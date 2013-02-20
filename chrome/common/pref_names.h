@@ -607,6 +607,8 @@ extern const char kSyncAppSettings[];
 extern const char kSyncApps[];
 extern const char kSyncAutofill[];
 extern const char kSyncAutofillProfile[];
+extern const char kSyncFaviconImages[];
+extern const char kSyncFaviconTracking[];
 extern const char kSyncThemes[];
 extern const char kSyncTypedUrls[];
 extern const char kSyncExtensions[];

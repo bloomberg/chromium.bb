@@ -99,6 +99,12 @@
       case ::syncer::DICTIONARY: \
         PER_DATA_TYPE_MACRO("Dictionary"); \
         break; \
+      case ::syncer::FAVICON_IMAGES: \
+        PER_DATA_TYPE_MACRO("FaviconImages"); \
+        break; \
+      case ::syncer::FAVICON_TRACKING: \
+        PER_DATA_TYPE_MACRO("FaviconTracking"); \
+        break; \
       default: \
         NOTREACHED() << "Unknown datatype " \
                      << ::syncer::ModelTypeToString(datatype);  \

@@ -54,26 +54,25 @@ enum ModelType {
   FIRST_USER_MODEL_TYPE = BOOKMARKS,  // Declared 2nd, for debugger prettiness.
   FIRST_REAL_MODEL_TYPE = FIRST_USER_MODEL_TYPE,
 
-  // A preference folder or a preference object.
+  // A preference object.
   PREFERENCES,
-  // A password folder or password object.
+  // A password object.
   PASSWORDS,
-    // An AutofillProfile Object
+  // An AutofillProfile Object
   AUTOFILL_PROFILE,
-  // An autofill folder or an autofill object.
+  // An autofill object.
   AUTOFILL,
-
-  // A themes folder or a themes object.
+  // A themes object.
   THEMES,
-  // A typed_url folder or a typed_url object.
+  // A typed_url object.
   TYPED_URLS,
-  // An extension folder or an extension object.
+  // An extension object.
   EXTENSIONS,
   // An object representing a custom search engine.
   SEARCH_ENGINES,
   // An object representing a browser session.
   SESSIONS,
-  // An app folder or an app object.
+  // An app object.
   APPS,
   // An app setting from the extension settings API.
   APP_SETTINGS,
@@ -87,7 +86,11 @@ enum ModelType {
   SYNCED_NOTIFICATIONS,
   // Custom spelling dictionary.
   DICTIONARY,
-  LAST_USER_MODEL_TYPE = DICTIONARY,
+  // Favicon images.
+  FAVICON_IMAGES,
+  // Favicon tracking information.
+  FAVICON_TRACKING,
+  LAST_USER_MODEL_TYPE = FAVICON_TRACKING,
 
   // An object representing a set of Nigori keys.
   NIGORI,

@@ -324,6 +324,10 @@ const char* SyncPrefs::GetPrefNameForDataType(syncer::ModelType data_type) {
       return prefs::kSyncSyncedNotifications;
     case syncer::DICTIONARY:
       return prefs::kSyncDictionary;
+    case syncer::FAVICON_IMAGES:
+      return prefs::kSyncFaviconImages;
+    case syncer::FAVICON_TRACKING:
+      return prefs::kSyncFaviconTracking;
     default:
       break;
   }
@@ -390,6 +394,11 @@ void SyncPrefs::RegisterPrefGroups() {
 
   pref_groups_[syncer::PREFERENCES].Put(syncer::DICTIONARY);
   pref_groups_[syncer::PREFERENCES].Put(syncer::SEARCH_ENGINES);
+
+  // TODO(zea): put favicons in the bookmarks group as well once it handles
+  // those favicons.
+  pref_groups_[syncer::SESSIONS].Put(syncer::FAVICON_IMAGES);
+  pref_groups_[syncer::SESSIONS].Put(syncer::FAVICON_TRACKING);
 
   // TODO(akalin): Revisit this once UI lands.
   pref_groups_[syncer::SESSIONS].Put(syncer::HISTORY_DELETE_DIRECTIVES);

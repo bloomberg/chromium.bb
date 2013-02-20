@@ -1739,6 +1739,8 @@ const char kSyncSessions[] = "sync.sessions";
 const char kSyncHistoryDeleteDirectives[] = "sync.history_delete_directives";
 const char kSyncSyncedNotifications[] = "sync.synced_notifications";
 const char kSyncDictionary[] = "sync.dictionary";
+const char kSyncFaviconImages[] = "sync.favicon_images";
+const char kSyncFaviconTracking[] = "sync.favicon_tracking";
 
 // Boolean used by enterprise configuration management in order to lock down
 // sync.

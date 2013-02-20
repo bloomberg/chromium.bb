@@ -520,6 +520,8 @@ base::DictionaryValue* EntitySpecificsToValue(
   SET_FIELD(experiments, ExperimentsSpecificsToValue);
   SET_FIELD(extension, ExtensionSpecificsToValue);
   SET_FIELD(extension_setting, ExtensionSettingSpecificsToValue);
+  SET_FIELD(favicon_image, FaviconImageSpecificsToValue);
+  SET_FIELD(favicon_tracking, FaviconTrackingSpecificsToValue);
   SET_FIELD(history_delete_directive, HistoryDeleteDirectiveSpecificsToValue);
   SET_FIELD(nigori, NigoriSpecificsToValue);
   SET_FIELD(password, PasswordSpecificsToValue);

@@ -95,6 +95,12 @@ void AddDefaultFieldValue(ModelType datatype,
     case DICTIONARY:
       specifics->mutable_dictionary();
       break;
+    case FAVICON_IMAGES:
+      specifics->mutable_favicon_image();
+      break;
+    case FAVICON_TRACKING:
+      specifics->mutable_favicon_tracking();
+      break;
     default:
       NOTREACHED() << "No known extension for model type.";
   }
@@ -177,6 +183,10 @@ int GetSpecificsFieldNumberFromModelType(ModelType model_type) {
     case DICTIONARY:
       return sync_pb::EntitySpecifics::kDictionaryFieldNumber;
       break;
+    case FAVICON_IMAGES:
+      return sync_pb::EntitySpecifics::kFaviconImageFieldNumber;
+    case FAVICON_TRACKING:
+      return sync_pb::EntitySpecifics::kFaviconTrackingFieldNumber;
     default:
       NOTREACHED() << "No known extension for model type.";
       return 0;
@@ -286,6 +296,12 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
 
   if (specifics.has_dictionary())
     return DICTIONARY;
+
+  if (specifics.has_favicon_image())
+    return FAVICON_IMAGES;
+
+  if (specifics.has_favicon_tracking())
+    return FAVICON_TRACKING;
 
   return UNSPECIFIED;
 }
@@ -400,6 +416,10 @@ const char* ModelTypeToString(ModelType model_type) {
       return "Priority Preferences";
     case DICTIONARY:
       return "Dictionary";
+    case FAVICON_IMAGES:
+      return "Favicon Images";
+    case FAVICON_TRACKING:
+      return "Favicon Tracking";
     default:
       break;
   }
@@ -477,6 +497,10 @@ ModelType ModelTypeFromString(const std::string& model_type_string) {
     return PRIORITY_PREFERENCES;
   else if (model_type_string == "Dictionary")
     return DICTIONARY;
+  else if (model_type_string == "Favicon Images")
+    return FAVICON_IMAGES;
+  else if (model_type_string == "Favicon Tracking")
+    return FAVICON_TRACKING;
   else
     NOTREACHED() << "No known model type corresponding to "
                  << model_type_string << ".";
@@ -559,6 +583,10 @@ std::string ModelTypeToRootTag(ModelType type) {
       return "google_chrome_priority_preferences";
     case DICTIONARY:
       return "google_chrome_dictionary";
+    case FAVICON_IMAGES:
+      return "google_chrome_favicon_images";
+    case FAVICON_TRACKING:
+      return "google_chrome_favicon_tracking";
     default:
       break;
   }
@@ -592,6 +620,8 @@ const char kDeviceInfoNotificationType[] = "DEVICE_INFO";
 const char kExperimentsNotificationType[] = "EXPERIMENTS";
 const char kPriorityPreferenceNotificationType[] = "PRIORITY_PREFERENCE";
 const char kDictionaryNotificationType[] = "DICTIONARY";
+const char kFaviconImageNotificationType[] = "FAVICON_IMAGE";
+const char kFaviconTrackingNotificationType[] = "FAVICON_TRACKING";
 }  // namespace
 
 bool RealModelTypeToNotificationType(ModelType model_type,
@@ -659,6 +689,12 @@ bool RealModelTypeToNotificationType(ModelType model_type,
       return true;
     case DICTIONARY:
       *notification_type = kDictionaryNotificationType;
+      return true;
+    case FAVICON_IMAGES:
+      *notification_type = kFaviconImageNotificationType;
+      return true;
+    case FAVICON_TRACKING:
+      *notification_type = kFaviconTrackingNotificationType;
       return true;
     default:
       break;
@@ -731,6 +767,12 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
     return true;
   } else if (notification_type == kDictionaryNotificationType) {
     *model_type = DICTIONARY;
+    return true;
+  } else if (notification_type == kFaviconImageNotificationType) {
+    *model_type = FAVICON_IMAGES;
+    return true;
+  } else if (notification_type == kFaviconTrackingNotificationType) {
+    *model_type = FAVICON_TRACKING;
     return true;
   }
   *model_type = UNSPECIFIED;

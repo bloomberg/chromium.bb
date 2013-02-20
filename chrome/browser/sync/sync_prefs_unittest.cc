@@ -40,6 +40,8 @@ syncer::ModelTypeSet GetUserVisibleTypes() {
   user_visible_types.Remove(syncer::DICTIONARY);
   user_visible_types.Remove(syncer::EXTENSION_SETTINGS);
   user_visible_types.Remove(syncer::SEARCH_ENGINES);
+  user_visible_types.Remove(syncer::FAVICON_IMAGES);
+  user_visible_types.Remove(syncer::FAVICON_TRACKING);
   return user_visible_types;
 }
 
@@ -121,6 +123,8 @@ TEST_F(SyncPrefsTest, PreferredTypesNotKeepEverythingSynced) {
     }
     if (it.Get() == syncer::SESSIONS) {
       expected_preferred_types.Put(syncer::HISTORY_DELETE_DIRECTIVES);
+      expected_preferred_types.Put(syncer::FAVICON_IMAGES);
+      expected_preferred_types.Put(syncer::FAVICON_TRACKING);
     }
     // TODO(akalin): Remove this when history delete directives are
     // registered by default.

@@ -116,5 +116,9 @@ message NigoriSpecifics {
   // Boolean corresponding to whether custom spelling dictionary should be
   // encrypted.
   optional bool encrypt_dictionary = 34;
+
+  // Boolean corresponding to Whether to encrypt favicons data or not.
+  optional bool encrypt_favicon_images = 35;
+  optional bool encrypt_favicon_tracking = 36;
 }
 

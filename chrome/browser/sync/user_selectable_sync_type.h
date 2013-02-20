@@ -46,6 +46,8 @@ enum UserSelectableSyncType {
   // DEVICE_INFO,
   // EXPERIMENTS,
   // PRIORITY_PREFERENCES,
+  // FAVICON_IMAGES,
+  // FAVICON_TRACKING,
 
   // Number of sync datatypes exposed to the user via checboxes in the UI.
   SELECTABLE_DATATYPE_COUNT = 10,

@@ -252,7 +252,7 @@ void UpdateNigoriFromEncryptedTypes(ModelTypeSet encrypted_types,
                                     bool encrypt_everything,
                                     sync_pb::NigoriSpecifics* nigori) {
   nigori->set_encrypt_everything(encrypt_everything);
-  COMPILE_ASSERT(17, MODEL_TYPE_COUNT);
+  COMPILE_ASSERT(25 == MODEL_TYPE_COUNT, UpdateEncryptedTypes);
   nigori->set_encrypt_bookmarks(
       encrypted_types.Has(BOOKMARKS));
   nigori->set_encrypt_preferences(
@@ -276,6 +276,8 @@ void UpdateNigoriFromEncryptedTypes(ModelTypeSet encrypted_types,
   nigori->set_encrypt_app_notifications(
       encrypted_types.Has(APP_NOTIFICATIONS));
   nigori->set_encrypt_dictionary(encrypted_types.Has(DICTIONARY));
+  nigori->set_encrypt_favicon_images(encrypted_types.Has(FAVICON_IMAGES));
+  nigori->set_encrypt_favicon_tracking(encrypted_types.Has(FAVICON_TRACKING));
 }
 
 ModelTypeSet GetEncryptedTypesFromNigori(
@@ -284,7 +286,7 @@ ModelTypeSet GetEncryptedTypesFromNigori(
     return ModelTypeSet::All();
 
   ModelTypeSet encrypted_types;
-  COMPILE_ASSERT(17, MODEL_TYPE_COUNT);
+  COMPILE_ASSERT(25 == MODEL_TYPE_COUNT, UpdateEncryptedTypes);
   if (nigori.encrypt_bookmarks())
     encrypted_types.Put(BOOKMARKS);
   if (nigori.encrypt_preferences())
@@ -313,6 +315,10 @@ ModelTypeSet GetEncryptedTypesFromNigori(
     encrypted_types.Put(APP_NOTIFICATIONS);
   if (nigori.encrypt_dictionary())
     encrypted_types.Put(DICTIONARY);
+  if (nigori.encrypt_favicon_images())
+    encrypted_types.Put(FAVICON_IMAGES);
+  if (nigori.encrypt_favicon_tracking())
+    encrypted_types.Put(FAVICON_TRACKING);
   return encrypted_types;
 }
 
