@@ -54,10 +54,10 @@ wallet::WalletItems::MaskedInstrument::Status
 namespace wallet {
 
 WalletItems::MaskedInstrument::MaskedInstrument(
-    const std::string& descriptive_name,
+    const string16& descriptive_name,
     const WalletItems::MaskedInstrument::Type& type,
-    const std::vector<std::string>& supported_currencies,
-    const std::string& last_four_digits,
+    const std::vector<string16>& supported_currencies,
+    const string16& last_four_digits,
     int expiration_month,
     int expiration_year,
     scoped_ptr<Address> address,
@@ -89,7 +89,7 @@ scoped_ptr<WalletItems::MaskedInstrument>
     return scoped_ptr<MaskedInstrument>();
   }
 
-  std::string last_four_digits;
+  string16 last_four_digits;
   if (!dictionary.GetString("last_four_digits", &last_four_digits)) {
     DLOG(ERROR) << "Response from Google Wallet missing last four digits";
     return scoped_ptr<MaskedInstrument>();
@@ -122,11 +122,11 @@ scoped_ptr<WalletItems::MaskedInstrument>
     return scoped_ptr<MaskedInstrument>();
   }
 
-  std::vector<std::string> supported_currencies;
+  std::vector<string16> supported_currencies;
   const ListValue* supported_currency_list;
   if (dictionary.GetList("supported_currency", &supported_currency_list)) {
     for (size_t i = 0; i < supported_currency_list->GetSize(); ++i) {
-      std::string currency;
+      string16 currency;
       if (supported_currency_list->GetString(i, &currency))
         supported_currencies.push_back(currency);
     }
@@ -142,7 +142,7 @@ scoped_ptr<WalletItems::MaskedInstrument>
   if (!dictionary.GetInteger("expiration_year", &expiration_year))
     DVLOG(1) << "Response from Google Wallet missing expiration year";
 
-  std::string descriptive_name;
+  string16 descriptive_name;
   if (!dictionary.GetString("descriptive_name", &descriptive_name))
     DVLOG(1) << "Response from Google Wallet missing descriptive name";
 

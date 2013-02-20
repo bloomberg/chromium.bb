@@ -5,6 +5,7 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/autofill/wallet/wallet_address.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -159,72 +160,72 @@ class WalletAddressTest : public testing::Test {
     scoped_ptr<Value> value(base::JSONReader::Read(json));
     DCHECK(value.get());
     DCHECK(value->IsType(Value::TYPE_DICTIONARY));
-    dict.reset(static_cast<DictionaryValue*>(value.release()));
+    dict_.reset(static_cast<DictionaryValue*>(value.release()));
   }
-  scoped_ptr<const DictionaryValue> dict;
+  scoped_ptr<const DictionaryValue> dict_;
 };
 
 TEST_F(WalletAddressTest, CreateAddressWithIDMissingObjectId) {
   SetUpDictionary(kAddressMissingObjectId);
-  ASSERT_EQ(NULL, Address::CreateAddressWithID(*dict).get());
+  ASSERT_EQ(NULL, Address::CreateAddressWithID(*dict_).get());
 }
 
 TEST_F(WalletAddressTest, CreateAddressWithIDMissingCountryNameCode) {
   SetUpDictionary(kAddressMissingCountryNameCode);
-  ASSERT_EQ(NULL, Address::CreateAddressWithID(*dict).get());
+  ASSERT_EQ(NULL, Address::CreateAddressWithID(*dict_).get());
 }
 
 TEST_F(WalletAddressTest, CreateAddressWithIDMissingRecipientName) {
   SetUpDictionary(kAddressMissingRecipientName);
-  ASSERT_EQ(NULL, Address::CreateAddressWithID(*dict).get());
+  ASSERT_EQ(NULL, Address::CreateAddressWithID(*dict_).get());
 }
 
 TEST_F(WalletAddressTest, CreateAddressWithIDMissingPostalCodeNumber) {
   SetUpDictionary(kAddressMissingPostalCodeNumber);
-  ASSERT_EQ(NULL, Address::CreateAddressWithID(*dict).get());
+  ASSERT_EQ(NULL, Address::CreateAddressWithID(*dict_).get());
 }
 
 TEST_F(WalletAddressTest, CreateAddressWithID) {
   SetUpDictionary(kValidAddress);
   Address address("country_name_code",
-                  "recipient_name",
-                  "address_line_1",
-                  "address_line_2",
-                  "locality_name",
-                  "administrative_area_name",
-                  "postal_code_number",
-                  "phone_number",
+                  ASCIIToUTF16("recipient_name"),
+                  ASCIIToUTF16("address_line_1"),
+                  ASCIIToUTF16("address_line_2"),
+                  ASCIIToUTF16("locality_name"),
+                  ASCIIToUTF16("administrative_area_name"),
+                  ASCIIToUTF16("postal_code_number"),
+                  ASCIIToUTF16("phone_number"),
                   "id");
-  ASSERT_EQ(address, *Address::CreateAddressWithID(*dict));
+  ASSERT_EQ(address, *Address::CreateAddressWithID(*dict_));
 }
 
 TEST_F(WalletAddressTest, CreateDisplayAddressMissingCountryNameCode) {
   SetUpDictionary(kClientAddressMissingCountryCode);
-  ASSERT_EQ(NULL, Address::CreateDisplayAddress(*dict).get());
+  ASSERT_EQ(NULL, Address::CreateDisplayAddress(*dict_).get());
 }
 
 TEST_F(WalletAddressTest, CreateDisplayAddressMissingName) {
   SetUpDictionary(kClientAddressMissingName);
-  ASSERT_EQ(NULL, Address::CreateDisplayAddress(*dict).get());
+  ASSERT_EQ(NULL, Address::CreateDisplayAddress(*dict_).get());
 }
 
 TEST_F(WalletAddressTest, CreateDisplayAddressMissingPostalCode) {
   SetUpDictionary(kClientAddressMissingPostalCode);
-  ASSERT_EQ(NULL, Address::CreateDisplayAddress(*dict).get());
+  ASSERT_EQ(NULL, Address::CreateDisplayAddress(*dict_).get());
 }
 
 TEST_F(WalletAddressTest, CreateDisplayAddress) {
   SetUpDictionary(kClientValidAddress);
   Address address("country_code",
-                  "name",
-                  "address1",
-                  "address2",
-                  "city",
-                  "state",
-                  "postal_code",
-                  "phone_number",
+                  ASCIIToUTF16("name"),
+                  ASCIIToUTF16("address1"),
+                  ASCIIToUTF16("address2"),
+                  ASCIIToUTF16("city"),
+                  ASCIIToUTF16("state"),
+                  ASCIIToUTF16("postal_code"),
+                  ASCIIToUTF16("phone_number"),
                   "");
-  ASSERT_EQ(address, *Address::CreateDisplayAddress(*dict));
+  ASSERT_EQ(address, *Address::CreateDisplayAddress(*dict_));
 }
 
 TEST_F(WalletAddressTest, ToDictionaryWithoutID) {
@@ -245,13 +246,13 @@ TEST_F(WalletAddressTest, ToDictionaryWithoutID) {
   expected.Set("address_line", address_lines);
 
   Address address("country_name_code",
-                  "recipient_name",
-                  "address_line_1",
-                  "address_line_2",
-                  "locality_name",
-                  "administrative_area_name",
-                  "postal_code_number",
-                  "phone_number",
+                  ASCIIToUTF16("recipient_name"),
+                  ASCIIToUTF16("address_line_1"),
+                  ASCIIToUTF16("address_line_2"),
+                  ASCIIToUTF16("locality_name"),
+                  ASCIIToUTF16("administrative_area_name"),
+                  ASCIIToUTF16("postal_code_number"),
+                  ASCIIToUTF16("phone_number"),
                   "");
 
   EXPECT_TRUE(expected.Equals(address.ToDictionaryWithoutID().get()));
@@ -277,13 +278,13 @@ TEST_F(WalletAddressTest, ToDictionaryWithID) {
   expected.Set("postal_address.address_line", address_lines);
 
   Address address("country_name_code",
-                  "recipient_name",
-                  "address_line_1",
-                  "address_line_2",
-                  "locality_name",
-                  "administrative_area_name",
-                  "postal_code_number",
-                  "phone_number",
+                  ASCIIToUTF16("recipient_name"),
+                  ASCIIToUTF16("address_line_1"),
+                  ASCIIToUTF16("address_line_2"),
+                  ASCIIToUTF16("locality_name"),
+                  ASCIIToUTF16("administrative_area_name"),
+                  ASCIIToUTF16("postal_code_number"),
+                  ASCIIToUTF16("phone_number"),
                   "id");
 
   EXPECT_TRUE(expected.Equals(address.ToDictionaryWithID().get()));

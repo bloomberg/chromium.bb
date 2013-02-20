@@ -5,6 +5,7 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/autofill/wallet/full_wallet.h"
 #include "chrome/browser/autofill/wallet/required_action.h"
@@ -425,24 +426,26 @@ TEST_F(FullWalletTest, CreateFullWalletWithInvalidRequiredActions) {
 
 TEST_F(FullWalletTest, CreateFullWallet) {
   SetUpDictionary(kFullWalletValidResponse);
-  scoped_ptr<Address> billing_address(new Address("country_name_code",
-                                                  "recipient_name",
-                                                  "address_line_1",
-                                                  "address_line_2",
-                                                  "locality_name",
-                                                  "administrative_area_name",
-                                                  "postal_code_number",
-                                                  "phone_number",
-                                                  "id"));
-  scoped_ptr<Address> shipping_address(new Address("ship_country_name_code",
-                                                   "ship_recipient_name",
-                                                   "ship_address_line_1",
-                                                   "ship_address_line_2",
-                                                   "ship_locality_name",
-                                                   "ship_admin_area_name",
-                                                   "ship_postal_code_number",
-                                                   "ship_phone_number",
-                                                   "ship_id"));
+  scoped_ptr<Address> billing_address(new Address(
+      "country_name_code",
+      ASCIIToUTF16("recipient_name"),
+      ASCIIToUTF16("address_line_1"),
+      ASCIIToUTF16("address_line_2"),
+      ASCIIToUTF16("locality_name"),
+      ASCIIToUTF16("administrative_area_name"),
+      ASCIIToUTF16("postal_code_number"),
+      ASCIIToUTF16("phone_number"),
+      "id"));
+  scoped_ptr<Address> shipping_address(new Address(
+      "ship_country_name_code",
+      ASCIIToUTF16("ship_recipient_name"),
+      ASCIIToUTF16("ship_address_line_1"),
+      ASCIIToUTF16("ship_address_line_2"),
+      ASCIIToUTF16("ship_locality_name"),
+      ASCIIToUTF16("ship_admin_area_name"),
+      ASCIIToUTF16("ship_postal_code_number"),
+      ASCIIToUTF16("ship_phone_number"),
+      "ship_id"));
   std::vector<RequiredAction> required_actions;
   FullWallet full_wallet(12,
                          2012,

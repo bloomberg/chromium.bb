@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/string16.h"
 #include "chrome/browser/autofill/wallet/required_action.h"
 #include "chrome/browser/autofill/wallet/wallet_address.h"
 
@@ -67,12 +68,12 @@ class WalletItems {
     bool operator==(const MaskedInstrument& other) const;
     bool operator!=(const MaskedInstrument& other) const;
 
-    const std::string& descriptive_name() const { return descriptive_name_; }
+    const string16& descriptive_name() const { return descriptive_name_; }
     const Type& type() const { return type_; }
-    const std::vector<std::string>& supported_currencies() const {
+    const std::vector<string16>& supported_currencies() const {
       return supported_currencies_;
     }
-    const std::string& last_four_digits() const { return last_four_digits_; }
+    const string16& last_four_digits() const { return last_four_digits_; }
     int expiration_month() const { return expiration_month_; }
     int expiration_year() const { return expiration_year_; }
     const Address& address() const { return *address_; }
@@ -83,10 +84,10 @@ class WalletItems {
     friend class WalletItemsTest;
     FRIEND_TEST_ALL_PREFIXES(WalletItemsTest, CreateMaskedInstrument);
     FRIEND_TEST_ALL_PREFIXES(WalletItemsTest, CreateWalletItems);
-    MaskedInstrument(const std::string& descriptve_name,
+    MaskedInstrument(const string16& descriptve_name,
                      const Type& type,
-                     const std::vector<std::string>& supported_currencies,
-                     const std::string& last_four_digits,
+                     const std::vector<string16>& supported_currencies,
+                     const string16& last_four_digits,
                      int expiration_month,
                      int expiration_year,
                      scoped_ptr<Address> address,
@@ -95,16 +96,16 @@ class WalletItems {
 
     // A user-provided description of the instrument. For example, "Google Visa
     // Card".
-    std::string descriptive_name_;
+    string16 descriptive_name_;
 
     // The payment network of the instrument. For example, Visa.
     Type type_;
 
     // |supported_currencies_| are ISO 4217 currency codes, e.g. USD.
-    std::vector<std::string> supported_currencies_;
+    std::vector<string16> supported_currencies_;
 
     // The last four digits of the primary account number of the instrument.
-    std::string last_four_digits_;
+    string16 last_four_digits_;
 
     // |expiration month_| should be 1-12.
     int expiration_month_;

@@ -37,8 +37,8 @@ std::string FormOfPaymentToString(
 
 namespace wallet {
 
-Instrument::Instrument(const std::string& primary_account_number,
-                       const std::string& card_verification_number,
+Instrument::Instrument(const string16& primary_account_number,
+                       const string16& card_verification_number,
                        int expiration_month,
                        int expiration_year,
                        FormOfPayment form_of_payment,
@@ -80,7 +80,7 @@ bool Instrument::IsValid() const {
   if (!IsStringASCII(primary_account_number_))
     return false;
   bool primary_account_number_valid =
-      autofill::IsValidCreditCardNumber(ASCIIToUTF16(primary_account_number_));
+      autofill::IsValidCreditCardNumber(primary_account_number_);
   bool card_verification_number_valid = card_verification_number_.size() == 3 ||
                                         card_verification_number_.size() == 4;
   bool exp_month_valid = expiration_month_ >= 1 && expiration_month_ <= 12;

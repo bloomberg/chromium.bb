@@ -11,6 +11,7 @@
 #include "base/string_split.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/autofill/wallet/cart.h"
 #include "chrome/browser/autofill/wallet/full_wallet.h"
@@ -90,9 +91,10 @@ void WalletClient::EncryptOtp(const void* otp,
 
   request_type_ = ENCRYPT_OTP;
 
-  std::string post_body = StringPrintf(kEncryptOtpBodyFormat,
-                                       base::HexEncode(&num_bits, 1).c_str(),
-                                       base::HexEncode(otp, length).c_str());
+  std::string post_body = base::StringPrintf(
+      kEncryptOtpBodyFormat,
+      base::HexEncode(&num_bits, 1).c_str(),
+      base::HexEncode(otp, length).c_str());
 
   MakeWalletRequest(GetEncryptionUrl(),
                     post_body,
@@ -107,11 +109,11 @@ void WalletClient::EscrowSensitiveInformation(
   DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
   request_type_ = ESCROW_SENSITIVE_INFORMATION;
 
-  std::string post_body = StringPrintf(
+  std::string post_body = base::StringPrintf(
       kEscrowSensitiveInformationFormat,
       obfuscated_gaia_id.c_str(),
-      new_instrument.primary_account_number().c_str(),
-      new_instrument.card_verification_number().c_str());
+      UTF16ToUTF8(new_instrument.primary_account_number()).c_str(),
+      UTF16ToUTF8(new_instrument.card_verification_number()).c_str());
 
   MakeWalletRequest(GetEscrowUrl(), post_body, observer, kApplicationMimeType);
 }

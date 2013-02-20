@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/autofill/wallet/instrument.h"
 #include "chrome/browser/autofill/wallet/wallet_address.h"
@@ -19,20 +20,20 @@ const char kLastFourDigits[] = "4448";
 namespace wallet {
 
 TEST(Instrument, LastFourDigits) {
-  Instrument instrument(kPrimaryAccountNumber,
-                        kCardVerificationNumber,
+  Instrument instrument(ASCIIToUTF16(kPrimaryAccountNumber),
+                        ASCIIToUTF16(kCardVerificationNumber),
                         12,
                         2015,
                         Instrument::VISA,
                         GetTestShippingAddress().Pass());
 
-  EXPECT_EQ(kLastFourDigits, instrument.last_four_digits());
+  EXPECT_EQ(ASCIIToUTF16(kLastFourDigits), instrument.last_four_digits());
   EXPECT_TRUE(instrument.IsValid());
 }
 
 TEST(Instrument, NoPrimaryAccountNumberIsInvalid) {
-  Instrument instrument(std::string(),
-                        kCardVerificationNumber,
+  Instrument instrument(string16(),
+                        ASCIIToUTF16(kCardVerificationNumber),
                         12,
                         2015,
                         Instrument::VISA,
@@ -42,8 +43,8 @@ TEST(Instrument, NoPrimaryAccountNumberIsInvalid) {
 }
 
 TEST(Instrument, TooShortPrimaryAccountNumberIsInvalid) {
-  Instrument instrument("44447",
-                        kCardVerificationNumber,
+  Instrument instrument(ASCIIToUTF16("44447"),
+                        ASCIIToUTF16(kCardVerificationNumber),
                         12,
                         2015,
                         Instrument::VISA,
@@ -53,8 +54,8 @@ TEST(Instrument, TooShortPrimaryAccountNumberIsInvalid) {
 }
 
 TEST(Instrument, TooLongPrimaryAccountNumberIsInvalid) {
-  Instrument instrument("44444444444444444448",
-                        kCardVerificationNumber,
+  Instrument instrument(ASCIIToUTF16("44444444444444444448"),
+                        ASCIIToUTF16(kCardVerificationNumber),
                         12,
                         2015,
                         Instrument::VISA,
@@ -64,8 +65,8 @@ TEST(Instrument, TooLongPrimaryAccountNumberIsInvalid) {
 }
 
 TEST(Instrument, PrimaryAccountNumberNotPassingLuhnIsInvalid) {
-  Instrument instrument("4444444444444444",
-                        kCardVerificationNumber,
+  Instrument instrument(ASCIIToUTF16("4444444444444444"),
+                        ASCIIToUTF16(kCardVerificationNumber),
                         12,
                         2015,
                         Instrument::VISA,
@@ -75,8 +76,8 @@ TEST(Instrument, PrimaryAccountNumberNotPassingLuhnIsInvalid) {
 }
 
 TEST(Instrument, NoCardVerificationNumberIsInvalid) {
-  Instrument instrument(kPrimaryAccountNumber,
-                        std::string(),
+  Instrument instrument(ASCIIToUTF16(kPrimaryAccountNumber),
+                        string16(),
                         12,
                         2015,
                         Instrument::VISA,
@@ -86,8 +87,8 @@ TEST(Instrument, NoCardVerificationNumberIsInvalid) {
 }
 
 TEST(Instrument, TooShortCardVerificationNumberIsInvalid) {
-  Instrument instrument(kPrimaryAccountNumber,
-                        "12",
+  Instrument instrument(ASCIIToUTF16(kPrimaryAccountNumber),
+                        ASCIIToUTF16("12"),
                         12,
                         2015,
                         Instrument::VISA,
@@ -97,8 +98,8 @@ TEST(Instrument, TooShortCardVerificationNumberIsInvalid) {
 }
 
 TEST(Instrument, TooLongCardVerificationNumberIsInvalid) {
-  Instrument instrument(kPrimaryAccountNumber,
-                        "12345",
+  Instrument instrument(ASCIIToUTF16(kPrimaryAccountNumber),
+                        ASCIIToUTF16("12345"),
                         12,
                         2015,
                         Instrument::VISA,
@@ -108,8 +109,8 @@ TEST(Instrument, TooLongCardVerificationNumberIsInvalid) {
 }
 
 TEST(Instrument, ZeroAsExpirationMonthIsInvalid) {
-  Instrument instrument(kPrimaryAccountNumber,
-                        kCardVerificationNumber,
+  Instrument instrument(ASCIIToUTF16(kPrimaryAccountNumber),
+                        ASCIIToUTF16(kCardVerificationNumber),
                         0,
                         2015,
                         Instrument::VISA,
@@ -119,8 +120,8 @@ TEST(Instrument, ZeroAsExpirationMonthIsInvalid) {
 }
 
 TEST(Instrument, TooLargeExpirationMonthIsInvalid) {
-  Instrument instrument(kPrimaryAccountNumber,
-                        kCardVerificationNumber,
+  Instrument instrument(ASCIIToUTF16(kPrimaryAccountNumber),
+                        ASCIIToUTF16(kCardVerificationNumber),
                         13,
                         2015,
                         Instrument::VISA,
@@ -130,8 +131,8 @@ TEST(Instrument, TooLargeExpirationMonthIsInvalid) {
 }
 
 TEST(Instrument, TooSmallExpirationYearIsInvalid) {
-  Instrument instrument(kPrimaryAccountNumber,
-                        kCardVerificationNumber,
+  Instrument instrument(ASCIIToUTF16(kPrimaryAccountNumber),
+                        ASCIIToUTF16(kCardVerificationNumber),
                         12,
                         999,
                         Instrument::VISA,
@@ -141,8 +142,8 @@ TEST(Instrument, TooSmallExpirationYearIsInvalid) {
 }
 
 TEST(Instrument, TooLargeExpirationYearIsInvalid) {
-  Instrument instrument(kPrimaryAccountNumber,
-                        kCardVerificationNumber,
+  Instrument instrument(ASCIIToUTF16(kPrimaryAccountNumber),
+                        ASCIIToUTF16(kCardVerificationNumber),
                         12,
                         10000,
                         Instrument::VISA,
@@ -173,8 +174,8 @@ TEST(Instrument, ToDictionary) {
   address_lines->AppendString("ship_address_line_2");
   expected.Set("credit_card.address.address_line", address_lines);
 
-  Instrument instrument(kPrimaryAccountNumber,
-                        kCardVerificationNumber,
+  Instrument instrument(ASCIIToUTF16(kPrimaryAccountNumber),
+                        ASCIIToUTF16(kCardVerificationNumber),
                         12,
                         2015,
                         Instrument::VISA,

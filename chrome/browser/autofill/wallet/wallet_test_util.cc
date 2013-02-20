@@ -4,14 +4,15 @@
 
 #include "chrome/browser/autofill/wallet/wallet_test_util.h"
 
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/wallet/instrument.h"
 #include "chrome/browser/autofill/wallet/wallet_address.h"
 
 namespace wallet {
 
 scoped_ptr<Instrument> GetTestInstrument() {
-  return scoped_ptr<Instrument>(new Instrument("4444444444444448",
-                                               "123",
+  return scoped_ptr<Instrument>(new Instrument(ASCIIToUTF16("4444444444444448"),
+                                               ASCIIToUTF16("123"),
                                                12,
                                                2012,
                                                Instrument::VISA,
@@ -19,26 +20,27 @@ scoped_ptr<Instrument> GetTestInstrument() {
 }
 
 scoped_ptr<Address> GetTestShippingAddress() {
-  return scoped_ptr<Address>(new Address("ship_country_name_code",
-                                         "ship_recipient_name",
-                                         "ship_address_line_1",
-                                         "ship_address_line_2",
-                                         "ship_locality_name",
-                                         "ship_admin_area_name",
-                                         "ship_postal_code_number",
-                                         "ship_phone_number",
-                                         std::string()));
+  return scoped_ptr<Address>(new Address(
+      "ship_country_name_code",
+      ASCIIToUTF16("ship_recipient_name"),
+      ASCIIToUTF16("ship_address_line_1"),
+      ASCIIToUTF16("ship_address_line_2"),
+      ASCIIToUTF16("ship_locality_name"),
+      ASCIIToUTF16("ship_admin_area_name"),
+      ASCIIToUTF16("ship_postal_code_number"),
+      ASCIIToUTF16("ship_phone_number"),
+      std::string()));
 }
 
 scoped_ptr<Address> GetTestAddress() {
   return scoped_ptr<Address>(new Address("country_name_code",
-                                         "recipient_name",
-                                         "address_line_1",
-                                         "address_line_2",
-                                         "locality_name",
-                                         "admin_area_name",
-                                         "postal_code_number",
-                                         "phone_number",
+                                         ASCIIToUTF16("recipient_name"),
+                                         ASCIIToUTF16("address_line_1"),
+                                         ASCIIToUTF16("address_line_2"),
+                                         ASCIIToUTF16("locality_name"),
+                                         ASCIIToUTF16("admin_area_name"),
+                                         ASCIIToUTF16("postal_code_number"),
+                                         ASCIIToUTF16("phone_number"),
                                          std::string()));
 }
 

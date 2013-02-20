@@ -960,7 +960,7 @@ void AutofillDialogControllerImpl::GenerateSuggestionsModels() {
       for (size_t i = 0; i < instruments.size(); ++i) {
         suggested_cc_billing_.AddKeyedItem(
             base::IntToString(i),
-            UTF8ToUTF16(instruments[i]->descriptive_name()));
+            instruments[i]->descriptive_name());
       }
     }
 

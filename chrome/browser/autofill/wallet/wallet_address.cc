@@ -13,13 +13,13 @@ namespace wallet {
 Address::Address() {}
 
 Address::Address(const std::string& country_name_code,
-                 const std::string& recipient_name,
-                 const std::string& address_line_1,
-                 const std::string& address_line_2,
-                 const std::string& locality_name,
-                 const std::string& administrative_area_name,
-                 const std::string& postal_code_number,
-                 const std::string& phone_number,
+                 const string16& recipient_name,
+                 const string16& address_line_1,
+                 const string16& address_line_2,
+                 const string16& locality_name,
+                 const string16& administrative_area_name,
+                 const string16& postal_code_number,
+                 const string16& phone_number,
                  const std::string& object_id)
     : country_name_code_(country_name_code),
       recipient_name_(recipient_name),
@@ -65,28 +65,28 @@ scoped_ptr<base::DictionaryValue> Address::ToDictionaryWithoutID() const {
 
 string16 Address::DisplayName() const {
   // TODO(estade): improve this stub implementation.
-  return UTF8ToUTF16(recipient_name() + ", " + address_line_1());
+  return recipient_name() + ASCIIToUTF16(", ") + address_line_1();
 }
 
 string16 Address::GetInfo(AutofillFieldType type) const {
   switch (type) {
     case NAME_FULL:
-      return UTF8ToUTF16(recipient_name());
+      return recipient_name();
 
     case ADDRESS_HOME_LINE1:
-      return UTF8ToUTF16(address_line_1());
+      return address_line_1();
 
     case ADDRESS_HOME_LINE2:
-      return UTF8ToUTF16(address_line_2());
+      return address_line_2();
 
     case ADDRESS_HOME_CITY:
-      return UTF8ToUTF16(locality_name());
+      return locality_name();
 
     case ADDRESS_HOME_STATE:
-      return UTF8ToUTF16(admin_area_name());
+      return admin_area_name();
 
     case ADDRESS_HOME_ZIP:
-      return UTF8ToUTF16(postal_code_number());
+      return postal_code_number();
 
     // TODO(estade): implement more.
     default:
@@ -110,26 +110,26 @@ scoped_ptr<Address>
     return scoped_ptr<Address>();
   }
 
-  std::string recipient_name;
+  string16 recipient_name;
   if (!dictionary.GetString("postal_address.recipient_name",
                             &recipient_name)) {
     DLOG(ERROR) << "Response from Google Wallet recipient name";
     return scoped_ptr<Address>();
   }
 
-  std::string postal_code_number;
+  string16 postal_code_number;
   if (!dictionary.GetString("postal_address.postal_code_number",
                             &postal_code_number)) {
     DLOG(ERROR) << "Response from Google Wallet missing postal code number";
     return scoped_ptr<Address>();
   }
 
-  std::string phone_number;
+  string16 phone_number;
   if (!dictionary.GetString("phone_number", &phone_number))
     DVLOG(1) << "Response from Google Wallet missing phone number";
 
-  std::string address_line_1;
-  std::string address_line_2;
+  string16 address_line_1;
+  string16 address_line_2;
   const ListValue* address_line_list;
   if (dictionary.GetList("postal_address.address_line", &address_line_list)) {
     if (!address_line_list->GetString(0, &address_line_1))
@@ -140,13 +140,13 @@ scoped_ptr<Address>
     DVLOG(1) << "Response from Google Wallet missing address lines";
   }
 
-  std::string locality_name;
+  string16 locality_name;
   if (!dictionary.GetString("postal_address.locality_name",
                             &locality_name)) {
     DVLOG(1) << "Response from Google Wallet missing locality name";
   }
 
-  std::string administrative_area_name;
+  string16 administrative_area_name;
   if (!dictionary.GetString("postal_address.administrative_area_name",
                             &administrative_area_name)) {
     DVLOG(1) << "Response from Google Wallet missing administrative area name";
@@ -163,7 +163,6 @@ scoped_ptr<Address>
                                          object_id));
 }
 
-
 scoped_ptr<Address>
     Address::CreateDisplayAddress(const base::DictionaryValue& dictionary) {
   std::string country_code;
@@ -172,35 +171,35 @@ scoped_ptr<Address>
     return scoped_ptr<Address>();
   }
 
-  std::string name;
+  string16 name;
   if (!dictionary.GetString("name", &name)) {
     DLOG(ERROR) << "Reponse from Google Wallet missing name";
     return scoped_ptr<Address>();
   }
 
-  std::string postal_code;
+  string16 postal_code;
   if (!dictionary.GetString("postal_code", &postal_code)) {
     DLOG(ERROR) << "Reponse from Google Wallet missing postal code";
     return scoped_ptr<Address>();
   }
 
-  std::string address1;
+  string16 address1;
   if (!dictionary.GetString("address1", &address1))
     DVLOG(1) << "Reponse from Google Wallet missing address1";
 
-  std::string address2;
+  string16 address2;
   if (!dictionary.GetString("address2", &address2))
     DVLOG(1) << "Reponse from Google Wallet missing address2";
 
-  std::string city;
+  string16 city;
   if (!dictionary.GetString("city", &city))
     DVLOG(1) << "Reponse from Google Wallet missing city";
 
-  std::string state;
+  string16 state;
   if (!dictionary.GetString("state", &state))
     DVLOG(1) << "Reponse from Google Wallet missing state";
 
-  std::string phone_number;
+  string16 phone_number;
   if (!dictionary.GetString("phone_number", &phone_number))
     DVLOG(1) << "Reponse from Google Wallet missing phone number";
 

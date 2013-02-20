@@ -159,7 +159,7 @@ void WalletInstrumentWrapper::FillInputs(DetailInputs* inputs) {
 
 string16 WalletInstrumentWrapper::GetDisplayText() {
   // TODO(estade): implement better.
-  return UTF8ToUTF16(instrument_->descriptive_name());
+  return instrument_->descriptive_name();
 }
 
 void WalletInstrumentWrapper::FillFormField(AutofillField* field) {

@@ -5,6 +5,7 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/autofill/wallet/required_action.h"
 #include "chrome/browser/autofill/wallet/wallet_items.h"
@@ -398,21 +399,21 @@ TEST_F(WalletItemsTest, CreateMaskedInstrumentMissingObjectId) {
 TEST_F(WalletItemsTest, CreateMaskedInstrument) {
   SetUpDictionary(kMaskedInstrument);
   scoped_ptr<Address> address(new Address("country_code",
-                                          "name",
-                                          "address1",
-                                          "address2",
-                                          "city",
-                                          "state",
-                                          "postal_code",
-                                          "phone_number",
+                                          ASCIIToUTF16("name"),
+                                          ASCIIToUTF16("address1"),
+                                          ASCIIToUTF16("address2"),
+                                          ASCIIToUTF16("city"),
+                                          ASCIIToUTF16("state"),
+                                          ASCIIToUTF16("postal_code"),
+                                          ASCIIToUTF16("phone_number"),
                                           ""));
-  std::vector<std::string> supported_currencies;
-  supported_currencies.push_back("currency");
+  std::vector<string16> supported_currencies;
+  supported_currencies.push_back(ASCIIToUTF16("currency"));
   WalletItems::MaskedInstrument masked_instrument(
-      "descriptive_name",
+      ASCIIToUTF16("descriptive_name"),
       WalletItems::MaskedInstrument::VISA,
       supported_currencies,
-      "last_four_digits",
+      ASCIIToUTF16("last_four_digits"),
       12,
       2012,
       address.Pass(),
@@ -493,21 +494,21 @@ TEST_F(WalletItemsTest, CreateWalletItems) {
                        "obfuscated_gaia_id");
 
   scoped_ptr<Address> billing_address(new Address("country_code",
-                                                  "name",
-                                                  "address1",
-                                                  "address2",
-                                                  "city",
-                                                  "state",
-                                                  "postal_code",
-                                                  "phone_number",
+                                                  ASCIIToUTF16("name"),
+                                                  ASCIIToUTF16("address1"),
+                                                  ASCIIToUTF16("address2"),
+                                                  ASCIIToUTF16("city"),
+                                                  ASCIIToUTF16("state"),
+                                                  ASCIIToUTF16("postal_code"),
+                                                  ASCIIToUTF16("phone_number"),
                                                   ""));
-  std::vector<std::string> supported_currencies;
-  supported_currencies.push_back("currency");
+  std::vector<string16> supported_currencies;
+  supported_currencies.push_back(ASCIIToUTF16("currency"));
   scoped_ptr<WalletItems::MaskedInstrument> masked_instrument(
-      new WalletItems::MaskedInstrument("descriptive_name",
+      new WalletItems::MaskedInstrument(ASCIIToUTF16("descriptive_name"),
                                         WalletItems::MaskedInstrument::VISA,
                                         supported_currencies,
-                                        "last_four_digits",
+                                        ASCIIToUTF16("last_four_digits"),
                                         12,
                                         2012,
                                         billing_address.Pass(),
@@ -516,13 +517,13 @@ TEST_F(WalletItemsTest, CreateWalletItems) {
   expected.AddInstrument(masked_instrument.Pass());
 
   scoped_ptr<Address> shipping_address(new Address("country_code",
-                                                   "name",
-                                                   "address1",
-                                                   "address2",
-                                                   "city",
-                                                   "state",
-                                                   "postal_code",
-                                                   "phone_number",
+                                                   ASCIIToUTF16("name"),
+                                                   ASCIIToUTF16("address1"),
+                                                   ASCIIToUTF16("address2"),
+                                                   ASCIIToUTF16("city"),
+                                                   ASCIIToUTF16("state"),
+                                                   ASCIIToUTF16("postal_code"),
+                                                   ASCIIToUTF16("phone_number"),
                                                    "id"));
   expected.AddAddress(shipping_address.Pass());
 
