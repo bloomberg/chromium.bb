@@ -7,7 +7,6 @@
 namespace tabCapture {
 
   enum TabCaptureState {
-    requested,
     pending,
     active,
     stopped,

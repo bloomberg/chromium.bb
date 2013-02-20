@@ -94,15 +94,6 @@ class CONTENT_EXPORT MediaStreamManager
                              const StreamOptions& components,
                              const GURL& security_origin);
 
-  // Like GenerateStream above, except the user is only able to allow/deny the
-  // request for the device specified by |device_id|.
-  std::string GenerateStreamForDevice(MediaStreamRequester* requester,
-                                      int render_process_id,
-                                      int render_view_id,
-                                      const StreamOptions& components,
-                                      const std::string& device_id,
-                                      const GURL& security_origin);
-
   void CancelRequest(const std::string& label);
 
   // Closes generated stream.

@@ -92,6 +92,8 @@ bool TabCaptureRegistry::AddRequest(const std::pair<int, int> key,
 
 bool TabCaptureRegistry::VerifyRequest(int render_process_id,
                                        int render_view_id) {
+  DVLOG(1) << "Verifying tabCapture request for "
+           << render_process_id << ":" << render_view_id;
   return requests_.find(std::make_pair(
       render_process_id, render_view_id)) != requests_.end();
 }
@@ -125,9 +127,6 @@ void TabCaptureRegistry::OnRequestUpdate(
 
   tab_capture::TabCaptureState state = tab_capture::TAB_CAPTURE_STATE_NONE;
   switch (new_state) {
-    case content::MEDIA_REQUEST_STATE_REQUESTED:
-      state = tab_capture::TAB_CAPTURE_STATE_REQUESTED;
-      break;
     case content::MEDIA_REQUEST_STATE_PENDING_APPROVAL:
       state = tab_capture::TAB_CAPTURE_STATE_PENDING;
       break;
@@ -140,14 +139,12 @@ void TabCaptureRegistry::OnRequestUpdate(
     case content::MEDIA_REQUEST_STATE_ERROR:
       state = tab_capture::TAB_CAPTURE_STATE_ERROR;
       break;
-    default:
-      // TODO(justinlin): Implement muted state notification.
-      break;
-  }
-
-  if (state == tab_capture::TAB_CAPTURE_STATE_NONE) {
-    // This is a state we don't handle.
-    return;
+    case content::MEDIA_REQUEST_STATE_OPENING:
+      return;
+    case content::MEDIA_REQUEST_STATE_REQUESTED:
+    case content::MEDIA_REQUEST_STATE_NOT_REQUESTED:
+      NOTREACHED();
+      return;
   }
 
   TabCaptureRegistry::TabCaptureRequest* request_info = &request_it->second;

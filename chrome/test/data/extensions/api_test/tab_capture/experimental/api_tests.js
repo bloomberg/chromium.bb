@@ -19,13 +19,12 @@ chrome.test.runTests([
       if (info.status == 'stopped') {
         chrome.test.assertEq('active', tabCaptureEvents.pop());
         chrome.test.assertEq('pending', tabCaptureEvents.pop());
-        chrome.test.assertEq('requested', tabCaptureEvents.pop());
         tabCapture.onStatusChanged.removeListener(tabCaptureListener);
         chrome.test.succeed();
         return;
       }
       tabCaptureEvents.push(info.status);
-    }
+    };
 
     tabCapture.onStatusChanged.addListener(tabCaptureListener);
 
@@ -39,14 +38,14 @@ chrome.test.runTests([
       chrome.test.assertEq(1, infos.length);
       chrome.test.assertEq('stopped', infos[0].status);
       chrome.test.succeed();
-    }
+    };
 
     var capturedTabsAfterOpen = function(infos) {
       chrome.test.assertEq(1, infos.length);
       chrome.test.assertEq('active', infos[0].status);
       activeStream.stop();
       tabCapture.getCapturedTabs(capturedTabsAfterClose);
-    }
+    };
 
     var tabMediaRequestCallback = function(stream) {
       chrome.test.assertTrue(stream != null);
@@ -90,7 +89,7 @@ chrome.test.runTests([
                               maxWidth: 1000,
                               minWidth: 300
                             }
-                        },
+                        }
                        }, tabMediaRequestCallback);
   },
 
