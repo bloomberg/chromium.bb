@@ -35,6 +35,7 @@ AM_CFLAGS = $(GCC_CFLAGS)
 AM_CPPFLAGS =					\
 	-I$(top_srcdir)/src			\
 	-I$(top_srcdir)/shared			\
+	-I$(top_builddir)/src			\
 	-DUNIT_TEST				\
 	$(COMPOSITOR_CFLAGS)
 AM_LDFLAGS = -module -avoid-version -rpath $(libdir)

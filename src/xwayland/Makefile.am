@@ -1,5 +1,6 @@
 AM_CPPFLAGS =					\
 	-I$(top_srcdir)/shared			\
+	-I$(top_builddir)/src			\
 	-DDATADIR='"$(datadir)"'		\
 	-DMODULEDIR='"$(moduledir)"'		\
 	-DLIBEXECDIR='"$(libexecdir)"'		\
