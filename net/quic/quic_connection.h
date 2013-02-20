@@ -76,7 +76,7 @@ class NET_EXPORT_PRIVATE QuicConnectionVisitorInterface {
 // Interface which gets callbacks from the QuicConnection at interesting
 // points.  Implementations must not mutate the state of the connection
 // as a result of these callbacks.
-class QuicConnectionDebugVisitorInterface {
+class NET_EXPORT_PRIVATE QuicConnectionDebugVisitorInterface {
  public:
   virtual ~QuicConnectionDebugVisitorInterface() {}
 

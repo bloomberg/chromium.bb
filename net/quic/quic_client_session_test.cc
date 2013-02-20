@@ -8,6 +8,7 @@
 
 #include "base/stl_util.h"
 #include "net/base/capturing_net_log.h"
+#include "net/base/net_log_unittest.h"
 #include "net/base/test_completion_callback.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/test_tools/quic_test_utils.h"
@@ -25,9 +26,10 @@ class QuicClientSessionTest : public ::testing::Test {
   QuicClientSessionTest()
       : guid_(1),
         connection_(new PacketSavingConnection(guid_, IPEndPoint())),
-        session_(connection_, NULL, NULL, kServerHostname, NULL) {
+        session_(connection_, NULL, NULL, kServerHostname, &net_log_) {
   }
 
+  CapturingNetLog net_log_;
   QuicGuid guid_;
   PacketSavingConnection* connection_;
   QuicClientSession session_;
@@ -73,6 +75,74 @@ TEST_F(QuicClientSessionTest, MaxNumConnections) {
   // Close a stream and ensure I can now open a new one.
   session_.CloseStream(streams[0]->id());
   EXPECT_TRUE(session_.CreateOutgoingReliableStream());
+}
+
+TEST_F(QuicClientSessionTest, Logging) {
+  // Initialize crypto before the client session will create a stream.
+  ASSERT_EQ(ERR_IO_PENDING, session_.CryptoConnect(callback_.callback()));
+  // Simulate the server crypto handshake.
+  CryptoHandshakeMessage server_message;
+  server_message.tag = kSHLO;
+  session_.GetCryptoStream()->OnHandshakeMessage(server_message);
+  callback_.WaitForResult();
+
+  // TODO(rch): Add some helper methods to simplify packet creation in tests.
+  // Receive a packet, and verify that it was logged.
+  QuicFramer framer(QuicDecrypter::Create(kNULL), QuicEncrypter::Create(kNULL));
+  QuicRstStreamFrame frame;
+  frame.stream_id = 2;
+  frame.offset = 7;
+  frame.error_code = QUIC_CONNECTION_TIMED_OUT;
+  frame.error_details = "doh!";
+
+  QuicFrames frames;
+  frames.push_back(QuicFrame(&frame));
+  QuicPacketHeader header;
+  header.public_header.guid = 1;
+  header.public_header.flags = PACKET_PUBLIC_FLAGS_NONE;
+  header.packet_sequence_number = 1;
+  header.private_flags = PACKET_PRIVATE_FLAGS_NONE;
+  header.fec_group = 0;
+  scoped_ptr<QuicPacket> p(framer.ConstructFrameDataPacket(header, frames));
+  scoped_ptr<QuicEncryptedPacket> packet(framer.EncryptPacket(*p));
+  IPAddressNumber ip;
+  CHECK(ParseIPLiteralToNumber("192.0.2.33", &ip));
+  IPEndPoint peer_addr = IPEndPoint(ip, 443);
+  IPEndPoint self_addr = IPEndPoint(ip, 8435);
+
+  connection_->ProcessUdpPacketInternal(self_addr, peer_addr, *packet);
+
+  // Check that the NetLog was filled reasonably.
+  net::CapturingNetLog::CapturedEntryList entries;
+  net_log_.GetEntries(&entries);
+  EXPECT_LT(0u, entries.size());
+
+  // Check that we logged a QUIC_SESSION_PACKET_RECEIVED.
+  int pos = net::ExpectLogContainsSomewhere(
+      entries, 0,
+      net::NetLog::TYPE_QUIC_SESSION_PACKET_RECEIVED,
+      net::NetLog::PHASE_NONE);
+  EXPECT_LT(0, pos);
+
+  // ... and also a QUIC_SESSION_RST_STREAM_FRAME_RECEIVED.
+  pos = net::ExpectLogContainsSomewhere(
+      entries, 0,
+      net::NetLog::TYPE_QUIC_SESSION_RST_STREAM_FRAME_RECEIVED,
+      net::NetLog::PHASE_NONE);
+  EXPECT_LT(0, pos);
+
+  int stream_id;
+  ASSERT_TRUE(entries[pos].GetIntegerValue("stream_id", &stream_id));
+  EXPECT_EQ(frame.stream_id, static_cast<QuicStreamId>(stream_id));
+  int offset;
+  ASSERT_TRUE(entries[pos].GetIntegerValue("offset", &offset));
+  EXPECT_EQ(frame.offset, static_cast<QuicStreamOffset>(offset));
+  int error_code;
+  ASSERT_TRUE(entries[pos].GetIntegerValue("error_code", &error_code));
+  EXPECT_EQ(frame.error_code, static_cast<QuicErrorCode>(error_code));
+  std::string details;
+  ASSERT_TRUE(entries[pos].GetStringValue("details", &details));
+  EXPECT_EQ(frame.error_details, details);
 }
 
 }  // namespace

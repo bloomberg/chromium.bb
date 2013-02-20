@@ -194,6 +194,12 @@ class MockConnection : public QuicConnection {
 
   MOCK_METHOD0(OnCanWrite, bool());
 
+  void ProcessUdpPacketInternal(const IPEndPoint& self_address,
+                                const IPEndPoint& peer_address,
+                                const QuicEncryptedPacket& packet) {
+    QuicConnection::ProcessUdpPacket(self_address, peer_address, packet);
+  }
+
  private:
   scoped_ptr<QuicConnectionHelperInterface> helper_;
   DISALLOW_COPY_AND_ASSIGN(MockConnection);

@@ -29,7 +29,9 @@ QuicClientSession::QuicClientSession(QuicConnection* connection,
       read_buffer_(new IOBufferWithSize(kMaxPacketSize)),
       read_pending_(false),
       num_total_streams_(0),
-      net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_QUIC_SESSION)) {
+      net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_QUIC_SESSION)),
+      logger_(net_log_) {
+  connection->set_debug_visitor(&logger_);
   // TODO(rch): pass in full host port proxy pair
   net_log_.BeginEvent(
       NetLog::TYPE_QUIC_SESSION,
@@ -37,6 +39,7 @@ QuicClientSession::QuicClientSession(QuicConnection* connection,
 }
 
 QuicClientSession::~QuicClientSession() {
+  connection()->set_debug_visitor(NULL);
   net_log_.EndEvent(NetLog::TYPE_QUIC_SESSION);
 }
 

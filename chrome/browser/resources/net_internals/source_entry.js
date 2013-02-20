@@ -95,6 +95,10 @@ var SourceEntry = (function() {
         case EventSourceType.MEMORY_CACHE_ENTRY:
           this.description_ = e.params.key;
           break;
+        case EventSourceType.QUIC_SESSION:
+          if (e.params.host != undefined)
+            this.description_ = e.params.host;
+          break;
         case EventSourceType.SPDY_SESSION:
           if (e.params.host)
             this.description_ = e.params.host + ' (' + e.params.proxy + ')';

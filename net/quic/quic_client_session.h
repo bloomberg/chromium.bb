@@ -14,6 +14,7 @@
 
 #include "base/hash_tables.h"
 #include "net/base/completion_callback.h"
+#include "net/quic/quic_connection_logger.h"
 #include "net/quic/quic_crypto_client_stream.h"
 #include "net/quic/quic_reliable_client_stream.h"
 #include "net/quic/quic_session.h"
@@ -74,6 +75,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
   CompletionCallback callback_;
   size_t num_total_streams_;
   BoundNetLog net_log_;
+  QuicConnectionLogger logger_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicClientSession);
 };

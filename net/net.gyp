@@ -712,6 +712,8 @@
         'quic/quic_connection.h',
         'quic/quic_connection_helper.cc',
         'quic/quic_connection_helper.h',
+        'quic/quic_connection_logger.cc',
+        'quic/quic_connection_logger.h',
         'quic/quic_data_reader.cc',
         'quic/quic_data_reader.h',
         'quic/quic_data_writer.cc',
