@@ -80,7 +80,11 @@ class WebKitTestRunner : public RenderViewObserver,
                                const std::string& frame_name);
   virtual bool allowExternalPages();
   virtual void captureHistoryForWindow(
+#if defined(WEBTESTRUNNER_NEW_HISTORY_CAPTURE)
+      WebTestRunner::WebTestProxyBase* proxy,
+#else
       size_t windowIndex,
+#endif
       WebKit::WebVector<WebKit::WebHistoryItem>* history,
       size_t* currentEntryIndex);
 

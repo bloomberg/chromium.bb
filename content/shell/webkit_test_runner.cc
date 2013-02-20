@@ -71,6 +71,7 @@ using WebKit::WebView;
 using WebTestRunner::WebPreferences;
 using WebTestRunner::WebTask;
 using WebTestRunner::WebTestInterfaces;
+using WebTestRunner::WebTestProxyBase;
 
 namespace content {
 
@@ -379,7 +380,11 @@ bool WebKitTestRunner::allowExternalPages() {
 }
 
 void WebKitTestRunner::captureHistoryForWindow(
+#if defined(WEBTESTRUNNER_NEW_HISTORY_CAPTURE)
+    WebTestProxyBase* proxy,
+#else
     size_t windowIndex,
+#endif
     WebVector<WebKit::WebHistoryItem>* history,
     size_t* currentEntryIndex) {
   Send(new ShellViewHostMsg_NotImplemented(
