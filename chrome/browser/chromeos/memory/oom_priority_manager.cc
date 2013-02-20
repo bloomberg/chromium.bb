@@ -28,7 +28,7 @@
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
-#include "chrome/browser/ui/browser_list_impl.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -529,10 +529,8 @@ void OomPriorityManager::Observe(int type,
 // 2) last time a tab was selected
 // 3) is the tab currently selected
 void OomPriorityManager::AdjustOomPriorities() {
-  if (chrome::BrowserListImpl::GetInstance(
-          chrome::HOST_DESKTOP_TYPE_ASH)->empty()) {
+  if (BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH)->empty())
     return;
-  }
 
   // Check for a discontinuity in time caused by the machine being suspended.
   if (!last_adjust_time_.is_null()) {
@@ -559,9 +557,9 @@ OomPriorityManager::TabStatsList OomPriorityManager::GetTabStatsOnUIThread() {
   TabStatsList stats_list;
   stats_list.reserve(32);  // 99% of users have < 30 tabs open
   bool browser_active = true;
-  const chrome::BrowserListImpl* ash_browser_list =
-      chrome::BrowserListImpl::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
-  for (chrome::BrowserListImpl::const_reverse_iterator browser_iterator =
+  const BrowserList* ash_browser_list =
+      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
+  for (BrowserList::const_reverse_iterator browser_iterator =
            ash_browser_list->begin_last_active();
        browser_iterator != ash_browser_list->end_last_active();
        ++browser_iterator) {

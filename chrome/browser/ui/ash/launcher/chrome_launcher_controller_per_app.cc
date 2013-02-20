@@ -39,7 +39,6 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_list_impl.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -1163,7 +1162,7 @@ void ChromeLauncherControllerPerApp::UpdateBrowserItemStatus() {
   aura::Window* window = ash::wm::GetActiveWindow();
   if (window && chrome::FindBrowserWithWindow(window)) {
     browser_status = ash::STATUS_ACTIVE;
-  } else if (!chrome::BrowserListImpl::GetInstance(
+  } else if (!BrowserList::GetInstance(
                  chrome::HOST_DESKTOP_TYPE_ASH)->empty()) {
     browser_status = ash::STATUS_RUNNING;
   } else {
@@ -1435,10 +1434,10 @@ ChromeLauncherControllerPerApp::GetBrowserApplicationList() {
   items.push_back(new ChromeLauncherAppMenuItem(
       l10n_util::GetStringFUTF16(IDS_LAUNCHER_CHROME_BROWSER_NAME,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)), NULL));
-  const chrome::BrowserListImpl* ash_browser_list =
-      chrome::BrowserListImpl::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
+  const BrowserList* ash_browser_list =
+      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
   int index = 1;
-  for (chrome::BrowserListImpl::const_reverse_iterator it =
+  for (BrowserList::const_reverse_iterator it =
            ash_browser_list->begin_last_active();
        it != ash_browser_list->end_last_active(); ++it, ++index) {
     Browser* browser = *it;

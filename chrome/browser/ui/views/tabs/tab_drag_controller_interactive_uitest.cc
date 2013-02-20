@@ -12,7 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
-#include "chrome/browser/ui/browser_list_impl.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -143,7 +143,7 @@ using test::IDString;
 using test::GetTabStripForBrowser;
 
 TabDragControllerTest::TabDragControllerTest()
-    : native_browser_list(chrome::BrowserListImpl::GetInstance(
+    : native_browser_list(BrowserList::GetInstance(
                               chrome::HOST_DESKTOP_TYPE_NATIVE)) {
 }
 
@@ -564,7 +564,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 namespace {
 
 void DeleteSourceDetachedStep2(WebContents* tab,
-                               const chrome::BrowserListImpl* browser_list) {
+                               const BrowserList* browser_list) {
   ASSERT_EQ(2u, browser_list->size());
   Browser* new_browser = browser_list->get(1);
   // This ends up closing the source window.
@@ -606,8 +606,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
 namespace {
 
-void PressEscapeWhileDetachedStep2(
-    const chrome::BrowserListImpl* browser_list) {
+void PressEscapeWhileDetachedStep2(const BrowserList* browser_list) {
   ASSERT_EQ(2u, browser_list->size());
   Browser* new_browser = browser_list->get(1);
   ui_controls::SendKeyPress(
@@ -646,7 +645,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 namespace {
 
 void DragAllStep2(DetachToBrowserTabDragControllerTest* test,
-                  const chrome::BrowserListImpl* browser_list) {
+                  const BrowserList* browser_list) {
   // Should only be one window.
   ASSERT_EQ(1u, browser_list->size());
   if (test->input_source() == INPUT_SOURCE_TOUCH) {
@@ -693,7 +692,7 @@ namespace {
 void DragAllToSeparateWindowStep2(DetachToBrowserTabDragControllerTest* test,
                                   TabStrip* attached_tab_strip,
                                   TabStrip* target_tab_strip,
-                                  const chrome::BrowserListImpl* browser_list) {
+                                  const BrowserList* browser_list) {
   ASSERT_TRUE(attached_tab_strip->IsDragSessionActive());
   ASSERT_FALSE(target_tab_strip->IsDragSessionActive());
   ASSERT_TRUE(TabDragController::IsActive());
@@ -756,7 +755,7 @@ void DragAllToSeparateWindowAndCancelStep2(
     DetachToBrowserTabDragControllerTest* test,
     TabStrip* attached_tab_strip,
     TabStrip* target_tab_strip,
-    const chrome::BrowserListImpl* browser_list) {
+    const BrowserList* browser_list) {
   ASSERT_TRUE(attached_tab_strip->IsDragSessionActive());
   ASSERT_FALSE(target_tab_strip->IsDragSessionActive());
   ASSERT_TRUE(TabDragController::IsActive());
@@ -912,7 +911,7 @@ namespace {
 // Invoked from the nested message loop.
 void CancelOnNewTabWhenDraggingStep2(
     DetachToBrowserTabDragControllerTest* test,
-    const chrome::BrowserListImpl* browser_list) {
+    const BrowserList* browser_list) {
   ASSERT_TRUE(TabDragController::IsActive());
   ASSERT_EQ(2u, browser_list->size());
 
@@ -954,7 +953,7 @@ namespace {
 void DragInMaximizedWindowStep2(DetachToBrowserTabDragControllerTest* test,
                                 Browser* browser,
                                 TabStrip* tab_strip,
-                                const chrome::BrowserListImpl* browser_list) {
+                                const BrowserList* browser_list) {
   // There should be another browser.
   ASSERT_EQ(2u, browser_list->size());
   Browser* new_browser = browser_list->get(1);
@@ -1279,7 +1278,7 @@ class DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest
 // Invoked from the nested message loop.
 void CancelDragTabToWindowInSeparateDisplayStep3(
     TabStrip* tab_strip,
-    const chrome::BrowserListImpl* browser_list) {
+    const BrowserList* browser_list) {
   ASSERT_FALSE(tab_strip->IsDragSessionActive());
   ASSERT_TRUE(TabDragController::IsActive());
   ASSERT_EQ(2u, browser_list->size());
@@ -1294,7 +1293,7 @@ void CancelDragTabToWindowInSeparateDisplayStep2(
     TabStrip* tab_strip,
     aura::RootWindow* current_root,
     gfx::Point final_destination,
-    const chrome::BrowserListImpl* browser_list) {
+    const BrowserList* browser_list) {
   ASSERT_FALSE(tab_strip->IsDragSessionActive());
   ASSERT_TRUE(TabDragController::IsActive());
   ASSERT_EQ(2u, browser_list->size());

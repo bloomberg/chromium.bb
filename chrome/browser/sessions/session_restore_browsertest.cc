@@ -21,7 +21,7 @@
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_list_impl.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
@@ -48,7 +48,7 @@
 class SessionRestoreTest : public InProcessBrowserTest {
  public:
   SessionRestoreTest()
-      : native_browser_list(chrome::BrowserListImpl::GetInstance(
+      : native_browser_list(BrowserList::GetInstance(
                                 chrome::HOST_DESKTOP_TYPE_NATIVE)) {
   }
 
@@ -169,7 +169,7 @@ class SessionRestoreTest : public InProcessBrowserTest {
   GURL url3_;
 
   // The SessionRestore browser tests only uses the native desktop for now.
-  const chrome::BrowserListImpl* native_browser_list;
+  const BrowserList* native_browser_list;
 };
 
 #if defined(OS_CHROMEOS)

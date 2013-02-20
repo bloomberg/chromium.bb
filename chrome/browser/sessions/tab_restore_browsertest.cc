@@ -10,7 +10,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_list_impl.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -34,7 +34,7 @@
 class TabRestoreTest : public InProcessBrowserTest {
  public:
   TabRestoreTest()
-      : native_browser_list(chrome::BrowserListImpl::GetInstance(
+      : native_browser_list(BrowserList::GetInstance(
                                 chrome::HOST_DESKTOP_TYPE_NATIVE)) {
     url1_ = ui_test_utils::GetTestUrl(
         base::FilePath().AppendASCII("session_history"),
@@ -148,7 +148,7 @@ class TabRestoreTest : public InProcessBrowserTest {
   GURL url2_;
 
   // The TabRestore browser tests only uses the native desktop for now.
-  const chrome::BrowserListImpl* native_browser_list;
+  const BrowserList* native_browser_list;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TabRestoreTest);

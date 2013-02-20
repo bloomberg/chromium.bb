@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/browser_iterator.h"
 
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list_impl.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 
@@ -49,14 +49,14 @@ TEST_F(BrowserIteratorTest, BrowsersOnMultipleDesktops) {
       chrome::CreateBrowserWithTestWindowForParams(&ash_params));
 
   // Sanity checks.
-  chrome::BrowserListImpl* native_list =
-      chrome::BrowserListImpl::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
+  BrowserList* native_list =
+      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
 #if defined(OS_CHROMEOS)
   // On Chrome OS, the native list and the ash list are the same.
   EXPECT_EQ(5U, native_list->size());
 #else
-  chrome::BrowserListImpl* ash_list =
-      chrome::BrowserListImpl::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
+  BrowserList* ash_list =
+      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
   EXPECT_EQ(3U, native_list->size());
   EXPECT_EQ(2U, ash_list->size());
 #endif
@@ -76,14 +76,14 @@ TEST_F(BrowserIteratorTest, NoBrowsersOnAshDesktop) {
       chrome::CreateBrowserWithTestWindowForParams(&native_params));
 
   // Sanity checks.
-  chrome::BrowserListImpl* native_list =
-      chrome::BrowserListImpl::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
+  BrowserList* native_list =
+      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
   EXPECT_EQ(3U, native_list->size());
 #if !defined(OS_CHROMEOS)
   // On non-Chrome OS platforms the Ash list is independent from the native
   // list, double-check that it's empty.
-  chrome::BrowserListImpl* ash_list =
-      chrome::BrowserListImpl::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
+  BrowserList* ash_list =
+      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
   EXPECT_EQ(0U, ash_list->size());
 #endif
 
@@ -100,14 +100,14 @@ TEST_F(BrowserIteratorTestWithInitialWindowInAsh, NoBrowsersOnNativeDesktop) {
   scoped_ptr<Browser> browser3(
       chrome::CreateBrowserWithTestWindowForParams(&ash_params));
 
-  chrome::BrowserListImpl* ash_list =
-      chrome::BrowserListImpl::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
+  BrowserList* ash_list =
+      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
   EXPECT_EQ(3U, ash_list->size());
 #if !defined(OS_CHROMEOS)
   // On non-Chrome OS platforms the native list is independent from the Ash
   // list; double-check that it's empty.
-  chrome::BrowserListImpl* native_list =
-      chrome::BrowserListImpl::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
+  BrowserList* native_list =
+      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
   EXPECT_EQ(0U, native_list->size());
 #endif
 

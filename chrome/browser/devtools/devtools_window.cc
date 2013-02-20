@@ -27,7 +27,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
-#include "chrome/browser/ui/browser_list_impl.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -822,9 +822,9 @@ void DevToolsWindow::OpenInNewTab(const std::string& url) {
       host_desktop_type = chrome::GetActiveDesktop();
     }
 
-    const chrome::BrowserListImpl* browser_list =
-        chrome::BrowserListImpl::GetInstance(host_desktop_type);
-    for (chrome::BrowserListImpl::const_iterator it = browser_list->begin();
+    const BrowserList* browser_list =
+        BrowserList::GetInstance(host_desktop_type);
+    for (BrowserList::const_iterator it = browser_list->begin();
          it != browser_list->end(); ++it) {
       if ((*it)->type() == Browser::TYPE_TABBED) {
         (*it)->OpenURL(params);

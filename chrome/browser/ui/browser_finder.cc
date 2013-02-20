@@ -6,7 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_iterator.h"
-#include "chrome/browser/ui/browser_list_impl.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -84,8 +84,7 @@ Browser* FindBrowserWithTabbedOrAnyType(Profile* profile,
                                         chrome::HostDesktopType desktop_type,
                                         bool match_tabbed,
                                         bool match_original_profiles) {
-  chrome::BrowserListImpl* browser_list_impl =
-      chrome::BrowserListImpl::GetInstance(desktop_type);
+  BrowserList* browser_list_impl = BrowserList::GetInstance(desktop_type);
   if (!browser_list_impl)
     return NULL;
   uint32 match_types = kMatchAny;
@@ -109,11 +108,10 @@ Browser* FindBrowserWithTabbedOrAnyType(Profile* profile,
 size_t GetBrowserCountImpl(Profile* profile,
                            chrome::HostDesktopType desktop_type,
                            uint32 match_types) {
-  chrome::BrowserListImpl* browser_list_impl =
-      chrome::BrowserListImpl::GetInstance(desktop_type);
+  BrowserList* browser_list_impl = BrowserList::GetInstance(desktop_type);
   size_t count = 0;
   if (browser_list_impl) {
-    for (chrome::BrowserListImpl::const_iterator i = browser_list_impl->begin();
+    for (BrowserList::const_iterator i = browser_list_impl->begin();
          i != browser_list_impl->end(); ++i) {
       if (BrowserMatches(*i, profile, Browser::FEATURE_NONE, match_types))
         count++;
@@ -183,7 +181,7 @@ Browser* FindBrowserWithWebContents(const WebContents* web_contents) {
 }
 
 Browser* FindLastActiveWithProfile(Profile* profile, HostDesktopType type) {
-  BrowserListImpl* list = BrowserListImpl::GetInstance(type);
+  BrowserList* list = BrowserList::GetInstance(type);
   // We are only interested in last active browsers, so we don't fall back to
   // all browsers like FindBrowserWith* do.
   return FindBrowserMatching(list->begin_last_active(), list->end_last_active(),
@@ -191,7 +189,7 @@ Browser* FindLastActiveWithProfile(Profile* profile, HostDesktopType type) {
 }
 
 Browser* FindLastActiveWithHostDesktopType(HostDesktopType type) {
-  BrowserListImpl* browser_list_impl = BrowserListImpl::GetInstance(type);
+  BrowserList* browser_list_impl = BrowserList::GetInstance(type);
   if (browser_list_impl)
     return browser_list_impl->GetLastActive();
   return NULL;
@@ -201,7 +199,7 @@ size_t GetTotalBrowserCount() {
   size_t count = 0;
   for (HostDesktopType t = HOST_DESKTOP_TYPE_FIRST; t < HOST_DESKTOP_TYPE_COUNT;
        t = static_cast<HostDesktopType>(t + 1)) {
-    count += BrowserListImpl::GetInstance(t)->size();
+    count += BrowserList::GetInstance(t)->size();
   }
   return count;
 }

@@ -22,7 +22,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list_impl.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -329,8 +329,8 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
 #endif
 
   // Browser tests do not support multi-desktop for now.
-  const chrome::BrowserListImpl* native_browser_list =
-      chrome::BrowserListImpl::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
+  const BrowserList* native_browser_list =
+      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
   if (!native_browser_list->empty()) {
     browser_ = native_browser_list->get(0);
 #if defined(USE_ASH)
