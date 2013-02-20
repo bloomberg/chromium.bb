@@ -24,7 +24,6 @@
 #include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/api/sync/profile_sync_service_base.h"
 #include "chrome/browser/autofill/autocheckout/whitelist_manager.h"
-#include "chrome/browser/autofill/autocheckout_infobar_delegate.h"
 #include "chrome/browser/autofill/autocheckout_manager.h"
 #include "chrome/browser/autofill/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"

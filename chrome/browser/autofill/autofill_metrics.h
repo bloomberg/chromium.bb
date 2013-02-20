@@ -163,8 +163,6 @@ class AutofillMetrics {
 
   virtual void LogUserHappinessMetric(UserHappinessMetric metric) const;
 
-  virtual void LogAutocheckoutInfoBarMetric(InfoBarMetric metric) const;
-
   // This should be called when the requestAutocomplete dialog, invoked by the
   // |requester|, is closed.  |duration| should be the time elapsed between the
   // dialog being shown and it being closed.  |dismissal_action| should indicate

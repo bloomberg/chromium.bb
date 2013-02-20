@@ -179,8 +179,6 @@
         'browser/autofill/address_field.h',
         'browser/autofill/autocheckout/whitelist_manager.cc',
         'browser/autofill/autocheckout/whitelist_manager.h',
-        'browser/autofill/autocheckout_infobar_delegate.cc',
-        'browser/autofill/autocheckout_infobar_delegate.h',
         'browser/autofill/autocheckout_manager.cc',
         'browser/autofill/autocheckout_manager.h',
         'browser/autofill/autocheckout_page_meta_data.cc',

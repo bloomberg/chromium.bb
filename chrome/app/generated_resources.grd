@@ -10814,15 +10814,6 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_AUTOFILL_CC_INFOBAR_DENY" desc="Text to show for the Autofill credit card request infobar deny button.">
         Don't save
       </message>
-      <message name="IDS_AUTOFILL_FLOW_INFOBAR_TEXT" desc="Text to show in the Autofill flow request infobar.">
-        Do you want to use Accelarated Autofill?
-      </message>
-      <message name="IDS_AUTOFILL_FLOW_INFOBAR_ACCEPT" desc="Text to show for the Autofill flow request infobar accept button.">
-        Accelarate
-      </message>
-      <message name="IDS_AUTOFILL_FLOW_INFOBAR_DENY" desc="Text to show for the Autofill flow request infobar deny button.">
-        No thanks
-      </message>
       <message name="IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM" desc="The entry in the suggestions dropdown that clears an auto-filled form.">
         Clear form
       </message>

@@ -274,13 +274,6 @@ void AutofillMetrics::LogCreditCardInfoBarMetric(InfoBarMetric metric) const {
                             NUM_INFO_BAR_METRICS);
 }
 
-void AutofillMetrics::LogAutocheckoutInfoBarMetric(InfoBarMetric metric) const {
-  DCHECK(metric < NUM_INFO_BAR_METRICS);
-
-  UMA_HISTOGRAM_ENUMERATION("Autofill.AutocheckoutInfoBar", metric,
-                            NUM_INFO_BAR_METRICS);
-}
-
 void AutofillMetrics::LogRequestAutocompleteUiDuration(
     const base::TimeDelta& duration,
     autofill::DialogType dialog_type,
