@@ -130,7 +130,7 @@ class DumpHelper : public base::PlatformThread::Delegate {
  private:
   DumpHelper() {}
 
-  virtual void ThreadMain() {
+  virtual void ThreadMain() OVERRIDE {
     base::PlatformThread::SetName("CrDumpHelper");
     BreakpadGenerateAndSendReport(gBreakpadRef);
   }

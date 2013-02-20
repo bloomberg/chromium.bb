@@ -14,7 +14,7 @@
 
 class MenuTrackedRootViewTest : public CocoaTest {
  public:
-  void SetUp() {
+  virtual void SetUp() {
     CocoaTest::SetUp();
     view_.reset([[MenuTrackedRootView alloc] init]);
   }

@@ -83,9 +83,10 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   explicit DevtoolsNotificationBridge(ExtensionPopupController* controller)
     : controller_(controller) {}
 
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) {
+  virtual void Observe(
+      int type,
+      const content::NotificationSource& source,
+      const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
       case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING: {
         if (content::Details<extensions::ExtensionHost>(

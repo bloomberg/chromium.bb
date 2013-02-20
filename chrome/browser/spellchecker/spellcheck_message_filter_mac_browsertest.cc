@@ -21,7 +21,7 @@ class TestingSpellCheckMessageFilter : public SpellCheckMessageFilterMac {
       : SpellCheckMessageFilterMac(),
         loop_(loop) { }
 
-  virtual bool Send(IPC::Message* message) {
+  virtual bool Send(IPC::Message* message) OVERRIDE {
     sent_messages_.push_back(message);
     loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     return true;
@@ -31,7 +31,7 @@ class TestingSpellCheckMessageFilter : public SpellCheckMessageFilterMac {
   MessageLoopForUI* loop_;
 
  private:
-  ~TestingSpellCheckMessageFilter() {
+  virtual ~TestingSpellCheckMessageFilter() {
     STLDeleteContainerPointers(sent_messages_.begin(), sent_messages_.end());
   }
 };

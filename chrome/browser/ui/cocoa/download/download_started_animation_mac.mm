@@ -65,9 +65,10 @@ class DownloadAnimationWebObserver : public content::NotificationObserver {
 
   // Runs when a tab is hidden or destroyed. Let our owner know we should end
   // the animation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) {
+  virtual void Observe(
+      int type,
+      const content::NotificationSource& source,
+      const content::NotificationDetails& details) OVERRIDE {
     if (type == content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED) {
       bool visible = *content::Details<bool>(details).ptr();
       if (visible)

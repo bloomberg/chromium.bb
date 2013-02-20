@@ -32,7 +32,7 @@ class TestBookmarkMenuBridge : public BookmarkMenuBridge {
 
  protected:
   // Overridden from BookmarkMenuBridge.
-  virtual NSMenu* BookmarkMenu() {
+  virtual NSMenu* BookmarkMenu() OVERRIDE {
     return menu_;
   }
 };

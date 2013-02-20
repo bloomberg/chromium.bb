@@ -34,19 +34,19 @@ class IOSurfaceSupportImpl : public IOSurfaceSupport {
     return initialized_successfully_;
   }
 
-  virtual CFStringRef GetKIOSurfaceWidth();
-  virtual CFStringRef GetKIOSurfaceHeight();
-  virtual CFStringRef GetKIOSurfaceBytesPerElement();
-  virtual CFStringRef GetKIOSurfaceIsGlobal();
+  virtual CFStringRef GetKIOSurfaceWidth() OVERRIDE;
+  virtual CFStringRef GetKIOSurfaceHeight() OVERRIDE;
+  virtual CFStringRef GetKIOSurfaceBytesPerElement() OVERRIDE;
+  virtual CFStringRef GetKIOSurfaceIsGlobal() OVERRIDE;
 
-  virtual CFTypeRef IOSurfaceCreate(CFDictionaryRef properties);
-  virtual uint32 IOSurfaceGetID(CFTypeRef io_surface);
-  virtual CFTypeRef IOSurfaceLookup(uint32 io_surface_id);
-  virtual mach_port_t IOSurfaceCreateMachPort(CFTypeRef io_surface);
-  virtual CFTypeRef IOSurfaceLookupFromMachPort(mach_port_t port);
+  virtual CFTypeRef IOSurfaceCreate(CFDictionaryRef properties) OVERRIDE;
+  virtual uint32 IOSurfaceGetID(CFTypeRef io_surface) OVERRIDE;
+  virtual CFTypeRef IOSurfaceLookup(uint32 io_surface_id) OVERRIDE;
+  virtual mach_port_t IOSurfaceCreateMachPort(CFTypeRef io_surface) OVERRIDE;
+  virtual CFTypeRef IOSurfaceLookupFromMachPort(mach_port_t port) OVERRIDE;
 
-  virtual size_t IOSurfaceGetWidth(CFTypeRef io_surface);
-  virtual size_t IOSurfaceGetHeight(CFTypeRef io_surface);
+  virtual size_t IOSurfaceGetWidth(CFTypeRef io_surface) OVERRIDE;
+  virtual size_t IOSurfaceGetHeight(CFTypeRef io_surface) OVERRIDE;
 
   virtual CGLError CGLTexImageIOSurface2D(CGLContextObj ctx,
                                           GLenum target,
@@ -56,14 +56,14 @@ class IOSurfaceSupportImpl : public IOSurfaceSupport {
                                           GLenum format,
                                           GLenum type,
                                           CFTypeRef io_surface,
-                                          GLuint plane);
+                                          GLuint plane) OVERRIDE;
 
   virtual CFTypeRef CVPixelBufferGetIOSurface(
       CVPixelBufferRef pixel_buffer) OVERRIDE;
 
  private:
   IOSurfaceSupportImpl();
-  ~IOSurfaceSupportImpl();
+  virtual ~IOSurfaceSupportImpl();
 
   void CloseLibraryHandles();
 

@@ -33,17 +33,19 @@ class Delegate : public ui::SimpleMenuModel::Delegate {
         did_close_(false) {
   }
 
-  virtual bool IsCommandIdChecked(int command_id) const { return false; }
-  virtual bool IsCommandIdEnabled(int command_id) const {
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE {
+    return false;
+  }
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE {
     ++enable_count_;
     return true;
   }
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      ui::Accelerator* accelerator) { return false; }
-  virtual void ExecuteCommand(int command_id) { ++execute_count_; }
+      ui::Accelerator* accelerator) OVERRIDE { return false; }
+  virtual void ExecuteCommand(int command_id) OVERRIDE { ++execute_count_; }
 
-  virtual void MenuWillShow(ui::SimpleMenuModel* /*source*/) {
+  virtual void MenuWillShow(ui::SimpleMenuModel* /*source*/) OVERRIDE {
     EXPECT_FALSE(did_show_);
     EXPECT_FALSE(did_close_);
     did_show_ = true;
@@ -56,7 +58,7 @@ class Delegate : public ui::SimpleMenuModel::Delegate {
                             inModes:modes];
   }
 
-  virtual void MenuClosed(ui::SimpleMenuModel* /*source*/) {
+  virtual void MenuClosed(ui::SimpleMenuModel* /*source*/) OVERRIDE {
     EXPECT_TRUE(did_show_);
     EXPECT_FALSE(did_close_);
     did_close_ = true;
@@ -76,9 +78,15 @@ class Delegate : public ui::SimpleMenuModel::Delegate {
 class DynamicDelegate : public Delegate {
  public:
   DynamicDelegate() {}
-  virtual bool IsItemForCommandIdDynamic(int command_id) const { return true; }
-  virtual string16 GetLabelForCommandId(int command_id) const { return label_; }
-  virtual bool GetIconForCommandId(int command_id, gfx::Image* icon) const {
+  virtual bool IsItemForCommandIdDynamic(int command_id) const OVERRIDE {
+    return true;
+  }
+  virtual string16 GetLabelForCommandId(int command_id) const OVERRIDE {
+    return label_;
+  }
+  virtual bool GetIconForCommandId(
+      int command_id,
+      gfx::Image* icon) const OVERRIDE {
     if (icon_.IsEmpty()) {
       return false;
     } else {

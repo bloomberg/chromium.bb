@@ -55,7 +55,7 @@ class CoreWlanApi : public WifiDataProviderCommon::WlanApiInterface {
   bool Init();
 
   // WlanApiInterface
-  virtual bool GetAccessPointData(WifiData::AccessPointDataSet* data);
+  virtual bool GetAccessPointData(WifiData::AccessPointDataSet* data) OVERRIDE;
 
  private:
   scoped_nsobject<NSBundle> bundle_;

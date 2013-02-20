@@ -37,7 +37,7 @@ class Apple80211Api : public WifiDataProviderCommon::WlanApiInterface {
   bool Init();
 
   // WlanApiInterface
-  virtual bool GetAccessPointData(WifiData::AccessPointDataSet* data);
+  virtual bool GetAccessPointData(WifiData::AccessPointDataSet* data) OVERRIDE;
 
  private:
   // Handle, context and function pointers for Apple80211 library.

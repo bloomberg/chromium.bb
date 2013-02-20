@@ -60,14 +60,15 @@ class ExtensionActionIconFactoryBridge
   virtual ~ExtensionActionIconFactoryBridge() {}
 
   // ExtensionActionIconFactory::Observer implementation.
-  void OnIconUpdated() OVERRIDE {
+  virtual void OnIconUpdated() OVERRIDE {
     [owner_ updateState];
   }
 
   // Overridden from content::NotificationObserver.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) {
+  virtual void Observe(
+      int type,
+      const content::NotificationSource& source,
+      const content::NotificationDetails& details) OVERRIDE {
     if (type == chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED)
       [owner_ updateState];
     else

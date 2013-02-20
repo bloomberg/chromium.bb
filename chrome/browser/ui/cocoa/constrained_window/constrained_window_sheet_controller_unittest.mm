@@ -66,7 +66,7 @@ const int kSystemSheetReturnCode = 77;
 
 class ConstrainedWindowSheetControllerTest : public CocoaTest {
  protected:
-  ~ConstrainedWindowSheetControllerTest() {
+  virtual ~ConstrainedWindowSheetControllerTest() {
   }
 
   virtual void SetUp() OVERRIDE {

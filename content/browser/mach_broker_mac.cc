@@ -43,7 +43,7 @@ class MachListenerThreadDelegate : public base::PlatformThread::Delegate {
   }
 
   // Implement |PlatformThread::Delegate|.
-  void ThreadMain() {
+  virtual void ThreadMain() OVERRIDE {
     base::MachReceiveMessage message;
     kern_return_t err;
     while ((err = receive_port_->WaitForMessage(&message,

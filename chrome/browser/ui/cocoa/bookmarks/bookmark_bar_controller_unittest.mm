@@ -205,29 +205,35 @@ class FakeTheme : public ui::ThemeProvider {
   FakeTheme(NSColor* color) : color_(color) {}
   scoped_nsobject<NSColor> color_;
 
-  virtual gfx::ImageSkia* GetImageSkiaNamed(int id) const { return NULL; }
-  virtual SkColor GetColor(int id) const { return SkColor(); }
-  virtual bool GetDisplayProperty(int id, int* result) const { return false; }
-  virtual bool ShouldUseNativeFrame() const { return false; }
-  virtual bool HasCustomImage(int id) const { return false; }
-  virtual base::RefCountedMemory* GetRawData(
-      int id,
-      ui::ScaleFactor scale_factor) const {
+  virtual gfx::ImageSkia* GetImageSkiaNamed(int id) const OVERRIDE {
     return NULL;
   }
-  virtual NSImage* GetNSImageNamed(int id, bool allow_default) const {
+  virtual SkColor GetColor(int id) const OVERRIDE { return SkColor(); }
+  virtual bool GetDisplayProperty(int id, int* result) const OVERRIDE {
+    return false;
+  }
+  virtual bool ShouldUseNativeFrame() const OVERRIDE { return false; }
+  virtual bool HasCustomImage(int id) const OVERRIDE { return false; }
+  virtual base::RefCountedMemory* GetRawData(
+      int id,
+      ui::ScaleFactor scale_factor) const OVERRIDE {
+    return NULL;
+  }
+  virtual NSImage* GetNSImageNamed(int id, bool allow_default) const OVERRIDE {
     return nil;
   }
-  virtual NSColor* GetNSImageColorNamed(int id, bool allow_default) const {
+  virtual NSColor* GetNSImageColorNamed(
+      int id,
+      bool allow_default) const OVERRIDE {
     return nil;
   }
-  virtual NSColor* GetNSColor(int id, bool allow_default) const {
+  virtual NSColor* GetNSColor(int id, bool allow_default) const OVERRIDE {
     return color_.get();
   }
-  virtual NSColor* GetNSColorTint(int id, bool allow_default) const {
+  virtual NSColor* GetNSColorTint(int id, bool allow_default) const OVERRIDE {
     return nil;
   }
-  virtual NSGradient* GetNSGradient(int id) const {
+  virtual NSGradient* GetNSGradient(int id) const OVERRIDE {
     return nil;
   }
 };

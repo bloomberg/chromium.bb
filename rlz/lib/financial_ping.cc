@@ -193,7 +193,7 @@ class FinancialPingUrlFetcherDelegate : public net::URLFetcherDelegate {
   FinancialPingUrlFetcherDelegate(const base::Closure& callback)
       : callback_(callback) {
   }
-  virtual void OnURLFetchComplete(const net::URLFetcher* source);
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
  private:
   base::Closure callback_;

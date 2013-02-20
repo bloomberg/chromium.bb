@@ -48,7 +48,7 @@ namespace WrenchMenuControllerInternal {
 class AcceleratorDelegate : public ui::AcceleratorProvider {
  public:
   virtual bool GetAcceleratorForCommandId(int command_id,
-      ui::Accelerator* out_accelerator) {
+      ui::Accelerator* out_accelerator) OVERRIDE {
     AcceleratorsCocoa* keymap = AcceleratorsCocoa::GetInstance();
     const ui::Accelerator* accelerator =
         keymap->GetAcceleratorForCommand(command_id);

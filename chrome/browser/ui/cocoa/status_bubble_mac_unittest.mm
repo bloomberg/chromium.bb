@@ -71,9 +71,12 @@ class StatusBubbleMacIgnoreMouseMoved : public StatusBubbleMac {
     mouseLocation_.SetPoint(NSMaxX(contentBounds), NSMaxY(contentBounds));
   }
 
-  virtual void MouseMoved(const gfx::Point& location, bool left_content) {}
+  virtual void MouseMoved(
+      const gfx::Point& location,
+      bool left_content) OVERRIDE {
+  }
 
-  virtual gfx::Point GetMouseLocation() {
+  virtual gfx::Point GetMouseLocation() OVERRIDE {
     return mouseLocation_;
   }
 

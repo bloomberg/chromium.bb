@@ -28,9 +28,10 @@ class InfoBarNotificationObserver : public content::NotificationObserver {
 
  private:
   // NotificationObserver implementation
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) {
+  virtual void Observe(
+      int type,
+      const content::NotificationSource& source,
+      const content::NotificationDetails& details) OVERRIDE {
     InfoBarService* infobar_service =
         content::Source<InfoBarService>(source).ptr();
     switch (type) {

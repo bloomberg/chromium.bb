@@ -21,7 +21,7 @@ namespace {
 
 class WrenchMenuButtonCellTest : public CocoaTest {
  public:
-  void SetUp() {
+  virtual void SetUp() {
     CocoaTest::SetUp();
 
     NSRect frame = NSMakeRect(10, 10, 50, 19);

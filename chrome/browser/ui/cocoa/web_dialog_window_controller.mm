@@ -58,9 +58,10 @@ public:
   virtual bool ShouldShowDialogTitle() const OVERRIDE { return true; }
 
   // WebDialogWebContentsDelegate declarations.
-  virtual void MoveContents(WebContents* source, const gfx::Rect& pos);
-  virtual void HandleKeyboardEvent(content::WebContents* source,
-                                   const NativeWebKeyboardEvent& event);
+  virtual void MoveContents(WebContents* source, const gfx::Rect& pos) OVERRIDE;
+  virtual void HandleKeyboardEvent(
+      content::WebContents* source,
+      const NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void CloseContents(WebContents* source) OVERRIDE;
   virtual content::WebContents* OpenURLFromTab(
       content::WebContents* source,

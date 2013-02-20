@@ -67,9 +67,10 @@ class ExtensionLoadedNotificationObserver
  private:
   // NotificationObserver implementation. Tells the controller to start showing
   // its window on the main thread when the extension has finished loading.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) {
+  virtual void Observe(
+      int type,
+      const content::NotificationSource& source,
+      const content::NotificationDetails& details) OVERRIDE {
     if (type == chrome::NOTIFICATION_EXTENSION_LOADED) {
       const Extension* extension =
           content::Details<const Extension>(details).ptr();

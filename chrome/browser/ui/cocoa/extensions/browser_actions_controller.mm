@@ -188,9 +188,10 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
   }
 
   // Overridden from content::NotificationObserver.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) {
+  virtual void Observe(
+      int type,
+      const content::NotificationSource& source,
+      const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
       case chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE: {
         ExtensionPopupController* popup = [ExtensionPopupController popup];
@@ -226,12 +227,14 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
   }
 
   // ExtensionToolbarModel::Observer implementation.
-  void BrowserActionAdded(const Extension* extension, int index) {
+  virtual void BrowserActionAdded(
+      const Extension* extension,
+      int index) OVERRIDE {
     [owner_ createActionButtonForExtension:extension withIndex:index];
     [owner_ resizeContainerAndAnimate:NO];
   }
 
-  void BrowserActionRemoved(const Extension* extension) {
+  virtual void BrowserActionRemoved(const Extension* extension) OVERRIDE {
     [owner_ removeActionButtonForExtension:extension];
     [owner_ resizeContainerAndAnimate:NO];
   }

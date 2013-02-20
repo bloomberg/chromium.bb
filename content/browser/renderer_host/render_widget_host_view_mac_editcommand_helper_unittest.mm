@@ -82,7 +82,7 @@ class RenderWidgetHostEditCommandCounter : public RenderWidgetHostImpl {
       edit_command_message_count_(0) {
   }
 
-  virtual bool Send(IPC::Message* message) {
+  virtual bool Send(IPC::Message* message) OVERRIDE {
     if (message->type() == ViewMsg_ExecuteEditCommand::ID)
       edit_command_message_count_++;
     return RenderWidgetHostImpl::Send(message);

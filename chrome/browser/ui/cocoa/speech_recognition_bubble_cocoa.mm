@@ -29,10 +29,10 @@ class SpeechRecognitionBubbleImpl : public SpeechRecognitionBubbleBase {
                               Delegate* delegate,
                               const gfx::Rect& element_rect);
   virtual ~SpeechRecognitionBubbleImpl();
-  virtual void Show();
-  virtual void Hide();
-  virtual void UpdateLayout();
-  virtual void UpdateImage();
+  virtual void Show() OVERRIDE;
+  virtual void Hide() OVERRIDE;
+  virtual void UpdateLayout() OVERRIDE;
+  virtual void UpdateImage() OVERRIDE;
 
  private:
   scoped_nsobject<SpeechRecognitionWindowController> window_;

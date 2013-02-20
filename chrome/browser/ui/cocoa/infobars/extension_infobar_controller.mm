@@ -118,7 +118,7 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver {
   }
 
   // Overridden from ExtensionInfoBarDelegate::DelegateObserver:
-  virtual void OnDelegateDeleted() {
+  virtual void OnDelegateDeleted() OVERRIDE {
     delegate_ = NULL;
   }
 

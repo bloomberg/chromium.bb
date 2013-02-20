@@ -33,18 +33,23 @@ namespace {
 // Use a dummy balloon collection for testing.
 class MockBalloonCollection : public BalloonCollection {
   virtual void Add(const Notification& notification,
-                   Profile* profile) {}
-  virtual bool DoesIdExist(const std::string& id) { return false; }
-  virtual bool RemoveById(const std::string& id) { return false; }
-  virtual bool RemoveBySourceOrigin(const GURL& origin) { return false; }
-  virtual bool RemoveByProfile(Profile* profile) { return false; }
-  virtual void RemoveAll() {}
-  virtual bool HasSpace() const { return true; }
-  virtual void ResizeBalloon(Balloon* balloon, const gfx::Size& size) {}
-  virtual void DisplayChanged() {}
-  virtual void SetPositionPreference(PositionPreference preference) {}
-  virtual void OnBalloonClosed(Balloon* source) {};
-  virtual const Balloons& GetActiveBalloons() {
+                   Profile* profile) OVERRIDE {}
+  virtual bool DoesIdExist(const std::string& id) OVERRIDE { return false; }
+  virtual bool RemoveById(const std::string& id) OVERRIDE { return false; }
+  virtual bool RemoveBySourceOrigin(const GURL& origin) OVERRIDE {
+    return false;
+  }
+  virtual bool RemoveByProfile(Profile* profile) OVERRIDE { return false; }
+  virtual void RemoveAll() OVERRIDE {}
+  virtual bool HasSpace() const OVERRIDE { return true; }
+  virtual void ResizeBalloon(
+      Balloon* balloon,
+      const gfx::Size& size) OVERRIDE {
+  }
+  virtual void DisplayChanged() OVERRIDE {}
+  virtual void SetPositionPreference(PositionPreference preference) OVERRIDE {}
+  virtual void OnBalloonClosed(Balloon* source) OVERRIDE {};
+  virtual const Balloons& GetActiveBalloons() OVERRIDE {
     NOTREACHED();
     return balloons_;
   }

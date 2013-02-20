@@ -75,7 +75,7 @@ class WriteToFileAudioSink : public AudioInputStream::AudioInputCallback {
   // AudioInputStream::AudioInputCallback implementation.
   virtual void OnData(AudioInputStream* stream,
                       const uint8* src, uint32 size,
-                      uint32 hardware_delay_bytes, double volume) {
+                      uint32 hardware_delay_bytes, double volume) OVERRIDE {
     // Store data data in a temporary buffer to avoid making blocking
     // fwrite() calls in the audio callback. The complete buffer will be
     // written to file in the destructor.
@@ -84,8 +84,8 @@ class WriteToFileAudioSink : public AudioInputStream::AudioInputCallback {
     }
   }
 
-  virtual void OnClose(AudioInputStream* stream) {}
-  virtual void OnError(AudioInputStream* stream, int code) {}
+  virtual void OnClose(AudioInputStream* stream) OVERRIDE {}
+  virtual void OnError(AudioInputStream* stream, int code) OVERRIDE {}
 
  private:
   media::SeekableBuffer buffer_;

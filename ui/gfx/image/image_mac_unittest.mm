@@ -78,7 +78,7 @@ class ImageMacTest : public testing::Test {
       : supported_scale_factors_(gfx::test::Get1xAnd2xScaleFactors()) {
   }
 
-  ~ImageMacTest() {
+  virtual ~ImageMacTest() {
   }
 
  private:

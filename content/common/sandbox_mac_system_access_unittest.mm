@@ -20,9 +20,9 @@ class MacSandboxedClipboardTestCase : public MacSandboxTestCase {
   MacSandboxedClipboardTestCase();
   virtual ~MacSandboxedClipboardTestCase();
 
-  virtual bool SandboxedTest();
+  virtual bool SandboxedTest() OVERRIDE;
 
-  virtual void SetTestData(const char* test_data);
+  virtual void SetTestData(const char* test_data) OVERRIDE;
  private:
   NSString* clipboard_name_;
 };
@@ -79,7 +79,7 @@ TEST_F(MacSandboxTest, ClipboardAccess) {
 // Test case for checking sandboxing of filesystem apis.
 class MacSandboxedFileAccessTestCase : public MacSandboxTestCase {
  public:
-  virtual bool SandboxedTest();
+  virtual bool SandboxedTest() OVERRIDE;
 };
 
 REGISTER_SANDBOX_TEST_CASE(MacSandboxedFileAccessTestCase);
@@ -98,7 +98,7 @@ TEST_F(MacSandboxTest, FileAccess) {
 // /dev/urandom is available to ppapi sandbox only.
 class MacSandboxedUrandomTestCase : public MacSandboxTestCase {
  public:
-  virtual bool SandboxedTest();
+  virtual bool SandboxedTest() OVERRIDE;
 };
 
 REGISTER_SANDBOX_TEST_CASE(MacSandboxedUrandomTestCase);
