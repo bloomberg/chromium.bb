@@ -591,6 +591,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
 
   ErrorMessageCallback* error_message_callback_;
 
+  scoped_ptr<std::string> current_trace_name_;
+
   DISALLOW_COPY_AND_ASSIGN(GLES2Implementation);
 };
 

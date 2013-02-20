@@ -1759,17 +1759,6 @@ TEST_F(GLES2ImplementationTest, ReleaseTexImage2DCHROMIUM) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
-TEST_F(GLES2ImplementationTest, TraceEndCHROMIUM) {
-  struct Cmds {
-    TraceEndCHROMIUM cmd;
-  };
-  Cmds expected;
-  expected.cmd.Init();
-
-  gl_->TraceEndCHROMIUM();
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-}
-
 TEST_F(GLES2ImplementationTest, DiscardFramebufferEXT) {
   struct Cmds {
     DiscardFramebufferEXTImmediate cmd;

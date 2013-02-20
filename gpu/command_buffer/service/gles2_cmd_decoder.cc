@@ -40,7 +40,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
-#include "gpu/command_buffer/service/gpu_trace.h"
+#include "gpu/command_buffer/service/gpu_tracer.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
@@ -1707,7 +1707,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
   base::TimeDelta total_texture_upload_time_;
   base::TimeDelta total_processing_commands_time_;
 
-  std::stack<linked_ptr<GPUTrace> > gpu_trace_stack_;
+  scoped_ptr<GPUTracer> gpu_tracer_;
 
   DISALLOW_COPY_AND_ASSIGN(GLES2DecoderImpl);
 };
@@ -2168,6 +2168,8 @@ bool GLES2DecoderImpl::Initialize(
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::Initialize");
   DCHECK(context->IsCurrent(surface.get()));
   DCHECK(!context_.get());
+
+  gpu_tracer_ = GPUTracer::Create();
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableGPUDebugging)) {
@@ -9877,24 +9879,23 @@ error::Error GLES2DecoderImpl::HandleTraceBeginCHROMIUM(
   if (!bucket->GetAsString(&command_name)) {
     return error::kInvalidArguments;
   }
-
-  linked_ptr<GPUTrace> trace(new GPUTrace(command_name));
-  trace->EnableStartTrace();
-  gpu_trace_stack_.push(trace);
-
+  TRACE_EVENT_COPY_ASYNC_BEGIN0("gpu", command_name.c_str(), this);
+  if (!gpu_tracer_->Begin(command_name)) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glTraceBeginCHROMIUM", "unable to create begin trace");
+    return error::kNoError;
+  }
   return error::kNoError;
 }
 
 void GLES2DecoderImpl::DoTraceEndCHROMIUM() {
-  if (gpu_trace_stack_.empty()) {
+  if (gpu_tracer_->CurrentName().empty()) {
     SetGLError(GL_INVALID_OPERATION,
                "glTraceEndCHROMIUM", "no trace begin found");
     return;
   }
-
-  linked_ptr<GPUTrace> trace = gpu_trace_stack_.top();
-  trace->EnableEndTrace();
-  gpu_trace_stack_.pop();
+  TRACE_EVENT_COPY_ASYNC_END0("gpu", gpu_tracer_->CurrentName().c_str(), this);
+  gpu_tracer_->End();
 }
 
 bool GLES2DecoderImpl::ValidateAsyncTransfer(

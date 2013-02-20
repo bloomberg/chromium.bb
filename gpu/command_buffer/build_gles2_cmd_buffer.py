@@ -2274,6 +2274,9 @@ _FUNCTION_INFO = {
     'chromium': True,
   },
   'TraceEndCHROMIUM': {
+    'impl_func': False,
+    'immediate': False,
+    'client_test': False,
     'decoder_func': 'DoTraceEndCHROMIUM',
     'unit_test': False,
     'extension': True,

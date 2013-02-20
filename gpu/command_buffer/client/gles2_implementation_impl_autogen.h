@@ -1672,13 +1672,6 @@ void GLES2Implementation::ReleaseTexImage2DCHROMIUM(
   CheckGLError();
 }
 
-void GLES2Implementation::TraceEndCHROMIUM() {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glTraceEndCHROMIUM(" << ")");
-  helper_->TraceEndCHROMIUM();
-  CheckGLError();
-}
-
 void GLES2Implementation::DiscardFramebufferEXT(
     GLenum target, GLsizei count, const GLenum* attachments) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
