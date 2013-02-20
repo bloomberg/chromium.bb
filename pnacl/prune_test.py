@@ -29,10 +29,14 @@ class TestTranslatorPruned(unittest.TestCase):
     self.nm_tool = sys.argv[1]
     self.host_binary = sys.argv[2]
     self.target_binary = sys.argv[3]
-    nm_unpruned_cmd = [self.nm_tool, '--size-sort', self.host_binary]
-    self.unpruned_symbols = self.my_check_output(nm_unpruned_cmd)
-    nm_pruned_cmd = [self.nm_tool, '--size-sort', self.target_binary]
-    self.pruned_symbols = self.my_check_output(nm_pruned_cmd)
+    nm_unpruned_cmd = [self.nm_tool,
+                       '--size-sort', '--demangle',
+                       self.host_binary]
+    self.unpruned_symbols = self.my_check_output(nm_unpruned_cmd).splitlines()
+    nm_pruned_cmd = [self.nm_tool,
+                     '--size-sort', '--demangle',
+                     self.target_binary]
+    self.pruned_symbols = self.my_check_output(nm_pruned_cmd).splitlines()
     # Make sure we're not trying to NM a stripped binary.
     self.assertTrue(len(self.unpruned_symbols) > 200)
     self.assertTrue(len(self.pruned_symbols) > 200)
@@ -41,8 +45,8 @@ class TestTranslatorPruned(unittest.TestCase):
     # Check if a given sym_list has symbols matching sym_regex, and
     # return the total size of all matching symbols.
     total = 0
-    for sym_info in sym_list.splitlines():
-      (hex_size, t, sym_name) = sym_info.split(' ')
+    for sym_info in sym_list:
+      (hex_size, t, sym_name) = sym_info.split(' ', 2)
       if re.search(sym_regex, sym_name):
         total += int(hex_size, 16)
     return total
@@ -53,7 +57,14 @@ class TestTranslatorPruned(unittest.TestCase):
     self.assertNotEqual(pruned, 0)
 
   def test_didPrune(self):
-    for sym_regex in ['LLParser', 'LLLexer']:
+    total = 0
+    for sym_regex in ['LLParser', 'LLLexer',
+                      'MCAsmParser', '::AsmParser',
+                      'ARMAsmParser', 'X86AsmParser',
+                      'ELFAsmParser', 'COFFAsmParser', 'DarwinAsmParser',
+                      'MCAsmLexer', '::AsmLexer',
+                      # Gigantic Asm MatchTable (globbed for all targets),
+                      'MatchTable']:
       unpruned = self.sizeOfMatchingSyms(sym_regex, self.unpruned_symbols)
       pruned = self.sizeOfMatchingSyms(sym_regex, self.pruned_symbols)
       self.assertNotEqual(unpruned, 0, 'Unpruned never had ' + sym_regex)
@@ -62,6 +73,8 @@ class TestTranslatorPruned(unittest.TestCase):
       # from the target build (different inlining / optimizations).
       print 'Pruned out approx %d bytes worth of %s symbols' % (unpruned,
                                                                 sym_regex)
+      total += unpruned
+    print 'Total %d bytes' % total
 
 if __name__ == '__main__':
   if len(sys.argv) != 4:
