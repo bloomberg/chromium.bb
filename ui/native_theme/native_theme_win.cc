@@ -254,15 +254,6 @@ gfx::Size NativeThemeWin::GetPartSize(Part part,
         size.cx = 13;
         size.cy = 13;
         break;
-      case kScrollbarDownArrow:
-      case kScrollbarLeftArrow:
-      case kScrollbarRightArrow:
-      case kScrollbarUpArrow:
-      case kScrollbarHorizontalThumb:
-      case kScrollbarVerticalThumb:
-        size.cx = size.cy = static_cast<int>(GetSystemMetrics(SM_CXVSCROLL) /
-          ui::win::GetDeviceScaleFactor());
-        break;
       default:
         size.cx = 0;
         size.cy = 0;
