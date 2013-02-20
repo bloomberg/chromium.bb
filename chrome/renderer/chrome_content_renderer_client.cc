@@ -47,6 +47,7 @@
 #include "chrome/renderer/extensions/resource_request_policy.h"
 #include "chrome/renderer/external_extension.h"
 #include "chrome/renderer/loadtimes_extension_bindings.h"
+#include "chrome/renderer/net/net_error_helper.h"
 #include "chrome/renderer/net/renderer_net_predictor.h"
 #include "chrome/renderer/net_benchmarking_extension.h"
 #include "chrome/renderer/one_click_signin_agent.h"
@@ -338,6 +339,8 @@ void ChromeContentRendererClient::RenderViewCreated(
 #if defined(ENABLE_PLUGINS)
   new PepperHelper(render_view);
 #endif
+
+  new NetErrorHelper(render_view);
 
 #if defined(ENABLE_AUTOMATION)
   // Used only for testing/automation.
