@@ -186,8 +186,7 @@ void WebWidgetHost::ScheduleComposite() {
 }
 
 void WebWidgetHost::SetCursor(HCURSOR cursor) {
-  SetClassLong(view_, GCL_HCURSOR,
-      static_cast<LONG>(reinterpret_cast<LONG_PTR>(cursor)));
+  SetClassLongPtr(view_, GCLP_HCURSOR, reinterpret_cast<LONG_PTR>(cursor));
   ::SetCursor(cursor);
 }
 

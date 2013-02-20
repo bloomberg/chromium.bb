@@ -170,6 +170,8 @@
               'dependencies': [
                 '<(DEPTH)/breakpad/breakpad.gyp:breakpad_handler',
               ],
+              # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+              'msvs_disabled_warnings': [ 4267, ],
             }, {  # else: OS!=win
               'sources/': [
                 ['exclude', '_webtheme(control|engine)\.(cc|h)$'],
@@ -452,7 +454,8 @@
               ],
             }],
             ['OS=="win"', {
-              'msvs_disabled_warnings': [ 4800 ],
+              # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+              'msvs_disabled_warnings': [ 4800, 4267 ],
             }],
             ['os_posix == 1 and OS != "mac"', {
               'conditions': [
