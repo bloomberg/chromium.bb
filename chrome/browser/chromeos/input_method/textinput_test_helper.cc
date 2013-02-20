@@ -5,6 +5,7 @@
 #include "ash/shell.h"
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/textinput_test_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -32,6 +33,7 @@ void TextInputTestBase::SetUpInProcessBrowserTestFixture() {
 
 TextInputTestHelper::TextInputTestHelper()
   : waiting_type_(NO_WAIT),
+    selection_range_(ui::Range::InvalidRange()),
     focus_state_(false),
     latest_text_input_type_(ui::TEXT_INPUT_TYPE_NONE) {
   GetInputMethod()->AddObserver(this);
@@ -41,7 +43,7 @@ TextInputTestHelper::~TextInputTestHelper() {
   GetInputMethod()->RemoveObserver(this);
 }
 
-std::string TextInputTestHelper::GetSurroundingText() const {
+string16 TextInputTestHelper::GetSurroundingText() const {
   return surrounding_text_;
 }
 
@@ -65,6 +67,10 @@ ui::TextInputType TextInputTestHelper::GetTextInputType() const {
   return latest_text_input_type_;
 }
 
+ui::TextInputClient* TextInputTestHelper::GetTextInputClient() const {
+  return GetInputMethod()->GetTextInputClient();
+}
+
 void TextInputTestHelper::OnTextInputTypeChanged(
     const ui::TextInputClient* client) {
   latest_text_input_type_ = client->GetTextInputType();
@@ -86,6 +92,11 @@ void TextInputTestHelper::OnBlur() {
 
 void TextInputTestHelper::OnCaretBoundsChanged(
     const ui::TextInputClient* client) {
+  ui::Range text_range;
+  if (!GetTextInputClient()->GetTextRange(&text_range) ||
+      !GetTextInputClient()->GetTextFromRange(text_range, &surrounding_text_) ||
+      !GetTextInputClient()->GetSelectionRange(&selection_range_))
+      return;
   if (waiting_type_ == WAIT_ON_CARET_BOUNDS_CHANGED)
     MessageLoop::current()->Quit();
 }
@@ -126,7 +137,7 @@ void TextInputTestHelper::WaitForCaretBoundsChanged(
 }
 
 void TextInputTestHelper::WaitForSurroundingTextChanged(
-    const std::string& expected_text,
+    const string16& expected_text,
     const ui::Range& expected_selection) {
   waiting_type_ = WAIT_ON_CARET_BOUNDS_CHANGED;
   while (expected_text != surrounding_text_ ||

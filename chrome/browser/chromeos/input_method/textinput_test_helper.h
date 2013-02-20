@@ -35,12 +35,14 @@ class TextInputTestHelper : public ui::MockInputMethod::Observer {
   virtual ~TextInputTestHelper();
 
   // Returns the latest status notified to ui::InputMethod
-  std::string GetSurroundingText() const;
+  string16 GetSurroundingText() const;
   gfx::Rect GetCaretRect() const;
   gfx::Rect GetCompositionHead() const;
   ui::Range GetSelectionRange() const;
   bool GetFocusState() const;
   ui::TextInputType GetTextInputType() const;
+
+  ui::TextInputClient* GetTextInputClient() const;
 
   // Waiting function for each input method events. These functions runs message
   // loop until the expected event comes.
@@ -49,7 +51,7 @@ class TextInputTestHelper : public ui::MockInputMethod::Observer {
   void WaitForBlur();
   void WaitForCaretBoundsChanged(const gfx::Rect& expected_caret_rect,
                                  const gfx::Rect& expected_composition_head);
-  void WaitForSurroundingTextChanged(const std::string& expected_text,
+  void WaitForSurroundingTextChanged(const string16& expected_text,
                                      const ui::Range& expected_selection);
 
   // Converts from string to gfx::Rect. The string should be "x,y,width,height".
@@ -78,7 +80,7 @@ class TextInputTestHelper : public ui::MockInputMethod::Observer {
   // Represents waiting type of text input event.
   WaitImeEventType waiting_type_;
 
-  std::string surrounding_text_;
+  string16 surrounding_text_;
   gfx::Rect caret_rect_;
   gfx::Rect composition_head_;
   ui::Range selection_range_;

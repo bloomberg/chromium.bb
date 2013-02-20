@@ -358,6 +358,7 @@
             'browser/chromeos/cros/cros_mock.cc',
             'browser/chromeos/cros/cros_mock.h',
             'browser/chromeos/input_method/textinput_browsertest.cc',
+            'browser/chromeos/input_method/textinput_surroundingtext_browsertest.cc',
             'browser/chromeos/input_method/textinput_test_helper.cc',
             'browser/chromeos/input_method/textinput_test_helper.h',
             'browser/chromeos/login/login_browsertest.cc',
