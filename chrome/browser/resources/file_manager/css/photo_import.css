@@ -50,7 +50,7 @@
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   display: -webkit-box;
-  height: 50px;
+  height: 65px;
   width: 100%;
 }
 
@@ -76,7 +76,6 @@
 }
 
 button.import {
-  -webkit-margin-end: 20px;
   min-width: 100px;
 }
 
