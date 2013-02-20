@@ -23,6 +23,8 @@
 #include "webkit/base/file_path_string_conversions.h"
 #include "webkit/blob/blob_storage_controller.h"
 #include "webkit/fileapi/external_mount_points.h"
+#include "webkit/fileapi/file_permission_policy.h"
+#include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
@@ -127,8 +129,8 @@ void SimpleFileSystem::move(
     const WebURL& dest_path, WebFileSystemCallbacks* callbacks) {
   FileSystemURL src_url(file_system_context()->CrackURL(src_path));
   FileSystemURL dest_url(file_system_context()->CrackURL(dest_path));
-  if (!HasFilePermission(src_url, FILE_PERMISSION_WRITE) ||
-      !HasFilePermission(dest_url, FILE_PERMISSION_CREATE)) {
+  if (!HasFilePermission(src_url, fileapi::kWriteFilePermissions) ||
+      !HasFilePermission(dest_url, fileapi::kCreateFilePermissions)) {
     callbacks->didFail(WebKit::WebFileErrorSecurity);
     return;
   }
@@ -141,8 +143,8 @@ void SimpleFileSystem::copy(
     WebFileSystemCallbacks* callbacks) {
   FileSystemURL src_url(file_system_context()->CrackURL(src_path));
   FileSystemURL dest_url(file_system_context()->CrackURL(dest_path));
-  if (!HasFilePermission(src_url, FILE_PERMISSION_READ) ||
-      !HasFilePermission(dest_url, FILE_PERMISSION_CREATE)) {
+  if (!HasFilePermission(src_url, fileapi::kReadFilePermissions) ||
+      !HasFilePermission(dest_url, fileapi::kCreateFilePermissions)) {
     callbacks->didFail(WebKit::WebFileErrorSecurity);
     return;
   }
@@ -153,7 +155,7 @@ void SimpleFileSystem::copy(
 void SimpleFileSystem::remove(
     const WebURL& path, WebFileSystemCallbacks* callbacks) {
   FileSystemURL url(file_system_context()->CrackURL(path));
-  if (!HasFilePermission(url, FILE_PERMISSION_WRITE)) {
+  if (!HasFilePermission(url, fileapi::kWriteFilePermissions)) {
     callbacks->didFail(WebKit::WebFileErrorSecurity);
     return;
   }
@@ -164,7 +166,7 @@ void SimpleFileSystem::remove(
 void SimpleFileSystem::removeRecursively(
     const WebURL& path, WebFileSystemCallbacks* callbacks) {
   FileSystemURL url(file_system_context()->CrackURL(path));
-  if (!HasFilePermission(url, FILE_PERMISSION_WRITE)) {
+  if (!HasFilePermission(url, fileapi::kWriteFilePermissions)) {
     callbacks->didFail(WebKit::WebFileErrorSecurity);
     return;
   }
@@ -175,7 +177,7 @@ void SimpleFileSystem::removeRecursively(
 void SimpleFileSystem::readMetadata(
     const WebURL& path, WebFileSystemCallbacks* callbacks) {
   FileSystemURL url(file_system_context()->CrackURL(path));
-  if (!HasFilePermission(url, FILE_PERMISSION_READ)) {
+  if (!HasFilePermission(url, fileapi::kReadFilePermissions)) {
     callbacks->didFail(WebKit::WebFileErrorSecurity);
     return;
   }
@@ -185,7 +187,7 @@ void SimpleFileSystem::readMetadata(
 void SimpleFileSystem::createFile(
     const WebURL& path, bool exclusive, WebFileSystemCallbacks* callbacks) {
   FileSystemURL url(file_system_context()->CrackURL(path));
-  if (!HasFilePermission(url, FILE_PERMISSION_CREATE)) {
+  if (!HasFilePermission(url, fileapi::kCreateFilePermissions)) {
     callbacks->didFail(WebKit::WebFileErrorSecurity);
     return;
   }
@@ -195,7 +197,7 @@ void SimpleFileSystem::createFile(
 void SimpleFileSystem::createDirectory(
     const WebURL& path, bool exclusive, WebFileSystemCallbacks* callbacks) {
   FileSystemURL url(file_system_context()->CrackURL(path));
-  if (!HasFilePermission(url, FILE_PERMISSION_CREATE)) {
+  if (!HasFilePermission(url, fileapi::kCreateFilePermissions)) {
     callbacks->didFail(WebKit::WebFileErrorSecurity);
     return;
   }
@@ -206,7 +208,7 @@ void SimpleFileSystem::createDirectory(
 void SimpleFileSystem::fileExists(
     const WebURL& path, WebFileSystemCallbacks* callbacks) {
   FileSystemURL url(file_system_context()->CrackURL(path));
-  if (!HasFilePermission(url, FILE_PERMISSION_READ)) {
+  if (!HasFilePermission(url, fileapi::kReadFilePermissions)) {
     callbacks->didFail(WebKit::WebFileErrorSecurity);
     return;
   }
@@ -216,7 +218,7 @@ void SimpleFileSystem::fileExists(
 void SimpleFileSystem::directoryExists(
     const WebURL& path, WebFileSystemCallbacks* callbacks) {
   FileSystemURL url(file_system_context()->CrackURL(path));
-  if (!HasFilePermission(url, FILE_PERMISSION_READ)) {
+  if (!HasFilePermission(url, fileapi::kReadFilePermissions)) {
     callbacks->didFail(WebKit::WebFileErrorSecurity);
     return;
   }
@@ -226,7 +228,7 @@ void SimpleFileSystem::directoryExists(
 void SimpleFileSystem::readDirectory(
     const WebURL& path, WebFileSystemCallbacks* callbacks) {
   FileSystemURL url(file_system_context()->CrackURL(path));
-  if (!HasFilePermission(url, FILE_PERMISSION_READ)) {
+  if (!HasFilePermission(url, fileapi::kReadFilePermissions)) {
     callbacks->didFail(WebKit::WebFileErrorSecurity);
     return;
   }
@@ -242,7 +244,7 @@ void SimpleFileSystem::createSnapshotFileAndReadMetadata(
     const WebURL& path,
     WebFileSystemCallbacks* callbacks) {
   FileSystemURL url(file_system_context()->CrackURL(path));
-  if (!HasFilePermission(url, FILE_PERMISSION_READ)) {
+  if (!HasFilePermission(url, fileapi::kReadFilePermissions)) {
     callbacks->didFail(WebKit::WebFileErrorSecurity);
     return;
   }
@@ -256,7 +258,7 @@ void SimpleFileSystem::createSnapshotFileAndReadMetadata(
     const WebURL& path,
     WebFileSystemCallbacks* callbacks) {
   FileSystemURL url(file_system_context()->CrackURL(path));
-  if (!HasFilePermission(url, FILE_PERMISSION_READ)) {
+  if (!HasFilePermission(url, fileapi::kReadFilePermissions)) {
     callbacks->didFail(WebKit::WebFileErrorSecurity);
     return;
   }
@@ -278,10 +280,16 @@ void SimpleFileSystem::CleanupOnIOThread() {
 }
 
 bool SimpleFileSystem::HasFilePermission(
-    const fileapi::FileSystemURL& url, FilePermission permission) {
-  // Disallow writing on dragged file system, otherwise return ok.
-  return (url.type() != fileapi::kFileSystemTypeDragged ||
-          permission == FILE_PERMISSION_READ);
+    const fileapi::FileSystemURL& url, int permissions) {
+  if (!url.is_valid())
+    return false;
+  fileapi::FileSystemMountPointProvider* mount_point_provider =
+      file_system_context_->GetMountPointProvider(url.type());
+  DCHECK(mount_point_provider);
+  // In test_shell we don't perform further detailed security checks if it's
+  // not specifically forbidden by ALWAYS_DENY.
+  return (mount_point_provider->GetPermissionPolicy(url, permissions)
+      != fileapi::FILE_PERMISSION_ALWAYS_DENY);
 }
 
 FileSystemOperation* SimpleFileSystem::GetNewOperation(

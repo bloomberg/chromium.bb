@@ -102,15 +102,8 @@ class SimpleFileSystem
   static void CleanupOnIOThread();
 
  private:
-  enum FilePermission {
-    FILE_PERMISSION_READ,
-    FILE_PERMISSION_WRITE,
-    FILE_PERMISSION_CREATE,
-  };
-
   // Helpers.
-  bool HasFilePermission(const fileapi::FileSystemURL& url,
-                         FilePermission permission);
+  bool HasFilePermission(const fileapi::FileSystemURL& url, int permissions);
   fileapi::FileSystemOperation* GetNewOperation(
       const fileapi::FileSystemURL& url);
 
