@@ -262,7 +262,7 @@ std::string DesktopNotificationService::AddNotification(
     Profile* profile) {
 #if defined(USE_ASH)
   // For Ash create a non-HTML notification with |icon_url|.
-  Notification notification(GURL(), icon_url, title, message,
+  Notification notification(origin_url, icon_url, title, message,
                             WebKit::WebTextDirectionDefault,
                             string16(), replace_id, delegate);
   g_browser_process->notification_ui_manager()->Add(notification, profile);
@@ -289,7 +289,7 @@ std::string DesktopNotificationService::AddIconNotification(
     Profile* profile) {
 #if defined(USE_ASH)
   // For Ash create a non-HTML notification with |icon|.
-  Notification notification(GURL(), icon, title, message,
+  Notification notification(origin_url, icon, title, message,
                             WebKit::WebTextDirectionDefault,
                             string16(), replace_id, delegate);
   g_browser_process->notification_ui_manager()->Add(notification, profile);

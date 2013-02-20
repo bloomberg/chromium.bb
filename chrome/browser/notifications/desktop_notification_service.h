@@ -105,6 +105,8 @@ class DesktopNotificationService : public content::NotificationObserver,
   // Add a desktop notification. On non-Ash platforms this will generate a HTML
   // notification from the input parameters. On Ash it will generate a normal
   // ash notification. Returns the notification id.
+  // TODO(mukai): remove these methods. HTML notifications are no longer
+  // supported.
   static std::string AddNotification(const GURL& origin_url,
                                      const string16& title,
                                      const string16& message,

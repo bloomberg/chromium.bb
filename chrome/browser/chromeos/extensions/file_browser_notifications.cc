@@ -9,6 +9,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/profiles/profile.h"
@@ -177,9 +178,11 @@ class FileBrowserNotifications::NotificationMessage {
     const gfx::ImageSkia& icon =
         *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             GetIconId(type));
+    // TODO(mukai): refactor here to invoke NotificationUIManager directly.
     const string16 replace_id = UTF8ToUTF16(notification_id);
     DesktopNotificationService::AddIconNotification(
-        GURL(), GetTitle(type), message, icon, replace_id,
+        file_manager_util::GetFileBrowserExtensionUrl(), GetTitle(type),
+        message, icon, replace_id,
         new Delegate(host->AsWeakPtr(), notification_id), profile);
   }
 
@@ -396,4 +399,3 @@ string16 FileBrowserNotifications::GetNotificationMessageForTest(
     return string16();
   return it->second->message();
 }
-
