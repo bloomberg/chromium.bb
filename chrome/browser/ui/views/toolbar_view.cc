@@ -122,6 +122,22 @@ int location_bar_vert_spacing() {
   return value;
 }
 
+// The buttons to the left of the omnibox are close together.
+int button_spacing() {
+  static int value = -1;
+  if (value == -1) {
+    switch (ui::GetDisplayLayout()) {
+      case ui::LAYOUT_DESKTOP:
+        value = kButtonSpacing;
+        break;
+      case ui::LAYOUT_TOUCH:
+        value = kButtonSpacing + 3;
+        break;
+    }
+  }
+  return value;
+}
+
 class BadgeImageSource: public gfx::CanvasImageSource {
  public:
   BadgeImageSource(const gfx::ImageSkia& icon, const gfx::ImageSkia& badge)
@@ -620,11 +636,11 @@ bool ToolbarView::GetAcceleratorForCommandId(int command_id,
 gfx::Size ToolbarView::GetPreferredSize() {
   if (is_display_mode_normal()) {
     int min_width = kLeftEdgeSpacing +
-        back_->GetPreferredSize().width() + kButtonSpacing +
-        forward_->GetPreferredSize().width() + kButtonSpacing +
+        back_->GetPreferredSize().width() + button_spacing() +
+        forward_->GetPreferredSize().width() + button_spacing() +
         reload_->GetPreferredSize().width() + kStandardSpacing +
         (show_home_button_.GetValue() ?
-            (home_->GetPreferredSize().width() + kButtonSpacing) : 0) +
+            (home_->GetPreferredSize().width() + button_spacing()) : 0) +
         location_bar_->GetPreferredSize().width() +
         browser_actions_->GetPreferredSize().width() +
         app_menu_->GetPreferredSize().width() + kRightEdgeSpacing;
@@ -678,16 +694,16 @@ void ToolbarView::Layout() {
   else
     back_->SetBounds(kLeftEdgeSpacing, child_y, back_width, child_height);
 
-  forward_->SetBounds(back_->x() + back_->width() + kButtonSpacing,
+  forward_->SetBounds(back_->x() + back_->width() + button_spacing(),
       child_y, forward_->GetPreferredSize().width(), child_height);
 
-  reload_->SetBounds(forward_->x() + forward_->width() + kButtonSpacing,
+  reload_->SetBounds(forward_->x() + forward_->width() + button_spacing(),
       child_y, reload_->GetPreferredSize().width(), child_height);
 
   if (show_home_button_.GetValue()) {
     home_->SetVisible(true);
-    home_->SetBounds(reload_->x() + reload_->width() + kButtonSpacing, child_y,
-                     home_->GetPreferredSize().width(), child_height);
+    home_->SetBounds(reload_->x() + reload_->width() + button_spacing(),
+                     child_y, home_->GetPreferredSize().width(), child_height);
   } else {
     home_->SetVisible(false);
     home_->SetBounds(reload_->x() + reload_->width(), child_y, 0, child_height);
