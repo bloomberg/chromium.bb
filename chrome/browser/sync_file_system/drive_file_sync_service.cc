@@ -152,16 +152,6 @@ void DriveFileSyncService::OnInvalidatorStateChange(
   SetPushNotificationEnabled(state);
 }
 
-void DriveFileSyncService::SetPushNotificationEnabled(
-    syncer::InvalidatorState state) {
-  push_notification_enabled_ = (state == syncer::INVALIDATIONS_ENABLED);
-  if (!push_notification_enabled_)
-    return;
-
-  // Push notifications are enabled so reset polling timer.
-  UpdatePollingDelay(kPollingDelaySecondsWithNotification);
-}
-
 void DriveFileSyncService::OnIncomingInvalidation(
     const syncer::ObjectIdInvalidationMap& invalidation_map) {
   DCHECK(push_notification_enabled_);
@@ -1806,6 +1796,15 @@ bool DriveFileSyncService::GetPendingChangeForFileSystemURL(
   return true;
 }
 
+fileapi::SyncStatusCode
+DriveFileSyncService::GDataErrorCodeToSyncStatusCodeWrapper(
+    google_apis::GDataErrorCode error) const {
+  fileapi::SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+  if (status != fileapi::SYNC_STATUS_OK && !sync_client_->IsAuthenticated())
+    return fileapi::SYNC_STATUS_AUTHENTICATION_FAILED;
+  return status;
+}
+
 void DriveFileSyncService::MaybeStartFetchChanges() {
   if (!token_ || GetCurrentState() == REMOTE_SERVICE_DISABLED) {
     // If another task is already running or the service is disabled
@@ -1929,30 +1928,6 @@ bool DriveFileSyncService::GetOriginForEntry(
   return false;
 }
 
-// Register for Google Drive invalidation notifications through XMPP.
-void DriveFileSyncService::RegisterDriveNotifications() {
-  // Push notification registration might have already occurred if called from
-  // a different extension.
-  if (push_notification_registered_) {
-    return;
-  }
-
-  ProfileSyncService* profile_sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
-  if (!profile_sync_service) {
-    return;
-  }
-
-  profile_sync_service->RegisterInvalidationHandler(this);
-  syncer::ObjectIdSet ids;
-  ids.insert(invalidation::ObjectId(
-      ipc::invalidation::ObjectSource::COSMO_CHANGELOG,
-      kDriveInvalidationObjectId));
-  profile_sync_service->UpdateRegisteredInvalidationIds(this, ids);
-  push_notification_registered_ = true;
-  SetPushNotificationEnabled(profile_sync_service->GetInvalidatorState());
-}
-
 void DriveFileSyncService::SchedulePolling() {
   if (polling_timer_.IsRunning() ||
       polling_delay_seconds_ < 0 ||
@@ -2001,13 +1976,38 @@ void DriveFileSyncService::UpdatePollingDelay(int64 new_delay_sec) {
     polling_timer_.Stop();
 }
 
-fileapi::SyncStatusCode
-DriveFileSyncService::GDataErrorCodeToSyncStatusCodeWrapper(
-    google_apis::GDataErrorCode error) const {
-  fileapi::SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
-  if (status != fileapi::SYNC_STATUS_OK && !sync_client_->IsAuthenticated())
-    return fileapi::SYNC_STATUS_AUTHENTICATION_FAILED;
-  return status;
+// Register for Google Drive invalidation notifications through XMPP.
+void DriveFileSyncService::RegisterDriveNotifications() {
+  // Push notification registration might have already occurred if called from
+  // a different extension.
+  if (push_notification_registered_) {
+    return;
+  }
+
+  ProfileSyncService* profile_sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
+  if (!profile_sync_service) {
+    return;
+  }
+
+  profile_sync_service->RegisterInvalidationHandler(this);
+  syncer::ObjectIdSet ids;
+  ids.insert(invalidation::ObjectId(
+      ipc::invalidation::ObjectSource::COSMO_CHANGELOG,
+      kDriveInvalidationObjectId));
+  profile_sync_service->UpdateRegisteredInvalidationIds(this, ids);
+  push_notification_registered_ = true;
+  SetPushNotificationEnabled(profile_sync_service->GetInvalidatorState());
+}
+
+void DriveFileSyncService::SetPushNotificationEnabled(
+    syncer::InvalidatorState state) {
+  push_notification_enabled_ = (state == syncer::INVALIDATIONS_ENABLED);
+  if (!push_notification_enabled_)
+    return;
+
+  // Push notifications are enabled so reset polling timer.
+  UpdatePollingDelay(kPollingDelaySecondsWithNotification);
 }
 
 void DriveFileSyncService::NotifyObserversFileStatusChanged(
