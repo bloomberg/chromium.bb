@@ -260,13 +260,14 @@ void MediaGalleriesPreferences::InitFromPrefs(bool notify_observers) {
     }
   }
   if (notify_observers)
-    NotifyChangeObservers();
+    NotifyChangeObservers("");
 }
 
-void MediaGalleriesPreferences::NotifyChangeObservers() {
+void MediaGalleriesPreferences::NotifyChangeObservers(
+    const std::string& extension_id) {
   FOR_EACH_OBSERVER(GalleryChangeObserver,
                     gallery_change_observers_,
-                    OnGalleryChanged(this));
+                    OnGalleryChanged(this, extension_id));
 }
 
 void MediaGalleriesPreferences::AddGalleryChangeObserver(
@@ -563,6 +564,7 @@ void MediaGalleriesPreferences::SetGalleryPermissionForExtension(
   if (has_permission && all_permission) {
     if (gallery_info->second.type == MediaGalleryPrefInfo::kAutoDetected) {
       GetExtensionPrefs()->UnsetMediaGalleryPermission(extension.id(), pref_id);
+      NotifyChangeObservers(extension.id());
 #if defined(ENABLE_EXTENSIONS)
       if (state_tracker) {
         state_tracker->OnGalleryPermissionChanged(extension.id(), pref_id,
@@ -579,6 +581,7 @@ void MediaGalleriesPreferences::SetGalleryPermissionForExtension(
     GetExtensionPrefs()->SetMediaGalleryPermission(extension.id(), pref_id,
                                                    has_permission);
   }
+  NotifyChangeObservers(extension.id());
 #if defined(ENABLE_EXTENSIONS)
   if (state_tracker) {
     state_tracker->OnGalleryPermissionChanged(extension.id(), pref_id,

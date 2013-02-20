@@ -61,7 +61,8 @@ class MockGalleryChangeObserver
 
  private:
   // MediaGalleriesPreferences::GalleryChangeObserver implementation.
-  virtual void OnGalleryChanged(MediaGalleriesPreferences* pref) OVERRIDE {
+  virtual void OnGalleryChanged(MediaGalleriesPreferences* pref,
+                                const std::string& /*extension_id*/) OVERRIDE {
     EXPECT_EQ(pref_, pref);
     ++notifications_;
   }

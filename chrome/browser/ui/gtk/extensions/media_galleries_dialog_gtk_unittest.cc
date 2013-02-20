@@ -111,4 +111,27 @@ TEST_F(MediaGalleriesDialogTest, UpdateAdds) {
   EXPECT_EQ(2U, dialog.checkbox_map_.size());
 }
 
+TEST_F(MediaGalleriesDialogTest, ForgetDeletes) {
+  NiceMock<MediaGalleriesDialogControllerMock> controller;
+
+  MediaGalleriesDialogController::KnownGalleryPermissions permissions;
+  EXPECT_CALL(controller, permissions()).
+      WillRepeatedly(ReturnRef(permissions));
+
+  MediaGalleriesDialogGtk dialog(&controller);
+
+  EXPECT_TRUE(dialog.checkbox_map_.empty());
+
+  MediaGalleryPrefInfo gallery1 = MakePrefInfoForTesting(1);
+  dialog.UpdateGallery(&gallery1, true);
+  EXPECT_EQ(1U, dialog.checkbox_map_.size());
+
+  MediaGalleryPrefInfo gallery2 = MakePrefInfoForTesting(2);
+  dialog.UpdateGallery(&gallery2, true);
+  EXPECT_EQ(2U, dialog.checkbox_map_.size());
+
+  dialog.ForgetGallery(&gallery2);
+  EXPECT_EQ(1U, dialog.checkbox_map_.size());
+}
+
 }  // namespace chrome

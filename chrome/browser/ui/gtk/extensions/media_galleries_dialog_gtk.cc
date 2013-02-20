@@ -117,6 +117,17 @@ void MediaGalleriesDialogGtk::UpdateGallery(
   gtk_button_set_label(GTK_BUTTON(widget), label_text.c_str());
 }
 
+void MediaGalleriesDialogGtk::ForgetGallery(
+    const MediaGalleryPrefInfo* gallery) {
+  CheckboxMap::iterator iter = checkbox_map_.find(gallery);
+  if (iter == checkbox_map_.end())
+    return;
+
+  base::AutoReset<bool> reset(&ignore_toggles_, true);
+  gtk_widget_destroy(iter->second);
+  checkbox_map_.erase(iter);
+}
+
 GtkWidget* MediaGalleriesDialogGtk::GetWidgetRoot() {
   return contents_.get();
 }

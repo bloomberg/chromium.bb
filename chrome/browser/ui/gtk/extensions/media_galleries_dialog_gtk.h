@@ -32,6 +32,7 @@ class MediaGalleriesDialogGtk : public MediaGalleriesDialog,
   // MediaGalleriesDialog implementation:
   virtual void UpdateGallery(const MediaGalleryPrefInfo* gallery,
                              bool permitted) OVERRIDE;
+  virtual void ForgetGallery(const MediaGalleryPrefInfo* gallery) OVERRIDE;
 
   // ConstrainedWindowGtkDelegate implementation:
   virtual GtkWidget* GetWidgetRoot() OVERRIDE;
@@ -48,6 +49,7 @@ class MediaGalleriesDialogGtk : public MediaGalleriesDialog,
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, InitializeCheckboxes);
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, ToggleCheckboxes);
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, UpdateAdds);
+  FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, ForgetDeletes);
 
   typedef std::map<const MediaGalleryPrefInfo*, GtkWidget*> CheckboxMap;
 

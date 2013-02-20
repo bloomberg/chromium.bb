@@ -110,7 +110,10 @@ class MediaGalleriesPreferences : public ProfileKeyedService {
  public:
   class GalleryChangeObserver {
     public:
-     virtual void OnGalleryChanged(MediaGalleriesPreferences* pref) {}
+     // |extension_id| specifies the extension affected by this change.
+     // It is empty if the gallery change affects all extensions.
+     virtual void OnGalleryChanged(MediaGalleriesPreferences* pref,
+                                   const std::string& extension_id) {}
 
     protected:
      virtual ~GalleryChangeObserver();
@@ -203,7 +206,7 @@ class MediaGalleriesPreferences : public ProfileKeyedService {
   void InitFromPrefs(bool notify_observers);
 
   // Notifies |gallery_change_observers_| about changes in |known_galleries_|.
-  void NotifyChangeObservers();
+  void NotifyChangeObservers(const std::string& extension_id);
 
   MediaGalleryPrefId AddGalleryInternal(const std::string& device_id,
                                         const string16& display_name,

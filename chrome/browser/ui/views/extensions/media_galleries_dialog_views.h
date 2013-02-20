@@ -34,6 +34,7 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
   // MediaGalleriesDialog implementation:
   virtual void UpdateGallery(const MediaGalleryPrefInfo* gallery,
                              bool permitted) OVERRIDE;
+  virtual void ForgetGallery(const MediaGalleryPrefInfo* gallery);
 
   // views::DialogDelegate implementation:
   virtual string16 GetWindowTitle() const OVERRIDE;

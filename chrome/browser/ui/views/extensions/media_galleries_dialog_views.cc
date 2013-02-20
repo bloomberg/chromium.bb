@@ -103,6 +103,19 @@ void MediaGalleriesDialogViews::UpdateGallery(
     GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
 }
 
+void MediaGalleriesDialogViews::ForgetGallery(
+    const MediaGalleryPrefInfo* gallery) {
+  CheckboxMap::iterator iter = checkbox_map_.find(gallery);
+  if (iter == checkbox_map_.end())
+    return;
+
+  views::Checkbox* checkbox = iter->second;
+  checkbox_container_->RemoveChildView(checkbox);
+  delete checkbox;
+  checkbox_map_.erase(iter);
+  GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
+}
+
 bool MediaGalleriesDialogViews::AddOrUpdateGallery(
     const MediaGalleryPrefInfo* gallery,
     bool permitted) {
