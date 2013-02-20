@@ -175,11 +175,8 @@ void NetworkProfileBubble::RecordUmaEvent(MetricNetworkedProfileCheck event) {
 
 // static
 void NetworkProfileBubble::NotifyNetworkProfileDetected() {
-  // TODO(robertshield): Eventually, we will need to figure out the correct
-  //                     desktop type for this for platforms that can have
-  //                     multiple desktop types (win8/metro).
   Browser* browser = chrome::FindLastActiveWithHostDesktopType(
-      chrome::HOST_DESKTOP_TYPE_NATIVE);
+      chrome::GetActiveDesktop());
 
   if (browser)
     ShowNotification(browser);
