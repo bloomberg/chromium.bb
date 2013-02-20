@@ -35,6 +35,8 @@ a {
 
 #footer-container {
   display: none;
+  height: 20%;
+  overflow-y: scroll;
   position: fixed;
   text-align: center;
   width: 100%;
