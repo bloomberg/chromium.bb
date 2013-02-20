@@ -645,11 +645,6 @@ incremental.add_config('x86-generic-incremental',
   boards=['x86-generic'],
 )
 
-incremental.add_config('arm-tegra2-incremental',
-  arm,
-  boards=['tegra2'],
-)
-
 incremental.add_config('daisy-incremental',
   arm,
   boards=['daisy'],
@@ -672,13 +667,6 @@ incremental.add_config('x32-generic-incremental',
 paladin.add_config('x86-generic-paladin',
   boards=['x86-generic'],
   paladin_builder_name='x86 generic paladin',
-)
-
-paladin.add_config('arm-tegra2-paladin',
-  arm,
-  boards=['tegra2'],
-  paladin_builder_name='tegra2 paladin',
-  important=False,
 )
 
 paladin.add_config('amd64-generic-paladin',
@@ -715,12 +703,6 @@ internal_chromium_pfq.add_config('x86-generic-chromium-pfq',
   boards=['x86-generic'],
   master=True,
   push_overlays=constants.PUBLIC_OVERLAYS,
-)
-
-internal_chromium_pfq.add_config('tegra2-chromium-pfq',
-  arm,
-  boards=['tegra2'],
-  important=False,
 )
 
 internal_chromium_pfq.add_config('daisy-chromium-pfq',
@@ -815,14 +797,9 @@ chromium_info.add_config('x86-generic-tot-chrome-pfq-informational',
   boards=['x86-generic'],
 )
 
-chromium_info_arm = \
-chromium_info.add_config('arm-tegra2-tot-chrome-pfq-informational',
-  arm,
-  boards=['tegra2'],
-)
-
 chromium_info_daisy = \
-chromium_info_arm.add_config('daisy-tot-chrome-pfq-informational',
+chromium_info.add_config('daisy-tot-chrome-pfq-informational',
+  arm,
   boards=['daisy'],
 )
 
@@ -852,14 +829,6 @@ chromium_info_daisy.add_config('daisy-webrtc-chrome-pfq-informational',)
 arm_generic_full = \
 full.add_config('arm-generic-full', arm,
   boards=['arm-generic'],
-)
-
-arm_generic_full.add_config('arm-tegra2-full',
-  boards=['tegra2'],
-)
-
-arm_generic_full.add_config('arm-tegra2-seaboard-full',
-  boards=['tegra2_seaboard'],
 )
 
 arm_generic_full.add_config('daisy-full',
@@ -990,12 +959,6 @@ internal_arm_paladin.add_config('daisy-paladin',
 internal_arm_paladin.add_config('spring-paladin',
   boards=['daisy_spring'],
   paladin_builder_name='daisy spring paladin',
-  important=False,
-)
-
-internal_arm_paladin.add_config('kaen-paladin',
-  boards=['tegra2_kaen'],
-  paladin_builder_name='tegra2 kaen paladin',
   important=False,
 )
 
@@ -1154,14 +1117,6 @@ _release.add_config('butterfly-release',
 )
 
 _arm_release = _release.derive(arm)
-
-_arm_release.add_config('arm-tegra2_seaboard-release',
-  boards=['tegra2_seaboard'],
-)
-
-_arm_release.add_config('arm-tegra2_kaen-release',
-  boards=['tegra2_kaen'],
-)
 
 _arm_release.add_config('daisy-release',
   boards=['daisy'],
