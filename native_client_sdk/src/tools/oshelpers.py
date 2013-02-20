@@ -468,6 +468,23 @@ def Zip(args):
   return 0
 
 
+def FindExeInPath(filename):
+  env_path = os.environ.get('PATH', '')
+  paths = env_path.split(os.pathsep)
+
+  def IsExecutableFile(path):
+    return os.path.isfile(path) and os.access(path, os.X_OK)
+
+  if os.path.sep in filename:
+    if IsExecutableFile(filename):
+      return filename
+
+  for path in paths:
+    filepath = os.path.join(path, filename)
+    if IsExecutableFile(filepath):
+      return os.path.abspath(os.path.join(path, filename))
+
+
 def Which(args):
   """A Unix style which.
 
@@ -482,26 +499,14 @@ def Which(args):
   if not files:
     return 0
 
-  env_path = os.environ.get('PATH', '')
-  paths = env_path.split(os.pathsep)
-
-  def IsExecutableFile(path):
-    return os.path.isfile(path) and os.access(path, os.X_OK)
-
   retval = 0
   for filename in files:
-    if os.path.sep in filename:
-      if IsExecutableFile(filename):
-        print filename
-        continue
-
-    for path in paths:
-      filepath = os.path.join(path, filename)
-      if IsExecutableFile(filepath):
-        print os.path.abspath(os.path.join(path, filename))
-        break
+    fullname = FindExeInPath(filename)
+    if fullname:
+      print fullname
     else:
       retval = 1
+
   return retval
 
 

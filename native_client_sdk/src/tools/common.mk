@@ -63,6 +63,38 @@ export CYGWIN
 
 
 #
+# If NACL_SDK_ROOT is not already set, then set it relative to this makefile.
+#
+THIS_MAKEFILE:=$(CURDIR)/$(lastword $(MAKEFILE_LIST))
+ifndef NACL_SDK_ROOT
+  NACL_SDK_ROOT:=$(realpath $(dir $(THIS_MAKEFILE))/..)
+endif
+
+
+#
+# Check that NACL_SDK_ROOT is set to a valid location.
+# We use the existence of tools/oshelpers.py to verify the validity of the SDK
+# root.
+#
+ifeq (,$(wildcard $(NACL_SDK_ROOT)/tools/oshelpers.py))
+  $(error NACL_SDK_ROOT is set to an invalid location: $(NACL_SDK_ROOT))
+endif
+
+
+#
+# If this makefile is part of a valid nacl SDK, but NACL_SDK_ROOT is set
+# to a different location this is almost certainly a local configuration
+# error.
+#
+LOCAL_ROOT:=$(realpath $(dir $(THIS_MAKEFILE))/..)
+ifneq (,$(wildcard $(LOCAL_ROOT)/tools/oshelpers.py))
+  ifneq ($(realpath $(NACL_SDK_ROOT)), $(realpath $(LOCAL_ROOT)))
+    $(error common.mk included from an SDK that does not match the current NACL_SDK_ROOT)
+  endif
+endif
+
+
+#
 # Alias for standard POSIX file system commands
 #
 OSHELPERS=python $(NACL_SDK_ROOT)/tools/oshelpers.py
@@ -79,13 +111,25 @@ MKDIR:=@$(OSHELPERS) mkdir
 MV:=@$(OSHELPERS) mv
 endif
 
+
+
 #
 # Compute path to requested NaCl Toolchain
 #
-OSNAME:=$(shell python $(NACL_SDK_ROOT)/tools/getos.py)
+GETOS=python $(NACL_SDK_ROOT)/tools/getos.py
+OSNAME:=$(shell $(GETOS))
 TC_PATH:=$(abspath $(NACL_SDK_ROOT)/toolchain)
 
 
+#
+# Check for required minimum SDK version.
+#
+ifdef NACL_SDK_VERSION_MIN
+  VERSION_CHECK:=$(shell $(GETOS) --check-version=$(NACL_SDK_VERSION_MIN) 2>&1)
+  ifneq ($(VERSION_CHECK),)
+    $(error $(VERSION_CHECK))
+  endif
+endif
 
 
 #
@@ -301,7 +345,7 @@ endif
 	    --register-pepper-plugins="$(PPAPI_DEBUG),$(PPAPI_RELEASE)"
 
 
-SYSARCH=$(shell python $(NACL_SDK_ROOT)/tools/getos.py --chrome)
+SYSARCH=$(shell python $(NACL_SDK_ROOT)/tools/getos.py --chrome-arch)
 GDB_ARGS+=-D $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/$(SYSARCH)-nacl-gdb
 GDB_ARGS+=-D $(CURDIR)/$(OUTDIR)/$(TARGET)_$(SYSARCH).nexe
 
