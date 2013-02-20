@@ -7,10 +7,12 @@
 #include <algorithm>
 
 #include "base/debug/trace_event.h"
+#include "cc/heads_up_display_layer_impl.h"
 #include "cc/layer.h"
 #include "cc/layer_impl.h"
 #include "cc/layer_iterator.h"
 #include "cc/layer_sorter.h"
+#include "cc/layer_tree_impl.h"
 #include "cc/math_util.h"
 #include "cc/render_surface.h"
 #include "cc/render_surface_impl.h"
@@ -1152,6 +1154,10 @@ LayerImpl* LayerTreeHostCommon::findLayerThatIsHitByPoint(const gfx::PointF& scr
         // the parents to ensure that the layer was not clipped in such a way that the
         // hit point actually should not hit the layer.
         if (pointIsClippedBySurfaceOrClipRect(screenSpacePoint, currentLayer))
+            continue;
+
+        // Skip the HUD layer.
+        if (currentLayer == currentLayer->layerTreeImpl()->hud_layer())
             continue;
 
         foundLayer = currentLayer;

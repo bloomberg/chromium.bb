@@ -6,9 +6,11 @@
 
 #include "cc/content_layer.h"
 #include "cc/content_layer_client.h"
+#include "cc/heads_up_display_layer_impl.h"
 #include "cc/layer.h"
 #include "cc/layer_animation_controller.h"
 #include "cc/layer_impl.h"
+#include "cc/layer_tree_impl.h"
 #include "cc/math_util.h"
 #include "cc/proxy.h"
 #include "cc/single_thread_proxy.h"
@@ -2951,6 +2953,57 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleLayer)
     EXPECT_FALSE(resultLayer);
 
     // Hit testing for a point inside should return the root layer.
+    testPoint = gfx::Point(1, 1);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    ASSERT_TRUE(resultLayer);
+    EXPECT_EQ(12345, resultLayer->id());
+
+    testPoint = gfx::Point(99, 99);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    ASSERT_TRUE(resultLayer);
+    EXPECT_EQ(12345, resultLayer->id());
+}
+
+TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleLayerAndHud)
+{
+    FakeImplProxy proxy;
+    FakeLayerTreeHostImpl hostImpl(&proxy);
+    scoped_ptr<LayerImpl> root = LayerImpl::create(hostImpl.activeTree(), 12345);
+    scoped_ptr<HeadsUpDisplayLayerImpl> hud = HeadsUpDisplayLayerImpl::create(hostImpl.activeTree(), 11111);
+
+    gfx::Transform identityMatrix;
+    gfx::PointF anchor(0.f, 0.f);
+    gfx::PointF position(0.f, 0.f);
+    gfx::Size bounds(100, 100);
+    setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
+    root->setDrawsContent(true);
+
+    // Create hud and add it as a child of root.
+    gfx::Size hudBounds(200, 200);
+    setLayerPropertiesForTesting(hud.get(), identityMatrix, identityMatrix, anchor, position, hudBounds, false);
+    hud->setDrawsContent(true);
+
+    hostImpl.activeTree()->set_hud_layer(hud.get());
+    root->addChild(hud.PassAs<LayerImpl>());
+
+    std::vector<LayerImpl*> renderSurfaceLayerList;
+    int dummyMaxTextureSize = 512;
+    LayerTreeHostCommon::calculateDrawProperties(root.get(), hudBounds, 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList, false);
+
+    // Sanity check the scenario we just created.
+    ASSERT_EQ(1u, renderSurfaceLayerList.size());
+    ASSERT_EQ(2u, root->renderSurface()->layerList().size());
+
+    // Hit testing for a point inside HUD, but outside root should return null
+    gfx::Point testPoint(101, 101);
+    LayerImpl* resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+
+    testPoint = gfx::Point(-1, -1);
+    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    EXPECT_FALSE(resultLayer);
+
+    // Hit testing for a point inside should return the root layer, never the HUD layer.
     testPoint = gfx::Point(1, 1);
     resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_TRUE(resultLayer);
