@@ -26,9 +26,6 @@ struct SYNC_EXPORT_PRIVATE UserShare {
 
   // The Directory itself, which is the parent of Transactions.
   scoped_ptr<syncable::Directory> directory;
-
-  // The username of the sync user.
-  std::string name;
 };
 
 }  // namespace syncer

@@ -135,10 +135,6 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
       PassphraseType type,
       base::Time explicit_passphrase_time) OVERRIDE;
 
-  // Return the currently active (validated) username for use with syncable
-  // types.
-  const std::string& username_for_share() const;
-
   static int GetDefaultNudgeDelay();
   static int GetPreferencesNudgeDelay();
 
@@ -235,8 +231,8 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
       const syncable::EntryKernelMutation& mutation,
       Cryptographer* cryptographer) const;
 
-  // Open the directory named with username_for_share
-  bool OpenDirectory();
+  // Open the directory named with |username|.
+  bool OpenDirectory(const std::string& username);
 
   // Purge those types from |previously_enabled_types| that are no longer
   // enabled in |currently_enabled_types|.

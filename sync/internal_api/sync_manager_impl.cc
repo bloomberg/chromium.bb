@@ -389,7 +389,7 @@ void SyncManagerImpl::Init(
           credentials.email, absolute_db_path).Pass();
 
   DCHECK(backing_store.get());
-  share_.name = credentials.email;
+  const std::string& username = credentials.email;
   share_.directory.reset(
       new syncable::Directory(
           backing_store.release(),
@@ -398,8 +398,8 @@ void SyncManagerImpl::Init(
           sync_encryption_handler_.get(),
           sync_encryption_handler_->GetCryptographerUnsafe()));
 
-  DVLOG(1) << "Username: " << username_for_share();
-  if (!OpenDirectory()) {
+  DVLOG(1) << "Username: " << username;
+  if (!OpenDirectory(username)) {
     FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                       OnInitializationComplete(
                           MakeWeakHandle(weak_ptr_factory_.GetWeakPtr()),
@@ -522,7 +522,7 @@ bool SyncManagerImpl::GetHasInvalidAuthTokenForTest() const {
   return connection_manager_->HasInvalidAuthToken();
 }
 
-bool SyncManagerImpl::OpenDirectory() {
+bool SyncManagerImpl::OpenDirectory(const std::string& username) {
   DCHECK(!initialized_) << "Should only happen once";
 
   // Set before Open().
@@ -531,10 +531,9 @@ bool SyncManagerImpl::OpenDirectory() {
       MakeWeakHandle(js_mutation_event_observer_.AsWeakPtr()));
 
   syncable::DirOpenResult open_result = syncable::NOT_INITIALIZED;
-  open_result = directory()->Open(username_for_share(), this,
-                                  transaction_observer);
+  open_result = directory()->Open(username, this, transaction_observer);
   if (open_result != syncable::OPENED) {
-    LOG(ERROR) << "Could not open share for:" << username_for_share();
+    LOG(ERROR) << "Could not open share for:" << username;
     return false;
   }
 
@@ -585,11 +584,9 @@ bool SyncManagerImpl::PurgeDisabledTypes(
   return directory()->PurgeEntriesWithTypeIn(disabled_types, failed_types);
 }
 
-void SyncManagerImpl::UpdateCredentials(
-    const SyncCredentials& credentials) {
+void SyncManagerImpl::UpdateCredentials(const SyncCredentials& credentials) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(initialized_);
-  DCHECK_EQ(credentials.email, share_.name);
   DCHECK(!credentials.email.empty());
   DCHECK(!credentials.sync_token.empty());
 
@@ -1307,10 +1304,6 @@ SyncStatus SyncManagerImpl::GetDetailedStatus() const {
 
 void SyncManagerImpl::SaveChanges() {
   directory()->SaveChanges();
-}
-
-const std::string& SyncManagerImpl::username_for_share() const {
-  return share_.name;
 }
 
 UserShare* SyncManagerImpl::GetUserShare() {
