@@ -856,7 +856,6 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
 
     ui::ComboboxModel* input_model =
         controller_->ComboboxModelForAutofillType(input.type);
-    // TODO(estade): TextFields and Comboboxes need to be the same height.
     if (input_model) {
       views::Combobox* combobox = new views::Combobox(input_model);
       comboboxes->insert(std::make_pair(&input, combobox));

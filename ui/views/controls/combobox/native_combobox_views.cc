@@ -195,7 +195,7 @@ void NativeComboboxViews::UpdateFromModel() {
   }
 
   content_width_ = max_width;
-  content_height_ = font.GetFontSize();
+  content_height_ = font.GetHeight();
 }
 
 void NativeComboboxViews::UpdateSelectedIndex() {
@@ -221,11 +221,12 @@ gfx::Size NativeComboboxViews::GetPreferredSize() {
   // The preferred size will drive the local bounds which in turn is used to set
   // the minimum width for the dropdown list.
   gfx::Insets insets = GetInsets();
-  int total_width = content_width_ + (2 * insets.width())
-      + kDisclosureArrowLeftPadding + disclosure_arrow_->width()
-      + kDisclosureArrowRightPadding;
+  int total_width = content_width_ + insets.width() +
+      kDisclosureArrowLeftPadding + disclosure_arrow_->width() +
+      kDisclosureArrowRightPadding;
+
   return gfx::Size(std::min(kMinComboboxWidth, total_width),
-                   content_height_ + (2 * insets.height()));
+                   content_height_ + insets.height());
 }
 
 View* NativeComboboxViews::GetView() {
