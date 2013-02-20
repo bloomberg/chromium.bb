@@ -282,11 +282,9 @@ GURL FindPreferredIcon(const InstalledApp::IconList& icons,
 }
 
 // Retrieves total and remaining available size on |mount_path|.
-void GetSizeStatsOnFileThread(const std::string& mount_path,
-                              size_t* total_size_kb,
-                              size_t* remaining_size_kb) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
+void GetSizeStatsOnBlockingPool(const std::string& mount_path,
+                                size_t* total_size_kb,
+                                size_t* remaining_size_kb) {
   uint64_t total_size_in_bytes = 0;
   uint64_t remaining_size_in_bytes = 0;
 
@@ -1736,7 +1734,7 @@ bool GetSizeStatsFunction::RunImpl() {
           GetFileSystemContext();
 
   base::FilePath file_path = GetLocalPathFromURL(file_system_context,
-                                           GURL(mount_url));
+                                                 GURL(mount_url));
   if (file_path.empty())
     return false;
 
@@ -1759,12 +1757,18 @@ bool GetSizeStatsFunction::RunImpl() {
                    this));
 
   } else {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(
-            &GetSizeStatsFunction::CallGetSizeStatsOnFileThread,
-            this,
-            file_path.value()));
+    size_t* total_size_kb = new size_t(0);
+    size_t* remaining_size_kb = new size_t(0);
+    BrowserThread::PostBlockingPoolTaskAndReply(
+        FROM_HERE,
+        base::Bind(&GetSizeStatsOnBlockingPool,
+                   file_path.value(),
+                   total_size_kb,
+                   remaining_size_kb),
+        base::Bind(&GetSizeStatsFunction::GetSizeStatsCallback,
+                   this,
+                   base::Owned(total_size_kb),
+                   base::Owned(remaining_size_kb)));
   }
   return true;
 }
@@ -1773,44 +1777,25 @@ void GetSizeStatsFunction::GetDriveAvailableSpaceCallback(
     drive::DriveFileError error,
     int64 bytes_total,
     int64 bytes_used) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   if (error == drive::DRIVE_FILE_OK) {
     int64 bytes_remaining = bytes_total - bytes_used;
-    GetSizeStatsCallbackOnUIThread(static_cast<size_t>(bytes_total/1024),
-                                   static_cast<size_t>(bytes_remaining/1024));
+    const size_t total_size_kb = static_cast<size_t>(bytes_total/1024);
+    const size_t remaining_size_kb = static_cast<size_t>(bytes_remaining/1024);
+    GetSizeStatsCallback(&total_size_kb, &remaining_size_kb);
   } else {
     // If stats couldn't be gotten for drive, result should be left undefined.
     SendResponse(true);
   }
 }
 
-void GetSizeStatsFunction::CallGetSizeStatsOnFileThread(
-    const std::string& mount_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  size_t total_size_kb = 0;
-  size_t remaining_size_kb = 0;
-  GetSizeStatsOnFileThread(mount_path, &total_size_kb, &remaining_size_kb);
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &GetSizeStatsFunction::GetSizeStatsCallbackOnUIThread,
-          this,
-          total_size_kb, remaining_size_kb));
-}
-
-void GetSizeStatsFunction::GetSizeStatsCallbackOnUIThread(
-    size_t total_size_kb,
-    size_t remaining_size_kb) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
+void GetSizeStatsFunction::GetSizeStatsCallback(
+    const size_t* total_size_kb,
+    const size_t* remaining_size_kb) {
   base::DictionaryValue* sizes = new base::DictionaryValue();
   SetResult(sizes);
 
-  sizes->SetInteger("totalSizeKB", total_size_kb);
-  sizes->SetInteger("remainingSizeKB", remaining_size_kb);
+  sizes->SetInteger("totalSizeKB", *total_size_kb);
+  sizes->SetInteger("remainingSizeKB", *remaining_size_kb);
 
   SendResponse(true);
 }

@@ -468,9 +468,8 @@ class GetSizeStatsFunction : public FileBrowserFunction {
                                       int64 bytes_total,
                                       int64 bytes_used);
 
-  void GetSizeStatsCallbackOnUIThread(size_t total_size_kb,
-                                      size_t remaining_size_kb);
-  void CallGetSizeStatsOnFileThread(const std::string& mount_path);
+  void GetSizeStatsCallback(const size_t* total_size_kb,
+                            const size_t* remaining_size_kb);
 };
 
 // Retrieves devices meta-data. Expects volume's device path as an argument.
