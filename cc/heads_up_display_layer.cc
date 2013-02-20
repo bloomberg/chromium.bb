@@ -30,17 +30,20 @@ void HeadsUpDisplayLayer::update(ResourceUpdateQueue&, const OcclusionTracker*, 
     const LayerTreeDebugState& debugState = layerTreeHost()->debugState();
     int maxTextureSize = layerTreeHost()->rendererCapabilities().maxTextureSize;
 
+    int deviceViewportInLayoutPixelsWidth = layerTreeHost()->deviceViewportSize().width() / layerTreeHost()->deviceScaleFactor();
+    int deviceViewportInLayoutPixelsHeight = layerTreeHost()->deviceViewportSize().height() / layerTreeHost()->deviceScaleFactor();
+
     gfx::Size bounds;
     gfx::Transform matrix;
     matrix.MakeIdentity();
 
     if (debugState.showPlatformLayerTree || debugState.showHudRects()) {
-        int width = std::min(maxTextureSize, layerTreeHost()->layoutViewportSize().width());
-        int height = std::min(maxTextureSize, layerTreeHost()->layoutViewportSize().height());
+        int width = std::min(maxTextureSize, deviceViewportInLayoutPixelsWidth);
+        int height = std::min(maxTextureSize, deviceViewportInLayoutPixelsHeight);
         bounds = gfx::Size(width, height);
     } else {
         bounds = gfx::Size(256, 256);
-        matrix.Translate(layerTreeHost()->layoutViewportSize().width() - 256, 0);
+        matrix.Translate(deviceViewportInLayoutPixelsWidth - 256, 0);
     }
 
     setBounds(bounds);
