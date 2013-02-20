@@ -402,12 +402,6 @@ class BASE_EXPORT FilePath {
 
 }  // namespace base
 
-// http://crosbug.com/39008 MTPD has a circular dependency on base and uses the
-// old non-namespaced FilePath.
-#if defined(MTPD_DEVICE_MANAGER_H_)
-using base::FilePath;
-#endif
-
 // This is required by googletest to print a readable output on test failures.
 BASE_EXPORT extern void PrintTo(const base::FilePath& path, std::ostream* out);
 
