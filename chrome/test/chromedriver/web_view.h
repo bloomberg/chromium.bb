@@ -26,6 +26,9 @@ class WebView {
   // Return the id for this WebView.
   virtual std::string GetId() = 0;
 
+  // Close the WebView itself.
+  virtual Status Close() = 0;
+
   // Load a given URL in the main frame.
   virtual Status Load(const std::string& url) = 0;
 

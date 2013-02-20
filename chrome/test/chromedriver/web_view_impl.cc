@@ -16,6 +16,7 @@
 #include "chrome/test/chromedriver/navigation_tracker.h"
 #include "chrome/test/chromedriver/status.h"
 #include "chrome/test/chromedriver/ui_events.h"
+#include "chrome/test/chromedriver/web_view_delegate.h"
 
 namespace {
 
@@ -82,17 +83,29 @@ const char* GetAsString(KeyEventType type) {
 
 }  // namespace
 
-WebViewImpl::WebViewImpl(const std::string& id, DevToolsClient* client)
+WebViewImpl::WebViewImpl(const std::string& id,
+                         DevToolsClient* client,
+                         WebViewDelegate* delegate,
+                         const CloserFunc& closer_func)
     : id_(id),
       dom_tracker_(new DomTracker(client)),
       frame_tracker_(new FrameTracker(client)),
       navigation_tracker_(new NavigationTracker(client)),
-      client_(client) {}
+      client_(client),
+      delegate_(delegate),
+      closer_func_(closer_func) {}
 
 WebViewImpl::~WebViewImpl() {}
 
 std::string WebViewImpl::GetId() {
   return id_;
+}
+
+Status WebViewImpl::Close() {
+  Status status = closer_func_.Run();
+  if (status.IsOk())
+    delegate_->OnWebViewClose(this);
+  return status;
 }
 
 Status WebViewImpl::Load(const std::string& url) {

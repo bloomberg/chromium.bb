@@ -22,6 +22,19 @@ namespace {
 
 const char kWindowHandlePrefix[] = "CDwindow-";
 
+std::string WebViewIdToWindowHandle(const std::string& web_view_id) {
+  return kWindowHandlePrefix + web_view_id;
+}
+
+bool WindowHandleToWebViewId(const std::string& window_handle,
+                             std::string* web_view_id) {
+  if (window_handle.find(kWindowHandlePrefix) != 0u)
+    return false;
+  *web_view_id = window_handle.substr(
+      std::string(kWindowHandlePrefix).length());
+  return true;
+}
+
 }  // namespace
 
 Status ExecuteSessionCommand(
@@ -56,10 +69,25 @@ Status ExecuteGetCurrentWindowHandle(
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  if (session->window.empty())
-    return Status(kNoSuchWindow);
-  value->reset(new StringValue(kWindowHandlePrefix + session->window));
+  WebView* web_view = NULL;
+  Status status = session->GetTargetWindow(&web_view);
+  if (status.IsError())
+    return status;
+
+  value->reset(new StringValue(WebViewIdToWindowHandle(web_view->GetId())));
   return Status(kOk);
+}
+
+Status ExecuteClose(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  WebView* web_view = NULL;
+  Status status = session->GetTargetWindow(&web_view);
+  if (status.IsError())
+    return status;
+
+  return web_view->Close();
 }
 
 Status ExecuteGetWindowHandles(
@@ -73,7 +101,7 @@ Status ExecuteGetWindowHandles(
   base::ListValue window_ids;
   for (std::list<WebView*>::const_iterator it = web_views.begin();
        it != web_views.end(); ++it) {
-    window_ids.AppendString(kWindowHandlePrefix + (*it)->GetId());
+    window_ids.AppendString(WebViewIdToWindowHandle((*it)->GetId()));
   }
   value->reset(window_ids.DeepCopy());
   return Status(kOk);
@@ -93,12 +121,13 @@ Status ExecuteSwitchToWindow(
     return status;
 
   WebView* web_view = NULL;
-  if (name.find(kWindowHandlePrefix) == 0u) {
-    std::string handle = name.substr(std::string(kWindowHandlePrefix).length());
-    // Check if any window handle matches |handle|.
+
+  std::string web_view_id;
+  if (WindowHandleToWebViewId(name, &web_view_id)) {
+    // Check if any web_view matches |web_view_id|.
     for (std::list<WebView*>::const_iterator it = web_views.begin();
          it != web_views.end(); ++it) {
-      if ((*it)->GetId() == handle) {
+      if ((*it)->GetId() == web_view_id) {
         web_view = *it;
         break;
       }

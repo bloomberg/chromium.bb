@@ -42,8 +42,14 @@ Status ExecuteQuit(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
 
-// Retrieve the current window handle.
+// Retrieve the handle of the target window.
 Status ExecuteGetCurrentWindowHandle(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
+// Close the target window.
+Status ExecuteClose(
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);

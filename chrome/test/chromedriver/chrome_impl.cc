@@ -4,8 +4,10 @@
 
 #include "chrome/test/chromedriver/chrome_impl.h"
 
+#include <algorithm>
 #include <list>
 
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/stringprintf.h"
 #include "base/threading/platform_thread.h"
@@ -29,6 +31,43 @@ Status FetchPagesInfo(URLRequestContextGetter* context_getter,
   if (!FetchUrl(GURL(url), context_getter, &data))
     return Status(kChromeNotReachable);
   return internal::ParsePagesInfo(data, page_ids);
+}
+
+Status CloseWebView(URLRequestContextGetter* context_getter,
+                    int port,
+                    const std::string& web_view_id) {
+  std::list<std::string> ids;
+  Status status = FetchPagesInfo(context_getter, port, &ids);
+  if (status.IsError())
+    return status;
+  if (std::find(ids.begin(), ids.end(), web_view_id) == ids.end())
+    return Status(kOk);
+
+  bool is_last_web_view = ids.size() == 1;
+
+  std::string url = base::StringPrintf(
+      "http://127.0.0.1:%d/json/close/%s", port, web_view_id.c_str());
+  std::string data;
+  if (!FetchUrl(GURL(url), context_getter, &data))
+    return is_last_web_view ? Status(kOk) : Status(kChromeNotReachable);
+  if (data != "Target is closing")
+    return Status(kOk);
+
+  // Wait for the target window to be completely closed.
+  base::Time deadline = base::Time::Now() + base::TimeDelta::FromSeconds(20);
+  while (base::Time::Now() < deadline) {
+    ids.clear();
+    status = FetchPagesInfo(context_getter, port, &ids);
+    if (is_last_web_view && status.code() == kChromeNotReachable)
+      return Status(kOk);  // Closing the last web view leads chrome to quit.
+    if (status.IsError())
+      return status;
+    if (std::find(ids.begin(), ids.end(), web_view_id) == ids.end())
+      return Status(kOk);
+    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
+  }
+
+  return Status(kUnknownError, "failed to close window in 20 seconds");
 }
 
 }  // namespace
@@ -62,12 +101,17 @@ Status ChromeImpl::GetWebViews(std::list<WebView*>* web_views) {
     std::string ws_url = base::StringPrintf(
         "ws://127.0.0.1:%d/devtools/page/%s", port_, it->c_str());
     web_view_map_[*it] = make_linked_ptr(new WebViewImpl(
-        *it, new DevToolsClientImpl(socket_factory_, ws_url)));
+        *it, new DevToolsClientImpl(socket_factory_, ws_url),
+        this, base::Bind(&CloseWebView, context_getter_, port_, *it)));
     internal_web_views.push_back(web_view_map_[*it].get());
   }
 
   web_views->swap(internal_web_views);
   return Status(kOk);
+}
+
+void ChromeImpl::OnWebViewClose(WebView* web_view) {
+  web_view_map_.erase(web_view->GetId());
 }
 
 Status ChromeImpl::Init() {

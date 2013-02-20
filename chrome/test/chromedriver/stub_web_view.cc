@@ -7,12 +7,16 @@
 #include "chrome/test/chromedriver/stub_web_view.h"
 #include "chrome/test/chromedriver/ui_events.h"
 
-StubWebView::StubWebView() {}
+StubWebView::StubWebView(const std::string& id) : id_(id) {}
 
 StubWebView::~StubWebView() {}
 
 std::string StubWebView::GetId() {
-  return "";
+  return id_;
+}
+
+Status StubWebView::Close() {
+  return Status(kOk);
 }
 
 Status StubWebView::Load(const std::string& url) {

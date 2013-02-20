@@ -129,7 +129,8 @@ enum TestScenario {
 class FindElementWebView : public StubWebView {
  public:
   FindElementWebView(bool only_one, TestScenario scenario)
-      : only_one_(only_one), scenario_(scenario), current_count_(0) {
+      : StubWebView("1"), only_one_(only_one), scenario_(scenario),
+        current_count_(0) {
     switch (scenario_) {
       case kElementExistsQueryOnce:
       case kElementExistsQueryTwice:
@@ -385,7 +386,8 @@ namespace {
 
 class ErrorCallFunctionWebView : public StubWebView {
  public:
-  explicit ErrorCallFunctionWebView(StatusCode code) : code_(code) {}
+  explicit ErrorCallFunctionWebView(StatusCode code)
+      : StubWebView("1"), code_(code) {}
   virtual ~ErrorCallFunctionWebView() {}
 
   // Overridden from WebView:

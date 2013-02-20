@@ -23,11 +23,12 @@ class Status;
 
 class StubWebView : public WebView {
  public:
-  StubWebView();
+  explicit StubWebView(const std::string& id);
   virtual ~StubWebView();
 
   // Overridden from WebView:
   virtual std::string GetId() OVERRIDE;
+  virtual Status Close() OVERRIDE;
   virtual Status Load(const std::string& url) OVERRIDE;
   virtual Status Reload() OVERRIDE;
   virtual Status EvaluateScript(const std::string& frame,
@@ -47,6 +48,9 @@ class StubWebView : public WebView {
   virtual Status WaitForPendingNavigations(
       const std::string& frame_id) OVERRIDE;
   virtual Status GetMainFrame(std::string* frame_id) OVERRIDE;
+
+ private:
+  std::string id_;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_STUB_WEB_VIEW_H_

@@ -14,13 +14,14 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/test/chromedriver/chrome.h"
 #include "chrome/test/chromedriver/net/sync_websocket_factory.h"
+#include "chrome/test/chromedriver/web_view_delegate.h"
 
 class Status;
 class URLRequestContextGetter;
 class WebView;
 class WebViewImpl;
 
-class ChromeImpl : public Chrome {
+class ChromeImpl : public Chrome, public WebViewDelegate {
  public:
   ChromeImpl(URLRequestContextGetter* context_getter,
              int port,
@@ -29,6 +30,9 @@ class ChromeImpl : public Chrome {
 
   // Overridden from Chrome:
   virtual Status GetWebViews(std::list<WebView*>* web_views) OVERRIDE;
+
+  // Overridden from WebViewDelegate:
+  virtual void OnWebViewClose(WebView* web_view) OVERRIDE;
 
  protected:
   Status Init();

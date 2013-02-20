@@ -15,11 +15,14 @@
 
 class Chrome;
 class Status;
+class WebView;
 
 struct Session {
   explicit Session(const std::string& id);
   Session(const std::string& id, scoped_ptr<Chrome> chrome);
   ~Session();
+
+  Status GetTargetWindow(WebView** web_view);
 
   const std::string id;
   scoped_ptr<Chrome> chrome;

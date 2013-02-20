@@ -106,6 +106,8 @@ void CommandExecutorImpl::Init() {
       base::Bind(&ExecuteQuit, &session_map_);
   session_command_map[CommandNames::kGetCurrentWindowHandle] =
       base::Bind(&ExecuteGetCurrentWindowHandle);
+  session_command_map[CommandNames::kClose] =
+      base::Bind(&ExecuteClose);
   session_command_map[CommandNames::kGetWindowHandles] =
       base::Bind(&ExecuteGetWindowHandles);
   session_command_map[CommandNames::kSwitchToWindow] =

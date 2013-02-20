@@ -8,6 +8,7 @@
 #include <list>
 #include <string>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/test/chromedriver/web_view.h"
@@ -25,14 +26,20 @@ struct KeyEvent;
 struct MouseEvent;
 class NavigationTracker;
 class Status;
+class WebViewDelegate;
 
 class WebViewImpl : public WebView {
  public:
-  WebViewImpl(const std::string& id, DevToolsClient* client);
+  typedef base::Callback<Status()> CloserFunc;
+  WebViewImpl(const std::string& id,
+              DevToolsClient* client,
+              WebViewDelegate* delegate,
+              const CloserFunc& closer_func);
   virtual ~WebViewImpl();
 
   // Overridden from WebView:
   virtual std::string GetId() OVERRIDE;
+  virtual Status Close() OVERRIDE;
   virtual Status Load(const std::string& url) OVERRIDE;
   virtual Status Reload() OVERRIDE;
   virtual Status EvaluateScript(const std::string& frame,
@@ -59,6 +66,8 @@ class WebViewImpl : public WebView {
   scoped_ptr<FrameTracker> frame_tracker_;
   scoped_ptr<NavigationTracker> navigation_tracker_;
   scoped_ptr<DevToolsClient> client_;
+  WebViewDelegate* delegate_;
+  CloserFunc closer_func_;
 };
 
 namespace internal {

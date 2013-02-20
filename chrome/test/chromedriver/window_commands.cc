@@ -40,27 +40,10 @@ Status ExecuteWindowCommand(
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  if (session->window.empty())
-    return Status(kNoSuchWindow, "target window not set");
-
-  std::list<WebView*> web_views;
-  Status status = session->chrome->GetWebViews(&web_views);
+  WebView* web_view = NULL;
+  Status status = session->GetTargetWindow(&web_view);
   if (status.IsError())
     return status;
-
-  WebView* web_view = NULL;
-  for (std::list<WebView*>::const_iterator it = web_views.begin();
-       it != web_views.end(); ++it) {
-    if ((*it)->GetId() == session->window) {
-      web_view = *it;
-      break;
-    }
-  }
-  if (!web_view) {
-    return Status(kNoSuchWindow,
-                  base::StringPrintf("target window '%s' might be closed",
-                                     session->window.c_str()));
-  }
 
   Status nav_status = web_view->WaitForPendingNavigations(session->frame);
   if (nav_status.IsError())

@@ -56,34 +56,60 @@ class ChromeDriverTest(unittest.TestCase):
   def testGetCurrentWindowHandle(self):
     self._driver.GetCurrentWindowHandle()
 
-  def testGetWindowHandles(self):
-    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
-    window_count = len(self._driver.GetWindowHandles())
-    self._driver.FindElement('id', 'link').Click()
+  def _WaitForNewWindow(self, old_handles):
+    """ Wait until at least one new window is opened, and return a handle to a
+        new window. If timeout in 20 seconds, return None.
+    """
     timeout = time.time() + 20
     while time.time() < timeout:
-      if (len(self._driver.GetWindowHandles()) > window_count):
-        return
+      new_handles = self._driver.GetWindowHandles()
+      if (len(new_handles) > len(old_handles)):
+        for old_handle in old_handles:
+          self.assertTrue(old_handle in new_handles)
+          new_handles.remove(old_handle)
+        self.assertTrue(0 < len(new_handles))
+        return new_handles[0]
       time.sleep(0.01)
-    self.assertTrue(False)
+    return None
+
+  def testCloseWindow(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
+    old_handles = self._driver.GetWindowHandles()
+    self._driver.FindElement('id', 'link').Click()
+    new_window_handle = self._WaitForNewWindow(old_handles)
+    self.assertNotEqual(None, new_window_handle)
+    self._driver.SwitchToWindow(new_window_handle)
+    self.assertEquals(new_window_handle, self._driver.GetCurrentWindowHandle())
+    self.assertRaises(chromedriver.NoSuchElement,
+                      self._driver.FindElement, 'id', 'link')
+    self._driver.CloseWindow()
+    self.assertRaises(chromedriver.NoSuchWindow,
+                      self._driver.GetCurrentWindowHandle)
+    new_handles = self._driver.GetWindowHandles()
+    for old_handle in old_handles:
+      self.assertTrue(old_handle in new_handles)
+    for handle in new_handles:
+      self._driver.SwitchToWindow(handle)
+      self.assertEquals(handle, self._driver.GetCurrentWindowHandle())
+      self._driver.CloseWindow()
+
+  def testGetWindowHandles(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
+    old_handles = self._driver.GetWindowHandles()
+    self._driver.FindElement('id', 'link').Click()
+    self.assertNotEqual(None, self._WaitForNewWindow(old_handles))
 
   def testSwitchToWindow(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
     self.assertEquals(
         1, self._driver.ExecuteScript('window.name = "oldWindow"; return 1;'))
     window1_handle = self._driver.GetCurrentWindowHandle()
-    window_count = len(self._driver.GetWindowHandles())
+    old_handles = self._driver.GetWindowHandles()
     self._driver.FindElement('id', 'link').Click()
-    timeout = time.time() + 20
-    while time.time() < timeout:
-      all_handles = self._driver.GetWindowHandles()
-      if (len(all_handles) > window_count):
-        break
-      time.sleep(0.01)
-    self.assertTrue(window1_handle in all_handles)
-    all_handles.remove(window1_handle)
-    self._driver.SwitchToWindow(all_handles[0])
-    self.assertEquals(all_handles[0], self._driver.GetCurrentWindowHandle())
+    new_window_handle = self._WaitForNewWindow(old_handles)
+    self.assertNotEqual(None, new_window_handle)
+    self._driver.SwitchToWindow(new_window_handle)
+    self.assertEquals(new_window_handle, self._driver.GetCurrentWindowHandle())
     self.assertRaises(chromedriver.NoSuchElement,
                       self._driver.FindElement, 'id', 'link')
     self._driver.SwitchToWindow('oldWindow')

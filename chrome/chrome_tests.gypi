@@ -803,6 +803,7 @@
         'test/chromedriver/util.h',
         'test/chromedriver/version.cc',
         'test/chromedriver/version.h',
+        'test/chromedriver/web_view_delegate.h',
         'test/chromedriver/web_view.h',
         'test/chromedriver/web_view_impl.cc',
         'test/chromedriver/web_view_impl.h',

@@ -135,6 +135,9 @@ class ChromeDriver(object):
   def GetCurrentWindowHandle(self):
     return self.ExecuteSessionCommand('getCurrentWindowHandle')
 
+  def CloseWindow(self):
+    self.ExecuteSessionCommand('close')
+
   def Load(self, url):
     self.ExecuteSessionCommand('get', {'url': url})
 
