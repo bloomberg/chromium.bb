@@ -5,11 +5,11 @@
  */
 
 
-// NaCl inter-module communication primitives.
+/* NaCl inter-module communication primitives. */
 
+/* Disables the generation of the min and max macro in <windows.h> */
 #ifndef NOMINMAX
-#define NOMINMAX  // Disables the generation of the min and max macro in
-                  // <windows.h>.
+#define NOMINMAX
 #endif
 
 #include <algorithm>
@@ -31,7 +31,7 @@ void NaClSetBrokerDuplicateHandleFunc(NaClBrokerDuplicateHandleFunc func) {
   g_broker_duplicate_handle_func = func;
 }
 
-// Duplicate a Windows HANDLE within the current process.
+/* Duplicate a Windows HANDLE within the current process. */
 NaClHandle NaClDuplicateNaClHandle(NaClHandle handle) {
   NaClHandle dup_handle;
   if (DuplicateHandle(GetCurrentProcess(),
@@ -47,9 +47,11 @@ NaClHandle NaClDuplicateNaClHandle(NaClHandle handle) {
   }
 }
 
-// This prefix used to be appended to pipe names for pipes
-// created in BoundSocket. We keep it for backward compatibility.
-// TODO(gregoryd): implement versioning support
+/*
+ * This prefix used to be appended to pipe names for pipes
+ * created in BoundSocket. We keep it for backward compatibility.
+ * TODO(gregoryd): implement versioning support
+ */
 static const char kOldPipePrefix[] = "\\\\.\\pipe\\google-nacl-";
 static const char kPipePrefix[] = "\\\\.\\pipe\\chrome.nacl.";
 
@@ -59,15 +61,15 @@ static const size_t kOldPipePrefixSize =
     sizeof kOldPipePrefix / sizeof kOldPipePrefix[0];
 
 static const int kPipePathMax = kPipePrefixSize + NACL_PATH_MAX + 1;
-static const int kOutBufferSize = 4096;  // TBD
-static const int kInBufferSize = 4096;   // TBD
+static const int kOutBufferSize = 4096;  /* TBD */
+static const int kInBufferSize = 4096;   /* TBD */
 static const int kDefaultTimeoutMilliSeconds = 1000;
 
-// ControlHeader::command
+/* ControlHeader::command */
 static const int kEchoRequest = 0;
 static const int kEchoResponse = 1;
 static const int kMessage = 2;
-static const int kCancel = 3;   // Cancels Handle transfer operations
+static const int kCancel = 3;   /* Cancels Handle transfer operations */
 
 struct ControlHeader {
   int command;
@@ -76,8 +78,10 @@ struct ControlHeader {
   uint32_t handle_count;
 };
 
-// TODO(gregoryd): a similar function exists in Chrome's base, but we cannot
-// use it here since it cannot be built with scons.
+/*
+ * TODO(gregoryd): a similar function exists in Chrome's base, but we cannot
+ * use it here since it cannot be built with scons.
+ */
 static std::wstring ASCIIToWide(const char* ascii) {
   return std::wstring(ascii, &ascii[strlen(ascii)]);
 }
@@ -122,7 +126,7 @@ static int WriteAll(HANDLE handle, const void* buffer, size_t length) {
   size_t count = 0;
   while (count < length) {
     DWORD len;
-    // The following statement is for the 64 bit portability.
+    /* The following statement is for the 64 bit portability. */
     DWORD chunk = static_cast<DWORD>(
       ((length - count) <= UINT_MAX) ? (length - count) : UINT_MAX);
     if (WriteFile(handle, static_cast<const char*>(buffer) + count,
@@ -180,7 +184,7 @@ NaClHandle NaClBoundSocket(const NaClSocketAddress* address) {
   if (!GetSocketName(address, name)) {
     return NACL_INVALID_HANDLE;
   }
-  // Create a named pipe in nonblocking mode.
+  /* Create a named pipe in nonblocking mode. */
   return CreateNamedPipeW(
       ASCIIToWide(name).c_str(),
       PIPE_ACCESS_DUPLEX | FILE_FLAG_FIRST_PIPE_INSTANCE,
@@ -217,11 +221,11 @@ int NaClSocketPair(NaClHandle pair[2]) {
   } while (pair[0] == INVALID_HANDLE_VALUE);
   pair[1] = CreateFileW(ASCIIToWide(name).c_str(),
                         GENERIC_READ | GENERIC_WRITE,
-                        0,              // no sharing
-                        NULL,           // default security attributes
-                        OPEN_EXISTING,  // opens existing pipe
+                        0,              /* no sharing */
+                        NULL,           /* default security attributes */
+                        OPEN_EXISTING,  /* opens existing pipe */
                         SECURITY_SQOS_PRESENT | SECURITY_IDENTIFICATION,
-                        NULL);          // no template file
+                        NULL);          /* no template file */
   if (pair[1] == INVALID_HANDLE_VALUE) {
     CloseHandle(pair[0]);
     return -1;
@@ -258,9 +262,11 @@ int NaClSendDatagram(NaClHandle handle, const NaClMessageHeader* message,
     return -1;
   }
   if (0 < message->handle_count && message->handles) {
-    // TODO(shiki): On Windows Vista, we can use GetNamedPipeClientProcessId()
-    // and GetNamedPipeServerProcessId() and probably we can remove
-    // kEchoRequest and kEchoResponse completely.
+    /*
+     * TODO(shiki): On Windows Vista, we can use GetNamedPipeClientProcessId()
+     * and GetNamedPipeServerProcessId() and probably we can remove
+     * kEchoRequest and kEchoResponse completely.
+     */
     if (WriteAll(handle, &header, sizeof header) != sizeof header ||
         ReadAll(handle, &header, sizeof header) != sizeof header ||
         header.command != kEchoResponse) {
@@ -287,8 +293,10 @@ int NaClSendDatagram(NaClHandle handle, const NaClMessageHeader* message,
                                   0, FALSE, DUPLICATE_SAME_ACCESS);
       }
       if (!success) {
-        // Send the kCancel message to revoke the handles duplicated
-        // so far in the remote peer.
+        /*
+         * Send the kCancel message to revoke the handles duplicated
+         * so far in the remote peer.
+         */
         header.command = kCancel;
         header.handle_count = i;
         if (0 < i) {
@@ -352,37 +360,39 @@ int NaClSendDatagramTo(const NaClMessageHeader* message, int flags,
   for (;;) {
     handle = CreateFileW(ASCIIToWide(pipe_name).c_str(),
                          GENERIC_READ | GENERIC_WRITE,
-                         0,              // no sharing
-                         NULL,           // default security attributes
-                         OPEN_EXISTING,  // opens existing pipe
+                         0,              /* no sharing */
+                         NULL,           /* default security attributes */
+                         OPEN_EXISTING,  /* opens existing pipe */
                          SECURITY_SQOS_PRESENT | SECURITY_IDENTIFICATION,
-                         NULL);          // no template file
+                         NULL);          /* no template file */
     if (handle != INVALID_HANDLE_VALUE) {
       break;
     }
 
-    // If the pipe is busy it means it exists, so we can try and wait
+    /* If the pipe is busy it means it exists, so we can try and wait. */
     if (GetLastError() != ERROR_PIPE_BUSY) {
       if (GetLastError() != ERROR_FILE_NOT_FOUND) {
         return -1;
       } else {
-        // Try to find the file using name with prefix (can be created
-        // by an old version of IMC library.
+        /*
+         * Try to find the file using name with prefix (can be created
+         * by an old version of IMC library.
+         */
         if (!GetSocketNameWithOldPrefix(name, pipe_name)) {
           return -1;
         }
         handle = CreateFileW(ASCIIToWide(pipe_name).c_str(),
                              GENERIC_READ | GENERIC_WRITE,
-                             0,              // no sharing
-                             NULL,           // default security attributes
-                             OPEN_EXISTING,  // opens existing pipe
+                             0,              /* no sharing */
+                             NULL,           /* default security attributes */
+                             OPEN_EXISTING,  /* opens existing pipe */
                              SECURITY_SQOS_PRESENT | SECURITY_IDENTIFICATION,
-                             NULL);          // no template file
+                             NULL);          /* no template file */
         if (handle != INVALID_HANDLE_VALUE) {
           break;
         }
         if (GetLastError() != ERROR_PIPE_BUSY) {
-          // Could not find the pipe - nothing to do
+          /* Could not find the pipe - nothing to do */
           return -1;
         }
       }
@@ -392,7 +402,7 @@ int NaClSendDatagramTo(const NaClMessageHeader* message, int flags,
       SetLastError(ERROR_PIPE_LISTENING);
       return -1;
     }
-    // Cannot call WaitNamedPipe here because it's blocked by Chrome sandbox.
+    /* Cannot call WaitNamedPipe here because it's blocked by Chrome sandbox. */
     Sleep(timeout_ms);
     timeout_ms *= 2;
     if (timeout_ms > kDefaultTimeoutMilliSeconds) {
@@ -419,16 +429,18 @@ static int ReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
       } else {
         switch (header.command) {
         case kEchoRequest:
-          // Send back the process id to the remote peer to duplicate handles.
-          // TODO(shiki) : It might be better to keep remote pid by the initial
-          //               handshake rather than send kEchoRequest each time
-          //               before duplicating handles.
+          /*
+           * Send back the process id to the remote peer to duplicate handles.
+           * TODO(shiki) : It might be better to keep remote pid by the initial
+           *               handshake rather than send kEchoRequest each time
+           *               before duplicating handles.
+           */
           if (ReadAll(handle, &header, sizeof header) == sizeof header) {
             header.command = kEchoResponse;
             header.pid = GetCurrentProcessId();
             WriteAll(handle, &header, sizeof header);
             if (bound_socket) {
-              // We must not close this connection.
+              /* We must not close this connection. */
               dontPeek = true;
             }
             goto Repeat;
@@ -538,24 +550,28 @@ int NaClReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
     return -1;
   }
 
-  // If handle is a bound socket, it is a named pipe in non-blocking mode.
-  // Set is_bound_socket to true if handle has been created by BoundSocket().
+  /*
+   * If handle is a bound socket, it is a named pipe in non-blocking mode.
+   * Set is_bound_socket to true if handle has been created by BoundSocket().
+   */
   DWORD state;
   if (!GetNamedPipeHandleState(handle, &state, NULL, NULL, NULL, NULL, NULL)) {
     return -1;
   }
 
   if (!(state & PIPE_NOWAIT)) {
-    // handle is a connected socket.
+    /* handle is a connected socket. */
     return ReceiveDatagram(handle, message, flags, false);
   }
 
-  // handle is a bound socket.
+  /* handle is a bound socket. */
   for (;;) {
     if (ConnectNamedPipe(handle, NULL)) {
-      // Note ConnectNamedPipe() for a handle in non-blocking mode returns a
-      // nonzero value just to indicate that the pipe is now available to be
-      // connected.
+      /*
+       * Note ConnectNamedPipe() for a handle in non-blocking mode returns a
+       * nonzero value just to indicate that the pipe is now available to be
+       * connected.
+       */
       continue;
     }
     switch (GetLastError()) {
@@ -563,18 +579,18 @@ int NaClReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
       if (flags & NACL_DONT_WAIT) {
         return -1;
       }
-      // Set handle to blocking mode
+      /* Set handle to blocking mode */
       DWORD mode = PIPE_READMODE_BYTE | PIPE_WAIT;
       SetNamedPipeHandleState(handle, &mode, NULL, NULL);
       break;
     }
     case ERROR_PIPE_CONNECTED: {
-      // Set handle to blocking mode
+      /* Set handle to blocking mode */
       DWORD mode = PIPE_READMODE_BYTE | PIPE_WAIT;
       SetNamedPipeHandleState(handle, &mode, NULL, NULL);
       int result = ReceiveDatagram(handle, message, flags, true);
       FlushFileBuffers(handle);
-      // Set handle back to non-blocking mode
+      /* Set handle back to non-blocking mode. */
       mode = PIPE_READMODE_BYTE | PIPE_NOWAIT;
       SetNamedPipeHandleState(handle, &mode, NULL, NULL);
       DisconnectNamedPipe(handle);

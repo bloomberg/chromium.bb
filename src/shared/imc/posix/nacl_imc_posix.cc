@@ -5,10 +5,12 @@
  */
 
 
-// NaCl inter-module communication primitives.
-//
-// This file implements common parts of IMC for "unix like systems" (i.e. not
-// used on Windows).
+/*
+ * NaCl inter-module communication primitives.
+ *
+ * This file implements common parts of IMC for "UNIX like systems" (i.e. not
+ * used on Windows).
+ */
 
 #include <assert.h>
 #include <ctype.h>
@@ -34,15 +36,17 @@
 
 static const char kNaClTempPrefixVar[] = "NACL_TMPFS_PREFIX";
 
-// The pathname or SHM-namespace prefixes for memory objects created
-// by CreateMemoryObject().
+/*
+ * The pathname or SHM-namespace prefixes for memory objects created
+ * by CreateMemoryObject().
+ */
 static const char kShmTempPrefix[] = "/tmp/google-nacl-shm-";
 static const char kShmOpenPrefix[] = "/google-nacl-shm-";
 
 static NaClCreateMemoryObjectFunc g_create_memory_object_func = NULL;
 
 
-// Duplicate a file descriptor.
+/* Duplicate a file descriptor. */
 NaClHandle NaClDuplicateNaClHandle(NaClHandle handle) {
   return dup(handle);
 }
@@ -76,7 +80,9 @@ int NaClWouldBlock(void) {
 
 int NaClGetLastErrorString(char* buffer, size_t length) {
 #if NACL_LINUX && !NACL_ANDROID
-  // Note some Linux distributions provide only GNU version of strerror_r().
+  /*
+   * Note some Linux distributions provide only GNU version of strerror_r().
+   */
   if (buffer == NULL || length == 0) {
     errno = ERANGE;
     return -1;
@@ -111,9 +117,11 @@ static int TryShmOrTempOpen(size_t length, const char* prefix, bool use_temp) {
     if (use_temp) {
       m = open(name, O_RDWR | O_CREAT | O_EXCL, 0);
     } else {
-      // Using 0 for the mode causes shm_unlink to fail with EACCES on Mac
-      // OS X 10.8. As of 10.8, the kernel requires the user to have write
-      // permission to successfully shm_unlink.
+      /*
+       * Using 0 for the mode causes shm_unlink to fail with EACCES on Mac
+       * OS X 10.8. As of 10.8, the kernel requires the user to have write
+       * permission to successfully shm_unlink.
+       */
       m = shm_open(name, O_RDWR | O_CREAT | O_EXCL, S_IWUSR);
     }
     if (0 <= m) {
@@ -133,7 +141,7 @@ static int TryShmOrTempOpen(size_t length, const char* prefix, bool use_temp) {
     if (errno != EEXIST) {
       return -1;
     }
-    // Retry only if we got EEXIST.
+    /* Retry only if we got EEXIST. */
   }
 }
 #endif
@@ -153,10 +161,12 @@ NaClHandle NaClCreateMemoryObject(size_t length, int executable) {
 #if NACL_ANDROID
   return AshmemCreateRegion(length);
 #else
-  // /dev/shm is not always available on Linux.
-  // Sometimes it's mounted as noexec.
-  // To handle this case, sel_ldr can take a path
-  // to tmpfs from the environment.
+  /*
+   * /dev/shm is not always available on Linux.
+   * Sometimes it's mounted as noexec.
+   * To handle this case, sel_ldr can take a path
+   * to tmpfs from the environment.
+   */
 #if NACL_LINUX && defined(NACL_ENABLE_TMPFS_REDIRECT_VAR)
   if (NACL_ENABLE_TMPFS_REDIRECT_VAR) {
     const char* prefix = getenv(kNaClTempPrefixVar);
@@ -170,15 +180,17 @@ NaClHandle NaClCreateMemoryObject(size_t length, int executable) {
 #endif
 
   if (NACL_OSX && executable) {
-    // On Mac OS X, shm_open() gives us file descriptors that the OS
-    // won't mmap() with PROT_EXEC, which is no good for the dynamic
-    // code region, so we must use /tmp instead.
+    /*
+     * On Mac OS X, shm_open() gives us file descriptors that the OS
+     * won't mmap() with PROT_EXEC, which is no good for the dynamic
+     * code region, so we must use /tmp instead.
+     */
     return TryShmOrTempOpen(length, kShmTempPrefix, true);
   }
 
-  // Try shm_open().
+  /* Try shm_open(). */
   return TryShmOrTempOpen(length, kShmOpenPrefix, false);
-#endif  // !NACL_ANDROID
+#endif  /* !NACL_ANDROID */
 }
 
 void* NaClMap(struct NaClDescEffector* effp,

@@ -5,9 +5,9 @@
  */
 
 
-// NaCl inter-module communication primitives.
+/* NaCl inter-module communication primitives. */
 
-// Used for UINT32_MAX
+/* Used for UINT32_MAX */
 #if !NACL_WINDOWS
 # ifndef __STDC_LIMIT_MACROS
 #  define __STDC_LIMIT_MACROS
@@ -15,7 +15,7 @@
 #include <stdint.h>
 #endif
 
-// TODO(robertm): stdio.h is included for NULL only - find a better way
+/* TODO(robertm): stdio.h is included for NULL only - find a better way */
 #include <stdio.h>
 
 #include "native_client/src/include/portability.h"

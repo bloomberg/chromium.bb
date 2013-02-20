@@ -4,7 +4,7 @@
  * found in the LICENSE file.
  */
 
-// NaCl inter-module communication primitives.
+/* NaCl inter-module communication primitives. */
 
 #include <errno.h>
 #include <stdio.h>
@@ -17,7 +17,7 @@
 
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 
-// Duplicate a NaCl file descriptor.
+/* Duplicate a NaCl file descriptor. */
 NaClHandle NaClDuplicateNaClHandle(NaClHandle handle) {
   return dup(handle);
 }
@@ -27,7 +27,7 @@ int NaClWouldBlock() {
 }
 
 int NaClGetLastErrorString(char* buffer, size_t length) {
-  // Note newlib provides only GNU version of strerror_r().
+  /* Note newlib provides only GNU version of strerror_r(). */
   if (buffer == NULL || length == 0) {
     errno = ERANGE;
     return -1;
@@ -43,9 +43,11 @@ int NaClGetLastErrorString(char* buffer, size_t length) {
 }
 
 NaClHandle NaClBoundSocket(const NaClSocketAddress* address) {
-  // TODO(shiki): Switch to the following once the make_bound_sock() prototype
-  //              is cleaned up.
-  // return make_bound_sock(address);
+  /*
+   * TODO(shiki): Switch to the following once the make_bound_sock() prototype
+   *              is cleaned up.
+   * return make_bound_sock(address);
+   */
   return -1;
 }
 
@@ -65,7 +67,7 @@ int NaClSendDatagram(NaClHandle handle, const NaClMessageHeader* message,
 
 int NaClSendDatagramTo(const NaClMessageHeader* message, int flags,
                        const NaClSocketAddress* name) {
-  return -1;  // TODO(bsy): how to implement this for NaCl?
+  return -1;  /* TODO(bsy): how to implement this for NaCl? */
 }
 
 int NaClReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
@@ -75,7 +77,7 @@ int NaClReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
 
 NaClHandle NaClCreateMemoryObject(size_t length, int executable) {
   if (executable) {
-    return -1;  // Will never work with NaCl and should never be invoked.
+    return -1;  /* Will never work with NaCl and should never be invoked. */
   }
   return imc_mem_obj_create(length);
 }

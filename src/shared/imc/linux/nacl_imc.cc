@@ -5,7 +5,7 @@
  */
 
 
-// NaCl inter-module communication primitives.
+/* NaCl inter-module communication primitives. */
 
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 #include <assert.h>
@@ -22,9 +22,11 @@
 
 #include "native_client/src/shared/platform/nacl_log.h"
 
-// Gets an array of file descriptors stored in msg.
-// The fdv parameter must be an int array of kHandleCountMax elements.
-// GetRights() returns the number of file descriptors copied into fdv.
+/*
+ * Gets an array of file descriptors stored in msg.
+ * The fdv parameter must be an int array of kHandleCountMax elements.
+ * GetRights() returns the number of file descriptors copied into fdv.
+ */
 static size_t GetRights(struct msghdr* msg, int* fdv) {
   size_t count = 0;
   for (struct cmsghdr* cmsg = CMSG_FIRSTHDR(msg);
@@ -40,8 +42,10 @@ static size_t GetRights(struct msghdr* msg, int* fdv) {
   return count;
 }
 
-// We keep these no-op implementations of SocketAddress-based
-// functions so that sigpipe_test continues to link.
+/*
+ * We keep these no-op implementations of SocketAddress-based
+ * functions so that sigpipe_test continues to link.
+ */
 NaClHandle NaClBoundSocket(const NaClSocketAddress* address) {
   UNREFERENCED_PARAMETER(address);
   NaClLog(LOG_FATAL, "BoundSocket(): Not used on Linux\n");
@@ -58,9 +62,11 @@ int NaClSendDatagramTo(const NaClMessageHeader* message, int flags,
 }
 
 int NaClSocketPair(NaClHandle pair[2]) {
-  // The read operation for a SOCK_SEQPACKET socket returns zero when the
-  // remote peer closed the connection unlike a SOCK_DGRAM socket. Note
-  // SOCK_SEQPACKET was introduced with Linux 2.6.4.
+  /*
+   * The read operation for a SOCK_SEQPACKET socket returns zero when the
+   * remote peer closed the connection unlike a SOCK_DGRAM socket. Note
+   * SOCK_SEQPACKET was introduced with Linux 2.6.4.
+   */
   int rv = socketpair(AF_UNIX, SOCK_SEQPACKET, 0, pair);
   if (rv != 0) {
     NaClLog(LOG_ERROR, "SocketPair: socketpair failed, errno %d\n", errno);

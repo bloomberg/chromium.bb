@@ -4,8 +4,7 @@
  * found in the LICENSE file.
  */
 
-
-// NaCl inter-module communication primitives.
+/* NaCl inter-module communication primitives. */
 
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 #include <assert.h>
@@ -54,37 +53,48 @@
 
 #if SIGPIPE_ALT_FIX
 # include <signal.h>
-#endif  // SIGPIPE_ALT_FIX
+#endif  /* SIGPIPE_ALT_FIX */
 
 #include <algorithm>
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
 
 
-// The number of recvmsg retries to perform to determine --
-// heuristically, unfortunately -- if the remote end of the socketpair
-// had actually closed.  This is a (new) hacky workaround for an OSX
-// blemish that replaces the older, buggier workaround.
+/*
+ * The number of recvmsg retries to perform to determine --
+ * heuristically, unfortunately -- if the remote end of the socketpair
+ * had actually closed.  This is a (new) hacky workaround for an OSX
+ * blemish that replaces the older, buggier workaround.
+ */
 static const int kRecvMsgRetries = 8;
 
-// The maximum number of NaClIOVec elements sent by SendDatagram(). Plus one for
-// NaClInternalHeader with the descriptor data bytes.
+/*
+ * The maximum number of NaClIOVec elements sent by SendDatagram(). Plus one for
+ * NaClInternalHeader with the descriptor data bytes.
+ */
 static const size_t kIovLengthMax = NACL_ABI_IMC_IOVEC_MAX + 1;
 
-// The IMC datagram header followed by a message_bytes of data sent over the
-// a stream-oriented socket. We need to use stream-oriented socket for OS X
-// since it doesn't support file descriptor transfer over SOCK_DGRAM socket
-// like Linux.
+/*
+ * The IMC datagram header followed by a message_bytes of data sent over the
+ * a stream-oriented socket. We need to use stream-oriented socket for OS X
+ * since it doesn't support file descriptor transfer over SOCK_DGRAM socket
+ * like Linux.
+ */
 struct Header {
-  // The total bytes of data in the IMC datagram excluding the size of Header.
+  /*
+   * The total bytes of data in the IMC datagram excluding the size of
+   * Header.
+   */
   size_t message_bytes;
-  // The total number of handles to be transferred with IMC datagram.
+  /* The total number of handles to be transferred with IMC datagram. */
   size_t handle_count;
 };
 
 
-// Gets an array of file descriptors stored in msg.
-// The fdv parameter must be an int array of kHandleCountMax elements.
-// GetRights() returns the number of file descriptors copied into fdv.
+/*
+ * Gets an array of file descriptors stored in msg.
+ * The fdv parameter must be an int array of kHandleCountMax elements.
+ * GetRights() returns the number of file descriptors copied into fdv.
+ */
 static size_t GetRights(struct msghdr* msg, int* fdv) {
   if (msg->msg_controllen == 0) {
     return 0;
@@ -103,9 +113,11 @@ static size_t GetRights(struct msghdr* msg, int* fdv) {
   return count;
 }
 
-// Skips the specified length of octets when reading from a handle. Skipped
-// octets are discarded.
-// On success, true is returned. On error, false is returned.
+/*
+ * Skips the specified length of octets when reading from a handle. Skipped
+ * octets are discarded.
+ * On success, true is returned. On error, false is returned.
+ */
 static bool SkipFile(int handle, size_t length) {
   while (0 < length) {
     char scratch[1024];
@@ -120,8 +132,10 @@ static bool SkipFile(int handle, size_t length) {
 }
 
 #if SIGPIPE_ALT_FIX
-// TODO(kbr): move this to an Init() function so it isn't called all
-// the time.
+/*
+ * TODO(kbr): move this to an Init() function so it isn't called all
+ * the time.
+ */
 static bool IgnoreSIGPIPE() {
   sigset_t mask;
   sigemptyset(&mask);
@@ -133,8 +147,10 @@ static bool IgnoreSIGPIPE() {
 }
 #endif
 
-// We keep these no-op implementations of SocketAddress-based
-// functions so that sigpipe_test continues to link.
+/*
+ * We keep these no-op implementations of SocketAddress-based
+ * functions so that sigpipe_test continues to link.
+ */
 NaClHandle NaClBoundSocket(const NaClSocketAddress* address) {
   UNREFERENCED_PARAMETER(address);
   NaClLog(LOG_FATAL, "BoundSocket(): Not used on OSX\n");
@@ -240,8 +256,10 @@ int NaClSendDatagram(NaClHandle handle, const NaClMessageHeader* message,
   }
   msg.msg_flags = 0;
 
-  // Send data with the header atomically. Note to send file descriptors we need
-  // to send at least one byte of data.
+  /*
+   * Send data with the header atomically. Note to send file descriptors we need
+   * to send at least one byte of data.
+   */
   for (size_t i = 0; i < message->iov_length; ++i) {
     header.message_bytes += message->iov[i].length;
   }
@@ -294,7 +312,7 @@ int NaClReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
   }
 
   message->flags = 0;
-  // Receive the header of the message and handles first.
+  /* Receive the header of the message and handles first. */
   Header header;
   struct iovec header_vec = { &header, sizeof header };
   msg.msg_iov = &header_vec;
@@ -327,9 +345,11 @@ int NaClReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
   }
   if (count != sizeof header) {
     while (0 < handle_count) {
-      // Note if the sender has sent one end of a socket pair here,
-      // ReceiveDatagram() for that socket will result in a zero length read
-      // return henceforth.
+      /*
+       * Note if the sender has sent one end of a socket pair here,
+       * ReceiveDatagram() for that socket will result in a zero length read
+       * return henceforth.
+       */
       close(message->handles[--handle_count]);
     }
     if (count == 0) {
@@ -337,9 +357,11 @@ int NaClReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
       return 0;
     }
     if (count != -1) {
-      // TODO(shiki): We should call recvmsg() again here since it could get to
-      // wake up with a partial header since the SOCK_STREAM socket does not
-      // required to maintain message boundaries.
+      /*
+       * TODO(shiki): We should call recvmsg() again here since it could get to
+       * wake up with a partial header since the SOCK_STREAM socket does not
+       * required to maintain message boundaries.
+       */
       errno = EMSGSIZE;
     }
     return -1;
@@ -347,8 +369,10 @@ int NaClReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
 
   message->handle_count = handle_count;
 
-  // OS X seems not to set the MSG_CTRUNC flag in msg.msg_flags as we expect,
-  // and we don't rely on it.
+  /*
+   * OS X seems not to set the MSG_CTRUNC flag in msg.msg_flags as we expect,
+   * and we don't rely on it.
+   */
   if (message->handle_count < header.handle_count) {
     message->flags |= NACL_HANDLES_TRUNCATED;
   }
@@ -357,7 +381,7 @@ int NaClReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
     return 0;
   }
 
-  // Update message->iov to receive just message_bytes.
+  /* Update message->iov to receive just message_bytes. */
   memmove(vec, message->iov, sizeof(NaClIOVec) * message->iov_length);
   msg.msg_iov = vec;
   msg.msg_iovlen = message->iov_length;
@@ -376,7 +400,7 @@ int NaClReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
     message->flags |= NACL_MESSAGE_TRUNCATED;
   }
 
-  // Receive the sent data.
+  /* Receive the sent data. */
   msg.msg_name = 0;
   msg.msg_namelen = 0;
 
@@ -384,9 +408,11 @@ int NaClReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
   msg.msg_controllen = 0;
   msg.msg_flags = 0;
   for (retry_count = 0; retry_count < kRecvMsgRetries; ++retry_count) {
-    // We have to pass MSG_WAITALL here, because we have already consumed
-    // the header.  If we returned EAGAIN here, subsequent calls would read
-    // data as a header, and much hilarity would ensue.
+    /*
+     * We have to pass MSG_WAITALL here, because we have already consumed
+     * the header.  If we returned EAGAIN here, subsequent calls would read
+     * data as a header, and much hilarity would ensue.
+     */
     if (0 != (count = recvmsg(handle, &msg, MSG_WAITALL))) {
       break;
     }
@@ -396,8 +422,10 @@ int NaClReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
            retry_count, count);
   }
   if (0 < count) {
-    // If the caller requested fewer bytes than the message contained, we need
-    // to read the remaining bytes, discard them, and report message truncated.
+    /*
+     * If the caller requested fewer bytes than the message contained, we need
+     * to read the remaining bytes, discard them, and report message truncated.
+     */
     if (static_cast<size_t>(count) < header.message_bytes) {
       if (!SkipFile(handle, header.message_bytes - count)) {
         return -1;
