@@ -13,12 +13,22 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/escape.h"
 
+// Url must not be matched by "urls" section of
+// cloud_print_app/manifest.json. If it's matched, print driver dialog will
+// open sign-in page in separate window.
 const char kDefaultCloudPrintServiceURL[] = "https://www.google.com/cloudprint";
-const char kDefaultCloudPrintSigninURL[] =
-    "https://accounts.google.com/ServiceLogin?service=cloudprint&sarp=1&"
-    "continue=https%3A%2F%2Fwww.google.com%2Fcloudprint";
+
+// Continue url must be any url matched by "urls" section of
+// cloud_print_app/manifest.json.
+// Current implementation of sign-in waits when browser will try to open url in
+// new tab. This happens if url is "app".
+// TODO(vitalybuka): Find better way to detect successful sign-in.
+const char kDefaultSignInContinueURL[] =
+    "https://www.google.com/cloudprint/enable_chrome_connector";
 
 const char kLearnMoreURL[] =
     "https://www.google.com/support/cloudprint";
@@ -38,8 +48,10 @@ void CloudPrintURL::RegisterPreferences() {
                                  PrefRegistrySyncable::UNSYNCABLE_PREF);
   }
   if (!pref_service->FindPreference(prefs::kCloudPrintSigninURL)) {
-    registry->RegisterStringPref(prefs::kCloudPrintSigninURL,
-                                 kDefaultCloudPrintSigninURL,
+    std::string url = GaiaUrls::GetInstance()->service_login_url();
+    url.append("?service=cloudprint&sarp=1&continue=");
+    url.append(net::EscapeQueryParamValue(kDefaultSignInContinueURL, false));
+    registry->RegisterStringPref(prefs::kCloudPrintSigninURL, url,
                                  PrefRegistrySyncable::UNSYNCABLE_PREF);
   }
 }

@@ -470,7 +470,7 @@ bool CloudPrintFlowHandler::NavigationToURLDidCloseDialog(const GURL& url) {
         Profile::FromWebUI(web_ui())).GetCloudPrintServiceURL();
 
     if (url.host() == dialog_url.host() &&
-        url.path() == dialog_url.path() &&
+        StartsWithASCII(url.path(), dialog_url.path(), false) &&
         url.scheme() == dialog_url.scheme()) {
       StoreDialogClientSize();
       web_ui()->GetWebContents()->GetRenderViewHost()->ClosePage();

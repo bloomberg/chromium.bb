@@ -10,7 +10,7 @@
       "web_url": "https://www.google.com/cloudprint"
     },
     "urls": [
-      "https://www.google.com/cloudprint",
+      // See comments in cloud_print_url.cc before changing.
       "https://www.google.com/cloudprint/enable_chrome_connector"
     ]
   },
