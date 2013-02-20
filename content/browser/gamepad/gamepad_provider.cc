@@ -50,7 +50,9 @@ GamepadProvider::~GamepadProvider() {
   if (monitor)
     monitor->RemoveDevicesChangedObserver(this);
 
-  polling_thread_.reset();
+  // Use Stop() to join the polling thread, as there may be pending callbacks
+  // which dereference |polling_thread_|.
+  polling_thread_->Stop();
   data_fetcher_.reset();
 }
 
