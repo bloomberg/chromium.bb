@@ -350,6 +350,9 @@ class RenderWidgetHostViewAura
   // Detaches |this| from the input method object.
   void DetachFromInputMethod();
 
+  // Dismisses a Web Popup on mouse press outside the popup and its parent.
+  void ApplyEventFilterForPopupExit(ui::MouseEvent* event);
+
   // Converts |rect| from window coordinate to screen coordinate.
   gfx::Rect ConvertRectToScreen(const gfx::Rect& rect);
 
@@ -391,6 +394,10 @@ class RenderWidgetHostViewAura
 
   // Our child popup host. NULL if we do not have a child popup.
   RenderWidgetHostViewAura* popup_child_host_view_;
+
+  class EventFilterForPopupExit;
+  friend class EventFilterForPopupExit;
+  scoped_ptr<ui::EventHandler> event_filter_for_popup_exit_;
 
   // True when content is being loaded. Used to show an hourglass cursor.
   bool is_loading_;

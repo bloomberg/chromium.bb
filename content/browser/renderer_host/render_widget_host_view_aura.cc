@@ -173,7 +173,7 @@ BOOL CALLBACK SetCutoutRectsCallback(HWND window, LPARAM param) {
     }
     gfx::SubtractRectanglesFromRegion(hrgn, cutout_rects);
     SetWindowRgn(window, hrgn, TRUE);
-    
+
   }
   return TRUE;
 }
@@ -263,6 +263,55 @@ bool PointerEventActivates(const ui::Event& event) {
 }
 
 }  // namespace
+
+// We need to watch for mouse events outside a Web Popup or its parent
+// and dismiss the popup for certain events.
+class RenderWidgetHostViewAura::EventFilterForPopupExit :
+    public ui::EventHandler {
+ public:
+  explicit EventFilterForPopupExit(RenderWidgetHostViewAura* rwhva)
+      : rwhva_(rwhva) {
+    DCHECK(rwhva_);
+    aura::RootWindow* root_window = rwhva_->window_->GetRootWindow();
+    DCHECK(root_window);
+    root_window->AddPreTargetHandler(this);
+  }
+
+  virtual ~EventFilterForPopupExit() {
+    aura::RootWindow* root_window = rwhva_->window_->GetRootWindow();
+    DCHECK(root_window);
+    root_window->RemovePreTargetHandler(this);
+  }
+
+  // Overridden from ui::EventHandler
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+    rwhva_->ApplyEventFilterForPopupExit(event);
+  }
+
+ private:
+  RenderWidgetHostViewAura* rwhva_;
+
+  DISALLOW_COPY_AND_ASSIGN(EventFilterForPopupExit);
+};
+
+void RenderWidgetHostViewAura::ApplyEventFilterForPopupExit(
+    ui::MouseEvent* event) {
+  if (in_shutdown_) {
+    event_filter_for_popup_exit_.reset();
+    return;
+  }
+  if (is_fullscreen_ || event->type() != ui::ET_MOUSE_PRESSED ||
+      !event->target())
+    return;
+
+  DCHECK(popup_parent_host_view_);
+  aura::Window* target = static_cast<aura::Window*>(event->target());
+  if (target != window_ && target != popup_parent_host_view_->window_) {
+    event_filter_for_popup_exit_.reset();
+    in_shutdown_ = true;
+    host_->Shutdown();
+  }
+}
 
 // We have to implement the WindowObserver interface on a separate object
 // because clang doesn't like implementing multiple interfaces that have
@@ -2259,9 +2308,12 @@ void RenderWidgetHostViewAura::AddedToRootWindow() {
   window_->GetRootWindow()->AddRootWindowObserver(this);
   host_->ParentChanged(GetNativeViewId());
   UpdateScreenInfo(window_);
+  if (popup_type_ != WebKit::WebPopupTypeNone)
+    event_filter_for_popup_exit_.reset(new EventFilterForPopupExit(this));
 }
 
 void RenderWidgetHostViewAura::RemovingFromRootWindow() {
+  event_filter_for_popup_exit_.reset();
   window_->GetRootWindow()->RemoveRootWindowObserver(this);
   host_->ParentChanged(0);
   // We are about to disconnect ourselves from the compositor, we need to issue
