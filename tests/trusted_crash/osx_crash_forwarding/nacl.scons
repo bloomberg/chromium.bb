@@ -6,9 +6,8 @@
 Import('env')
 
 
-# This tests an interface that is specific to Mac OS X and/or Mach and
-# that is only implemented for x86-32.
-if not env.Bit('host_mac') or not env.Bit('build_x86_32'):
+# This tests an interface that is specific to Mac OS X and/or Mach.
+if not env.Bit('host_mac'):
   Return()
 
 # These tests use nexes built by other tests. Nexes do not get staged in

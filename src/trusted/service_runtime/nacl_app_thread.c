@@ -22,6 +22,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_stack_safety.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
+#include "native_client/src/trusted/service_runtime/osx/mach_thread_map.h"
 
 
 void WINAPI NaClAppThreadLauncher(void *state) {
@@ -43,6 +44,8 @@ void WINAPI NaClAppThreadLauncher(void *state) {
   nacl_user[thread_idx] = &natp->user;
 #if NACL_WINDOWS
   nacl_thread_ids[thread_idx] = GetCurrentThreadId();
+#elif NACL_OSX
+  NaClSetCurrentMachThreadForThreadIndex(thread_idx);
 #endif
 
   /*
@@ -122,6 +125,8 @@ void NaClAppThreadTeardown(struct NaClAppThread *natp) {
   nacl_user[thread_idx] = NULL;
 #if NACL_WINDOWS
   nacl_thread_ids[thread_idx] = 0;
+#elif NACL_OSX
+  NaClClearMachThreadForThreadIndex(thread_idx);
 #endif
   NaClTlsSetCurrentThread(NULL);
 

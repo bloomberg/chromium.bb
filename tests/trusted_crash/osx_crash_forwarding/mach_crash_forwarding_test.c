@@ -138,11 +138,11 @@ int main(int argc, char **argv) {
   if (strcmp(argv[1], "trusted") == 0) {
     g_expect_crash = 1;
   } else if (strcmp(argv[1], "unforwarded_trusted") == 0) {
-    fprintf(stderr, "** intended_exit_status=-10\n");
+    fprintf(stderr, "** intended_exit_status=trusted_segfault\n");
     g_expect_crash = 0;
   } else if (strcmp(argv[1], "untrusted") == 0) {
     /* Expect the test to crash; untrusted crashes shouldn't be propagated. */
-    fprintf(stderr, "** intended_exit_status=-10\n");
+    fprintf(stderr, "** intended_exit_status=untrusted_segfault\n");
     g_expect_crash = 0;
   } else if (strcmp(argv[1], "untrusted_caught") == 0) {
     g_expect_crash = 0;

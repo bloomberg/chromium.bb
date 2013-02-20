@@ -26,11 +26,13 @@
 #include "native_client/src/trusted/service_runtime/nacl_exception.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
+#include "native_client/src/trusted/service_runtime/nacl_tls.h"
+#include "native_client/src/trusted/service_runtime/osx/crash_filter.h"
+#include "native_client/src/trusted/service_runtime/osx/mach_thread_map.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
 
-/* Only handle x86_32 for now. */
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
 
 
 /*
@@ -87,90 +89,128 @@ static void FireDebugStubEvent(int pipe_fd) {
   }
 }
 
+#if NACL_BUILD_SUBARCH == 32
+
+#define NATIVE_x86_THREAD_STATE x86_THREAD_STATE32
+#define X86_REG_BP(regs)    ((regs).uts.ts32.__ebp)
+#define X86_REG_SP(regs)    ((regs).uts.ts32.__esp)
+#define X86_REG_IP(regs)    ((regs).uts.ts32.__eip)
+#define X86_REG_FLAGS(regs) ((regs).uts.ts32.__eflags)
+
+#elif NACL_BUILD_SUBARCH == 64
+
+#define NATIVE_x86_THREAD_STATE x86_THREAD_STATE64
+#define X86_REG_BP(regs)    ((regs).uts.ts64.__rbp)
+#define X86_REG_SP(regs)    ((regs).uts.ts64.__rsp)
+#define X86_REG_IP(regs)    ((regs).uts.ts64.__rip)
+#define X86_REG_FLAGS(regs) ((regs).uts.ts64.__rflags)
+
+#endif  /* NACL_BUILD_SUBARCH */
+
 static int HandleException(mach_port_t thread_port,
                            exception_type_t exception, int *is_untrusted) {
   mach_msg_type_number_t size;
   x86_thread_state_t regs;
   kern_return_t result;
-  uint16_t trusted_cs = NaClGetGlobalCs();
-  uint16_t trusted_ds = NaClGetGlobalDs();
   uint32_t nacl_thread_index;
   struct NaClApp *nap;
   struct NaClAppThread *natp;
   struct NaClExceptionFrame frame;
-  uintptr_t frame_addr_user;
+  uint32_t frame_addr_user;
   uintptr_t frame_addr_sys;
+#if NACL_BUILD_SUBARCH == 32
+  uint16_t trusted_cs = NaClGetGlobalCs();
+  uint16_t trusted_ds = NaClGetGlobalDs();
+#endif
 
   /* Assume untrusted crash until we know otherwise. */
   *is_untrusted = TRUE;
 
   /* Capture the register state of the 'excepting' thread. */
-  size = sizeof(regs) / sizeof(natural_t);
+  size = x86_THREAD_STATE_COUNT;
   result = thread_get_state(thread_port, x86_THREAD_STATE,
-                            (void *) &regs, &size);
+                            (thread_state_t) &regs, &size);
   if (result != KERN_SUCCESS) {
     return 0;
   }
+  CHECK(regs.tsh.flavor == NATIVE_x86_THREAD_STATE);
 
-  /*
-   * If trusted_cs is 0 (which is not a usable segment selector), the
-   * sandbox has not been initialised yet, so there can be no untrusted
-   * code running.
-   */
-  if (trusted_cs == 0) {
-    *is_untrusted = FALSE;
-    return 0;
-  }
-
-  /*
-   * If the current code segment is the trusted one, we aren't in the
-   * sandbox.
-   * TODO(bradnelson): This makes the potentially false assumption that cs is
-   *     the last thing to change when switching into untrusted code. We need
-   *     tests to vet this.
-   */
-  if (regs.uts.ts32.__cs == trusted_cs) {
-    /*
-     * If we are single-stepping, allow NaClSwitchRemainingRegsViaECX()
-     * to continue in order to restore control to untrusted code.
-     */
-    if (exception == EXC_BREAKPOINT &&
-        (regs.uts.ts32.__eflags & NACL_X86_TRAP_FLAG) != 0 &&
-        regs.uts.ts32.__eip >= (uintptr_t) NaClSwitchRemainingRegsViaECX &&
-        regs.uts.ts32.__eip < (uintptr_t) NaClSwitchRemainingRegsAsmEnd) {
-      return 1;
-    }
-    *is_untrusted = FALSE;
-    return 0;
-  }
-
+#if NACL_BUILD_SUBARCH == 32
   /*
    * We can get the thread index from the segment selector used for TLS
    * from %gs >> 3.
    * TODO(bradnelson): Migrate that knowledge to a single shared location.
    */
   nacl_thread_index = regs.uts.ts32.__gs >> 3;
+#elif NACL_BUILD_SUBARCH == 64
+  nacl_thread_index = NaClGetThreadIndexForMachThread(thread_port);
+
+  if (nacl_thread_index == NACL_TLS_INDEX_INVALID) {
+    *is_untrusted = FALSE;
+    return 0;
+  }
+#endif
+
   natp = NaClAppThreadGetFromIndex(nacl_thread_index);
+  if (natp == NULL) {
+    *is_untrusted = FALSE;
+    return 0;
+  }
   nap = natp->nap;
 
+  /*
+   * TODO(bradnelson): For x86_32, this makes the potentially false assumption
+   *     that cs is the last thing to change when switching into untrusted
+   *     code. We need tests to vet this.
+   */
+  *is_untrusted = NaClMachThreadStateIsInUntrusted(&regs, nacl_thread_index);
+
+  /*
+   * If trusted code accidentally jumped to untrusted code, don't let the
+   * untrusted exception handler take over.
+   */
+  if (*is_untrusted &&
+      (natp->suspend_state & NACL_APP_THREAD_UNTRUSTED) == 0) {
+    *is_untrusted = 0;
+    return 0;
+  }
+
+  if (!*is_untrusted) {
+#if NACL_BUILD_SUBARCH == 32
+    /*
+     * If we are single-stepping, allow NaClSwitchRemainingRegsViaECX()
+     * to continue in order to restore control to untrusted code.
+     */
+    if (exception == EXC_BREAKPOINT &&
+        (X86_REG_FLAGS(regs) & NACL_X86_TRAP_FLAG) != 0 &&
+        X86_REG_IP(regs) >= (uintptr_t) NaClSwitchRemainingRegsViaECX &&
+        X86_REG_IP(regs) < (uintptr_t) NaClSwitchRemainingRegsAsmEnd) {
+      return 1;
+    }
+#endif
+    return 0;
+  }
+
   if (nap->enable_faulted_thread_queue) {
+#if NACL_BUILD_SUBARCH == 32
     /*
      * If we are single-stepping, step through until we reach untrusted code.
      */
     if (exception == EXC_BREAKPOINT &&
-        (regs.uts.ts32.__eflags & NACL_X86_TRAP_FLAG) != 0) {
-      if (regs.uts.ts32.__eip >= nap->all_regs_springboard.start_addr &&
-          regs.uts.ts32.__eip < nap->all_regs_springboard.end_addr) {
+        (X86_REG_FLAGS(regs) & NACL_X86_TRAP_FLAG) != 0) {
+      if (X86_REG_IP(regs) >= nap->all_regs_springboard.start_addr &&
+          X86_REG_IP(regs) < nap->all_regs_springboard.end_addr) {
         return 1;
       }
       /*
        * Step through the instruction we have been asked to restore
        * control to.
        */
-      if (regs.uts.ts32.__eip == natp->user.gs_segment.new_prog_ctr) {
+      if (X86_REG_IP(regs) == natp->user.gs_segment.new_prog_ctr) {
         return 1;
       }
     }
+#endif
 
     /*
      * Increment the kernel's thread suspension count so that the
@@ -203,6 +243,11 @@ static int HandleException(mach_port_t thread_port,
     return 0;
   }
 
+  /* Don't handle if no exception handler is set. */
+  if (nap->exception_handler == 0) {
+    return 0;
+  }
+
   /* Don't handle it if the exception flag is set. */
   if (natp->exception_flag) {
     return 0;
@@ -210,17 +255,12 @@ static int HandleException(mach_port_t thread_port,
   /* Set the flag. */
   natp->exception_flag = 1;
 
-  /* Don't handle if no exception handler is set. */
-  if (nap->exception_handler == 0) {
-    return 0;
-  }
-
   /* Get location of exception stack frame. */
   if (natp->exception_stack) {
     frame_addr_user = natp->exception_stack;
   } else {
     /* If not set default to user stack. */
-    frame_addr_user = regs.uts.ts32.__esp;
+    frame_addr_user = X86_REG_SP(regs) - NACL_STACK_RED_ZONE;
   }
 
   /* Align stack frame properly. */
@@ -238,11 +278,13 @@ static int HandleException(mach_port_t thread_port,
 
   /* Set up the stack frame for the handler invocation. */
   frame.return_addr = 0;
+  frame.context.prog_ctr = X86_REG_IP(regs);
+  frame.context.stack_ptr = X86_REG_SP(regs);
+  frame.context.frame_ptr = X86_REG_BP(regs);
+#if NACL_BUILD_SUBARCH == 32
   frame.context_ptr = frame_addr_user +
                       offsetof(struct NaClExceptionFrame, context);
-  frame.context.prog_ctr = regs.uts.ts32.__eip;
-  frame.context.stack_ptr = regs.uts.ts32.__esp;
-  frame.context.frame_ptr = regs.uts.ts32.__ebp;
+#endif
 
   /*
    * Write the stack frame into untrusted address space.  We do not
@@ -259,10 +301,8 @@ static int HandleException(mach_port_t thread_port,
   }
 
   /* Set up thread context to resume at handler. */
-  natp->user.new_prog_ctr = nap->exception_handler;
-  natp->user.stack_ptr = frame_addr_user;
   /* TODO(bradnelson): put all registers in some default state. */
-
+#if NACL_BUILD_SUBARCH == 32
   /*
    * Put registers in right place to land at NaClSwitchNoSSEViaECX
    * This is required because:
@@ -276,15 +316,26 @@ static int HandleException(mach_port_t thread_port,
    * Instead we call a variant of NaClSwitchNoSSE which takes a pointer
    * to the thread user context in %ecx.
    */
-  regs.uts.ts32.__eip = (uint32_t) &NaClSwitchNoSSEViaECX;
+  natp->user.new_prog_ctr = nap->exception_handler;
+  natp->user.stack_ptr = frame_addr_user;
+  X86_REG_IP(regs) = (uint32_t) &NaClSwitchNoSSEViaECX;
   regs.uts.ts32.__cs = trusted_cs;
   regs.uts.ts32.__ecx = (uint32_t) &natp->user;
   regs.uts.ts32.__ds = trusted_ds;
   regs.uts.ts32.__es = trusted_ds;  /* just for good measure */
   regs.uts.ts32.__ss = trusted_ds;  /* just for good measure */
-  regs.uts.ts32.__eflags &= ~NACL_X86_DIRECTION_FLAG;
+#elif NACL_BUILD_SUBARCH == 64
+  X86_REG_IP(regs) = NaClUserToSys(nap, nap->exception_handler);
+  X86_REG_SP(regs) = frame_addr_sys;
+  X86_REG_BP(regs) = nap->mem_start;
+
+  /* Argument 1 */
+  regs.uts.ts64.__rdi = frame_addr_user +
+                        offsetof(struct NaClExceptionFrame, context);
+#endif
+  X86_REG_FLAGS(regs) &= ~NACL_X86_DIRECTION_FLAG;
   result = thread_set_state(thread_port, x86_THREAD_STATE,
-                            (void *) &regs, size);
+                            (thread_state_t) &regs, size);
   if (result != KERN_SUCCESS) {
     return 0;
   }
@@ -570,10 +621,4 @@ failure:
   return FALSE;
 }
 
-#else  /* NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32 */
-
-int NaClInterceptMachExceptions(void) {
-  return FALSE;
-}
-
-#endif  /* NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32 */
+#endif  /* NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 */

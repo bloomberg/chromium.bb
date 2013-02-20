@@ -109,6 +109,7 @@
               'sources': [
                 'osx/crash_filter.c',
                 'osx/mach_exception_handler.c',
+                'osx/mach_thread_map.c',
                 'osx/nacl_ldt.c',
                 'osx/nacl_thread_nice.c',
                 'osx/outer_sandbox.c',
