@@ -57,26 +57,15 @@ class AutocompleteHistoryManager : public content::WebContentsObserver,
   void SetExternalDelegate(AutofillExternalDelegate* delegate);
 
  protected:
-  friend class AutocompleteHistoryManagerTest;
   friend class AutofillManagerTest;
-  FRIEND_TEST_ALL_PREFIXES(AutocompleteHistoryManagerTest, ExternalDelegate);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
-                           TestTabContentsWithExternalDelegate);
 
-  // For tests.
-  AutocompleteHistoryManager(content::WebContents* web_contents,
-                             content::BrowserContext* context,
-                             scoped_ptr<AutofillWebDataService> wds);
-
+  // Sends the given |suggestions| for display in the Autofill popup.
   void SendSuggestions(const std::vector<string16>* suggestions);
-  void CancelPendingQuery();
-
-  // Exposed for testing.
-  AutofillExternalDelegate* external_delegate() {
-    return external_delegate_;
-  }
 
  private:
+  // Cancels the currently pending WebDataService query, if there is one.
+  void CancelPendingQuery();
+
   content::BrowserContext* browser_context_;
   scoped_ptr<AutofillWebDataService> autofill_data_;
 
