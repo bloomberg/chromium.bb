@@ -44,7 +44,8 @@ html {
 }
 
 .extension-list-item {
-  /* Set in ItemsList.createNode_() */
+  /* Set in ItemsList.createNode_(). */
+  -webkit-background-size: 3em 3em;
   background-repeat: no-repeat;
   display: -webkit-box;
   min-height: 4em;
