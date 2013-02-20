@@ -1824,3 +1824,16 @@
    fun:Init
    fun:GcryptInitializer
 }
+{
+   bug_177206_a
+   Heapcheck:Leak
+   ...
+   fun:cloud_print::CloudPrintURLFetcher::OnURLFetchComplete
+}
+{
+   bug_177206_b
+   Heapcheck:Leak
+   fun:cloud_print::CloudPrintURLFetcherNoServiceProcess::GetRequestContextGetter
+   fun:cloud_print::CloudPrintURLFetcher::StartRequestHelper
+   fun:cloud_print::CloudPrintURLFetcher::StartGetRequest
+}

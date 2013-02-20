@@ -6679,3 +6679,17 @@
    ...
    fun:_ZN3net15NSSCertDatabase16DeleteCertAndKeyEPKNS_15X509CertificateE
 }
+{
+   bug_177206_a
+   Memcheck:Leak
+   ...
+   fun:_ZN11cloud_print20CloudPrintURLFetcher18OnURLFetchCompleteEPKN3net10URLFetcherE
+}
+{
+   bug_177206_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN11cloud_print36CloudPrintURLFetcherNoServiceProcess23GetRequestContextGetterEv
+   fun:_ZN11cloud_print20CloudPrintURLFetcher18StartRequestHelperERK4GURLN3net10URLFetcher11RequestTypeEPNS0_8DelegateEiRKSsSA_SA_
+   fun:_ZN11cloud_print20CloudPrintURLFetcher15StartGetRequestERK4GURLPNS0_8DelegateEiRKSs
+}
