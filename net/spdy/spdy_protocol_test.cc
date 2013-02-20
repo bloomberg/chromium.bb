@@ -61,13 +61,11 @@ TEST_P(SpdyProtocolTest, FrameStructs) {
   frame.set_flags(10);
   EXPECT_EQ(12345u, frame.length());
   EXPECT_EQ(10u, frame.flags());
-  EXPECT_FALSE(frame.is_control_frame());
 
   frame.set_length(0);
   frame.set_flags(10);
   EXPECT_EQ(0u, frame.length());
   EXPECT_EQ(10u, frame.flags());
-  EXPECT_FALSE(frame.is_control_frame());
 }
 
 TEST_P(SpdyProtocolTest, DataFrameStructs) {
@@ -82,10 +80,8 @@ TEST_P(SpdyProtocolTest, TestDataFrame) {
   // Set the stream ID to various values.
   frame.set_stream_id(0);
   EXPECT_EQ(0u, frame.stream_id());
-  EXPECT_FALSE(frame.is_control_frame());
   frame.set_stream_id(~0 & kStreamIdMask);
   EXPECT_EQ(~0 & kStreamIdMask, frame.stream_id());
-  EXPECT_FALSE(frame.is_control_frame());
 
   // Set length to various values.  Make sure that when you set_length(x),
   // length() == x.  Also make sure the flags are unaltered.
@@ -140,7 +136,6 @@ TEST_P(SpdyProtocolDeathTest, TestDataFrame) {
   EXPECT_DEATH(frame.set_stream_id(~0), "");
 #endif
 #endif
-  EXPECT_FALSE(frame.is_control_frame());
 
   frame.set_flags(0);
 #if !defined(WIN32) && defined(GTEST_HAS_DEATH_TEST)

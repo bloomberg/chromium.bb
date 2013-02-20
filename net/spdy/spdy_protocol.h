@@ -856,11 +856,6 @@ class SpdyFrame {
     frame_->flags_length_.length_ = flags() | length;
   }
 
-  bool is_control_frame() const {
-    return (ntohs(frame_->control_.version_) & kControlFlagMask) ==
-        kControlFlagMask;
-  }
-
   // The size of the SpdyFrameBlock structure.
   // Every SpdyFrame* class has a static size() method for accessing
   // the size of the data structure which will be sent over the wire.

@@ -1352,7 +1352,6 @@ TEST_P(SpdyFramerTest, HeaderCompression) {
   decompressed.reset(SpdyFramerTestUtil::DecompressFrame(
       &recv_framer, *syn_frame_1.get()));
   EXPECT_TRUE(decompressed.get() != NULL);
-  EXPECT_TRUE(decompressed->is_control_frame());
   serialized_headers = GetSerializedHeaders(decompressed.get(), send_framer);
   EXPECT_TRUE(recv_framer.ParseHeaderBlockInBuffer(serialized_headers.data(),
                                                    serialized_headers.size(),
@@ -1365,7 +1364,6 @@ TEST_P(SpdyFramerTest, HeaderCompression) {
   decompressed.reset(SpdyFramerTestUtil::DecompressFrame(
       &recv_framer, *syn_frame_2.get()));
   EXPECT_TRUE(decompressed.get() != NULL);
-  EXPECT_TRUE(decompressed->is_control_frame());
   serialized_headers = GetSerializedHeaders(decompressed.get(), send_framer);
   decompressed_headers.clear();
   EXPECT_TRUE(recv_framer.ParseHeaderBlockInBuffer(serialized_headers.data(),

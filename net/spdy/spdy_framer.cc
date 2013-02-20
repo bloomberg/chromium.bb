@@ -474,7 +474,6 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
   DCHECK_EQ(state_, SPDY_READING_COMMON_HEADER);
 
   size_t original_len = len;
-  SpdyFrame current_frame(current_frame_buffer_.get(), false);
 
   // Update current frame buffer as needed.
   if (current_frame_buffer_length_ < SpdyFrame::kHeaderSize) {
@@ -487,7 +486,31 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
     // TODO(rch): remove this empty block
     // Do nothing.
   } else {
-    remaining_data_ = current_frame.length();
+    SpdyFrameReader reader(current_frame_buffer_.get(),
+                           current_frame_buffer_length_);
+
+    uint16 version = 0;
+    bool successful_read = reader.ReadUInt16(&version);
+    DCHECK(successful_read);
+    bool control_bit = (version & kControlFlagMask) != 0;
+    version &= ~kControlFlagMask;  // Only valid for control frames.
+
+    if (control_bit) {
+      uint16 frame_type_field;
+      successful_read = reader.ReadUInt16(&frame_type_field);
+      // We check for validity below in ProcessControlFrameHeader().
+      current_frame_type_ = static_cast<SpdyControlType>(frame_type_field);
+    } else {
+      successful_read = reader.Seek(2);  // Seek past rest of stream_id.
+    }
+    DCHECK(successful_read);
+
+    successful_read = reader.ReadUInt8(&current_frame_flags_);
+    DCHECK(successful_read);
+
+    successful_read = reader.ReadUInt24(&current_frame_length_);
+    DCHECK(successful_read);
+    remaining_data_ = current_frame_length_;
 
     // This is just a sanity check for help debugging early frame errors.
     if (remaining_data_ > 1000000u) {
@@ -505,25 +528,31 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
     }
 
     // if we're here, then we have the common header all received.
-    if (!current_frame.is_control_frame()) {
+    if (!control_bit) {
       SpdyDataFrame data_frame(current_frame_buffer_.get(), false);
-      if (data_frame.flags() & ~DATA_FLAG_FIN) {
+      if (current_frame_flags_ & ~DATA_FLAG_FIN) {
         set_error(SPDY_INVALID_DATA_FRAME_FLAGS);
       } else {
         visitor_->OnDataFrameHeader(data_frame.stream_id(),
-                                    data_frame.length(),
-                                    data_frame.flags() & DATA_FLAG_FIN);
-        if (current_frame.length() > 0) {
+                                    current_frame_length_,
+                                    current_frame_flags_ & DATA_FLAG_FIN);
+        if (current_frame_length_ > 0) {
           CHANGE_STATE(SPDY_FORWARD_STREAM_FRAME);
         } else {
           // Empty data frame.
-          if (current_frame.flags() & DATA_FLAG_FIN) {
+          if (current_frame_flags_ & DATA_FLAG_FIN) {
             visitor_->OnStreamFrameData(data_frame.stream_id(),
                                         NULL, 0, DATA_FLAG_FIN);
           }
           CHANGE_STATE(SPDY_AUTO_RESET);
         }
       }
+    } else if (version != spdy_version_) {
+      // We check version before we check validity: version can never be
+      // 'invalid', it can only be unsupported.
+      DLOG(INFO) << "Unsupported SPDY version " << version
+                 << " (expected " << spdy_version_ << ")";
+      set_error(SPDY_UNSUPPORTED_VERSION);
     } else {
       ProcessControlFrameHeader();
     }
@@ -535,32 +564,6 @@ void SpdyFramer::ProcessControlFrameHeader() {
   DCHECK_EQ(SPDY_NO_ERROR, error_code_);
   DCHECK_LE(static_cast<size_t>(SpdyFrame::kHeaderSize),
             current_frame_buffer_length_);
-  SpdyFrameReader reader(current_frame_buffer_.get(),
-                         current_frame_buffer_length_);
-
-  uint16 version = 0;
-  bool successful_read = reader.ReadUInt16(&version);
-  DCHECK(successful_read);
-  version &= ~kControlFlagMask;
-
-  successful_read =
-      reader.ReadUInt16(reinterpret_cast<uint16*>(&current_frame_type_));
-  DCHECK(successful_read);
-
-  successful_read = reader.ReadUInt8(&current_frame_flags_);
-  DCHECK(successful_read);
-
-  successful_read = reader.ReadUInt24(&current_frame_length_);
-  DCHECK(successful_read);
-
-  // We check version before we check validity: version can never be 'invalid',
-  // it can only be unsupported.
-  if (version != spdy_version_) {
-    DLOG(INFO) << "Unsupported SPDY version " << version
-               << " (expected " << spdy_version_ << ")";
-    set_error(SPDY_UNSUPPORTED_VERSION);
-    return;
-  }
 
   if (current_frame_type_ < SYN_STREAM ||
       current_frame_type_ >= NUM_CONTROL_FRAME_TYPES) {
