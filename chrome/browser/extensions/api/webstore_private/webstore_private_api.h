@@ -180,6 +180,9 @@ class CompleteInstallFunction
   void OnGetAppLauncherEnabled(std::string id, bool app_launcher_enabled);
 
   scoped_ptr<WebstoreInstaller::Approval> approval_;
+
+  // True if this install is for an app.
+  bool is_app_;
 };
 
 class GetBrowserLoginFunction : public SyncExtensionFunction {

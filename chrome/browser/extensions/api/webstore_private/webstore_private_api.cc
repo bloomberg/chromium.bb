@@ -415,7 +415,8 @@ void BeginInstallWithManifestFunction::InstallUIAbort(bool user_initiated) {
   Release();
 }
 
-CompleteInstallFunction::CompleteInstallFunction() {}
+CompleteInstallFunction::CompleteInstallFunction()
+    : is_app_(false) {}
 
 CompleteInstallFunction::~CompleteInstallFunction() {}
 
@@ -433,6 +434,8 @@ bool CompleteInstallFunction::RunImpl() {
         kNoPreviousBeginInstallWithManifestError, id);
     return false;
   }
+  is_app_ = approval_->parsed_manifest->Get(
+      extension_manifest_keys::kPlatformAppBackground, NULL);
 
   // Balanced in OnExtensionInstallSuccess() or OnExtensionInstallFailure().
   AddRef();
@@ -478,8 +481,10 @@ void CompleteInstallFunction::OnGetAppLauncherEnabled(
       NOTREACHED();
     }
     // Tell the app list about the install that we just started.
-    chrome::NotifyAppListOfBeginExtensionInstall(
-        profile(), id, name, approval_->installing_icon);
+    if (is_app_) {
+      chrome::NotifyAppListOfBeginExtensionInstall(
+          profile(), id, name, approval_->installing_icon);
+    }
 #endif
   }
 
@@ -508,7 +513,8 @@ void CompleteInstallFunction::OnExtensionInstallFailure(
     const std::string& error,
     WebstoreInstaller::FailureReason reason) {
 #if defined(ENABLE_APP_LIST)
-  chrome::NotifyAppListOfExtensionInstallFailure(profile(), id);
+  if (is_app_)
+    chrome::NotifyAppListOfExtensionInstallFailure(profile(), id);
 #endif
   if (test_webstore_installer_delegate) {
     test_webstore_installer_delegate->OnExtensionInstallFailure(
@@ -526,8 +532,10 @@ void CompleteInstallFunction::OnExtensionDownloadProgress(
     const std::string& id,
     content::DownloadItem* item) {
 #if defined(ENABLE_APP_LIST)
-  chrome::NotifyAppListOfDownloadProgress(profile(), id,
-                                          item->PercentComplete());
+  if (is_app_) {
+    chrome::NotifyAppListOfDownloadProgress(profile(), id,
+                                            item->PercentComplete());
+  }
 #endif
 }
 
