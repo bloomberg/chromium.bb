@@ -164,7 +164,7 @@ void ShellWindow::Init(const GURL& url,
   OnNativeWindowChanged();
 
   if (!params.hidden) {
-    if (params.window_type == WINDOW_TYPE_PANEL)
+    if (window_type_is_panel())
       GetBaseWindow()->ShowInactive();  // Panels are not activated by default.
     else
       GetBaseWindow()->Show();

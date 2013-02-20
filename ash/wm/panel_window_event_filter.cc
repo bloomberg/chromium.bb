@@ -78,7 +78,6 @@ void PanelWindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
         event->StopPropagation();
       } else if (dragged_panel_ != NULL) {
         drag_state_ = DRAG_NONE;
-        layout_manager_->ToggleMinimize(dragged_panel_);
         dragged_panel_ = NULL;
         event->StopPropagation();
       }

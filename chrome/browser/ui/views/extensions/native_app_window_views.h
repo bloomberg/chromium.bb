@@ -79,6 +79,7 @@ class NativeAppWindowViews : public NativeAppWindow,
   virtual bool ShouldShowWindowTitle() const OVERRIDE;
   virtual gfx::ImageSkia GetWindowAppIcon() OVERRIDE;
   virtual gfx::ImageSkia GetWindowIcon() OVERRIDE;
+  virtual bool ShouldShowWindowIcon() const OVERRIDE;
   virtual void SaveWindowPlacement(const gfx::Rect& bounds,
                                    ui::WindowShowState show_state) OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;

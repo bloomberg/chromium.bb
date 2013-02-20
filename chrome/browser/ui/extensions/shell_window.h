@@ -69,6 +69,7 @@ class ShellWindow : public content::NotificationObserver,
   enum WindowType {
     WINDOW_TYPE_DEFAULT,  // Default shell window
     WINDOW_TYPE_PANEL,  // OS controlled panel window (Ash only)
+    WINDOW_TYPE_V1_PANEL,  // For apps v1 support in Ash; deprecate with v1 apps
   };
 
   enum Frame {
@@ -130,6 +131,10 @@ class ShellWindow : public content::NotificationObserver,
   const extensions::Extension* extension() const { return extension_; }
   content::WebContents* web_contents() const;
   WindowType window_type() const { return window_type_; }
+  bool window_type_is_panel() const {
+    return (window_type_ == WINDOW_TYPE_PANEL ||
+            window_type_ == WINDOW_TYPE_V1_PANEL);
+  }
   Profile* profile() const { return profile_; }
   const gfx::Image& app_icon() const { return app_icon_; }
   const GURL& app_icon_url() { return app_icon_url_; }

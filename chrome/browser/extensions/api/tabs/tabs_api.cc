@@ -598,7 +598,7 @@ bool WindowsCreateFunction::RunImpl() {
     if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePanels) &&
         PanelManager::ShouldUsePanels(extension_id)) {
       ShellWindow::CreateParams create_params;
-      create_params.window_type = ShellWindow::WINDOW_TYPE_PANEL;
+      create_params.window_type = ShellWindow::WINDOW_TYPE_V1_PANEL;
       create_params.bounds = window_bounds;
       create_params.minimum_size = window_bounds.size();
       create_params.maximum_size = window_bounds.size();

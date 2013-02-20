@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "ui/aura/aura_export.h"
+#include "ui/gfx/font.h"
 #include "ui/views/window/non_client_view.h"
 #include "ui/views/controls/button/button.h"  // ButtonListener
 
@@ -31,7 +32,7 @@ class ASH_EXPORT PanelFrameView : public views::NonClientFrameView,
   virtual ~PanelFrameView();
 
  private:
-  void InitFramePainter(views::Widget* frame);
+  void InitFramePainter();
 
   // Overridden from views::NonClientFrameView:
   virtual gfx::Rect GetBoundsForClientView() const OVERRIDE;
@@ -55,9 +56,12 @@ class ASH_EXPORT PanelFrameView : public views::NonClientFrameView,
   // Child View class describing the panel's title bar behavior
   // and buttons, owned by the view hierarchy
   scoped_ptr<FramePainter> frame_painter_;
+  views::Widget* frame_;
   views::ImageButton* close_button_;
   views::ImageButton* minimize_button_;
+  views::ImageButton* window_icon_;
   gfx::Rect client_view_bounds_;
+  const gfx::Font title_font_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelFrameView);
 };

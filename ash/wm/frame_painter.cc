@@ -44,7 +44,7 @@ const int kBorderThickness = 0;
 // Space between left edge of window and popup window icon.
 const int kIconOffsetX = 9;
 // Space between top of window and popup window icon.
-const int kIconOffsetY = 9;
+const int kIconOffsetY = 5;
 // Height and width of window icon.
 const int kIconSize = 16;
 // Space between the title text and the caption buttons.
@@ -594,9 +594,10 @@ void FramePainter::LayoutHeader(views::NonClientFrameView* view,
         immersive_size.height());
   }
 
-  if (window_icon_)
+  if (window_icon_) {
     window_icon_->SetBoundsRect(
         gfx::Rect(kIconOffsetX, kIconOffsetY, kIconSize, kIconSize));
+  }
 }
 
 void FramePainter::SchedulePaintForTitle(views::NonClientFrameView* view,

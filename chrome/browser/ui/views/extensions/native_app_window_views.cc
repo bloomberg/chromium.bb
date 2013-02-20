@@ -57,11 +57,12 @@ NativeAppWindowViews::NativeAppWindowViews(
   maximum_size_ = create_params.maximum_size;
 
   window_ = new views::Widget;
-  if (create_params.window_type == ShellWindow::WINDOW_TYPE_PANEL)
+  if (create_params.window_type == ShellWindow::WINDOW_TYPE_PANEL ||
+      create_params.window_type == ShellWindow::WINDOW_TYPE_V1_PANEL) {
     InitializePanelWindow(create_params);
-  else
+  } else {
     InitializeDefaultWindow(create_params);
-
+  }
   extension_keybinding_registry_.reset(
       new ExtensionKeybindingRegistryViews(
           profile(),
@@ -235,7 +236,7 @@ void NativeAppWindowViews::FlashFrame(bool flash) {
 }
 
 bool NativeAppWindowViews::IsAlwaysOnTop() const {
-  return shell_window_->window_type() == ShellWindow::WINDOW_TYPE_PANEL;
+  return shell_window_->window_type_is_panel();
 }
 
 gfx::Insets NativeAppWindowViews::GetFrameInsets() const {
@@ -331,7 +332,7 @@ string16 NativeAppWindowViews::GetWindowTitle() const {
 }
 
 bool NativeAppWindowViews::ShouldShowWindowTitle() const {
-  return false;
+  return shell_window_->window_type() == ShellWindow::WINDOW_TYPE_V1_PANEL;
 }
 
 gfx::ImageSkia NativeAppWindowViews::GetWindowAppIcon() {
@@ -352,6 +353,10 @@ gfx::ImageSkia NativeAppWindowViews::GetWindowIcon() {
       return *app_icon.ToImageSkia();
   }
   return gfx::ImageSkia();
+}
+
+bool NativeAppWindowViews::ShouldShowWindowIcon() const {
+  return shell_window_->window_type() == ShellWindow::WINDOW_TYPE_V1_PANEL;
 }
 
 void NativeAppWindowViews::SaveWindowPlacement(const gfx::Rect& bounds,
@@ -377,7 +382,7 @@ views::NonClientFrameView* NativeAppWindowViews::CreateNonClientFrameView(
     views::Widget* widget) {
 #if defined(USE_ASH)
   if (chrome::IsNativeViewInAsh(widget->GetNativeView())) {
-    if (shell_window_->window_type() == ShellWindow::WINDOW_TYPE_PANEL) {
+    if (shell_window_->window_type_is_panel()) {
       ash::PanelFrameView::FrameType frame_type = frameless_ ?
           ash::PanelFrameView::FRAME_NONE : ash::PanelFrameView::FRAME_ASH;
       return new ash::PanelFrameView(widget, frame_type);
@@ -477,7 +482,7 @@ void NativeAppWindowViews::OnFocus() {
 
 void NativeAppWindowViews::SetFullscreen(bool fullscreen) {
   // Fullscreen not supported by panels.
-  if (shell_window_->window_type() == ShellWindow::WINDOW_TYPE_PANEL)
+  if (shell_window_->window_type_is_panel())
     return;
   is_fullscreen_ = fullscreen;
   window_->SetFullscreen(fullscreen);

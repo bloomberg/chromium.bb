@@ -23,15 +23,20 @@
 
 namespace ash {
 
-PanelFrameView::PanelFrameView(views::Widget* frame, FrameType frame_type) {
+PanelFrameView::PanelFrameView(views::Widget* frame, FrameType frame_type)
+    : frame_(frame),
+      close_button_(NULL),
+      minimize_button_(NULL),
+      window_icon_(NULL),
+      title_font_(gfx::Font(views::NativeWidgetAura::GetWindowTitleFont())) {
   if (frame_type != FRAME_NONE)
-    InitFramePainter(frame);
+    InitFramePainter();
 }
 
 PanelFrameView::~PanelFrameView() {
 }
 
-void PanelFrameView::InitFramePainter(views::Widget* frame) {
+void PanelFrameView::InitFramePainter() {
   frame_painter_.reset(new FramePainter);
 
   close_button_ = new views::ImageButton(this);
@@ -44,7 +49,12 @@ void PanelFrameView::InitFramePainter(views::Widget* frame) {
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MINIMIZE));
   AddChildView(minimize_button_);
 
-  frame_painter_->Init(frame, NULL, minimize_button_, close_button_,
+  if (frame_->widget_delegate()->ShouldShowWindowIcon()) {
+    window_icon_ = new views::ImageButton(this);
+    AddChildView(window_icon_);
+  }
+
+  frame_painter_->Init(frame_, window_icon_, minimize_button_, close_button_,
                        FramePainter::SIZE_BUTTON_MINIMIZES);
 }
 
@@ -59,11 +69,20 @@ void PanelFrameView::ResetWindowControls() {
 }
 
 void PanelFrameView::UpdateWindowIcon() {
-  // TODO(stevenjb): Support icons for panels?
+  if (!window_icon_)
+    return;
+  views::WidgetDelegate* delegate = frame_->widget_delegate();
+  if (delegate) {
+    gfx::ImageSkia image = delegate->GetWindowIcon();
+    window_icon_->SetImage(views::CustomButton::STATE_NORMAL, &image);
+  }
+  window_icon_->SchedulePaint();
 }
 
 void PanelFrameView::UpdateWindowTitle() {
-  // TODO(stevenjb): Support titles for panels?
+  if (!frame_painter_.get())
+    return;
+  frame_painter_->SchedulePaintForTitle(this, title_font_);
 }
 
 void PanelFrameView::GetWindowMask(const gfx::Size&, gfx::Path*) {
@@ -88,6 +107,7 @@ void PanelFrameView::OnPaint(gfx::Canvas* canvas) {
       paint_as_active ? FramePainter::ACTIVE : FramePainter::INACTIVE,
       theme_image_id,
       NULL);
+  frame_painter_->PaintTitleBar(this, canvas, title_font_);
   frame_painter_->PaintHeaderContentSeparator(this, canvas);
 }
 
