@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/views/controls/button/chrome_style.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
@@ -289,10 +290,12 @@ void DialogClientView::CreateDialogButtons() {
 TextButton* DialogClientView::CreateDialogButton(ui::DialogButton type) {
   const string16 title = GetDialogDelegate()->GetDialogButtonLabel(type);
   TextButton* button = NULL;
-  if (DialogDelegate::UseNewStyle())
+  if (DialogDelegate::UseNewStyle()) {
     button = new TextButton(this, title);
-  else
+    ApplyChromeStyle(button);
+  } else {
     button = new NativeTextButton(this, title);
+  }
   const int kDialogMinButtonWidth = 75;
   button->set_min_width(kDialogMinButtonWidth);
   button->SetGroup(kButtonGroup);
