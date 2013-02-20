@@ -60,16 +60,16 @@ int ChromeV8ContextSet::size() const {
 }
 
 void ChromeV8ContextSet::Add(ChromeV8Context* context) {
-#ifndef NDEBUG
-  // It's OK to insert the same context twice, but we should only ever have one
-  // ChromeV8Context per v8::Context.
-  for (ContextSet::iterator iter = contexts_.begin(); iter != contexts_.end();
-       ++iter) {
-    ChromeV8Context* candidate = *iter;
-    if (candidate != context)
-      DCHECK(candidate->v8_context() != context->v8_context());
+  if (DCHECK_IS_ON()) {
+    // It's OK to insert the same context twice, but we should only ever have
+    // one ChromeV8Context per v8::Context.
+    for (ContextSet::iterator iter = contexts_.begin(); iter != contexts_.end();
+        ++iter) {
+      ChromeV8Context* candidate = *iter;
+      if (candidate != context)
+        DCHECK(candidate->v8_context() != context->v8_context());
+    }
   }
-#endif
   contexts_.insert(context);
 }
 

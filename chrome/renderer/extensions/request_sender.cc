@@ -156,12 +156,12 @@ void RequestSender::HandleResponse(int request_id,
                                            &retval));
   // In debug, the js will validate the callback parameters and return a
   // string if a validation error has occured.
-#ifndef NDEBUG
-  if (!retval.IsEmpty() && !retval->IsUndefined()) {
-    std::string error = *v8::String::AsciiValue(retval);
-    DCHECK(false) << error;
+  if (DCHECK_IS_ON()) {
+    if (!retval.IsEmpty() && !retval->IsUndefined()) {
+      std::string error = *v8::String::AsciiValue(retval);
+      DCHECK(false) << error;
+    }
   }
-#endif
 }
 
 }  // namespace extensions
