@@ -36,6 +36,9 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
   // Closes the dialog once all requested data has been removed.
   virtual void OnBrowsingDataRemoverDone() OVERRIDE;
 
+  // Updates UI when the pref to allow clearing history changes.
+  virtual void OnBrowsingHistoryPrefChanged();
+
   // If non-null it means removal is in progress. BrowsingDataRemover takes care
   // of deleting itself when done.
   BrowsingDataRemover* remover_;
@@ -46,6 +49,9 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
   // Keeps track of whether Pepper Flash is enabled and thus Flapper-specific
   // settings and removal options (e.g. Content Licenses) are available.
   BooleanPrefMember pepper_flash_settings_enabled_;
+
+  // Keeps track of whether deleting browsing history and downloads is allowed.
+  BooleanPrefMember allow_deleting_browser_history_;
 
   DISALLOW_COPY_AND_ASSIGN(ClearBrowserDataHandler);
 };

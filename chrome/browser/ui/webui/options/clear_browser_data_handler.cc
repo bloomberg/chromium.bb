@@ -41,14 +41,20 @@ ClearBrowserDataHandler::~ClearBrowserDataHandler() {
 }
 
 void ClearBrowserDataHandler::InitializeHandler() {
-  clear_plugin_lso_data_enabled_.Init(prefs::kClearPluginLSODataEnabled,
-                                      Profile::FromWebUI(web_ui())->GetPrefs());
+  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+  clear_plugin_lso_data_enabled_.Init(prefs::kClearPluginLSODataEnabled, prefs);
   pepper_flash_settings_enabled_.Init(prefs::kPepperFlashSettingsEnabled,
-                                      Profile::FromWebUI(web_ui())->GetPrefs());
+                                      prefs);
+  allow_deleting_browser_history_.Init(
+      prefs::kAllowDeletingBrowserHistory,
+      prefs,
+      base::Bind(&ClearBrowserDataHandler::OnBrowsingHistoryPrefChanged,
+                 base::Unretained(this)));
 }
 
 void ClearBrowserDataHandler::InitializePage() {
   UpdateInfoBannerVisibility();
+  OnBrowsingHistoryPrefChanged();
 }
 
 void ClearBrowserDataHandler::UpdateInfoBannerVisibility() {
@@ -149,10 +155,14 @@ void ClearBrowserDataHandler::HandleClearBrowserData(const ListValue* value) {
 
   int remove_mask = 0;
   int origin_mask = 0;
-  if (prefs->GetBoolean(prefs::kDeleteBrowsingHistory))
+  if (prefs->GetBoolean(prefs::kDeleteBrowsingHistory) &&
+      *allow_deleting_browser_history_) {
     remove_mask |= BrowsingDataRemover::REMOVE_HISTORY;
-  if (prefs->GetBoolean(prefs::kDeleteDownloadHistory))
+  }
+  if (prefs->GetBoolean(prefs::kDeleteDownloadHistory) &&
+      *allow_deleting_browser_history_) {
     remove_mask |= BrowsingDataRemover::REMOVE_DOWNLOADS;
+  }
   if (prefs->GetBoolean(prefs::kDeleteCache))
     remove_mask |= BrowsingDataRemover::REMOVE_CACHE;
   if (prefs->GetBoolean(prefs::kDeleteCookies)) {
@@ -192,6 +202,14 @@ void ClearBrowserDataHandler::OnBrowsingDataRemoverDone() {
   // itself after we return.
   remover_ = NULL;
   web_ui()->CallJavascriptFunction("ClearBrowserDataOverlay.doneClearing");
+}
+
+void ClearBrowserDataHandler::OnBrowsingHistoryPrefChanged() {
+  scoped_ptr<Value> allowed(
+      new base::FundamentalValue(*allow_deleting_browser_history_));
+  web_ui()->CallJavascriptFunction(
+      "ClearBrowserDataOverlay.updateHistoryCheckboxes",
+      base::FundamentalValue(allowed));
 }
 
 }  // namespace options

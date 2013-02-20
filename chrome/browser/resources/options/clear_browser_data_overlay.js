@@ -76,6 +76,20 @@ cr.define('options', function() {
   //
   // Chrome callbacks
   //
+  /**
+   * Updates the disabled status of the browsing-history and downloads
+   * checkboxes, also unchecking them if they are disabled. This is called in
+   * response to a change in the corresponding preference.
+   */
+  ClearBrowserDataOverlay.updateHistoryCheckboxes = function(allowed) {
+    $('delete-browsing-history-checkbox').disabled = !allowed;
+    $('delete-download-history-checkbox').disabled = !allowed;
+    if (!allowed) {
+      $('delete-browsing-history-checkbox').checked = false;
+      $('delete-download-history-checkbox').checked = false;
+    }
+  };
+
   ClearBrowserDataOverlay.setClearingState = function(state) {
     $('delete-browsing-history-checkbox').disabled = state;
     $('delete-download-history-checkbox').disabled = state;

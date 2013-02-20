@@ -51,6 +51,37 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
     ASSERT_EQ(data, result);
   }
 
+  void VerifyDownloadCount(size_t expected) {
+    content::DownloadManager* download_manager =
+        content::BrowserContext::GetDownloadManager(browser()->profile());
+    std::vector<content::DownloadItem*> downloads;
+    download_manager->GetAllDownloads(&downloads);
+    EXPECT_EQ(expected, downloads.size());
+  }
+
+  void DownloadAnItem() {
+    base::ScopedTempDir downloads_directory;
+    ASSERT_TRUE(downloads_directory.CreateUniqueTempDir());
+    browser()->profile()->GetPrefs()->SetFilePath(
+        prefs::kDownloadDefaultDirectory, downloads_directory.path());
+
+    // Start a download.
+    content::DownloadManager* download_manager =
+        content::BrowserContext::GetDownloadManager(browser()->profile());
+    scoped_ptr<content::DownloadTestObserver> observer(
+        new content::DownloadTestObserverTerminal(
+            download_manager, 1,
+            content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
+
+    GURL download_url = ui_test_utils::GetTestUrl(
+        base::FilePath().AppendASCII("downloads"),
+        base::FilePath().AppendASCII("a_zip_file.zip"));
+    ui_test_utils::NavigateToURL(browser(), download_url);
+    observer->WaitForFinished();
+
+    VerifyDownloadCount(1u);
+  }
+
   void RemoveAndWait(int remove_mask) {
     content::WindowedNotificationObserver signal(
         chrome::NOTIFICATION_BROWSING_DATA_REMOVED,
@@ -64,35 +95,25 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
 
 // Test BrowsingDataRemover for downloads.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Download) {
-  base::ScopedTempDir downloads_directory;
-  ASSERT_TRUE(downloads_directory.CreateUniqueTempDir());
-  browser()->profile()->GetPrefs()->SetFilePath(
-      prefs::kDownloadDefaultDirectory, downloads_directory.path());
-
-  // Start a download.
-  content::DownloadManager* download_manager =
-      content::BrowserContext::GetDownloadManager(browser()->profile());
-  scoped_ptr<content::DownloadTestObserver> observer(
-      new content::DownloadTestObserverTerminal(
-          download_manager, 1,
-          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
-
-  GURL download_url = ui_test_utils::GetTestUrl(
-      base::FilePath().AppendASCII("downloads"),
-      base::FilePath().AppendASCII("a_zip_file.zip"));
-  ui_test_utils::NavigateToURL(browser(), download_url);
-  observer->WaitForFinished();
-
-  std::vector<content::DownloadItem*> downloads;
-  download_manager->GetAllDownloads(&downloads);
-  EXPECT_EQ(1u, downloads.size());
-
+  DownloadAnItem();
   RemoveAndWait(BrowsingDataRemover::REMOVE_DOWNLOADS);
-
-  downloads.clear();
-  download_manager->GetAllDownloads(&downloads);
-  EXPECT_TRUE(downloads.empty());
+  VerifyDownloadCount(0u);
 }
+
+// The call to Remove() should crash in debug (DCHECK), but the browser-test
+// process model prevents using a death test.
+#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
+// Test BrowsingDataRemover for prohibited downloads. Note that this only
+// really exercises the code in a Release build.
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, DownloadProhibited) {
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kAllowDeletingBrowserHistory, false);
+
+  DownloadAnItem();
+  RemoveAndWait(BrowsingDataRemover::REMOVE_DOWNLOADS);
+  VerifyDownloadCount(1u);
+}
+#endif
 
 // Verify can modify database after deleting it.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Database) {
