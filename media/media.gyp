@@ -91,6 +91,12 @@
         'audio/audio_source_diverter.h',
         'audio/audio_util.cc',
         'audio/audio_util.h',
+        'audio/cras/audio_manager_cras.cc',
+        'audio/cras/audio_manager_cras.h',
+        'audio/cras/cras_input.cc',
+        'audio/cras/cras_input.h',
+        'audio/cras/cras_output.cc',
+        'audio/cras/cras_output.h',
         'audio/cross_process_notification.cc',
         'audio/cross_process_notification.h',
         'audio/cross_process_notification_posix.cc',
@@ -113,10 +119,6 @@
         'audio/linux/alsa_wrapper.h',
         'audio/linux/audio_manager_linux.cc',
         'audio/linux/audio_manager_linux.h',
-        'audio/linux/cras_input.cc',
-        'audio/linux/cras_input.h',
-        'audio/linux/cras_output.cc',
-        'audio/linux/cras_output.h',
         'audio/mac/audio_device_listener_mac.cc',
         'audio/mac/audio_device_listener_mac.h',
         'audio/mac/audio_input_mac.cc',
@@ -602,12 +604,24 @@
               ],
             }, {  # else: use_cras == 0
               'sources!': [
-                'audio/linux/cras_input.cc',
-                'audio/linux/cras_input.h',
-                'audio/linux/cras_output.cc',
-                'audio/linux/cras_output.h',
+                'audio/cras/audio_manager_cras.cc',
+                'audio/cras/audio_manager_cras.h',
+                'audio/cras/cras_input.cc',
+                'audio/cras/cras_input.h',
+                'audio/cras/cras_output.cc',
+                'audio/cras/cras_output.h',
               ],
             }],
+          ],
+        }],
+        ['OS!="linux"', {
+          'sources!': [
+            'audio/cras/audio_manager_cras.cc',
+            'audio/cras/audio_manager_cras.h',
+            'audio/cras/cras_input.cc',
+            'audio/cras/cras_input.h',
+            'audio/cras/cras_output.cc',
+            'audio/cras/cras_output.h',
           ],
         }],
         ['os_posix == 1', {
@@ -920,8 +934,8 @@
           'conditions': [
             ['use_cras == 1', {
               'sources': [
-                'audio/linux/cras_input_unittest.cc',
-                'audio/linux/cras_output_unittest.cc',
+                'audio/cras/cras_input_unittest.cc',
+                'audio/cras/cras_output_unittest.cc',
               ],
               'defines': [
                 'USE_CRAS',

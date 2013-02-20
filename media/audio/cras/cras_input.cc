@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/audio/linux/cras_input.h"
+#include "media/audio/cras/cras_input.h"
 
 #include <math.h>
 
@@ -11,13 +11,13 @@
 #include "base/logging.h"
 #include "base/time.h"
 #include "media/audio/audio_manager.h"
+#include "media/audio/cras/audio_manager_cras.h"
 #include "media/audio/linux/alsa_util.h"
-#include "media/audio/linux/audio_manager_linux.h"
 
 namespace media {
 
 CrasInputStream::CrasInputStream(const AudioParameters& params,
-                                 AudioManagerLinux* manager)
+                                 AudioManagerCras* manager)
     : audio_manager_(manager),
       bytes_per_frame_(0),
       callback_(NULL),

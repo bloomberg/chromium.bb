@@ -12,15 +12,14 @@
 #include "base/stl_util.h"
 #include "media/audio/audio_output_dispatcher.h"
 #include "media/audio/audio_util.h"
+#if defined(USE_CRAS)
+#include "media/audio/cras/audio_manager_cras.h"
+#endif
 #include "media/audio/linux/alsa_input.h"
 #include "media/audio/linux/alsa_output.h"
 #include "media/audio/linux/alsa_wrapper.h"
 #if defined(USE_PULSEAUDIO)
 #include "media/audio/pulse/pulse_output.h"
-#endif
-#if defined(USE_CRAS)
-#include "media/audio/linux/cras_input.h"
-#include "media/audio/linux/cras_output.h"
 #endif
 #include "media/base/limits.h"
 #include "media/base/media_switches.h"
@@ -42,21 +41,12 @@ static const char* kInvalidAudioInputDevices[] = {
   "surround",
 };
 
-static const char kCrasAutomaticDeviceName[] = "Automatic";
-static const char kCrasAutomaticDeviceId[] = "automatic";
-
 // Implementation of AudioManager.
 bool AudioManagerLinux::HasAudioOutputDevices() {
-  if (UseCras())
-    return true;
-
   return HasAnyAlsaAudioDevice(kStreamPlayback);
 }
 
 bool AudioManagerLinux::HasAudioInputDevices() {
-  if (UseCras())
-    return true;
-
   return HasAnyAlsaAudioDevice(kStreamCapture);
 }
 
@@ -96,28 +86,7 @@ void AudioManagerLinux::ShowAudioInputSettings() {
 void AudioManagerLinux::GetAudioInputDeviceNames(
     media::AudioDeviceNames* device_names) {
   DCHECK(device_names->empty());
-  if (UseCras()) {
-    GetCrasAudioInputDevices(device_names);
-    return;
-  }
-
   GetAlsaAudioInputDevices(device_names);
-}
-
-bool AudioManagerLinux::UseCras() {
-#if defined(USE_CRAS)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseCras)) {
-    return true;
-  }
-#endif
-  return false;
-}
-
-void AudioManagerLinux::GetCrasAudioInputDevices(
-    media::AudioDeviceNames* device_names) {
-  // Cras will route audio from a proper physical device automatically.
-  device_names->push_back(media::AudioDeviceName(
-      kCrasAutomaticDeviceName, kCrasAutomaticDeviceId));
 }
 
 void AudioManagerLinux::GetAlsaAudioInputDevices(
@@ -279,12 +248,6 @@ AudioInputStream* AudioManagerLinux::MakeLowLatencyInputStream(
 
 AudioOutputStream* AudioManagerLinux::MakeOutputStream(
     const AudioParameters& params) {
-#if defined(USE_CRAS)
-  if (UseCras()) {
-    return new CrasOutputStream(params, this);
-  }
-#endif
-
 #if defined(USE_PULSEAUDIO)
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUsePulseAudio)) {
     return new PulseAudioOutputStream(params, this);
@@ -302,12 +265,6 @@ AudioOutputStream* AudioManagerLinux::MakeOutputStream(
 
 AudioInputStream* AudioManagerLinux::MakeInputStream(
     const AudioParameters& params, const std::string& device_id) {
-#if defined(USE_CRAS)
-  if (UseCras()) {
-    return new CrasInputStream(params, this);
-  }
-#endif
-
   std::string device_name = (device_id == AudioManagerBase::kDefaultDeviceId) ?
       AlsaPcmInputStream::kAutoSelectDevice : device_id;
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAlsaInputDevice)) {
@@ -319,6 +276,12 @@ AudioInputStream* AudioManagerLinux::MakeInputStream(
 }
 
 AudioManager* CreateAudioManager() {
+#if defined(USE_CRAS)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseCras)) {
+    return new AudioManagerCras();
+  }
+#endif
+
   return new AudioManagerLinux();
 }
 

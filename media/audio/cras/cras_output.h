@@ -7,8 +7,8 @@
 // CrasOutputStream object is *not* thread-safe and should only be used
 // from the audio thread.
 
-#ifndef MEDIA_AUDIO_LINUX_CRAS_OUTPUT_H_
-#define MEDIA_AUDIO_LINUX_CRAS_OUTPUT_H_
+#ifndef MEDIA_AUDIO_CRAS_CRAS_OUTPUT_H_
+#define MEDIA_AUDIO_CRAS_CRAS_OUTPUT_H_
 
 #include <alsa/asoundlib.h>
 #include <cras_client.h>
@@ -20,7 +20,7 @@
 
 namespace media {
 
-class AudioManagerLinux;
+class AudioManagerCras;
 class AudioParameters;
 
 // Implementation of AudioOuputStream for Chrome OS using the Chrome OS audio
@@ -29,7 +29,7 @@ class MEDIA_EXPORT CrasOutputStream : public AudioOutputStream {
  public:
   // The ctor takes all the usual parameters, plus |manager| which is the
   // audio manager who is creating this object.
-  CrasOutputStream(const AudioParameters& params, AudioManagerLinux* manager);
+  CrasOutputStream(const AudioParameters& params, AudioManagerCras* manager);
 
   // The dtor is typically called by the AudioManager only and it is usually
   // triggered by calling AudioOutputStream::Close().
@@ -111,7 +111,7 @@ class MEDIA_EXPORT CrasOutputStream : public AudioOutputStream {
   float volume_;
 
   // Audio manager that created us.  Used to report that we've been closed.
-  AudioManagerLinux* manager_;
+  AudioManagerCras* manager_;
 
   // Callback to get audio samples.
   AudioSourceCallback* source_callback_;
@@ -124,4 +124,4 @@ class MEDIA_EXPORT CrasOutputStream : public AudioOutputStream {
 
 }  // namespace media
 
-#endif  // MEDIA_AUDIO_LINUX_CRAS_OUTPUT_H_
+#endif  // MEDIA_AUDIO_CRAS_CRAS_OUTPUT_H_
