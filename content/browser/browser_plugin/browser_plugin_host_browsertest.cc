@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/run_loop.h"
+#include "base/string_util.h"
 #include "base/strings/string_split.h"
 #include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
@@ -257,6 +258,14 @@ class BrowserPluginHostTest : public ContentBrowserTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     // Enable browser plugin in content_shell for running test.
     command_line->AppendSwitch(switches::kEnableBrowserPluginForAllViewTypes);
+    const testing::TestInfo* const test_info =
+        testing::UnitTest::GetInstance()->current_test_info();
+    bool use_browser_plugin_guest_views =
+        EndsWith(test_info->name(), "_UseGuestViews", true);
+    if (use_browser_plugin_guest_views) {
+      CommandLine::ForCurrentProcess()->AppendSwitch(
+          switches::kEnableBrowserPluginGuestViews);
+    }
   }
 
   static void SimulateSpaceKeyPress(WebContents* web_contents) {
@@ -354,6 +363,14 @@ class BrowserPluginHostTest : public ContentBrowserTest {
         test_guest_web_contents->GetBrowserPluginGuest());
     test_guest_->WaitForLoadStop();
   }
+
+  // Following two *TestHelper functions are defined below and each of them are
+  // used in two tests.
+  // Used in tests: |EmbedderChangedAfterSwap| and
+  // |EmbedderChangedAfterSwap_UseGuestViews|.
+  void EmbedderChangedAfterSwapTestHelper();
+  // Used in tests: |ReloadEmbedder| and |ReloadEmbedder_UseGuestViews|.
+  void ReloadEmbedderTestHelper();
 
   TestBrowserPluginEmbedder* test_embedder() const { return test_embedder_; }
   TestBrowserPluginGuest* test_guest() const { return test_guest_; }
@@ -468,6 +485,25 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AdvanceFocus) {
 // a RenderViewHost swap in the web_contents. We verify that the embedder in the
 // web_contents gets cleared properly.
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, EmbedderChangedAfterSwap) {
+  EmbedderChangedAfterSwapTestHelper();
+}
+
+// TODO(lazyboy): Make this test pass on win aura trybots:
+// http://crbug.com/177222.
+#if defined(OS_WIN) && defined(USE_AURA)
+#define MAYBE_EmbedderChangedAfterSwap_UseGuestViews \
+        DISABLED_EmbedderChangedAfterSwap_UseGuestViews
+#else
+#define MAYBE_EmbedderChangedAfterSwap_UseGuestViews \
+        EmbedderChangedAfterSwap_UseGuestViews
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest,
+                       MAYBE_EmbedderChangedAfterSwap_UseGuestViews) {
+  // kEnableBrowserPluginGuestViews is turned on for this test.
+  EmbedderChangedAfterSwapTestHelper();
+}
+
+void BrowserPluginHostTest::EmbedderChangedAfterSwapTestHelper() {
   net::TestServer https_server(
       net::TestServer::TYPE_HTTPS,
       net::TestServer::kLocalhost,
@@ -699,6 +735,23 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, Renavigate) {
 // This tests verifies that reloading the embedder does not crash the browser
 // and that the guest is reset.
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, ReloadEmbedder) {
+  ReloadEmbedderTestHelper();
+}
+
+// TODO(lazyboy): Make this test pass on win aura trybots:
+// http://crbug.com/177222.
+#if defined(OS_WIN) && defined(USE_AURA)
+#define MAYBE_ReloadEmbedder_UseGuestViews DISABLED_ReloadEmbedder_UseGuestViews
+#else
+#define MAYBE_ReloadEmbedder_UseGuestViews ReloadEmbedder_UseGuestViews
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest,
+                       MAYBE_ReloadEmbedder_UseGuestViews) {
+  // kEnableBrowserPluginGuestViews is turned on for this test.
+  ReloadEmbedderTestHelper();
+}
+
+void BrowserPluginHostTest::ReloadEmbedderTestHelper() {
   const char kEmbedderURL[] = "files/browser_plugin_embedder.html";
   StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, "");
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(

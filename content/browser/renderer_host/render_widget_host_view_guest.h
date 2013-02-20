@@ -195,6 +195,9 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   friend class RenderWidgetHostView;
 
  private:
+  // Destroys this view without calling |Destroy| on |platform_view_|.
+  void DestroyGuestView();
+
   // The model object.
   RenderWidgetHostImpl* host_;
 

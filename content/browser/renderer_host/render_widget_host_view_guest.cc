@@ -83,13 +83,15 @@ gfx::Rect RenderWidgetHostViewGuest::GetViewBounds() const {
 void RenderWidgetHostViewGuest::RenderViewGone(base::TerminationStatus status,
                                                int error_code) {
   platform_view_->RenderViewGone(status, error_code);
-  Destroy();
+  // Destroy the guest view instance only, so we don't end up calling
+  // platform_view_->Destroy().
+  DestroyGuestView();
 }
 
 void RenderWidgetHostViewGuest::Destroy() {
+  platform_view_->Destroy();
   // The RenderWidgetHost's destruction led here, so don't call it.
-  host_ = NULL;
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  DestroyGuestView();
 }
 
 void RenderWidgetHostViewGuest::SetTooltipText(const string16& tooltip_text) {
@@ -444,5 +446,10 @@ void RenderWidgetHostViewGuest::DestroyPluginContainer(
 void RenderWidgetHostViewGuest::WillWmDestroy() {
 }
 #endif
+
+void RenderWidgetHostViewGuest::DestroyGuestView() {
+  host_ = NULL;
+  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+}
 
 }  // namespace content
