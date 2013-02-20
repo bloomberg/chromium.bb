@@ -20,9 +20,10 @@ scoped_ptr<FrameRateCounter> FrameRateCounter::create(bool hasImplThread) {
   return make_scoped_ptr(new FrameRateCounter(hasImplThread));
 }
 
-inline base::TimeDelta FrameRateCounter::recentFrameInterval(size_t n) const
+base::TimeDelta FrameRateCounter::recentFrameInterval(size_t n) const
 {
     DCHECK(n > 0);
+    DCHECK(n < m_ringBuffer.BufferSize());
     return m_ringBuffer.ReadBuffer(n) - m_ringBuffer.ReadBuffer(n - 1);
 }
 
@@ -67,8 +68,8 @@ void FrameRateCounter::getMinAndMaxFPS(double& minFPS, double& maxFPS) const
     minFPS = std::numeric_limits<double>::max();
     maxFPS = 0;
 
-    for (size_t i = m_ringBuffer.BufferSize() - 1; i > 0 && m_ringBuffer.IsFilledIndex(i - 1); --i) {
-        base::TimeDelta delta = recentFrameInterval(i);
+    for (RingBufferType::Iterator it = --m_ringBuffer.End(); it; --it) {
+        base::TimeDelta delta = recentFrameInterval(it.index() + 1);
 
         if (isBadFrameInterval(delta))
             continue;
@@ -101,8 +102,8 @@ double FrameRateCounter::getAverageFPS() const
     //
     // isBadFrameInterval encapsulates the frame too slow/frame too fast logic.
 
-    for (size_t i = m_ringBuffer.BufferSize() - 1; i > 0 && m_ringBuffer.IsFilledIndex(i - 1) && frameTimesTotal < 1.0; --i) {
-        base::TimeDelta delta = recentFrameInterval(i);
+    for (RingBufferType::Iterator it = --m_ringBuffer.End(); it && frameTimesTotal < 1.0; --it) {
+        base::TimeDelta delta = recentFrameInterval(it.index() + 1);
 
         if (!isBadFrameInterval(delta)) {
             frameCount++;
@@ -117,16 +118,6 @@ double FrameRateCounter::getAverageFPS() const
     }
 
     return averageFPS;
-}
-
-base::TimeTicks FrameRateCounter::timeStampOfRecentFrame(size_t n) const
-{
-    DCHECK(n < m_ringBuffer.BufferSize());
-
-    if (m_ringBuffer.IsFilledIndex(n))
-        return m_ringBuffer.ReadBuffer(n);
-
-    return base::TimeTicks();
 }
 
 }  // namespace cc

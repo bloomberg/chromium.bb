@@ -37,17 +37,17 @@ class MemoryHistory {
       }
   };
 
-  // n = 0 returns the oldest and
-  // n = HistorySize() - 1 the most recent paint time.
-  Entry GetEntry(const size_t& n) const;
-
   void SaveEntry(const Entry& entry);
   void GetMinAndMax(size_t* min, size_t* max) const;
+
+  typedef RingBuffer<Entry, 80> RingBufferType;
+  RingBufferType::Iterator Begin() const { return ring_buffer_.Begin(); }
+  RingBufferType::Iterator End() const { return ring_buffer_.End(); }
 
  private:
   MemoryHistory();
 
-  RingBuffer<Entry, 80> ring_buffer_;
+  RingBufferType ring_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryHistory);
 };

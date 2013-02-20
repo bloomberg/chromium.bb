@@ -24,9 +24,9 @@ public:
 
     void saveTimeStamp(base::TimeTicks timestamp);
 
-    // n = 0 returns the oldest frame retained in the history,
-    // while n = timeStampHistorySize() - 1 returns the timestamp most recent frame.
-    base::TimeTicks timeStampOfRecentFrame(size_t n) const;
+    // n = 0 returns the oldest frame interval retained in the history,
+    // while n = timeStampHistorySize() - 1 returns the most recent frame interval.
+    base::TimeDelta recentFrameInterval(size_t n) const;
 
     // This is a heuristic that can be used to ignore frames in a reasonable way. Returns
     // true if the given frame interval is too fast or too slow, based on constant thresholds.
@@ -35,10 +35,12 @@ public:
     void getMinAndMaxFPS(double& minFPS, double& maxFPS) const;
     double getAverageFPS() const;
 
+    typedef RingBuffer<base::TimeTicks, 136> RingBufferType;
+    RingBufferType::Iterator begin() const { return m_ringBuffer.Begin(); }
+    RingBufferType::Iterator end() const { return m_ringBuffer.End(); }
+
 private:
     explicit FrameRateCounter(bool hasImplThread);
-
-    base::TimeDelta recentFrameInterval(size_t n) const;
 
     // Two thresholds (measured in seconds) that describe what is considered to be a "no-op frame" that should not be counted.
     // - if the frame is too fast, then given our compositor implementation, the frame probably was a no-op and did not draw.
@@ -51,7 +53,7 @@ private:
     // FIXME: Determine this threshold based on monitor refresh rate, crbug.com/138642.
     static const double kDroppedFrameTime;
 
-    RingBuffer<base::TimeTicks, 136> m_ringBuffer;
+    RingBufferType m_ringBuffer;
 
     bool m_hasImplThread;
     int m_droppedFrameCount;

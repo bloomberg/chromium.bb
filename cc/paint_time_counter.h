@@ -44,10 +44,14 @@ class PaintTimeCounter {
 
   void ClearHistory();
 
+  typedef RingBuffer<Entry, 90> RingBufferType;
+  RingBufferType::Iterator Begin() const { return ring_buffer_.Begin(); }
+  RingBufferType::Iterator End() const { return ring_buffer_.End(); }
+
  private:
   PaintTimeCounter();
 
-  RingBuffer<Entry, 90> ring_buffer_;
+  RingBufferType ring_buffer_;
 
   base::TimeDelta last_total_paint_time_;
   base::TimeDelta last_total_rasterize_time_;

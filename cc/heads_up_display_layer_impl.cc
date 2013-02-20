@@ -193,7 +193,8 @@ void HeadsUpDisplayLayerImpl::drawHudContents(SkCanvas* canvas)
             fpsCounter->getMinAndMaxFPS(m_fpsGraph.min, m_fpsGraph.max);
 
             base::TimeDelta latest, min, max;
-            latest = paintTimeCounter->GetPaintTimeOfRecentFrame(paintTimeCounter->HistorySize() - 1);
+            if (paintTimeCounter->End())
+                latest = paintTimeCounter->End()->total_time();
             paintTimeCounter->GetMinAndMaxPaintTime(&min, &max);
 
             m_paintTimeGraph.value = latest.InMillisecondsF();
@@ -305,15 +306,14 @@ int HeadsUpDisplayLayerImpl::drawFPSDisplay(SkCanvas* canvas, FrameRateCounter* 
     drawGraphLines(canvas, &paint, graphBounds, m_fpsGraph);
 
     // Collect graph and histogram data.
-    int x = 0;
     SkPath path;
 
     const int histogramSize = 20;
     double histogram[histogramSize] = {0};
     double maxBucketValue = 0;
 
-    for (size_t i = 0; i < fpsCounter->timeStampHistorySize() - 1; ++i) {
-        base::TimeDelta delta = fpsCounter->timeStampOfRecentFrame(i + 1) - fpsCounter->timeStampOfRecentFrame(i);
+    for (FrameRateCounter::RingBufferType::Iterator it = --fpsCounter->end(); it; --it) {
+        base::TimeDelta delta = fpsCounter->recentFrameInterval(it.index() + 1);
 
         // Skip this particular instantaneous frame rate if it is not likely to have been valid.
         if (!fpsCounter->isBadFrameInterval(delta)) {
@@ -326,7 +326,7 @@ int HeadsUpDisplayLayerImpl::drawFPSDisplay(SkCanvas* canvas, FrameRateCounter* 
                 p = 1;
 
             // Plot this data point.
-            SkPoint cur = SkPoint::Make(graphBounds.left() + x, graphBounds.bottom() - p * graphBounds.height());
+            SkPoint cur = SkPoint::Make(graphBounds.left() + it.index(), graphBounds.bottom() - p * graphBounds.height());
             if (path.isEmpty())
                 path.moveTo(cur);
             else
@@ -339,8 +339,6 @@ int HeadsUpDisplayLayerImpl::drawFPSDisplay(SkCanvas* canvas, FrameRateCounter* 
             histogram[bucketIndex] += delta.InSecondsF();
             maxBucketValue = std::max(histogram[bucketIndex], maxBucketValue);
         }
-
-        x++;
     }
 
     // Draw FPS histogram.
@@ -370,12 +368,11 @@ int HeadsUpDisplayLayerImpl::drawFPSDisplay(SkCanvas* canvas, FrameRateCounter* 
 
 int HeadsUpDisplayLayerImpl::drawMemoryDisplay(SkCanvas* canvas, MemoryHistory* memoryHistory, const int& initial_top)
 {
-    MemoryHistory::Entry curEntry = memoryHistory->GetEntry(
-        memoryHistory->HistorySize() - 1);
-
     // Don't draw the display if there is no data in it.
-    if (curEntry.bytes_total() == 0)
+    if (!memoryHistory->End())
         return initial_top;
+
+    const MemoryHistory::Entry curEntry = **memoryHistory->End();
 
     // Move up by 2 to create no gap between us and previous counter.
     const int top = initial_top - 2;
@@ -448,8 +445,8 @@ int HeadsUpDisplayLayerImpl::drawPaintTimeDisplay(SkCanvas* canvas, PaintTimeCou
     drawGraphLines(canvas, &paint, graphBounds, m_paintTimeGraph);
 
     paint.setColor(DebugColors::PaintTimeDisplayTextAndGraphColor());
-    for (size_t i = 0; i < paintTimeCounter->HistorySize(); ++i) {
-        double pt = paintTimeCounter->GetPaintTimeOfRecentFrame(i).InMillisecondsF();
+    for (PaintTimeCounter::RingBufferType::Iterator it = paintTimeCounter->End(); it; --it) {
+        double pt = it->total_time().InMillisecondsF();
 
         if (pt == 0.0)
             continue;
@@ -458,7 +455,7 @@ int HeadsUpDisplayLayerImpl::drawPaintTimeDisplay(SkCanvas* canvas, PaintTimeCou
         if (p > 1)
             p = 1;
 
-        canvas->drawRect(SkRect::MakeXYWH(graphBounds.left() + i * 2, graphBounds.bottom() - p * graphBounds.height(), 1, p * graphBounds.height()), paint);
+        canvas->drawRect(SkRect::MakeXYWH(graphBounds.left() + it.index() * 2, graphBounds.bottom() - p * graphBounds.height(), 1, p * graphBounds.height()), paint);
     }
 
     return top + height + 2;

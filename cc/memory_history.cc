@@ -14,15 +14,6 @@ scoped_ptr<MemoryHistory> MemoryHistory::create() {
 MemoryHistory::MemoryHistory() {
 }
 
-MemoryHistory::Entry MemoryHistory::GetEntry(const size_t& n) const {
-  DCHECK(n < ring_buffer_.BufferSize());
-
-  if (ring_buffer_.IsFilledIndex(n))
-    return ring_buffer_.ReadBuffer(n);
-
-  return MemoryHistory::Entry();
-}
-
 void MemoryHistory::SaveEntry(const MemoryHistory::Entry& entry) {
   ring_buffer_.SaveToBuffer(entry);
 }
@@ -31,11 +22,8 @@ void MemoryHistory::GetMinAndMax(size_t* min, size_t* max) const {
   *min = std::numeric_limits<size_t>::max();
   *max = 0;
 
-  for (size_t i = 0; i < ring_buffer_.BufferSize(); i++) {
-    if (!ring_buffer_.IsFilledIndex(i))
-        continue;
-    const Entry entry = ring_buffer_.ReadBuffer(i);
-    size_t bytes_total = entry.bytes_total();
+  for (RingBufferType::Iterator it = ring_buffer_.Begin(); it; ++it) {
+    size_t bytes_total = it->bytes_total();
 
     if (bytes_total < *min)
       *min = bytes_total;

@@ -16,16 +16,6 @@ PaintTimeCounter::PaintTimeCounter()
     can_save_rasterize_time_delta_(false) {
 }
 
-base::TimeDelta PaintTimeCounter::GetPaintTimeOfRecentFrame(
-    const size_t& n) const {
-  DCHECK(n < ring_buffer_.BufferSize());
-
-  if (ring_buffer_.IsFilledIndex(n))
-    return ring_buffer_.ReadBuffer(n).total_time();
-
-  return base::TimeDelta();
-}
-
 void PaintTimeCounter::SavePaintTime(const base::TimeDelta& total_paint_time,
                                      int commit_number) {
   if (can_save_paint_time_delta_) {
@@ -57,15 +47,13 @@ void PaintTimeCounter::GetMinAndMaxPaintTime(base::TimeDelta* min,
   *min = base::TimeDelta::FromDays(1);
   *max = base::TimeDelta();
 
-  for (size_t i = 0; i < ring_buffer_.BufferSize(); i++) {
-    if (ring_buffer_.IsFilledIndex(i)) {
-      base::TimeDelta paint_time = ring_buffer_.ReadBuffer(i).total_time();
+  for (RingBufferType::Iterator it = ring_buffer_.Begin(); it; ++it) {
+    const base::TimeDelta paint_time = it->total_time();
 
-      if (paint_time < *min)
-        *min = paint_time;
-      if (paint_time > *max)
-        *max = paint_time;
-    }
+    if (paint_time < *min)
+      *min = paint_time;
+    if (paint_time > *max)
+      *max = paint_time;
   }
 
   if (*min > *max)
