@@ -1409,8 +1409,11 @@ const char kPluginsMetadataServerURL[]      = "plugins-metadata-server-url";
 #endif
 
 #if defined(OS_ANDROID)
+// Enable SPDY proxy.
+const char kEnableSpdyProxy[]               = "enable-spdy-proxy";
+
 // Pops the translate infobar if possible.
-const char kEnableTranslate[] = "enable-translate";
+const char kEnableTranslate[]               = "enable-translate";
 
 // Uses the tablet specific UI components when available.
 const char kTabletUI[]                      = "tablet-ui";

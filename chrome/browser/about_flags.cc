@@ -279,6 +279,15 @@ const Experiment::Choice kChromeCaptivePortalDetectionChoices[] = {
 //
 // When adding a new choice, add it to the end of the list.
 const Experiment kExperiments[] = {
+#if defined(OS_ANDROID)
+  {
+     "enable-spdy-proxy",
+     IDS_FLAGS_ENABLE_SPDY_PROXY_NAME,
+     IDS_FLAGS_ENABLE_SPDY_PROXY_DESCRIPTION,
+     kOsAndroid,
+     SINGLE_VALUE_TYPE(switches::kEnableSpdyProxy)
+  },
+#endif
   {
     "expose-for-tabs",  // FLAGS:RECORD_UMA
     IDS_FLAGS_TABPOSE_NAME,

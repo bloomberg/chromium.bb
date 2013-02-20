@@ -7165,6 +7165,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_APPS_DEVTOOL_APP_DESCRIPTION" desc="Description of flag to enable apps-devtools app.">
         An app to develop apps / extensions.
       </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_FLAGS_ENABLE_SPDY_PROXY_NAME" desc="Name of the flag to enable SPDY proxy.">
+          Enable SPDY proxy.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_SPDY_PROXY_DESCRIPTION" desc="Description of flag to enable SPDY proxy.">
+          <!-- TODO Add description of enable SPDY proxy flag. -->
+        </message>
+      </if>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
