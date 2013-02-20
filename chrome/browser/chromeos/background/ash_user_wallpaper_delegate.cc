@@ -28,7 +28,6 @@ namespace {
 bool IsNormalWallpaperChange() {
   if (chromeos::UserManager::Get()->IsUserLoggedIn() ||
       !CommandLine::ForCurrentProcess()->HasSwitch(switches::kFirstBoot) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableNewOobe) ||
       WizardController::IsZeroDelayEnabled() ||
       !CommandLine::ForCurrentProcess()->HasSwitch(switches::kLoginManager)) {
     return true;

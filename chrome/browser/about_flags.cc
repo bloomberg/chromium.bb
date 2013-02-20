@@ -998,13 +998,6 @@ const Experiment kExperiments[] = {
 #endif  // defined(USE_ASH)
 #if defined(OS_CHROMEOS)
   {
-    "disable-new-oobe",
-    IDS_FLAGS_DISABLE_NEW_OOBE,
-    IDS_FLAGS_DISABLE_NEW_OOBE_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kDisableNewOobe),
-  },
-  {
     "disable-boot-animation",
     IDS_FLAGS_DISABLE_BOOT_ANIMATION,
     IDS_FLAGS_DISABLE_BOOT_ANIMATION_DESCRIPTION,

@@ -11,7 +11,7 @@
   right: 0;
 }
 
-html[oobe=new] #login-header-bar {
+#login-header-bar {
   -webkit-padding-before: 7px;
   /* Using copy of Ash launcher background with 0.8 opacity applied to it.
      Otherwise if opacity: 0.8 is set here it will affect button text as well.
@@ -20,18 +20,18 @@ html[oobe=new] #login-header-bar {
   background-image: url('chrome://theme/IDR_LAUNCHER_BACKGROUND');
 }
 
-html[oobe=new][screen=lock][lockanimations=new] .login-header-bar-hidden {
+html[screen=lock][lockanimations=new] .login-header-bar-hidden {
   opacity: 0;
 }
-html[oobe=new][screen=lock][lockanimations=new] .login-header-bar-animate-fast {
+html[screen=lock][lockanimations=new] .login-header-bar-animate-fast {
   -webkit-transition: opacity 200ms ease-out;
 }
 
-html[oobe=new][screen=lock][lockanimations=new] .login-header-bar-animate-slow {
+html[screen=lock][lockanimations=new] .login-header-bar-animate-slow {
   -webkit-transition: opacity 2s ease-out;
 }
 
-html[oobe=new] .header-bar-item:first-child {
+.header-bar-item:first-child {
   -webkit-padding-start: 15px;
 }
 
@@ -50,20 +50,12 @@ html[oobe=new] .header-bar-item:first-child {
   vertical-align: middle;
 }
 
-html[oobe=new] #login-header-bar button:not(.button-restricted),
-html[oobe=new] #login-header-bar button:active:not(.button-restricted),
-html[oobe=new] #login-header-bar button:focus:not(.button-restricted),
-html[oobe=new] #login-header-bar button:hover:not(.button-restricted) {
+#login-header-bar button:not(.button-restricted),
+#login-header-bar button:active:not(.button-restricted),
+#login-header-bar button:focus:not(.button-restricted),
+#login-header-bar button:hover:not(.button-restricted) {
   color: white !important;
   opacity: 1 !important;
-}
-
-html[oobe=old] .header-bar-item {
-  -webkit-padding-start: 15px;
-  background-image: url('chrome://theme/IDR_DIVIDER_VERT');
-  background-position: -2px center;
-  background-repeat: no-repeat;
-  background-size: 15px;
 }
 
 .header-bar-item {
@@ -73,11 +65,6 @@ html[oobe=old] .header-bar-item {
 
 html[dir=rtl] .header-bar-item {
   background-position: right center;
-}
-
-html[oobe=old] .header-bar-item:first-child {
-  -webkit-padding-start: 9px;
-  background: none;
 }
 
 #login-header-bar #shutdown-button,
@@ -96,18 +83,10 @@ html[dir=rtl] #login-header-bar #guest-user-button {
 }
 
 #login-header-bar #shutdown-button {
-  background-image: url('chrome://theme/IDR_ICON_POWER24');
-}
-
-html[oobe=new] #login-header-bar #shutdown-button {
   background-image: url('chrome://theme/IDR_ICON_POWER_WHITE');
 }
 
 #login-header-bar #add-user-button {
-  background-image: url('chrome://theme/IDR_ICON_ADD_USER24');
-}
-
-html[oobe=new] #login-header-bar #add-user-button {
   background-image: url('chrome://theme/IDR_ICON_ADD_USER_WHITE');
 }
 

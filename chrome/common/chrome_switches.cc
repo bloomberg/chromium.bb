@@ -1453,9 +1453,6 @@ const char kEnableDrivePrefetch[]           = "enable-drive-prefetch";
 // Avoid doing expensive animations upon login.
 const char kDisableLoginAnimations[]        = "disable-login-animations";
 
-// Disables new OOBE/sign in design.
-const char kDisableNewOobe[]                = "disable-new-oobe";
-
 // Avoid doing animations upon oobe.
 const char kDisableOobeAnimation[]          = "disable-oobe-animation";
 

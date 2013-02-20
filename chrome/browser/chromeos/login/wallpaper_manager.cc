@@ -264,17 +264,11 @@ void WallpaperManager::InitializeWallpaper() {
     return;
   }
 
-  bool disable_new_oobe = CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kDisableNewOobe);
-
   if (!user_manager->IsUserLoggedIn()) {
-    if (!disable_new_oobe) {
-      if (!WizardController::IsDeviceRegistered()) {
-        SetDefaultWallpaper();
-      } else {
-        InitializeRegisteredDeviceWallpaper();
-      }
-    }
+    if (!WizardController::IsDeviceRegistered())
+      SetDefaultWallpaper();
+    else
+      InitializeRegisteredDeviceWallpaper();
     return;
   }
   SetUserWallpaper(user_manager->GetLoggedInUser()->email());

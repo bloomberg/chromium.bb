@@ -1479,8 +1479,6 @@ void SigninScreenHandler::HandleLoginVisible(const base::ListValue* args) {
         content::NotificationService::NoDetails());
   }
   webui_visible_ = true;
-  if (ScreenLocker::default_screen_locker())
-    web_ui()->CallJavascriptFunction("login.AccountPickerScreen.setWallpaper");
 }
 
 void SigninScreenHandler::HandleCancelPasswordChangedFlow(

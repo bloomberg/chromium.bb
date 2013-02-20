@@ -84,13 +84,6 @@ cr.define('cr.ui', function() {
     cr.ui.Bubble.decorate($('bubble'));
     login.HeaderBar.decorate($('login-header-bar'));
 
-    // TODO: Cleanup with old OOBE style removal.
-    $('security-link').addEventListener('click', function(event) {
-      chrome.send('eulaOnInstallationSettingsPopupOpened');
-      $('popup-overlay').hidden = false;
-      $('installation-settings-ok-button').focus();
-    });
-
     Oobe.initializeA11yMenu();
 
     chrome.send('screenStateInitialize');

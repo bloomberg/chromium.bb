@@ -13,6 +13,7 @@ body {
 }
 
 body {
+  background-color: transparent;
   cursor: default;
   font-size: 14px;
   margin: 0;
@@ -20,18 +21,6 @@ body {
   padding: 0;
   position: fixed;
   top: 0;
-}
-
-html[oobe=old] body {
-  background-color: #fefefe;
-}
-
-html[oobe=new]:not([screen=lock]) body {
-  background-color: transparent;
-}
-
-html[oobe=new][screen=lock] body {
-  background-color: transparent;
 }
 
 progress {
@@ -88,48 +77,35 @@ button:not(.custom-appearance) {
   top: 0;
 }
 
-html[oobe=old] #oobe {
-  margin-top: 20px;  /* Compensate bottom header to center content. */
-}
-
-html[oobe=new] #oobe {
+#oobe {
   margin-top: 40px;  /* Compensate bottom header to center content. */
 }
 
 #inner-container {
+  border-radius: 2px;
+  padding: 0;
   position: relative;
 }
 
-html[oobe=old] #inner-container {
-  height: 294px;
-  padding: 20px;
-  width: 640px;
-}
-
-html[oobe=new] #inner-container {
-  border-radius: 2px;
-  padding: 0;
-}
-
-html[oobe=new] #inner-container.animation {
+#inner-container.animation {
   overflow: hidden;
 }
 
 /* Screens that have a border and background. */
-html[oobe=new] #oobe.connect #inner-container,
-html[oobe=new] #oobe.enrollment #inner-container,
-html[oobe=new] #oobe.eula #inner-container,
-html[oobe=new] #oobe.gaia-signin #inner-container,
-html[oobe=new] #oobe.error-message #inner-container,
-html[oobe=new] #oobe.oauth-enrollment #inner-container,
-html[oobe=new] #oobe.reset #inner-container,
-html[oobe=new] #oobe.update #inner-container,
-html[oobe=new] #oobe.user-image #inner-container,
-html[oobe=new] #oobe.managed-user-creation #inner-container,
-html[oobe=new] #oobe.tpm-error-message #inner-container,
-html[oobe=new] #oobe.password-changed #inner-container,
-html[oobe=new] #oobe.terms-of-service #inner-container,
-html[oobe=new] #oobe.wrong-hwid #inner-container {
+#oobe.connect #inner-container,
+#oobe.enrollment #inner-container,
+#oobe.eula #inner-container,
+#oobe.gaia-signin #inner-container,
+#oobe.error-message #inner-container,
+#oobe.oauth-enrollment #inner-container,
+#oobe.reset #inner-container,
+#oobe.update #inner-container,
+#oobe.user-image #inner-container,
+#oobe.managed-user-creation #inner-container,
+#oobe.tpm-error-message #inner-container,
+#oobe.password-changed #inner-container,
+#oobe.terms-of-service #inner-container,
+#oobe.wrong-hwid #inner-container {
   background: -webkit-linear-gradient(rgba(255,255,255,0.99),
                                       rgba(255,255,255,0.95));
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3),
@@ -138,109 +114,16 @@ html[oobe=new] #oobe.wrong-hwid #inner-container {
 }
 
 /* Only play this animation when 'down' class is removed. */
-html[oobe=new] #inner-container:not(.down) {
+#inner-container:not(.down) {
   -webkit-transition: -webkit-transform 200ms ease-in-out;
 }
 
-html[oobe=new] #inner-container.down {
+#inner-container.down {
   -webkit-transform: translateY(50px) rotateX(-2.5deg);
 }
 
 #eula #stats-help-link {
   color: rgb(49, 106, 197);
-}
-
-hr.shadow {
-  -webkit-mask: -webkit-linear-gradient(left, rgba(0, 0, 0, 0),
-                                        black 50%, rgba(0, 0, 0, 0));
-  border: none;
-  opacity: 0.3
-}
-
-hr.top {
-  background: -webkit-linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0));
-  border-top: 1px solid rgba(0, 0, 0, 0.5);
-  height: 4px;
-}
-
-hr.bottom {
-  background: -webkit-linear-gradient(bottom,
-                                      rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0));
-  border-bottom: 1px solid rgba(0, 0, 0, 0.5);
-  height: 4px;
-  z-index: 0;
-}
-
-#header {
-  -webkit-padding-start: 45px;
-  background: url('chrome://theme/IDR_PRODUCT_LOGO_32') left center no-repeat;
-  background-size: 32px;
-  color: #666;
-  display: -webkit-box;
-  font-size: 23px;
-  height: 47px;
-  line-height: 45px;
-  padding-top: 1px;
-}
-
-/* TODO(nkostylev): Remove all #header, #header-sections-old related rules. */
-html[oobe=new] #header {
-  display: none;
-}
-
-#header span {
-  text-transform: lowercase;
-}
-
-#header span,
-#user-image-screen-curtain p,
-.label,
-.flexible-label,
-.menu-control {
-  cursor: default;
-}
-
-#header-sections-old {
-  display: inline-block;
-  height: 30px;
-  position: relative;
-}
-
-.header-section-old::before {
-  /* Divider in header between product name and title,
-   * like "[Product name] > [step header]". */
-  content: '\00A0\203A\00A0\00A0';
-}
-
-.header-section-old {
-  -webkit-transition: left 200ms, opacity 200ms ease-in-out;
-  position: absolute;
-  text-transform: lowercase;
-  width: 20em;
-}
-
-html[dir=rtl] .header-section-old {
-  -webkit-transition: right 200ms, opacity 200ms ease-in-out;
-}
-
-.header-section-old.right {
-  left: 50px;
-}
-
-.header-section-old.left {
-  left: -20px;
-}
-
-html[dir=rtl]  .header-section-old.right {
-  right: 50px;
-}
-
-html[dir=rtl]  .header-section-old.left {
-  right: -20px;
-}
-
-html[oobe=old] #step-logo {
-  display: none;
 }
 
 #step-logo {
@@ -277,155 +160,83 @@ html[build=chromium] #header-sections {
   content: '\00A0\203A\00A0\00A0';
 }
 
-html[oobe=new] #connect .step-contents {
+#connect .step-contents {
   margin: 33px auto 82px;
   width: 435px;
 }
 
-html[oobe=new] #eula .step-contents {
+#eula .step-contents {
   -webkit-margin-after: 30px;
   -webkit-margin-start: 32px;
 }
 
-html[oobe=new] #gaia-signin .step-contents {
+#gaia-signin .step-contents {
   -webkit-box-pack: center;
   display: -webkit-box;
 }
 
-html[oobe=new] #user-image .step-contents {
+#user-image .step-contents {
   -webkit-margin-after: 30px;
   -webkit-margin-start: 31px;
 }
 
-html[oobe=new] #oauth-enrollment .step-contents {
+#oauth-enrollment .step-contents {
   -webkit-margin-after: 10px;
 }
 
-html[oobe=new] #user-image-screen-curtain {
+#user-image-screen-curtain {
   -webkit-margin-start: 8px;
 }
 
-html[oobe=new] #user-image-screen-description {
+#user-image-screen-description {
   -webkit-margin-before: 0;
 }
 
 .step {
+  box-sizing: border-box;
   position: absolute;
 }
 
-html[oobe=old] .step {
-  min-height: 294px;
-  opacity: 1;
-  width: 640px;
-}
-
-html[oobe=new] .step {
-  box-sizing: border-box;
-}
-
-html[oobe=new] .step.animated {
+.step.animated {
   -webkit-transition: -webkit-transform 200ms ease-in-out,
                       opacity 200ms ease-in-out,
                       visibility 200ms ease-in-out;
-}
-
-html[oobe=old][dir=ltr] .step {
-  -webkit-transition: left 200ms, opacity 200ms, visibility 200ms ease-in-out;
-  left: 0;
-}
-
-html[oobe=old][dir=rtl] .step {
-  -webkit-transition: right 200ms, opacity 200ms, visibility 200ms ease-in-out;
-  right: 0;
-}
-
-html[oobe=old] .step.right {
-  left: 100px;
-}
-
-html[oobe=old] .step.left {
-  left: -50px;
-}
-
-html[oobe=old][dir=rtl] .step.right {
-  right: 100px;
-}
-
-html[oobe=old][dir=rtl] .step.left {
-  right: -50px;
 }
 
 .step.hidden {
   visibility: hidden;
 }
 
-/* Have to add attribute selector here otherwise style html[oobe=old] .step
-   has more points. */
-html[oobe=old] .faded,
-html[oobe=old] .left,
-html[oobe=old] .right {
+.faded,
+.left,
+.right {
   opacity: 0;
 }
 
-html[oobe=new] .faded,
-html[oobe=new] .left,
-html[oobe=new] .right {
-  opacity: 0;
-}
-
-html[oobe=new] .step.right {
+.step.right {
   -webkit-transform: translateX(50px);
 }
 
-html[oobe=new] .step.left {
+.step.left {
   -webkit-transform: translateX(-50px)
 }
 
-#footer {
-  -webkit-box-align: center;
-  display: -webkit-box;
-}
-
-/* TODO(nkostylev): Remove all #footer related rules. */
-html[oobe=new] #footer {
-  display: none;
-}
-
-html[oobe=old] #progress {
-  -webkit-box-align: center;
-  display: -webkit-box;
-}
-
-html[oobe=old] #progress-dots {
-  display: none;
-}
-
-html[oobe=new] #progress-dots {
+#progress-dots {
   -webkit-box-pack: center;
   -webkit-margin-before: 15px;
   display: -webkit-box;
 }
 
 /* Hidden for the duration of initial transition. */
-html[oobe=new] #progress-dots.down {
+#progress-dots.down {
   visibility: hidden;
 }
 
 .progdot {
   -webkit-margin-end: 12px;
-  opacity: 0.4;
-}
-
-html[oobe=old] .progdot {
-  background: black;
-  border-radius: 2px;
-  height: 8px;
-  width: 8px;
-}
-
-html[oobe=new] .progdot {
   background: white;
   height: 10px;
+  opacity: 0.4;
   width: 10px;
 }
 
@@ -466,68 +277,63 @@ html[oobe=new] .progdot {
   max-width: 250px;
 }
 
-html[oobe=old] #connect {
-  box-sizing: border-box;
-  padding: 60px 0 0 145px;
-}
-
 /* Padding for header and buttons. */
-html[oobe=new] #connect {
+#connect {
   min-height: 395px;
   padding: 70px 17px 21px;
 }
 
-html[oobe=new] #eula {
+#eula {
   min-height: 395px;
   padding: 70px 17px 21px;
 }
 
-html[oobe=new] #update {
+#update {
   min-height: 423px;
   padding: 70px 17px 69px;    /* Screen has no controls. */
 }
 
-html[oobe=new] #reset {
+#reset {
   min-height: 423px;
   padding: 40px 17px 80px;
   text-align: center;
   width: 722px;
 }
 
-html[oobe=new] #reset #reset-warning-msg {
+#reset #reset-warning-msg {
   color: #606060;
   font-size: 22px;
   padding: 5px 45px 30px;
 }
 
-html[oobe=new] #reset #reset-warning-details {
+#reset #reset-warning-details {
   color: #606060;
   font-size: 16px;
   padding: 35px 40px 80px;
 }
 
-html[oobe=new] #reset #reset-controls {
+#reset #reset-controls {
   -webkit-box-pack: center;
   bottom: 80px;
 }
 
-html[oobe=new] #gaia-signin {
+#gaia-signin {
   height: 609px;
   padding: 70px 17px 69px;    /* Screen has no controls. */
   width: 722px;
 }
 
-html[oobe=new] #gaia-signin.no-right-panel {
+#gaia-signin.no-right-panel {
   width: 522px;
 }
 
-html[oobe=new] #user-image {
+#user-image {
   min-height: 443px;
   padding: 70px 17px 21px;
   width: 702px;
 }
 
-html[oobe=new] #oauth-enrollment {
+#oauth-enrollment {
   min-height: 609px;
   padding: 70px 17px 21px;
   width: 722px;
@@ -537,10 +343,6 @@ html[oobe=new] #oauth-enrollment {
   clear: both;
   font-size: small;
   margin-top: 20px;
-  width: 500px;
-}
-
-html[oobe=new] #logging {
   width: 620px;
 }
 
@@ -551,10 +353,6 @@ html[oobe=new] #logging {
 
 #usage-stats {
   -webkit-margin-end: 10px;
-}
-
-html[oobe=old] #user-image {
-  margin: 0 20px;
 }
 
 #user-image-grid {
@@ -772,23 +570,6 @@ html[dir=rtl] #flip-photo {
   display: none;
 }
 
-/* TODO(nkostylev): Remove footer, button-strip styles. */
-#footer {
-  height: 28px;  /* Same as button height */
-}
-
-#footer button {
-  display: none;
-  height: 28px;
-}
-
-#button-strip {
-  -webkit-box-align: center;
-  -webkit-box-flex: 1;
-  -webkit-box-pack: end;
-  display: -webkit-box;
-}
-
 .step-controls {
   -webkit-box-pack: end;
   -webkit-padding-end: 34px;  /* Double the padding of .step */
@@ -803,10 +584,6 @@ html[dir=rtl] #flip-photo {
 .animation .step-controls button {
   /* Don't grey out disabled buttons during animation. */
   color: buttontext !important;
-}
-
-html[oobe=old] .step-controls {
-  display: none;
 }
 
 .step.loading .step-contents,
@@ -893,36 +670,6 @@ html[oobe=old] .step-controls {
   margin: 7em auto;
 }
 
-/* TODO(nkostylev): Cleanup, security-info - old design,
-   installation-settings - new design. */
-#security-info {
-  bottom: 10px;
-  left: 0;
-  position: absolute;
-  text-align: center;
-  visibility: hidden;
-  width: 100%;
-  z-index: 10;
-}
-
-#security-info a {
-  color: #8c8c8c;
-  font-size: 13px;
-}
-
-#oobe.eula + #security-info {
-  visibility: visible;
-}
-
-html[oobe=new] #security-info {
-  display: none;
-}
-
-/* TODO(nkostylev): Remove #security-info element and rules. */
-html[oobe=old] #installation-settings {
-  display: none;
-}
-
 #security-info a,
 #eula a,
 .step-extra-controls a {
@@ -960,14 +707,6 @@ html[dir=rtl] .step-extra-controls {
   right: 49px;
 }
 
-html[oobe=old] #update div {
-  width: 32em;
-}
-
-html[oobe=old] #update div {
-  margin: 6em auto;
-}
-
 #update-screen-curtain p {
   text-align: center;
 }
@@ -984,15 +723,11 @@ html[oobe=old] #update div {
   display: -webkit-box;
 }
 
-html[oobe=old] #update #update-screen-curtain {
-  margin: 9em auto;
-}
-
-html[oobe=new] #update #update-screen-curtain {
+#update #update-screen-curtain {
   margin: 45px 45px;
 }
 
-html[oobe=new] #update-screen-main {
+#update-screen-main {
   margin: 45px 45px;
   min-height: 114px;
   text-align: center;
@@ -1010,14 +745,7 @@ html[dir=rtl] #update #update-checking-ellipsis {
   text-align: right;
 }
 
-html[oobe=old] #update #update-cancel-hint {
-  color: rgb(170, 0, 0);
-  left: 50%;
-  margin: 1em -16em;
-  position: absolute;
-}
-
-html[oobe=new] #update #update-cancel-hint {
+#update #update-cancel-hint {
   -webkit-margin-before: 15px;
   -webkit-margin-start: 45px;
   color: rgb(170, 0, 0);
@@ -1036,10 +764,6 @@ html[oobe=new] #update #update-cancel-hint {
   -webkit-margin-after: 4px;
   -webkit-margin-before: 4px;
   text-align: left;
-}
-
-html[oobe=old] #update progress {
-  -webkit-margin-start: 74px;
 }
 
 #update progress {
@@ -1075,10 +799,10 @@ html[oobe=old] #update progress {
   height: 200px;
 }
 
-html[oobe=new] .eula-frame,
-html[oobe=new] #cros-eula,
-html[oobe=new] #oem-eula,
-html[oobe=new] #tos-container {
+.eula-frame,
+#cros-eula,
+#oem-eula,
+#tos-container {
   height: 222px;
 }
 
@@ -1225,24 +949,11 @@ html[oobe=new] #tos-container {
 
 /* Styling for OAuth enrollment screen. */
 
-html[oobe=old] #oauth-enroll-container {
-  bottom: 0;
-  display: -webkit-box;
-  left: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
-}
-
-html[oobe=new] #oauth-enroll-container {
+#oauth-enroll-container {
   display: -webkit-box;
 }
 
-html[oobe=old] #oauth-enroll-signin-frame {
-  height: 100%;
-}
-
-html[oobe=new] #oauth-enroll-signin-frame {
+#oauth-enroll-signin-frame {
   height: 456px;
 }
 
@@ -1251,36 +962,22 @@ html[oobe=new] #oauth-enroll-signin-frame {
   width: 100%;
 }
 
-html[oobe=old] #oauth-enroll-signin-frame-container {
-  height: 100%;
-}
-
 #oauth-enroll-signin-frame-container {
   box-sizing: border-box;
   padding-bottom: 20px;
   width: 100%;
 }
 
-html[oobe=new] #oauth-enroll-signin-link-container {
+#oauth-enroll-signin-link-container {
   -webkit-box-pack: end;
   display: -webkit-box;
-}
-
-html[oobe=old] #oauth-enroll-signin-link-container {
-  bottom: 0;
-  position: absolute;
-  right: 0;
 }
 
 #oauth-enroll-step-signin {
   width: 100%;
 }
 
-html[oobe=old] .oauth-enroll-step-center {
-  height: 100%;
-}
-
-html[oobe=new] .oauth-enroll-step-center {
+.oauth-enroll-step-center {
   height: 480px;
 }
 
@@ -1353,51 +1050,13 @@ html[dir=rtl] .close-button {
   -webkit-transition: 250ms opacity;
 }
 
-html[dir=rtl] #header {
-  background-position: right center;
-}
-
-body.login-display #oobe hr.shadow {
-  -webkit-transition: all 800ms ease;
-  width: 1100px;  /* Necessary. Otherwise hr shrinks to 0 first when switching
-                     from 640px to full width. */
-}
-
-/* TODO(nkostylev): Remove hr element and rules. */
-html[oobe=new] #oobe hr {
-  display: none;
-}
-
-body.login-display #oobe.signin hr,
-body.login-display #oobe.gaia-signin hr {
-  opacity: 0;
-}
-
 body.login-display #inner-container {
   height: 262px;
   padding: 0;
   width: 1100px;
 }
 
-html[oobe=old] body.login-display .step {
-  left: 230px;  /* (1100px - 640px) / 2, make it center in oobe div */
-}
-
-body.login-display #header {
-  visibility: hidden;
-}
-
-body.login-display #footer {
-  margin-left: auto;
-  margin-right: auto;
-  width: 640px;  /* Same width as .step screens */
-}
-
-html[oobe=old] body.login-display #progress {
-  visibility: hidden;
-}
-
-html[oobe=new] body.login-display #progress-dots {
+body.login-display #progress-dots {
   visibility: hidden;
 }
 

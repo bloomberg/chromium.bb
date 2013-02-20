@@ -300,11 +300,6 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   localized_strings->SetString("buildType", "chromium");
 #endif
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableNewOobe))
-    localized_strings->SetString("oobeType", "new");
-  else
-    localized_strings->SetString("oobeType", "old");
-
   if (CommandLine::ForCurrentProcess()->
           HasSwitch(ash::switches::kAshDisableNewLockAnimations))
     localized_strings->SetString("lockAnimationsType", "old");

@@ -6,19 +6,14 @@
 #account-picker {
   -webkit-box-align: center;
   -webkit-box-pack: center;
+  /*
+   * Account picker has .step class but should be
+   * fully transparent and w/o border.
+   */
+  background: transparent;
+  box-shadow: none;
   display: -webkit-box;
   left: 0;
   margin: 0;
   padding: 0;
-}
-
-html[oobe=old] #account-picker {
-  width: 100%;  /* Same as its container */
-}
-
-/* Account picker has .step class but should be
-   fully transparent and w/o border. */
-html[oobe=new] #account-picker {
-  background: transparent;
-  box-shadow: none;
 }

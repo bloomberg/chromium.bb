@@ -7008,12 +7008,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_DISABLE_HTML5_CAMERA_DESCRIPTION" desc="Description for the flag to disable new new camera WebUI.">
           Disables HTML5 camera support in some WebUI parts.
         </message>
-        <message name="IDS_FLAGS_DISABLE_NEW_OOBE" desc="Name for the flag to disable new design for OOBE / sign in flows.">
-          Disable OOBE/sign in redesign.
-        </message>
-        <message name="IDS_FLAGS_DISABLE_NEW_OOBE_DESCRIPTION" desc="Description for the flag to disable new design for OOBE / sign in flows.">
-          Disables new design for OOBE / sign in flows.
-        </message>
         <message name="IDS_FLAGS_DISABLE_BOOT_ANIMATION" desc="Name for the flag to disable wallpaper boot animation (except for OOBE).">
           Disable boot animation.
         </message>

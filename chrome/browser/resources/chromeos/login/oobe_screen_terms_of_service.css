@@ -3,11 +3,11 @@
  * found in the LICENSE file.
  */
 
-html[oobe=new] #terms-of-service {
+#terms-of-service {
   padding: 70px 17px 21px;
 }
 
-html[oobe=new] #terms-of-service .step-contents {
+#terms-of-service .step-contents {
   -webkit-margin-after: 49px;
   -webkit-margin-start: 32px;
 }

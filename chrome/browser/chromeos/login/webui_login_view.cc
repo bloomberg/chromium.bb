@@ -8,7 +8,6 @@
 #include "ash/system/tray/system_tray.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
@@ -26,7 +25,6 @@
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -211,18 +209,15 @@ void WebUILoginView::LoadURL(const GURL & url) {
   webui_login_->LoadInitialURL(url);
   webui_login_->RequestFocus();
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kDisableNewOobe)) {
-    // TODO(nkostylev): Use WebContentsObserver::RenderViewCreated to track
-    // when RenderView is created.
-    // Use a background with transparency to trigger transparency in Webkit.
-    SkBitmap background;
-    background.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
-    background.allocPixels();
-    background.eraseARGB(0x00, 0x00, 0x00, 0x00);
-    content::RenderViewHost* host = GetWebContents()->GetRenderViewHost();
-    host->GetView()->SetBackground(background);
-  }
+  // TODO(nkostylev): Use WebContentsObserver::RenderViewCreated to track
+  // when RenderView is created.
+  // Use a background with transparency to trigger transparency in Webkit.
+  SkBitmap background;
+  background.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
+  background.allocPixels();
+  background.eraseARGB(0x00, 0x00, 0x00, 0x00);
+  content::RenderViewHost* host = GetWebContents()->GetRenderViewHost();
+  host->GetView()->SetBackground(background);
 }
 
 content::WebUI* WebUILoginView::GetWebUI() {

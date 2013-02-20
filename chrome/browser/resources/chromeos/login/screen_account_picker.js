@@ -187,39 +187,6 @@ cr.define('login', function() {
       row.focusPod(row.lockedPod, true);
   };
 
-  /**
-   * Sets wallpaper for lock screen.
-   */
-  AccountPickerScreen.setWallpaper = function() {
-    // TODO(antrim): remove whole method once 136853 is accepted.
-    return;
-    var oobe = Oobe.getInstance();
-    if (!oobe.isNewOobe() || !oobe.isLockScreen())
-      return;
-
-    // Load image before starting animation.
-    var image = new Image();
-    image.onload = function() {
-      var background = $('background');
-
-      // Prepare to report metric.
-      background.addEventListener('webkitTransitionEnd', function f(e) {
-        if (e.target == background) {
-          background.removeEventListener('webkitTransitionEnd', f);
-          chrome.send('wallpaperReady');
-        }
-      });
-
-      background.style.backgroundImage = 'url(' + image.src + ')';
-      // Start animation.
-      background.classList.add('background-final');
-      background.classList.remove('background-initial');
-    };
-    // Start image loading.
-    // Add timestamp for wallpapers that are rotated over time.
-    image.src = 'chrome://wallpaper/' + new Date().getTime();
-  };
-
   return {
     AccountPickerScreen: AccountPickerScreen
   };

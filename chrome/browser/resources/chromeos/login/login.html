@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html i18n-values="dir:textdirection;oobe:oobeType;screen:screenType;lockanimations:lockAnimationsType;build:buildType">
+<html i18n-values="dir:textdirection;screen:screenType;lockanimations:lockAnimationsType;build:buildType">
 <head>
 <title i18n-content="title"></title>
 <link rel="stylesheet" href="chrome://resources/css/dialogs.css"></link>
@@ -60,11 +60,6 @@
   <include src="version.html">
   <div id="outer-container">
     <div id="oobe" class="faded">
-      <div id="header">
-        <span i18n-content="productName"></span>
-        <div id="header-sections-old"></div>
-      </div>
-      <hr class="top shadow">
       <div id="inner-container">
         <div id="step-logo" hidden>
           <img src="chrome://theme/IDR_PRODUCT_LOGO" alt="">
@@ -82,11 +77,6 @@
         <include src="oobe_screen_reset.html">
         <include src="oobe_screen_terms_of_service.html">
         <include src="screen_wrong_hwid.html">
-      </div>
-      <hr class="bottom shadow">
-      <div id="footer">
-        <div id="progress"></div>
-        <div id="button-strip" class="button-strip"></div>
       </div>
       <div id="progress-dots"></div>
     </div>

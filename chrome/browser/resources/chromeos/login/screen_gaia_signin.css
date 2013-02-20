@@ -3,14 +3,9 @@
  * found in the LICENSE file.
  */
 
-html[oobe=old] #gaia-signin {
-  -webkit-box-align: center;
-  -webkit-box-pack: center;
-  display: -webkit-box;
-  height: 470px;
-}
-
 #signin-right {
+  -webkit-margin-before: 80px;
+  -webkit-margin-start: 30px;
   top: 60px;
   width: 200px;
 }
@@ -20,9 +15,6 @@ html[oobe=old] #gaia-signin {
   font-size: 12px;
 }
 
-html[oobe=old] #signin-right {
-  position: absolute;
-}
 
 /*  For touch-optimized UI, make the links bigger. */
 @media (pointer:coarse) {
@@ -31,23 +23,7 @@ html[oobe=old] #signin-right {
   }
 }
 
-html[dir=ltr][oobe=old] #signin-right {
-  right: -150px;  /* ('gaia-sign'.width - 'signin-frame'.width) / 2 -
-                     desiredGap - 'signin-right'.width =
-                     (640 - 340) / 2 - 100 - 200 = -150
-                   */
-}
-
-html[dir=rtl][oobe=old] #signin-right {
-  left: -150px;
-}
-
-html[oobe=new] #signin-right {
-  -webkit-margin-before: 80px;
-  -webkit-margin-start: 30px;
-}
-
-html[oobe=new] .no-right-panel #signin-right {
+.no-right-panel #signin-right {
   display: none;
 }
 
@@ -72,26 +48,18 @@ html[oobe=new] .no-right-panel #signin-right {
   /* TODO(nkostylev): Figure out why height: 100% stopped working (gives
     same resalt as not specifying it). Specifying content size from
     .step-contents for now. Working at r182673, broken at r183121. */
+  background-color: transparent;
+  border-right: 1px solid lightgray;
   height: 470px;
   width: 340px;
 }
 
-html[oobe=old] #signin-frame {
-  background-color: #fefefe;
-  border: 1px solid lightgray;
-}
-
-html[oobe=new] #signin-frame {
-  background-color: transparent;
-  border-right: 1px solid lightgray;
-}
-
-html[dir=rtl][oobe=new] #signin-frame {
+html[dir=rtl] #signin-frame {
   border-left: 1px solid lightgray;
   border-right: none;
 }
 
-html[oobe=new] .no-right-panel #signin-frame {
+.no-right-panel #signin-frame {
   border: none;
 }
 

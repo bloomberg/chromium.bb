@@ -8,7 +8,6 @@
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_animations.h"
 #include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 
@@ -44,8 +43,7 @@ void LockWindowAura::Init() {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.show_state = ui::SHOW_STATE_FULLSCREEN;
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableNewOobe))
-    params.transparent = true;
+  params.transparent = true;
   // TODO(oshima): move the lock screen harness to ash.
   params.parent =
       ash::Shell::GetContainer(
