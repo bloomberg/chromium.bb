@@ -132,9 +132,17 @@ TEST_F(LauncherViewIconObserverTest, AddRemove) {
   observer()->Reset();
 }
 
+// Sometimes fails on trybots on win7_aura. http://crbug.com/177135
+#if defined(OS_WIN)
+#define MAYBE_AddRemoveWithMultipleDisplays \
+    DISABLED_AddRemoveWithMultipleDisplays
+#else
+#define MAYBE_AddRemoveWithMultipleDisplays \
+    AddRemoveWithMultipleDisplays
+#endif
 // Make sure creating/deleting an window on one displays notifies a
 // launcher on external display as well as one on primary.
-TEST_F(LauncherViewIconObserverTest, AddRemoveWithMultipleDisplays) {
+TEST_F(LauncherViewIconObserverTest, MAYBE_AddRemoveWithMultipleDisplays) {
   UpdateDisplay("400x400,400x400");
   TestLauncherIconObserver second_observer(LauncherForSecondaryDisplay());
 
