@@ -21,7 +21,7 @@ class SingleThreadTaskRunner;
 }  // base
 
 namespace IPC {
-class ChannelProxy;
+class Sender;
 }  // namespace IPC
 
 namespace remoting {
@@ -83,7 +83,7 @@ class IpcDesktopEnvironmentFactory
   IpcDesktopEnvironmentFactory(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      IPC::ChannelProxy* daemon_channel);
+      IPC::Sender* daemon_channel);
   virtual ~IpcDesktopEnvironmentFactory();
 
   // DesktopEnvironmentFactory implementation.
@@ -111,7 +111,7 @@ class IpcDesktopEnvironmentFactory
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // IPC channel connected to the daemon process.
-  IPC::ChannelProxy* daemon_channel_;
+  IPC::Sender* daemon_channel_;
 
   // List of DesktopEnvironment instances we've told the daemon process about.
   typedef std::map<int, scoped_refptr<DesktopSessionProxy> >

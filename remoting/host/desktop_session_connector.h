@@ -41,7 +41,7 @@ class DesktopSessionConnector {
       IPC::PlatformFileForTransit desktop_pipe) = 0;
 
   // Notifies the network process that the daemon has disconnected the desktop
-  // session from the associated descktop environment.
+  // session from the associated desktop environment.
   virtual void OnTerminalDisconnected(int terminal_id) = 0;
 
  private:

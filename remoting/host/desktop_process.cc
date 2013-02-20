@@ -71,12 +71,13 @@ void DesktopProcess::OnChannelConnected(int32 peer_pid) {
 }
 
 void DesktopProcess::OnChannelError() {
-  DCHECK(caller_task_runner_->BelongsToCurrentThread());
-
   // Shutdown the desktop process.
   daemon_channel_.reset();
-  desktop_agent_->Stop();
-  desktop_agent_ = NULL;
+  if (desktop_agent_) {
+    desktop_agent_->Stop();
+    desktop_agent_ = NULL;
+  }
+
   caller_task_runner_ = NULL;
 }
 

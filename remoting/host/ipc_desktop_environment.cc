@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/single_thread_task_runner.h"
-#include "ipc/ipc_channel_proxy.h"
+#include "ipc/ipc_sender.h"
 #include "media/video/capture/screen/screen_capturer.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/chromoting_messages.h"
@@ -83,7 +83,7 @@ void IpcDesktopEnvironment::ConnectToDesktopSession() {
 IpcDesktopEnvironmentFactory::IpcDesktopEnvironmentFactory(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    IPC::ChannelProxy* daemon_channel)
+    IPC::Sender* daemon_channel)
     : caller_task_runner_(caller_task_runner),
       io_task_runner_(io_task_runner),
       daemon_channel_(daemon_channel),
