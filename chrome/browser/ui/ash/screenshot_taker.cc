@@ -162,6 +162,13 @@ void ScreenshotTaker::HandleTakeScreenshotForAllRootWindows() {
   std::string screenshot_basename =
       ScreenshotSource::GetScreenshotBaseFilename();
   ash::Shell::RootWindowList root_windows = ash::Shell::GetAllRootWindows();
+  // Reorder root_windows to take the primary root window's snapshot at first.
+  aura::RootWindow* primary_root = ash::Shell::GetPrimaryRootWindow();
+  if (*(root_windows.begin()) != primary_root) {
+    root_windows.erase(std::find(
+        root_windows.begin(), root_windows.end(), primary_root));
+    root_windows.insert(root_windows.begin(), primary_root);
+  }
   for (size_t i = 0; i < root_windows.size(); ++i) {
     aura::RootWindow* root_window = root_windows[i];
     scoped_refptr<base::RefCountedBytes> png_data(new base::RefCountedBytes);
