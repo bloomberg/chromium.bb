@@ -283,9 +283,8 @@ class ImeAdapter {
     @VisibleForTesting
     boolean checkCompositionQueueAndCallNative(String text, int newCursorPosition,
             boolean isCommit) {
-        if (mNativeImeAdapterAndroid == 0) {
-            return false;
-        }
+        if (mNativeImeAdapterAndroid == 0) return false;
+
 
         // Committing an empty string finishes the current composition.
         boolean isFinish = text.isEmpty();
@@ -336,9 +335,8 @@ class ImeAdapter {
     }
 
     private boolean translateAndSendNativeEvents(KeyEvent event) {
-        if (mNativeImeAdapterAndroid == 0) {
-            return false;
-        }
+        if (mNativeImeAdapterAndroid == 0) return false;
+
         int action = event.getAction();
         if (action != KeyEvent.ACTION_DOWN &&
             action != KeyEvent.ACTION_UP) {
@@ -390,75 +388,71 @@ class ImeAdapter {
 
     private boolean sendSyntheticKeyEvent(
             int eventType, long timestampMs, int keyCode, int unicodeChar) {
-        if (mNativeImeAdapterAndroid == 0) {
-            return false;
-        }
+        if (mNativeImeAdapterAndroid == 0) return false;
+
         nativeSendSyntheticKeyEvent(
                 mNativeImeAdapterAndroid, eventType, timestampMs, keyCode, unicodeChar);
         return true;
     }
 
     private boolean deleteSurroundingText(int leftLength, int rightLength) {
-        if (mNativeImeAdapterAndroid == 0) {
-            return false;
-        }
+        if (mNativeImeAdapterAndroid == 0) return false;
+
         nativeDeleteSurroundingText(mNativeImeAdapterAndroid, leftLength, rightLength);
         return true;
     }
 
     @VisibleForTesting
     protected boolean setEditableSelectionOffsets(int start, int end) {
-        if (mNativeImeAdapterAndroid == 0) {
-            return false;
-        }
+        if (mNativeImeAdapterAndroid == 0) return false;
+
         nativeSetEditableSelectionOffsets(mNativeImeAdapterAndroid, start, end);
         return true;
     }
 
+    private void batchStateChanged(boolean isBegin) {
+        if (mNativeImeAdapterAndroid == 0) return;
+        nativeImeBatchStateChanged(mNativeImeAdapterAndroid, isBegin);
+    }
+
     private boolean setComposingRegion(int start, int end) {
-        if (mNativeImeAdapterAndroid == 0) {
-            return false;
-        }
+        if (mNativeImeAdapterAndroid == 0) return false;
+
         nativeSetComposingRegion(mNativeImeAdapterAndroid, start, end);
         return true;
     }
 
     boolean unselect() {
-        if (mNativeImeAdapterAndroid == 0) {
-            return false;
-        }
+        if (mNativeImeAdapterAndroid == 0) return false;
+
         nativeUnselect(mNativeImeAdapterAndroid);
         return true;
     }
 
     boolean selectAll() {
-        if (mNativeImeAdapterAndroid == 0) {
-            return false;
-        }
+        if (mNativeImeAdapterAndroid == 0) return false;
+
         nativeSelectAll(mNativeImeAdapterAndroid);
         return true;
     }
 
     boolean cut() {
-        if (mNativeImeAdapterAndroid == 0) {
-            return false;
-        }
+        if (mNativeImeAdapterAndroid == 0) return false;
+
         nativeCut(mNativeImeAdapterAndroid);
         return true;
     }
 
     boolean copy() {
-        if (mNativeImeAdapterAndroid == 0) {
-            return false;
-        }
+        if (mNativeImeAdapterAndroid == 0) return false;
+
         nativeCopy(mNativeImeAdapterAndroid);
         return true;
     }
 
     boolean paste() {
-        if (mNativeImeAdapterAndroid == 0) {
-            return false;
-        }
+        if (mNativeImeAdapterAndroid == 0) return false;
+
         nativePaste(mNativeImeAdapterAndroid);
         return true;
     }
@@ -477,6 +471,8 @@ class ImeAdapter {
         private View mInternalView;
         private ImeAdapter mImeAdapter;
         private boolean mSingleLine;
+        private int mNumNestedBatchEdits = 0;
+        private boolean mIgnoreTextInputStateUpdates = false;
 
         /**
          * Updates the AdapterInputConnection's internal representation of the text
@@ -495,7 +491,6 @@ class ImeAdapter {
          */
         public void setEditableText(String text, int selectionStart, int selectionEnd,
                 int compositionStart, int compositionEnd) {
-
             Editable editable = getEditable();
 
             int prevSelectionStart = Selection.getSelectionStart(editable);
@@ -525,13 +520,27 @@ class ImeAdapter {
             }
             Selection.setSelection(editable, selectionStart, selectionEnd);
             super.setComposingRegion(compositionStart, compositionEnd);
-            if (textUnchanged || prevText.equals("")) {
-                // updateSelection should be called when a manual selection change occurs.
-                // Should not be called if text is being entered else issues can occur
-                // e.g. backspace to undo autocorrection will not work with the default OSK.
-                getInputMethodManager().updateSelection(mInternalView,
-                        selectionStart, selectionEnd, compositionStart, compositionEnd);
+
+            if (mIgnoreTextInputStateUpdates) return;
+            updateSelection(selectionStart, selectionEnd, compositionStart, compositionEnd);
+        }
+
+        @VisibleForTesting
+        protected void updateSelection(
+                int selectionStart, int selectionEnd,
+                int compositionStart, int compositionEnd) {
+            // updateSelection should
+            // be called every time the selection or composition changes if it happens not
+            // within a batch edit, or at the end of each top level batch edit.
+            Editable editable = getEditable();
+            if (Selection.getSelectionStart(editable) == selectionStart &&
+                    Selection.getSelectionEnd(editable) == selectionEnd &&
+                    getComposingSpanStart(editable) == compositionStart &&
+                    getComposingSpanEnd(editable) == compositionEnd) {
+                return;
             }
+            getInputMethodManager().updateSelection(mInternalView,
+                    selectionStart, selectionEnd, compositionStart, compositionEnd);
         }
 
         @Override
@@ -590,6 +599,23 @@ class ImeAdapter {
             et.selectionEnd = Selection.getSelectionEnd(editable);
             et.flags = mSingleLine ? ExtractedText.FLAG_SINGLE_LINE : 0;
             return et;
+        }
+
+        @Override
+        public boolean beginBatchEdit() {
+            if (mNumNestedBatchEdits == 0) mImeAdapter.batchStateChanged(true);
+
+            mNumNestedBatchEdits++;
+            return false;
+        }
+
+        @Override
+        public boolean endBatchEdit() {
+            if (mNumNestedBatchEdits == 0) return false;
+
+            --mNumNestedBatchEdits;
+            if (mNumNestedBatchEdits == 0) mImeAdapter.batchStateChanged(false);
+            return false;
         }
 
         @Override
@@ -656,6 +682,8 @@ class ImeAdapter {
          */
         void restartInput() {
             getInputMethodManager().restartInput(mInternalView);
+            mIgnoreTextInputStateUpdates = false;
+            mNumNestedBatchEdits = 0;
         }
 
         @Override
@@ -668,6 +696,22 @@ class ImeAdapter {
 
         boolean isActive() {
             return getInputMethodManager().isActive();
+        }
+
+        void setIgnoreTextInputStateUpdates(boolean shouldIgnore) {
+            mIgnoreTextInputStateUpdates = shouldIgnore;
+            if (shouldIgnore) return;
+
+            Editable editable = getEditable();
+            updateSelection(Selection.getSelectionStart(editable),
+                    Selection.getSelectionEnd(editable),
+                    getComposingSpanStart(editable),
+                    getComposingSpanEnd(editable));
+        }
+
+        @VisibleForTesting
+        protected boolean isIgnoringTextInputStateUpdates() {
+            return mIgnoreTextInputStateUpdates;
         }
 
         private InputMethodManager getInputMethodManager() {
@@ -760,6 +804,8 @@ class ImeAdapter {
 
     private native void nativeDeleteSurroundingText(int nativeImeAdapterAndroid,
             int before, int after);
+
+    private native void nativeImeBatchStateChanged(int nativeImeAdapterAndroid, boolean isBegin);
 
     private native void nativeUnselect(int nativeImeAdapterAndroid);
     private native void nativeSelectAll(int nativeImeAdapterAndroid);

@@ -424,6 +424,9 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
+  if (!handled && view_ && view_->OnMessageReceived(msg))
+    return true;
+
   if (!msg_is_ok) {
     // The message de-serialization failed. Kill the renderer process.
     RecordAction(UserMetricsAction("BadMessageTerminate_RWH"));

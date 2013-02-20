@@ -353,6 +353,10 @@ RenderWidgetHostViewBase::~RenderWidgetHostViewBase() {
   DCHECK(!mouse_locked_);
 }
 
+bool RenderWidgetHostViewBase::OnMessageReceived(const IPC::Message& msg){
+  return false;
+}
+
 void RenderWidgetHostViewBase::SetBackground(const SkBitmap& background) {
   background_ = background;
 }

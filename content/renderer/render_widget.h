@@ -305,6 +305,9 @@ class CONTENT_EXPORT RenderWidget
   void OnScreenInfoChanged(const WebKit::WebScreenInfo& screen_info);
   void OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
                            const gfx::Rect& window_screen_rect);
+#if defined(OS_ANDROID)
+  void OnImeBatchStateChanged(bool is_begin);
+#endif
 
   virtual void SetDeviceScaleFactor(float device_scale_factor);
 

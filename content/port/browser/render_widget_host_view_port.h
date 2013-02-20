@@ -11,6 +11,7 @@
 #include "content/common/content_export.h"
 #include "content/port/common/input_event_ack_state.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "ipc/ipc_listener.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 #include "ui/base/ime/text_input_type.h"
@@ -48,7 +49,8 @@ struct NativeWebKeyboardEvent;
 // This is the larger RenderWidgetHostView interface exposed only
 // within content/ and to embedders looking to port to new platforms.
 // RenderWidgetHostView class hierarchy described in render_widget_host_view.h.
-class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
+class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
+                                                public IPC::Listener {
  public:
   virtual ~RenderWidgetHostViewPort() {}
 

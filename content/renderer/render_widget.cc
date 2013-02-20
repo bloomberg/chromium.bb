@@ -302,6 +302,9 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_Move_ACK, OnRequestMoveAck)
     IPC_MESSAGE_HANDLER(ViewMsg_ScreenInfoChanged, OnScreenInfoChanged)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateScreenRects, OnUpdateScreenRects)
+#if defined(OS_ANDROID)
+    IPC_MESSAGE_HANDLER(ViewMsg_ImeBatchStateChanged, OnImeBatchStateChanged)
+#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -1763,6 +1766,12 @@ void RenderWidget::OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
   window_screen_rect_ = window_screen_rect;
   Send(new ViewHostMsg_UpdateScreenRects_ACK(routing_id()));
 }
+
+#if defined(OS_ANDROID)
+void RenderWidget::OnImeBatchStateChanged(bool is_begin) {
+  Send(new ViewHostMsg_ImeBatchStateChanged_ACK(routing_id(), is_begin));
+}
+#endif
 
 void RenderWidget::SetDeviceScaleFactor(float device_scale_factor) {
   if (device_scale_factor_ == device_scale_factor)

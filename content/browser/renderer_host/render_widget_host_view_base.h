@@ -45,6 +45,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual ~RenderWidgetHostViewBase();
 
   // RenderWidgetHostViewPort implementation.
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
   virtual void SelectionChanged(const string16& text,
                                 size_t offset,
                                 const ui::Range& range) OVERRIDE;

@@ -51,6 +51,7 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   virtual ~RenderWidgetHostViewAndroid();
 
   // RenderWidgetHostView implementation.
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
   virtual void InitAsChild(gfx::NativeView parent_view) OVERRIDE;
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& pos) OVERRIDE;
@@ -157,6 +158,8 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   void SendMouseEvent(const WebKit::WebMouseEvent& event);
   void SendMouseWheelEvent(const WebKit::WebMouseWheelEvent& event);
   void SendGestureEvent(const WebKit::WebGestureEvent& event);
+
+  void ProcessImeBatchStateAck(bool is_begin);
 
   int GetNativeImeAdapter();
 

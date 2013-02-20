@@ -28,6 +28,8 @@ import java.util.concurrent.Callable;
 
 public class ImeTest extends ContentShellTestBase {
 
+    private static final int INVALID_SELECTION = -2;
+    private static final int INVALID_COMPOSITION = -2;
     private static final String DATA_URL = UrlUtils.encodeHtmlDataUri(
             "<html><body>" +
             "<form action=\"about:blank\">" +
@@ -228,6 +230,44 @@ public class ImeTest extends ContentShellTestBase {
         assertWaitForKeyboardStatus(false);
     }
 
+    @SmallTest
+    @Feature({"TextInput", "Main"})
+    public void testUpdatesGetIgnoredDuringBatchEdits() throws Throwable {
+        mConnection.beginBatchEdit();
+        assertWaitForSetIgnoreUpdates(true, mConnection);
+
+        mImeAdapter.checkCompositionQueueAndCallNative("h", 1, false);
+        assertWaitForSetEditableCallback(2, mConnection);
+        assertEquals("h", mConnection.mText);
+        assertEquals(1, mConnection.mSelectionStart);
+        assertEquals(1, mConnection.mSelectionEnd);
+        assertEquals(0, mConnection.mCompositionStart);
+        assertEquals(1, mConnection.mCompositionEnd);
+        assertTrue(mConnection.isIgnoringTextInputStateUpdates());
+
+        mImeAdapter.checkCompositionQueueAndCallNative("he", 1, false);
+        assertWaitForSetEditableCallback(3, mConnection);
+        assertEquals("he", mConnection.mText);
+        assertEquals(2, mConnection.mSelectionStart);
+        assertEquals(2, mConnection.mSelectionEnd);
+        assertEquals(0, mConnection.mCompositionStart);
+        assertEquals(2, mConnection.mCompositionEnd);
+        assertTrue(mConnection.isIgnoringTextInputStateUpdates());
+
+        mImeAdapter.checkCompositionQueueAndCallNative("hel", 1, false);
+        assertWaitForSetEditableCallback(4, mConnection);
+        assertEquals("hel", mConnection.mText);
+        assertEquals(3, mConnection.mSelectionStart);
+        assertEquals(3, mConnection.mSelectionEnd);
+        assertEquals(0, mConnection.mCompositionStart);
+        assertEquals(3, mConnection.mCompositionEnd);
+
+        assertEquals(0, mConnection.mUpdateSelectionCounter);
+        assertTrue(mConnection.isIgnoringTextInputStateUpdates());
+        mConnection.endBatchEdit();
+        assertWaitForSetIgnoreUpdates(false, mConnection);
+    }
+
     private void performGo(final AdapterInputConnection inputConnection,
             TestCallbackHelperContainer testCallbackHelperContainer) throws Throwable {
         handleBlockingCallbackAction(
@@ -279,6 +319,16 @@ public class ImeTest extends ContentShellTestBase {
         }));
     }
 
+    private void assertWaitForSetIgnoreUpdates(final boolean ignore,
+            final TestAdapterInputConnection connection) throws Throwable {
+        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return ignore == connection.isIgnoringTextInputStateUpdates();
+            }
+        }));
+    }
+
     private ImeAdapter getImeAdapter() {
         return getContentViewCore().getImeAdapterForTest();
     }
@@ -297,16 +347,16 @@ public class ImeTest extends ContentShellTestBase {
     }
 
     private static class TestAdapterInputConnection extends ImeAdapter.AdapterInputConnection {
-        private int mSetEditableTextCallCounter;
+        private int mSetEditableTextCallCounter = 0;
+        private int mUpdateSelectionCounter = 0;
         private String mText;
-        private int mSelectionStart;
-        private int mSelectionEnd;
-        private int mCompositionStart;
-        private int mCompositionEnd;
+        private int mSelectionStart = INVALID_SELECTION;
+        private int mSelectionEnd = INVALID_SELECTION;
+        private int mCompositionStart = INVALID_COMPOSITION;
+        private int mCompositionEnd = INVALID_COMPOSITION;
 
         public TestAdapterInputConnection(View view, ImeAdapter imeAdapter, EditorInfo outAttrs) {
             super(view, imeAdapter, outAttrs);
-            mSetEditableTextCallCounter = 0;
         }
 
         @Override
@@ -318,6 +368,15 @@ public class ImeTest extends ContentShellTestBase {
             mCompositionStart = compositionStart;
             mCompositionEnd = compositionEnd;
             mSetEditableTextCallCounter++;
+            super.setEditableText(
+                    text, selectionStart, selectionEnd, compositionStart, compositionEnd);
+        }
+
+        @Override
+        protected void updateSelection(
+                int selectionStart, int selectionEnd,
+                int compositionStart, int compositionEnd) {
+            mUpdateSelectionCounter++;
         }
     }
 }

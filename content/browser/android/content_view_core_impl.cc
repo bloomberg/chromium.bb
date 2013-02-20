@@ -1345,6 +1345,14 @@ void ContentViewCoreImpl::ImeUpdateAdapter(int native_ime_adapter,
                                         show_ime_if_needed);
 }
 
+void ContentViewCoreImpl::ProcessImeBatchStateAck(bool is_begin) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  Java_ContentViewCore_processImeBatchStateAck(env, obj.obj(), is_begin);
+}
+
 void ContentViewCoreImpl::ClearSslPreferences(JNIEnv* env, jobject obj) {
   SSLHostState* state = SSLHostState::GetFor(
       web_contents_->GetController().GetBrowserContext());

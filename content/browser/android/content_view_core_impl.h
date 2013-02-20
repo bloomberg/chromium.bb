@@ -239,6 +239,7 @@ class ContentViewCoreImpl : public ContentViewCore,
                         int selection_start, int selection_end,
                         int composition_start, int composition_end,
                         bool show_ime_if_needed);
+  void ProcessImeBatchStateAck(bool is_begin);
   void SetTitle(const string16& title);
   void OnBackgroundColorChanged(SkColor color);
 

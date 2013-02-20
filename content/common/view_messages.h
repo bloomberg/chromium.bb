@@ -1331,18 +1331,9 @@ IPC_MESSAGE_ROUTED2(ViewMsg_SelectPopupMenuItems,
 // ViewMsg_ScrollFocusedEditableNodeIntoView was called.
 IPC_MESSAGE_ROUTED0(ViewMsg_UndoScrollFocusedEditableNodeIntoView)
 
-// Message sent when the renderer changed the background color for the view.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_DidChangeBodyBackgroundColor,
-                    uint32  /* bg_color */)
-
-// Information about current document scroll, scale and size. Sent on a
-// best-effort basis.
-IPC_MESSAGE_ROUTED5(ViewHostMsg_UpdateFrameInfo,
-                    gfx::Vector2d /* scroll_offset */,
-                    float /* page_scale_factor */,
-                    float /* min_page_scale_factor */,
-                    float /* max_page_scale_factor */,
-                    gfx::Size /* content_size */)
+// This message relays the beginning or end of a batch event in the IME.
+IPC_MESSAGE_ROUTED1(ViewMsg_ImeBatchStateChanged,
+    bool /* is_begin */)
 
 #elif defined(OS_MACOSX)
 // Let the RenderView know its window has changed visibility.
@@ -2370,6 +2361,25 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_FindMatchRects_Reply,
 // Start an android intent with the given URI.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_StartContentIntent,
                     GURL /* content_url */)
+
+// Message sent when the renderer changed the background color for the view.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_DidChangeBodyBackgroundColor,
+                    uint32  /* bg_color */)
+
+// Information about current document scroll, scale and size. Sent on a
+// best-effort basis.
+IPC_MESSAGE_ROUTED5(ViewHostMsg_UpdateFrameInfo,
+                    gfx::Vector2d /* scroll_offset */,
+                    float /* page_scale_factor */,
+                    float /* min_page_scale_factor */,
+                    float /* max_page_scale_factor */,
+                    gfx::Size /* content_size */)
+
+// This message is an ACK that the batch state change has been received by
+// the renderer and all IME related messages should be processed accordingly.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_ImeBatchStateChanged_ACK,
+                    bool /* is_begin */)
+
 #endif
 
 // Notifies that multiple touch targets may have been pressed, and to show
