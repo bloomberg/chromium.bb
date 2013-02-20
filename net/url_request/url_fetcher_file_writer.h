@@ -18,6 +18,7 @@ class TaskRunner;
 
 namespace net {
 
+class DrainableIOBuffer;
 class IOBuffer;
 
 // This class encapsulates all state involved in writing URLFetcher response
@@ -38,7 +39,7 @@ class URLFetcherFileWriter {
 
   // Called when a write has been done.  Continues writing if there are more
   // bytes to write.  Otherwise, runs |callback|.
-  void ContinueWrite(scoped_refptr<IOBuffer> buffer,
+  void ContinueWrite(scoped_refptr<DrainableIOBuffer> buffer,
                      const CompletionCallback& callback,
                      base::PlatformFileError error_code,
                      int bytes_written);
@@ -102,15 +103,6 @@ class URLFetcherFileWriter {
   // We always append to the file.  Track the total number of bytes
   // written, so that writes know the offset to give.
   int64 total_bytes_written_;
-
-  // How many bytes did the last Write() try to write?  Needed so
-  // that if not all the bytes get written on a Write(), we can
-  // call Write() again with the rest.
-  int pending_bytes_;
-
-  // When writing, how many bytes from the buffer have been successfully
-  // written so far?
-  int buffer_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(URLFetcherFileWriter);
 };

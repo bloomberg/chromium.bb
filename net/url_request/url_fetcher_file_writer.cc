@@ -49,16 +49,12 @@ void URLFetcherFileWriter::CreateTempFile(const CompletionCallback& callback) {
 void URLFetcherFileWriter::Write(scoped_refptr<IOBuffer> buffer,
                                  int num_bytes,
                                  const CompletionCallback& callback) {
-  // Start writing to the file by setting the initial state
-  // of |pending_bytes_| and |buffer_offset_| to indicate that the
-  // entire buffer has not yet been written.
-  pending_bytes_ = num_bytes;
-  buffer_offset_ = 0;
-  ContinueWrite(buffer, callback, base::PLATFORM_FILE_OK, 0);
+  ContinueWrite(new DrainableIOBuffer(buffer, num_bytes), callback,
+                base::PLATFORM_FILE_OK, 0);
 }
 
 void URLFetcherFileWriter::ContinueWrite(
-    scoped_refptr<IOBuffer> buffer,
+    scoped_refptr<DrainableIOBuffer> buffer,
     const CompletionCallback& callback,
     base::PlatformFileError error_code,
     int bytes_written) {
@@ -78,14 +74,13 @@ void URLFetcherFileWriter::ContinueWrite(
   }
 
   total_bytes_written_ += bytes_written;
-  buffer_offset_ += bytes_written;
-  pending_bytes_ -= bytes_written;
+  buffer->DidConsume(bytes_written);
 
-  if (pending_bytes_ > 0) {
+  if (buffer->BytesRemaining() > 0) {
     base::FileUtilProxy::Write(
         file_task_runner_, file_handle_,
         total_bytes_written_,  // Append to the end
-        (buffer->data() + buffer_offset_), pending_bytes_,
+        buffer->data(), buffer->BytesRemaining(),
         base::Bind(&URLFetcherFileWriter::ContinueWrite,
                    weak_factory_.GetWeakPtr(),
                    buffer,
