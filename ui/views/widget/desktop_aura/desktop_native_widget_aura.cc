@@ -27,6 +27,7 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_aura_utils.h"
+#include "ui/views/widget/widget_delegate.h"
 
 DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(VIEWS_EXPORT,
                                       views::DesktopNativeWidgetAura*);
@@ -504,7 +505,9 @@ int DesktopNativeWidgetAura::GetNonClientComponent(
 bool DesktopNativeWidgetAura::ShouldDescendIntoChildForEventHandling(
       aura::Window* child,
       const gfx::Point& location) {
-  return true;
+  views::WidgetDelegate* widget_delegate = GetWidget()->widget_delegate();
+  return !widget_delegate ||
+      widget_delegate->ShouldDescendIntoChildForEventHandling(child, location);
 }
 
 bool DesktopNativeWidgetAura::CanFocus() {
