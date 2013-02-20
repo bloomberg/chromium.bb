@@ -743,19 +743,24 @@ TEST_F(WindowSizerTestWithBrowser, TestShowState) {
 
   // In smaller screen resolutions we default to maximized if there is no other
   // window visible.
-  EXPECT_EQ(ui::SHOW_STATE_DEFAULT,
-            GetWindowShowState(ui::SHOW_STATE_MAXIMIZED,
-                               ui::SHOW_STATE_DEFAULT,
-                               BOTH,
-                               browser2.get(),
-                               p1024x768));
-  window->Hide();
-  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED,
-            GetWindowShowState(ui::SHOW_STATE_MAXIMIZED,
-                               ui::SHOW_STATE_DEFAULT,
-                               BOTH,
-                               browser2.get(),
-                               p1024x768));
+  int min_size = WindowSizer::GetForceMaximizedWidthLimit() / 2;
+  if (min_size > 0) {
+    const gfx::Rect tiny_screen(0, 0, min_size, min_size);
+    EXPECT_EQ(ui::SHOW_STATE_DEFAULT,
+              GetWindowShowState(ui::SHOW_STATE_MAXIMIZED,
+                                 ui::SHOW_STATE_DEFAULT,
+                                 BOTH,
+                                 browser2.get(),
+                                 tiny_screen));
+    window->Hide();
+    EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED,
+              GetWindowShowState(ui::SHOW_STATE_MAXIMIZED,
+                                 ui::SHOW_STATE_DEFAULT,
+                                 BOTH,
+                                 browser2.get(),
+                                 tiny_screen));
+
+  }
 }
 
 // Test that the default show state override behavior is properly handled.

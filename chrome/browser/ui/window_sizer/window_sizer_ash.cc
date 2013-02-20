@@ -23,7 +23,7 @@ namespace {
 
 // When a window gets opened in default mode and the screen is less then this
 // width, the window will get opened in maximized mode.
-const int kForceMaximizeWidthLimit = 1450;
+const int kForceMaximizeWidthLimit = 640;
 
 // Check if the given browser is 'valid': It is a tabbed, non minimized
 // window, which intersects with the |bounds_in_screen| area of a given screen.
@@ -132,6 +132,11 @@ bool MoveRect(const gfx::Rect& work_area,
 }
 
 }  // namespace
+
+// static
+int WindowSizer::GetForceMaximizedWidthLimit() {
+  return kForceMaximizeWidthLimit;
+}
 
 bool WindowSizer::GetBoundsOverrideAsh(gfx::Rect* bounds_in_screen,
                                        ui::WindowShowState* show_state) const {

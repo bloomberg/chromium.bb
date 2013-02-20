@@ -122,6 +122,12 @@ class WindowSizer {
   // opened windows.  This value may be different on each platform.
   static const int kWindowTilePixels;
 
+#if defined(USE_ASH)
+  // When the screen resolution width is smaller then this size, The algorithm
+  // will default to maximized.
+  static int GetForceMaximizedWidthLimit();
+#endif
+
  private:
   // The edge of the screen to check for out-of-bounds.
   enum Edge { TOP, LEFT, BOTTOM, RIGHT };
