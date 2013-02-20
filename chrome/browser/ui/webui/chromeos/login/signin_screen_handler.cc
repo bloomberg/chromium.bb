@@ -371,8 +371,11 @@ void SigninScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_CREATE_LOCALLY_MANAGED_USER_HTML));
   localized_strings->SetString("offlineLogin",
       l10n_util::GetStringUTF16(IDS_OFFLINE_LOGIN_HTML));
+  localized_strings->SetString("ownerUserPattern",
+      l10n_util::GetStringUTF16(
+          IDS_LOGIN_POD_OWNER_USER));
   localized_strings->SetString("removeUser",
-      l10n_util::GetStringUTF16(IDS_LOGIN_REMOVE));
+      l10n_util::GetStringUTF16(IDS_LOGIN_POD_REMOVE_USER));
   localized_strings->SetString("errorTpmFailure",
       l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_TPM_FAILURE));
   localized_strings->SetString("errorTpmFailureReboot",

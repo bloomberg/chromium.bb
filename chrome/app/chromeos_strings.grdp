@@ -330,9 +330,6 @@ Press any key to continue exploring.
   <message name="IDS_ENTER_GUEST_SESSION_BUTTON_ACCESSIBLE_NAME">
     Browse as guest
   </message>
-  <message name="IDS_LOGIN_REMOVE">
-    Remove
-  </message>
   <message name="IDS_DISABLED_ADD_USER_TOOLTIP" desc="Tooltip over disabled Add user button">
     The owner of this device has disabled new users from being added
   </message>

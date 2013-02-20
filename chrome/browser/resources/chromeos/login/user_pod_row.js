@@ -71,7 +71,7 @@ cr.define('login', function() {
   var UserPodTabOrder = {
     POD_INPUT: 1,    // Password input fields (and whole pods themselves).
     HEADER_BAR: 2,   // Buttons on the header bar (Shutdown, Add User).
-    REMOVE_USER: 3   // Remove ('X') buttons.
+    ACTION_BOX: 3    // Action box buttons.
   };
 
   // Focus and tab order are organized as follows:
@@ -80,7 +80,7 @@ cr.define('login', function() {
   // (2) when a user pod is activated, its tab index is set to -1 and its
   //     main input field gets focus and tab index 1;
   // (3) buttons on the header bar have tab index 2 so they follow user pods;
-  // (4) 'Remove' buttons have tab index 3 and follow header bar buttons;
+  // (4) Action box buttons have tab index 3 and follow header bar buttons;
   // (5) lastly, focus jumps to the Status Area and back to user pods.
   //
   // 'Focus' event is handled by a capture handler for the whole document
@@ -108,6 +108,16 @@ cr.define('login', function() {
   });
 
   /**
+   * Stops event propagation from the any user pod child element.
+   * @param {Event} e Event to handle.
+   */
+  function stopEventPropagation(e) {
+    // Prevent default so that we don't trigger a 'focus' event.
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  /**
    * Unique salt added to user image URLs to prevent caching. Dictionary with
    * user names as keys.
    * @type {Object}
@@ -120,7 +130,7 @@ cr.define('login', function() {
     /** @override */
     decorate: function() {
       this.tabIndex = UserPodTabOrder.POD_INPUT;
-      this.removeUserButtonElement.tabIndex = UserPodTabOrder.REMOVE_USER;
+      this.actionBoxAreaElement.tabIndex = UserPodTabOrder.ACTION_BOX;
 
       // Mousedown has to be used instead of click to be able to prevent 'focus'
       // event later.
@@ -130,20 +140,14 @@ cr.define('login', function() {
       this.signinButtonElement.addEventListener('click',
           this.activate.bind(this));
 
-      this.removeUserButtonElement.addEventListener('mousedown', function(e) {
-        // Prevent default so that we don't trigger a 'focus' event.
-        e.preventDefault();
-        // Prevent the 'mousedown' event for the whole pod, which could result
-        // in sign-in UI being shown.
-        e.stopPropagation();
-      });
-      this.removeUserButtonElement.addEventListener('click',
-          this.handleRemoveButtonClick_.bind(this));
-      this.removeUserButtonElement.addEventListener('mouseout',
-          this.handleRemoveButtonMouseOutOrBlur_.bind(this));
-      // TODO(altimofeev): this will trigger when Gaia extension grabs focus.
-      this.removeUserButtonElement.addEventListener('blur',
-          this.handleRemoveButtonMouseOutOrBlur_.bind(this));
+      this.actionBoxAreaElement.addEventListener('mousedown',
+                                                   stopEventPropagation);
+      this.actionBoxMenuElement.addEventListener('mousedown',
+                                                 stopEventPropagation);
+      this.actionBoxAreaElement.addEventListener('click',
+          this.handleActionAreaButtonClick_.bind(this));
+      this.actionBoxMenuRemoveElement.addEventListener('click',
+          this.handleRemoveCommandClick_.bind(this));
     },
 
     /**
@@ -230,11 +234,51 @@ cr.define('login', function() {
     },
 
     /**
-     * Gets remove user button.
+     * Gets action box area.
      * @type {!HTMLInputElement}
      */
-    get removeUserButtonElement() {
-      return this.querySelector('.remove-user-button');
+    get actionBoxAreaElement() {
+      return this.querySelector('.action-box-area');
+    },
+
+    /**
+     * Gets action box menu.
+     * @type {!HTMLInputElement}
+     */
+    get actionBoxMenuElement() {
+      return this.querySelector('.action-box-menu');
+    },
+
+    /**
+     * Gets action box menu title, user name item.
+     * @type {!HTMLInputElement}
+     */
+    get actionBoxMenuTitleNameElement() {
+      return this.querySelector('.action-box-menu-title-name');
+    },
+
+    /**
+     * Gets action box menu title, user email item.
+     * @type {!HTMLInputElement}
+     */
+    get actionBoxMenuTitleEmailElement() {
+      return this.querySelector('.action-box-menu-title-email');
+    },
+
+    /**
+     * Gets action box menu, remove user command item.
+     * @type {!HTMLInputElement}
+     */
+    get actionBoxMenuCommandElement() {
+      return this.querySelector('.action-box-menu-remove-command');
+    },
+
+    /**
+     * Gets action box menu, remove user command item div.
+     * @type {!HTMLInputElement}
+     */
+    get actionBoxMenuRemoveElement() {
+      return this.querySelector('.action-box-menu-remove');
     },
 
     /**
@@ -245,14 +289,20 @@ cr.define('login', function() {
           '?id=' + UserPod.userImageSalt_[this.user.username];
 
       this.nameElement.textContent = this.user_.displayName;
-      this.removeUserButtonElement.hidden = !this.user_.canRemove;
+      this.actionBoxMenuRemoveElement.hidden = !this.user_.canRemove;
       this.signedInIndicatorElement.hidden = !this.user_.signedIn;
 
       var needSignin = this.needGaiaSignin;
       this.passwordElement.hidden = needSignin;
-      this.removeUserButtonElement.setAttribute(
+      this.actionBoxAreaElement.setAttribute(
           'aria-label', localStrings.getStringF('removeButtonAccessibleName',
                                                 this.user_.emailAddress));
+      this.actionBoxMenuTitleNameElement.textContent = !this.user_.canRemove ?
+          localStrings.getStringF('ownerUserPattern', this.user_.displayName) :
+          this.user_.displayName;
+      this.actionBoxMenuTitleEmailElement.textContent = this.user_.emailAddress;
+      this.actionBoxMenuCommandElement.textContent =
+          localStrings.getString('removeUser');
       this.passwordElement.setAttribute('aria-label',
                                         localStrings.getStringF(
                                             'passwordFieldAccessibleName',
@@ -297,26 +347,25 @@ cr.define('login', function() {
     },
 
     /**
-     * Whether remove button is active state.
+     * Whether action box button is in active state.
      * @type {boolean}
      */
-    get activeRemoveButton() {
-      return this.removeUserButtonElement.classList.contains('active');
+    get activeActionBoxMenu() {
+      return this.actionBoxAreaElement.classList.contains('active');
     },
-    set activeRemoveButton(active) {
-      if (active == this.activeRemoveButton)
+    set activeActionBoxMenu(active) {
+      if (active == this.activeActionBoxMenu)
         return;
 
       if (active) {
         // Clear focus first if another pod is focused.
-        if (!this.parentNode.isFocused(this))
+        if (!this.parentNode.isFocused(this)) {
           this.parentNode.focusPod(undefined, true);
-        this.removeUserButtonElement.textContent =
-            localStrings.getString('removeUser');
-        this.removeUserButtonElement.classList.add('active');
+          this.actionBoxAreaElement.focus();
+        }
+        this.actionBoxAreaElement.classList.add('active');
       } else {
-        this.removeUserButtonElement.textContent = '';
-        this.removeUserButtonElement.classList.remove('active');
+        this.actionBoxAreaElement.classList.remove('active');
       }
     },
 
@@ -381,24 +430,22 @@ cr.define('login', function() {
     },
 
     /**
-     * Handles mouseout and blur on remove button.
-     * @param {Event} e Mouseout or blur event.
+     * Handles a click event on action area button.
+     * @param {Event} e Click event.
      */
-    handleRemoveButtonMouseOutOrBlur_: function(e) {
-      this.activeRemoveButton = false;
+    handleActionAreaButtonClick_: function(e) {
+      if (this.parentNode.disabled)
+        return;
+      this.activeActionBoxMenu = !this.activeActionBoxMenu;
     },
 
     /**
-     * Handles a click event on remove user button.
+     * Handles a click event on remove user command.
      * @param {Event} e Click event.
      */
-    handleRemoveButtonClick_: function(e) {
-      if (this.parentNode.disabled)
-        return;
-      if (this.activeRemoveButton)
+    handleRemoveCommandClick_: function(e) {
+      if (this.activeActionBoxMenu)
         chrome.send('removeUser', [this.user.username]);
-      else
-        this.activeRemoveButton = true;
     },
 
     /**
@@ -857,7 +904,8 @@ cr.define('login', function() {
 
       clearTimeout(this.loadWallpaperTimeout_);
       for (var i = 0, pod; pod = this.pods[i]; ++i) {
-        pod.activeRemoveButton = false;
+        if (!this.isSinglePod)
+          pod.activeActionBoxMenu = false;
         if (pod != podToFocus) {
           pod.classList.remove('focused');
           pod.classList.remove('faded');
@@ -997,6 +1045,15 @@ cr.define('login', function() {
     handleClick_: function(e) {
       if (this.disabled)
         return;
+
+      // Clear all menus if the click is outside pod menu and its
+      // button area.
+      if (!findAncestorByClass(e.target, 'action-box-menu') &&
+          !findAncestorByClass(e.target, 'action-box-area')) {
+        for (var i = 0, pod; pod = this.pods[i]; ++i)
+          pod.activeActionBoxMenu = false;
+      }
+
       // Clears focus if not clicked on a pod and if there's more than one pod.
       var pod = findAncestorByClass(e.target, 'pod');
       if ((!pod || pod.parentNode != this) && !this.isSinglePod) {
@@ -1028,9 +1085,9 @@ cr.define('login', function() {
 
       var pod = findAncestorByClass(e.target, 'pod');
       if (pod && pod.parentNode == this) {
-        // Focus on a control of a pod but not on the Remove button.
+        // Focus on a control of a pod but not on the action area button.
         if (!pod.classList.contains('focused') &&
-            !e.target.classList.contains('remove-user-button')) {
+            !e.target.classList.contains('action-box-button')) {
           this.focusPod(pod);
           e.target.focus();
         }

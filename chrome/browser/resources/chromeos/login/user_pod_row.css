@@ -253,61 +253,104 @@ html[dir=rtl] .pod .capslock-hint {
   visibility: visible;
 }
 
-.remove-user-button {
-  -webkit-transition: width 100ms ease-in-out, background 200ms ease-in-out;
-  background: -webkit-image-set(
-      url('../../../../../ui/resources/default_100_percent/close_bar.png') 1x,
-      url('../../../../../ui/resources/default_200_percent/close_bar.png') 2x)
-      center center no-repeat;
-  background-color: rgba(255, 255, 255, 0.3);
+.action-box-area {
+  -webkit-transition: opacity 100ms ease-in-out;
+  background-color: white;
   border-radius: 2px;
   box-shadow: none;
-  height: 16px;
+  height: 23px;
   margin: 0;
-  min-width: 16px;
   opacity: 0;
+  outline: none;
   padding: 0;
   position: absolute;
   right: 0;
   top: 0;
-  width: 16px;
+  width: 23px;
 }
 
-html[dir=rtl] .remove-user-button {
+.pod .action-box-area:focus,
+.pod .action-box-area:hover,
+.main-pane:hover ~ .action-box-area,
+.action-box-area.active,
+.pod:hover .main-pane ~ .action-box-area {
+  opacity: 1;
+}
+
+.action-box-button {
+  background-color: transparent;
+  background-image: url('chrome://theme/IDR_OOBE_ACTION_BOX_BUTTON_NORMAL');
+  border: 0 !important;
+  height: 13px;
+  margin: 5px;
+  padding: 0;
+  width: 13px;
+}
+
+html[dir=rtl] .action-box-area {
   left: 0;
   right: auto;
 }
 
-.pod .remove-user-button:focus,
-.pod .remove-user-button:hover,
-.user-image:hover ~ .remove-user-button {
-  opacity: 1;
+.action-box-button:hover {
+  background-image: url('chrome://theme/IDR_OOBE_ACTION_BOX_BUTTON_HOVER');
 }
 
-html[oobe=old] .pod.focused .remove-user-button {
+.action-box-area.active .action-box-button {
+  background-image: url('chrome://theme/IDR_OOBE_ACTION_BOX_BUTTON_PRESSED');
+}
+
+.action-box-menu {
+  -webkit-transition: opacity 100ms ease-in-out;
+  background-color: white;
+  border: 1px solid lightgray;
+  border-radius: 2px;
+  box-shadow: none;
+  font-size: 13px;
+  line-height: 19px;
+  margin: 0;
+  max-width: 250px;
+  min-width: 200px;
+  opacity: 0;
+  padding: 0;
+  position: absolute;
+  right: 5px;
+  top: 18px;
+  /* TODO(glotov): the menu should fade out with transition  */
+  visibility: hidden;
+}
+
+.action-box-area.active ~ .action-box-menu {
+  opacity: 1;
+  visibility: visible;
+}
+
+.action-box-menu-title {
+  -webkit-box-orient: vertical;
+  -webkit-box-pack: center;
+  color: lightgray;
+  display: -webkit-box;
+  min-height: 46px;
+  padding: 7px 20px;
+}
+
+.action-box-menu-title-name {
+  display: -webkit-box;
+}
+
+.action-box-menu-remove {
+  -webkit-box-align: center;
+  border-top: 1px solid lightgray;
+  display: -webkit-box;
+  min-height: 29px;
+  padding: 7px 20px;
+}
+
+html[oobe=old] .pod.focused .action-box-area {
   /* Track shifting of .user-image on pod focus. */
   -webkit-transform: translateY(-1px);
   -webkit-transition: -webkit-transform 140ms ease;
   opacity: 1;
-}
-
-.remove-user-button:hover {
-  background-image: -webkit-image-set(
-      url('../../../../../ui/resources/default_100_percent/close_bar_hover.png')
-          1x,
-      url('../../../../../ui/resources/default_200_percent/close_bar_hover.png')
-          2x);
-  box-shadow: none;
-}
-
-.remove-user-button.active {
-  background-color: rgb(233, 73, 73);
-  background-image: none;
-  color: white;
-  font-size: 10px;
-  height: initial;
-  padding: 2px 4px;
-  width: initial;
 }
 
 .signed-in-indicator {

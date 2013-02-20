@@ -172,6 +172,9 @@
       <if expr="pp_ifdef('use_aura')">
         <structure type="chrome_scaled_image" name="IDR_OAK" file="oak.png" />
       </if>
+      <structure type="chrome_scaled_image" name="IDR_OOBE_ACTION_BOX_BUTTON_HOVER" file="cros/action_box_button_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_OOBE_ACTION_BOX_BUTTON_NORMAL" file="cros/action_box_button_normal.png" />
+      <structure type="chrome_scaled_image" name="IDR_OOBE_ACTION_BOX_BUTTON_PRESSED" file="cros/action_box_button_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_PANEL_TOP_LEFT_CORNER" file="panel_top_left_corner.png" />
       <structure type="chrome_scaled_image" name="IDR_PANEL_TOP_RIGHT_CORNER" file="panel_top_right_corner.png" />
       <structure type="chrome_scaled_image" name="IDR_PANEL_BOTTOM_LEFT_CORNER" file="panel_bottom_left_corner.png" />
