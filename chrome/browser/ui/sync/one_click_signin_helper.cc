@@ -889,7 +889,6 @@ void OneClickSigninHelper::RedirectToNTP() {
   contents->OpenURL(params);
 
   error_message_.clear();
-  signin_tracker_.reset();
 }
 
 void OneClickSigninHelper::CleanTransientState() {
@@ -1105,6 +1104,7 @@ void OneClickSigninHelper::DidStopLoading(
       if (source_ != SyncPromoUI::SOURCE_SETTINGS &&
           source_ != SyncPromoUI::SOURCE_WEBSTORE_INSTALL) {
         signin_tracker_.reset(new SigninTracker(profile, this));
+        RedirectToNTP();
       }
       break;
     }
@@ -1172,8 +1172,9 @@ void OneClickSigninHelper::SigninFailed(const GoogleServiceAuthError& error) {
   }
 
   RedirectToNTP();
+  signin_tracker_.reset();
 }
 
 void OneClickSigninHelper::SigninSuccess() {
-  RedirectToNTP();
+  signin_tracker_.reset();
 }
