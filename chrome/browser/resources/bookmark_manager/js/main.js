@@ -895,19 +895,9 @@ chrome.bookmarkManagerPrivate.canOpenNewWindows(function(result) {
  * @param {!cr.ui.Command} command The command we are currently processing.
  */
 function updateOpenCommands(e, command) {
-  var selectedItem = e.target.selectedItem;
-  var selectionCount;
-  if (e.target == tree) {
-    selectionCount = selectedItem ? 1 : 0;
-    selectedItem = selectedItem.bookmarkNode;
-  } else {
-    selectionCount = list.selectedItems.length;
-  }
-
-  var isFolder = selectionCount == 1 &&
-                 selectedItem &&
-                 bmm.isFolder(selectedItem);
-  var multiple = selectionCount != 1 || isFolder;
+  var selectedItems = getSelectedBookmarkNodes(e.target);
+  var isFolder = selectedItems.length == 1 && bmm.isFolder(selectedItems[0]);
+  var multiple = selectedItems.length > 1 || isFolder;
 
   function hasBookmarks(node) {
     for (var i = 0; i < node.children.length; i++) {
@@ -938,11 +928,11 @@ function updateOpenCommands(e, command) {
       commandDisabled = incognitoModeAvailability == 'disabled';
       break;
   }
-  e.canExecute = selectionCount > 0 && !!selectedItem && !commandDisabled;
+  e.canExecute = selectedItems.length > 0 && !commandDisabled;
   if (isFolder && e.canExecute) {
     // We need to get all the bookmark items in this tree. If the tree does not
     // contain any non-folders, we need to disable the command.
-    var p = bmm.loadSubtree(selectedItem.id);
+    var p = bmm.loadSubtree(selectedItems[0].id);
     p.addListener(function(node) {
       command.disabled = !node || !hasBookmarks(node);
     });
@@ -1301,13 +1291,15 @@ function getLinkController() {
 }
 
 /**
- * Returns the selected bookmark nodes of the active element. Only call this
- * if the list or the tree is focused.
+ * Returns the selected bookmark nodes of the provided tree or list.
+ * If |opt_target| is not provided or null the active element is used.
+ * Only call this if the list or the tree is focused.
+ * @param {BookmarkList|BookmarkTree} opt_target The target list or tree.
  * @return {!Array} Array of bookmark nodes.
  */
-function getSelectedBookmarkNodes() {
-  return document.activeElement == tree ? [tree.selectedItem.bookmarkNode] :
-                                          list.selectedItems;
+function getSelectedBookmarkNodes(opt_target) {
+  return (opt_target || document.activeElement) == tree ?
+      tree.selectedFolders : list.selectedItems;
 }
 
 /**
