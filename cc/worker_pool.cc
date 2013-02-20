@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
 
@@ -26,6 +27,8 @@ class WorkerPoolTaskImpl : public internal::WorkerPoolTask {
       : internal::WorkerPoolTask(reply),
         task_(task) {}
 
+  virtual void WillRunOnThread(base::Thread* thread) OVERRIDE {}
+
   virtual void Run(RenderingStats* rendering_stats) OVERRIDE {
     task_.Run(rendering_stats);
     base::subtle::Release_Store(&completed_, 1);
@@ -44,6 +47,12 @@ const int kNumPendingTasksPerWorker = 40;
 #endif
 
 const int kCheckForCompletedTasksDelayMs = 6;
+
+// Limits for the total number of cheap tasks we are allowed to perform
+// during a single frame and the time spent running those tasks.
+// TODO(skyostil): Determine these limits more dynamically.
+const int kMaxCheapTaskCount = 6;
+const int kMaxCheapTaskMs = kCheckForCompletedTasksDelayMs;
 
 }  // namespace
 
@@ -94,8 +103,6 @@ void WorkerPool::Worker::StopAfterCompletingAllPendingTasks() {
 void WorkerPool::Worker::PostTask(scoped_ptr<internal::WorkerPoolTask> task) {
   RenderingStats* stats =
       record_rendering_stats_ ? rendering_stats_.get() : NULL;
-
-  worker_pool_->WillPostTask();
 
   message_loop_proxy()->PostTask(
       FROM_HERE,
@@ -151,9 +158,12 @@ WorkerPool::WorkerPool(WorkerPoolClient* client, size_t num_threads)
       workers_need_sorting_(false),
       pending_task_count_(0),
       shutdown_(false),
-      check_for_completed_tasks_pending_(false),
       idle_callback_(
-          base::Bind(&WorkerPool::OnIdle, weak_ptr_factory_.GetWeakPtr())) {
+          base::Bind(&WorkerPool::OnIdle, weak_ptr_factory_.GetWeakPtr())),
+      cheap_task_callback_(
+          base::Bind(&WorkerPool::RunCheapTasks,
+                     weak_ptr_factory_.GetWeakPtr())),
+      run_cheap_tasks_pending_(false) {
   const std::string thread_name_prefix = kWorkerThreadNamePrefix;
   while (workers_.size() < num_threads) {
     int thread_number = workers_.size() + 1;
@@ -176,6 +186,9 @@ void WorkerPool::Shutdown() {
   DCHECK(!shutdown_);
   shutdown_ = true;
 
+  if (run_cheap_tasks_pending_)
+    RunCheapTasks();
+
   for (WorkerVector::iterator it = workers_.begin();
        it != workers_.end(); it++) {
     Worker* worker = *it;
@@ -185,12 +198,11 @@ void WorkerPool::Shutdown() {
 
 void WorkerPool::PostTaskAndReply(
     const Callback& task, const base::Closure& reply) {
-  Worker* worker = GetWorkerForNextTask();
-
-  worker->PostTask(
+  PostTask(
       make_scoped_ptr(new WorkerPoolTaskImpl(
                           task,
-                          reply)).PassAs<internal::WorkerPoolTask>());
+                          reply)).PassAs<internal::WorkerPoolTask>(),
+                      false);
 }
 
 bool WorkerPool::IsBusy() {
@@ -200,6 +212,11 @@ bool WorkerPool::IsBusy() {
 }
 
 void WorkerPool::SetRecordRenderingStats(bool record_rendering_stats) {
+  if (record_rendering_stats)
+    cheap_rendering_stats_.reset(new RenderingStats);
+  else
+    cheap_rendering_stats_.reset();
+
   for (WorkerVector::iterator it = workers_.begin();
        it != workers_.end(); ++it) {
     Worker* worker = *it;
@@ -213,6 +230,16 @@ void WorkerPool::GetRenderingStats(RenderingStats* stats) {
   stats->totalPixelsRasterized = 0;
   stats->totalDeferredImageDecodeCount = 0;
   stats->totalDeferredImageDecodeTime = base::TimeDelta();
+  if (cheap_rendering_stats_) {
+    stats->totalRasterizeTime +=
+        cheap_rendering_stats_->totalRasterizeTime;
+    stats->totalPixelsRasterized +=
+        cheap_rendering_stats_->totalPixelsRasterized;
+    stats->totalDeferredImageDecodeCount +=
+        cheap_rendering_stats_->totalDeferredImageDecodeCount;
+    stats->totalDeferredImageDecodeTime +=
+        cheap_rendering_stats_->totalDeferredImageDecodeTime;
+  }
   for (WorkerVector::iterator it = workers_.begin();
        it != workers_.end(); ++it) {
     Worker* worker = *it;
@@ -237,23 +264,19 @@ WorkerPool::Worker* WorkerPool::GetWorkerForNextTask() {
 }
 
 void WorkerPool::ScheduleCheckForCompletedTasks() {
-  if (check_for_completed_tasks_pending_)
+  if (!check_for_completed_tasks_deadline_.is_null())
     return;
 
   check_for_completed_tasks_callback_.Reset(
       base::Bind(&WorkerPool::CheckForCompletedTasks,
                  weak_ptr_factory_.GetWeakPtr()));
+  base::TimeDelta delay =
+      base::TimeDelta::FromMilliseconds(kCheckForCompletedTasksDelayMs);
+  check_for_completed_tasks_deadline_ = base::TimeTicks::Now() + delay;
   origin_loop_->PostDelayedTask(
       FROM_HERE,
       check_for_completed_tasks_callback_.callback(),
-      base::TimeDelta::FromMilliseconds(kCheckForCompletedTasksDelayMs));
-  check_for_completed_tasks_pending_ = true;
-}
-
-void WorkerPool::WillPostTask() {
-  base::subtle::Barrier_AtomicIncrement(&pending_task_count_, 1);
-  ScheduleCheckForCompletedTasks();
-  workers_need_sorting_ = true;
+      delay);
 }
 
 void WorkerPool::OnWorkCompletedOnWorkerThread() {
@@ -264,14 +287,22 @@ void WorkerPool::OnWorkCompletedOnWorkerThread() {
 }
 
 void WorkerPool::OnIdle() {
-  if (base::subtle::Acquire_Load(&pending_task_count_) == 0) {
+  if (base::subtle::Acquire_Load(&pending_task_count_) == 0 &&
+      pending_cheap_tasks_.empty()) {
     check_for_completed_tasks_callback_.Cancel();
     CheckForCompletedTasks();
   }
 }
 
 void WorkerPool::CheckForCompletedTasks() {
-  check_for_completed_tasks_pending_ = false;
+  TRACE_EVENT0("cc", "WorkerPool::CheckForCompletedTasks");
+  check_for_completed_tasks_deadline_ = base::TimeTicks();
+
+  while (completed_cheap_tasks_.size()) {
+    scoped_ptr<internal::WorkerPoolTask> task =
+        completed_cheap_tasks_.take_front();
+    task->DidComplete();
+  }
 
   for (WorkerVector::iterator it = workers_.begin();
        it != workers_.end(); it++) {
@@ -301,6 +332,66 @@ void WorkerPool::SortWorkersIfNeeded() {
 
   std::sort(workers_.begin(), workers_.end(), NumPendingTasksComparator());
   workers_need_sorting_ = false;
+}
+
+void WorkerPool::PostTask(
+    scoped_ptr<internal::WorkerPoolTask> task, bool is_cheap) {
+  if (is_cheap && CanPostCheapTask()) {
+    pending_cheap_tasks_.push_back(task.Pass());
+    ScheduleRunCheapTasks();
+  } else {
+    base::subtle::Barrier_AtomicIncrement(&pending_task_count_, 1);
+    workers_need_sorting_ = true;
+
+    Worker* worker = GetWorkerForNextTask();
+    task->WillRunOnThread(worker);
+    worker->PostTask(task.Pass());
+  }
+  ScheduleCheckForCompletedTasks();
+}
+
+bool WorkerPool::CanPostCheapTask() const {
+  return pending_cheap_tasks_.size() < kMaxCheapTaskCount;
+}
+
+void WorkerPool::ScheduleRunCheapTasks() {
+  if (run_cheap_tasks_pending_)
+    return;
+  origin_loop_->PostTask(FROM_HERE, cheap_task_callback_);
+  run_cheap_tasks_pending_ = true;
+}
+
+void WorkerPool::RunCheapTasks() {
+  TRACE_EVENT0("cc", "WorkerPool::RunCheapTasks");
+  DCHECK(run_cheap_tasks_pending_);
+
+  // Run as many cheap tasks as we can within the time limit.
+  base::TimeTicks deadline = base::TimeTicks::Now() +
+      base::TimeDelta::FromMilliseconds(kMaxCheapTaskMs);
+  while (pending_cheap_tasks_.size()) {
+    scoped_ptr<internal::WorkerPoolTask> task =
+        pending_cheap_tasks_.take_front();
+    task->Run(cheap_rendering_stats_.get());
+    completed_cheap_tasks_.push_back(task.Pass());
+
+    if (!check_for_completed_tasks_deadline_.is_null() &&
+        base::TimeTicks::Now() >= check_for_completed_tasks_deadline_) {
+      TRACE_EVENT_INSTANT0("cc", "WorkerPool::RunCheapTasks check deadline");
+      CheckForCompletedTasks();
+    }
+    if (base::TimeTicks::Now() >= deadline) {
+      TRACE_EVENT_INSTANT0("cc", "WorkerPool::RunCheapTasks out of time");
+      break;
+    }
+  }
+
+  // Defer remaining tasks to worker threads.
+  while (pending_cheap_tasks_.size()) {
+    scoped_ptr<internal::WorkerPoolTask> task =
+        pending_cheap_tasks_.take_front();
+    PostTask(task.Pass(), false);
+  }
+  run_cheap_tasks_pending_ = false;
 }
 
 }  // namespace cc

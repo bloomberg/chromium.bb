@@ -114,7 +114,7 @@ void Picture::Raster(
   canvas->restore();
 }
 
-bool Picture::IsCheapInRect(const gfx::Rect& layer_rect) {
+bool Picture::IsCheapInRect(const gfx::Rect& layer_rect) const {
   TRACE_EVENT0("cc", "Picture::IsCheapInRect");
 
   SkBitmap emptyBitmap;

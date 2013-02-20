@@ -867,6 +867,8 @@ const RendererCapabilities& LayerTreeHostImpl::rendererCapabilities() const
 
 bool LayerTreeHostImpl::swapBuffers()
 {
+    if (m_tileManager)
+        m_tileManager->DidCompleteFrame();
     return m_renderer->swapBuffers();
 }
 

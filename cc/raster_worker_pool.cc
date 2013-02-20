@@ -21,6 +21,10 @@ class RasterWorkerPoolTaskImpl : public internal::WorkerPoolTask {
     DCHECK(picture_pile_);
   }
 
+  virtual void WillRunOnThread(base::Thread* thread) OVERRIDE {
+    picture_pile_ = picture_pile_->GetCloneForDrawingOnThread(thread);
+  }
+
   virtual void Run(RenderingStats* rendering_stats) OVERRIDE {
     task_.Run(picture_pile_.get(), rendering_stats);
     base::subtle::Release_Store(&completed_, 1);
@@ -42,18 +46,15 @@ RasterWorkerPool::~RasterWorkerPool() {
 }
 
 void RasterWorkerPool::PostRasterTaskAndReply(PicturePileImpl* picture_pile,
+                                              bool is_cheap,
                                               const RasterCallback& task,
                                               const base::Closure& reply) {
-  Worker* worker = GetWorkerForNextTask();
-
-  scoped_refptr<PicturePileImpl> picture_pile_clone =
-      picture_pile->GetCloneForDrawingOnThread(worker);
-
-  worker->PostTask(
+  PostTask(
       make_scoped_ptr(new RasterWorkerPoolTaskImpl(
-                          picture_pile_clone.get(),
+                          picture_pile,
                           task,
-                          reply)).PassAs<internal::WorkerPoolTask>());
+                          reply)).PassAs<internal::WorkerPoolTask>(),
+                      is_cheap);
 }
 
 }  // namespace cc

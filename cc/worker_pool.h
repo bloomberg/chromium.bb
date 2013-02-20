@@ -23,6 +23,10 @@ class WorkerPoolTask {
  public:
   virtual ~WorkerPoolTask();
 
+  // Called when the task is scheduled to run on a thread that isn't the
+  // origin thread. Called on the origin thread.
+  virtual void WillRunOnThread(base::Thread* thread) = 0;
+
   virtual void Run(RenderingStats* rendering_stats) = 0;
 
   bool HasCompleted();
@@ -120,7 +124,7 @@ class WorkerPool {
 
   WorkerPool(WorkerPoolClient* client, size_t num_threads);
 
-  WorkerPool::Worker* GetWorkerForNextTask();
+  void PostTask(scoped_ptr<internal::WorkerPoolTask> task, bool is_cheap);
 
  private:
   class NumPendingTasksComparator {
@@ -132,9 +136,6 @@ class WorkerPool {
 
   // Schedule a completed tasks check if not already pending.
   void ScheduleCheckForCompletedTasks();
-
-  // Called on origin thread before posting task to worker.
-  void WillPostTask();
 
   // Called on worker thread after completing work.
   void OnWorkCompletedOnWorkerThread();
@@ -151,6 +152,17 @@ class WorkerPool {
   // Ensure workers are sorted by number of pending tasks.
   void SortWorkersIfNeeded();
 
+  // Schedule running cheap tasks on the origin thread unless already pending.
+  void ScheduleRunCheapTasks();
+
+  // Run pending cheap tasks on the origin thread. If the allotted time slot
+  // for cheap tasks runs out, the remaining tasks are deferred to the thread
+  // pool.
+  void RunCheapTasks();
+
+  WorkerPool::Worker* GetWorkerForNextTask();
+  bool CanPostCheapTask() const;
+
   typedef std::vector<Worker*> WorkerVector;
   WorkerVector workers_;
   WorkerPoolClient* client_;
@@ -159,10 +171,16 @@ class WorkerPool {
   bool workers_need_sorting_;
   bool shutdown_;
   base::CancelableClosure check_for_completed_tasks_callback_;
-  bool check_for_completed_tasks_pending_;
+  base::TimeTicks check_for_completed_tasks_deadline_;
   base::Closure idle_callback_;
+  base::Closure cheap_task_callback_;
   // Accessed from multiple threads. 0 when worker pool is idle.
   base::subtle::Atomic32 pending_task_count_;
+
+  bool run_cheap_tasks_pending_;
+  ScopedPtrDeque<internal::WorkerPoolTask> pending_cheap_tasks_;
+  ScopedPtrDeque<internal::WorkerPoolTask> completed_cheap_tasks_;
+  scoped_ptr<RenderingStats> cheap_rendering_stats_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerPool);
 };

@@ -194,7 +194,9 @@ TileManager::TileManager(
       has_performed_uploads_since_last_flush_(false),
       ever_exceeded_memory_budget_(false),
       record_rendering_stats_(false),
-      use_cheapness_estimator_(use_cheapness_estimator) {
+      use_cheapness_estimator_(use_cheapness_estimator),
+      allow_cheap_tasks_(true),
+      did_schedule_cheap_tasks_(false) {
   for (int i = 0; i < NUM_STATES; ++i) {
     for (int j = 0; j < NUM_TREES; ++j) {
       for (int k = 0; k < NUM_BINS; ++k)
@@ -449,6 +451,11 @@ void TileManager::AbortPendingTileUploads() {
   }
 }
 
+void TileManager::DidCompleteFrame() {
+  allow_cheap_tasks_ = true;
+  did_schedule_cheap_tasks_ = false;
+}
+
 void TileManager::GetMemoryStats(
     size_t* memoryRequiredBytes,
     size_t* memoryNiceToHaveBytes,
@@ -646,7 +653,7 @@ void TileManager::FreeResourcesForTile(Tile* tile) {
     resource_pool_->ReleaseResource(managed_tile_state.resource.Pass());
 }
 
-bool TileManager::CanDispatchRasterTask(Tile* tile) {
+bool TileManager::CanDispatchRasterTask(Tile* tile) const {
   if (raster_worker_pool_->IsBusy())
     return false;
   size_t new_bytes_pending = bytes_pending_set_pixels_;
@@ -656,6 +663,9 @@ bool TileManager::CanDispatchRasterTask(Tile* tile) {
 }
 
 void TileManager::DispatchMoreTasks() {
+  if (did_schedule_cheap_tasks_)
+    allow_cheap_tasks_ = false;
+
   // Because tiles in the image decoding list have higher priorities, we
   // need to process those tiles first before we start to handle the tiles
   // in the need_to_be_rasterized queue.
@@ -789,9 +799,13 @@ void TileManager::DispatchOneRasterTask(scoped_refptr<Tile> tile) {
   scoped_ptr<ResourcePool::Resource> resource = PrepareTileForRaster(tile);
   ResourceProvider::ResourceId resource_id = resource->id();
 
+  bool is_cheap = use_cheapness_estimator_ && allow_cheap_tasks_ &&
+      tile->picture_pile()->IsCheapInRect(tile->content_rect_,
+                                          tile->contents_scale());
   raster_worker_pool_->PostRasterTaskAndReply(
       tile->picture_pile(),
-      base::Bind(&TileManager::PerformRaster,
+      is_cheap,
+      base::Bind(&TileManager::RunRasterTask,
                  resource_pool_->resource_provider()->mapPixelBuffer(
                      resource_id),
                  tile->content_rect_,
@@ -803,29 +817,14 @@ void TileManager::DispatchOneRasterTask(scoped_refptr<Tile> tile) {
                  tile,
                  base::Passed(&resource),
                  manage_tiles_call_count_));
+  did_schedule_cheap_tasks_ |= is_cheap;
 }
 
-void TileManager::PerformOneRaster(Tile* tile) {
-  scoped_ptr<ResourcePool::Resource> resource = PrepareTileForRaster(tile);
-  ResourceProvider::ResourceId resource_id = resource->id();
-
-  PerformRaster(resource_pool_->resource_provider()->mapPixelBuffer(
-                    resource_id),
-                tile->content_rect_,
-                tile->contents_scale(),
-                use_cheapness_estimator_,
-                GetRasterTaskMetadata(tile->managed_state()),
-                tile->picture_pile(),
-                &rendering_stats_);
-
-  OnRasterCompleted(tile, resource.Pass(), manage_tiles_call_count_);
-}
-
-void TileManager::OnRasterCompleted(
+void TileManager::OnRasterTaskCompleted(
     scoped_refptr<Tile> tile,
     scoped_ptr<ResourcePool::Resource> resource,
     int manage_tiles_call_count_when_dispatched) {
-  TRACE_EVENT0("cc", "TileManager::OnRasterCompleted");
+  TRACE_EVENT0("cc", "TileManager::OnRasterTaskCompleted");
 
   // Release raster resources.
   resource_pool_->resource_provider()->unmapPixelBuffer(resource->id());
@@ -869,14 +868,6 @@ void TileManager::OnRasterCompleted(
   }
 }
 
-void TileManager::OnRasterTaskCompleted(
-    scoped_refptr<Tile> tile,
-    scoped_ptr<ResourcePool::Resource> resource,
-    int manage_tiles_call_count_when_dispatched) {
-  OnRasterCompleted(tile, resource.Pass(),
-                    manage_tiles_call_count_when_dispatched);
-}
-
 void TileManager::DidFinishTileInitialization(Tile* tile) {
   ManagedTileState& managed_tile_state = tile->managed_state();
   DCHECK(managed_tile_state.resource);
@@ -916,7 +907,7 @@ void TileManager::DidTileTreeBinChange(Tile* tile,
 }
 
 // static
-void TileManager::PerformRaster(uint8* buffer,
+void TileManager::RunRasterTask(uint8* buffer,
                                 const gfx::Rect& rect,
                                 float contents_scale,
                                 bool use_cheapness_estimator,
@@ -924,7 +915,7 @@ void TileManager::PerformRaster(uint8* buffer,
                                 PicturePileImpl* picture_pile,
                                 RenderingStats* stats) {
   TRACE_EVENT2(
-      "cc", "TileManager::PerformRaster",
+      "cc", "TileManager::RunRasterTask",
       "is_on_pending_tree",
           raster_task_metadata.is_tile_in_pending_tree_now_bin,
       "is_low_res",
@@ -962,7 +953,8 @@ void TileManager::PerformRaster(uint8* buffer,
                                 10);
 
     if (use_cheapness_estimator) {
-      bool is_predicted_cheap = picture_pile->IsCheapInRect (rect, contents_scale);
+      bool is_predicted_cheap =
+          picture_pile->IsCheapInRect(rect, contents_scale);
       bool is_actually_cheap = duration.InMillisecondsF() <= 1.0f;
       RecordCheapnessPredictorResults(is_predicted_cheap, is_actually_cheap);
     }

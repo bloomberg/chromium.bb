@@ -120,6 +120,7 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   void ManageTiles();
   void CheckForCompletedTileUploads();
   void AbortPendingTileUploads();
+  void DidCompleteFrame();
 
   scoped_ptr<base::Value> BasicStateAsValue() const;
   scoped_ptr<base::Value> AllTilesAsValue() const;
@@ -167,14 +168,9 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   void OnImageDecodeTaskCompleted(
       scoped_refptr<Tile> tile,
       uint32_t pixel_ref_id);
-  bool CanDispatchRasterTask(Tile* tile);
+  bool CanDispatchRasterTask(Tile* tile) const;
   scoped_ptr<ResourcePool::Resource> PrepareTileForRaster(Tile* tile);
   void DispatchOneRasterTask(scoped_refptr<Tile> tile);
-  void PerformOneRaster(Tile* tile);
-  void OnRasterCompleted(
-      scoped_refptr<Tile> tile,
-      scoped_ptr<ResourcePool::Resource> resource,
-      int manage_tiles_call_count_when_dispatched);
   void OnRasterTaskCompleted(
       scoped_refptr<Tile> tile,
       scoped_ptr<ResourcePool::Resource> resource,
@@ -186,7 +182,7 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
                             WhichTree tree);
   scoped_ptr<Value> GetMemoryRequirementsAsValue() const;
 
-  static void PerformRaster(uint8* buffer,
+  static void RunRasterTask(uint8* buffer,
                             const gfx::Rect& rect,
                             float contents_scale,
                             bool use_cheapness_estimator,
@@ -232,6 +228,8 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   RenderingStats rendering_stats_;
 
   bool use_cheapness_estimator_;
+  bool did_schedule_cheap_tasks_;
+  bool allow_cheap_tasks_;
   int raster_state_count_[NUM_STATES][NUM_TREES][NUM_BINS];
 
   DISALLOW_COPY_AND_ASSIGN(TileManager);

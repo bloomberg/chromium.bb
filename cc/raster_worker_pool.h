@@ -26,6 +26,7 @@ class RasterWorkerPool : public WorkerPool {
   }
 
   void PostRasterTaskAndReply(PicturePileImpl* picture_pile,
+                              bool is_cheap,
                               const RasterCallback& task,
                               const base::Closure& reply);
 

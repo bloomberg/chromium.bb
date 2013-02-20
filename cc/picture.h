@@ -45,7 +45,7 @@ class CC_EXPORT Picture
   // Estimate the cost of rasterizing. To predict the cost of a particular
   // call to Raster(), pass this the bounds of the canvas that will
   // be rastered into.
-  bool IsCheapInRect(const gfx::Rect& layer_rect);
+  bool IsCheapInRect(const gfx::Rect& layer_rect) const;
 
   void GatherPixelRefs(
       const gfx::Rect& layer_rect,
