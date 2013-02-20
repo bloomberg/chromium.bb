@@ -910,8 +910,8 @@ void StartupBrowserCreatorImpl::AddStartupURLs(
   PrefService* prefs = profile_->GetPrefs();
   bool has_reset_local_passphrase_switch =
       command_line_.HasSwitch(switches::kResetLocalPassphrase);
-  if (prefs->GetBoolean(prefs::kProfileIsManaged) &&
-      (is_first_run_ || has_reset_local_passphrase_switch)) {
+  if ((is_first_run_ || has_reset_local_passphrase_switch) &&
+      prefs->GetBoolean(prefs::kProfileIsManaged)) {
     startup_urls->insert(startup_urls->begin(),
                          GURL(std::string(chrome::kChromeUISettingsURL) +
                               chrome::kManagedUserSettingsSubPage));
