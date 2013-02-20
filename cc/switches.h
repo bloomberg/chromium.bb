@@ -36,6 +36,7 @@ CC_EXPORT extern const char kTopControlsHeight[];
 CC_EXPORT extern const char kTraceAllRenderedFrames[];
 CC_EXPORT extern const char kSlowDownRasterScaleFactor[];
 CC_EXPORT extern const char kUseCheapnessEstimator[];
+CC_EXPORT extern const char kLowResolutionContentsScaleFactor[];
 
 }  // namespace switches
 }  // namespace cc

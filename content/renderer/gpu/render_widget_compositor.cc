@@ -29,6 +29,48 @@ using WebKit::WebSize;
 using WebKit::WebRect;
 
 namespace content {
+namespace {
+
+bool GetSwitchValueAsInt(
+    const CommandLine& command_line,
+    const std::string& switch_string,
+    int min_value,
+    int max_value,
+    int* result) {
+  std::string string_value = command_line.GetSwitchValueASCII(switch_string);
+  int int_value;
+  if (base::StringToInt(string_value, &int_value) &&
+      int_value >= min_value && int_value <= max_value) {
+    *result = int_value;
+    return true;
+  } else {
+    LOG(WARNING) << "Failed to parse switch " << switch_string  << ": " <<
+        string_value;
+    return false;
+  }
+}
+
+bool GetSwitchValueAsFloat(
+    const CommandLine& command_line,
+    const std::string& switch_string,
+    float min_value,
+    float max_value,
+    float* result) {
+  std::string string_value = command_line.GetSwitchValueASCII(switch_string);
+  double double_value;
+  if (base::StringToDouble(string_value, &double_value) &&
+      double_value >= min_value && double_value <= max_value) {
+    *result = static_cast<float>(double_value);
+    return true;
+  } else {
+    LOG(WARNING) << "Failed to parse switch " << switch_string  << ": " <<
+        string_value;
+    return false;
+  }
+}
+
+
+}  // namespace
 
 // static
 scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
@@ -109,29 +151,30 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
       cmd->HasSwitch(cc::switches::kTraceAllRenderedFrames);
 
   if (cmd->HasSwitch(cc::switches::kSlowDownRasterScaleFactor)) {
-    std::string slow_down_scale_str =
-        cmd->GetSwitchValueASCII(cc::switches::kSlowDownRasterScaleFactor);
-    int slow_down_scale;
-    if (base::StringToInt(slow_down_scale_str, &slow_down_scale)) {
-      settings.initialDebugState.slowDownRasterScaleFactor = slow_down_scale;
-    } else {
-      LOG(WARNING) << "Failed to parse the slow down raster scale factor:" <<
-          slow_down_scale_str;
-    }
+    const int kMinSlowDownScaleFactor = 0;
+    const int kMaxSlowDownScaleFactor = INT_MAX;
+    GetSwitchValueAsInt(*cmd, cc::switches::kSlowDownRasterScaleFactor,
+                        kMinSlowDownScaleFactor, kMaxSlowDownScaleFactor,
+                        &settings.initialDebugState.slowDownRasterScaleFactor);
   }
 
   if (cmd->HasSwitch(cc::switches::kNumRasterThreads)) {
+    const int kMinRasterThreads = 1;
     const int kMaxRasterThreads = 64;
-    std::string num_raster_threads_str =
-        cmd->GetSwitchValueASCII(cc::switches::kNumRasterThreads);
     int num_raster_threads;
-    if (base::StringToInt(num_raster_threads_str, &num_raster_threads) &&
-        num_raster_threads > 0 && num_raster_threads <= kMaxRasterThreads) {
+    if (GetSwitchValueAsInt(*cmd, cc::switches::kNumRasterThreads,
+                            kMinRasterThreads, kMaxRasterThreads,
+                            &num_raster_threads))
       settings.numRasterThreads = num_raster_threads;
-    } else {
-      LOG(WARNING) << "Bad number of raster threads: " <<
-          num_raster_threads;
-    }
+  }
+
+  if (cmd->HasSwitch(cc::switches::kLowResolutionContentsScaleFactor)) {
+    const int kMinScaleFactor = settings.minimumContentsScale;
+    const int kMaxScaleFactor = 1;
+    GetSwitchValueAsFloat(*cmd,
+                          cc::switches::kLowResolutionContentsScaleFactor,
+                          kMinScaleFactor, kMaxScaleFactor,
+                          &settings.lowResContentsScaleFactor);
   }
 
 #if defined(OS_ANDROID)

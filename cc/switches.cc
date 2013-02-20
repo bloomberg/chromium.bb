@@ -74,5 +74,9 @@ const char kSlowDownRasterScaleFactor[] = "slow-down-raster-scale-factor";
 // Schedule rasterization jobs according to their estimated processing cost.
 const char kUseCheapnessEstimator[] = "use-cheapness-estimator";
 
+// The scale factor for low resolution tile contents.
+const char kLowResolutionContentsScaleFactor[] =
+    "low-resolution-contents-scale-factor";
+
 }  // namespace switches
 }  // namespace cc

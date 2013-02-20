@@ -11,6 +11,7 @@
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/strings/string_split.h"
+#include "cc/switches.h"
 #include "content/public/common/content_switches.h"
 #include "ui/gfx/android/device_display_info.h"
 
@@ -79,6 +80,7 @@ bool CollectBasicGraphicsInfo(content::GPUInfo* gpu_info) {
   std::string model = build_info->model();
   model = StringToLowerASCII(model);
   bool is_nexus7 = model.find("nexus 7") != std::string::npos;
+  bool is_nexus10 = model.find("nexus 10") != std::string::npos;
 
   // IMG: avoid context switching perf problems, crashes with share groups
   // Mali-T604: http://crbug.com/154715
@@ -121,6 +123,14 @@ bool CollectBasicGraphicsInfo(content::GPUInfo* gpu_info) {
         switches::kDefaultTileWidth, size.str());
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kDefaultTileHeight, size.str());
+  }
+
+  // Increase the resolution of low resolution tiles for Nexus 10.
+  if (is_nexus10 &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          cc::switches::kLowResolutionContentsScaleFactor)) {
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        cc::switches::kLowResolutionContentsScaleFactor, "0.25");
   }
 
   return true;

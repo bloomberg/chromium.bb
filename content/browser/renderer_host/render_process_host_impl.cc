@@ -867,6 +867,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kTopControlsHeight,
     cc::switches::kSlowDownRasterScaleFactor,
     cc::switches::kUseCheapnessEstimator,
+    cc::switches::kLowResolutionContentsScaleFactor,
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
                                  arraysize(kSwitchNames));
