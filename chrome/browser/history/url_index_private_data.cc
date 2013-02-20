@@ -640,7 +640,7 @@ bool URLIndexPrivateData::IndexRow(
   // Strip out username and password before saving and indexing.
   string16 url(net::FormatUrl(gurl, languages,
       net::kFormatUrlOmitUsernamePassword,
-      net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS,
+      net::UnescapeRule::NONE,
       NULL, NULL, NULL));
 
   HistoryID history_id = static_cast<HistoryID>(row_id);

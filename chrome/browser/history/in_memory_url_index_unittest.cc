@@ -474,6 +474,14 @@ TEST_F(InMemoryURLIndexTest, Retrieval) {
   EXPECT_EQ(30, matches[0].url_info.id());
   EXPECT_FALSE(matches[0].can_inline);
 
+  // Check that URLs are not escaped an escape time.
+  matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("1% wikipedia"),
+                                             string16::npos);
+  ASSERT_EQ(1U, matches.size());
+  EXPECT_EQ(35, matches[0].url_info.id());
+  EXPECT_EQ("http://en.wikipedia.org/wiki/1%25_rule_(Internet_culture)",
+            matches[0].url_info.url().spec());
+
   // Verify that a single term can appear multiple times in the URL and as long
   // as one starts the URL it is still inlined.
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("fubar"),
@@ -636,7 +644,7 @@ TEST_F(InMemoryURLIndexTest, HugeResultSet) {
 
 TEST_F(InMemoryURLIndexTest, TitleSearch) {
   // Signal if someone has changed the test DB.
-  EXPECT_EQ(28U, GetPrivateData()->history_info_map_.size());
+  EXPECT_EQ(29U, GetPrivateData()->history_info_map_.size());
 
   // Ensure title is being searched.
   ScoredHistoryMatches matches = url_index_->HistoryItemsForTerms(

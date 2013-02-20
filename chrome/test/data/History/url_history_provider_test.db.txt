@@ -58,3 +58,4 @@ INSERT INTO "urls" VALUES(31,'http://www.redrudgerydo.com/','Music of the Wild L
 INSERT INTO "urls" VALUES(32,'https://NearlyPerfectResult.com/','Practically Perfect Search Result',99,99,0,0,0);  // Qualifies
 INSERT INTO "urls" VALUES(33,'http://QuiteUselessSearchResultxyz.com/','Practically Useless Search Result',4,0,99,0,0);  // Qualifies
 INSERT INTO "urls" VALUES(34,'http://FubarFubarAndFubar.com/','Situation Normal -- FUBARED',99,99,0,0,0);  // Qualifies
+INSERT INTO "urls" VALUES(35,'http://en.wikipedia.org/wiki/1%25_rule_(Internet_culture)','Do Not Need Title',2,2,0,0,0);  // Qualifies
