@@ -141,6 +141,180 @@ TEST_F(ChromeLauncherControllerPerAppTest, DefaultApps) {
   EXPECT_TRUE(launcher_controller.IsAppPinned(extension3_->id()));
 }
 
+// Check that simple locking of an application will 'create' a launcher item.
+TEST_F(ChromeLauncherControllerPerAppTest, CheckLockApps) {
+  ChromeLauncherControllerPerApp launcher_controller(profile(), &model_);
+  launcher_controller.Init();
+
+  // Model should only contain the browser shortcut and app list items.
+  EXPECT_EQ(2, model_.item_count());
+  EXPECT_FALSE(launcher_controller.IsAppPinned(extension1_->id()));
+  EXPECT_FALSE(launcher_controller.IsWindowedAppInLauncher(extension1_->id()));
+  EXPECT_FALSE(launcher_controller.IsAppPinned(extension2_->id()));
+  EXPECT_FALSE(launcher_controller.IsWindowedAppInLauncher(extension2_->id()));
+
+  launcher_controller.LockV1AppWithID(extension1_->id());
+
+  EXPECT_EQ(3, model_.item_count());
+  EXPECT_EQ(ash::TYPE_WINDOWED_APP, model_.items()[kExpectedAppIndex].type);
+  EXPECT_FALSE(launcher_controller.IsAppPinned(extension1_->id()));
+  EXPECT_TRUE(launcher_controller.IsWindowedAppInLauncher(extension1_->id()));
+  EXPECT_FALSE(launcher_controller.IsAppPinned(extension2_->id()));
+  EXPECT_FALSE(launcher_controller.IsWindowedAppInLauncher(extension2_->id()));
+
+  launcher_controller.UnlockV1AppWithID(extension1_->id());
+
+  EXPECT_EQ(2, model_.item_count());
+  EXPECT_FALSE(launcher_controller.IsAppPinned(extension1_->id()));
+  EXPECT_FALSE(launcher_controller.IsWindowedAppInLauncher(extension1_->id()));
+  EXPECT_FALSE(launcher_controller.IsAppPinned(extension2_->id()));
+  EXPECT_FALSE(launcher_controller.IsWindowedAppInLauncher(extension2_->id()));
+}
+
+// Check that multiple locks of an application will be properly handled.
+TEST_F(ChromeLauncherControllerPerAppTest, CheckMukltiLockApps) {
+  ChromeLauncherControllerPerApp launcher_controller(profile(), &model_);
+  launcher_controller.Init();
+
+  // Model should only contain the browser shortcut and app list items.
+  EXPECT_EQ(2, model_.item_count());
+  EXPECT_FALSE(launcher_controller.IsAppPinned(extension1_->id()));
+  EXPECT_FALSE(launcher_controller.IsWindowedAppInLauncher(extension1_->id()));
+
+  for (int i = 0; i < 2; i++) {
+    launcher_controller.LockV1AppWithID(extension1_->id());
+
+    EXPECT_EQ(3, model_.item_count());
+    EXPECT_EQ(ash::TYPE_WINDOWED_APP, model_.items()[kExpectedAppIndex].type);
+    EXPECT_FALSE(launcher_controller.IsAppPinned(extension1_->id()));
+    EXPECT_TRUE(launcher_controller.IsWindowedAppInLauncher(
+        extension1_->id()));
+  }
+
+  launcher_controller.UnlockV1AppWithID(extension1_->id());
+
+  EXPECT_EQ(3, model_.item_count());
+  EXPECT_EQ(ash::TYPE_WINDOWED_APP, model_.items()[kExpectedAppIndex].type);
+  EXPECT_FALSE(launcher_controller.IsAppPinned(extension1_->id()));
+  EXPECT_TRUE(launcher_controller.IsWindowedAppInLauncher(extension1_->id()));
+
+  launcher_controller.UnlockV1AppWithID(extension1_->id());
+
+  EXPECT_EQ(2, model_.item_count());
+  EXPECT_FALSE(launcher_controller.IsAppPinned(extension1_->id()));
+  EXPECT_FALSE(launcher_controller.IsWindowedAppInLauncher(extension1_->id()));
+  EXPECT_FALSE(launcher_controller.IsAppPinned(extension2_->id()));
+  EXPECT_FALSE(launcher_controller.IsWindowedAppInLauncher(extension1_->id()));
+}
+
+// Check that already pinned items are not effected by locks.
+TEST_F(ChromeLauncherControllerPerAppTest, CheckAlreadyPinnedLockApps) {
+  ChromeLauncherControllerPerApp launcher_controller(profile(), &model_);
+  launcher_controller.Init();
+
+  // Model should only contain the browser shortcut and app list items.
+  EXPECT_EQ(2, model_.item_count());
+  EXPECT_FALSE(launcher_controller.IsAppPinned(extension1_->id()));
+  EXPECT_FALSE(launcher_controller.IsWindowedAppInLauncher(extension1_->id()));
+
+  launcher_controller.PinAppWithID(extension1_->id());
+
+  EXPECT_EQ(3, model_.item_count());
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_.items()[kExpectedAppIndex].type);
+  EXPECT_TRUE(launcher_controller.IsAppPinned(extension1_->id()));
+  EXPECT_FALSE(launcher_controller.IsWindowedAppInLauncher(extension1_->id()));
+
+  launcher_controller.LockV1AppWithID(extension1_->id());
+
+  EXPECT_EQ(3, model_.item_count());
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_.items()[kExpectedAppIndex].type);
+  EXPECT_TRUE(launcher_controller.IsAppPinned(extension1_->id()));
+  EXPECT_FALSE(launcher_controller.IsWindowedAppInLauncher(extension1_->id()));
+
+  launcher_controller.UnlockV1AppWithID(extension1_->id());
+
+  EXPECT_EQ(3, model_.item_count());
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_.items()[kExpectedAppIndex].type);
+  EXPECT_TRUE(launcher_controller.IsAppPinned(extension1_->id()));
+  EXPECT_FALSE(launcher_controller.IsWindowedAppInLauncher(extension1_->id()));
+
+  launcher_controller.UnpinAppsWithID(extension1_->id());
+
+  EXPECT_EQ(2, model_.item_count());
+}
+
+// Check that already pinned items which get locked stay after unpinning.
+TEST_F(ChromeLauncherControllerPerAppTest, CheckPinnedAppsStayAfterUnlock) {
+  ChromeLauncherControllerPerApp launcher_controller(profile(), &model_);
+  launcher_controller.Init();
+
+  // Model should only contain the browser shortcut and app list items.
+  EXPECT_EQ(2, model_.item_count());
+  EXPECT_FALSE(launcher_controller.IsAppPinned(extension1_->id()));
+  EXPECT_FALSE(launcher_controller.IsWindowedAppInLauncher(extension1_->id()));
+
+  launcher_controller.PinAppWithID(extension1_->id());
+
+  EXPECT_EQ(3, model_.item_count());
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_.items()[kExpectedAppIndex].type);
+  EXPECT_TRUE(launcher_controller.IsAppPinned(extension1_->id()));
+  EXPECT_FALSE(launcher_controller.IsWindowedAppInLauncher(extension1_->id()));
+
+  launcher_controller.LockV1AppWithID(extension1_->id());
+
+  EXPECT_EQ(3, model_.item_count());
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_.items()[kExpectedAppIndex].type);
+  EXPECT_TRUE(launcher_controller.IsAppPinned(extension1_->id()));
+  EXPECT_FALSE(launcher_controller.IsWindowedAppInLauncher(extension1_->id()));
+
+  launcher_controller.UnpinAppsWithID(extension1_->id());
+
+  EXPECT_EQ(3, model_.item_count());
+  EXPECT_EQ(ash::TYPE_WINDOWED_APP, model_.items()[kExpectedAppIndex].type);
+  EXPECT_FALSE(launcher_controller.IsAppPinned(extension1_->id()));
+  EXPECT_TRUE(launcher_controller.IsWindowedAppInLauncher(extension1_->id()));
+
+  launcher_controller.UnlockV1AppWithID(extension1_->id());
+
+  EXPECT_EQ(2, model_.item_count());
+}
+
+// Check that lock -> pin -> unlock -> unpin does properly transition.
+TEST_F(ChromeLauncherControllerPerAppTest, CheckLockPinUnlockUnpin) {
+  ChromeLauncherControllerPerApp launcher_controller(profile(), &model_);
+  launcher_controller.Init();
+
+  // Model should only contain the browser shortcut and app list items.
+  EXPECT_EQ(2, model_.item_count());
+  EXPECT_FALSE(launcher_controller.IsAppPinned(extension1_->id()));
+  EXPECT_FALSE(launcher_controller.IsWindowedAppInLauncher(extension1_->id()));
+
+  launcher_controller.LockV1AppWithID(extension1_->id());
+
+  EXPECT_EQ(3, model_.item_count());
+  EXPECT_EQ(ash::TYPE_WINDOWED_APP, model_.items()[kExpectedAppIndex].type);
+  EXPECT_FALSE(launcher_controller.IsAppPinned(extension1_->id()));
+  EXPECT_TRUE(launcher_controller.IsWindowedAppInLauncher(extension1_->id()));
+
+  launcher_controller.PinAppWithID(extension1_->id());
+
+  EXPECT_EQ(3, model_.item_count());
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_.items()[kExpectedAppIndex].type);
+  EXPECT_TRUE(launcher_controller.IsAppPinned(extension1_->id()));
+  EXPECT_FALSE(launcher_controller.IsWindowedAppInLauncher(extension1_->id()));
+
+  launcher_controller.UnlockV1AppWithID(extension1_->id());
+
+  EXPECT_EQ(3, model_.item_count());
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_.items()[kExpectedAppIndex].type);
+  EXPECT_TRUE(launcher_controller.IsAppPinned(extension1_->id()));
+  EXPECT_FALSE(launcher_controller.IsWindowedAppInLauncher(extension1_->id()));
+
+  launcher_controller.UnpinAppsWithID(extension1_->id());
+
+  EXPECT_EQ(2, model_.item_count());
+}
+
 TEST_F(ChromeLauncherControllerPerAppTest, Policy) {
   extension_service_->AddExtension(extension1_.get());
   extension_service_->AddExtension(extension3_.get());

@@ -145,6 +145,10 @@ AppShortcutLauncherItemController::GetRunningApplications() {
   const Extension* extension =
       launcher_controller()->GetExtensionForAppID(app_id());
 
+  // It is possible to come here While an extension gets loaded.
+  if (!extension)
+    return items;
+
   const chrome::BrowserListImpl* ash_browser_list =
       chrome::BrowserListImpl::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
   for (chrome::BrowserListImpl::const_reverse_iterator it =

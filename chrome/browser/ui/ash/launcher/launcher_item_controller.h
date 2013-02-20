@@ -33,7 +33,8 @@ class LauncherItemController {
     TYPE_APP_PANEL,
     TYPE_EXTENSION_PANEL,
     TYPE_SHORTCUT,
-    TYPE_TABBED
+    TYPE_TABBED,
+    TYPE_WINDOWED_APP
   };
 
   LauncherItemController(Type type,
@@ -44,10 +45,18 @@ class LauncherItemController {
   Type type() const { return type_; }
   ash::LauncherID launcher_id() const { return launcher_id_; }
   void set_launcher_id(ash::LauncherID id) { launcher_id_ = id; }
-  const std::string& app_id() const { return app_id_; }
+  virtual const std::string& app_id() const { return app_id_; }
   ChromeLauncherController* launcher_controller() {
     return launcher_controller_;
   }
+
+  // Lock this item to the launcher without being pinned (windowed v1 apps).
+  void lock() { locked_++; }
+  void unlock() {
+    DCHECK(locked_);
+    locked_--;
+  }
+  bool locked() { return locked_ > 0; }
 
   // Returns the title for this item.
   virtual string16 GetTitle() = 0;
@@ -100,6 +109,11 @@ class LauncherItemController {
   const std::string app_id_;
   ash::LauncherID launcher_id_;
   ChromeLauncherController* launcher_controller_;
+
+  // The lock counter which tells the launcher if the item can be removed from
+  // the launcher (0) or not (>0). It is being used for windowed V1
+  // applications.
+  int locked_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherItemController);
 };

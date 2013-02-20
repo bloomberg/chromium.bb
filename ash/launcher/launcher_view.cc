@@ -686,6 +686,7 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
     }
 
     case TYPE_APP_SHORTCUT:
+    case TYPE_WINDOWED_APP:
     case TYPE_PLATFORM_APP:
     case TYPE_APP_PANEL: {
       LauncherButton* button = LauncherButton::Create(
@@ -824,6 +825,7 @@ bool LauncherView::SameDragType(LauncherItemType typea,
     case TYPE_PLATFORM_APP:
       return (typeb == TYPE_TABBED || typeb == TYPE_PLATFORM_APP);
     case TYPE_APP_SHORTCUT:
+    case TYPE_WINDOWED_APP:
     case TYPE_APP_LIST:
     case TYPE_APP_PANEL:
     case TYPE_BROWSER_SHORTCUT:
@@ -1097,6 +1099,7 @@ void LauncherView::LauncherItemChanged(int model_index,
       // Fallthrough for the new Launcher since it needs to show the activation
       // change as well.
     case TYPE_APP_SHORTCUT:
+    case TYPE_WINDOWED_APP:
     case TYPE_PLATFORM_APP:
     case TYPE_APP_PANEL: {
       LauncherButton* button = static_cast<LauncherButton*>(view);
@@ -1218,6 +1221,7 @@ string16 LauncherView::GetAccessibleName(const views::View* view) {
     case TYPE_TABBED:
     case TYPE_APP_PANEL:
     case TYPE_APP_SHORTCUT:
+    case TYPE_WINDOWED_APP:
     case TYPE_PLATFORM_APP:
       return delegate_->GetTitle(model_->items()[view_index]);
 
@@ -1259,6 +1263,7 @@ void LauncherView::ButtonPressed(views::Button* sender,
   // Collect usage statistics before we decide what to do with the click.
   switch (model_->items()[view_index].type) {
     case TYPE_APP_SHORTCUT:
+    case TYPE_WINDOWED_APP:
     case TYPE_PLATFORM_APP:
       Shell::GetInstance()->delegate()->RecordUserMetricsAction(
           UMA_LAUNCHER_CLICK_ON_APP);
