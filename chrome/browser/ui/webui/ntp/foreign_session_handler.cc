@@ -38,10 +38,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/webui/web_ui_util.h"
 
-#if !defined(OS_ANDROID)
-#include "chrome/browser/ui/search/other_device_menu_controller.h"
-#endif
-
 namespace browser_sync {
 
 // Maximum number of sessions we're going to display on the NTP
@@ -175,9 +171,6 @@ void ForeignSessionHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("setForeignSessionCollapsed",
       base::Bind(&ForeignSessionHandler::HandleSetForeignSessionCollapsed,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("showOtherDeviceSessionPopup",
-      base::Bind(&ForeignSessionHandler::HandleShowOtherDeviceSessionPopup,
                  base::Unretained(this)));
 }
 
@@ -379,32 +372,6 @@ void ForeignSessionHandler::HandleSetForeignSessionCollapsed(
     update.Get()->SetBoolean(session_tag, true);
   else
     update.Get()->Remove(session_tag, NULL);
-}
-
-void ForeignSessionHandler::HandleShowOtherDeviceSessionPopup(
-    const ListValue* args) {
-  // Exclude Android until an OtherDeviceMenu view is implemented for it.
-  #if !defined(OS_ANDROID)
-  CHECK(args->GetSize() == 3U);
-
-  // Extract the session tag.
-  std::string session_string_value;
-  CHECK(args->GetString(0, &session_string_value));
-
-  // Extract horizontal coordinate of the click relative to the origin of the
-  // screen coordinate system.
-  double screen_x;
-  CHECK(args->GetDouble(1, &screen_x));
-
-  // Extract vertical coordinate of the click relative to the origin of the
-  // screen coordinate system.
-  double screen_y;
-  CHECK(args->GetDouble(2, &screen_y));
-  OtherDeviceMenuController* menu = new OtherDeviceMenuController(
-      web_ui(),
-      session_string_value, gfx::Point(screen_x, screen_y));
-  menu->ShowMenu();
-  #endif
 }
 
 bool ForeignSessionHandler::SessionWindowToValue(

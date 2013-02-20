@@ -71,17 +71,13 @@ class NewTabPageHandler : public content::WebUIMessageHandler,
   // group, and the rest of the bits are used for the page group ID (defined
   // here).
   static const int kPageIdOffset = 10;
-  // TODO(vadimt): create a new enum and a new UMA histogram for search ntp so
-  // the two histograms don't get mixed in together.
   enum {
     INDEX_MASK = (1 << kPageIdOffset) - 1,
     MOST_VISITED_PAGE_ID = 1 << kPageIdOffset,
     APPS_PAGE_ID = 2 << kPageIdOffset,
     BOOKMARKS_PAGE_ID = 3 << kPageIdOffset,
     SUGGESTIONS_PAGE_ID = 4 << kPageIdOffset,
-    RECENTLY_CLOSED_PAGE_ID = 5 << kPageIdOffset,
-    OTHER_DEVICES_PAGE_ID = 6 << kPageIdOffset,
-    LAST_PAGE_ID = OTHER_DEVICES_PAGE_ID
+    LAST_PAGE_ID = SUGGESTIONS_PAGE_ID
   };
   static const int kHistogramEnumerationMax =
       (LAST_PAGE_ID >> kPageIdOffset) + 1;

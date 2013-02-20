@@ -196,10 +196,6 @@ void NewTabPageHandler::GetLocalizedValues(Profile* profile,
   values->SetInteger("most_visited_page_id", MOST_VISITED_PAGE_ID);
   values->SetInteger("apps_page_id", APPS_PAGE_ID);
   values->SetInteger("suggestions_page_id", SUGGESTIONS_PAGE_ID);
-  // TODO(jeremycho): Add this to histograms.xml (see issue 144067).
-  values->SetInteger("recently_closed_page_id", RECENTLY_CLOSED_PAGE_ID);
-  // TODO(vadimt): Add this to histograms.xml (see issue 148871).
-  values->SetInteger("other_devices_page_id", OTHER_DEVICES_PAGE_ID);
 
   PrefService* prefs = profile->GetPrefs();
   int shown_page = prefs->GetInteger(prefs::kNtpShownPage);
