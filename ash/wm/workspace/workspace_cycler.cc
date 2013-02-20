@@ -98,16 +98,20 @@ void WorkspaceCycler::OnEvent(ui::Event* event) {
   if (!IsCyclingAllowed())
     SetState(NOT_CYCLING);
 
+  if (state_ != NOT_CYCLING) {
+    if (event->type() == ui::ET_SCROLL_FLING_START ||
+        event->type() == ui::ET_MOUSE_PRESSED ||
+        event->type() == ui::ET_MOUSE_RELEASED ||
+        event->IsKeyEvent()) {
+      SetState(STOPPING_CYCLING);
+      event->StopPropagation();
+      return;
+    }
+  }
   ui::EventHandler::OnEvent(event);
 }
 
 void WorkspaceCycler::OnScrollEvent(ui::ScrollEvent* event) {
-  if (state_ != NOT_CYCLING && event->type() == ui::ET_SCROLL_FLING_START) {
-    SetState(STOPPING_CYCLING);
-    event->StopPropagation();
-    return;
-  }
-
   if (event->finger_count() != 3 ||
       event->type() != ui::ET_SCROLL) {
     if (state_ != NOT_CYCLING)
