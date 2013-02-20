@@ -11,7 +11,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/mock_user_image_manager.h"
 #include "chrome/browser/chromeos/login/user.h"
-#include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/user_image.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -70,9 +69,6 @@ class MockUserManager : public UserManager {
   MOCK_CONST_METHOD0(GetMergeSessionState, MergeSessionState(void));
   MOCK_METHOD1(SetMergeSessionState, void(MergeSessionState));
 
-  MOCK_METHOD2(SetUserFlow, void(const std::string&, UserFlow*));
-  MOCK_METHOD1(ResetUserFlow, void(const std::string&));
-
   // You can't mock this function easily because nobody can create User objects
   // but the UserManagerImpl and us.
   virtual const User* GetLoggedInUser() const OVERRIDE;
@@ -83,15 +79,11 @@ class MockUserManager : public UserManager {
 
   virtual UserImageManager* GetUserImageManager() OVERRIDE;
 
-  virtual UserFlow* GetCurrentUserFlow() const OVERRIDE;
-  virtual UserFlow* GetUserFlow(const std::string&) const OVERRIDE;
-
   // Sets a new User instance.
   void SetLoggedInUser(const std::string& email);
 
   User* user_;
   scoped_ptr<MockUserImageManager> user_image_manager_;
-  scoped_ptr<UserFlow> user_flow_;
 };
 
 // Class that provides easy life-cycle management for mocking the UserManager

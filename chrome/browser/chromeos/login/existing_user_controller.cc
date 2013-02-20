@@ -682,10 +682,6 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
     login_display_->SetUIEnabled(true);
   }
 
-  // Reset user flow to default, so that special flow will not affect next
-  // attempt.
-  UserManager::Get()->ResetUserFlow(last_login_attempt_username_);
-
   if (login_status_consumer_)
     login_status_consumer_->OnLoginFailure(failure);
 
@@ -737,7 +733,6 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
   login_display_->SetUIEnabled(true);
 
   if (UserManager::Get()->IsCurrentUserNew() &&
-      !UserManager::Get()->GetCurrentUserFlow()->ShouldSkipPostLoginScreens() &&
       !WizardController::default_controller()->skip_post_login_screens()) {
     // Don't specify start URLs if the administrator has configured the start
     // URLs via policy.
@@ -917,8 +912,6 @@ void ExistingUserController::OptionallyShowReleaseNotes(
     Profile* profile) const {
   // TODO(nkostylev): Fix WizardControllerFlowTest case.
   if (!profile || KioskModeSettings::Get()->IsKioskModeEnabled())
-    return;
-  if (UserManager::Get()->GetCurrentUserFlow()->ShouldSkipPostLoginScreens())
     return;
   PrefService* prefs = profile->GetPrefs();
   chrome::VersionInfo version_info;

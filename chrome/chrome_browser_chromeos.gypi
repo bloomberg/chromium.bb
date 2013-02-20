@@ -480,8 +480,6 @@
         'browser/chromeos/login/user_image_screen.cc',
         'browser/chromeos/login/user_image_screen.h',
         'browser/chromeos/login/user_image_screen_actor.h',
-        'browser/chromeos/login/user_flow.cc',
-        'browser/chromeos/login/user_flow.h',
         'browser/chromeos/login/user_manager.cc',
         'browser/chromeos/login/user_manager.h',
         'browser/chromeos/login/user_manager_impl.cc',
