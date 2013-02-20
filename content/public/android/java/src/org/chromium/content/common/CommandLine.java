@@ -36,11 +36,6 @@ public abstract class CommandLine {
     // Enables test intent handling.
     public static final String ENABLE_TEST_INTENTS = "enable-test-intents";
 
-    // Sets the max number of sandboxed service processes to use.
-    // Unlike renderer-process-limit, this is a hard limit on the number of
-    // concurrent sandboxed processes.
-    public static final String SANDBOXED_SERVICE_LIMIT = "sandboxed-service-limit";
-
     // Dump frames-per-second to the log
     public static final String LOG_FPS = "log-fps";
 

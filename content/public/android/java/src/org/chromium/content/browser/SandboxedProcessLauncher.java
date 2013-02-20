@@ -9,6 +9,7 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.view.Surface;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -35,23 +36,20 @@ public class SandboxedProcessLauncher {
     /* package */ static final int MAX_REGISTERED_SERVICES = 6;
     private static final SandboxedProcessConnection[] mConnections =
         new SandboxedProcessConnection[MAX_REGISTERED_SERVICES];
-
-    private static int sNumRegisteredServices = -1;
-
-    private static int getNumRegisteredServices() {
-        if (sNumRegisteredServices < 0) {
-            String s =
-                CommandLine.getInstance().getSwitchValue(CommandLine.SANDBOXED_SERVICE_LIMIT);
-            sNumRegisteredServices = MAX_REGISTERED_SERVICES;
-            if (s != null) {
-                try {
-                    sNumRegisteredServices = Integer.parseInt(s);
-                } catch (java.lang.NumberFormatException e) {
-                    // pass
-                }
-            }
+    // The list of free slots in mConnections.  When looking for a free connection,
+    // the first index in that list should be used. When a connection is freed, its index
+    // is added to the end of the list. This is so that we avoid immediately reusing a freed
+    // connection (see bug crbug.com/164069): the framework might keep a service process alive
+    // when it's been unbound for a short time.  If a connection to that same service is bound
+    // at that point, the process is reused and bad things happen (mostly static variables are
+    // set when we don't expect them to).
+    // SHOULD BE ACCESSED WITH THE mConnections LOCK.
+    private static final ArrayList<Integer> mFreeConnectionIndices =
+        new ArrayList<Integer>(MAX_REGISTERED_SERVICES);
+    static {
+        for (int i = 0; i < MAX_REGISTERED_SERVICES; i++) {
+            mFreeConnectionIndices.add(i);
         }
-        return sNumRegisteredServices;
     }
 
     private static SandboxedProcessConnection allocateConnection(Context context) {
@@ -63,15 +61,15 @@ public class SandboxedProcessLauncher {
                 }
             };
         synchronized (mConnections) {
-            for (int i = 0; i < getNumRegisteredServices(); ++i) {
-                if (mConnections[i] == null) {
-                    mConnections[i] = new SandboxedProcessConnection(context, i, deathCallback);
-                    return mConnections[i];
-                }
+            if (mFreeConnectionIndices.isEmpty()) {
+                Log.w(TAG, "Ran out of sandboxed services.");
+                return null;
             }
+            int slot = mFreeConnectionIndices.remove(0);
+            assert mConnections[slot] == null;
+            mConnections[slot] = new SandboxedProcessConnection(context, slot, deathCallback);
+            return mConnections[slot];
         }
-        Log.w(TAG, "Ran out of sandboxed services.");
-        return null;
     }
 
     private static SandboxedProcessConnection allocateBoundConnection(Context context,
@@ -100,19 +98,16 @@ public class SandboxedProcessLauncher {
                 assert false;
             } else {
                 mConnections[slot] = null;
+                assert !mFreeConnectionIndices.contains(slot);
+                mFreeConnectionIndices.add(slot);
             }
         }
     }
 
     public static int getNumberOfConnections() {
-        int result = 0;
         synchronized (mConnections) {
-            for (int i = 0; i < getNumRegisteredServices(); ++i) {
-                if (mConnections[i] != null)
-                    ++result;
-            }
+            return mFreeConnectionIndices.size();
         }
-        return result;
     }
 
     // Represents an invalid process handle; same as base/process.h kNullProcessHandle.
