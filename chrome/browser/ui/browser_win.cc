@@ -30,7 +30,7 @@ void NewWindowMaybeMetro(Browser* source_browser, Profile* profile) {
                                                  host_desktop_type);
 
     if (!browser) {
-      chrome::OpenEmptyWindow(profile);
+      chrome::OpenEmptyWindow(profile, host_desktop_type);
       return;
     }
 

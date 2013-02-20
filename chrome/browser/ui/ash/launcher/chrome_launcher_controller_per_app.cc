@@ -658,7 +658,8 @@ void ChromeLauncherControllerPerApp::CreateNewWindow() {
 }
 
 void ChromeLauncherControllerPerApp::CreateNewIncognitoWindow() {
-  chrome::NewEmptyWindow(GetProfileForNewWindows()->GetOffTheRecordProfile());
+  chrome::NewEmptyWindow(GetProfileForNewWindows()->GetOffTheRecordProfile(),
+                         chrome::HOST_DESKTOP_TYPE_ASH);
 }
 
 bool ChromeLauncherControllerPerApp::CanPin() const {

@@ -89,7 +89,7 @@ RenderViewHost* BrowserListTabContentsProvider::CreateNewTarget() {
       chrome::BrowserListImpl::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
 
   if (browser_list->empty())
-    chrome::NewEmptyWindow(profile_);
+    chrome::NewEmptyWindowDeprecated(profile_);
 
   if (browser_list->empty())
     return NULL;

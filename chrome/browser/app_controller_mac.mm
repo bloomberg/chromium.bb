@@ -119,7 +119,7 @@ Browser* ActivateBrowser(Profile* profile) {
 Browser* CreateBrowser(Profile* profile) {
   {
     base::AutoReset<bool> auto_reset_in_run(&g_is_opening_new_window, true);
-    chrome::NewEmptyWindow(profile);
+    chrome::NewEmptyWindow(profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
   }
 
   Browser* browser = chrome::GetLastActiveBrowser();

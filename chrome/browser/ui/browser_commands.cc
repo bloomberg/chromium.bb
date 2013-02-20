@@ -292,7 +292,9 @@ void NewEmptyWindow(Profile* profile, HostDesktopType desktop_type) {
   }
 }
 
-void NewEmptyWindow(Profile* profile) {
+// TODO(gab): This method is deprecated and will be removed shortly. Please use
+// the new version of the NewEmptyWindow call.
+void NewEmptyWindowDeprecated(Profile* profile) {
   NewEmptyWindow(profile, HOST_DESKTOP_TYPE_NATIVE);
 }
 
@@ -306,10 +308,6 @@ Browser* OpenEmptyWindow(Profile* profile, HostDesktopType desktop_type) {
   AddBlankTabAt(browser, -1, true);
   browser->window()->Show();
   return browser;
-}
-
-Browser* OpenEmptyWindow(Profile* profile) {
-  return OpenEmptyWindow(profile, HOST_DESKTOP_TYPE_NATIVE);
 }
 
 void OpenWindowWithRestoredTabs(Profile* profile,
@@ -449,11 +447,13 @@ void Stop(Browser* browser) {
 
 #if !defined(OS_WIN)
 void NewWindow(Browser* browser) {
-  NewEmptyWindow(browser->profile()->GetOriginalProfile());
+  NewEmptyWindow(browser->profile()->GetOriginalProfile(),
+                 browser->host_desktop_type());
 }
 
 void NewIncognitoWindow(Browser* browser) {
-  NewEmptyWindow(browser->profile()->GetOffTheRecordProfile());
+  NewEmptyWindow(browser->profile()->GetOffTheRecordProfile(),
+                 browser->host_desktop_type());
 }
 #endif  // OS_WIN
 

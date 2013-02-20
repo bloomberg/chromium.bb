@@ -15,6 +15,7 @@
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
@@ -748,7 +749,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_NewWindowDismissesInstant) {
 
   InstantTestModelObserver observer(instant()->model(),
                                     chrome::search::Mode::MODE_DEFAULT);
-  chrome::NewEmptyWindow(browser()->profile());
+  chrome::NewEmptyWindow(browser()->profile(),
+                         chrome::HOST_DESKTOP_TYPE_NATIVE);
   observer.WaitUntilDesiredPreviewState();
 
   // Even though we just created a new Browser object (for the new window), the

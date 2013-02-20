@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -684,7 +685,8 @@ void ChromeLauncherControllerPerBrowser::CreateNewWindow() {
 }
 
 void ChromeLauncherControllerPerBrowser::CreateNewIncognitoWindow() {
-  chrome::NewEmptyWindow(GetProfileForNewWindows()->GetOffTheRecordProfile());
+  chrome::NewEmptyWindow(GetProfileForNewWindows()->GetOffTheRecordProfile(),
+                         chrome::HOST_DESKTOP_TYPE_ASH);
 }
 
 bool ChromeLauncherControllerPerBrowser::CanPin() const {

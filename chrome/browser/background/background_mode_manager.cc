@@ -96,9 +96,11 @@ void BackgroundModeManager::BackgroundModeData::ExecuteCommand(int item) {
 }
 
 Browser* BackgroundModeManager::BackgroundModeData::GetBrowserWindow() {
+  chrome::HostDesktopType host_desktop_type = chrome::GetActiveDesktop();
   Browser* browser = chrome::FindLastActiveWithProfile(profile_,
-      chrome::GetActiveDesktop());
-  return browser ? browser : chrome::OpenEmptyWindow(profile_);
+                                                       host_desktop_type);
+  return browser ? browser : chrome::OpenEmptyWindow(profile_,
+                                                     host_desktop_type);
 }
 
 int BackgroundModeManager::BackgroundModeData::GetBackgroundAppCount() const {

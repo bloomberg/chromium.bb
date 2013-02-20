@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/browser_list_impl.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -122,7 +123,7 @@ class SessionRestoreTest : public InProcessBrowserTest {
     ui_test_utils::BrowserAddedObserver window_observer;
     content::TestNavigationObserver navigation_observer(
         content::NotificationService::AllSources(), NULL, expected_tab_count);
-    chrome::NewEmptyWindow(profile);
+    chrome::NewEmptyWindow(profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
     Browser* new_browser = window_observer.WaitForSingleNewBrowser();
     navigation_observer.Wait();
     g_browser_process->ReleaseModule();

@@ -98,7 +98,7 @@ void GoBackToSafety(content::WebContents* web_contents) {
     Browser* browser = browser_list->get(0);
     DCHECK(browser == chrome::FindBrowserWithWebContents(web_contents));
     if (browser->tab_strip_model()->count() == 1)
-      chrome::NewEmptyWindow(browser->profile());
+      chrome::NewEmptyWindow(browser->profile(), browser->host_desktop_type());
   }
 
   web_contents->GetDelegate()->CloseContents(web_contents);
