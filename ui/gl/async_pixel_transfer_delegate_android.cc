@@ -33,6 +33,36 @@ namespace gfx {
 
 namespace {
 
+class TextureUploadStats
+    : public base::RefCountedThreadSafe<TextureUploadStats> {
+ public:
+  TextureUploadStats() : texture_upload_count_(0) {}
+
+  void AddUpload(base::TimeDelta transfer_time) {
+    base::AutoLock scoped_lock(lock_);
+    texture_upload_count_++;
+    total_texture_upload_time_ += transfer_time;
+  }
+
+  int GetStats(base::TimeDelta* total_texture_upload_time) {
+    base::AutoLock scoped_lock(lock_);
+    if (total_texture_upload_time)
+      *total_texture_upload_time = total_texture_upload_time_;
+    return texture_upload_count_;
+  }
+
+ private:
+  friend class RefCountedThreadSafe<TextureUploadStats>;
+
+  ~TextureUploadStats() {}
+
+  int texture_upload_count_;
+  base::TimeDelta total_texture_upload_time_;
+  base::Lock lock_;
+
+  DISALLOW_COPY_AND_ASSIGN(TextureUploadStats);
+};
+
 const char kAsyncTransferThreadName[] = "AsyncTransferThread";
 
 bool CheckErrors(const char* file, int line) {
@@ -156,17 +186,17 @@ class TransferStateInternal : public base::RefCounted<TransferStateInternal> {
       : texture_id_(texture_id),
         thread_texture_id_(0),
         needs_late_bind_(false),
-        transfer_in_progress_(false),
         egl_image_(EGL_NO_IMAGE_KHR),
         wait_for_uploads_(wait_for_uploads),
         use_image_preserved_(use_image_preserved) {
     static const AsyncTexImage2DParams zero_params = {0, 0, 0, 0, 0, 0, 0, 0};
     late_bind_define_params_ = zero_params;
+    base::subtle::Acquire_Store(&transfer_in_progress_, 0);
   }
 
   // Implement AsyncPixelTransferState:
   bool TransferIsInProgress() {
-    return transfer_in_progress_;
+    return base::subtle::Acquire_Load(&transfer_in_progress_) == 1;
   }
 
   void BindTransfer(AsyncTexImage2DParams* bound_params) {
@@ -237,6 +267,18 @@ class TransferStateInternal : public base::RefCounted<TransferStateInternal> {
     }
   }
 
+  void MarkAsTransferIsInProgress() {
+    base::subtle::Atomic32 old_value = base::subtle::Acquire_CompareAndSwap(
+        &transfer_in_progress_, 0, 1);
+    DCHECK_EQ(old_value, 0);
+  }
+
+  void MarkAsCompleted() {
+    base::subtle::Atomic32 old_value = base::subtle::Release_CompareAndSwap(
+        &transfer_in_progress_, 1, 0);
+    DCHECK_EQ(old_value, 1);
+  }
+
  protected:
   friend class base::RefCounted<TransferStateInternal>;
   friend class AsyncPixelTransferDelegateAndroid;
@@ -270,15 +312,12 @@ class TransferStateInternal : public base::RefCounted<TransferStateInternal> {
   AsyncTexImage2DParams late_bind_define_params_;
 
   // Indicates that an async transfer is in progress.
-  bool transfer_in_progress_;
+  base::subtle::Atomic32 transfer_in_progress_;
 
   // It would be nice if we could just create a new EGLImage for
   // every upload, but I found that didn't work, so this stores
   // one for the lifetime of the texture.
   EGLImageKHR egl_image_;
-
-  // Time spent performing last transfer.
-  base::TimeDelta last_transfer_time_;
 
   // Customize when we block on fences (these are work-arounds).
   bool wait_for_uploads_;
@@ -335,9 +374,6 @@ class AsyncPixelTransferDelegateAndroid
   virtual AsyncPixelTransferState*
       CreateRawPixelTransferState(GLuint texture_id) OVERRIDE;
 
-  void AsyncTexImage2DCompleted(scoped_refptr<TransferStateInternal> state);
-  void AsyncTexSubImage2DCompleted(scoped_refptr<TransferStateInternal> state);
-
   static void PerformNotifyCompletion(
       AsyncMemoryParams mem_params,
       ScopedSafeSharedMemory* safe_shared_memory,
@@ -351,7 +387,8 @@ class AsyncPixelTransferDelegateAndroid
       TransferStateInternal* state,
       AsyncTexSubImage2DParams tex_params,
       AsyncMemoryParams mem_params,
-      ScopedSafeSharedMemory* safe_shared_memory);
+      ScopedSafeSharedMemory* safe_shared_memory,
+      scoped_refptr<TextureUploadStats> texture_upload_stats);
 
   // Returns true if a work-around was used.
   bool WorkAroundAsyncTexImage2D(
@@ -363,8 +400,7 @@ class AsyncPixelTransferDelegateAndroid
       const AsyncTexSubImage2DParams& tex_params,
       const AsyncMemoryParams& mem_params);
 
-  int texture_upload_count_;
-  base::TimeDelta total_texture_upload_time_;
+  scoped_refptr<TextureUploadStats> texture_upload_stats_;
   bool is_imagination_;
   bool is_qualcomm_;
 
@@ -394,12 +430,13 @@ scoped_ptr<AsyncPixelTransferDelegate>
   }
 }
 
-AsyncPixelTransferDelegateAndroid::AsyncPixelTransferDelegateAndroid()
-    : texture_upload_count_(0) {
+AsyncPixelTransferDelegateAndroid::AsyncPixelTransferDelegateAndroid() {
   std::string vendor;
   vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
   is_imagination_ = vendor.find("Imagination") != std::string::npos;
   is_qualcomm_ = vendor.find("Qualcomm") != std::string::npos;
+  // TODO(reveman): Skip this if --enable-gpu-benchmarking is not present.
+  texture_upload_stats_ = make_scoped_refptr(new TextureUploadStats);
 }
 
 AsyncPixelTransferDelegateAndroid::~AsyncPixelTransferDelegateAndroid() {
@@ -457,7 +494,7 @@ void AsyncPixelTransferDelegateAndroid::AsyncTexImage2D(
   DCHECK(state);
   DCHECK(state->texture_id_);
   DCHECK(!state->needs_late_bind_);
-  DCHECK(!state->transfer_in_progress_);
+  DCHECK(!state->TransferIsInProgress());
   DCHECK_EQ(state->egl_image_, EGL_NO_IMAGE_KHR);
   DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D), tex_params.target);
   DCHECK_EQ(tex_params.level, 0);
@@ -466,12 +503,15 @@ void AsyncPixelTransferDelegateAndroid::AsyncTexImage2D(
     return;
 
   // Mark the transfer in progress and save define params for lazy binding.
-  state->transfer_in_progress_ = true;
+  state->needs_late_bind_ = true;
   state->late_bind_define_params_ = tex_params;
+
+  // Mark the transfer in progress.
+  state->MarkAsTransferIsInProgress();
 
   // Duplicate the shared memory so there are no way we can get
   // a use-after-free of the raw pixels.
-  transfer_message_loop_proxy()->PostTaskAndReply(FROM_HERE,
+  transfer_message_loop_proxy()->PostTask(FROM_HERE,
       base::Bind(
           &AsyncPixelTransferDelegateAndroid::PerformAsyncTexImage2D,
           base::Unretained(state.get()),  // This is referenced in reply below.
@@ -479,11 +519,7 @@ void AsyncPixelTransferDelegateAndroid::AsyncTexImage2D(
           mem_params,
           base::Owned(new ScopedSafeSharedMemory(safe_shared_memory_pool(),
                                                  mem_params.shared_memory,
-                                                 mem_params.shm_size))),
-      base::Bind(
-          &AsyncPixelTransferDelegateAndroid::AsyncTexImage2DCompleted,
-          AsWeakPtr(),
-          state));
+                                                 mem_params.shm_size))));
 
   DCHECK(CHECK_GL());
 }
@@ -498,7 +534,7 @@ void AsyncPixelTransferDelegateAndroid::AsyncTexSubImage2D(
   scoped_refptr<TransferStateInternal> state =
       static_cast<AsyncTransferStateAndroid*>(transfer_state)->internal_.get();
   DCHECK(state->texture_id_);
-  DCHECK(!state->transfer_in_progress_);
+  DCHECK(!state->TransferIsInProgress());
   DCHECK(mem_params.shared_memory);
   DCHECK_LE(mem_params.shm_data_offset + mem_params.shm_data_size,
             mem_params.shm_size);
@@ -509,7 +545,7 @@ void AsyncPixelTransferDelegateAndroid::AsyncTexSubImage2D(
     return;
 
   // Mark the transfer in progress.
-  state->transfer_in_progress_ = true;
+  state->MarkAsTransferIsInProgress();
 
   // If this wasn't async allocated, we don't have an EGLImage yet.
   // Create the EGLImage if it hasn't already been created.
@@ -517,7 +553,7 @@ void AsyncPixelTransferDelegateAndroid::AsyncTexSubImage2D(
 
   // Duplicate the shared memory so there are no way we can get
   // a use-after-free of the raw pixels.
-  transfer_message_loop_proxy()->PostTaskAndReply(FROM_HERE,
+  transfer_message_loop_proxy()->PostTask(FROM_HERE,
       base::Bind(
           &AsyncPixelTransferDelegateAndroid::PerformAsyncTexSubImage2D,
           base::Unretained(state.get()),  // This is referenced in reply below.
@@ -525,34 +561,22 @@ void AsyncPixelTransferDelegateAndroid::AsyncTexSubImage2D(
           mem_params,
           base::Owned(new ScopedSafeSharedMemory(safe_shared_memory_pool(),
                                                  mem_params.shared_memory,
-                                                 mem_params.shm_size))),
-      base::Bind(
-          &AsyncPixelTransferDelegateAndroid::AsyncTexSubImage2DCompleted,
-          AsWeakPtr(),
-          state));
+                                                 mem_params.shm_size)),
+          texture_upload_stats_));
 
   DCHECK(CHECK_GL());
 }
 
 uint32 AsyncPixelTransferDelegateAndroid::GetTextureUploadCount() {
-  return texture_upload_count_;
+  CHECK(texture_upload_stats_);
+  return texture_upload_stats_->GetStats(NULL);
 }
 
 base::TimeDelta AsyncPixelTransferDelegateAndroid::GetTotalTextureUploadTime() {
-  return total_texture_upload_time_;
-}
-
-void AsyncPixelTransferDelegateAndroid::AsyncTexImage2DCompleted(
-    scoped_refptr<TransferStateInternal> state) {
-  state->needs_late_bind_ = true;
-  state->transfer_in_progress_ = false;
-}
-
-void AsyncPixelTransferDelegateAndroid::AsyncTexSubImage2DCompleted(
-    scoped_refptr<TransferStateInternal> state) {
-  state->transfer_in_progress_ = false;
-  texture_upload_count_++;
-  total_texture_upload_time_ += state->last_transfer_time_;
+  CHECK(texture_upload_stats_);
+  base::TimeDelta total_texture_upload_time;
+  texture_upload_stats_->GetStats(&total_texture_upload_time);
+  return total_texture_upload_time;
 }
 
 namespace {
@@ -620,6 +644,8 @@ void AsyncPixelTransferDelegateAndroid::PerformAsyncTexImage2D(
   }
 
   state->WaitForLastUpload();
+  state->MarkAsCompleted();
+
   DCHECK(CHECK_GL());
 }
 
@@ -627,7 +653,8 @@ void AsyncPixelTransferDelegateAndroid::PerformAsyncTexSubImage2D(
     TransferStateInternal* state,
     AsyncTexSubImage2DParams tex_params,
     AsyncMemoryParams mem_params,
-    ScopedSafeSharedMemory* safe_shared_memory) {
+    ScopedSafeSharedMemory* safe_shared_memory,
+    scoped_refptr<TextureUploadStats> texture_upload_stats) {
   TRACE_EVENT2("gpu", "PerformAsyncTexSubImage2D",
                "width", tex_params.width,
                "height", tex_params.height);
@@ -639,7 +666,10 @@ void AsyncPixelTransferDelegateAndroid::PerformAsyncTexSubImage2D(
   void* data = GetAddress(safe_shared_memory->shared_memory(),
                           mem_params.shm_data_offset);
 
-  base::TimeTicks begin_time(base::TimeTicks::HighResNow());
+  base::TimeTicks begin_time;
+  if (texture_upload_stats)
+    begin_time = base::TimeTicks::HighResNow();
+
   if (!state->thread_texture_id_) {
     TRACE_EVENT0("gpu", "glEGLImageTargetTexture2DOES");
     glGenTextures(1, &state->thread_texture_id_);
@@ -655,9 +685,13 @@ void AsyncPixelTransferDelegateAndroid::PerformAsyncTexSubImage2D(
     DoTexSubImage2D(tex_params, data);
   }
   state->WaitForLastUpload();
+  state->MarkAsCompleted();
 
   DCHECK(CHECK_GL());
-  state->last_transfer_time_ = base::TimeTicks::HighResNow() - begin_time;
+  if (texture_upload_stats) {
+    texture_upload_stats->AddUpload(
+        base::TimeTicks::HighResNow() - begin_time);
+  }
 }
 
 namespace {
@@ -714,8 +748,8 @@ bool AsyncPixelTransferDelegateAndroid::WorkAroundAsyncTexImage2D(
   // The allocation has already occured, so mark it as finished
   // and ready for binding.
   state->needs_late_bind_ = false;
-  state->transfer_in_progress_ = false;
   state->late_bind_define_params_ = tex_params;
+  CHECK(!state->TransferIsInProgress());
 
   // If the dimensions support fast async uploads, create the
   // EGLImage for future uploads. The late bind should not
@@ -758,15 +792,19 @@ bool AsyncPixelTransferDelegateAndroid::WorkAroundAsyncTexSubImage2D(
 
   void* data = GetAddress(mem_params.shared_memory,
                           mem_params.shm_data_offset);
-  base::TimeTicks begin_time(base::TimeTicks::HighResNow());
+  base::TimeTicks begin_time;
+  if (texture_upload_stats_)
+    begin_time = base::TimeTicks::HighResNow();
   {
     TRACE_EVENT0("gpu", "glTexSubImage2D");
     // Note we use late_bind_define_params_ instead of tex_params.
     // The DCHECKs above verify this is always the same.
     DoTexImage2D(state->late_bind_define_params_, data);
   }
-  texture_upload_count_++;
-  total_texture_upload_time_ += base::TimeTicks::HighResNow() - begin_time;
+  if (texture_upload_stats_) {
+    texture_upload_stats_->AddUpload(
+        base::TimeTicks::HighResNow() - begin_time);
+  }
 
   DCHECK(CHECK_GL());
   return true;
