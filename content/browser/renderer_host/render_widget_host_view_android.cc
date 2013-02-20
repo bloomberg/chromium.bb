@@ -515,7 +515,7 @@ gfx::GLSurfaceHandle RenderWidgetHostViewAndroid::GetCompositingSurface() {
     return surface_texture_transport_->GetCompositingSurface(
         host_->surface_id());
   } else {
-    return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, true);
+    return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::TEXTURE_TRANSPORT);
   }
 }
 

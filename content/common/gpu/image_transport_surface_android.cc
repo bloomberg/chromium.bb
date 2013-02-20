@@ -17,9 +17,9 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     GpuCommandBufferStub* stub,
     const gfx::GLSurfaceHandle& handle) {
   scoped_refptr<gfx::GLSurface> surface;
-  if (!handle.handle && handle.transport) {
+  if (handle.transport_type == gfx::TEXTURE_TRANSPORT) {
     surface = new TextureImageTransportSurface(manager, stub, handle);
-  } else if (handle.handle == gfx::kDummyPluginWindow && !handle.transport) {
+  } else if (handle.transport_type == gfx::NATIVE_DIRECT) {
     DCHECK(GpuSurfaceLookup::GetInstance());
     ANativeWindow* window =
         GpuSurfaceLookup::GetInstance()->AcquireNativeWidget(
@@ -32,7 +32,7 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
       return NULL;
 
     surface = new PassThroughImageTransportSurface(
-        manager, stub, surface.get(), handle.transport);
+        manager, stub, surface.get(), false);
   } else {
     NOTIMPLEMENTED();
     return NULL;

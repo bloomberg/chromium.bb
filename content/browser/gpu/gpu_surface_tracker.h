@@ -68,10 +68,6 @@ class GpuSurfaceTracker : public GpuSurfaceLookup {
   // Note: This is an O(log N) lookup.
   gfx::GLSurfaceHandle GetSurfaceHandle(int surface_id);
 
-  // Gets the native window handle for the given surface or NULL if the surface
-  // does not exist. This is an O(log N) lookup.
-  gfx::PluginWindowHandle GetSurfaceWindowHandle(int surface_id);
-
   // Returns the number of surfaces currently registered with the tracker.
   std::size_t GetSurfaceCount();
 

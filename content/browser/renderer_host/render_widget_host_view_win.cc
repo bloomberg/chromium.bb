@@ -2420,14 +2420,14 @@ gfx::Rect RenderWidgetHostViewWin::GetBoundsInRootWindow() {
 gfx::GLSurfaceHandle RenderWidgetHostViewWin::GetCompositingSurface() {
   // If the window has been created, don't recreate it a second time
   if (compositor_host_window_)
-    return gfx::GLSurfaceHandle(compositor_host_window_, true);
+    return gfx::GLSurfaceHandle(compositor_host_window_, gfx::NATIVE_TRANSPORT);
 
   // On Vista and later we present directly to the view window rather than a
   // child window.
   if (GpuDataManagerImpl::GetInstance()->IsUsingAcceleratedSurface()) {
     if (!accelerated_surface_.get())
       accelerated_surface_.reset(new AcceleratedSurface(m_hWnd));
-    return gfx::GLSurfaceHandle(m_hWnd, true);
+    return gfx::GLSurfaceHandle(m_hWnd, gfx::NATIVE_TRANSPORT);
   }
 
   // On XP we need a child window that can be resized independently of the
@@ -2465,7 +2465,8 @@ gfx::GLSurfaceHandle RenderWidgetHostViewWin::GetCompositingSurface() {
 
   ui::SetWindowUserData(compositor_host_window_, this);
 
-  gfx::GLSurfaceHandle surface_handle(compositor_host_window_, true);
+  gfx::GLSurfaceHandle surface_handle(compositor_host_window_,
+                                      gfx::NATIVE_TRANSPORT);
 
   return surface_handle;
 }

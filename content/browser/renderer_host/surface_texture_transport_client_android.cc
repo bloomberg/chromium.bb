@@ -62,7 +62,7 @@ SurfaceTextureTransportClient::GetCompositingSurface(int surface_id) {
     window_ = surface_texture_->CreateSurface();
 
   GpuSurfaceTracker::Get()->SetNativeWidget(surface_id, window_);
-  return gfx::GLSurfaceHandle(gfx::kDummyPluginWindow, false);
+  return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::NATIVE_DIRECT);
 }
 
 void SurfaceTextureTransportClient::SetSize(const gfx::Size& size) {

@@ -12,6 +12,7 @@
 #endif
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "ui/base/ui_export.h"
 
 // This file provides cross platform typedefs for native widget types.
@@ -251,7 +252,6 @@ static inline NativeView NativeViewFromIdInBrowser(NativeViewId id) {
 #elif defined(OS_ANDROID)
   typedef uint64 PluginWindowHandle;
   const PluginWindowHandle kNullPluginWindow = 0;
-  const PluginWindowHandle kDummyPluginWindow = 0xFEEDBEEF;
 #else
   // On OS X we don't have windowed plugins.
   // We use a NULL/0 PluginWindowHandle in shared code to indicate there
@@ -267,22 +267,36 @@ static inline NativeView NativeViewFromIdInBrowser(NativeViewId id) {
   const PluginWindowHandle kNullPluginWindow = 0;
 #endif
 
+enum SurfaceType {
+  EMPTY,
+  NATIVE_DIRECT,
+  NATIVE_TRANSPORT,
+  TEXTURE_TRANSPORT
+};
+
 struct GLSurfaceHandle {
   GLSurfaceHandle()
       : handle(kNullPluginWindow),
-        transport(false),
+        transport_type(EMPTY),
         parent_gpu_process_id(0),
         parent_client_id(0) {
   }
-  GLSurfaceHandle(PluginWindowHandle handle_, bool transport_)
+  GLSurfaceHandle(PluginWindowHandle handle_, SurfaceType transport_)
       : handle(handle_),
-        transport(transport_),
+        transport_type(transport_),
         parent_gpu_process_id(0),
         parent_client_id(0) {
+    DCHECK(!is_null() || handle == kNullPluginWindow);
+    DCHECK(transport_type != TEXTURE_TRANSPORT ||
+           handle == kNullPluginWindow);
   }
-  bool is_null() const { return handle == kNullPluginWindow && !transport; }
+  bool is_null() const { return transport_type == EMPTY; }
+  bool is_transport() const {
+    return transport_type == NATIVE_TRANSPORT ||
+           transport_type == TEXTURE_TRANSPORT;
+  }
   PluginWindowHandle handle;
-  bool transport;
+  SurfaceType transport_type;
   int parent_gpu_process_id;
   uint32 parent_client_id;
 };

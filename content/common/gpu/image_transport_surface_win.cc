@@ -239,13 +239,16 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     const gfx::GLSurfaceHandle& handle) {
   scoped_refptr<gfx::GLSurface> surface;
 
-  if (!handle.handle) {
+  if (handle.transport_type == gfx::TEXTURE_TRANSPORT) {
     // If we don't have a valid handle with the transport flag set, then we're
     // coming from a renderer and we want to render the webpage contents to a
     // texture.
-    DCHECK(handle.transport);
+    DCHECK(!handle.handle);
     surface = new TextureImageTransportSurface(manager, stub, handle);
   } else {
+    DCHECK(handle.handle);
+    DCHECK(handle.transport_type == gfx::NATIVE_DIRECT ||
+           handle.transport_type == gfx::NATIVE_TRANSPORT);
     if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&
         !CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableImageTransportSurface)) {
@@ -273,7 +276,7 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
       surface = new PassThroughImageTransportSurface(manager,
                                                     stub,
                                                     surface.get(),
-                                                    handle.transport);
+                                                    handle.is_transport());
     }
   }
 

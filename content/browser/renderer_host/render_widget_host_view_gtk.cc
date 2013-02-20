@@ -1323,7 +1323,7 @@ gfx::GLSurfaceHandle RenderWidgetHostViewGtk::GetCompositingSurface() {
       DLOG(ERROR) << "Can't find XID for view id " << view_id;
     }
   }
-  return gfx::GLSurfaceHandle(compositing_surface_, true);
+  return gfx::GLSurfaceHandle(compositing_surface_, gfx::NATIVE_TRANSPORT);
 }
 
 bool RenderWidgetHostViewGtk::LockMouse() {

@@ -90,17 +90,10 @@ void GpuSurfaceTracker::SetSurfaceHandle(int surface_id,
 
 gfx::GLSurfaceHandle GpuSurfaceTracker::GetSurfaceHandle(int surface_id) {
   base::AutoLock lock(lock_);
-  DCHECK(surface_map_.find(surface_id) != surface_map_.end());
-  return surface_map_[surface_id].handle;
-}
-
-gfx::PluginWindowHandle GpuSurfaceTracker::GetSurfaceWindowHandle(
-    int surface_id) {
-  base::AutoLock lock(lock_);
   SurfaceMap::iterator it = surface_map_.find(surface_id);
   if (it == surface_map_.end())
-    return gfx::kNullPluginWindow;
-  return it->second.handle.handle;
+    return gfx::GLSurfaceHandle();
+  return it->second.handle;
 }
 
 gfx::AcceleratedWidget GpuSurfaceTracker::AcquireNativeWidget(int surface_id) {

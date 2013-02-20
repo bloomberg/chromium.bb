@@ -395,7 +395,7 @@ class GpuProcessTransportFactory
   virtual gfx::GLSurfaceHandle CreateSharedSurfaceHandle() OVERRIDE {
     CreateSharedContextLazy();
     gfx::GLSurfaceHandle handle = gfx::GLSurfaceHandle(
-        gfx::kNullPluginWindow, true);
+        gfx::kNullPluginWindow, gfx::TEXTURE_TRANSPORT);
     handle.parent_gpu_process_id = shared_context_->GetGPUProcessID();
     handle.parent_client_id = shared_context_->GetChannelID();
 
@@ -502,7 +502,7 @@ class GpuProcessTransportFactory
 #endif
     tracker->SetSurfaceHandle(
         data->surface_id,
-        gfx::GLSurfaceHandle(widget, false));
+        gfx::GLSurfaceHandle(widget, gfx::NATIVE_DIRECT));
 
     per_compositor_data_[compositor] = data;
 

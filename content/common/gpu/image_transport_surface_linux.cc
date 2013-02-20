@@ -14,17 +14,20 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     GpuCommandBufferStub* stub,
     const gfx::GLSurfaceHandle& handle) {
   scoped_refptr<gfx::GLSurface> surface;
-  if (!handle.handle) {
-    DCHECK(handle.transport);
+  if (handle.transport_type == gfx::TEXTURE_TRANSPORT) {
+    DCHECK(!handle.handle);
     surface = new TextureImageTransportSurface(manager, stub, handle);
   } else {
+    DCHECK(handle.handle);
+    DCHECK(handle.transport_type == gfx::NATIVE_DIRECT ||
+           handle.transport_type == gfx::NATIVE_TRANSPORT);
     surface = gfx::GLSurface::CreateViewGLSurface(false, handle.handle);
     if (!surface.get())
       return NULL;
     surface = new PassThroughImageTransportSurface(manager,
                                                    stub,
                                                    surface.get(),
-                                                   handle.transport);
+                                                   handle.is_transport());
   }
 
   if (surface->Initialize())

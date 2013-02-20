@@ -121,7 +121,7 @@ void CompositorImpl::SetWindowSurface(ANativeWindow* window) {
     surface_id_ = tracker->AddSurfaceForNativeWidget(window);
     tracker->SetSurfaceHandle(
         surface_id_,
-        gfx::GLSurfaceHandle(gfx::kDummyPluginWindow, false));
+        gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::NATIVE_DIRECT));
     SetVisible(true);
   }
 }
