@@ -115,9 +115,6 @@ class Register {
   static const Number kLr = 14;  // Link register.
   static const Number kPc = 15;  // Program counter.
   static const Number kConditions = 16;
-  // TODO(karl): CondsDontCare is deprecated, and should be removed as soon
-  // as possible
-  static const Number kCondsDontCareFlag = 17;
   static const Number kNone = 32;  // Out of GPR and FPR range.
 
   // A special value used to indicate that a register field is not used.
@@ -132,18 +129,6 @@ class Register {
   // affected. If you need to track other bits in the APSR, add them as
   // a separate register.
   static Register Conditions() { return Register(kConditions); }
-
-  // For most class decoders, we don't care what the instruction does, other
-  // than if it is safe, and what general purpose registers are changed.
-  // Hence, we may have simplified the "defs" virtual of a class decoder
-  // to always return Register::Conditions() (rather than accurately modeling
-  // if and when it gets updated).
-  //
-  // Note: Do not add Register::CondsDontCareFlag() to a RegisterList. Rather,
-  // use the constant RegisterList::CondsDontCare().
-  // TODO(karl): CondsDontCare is deprecated, and should be removed as soon
-  // as possible
-  static Register CondsDontCareFlag() { return Register(kCondsDontCareFlag); }
 
   // Registers with special meaning in our model:
   static Register Tp() { return Register(kTp); }
@@ -195,12 +180,6 @@ class RegisterList {
     return bits_ == other.bits_;
   }
 
-  // Returns true if the two register list contain the same
-  // general purpose registers and NZCV APSR flags.
-  bool IsSame(const RegisterList& other) const {
-    return JustGprAndApsrBits() == other.JustGprAndApsrBits();
-  }
-
   // Adds a register to the register list.
   RegisterList& Add(const Register& r) {
     bits_ |= r.BitMask();
@@ -249,18 +228,6 @@ class RegisterList {
   // Used exclusively as a bogus scary return value for forbidden instructions.
   static RegisterList Everything() { return RegisterList(-1); }
 
-  // A special register list to communicate that we don't care about conditions
-  // for the given class decoder. Note: This should only be added to register
-  // lists returned from virtual ClassDecoder::defs, and only for actual
-  // class decoders. It is used to communicate to class decoder testers
-  // that the actual class decoder is not tracking conditions.
-  // TODO(karl): CondsDontCare is deprecated, and should be removed as soon
-  // as possible
-  static RegisterList CondsDontCare() {
-    return RegisterList(((1 << Register::kConditions) |
-                         (1 << Register::kCondsDontCareFlag)));
-  }
-
   // A special register list to communicate registers that can't be changed
   // when doing dynamic code replacement.
   static RegisterList DynCodeReplaceFrozenRegs() {
@@ -273,15 +240,6 @@ class RegisterList {
  private:
   Register::Mask bits_;
   RegisterList& operator=(const RegisterList& r);  // Disallow assignment.
-
-  // Returns just the general purpose registers and NZCV APSR flags
-  // register (i.e. it removes the CondsDontCare bit), so that they
-  // can be compared.
-  // TODO(karl): CondsDontCare is deprecated, and should be removed as soon
-  // as possible
-  Register::Mask JustGprAndApsrBits() const {
-    return bits() & ~(1 << Register::kCondsDontCareFlag);
-  }
 };
 
 

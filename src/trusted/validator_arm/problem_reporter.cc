@@ -37,7 +37,6 @@ void ProblemReporter::ExtractProblemAddress(
 static ValidatorInstructionPairProblem Int2InstPairProblem(uint32_t index) {
   static ValidatorInstructionPairProblem Int2InstPairProblemMap[] = {
     kNoSpecificPairProblem,
-    kFirstNotAllowsInInstructionPairs,
     kFirstSetsConditionFlags,
     kConditionsOnPairNotSafe,
     kEqConditionalOn,
@@ -214,10 +213,6 @@ static const char* kValidatorInstructionPairProblem[] = {
   // kNoSpecificPairProblem - No specific known reason for instruction pair
   // failing.
   "",
-  // kFirstNotAllowsInInstructionPairs - First instruction does not model
-  // conditions flags, and hence, can't be used in multiple instruction
-  // patterns.
-  ", because instruction $F can't be used in patterns",
   // kFirstSetsConditionFlags - First instruction sets conditions flags, and
   // hence, can't guarantee that the next instruction will always be executed.
   ", because instruction $F sets APSR condition flags",

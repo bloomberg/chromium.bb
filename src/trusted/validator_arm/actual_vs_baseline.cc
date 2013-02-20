@@ -106,20 +106,6 @@ bool ActualVsBaselineTester::MayBeSafe() {
 void ActualVsBaselineTester::CheckDefs() {
   nacl_arm_dec::RegisterList actual_defs(actual_decoder_.defs(inst_));
   nacl_arm_dec::RegisterList baseline_defs(baseline_decoder_.defs(inst_));
-  if (actual_defs.Contains(nacl_arm_dec::Register::CondsDontCareFlag()) &&
-      !baseline_defs.Contains(nacl_arm_dec::Register::CondsDontCareFlag())) {
-    // Allow simplification on the conditions flag as follows:
-    // If the baseline changes condition flags, so must the actual.
-    // Otherwise, we don't care about the condition flags.
-    if (!baseline_defs.Contains(nacl_arm_dec::Register::Conditions())) {
-      actual_defs.Copy(
-          nacl_arm_dec::RegisterList(actual_defs).
-          Remove(nacl_arm_dec::Register::Conditions()));
-    }
-    actual_defs.Copy(
-        nacl_arm_dec::RegisterList(actual_defs).
-        Remove(nacl_arm_dec::Register::CondsDontCareFlag()));
-  }  // else no simplification allowed, defs must match.
   EXPECT_TRUE(baseline_defs.Equals(actual_defs));
 }
 

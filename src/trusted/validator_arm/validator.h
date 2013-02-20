@@ -264,9 +264,7 @@ class DecodedInstruction {
   // This is important if 'this' produces a sandboxed value that 'other'
   // must consume.
   //
-  // Note: This function is conservative in that if it isn't sure
-  // whether 'this' instruction changes the condition, it assumes that
-  // it does. Similarly, if the conditions of the two instructions do
+  // Note: If the conditions of the two instructions do
   // not statically infer that the conditional execution is correct,
   // we assume that it is not.
   //
@@ -277,7 +275,6 @@ class DecodedInstruction {
     nacl_arm_dec::Instruction::Condition cond1 = inst_.GetCondition();
     nacl_arm_dec::Instruction::Condition cond2 = other.inst_.GetCondition();
     return !defines(nacl_arm_dec::Register::Conditions()) &&
-        !defines(nacl_arm_dec::Register::CondsDontCareFlag()) &&
         // TODO(jfb) Put back mixed-condition handling. See issue #3221.
         //           SfiValidator::condition_implies[cond2][cond1];
         ((cond1 == nacl_arm_dec::Instruction::AL) || (cond1 == cond2));
@@ -290,9 +287,7 @@ class DecodedInstruction {
   // This is important if 'other' produces an unsafe value that 'this'
   // fixes before it can leak out.
   //
-  // Note: This function is conservative in that if it isn't sure
-  // whether the 'other' instruction changes the condition, it assumes
-  // that it does. Similarly, if the conditions of the two
+  // Note: if the conditions of the two
   // instructions do not statically infer that the conditional
   // execution is correct, we assume that it is not.
   //
@@ -303,7 +298,6 @@ class DecodedInstruction {
     nacl_arm_dec::Instruction::Condition cond1 = other.inst_.GetCondition();
     nacl_arm_dec::Instruction::Condition cond2 = inst_.GetCondition();
     return !other.defines(nacl_arm_dec::Register::Conditions()) &&
-        !other.defines(nacl_arm_dec::Register::CondsDontCareFlag()) &&
         // TODO(jfb) Put back mixed-condition handling. See issue #3221.
         //           SfiValidator::condition_implies[cond1][cond2];
         ((cond2 == nacl_arm_dec::Instruction::AL) || (cond1 == cond2));
@@ -509,9 +503,6 @@ typedef enum {
 typedef enum {
   // No specific known reason for instruction pair failing.
   kNoSpecificPairProblem,
-  // First instruction does not model conditions flags, and hence,
-  // can't be used in multiple instruction patterns.
-  kFirstNotAllowsInInstructionPairs,
   // First instruction sets conditions flags, and hence, can't
   // guarantee that the next instruction will always be executed.
   kFirstSetsConditionFlags,

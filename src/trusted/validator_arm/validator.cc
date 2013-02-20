@@ -232,9 +232,7 @@ static ValidatorInstructionPairProblem GetPairConditionProblem(
     const DecodedInstruction& first,
     const DecodedInstruction& second) {
   UNREFERENCED_PARAMETER(second);
-  if (first.defines(nacl_arm_dec::Register::CondsDontCareFlag())) {
-    return kFirstNotAllowsInInstructionPairs;
-  } else if (first.defines(Register::Conditions())) {
+  if (first.defines(Register::Conditions())) {
     return kFirstSetsConditionFlags;
   } else {
     return kConditionsOnPairNotSafe;

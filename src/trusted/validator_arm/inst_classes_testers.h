@@ -1172,7 +1172,6 @@ class PreloadRegisterImm12OpTester : public UncondDecoderTester {
 // Note: Currently we don't mask addresses for preload instructions,
 // since an actual load doesn't occur, and it doesn't fault the processor.
 // Hence, we do not define virtual base_address_register.
-// Note: We assume that we don't care if the conditions flags are set.
 // TODO(karl): Verify that we don't want to mask preload addresses.
 class PreloadRegisterPairOpTester : public UncondDecoderTester {
  public:
