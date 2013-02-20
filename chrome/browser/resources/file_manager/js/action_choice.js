@@ -107,10 +107,10 @@ ActionChoice.prototype.checkDrive_ = function() {
         loadTimeData.getString('ACTION_CHOICE_PHOTOS_DRIVE');
   };
 
-  if (this.volumeManager_.isMounted(RootDirectory.GDATA)) {
+  if (this.volumeManager_.isMounted(RootDirectory.DRIVE)) {
     onMounted();
   } else {
-    this.volumeManager_.mountGData(onMounted, function() {});
+    this.volumeManager_.mountDrive(onMounted, function() {});
   }
 };
 
