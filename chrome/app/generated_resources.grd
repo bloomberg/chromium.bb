@@ -3425,14 +3425,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         The server certificate contains a weak cryptographic key.
       </message>
 
-      <message name="IDS_CERT_ERROR_SPECIAL_CASE_TITLE" desc="Title of the error page for a certificate with a special case exception (i.e. we know that the user is infected with malware)">
-        Special case exception found for received certificate.
-      </message>
-
-      <message name="IDS_CERT_ERROR_SPECIAL_CASE_DETAILS" desc="Description of the error page for a certificate with a special case exception (i.e. we know that the user is infected with malware)">
-        The certificate received has been flagged as erroneous. Please see $1 for more details.
-      </message>
-
       <message name="IDS_CERT_ERROR_UNKNOWN_ERROR_TITLE" desc="Title of the error page for an unknown ssl error">
         Unknown server certificate error
       </message>

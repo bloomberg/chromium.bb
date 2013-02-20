@@ -6,11 +6,9 @@
 
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"
-#include "base/sha1.h"
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
@@ -54,54 +52,6 @@ using content::NavigationEntry;
         base::TimeDelta::FromMinutes(20), 50);
 
 namespace {
-
-// kMalware1 is the SHA1 SPKI hash of a key used by a piece of malware that MS
-// Security Essentials identifies as Win32/Sirefef.gen!C.
-const uint8 kMalware1[base::kSHA1Length] = {
-  0xa4, 0xf5, 0x6e, 0x9e, 0x1d, 0x9a, 0x3b, 0x7b, 0x1a, 0xc3,
-  0x31, 0xcf, 0x64, 0xfc, 0x76, 0x2c, 0xd0, 0x51, 0xfb, 0xa4,
-};
-
-// IsSpecialCaseCertError returns true if the public key hashes in |ssl_info|
-// indicate that this is a special case error. If so, a URL with more
-// information will be returned in |out_url| and an (untranslated) message in
-// |out_message|.
-bool IsSpecialCaseCertError(const net::SSLInfo& ssl_info,
-                            std::string* out_url,
-                            std::string* out_message) {
-  for (net::HashValueVector::const_iterator i =
-       ssl_info.public_key_hashes.begin();
-       i != ssl_info.public_key_hashes.end(); ++i) {
-    if (i->tag != net::HASH_VALUE_SHA1 ||
-        0 != memcmp(i->data(), kMalware1, base::kSHA1Length)) {
-      continue;
-    }
-
-    // In the future this information will come from the CRLSet. Until then
-    // this case is hardcoded.
-    *out_url = "http://support.google.com/chrome/?p=e_malware_Sirefef";
-    *out_message =
-      "<p>The certificate received indicates that this computer is infected"
-      " with Sirefef.gen!C.</p>"
-
-      "<p>Sirefef.gen!C is a computer virus that intercepts secure web"
-      " connections and can steal passwords and other sensitive data.</p>"
-
-      "<p>Chrome recognises this virus, but it affects all software on the"
-      " computer. Other browsers and software may continue to work but"
-      " they are also affected and rendered insecure.</p>"
-
-      "<p>Microsoft Security Essentials can reportedly remove this virus."
-      " When the virus is removed, the warnings in Chrome will stop.</p>"
-
-      "<p>Microsoft Security Essentials is freely available from Microsoft "
-      " at "
-      "http://windows.microsoft.com/en-US/windows/security-essentials-download";
-    return true;
-  }
-
-  return false;
-}
 
 // These represent the commands sent by ssl_roadblock.html.
 enum SSLBlockingPageCommands {
@@ -234,52 +184,15 @@ SSLBlockingPage::~SSLBlockingPage() {
 std::string SSLBlockingPage::GetHTMLContents() {
   // Let's build the html error page.
   DictionaryValue strings;
+  SSLErrorInfo error_info = SSLErrorInfo::CreateError(
+      SSLErrorInfo::NetErrorToErrorType(cert_error_), ssl_info_.cert,
+      request_url_);
 
-  // ERR_CERT_REVOKED handles both online (OCSP, CRL) and offline (CRLSet)
-  // revocation. If the certificate was revoked for being in a CRLSet, see if
-  // there is a user-friendly error message or link to direct them to that may
-  // explain why it was revoked. In the future, these messages will be
-  // contained within the CRLSet itself and they will be loaded from there, but
-  // for now, this is a hardcoded list.
-  std::string url, message;
-  if (cert_error_ == net::ERR_CERT_REVOKED &&
-      IsSpecialCaseCertError(ssl_info_, &url, &message)) {
-    strings.SetString("headLine", l10n_util::GetStringUTF16(
-        IDS_CERT_ERROR_SPECIAL_CASE_TITLE));
-
-    string16 details = l10n_util::GetStringFUTF16(
-        IDS_CERT_ERROR_SPECIAL_CASE_DETAILS,
-        UTF8ToUTF16(google_util::StringAppendGoogleLocaleParam(url)));
-    details += UTF8ToUTF16("<br><br>") + UTF8ToUTF16(message);
-    strings.SetString("description", details);
-
-    // If this is the only error for the site, then the user can override.
-    if ((ssl_info_.cert_status & net::CERT_STATUS_ALL_ERRORS) ==
-        net::CERT_STATUS_REVOKED) {
-      overridable_ = true;
-      strict_enforcement_ = false;
-    }
-
-    // The malware warning doesn't have any "more info" at the moment;
-    // putting placeholders, and ssl_roadblock will conditionally
-    // hide the twisty & the empty places.
-    strings.SetString("moreInfoTitle", "");
-    strings.SetString("moreInfo1", "");
-    strings.SetString("moreInfo2", "");
-    strings.SetString("moreInfo3", "");
-    strings.SetString("moreInfo4", "");
-    strings.SetString("moreInfo5", "");
-  } else {
-    SSLErrorInfo error_info = SSLErrorInfo::CreateError(
-        SSLErrorInfo::NetErrorToErrorType(cert_error_), ssl_info_.cert,
-        request_url_);
-
-    strings.SetString("headLine", error_info.title());
-    strings.SetString("description", error_info.details());
-    strings.SetString("moreInfoTitle",
-        l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXTRA_INFO_TITLE));
-    SetExtraInfo(&strings, error_info.extra_information());
-  }
+  strings.SetString("headLine", error_info.title());
+  strings.SetString("description", error_info.details());
+  strings.SetString("moreInfoTitle",
+      l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXTRA_INFO_TITLE));
+  SetExtraInfo(&strings, error_info.extra_information());
 
   strings.SetString("exit",
                     l10n_util::GetStringUTF16(IDS_SSL_BLOCKING_PAGE_EXIT));
