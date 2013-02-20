@@ -361,8 +361,11 @@ class RenderWidgetHostViewAura::TransientWindowObserver
     aura::RootWindow* root = view_->window_->GetRootWindow();
     if (!root)
       return NULL;
-    return aura::client::GetActivationClient(root)->GetToplevelWindow(
-        view_->window_);
+    aura::client::ActivationClient* activation_client =
+        aura::client::GetActivationClient(root);
+    if (!activation_client)
+      return NULL;
+    return activation_client->GetToplevelWindow(view_->window_);
   }
 
   void StopObserving() {
