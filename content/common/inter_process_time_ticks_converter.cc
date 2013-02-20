@@ -15,6 +15,13 @@ InterProcessTimeTicksConverter::InterProcessTimeTicksConverter(
     const RemoteTimeTicks& remote_upper_bound)
     : remote_lower_bound_(remote_lower_bound.value_),
       remote_upper_bound_(remote_upper_bound.value_) {
+#define CONVERTER_DISABLED_DUE_TO_BUG_174170
+#ifdef CONVERTER_DISABLED_DUE_TO_BUG_174170
+  numerator_ = 1;
+  denominator_ = 1;
+  offset_ = 0;
+  return;
+#endif
   int64 target_range = local_upper_bound.value_ - local_lower_bound.value_;
   int64 source_range = remote_upper_bound.value_ - remote_lower_bound.value_;
   if (source_range <= target_range) {
