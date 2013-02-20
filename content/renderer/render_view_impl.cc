@@ -626,6 +626,7 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       cached_has_main_frame_horizontal_scrollbar_(false),
       cached_has_main_frame_vertical_scrollbar_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(cookie_jar_(this)),
+      notification_provider_(NULL),
       geolocation_dispatcher_(NULL),
       input_tag_speech_dispatcher_(NULL),
       speech_recognition_dispatcher_(NULL),
@@ -645,10 +646,12 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       expected_content_intent_id_(0),
       media_player_proxy_(NULL),
       synchronous_find_active_match_ordinal_(-1),
+      enumeration_completion_id_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           load_progress_tracker_(new LoadProgressTracker(this))),
 #endif
       session_storage_namespace_id_(params->session_storage_namespace_id),
+      decrement_shared_popup_at_destruction_(false),
       handling_select_range_(false),
       next_snapshot_id_(0),
 #if defined(OS_WIN)
