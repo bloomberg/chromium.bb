@@ -5,21 +5,17 @@
 import glob
 import logging
 import os
-import sys
 
 from pylib import android_commands
 from pylib import constants
 from pylib import perf_tests_helper
 from pylib.android_commands import errors
-from pylib.base.base_test_runner import BaseTestRunner
-from pylib.base.test_result import BaseTestResult, TestResults
+from pylib.base import new_base_test_runner as base_test_runner
+from pylib.base import test_result
 from pylib.utils import run_tests_helper
 
-from test_package_apk import TestPackageApk
-from test_package_executable import TestPackageExecutable
-
-
-CURFILE_PATH = os.path.abspath(os.path.dirname(__file__))
+import test_package_apk
+import test_package_executable
 
 
 def _GetDataFilesForTestSuite(test_suite_basename):
@@ -34,9 +30,7 @@ def _GetDataFilesForTestSuite(test_suite_basename):
   # Ideally, we'd just push all test data. However, it has >100MB, and a lot
   # of the files are not relevant (some are used for browser_tests, others for
   # features not supported, etc..).
-  if test_suite_basename in ['base_unittests',
-                                          'sql_unittests',
-                                          'unit_tests']:
+  if test_suite_basename in ['base_unittests', 'sql_unittests', 'unit_tests']:
     test_files = [
         'base/data/file_util_unittest',
         'base/data/json/bom_feff.json',
@@ -130,85 +124,60 @@ def _GetDataFilesForTestSuite(test_suite_basename):
   return []
 
 
-class TestRunner(BaseTestRunner):
+def _TestSuiteRequiresMockTestServer(test_suite_basename):
+  """Returns True if the test suite requires mock test server."""
+  tests_require_net_test_server = ['unit_tests', 'net_unittests',
+                                   'content_unittests']
+  return (test_suite_basename in
+          tests_require_net_test_server)
+
+
+class TestRunner(base_test_runner.BaseTestRunner):
   """Single test suite attached to a single device.
 
   Args:
     device: Device to run the tests.
     test_suite: A specific test suite to run, empty to run all.
-    gtest_filter: A gtest_filter flag.
     test_arguments: Additional arguments to pass to the test binary.
     timeout: Timeout for each test.
     cleanup_test_files: Whether or not to cleanup test files on device.
-    tool: Name of the Valgrind tool.
-    shard_index: index number of the shard on which the test suite will run.
+    tool_name: Name of the Valgrind tool.
     build_type: 'Release' or 'Debug'.
     in_webkit_checkout: Whether the suite is being run from a WebKit checkout.
   """
 
-  def __init__(self, device, test_suite, gtest_filter, test_arguments, timeout,
-               cleanup_test_files, tool_name, shard_index, build_type,
+  def __init__(self, device, test_suite, test_arguments, timeout,
+               cleanup_test_files, tool_name, build_type,
                in_webkit_checkout):
-    BaseTestRunner.__init__(self, device, tool_name, shard_index, build_type)
+    super(TestRunner, self).__init__(device, tool_name, build_type)
     self._running_on_emulator = self.device.startswith('emulator')
-    self._gtest_filter = gtest_filter
     self._test_arguments = test_arguments
-    self.test_results = TestResults()
     self.in_webkit_checkout = in_webkit_checkout
+    self._cleanup_test_files = cleanup_test_files
 
     logging.warning('Test suite: ' + test_suite)
     if os.path.splitext(test_suite)[1] == '.apk':
-      self.test_package = TestPackageApk(
+      self.test_package = test_package_apk.TestPackageApk(
           self.adb,
           device,
           test_suite,
           timeout,
-          cleanup_test_files,
+          self._cleanup_test_files,
           self.tool)
     else:
       # Put a copy into the android out/target directory, to allow stack trace
       # generation.
       symbols_dir = os.path.join(constants.CHROME_DIR, 'out', build_type,
                                  'lib.target')
-      self.test_package = TestPackageExecutable(
+      self.test_package = test_package_executable.TestPackageExecutable(
           self.adb,
           device,
-          test_suite, timeout,
-          cleanup_test_files,
+          test_suite,
+          timeout,
+          self._cleanup_test_files,
           self.tool,
           symbols_dir)
 
-  def _TestSuiteRequiresMockTestServer(self):
-    """Returns True if the test suite requires mock test server."""
-    tests_require_net_test_server = ['unit_tests', 'net_unittests',
-                                     'content_unittests']
-    return (self.test_package.test_suite_basename in
-            tests_require_net_test_server)
-
-  def GetDisabledTests(self):
-    """Returns a list of disabled tests.
-
-    Returns:
-      A list of disabled tests obtained from 'filter' subdirectory.
-    """
-    gtest_filter_base_path = os.path.join(
-        CURFILE_PATH, 'filter', self.test_package.test_suite_basename)
-    disabled_tests = run_tests_helper.GetExpectations(
-       gtest_filter_base_path + '_disabled')
-    if self._running_on_emulator:
-      # Append emulator's filter file.
-      disabled_tests.extend(run_tests_helper.GetExpectations(
-          gtest_filter_base_path + '_emulator_additional_disabled'))
-    return disabled_tests
-
-  def LaunchHelperToolsForTestSuite(self):
-    """Launches helper tools for the test suite.
-
-    Sometimes one test may need to run some helper tools first in order to
-    successfully complete the test.
-    """
-    if self._TestSuiteRequiresMockTestServer():
-      self.LaunchChromeTestServerSpawner()
 
   def StripAndCopyFiles(self):
     """Strips and copies the required data files for the test suite."""
@@ -240,44 +209,69 @@ class TestRunner(BaseTestRunner):
             self.adb.GetExternalStorage(),
             'third_party/WebKit/Source/WebKit/chromium/tests/data'))
 
-  def RunTests(self):
-    """Runs tests on a single device.
+  # TODO(craigdh): There is no reason for this to be part of TestRunner.
+  def GetDisabledTests(self):
+    """Returns a list of disabled tests.
 
     Returns:
-      A TestResults object.
+      A list of disabled tests obtained from 'filter' subdirectory.
     """
-    if self._gtest_filter:
-      try:
-        self.test_package.CreateTestRunnerScript(self._gtest_filter,
-                                                 self._test_arguments)
-        self.test_results = self.test_package.RunTestsAndListResults()
-      except errors.DeviceUnresponsiveError as e:
-        # Make sure this device is not attached
-        logging.warning(e)
-        if android_commands.IsDeviceAttached(self.device):
-          raise e
-        self.test_results.device_exception = device_exception
-      # Calculate unknown test results.
-      finally:
-        # TODO(frankf): Do not break TestResults encapsulation.
-        all_tests = set(self._gtest_filter.split(':'))
-        all_tests_ran = set([t.name for t in self.test_results.GetAll()])
-        unknown_tests = all_tests - all_tests_ran
-        self.test_results.unknown = [BaseTestResult(t, '') for t in
-                                     unknown_tests]
-    return self.test_results
+    gtest_filter_base_path = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)),
+        'filter',
+        self.test_package.test_suite_basename)
+    disabled_tests = run_tests_helper.GetExpectations(
+       gtest_filter_base_path + '_disabled')
+    if self._running_on_emulator:
+      # Append emulator's filter file.
+      disabled_tests.extend(run_tests_helper.GetExpectations(
+          gtest_filter_base_path + '_emulator_additional_disabled'))
+    return disabled_tests
+
+  def RunTest(self, test):
+    """Runs a test on a single device.
+
+    Args:
+      test: a gtest filter string to run.
+
+    Returns:
+      Tuple: (TestResults, test to retry or None)
+    """
+    test_results = test_result.TestResults()
+    if not test:
+      return test_results, None
+
+    try:
+      self.test_package.CreateTestRunnerScript(test, self._test_arguments)
+      test_results = self.test_package.RunTestsAndListResults()
+    except errors.DeviceUnresponsiveError as e:
+      # Make sure this device is not attached
+      logging.warning(e)
+      if android_commands.IsDeviceAttached(self.device):
+        raise
+      test_results.device_exception = device_exception
+    # Calculate unknown test results.
+    # TODO(frankf): Do not break TestResults encapsulation.
+    all_tests = set(test.split(':'))
+    all_tests_ran = set([t.name for t in test_results.GetAll()])
+    unknown_tests = all_tests - all_tests_ran
+    test_results.unknown = [test_result.BaseTestResult(t, '') for t in
+                            unknown_tests]
+    retry = ':'.join([t.name for t in test_results.GetAllBroken()])
+    return test_results, retry
 
   def SetUp(self):
     """Sets up necessary test enviroment for the test suite."""
     super(TestRunner, self).SetUp()
     self.adb.ClearApplicationState(constants.CHROME_PACKAGE)
     self.StripAndCopyFiles()
-    self.LaunchHelperToolsForTestSuite()
+    if _TestSuiteRequiresMockTestServer(self.test_package.test_suite_basename):
+      self.LaunchChromeTestServerSpawner()
     self.tool.SetupEnvironment()
 
   def TearDown(self):
     """Cleans up the test enviroment for the test suite."""
     self.tool.CleanUpEnvironment()
-    if self.test_package.cleanup_test_files:
+    if self._cleanup_test_files:
       self.adb.RemovePushedFiles()
     super(TestRunner, self).TearDown()

@@ -3,17 +3,20 @@
 # found in the LICENSE file.
 
 import copy
+import fnmatch
 import logging
 import os
 
 from pylib import android_commands
 from pylib import cmd_helper
 from pylib import ports
+from pylib.base import shard
+from pylib.base import test_result
 from pylib.utils import emulator
 from pylib.utils import xvfb
 
 import gtest_config
-import test_sharder
+import test_runner
 
 
 def _FullyQualifiedTestSuites(exe, option_test_suite, build_type):
@@ -54,6 +57,48 @@ def _FullyQualifiedTestSuites(exe, option_test_suite, build_type):
   return zip(all_test_suites, qualified_test_suites)
 
 
+def _GetTestsFromDevice(runner):
+  """Get a list of tests from a device, excluding disabled tests.
+
+  Args:
+    runner: a TestRunner.
+  """
+  # The executable/apk needs to be copied before we can call GetAllTests.
+  runner.test_package.StripAndCopyExecutable()
+  all_tests = runner.test_package.GetAllTests()
+  # Only includes tests that do not have any match in the disabled list.
+  disabled_list = runner.GetDisabledTests()
+  return filter(lambda t: not any([fnmatch.fnmatch(t, disabled_pattern)
+                                   for disabled_pattern in disabled_list]),
+                all_tests)
+
+
+def _GetAllEnabledTests(runner_factory, devices):
+  """Get all enabled tests.
+
+  Obtains a list of enabled tests from the test package on the device,
+  then filters it again using the disabled list on the host.
+
+  Args:
+    runner_factory: callable that takes a devices and returns a TestRunner.
+    devices: list of devices.
+
+  Returns:
+    List of all enabled tests.
+
+  Raises Exception if all devices failed.
+  """
+  for device in devices:
+    try:
+      logging.info('Obtaining tests from %s', device)
+      runner = runner_factory(device)
+      return _GetTestsFromDevice(runner)
+    except Exception as e:
+      logging.warning('Failed obtaining tests from %s with exception: %s',
+                      device, e)
+  raise Exception('No device available to get the list of tests.')
+
+
 def _RunATestSuite(options, suite_name):
   """Run a single test suite.
 
@@ -90,22 +135,31 @@ def _RunATestSuite(options, suite_name):
   if not ports.ResetTestServerPortAllocation():
     raise Exception('Failed to reset test server port.')
 
+  # Constructs a new TestRunner with the current options.
+  def RunnerFactory(device):
+    return test_runner.TestRunner(
+        device,
+        options.test_suite,
+        options.test_arguments,
+        options.timeout,
+        options.cleanup_test_files,
+        options.tool,
+        options.build_type,
+        options.webkit)
+
+  # Get tests and split them up based on the number of devices.
   if options.gtest_filter:
-    logging.warning('Sharding is not possible with these configurations.')
-    attached_devices = [attached_devices[0]]
+    all_tests = [t for t in options.gtest_filter.split(':') if t]
+  else:
+    all_tests = _GetAllEnabledTests(RunnerFactory, attached_devices)
+  num_devices = len(attached_devices)
+  tests = [':'.join(all_tests[i::num_devices]) for i in xrange(num_devices)]
+  tests = [t for t in tests if t]
 
-  sharder = test_sharder.TestSharder(
-      attached_devices,
-      options.test_suite,
-      options.gtest_filter,
-      options.test_arguments,
-      options.timeout,
-      options.cleanup_test_files,
-      options.tool,
-      options.build_type,
-      options.webkit)
+  # Run tests.
+  test_results = shard.ShardAndRunTests(RunnerFactory, attached_devices, tests,
+                                        options.build_type)
 
-  test_results = sharder.RunShardedTests()
   test_results.LogFull(
       test_type='Unit test',
       test_package=suite_name,
