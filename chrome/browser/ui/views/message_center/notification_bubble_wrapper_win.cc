@@ -52,7 +52,11 @@ NotificationBubbleWrapperWin::NotificationBubbleWrapperWin(
   bubble_widget_->AddObserver(this);
   bubble_widget_->StackAtTop();
   bubble_widget_->SetAlwaysOnTop(true);
-  bubble_widget_->Activate();
+  // Popups should appear on top of everything, but not disturb the user's
+  // focus since they could appear at any time.  Message Center is always
+  // shown as a result of user action so it can be activated here.
+  if (bubble_type_ != BUBBLE_TYPE_POPUP)
+    bubble_widget_->Activate();
   bubble_view_->InitializeAndShowBubble();
 
   bubble_view_->set_close_on_deactivate(true);
