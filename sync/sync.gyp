@@ -8,6 +8,7 @@
   },
 
   'includes': [
+    'sync_android.gypi',
     'sync_tests.gypi',
   ],
 
