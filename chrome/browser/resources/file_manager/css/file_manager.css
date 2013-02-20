@@ -360,8 +360,6 @@ body[maximized][type='full-page'] .dialog-header {
 }
 
 #search-breadcrumbs {
-  -webkit-margin-end: 5px;
-  -webkit-margin-start: 5px;
 }
 
 .breadcrumbs > [collapsed]::before {
@@ -1137,6 +1135,8 @@ input.rename {
 
 #preview-lines {
   -webkit-box-flex: 1;
+  -webkit-margin-end: 10px;
+  -webkit-margin-start: 10px;
   vertical-align: middle;
 }
 
@@ -1144,8 +1144,6 @@ input.rename {
 .preview-summary {
   color: #666;
   overflow: hidden;
-  padding-left: 10px;
-  padding-right: 10px;
   text-overflow: ellipsis;
   vertical-align: middle;
   white-space: nowrap;
