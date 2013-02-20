@@ -241,6 +241,10 @@ bool WebKitTestController::ResetAfterLayoutTest() {
   return true;
 }
 
+void WebKitTestController::SetTempPath(const base::FilePath& temp_path) {
+  temp_path_ = temp_path;
+}
+
 void WebKitTestController::RendererUnresponsive() {
   DCHECK(CalledOnValidThread());
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTimeout))
@@ -302,6 +306,7 @@ void WebKitTestController::RenderViewCreated(RenderViewHost* render_view_host) {
     current_pid_ = base::GetProcId(render_view_host->GetProcess()->GetHandle());
   ShellViewMsg_SetTestConfiguration_Params params;
   params.current_working_directory = current_working_directory_;
+  params.temp_path = temp_path_;
   params.test_url = test_url_;
   params.enable_pixel_dumping = enable_pixel_dumping_;
   params.layout_test_timeout = kTestTimeoutMilliseconds;

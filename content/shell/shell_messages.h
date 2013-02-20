@@ -16,6 +16,9 @@ IPC_STRUCT_BEGIN(ShellViewMsg_SetTestConfiguration_Params)
   // The current working directory.
   IPC_STRUCT_MEMBER(base::FilePath, current_working_directory)
 
+  // The temporary directory of the system.
+  IPC_STRUCT_MEMBER(base::FilePath, temp_path)
+
   // The URL of the current layout test.
   IPC_STRUCT_MEMBER(GURL, test_url)
 

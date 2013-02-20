@@ -88,6 +88,8 @@ class WebKitTestController : public base::NonThreadSafe,
   // True if the controller was reset successfully.
   bool ResetAfterLayoutTest();
 
+  void SetTempPath(const base::FilePath& temp_path);
+
   void RendererUnresponsive();
   void OverrideWebkitPrefs(webkit_glue::WebPreferences* prefs);
 
@@ -133,6 +135,7 @@ class WebKitTestController : public base::NonThreadSafe,
   scoped_ptr<WebKitTestResultPrinter> printer_;
 
   base::FilePath current_working_directory_;
+  base::FilePath temp_path_;
 
   Shell* main_window_;
 

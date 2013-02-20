@@ -122,6 +122,7 @@ class WebKitTestRunner : public RenderViewObserver,
   static int window_count_;
 
   base::FilePath current_working_directory_;
+  base::FilePath temp_path_;
 
   ::WebTestRunner::WebTestProxyBase* proxy_;
 

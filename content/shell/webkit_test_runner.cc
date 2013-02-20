@@ -4,6 +4,7 @@
 
 #include "content/shell/webkit_test_runner.h"
 
+#include <algorithm>
 #include <clocale>
 #include <cmath>
 
@@ -12,6 +13,7 @@
 #include "base/md5.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
@@ -304,9 +306,22 @@ void WebKitTestRunner::setAcceptAllCookies(bool accept) {
 }
 
 std::string WebKitTestRunner::pathToLocalResource(const std::string& resource) {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebKitTestRunner", "pathToLocalResource"));
-  return std::string();
+#if defined(OS_WIN)
+  if (resource.find("/tmp/") == 0) {
+    // We want a temp file.
+    GURL base_url = net::FilePathToFileURL(temp_path_);
+    return base_url.Resolve(resource.substr(strlen("/tmp/"))).spec();
+  }
+#endif
+
+  // Some layout tests use file://// which we resolve as a UNC path. Normalize
+  // them to just file:///.
+  std::string result = resource;
+  while (StringToLowerASCII(result).find("file:////") == 0) {
+    result = result.substr(0, strlen("file:///")) +
+             result.substr(strlen("file:////"));
+  }
+  return rewriteLayoutTestsURL(result).spec();
 }
 
 void WebKitTestRunner::setLocale(const std::string& locale) {
@@ -562,6 +577,7 @@ void WebKitTestRunner::CaptureDump() {
 void WebKitTestRunner::OnSetTestConfiguration(
     const ShellViewMsg_SetTestConfiguration_Params& params) {
   current_working_directory_ = params.current_working_directory;
+  temp_path_ = params.temp_path;
   enable_pixel_dumping_ = params.enable_pixel_dumping;
   layout_test_timeout_ = params.layout_test_timeout;
   allow_external_pages_ = params.allow_external_pages;

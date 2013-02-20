@@ -123,6 +123,13 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters) {
 
   if (layout_test_mode) {
     content::WebKitTestController test_controller;
+    {
+      // We're outside of the message loop here, and this is a test.
+      base::ThreadRestrictions::ScopedAllowIO allow_io;
+      base::FilePath temp_path;
+      file_util::GetTempDir(&temp_path);
+      test_controller.SetTempPath(temp_path);
+    }
     std::string test_string;
     CommandLine::StringVector args =
         CommandLine::ForCurrentProcess()->GetArgs();
