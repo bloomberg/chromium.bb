@@ -87,7 +87,6 @@ class OobeUI : public OobeDisplay,
       GetTermsOfServiceScreenActor() OVERRIDE;
   virtual UserImageScreenActor* GetUserImageScreenActor() OVERRIDE;
   virtual ViewScreenDelegate* GetRegistrationScreenActor() OVERRIDE;
-  virtual ViewScreenDelegate* GetHTMLPageScreenActor() OVERRIDE;
   virtual WrongHWIDScreenActor* GetWrongHWIDScreenActor() OVERRIDE;
 
   // Collects localized strings from the owned handlers.

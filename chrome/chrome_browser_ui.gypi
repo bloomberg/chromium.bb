@@ -1879,8 +1879,6 @@
         'browser/ui/webui/chromeos/mobile_setup_ui.h',
         'browser/ui/webui/chromeos/proxy_settings_ui.cc',
         'browser/ui/webui/chromeos/proxy_settings_ui.h',
-        'browser/ui/webui/chromeos/register_page_ui.cc',
-        'browser/ui/webui/chromeos/register_page_ui.h',
         'browser/ui/webui/chromeos/sim_unlock_ui.cc',
         'browser/ui/webui/chromeos/sim_unlock_ui.h',
         'browser/ui/webui/chromeos/system_info_ui.cc',

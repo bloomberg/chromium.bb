@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/login/password_changed_view.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/textfield_with_margin.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"

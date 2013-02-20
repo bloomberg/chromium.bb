@@ -29,13 +29,11 @@
 #include "chrome/browser/chromeos/login/eula_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
-#include "chrome/browser/chromeos/login/html_page_screen.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/network_screen.h"
 #include "chrome/browser/chromeos/login/oobe_display.h"
-#include "chrome/browser/chromeos/login/registration_screen.h"
 #include "chrome/browser/chromeos/login/reset_screen.h"
 #include "chrome/browser/chromeos/login/terms_of_service_screen.h"
 #include "chrome/browser/chromeos/login/update_screen.h"
@@ -117,7 +115,6 @@ const char WizardController::kUpdateScreenName[] = "update";
 const char WizardController::kUserImageScreenName[] = "image";
 const char WizardController::kEulaScreenName[] = "eula";
 const char WizardController::kRegistrationScreenName[] = "register";
-const char WizardController::kHTMLPageScreenName[] = "html";
 const char WizardController::kEnterpriseEnrollmentScreenName[] = "enroll";
 const char WizardController::kResetScreenName[] = "reset";
 const char WizardController::kTermsOfServiceScreenName[] = "tos";
@@ -221,35 +218,6 @@ chromeos::EulaScreen* WizardController::GetEulaScreen() {
   return eula_screen_.get();
 }
 
-chromeos::RegistrationScreen* WizardController::GetRegistrationScreen() {
-  if (!registration_screen_.get())
-    registration_screen_.reset(
-        new chromeos::RegistrationScreen(
-            oobe_display_->GetRegistrationScreenActor()));
-  return registration_screen_.get();
-}
-
-chromeos::HTMLPageScreen* WizardController::GetHTMLPageScreen() {
-  if (!html_page_screen_.get()) {
-    const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-    const CommandLine::StringVector& args = cmd_line->GetArgs();
-
-    std::string url;
-    // It's strange but args may contains empty strings.
-    for (size_t i = 0; i < args.size(); i++) {
-      if (!args[i].empty()) {
-        DCHECK(url.empty()) << "More than one URL in command line";
-        url = args[i];
-      }
-    }
-    DCHECK(!url.empty()) << "No URL in command line";
-    html_page_screen_.reset(
-        new chromeos::HTMLPageScreen(
-            oobe_display_->GetHTMLPageScreenActor(), url));
-  }
-  return html_page_screen_.get();
-}
-
 chromeos::EnterpriseEnrollmentScreen*
     WizardController::GetEnterpriseEnrollmentScreen() {
   if (!enterprise_enrollment_screen_.get()) {
@@ -342,25 +310,6 @@ void WizardController::ShowEulaScreen() {
   SetCurrentScreen(GetEulaScreen());
 }
 
-void WizardController::ShowRegistrationScreen() {
-  if (!IsRegisterScreenDefined()) {
-    VLOG(1) << "Skipping registration screen: manifest not defined or invalid "
-               "URL.";
-    OnRegistrationSkipped();
-    return;
-  }
-  VLOG(1) << "Showing registration screen.";
-  SetStatusAreaVisible(true);
-  SetCurrentScreen(GetRegistrationScreen());
-}
-
-void WizardController::ShowHTMLPageScreen() {
-  VLOG(1) << "Showing HTML page screen.";
-  SetStatusAreaVisible(true);
-  host_->SetOobeProgressBarVisible(false);
-  SetCurrentScreen(GetHTMLPageScreen());
-}
-
 void WizardController::ShowEnterpriseEnrollmentScreen() {
   SetStatusAreaVisible(true);
 
@@ -413,13 +362,6 @@ void WizardController::SkipToLoginForTesting() {
 
 void WizardController::SkipPostLoginScreensForTesting() {
   skip_post_login_screens_ = true;
-}
-
-void WizardController::SkipRegistration() {
-  if (current_screen_ == GetRegistrationScreen())
-    OnRegistrationSkipped();
-  else
-    LOG(ERROR) << "Registration screen is not active.";
 }
 
 void WizardController::AddObserver(Observer* observer) {
@@ -565,11 +507,6 @@ void WizardController::OnRegistrationSuccess() {
   }
 }
 
-void WizardController::OnRegistrationSkipped() {
-  // TODO(nkostylev): Track in a histogram?
-  OnRegistrationSuccess();
-}
-
 void WizardController::OnEnterpriseEnrollmentDone() {
   ShowLoginScreen();
 }
@@ -687,16 +624,10 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
   } else if (screen_name == kEulaScreenName) {
     ShowEulaScreen();
   } else if (screen_name == kRegistrationScreenName) {
-    if (is_official_build_) {
-      ShowRegistrationScreen();
-    } else {
-      // Just proceed to image screen.
-      OnRegistrationSuccess();
-    }
+    // Just proceed to next stage.
+    OnRegistrationSuccess();
   } else if (screen_name == kResetScreenName) {
     ShowResetScreen();
-  } else if (screen_name == kHTMLPageScreenName) {
-    ShowHTMLPageScreen();
   } else if (screen_name == kEnterpriseEnrollmentScreenName) {
     ShowEnterpriseEnrollmentScreen();
   } else if (screen_name == kTermsOfServiceScreenName) {
@@ -812,14 +743,6 @@ void WizardController::SetInitialLocale(const std::string& locale) {
     NOTREACHED();
 }
 
-// static
-bool WizardController::IsRegisterScreenDefined() {
-  const chromeos::StartupCustomizationDocument* manifest =
-      chromeos::StartupCustomizationDocument::GetInstance();
-  return manifest->IsReady() &&
-         GURL(manifest->registration_url()).is_valid();
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, chromeos::ScreenObserver overrides:
 void WizardController::OnExit(ExitCodes exit_code) {
@@ -849,12 +772,6 @@ void WizardController::OnExit(ExitCodes exit_code) {
       break;
     case EULA_BACK:
       ShowNetworkScreen();
-      break;
-    case REGISTRATION_SUCCESS:
-      OnRegistrationSuccess();
-      break;
-    case REGISTRATION_SKIPPED:
-      OnRegistrationSkipped();
       break;
     case ENTERPRISE_ENROLLMENT_COMPLETED:
       OnEnterpriseEnrollmentDone();

@@ -288,13 +288,6 @@ ViewScreenDelegate* OobeUI::GetRegistrationScreenActor() {
   return NULL;
 }
 
-ViewScreenDelegate* OobeUI::GetHTMLPageScreenActor() {
-  // WebUI implementation of the LoginDisplayHost opens HTML page directly,
-  // without opening OOBE page.
-  NOTREACHED();
-  return NULL;
-}
-
 void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   // Note, handlers_[0] is a GenericHandler used by the WebUI.
   for (size_t i = 0; i < handlers_.size(); ++i)
