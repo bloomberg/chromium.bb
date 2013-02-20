@@ -8,8 +8,6 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/values.h"
 #include "chrome/browser/history/page_usage_data.h"
 
 namespace history {
@@ -118,38 +116,6 @@ void URLResult::SwapResult(URLResult* other) {
   title_match_positions_.swap(other->title_match_positions_);
 }
 
-// QueryCursor -----------------------------------------------------------------
-
-QueryCursor::QueryCursor() : rowid_(0) {
-}
-
-QueryCursor::~QueryCursor() {
-}
-
-Value* QueryCursor::ToValue() const {
-  ListValue* value = new ListValue;
-  value->AppendString(base::Int64ToString(time_.ToInternalValue()));
-  value->AppendString(base::Int64ToString(rowid_));
-  return value;
-}
-
-bool QueryCursor::FromValue(const Value* value, QueryCursor* cursor) {
-  if (value->GetType() == Value::TYPE_LIST) {
-    const ListValue* list_value = static_cast<const ListValue*>(value);
-    string16 string_value;
-    int64 timestamp;
-
-    if (list_value->GetString(0, &string_value) &&
-        base::StringToInt64(string_value, &timestamp) &&
-        list_value->GetString(1, &string_value) &&
-        base::StringToInt64(string_value, &cursor->rowid_)) {
-      cursor->time_ = base::Time::FromInternalValue(timestamp);
-      return true;
-    }
-  }
-  return false;
-}
-
 // QueryResults ----------------------------------------------------------------
 
 QueryResults::QueryResults() : reached_beginning_(false) {
@@ -180,7 +146,6 @@ const size_t* QueryResults::MatchesForURL(const GURL& url,
 void QueryResults::Swap(QueryResults* other) {
   std::swap(first_time_searched_, other->first_time_searched_);
   std::swap(reached_beginning_, other->reached_beginning_);
-  std::swap(cursor_, other->cursor_);
   results_.swap(other->results_);
   url_to_results_.swap(other->url_to_results_);
 }
@@ -288,15 +253,8 @@ int64 QueryOptions::EffectiveBeginTime() const {
 }
 
 int64 QueryOptions::EffectiveEndTime() const {
-  int64 end = end_time.is_null() ?
+  return end_time.is_null() ?
       std::numeric_limits<int64>::max() : end_time.ToInternalValue();
-
-  // If the cursor is specified, it provides the true end time.
-  if (!cursor.empty()) {
-    DCHECK(cursor.time_.ToInternalValue() <= end);
-    return cursor.time_.ToInternalValue();
-  }
-  return end;
 }
 
 int QueryOptions::EffectiveMaxCount() const {

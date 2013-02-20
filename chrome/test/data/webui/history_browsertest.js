@@ -114,7 +114,7 @@ BaseHistoryWebUITest.prototype = {
    */
   queryHistoryStub_: function(args) {
     callFrontendAsync(
-        'historyResult', { term: args[0], finished: true, cursor: 0 }, []);
+        'historyResult', { term: args[0], finished: true }, []);
   },
 };
 
@@ -156,19 +156,23 @@ HistoryWebUITest.prototype = {
     var searchText = args[0];
     var offset = args[1];
     var range = args[2];
-    var cursor = args[3];
+    var endTime = args[3] || Number.MAX_VALUE;
     var maxCount = args[4];
 
-    var resultCount = Math.min(maxCount, this.fakeHistory_.length - cursor);
-    var results = this.fakeHistory_.slice(cursor, cursor + resultCount);
-    var newCursor = cursor + results.length;
+    // Advance past all entries newer than the specified end time.
+    var i = 0;
+    while (this.fakeHistory_[i] && this.fakeHistory_[i].time >= endTime)
+      ++i;
+
+    var results = this.fakeHistory_.slice(i);
+    if (maxCount)
+      results = results.slice(0, maxCount);
 
     callFrontendAsync(
         'historyResult',
         {
           term: searchText,
-          finished: newCursor >= this.fakeHistory_.length,
-          cursor: newCursor,
+          finished: (this.fakeHistory_.length <= i + results.length)
         },
         results);
   },

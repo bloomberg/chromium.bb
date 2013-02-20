@@ -9,6 +9,7 @@
 
 #include "base/string16.h"
 #include "base/timer.h"
+#include "base/values.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/web_history_service.h"
@@ -48,7 +49,7 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   // Removes duplicate visits from the given list of query results, only
   // retaining the most recent visit to a URL on a particular day. |results|
   // must already be sorted by visit time, most recent first.
-  static void RemoveDuplicateResults(ListValue* results);
+  static void RemoveDuplicateResults(base::ListValue* results);
 
  private:
   // The range for which to return results:
@@ -65,7 +66,7 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   void QueryHistory(string16 search_text, const history::QueryOptions& options);
 
   // Creates a history query result value.
-  DictionaryValue* CreateQueryResultValue(
+  base::DictionaryValue* CreateQueryResultValue(
       const GURL& url, const string16& title, base::Time visit_time,
       bool is_search_result, const string16& snippet);
 
@@ -90,7 +91,7 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   void WebHistoryQueryComplete(const string16& search_text,
                                const history::QueryOptions& options,
                                history::WebHistoryService::Request* request,
-                               const DictionaryValue* results_value);
+                               const base::DictionaryValue* results_value);
 
   // Callback from the history system when visits were deleted.
   void RemoveComplete();
@@ -128,10 +129,10 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   std::set<GURL> urls_to_be_deleted_;
 
   // The info value that is returned to the front end with the query results.
-  DictionaryValue results_info_value_;
+  base::DictionaryValue results_info_value_;
 
   // The list of query results that is returned to the front end.
-  ListValue results_value_;
+  base::ListValue results_value_;
 
   // Timer used to implement a timeout on a Web History response.
   base::OneShotTimer<BrowsingHistoryHandler> web_history_timer_;

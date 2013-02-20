@@ -38,7 +38,7 @@ class WebHistoryService : public ProfileKeyedService {
   // Callback with the result of a call to QueryHistory(). Currently, the
   // DictionaryValue is just the parsed JSON response from the server.
   // TODO(dubroy): Extract the DictionaryValue into a structured results object.
-  typedef base::Callback<void(Request*, const DictionaryValue*)>
+  typedef base::Callback<void(Request*, const base::DictionaryValue*)>
       QueryWebHistoryCallback;
 
   typedef base::Callback<void(Request*, bool success)>

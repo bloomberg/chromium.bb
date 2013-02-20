@@ -310,9 +310,8 @@ void BrowsingHistoryHandler::HandleQueryHistory(const ListValue* args) {
   //   month, set by the next argument).
   // - the range (BrowsingHistoryHandler::Range) Enum value that sets the range
   //   of the query.
-  // - the search cursor, an opaque value from a previous query result, which
-  //   allows this query to pick up where the previous one left off. May be
-  //   null or undefined.
+  // - the end time for the query. Only results older than this time will be
+  //   returned.
   // - the maximum number of results to return (may be 0, meaning that there
   //   is no maximum).
   string16 search_text = ExtractStringValue(args);
@@ -332,15 +331,13 @@ void BrowsingHistoryHandler::HandleQueryHistory(const ListValue* args) {
   else if (range == BrowsingHistoryHandler::WEEK)
     SetQueryTimeInWeeks(offset, &options);
 
-  const Value* cursor_value;
-
-  // Get the cursor. It must be either null, or a list.
-  if (!args->Get(3, &cursor_value) ||
-      (!cursor_value->IsType(Value::TYPE_NULL) &&
-      !history::QueryCursor::FromValue(cursor_value, &options.cursor))) {
+  double end_time;
+  if (!args->GetDouble(3, &end_time)) {
     NOTREACHED() << "Failed to convert argument 3. ";
     return;
   }
+  if (end_time)
+    options.end_time = base::Time::FromJsTime(end_time);
 
   if (!ExtractIntegerValueAtIndex(args, 4, &options.max_count)) {
     NOTREACHED() << "Failed to convert argument 4.";
@@ -535,7 +532,7 @@ void BrowsingHistoryHandler::QueryComplete(
 
   results_info_value_.SetString("term", search_text);
   results_info_value_.SetBoolean("finished", results->reached_beginning());
-  results_info_value_.Set("cursor", results->cursor().ToValue());
+
   // Add the specific dates that were searched to display them.
   // TODO(sergiu): Put today if the start is in the future.
   results_info_value_.SetString("queryStartTime",

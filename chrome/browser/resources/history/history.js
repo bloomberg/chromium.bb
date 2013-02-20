@@ -405,7 +405,6 @@ HistoryModel.prototype.addResults = function(info, results) {
   $('loading-spinner').hidden = true;
   this.inFlight_ = false;
   this.isQueryFinished_ = info.finished;
-  this.queryCursor_ = info.cursor;
   this.queryStartTime = info.queryStartTime;
   this.queryEndTime = info.queryEndTime;
 
@@ -517,10 +516,6 @@ HistoryModel.prototype.clearModel_ = function() {
   // currently held in |this.visits_|.
   this.isQueryFinished_ = false;
 
-  // An opaque value that is returned with the query results. This is used to
-  // fetch the next page of results for a query.
-  this.queryCursor_ = null;
-
   if (this.view_)
     this.view_.clear_();
 };
@@ -539,9 +534,8 @@ HistoryModel.prototype.updateSearch_ = function() {
 
   // Try to fetch more results if more results can arrive and the page is not
   // full.
-  if (!doneLoading && !this.inFlight_) {
+  if (!doneLoading && !this.inFlight_)
     this.queryHistory_();
-  }
 
   // Show the result or a message if no results were returned.
   this.view_.onModelReady(doneLoading);
@@ -552,14 +546,18 @@ HistoryModel.prototype.updateSearch_ = function() {
  * @private
  */
 HistoryModel.prototype.queryHistory_ = function() {
-  var max_results =
+  var maxResults =
       (this.rangeInDays_ == HistoryModel.Range.ALL_TIME) ? RESULTS_PER_PAGE : 0;
+
+  // If there are already some visits, pick up the previous query where it
+  // left off.
+  var lastVisit = this.visits_.slice(-1)[0];
+  var endTime = lastVisit ? lastVisit.date.getTime() : 0;
 
   $('loading-spinner').hidden = false;
   this.inFlight_ = true;
   chrome.send('queryHistory',
-      [this.searchText_, this.offset_, this.rangeInDays_, this.queryCursor_,
-       max_results]);
+      [this.searchText_, this.offset_, this.rangeInDays_, endTime, maxResults]);
 };
 
 /**

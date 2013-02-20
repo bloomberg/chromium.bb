@@ -30,9 +30,6 @@ class TextDatabase {
     Match();
     ~Match();
 
-    // The database rowid of the match.
-    int64 rowid;
-
     // URL of the match.
     GURL url;
 

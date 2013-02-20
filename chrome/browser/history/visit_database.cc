@@ -320,39 +320,23 @@ bool VisitDatabase::GetVisitsInRangeForTransition(
 bool VisitDatabase::GetVisibleVisitsInRange(const QueryOptions& options,
                                             VisitVector* visits) {
   visits->clear();
-  std::string sql = "SELECT" HISTORY_VISIT_ROW_FIELDS "FROM visits "
-                    "WHERE visit_time >= ? AND (visit_time < ? ";
-  if (!options.cursor.empty())
-    sql += " OR (visit_time = ? and id < ?)";
-
   // The visit_time values can be duplicated in a redirect chain, so we sort
   // by id too, to ensure a consistent ordering just in case.
-  sql += ") AND (transition & ?) != 0 "  // CHAIN_END
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
+      "SELECT" HISTORY_VISIT_ROW_FIELDS "FROM visits "
+      "WHERE visit_time >= ? AND visit_time < ? "
+      "AND (transition & ?) != 0 "  // CHAIN_END
       "AND (transition & ?) NOT IN (?, ?, ?) "  // NO SUBFRAME or
                                                 // KEYWORD_GENERATED
-      "ORDER BY visit_time DESC, id DESC";
+      "ORDER BY visit_time DESC, id DESC"));
 
-  // Generate unique IDs for the different variations of the statement,
-  // so they don't share the same cached prepared statement.
-  sql::StatementID id_with_cursor = SQL_FROM_HERE;
-  sql::StatementID id_without_cursor = SQL_FROM_HERE;
-
-  sql::Statement statement(GetDB().GetCachedStatement(
-      options.cursor.empty() ? id_without_cursor : id_with_cursor,
-      sql.c_str()));
-
-  int i = 0;
-  statement.BindInt64(i++, options.EffectiveBeginTime());
-  statement.BindInt64(i++, options.EffectiveEndTime());
-  if (!options.cursor.empty()) {
-    statement.BindInt64(i++, options.EffectiveEndTime());
-    statement.BindInt64(i++, options.cursor.rowid_);
-  }
-  statement.BindInt(i++, content::PAGE_TRANSITION_CHAIN_END);
-  statement.BindInt(i++, content::PAGE_TRANSITION_CORE_MASK);
-  statement.BindInt(i++, content::PAGE_TRANSITION_AUTO_SUBFRAME);
-  statement.BindInt(i++, content::PAGE_TRANSITION_MANUAL_SUBFRAME);
-  statement.BindInt(i++, content::PAGE_TRANSITION_KEYWORD_GENERATED);
+  statement.BindInt64(0, options.EffectiveBeginTime());
+  statement.BindInt64(1, options.EffectiveEndTime());
+  statement.BindInt(2, content::PAGE_TRANSITION_CHAIN_END);
+  statement.BindInt(3, content::PAGE_TRANSITION_CORE_MASK);
+  statement.BindInt(4, content::PAGE_TRANSITION_AUTO_SUBFRAME);
+  statement.BindInt(5, content::PAGE_TRANSITION_MANUAL_SUBFRAME);
+  statement.BindInt(6, content::PAGE_TRANSITION_KEYWORD_GENERATED);
 
   std::set<URLID> found_urls;
 
