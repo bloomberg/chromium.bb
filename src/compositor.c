@@ -3211,11 +3211,13 @@ load_module(const char *name, const char *entrypoint)
 }
 
 static int
-load_modules(struct weston_compositor *ec, const char *modules)
+load_modules(struct weston_compositor *ec, const char *modules,
+	     int *argc, char *argv[], const char *config_file)
 {
 	const char *p, *end;
 	char buffer[256];
-	int (*module_init)(struct weston_compositor *ec);
+	int (*module_init)(struct weston_compositor *ec,
+			   int *argc, char *argv[], const char *config_file);
 
 	if (modules == NULL)
 		return 0;
@@ -3226,7 +3228,7 @@ load_modules(struct weston_compositor *ec, const char *modules)
 		snprintf(buffer, sizeof buffer, "%.*s", (int) (end - p), p);
 		module_init = load_module(buffer, "module_init");
 		if (module_init)
-			module_init(ec);
+			module_init(ec, argc, argv, config_file);
 		p = end;
 		while (*p == ',')
 			p++;
@@ -3429,14 +3431,6 @@ int main(int argc, char *argv[])
 	sigaction(SIGSEGV, &segv_action, NULL);
 	segv_compositor = ec;
 
-
-	for (i = 1; i < argc; i++)
-		weston_log("fatal: unhandled option: %s\n", argv[i]);
-	if (argc > 1) {
-		ret = EXIT_FAILURE;
-		goto out;
-	}
-
 	free(config_file);
 
 	ec->option_idle_time = idle_time;
@@ -3444,10 +3438,17 @@ int main(int argc, char *argv[])
 
 	setenv("WAYLAND_DISPLAY", socket_name, 1);
 
-	if (load_modules(ec, modules) < 0)
+	if (load_modules(ec, modules, &argc, argv, config_file) < 0)
 		goto out;
-	if (load_modules(ec, option_modules) < 0)
+	if (load_modules(ec, option_modules, &argc, argv, config_file) < 0)
 		goto out;
+
+	for (i = 1; i < argc; i++)
+		weston_log("fatal: unhandled option: %s\n", argv[i]);
+	if (argc > 1) {
+		ret = EXIT_FAILURE;
+		goto out;
+	}
 
 	if (wl_display_add_socket(display, socket_name)) {
 		weston_log("fatal: failed to add socket: %m\n");

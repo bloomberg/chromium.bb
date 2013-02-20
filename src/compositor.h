@@ -843,7 +843,8 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 	     const char *config_file);
 
 int
-module_init(struct weston_compositor *compositor);
+module_init(struct weston_compositor *compositor,
+	    int *argc, char *argv[], const char *config_file);
 
 void
 weston_transformed_coord(int width, int height,

@@ -345,9 +345,8 @@ get_animation_type(char *animation)
 }
 
 static void
-shell_configuration(struct desktop_shell *shell)
+shell_configuration(struct desktop_shell *shell, const char *config_file)
 {
-	char *config_file;
 	char *path = NULL;
 	int duration = 60;
 	unsigned int num_workspaces = DEFAULT_NUM_WORKSPACES;
@@ -371,9 +370,7 @@ shell_configuration(struct desktop_shell *shell)
 		{ "screensaver", saver_keys, ARRAY_LENGTH(saver_keys), NULL },
 	};
 
-	config_file = config_file_path("weston.ini");
 	parse_config_file(config_file, cs, ARRAY_LENGTH(cs), shell);
-	free(config_file);
 
 	shell->screensaver.path = path;
 	shell->screensaver.duration = duration;
@@ -3957,7 +3954,8 @@ shell_add_bindings(struct weston_compositor *ec, struct desktop_shell *shell)
 }
 
 WL_EXPORT int
-module_init(struct weston_compositor *ec)
+module_init(struct weston_compositor *ec,
+	    int *argc, char *argv[], const char *config_file)
 {
 	struct weston_seat *seat;
 	struct desktop_shell *shell;
@@ -4002,7 +4000,7 @@ module_init(struct weston_compositor *ec)
 	wl_array_init(&shell->workspaces.array);
 	wl_list_init(&shell->workspaces.client_list);
 
-	shell_configuration(shell);
+	shell_configuration(shell, config_file);
 
 	for (i = 0; i < shell->workspaces.num; i++) {
 		pws = wl_array_add(&shell->workspaces.array, sizeof *pws);

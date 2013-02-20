@@ -315,7 +315,9 @@ weston_xserver_destroy(struct wl_listener *l, void *data)
 }
 
 WL_EXPORT int
-module_init(struct weston_compositor *compositor)
+module_init(struct weston_compositor *compositor,
+	    int *argc, char *argv[], const char *config_file)
+
 {
 	struct wl_display *display = compositor->wl_display;
 	struct weston_xserver *wxs;
