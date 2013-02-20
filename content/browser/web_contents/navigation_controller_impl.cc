@@ -735,18 +735,6 @@ void NavigationControllerImpl::UpdateVirtualURLToURL(
   }
 }
 
-void NavigationControllerImpl::AddTransientEntry(NavigationEntryImpl* entry) {
-  // Discard any current transient entry, we can only have one at a time.
-  int index = 0;
-  if (last_committed_entry_index_ != -1)
-    index = last_committed_entry_index_ + 1;
-  DiscardTransientEntry();
-  entries_.insert(
-      entries_.begin() + index, linked_ptr<NavigationEntryImpl>(entry));
-  transient_entry_index_ = index;
-  web_contents_->NotifyNavigationStateChanged(kInvalidateAll);
-}
-
 void NavigationControllerImpl::LoadURL(
     const GURL& url,
     const Referrer& referrer,
@@ -1757,6 +1745,19 @@ NavigationEntry* NavigationControllerImpl::GetTransientEntry() const {
   if (transient_entry_index_ == -1)
     return NULL;
   return entries_[transient_entry_index_].get();
+}
+
+void NavigationControllerImpl::SetTransientEntry(NavigationEntry* entry) {
+  // Discard any current transient entry, we can only have one at a time.
+  int index = 0;
+  if (last_committed_entry_index_ != -1)
+    index = last_committed_entry_index_ + 1;
+  DiscardTransientEntry();
+  entries_.insert(
+      entries_.begin() + index, linked_ptr<NavigationEntryImpl>(
+          NavigationEntryImpl::FromNavigationEntry(entry)));
+  transient_entry_index_ = index;
+  web_contents_->NotifyNavigationStateChanged(kInvalidateAll);
 }
 
 void NavigationControllerImpl::InsertEntriesFrom(

@@ -55,6 +55,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   virtual NavigationEntry* GetPendingEntry() const OVERRIDE;
   virtual int GetPendingEntryIndex() const OVERRIDE;
   virtual NavigationEntry* GetTransientEntry() const OVERRIDE;
+  virtual void SetTransientEntry(NavigationEntry* entry) OVERRIDE;
   virtual void LoadURL(const GURL& url,
                        const Referrer& referrer,
                        PageTransition type,
@@ -110,17 +111,6 @@ class CONTENT_EXPORT NavigationControllerImpl
   NavigationEntryImpl* GetEntryWithPageID(
       SiteInstance* instance,
       int32 page_id) const;
-
-  // Transient entry -----------------------------------------------------------
-
-  // Adds an entry that is returned by GetActiveEntry().  The entry is
-  // transient: any navigation causes it to be removed and discarded.
-  // The NavigationController becomes the owner of |entry| and deletes it when
-  // it discards it.  This is useful with interstitial page that need to be
-  // represented as an entry, but should go away when the user navigates away
-  // from them.
-  // Note that adding a transient entry does not change the active contents.
-  void AddTransientEntry(NavigationEntryImpl* entry);
 
   // WebContentsImpl -----------------------------------------------------------
 

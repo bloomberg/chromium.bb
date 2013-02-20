@@ -2190,7 +2190,7 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   // Adding a transient with no pending entry.
   NavigationEntryImpl* transient_entry = new NavigationEntryImpl;
   transient_entry->SetURL(transient_url);
-  controller.AddTransientEntry(transient_entry);
+  controller.SetTransientEntry(transient_entry);
 
   // We should not have received any notifications.
   EXPECT_EQ(0U, notifications.size());
@@ -2218,7 +2218,7 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   // Add a transient again, then navigate with no pending entry this time.
   transient_entry = new NavigationEntryImpl;
   transient_entry->SetURL(transient_url);
-  controller.AddTransientEntry(transient_entry);
+  controller.SetTransientEntry(transient_entry);
   EXPECT_EQ(transient_url, controller.GetActiveEntry()->GetURL());
   test_rvh()->SendNavigate(3, url3);
   // Transient entry should be gone.
@@ -2230,7 +2230,7 @@ TEST_F(NavigationControllerTest, TransientEntry) {
       url4, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   transient_entry = new NavigationEntryImpl;
   transient_entry->SetURL(transient_url);
-  controller.AddTransientEntry(transient_entry);
+  controller.SetTransientEntry(transient_entry);
   EXPECT_EQ(transient_url, controller.GetActiveEntry()->GetURL());
   test_rvh()->SendNavigate(4, url4);
   EXPECT_EQ(url4, controller.GetActiveEntry()->GetURL());
@@ -2239,7 +2239,7 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   // Add a transient and go back.  This should simply remove the transient.
   transient_entry = new NavigationEntryImpl;
   transient_entry->SetURL(transient_url);
-  controller.AddTransientEntry(transient_entry);
+  controller.SetTransientEntry(transient_entry);
   EXPECT_EQ(transient_url, controller.GetActiveEntry()->GetURL());
   EXPECT_TRUE(controller.CanGoBack());
   EXPECT_FALSE(controller.CanGoForward());
@@ -2252,7 +2252,7 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   // Add a transient and go to an entry before the current one.
   transient_entry = new NavigationEntryImpl;
   transient_entry->SetURL(transient_url);
-  controller.AddTransientEntry(transient_entry);
+  controller.SetTransientEntry(transient_entry);
   EXPECT_EQ(transient_url, controller.GetActiveEntry()->GetURL());
   controller.GoToIndex(1);
   // The navigation should have been initiated, transient entry should be gone.
@@ -2265,7 +2265,7 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   // Add a transient and go to an entry after the current one.
   transient_entry = new NavigationEntryImpl;
   transient_entry->SetURL(transient_url);
-  controller.AddTransientEntry(transient_entry);
+  controller.SetTransientEntry(transient_entry);
   EXPECT_EQ(transient_url, controller.GetActiveEntry()->GetURL());
   controller.GoToIndex(3);
   // The navigation should have been initiated, transient entry should be gone.
@@ -2279,7 +2279,7 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   // Add a transient and go forward.
   transient_entry = new NavigationEntryImpl;
   transient_entry->SetURL(transient_url);
-  controller.AddTransientEntry(transient_entry);
+  controller.SetTransientEntry(transient_entry);
   EXPECT_EQ(transient_url, controller.GetActiveEntry()->GetURL());
   EXPECT_TRUE(controller.CanGoForward());
   controller.GoForward();
@@ -2292,7 +2292,7 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   // Add a transient and do an in-page navigation, replacing the current entry.
   transient_entry = new NavigationEntryImpl;
   transient_entry->SetURL(transient_url);
-  controller.AddTransientEntry(transient_entry);
+  controller.SetTransientEntry(transient_entry);
   EXPECT_EQ(transient_url, controller.GetActiveEntry()->GetURL());
   test_rvh()->SendNavigate(3, url3_ref);
   // Transient entry should be gone.
@@ -2324,7 +2324,7 @@ TEST_F(NavigationControllerTest, ReloadTransient) {
   // A transient entry is added, interrupting the navigation.
   NavigationEntryImpl* transient_entry = new NavigationEntryImpl;
   transient_entry->SetURL(transient_url);
-  controller.AddTransientEntry(transient_entry);
+  controller.SetTransientEntry(transient_entry);
   EXPECT_TRUE(controller.GetTransientEntry());
   EXPECT_EQ(transient_url, controller.GetActiveEntry()->GetURL());
 
@@ -2476,7 +2476,7 @@ TEST_F(NavigationControllerTest, CloneOmitsInterstitials) {
   // Add an interstitial entry.  Should be deleted with controller.
   NavigationEntryImpl* interstitial_entry = new NavigationEntryImpl();
   interstitial_entry->set_page_type(PAGE_TYPE_INTERSTITIAL);
-  controller.AddTransientEntry(interstitial_entry);
+  controller.SetTransientEntry(interstitial_entry);
 
   scoped_ptr<WebContents> clone(controller.GetWebContents()->Clone());
 
@@ -2886,7 +2886,7 @@ TEST_F(NavigationControllerTest, PruneAllButActiveForTransient) {
   // Adding a transient with no pending entry.
   NavigationEntryImpl* transient_entry = new NavigationEntryImpl;
   transient_entry->SetURL(transient_url);
-  controller.AddTransientEntry(transient_entry);
+  controller.SetTransientEntry(transient_entry);
 
   controller.PruneAllButActive();
 

@@ -265,6 +265,15 @@ class NavigationController {
   // by the navigation controller and may be deleted at any time.
   virtual NavigationEntry* GetTransientEntry() const = 0;
 
+  // Adds an entry that is returned by GetActiveEntry(). The entry is
+  // transient: any navigation causes it to be removed and discarded.  The
+  // NavigationController becomes the owner of |entry| and deletes it when
+  // it discards it. This is useful with interstitial pages that need to be
+  // represented as an entry, but should go away when the user navigates away
+  // from them.
+  // Note that adding a transient entry does not change the active contents.
+  virtual void SetTransientEntry(NavigationEntry* entry) = 0;
+
   // New navigations -----------------------------------------------------------
 
   // Loads the specified URL, specifying extra http headers to add to the

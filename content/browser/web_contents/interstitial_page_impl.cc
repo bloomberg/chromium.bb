@@ -210,7 +210,7 @@ void InterstitialPageImpl::Show() {
     // Give delegates a chance to set some states on the navigation entry.
     delegate_->OverrideEntry(entry);
 
-    web_contents_->GetController().AddTransientEntry(entry);
+    web_contents_->GetController().SetTransientEntry(entry);
   }
 
   DCHECK(!render_view_host_);

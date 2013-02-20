@@ -10,7 +10,6 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_tab_helper.h"
@@ -162,6 +161,30 @@ bool IsFullHeight(const InstantModel& model) {
 bool IsContentsFrom(const InstantPage* page,
                     const content::WebContents* contents) {
   return page && (page->contents() == contents);
+}
+
+// Adds a transient NavigationEntry to the supplied |contents|'s
+// NavigationController if the page's URL has not already been updated with the
+// supplied |search_terms|. Sets the |search_terms| on the transient entry for
+// search terms extraction to work correctly.
+void EnsureSearchTermsAreSet(content::WebContents* contents,
+                             const string16& search_terms) {
+  content::NavigationController& controller = contents->GetController();
+
+  // If search terms are already correct or there is already a transient entry
+  // (there shouldn't be), bail out early.
+  if (chrome::search::GetSearchTerms(contents) == search_terms ||
+      controller.GetTransientEntry())
+    return;
+
+  content::NavigationEntry* transient = content::NavigationEntry::Create(
+      *controller.GetActiveEntry());
+  transient->SetExtraData(chrome::search::kInstantExtendedSearchTermsKey,
+                          search_terms);
+  controller.SetTransientEntry(transient);
+
+  chrome::search::SearchTabHelper::FromWebContents(contents)->
+      NavigationEntryUpdated();
 }
 
 }  // namespace
@@ -554,6 +577,7 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
     if (type == INSTANT_COMMIT_PRESSED_ENTER &&
         (last_match_was_search_ ||
          last_suggestion_.behavior == INSTANT_COMPLETE_NEVER)) {
+      EnsureSearchTermsAreSet(instant_tab_->contents(), last_omnibox_text_);
       instant_tab_->Submit(last_omnibox_text_);
       instant_tab_->contents()->Focus();
       return true;
@@ -583,39 +607,18 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
   scoped_ptr<content::WebContents> preview = overlay_->ReleaseContents();
 
   if (extended_enabled_) {
-    // Consider what's happening:
-    //   1. The user has typed a query in the omnibox and committed it (either
-    //      by pressing Enter or clicking on the preview).
-    //   2. We commit the preview to the tab strip, and tell the page.
-    //   3. The page will update the URL hash fragment with the query terms.
-    // After steps 1 and 3, the omnibox will show the query terms. However, if
-    // the URL we are committing at step 2 doesn't already have query terms, it
-    // will flash for a brief moment as a plain URL. So, avoid that flicker by
-    // pretending that the plain URL is actually the typed query terms.
-    // TODO(samarth,beaudoin): Instead of this hack, we should add a new field
-    // to NavigationEntry to keep track of what the correct query, if any, is.
-    content::NavigationEntry* entry =
-        preview->GetController().GetVisibleEntry();
-    std::string url = entry->GetVirtualURL().spec();
-    if (!google_util::IsInstantExtendedAPIGoogleSearchUrl(url) &&
-        google_util::IsGoogleDomainUrl(url, google_util::ALLOW_SUBDOMAIN,
-                                       google_util::ALLOW_NON_STANDARD_PORTS)) {
-      // Hitting ENTER searches for what the user typed, so use
-      // last_omnibox_text_. Clicking on the overlay commits what is currently
-      // showing, so add in the gray text in that case.
-      std::string query(UTF16ToUTF8(last_omnibox_text_));
-      if (type != INSTANT_COMMIT_PRESSED_ENTER) {
-        query += UTF16ToUTF8(last_suggestion_.text);
-        // Update |last_omnibox_text_| so that the controller commits the proper
-        // query if the user focuses the omnibox and presses Enter.
-        last_omnibox_text_ += last_suggestion_.text;
-      }
-      entry->SetVirtualURL(GURL(
-          url + "#q=" +
-          net::EscapeQueryParamValue(query, true)));
-      chrome::search::SearchTabHelper::FromWebContents(preview.get())->
-          NavigationEntryUpdated();
+    // Adjust the search terms shown in the omnibox for this query. Hitting
+    // ENTER searches for what the user typed, so use last_omnibox_text_.
+    // Clicking on the overlay commits what is currently showing, so add in the
+    // gray text in that case.
+    if (type == INSTANT_COMMIT_FOCUS_LOST &&
+        last_suggestion_.behavior == INSTANT_COMPLETE_NEVER) {
+      // Update |last_omnibox_text_| so that the controller commits the proper
+      // query if the user focuses the omnibox and presses Enter.
+      last_omnibox_text_ += last_suggestion_.text;
     }
+
+    EnsureSearchTermsAreSet(preview.get(), last_omnibox_text_);
   }
 
   // If the preview page has navigated since the last Update(), we need to add
