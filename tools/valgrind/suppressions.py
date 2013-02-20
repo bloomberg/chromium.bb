@@ -49,6 +49,12 @@ def GetSuppressions():
   tsan_common = ReadSuppressionsFromFile(supp_filename)
   result['common_suppressions'] = vg_common + tsan_common
 
+  supp_filename = JOIN(suppressions_root, "memcheck", "suppressions_linux.txt")
+  vg_linux = ReadSuppressionsFromFile(supp_filename)
+  supp_filename = JOIN(suppressions_root, "tsan", "suppressions_linux.txt")
+  tsan_linux = ReadSuppressionsFromFile(supp_filename)
+  result['linux_suppressions'] = vg_linux + tsan_linux
+
   supp_filename = JOIN(suppressions_root, "memcheck", "suppressions_mac.txt")
   vg_mac = ReadSuppressionsFromFile(supp_filename)
   supp_filename = JOIN(suppressions_root, "tsan", "suppressions_mac.txt")
@@ -171,6 +177,10 @@ def ReadSuppressionsFromFile(filename):
   assert tool in tool_to_parser, (
       "unknown tool %s for filename %s" % (tool, filename))
   parse_func = tool_to_parser[tool]
+
+  # Consider non-existent files to be empty.
+  if not os.path.exists(filename):
+    return []
 
   input_file = file(filename, 'r')
   try:

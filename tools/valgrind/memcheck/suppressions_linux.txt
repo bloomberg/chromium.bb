@@ -8,6 +8,11 @@
 # These should all be in chromium's bug tracking system.
 # Periodically we should sweep this file and the bug tracker clean by
 # running overnight and removing outdated bugs/suppressions.
+#
+# TODO(rnk): Should we move all of the Linux-only system library suppressions
+# over from suppressions.txt?  We'd avoid wasting time parsing and matching
+# suppressions on non-Linux, which is basically just Mac.
+#
 #-----------------------------------------------------------------------
 
 # 1. Third party stuff we have no control over.
