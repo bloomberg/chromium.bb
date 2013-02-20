@@ -16,11 +16,11 @@ SpellcheckLanguage::SpellcheckLanguage()
 SpellcheckLanguage::~SpellcheckLanguage() {
 }
 
-void SpellcheckLanguage::Init(base::PlatformFile file,
-                      const std::vector<std::string>& custom_words,
-                      const std::string& language) {
+void SpellcheckLanguage::Init(
+    base::PlatformFile file,
+    const std::string& language) {
   DCHECK(platform_spelling_engine_.get());
-  platform_spelling_engine_->Init(file, custom_words);
+  platform_spelling_engine_->Init(file);
 
   character_attributes_.SetDefaultLanguage(language);
   text_iterator_.Reset();
@@ -30,14 +30,6 @@ void SpellcheckLanguage::Init(base::PlatformFile file,
 bool SpellcheckLanguage::InitializeIfNeeded() {
   DCHECK(platform_spelling_engine_.get());
   return platform_spelling_engine_->InitializeIfNeeded();
-}
-
-void SpellcheckLanguage::OnCustomDictionaryChanged(
-    const std::vector<std::string>& words_added,
-    const std::vector<std::string>& words_removed) {
-  DCHECK(platform_spelling_engine_.get());
-  platform_spelling_engine_->OnCustomDictionaryChanged(words_added,
-                                                       words_removed);
 }
 
 bool SpellcheckLanguage::SpellCheckWord(

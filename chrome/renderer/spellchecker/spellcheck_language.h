@@ -21,14 +21,7 @@ class SpellcheckLanguage {
   SpellcheckLanguage();
   ~SpellcheckLanguage();
 
-  void Init(base::PlatformFile file,
-            const std::vector<std::string>& custom_words,
-            const std::string& language);
-
-  // Update custom dictionary.
-  void OnCustomDictionaryChanged(
-    const std::vector<std::string>& words_added,
-    const std::vector<std::string>& words_removed);
+  void Init(base::PlatformFile file, const std::string& language);
 
   // SpellCheck a word.
   // Returns true if spelled correctly, false otherwise.

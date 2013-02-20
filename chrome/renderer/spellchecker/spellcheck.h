@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "base/string16.h"
+#include "chrome/renderer/spellchecker/custom_dictionary_engine.h"
 #include "chrome/renderer/spellchecker/spellcheck_language.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "ipc/ipc_platform_file.h"
@@ -149,8 +150,10 @@ class SpellCheck : public content::RenderProcessObserver,
   scoped_ptr<SpellcheckRequest> pending_request_param_;
 #endif
 
- private:
   SpellcheckLanguage spellcheck_;  // Language-specific spellchecking code.
+
+  // Custom dictionary spelling engine.
+  CustomDictionaryEngine custom_dictionary_;
 
   // Remember state for auto spell correct.
   bool auto_spell_correct_turned_on_;

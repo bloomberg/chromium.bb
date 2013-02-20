@@ -265,6 +265,8 @@
         'renderer/security_filter_peer.h',
         'renderer/spellchecker/cocoa_spelling_engine_mac.cc',
         'renderer/spellchecker/cocoa_spelling_engine_mac.h',
+        'renderer/spellchecker/custom_dictionary_engine.cc',
+        'renderer/spellchecker/custom_dictionary_engine.h',
         'renderer/spellchecker/hunspell_engine.cc',
         'renderer/spellchecker/hunspell_engine.h',
         'renderer/spellchecker/spellcheck_provider.cc',

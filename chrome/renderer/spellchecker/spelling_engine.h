@@ -21,17 +21,13 @@ class SpellingEngine {
 
   // Initialize spelling engine with browser-side info. Must be called before
   // any other functions are called.
-  virtual void Init(base::PlatformFile bdict_file,
-                    const std::vector<std::string>& custom_words) = 0;
+  virtual void Init(base::PlatformFile bdict_file) = 0;
   virtual bool InitializeIfNeeded() = 0;
   virtual bool IsEnabled() = 0;
   virtual bool CheckSpelling(const string16& word_to_check, int tag) = 0;
   virtual void FillSuggestionList(
       const string16& wrong_word,
       std::vector<string16>* optional_suggestions) = 0;
-  virtual void OnCustomDictionaryChanged(
-      const std::vector<std::string>& words_added,
-      const std::vector<std::string>& words_removed) = 0;
 };
 
 #endif  // CHROME_RENDERER_SPELLCHECKER_SPELLING_ENGINE_H_

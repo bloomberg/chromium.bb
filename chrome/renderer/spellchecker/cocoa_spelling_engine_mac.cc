@@ -13,8 +13,7 @@ SpellingEngine* CreateNativeSpellingEngine() {
   return new CocoaSpellingEngine();
 }
 
-void CocoaSpellingEngine::Init(base::PlatformFile bdict_file,
-                               const std::vector<std::string>&) {
+void CocoaSpellingEngine::Init(base::PlatformFile bdict_file) {
   DCHECK(bdict_file == base::kInvalidPlatformFileValue);
 }
 
@@ -45,10 +44,4 @@ void CocoaSpellingEngine::FillSuggestionList(
     std::vector<string16>* optional_suggestions) {
     RenderThread::Get()->Send(new SpellCheckHostMsg_FillSuggestionList(
         wrong_word, optional_suggestions));
-}
-
-void CocoaSpellingEngine::OnCustomDictionaryChanged(
-    const std::vector<std::string>& words_added,
-    const std::vector<std::string>& words_removed) {
-  // OSX doesn't support the custom dictionary yet.
 }
