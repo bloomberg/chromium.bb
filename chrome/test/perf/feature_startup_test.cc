@@ -28,8 +28,8 @@ class NewTabUIStartupTest : public UIPerfTest {
     show_window_ = true;
   }
 
-  void SetUp() {}
-  void TearDown() {}
+  virtual void SetUp() {}
+  virtual void TearDown() {}
 
   static const int kNumCycles = 5;
 

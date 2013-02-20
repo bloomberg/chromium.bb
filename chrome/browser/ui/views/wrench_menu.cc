@@ -561,7 +561,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
     UpdateZoomControls();
   }
 
-  ~ZoomView() {
+  virtual ~ZoomView() {
     HostZoomMap::GetForBrowserContext(
         menu_->browser_->profile())->RemoveZoomLevelChangedCallback(
             zoom_callback_);

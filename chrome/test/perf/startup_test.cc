@@ -36,10 +36,10 @@ class StartupTest : public UIPerfTest {
   StartupTest() {
     show_window_ = true;
   }
-  void SetUp() {
+  virtual void SetUp() {
     collect_profiling_stats_ = false;
   }
-  void TearDown() {}
+  virtual void TearDown() {}
 
   enum TestColdness {
     WARM,
@@ -100,7 +100,7 @@ class StartupTest : public UIPerfTest {
   }
 
   // Rewrite the preferences file to point to the proper image directory.
-  virtual void SetUpProfile() {
+  virtual void SetUpProfile() OVERRIDE {
     UIPerfTest::SetUpProfile();
     if (profile_type_ != UITestBase::COMPLEX_THEME)
       return;

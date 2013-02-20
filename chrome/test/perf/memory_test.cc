@@ -35,7 +35,7 @@ class MemoryTest : public UIPerfTest {
  public:
   MemoryTest() : cleanup_temp_dir_on_exit_(false) {}
 
-  ~MemoryTest() {
+  virtual ~MemoryTest() {
     // Cleanup our temporary directory.
     if (cleanup_temp_dir_on_exit_)
       file_util::Delete(temp_dir_, true);
@@ -248,7 +248,7 @@ class MemoryTest : public UIPerfTest {
 
 class GeneralMixMemoryTest : public MemoryTest {
  public:
-  virtual base::FilePath GetUserDataDirSource() const {
+  virtual base::FilePath GetUserDataDirSource() const OVERRIDE {
     base::FilePath profile_dir;
     PathService::Get(base::DIR_SOURCE_ROOT, &profile_dir);
     profile_dir = profile_dir.AppendASCII("data");
@@ -257,7 +257,7 @@ class GeneralMixMemoryTest : public MemoryTest {
     return profile_dir;
   }
 
-  virtual size_t GetUrlList(std::string** list) {
+  virtual size_t GetUrlList(std::string** list) OVERRIDE {
     *list = urls_;
     return urls_length_;
   }
@@ -399,7 +399,7 @@ size_t GeneralMixMemoryTest::urls_length_ =
 
 class GeneralMixReferenceMemoryTest : public GeneralMixMemoryTest {
  public:
-  void SetUp() {
+  virtual void SetUp() {
     UseReferenceBuild();
     GeneralMixMemoryTest::SetUp();
   }
@@ -413,7 +413,7 @@ class MembusterMemoryTest : public MemoryTest {
     delete[] test_urls_;
   }
 
-  virtual base::FilePath GetUserDataDirSource() const {
+  virtual base::FilePath GetUserDataDirSource() const OVERRIDE {
     base::FilePath profile_dir;
     PathService::Get(base::DIR_SOURCE_ROOT, &profile_dir);
     profile_dir = profile_dir.AppendASCII("data");
@@ -422,7 +422,7 @@ class MembusterMemoryTest : public MemoryTest {
     return profile_dir;
   }
 
-  virtual size_t GetUrlList(std::string** list) {
+  virtual size_t GetUrlList(std::string** list) OVERRIDE {
     size_t total_url_entries = urls_length_ * kIterations_ * 2 - 1;
     if (!test_urls_) {
       test_urls_ = new std::string[total_url_entries];

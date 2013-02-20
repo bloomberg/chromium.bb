@@ -45,13 +45,13 @@ class HistoryEmptyTask : public history::HistoryDBTask {
   explicit HistoryEmptyTask(base::WaitableEvent* done) : done_(done) {}
 
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) {
+                             history::HistoryDatabase* db) OVERRIDE {
     content::RunAllPendingInMessageLoop();
     done_->Signal();
     return true;
   }
 
-  virtual void DoneRunOnMainThread() {}
+  virtual void DoneRunOnMainThread() OVERRIDE {}
 
  private:
   virtual ~HistoryEmptyTask() {}

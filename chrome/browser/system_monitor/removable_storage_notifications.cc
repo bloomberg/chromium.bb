@@ -37,11 +37,12 @@ class RemovableStorageNotifications::ReceiverImpl
 
   virtual ~ReceiverImpl() {}
 
-  void ProcessAttach(const std::string& id,
-                     const string16& name,
-                     const base::FilePath::StringType& location) OVERRIDE;
+  virtual void ProcessAttach(
+      const std::string& id,
+      const string16& name,
+      const base::FilePath::StringType& location) OVERRIDE;
 
-  void ProcessDetach(const std::string& id) OVERRIDE;
+  virtual void ProcessDetach(const std::string& id) OVERRIDE;
 
  private:
   RemovableStorageNotifications* notifications_;

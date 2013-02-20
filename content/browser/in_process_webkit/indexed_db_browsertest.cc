@@ -323,7 +323,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithCorruptLevelDB,
 
 class IndexedDBBrowserTestWithMissingSSTFile : public
     IndexedDBBrowserTestWithPreexistingLevelDB {
-  virtual std::string EnclosingLevelDBDir() {
+  virtual std::string EnclosingLevelDBDir() OVERRIDE {
     return "missing_sst";
   }
 };

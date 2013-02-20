@@ -27,8 +27,8 @@ class ShutdownTest : public UIPerfTest {
   ShutdownTest() {
     show_window_ = true;
   }
-  void SetUp() {}
-  void TearDown() {}
+  virtual void SetUp() {}
+  virtual void TearDown() {}
 
   enum TestSize {
     SIMPLE,  // Runs with no command line arguments (loads about:blank).

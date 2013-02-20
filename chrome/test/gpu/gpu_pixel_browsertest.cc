@@ -106,12 +106,12 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
         ref_img_option_(kReferenceImageNone) {
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitchASCII(switches::kTestGLLib,
                                     "libllvmpipe.so");
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() {
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
 
     CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -520,7 +520,7 @@ IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, Canvas2DRedBoxHD) {
 
 class Canvas2DPixelTestSD : public GpuPixelBrowserTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     GpuPixelBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kDisableAccelerated2dCanvas);
   }

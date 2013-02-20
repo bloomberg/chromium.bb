@@ -34,7 +34,8 @@ class ExtensionImageView : public views::ImageView, public IconImage::Observer {
   }
 
  private:
-  virtual void OnExtensionIconImageChanged(extensions::IconImage* image) {
+  virtual void OnExtensionIconImageChanged(
+      extensions::IconImage* image) OVERRIDE {
     SetImage(icon_->image_skia());
   }
 

@@ -304,7 +304,7 @@ class PageCyclerTest : public UIPerfTest {
 
 class PageCyclerReferenceTest : public PageCyclerTest {
  public:
-  void SetUp() {
+  virtual void SetUp() {
     UseReferenceBuild();
     PageCyclerTest::SetUp();
   }
@@ -411,15 +411,15 @@ class PageCyclerDatabaseTest : public PageCyclerTest {
     print_times_only_ = true;
   }
 
-  virtual base::FilePath GetDataPath(const char* name) {
+  virtual base::FilePath GetDataPath(const char* name) OVERRIDE {
     return GetDatabaseDataPath(name);
   }
 
-  virtual bool HasErrors(const std::string timings) {
+  virtual bool HasErrors(const std::string timings) OVERRIDE {
     return HasDatabaseErrors(timings);
   }
 
-  virtual int GetTestIterations() {
+  virtual int GetTestIterations() OVERRIDE {
     return kDatabaseTestIterations;
   }
 };
@@ -430,15 +430,15 @@ class PageCyclerDatabaseReferenceTest : public PageCyclerReferenceTest {
     print_times_only_ = true;
   }
 
-  virtual base::FilePath GetDataPath(const char* name) {
+  virtual base::FilePath GetDataPath(const char* name) OVERRIDE {
     return GetDatabaseDataPath(name);
   }
 
-  virtual bool HasErrors(const std::string timings) {
+  virtual bool HasErrors(const std::string timings) OVERRIDE {
     return HasDatabaseErrors(timings);
   }
 
-  virtual int GetTestIterations() {
+  virtual int GetTestIterations() OVERRIDE {
     return kDatabaseTestIterations;
   }
 };
@@ -449,15 +449,15 @@ class PageCyclerIndexedDatabaseTest : public PageCyclerTest {
     print_times_only_ = true;
   }
 
-  virtual base::FilePath GetDataPath(const char* name) {
+  virtual base::FilePath GetDataPath(const char* name) OVERRIDE {
     return GetIndexedDatabaseDataPath(name);
   }
 
-  virtual bool HasErrors(const std::string timings) {
+  virtual bool HasErrors(const std::string timings) OVERRIDE {
     return HasDatabaseErrors(timings);
   }
 
-  virtual int GetTestIterations() {
+  virtual int GetTestIterations() OVERRIDE {
     return kIDBTestIterations;
   }
 };
@@ -468,15 +468,15 @@ class PageCyclerIndexedDatabaseReferenceTest : public PageCyclerReferenceTest {
     print_times_only_ = true;
   }
 
-  virtual base::FilePath GetDataPath(const char* name) {
+  virtual base::FilePath GetDataPath(const char* name) OVERRIDE {
     return GetIndexedDatabaseDataPath(name);
   }
 
-  virtual bool HasErrors(const std::string timings) {
+  virtual bool HasErrors(const std::string timings) OVERRIDE {
     return HasDatabaseErrors(timings);
   }
 
-  virtual int GetTestIterations() {
+  virtual int GetTestIterations() OVERRIDE {
     return kIDBTestIterations;
   }
 };

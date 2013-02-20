@@ -66,7 +66,7 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
  public:
   WebContentsViewAuraTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(switches::kEnableOverscrollHistoryNavigation);
   }
 

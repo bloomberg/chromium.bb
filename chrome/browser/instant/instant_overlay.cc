@@ -21,7 +21,7 @@ class InstantOverlayUserData : public base::SupportsUserData::Data {
   virtual InstantOverlay* overlay() const { return overlay_; }
 
  private:
-  ~InstantOverlayUserData() {}
+  virtual ~InstantOverlayUserData() {}
 
   InstantOverlay* const overlay_;
 

@@ -31,39 +31,41 @@ class IBusBridgeImpl : public IBusBridge {
   }
 
   // IBusBridge override.
-  void SetInputContextHandler(
+  virtual void SetInputContextHandler(
       IBusInputContextHandlerInterface* handler) OVERRIDE {
     input_context_handler_ = handler;
   }
 
   // IBusBridge override.
-  IBusEngineHandlerInterface* GetEngineHandler() const {
+  virtual IBusEngineHandlerInterface* GetEngineHandler() const OVERRIDE {
     return engine_handler_;
   }
 
   // IBusBridge override.
-  void SetEngineHandler(IBusEngineHandlerInterface* handler) {
+  virtual void SetEngineHandler(IBusEngineHandlerInterface* handler) OVERRIDE {
     engine_handler_ = handler;
   }
 
   // IBusBridge override.
-  IBusPanelCandidateWindowHandlerInterface* GetCandidateWindowHandler() const {
+  virtual IBusPanelCandidateWindowHandlerInterface*
+  GetCandidateWindowHandler() const OVERRIDE {
     return candidate_window_handler_;
   }
 
   // IBusBridge override.
-  void SetCandidateWindowHandler(
-      IBusPanelCandidateWindowHandlerInterface* handler) {
+  virtual void SetCandidateWindowHandler(
+      IBusPanelCandidateWindowHandlerInterface* handler) OVERRIDE {
     candidate_window_handler_ = handler;
   }
 
   // IBusBridge override.
-  IBusPanelPropertyHandlerInterface* GetPanelHandler() const {
+  virtual IBusPanelPropertyHandlerInterface* GetPanelHandler() const OVERRIDE {
     return panel_handler_;
   }
 
   // IBusBridge override.
-  void SetPanelHandler(IBusPanelPropertyHandlerInterface* handler) {
+  virtual void SetPanelHandler(
+      IBusPanelPropertyHandlerInterface* handler) OVERRIDE {
     panel_handler_ = handler;
   }
 

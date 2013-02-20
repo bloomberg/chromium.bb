@@ -144,7 +144,7 @@ class MockDtmfSender : public DtmfSenderInterface {
   virtual void UnregisterObserver() OVERRIDE {
     observer_ = NULL;
   }
-  virtual bool CanInsertDtmf() {
+  virtual bool CanInsertDtmf() OVERRIDE {
     return true;
   }
   virtual bool InsertDtmf(const std::string& tones, int duration,

@@ -53,7 +53,7 @@ class TabScrubberTest : public InProcessBrowserTest,
         ash::internal::EventTransformationHandler::TRANSFORM_NONE);
   }
 
-  virtual void CleanUpOnMainThread() {
+  virtual void CleanUpOnMainThread() OVERRIDE {
     browser()->tab_strip_model()->RemoveObserver(this);
   }
 
@@ -177,40 +177,44 @@ class TabScrubberTest : public InProcessBrowserTest,
   // TabStripModelObserver overrides.
   virtual void TabInsertedAt(content::WebContents* contents,
                              int index,
-                             bool foreground) {}
+                             bool foreground) OVERRIDE {}
   virtual void TabClosingAt(TabStripModel* tab_strip_model,
                             content::WebContents* contents,
-                            int index) {}
-  virtual void TabDetachedAt(content::WebContents* contents, int index) {}
-  virtual void TabDeactivated(content::WebContents* contents) {}
+                            int index) OVERRIDE {}
+  virtual void TabDetachedAt(content::WebContents* contents,
+                             int index) OVERRIDE {}
+  virtual void TabDeactivated(content::WebContents* contents) OVERRIDE {}
   virtual void ActiveTabChanged(content::WebContents* old_contents,
                                 content::WebContents* new_contents,
                                 int index,
-                                bool user_gesture) {
+                                bool user_gesture) OVERRIDE {
     activation_order_.push_back(index);
     if (index == target_index_)
       quit_closure_.Run();
   }
 
-  virtual void TabSelectionChanged(TabStripModel* tab_strip_model,
-                                   const ui::ListSelectionModel& old_model) {}
+  virtual void TabSelectionChanged(
+      TabStripModel* tab_strip_model,
+      const ui::ListSelectionModel& old_model) OVERRIDE {}
   virtual void TabMoved(content::WebContents* contents,
                         int from_index,
-                        int to_index) {}
+                        int to_index) OVERRIDE {}
   virtual void TabChangedAt(content::WebContents* contents,
                             int index,
-                            TabChangeType change_type) {}
+                            TabChangeType change_type) OVERRIDE {}
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
                              content::WebContents* old_contents,
                              content::WebContents* new_contents,
-                             int index) {}
+                             int index) OVERRIDE {}
   virtual void TabPinnedStateChanged(content::WebContents* contents,
-                                     int index) {}
-  virtual void TabMiniStateChanged(content::WebContents* contents, int index) {}
+                                     int index) OVERRIDE {}
+  virtual void TabMiniStateChanged(content::WebContents* contents,
+                                   int index) OVERRIDE {
+  }
   virtual void TabBlockedStateChanged(content::WebContents* contents,
-                                      int index) {}
-  virtual void TabStripEmpty() {}
-  virtual void TabStripModelDeleted() {}
+                                      int index) OVERRIDE {}
+  virtual void TabStripEmpty() OVERRIDE {}
+  virtual void TabStripModelDeleted() OVERRIDE {}
 
   // History of tab activation. Scrub() resets it.
   std::vector<int> activation_order_;

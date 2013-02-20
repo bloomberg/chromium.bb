@@ -97,7 +97,7 @@ class IndexedDBReferenceTest : public IndexedDBTest {
     reference_ = true;
   }
 
-  void SetUp() {
+  virtual void SetUp() {
     UseReferenceBuild();
     IndexedDBTest::SetUp();
   }

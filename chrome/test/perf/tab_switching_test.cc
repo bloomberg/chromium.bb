@@ -43,7 +43,7 @@ class TabSwitchingUITest : public UIPerfTest {
     show_window_ = true;
   }
 
-  void SetUp() {
+  virtual void SetUp() {
     // Set the log_file_name_ path according to the selected browser_directory_.
     log_file_name_ = browser_directory_.AppendASCII("chrome_debug.log");
 

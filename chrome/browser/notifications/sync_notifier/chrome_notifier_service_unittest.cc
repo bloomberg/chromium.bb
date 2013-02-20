@@ -76,7 +76,7 @@ class StubNotificationUIManager : public NotificationUIManager {
 
   // Returns true if any notifications match the supplied ID, either currently
   // displayed or in the queue.
-  virtual bool DoesIdExist(const std::string& id) {
+  virtual bool DoesIdExist(const std::string& id) OVERRIDE {
     return true;
   }
 
@@ -174,7 +174,7 @@ class ChromeNotifierServiceTest : public testing::Test {
       : sync_processor_(new TestChangeProcessor),
         sync_processor_delegate_(new SyncChangeProcessorDelegate(
             sync_processor_.get())) {}
-  ~ChromeNotifierServiceTest() {}
+  virtual ~ChromeNotifierServiceTest() {}
 
   // Methods from testing::Test.
   virtual void SetUp() {}

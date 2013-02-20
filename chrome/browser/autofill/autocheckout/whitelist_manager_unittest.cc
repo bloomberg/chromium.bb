@@ -37,12 +37,12 @@ class TestWhitelistManager : public WhitelistManager {
       : WhitelistManager(context_getter),
         did_start_download_timer_(false) {}
 
-  void ScheduleDownload(size_t interval_seconds) OVERRIDE {
+  virtual void ScheduleDownload(size_t interval_seconds) OVERRIDE {
     did_start_download_timer_ = false;
     return WhitelistManager::ScheduleDownload(interval_seconds);
   }
 
-  void StartDownloadTimer(size_t interval_seconds) OVERRIDE {
+  virtual void StartDownloadTimer(size_t interval_seconds) OVERRIDE {
     WhitelistManager::StartDownloadTimer(interval_seconds);
     did_start_download_timer_ = true;
   }

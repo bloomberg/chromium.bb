@@ -40,7 +40,7 @@ class SyncedNotificationTest : public testing::Test {
  public:
   SyncedNotificationTest() : notification1(NULL),
                              notification2(NULL) {}
-  ~SyncedNotificationTest() {}
+  virtual ~SyncedNotificationTest() {}
 
   // Methods from testing::Test.
 
