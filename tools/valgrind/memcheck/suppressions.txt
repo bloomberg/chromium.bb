@@ -6587,15 +6587,6 @@
    fun:_ZN7WebCore14SubframeLoader10loadPluginEPNS_22HTMLPlugInImageElementERKNS_4KURLERKN3WTF6StringERKNS6_6VectorIS7*
 }
 {
-   bug_176624
-   Memcheck:Uninitialized
-   fun:_ZN5mediaL23FromInterleavedInternalIilEEvPKviiPNS_8AudioBusE
-   fun:_ZN5media8AudioBus22FromInterleavedPartialEPKviii
-   fun:_ZN5media8AudioBus15FromInterleavedEPKvii
-   fun:_ZN5media17AudioRendererImpl6RenderEPNS_8AudioBusEi
-   fun:_ZN5media13NullAudioSink14FillBufferTaskEv
-}
-{
    bug_176888
    Memcheck:Leak
    fun:malloc

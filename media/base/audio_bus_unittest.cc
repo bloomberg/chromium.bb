@@ -353,7 +353,7 @@ TEST_F(AudioBusTest, ToInterleavedPartial) {
       kPartialStart, kPartialFrames, sizeof(*kTestVectorInt16), test_array);
   ASSERT_EQ(memcmp(
       test_array, kTestVectorInt16 + kPartialStart * kTestVectorChannels,
-      kPartialFrames * sizeof(*kTestVectorInt16)), 0);
+      kPartialFrames * sizeof(*kTestVectorInt16) * kTestVectorChannels), 0);
 }
 
 }  // namespace media

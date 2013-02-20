@@ -75,7 +75,7 @@ static void ToInterleavedInternal(const AudioBus* source, int start_frame,
   int channels = source->channels();
   for (int ch = 0; ch < channels; ++ch) {
     const float* channel_data = source->channel(ch);
-    for (int i = start_frame, offset = ch; i < frames;
+    for (int i = start_frame, offset = ch; i < start_frame + frames;
          ++i, offset += channels) {
       float v = channel_data[i];
       Fixed sample = v * (v < 0 ? -kMinValue : kMaxValue);
