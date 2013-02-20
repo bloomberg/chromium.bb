@@ -228,24 +228,24 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     local_stream.initialize(UTF8ToUTF16(stream_label), audio_sources,
                             video_sources);
 
-    scoped_refptr<webrtc::LocalMediaStreamInterface> native_stream(
+    scoped_refptr<webrtc::MediaStreamInterface> native_stream(
         mock_dependency_factory_->CreateLocalMediaStream(stream_label));
     WebKit::WebVector<WebKit::WebMediaStreamTrack> audio_tracks;
     local_stream.audioSources(audio_tracks);
     const std::string audio_track_id = UTF16ToUTF8(audio_tracks[0].id());
-    scoped_refptr<webrtc::LocalAudioTrackInterface> audio_track(
+    scoped_refptr<webrtc::AudioTrackInterface> audio_track(
         mock_dependency_factory_->CreateLocalAudioTrack(audio_track_id,
                                                         NULL));
     native_stream->AddTrack(audio_track);
     WebKit::WebVector<WebKit::WebMediaStreamTrack> video_tracks;
     local_stream.audioSources(video_tracks);
     const std::string video_track_id = UTF16ToUTF8(video_tracks[0].id());
-    scoped_refptr<webrtc::LocalVideoTrackInterface> video_track(
+    scoped_refptr<webrtc::VideoTrackInterface> video_track(
         mock_dependency_factory_->CreateLocalVideoTrack(
             video_track_id, 0));
     native_stream->AddTrack(video_track);
 
-    local_stream.setExtraData(new MediaStreamExtraData(native_stream));
+    local_stream.setExtraData(new MediaStreamExtraData(native_stream, true));
     return local_stream;
   }
 
@@ -255,18 +255,16 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
   AddRemoteMockMediaStream(const std::string& stream_label,
                            const std::string& video_track_label,
                            const std::string& audio_track_label) {
-    // We use a local stream as a remote since for testing purposes we really
-    // only need the MediaStreamInterface.
-    scoped_refptr<webrtc::LocalMediaStreamInterface> stream(
+    scoped_refptr<webrtc::MediaStreamInterface> stream(
         mock_dependency_factory_->CreateLocalMediaStream(stream_label));
     if (!video_track_label.empty()) {
-      scoped_refptr<webrtc::LocalVideoTrackInterface> video_track(
+      scoped_refptr<webrtc::VideoTrackInterface> video_track(
           mock_dependency_factory_->CreateLocalVideoTrack(
               video_track_label, 0));
       stream->AddTrack(video_track);
     }
     if (!audio_track_label.empty()) {
-      scoped_refptr<webrtc::LocalAudioTrackInterface> audio_track(
+      scoped_refptr<webrtc::AudioTrackInterface> audio_track(
           mock_dependency_factory_->CreateLocalAudioTrack(audio_track_label,
                                                           NULL));
       stream->AddTrack(audio_track);
@@ -383,9 +381,9 @@ TEST_F(RTCPeerConnectionHandlerTest, addAndRemoveStream) {
   EXPECT_TRUE(pc_handler_->addStream(local_stream, constraints));
   EXPECT_EQ(stream_label, mock_peer_connection_->stream_label());
   EXPECT_EQ(1u,
-      mock_peer_connection_->local_streams()->at(0)->audio_tracks()->count());
+      mock_peer_connection_->local_streams()->at(0)->GetAudioTracks().size());
   EXPECT_EQ(1u,
-      mock_peer_connection_->local_streams()->at(0)->video_tracks()->count());
+      mock_peer_connection_->local_streams()->at(0)->GetVideoTracks().size());
 
   pc_handler_->removeStream(local_stream);
   EXPECT_EQ(0u, mock_peer_connection_->local_streams()->count());

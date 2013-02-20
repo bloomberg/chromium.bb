@@ -683,7 +683,7 @@ void RTCPeerConnectionHandler::OnAddStream(
   DCHECK(stream_interface);
   DCHECK(remote_streams_.find(stream_interface) == remote_streams_.end());
   WebKit::WebMediaStream stream =
-      CreateWebKitStreamDescriptor(stream_interface);
+      CreateRemoteWebKitMediaStream(stream_interface);
 
   if (peer_connection_tracker_)
     peer_connection_tracker_->TrackAddStream(

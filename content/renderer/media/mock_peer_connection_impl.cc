@@ -14,7 +14,6 @@ using webrtc::CreateSessionDescriptionObserver;
 using webrtc::DtmfSenderInterface;
 using webrtc::DtmfSenderObserverInterface;
 using webrtc::IceCandidateInterface;
-using webrtc::LocalMediaStreamInterface;
 using webrtc::MediaConstraintsInterface;
 using webrtc::MediaStreamInterface;
 using webrtc::PeerConnectionInterface;
@@ -42,7 +41,7 @@ class MockStreamCollection : public webrtc::StreamCollectionInterface {
       const std::string& id) OVERRIDE {
     for (size_t i = 0; i < streams_.size(); ++i) {
       webrtc::MediaStreamTrackInterface* track =
-          streams_.at(i)->audio_tracks()->Find(id);
+          streams_.at(i)->FindAudioTrack(id);
       if (track)
         return track;
     }
@@ -52,7 +51,7 @@ class MockStreamCollection : public webrtc::StreamCollectionInterface {
       const std::string& id) OVERRIDE {
     for (size_t i = 0; i < streams_.size(); ++i) {
       webrtc::MediaStreamTrackInterface* track =
-          streams_.at(i)->video_tracks()->Find(id);
+          streams_.at(i)->FindVideoTrack(id);
       if (track)
         return track;
     }

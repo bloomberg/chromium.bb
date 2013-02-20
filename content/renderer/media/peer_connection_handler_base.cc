@@ -16,23 +16,12 @@
 namespace content {
 
 // TODO(hta): Unify implementations of these functions from MediaStreamCenter
-static webrtc::LocalMediaStreamInterface* GetLocalNativeMediaStream(
+static webrtc::MediaStreamInterface* GetNativeMediaStream(
     const WebKit::WebMediaStream& stream) {
   MediaStreamExtraData* extra_data =
       static_cast<MediaStreamExtraData*>(stream.extraData());
   if (extra_data)
-    return extra_data->local_stream();
-  return NULL;
-}
-
-template <class TrackList>
-static webrtc::MediaStreamTrackInterface* GetLocalTrack(
-    const std::string& track_id,
-    TrackList* tracks) {
-  for (size_t i = 0; i < tracks->count(); ++i) {
-    if (tracks->at(i)->id() == track_id)
-      return tracks->at(i);
-  }
+    return extra_data->stream();
   return NULL;
 }
 
@@ -48,8 +37,7 @@ PeerConnectionHandlerBase::~PeerConnectionHandlerBase() {
 bool PeerConnectionHandlerBase::AddStream(
     const WebKit::WebMediaStream& stream,
     const webrtc::MediaConstraintsInterface* constraints) {
-  webrtc::LocalMediaStreamInterface* native_stream =
-      GetLocalNativeMediaStream(stream);
+  webrtc::MediaStreamInterface* native_stream = GetNativeMediaStream(stream);
   if (!native_stream)
     return false;
   return native_peer_connection_->AddStream(native_stream, constraints);
@@ -57,27 +45,26 @@ bool PeerConnectionHandlerBase::AddStream(
 
 void PeerConnectionHandlerBase::RemoveStream(
     const WebKit::WebMediaStream& stream) {
-  webrtc::LocalMediaStreamInterface* native_stream =
-      GetLocalNativeMediaStream(stream);
+  webrtc::MediaStreamInterface* native_stream = GetNativeMediaStream(stream);
   if (native_stream)
     native_peer_connection_->RemoveStream(native_stream);
   DCHECK(native_stream);
 }
 
 WebKit::WebMediaStream
-PeerConnectionHandlerBase::CreateWebKitStreamDescriptor(
+PeerConnectionHandlerBase::CreateRemoteWebKitMediaStream(
     webrtc::MediaStreamInterface* stream) {
-  webrtc::AudioTracks* audio_tracks = stream->audio_tracks();
-  webrtc::VideoTracks* video_tracks = stream->video_tracks();
+  webrtc::AudioTrackVector audio_tracks = stream->GetAudioTracks();
+  webrtc::VideoTrackVector video_tracks = stream->GetVideoTracks();
   WebKit::WebVector<WebKit::WebMediaStreamSource> audio_source_vector(
-      audio_tracks->count());
+      audio_tracks.size());
   WebKit::WebVector<WebKit::WebMediaStreamSource> video_source_vector(
-      video_tracks->count());
+      video_tracks.size());
 
   // Add audio tracks.
   size_t i = 0;
-  for (; i < audio_tracks->count(); ++i) {
-    webrtc::AudioTrackInterface* audio_track = audio_tracks->at(i);
+  for (; i < audio_tracks.size(); ++i) {
+    webrtc::AudioTrackInterface* audio_track = audio_tracks[i];
     DCHECK(audio_track);
     audio_source_vector[i].initialize(
         UTF8ToUTF16(audio_track->id()),
@@ -86,8 +73,8 @@ PeerConnectionHandlerBase::CreateWebKitStreamDescriptor(
   }
 
   // Add video tracks.
-  for (i = 0; i < video_tracks->count(); ++i) {
-    webrtc::VideoTrackInterface* video_track = video_tracks->at(i);
+  for (i = 0; i < video_tracks.size(); ++i) {
+    webrtc::VideoTrackInterface* video_track = video_tracks[i];
     DCHECK(video_track);
     video_source_vector[i].initialize(
         UTF8ToUTF16(video_track->id()),
@@ -97,7 +84,7 @@ PeerConnectionHandlerBase::CreateWebKitStreamDescriptor(
   WebKit::WebMediaStream descriptor;
   descriptor.initialize(UTF8ToUTF16(stream->label()),
                         audio_source_vector, video_source_vector);
-  descriptor.setExtraData(new MediaStreamExtraData(stream));
+  descriptor.setExtraData(new MediaStreamExtraData(stream, false));
   return descriptor;
 }
 
@@ -106,18 +93,15 @@ PeerConnectionHandlerBase::GetLocalNativeMediaStreamTrack(
       const WebKit::WebMediaStream& stream,
       const WebKit::WebMediaStreamTrack& track) {
   std::string track_id = UTF16ToUTF8(track.id());
-  webrtc::MediaStreamInterface* native_stream
-      = GetLocalNativeMediaStream(stream);
+  webrtc::MediaStreamInterface* native_stream = GetNativeMediaStream(stream);
   if (!native_stream) {
     return NULL;
   }
   if (track.source().type() == WebKit::WebMediaStreamSource::TypeAudio) {
-    return GetLocalTrack<webrtc::AudioTracks>(
-        track_id, native_stream->audio_tracks());
+    return native_stream->FindAudioTrack(track_id);
   }
   if (track.source().type() == WebKit::WebMediaStreamSource::TypeVideo) {
-    return GetLocalTrack<webrtc::VideoTracks>(
-        track_id, native_stream->video_tracks());
+    return native_stream->FindVideoTrack(track_id);
   }
   NOTIMPLEMENTED();  // We have an unknown type of media stream track.
   return NULL;

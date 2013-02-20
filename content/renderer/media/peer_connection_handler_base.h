@@ -35,7 +35,7 @@ class CONTENT_EXPORT PeerConnectionHandlerBase
   bool AddStream(const WebKit::WebMediaStream& stream,
                  const webrtc::MediaConstraintsInterface* constraints);
   void RemoveStream(const WebKit::WebMediaStream& stream);
-  WebKit::WebMediaStream CreateWebKitStreamDescriptor(
+  WebKit::WebMediaStream CreateRemoteWebKitMediaStream(
       webrtc::MediaStreamInterface* stream);
   webrtc::MediaStreamTrackInterface* GetLocalNativeMediaStreamTrack(
       const WebKit::WebMediaStream& stream,

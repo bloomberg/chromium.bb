@@ -29,47 +29,24 @@ static webrtc::MediaStreamInterface* GetNativeMediaStream(
     const WebKit::WebMediaStream& stream) {
   MediaStreamExtraData* extra_data =
       static_cast<MediaStreamExtraData*>(stream.extraData());
-  if (extra_data && extra_data->remote_stream())
-    return extra_data->remote_stream();
-
-  if (extra_data && extra_data->local_stream())
-    return extra_data->local_stream();
-
-  // TODO(perkj): This can occur if a JS create a new MediaStream based on an
-  // existing MediaStream.
-  NOTIMPLEMENTED();
-  return NULL;
+  return extra_data->stream();
 }
 
-template <class TrackList>
-static webrtc::MediaStreamTrackInterface* GetTrack(
-    const std::string& source_id,
-    TrackList* tracks) {
-  for (size_t i = 0; i < tracks->count(); ++i) {
-    if (tracks->at(i)->id() == source_id)
-      return tracks->at(i);
-  }
-  return NULL;
-}
 
 static webrtc::MediaStreamTrackInterface* GetNativeMediaStreamTrack(
       const WebKit::WebMediaStream& stream,
       const WebKit::WebMediaStreamTrack& component) {
-  std::string source_id = UTF16ToUTF8(component.source().id());
+  std::string track_id = UTF16ToUTF8(component.id());
   webrtc::MediaStreamInterface* native_stream = GetNativeMediaStream(stream);
   if (native_stream) {
     if (component.source().type() == WebKit::WebMediaStreamSource::TypeAudio) {
-      return GetTrack<webrtc::AudioTracks>(
-          source_id, native_stream->audio_tracks());
+      return native_stream->FindAudioTrack(track_id);
     }
     if (component.source().type() == WebKit::WebMediaStreamSource::TypeVideo) {
-      return GetTrack<webrtc::VideoTracks>(
-          source_id, native_stream->video_tracks());
+      return native_stream->FindVideoTrack(track_id);
     }
   }
-  // TODO(perkj): This can occur if a JS create a new MediaStream based on an
-  // existing MediaStream.
-  NOTIMPLEMENTED();
+  NOTREACHED();
   return NULL;
 }
 

@@ -304,7 +304,7 @@ void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
   }
 
   std::string label = UTF16ToUTF8(description->label());
-  scoped_refptr<webrtc::LocalMediaStreamInterface> native_stream =
+  scoped_refptr<webrtc::MediaStreamInterface> native_stream =
       CreateLocalMediaStream(label);
 
   // Add audio tracks.
@@ -337,7 +337,7 @@ void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
       continue;
     }
 
-    scoped_refptr<webrtc::LocalAudioTrackInterface> audio_track(
+    scoped_refptr<webrtc::AudioTrackInterface> audio_track(
         CreateLocalAudioTrack(UTF16ToUTF8(audio_tracks[i].id()),
                               source_data->local_audio_source()));
     native_stream->AddTrack(audio_track);
@@ -365,7 +365,8 @@ void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
     video_track->set_enabled(video_tracks[i].isEnabled());
   }
 
-  MediaStreamExtraData* extra_data = new MediaStreamExtraData(native_stream);
+  MediaStreamExtraData* extra_data = new MediaStreamExtraData(native_stream,
+                                                              true);
   description->setExtraData(extra_data);
 }
 
@@ -418,7 +419,7 @@ MediaStreamDependencyFactory::CreatePeerConnection(
       ice_servers, constraints, pa_factory, observer).get();
 }
 
-scoped_refptr<webrtc::LocalMediaStreamInterface>
+scoped_refptr<webrtc::MediaStreamInterface>
 MediaStreamDependencyFactory::CreateLocalMediaStream(
     const std::string& label) {
   return pc_factory_->CreateLocalMediaStream(label).get();
@@ -515,7 +516,7 @@ MediaStreamDependencyFactory::CreateLocalVideoTrack(
   return pc_factory_->CreateVideoTrack(id, source).get();
 }
 
-scoped_refptr<webrtc::LocalAudioTrackInterface>
+scoped_refptr<webrtc::AudioTrackInterface>
 MediaStreamDependencyFactory::CreateLocalAudioTrack(
     const std::string& id,
     webrtc::AudioSourceInterface* source) {

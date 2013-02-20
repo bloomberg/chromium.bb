@@ -128,11 +128,11 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
   MockMediaStreamDependencyFactory();
   virtual ~MockMediaStreamDependencyFactory();
 
-  virtual scoped_refptr<webrtc::PeerConnectionInterface>
-      CreatePeerConnection(const webrtc::JsepInterface::IceServers& ice_servers,
-                           const webrtc::MediaConstraintsInterface* constraints,
-                           WebKit::WebFrame* frame,
-                           webrtc::PeerConnectionObserver* observer) OVERRIDE;
+  virtual scoped_refptr<webrtc::PeerConnectionInterface> CreatePeerConnection(
+      const webrtc::PeerConnectionInterface::IceServers& ice_servers,
+      const webrtc::MediaConstraintsInterface* constraints,
+      WebKit::WebFrame* frame,
+      webrtc::PeerConnectionObserver* observer) OVERRIDE;
   virtual scoped_refptr<webrtc::AudioSourceInterface>
       CreateLocalAudioSource(
           const webrtc::MediaConstraintsInterface* constraints) OVERRIDE;
@@ -145,12 +145,12 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
       const StreamDeviceInfo& device_info) OVERRIDE;
   virtual bool CreateWebAudioSource(
       WebKit::WebMediaStreamSource* source) OVERRIDE;
-  virtual scoped_refptr<webrtc::LocalMediaStreamInterface>
+  virtual scoped_refptr<webrtc::MediaStreamInterface>
       CreateLocalMediaStream(const std::string& label) OVERRIDE;
   virtual scoped_refptr<webrtc::VideoTrackInterface>
       CreateLocalVideoTrack(const std::string& id,
                             webrtc::VideoSourceInterface* source) OVERRIDE;
-  virtual scoped_refptr<webrtc::LocalAudioTrackInterface>
+  virtual scoped_refptr<webrtc::AudioTrackInterface>
       CreateLocalAudioTrack(const std::string& id,
                             webrtc::AudioSourceInterface* source) OVERRIDE;
   virtual webrtc::SessionDescriptionInterface* CreateSessionDescription(

@@ -102,18 +102,18 @@ class MediaStreamImplTest : public ::testing::Test {
     WebKit::WebMediaStream desc = ms_impl_->last_generated_stream();
     content::MediaStreamExtraData* extra_data =
         static_cast<content::MediaStreamExtraData*>(desc.extraData());
-    if (!extra_data || !extra_data->local_stream()) {
+    if (!extra_data || !extra_data->stream()) {
       ADD_FAILURE();
       return desc;
     }
 
     if (audio)
-      EXPECT_EQ(1u, extra_data->local_stream()->audio_tracks()->count());
+      EXPECT_EQ(1u, extra_data->stream()->GetAudioTracks().size());
     if (video)
-      EXPECT_EQ(1u, extra_data->local_stream()->video_tracks()->count());
+      EXPECT_EQ(1u, extra_data->stream()->GetVideoTracks().size());
     if (audio && video) {
-      EXPECT_NE(extra_data->local_stream()->audio_tracks()->at(0)->id(),
-                extra_data->local_stream()->video_tracks()->at(0)->id());
+      EXPECT_NE(extra_data->stream()->GetAudioTracks()[0]->id(),
+                extra_data->stream()->GetVideoTracks()[0]->id());
     }
     return desc;
   }

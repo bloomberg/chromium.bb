@@ -127,9 +127,10 @@ TEST_F(MediaStreamDependencyFactoryTest, CreateNativeMediaStream) {
 
   content::MediaStreamExtraData* extra_data =
       static_cast<content::MediaStreamExtraData*>(stream_desc.extraData());
-  ASSERT_TRUE(extra_data && extra_data->local_stream());
-  EXPECT_EQ(1u, extra_data->local_stream()->audio_tracks()->count());
-  EXPECT_EQ(1u, extra_data->local_stream()->video_tracks()->count());
+  ASSERT_TRUE(extra_data && extra_data->stream());
+  EXPECT_TRUE(extra_data->is_local());
+  EXPECT_EQ(1u, extra_data->stream()->GetAudioTracks().size());
+  EXPECT_EQ(1u, extra_data->stream()->GetVideoTracks().size());
 }
 
 // Test that we don't crash if a MediaStream is created in WebKit with unknown
@@ -154,9 +155,10 @@ TEST_F(MediaStreamDependencyFactoryTest, CreateNativeMediaStreamWithoutSource) {
   dependency_factory_->CreateNativeLocalMediaStream(&stream_desc);
   MediaStreamExtraData* extra_data = static_cast<MediaStreamExtraData*>(
       stream_desc.extraData());
-  ASSERT_TRUE(extra_data && extra_data->local_stream());
-  EXPECT_EQ(0u, extra_data->local_stream()->video_tracks()->count());
-  EXPECT_EQ(0u, extra_data->local_stream()->audio_tracks()->count());
+  ASSERT_TRUE(extra_data && extra_data->stream());
+  EXPECT_TRUE(extra_data->is_local());
+  EXPECT_EQ(0u, extra_data->stream()->GetVideoTracks().size());
+  EXPECT_EQ(0u, extra_data->stream()->GetAudioTracks().size());
 }
 
 }  // namespace content
