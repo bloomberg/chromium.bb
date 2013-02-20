@@ -1828,3 +1828,17 @@
    fun:cloud_print::CloudPrintURLFetcher::StartRequestHelper
    fun:cloud_print::CloudPrintURLFetcher::StartGetRequest
 }
+{
+   bug_177285_a
+   Heapcheck:Leak
+   fun:MessageLoop::MessageLoop
+   fun:FileSystemURLRequestJobTest
+   fun:FileSystemURLRequestJobTest_FileTestFullSpecifiedRange_Test
+}
+{
+   bug_177285_b
+   Heapcheck:Leak
+   fun:MessageLoop::MessageLoop
+   fun:FileSystemURLRequestJobTest
+   fun:FileSystemURLRequestJobTest_FileTestHalfSpecifiedRange_Test
+}
