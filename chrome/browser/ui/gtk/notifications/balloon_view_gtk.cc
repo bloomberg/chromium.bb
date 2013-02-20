@@ -98,7 +98,10 @@ const char* kLabelMarkup = "<span size=\"small\" color=\"%s\">%s</span>";
 
 BalloonViewImpl::BalloonViewImpl(BalloonCollection* collection)
     : balloon_(NULL),
+      theme_service_(NULL),
       frame_container_(NULL),
+      shelf_(NULL),
+      hbox_(NULL),
       html_container_(NULL),
       weak_factory_(this),
       close_button_(NULL),
