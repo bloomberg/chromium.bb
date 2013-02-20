@@ -84,7 +84,9 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
   DisplayController();
   virtual ~DisplayController();
 
-  // Retruns primary display. This is safe to use after ash::Shell is
+  void Shutdown();
+
+  // Returns primary display. This is safe to use after ash::Shell is
   // deleted.
   static const gfx::Display& GetPrimaryDisplay();
 

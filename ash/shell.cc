@@ -288,7 +288,10 @@ Shell::~Shell() {
   power_button_controller_.reset();
   session_state_controller_.reset();
 
-  // This also deletes all RootWindows.
+  // This also deletes all RootWindows. Note that we invoke Shutdown() on
+  // DisplayController before resetting |display_controller_|, since destruction
+  // of its owned RootWindowControllers relies on the value.
+  display_controller_->Shutdown();
   display_controller_.reset();
   screen_position_controller_.reset();
 

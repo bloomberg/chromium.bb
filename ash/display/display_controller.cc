@@ -254,6 +254,10 @@ DisplayController::DisplayController()
 }
 
 DisplayController::~DisplayController() {
+  DCHECK(primary_display_for_shutdown);
+}
+
+void DisplayController::Shutdown() {
   DCHECK(!primary_display_for_shutdown);
   primary_display_for_shutdown = new gfx::Display(
       GetDisplayManager()->GetDisplayForId(primary_display_id));
@@ -270,6 +274,7 @@ DisplayController::~DisplayController() {
     delete controller;
   }
 }
+
 // static
 const gfx::Display& DisplayController::GetPrimaryDisplay() {
   DCHECK_NE(primary_display_id, gfx::Display::kInvalidDisplayID);
