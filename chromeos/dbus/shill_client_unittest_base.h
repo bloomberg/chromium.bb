@@ -151,10 +151,17 @@ class ShillClientUnittestBase : public testing::Test {
                                      DBusMethodCallStatus call_status,
                                      const dbus::ObjectPath& result);
 
-  // Checks the result and expects the call status to be SUCCESS.
   static void ExpectObjectPathResultWithoutStatus(
       const dbus::ObjectPath& expected_result,
       const dbus::ObjectPath& result);
+
+  static void ExpectBoolResultWithoutStatus(
+      bool expected_result,
+      bool result);
+
+  static void ExpectStringResultWithoutStatus(
+      const std::string& expected_result,
+      const std::string& result);
 
   // Checks the result and expects the call status to be SUCCESS.
   static void ExpectDictionaryValueResult(

@@ -14,6 +14,32 @@
         "id": "NetworkProperties",
         "type": "object",
         "additionalProperties": { "type": "any" }
+      },
+      {
+        "id": "VerificationProperties",
+        "type": "object",
+        "properties": {
+          "certificate": {
+            "type": "string",
+            "description": "A string containing a PEM-encoded X.509 certificate for use in verifying the signed data."
+          },
+          "publicKey": {
+            "type": "string",
+            "description": "A string containing a PEM-encoded RSA public key to be used to compare with the one in signedData"
+          },
+          "nonce": {
+            "type": "string",
+            "description": "A string containing a base64-encoded random binary data for use in verifying the signed data."
+          },
+          "signedData": {
+            "type": "string",
+            "description": "A string containing the identifying data string signed by the device."
+          },
+          "deviceSerial": {
+            "type": "string",
+            "description": "A string containing the serial number of the device."
+          }
+        }        
       }
     ],
     "functions": [
@@ -96,6 +122,82 @@
             "optional": true,
             "parameters": [],
             "description": "A callback function that indicates that a disconnect has been initiated."
+          }
+        ]
+      },
+      {
+        "name": "verifyDestination",
+        "description": "Verifies that the device is a trusted device.",
+        "parameters": [
+          {
+            "name": "properties",
+            "$ref": "VerificationProperties",
+            "description": "Properties of the destination to use in verifying that it is a trusted device."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "verified",
+                "type": "boolean"
+              }
+            ],
+            "description": "A callback function that indicates whether or not the device is a trusted device."
+          }
+        ]
+      },
+      {
+        "name": "verifyAndSignCredentials",
+        "description": "Verifies that the device is a trusted device and retrieves encrypted network credentials.",
+        "parameters": [
+          {
+            "name": "properties",
+            "$ref": "VerificationProperties",
+            "description": "Properties of the destination to use in verifying that it is a trusted device."
+          },
+          {
+            "name": "guid",
+            "type": "string",
+            "description": "A string containing the unique identifier of the network to get credentials for."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "credentials",
+                "type": "string"
+              }
+            ],
+            "description": "A callback function that receives base64-encoded encrypted credential data to send to a trusted device."
+          }
+        ]
+      },
+      {
+        "name": "verifyAndSignData",
+        "description": "Verifies that the device is a trusted device and encrypts supplied data with device public key.",
+        "parameters": [
+          {
+            "name": "properties",
+            "$ref": "VerificationProperties",
+            "description": "Properties of the destination to use in verifying that it is a trusted device."
+          },
+          {
+            "name": "data",
+            "type": "string",
+            "description": "A string containing the base64-encoded data to encrypt."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "encryptedData",
+                "type": "string"
+              }
+            ],
+            "description": "A callback function that receives base64-encoded encrypted data to send to a trusted device."
           }
         ]
       }

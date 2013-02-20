@@ -254,6 +254,20 @@ void ShillClientUnittestBase::ExpectObjectPathResultWithoutStatus(
 }
 
 // static
+void ShillClientUnittestBase::ExpectBoolResultWithoutStatus(
+    bool expected_result,
+    bool result) {
+  EXPECT_EQ(expected_result, result);
+}
+
+// static
+void ShillClientUnittestBase::ExpectStringResultWithoutStatus(
+    const std::string& expected_result,
+    const std::string& result) {
+  EXPECT_EQ(expected_result, result);
+}
+
+// static
 void ShillClientUnittestBase::ExpectDictionaryValueResultWithoutStatus(
     const base::DictionaryValue* expected_result,
     const base::DictionaryValue& result) {

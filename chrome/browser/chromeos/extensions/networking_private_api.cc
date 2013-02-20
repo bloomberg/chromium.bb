@@ -301,3 +301,122 @@ bool NetworkingPrivateStartDisconnectFunction::RunImpl() {
           this));
   return true;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkingPrivateVerifyDestinationFunction
+
+NetworkingPrivateVerifyDestinationFunction::
+  ~NetworkingPrivateVerifyDestinationFunction() {
+}
+
+bool NetworkingPrivateVerifyDestinationFunction::RunImpl() {
+  scoped_ptr<api::VerifyDestination::Params> params =
+      api::VerifyDestination::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  DBusThreadManager::Get()->GetShillManagerClient()->VerifyDestination(
+      params->properties.certificate,
+      params->properties.public_key,
+      params->properties.nonce,
+      params->properties.signed_data,
+      params->properties.device_serial,
+      base::Bind(
+          &NetworkingPrivateVerifyDestinationFunction::ResultCallback,
+          this),
+      base::Bind(
+          &NetworkingPrivateVerifyDestinationFunction::ErrorCallback,
+          this));
+  return true;
+}
+
+void NetworkingPrivateVerifyDestinationFunction::ResultCallback(
+    bool result) {
+  results_ = api::VerifyDestination::Results::Create(result);
+  SendResponse(true);
+}
+
+void NetworkingPrivateVerifyDestinationFunction::ErrorCallback(
+    const std::string& error_name, const std::string& error) {
+  error_ = error_name;
+  SendResponse(false);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkingPrivateVerifyAndSignCredentialsFunction
+
+NetworkingPrivateVerifyAndSignCredentialsFunction::
+  ~NetworkingPrivateVerifyAndSignCredentialsFunction() {
+}
+
+bool NetworkingPrivateVerifyAndSignCredentialsFunction::RunImpl() {
+  scoped_ptr<api::VerifyAndSignCredentials::Params> params =
+      api::VerifyAndSignCredentials::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  DBusThreadManager::Get()->GetShillManagerClient()->VerifyAndSignCredentials(
+      params->properties.certificate,
+      params->properties.public_key,
+      params->properties.nonce,
+      params->properties.signed_data,
+      params->properties.device_serial,
+      params->guid,
+      base::Bind(
+          &NetworkingPrivateVerifyAndSignCredentialsFunction::ResultCallback,
+          this),
+      base::Bind(
+          &NetworkingPrivateVerifyAndSignCredentialsFunction::ErrorCallback,
+          this));
+  return true;
+}
+
+void NetworkingPrivateVerifyAndSignCredentialsFunction::ResultCallback(
+    const std::string& result) {
+  results_ = api::VerifyAndSignCredentials::Results::Create(result);
+  SendResponse(true);
+}
+
+void NetworkingPrivateVerifyAndSignCredentialsFunction::ErrorCallback(
+    const std::string& error_name, const std::string& error) {
+  error_ = error_name;
+  SendResponse(false);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkingPrivateVerifyAndSignDataFunction
+
+NetworkingPrivateVerifyAndSignDataFunction::
+  ~NetworkingPrivateVerifyAndSignDataFunction() {
+}
+
+bool NetworkingPrivateVerifyAndSignDataFunction::RunImpl() {
+  scoped_ptr<api::VerifyAndSignData::Params> params =
+      api::VerifyAndSignData::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  DBusThreadManager::Get()->GetShillManagerClient()->VerifyAndSignData(
+      params->properties.certificate,
+      params->properties.public_key,
+      params->properties.nonce,
+      params->properties.signed_data,
+      params->properties.device_serial,
+      params->data,
+      base::Bind(
+          &NetworkingPrivateVerifyAndSignDataFunction::ResultCallback,
+          this),
+      base::Bind(
+          &NetworkingPrivateVerifyAndSignDataFunction::ErrorCallback,
+          this));
+  return true;
+}
+
+void NetworkingPrivateVerifyAndSignDataFunction::ResultCallback(
+    const std::string& result) {
+  results_ = api::VerifyAndSignData::Results::Create(result);
+  SendResponse(true);
+}
+
+void NetworkingPrivateVerifyAndSignDataFunction::ErrorCallback(
+    const std::string& error_name, const std::string& error) {
+  error_ = error_name;
+  SendResponse(false);
+}

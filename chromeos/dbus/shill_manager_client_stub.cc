@@ -164,6 +164,51 @@ void ShillManagerClientStub::GetService(
       FROM_HERE, base::Bind(callback, dbus::ObjectPath()));
 }
 
+void ShillManagerClientStub::VerifyDestination(
+    const std::string& certificate,
+    const std::string& public_key,
+    const std::string& nonce,
+    const std::string& signed_data,
+    const std::string& device_serial,
+    const BooleanCallback& callback,
+    const ErrorCallback& error_callback) {
+  if (callback.is_null())
+    return;
+  MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(callback, true));
+}
+
+void ShillManagerClientStub::VerifyAndSignCredentials(
+    const std::string& certificate,
+    const std::string& public_key,
+    const std::string& nonce,
+    const std::string& signed_data,
+    const std::string& device_serial,
+    const std::string& service_path,
+    const StringCallback& callback,
+    const ErrorCallback& error_callback) {
+  if (callback.is_null())
+    return;
+  MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(callback, "encrypted_credentials"));
+}
+
+void ShillManagerClientStub::VerifyAndSignData(
+    const std::string& certificate,
+    const std::string& public_key,
+    const std::string& nonce,
+    const std::string& signed_data,
+    const std::string& device_serial,
+    const std::string& data,
+    const StringCallback& callback,
+    const ErrorCallback& error_callback) {
+  if (callback.is_null())
+    return;
+  MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(callback, "encrypted_data"));
+}
+
+
 ShillManagerClient::TestInterface* ShillManagerClientStub::GetTestInterface() {
   return this;
 }

@@ -97,6 +97,34 @@ base::DictionaryValue* CreateExampleProperties() {
   return properties;
 }
 
+void ExpectStringArguments(const std::vector<std::string>& arguments,
+                           dbus::MessageReader* reader) {
+  for (std::vector<std::string>::const_iterator iter = arguments.begin();
+       iter != arguments.end(); ++iter) {
+    std::string arg_string;
+    ASSERT_TRUE(reader->PopString(&arg_string));
+    EXPECT_EQ(*iter, arg_string);
+  }
+  EXPECT_FALSE(reader->HasMoreData());
+}
+
+void ExpectStringArgumentsFollowedByObjectPath(
+      const std::vector<std::string>& arguments,
+      const dbus::ObjectPath& object_path,
+      dbus::MessageReader* reader) {
+  for (std::vector<std::string>::const_iterator iter = arguments.begin();
+       iter != arguments.end(); ++iter) {
+    std::string arg_string;
+    ASSERT_TRUE(reader->PopString(&arg_string));
+    EXPECT_EQ(*iter, arg_string);
+  }
+  dbus::ObjectPath path;
+  ASSERT_TRUE(reader->PopObjectPath(&path));
+  EXPECT_EQ(object_path, path);
+  EXPECT_FALSE(reader->HasMoreData());
+}
+
+
 }  // namespace
 
 class ShillManagerClientTest : public ShillClientUnittestBase {
@@ -386,6 +414,115 @@ TEST_F(ShillManagerClientTest, GetService) {
                       base::Bind(&ExpectObjectPathResultWithoutStatus,
                                  object_path),
                       mock_error_callback.GetCallback());
+  EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
+
+  // Run the message loop.
+  message_loop_.RunUntilIdle();
+}
+
+TEST_F(ShillManagerClientTest, VerifyDestination) {
+  // Create response.
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(response.get());
+  bool expected = true;
+  writer.AppendBool(expected);
+  // Set expectations.
+  std::vector<std::string> arguments;
+  arguments.push_back("certificate");
+  arguments.push_back("public_key");
+  arguments.push_back("nonce");
+  arguments.push_back("signed_data");
+  arguments.push_back("device_serial");
+  PrepareForMethodCall(shill::kVerifyDestinationFunction,
+                       base::Bind(&ExpectStringArguments, arguments),
+                       response.get());
+
+
+  // Call method.
+  MockErrorCallback mock_error_callback;
+  client_->VerifyDestination(arguments[0],
+                             arguments[1],
+                             arguments[2],
+                             arguments[3],
+                             arguments[4],
+                             base::Bind(&ExpectBoolResultWithoutStatus,
+                                        expected),
+                             mock_error_callback.GetCallback());
+  EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
+
+  // Run the message loop.
+  message_loop_.RunUntilIdle();
+}
+
+TEST_F(ShillManagerClientTest, VerifyAndSignCredentials) {
+  // Create response.
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(response.get());
+  std::string expected = "encrypted_credentials";
+  writer.AppendString(expected);
+  // Set expectations.
+  std::vector<std::string> arguments;
+  arguments.push_back("certificate");
+  arguments.push_back("public_key");
+  arguments.push_back("nonce");
+  arguments.push_back("signed_data");
+  arguments.push_back("device_serial");
+  std::string service_path = "/";
+  dbus::ObjectPath service_path_obj(service_path);
+  PrepareForMethodCall(shill::kVerifyAndSignCredentialsFunction,
+                       base::Bind(&ExpectStringArgumentsFollowedByObjectPath,
+                                  arguments,
+                                  service_path_obj),
+                       response.get());
+
+
+  // Call method.
+  MockErrorCallback mock_error_callback;
+  client_->VerifyAndSignCredentials(arguments[0],
+                                    arguments[1],
+                                    arguments[2],
+                                    arguments[3],
+                                    arguments[4],
+                                    service_path,
+                                    base::Bind(&ExpectStringResultWithoutStatus,
+                                               expected),
+                                    mock_error_callback.GetCallback());
+  EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
+
+  // Run the message loop.
+  message_loop_.RunUntilIdle();
+}
+
+TEST_F(ShillManagerClientTest, VerifyAndSignData) {
+  // Create response.
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(response.get());
+  std::string expected = "encrypted_data";
+  writer.AppendString(expected);
+  // Set expectations.
+  std::vector<std::string> arguments;
+  arguments.push_back("certificate");
+  arguments.push_back("public_key");
+  arguments.push_back("nonce");
+  arguments.push_back("signed_data");
+  arguments.push_back("device_serial");
+  arguments.push_back("data");
+  PrepareForMethodCall(shill::kVerifyAndSignDataFunction,
+                       base::Bind(&ExpectStringArguments, arguments),
+                       response.get());
+
+
+  // Call method.
+  MockErrorCallback mock_error_callback;
+  client_->VerifyAndSignData(arguments[0],
+                             arguments[1],
+                             arguments[2],
+                             arguments[3],
+                             arguments[4],
+                             arguments[5],
+                             base::Bind(&ExpectStringResultWithoutStatus,
+                                        expected),
+                             mock_error_callback.GetCallback());
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
   // Run the message loop.

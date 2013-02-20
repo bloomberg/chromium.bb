@@ -67,4 +67,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
   EXPECT_TRUE(RunNetworkingSubtest("onNetworkListChangedEvent")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
+                       VerifyDestination) {
+  EXPECT_TRUE(RunNetworkingSubtest("verifyDestination")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
+                       VerifyAndSignCredentials) {
+  EXPECT_TRUE(RunNetworkingSubtest("verifyAndSignCredentials")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
+                       VerifyAndSignData) {
+  EXPECT_TRUE(RunNetworkingSubtest("verifyAndSignData")) << message_;
+}
+
+
 }  // namespace chromeos

@@ -62,6 +62,13 @@ class ShillClientHelper {
   typedef base::Callback<void(const std::string& error_name,
                               const std::string& error_message)> ErrorCallback;
 
+  // A callback that handles responses for methods with string results.
+  typedef base::Callback<void(const std::string& result)> StringCallback;
+
+  // A callback that handles responses for methods with boolean results.
+  typedef base::Callback<void(bool result)> BooleanCallback;
+
+
   ShillClientHelper(dbus::Bus* bus, dbus::ObjectProxy* proxy);
 
   virtual ~ShillClientHelper();
@@ -100,6 +107,18 @@ class ShillClientHelper {
                                        const base::Closure& callback,
                                        const ErrorCallback& error_callback);
 
+  // Calls a method with a boolean result with error callback.
+  void CallBooleanMethodWithErrorCallback(
+      dbus::MethodCall* method_call,
+      const BooleanCallback& callback,
+      const ErrorCallback& error_callback);
+
+  // Calls a method with a string result with error callback.
+  void CallStringMethodWithErrorCallback(dbus::MethodCall* method_call,
+                                         const StringCallback& callback,
+                                         const ErrorCallback& error_callback);
+
+
   // Calls a method with a dictionary value result with error callback.
   void CallDictionaryValueMethodWithErrorCallback(
       dbus::MethodCall* method_call,
@@ -137,47 +156,6 @@ class ShillClientHelper {
 
   // Handles PropertyChanged signal.
   void OnPropertyChanged(dbus::Signal* signal);
-
-  // Handles responses for methods without results.
-  void OnVoidMethod(const VoidDBusMethodCallback& callback,
-                    dbus::Response* response);
-
-  // Handles responses for methods with ObjectPath results.
-  void OnObjectPathMethod(const ObjectPathDBusMethodCallback& callback,
-                          dbus::Response* response);
-
-  // Handles responses for methods with ObjectPath results.
-  void OnObjectPathMethodWithoutStatus(
-      const ObjectPathCallback& callback,
-      const ErrorCallback& error_callback,
-      dbus::Response* response);
-
-  // Handles responses for methods with DictionaryValue results.
-  void OnDictionaryValueMethod(const DictionaryValueCallback& callback,
-                               dbus::Response* response);
-
-  // Handles responses for methods without results.
-  // Used by CallVoidMethodWithErrorCallback().
-  void OnVoidMethodWithErrorCallback(const base::Closure& callback,
-                                     dbus::Response* response);
-
-  // Handles responses for methods with DictionaryValue results.
-  // Used by CallDictionaryValueMethodWithErrorCallback().
-  void OnDictionaryValueMethodWithErrorCallback(
-      const DictionaryValueCallbackWithoutStatus& callback,
-      const ErrorCallback& error_callback,
-      dbus::Response* response);
-
-  // Handles responses for methods with Boolean array results.
-  // Used by CallBooleanArrayMethodWithErrorCallback().
-  void OnListValueMethodWithErrorCallback(
-      const ListValueCallback& callback,
-      const ErrorCallback& error_callback,
-      dbus::Response* response);
-
-  // Handles errors for method calls.
-  void OnError(const ErrorCallback& error_callback,
-               dbus::ErrorResponse* response);
 
   // TODO(hashimoto): Remove this when we no longer need to make blocking calls.
   BlockingMethodCaller blocking_method_caller_;
