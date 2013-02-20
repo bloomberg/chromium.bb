@@ -12,6 +12,10 @@ import compiled_file_system as compiled_fs
 STATIC_DIR_PREFIX = 'docs'
 DOCS_PATH = 'docs'
 
+def _IsBinaryMimetype(mimetype):
+  return any(mimetype.startswith(prefix)
+             for prefix in ['audio', 'image', 'video'])
+
 class ServerInstance(object):
   """This class is used to hold a data source and fetcher for an instance of a
   server. Each new branch will get its own ServerInstance.
@@ -23,18 +27,17 @@ class ServerInstance(object):
     self._template_data_source_factory = template_data_source_factory
     self._example_zipper = example_zipper
     self._cache = cache_factory.Create(lambda _, x: x, compiled_fs.STATIC)
-    mimetypes.init()
 
   def _FetchStaticResource(self, path, response):
     """Fetch a resource in the 'static' directory.
     """
+    mimetype = mimetypes.guess_type(path)[0] or 'text/plain'
     try:
       result = self._cache.GetFromFile(STATIC_DIR_PREFIX + '/' + path,
-                                       binary='/images/' in path)
+                                       binary=_IsBinaryMimetype(mimetype))
     except FileNotFoundError:
       return None
-    base, ext = os.path.splitext(path)
-    response.headers['content-type'] = mimetypes.types_map[ext]
+    response.headers['content-type'] = mimetype
     return result
 
   def Get(self, path, request, response):
@@ -46,13 +49,15 @@ class ServerInstance(object):
       try:
         content = self._example_zipper.Create(
             path[len('extensions/'):-len('.zip')])
-        response.headers['content-type'] = mimetypes.types_map['.zip']
+        response.headers['content-type'] = 'application/zip'
       except FileNotFoundError:
         content = None
     elif path.startswith('extensions/examples/'):
+      mimetype = mimetypes.guess_type(path)[0] or 'text/plain'
       try:
         content = self._cache.GetFromFile(
-            '%s/%s' % (DOCS_PATH, path[len('extensions/'):]))
+            '%s/%s' % (DOCS_PATH, path[len('extensions/'):]),
+            binary=_IsBinaryMimetype(mimetype))
         response.headers['content-type'] = 'text/plain'
       except FileNotFoundError:
         content = None
