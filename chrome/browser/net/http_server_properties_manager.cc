@@ -4,6 +4,7 @@
 #include "chrome/browser/net/http_server_properties_manager.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
@@ -411,17 +412,23 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnIO(
   // preferences. Update the cached data with new data from preferences.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
+  UMA_HISTOGRAM_COUNTS("Net.CountOfSpdyServers", spdy_servers->size());
   http_server_properties_impl_->InitializeSpdyServers(spdy_servers, true);
 
   // Clear the cached data and use the new spdy_settings from preferences.
+  UMA_HISTOGRAM_COUNTS("Net.CountOfSpdySettings", spdy_settings_map->size());
   http_server_properties_impl_->InitializeSpdySettingsServers(
       spdy_settings_map);
 
   // Clear the cached data and use the new Alternate-Protocol server list from
   // preferences.
+  UMA_HISTOGRAM_COUNTS("Net.CountOfAlternateProtocolServers",
+                       alternate_protocol_map->size());
   http_server_properties_impl_->InitializeAlternateProtocolServers(
       alternate_protocol_map);
 
+  UMA_HISTOGRAM_COUNTS("Net.CountOfPipelineCapableServers",
+                       pipeline_capability_map->size());
   http_server_properties_impl_->InitializePipelineCapabilities(
       pipeline_capability_map);
 
