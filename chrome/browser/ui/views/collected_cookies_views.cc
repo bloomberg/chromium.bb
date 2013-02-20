@@ -338,7 +338,6 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
   allowed_cookies_tree_->SetModel(allowed_cookies_tree_model_.get());
   allowed_cookies_tree_->SetRootShown(false);
   allowed_cookies_tree_->SetEditable(false);
-  allowed_cookies_tree_->set_lines_at_root(true);
   allowed_cookies_tree_->set_auto_expand_children(true);
   allowed_cookies_tree_->SetController(this);
 
@@ -398,7 +397,6 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
   blocked_cookies_tree_->SetModel(blocked_cookies_tree_model_.get());
   blocked_cookies_tree_->SetRootShown(false);
   blocked_cookies_tree_->SetEditable(false);
-  blocked_cookies_tree_->set_lines_at_root(true);
   blocked_cookies_tree_->set_auto_expand_children(true);
   blocked_cookies_tree_->SetController(this);
 

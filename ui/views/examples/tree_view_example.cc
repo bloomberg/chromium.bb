@@ -41,7 +41,6 @@ void TreeViewExample::CreateExampleView(View* container) {
   tree_view_ = new TreeView();
   tree_view_->set_context_menu_controller(this);
   tree_view_->SetRootShown(false);
-  tree_view_->set_lines_at_root(true);
   tree_view_->SetModel(&model_);
   tree_view_->SetController(this);
   add_ = new TextButton(this, ASCIIToUTF16("Add"));

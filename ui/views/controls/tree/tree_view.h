@@ -56,9 +56,6 @@ class VIEWS_EXPORT TreeView : public View,
   // the Controller is queried to determine if a particular node can be edited.
   void SetEditable(bool editable);
 
-  // Does nothing, but required for compatibility with Windows implementation.
-  void set_lines_at_root(bool lines_at_root) {}
-
   // Edits the specified node. This cancels the current edit and expands all
   // parents of node.
   void StartEditing(ui::TreeModelNode* node);

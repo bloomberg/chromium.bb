@@ -281,7 +281,6 @@ void BookmarkEditorView::Init() {
   if (show_tree_) {
     tree_view_ = new views::TreeView;
     tree_view_->SetRootShown(false);
-    tree_view_->set_lines_at_root(true);
     tree_view_->set_context_menu_controller(this);
 
     new_folder_button_.reset(new views::NativeTextButton(this,
