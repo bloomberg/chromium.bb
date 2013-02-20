@@ -48,6 +48,7 @@
 #include "chrome/renderer/external_extension.h"
 #include "chrome/renderer/loadtimes_extension_bindings.h"
 #include "chrome/renderer/net/renderer_net_predictor.h"
+#include "chrome/renderer/net_benchmarking_extension.h"
 #include "chrome/renderer/one_click_signin_agent.h"
 #include "chrome/renderer/page_click_tracker.h"
 #include "chrome/renderer/page_load_histograms.h"
@@ -232,6 +233,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableBenchmarking))
     thread->RegisterExtension(extensions_v8::BenchmarkingExtension::Get());
+  if (command_line->HasSwitch(switches::kEnableNetBenchmarking))
+    thread->RegisterExtension(extensions_v8::NetBenchmarkingExtension::Get());
 
   if (command_line->HasSwitch(switches::kPlaybackMode) ||
       command_line->HasSwitch(switches::kRecordMode) ||

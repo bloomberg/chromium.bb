@@ -140,6 +140,8 @@
         'renderer/net/predictor_queue.h',
         'renderer/net/renderer_net_predictor.cc',
         'renderer/net/renderer_net_predictor.h',
+        'renderer/net_benchmarking_extension.cc',
+        'renderer/net_benchmarking_extension.h',        
         'renderer/one_click_signin_agent.cc',
         'renderer/one_click_signin_agent.h',
         'renderer/playback_extension.cc',

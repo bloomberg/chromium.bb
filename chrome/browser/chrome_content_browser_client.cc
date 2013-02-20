@@ -20,7 +20,7 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/character_encoding.h"
-#include "chrome/browser/chrome_benchmarking_message_filter.h"
+#include "chrome/browser/chrome_net_benchmarking_message_filter.h"
 #include "chrome/browser/chrome_quota_permission_context.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
@@ -648,8 +648,11 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
     content::RenderProcessHost* host) {
   int id = host->GetID();
   Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
+  net::URLRequestContextGetter* context =
+      profile->GetRequestContextForRenderProcess(id);
+
   host->GetChannel()->AddFilter(new ChromeRenderMessageFilter(
-      id, profile, profile->GetRequestContextForRenderProcess(id)));
+      id, profile, context));
 #if defined(ENABLE_PLUGINS)
   host->GetChannel()->AddFilter(new PluginInfoMessageFilter(id, profile));
 #endif
@@ -662,8 +665,8 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
 #if defined(OS_MACOSX)
   host->GetChannel()->AddFilter(new SpellCheckMessageFilterMac());
 #endif
-  host->GetChannel()->AddFilter(new ChromeBenchmarkingMessageFilter(
-      id, profile, profile->GetRequestContextForRenderProcess(id)));
+  host->GetChannel()->AddFilter(new ChromeNetBenchmarkingMessageFilter(
+      id, profile, context));
   host->GetChannel()->AddFilter(
       new prerender::PrerenderMessageFilter(id, profile));
 
