@@ -692,7 +692,7 @@ GURL GetFileBrowserUrlWithParams(
 
   // Disable showing Drive unless it's specifically supported.
   arg_value.SetBoolean("disableDrive",
-      !file_types || !file_types->support_gdata);
+      !file_types || !file_types->support_drive);
 
   std::string json_args;
   base::JSONWriter::Write(&arg_value, &json_args);

@@ -40,7 +40,7 @@ namespace ui {
 
 SelectFileDialog::FileTypeInfo::FileTypeInfo()
     : include_all_files(false),
-      support_gdata(false) {}
+      support_drive(false) {}
 
 SelectFileDialog::FileTypeInfo::~FileTypeInfo() {}
 

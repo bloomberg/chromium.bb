@@ -852,7 +852,7 @@ void PrintPreviewHandler::SelectFile(const base::FilePath& default_filename) {
   ui::SelectFileDialog::FileTypeInfo file_type_info;
   file_type_info.extensions.resize(1);
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("pdf"));
-  file_type_info.support_gdata = true;
+  file_type_info.support_drive = true;
 
   // Initializing save_path_ if it is not already initialized.
   printing::StickySettings* sticky_settings = GetStickySettings();

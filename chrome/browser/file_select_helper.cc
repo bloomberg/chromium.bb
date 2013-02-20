@@ -252,7 +252,7 @@ FileSelectHelper::GetFileTypesFromAcceptType(
     const std::vector<string16>& accept_types) {
   scoped_ptr<ui::SelectFileDialog::FileTypeInfo> base_file_type(
       new ui::SelectFileDialog::FileTypeInfo());
-  base_file_type->support_gdata = true;
+  base_file_type->support_drive = true;
   if (accept_types.empty())
     return base_file_type.Pass();
 

@@ -170,10 +170,10 @@ void ShowCertSelectFileDialog(ui::SelectFileDialog* select_file_dialog,
   file_type_info.extension_description_overrides.push_back(
       l10n_util::GetStringUTF16(IDS_CERT_EXPORT_TYPE_PKCS7_CHAIN));
   file_type_info.include_all_files = true;
-  // TODO(kinaba): http://crbug.com/140425. Turn file_type_info.support_gdata
+  // TODO(kinaba): http://crbug.com/140425. Turn file_type_info.support_drive
   // on for saving once Google Drive client on ChromeOS supports it.
   if (type == ui::SelectFileDialog::SELECT_OPEN_FILE)
-    file_type_info.support_gdata = true;
+    file_type_info.support_drive = true;
   select_file_dialog->SelectFile(
       type, string16(),
       suggested_path, &file_type_info, 1,

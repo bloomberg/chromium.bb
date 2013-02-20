@@ -117,7 +117,7 @@ class SHELL_DIALOGS_EXPORT SelectFileDialog
     bool include_all_files;
 
     // Specifies whether the caller can support files/folders that are on Drive.
-    bool support_gdata;
+    bool support_drive;
   };
 
   // Selects a File.
