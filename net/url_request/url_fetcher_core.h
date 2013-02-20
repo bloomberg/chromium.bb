@@ -195,7 +195,7 @@ class URLFetcherCore
   // write is complete.
   bool WriteBuffer(int num_bytes);
 
-  // Handles results of WriteBuffer.
+  // Handles the result of WriteBuffer.
   void DidWriteBuffer(int result);
 
   // Read response bytes from the request.
