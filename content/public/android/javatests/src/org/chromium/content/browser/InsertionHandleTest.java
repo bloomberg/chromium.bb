@@ -16,7 +16,7 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
-import org.chromium.content.browser.test.util.TouchUtils;
+import org.chromium.content.browser.test.util.TestTouchUtils;
 import org.chromium.content_shell.ContentShellTestBase;
 
 public class InsertionHandleTest extends ContentShellTestBase {
@@ -42,15 +42,17 @@ public class InsertionHandleTest extends ContentShellTestBase {
         int initialY = handle.getPositionY() + VERTICAL_OFFSET;
         ContentView view = getContentView();
 
-        int fromLocation[] = TouchUtils.getAbsoluteLocationFromRelative(view, initialX, initialY);
-        int toLocation[] = TouchUtils.getAbsoluteLocationFromRelative(view, dragToX, dragToY);
+        int fromLocation[] = TestTouchUtils.getAbsoluteLocationFromRelative(view, initialX,
+                initialY);
+        int toLocation[] = TestTouchUtils.getAbsoluteLocationFromRelative(view, dragToX,
+                dragToY);
 
-        long downTime = TouchUtils.dragStart(getInstrumentation(), fromLocation[0],
+        long downTime = TestTouchUtils.dragStart(getInstrumentation(), fromLocation[0],
                 fromLocation[1]);
         assertWaitForHandleDraggingEquals(true);
-        TouchUtils.dragTo(getInstrumentation(), fromLocation[0], toLocation[0], fromLocation[1],
-                toLocation[1], steps, downTime);
-        TouchUtils.dragEnd(getInstrumentation(), toLocation[0], toLocation[1], downTime);
+        TestTouchUtils.dragTo(getInstrumentation(), fromLocation[0], toLocation[0],
+                fromLocation[1], toLocation[1], steps, downTime);
+        TestTouchUtils.dragEnd(getInstrumentation(), toLocation[0], toLocation[1], downTime);
         assertWaitForHandleDraggingEquals(false);
     }
 
@@ -183,7 +185,7 @@ public class InsertionHandleTest extends ContentShellTestBase {
 
         DOMUtils.clickNode(this, getContentView(),
                 new TestCallbackHelperContainer(getContentView()), INPUT_TEXT_ID);
-        TouchUtils.sleepForDoubleTapTimeout(getInstrumentation());
+        TestTouchUtils.sleepForDoubleTapTimeout(getInstrumentation());
         DOMUtils.clickNode(this, getContentView(),
                 new TestCallbackHelperContainer(getContentView()), INPUT_TEXT_ID);
 
@@ -203,7 +205,7 @@ public class InsertionHandleTest extends ContentShellTestBase {
         assertTrue(waitForHandleViewStopped());
         assertWaitForHandleNear(dragToX, initialY);
 
-        TouchUtils.sleepForDoubleTapTimeout(getInstrumentation());
+        TestTouchUtils.sleepForDoubleTapTimeout(getInstrumentation());
 
         initialX = handle.getPositionX();
         initialY = handle.getPositionY() + VERTICAL_OFFSET;
@@ -225,7 +227,7 @@ public class InsertionHandleTest extends ContentShellTestBase {
 
         DOMUtils.clickNode(this, getContentView(),
                 new TestCallbackHelperContainer(getContentView()), INPUT_TEXT_ID);
-        TouchUtils.sleepForDoubleTapTimeout(getInstrumentation());
+        TestTouchUtils.sleepForDoubleTapTimeout(getInstrumentation());
         DOMUtils.clickNode(this, getContentView(),
                 new TestCallbackHelperContainer(getContentView()), INPUT_TEXT_ID);
 
@@ -268,10 +270,10 @@ public class InsertionHandleTest extends ContentShellTestBase {
     }
 
     private void clickToShowInsertionHandle() throws Throwable {
-        TouchUtils.singleClickView(getInstrumentation(), getContentView(), INITIAL_CLICK_X,
+        TestTouchUtils.singleClickView(getInstrumentation(), getContentView(), INITIAL_CLICK_X,
                 INITIAL_CLICK_Y);
-        TouchUtils.sleepForDoubleTapTimeout(getInstrumentation());
-        TouchUtils.singleClickView(getInstrumentation(), getContentView(), INITIAL_CLICK_X,
+        TestTouchUtils.sleepForDoubleTapTimeout(getInstrumentation());
+        TestTouchUtils.singleClickView(getInstrumentation(), getContentView(), INITIAL_CLICK_X,
                 INITIAL_CLICK_Y);
         assertTrue(waitForHandleShowingEquals(true));
         assertWaitForZoomFinished();

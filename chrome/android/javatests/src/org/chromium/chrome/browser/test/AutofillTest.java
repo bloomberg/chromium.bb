@@ -31,7 +31,6 @@ import org.chromium.content.browser.ContainerViewDelegate;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content.browser.test.util.UiUtils;
-import org.chromium.content.browser.test.util.TouchUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.ui.gfx.ActivityNativeWindow;
