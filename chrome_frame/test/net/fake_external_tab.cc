@@ -205,6 +205,11 @@ void FilterDisabledTests() {
     "HTTPSRequestTest.HTTPSExpiredTest",
     "HTTPSRequestTest.ClientAuthTest",
 
+    // More HTTPS tests failing due to certificate dialogs.
+    // http://crbug.com/102991
+    "URLRequestTestHTTP.HTTPSToHTTPRedirectNoRefererTest",
+    "HTTPSRequestTest.HTTPSGetTest",
+
     // Tests chrome's network stack's cache (might not apply to CF).
     "URLRequestTestHTTP.VaryHeader",
     "URLRequestTestHTTP.GetZippedTest",
@@ -269,6 +274,7 @@ void FilterDisabledTests() {
     // These tests are disabled as they rely on functionality provided by
     // Chrome's HTTP stack like the ability to set the proxy for a URL, etc.
     "URLRequestTestHTTP.ProxyTunnelRedirectTest",
+    "URLRequestTestHTTP.NetworkDelegateTunnelConnectionFailed",
     "URLRequestTestHTTP.UnexpectedServerAuthTest",
 
     // These tests are disabled as they expect an empty UA to be echoed back

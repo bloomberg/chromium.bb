@@ -7,6 +7,7 @@ CertVerifyProcTest.VerifyReturnChainProperlyOrdered
 HTTPSCRLSetTest.ExpiredCRLSet
 HTTPSEVCRLSetTest.FreshCRLSet
 HTTPSRequestTest.ClientAuthTest
+HTTPSRequestTest.HTTPSGetTest
 HTTPSRequestTest.ResumeTest
 HTTPSRequestTest.SSLSessionCacheShardTest
 # Bug: 171812
@@ -15,6 +16,7 @@ MultiThreadedCertVerifierTest.CancelRequest
 PythonUtils.PythonRunTime
 TransportSecurityStateTest.ValidPinsHeadersSHA1
 TransportSecurityStateTest.ValidPinsHeadersSHA256
+URLRequestTestHTTP.HTTPSToHTTPRedirectNoRefererTest
 URLRequestTestHTTP.ProcessSTS
 URLRequestTestHTTP.ProcessSTSOnce
 VerifyEndEntity/CertVerifyProcWeakDigestTest.Verify/0
