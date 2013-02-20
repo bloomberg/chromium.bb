@@ -68,7 +68,6 @@ DeviceMediaAsyncFileUtil::~DeviceMediaAsyncFileUtil() {
 // static
 DeviceMediaAsyncFileUtil* DeviceMediaAsyncFileUtil::Create(
     const base::FilePath& profile_path) {
-  NOTIMPLEMENTED();
   return NULL;
 }
 
