@@ -111,7 +111,7 @@ void UninstallHook(InputDispatcher* dispatcher) {
 }
 
 InputDispatcher::InputDispatcher(const base::Closure& task,
-                                 UINT message_waiting_for)
+                                 WPARAM message_waiting_for)
     : task_(task), message_waiting_for_(message_waiting_for) {
   InstallHook(this, message_waiting_for == WM_KEYUP);
 }
