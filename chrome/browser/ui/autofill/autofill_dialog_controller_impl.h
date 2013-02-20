@@ -86,6 +86,8 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual DialogSignedInState SignedInState() const OVERRIDE;
   virtual bool CanPayWithWallet() const OVERRIDE;
   virtual bool AccountChooserEnabled() const OVERRIDE;
+  virtual bool ShouldOfferToSaveInChrome() const OVERRIDE;
+  virtual bool SectionIsActive(DialogSection section) const OVERRIDE;
   virtual const DetailInputs& RequestedFieldsForSection(DialogSection section)
       const OVERRIDE;
   virtual ui::ComboboxModel* ComboboxModelForAutofillType(
@@ -276,6 +278,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   DetailInputs requested_email_fields_;
   DetailInputs requested_cc_fields_;
   DetailInputs requested_billing_fields_;
+  DetailInputs requested_cc_billing_fields_;
   DetailInputs requested_shipping_fields_;
 
   // Models for the credit card expiration inputs.
@@ -286,6 +289,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   SuggestionsMenuModel suggested_email_;
   SuggestionsMenuModel suggested_cc_;
   SuggestionsMenuModel suggested_billing_;
+  SuggestionsMenuModel suggested_cc_billing_;
   SuggestionsMenuModel suggested_shipping_;
 
   // A map from DialogSection to editing state (true for editing, false for

@@ -374,6 +374,8 @@ AutofillDialogViews::AutofillDialogViews(AutofillDialogController* controller)
                                        DetailsGroup(SECTION_CC)));
   detail_groups_.insert(std::make_pair(SECTION_BILLING,
                                        DetailsGroup(SECTION_BILLING)));
+  detail_groups_.insert(std::make_pair(SECTION_CC_BILLING,
+                                       DetailsGroup(SECTION_CC_BILLING)));
   detail_groups_.insert(std::make_pair(SECTION_SHIPPING,
                                        DetailsGroup(SECTION_SHIPPING)));
 }
@@ -905,11 +907,14 @@ void AutofillDialogViews::UpdateDetailsGroupState(const DetailsGroup& group) {
   }
 
   // Show or hide the "Save in chrome" checkbox. If nothing is in editing mode,
-  // hide.
-  save_in_chrome_checkbox_->SetVisible(AtLeastOneSectionIsEditing());
+  // hide. If the controller tells us not to show it, likewise hide.
+  save_in_chrome_checkbox_->SetVisible(
+      controller_->ShouldOfferToSaveInChrome() && AtLeastOneSectionIsEditing());
 
-  if (group.container)
+  if (group.container) {
     group.container->SetForwardMouseEvents(show_suggestions);
+    group.container->SetVisible(controller_->SectionIsActive(group.section));
+  }
 
   if (GetWidget())
     GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
@@ -930,6 +935,9 @@ bool AutofillDialogViews::ValidateForm() {
   for (DetailGroupMap::iterator iter = detail_groups_.begin();
        iter != detail_groups_.end(); ++iter) {
     DetailsGroup* group = &iter->second;
+    if (!group->container->visible())
+      continue;
+
     if (group->manual_input->visible()) {
       for (TextfieldMap::iterator iter = group->textfields.begin();
            iter != group->textfields.end(); ++iter) {

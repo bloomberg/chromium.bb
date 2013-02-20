@@ -44,6 +44,10 @@ class SuggestionsMenuModel : public ui::SimpleMenuModel,
   // Returns the ID key for the item at |index|.
   std::string GetItemKeyAt(int index) const;
 
+  // Returns the ID key for the item at |checked_item_|, or an empty string if
+  // there are no items.
+  std::string GetItemKeyForCheckedItem() const;
+
   int checked_item() { return checked_item_; }
 
   // ui::SimpleMenuModel::Delegate implementation.

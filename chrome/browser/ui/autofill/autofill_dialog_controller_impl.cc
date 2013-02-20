@@ -146,6 +146,7 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       ALLOW_THIS_IN_INITIALIZER_LIST(suggested_email_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(suggested_cc_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(suggested_billing_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(suggested_cc_billing_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(suggested_shipping_(this)),
       section_showing_popup_(SECTION_BILLING),
       metric_logger_(metric_logger),
@@ -182,41 +183,62 @@ void AutofillDialogControllerImpl::Show() {
   };
 
   const DetailInput kCCInputs[] = {
-    { 2, CREDIT_CARD_NUMBER, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARD_NUMBER },
-    { 3, CREDIT_CARD_EXP_MONTH },
-    { 3, CREDIT_CARD_EXP_4_DIGIT_YEAR },
-    { 3, CREDIT_CARD_VERIFICATION_CODE, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC },
-    { 4, CREDIT_CARD_NAME, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARDHOLDER_NAME },
+    { 1, CREDIT_CARD_NUMBER, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARD_NUMBER },
+    { 2, CREDIT_CARD_EXP_MONTH },
+    { 2, CREDIT_CARD_EXP_4_DIGIT_YEAR },
+    { 2, CREDIT_CARD_VERIFICATION_CODE, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC },
+    { 3, CREDIT_CARD_NAME, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARDHOLDER_NAME },
   };
 
   const DetailInput kBillingInputs[] = {
-    { 5, ADDRESS_HOME_LINE1, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_1,
+    { 1, ADDRESS_HOME_LINE1, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_1,
       "billing" },
-    { 6, ADDRESS_HOME_LINE2, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_2,
+    { 2, ADDRESS_HOME_LINE2, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_2,
       "billing" },
-    { 7, ADDRESS_HOME_CITY, IDS_AUTOFILL_DIALOG_PLACEHOLDER_LOCALITY,
+    { 3, ADDRESS_HOME_CITY, IDS_AUTOFILL_DIALOG_PLACEHOLDER_LOCALITY,
       "billing" },
     // TODO(estade): state is supposed to be a combobox.
-    { 8, ADDRESS_HOME_STATE, IDS_AUTOFILL_FIELD_LABEL_STATE, "billing" },
-    { 8, ADDRESS_HOME_ZIP, IDS_AUTOFILL_DIALOG_PLACEHOLDER_POSTAL_CODE,
+    { 4, ADDRESS_HOME_STATE, IDS_AUTOFILL_FIELD_LABEL_STATE, "billing" },
+    { 4, ADDRESS_HOME_ZIP, IDS_AUTOFILL_DIALOG_PLACEHOLDER_POSTAL_CODE,
+      "billing", 0.5 },
+  };
+
+  // TODO(estade): This is just kCCInputs + kBillingInputs. Is there a better
+  // way to combine them than copying?
+  const DetailInput kCCAndBillingInputs[] = {
+    { 1, CREDIT_CARD_NUMBER, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARD_NUMBER },
+    { 2, CREDIT_CARD_EXP_MONTH },
+    { 2, CREDIT_CARD_EXP_4_DIGIT_YEAR },
+    { 2, CREDIT_CARD_VERIFICATION_CODE, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC },
+    { 3, CREDIT_CARD_NAME, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARDHOLDER_NAME },
+    { 4, ADDRESS_HOME_LINE1, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_1,
+      "billing" },
+    { 5, ADDRESS_HOME_LINE2, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_2,
+      "billing" },
+    { 6, ADDRESS_HOME_CITY, IDS_AUTOFILL_DIALOG_PLACEHOLDER_LOCALITY,
+      "billing" },
+    // TODO(estade): state is supposed to be a combobox.
+    { 7, ADDRESS_HOME_STATE, IDS_AUTOFILL_FIELD_LABEL_STATE, "billing" },
+    { 7, ADDRESS_HOME_ZIP, IDS_AUTOFILL_DIALOG_PLACEHOLDER_POSTAL_CODE,
       "billing", 0.5 },
   };
 
   const DetailInput kShippingInputs[] = {
-    { 9, NAME_FULL, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESSEE_NAME,
+    { 1, NAME_FULL, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESSEE_NAME,
       "shipping" },
-    { 10, ADDRESS_HOME_LINE1, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_1,
+    { 2, ADDRESS_HOME_LINE1, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_1,
       "shipping" },
-    { 11, ADDRESS_HOME_LINE2, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_2,
+    { 3, ADDRESS_HOME_LINE2, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_2,
       "shipping" },
-    { 12, ADDRESS_HOME_CITY, IDS_AUTOFILL_DIALOG_PLACEHOLDER_LOCALITY,
+    { 4, ADDRESS_HOME_CITY, IDS_AUTOFILL_DIALOG_PLACEHOLDER_LOCALITY,
       "shipping" },
     // TODO(estade): state is supposed to be a combobox.
-    { 13, ADDRESS_HOME_STATE, IDS_AUTOFILL_FIELD_LABEL_STATE, "shipping" },
-    { 13, ADDRESS_HOME_ZIP, IDS_AUTOFILL_DIALOG_PLACEHOLDER_POSTAL_CODE,
+    { 5, ADDRESS_HOME_STATE, IDS_AUTOFILL_FIELD_LABEL_STATE, "shipping" },
+    { 5, ADDRESS_HOME_ZIP, IDS_AUTOFILL_DIALOG_PLACEHOLDER_POSTAL_CODE,
       "shipping", 0.5 },
   };
 
+  // TODO(estade): this filtering stuff probably can go away.
   FilterInputs(form_structure_,
                kEmailInputs,
                arraysize(kEmailInputs),
@@ -231,6 +253,11 @@ void AutofillDialogControllerImpl::Show() {
                kBillingInputs,
                arraysize(kBillingInputs),
                &requested_billing_fields_);
+
+  FilterInputs(form_structure_,
+               kCCAndBillingInputs,
+               arraysize(kBillingInputs),
+               &requested_cc_billing_fields_);
 
   FilterInputs(form_structure_,
                kShippingInputs,
@@ -332,6 +359,18 @@ bool AutofillDialogControllerImpl::AccountChooserEnabled() const {
   return state != REQUIRES_RESPONSE && state != SIGNED_IN;
 }
 
+bool AutofillDialogControllerImpl::ShouldOfferToSaveInChrome() const {
+  return !CanPayWithWallet();
+}
+
+bool AutofillDialogControllerImpl::SectionIsActive(DialogSection section)
+    const {
+  if (CanPayWithWallet())
+    return section != SECTION_BILLING && section != SECTION_CC;
+
+  return section != SECTION_CC_BILLING;
+}
+
 const DetailInputs& AutofillDialogControllerImpl::RequestedFieldsForSection(
     DialogSection section) const {
   switch (section) {
@@ -341,6 +380,8 @@ const DetailInputs& AutofillDialogControllerImpl::RequestedFieldsForSection(
       return requested_cc_fields_;
     case SECTION_BILLING:
       return requested_billing_fields_;
+    case SECTION_CC_BILLING:
+      return requested_cc_billing_fields_;
     case SECTION_SHIPPING:
       return requested_shipping_fields_;
   }
@@ -377,6 +418,8 @@ string16 AutofillDialogControllerImpl::LabelForSection(DialogSection section)
       return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECTION_CC);
     case SECTION_BILLING:
       return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECTION_BILLING);
+    case SECTION_CC_BILLING:
+      return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECTION_CC_BILLING);
     case SECTION_SHIPPING:
       return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECTION_SHIPPING);
     default:
@@ -393,7 +436,7 @@ string16 AutofillDialogControllerImpl::SuggestionTextForSection(
     return string16();
 
   SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
-  std::string item_key = model->GetItemKeyAt(model->checked_item());
+  std::string item_key = model->GetItemKeyForCheckedItem();
   if (item_key.empty())
     return string16();
 
@@ -407,7 +450,7 @@ string16 AutofillDialogControllerImpl::SuggestionTextForSection(
 scoped_ptr<DataModelWrapper> AutofillDialogControllerImpl::CreateWrapper(
     DialogSection section) {
   SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
-  std::string item_key = model->GetItemKeyAt(model->checked_item());
+  std::string item_key = model->GetItemKeyForCheckedItem();
   scoped_ptr<DataModelWrapper> wrapper;
   if (item_key.empty())
     return wrapper.Pass();
@@ -417,7 +460,7 @@ scoped_ptr<DataModelWrapper> AutofillDialogControllerImpl::CreateWrapper(
     bool success = base::StringToInt(item_key, &index);
     DCHECK(success);
 
-    if (section == SECTION_CC) {
+    if (section == SECTION_CC_BILLING) {
       wrapper.reset(
           new WalletInstrumentWrapper(wallet_items_->instruments()[index]));
     } else {
@@ -895,25 +938,35 @@ void AutofillDialogControllerImpl::WalletRequestCompleted(bool success) {
 }
 
 void AutofillDialogControllerImpl::GenerateSuggestionsModels() {
+  suggested_email_.Reset();
   suggested_cc_.Reset();
   suggested_billing_.Reset();
-  suggested_email_.Reset();
+  suggested_cc_billing_.Reset();
   suggested_shipping_.Reset();
 
   if (CanPayWithWallet()) {
     if (wallet_items_.get()) {
       // TODO(estade): seems we need to hardcode the email address.
-      // TODO(estade): CC and billing need to be combined into one section,
-      // and suggestions added here.
+
       const std::vector<wallet::Address*>& addresses =
           wallet_items_->addresses();
       for (size_t i = 0; i < addresses.size(); ++i) {
-        suggested_billing_.AddKeyedItem(base::IntToString(i),
-                                        addresses[i]->DisplayName());
         suggested_shipping_.AddKeyedItem(base::IntToString(i),
                                          addresses[i]->DisplayName());
       }
+
+      const std::vector<wallet::WalletItems::MaskedInstrument*>& instruments =
+          wallet_items_->instruments();
+      for (size_t i = 0; i < instruments.size(); ++i) {
+        suggested_cc_billing_.AddKeyedItem(
+            base::IntToString(i),
+            UTF8ToUTF16(instruments[i]->descriptive_name()));
+      }
     }
+
+    suggested_cc_billing_.AddKeyedItem(
+        std::string(),
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_BILLING_DETAILS));
   } else {
     PersonalDataManager* manager = GetManager();
     const std::vector<CreditCard*>& cards = manager->credit_cards();
@@ -943,17 +996,18 @@ void AutofillDialogControllerImpl::GenerateSuggestionsModels() {
       suggested_shipping_.AddKeyedItem(profiles[i]->guid(),
                                        profiles[i]->Label());
     }
+
+    suggested_cc_.AddKeyedItem(
+        std::string(),
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_CREDIT_CARD));
+    suggested_billing_.AddKeyedItem(
+        std::string(),
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_BILLING_ADDRESS));
   }
 
   suggested_email_.AddKeyedItem(
       std::string(),
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_EMAIL_ADDRESS));
-  suggested_cc_.AddKeyedItem(
-      std::string(),
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_CREDIT_CARD));
-  suggested_billing_.AddKeyedItem(
-      std::string(),
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_BILLING_ADDRESS));
   suggested_shipping_.AddKeyedItem(
       std::string(),
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_SHIPPING_ADDRESS));
@@ -975,8 +1029,11 @@ bool AutofillDialogControllerImpl::IsCompleteProfile(
 void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
     DialogSection section,
     const InputFieldComparator& compare) {
+  if (!SectionIsActive(section))
+    return;
+
   SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
-  std::string item_key = model->GetItemKeyAt(model->checked_item());
+  std::string item_key = model->GetItemKeyForCheckedItem();
   if (!item_key.empty() && !section_editing_state_[section]) {
     scoped_ptr<DataModelWrapper> model = CreateWrapper(section);
     // Only fill in data that is associated with this section.
@@ -1066,6 +1123,8 @@ SuggestionsMenuModel* AutofillDialogControllerImpl::
       return &suggested_billing_;
     case SECTION_SHIPPING:
       return &suggested_shipping_;
+    case SECTION_CC_BILLING:
+      return &suggested_cc_billing_;
   }
 
   NOTREACHED();
@@ -1082,6 +1141,9 @@ DialogSection AutofillDialogControllerImpl::SectionForSuggestionsMenuModel(
 
   if (&model == &suggested_billing_)
     return SECTION_BILLING;
+
+  if (&model == &suggested_cc_billing_)
+    return SECTION_CC_BILLING;
 
   DCHECK_EQ(&model, &suggested_shipping_);
   return SECTION_SHIPPING;

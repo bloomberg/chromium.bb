@@ -39,6 +39,13 @@ std::string SuggestionsMenuModel::GetItemKeyAt(int index) const {
   return items_[index].first;
 }
 
+std::string SuggestionsMenuModel::GetItemKeyForCheckedItem() const {
+  if (items_.empty())
+    return std::string();
+
+  return items_[checked_item_].first;
+}
+
 bool SuggestionsMenuModel::IsCommandIdChecked(
     int command_id) const {
   return checked_item_ == command_id;

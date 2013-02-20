@@ -59,7 +59,13 @@ class AutofillDialogController {
   // Whether the account chooser is enabled (clickable).
   virtual bool AccountChooserEnabled() const = 0;
 
+  // Whether to show the checkbox to save data locally (in Autofill).
+  virtual bool ShouldOfferToSaveInChrome() const = 0;
+
   // Detail inputs -------------------------------------------------------------
+
+  // Whether the section is currently active (i.e. should be shown).
+  virtual bool SectionIsActive(DialogSection section) const = 0;
 
   // Returns the set of inputs the page has requested which fall under
   // |section|.

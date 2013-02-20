@@ -45,8 +45,11 @@ typedef base::Callback<bool(const DetailInput& input,
 // one of these sections.
 enum DialogSection {
   SECTION_EMAIL,
+  // The Autofill-backed dialog uses separate CC and billing sections.
   SECTION_CC,
   SECTION_BILLING,
+  // The wallet-backed dialog uses a combined CC and billing section.
+  SECTION_CC_BILLING,
   SECTION_SHIPPING,
 };
 

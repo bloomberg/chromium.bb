@@ -11074,7 +11074,10 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_AUTOFILL_DIALOG_SECTION_CC" desc="Label for the credit card section of the imperative autofill dialog.">
         Credit card
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_SECTION_BILLING" desc="Label for the billing details section of the imperative autofill dialog.">
+      <message name="IDS_AUTOFILL_DIALOG_SECTION_BILLING" desc="Label for the billing address section of the imperative autofill dialog.">
+        Billing address
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_SECTION_CC_BILLING" desc="Label for the billing details (credit card + address) section of the imperative autofill dialog.">
         Billing details
       </message>
       <message name="IDS_AUTOFILL_DIALOG_SECTION_SHIPPING" desc="Label for the shipping details section of the imperative autofill dialog.">
