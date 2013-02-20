@@ -22,9 +22,10 @@ function PhotoImport(dom, filesystem, params) {
   this.copyManager_ = FileCopyManagerWrapper.getInstance(this.filesystem_.root);
   this.mediaFilesList_ = null;
   this.destination_ = null;
+  this.myPhotosDirectory_ = null;
 
   this.initDom_();
-  this.initDestination_();
+  this.initMyPhotos_();
   this.loadSource_(params.source);
 }
 
@@ -41,6 +42,11 @@ PhotoImport.ITEM_WIDTH = 164 + 8;
  * TODO(dgozman): localize
  */
 PhotoImport.DRIVE_PHOTOS_DIR = 'My Photos';
+
+/**
+ * Number of tries in creating a destination directory.
+ */
+PhotoImport.CREATE_DESTINATION_TRIES = 100;
 
 /**
  * Loads app in the document body.
@@ -115,16 +121,16 @@ PhotoImport.prototype.initDom_ = function() {
 };
 
 /**
- * One-time initialization of destination directory.
+ * One-time initialization of the My Photos directory.
  * @private
  */
-PhotoImport.prototype.initDestination_ = function() {
+PhotoImport.prototype.initMyPhotos_ = function() {
   var onError = this.onError_.bind(
       this, loadTimeData.getString('PHOTO_IMPORT_DRIVE_ERROR'));
 
   var onDirectory = function(dir) {
-    this.destination_ = dir;
     // This may enable the import button, so check that.
+    this.myPhotosDirectory_ = dir;
     this.onSelectionChanged_();
   }.bind(this);
 
@@ -139,6 +145,55 @@ PhotoImport.prototype.initDestination_ = function() {
     this.volumeManager_.mountDrive(onMounted, onError);
   }
 };
+
+/**
+ * Creates the destination directory.
+ * @param {function} onSuccess Callback on success.
+ * @private
+ */
+PhotoImport.prototype.createDestination_ = function(onSuccess) {
+  var onError = this.onError_.bind(
+      this, loadTimeData.getString('PHOTO_IMPORT_DRIVE_ERROR'));
+
+  var dateFormatter = v8Intl.DateTimeFormat(
+      [] /* default locale */,
+      {year: 'numeric', month: 'short', day: 'numeric'});
+
+  var baseName = PathUtil.join(RootDirectory.DRIVE,
+                               PhotoImport.DRIVE_PHOTOS_DIR,
+                               dateFormatter.format(new Date()));
+
+  var createDirectory = function(directoryName) {
+    this.filesystem_.root.getDirectory(
+        directoryName,
+        { create: true },
+        function(dir) {
+          this.destination_ = dir;
+          onSuccess();
+        }.bind(this),
+        onError);
+  };
+
+  // Try to create a directory: Name, Name (2), Name (3)...
+  var tryNext = function(tryNumber) {
+    if (tryNumber > PhotoImport.CREATE_DESTINATION_TRIES) {
+      console.error('Too many directories with the same base name exist.');
+      onError();
+      return;
+    }
+    var directoryName = baseName;
+    if (tryNumber > 1)
+      directoryName += ' (' + (tryNumber) + ')';
+    this.filesystem_.root.getDirectory(
+        directoryName,
+        { create: false },
+        tryNext.bind(this, tryNumber + 1),
+        createDirectory.bind(this, directoryName));
+  }.bind(this);
+
+  tryNext(1);
+};
+
 
 /**
  * Load the source contents.
@@ -312,7 +367,8 @@ PhotoImport.prototype.onSelectAllNone_ = function() {
  * @private
  */
 PhotoImport.prototype.onError_ = function(message) {
-  // TODO
+  // TODO(mtomasz): Implement error handling. crbug.com/177164.
+  console.error(message);
 };
 
 /**
@@ -351,7 +407,7 @@ PhotoImport.prototype.onSelectionChanged_ = function() {
   this.selectedCount_.textContent = count == 0 ? '' :
       count == 1 ? loadTimeData.getString('PHOTO_IMPORT_ONE_SELECTED') :
                    loadTimeData.getStringF('PHOTO_IMPORT_MANY_SELECTED', count);
-  this.importButton_.disabled = count == 0 || this.destination_ == null;
+  this.importButton_.disabled = count == 0 || this.myPhotosDirectory_ == null;
   this.selectAllNone_.textContent = loadTimeData.getString(
       count == this.fileList_.length && count > 0 ?
           'PHOTO_IMPORT_SELECT_NONE' : 'PHOTO_IMPORT_SELECT_ALL');
@@ -363,14 +419,16 @@ PhotoImport.prototype.onSelectionChanged_ = function() {
  * @private
  */
 PhotoImport.prototype.onImportClick_ = function(event) {
-  var entries = this.getSelectedItems_();
-  var move = this.dom_.querySelector('#delete-after-checkbox').checked;
+  this.createDestination_(function() {
+    var entries = this.getSelectedItems_();
+    var move = this.dom_.querySelector('#delete-after-checkbox').checked;
 
-  var percentage = Math.round(entries.length / this.fileList_.length * 100);
-  metrics.recordMediumCount('PhotoImport.ImportCount', entries.length);
-  metrics.recordSmallCount('PhotoImport.ImportPercentage', percentage);
+    var percentage = Math.round(entries.length / this.fileList_.length * 100);
+    metrics.recordMediumCount('PhotoImport.ImportCount', entries.length);
+    metrics.recordSmallCount('PhotoImport.ImportPercentage', percentage);
 
-  this.importingDialog_.show(entries, this.destination_, move);
+    this.importingDialog_.show(entries, this.destination_, move);
+  }.bind(this));
 };
 
 /**
