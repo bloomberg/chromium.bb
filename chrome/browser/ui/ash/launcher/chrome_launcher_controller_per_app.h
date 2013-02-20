@@ -123,15 +123,6 @@ class ChromeLauncherControllerPerApp : public ash::LauncherModelObserver,
   // be pinned.
   virtual bool IsPinnable(ash::LauncherID id) const OVERRIDE;
 
-  // If there is no launcher item in the launcher for application |app_id|, one
-  // gets created. The (existing or created) launcher items get then locked
-  // against a users un-pinning removal.
-  virtual void LockV1AppWithID(const std::string& app_id) OVERRIDE;
-
-  // A previously locked launcher item of type |app_id| gets unlocked. If the
-  // lock count reaches 0 and the item is not pinned it will go away.
-  virtual void UnlockV1AppWithID(const std::string& app_id) OVERRIDE;
-
   // Requests that the launcher item controller specified by |id| open a new
   // instance of the app.  |event_flags| holds the flags of the event which
   // triggered this command.
@@ -173,10 +164,6 @@ class ChromeLauncherControllerPerApp : public ash::LauncherModelObserver,
 
   // Returns true if a pinned launcher item with given |app_id| could be found.
   virtual bool IsAppPinned(const std::string& app_id) OVERRIDE;
-
-  // Find out if the given application |id| is a windowed app item and not a
-  // pinned item in the launcher.
-  bool IsWindowedAppInLauncher(const std::string& app_id);
 
   // Pins an app with |app_id| to launcher. If there is a running instance in
   // launcher, the running instance is pinned. If there is no running instance,
@@ -331,13 +318,6 @@ class ChromeLauncherControllerPerApp : public ash::LauncherModelObserver,
   friend class ChromeLauncherControllerPerAppTest;
   friend class LauncherPerAppAppBrowserTest;
 
-  // Creates a new app shortcut item and controller on the launcher at |index|.
-   // Use kInsertItemAtEnd to add a shortcut as the last item.
-   virtual ash::LauncherID CreateAppShortcutLauncherItemWithType(
-       const std::string& app_id,
-       int index,
-       ash::LauncherItemType launcher_item_type);
-
   // Updates the activation state of the Broswer item.
   void UpdateBrowserItemStatus();
 
@@ -379,13 +359,11 @@ class ChromeLauncherControllerPerApp : public ash::LauncherModelObserver,
 
   // Creates an app launcher to insert at |index|. Note that |index| may be
   // adjusted by the model to meet ordering constraints.
-  // The |launcher_item_type| will be set into the LauncherModel.
   ash::LauncherID InsertAppLauncherItem(
       LauncherItemController* controller,
       const std::string& app_id,
       ash::LauncherItemStatus status,
-      int index,
-      ash::LauncherItemType launcher_item_type);
+      int index);
 
   bool HasItemController(ash::LauncherID id) const;
 

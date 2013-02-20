@@ -53,9 +53,6 @@ class BrowserLauncherItemController : public LauncherItemController,
                                 const std::string& app_id);
   virtual ~BrowserLauncherItemController();
 
-  // Overriding the app id for V1 apps.
-  virtual const std::string& app_id() const OVERRIDE;
-
   // Sets up this BrowserLauncherItemController.
   void Init();
 
@@ -135,10 +132,6 @@ class BrowserLauncherItemController : public LauncherItemController,
 
   // Browser window we're in.
   aura::Window* window_;
-
-  // If running a windowed V1 app with the new launcher, this (empty) app id
-  // will be returned by app_id().
-  std::string empty_app_id_;
 
   TabStripModel* tab_model_;
 

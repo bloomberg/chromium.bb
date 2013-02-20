@@ -451,14 +451,6 @@ bool ChromeLauncherControllerPerBrowser::IsPinnable(ash::LauncherID id) const {
           CanPin());
 }
 
-void ChromeLauncherControllerPerBrowser::LockV1AppWithID(
-    const std::string& app_id) {
-}
-
-void ChromeLauncherControllerPerBrowser::UnlockV1AppWithID(
-    const std::string& app_id) {
-}
-
 void ChromeLauncherControllerPerBrowser::Launch(
     ash::LauncherID id, int event_flags) {
   if (!HasItemController(id))

@@ -40,9 +40,6 @@ enum LauncherItemType {
 
   // Represents a platform app.
   TYPE_PLATFORM_APP,
-
-  // Represents a windowed V1 browser app.
-  TYPE_WINDOWED_APP,
 };
 
 // Represents the status of pinned or running app launcher items.

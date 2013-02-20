@@ -17,7 +17,6 @@ int LauncherItemTypeToWeight(LauncherItemType type) {
     case TYPE_BROWSER_SHORTCUT:
       return 0;
     case TYPE_APP_SHORTCUT:
-    case TYPE_WINDOWED_APP:
       return 1;
     case TYPE_TABBED:
     case TYPE_PLATFORM_APP:

@@ -15,8 +15,7 @@ namespace {
 bool ShouldSkip(ash::LauncherItemType type) {
   return type == ash::TYPE_APP_LIST ||
          type == ash::TYPE_BROWSER_SHORTCUT ||
-         type == ash::TYPE_APP_SHORTCUT ||
-         type == ash::TYPE_WINDOWED_APP;
+         type == ash::TYPE_APP_SHORTCUT;
 }
 
 }  // namespace

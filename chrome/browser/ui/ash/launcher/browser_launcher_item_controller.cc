@@ -49,14 +49,6 @@ BrowserLauncherItemController::~BrowserLauncherItemController() {
   window_->RemoveObserver(this);
   if (launcher_id() > 0)
     launcher_controller()->CloseLauncherItem(launcher_id());
-  if (type() == TYPE_WINDOWED_APP)
-    launcher_controller()->UnlockV1AppWithID(LauncherItemController::app_id());
-}
-
-const std::string& BrowserLauncherItemController::app_id() const {
-  if (type() == TYPE_WINDOWED_APP)
-    return empty_app_id_;
-  return LauncherItemController::app_id();
 }
 
 void BrowserLauncherItemController::Init() {
@@ -64,7 +56,7 @@ void BrowserLauncherItemController::Init() {
   ash::LauncherItemStatus app_status =
       ash::wm::IsActiveWindow(window_) ?
       ash::STATUS_ACTIVE : ash::STATUS_RUNNING;
-  if (type() != TYPE_TABBED && type() != TYPE_WINDOWED_APP) {
+  if (type() != TYPE_TABBED) {
     launcher_controller()->CreateAppLauncherItem(this, app_id(), app_status);
   } else {
     launcher_controller()->CreateTabbedLauncherItem(
@@ -72,8 +64,6 @@ void BrowserLauncherItemController::Init() {
         is_incognito_ ? ChromeLauncherController::STATE_INCOGNITO :
                         ChromeLauncherController::STATE_NOT_INCOGNITO,
         app_status);
-    if (type() == TYPE_WINDOWED_APP)
-      launcher_controller()->LockV1AppWithID(LauncherItemController::app_id());
   }
   // In testing scenarios we can get tab strips with no active contents.
   if (tab_model_->active_index() != TabStripModel::kNoTab)
@@ -91,17 +81,6 @@ BrowserLauncherItemController* BrowserLauncherItemController::Create(
   std::string app_id;
   if (browser->is_type_tabbed() || browser->is_type_popup()) {
     type = TYPE_TABBED;
-    if (!browser->is_type_tabbed() &&
-        browser->is_type_popup() &&
-        browser->is_app() &&
-        ChromeLauncherController::instance()->GetPerAppInterface()) {
-      app_id = web_app::GetExtensionIdFromApplicationName(
-                    browser->app_name());
-      // Only allow this for known applications. Some unit tests for example
-      // do not have one.
-      if (!app_id.empty())
-        type = TYPE_WINDOWED_APP;
-    }
   } else if (browser->is_app()) {
     if (browser->is_type_panel()) {
       if (browser->app_type() == Browser::APP_TYPE_CHILD)

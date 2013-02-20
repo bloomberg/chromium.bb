@@ -67,10 +67,8 @@ void LauncherContextMenu::Init() {
   set_delegate(this);
 
   if (is_valid_item()) {
-    if (item_.type == ash::TYPE_APP_SHORTCUT ||
-        item_.type == ash::TYPE_WINDOWED_APP) {
-      DCHECK(item_.type == ash::TYPE_APP_SHORTCUT &&
-             controller_->IsPinned(item_.id));
+    if (item_.type == ash::TYPE_APP_SHORTCUT) {
+      DCHECK(controller_->IsPinned(item_.id));
       // V1 apps can be started from the menu - but V2 apps should not.
       if  (!controller_->IsPlatformApp(item_.id)) {
         AddItem(MENU_OPEN_NEW, string16());
@@ -78,9 +76,7 @@ void LauncherContextMenu::Init() {
       }
       AddItem(
           MENU_PIN,
-          l10n_util::GetStringUTF16(controller_->IsPinned(item_.id) ?
-                                    IDS_LAUNCHER_CONTEXT_MENU_UNPIN :
-                                    IDS_LAUNCHER_CONTEXT_MENU_PIN));
+          l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_UNPIN));
       if (controller_->IsOpen(item_.id)) {
         AddItem(MENU_CLOSE,
                 l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_CLOSE));
@@ -122,7 +118,6 @@ void LauncherContextMenu::Init() {
     }
     AddSeparator(ui::NORMAL_SEPARATOR);
     if (item_.type == ash::TYPE_APP_SHORTCUT ||
-        item_.type == ash::TYPE_WINDOWED_APP ||
         item_.type == ash::TYPE_PLATFORM_APP) {
       std::string app_id = controller_->GetAppIDForLauncherID(item_.id);
       if (!app_id.empty()) {
