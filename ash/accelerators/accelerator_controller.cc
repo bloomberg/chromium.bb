@@ -134,22 +134,19 @@ bool HandleRotatePaneFocus(Shell::Direction direction) {
   return true;
 }
 
-// Rotates the default window container.
-bool HandleRotateWindows() {
-  Shell::RootWindowControllerList controllers =
-      Shell::GetAllRootWindowControllers();
-  for (size_t i = 0; i < controllers.size(); ++i) {
-    aura::Window* target = controllers[i]->GetContainer(
-        internal::kShellWindowId_DefaultContainer);
+// Rotate the active window.
+bool HandleRotateActiveWindow() {
+  aura::Window* active_window = wm::GetActiveWindow();
+  if (active_window) {
     // The rotation animation bases its target transform on the current
     // rotation and position. Since there could be an animation in progress
     // right now, queue this animation so when it starts it picks up a neutral
     // rotation and position. Use replace so we only enqueue one at a time.
-    target->layer()->GetAnimator()->
+    active_window->layer()->GetAnimator()->
         set_preemption_strategy(ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-    target->layer()->GetAnimator()->ScheduleAnimation(
+    active_window->layer()->GetAnimator()->ScheduleAnimation(
         new ui::LayerAnimationSequence(
-            new ash::ScreenRotation(360, target->layer())));
+            new ash::ScreenRotation(360, active_window->layer())));
   }
   return true;
 }
@@ -753,8 +750,8 @@ bool AcceleratorController::PerformAction(int action,
       }
       break;
     }
-    case ROTATE_WINDOWS:
-      return HandleRotateWindows();
+    case ROTATE_WINDOW:
+      return HandleRotateActiveWindow();
     case ROTATE_SCREEN:
       return HandleRotateScreen();
     case TOGGLE_DESKTOP_BACKGROUND_MODE:
