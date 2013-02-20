@@ -105,6 +105,7 @@ def _UploadChangeToBranch(work_dir, patch, branch, draft, dryrun):
       if line.startswith('Reviewed-on: '):
         line = 'Previous-' + line
       elif line.startswith('Commit-Ready: ') or \
+           line.startswith('Commit-Queue: ') or \
            line.startswith('Reviewed-by: ') or \
            line.startswith('Tested-by: '):
         # If the tag is malformed, or the person lacks a name,
