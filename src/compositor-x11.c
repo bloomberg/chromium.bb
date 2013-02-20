@@ -85,6 +85,8 @@ struct x11_compositor {
 	uint8_t			 xkb_event_base;
 	int			 use_pixman;
 
+	int			 has_net_wm_state_fullscreen;
+
 	/* We could map multi-pointer X to multiple wayland seats, but
 	 * for now we only support core X input. */
 	struct weston_seat	 core_seat;
@@ -96,6 +98,8 @@ struct x11_compositor {
 		xcb_atom_t		 wm_delete_window;
 		xcb_atom_t		 wm_class;
 		xcb_atom_t		 net_wm_name;
+		xcb_atom_t		 net_supporting_wm_check;
+		xcb_atom_t		 net_supported;
 		xcb_atom_t		 net_wm_icon;
 		xcb_atom_t		 net_wm_state;
 		xcb_atom_t		 net_wm_state_fullscreen;
@@ -512,8 +516,6 @@ x11_output_wait_for_map(struct x11_compositor *c, struct x11_output *output)
 
 		switch (response_type) {
 		case XCB_MAP_NOTIFY:
-			fprintf(stderr, "got XCB_MAP_NOTIFY\n");
-
 			map_notify = (xcb_map_notify_event_t *) event;
 			if (map_notify->window == output->window)
 				mapped = 1;
@@ -522,10 +524,6 @@ x11_output_wait_for_map(struct x11_compositor *c, struct x11_output *output)
 		case XCB_CONFIGURE_NOTIFY:
 			configure_notify =
 				(xcb_configure_notify_event_t *) event;
-
-			fprintf(stderr, "got XCB_CONFIGURE_NOTIFY %dx%d\n",
-				configure_notify->width,
-				configure_notify->height);
 
 			output->mode.width = configure_notify->width;
 			output->mode.height = configure_notify->height;
@@ -769,7 +767,8 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 
 	xcb_map_window(c->conn, output->window);
 
-	x11_output_wait_for_map(c, output);
+	if (fullscreen)
+		x11_output_wait_for_map(c, output);
 
 	output->base.origin = output->base.current;
 	if (c->use_pixman)
@@ -1267,6 +1266,9 @@ x11_compositor_get_resources(struct x11_compositor *c)
 		{ "_NET_WM_ICON",	F(atom.net_wm_icon) },
 		{ "_NET_WM_STATE",	F(atom.net_wm_state) },
 		{ "_NET_WM_STATE_FULLSCREEN", F(atom.net_wm_state_fullscreen) },
+		{ "_NET_SUPPORTING_WM_CHECK",
+					F(atom.net_supporting_wm_check) },
+		{ "_NET_SUPPORTED",     F(atom.net_supported) },
 		{ "STRING",		F(atom.string) },
 		{ "UTF8_STRING",	F(atom.utf8_string) },
 		{ "CARDINAL",		F(atom.cardinal) },
@@ -1302,6 +1304,29 @@ x11_compositor_get_resources(struct x11_compositor *c)
 			   pixmap, pixmap, 0, 0, 0,  0, 0, 0,  1, 1);
 	xcb_free_gc(c->conn, gc);
 	xcb_free_pixmap(c->conn, pixmap);
+}
+
+static void
+x11_compositor_get_wm_info(struct x11_compositor *c)
+{
+	xcb_get_property_cookie_t cookie;
+	xcb_get_property_reply_t *reply;
+	xcb_atom_t *atom;
+	unsigned int i;
+
+	cookie = xcb_get_property(c->conn, 0, c->screen->root,
+				  c->atom.net_supported,
+				  XCB_ATOM_ATOM, 0, 1024);
+	reply = xcb_get_property_reply(c->conn, cookie, NULL);
+	if (reply == NULL)
+		return;
+
+	atom = (xcb_atom_t *) xcb_get_property_value(reply);
+
+	for (i = 0; i < reply->value_len; i++) {
+		if (atom[i] == c->atom.net_wm_state_fullscreen)
+			c->has_net_wm_state_fullscreen = 1;
+	}
 }
 
 static void
@@ -1377,6 +1402,13 @@ x11_compositor_create(struct wl_display *display,
 	wl_array_init(&c->keys);
 
 	x11_compositor_get_resources(c);
+	x11_compositor_get_wm_info(c);
+
+	if (!c->has_net_wm_state_fullscreen && fullscreen) {
+		weston_log("Can not fullscreen without window manager support"
+			   "(need _NET_WM_STATE_FULLSCREEN)\n");
+		fullscreen = 0;
+	}
 
 	c->base.wl_display = display;
 	c->use_pixman = use_pixman;
