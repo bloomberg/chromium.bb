@@ -8,13 +8,16 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/i18n/rtl.h"
+#include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
+#include "chrome/browser/ui/content_settings/content_setting_media_menu_model.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -27,6 +30,7 @@
 #include "grit/ui_resources.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/gtk_util.h"
 
@@ -38,6 +42,10 @@ namespace {
 // The maximum width of a title entry in the content box. We elide anything
 // longer than this.
 const int kMaxLinkPixelSize = 500;
+
+// The minimum and maximum width of the media menu buttons.
+const int kMinMediaMenuButtonWidth = 100;
+const int kMaxMediaMenuButtonWidth = 600;
 
 std::string BuildElidedText(const std::string& input) {
   return UTF16ToUTF8(ui::ElideText(
@@ -70,8 +78,22 @@ ContentSettingBubbleGtk::~ContentSettingBubbleGtk() {
 }
 
 void ContentSettingBubbleGtk::Close() {
+  STLDeleteValues(&media_menus_);
+
   if (bubble_)
     bubble_->Close();
+}
+
+void ContentSettingBubbleGtk::UpdateMenuLabel(content::MediaStreamType type,
+                                              const std::string& label) {
+  GtkMediaMenuMap::const_iterator it = media_menus_.begin();
+  for (; it != media_menus_.end(); ++it) {
+    if (it->second->type == type) {
+      gtk_label_set_text(GTK_LABEL(it->second->label.get()), label.c_str());
+      return;
+    }
+  }
+  NOTREACHED();
 }
 
 void ContentSettingBubbleGtk::BubbleClosing(BubbleGtk* bubble,
@@ -196,6 +218,70 @@ void ContentSettingBubbleGtk::BuildBubble() {
     g_signal_connect(*i, "toggled", G_CALLBACK(OnRadioToggledThunk), this);
   }
 
+  // Layout code for the media device menus.
+  if (content_setting_bubble_model_->content_type() ==
+        CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
+    GtkWidget* table = gtk_table_new(content.media_menus.size(), 2, FALSE);
+    int menu_width = 0;
+    int row = 0;
+    for (ContentSettingBubbleModel::MediaMenuMap::const_iterator
+             i(content.media_menus.begin());
+         i != content.media_menus.end();
+         ++i, ++row) {
+      GtkWidget* label = theme_provider->BuildLabel(
+          i->second.label.c_str(), ui::kGdkBlack);
+      gtk_table_attach(GTK_TABLE(table), gtk_util::LeftAlignMisc(label), 0, 1,
+                       row, row + 1, GTK_FILL, GTK_FILL,
+                       ui::kControlSpacing / 2, ui::kControlSpacing / 2);
+
+      // Build up the gtk menu button.
+      MediaMenuGtk* gtk_menu = new MediaMenuGtk(i->first);
+      gtk_menu->label.Own(
+          gtk_label_new(i->second.selected_device.name.c_str()));
+      GtkWidget* button = gtk_button_new();
+      GtkWidget* button_content = gtk_hbox_new(FALSE, 0);
+      gtk_box_pack_start(GTK_BOX(button_content),
+                         gtk_util::LeftAlignMisc(gtk_menu->label.get()),
+                         FALSE, FALSE, 0);
+      GtkWidget* arrow = gtk_arrow_new(GTK_ARROW_DOWN, GTK_SHADOW_NONE);
+      gtk_box_pack_end(GTK_BOX(button_content), arrow, FALSE, FALSE, 0);
+
+      gtk_container_add(GTK_CONTAINER(button), button_content);
+
+      // Store the gtk menu to the map.
+      gtk_menu->menu_model.reset(new ContentSettingMediaMenuModel(
+          gtk_menu->type,
+          content_setting_bubble_model_.get(),
+          base::Bind(&ContentSettingBubbleGtk::UpdateMenuLabel,
+                     base::Unretained(this))));
+      gtk_menu->menu.reset(new MenuGtk(NULL, gtk_menu->menu_model.get()));
+      media_menus_[button] = gtk_menu;
+
+      // Use the longest width of the menus as the width of the menu buttons.
+      GtkRequisition menu_req;
+      gtk_widget_size_request(gtk_menu->menu->widget(), &menu_req);
+      menu_width = std::max(menu_width, menu_req.width);
+
+      g_signal_connect(button, "clicked", G_CALLBACK(OnMenuButtonClickedThunk),
+                       this);
+      gtk_table_attach(GTK_TABLE(table), button, 1, 2, row, row + 1,
+                       GTK_FILL, GTK_FILL, ui::kControlSpacing * 2,
+                       ui::kControlSpacing / 2);
+    }
+
+    // Make sure the width is within [kMinMediaMenuButtonWidth,
+    // kMaxMediaMenuButtonWidth].
+    menu_width = std::max(kMinMediaMenuButtonWidth, menu_width);
+    menu_width = std::min(kMaxMediaMenuButtonWidth, menu_width);
+
+    // Set all the menu buttons to the width we calculated above.
+    for (GtkMediaMenuMap::const_iterator i = media_menus_.begin();
+         i != media_menus_.end(); ++i)
+      gtk_widget_set_size_request(i->first, menu_width, -1);
+
+    gtk_box_pack_start(GTK_BOX(bubble_content), table, FALSE, FALSE, 0);
+  }
+
   for (std::vector<ContentSettingBubbleModel::DomainList>::const_iterator i =
        content.domain_lists.begin();
        i != content.domain_lists.end(); ++i) {
@@ -253,7 +339,6 @@ void ContentSettingBubbleGtk::BuildBubble() {
   g_signal_connect(button, "clicked", G_CALLBACK(OnCloseButtonClickedThunk),
                    this);
   gtk_box_pack_end(GTK_BOX(bottom_box), button, FALSE, FALSE, 0);
-
   gtk_box_pack_start(GTK_BOX(bubble_content), bottom_box, FALSE, FALSE, 0);
   gtk_widget_grab_focus(bottom_box);
   gtk_widget_grab_focus(button);
@@ -316,3 +401,15 @@ void ContentSettingBubbleGtk::OnManageLinkClicked(GtkWidget* button) {
   content_setting_bubble_model_->OnManageLinkClicked();
   Close();
 }
+
+void ContentSettingBubbleGtk::OnMenuButtonClicked(GtkWidget* button) {
+  GtkMediaMenuMap::iterator i(media_menus_.find(button));
+  DCHECK(i != media_menus_.end());
+  i->second->menu->PopupForWidget(button, 1, gtk_get_current_event_time());
+}
+
+ContentSettingBubbleGtk::MediaMenuGtk::MediaMenuGtk(
+    content::MediaStreamType type)
+    : type(type) {}
+
+ContentSettingBubbleGtk::MediaMenuGtk::~MediaMenuGtk() {}

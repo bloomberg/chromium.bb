@@ -12,17 +12,27 @@
 #include "chrome/common/content_settings_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/common/media_stream_request.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/link_listener.h"
 
 class ContentSettingBubbleModel;
+class ContentSettingMediaMenuModel;
+class Profile;
 
 namespace content {
 class WebContents;
 }
 
+namespace ui {
+class SimpleMenuModel;
+}
+
 namespace views {
+class MenuButton;
+class MenuRunner;
 class TextButton;
 class RadioButton;
 }
@@ -36,10 +46,11 @@ class RadioButton;
 // the blocking settings for the current site, a close button, and a link to
 // get to a more comprehensive settings management dialog.  A few types have
 // more or fewer controls than this.
-class ContentSettingBubbleContents : public views::BubbleDelegateView,
+class ContentSettingBubbleContents : public content::NotificationObserver,
+                                     public views::BubbleDelegateView,
                                      public views::ButtonListener,
                                      public views::LinkListener,
-                                     public content::NotificationObserver {
+                                     public views::MenuButtonListener {
  public:
   ContentSettingBubbleContents(
       ContentSettingBubbleModel* content_setting_bubble_model,
@@ -50,14 +61,20 @@ class ContentSettingBubbleContents : public views::BubbleDelegateView,
 
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
+  // Callback to allow ContentSettingMediaMenuModel to update the menu label.
+  void UpdateMenuLabel(content::MediaStreamType type,
+                       const std::string& label);
+
  protected:
   // views::BubbleDelegateView:
   virtual void Init() OVERRIDE;
 
  private:
   class Favicon;
+  struct MediaMenuParts;
 
   typedef std::map<views::Link*, int> PopupLinks;
+  typedef std::map<views::MenuButton*, MediaMenuParts*> MediaMenuPartsMap;
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
@@ -66,10 +83,18 @@ class ContentSettingBubbleContents : public views::BubbleDelegateView,
   // views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
+  // views::MenuButtonListener:
+  virtual void OnMenuButtonClicked(views::View* source,
+                                   const gfx::Point& point) OVERRIDE;
+
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // Helper to get the preferred width of the media menu.
+  int GetPreferredMediaMenuWidth(views::MenuButton* button,
+                                 ui::SimpleMenuModel* menu_model);
 
   // Provides data for this bubble.
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model_;
@@ -88,6 +113,8 @@ class ContentSettingBubbleContents : public views::BubbleDelegateView,
   views::Link* custom_link_;
   views::Link* manage_link_;
   views::TextButton* close_button_;
+  scoped_ptr<views::MenuRunner> menu_runner_;
+  MediaMenuPartsMap media_menus_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ContentSettingBubbleContents);
 };

@@ -9,23 +9,33 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/ui/chrome_style.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
+#include "chrome/browser/ui/content_settings/content_setting_media_menu_model.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/simple_menu_model.h"
+#include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/radio_button.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
+#include "ui/views/controls/menu/menu.h"
+#include "ui/views/controls/menu/menu_model_adapter.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
@@ -33,6 +43,8 @@
 #if defined(USE_AURA)
 #include "ui/base/cursor/cursor.h"
 #endif
+
+namespace {
 
 // If we don't clamp the maximum width, then very long URLs and titles can make
 // the bubble arbitrarily wide.
@@ -42,8 +54,17 @@ const int kMaxContentsWidth = 500;
 // narrow bubbles with lots of line-wrapping.
 const int kMinMultiLineContentsWidth = 250;
 
+// The minimum and maximum width of the media menu buttons.
+const int kMinMediaMenuButtonWidth = 100;
+const int kMaxMediaMenuButtonWidth = 600;
+
+}
+
 using content::PluginService;
 using content::WebContents;
+
+
+// ContentSettingBubbleContents::Favicon --------------------------------------
 
 class ContentSettingBubbleContents::Favicon : public views::ImageView {
  public:
@@ -97,6 +118,29 @@ gfx::NativeCursor ContentSettingBubbleContents::Favicon::GetCursor(
 #endif
 }
 
+
+// ContentSettingBubbleContents::MediaMenuParts -------------------------------
+
+struct ContentSettingBubbleContents::MediaMenuParts {
+  explicit MediaMenuParts(content::MediaStreamType type);
+  ~MediaMenuParts();
+
+  content::MediaStreamType type;
+  scoped_ptr<ui::SimpleMenuModel> menu_model;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MediaMenuParts);
+};
+
+ContentSettingBubbleContents::MediaMenuParts::MediaMenuParts(
+    content::MediaStreamType type)
+    : type(type) {}
+
+ContentSettingBubbleContents::MediaMenuParts::~MediaMenuParts() {}
+
+
+// ContentSettingBubbleContents -----------------------------------------------
+
 ContentSettingBubbleContents::ContentSettingBubbleContents(
     ContentSettingBubbleModel* content_setting_bubble_model,
     WebContents* web_contents,
@@ -116,6 +160,7 @@ ContentSettingBubbleContents::ContentSettingBubbleContents(
 }
 
 ContentSettingBubbleContents::~ContentSettingBubbleContents() {
+  STLDeleteValues(&media_menus_);
 }
 
 gfx::Size ContentSettingBubbleContents::GetPreferredSize() {
@@ -126,6 +171,19 @@ gfx::Size ContentSettingBubbleContents::GetPreferredSize() {
       kMinMultiLineContentsWidth : preferred_size.width();
   preferred_size.set_width(std::min(preferred_width, kMaxContentsWidth));
   return preferred_size;
+}
+
+void ContentSettingBubbleContents::UpdateMenuLabel(
+    content::MediaStreamType type,
+    const std::string& label) {
+  for (MediaMenuPartsMap::const_iterator it = media_menus_.begin();
+       it != media_menus_.end(); ++it) {
+    if (it->second->type == type) {
+      it->first->SetText(UTF8ToUTF16(label));
+      return;
+    }
+  }
+  NOTREACHED();
 }
 
 void ContentSettingBubbleContents::Init() {
@@ -225,6 +283,71 @@ void ContentSettingBubbleContents::Init() {
     radio_group_[radio_group.default_item]->SetChecked(true);
   }
 
+  // Layout code for the media device menus.
+  if (content_setting_bubble_model_->content_type() ==
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
+    const int kMediaMenuColumnSetId = 2;
+    views::ColumnSet* menu_column_set =
+        layout->AddColumnSet(kMediaMenuColumnSetId);
+    menu_column_set->AddPaddingColumn(
+        0, chrome_style::kCheckboxIndent);
+    menu_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0,
+                               GridLayout::USE_PREF, 0, 0);
+    menu_column_set->AddPaddingColumn(
+        0, views::kRelatedControlHorizontalSpacing);
+    menu_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
+                               GridLayout::USE_PREF, 0, 0);
+
+    int menu_width = 0;
+    for (ContentSettingBubbleModel::MediaMenuMap::const_iterator i(
+         bubble_content.media_menus.begin());
+         i != bubble_content.media_menus.end(); ++i) {
+      if (!bubble_content_empty)
+        layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+      layout->StartRow(0, kMediaMenuColumnSetId);
+
+      views::Label* label = new views::Label(UTF8ToUTF16(i->second.label));
+      label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
+      views::MenuButton* menu_button = new views::MenuButton(
+          NULL, UTF8ToUTF16((i->second.selected_device.name)), this, false);
+      menu_button->set_alignment(views::TextButton::ALIGN_LEFT);
+      menu_button->set_border(
+          new views::TextButtonNativeThemeBorder(menu_button));
+      menu_button->set_animate_on_state_change(false);
+
+      MediaMenuParts* menu_view = new MediaMenuParts(i->first);
+      menu_view->menu_model.reset(new ContentSettingMediaMenuModel(
+          i->first,
+          content_setting_bubble_model_.get(),
+          base::Bind(&ContentSettingBubbleContents::UpdateMenuLabel,
+                     base::Unretained(this))));
+      media_menus_[menu_button] = menu_view;
+
+      // Use the longest width of the menus as the width of the menu buttons.
+      menu_width = std::max(menu_width,
+                            GetPreferredMediaMenuWidth(
+                                menu_button, menu_view->menu_model.get()));
+
+      layout->AddView(label);
+      layout->AddView(menu_button);
+
+      bubble_content_empty = false;
+    }
+
+    // Make sure the width is within [kMinMediaMenuButtonWidth,
+    // kMaxMediaMenuButtonWidth].
+    menu_width = std::max(kMinMediaMenuButtonWidth, menu_width);
+    menu_width = std::min(kMaxMediaMenuButtonWidth, menu_width);
+
+    // Set all the menu buttons to the width we calculated above.
+    for (MediaMenuPartsMap::const_iterator i = media_menus_.begin();
+         i != media_menus_.end(); ++i) {
+      i->first->set_min_width(menu_width);
+      i->first->set_max_width(menu_width);
+    }
+  }
+
   gfx::Font domain_font =
       views::Label().font().DeriveFont(0, gfx::Font::BOLD);
   for (std::vector<ContentSettingBubbleModel::DomainList>::const_iterator i(
@@ -320,6 +443,26 @@ void ContentSettingBubbleContents::LinkClicked(views::Link* source,
   content_setting_bubble_model_->OnPopupClicked(i->second);
 }
 
+void ContentSettingBubbleContents::OnMenuButtonClicked(
+    views::View* source,
+    const gfx::Point& point) {
+  MediaMenuPartsMap::iterator i(media_menus_.find(
+      static_cast<views::MenuButton*>(source)));
+  DCHECK(i != media_menus_.end());
+
+  views::MenuModelAdapter menu_model_adapter(i->second->menu_model.get());
+  menu_runner_.reset(new views::MenuRunner(menu_model_adapter.CreateMenu()));
+
+  gfx::Point screen_location;
+  views::View::ConvertPointToScreen(i->first, &screen_location);
+  ignore_result(menu_runner_->RunMenuAt(
+      source->GetWidget(),
+      i->first,
+      gfx::Rect(screen_location, i->first->size()),
+      views::MenuItemView::TOPLEFT,
+      views::MenuRunner::HAS_MNEMONICS));
+}
+
 void ContentSettingBubbleContents::Observe(
     int type,
     const content::NotificationSource& source,
@@ -327,4 +470,20 @@ void ContentSettingBubbleContents::Observe(
   DCHECK_EQ(content::NOTIFICATION_WEB_CONTENTS_DESTROYED, type);
   DCHECK(source == content::Source<WebContents>(web_contents_));
   web_contents_ = NULL;
+}
+
+int ContentSettingBubbleContents::GetPreferredMediaMenuWidth(
+    views::MenuButton* button,
+    ui::SimpleMenuModel* menu_model) {
+  string16 title = button->text();
+
+  int width = button->GetPreferredSize().width();
+  for (int i = 0; i < menu_model->GetItemCount(); ++i) {
+    button->SetText(menu_model->GetLabelAt(i));
+    width = std::max(width, button->GetPreferredSize().width());
+  }
+
+  // Recover the title for the menu button.
+  button->SetText(title);
+  return width;
 }

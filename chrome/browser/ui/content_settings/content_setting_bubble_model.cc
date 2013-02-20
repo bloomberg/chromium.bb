@@ -13,6 +13,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
@@ -56,6 +57,22 @@ int GetIdForContentType(const ContentSettingsTypeIdEntry* entries,
       return entries[i].id;
   }
   return 0;
+}
+
+const content::MediaStreamDevice& GetMediaDeviceById(
+    const std::string& device_id,
+    const content::MediaStreamDevices& devices) {
+  DCHECK(!devices.empty());
+  for (content::MediaStreamDevices::const_iterator it = devices.begin();
+       it != devices.end(); ++it) {
+    if (it->id == device_id)
+      return *(it);
+  }
+
+  // A device with the |device_id| was not found. It is likely that the device
+  // has been unplugged from the OS. Return the first device as the default
+  // device.
+  return *devices.begin();
 }
 
 }  // namespace
@@ -544,11 +561,19 @@ class ContentSettingMediaStreamBubbleModel
   void SetTitle();
   // Sets the data for the radio buttons of the bubble.
   void SetRadioGroup();
+  // Sets the data for the media menus of the bubble.
+  void SetMediaMenus();
   // Updates the camera and microphone setting with the passed |setting|.
   void UpdateSettings(ContentSetting setting);
+  // Updates the camera and microphone default device with the passed |type|
+  // and device.
+  void UpdateDefaultDeviceForType(content::MediaStreamType type,
+                                  const std::string& device);
 
   // ContentSettingBubbleModel implementation.
   virtual void OnRadioClicked(int radio_index) OVERRIDE;
+  virtual void OnMediaMenuClicked(content::MediaStreamType type,
+                                  const std::string& selected_device) OVERRIDE;
 
   // The index of the selected radio item.
   int selected_item_;
@@ -564,6 +589,7 @@ ContentSettingMediaStreamBubbleModel::ContentSettingMediaStreamBubbleModel(
     : ContentSettingTitleAndLinkModel(
           delegate, web_contents, profile, CONTENT_SETTINGS_TYPE_MEDIASTREAM),
       selected_item_(0) {
+  DCHECK(profile);
   // Initialize the content settings associated with the individual radio
   // buttons.
   radio_item_setting_[0] = CONTENT_SETTING_ASK;
@@ -571,12 +597,27 @@ ContentSettingMediaStreamBubbleModel::ContentSettingMediaStreamBubbleModel(
 
   SetTitle();
   SetRadioGroup();
+  SetMediaMenus();
 }
 
 ContentSettingMediaStreamBubbleModel::~ContentSettingMediaStreamBubbleModel() {
+  bool media_setting_changed = false;
+  for (MediaMenuMap::const_iterator it = bubble_content().media_menus.begin();
+      it != bubble_content().media_menus.end(); ++it) {
+    if (it->second.selected_device.id != it->second.default_device.id) {
+      UpdateDefaultDeviceForType(it->first, it->second.selected_device.id);
+      media_setting_changed = true;
+    }
+  }
+
   // Update the media settings if the radio button selection was changed.
   if (selected_item_ != bubble_content().radio_group.default_item) {
     UpdateSettings(radio_item_setting_[selected_item_]);
+    media_setting_changed = true;
+  }
+
+  // Trigger the reload infobar if the media setting has been changed.
+  if (media_setting_changed) {
     ContentSettingChangedInfoBarDelegate::Create(
         InfoBarService::FromWebContents(web_contents()),
         IDR_INFOBAR_MEDIA_STREAM_CAMERA,
@@ -661,8 +702,67 @@ void ContentSettingMediaStreamBubbleModel::UpdateSettings(
   }
 }
 
+void ContentSettingMediaStreamBubbleModel::UpdateDefaultDeviceForType(
+    content::MediaStreamType type,
+    const std::string& device) {
+  PrefService* prefs = profile()->GetPrefs();
+  if (type == content::MEDIA_DEVICE_AUDIO_CAPTURE) {
+    prefs->SetString(prefs::kDefaultAudioCaptureDevice, device);
+  } else {
+    DCHECK_EQ(content::MEDIA_DEVICE_VIDEO_CAPTURE, type);
+    prefs->SetString(prefs::kDefaultVideoCaptureDevice, device);
+  }
+}
+
+void ContentSettingMediaStreamBubbleModel::SetMediaMenus() {
+  // Add microphone menu.
+  PrefService* prefs = profile()->GetPrefs();
+  MediaCaptureDevicesDispatcher* dispatcher =
+      MediaCaptureDevicesDispatcher::GetInstance();
+  const content::MediaStreamDevices& microphones =
+      dispatcher->GetAudioCaptureDevices();
+  MediaMenu mic_menu;
+  mic_menu.label = l10n_util::GetStringUTF8(IDS_MEDIA_SELECTED_MIC_LABEL);
+  if (!microphones.empty()) {
+    std::string preferred_mic =
+        prefs->GetString(prefs::kDefaultAudioCaptureDevice);
+    mic_menu.default_device = GetMediaDeviceById(preferred_mic, microphones);
+    mic_menu.selected_device = mic_menu.default_device;
+  }
+  add_media_menu(content::MEDIA_DEVICE_AUDIO_CAPTURE, mic_menu);
+
+  // Add camera menu.
+  const content::MediaStreamDevices& cameras =
+      dispatcher->GetVideoCaptureDevices();
+  MediaMenu camera_menu;
+  camera_menu.label = l10n_util::GetStringUTF8(IDS_MEDIA_SELECTED_CAMERA_LABEL);
+  if (!cameras.empty()) {
+    std::string preferred_camera =
+        prefs->GetString(prefs::kDefaultVideoCaptureDevice);
+    camera_menu.default_device =
+        GetMediaDeviceById(preferred_camera, cameras);
+    camera_menu.selected_device = camera_menu.default_device;
+  }
+  add_media_menu(content::MEDIA_DEVICE_VIDEO_CAPTURE, camera_menu);
+}
+
 void ContentSettingMediaStreamBubbleModel::OnRadioClicked(int radio_index) {
   selected_item_ = radio_index;
+}
+
+void ContentSettingMediaStreamBubbleModel::OnMediaMenuClicked(
+    content::MediaStreamType type,
+    const std::string& selected_device_id) {
+  DCHECK(type == content::MEDIA_DEVICE_AUDIO_CAPTURE ||
+         type == content::MEDIA_DEVICE_VIDEO_CAPTURE);
+  DCHECK_EQ(1U, bubble_content().media_menus.count(type));
+  MediaCaptureDevicesDispatcher* dispatcher =
+      MediaCaptureDevicesDispatcher::GetInstance();
+  const content::MediaStreamDevices& devices =
+      (type == content::MEDIA_DEVICE_AUDIO_CAPTURE) ?
+          dispatcher->GetAudioCaptureDevices() :
+          dispatcher->GetVideoCaptureDevices();
+  set_selected_device(GetMediaDeviceById(selected_device_id, devices));
 }
 
 class ContentSettingDomainListBubbleModel

@@ -127,6 +127,7 @@ TEST_F(ContentSettingBubbleModelTest, Mediastream) {
   EXPECT_TRUE(bubble_content.custom_link.empty());
   EXPECT_FALSE(bubble_content.custom_link_enabled);
   EXPECT_FALSE(bubble_content.manage_link.empty());
+  EXPECT_EQ(2U, bubble_content.media_menus.size());
 }
 
 TEST_F(ContentSettingBubbleModelTest, BlockedMediastream) {

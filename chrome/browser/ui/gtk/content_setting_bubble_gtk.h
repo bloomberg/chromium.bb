@@ -10,16 +10,24 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
+#include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/common/content_settings_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/common/media_stream_request.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/gtk/owned_widget_gtk.h"
 
 class ContentSettingBubbleModel;
+class ContentSettingMediaMenuModel;
 class Profile;
 
 namespace content {
 class WebContents;
+}
+
+namespace ui {
+class SimpleMenuModel;
 }
 
 // ContentSettingBubbleGtk is used when the user turns on different kinds of
@@ -36,10 +44,30 @@ class ContentSettingBubbleGtk : public BubbleDelegateGtk,
        Profile* profile, content::WebContents* web_contents);
   virtual ~ContentSettingBubbleGtk();
 
+  // Callback to allow ContentSettingMediaMenuModel to update the menu label.
+  void UpdateMenuLabel(content::MediaStreamType type,
+                       const std::string& label);
+
   // Dismisses the bubble.
   void Close();
 
  private:
+  // A map from a GtkWidget* to a MediaMenuGtk*. MediaMenuGtk struct is used
+  // to store the UI members that a media menu owns.
+  struct MediaMenuGtk {
+    explicit MediaMenuGtk(content::MediaStreamType type);
+    ~MediaMenuGtk();
+
+    content::MediaStreamType type;
+    scoped_ptr<ui::SimpleMenuModel> menu_model;
+    scoped_ptr<MenuGtk> menu;
+    ui::OwnedWidgetGtk label;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(MediaMenuGtk);
+  };
+  typedef std::map<GtkWidget*, MediaMenuGtk*> GtkMediaMenuMap;
+
   typedef std::map<GtkWidget*, int> PopupMap;
 
   // BubbleDelegateGtk:
@@ -61,6 +89,7 @@ class ContentSettingBubbleGtk : public BubbleDelegateGtk,
   CHROMEGTK_CALLBACK_0(ContentSettingBubbleGtk, void, OnCustomLinkClicked);
   CHROMEGTK_CALLBACK_0(ContentSettingBubbleGtk, void, OnManageLinkClicked);
   CHROMEGTK_CALLBACK_0(ContentSettingBubbleGtk, void, OnCloseButtonClicked);
+  CHROMEGTK_CALLBACK_0(ContentSettingBubbleGtk, void, OnMenuButtonClicked);
 
   // We position the bubble near this widget.
   GtkWidget* anchor_;
@@ -89,6 +118,8 @@ class ContentSettingBubbleGtk : public BubbleDelegateGtk,
 
   typedef std::vector<GtkWidget*> RadioGroupGtk;
   RadioGroupGtk radio_group_gtk_;
+
+  GtkMediaMenuMap media_menus_;
 };
 
 #endif  // CHROME_BROWSER_UI_GTK_CONTENT_SETTING_BUBBLE_GTK_H_
