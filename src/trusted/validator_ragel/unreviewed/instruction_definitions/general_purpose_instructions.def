@@ -873,7 +873,7 @@ tzmsk Ey By, 0x8f RXB.09 W.dest.0.00 0x01 /4, CPUFeature_TBM
 #  http://code.google.com/p/nativeclient/issues/detail?id=2981
 xadd &Gb Eb, 0x0f 0xc0, lock
 xadd &Gw Ew, data16 0x0f 0xc1, norexw lock nacl-ia32-forbidden
-xadd &Gd Rd, 0x0f 0xc1, norexw lock nacl-amd64-zero-extends
+xadd &Gd Rd, 0x0f 0xc1, norexw nacl-amd64-zero-extends
 xadd &Gd Md, 0x0f 0xc1, norexw lock
 xadd &Gq Eq, rexw 0x0f 0xc1, lock amd64
 xadd &Gq Eq, data16 rexw 0x0f 0xc1, lock amd64 nacl-forbidden
@@ -882,7 +882,7 @@ xadd &Gq Eq, data16 rexw 0x0f 0xc1, lock amd64 nacl-forbidden
 # zero-extending.
 # See http://code.google.com/p/nativeclient/issues/detail?id=3071
 xchg &av rv, 0x90, nacl-amd64-zero-extends
-xchg &G R, 0x86, lock nacl-amd64-zero-extends
+xchg &G R, 0x86, nacl-amd64-zero-extends
 xchg &G M, 0x86, lock
 ######## XLAT ##################################################################
 xlat xb, 0xd7, nacl-forbidden
