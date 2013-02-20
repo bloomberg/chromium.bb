@@ -73,7 +73,7 @@ class TestShellWebKitInit : public webkit_glue::WebKitPlatformSupportImpl {
   virtual WebKit::WebStorageNamespace* createLocalStorageNamespace(
       const WebKit::WebString& path, unsigned quota) OVERRIDE;
 
-  virtual WebKit::WebIDBFactory* idbFactory() OVERRIDE;
+  virtual WebKit::WebIDBFactory* idbFactory();
 
 #if defined(OS_WIN)
   void SetThemeEngine(WebKit::WebThemeEngine* engine) {
