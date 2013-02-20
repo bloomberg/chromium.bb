@@ -8252,6 +8252,9 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </message>
 
       <!-- Managed User Settings dialog data -->
+      <message name="IDS_OPTIONS_MANAGED_USERS_SECTION_TITLE" desc="Title for the Managed User section">
+        Managed User
+      </message>
       <message name="IDS_MANAGED_USER_SETTINGS_TITLE" desc="Title for the Managed User Settings dialog">
         Managed User Settings
       </message>
