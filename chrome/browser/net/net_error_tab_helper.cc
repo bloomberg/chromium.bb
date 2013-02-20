@@ -50,10 +50,27 @@ bool GetEnabledByTrial() {
           == kDnsProbeFieldTrialEnableGroupName);
 }
 
+NetErrorTracker::FrameType GetFrameType(bool is_main_frame) {
+  return is_main_frame ? NetErrorTracker::FRAME_MAIN
+                       : NetErrorTracker::FRAME_SUB;
+}
+
+NetErrorTracker::PageType GetPageType(bool is_error_page) {
+  return is_error_page ? NetErrorTracker::PAGE_ERROR
+                       : NetErrorTracker::PAGE_NORMAL;
+}
+
+NetErrorTracker::ErrorType GetErrorType(int net_error) {
+  return IsDnsError(net_error) ? NetErrorTracker::ERROR_DNS
+                               : NetErrorTracker::ERROR_OTHER;
+}
+
 void OnDnsProbeFinishedOnIOThread(
     const base::Callback<void(DnsProbeResult)>& callback,
     DnsProbeResult result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  DVLOG(1) << "DNS probe finished with result " << result;
 
   BrowserThread::PostTask(
       BrowserThread::UI,
@@ -64,6 +81,8 @@ void OnDnsProbeFinishedOnIOThread(
 void StartDnsProbeOnIOThread(
     const base::Callback<void(DnsProbeResult)>& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  DVLOG(1) << "Starting DNS probe";
 
   DnsProbeService* probe_service =
       g_browser_process->io_thread()->globals()->dns_probe_service.get();
@@ -91,14 +110,8 @@ void NetErrorTabHelper::DidStartProvisionalLoadForFrame(
     RenderViewHost* render_view_host) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!is_main_frame)
-    return;
-
-  if (is_error_page) {
-    error_page_state_ = ERROR_PAGE_STARTED;
-  } else {
-    error_page_state_ = ERROR_PAGE_NONE;
-  }
+  tracker_.OnStartProvisionalLoad(GetFrameType(is_main_frame),
+                                  GetPageType(is_error_page));
 }
 
 void NetErrorTabHelper::DidCommitProvisionalLoadForFrame(
@@ -109,12 +122,7 @@ void NetErrorTabHelper::DidCommitProvisionalLoadForFrame(
     RenderViewHost* render_view_host) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!is_main_frame)
-    return;
-
-  if (error_page_state_ == ERROR_PAGE_STARTED) {
-    error_page_state_ = ERROR_PAGE_COMMITTED;
-  }
+  tracker_.OnCommitProvisionalLoad(GetFrameType(is_main_frame));
 }
 
 void NetErrorTabHelper::DidFailProvisionalLoad(
@@ -126,15 +134,8 @@ void NetErrorTabHelper::DidFailProvisionalLoad(
     RenderViewHost* render_view_host) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!is_main_frame)
-    return;
-
-  // Consider running a DNS probe if a main frame load fails with a DNS error
-  if (error_page_state_ == ERROR_PAGE_STARTED) {
-    error_page_state_ = ERROR_PAGE_NONE;
-  } else if (IsDnsError(error_code)) {
-    OnMainFrameDnsError();
-  }
+  tracker_.OnFailProvisionalLoad(GetFrameType(is_main_frame),
+                                 GetErrorType(error_code));
 }
 
 void NetErrorTabHelper::DidFinishLoad(
@@ -144,50 +145,45 @@ void NetErrorTabHelper::DidFinishLoad(
     RenderViewHost* render_view_host) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!is_main_frame)
-    return;
-
-  if (error_page_state_ == ERROR_PAGE_COMMITTED) {
-    error_page_state_ = ERROR_PAGE_LOADED;
-    MaybeSendInfo();
-  }
+  tracker_.OnFinishLoad(GetFrameType(is_main_frame));
 }
 
 NetErrorTabHelper::NetErrorTabHelper(WebContents* contents)
     : WebContentsObserver(contents),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(
+          base::Bind(&NetErrorTabHelper::TrackerCallback,
+                     weak_factory_.GetWeakPtr()))),
+      dns_error_page_state_(NetErrorTracker::DNS_ERROR_PAGE_NONE),
       dns_probe_state_(DNS_PROBE_NONE),
-      error_page_state_(ERROR_PAGE_NONE),
-      enabled_by_trial_(GetEnabledByTrial()),
-      pref_initialized_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      enabled_by_trial_(GetEnabledByTrial()) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   InitializePref(contents);
 }
 
-void NetErrorTabHelper::OnDnsProbeFinishedForTesting(DnsProbeResult result) {
-  OnDnsProbeFinished(result);
+void NetErrorTabHelper::TrackerCallback(
+    NetErrorTracker::DnsErrorPageState state) {
+  dns_error_page_state_ = state;
+
+  MaybePostStartDnsProbeTask();
+  MaybeSendInfo();
 }
 
-void NetErrorTabHelper::OnMainFrameDnsError() {
+void NetErrorTabHelper::MaybePostStartDnsProbeTask() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  bool probe_running = (dns_probe_state_ == DNS_PROBE_STARTED);
-  if (probe_running || !ProbesAllowed())
-    return;
-
-  PostStartDnsProbeTask();
-
-  dns_probe_state_ = DNS_PROBE_STARTED;
-}
-
-void NetErrorTabHelper::PostStartDnsProbeTask() {
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&StartDnsProbeOnIOThread,
-                 base::Bind(&NetErrorTabHelper::OnDnsProbeFinished,
-                            weak_factory_.GetWeakPtr())));
+  if (dns_error_page_state_ != NetErrorTracker::DNS_ERROR_PAGE_NONE &&
+      dns_probe_state_ != DNS_PROBE_STARTED &&
+      ProbesAllowed()) {
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&StartDnsProbeOnIOThread,
+                   base::Bind(&NetErrorTabHelper::OnDnsProbeFinished,
+                              weak_factory_.GetWeakPtr())));
+    dns_probe_state_ = DNS_PROBE_STARTED;
+  }
 }
 
 void NetErrorTabHelper::OnDnsProbeFinished(DnsProbeResult result) {
@@ -196,38 +192,27 @@ void NetErrorTabHelper::OnDnsProbeFinished(DnsProbeResult result) {
 
   dns_probe_result_ = result;
   dns_probe_state_ = DNS_PROBE_FINISHED;
+
   MaybeSendInfo();
 }
 
 void NetErrorTabHelper::MaybeSendInfo() {
-  if (dns_probe_state_ != DNS_PROBE_FINISHED
-      || error_page_state_ != ERROR_PAGE_LOADED) {
-    return;
+  if (dns_error_page_state_ == NetErrorTracker::DNS_ERROR_PAGE_LOADED &&
+      dns_probe_state_ == DNS_PROBE_FINISHED) {
+    DVLOG(1) << "Sending result " << dns_probe_result_ << " to renderer";
+    Send(new ChromeViewMsg_NetErrorInfo(routing_id(), dns_probe_result_));
+    dns_probe_state_ = DNS_PROBE_NONE;
   }
-
-  SendInfo();
-
-  dns_probe_state_ = DNS_PROBE_NONE;
-  error_page_state_ = ERROR_PAGE_NONE;
-}
-
-void NetErrorTabHelper::SendInfo() {
-  Send(new ChromeViewMsg_NetErrorInfo(routing_id(), dns_probe_result_));
 }
 
 void NetErrorTabHelper::InitializePref(WebContents* contents) {
-  // Unit tests don't pass a WebContents, so the tab helper has no way to get
-  // to the preference.  pref_initialized_ will remain false, so ProbesAllowed
-  // will return false without checking the pref.
-  if (!contents)
-    return;
+  DCHECK(contents);
 
   BrowserContext* browser_context = contents->GetBrowserContext();
   Profile* profile = Profile::FromBrowserContext(browser_context);
   resolve_errors_with_web_service_.Init(
       prefs::kAlternateErrorPagesEnabled,
       profile->GetPrefs());
-  pref_initialized_ = true;
 }
 
 bool NetErrorTabHelper::ProbesAllowed() const {
@@ -235,9 +220,7 @@ bool NetErrorTabHelper::ProbesAllowed() const {
     return testing_state_ == TESTING_FORCE_ENABLED;
 
   // TODO(ttuttle): Disable on mobile?
-  return enabled_by_trial_
-         && pref_initialized_
-         && *resolve_errors_with_web_service_;
+  return enabled_by_trial_ && *resolve_errors_with_web_service_;
 }
 
 }  // namespace chrome_browser_net

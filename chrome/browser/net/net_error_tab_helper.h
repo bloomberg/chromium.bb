@@ -11,6 +11,7 @@
 #include "base/prefs/public/pref_member.h"
 #include "chrome/browser/net/dns_probe_service.h"
 #include "chrome/common/net/net_error_info.h"
+#include "chrome/common/net/net_error_tracker.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -64,44 +65,33 @@ class NetErrorTabHelper
       bool is_main_frame,
       content::RenderViewHost* render_view_host) OVERRIDE;
 
- protected:
+ private:
   friend class content::WebContentsUserData<NetErrorTabHelper>;
 
-  // |contents| is the WebContents of the tab this NetErrorTabHelper is
-  // attached to.
-  explicit NetErrorTabHelper(content::WebContents* contents);
-
-  void OnDnsProbeFinishedForTesting(chrome_common_net::DnsProbeResult result);
-
-  chrome_common_net::DnsProbeResult dns_probe_result() const {
-    return dns_probe_result_;
-  }
-
- private:
   enum DnsProbeState {
     DNS_PROBE_NONE,
     DNS_PROBE_STARTED,
     DNS_PROBE_FINISHED
   };
 
-  enum ErrorPageState {
-    ERROR_PAGE_NONE,
-    ERROR_PAGE_STARTED,
-    ERROR_PAGE_COMMITTED,
-    ERROR_PAGE_LOADED
-  };
+  // |contents| is the WebContents of the tab this NetErrorTabHelper is
+  // attached to.
+  explicit NetErrorTabHelper(content::WebContents* contents);
 
-  void OnMainFrameDnsError();
-  virtual void PostStartDnsProbeTask();
+  void TrackerCallback(NetErrorTracker::DnsErrorPageState state);
+  void MaybePostStartDnsProbeTask();
   void OnDnsProbeFinished(chrome_common_net::DnsProbeResult result);
   void MaybeSendInfo();
-  virtual void SendInfo();
 
   void InitializePref(content::WebContents* contents);
   bool ProbesAllowed() const;
 
+  base::WeakPtrFactory<NetErrorTabHelper> weak_factory_;
+
+  NetErrorTracker tracker_;
+  NetErrorTracker::DnsErrorPageState dns_error_page_state_;
+
   DnsProbeState dns_probe_state_;
-  ErrorPageState error_page_state_;
   chrome_common_net::DnsProbeResult dns_probe_result_;
 
   // Whether we are enabled to run by the DnsProbe-Enable field trial.
@@ -109,9 +99,6 @@ class NetErrorTabHelper
   // "Use a web service to resolve navigation errors" preference is required
   // to allow probes.
   BooleanPrefMember resolve_errors_with_web_service_;
-  // Whether the above pref was initialized -- will be false in unit tests.
-  bool pref_initialized_;
-  base::WeakPtrFactory<NetErrorTabHelper> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetErrorTabHelper);
 };
