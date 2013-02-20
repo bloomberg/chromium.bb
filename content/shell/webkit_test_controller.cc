@@ -277,6 +277,9 @@ bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_TestFinished, OnTestFinished)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_ShowDevTools, OnShowDevTools)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_CloseDevTools, OnCloseDevTools)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_GoToOffset, OnGoToOffset)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_Reload, OnReload)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_LoadURLForFrame, OnLoadURLForFrame)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_NotImplemented, OnNotImplemented)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -435,6 +438,19 @@ void WebKitTestController::OnShowDevTools() {
 
 void WebKitTestController::OnCloseDevTools() {
   main_window_->CloseDevTools();
+}
+
+void WebKitTestController::OnGoToOffset(int offset) {
+  main_window_->GoBackOrForward(offset);
+}
+
+void WebKitTestController::OnReload() {
+  main_window_->Reload();
+}
+
+void WebKitTestController::OnLoadURLForFrame(const GURL& url,
+                                             const std::string& frame_name) {
+  main_window_->LoadURLForFrame(url, frame_name);
 }
 
 void WebKitTestController::OnNotImplemented(

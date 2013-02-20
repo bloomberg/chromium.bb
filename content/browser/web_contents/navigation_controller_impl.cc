@@ -805,6 +805,7 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
   entry->SetIsOverridingUserAgent(override);
   entry->set_transferred_global_request_id(
       params.transferred_global_request_id);
+  entry->SetFrameToNavigate(params.frame_name);
 
   switch (params.load_type) {
     case LOAD_TYPE_DEFAULT:

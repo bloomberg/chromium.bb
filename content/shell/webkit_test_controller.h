@@ -123,6 +123,9 @@ class WebKitTestController : public base::NonThreadSafe,
   void OnTestFinished(bool did_timeout);
   void OnShowDevTools();
   void OnCloseDevTools();
+  void OnGoToOffset(int offset);
+  void OnReload();
+  void OnLoadURLForFrame(const GURL& url, const std::string& frame_name);
 
   void OnNotImplemented(const std::string& object_name,
                         const std::string& method_name);

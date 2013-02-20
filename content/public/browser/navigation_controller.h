@@ -155,6 +155,10 @@ class NavigationController {
     // in which case it should replace the current navigation entry.
     bool is_cross_site_redirect;
 
+    // Used to specify which frame to navigate. If empty, the main frame is
+    // navigated. This is currently only used in tests.
+    std::string frame_name;
+
     explicit LoadURLParams(const GURL& url);
     ~LoadURLParams();
 

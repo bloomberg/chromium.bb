@@ -72,6 +72,12 @@ IPC_MESSAGE_ROUTED1(ShellViewHostMsg_PrintMessage,
                     std::string /* message */)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_ShowDevTools)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_CloseDevTools)
+IPC_MESSAGE_ROUTED1(ShellViewHostMsg_GoToOffset,
+                    int /* offset */)
+IPC_MESSAGE_ROUTED0(ShellViewHostMsg_Reload)
+IPC_MESSAGE_ROUTED2(ShellViewHostMsg_LoadURLForFrame,
+                    GURL /* url */,
+                    std::string /* frame_name */)
 
 IPC_MESSAGE_ROUTED2(ShellViewHostMsg_NotImplemented,
                     std::string /* object_name */,

@@ -445,19 +445,17 @@ int WebKitTestRunner::windowCount() {
 }
 
 void WebKitTestRunner::goToOffset(int offset) {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebKitTestRunner", "goToOffset"));
+  Send(new ShellViewHostMsg_GoToOffset(routing_id(), offset));
 }
 
 void WebKitTestRunner::reload() {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebKitTestRunner", "reload"));
+  Send(new ShellViewHostMsg_Reload(routing_id()));
 }
 
 void WebKitTestRunner::loadURLForFrame(const WebURL& url,
                              const std::string& frame_name) {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebKitTestRunner", "loadURLForFrame"));
+  Send(new ShellViewHostMsg_LoadURLForFrame(
+      routing_id(), url, frame_name));
 }
 
 bool WebKitTestRunner::allowExternalPages() {
