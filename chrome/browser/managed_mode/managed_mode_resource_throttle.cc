@@ -13,11 +13,35 @@
 
 namespace {
 
+// Uniquely identifies a tab, used to set a temporary exception on it.
+struct WebContentsId {
+  WebContentsId(int render_process_host_id, int render_view_id)
+      : render_process_host_id(render_process_host_id),
+        render_view_id(render_view_id) {}
+
+  bool operator<(const WebContentsId& key) const {
+    if (render_process_host_id != key.render_process_host_id)
+      return render_process_host_id < key.render_process_host_id;
+    return render_view_id < key.render_view_id;
+  }
+
+  int render_process_host_id;
+  int render_view_id;
+};
+
+struct TemporaryExceptionData {
+  // Hostname for which the temporary exception was added.
+  std::string host;
+  // Whether the user initiated a new navigation or not.
+  bool new_navigation;
+};
+
 // This map contains <render_process_host_id_, render_view_id> pairs mapped
-// to hostnames which identify individual tabs. If a hostname
-// is present for a specific pair then the user clicked preview, is
-// navigating around and has not clicked one of the options on the infobar.
-typedef std::map<std::pair<int, int>, std::string> PreviewMap;
+// to |TemporaryExceptionData| which identifies individual tabs. If a
+// |TemporaryExceptionData| is present for a specific pair then the user
+// clicked preview, is navigating around and has not clicked one of the options
+// on the infobar.
+typedef std::map<WebContentsId, TemporaryExceptionData> PreviewMap;
 base::LazyInstance<PreviewMap> g_in_preview_mode = LAZY_INSTANCE_INITIALIZER;
 
 }
@@ -42,17 +66,35 @@ ManagedModeResourceThrottle::~ManagedModeResourceThrottle() {}
 void ManagedModeResourceThrottle::AddTemporaryException(
     int render_process_host_id,
     int render_view_id,
-    const GURL& url) {
-  g_in_preview_mode.Get()[std::make_pair(render_process_host_id,
-                                         render_view_id)] = url.host();
+    const GURL& url,
+    bool new_navigation) {
+  TemporaryExceptionData data;
+  data.host = url.host();
+  data.new_navigation = new_navigation;
+  WebContentsId web_contents_id(render_process_host_id, render_view_id);
+  g_in_preview_mode.Get()[web_contents_id] = data;
+}
+
+// static
+void ManagedModeResourceThrottle::UpdateExceptionNavigationStatus(
+    int render_process_host_id,
+    int render_view_id,
+    bool new_navigation) {
+  PreviewMap* preview_map = g_in_preview_mode.Pointer();
+  WebContentsId web_contents_id(render_process_host_id, render_view_id);
+  PreviewMap::iterator it = preview_map->find(web_contents_id);
+  if (it == preview_map->end())
+    return;
+
+  it->second.new_navigation = new_navigation;
 }
 
 // static
 void ManagedModeResourceThrottle::RemoveTemporaryException(
       int render_process_host_id,
       int render_view_id) {
-  g_in_preview_mode.Get().erase(std::make_pair(render_process_host_id,
-                                               render_view_id));
+  WebContentsId web_contents_id(render_process_host_id, render_view_id);
+  g_in_preview_mode.Get().erase(web_contents_id);
 }
 
 void ManagedModeResourceThrottle::ShowInterstitialIfNeeded(bool is_redirect,
@@ -75,10 +117,14 @@ void ManagedModeResourceThrottle::ShowInterstitialIfNeeded(bool is_redirect,
     return;
   }
 
-  PreviewMap::iterator it = preview_map->find(
-      std::make_pair(render_process_host_id_, render_view_id_));
-  if (it != preview_map->end() && url.host() == it->second)
+  WebContentsId web_contents_id(render_process_host_id_, render_view_id_);
+  PreviewMap::iterator it = preview_map->find(web_contents_id);
+  if (it != preview_map->end() &&
+      (!it->second.new_navigation || url.host() == it->second.host)) {
+    temporarily_allowed_ = true;
+    RemoveTemporaryException(render_process_host_id_, render_view_id_);
     return;
+  }
 
   *defer = true;
   ManagedModeInterstitial::ShowInterstitial(

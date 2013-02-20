@@ -135,10 +135,14 @@ class ManagedModeBlockModeTest : public InProcessBrowserTest {
 
       switch (infobar_action) {
         case INFOBAR_ACCEPT:
-          confirm_info_bar_delegate->Accept();
+          confirm_info_bar_delegate->InfoBarDismissed();
+          ASSERT_TRUE(confirm_info_bar_delegate->Accept());
+          infobar_service->RemoveInfoBar(confirm_info_bar_delegate);
           break;
         case INFOBAR_CANCEL:
-          confirm_info_bar_delegate->Cancel();
+          confirm_info_bar_delegate->InfoBarDismissed();
+          ASSERT_TRUE(confirm_info_bar_delegate->Cancel());
+          infobar_service->RemoveInfoBar(confirm_info_bar_delegate);
           break;
         case INFOBAR_ALREADY_ADDED:
           confirm_info_bar_delegate->InfoBarDismissed();
@@ -459,7 +463,11 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
       content::NotificationService::AllSources());
 
   // Finally accept the infobar and see that it is gone.
-  confirm_info_bar_delegate->Accept();
+  confirm_info_bar_delegate->InfoBarDismissed();
+  ASSERT_TRUE(confirm_info_bar_delegate->Accept());
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(tab);
+  infobar_service->RemoveInfoBar(confirm_info_bar_delegate);
   infobar_removed.Wait();
 
   CheckNumberOfInfobars(0);

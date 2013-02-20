@@ -256,6 +256,7 @@ ManagedModeNavigationObserver::ManagedModeNavigationObserver(
     : WebContentsObserver(web_contents),
       warn_infobar_delegate_(NULL),
       preview_infobar_delegate_(NULL),
+      got_user_gesture_(false),
       state_(RECORDING_URLS_BEFORE_PREVIEW),
       last_allowed_page_(-1) {
   Profile* profile =
@@ -274,7 +275,21 @@ void ManagedModeNavigationObserver::AddTemporaryException() {
       base::Bind(&ManagedModeResourceThrottle::AddTemporaryException,
                  web_contents()->GetRenderProcessHost()->GetID(),
                  web_contents()->GetRenderViewHost()->GetRoutingID(),
-                 last_url_));
+                 last_url_,
+                 got_user_gesture_));
+}
+
+void ManagedModeNavigationObserver::UpdateExceptionNavigationStatus() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(web_contents());
+
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&ManagedModeResourceThrottle::UpdateExceptionNavigationStatus,
+                 web_contents()->GetRenderProcessHost()->GetID(),
+                 web_contents()->GetRenderViewHost()->GetRoutingID(),
+                 got_user_gesture_));
 }
 
 void ManagedModeNavigationObserver::RemoveTemporaryException() {
@@ -307,7 +322,8 @@ void ManagedModeNavigationObserver::AddSavedURLsToWhitelistAndClearState() {
   for (std::set<GURL>::const_iterator it = navigated_urls_.begin();
        it != navigated_urls_.end();
        ++it) {
-    urls.push_back(*it);
+    if (it->host() != last_url_.host())
+      urls.push_back(*it);
   }
   managed_user_service_->SetManualBehaviorForURLs(
       urls, ManagedUserService::MANUAL_ALLOW);
@@ -321,17 +337,7 @@ void ManagedModeNavigationObserver::AddSavedURLsToWhitelistAndClearState() {
 }
 
 void ManagedModeNavigationObserver::AddURLToPatternList(const GURL& url) {
-  DCHECK(state_ != NOT_RECORDING_URLS);
   navigated_urls_.insert(url);
-}
-
-void ManagedModeNavigationObserver::AddURLAsLastPattern(const GURL& url) {
-  DCHECK(state_ != NOT_RECORDING_URLS);
-
-  // Erase the last |url| if it is present in the |navigated_urls_|. This stops
-  // us from having both http://.www.google.com (exact URL from the pattern
-  // list) and www.google.com (hostname from the last URL pattern) in the list.
-  navigated_urls_.erase(url);
   last_url_ = url;
 }
 
@@ -345,7 +351,7 @@ bool ManagedModeNavigationObserver::CanTemporarilyNavigateHost(
 }
 
 void ManagedModeNavigationObserver::ClearObserverState() {
-  if (state_ == NOT_RECORDING_URLS && preview_infobar_delegate_) {
+  if (preview_infobar_delegate_) {
     InfoBarService* infobar_service =
         InfoBarService::FromWebContents(web_contents());
     infobar_service->RemoveInfoBar(preview_infobar_delegate_);
@@ -354,18 +360,21 @@ void ManagedModeNavigationObserver::ClearObserverState() {
   navigated_urls_.clear();
   last_url_ = GURL();
   state_ = RECORDING_URLS_BEFORE_PREVIEW;
+  // TODO(sergiu): Remove these logging calls once this is stable.
+  DVLOG(1) << "Clearing observer state";
   RemoveTemporaryException();
 }
 
 void ManagedModeNavigationObserver::NavigateToPendingEntry(
     const GURL& url,
     content::NavigationController::ReloadType reload_type) {
-
-  // This method gets called first when a user navigates to a (new) URL.
-  // This means that the data related to the list of URLs needs to be cleared
-  // in certain circumstances.
+  DVLOG(1) << "NavigateToPendingEntry " << url.spec();
+  // This method gets called only when the user goes back and forward and when
+  // the user types a new URL. So do the main work in
+  // ProvisionalChangeToMainFrameUrl and only check that the user didn't go
+  // back to a blocked site here.
   if (web_contents()->GetController().GetCurrentEntryIndex() <
-          last_allowed_page_ || !CanTemporarilyNavigateHost(url)) {
+      last_allowed_page_) {
     ClearObserverState();
   }
 }
@@ -383,19 +392,19 @@ void ManagedModeNavigationObserver::DidNavigateMainFrame(
                             behavior,
                             ManagedModeURLFilter::HISTOGRAM_BOUNDING_VALUE);
 
-  // If the user just saw an interstitial this is the final URL so it is
-  // recorded. Checking for filtering behavior here isn't useful because
-  // although this specific URL can be allowed the hostname will be added which
-  // is more general. The hostname will be checked later when it is
-  // added to the actual whitelist to see if it is already present.
-  if (behavior == ManagedModeURLFilter::BLOCK && state_ != NOT_RECORDING_URLS)
-    AddURLAsLastPattern(params.url);
+  // The page can be redirected to a different domain, record those URLs as
+  // well.
+  if (behavior == ManagedModeURLFilter::BLOCK &&
+      !CanTemporarilyNavigateHost(params.url))
+    AddURLToPatternList(params.url);
 
   if (behavior == ManagedModeURLFilter::ALLOW &&
-      state_ != RECORDING_URLS_BEFORE_PREVIEW) {
+      state_ == RECORDING_URLS_AFTER_PREVIEW) {
     // The initial page that triggered the interstitial was blocked but the
     // final page is already in the whitelist so add the series of URLs
     // which lead to the final page to the whitelist as well.
+    // Update the |last_url_| since it was not added to the list before.
+    last_url_ = params.url;
     AddSavedURLsToWhitelistAndClearState();
     SimpleAlertInfoBarDelegate::Create(
         InfoBarService::FromWebContents(web_contents()),
@@ -405,15 +414,15 @@ void ManagedModeNavigationObserver::DidNavigateMainFrame(
     return;
   }
 
+  // Update the exception to the last host visited. A redirect can follow this
+  // so don't update the state yet.
   if (state_ == RECORDING_URLS_AFTER_PREVIEW) {
-    // A temporary exception should be added only if an interstitial was shown,
-    // the user clicked preview and the final page was not allowed. This
-    // temporary exception stops the interstitial from showing on further
-    // navigations to that host so that the user can navigate around to
-    // inspect it.
-    state_ = NOT_RECORDING_URLS;
     AddTemporaryException();
   }
+
+  // The navigation is complete, unless there is a redirect. So set the
+  // new navigation to false to detect user interaction.
+  got_user_gesture_ = false;
 }
 
 void ManagedModeNavigationObserver::DidStartProvisionalLoadForFrame(
@@ -433,14 +442,22 @@ void ManagedModeNavigationObserver::ProvisionalChangeToMainFrameUrl(
     content::RenderViewHost* render_view_host) {
   // This function is the last one to be called before the resource throttle
   // shows the interstitial if the URL must be blocked.
+  DVLOG(1) << "ProvisionalChangeToMainFrameURL " << url.spec();
   ManagedModeURLFilter::FilteringBehavior behavior =
       url_filter_->GetFilteringBehaviorForURL(url);
 
-  if (state_ == NOT_RECORDING_URLS && !CanTemporarilyNavigateHost(url))
+  if (behavior != ManagedModeURLFilter::BLOCK)
+    return;
+
+  if (state_ == RECORDING_URLS_AFTER_PREVIEW && got_user_gesture_ &&
+      !CanTemporarilyNavigateHost(url))
     ClearObserverState();
 
-  if (behavior == ManagedModeURLFilter::BLOCK && state_ != NOT_RECORDING_URLS)
+  if (behavior == ManagedModeURLFilter::BLOCK &&
+      !CanTemporarilyNavigateHost(url))
     AddURLToPatternList(url);
+
+  got_user_gesture_ = false;
 }
 
 void ManagedModeNavigationObserver::DidCommitProvisionalLoadForFrame(
@@ -452,6 +469,7 @@ void ManagedModeNavigationObserver::DidCommitProvisionalLoadForFrame(
   if (!is_main_frame)
     return;
 
+  DVLOG(1) << "DidCommitProvisionalLoadForFrame " << url.spec();
   ManagedModeURLFilter::FilteringBehavior behavior =
       url_filter_->GetFilteringBehaviorForURL(url);
 
@@ -470,26 +488,21 @@ void ManagedModeNavigationObserver::DidCommitProvisionalLoadForFrame(
   }
 
   if (behavior == ManagedModeURLFilter::BLOCK) {
-    switch (state_) {
-      case RECORDING_URLS_BEFORE_PREVIEW:
-        // Should not be in this state with a blocked URL.
-        NOTREACHED();
-        break;
-      case RECORDING_URLS_AFTER_PREVIEW:
-        // Add the infobar.
-        if (!preview_infobar_delegate_) {
-          preview_infobar_delegate_ =
-              ManagedModePreviewInfobarDelegate::Create(
-                  InfoBarService::FromWebContents(web_contents()));
-        }
-        break;
-      case NOT_RECORDING_URLS:
-        // Check that the infobar is present.
-        DCHECK(preview_infobar_delegate_);
-        break;
+    DCHECK_EQ(RECORDING_URLS_AFTER_PREVIEW, state_);
+    // Add the infobar.
+    if (!preview_infobar_delegate_) {
+      preview_infobar_delegate_ = ManagedModePreviewInfobarDelegate::Create(
+          InfoBarService::FromWebContents(web_contents()));
     }
   }
 
   if (behavior == ManagedModeURLFilter::ALLOW)
     last_allowed_page_ = web_contents()->GetController().GetCurrentEntryIndex();
+}
+
+void ManagedModeNavigationObserver::DidGetUserGesture() {
+  got_user_gesture_ = true;
+  // Update the exception status so that the resource throttle knows that
+  // there was a manual navigation.
+  UpdateExceptionNavigationStatus();
 }
