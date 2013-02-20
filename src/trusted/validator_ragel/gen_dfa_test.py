@@ -427,6 +427,25 @@ class TestInstructionPrinter(unittest.TestCase):
         @CPUFeature_3DNOW
         """.split())
 
+  def test_vex_prefix(self):
+    printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 64)
+    instr = gen_dfa.Instruction.Parse(
+        'vaddsubps Wps Hps Vps, '
+        '0xc4 RXB.00001 x.src.0.11 0xd0, '
+        'CPUFeature_AVX')
+    instr.rex.r_matters = True
+    instr.rex.x_matters = False
+    instr.rex.b_matters = True
+
+    printer._PrintVexOrXopPrefix(instr)
+
+    self.assertEquals(
+        printer.GetContent().split(),
+        """
+        (0xc4 (VEX_RB & VEX_map00001)  b_0_XXXX_0_11 @vex_prefix3 |
+         0xc5 b_X_XXXX_0_11 @vex_prefix_short)
+        """.split())
+
 
 class TestSplit(unittest.TestCase):
 

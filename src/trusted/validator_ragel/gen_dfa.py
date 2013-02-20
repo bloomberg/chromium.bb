@@ -399,6 +399,86 @@ class InstructionPrinter(object):
       self._out.write('REX_WRXB?\n')
 
 
+  def _PrintVexOrXopPrefix(self, instruction):
+    """Print machine that parses VEX or XOP prefix.
+
+    First three opcodes of the instruction are expected to be of the form
+      0xc4 (or 0x8f)
+      RXB.<map_select>
+      <W>.<vvvv>.<L>.<pp>
+
+    So they serve as a description of long form of VEX/XOP prefix.
+    Short two-byte form is printed automatically when appropriate.
+
+    Args:
+      instruction: instruction (if it's not VEX/XOP-instruction, nothing
+                   is printed).
+
+    Returns:
+      None.
+    """
+    # Note the difference between 'X' and 'x' below.
+    # 'x' means bit insignificant to the processor but which objdump
+    #     expects to be 0
+    # 'X' means bit insignificant both to processor and to objdump.
+
+    if not instruction.IsVexOrXop():
+      return
+
+    assert instruction.opcodes[0] in ['0xc4', '0x8f']
+
+    m = re.match(r'RXB\.([01][0-9A-F]|[01]{5})$', instruction.opcodes[1])
+    map_select = m.group(1)
+
+    m = re.match(r'([xW01])\.(src|src1|dest|cntl|1111)\.([Lx01])\.([01]{2})',
+                 instruction.opcodes[2])
+    w, vvvv, L, pp = m.groups()
+    assert L != 'L', 'L-bit should be splitted already'
+
+    has_short_form = (
+        instruction.opcodes[0] == '0xc4' and
+        map_select in ['01', '00001'] and
+        w in ['0', 'x'])
+
+    if vvvv in ['src', 'src1', 'dest', 'cntl']:
+      vvvv = {32: '1XXX', 64: 'XXXX'}[self._bitness]
+
+    if w == 'W':
+      assert instruction.rex.w_matters
+      w = '1' if instruction.rex.w_set else '0'
+
+    # Adjustment for objdump.
+    w = w.replace('x', '0')
+    L = L.replace('x', '0')
+
+    vex_rxb = 'VEX_'
+    if instruction.rex.r_matters:
+      vex_rxb += 'R'
+    if instruction.rex.x_matters:
+      vex_rxb += 'X'
+    if instruction.rex.b_matters:
+      vex_rxb += 'B'
+    if vex_rxb.endswith('_'):
+      vex_rxb += 'NONE'
+
+    long_form = '%s (%s & VEX_map%s) b_%s_%s_%s_%s @vex_prefix3' % (
+        instruction.opcodes[0],
+        vex_rxb, map_select,
+        w, vvvv, L, pp)
+
+    if has_short_form:
+      if self._bitness == 64 and instruction.rex.r_matters:
+        inverted_r = 'X'
+      else:
+        inverted_r = '1'
+      short_form = '0xc5 b_%s_%s_%s_%s @vex_prefix_short' % (
+          inverted_r, vvvv, L, pp)
+
+    if has_short_form:
+      self._out.write('(%s | %s)\n' % (long_form, short_form))
+    else:
+      self._out.write('%s\n' % long_form)
+
   def _PrintOpcode(self, instruction):
     """Print a machine for opcode."""
     main_opcode_part = instruction.GetMainOpcodePart()
@@ -560,11 +640,11 @@ class InstructionPrinter(object):
       self._PrintOperandSource(operand, 'second_immediate')
 
   def PrintInstructionWithoutModRM(self, instruction):
-    assert not instruction.IsVexOrXop(), 'not supported yet'
     assert not instruction.HasModRM()
 
     self._PrintLegacyPrefixes(instruction)
     self._PrintRexPrefix(instruction)
+    self._PrintVexOrXopPrefix(instruction)
 
     assert instruction.GetOpcodeInModRM() is None
 
@@ -631,7 +711,6 @@ class InstructionPrinter(object):
 
     instruction = copy.deepcopy(instruction)
 
-    assert not instruction.IsVexOrXop(), 'not supported yet'
     assert instruction.HasModRM()
     assert instruction.FindOperand(def_format.OperandType.MEMORY) is None
 
@@ -647,6 +726,7 @@ class InstructionPrinter(object):
 
     self._PrintLegacyPrefixes(instruction)
     self._PrintRexPrefix(instruction)
+    self._PrintVexOrXopPrefix(instruction)
 
     self._PrintOpcode(instruction)
     self._out.write('\n')
@@ -701,7 +781,6 @@ class InstructionPrinter(object):
 
     instruction = copy.deepcopy(instruction)
 
-    assert not instruction.IsVexOrXop(), 'not supported yet'
     assert instruction.HasModRM()
     assert instruction.FindOperand(def_format.OperandType.MEMORY) is not None
 
@@ -716,6 +795,7 @@ class InstructionPrinter(object):
 
     self._PrintLegacyPrefixes(instruction)
     self._PrintRexPrefix(instruction)
+    self._PrintVexOrXopPrefix(instruction)
 
     self._PrintOpcode(instruction)
     self._out.write('\n')
