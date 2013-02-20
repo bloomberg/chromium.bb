@@ -84,8 +84,10 @@ AudioCodec CodecIDToAudioCodec(CodecID codec_id) {
       return kCodecGSM_MS;
     case CODEC_ID_PCM_MULAW:
       return kCodecPCM_MULAW;
+#ifndef CHROMIUM_OMIT_CODEC_ID_OPUS
     case CODEC_ID_OPUS:
       return kCodecOpus;
+#endif
     default:
       DVLOG(1) << "Unknown audio CodecID: " << codec_id;
   }
@@ -129,8 +131,10 @@ static CodecID AudioCodecToCodecID(AudioCodec audio_codec,
       return CODEC_ID_GSM_MS;
     case kCodecPCM_MULAW:
       return CODEC_ID_PCM_MULAW;
+#ifndef CHROMIUM_OMIT_CODEC_ID_OPUS
     case kCodecOpus:
       return CODEC_ID_OPUS;
+#endif
     default:
       DVLOG(1) << "Unknown AudioCodec: " << audio_codec;
   }
@@ -147,8 +151,10 @@ VideoCodec CodecIDToVideoCodec(CodecID codec_id) {
       return kCodecMPEG4;
     case CODEC_ID_VP8:
       return kCodecVP8;
+#ifndef CHROMIUM_OMIT_AV_CODEC_ID_VP9
     case AV_CODEC_ID_VP9:
       return kCodecVP9;
+#endif
     default:
       DVLOG(1) << "Unknown video CodecID: " << codec_id;
   }
@@ -165,8 +171,10 @@ static CodecID VideoCodecToCodecID(VideoCodec video_codec) {
       return CODEC_ID_MPEG4;
     case kCodecVP8:
       return CODEC_ID_VP8;
+#ifndef CHROMIUM_OMIT_AV_CODEC_ID_VP9
     case kCodecVP9:
       return AV_CODEC_ID_VP9;
+#endif
     default:
       DVLOG(1) << "Unknown VideoCodec: " << video_codec;
   }
@@ -468,8 +476,10 @@ ChannelLayout ChannelLayoutToChromeChannelLayout(int64_t layout, int channels) {
       return CHANNEL_LAYOUT_6_1_FRONT;
     case AV_CH_LAYOUT_7POINT0_FRONT:
       return CHANNEL_LAYOUT_7_0_FRONT;
+#ifdef AV_CH_LAYOUT_7POINT1_WIDE_BACK
     case AV_CH_LAYOUT_7POINT1_WIDE_BACK:
       return CHANNEL_LAYOUT_7_1_WIDE_BACK;
+#endif
     case AV_CH_LAYOUT_OCTAGONAL:
       return CHANNEL_LAYOUT_OCTAGONAL;
     default:

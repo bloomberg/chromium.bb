@@ -741,6 +741,9 @@
     'google_default_client_secret%': '<(google_default_client_secret)',
     'enable_managed_users%': '<(enable_managed_users)',
 
+    # Use system ffmpeg instead of bundled one.
+    'use_system_ffmpeg%': 0,
+
     # Use system mesa instead of bundled one.
     'use_system_mesa%': 0,
 

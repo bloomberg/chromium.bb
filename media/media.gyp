@@ -469,6 +469,18 @@
             'filters/vpx_video_decoder.h',
           ],
         }],
+        ['use_system_ffmpeg == 1', {
+          'defines': [
+            '<!(python <(DEPTH)/tools/compile_test/compile_test.py '
+                '--code "#include <libavcodec/avcodec.h>\n'
+                'int test() { return CODEC_ID_OPUS; }" '
+                '--on-failure CHROMIUM_OMIT_CODEC_ID_OPUS)',
+            '<!(python <(DEPTH)/tools/compile_test/compile_test.py '
+                '--code "#include <libavcodec/avcodec.h>\n'
+                'int test() { return AV_CODEC_ID_VP9; }" '
+                '--on-failure CHROMIUM_OMIT_AV_CODEC_ID_VP9)',
+          ],
+        }],
         ['OS == "ios"', {
           'includes': [
             # For shared_memory_support_sources variable.
