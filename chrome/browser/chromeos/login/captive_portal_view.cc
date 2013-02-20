@@ -15,7 +15,7 @@
 
 namespace {
 
-const char kCaptivePortalStartURL[] = "http://client3.google.com/generate_204";
+const char kCaptivePortalStartURL[] = "http://clients3.google.com/generate_204";
 
 }  // namespace
 
