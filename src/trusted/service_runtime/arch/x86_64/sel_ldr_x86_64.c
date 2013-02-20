@@ -16,78 +16,61 @@
 #include "native_client/src/trusted/service_runtime/arch/x86_64/sel_rt_64.h"
 #include "native_client/src/trusted/service_runtime/arch/x86_64/tramp_64.h"
 
-static uintptr_t AddDispatchThunk(uintptr_t *next_addr,
-                                  uintptr_t target_routine) {
-  struct NaClPatchInfo patch_info;
-  struct NaClPatch jmp_target;
-
-  jmp_target.target = (((uintptr_t) &NaClDispatchThunk_jmp_target)
-                       - sizeof(uintptr_t));
-  jmp_target.value = target_routine;
-
-  NaClPatchInfoCtor(&patch_info);
-  patch_info.abs64 = &jmp_target;
-  patch_info.num_abs64 = 1;
-
-  patch_info.dst = *next_addr;
-  patch_info.src = (uintptr_t) &NaClDispatchThunk;
-  patch_info.nbytes = ((uintptr_t) &NaClDispatchThunkEnd
-                       - (uintptr_t) &NaClDispatchThunk);
-  NaClApplyPatchToMemory(&patch_info);
-
-  *next_addr += patch_info.nbytes;
-  return patch_info.dst;
+static uintptr_t AddDispatchAddr(uintptr_t *next_addr,
+                                 uintptr_t target_routine) {
+  uintptr_t addr = *next_addr;
+  *(uintptr_t *) addr = target_routine;
+  *next_addr += sizeof(uintptr_t);
+  return addr;
 }
 
-int NaClMakeDispatchThunk(struct NaClApp *nap) {
+int NaClMakeDispatchAddrs(struct NaClApp *nap) {
   int                   retval = 0;  /* fail */
   int                   error;
-  void                  *thunk_addr = NULL;
+  void                  *page_addr = NULL;
   uintptr_t             next_addr;
-  uintptr_t             dispatch_thunk = 0;
-  uintptr_t             get_tls_fast_path1 = 0;
-  uintptr_t             get_tls_fast_path2 = 0;
+  uintptr_t             nacl_syscall_addr = 0;
+  uintptr_t             get_tls_fast_path1_addr = 0;
+  uintptr_t             get_tls_fast_path2_addr = 0;
 
-  NaClLog(2, "Entered NaClMakeDispatchThunk\n");
-  if (0 != nap->dispatch_thunk) {
-    NaClLog(LOG_ERROR, " dispatch_thunk already initialized!\n");
+  NaClLog(2, "Entered NaClMakeDispatchAddrs\n");
+  if (0 != nap->nacl_syscall_addr) {
+    NaClLog(LOG_ERROR, " dispatch addrs already initialized!\n");
     return 1;
   }
 
-  if (0 != (error = NaClPageAllocRandomized(&thunk_addr, NACL_MAP_PAGESIZE))) {
+  if (0 != (error = NaClPageAllocRandomized(&page_addr,
+                                            NACL_MAP_PAGESIZE))) {
     NaClLog(LOG_INFO,
-            "NaClMakeDispatchThunk::NaClPageAlloc failed, errno %d\n",
+            "NaClMakeDispatchAddrs::NaClPageAlloc failed, errno %d\n",
             -error);
     retval = 0;
     goto cleanup;
   }
-  NaClLog(2, "NaClMakeDispatchThunk: got addr 0x%"NACL_PRIxPTR"\n",
-          (uintptr_t) thunk_addr);
+  NaClLog(2, "NaClMakeDispatchAddrs: got addr 0x%"NACL_PRIxPTR"\n",
+          (uintptr_t) page_addr);
 
-  if (0 != (error = NaClMprotect(thunk_addr,
+  if (0 != (error = NaClMprotect(page_addr,
                                  NACL_MAP_PAGESIZE,
                                  PROT_READ | PROT_WRITE))) {
     NaClLog(LOG_INFO,
-            "NaClMakeDispatchThunk::NaClMprotect r/w failed, errno %d\n",
+            "NaClMakeDispatchAddrs::NaClMprotect r/w failed, errno %d\n",
             -error);
     retval = 0;
     goto cleanup;
   }
-  NaClFillMemoryRegionWithHalt(thunk_addr, NACL_MAP_PAGESIZE);
 
-  next_addr = (uintptr_t) thunk_addr;
-  dispatch_thunk =
-      AddDispatchThunk(&next_addr, (uintptr_t) &NaClSyscallSeg);
-  get_tls_fast_path1 =
-      AddDispatchThunk(&next_addr, (uintptr_t) &NaClGetTlsFastPath1);
-  get_tls_fast_path2 =
-      AddDispatchThunk(&next_addr, (uintptr_t) &NaClGetTlsFastPath2);
+  next_addr = (uintptr_t) page_addr;
+  nacl_syscall_addr =
+      AddDispatchAddr(&next_addr, (uintptr_t) &NaClSyscallSeg);
+  get_tls_fast_path1_addr =
+      AddDispatchAddr(&next_addr, (uintptr_t) &NaClGetTlsFastPath1);
+  get_tls_fast_path2_addr =
+      AddDispatchAddr(&next_addr, (uintptr_t) &NaClGetTlsFastPath2);
 
-  if (0 != (error = NaClMprotect(thunk_addr,
-                                 NACL_MAP_PAGESIZE,
-                                 PROT_EXEC|PROT_READ))) {
+  if (0 != (error = NaClMprotect(page_addr, NACL_MAP_PAGESIZE, PROT_READ))) {
     NaClLog(LOG_INFO,
-            "NaClMakeDispatchThunk::NaClMprotect r/x failed, errno %d\n",
+            "NaClMakeDispatchAddrs::NaClMprotect read-only failed, errno %d\n",
             -error);
     retval = 0;
     goto cleanup;
@@ -95,17 +78,14 @@ int NaClMakeDispatchThunk(struct NaClApp *nap) {
   retval = 1;
  cleanup:
   if (0 == retval) {
-    if (NULL != thunk_addr) {
-      NaClPageFree(thunk_addr, NACL_MAP_PAGESIZE);
-      thunk_addr = NULL;
+    if (NULL != page_addr) {
+      NaClPageFree(page_addr, NACL_MAP_PAGESIZE);
+      page_addr = NULL;
     }
   } else {
-    nap->dispatch_thunk = dispatch_thunk;
-    nap->dispatch_thunk_end =
-        dispatch_thunk + ((uintptr_t) &NaClDispatchThunkEnd
-                          - (uintptr_t) &NaClDispatchThunk);
-    nap->get_tls_fast_path1 = get_tls_fast_path1;
-    nap->get_tls_fast_path2 = get_tls_fast_path2;
+    nap->nacl_syscall_addr = nacl_syscall_addr;
+    nap->get_tls_fast_path1_addr = get_tls_fast_path1_addr;
+    nap->get_tls_fast_path2_addr = get_tls_fast_path2_addr;
   }
   return retval;
 }
@@ -137,12 +117,8 @@ void  NaClPatchOneTrampolineCall(uintptr_t  call_target_addr,
   NaClApplyPatchToMemory(&patch_info);
 }
 
-void  NaClPatchOneTrampoline(struct NaClApp *nap,
-                             uintptr_t      target_addr) {
-  uintptr_t             call_target_addr;
-
-  call_target_addr = nap->dispatch_thunk;
-  NaClPatchOneTrampolineCall(call_target_addr, target_addr);
+void NaClPatchOneTrampoline(struct NaClApp *nap, uintptr_t target_addr) {
+  NaClPatchOneTrampolineCall(nap->nacl_syscall_addr, target_addr);
 }
 
 void NaClFillMemoryRegionWithHalt(void *start, size_t size) {

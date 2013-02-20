@@ -99,10 +99,9 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
 #endif
 #if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 \
      && NACL_BUILD_SUBARCH == 64)
-  nap->dispatch_thunk = 0;
-  nap->dispatch_thunk_end = 0;
-  nap->get_tls_fast_path1 = 0;
-  nap->get_tls_fast_path2 = 0;
+  nap->nacl_syscall_addr = 0;
+  nap->get_tls_fast_path1_addr = 0;
+  nap->get_tls_fast_path2_addr = 0;
 #endif
 
   nap->static_text_end = 0;
@@ -435,8 +434,8 @@ void  NaClLoadTrampoline(struct NaClApp *nap) {
   }
 #endif
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
-  if (!NaClMakeDispatchThunk(nap)) {
-    NaClLog(LOG_FATAL, "NaClMakeDispatchThunk failed!\n");
+  if (!NaClMakeDispatchAddrs(nap)) {
+    NaClLog(LOG_FATAL, "NaClMakeDispatchAddrs failed!\n");
   }
 #endif
   NaClFillTrampolineRegion(nap);
@@ -475,10 +474,10 @@ void  NaClLoadTrampoline(struct NaClApp *nap) {
   }
 #endif
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
-  NaClPatchOneTrampolineCall(nap->get_tls_fast_path1,
+  NaClPatchOneTrampolineCall(nap->get_tls_fast_path1_addr,
                              nap->mem_start + NACL_SYSCALL_START_ADDR
                              + NACL_SYSCALL_BLOCK_SIZE * NACL_sys_tls_get);
-  NaClPatchOneTrampolineCall(nap->get_tls_fast_path2,
+  NaClPatchOneTrampolineCall(nap->get_tls_fast_path2_addr,
                              nap->mem_start + NACL_SYSCALL_START_ADDR
                              + (NACL_SYSCALL_BLOCK_SIZE *
                                 NACL_sys_second_tls_get));

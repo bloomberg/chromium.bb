@@ -85,13 +85,6 @@ static int Unwind(struct NaClAppThread *natp, struct NaClSignalContext *regs,
     regs->stack_ptr += 4 + 8;  /* Pop user + trampoline return addresses */
     return 1;
   }
-#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
-  if (regs->prog_ctr >= nap->dispatch_thunk &&
-      regs->prog_ctr < nap->dispatch_thunk_end) {
-    *unwind_case = NACL_UNWIND_in_dispatch_thunk;
-    regs->stack_ptr += 8 * 2;  /* Pop user + trampoline return addresses */
-    return 1;
-  }
 #endif
 
   GetNaClSyscallSeg(nap, &nacl_syscall_seg, &nacl_syscall_seg_regs_saved);

@@ -138,10 +138,9 @@ struct NaClApp {
   uintptr_t                 pcrel_thunk_end;
 #endif
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
-  uintptr_t                 dispatch_thunk;
-  uintptr_t                 dispatch_thunk_end;
-  uintptr_t                 get_tls_fast_path1;
-  uintptr_t                 get_tls_fast_path2;
+  uintptr_t                 nacl_syscall_addr;
+  uintptr_t                 get_tls_fast_path1_addr;
+  uintptr_t                 get_tls_fast_path2_addr;
 #endif
 
   /* only used for ET_EXEC:  for CS restriction */
@@ -664,7 +663,7 @@ int NaClMakePcrelThunk(struct NaClApp *nap);
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
 
-int NaClMakeDispatchThunk(struct NaClApp *nap);
+int NaClMakeDispatchAddrs(struct NaClApp *nap);
 
 #endif
 
