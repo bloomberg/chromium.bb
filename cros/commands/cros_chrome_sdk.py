@@ -256,17 +256,23 @@ class ChromeSDKCommand(cros.CrosCommand):
     return (ps1 % {'sdk_version': sdk_version,
                    'label': label})
 
-  def _FixGoldPath(self, var_contents):
-    """Point to the right gold linker.
+  def _FixGoldPath(self, var_contents, toolchain_path):
+    """Point to the gold linker in the toolchain tarball.
 
-    Strips a command of form '<cmd> -B<gold_path>', and appends
-    '-fuse-ld=ld.gold' instead.
+    Accepts an already set environment variable in the form of '<cmd>
+    -B<gold_path>', and overrides the gold_path to the correct path in the
+    extracted toolchain tarball.
 
     Arguments:
       var_contents: The contents of the environment variable.
+      toolchain_path: Path to the extracted toolchain tarball contents.
+
+    Returns:
+      Environment string that has correct gold path.
     """
-    cmd = os.path.basename(var_contents.partition(' -B')[0])
-    return '%s -fuse-ld=ld.gold' % cmd
+    cmd, _, gold_path = var_contents.partition(' -B')
+    gold_path = os.path.join(toolchain_path, gold_path.lstrip('/'))
+    return '%s -B%s' % (cmd, gold_path)
 
   def _SetupEnvironment(self, board, version, key_map):
     """Sets environment variables to export to the SDK shell."""
@@ -290,7 +296,7 @@ class ChromeSDKCommand(cros.CrosCommand):
       env['PATH'] = '%s:%s' % (os.path.join(tc_path, 'bin'), os.environ['PATH'])
 
     for var in ('CXX', 'CC', 'LD'):
-      env[var] = self._FixGoldPath(env[var])
+      env[var] = self._FixGoldPath(env[var], target_tc)
 
     env['CXX_host'] = 'g++'
     env['CC_host'] = 'gcc'
