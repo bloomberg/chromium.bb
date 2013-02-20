@@ -650,6 +650,15 @@ void ProfileShortcutManagerWin::CreateOrUpdateShortcutsForProfileAtPath(
   string16 old_shortcut_appended_name =
       cache->GetShortcutNameOfProfileAtIndex(profile_index);
 
+  // Exit early if the mode is to update existing profile shortcuts only and
+  // none were ever created for this profile, per the shortcut name not being
+  // set in the profile info cache.
+  if (old_shortcut_appended_name.empty() &&
+      create_mode == UPDATE_EXISTING_ONLY &&
+      action == IGNORE_NON_PROFILE_SHORTCUTS) {
+    return;
+  }
+
   string16 new_shortcut_appended_name;
   if (!remove_badging)
     new_shortcut_appended_name = cache->GetNameOfProfileAtIndex(profile_index);

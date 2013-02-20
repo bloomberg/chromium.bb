@@ -693,6 +693,36 @@ TEST_F(ProfileShortcutManagerTest, ProfileShortcutsWithSystemLevelShortcut) {
   ValidateProfileShortcut(FROM_HERE, profile_1_name_, profile_1_path_);
   ValidateProfileShortcut(FROM_HERE, profile_2_name_, profile_2_path_);
   EXPECT_TRUE(file_util::PathExists(system_level_shortcut_path));
+
+  // Create a third profile without a shortcut and ensure it doesn't get one.
+  profile_info_cache_->AddProfileToCache(profile_3_path_, profile_3_name_,
+                                         string16(), 0, false);
+  RunPendingTasks();
+  EXPECT_FALSE(ProfileShortcutExistsAtDefaultPath(profile_3_name_));
+
+  // Ensure that changing the avatar icon and the name does not result in a
+  // shortcut being created.
+  profile_info_cache_->SetAvatarIconOfProfileAtIndex(
+      profile_info_cache_->GetIndexOfProfileWithPath(profile_3_path_), 3);
+  RunPendingTasks();
+  EXPECT_FALSE(ProfileShortcutExistsAtDefaultPath(profile_3_name_));
+
+  const string16 new_profile_3_name = L"New Name 3";
+  profile_info_cache_->SetNameOfProfileAtIndex(
+      profile_info_cache_->GetIndexOfProfileWithPath(profile_3_path_),
+      new_profile_3_name);
+  RunPendingTasks();
+  EXPECT_FALSE(ProfileShortcutExistsAtDefaultPath(profile_3_name_));
+  EXPECT_FALSE(ProfileShortcutExistsAtDefaultPath(new_profile_3_name));
+
+  // Rename the second profile and ensure its shortcut got renamed.
+  const string16 new_profile_2_name = L"New Name 2";
+  profile_info_cache_->SetNameOfProfileAtIndex(
+      profile_info_cache_->GetIndexOfProfileWithPath(profile_2_path_),
+      new_profile_2_name);
+  RunPendingTasks();
+  EXPECT_FALSE(ProfileShortcutExistsAtDefaultPath(profile_2_name_));
+  ValidateProfileShortcut(FROM_HERE, new_profile_2_name, profile_2_path_);
 }
 
 TEST_F(ProfileShortcutManagerTest,
