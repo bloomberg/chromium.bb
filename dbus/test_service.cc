@@ -33,7 +33,7 @@ TestService::Options::~Options() {
 
 TestService::TestService(const Options& options)
     : base::Thread("TestService"),
-      dbus_thread_message_loop_proxy_(options.dbus_thread_message_loop_proxy),
+      dbus_task_runner_(options.dbus_task_runner),
       on_all_methods_exported_(false, false),
       num_exported_methods_(0) {
 }
@@ -155,7 +155,7 @@ void TestService::Run(MessageLoop* message_loop) {
   Bus::Options bus_options;
   bus_options.bus_type = Bus::SESSION;
   bus_options.connection_type = Bus::PRIVATE;
-  bus_options.dbus_thread_message_loop_proxy = dbus_thread_message_loop_proxy_;
+  bus_options.dbus_task_runner = dbus_task_runner_;
   bus_ = new Bus(bus_options);
 
   bus_->RequestOwnership("org.chromium.TestService",

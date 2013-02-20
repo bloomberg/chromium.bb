@@ -5,25 +5,28 @@
 #ifndef DBUS_BUS_H_
 #define DBUS_BUS_H_
 
+#include <dbus/dbus.h>
+
 #include <map>
 #include <set>
 #include <string>
 #include <utility>
-#include <dbus/dbus.h>
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
-#include "base/tracked_objects.h"
 #include "dbus/dbus_export.h"
 #include "dbus/object_path.h"
 
-class MessageLoop;
-
 namespace base {
+class SequencedTaskRunner;
+class SingleThreadTaskRunner;
 class Thread;
-class MessageLoopProxy;
+}
+
+namespace tracked_objects {
+class Location;
 }
 
 namespace dbus {
@@ -35,17 +38,17 @@ class ObjectProxy;
 // proxies, and export objects.
 //
 // For asynchronous operations such as an asynchronous method call, the
-// bus object will use a message loop to monitor the underlying file
+// bus object will use a task runner to monitor the underlying file
 // descriptor used for D-Bus communication. By default, the bus will use
-// the current thread's MessageLoopForIO. If |dbus_thread_message_loop_proxy|
-// option is specified, the bus will use that message loop instead.
+// the current thread's task runner. If |dbus_task_runner| option is
+// specified, the bus will use that task runner instead.
 //
 // THREADING
 //
 // In the D-Bus library, we use the two threads:
 //
 // - The origin thread: the thread that created the Bus object.
-// - The D-Bus thread: the thread servicing |dbus_thread_message_loop_proxy|.
+// - The D-Bus thread: the thread servicing |dbus_task_runner|.
 //
 // The origin thread is usually Chrome's UI thread. The D-Bus thread is
 // usually a dedicated thread for the D-Bus library.
@@ -164,14 +167,14 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
 
     BusType bus_type;  // SESSION by default.
     ConnectionType connection_type;  // PRIVATE by default.
-    // If dbus_thread_message_loop_proxy is set, the bus object will use that
-    // message loop to process asynchronous operations.
+    // If dbus_task_runner is set, the bus object will use that
+    // task runner to process asynchronous operations.
     //
-    // The thread servicing the message loop proxy should meet the following
+    // The thread servicing the task runner should meet the following
     // requirements:
     // 1) Already running.
     // 2) Has a MessageLoopForIO.
-    scoped_refptr<base::MessageLoopProxy> dbus_thread_message_loop_proxy;
+    scoped_refptr<base::SequencedTaskRunner> dbus_task_runner;
 
     // Specifies the server addresses to be connected. If you want to
     // communicate with non dbus-daemon such as ibus-daemon, set |bus_type| to
@@ -463,20 +466,20 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   // BLOCKING CALL.
   virtual void UnregisterObjectPath(const ObjectPath& object_path);
 
-  // Posts the task to the message loop of the thread that created the bus.
+  // Posts the task to the task runner of the thread that created the bus.
   virtual void PostTaskToOriginThread(
       const tracked_objects::Location& from_here,
       const base::Closure& task);
 
-  // Posts the task to the message loop of the D-Bus thread. If D-Bus
-  // thread is not supplied, the message loop of the origin thread will be
+  // Posts the task to the task runner of the D-Bus thread. If D-Bus
+  // thread is not supplied, the task runner of the origin thread will be
   // used.
   virtual void PostTaskToDBusThread(
       const tracked_objects::Location& from_here,
       const base::Closure& task);
 
-  // Posts the delayed task to the message loop of the D-Bus thread. If
-  // D-Bus thread is not supplied, the message loop of the origin thread
+  // Posts the delayed task to the task runner of the D-Bus thread. If
+  // D-Bus thread is not supplied, the task runner of the origin thread
   // will be used.
   virtual void PostDelayedTaskToDBusThread(
       const tracked_objects::Location& from_here,
@@ -566,17 +569,17 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
 
   // Calls OnConnectionDisconnected if the Diconnected signal is received.
   static DBusHandlerResult OnConnectionDisconnectedFilter(
-      DBusConnection *connection,
-      DBusMessage *message,
-      void *user_data);
+      DBusConnection* connection,
+      DBusMessage* message,
+      void* user_data);
 
   const BusType bus_type_;
   const ConnectionType connection_type_;
-  scoped_refptr<base::MessageLoopProxy> dbus_thread_message_loop_proxy_;
+  scoped_refptr<base::SequencedTaskRunner> dbus_task_runner_;
   base::WaitableEvent on_shutdown_;
   DBusConnection* connection_;
 
-  scoped_refptr<base::MessageLoopProxy> origin_message_loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner_;
   base::PlatformThreadId origin_thread_id_;
 
   std::set<std::string> owned_service_names_;

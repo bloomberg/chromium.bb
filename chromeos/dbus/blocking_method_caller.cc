@@ -5,6 +5,7 @@
 #include "chromeos/dbus/blocking_method_caller.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/threading/thread_restrictions.h"
 #include "dbus/bus.h"
 #include "dbus/object_proxy.h"

@@ -72,8 +72,7 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     dbus::Bus::Options system_bus_options;
     system_bus_options.bus_type = dbus::Bus::SYSTEM;
     system_bus_options.connection_type = dbus::Bus::PRIVATE;
-    system_bus_options.dbus_thread_message_loop_proxy =
-        dbus_thread_->message_loop_proxy();
+    system_bus_options.dbus_task_runner = dbus_thread_->message_loop_proxy();
     system_bus_ = new dbus::Bus(system_bus_options);
 
     bluetooth_manager_client_.reset(BluetoothManagerClient::Create(
@@ -169,8 +168,7 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     ibus_bus_options.bus_type = dbus::Bus::CUSTOM_ADDRESS;
     ibus_bus_options.address = ibus_address;
     ibus_bus_options.connection_type = dbus::Bus::PRIVATE;
-    ibus_bus_options.dbus_thread_message_loop_proxy =
-        dbus_thread_->message_loop_proxy();
+    ibus_bus_options.dbus_task_runner = dbus_thread_->message_loop_proxy();
     ibus_bus_ = new dbus::Bus(ibus_bus_options);
     ibus_address_ = ibus_address;
     VLOG(1) << "Connected to ibus-daemon: " << ibus_address;

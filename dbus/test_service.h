@@ -12,7 +12,7 @@
 #include "dbus/exported_object.h"
 
 namespace base {
-class MessageLoopProxy;
+class SequencedTaskRunner;
 }
 
 namespace dbus {
@@ -35,13 +35,13 @@ class TestService : public base::Thread {
     ~Options();
 
     // NULL by default (i.e. don't use the D-Bus thread).
-    scoped_refptr<base::MessageLoopProxy> dbus_thread_message_loop_proxy;
+    scoped_refptr<base::SequencedTaskRunner> dbus_task_runner;
   };
 
   // The number of methods we'll export.
   static const int kNumMethodsToExport;
 
-  TestService(const Options& options);
+  explicit TestService(const Options& options);
   virtual ~TestService();
 
   // Starts the service in a separate thread.
@@ -143,7 +143,7 @@ class TestService : public base::Thread {
   // Helper function for RequestOwnership().
   void RequestOwnershipInternal(base::Callback<void(bool)> callback);
 
-  scoped_refptr<base::MessageLoopProxy> dbus_thread_message_loop_proxy_;
+  scoped_refptr<base::SequencedTaskRunner> dbus_task_runner_;
   base::WaitableEvent on_all_methods_exported_;
   // The number of methods actually exported.
   int num_exported_methods_;

@@ -51,7 +51,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
     dbus::Bus::Options options;
     options.bus_type = dbus::Bus::SYSTEM;
     options.connection_type = dbus::Bus::PRIVATE;
-    options.dbus_thread_message_loop_proxy = loop_proxy;
+    options.dbus_task_runner = loop_proxy;
     session_bus_ = new dbus::Bus(options);
     bus = session_bus_.get();
 #endif
