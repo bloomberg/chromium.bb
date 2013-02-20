@@ -72,9 +72,10 @@ void PlusDecoration::ShowMenu(scoped_ptr<ActionBoxMenuModel> menu_model) {
   NSWindow* parent = browser_->window()->GetNativeWindow();
   ActionBoxMenuBubbleController* menu_controller =
       [[ActionBoxMenuBubbleController alloc]
-          initWithModel:menu_model.PassAs<ui::MenuModel>()
+          initWithModel:menu_model.Pass()
            parentWindow:parent
-             anchoredAt:[parent convertBaseToScreen:GetActionBoxAnchorPoint()]];
+             anchoredAt:[parent convertBaseToScreen:GetActionBoxAnchorPoint()]
+                profile:browser_->profile()];
 
   [menu_controller showWindow:nil];
 }

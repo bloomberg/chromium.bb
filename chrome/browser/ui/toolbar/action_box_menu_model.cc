@@ -42,9 +42,11 @@ ActionBoxMenuModel::ActionBoxMenuModel(Browser* browser,
             rb.GetNativeImageNamed(IDR_MOBILE));
   }
 
-  BookmarkTabHelper* bookmark_tab_helper = BookmarkTabHelper::FromWebContents(
-      browser_->tab_strip_model()->GetActiveWebContents());
-  bool starred = bookmark_tab_helper->is_starred();
+  // In some unit tests, GetActiveWebContents can return NULL.
+  bool starred = browser_->tab_strip_model()->GetActiveWebContents() &&
+      BookmarkTabHelper::FromWebContents(browser_->tab_strip_model()->
+          GetActiveWebContents())->is_starred();
+
   AddItemWithStringId(IDC_BOOKMARK_PAGE_FROM_STAR,
                       starred ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR);
   SetIcon(GetIndexOfCommandId(IDC_BOOKMARK_PAGE_FROM_STAR),
@@ -61,6 +63,7 @@ void ActionBoxMenuModel::AddExtension(const extensions::Extension& extension,
   extension_ids_.push_back(extension.id());
   const ActionInfo* page_launcher_info =
       ActionInfo::GetPageLauncherInfo(&extension);
+  DCHECK(page_launcher_info);
   AddItem(command_id, UTF8ToUTF16(page_launcher_info->default_title));
 }
 

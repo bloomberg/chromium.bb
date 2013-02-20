@@ -8,16 +8,21 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/extensions/extension_icon_image.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #import "chrome/browser/ui/cocoa/event_utils.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
+#include "chrome/browser/ui/toolbar/action_box_menu_model.h"
+#include "chrome/common/extensions/api/extension_action/action_info.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
-#include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia_util_mac.h"
 
 @interface ActionBoxMenuBubbleController (Private)
 - (id)highlightedItem;
@@ -45,11 +50,46 @@ const CGFloat kSelectionAlpha = 0.06;
 
 }  // namespace
 
+// extension Icon Loader Bridge ////////////////////////////////////////////////
+
+class ExtensionIconLoaderBridge : public extensions::IconImage::Observer {
+ public:
+  ExtensionIconLoaderBridge(Profile* profile,
+                            const extensions::Extension* extension,
+                            ActionBoxMenuItemController* controller)
+      : controller_(controller) {
+    const extensions::ActionInfo* page_launcher_info =
+        extensions::ActionInfo::GetPageLauncherInfo(extension);
+    DCHECK(page_launcher_info);
+    icon_loader_.reset(new extensions::IconImage(
+        profile,
+        extension,
+        page_launcher_info->default_icon,
+        extension_misc::EXTENSION_ICON_ACTION,
+        extensions::Extension::GetDefaultIcon(true),
+        this));
+    OnExtensionIconImageChanged(icon_loader_.get());
+  }
+
+ private:
+  virtual void OnExtensionIconImageChanged(
+      extensions::IconImage* image) OVERRIDE {
+    [controller_ onExtensionIconImageChanged:
+        gfx::NSImageFromImageSkia(image->image_skia())];
+  }
+
+  scoped_ptr<extensions::IconImage> icon_loader_;
+  ActionBoxMenuItemController* controller_;  // Weak.
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionIconLoaderBridge);
+};
+
 @implementation ActionBoxMenuBubbleController
 
-- (id)initWithModel:(scoped_ptr<ui::MenuModel>)model
+- (id)initWithModel:(scoped_ptr<ActionBoxMenuModel>)model
        parentWindow:(NSWindow*)parent
-         anchoredAt:(NSPoint)point {
+         anchoredAt:(NSPoint)point
+            profile:(Profile*)profile {
   // Use an arbitrary height because it will reflect the size of the content.
   NSRect contentRect = NSMakeRect(0, 0, kBubbleMinWidth, 150);
   // Create an empty window into which content is placed.
@@ -61,6 +101,7 @@ const CGFloat kSelectionAlpha = 0.06;
   if (self = [super initWithWindow:window
                       parentWindow:parent
                         anchoredAt:point]) {
+    profile_ = profile;
     model_.reset(model.release());
 
     [[self bubble] setAlignment:info_bubble::kAlignRightEdgeToAnchorEdge];
@@ -73,8 +114,12 @@ const CGFloat kSelectionAlpha = 0.06;
   return self;
 }
 
-- (ui::MenuModel*)model {
+- (ActionBoxMenuModel*)model {
   return model_.get();
+}
+
+- (NSMutableArray*)items {
+  return items_;
 }
 
 - (IBAction)itemSelected:(id)sender {
@@ -112,8 +157,10 @@ const CGFloat kSelectionAlpha = 0.06;
     // Create the item controller. Autorelease it because it will be owned
     // by the |items_| array.
     scoped_nsobject<ActionBoxMenuItemController> itemController(
-        [[ActionBoxMenuItemController alloc] initWithModelIndex:i
-                                                 menuController:self]);
+        [[ActionBoxMenuItemController alloc]
+            initWithModelIndex:i
+                menuController:self
+                       profile:profile_]);
 
     // Adjust the name field to fit the string.
     [GTMUILocalizerAndLayoutTweaker sizeToFitView:[itemController nameField]];
@@ -208,10 +255,12 @@ const CGFloat kSelectionAlpha = 0.06;
 
 @synthesize modelIndex = modelIndex_;
 @synthesize isHighlighted = isHighlighted_;
+@synthesize iconView = iconView_;
 @synthesize nameField = nameField_;
 
 - (id)initWithModelIndex:(size_t)modelIndex
-          menuController:(ActionBoxMenuBubbleController*)controller {
+          menuController:(ActionBoxMenuBubbleController*)controller
+                profile:(Profile*)profile {
   if ((self = [super initWithNibName:@"ActionBoxMenuItem"
                               bundle:base::mac::FrameworkBundle()])) {
     modelIndex_ = modelIndex;
@@ -220,11 +269,24 @@ const CGFloat kSelectionAlpha = 0.06;
     [self loadView];
 
     gfx::Image icon = gfx::Image();
+    ActionBoxMenuModel* model = [controller model];
+    if (model->GetIconAt(modelIndex_, &icon)) {
+      extensionIconLoaderBridge_.reset();
+      [iconView_ setImage:icon.ToNSImage()];
+    } else if (model->GetTypeAt(modelIndex_) == ui::MenuModel::TYPE_COMMAND &&
+               model->IsItemExtension(modelIndex_)) {
+      // Creating an ExtensionIconLoaderBridge will call
+      // onExtensionIconImageChanged and set the |iconView_|.
+      [iconView_ setImage:nil];
+      extensionIconLoaderBridge_.reset(new ExtensionIconLoaderBridge(
+          profile,
+          model->GetExtensionAt(modelIndex_),
+          self));
+    } else {
+      extensionIconLoaderBridge_.reset();
+      [iconView_ setImage:nil];
+    }
 
-    if (controller.model->GetIconAt(modelIndex_, &icon))
-      iconView_.image = icon.ToNSImage();
-    else
-      iconView_.image = nil;
     nameField_.stringValue = base::SysUTF16ToNSString(
         controller.model->GetLabelAt(modelIndex_));
   }
@@ -262,6 +324,10 @@ const CGFloat kSelectionAlpha = 0.06;
 
   isHighlighted_ = isHighlighted;
   [[self view] setNeedsDisplay:YES];
+}
+
+- (void)onExtensionIconImageChanged:(NSImage*)image {
+  [iconView_ setImage:image];
 }
 
 @end
