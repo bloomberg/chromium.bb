@@ -486,6 +486,20 @@ class TestSplit(unittest.TestCase):
     assert instr3.rex.w_set
     self.assertEquals(instr3.required_prefixes, [])
 
+  def test_split_L(self):
+    instr = gen_dfa.Instruction.Parse(
+        'vaddpd =Wpdx =Hpdx !Vpdx, '
+        '0xc4 RXB.00001 x.src.L.01 0x58, '
+        'CPUFeature_AVX')
+    self.assertEquals(
+        map(str, gen_dfa.SplitL(instr)),
+        [('vaddpd =Wpd =Hpd !Vpd, '
+          '0xc4 RXB.00001 x.src.0.01 0x58, '
+          'CPUFeature_AVX'),
+         ('vaddpd =Wpd-ymm =Hpd-ymm !Vpd-ymm, '
+          '0xc4 RXB.00001 x.src.1.01 0x58, '
+          'CPUFeature_AVX')])
+
 
 class TestParser(unittest.TestCase):
 

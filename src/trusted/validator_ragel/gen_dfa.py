@@ -310,6 +310,8 @@ class Instruction(object):
         # Anyway, main part of the opcode is over.
         break
       result.append(opcode)
+    if self.IsVexOrXop():
+      del result[:3]
     return result
 
   def GetNameAsIdentifier(self):
@@ -452,12 +454,13 @@ class InstructionPrinter(object):
     L = L.replace('x', '0')
 
     vex_rxb = 'VEX_'
-    if instruction.rex.r_matters:
-      vex_rxb += 'R'
-    if instruction.rex.x_matters:
-      vex_rxb += 'X'
-    if instruction.rex.b_matters:
-      vex_rxb += 'B'
+    if self._bitness == 64:
+      if instruction.rex.r_matters:
+        vex_rxb += 'R'
+      if instruction.rex.x_matters:
+        vex_rxb += 'X'
+      if instruction.rex.b_matters:
+        vex_rxb += 'B'
     if vex_rxb.endswith('_'):
       vex_rxb += 'NONE'
 
@@ -951,10 +954,17 @@ def SplitByteNonByte(instruction):
 
   # Set the last bit of the main part of the opcode if instruction uses
   # larger-than-byte operands.
-  main_opcode_part = instruction.GetMainOpcodePart()
-  last_byte = int(main_opcode_part[-1], 16)
+
+  last_byte_index = len(instruction.opcodes) - 1
+  for i, opcode in enumerate(instruction.opcodes):
+    if opcode.startswith('/'):
+      last_byte_index = i - 1
+      break
+  assert last_byte_index >= 0
+
+  last_byte = int(instruction.opcodes[last_byte_index], 16)
   assert last_byte % 2 == 0
-  instr_nonbyte.opcodes[len(main_opcode_part) - 1] = hex(last_byte | 1)
+  instr_nonbyte.opcodes[last_byte_index] = hex(last_byte | 1)
 
   # TODO(shcherbina): att-show-name-suffix-b
 
@@ -1042,6 +1052,52 @@ def SplitVYZ(bitness, instruction):
       Attribute('norexw') not in instruction.attributes):
     result.append(instr64)
   return result
+
+  # TODO(shcherbina): att-show-name-suffix-...
+
+
+def SplitL(instruction):
+  """Split instruction by L-bit into two versions (xmm and ymm).
+
+  Args:
+    instruction: instruction to split.
+
+  Returns:
+    List of one or two instructions.
+  """
+
+  instr_xmm = copy.deepcopy(instruction)
+  instr_ymm = copy.deepcopy(instruction)
+
+  splits = {
+      'x': ('x-xmm', 'x-ymm'),
+      'pdx': ('pd', 'pd-ymm'),
+      'phx': ('ph', 'ph-ymm'),
+      'pjx': ('pj', 'pj-ymm'),
+      'pkx': ('pk', 'pk-ymm'),
+      'pqx': ('pq', 'pq-ymm'),
+      'psx': ('ps', 'ps-ymm'),
+      'pdwx': ('pdw', 'pdw-ymm'),
+      'pqwx': ('pqw', 'pqw-ymm')}
+
+  splitted = False
+  for i, operand in enumerate(instruction.operands):
+    if operand.size in splits:
+      splitted = True
+      (instr_xmm.operands[i].size,
+       instr_ymm.operands[i].size) = splits[operand.size]
+
+  if not splitted:
+    return [instruction]
+
+  assert instruction.IsVexOrXop()
+  third_vex_byte = instruction.opcodes[2]
+  assert '.L.' in third_vex_byte
+
+  instr_xmm.opcodes[2] = third_vex_byte.replace('.L.', '.0.')
+  instr_ymm.opcodes[2] = third_vex_byte.replace('.L.', '.1.')
+
+  return [instr_xmm, instr_ymm]
 
   # TODO(shcherbina): att-show-name-suffix-...
 
@@ -1175,6 +1231,7 @@ def main():
       instructions = sum([SplitVYZ(options.bitness, instr)
                           for instr in instructions],
                          [])
+      instructions = sum(map(SplitL, instructions), [])
 
       header = '##### %s #####\n' % instruction
       variants = [InstructionToString(mode, options.bitness, instr)
