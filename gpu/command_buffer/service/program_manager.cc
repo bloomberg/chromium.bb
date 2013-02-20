@@ -157,7 +157,7 @@ std::string ProgramManager::ProgramInfo::ProcessLogInfo(
   std::string prior_log;
   std::string hashed_name;
   while (RE2::Consume(&input,
-                      "(.*)_(webgl_[0123456789abcdefABCDEF]+)",
+                      "(.*)(webgl_[0123456789abcdefABCDEF]+)",
                       &prior_log,
                       &hashed_name)) {
     output += prior_log;
