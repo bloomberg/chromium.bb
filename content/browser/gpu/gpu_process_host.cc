@@ -821,34 +821,30 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
           host_id_, params.route_id, params.surface_id, params.surface_handle,
           true, base::TimeTicks(), base::TimeDelta()));
 
-  gfx::PluginWindowHandle handle =
-      GpuSurfaceTracker::Get()->GetSurfaceHandle(params.surface_id).handle;
+  gfx::GLSurfaceHandle handle =
+      GpuSurfaceTracker::Get()->GetSurfaceHandle(params.surface_id);
 
-  if (!handle) {
+  if (handle.is_null())
+    return;
+
+  if (handle.transport_type == gfx::TEXTURE_TRANSPORT) {
     TRACE_EVENT1("gpu", "SurfaceIDNotFound_RoutingToUI",
                  "surface_id", params.surface_id);
-#if defined(USE_AURA)
     // This is a content area swap, send it on to the UI thread.
     scoped_completion_runner.Release();
     RouteOnUIThread(GpuHostMsg_AcceleratedSurfaceBuffersSwapped(params));
-#else
-  // HW accelerated compositing for webview uses image transport surface
-  // to forward guest renderer buffers to the embedder.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserPluginCompositing)) {
-    scoped_completion_runner.Release();
-    RouteOnUIThread(GpuHostMsg_AcceleratedSurfaceBuffersSwapped(params));
-  }
-#endif
     return;
   }
 
   // Otherwise it's the UI swap.
 
   scoped_refptr<AcceleratedPresenter> presenter(
-      AcceleratedPresenter::GetForWindow(handle));
+      AcceleratedPresenter::GetForWindow(handle.handle));
   if (!presenter) {
-    TRACE_EVENT1("gpu", "EarlyOut_NativeWindowNotFound", "handle", handle);
+    TRACE_EVENT1("gpu",
+                 "EarlyOut_NativeWindowNotFound",
+                 "handle",
+                 handle.handle);
     return;
   }
 
