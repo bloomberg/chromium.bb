@@ -2157,7 +2157,13 @@ void RenderWidgetHostImpl::Replace(const string16& word) {
 }
 
 void RenderWidgetHostImpl::ReplaceMisspelling(const string16& word) {
+#if defined(OS_MACOSX)
+  // TODO(rouslan): Use ViewMsg_ReplaceMisspelling on Mac after Mac implements
+  // asynchronous spell checking and enables unified text checking.
+  Send(new ViewMsg_Replace(routing_id_, word));
+#else
   Send(new ViewMsg_ReplaceMisspelling(routing_id_, word));
+#endif
 }
 
 void RenderWidgetHostImpl::SetIgnoreInputEvents(bool ignore_input_events) {
