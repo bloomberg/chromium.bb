@@ -78,7 +78,8 @@ ExtensionInstalledBubbleGtk::ExtensionInstalledBubbleGtk(
     : extension_(extension),
       browser_(browser),
       icon_(icon),
-      animation_wait_retries_(kAnimationWaitRetries) {
+      animation_wait_retries_(kAnimationWaitRetries),
+      bubble_(NULL) {
   AddRef();  // Balanced in Close().
 
   extensions::ExtensionActionManager* extension_action_manager =
