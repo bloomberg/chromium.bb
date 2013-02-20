@@ -376,8 +376,12 @@ ProfileIOData::ProfileParams::~ProfileParams() {}
 
 ProfileIOData::ProfileIOData(bool is_incognito)
     : initialized_(false),
+#if defined(ENABLE_NOTIFICATIONS)
+      notification_service_(NULL),
+#endif
       ALLOW_THIS_IN_INITIALIZER_LIST(
           resource_context_(new ResourceContext(this))),
+      load_time_stats_(NULL),
       initialized_on_UI_thread_(false),
       is_incognito_(is_incognito) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
