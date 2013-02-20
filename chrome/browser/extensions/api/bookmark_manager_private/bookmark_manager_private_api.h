@@ -191,13 +191,14 @@ class BookmarkManagerPrivateCanEditFunction
   virtual bool RunImpl() OVERRIDE;
 };
 
-class RecordLaunchBookmarkFunction : public extensions::BookmarksFunction {
+class BookmarkManagerPrivateRecordLaunchFunction
+    : public extensions::BookmarksFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bookmarkManagerPrivate.recordLaunch",
                              BOOKMARKMANAGERPRIVATE_RECORDLAUNCH)
 
  protected:
-  virtual ~RecordLaunchBookmarkFunction() {}
+  virtual ~BookmarkManagerPrivateRecordLaunchFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;

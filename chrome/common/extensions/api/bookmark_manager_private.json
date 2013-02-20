@@ -220,6 +220,13 @@
             {"name": "result", "type": "boolean"}
           ]}
         ]
+      },
+      {
+        "name": "recordLaunch",
+        "type": "function",
+        "description": "",
+        "nodoc": "true",
+        "parameters": []
       }
     ],
     "events": [

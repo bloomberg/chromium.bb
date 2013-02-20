@@ -507,7 +507,7 @@ bool BookmarkManagerPrivateCanEditFunction::RunImpl() {
   return true;
 }
 
-bool RecordLaunchBookmarkFunction::RunImpl() {
+bool BookmarkManagerPrivateRecordLaunchFunction::RunImpl() {
   bookmark_utils::RecordBookmarkLaunch(bookmark_utils::LAUNCH_MANAGER);
   return true;
 }
