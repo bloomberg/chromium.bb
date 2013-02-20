@@ -171,6 +171,9 @@ int drm_intel_gem_bo_get_reloc_count(drm_intel_bo *bo);
 void drm_intel_gem_bo_clear_relocs(drm_intel_bo *bo, int start);
 void drm_intel_gem_bo_start_gtt_access(drm_intel_bo *bo, int write_enable);
 
+void
+drm_intel_bufmgr_gem_set_aub_filename(drm_intel_bufmgr *bufmgr,
+				      const char *filename);
 void drm_intel_bufmgr_gem_set_aub_dump(drm_intel_bufmgr *bufmgr, int enable);
 void drm_intel_gem_bo_aub_dump_bmp(drm_intel_bo *bo,
 				   int x1, int y1, int width, int height,
