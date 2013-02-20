@@ -1267,6 +1267,17 @@ void HWNDMessageHandler::OnCommand(UINT notification_code,
 LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
   use_layered_buffer_ = !!(window_ex_style() & WS_EX_LAYERED);
 
+#if defined(USE_AURA)
+  if (window_ex_style() &  WS_EX_COMPOSITED) {
+    if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+      // This is part of the magic to emulate layered windows with Aura
+      // see the explanation elsewere when we set WS_EX_COMPOSITED style.
+      MARGINS margins = {-1,-1,-1,-1};
+      DwmExtendFrameIntoClientArea(hwnd(), &margins);
+    }
+  }
+#endif
+
   fullscreen_handler_->set_hwnd(hwnd());
 
   // Attempt to detect screen readers by sending an event with our custom id.

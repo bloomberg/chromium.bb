@@ -4,6 +4,8 @@
 
 #include "ui/views/widget/widget_hwnd_utils.h"
 
+#include <dwmapi.h>
+
 #include "base/win/windows_version.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -39,11 +41,31 @@ void CalculateWindowStylesFromInitParams(
     *ex_style |= WS_EX_TOPMOST;
   if (params.mirror_origin_in_rtl)
     *ex_style |= l10n_util::GetExtendedTooltipStyles();
-#if !defined(USE_AURA)
-  // TODO(beng): layered windows with aura. http://crbug.com/154069
-  if (params.transparent)
+  // Layered windows do not work with Aura. They are basically incompatible
+  // with Direct3D surfaces. Officially, it should be impossible to achieve
+  // per-pixel alpha compositing with the desktop and 3D acceleration but it
+  // has been discovered that since Vista There is a secret handshake between
+  // user32 and the DMW. If things are set up just right DMW gets out of the
+  // way; it does not create a backbuffer and simply blends our D3D surface
+  // and the desktop background. The handshake is as follows:
+  // 1- Use D3D9Ex to create device/swapchain, etc. You need D3DFMT_A8R8G8B8.
+  // 2- The window must have WS_EX_COMPOSITED in the extended style.
+  // 3- The window must have WS_POPUP in its style.
+  // 4- The windows must not have WM_SIZEBOX  in its style.
+  // 5- When the window is created but before it is presented, call
+  //    DwmExtendFrameIntoClientArea passing -1 as the margins.
+  if (params.transparent) {
+#if defined(USE_AURA)
+    if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+      BOOL enabled = FALSE;
+      HRESULT hr = DwmIsCompositionEnabled(&enabled);
+      if (SUCCEEDED(hr) && (enabled == TRUE))
+        *ex_style |= WS_EX_COMPOSITED;
+    }
+#else
     *ex_style |= WS_EX_LAYERED;
 #endif
+  }
   if (params.has_dropshadow) {
     *class_style |= (base::win::GetVersion() < base::win::VERSION_XP) ?
         0 : CS_DROPSHADOW;
