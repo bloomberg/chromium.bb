@@ -367,19 +367,14 @@ void TileManager::ManageTiles() {
     mts.gpu_memmgr_stats_bin = BinFromTilePriority(tile->combined_priority());
 
     DidTileTreeBinChange(tile,
-                         BinFromTilePriority(tile->priority(ACTIVE_TREE)),
-                         ACTIVE_TREE);
+        bin_map[BinFromTilePriority(tile->priority(ACTIVE_TREE))],
+        ACTIVE_TREE);
     DidTileTreeBinChange(tile,
-                         BinFromTilePriority(tile->priority(PENDING_TREE)),
-                         PENDING_TREE);
+        bin_map[BinFromTilePriority(tile->priority(PENDING_TREE))],
+        PENDING_TREE);
 
     for (int i = 0; i < NUM_BIN_PRIORITIES; ++i)
       mts.bin[i] = bin_map[mts.bin[i]];
-
-    DidTileTreeBinChange(tile, bin_map[mts.tree_bin[ACTIVE_TREE]],
-                         ACTIVE_TREE);
-    DidTileTreeBinChange(tile, bin_map[mts.tree_bin[PENDING_TREE]],
-                         PENDING_TREE);
 
     if (tile->priority(ACTIVE_TREE).is_live ||
         tile->priority(PENDING_TREE).is_live ||
