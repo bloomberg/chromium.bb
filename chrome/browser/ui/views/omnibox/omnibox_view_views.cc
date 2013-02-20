@@ -180,10 +180,8 @@ gfx::Font OmniboxViewViews::GetFont() {
 }
 
 int OmniboxViewViews::WidthOfTextAfterCursor() {
-  ui::Range sel;
-  GetSelectedRange(&sel);
   // See comments in LocationBarView::Layout as to why this uses -1.
-  const int start = std::max(0, static_cast<int>(sel.end()) - 1);
+  const int start = std::max(0, static_cast<int>(GetSelectedRange().end()) - 1);
   // TODO: add horizontal margin.
   return font().GetStringWidth(text().substr(start));
 }
@@ -326,7 +324,7 @@ void OmniboxViewViews::OnFocus() {
 
 void OmniboxViewViews::OnBlur() {
   // Save the selection to restore on tab-to-focus.
-  GetSelectedRange(&saved_temporary_selection_);
+  saved_temporary_selection_ = GetSelectedRange();
 
   views::Textfield::OnBlur();
   gfx::NativeView native_view = NULL;
@@ -363,8 +361,7 @@ void OmniboxViewViews::SaveStateToTab(content::WebContents* tab) {
 
   // NOTE: GetStateForTabSwitch may affect GetSelection, so order is important.
   OmniboxEditModel::State state = model()->GetStateForTabSwitch();
-  gfx::SelectionModel selection;
-  GetSelectionModel(&selection);
+  const gfx::SelectionModel selection = GetSelectionModel();
   tab->SetUserData(OmniboxState::kKey, new OmniboxState(state, selection));
 }
 
@@ -435,17 +432,9 @@ bool OmniboxViewViews::DeleteAtEndPressed() {
 
 void OmniboxViewViews::GetSelectionBounds(string16::size_type* start,
                                           string16::size_type* end) const {
-  ui::Range range;
-  GetSelectedRange(&range);
-  if (range.is_empty()) {
-    // Omnibox API expects that selection bounds is at cursor position
-    // if there is no selection.
-    *start = GetCursorPosition();
-    *end = GetCursorPosition();
-  } else {
-    *start = static_cast<size_t>(range.end());
-    *end = static_cast<size_t>(range.start());
-  }
+  const ui::Range range = GetSelectedRange();
+  *start = static_cast<size_t>(range.start());
+  *end = static_cast<size_t>(range.end());
 }
 
 void OmniboxViewViews::SelectAll(bool reversed) {
@@ -461,8 +450,7 @@ void OmniboxViewViews::UpdatePopup() {
 
   // Prevent inline autocomplete when the caret isn't at the end of the text,
   // and during IME composition editing.
-  ui::Range sel;
-  GetSelectedRange(&sel);
+  const ui::Range sel = GetSelectedRange();
   model()->StartAutocomplete(
       !sel.is_empty(),
       sel.GetMax() < text().length() || IsIMEComposing());
@@ -487,7 +475,7 @@ void OmniboxViewViews::OnTemporaryTextMaybeChanged(
     bool save_original_selection,
     bool notify_text_changed) {
   if (save_original_selection)
-    GetSelectedRange(&saved_temporary_selection_);
+    saved_temporary_selection_ = GetSelectedRange();
 
   SetWindowTextAndCaretPos(display_text, display_text.length(), false,
                            notify_text_changed);
@@ -512,16 +500,14 @@ void OmniboxViewViews::OnRevertTemporaryText() {
 void OmniboxViewViews::OnBeforePossibleChange() {
   // Record our state.
   text_before_change_ = text();
-  GetSelectedRange(&sel_before_change_);
+  sel_before_change_ = GetSelectedRange();
   ime_composing_before_change_ = IsIMEComposing();
 }
 
 bool OmniboxViewViews::OnAfterPossibleChange() {
-  ui::Range new_sel;
-  GetSelectedRange(&new_sel);
-
   // See if the text or selection have changed since OnBeforePossibleChange().
   const string16 new_text = text();
+  const ui::Range new_sel = GetSelectedRange();
   const bool text_changed = (new_text != text_before_change_) ||
       (ime_composing_before_change_ != IsIMEComposing());
   const bool selection_differs =
@@ -650,15 +636,13 @@ void OmniboxViewViews::OnAfterUserAction(views::Textfield* sender) {
 }
 
 void OmniboxViewViews::OnAfterCutOrCopy() {
-  ui::Range selection_range;
-  GetSelectedRange(&selection_range);
   ui::Clipboard* cb = ui::Clipboard::GetForCurrentThread();
   string16 selected_text;
   cb->ReadText(ui::Clipboard::BUFFER_STANDARD, &selected_text);
   GURL url;
   bool write_url;
-  model()->AdjustTextForCopy(selection_range.GetMin(), selected_text == text(),
-      &selected_text, &url, &write_url);
+  model()->AdjustTextForCopy(GetSelectedRange().GetMin(), IsSelectAll(),
+                             &selected_text, &url, &write_url);
   if (write_url) {
     DoCopyURL(url, selected_text);
   } else {
@@ -669,13 +653,11 @@ void OmniboxViewViews::OnAfterCutOrCopy() {
 }
 
 void OmniboxViewViews::OnWriteDragData(ui::OSExchangeData* data) {
-  ui::Range selection_range;
-  GetSelectedRange(&selection_range);
   string16 selected_text = GetSelectedText();
   GURL url;
   bool write_url;
-  model()->AdjustTextForCopy(selection_range.start(), selected_text == text(),
-      &selected_text, &url, &write_url);
+  model()->AdjustTextForCopy(GetSelectedRange().GetMin(), IsSelectAll(),
+                             &selected_text, &url, &write_url);
   data->SetString(selected_text);
   if (write_url)
     data->SetURL(url, selected_text);

@@ -294,17 +294,14 @@ int NativeTextfieldViews::OnPerformDrop(const ui::DropTargetEvent& event) {
   event.data().GetString(&text);
   text = GetTextForDisplay(text);
 
-  // We'll delete the current selection for a drag and drop within this view.
-  bool move = initiating_drag_ && !event.IsControlDown() &&
-              event.source_operations() & ui::DragDropTypes::DRAG_MOVE;
+  // Delete the current selection for a drag and drop within this view.
+  const bool move = initiating_drag_ && !event.IsControlDown() &&
+                    event.source_operations() & ui::DragDropTypes::DRAG_MOVE;
   if (move) {
-    gfx::SelectionModel selected;
-    model_->GetSelectionModel(&selected);
     // Adjust the drop destination if it is on or after the current selection.
-    size_t drop_destination = drop_destination_model.caret_pos();
-    drop_destination -=
-        selected.selection().Intersect(ui::Range(0, drop_destination)).length();
-    model_->DeleteSelectionAndInsertTextAt(text, drop_destination);
+    size_t drop = drop_destination_model.caret_pos();
+    drop -= GetSelectedRange().Intersect(ui::Range(0, drop)).length();
+    model_->DeleteSelectionAndInsertTextAt(text, drop);
   } else {
     model_->MoveCursorTo(drop_destination_model);
     // Drop always inserts text even if the textfield is not in insert mode.
@@ -608,8 +605,8 @@ bool NativeTextfieldViews::IsIMEComposing() const {
   return model_->HasCompositionText();
 }
 
-void NativeTextfieldViews::GetSelectedRange(ui::Range* range) const {
-  *range = GetRenderText()->selection();
+ui::Range NativeTextfieldViews::GetSelectedRange() const {
+  return GetRenderText()->selection();
 }
 
 void NativeTextfieldViews::SelectRange(const ui::Range& range) {
@@ -620,8 +617,8 @@ void NativeTextfieldViews::SelectRange(const ui::Range& range) {
       textfield_, ui::AccessibilityTypes::EVENT_SELECTION_CHANGED, true);
 }
 
-void NativeTextfieldViews::GetSelectionModel(gfx::SelectionModel* sel) const {
-  model_->GetSelectionModel(sel);
+gfx::SelectionModel NativeTextfieldViews::GetSelectionModel() const {
+  return GetRenderText()->selection_model();
 }
 
 void NativeTextfieldViews::SelectSelectionModel(
@@ -953,7 +950,7 @@ bool NativeTextfieldViews::GetCompositionTextRange(ui::Range* range) {
 bool NativeTextfieldViews::GetSelectionRange(ui::Range* range) {
   if (!ImeEditingAllowed())
     return false;
-  GetSelectedRange(range);
+  *range = GetSelectedRange();
   return true;
 }
 

@@ -356,11 +356,10 @@ bool NativeTextfieldWin::IsIMEComposing() const {
   return composition_size > 0;
 }
 
-void NativeTextfieldWin::GetSelectedRange(ui::Range* range) const {
+ui::Range NativeTextfieldWin::GetSelectedRange() const {
   // TODO(tommi): Implement.
   NOTIMPLEMENTED();
-  range->set_start(0);
-  range->set_end(0);
+  return ui::Range();
 }
 
 void NativeTextfieldWin::SelectRange(const ui::Range& range) {
@@ -368,9 +367,10 @@ void NativeTextfieldWin::SelectRange(const ui::Range& range) {
   NOTIMPLEMENTED();
 }
 
-void NativeTextfieldWin::GetSelectionModel(gfx::SelectionModel* sel) const {
+gfx::SelectionModel NativeTextfieldWin::GetSelectionModel() const {
   // TODO(tommi): Implement.
   NOTIMPLEMENTED();
+  return gfx::SelectionModel();
 }
 
 void NativeTextfieldWin::SelectSelectionModel(const gfx::SelectionModel& sel) {

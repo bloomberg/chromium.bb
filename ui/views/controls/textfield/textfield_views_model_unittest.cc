@@ -279,17 +279,14 @@ TEST_F(TextfieldViewsModelTest, Selection) {
   // SelectAll(false) selects towards the end.
   model.SelectAll(false);
   EXPECT_STR_EQ("HELLO", model.GetSelectedText());
-  gfx::SelectionModel sel;
-  model.GetSelectionModel(&sel);
-  EXPECT_EQ(ui::Range(0, 5), sel.selection());
+  EXPECT_EQ(ui::Range(0, 5), model.render_text()->selection());
 
   // SelectAll(true) selects towards the beginning.
   model.SelectAll(true);
   EXPECT_STR_EQ("HELLO", model.GetSelectedText());
-  model.GetSelectionModel(&sel);
-  EXPECT_EQ(ui::Range(5, 0), sel.selection());
+  EXPECT_EQ(ui::Range(5, 0), model.render_text()->selection());
 
-  // Select and move cursor
+  // Select and move cursor.
   model.SelectRange(ui::Range(1U, 3U));
   EXPECT_STR_EQ("EL", model.GetSelectedText());
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_LEFT, false);
@@ -298,7 +295,7 @@ TEST_F(TextfieldViewsModelTest, Selection) {
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT, false);
   EXPECT_EQ(3U, model.GetCursorPosition());
 
-  // Select all and move cursor
+  // Select all and move cursor.
   model.SelectAll(false);
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_LEFT, false);
   EXPECT_EQ(0U, model.GetCursorPosition());
@@ -744,47 +741,46 @@ TEST_F(TextfieldViewsModelTest, SelectRangeTest) {
   EXPECT_TRUE(model.GetSelectedText().empty());
 }
 
-TEST_F(TextfieldViewsModelTest, SelectionModelTest) {
+TEST_F(TextfieldViewsModelTest, SelectionTest) {
   TextfieldViewsModel model(NULL);
   model.Append(ASCIIToUTF16("HELLO WORLD"));
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_LEFT, false);
-  gfx::SelectionModel sel;
-  model.GetSelectionModel(&sel);
-  EXPECT_EQ(ui::Range(0), sel.selection());
+  ui::Range selection = model.render_text()->selection();
+  EXPECT_EQ(ui::Range(0), selection);
 
   model.MoveCursor(gfx::WORD_BREAK, gfx::CURSOR_RIGHT, true);
-  model.GetSelectionModel(&sel);
-  EXPECT_EQ(ui::Range(0, 5), sel.selection());
+  selection = model.render_text()->selection();
+  EXPECT_EQ(ui::Range(0, 5), selection);
 
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_LEFT, true);
-  model.GetSelectionModel(&sel);
-  EXPECT_EQ(ui::Range(0, 4), sel.selection());
+  selection = model.render_text()->selection();
+  EXPECT_EQ(ui::Range(0, 4), selection);
 
   model.MoveCursor(gfx::WORD_BREAK, gfx::CURSOR_LEFT, true);
-  model.GetSelectionModel(&sel);
-  EXPECT_EQ(ui::Range(0), sel.selection());
+  selection = model.render_text()->selection();
+  EXPECT_EQ(ui::Range(0), selection);
 
   // now from the end.
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, false);
-  model.GetSelectionModel(&sel);
-  EXPECT_EQ(ui::Range(11), sel.selection());
+  selection = model.render_text()->selection();
+  EXPECT_EQ(ui::Range(11), selection);
 
   model.MoveCursor(gfx::WORD_BREAK, gfx::CURSOR_LEFT, true);
-  model.GetSelectionModel(&sel);
-  EXPECT_EQ(ui::Range(11, 6), sel.selection());
+  selection = model.render_text()->selection();
+  EXPECT_EQ(ui::Range(11, 6), selection);
 
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT, true);
-  model.GetSelectionModel(&sel);
-  EXPECT_EQ(ui::Range(11, 7), sel.selection());
+  selection = model.render_text()->selection();
+  EXPECT_EQ(ui::Range(11, 7), selection);
 
   model.MoveCursor(gfx::WORD_BREAK, gfx::CURSOR_RIGHT, true);
-  model.GetSelectionModel(&sel);
-  EXPECT_EQ(ui::Range(11), sel.selection());
+  selection = model.render_text()->selection();
+  EXPECT_EQ(ui::Range(11), selection);
 
   // Select All
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_LEFT, true);
-  model.GetSelectionModel(&sel);
-  EXPECT_EQ(ui::Range(11, 0), sel.selection());
+  selection = model.render_text()->selection();
+  EXPECT_EQ(ui::Range(11, 0), selection);
 }
 
 TEST_F(TextfieldViewsModelTest, SelectSelectionModelTest) {
@@ -847,10 +843,7 @@ TEST_F(TextfieldViewsModelTest, CompositionTextTest) {
   EXPECT_EQ(ui::Range(5, 8), range);
   // composition text
   EXPECT_STR_EQ("456", model.GetTextFromRange(ui::Range(3, 6)));
-
-  gfx::SelectionModel selection;
-  model.GetSelectionModel(&selection);
-  EXPECT_EQ(ui::Range(8, 8), selection.selection());
+  EXPECT_EQ(ui::Range(8, 8), model.render_text()->selection());
 
   EXPECT_FALSE(composition_text_confirmed_or_cleared_);
   model.CancelCompositionText();
@@ -1323,10 +1316,7 @@ TEST_F(TextfieldViewsModelTest, UndoRedo_CursorTest) {
 }
 
 void RunInsertReplaceTest(TextfieldViewsModel& model) {
-  gfx::SelectionModel sel;
-  model.GetSelectionModel(&sel);
-  bool reverse = sel.selection().is_reversed();
-
+  const bool reverse = model.render_text()->selection().is_reversed();
   model.InsertChar('1');
   model.InsertChar('2');
   model.InsertChar('3');
@@ -1349,10 +1339,7 @@ void RunInsertReplaceTest(TextfieldViewsModel& model) {
 }
 
 void RunOverwriteReplaceTest(TextfieldViewsModel& model) {
-  gfx::SelectionModel sel;
-  model.GetSelectionModel(&sel);
-  bool reverse = sel.selection().is_reversed();
-
+  const bool reverse = model.render_text()->selection().is_reversed();
   model.ReplaceChar('1');
   model.ReplaceChar('2');
   model.ReplaceChar('3');

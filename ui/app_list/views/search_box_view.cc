@@ -95,10 +95,7 @@ void SearchBoxView::UpdateModel() {
   // Temporarily remove from observer to ignore notifications caused by us.
   model_->RemoveObserver(this);
   model_->SetText(search_box_->text());
-
-  gfx::SelectionModel sel;
-  search_box_->GetSelectionModel(&sel);
-  model_->SetSelectionModel(sel);
+  model_->SetSelectionModel(search_box_->GetSelectionModel());
   model_->AddObserver(this);
 }
 

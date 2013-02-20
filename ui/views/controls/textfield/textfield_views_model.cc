@@ -418,10 +418,6 @@ void TextfieldViewsModel::SelectRange(const ui::Range& range) {
   render_text_->SelectRange(range);
 }
 
-void TextfieldViewsModel::GetSelectionModel(gfx::SelectionModel* sel) const {
-  *sel = render_text_->selection_model();
-}
-
 void TextfieldViewsModel::SelectSelectionModel(const gfx::SelectionModel& sel) {
   if (HasCompositionText())
     ConfirmCompositionText();

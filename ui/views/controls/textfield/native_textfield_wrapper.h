@@ -7,18 +7,18 @@
 
 #include "base/string16.h"
 #include "base/i18n/rtl.h"
+#include "ui/base/range/range.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/selection_model.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/views_export.h"
 
 namespace gfx {
 class Insets;
-class SelectionModel;
 }  // namespace gfx
 
 namespace ui {
 class KeyEvent;
-class Range;
 class TextInputClient;
 }  // namespace ui
 
@@ -110,13 +110,13 @@ class VIEWS_EXPORT NativeTextfieldWrapper {
   virtual bool IsIMEComposing() const = 0;
 
   // Gets the selected range.
-  virtual void GetSelectedRange(ui::Range* range) const = 0;
+  virtual ui::Range GetSelectedRange() const = 0;
 
   // Selects the text given by |range|.
   virtual void SelectRange(const ui::Range& range) = 0;
 
   // Gets the selection model.
-  virtual void GetSelectionModel(gfx::SelectionModel* sel) const = 0;
+  virtual gfx::SelectionModel GetSelectionModel() const = 0;
 
   // Selects the text given by |sel|.
   virtual void SelectSelectionModel(const gfx::SelectionModel& sel) = 0;

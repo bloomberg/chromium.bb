@@ -146,8 +146,6 @@ class VIEWS_EXPORT TextfieldViewsModel {
   // therefore the cursor position becomes the end position.
   void SelectRange(const ui::Range& range);
 
-  void GetSelectionModel(gfx::SelectionModel* sel) const;
-
   // The current composition text will be confirmed.
   // render_text_'s selection model is set to |sel|.
   void SelectSelectionModel(const gfx::SelectionModel& sel);

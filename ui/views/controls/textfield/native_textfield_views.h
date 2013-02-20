@@ -126,9 +126,9 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
   virtual View* GetView() OVERRIDE;
   virtual gfx::NativeView GetTestingHandle() const OVERRIDE;
   virtual bool IsIMEComposing() const OVERRIDE;
-  virtual void GetSelectedRange(ui::Range* range) const OVERRIDE;
+  virtual ui::Range GetSelectedRange() const OVERRIDE;
   virtual void SelectRange(const ui::Range& range) OVERRIDE;
-  virtual void GetSelectionModel(gfx::SelectionModel* sel) const OVERRIDE;
+  virtual gfx::SelectionModel GetSelectionModel() const OVERRIDE;
   virtual void SelectSelectionModel(const gfx::SelectionModel& sel) OVERRIDE;
   virtual size_t GetCursorPosition() const OVERRIDE;
   virtual bool GetCursorEnabled() const OVERRIDE;

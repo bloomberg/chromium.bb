@@ -188,7 +188,8 @@ class VIEWS_EXPORT Textfield : public View {
 
   // Gets the selected range. This is views-implementation only and
   // has to be called after the wrapper is created.
-  void GetSelectedRange(ui::Range* range) const;
+  // TODO(msw): Return a const reference when NativeTextfieldWin is gone.
+  ui::Range GetSelectedRange() const;
 
   // Selects the text given by |range|. This is views-implementation only and
   // has to be called after the wrapper is created.
@@ -196,7 +197,8 @@ class VIEWS_EXPORT Textfield : public View {
 
   // Gets the selection model. This is views-implementation only and
   // has to be called after the wrapper is created.
-  void GetSelectionModel(gfx::SelectionModel* sel) const;
+  // TODO(msw): Return a const reference when NativeTextfieldWin is gone.
+  gfx::SelectionModel GetSelectionModel() const;
 
   // Selects the text given by |sel|. This is views-implementation only and
   // has to be called after the wrapper is created.
