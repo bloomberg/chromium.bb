@@ -157,7 +157,8 @@
               'cflags': ['-Wno-multichar'],
             }],
             ['OS=="win"', {
-              'msvs_disabled_warnings': [ 4800 ],
+              # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+              'msvs_disabled_warnings': [ 4800, 4267 ],
               'link_settings': {
                 'libraries': [
                   '-lcomctl32.lib',
@@ -170,8 +171,6 @@
               'dependencies': [
                 '<(DEPTH)/breakpad/breakpad.gyp:breakpad_handler',
               ],
-              # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-              'msvs_disabled_warnings': [ 4267, ],
             }, {  # else: OS!=win
               'sources/': [
                 ['exclude', '_webtheme(control|engine)\.(cc|h)$'],
