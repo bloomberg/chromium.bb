@@ -198,9 +198,9 @@ class InterfaceTest(cros_test_lib.MoxTestCase):
   def assertDieSysExit(self, *args, **kwargs):
     self.assertRaises(cros_build_lib.DieSystemExit, *args, **kwargs)
 
-  # Let this test run for a max of 3s; if it takes longer, then it's
+  # Let this test run for a max of 30s; if it takes longer, then it's
   # likely that there is an exec loop in the pathways.
-  @cros_build_lib.TimeoutDecorator(3)
+  @cros_build_lib.TimeoutDecorator(30)
   def testDepotTools(self):
     """Test that the entry point used by depot_tools works."""
     path = os.path.join(constants.SOURCE_ROOT, 'chromite', 'buildbot',
