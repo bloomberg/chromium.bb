@@ -5,9 +5,9 @@
 /* This file holds CSS that should be shared, in theory, by all user-visible
  * chrome:// pages. */
 
-@import url("chrome://resources/css/widgets.css");
+@import url("widgets.css");
 <if expr="pp_ifdef('chromeos')">
-  @import url("chrome://resources/css/chromeos/ui_account_tweaks.css");
+  @import url("chromeos/ui_account_tweaks.css");
 </if>
 
 /* Prevent CSS from overriding the hidden property. */
