@@ -2400,14 +2400,13 @@ class VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000xn
 //    Vm: Vm(3:0),
 //    actual: Actual_VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_cccc1100010otttttttt101100m1mmmm_case_1,
 //    arch: ['VFPv2', 'AdvSIMD'],
-//    baseline: MoveDoubleVfpRegisterOp,
+//    baseline: VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_cccc1100010otttttttt101100m1mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    defs: {Rt, Rt2}
 //         if to_arm_registers
 //         else {},
 //    fields: [cond(31:28), op(20), Rt2(19:16), Rt(15:12), M(5), Vm(3:0)],
-//    generated_baseline: VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_cccc1100010otttttttt101100m1mmmm_case_0,
 //    m: M:Vm,
 //    op: op(20),
 //    pattern: cccc1100010otttttttt101100m1mmmm,
@@ -2444,14 +2443,13 @@ class VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_cc
 //    Vm: Vm(3:0),
 //    actual: Actual_VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_cccc1100010otttttttt101000m1mmmm_case_1,
 //    arch: ['VFPv2'],
-//    baseline: MoveDoubleVfpRegisterOp,
+//    baseline: VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_cccc1100010otttttttt101000m1mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    defs: {Rt, Rt2}
 //         if to_arm_registers
 //         else {},
 //    fields: [cond(31:28), op(20), Rt2(19:16), Rt(15:12), M(5), Vm(3:0)],
-//    generated_baseline: VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_cccc1100010otttttttt101000m1mmmm_case_0,
 //    m: Vm:M,
 //    op: op(20),
 //    pattern: cccc1100010otttttttt101000m1mmmm,

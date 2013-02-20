@@ -1056,30 +1056,6 @@ class NamedVMOVN_111100111d11ss10dddd001000m0mmmm_case_0
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedVMOVN_111100111d11ss10dddd001000m0mmmm_case_0);
 };
 
-class NamedVMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_cccc1100010otttttttt101100m1mmmm_case_0
-    : public NamedClassDecoder {
- public:
-  NamedVMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_cccc1100010otttttttt101100m1mmmm_case_0()
-    : NamedClassDecoder(decoder_, "VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_cccc1100010otttttttt101100m1mmmm_case_0")
-  {}
-
- private:
-  nacl_arm_dec::VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_cccc1100010otttttttt101100m1mmmm_case_0 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_cccc1100010otttttttt101100m1mmmm_case_0);
-};
-
-class NamedVMOV_between_two_ARM_core_registers_and_two_single_precision_registers_cccc1100010otttttttt101000m1mmmm_case_0
-    : public NamedClassDecoder {
- public:
-  NamedVMOV_between_two_ARM_core_registers_and_two_single_precision_registers_cccc1100010otttttttt101000m1mmmm_case_0()
-    : NamedClassDecoder(decoder_, "VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_cccc1100010otttttttt101000m1mmmm_case_0")
-  {}
-
- private:
-  nacl_arm_dec::VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_cccc1100010otttttttt101000m1mmmm_case_0 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVMOV_between_two_ARM_core_registers_and_two_single_precision_registers_cccc1100010otttttttt101000m1mmmm_case_0);
-};
-
 class NamedVMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0
     : public NamedClassDecoder {
  public:
