@@ -647,7 +647,6 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
   MetricsLog::set_version_extension(version_extension);
 #endif  // defined(OS_WIN)
 
-#if !defined(OS_ANDROID)
   // Initialize FieldTrialList to support FieldTrials that use one-time
   // randomization.
   MetricsService* metrics = browser_process_->metrics_service();
@@ -686,7 +685,6 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
   // Even though base::Bind does AddRef and Release, the object will not be
   // deleted after the Task is executed.
   field_trial_synchronizer_ = new FieldTrialSynchronizer();
-#endif  // !defined(OS_ANDROID)
 }
 
 // ChromeBrowserMainParts: |SetupMetricsAndFieldTrials()| related --------------

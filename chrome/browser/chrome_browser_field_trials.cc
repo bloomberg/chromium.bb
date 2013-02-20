@@ -136,12 +136,18 @@ ChromeBrowserFieldTrials::~ChromeBrowserFieldTrials() {
 
 void ChromeBrowserFieldTrials::SetupFieldTrials(
     const base::Time& install_time) {
+  SetupUniformityFieldTrials(install_time);
+#if !defined(OS_ANDROID)
+  SetupDesktopFieldTrials();
+#endif  // defined(OS_ANDROID)
+}
+
+void ChromeBrowserFieldTrials::SetupDesktopFieldTrials() {
   prerender::ConfigurePrefetchAndPrerender(parsed_command_line_);
   SpdyFieldTrial();
   WarmConnectionFieldTrial();
   AutoLaunchChromeFieldTrial();
   gpu_util::InitializeCompositingFieldTrial();
-  SetupUniformityFieldTrials(install_time);
   AutocompleteFieldTrial::ActivateStaticTrials();
   DisableNewTabFieldTrialIfNecesssary();
   SetUpInfiniteCacheFieldTrial();

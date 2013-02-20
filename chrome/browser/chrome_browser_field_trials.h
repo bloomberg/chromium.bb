@@ -15,7 +15,7 @@ class ChromeBrowserFieldTrials {
   explicit ChromeBrowserFieldTrials(const CommandLine& command_line);
   ~ChromeBrowserFieldTrials();
 
-  // Add an invocation of your field trial init function to this method.
+  // Called by the browser main sequence to set up Field Trials for this client.
   // |install_time| is the time this browser was installed (or the last time
   // prefs was reset). |install_time| is used by trials that are only created
   // for new installs of the browser.
@@ -26,6 +26,11 @@ class ChromeBrowserFieldTrials {
                            WarmConnectionFieldTrial_WarmestSocket);
   FRIEND_TEST_ALL_PREFIXES(BrowserMainTest, WarmConnectionFieldTrial_Random);
   FRIEND_TEST_ALL_PREFIXES(BrowserMainTest, WarmConnectionFieldTrial_Invalid);
+
+  // Sets up common desktop-only field trials.
+  // Add an invocation of your field trial init function to this method, or to
+  // SetupFieldTrials if it is for all platforms.
+  void SetupDesktopFieldTrials();
 
   // A/B test for spdy when --use-spdy not set.
   void SpdyFieldTrial();
