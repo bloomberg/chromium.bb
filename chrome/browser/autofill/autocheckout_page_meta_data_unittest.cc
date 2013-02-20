@@ -23,26 +23,32 @@ TEST(AutocheckoutPageMetaDataTest, AutofillableFlow) {
   AutocheckoutPageMetaData page_meta_data;
   EXPECT_FALSE(page_meta_data.IsStartOfAutofillableFlow());
   EXPECT_FALSE(page_meta_data.IsInAutofillableFlow());
+  EXPECT_FALSE(page_meta_data.IsEndOfAutofillableFlow());
 
   SetPageDetails(&page_meta_data, -1, 0);
   EXPECT_FALSE(page_meta_data.IsStartOfAutofillableFlow());
   EXPECT_FALSE(page_meta_data.IsInAutofillableFlow());
+  EXPECT_FALSE(page_meta_data.IsEndOfAutofillableFlow());
 
   SetPageDetails(&page_meta_data, 0, 0);
   EXPECT_FALSE(page_meta_data.IsStartOfAutofillableFlow());
   EXPECT_FALSE(page_meta_data.IsInAutofillableFlow());
+  EXPECT_FALSE(page_meta_data.IsEndOfAutofillableFlow());
 
   SetPageDetails(&page_meta_data, 0, 1);
   EXPECT_TRUE(page_meta_data.IsStartOfAutofillableFlow());
   EXPECT_TRUE(page_meta_data.IsInAutofillableFlow());
+  EXPECT_TRUE(page_meta_data.IsEndOfAutofillableFlow());
 
   SetPageDetails(&page_meta_data, 1, 2);
   EXPECT_FALSE(page_meta_data.IsStartOfAutofillableFlow());
   EXPECT_TRUE(page_meta_data.IsInAutofillableFlow());
+  EXPECT_TRUE(page_meta_data.IsEndOfAutofillableFlow());
 
   SetPageDetails(&page_meta_data, 2, 2);
   EXPECT_FALSE(page_meta_data.IsStartOfAutofillableFlow());
   EXPECT_FALSE(page_meta_data.IsInAutofillableFlow());
+  EXPECT_FALSE(page_meta_data.IsEndOfAutofillableFlow());
 }
 
 }  // namespace autofill

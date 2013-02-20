@@ -579,6 +579,8 @@ std::string RetrievalMethodToString(
       return "CSS_SELECTOR";
     case autofill::WebElementDescriptor::ID:
       return "ID";
+    case autofill::WebElementDescriptor::NONE:
+      return "NONE";
   }
   NOTREACHED();
   return "UNKNOWN";
@@ -648,6 +650,8 @@ bool ClickElement(const WebDocument& document,
     case WebElementDescriptor::ID:
       element = document.getElementById(web_descriptor);
       break;
+    case WebElementDescriptor::NONE:
+      return true;
   }
 
   if (element.isNull()) {

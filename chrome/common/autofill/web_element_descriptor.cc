@@ -5,5 +5,5 @@
 #include "chrome/common/autofill/web_element_descriptor.h"
 
 autofill::WebElementDescriptor::WebElementDescriptor()
-  : retrieval_method(CSS_SELECTOR) {}
+  : retrieval_method(NONE) {}
 

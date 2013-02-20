@@ -36,7 +36,9 @@ class TabAutofillManagerDelegate
   virtual InfoBarService* GetInfoBarService() OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;
   virtual ProfileSyncServiceBase* GetProfileSyncService() OVERRIDE;
+  virtual void HideRequestAutocompleteDialog() OVERRIDE;
   virtual bool IsSavingPasswordsEnabled() const OVERRIDE;
+  virtual void OnAutocheckoutError() OVERRIDE;
   virtual void ShowAutofillSettings() OVERRIDE;
   virtual void ShowPasswordGenerationBubble(
       const gfx::Rect& bounds,
@@ -64,9 +66,6 @@ class TabAutofillManagerDelegate
  private:
   explicit TabAutofillManagerDelegate(content::WebContents* web_contents);
   friend class content::WebContentsUserData<TabAutofillManagerDelegate>;
-
-  // Hides the associated request autocomplete dialog (if it exists).
-  void HideRequestAutocompleteDialog();
 
   content::WebContents* const web_contents_;
   AutofillDialogControllerImpl* autofill_dialog_controller_;  // weak.

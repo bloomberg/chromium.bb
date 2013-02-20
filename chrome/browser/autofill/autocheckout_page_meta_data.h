@@ -23,6 +23,10 @@ struct AutocheckoutPageMetaData {
   // multipage Autofill flow.
   bool IsInAutofillableFlow() const;
 
+  // Returns true if the Autofill server says that the current page is the end
+  // of a multipage Autofill flow.
+  bool IsEndOfAutofillableFlow() const;
+
   // Page number of the multipage Autofill flow this form belongs to
   // (zero-indexed). If this form doesn't belong to any autofill flow, it is set
   // to -1.

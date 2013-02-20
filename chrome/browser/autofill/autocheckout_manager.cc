@@ -15,6 +15,7 @@
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller_impl.h"
+#include "chrome/common/autofill/autocheckout_status.h"
 #include "chrome/common/autofill/web_element_descriptor.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/form_data.h"
@@ -73,6 +74,7 @@ namespace autofill {
 AutocheckoutManager::AutocheckoutManager(AutofillManager* autofill_manager)
     : autofill_manager_(autofill_manager),
       autocheckout_bubble_shown_(false),
+      in_autocheckout_flow_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
@@ -80,9 +82,8 @@ AutocheckoutManager::~AutocheckoutManager() {
 }
 
 void AutocheckoutManager::FillForms() {
-  // |page_meta_data_| should have been set by OnLoadedPageMetaData and this
-  // function should only be called if page has a proceed element.
-  DCHECK(page_meta_data_ && page_meta_data_->proceed_element_descriptor);
+  // |page_meta_data_| should have been set by OnLoadedPageMetaData.
+  DCHECK(page_meta_data_);
 
   // Fill the forms on the page with data given by user.
   std::vector<FormData> filled_forms;
@@ -111,12 +112,60 @@ void AutocheckoutManager::FillForms() {
   host->Send(new AutofillMsg_FillFormsAndClick(
       host->GetRoutingID(),
       filled_forms,
-      *page_meta_data_->proceed_element_descriptor));
+      page_meta_data_->IsEndOfAutofillableFlow() ?
+          WebElementDescriptor() :
+          *page_meta_data_->proceed_element_descriptor));
 }
 
 void AutocheckoutManager::OnLoadedPageMetaData(
     scoped_ptr<AutocheckoutPageMetaData> page_meta_data) {
+  scoped_ptr<AutocheckoutPageMetaData> old_meta_data =
+      page_meta_data_.Pass();
   page_meta_data_ = page_meta_data.Pass();
+
+  // On the first page of an Autocheckout flow, when this function is called the
+  // user won't have opted into the flow yet.
+  if (!in_autocheckout_flow_)
+    return;
+
+  // Missing Autofill server results.
+  if (!page_meta_data_) {
+    in_autocheckout_flow_ = false;
+  } else if (page_meta_data_->IsStartOfAutofillableFlow()) {
+    // Not possible unless Autocheckout failed to proceed.
+    in_autocheckout_flow_ = false;
+  } else if (!page_meta_data_->IsInAutofillableFlow()) {
+    // Missing Autocheckout meta data in the Autofill server results.
+    in_autocheckout_flow_ = false;
+  } else if (!page_meta_data_->proceed_element_descriptor &&
+             !page_meta_data_->IsEndOfAutofillableFlow()) {
+    // Missing Autocheckout proceed data in meta data in the Autofill server
+    // results.
+    in_autocheckout_flow_ = false;
+  } else if (page_meta_data_->current_page_number <=
+                 old_meta_data->current_page_number) {
+    // Not possible unless Autocheckout failed to proceed.
+    in_autocheckout_flow_ = false;
+  }
+
+  // Encountered an error during the Autocheckout flow.
+  if (!in_autocheckout_flow_) {
+    // TODO(ahutter): SendAutocheckoutStatus of the error.
+    autofill_manager_->delegate()->OnAutocheckoutError();
+    return;
+  }
+
+  // Add 1.0 since page numbers are 0-indexed.
+  autofill_manager_->delegate()->UpdateProgressBar(
+      (1.0 + page_meta_data_->current_page_number) /
+          page_meta_data_->total_pages);
+  FillForms();
+  // If the current page is the last page in the flow, close the dialog.
+  if (page_meta_data_->IsEndOfAutofillableFlow()) {
+    // TODO(ahutter): SendAutocheckoutStatus of SUCCESS.
+    autofill_manager_->delegate()->HideRequestAutocompleteDialog();
+    in_autocheckout_flow_ = false;
+  }
 }
 
 void AutocheckoutManager::OnFormsSeen() {
@@ -167,6 +216,8 @@ void AutocheckoutManager::ReturnAutocheckoutData(const FormStructure* result) {
   if (!result)
     return;
 
+  in_autocheckout_flow_ = true;
+
   profile_.reset(new AutofillProfile());
   credit_card_.reset(new CreditCard());
 
@@ -186,10 +237,11 @@ void AutocheckoutManager::ReturnAutocheckoutData(const FormStructure* result) {
     }
   }
 
+  // Add 1.0 since page numbers are 0-indexed.
+  autofill_manager_->delegate()->UpdateProgressBar(
+      (1.0 + page_meta_data_->current_page_number) /
+          page_meta_data_->total_pages);
   FillForms();
-
-  // TODO(ramankk): Manage lifecycle of autofill dialog controller correctly.
-  autofill_manager_->RequestAutocompleteDialogClosed();
 }
 
 void AutocheckoutManager::SetValue(const AutofillField& field,

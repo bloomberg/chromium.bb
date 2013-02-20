@@ -70,6 +70,13 @@ class AutocheckoutManager {
   // Whether or not the current page is part of a multipage Autofill flow.
   bool IsInAutofillableFlow() const;
 
+ protected:
+  // Exposed for testing.
+  bool in_autocheckout_flow() const { return in_autocheckout_flow_; }
+
+  // Exposed for testing.
+  bool autocheckout_bubble_shown() const { return autocheckout_bubble_shown_; }
+
  private:
   // Callback called from AutofillDialogController on filling up the UI form.
   void ReturnAutocheckoutData(const FormStructure* result);
@@ -96,6 +103,9 @@ class AutocheckoutManager {
   // the current forms. Ensures the Autocheckout bubble is only shown to a
   // user once per pageview.
   bool autocheckout_bubble_shown_;
+
+  // Whether or not the user is in an Autocheckout flow.
+  bool in_autocheckout_flow_;
 
   base::WeakPtrFactory<AutocheckoutManager> weak_ptr_factory_;
 

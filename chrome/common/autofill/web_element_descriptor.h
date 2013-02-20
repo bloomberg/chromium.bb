@@ -14,6 +14,7 @@ struct WebElementDescriptor {
   enum RetrievalMethod {
     CSS_SELECTOR,
     ID,
+    NONE,
   };
 
   WebElementDescriptor();

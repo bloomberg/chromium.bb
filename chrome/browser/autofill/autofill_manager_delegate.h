@@ -74,9 +74,16 @@ class AutofillManagerDelegate {
   // be NULL if sync is not enabled.
   virtual ProfileSyncServiceBase* GetProfileSyncService() = 0;
 
+  // Hides the associated request autocomplete dialog (if it exists).
+  virtual void HideRequestAutocompleteDialog() = 0;
+
   // Returns true if saving passwords is currently enabled for the
   // delegate.
   virtual bool IsSavingPasswordsEnabled() const = 0;
+
+  // Causes an error explaining that Autocheckout has failed to be displayed to
+  // the user.
+  virtual void OnAutocheckoutError() = 0;
 
   // Causes the Autofill settings UI to be shown.
   virtual void ShowAutofillSettings() = 0;

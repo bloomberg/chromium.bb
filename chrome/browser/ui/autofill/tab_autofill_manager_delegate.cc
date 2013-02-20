@@ -66,6 +66,11 @@ bool TabAutofillManagerDelegate::IsSavingPasswordsEnabled() const {
   return PasswordManager::FromWebContents(web_contents_)->IsSavingEnabled();
 }
 
+void TabAutofillManagerDelegate::OnAutocheckoutError() {
+  // TODO(ahutter): Notify |autofill_dialog_controller_| of the error once it
+  // stays open for Autocheckout.
+}
+
 void TabAutofillManagerDelegate::ShowAutofillSettings() {
 #if defined(OS_ANDROID)
   NOTIMPLEMENTED();
@@ -120,7 +125,8 @@ void TabAutofillManagerDelegate::RequestAutocompleteDialogClosed() {
 }
 
 void TabAutofillManagerDelegate::UpdateProgressBar(double value) {
-  autofill_dialog_controller_->UpdateProgressBar(value);
+  // TODO(ahutter): Notify |autofill_dialog_controller_| of the change once it
+  // stays open for Autocheckout.
 }
 
 void TabAutofillManagerDelegate::HideRequestAutocompleteDialog() {

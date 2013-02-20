@@ -20,4 +20,8 @@ bool AutocheckoutPageMetaData::IsInAutofillableFlow() const {
   return current_page_number >= 0 && current_page_number < total_pages;
 }
 
+bool AutocheckoutPageMetaData::IsEndOfAutofillableFlow() const {
+  return total_pages > 0 && current_page_number == total_pages - 1;
+}
+
 }  // namesapce autofill
