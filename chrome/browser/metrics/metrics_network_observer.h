@@ -47,7 +47,7 @@ class MetricsNetworkObserver
   void ProbeWifiPHYLayerProtocol();
   // Callback from the blocking pool with the result of
   // net::GetWifiPHYLayerProtocol.
-  void OnWifiPHYLayerProtocolResult(net::WifiPHYLayerProtocol* mode);
+  void OnWifiPHYLayerProtocolResult(net::WifiPHYLayerProtocol mode);
 
   base::WeakPtrFactory<MetricsNetworkObserver> weak_ptr_factory_;
 

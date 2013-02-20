@@ -5,16 +5,10 @@
 #include "chrome/browser/metrics/metrics_network_observer.h"
 
 #include "base/compiler_specific.h"
+#include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/browser_thread.h"
 
-namespace {
-
-void ReadWifiPHYLayerProtocol(net::WifiPHYLayerProtocol* phy_layer_protocol) {
-  *phy_layer_protocol = net::GetWifiPHYLayerProtocol();
-}
-
-}  // namespace
 
 MetricsNetworkObserver::MetricsNetworkObserver()
     : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
@@ -37,7 +31,7 @@ void MetricsNetworkObserver::Reset() {
 }
 
 void MetricsNetworkObserver::OnConnectionTypeChanged(
-      net::NetworkChangeNotifier::ConnectionType type) {
+    net::NetworkChangeNotifier::ConnectionType type) {
   if (type == net::NetworkChangeNotifier::CONNECTION_NONE)
     return;
   if (type != connection_type_ &&
@@ -93,22 +87,20 @@ MetricsNetworkObserver::wifi_phy_layer_protocol() const {
 }
 
 void MetricsNetworkObserver::ProbeWifiPHYLayerProtocol() {
-  net::WifiPHYLayerProtocol* phy_layer_protocol = new net::WifiPHYLayerProtocol;
-  content::BrowserThread::GetBlockingPool()->PostTaskAndReply(
+  PostTaskAndReplyWithResult(
+      content::BrowserThread::GetBlockingPool(),
       FROM_HERE,
-      base::Bind(&ReadWifiPHYLayerProtocol,
-                 base::Unretained(phy_layer_protocol)),
+      base::Bind(&net::GetWifiPHYLayerProtocol),
       base::Bind(&MetricsNetworkObserver::OnWifiPHYLayerProtocolResult,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Owned(phy_layer_protocol)));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void MetricsNetworkObserver::OnWifiPHYLayerProtocolResult(
-    net::WifiPHYLayerProtocol* mode) {
+    net::WifiPHYLayerProtocol mode) {
   if (wifi_phy_layer_protocol_ != net::WIFI_PHY_LAYER_PROTOCOL_UNKNOWN &&
-      *mode != wifi_phy_layer_protocol_) {
+      mode != wifi_phy_layer_protocol_) {
     wifi_phy_layer_protocol_is_ambiguous_ = true;
   }
-  wifi_phy_layer_protocol_ = *mode;
+  wifi_phy_layer_protocol_ = mode;
 }
 
