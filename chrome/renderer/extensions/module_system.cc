@@ -305,8 +305,8 @@ v8::Handle<v8::Value> ModuleSystem::GetNative(const v8::Arguments& args) {
 
 v8::Handle<v8::String> ModuleSystem::WrapSource(v8::Handle<v8::String> source) {
   v8::HandleScope handle_scope;
-  v8::Handle<v8::String> left =
-      v8::String::New("(function(require, requireNative, exports) {");
+  v8::Handle<v8::String> left = v8::String::New(
+      "(function(require, requireNative, exports) {'use strict';");
   v8::Handle<v8::String> right = v8::String::New("\n})");
   return handle_scope.Close(
       v8::String::Concat(left, v8::String::Concat(source, right)));

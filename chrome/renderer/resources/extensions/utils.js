@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 function forEach(dict, f) {
-  for (key in dict) {
+  for (var key in dict) {
     if (dict.hasOwnProperty(key))
       f(key, dict[key]);
   }

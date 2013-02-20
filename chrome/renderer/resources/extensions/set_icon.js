@@ -85,7 +85,7 @@ function setIcon(details, callback, name, parameters, actionType) {
     if (typeof details.path == 'object') {
       details.imageData = {};
       var isEmpty = true;
-      function processIconSize(index) {
+      var processIconSize = function(index) {
         if (index == iconSizes.length) {
           delete details.path;
           if (isEmpty)

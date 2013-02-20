@@ -208,7 +208,7 @@
       return;
 
     var dispatchArgs = function(args) {
-      result = event.dispatch_(args, listenerIDs);
+      var result = event.dispatch_(args, listenerIDs);
       if (result)
         DCHECK(!result.validationErrors, result.validationErrors);
     };

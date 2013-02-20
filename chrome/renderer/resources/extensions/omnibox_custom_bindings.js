@@ -46,7 +46,7 @@ function parseOmniboxDescription(input) {
   };
 
   // Recursively walk the tree.
-  (function(node) {
+  function walk(node) {
     for (var i = 0, child; child = node.childNodes[i]; i++) {
       // Append text nodes to our description.
       if (child.nodeType == Node.TEXT_NODE) {
@@ -64,16 +64,17 @@ function parseOmniboxDescription(input) {
           'offset': result.description.length
         };
         result.descriptionStyles.push(style);
-        arguments.callee(child);
+        walk(child);
         style.length = result.description.length - style.offset;
         continue;
       }
 
       // Descend into all other nodes, even if they are unrecognized, for
       // forward compat.
-      arguments.callee(child);
+      walk(child);
     }
-  })(root);
+  };
+  walk(root);
 
   return result;
 }

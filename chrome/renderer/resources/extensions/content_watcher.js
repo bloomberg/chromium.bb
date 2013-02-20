@@ -6,7 +6,7 @@ var contentWatcherNative = requireNative("contentWatcherNative");
 
 // Returns the indices in |css_selectors| that match any element on the page.
 exports.FindMatchingSelectors = function(css_selectors) {
-  result = []
+  var result = []
   css_selectors.forEach(function(selector, index) {
     try {
       if (document.querySelector(selector) != null)

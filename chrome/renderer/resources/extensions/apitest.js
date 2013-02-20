@@ -200,10 +200,10 @@
     chrome.test.assertEq(expectedError, chrome.runtime.lastError.message);
   }
 
-  function safeFunctionApply(func, arguments) {
+  function safeFunctionApply(func, args) {
     try {
       if (func)
-        func.apply(null, arguments);
+        func.apply(null, args);
     } catch (e) {
       var msg = "uncaught exception " + e;
       chrome.test.fail(msg);

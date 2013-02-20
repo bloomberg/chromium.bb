@@ -108,7 +108,7 @@ TEST_F(ModuleSystemTest, TestNativesAreDisabledOutsideANativesEnabledScope) {
       "try {"
       "  assert = requireNative('assert');"
       "} catch (e) {"
-      "  caught = true;"
+      "  var caught = true;"
       "}"
       "if (assert) {"
       "  assert.AssertTrue(true);"
