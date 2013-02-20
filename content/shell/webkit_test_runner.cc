@@ -447,11 +447,13 @@ int WebKitTestRunner::layoutTestTimeout() {
 }
 
 void WebKitTestRunner::closeRemainingWindows() {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebKitTestRunner", "closeRemainingWindows"));
+  // We currently always close all remaining windows at the end of each test.
+  // TODO(jochen): Reuse the renderer across tests instead of closing all
+  // windows. http://crbug.com/171128
 }
 
 int WebKitTestRunner::navigationEntryCount() {
+  // TODO(jochen): implement this.
   return 0;
 }
 
