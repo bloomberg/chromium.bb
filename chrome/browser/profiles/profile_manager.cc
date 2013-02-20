@@ -47,7 +47,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #endif
@@ -1055,10 +1054,6 @@ bool ProfileManager::IsMultipleProfilesEnabled() {
 #endif
 #if defined(OS_CHROMEOS)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles))
-    return false;
-#endif
-#if defined(ENABLE_MANAGED_USERS)
-  if (ManagedMode::IsInManagedMode())
     return false;
 #endif
 

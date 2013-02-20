@@ -28,6 +28,11 @@
 #include "grit/generated_resources.h"
 #include "ui/webui/web_ui_util.h"
 
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_service_factory.h"
+#endif
+
 #if defined(ENABLE_SETTINGS_APP)
 #include "chrome/browser/ui/app_list/app_list_util.h"
 #include "content/public/browser/web_contents.h"
@@ -286,8 +291,15 @@ void ManageProfileHandler::SetProfileNameAndIcon(const ListValue* args) {
 
 void ManageProfileHandler::DeleteProfile(const ListValue* args) {
   DCHECK(args);
+#if defined(ENABLE_MANAGED_USERS)
   // This handler could have been called in managed mode, for example because
   // the user fiddled with the web inspector. Silently return in this case.
+  ManagedUserService* service =
+      ManagedUserServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
+  if (service->ProfileIsManaged())
+    return;
+#endif
+
   if (!ProfileManager::IsMultipleProfilesEnabled())
     return;
 

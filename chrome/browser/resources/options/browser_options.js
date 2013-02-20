@@ -194,6 +194,10 @@ cr.define('options', function() {
           if (selectedProfile)
             ManageProfileOverlay.showDeleteDialog(selectedProfile);
         };
+        if (loadTimeData.getBoolean('profileIsManaged')) {
+          $('profiles-create').disabled = true;
+          $('profiles-delete').disabled = true;
+        }
       }
 
       if (cr.isChromeOS) {
@@ -940,13 +944,15 @@ cr.define('options', function() {
       var selectedProfile = profilesList.selectedItem;
       var hasSelection = selectedProfile != null;
       var hasSingleProfile = profilesList.dataModel.length == 1;
+      var isManaged = loadTimeData.getBoolean('profileIsManaged');
       $('profiles-manage').disabled = !hasSelection ||
           !selectedProfile.isCurrentProfile;
       if (hasSelection && !selectedProfile.isCurrentProfile)
         $('profiles-manage').title = loadTimeData.getString('currentUserOnly');
       else
         $('profiles-manage').title = '';
-      $('profiles-delete').disabled = !hasSelection && !hasSingleProfile;
+      $('profiles-delete').disabled = isManaged ||
+                                      (!hasSelection && !hasSingleProfile);
       if (OptionsPage.isSettingsApp()) {
         $('profiles-app-list-switch').disabled = !hasSelection ||
             selectedProfile.isCurrentProfile;

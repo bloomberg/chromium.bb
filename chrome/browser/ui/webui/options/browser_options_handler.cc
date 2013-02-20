@@ -81,6 +81,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/webui/web_ui_util.h"
 
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_service_factory.h"
+#endif
+
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_handler.h"
 #include "chrome/browser/ui/webui/options/advanced_options_utils.h"
@@ -470,6 +475,12 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
 
   if (multiprofile_)
     values->Set("profilesInfo", GetProfilesInfoList().release());
+
+#if defined(ENABLE_MANAGED_USERS)
+  ManagedUserService* service =
+      ManagedUserServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
+  values->SetBoolean("profileIsManaged", service->ProfileIsManaged());
+#endif
 }
 
 void BrowserOptionsHandler::RegisterCloudPrintValues(DictionaryValue* values) {
@@ -1006,8 +1017,15 @@ void BrowserOptionsHandler::SendProfilesInfo() {
 }
 
 void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
+#if defined(ENABLE_MANAGED_USERS)
   // This handler could have been called in managed mode, for example because
   // the user fiddled with the web inspector. Silently return in this case.
+  ManagedUserService* service =
+      ManagedUserServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
+  if (service->ProfileIsManaged())
+    return;
+#endif
+
   if (!ProfileManager::IsMultipleProfilesEnabled())
     return;
 
