@@ -73,7 +73,7 @@ class PanelResizeBrowserTest : public BasePanelBrowserTest {
 };
 
 // http://crbug.com/175760; several panel tests failing regularly on mac.
-#if defined(OS_MAC)
+#if defined(OS_MACOSX)
 #define MAYBE_DockedPanelResizability DISABLED_DockedPanelResizability
 #else
 #define MAYBE_DockedPanelResizability DockedPanelResizability
@@ -197,7 +197,7 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, MAYBE_DockedPanelResizability) {
 }
 
 // http://crbug.com/175760; several panel tests failing regularly on mac.
-#if defined(OS_MAC)
+#if defined(OS_MACOSX)
 #define MAYBE_ResizeDetachedPanel DISABLED_ResizeDetachedPanel
 #else
 #define MAYBE_ResizeDetachedPanel ResizeDetachedPanel
@@ -270,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, MAYBE_ResizeDetachedPanel) {
 }
 
 // http://crbug.com/175760; several panel tests failing regularly on mac.
-#if defined(OS_MAC)
+#if defined(OS_MACOSX)
 #define MAYBE_ResizeDetachedPanelToClampSize \
   DISABLED_ResizeDetachedPanelToClampSize
 #else
@@ -323,7 +323,7 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest,
 }
 
 // http://crbug.com/175760; several panel tests failing regularly on mac.
-#if defined(OS_MAC)
+#if defined(OS_MACOSX)
 #define MAYBE_CloseDetachedPanelOnResize DISABLED_CloseDetachedPanelOnResize
 #else
 #define MAYBE_CloseDetachedPanelOnResize CloseDetachedPanelOnResize
@@ -393,7 +393,7 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest,
 }
 
 // http://crbug.com/175760; several panel tests failing regularly on mac.
-#if defined(OS_MAC)
+#if defined(OS_MACOSX)
 #define MAYBE_ResizeAndCancel DISABLED_ResizeAndCancel
 #else
 #define MAYBE_ResizeAndCancel ResizeAndCancel
@@ -444,7 +444,7 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, MAYBE_ResizeAndCancel) {
 }
 
 // http://crbug.com/175760; several panel tests failing regularly on mac.
-#if defined(OS_MAC)
+#if defined(OS_MACOSX)
 #define MAYBE_ResizeDetachedPanelToTop DISABLED_ResizeDetachedPanelToTop
 #else
 #define MAYBE_ResizeDetachedPanelToTop ResizeDetachedPanelToTop

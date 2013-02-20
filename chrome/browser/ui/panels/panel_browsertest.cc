@@ -1132,7 +1132,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DrawAttentionWhileMinimized) {
 }
 
 // http://crbug.com/175760; several panel tests failing regularly on mac.
-#if defined(OS_MAC)
+#if defined(OS_MACOSX)
 #define MAYBE_StopDrawingAttentionWhileMinimized \
   DISABLED_StopDrawingAttentionWhileMinimized
 #else
@@ -1331,7 +1331,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DrawAttentionResetOnClick) {
 }
 
 // http://crbug.com/175760; several panel tests failing regularly on mac.
-#if defined(OS_MAC)
+#if defined(OS_MACOSX)
 #define MAYBE_MinimizeImmediatelyAfterRestore \
   DISABLED_MinimizeImmediatelyAfterRestore
 #else
