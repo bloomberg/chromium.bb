@@ -1114,12 +1114,13 @@ void PrintThirdByteOfVEX(const MarkedInstruction& instruction,
 //  • one register can be embedded in a VEX prefix, too
 void PrintVEXOpcode(const MarkedInstruction& instruction) {
   const std::vector<std::string>& opcodes = instruction.opcodes();
-  bool c5_ok = (opcodes[0] == "0xc4") &&
-               ((opcodes[1] == "RXB.01") ||
-                (opcodes[1] == "RXB.00001")) &&
-               ((*opcodes[2].begin() == '0') ||
-                (*opcodes[2].begin() == 'x') ||
-                (*opcodes[2].begin() == 'X'));
+  bool c5_ok = opcodes[0] == "0xc4" &&
+               (opcodes[1] == "RXB.01" ||
+                opcodes[1] == "RXB.00001") &&
+               (*opcodes[2].begin() == '0' ||
+                *opcodes[2].begin() == 'x' ||
+                *opcodes[2].begin() == 'X' ||
+                (*opcodes[2].begin() == 'W' && !instruction.rex_w_required()));
   if (c5_ok) fprintf(out_file, "((");
   bool rex_b = instruction.rex_b();
   bool rex_x = instruction.rex_x();
