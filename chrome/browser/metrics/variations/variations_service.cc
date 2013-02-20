@@ -578,10 +578,18 @@ void VariationsService::CreateTrialFromStudy(const Study& study,
     if (experiment.name() != study.default_experiment_name())
       trial->AppendGroup(experiment.name(), experiment.probability_weight());
 
-    if (experiment.has_experiment_id()) {
+    if (experiment.has_google_web_experiment_id()) {
       const VariationID variation_id =
-          static_cast<VariationID>(experiment.experiment_id());
+          static_cast<VariationID>(experiment.google_web_experiment_id());
       AssociateGoogleVariationIDForce(GOOGLE_WEB_PROPERTIES,
+                                      study.name(),
+                                      experiment.name(),
+                                      variation_id);
+    }
+    if (experiment.has_google_update_experiment_id()) {
+      const VariationID variation_id =
+          static_cast<VariationID>(experiment.google_update_experiment_id());
+      AssociateGoogleVariationIDForce(GOOGLE_UPDATE_SERVICE,
                                       study.name(),
                                       experiment.name(),
                                       variation_id);
