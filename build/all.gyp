@@ -125,6 +125,13 @@
                 '../base/allocator/allocator.gyp:*',
               ],
             }],
+            # Don't enable dependencies that don't work on Win64.
+            ['target_arch!="x64"', {
+              'dependencies': [
+                # TODO(jschuh) Enable Win64 Memory Watcher. crbug.com/176877
+                '../tools/memory_watcher/memory_watcher.gyp:*',
+              ],
+            }],
           ],
           'dependencies': [
             '../chrome_frame/chrome_frame.gyp:*',
@@ -136,7 +143,6 @@
             '../third_party/bsdiff/bsdiff.gyp:*',
             '../third_party/bspatch/bspatch.gyp:*',
             '../third_party/gles2_book/gles2_book.gyp:*',
-            '../tools/memory_watcher/memory_watcher.gyp:*',
           ],
         }, {
           'dependencies': [
