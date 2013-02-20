@@ -158,10 +158,12 @@ static const char kDispatchUpOrDownKeyPressEventScript[] =
 // Takes one printf-style replaceable value: key_code.
 static const char kDispatchEscKeyPressEventScript[] =
     "if (window.chrome &&"
-    "    window.chrome.searchBox &&"
-    "    window.chrome.searchBox.onkeypress &&"
-    "    typeof window.chrome.searchBox.onkeypress == 'function') {"
-    "  window.chrome.searchBox.onkeypress({keyCode: %d});"
+    "    window.chrome.embeddedSearch &&"
+    "    window.chrome.embeddedSearch.searchBox &&"
+    "    window.chrome.embeddedSearch.searchBox.onkeypress &&"
+    "    typeof window.chrome.embeddedSearch.searchBox.onkeypress =="
+    "        'function') {"
+    "  window.chrome.embeddedSearch.searchBox.onkeypress({keyCode: %d});"
     "  true;"
     "}";
 
@@ -181,7 +183,7 @@ static const char kDispatchThemeChangeEventScript[] =
     "    window.chrome.embeddedSearch &&"
     "    window.chrome.embeddedSearch.newTabPage &&"
     "    window.chrome.embeddedSearch.newTabPage.onthemechange &&"
-    "    typeof window.chrome.embeddedSearch.searchBox.onthemechange =="
+    "    typeof window.chrome.embeddedSearch.newTabPage.onthemechange =="
     "        'function') {"
     "  window.chrome.embeddedSearch.newTabPage.onthemechange();"
     "  true;"
