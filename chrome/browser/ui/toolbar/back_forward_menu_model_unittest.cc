@@ -507,8 +507,10 @@ TEST_F(BackFwdMenuModelTest, EscapeLabel) {
 TEST_F(BackFwdMenuModelTest, FaviconLoadTest) {
   profile()->CreateHistoryService(true, false);
   profile()->CreateFaviconService();
+  Browser::CreateParams native_params(profile(),
+                                      chrome::HOST_DESKTOP_TYPE_NATIVE);
   scoped_ptr<Browser> browser(
-      chrome::CreateBrowserWithTestWindowForProfile(profile()));
+      chrome::CreateBrowserWithTestWindowForParams(&native_params));
   FaviconDelegate favicon_delegate;
 
   BackForwardMenuModel back_model(

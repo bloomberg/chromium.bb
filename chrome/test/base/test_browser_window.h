@@ -150,8 +150,7 @@ class TestBrowserWindow : public BrowserWindow {
 
 namespace chrome {
 
-// Helpers that handle the lifetime of TestBrowserWindow instances.
-Browser* CreateBrowserWithTestWindowForProfile(Profile* profile);
+// Helper that handle the lifetime of TestBrowserWindow instances.
 Browser* CreateBrowserWithTestWindowForParams(Browser::CreateParams* params);
 
 }  // namespace chrome

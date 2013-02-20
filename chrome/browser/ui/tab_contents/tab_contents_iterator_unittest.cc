@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list_impl.h"
 #include "chrome/browser/ui/host_desktop.h"
@@ -40,8 +41,10 @@ TEST_F(BrowserListTest, TabContentsIteratorVerifyCount) {
   EXPECT_EQ(0U, CountAllTabs());
 
   // Create more browsers/windows.
+  Browser::CreateParams native_params(profile(),
+                                      chrome::HOST_DESKTOP_TYPE_NATIVE);
   scoped_ptr<Browser> browser2(
-      chrome::CreateBrowserWithTestWindowForProfile(profile()));
+      chrome::CreateBrowserWithTestWindowForParams(&native_params));
   // Create browser 3 and 4 on the Ash desktop (the TabContentsIterator
   // shouldn't see the difference).
   Browser::CreateParams ash_params(profile(), chrome::HOST_DESKTOP_TYPE_ASH);
@@ -95,8 +98,10 @@ TEST_F(BrowserListTest, TabContentsIteratorVerifyBrowser) {
                     chrome::HOST_DESKTOP_TYPE_NATIVE)->size());
 
   // Create more browsers/windows.
+  Browser::CreateParams native_params(profile(),
+                                      chrome::HOST_DESKTOP_TYPE_NATIVE);
   scoped_ptr<Browser> browser2(
-      chrome::CreateBrowserWithTestWindowForProfile(profile()));
+      chrome::CreateBrowserWithTestWindowForParams(&native_params));
   // Create browser 3 on the Ash desktop (the TabContentsIterator shouldn't see
   // the difference).
   Browser::CreateParams ash_params(profile(), chrome::HOST_DESKTOP_TYPE_ASH);

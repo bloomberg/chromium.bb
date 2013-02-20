@@ -472,8 +472,10 @@ TEST_F(WindowSizerTestWithBrowser, PlaceNewWindows) {
   scoped_ptr<TestingProfile> profile(new TestingProfile());
   // Creating a popup handler here to make sure it does not interfere with the
   // existing windows.
+  Browser::CreateParams native_params(profile.get(),
+                                      chrome::HOST_DESKTOP_TYPE_NATIVE);
   scoped_ptr<Browser> browser(
-      chrome::CreateBrowserWithTestWindowForProfile(profile.get()));
+      chrome::CreateBrowserWithTestWindowForParams(&native_params));
 
   // Creating a popup handler here to make sure it does not interfere with the
   // existing windows.

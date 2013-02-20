@@ -197,8 +197,10 @@ TEST_F(ProfileMenuControllerTest, SetActiveAndRemove) {
   ASSERT_EQ(7, [menu numberOfItems]);
 
   // Create a browser and "show" it.
+  Browser::CreateParams profile2_params(profile2,
+                                        chrome::HOST_DESKTOP_TYPE_NATIVE);
   scoped_ptr<Browser> p2_browser(
-      chrome::CreateBrowserWithTestWindowForProfile(profile2));
+      chrome::CreateBrowserWithTestWindowForParams(&profile2_params));
   BrowserList::SetLastActive(p2_browser.get());
   VerifyProfileNamedIsActive(@"Profile 2", __LINE__);
 
@@ -207,8 +209,10 @@ TEST_F(ProfileMenuControllerTest, SetActiveAndRemove) {
   VerifyProfileNamedIsActive(@"Profile 2", __LINE__);
 
   // Open a new browser and make sure it takes effect.
+  Browser::CreateParams profile3_params(profile3,
+                                        chrome::HOST_DESKTOP_TYPE_NATIVE);
   scoped_ptr<Browser> p3_browser(
-      chrome::CreateBrowserWithTestWindowForProfile(profile3));
+      chrome::CreateBrowserWithTestWindowForParams(&profile3_params));
   BrowserList::SetLastActive(p3_browser.get());
   VerifyProfileNamedIsActive(@"Profile 3", __LINE__);
 

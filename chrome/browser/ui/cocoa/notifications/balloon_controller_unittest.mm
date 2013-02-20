@@ -70,7 +70,10 @@ class BalloonControllerTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
     CocoaTest::BootstrapCocoa();
     profile()->CreateRequestContext();
-    browser_.reset(chrome::CreateBrowserWithTestWindowForProfile(profile()));
+    Browser::CreateParams native_params(profile(),
+                                        chrome::HOST_DESKTOP_TYPE_NATIVE);
+    browser_.reset(
+        chrome::CreateBrowserWithTestWindowForParams(&native_params));
     collection_.reset(new MockBalloonCollection());
   }
 

@@ -117,8 +117,10 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     profile_->BlockUntilBookmarkModelLoaded();
     profile_->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, true);
 
+    Browser::CreateParams native_params(profile_.get(),
+                                        chrome::HOST_DESKTOP_TYPE_NATIVE);
     browser_.reset(
-        chrome::CreateBrowserWithTestWindowForProfile(profile_.get()));
+        chrome::CreateBrowserWithTestWindowForParams(&native_params));
 
     model_ = BookmarkModelFactory::GetForProfile(profile_.get());
     model_->ClearStore();
