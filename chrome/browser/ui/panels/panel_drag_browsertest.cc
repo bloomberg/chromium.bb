@@ -1486,7 +1486,13 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_AttachWithSqueeze) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DragDetachedPanelToTop) {
+// http://crbug.com/175760; several panel tests failing regularly on mac.
+#if defined(OS_MACOSX)
+#define MAYBE_DragDetachedPanelToTop DISABLED_DragDetachedPanelToTop
+#else
+#define MAYBE_DragDetachedPanelToTop DragDetachedPanelToTop
+#endif
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_DragDetachedPanelToTop) {
   // Setup the test areas to have top-aligned bar excluded from work area.
   const gfx::Rect primary_screen_area(0, 0, 800, 600);
   const gfx::Rect work_area(0, 10, 800, 590);
