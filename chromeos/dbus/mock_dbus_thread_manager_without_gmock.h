@@ -36,7 +36,8 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
 
   virtual void AddObserver(DBusThreadManagerObserver* observer) OVERRIDE;
   virtual void RemoveObserver(DBusThreadManagerObserver* observer) OVERRIDE;
-  virtual void InitIBusBus(const std::string& ibus_address) OVERRIDE;
+  virtual void InitIBusBus(const std::string& ibus_address,
+                           const base::Closure& closure) OVERRIDE;
   virtual dbus::Bus* GetSystemBus() OVERRIDE;
   virtual dbus::Bus* GetIBusBus() OVERRIDE;
 

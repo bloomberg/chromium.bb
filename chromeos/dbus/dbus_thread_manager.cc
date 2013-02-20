@@ -162,13 +162,16 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   }
 
   // DBusThreadManager override.
-  virtual void InitIBusBus(const std::string &ibus_address) OVERRIDE {
+  virtual void InitIBusBus(
+      const std::string &ibus_address,
+      const base::Closure& on_disconnected_callback) OVERRIDE {
     DCHECK(!ibus_bus_);
     dbus::Bus::Options ibus_bus_options;
     ibus_bus_options.bus_type = dbus::Bus::CUSTOM_ADDRESS;
     ibus_bus_options.address = ibus_address;
     ibus_bus_options.connection_type = dbus::Bus::PRIVATE;
     ibus_bus_options.dbus_task_runner = dbus_thread_->message_loop_proxy();
+    ibus_bus_options.disconnected_callback = on_disconnected_callback;
     ibus_bus_ = new dbus::Bus(ibus_bus_options);
     ibus_address_ = ibus_address;
     VLOG(1) << "Connected to ibus-daemon: " << ibus_address;

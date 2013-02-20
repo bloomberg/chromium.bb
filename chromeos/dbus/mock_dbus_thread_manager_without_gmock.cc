@@ -38,7 +38,8 @@ void MockDBusThreadManagerWithoutGMock::RemoveObserver(
 }
 
 void MockDBusThreadManagerWithoutGMock::InitIBusBus(
-    const std::string& ibus_address) {
+    const std::string& ibus_address,
+    const base::Closure& closure) {
   // Non-null bus address is used to ensure the connection to ibus-daemon.
   ibus_bus_ = reinterpret_cast<dbus::Bus*>(0xdeadbeef);
 }

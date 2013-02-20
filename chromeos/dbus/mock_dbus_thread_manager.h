@@ -55,7 +55,8 @@ class MockDBusThreadManager : public DBusThreadManager {
 
   void AddObserver(DBusThreadManagerObserver* observer) OVERRIDE;
   void RemoveObserver(DBusThreadManagerObserver* observer) OVERRIDE;
-  MOCK_METHOD1(InitIBusBus, void(const std::string& ibus_address));
+  MOCK_METHOD2(InitIBusBus, void(const std::string& ibus_address,
+                                 const base::Closure& closure));
   MOCK_METHOD0(GetSystemBus, dbus::Bus*(void));
   MOCK_METHOD0(GetIBusBus, dbus::Bus*(void));
   MOCK_METHOD0(GetBluetoothAdapterClient, BluetoothAdapterClient*(void));

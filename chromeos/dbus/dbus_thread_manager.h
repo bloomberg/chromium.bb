@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
@@ -105,9 +106,12 @@ class CHROMEOS_EXPORT DBusThreadManager {
   virtual void RemoveObserver(DBusThreadManagerObserver* observer) = 0;
 
   // Creates new IBusBus instance to communicate with ibus-daemon with specified
-  // ibus address. Must be called before using ibus related clients.
+  // ibus address. |on_disconnected_callback| will be called when the connection
+  // with ibus-daemon is disconnected. Must be called before using ibus related
+  // clients.
   // TODO(nona): Support shutdown to enable dynamical ibus-daemon shutdown.
-  virtual void InitIBusBus(const std::string &ibus_address) = 0;
+  virtual void InitIBusBus(const std::string& ibus_address,
+                           const base::Closure& on_disconnected_callback) = 0;
 
   // Returns various D-Bus bus instances, owned by DBusThreadManager.
   virtual dbus::Bus* GetSystemBus() = 0;

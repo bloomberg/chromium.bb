@@ -483,16 +483,13 @@ void IBusControllerImpl::LaunchIBusDaemon(const std::string& ibus_address) {
                          " --address=%s",
                          kIBusDaemonPath,
                          ibus_address.c_str());
-  if (!LaunchProcess(ibus_daemon_command_line,
-                     &process_handle_,
-                     reinterpret_cast<GChildWatchFunc>(OnIBusDaemonExit))) {
+  if (!LaunchProcess(ibus_daemon_command_line, &process_handle_)) {
     DVLOG(1) << "Failed to launch " << ibus_daemon_command_line;
   }
 }
 
 bool IBusControllerImpl::LaunchProcess(const std::string& command_line,
-                                       base::ProcessHandle* process_handle,
-                                       GChildWatchFunc watch_func) {
+                                       base::ProcessHandle* process_handle) {
   std::vector<std::string> argv;
   base::ProcessHandle handle = base::kNullProcessHandle;
 
@@ -503,14 +500,8 @@ bool IBusControllerImpl::LaunchProcess(const std::string& command_line,
     return false;
   }
 
-  // g_child_watch_add is necessary to prevent the process from becoming a
-  // zombie.
-  // TODO(yusukes): port g_child_watch_add to base/process_utils_posix.cc.
-  const base::ProcessId pid = base::GetProcId(handle);
-  g_child_watch_add(pid, watch_func, this);
-
   *process_handle = handle;
-  DVLOG(1) << command_line << "is started. PID=" << pid;
+
   return true;
 }
 
@@ -545,7 +536,11 @@ void IBusControllerImpl::IBusDaemonInitializationDone(
     // Stop() or OnIBusDaemonExit() has already been called.
     return;
   }
-  chromeos::DBusThreadManager::Get()->InitIBusBus(ibus_address);
+  chromeos::DBusThreadManager::Get()->InitIBusBus(
+      ibus_address,
+      base::Bind(&IBusControllerImpl::OnIBusDaemonDisconnected,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::GetProcId(process_handle_)));
   ibus_daemon_status_ = IBUS_DAEMON_RUNNING;
 
   ui::InputMethodIBus* input_method_ibus = GetInputMethod();
@@ -567,15 +562,15 @@ void IBusControllerImpl::IBusDaemonInitializationDone(
   VLOG(1) << "The ibus-daemon initialization is done.";
 }
 
-// static
-void IBusControllerImpl::OnIBusDaemonExit(GPid pid,
-                                          gint status,
-                                          IBusControllerImpl* controller) {
-  if (controller->process_handle_ != base::kNullProcessHandle) {
-    if (base::GetProcId(controller->process_handle_) == pid) {
+void IBusControllerImpl::OnIBusDaemonDisconnected(base::ProcessId pid) {
+  if (!chromeos::DBusThreadManager::Get())
+    return;  // Expected disconnection at shutting down. do nothing.
+
+  if (process_handle_ != base::kNullProcessHandle) {
+    if (base::GetProcId(process_handle_) == pid) {
       // ibus-daemon crashed.
       // TODO(nona): Shutdown ibus-bus connection.
-      controller->process_handle_ = base::kNullProcessHandle;
+      process_handle_ = base::kNullProcessHandle;
     } else {
       // This condition is as follows.
       // 1. Called Stop (process_handle_ becomes null)
@@ -587,13 +582,13 @@ void IBusControllerImpl::OnIBusDaemonExit(GPid pid,
     }
   }
 
-  const IBusDaemonStatus on_exit_state = controller->ibus_daemon_status_;
-  controller->ibus_daemon_status_ = IBUS_DAEMON_STOP;
-  ui::InputMethodIBus* input_method_ibus = controller->GetInputMethod();
+  const IBusDaemonStatus on_exit_state = ibus_daemon_status_;
+  ibus_daemon_status_ = IBUS_DAEMON_STOP;
+  ui::InputMethodIBus* input_method_ibus = GetInputMethod();
   DCHECK(input_method_ibus);
   input_method_ibus->OnDisconnected();
 
-  FOR_EACH_OBSERVER(Observer, controller->observers_, OnDisconnected());
+  FOR_EACH_OBSERVER(Observer, observers_, OnDisconnected());
 
   if (on_exit_state == IBUS_DAEMON_SHUTTING_DOWN) {
     // Normal exitting, so do nothing.
@@ -601,7 +596,7 @@ void IBusControllerImpl::OnIBusDaemonExit(GPid pid,
   }
 
   LOG(ERROR) << "The ibus-daemon crashed. Re-launching...";
-  controller->StartIBusDaemon();
+  StartIBusDaemon();
 }
 
 // static

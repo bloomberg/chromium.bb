@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_IBUS_CONTROLLER_IMPL_H_
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_IBUS_CONTROLLER_IMPL_H_
 
-#include <gio/gio.h>  // GAsyncResult and related types.
-
 #include <string>
 #include <vector>
 
@@ -82,11 +80,9 @@ class IBusControllerImpl : public IBusControllerBase,
   // Launches an input method procsess specified by the given command
   // line. On success, returns true and stores the process handle in
   // |process_handle|. Otherwise, returns false, and the contents of
-  // |process_handle| is untouched. |watch_func| will be called when the
-  // process terminates.
+  // |process_handle| is untouched.
   bool LaunchProcess(const std::string& command_line,
-                     base::ProcessHandle* process_handle,
-                     GChildWatchFunc watch_func);
+                     base::ProcessHandle* process_handle);
 
   // Returns pointer to InputMethod object.
   ui::InputMethodIBus* GetInputMethod();
@@ -99,9 +95,7 @@ class IBusControllerImpl : public IBusControllerBase,
   void OnIBusConfigClientInitialized();
 
   // Called when the input method process is shut down.
-  static void OnIBusDaemonExit(GPid pid,
-                               gint status,
-                               IBusControllerImpl* controller);
+  void OnIBusDaemonDisconnected(base::ProcessId pid);
 
   // The current ibus_daemon address. This value is assigned at the launching
   // ibus-daemon and used in bus connection initialization.
