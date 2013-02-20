@@ -376,12 +376,20 @@ gfx::Point TouchSelectionControllerImpl::GetSelectionHandle2Position() {
   return selection_handle_2_->GetScreenPosition();
 }
 
+gfx::Point TouchSelectionControllerImpl::GetCursorHandlePosition() {
+  return cursor_handle_->GetScreenPosition();
+}
+
 bool TouchSelectionControllerImpl::IsSelectionHandle1Visible() {
   return selection_handle_1_->visible();
 }
 
 bool TouchSelectionControllerImpl::IsSelectionHandle2Visible() {
   return selection_handle_2_->visible();
+}
+
+bool TouchSelectionControllerImpl::IsCursorHandleVisible() {
+  return cursor_handle_->visible();
 }
 
 ViewsTouchSelectionControllerFactory::ViewsTouchSelectionControllerFactory() {

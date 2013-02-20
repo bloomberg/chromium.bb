@@ -678,6 +678,11 @@
         'run_all_unittests.cc',
       ],
       'conditions': [
+        ['chromeos==1', {
+          'sources': [
+            'touchui/touch_selection_controller_impl_unittest.cc',
+          ],
+        }],
         ['OS=="win"', {
           'link_settings': {
             'libraries': [

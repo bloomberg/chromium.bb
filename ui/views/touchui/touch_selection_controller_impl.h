@@ -71,8 +71,10 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   // Convenience methods for testing.
   gfx::Point GetSelectionHandle1Position();
   gfx::Point GetSelectionHandle2Position();
+  gfx::Point GetCursorHandlePosition();
   bool IsSelectionHandle1Visible();
   bool IsSelectionHandle2Visible();
+  bool IsCursorHandleVisible();
 
   ui::TouchEditable* client_view_;
   Widget* client_widget_;
