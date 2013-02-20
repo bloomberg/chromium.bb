@@ -2,7 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""List of known-incompatibly-licensed directories for Android WebView.
+"""List of directories which are known issues for Android WebView.
+
+There are a number of directories in the Chromium tree which should be removed
+when merging into Android. Some are for licensing reasons; others are to ensure
+that the build inside the Android tree does not accidentally include the wrong
+headers.
 
 This is not used by the webview_licenses tool itself; it is effectively a
 "cache" of the output of webview_licenses.GetIncompatibleDirectories() for the
@@ -25,8 +30,8 @@ KNOWN_ISSUES = [
 ]
 
 KNOWN_INCOMPATIBLE = {
-    # Incompatible code in the main chromium repository.
     '.': [
+        # Incompatibly licensed code from the main chromium src/ directory.
         'base/third_party/xdg_mime',
         'breakpad',
         'chrome/installer/mac/third_party/xz',
@@ -42,10 +47,25 @@ KNOWN_INCOMPATIBLE = {
         'third_party/webdriver',
         'third_party/wtl',
         'tools/telemetry/third_party/websocket-client',
+
+        # Code we don't want to build/include by accident from the main chromium
+        # src/ directory.
+        'third_party/expat/files/lib',
+        'third_party/libjpeg/*.[ch]',
     ],
-    # Incompatible code in ICU.
     'third_party/icu': [
+        # Incompatible code from ICU's repository.
         'source/data/brkitr',
+
+        # Code we don't want to build/include by accident from ICU's repository.
+        'android',
+        'build',
+        'linux',
+        'mac',
+        'patches',
+        'public',
+        'source',
+        'windows',
     ],
 }
 
