@@ -253,7 +253,7 @@ Browser* TabScrubber::GetActiveBrowser() {
 void TabScrubber::FinishScrub(bool activate) {
   activate_timer_.Stop();
 
-  if (browser_) {
+  if (browser_ && browser_->window()) {
     BrowserView* browser_view =
         BrowserView::GetBrowserViewForNativeWindow(
             browser_->window()->GetNativeWindow());
