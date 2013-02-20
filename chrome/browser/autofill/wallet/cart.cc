@@ -6,6 +6,7 @@
 
 #include "base/values.h"
 
+namespace autofill {
 namespace wallet {
 
 Cart::Cart(const std::string& total_price, const std::string& currency_code)
@@ -21,4 +22,4 @@ scoped_ptr<base::DictionaryValue> Cart::ToDictionary() const {
 }
 
 }  // namespace wallet
-
+}  // namespace autofill

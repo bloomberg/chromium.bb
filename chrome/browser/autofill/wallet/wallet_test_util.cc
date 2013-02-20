@@ -8,6 +8,7 @@
 #include "chrome/browser/autofill/wallet/instrument.h"
 #include "chrome/browser/autofill/wallet/wallet_address.h"
 
+namespace autofill {
 namespace wallet {
 
 scoped_ptr<Instrument> GetTestInstrument() {
@@ -45,3 +46,4 @@ scoped_ptr<Address> GetTestAddress() {
 }
 
 }  // namespace wallet
+}  // namespace autofill

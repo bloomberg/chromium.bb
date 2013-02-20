@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 
+namespace autofill {
 namespace wallet {
 
 bool ActionAppliesToFullWallet(RequiredAction action) {
@@ -50,3 +51,4 @@ RequiredAction ParseRequiredActionFromString(const std::string& str) {
 }
 
 }  // namespace wallet
+}  // namespace autofill

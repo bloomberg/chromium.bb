@@ -790,17 +790,6 @@ void AutofillDialogControllerImpl::OnDidAcceptLegalDocuments() {
   NOTIMPLEMENTED();
 }
 
-void AutofillDialogControllerImpl::OnDidEncryptOtp(
-    const std::string& encrypted_otp, const std::string& session_material) {
-  NOTIMPLEMENTED() << " encrypted_otp=" << encrypted_otp
-                   << ", session_material=" << session_material;
-}
-
-void AutofillDialogControllerImpl::OnDidEscrowSensitiveInformation(
-    const std::string& escrow_handle) {
-  NOTIMPLEMENTED() << " escrow_handle=" << escrow_handle;
-}
-
 void AutofillDialogControllerImpl::OnDidGetFullWallet(
     scoped_ptr<wallet::FullWallet> full_wallet) {
   NOTIMPLEMENTED();

@@ -17,6 +17,7 @@ const char kLastFourDigits[] = "4448";
 
 }
 
+namespace autofill {
 namespace wallet {
 
 TEST(Instrument, LastFourDigits) {
@@ -185,3 +186,4 @@ TEST(Instrument, ToDictionary) {
 }
 
 }  // namespace wallet
+}  // namespace autofill

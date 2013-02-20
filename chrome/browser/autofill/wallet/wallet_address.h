@@ -16,6 +16,7 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace autofill {
 namespace wallet {
 
 // TODO(ahutter): This address is a lot like chrome/browser/autofill/address.h.
@@ -152,6 +153,6 @@ class Address {
 };
 
 }  // namespace wallet
+}  // namespace autofill
 
 #endif  // CHROME_BROWSER_AUTOFILL_WALLET_WALLET_ADDRESS_H_
-

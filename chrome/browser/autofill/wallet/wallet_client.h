@@ -9,16 +9,22 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "base/values.h"
+#include "chrome/browser/autofill/wallet/encryption_escrow_client.h"
+#include "chrome/browser/autofill/wallet/encryption_escrow_client_observer.h"
+#include "chrome/browser/autofill/wallet/full_wallet.h"
 #include "chrome/common/autofill/autocheckout_status.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 class GURL;
 
 namespace net {
-class URLRequestContextGetter;
 class URLFetcher;
+class URLRequestContextGetter;
 }
 
+namespace autofill {
 namespace wallet {
 
 class Address;
@@ -30,7 +36,9 @@ class WalletItems;
 
 // WalletClient is responsible for making calls to the Online Wallet backend on
 // the user's behalf.
-class WalletClient : public net::URLFetcherDelegate {
+class WalletClient
+    : public net::URLFetcherDelegate,
+      public EncryptionEscrowClientObserver {
  public:
   explicit WalletClient(net::URLRequestContextGetter* context_getter);
   virtual ~WalletClient();
@@ -48,51 +56,31 @@ class WalletClient : public net::URLFetcherDelegate {
                             const std::string& google_transaction_id,
                             WalletClientObserver* observer);
 
-  // Before calling GetFullWallet, the client must encrypt a one time pad,
-  // |otp|, of crytographically secure random bytes. These bytes must be
-  // generated using crypto/random.h.
-  void EncryptOtp(const void* otp,
-                  size_t length,
-                  WalletClientObserver* observer);
-
-  // Before calling SaveInstrument or SaveAddressAndInstrument, the client must
-  // escrow the primary account number and card verfication number of
-  // |new_instrument| with Google Wallet.
-  void EscrowSensitiveInformation(const Instrument& new_instrument,
-                                  const std::string& obfuscated_gaia_id,
-                                  WalletClientObserver* observer);
-
   // GetFullWallet retrieves the a FullWallet for the user. |instrument_id| and
   // |adddress_id| should have been selected by the user in some UI,
   // |merchant_domain| should come from the BrowserContext, the |cart|
-  // information will have been provided by the browser, |google_transaction_id|
-  // is the same one that GetWalletItems returns, and |encrypted_otp| and
-  // |session_material| are the results of the EncryptOtp call.
+  // information will have been provided by the browser, and
+  // |google_transaction_id| is the same one that GetWalletItems returns.
   void GetFullWallet(const std::string& instrument_id,
                      const std::string& address_id,
                      const std::string& merchant_domain,
                      const Cart& cart,
                      const std::string& google_transaction_id,
-                     const std::string& encrypted_otp,
-                     const std::string& session_material,
                      WalletClientObserver* observer);
 
   // SaveAddress saves a new shipping address.
   void SaveAddress(const Address& address,
                    WalletClientObserver* observer);
 
-  // SaveInstrument saves a new instrument. |escrow_handle| must have been
-  // retrieved from Google Wallet through an EscrowSensitiveInformation call.
+  // SaveInstrument saves a new instrument.
   void SaveInstrument(const Instrument& instrument,
-                      const std::string& escrow_handle,
+                      const std::string& obfuscated_gaia_id,
                       WalletClientObserver* observer);
 
   // SaveInstrumentAndAddress saves a new instrument and address.
-  // |escrow_handle| must have been retrieved from Google Wallet through an
-  // EscrowSensitiveInformation call.
   void SaveInstrumentAndAddress(const Instrument& instrument,
-                                const std::string& escrow_handle,
                                 const Address& shipping_address,
+                                const std::string& obfuscated_gaia_id,
                                 WalletClientObserver* observer);
 
   // SendAutocheckoutStatus is used for tracking the success of Autocheckout
@@ -123,8 +111,6 @@ class WalletClient : public net::URLFetcherDelegate {
   enum RequestType {
     NO_PENDING_REQUEST,
     ACCEPT_LEGAL_DOCUMENTS,
-    ENCRYPT_OTP,
-    ESCROW_SENSITIVE_INFORMATION,
     GET_FULL_WALLET,
     GET_WALLET_ITEMS,
     SAVE_ADDRESS,
@@ -134,16 +120,26 @@ class WalletClient : public net::URLFetcherDelegate {
     UPDATE_INSTRUMENT,
   };
 
+  // Posts |post_body| to |url| and notifies |observer| when the request is
+  // complete.
   void MakeWalletRequest(const GURL& url,
                          const std::string& post_body,
-                         WalletClientObserver* observer,
-                         const std::string& content_type);
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+                         WalletClientObserver* observer);
+
+  // Performs bookkeeping tasks for any invalid requests.
   void HandleMalformedResponse(net::URLFetcher* request);
-  void SaveToWallet(const Instrument* instrument,
-                    const std::string& escrow_handle,
-                    const Address* address,
-                    WalletClientObserver* observer);
+
+  // net::URLFetcherDelegate:
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+
+  // EncryptionEscrowClientObserver:
+  virtual void OnDidEncryptOneTimePad(
+      const std::string& encrypted_one_time_pad,
+      const std::string& session_material) OVERRIDE;
+  virtual void OnDidEscrowSensitiveInformation(
+      const std::string& escrow_handle) OVERRIDE;
+  virtual void OnNetworkError(int response_code) OVERRIDE;
+  virtual void OnMalformedResponse() OVERRIDE;
 
   // The context for the request. Ensures the gdToken cookie is set as a header
   // in the requests to Online Wallet if it is present.
@@ -160,10 +156,24 @@ class WalletClient : public net::URLFetcherDelegate {
   // to be initiated as only one request may be running at a given time.
   RequestType request_type_;
 
+  // The one time pad used for GetFullWallet encryption.
+  std::vector<uint8> one_time_pad_;
+
+  // GetFullWallet requests and requests that alter instruments rely on requests
+  // made through the |encryption_escrow_client_| finishing first. The request
+  // body is saved here while that those requests are in flight.
+  base::DictionaryValue pending_request_body_;
+
+  // This client is repsonsible for making encryption and escrow calls to Online
+  // Wallet.
+  EncryptionEscrowClient encryption_escrow_client_;
+
+  base::WeakPtrFactory<WalletClient> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(WalletClient);
 };
 
 }  // namespace wallet
+}  // namespace autofill
 
 #endif  // CHROME_BROWSER_AUTOFILL_WALLET_WALLET_CLIENT_H_
-

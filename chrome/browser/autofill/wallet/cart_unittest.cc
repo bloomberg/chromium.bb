@@ -6,6 +6,7 @@
 #include "chrome/browser/autofill/wallet/cart.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace autofill {
 namespace wallet {
 
 TEST(Cart, ToDictionary) {
@@ -17,4 +18,4 @@ TEST(Cart, ToDictionary) {
 }
 
 }  // namespace wallet
-
+}  // namespace autofill

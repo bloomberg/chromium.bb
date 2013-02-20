@@ -14,6 +14,7 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace autofill {
 namespace wallet {
 
 // Container object for purchase data provided by the browser. The enclosed data
@@ -42,6 +43,6 @@ class Cart {
 };
 
 }  // namespace wallet
+}  // namespace autofill
 
 #endif  // CHROME_BROWSER_AUTOFILL_WALLET_CART_H_
-

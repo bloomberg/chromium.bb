@@ -8,50 +8,51 @@
 #include "base/values.h"
 #include "googleurl/src/gurl.h"
 
+namespace autofill {
+namespace wallet {
+
 namespace {
 
 const char kLegalDocumentUrl[] =
     "https://wallet.google.com/customer/gadget/legaldocument.html?docId=";
 
-wallet::WalletItems::MaskedInstrument::Type
+WalletItems::MaskedInstrument::Type
     TypeFromString(const std::string& type_string) {
   if (type_string == "VISA")
-    return wallet::WalletItems::MaskedInstrument::VISA;
+    return WalletItems::MaskedInstrument::VISA;
   if (type_string == "MASTER_CARD")
-    return wallet::WalletItems::MaskedInstrument::MASTER_CARD;
+    return WalletItems::MaskedInstrument::MASTER_CARD;
   if (type_string == "AMEX")
-    return wallet::WalletItems::MaskedInstrument::AMEX;
+    return WalletItems::MaskedInstrument::AMEX;
   if (type_string == "DISCOVER")
-    return wallet::WalletItems::MaskedInstrument::DISCOVER;
+    return WalletItems::MaskedInstrument::DISCOVER;
   if (type_string == "SOLO")
-    return wallet::WalletItems::MaskedInstrument::SOLO;
+    return WalletItems::MaskedInstrument::SOLO;
   if (type_string == "MAESTRO")
-    return wallet::WalletItems::MaskedInstrument::MAESTRO;
+    return WalletItems::MaskedInstrument::MAESTRO;
   if (type_string == "SWITCH")
-    return wallet::WalletItems::MaskedInstrument::SWITCH;
-  return wallet::WalletItems::MaskedInstrument::UNKNOWN;
+    return WalletItems::MaskedInstrument::SWITCH;
+  return WalletItems::MaskedInstrument::UNKNOWN;
 }
 
-wallet::WalletItems::MaskedInstrument::Status
+WalletItems::MaskedInstrument::Status
     StatusFromString(const std::string& status_string) {
   if (status_string == "PENDING")
-    return wallet::WalletItems::MaskedInstrument::PENDING;
+    return WalletItems::MaskedInstrument::PENDING;
   if (status_string == "VALID")
-    return wallet::WalletItems::MaskedInstrument::VALID;
+    return WalletItems::MaskedInstrument::VALID;
   if (status_string == "DECLINED")
-    return wallet::WalletItems::MaskedInstrument::DECLINED;
+    return WalletItems::MaskedInstrument::DECLINED;
   if (status_string == "UNSUPPORTED_COUNTRY")
-    return wallet::WalletItems::MaskedInstrument::UNSUPPORTED_COUNTRY;
+    return WalletItems::MaskedInstrument::UNSUPPORTED_COUNTRY;
   if (status_string == "EXPIRED")
-    return wallet::WalletItems::MaskedInstrument::EXPIRED;
+    return WalletItems::MaskedInstrument::EXPIRED;
   if (status_string == "BILLING_INCOMPLETE")
-    return wallet::WalletItems::MaskedInstrument::BILLING_INCOMPLETE;
-  return wallet::WalletItems::MaskedInstrument::INAPPLICABLE;
+    return WalletItems::MaskedInstrument::BILLING_INCOMPLETE;
+  return WalletItems::MaskedInstrument::INAPPLICABLE;
 }
 
 }  // anonymous namespace
-
-namespace wallet {
 
 WalletItems::MaskedInstrument::MaskedInstrument(
     const string16& descriptive_name,
@@ -362,4 +363,4 @@ bool WalletItems::operator!=(const WalletItems& other) const {
 }
 
 }  // namespace wallet
-
+}  // namespace autofill

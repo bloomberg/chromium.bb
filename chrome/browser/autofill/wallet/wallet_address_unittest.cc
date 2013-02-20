@@ -150,6 +150,7 @@ const char kClientValidAddress[] =
 
 }  // anonymous namespace
 
+namespace autofill {
 namespace wallet {
 
 class WalletAddressTest : public testing::Test {
@@ -291,4 +292,4 @@ TEST_F(WalletAddressTest, ToDictionaryWithID) {
 }
 
 }  // namespace wallet
-
+}  // namespace autofill

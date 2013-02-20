@@ -42,6 +42,7 @@ GURL GetBaseSecureUrl() {
 
 }  // anonymous namespace
 
+namespace autofill {
 namespace wallet {
 
 GURL GetGetWalletItemsUrl() {
@@ -99,3 +100,4 @@ bool IsSignInContinueUrl(const GURL& url) {
 }
 
 }  // namespace wallet
+}  // namespace autofill

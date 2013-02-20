@@ -345,6 +345,7 @@ const char kWalletItems[] =
 
 }  // anonymous namespace
 
+namespace autofill {
 namespace wallet {
 
 class WalletItemsTest : public testing::Test {
@@ -536,4 +537,4 @@ TEST_F(WalletItemsTest, CreateWalletItems) {
 }
 
 }  // namespace wallet
-
+}  // namespace autofill

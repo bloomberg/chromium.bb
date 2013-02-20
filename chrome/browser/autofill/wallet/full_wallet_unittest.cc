@@ -343,6 +343,7 @@ const char kFullWalletMalformedBillingAddress[] =
 
 }  // anonymous namespace
 
+namespace autofill {
 namespace wallet {
 
 class FullWalletTest : public testing::Test {
@@ -457,5 +458,7 @@ TEST_F(FullWalletTest, CreateFullWallet) {
   ASSERT_EQ(full_wallet, *FullWallet::CreateFullWallet(*dict));
 }
 
-}  // namespace wallet
+// TODO(ahutter): Add tests for GetPan and GetCvn.
 
+}  // namespace wallet
+}  // namespace autofill

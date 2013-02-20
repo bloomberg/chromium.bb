@@ -7,6 +7,7 @@
 
 #include <string>
 
+namespace autofill {
 namespace wallet {
 
 // Required actions are steps that must be taken before the current transaction
@@ -35,5 +36,6 @@ bool ActionAppliesToWalletItems(RequiredAction action);
 RequiredAction ParseRequiredActionFromString(const std::string& str);
 
 }  // namespace wallet
+}  // namespace autofill
 
 #endif  // CHROME_BROWSER_AUTOFILL_WALLET_REQUIRED_ACTION_H_

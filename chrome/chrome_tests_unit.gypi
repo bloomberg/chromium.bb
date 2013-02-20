@@ -497,6 +497,7 @@
         'browser/autofill/phone_number_i18n_unittest.cc',
         'browser/autofill/validation_unittest.cc',
         'browser/autofill/wallet/cart_unittest.cc',
+        'browser/autofill/wallet/encryption_escrow_client_unittest.cc',
         'browser/autofill/wallet/full_wallet_unittest.cc',
         'browser/autofill/wallet/instrument_unittest.cc',
         'browser/autofill/wallet/wallet_address_unittest.cc',

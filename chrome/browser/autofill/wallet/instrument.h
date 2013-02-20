@@ -14,6 +14,7 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace autofill {
 namespace wallet {
 
 class Address;
@@ -84,6 +85,6 @@ class Instrument {
 };
 
 }  // namespace wallet
+}  // namespace autofill
 
 #endif  // CHROME_BROWSER_AUTOFILL_WALLET_INSTRUMENT_H_
-

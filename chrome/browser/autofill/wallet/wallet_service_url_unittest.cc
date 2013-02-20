@@ -6,6 +6,7 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace autofill {
 namespace wallet {
 
 TEST(WalletServiceUrl, CheckDefaultUrls) {
@@ -33,4 +34,4 @@ TEST(WalletServiceUrl, CheckDefaultUrls) {
 }
 
 }  // namespace wallet
-
+}  // namespace autofill

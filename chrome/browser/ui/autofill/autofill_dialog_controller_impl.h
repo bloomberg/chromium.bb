@@ -136,10 +136,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
 
   // wallet::WalletClientObserver implementation.
   virtual void OnDidAcceptLegalDocuments() OVERRIDE;
-  virtual void OnDidEncryptOtp(const std::string& encrypted_otp,
-                               const std::string& session_material) OVERRIDE;
-  virtual void OnDidEscrowSensitiveInformation(
-      const std::string& escrow_handle) OVERRIDE;
   virtual void OnDidGetFullWallet(
       scoped_ptr<wallet::FullWallet> full_wallet) OVERRIDE;
   virtual void OnDidGetWalletItems(

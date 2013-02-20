@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 
+namespace autofill {
 namespace wallet {
 
 Address::Address() {}
@@ -231,4 +232,4 @@ bool Address::operator!=(const Address& other) const {
 }
 
 }  // namespace wallet
-
+}  // namespace autofill

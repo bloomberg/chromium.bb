@@ -23,6 +23,7 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace autofill {
 namespace wallet {
 
 class WalletItemsTest;
@@ -244,6 +245,6 @@ class WalletItems {
 };
 
 }  // namespace wallet
+}  // namespace autofill
 
 #endif  // CHROME_BROWSER_AUTOFILL_WALLET_WALLET_ITEMS_H_
-
