@@ -85,6 +85,8 @@ def _UploadChangeToBranch(work_dir, patch, branch, draft, dryrun):
     draft: If True, upload to refs/draft/|branch| rather than refs/for/|branch|.
     dryrun: Don't actually upload a change but go through all the steps up to
       and including git push --dry-run.
+  Returns:
+    A list of all the gerrit URLs found.
   """
   upload_type = 'drafts' if draft else 'for'
   # Download & setup the patch if need be.
@@ -228,10 +230,13 @@ def main(argv):
       # Now that we have the project checked out, let's apply our change and
       # create a new change on Gerrit.
       logging.info('Uploading change %s to branch %s', change, branch)
-      url = _UploadChangeToBranch(work_dir, patch, branch, options.draft,
-                                  options.dryrun)
+      urls = _UploadChangeToBranch(work_dir, patch, branch, options.draft,
+                                   options.dryrun)
       logging.info('Successfully uploaded %s to %s', change, branch)
-      if url:
+      for url in urls:
+        if url.endswith('\x1b[K'):
+          # Git will often times emit these escape sequences.
+          url = url[0:-3]
         logging.info('  URL: %s', url)
 
   except (cros_build_lib.RunCommandError, cros_patch.ApplyPatchException,
