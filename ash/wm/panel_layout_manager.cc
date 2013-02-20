@@ -172,7 +172,8 @@ void PanelLayoutManager::StartDragging(aura::Window* panel) {
 }
 
 void PanelLayoutManager::FinishDragging() {
-  DCHECK(dragged_panel_);
+  // Note, dragged panel may be null if the panel was just attached to the
+  // panel layout.
   dragged_panel_ = NULL;
   Relayout();
 }
@@ -207,6 +208,9 @@ void PanelLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
 }
 
 void PanelLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
+}
+
+void PanelLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
   PanelList::iterator found =
       std::find(panel_windows_.begin(), panel_windows_.end(), child);
   if (found != panel_windows_.end())
@@ -220,9 +224,6 @@ void PanelLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
     last_active_panel_ = NULL;
 
   Relayout();
-}
-
-void PanelLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
 }
 
 void PanelLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
@@ -303,8 +304,7 @@ void PanelLayoutManager::OnWindowActivated(aura::Window* gained_active,
   // Ignore if the panel that is not managed by this was activated.
   if (gained_active &&
       gained_active->type() == aura::client::WINDOW_TYPE_PANEL &&
-      gained_active->GetRootWindow() ==
-          launcher_->widget()->GetNativeView()->GetRootWindow()) {
+      gained_active->parent() == panel_container_) {
     UpdateStacking(gained_active);
     UpdateCallout(gained_active);
   } else {

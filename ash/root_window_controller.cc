@@ -22,7 +22,6 @@
 #include "ash/wm/base_layout_manager.h"
 #include "ash/wm/boot_splash_screen.h"
 #include "ash/wm/panel_layout_manager.h"
-#include "ash/wm/panel_window_event_filter.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/root_window_layout_manager.h"
 #include "ash/wm/screen_dimmer.h"
@@ -305,9 +304,8 @@ void RootWindowController::InitForPrimaryDisplay() {
         internal::kShellWindowId_PanelContainer);
     panel_layout_manager_ =
         new internal::PanelLayoutManager(panel_container);
-    panel_container->AddPreTargetHandler(
-        new internal::PanelWindowEventFilter(
-            panel_container, panel_layout_manager_));
+    panel_container_handler_.reset(
+        new ToplevelWindowEventHandler(panel_container));
     panel_container->SetLayoutManager(panel_layout_manager_);
   }
 

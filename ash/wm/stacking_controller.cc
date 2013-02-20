@@ -49,6 +49,10 @@ bool IsWindowModal(aura::Window* window) {
       window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_WINDOW;
 }
 
+bool IsPanelAttached(aura::Window* window) {
+  return window->GetProperty(internal::kPanelAttachedKey);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -86,8 +90,11 @@ aura::Window* StackingController::GetDefaultParent(aura::Window* context,
       return GetContainerById(
           target_root, internal::kShellWindowId_UnparentedControlContainer);
     case aura::client::WINDOW_TYPE_PANEL:
-      return GetContainerById(target_root,
-                              internal::kShellWindowId_PanelContainer);
+      if (IsPanelAttached(window))
+        return GetContainerById(target_root,
+                                internal::kShellWindowId_PanelContainer);
+      else
+        return GetAlwaysOnTopController(target_root)->GetContainer(window);
     case aura::client::WINDOW_TYPE_MENU:
       return GetContainerById(
           target_root, internal::kShellWindowId_MenuContainer);

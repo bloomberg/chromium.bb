@@ -17,11 +17,13 @@
 #include "ash/wm/cursor_manager.h"
 #include "ash/wm/default_window_resizer.h"
 #include "ash/wm/drag_window_resizer.h"
+#include "ash/wm/panel_window_resizer.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/snap_sizer.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/window_types.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -41,7 +43,10 @@ scoped_ptr<WindowResizer> CreateWindowResizer(aura::Window* window,
     return scoped_ptr<WindowResizer>();
 
   WindowResizer* window_resizer = NULL;
-  if (window->parent() &&
+  if (window->type() == aura::client::WINDOW_TYPE_PANEL) {
+    window_resizer = PanelWindowResizer::Create(
+        window, point_in_parent, window_component);
+  } else if (window->parent() &&
       window->parent()->id() == internal::kShellWindowId_WorkspaceContainer) {
     // Allow dragging maximized windows if it's not tracked by workspace. This
     // is set by tab dragging code.

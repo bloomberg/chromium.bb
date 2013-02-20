@@ -203,6 +203,7 @@ class ASH_EXPORT RootWindowController {
   scoped_ptr<ToplevelWindowEventHandler> always_on_top_container_handler_;
   scoped_ptr<ToplevelWindowEventHandler> modal_container_handler_;
   scoped_ptr<ToplevelWindowEventHandler> lock_modal_container_handler_;
+  scoped_ptr<ToplevelWindowEventHandler> panel_container_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowController);
 };

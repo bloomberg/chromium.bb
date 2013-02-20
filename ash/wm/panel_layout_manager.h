@@ -60,6 +60,7 @@ class ASH_EXPORT PanelLayoutManager
 
   void ToggleMinimize(aura::Window* panel);
 
+  ash::Launcher* launcher() { return launcher_; }
   void SetLauncher(ash::Launcher* launcher);
 
   // Overridden from aura::LayoutManager:
@@ -88,6 +89,7 @@ class ASH_EXPORT PanelLayoutManager
 
  private:
   friend class PanelLayoutManagerTest;
+  friend class PanelWindowResizerTest;
 
   typedef std::list<aura::Window*> PanelList;
 
