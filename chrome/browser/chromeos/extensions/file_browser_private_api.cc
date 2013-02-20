@@ -1094,7 +1094,8 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
 ExecuteTasksFileBrowserFunction::ExecuteTasksFileBrowserFunction() {}
 
 void ExecuteTasksFileBrowserFunction::OnTaskExecuted(bool success) {
-  SendResponse(success);
+  SetResult(new base::FundamentalValue(success));
+  SendResponse(true);
 }
 
 ExecuteTasksFileBrowserFunction::~ExecuteTasksFileBrowserFunction() {}
@@ -1166,7 +1167,6 @@ bool ExecuteTasksFileBrowserFunction::RunImpl() {
       base::Bind(&ExecuteTasksFileBrowserFunction::OnTaskExecuted, this)))
     return false;
 
-  SetResult(new base::FundamentalValue(true));
   return true;
 }
 

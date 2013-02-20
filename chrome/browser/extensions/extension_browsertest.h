@@ -79,7 +79,16 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
   const extensions::Extension* LoadExtensionWithFlags(
       const base::FilePath& path, int flags);
 
-  // Loads extension and imitates that it is a component extension.
+  // Loads unpacked extension from |path| with manifest |manifest_relative_path|
+  // and imitates that it is a component extension.
+  // |manifest_relative_path| is relative to |path|.
+  const extensions::Extension* LoadExtensionAsComponentWithManifest(
+      const base::FilePath& path,
+      const base::FilePath::CharType* manifest_relative_path);
+
+  // Loads unpacked extension from |path| and imitates that it is a component
+  // extension. Equivalent to
+  // LoadExtensionAsComponentWithManifest(path, Extensions::kManifestFilename).
   const extensions::Extension* LoadExtensionAsComponent(
       const base::FilePath& path);
 
