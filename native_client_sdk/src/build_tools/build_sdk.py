@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Entry point for both build and try bots
+"""Entry point for both build and try bots.
 
 This script is invoked from XXX, usually without arguments
 to package an SDK. It automatically determines whether
@@ -64,7 +64,7 @@ MAKE = 'nacl_sdk/make_3_81/make.exe'
 CYGTAR = os.path.join(NACL_DIR, 'build', 'cygtar.py')
 
 NACLPORTS_URL = 'https://naclports.googlecode.com/svn/trunk/src'
-NACLPORTS_REV = 704
+NACLPORTS_REV = 706
 
 options = None
 
