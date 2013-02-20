@@ -2407,3 +2407,8 @@ IPC_SYNC_MESSAGE_CONTROL2_0(ViewHostMsg_PreCacheFontCharacters,
 // Notifies the browser that the frame with the given id was detached.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_FrameDetached,
                     int64 /* frame_id */)
+
+// Notifies the browser that document has parsed the body. This is used by the
+// ResourceScheduler as an indication that bandwidth contention won't block
+// first paint.
+IPC_MESSAGE_ROUTED0(ViewHostMsg_WillInsertBody)

@@ -14,6 +14,7 @@
 #include "content/public/common/security_style.h"
 #include "content/public/common/ssl_status.h"
 #include "ipc/ipc_message_macros.h"
+#include "net/base/request_priority.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebPoint.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebReferrerPolicy.h"
@@ -32,7 +33,7 @@ IPC_ENUM_TRAITS(WebKit::WebReferrerPolicy)
 IPC_ENUM_TRAITS(WindowOpenDisposition)
 IPC_ENUM_TRAITS(webkit_glue::WebPreferences::EditingBehavior)
 IPC_ENUM_TRAITS(content::PasswordForm::Type)
-IPC_ENUM_TRAITS(WebKit::WebURLRequest::Priority)
+IPC_ENUM_TRAITS(net::RequestPriority)
 
 IPC_STRUCT_TRAITS_BEGIN(WebKit::WebPoint)
   IPC_STRUCT_TRAITS_MEMBER(x)
