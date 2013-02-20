@@ -164,7 +164,7 @@ void ButtonExample::LabelButtonPressed(const ui::Event& event) {
       label_button_->SetNativeTheme(!label_button_->native_theme());
     }
   } else if (event.IsAltDown()) {
-    label_button_->SetDefaultButton(!label_button_->default_button());
+    label_button_->SetIsDefault(!label_button_->is_default());
   } else {
     label_button_->set_min_size(gfx::Size());
   }

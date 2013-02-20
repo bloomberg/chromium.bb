@@ -36,7 +36,7 @@ TEST_F(LabelButtonTest, Init) {
 
   EXPECT_EQ(text, button.GetText());
   EXPECT_EQ(gfx::ALIGN_LEFT, button.GetHorizontalAlignment());
-  EXPECT_FALSE(button.default_button());
+  EXPECT_FALSE(button.is_default());
   EXPECT_FALSE(button.native_theme());
   EXPECT_EQ(CustomButton::STATE_NORMAL, button.state());
 

@@ -53,8 +53,8 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   void set_max_size(const gfx::Size& max_size) { max_size_ = max_size; }
 
   // Get or set the option to handle the return key; false by default.
-  bool default_button() const { return default_button_; }
-  void SetDefaultButton(bool default_button);
+  bool is_default() const { return is_default_; }
+  void SetIsDefault(bool is_default);
 
   // Get or set the option to use a native button appearance; false by default.
   bool native_theme() const { return native_theme_; }
@@ -113,7 +113,9 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   gfx::Size max_size_;
 
   // Flag indicating default handling of the return key via an accelerator.
-  bool default_button_;
+  // Whether or not the button appears or behaves as the default button in its
+  // current context;
+  bool is_default_;
 
   // Flag indicating native theme styling (or Views styling) of the button.
   bool native_theme_;

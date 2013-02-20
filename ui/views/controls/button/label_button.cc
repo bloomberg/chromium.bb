@@ -36,7 +36,7 @@ LabelButton::LabelButton(ButtonListener* listener, const string16& text)
       button_state_images_(),
       button_state_colors_(),
       explicitly_set_colors_(),
-      default_button_(false),
+      is_default_(false),
       native_theme_(false) {
   set_border(new LabelButtonBorder());
   // Inset the button focus rect from the actual border; roughly match Windows.
@@ -109,12 +109,12 @@ void LabelButton::SetHorizontalAlignment(gfx::HorizontalAlignment alignment) {
   InvalidateLayout();
 }
 
-void LabelButton::SetDefaultButton(bool default_button) {
-  if (default_button == default_button_)
+void LabelButton::SetIsDefault(bool is_default) {
+  if (is_default == is_default_)
     return;
-  default_button_ = default_button;
+  is_default_ = is_default;
   ui::Accelerator accel(ui::VKEY_RETURN, ui::EF_NONE);
-  default_button_ ? AddAccelerator(accel) : RemoveAccelerator(accel);
+  is_default_ ? AddAccelerator(accel) : RemoveAccelerator(accel);
 }
 
 void LabelButton::SetNativeTheme(bool native_theme) {
@@ -287,7 +287,7 @@ ui::NativeTheme::State LabelButton::GetForegroundThemeState(
 void LabelButton::GetExtraParams(ui::NativeTheme::ExtraParams* params) const {
   params->button.checked = false;
   params->button.indeterminate = false;
-  params->button.is_default = default_button();
+  params->button.is_default = is_default_;
   params->button.is_focused = HasFocus() && IsAccessibilityFocusable();
   params->button.has_border = native_theme();
   params->button.classic_state = 0;
