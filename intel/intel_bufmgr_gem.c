@@ -2885,6 +2885,7 @@ drm_intel_bufmgr_gem_set_aub_dump(drm_intel_bufmgr *bufmgr, int enable)
 			fclose(bufmgr_gem->aub_file);
 			bufmgr_gem->aub_file = NULL;
 		}
+		return;
 	}
 
 	if (geteuid() != getuid())
