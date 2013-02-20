@@ -60,8 +60,6 @@ class VectorBinary2RegisterScalar_I16_32TesterCase0
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorBinary2RegisterScalar_I16_32TesterCase0
@@ -82,36 +80,6 @@ bool VectorBinary2RegisterScalar_I16_32TesterCase0
   // Check other preconditions defined for the base decoder.
   return VectorBinary2RegisterScalarTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorBinary2RegisterScalar_I16_32TesterCase0
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorBinary2RegisterScalarTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(21:20)=11 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
-          0x00300000);
-
-  // safety: size(21:20)=00 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
-          0x00000000);
-
-  // safety: Q(24)=1 &&
-  //       (Vd(0)=1 ||
-  //       Vn(0)=1) => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x01000000)  ==
-          0x01000000) &&
-       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001) ||
-       ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
-          0x00000001)))));
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // A(11:8)=0001
@@ -142,8 +110,6 @@ class VectorBinary2RegisterScalar_F32TesterCase1
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorBinary2RegisterScalar_F32TesterCase1
@@ -164,39 +130,6 @@ bool VectorBinary2RegisterScalar_F32TesterCase1
   // Check other preconditions defined for the base decoder.
   return VectorBinary2RegisterScalarTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorBinary2RegisterScalar_F32TesterCase1
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorBinary2RegisterScalarTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(21:20)=11 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
-          0x00300000);
-
-  // safety: (size(21:20)=00 ||
-  //       size(21:20)=01) => UNDEFINED
-  EXPECT_TRUE((!(((inst.Bits() & 0x00300000)  ==
-          0x00000000) ||
-       ((inst.Bits() & 0x00300000)  ==
-          0x00100000))));
-
-  // safety: Q(24)=1 &&
-  //       (Vd(0)=1 ||
-  //       Vn(0)=1) => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x01000000)  ==
-          0x01000000) &&
-       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001) ||
-       ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
-          0x00000001)))));
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // A(11:8)=0010
@@ -222,8 +155,6 @@ class VectorBinary2RegisterScalar_I16_32LTesterCase2
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorBinary2RegisterScalar_I16_32LTesterCase2
@@ -244,29 +175,6 @@ bool VectorBinary2RegisterScalar_I16_32LTesterCase2
   // Check other preconditions defined for the base decoder.
   return VectorBinary2RegisterScalarTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorBinary2RegisterScalar_I16_32LTesterCase2
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorBinary2RegisterScalarTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(21:20)=11 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
-          0x00300000);
-
-  // safety: (size(21:20)=00 ||
-  //       Vd(0)=1) => UNDEFINED
-  EXPECT_TRUE((!(((inst.Bits() & 0x00300000)  ==
-          0x00000000) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001))));
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // A(11:8)=0011 & U(24)=0
@@ -292,8 +200,6 @@ class VectorBinary2RegisterScalar_I16_32LTesterCase3
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorBinary2RegisterScalar_I16_32LTesterCase3
@@ -317,29 +223,6 @@ bool VectorBinary2RegisterScalar_I16_32LTesterCase3
   // Check other preconditions defined for the base decoder.
   return VectorBinary2RegisterScalarTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorBinary2RegisterScalar_I16_32LTesterCase3
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorBinary2RegisterScalarTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(21:20)=11 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
-          0x00300000);
-
-  // safety: (size(21:20)=00 ||
-  //       Vd(0)=1) => UNDEFINED
-  EXPECT_TRUE((!(((inst.Bits() & 0x00300000)  ==
-          0x00000000) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001))));
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // A(11:8)=0100
@@ -369,8 +252,6 @@ class VectorBinary2RegisterScalar_I16_32TesterCase4
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorBinary2RegisterScalar_I16_32TesterCase4
@@ -391,36 +272,6 @@ bool VectorBinary2RegisterScalar_I16_32TesterCase4
   // Check other preconditions defined for the base decoder.
   return VectorBinary2RegisterScalarTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorBinary2RegisterScalar_I16_32TesterCase4
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorBinary2RegisterScalarTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(21:20)=11 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
-          0x00300000);
-
-  // safety: size(21:20)=00 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
-          0x00000000);
-
-  // safety: Q(24)=1 &&
-  //       (Vd(0)=1 ||
-  //       Vn(0)=1) => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x01000000)  ==
-          0x01000000) &&
-       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001) ||
-       ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
-          0x00000001)))));
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // A(11:8)=0101
@@ -451,8 +302,6 @@ class VectorBinary2RegisterScalar_F32TesterCase5
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorBinary2RegisterScalar_F32TesterCase5
@@ -473,39 +322,6 @@ bool VectorBinary2RegisterScalar_F32TesterCase5
   // Check other preconditions defined for the base decoder.
   return VectorBinary2RegisterScalarTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorBinary2RegisterScalar_F32TesterCase5
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorBinary2RegisterScalarTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(21:20)=11 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
-          0x00300000);
-
-  // safety: (size(21:20)=00 ||
-  //       size(21:20)=01) => UNDEFINED
-  EXPECT_TRUE((!(((inst.Bits() & 0x00300000)  ==
-          0x00000000) ||
-       ((inst.Bits() & 0x00300000)  ==
-          0x00100000))));
-
-  // safety: Q(24)=1 &&
-  //       (Vd(0)=1 ||
-  //       Vn(0)=1) => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x01000000)  ==
-          0x01000000) &&
-       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001) ||
-       ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
-          0x00000001)))));
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // A(11:8)=0110
@@ -531,8 +347,6 @@ class VectorBinary2RegisterScalar_I16_32LTesterCase6
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorBinary2RegisterScalar_I16_32LTesterCase6
@@ -553,29 +367,6 @@ bool VectorBinary2RegisterScalar_I16_32LTesterCase6
   // Check other preconditions defined for the base decoder.
   return VectorBinary2RegisterScalarTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorBinary2RegisterScalar_I16_32LTesterCase6
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorBinary2RegisterScalarTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(21:20)=11 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
-          0x00300000);
-
-  // safety: (size(21:20)=00 ||
-  //       Vd(0)=1) => UNDEFINED
-  EXPECT_TRUE((!(((inst.Bits() & 0x00300000)  ==
-          0x00000000) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001))));
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // A(11:8)=0111 & U(24)=0
@@ -601,8 +392,6 @@ class VectorBinary2RegisterScalar_I16_32LTesterCase7
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorBinary2RegisterScalar_I16_32LTesterCase7
@@ -626,29 +415,6 @@ bool VectorBinary2RegisterScalar_I16_32LTesterCase7
   // Check other preconditions defined for the base decoder.
   return VectorBinary2RegisterScalarTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorBinary2RegisterScalar_I16_32LTesterCase7
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorBinary2RegisterScalarTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(21:20)=11 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
-          0x00300000);
-
-  // safety: (size(21:20)=00 ||
-  //       Vd(0)=1) => UNDEFINED
-  EXPECT_TRUE((!(((inst.Bits() & 0x00300000)  ==
-          0x00000000) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001))));
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // A(11:8)=1000
@@ -678,8 +444,6 @@ class VectorBinary2RegisterScalar_I16_32TesterCase8
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorBinary2RegisterScalar_I16_32TesterCase8
@@ -700,36 +464,6 @@ bool VectorBinary2RegisterScalar_I16_32TesterCase8
   // Check other preconditions defined for the base decoder.
   return VectorBinary2RegisterScalarTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorBinary2RegisterScalar_I16_32TesterCase8
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorBinary2RegisterScalarTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(21:20)=11 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
-          0x00300000);
-
-  // safety: size(21:20)=00 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
-          0x00000000);
-
-  // safety: Q(24)=1 &&
-  //       (Vd(0)=1 ||
-  //       Vn(0)=1) => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x01000000)  ==
-          0x01000000) &&
-       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001) ||
-       ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
-          0x00000001)))));
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // A(11:8)=1001
@@ -760,8 +494,6 @@ class VectorBinary2RegisterScalar_F32TesterCase9
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorBinary2RegisterScalar_F32TesterCase9
@@ -782,39 +514,6 @@ bool VectorBinary2RegisterScalar_F32TesterCase9
   // Check other preconditions defined for the base decoder.
   return VectorBinary2RegisterScalarTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorBinary2RegisterScalar_F32TesterCase9
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorBinary2RegisterScalarTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(21:20)=11 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
-          0x00300000);
-
-  // safety: (size(21:20)=00 ||
-  //       size(21:20)=01) => UNDEFINED
-  EXPECT_TRUE((!(((inst.Bits() & 0x00300000)  ==
-          0x00000000) ||
-       ((inst.Bits() & 0x00300000)  ==
-          0x00100000))));
-
-  // safety: Q(24)=1 &&
-  //       (Vd(0)=1 ||
-  //       Vn(0)=1) => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x01000000)  ==
-          0x01000000) &&
-       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001) ||
-       ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
-          0x00000001)))));
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // A(11:8)=1010
@@ -840,8 +539,6 @@ class VectorBinary2RegisterScalar_I16_32LTesterCase10
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorBinary2RegisterScalar_I16_32LTesterCase10
@@ -862,29 +559,6 @@ bool VectorBinary2RegisterScalar_I16_32LTesterCase10
   // Check other preconditions defined for the base decoder.
   return VectorBinary2RegisterScalarTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorBinary2RegisterScalar_I16_32LTesterCase10
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorBinary2RegisterScalarTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(21:20)=11 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
-          0x00300000);
-
-  // safety: (size(21:20)=00 ||
-  //       Vd(0)=1) => UNDEFINED
-  EXPECT_TRUE((!(((inst.Bits() & 0x00300000)  ==
-          0x00000000) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001))));
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // A(11:8)=1011 & U(24)=0
@@ -910,8 +584,6 @@ class VectorBinary2RegisterScalar_I16_32LTesterCase11
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorBinary2RegisterScalar_I16_32LTesterCase11
@@ -935,29 +607,6 @@ bool VectorBinary2RegisterScalar_I16_32LTesterCase11
   // Check other preconditions defined for the base decoder.
   return VectorBinary2RegisterScalarTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorBinary2RegisterScalar_I16_32LTesterCase11
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorBinary2RegisterScalarTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(21:20)=11 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
-          0x00300000);
-
-  // safety: (size(21:20)=00 ||
-  //       Vd(0)=1) => UNDEFINED
-  EXPECT_TRUE((!(((inst.Bits() & 0x00300000)  ==
-          0x00000000) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001))));
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // A(11:8)=1100
@@ -987,8 +636,6 @@ class VectorBinary2RegisterScalar_I16_32TesterCase12
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorBinary2RegisterScalar_I16_32TesterCase12
@@ -1009,36 +656,6 @@ bool VectorBinary2RegisterScalar_I16_32TesterCase12
   // Check other preconditions defined for the base decoder.
   return VectorBinary2RegisterScalarTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorBinary2RegisterScalar_I16_32TesterCase12
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorBinary2RegisterScalarTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(21:20)=11 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
-          0x00300000);
-
-  // safety: size(21:20)=00 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
-          0x00000000);
-
-  // safety: Q(24)=1 &&
-  //       (Vd(0)=1 ||
-  //       Vn(0)=1) => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x01000000)  ==
-          0x01000000) &&
-       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001) ||
-       ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
-          0x00000001)))));
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // A(11:8)=1101
@@ -1068,8 +685,6 @@ class VectorBinary2RegisterScalar_I16_32TesterCase13
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorBinary2RegisterScalar_I16_32TesterCase13
@@ -1090,36 +705,6 @@ bool VectorBinary2RegisterScalar_I16_32TesterCase13
   // Check other preconditions defined for the base decoder.
   return VectorBinary2RegisterScalarTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorBinary2RegisterScalar_I16_32TesterCase13
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorBinary2RegisterScalarTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(21:20)=11 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
-          0x00300000);
-
-  // safety: size(21:20)=00 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
-          0x00000000);
-
-  // safety: Q(24)=1 &&
-  //       (Vd(0)=1 ||
-  //       Vn(0)=1) => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x01000000)  ==
-          0x01000000) &&
-       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001) ||
-       ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
-          0x00000001)))));
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // The following are derived class decoder testers for decoder actions

@@ -55,8 +55,6 @@ class UADD16_cccc01100101nnnndddd11110001mmmm_case_0TesterCase0
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool UADD16_cccc01100101nnnndddd11110001mmmm_case_0TesterCase0
@@ -81,24 +79,6 @@ bool UADD16_cccc01100101nnnndddd11110001mmmm_case_0TesterCase0
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool UADD16_cccc01100101nnnndddd11110001mmmm_case_0TesterCase0
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: Pc in {Rd, Rn, Rm} => UNPREDICTABLE
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
-       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
-       (((15) == ((inst.Bits() & 0x0000000F))))));
-
-  // defs: {Rd};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
-   Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
-
-  return true;
 }
 
 // op1(21:20)=01 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -123,8 +103,6 @@ class UASX_cccc01100101nnnndddd11110011mmmm_case_0TesterCase1
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool UASX_cccc01100101nnnndddd11110011mmmm_case_0TesterCase1
@@ -149,24 +127,6 @@ bool UASX_cccc01100101nnnndddd11110011mmmm_case_0TesterCase1
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool UASX_cccc01100101nnnndddd11110011mmmm_case_0TesterCase1
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: Pc in {Rd, Rn, Rm} => UNPREDICTABLE
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
-       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
-       (((15) == ((inst.Bits() & 0x0000000F))))));
-
-  // defs: {Rd};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
-   Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
-
-  return true;
 }
 
 // op1(21:20)=01 & op2(7:5)=010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -191,8 +151,6 @@ class USAX_cccc01100101nnnndddd11110101mmmm_case_0TesterCase2
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool USAX_cccc01100101nnnndddd11110101mmmm_case_0TesterCase2
@@ -217,24 +175,6 @@ bool USAX_cccc01100101nnnndddd11110101mmmm_case_0TesterCase2
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool USAX_cccc01100101nnnndddd11110101mmmm_case_0TesterCase2
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: Pc in {Rd, Rn, Rm} => UNPREDICTABLE
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
-       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
-       (((15) == ((inst.Bits() & 0x0000000F))))));
-
-  // defs: {Rd};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
-   Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
-
-  return true;
 }
 
 // op1(21:20)=01 & op2(7:5)=011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -259,8 +199,6 @@ class USUB16_cccc01100101nnnndddd11110111mmmm_case_0TesterCase3
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool USUB16_cccc01100101nnnndddd11110111mmmm_case_0TesterCase3
@@ -285,24 +223,6 @@ bool USUB16_cccc01100101nnnndddd11110111mmmm_case_0TesterCase3
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool USUB16_cccc01100101nnnndddd11110111mmmm_case_0TesterCase3
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: Pc in {Rd, Rn, Rm} => UNPREDICTABLE
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
-       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
-       (((15) == ((inst.Bits() & 0x0000000F))))));
-
-  // defs: {Rd};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
-   Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
-
-  return true;
 }
 
 // op1(21:20)=01 & op2(7:5)=100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -327,8 +247,6 @@ class UADD8_cccc01100101nnnndddd11111001mmmm_case_0TesterCase4
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool UADD8_cccc01100101nnnndddd11111001mmmm_case_0TesterCase4
@@ -353,24 +271,6 @@ bool UADD8_cccc01100101nnnndddd11111001mmmm_case_0TesterCase4
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool UADD8_cccc01100101nnnndddd11111001mmmm_case_0TesterCase4
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: Pc in {Rd, Rn, Rm} => UNPREDICTABLE
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
-       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
-       (((15) == ((inst.Bits() & 0x0000000F))))));
-
-  // defs: {Rd};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
-   Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
-
-  return true;
 }
 
 // op1(21:20)=01 & op2(7:5)=111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -395,8 +295,6 @@ class USUB8_cccc01100101nnnndddd11111111mmmm_case_0TesterCase5
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool USUB8_cccc01100101nnnndddd11111111mmmm_case_0TesterCase5
@@ -423,24 +321,6 @@ bool USUB8_cccc01100101nnnndddd11111111mmmm_case_0TesterCase5
       PassesParsePreconditions(inst, decoder);
 }
 
-bool USUB8_cccc01100101nnnndddd11111111mmmm_case_0TesterCase5
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: Pc in {Rd, Rn, Rm} => UNPREDICTABLE
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
-       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
-       (((15) == ((inst.Bits() & 0x0000000F))))));
-
-  // defs: {Rd};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
-   Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
-
-  return true;
-}
-
 // op1(21:20)=10 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -463,8 +343,6 @@ class UQADD16_cccc01100110nnnndddd11110001mmmm_case_0TesterCase6
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool UQADD16_cccc01100110nnnndddd11110001mmmm_case_0TesterCase6
@@ -489,24 +367,6 @@ bool UQADD16_cccc01100110nnnndddd11110001mmmm_case_0TesterCase6
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool UQADD16_cccc01100110nnnndddd11110001mmmm_case_0TesterCase6
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: Pc in {Rd, Rn, Rm} => UNPREDICTABLE
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
-       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
-       (((15) == ((inst.Bits() & 0x0000000F))))));
-
-  // defs: {Rd};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
-   Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
-
-  return true;
 }
 
 // op1(21:20)=10 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -531,8 +391,6 @@ class UQASX_cccc01100110nnnndddd11110011mmmm_case_0TesterCase7
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool UQASX_cccc01100110nnnndddd11110011mmmm_case_0TesterCase7
@@ -559,24 +417,6 @@ bool UQASX_cccc01100110nnnndddd11110011mmmm_case_0TesterCase7
       PassesParsePreconditions(inst, decoder);
 }
 
-bool UQASX_cccc01100110nnnndddd11110011mmmm_case_0TesterCase7
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: Pc in {Rd, Rn, Rm} => UNPREDICTABLE
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
-       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
-       (((15) == ((inst.Bits() & 0x0000000F))))));
-
-  // defs: {Rd};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
-   Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
-
-  return true;
-}
-
 // op1(21:20)=10 & op2(7:5)=010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -599,8 +439,6 @@ class UQSAX_cccc01100110nnnndddd11110101mmmm_case_0TesterCase8
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool UQSAX_cccc01100110nnnndddd11110101mmmm_case_0TesterCase8
@@ -627,24 +465,6 @@ bool UQSAX_cccc01100110nnnndddd11110101mmmm_case_0TesterCase8
       PassesParsePreconditions(inst, decoder);
 }
 
-bool UQSAX_cccc01100110nnnndddd11110101mmmm_case_0TesterCase8
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: Pc in {Rd, Rn, Rm} => UNPREDICTABLE
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
-       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
-       (((15) == ((inst.Bits() & 0x0000000F))))));
-
-  // defs: {Rd};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
-   Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
-
-  return true;
-}
-
 // op1(21:20)=10 & op2(7:5)=011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -667,8 +487,6 @@ class UQSUB16_cccc01100110nnnndddd11110111mmmm_case_0TesterCase9
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool UQSUB16_cccc01100110nnnndddd11110111mmmm_case_0TesterCase9
@@ -695,24 +513,6 @@ bool UQSUB16_cccc01100110nnnndddd11110111mmmm_case_0TesterCase9
       PassesParsePreconditions(inst, decoder);
 }
 
-bool UQSUB16_cccc01100110nnnndddd11110111mmmm_case_0TesterCase9
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: Pc in {Rd, Rn, Rm} => UNPREDICTABLE
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
-       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
-       (((15) == ((inst.Bits() & 0x0000000F))))));
-
-  // defs: {Rd};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
-   Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
-
-  return true;
-}
-
 // op1(21:20)=10 & op2(7:5)=100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -735,8 +535,6 @@ class UQADD8_cccc01100110nnnndddd11111001mmmm_case_0TesterCase10
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool UQADD8_cccc01100110nnnndddd11111001mmmm_case_0TesterCase10
@@ -763,24 +561,6 @@ bool UQADD8_cccc01100110nnnndddd11111001mmmm_case_0TesterCase10
       PassesParsePreconditions(inst, decoder);
 }
 
-bool UQADD8_cccc01100110nnnndddd11111001mmmm_case_0TesterCase10
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: Pc in {Rd, Rn, Rm} => UNPREDICTABLE
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
-       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
-       (((15) == ((inst.Bits() & 0x0000000F))))));
-
-  // defs: {Rd};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
-   Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
-
-  return true;
-}
-
 // op1(21:20)=10 & op2(7:5)=111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -803,8 +583,6 @@ class UQSUB8_cccc01100110nnnndddd11111111mmmm_case_0TesterCase11
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool UQSUB8_cccc01100110nnnndddd11111111mmmm_case_0TesterCase11
@@ -831,24 +609,6 @@ bool UQSUB8_cccc01100110nnnndddd11111111mmmm_case_0TesterCase11
       PassesParsePreconditions(inst, decoder);
 }
 
-bool UQSUB8_cccc01100110nnnndddd11111111mmmm_case_0TesterCase11
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: Pc in {Rd, Rn, Rm} => UNPREDICTABLE
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
-       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
-       (((15) == ((inst.Bits() & 0x0000000F))))));
-
-  // defs: {Rd};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
-   Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
-
-  return true;
-}
-
 // op1(21:20)=11 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -871,8 +631,6 @@ class UHADD16_cccc01100111nnnndddd11110001mmmm_case_0TesterCase12
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool UHADD16_cccc01100111nnnndddd11110001mmmm_case_0TesterCase12
@@ -899,24 +657,6 @@ bool UHADD16_cccc01100111nnnndddd11110001mmmm_case_0TesterCase12
       PassesParsePreconditions(inst, decoder);
 }
 
-bool UHADD16_cccc01100111nnnndddd11110001mmmm_case_0TesterCase12
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: Pc in {Rd, Rn, Rm} => UNPREDICTABLE
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
-       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
-       (((15) == ((inst.Bits() & 0x0000000F))))));
-
-  // defs: {Rd};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
-   Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
-
-  return true;
-}
-
 // op1(21:20)=11 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -939,8 +679,6 @@ class UHASX_cccc01100111nnnndddd11110011mmmm_case_0TesterCase13
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool UHASX_cccc01100111nnnndddd11110011mmmm_case_0TesterCase13
@@ -967,24 +705,6 @@ bool UHASX_cccc01100111nnnndddd11110011mmmm_case_0TesterCase13
       PassesParsePreconditions(inst, decoder);
 }
 
-bool UHASX_cccc01100111nnnndddd11110011mmmm_case_0TesterCase13
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: Pc in {Rd, Rn, Rm} => UNPREDICTABLE
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
-       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
-       (((15) == ((inst.Bits() & 0x0000000F))))));
-
-  // defs: {Rd};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
-   Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
-
-  return true;
-}
-
 // op1(21:20)=11 & op2(7:5)=010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -1007,8 +727,6 @@ class UHSAX_cccc01100111nnnndddd11110101mmmm_case_0TesterCase14
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool UHSAX_cccc01100111nnnndddd11110101mmmm_case_0TesterCase14
@@ -1035,24 +753,6 @@ bool UHSAX_cccc01100111nnnndddd11110101mmmm_case_0TesterCase14
       PassesParsePreconditions(inst, decoder);
 }
 
-bool UHSAX_cccc01100111nnnndddd11110101mmmm_case_0TesterCase14
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: Pc in {Rd, Rn, Rm} => UNPREDICTABLE
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
-       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
-       (((15) == ((inst.Bits() & 0x0000000F))))));
-
-  // defs: {Rd};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
-   Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
-
-  return true;
-}
-
 // op1(21:20)=11 & op2(7:5)=011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -1075,8 +775,6 @@ class UHSUB16_cccc01100111nnnndddd11110111mmmm_case_0TesterCase15
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool UHSUB16_cccc01100111nnnndddd11110111mmmm_case_0TesterCase15
@@ -1103,24 +801,6 @@ bool UHSUB16_cccc01100111nnnndddd11110111mmmm_case_0TesterCase15
       PassesParsePreconditions(inst, decoder);
 }
 
-bool UHSUB16_cccc01100111nnnndddd11110111mmmm_case_0TesterCase15
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: Pc in {Rd, Rn, Rm} => UNPREDICTABLE
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
-       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
-       (((15) == ((inst.Bits() & 0x0000000F))))));
-
-  // defs: {Rd};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
-   Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
-
-  return true;
-}
-
 // op1(21:20)=11 & op2(7:5)=100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -1143,8 +823,6 @@ class UHADD8_cccc01100111nnnndddd11111001mmmm_case_0TesterCase16
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool UHADD8_cccc01100111nnnndddd11111001mmmm_case_0TesterCase16
@@ -1171,24 +849,6 @@ bool UHADD8_cccc01100111nnnndddd11111001mmmm_case_0TesterCase16
       PassesParsePreconditions(inst, decoder);
 }
 
-bool UHADD8_cccc01100111nnnndddd11111001mmmm_case_0TesterCase16
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: Pc in {Rd, Rn, Rm} => UNPREDICTABLE
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
-       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
-       (((15) == ((inst.Bits() & 0x0000000F))))));
-
-  // defs: {Rd};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
-   Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
-
-  return true;
-}
-
 // op1(21:20)=11 & op2(7:5)=111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -1211,8 +871,6 @@ class UHSUB8_cccc01100111nnnndddd11111111mmmm_case_0TesterCase17
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool UHSUB8_cccc01100111nnnndddd11111111mmmm_case_0TesterCase17
@@ -1237,24 +895,6 @@ bool UHSUB8_cccc01100111nnnndddd11111111mmmm_case_0TesterCase17
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool UHSUB8_cccc01100111nnnndddd11111111mmmm_case_0TesterCase17
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: Pc in {Rd, Rn, Rm} => UNPREDICTABLE
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
-       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
-       (((15) == ((inst.Bits() & 0x0000000F))))));
-
-  // defs: {Rd};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
-   Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
-
-  return true;
 }
 
 // The following are derived class decoder testers for decoder actions

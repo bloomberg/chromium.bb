@@ -62,8 +62,6 @@ class VectorBinary3RegisterImmOpTesterCase0
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorBinary3RegisterImmOpTesterCase0
@@ -85,38 +83,6 @@ bool VectorBinary3RegisterImmOpTesterCase0
   // Check other preconditions defined for the base decoder.
   return VectorBinary3RegisterImmOpTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorBinary3RegisterImmOpTesterCase0
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorBinary3RegisterImmOpTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: Q(6)=1 &&
-  //       (Vd(0)=1 ||
-  //       Vn(0)=1 ||
-  //       Vm(0)=1) => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040)  ==
-          0x00000040) &&
-       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001) ||
-       ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
-          0x00000001) ||
-       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
-          0x00000001)))));
-
-  // safety: Q(6)=0 &&
-  //       imm4(3)=1 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040)  ==
-          0x00000000) &&
-       ((((inst.Bits() & 0x00000F00) >> 8) & 0x00000008)  ==
-          0x00000008)));
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // U(24)=1 & A(23:19)=1x11x & B(11:8)=1100 & C(7:4)=0xx0
@@ -143,8 +109,6 @@ class VectorUnary2RegisterDupTesterCase1
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorUnary2RegisterDupTesterCase1
@@ -169,29 +133,6 @@ bool VectorUnary2RegisterDupTesterCase1
   // Check other preconditions defined for the base decoder.
   return VectorUnary2RegisterDupTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorUnary2RegisterDupTesterCase1
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorUnary2RegisterDupTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: imm4(19:16)=x000 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x00070000)  !=
-          0x00000000);
-
-  // safety: Q(6)=1 &&
-  //       Vd(0)=1 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040)  ==
-          0x00000040) &&
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001)));
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // U(24)=1 & A(23:19)=1x11x & B(11:8)=10xx & C(7:4)=xxx0
@@ -219,8 +160,6 @@ class VectorBinary3RegisterLookupOpTesterCase2
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorBinary3RegisterLookupOpTesterCase2
@@ -245,22 +184,6 @@ bool VectorBinary3RegisterLookupOpTesterCase2
   // Check other preconditions defined for the base decoder.
   return VectorBinary3RegisterLookupOpTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorBinary3RegisterLookupOpTesterCase2
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorBinary3RegisterLookupOpTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: n + length  >
-  //          32 => UNPREDICTABLE
-  EXPECT_TRUE((((((((inst.Bits() & 0x00000080) >> 7)) << 4) | ((inst.Bits() & 0x000F0000) >> 16)) + ((inst.Bits() & 0x00000300) >> 8) + 1) <= (32)));
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // The following are derived class decoder testers for decoder actions

@@ -140,8 +140,6 @@ class MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0TesterCase2
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0TesterCase2
@@ -163,28 +161,6 @@ bool MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0TesterCase2
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0TesterCase2
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: Rd(15:12)=1111 => UNPREDICTABLE
-  EXPECT_TRUE((inst.Bits() & 0x0000F000)  !=
-          0x0000F000);
-
-  // defs: {Rd, NZCV
-  //       if S
-  //       else None};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
-   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
-   Add(Register(((((inst.Bits() & 0x00100000) >> 20) != 0)
-       ? 16
-       : 32)))));
-
-  return true;
 }
 
 // op(25)=1 & op1(24:20)=10100
@@ -214,8 +190,6 @@ class MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0TesterCase3
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0TesterCase3
@@ -237,28 +211,6 @@ bool MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0TesterCase3
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0TesterCase3
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: Rd(15:12)=1111 => UNPREDICTABLE
-  EXPECT_TRUE((inst.Bits() & 0x0000F000)  !=
-          0x0000F000);
-
-  // defs: {Rd, NZCV
-  //       if S
-  //       else None};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
-   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
-   Add(Register(((((inst.Bits() & 0x00100000) >> 20) != 0)
-       ? 16
-       : 32)))));
-
-  return true;
 }
 
 // The following are derived class decoder testers for decoder actions

@@ -101,8 +101,6 @@ class VectorLoadStoreMultiple1TesterCase0
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadStoreMultiple1TesterCase0
@@ -124,73 +122,6 @@ bool VectorLoadStoreMultiple1TesterCase0
   // Check other preconditions defined for the base decoder.
   return VectorLoadStoreMultipleTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadStoreMultiple1TesterCase0
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadStoreMultipleTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: type(11:8)=0111 &&
-  //       align(1)=1 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000F00)  ==
-          0x00000700) &&
-       ((((inst.Bits() & 0x00000030) >> 4) & 0x00000002)  ==
-          0x00000002)));
-
-  // safety: type(11:8)=1010 &&
-  //       align(5:4)=11 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000F00)  ==
-          0x00000A00) &&
-       ((inst.Bits() & 0x00000030)  ==
-          0x00000030)));
-
-  // safety: type(11:8)=0110 &&
-  //       align(1)=1 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000F00)  ==
-          0x00000600) &&
-       ((((inst.Bits() & 0x00000030) >> 4) & 0x00000002)  ==
-          0x00000002)));
-
-  // safety: not type in bitset {'0111', '1010', '0110', '0010'} => DECODER_ERROR
-  EXPECT_TRUE(((inst.Bits() & 0x00000F00)  ==
-          0x00000700) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000A00) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000600) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000200));
-
-  // safety: n  ==
-  //          Pc ||
-  //       d + regs  >
-  //          32 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + ((inst.Bits() & 0x00000F00)  ==
-          0x00000700
-       ? 1
-       : ((inst.Bits() & 0x00000F00)  ==
-          0x00000A00
-       ? 2
-       : ((inst.Bits() & 0x00000F00)  ==
-          0x00000600
-       ? 3
-       : ((inst.Bits() & 0x00000F00)  ==
-          0x00000200
-       ? 4
-       : 0))))) > (32)))));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=0 & A(23)=0 & B(11:8)=0011
@@ -258,8 +189,6 @@ class VectorLoadStoreMultiple2TesterCase1
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadStoreMultiple2TesterCase1
@@ -281,59 +210,6 @@ bool VectorLoadStoreMultiple2TesterCase1
   // Check other preconditions defined for the base decoder.
   return VectorLoadStoreMultipleTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadStoreMultiple2TesterCase1
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadStoreMultipleTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(7:6)=11 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x000000C0)  !=
-          0x000000C0);
-
-  // safety: type in bitset {'1000', '1001'} &&
-  //       align(5:4)=11 => UNDEFINED
-  EXPECT_TRUE(!((((inst.Bits() & 0x00000F00)  ==
-          0x00000800) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000900)) &&
-       ((inst.Bits() & 0x00000030)  ==
-          0x00000030)));
-
-  // safety: not type in bitset {'1000', '1001', '0011'} => DECODER_ERROR
-  EXPECT_TRUE(((inst.Bits() & 0x00000F00)  ==
-          0x00000800) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000900) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000300));
-
-  // safety: n  ==
-  //          Pc ||
-  //       d2 + regs  >
-  //          32 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + ((inst.Bits() & 0x00000F00)  ==
-          0x00000800
-       ? 1
-       : 2) + (((inst.Bits() & 0x00000F00)  ==
-          0x00000800) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000900)
-       ? 1
-       : 2)) > (32)))));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=0 & A(23)=0 & B(11:8)=1010
@@ -404,8 +280,6 @@ class VectorLoadStoreMultiple1TesterCase2
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadStoreMultiple1TesterCase2
@@ -427,73 +301,6 @@ bool VectorLoadStoreMultiple1TesterCase2
   // Check other preconditions defined for the base decoder.
   return VectorLoadStoreMultipleTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadStoreMultiple1TesterCase2
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadStoreMultipleTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: type(11:8)=0111 &&
-  //       align(1)=1 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000F00)  ==
-          0x00000700) &&
-       ((((inst.Bits() & 0x00000030) >> 4) & 0x00000002)  ==
-          0x00000002)));
-
-  // safety: type(11:8)=1010 &&
-  //       align(5:4)=11 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000F00)  ==
-          0x00000A00) &&
-       ((inst.Bits() & 0x00000030)  ==
-          0x00000030)));
-
-  // safety: type(11:8)=0110 &&
-  //       align(1)=1 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000F00)  ==
-          0x00000600) &&
-       ((((inst.Bits() & 0x00000030) >> 4) & 0x00000002)  ==
-          0x00000002)));
-
-  // safety: not type in bitset {'0111', '1010', '0110', '0010'} => DECODER_ERROR
-  EXPECT_TRUE(((inst.Bits() & 0x00000F00)  ==
-          0x00000700) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000A00) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000600) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000200));
-
-  // safety: n  ==
-  //          Pc ||
-  //       d + regs  >
-  //          32 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + ((inst.Bits() & 0x00000F00)  ==
-          0x00000700
-       ? 1
-       : ((inst.Bits() & 0x00000F00)  ==
-          0x00000A00
-       ? 2
-       : ((inst.Bits() & 0x00000F00)  ==
-          0x00000600
-       ? 3
-       : ((inst.Bits() & 0x00000F00)  ==
-          0x00000200
-       ? 4
-       : 0))))) > (32)))));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=0 & A(23)=0 & B(11:8)=000x
@@ -556,8 +363,6 @@ class VectorLoadStoreMultiple4TesterCase3
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadStoreMultiple4TesterCase3
@@ -579,49 +384,6 @@ bool VectorLoadStoreMultiple4TesterCase3
   // Check other preconditions defined for the base decoder.
   return VectorLoadStoreMultipleTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadStoreMultiple4TesterCase3
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadStoreMultipleTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(7:6)=11 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x000000C0)  !=
-          0x000000C0);
-
-  // safety: not type in bitset {'0000', '0001'} => DECODER_ERROR
-  EXPECT_TRUE(((inst.Bits() & 0x00000F00)  ==
-          0x00000000) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000100));
-
-  // safety: n  ==
-  //          Pc ||
-  //       d4  >
-  //          31 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + ((inst.Bits() & 0x00000F00)  ==
-          0x00000000
-       ? 1
-       : 2) + ((inst.Bits() & 0x00000F00)  ==
-          0x00000000
-       ? 1
-       : 2) + ((inst.Bits() & 0x00000F00)  ==
-          0x00000000
-       ? 1
-       : 2)) > (31)))));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=0 & A(23)=0 & B(11:8)=010x
@@ -686,8 +448,6 @@ class VectorLoadStoreMultiple3TesterCase4
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadStoreMultiple3TesterCase4
@@ -709,49 +469,6 @@ bool VectorLoadStoreMultiple3TesterCase4
   // Check other preconditions defined for the base decoder.
   return VectorLoadStoreMultipleTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadStoreMultiple3TesterCase4
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadStoreMultipleTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(7:6)=11 ||
-  //       align(1)=1 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x000000C0)  ==
-          0x000000C0) ||
-       ((((inst.Bits() & 0x00000030) >> 4) & 0x00000002)  ==
-          0x00000002)));
-
-  // safety: not type in bitset {'0100', '0101'} => DECODER_ERROR
-  EXPECT_TRUE(((inst.Bits() & 0x00000F00)  ==
-          0x00000400) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000500));
-
-  // safety: n  ==
-  //          Pc ||
-  //       d3  >
-  //          31 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + ((inst.Bits() & 0x00000F00)  ==
-          0x00000400
-       ? 1
-       : 2) + ((inst.Bits() & 0x00000F00)  ==
-          0x00000400
-       ? 1
-       : 2)) > (31)))));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=0 & A(23)=0 & B(11:8)=011x
@@ -822,8 +539,6 @@ class VectorLoadStoreMultiple1TesterCase5
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadStoreMultiple1TesterCase5
@@ -845,73 +560,6 @@ bool VectorLoadStoreMultiple1TesterCase5
   // Check other preconditions defined for the base decoder.
   return VectorLoadStoreMultipleTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadStoreMultiple1TesterCase5
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadStoreMultipleTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: type(11:8)=0111 &&
-  //       align(1)=1 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000F00)  ==
-          0x00000700) &&
-       ((((inst.Bits() & 0x00000030) >> 4) & 0x00000002)  ==
-          0x00000002)));
-
-  // safety: type(11:8)=1010 &&
-  //       align(5:4)=11 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000F00)  ==
-          0x00000A00) &&
-       ((inst.Bits() & 0x00000030)  ==
-          0x00000030)));
-
-  // safety: type(11:8)=0110 &&
-  //       align(1)=1 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000F00)  ==
-          0x00000600) &&
-       ((((inst.Bits() & 0x00000030) >> 4) & 0x00000002)  ==
-          0x00000002)));
-
-  // safety: not type in bitset {'0111', '1010', '0110', '0010'} => DECODER_ERROR
-  EXPECT_TRUE(((inst.Bits() & 0x00000F00)  ==
-          0x00000700) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000A00) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000600) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000200));
-
-  // safety: n  ==
-  //          Pc ||
-  //       d + regs  >
-  //          32 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + ((inst.Bits() & 0x00000F00)  ==
-          0x00000700
-       ? 1
-       : ((inst.Bits() & 0x00000F00)  ==
-          0x00000A00
-       ? 2
-       : ((inst.Bits() & 0x00000F00)  ==
-          0x00000600
-       ? 3
-       : ((inst.Bits() & 0x00000F00)  ==
-          0x00000200
-       ? 4
-       : 0))))) > (32)))));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=0 & A(23)=0 & B(11:8)=100x
@@ -979,8 +627,6 @@ class VectorLoadStoreMultiple2TesterCase6
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadStoreMultiple2TesterCase6
@@ -1002,59 +648,6 @@ bool VectorLoadStoreMultiple2TesterCase6
   // Check other preconditions defined for the base decoder.
   return VectorLoadStoreMultipleTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadStoreMultiple2TesterCase6
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadStoreMultipleTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(7:6)=11 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x000000C0)  !=
-          0x000000C0);
-
-  // safety: type in bitset {'1000', '1001'} &&
-  //       align(5:4)=11 => UNDEFINED
-  EXPECT_TRUE(!((((inst.Bits() & 0x00000F00)  ==
-          0x00000800) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000900)) &&
-       ((inst.Bits() & 0x00000030)  ==
-          0x00000030)));
-
-  // safety: not type in bitset {'1000', '1001', '0011'} => DECODER_ERROR
-  EXPECT_TRUE(((inst.Bits() & 0x00000F00)  ==
-          0x00000800) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000900) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000300));
-
-  // safety: n  ==
-  //          Pc ||
-  //       d2 + regs  >
-  //          32 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + ((inst.Bits() & 0x00000F00)  ==
-          0x00000800
-       ? 1
-       : 2) + (((inst.Bits() & 0x00000F00)  ==
-          0x00000800) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000900)
-       ? 1
-       : 2)) > (32)))));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=0 & A(23)=1 & B(11:8)=1000
@@ -1109,8 +702,6 @@ class VectorLoadStoreSingle1TesterCase7
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadStoreSingle1TesterCase7
@@ -1132,62 +723,6 @@ bool VectorLoadStoreSingle1TesterCase7
   // Check other preconditions defined for the base decoder.
   return VectorLoadStoreSingleTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadStoreSingle1TesterCase7
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadStoreSingleTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(11:10)=11 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x00000C00)  !=
-          0x00000C00);
-
-  // safety: size(11:10)=00 &&
-  //       index_align(0)=~0 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000000) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000001)  !=
-          0x00000000)));
-
-  // safety: size(11:10)=01 &&
-  //       index_align(1)=~0 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000400) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  !=
-          0x00000000)));
-
-  // safety: size(11:10)=10 &&
-  //       index_align(2)=~0 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000800) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000004)  !=
-          0x00000000)));
-
-  // safety: size(11:10)=10 &&
-  //       index_align(1:0)=~00 &&
-  //       index_align(1:0)=~11 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000800) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000003)  !=
-          0x00000000) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000003)  !=
-          0x00000003)));
-
-  // safety: n  ==
-  //          Pc => UNPREDICTABLE
-  EXPECT_TRUE(((((inst.Bits() & 0x000F0000) >> 16)) != (15)));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=0 & A(23)=1 & B(11:8)=1001
@@ -1257,8 +792,6 @@ class VectorLoadStoreSingle2TesterCase8
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadStoreSingle2TesterCase8
@@ -1280,56 +813,6 @@ bool VectorLoadStoreSingle2TesterCase8
   // Check other preconditions defined for the base decoder.
   return VectorLoadStoreSingleTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadStoreSingle2TesterCase8
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadStoreSingleTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(11:10)=11 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x00000C00)  !=
-          0x00000C00);
-
-  // safety: size(11:10)=10 &&
-  //       index_align(1)=~0 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000800) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  !=
-          0x00000000)));
-
-  // safety: n  ==
-  //          Pc ||
-  //       d2  >
-  //          31 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + ((inst.Bits() & 0x00000C00)  ==
-          0x00000000
-       ? 1
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000400
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000800
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000004)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : 0)))) > (31)))));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=0 & A(23)=1 & B(11:8)=1010
@@ -1404,8 +887,6 @@ class VectorLoadStoreSingle3TesterCase9
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadStoreSingle3TesterCase9
@@ -1427,85 +908,6 @@ bool VectorLoadStoreSingle3TesterCase9
   // Check other preconditions defined for the base decoder.
   return VectorLoadStoreSingleTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadStoreSingle3TesterCase9
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadStoreSingleTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(11:10)=11 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x00000C00)  !=
-          0x00000C00);
-
-  // safety: size(11:10)=00 &&
-  //       index_align(0)=~0 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000000) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000001)  !=
-          0x00000000)));
-
-  // safety: size(11:10)=01 &&
-  //       index_align(0)=~0 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000400) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000001)  !=
-          0x00000000)));
-
-  // safety: size(11:10)=10 &&
-  //       index_align(1:0)=~00 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000800) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000003)  !=
-          0x00000000)));
-
-  // safety: n  ==
-  //          Pc ||
-  //       d3  >
-  //          31 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + ((inst.Bits() & 0x00000C00)  ==
-          0x00000000
-       ? 1
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000400
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000800
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000004)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : 0))) + ((inst.Bits() & 0x00000C00)  ==
-          0x00000000
-       ? 1
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000400
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000800
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000004)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : 0)))) > (31)))));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=0 & A(23)=1 & B(11:8)=1011
@@ -1577,8 +979,6 @@ class VectorLoadStoreSingle4TesterCase10
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadStoreSingle4TesterCase10
@@ -1600,86 +1000,6 @@ bool VectorLoadStoreSingle4TesterCase10
   // Check other preconditions defined for the base decoder.
   return VectorLoadStoreSingleTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadStoreSingle4TesterCase10
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadStoreSingleTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(11:10)=11 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x00000C00)  !=
-          0x00000C00);
-
-  // safety: size(11:10)=10 &&
-  //       index_align(1:0)=11 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000800) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000003)  ==
-          0x00000003)));
-
-  // safety: n  ==
-  //          Pc ||
-  //       d4  >
-  //          31 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + ((inst.Bits() & 0x00000C00)  ==
-          0x00000000
-       ? 1
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000400
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000800
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000004)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : 0))) + ((inst.Bits() & 0x00000C00)  ==
-          0x00000000
-       ? 1
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000400
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000800
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000004)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : 0))) + ((inst.Bits() & 0x00000C00)  ==
-          0x00000000
-       ? 1
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000400
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000800
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000004)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : 0)))) > (31)))));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=0 & A(23)=1 & B(11:8)=0x00
@@ -1734,8 +1054,6 @@ class VectorLoadStoreSingle1TesterCase11
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadStoreSingle1TesterCase11
@@ -1757,62 +1075,6 @@ bool VectorLoadStoreSingle1TesterCase11
   // Check other preconditions defined for the base decoder.
   return VectorLoadStoreSingleTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadStoreSingle1TesterCase11
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadStoreSingleTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(11:10)=11 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x00000C00)  !=
-          0x00000C00);
-
-  // safety: size(11:10)=00 &&
-  //       index_align(0)=~0 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000000) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000001)  !=
-          0x00000000)));
-
-  // safety: size(11:10)=01 &&
-  //       index_align(1)=~0 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000400) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  !=
-          0x00000000)));
-
-  // safety: size(11:10)=10 &&
-  //       index_align(2)=~0 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000800) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000004)  !=
-          0x00000000)));
-
-  // safety: size(11:10)=10 &&
-  //       index_align(1:0)=~00 &&
-  //       index_align(1:0)=~11 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000800) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000003)  !=
-          0x00000000) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000003)  !=
-          0x00000003)));
-
-  // safety: n  ==
-  //          Pc => UNPREDICTABLE
-  EXPECT_TRUE(((((inst.Bits() & 0x000F0000) >> 16)) != (15)));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=0 & A(23)=1 & B(11:8)=0x01
@@ -1882,8 +1144,6 @@ class VectorLoadStoreSingle2TesterCase12
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadStoreSingle2TesterCase12
@@ -1905,56 +1165,6 @@ bool VectorLoadStoreSingle2TesterCase12
   // Check other preconditions defined for the base decoder.
   return VectorLoadStoreSingleTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadStoreSingle2TesterCase12
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadStoreSingleTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(11:10)=11 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x00000C00)  !=
-          0x00000C00);
-
-  // safety: size(11:10)=10 &&
-  //       index_align(1)=~0 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000800) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  !=
-          0x00000000)));
-
-  // safety: n  ==
-  //          Pc ||
-  //       d2  >
-  //          31 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + ((inst.Bits() & 0x00000C00)  ==
-          0x00000000
-       ? 1
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000400
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000800
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000004)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : 0)))) > (31)))));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=0 & A(23)=1 & B(11:8)=0x10
@@ -2029,8 +1239,6 @@ class VectorLoadStoreSingle3TesterCase13
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadStoreSingle3TesterCase13
@@ -2052,85 +1260,6 @@ bool VectorLoadStoreSingle3TesterCase13
   // Check other preconditions defined for the base decoder.
   return VectorLoadStoreSingleTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadStoreSingle3TesterCase13
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadStoreSingleTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(11:10)=11 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x00000C00)  !=
-          0x00000C00);
-
-  // safety: size(11:10)=00 &&
-  //       index_align(0)=~0 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000000) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000001)  !=
-          0x00000000)));
-
-  // safety: size(11:10)=01 &&
-  //       index_align(0)=~0 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000400) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000001)  !=
-          0x00000000)));
-
-  // safety: size(11:10)=10 &&
-  //       index_align(1:0)=~00 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000800) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000003)  !=
-          0x00000000)));
-
-  // safety: n  ==
-  //          Pc ||
-  //       d3  >
-  //          31 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + ((inst.Bits() & 0x00000C00)  ==
-          0x00000000
-       ? 1
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000400
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000800
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000004)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : 0))) + ((inst.Bits() & 0x00000C00)  ==
-          0x00000000
-       ? 1
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000400
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000800
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000004)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : 0)))) > (31)))));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=0 & A(23)=1 & B(11:8)=0x11
@@ -2202,8 +1331,6 @@ class VectorLoadStoreSingle4TesterCase14
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadStoreSingle4TesterCase14
@@ -2225,86 +1352,6 @@ bool VectorLoadStoreSingle4TesterCase14
   // Check other preconditions defined for the base decoder.
   return VectorLoadStoreSingleTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadStoreSingle4TesterCase14
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadStoreSingleTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(11:10)=11 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x00000C00)  !=
-          0x00000C00);
-
-  // safety: size(11:10)=10 &&
-  //       index_align(1:0)=11 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000800) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000003)  ==
-          0x00000003)));
-
-  // safety: n  ==
-  //          Pc ||
-  //       d4  >
-  //          31 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + ((inst.Bits() & 0x00000C00)  ==
-          0x00000000
-       ? 1
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000400
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000800
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000004)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : 0))) + ((inst.Bits() & 0x00000C00)  ==
-          0x00000000
-       ? 1
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000400
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000800
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000004)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : 0))) + ((inst.Bits() & 0x00000C00)  ==
-          0x00000000
-       ? 1
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000400
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000800
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000004)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : 0)))) > (31)))));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=1 & A(23)=0 & B(11:8)=0010
@@ -2375,8 +1422,6 @@ class VectorLoadStoreMultiple1TesterCase15
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadStoreMultiple1TesterCase15
@@ -2398,73 +1443,6 @@ bool VectorLoadStoreMultiple1TesterCase15
   // Check other preconditions defined for the base decoder.
   return VectorLoadStoreMultipleTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadStoreMultiple1TesterCase15
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadStoreMultipleTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: type(11:8)=0111 &&
-  //       align(1)=1 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000F00)  ==
-          0x00000700) &&
-       ((((inst.Bits() & 0x00000030) >> 4) & 0x00000002)  ==
-          0x00000002)));
-
-  // safety: type(11:8)=1010 &&
-  //       align(5:4)=11 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000F00)  ==
-          0x00000A00) &&
-       ((inst.Bits() & 0x00000030)  ==
-          0x00000030)));
-
-  // safety: type(11:8)=0110 &&
-  //       align(1)=1 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000F00)  ==
-          0x00000600) &&
-       ((((inst.Bits() & 0x00000030) >> 4) & 0x00000002)  ==
-          0x00000002)));
-
-  // safety: not type in bitset {'0111', '1010', '0110', '0010'} => DECODER_ERROR
-  EXPECT_TRUE(((inst.Bits() & 0x00000F00)  ==
-          0x00000700) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000A00) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000600) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000200));
-
-  // safety: n  ==
-  //          Pc ||
-  //       d + regs  >
-  //          32 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + ((inst.Bits() & 0x00000F00)  ==
-          0x00000700
-       ? 1
-       : ((inst.Bits() & 0x00000F00)  ==
-          0x00000A00
-       ? 2
-       : ((inst.Bits() & 0x00000F00)  ==
-          0x00000600
-       ? 3
-       : ((inst.Bits() & 0x00000F00)  ==
-          0x00000200
-       ? 4
-       : 0))))) > (32)))));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=1 & A(23)=0 & B(11:8)=0011
@@ -2532,8 +1510,6 @@ class VectorLoadStoreMultiple2TesterCase16
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadStoreMultiple2TesterCase16
@@ -2555,59 +1531,6 @@ bool VectorLoadStoreMultiple2TesterCase16
   // Check other preconditions defined for the base decoder.
   return VectorLoadStoreMultipleTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadStoreMultiple2TesterCase16
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadStoreMultipleTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(7:6)=11 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x000000C0)  !=
-          0x000000C0);
-
-  // safety: type in bitset {'1000', '1001'} &&
-  //       align(5:4)=11 => UNDEFINED
-  EXPECT_TRUE(!((((inst.Bits() & 0x00000F00)  ==
-          0x00000800) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000900)) &&
-       ((inst.Bits() & 0x00000030)  ==
-          0x00000030)));
-
-  // safety: not type in bitset {'1000', '1001', '0011'} => DECODER_ERROR
-  EXPECT_TRUE(((inst.Bits() & 0x00000F00)  ==
-          0x00000800) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000900) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000300));
-
-  // safety: n  ==
-  //          Pc ||
-  //       d2 + regs  >
-  //          32 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + ((inst.Bits() & 0x00000F00)  ==
-          0x00000800
-       ? 1
-       : 2) + (((inst.Bits() & 0x00000F00)  ==
-          0x00000800) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000900)
-       ? 1
-       : 2)) > (32)))));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=1 & A(23)=0 & B(11:8)=1010
@@ -2678,8 +1601,6 @@ class VectorLoadStoreMultiple1TesterCase17
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadStoreMultiple1TesterCase17
@@ -2701,73 +1622,6 @@ bool VectorLoadStoreMultiple1TesterCase17
   // Check other preconditions defined for the base decoder.
   return VectorLoadStoreMultipleTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadStoreMultiple1TesterCase17
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadStoreMultipleTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: type(11:8)=0111 &&
-  //       align(1)=1 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000F00)  ==
-          0x00000700) &&
-       ((((inst.Bits() & 0x00000030) >> 4) & 0x00000002)  ==
-          0x00000002)));
-
-  // safety: type(11:8)=1010 &&
-  //       align(5:4)=11 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000F00)  ==
-          0x00000A00) &&
-       ((inst.Bits() & 0x00000030)  ==
-          0x00000030)));
-
-  // safety: type(11:8)=0110 &&
-  //       align(1)=1 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000F00)  ==
-          0x00000600) &&
-       ((((inst.Bits() & 0x00000030) >> 4) & 0x00000002)  ==
-          0x00000002)));
-
-  // safety: not type in bitset {'0111', '1010', '0110', '0010'} => DECODER_ERROR
-  EXPECT_TRUE(((inst.Bits() & 0x00000F00)  ==
-          0x00000700) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000A00) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000600) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000200));
-
-  // safety: n  ==
-  //          Pc ||
-  //       d + regs  >
-  //          32 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + ((inst.Bits() & 0x00000F00)  ==
-          0x00000700
-       ? 1
-       : ((inst.Bits() & 0x00000F00)  ==
-          0x00000A00
-       ? 2
-       : ((inst.Bits() & 0x00000F00)  ==
-          0x00000600
-       ? 3
-       : ((inst.Bits() & 0x00000F00)  ==
-          0x00000200
-       ? 4
-       : 0))))) > (32)))));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=1 & A(23)=0 & B(11:8)=000x
@@ -2830,8 +1684,6 @@ class VectorLoadStoreMultiple4TesterCase18
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadStoreMultiple4TesterCase18
@@ -2853,49 +1705,6 @@ bool VectorLoadStoreMultiple4TesterCase18
   // Check other preconditions defined for the base decoder.
   return VectorLoadStoreMultipleTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadStoreMultiple4TesterCase18
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadStoreMultipleTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(7:6)=11 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x000000C0)  !=
-          0x000000C0);
-
-  // safety: not type in bitset {'0000', '0001'} => DECODER_ERROR
-  EXPECT_TRUE(((inst.Bits() & 0x00000F00)  ==
-          0x00000000) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000100));
-
-  // safety: n  ==
-  //          Pc ||
-  //       d4  >
-  //          31 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + ((inst.Bits() & 0x00000F00)  ==
-          0x00000000
-       ? 1
-       : 2) + ((inst.Bits() & 0x00000F00)  ==
-          0x00000000
-       ? 1
-       : 2) + ((inst.Bits() & 0x00000F00)  ==
-          0x00000000
-       ? 1
-       : 2)) > (31)))));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=1 & A(23)=0 & B(11:8)=010x
@@ -2960,8 +1769,6 @@ class VectorLoadStoreMultiple3TesterCase19
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadStoreMultiple3TesterCase19
@@ -2983,49 +1790,6 @@ bool VectorLoadStoreMultiple3TesterCase19
   // Check other preconditions defined for the base decoder.
   return VectorLoadStoreMultipleTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadStoreMultiple3TesterCase19
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadStoreMultipleTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(7:6)=11 ||
-  //       align(1)=1 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x000000C0)  ==
-          0x000000C0) ||
-       ((((inst.Bits() & 0x00000030) >> 4) & 0x00000002)  ==
-          0x00000002)));
-
-  // safety: not type in bitset {'0100', '0101'} => DECODER_ERROR
-  EXPECT_TRUE(((inst.Bits() & 0x00000F00)  ==
-          0x00000400) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000500));
-
-  // safety: n  ==
-  //          Pc ||
-  //       d3  >
-  //          31 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + ((inst.Bits() & 0x00000F00)  ==
-          0x00000400
-       ? 1
-       : 2) + ((inst.Bits() & 0x00000F00)  ==
-          0x00000400
-       ? 1
-       : 2)) > (31)))));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=1 & A(23)=0 & B(11:8)=011x
@@ -3096,8 +1860,6 @@ class VectorLoadStoreMultiple1TesterCase20
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadStoreMultiple1TesterCase20
@@ -3119,73 +1881,6 @@ bool VectorLoadStoreMultiple1TesterCase20
   // Check other preconditions defined for the base decoder.
   return VectorLoadStoreMultipleTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadStoreMultiple1TesterCase20
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadStoreMultipleTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: type(11:8)=0111 &&
-  //       align(1)=1 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000F00)  ==
-          0x00000700) &&
-       ((((inst.Bits() & 0x00000030) >> 4) & 0x00000002)  ==
-          0x00000002)));
-
-  // safety: type(11:8)=1010 &&
-  //       align(5:4)=11 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000F00)  ==
-          0x00000A00) &&
-       ((inst.Bits() & 0x00000030)  ==
-          0x00000030)));
-
-  // safety: type(11:8)=0110 &&
-  //       align(1)=1 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000F00)  ==
-          0x00000600) &&
-       ((((inst.Bits() & 0x00000030) >> 4) & 0x00000002)  ==
-          0x00000002)));
-
-  // safety: not type in bitset {'0111', '1010', '0110', '0010'} => DECODER_ERROR
-  EXPECT_TRUE(((inst.Bits() & 0x00000F00)  ==
-          0x00000700) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000A00) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000600) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000200));
-
-  // safety: n  ==
-  //          Pc ||
-  //       d + regs  >
-  //          32 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + ((inst.Bits() & 0x00000F00)  ==
-          0x00000700
-       ? 1
-       : ((inst.Bits() & 0x00000F00)  ==
-          0x00000A00
-       ? 2
-       : ((inst.Bits() & 0x00000F00)  ==
-          0x00000600
-       ? 3
-       : ((inst.Bits() & 0x00000F00)  ==
-          0x00000200
-       ? 4
-       : 0))))) > (32)))));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=1 & A(23)=0 & B(11:8)=100x
@@ -3253,8 +1948,6 @@ class VectorLoadStoreMultiple2TesterCase21
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadStoreMultiple2TesterCase21
@@ -3276,59 +1969,6 @@ bool VectorLoadStoreMultiple2TesterCase21
   // Check other preconditions defined for the base decoder.
   return VectorLoadStoreMultipleTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadStoreMultiple2TesterCase21
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadStoreMultipleTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(7:6)=11 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x000000C0)  !=
-          0x000000C0);
-
-  // safety: type in bitset {'1000', '1001'} &&
-  //       align(5:4)=11 => UNDEFINED
-  EXPECT_TRUE(!((((inst.Bits() & 0x00000F00)  ==
-          0x00000800) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000900)) &&
-       ((inst.Bits() & 0x00000030)  ==
-          0x00000030)));
-
-  // safety: not type in bitset {'1000', '1001', '0011'} => DECODER_ERROR
-  EXPECT_TRUE(((inst.Bits() & 0x00000F00)  ==
-          0x00000800) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000900) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000300));
-
-  // safety: n  ==
-  //          Pc ||
-  //       d2 + regs  >
-  //          32 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + ((inst.Bits() & 0x00000F00)  ==
-          0x00000800
-       ? 1
-       : 2) + (((inst.Bits() & 0x00000F00)  ==
-          0x00000800) ||
-       ((inst.Bits() & 0x00000F00)  ==
-          0x00000900)
-       ? 1
-       : 2)) > (32)))));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=1 & A(23)=1 & B(11:8)=1000
@@ -3383,8 +2023,6 @@ class VectorLoadStoreSingle1TesterCase22
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadStoreSingle1TesterCase22
@@ -3406,62 +2044,6 @@ bool VectorLoadStoreSingle1TesterCase22
   // Check other preconditions defined for the base decoder.
   return VectorLoadStoreSingleTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadStoreSingle1TesterCase22
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadStoreSingleTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(11:10)=11 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x00000C00)  !=
-          0x00000C00);
-
-  // safety: size(11:10)=00 &&
-  //       index_align(0)=~0 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000000) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000001)  !=
-          0x00000000)));
-
-  // safety: size(11:10)=01 &&
-  //       index_align(1)=~0 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000400) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  !=
-          0x00000000)));
-
-  // safety: size(11:10)=10 &&
-  //       index_align(2)=~0 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000800) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000004)  !=
-          0x00000000)));
-
-  // safety: size(11:10)=10 &&
-  //       index_align(1:0)=~00 &&
-  //       index_align(1:0)=~11 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000800) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000003)  !=
-          0x00000000) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000003)  !=
-          0x00000003)));
-
-  // safety: n  ==
-  //          Pc => UNPREDICTABLE
-  EXPECT_TRUE(((((inst.Bits() & 0x000F0000) >> 16)) != (15)));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=1 & A(23)=1 & B(11:8)=1001
@@ -3531,8 +2113,6 @@ class VectorLoadStoreSingle2TesterCase23
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadStoreSingle2TesterCase23
@@ -3554,56 +2134,6 @@ bool VectorLoadStoreSingle2TesterCase23
   // Check other preconditions defined for the base decoder.
   return VectorLoadStoreSingleTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadStoreSingle2TesterCase23
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadStoreSingleTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(11:10)=11 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x00000C00)  !=
-          0x00000C00);
-
-  // safety: size(11:10)=10 &&
-  //       index_align(1)=~0 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000800) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  !=
-          0x00000000)));
-
-  // safety: n  ==
-  //          Pc ||
-  //       d2  >
-  //          31 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + ((inst.Bits() & 0x00000C00)  ==
-          0x00000000
-       ? 1
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000400
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000800
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000004)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : 0)))) > (31)))));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=1 & A(23)=1 & B(11:8)=1010
@@ -3678,8 +2208,6 @@ class VectorLoadStoreSingle3TesterCase24
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadStoreSingle3TesterCase24
@@ -3701,85 +2229,6 @@ bool VectorLoadStoreSingle3TesterCase24
   // Check other preconditions defined for the base decoder.
   return VectorLoadStoreSingleTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadStoreSingle3TesterCase24
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadStoreSingleTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(11:10)=11 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x00000C00)  !=
-          0x00000C00);
-
-  // safety: size(11:10)=00 &&
-  //       index_align(0)=~0 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000000) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000001)  !=
-          0x00000000)));
-
-  // safety: size(11:10)=01 &&
-  //       index_align(0)=~0 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000400) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000001)  !=
-          0x00000000)));
-
-  // safety: size(11:10)=10 &&
-  //       index_align(1:0)=~00 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000800) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000003)  !=
-          0x00000000)));
-
-  // safety: n  ==
-  //          Pc ||
-  //       d3  >
-  //          31 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + ((inst.Bits() & 0x00000C00)  ==
-          0x00000000
-       ? 1
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000400
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000800
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000004)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : 0))) + ((inst.Bits() & 0x00000C00)  ==
-          0x00000000
-       ? 1
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000400
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000800
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000004)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : 0)))) > (31)))));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=1 & A(23)=1 & B(11:8)=1011
@@ -3851,8 +2300,6 @@ class VectorLoadStoreSingle4TesterCase25
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadStoreSingle4TesterCase25
@@ -3874,86 +2321,6 @@ bool VectorLoadStoreSingle4TesterCase25
   // Check other preconditions defined for the base decoder.
   return VectorLoadStoreSingleTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadStoreSingle4TesterCase25
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadStoreSingleTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(11:10)=11 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x00000C00)  !=
-          0x00000C00);
-
-  // safety: size(11:10)=10 &&
-  //       index_align(1:0)=11 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000800) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000003)  ==
-          0x00000003)));
-
-  // safety: n  ==
-  //          Pc ||
-  //       d4  >
-  //          31 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + ((inst.Bits() & 0x00000C00)  ==
-          0x00000000
-       ? 1
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000400
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000800
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000004)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : 0))) + ((inst.Bits() & 0x00000C00)  ==
-          0x00000000
-       ? 1
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000400
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000800
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000004)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : 0))) + ((inst.Bits() & 0x00000C00)  ==
-          0x00000000
-       ? 1
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000400
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000800
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000004)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : 0)))) > (31)))));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=1 & A(23)=1 & B(11:8)=1100
@@ -4016,8 +2383,6 @@ class VectorLoadSingle1AllLanesTesterCase26
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadSingle1AllLanesTesterCase26
@@ -4039,43 +2404,6 @@ bool VectorLoadSingle1AllLanesTesterCase26
   // Check other preconditions defined for the base decoder.
   return VectorLoadSingleAllLanesTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadSingle1AllLanesTesterCase26
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadSingleAllLanesTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(7:6)=11 ||
-  //       (size(7:6)=00 &&
-  //       a(4)=1) => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x000000C0)  ==
-          0x000000C0) ||
-       ((((inst.Bits() & 0x000000C0)  ==
-          0x00000000) &&
-       ((inst.Bits() & 0x00000010)  ==
-          0x00000010)))));
-
-  // safety: n  ==
-  //          Pc ||
-  //       d + regs  >
-  //          32 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + ((inst.Bits() & 0x00000020)  ==
-          0x00000000
-       ? 1
-       : 2)) > (32)))));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=1 & A(23)=1 & B(11:8)=1101
@@ -4130,8 +2458,6 @@ class VectorLoadSingle2AllLanesTesterCase27
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadSingle2AllLanesTesterCase27
@@ -4153,37 +2479,6 @@ bool VectorLoadSingle2AllLanesTesterCase27
   // Check other preconditions defined for the base decoder.
   return VectorLoadSingleAllLanesTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadSingle2AllLanesTesterCase27
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadSingleAllLanesTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(7:6)=11 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x000000C0)  !=
-          0x000000C0);
-
-  // safety: n  ==
-  //          Pc ||
-  //       d2  >
-  //          31 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + ((inst.Bits() & 0x00000020)  ==
-          0x00000000
-       ? 1
-       : 2)) > (31)))));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=1 & A(23)=1 & B(11:8)=1110
@@ -4247,8 +2542,6 @@ class VectorLoadSingle3AllLanesTesterCase28
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadSingle3AllLanesTesterCase28
@@ -4270,43 +2563,6 @@ bool VectorLoadSingle3AllLanesTesterCase28
   // Check other preconditions defined for the base decoder.
   return VectorLoadSingleAllLanesTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadSingle3AllLanesTesterCase28
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadSingleAllLanesTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(7:6)=11 ||
-  //       a(4)=1 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x000000C0)  ==
-          0x000000C0) ||
-       ((inst.Bits() & 0x00000010)  ==
-          0x00000010)));
-
-  // safety: n  ==
-  //          Pc ||
-  //       d3  >
-  //          31 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + ((inst.Bits() & 0x00000020)  ==
-          0x00000000
-       ? 1
-       : 2) + ((inst.Bits() & 0x00000020)  ==
-          0x00000000
-       ? 1
-       : 2)) > (31)))));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=1 & A(23)=1 & B(11:8)=1111
@@ -4371,8 +2627,6 @@ class VectorLoadSingle4AllLanesTesterCase29
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadSingle4AllLanesTesterCase29
@@ -4394,46 +2648,6 @@ bool VectorLoadSingle4AllLanesTesterCase29
   // Check other preconditions defined for the base decoder.
   return VectorLoadSingleAllLanesTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadSingle4AllLanesTesterCase29
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadSingleAllLanesTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(7:6)=11 &&
-  //       a(4)=0 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x000000C0)  ==
-          0x000000C0) &&
-       ((inst.Bits() & 0x00000010)  ==
-          0x00000000)));
-
-  // safety: n  ==
-  //          Pc ||
-  //       d4  >
-  //          31 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + ((inst.Bits() & 0x00000020)  ==
-          0x00000000
-       ? 1
-       : 2) + ((inst.Bits() & 0x00000020)  ==
-          0x00000000
-       ? 1
-       : 2) + ((inst.Bits() & 0x00000020)  ==
-          0x00000000
-       ? 1
-       : 2)) > (31)))));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=1 & A(23)=1 & B(11:8)=0x00
@@ -4488,8 +2702,6 @@ class VectorLoadStoreSingle1TesterCase30
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadStoreSingle1TesterCase30
@@ -4511,62 +2723,6 @@ bool VectorLoadStoreSingle1TesterCase30
   // Check other preconditions defined for the base decoder.
   return VectorLoadStoreSingleTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadStoreSingle1TesterCase30
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadStoreSingleTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(11:10)=11 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x00000C00)  !=
-          0x00000C00);
-
-  // safety: size(11:10)=00 &&
-  //       index_align(0)=~0 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000000) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000001)  !=
-          0x00000000)));
-
-  // safety: size(11:10)=01 &&
-  //       index_align(1)=~0 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000400) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  !=
-          0x00000000)));
-
-  // safety: size(11:10)=10 &&
-  //       index_align(2)=~0 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000800) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000004)  !=
-          0x00000000)));
-
-  // safety: size(11:10)=10 &&
-  //       index_align(1:0)=~00 &&
-  //       index_align(1:0)=~11 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000800) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000003)  !=
-          0x00000000) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000003)  !=
-          0x00000003)));
-
-  // safety: n  ==
-  //          Pc => UNPREDICTABLE
-  EXPECT_TRUE(((((inst.Bits() & 0x000F0000) >> 16)) != (15)));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=1 & A(23)=1 & B(11:8)=0x01
@@ -4636,8 +2792,6 @@ class VectorLoadStoreSingle2TesterCase31
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadStoreSingle2TesterCase31
@@ -4659,56 +2813,6 @@ bool VectorLoadStoreSingle2TesterCase31
   // Check other preconditions defined for the base decoder.
   return VectorLoadStoreSingleTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadStoreSingle2TesterCase31
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadStoreSingleTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(11:10)=11 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x00000C00)  !=
-          0x00000C00);
-
-  // safety: size(11:10)=10 &&
-  //       index_align(1)=~0 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000800) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  !=
-          0x00000000)));
-
-  // safety: n  ==
-  //          Pc ||
-  //       d2  >
-  //          31 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + ((inst.Bits() & 0x00000C00)  ==
-          0x00000000
-       ? 1
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000400
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000800
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000004)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : 0)))) > (31)))));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=1 & A(23)=1 & B(11:8)=0x10
@@ -4783,8 +2887,6 @@ class VectorLoadStoreSingle3TesterCase32
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadStoreSingle3TesterCase32
@@ -4806,85 +2908,6 @@ bool VectorLoadStoreSingle3TesterCase32
   // Check other preconditions defined for the base decoder.
   return VectorLoadStoreSingleTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadStoreSingle3TesterCase32
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadStoreSingleTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(11:10)=11 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x00000C00)  !=
-          0x00000C00);
-
-  // safety: size(11:10)=00 &&
-  //       index_align(0)=~0 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000000) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000001)  !=
-          0x00000000)));
-
-  // safety: size(11:10)=01 &&
-  //       index_align(0)=~0 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000400) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000001)  !=
-          0x00000000)));
-
-  // safety: size(11:10)=10 &&
-  //       index_align(1:0)=~00 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000800) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000003)  !=
-          0x00000000)));
-
-  // safety: n  ==
-  //          Pc ||
-  //       d3  >
-  //          31 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + ((inst.Bits() & 0x00000C00)  ==
-          0x00000000
-       ? 1
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000400
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000800
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000004)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : 0))) + ((inst.Bits() & 0x00000C00)  ==
-          0x00000000
-       ? 1
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000400
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000800
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000004)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : 0)))) > (31)))));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // L(21)=1 & A(23)=1 & B(11:8)=0x11
@@ -4956,8 +2979,6 @@ class VectorLoadStoreSingle4TesterCase33
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorLoadStoreSingle4TesterCase33
@@ -4979,86 +3000,6 @@ bool VectorLoadStoreSingle4TesterCase33
   // Check other preconditions defined for the base decoder.
   return VectorLoadStoreSingleTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VectorLoadStoreSingle4TesterCase33
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorLoadStoreSingleTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: size(11:10)=11 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x00000C00)  !=
-          0x00000C00);
-
-  // safety: size(11:10)=10 &&
-  //       index_align(1:0)=11 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000C00)  ==
-          0x00000800) &&
-       ((((inst.Bits() & 0x000000F0) >> 4) & 0x00000003)  ==
-          0x00000003)));
-
-  // safety: n  ==
-  //          Pc ||
-  //       d4  >
-  //          31 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + ((inst.Bits() & 0x00000C00)  ==
-          0x00000000
-       ? 1
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000400
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000800
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000004)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : 0))) + ((inst.Bits() & 0x00000C00)  ==
-          0x00000000
-       ? 1
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000400
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000800
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000004)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : 0))) + ((inst.Bits() & 0x00000C00)  ==
-          0x00000000
-       ? 1
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000400
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000002)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : ((inst.Bits() & 0x00000C00)  ==
-          0x00000800
-       ? (((((inst.Bits() & 0x000000F0) >> 4) & 0x00000004)  ==
-          0x00000000
-       ? 1
-       : 2))
-       : 0)))) > (31)))));
-
-  // defs: {base}
-  //       if wback
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame((((((inst.Bits() & 0x0000000F)) != (15)))
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // The following are derived class decoder testers for decoder actions

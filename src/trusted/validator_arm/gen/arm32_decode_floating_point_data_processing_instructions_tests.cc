@@ -52,8 +52,6 @@ class VMLA_VMLS_floating_point_cccc11100d00nnnndddd101snom0mmmm_case_0TesterCase
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VMLA_VMLS_floating_point_cccc11100d00nnnndddd101snom0mmmm_case_0TesterCase0
@@ -72,22 +70,6 @@ bool VMLA_VMLS_floating_point_cccc11100d00nnnndddd101snom0mmmm_case_0TesterCase0
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VMLA_VMLS_floating_point_cccc11100d00nnnndddd101snom0mmmm_case_0TesterCase0
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: cond(31:28)=1111 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0xF0000000)  !=
-          0xF0000000);
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // opc1(23:20)=0x01
@@ -109,8 +91,6 @@ class VNMLA_VNMLS_cccc11100d01nnnndddd101snom0mmmm_case_0TesterCase1
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VNMLA_VNMLS_cccc11100d01nnnndddd101snom0mmmm_case_0TesterCase1
@@ -129,22 +109,6 @@ bool VNMLA_VNMLS_cccc11100d01nnnndddd101snom0mmmm_case_0TesterCase1
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VNMLA_VNMLS_cccc11100d01nnnndddd101snom0mmmm_case_0TesterCase1
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: cond(31:28)=1111 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0xF0000000)  !=
-          0xF0000000);
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // opc1(23:20)=0x10 & opc3(7:6)=x0
@@ -166,8 +130,6 @@ class VMUL_floating_point_cccc11100d10nnnndddd101sn0m0mmmm_case_0TesterCase2
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VMUL_floating_point_cccc11100d10nnnndddd101sn0m0mmmm_case_0TesterCase2
@@ -189,22 +151,6 @@ bool VMUL_floating_point_cccc11100d10nnnndddd101sn0m0mmmm_case_0TesterCase2
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VMUL_floating_point_cccc11100d10nnnndddd101sn0m0mmmm_case_0TesterCase2
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: cond(31:28)=1111 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0xF0000000)  !=
-          0xF0000000);
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // opc1(23:20)=0x10 & opc3(7:6)=x1
@@ -226,8 +172,6 @@ class VNMUL_cccc11100d10nnnndddd101sn1m0mmmm_case_0TesterCase3
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VNMUL_cccc11100d10nnnndddd101sn1m0mmmm_case_0TesterCase3
@@ -251,22 +195,6 @@ bool VNMUL_cccc11100d10nnnndddd101sn1m0mmmm_case_0TesterCase3
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VNMUL_cccc11100d10nnnndddd101sn1m0mmmm_case_0TesterCase3
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: cond(31:28)=1111 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0xF0000000)  !=
-          0xF0000000);
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
-}
-
 // opc1(23:20)=0x11 & opc3(7:6)=x0
 //    = {actual: Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1,
 //       baseline: VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_0,
@@ -286,8 +214,6 @@ class VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_0TesterCase4
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_0TesterCase4
@@ -311,22 +237,6 @@ bool VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_0TesterCase4
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_0TesterCase4
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: cond(31:28)=1111 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0xF0000000)  !=
-          0xF0000000);
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
-}
-
 // opc1(23:20)=0x11 & opc3(7:6)=x1
 //    = {actual: Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1,
 //       baseline: VSUB_floating_point_cccc11100d11nnnndddd101sn1m0mmmm_case_0,
@@ -346,8 +256,6 @@ class VSUB_floating_point_cccc11100d11nnnndddd101sn1m0mmmm_case_0TesterCase5
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VSUB_floating_point_cccc11100d11nnnndddd101sn1m0mmmm_case_0TesterCase5
@@ -371,22 +279,6 @@ bool VSUB_floating_point_cccc11100d11nnnndddd101sn1m0mmmm_case_0TesterCase5
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VSUB_floating_point_cccc11100d11nnnndddd101sn1m0mmmm_case_0TesterCase5
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: cond(31:28)=1111 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0xF0000000)  !=
-          0xF0000000);
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
-}
-
 // opc1(23:20)=1x00 & opc3(7:6)=x0
 //    = {actual: Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1,
 //       baseline: VDIV_cccc11101d00nnnndddd101sn0m0mmmm_case_0,
@@ -406,8 +298,6 @@ class VDIV_cccc11101d00nnnndddd101sn0m0mmmm_case_0TesterCase6
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VDIV_cccc11101d00nnnndddd101sn0m0mmmm_case_0TesterCase6
@@ -431,22 +321,6 @@ bool VDIV_cccc11101d00nnnndddd101sn0m0mmmm_case_0TesterCase6
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VDIV_cccc11101d00nnnndddd101sn0m0mmmm_case_0TesterCase6
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: cond(31:28)=1111 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0xF0000000)  !=
-          0xF0000000);
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
-}
-
 // opc1(23:20)=1x01
 //    = {actual: Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1,
 //       baseline: VFNMA_VFNMS_cccc11101d01nnnndddd101snom0mmmm_case_0,
@@ -466,8 +340,6 @@ class VFNMA_VFNMS_cccc11101d01nnnndddd101snom0mmmm_case_0TesterCase7
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VFNMA_VFNMS_cccc11101d01nnnndddd101snom0mmmm_case_0TesterCase7
@@ -486,22 +358,6 @@ bool VFNMA_VFNMS_cccc11101d01nnnndddd101snom0mmmm_case_0TesterCase7
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VFNMA_VFNMS_cccc11101d01nnnndddd101snom0mmmm_case_0TesterCase7
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: cond(31:28)=1111 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0xF0000000)  !=
-          0xF0000000);
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // opc1(23:20)=1x10
@@ -523,8 +379,6 @@ class VFMA_VFMS_cccc11101d10nnnndddd101snom0mmmm_case_0TesterCase8
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VFMA_VFMS_cccc11101d10nnnndddd101snom0mmmm_case_0TesterCase8
@@ -543,22 +397,6 @@ bool VFMA_VFMS_cccc11101d10nnnndddd101snom0mmmm_case_0TesterCase8
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VFMA_VFMS_cccc11101d10nnnndddd101snom0mmmm_case_0TesterCase8
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: cond(31:28)=1111 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0xF0000000)  !=
-          0xF0000000);
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // The following are derived class decoder testers for decoder actions

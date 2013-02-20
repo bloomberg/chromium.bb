@@ -758,10 +758,6 @@ CONSTRAINT_TESTER_RESTRICTIONS_HEADER="""
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);"""
 
-CONSTRAINT_TESTER_SANITY_HEADER="""
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);"""
-
 CONSTRAINT_TESTER_CLASS_CLOSE="""
 };
 """
@@ -794,29 +790,6 @@ CONSTRAINT_TESTER_CLASS_FOOTER="""
   // Check other preconditions defined for the base decoder.
   return %(base_base_tester)s::
       PassesParsePreconditions(inst, decoder);
-}
-"""
-
-SAFETY_TESTER_HEADER="""
-bool %(base_tester)s
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(%(base_base_tester)s::
-               ApplySanityChecks(inst, decoder));"""
-
-SAFETY_TESTER_CHECK="""
-
-  // safety: %(comment)s
-  EXPECT_TRUE(%(code)s);"""
-
-DEFS_SAFETY_CHECK="""
-
-  // defs: %(comment)s;
-  EXPECT_TRUE(decoder.defs(inst).IsSame(%(code)s));"""
-
-SAFETY_TESTER_FOOTER="""
-
-  return true;
 }
 """
 
@@ -1008,13 +981,9 @@ def _generate_constraint_testers(decoder, values, out):
     _install_row_cases(r, values)
     row = _row_filter_interesting_patterns(r)
     action = _install_test_row(row, decoder, values)
-    safety_to_check = _safety_to_check(action.safety())
-    defs_to_check = action.defs()
     out.write(CONSTRAINT_TESTER_CLASS_HEADER % values)
     if _row_action_has_parse_restrictions(row, action):
       out.write(CONSTRAINT_TESTER_RESTRICTIONS_HEADER % values);
-    if safety_to_check or defs_to_check:
-      out.write(CONSTRAINT_TESTER_SANITY_HEADER % values)
     out.write(CONSTRAINT_TESTER_CLASS_CLOSE % values)
     if _row_action_has_parse_restrictions(row, action):
       out.write(CONSTRAINT_TESTER_PARSE_HEADER % values)
@@ -1036,19 +1005,6 @@ def _generate_constraint_testers(decoder, values, out):
         # Special case where 'cccc' part of pattern can't be 1111.
         out.write(CONSTRAINT_TESTER_COND_TEST % values)
       out.write(CONSTRAINT_TESTER_CLASS_FOOTER % values)
-    if safety_to_check or defs_to_check:
-      out.write(SAFETY_TESTER_HEADER % values)
-      for check in safety_to_check:
-        values['comment'] = dgen_output.commented_string(
-            repr(check), '  ')
-        values['code'] = check.to_bool()
-        out.write(SAFETY_TESTER_CHECK % values)
-      if defs_to_check:
-        values['comment'] = dgen_output.commented_string(
-            repr(defs_to_check), '  ')
-        values['code'] = defs_to_check.to_register_list()
-        out.write(DEFS_SAFETY_CHECK % values)
-      out.write(SAFETY_TESTER_FOOTER % values)
 
 def _generate_rule_testers(decoder, values, out):
   """Generates the testers that tests the rule associated with

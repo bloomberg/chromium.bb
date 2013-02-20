@@ -69,8 +69,6 @@ class STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase0
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase0
@@ -89,40 +87,6 @@ bool STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase0
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase0
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: Rn  ==
-  //          Pc ||
-  //       NumGPRs(registers)  <
-  //          1 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       (((nacl_arm_dec::NumGPRs(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)))) < (1)))));
-
-  // safety: wback &&
-  //       Contains(registers, Rn) &&
-  //       Rn  !=
-  //          SmallestGPR(registers) => UNKNOWN
-  EXPECT_TRUE(!(((inst.Bits() & 0x00200000)  ==
-          0x00200000) &&
-       (nacl_arm_dec::Contains(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)), Register(((inst.Bits() & 0x000F0000) >> 16)))) &&
-       (((((inst.Bits() & 0x000F0000) >> 16)) != (nacl_arm_dec::SmallestGPR(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF))))))));
-
-  // defs: {Rn
-  //       if wback
-  //       else None};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
-   Add(Register(((inst.Bits() & 0x00200000)  ==
-          0x00200000
-       ? ((inst.Bits() & 0x000F0000) >> 16)
-       : 32)))));
-
-  return true;
 }
 
 // op(25:20)=0000x1
@@ -160,8 +124,6 @@ class LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase1
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase1
@@ -180,40 +142,6 @@ bool LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase1
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase1
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: Rn  ==
-  //          Pc ||
-  //       NumGPRs(registers)  <
-  //          1 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       (((nacl_arm_dec::NumGPRs(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)))) < (1)))));
-
-  // safety: wback &&
-  //       Contains(registers, Rn) => UNKNOWN
-  EXPECT_TRUE(!(((inst.Bits() & 0x00200000)  ==
-          0x00200000) &&
-       (nacl_arm_dec::Contains(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)), Register(((inst.Bits() & 0x000F0000) >> 16))))));
-
-  // safety: Contains(registers, Pc) => FORBIDDEN_OPERANDS
-  EXPECT_TRUE(!(nacl_arm_dec::Contains(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)), Register(15))));
-
-  // defs: Union({Rn
-  //       if wback
-  //       else None}, registers);
-  EXPECT_TRUE(decoder.defs(inst).IsSame(nacl_arm_dec::Union(RegisterList().
-   Add(Register(((inst.Bits() & 0x00200000)  ==
-          0x00200000
-       ? ((inst.Bits() & 0x000F0000) >> 16)
-       : 32))), nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)))));
-
-  return true;
 }
 
 // op(25:20)=0010x0
@@ -252,8 +180,6 @@ class STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase2
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase2
@@ -272,40 +198,6 @@ bool STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase2
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase2
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: Rn  ==
-  //          Pc ||
-  //       NumGPRs(registers)  <
-  //          1 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       (((nacl_arm_dec::NumGPRs(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)))) < (1)))));
-
-  // safety: wback &&
-  //       Contains(registers, Rn) &&
-  //       Rn  !=
-  //          SmallestGPR(registers) => UNKNOWN
-  EXPECT_TRUE(!(((inst.Bits() & 0x00200000)  ==
-          0x00200000) &&
-       (nacl_arm_dec::Contains(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)), Register(((inst.Bits() & 0x000F0000) >> 16)))) &&
-       (((((inst.Bits() & 0x000F0000) >> 16)) != (nacl_arm_dec::SmallestGPR(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF))))))));
-
-  // defs: {Rn
-  //       if wback
-  //       else None};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
-   Add(Register(((inst.Bits() & 0x00200000)  ==
-          0x00200000
-       ? ((inst.Bits() & 0x000F0000) >> 16)
-       : 32)))));
-
-  return true;
 }
 
 // op(25:20)=0010x1
@@ -343,8 +235,6 @@ class LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase3
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase3
@@ -363,40 +253,6 @@ bool LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase3
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase3
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: Rn  ==
-  //          Pc ||
-  //       NumGPRs(registers)  <
-  //          1 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       (((nacl_arm_dec::NumGPRs(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)))) < (1)))));
-
-  // safety: wback &&
-  //       Contains(registers, Rn) => UNKNOWN
-  EXPECT_TRUE(!(((inst.Bits() & 0x00200000)  ==
-          0x00200000) &&
-       (nacl_arm_dec::Contains(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)), Register(((inst.Bits() & 0x000F0000) >> 16))))));
-
-  // safety: Contains(registers, Pc) => FORBIDDEN_OPERANDS
-  EXPECT_TRUE(!(nacl_arm_dec::Contains(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)), Register(15))));
-
-  // defs: Union({Rn
-  //       if wback
-  //       else None}, registers);
-  EXPECT_TRUE(decoder.defs(inst).IsSame(nacl_arm_dec::Union(RegisterList().
-   Add(Register(((inst.Bits() & 0x00200000)  ==
-          0x00200000
-       ? ((inst.Bits() & 0x000F0000) >> 16)
-       : 32))), nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)))));
-
-  return true;
 }
 
 // op(25:20)=0100x0
@@ -435,8 +291,6 @@ class STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase4
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase4
@@ -455,40 +309,6 @@ bool STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase4
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase4
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: Rn  ==
-  //          Pc ||
-  //       NumGPRs(registers)  <
-  //          1 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       (((nacl_arm_dec::NumGPRs(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)))) < (1)))));
-
-  // safety: wback &&
-  //       Contains(registers, Rn) &&
-  //       Rn  !=
-  //          SmallestGPR(registers) => UNKNOWN
-  EXPECT_TRUE(!(((inst.Bits() & 0x00200000)  ==
-          0x00200000) &&
-       (nacl_arm_dec::Contains(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)), Register(((inst.Bits() & 0x000F0000) >> 16)))) &&
-       (((((inst.Bits() & 0x000F0000) >> 16)) != (nacl_arm_dec::SmallestGPR(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF))))))));
-
-  // defs: {Rn
-  //       if wback
-  //       else None};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
-   Add(Register(((inst.Bits() & 0x00200000)  ==
-          0x00200000
-       ? ((inst.Bits() & 0x000F0000) >> 16)
-       : 32)))));
-
-  return true;
 }
 
 // op(25:20)=0100x1
@@ -526,8 +346,6 @@ class LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase5
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase5
@@ -546,40 +364,6 @@ bool LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase5
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase5
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: Rn  ==
-  //          Pc ||
-  //       NumGPRs(registers)  <
-  //          1 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       (((nacl_arm_dec::NumGPRs(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)))) < (1)))));
-
-  // safety: wback &&
-  //       Contains(registers, Rn) => UNKNOWN
-  EXPECT_TRUE(!(((inst.Bits() & 0x00200000)  ==
-          0x00200000) &&
-       (nacl_arm_dec::Contains(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)), Register(((inst.Bits() & 0x000F0000) >> 16))))));
-
-  // safety: Contains(registers, Pc) => FORBIDDEN_OPERANDS
-  EXPECT_TRUE(!(nacl_arm_dec::Contains(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)), Register(15))));
-
-  // defs: Union({Rn
-  //       if wback
-  //       else None}, registers);
-  EXPECT_TRUE(decoder.defs(inst).IsSame(nacl_arm_dec::Union(RegisterList().
-   Add(Register(((inst.Bits() & 0x00200000)  ==
-          0x00200000
-       ? ((inst.Bits() & 0x000F0000) >> 16)
-       : 32))), nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)))));
-
-  return true;
 }
 
 // op(25:20)=0110x0
@@ -618,8 +402,6 @@ class STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase6
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase6
@@ -638,40 +420,6 @@ bool STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase6
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase6
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: Rn  ==
-  //          Pc ||
-  //       NumGPRs(registers)  <
-  //          1 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       (((nacl_arm_dec::NumGPRs(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)))) < (1)))));
-
-  // safety: wback &&
-  //       Contains(registers, Rn) &&
-  //       Rn  !=
-  //          SmallestGPR(registers) => UNKNOWN
-  EXPECT_TRUE(!(((inst.Bits() & 0x00200000)  ==
-          0x00200000) &&
-       (nacl_arm_dec::Contains(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)), Register(((inst.Bits() & 0x000F0000) >> 16)))) &&
-       (((((inst.Bits() & 0x000F0000) >> 16)) != (nacl_arm_dec::SmallestGPR(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF))))))));
-
-  // defs: {Rn
-  //       if wback
-  //       else None};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
-   Add(Register(((inst.Bits() & 0x00200000)  ==
-          0x00200000
-       ? ((inst.Bits() & 0x000F0000) >> 16)
-       : 32)))));
-
-  return true;
 }
 
 // op(25:20)=0110x1
@@ -709,8 +457,6 @@ class LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase7
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase7
@@ -729,40 +475,6 @@ bool LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase7
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase7
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: Rn  ==
-  //          Pc ||
-  //       NumGPRs(registers)  <
-  //          1 => UNPREDICTABLE
-  EXPECT_TRUE(!((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
-       (((nacl_arm_dec::NumGPRs(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)))) < (1)))));
-
-  // safety: wback &&
-  //       Contains(registers, Rn) => UNKNOWN
-  EXPECT_TRUE(!(((inst.Bits() & 0x00200000)  ==
-          0x00200000) &&
-       (nacl_arm_dec::Contains(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)), Register(((inst.Bits() & 0x000F0000) >> 16))))));
-
-  // safety: Contains(registers, Pc) => FORBIDDEN_OPERANDS
-  EXPECT_TRUE(!(nacl_arm_dec::Contains(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)), Register(15))));
-
-  // defs: Union({Rn
-  //       if wback
-  //       else None}, registers);
-  EXPECT_TRUE(decoder.defs(inst).IsSame(nacl_arm_dec::Union(RegisterList().
-   Add(Register(((inst.Bits() & 0x00200000)  ==
-          0x00200000
-       ? ((inst.Bits() & 0x000F0000) >> 16)
-       : 32))), nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)))));
-
-  return true;
 }
 
 // op(25:20)=0xx1x0 & $pattern(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
@@ -903,8 +615,6 @@ class B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0TesterCase11
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0TesterCase11
@@ -923,22 +633,6 @@ bool B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0TesterCase11
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0TesterCase11
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: true => MAY_BE_SAFE
-  EXPECT_TRUE(true);
-
-  // defs: {Pc};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
-   Add(Register(15))));
-
-  return true;
 }
 
 // op(25:20)=11xxxx
@@ -966,8 +660,6 @@ class BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0TesterCase12
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0TesterCase12
@@ -986,23 +678,6 @@ bool BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0TesterCase12
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0TesterCase12
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: true => MAY_BE_SAFE
-  EXPECT_TRUE(true);
-
-  // defs: {Pc, Lr};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
-   Add(Register(15)).
-   Add(Register(14))));
-
-  return true;
 }
 
 // The following are derived class decoder testers for decoder actions

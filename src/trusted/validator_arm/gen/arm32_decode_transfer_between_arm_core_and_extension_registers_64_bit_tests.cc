@@ -70,8 +70,6 @@ class VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_ccc
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_cccc1100010otttttttt101000m1mmmm_case_0TesterCase0
@@ -93,39 +91,6 @@ bool VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_cccc
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_cccc1100010otttttttt101000m1mmmm_case_0TesterCase0
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: Pc in {t, t2} ||
-  //       m  ==
-  //          31 => UNPREDICTABLE
-  EXPECT_TRUE(!(((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
-       (((15) == (((inst.Bits() & 0x000F0000) >> 16))))) ||
-       (((((((inst.Bits() & 0x0000000F)) << 1) | ((inst.Bits() & 0x00000020) >> 5))) == (31)))));
-
-  // safety: to_arm_registers &&
-  //       t  ==
-  //          t2 => UNPREDICTABLE
-  EXPECT_TRUE(!(((inst.Bits() & 0x00100000)  ==
-          0x00100000) &&
-       (((((inst.Bits() & 0x0000F000) >> 12)) == (((inst.Bits() & 0x000F0000) >> 16))))));
-
-  // defs: {Rt, Rt2}
-  //       if to_arm_registers
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(((inst.Bits() & 0x00100000)  ==
-          0x00100000
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // C(8)=1 & op(7:4)=00x1
@@ -160,8 +125,6 @@ class VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_cc
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_cccc1100010otttttttt101100m1mmmm_case_0TesterCase1
@@ -183,36 +146,6 @@ bool VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_ccc
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_cccc1100010otttttttt101100m1mmmm_case_0TesterCase1
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Arm32DecoderTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: Pc in {t, t2} => UNPREDICTABLE
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
-       (((15) == (((inst.Bits() & 0x000F0000) >> 16))))));
-
-  // safety: to_arm_registers &&
-  //       t  ==
-  //          t2 => UNPREDICTABLE
-  EXPECT_TRUE(!(((inst.Bits() & 0x00100000)  ==
-          0x00100000) &&
-       (((((inst.Bits() & 0x0000F000) >> 12)) == (((inst.Bits() & 0x000F0000) >> 16))))));
-
-  // defs: {Rt, Rt2}
-  //       if to_arm_registers
-  //       else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(((inst.Bits() & 0x00100000)  ==
-          0x00100000
-       ? RegisterList().
-   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
-       : RegisterList())));
-
-  return true;
 }
 
 // The following are derived class decoder testers for decoder actions

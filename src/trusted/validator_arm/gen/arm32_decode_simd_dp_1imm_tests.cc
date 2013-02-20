@@ -62,8 +62,6 @@ class Vector1RegisterImmediate_MOVTesterCase0
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool Vector1RegisterImmediate_MOVTesterCase0
@@ -82,42 +80,6 @@ bool Vector1RegisterImmediate_MOVTesterCase0
   // Check other preconditions defined for the base decoder.
   return Vector1RegisterImmediateTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool Vector1RegisterImmediate_MOVTesterCase0
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Vector1RegisterImmediateTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: op(5)=0 &&
-  //       cmode(0)=1 &&
-  //       cmode(3:2)=~11 => DECODER_ERROR
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000020)  ==
-          0x00000000) &&
-       ((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001)  ==
-          0x00000001) &&
-       ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C)  !=
-          0x0000000C)));
-
-  // safety: op(5)=1 &&
-  //       cmode(11:8)=~1110 => DECODER_ERROR
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000020)  ==
-          0x00000020) &&
-       ((inst.Bits() & 0x00000F00)  !=
-          0x00000E00)));
-
-  // safety: Q(6)=1 &&
-  //       Vd(0)=1 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040)  ==
-          0x00000040) &&
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001)));
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // op(5)=0 & cmode(11:8)=10x1
@@ -145,8 +107,6 @@ class Vector1RegisterImmediate_BITTesterCase1
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool Vector1RegisterImmediate_BITTesterCase1
@@ -165,32 +125,6 @@ bool Vector1RegisterImmediate_BITTesterCase1
   // Check other preconditions defined for the base decoder.
   return Vector1RegisterImmediateTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool Vector1RegisterImmediate_BITTesterCase1
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Vector1RegisterImmediateTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: cmode(0)=0 ||
-  //       cmode(3:2)=11 => DECODER_ERROR
-  EXPECT_TRUE(!(((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001)  ==
-          0x00000000) ||
-       ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C)  ==
-          0x0000000C)));
-
-  // safety: Q(6)=1 &&
-  //       Vd(0)=1 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040)  ==
-          0x00000040) &&
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001)));
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // op(5)=0 & cmode(11:8)=0xx0
@@ -222,8 +156,6 @@ class Vector1RegisterImmediate_MOVTesterCase2
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool Vector1RegisterImmediate_MOVTesterCase2
@@ -242,42 +174,6 @@ bool Vector1RegisterImmediate_MOVTesterCase2
   // Check other preconditions defined for the base decoder.
   return Vector1RegisterImmediateTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool Vector1RegisterImmediate_MOVTesterCase2
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Vector1RegisterImmediateTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: op(5)=0 &&
-  //       cmode(0)=1 &&
-  //       cmode(3:2)=~11 => DECODER_ERROR
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000020)  ==
-          0x00000000) &&
-       ((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001)  ==
-          0x00000001) &&
-       ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C)  !=
-          0x0000000C)));
-
-  // safety: op(5)=1 &&
-  //       cmode(11:8)=~1110 => DECODER_ERROR
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000020)  ==
-          0x00000020) &&
-       ((inst.Bits() & 0x00000F00)  !=
-          0x00000E00)));
-
-  // safety: Q(6)=1 &&
-  //       Vd(0)=1 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040)  ==
-          0x00000040) &&
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001)));
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // op(5)=0 & cmode(11:8)=0xx1
@@ -305,8 +201,6 @@ class Vector1RegisterImmediate_BITTesterCase3
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool Vector1RegisterImmediate_BITTesterCase3
@@ -325,32 +219,6 @@ bool Vector1RegisterImmediate_BITTesterCase3
   // Check other preconditions defined for the base decoder.
   return Vector1RegisterImmediateTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool Vector1RegisterImmediate_BITTesterCase3
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Vector1RegisterImmediateTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: cmode(0)=0 ||
-  //       cmode(3:2)=11 => DECODER_ERROR
-  EXPECT_TRUE(!(((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001)  ==
-          0x00000000) ||
-       ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C)  ==
-          0x0000000C)));
-
-  // safety: Q(6)=1 &&
-  //       Vd(0)=1 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040)  ==
-          0x00000040) &&
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001)));
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // op(5)=0 & cmode(11:8)=11xx
@@ -382,8 +250,6 @@ class Vector1RegisterImmediate_MOVTesterCase4
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool Vector1RegisterImmediate_MOVTesterCase4
@@ -402,42 +268,6 @@ bool Vector1RegisterImmediate_MOVTesterCase4
   // Check other preconditions defined for the base decoder.
   return Vector1RegisterImmediateTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool Vector1RegisterImmediate_MOVTesterCase4
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Vector1RegisterImmediateTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: op(5)=0 &&
-  //       cmode(0)=1 &&
-  //       cmode(3:2)=~11 => DECODER_ERROR
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000020)  ==
-          0x00000000) &&
-       ((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001)  ==
-          0x00000001) &&
-       ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C)  !=
-          0x0000000C)));
-
-  // safety: op(5)=1 &&
-  //       cmode(11:8)=~1110 => DECODER_ERROR
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000020)  ==
-          0x00000020) &&
-       ((inst.Bits() & 0x00000F00)  !=
-          0x00000E00)));
-
-  // safety: Q(6)=1 &&
-  //       Vd(0)=1 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040)  ==
-          0x00000040) &&
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001)));
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // op(5)=1 & cmode(11:8)=1110
@@ -469,8 +299,6 @@ class Vector1RegisterImmediate_MOVTesterCase5
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool Vector1RegisterImmediate_MOVTesterCase5
@@ -489,42 +317,6 @@ bool Vector1RegisterImmediate_MOVTesterCase5
   // Check other preconditions defined for the base decoder.
   return Vector1RegisterImmediateTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool Vector1RegisterImmediate_MOVTesterCase5
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Vector1RegisterImmediateTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: op(5)=0 &&
-  //       cmode(0)=1 &&
-  //       cmode(3:2)=~11 => DECODER_ERROR
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000020)  ==
-          0x00000000) &&
-       ((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001)  ==
-          0x00000001) &&
-       ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C)  !=
-          0x0000000C)));
-
-  // safety: op(5)=1 &&
-  //       cmode(11:8)=~1110 => DECODER_ERROR
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000020)  ==
-          0x00000020) &&
-       ((inst.Bits() & 0x00000F00)  !=
-          0x00000E00)));
-
-  // safety: Q(6)=1 &&
-  //       Vd(0)=1 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040)  ==
-          0x00000040) &&
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001)));
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // op(5)=1 & cmode(11:8)=10x0
@@ -553,8 +345,6 @@ class Vector1RegisterImmediate_MVNTesterCase6
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool Vector1RegisterImmediate_MVNTesterCase6
@@ -573,35 +363,6 @@ bool Vector1RegisterImmediate_MVNTesterCase6
   // Check other preconditions defined for the base decoder.
   return Vector1RegisterImmediateTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool Vector1RegisterImmediate_MVNTesterCase6
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Vector1RegisterImmediateTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: (cmode(0)=1 &&
-  //       cmode(3:2)=~11) ||
-  //       cmode(3:1)=111 => DECODER_ERROR
-  EXPECT_TRUE(!(((((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001)  ==
-          0x00000001) &&
-       ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C)  !=
-          0x0000000C))) ||
-       ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000E)  ==
-          0x0000000E)));
-
-  // safety: Q(6)=1 &&
-  //       Vd(0)=1 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040)  ==
-          0x00000040) &&
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001)));
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // op(5)=1 & cmode(11:8)=10x1
@@ -629,8 +390,6 @@ class Vector1RegisterImmediate_BITTesterCase7
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool Vector1RegisterImmediate_BITTesterCase7
@@ -649,32 +408,6 @@ bool Vector1RegisterImmediate_BITTesterCase7
   // Check other preconditions defined for the base decoder.
   return Vector1RegisterImmediateTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool Vector1RegisterImmediate_BITTesterCase7
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Vector1RegisterImmediateTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: cmode(0)=0 ||
-  //       cmode(3:2)=11 => DECODER_ERROR
-  EXPECT_TRUE(!(((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001)  ==
-          0x00000000) ||
-       ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C)  ==
-          0x0000000C)));
-
-  // safety: Q(6)=1 &&
-  //       Vd(0)=1 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040)  ==
-          0x00000040) &&
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001)));
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // op(5)=1 & cmode(11:8)=110x
@@ -703,8 +436,6 @@ class Vector1RegisterImmediate_MVNTesterCase8
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool Vector1RegisterImmediate_MVNTesterCase8
@@ -723,35 +454,6 @@ bool Vector1RegisterImmediate_MVNTesterCase8
   // Check other preconditions defined for the base decoder.
   return Vector1RegisterImmediateTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool Vector1RegisterImmediate_MVNTesterCase8
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Vector1RegisterImmediateTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: (cmode(0)=1 &&
-  //       cmode(3:2)=~11) ||
-  //       cmode(3:1)=111 => DECODER_ERROR
-  EXPECT_TRUE(!(((((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001)  ==
-          0x00000001) &&
-       ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C)  !=
-          0x0000000C))) ||
-       ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000E)  ==
-          0x0000000E)));
-
-  // safety: Q(6)=1 &&
-  //       Vd(0)=1 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040)  ==
-          0x00000040) &&
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001)));
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // op(5)=1 & cmode(11:8)=0xx0
@@ -780,8 +482,6 @@ class Vector1RegisterImmediate_MVNTesterCase9
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool Vector1RegisterImmediate_MVNTesterCase9
@@ -800,35 +500,6 @@ bool Vector1RegisterImmediate_MVNTesterCase9
   // Check other preconditions defined for the base decoder.
   return Vector1RegisterImmediateTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool Vector1RegisterImmediate_MVNTesterCase9
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Vector1RegisterImmediateTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: (cmode(0)=1 &&
-  //       cmode(3:2)=~11) ||
-  //       cmode(3:1)=111 => DECODER_ERROR
-  EXPECT_TRUE(!(((((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001)  ==
-          0x00000001) &&
-       ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C)  !=
-          0x0000000C))) ||
-       ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000E)  ==
-          0x0000000E)));
-
-  // safety: Q(6)=1 &&
-  //       Vd(0)=1 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040)  ==
-          0x00000040) &&
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001)));
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // op(5)=1 & cmode(11:8)=0xx1
@@ -856,8 +527,6 @@ class Vector1RegisterImmediate_BITTesterCase10
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
 };
 
 bool Vector1RegisterImmediate_BITTesterCase10
@@ -876,32 +545,6 @@ bool Vector1RegisterImmediate_BITTesterCase10
   // Check other preconditions defined for the base decoder.
   return Vector1RegisterImmediateTester::
       PassesParsePreconditions(inst, decoder);
-}
-
-bool Vector1RegisterImmediate_BITTesterCase10
-::ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                    const NamedClassDecoder& decoder) {
-  NC_PRECOND(Vector1RegisterImmediateTester::
-               ApplySanityChecks(inst, decoder));
-
-  // safety: cmode(0)=0 ||
-  //       cmode(3:2)=11 => DECODER_ERROR
-  EXPECT_TRUE(!(((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001)  ==
-          0x00000000) ||
-       ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C)  ==
-          0x0000000C)));
-
-  // safety: Q(6)=1 &&
-  //       Vd(0)=1 => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040)  ==
-          0x00000040) &&
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001)));
-
-  // defs: {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
-
-  return true;
 }
 
 // The following are derived class decoder testers for decoder actions
