@@ -6,6 +6,7 @@
 
 import contextlib
 from datetime import datetime
+from email.utils import formatdate
 import errno
 import functools
 import json
@@ -1479,3 +1480,19 @@ def SafeRun(functors, combine_exceptions=False):
     else:
       raise RuntimeError([e[0] for e in errors])
 
+
+def UserDateTimeFormat(timeval=None):
+  """Format a date meant to be viewed by a user
+
+  The focus here is to have a format that is easily readable by humans,
+  but still easy (and unambiguous) for a machine to parse.  Hence, we
+  use the RFC 2822 date format (with timezone name appended).
+
+  Arguments:
+    timeval: Floating point time value as accepted by gmtime()/localtime(),
+             otherwise the current time is used.
+  Returns:
+    A string format such as 'Wed, 20 Feb 2013 15:25:15 -0500 (EST)'
+  """
+  return '%s (%s)' % (formatdate(timeval=timeval, localtime=True),
+                      time.tzname[0])

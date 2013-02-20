@@ -650,6 +650,21 @@ class HelperMethodSimpleTests(cros_test_lib.TestCase):
   def testGetChromeosVersionWithNoneInputReturnsDefault(self):
     self._TestChromeosVersion(None)
 
+  def testUserDateTime(self):
+    old_tz = os.environ.get('TZ')
+    os.environ['TZ'] = '0'
+    time.tzset()
+    timeval = 330005000
+    expected = 'Mon, 16 Jun 1980 12:03:20 +0000 ()'
+    try:
+      self.assertEqual(cros_build_lib.UserDateTimeFormat(timeval=timeval),
+                       expected)
+    finally:
+      if old_tz:
+        os.environ['TZ'] = old_tz
+      else:
+        os.environ.pop('TZ')
+
 
 class YNInteraction():
   """Class to hold a list of responses and expected reault of YN prompt."""
