@@ -880,10 +880,13 @@ void OneClickSigninHelper::RedirectToNTP() {
   pref_service->SetBoolean(prefs::kSyncPromoShowNTPBubble, true);
   pref_service->SetString(prefs::kSyncPromoErrorMessage, error_message_);
 
-  contents->GetController().LoadURL(GURL(chrome::kChromeUINewTabURL),
-                                    content::Referrer(),
-                                    content::PAGE_TRANSITION_AUTO_TOPLEVEL,
-                                    std::string());
+  content::OpenURLParams params(
+      GURL(chrome::kChromeUINewTabURL),
+      content::Referrer(),
+      CURRENT_TAB,
+      content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+      false);
+  contents->OpenURL(params);
 
   error_message_.clear();
   signin_tracker_.reset();
