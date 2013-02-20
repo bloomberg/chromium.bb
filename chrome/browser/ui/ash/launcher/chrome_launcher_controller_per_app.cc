@@ -300,8 +300,11 @@ ash::LauncherID ChromeLauncherControllerPerApp::CreateAppLauncherItem(
     const std::string& app_id,
     ash::LauncherItemStatus status) {
   DCHECK(controller);
-  return InsertAppLauncherItem(controller, app_id, status,
-                               model_->item_count());
+  return InsertAppLauncherItem(controller,
+                               app_id,
+                               status,
+                               model_->item_count(),
+                               controller->GetLauncherItemType());
 }
 
 void ChromeLauncherControllerPerApp::SetItemStatus(
@@ -354,11 +357,13 @@ void ChromeLauncherControllerPerApp::Pin(ash::LauncherID id) {
 
   ash::LauncherItem item = model_->items()[index];
 
-  if (item.type != ash::TYPE_PLATFORM_APP)
+  if (item.type == ash::TYPE_PLATFORM_APP ||
+      item.type == ash::TYPE_WINDOWED_APP) {
+    item.type = ash::TYPE_APP_SHORTCUT;
+    model_->Set(index, item);
+  } else if (item.type != ash::TYPE_APP_SHORTCUT) {
     return;
-
-  item.type = ash::TYPE_APP_SHORTCUT;
-  model_->Set(index, item);
+  }
 
   if (CanPin())
     PersistPinnedState();
@@ -375,7 +380,17 @@ void ChromeLauncherControllerPerApp::Unpin(ash::LauncherID id) {
     item.type = ash::TYPE_PLATFORM_APP;
     model_->Set(index, item);
   } else {
-    LauncherItemClosed(id);
+    // Prevent the removal of items upon unpin if it is locked by a running
+    // windowed V1 app.
+    if (!controller->locked()) {
+      LauncherItemClosed(id);
+    } else {
+      int index = model_->ItemIndexByID(id);
+      DCHECK_GE(index, 0);
+      ash::LauncherItem item = model_->items()[index];
+      item.type = ash::TYPE_WINDOWED_APP;
+      model_->Set(index, item);
+    }
   }
   if (CanPin())
     PersistPinnedState();
@@ -405,8 +420,34 @@ bool ChromeLauncherControllerPerApp::IsPinnable(ash::LauncherID id) const {
     return false;
 
   ash::LauncherItemType type = model_->items()[index].type;
-  return ((type == ash::TYPE_APP_SHORTCUT || type == ash::TYPE_PLATFORM_APP) &&
+  return ((type == ash::TYPE_APP_SHORTCUT ||
+           type == ash::TYPE_PLATFORM_APP ||
+           type == ash::TYPE_WINDOWED_APP) &&
           CanPin());
+}
+
+void ChromeLauncherControllerPerApp::LockV1AppWithID(
+    const std::string& app_id) {
+  ash::LauncherID id = GetLauncherIDForAppID(app_id);
+  if (!IsPinned(id) && !IsWindowedAppInLauncher(app_id)) {
+    CreateAppShortcutLauncherItemWithType(app_id,
+                                          model_->item_count(),
+                                          ash::TYPE_WINDOWED_APP);
+    id = GetLauncherIDForAppID(app_id);
+  }
+  DCHECK(id);
+  id_to_item_controller_map_[id]->lock();
+}
+
+void ChromeLauncherControllerPerApp::UnlockV1AppWithID(
+    const std::string& app_id) {
+  ash::LauncherID id = GetLauncherIDForAppID(app_id);
+  DCHECK(IsPinned(id) || IsWindowedAppInLauncher(app_id));
+  DCHECK(id);
+  LauncherItemController* controller = id_to_item_controller_map_[id];
+  controller->unlock();
+  if (!controller->locked() && !IsPinned(id))
+    CloseLauncherItem(id);
 }
 
 void ChromeLauncherControllerPerApp::Launch(ash::LauncherID id,
@@ -570,6 +611,16 @@ bool ChromeLauncherControllerPerApp::IsAppPinned(const std::string& app_id) {
       return true;
   }
   return false;
+}
+
+bool ChromeLauncherControllerPerApp::IsWindowedAppInLauncher(
+    const std::string& app_id) {
+  int index = model_->ItemIndexByID(GetLauncherIDForAppID(app_id));
+  if (index < 0)
+    return false;
+
+  ash::LauncherItemType type = model_->items()[index].type;
+  return type == ash::TYPE_WINDOWED_APP;
 }
 
 void ChromeLauncherControllerPerApp::PinAppWithID(const std::string& app_id) {
@@ -780,7 +831,7 @@ void ChromeLauncherControllerPerApp::SetRefocusURLPatternForTest(
   }
 
   ash::LauncherItemType type = model_->items()[index].type;
-  if (type == ash::TYPE_APP_SHORTCUT) {
+  if (type == ash::TYPE_APP_SHORTCUT || type == ash::TYPE_WINDOWED_APP) {
     AppShortcutLauncherItemController* app_controller =
         static_cast<AppShortcutLauncherItemController*>(controller);
     app_controller->set_refocus_url(url);
@@ -864,7 +915,8 @@ ash::LauncherID ChromeLauncherControllerPerApp::GetIDByWindow(
 
 bool ChromeLauncherControllerPerApp::IsDraggable(
     const ash::LauncherItem& item) {
-  return item.type == ash::TYPE_APP_SHORTCUT ? CanPin() : true;
+  return (item.type == ash::TYPE_APP_SHORTCUT ||
+          item.type == ash::TYPE_WINDOWED_APP) ? CanPin() : true;
 }
 
 void ChromeLauncherControllerPerApp::LauncherItemAdded(int index) {
@@ -1067,11 +1119,9 @@ void ChromeLauncherControllerPerApp::OnBrowserRemoved(Browser* browser) {
 ash::LauncherID ChromeLauncherControllerPerApp::CreateAppShortcutLauncherItem(
     const std::string& app_id,
     int index) {
-  AppShortcutLauncherItemController* controller =
-      new AppShortcutLauncherItemController(app_id, this);
-  ash::LauncherID launcher_id = InsertAppLauncherItem(
-      controller, app_id, ash::STATUS_CLOSED, index);
-  return launcher_id;
+  return CreateAppShortcutLauncherItemWithType(app_id,
+                                               index,
+                                               ash::TYPE_APP_SHORTCUT);
 }
 
 void ChromeLauncherControllerPerApp::SetAppTabHelperForTest(
@@ -1088,6 +1138,18 @@ const std::string&
 ChromeLauncherControllerPerApp::GetAppIdFromLauncherIdForTest(
     ash::LauncherID id) {
   return id_to_item_controller_map_[id]->app_id();
+}
+
+ash::LauncherID
+ChromeLauncherControllerPerApp::CreateAppShortcutLauncherItemWithType(
+    const std::string& app_id,
+    int index,
+    ash::LauncherItemType launcher_item_type) {
+  AppShortcutLauncherItemController* controller =
+      new AppShortcutLauncherItemController(app_id, this);
+  ash::LauncherID launcher_id = InsertAppLauncherItem(
+      controller, app_id, ash::STATUS_CLOSED, index, launcher_item_type);
+  return launcher_id;
 }
 
 void ChromeLauncherControllerPerApp::UpdateBrowserItemStatus() {
@@ -1317,7 +1379,8 @@ ash::LauncherID ChromeLauncherControllerPerApp::InsertAppLauncherItem(
     LauncherItemController* controller,
     const std::string& app_id,
     ash::LauncherItemStatus status,
-    int index) {
+    int index,
+    ash::LauncherItemType launcher_item_type) {
   ash::LauncherID id = model_->next_id();
   DCHECK(!HasItemController(id));
   DCHECK(controller);
@@ -1325,7 +1388,7 @@ ash::LauncherID ChromeLauncherControllerPerApp::InsertAppLauncherItem(
   controller->set_launcher_id(id);
 
   ash::LauncherItem item;
-  item.type = controller->GetLauncherItemType();
+  item.type = launcher_item_type;
   item.is_incognito = false;
   item.image = Extension::GetDefaultIcon(true);
 
@@ -1380,6 +1443,11 @@ ChromeLauncherControllerPerApp::GetBrowserApplicationList() {
     Browser* browser = *it;
     if (browser->is_type_tabbed())
       found_tabbed_browser = true;
+    else if (browser->is_app() &&
+             browser->is_type_popup() &&
+             GetLauncherIDForAppID(web_app::GetExtensionIdFromApplicationName(
+                                       browser->app_name())) > 0)
+      continue;
     TabStripModel* tab_strip = browser->tab_strip_model();
     WebContents* web_contents =
         tab_strip->GetWebContentsAt(tab_strip->active_index());

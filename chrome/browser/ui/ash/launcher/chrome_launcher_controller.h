@@ -136,6 +136,15 @@ class ChromeLauncherController
   // be pinned.
   virtual bool IsPinnable(ash::LauncherID id) const = 0;
 
+  // If there is no launcher item in the launcher for application |app_id|, one
+  // gets created. The (existing or created) launcher items get then locked
+  // against a users un-pinning removal.
+  virtual void LockV1AppWithID(const std::string& app_id) = 0;
+
+  // A previously locked launcher item of type |app_id| gets unlocked. If the
+  // lock count reaches 0 and the item is not pinned it will go away.
+  virtual void UnlockV1AppWithID(const std::string& app_id) = 0;
+
   // Requests that the launcher item controller specified by |id| open a new
   // instance of the app.  |event_flags| holds the flags of the event which
   // triggered this command.
