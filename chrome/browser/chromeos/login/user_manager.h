@@ -9,6 +9,7 @@
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/chromeos/login/user.h"
+#include "chrome/browser/chromeos/login/user_flow.h"
 
 class PrefRegistrySimple;
 
@@ -240,6 +241,25 @@ class UserManager {
   // status, display name, display email) is to be treated as ephemeral.
   virtual bool IsUserNonCryptohomeDataEphemeral(
       const std::string& email) const = 0;
+
+  // Method that allows to set |flow| for user identified by |email|.
+  // Flow should be set before login attempt.
+  // Takes ownership of the |flow|, |flow| will be deleted in case of login
+  // failure.
+  virtual void SetUserFlow(const std::string& email, UserFlow* flow) = 0;
+
+  // Return user flow for current user. Returns instance of DefaultUserFlow if
+  // no flow was defined for current user, or user is not logged in.
+  // Returned value should not be cached.
+  virtual UserFlow* GetCurrentUserFlow() const = 0;
+
+  // Return user flow for user identified by |email|. Returns instance of
+  // DefaultUserFlow if no flow was defined for user.
+  // Returned value should not be cached.
+  virtual UserFlow* GetUserFlow(const std::string& email) const = 0;
+
+  // Resets user flow fo user idenitified by |email|.
+  virtual void ResetUserFlow(const std::string& email) = 0;
 
   virtual void AddObserver(Observer* obs) = 0;
   virtual void RemoveObserver(Observer* obs) = 0;

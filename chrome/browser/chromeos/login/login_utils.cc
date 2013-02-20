@@ -350,6 +350,11 @@ void LoginUtilsImpl::DoBrowserLaunch(Profile* profile,
   if (browser_shutdown::IsTryingToQuit())
     return;
 
+  if (!UserManager::Get()->GetCurrentUserFlow()->ShouldLaunchBrowser()) {
+    UserManager::Get()->GetCurrentUserFlow()->LaunchExtraSteps();
+    return;
+  }
+
   if (login_host) {
     login_host->SetStatusAreaVisible(true);
     login_host->BeforeSessionStart();
