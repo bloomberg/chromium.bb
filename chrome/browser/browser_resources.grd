@@ -314,6 +314,10 @@
         <include name="IDR_SET_AS_DEFAULT_BROWSER_HTML" file="resources\set_as_default_browser.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       </if>
       <include name="IDR_MANAGED_MODE_BLOCK_INTERSTITIAL_HTML" file="resources\managed_mode_block_interstitial.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_MANAGED_USER_PASSPHRASE_DIALOG_HTML" file="resources\managed_user_passphrase_dialog.html" allowexternalscript="true" type="chrome_html" />
+      <include name="IDR_MANAGED_USER_PASSPHRASE_DIALOG_JS" file="resources\managed_user_passphrase_dialog.js" type="BINDATA" />
+      <include name="IDR_MANAGED_USER_PASSPHRASE_DIALOG_CSS" file="resources\managed_user_passphrase_dialog.css" type="BINDATA" />
+      <include name="IDR_MANAGED_USER_PASSPHRASE_DIALOG_IMG" file="resources\options\managed_user.png" type="BINDATA" />
       <include name="IDR_PROFILE_SIGNIN_CONFIRMATION_HTML" file="resources\profile_signin_confirmation.html" type="BINDATA" />
       <include name="IDR_PROFILE_SIGNIN_CONFIRMATION_JS" file="resources\profile_signin_confirmation.js" type="BINDATA" />
     </includes>

@@ -8240,6 +8240,23 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Clearing...
       </message>
 
+      <!--Managed mode passphrase dialog data -->
+      <message name="IDS_PASSPHRASE_TITLE" desc="A title for the passphrase page to unlock managed user settings.">
+        Unlock
+      </message>
+      <message name="IDS_PASSPHRASE_INSTRUCTION" desc="Instruction to enter an unlock passphrase to unlock a page not accessible to the managed user.">
+        Enter passphrase to unlock and make changes.
+      </message>
+      <message name="IDS_UNLOCK_PASSPHRASE_BUTTON" desc="A button for unlocking the managed user settings page.">
+        Unlock
+      </message>
+      <message name="IDS_FORGOT_PASSPHRASE" desc="A link to recover forgotten passphrase.">
+        Forgot passphrase?
+      </message>
+      <message name="IDS_INCORRECT_PASSPHRASE_WARNING" desc="A warning for the passphrase page if the incorrect passphrase was entered.">
+        The passphrase you entered is incorrect.
+      </message>
+
       <!-- Managed User Settings dialog data -->
       <message name="IDS_MANAGED_USER_SETTINGS_TITLE" desc="Title for the Managed User Settings dialog">
         Managed User Settings

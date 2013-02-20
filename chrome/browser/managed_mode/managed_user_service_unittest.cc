@@ -128,7 +128,7 @@ TEST_F(ManagedUserServiceExtensionTest, InstallContentPacks) {
   profile_->GetPrefs()->SetBoolean(prefs::kProfileIsManaged, true);
   ManagedUserService managed_user_service(profile_.get());
   managed_user_service.Init();
-  managed_user_service.SetElevatedForTesting(true);
+  managed_user_service.SetElevated(true);
   ManagedModeURLFilter* url_filter =
       managed_user_service.GetURLFilterForUIThread();
   ManagedModeURLFilterObserver observer(url_filter);

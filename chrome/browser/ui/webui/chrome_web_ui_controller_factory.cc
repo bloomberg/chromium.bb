@@ -208,6 +208,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<InstantUI>;
   if (url.host() == chrome::kChromeUILocalOmniboxPopupHost)
     return &NewWebUI<LocalOmniboxPopupUI>;
+  if (url.host() == chrome::kChromeUIManagedUserPassphrasePageHost)
+    return &NewWebUI<ConstrainedWebDialogUI>;
   if (url.host() == chrome::kChromeUIMemoryInternalsHost &&
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableMemoryInternalsUI)) {

@@ -39,6 +39,7 @@ class ManagedUserService : public ProfileKeyedService,
   virtual ~ManagedUserService();
 
   bool ProfileIsManaged() const;
+  bool IsElevated() const;
 
   static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
@@ -76,7 +77,7 @@ class ManagedUserService : public ProfileKeyedService,
   void SetManualBehaviorForURLs(const std::vector<GURL>& url,
                                 ManualBehavior behavior);
 
-  void SetElevatedForTesting(bool is_elevated);
+  void SetElevated(bool is_elevated);
 
   // Initializes this object. This method does nothing if the profile is not
   // managed.

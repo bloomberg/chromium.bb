@@ -1,0 +1,36 @@
+/* Copyright (c) 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+#managed-mode-passphrase-page {
+  min-width: 350px;
+}
+
+#managed-user-logo {
+  background-image: url('managed_user.png');
+  height: 68px;
+  width: 65px;
+}
+
+#instructions,
+#entry,
+#incorrect-passphrase-warning {
+  padding: 5px 15px;
+}
+
+#buttons {
+  float: right;
+}
+
+html[dir=rtl] #buttons {
+  float: left;
+}
+
+#buttons {
+  padding: 15px 15px;
+}
+
+#incorrect-passphrase-warning {
+  color: red;
+  font-weight: bold;
+}

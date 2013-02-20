@@ -97,6 +97,14 @@ bool ManagedUserService::ProfileIsManaged() const {
   return profile_->GetPrefs()->GetBoolean(prefs::kProfileIsManaged);
 }
 
+bool ManagedUserService::IsElevated() const {
+  PrefService* pref_service = profile_->GetPrefs();
+  // If there is no passphrase set, the profile is considered to be elevated.
+  if (pref_service->GetString(prefs::kManagedModeLocalPassphrase).empty())
+    return true;
+  return is_elevated_;
+}
+
 // static
 void ManagedUserService::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(prefs::kManagedModeManualHosts,
@@ -331,7 +339,7 @@ void ManagedUserService::SetManualBehaviorForURLs(const std::vector<GURL>& urls,
   UpdateManualURLs();
 }
 
-void ManagedUserService::SetElevatedForTesting(bool is_elevated) {
+void ManagedUserService::SetElevated(bool is_elevated) {
   is_elevated_ = is_elevated;
 }
 

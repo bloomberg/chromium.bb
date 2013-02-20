@@ -47,6 +47,8 @@ const char kChromeUIInspectURL[] = "chrome://inspect/";
 const char kChromeUIInstantURL[] = "chrome://instant/";
 const char kChromeUIIPCURL[] = "chrome://ipc/";
 const char kChromeUIKeyboardURL[] = "chrome://keyboard/";
+const char kChromeUIManagedUserPassphrasePageURL[] =
+    "chrome://managed-user-passphrase/";
 const char kChromeUIMemoryRedirectURL[] = "chrome://memory-redirect/";
 const char kChromeUIMemoryURL[] = "chrome://memory/";
 const char kChromeUIMetroFlowURL[] = "chrome://make-metro/";
@@ -164,6 +166,7 @@ const char kChromeUIIPCHost[] = "ipc";
 const char kChromeUIKeyboardHost[] = "keyboard";
 const char kChromeUIKillHost[] = "kill";
 const char kChromeUILocalOmniboxPopupHost[] = "local-omnibox-popup";
+const char kChromeUIManagedUserPassphrasePageHost[] = "managed-user-passphrase";
 const char kChromeUIMemoryHost[] = "memory";
 const char kChromeUIMemoryInternalsHost[] = "memory-internals";
 const char kChromeUIMemoryRedirectHost[] = "memory-redirect";

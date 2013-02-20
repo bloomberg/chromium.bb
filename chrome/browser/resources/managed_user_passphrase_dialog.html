@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<!-- Copyright (c) 2013 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+<html i18n-values="dir:textdirection">
+<head>
+  <link rel="stylesheet" href="shared/css/chrome_shared.css">
+  <link rel="stylesheet" href="dialog.css">
+  <link rel="stylesheet" href="managed_user_passphrase_dialog.css">
+  <script src="chrome://resources/js/load_time_data.js"></script>
+  <script src="chrome://resources/js/util.js"></script>
+  <script src="managed_user_passphrase_dialog.js"></script>
+  <script src="strings.js"></script>
+</head>
+<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+  <div id="managed-mode-passphrase-page" class="page">
+    <div id="managed-user-logo"></div>
+    <h1 i18n-content="managedModePassphrasePage"></h1>
+    <div class="content-area">
+      <div id="instructions">
+        <label>
+          <span i18n-content="passphraseInstruction"></span>
+        </label>
+      </div>
+      <div id="entry">
+        <input id="passphrase-entry" size="50" type="password" required>
+      </div>
+      <div id="buttons">
+        <button id="cancel-passphrase-button"
+            i18n-content="cancelPassphraseButton">
+        </button>
+        <button id="unlock-passphrase-button"
+            i18n-content="unlockPassphraseButton" disabled>
+        </button>
+      </div>
+      <div id="incorrect-passphrase-warning" hidden>
+        <label>
+          <span i18n-content="incorrectPassphraseWarning"></span>
+        </label>
+      </div>
+    </div>
+  </div>
+  <script src="chrome://resources/js/i18n_template2.js"></script>
+</body>
+</html>
