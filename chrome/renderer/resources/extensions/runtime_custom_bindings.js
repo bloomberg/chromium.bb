@@ -88,9 +88,13 @@ chromeHidden.registerCustomHook('runtime', function(bindings, id, contextType) {
     if (connectInfo && connectInfo.name)
       name = connectInfo.name;
 
-    var portId = OpenChannelToExtension(chrome.runtime.id, targetId, name);
-    if (portId >= 0)
-      return chromeHidden.Port.createPort(portId, name);
+    // Don't let orphaned content scripts communicate with their extension.
+    // http://crbug.com/168263
+    if (!chromeHidden.wasUnloaded) {
+      var portId = OpenChannelToExtension(chrome.runtime.id, targetId, name);
+      if (portId >= 0)
+        return chromeHidden.Port.createPort(portId, name);
+    }
     throw new Error('Error connecting to extension ' + targetId);
   });
 
@@ -102,10 +106,10 @@ chromeHidden.registerCustomHook('runtime', function(bindings, id, contextType) {
 
   apiFunctions.setHandleRequest('connectNative',
                                 function(nativeAppName) {
-    // Turn the object into a string here, because it eventually will be.
-    var portId = OpenChannelToNativeApp(chrome.runtime.id, nativeAppName);
-    if (portId >= 0) {
-      return chromeHidden.Port.createPort(portId, '');
+    if (!chromeHidden.wasUnloaded) {
+      var portId = OpenChannelToNativeApp(chrome.runtime.id, nativeAppName);
+      if (portId >= 0)
+        return chromeHidden.Port.createPort(portId, '');
     }
     throw new Error('Error connecting to native app: ' + nativeAppName);
   });

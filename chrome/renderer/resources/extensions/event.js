@@ -457,6 +457,8 @@
 
   chromeHidden.dispatchOnUnload = function() {
     chromeHidden.onUnload.dispatch();
+    chromeHidden.wasUnloaded = true;
+
     for (var i = 0; i < allAttachedEvents.length; ++i) {
       var event = allAttachedEvents[i];
       if (event)
