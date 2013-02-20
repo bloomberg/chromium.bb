@@ -229,6 +229,10 @@ bool NativeAppWindowGtk::IsAlwaysOnTop() const {
   return false;
 }
 
+void NativeAppWindowGtk::RenderViewHostChanged() {
+  web_contents()->Focus();
+}
+
 gfx::Insets NativeAppWindowGtk::GetFrameInsets() const {
   if (frameless_)
     return gfx::Insets();
