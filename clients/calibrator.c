@@ -238,7 +238,7 @@ main(int argc, char *argv[])
 	struct display *display;
 	struct calibrator *calibrator;
 
-	display = display_create(argc, argv);
+	display = display_create(&argc, argv);
 
 	if (display == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");

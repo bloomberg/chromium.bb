@@ -2134,7 +2134,7 @@ planes_binding(struct wl_seat *seat, uint32_t time, uint32_t key, void *data)
 static struct weston_compositor *
 drm_compositor_create(struct wl_display *display,
 		      int connector, const char *seat, int tty, int pixman,
-		      int argc, char *argv[], const char *config_file)
+		      int *argc, char *argv[], const char *config_file)
 {
 	struct drm_compositor *ec;
 	struct udev_device *drm_device;
@@ -2430,7 +2430,7 @@ output_section_done(void *data)
 }
 
 WL_EXPORT struct weston_compositor *
-backend_init(struct wl_display *display, int argc, char *argv[],
+backend_init(struct wl_display *display, int *argc, char *argv[],
 	     const char *config_file)
 {
 	int connector = 0, tty = 0, use_pixman = 0;

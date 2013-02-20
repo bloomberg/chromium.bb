@@ -295,10 +295,9 @@ main(int argc, char *argv[])
 
 	g_type_init();
 
-	argc = parse_options(view_options,
-			     ARRAY_LENGTH(view_options), argc, argv);
+	parse_options(view_options, ARRAY_LENGTH(view_options), &argc, argv);
 
-	d = display_create(argc, argv);
+	d = display_create(&argc, argv);
 	if (d == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;

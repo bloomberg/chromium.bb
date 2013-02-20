@@ -67,7 +67,7 @@ struct weston_option {
 
 int
 parse_options(const struct weston_option *options,
-	      int count, int argc, char *argv[]);
+	      int count, int *argc, char *argv[]);
 
 #endif /* CONFIGPARSER_H */
 

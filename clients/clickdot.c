@@ -297,7 +297,7 @@ main(int argc, char *argv[])
 	struct display *display;
 	struct clickdot *clickdot;
 
-	display = display_create(argc, argv);
+	display = display_create(&argc, argv);
 	if (display == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;

@@ -310,10 +310,10 @@ int main(int argc, char *argv[])
 
 	init_frand();
 
-	argc = parse_options(wscreensaver_options,
-			     ARRAY_LENGTH(wscreensaver_options), argc, argv);
+	parse_options(wscreensaver_options,
+		      ARRAY_LENGTH(wscreensaver_options), &argc, argv);
 
-	d = display_create(argc, argv);
+	d = display_create(&argc, argv);
 	if (d == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return EXIT_FAILURE;

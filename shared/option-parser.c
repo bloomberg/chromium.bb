@@ -51,11 +51,11 @@ handle_option(const struct weston_option *option, char *value)
 
 int
 parse_options(const struct weston_option *options,
-	      int count, int argc, char *argv[])
+	      int count, int *argc, char *argv[])
 {
 	int i, j, k, len = 0;
 
-	for (i = 1, j = 1; i < argc; i++) {
+	for (i = 1, j = 1; i < *argc; i++) {
 		for (k = 0; k < count; k++) {
 			if (options[k].name)
 				len = strlen(options[k].name);
@@ -77,6 +77,7 @@ parse_options(const struct weston_option *options,
 			argv[j++] = argv[i];
 	}
 	argv[j] = NULL;
+	*argc = j;
 
 	return j;
 }

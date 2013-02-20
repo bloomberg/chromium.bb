@@ -264,7 +264,7 @@ int main(int argc, char *argv[])
 			usage(EXIT_FAILURE);
 	}
 
-	d = display_create(argc, argv);
+	d = display_create(&argc, argv);
 	if (d == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;

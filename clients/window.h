@@ -53,7 +53,7 @@ struct rectangle {
 };
 
 struct display *
-display_create(int argc, char *argv[]);
+display_create(int *argc, char *argv[]);
 
 void
 display_destroy(struct display *display);

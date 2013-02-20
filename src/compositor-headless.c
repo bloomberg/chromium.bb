@@ -152,7 +152,7 @@ headless_destroy(struct weston_compositor *ec)
 static struct weston_compositor *
 headless_compositor_create(struct wl_display *display,
 			  int width, int height, const char *display_name,
-			  int argc, char *argv[], const char *config_file)
+			  int *argc, char *argv[], const char *config_file)
 {
 	struct headless_compositor *c;
 
@@ -187,7 +187,7 @@ err_free:
 }
 
 WL_EXPORT struct weston_compositor *
-backend_init(struct wl_display *display, int argc, char *argv[],
+backend_init(struct wl_display *display, int *argc, char *argv[],
 	     const char *config_file)
 {
 	int width = 1024, height = 640;

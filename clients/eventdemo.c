@@ -390,11 +390,11 @@ main(int argc, char *argv[])
 	struct display *d;
 	struct eventdemo *e;
 
-	argc = parse_options(eventdemo_options,
-			     ARRAY_LENGTH(eventdemo_options), argc, argv);
+	parse_options(eventdemo_options,
+		      ARRAY_LENGTH(eventdemo_options), &argc, argv);
 
 	/* Connect to the display and have the arguments parsed */
-	d = display_create(argc, argv);
+	d = display_create(&argc, argv);
 	if (d == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;

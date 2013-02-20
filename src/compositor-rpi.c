@@ -1423,7 +1423,7 @@ struct rpi_parameters {
 };
 
 static struct weston_compositor *
-rpi_compositor_create(struct wl_display *display, int argc, char *argv[],
+rpi_compositor_create(struct wl_display *display, int *argc, char *argv[],
 		      const char *config_file, struct rpi_parameters *param)
 {
 	struct rpi_compositor *compositor;
@@ -1536,7 +1536,7 @@ out_free:
 #define DEFAULT_MAX_PLANES 80
 
 WL_EXPORT struct weston_compositor *
-backend_init(struct wl_display *display, int argc, char *argv[],
+backend_init(struct wl_display *display, int *argc, char *argv[],
 	     const char *config_file)
 {
 	struct rpi_parameters param = {

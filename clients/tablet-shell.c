@@ -459,7 +459,7 @@ int main(int argc, char *argv[])
 	char *config_file;
 	struct output *output;
 
-	display = display_create(argc, argv);
+	display = display_create(&argc, argv);
 	if (display == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;

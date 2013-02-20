@@ -826,7 +826,7 @@ switch_vt_binding(struct wl_seat *seat, uint32_t time, uint32_t key, void *data)
 }
 
 static struct weston_compositor *
-fbdev_compositor_create(struct wl_display *display, int argc, char *argv[],
+fbdev_compositor_create(struct wl_display *display, int *argc, char *argv[],
                         const char *config_file, struct fbdev_parameters *param)
 {
 	struct fbdev_compositor *compositor;
@@ -897,7 +897,7 @@ out_free:
 }
 
 WL_EXPORT struct weston_compositor *
-backend_init(struct wl_display *display, int argc, char *argv[],
+backend_init(struct wl_display *display, int *argc, char *argv[],
 	     const char *config_file)
 {
 	/* TODO: Ideally, available frame buffers should be enumerated using

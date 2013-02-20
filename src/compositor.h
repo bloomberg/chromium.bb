@@ -714,7 +714,7 @@ weston_compositor_get_time(void);
 
 int
 weston_compositor_init(struct weston_compositor *ec, struct wl_display *display,
-		       int argc, char *argv[], const char *config_file);
+		       int *argc, char *argv[], const char *config_file);
 void
 weston_compositor_shutdown(struct weston_compositor *ec);
 void
@@ -839,8 +839,8 @@ int
 noop_renderer_init(struct weston_compositor *ec);
 
 struct weston_compositor *
-backend_init(struct wl_display *display, int argc, char *argv[],
-	    const char *config_file);
+backend_init(struct wl_display *display, int *argc, char *argv[],
+	     const char *config_file);
 
 int
 module_init(struct weston_compositor *compositor);

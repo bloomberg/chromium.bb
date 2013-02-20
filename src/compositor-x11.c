@@ -1366,7 +1366,7 @@ x11_compositor_create(struct wl_display *display,
 		      int fullscreen,
 		      int no_input,
 		      int use_pixman,
-		      int argc, char *argv[], const char *config_file)
+		      int *argc, char *argv[], const char *config_file)
 {
 	struct x11_compositor *c;
 	struct x11_configured_output *o;
@@ -1556,7 +1556,7 @@ err_free:
 }
 
 WL_EXPORT struct weston_compositor *
-backend_init(struct wl_display *display, int argc, char *argv[],
+backend_init(struct wl_display *display, int *argc, char *argv[],
 	     const char *config_file)
 {
 	int fullscreen = 0;

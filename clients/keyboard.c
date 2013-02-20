@@ -706,7 +706,7 @@ main(int argc, char *argv[])
 
 	memset(&virtual_keyboard, 0, sizeof virtual_keyboard);
 
-	virtual_keyboard.display = display_create(argc, argv);
+	virtual_keyboard.display = display_create(&argc, argv);
 	if (virtual_keyboard.display == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;

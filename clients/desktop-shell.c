@@ -1094,7 +1094,7 @@ int main(int argc, char *argv[])
 	desktop.unlock_task.run = unlock_dialog_finish;
 	wl_list_init(&desktop.outputs);
 
-	desktop.display = display_create(argc, argv);
+	desktop.display = display_create(&argc, argv);
 	if (desktop.display == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;

@@ -2683,10 +2683,10 @@ int main(int argc, char *argv[])
 			  NULL);
 	free(config_file);
 
-	argc = parse_options(terminal_options,
-			     ARRAY_LENGTH(terminal_options), argc, argv);
+	parse_options(terminal_options,
+		      ARRAY_LENGTH(terminal_options), &argc, argv);
 
-	d = display_create(argc, argv);
+	d = display_create(&argc, argv);
 	if (d == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;

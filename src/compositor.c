@@ -2951,8 +2951,7 @@ log_uname(void)
 WL_EXPORT int
 weston_compositor_init(struct weston_compositor *ec,
 		       struct wl_display *display,
-		       int argc,
-		       char *argv[],
+		       int *argc, char *argv[],
 		       const char *config_file)
 {
 	struct wl_event_loop *loop;
@@ -3336,7 +3335,7 @@ int main(int argc, char *argv[])
 	struct sigaction segv_action;
 	struct weston_compositor
 		*(*backend_init)(struct wl_display *display,
-				 int argc, char *argv[], const char *config_file);
+				 int *argc, char *argv[], const char *config_file);
 	int i;
 	char *backend = NULL;
 	const char *modules = "desktop-shell.so", *option_modules = NULL;
@@ -3366,8 +3365,7 @@ int main(int argc, char *argv[])
 		{ WESTON_OPTION_BOOLEAN, "version", 0, &version },
 	};
 
-	argc = parse_options(core_options,
-			     ARRAY_LENGTH(core_options), argc, argv);
+	parse_options(core_options, ARRAY_LENGTH(core_options), &argc, argv);
 
 	if (help)
 		usage(EXIT_SUCCESS);
@@ -3419,7 +3417,7 @@ int main(int argc, char *argv[])
 	if (!backend_init)
 		exit(EXIT_FAILURE);
 
-	ec = backend_init(display, argc, argv, config_file);
+	ec = backend_init(display, &argc, argv, config_file);
 	if (ec == NULL) {
 		weston_log("fatal: failed to create compositor\n");
 		exit(EXIT_FAILURE);
@@ -3431,9 +3429,10 @@ int main(int argc, char *argv[])
 	sigaction(SIGSEGV, &segv_action, NULL);
 	segv_compositor = ec;
 
-	for (i = 1; argv[i]; i++)
+
+	for (i = 1; i < argc; i++)
 		weston_log("fatal: unhandled option: %s\n", argv[i]);
-	if (argv[1]) {
+	if (argc > 1) {
 		ret = EXIT_FAILURE;
 		goto out;
 	}

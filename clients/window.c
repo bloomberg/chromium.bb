@@ -4329,7 +4329,7 @@ handle_display_data(struct task *task, uint32_t events)
 }
 
 struct display *
-display_create(int argc, char *argv[])
+display_create(int *argc, char *argv[])
 {
 	struct display *d;
 

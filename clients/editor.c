@@ -1056,7 +1056,7 @@ main(int argc, char *argv[])
 	g_type_init();
 #endif
 
-	editor.display = display_create(argc, argv);
+	editor.display = display_create(&argc, argv);
 	if (editor.display == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;

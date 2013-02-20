@@ -410,7 +410,7 @@ main(int argc, char *argv[])
 	int i;
 	int image_counter = 0;
 
-	d = display_create(argc, argv);
+	d = display_create(&argc, argv);
 	if (d == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;
