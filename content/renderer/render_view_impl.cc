@@ -809,6 +809,12 @@ RenderViewImpl::~RenderViewImpl() {
     file_chooser_completions_.pop_front();
   }
 
+#if defined(OS_ANDROID)
+  // The date/time picker client is both a scoped_ptr member of this class and
+  // a RenderViewObserver. Reset it to prevent double deletion.
+  date_time_picker_client_.reset();
+#endif
+
 #if defined(OS_MACOSX)
   // Destroy all fake plugin window handles on the browser side.
   while (!fake_plugin_window_handles_.empty()) {
