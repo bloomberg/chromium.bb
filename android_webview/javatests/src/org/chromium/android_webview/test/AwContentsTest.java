@@ -112,8 +112,12 @@ public class AwContentsTest extends AndroidWebViewTestBase {
         createAwTestContainerView(mContentsClient).getAwContents().destroy();
     }
 
-    @LargeTest
-    @Feature({"AndroidWebView"})
+    /*
+     * @LargeTest
+     * @Feature({"AndroidWebView"})
+     * Disabled until we switch to final rendering pipeline.
+     */
+    @DisabledTest
     public void testCreateLoadDestroyManyTimes() throws Throwable {
         final int CREATE_AND_DESTROY_REPEAT_COUNT = 10;
         for (int i = 0; i < CREATE_AND_DESTROY_REPEAT_COUNT; ++i) {
