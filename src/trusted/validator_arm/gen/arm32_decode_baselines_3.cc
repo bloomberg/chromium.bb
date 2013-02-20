@@ -4002,7 +4002,7 @@ uses(Instruction inst) const {
 //    actual: Actual_VMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_case_1,
 //    advsimd: sel in bitset {'1xxx', '0xx1'},
 //    arch: ['VFPv2', 'AdvSIMD'],
-//    baseline: MoveVfpRegisterOpWithTypeSel,
+//    baseline: VMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: D:Vd,
@@ -4020,7 +4020,6 @@ uses(Instruction inst) const {
 //      Rt(15:12),
 //      D(7),
 //      opc2(6:5)],
-//    generated_baseline: VMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_case_0,
 //    index: opc1(0):opc2
 //         if opc1:opc2(3:0)=1xxx
 //         else opc1(0):opc2(1)
@@ -4080,14 +4079,13 @@ uses(Instruction inst) const {
 //    Vn: Vn(19:16),
 //    actual: Actual_VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_1,
 //    arch: VFPv2,
-//    baseline: MoveVfpRegisterOp,
+//    baseline: VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    defs: {Rt
 //         if to_arm_register
 //         else None},
 //    fields: [cond(31:28), op(20), Vn(19:16), Rt(15:12), N(7)],
-//    generated_baseline: VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_0,
 //    n: Vn:N,
 //    op: op(20),
 //    pattern: cccc1110000onnnntttt1010n0010000,
@@ -4147,14 +4145,13 @@ uses(Instruction inst) const {
 //    Vn: Vn(19:16),
 //    actual: Actual_VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_1,
 //    arch: VFPv2,
-//    baseline: MoveVfpRegisterOp,
+//    baseline: VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000xnnnntttt1010n0010000_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    defs: {Rt
 //         if to_arm_register
 //         else None},
 //    fields: [cond(31:28), op(20), Vn(19:16), Rt(15:12), N(7)],
-//    generated_baseline: VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000xnnnntttt1010n0010000_case_0,
 //    n: Vn:N,
 //    op: op(20),
 //    pattern: cccc1110000xnnnntttt1010n0010000,
@@ -4587,7 +4584,7 @@ uses(Instruction inst) const {
 //    Rt: Rt(15:12),
 //    actual: Actual_VMRS_cccc111011110001tttt101000010000_case_1,
 //    arch: ['VFPv2', 'AdvSIMD'],
-//    baseline: VfpMrsOp,
+//    baseline: VMRS_cccc111011110001tttt101000010000_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    defs: {NZCV
@@ -4595,7 +4592,6 @@ uses(Instruction inst) const {
 //            Pc
 //         else Rt},
 //    fields: [cond(31:28), Rt(15:12)],
-//    generated_baseline: VMRS_cccc111011110001tttt101000010000_case_0,
 //    pattern: cccc111011110001tttt101000010000,
 //    rule: VMRS,
 //    t: Rt}
@@ -4626,12 +4622,11 @@ safety(Instruction inst) const {
 //    Rt: Rt(15:12),
 //    actual: Actual_VMSR_cccc111011100001tttt101000010000_case_1,
 //    arch: ['VFPv2', 'AdvSIMD'],
-//    baseline: VfpUsesRegOp,
+//    baseline: VMSR_cccc111011100001tttt101000010000_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    defs: {},
 //    fields: [cond(31:28), Rt(15:12)],
-//    generated_baseline: VMSR_cccc111011100001tttt101000010000_case_0,
 //    pattern: cccc111011100001tttt101000010000,
 //    rule: VMSR,
 //    safety: [t  ==

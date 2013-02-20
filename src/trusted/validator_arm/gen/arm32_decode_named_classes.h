@@ -165,10 +165,6 @@ class Deprecated_SWP_SWPB
     : public Deprecated {
 };
 
-class DuplicateToAdvSIMDRegisters_VDUP_ARM_core_register
-    : public DuplicateToAdvSIMDRegisters {
-};
-
 class EOR_immediate_cccc0010001snnnnddddiiiiiiiiiiii_case_0_EOR_immediate
     : public EOR_immediate_cccc0010001snnnnddddiiiiiiiiiiii_case_0 {
 };
@@ -461,6 +457,10 @@ class MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_0_MLS_A1
     : public MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_0 {
 };
 
+class MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_0_MOVE_scalar_to_ARM_core_register
+    : public MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_0 {
+};
+
 class MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0_MOVT
     : public MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0 {
 };
@@ -523,18 +523,6 @@ class MoveDoubleVfpRegisterOp_VMOV_between_two_ARM_core_registers_and_a_doublewo
 
 class MoveDoubleVfpRegisterOp_VMOV_between_two_ARM_core_registers_and_two_single_precision_registers
     : public MoveDoubleVfpRegisterOp {
-};
-
-class MoveVfpRegisterOp_VMOV_between_ARM_core_register_and_single_precision_register
-    : public MoveVfpRegisterOp {
-};
-
-class MoveVfpRegisterOpWithTypeSel_MOVE_scalar_to_ARM_core_register
-    : public MoveVfpRegisterOpWithTypeSel {
-};
-
-class MoveVfpRegisterOpWithTypeSel_VMOV_ARM_core_register_to_scalar
-    : public MoveVfpRegisterOpWithTypeSel {
 };
 
 class NOP_cccc0011001000001111000000000000_case_0_NOP
@@ -1149,6 +1137,10 @@ class VDIV_cccc11101d00nnnndddd101sn0m0mmmm_case_0_VDIV
     : public VDIV_cccc11101d00nnnndddd101sn0m0mmmm_case_0 {
 };
 
+class VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0_VDUP_ARM_core_register
+    : public VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0 {
+};
+
 class VFMA_VFMS_cccc11101d10nnnndddd101snom0mmmm_case_0_VFMA_VFMS
     : public VFMA_VFMS_cccc11101d10nnnndddd101snom0mmmm_case_0 {
 };
@@ -1177,12 +1169,32 @@ class VMLA_VMLS_floating_point_cccc11100d00nnnndddd101snom0mmmm_case_0_VMLA_VMLS
     : public VMLA_VMLS_floating_point_cccc11100d00nnnndddd101snom0mmmm_case_0 {
 };
 
+class VMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_case_0_VMOV_ARM_core_register_to_scalar
+    : public VMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_case_0 {
+};
+
+class VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_0_VMOV_between_ARM_core_register_and_single_precision_register
+    : public VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_0 {
+};
+
+class VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000xnnnntttt1010n0010000_case_0_VMOV_between_ARM_core_register_and_single_precision_register
+    : public VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000xnnnntttt1010n0010000_case_0 {
+};
+
 class VMOV_immediate_cccc11101d11iiiidddd101s0000iiii_case_0_VMOV_immediate
     : public VMOV_immediate_cccc11101d11iiiidddd101s0000iiii_case_0 {
 };
 
 class VMOV_register_cccc11101d110000dddd101s01m0mmmm_case_0_VMOV_register
     : public VMOV_register_cccc11101d110000dddd101s01m0mmmm_case_0 {
+};
+
+class VMRS_cccc111011110001tttt101000010000_case_0_VMRS
+    : public VMRS_cccc111011110001tttt101000010000_case_0 {
+};
+
+class VMSR_cccc111011100001tttt101000010000_case_0_VMSR
+    : public VMSR_cccc111011100001tttt101000010000_case_0 {
 };
 
 class VMUL_floating_point_cccc11100d10nnnndddd101sn0m0mmmm_case_0_VMUL_floating_point
@@ -1891,14 +1903,6 @@ class VectorLoadStoreSingle4_VST4_single_4_element_structure_form_one_lane
 
 class VectorUnary2RegisterDup_VDUP_scalar
     : public VectorUnary2RegisterDup {
-};
-
-class VfpMrsOp_VMRS
-    : public VfpMrsOp {
-};
-
-class VfpUsesRegOp_VMSR
-    : public VfpUsesRegOp {
 };
 
 class WFE_cccc0011001000001111000000000010_case_0_WFE
@@ -4152,18 +4156,6 @@ class NamedDeprecated_SWP_SWPB
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedDeprecated_SWP_SWPB);
 };
 
-class NamedDuplicateToAdvSIMDRegisters_VDUP_ARM_core_register
-    : public NamedClassDecoder {
- public:
-  NamedDuplicateToAdvSIMDRegisters_VDUP_ARM_core_register()
-    : NamedClassDecoder(decoder_, "DuplicateToAdvSIMDRegisters VDUP_ARM_core_register")
-  {}
-
- private:
-  nacl_arm_dec::DuplicateToAdvSIMDRegisters_VDUP_ARM_core_register decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDuplicateToAdvSIMDRegisters_VDUP_ARM_core_register);
-};
-
 class NamedEOR_immediate_cccc0010001snnnnddddiiiiiiiiiiii_case_0_EOR_immediate
     : public NamedClassDecoder {
  public:
@@ -5040,6 +5032,18 @@ class NamedMLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_0_MLS_A1
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedMLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_0_MLS_A1);
 };
 
+class NamedMOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_0_MOVE_scalar_to_ARM_core_register
+    : public NamedClassDecoder {
+ public:
+  NamedMOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_0_MOVE_scalar_to_ARM_core_register()
+    : NamedClassDecoder(decoder_, "MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_0 MOVE_scalar_to_ARM_core_register")
+  {}
+
+ private:
+  nacl_arm_dec::MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_0_MOVE_scalar_to_ARM_core_register decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_0_MOVE_scalar_to_ARM_core_register);
+};
+
 class NamedMOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0_MOVT
     : public NamedClassDecoder {
  public:
@@ -5230,42 +5234,6 @@ class NamedMoveDoubleVfpRegisterOp_VMOV_between_two_ARM_core_registers_and_two_s
  private:
   nacl_arm_dec::MoveDoubleVfpRegisterOp_VMOV_between_two_ARM_core_registers_and_two_single_precision_registers decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedMoveDoubleVfpRegisterOp_VMOV_between_two_ARM_core_registers_and_two_single_precision_registers);
-};
-
-class NamedMoveVfpRegisterOp_VMOV_between_ARM_core_register_and_single_precision_register
-    : public NamedClassDecoder {
- public:
-  NamedMoveVfpRegisterOp_VMOV_between_ARM_core_register_and_single_precision_register()
-    : NamedClassDecoder(decoder_, "MoveVfpRegisterOp VMOV_between_ARM_core_register_and_single_precision_register")
-  {}
-
- private:
-  nacl_arm_dec::MoveVfpRegisterOp_VMOV_between_ARM_core_register_and_single_precision_register decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMoveVfpRegisterOp_VMOV_between_ARM_core_register_and_single_precision_register);
-};
-
-class NamedMoveVfpRegisterOpWithTypeSel_MOVE_scalar_to_ARM_core_register
-    : public NamedClassDecoder {
- public:
-  NamedMoveVfpRegisterOpWithTypeSel_MOVE_scalar_to_ARM_core_register()
-    : NamedClassDecoder(decoder_, "MoveVfpRegisterOpWithTypeSel MOVE_scalar_to_ARM_core_register")
-  {}
-
- private:
-  nacl_arm_dec::MoveVfpRegisterOpWithTypeSel_MOVE_scalar_to_ARM_core_register decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMoveVfpRegisterOpWithTypeSel_MOVE_scalar_to_ARM_core_register);
-};
-
-class NamedMoveVfpRegisterOpWithTypeSel_VMOV_ARM_core_register_to_scalar
-    : public NamedClassDecoder {
- public:
-  NamedMoveVfpRegisterOpWithTypeSel_VMOV_ARM_core_register_to_scalar()
-    : NamedClassDecoder(decoder_, "MoveVfpRegisterOpWithTypeSel VMOV_ARM_core_register_to_scalar")
-  {}
-
- private:
-  nacl_arm_dec::MoveVfpRegisterOpWithTypeSel_VMOV_ARM_core_register_to_scalar decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMoveVfpRegisterOpWithTypeSel_VMOV_ARM_core_register_to_scalar);
 };
 
 class NamedNOP_cccc0011001000001111000000000000_case_0_NOP
@@ -7104,6 +7072,18 @@ class NamedVDIV_cccc11101d00nnnndddd101sn0m0mmmm_case_0_VDIV
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedVDIV_cccc11101d00nnnndddd101sn0m0mmmm_case_0_VDIV);
 };
 
+class NamedVDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0_VDUP_ARM_core_register
+    : public NamedClassDecoder {
+ public:
+  NamedVDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0_VDUP_ARM_core_register()
+    : NamedClassDecoder(decoder_, "VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0 VDUP_ARM_core_register")
+  {}
+
+ private:
+  nacl_arm_dec::VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0_VDUP_ARM_core_register decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0_VDUP_ARM_core_register);
+};
+
 class NamedVFMA_VFMS_cccc11101d10nnnndddd101snom0mmmm_case_0_VFMA_VFMS
     : public NamedClassDecoder {
  public:
@@ -7188,6 +7168,42 @@ class NamedVMLA_VMLS_floating_point_cccc11100d00nnnndddd101snom0mmmm_case_0_VMLA
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedVMLA_VMLS_floating_point_cccc11100d00nnnndddd101snom0mmmm_case_0_VMLA_VMLS_floating_point);
 };
 
+class NamedVMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_case_0_VMOV_ARM_core_register_to_scalar
+    : public NamedClassDecoder {
+ public:
+  NamedVMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_case_0_VMOV_ARM_core_register_to_scalar()
+    : NamedClassDecoder(decoder_, "VMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_case_0 VMOV_ARM_core_register_to_scalar")
+  {}
+
+ private:
+  nacl_arm_dec::VMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_case_0_VMOV_ARM_core_register_to_scalar decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_case_0_VMOV_ARM_core_register_to_scalar);
+};
+
+class NamedVMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_0_VMOV_between_ARM_core_register_and_single_precision_register
+    : public NamedClassDecoder {
+ public:
+  NamedVMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_0_VMOV_between_ARM_core_register_and_single_precision_register()
+    : NamedClassDecoder(decoder_, "VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_0 VMOV_between_ARM_core_register_and_single_precision_register")
+  {}
+
+ private:
+  nacl_arm_dec::VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_0_VMOV_between_ARM_core_register_and_single_precision_register decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_0_VMOV_between_ARM_core_register_and_single_precision_register);
+};
+
+class NamedVMOV_between_ARM_core_register_and_single_precision_register_cccc1110000xnnnntttt1010n0010000_case_0_VMOV_between_ARM_core_register_and_single_precision_register
+    : public NamedClassDecoder {
+ public:
+  NamedVMOV_between_ARM_core_register_and_single_precision_register_cccc1110000xnnnntttt1010n0010000_case_0_VMOV_between_ARM_core_register_and_single_precision_register()
+    : NamedClassDecoder(decoder_, "VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000xnnnntttt1010n0010000_case_0 VMOV_between_ARM_core_register_and_single_precision_register")
+  {}
+
+ private:
+  nacl_arm_dec::VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000xnnnntttt1010n0010000_case_0_VMOV_between_ARM_core_register_and_single_precision_register decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVMOV_between_ARM_core_register_and_single_precision_register_cccc1110000xnnnntttt1010n0010000_case_0_VMOV_between_ARM_core_register_and_single_precision_register);
+};
+
 class NamedVMOV_immediate_cccc11101d11iiiidddd101s0000iiii_case_0_VMOV_immediate
     : public NamedClassDecoder {
  public:
@@ -7210,6 +7226,30 @@ class NamedVMOV_register_cccc11101d110000dddd101s01m0mmmm_case_0_VMOV_register
  private:
   nacl_arm_dec::VMOV_register_cccc11101d110000dddd101s01m0mmmm_case_0_VMOV_register decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedVMOV_register_cccc11101d110000dddd101s01m0mmmm_case_0_VMOV_register);
+};
+
+class NamedVMRS_cccc111011110001tttt101000010000_case_0_VMRS
+    : public NamedClassDecoder {
+ public:
+  NamedVMRS_cccc111011110001tttt101000010000_case_0_VMRS()
+    : NamedClassDecoder(decoder_, "VMRS_cccc111011110001tttt101000010000_case_0 VMRS")
+  {}
+
+ private:
+  nacl_arm_dec::VMRS_cccc111011110001tttt101000010000_case_0_VMRS decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVMRS_cccc111011110001tttt101000010000_case_0_VMRS);
+};
+
+class NamedVMSR_cccc111011100001tttt101000010000_case_0_VMSR
+    : public NamedClassDecoder {
+ public:
+  NamedVMSR_cccc111011100001tttt101000010000_case_0_VMSR()
+    : NamedClassDecoder(decoder_, "VMSR_cccc111011100001tttt101000010000_case_0 VMSR")
+  {}
+
+ private:
+  nacl_arm_dec::VMSR_cccc111011100001tttt101000010000_case_0_VMSR decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVMSR_cccc111011100001tttt101000010000_case_0_VMSR);
 };
 
 class NamedVMUL_floating_point_cccc11100d10nnnndddd101sn0m0mmmm_case_0_VMUL_floating_point
@@ -9334,30 +9374,6 @@ class NamedVectorUnary2RegisterDup_VDUP_scalar
  private:
   nacl_arm_dec::VectorUnary2RegisterDup_VDUP_scalar decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorUnary2RegisterDup_VDUP_scalar);
-};
-
-class NamedVfpMrsOp_VMRS
-    : public NamedClassDecoder {
- public:
-  NamedVfpMrsOp_VMRS()
-    : NamedClassDecoder(decoder_, "VfpMrsOp VMRS")
-  {}
-
- private:
-  nacl_arm_dec::VfpMrsOp_VMRS decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVfpMrsOp_VMRS);
-};
-
-class NamedVfpUsesRegOp_VMSR
-    : public NamedClassDecoder {
- public:
-  NamedVfpUsesRegOp_VMSR()
-    : NamedClassDecoder(decoder_, "VfpUsesRegOp VMSR")
-  {}
-
- private:
-  nacl_arm_dec::VfpUsesRegOp_VMSR decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVfpUsesRegOp_VMSR);
 };
 
 class NamedWFE_cccc0011001000001111000000000010_case_0_WFE

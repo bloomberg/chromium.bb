@@ -5952,7 +5952,7 @@ class VDIV_cccc11101d00nnnndddd101sn0m0mmmm_case_0
 //    Vd: Vd(19:16),
 //    actual: Actual_VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_1,
 //    arch: AdvSIMD,
-//    baseline: DuplicateToAdvSIMDRegisters,
+//    baseline: VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0,
 //    cond: cond(31:28),
 //    cond_AL: 14,
 //    constraints: ,
@@ -5979,7 +5979,6 @@ class VDIV_cccc11101d00nnnndddd101sn0m0mmmm_case_0
 //      Rt(15:12),
 //      D(7),
 //      E(5)],
-//    generated_baseline: VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0,
 //    pattern: cccc11101bq0ddddtttt1011d0e10000,
 //    regs: 1
 //         if Q(21)=0

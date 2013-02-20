@@ -3304,7 +3304,7 @@ class MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_0
 //    actual: Actual_MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_1,
 //    advsimd: sel in bitset {'x1xxx', 'x0xx1'},
 //    arch: ['VFPv2', 'AdvSIMD'],
-//    baseline: MoveVfpRegisterOpWithTypeSel,
+//    baseline: MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    defs: {Rt},
@@ -3322,7 +3322,6 @@ class MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_0
 //      Rt(15:12),
 //      N(7),
 //      opc2(6:5)],
-//    generated_baseline: MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_0,
 //    index: opc1(0):opc2
 //         if U:opc1:opc2(4:0)=x1xxx
 //         else opc1(0):opc2(1)
