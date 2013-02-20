@@ -80,11 +80,11 @@ bool EventListenerMap::RemoveListener(const EventListener* listener) {
   for (ListenerList::iterator it = listeners.begin(); it != listeners.end();
        it++) {
     if ((*it)->Equals(listener)) {
-      delegate_->OnListenerRemoved(it->get());
       CleanupListener(it->get());
       // Popping from the back should be cheaper than erase(it).
       std::swap(*it, listeners.back());
       listeners.pop_back();
+      delegate_->OnListenerRemoved(listener);
       return true;
     }
   }
@@ -215,9 +215,10 @@ void EventListenerMap::RemoveListenersForProcess(
     for (ListenerList::iterator it2 = it->second.begin();
          it2 != it->second.end();) {
       if ((*it2)->process == process) {
-        delegate_->OnListenerRemoved(it2->get());
+        linked_ptr<EventListener> listener(*it2);
         CleanupListener(it2->get());
         it2 = it->second.erase(it2);
+        delegate_->OnListenerRemoved(listener.get());
       } else {
         it2++;
       }
