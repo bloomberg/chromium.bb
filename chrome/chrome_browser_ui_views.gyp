@@ -17,8 +17,11 @@
       'sources': [
         'browser/ui/views/accelerator_table.cc',
         'browser/ui/views/accelerator_table.h',
+        'browser/ui/views/browser_dialogs.h',
+        'browser/ui/views/chrome_views_export.h',
         'browser/ui/views/event_utils.cc',
         'browser/ui/views/event_utils.h',
+        'browser/ui/views/tab_icon_view_model.h',
       ],
     },
   ],

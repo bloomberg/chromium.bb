@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_BROWSER_DIALOGS_H_
 #define CHROME_BROWSER_UI_VIEWS_BROWSER_DIALOGS_H_
 
-#include "chrome/browser/ui/host_desktop.h"
 #include "ui/gfx/native_widget_types.h"
 
 // This file contains functions for running a variety of browser dialogs and
@@ -23,12 +22,6 @@ class FindBar;
 class GURL;
 class Profile;
 class TemplateURL;
-
-namespace content {
-class PageNavigator;
-class WebContents;
-struct SSLStatus;
-}
 
 namespace extensions {
 class Extension;
