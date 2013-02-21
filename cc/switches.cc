@@ -33,6 +33,12 @@ const char kEnableTopControlsPositionCalculation[] =
 // The height of the movable top controls.
 const char kTopControlsHeight[] = "top-controls-height";
 
+// Percentage of the top controls need to be hidden before they will auto hide.
+const char kTopControlsHideThreshold[] = "top-controls-hide-threshold";
+
+// Percentage of the top controls need to be shown before they will auto show.
+const char kTopControlsShowThreshold[] = "top-controls-show-threshold";
+
 // Number of worker threads used to rasterize content.
 const char kNumRasterThreads[] = "num-raster-threads";
 

@@ -42,6 +42,8 @@ class CC_EXPORT LayerTreeSettings {
   float minimumContentsScale;
   float lowResContentsScaleFactor;
   float topControlsHeight;
+  float topControlsShowThreshold;
+  float topControlsHideThreshold;
   double refreshRate;
   size_t maxPartialTextureUpdates;
   size_t numRasterThreads;

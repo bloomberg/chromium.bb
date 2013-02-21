@@ -174,8 +174,12 @@ LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings, LayerTre
 
     setDebugState(settings.initialDebugState);
 
-    if (settings.calculateTopControlsPosition)
-        m_topControlsManager = TopControlsManager::Create(this, settings.topControlsHeight);
+    if (settings.calculateTopControlsPosition) {
+        m_topControlsManager = TopControlsManager::Create(this,
+                                                          settings.topControlsHeight,
+                                                          settings.topControlsShowThreshold,
+                                                          settings.topControlsHideThreshold);
+    }
 
     setDebugState(settings.initialDebugState);
 

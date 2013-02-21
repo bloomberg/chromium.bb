@@ -61,6 +61,12 @@ public abstract class CommandLine {
     // The height of the movable top controls.
     public static final String TOP_CONTROLS_HEIGHT = "top-controls-height";
 
+    // How much of the top controls need to be shown before they will auto show.
+    public static final String TOP_CONTROLS_SHOW_THRESHOLD = "top-controls-show-threshold";
+
+    // How much of the top controls need to be hidden before they will auto hide.
+    public static final String TOP_CONTROLS_HIDE_THRESHOLD = "top-controls-hide-threshold";
+
     // Public abstract interface, implemented in derived classes.
     // All these methods reflect their native-side counterparts.
     /**

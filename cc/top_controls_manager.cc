@@ -19,18 +19,25 @@ namespace cc {
 namespace {
 // These constants were chosen empirically for their visually pleasant behavior.
 // Contact tedchoc@chromium.org for questions about changing these values.
-const float kShowHideThreshold = 0.5f;
 const int64 kShowHideMaxDurationMs = 175;
 }
 
 // static
 scoped_ptr<TopControlsManager> TopControlsManager::Create(
-    TopControlsManagerClient* client, float top_controls_height) {
-  return make_scoped_ptr(new TopControlsManager(client, top_controls_height));
+    TopControlsManagerClient* client,
+    float top_controls_height,
+    float top_controls_show_threshold,
+    float top_controls_hide_threshold) {
+  return make_scoped_ptr(new TopControlsManager(client,
+                                                top_controls_height,
+                                                top_controls_show_threshold,
+                                                top_controls_hide_threshold));
 }
 
 TopControlsManager::TopControlsManager(TopControlsManagerClient* client,
-                                       float top_controls_height)
+                                       float top_controls_height,
+                                       float top_controls_show_threshold,
+                                       float top_controls_hide_threshold)
     : client_(client),
       animation_direction_(NO_ANIMATION),
       in_scroll_gesture_(false),
@@ -38,7 +45,12 @@ TopControlsManager::TopControlsManager(TopControlsManagerClient* client,
       controls_top_offset_(0),
       content_top_offset_(top_controls_height),
       previous_root_scroll_offset_(0.f),
-      scroll_start_offset_(0.f) {
+      scroll_start_offset_(0.f),
+      current_scroll_delta_(0.f),
+      top_controls_show_height_(
+          top_controls_height * top_controls_hide_threshold),
+      top_controls_hide_height_(
+          top_controls_height * (1.f - top_controls_show_threshold)) {
   CHECK(client_);
 }
 
@@ -49,12 +61,15 @@ void TopControlsManager::ScrollBegin() {
   ResetAnimations();
   in_scroll_gesture_ = true;
   scroll_start_offset_ = RootScrollLayerTotalScrollY() + controls_top_offset_;
+  current_scroll_delta_ = 0.f;
 }
 
 gfx::Vector2dF TopControlsManager::ScrollBy(
     const gfx::Vector2dF pending_delta) {
   if (pending_delta.y() == 0)
     return pending_delta;
+
+  current_scroll_delta_ += pending_delta.y();
 
   float scroll_total_y = RootScrollLayerTotalScrollY();
 
@@ -117,6 +132,7 @@ void TopControlsManager::ScrollEnd() {
   StartAnimationIfNecessary();
   previous_root_scroll_offset_ = RootScrollLayerTotalScrollY();
   in_scroll_gesture_ = false;
+  current_scroll_delta_ = 0.f;
 }
 
 void TopControlsManager::Animate(base::TimeTicks monotonic_time) {
@@ -161,14 +177,26 @@ void TopControlsManager::SetupAnimation(AnimationDirection direction) {
 }
 
 void TopControlsManager::StartAnimationIfNecessary() {
-  float scroll_total_y = RootScrollLayerTotalScrollY();
-
   if (controls_top_offset_ != 0
       && controls_top_offset_ != -top_controls_height_) {
-    AnimationDirection show_controls =
-        controls_top_offset_ >= -(top_controls_height_ * kShowHideThreshold) ?
-            SHOWING_CONTROLS : HIDING_CONTROLS;
-    if (!top_controls_animation_ || animation_direction_ != show_controls) {
+    AnimationDirection show_controls = NO_ANIMATION;
+
+    if (controls_top_offset_ >= -top_controls_show_height_) {
+      // If we're showing so much that the hide threshold won't trigger, show.
+      show_controls = SHOWING_CONTROLS;
+    } else if (controls_top_offset_ <= -top_controls_hide_height_) {
+      // If we're showing so little that the show threshold won't trigger, hide.
+      show_controls = HIDING_CONTROLS;
+    } else {
+      // If we could be either showing or hiding, we determine which one to
+      // do based on whether or not the total scroll delta was moving up or
+      // down.
+      show_controls = current_scroll_delta_ <= 0.f ?
+          SHOWING_CONTROLS : HIDING_CONTROLS;
+    }
+
+    if (show_controls != NO_ANIMATION &&
+        (!top_controls_animation_ || animation_direction_ != show_controls)) {
       SetupAnimation(show_controls);
       client_->setNeedsRedraw();
     }

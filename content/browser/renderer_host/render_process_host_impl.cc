@@ -863,6 +863,8 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kTraceAllRenderedFrames,
     cc::switches::kTraceOverdraw,
     cc::switches::kTopControlsHeight,
+    cc::switches::kTopControlsShowThreshold,
+    cc::switches::kTopControlsHideThreshold,
     cc::switches::kSlowDownRasterScaleFactor,
     cc::switches::kUseCheapnessEstimator,
     cc::switches::kLowResolutionContentsScaleFactor,

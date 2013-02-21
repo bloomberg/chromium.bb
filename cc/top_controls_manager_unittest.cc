@@ -21,10 +21,13 @@ static const float kTopControlsHeight = 100;
 
 class MockTopControlsManagerClient : public TopControlsManagerClient {
  public:
-  MockTopControlsManagerClient()
+  MockTopControlsManagerClient(float top_controls_show_threshold,
+                               float top_controls_hide_threshold)
       : host_impl_(&proxy_),
         redraw_needed_(false),
-        update_draw_properties_needed_(false) {
+        update_draw_properties_needed_(false),
+        top_controls_show_threshold_(top_controls_show_threshold),
+        top_controls_hide_threshold_(top_controls_hide_threshold) {
     active_tree_ = LayerTreeImpl::create(&host_impl_);
     root_scroll_layer_ = LayerImpl::create(active_tree_.get(), 1);
   }
@@ -53,8 +56,12 @@ class MockTopControlsManagerClient : public TopControlsManagerClient {
   }
 
   TopControlsManager* manager() {
-    if (!manager_)
-      manager_ = TopControlsManager::Create(this, kTopControlsHeight);
+    if (!manager_) {
+      manager_ = TopControlsManager::Create(this,
+                                            kTopControlsHeight,
+                                            top_controls_show_threshold_,
+                                            top_controls_hide_threshold_);
+    }
     return manager_.get();
   }
 
@@ -66,10 +73,13 @@ class MockTopControlsManagerClient : public TopControlsManagerClient {
   scoped_ptr<TopControlsManager> manager_;
   bool redraw_needed_;
   bool update_draw_properties_needed_;
+
+  float top_controls_show_threshold_;
+  float top_controls_hide_threshold_;
 };
 
 TEST(TopControlsManagerTest, overlayModeDetection) {
-  MockTopControlsManagerClient client;
+  MockTopControlsManagerClient client(0.5f, 0.5f);
   TopControlsManager* manager = client.manager();
   client.rootScrollLayer()->setScrollDelta(gfx::Vector2dF(0.f, 0.f));
 
@@ -134,7 +144,7 @@ TEST(TopControlsManagerTest, overlayModeDetection) {
 }
 
 TEST(TopControlsManagerTest, ensureScrollThresholdApplied) {
-  MockTopControlsManagerClient client;
+  MockTopControlsManagerClient client(0.5f, 0.5f);
   TopControlsManager* manager = client.manager();
   client.rootScrollLayer()->setScrollOffset(gfx::Vector2d(0, 200));
 
@@ -197,7 +207,7 @@ TEST(TopControlsManagerTest, ensureScrollThresholdApplied) {
 }
 
 TEST(TopControlsManagerTest, partialShownHideAnimation) {
-  MockTopControlsManagerClient client;
+  MockTopControlsManagerClient client(0.5f, 0.5f);
   TopControlsManager* manager = client.manager();
   client.rootScrollLayer()->setScrollOffset(gfx::Vector2d(0, 300));
   manager->ScrollBy(gfx::Vector2dF(0.f, 300.f));
@@ -226,7 +236,7 @@ TEST(TopControlsManagerTest, partialShownHideAnimation) {
 }
 
 TEST(TopControlsManagerTest, partialShownShowAnimation) {
-  MockTopControlsManagerClient client;
+  MockTopControlsManagerClient client(0.5f, 0.5f);
   TopControlsManager* manager = client.manager();
   client.rootScrollLayer()->setScrollOffset(gfx::Vector2d(0, 300));
   manager->ScrollBy(gfx::Vector2dF(0.f, 300.f));
@@ -236,6 +246,122 @@ TEST(TopControlsManagerTest, partialShownShowAnimation) {
   client.rootScrollLayer()->setScrollOffset(gfx::Vector2d(0, 230));
   manager->ScrollBy(gfx::Vector2dF(0.f, -70.f));
   EXPECT_EQ(-30.f, manager->controls_top_offset());
+  EXPECT_EQ(0.f, manager->content_top_offset());
+
+  manager->ScrollEnd();
+  EXPECT_TRUE(manager->animation());
+
+  base::TimeTicks time = base::TimeTicks::Now();
+  float previous_offset = manager->controls_top_offset();
+  while(manager->animation()) {
+    time = base::TimeDelta::FromMicroseconds(100) + time;
+    manager->Animate(time);
+    EXPECT_GT(manager->controls_top_offset(), previous_offset);
+    previous_offset = manager->controls_top_offset();
+  }
+  EXPECT_FALSE(manager->animation());
+  EXPECT_EQ(0.f, manager->controls_top_offset());
+  EXPECT_EQ(0.f, manager->content_top_offset());
+}
+
+TEST(TopControlsManagerTest, partialHiddenWithAmbiguousThresholdShows) {
+  MockTopControlsManagerClient client(0.25f, 0.25f);
+  TopControlsManager* manager = client.manager();
+
+  manager->ScrollBegin();
+
+  manager->ScrollBy(gfx::Vector2dF(0.f, 20.f));
+  EXPECT_EQ(-20.f, manager->controls_top_offset());
+  EXPECT_EQ(80.f, manager->content_top_offset());
+
+  manager->ScrollEnd();
+  EXPECT_TRUE(manager->animation());
+
+  base::TimeTicks time = base::TimeTicks::Now();
+  float previous_offset = manager->controls_top_offset();
+  while(manager->animation()) {
+    time = base::TimeDelta::FromMicroseconds(100) + time;
+    manager->Animate(time);
+    EXPECT_GT(manager->controls_top_offset(), previous_offset);
+    previous_offset = manager->controls_top_offset();
+  }
+  EXPECT_FALSE(manager->animation());
+  EXPECT_EQ(0.f, manager->controls_top_offset());
+  EXPECT_EQ(100.f, manager->content_top_offset());
+}
+
+TEST(TopControlsManagerTest, partialHiddenWithAmbiguousThresholdHides) {
+  MockTopControlsManagerClient client(0.25f, 0.25f);
+  TopControlsManager* manager = client.manager();
+
+  manager->ScrollBegin();
+
+  manager->ScrollBy(gfx::Vector2dF(0.f, 30.f));
+  EXPECT_EQ(-30.f, manager->controls_top_offset());
+  EXPECT_EQ(70.f, manager->content_top_offset());
+
+  manager->ScrollEnd();
+  EXPECT_TRUE(manager->animation());
+
+  base::TimeTicks time = base::TimeTicks::Now();
+  float previous_offset = manager->controls_top_offset();
+  while(manager->animation()) {
+    time = base::TimeDelta::FromMicroseconds(100) + time;
+    manager->Animate(time);
+    EXPECT_LT(manager->controls_top_offset(), previous_offset);
+    previous_offset = manager->controls_top_offset();
+  }
+  EXPECT_FALSE(manager->animation());
+  EXPECT_EQ(-100.f, manager->controls_top_offset());
+  EXPECT_EQ(0.f, manager->content_top_offset());
+}
+
+TEST(TopControlsManagerTest, partialShownWithAmbiguousThresholdHides) {
+  MockTopControlsManagerClient client(0.25f, 0.25f);
+  TopControlsManager* manager = client.manager();
+  client.rootScrollLayer()->setScrollOffset(gfx::Vector2d(0, 300));
+
+  manager->ScrollBy(gfx::Vector2dF(0.f, 200.f));
+  EXPECT_EQ(-100.f, manager->controls_top_offset());
+  EXPECT_EQ(0.f, manager->content_top_offset());
+
+  manager->ScrollBegin();
+
+  client.rootScrollLayer()->setScrollOffset(gfx::Vector2d(0, 180));
+  manager->ScrollBy(gfx::Vector2dF(0.f, -20.f));
+  EXPECT_EQ(-80.f, manager->controls_top_offset());
+  EXPECT_EQ(0.f, manager->content_top_offset());
+
+  manager->ScrollEnd();
+  EXPECT_TRUE(manager->animation());
+
+  base::TimeTicks time = base::TimeTicks::Now();
+  float previous_offset = manager->controls_top_offset();
+  while(manager->animation()) {
+    time = base::TimeDelta::FromMicroseconds(100) + time;
+    manager->Animate(time);
+    EXPECT_LT(manager->controls_top_offset(), previous_offset);
+    previous_offset = manager->controls_top_offset();
+  }
+  EXPECT_FALSE(manager->animation());
+  EXPECT_EQ(-100.f, manager->controls_top_offset());
+  EXPECT_EQ(0.f, manager->content_top_offset());
+}
+
+TEST(TopControlsManagerTest, partialShownWithAmbiguousThresholdShows) {
+  MockTopControlsManagerClient client(0.25f, 0.25f);
+  TopControlsManager* manager = client.manager();
+  client.rootScrollLayer()->setScrollOffset(gfx::Vector2d(0, 300));
+
+  manager->ScrollBy(gfx::Vector2dF(0.f, 200.f));
+  EXPECT_EQ(-100.f, manager->controls_top_offset());
+  EXPECT_EQ(0.f, manager->content_top_offset());
+
+  manager->ScrollBegin();
+
+  client.rootScrollLayer()->setScrollOffset(gfx::Vector2d(0, 70));
+  manager->ScrollBy(gfx::Vector2dF(0.f, -30.f));
+  EXPECT_EQ(-70.f, manager->controls_top_offset());
   EXPECT_EQ(0.f, manager->content_top_offset());
 
   manager->ScrollEnd();
