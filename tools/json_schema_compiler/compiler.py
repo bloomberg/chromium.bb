@@ -32,7 +32,7 @@ import sys
 # First is default.
 GENERATORS = ['cpp', 'cpp-bundle', 'dart']
 
-def load_schema(schema):
+def _LoadSchema(schema):
   schema_filename, schema_extension = os.path.splitext(schema)
 
   if schema_extension == '.json':
@@ -47,6 +47,122 @@ def load_schema(schema):
              ' single schema.' % schema)
 
   return api_defs
+
+def GenerateSchema(generator,
+                   filenames,
+                   root,
+                   destdir,
+                   root_namespace,
+                   dart_overrides_dir):
+  # Merge the source files into a single list of schemas.
+  api_defs = []
+  for filename in filenames:
+    schema = os.path.normpath(filename)
+    schema_filename, schema_extension = os.path.splitext(schema)
+    path, short_filename = os.path.split(schema_filename)
+    api_def = _LoadSchema(schema)
+
+    # If compiling the C++ model code, delete 'nocompile' nodes.
+    if generator == 'cpp':
+      api_def = json_schema.DeleteNodes(api_def, 'nocompile')
+    api_defs.extend(api_def)
+
+  api_model = Model()
+
+  # Load type dependencies into the model.
+  #
+  # HACK(kalman): bundle mode doesn't work with dependencies, because not all
+  # schemas work in bundle mode.
+  #
+  # TODO(kalman): load dependencies lazily (get rid of the 'dependencies' list)
+  # and this problem will go away.
+  if generator != 'cpp-bundle':
+    for target_namespace in api_defs:
+      for referenced_schema in target_namespace.get('dependencies', []):
+        split_schema = referenced_schema.split(':', 1)
+        if len(split_schema) > 1:
+          if split_schema[0] != 'api':
+            continue
+          else:
+            referenced_schema = split_schema[1]
+
+        referenced_schema_path = os.path.join(
+            os.path.dirname(schema), referenced_schema + '.json')
+        referenced_api_defs = json_schema.Load(referenced_schema_path)
+
+        for namespace in referenced_api_defs:
+          api_model.AddNamespace(
+              namespace,
+              os.path.relpath(referenced_schema_path, root),
+              include_compiler_options=True)
+
+  # For single-schema compilation make sure that the first (i.e. only) schema
+  # is the default one.
+  default_namespace = None
+
+  # Load the actual namespaces into the model.
+  for target_namespace, schema_filename in zip(api_defs, filenames):
+    relpath = os.path.relpath(os.path.normpath(schema_filename), root)
+    namespace = api_model.AddNamespace(target_namespace,
+                                       relpath,
+                                       include_compiler_options=True)
+    if default_namespace is None:
+      default_namespace = namespace
+
+    path, filename = os.path.split(schema_filename)
+    short_filename, extension = os.path.splitext(filename)
+
+    # Filenames are checked against the unix_names of the namespaces they
+    # generate because the gyp uses the names of the JSON files to generate
+    # the names of the .cc and .h files. We want these to be using unix_names.
+    if namespace.unix_name != short_filename:
+      sys.exit("Filename %s is illegal. Name files using unix_hacker style." %
+               schema_filename)
+
+    # The output filename must match the input filename for gyp to deal with it
+    # properly.
+    out_file = namespace.unix_name
+
+  # Construct the type generator with all the namespaces in this model.
+  type_generator = CppTypeGenerator(api_model,
+                                    default_namespace=default_namespace)
+
+  if generator == 'cpp-bundle':
+    cpp_bundle_generator = CppBundleGenerator(root,
+                                              api_model,
+                                              api_defs,
+                                              type_generator,
+                                              root_namespace)
+    generators = [
+      ('generated_api.cc', cpp_bundle_generator.api_cc_generator),
+      ('generated_api.h', cpp_bundle_generator.api_h_generator),
+      ('generated_schemas.cc', cpp_bundle_generator.schemas_cc_generator),
+      ('generated_schemas.h', cpp_bundle_generator.schemas_h_generator)
+    ]
+  elif generator == 'cpp':
+    cpp_generator = CppGenerator(type_generator, root_namespace)
+    generators = [
+      ('%s.h' % namespace.unix_name, cpp_generator.h_generator),
+      ('%s.cc' % namespace.unix_name, cpp_generator.cc_generator)
+    ]
+  elif generator == 'dart':
+    generators = [
+      ('%s.dart' % namespace.unix_name, DartGenerator(
+          dart_overrides_dir))
+    ]
+  else:
+    raise Exception('Unrecognised generator %s' % generator)
+
+  output_code = []
+  for filename, generator in generators:
+    code = generator.Generate(namespace).Render()
+    if destdir:
+      with open(os.path.join(destdir, namespace.source_file_dir,
+          filename), 'w') as f:
+        f.write(code)
+    output_code += [filename, '', code, '']
+
+  return '\n'.join(output_code)
 
 if __name__ == '__main__':
   parser = optparse.OptionParser(
@@ -77,113 +193,6 @@ if __name__ == '__main__':
     raise Exception(
         "Unless in bundle mode, only one file can be specified at a time.")
 
-  # Merge the source files into a single list of schemas.
-  api_defs = []
-  for filename in filenames:
-    schema = os.path.normpath(filename)
-    schema_filename, schema_extension = os.path.splitext(schema)
-    path, short_filename = os.path.split(schema_filename)
-    api_def = load_schema(schema)
-
-    # If compiling the C++ model code, delete 'nocompile' nodes.
-    if opts.generator == 'cpp':
-      api_def = json_schema.DeleteNodes(api_def, 'nocompile')
-    api_defs.extend(api_def)
-
-  api_model = Model()
-
-  # Load type dependencies into the model.
-  #
-  # HACK(kalman): bundle mode doesn't work with dependencies, because not all
-  # schemas work in bundle mode.
-  #
-  # TODO(kalman): load dependencies lazily (get rid of the 'dependencies' list)
-  # and this problem will go away.
-  if opts.generator != 'cpp-bundle':
-    for target_namespace in api_defs:
-      for referenced_schema in target_namespace.get('dependencies', []):
-        split_schema = referenced_schema.split(':', 1)
-        if len(split_schema) > 1:
-          if split_schema[0] != 'api':
-            continue
-          else:
-            referenced_schema = split_schema[1]
-
-        referenced_schema_path = os.path.join(
-            os.path.dirname(schema), referenced_schema + '.json')
-        referenced_api_defs = json_schema.Load(referenced_schema_path)
-
-        for namespace in referenced_api_defs:
-          api_model.AddNamespace(
-              namespace,
-              os.path.relpath(referenced_schema_path, opts.root),
-              include_compiler_options=True)
-
-  # For single-schema compilation make sure that the first (i.e. only) schema
-  # is the default one.
-  default_namespace = None
-
-  # Load the actual namespaces into the model.
-  for target_namespace, schema_filename in zip(api_defs, filenames):
-    relpath = os.path.relpath(os.path.normpath(schema_filename), opts.root)
-    namespace = api_model.AddNamespace(target_namespace,
-                                       relpath,
-                                       include_compiler_options=True)
-    if default_namespace is None:
-      default_namespace = namespace
-
-    path, filename = os.path.split(schema_filename)
-    short_filename, extension = os.path.splitext(filename)
-
-    # Filenames are checked against the unix_names of the namespaces they
-    # generate because the gyp uses the names of the JSON files to generate
-    # the names of the .cc and .h files. We want these to be using unix_names.
-    if namespace.unix_name != short_filename:
-      sys.exit("Filename %s is illegal. Name files using unix_hacker style." %
-               schema_filename)
-
-    # The output filename must match the input filename for gyp to deal with it
-    # properly.
-    out_file = namespace.unix_name
-
-  # Construct the type generator with all the namespaces in this model.
-  type_generator = CppTypeGenerator(api_model,
-                                    default_namespace=default_namespace)
-
-  if opts.generator == 'cpp-bundle':
-    cpp_bundle_generator = CppBundleGenerator(opts.root,
-                                              api_model,
-                                              api_defs,
-                                              type_generator,
-                                              opts.namespace)
-    generators = [
-      ('generated_api.cc', cpp_bundle_generator.api_cc_generator),
-      ('generated_api.h', cpp_bundle_generator.api_h_generator),
-      ('generated_schemas.cc', cpp_bundle_generator.schemas_cc_generator),
-      ('generated_schemas.h', cpp_bundle_generator.schemas_h_generator)
-    ]
-  elif opts.generator == 'cpp':
-    cpp_generator = CppGenerator(type_generator, opts.namespace)
-    generators = [
-      ('%s.h' % namespace.unix_name, cpp_generator.h_generator),
-      ('%s.cc' % namespace.unix_name, cpp_generator.cc_generator)
-    ]
-  elif opts.generator == 'dart':
-    generators = [
-      ('%s.dart' % namespace.unix_name, DartGenerator(
-          opts.dart_overrides_dir))
-    ]
-  else:
-    raise Exception('Unrecognised generator %s' % opts.generator)
-
-  for filename, generator in generators:
-    code = generator.Generate(namespace).Render()
-    if opts.destdir:
-      with open(os.path.join(opts.destdir, namespace.source_file_dir,
-          filename), 'w') as f:
-        f.write(code)
-    else:
-      print filename
-      print
-      print code
-      print
+  if opts.destdir:
+    print(GenerateSchema(opts.generator, filenames, opts.root, opts.destdir,
+                         opts.namespace, opts.dart_overrides_dir))
