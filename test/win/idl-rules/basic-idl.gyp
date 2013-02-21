@@ -6,6 +6,17 @@
   'variables': {
     'midl_out_dir': '<(SHARED_INTERMEDIATE_DIR)',
   },
+  'target_defaults': {
+    'configurations': {
+      'Debug': {
+        'msvs_configuration_platform': 'Win32',
+      },
+      'Debug_x64': {
+        'inherit_from': ['Debug'],
+        'msvs_configuration_platform': 'x64',
+      },
+    },
+  },
   'targets': [
     {
       'target_name': 'idl_test',

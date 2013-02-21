@@ -600,7 +600,8 @@ class MsvsSettings(object):
                  ('iid', iid),
                  ('proxy', proxy)]
     # TODO(scottmg): Are there configuration settings to set these flags?
-    flags = ['/char', 'signed', '/env', 'win32', '/Oicf']
+    target_platform = 'win32' if self.GetArch(config) == 'x86' else 'x64'
+    flags = ['/char', 'signed', '/env', target_platform, '/Oicf']
     return outdir, output, variables, flags
 
 
