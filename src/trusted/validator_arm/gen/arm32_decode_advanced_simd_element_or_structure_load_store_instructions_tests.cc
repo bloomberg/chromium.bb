@@ -44,7 +44,7 @@ namespace nacl_arm_test {
 //       actual: Actual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple1,
+//       baseline: VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {base}
@@ -56,7 +56,6 @@ namespace nacl_arm_test {
 //         type(11:8),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0,
 //       m: Rm,
 //       n: Rn,
 //       pattern: 111101000d00nnnnddddttttssaammmm,
@@ -93,17 +92,17 @@ namespace nacl_arm_test {
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultiple1TesterCase0
-    : public VectorLoadStoreMultipleTester {
+class VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0TesterCase0
+    : public Arm32DecoderTester {
  public:
-  VectorLoadStoreMultiple1TesterCase0(const NamedClassDecoder& decoder)
-    : VectorLoadStoreMultipleTester(decoder) {}
+  VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0TesterCase0(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreMultiple1TesterCase0
+bool VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0TesterCase0
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -120,7 +119,7 @@ bool VectorLoadStoreMultiple1TesterCase0
           0x00000200) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadStoreMultipleTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -135,7 +134,7 @@ bool VectorLoadStoreMultiple1TesterCase0
 //       actual: Actual_VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple2,
+//       baseline: VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -149,7 +148,6 @@ bool VectorLoadStoreMultiple1TesterCase0
 //         size(7:6),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //       inc: 1
 //            if type(11:8)=1000
 //            else 2,
@@ -181,17 +179,17 @@ bool VectorLoadStoreMultiple1TesterCase0
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultiple2TesterCase1
-    : public VectorLoadStoreMultipleTester {
+class VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0TesterCase1
+    : public Arm32DecoderTester {
  public:
-  VectorLoadStoreMultiple2TesterCase1(const NamedClassDecoder& decoder)
-    : VectorLoadStoreMultipleTester(decoder) {}
+  VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0TesterCase1(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreMultiple2TesterCase1
+bool VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0TesterCase1
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -208,7 +206,7 @@ bool VectorLoadStoreMultiple2TesterCase1
           0x00000300) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadStoreMultipleTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -223,7 +221,7 @@ bool VectorLoadStoreMultiple2TesterCase1
 //       actual: Actual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple1,
+//       baseline: VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {base}
@@ -235,7 +233,6 @@ bool VectorLoadStoreMultiple2TesterCase1
 //         type(11:8),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0,
 //       m: Rm,
 //       n: Rn,
 //       pattern: 111101000d00nnnnddddttttssaammmm,
@@ -272,17 +269,17 @@ bool VectorLoadStoreMultiple2TesterCase1
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultiple1TesterCase2
-    : public VectorLoadStoreMultipleTester {
+class VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0TesterCase2
+    : public Arm32DecoderTester {
  public:
-  VectorLoadStoreMultiple1TesterCase2(const NamedClassDecoder& decoder)
-    : VectorLoadStoreMultipleTester(decoder) {}
+  VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0TesterCase2(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreMultiple1TesterCase2
+bool VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0TesterCase2
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -299,7 +296,7 @@ bool VectorLoadStoreMultiple1TesterCase2
           0x00000A00) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadStoreMultipleTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -313,7 +310,7 @@ bool VectorLoadStoreMultiple1TesterCase2
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreMultiple4,
+//       baseline: VST4_multiple_4_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -328,7 +325,6 @@ bool VectorLoadStoreMultiple1TesterCase2
 //         type(11:8),
 //         size(7:6),
 //         Rm(3:0)],
-//       generated_baseline: VST4_multiple_4_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //       inc: 1
 //            if type(11:8)=0000
 //            else 2,
@@ -355,17 +351,17 @@ bool VectorLoadStoreMultiple1TesterCase2
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultiple4TesterCase3
-    : public VectorLoadStoreMultipleTester {
+class VST4_multiple_4_element_structures_111101000d00nnnnddddttttssaammmm_case_0TesterCase3
+    : public Arm32DecoderTester {
  public:
-  VectorLoadStoreMultiple4TesterCase3(const NamedClassDecoder& decoder)
-    : VectorLoadStoreMultipleTester(decoder) {}
+  VST4_multiple_4_element_structures_111101000d00nnnnddddttttssaammmm_case_0TesterCase3(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreMultiple4TesterCase3
+bool VST4_multiple_4_element_structures_111101000d00nnnnddddttttssaammmm_case_0TesterCase3
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -382,7 +378,7 @@ bool VectorLoadStoreMultiple4TesterCase3
           0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadStoreMultipleTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -397,7 +393,7 @@ bool VectorLoadStoreMultiple4TesterCase3
 //       actual: Actual_VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple3,
+//       baseline: VST3_multiple_3_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -412,7 +408,6 @@ bool VectorLoadStoreMultiple4TesterCase3
 //         size(7:6),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VST3_multiple_3_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //       inc: 1
 //            if type(11:8)=0100
 //            else 2,
@@ -440,17 +435,17 @@ bool VectorLoadStoreMultiple4TesterCase3
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultiple3TesterCase4
-    : public VectorLoadStoreMultipleTester {
+class VST3_multiple_3_element_structures_111101000d00nnnnddddttttssaammmm_case_0TesterCase4
+    : public Arm32DecoderTester {
  public:
-  VectorLoadStoreMultiple3TesterCase4(const NamedClassDecoder& decoder)
-    : VectorLoadStoreMultipleTester(decoder) {}
+  VST3_multiple_3_element_structures_111101000d00nnnnddddttttssaammmm_case_0TesterCase4(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreMultiple3TesterCase4
+bool VST3_multiple_3_element_structures_111101000d00nnnnddddttttssaammmm_case_0TesterCase4
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -467,7 +462,7 @@ bool VectorLoadStoreMultiple3TesterCase4
           0x00000400) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadStoreMultipleTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -482,7 +477,7 @@ bool VectorLoadStoreMultiple3TesterCase4
 //       actual: Actual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple1,
+//       baseline: VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {base}
@@ -494,7 +489,6 @@ bool VectorLoadStoreMultiple3TesterCase4
 //         type(11:8),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0,
 //       m: Rm,
 //       n: Rn,
 //       pattern: 111101000d00nnnnddddttttssaammmm,
@@ -531,17 +525,17 @@ bool VectorLoadStoreMultiple3TesterCase4
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultiple1TesterCase5
-    : public VectorLoadStoreMultipleTester {
+class VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0TesterCase5
+    : public Arm32DecoderTester {
  public:
-  VectorLoadStoreMultiple1TesterCase5(const NamedClassDecoder& decoder)
-    : VectorLoadStoreMultipleTester(decoder) {}
+  VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0TesterCase5(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreMultiple1TesterCase5
+bool VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0TesterCase5
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -558,7 +552,7 @@ bool VectorLoadStoreMultiple1TesterCase5
           0x00000600) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadStoreMultipleTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -573,7 +567,7 @@ bool VectorLoadStoreMultiple1TesterCase5
 //       actual: Actual_VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple2,
+//       baseline: VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -587,7 +581,6 @@ bool VectorLoadStoreMultiple1TesterCase5
 //         size(7:6),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //       inc: 1
 //            if type(11:8)=1000
 //            else 2,
@@ -619,17 +612,17 @@ bool VectorLoadStoreMultiple1TesterCase5
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultiple2TesterCase6
-    : public VectorLoadStoreMultipleTester {
+class VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0TesterCase6
+    : public Arm32DecoderTester {
  public:
-  VectorLoadStoreMultiple2TesterCase6(const NamedClassDecoder& decoder)
-    : VectorLoadStoreMultipleTester(decoder) {}
+  VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0TesterCase6(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreMultiple2TesterCase6
+bool VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0TesterCase6
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -646,7 +639,7 @@ bool VectorLoadStoreMultiple2TesterCase6
           0x00000800) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadStoreMultipleTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -658,13 +651,12 @@ bool VectorLoadStoreMultiple2TesterCase6
 //       Sp: 13,
 //       actual: Actual_VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle1,
+//       baseline: VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0,
 //       constraints: ,
 //       defs: {base}
 //            if wback
 //            else {},
 //       fields: [Rn(19:16), size(11:10), index_align(7:4), Rm(3:0)],
-//       generated_baseline: VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0,
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
@@ -694,17 +686,17 @@ bool VectorLoadStoreMultiple2TesterCase6
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle1TesterCase7
-    : public VectorLoadStoreSingleTester {
+class VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0TesterCase7
+    : public Arm32DecoderTester {
  public:
-  VectorLoadStoreSingle1TesterCase7(const NamedClassDecoder& decoder)
-    : VectorLoadStoreSingleTester(decoder) {}
+  VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0TesterCase7(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingle1TesterCase7
+bool VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0TesterCase7
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -721,7 +713,7 @@ bool VectorLoadStoreSingle1TesterCase7
           0x00000800) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadStoreSingleTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -735,7 +727,7 @@ bool VectorLoadStoreSingle1TesterCase7
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle2,
+//       baseline: VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -748,7 +740,6 @@ bool VectorLoadStoreSingle1TesterCase7
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -784,17 +775,17 @@ bool VectorLoadStoreSingle1TesterCase7
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle2TesterCase8
-    : public VectorLoadStoreSingleTester {
+class VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0TesterCase8
+    : public Arm32DecoderTester {
  public:
-  VectorLoadStoreSingle2TesterCase8(const NamedClassDecoder& decoder)
-    : VectorLoadStoreSingleTester(decoder) {}
+  VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0TesterCase8(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingle2TesterCase8
+bool VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0TesterCase8
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -811,7 +802,7 @@ bool VectorLoadStoreSingle2TesterCase8
           0x00000900) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadStoreSingleTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -825,7 +816,7 @@ bool VectorLoadStoreSingle2TesterCase8
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle3,
+//       baseline: VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -839,7 +830,6 @@ bool VectorLoadStoreSingle2TesterCase8
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -879,17 +869,17 @@ bool VectorLoadStoreSingle2TesterCase8
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle3TesterCase9
-    : public VectorLoadStoreSingleTester {
+class VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0TesterCase9
+    : public Arm32DecoderTester {
  public:
-  VectorLoadStoreSingle3TesterCase9(const NamedClassDecoder& decoder)
-    : VectorLoadStoreSingleTester(decoder) {}
+  VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0TesterCase9(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingle3TesterCase9
+bool VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0TesterCase9
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -906,7 +896,7 @@ bool VectorLoadStoreSingle3TesterCase9
           0x00000A00) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadStoreSingleTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -920,7 +910,7 @@ bool VectorLoadStoreSingle3TesterCase9
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle4,
+//       baseline: VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -935,7 +925,6 @@ bool VectorLoadStoreSingle3TesterCase9
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -971,17 +960,17 @@ bool VectorLoadStoreSingle3TesterCase9
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle4TesterCase10
-    : public VectorLoadStoreSingleTester {
+class VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0TesterCase10
+    : public Arm32DecoderTester {
  public:
-  VectorLoadStoreSingle4TesterCase10(const NamedClassDecoder& decoder)
-    : VectorLoadStoreSingleTester(decoder) {}
+  VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0TesterCase10(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingle4TesterCase10
+bool VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0TesterCase10
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -998,7 +987,7 @@ bool VectorLoadStoreSingle4TesterCase10
           0x00000B00) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadStoreSingleTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -1010,13 +999,12 @@ bool VectorLoadStoreSingle4TesterCase10
 //       Sp: 13,
 //       actual: Actual_VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle1,
+//       baseline: VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0,
 //       constraints: ,
 //       defs: {base}
 //            if wback
 //            else {},
 //       fields: [Rn(19:16), size(11:10), index_align(7:4), Rm(3:0)],
-//       generated_baseline: VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0,
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
@@ -1046,17 +1034,17 @@ bool VectorLoadStoreSingle4TesterCase10
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle1TesterCase11
-    : public VectorLoadStoreSingleTester {
+class VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0TesterCase11
+    : public Arm32DecoderTester {
  public:
-  VectorLoadStoreSingle1TesterCase11(const NamedClassDecoder& decoder)
-    : VectorLoadStoreSingleTester(decoder) {}
+  VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0TesterCase11(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingle1TesterCase11
+bool VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0TesterCase11
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1073,7 +1061,7 @@ bool VectorLoadStoreSingle1TesterCase11
           0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadStoreSingleTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -1087,7 +1075,7 @@ bool VectorLoadStoreSingle1TesterCase11
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle2,
+//       baseline: VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -1100,7 +1088,6 @@ bool VectorLoadStoreSingle1TesterCase11
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -1136,17 +1123,17 @@ bool VectorLoadStoreSingle1TesterCase11
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle2TesterCase12
-    : public VectorLoadStoreSingleTester {
+class VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0TesterCase12
+    : public Arm32DecoderTester {
  public:
-  VectorLoadStoreSingle2TesterCase12(const NamedClassDecoder& decoder)
-    : VectorLoadStoreSingleTester(decoder) {}
+  VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0TesterCase12(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingle2TesterCase12
+bool VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0TesterCase12
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1163,7 +1150,7 @@ bool VectorLoadStoreSingle2TesterCase12
           0x00000100) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadStoreSingleTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -1177,7 +1164,7 @@ bool VectorLoadStoreSingle2TesterCase12
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle3,
+//       baseline: VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -1191,7 +1178,6 @@ bool VectorLoadStoreSingle2TesterCase12
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -1231,17 +1217,17 @@ bool VectorLoadStoreSingle2TesterCase12
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle3TesterCase13
-    : public VectorLoadStoreSingleTester {
+class VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0TesterCase13
+    : public Arm32DecoderTester {
  public:
-  VectorLoadStoreSingle3TesterCase13(const NamedClassDecoder& decoder)
-    : VectorLoadStoreSingleTester(decoder) {}
+  VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0TesterCase13(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingle3TesterCase13
+bool VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0TesterCase13
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1258,7 +1244,7 @@ bool VectorLoadStoreSingle3TesterCase13
           0x00000200) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadStoreSingleTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -1272,7 +1258,7 @@ bool VectorLoadStoreSingle3TesterCase13
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle4,
+//       baseline: VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -1287,7 +1273,6 @@ bool VectorLoadStoreSingle3TesterCase13
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -1323,17 +1308,17 @@ bool VectorLoadStoreSingle3TesterCase13
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle4TesterCase14
-    : public VectorLoadStoreSingleTester {
+class VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0TesterCase14
+    : public Arm32DecoderTester {
  public:
-  VectorLoadStoreSingle4TesterCase14(const NamedClassDecoder& decoder)
-    : VectorLoadStoreSingleTester(decoder) {}
+  VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0TesterCase14(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingle4TesterCase14
+bool VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0TesterCase14
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1350,7 +1335,7 @@ bool VectorLoadStoreSingle4TesterCase14
           0x00000300) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadStoreSingleTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -1365,7 +1350,7 @@ bool VectorLoadStoreSingle4TesterCase14
 //       actual: Actual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple1,
+//       baseline: VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {base}
@@ -1377,7 +1362,6 @@ bool VectorLoadStoreSingle4TesterCase14
 //         type(11:8),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0,
 //       m: Rm,
 //       n: Rn,
 //       pattern: 111101000d10nnnnddddttttssaammmm,
@@ -1414,17 +1398,17 @@ bool VectorLoadStoreSingle4TesterCase14
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultiple1TesterCase15
-    : public VectorLoadStoreMultipleTester {
+class VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0TesterCase15
+    : public Arm32DecoderTester {
  public:
-  VectorLoadStoreMultiple1TesterCase15(const NamedClassDecoder& decoder)
-    : VectorLoadStoreMultipleTester(decoder) {}
+  VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0TesterCase15(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreMultiple1TesterCase15
+bool VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0TesterCase15
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1441,7 +1425,7 @@ bool VectorLoadStoreMultiple1TesterCase15
           0x00000200) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadStoreMultipleTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -1456,7 +1440,7 @@ bool VectorLoadStoreMultiple1TesterCase15
 //       actual: Actual_VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple2,
+//       baseline: VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -1470,7 +1454,6 @@ bool VectorLoadStoreMultiple1TesterCase15
 //         size(7:6),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //       inc: 1
 //            if type(11:8)=1000
 //            else 2,
@@ -1502,17 +1485,17 @@ bool VectorLoadStoreMultiple1TesterCase15
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultiple2TesterCase16
-    : public VectorLoadStoreMultipleTester {
+class VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0TesterCase16
+    : public Arm32DecoderTester {
  public:
-  VectorLoadStoreMultiple2TesterCase16(const NamedClassDecoder& decoder)
-    : VectorLoadStoreMultipleTester(decoder) {}
+  VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0TesterCase16(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreMultiple2TesterCase16
+bool VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0TesterCase16
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1529,7 +1512,7 @@ bool VectorLoadStoreMultiple2TesterCase16
           0x00000300) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadStoreMultipleTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -1544,7 +1527,7 @@ bool VectorLoadStoreMultiple2TesterCase16
 //       actual: Actual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple1,
+//       baseline: VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {base}
@@ -1556,7 +1539,6 @@ bool VectorLoadStoreMultiple2TesterCase16
 //         type(11:8),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0,
 //       m: Rm,
 //       n: Rn,
 //       pattern: 111101000d10nnnnddddttttssaammmm,
@@ -1593,17 +1575,17 @@ bool VectorLoadStoreMultiple2TesterCase16
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultiple1TesterCase17
-    : public VectorLoadStoreMultipleTester {
+class VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0TesterCase17
+    : public Arm32DecoderTester {
  public:
-  VectorLoadStoreMultiple1TesterCase17(const NamedClassDecoder& decoder)
-    : VectorLoadStoreMultipleTester(decoder) {}
+  VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0TesterCase17(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreMultiple1TesterCase17
+bool VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0TesterCase17
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1620,7 +1602,7 @@ bool VectorLoadStoreMultiple1TesterCase17
           0x00000A00) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadStoreMultipleTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -1634,7 +1616,7 @@ bool VectorLoadStoreMultiple1TesterCase17
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreMultiple4,
+//       baseline: VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -1649,7 +1631,6 @@ bool VectorLoadStoreMultiple1TesterCase17
 //         type(11:8),
 //         size(7:6),
 //         Rm(3:0)],
-//       generated_baseline: VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //       inc: 1
 //            if type(11:8)=0000
 //            else 2,
@@ -1676,17 +1657,17 @@ bool VectorLoadStoreMultiple1TesterCase17
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultiple4TesterCase18
-    : public VectorLoadStoreMultipleTester {
+class VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_0TesterCase18
+    : public Arm32DecoderTester {
  public:
-  VectorLoadStoreMultiple4TesterCase18(const NamedClassDecoder& decoder)
-    : VectorLoadStoreMultipleTester(decoder) {}
+  VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_0TesterCase18(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreMultiple4TesterCase18
+bool VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_0TesterCase18
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1703,7 +1684,7 @@ bool VectorLoadStoreMultiple4TesterCase18
           0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadStoreMultipleTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -1718,7 +1699,7 @@ bool VectorLoadStoreMultiple4TesterCase18
 //       actual: Actual_VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple3,
+//       baseline: VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -1733,7 +1714,6 @@ bool VectorLoadStoreMultiple4TesterCase18
 //         size(7:6),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //       inc: 1
 //            if type(11:8)=0100
 //            else 2,
@@ -1761,17 +1741,17 @@ bool VectorLoadStoreMultiple4TesterCase18
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultiple3TesterCase19
-    : public VectorLoadStoreMultipleTester {
+class VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_0TesterCase19
+    : public Arm32DecoderTester {
  public:
-  VectorLoadStoreMultiple3TesterCase19(const NamedClassDecoder& decoder)
-    : VectorLoadStoreMultipleTester(decoder) {}
+  VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_0TesterCase19(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreMultiple3TesterCase19
+bool VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_0TesterCase19
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1788,7 +1768,7 @@ bool VectorLoadStoreMultiple3TesterCase19
           0x00000400) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadStoreMultipleTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -1803,7 +1783,7 @@ bool VectorLoadStoreMultiple3TesterCase19
 //       actual: Actual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple1,
+//       baseline: VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {base}
@@ -1815,7 +1795,6 @@ bool VectorLoadStoreMultiple3TesterCase19
 //         type(11:8),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0,
 //       m: Rm,
 //       n: Rn,
 //       pattern: 111101000d10nnnnddddttttssaammmm,
@@ -1852,17 +1831,17 @@ bool VectorLoadStoreMultiple3TesterCase19
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultiple1TesterCase20
-    : public VectorLoadStoreMultipleTester {
+class VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0TesterCase20
+    : public Arm32DecoderTester {
  public:
-  VectorLoadStoreMultiple1TesterCase20(const NamedClassDecoder& decoder)
-    : VectorLoadStoreMultipleTester(decoder) {}
+  VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0TesterCase20(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreMultiple1TesterCase20
+bool VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0TesterCase20
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1879,7 +1858,7 @@ bool VectorLoadStoreMultiple1TesterCase20
           0x00000600) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadStoreMultipleTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -1894,7 +1873,7 @@ bool VectorLoadStoreMultiple1TesterCase20
 //       actual: Actual_VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple2,
+//       baseline: VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -1908,7 +1887,6 @@ bool VectorLoadStoreMultiple1TesterCase20
 //         size(7:6),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //       inc: 1
 //            if type(11:8)=1000
 //            else 2,
@@ -1940,17 +1918,17 @@ bool VectorLoadStoreMultiple1TesterCase20
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultiple2TesterCase21
-    : public VectorLoadStoreMultipleTester {
+class VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0TesterCase21
+    : public Arm32DecoderTester {
  public:
-  VectorLoadStoreMultiple2TesterCase21(const NamedClassDecoder& decoder)
-    : VectorLoadStoreMultipleTester(decoder) {}
+  VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0TesterCase21(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreMultiple2TesterCase21
+bool VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0TesterCase21
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1967,7 +1945,7 @@ bool VectorLoadStoreMultiple2TesterCase21
           0x00000800) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadStoreMultipleTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -1979,13 +1957,12 @@ bool VectorLoadStoreMultiple2TesterCase21
 //       Sp: 13,
 //       actual: Actual_VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle1,
+//       baseline: VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0,
 //       constraints: ,
 //       defs: {base}
 //            if wback
 //            else {},
 //       fields: [Rn(19:16), size(11:10), index_align(7:4), Rm(3:0)],
-//       generated_baseline: VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0,
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
@@ -2015,17 +1992,17 @@ bool VectorLoadStoreMultiple2TesterCase21
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle1TesterCase22
-    : public VectorLoadStoreSingleTester {
+class VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0TesterCase22
+    : public Arm32DecoderTester {
  public:
-  VectorLoadStoreSingle1TesterCase22(const NamedClassDecoder& decoder)
-    : VectorLoadStoreSingleTester(decoder) {}
+  VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0TesterCase22(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingle1TesterCase22
+bool VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0TesterCase22
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2042,7 +2019,7 @@ bool VectorLoadStoreSingle1TesterCase22
           0x00000800) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadStoreSingleTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -2056,7 +2033,7 @@ bool VectorLoadStoreSingle1TesterCase22
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle2,
+//       baseline: VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -2069,7 +2046,6 @@ bool VectorLoadStoreSingle1TesterCase22
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -2105,17 +2081,17 @@ bool VectorLoadStoreSingle1TesterCase22
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle2TesterCase23
-    : public VectorLoadStoreSingleTester {
+class VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0TesterCase23
+    : public Arm32DecoderTester {
  public:
-  VectorLoadStoreSingle2TesterCase23(const NamedClassDecoder& decoder)
-    : VectorLoadStoreSingleTester(decoder) {}
+  VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0TesterCase23(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingle2TesterCase23
+bool VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0TesterCase23
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2132,7 +2108,7 @@ bool VectorLoadStoreSingle2TesterCase23
           0x00000900) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadStoreSingleTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -2146,7 +2122,7 @@ bool VectorLoadStoreSingle2TesterCase23
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle3,
+//       baseline: VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -2160,7 +2136,6 @@ bool VectorLoadStoreSingle2TesterCase23
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -2200,17 +2175,17 @@ bool VectorLoadStoreSingle2TesterCase23
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle3TesterCase24
-    : public VectorLoadStoreSingleTester {
+class VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0TesterCase24
+    : public Arm32DecoderTester {
  public:
-  VectorLoadStoreSingle3TesterCase24(const NamedClassDecoder& decoder)
-    : VectorLoadStoreSingleTester(decoder) {}
+  VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0TesterCase24(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingle3TesterCase24
+bool VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0TesterCase24
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2227,7 +2202,7 @@ bool VectorLoadStoreSingle3TesterCase24
           0x00000A00) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadStoreSingleTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -2241,7 +2216,7 @@ bool VectorLoadStoreSingle3TesterCase24
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle4,
+//       baseline: VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -2256,7 +2231,6 @@ bool VectorLoadStoreSingle3TesterCase24
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -2292,17 +2266,17 @@ bool VectorLoadStoreSingle3TesterCase24
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle4TesterCase25
-    : public VectorLoadStoreSingleTester {
+class VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0TesterCase25
+    : public Arm32DecoderTester {
  public:
-  VectorLoadStoreSingle4TesterCase25(const NamedClassDecoder& decoder)
-    : VectorLoadStoreSingleTester(decoder) {}
+  VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0TesterCase25(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingle4TesterCase25
+bool VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0TesterCase25
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2319,7 +2293,7 @@ bool VectorLoadStoreSingle4TesterCase25
           0x00000B00) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadStoreSingleTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -2335,7 +2309,7 @@ bool VectorLoadStoreSingle4TesterCase25
 //       a: a(4),
 //       actual: Actual_VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadSingle1AllLanes,
+//       baseline: VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {base}
@@ -2348,7 +2322,6 @@ bool VectorLoadStoreSingle4TesterCase25
 //         T(5),
 //         a(4),
 //         Rm(3:0)],
-//       generated_baseline: VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0,
 //       m: Rm,
 //       n: Rn,
 //       pattern: 111101001d10nnnndddd1100sstammmm,
@@ -2375,17 +2348,17 @@ bool VectorLoadStoreSingle4TesterCase25
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadSingle1AllLanesTesterCase26
-    : public VectorLoadSingleAllLanesTester {
+class VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0TesterCase26
+    : public Arm32DecoderTester {
  public:
-  VectorLoadSingle1AllLanesTesterCase26(const NamedClassDecoder& decoder)
-    : VectorLoadSingleAllLanesTester(decoder) {}
+  VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0TesterCase26(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadSingle1AllLanesTesterCase26
+bool VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0TesterCase26
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2402,7 +2375,7 @@ bool VectorLoadSingle1AllLanesTesterCase26
           0x00000C00) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadSingleAllLanesTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -2417,7 +2390,7 @@ bool VectorLoadSingle1AllLanesTesterCase26
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadSingle2AllLanes,
+//       baseline: VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -2425,7 +2398,6 @@ bool VectorLoadSingle1AllLanesTesterCase26
 //            if wback
 //            else {},
 //       fields: [D(22), Rn(19:16), Vd(15:12), size(7:6), T(5), Rm(3:0)],
-//       generated_baseline: VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_0,
 //       inc: 1
 //            if T(5)=0
 //            else 2,
@@ -2450,17 +2422,17 @@ bool VectorLoadSingle1AllLanesTesterCase26
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadSingle2AllLanesTesterCase27
-    : public VectorLoadSingleAllLanesTester {
+class VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_0TesterCase27
+    : public Arm32DecoderTester {
  public:
-  VectorLoadSingle2AllLanesTesterCase27(const NamedClassDecoder& decoder)
-    : VectorLoadSingleAllLanesTester(decoder) {}
+  VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_0TesterCase27(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadSingle2AllLanesTesterCase27
+bool VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_0TesterCase27
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2477,7 +2449,7 @@ bool VectorLoadSingle2AllLanesTesterCase27
           0x00000D00) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadSingleAllLanesTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -2493,7 +2465,7 @@ bool VectorLoadSingle2AllLanesTesterCase27
 //       a: a(4),
 //       actual: Actual_VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadSingle3AllLanes,
+//       baseline: VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -2508,7 +2480,6 @@ bool VectorLoadSingle2AllLanesTesterCase27
 //         T(5),
 //         a(4),
 //         Rm(3:0)],
-//       generated_baseline: VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_0,
 //       inc: 1
 //            if T(5)=0
 //            else 2,
@@ -2534,17 +2505,17 @@ bool VectorLoadSingle2AllLanesTesterCase27
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadSingle3AllLanesTesterCase28
-    : public VectorLoadSingleAllLanesTester {
+class VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_0TesterCase28
+    : public Arm32DecoderTester {
  public:
-  VectorLoadSingle3AllLanesTesterCase28(const NamedClassDecoder& decoder)
-    : VectorLoadSingleAllLanesTester(decoder) {}
+  VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_0TesterCase28(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadSingle3AllLanesTesterCase28
+bool VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_0TesterCase28
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2561,7 +2532,7 @@ bool VectorLoadSingle3AllLanesTesterCase28
           0x00000E00) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadSingleAllLanesTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -2577,7 +2548,7 @@ bool VectorLoadSingle3AllLanesTesterCase28
 //       a: a(4),
 //       actual: Actual_VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadSingle4AllLanes,
+//       baseline: VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -2593,7 +2564,6 @@ bool VectorLoadSingle3AllLanesTesterCase28
 //         T(5),
 //         a(4),
 //         Rm(3:0)],
-//       generated_baseline: VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_0,
 //       inc: 1
 //            if T(5)=0
 //            else 2,
@@ -2619,17 +2589,17 @@ bool VectorLoadSingle3AllLanesTesterCase28
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadSingle4AllLanesTesterCase29
-    : public VectorLoadSingleAllLanesTester {
+class VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_0TesterCase29
+    : public Arm32DecoderTester {
  public:
-  VectorLoadSingle4AllLanesTesterCase29(const NamedClassDecoder& decoder)
-    : VectorLoadSingleAllLanesTester(decoder) {}
+  VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_0TesterCase29(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadSingle4AllLanesTesterCase29
+bool VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_0TesterCase29
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2646,7 +2616,7 @@ bool VectorLoadSingle4AllLanesTesterCase29
           0x00000F00) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadSingleAllLanesTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -2658,13 +2628,12 @@ bool VectorLoadSingle4AllLanesTesterCase29
 //       Sp: 13,
 //       actual: Actual_VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle1,
+//       baseline: VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0,
 //       constraints: ,
 //       defs: {base}
 //            if wback
 //            else {},
 //       fields: [Rn(19:16), size(11:10), index_align(7:4), Rm(3:0)],
-//       generated_baseline: VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0,
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
@@ -2694,17 +2663,17 @@ bool VectorLoadSingle4AllLanesTesterCase29
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle1TesterCase30
-    : public VectorLoadStoreSingleTester {
+class VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0TesterCase30
+    : public Arm32DecoderTester {
  public:
-  VectorLoadStoreSingle1TesterCase30(const NamedClassDecoder& decoder)
-    : VectorLoadStoreSingleTester(decoder) {}
+  VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0TesterCase30(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingle1TesterCase30
+bool VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0TesterCase30
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2721,7 +2690,7 @@ bool VectorLoadStoreSingle1TesterCase30
           0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadStoreSingleTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -2735,7 +2704,7 @@ bool VectorLoadStoreSingle1TesterCase30
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle2,
+//       baseline: VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -2748,7 +2717,6 @@ bool VectorLoadStoreSingle1TesterCase30
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -2784,17 +2752,17 @@ bool VectorLoadStoreSingle1TesterCase30
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle2TesterCase31
-    : public VectorLoadStoreSingleTester {
+class VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0TesterCase31
+    : public Arm32DecoderTester {
  public:
-  VectorLoadStoreSingle2TesterCase31(const NamedClassDecoder& decoder)
-    : VectorLoadStoreSingleTester(decoder) {}
+  VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0TesterCase31(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingle2TesterCase31
+bool VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0TesterCase31
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2811,7 +2779,7 @@ bool VectorLoadStoreSingle2TesterCase31
           0x00000100) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadStoreSingleTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -2825,7 +2793,7 @@ bool VectorLoadStoreSingle2TesterCase31
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle3,
+//       baseline: VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -2839,7 +2807,6 @@ bool VectorLoadStoreSingle2TesterCase31
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -2879,17 +2846,17 @@ bool VectorLoadStoreSingle2TesterCase31
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle3TesterCase32
-    : public VectorLoadStoreSingleTester {
+class VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0TesterCase32
+    : public Arm32DecoderTester {
  public:
-  VectorLoadStoreSingle3TesterCase32(const NamedClassDecoder& decoder)
-    : VectorLoadStoreSingleTester(decoder) {}
+  VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0TesterCase32(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingle3TesterCase32
+bool VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0TesterCase32
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2906,7 +2873,7 @@ bool VectorLoadStoreSingle3TesterCase32
           0x00000200) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadStoreSingleTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -2920,7 +2887,7 @@ bool VectorLoadStoreSingle3TesterCase32
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle4,
+//       baseline: VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -2935,7 +2902,6 @@ bool VectorLoadStoreSingle3TesterCase32
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -2971,17 +2937,17 @@ bool VectorLoadStoreSingle3TesterCase32
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle4TesterCase33
-    : public VectorLoadStoreSingleTester {
+class VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0TesterCase33
+    : public Arm32DecoderTester {
  public:
-  VectorLoadStoreSingle4TesterCase33(const NamedClassDecoder& decoder)
-    : VectorLoadStoreSingleTester(decoder) {}
+  VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0TesterCase33(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingle4TesterCase33
+bool VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0TesterCase33
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2998,7 +2964,7 @@ bool VectorLoadStoreSingle4TesterCase33
           0x00000300) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorLoadStoreSingleTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -3018,7 +2984,7 @@ bool VectorLoadStoreSingle4TesterCase33
 //       actual: Actual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple1,
+//       baseline: VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {base}
@@ -3030,7 +2996,6 @@ bool VectorLoadStoreSingle4TesterCase33
 //         type(11:8),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0,
 //       m: Rm,
 //       n: Rn,
 //       pattern: 111101000d00nnnnddddttttssaammmm,
@@ -3067,12 +3032,12 @@ bool VectorLoadStoreSingle4TesterCase33
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultiple1Tester_Case0
-    : public VectorLoadStoreMultiple1TesterCase0 {
+class VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0Tester_Case0
+    : public VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0TesterCase0 {
  public:
-  VectorLoadStoreMultiple1Tester_Case0()
-    : VectorLoadStoreMultiple1TesterCase0(
-      state_.VectorLoadStoreMultiple1_VST1_multiple_single_elements_instance_)
+  VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0Tester_Case0()
+    : VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0TesterCase0(
+      state_.VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0_VST1_multiple_single_elements_instance_)
   {}
 };
 
@@ -3087,7 +3052,7 @@ class VectorLoadStoreMultiple1Tester_Case0
 //       actual: Actual_VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple2,
+//       baseline: VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -3101,7 +3066,6 @@ class VectorLoadStoreMultiple1Tester_Case0
 //         size(7:6),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //       inc: 1
 //            if type(11:8)=1000
 //            else 2,
@@ -3133,12 +3097,12 @@ class VectorLoadStoreMultiple1Tester_Case0
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultiple2Tester_Case1
-    : public VectorLoadStoreMultiple2TesterCase1 {
+class VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0Tester_Case1
+    : public VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0TesterCase1 {
  public:
-  VectorLoadStoreMultiple2Tester_Case1()
-    : VectorLoadStoreMultiple2TesterCase1(
-      state_.VectorLoadStoreMultiple2_VST2_multiple_2_element_structures_instance_)
+  VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0Tester_Case1()
+    : VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0TesterCase1(
+      state_.VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0_VST2_multiple_2_element_structures_instance_)
   {}
 };
 
@@ -3153,7 +3117,7 @@ class VectorLoadStoreMultiple2Tester_Case1
 //       actual: Actual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple1,
+//       baseline: VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {base}
@@ -3165,7 +3129,6 @@ class VectorLoadStoreMultiple2Tester_Case1
 //         type(11:8),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0,
 //       m: Rm,
 //       n: Rn,
 //       pattern: 111101000d00nnnnddddttttssaammmm,
@@ -3202,12 +3165,12 @@ class VectorLoadStoreMultiple2Tester_Case1
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultiple1Tester_Case2
-    : public VectorLoadStoreMultiple1TesterCase2 {
+class VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0Tester_Case2
+    : public VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0TesterCase2 {
  public:
-  VectorLoadStoreMultiple1Tester_Case2()
-    : VectorLoadStoreMultiple1TesterCase2(
-      state_.VectorLoadStoreMultiple1_VST1_multiple_single_elements_instance_)
+  VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0Tester_Case2()
+    : VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0TesterCase2(
+      state_.VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0_VST1_multiple_single_elements_instance_)
   {}
 };
 
@@ -3221,7 +3184,7 @@ class VectorLoadStoreMultiple1Tester_Case2
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreMultiple4,
+//       baseline: VST4_multiple_4_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -3236,7 +3199,6 @@ class VectorLoadStoreMultiple1Tester_Case2
 //         type(11:8),
 //         size(7:6),
 //         Rm(3:0)],
-//       generated_baseline: VST4_multiple_4_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //       inc: 1
 //            if type(11:8)=0000
 //            else 2,
@@ -3263,12 +3225,12 @@ class VectorLoadStoreMultiple1Tester_Case2
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultiple4Tester_Case3
-    : public VectorLoadStoreMultiple4TesterCase3 {
+class VST4_multiple_4_element_structures_111101000d00nnnnddddttttssaammmm_case_0Tester_Case3
+    : public VST4_multiple_4_element_structures_111101000d00nnnnddddttttssaammmm_case_0TesterCase3 {
  public:
-  VectorLoadStoreMultiple4Tester_Case3()
-    : VectorLoadStoreMultiple4TesterCase3(
-      state_.VectorLoadStoreMultiple4_VST4_multiple_4_element_structures_instance_)
+  VST4_multiple_4_element_structures_111101000d00nnnnddddttttssaammmm_case_0Tester_Case3()
+    : VST4_multiple_4_element_structures_111101000d00nnnnddddttttssaammmm_case_0TesterCase3(
+      state_.VST4_multiple_4_element_structures_111101000d00nnnnddddttttssaammmm_case_0_VST4_multiple_4_element_structures_instance_)
   {}
 };
 
@@ -3283,7 +3245,7 @@ class VectorLoadStoreMultiple4Tester_Case3
 //       actual: Actual_VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple3,
+//       baseline: VST3_multiple_3_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -3298,7 +3260,6 @@ class VectorLoadStoreMultiple4Tester_Case3
 //         size(7:6),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VST3_multiple_3_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //       inc: 1
 //            if type(11:8)=0100
 //            else 2,
@@ -3326,12 +3287,12 @@ class VectorLoadStoreMultiple4Tester_Case3
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultiple3Tester_Case4
-    : public VectorLoadStoreMultiple3TesterCase4 {
+class VST3_multiple_3_element_structures_111101000d00nnnnddddttttssaammmm_case_0Tester_Case4
+    : public VST3_multiple_3_element_structures_111101000d00nnnnddddttttssaammmm_case_0TesterCase4 {
  public:
-  VectorLoadStoreMultiple3Tester_Case4()
-    : VectorLoadStoreMultiple3TesterCase4(
-      state_.VectorLoadStoreMultiple3_VST3_multiple_3_element_structures_instance_)
+  VST3_multiple_3_element_structures_111101000d00nnnnddddttttssaammmm_case_0Tester_Case4()
+    : VST3_multiple_3_element_structures_111101000d00nnnnddddttttssaammmm_case_0TesterCase4(
+      state_.VST3_multiple_3_element_structures_111101000d00nnnnddddttttssaammmm_case_0_VST3_multiple_3_element_structures_instance_)
   {}
 };
 
@@ -3346,7 +3307,7 @@ class VectorLoadStoreMultiple3Tester_Case4
 //       actual: Actual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple1,
+//       baseline: VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {base}
@@ -3358,7 +3319,6 @@ class VectorLoadStoreMultiple3Tester_Case4
 //         type(11:8),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0,
 //       m: Rm,
 //       n: Rn,
 //       pattern: 111101000d00nnnnddddttttssaammmm,
@@ -3395,12 +3355,12 @@ class VectorLoadStoreMultiple3Tester_Case4
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultiple1Tester_Case5
-    : public VectorLoadStoreMultiple1TesterCase5 {
+class VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0Tester_Case5
+    : public VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0TesterCase5 {
  public:
-  VectorLoadStoreMultiple1Tester_Case5()
-    : VectorLoadStoreMultiple1TesterCase5(
-      state_.VectorLoadStoreMultiple1_VST1_multiple_single_elements_instance_)
+  VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0Tester_Case5()
+    : VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0TesterCase5(
+      state_.VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0_VST1_multiple_single_elements_instance_)
   {}
 };
 
@@ -3415,7 +3375,7 @@ class VectorLoadStoreMultiple1Tester_Case5
 //       actual: Actual_VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple2,
+//       baseline: VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -3429,7 +3389,6 @@ class VectorLoadStoreMultiple1Tester_Case5
 //         size(7:6),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //       inc: 1
 //            if type(11:8)=1000
 //            else 2,
@@ -3461,12 +3420,12 @@ class VectorLoadStoreMultiple1Tester_Case5
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultiple2Tester_Case6
-    : public VectorLoadStoreMultiple2TesterCase6 {
+class VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0Tester_Case6
+    : public VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0TesterCase6 {
  public:
-  VectorLoadStoreMultiple2Tester_Case6()
-    : VectorLoadStoreMultiple2TesterCase6(
-      state_.VectorLoadStoreMultiple2_VST2_multiple_2_element_structures_instance_)
+  VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0Tester_Case6()
+    : VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0TesterCase6(
+      state_.VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0_VST2_multiple_2_element_structures_instance_)
   {}
 };
 
@@ -3478,13 +3437,12 @@ class VectorLoadStoreMultiple2Tester_Case6
 //       Sp: 13,
 //       actual: Actual_VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle1,
+//       baseline: VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0,
 //       constraints: ,
 //       defs: {base}
 //            if wback
 //            else {},
 //       fields: [Rn(19:16), size(11:10), index_align(7:4), Rm(3:0)],
-//       generated_baseline: VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0,
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
@@ -3514,12 +3472,12 @@ class VectorLoadStoreMultiple2Tester_Case6
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle1Tester_Case7
-    : public VectorLoadStoreSingle1TesterCase7 {
+class VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0Tester_Case7
+    : public VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0TesterCase7 {
  public:
-  VectorLoadStoreSingle1Tester_Case7()
-    : VectorLoadStoreSingle1TesterCase7(
-      state_.VectorLoadStoreSingle1_VST1_single_element_from_one_lane_instance_)
+  VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0Tester_Case7()
+    : VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0TesterCase7(
+      state_.VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0_VST1_single_element_from_one_lane_instance_)
   {}
 };
 
@@ -3533,7 +3491,7 @@ class VectorLoadStoreSingle1Tester_Case7
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle2,
+//       baseline: VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -3546,7 +3504,6 @@ class VectorLoadStoreSingle1Tester_Case7
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -3582,12 +3539,12 @@ class VectorLoadStoreSingle1Tester_Case7
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle2Tester_Case8
-    : public VectorLoadStoreSingle2TesterCase8 {
+class VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0Tester_Case8
+    : public VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0TesterCase8 {
  public:
-  VectorLoadStoreSingle2Tester_Case8()
-    : VectorLoadStoreSingle2TesterCase8(
-      state_.VectorLoadStoreSingle2_VST2_single_2_element_structure_from_one_lane_instance_)
+  VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0Tester_Case8()
+    : VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0TesterCase8(
+      state_.VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0_VST2_single_2_element_structure_from_one_lane_instance_)
   {}
 };
 
@@ -3601,7 +3558,7 @@ class VectorLoadStoreSingle2Tester_Case8
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle3,
+//       baseline: VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -3615,7 +3572,6 @@ class VectorLoadStoreSingle2Tester_Case8
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -3655,12 +3611,12 @@ class VectorLoadStoreSingle2Tester_Case8
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle3Tester_Case9
-    : public VectorLoadStoreSingle3TesterCase9 {
+class VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0Tester_Case9
+    : public VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0TesterCase9 {
  public:
-  VectorLoadStoreSingle3Tester_Case9()
-    : VectorLoadStoreSingle3TesterCase9(
-      state_.VectorLoadStoreSingle3_VST3_single_3_element_structure_from_one_lane_instance_)
+  VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0Tester_Case9()
+    : VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0TesterCase9(
+      state_.VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0_VST3_single_3_element_structure_from_one_lane_instance_)
   {}
 };
 
@@ -3674,7 +3630,7 @@ class VectorLoadStoreSingle3Tester_Case9
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle4,
+//       baseline: VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -3689,7 +3645,6 @@ class VectorLoadStoreSingle3Tester_Case9
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -3725,12 +3680,12 @@ class VectorLoadStoreSingle3Tester_Case9
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle4Tester_Case10
-    : public VectorLoadStoreSingle4TesterCase10 {
+class VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0Tester_Case10
+    : public VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0TesterCase10 {
  public:
-  VectorLoadStoreSingle4Tester_Case10()
-    : VectorLoadStoreSingle4TesterCase10(
-      state_.VectorLoadStoreSingle4_VST4_single_4_element_structure_form_one_lane_instance_)
+  VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0Tester_Case10()
+    : VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0TesterCase10(
+      state_.VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0_VST4_single_4_element_structure_form_one_lane_instance_)
   {}
 };
 
@@ -3742,13 +3697,12 @@ class VectorLoadStoreSingle4Tester_Case10
 //       Sp: 13,
 //       actual: Actual_VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle1,
+//       baseline: VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0,
 //       constraints: ,
 //       defs: {base}
 //            if wback
 //            else {},
 //       fields: [Rn(19:16), size(11:10), index_align(7:4), Rm(3:0)],
-//       generated_baseline: VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0,
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
@@ -3778,12 +3732,12 @@ class VectorLoadStoreSingle4Tester_Case10
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle1Tester_Case11
-    : public VectorLoadStoreSingle1TesterCase11 {
+class VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0Tester_Case11
+    : public VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0TesterCase11 {
  public:
-  VectorLoadStoreSingle1Tester_Case11()
-    : VectorLoadStoreSingle1TesterCase11(
-      state_.VectorLoadStoreSingle1_VST1_single_element_from_one_lane_instance_)
+  VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0Tester_Case11()
+    : VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0TesterCase11(
+      state_.VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0_VST1_single_element_from_one_lane_instance_)
   {}
 };
 
@@ -3797,7 +3751,7 @@ class VectorLoadStoreSingle1Tester_Case11
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle2,
+//       baseline: VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -3810,7 +3764,6 @@ class VectorLoadStoreSingle1Tester_Case11
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -3846,12 +3799,12 @@ class VectorLoadStoreSingle1Tester_Case11
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle2Tester_Case12
-    : public VectorLoadStoreSingle2TesterCase12 {
+class VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0Tester_Case12
+    : public VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0TesterCase12 {
  public:
-  VectorLoadStoreSingle2Tester_Case12()
-    : VectorLoadStoreSingle2TesterCase12(
-      state_.VectorLoadStoreSingle2_VST2_single_2_element_structure_from_one_lane_instance_)
+  VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0Tester_Case12()
+    : VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0TesterCase12(
+      state_.VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0_VST2_single_2_element_structure_from_one_lane_instance_)
   {}
 };
 
@@ -3865,7 +3818,7 @@ class VectorLoadStoreSingle2Tester_Case12
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle3,
+//       baseline: VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -3879,7 +3832,6 @@ class VectorLoadStoreSingle2Tester_Case12
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -3919,12 +3871,12 @@ class VectorLoadStoreSingle2Tester_Case12
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle3Tester_Case13
-    : public VectorLoadStoreSingle3TesterCase13 {
+class VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0Tester_Case13
+    : public VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0TesterCase13 {
  public:
-  VectorLoadStoreSingle3Tester_Case13()
-    : VectorLoadStoreSingle3TesterCase13(
-      state_.VectorLoadStoreSingle3_VST3_single_3_element_structure_from_one_lane_instance_)
+  VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0Tester_Case13()
+    : VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0TesterCase13(
+      state_.VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0_VST3_single_3_element_structure_from_one_lane_instance_)
   {}
 };
 
@@ -3938,7 +3890,7 @@ class VectorLoadStoreSingle3Tester_Case13
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle4,
+//       baseline: VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -3953,7 +3905,6 @@ class VectorLoadStoreSingle3Tester_Case13
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -3989,12 +3940,12 @@ class VectorLoadStoreSingle3Tester_Case13
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle4Tester_Case14
-    : public VectorLoadStoreSingle4TesterCase14 {
+class VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0Tester_Case14
+    : public VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0TesterCase14 {
  public:
-  VectorLoadStoreSingle4Tester_Case14()
-    : VectorLoadStoreSingle4TesterCase14(
-      state_.VectorLoadStoreSingle4_VST4_single_4_element_structure_form_one_lane_instance_)
+  VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0Tester_Case14()
+    : VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0TesterCase14(
+      state_.VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0_VST4_single_4_element_structure_form_one_lane_instance_)
   {}
 };
 
@@ -4009,7 +3960,7 @@ class VectorLoadStoreSingle4Tester_Case14
 //       actual: Actual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple1,
+//       baseline: VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {base}
@@ -4021,7 +3972,6 @@ class VectorLoadStoreSingle4Tester_Case14
 //         type(11:8),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0,
 //       m: Rm,
 //       n: Rn,
 //       pattern: 111101000d10nnnnddddttttssaammmm,
@@ -4058,12 +4008,12 @@ class VectorLoadStoreSingle4Tester_Case14
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultiple1Tester_Case15
-    : public VectorLoadStoreMultiple1TesterCase15 {
+class VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0Tester_Case15
+    : public VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0TesterCase15 {
  public:
-  VectorLoadStoreMultiple1Tester_Case15()
-    : VectorLoadStoreMultiple1TesterCase15(
-      state_.VectorLoadStoreMultiple1_VLD1_multiple_single_elements_instance_)
+  VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0Tester_Case15()
+    : VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0TesterCase15(
+      state_.VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0_VLD1_multiple_single_elements_instance_)
   {}
 };
 
@@ -4078,7 +4028,7 @@ class VectorLoadStoreMultiple1Tester_Case15
 //       actual: Actual_VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple2,
+//       baseline: VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -4092,7 +4042,6 @@ class VectorLoadStoreMultiple1Tester_Case15
 //         size(7:6),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //       inc: 1
 //            if type(11:8)=1000
 //            else 2,
@@ -4124,12 +4073,12 @@ class VectorLoadStoreMultiple1Tester_Case15
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultiple2Tester_Case16
-    : public VectorLoadStoreMultiple2TesterCase16 {
+class VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0Tester_Case16
+    : public VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0TesterCase16 {
  public:
-  VectorLoadStoreMultiple2Tester_Case16()
-    : VectorLoadStoreMultiple2TesterCase16(
-      state_.VectorLoadStoreMultiple2_VLD2_multiple_2_element_structures_instance_)
+  VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0Tester_Case16()
+    : VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0TesterCase16(
+      state_.VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0_VLD2_multiple_2_element_structures_instance_)
   {}
 };
 
@@ -4144,7 +4093,7 @@ class VectorLoadStoreMultiple2Tester_Case16
 //       actual: Actual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple1,
+//       baseline: VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {base}
@@ -4156,7 +4105,6 @@ class VectorLoadStoreMultiple2Tester_Case16
 //         type(11:8),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0,
 //       m: Rm,
 //       n: Rn,
 //       pattern: 111101000d10nnnnddddttttssaammmm,
@@ -4193,12 +4141,12 @@ class VectorLoadStoreMultiple2Tester_Case16
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultiple1Tester_Case17
-    : public VectorLoadStoreMultiple1TesterCase17 {
+class VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0Tester_Case17
+    : public VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0TesterCase17 {
  public:
-  VectorLoadStoreMultiple1Tester_Case17()
-    : VectorLoadStoreMultiple1TesterCase17(
-      state_.VectorLoadStoreMultiple1_VLD1_multiple_single_elements_instance_)
+  VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0Tester_Case17()
+    : VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0TesterCase17(
+      state_.VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0_VLD1_multiple_single_elements_instance_)
   {}
 };
 
@@ -4212,7 +4160,7 @@ class VectorLoadStoreMultiple1Tester_Case17
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreMultiple4,
+//       baseline: VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -4227,7 +4175,6 @@ class VectorLoadStoreMultiple1Tester_Case17
 //         type(11:8),
 //         size(7:6),
 //         Rm(3:0)],
-//       generated_baseline: VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //       inc: 1
 //            if type(11:8)=0000
 //            else 2,
@@ -4254,12 +4201,12 @@ class VectorLoadStoreMultiple1Tester_Case17
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultiple4Tester_Case18
-    : public VectorLoadStoreMultiple4TesterCase18 {
+class VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_0Tester_Case18
+    : public VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_0TesterCase18 {
  public:
-  VectorLoadStoreMultiple4Tester_Case18()
-    : VectorLoadStoreMultiple4TesterCase18(
-      state_.VectorLoadStoreMultiple4_VLD4_multiple_4_element_structures_instance_)
+  VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_0Tester_Case18()
+    : VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_0TesterCase18(
+      state_.VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_0_VLD4_multiple_4_element_structures_instance_)
   {}
 };
 
@@ -4274,7 +4221,7 @@ class VectorLoadStoreMultiple4Tester_Case18
 //       actual: Actual_VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple3,
+//       baseline: VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -4289,7 +4236,6 @@ class VectorLoadStoreMultiple4Tester_Case18
 //         size(7:6),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //       inc: 1
 //            if type(11:8)=0100
 //            else 2,
@@ -4317,12 +4263,12 @@ class VectorLoadStoreMultiple4Tester_Case18
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultiple3Tester_Case19
-    : public VectorLoadStoreMultiple3TesterCase19 {
+class VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_0Tester_Case19
+    : public VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_0TesterCase19 {
  public:
-  VectorLoadStoreMultiple3Tester_Case19()
-    : VectorLoadStoreMultiple3TesterCase19(
-      state_.VectorLoadStoreMultiple3_VLD3_multiple_3_element_structures_instance_)
+  VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_0Tester_Case19()
+    : VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_0TesterCase19(
+      state_.VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_0_VLD3_multiple_3_element_structures_instance_)
   {}
 };
 
@@ -4337,7 +4283,7 @@ class VectorLoadStoreMultiple3Tester_Case19
 //       actual: Actual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple1,
+//       baseline: VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {base}
@@ -4349,7 +4295,6 @@ class VectorLoadStoreMultiple3Tester_Case19
 //         type(11:8),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0,
 //       m: Rm,
 //       n: Rn,
 //       pattern: 111101000d10nnnnddddttttssaammmm,
@@ -4386,12 +4331,12 @@ class VectorLoadStoreMultiple3Tester_Case19
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultiple1Tester_Case20
-    : public VectorLoadStoreMultiple1TesterCase20 {
+class VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0Tester_Case20
+    : public VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0TesterCase20 {
  public:
-  VectorLoadStoreMultiple1Tester_Case20()
-    : VectorLoadStoreMultiple1TesterCase20(
-      state_.VectorLoadStoreMultiple1_VLD1_multiple_single_elements_instance_)
+  VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0Tester_Case20()
+    : VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0TesterCase20(
+      state_.VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0_VLD1_multiple_single_elements_instance_)
   {}
 };
 
@@ -4406,7 +4351,7 @@ class VectorLoadStoreMultiple1Tester_Case20
 //       actual: Actual_VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple2,
+//       baseline: VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -4420,7 +4365,6 @@ class VectorLoadStoreMultiple1Tester_Case20
 //         size(7:6),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //       inc: 1
 //            if type(11:8)=1000
 //            else 2,
@@ -4452,12 +4396,12 @@ class VectorLoadStoreMultiple1Tester_Case20
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultiple2Tester_Case21
-    : public VectorLoadStoreMultiple2TesterCase21 {
+class VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0Tester_Case21
+    : public VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0TesterCase21 {
  public:
-  VectorLoadStoreMultiple2Tester_Case21()
-    : VectorLoadStoreMultiple2TesterCase21(
-      state_.VectorLoadStoreMultiple2_VLD2_multiple_2_element_structures_instance_)
+  VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0Tester_Case21()
+    : VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0TesterCase21(
+      state_.VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0_VLD2_multiple_2_element_structures_instance_)
   {}
 };
 
@@ -4469,13 +4413,12 @@ class VectorLoadStoreMultiple2Tester_Case21
 //       Sp: 13,
 //       actual: Actual_VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle1,
+//       baseline: VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0,
 //       constraints: ,
 //       defs: {base}
 //            if wback
 //            else {},
 //       fields: [Rn(19:16), size(11:10), index_align(7:4), Rm(3:0)],
-//       generated_baseline: VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0,
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
@@ -4505,12 +4448,12 @@ class VectorLoadStoreMultiple2Tester_Case21
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle1Tester_Case22
-    : public VectorLoadStoreSingle1TesterCase22 {
+class VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0Tester_Case22
+    : public VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0TesterCase22 {
  public:
-  VectorLoadStoreSingle1Tester_Case22()
-    : VectorLoadStoreSingle1TesterCase22(
-      state_.VectorLoadStoreSingle1_VLD1_single_element_to_one_lane_instance_)
+  VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0Tester_Case22()
+    : VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0TesterCase22(
+      state_.VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0_VLD1_single_element_to_one_lane_instance_)
   {}
 };
 
@@ -4524,7 +4467,7 @@ class VectorLoadStoreSingle1Tester_Case22
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle2,
+//       baseline: VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -4537,7 +4480,6 @@ class VectorLoadStoreSingle1Tester_Case22
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -4573,12 +4515,12 @@ class VectorLoadStoreSingle1Tester_Case22
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle2Tester_Case23
-    : public VectorLoadStoreSingle2TesterCase23 {
+class VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0Tester_Case23
+    : public VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0TesterCase23 {
  public:
-  VectorLoadStoreSingle2Tester_Case23()
-    : VectorLoadStoreSingle2TesterCase23(
-      state_.VectorLoadStoreSingle2_VLD2_single_2_element_structure_to_one_lane_instance_)
+  VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0Tester_Case23()
+    : VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0TesterCase23(
+      state_.VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0_VLD2_single_2_element_structure_to_one_lane_instance_)
   {}
 };
 
@@ -4592,7 +4534,7 @@ class VectorLoadStoreSingle2Tester_Case23
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle3,
+//       baseline: VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -4606,7 +4548,6 @@ class VectorLoadStoreSingle2Tester_Case23
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -4646,12 +4587,12 @@ class VectorLoadStoreSingle2Tester_Case23
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle3Tester_Case24
-    : public VectorLoadStoreSingle3TesterCase24 {
+class VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0Tester_Case24
+    : public VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0TesterCase24 {
  public:
-  VectorLoadStoreSingle3Tester_Case24()
-    : VectorLoadStoreSingle3TesterCase24(
-      state_.VectorLoadStoreSingle3_VLD3_single_3_element_structure_to_one_lane_instance_)
+  VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0Tester_Case24()
+    : VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0TesterCase24(
+      state_.VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0_VLD3_single_3_element_structure_to_one_lane_instance_)
   {}
 };
 
@@ -4665,7 +4606,7 @@ class VectorLoadStoreSingle3Tester_Case24
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle4,
+//       baseline: VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -4680,7 +4621,6 @@ class VectorLoadStoreSingle3Tester_Case24
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -4716,12 +4656,12 @@ class VectorLoadStoreSingle3Tester_Case24
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle4Tester_Case25
-    : public VectorLoadStoreSingle4TesterCase25 {
+class VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0Tester_Case25
+    : public VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0TesterCase25 {
  public:
-  VectorLoadStoreSingle4Tester_Case25()
-    : VectorLoadStoreSingle4TesterCase25(
-      state_.VectorLoadStoreSingle4_VLD4_single_4_element_structure_to_one_lane_instance_)
+  VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0Tester_Case25()
+    : VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0TesterCase25(
+      state_.VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0_VLD4_single_4_element_structure_to_one_lane_instance_)
   {}
 };
 
@@ -4737,7 +4677,7 @@ class VectorLoadStoreSingle4Tester_Case25
 //       a: a(4),
 //       actual: Actual_VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadSingle1AllLanes,
+//       baseline: VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {base}
@@ -4750,7 +4690,6 @@ class VectorLoadStoreSingle4Tester_Case25
 //         T(5),
 //         a(4),
 //         Rm(3:0)],
-//       generated_baseline: VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0,
 //       m: Rm,
 //       n: Rn,
 //       pattern: 111101001d10nnnndddd1100sstammmm,
@@ -4777,12 +4716,12 @@ class VectorLoadStoreSingle4Tester_Case25
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadSingle1AllLanesTester_Case26
-    : public VectorLoadSingle1AllLanesTesterCase26 {
+class VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0Tester_Case26
+    : public VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0TesterCase26 {
  public:
-  VectorLoadSingle1AllLanesTester_Case26()
-    : VectorLoadSingle1AllLanesTesterCase26(
-      state_.VectorLoadSingle1AllLanes_VLD1_single_element_to_all_lanes_instance_)
+  VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0Tester_Case26()
+    : VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0TesterCase26(
+      state_.VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0_VLD1_single_element_to_all_lanes_instance_)
   {}
 };
 
@@ -4797,7 +4736,7 @@ class VectorLoadSingle1AllLanesTester_Case26
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadSingle2AllLanes,
+//       baseline: VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -4805,7 +4744,6 @@ class VectorLoadSingle1AllLanesTester_Case26
 //            if wback
 //            else {},
 //       fields: [D(22), Rn(19:16), Vd(15:12), size(7:6), T(5), Rm(3:0)],
-//       generated_baseline: VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_0,
 //       inc: 1
 //            if T(5)=0
 //            else 2,
@@ -4830,12 +4768,12 @@ class VectorLoadSingle1AllLanesTester_Case26
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadSingle2AllLanesTester_Case27
-    : public VectorLoadSingle2AllLanesTesterCase27 {
+class VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_0Tester_Case27
+    : public VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_0TesterCase27 {
  public:
-  VectorLoadSingle2AllLanesTester_Case27()
-    : VectorLoadSingle2AllLanesTesterCase27(
-      state_.VectorLoadSingle2AllLanes_VLD2_single_2_element_structure_to_all_lanes_instance_)
+  VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_0Tester_Case27()
+    : VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_0TesterCase27(
+      state_.VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_0_VLD2_single_2_element_structure_to_all_lanes_instance_)
   {}
 };
 
@@ -4851,7 +4789,7 @@ class VectorLoadSingle2AllLanesTester_Case27
 //       a: a(4),
 //       actual: Actual_VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadSingle3AllLanes,
+//       baseline: VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -4866,7 +4804,6 @@ class VectorLoadSingle2AllLanesTester_Case27
 //         T(5),
 //         a(4),
 //         Rm(3:0)],
-//       generated_baseline: VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_0,
 //       inc: 1
 //            if T(5)=0
 //            else 2,
@@ -4892,12 +4829,12 @@ class VectorLoadSingle2AllLanesTester_Case27
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadSingle3AllLanesTester_Case28
-    : public VectorLoadSingle3AllLanesTesterCase28 {
+class VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_0Tester_Case28
+    : public VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_0TesterCase28 {
  public:
-  VectorLoadSingle3AllLanesTester_Case28()
-    : VectorLoadSingle3AllLanesTesterCase28(
-      state_.VectorLoadSingle3AllLanes_VLD3_single_3_element_structure_to_all_lanes_instance_)
+  VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_0Tester_Case28()
+    : VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_0TesterCase28(
+      state_.VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_0_VLD3_single_3_element_structure_to_all_lanes_instance_)
   {}
 };
 
@@ -4913,7 +4850,7 @@ class VectorLoadSingle3AllLanesTester_Case28
 //       a: a(4),
 //       actual: Actual_VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadSingle4AllLanes,
+//       baseline: VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -4929,7 +4866,6 @@ class VectorLoadSingle3AllLanesTester_Case28
 //         T(5),
 //         a(4),
 //         Rm(3:0)],
-//       generated_baseline: VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_0,
 //       inc: 1
 //            if T(5)=0
 //            else 2,
@@ -4955,12 +4891,12 @@ class VectorLoadSingle3AllLanesTester_Case28
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadSingle4AllLanesTester_Case29
-    : public VectorLoadSingle4AllLanesTesterCase29 {
+class VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_0Tester_Case29
+    : public VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_0TesterCase29 {
  public:
-  VectorLoadSingle4AllLanesTester_Case29()
-    : VectorLoadSingle4AllLanesTesterCase29(
-      state_.VectorLoadSingle4AllLanes_VLD4_single_4_element_structure_to_all_lanes_instance_)
+  VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_0Tester_Case29()
+    : VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_0TesterCase29(
+      state_.VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_0_VLD4_single_4_element_structure_to_all_lanes_instance_)
   {}
 };
 
@@ -4972,13 +4908,12 @@ class VectorLoadSingle4AllLanesTester_Case29
 //       Sp: 13,
 //       actual: Actual_VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle1,
+//       baseline: VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0,
 //       constraints: ,
 //       defs: {base}
 //            if wback
 //            else {},
 //       fields: [Rn(19:16), size(11:10), index_align(7:4), Rm(3:0)],
-//       generated_baseline: VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0,
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
@@ -5008,12 +4943,12 @@ class VectorLoadSingle4AllLanesTester_Case29
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle1Tester_Case30
-    : public VectorLoadStoreSingle1TesterCase30 {
+class VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0Tester_Case30
+    : public VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0TesterCase30 {
  public:
-  VectorLoadStoreSingle1Tester_Case30()
-    : VectorLoadStoreSingle1TesterCase30(
-      state_.VectorLoadStoreSingle1_VLD1_single_element_to_one_lane_instance_)
+  VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0Tester_Case30()
+    : VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0TesterCase30(
+      state_.VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0_VLD1_single_element_to_one_lane_instance_)
   {}
 };
 
@@ -5027,7 +4962,7 @@ class VectorLoadStoreSingle1Tester_Case30
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle2,
+//       baseline: VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -5040,7 +4975,6 @@ class VectorLoadStoreSingle1Tester_Case30
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -5076,12 +5010,12 @@ class VectorLoadStoreSingle1Tester_Case30
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle2Tester_Case31
-    : public VectorLoadStoreSingle2TesterCase31 {
+class VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0Tester_Case31
+    : public VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0TesterCase31 {
  public:
-  VectorLoadStoreSingle2Tester_Case31()
-    : VectorLoadStoreSingle2TesterCase31(
-      state_.VectorLoadStoreSingle2_VLD2_single_2_element_structure_to_one_lane_instance_)
+  VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0Tester_Case31()
+    : VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0TesterCase31(
+      state_.VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0_VLD2_single_2_element_structure_to_one_lane_instance_)
   {}
 };
 
@@ -5095,7 +5029,7 @@ class VectorLoadStoreSingle2Tester_Case31
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle3,
+//       baseline: VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -5109,7 +5043,6 @@ class VectorLoadStoreSingle2Tester_Case31
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -5149,12 +5082,12 @@ class VectorLoadStoreSingle2Tester_Case31
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle3Tester_Case32
-    : public VectorLoadStoreSingle3TesterCase32 {
+class VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0Tester_Case32
+    : public VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0TesterCase32 {
  public:
-  VectorLoadStoreSingle3Tester_Case32()
-    : VectorLoadStoreSingle3TesterCase32(
-      state_.VectorLoadStoreSingle3_VLD3_single_3_element_structure_to_one_lane_instance_)
+  VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0Tester_Case32()
+    : VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0TesterCase32(
+      state_.VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0_VLD3_single_3_element_structure_to_one_lane_instance_)
   {}
 };
 
@@ -5168,7 +5101,7 @@ class VectorLoadStoreSingle3Tester_Case32
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle4,
+//       baseline: VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -5183,7 +5116,6 @@ class VectorLoadStoreSingle3Tester_Case32
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -5219,12 +5151,12 @@ class VectorLoadStoreSingle3Tester_Case32
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingle4Tester_Case33
-    : public VectorLoadStoreSingle4TesterCase33 {
+class VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0Tester_Case33
+    : public VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0TesterCase33 {
  public:
-  VectorLoadStoreSingle4Tester_Case33()
-    : VectorLoadStoreSingle4TesterCase33(
-      state_.VectorLoadStoreSingle4_VLD4_single_4_element_structure_to_one_lane_instance_)
+  VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0Tester_Case33()
+    : VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0TesterCase33(
+      state_.VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0_VLD4_single_4_element_structure_to_one_lane_instance_)
   {}
 };
 
@@ -5248,7 +5180,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       actual: Actual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple1,
+//       baseline: VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {base}
@@ -5260,7 +5192,6 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //         type(11:8),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0,
 //       m: Rm,
 //       n: Rn,
 //       pattern: 111101000d00nnnnddddttttssaammmm,
@@ -5298,8 +5229,8 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadStoreMultiple1Tester_Case0_TestCase0) {
-  VectorLoadStoreMultiple1Tester_Case0 baseline_tester;
+       VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0Tester_Case0_TestCase0) {
+  VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0Tester_Case0 baseline_tester;
   NamedActual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_1_VST1_multiple_single_elements actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101000d00nnnnddddttttssaammmm");
@@ -5316,7 +5247,7 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple2,
+//       baseline: VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -5330,7 +5261,6 @@ TEST_F(Arm32DecoderStateTests,
 //         size(7:6),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //       inc: 1
 //            if type(11:8)=1000
 //            else 2,
@@ -5363,8 +5293,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadStoreMultiple2Tester_Case1_TestCase1) {
-  VectorLoadStoreMultiple2Tester_Case1 baseline_tester;
+       VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0Tester_Case1_TestCase1) {
+  VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0Tester_Case1 baseline_tester;
   NamedActual_VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_1_VST2_multiple_2_element_structures actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101000d00nnnnddddttttssaammmm");
@@ -5381,7 +5311,7 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple1,
+//       baseline: VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {base}
@@ -5393,7 +5323,6 @@ TEST_F(Arm32DecoderStateTests,
 //         type(11:8),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0,
 //       m: Rm,
 //       n: Rn,
 //       pattern: 111101000d00nnnnddddttttssaammmm,
@@ -5431,8 +5360,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadStoreMultiple1Tester_Case2_TestCase2) {
-  VectorLoadStoreMultiple1Tester_Case2 baseline_tester;
+       VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0Tester_Case2_TestCase2) {
+  VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0Tester_Case2 baseline_tester;
   NamedActual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_1_VST1_multiple_single_elements actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101000d00nnnnddddttttssaammmm");
@@ -5448,7 +5377,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreMultiple4,
+//       baseline: VST4_multiple_4_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -5463,7 +5392,6 @@ TEST_F(Arm32DecoderStateTests,
 //         type(11:8),
 //         size(7:6),
 //         Rm(3:0)],
-//       generated_baseline: VST4_multiple_4_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //       inc: 1
 //            if type(11:8)=0000
 //            else 2,
@@ -5491,8 +5419,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadStoreMultiple4Tester_Case3_TestCase3) {
-  VectorLoadStoreMultiple4Tester_Case3 baseline_tester;
+       VST4_multiple_4_element_structures_111101000d00nnnnddddttttssaammmm_case_0Tester_Case3_TestCase3) {
+  VST4_multiple_4_element_structures_111101000d00nnnnddddttttssaammmm_case_0Tester_Case3 baseline_tester;
   NamedActual_VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_1_VST4_multiple_4_element_structures actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101000d00nnnnddddttttssaammmm");
@@ -5509,7 +5437,7 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple3,
+//       baseline: VST3_multiple_3_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -5524,7 +5452,6 @@ TEST_F(Arm32DecoderStateTests,
 //         size(7:6),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VST3_multiple_3_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //       inc: 1
 //            if type(11:8)=0100
 //            else 2,
@@ -5553,8 +5480,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadStoreMultiple3Tester_Case4_TestCase4) {
-  VectorLoadStoreMultiple3Tester_Case4 baseline_tester;
+       VST3_multiple_3_element_structures_111101000d00nnnnddddttttssaammmm_case_0Tester_Case4_TestCase4) {
+  VST3_multiple_3_element_structures_111101000d00nnnnddddttttssaammmm_case_0Tester_Case4 baseline_tester;
   NamedActual_VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_1_VST3_multiple_3_element_structures actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101000d00nnnnddddttttssaammmm");
@@ -5571,7 +5498,7 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple1,
+//       baseline: VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {base}
@@ -5583,7 +5510,6 @@ TEST_F(Arm32DecoderStateTests,
 //         type(11:8),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0,
 //       m: Rm,
 //       n: Rn,
 //       pattern: 111101000d00nnnnddddttttssaammmm,
@@ -5621,8 +5547,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadStoreMultiple1Tester_Case5_TestCase5) {
-  VectorLoadStoreMultiple1Tester_Case5 baseline_tester;
+       VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0Tester_Case5_TestCase5) {
+  VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0Tester_Case5 baseline_tester;
   NamedActual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_1_VST1_multiple_single_elements actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101000d00nnnnddddttttssaammmm");
@@ -5639,7 +5565,7 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple2,
+//       baseline: VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -5653,7 +5579,6 @@ TEST_F(Arm32DecoderStateTests,
 //         size(7:6),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //       inc: 1
 //            if type(11:8)=1000
 //            else 2,
@@ -5686,8 +5611,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadStoreMultiple2Tester_Case6_TestCase6) {
-  VectorLoadStoreMultiple2Tester_Case6 baseline_tester;
+       VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0Tester_Case6_TestCase6) {
+  VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0Tester_Case6 baseline_tester;
   NamedActual_VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_1_VST2_multiple_2_element_structures actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101000d00nnnnddddttttssaammmm");
@@ -5701,13 +5626,12 @@ TEST_F(Arm32DecoderStateTests,
 //       Sp: 13,
 //       actual: Actual_VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle1,
+//       baseline: VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0,
 //       constraints: ,
 //       defs: {base}
 //            if wback
 //            else {},
 //       fields: [Rn(19:16), size(11:10), index_align(7:4), Rm(3:0)],
-//       generated_baseline: VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0,
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
@@ -5738,8 +5662,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadStoreSingle1Tester_Case7_TestCase7) {
-  VectorLoadStoreSingle1Tester_Case7 baseline_tester;
+       VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0Tester_Case7_TestCase7) {
+  VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0Tester_Case7 baseline_tester;
   NamedActual_VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_1_VST1_single_element_from_one_lane actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101001d00nnnnddddss00aaaammmm");
@@ -5755,7 +5679,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle2,
+//       baseline: VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -5768,7 +5692,6 @@ TEST_F(Arm32DecoderStateTests,
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -5805,8 +5728,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadStoreSingle2Tester_Case8_TestCase8) {
-  VectorLoadStoreSingle2Tester_Case8 baseline_tester;
+       VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0Tester_Case8_TestCase8) {
+  VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0Tester_Case8 baseline_tester;
   NamedActual_VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_1_VST2_single_2_element_structure_from_one_lane actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101001d00nnnnddddss01aaaammmm");
@@ -5822,7 +5745,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle3,
+//       baseline: VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -5836,7 +5759,6 @@ TEST_F(Arm32DecoderStateTests,
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -5877,8 +5799,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadStoreSingle3Tester_Case9_TestCase9) {
-  VectorLoadStoreSingle3Tester_Case9 baseline_tester;
+       VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0Tester_Case9_TestCase9) {
+  VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0Tester_Case9 baseline_tester;
   NamedActual_VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_1_VST3_single_3_element_structure_from_one_lane actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101001d00nnnnddddss10aaaammmm");
@@ -5894,7 +5816,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle4,
+//       baseline: VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -5909,7 +5831,6 @@ TEST_F(Arm32DecoderStateTests,
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -5946,8 +5867,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadStoreSingle4Tester_Case10_TestCase10) {
-  VectorLoadStoreSingle4Tester_Case10 baseline_tester;
+       VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0Tester_Case10_TestCase10) {
+  VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0Tester_Case10 baseline_tester;
   NamedActual_VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_1_VST4_single_4_element_structure_form_one_lane actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101001d00nnnnddddss11aaaammmm");
@@ -5961,13 +5882,12 @@ TEST_F(Arm32DecoderStateTests,
 //       Sp: 13,
 //       actual: Actual_VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle1,
+//       baseline: VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0,
 //       constraints: ,
 //       defs: {base}
 //            if wback
 //            else {},
 //       fields: [Rn(19:16), size(11:10), index_align(7:4), Rm(3:0)],
-//       generated_baseline: VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0,
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
@@ -5998,8 +5918,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadStoreSingle1Tester_Case11_TestCase11) {
-  VectorLoadStoreSingle1Tester_Case11 baseline_tester;
+       VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0Tester_Case11_TestCase11) {
+  VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0Tester_Case11 baseline_tester;
   NamedActual_VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_1_VST1_single_element_from_one_lane actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101001d00nnnnddddss00aaaammmm");
@@ -6015,7 +5935,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle2,
+//       baseline: VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -6028,7 +5948,6 @@ TEST_F(Arm32DecoderStateTests,
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -6065,8 +5984,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadStoreSingle2Tester_Case12_TestCase12) {
-  VectorLoadStoreSingle2Tester_Case12 baseline_tester;
+       VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0Tester_Case12_TestCase12) {
+  VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0Tester_Case12 baseline_tester;
   NamedActual_VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_1_VST2_single_2_element_structure_from_one_lane actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101001d00nnnnddddss01aaaammmm");
@@ -6082,7 +6001,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle3,
+//       baseline: VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -6096,7 +6015,6 @@ TEST_F(Arm32DecoderStateTests,
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -6137,8 +6055,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadStoreSingle3Tester_Case13_TestCase13) {
-  VectorLoadStoreSingle3Tester_Case13 baseline_tester;
+       VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0Tester_Case13_TestCase13) {
+  VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0Tester_Case13 baseline_tester;
   NamedActual_VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_1_VST3_single_3_element_structure_from_one_lane actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101001d00nnnnddddss10aaaammmm");
@@ -6154,7 +6072,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle4,
+//       baseline: VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -6169,7 +6087,6 @@ TEST_F(Arm32DecoderStateTests,
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -6206,8 +6123,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadStoreSingle4Tester_Case14_TestCase14) {
-  VectorLoadStoreSingle4Tester_Case14 baseline_tester;
+       VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0Tester_Case14_TestCase14) {
+  VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0Tester_Case14 baseline_tester;
   NamedActual_VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_1_VST4_single_4_element_structure_form_one_lane actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101001d00nnnnddddss11aaaammmm");
@@ -6224,7 +6141,7 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple1,
+//       baseline: VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {base}
@@ -6236,7 +6153,6 @@ TEST_F(Arm32DecoderStateTests,
 //         type(11:8),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0,
 //       m: Rm,
 //       n: Rn,
 //       pattern: 111101000d10nnnnddddttttssaammmm,
@@ -6274,8 +6190,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadStoreMultiple1Tester_Case15_TestCase15) {
-  VectorLoadStoreMultiple1Tester_Case15 baseline_tester;
+       VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0Tester_Case15_TestCase15) {
+  VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0Tester_Case15 baseline_tester;
   NamedActual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_1_VLD1_multiple_single_elements actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101000d10nnnnddddttttssaammmm");
@@ -6292,7 +6208,7 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple2,
+//       baseline: VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -6306,7 +6222,6 @@ TEST_F(Arm32DecoderStateTests,
 //         size(7:6),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //       inc: 1
 //            if type(11:8)=1000
 //            else 2,
@@ -6339,8 +6254,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadStoreMultiple2Tester_Case16_TestCase16) {
-  VectorLoadStoreMultiple2Tester_Case16 baseline_tester;
+       VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0Tester_Case16_TestCase16) {
+  VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0Tester_Case16 baseline_tester;
   NamedActual_VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_1_VLD2_multiple_2_element_structures actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101000d10nnnnddddttttssaammmm");
@@ -6357,7 +6272,7 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple1,
+//       baseline: VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {base}
@@ -6369,7 +6284,6 @@ TEST_F(Arm32DecoderStateTests,
 //         type(11:8),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0,
 //       m: Rm,
 //       n: Rn,
 //       pattern: 111101000d10nnnnddddttttssaammmm,
@@ -6407,8 +6321,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadStoreMultiple1Tester_Case17_TestCase17) {
-  VectorLoadStoreMultiple1Tester_Case17 baseline_tester;
+       VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0Tester_Case17_TestCase17) {
+  VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0Tester_Case17 baseline_tester;
   NamedActual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_1_VLD1_multiple_single_elements actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101000d10nnnnddddttttssaammmm");
@@ -6424,7 +6338,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreMultiple4,
+//       baseline: VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -6439,7 +6353,6 @@ TEST_F(Arm32DecoderStateTests,
 //         type(11:8),
 //         size(7:6),
 //         Rm(3:0)],
-//       generated_baseline: VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //       inc: 1
 //            if type(11:8)=0000
 //            else 2,
@@ -6467,8 +6380,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadStoreMultiple4Tester_Case18_TestCase18) {
-  VectorLoadStoreMultiple4Tester_Case18 baseline_tester;
+       VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_0Tester_Case18_TestCase18) {
+  VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_0Tester_Case18 baseline_tester;
   NamedActual_VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_1_VLD4_multiple_4_element_structures actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101000d10nnnnddddttttssaammmm");
@@ -6485,7 +6398,7 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple3,
+//       baseline: VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -6500,7 +6413,6 @@ TEST_F(Arm32DecoderStateTests,
 //         size(7:6),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //       inc: 1
 //            if type(11:8)=0100
 //            else 2,
@@ -6529,8 +6441,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadStoreMultiple3Tester_Case19_TestCase19) {
-  VectorLoadStoreMultiple3Tester_Case19 baseline_tester;
+       VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_0Tester_Case19_TestCase19) {
+  VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_0Tester_Case19 baseline_tester;
   NamedActual_VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_1_VLD3_multiple_3_element_structures actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101000d10nnnnddddttttssaammmm");
@@ -6547,7 +6459,7 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple1,
+//       baseline: VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {base}
@@ -6559,7 +6471,6 @@ TEST_F(Arm32DecoderStateTests,
 //         type(11:8),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0,
 //       m: Rm,
 //       n: Rn,
 //       pattern: 111101000d10nnnnddddttttssaammmm,
@@ -6597,8 +6508,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadStoreMultiple1Tester_Case20_TestCase20) {
-  VectorLoadStoreMultiple1Tester_Case20 baseline_tester;
+       VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0Tester_Case20_TestCase20) {
+  VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0Tester_Case20 baseline_tester;
   NamedActual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_1_VLD1_multiple_single_elements actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101000d10nnnnddddttttssaammmm");
@@ -6615,7 +6526,7 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Actual_VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_1,
 //       align: align(5:4),
 //       base: n,
-//       baseline: VectorLoadStoreMultiple2,
+//       baseline: VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -6629,7 +6540,6 @@ TEST_F(Arm32DecoderStateTests,
 //         size(7:6),
 //         align(5:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //       inc: 1
 //            if type(11:8)=1000
 //            else 2,
@@ -6662,8 +6572,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadStoreMultiple2Tester_Case21_TestCase21) {
-  VectorLoadStoreMultiple2Tester_Case21 baseline_tester;
+       VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0Tester_Case21_TestCase21) {
+  VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0Tester_Case21 baseline_tester;
   NamedActual_VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_1_VLD2_multiple_2_element_structures actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101000d10nnnnddddttttssaammmm");
@@ -6677,13 +6587,12 @@ TEST_F(Arm32DecoderStateTests,
 //       Sp: 13,
 //       actual: Actual_VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle1,
+//       baseline: VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0,
 //       constraints: ,
 //       defs: {base}
 //            if wback
 //            else {},
 //       fields: [Rn(19:16), size(11:10), index_align(7:4), Rm(3:0)],
-//       generated_baseline: VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0,
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
@@ -6714,8 +6623,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadStoreSingle1Tester_Case22_TestCase22) {
-  VectorLoadStoreSingle1Tester_Case22 baseline_tester;
+       VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0Tester_Case22_TestCase22) {
+  VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0Tester_Case22 baseline_tester;
   NamedActual_VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_1_VLD1_single_element_to_one_lane actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101001d10nnnnddddss00aaaammmm");
@@ -6731,7 +6640,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle2,
+//       baseline: VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -6744,7 +6653,6 @@ TEST_F(Arm32DecoderStateTests,
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -6781,8 +6689,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadStoreSingle2Tester_Case23_TestCase23) {
-  VectorLoadStoreSingle2Tester_Case23 baseline_tester;
+       VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0Tester_Case23_TestCase23) {
+  VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0Tester_Case23 baseline_tester;
   NamedActual_VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_1_VLD2_single_2_element_structure_to_one_lane actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101001d10nnnnddddss01aaaammmm");
@@ -6798,7 +6706,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle3,
+//       baseline: VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -6812,7 +6720,6 @@ TEST_F(Arm32DecoderStateTests,
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -6853,8 +6760,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadStoreSingle3Tester_Case24_TestCase24) {
-  VectorLoadStoreSingle3Tester_Case24 baseline_tester;
+       VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0Tester_Case24_TestCase24) {
+  VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0Tester_Case24 baseline_tester;
   NamedActual_VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_1_VLD3_single_3_element_structure_to_one_lane actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101001d10nnnnddddss10aaaammmm");
@@ -6870,7 +6777,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle4,
+//       baseline: VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -6885,7 +6792,6 @@ TEST_F(Arm32DecoderStateTests,
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -6922,8 +6828,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadStoreSingle4Tester_Case25_TestCase25) {
-  VectorLoadStoreSingle4Tester_Case25 baseline_tester;
+       VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0Tester_Case25_TestCase25) {
+  VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0Tester_Case25 baseline_tester;
   NamedActual_VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_1_VLD4_single_4_element_structure_to_one_lane actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101001d10nnnnddddss11aaaammmm");
@@ -6941,7 +6847,7 @@ TEST_F(Arm32DecoderStateTests,
 //       a: a(4),
 //       actual: Actual_VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadSingle1AllLanes,
+//       baseline: VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {base}
@@ -6954,7 +6860,6 @@ TEST_F(Arm32DecoderStateTests,
 //         T(5),
 //         a(4),
 //         Rm(3:0)],
-//       generated_baseline: VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0,
 //       m: Rm,
 //       n: Rn,
 //       pattern: 111101001d10nnnndddd1100sstammmm,
@@ -6982,8 +6887,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadSingle1AllLanesTester_Case26_TestCase26) {
-  VectorLoadSingle1AllLanesTester_Case26 baseline_tester;
+       VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0Tester_Case26_TestCase26) {
+  VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0Tester_Case26 baseline_tester;
   NamedActual_VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_1_VLD1_single_element_to_all_lanes actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101001d10nnnndddd1100sstammmm");
@@ -7000,7 +6905,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadSingle2AllLanes,
+//       baseline: VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -7008,7 +6913,6 @@ TEST_F(Arm32DecoderStateTests,
 //            if wback
 //            else {},
 //       fields: [D(22), Rn(19:16), Vd(15:12), size(7:6), T(5), Rm(3:0)],
-//       generated_baseline: VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_0,
 //       inc: 1
 //            if T(5)=0
 //            else 2,
@@ -7034,8 +6938,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadSingle2AllLanesTester_Case27_TestCase27) {
-  VectorLoadSingle2AllLanesTester_Case27 baseline_tester;
+       VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_0Tester_Case27_TestCase27) {
+  VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_0Tester_Case27 baseline_tester;
   NamedActual_VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_1_VLD2_single_2_element_structure_to_all_lanes actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101001d10nnnndddd1101sstammmm");
@@ -7053,7 +6957,7 @@ TEST_F(Arm32DecoderStateTests,
 //       a: a(4),
 //       actual: Actual_VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadSingle3AllLanes,
+//       baseline: VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -7068,7 +6972,6 @@ TEST_F(Arm32DecoderStateTests,
 //         T(5),
 //         a(4),
 //         Rm(3:0)],
-//       generated_baseline: VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_0,
 //       inc: 1
 //            if T(5)=0
 //            else 2,
@@ -7095,8 +6998,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadSingle3AllLanesTester_Case28_TestCase28) {
-  VectorLoadSingle3AllLanesTester_Case28 baseline_tester;
+       VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_0Tester_Case28_TestCase28) {
+  VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_0Tester_Case28 baseline_tester;
   NamedActual_VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_1_VLD3_single_3_element_structure_to_all_lanes actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101001d10nnnndddd1110sstammmm");
@@ -7114,7 +7017,7 @@ TEST_F(Arm32DecoderStateTests,
 //       a: a(4),
 //       actual: Actual_VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadSingle4AllLanes,
+//       baseline: VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -7130,7 +7033,6 @@ TEST_F(Arm32DecoderStateTests,
 //         T(5),
 //         a(4),
 //         Rm(3:0)],
-//       generated_baseline: VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_0,
 //       inc: 1
 //            if T(5)=0
 //            else 2,
@@ -7157,8 +7059,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadSingle4AllLanesTester_Case29_TestCase29) {
-  VectorLoadSingle4AllLanesTester_Case29 baseline_tester;
+       VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_0Tester_Case29_TestCase29) {
+  VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_0Tester_Case29 baseline_tester;
   NamedActual_VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_1_VLD4_single_4_element_structure_to_all_lanes actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101001d10nnnndddd1111sstammmm");
@@ -7172,13 +7074,12 @@ TEST_F(Arm32DecoderStateTests,
 //       Sp: 13,
 //       actual: Actual_VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle1,
+//       baseline: VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0,
 //       constraints: ,
 //       defs: {base}
 //            if wback
 //            else {},
 //       fields: [Rn(19:16), size(11:10), index_align(7:4), Rm(3:0)],
-//       generated_baseline: VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0,
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
@@ -7209,8 +7110,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadStoreSingle1Tester_Case30_TestCase30) {
-  VectorLoadStoreSingle1Tester_Case30 baseline_tester;
+       VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0Tester_Case30_TestCase30) {
+  VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0Tester_Case30 baseline_tester;
   NamedActual_VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_1_VLD1_single_element_to_one_lane actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101001d10nnnnddddss00aaaammmm");
@@ -7226,7 +7127,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle2,
+//       baseline: VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -7239,7 +7140,6 @@ TEST_F(Arm32DecoderStateTests,
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -7276,8 +7176,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadStoreSingle2Tester_Case31_TestCase31) {
-  VectorLoadStoreSingle2Tester_Case31 baseline_tester;
+       VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0Tester_Case31_TestCase31) {
+  VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0Tester_Case31 baseline_tester;
   NamedActual_VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_1_VLD2_single_2_element_structure_to_one_lane actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101001d10nnnnddddss01aaaammmm");
@@ -7293,7 +7193,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle3,
+//       baseline: VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -7307,7 +7207,6 @@ TEST_F(Arm32DecoderStateTests,
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -7348,8 +7247,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadStoreSingle3Tester_Case32_TestCase32) {
-  VectorLoadStoreSingle3Tester_Case32 baseline_tester;
+       VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0Tester_Case32_TestCase32) {
+  VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0Tester_Case32 baseline_tester;
   NamedActual_VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_1_VLD3_single_3_element_structure_to_one_lane actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101001d10nnnnddddss10aaaammmm");
@@ -7365,7 +7264,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       actual: Actual_VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_1,
 //       base: n,
-//       baseline: VectorLoadStoreSingle4,
+//       baseline: VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       d2: d + inc,
@@ -7380,7 +7279,6 @@ TEST_F(Arm32DecoderStateTests,
 //         size(11:10),
 //         index_align(7:4),
 //         Rm(3:0)],
-//       generated_baseline: VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0,
 //       inc: 1
 //            if size(11:10)=00
 //            else (1
@@ -7417,8 +7315,8 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: (m  !=
 //               Pc)}
 TEST_F(Arm32DecoderStateTests,
-       VectorLoadStoreSingle4Tester_Case33_TestCase33) {
-  VectorLoadStoreSingle4Tester_Case33 baseline_tester;
+       VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0Tester_Case33_TestCase33) {
+  VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0Tester_Case33 baseline_tester;
   NamedActual_VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_1_VLD4_single_4_element_structure_to_one_lane actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111101001d10nnnnddddss11aaaammmm");

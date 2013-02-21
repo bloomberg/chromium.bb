@@ -222,7 +222,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00000000 /* A(23)=0 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000300 /* B(11:8)=0011 */) {
-    return VectorLoadStoreMultiple2_VST2_multiple_2_element_structures_instance_;
+    return VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0_VST2_multiple_2_element_structures_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -231,7 +231,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00000000 /* A(23)=0 */ &&
       (inst.Bits() & 0x00000700)  ==
           0x00000200 /* B(11:8)=x010 */) {
-    return VectorLoadStoreMultiple1_VST1_multiple_single_elements_instance_;
+    return VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0_VST1_multiple_single_elements_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -240,7 +240,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00000000 /* A(23)=0 */ &&
       (inst.Bits() & 0x00000E00)  ==
           0x00000000 /* B(11:8)=000x */) {
-    return VectorLoadStoreMultiple4_VST4_multiple_4_element_structures_instance_;
+    return VST4_multiple_4_element_structures_111101000d00nnnnddddttttssaammmm_case_0_VST4_multiple_4_element_structures_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -249,7 +249,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00000000 /* A(23)=0 */ &&
       (inst.Bits() & 0x00000E00)  ==
           0x00000400 /* B(11:8)=010x */) {
-    return VectorLoadStoreMultiple3_VST3_multiple_3_element_structures_instance_;
+    return VST3_multiple_3_element_structures_111101000d00nnnnddddttttssaammmm_case_0_VST3_multiple_3_element_structures_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -258,7 +258,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00000000 /* A(23)=0 */ &&
       (inst.Bits() & 0x00000E00)  ==
           0x00000600 /* B(11:8)=011x */) {
-    return VectorLoadStoreMultiple1_VST1_multiple_single_elements_instance_;
+    return VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0_VST1_multiple_single_elements_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -267,7 +267,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00000000 /* A(23)=0 */ &&
       (inst.Bits() & 0x00000E00)  ==
           0x00000800 /* B(11:8)=100x */) {
-    return VectorLoadStoreMultiple2_VST2_multiple_2_element_structures_instance_;
+    return VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0_VST2_multiple_2_element_structures_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -276,7 +276,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000800 /* B(11:8)=1000 */) {
-    return VectorLoadStoreSingle1_VST1_single_element_from_one_lane_instance_;
+    return VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0_VST1_single_element_from_one_lane_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -285,7 +285,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000900 /* B(11:8)=1001 */) {
-    return VectorLoadStoreSingle2_VST2_single_2_element_structure_from_one_lane_instance_;
+    return VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0_VST2_single_2_element_structure_from_one_lane_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -294,7 +294,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000A00 /* B(11:8)=1010 */) {
-    return VectorLoadStoreSingle3_VST3_single_3_element_structure_from_one_lane_instance_;
+    return VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0_VST3_single_3_element_structure_from_one_lane_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -303,7 +303,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000B00 /* B(11:8)=1011 */) {
-    return VectorLoadStoreSingle4_VST4_single_4_element_structure_form_one_lane_instance_;
+    return VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0_VST4_single_4_element_structure_form_one_lane_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -312,7 +312,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000B00)  ==
           0x00000000 /* B(11:8)=0x00 */) {
-    return VectorLoadStoreSingle1_VST1_single_element_from_one_lane_instance_;
+    return VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0_VST1_single_element_from_one_lane_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -321,7 +321,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000B00)  ==
           0x00000100 /* B(11:8)=0x01 */) {
-    return VectorLoadStoreSingle2_VST2_single_2_element_structure_from_one_lane_instance_;
+    return VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0_VST2_single_2_element_structure_from_one_lane_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -330,7 +330,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000B00)  ==
           0x00000200 /* B(11:8)=0x10 */) {
-    return VectorLoadStoreSingle3_VST3_single_3_element_structure_from_one_lane_instance_;
+    return VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0_VST3_single_3_element_structure_from_one_lane_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -339,7 +339,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000B00)  ==
           0x00000300 /* B(11:8)=0x11 */) {
-    return VectorLoadStoreSingle4_VST4_single_4_element_structure_form_one_lane_instance_;
+    return VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0_VST4_single_4_element_structure_form_one_lane_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -348,7 +348,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00000000 /* A(23)=0 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000300 /* B(11:8)=0011 */) {
-    return VectorLoadStoreMultiple2_VLD2_multiple_2_element_structures_instance_;
+    return VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0_VLD2_multiple_2_element_structures_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -357,7 +357,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00000000 /* A(23)=0 */ &&
       (inst.Bits() & 0x00000700)  ==
           0x00000200 /* B(11:8)=x010 */) {
-    return VectorLoadStoreMultiple1_VLD1_multiple_single_elements_instance_;
+    return VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0_VLD1_multiple_single_elements_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -366,7 +366,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00000000 /* A(23)=0 */ &&
       (inst.Bits() & 0x00000E00)  ==
           0x00000000 /* B(11:8)=000x */) {
-    return VectorLoadStoreMultiple4_VLD4_multiple_4_element_structures_instance_;
+    return VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_0_VLD4_multiple_4_element_structures_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -375,7 +375,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00000000 /* A(23)=0 */ &&
       (inst.Bits() & 0x00000E00)  ==
           0x00000400 /* B(11:8)=010x */) {
-    return VectorLoadStoreMultiple3_VLD3_multiple_3_element_structures_instance_;
+    return VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_0_VLD3_multiple_3_element_structures_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -384,7 +384,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00000000 /* A(23)=0 */ &&
       (inst.Bits() & 0x00000E00)  ==
           0x00000600 /* B(11:8)=011x */) {
-    return VectorLoadStoreMultiple1_VLD1_multiple_single_elements_instance_;
+    return VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0_VLD1_multiple_single_elements_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -393,7 +393,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00000000 /* A(23)=0 */ &&
       (inst.Bits() & 0x00000E00)  ==
           0x00000800 /* B(11:8)=100x */) {
-    return VectorLoadStoreMultiple2_VLD2_multiple_2_element_structures_instance_;
+    return VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0_VLD2_multiple_2_element_structures_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -402,7 +402,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000800 /* B(11:8)=1000 */) {
-    return VectorLoadStoreSingle1_VLD1_single_element_to_one_lane_instance_;
+    return VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0_VLD1_single_element_to_one_lane_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -411,7 +411,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000900 /* B(11:8)=1001 */) {
-    return VectorLoadStoreSingle2_VLD2_single_2_element_structure_to_one_lane_instance_;
+    return VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0_VLD2_single_2_element_structure_to_one_lane_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -420,7 +420,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000A00 /* B(11:8)=1010 */) {
-    return VectorLoadStoreSingle3_VLD3_single_3_element_structure_to_one_lane_instance_;
+    return VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0_VLD3_single_3_element_structure_to_one_lane_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -429,7 +429,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000B00 /* B(11:8)=1011 */) {
-    return VectorLoadStoreSingle4_VLD4_single_4_element_structure_to_one_lane_instance_;
+    return VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0_VLD4_single_4_element_structure_to_one_lane_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -438,7 +438,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000C00 /* B(11:8)=1100 */) {
-    return VectorLoadSingle1AllLanes_VLD1_single_element_to_all_lanes_instance_;
+    return VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0_VLD1_single_element_to_all_lanes_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -447,7 +447,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000D00 /* B(11:8)=1101 */) {
-    return VectorLoadSingle2AllLanes_VLD2_single_2_element_structure_to_all_lanes_instance_;
+    return VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_0_VLD2_single_2_element_structure_to_all_lanes_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -456,7 +456,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000E00 /* B(11:8)=1110 */) {
-    return VectorLoadSingle3AllLanes_VLD3_single_3_element_structure_to_all_lanes_instance_;
+    return VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_0_VLD3_single_3_element_structure_to_all_lanes_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -465,7 +465,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* B(11:8)=1111 */) {
-    return VectorLoadSingle4AllLanes_VLD4_single_4_element_structure_to_all_lanes_instance_;
+    return VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_0_VLD4_single_4_element_structure_to_all_lanes_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -474,7 +474,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000B00)  ==
           0x00000000 /* B(11:8)=0x00 */) {
-    return VectorLoadStoreSingle1_VLD1_single_element_to_one_lane_instance_;
+    return VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0_VLD1_single_element_to_one_lane_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -483,7 +483,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000B00)  ==
           0x00000100 /* B(11:8)=0x01 */) {
-    return VectorLoadStoreSingle2_VLD2_single_2_element_structure_to_one_lane_instance_;
+    return VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0_VLD2_single_2_element_structure_to_one_lane_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -492,7 +492,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000B00)  ==
           0x00000200 /* B(11:8)=0x10 */) {
-    return VectorLoadStoreSingle3_VLD3_single_3_element_structure_to_one_lane_instance_;
+    return VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0_VLD3_single_3_element_structure_to_one_lane_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -501,7 +501,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000B00)  ==
           0x00000300 /* B(11:8)=0x11 */) {
-    return VectorLoadStoreSingle4_VLD4_single_4_element_structure_to_one_lane_instance_;
+    return VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0_VLD4_single_4_element_structure_to_one_lane_instance_;
   }
 
   if (true) {

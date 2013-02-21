@@ -27,7 +27,7 @@ namespace nacl_arm_dec {
 //         else 4 << align,
 //    arch: ASIMD,
 //    base: n,
-//    baseline: VectorLoadStoreMultiple1,
+//    baseline: VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0,
 //    constraints: ,
 //    d: D:Vd,
 //    defs: {base}
@@ -43,7 +43,6 @@ namespace nacl_arm_dec {
 //      size(7:6),
 //      align(5:4),
 //      Rm(3:0)],
-//    generated_baseline: VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0,
 //    m: Rm,
 //    n: Rn,
 //    pattern: 111101000d10nnnnddddttttssaammmm,
@@ -221,7 +220,7 @@ uses(Instruction inst) const {
 //         else ebytes,
 //    arch: ASIMD,
 //    base: n,
-//    baseline: VectorLoadSingle1AllLanes,
+//    baseline: VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0,
 //    constraints: ,
 //    d: D:Vd,
 //    defs: {base}
@@ -236,7 +235,6 @@ uses(Instruction inst) const {
 //      T(5),
 //      a(4),
 //      Rm(3:0)],
-//    generated_baseline: VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0,
 //    m: Rm,
 //    n: Rn,
 //    pattern: 111101001d10nnnndddd1100sstammmm,
@@ -367,7 +365,7 @@ uses(Instruction inst) const {
 //         else 0,
 //    arch: ASIMD,
 //    base: n,
-//    baseline: VectorLoadStoreSingle1,
+//    baseline: VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0,
 //    constraints: ,
 //    d: D:Vd,
 //    defs: {base}
@@ -381,7 +379,6 @@ uses(Instruction inst) const {
 //      size(11:10),
 //      index_align(7:4),
 //      Rm(3:0)],
-//    generated_baseline: VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0,
 //    inc: 1
 //         if size(11:10)=00
 //         else (1
@@ -547,7 +544,7 @@ uses(Instruction inst) const {
 //         else 4 << align,
 //    arch: ASIMD,
 //    base: n,
-//    baseline: VectorLoadStoreMultiple2,
+//    baseline: VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //    constraints: ,
 //    d: D:Vd,
 //    d2: d + inc,
@@ -564,7 +561,6 @@ uses(Instruction inst) const {
 //      size(7:6),
 //      align(5:4),
 //      Rm(3:0)],
-//    generated_baseline: VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //    inc: 1
 //         if type(11:8)=1000
 //         else 2,
@@ -718,7 +714,7 @@ uses(Instruction inst) const {
 //         else 2 * ebytes,
 //    arch: ASIMD,
 //    base: n,
-//    baseline: VectorLoadSingle2AllLanes,
+//    baseline: VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_0,
 //    constraints: ,
 //    d: D:Vd,
 //    d2: d + inc,
@@ -734,7 +730,6 @@ uses(Instruction inst) const {
 //      T(5),
 //      a(4),
 //      Rm(3:0)],
-//    generated_baseline: VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_0,
 //    inc: 1
 //         if T(5)=0
 //         else 2,
@@ -859,7 +854,7 @@ uses(Instruction inst) const {
 //         else 0,
 //    arch: ASIMD,
 //    base: n,
-//    baseline: VectorLoadStoreSingle2,
+//    baseline: VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0,
 //    constraints: ,
 //    d: D:Vd,
 //    d2: d + inc,
@@ -874,7 +869,6 @@ uses(Instruction inst) const {
 //      size(11:10),
 //      index_align(7:4),
 //      Rm(3:0)],
-//    generated_baseline: VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0,
 //    inc: 1
 //         if size(11:10)=00
 //         else (1
@@ -1036,7 +1030,7 @@ uses(Instruction inst) const {
 //         else 8,
 //    arch: ASIMD,
 //    base: n,
-//    baseline: VectorLoadStoreMultiple3,
+//    baseline: VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //    constraints: ,
 //    d: D:Vd,
 //    d2: d + inc,
@@ -1054,7 +1048,6 @@ uses(Instruction inst) const {
 //      size(7:6),
 //      align(5:4),
 //      Rm(3:0)],
-//    generated_baseline: VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //    inc: 1
 //         if type(11:8)=0100
 //         else 2,
@@ -1188,7 +1181,7 @@ uses(Instruction inst) const {
 //    alignment: 1,
 //    arch: ASIMD,
 //    base: n,
-//    baseline: VectorLoadSingle3AllLanes,
+//    baseline: VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_0,
 //    constraints: ,
 //    d: D:Vd,
 //    d2: d + inc,
@@ -1205,7 +1198,6 @@ uses(Instruction inst) const {
 //      T(5),
 //      a(4),
 //      Rm(3:0)],
-//    generated_baseline: VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_0,
 //    inc: 1
 //         if T(5)=0
 //         else 2,
@@ -1327,7 +1319,7 @@ uses(Instruction inst) const {
 //    alignment: 1,
 //    arch: ASIMD,
 //    base: n,
-//    baseline: VectorLoadStoreSingle3,
+//    baseline: VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0,
 //    constraints: ,
 //    d: D:Vd,
 //    d2: d + inc,
@@ -1343,7 +1335,6 @@ uses(Instruction inst) const {
 //      size(11:10),
 //      index_align(7:4),
 //      Rm(3:0)],
-//    generated_baseline: VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_0,
 //    inc: 1
 //         if size(11:10)=00
 //         else (1
@@ -1550,7 +1541,7 @@ uses(Instruction inst) const {
 //         else 4 << align,
 //    arch: ASIMD,
 //    base: n,
-//    baseline: VectorLoadStoreMultiple4,
+//    baseline: VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //    constraints: ,
 //    d: D:Vd,
 //    d2: d + inc,
@@ -1569,7 +1560,6 @@ uses(Instruction inst) const {
 //      size(7:6),
 //      align(5:4),
 //      Rm(3:0)],
-//    generated_baseline: VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_0,
 //    inc: 1
 //         if type(11:8)=0000
 //         else 2,
@@ -1712,7 +1702,7 @@ uses(Instruction inst) const {
 //         else 4 * ebytes),
 //    arch: ASIMD,
 //    base: n,
-//    baseline: VectorLoadSingle4AllLanes,
+//    baseline: VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_0,
 //    constraints: ,
 //    d: D:Vd,
 //    d2: d + inc,
@@ -1730,7 +1720,6 @@ uses(Instruction inst) const {
 //      T(5),
 //      a(4),
 //      Rm(3:0)],
-//    generated_baseline: VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_0,
 //    inc: 1
 //         if T(5)=0
 //         else 2,
@@ -1869,7 +1858,7 @@ uses(Instruction inst) const {
 //         else 0,
 //    arch: ASIMD,
 //    base: n,
-//    baseline: VectorLoadStoreSingle4,
+//    baseline: VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0,
 //    constraints: ,
 //    d: D:Vd,
 //    d2: d + inc,
@@ -1886,7 +1875,6 @@ uses(Instruction inst) const {
 //      size(11:10),
 //      index_align(7:4),
 //      Rm(3:0)],
-//    generated_baseline: VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_0,
 //    inc: 1
 //         if size(11:10)=00
 //         else (1
@@ -11067,7 +11055,7 @@ uses(Instruction inst) const {
 //         else 4 << align,
 //    arch: ASIMD,
 //    base: n,
-//    baseline: VectorLoadStoreMultiple1,
+//    baseline: VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0,
 //    constraints: ,
 //    d: D:Vd,
 //    defs: {base}
@@ -11083,7 +11071,6 @@ uses(Instruction inst) const {
 //      size(7:6),
 //      align(5:4),
 //      Rm(3:0)],
-//    generated_baseline: VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0,
 //    m: Rm,
 //    n: Rn,
 //    pattern: 111101000d00nnnnddddttttssaammmm,
@@ -11267,7 +11254,7 @@ uses(Instruction inst) const {
 //         else 0,
 //    arch: ASIMD,
 //    base: n,
-//    baseline: VectorLoadStoreSingle1,
+//    baseline: VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0,
 //    constraints: ,
 //    d: D:Vd,
 //    defs: {base}
@@ -11281,7 +11268,6 @@ uses(Instruction inst) const {
 //      size(11:10),
 //      index_align(7:4),
 //      Rm(3:0)],
-//    generated_baseline: VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0,
 //    inc: 1
 //         if size(11:10)=00
 //         else (1
@@ -11447,7 +11433,7 @@ uses(Instruction inst) const {
 //         else 4 << align,
 //    arch: ASIMD,
 //    base: n,
-//    baseline: VectorLoadStoreMultiple2,
+//    baseline: VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //    constraints: ,
 //    d: D:Vd,
 //    d2: d + inc,
@@ -11464,7 +11450,6 @@ uses(Instruction inst) const {
 //      size(7:6),
 //      align(5:4),
 //      Rm(3:0)],
-//    generated_baseline: VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //    inc: 1
 //         if type(11:8)=1000
 //         else 2,
@@ -11626,7 +11611,7 @@ uses(Instruction inst) const {
 //         else 0,
 //    arch: ASIMD,
 //    base: n,
-//    baseline: VectorLoadStoreSingle2,
+//    baseline: VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0,
 //    constraints: ,
 //    d: D:Vd,
 //    d2: d + inc,
@@ -11641,7 +11626,6 @@ uses(Instruction inst) const {
 //      size(11:10),
 //      index_align(7:4),
 //      Rm(3:0)],
-//    generated_baseline: VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaammmm_case_0,
 //    inc: 1
 //         if size(11:10)=00
 //         else (1
@@ -11803,7 +11787,7 @@ uses(Instruction inst) const {
 //         else 8,
 //    arch: ASIMD,
 //    base: n,
-//    baseline: VectorLoadStoreMultiple3,
+//    baseline: VST3_multiple_3_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //    constraints: ,
 //    d: D:Vd,
 //    d2: d + inc,
@@ -11821,7 +11805,6 @@ uses(Instruction inst) const {
 //      size(7:6),
 //      align(5:4),
 //      Rm(3:0)],
-//    generated_baseline: VST3_multiple_3_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //    inc: 1
 //         if type(11:8)=0100
 //         else 2,
@@ -11953,7 +11936,7 @@ uses(Instruction inst) const {
 //    alignment: 1,
 //    arch: ASIMD,
 //    base: n,
-//    baseline: VectorLoadStoreSingle3,
+//    baseline: VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0,
 //    constraints: ,
 //    d: D:Vd,
 //    d2: d + inc,
@@ -11969,7 +11952,6 @@ uses(Instruction inst) const {
 //      size(11:10),
 //      index_align(7:4),
 //      Rm(3:0)],
-//    generated_baseline: VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaammmm_case_0,
 //    inc: 1
 //         if size(11:10)=00
 //         else (1
@@ -12176,7 +12158,7 @@ uses(Instruction inst) const {
 //         else 4 << align,
 //    arch: ASIMD,
 //    base: n,
-//    baseline: VectorLoadStoreMultiple4,
+//    baseline: VST4_multiple_4_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //    constraints: ,
 //    d: D:Vd,
 //    d2: d + inc,
@@ -12195,7 +12177,6 @@ uses(Instruction inst) const {
 //      size(7:6),
 //      align(5:4),
 //      Rm(3:0)],
-//    generated_baseline: VST4_multiple_4_element_structures_111101000d00nnnnddddttttssaammmm_case_0,
 //    inc: 1
 //         if type(11:8)=0000
 //         else 2,
@@ -12340,7 +12321,7 @@ uses(Instruction inst) const {
 //         else 0,
 //    arch: ASIMD,
 //    base: n,
-//    baseline: VectorLoadStoreSingle4,
+//    baseline: VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0,
 //    constraints: ,
 //    d: D:Vd,
 //    d2: d + inc,
@@ -12357,7 +12338,6 @@ uses(Instruction inst) const {
 //      size(11:10),
 //      index_align(7:4),
 //      Rm(3:0)],
-//    generated_baseline: VST4_single_4_element_structure_form_one_lane_111101001d00nnnnddddss11aaaammmm_case_0,
 //    inc: 1
 //         if size(11:10)=00
 //         else (1
