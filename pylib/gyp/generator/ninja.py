@@ -920,6 +920,7 @@ class NinjaWriter:
       ldflags = config.get('ldflags', [])
       if is_executable and len(solibs):
         ldflags.append('-Wl,-rpath=\$$ORIGIN/lib/')
+        ldflags.append('-Wl,-rpath-link=lib/')
     self.WriteVariableList('ldflags',
                            gyp.common.uniquer(map(self.ExpandSpecial,
                                                   ldflags)))
