@@ -982,14 +982,7 @@ void HandleCrashDump(const BreakpadInfo& info) {
 #endif
 #endif
 
-#if defined (OS_ANDROID)
-    base::android::BuildInfo* android_build_info =
-        base::android::BuildInfo::GetInstance();
-    static const char* version_msg =
-        android_build_info->package_version_code();
-#else
     static const char version_msg[] = PRODUCT_VERSION;
-#endif
 
     writer.AddBoundary();
     writer.AddPairString("prod", chrome_product_msg);
@@ -1016,6 +1009,8 @@ void HandleCrashDump(const BreakpadInfo& info) {
     static const char brand[] = "brand";
     static const char exception_info[] = "exception_info";
 
+    base::android::BuildInfo* android_build_info =
+        base::android::BuildInfo::GetInstance();
     writer.AddPairString(
         android_build_id, android_build_info->android_build_id());
     writer.AddBoundary();
