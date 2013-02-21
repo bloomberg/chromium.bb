@@ -1694,7 +1694,7 @@ const char kDevToolsVSplitLocation[] = "devtools.v_split_location";
 
 #if defined(OS_ANDROID)
 // A boolean specifying whether a SPDY proxy is enabled.
-const char kSpdyProxyEnabled[] = "spdy_proxy.enabled";
+const char kSpdyProxyAuthEnabled[] = "spdy_proxy.enabled";
 #endif
 
 // 64-bit integer serialization of the base::Time when the last sync occurred.
@@ -1916,7 +1916,7 @@ const char kGSSAPILibraryName[] = "auth.gssapi_library_name";
 
 // String that specifies the origin allowed to use SpdyProxy
 // authentication, if any.
-const char kSpdyProxyOrigin[] = "auth.spdyproxy.origin";
+const char kSpdyProxyAuthOrigin[] = "auth.spdyproxy.origin";
 
 // Boolean that specifies whether to allow basic auth prompting on cross-
 // domain sub-content requests.

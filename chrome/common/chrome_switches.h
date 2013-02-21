@@ -330,7 +330,7 @@ extern const char kSocketReusePolicy[];
 extern const char kSpeculativeResourcePrefetching[];
 extern const char kSpeculativeResourcePrefetchingDisabled[];
 extern const char kSpeculativeResourcePrefetchingLearning[];
-extern const char kSpdyProxyOrigin[];
+extern const char kSpdyProxyAuthOrigin[];
 extern const char kSpeculativeResourcePrefetchingEnabled[];
 extern const char kSSLVersionMax[];
 extern const char kSSLVersionMin[];
@@ -381,7 +381,7 @@ extern const char kPluginsMetadataServerURL[];
 #endif
 
 #if defined(OS_ANDROID)
-extern const char kEnableSpdyProxy[];
+extern const char kEnableSpdyProxyAuth[];
 extern const char kEnableTranslate[];
 extern const char kTabletUI[];
 #endif

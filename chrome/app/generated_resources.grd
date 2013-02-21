@@ -7155,11 +7155,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         An app to develop apps / extensions.
       </message>
       <if expr="pp_ifdef('android')">
-        <message name="IDS_FLAGS_ENABLE_SPDY_PROXY_NAME" desc="Name of the flag to enable SPDY proxy.">
-          Enable SPDY proxy.
+        <message name="IDS_FLAGS_ENABLE_SPDY_PROXY_AUTH_NAME" desc="Name of the flag to enable SPDY proxy authentication.">
+          Enable SPDY proxy authentication.
         </message>
-        <message name="IDS_FLAGS_ENABLE_SPDY_PROXY_DESCRIPTION" desc="Description of flag to enable SPDY proxy.">
-          <!-- TODO Add description of enable SPDY proxy flag. -->
+        <message name="IDS_FLAGS_ENABLE_SPDY_PROXY_AUTH_DESCRIPTION" desc="Description of flag to enable SPDY proxy authentication.">
+          <!-- TODO Add description of enable SPDY proxy auth flag. -->
         </message>
       </if>
 

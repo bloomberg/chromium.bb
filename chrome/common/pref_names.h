@@ -590,7 +590,7 @@ extern const char kDevToolsRemoteEnabled[];
 extern const char kDevToolsVSplitLocation[];
 #if defined(OS_ANDROID)
 // Used by Chrome Mobile.
-extern const char kSpdyProxyEnabled[];
+extern const char kSpdyProxyAuthEnabled[];
 #endif
 extern const char kSyncLastSyncedTime[];
 extern const char kSyncHasSetupCompleted[];
@@ -752,7 +752,7 @@ extern const char kEnableAuthNegotiatePort[];
 extern const char kAuthServerWhitelist[];
 extern const char kAuthNegotiateDelegateWhitelist[];
 extern const char kGSSAPILibraryName[];
-extern const char kSpdyProxyOrigin[];
+extern const char kSpdyProxyAuthOrigin[];
 extern const char kAllowCrossOriginAuthPrompt[];
 
 extern const char kBuiltInDnsClientEnabled[];

@@ -481,9 +481,13 @@ void IOThread::Init() {
   globals_->cert_verifier.reset(net::CertVerifier::CreateDefault());
   globals_->transport_security_state.reset(new net::TransportSecurityState());
   globals_->ssl_config_service = GetSSLConfigService();
-  if (command_line.HasSwitch(switches::kSpdyProxyOrigin)) {
-    spdyproxy_origin_ =
-        command_line.GetSwitchValueASCII(switches::kSpdyProxyOrigin);
+  if (command_line.HasSwitch(switches::kSpdyProxyAuthOrigin)) {
+    spdyproxy_auth_origin_ =
+        command_line.GetSwitchValueASCII(switches::kSpdyProxyAuthOrigin);
+  } else {
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+    spdyproxy_auth_origin_ = SPDY_PROXY_AUTH_ORIGIN;
+#endif
   }
   globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory(
       globals_->host_resolver.get()));
@@ -743,7 +747,7 @@ void IOThread::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kAuthServerWhitelist, "");
   registry->RegisterStringPref(prefs::kAuthNegotiateDelegateWhitelist, "");
   registry->RegisterStringPref(prefs::kGSSAPILibraryName, "");
-  registry->RegisterStringPref(prefs::kSpdyProxyOrigin, "");
+  registry->RegisterStringPref(prefs::kSpdyProxyAuthOrigin, "");
   registry->RegisterBooleanPref(prefs::kEnableReferrers, true);
   registry->RegisterInt64Pref(prefs::kHttpReceivedContentLength, 0);
   registry->RegisterInt64Pref(prefs::kHttpOriginalContentLength, 0);
@@ -776,8 +780,8 @@ net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory(
           resolver, gssapi_library_name_, negotiate_disable_cname_lookup_,
           negotiate_enable_port_));
 
-  if (!spdyproxy_origin_.empty()) {
-    GURL origin_url(spdyproxy_origin_);
+  if (!spdyproxy_auth_origin_.empty()) {
+    GURL origin_url(spdyproxy_auth_origin_);
     if (origin_url.is_valid()) {
       registry_factory->RegisterSchemeFactory(
           "spdyproxy",
@@ -785,7 +789,7 @@ net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory(
     } else {
       LOG(WARNING) << "Skipping creation of SpdyProxy auth handler since "
                    << "authorized origin is invalid: "
-                   << spdyproxy_origin_;
+                   << spdyproxy_auth_origin_;
     }
   }
 

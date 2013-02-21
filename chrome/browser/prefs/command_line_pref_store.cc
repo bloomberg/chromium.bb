@@ -24,7 +24,7 @@ const CommandLinePrefStore::StringSwitchToPreferenceMapEntry
       { switches::kAuthNegotiateDelegateWhitelist,
           prefs::kAuthNegotiateDelegateWhitelist },
       { switches::kGSSAPILibraryName, prefs::kGSSAPILibraryName },
-      { switches::kSpdyProxyOrigin, prefs::kSpdyProxyOrigin },
+      { switches::kSpdyProxyAuthOrigin, prefs::kSpdyProxyAuthOrigin },
       { switches::kDiskCacheDir, prefs::kDiskCacheDir },
       { switches::kSSLVersionMin, prefs::kSSLVersionMin },
       { switches::kSSLVersionMax, prefs::kSSLVersionMax },

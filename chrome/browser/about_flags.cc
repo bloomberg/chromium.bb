@@ -281,11 +281,11 @@ const Experiment::Choice kChromeCaptivePortalDetectionChoices[] = {
 const Experiment kExperiments[] = {
 #if defined(OS_ANDROID)
   {
-     "enable-spdy-proxy",
-     IDS_FLAGS_ENABLE_SPDY_PROXY_NAME,
-     IDS_FLAGS_ENABLE_SPDY_PROXY_DESCRIPTION,
+     "enable-spdy-proxy-auth",
+     IDS_FLAGS_ENABLE_SPDY_PROXY_AUTH_NAME,
+     IDS_FLAGS_ENABLE_SPDY_PROXY_AUTH_DESCRIPTION,
      kOsAndroid,
-     SINGLE_VALUE_TYPE(switches::kEnableSpdyProxy)
+     SINGLE_VALUE_TYPE(switches::kEnableSpdyProxyAuth)
   },
 #endif
   {

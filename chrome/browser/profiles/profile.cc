@@ -104,7 +104,7 @@ void Profile::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kDevToolsRemoteEnabled,
                                 false,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(prefs::kSpdyProxyEnabled,
+  registry->RegisterBooleanPref(prefs::kSpdyProxyAuthEnabled,
                                 false,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif

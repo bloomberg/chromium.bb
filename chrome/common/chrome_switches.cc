@@ -1234,7 +1234,7 @@ const char kSimulateOutdated[]               = "simulate-outdated";
 const char kSocketReusePolicy[]             = "socket-reuse-policy";
 
 // Origin for which SpdyProxy authentication is supported.
-const char kSpdyProxyOrigin[]               = "spdy-proxy-origin";
+const char kSpdyProxyAuthOrigin[]           = "spdy-proxy-auth-origin";
 
 // Speculative resource prefetching.
 const char kSpeculativeResourcePrefetching[] =
@@ -1410,7 +1410,7 @@ const char kPluginsMetadataServerURL[]      = "plugins-metadata-server-url";
 
 #if defined(OS_ANDROID)
 // Enable SPDY proxy.
-const char kEnableSpdyProxy[]               = "enable-spdy-proxy";
+const char kEnableSpdyProxyAuth[]           = "enable-spdy-proxy-auth";
 
 // Pops the translate infobar if possible.
 const char kEnableTranslate[]               = "enable-translate";

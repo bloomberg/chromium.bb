@@ -321,9 +321,16 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
       break;
   }
 
+  bool spdy_proxy_auth_origin_is_set = false;
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+  spdy_proxy_auth_origin_is_set = true;
+#else
+  spdy_proxy_auth_origin_is_set = CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kSpdyProxyAuthOrigin);
+#endif
+
   if (document_state->was_fetched_via_proxy() &&
-      document_state->was_fetched_via_spdy() &&
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kSpdyProxyOrigin)) {
+      document_state->was_fetched_via_spdy() && spdy_proxy_auth_origin_is_set) {
     UMA_HISTOGRAM_ENUMERATION(
         "PLT.Abandoned_SpdyProxy", abandoned_page ? 1 : 0, 2);
     PLT_HISTOGRAM("PLT.BeginToFinishDoc_SpdyProxy", begin_to_finish_doc);
