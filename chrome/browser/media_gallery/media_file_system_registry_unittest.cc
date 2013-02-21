@@ -27,10 +27,10 @@
 #include "chrome/browser/media_gallery/media_file_system_registry.h"
 #include "chrome/browser/media_gallery/media_galleries_preferences_factory.h"
 #include "chrome/browser/media_gallery/media_galleries_test_util.h"
-#include "chrome/browser/system_monitor/media_storage_util.h"
-#include "chrome/browser/system_monitor/removable_device_constants.h"
-#include "chrome/browser/system_monitor/removable_storage_notifications.h"
-#include "chrome/browser/system_monitor/test_removable_storage_notifications.h"
+#include "chrome/browser/storage_monitor/media_storage_util.h"
+#include "chrome/browser/storage_monitor/removable_device_constants.h"
+#include "chrome/browser/storage_monitor/removable_storage_notifications.h"
+#include "chrome/browser/storage_monitor/test_removable_storage_notifications.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -46,9 +46,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
-#include "chrome/browser/system_monitor/test_portable_device_watcher_win.h"
-#include "chrome/browser/system_monitor/test_removable_device_notifications_window_win.h"
-#include "chrome/browser/system_monitor/test_volume_mount_watcher_win.h"
+#include "chrome/browser/storage_monitor/test_portable_device_watcher_win.h"
+#include "chrome/browser/storage_monitor/test_removable_device_notifications_window_win.h"
+#include "chrome/browser/storage_monitor/test_volume_mount_watcher_win.h"
 #include "chrome/common/chrome_switches.h"
 #endif
 

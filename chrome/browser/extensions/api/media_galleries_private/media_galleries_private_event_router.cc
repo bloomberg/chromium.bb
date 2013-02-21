@@ -15,7 +15,7 @@
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/system_monitor/removable_storage_notifications.h"
+#include "chrome/browser/storage_monitor/removable_storage_notifications.h"
 #include "chrome/common/extensions/api/media_galleries_private.h"
 #include "content/public/browser/browser_thread.h"
 

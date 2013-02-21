@@ -17,7 +17,7 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/media_gallery/media_file_system_registry.h"
 #include "chrome/browser/media_gallery/media_galleries_test_util.h"
-#include "chrome/browser/system_monitor/media_storage_util.h"
+#include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"

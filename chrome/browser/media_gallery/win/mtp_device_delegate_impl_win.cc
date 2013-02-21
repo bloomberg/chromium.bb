@@ -23,8 +23,8 @@
 #include "chrome/browser/media_gallery/win/mtp_device_object_enumerator.h"
 #include "chrome/browser/media_gallery/win/mtp_device_operations_util.h"
 #include "chrome/browser/media_gallery/win/recursive_mtp_device_object_enumerator.h"
-#include "chrome/browser/system_monitor/removable_device_notifications_window_win.h"
-#include "chrome/browser/system_monitor/removable_storage_notifications.h"
+#include "chrome/browser/storage_monitor/removable_device_notifications_window_win.h"
+#include "chrome/browser/storage_monitor/removable_storage_notifications.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chrome {

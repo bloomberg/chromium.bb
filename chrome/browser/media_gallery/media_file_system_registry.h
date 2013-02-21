@@ -18,7 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/prefs/public/pref_change_registrar.h"
 #include "chrome/browser/media_gallery/media_galleries_preferences.h"
-#include "chrome/browser/system_monitor/removable_storage_observer.h"
+#include "chrome/browser/storage_monitor/removable_storage_observer.h"
 #include "webkit/fileapi/media/mtp_device_file_system_config.h"
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)

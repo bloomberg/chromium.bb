@@ -5,12 +5,12 @@
 #include "chrome/browser/chrome_browser_main_linux.h"
 
 #include "base/message_loop_proxy.h"
-#include "chrome/browser/system_monitor/media_transfer_protocol_device_observer_linux.h"
+#include "chrome/browser/storage_monitor/media_transfer_protocol_device_observer_linux.h"
 #include "chrome/common/chrome_switches.h"
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 
 #if !defined(OS_CHROMEOS)
-#include "chrome/browser/system_monitor/removable_device_notifications_linux.h"
+#include "chrome/browser/storage_monitor/removable_device_notifications_linux.h"
 #include "content/public/browser/browser_thread.h"
 #endif
 

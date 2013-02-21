@@ -9,9 +9,9 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/media_gallery/mtp_device_delegate_impl.h"
-#include "chrome/browser/system_monitor/image_capture_device.h"
-#include "chrome/browser/system_monitor/image_capture_device_manager.h"
-#include "chrome/browser/system_monitor/media_storage_util.h"
+#include "chrome/browser/storage_monitor/image_capture_device.h"
+#include "chrome/browser/storage_monitor/image_capture_device_manager.h"
+#include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chrome {

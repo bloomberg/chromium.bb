@@ -17,7 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/media_gallery/media_galleries_preferences.h"
-#include "chrome/browser/system_monitor/removable_storage_observer.h"
+#include "chrome/browser/storage_monitor/removable_storage_observer.h"
 
 class Profile;
 
