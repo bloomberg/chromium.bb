@@ -11,11 +11,15 @@ weston_tests =				\
 	text-test			\
 	$(xwayland_test)
 
-TESTS_ENVIRONMENT = $(SHELL) $(top_srcdir)/tests/weston-tests-env
+AM_TESTS_ENVIRONMENT = \
+	abs_builddir='$(abs_builddir)'; export abs_builddir;
+
+LOG_COMPILER = $(srcdir)/weston-tests-env
 
 clean-local:
 	-rm -rf logs
 
+# To remove when automake 1.11 support is dropped
 export abs_builddir
 
 noinst_LTLIBRARIES =			\

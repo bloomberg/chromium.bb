@@ -21,12 +21,14 @@ fi
 case $1 in
 	*.la|*.so)
 		$WESTON --backend=$BACKEND \
+			--socket=test-$(basename $1) \
 			--modules=$abs_builddir/.libs/${1/.la/.so},xwayland.so \
 			--log="$SERVERLOG" \
 			&> "$OUTLOG"
 		;;
 	*)
 		WESTON_TEST_CLIENT_PATH=$abs_builddir/$1 $WESTON \
+			--socket=test-$(basename $1) \
 			--backend=$BACKEND \
 			--log="$SERVERLOG" \
 			--modules=$abs_builddir/.libs/weston-test.so,xwayland.so \
