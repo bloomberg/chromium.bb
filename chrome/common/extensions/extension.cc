@@ -601,7 +601,10 @@ bool Extension::ParsePermissions(const char* key,
       // The feature should exist since we just got an APIPermission
       // for it. The two systems should be updated together whenever a
       // permission is added.
-      CHECK(feature);
+      DCHECK(feature);
+      // http://crbug.com/176381
+      if (!feature)
+        continue;
 
       Feature::Availability availability =
           feature->IsAvailableToManifest(

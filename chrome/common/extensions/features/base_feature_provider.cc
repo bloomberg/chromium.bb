@@ -41,42 +41,46 @@ struct Static {
       const std::string& debug_string,
       BaseFeatureProvider::FeatureFactory factory,
       int resource_id) {
-    std::string manifest_features =
+    const std::string& features_file =
         ResourceBundle::GetSharedInstance().GetRawDataResource(
             resource_id).as_string();
     int error_code = 0;
     std::string error_message;
-    Value* value = base::JSONReader::ReadAndReturnError(
-        manifest_features, base::JSON_PARSE_RFC,
-        &error_code, &error_message);
-    CHECK(value) << "Could not load features: " << debug_string << " "
-                 << error_message;
-    CHECK(value->IsType(Value::TYPE_DICTIONARY)) << debug_string;
-    scoped_ptr<DictionaryValue> dictionary_value(
-        static_cast<DictionaryValue*>(value));
-    return scoped_ptr<BaseFeatureProvider>(
-        new BaseFeatureProvider(*dictionary_value, factory));
+    scoped_ptr<Value> value(base::JSONReader::ReadAndReturnError(
+        features_file, base::JSON_PARSE_RFC,
+        &error_code, &error_message));
+    DCHECK(value) << "Could not load features: " << debug_string << " "
+                  << error_message;
+    scoped_ptr<DictionaryValue> value_as_dict;
+    if (value) {
+      CHECK(value->IsType(Value::TYPE_DICTIONARY)) << debug_string;
+      value_as_dict.reset(static_cast<DictionaryValue*>(value.release()));
+    } else {
+      // http://crbug.com/176381
+      value_as_dict.reset(new DictionaryValue());
+    }
+    return make_scoped_ptr(new BaseFeatureProvider(*value_as_dict, factory));
   }
 };
 
 bool ParseFeature(const DictionaryValue* value,
                   const std::string& name,
                   SimpleFeature* feature) {
-    feature->set_name(name);
-    feature->Parse(value);
+  feature->set_name(name);
+  feature->Parse(value);
 
-    if (feature->extension_types()->empty()) {
-      LOG(ERROR) << name << ": Simple features must specify at least one "
-                 << "value for extension_types.";
-      return false;
-    }
+  if (feature->extension_types()->empty()) {
+    LOG(ERROR) << name << ": Simple features must specify at least one "
+               << "value for extension_types.";
+    return false;
+  }
 
-    if (!feature->GetContexts()->empty()) {
-      LOG(ERROR) << name << ": Simple features do not support contexts.";
-      return false;
-    }
+  if (!feature->GetContexts()->empty()) {
+    LOG(ERROR) << name << ": Simple features do not support contexts.";
+    return false;
+  }
 
-    return true;
+  return true;
 }
 
 base::LazyInstance<Static> g_static = LAZY_INSTANCE_INITIALIZER;
@@ -84,7 +88,7 @@ base::LazyInstance<Static> g_static = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
 BaseFeatureProvider::BaseFeatureProvider(const DictionaryValue& root,
-                                             FeatureFactory factory)
+                                         FeatureFactory factory)
     : factory_(factory ? factory :
                static_cast<FeatureFactory>(&CreateFeature<SimpleFeature>)) {
   for (DictionaryValue::Iterator iter(root); iter.HasNext(); iter.Advance()) {
