@@ -82,6 +82,35 @@ void CompareCharArraysWithHexError(
       << HexDumpWithMarks(actual, actual_len, marks.get(), max_len);
 }
 
+void SetFrameFlags(SpdyFrame* frame, uint8 flags, int spdy_version) {
+  switch (spdy_version) {
+    case 2:
+    case 3:
+      frame->data()[4] = flags;
+      break;
+    default:
+      LOG(FATAL) << "Unsupported SPDY version.";
+  }
+}
+
+void SetFrameLength(SpdyFrame* frame, size_t length, int spdy_version) {
+  switch (spdy_version) {
+    case 2:
+    case 3:
+      CHECK_EQ(0u, length & ~kLengthMask);
+      {
+        int32 wire_length = htonl(length);
+        // The length field in SPDY 2 and 3 is a 24-bit (3B) integer starting at
+        // offset 5.
+        memcpy(frame->data() + 5, reinterpret_cast<char*>(&wire_length) + 1, 3);
+      }
+      break;
+    default:
+      LOG(FATAL) << "Unsupported SPDY version.";
+  }
+}
+
+
 }  // namespace test
 
 }  // namespace net

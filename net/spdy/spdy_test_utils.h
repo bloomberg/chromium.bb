@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "net/spdy/spdy_protocol.h"
+
 namespace net {
 
 namespace test {
@@ -20,6 +22,10 @@ void CompareCharArraysWithHexError(
     const int actual_len,
     const unsigned char* expected,
     const int expected_len);
+
+void SetFrameFlags(SpdyFrame* frame, uint8 flags, int spdy_version);
+
+void SetFrameLength(SpdyFrame* frame, size_t length, int spdy_version);
 
 }  // namespace test
 
