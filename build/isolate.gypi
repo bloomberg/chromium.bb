@@ -63,6 +63,7 @@
         '--outdir', '<(test_isolation_outdir)',
         '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR)',
         '--variable', 'OS', '<(OS)',
+        '--variable', 'chromeos', '<(chromeos)',
         '--result', '<@(_outputs)',
         '--isolate', '<(RULE_INPUT_PATH)',
       ],
