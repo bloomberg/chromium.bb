@@ -236,6 +236,7 @@ static int DispatchToUntrustedHandler(struct NaClAppThread *natp,
   frame = (struct NaClExceptionFrame *) frame_addr;
   frame->context.prog_ctr = (uint32_t) regs->prog_ctr;
   frame->context.stack_ptr = (uint32_t) regs->stack_ptr;
+  NaClUserRegisterStateFromSignalContext(&frame->context.regs, regs);
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
   frame->context_ptr = context_user_addr;

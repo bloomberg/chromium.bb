@@ -9,6 +9,7 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_exception.h"
 
 /*
  * ASM_WITH_REGS(regs, asm_code) executes asm_code with most registers
@@ -306,6 +307,13 @@ void RegsApplySandboxConstraints(struct NaClSignalContext *regs);
 /* This compares for equality all registers saved by REGS_SAVER_FUNC. */
 void RegsAssertEqual(const struct NaClSignalContext *actual,
                      const struct NaClSignalContext *expected);
+
+/*
+ * Copy a NaClUserRegisterState into a NaClSignalContext, leaving
+ * trusted registers in the NaClSignalContext with unspecified values.
+ */
+void RegsCopyFromUserRegisterState(struct NaClSignalContext *dest,
+                                   const NaClUserRegisterState *src);
 
 /* Zero out registers that are clobbered by function calls. */
 void RegsUnsetNonCalleeSavedRegisters(struct NaClSignalContext *regs);

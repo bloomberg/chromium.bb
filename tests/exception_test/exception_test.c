@@ -113,7 +113,7 @@ void exception_handler_wrapped(struct NaClSignalContext *entry_regs) {
 
   check_stack_is_aligned();
 
-  assert(context->stack_ptr == g_regs_at_crash.stack_ptr);
+  assert(context->stack_ptr == (uint32_t) g_regs_at_crash.stack_ptr);
   assert(context->prog_ctr == (uintptr_t) prog_ctr_at_crash);
 #if defined(__i386__)
   assert(context->frame_ptr == g_regs_at_crash.ebp);
@@ -124,6 +124,14 @@ void exception_handler_wrapped(struct NaClSignalContext *entry_regs) {
 #else
 # error Unsupported architecture
 #endif
+
+  /*
+   * Convert the NaClUserRegisterState to a NaClSignalContext so that
+   * we can reuse RegsAssertEqual() to compare the register state.
+   */
+  struct NaClSignalContext reported_regs;
+  RegsCopyFromUserRegisterState(&reported_regs, &context->regs);
+  RegsAssertEqual(&reported_regs, &g_regs_at_crash);
 
   const int kMaxStackFrameSize = 0x1000;
   char *stack_top;
@@ -181,6 +189,12 @@ void test_exception_stack_with_size(char *stack, size_t stack_size) {
   char crash_stack[0x1000];
   RegsFillTestValues(&g_regs_at_crash, /* seed= */ 0);
   g_regs_at_crash.stack_ptr = (uintptr_t) crash_stack + sizeof(crash_stack);
+  g_regs_at_crash.prog_ctr = (uintptr_t) prog_ctr_at_crash;
+  RegsApplySandboxConstraints(&g_regs_at_crash);
+#if defined(__arm__)
+  /* crash_at_known_address clobbers r0. */
+  g_regs_at_crash.r0 = 0;
+#endif
 
   if (!setjmp(g_jmp_buf)) {
     JUMP_WITH_REGS(&g_regs_at_crash, crash_at_known_address);

@@ -321,3 +321,95 @@ void NaClSignalHandlerFini(void) {
   /* We try to lock, but since we are shutting down, we ignore failures. */
   NaClSignalHandlerFiniPlatform();
 }
+
+void NaClUserRegisterStateFromSignalContext(
+    volatile NaClUserRegisterState *dest,
+    const struct NaClSignalContext *src) {
+#define COPY_REG(reg) dest->reg = src->reg
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
+  COPY_REG(eax);
+  COPY_REG(ecx);
+  COPY_REG(edx);
+  COPY_REG(ebx);
+  COPY_REG(stack_ptr);
+  COPY_REG(ebp);
+  COPY_REG(esi);
+  COPY_REG(edi);
+  COPY_REG(prog_ctr);
+  COPY_REG(flags);
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
+  COPY_REG(rax);
+  COPY_REG(rcx);
+  COPY_REG(rdx);
+  COPY_REG(rbx);
+  COPY_REG(stack_ptr);
+  COPY_REG(rbp);
+  COPY_REG(rsi);
+  COPY_REG(rdi);
+  COPY_REG(r8);
+  COPY_REG(r9);
+  COPY_REG(r10);
+  COPY_REG(r11);
+  COPY_REG(r12);
+  COPY_REG(r13);
+  COPY_REG(r14);
+  COPY_REG(r15);
+  COPY_REG(prog_ctr);
+  COPY_REG(flags);
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+  COPY_REG(r0);
+  COPY_REG(r1);
+  COPY_REG(r2);
+  COPY_REG(r3);
+  COPY_REG(r4);
+  COPY_REG(r5);
+  COPY_REG(r6);
+  COPY_REG(r7);
+  COPY_REG(r8);
+  COPY_REG(r9);
+  COPY_REG(r10);
+  COPY_REG(r11);
+  COPY_REG(r12);
+  COPY_REG(stack_ptr);
+  COPY_REG(lr);
+  COPY_REG(prog_ctr);
+  COPY_REG(cpsr);
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+  COPY_REG(zero);
+  COPY_REG(at);
+  COPY_REG(v0);
+  COPY_REG(v1);
+  COPY_REG(a0);
+  COPY_REG(a1);
+  COPY_REG(a2);
+  COPY_REG(a3);
+  COPY_REG(t0);
+  COPY_REG(t1);
+  COPY_REG(t2);
+  COPY_REG(t3);
+  COPY_REG(t4);
+  COPY_REG(t5);
+  COPY_REG(t6);
+  COPY_REG(t7);
+  COPY_REG(s0);
+  COPY_REG(s1);
+  COPY_REG(s2);
+  COPY_REG(s3);
+  COPY_REG(s4);
+  COPY_REG(s5);
+  COPY_REG(s6);
+  COPY_REG(s7);
+  COPY_REG(t8);
+  COPY_REG(t9);
+  COPY_REG(k0);
+  COPY_REG(k1);
+  COPY_REG(global_ptr);
+  COPY_REG(stack_ptr);
+  COPY_REG(frame_ptr);
+  COPY_REG(return_addr);
+  COPY_REG(prog_ctr);
+#else
+# error Unsupported architecture
+#endif
+#undef COPY_REG
+}

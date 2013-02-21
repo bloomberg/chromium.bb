@@ -369,6 +369,7 @@ static BOOL HandleException(const struct StartupInfo *startup_info,
   struct NaClAppThread appthread_copy;
   struct NaClApp app_copy;
   uint32_t context_user_addr;
+  struct NaClSignalContext tmp_context;
 
   context.ContextFlags = CONTEXT_SEGMENTS | CONTEXT_INTEGER | CONTEXT_CONTROL;
   if (!GetThreadContext(thread_handle, &context)) {
@@ -498,6 +499,8 @@ static BOOL HandleException(const struct StartupInfo *startup_info,
   new_stack.context.stack_ptr = (uint32_t) context.Rsp;
   new_stack.context.frame_ptr = (uint32_t) context.Rbp;
 #endif
+  NaClSignalContextFromHandler(&tmp_context, &context);
+  NaClUserRegisterStateFromSignalContext(&new_stack.context.regs, &tmp_context);
   if (!WRITE_MEM(process_handle,
                  (struct NaClExceptionFrame *) (app_copy.mem_start
                                                 + exception_stack),

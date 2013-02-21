@@ -118,6 +118,7 @@ static int HandleException(mach_port_t thread_port,
   struct NaClExceptionFrame frame;
   uint32_t frame_addr_user;
   uintptr_t frame_addr_sys;
+  struct NaClSignalContext tmp_context;
 #if NACL_BUILD_SUBARCH == 32
   uint16_t trusted_cs = NaClGetGlobalCs();
   uint16_t trusted_ds = NaClGetGlobalDs();
@@ -281,6 +282,8 @@ static int HandleException(mach_port_t thread_port,
   frame.context.prog_ctr = X86_REG_IP(regs);
   frame.context.stack_ptr = X86_REG_SP(regs);
   frame.context.frame_ptr = X86_REG_BP(regs);
+  NaClSignalContextFromMacThreadState(&tmp_context, &regs);
+  NaClUserRegisterStateFromSignalContext(&frame.context.regs, &tmp_context);
 #if NACL_BUILD_SUBARCH == 32
   frame.context_ptr = frame_addr_user +
                       offsetof(struct NaClExceptionFrame, context);

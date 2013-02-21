@@ -8,6 +8,7 @@
 
 #include <assert.h>
 #include <stddef.h>
+#include <string.h>
 
 #include "native_client/src/include/nacl_assert.h"
 
@@ -20,13 +21,17 @@ struct RegInfo {
   const char *reg_name;
   int reg_offset;
   int reg_size;
+  int user_register_state_reg_offset;
+  int user_register_state_reg_size;
 };
 
 #define DEFINE_REG(regname) \
     { \
       #regname, \
       offsetof(struct NaClSignalContext, regname), \
-      sizeof(((struct NaClSignalContext *) NULL)->regname) \
+      sizeof(((struct NaClSignalContext *) NULL)->regname), \
+      offsetof(NaClUserRegisterState, regname), \
+      sizeof(((NaClUserRegisterState *) NULL)->regname) \
     }
 
 const struct RegInfo kRegs[] = {
@@ -191,6 +196,22 @@ void RegsAssertEqual(const struct NaClSignalContext *actual,
     fprintf(stderr, "Actual register state:\n");
     RegsDump(actual);
     _exit(1);
+  }
+}
+
+void RegsCopyFromUserRegisterState(struct NaClSignalContext *dest,
+                                   const NaClUserRegisterState *src) {
+  unsigned int regnum;
+
+  /* Fill out trusted registers with dummy values. */
+  memset(dest, 0xff, sizeof(*dest));
+
+  for (regnum = 0; regnum < NACL_ARRAY_SIZE(kRegs); regnum++) {
+    ASSERT_EQ(kRegs[regnum].reg_size,
+              kRegs[regnum].user_register_state_reg_size);
+    memcpy((char *) dest + kRegs[regnum].reg_offset,
+           (char *) src + kRegs[regnum].user_register_state_reg_offset,
+           kRegs[regnum].reg_size);
   }
 }
 
