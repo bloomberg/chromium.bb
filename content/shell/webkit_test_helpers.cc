@@ -43,6 +43,8 @@ void ExportLayoutTestSpecificPreferences(const WebPreferences& from,
   to->allow_running_insecure_content = from.allowRunningOfInsecureContent;
   to->css_shaders_enabled = from.cssCustomFilterEnabled;
   to->should_respect_image_orientation = from.shouldRespectImageOrientation;
+  to->asynchronous_spell_checking_enabled =
+      from.asynchronousSpellCheckingEnabled;
 }
 
 void ApplyLayoutTestDefaultPreferences(webkit_glue::WebPreferences* prefs) {
@@ -86,6 +88,7 @@ void ApplyLayoutTestDefaultPreferences(webkit_glue::WebPreferences* prefs) {
       webkit_glue::WebPreferences::kCommonScript] = ASCIIToUTF16("Helvetica");
   prefs->minimum_logical_font_size = 9;
   prefs->asynchronous_spell_checking_enabled = false;
+  prefs->unified_textchecker_enabled = true;
 }
 
 }  // namespace content
