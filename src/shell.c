@@ -83,8 +83,8 @@ struct input_panel_surface {
 struct desktop_shell {
 	struct weston_compositor *compositor;
 
-	struct wl_listener lock_listener;
-	struct wl_listener unlock_listener;
+	struct wl_listener idle_listener;
+	struct wl_listener wake_listener;
 	struct wl_listener destroy_listener;
 	struct wl_listener show_input_panel_listener;
 	struct wl_listener hide_input_panel_listener;
@@ -2894,20 +2894,20 @@ shell_fade(struct desktop_shell *shell, enum fade_type type)
 }
 
 static void
-lock_handler(struct wl_listener *listener, void *data)
+idle_handler(struct wl_listener *listener, void *data)
 {
 	struct desktop_shell *shell =
-		container_of(listener, struct desktop_shell, lock_listener);
+		container_of(listener, struct desktop_shell, idle_listener);
 
 	shell_fade(shell, FADE_OUT);
 	/* lock() is called from shell_fade_done() */
 }
 
 static void
-unlock_handler(struct wl_listener *listener, void *data)
+wake_handler(struct wl_listener *listener, void *data)
 {
 	struct desktop_shell *shell =
-		container_of(listener, struct desktop_shell, unlock_listener);
+		container_of(listener, struct desktop_shell, wake_listener);
 
 	unlock(shell);
 }
@@ -3965,8 +3965,8 @@ shell_destroy(struct wl_listener *listener, void *data)
 	if (shell->child.client)
 		wl_client_destroy(shell->child.client);
 
-	wl_list_remove(&shell->lock_listener.link);
-	wl_list_remove(&shell->unlock_listener.link);
+	wl_list_remove(&shell->idle_listener.link);
+	wl_list_remove(&shell->wake_listener.link);
 	wl_list_remove(&shell->show_input_panel_listener.link);
 	wl_list_remove(&shell->hide_input_panel_listener.link);
 
@@ -4070,10 +4070,10 @@ module_init(struct weston_compositor *ec,
 
 	shell->destroy_listener.notify = shell_destroy;
 	wl_signal_add(&ec->destroy_signal, &shell->destroy_listener);
-	shell->lock_listener.notify = lock_handler;
-	wl_signal_add(&ec->lock_signal, &shell->lock_listener);
-	shell->unlock_listener.notify = unlock_handler;
-	wl_signal_add(&ec->unlock_signal, &shell->unlock_listener);
+	shell->idle_listener.notify = idle_handler;
+	wl_signal_add(&ec->idle_signal, &shell->idle_listener);
+	shell->wake_listener.notify = wake_handler;
+	wl_signal_add(&ec->wake_signal, &shell->wake_listener);
 	shell->show_input_panel_listener.notify = show_input_panels;
 	wl_signal_add(&ec->show_input_panel_signal, &shell->show_input_panel_listener);
 	shell->hide_input_panel_listener.notify = hide_input_panels;

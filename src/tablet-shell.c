@@ -547,9 +547,9 @@ module_init(struct weston_compositor *compositor,
 	shell->destroy_listener.notify = tablet_shell_destroy;
 	wl_signal_add(&compositor->destroy_signal, &shell->destroy_listener);
 	shell->lock_listener.notify = tablet_shell_lock;
-	wl_signal_add(&compositor->lock_signal, &shell->lock_listener);
+	wl_signal_add(&compositor->idle_signal, &shell->lock_listener);
 	shell->unlock_listener.notify = tablet_shell_unlock;
-	wl_signal_add(&compositor->unlock_signal, &shell->unlock_listener);
+	wl_signal_add(&compositor->wake_signal, &shell->unlock_listener);
 
 	/* FIXME: This will make the object available to all clients. */
 	wl_display_add_global(compositor->wl_display, &tablet_shell_interface,

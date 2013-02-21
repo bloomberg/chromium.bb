@@ -1592,7 +1592,7 @@ weston_compositor_wake(struct weston_compositor *compositor)
 		weston_compositor_dpms(compositor, WESTON_DPMS_ON);
 		/* fall through */
 	case WESTON_COMPOSITOR_IDLE:
-		wl_signal_emit(&compositor->unlock_signal, compositor);
+		wl_signal_emit(&compositor->wake_signal, compositor);
 		/* fall through */
 	default:
 		compositor->state = WESTON_COMPOSITOR_ACTIVE;
@@ -1634,7 +1634,7 @@ idle_handler(void *data)
 		return 1;
 
 	compositor->state = WESTON_COMPOSITOR_IDLE;
-	wl_signal_emit(&compositor->lock_signal, compositor);
+	wl_signal_emit(&compositor->idle_signal, compositor);
 
 	return 1;
 }
@@ -3012,8 +3012,8 @@ weston_compositor_init(struct weston_compositor *ec,
 	wl_signal_init(&ec->destroy_signal);
 	wl_signal_init(&ec->activate_signal);
 	wl_signal_init(&ec->kill_signal);
-	wl_signal_init(&ec->lock_signal);
-	wl_signal_init(&ec->unlock_signal);
+	wl_signal_init(&ec->idle_signal);
+	wl_signal_init(&ec->wake_signal);
 	wl_signal_init(&ec->show_input_panel_signal);
 	wl_signal_init(&ec->hide_input_panel_signal);
 	wl_signal_init(&ec->seat_created_signal);
