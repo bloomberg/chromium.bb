@@ -154,7 +154,7 @@ weston_surface_animation_frame(struct weston_animation *base,
 		animation->frame(animation);
 
 	animation->surface->geometry.dirty = 1;
-	weston_compositor_schedule_repaint(animation->surface->compositor);
+	weston_surface_schedule_repaint(animation->surface);
 }
 
 static struct weston_surface_animation *
