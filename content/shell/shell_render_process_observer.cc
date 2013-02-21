@@ -49,6 +49,7 @@ ShellRenderProcessObserver::ShellRenderProcessObserver()
   WebRuntimeFeatures::enableInputTypeMonth(true);
   WebRuntimeFeatures::enableInputTypeTime(true);
   WebRuntimeFeatures::enableInputTypeWeek(true);
+  WebRuntimeFeatures::enableCanvasPath(true);
   DisableAppCacheLogging();
   EnableDevToolsFrontendTesting();
 }
