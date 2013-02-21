@@ -25,8 +25,7 @@ class DownloadPrefs {
   explicit DownloadPrefs(Profile* profile);
   ~DownloadPrefs();
 
-  static void RegisterUserPrefs(PrefService* user_prefs,
-                                PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
   // Returns the DownloadPrefs corresponding to the given DownloadManager
   // or BrowserContext.

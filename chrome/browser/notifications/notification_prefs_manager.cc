@@ -8,19 +8,21 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 
+NotificationPrefsManager::NotificationPrefsManager(PrefService* prefs) {
+#if defined(OS_CHROMEOS)
+  static bool have_cleared = false;
+
+  if (!have_cleared) {
+    // Option menu for changing desktop notification position on ChromeOS is
+    // disabled. Force preference to default.
+    prefs->ClearPref(prefs::kDesktopNotificationPosition);
+    have_cleared = true;
+  }
+#endif
+}
+
 // static
-void NotificationPrefsManager::RegisterPrefs(PrefService* prefs,
-                                             PrefRegistrySimple* registry) {
+void NotificationPrefsManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kDesktopNotificationPosition,
                                 BalloonCollection::DEFAULT_POSITION);
-#if defined(OS_CHROMEOS)
-  // Option menu for changing desktop notification position on ChromeOS is
-  // disabled. Force preference to default.
-  //
-  // TODO(joi): This shouldn't be done during registration;
-  // registration should all be done up front, before there even
-  // exists a PrefService.
-  prefs->SetInteger(prefs::kDesktopNotificationPosition,
-                    BalloonCollection::DEFAULT_POSITION);
-#endif
 }

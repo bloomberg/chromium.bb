@@ -94,6 +94,15 @@ const int kMinDevToolsWidth = 150;
 const int kMinContentsSize = 50;
 
 // static
+std::string DevToolsWindow::GetDevToolsWindowPlacementPrefKey() {
+  std::string wp_key;
+  wp_key.append(prefs::kBrowserWindowPlacement);
+  wp_key.append("_");
+  wp_key.append(kDevToolsApp);
+  return wp_key;
+}
+
+// static
 void DevToolsWindow::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kDevToolsOpenDocked,
                                 true,
@@ -104,6 +113,9 @@ void DevToolsWindow::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(prefs::kDevToolsEditedFiles,
                                    PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDictionaryPref(prefs::kDevToolsFileSystemPaths,
+                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
+
+  registry->RegisterDictionaryPref(GetDevToolsWindowPlacementPrefKey().c_str(),
                                    PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
@@ -188,7 +200,6 @@ void DevToolsWindow::InspectElement(RenderViewHost* inspected_rvh,
   // renderer. Otherwise, we still can hit a race condition here.
   OpenDevToolsWindow(inspected_rvh);
 }
-
 
 DevToolsWindow* DevToolsWindow::Create(
     Profile* profile,
@@ -383,21 +394,8 @@ RenderViewHost* DevToolsWindow::GetRenderViewHost() {
 }
 
 void DevToolsWindow::CreateDevToolsBrowser() {
-  // TODO(pfeldman): Make browser's getter for this key static.
-  std::string wp_key;
-  wp_key.append(prefs::kBrowserWindowPlacement);
-  wp_key.append("_");
-  wp_key.append(kDevToolsApp);
-
+  std::string wp_key = GetDevToolsWindowPlacementPrefKey();
   PrefService* prefs = profile_->GetPrefs();
-  scoped_refptr<PrefRegistrySyncable> registry(
-      static_cast<PrefRegistrySyncable*>(prefs->DeprecatedGetPrefRegistry()));
-  // TODO(joi): All registration should be done up front.
-  if (!prefs->FindPreference(wp_key.c_str())) {
-    registry->RegisterDictionaryPref(wp_key.c_str(),
-                                     PrefRegistrySyncable::UNSYNCABLE_PREF);
-  }
-
   const DictionaryValue* wp_pref = prefs->GetDictionary(wp_key.c_str());
   if (!wp_pref || wp_pref->empty()) {
     DictionaryPrefUpdate update(prefs, wp_key.c_str());

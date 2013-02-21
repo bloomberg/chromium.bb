@@ -52,6 +52,7 @@ class DevToolsWindow : private content::NotificationObserver,
                        private content::DevToolsFrontendHostDelegate {
  public:
   static const char kDevToolsApp[];
+  static std::string GetDevToolsWindowPlacementPrefKey();
   static void RegisterUserPrefs(PrefRegistrySyncable* registry);
   static DevToolsWindow* GetDockedInstanceForInspectedTab(
       content::WebContents* inspected_tab);

@@ -16,9 +16,11 @@
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_content_browser_client.h"
+#include "chrome/browser/component_updater/recovery_component_installer.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/devtools/devtools_window.h"
+#include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
@@ -30,6 +32,7 @@
 #include "chrome/browser/geolocation/geolocation_prefs.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
+#include "chrome/browser/gpu/gl_string_manager.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
@@ -51,6 +54,8 @@
 #include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_url.h"
+#include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -107,6 +112,7 @@
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
+#include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/user_image_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
@@ -167,6 +173,7 @@ void RegisterLocalState(PrefService* local_state,
   ExternalProtocolHandler::RegisterPrefs(registry);
   FlagsUI::RegisterPrefs(registry);
   geolocation::RegisterPrefs(registry);
+  GLStringManager::RegisterPrefs(registry);
   IntranetRedirectDetector::RegisterPrefs(registry);
   KeywordEditorController::RegisterPrefs(registry);
   MetricsLog::RegisterPrefs(registry);
@@ -175,6 +182,7 @@ void RegisterLocalState(PrefService* local_state,
   ProfileInfoCache::RegisterPrefs(registry);
   ProfileManager::RegisterPrefs(registry);
   PromoResourceService::RegisterPrefs(registry);
+  RegisterPrefsForRecoveryComponent(registry);
   SigninManagerFactory::RegisterPrefs(registry);
   SSLConfigServiceManager::RegisterPrefs(registry);
   UpgradeDetector::RegisterPrefs(registry);
@@ -194,7 +202,7 @@ void RegisterLocalState(PrefService* local_state,
 #endif
 
 #if defined(ENABLE_NOTIFICATIONS)
-  NotificationPrefsManager::RegisterPrefs(local_state, registry);
+  NotificationPrefsManager::RegisterPrefs(registry);
 #endif
 
 #if defined(ENABLE_TASK_MANAGER)
@@ -219,6 +227,8 @@ void RegisterLocalState(PrefService* local_state,
   chromeos::device_settings_cache::RegisterPrefs(registry);
   chromeos::language_prefs::RegisterPrefs(registry);
   chromeos::KioskAppManager::RegisterPrefs(registry);
+  chromeos::LoginUtils::RegisterPrefs(registry);
+  chromeos::Preferences::RegisterPrefs(registry);
   chromeos::ProxyConfigServiceImpl::RegisterPrefs(registry);
   chromeos::RegisterDisplayLocalStatePrefs(registry);
   chromeos::ServicesCustomizationDocument::RegisterPrefs(registry);
@@ -252,11 +262,12 @@ void RegisterUserPrefs(PrefService* user_prefs,
   BrowserInstantController::RegisterUserPrefs(user_prefs, registry);
   browser_sync::SyncPrefs::RegisterUserPrefs(user_prefs, registry);
   ChromeContentBrowserClient::RegisterUserPrefs(registry);
+  ChromeDownloadManagerDelegate::RegisterUserPrefs(registry);
   ChromeVersionService::RegisterUserPrefs(registry);
   chrome_browser_net::HttpServerPropertiesManager::RegisterUserPrefs(
       registry);
   chrome_browser_net::Predictor::RegisterUserPrefs(registry);
-  DownloadPrefs::RegisterUserPrefs(user_prefs, registry);
+  DownloadPrefs::RegisterUserPrefs(registry);
   extensions::ComponentLoader::RegisterUserPrefs(registry);
   extensions::ExtensionPrefs::RegisterUserPrefs(registry);
   ExtensionWebUI::RegisterUserPrefs(registry);
@@ -264,7 +275,7 @@ void RegisterUserPrefs(PrefService* user_prefs,
   HostContentSettingsMap::RegisterUserPrefs(registry);
   IncognitoModePrefs::RegisterUserPrefs(registry);
   InstantUI::RegisterUserPrefs(registry);
-  MediaCaptureDevicesDispatcher::RegisterUserPrefs(user_prefs, registry);
+  MediaCaptureDevicesDispatcher::RegisterUserPrefs(registry);
   MediaStreamDevicesController::RegisterUserPrefs(registry);
   NetPrefObserver::RegisterUserPrefs(registry);
   NewTabUI::RegisterUserPrefs(registry);
@@ -314,6 +325,8 @@ void RegisterUserPrefs(PrefService* user_prefs,
   PepperFlashSettingsManager::RegisterUserPrefs(registry);
   PinnedTabCodec::RegisterUserPrefs(registry);
   PluginsUI::RegisterUserPrefs(registry);
+  CloudPrintURL::RegisterUserPrefs(registry);
+  print_dialog_cloud::RegisterUserPrefs(registry);
   printing::StickySettings::RegisterUserPrefs(registry);
   RegisterAutolaunchUserPrefs(registry);
   SyncPromoUI::RegisterUserPrefs(registry);
@@ -324,7 +337,7 @@ void RegisterUserPrefs(PrefService* user_prefs,
 #endif
 
 #if defined(OS_CHROMEOS)
-  chromeos::Preferences::RegisterUserPrefs(user_prefs, registry);
+  chromeos::Preferences::RegisterUserPrefs(registry);
   chromeos::ProxyConfigServiceImpl::RegisterUserPrefs(registry);
 #endif
 

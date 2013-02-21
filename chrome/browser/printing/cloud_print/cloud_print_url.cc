@@ -35,25 +35,16 @@ const char kLearnMoreURL[] =
 const char kTestPageURL[] =
     "http://www.google.com/landing/cloudprint/enable.html?print=true";
 
-void CloudPrintURL::RegisterPreferences() {
-  DCHECK(profile_);
-  PrefService* pref_service = profile_->GetPrefs();
-  // TODO(joi): Do all registration up front.
-  scoped_refptr<PrefRegistrySyncable> registry(
-      static_cast<PrefRegistrySyncable*>(
-          pref_service->DeprecatedGetPrefRegistry()));
-  if (!pref_service->FindPreference(prefs::kCloudPrintServiceURL)) {
-    registry->RegisterStringPref(prefs::kCloudPrintServiceURL,
-                                 kDefaultCloudPrintServiceURL,
-                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
-  }
-  if (!pref_service->FindPreference(prefs::kCloudPrintSigninURL)) {
-    std::string url = GaiaUrls::GetInstance()->service_login_url();
-    url.append("?service=cloudprint&sarp=1&continue=");
-    url.append(net::EscapeQueryParamValue(kDefaultSignInContinueURL, false));
-    registry->RegisterStringPref(prefs::kCloudPrintSigninURL, url,
-                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
-  }
+// static
+void CloudPrintURL::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterStringPref(prefs::kCloudPrintServiceURL,
+                               kDefaultCloudPrintServiceURL,
+                               PrefRegistrySyncable::UNSYNCABLE_PREF);
+  std::string url = GaiaUrls::GetInstance()->service_login_url();
+  url.append("?service=cloudprint&sarp=1&continue=");
+  url.append(net::EscapeQueryParamValue(kDefaultSignInContinueURL, false));
+  registry->RegisterStringPref(prefs::kCloudPrintSigninURL, url,
+                               PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // Returns the root service URL for the cloud print service.  The default is to
@@ -61,7 +52,6 @@ void CloudPrintURL::RegisterPreferences() {
 // command line or by the user preferences.
 GURL CloudPrintURL::GetCloudPrintServiceURL() {
   DCHECK(profile_);
-  RegisterPreferences();
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   GURL cloud_print_service_url = GURL(command_line.GetSwitchValueASCII(
@@ -75,7 +65,6 @@ GURL CloudPrintURL::GetCloudPrintServiceURL() {
 
 GURL CloudPrintURL::GetCloudPrintSigninURL() {
   DCHECK(profile_);
-  RegisterPreferences();
 
   GURL cloud_print_signin_url = GURL(
       profile_->GetPrefs()->GetString(prefs::kCloudPrintSigninURL));

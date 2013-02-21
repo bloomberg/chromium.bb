@@ -386,14 +386,6 @@ void WizardController::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(kDeviceRegistered, -1);
   registry->RegisterBooleanPref(kEulaAccepted, false);
   registry->RegisterStringPref(kInitialLocale, "en-US");
-  registry->RegisterBooleanPref(prefs::kSpokenFeedbackEnabled, false);
-  registry->RegisterBooleanPref(prefs::kHighContrastEnabled, false);
-  registry->RegisterBooleanPref(prefs::kVirtualKeyboardEnabled, false);
-  registry->RegisterBooleanPref(prefs::kOwnerPrimaryMouseButtonRight, false);
-  registry->RegisterBooleanPref(prefs::kOwnerTapToClickEnabled, true);
-  registry->RegisterBooleanPref(prefs::kFactoryResetRequested, false);
-  registry->RegisterStringPref(prefs::kRLZBrand, std::string());
-  registry->RegisterBooleanPref(prefs::kRLZDisabled, false);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

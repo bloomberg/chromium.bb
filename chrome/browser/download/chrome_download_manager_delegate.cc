@@ -187,6 +187,16 @@ base::FilePath GetPlatformDownloadPath(Profile* profile,
 
 }  // namespace
 
+// static
+void ChromeDownloadManagerDelegate::RegisterUserPrefs(
+    PrefRegistrySyncable* registry) {
+  const base::FilePath& default_download_path =
+      download_util::GetDefaultDownloadDirectory();
+  registry->RegisterFilePathPref(prefs::kSaveFileDefaultDirectory,
+                                 default_download_path,
+                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
+}
+
 ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
     : profile_(profile),
       next_download_id_(0),
@@ -392,19 +402,17 @@ void ChromeDownloadManagerDelegate::GetSaveDir(
   Profile* profile = Profile::FromBrowserContext(browser_context);
   PrefService* prefs = profile->GetPrefs();
 
-  // Check whether the preference has the preferred directory for saving file.
-  // If not, initialize it with default directory.
-  if (!prefs->FindPreference(prefs::kSaveFileDefaultDirectory)) {
-    DCHECK(prefs->FindPreference(prefs::kDownloadDefaultDirectory));
-    base::FilePath default_save_path = prefs->GetFilePath(
-        prefs::kDownloadDefaultDirectory);
-
-    // TODO(joi): All registration should be done up front.
-    scoped_refptr<PrefRegistrySyncable> registry(
-        static_cast<PrefRegistrySyncable*>(prefs->DeprecatedGetPrefRegistry()));
-    registry->RegisterFilePathPref(prefs::kSaveFileDefaultDirectory,
-                                   default_save_path,
-                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
+  // Check whether the preference for the preferred directory for
+  // saving file has been explicitly set. If not, and the preference
+  // for the default download directory has been set, initialize it
+  // with the latter. Note that the defaults for both are the same.
+  const PrefService::Preference* download_default_directory =
+      prefs->FindPreference(prefs::kDownloadDefaultDirectory);
+  if (!download_default_directory->IsDefaultValue() &&
+      prefs->FindPreference(
+          prefs::kSaveFileDefaultDirectory)->IsDefaultValue()) {
+    prefs->Set(prefs::kSaveFileDefaultDirectory,
+               *(download_default_directory->GetValue()));
   }
 
   // Get the directory from preference.

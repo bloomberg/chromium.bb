@@ -55,8 +55,8 @@ class MyMockInputMethodManager : public input_method::MockInputMethodManager {
 
 TEST(PreferencesTest, TestUpdatePrefOnBrowserScreenDetails) {
   TestingPrefServiceSyncable prefs;
-  Preferences::RegisterUserPrefs(&prefs, prefs.registry());
-  DownloadPrefs::RegisterUserPrefs(&prefs, prefs.registry());
+  Preferences::RegisterUserPrefs(prefs.registry());
+  DownloadPrefs::RegisterUserPrefs(prefs.registry());
 
   StringPrefMember previous;
   previous.Init(prefs::kLanguagePreviousInputMethod, &prefs);

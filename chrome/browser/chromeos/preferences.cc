@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram.h"
+#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/public/pref_member.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
@@ -58,9 +59,16 @@ Preferences::~Preferences() {
 }
 
 // static
-void Preferences::RegisterUserPrefs(PrefService* prefs,
-                                    PrefRegistrySyncable* registry) {
-  // TODO(joi): Get rid of need for PrefService parameter.
+void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kHighContrastEnabled, false);
+  registry->RegisterBooleanPref(prefs::kOwnerPrimaryMouseButtonRight, false);
+  registry->RegisterBooleanPref(prefs::kOwnerTapToClickEnabled, true);
+  registry->RegisterBooleanPref(prefs::kSpokenFeedbackEnabled, false);
+  registry->RegisterBooleanPref(prefs::kVirtualKeyboardEnabled, false);
+}
+
+// static
+void Preferences::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   std::string hardware_keyboard_id;
   // TODO(yusukes): Remove the runtime hack.
   if (base::chromeos::IsRunningOnChromeOS()) {
@@ -100,24 +108,6 @@ void Preferences::RegisterUserPrefs(PrefService* prefs,
   registry->RegisterBooleanPref(prefs::kLabsAdvancedFilesystemEnabled,
                                 false,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
-  // Check if the accessibility prefs are already registered, which can happen
-  // in WizardController::RegisterPrefs. We still want to try to register
-  // the prefs here in case of Chrome/Linux with ChromeOS=1.
-  if (prefs->FindPreference(prefs::kSpokenFeedbackEnabled) == NULL) {
-    registry->RegisterBooleanPref(prefs::kSpokenFeedbackEnabled,
-                                  false,
-                                  PrefRegistrySyncable::UNSYNCABLE_PREF);
-  }
-  if (prefs->FindPreference(prefs::kHighContrastEnabled) == NULL) {
-    registry->RegisterBooleanPref(prefs::kHighContrastEnabled,
-                                  false,
-                                  PrefRegistrySyncable::UNSYNCABLE_PREF);
-  }
-  if (prefs->FindPreference(prefs::kVirtualKeyboardEnabled) == NULL) {
-    registry->RegisterBooleanPref(prefs::kVirtualKeyboardEnabled,
-                                  false,
-                                  PrefRegistrySyncable::UNSYNCABLE_PREF);
-  }
   registry->RegisterBooleanPref(prefs::kScreenMagnifierEnabled,
                                 false,
                                 PrefRegistrySyncable::SYNCABLE_PREF);
@@ -358,7 +348,6 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
   three_finger_swipe_enabled_.Init(prefs::kEnableTouchpadThreeFingerSwipe,
       prefs, callback);
   natural_scroll_.Init(prefs::kNaturalScroll, prefs, callback);
-  accessibility_enabled_.Init(prefs::kSpokenFeedbackEnabled, prefs, callback);
   screen_magnifier_enabled_.Init(prefs::kScreenMagnifierEnabled,
                                  prefs, callback);
   screen_magnifier_type_.Init(prefs::kScreenMagnifierType, prefs, callback);

@@ -10,6 +10,13 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/gpu_data_manager.h"
 
+// static
+void GLStringManager::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(prefs::kGLVendorString, std::string());
+  registry->RegisterStringPref(prefs::kGLRendererString, std::string());
+  registry->RegisterStringPref(prefs::kGLVersionString, std::string());
+}
+
 GLStringManager::GLStringManager() {
 }
 
@@ -25,13 +32,6 @@ void GLStringManager::Initialize() {
   PrefService* local_state = g_browser_process->local_state();
   if (!local_state)
     return;
-
-  // TODO(joi): This should happen via browser_prefs::RegisterLocalState().
-  PrefRegistrySimple* registry = static_cast<PrefRegistrySimple*>(
-      local_state->DeprecatedGetPrefRegistry());
-  registry->RegisterStringPref(prefs::kGLVendorString, gl_vendor_);
-  registry->RegisterStringPref(prefs::kGLRendererString, gl_renderer_);
-  registry->RegisterStringPref(prefs::kGLVersionString, gl_version_);
 
   gl_vendor_ = local_state->GetString(prefs::kGLVendorString);
   gl_renderer_ = local_state->GetString(prefs::kGLRendererString);

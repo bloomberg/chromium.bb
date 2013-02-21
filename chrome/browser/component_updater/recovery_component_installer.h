@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_COMPONENT_UPDATER_RECOVERY_COMPONENT_INSTALLER_H_
 
 class ComponentUpdateService;
+class PrefRegistrySimple;
 class PrefService;
 
 // Component update registration for the recovery component. The job of the
@@ -13,6 +14,10 @@ class PrefService;
 // update installation. This is a last resort safety mechanism.
 void RegisterRecoveryComponent(ComponentUpdateService* cus,
                                PrefService* prefs);
+
+
+// Register user preferences related to the recovery component.
+void RegisterPrefsForRecoveryComponent(PrefRegistrySimple* registry);
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_RECOVERY_COMPONENT_INSTALLER_H_
 

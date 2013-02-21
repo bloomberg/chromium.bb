@@ -10,8 +10,12 @@
 #include "base/compiler_specific.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 
+class PrefRegistrySimple;
+
 class GLStringManager : public content::GpuDataManagerObserver {
  public:
+  static void RegisterPrefs(PrefRegistrySimple* registry);
+
   GLStringManager();
   virtual ~GLStringManager();
 

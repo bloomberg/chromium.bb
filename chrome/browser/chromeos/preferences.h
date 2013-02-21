@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/prefs/pref_service_syncable_observer.h"
 
+class PrefRegistrySimple;
 class PrefRegistrySyncable;
 class PrefService;
 class PrefServiceSyncable;
@@ -33,9 +34,9 @@ class Preferences : public PrefServiceSyncableObserver {
       input_method::InputMethodManager* input_method_manager);  // for testing
   virtual ~Preferences();
 
-  // This method will register the prefs associated with Chrome OS settings.
-  static void RegisterUserPrefs(PrefService* prefs,
-                                PrefRegistrySyncable* registry);
+  // These method will register the prefs associated with Chrome OS settings.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
+  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
   // This method will initialize Chrome OS settings to values in user prefs.
   void Init(PrefServiceSyncable* prefs);
@@ -111,7 +112,6 @@ class Preferences : public PrefServiceSyncableObserver {
   BooleanPrefMember three_finger_swipe_enabled_;
   BooleanPrefMember natural_scroll_;
   BooleanPrefMember vert_edge_scroll_enabled_;
-  BooleanPrefMember accessibility_enabled_;
   BooleanPrefMember screen_magnifier_enabled_;
   IntegerPrefMember screen_magnifier_type_;
   DoublePrefMember screen_magnifier_scale_;

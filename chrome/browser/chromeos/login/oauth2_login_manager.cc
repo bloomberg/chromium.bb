@@ -93,7 +93,7 @@ TokenService* OAuth2LoginManager::SetupTokenService() {
 
 void OAuth2LoginManager::RemoveLegacyTokens() {
   PrefService* prefs = user_profile_->GetPrefs();
-  // TODO(joi): Registration should only be done up front.
+  // TODO(joi): Handle migration more elegantly.
   scoped_refptr<PrefRegistrySyncable> registry(
       static_cast<PrefRegistrySyncable*>(prefs->DeprecatedGetPrefRegistry()));
   registry->RegisterStringPref(prefs::kOAuth1Token,

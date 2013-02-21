@@ -12,6 +12,7 @@
 class CommandLine;
 class GURL;
 class Profile;
+class PrefRegistrySimple;
 class PrefService;
 
 namespace {
@@ -36,6 +37,9 @@ class LoginUtils {
     virtual void OnRlzInitialized(Profile* profile) {}
 #endif
   };
+
+  // Registers log-in related preferences.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Get LoginUtils singleton object. If it was not set before, new default
   // instance will be created.

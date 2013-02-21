@@ -18,6 +18,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
+#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/public/pref_member.h"
 #include "base/string_util.h"
@@ -1047,6 +1048,13 @@ void LoginUtilsImpl::Observe(int type,
     default:
       NOTREACHED();
   }
+}
+
+// static
+void LoginUtils::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kFactoryResetRequested, false);
+  registry->RegisterStringPref(prefs::kRLZBrand, std::string());
+  registry->RegisterBooleanPref(prefs::kRLZDisabled, false);
 }
 
 // static

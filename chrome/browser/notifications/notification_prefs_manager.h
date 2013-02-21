@@ -14,10 +14,11 @@ class PrefRegistrySimple;
 // desktop notifications.
 class NotificationPrefsManager {
  public:
+  explicit NotificationPrefsManager(PrefService* prefs);
   virtual ~NotificationPrefsManager() {}
 
   // Registers preferences.
-  static void RegisterPrefs(PrefService* prefs, PrefRegistrySimple* registry);
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Gets the preference indicating where notifications should be placed.
   virtual BalloonCollection::PositionPreference

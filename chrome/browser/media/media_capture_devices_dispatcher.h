@@ -15,7 +15,6 @@
 class AudioStreamIndicator;
 class MediaStreamCaptureIndicator;
 class PrefRegistrySyncable;
-class PrefService;
 class Profile;
 
 // This singleton is used to receive updates about media events from the content
@@ -47,8 +46,7 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver {
   static MediaCaptureDevicesDispatcher* GetInstance();
 
   // Registers the preferences related to Media Stream default devices.
-  static void RegisterUserPrefs(PrefService* user_prefs,
-                                PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
   // Methods for observers. Called on UI thread.
   // Observers should add themselves on construction and remove themselves

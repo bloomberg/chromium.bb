@@ -20,6 +20,7 @@
 
 class DownloadPrefs;
 class ExtensionDownloadsEventRouter;
+class PrefRegistrySyncable;
 class Profile;
 
 namespace content {
@@ -54,11 +55,13 @@ class ChromeDownloadManagerDelegate
 
   explicit ChromeDownloadManagerDelegate(Profile* profile);
 
-  void SetDownloadManager(content::DownloadManager* dm);
+  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
   // Should be called before the first call to ShouldCompleteDownload() to
   // disable SafeBrowsing checks for |item|.
   static void DisableSafeBrowsing(content::DownloadItem* item);
+
+  void SetDownloadManager(content::DownloadManager* dm);
 
   // content::DownloadManagerDelegate
   virtual void Shutdown() OVERRIDE;

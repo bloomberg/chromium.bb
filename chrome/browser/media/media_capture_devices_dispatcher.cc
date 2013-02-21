@@ -51,19 +51,13 @@ MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher()
 MediaCaptureDevicesDispatcher::~MediaCaptureDevicesDispatcher() {}
 
 void MediaCaptureDevicesDispatcher::RegisterUserPrefs(
-    PrefService* user_prefs,
     PrefRegistrySyncable* registry) {
-  // TODO(joi): Get rid of the need for PrefService param above.
-  if (!user_prefs->FindPreference(prefs::kDefaultAudioCaptureDevice)) {
-    registry->RegisterStringPref(prefs::kDefaultAudioCaptureDevice,
-                                 std::string(),
-                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
-  }
-  if (!user_prefs->FindPreference(prefs::kDefaultVideoCaptureDevice)) {
-    registry->RegisterStringPref(prefs::kDefaultVideoCaptureDevice,
-                                 std::string(),
-                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
-  }
+  registry->RegisterStringPref(prefs::kDefaultAudioCaptureDevice,
+                               std::string(),
+                               PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kDefaultVideoCaptureDevice,
+                               std::string(),
+                               PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 void MediaCaptureDevicesDispatcher::AddObserver(Observer* observer) {

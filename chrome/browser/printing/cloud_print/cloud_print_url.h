@@ -8,11 +8,14 @@
 #include <string>
 
 class GURL;
+class PrefRegistrySyncable;
 class Profile;
 
 // Centralize URL management for the cloud print service.
 class CloudPrintURL {
  public:
+  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+
   explicit CloudPrintURL(Profile* profile) : profile_(profile) {}
 
   GURL GetCloudPrintServiceURL();
@@ -27,8 +30,6 @@ class CloudPrintURL {
   static GURL GetCloudPrintTestPageURL();
 
  private:
-  void RegisterPreferences();
-
   Profile* profile_;
 };
 
