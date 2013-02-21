@@ -264,6 +264,8 @@
         'browser/ui/browser_iterator.h',
         'browser/ui/browser_list.cc',
         'browser/ui/browser_list.h',
+        'browser/ui/browser_list_impl.cc',
+        'browser/ui/browser_list_impl.h',
         'browser/ui/browser_mac.cc',
         'browser/ui/browser_mac.h',
         'browser/ui/browser_navigator.cc',

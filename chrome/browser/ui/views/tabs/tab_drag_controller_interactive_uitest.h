@@ -10,9 +10,12 @@
 #include "chrome/test/base/in_process_browser_test.h"
 
 class Browser;
-class BrowserList;
 class TabStrip;
 class TabStripModel;
+
+namespace chrome {
+class BrowserListImpl;
+}
 
 namespace content {
 class WebContents;
@@ -46,7 +49,7 @@ class TabDragControllerTest : public InProcessBrowserTest {
 
   // The tab drag controller interactive ui tests only use the native desktop
   // for now.
-  const BrowserList* native_browser_list;
+  const chrome::BrowserListImpl* native_browser_list;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TabDragControllerTest);

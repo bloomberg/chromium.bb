@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_BROWSER_ITERATOR_H_
 #define CHROME_BROWSER_UI_BROWSER_ITERATOR_H_
 
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_impl.h"
 #include "chrome/browser/ui/host_desktop.h"
 
 class Browser;
@@ -14,7 +14,7 @@ namespace chrome {
 
 // Iterates over all existing browsers (potentially across multiple desktops).
 // Note: to iterate only over the browsers of a specific desktop, use the
-// const_iterator of a given BrowserList instead.
+// const_iterator of a given BrowserListImpl instead.
 //
 // Example:
 //   for (BrowserIterator iterator; !iterator.done(); iterator.Next()) {
@@ -52,12 +52,12 @@ class BrowserIterator {
   // |current_iterator_| is valid or done().
   void NextBrowserListIfAtEnd();
 
-  // The BrowserList currently being iterated over. Instances of this class do
-  // not own this pointer.
-  BrowserList* current_browser_list_;
+  // The BrowserListImpl currently being iterated over. Instances of this class
+  // do not own this pointer.
+  BrowserListImpl* current_browser_list_;
 
   // The underlying iterator over browsers in |current_browser_list_|.
-  BrowserList::const_iterator current_iterator_;
+  BrowserListImpl::const_iterator current_iterator_;
 
   // The next HostDesktopType to iterate over when |current_iterator_| reaches
   // |current_browser_list_->end()|.

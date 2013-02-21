@@ -22,7 +22,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_impl.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
@@ -92,7 +92,8 @@ void GoBackToSafety(content::WebContents* web_contents) {
   // If this is the last tab on this desktop, open a new window.
   chrome::HostDesktopType host_desktop_type =
       chrome::GetHostDesktopTypeForNativeView(web_contents->GetNativeView());
-  const BrowserList* browser_list = BrowserList::GetInstance(host_desktop_type);
+  const chrome::BrowserListImpl* browser_list =
+      chrome::BrowserListImpl::GetInstance(host_desktop_type);
   if (browser_list->size() == 1) {
     Browser* browser = browser_list->get(0);
     DCHECK(browser == chrome::FindBrowserWithWebContents(web_contents));

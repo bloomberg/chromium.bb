@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_impl.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/host_desktop.h"
@@ -149,9 +149,9 @@ AppShortcutLauncherItemController::GetRunningApplications() {
   if (!extension)
     return items;
 
-  const BrowserList* ash_browser_list =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
-  for (BrowserList::const_reverse_iterator it =
+  const chrome::BrowserListImpl* ash_browser_list =
+      chrome::BrowserListImpl::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
+  for (chrome::BrowserListImpl::const_reverse_iterator it =
            ash_browser_list->begin_last_active();
        it != ash_browser_list->end_last_active(); ++it) {
     Browser* browser = *it;

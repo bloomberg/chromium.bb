@@ -93,6 +93,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_impl.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -289,7 +290,8 @@ void TestingAutomationProvider::OnBrowserRemoved(Browser* browser) {
   // want the automation provider (and hence the process) to go away when the
   // last browser goes away.
   // The automation layer doesn't support non-native desktops.
-  if (BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE)->empty() &&
+  if (chrome::BrowserListImpl::GetInstance(
+          chrome::HOST_DESKTOP_TYPE_NATIVE)->empty() &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kKeepAliveForTest)) {
     // If you change this, update Observer for chrome::SESSION_END
@@ -608,7 +610,7 @@ void TestingAutomationProvider::Reload(int handle,
 
 void TestingAutomationProvider::GetBrowserWindowCount(int* window_count) {
   // The automation layer doesn't support non-native desktops.
-  *window_count = static_cast<int>(BrowserList::GetInstance(
+  *window_count = static_cast<int>(chrome::BrowserListImpl::GetInstance(
                       chrome::HOST_DESKTOP_TYPE_NATIVE)->size());
 }
 
@@ -1127,7 +1129,7 @@ void TestingAutomationProvider::GetBrowserWindowCountJSON(
   DictionaryValue dict;
   // The automation layer doesn't support non-native desktops.
   dict.SetInteger("count",
-                  static_cast<int>(BrowserList::GetInstance(
+                  static_cast<int>(chrome::BrowserListImpl::GetInstance(
                       chrome::HOST_DESKTOP_TYPE_NATIVE)->size()));
   AutomationJSONReply(this, reply_message).SendSuccess(&dict);
 }
@@ -1519,7 +1521,7 @@ void TestingAutomationProvider::WaitForBrowserWindowCountToBecome(
     int target_count,
     IPC::Message* reply_message) {
   // The automation layer doesn't support non-native desktops.
-  int current_count = static_cast<int>(BrowserList::GetInstance(
+  int current_count = static_cast<int>(chrome::BrowserListImpl::GetInstance(
                           chrome::HOST_DESKTOP_TYPE_NATIVE)->size());
   if (current_count == target_count) {
     AutomationMsg_WaitForBrowserWindowCountToBecome::WriteReplyParams(

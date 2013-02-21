@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_impl.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
@@ -84,8 +85,8 @@ std::string BrowserListTabContentsProvider::GetPageThumbnailData(
 RenderViewHost* BrowserListTabContentsProvider::CreateNewTarget() {
   // TODO(gab): Do not hardcode HOST_DESKTOP_TYPE_NATIVE below once
   // chrome::NewEmptyWindow() above has been made multi-desktop friendly.
-  const BrowserList* browser_list =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
+  const chrome::BrowserListImpl* browser_list =
+      chrome::BrowserListImpl::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
 
   if (browser_list->empty())
     chrome::NewEmptyWindowDeprecated(profile_);

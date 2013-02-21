@@ -10,6 +10,7 @@
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_impl.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #import "chrome/common/chrome_switches.h"
@@ -22,7 +23,7 @@ namespace {
 class AppControllerPlatformAppBrowserTest : public InProcessBrowserTest {
  protected:
   AppControllerPlatformAppBrowserTest()
-      : native_browser_list(BrowserList::GetInstance(
+      : native_browser_list(chrome::BrowserListImpl::GetInstance(
                                 chrome::HOST_DESKTOP_TYPE_NATIVE)) {
   }
 
@@ -32,7 +33,7 @@ class AppControllerPlatformAppBrowserTest : public InProcessBrowserTest {
   }
 
   // Mac only has the native desktop.
-  const BrowserList* native_browser_list;
+  const chrome::BrowserListImpl* native_browser_list;
 };
 
 // Test that if only a platform app window is open and no browser windows are
@@ -52,7 +53,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerPlatformAppBrowserTest,
 class AppControllerWebAppBrowserTest : public InProcessBrowserTest {
  protected:
   AppControllerWebAppBrowserTest()
-      : native_browser_list(BrowserList::GetInstance(
+      : native_browser_list(chrome::BrowserListImpl::GetInstance(
                                 chrome::HOST_DESKTOP_TYPE_NATIVE)) {
   }
 
@@ -65,7 +66,7 @@ class AppControllerWebAppBrowserTest : public InProcessBrowserTest {
   }
 
   // Mac only has the native desktop.
-  const BrowserList* native_browser_list;
+  const chrome::BrowserListImpl* native_browser_list;
 };
 
 // Test that in web app mode a reopen event opens the app URL.

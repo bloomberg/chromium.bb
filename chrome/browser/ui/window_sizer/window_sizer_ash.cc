@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_impl.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/host_desktop.h"
@@ -40,9 +40,9 @@ bool IsValidBrowser(Browser* browser, const gfx::Rect& bounds_in_screen) {
 // on the screen defined by |bounds_in_screen| and visible.
 bool IsValidToplevelWindow(aura::Window* window,
                            const gfx::Rect& bounds_in_screen) {
-  const BrowserList* ash_browser_list =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
-  for (BrowserList::const_iterator iter = ash_browser_list->begin();
+  const chrome::BrowserListImpl* ash_browser_list =
+      chrome::BrowserListImpl::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
+  for (chrome::BrowserListImpl::const_iterator iter = ash_browser_list->begin();
        iter != ash_browser_list->end();
        ++iter) {
     Browser* browser = *iter;
@@ -100,9 +100,9 @@ aura::Window* GetTopWindow(const gfx::Rect& bounds_in_screen) {
 // the |bounds_in_screen| rectangle.
 int GetNumberOfValidTopLevelBrowserWindows(const gfx::Rect& bounds_in_screen) {
   int count = 0;
-  const BrowserList* ash_browser_list =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
-  for (BrowserList::const_iterator iter = ash_browser_list->begin();
+  const chrome::BrowserListImpl* ash_browser_list =
+      chrome::BrowserListImpl::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
+  for (chrome::BrowserListImpl::const_iterator iter = ash_browser_list->begin();
        iter != ash_browser_list->end();
        ++iter) {
     if (IsValidBrowser(*iter, bounds_in_screen))

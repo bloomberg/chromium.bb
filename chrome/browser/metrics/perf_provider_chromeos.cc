@@ -41,8 +41,9 @@ namespace metrics {
 // is destroyed.
 class WindowedIncognitoObserver : public chrome::BrowserListObserver {
  public:
-  WindowedIncognitoObserver() : incognito_launched_(false) {
-    BrowserList::AddObserver(this);
+  WindowedIncognitoObserver()
+      : incognito_launched_(false) {
+      BrowserList::AddObserver(this);
   }
 
   virtual ~WindowedIncognitoObserver() {

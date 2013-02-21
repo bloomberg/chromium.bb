@@ -11,7 +11,7 @@
 #include "ash/shell.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/aura/active_desktop_monitor.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_impl.h"
 
 namespace chrome {
 
@@ -79,8 +79,10 @@ HostDesktopType GetHostDesktopTypeForBrowser(const Browser* browser) {
   for (HostDesktopType type = HOST_DESKTOP_TYPE_FIRST;
       type < HOST_DESKTOP_TYPE_COUNT;
       type = static_cast<HostDesktopType>(type + 1)) {
-    BrowserList::const_iterator begin = BrowserList::GetInstance(type)->begin();
-    BrowserList::const_iterator end = BrowserList::GetInstance(type)->end();
+    BrowserListImpl::const_iterator begin =
+        BrowserListImpl::GetInstance(type)->begin();
+    BrowserListImpl::const_iterator end =
+        BrowserListImpl::GetInstance(type)->end();
     if (std::find(begin, end, browser) != end)
       return type;
   }

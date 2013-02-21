@@ -95,6 +95,7 @@
 #include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_impl.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tab_contents.h"
 #include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
@@ -631,7 +632,7 @@ void Browser::OnWindowClosing() {
       browser_shutdown::IsTryingToQuit() || !chrome::WillKeepAlive();
 
   if (should_quit_if_last_browser &&
-      BrowserList::GetInstance(host_desktop_type_)->size() == 1) {
+      chrome::BrowserListImpl::GetInstance(host_desktop_type_)->size() == 1) {
     browser_shutdown::OnShutdownStarting(browser_shutdown::WINDOW_CLOSE);
   }
 

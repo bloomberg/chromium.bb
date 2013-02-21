@@ -11,7 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/ash_init.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_impl.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/host_desktop.h"
@@ -117,9 +117,10 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
       // GetBoundsOverrideAsh should take over below before this is reached).
       // TODO(gab): This code should go in a native desktop specific window
       // sizer as part of fixing crbug.com/175812.
-      const BrowserList* native_browser_list =
-          BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
-      for (BrowserList::const_reverse_iterator it =
+      const chrome::BrowserListImpl* native_browser_list =
+          chrome::BrowserListImpl::GetInstance(
+              chrome::HOST_DESKTOP_TYPE_NATIVE);
+      for (chrome::BrowserListImpl::const_reverse_iterator it =
                native_browser_list->begin_last_active();
            it != native_browser_list->end_last_active(); ++it) {
         Browser* last_active = *it;
