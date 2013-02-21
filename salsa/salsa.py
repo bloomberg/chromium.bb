@@ -87,6 +87,9 @@ class Submit(webapp2.RequestHandler):
             exp.participants.append(participant)
             exp.feedback.append('')
         participant_number = exp.participants.index(participant)
+
+        while participant_number >= len(exp.feedback):
+            exp.feedback.append('')
         exp.feedback[participant_number] = feedback
 
         score = 0
