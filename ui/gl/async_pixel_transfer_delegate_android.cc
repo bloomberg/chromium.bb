@@ -178,7 +178,8 @@ SafeSharedMemoryPool* safe_shared_memory_pool() {
 // Class which holds async pixel transfers state (EGLImage).
 // The EGLImage is accessed by either thread, but everything
 // else accessed only on the main thread.
-class TransferStateInternal : public base::RefCounted<TransferStateInternal> {
+class TransferStateInternal
+    : public base::RefCountedThreadSafe<TransferStateInternal> {
  public:
   explicit TransferStateInternal(GLuint texture_id,
                                  bool wait_for_uploads,
@@ -280,7 +281,7 @@ class TransferStateInternal : public base::RefCounted<TransferStateInternal> {
   }
 
  protected:
-  friend class base::RefCounted<TransferStateInternal>;
+  friend class base::RefCountedThreadSafe<TransferStateInternal>;
   friend class AsyncPixelTransferDelegateAndroid;
 
   static void DeleteTexture(GLuint id) {
@@ -514,7 +515,7 @@ void AsyncPixelTransferDelegateAndroid::AsyncTexImage2D(
   transfer_message_loop_proxy()->PostTask(FROM_HERE,
       base::Bind(
           &AsyncPixelTransferDelegateAndroid::PerformAsyncTexImage2D,
-          base::Unretained(state.get()),  // This is referenced in reply below.
+          state,
           tex_params,
           mem_params,
           base::Owned(new ScopedSafeSharedMemory(safe_shared_memory_pool(),
@@ -556,7 +557,7 @@ void AsyncPixelTransferDelegateAndroid::AsyncTexSubImage2D(
   transfer_message_loop_proxy()->PostTask(FROM_HERE,
       base::Bind(
           &AsyncPixelTransferDelegateAndroid::PerformAsyncTexSubImage2D,
-          base::Unretained(state.get()),  // This is referenced in reply below.
+          state,
           tex_params,
           mem_params,
           base::Owned(new ScopedSafeSharedMemory(safe_shared_memory_pool(),
