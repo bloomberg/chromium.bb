@@ -434,6 +434,12 @@ class WrenchMenu::CutCopyPasteView : public WrenchMenuView {
       cut->SetEnabledColor(kTouchButtonText);
       copy->SetEnabledColor(kTouchButtonText);
       paste->SetEnabledColor(kTouchButtonText);
+    } else {
+      SkColor text_color = GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor);
+      cut->SetEnabledColor(text_color);
+      copy->SetEnabledColor(text_color);
+      paste->SetEnabledColor(text_color);
     }
     copy_background->SetOtherButtons(cut, paste);
   }
@@ -538,7 +544,15 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
       decrement_button_->SetEnabledColor(kTouchButtonText);
       increment_button_->SetEnabledColor(kTouchButtonText);
     } else {
-      zoom_label_->SetEnabledColor(menu_config.text_color);
+      SkColor enabled_text_color = GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor);
+      zoom_label_->SetEnabledColor(enabled_text_color);
+      decrement_button_->SetEnabledColor(enabled_text_color);
+      increment_button_->SetEnabledColor(enabled_text_color);
+      SkColor disabled_text_color = GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor);
+      decrement_button_->SetDisabledColor(disabled_text_color);
+      increment_button_->SetDisabledColor(disabled_text_color);
     }
 
     fullscreen_button_->set_focusable(true);
