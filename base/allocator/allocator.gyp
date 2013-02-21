@@ -521,6 +521,7 @@
                 'prep_libc.py',
                 '$(VCInstallDir)lib',
                 '<(SHARED_INTERMEDIATE_DIR)/allocator',
+                '<(target_arch)',
               ],
             },
           ],
