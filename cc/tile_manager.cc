@@ -73,14 +73,6 @@ std::string ValueToString(scoped_ptr<base::Value> value)
   return str;
 }
 
-RasterTaskMetadata GetRasterTaskMetadata(const ManagedTileState& mts) {
-  RasterTaskMetadata raster_task_metadata;
-  raster_task_metadata.is_tile_in_pending_tree_now_bin =
-      mts.tree_bin[PENDING_TREE] == NOW_BIN;
-  raster_task_metadata.tile_resolution = mts.resolution;
-  return raster_task_metadata;
-}
-
 }  // namespace
 
 scoped_ptr<base::Value> TileManagerBinAsValue(TileManagerBin bin) {
@@ -798,6 +790,8 @@ void TileManager::DispatchOneRasterTask(scoped_refptr<Tile> tile) {
   TRACE_EVENT0("cc", "TileManager::DispatchOneRasterTask");
   scoped_ptr<ResourcePool::Resource> resource = PrepareTileForRaster(tile);
   ResourceProvider::ResourceId resource_id = resource->id();
+  uint8* buffer =
+      resource_pool_->resource_provider()->mapPixelBuffer(resource_id);
 
   bool is_cheap = use_cheapness_estimator_ && allow_cheap_tasks_ &&
       tile->picture_pile()->IsCheapInRect(tile->content_rect_,
@@ -806,18 +800,27 @@ void TileManager::DispatchOneRasterTask(scoped_refptr<Tile> tile) {
       tile->picture_pile(),
       is_cheap,
       base::Bind(&TileManager::RunRasterTask,
-                 resource_pool_->resource_provider()->mapPixelBuffer(
-                     resource_id),
-                 tile->content_rect_,
+                 buffer,
+                 tile->content_rect(),
                  tile->contents_scale(),
-                 use_cheapness_estimator_,
-                 GetRasterTaskMetadata(tile->managed_state())),
+                 GetRasterTaskMetadata(*tile)),
       base::Bind(&TileManager::OnRasterTaskCompleted,
                  base::Unretained(this),
                  tile,
                  base::Passed(&resource),
                  manage_tiles_call_count_));
   did_schedule_cheap_tasks_ |= is_cheap;
+}
+
+TileManager::RasterTaskMetadata TileManager::GetRasterTaskMetadata(
+    const Tile& tile) const {
+  RasterTaskMetadata metadata;
+  const ManagedTileState& mts = tile.managed_state();
+  metadata.use_cheapness_estimator = use_cheapness_estimator_;
+  metadata.is_tile_in_pending_tree_now_bin =
+      mts.tree_bin[PENDING_TREE] == NOW_BIN;
+  metadata.tile_resolution = mts.resolution;
+  return metadata;
 }
 
 void TileManager::OnRasterTaskCompleted(
@@ -910,19 +913,19 @@ void TileManager::DidTileTreeBinChange(Tile* tile,
 void TileManager::RunRasterTask(uint8* buffer,
                                 const gfx::Rect& rect,
                                 float contents_scale,
-                                bool use_cheapness_estimator,
-                                const RasterTaskMetadata& raster_task_metadata,
+                                const RasterTaskMetadata& metadata,
                                 PicturePileImpl* picture_pile,
                                 RenderingStats* stats) {
   TRACE_EVENT2(
       "cc", "TileManager::RunRasterTask",
       "is_on_pending_tree",
-          raster_task_metadata.is_tile_in_pending_tree_now_bin,
+      metadata.is_tile_in_pending_tree_now_bin,
       "is_low_res",
-          raster_task_metadata.tile_resolution == LOW_RESOLUTION);
+      metadata.tile_resolution == LOW_RESOLUTION);
 
   DCHECK(picture_pile);
   DCHECK(buffer);
+
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, rect.width(), rect.height());
   bitmap.setPixels(buffer);
@@ -943,7 +946,7 @@ void TileManager::RunRasterTask(uint8* buffer,
     base::TimeTicks end_time = base::TimeTicks::HighResNow();
     base::TimeDelta duration = end_time - begin_time;
     stats->totalRasterizeTime += duration;
-    if (raster_task_metadata.is_tile_in_pending_tree_now_bin)
+    if (metadata.is_tile_in_pending_tree_now_bin)
       stats->totalRasterizeTimeForNowBinsOnPendingTree += duration;
 
     UMA_HISTOGRAM_CUSTOM_COUNTS("Renderer4.PictureRasterTimeMS",
@@ -952,7 +955,7 @@ void TileManager::RunRasterTask(uint8* buffer,
                                 10,
                                 10);
 
-    if (use_cheapness_estimator) {
+    if (metadata.use_cheapness_estimator) {
       bool is_predicted_cheap =
           picture_pile->IsCheapInRect(rect, contents_scale);
       bool is_actually_cheap = duration.InMillisecondsF() <= 1.0f;
