@@ -62,12 +62,9 @@ def install_actuals_and_baselines(decoder, cl_args):
     # Generate baselines form descriptions in tables.
     decoder = dgen_baselines.AddBaselinesToDecoder(decoder)
 
-    # Generate actuals from descriptions in tables, for each of the
-    # tables that should automatically generate the corresponding
-    # needed actual class decoders.
-    actuals = cl_args.get('auto-actual')
-    if not actuals: actuals = []
-    decoder = dgen_actuals.AddAutoActualsToDecoder(decoder, actuals)
+    # Generate actuals from descriptions in tables.
+    decoder = dgen_actuals.AddAutoActualsToDecoder(
+        decoder, decoder.table_names())
 
     decoder = dgen_baselines.InstallGeneratedBaselinesIntoTables(
       decoder, cl_args['auto-base'])
