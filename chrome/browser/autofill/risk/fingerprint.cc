@@ -22,6 +22,10 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/gpu_info.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
@@ -380,24 +384,22 @@ void FingerprintDataLoader::FillFingerprint() {
 void GetFingerprint(
     int64 gaia_id,
     const gfx::Rect& window_bounds,
-    const gfx::Rect& content_bounds,
-    const WebKit::WebScreenInfo& screen_info,
+    const content::WebContents& web_contents,
     const PrefService& prefs,
     const base::Callback<void(scoped_ptr<Fingerprint>)>& callback) {
-  // TODO(isherman): Add a DCHECK that the ToS have been accepted prior to
-  // calling into this method.  Also, ensure that the UI contains a clear
-  // indication to the user as to what data will be collected.  Until then, this
-  // code should not be called.
+  gfx::Rect content_bounds;
+  web_contents.GetView()->GetContainerBounds(&content_bounds);
 
-  // TODO(isherman): In order to actually be able to pass in the WebScreenInfo
-  // that's used here, we'll need to expose RenderWidgetHostImpl's
-  // GetWebScreenInfo() as part of the public RenderWidgetHost interface.
-  // We can then access it via the dialog's WebContents pointer.
+  WebKit::WebScreenInfo screen_info;
+  content::RenderWidgetHostView* host_view =
+      web_contents.GetRenderWidgetHostView();
+  if (host_view)
+    host_view->GetRenderWidgetHost()->GetWebScreenInfo(&screen_info);
 
   // Begin loading all of the data that we need to load asynchronously.
   // This class is responsible for freeing its own memory.
-  new FingerprintDataLoader(gaia_id, window_bounds, content_bounds,
-                            screen_info, prefs, callback);
+  new FingerprintDataLoader(gaia_id, window_bounds, content_bounds, screen_info,
+                            prefs, callback);
 }
 
 }  // namespace risk

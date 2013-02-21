@@ -45,6 +45,10 @@ namespace autofill {
 class AutofillDialogView;
 class DataModelWrapper;
 
+namespace risk {
+class Fingerprint;
+}
+
 // This class drives the dialog that appears when a site uses the imperative
 // autocomplete API to fill out a form.
 class AutofillDialogControllerImpl : public AutofillDialogController,
@@ -237,6 +241,11 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Hides |popup_controller_|'s popup view, if it exists.
   void HidePopup();
 
+  // Asks risk module to asynchronously load fingerprint data. Data will be
+  // returned via OnDidLoadRiskFingerprintData.
+  void LoadRiskFingerprintData();
+  void OnDidLoadRiskFingerprintData(scoped_ptr<risk::Fingerprint> fingerprint);
+
   // The |profile| for |contents_|.
   Profile* const profile_;
 
@@ -308,6 +317,8 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
 
   // A NotificationRegistrar for tracking the completion of sign-in.
   content::NotificationRegistrar registrar_;
+
+  base::WeakPtrFactory<AutofillDialogControllerImpl> weak_ptr_factory_;
 
   // For logging UMA metrics.
   const AutofillMetrics& metric_logger_;

@@ -6,7 +6,9 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/prefs/pref_service.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
@@ -16,13 +18,22 @@
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/autofill/risk/fingerprint.h"
+#include "chrome/browser/autofill/risk/proto/fingerprint.pb.h"
 #include "chrome/browser/autofill/validation.h"
 #include "chrome/browser/autofill/wallet/full_wallet.h"
 #include "chrome/browser/autofill/wallet/wallet_items.h"
 #include "chrome/browser/autofill/wallet/wallet_service_url.h"
+#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/browser/ui/autofill/data_model_wrapper.h"
+#include "chrome/browser/ui/base_window.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/native_app_window.h"
+#include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/form_data.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
@@ -30,6 +41,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -123,6 +135,23 @@ void FillFormGroupFromOutputs(const DetailOutputMap& detail_outputs,
   }
 }
 
+// Returns the containing window for the given |web_contents|.  The containing
+// window might be a browser window for a Chrome tab, or it might be a shell
+// window for a platform app.
+BaseWindow* GetBaseWindowForWebContents(
+    const content::WebContents* web_contents) {
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (browser)
+    return browser->window();
+
+  gfx::NativeWindow native_window =
+      web_contents->GetView()->GetTopLevelNativeWindow();
+  ShellWindow* shell_window =
+      extensions::ShellWindowRegistry::
+          GetShellWindowForNativeWindowAnyProfile(native_window);
+  return shell_window->GetBaseWindow();
+}
+
 }  // namespace
 
 AutofillDialogController::~AutofillDialogController() {}
@@ -150,6 +179,7 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       ALLOW_THIS_IN_INITIALIZER_LIST(suggested_cc_billing_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(suggested_shipping_(this)),
       section_showing_popup_(SECTION_BILLING),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       metric_logger_(metric_logger),
       dialog_type_(dialog_type) {
   // TODO(estade): |this| should observe PersonalDataManager.
@@ -1160,6 +1190,31 @@ DetailInputs* AutofillDialogControllerImpl::MutableRequestedFieldsForSection(
 void AutofillDialogControllerImpl::HidePopup() {
   if (popup_controller_)
     popup_controller_->Hide();
+}
+
+void AutofillDialogControllerImpl::LoadRiskFingerprintData() {
+  // TODO(dbeam): Add a CHECK or otherwise strong guarantee that the ToS have
+  // been accepted prior to calling into this method.  Also, ensure that the UI
+  // contains a clear indication to the user as to what data will be collected.
+  // Until then, this code should not be called.
+
+  int64 gaia_id = 0;
+  bool success =
+      base::StringToInt64(wallet_items_->obfuscated_gaia_id(), &gaia_id);
+  DCHECK(success);
+
+  gfx::Rect window_bounds =
+      GetBaseWindowForWebContents(web_contents())->GetBounds();
+
+  risk::GetFingerprint(
+      gaia_id, window_bounds, *web_contents(), *profile_->GetPrefs(),
+      base::Bind(&AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData(
+    scoped_ptr<risk::Fingerprint> fingerprint) {
+  NOTIMPLEMENTED();
 }
 
 }  // namespace autofill

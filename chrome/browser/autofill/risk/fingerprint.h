@@ -11,6 +11,10 @@
 
 class PrefService;
 
+namespace content {
+class WebContents;
+}
+
 namespace gfx {
 class Rect;
 }
@@ -26,16 +30,14 @@ class Fingerprint;
 
 // Asynchronously calls |callback| with statistics that, collectively, provide a
 // unique fingerprint for this (machine, user) pair, used for fraud prevention.
-// The |gaia_id| should be the user id for Google's authentication system.
-// The |window_bounds| should be the bounds of the containing Chrome window.
-// The |content_bounds| should be the bounds of the web contents view for the
-// page the user is interacting with.  The |prefs| should reflect the active
-// Chrome profile's user preferences.
+// |gaia_id| should be the user id for Google's authentication system.
+// |window_bounds| should be the bounds of the containing Chrome window.
+// |web_contents| should be the host for the page the user is interacting with.
+// |prefs| should reflect the active Chrome profile's user preferences.
 void GetFingerprint(
     int64 gaia_id,
     const gfx::Rect& window_bounds,
-    const gfx::Rect& content_bounds,
-    const WebKit::WebScreenInfo& screen_info,
+    const content::WebContents& web_contents,
     const PrefService& prefs,
     const base::Callback<void(scoped_ptr<Fingerprint>)>& callback);
 

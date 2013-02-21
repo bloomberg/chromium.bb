@@ -28,6 +28,10 @@ namespace gfx {
 class Rect;
 }
 
+namespace WebKit {
+struct WebScreenInfo;
+}
+
 namespace content {
 
 class RenderProcessHost;
@@ -276,6 +280,9 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
 
   // Remove a keyboard listener.
   virtual void RemoveKeyboardListener(KeyboardListener* listener) = 0;
+
+  // Get the screen info corresponding to this render widget.
+  virtual void GetWebScreenInfo(WebKit::WebScreenInfo* result) = 0;
 
  protected:
   friend class RenderWidgetHostImpl;

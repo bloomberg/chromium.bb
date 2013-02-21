@@ -1254,6 +1254,13 @@ void RenderWidgetHostImpl::RemoveKeyboardListener(
   keyboard_listeners_.remove(listener);
 }
 
+void RenderWidgetHostImpl::GetWebScreenInfo(WebKit::WebScreenInfo* result) {
+  if (GetView())
+    static_cast<RenderWidgetHostViewPort*>(GetView())->GetScreenInfo(result);
+  else
+    RenderWidgetHostViewPort::GetDefaultScreenInfo(result);
+}
+
 void RenderWidgetHostImpl::NotifyScreenInfoChanged() {
   WebKit::WebScreenInfo screen_info;
   GetWebScreenInfo(&screen_info);
@@ -1412,14 +1419,6 @@ void RenderWidgetHostImpl::SetShouldAutoResize(bool enable) {
 bool RenderWidgetHostImpl::IsInOverscrollGesture() const {
   return overscroll_controller_.get() &&
          overscroll_controller_->overscroll_mode() != OVERSCROLL_NONE;
-}
-
-void RenderWidgetHostImpl::GetWebScreenInfo(WebKit::WebScreenInfo* result) {
-  if (GetView()) {
-    static_cast<RenderWidgetHostViewPort*>(GetView())->GetScreenInfo(result);
-  } else {
-    RenderWidgetHostViewPort::GetDefaultScreenInfo(result);
-  }
 }
 
 void RenderWidgetHostImpl::Destroy() {
