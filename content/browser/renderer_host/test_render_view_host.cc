@@ -179,50 +179,14 @@ bool TestRenderWidgetHostView::IsSpeaking() const {
 void TestRenderWidgetHostView::StopSpeaking() {
 }
 
-void TestRenderWidgetHostView::PluginFocusChanged(bool focused,
-                                                  int plugin_id) {
-}
-
-void TestRenderWidgetHostView::StartPluginIme() {
-}
-
 bool TestRenderWidgetHostView::PostProcessEventForPluginIme(
     const NativeWebKeyboardEvent& event) {
   return false;
 }
 
-gfx::PluginWindowHandle
-TestRenderWidgetHostView::AllocateFakePluginWindowHandle(
-    bool opaque,
-    bool root) {
-  return gfx::kNullPluginWindow;
-}
-
-void TestRenderWidgetHostView::DestroyFakePluginWindowHandle(
-    gfx::PluginWindowHandle window) {
-}
-
-void TestRenderWidgetHostView::AcceleratedSurfaceSetIOSurface(
-    gfx::PluginWindowHandle window,
-    int32 width,
-    int32 height,
-    uint64 surface_id) {
-}
-
-void TestRenderWidgetHostView::AcceleratedSurfaceSetTransportDIB(
-    gfx::PluginWindowHandle window,
-    int32 width,
-    int32 height,
-    TransportDIB::Handle transport_dib) {
-}
-
 #elif defined(OS_WIN) && !defined(USE_AURA)
 void TestRenderWidgetHostView::WillWmDestroy() {
 }
-#endif
-
-#if defined(OS_ANDROID)
-void TestRenderWidgetHostView::StartContentIntent(const GURL&) {}
 #endif
 
 gfx::Rect TestRenderWidgetHostView::GetBoundsInRootWindow() {

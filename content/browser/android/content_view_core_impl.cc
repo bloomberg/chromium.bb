@@ -349,7 +349,7 @@ void ContentViewCoreImpl::SetBackgroundColor(JNIEnv* env,
   RenderWidgetHostViewAndroid* rwhva = GetRenderWidgetHostViewAndroid();
   if (!rwhva)
     return;
-  rwhva->SetCachedBackgroundColor(color);
+  rwhva->OnDidChangeBodyBackgroundColor(color);
 }
 
 void ContentViewCoreImpl::OnHide(JNIEnv* env, jobject obj) {

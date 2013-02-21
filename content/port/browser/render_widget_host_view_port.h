@@ -259,41 +259,17 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
   // Called just before GetBackingStore blocks for an updated frame.
   virtual void AboutToWaitForBackingStoreMsg() = 0;
 
-  // Informs the view that a plugin gained or lost focus.
-  virtual void PluginFocusChanged(bool focused, int plugin_id) = 0;
-
-  // Start plugin IME.
-  virtual void StartPluginIme() = 0;
-
   // Does any event handling necessary for plugin IME; should be called after
   // the plugin has already had a chance to process the event. If plugin IME is
   // not enabled, this is a no-op, so it is always safe to call.
   // Returns true if the event was handled by IME.
   virtual bool PostProcessEventForPluginIme(
       const NativeWebKeyboardEvent& event) = 0;
-
-  // Methods associated with GPU-accelerated plug-in instances.
-  virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle(
-      bool opaque, bool root) = 0;
-  virtual void DestroyFakePluginWindowHandle(
-      gfx::PluginWindowHandle window) = 0;
-  virtual void AcceleratedSurfaceSetIOSurface(
-      gfx::PluginWindowHandle window,
-      int32 width,
-      int32 height,
-      uint64 io_surface_identifier) = 0;
-  virtual void AcceleratedSurfaceSetTransportDIB(
-      gfx::PluginWindowHandle window,
-      int32 width,
-      int32 height,
-      TransportDIB::Handle transport_dib) = 0;
 #endif
 
 #if defined(OS_ANDROID)
   virtual void ShowDisambiguationPopup(const gfx::Rect& target_rect,
                                        const SkBitmap& zoomed_bitmap) = 0;
-  virtual void SetCachedPageScaleFactorLimits(float minimum_scale,
-                                              float maximum_scale) = 0;
   virtual void UpdateFrameInfo(const gfx::Vector2d& scroll_offset,
                                float page_scale_factor,
                                float min_page_scale_factor,
@@ -303,11 +279,6 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
                                const gfx::Vector2dF& content_offset) = 0;
   virtual void HasTouchEventHandlers(bool need_touch_events) = 0;
 #endif
-
-#if defined(TOOLKIT_GTK)
-  virtual void CreatePluginContainer(gfx::PluginWindowHandle id) = 0;
-  virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) = 0;
-#endif  // defined(TOOLKIT_GTK)
 
 #if defined(OS_WIN) && !defined(USE_AURA)
   virtual void WillWmDestroy() = 0;

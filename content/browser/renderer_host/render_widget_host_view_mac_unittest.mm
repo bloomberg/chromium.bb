@@ -175,10 +175,11 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
   gfx::PluginWindowHandle AddAcceleratedPluginView(int w, int h) {
     // Create an accelerated view the size of the rhwvmac.
     [rwhv_cocoa_.get() setFrame:NSMakeRect(0, 0, w, h)];
-    gfx::PluginWindowHandle accelerated_handle =
-        rwhv_mac_->AllocateFakePluginWindowHandle(/*opaque=*/false,
-                                                  /*root=*/false);
-    rwhv_mac_->AcceleratedSurfaceSetIOSurface(accelerated_handle, w, h, 0);
+    gfx::PluginWindowHandle accelerated_handle;
+    rwhv_mac_->OnAllocateFakePluginWindowHandle(/*opaque=*/false,
+                                                /*root=*/false,
+                                                &accelerated_handle);
+    rwhv_mac_->OnAcceleratedSurfaceSetIOSurface(accelerated_handle, w, h, 0);
 
     // The accelerated view isn't shown until it has a valid rect and has been
     // painted to.
@@ -198,6 +199,11 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
 
     return accelerated_handle;
   }
+  
+  void DestroyPluginView(gfx::PluginWindowHandle accelerated_handle) {
+    rwhv_mac_->OnDestroyFakePluginWindowHandle(accelerated_handle);
+  }
+  
  private:
   // This class isn't derived from PlatformTest.
   base::mac::ScopedNSAutoreleasePool pool_;
@@ -252,7 +258,7 @@ TEST_F(RenderWidgetHostViewMacTest, FocusAcceleratedView) {
   EXPECT_EQ(rwhv_cocoa_.get(), [window firstResponder]);
 
   // Clean up.
-  rwhv_mac_->DestroyFakePluginWindowHandle(accelerated_handle);
+  DestroyPluginView(accelerated_handle);
 }
 
 TEST_F(RenderWidgetHostViewMacTest, AcceptsFirstResponder) {
@@ -322,7 +328,7 @@ TEST_F(RenderWidgetHostViewMacTest, TakesFocusOnMouseDownWithAcceleratedView) {
   EXPECT_EQ(rwhv_cocoa_.get(), [window firstResponder]);
 
   // Clean up.
-  rwhv_mac_->DestroyFakePluginWindowHandle(accelerated_handle);
+  DestroyPluginView(accelerated_handle);
 }
 
 TEST_F(RenderWidgetHostViewMacTest, Fullscreen) {

@@ -15,6 +15,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
+#include "ipc/ipc_sender.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -43,11 +44,13 @@ struct NativeWebKeyboardEvent;
 class CONTENT_EXPORT RenderWidgetHostViewGtk
     : public RenderWidgetHostViewBase,
       public BrowserAccessibilityDelegate,
-      public ui::ActiveWindowWatcherXObserver {
+      public ui::ActiveWindowWatcherXObserver,
+      public IPC::Sender {
  public:
   virtual ~RenderWidgetHostViewGtk();
 
   // RenderWidgetHostView implementation.
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
   virtual void InitAsChild(gfx::NativeView parent_view) OVERRIDE;
   virtual RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
@@ -120,8 +123,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk
   virtual void AcceleratedSurfaceSuspend() OVERRIDE;
   virtual void AcceleratedSurfaceRelease() OVERRIDE;
   virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) OVERRIDE;
-  virtual void CreatePluginContainer(gfx::PluginWindowHandle id) OVERRIDE;
-  virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) OVERRIDE;
   virtual void SetHasHorizontalScrollbar(
       bool has_horizontal_scrollbar) OVERRIDE;
   virtual void SetScrollOffsetPinning(
@@ -137,6 +138,9 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk
 
   // ActiveWindowWatcherXObserver implementation.
   virtual void ActiveWindowChanged(GdkWindow* active_window) OVERRIDE;
+
+  // IPC::Sender implementation:
+  virtual bool Send(IPC::Message* message) OVERRIDE;
 
   // If the widget is aligned with an edge of the monitor its on and the user
   // attempts to drag past that edge we track the number of times it has
@@ -210,6 +214,9 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk
 
   // Cause the next query for the widget center to recompute the cached value.
   void MarkCachedWidgetCenterStale();
+
+  void OnCreatePluginContainer(gfx::PluginWindowHandle id);
+  void OnDestroyPluginContainer(gfx::PluginWindowHandle id);
 
   gfx::Point GetWidgetCenter();
 

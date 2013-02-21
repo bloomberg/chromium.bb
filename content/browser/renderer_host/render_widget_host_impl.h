@@ -311,9 +311,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
     return ignore_input_events_;
   }
 
-  // Activate deferred plugin handles.
-  void ActivateDeferredPluginHandles();
-
   bool ShouldForwardTouchEvent() const;
 
   bool has_touch_handler() const { return has_touch_handler_; }
@@ -586,36 +583,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void OnShowDisambiguationPopup(const gfx::Rect& rect,
                                  const gfx::Size& size,
                                  const TransportDIB::Id& id);
-
-#if defined(OS_MACOSX)
-  void OnPluginFocusChanged(bool focused, int plugin_id);
-  void OnStartPluginIme();
-  void OnAllocateFakePluginWindowHandle(bool opaque,
-                                        bool root,
-                                        gfx::PluginWindowHandle* id);
-  void OnDestroyFakePluginWindowHandle(gfx::PluginWindowHandle id);
-  void OnAcceleratedSurfaceSetIOSurface(gfx::PluginWindowHandle window,
-                                        int32 width,
-                                        int32 height,
-                                        uint64 mach_port);
-  void OnAcceleratedSurfaceSetTransportDIB(gfx::PluginWindowHandle window,
-                                           int32 width,
-                                           int32 height,
-                                           TransportDIB::Handle transport_dib);
-  void OnAcceleratedSurfaceBuffersSwapped(gfx::PluginWindowHandle window,
-                                          uint64 surface_handle);
-#endif
-#if defined(OS_ANDROID)
-  void OnUpdateFrameInfo(const gfx::Vector2d& scroll_offset,
-                         float page_scale_factor,
-                         float min_page_scale_factor,
-                         float max_page_scale_factor,
-                         const gfx::Size& content_size);
-#endif
-#if defined(TOOLKIT_GTK)
-  void OnCreatePluginContainer(gfx::PluginWindowHandle id);
-  void OnDestroyPluginContainer(gfx::PluginWindowHandle id);
-#endif
 #if defined(OS_WIN)
   void OnWindowlessPluginDummyWindowCreated(
       gfx::NativeViewId dummy_activation_window);
@@ -848,8 +815,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // switching back to the original tab, because the content may already be
   // changed.
   bool suppress_next_char_events_;
-
-  std::vector<gfx::PluginWindowHandle> deferred_plugin_handles_;
 
   // The last scroll offset of the render widget.
   gfx::Vector2d last_scroll_offset_;

@@ -137,6 +137,10 @@ void RenderWidgetHostViewGuest::SetBounds(const gfx::Rect& rect) {
   platform_view_->SetBounds(rect);
 }
 
+bool RenderWidgetHostViewGuest::OnMessageReceived(const IPC::Message& msg) {
+  return platform_view_->OnMessageReceived(msg);
+}
+
 void RenderWidgetHostViewGuest::InitAsChild(
     gfx::NativeView parent_view) {
   platform_view_->InitAsChild(parent_view);
@@ -351,63 +355,17 @@ void RenderWidgetHostViewGuest::AboutToWaitForBackingStoreMsg() {
   NOTREACHED();
 }
 
-void RenderWidgetHostViewGuest::PluginFocusChanged(bool focused,
-                                                   int plugin_id) {
-  platform_view_->PluginFocusChanged(focused, plugin_id);
-}
-
-void RenderWidgetHostViewGuest::StartPluginIme() {
-  platform_view_->StartPluginIme();
-}
-
 bool RenderWidgetHostViewGuest::PostProcessEventForPluginIme(
     const NativeWebKeyboardEvent& event) {
   return false;
 }
 
-gfx::PluginWindowHandle
-RenderWidgetHostViewGuest::AllocateFakePluginWindowHandle(
-    bool opaque, bool root) {
-  return platform_view_->AllocateFakePluginWindowHandle(opaque, root);
-}
-
-void RenderWidgetHostViewGuest::DestroyFakePluginWindowHandle(
-    gfx::PluginWindowHandle window) {
-  return platform_view_->DestroyFakePluginWindowHandle(window);
-}
-
-void RenderWidgetHostViewGuest::AcceleratedSurfaceSetIOSurface(
-    gfx::PluginWindowHandle window,
-    int32 width,
-    int32 height,
-    uint64 io_surface_identifier) {
-  NOTREACHED();
-}
-
-void RenderWidgetHostViewGuest::AcceleratedSurfaceSetTransportDIB(
-    gfx::PluginWindowHandle window,
-    int32 width,
-    int32 height,
-    TransportDIB::Handle transport_dib) {
-  NOTREACHED();
-}
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_ANDROID)
-void RenderWidgetHostViewGuest::StartContentIntent(const GURL& content_url) {
-}
-
-void RenderWidgetHostViewGuest::SetCachedBackgroundColor(SkColor color) {
-}
-
 void RenderWidgetHostViewGuest::ShowDisambiguationPopup(
     const gfx::Rect& target_rect,
     const SkBitmap& zoomed_bitmap) {
-}
-
-void RenderWidgetHostViewGuest::SetCachedPageScaleFactorLimits(
-    float minimum_scale,
-    float maximum_scale) {
 }
 
 void RenderWidgetHostViewGuest::UpdateFrameInfo(
@@ -431,14 +389,6 @@ GdkEventButton* RenderWidgetHostViewGuest::GetLastMouseDown() {
 
 gfx::NativeView RenderWidgetHostViewGuest::BuildInputMethodsGtkMenu() {
   return gfx::NativeView();
-}
-
-void RenderWidgetHostViewGuest::CreatePluginContainer(
-    gfx::PluginWindowHandle id) {
-}
-
-void RenderWidgetHostViewGuest::DestroyPluginContainer(
-    gfx::PluginWindowHandle id) {
 }
 #endif  // defined(TOOLKIT_GTK)
 

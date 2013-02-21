@@ -73,7 +73,11 @@ bool RenderWidgetHostViewAndroid::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostViewAndroid, message)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ImeBatchStateChanged_ACK,
-                        ProcessImeBatchStateAck)
+                        OnProcessImeBatchStateAck)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFrameInfo, OnUpdateFrameInfo)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_StartContentIntent, OnStartContentIntent)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeBodyBackgroundColor,
+                        OnDidChangeBodyBackgroundColor)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -299,9 +303,40 @@ int RenderWidgetHostViewAndroid::GetNativeImeAdapter() {
   return reinterpret_cast<int>(&ime_adapter_android_);
 }
 
-void RenderWidgetHostViewAndroid::ProcessImeBatchStateAck(bool is_begin) {
+void RenderWidgetHostViewAndroid::OnProcessImeBatchStateAck(bool is_begin) {
   if (content_view_core_)
     content_view_core_->ProcessImeBatchStateAck(is_begin);
+}
+
+void RenderWidgetHostViewAndroid::OnUpdateFrameInfo(
+    const gfx::Vector2d& scroll_offset,
+    float page_scale_factor,
+    float min_page_scale_factor,
+    float max_page_scale_factor,
+    const gfx::Size& content_size) {
+  UpdateFrameInfo(scroll_offset,
+                  page_scale_factor,
+                  min_page_scale_factor,
+                  max_page_scale_factor,
+                  content_size,
+                  gfx::Vector2dF(),
+                  gfx::Vector2dF());
+}
+
+void RenderWidgetHostViewAndroid::OnDidChangeBodyBackgroundColor(
+    SkColor color) {
+  if (cached_background_color_ == color)
+    return;
+
+  cached_background_color_ = color;
+  if (content_view_core_)
+    content_view_core_->OnBackgroundColorChanged(color);
+}
+
+void RenderWidgetHostViewAndroid::OnStartContentIntent(
+    const GURL& content_url) {
+  if (content_view_core_)
+    content_view_core_->StartContentIntent(content_url);
 }
 
 void RenderWidgetHostViewAndroid::ImeCancelComposition() {
@@ -493,12 +528,6 @@ bool RenderWidgetHostViewAndroid::HasAcceleratedSurface(
   return false;
 }
 
-void RenderWidgetHostViewAndroid::StartContentIntent(
-    const GURL& content_url) {
-  if (content_view_core_)
-    content_view_core_->StartContentIntent(content_url);
-}
-
 void RenderWidgetHostViewAndroid::GetScreenInfo(WebKit::WebScreenInfo* result) {
   // ScreenInfo isn't tied to the widget on Android. Always return the default.
   RenderWidgetHostViewBase::GetDefaultScreenInfo(result);
@@ -597,25 +626,8 @@ void RenderWidgetHostViewAndroid::MoveCaret(const gfx::Point& point) {
     host_->MoveCaret(point);
 }
 
-
-void RenderWidgetHostViewAndroid::SetCachedBackgroundColor(SkColor color) {
-  if (cached_background_color_ == color)
-    return;
-
-  cached_background_color_ = color;
-  if (content_view_core_)
-    content_view_core_->OnBackgroundColorChanged(color);
-}
-
 SkColor RenderWidgetHostViewAndroid::GetCachedBackgroundColor() const {
   return cached_background_color_;
-}
-
-void RenderWidgetHostViewAndroid::SetCachedPageScaleFactorLimits(
-    float minimum_scale,
-    float maximum_scale) {
-  if (content_view_core_)
-    content_view_core_->UpdatePageScaleLimits(minimum_scale, maximum_scale);
 }
 
 void RenderWidgetHostViewAndroid::UpdateFrameInfo(

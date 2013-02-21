@@ -135,32 +135,12 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) OVERRIDE;
 #if defined(OS_MACOSX)
   virtual void AboutToWaitForBackingStoreMsg() OVERRIDE;
-  virtual void PluginFocusChanged(bool focused, int plugin_id) OVERRIDE;
-  virtual void StartPluginIme() OVERRIDE;
   virtual bool PostProcessEventForPluginIme(
       const NativeWebKeyboardEvent& event) OVERRIDE;
-  virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle(
-      bool opaque,
-      bool root) OVERRIDE;
-  virtual void DestroyFakePluginWindowHandle(
-      gfx::PluginWindowHandle window) OVERRIDE;
-  virtual void AcceleratedSurfaceSetIOSurface(gfx::PluginWindowHandle window,
-                                              int32 width,
-                                              int32 height,
-                                              uint64 surface_id) OVERRIDE;
-  virtual void AcceleratedSurfaceSetTransportDIB(
-      gfx::PluginWindowHandle window,
-      int32 width,
-      int32 height,
-      TransportDIB::Handle transport_dib) OVERRIDE;
 #elif defined(OS_ANDROID)
-  virtual void StartContentIntent(const GURL&) OVERRIDE;
   virtual void ShowDisambiguationPopup(
       const gfx::Rect& target_rect,
       const SkBitmap& zoomed_bitmap) OVERRIDE {}
-  virtual void SetCachedBackgroundColor(SkColor color) OVERRIDE {}
-  virtual void SetCachedPageScaleFactorLimits(float minimum_scale,
-                                              float maximum_scale) OVERRIDE {}
   virtual void UpdateFrameInfo(const gfx::Vector2d& scroll_offset,
                                float page_scale_factor,
                                float min_page_scale_factor,
@@ -181,12 +161,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   virtual void OnAccessibilityNotifications(
       const std::vector<AccessibilityHostMsg_NotificationParams>&
           params) OVERRIDE {}
-
-#if defined(TOOLKIT_GTK)
-  virtual void CreatePluginContainer(gfx::PluginWindowHandle id) OVERRIDE { }
-  virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) OVERRIDE { }
-#endif  // defined(TOOLKIT_GTK)
-
   virtual gfx::GLSurfaceHandle GetCompositingSurface() OVERRIDE;
 #if defined(OS_WIN) && !defined(USE_AURA)
   virtual void SetClickthroughRegion(SkRegion* region) OVERRIDE;

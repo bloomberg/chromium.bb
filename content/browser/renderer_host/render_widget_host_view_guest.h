@@ -43,6 +43,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   virtual ~RenderWidgetHostViewGuest();
 
   // RenderWidgetHostView implementation.
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
   virtual void InitAsChild(gfx::NativeView parent_view) OVERRIDE;
   virtual RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
@@ -140,36 +141,14 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
 
   // RenderWidgetHostViewPort implementation.
   virtual void AboutToWaitForBackingStoreMsg() OVERRIDE;
-  virtual void PluginFocusChanged(bool focused, int plugin_id) OVERRIDE;
-  virtual void StartPluginIme() OVERRIDE;
   virtual bool PostProcessEventForPluginIme(
       const NativeWebKeyboardEvent& event) OVERRIDE;
-  virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle(
-      bool opaque, bool root) OVERRIDE;
-  virtual void DestroyFakePluginWindowHandle(
-      gfx::PluginWindowHandle window) OVERRIDE;
-  virtual void AcceleratedSurfaceSetIOSurface(
-      gfx::PluginWindowHandle window,
-      int32 width,
-      int32 height,
-      uint64 io_surface_identifier) OVERRIDE;
-  virtual void AcceleratedSurfaceSetTransportDIB(
-      gfx::PluginWindowHandle window,
-      int32 width,
-      int32 height,
-      TransportDIB::Handle transport_dib) OVERRIDE;
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_ANDROID)
-  // RenderWidgetHostView implementation.
-  virtual void StartContentIntent(const GURL& content_url) OVERRIDE;
-  virtual void SetCachedBackgroundColor(SkColor color) OVERRIDE;
-
   // RenderWidgetHostViewPort implementation.
   virtual void ShowDisambiguationPopup(const gfx::Rect& target_rect,
                                        const SkBitmap& zoomed_bitmap) OVERRIDE;
-  virtual void SetCachedPageScaleFactorLimits(float minimum_scale,
-                                              float maximum_scale) OVERRIDE;
   virtual void UpdateFrameInfo(const gfx::Vector2d& scroll_offset,
                                float page_scale_factor,
                                float min_page_scale_factor,
@@ -183,8 +162,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
 #if defined(TOOLKIT_GTK)
   virtual GdkEventButton* GetLastMouseDown() OVERRIDE;
   virtual gfx::NativeView BuildInputMethodsGtkMenu() OVERRIDE;
-  virtual void CreatePluginContainer(gfx::PluginWindowHandle id) OVERRIDE;
-  virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) OVERRIDE;
 #endif  // defined(TOOLKIT_GTK)
 
 #if defined(OS_WIN) && !defined(USE_AURA)

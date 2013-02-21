@@ -107,6 +107,17 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // Returns the currently selected text.
   virtual string16 GetSelectedText() const = 0;
 
+  // Subclasses should override this method to do what is appropriate to set
+  // the custom background for their platform.
+  virtual void SetBackground(const SkBitmap& background) = 0;
+  virtual const SkBitmap& GetBackground() = 0;
+
+  // Return value indicates whether the mouse is locked successfully or not.
+  virtual bool LockMouse() = 0;
+  virtual void UnlockMouse() = 0;
+  // Returns true if the mouse pointer is currently locked.
+  virtual bool IsMouseLocked() = 0;
+
 #if defined(OS_MACOSX)
   // Set the view's active state (i.e., tint state of controls).
   virtual void SetActive(bool active) = 0;
@@ -148,26 +159,10 @@ class CONTENT_EXPORT RenderWidgetHostView {
   virtual gfx::NativeView BuildInputMethodsGtkMenu() = 0;
 #endif  // defined(TOOLKIT_GTK)
 
-#if defined(OS_ANDROID)
-  virtual void StartContentIntent(const GURL& content_url) = 0;
-  virtual void SetCachedBackgroundColor(SkColor color) = 0;
-#endif
-
-  // Subclasses should override this method to do what is appropriate to set
-  // the custom background for their platform.
-  virtual void SetBackground(const SkBitmap& background) = 0;
-  virtual const SkBitmap& GetBackground() = 0;
-
 #if defined(OS_WIN) && !defined(USE_AURA)
   // The region specified will be transparent to mouse clicks.
   virtual void SetClickthroughRegion(SkRegion* region) = 0;
 #endif
-
-  // Return value indicates whether the mouse is locked successfully or not.
-  virtual bool LockMouse() = 0;
-  virtual void UnlockMouse() = 0;
-  // Returns true if the mouse pointer is currently locked.
-  virtual bool IsMouseLocked() = 0;
 };
 
 }  // namespace content

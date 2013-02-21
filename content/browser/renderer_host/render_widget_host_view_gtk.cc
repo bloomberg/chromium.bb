@@ -573,6 +573,18 @@ RenderWidgetHostViewGtk::~RenderWidgetHostViewGtk() {
   view_.Destroy();
 }
 
+bool RenderWidgetHostViewGtk::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostViewGtk, message)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_CreatePluginContainer,
+                        OnCreatePluginContainer)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DestroyPluginContainer,
+                        OnDestroyPluginContainer)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
 void RenderWidgetHostViewGtk::InitAsChild(
     gfx::NativeView parent_view) {
   DoSharedInit();
@@ -773,6 +785,10 @@ void RenderWidgetHostViewGtk::ActiveWindowChanged(GdkWindow* window) {
   // down.
   if (is_fullscreen_ && our_window != window && made_active_)
     host_->Shutdown();
+}
+
+bool RenderWidgetHostViewGtk::Send(IPC::Message* message) {
+  return host_->Send(message);
 }
 
 bool RenderWidgetHostViewGtk::IsSurfaceAvailableForCopy() const {
@@ -1123,7 +1139,7 @@ bool RenderWidgetHostViewGtk::HasAcceleratedSurface(
 
 void RenderWidgetHostViewGtk::SetBackground(const SkBitmap& background) {
   RenderWidgetHostViewBase::SetBackground(background);
-  host_->Send(new ViewMsg_SetBackground(host_->GetRoutingID(), background));
+  Send(new ViewMsg_SetBackground(host_->GetRoutingID(), background));
 }
 
 void RenderWidgetHostViewGtk::ModifyEventForEdgeDragging(
@@ -1262,16 +1278,6 @@ void RenderWidgetHostViewGtk::ShowCurrentCursor() {
   gdk_window_set_cursor(gtk_widget_get_window(view_.get()), gdk_cursor);
 }
 
-void RenderWidgetHostViewGtk::CreatePluginContainer(
-    gfx::PluginWindowHandle id) {
-  plugin_container_manager_.CreatePluginContainer(id);
-}
-
-void RenderWidgetHostViewGtk::DestroyPluginContainer(
-    gfx::PluginWindowHandle id) {
-  plugin_container_manager_.DestroyPluginContainer(id);
-}
-
 void RenderWidgetHostViewGtk::SetHasHorizontalScrollbar(
     bool has_horizontal_scrollbar) {
 }
@@ -1400,7 +1406,7 @@ void RenderWidgetHostViewGtk::ForwardKeyboardEvent(
   EditCommands edit_commands;
   if (!event.skip_in_browser &&
       key_bindings_handler_->Match(event, &edit_commands)) {
-    host_->Send(new ViewMsg_SetEditCommandsForNextKeyEvent(
+    Send(new ViewMsg_SetEditCommandsForNextKeyEvent(
         host_->GetRoutingID(), edit_commands));
     NativeWebKeyboardEvent copy_event(event);
     copy_event.match_edit_command = true;
@@ -1592,6 +1598,16 @@ AtkObject* RenderWidgetHostViewGtk::GetAccessible() {
 
   atk_object_set_role(root->GetAtkObject(), ATK_ROLE_HTML_CONTAINER);
   return root->GetAtkObject();
+}
+
+void RenderWidgetHostViewGtk::OnCreatePluginContainer(
+    gfx::PluginWindowHandle id) {
+  plugin_container_manager_.CreatePluginContainer(id);
+}
+
+void RenderWidgetHostViewGtk::OnDestroyPluginContainer(
+    gfx::PluginWindowHandle id) {
+  plugin_container_manager_.DestroyPluginContainer(id);
 }
 
 }  // namespace content

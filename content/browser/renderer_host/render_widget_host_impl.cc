@@ -392,29 +392,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_UnlockMouse, OnUnlockMouse)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowDisambiguationPopup,
                         OnShowDisambiguationPopup)
-#if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PluginFocusChanged, OnPluginFocusChanged)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_StartPluginIme, OnStartPluginIme)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateFakePluginWindowHandle,
-                        OnAllocateFakePluginWindowHandle)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DestroyFakePluginWindowHandle,
-                        OnDestroyFakePluginWindowHandle)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AcceleratedSurfaceSetIOSurface,
-                        OnAcceleratedSurfaceSetIOSurface)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AcceleratedSurfaceSetTransportDIB,
-                        OnAcceleratedSurfaceSetTransportDIB)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AcceleratedSurfaceBuffersSwapped,
-                        OnAcceleratedSurfaceBuffersSwapped)
-#endif
-#if defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFrameInfo, OnUpdateFrameInfo)
-#endif
-#if defined(TOOLKIT_GTK)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CreatePluginContainer,
-                        OnCreatePluginContainer)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DestroyPluginContainer,
-                        OnDestroyPluginContainer)
-#endif
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(ViewHostMsg_WindowlessPluginDummyWindowCreated,
                         OnWindowlessPluginDummyWindowCreated)
@@ -2216,21 +2193,6 @@ void RenderWidgetHostImpl::ProcessKeyboardEventAck(int type, bool processed) {
       // HandleKeyboardEvent destroys this RenderWidgetHostImpl).
     }
   }
-}
-
-void RenderWidgetHostImpl::ActivateDeferredPluginHandles() {
-#if !defined(USE_AURA)
-  if (view_ == NULL)
-    return;
-
-  for (int i = 0; i < static_cast<int>(deferred_plugin_handles_.size()); i++) {
-#if defined(TOOLKIT_GTK)
-    view_->CreatePluginContainer(deferred_plugin_handles_[i]);
-#endif
-  }
-
-  deferred_plugin_handles_.clear();
-#endif
 }
 
 const gfx::Vector2d& RenderWidgetHostImpl::GetLastScrollOffset() const {

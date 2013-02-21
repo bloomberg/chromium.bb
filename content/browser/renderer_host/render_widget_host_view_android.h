@@ -135,11 +135,7 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
           params) OVERRIDE;
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
-  virtual void StartContentIntent(const GURL& content_url) OVERRIDE;
   virtual void HasTouchEventHandlers(bool need_touch_events) OVERRIDE;
-  virtual void SetCachedBackgroundColor(SkColor color) OVERRIDE;
-  virtual void SetCachedPageScaleFactorLimits(float minimum_scale,
-                                              float maximum_scale) OVERRIDE;
   virtual void UpdateFrameInfo(const gfx::Vector2d& scroll_offset,
                                float page_scale_factor,
                                float min_page_scale_factor,
@@ -159,7 +155,14 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   void SendMouseWheelEvent(const WebKit::WebMouseWheelEvent& event);
   void SendGestureEvent(const WebKit::WebGestureEvent& event);
 
-  void ProcessImeBatchStateAck(bool is_begin);
+  void OnProcessImeBatchStateAck(bool is_begin);
+  void OnUpdateFrameInfo(const gfx::Vector2d& scroll_offset,
+                         float page_scale_factor,
+                         float min_page_scale_factor,
+                         float max_page_scale_factor,
+                         const gfx::Size& content_size);
+  void OnDidChangeBodyBackgroundColor(SkColor color);
+  void OnStartContentIntent(const GURL& content_url);
 
   int GetNativeImeAdapter();
 

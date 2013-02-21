@@ -562,11 +562,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnShowPopup(const ViewHostMsg_ShowPopup_Params& params);
 #endif
 
-#if defined(OS_ANDROID)
-  void OnDidChangeBodyBackgroundColor(SkColor color);
-  void OnStartContentIntent(const GURL& content_url);
-#endif
-
  private:
   friend class TestRenderViewHost;
 
