@@ -1132,4 +1132,9 @@ bool VerifyPathControlledByAdmin(const FilePath& path) {
 }
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
+int GetMaximumPathComponentLength(const FilePath& path) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  return pathconf(path.value().c_str(), _PC_NAME_MAX);
+}
+
 }  // namespace file_util

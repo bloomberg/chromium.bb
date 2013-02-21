@@ -422,6 +422,10 @@ BASE_EXPORT bool VerifyPathControlledByUser(const base::FilePath& base,
 BASE_EXPORT bool VerifyPathControlledByAdmin(const base::FilePath& path);
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
+// Returns the maximum length of path component on the volume containing
+// the directory |path|, in the number of FilePath::CharType, or -1 on failure.
+BASE_EXPORT int GetMaximumPathComponentLength(const base::FilePath& path);
+
 // A class to handle auto-closing of FILE*'s.
 class ScopedFILEClose {
  public:

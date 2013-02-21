@@ -12,6 +12,9 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
+#include "base/string_util.h"
+#include "base/stringprintf.h"
+#include "base/third_party/icu/icu_utf.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
@@ -25,6 +28,16 @@ using content::DownloadItem;
 namespace {
 
 typedef std::map<content::DownloadId, base::FilePath> ReservationMap;
+
+// The lower bound for file name truncation. If the truncation results in a name
+// shorter than this limit, we give up automatic truncation and prompt the user.
+static const size_t kTruncatedNameLengthLowerbound = 5;
+
+// The length of the suffix string we append for an intermediate file name.
+// In the file name truncation, we keep the margin to append the suffix.
+// TODO(kinaba): remove the margin. The user should be able to set maximum
+// possible filename.
+static const size_t kIntermediateNameSuffixLength = sizeof(".crdownload") - 1;
 
 // Map of download path reservations. Each reserved path is associated with a
 // DownloadId. This object is destroyed in |Revoke()| when there are no more
@@ -90,10 +103,51 @@ bool IsPathInUse(const base::FilePath& path) {
   return false;
 }
 
+// Truncates path->BaseName() to make path->BaseName().value().size() <= limit.
+// - It keeps the extension as is. Only truncates the body part.
+// - It secures the base filename length to be more than or equals to
+//   kTruncatedNameLengthLowerbound.
+// If it was unable to shorten the name, returns false.
+bool TruncateFileName(base::FilePath* path, size_t limit) {
+  base::FilePath basename(path->BaseName());
+  // It is already short enough.
+  if (basename.value().size() <= limit)
+    return true;
+
+  base::FilePath dir(path->DirName());
+  base::FilePath::StringType ext(basename.Extension());
+  base::FilePath::StringType name(basename.RemoveExtension().value());
+
+  // Impossible to satisfy the limit.
+  if (limit < kTruncatedNameLengthLowerbound + ext.size())
+    return false;
+  limit -= ext.size();
+
+  // Encoding specific truncation logic.
+  base::FilePath::StringType truncated;
+#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
+  // UTF-8.
+  TruncateUTF8ToByteSize(name, limit, &truncated);
+#elif defined(OS_WIN)
+  // UTF-16.
+  DCHECK(name.size() > limit);
+  truncated = name.substr(0, CBU16_IS_TRAIL(name[limit]) ? limit - 1 : limit);
+#else
+  // We cannot generally assume that the file name encoding is in UTF-8 (see
+  // the comment for FilePath::AsUTF8Unsafe), hence no safe way to truncate.
+#endif
+
+  if (truncated.size() < kTruncatedNameLengthLowerbound)
+    return false;
+  *path = dir.Append(truncated + ext);
+  return true;
+}
+
 // Called on the FILE thread to reserve a download path. This method:
 // - Creates directory |default_download_path| if it doesn't exist.
 // - Verifies that the parent directory of |suggested_path| exists and is
 //   writeable.
+// - Truncates the suggested name if it exceeds the filesystem's limit.
 // - Uniquifies |suggested_path| if |should_uniquify_path| is true.
 // - Schedules |callback| on the UI thread with the reserved path and a flag
 //   indicating whether the returned path has been successfully verified.
@@ -118,6 +172,7 @@ void CreateReservation(
   base::FilePath target_path(suggested_path.NormalizePathSeparators());
   bool is_path_writeable = true;
   bool has_conflicts = false;
+  bool name_too_long = false;
 
   // Create the default download path if it doesn't already exist and is where
   // we are going to create the downloaded file. |target_path| might point
@@ -139,24 +194,49 @@ void CreateReservation(
     target_path = dir.Append(filename);
   }
 
-  if (is_path_writeable && should_uniquify && IsPathInUse(target_path)) {
-    has_conflicts = true;
-    for (int uniquifier = 1;
-         uniquifier <= DownloadPathReservationTracker::kMaxUniqueFiles;
-         ++uniquifier) {
-      base::FilePath path_to_check(target_path.InsertBeforeExtensionASCII(
-          StringPrintf(" (%d)", uniquifier)));
-      if (!IsPathInUse(path_to_check)) {
-        target_path = path_to_check;
-        has_conflicts = false;
-        break;
+  if (is_path_writeable) {
+    // Check the limit of file name length if it could be obtained. When the
+    // suggested name exceeds the limit, truncate or prompt the user.
+    int max_length = file_util::GetMaximumPathComponentLength(dir);
+    if (max_length != -1) {
+      int limit = max_length - kIntermediateNameSuffixLength;
+      if (limit <= 0 || !TruncateFileName(&target_path, limit))
+        name_too_long = true;
+    }
+
+    // Uniquify the name, if it already exists.
+    if (!name_too_long && should_uniquify && IsPathInUse(target_path)) {
+      has_conflicts = true;
+      for (int uniquifier = 1;
+           uniquifier <= DownloadPathReservationTracker::kMaxUniqueFiles;
+           ++uniquifier) {
+        // Append uniquifier.
+        std::string suffix(base::StringPrintf(" (%d)", uniquifier));
+        base::FilePath path_to_check(target_path);
+        // If the name length limit is available (max_length != -1), and the
+        // the current name exceeds the limit, truncate.
+        if (max_length != -1) {
+          int limit =
+              max_length - kIntermediateNameSuffixLength - suffix.size();
+          // If truncation failed, give up uniquification.
+          if (limit <= 0 || !TruncateFileName(&path_to_check, limit))
+            break;
+        }
+        path_to_check = path_to_check.InsertBeforeExtensionASCII(suffix);
+
+        if (!IsPathInUse(path_to_check)) {
+          target_path = path_to_check;
+          has_conflicts = false;
+          break;
+        }
       }
     }
   }
+
   reservations[download_id] = target_path;
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(callback, target_path, (is_path_writeable && !has_conflicts)));
+  bool verified = (is_path_writeable && !has_conflicts && !name_too_long);
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, target_path, verified));
 }
 
 // Called on the FILE thread to update the path of the reservation associated

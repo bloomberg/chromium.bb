@@ -86,6 +86,9 @@ class DownloadPathReservationTrackerTest : public testing::Test {
   void set_default_download_path(const base::FilePath& path) {
     default_download_path_ = path;
   }
+  // Creates a name of form 'a'*repeat + suffix
+  base::FilePath GetLongNamePathInDownloadsDirectory(
+      size_t repeat, const base::FilePath::CharType* suffix);
 
  protected:
   base::ScopedTempDir test_download_dir_;
@@ -161,6 +164,14 @@ void DownloadPathReservationTrackerTest::TestReservedPathCallback(
   *did_run_callback = true;
   *return_path = path;
   *return_verified = verified;
+}
+
+base::FilePath
+DownloadPathReservationTrackerTest::GetLongNamePathInDownloadsDirectory(
+    size_t repeat, const base::FilePath::CharType* suffix) {
+  return GetPathInDownloadsDirectory(
+      (base::FilePath::StringType(repeat, FILE_PATH_LITERAL('a'))
+          + suffix).c_str());
 }
 
 }  // namespace
@@ -439,3 +450,83 @@ TEST_F(DownloadPathReservationTrackerTest, UpdatesToTargetPath) {
   message_loop_.RunUntilIdle();
   EXPECT_FALSE(IsPathInUse(new_target_path));
 }
+
+// Tests for long name truncation. On other platforms automatic truncation
+// is not performed (yet).
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
+
+TEST_F(DownloadPathReservationTrackerTest, BasicTruncation) {
+  int real_max_length =
+      file_util::GetMaximumPathComponentLength(default_download_path());
+  ASSERT_NE(-1, real_max_length);
+
+  // TODO(kinaba): the current implementation leaves spaces for appending
+  // ".crdownload". So take it into account. Should be removed in the future.
+  const size_t max_length = real_max_length - 11;
+
+  scoped_ptr<FakeDownloadItem> item(CreateDownloadItem(1));
+  base::FilePath path(GetLongNamePathInDownloadsDirectory(
+      max_length, FILE_PATH_LITERAL(".txt")));
+  ASSERT_FALSE(IsPathInUse(path));
+
+  base::FilePath reserved_path;
+  bool verified = false;
+  CallGetReservedPath(*item, path, false, &reserved_path, &verified);
+  EXPECT_TRUE(IsPathInUse(reserved_path));
+  EXPECT_TRUE(verified);
+  // The file name length is truncated to max_length.
+  EXPECT_EQ(max_length, reserved_path.BaseName().value().size());
+  // But the extension is kept unchanged.
+  EXPECT_EQ(path.Extension(), reserved_path.Extension());
+}
+
+TEST_F(DownloadPathReservationTrackerTest, TruncationConflict) {
+  int real_max_length =
+      file_util::GetMaximumPathComponentLength(default_download_path());
+  ASSERT_NE(-1, real_max_length);
+  const size_t max_length = real_max_length - 11;
+
+  scoped_ptr<FakeDownloadItem> item(CreateDownloadItem(1));
+  base::FilePath path(GetLongNamePathInDownloadsDirectory(
+      max_length, FILE_PATH_LITERAL(".txt")));
+  base::FilePath path0(GetLongNamePathInDownloadsDirectory(
+      max_length - 4, FILE_PATH_LITERAL(".txt")));
+  base::FilePath path1(GetLongNamePathInDownloadsDirectory(
+      max_length - 8, FILE_PATH_LITERAL(" (1).txt")));
+  base::FilePath path2(GetLongNamePathInDownloadsDirectory(
+      max_length - 8, FILE_PATH_LITERAL(" (2).txt")));
+  ASSERT_FALSE(IsPathInUse(path));
+  // "aaa...aaaaaaa.txt" (truncated path) and
+  // "aaa...aaa (1).txt" (truncated and first uniquification try) exists.
+  // "aaa...aaa (2).txt" should be used.
+  ASSERT_EQ(0, file_util::WriteFile(path0, "", 0));
+  ASSERT_EQ(0, file_util::WriteFile(path1, "", 0));
+
+  base::FilePath reserved_path;
+  bool verified = false;
+  CallGetReservedPath(*item, path, true, &reserved_path, &verified);
+  EXPECT_TRUE(IsPathInUse(reserved_path));
+  EXPECT_TRUE(verified);
+  EXPECT_EQ(path2, reserved_path);
+}
+
+TEST_F(DownloadPathReservationTrackerTest, TruncationFail) {
+  int real_max_length =
+      file_util::GetMaximumPathComponentLength(default_download_path());
+  ASSERT_NE(-1, real_max_length);
+  const size_t max_length = real_max_length - 11;
+
+  scoped_ptr<FakeDownloadItem> item(CreateDownloadItem(1));
+  base::FilePath path(GetPathInDownloadsDirectory(
+      (FILE_PATH_LITERAL("a.") +
+          base::FilePath::StringType(max_length, 'b')).c_str()));
+  ASSERT_FALSE(IsPathInUse(path));
+
+  base::FilePath reserved_path;
+  bool verified = false;
+  CallGetReservedPath(*item, path, false, &reserved_path, &verified);
+  // We cannot truncate a path with very long extension.
+  EXPECT_FALSE(verified);
+}
+
+#endif

@@ -10,6 +10,7 @@
 #include <shlobj.h>
 #include <time.h>
 
+#include <algorithm>
 #include <limits>
 #include <string>
 
@@ -948,6 +949,30 @@ bool NormalizeToNativeFilePath(const FilePath& path, FilePath* nt_path) {
   }
   ::UnmapViewOfFile(file_view);
   return success;
+}
+
+int GetMaximumPathComponentLength(const FilePath& path) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
+  wchar_t volume_path[MAX_PATH];
+  if (!GetVolumePathNameW(path.NormalizePathSeparators().value().c_str(),
+                          volume_path,
+                          arraysize(volume_path))) {
+    return -1;
+  }
+
+  DWORD max_length = 0;
+  if (!GetVolumeInformationW(volume_path, NULL, 0, NULL, &max_length, NULL,
+                             NULL, 0)) {
+    return -1;
+  }
+
+  // Length of |path| with path separator appended.
+  size_t prefix = path.StripTrailingSeparators().value().size() + 1;
+  // The whole path string must be shorter than MAX_PATH. That is, it must be
+  // prefix + component_length < MAX_PATH (or equivalently, <= MAX_PATH - 1).
+  int whole_path_limit = std::max(0, MAX_PATH - 1 - static_cast<int>(prefix));
+  return std::min(whole_path_limit, static_cast<int>(max_length));
 }
 
 }  // namespace file_util
