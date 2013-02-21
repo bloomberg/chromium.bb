@@ -1585,6 +1585,8 @@
         'spdy/spdy_test_util_spdy3.h',
         'spdy/spdy_test_util_spdy2.cc',
         'spdy/spdy_test_util_spdy2.h',
+        'spdy/spdy_test_utils.cc',
+        'spdy/spdy_test_utils.h',
         'spdy/spdy_websocket_stream_spdy2_unittest.cc',
         'spdy/spdy_websocket_stream_spdy3_unittest.cc',
         'spdy/spdy_websocket_test_util_spdy2.cc',
