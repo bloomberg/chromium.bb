@@ -63,8 +63,8 @@ void ExtensionBluetoothEventRouter::OnListenerAdded() {
 }
 
 void ExtensionBluetoothEventRouter::OnListenerRemoved() {
-  num_event_listeners_--;
-  CHECK(num_event_listeners_ >= 0);
+  if (num_event_listeners_ > 0)
+    num_event_listeners_--;
   MaybeReleaseAdapter();
 }
 
@@ -192,9 +192,10 @@ void ExtensionBluetoothEventRouter::InitializeAdapterIfNeeded() {
 
 void ExtensionBluetoothEventRouter::InitializeAdapter(
     scoped_refptr<device::BluetoothAdapter> adapter) {
-  adapter_ = adapter;
-  if (adapter_)
+  if (!adapter_) {
+    adapter_ = adapter;
     adapter_->AddObserver(this);
+  }
 }
 
 void ExtensionBluetoothEventRouter::MaybeReleaseAdapter() {

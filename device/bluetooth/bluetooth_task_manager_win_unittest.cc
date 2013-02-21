@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <deque>
-
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/test_pending_task.h"
@@ -16,23 +14,70 @@ namespace {
 
 class BluetoothTaskObserver : public device::BluetoothTaskManagerWin::Observer {
  public:
-  BluetoothTaskObserver() : num_updates_(0) {
+  BluetoothTaskObserver() {
+    Clear();
   }
 
   virtual ~BluetoothTaskObserver() {
   }
 
   virtual void AdapterStateChanged(
-    const device::BluetoothTaskManagerWin::AdapterState& state) {
-    num_updates_++;
+    const device::BluetoothTaskManagerWin::AdapterState& state) OVERRIDE {
+    num_adapter_state_changed_++;
   }
 
-  int num_updates() const {
-    return num_updates_;
+  virtual void DiscoveryStarted(bool success) OVERRIDE {
+    num_discovery_started_++;
+  }
+
+  virtual void DiscoveryStopped() OVERRIDE {
+    num_discovery_stopped_++;
+  }
+
+  virtual void ScanningChanged(bool scanning) OVERRIDE {
+    num_scanning_changed_++;
+  }
+
+  virtual void DevicesDiscovered(
+      const ScopedVector<device::BluetoothTaskManagerWin::DeviceState>&
+          devices) OVERRIDE {
+    num_devices_discovered_++;
+  }
+
+  void Clear() {
+    num_adapter_state_changed_ = 0;
+    num_discovery_started_ = 0;
+    num_discovery_stopped_ = 0;
+    num_scanning_changed_ = 0;
+    num_devices_discovered_ = 0;
+  }
+
+  int num_adapter_state_changed() const {
+    return num_adapter_state_changed_;
+  }
+
+  int num_discovery_started() const {
+    return num_discovery_started_;
+  }
+
+  int num_discovery_stopped() const {
+    return num_discovery_stopped_;
+  }
+
+  int num_scanning_changed() const {
+    return num_scanning_changed_;
+  }
+
+  int num_devices_discovered() const {
+    return num_devices_discovered_;
   }
 
  private:
-   int num_updates_;
+   int num_adapter_state_changed_;
+   int num_discovery_started_;
+   int num_discovery_stopped_;
+   int num_scanning_changed_;
+   int num_devices_discovered_;
 };
 
 }  // namespace
@@ -44,9 +89,9 @@ class BluetoothTaskManagerWinTest : public testing::Test {
   BluetoothTaskManagerWinTest()
       : ui_task_runner_(new base::TestSimpleTaskRunner()),
         bluetooth_task_runner_(new base::TestSimpleTaskRunner()),
-        task_manager_(new BluetoothTaskManagerWin(ui_task_runner_,
-                                                  bluetooth_task_runner_)),
+        task_manager_(new BluetoothTaskManagerWin(ui_task_runner_)),
         has_bluetooth_stack_(device::bluetooth_init_win::HasBluetoothStack()) {
+    task_manager_->InitializeWithBluetoothTaskRunner(bluetooth_task_runner_);
   }
 
   virtual void SetUp() {
@@ -70,14 +115,10 @@ class BluetoothTaskManagerWinTest : public testing::Test {
 };
 
 TEST_F(BluetoothTaskManagerWinTest, StartPolling) {
-  task_manager_->Initialize();
-  const std::deque<base::TestPendingTask>& pending_tasks =
-      bluetooth_task_runner_->GetPendingTasks();
   EXPECT_EQ(1, bluetooth_task_runner_->GetPendingTasks().size());
 }
 
 TEST_F(BluetoothTaskManagerWinTest, PollAdapterIfBluetoothStackIsAvailable) {
-  task_manager_->Initialize();
   bluetooth_task_runner_->RunPendingTasks();
   int num_expected_pending_tasks = has_bluetooth_stack_ ? 1 : 0;
   EXPECT_EQ(num_expected_pending_tasks,
@@ -88,28 +129,43 @@ TEST_F(BluetoothTaskManagerWinTest, Polling) {
   if (!has_bluetooth_stack_)
     return;
 
-  task_manager_->Initialize();
-  int expected_num_updates = 5;
+  int num_polls = 5;
 
-  for (int i = 0; i < expected_num_updates; i++) {
+  for (int i = 0; i < num_polls; i++) {
     bluetooth_task_runner_->RunPendingTasks();
   }
 
-  EXPECT_EQ(expected_num_updates, ui_task_runner_->GetPendingTasks().size());
   ui_task_runner_->RunPendingTasks();
-  EXPECT_EQ(expected_num_updates, observer_.num_updates());
+  EXPECT_EQ(num_polls, observer_.num_adapter_state_changed());
 }
 
 TEST_F(BluetoothTaskManagerWinTest, SetPowered) {
   if (!has_bluetooth_stack_)
     return;
 
+  bluetooth_task_runner_->ClearPendingTasks();
   base::Closure closure;
   task_manager_->PostSetPoweredBluetoothTask(true, closure, closure);
 
   EXPECT_EQ(1, bluetooth_task_runner_->GetPendingTasks().size());
   bluetooth_task_runner_->RunPendingTasks();
   EXPECT_TRUE(ui_task_runner_->GetPendingTasks().size() >= 1);
+}
+
+TEST_F(BluetoothTaskManagerWinTest, Discovery) {
+  if (!has_bluetooth_stack_)
+    return;
+
+  bluetooth_task_runner_->RunPendingTasks();
+  bluetooth_task_runner_->ClearPendingTasks();
+  task_manager_->PostStartDiscoveryTask();
+  bluetooth_task_runner_->RunPendingTasks();
+  ui_task_runner_->RunPendingTasks();
+  EXPECT_EQ(1, observer_.num_discovery_started());
+  task_manager_->PostStopDiscoveryTask();
+  bluetooth_task_runner_->RunPendingTasks();
+  ui_task_runner_->RunPendingTasks();
+  EXPECT_EQ(1, observer_.num_discovery_stopped());
 }
 
 }  // namespace device

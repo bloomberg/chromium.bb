@@ -26,6 +26,8 @@ class BluetoothServiceRecordWin : public BluetoothServiceRecord {
 
  private:
   BTH_ADDR bth_addr_;
+
+  DISALLOW_COPY_AND_ASSIGN(BluetoothServiceRecordWin);
 };
 
 }  // namespace device
