@@ -6536,6 +6536,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_TOUCH_DRAG_DROP_DESCRIPTION" desc="Description of the flag to enable touch initiated drag drop.">
         Touch drag and drop can be initiated through long press on a draggable element.
       </message>
+      <message name="IDS_FLAGS_ENABLE_TOUCH_EDITING_NAME" desc="Name of the flag that enables touch based text editing.">
+        Enable touch based text editing
+      </message>
+      <message name="IDS_FLAGS_ENABLE_TOUCH_EDITING_DESCRIPTION" desc="Description of the flag to enable touch based text editing.">
+        Touch editing can be initiated by tapping on a textfield or a selected text.
+      </message>
       <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_FORM_FILLING_NAME" desc="Title for the flag to enable experimental form filling">
         Enable experimental form filling
       </message>

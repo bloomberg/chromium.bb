@@ -1250,6 +1250,13 @@ const Experiment kExperiments[] = {
     kOsWin | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kEnableTouchDragDrop)
   },
+  {
+    "enable-touch-editing",
+    IDS_FLAGS_ENABLE_TOUCH_EDITING_NAME,
+    IDS_FLAGS_ENABLE_TOUCH_EDITING_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableTouchEditing)
+  },
 #if defined(ENABLE_MESSAGE_CENTER)
   {
     "enable-rich-notifications",
