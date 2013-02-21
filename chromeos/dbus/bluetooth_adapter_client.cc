@@ -24,7 +24,7 @@ namespace {
 
 // The |CreatePairedDevice| DBus call needs a longer timeout than the default
 // in order to allow BlueZ to timeout this call first. See crosbug.com/37387.
-const int kCreatePairedDeviceTimeoutMs = 70 * 1000;
+const int kCreatePairedDeviceTimeoutMs = 120 * 1000;
 
 } // namespace
 
