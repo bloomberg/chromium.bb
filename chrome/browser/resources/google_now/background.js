@@ -25,6 +25,7 @@
 // TODO(vadimt): Report errors to the user.
 
 // TODO(vadimt): Figure out the server name. Use it in the manifest and for
+// TODO(vadimt): Consider processing errors for all storage.set calls.
 // NOTIFICATION_CARDS_URL. Meanwhile, to use the feature, you need to manually
 // edit NOTIFICATION_CARDS_URL before building Chrome.
 /**
@@ -39,10 +40,16 @@ var NOTIFICATION_CARDS_URL = '';
 var HTTP_OK = 200;
 
 /**
- * Period for polling for Google Now Notifications cards to use when the period
- * from the server is not available.
+ * Initial period for polling for Google Now Notifications cards to use when the
+ * period from the server is not available.
  */
-var DEFAULT_POLLING_PERIOD_SECONDS = 300;  // 5 minutes
+var INITIAL_POLLING_PERIOD_SECONDS = 300;  // 5 minutes
+
+/**
+ * Maximal period for polling for Google Now Notifications cards to use when the
+ * period from the server is not available.
+ */
+var MAXIMUM_POLLING_PERIOD_SECONDS = 3600;  // 1 hour
 
 var storage = chrome.storage.local;
 
@@ -80,11 +87,7 @@ function createNotification(card) {
           // TODO(vadimt): Make sure that activeNotifications map cannot grow
           // infinitely.
           items.activeNotifications[assignedNotificationId] = actionUrls;
-          storage.set(
-              {activeNotifications: items.activeNotifications},
-              function() {
-                // TODO(vadimt): Analyze runtime.lastError.
-              });
+          storage.set({activeNotifications: items.activeNotifications});
         });
       });
 }
@@ -124,6 +127,11 @@ function parseAndShowNotificationCards(response) {
   }
 
   scheduleNextUpdate(parsedResponse.expiration_timestamp_seconds);
+
+  // Now that we got a valid response from the server, reset the retry period to
+  // the initial value. This retry period will be used the next time we fail to
+  // get the server-provided period.
+  storage.set({retryDelaySeconds: INITIAL_POLLING_PERIOD_SECONDS});
 }
 
 /**
@@ -174,22 +182,28 @@ function requestNotificationCardsWithoutLocation(positionError) {
  * location.
  */
 function updateNotificationsCards() {
-  // Immediately schedule the update after the default period. If we
-  // successfully retrieve, parse and show the notifications cards, we'll
-  // schedule next update based on the expiration timestamp received from the
-  // server. At that point scheduled time will be overwritten by the new one
-  // based on the expiration timestamp.
-  // TODO(vadimt): Implement exponential backoff with randomized jitter.
-  scheduleNextUpdate(DEFAULT_POLLING_PERIOD_SECONDS);
+  storage.get('retryDelaySeconds', function(items) {
+    // Immediately schedule the update after the current retry period. Then,
+    // we'll use update time from the server if available.
+    scheduleNextUpdate(items.retryDelaySeconds);
 
-  // TODO(vadimt): Use chrome.* geolocation API once it's ready.
-  navigator.geolocation.getCurrentPosition(
-      requestNotificationCardsWithLocation,
-      requestNotificationCardsWithoutLocation);
+    // TODO(vadimt): Consider interrupting waiting for the next update if we
+    // detect that the network conditions have changed. Also, decide whether the
+    // exponential backoff is needed both when we are offline and when there are
+    // failures on the server side.
+    var newRetryDelaySeconds =
+        Math.min(items.retryDelaySeconds * 2 * (1 + 0.2 * Math.random()),
+                 MAXIMUM_POLLING_PERIOD_SECONDS);
+    storage.set({retryDelaySeconds: newRetryDelaySeconds});
+
+    navigator.geolocation.getCurrentPosition(
+        requestNotificationCardsWithLocation,
+        requestNotificationCardsWithoutLocation);
+  });
 }
 
 /**
- * Opens URL corresponsing to the clicked part of the notification.
+ * Opens URL corresponding to the clicked part of the notification.
  * @param {string} notificationId Unique identifier of the notification.
  * @param {string} area Name of the notification's clicked area.
  */
@@ -213,9 +227,7 @@ function onNotificationClosed(notificationId, byUser) {
   // Remove button actions entry for notificationId.
   storage.get('activeNotifications', function(items) {
     delete items.activeNotifications[notificationId];
-    storage.set({activeNotifications: items.activeNotifications}, function() {
-      // TODO(vadimt): Analyze runtime.lastError.
-    });
+    storage.set({activeNotifications: items.activeNotifications});
   });
 
   if (byUser) {
@@ -241,18 +253,23 @@ function onNotificationClosed(notificationId, byUser) {
  *     event should fire.
  */
 function scheduleNextUpdate(delaySeconds) {
-  chrome.alarms.create({delayInMinutes: delaySeconds / 60});
+  // Schedule an alarm after the specified delay. 'periodInMinutes' is for the
+  // case when we fail to re-register the alarm.
+  chrome.alarms.create({
+    delayInMinutes: delaySeconds / 60,
+    periodInMinutes: MAXIMUM_POLLING_PERIOD_SECONDS / 60
+  });
 }
 
 /**
  * Initialize the event page on install or on browser startup.
  */
 function initialize() {
-  updateNotificationsCards();
-
-  storage.set({activeNotifications: {}}, function() {
-    // TODO(vadimt): Analyze runtime.lastError.
-  });
+  var initialStorage = {
+    activeNotifications: {},
+    retryDelaySeconds: INITIAL_POLLING_PERIOD_SECONDS
+  };
+  storage.set(initialStorage, updateNotificationsCards);
 }
 
 chrome.runtime.onInstalled.addListener(function(details) {
