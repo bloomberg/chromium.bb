@@ -448,14 +448,17 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
 
   void OnPluginFocusChanged(bool focused, int plugin_id);
   void OnStartPluginIme();
-  void OnAllocateFakePluginWindowHandle(bool opaque,
-                                        bool root,
-                                        gfx::PluginWindowHandle* id);
-  void OnDestroyFakePluginWindowHandle(gfx::PluginWindowHandle id);
-  void OnAcceleratedSurfaceSetIOSurface(gfx::PluginWindowHandle window,
-                                        int32 width,
-                                        int32 height,
-                                        uint64 mach_port);
+  CONTENT_EXPORT void OnAllocateFakePluginWindowHandle(
+      bool opaque,
+      bool root,
+      gfx::PluginWindowHandle* id);
+  CONTENT_EXPORT void OnDestroyFakePluginWindowHandle(
+      gfx::PluginWindowHandle id);
+  CONTENT_EXPORT void OnAcceleratedSurfaceSetIOSurface(
+      gfx::PluginWindowHandle window,
+      int32 width,
+      int32 height,
+      uint64 mach_port);
   void OnAcceleratedSurfaceSetTransportDIB(gfx::PluginWindowHandle window,
                                            int32 width,
                                            int32 height,
