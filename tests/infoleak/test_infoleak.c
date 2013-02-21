@@ -14,7 +14,18 @@
 #if !defined(__pnacl__) && (defined(__x86_64__) || defined(__i386__))
 
 typedef struct { char b[10]; } st_reg;
-static st_reg st_zero;
+static const st_reg st_zero;
+
+typedef struct {
+  uint32_t cwd;
+  uint32_t swd;
+  uint32_t twd;
+  uint32_t fip;
+  uint32_t fcs;
+  uint32_t foo;
+  uint32_t fos;
+  st_reg st[8];
+} fsave_block;
 
 /*
  * Not every x86-32 CPU supports SSE registers, but we're willing
@@ -25,21 +36,33 @@ static const xmm_reg xmm_zero;
 
 static void infoleak_clear_state(void) {
   const uint32_t zero = 0;
-  __asm__ volatile("fninit; fstpt %0" : "=m" (st_zero));
+  fsave_block fsave;
+  __asm__ volatile("fninit; fsave %0" : "=m" (fsave));
+  memset(fsave.st, 0, sizeof(fsave.st));
+  __asm__ volatile("frstor %0" :: "m" (fsave));
   __asm__ volatile("movaps %0, %%xmm7" :: "m" (xmm_zero));
   __asm__ volatile("ldmxcsr %0" :: "m" (zero));
 }
 
 __attribute__((noinline)) static int infoleak_check_state(void) {
   int ok = 1;
-  st_reg st0;
+  fsave_block fsave;
+  uint64_t mm7;
   xmm_reg xmm7;
   uint32_t mxcsr;
-  __asm__("fstpt %0" : "=m" (st0));
+  int i;
+  __asm__("fsave %0" : "=m" (fsave));
+  __asm__("movq %%mm7, %0" : "=m" (mm7));
   __asm__("movaps %%xmm7, %0" : "=m" (xmm7));
   __asm__("stmxcsr %0" : "=m" (mxcsr));
-  if (memcmp(&st0, &st_zero, sizeof(st0)) != 0) {
-    printf("x87 state leaked information!\n");
+  for (i = 0; i < 8; ++i) {
+    if (memcmp(&fsave.st[i], &st_zero, sizeof(st_zero)) != 0) {
+      printf("x87 %%st(%d) leaked information!\n", i);
+      ok = 0;
+    }
+  }
+  if (mm7 != 0) {
+    printf("MMX state leaked information!\n");
     ok = 0;
   }
   if (memcmp(&xmm7, &xmm_zero, sizeof(xmm7)) != 0) {

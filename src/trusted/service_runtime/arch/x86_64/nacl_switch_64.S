@@ -90,43 +90,29 @@ MACROENTRY
         movq    %rdx, %r11
 
         /*
-         * Clear the x87 state.  Then restore the untrusted code's control word.
+         * Clear the x87, MMX, and SSE state.
+         * Then restore the untrusted code's x87 and SSE control words.
+         * We could roll them together by storing a 512-byte per-thread
+         * buffer and setting the control words in that in NaClSyscallSeg.
+         * But that would bloat struct NaClThreadContext by 504 bytes or so,
+         * and the performance cost of these two instructions after fxrstor
+         * seems to be immeasurably small.
          */
-        fninit
+        fxrstor fxrstor_default_state(%rip)
         fldcw   NACL_THREAD_CONTEXT_OFFSET_FCW(%rcx)
+        ldmxcsr NACL_THREAD_CONTEXT_OFFSET_MXCSR(%rcx)
 
-        /*
-         * Clear the vector registers.
-         */
 .if MACROARG2
         /*
-         * This is "vzeroall".
+         * Clear the AVX state that the "fxrstor" instruction doesn't cover.
+         * We could roll them together by using the "xrstor" instruction, but
+         * that has a complicated protocol and this seems to perform fine.
+         *
+         * This is "vzeroupper".
          * Some assembler versions don't know the AVX instructions.
          */
-        .byte   0xc5, 0xfc, 0x77
-.else
-        xorps   %xmm0, %xmm0
-        xorps   %xmm1, %xmm1
-        xorps   %xmm2, %xmm2
-        xorps   %xmm3, %xmm3
-        xorps   %xmm4, %xmm4
-        xorps   %xmm5, %xmm5
-        xorps   %xmm6, %xmm6
-        xorps   %xmm7, %xmm7
-        xorps   %xmm8, %xmm8
-        xorps   %xmm9, %xmm9
-        xorps   %xmm10, %xmm10
-        xorps   %xmm11, %xmm11
-        xorps   %xmm12, %xmm12
-        xorps   %xmm13, %xmm13
-        xorps   %xmm14, %xmm14
-        xorps   %xmm15, %xmm15
+        .byte   0xc5, 0xf8, 0x77
 .endif
-
-        /*
-         * Restore the untrusted code's SSE control word.
-         */
-        ldmxcsr NACL_THREAD_CONTEXT_OFFSET_MXCSR(%rcx)
 
         /*
          * Load the return address into %rcx rather than doing
@@ -140,3 +126,19 @@ ENDMACRO
 
         switcher NaClSwitchSSE, 0
         switcher NaClSwitchAVX, 1
+
+
+        NACL_RODATA
+        /*
+         * This is the memory block for "fxrstor" to read.  The only
+         * contents that matter are the fcw and mxcsr words, which we
+         * store separately.  The mxcsr_mask word is ignored by the
+         * hardware, so there is no need to get the hardware-supplied
+         * value for that.  The hardware requires that this address be
+         * aligned to 16 bytes.  Align it further to 64 bytes because
+         * that is the usual size of a cache line; this might help
+         * performance and is very unlikely to hurt it.
+         */
+        .balign 64
+fxrstor_default_state:
+        .space 512
