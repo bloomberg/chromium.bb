@@ -55,8 +55,7 @@ ImportingDialog.prototype.initDom_ = function() {
  * @param {boolean} move Whether to move files instead of copying them.
  */
 ImportingDialog.prototype.show = function(entries, dir, move) {
-  var message = loadTimeData.getStringF(
-      'PHOTO_IMPORT_IMPORTING', entries.length);
+  var message = loadTimeData.getString('PHOTO_IMPORT_IMPORTING');
   cr.ui.dialogs.BaseDialog.prototype.show.call(this, message, null, null, null);
 
   this.error_ = false;

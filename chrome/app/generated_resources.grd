@@ -13096,7 +13096,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Import media
       </message>
       <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_IMPORTING" desc="In the Photo import, text informing that import is running.">
-        Importing <ph name="COUNT">$1<ex>42</ex></ph> photos to Drive
+        Importing to Drive
       </message>
       <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_IMPORT_COMPLETE" desc="In the Photo import, text informing that import is done.">
         Import complete
