@@ -48,7 +48,7 @@ class BurnLibraryImpl : public BurnLibrary {
  private:
   virtual void Init() OVERRIDE;
   void BurnImage();
-  static void DevicesUnmountedCallback(void* object, bool success);
+  void DevicesUnmountedCallback(bool success);
   void UpdateBurnStatus(const ImageBurnStatus& status, BurnEvent evt);
   void OnBurnFinished(const std::string& target_path,
                       bool success,
@@ -161,10 +161,10 @@ void BurnLibraryImpl::OnImageUnzipped(
 
   burning_ = true;
 
-  chromeos::disks::DiskMountManager::GetInstance()->
-      UnmountDeviceRecursive(target_device_path_,
-                             &BurnLibraryImpl::DevicesUnmountedCallback,
-                             this);
+  chromeos::disks::DiskMountManager::GetInstance()->UnmountDeviceRecursively(
+      target_device_path_,
+      base::Bind(&BurnLibraryImpl::DevicesUnmountedCallback,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BurnLibraryImpl::OnBurnFinished(const std::string& target_path,
@@ -183,13 +183,11 @@ void BurnLibraryImpl::OnBurnImageFail() {
   UpdateBurnStatus(ImageBurnStatus(0, 0), BURN_FAIL);
 }
 
-void BurnLibraryImpl::DevicesUnmountedCallback(void* object, bool success) {
-  DCHECK(object);
-  BurnLibraryImpl* self = static_cast<BurnLibraryImpl*>(object);
+void BurnLibraryImpl::DevicesUnmountedCallback(bool success) {
   if (success) {
-    self->BurnImage();
+    BurnImage();
   } else {
-    self->UpdateBurnStatus(ImageBurnStatus(0, 0), BURN_FAIL);
+    UpdateBurnStatus(ImageBurnStatus(0, 0), BURN_FAIL);
   }
 }
 

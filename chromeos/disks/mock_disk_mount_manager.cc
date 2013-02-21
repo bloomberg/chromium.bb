@@ -170,7 +170,7 @@ void MockDiskMountManager::SetupDefaultReplies() {
       .Times(AnyNumber());
   EXPECT_CALL(*this, FormatMountedDevice(_))
       .Times(AnyNumber());
-  EXPECT_CALL(*this, UnmountDeviceRecursive(_, _, _))
+  EXPECT_CALL(*this, UnmountDeviceRecursively(_, _))
       .Times(AnyNumber());
 }
 

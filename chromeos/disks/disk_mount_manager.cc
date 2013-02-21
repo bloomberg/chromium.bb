@@ -123,12 +123,9 @@ class DiskMountManagerImpl : public DiskMountManager {
   }
 
   // DiskMountManager override.
-  virtual void UnmountDeviceRecursive(
+  virtual void UnmountDeviceRecursively(
       const std::string& device_path,
-      UnmountDeviceRecursiveCallbackType callback,
-      void* user_data) OVERRIDE {
-    bool success = true;
-    std::string error_message;
+      const UnmountDeviceRecursivelyCallbackType& callback) OVERRIDE {
     std::vector<std::string> devices_to_unmount;
 
     // Get list of all devices to unmount.
@@ -140,36 +137,46 @@ class DiskMountManagerImpl : public DiskMountManager {
         devices_to_unmount.push_back(it->second->mount_path());
       }
     }
+
     // We should detect at least original device.
     if (devices_to_unmount.empty()) {
       if (disks_.find(device_path) == disks_.end()) {
-        success = false;
-        error_message = kDeviceNotFound;
-      } else {
-        // Nothing to unmount.
-        callback(user_data, true);
+        LOG(WARNING) << "Unmount recursive request failed for device "
+                     << device_path << ", with error: " << kDeviceNotFound;
+        callback.Run(false);
         return;
       }
+
+      // Nothing to unmount.
+      callback.Run(true);
+      return;
     }
-    if (success) {
-      // We will send the same callback data object to all Unmount calls and use
-      // it to syncronize callbacks.
-      UnmountDeviceRecursiveCallbackData* cb_data =
-          new UnmountDeviceRecursiveCallbackData(user_data, callback,
-                                                 devices_to_unmount.size());
-      for (size_t i = 0; i < devices_to_unmount.size(); ++i) {
-        cros_disks_client_->Unmount(
-            devices_to_unmount[i],
-            UNMOUNT_OPTIONS_NONE,
-            base::Bind(&DiskMountManagerImpl::OnUnmountDeviceRecursive,
-                       weak_ptr_factory_.GetWeakPtr(), cb_data, true),
-            base::Bind(&DiskMountManagerImpl::OnUnmountDeviceRecursive,
-                       weak_ptr_factory_.GetWeakPtr(), cb_data, false));
-      }
-    } else {
-      LOG(WARNING) << "Unmount recursive request failed for device "
-                   << device_path << ", with error: " << error_message;
-      callback(user_data, false);
+
+    // We will send the same callback data object to all Unmount calls and use
+    // it to syncronize callbacks.
+    // Note: this implementation has a potential memory leak issue. For
+    // example if this instance is destructed before all the callbacks for
+    // Unmount are invoked, the memory pointed by |cb_data| will be leaked.
+    // It is because the UnmountDeviceRecursivelyCallbackData keeps how
+    // many times OnUnmountDeviceRecursively callback is called and when
+    // all the callbacks are called, |cb_data| will be deleted in the method.
+    // However destructing the instance before all callback invocations will
+    // cancel all pending callbacks, so that the |cb_data| would never be
+    // deleted.
+    // Fortunately, in the real scenario, the instance will be destructed
+    // only for ShutDown. So, probably the memory would rarely be leaked.
+    // TODO(hidehiko): Fix the issue.
+    UnmountDeviceRecursivelyCallbackData* cb_data =
+        new UnmountDeviceRecursivelyCallbackData(
+            callback, devices_to_unmount.size());
+    for (size_t i = 0; i < devices_to_unmount.size(); ++i) {
+      cros_disks_client_->Unmount(
+          devices_to_unmount[i],
+          UNMOUNT_OPTIONS_NONE,
+          base::Bind(&DiskMountManagerImpl::OnUnmountDeviceRecursively,
+                     weak_ptr_factory_.GetWeakPtr(), cb_data, true),
+          base::Bind(&DiskMountManagerImpl::OnUnmountDeviceRecursively,
+                     weak_ptr_factory_.GetWeakPtr(), cb_data, false));
     }
   }
 
@@ -226,18 +233,16 @@ class DiskMountManagerImpl : public DiskMountManager {
   }
 
  private:
-  struct UnmountDeviceRecursiveCallbackData {
-    void* user_data;
-    UnmountDeviceRecursiveCallbackType callback;
-    size_t pending_callbacks_count;
-
-    UnmountDeviceRecursiveCallbackData(void* ud,
-                                       UnmountDeviceRecursiveCallbackType cb,
-                                       int count)
-        : user_data(ud),
-          callback(cb),
-          pending_callbacks_count(count) {
+  struct UnmountDeviceRecursivelyCallbackData {
+    UnmountDeviceRecursivelyCallbackData(
+        const UnmountDeviceRecursivelyCallbackType& in_callback,
+        int in_num_pending_callbacks)
+        : callback(in_callback),
+          num_pending_callbacks(in_num_pending_callbacks) {
     }
+
+    const UnmountDeviceRecursivelyCallbackType callback;
+    size_t num_pending_callbacks;
   };
 
   // Unmounts all mount points whose source path is transitively parented by
@@ -258,21 +263,25 @@ class DiskMountManagerImpl : public DiskMountManager {
     }
   }
 
-  // Callback for UnmountDeviceRecursive.
-  void OnUnmountDeviceRecursive(UnmountDeviceRecursiveCallbackData* cb_data,
-                                bool success,
-                                const std::string& mount_path) {
+  // Callback for UnmountDeviceRecursively.
+  void OnUnmountDeviceRecursively(
+      UnmountDeviceRecursivelyCallbackData* cb_data,
+      bool success,
+      const std::string& mount_path) {
     if (success) {
       // Do standard processing for Unmount event.
       OnUnmountPath(true, mount_path);
       LOG(INFO) << mount_path <<  " unmounted.";
     }
     // This is safe as long as all callbacks are called on the same thread as
-    // UnmountDeviceRecursive.
-    cb_data->pending_callbacks_count--;
+    // UnmountDeviceRecursively.
+    cb_data->num_pending_callbacks--;
 
-    if (cb_data->pending_callbacks_count == 0) {
-      cb_data->callback(cb_data->user_data, success);
+    if (cb_data->num_pending_callbacks == 0) {
+      // This code has a problem that the |success| status used here is for the
+      // last "unmount" callback, but not whether all unmounting is succeeded.
+      // TODO(hidehiko): Fix the issue.
+      cb_data->callback.Run(success);
       delete cb_data;
     }
   }

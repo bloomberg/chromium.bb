@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/callback_forward.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/cros_disks_client.h"
 
@@ -190,9 +191,9 @@ class CHROMEOS_EXPORT DiskMountManager {
   // MountPointMap key is mount_path.
   typedef std::map<std::string, MountPointInfo> MountPointMap;
 
-  // A callback function type which is called after UnmountDeviceRecursive
+  // A callback function type which is called after UnmountDeviceRecursively
   // finishes.
-  typedef void(*UnmountDeviceRecursiveCallbackType)(void*, bool);
+  typedef base::Callback<void(bool)> UnmountDeviceRecursivelyCallbackType;
 
   // Implement this interface to be notified about disk/mount related events.
   class Observer {
@@ -251,10 +252,9 @@ class CHROMEOS_EXPORT DiskMountManager {
   virtual void FormatMountedDevice(const std::string& mount_path) = 0;
 
   // Unmounts device_path and all of its known children.
-  virtual void UnmountDeviceRecursive(
+  virtual void UnmountDeviceRecursively(
       const std::string& device_path,
-      UnmountDeviceRecursiveCallbackType callback,
-      void* user_data) = 0;
+      const UnmountDeviceRecursivelyCallbackType& callback) = 0;
 
   // Used in tests to initialize the manager's disk and mount point sets.
   // Default implementation does noting. It just fails.
