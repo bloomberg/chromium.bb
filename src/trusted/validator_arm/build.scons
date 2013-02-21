@@ -160,6 +160,7 @@ BASELINE_GEN_TABLES = [
     "transfer_between_arm_core_and_extension_register_8_16_and_32_bit",
     "transfer_between_arm_core_and_extension_registers_64_bit",
     "advanced_simd_element_or_structure_load_store_instructions",
+    "unconditional_instructions",
     ]
 
 # Verify that BASELINE_TEST_TABLES and BASELINE_GEN_TABLES don't intersect.

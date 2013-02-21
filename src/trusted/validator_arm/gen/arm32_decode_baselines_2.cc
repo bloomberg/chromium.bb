@@ -515,10 +515,9 @@ uses(Instruction inst) const {
 //
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v6,
-//    baseline: Forbidden,
+//    baseline: SRS_1111100pu1w0110100000101000iiiii_case_0,
 //    constraints: ,
 //    defs: {},
-//    generated_baseline: SRS_1111100pu1w0110100000101000iiiii_case_0,
 //    pattern: 1111100pu1w0110100000101000iiiii,
 //    rule: SRS,
 //    safety: [true => FORBIDDEN],
@@ -821,10 +820,9 @@ uses(Instruction inst) const {
 //
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v5,
-//    baseline: Forbidden,
+//    baseline: STC2_1111110pudw0nnnniiiiiiiiiiiiiiii_case_0,
 //    constraints: ,
 //    defs: {},
-//    generated_baseline: STC2_1111110pudw0nnnniiiiiiiiiiiiiiii_case_0,
 //    pattern: 1111110pudw0nnnniiiiiiiiiiiiiiii,
 //    rule: STC2,
 //    safety: [true => FORBIDDEN],
@@ -5958,6 +5956,41 @@ safety(Instruction inst) const {
 
 
 RegisterList Unnamed_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// Unnamed_case_2:
+//
+//   {actual: Actual_Unnamed_case_1,
+//    baseline: Unnamed_case_1,
+//    constraints: ,
+//    defs: {},
+//    safety: [true => UNDEFINED],
+//    true: true,
+//    uses: {}}
+RegisterList Unnamed_case_2::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel Unnamed_case_2::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => UNDEFINED
+  if (true)
+    return UNDEFINED;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList Unnamed_case_2::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // uses: '{}'

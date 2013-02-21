@@ -4840,47 +4840,47 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_unconditional_instructio
 
   if ((inst.Bits() & 0x0FF00000)  ==
           0x0C400000 /* op1(27:20)=11000100 */) {
-    return Forbidden_MCRR2_instance_;
+    return MCRR2_111111000100ssssttttiiiiiiiiiiii_case_0_MCRR2_instance_;
   }
 
   if ((inst.Bits() & 0x0FF00000)  ==
           0x0C500000 /* op1(27:20)=11000101 */) {
-    return Forbidden_MRRC2_instance_;
+    return MRRC2_111111000101ssssttttiiiiiiiiiiii_case_0_MRRC2_instance_;
   }
 
   if ((inst.Bits() & 0x0E500000)  ==
           0x08100000 /* op1(27:20)=100xx0x1 */ &&
       (inst.Bits() & 0x0000FFFF)  ==
           0x00000A00 /* $pattern(31:0)=xxxxxxxxxxxxxxxx0000101000000000 */) {
-    return Forbidden_RFE_instance_;
+    return RFE_1111100pu0w1nnnn0000101000000000_case_0_RFE_instance_;
   }
 
   if ((inst.Bits() & 0x0E500000)  ==
           0x08400000 /* op1(27:20)=100xx1x0 */ &&
       (inst.Bits() & 0x000FFFE0)  ==
           0x000D0500 /* $pattern(31:0)=xxxxxxxxxxxx110100000101000xxxxx */) {
-    return Forbidden_SRS_instance_;
+    return SRS_1111100pu1w0110100000101000iiiii_case_0_SRS_instance_;
   }
 
   if ((inst.Bits() & 0x0F100000)  ==
           0x0E000000 /* op1(27:20)=1110xxx0 */ &&
       (inst.Bits() & 0x00000010)  ==
           0x00000010 /* op(4)=1 */) {
-    return Forbidden_MCR2_instance_;
+    return MCR2_11111110iii0iiiittttiiiiiii1iiii_case_0_MCR2_instance_;
   }
 
   if ((inst.Bits() & 0x0F100000)  ==
           0x0E100000 /* op1(27:20)=1110xxx1 */ &&
       (inst.Bits() & 0x00000010)  ==
           0x00000010 /* op(4)=1 */) {
-    return Forbidden_MRC2_instance_;
+    return MRC2_11111110iii1iiiittttiiiiiii1iiii_case_0_MRC2_instance_;
   }
 
   if ((inst.Bits() & 0x0E100000)  ==
           0x0C000000 /* op1(27:20)=110xxxx0 */ &&
       (inst.Bits() & 0x0FB00000)  !=
           0x0C000000 /* op1_repeated(27:20)=~11000x00 */) {
-    return Forbidden_STC2_instance_;
+    return STC2_1111110pudw0nnnniiiiiiiiiiiiiiii_case_0_STC2_instance_;
   }
 
   if ((inst.Bits() & 0x0E100000)  ==
@@ -4889,7 +4889,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_unconditional_instructio
           0x000F0000 /* Rn(19:16)=~1111 */ &&
       (inst.Bits() & 0x0FB00000)  !=
           0x0C100000 /* op1_repeated(27:20)=~11000x01 */) {
-    return Forbidden_LDC2_immediate_instance_;
+    return LDC2_immediate_1111110pudw1nnnniiiiiiiiiiiiiiii_case_0_LDC2_immediate_instance_;
   }
 
   if ((inst.Bits() & 0x0E100000)  ==
@@ -4898,19 +4898,19 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_unconditional_instructio
           0x000F0000 /* Rn(19:16)=1111 */ &&
       (inst.Bits() & 0x0FB00000)  !=
           0x0C100000 /* op1_repeated(27:20)=~11000x01 */) {
-    return Forbidden_LDC2_literal_instance_;
+    return LDC2_literal_1111110pudw11111iiiiiiiiiiiiiiii_case_0_LDC2_literal_instance_;
   }
 
   if ((inst.Bits() & 0x0F000000)  ==
           0x0E000000 /* op1(27:20)=1110xxxx */ &&
       (inst.Bits() & 0x00000010)  ==
           0x00000000 /* op(4)=0 */) {
-    return Forbidden_CDP2_instance_;
+    return CDP2_11111110iiiiiiiiiiiiiiiiiii0iiii_case_0_CDP2_instance_;
   }
 
   if ((inst.Bits() & 0x0E000000)  ==
           0x0A000000 /* op1(27:20)=101xxxxx */) {
-    return Forbidden_BLX_immediate_instance_;
+    return BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_0_BLX_immediate_instance_;
   }
 
   if ((inst.Bits() & 0x08000000)  ==
@@ -4919,7 +4919,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_unconditional_instructio
   }
 
   if (true) {
-    return Undefined_None_instance_;
+    return Unnamed_case_1_None_instance_;
   }
 
   // Catch any attempt to fall through...
