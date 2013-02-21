@@ -16,7 +16,7 @@ namespace panel {
 // single line of text - so the height is set to be likely less then a titlebar,
 // to make sure even small content is tightly wrapped.
 const int kPanelMinWidth = 80;
-const int kPanelMinHeight = 20;
+const int kPanelMinHeight = 30;
 
 // The panel can be minimized to 4-pixel lines.
 static const int kMinimizedPanelHeight = 4;

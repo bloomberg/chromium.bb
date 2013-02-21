@@ -92,14 +92,24 @@ class StackedPanelCollection : public PanelCollection {
     PanelPlacement() : panel(NULL), top_panel(NULL) { }
   };
 
-  // Returns the current available space from the bottom of the stack. The
+  // Tries to collapse panels in the least recently active order in order to get
+  // enough bottom space for |needed_space|. Returns the current available space
+  // so far if all panels that could be collapsed have been collapsed.
+  int MinimizePanelsForSpace(int needed_space);
+
+  // Returns the current available space above the top of the stack. The current
+  // available space is defined as the distance between the top of the working
+  // area and the top of the stack.
+  int GetCurrentAvailableTopSpace() const;
+
+  // Returns the current available space below the bottom of the stack. The
   // current available space is defined as the distance between the bottom
   // of the stack and the bottom of the working area.
   int GetCurrentAvailableBottomSpace() const;
 
   // Minimizes or restores all panels in the collection.
   void MinimizeAll();
-  void RestoreAll();
+  void RestoreAll(Panel* panel_clicked);
 
   void UpdatePanelCornerStyle(Panel* panel);
 
