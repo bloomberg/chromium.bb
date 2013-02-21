@@ -113,11 +113,6 @@ before it can be sent upstream.</p>
 <h3><a name="bugfix-checkSpellcheckAttrBeforeMark">bugfix/checkSpellcheckAttrBeforeMark</a> (Tianyin Zhang; D37544856)</h3>
 <p>This patch fixed a bug where text under elements having spellcheck attribute set to false got spellchecked. To see the bug, open <a href="repros/checkSpellcheckAttrBeforeMark.html">This Link</a> in Chrome</p>
 
-<h3><a name="bugfix-cleanWarnings">bugfix/cleanWarnings</a> (Shezan Baig)</h3>
-<p>The purpose of this branch is simply to cleanup the ton of compiler warnings
-we get when building Chromium in Visual Studio. Most of these warnings are
-benign, so we simply just disable them.</p>
-
 <h3><a name="bugfix-clearDragCaret">bugfix/clearDragCaret</a> (Shezan Baig; D31916022)</h3>
 <p>Open <a href="repros/clearDragCaret.html">this link</a> in Chrome, then
 select some text from another tab, and try to drag it into the editable div.
@@ -569,6 +564,10 @@ main event loop of the application.</p>
 <h3><a name="bugfix-autoCorrectionRange">bugfix/autoCorrectionRange</a> (Edward Christie; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=89526">89526</a>)</h3>
 <p>Retired as of the <code>23.0.1271.97</code> snapshot because the fix is
 available upstream.</p>
+
+<h3><a name="bugfix-cleanWarnings">bugfix/cleanWarnings</a> (Shezan Baig)</h3>
+<p>Retired as of the <code>25.0.1364.84</code> snapshot because we no longer
+need it.</p>
 
 <h3><a name="bugfix-dontRespondIfNoFocus"> bugfix/dontRespondIfNoFocus</a> (Shezan Baig; D32819389)</h3>
 <p>Retired because the original issue is no longer reproducable (it appears to
