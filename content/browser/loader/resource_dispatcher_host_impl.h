@@ -27,7 +27,6 @@
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/loader/resource_loader.h"
 #include "content/browser/loader/resource_loader_delegate.h"
-#include "content/browser/loader/resource_scheduler.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/download_id.h"
@@ -218,8 +217,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   void ClearSSLClientAuthHandlerForRequest(net::URLRequest* request);
 
-  ResourceScheduler* scheduler() { return scheduler_.get(); }
-
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
                            TestBlockedRequestsProcessDies);
@@ -258,9 +255,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   static bool RenderViewForRequest(const net::URLRequest* request,
                                    int* render_process_host_id,
                                    int* render_view_host_id);
-
-  // An init helper that runs on the IO thread.
-  void OnInit();
 
   // A shutdown helper that runs on the IO thread.
   void OnShutdown();
@@ -434,8 +428,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   typedef std::map<GlobalRequestID,
                    ObserverList<ResourceMessageDelegate>*> DelegateMap;
   DelegateMap delegate_map_;
-
-  scoped_ptr<ResourceScheduler> scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcherHostImpl);
 };

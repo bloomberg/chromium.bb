@@ -57,7 +57,6 @@
 #include "content/browser/in_process_webkit/indexed_db_context_impl.h"
 #include "content/browser/in_process_webkit/indexed_db_dispatcher_host.h"
 #include "content/browser/loader/resource_message_filter.h"
-#include "content/browser/loader/resource_scheduler_filter.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/mime_registry_message_filter.h"
 #include "content/browser/plugin_service_impl.h"
@@ -483,7 +482,6 @@ bool RenderProcessHostImpl::Init() {
 
 void RenderProcessHostImpl::CreateMessageFilters() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  channel_->AddFilter(new ResourceSchedulerFilter(GetID()));
   MediaInternals* media_internals = MediaInternals::GetInstance();;
   // Add BrowserPluginMessageFilter to ensure it gets the first stab at messages
   // from guests.

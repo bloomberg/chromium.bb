@@ -967,10 +967,6 @@ class ResourceLoaderBridgeImpl : public ResourceLoaderBridge {
     static_cast<SyncRequestProxy*>(proxy_)->WaitForCompletion();
   }
 
-  virtual void DidChangePriority(net::RequestPriority new_priority) {
-    // Not really needed for DRT.
-  }
-
  private:
   // Ownership of params_ is transfered to the proxy when the proxy is created.
   scoped_ptr<RequestParams> params_;

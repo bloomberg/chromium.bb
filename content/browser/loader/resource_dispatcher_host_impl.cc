@@ -205,6 +205,31 @@ void RemoveDownloadFileFromChildSecurityPolicy(int child_id,
 #pragma warning(default: 4748)
 #endif
 
+net::RequestPriority DetermineRequestPriority(
+    const ResourceHostMsg_Request& request_data) {
+  switch (request_data.priority) {
+    case WebKit::WebURLRequest::PriorityVeryHigh:
+      return net::HIGHEST;
+
+    case WebKit::WebURLRequest::PriorityHigh:
+      return net::MEDIUM;
+
+    case WebKit::WebURLRequest::PriorityMedium:
+      return net::LOW;
+
+    case WebKit::WebURLRequest::PriorityLow:
+      return net::LOWEST;
+
+    case WebKit::WebURLRequest::PriorityVeryLow:
+      return net::IDLE;
+
+    case WebKit::WebURLRequest::PriorityUnresolved:
+    default:
+      NOTREACHED();
+      return net::LOW;
+  }
+}
+
 void OnSwapOutACKHelper(int render_process_id,
                         int render_view_id,
                         bool timed_out) {
@@ -314,10 +339,9 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl()
       &last_user_gesture_time_,
       "We don't care about the precise value, see http://crbug.com/92889");
 
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(&ResourceDispatcherHostImpl::OnInit,
-                                     base::Unretained(this)));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&appcache::AppCacheInterceptor::EnsureRegistered));
 
   update_load_states_timer_.reset(
       new base::RepeatingTimer<ResourceDispatcherHostImpl>());
@@ -726,11 +750,6 @@ bool ResourceDispatcherHostImpl::RenderViewForRequest(
   return info->GetAssociatedRenderView(render_process_id, render_view_id);
 }
 
-void ResourceDispatcherHostImpl::OnInit() {
-  scheduler_.reset(new ResourceScheduler);
-  appcache::AppCacheInterceptor::EnsureRegistered();
-}
-
 void ResourceDispatcherHostImpl::OnShutdown() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -758,8 +777,6 @@ void ResourceDispatcherHostImpl::OnShutdown() {
        iter != ids.end(); ++iter) {
     CancelBlockedRequestsForRoute(iter->first, iter->second);
   }
-
-  scheduler_.reset();
 }
 
 bool ResourceDispatcherHostImpl::OnMessageReceived(
@@ -922,7 +939,8 @@ void ResourceDispatcherHostImpl::BeginRequest(
   // transferred navigation case?
 
   request->set_load_flags(load_flags);
-  request->set_priority(request_data.priority);
+
+  request->set_priority(DetermineRequestPriority(request_data));
 
   // Resolve elements from request_body and prepare upload data.
   if (request_data.request_body) {
@@ -1031,12 +1049,11 @@ void ResourceDispatcherHostImpl::BeginRequest(
         new TransferNavigationResourceThrottle(request));
   }
 
-  throttles.push_back(
-      scheduler_->ScheduleRequest(child_id, route_id, request).release());
-
-  handler.reset(
-      new ThrottlingResourceHandler(handler.Pass(), child_id, request_id,
-                                    throttles.Pass()));
+  if (!throttles.empty()) {
+    handler.reset(
+        new ThrottlingResourceHandler(handler.Pass(), child_id, request_id,
+                                      throttles.Pass()));
+  }
 
   if (deferred_loader.get()) {
     pending_loaders_[extra_info->GetGlobalRequestID()] = deferred_loader;
