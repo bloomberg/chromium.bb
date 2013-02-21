@@ -75,6 +75,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
        // Listen to onresize here rather than win.onBoundsChanged, because
        // onBoundsChanged is fired before the web contents are resized.
        win.contentWindow.onresize = callbackPass(function() {
+         win.contentWindow.onresize = undefined;
          chrome.test.assertEq(400, win.contentWindow.innerWidth);
          chrome.test.assertEq(450, win.contentWindow.innerHeight);
          win.close();

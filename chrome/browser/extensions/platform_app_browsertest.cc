@@ -315,7 +315,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, Restrictions) {
 
 // Tests that platform apps can use the chrome.app.window.* API.
 // Flaky, http://crbug.com/167097 .
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DISABLED_WindowsApi) {
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApi) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/windows_api")) << message_;
 }
 
