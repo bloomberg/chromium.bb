@@ -61,8 +61,8 @@ void SyncControlVSyncProvider::GetVSyncParameters(
   // We need the time according to CLOCK_MONOTONIC, so if we've been given
   // a time from CLOCK_REALTIME, we need to convert.
   bool time_conversion_needed =
-      abs(system_time - real_time_in_microseconds) <
-      abs(system_time - monotonic_time_in_microseconds);
+      llabs(system_time - real_time_in_microseconds) <
+      llabs(system_time - monotonic_time_in_microseconds);
 
   if (time_conversion_needed)
     system_time += monotonic_time_in_microseconds - real_time_in_microseconds;
