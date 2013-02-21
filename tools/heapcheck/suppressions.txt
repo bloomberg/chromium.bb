@@ -1821,3 +1821,32 @@
    fun:MessageLoop::MessageLoop
    fun:FileSystemURLRequestJobTest
 }
+{
+   bug_177534_a
+   Heapcheck:Leak
+   ...
+   fun:net::test::QuicNetworkTransactionTest::CreateSession
+}
+{
+   bug_177534_b
+   Heapcheck:Leak
+   fun:base::internal::WeakReferenceOwner::GetRef
+   fun:base::SupportsWeakPtr::AsWeakPtr
+   fun:net::MockHostResolverBase::Resolve
+   fun:net::SingleRequestHostResolver::Resolve
+   fun:net::QuicStreamFactory::Job::DoResolveHost
+   fun:net::QuicStreamFactory::Job::DoLoop
+   fun:net::QuicStreamFactory::Job::Run
+   fun:net::QuicStreamFactory::Create
+   fun:net::QuicStreamRequest::Request
+   fun:net::HttpStreamFactoryImpl::Job::DoCreateStream
+   fun:net::HttpStreamFactoryImpl::Job::DoLoop
+   fun:net::HttpStreamFactoryImpl::Job::RunLoop
+   fun:net::HttpStreamFactoryImpl::Job::StartInternal
+   fun:net::HttpStreamFactoryImpl::Job::Start
+   fun:net::HttpStreamFactoryImpl::RequestStream
+   fun:net::HttpNetworkTransaction::DoCreateStream
+   fun:net::HttpNetworkTransaction::DoLoop
+   fun:net::HttpNetworkTransaction::Start
+   fun:net::test::QuicNetworkTransactionTest_UseAlternateProtocolForQuic_Test::TestBody
+}

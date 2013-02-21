@@ -6665,3 +6665,9 @@
    ...
    fun:_ZN10extensionsL9SerializeERKSt6vectorINS_10UserScriptESaIS1_EE
 }
+{
+   bug_177534
+   Memcheck:Leak
+   ...
+   fun:_ZN3net4test26QuicNetworkTransactionTest13CreateSessionEv
+}
