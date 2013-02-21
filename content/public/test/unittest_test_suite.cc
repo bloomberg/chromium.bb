@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/test/test_suite.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebKitPlatformSupport.h"
 #include "webkit/compositor_bindings/web_compositor_support_impl.h"
 
 namespace content {
