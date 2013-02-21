@@ -1816,16 +1816,8 @@
    fun:GcryptInitializer
 }
 {
-   bug_177285_a
+   bug_177285
    Heapcheck:Leak
    fun:MessageLoop::MessageLoop
    fun:FileSystemURLRequestJobTest
-   fun:FileSystemURLRequestJobTest_FileTestFullSpecifiedRange_Test
-}
-{
-   bug_177285_b
-   Heapcheck:Leak
-   fun:MessageLoop::MessageLoop
-   fun:FileSystemURLRequestJobTest
-   fun:FileSystemURLRequestJobTest_FileTestHalfSpecifiedRange_Test
 }
