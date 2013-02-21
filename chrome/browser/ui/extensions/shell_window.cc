@@ -336,6 +336,12 @@ gfx::NativeWindow ShellWindow::GetNativeWindow() {
   return GetBaseWindow()->GetNativeWindow();
 }
 
+gfx::Rect ShellWindow::GetClientBounds() const {
+  gfx::Rect bounds = native_app_window_->GetBounds();
+  bounds.Inset(native_app_window_->GetFrameInsets());
+  return bounds;
+}
+
 string16 ShellWindow::GetTitle() const {
   // WebContents::GetTitle() will return the page's URL if there's no <title>
   // specified. However, we'd prefer to show the name of the extension in that
@@ -505,7 +511,8 @@ void ShellWindow::SaveWindowPosition() {
       extensions::ExtensionSystem::Get(profile())->
           shell_window_geometry_cache();
 
-  gfx::Rect bounds = native_app_window_->GetBounds();
+  gfx::Rect bounds = native_app_window_->GetRestoredBounds();
+  bounds.Inset(native_app_window_->GetFrameInsets());
   cache->SaveGeometry(extension()->id(), window_key_, bounds);
 }
 

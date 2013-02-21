@@ -142,6 +142,9 @@ class ShellWindow : public content::NotificationObserver,
   NativeAppWindow* GetBaseWindow();
   gfx::NativeWindow GetNativeWindow();
 
+  // Returns the bounds that should be reported to the renderer.
+  gfx::Rect GetClientBounds() const;
+
   // This will return a slightly smaller icon then the app_icon to be used in
   // application lists. It is the responsibility of the caller to delete the
   // returned image after use.

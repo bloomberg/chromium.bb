@@ -520,60 +520,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MutationEventsDisabled) {
 #endif
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
                        MAYBE_ShellWindowRestorePosition) {
-  ExtensionTestMessageListener page2_listener("WaitForPage2", true);
-  ExtensionTestMessageListener done_listener("Done1", false);
-  ExtensionTestMessageListener done2_listener("Done2", false);
-
-  ASSERT_TRUE(LoadAndLaunchPlatformApp("geometry"));
-
-  // Wait for the app to be launched (although this is mostly to have a
-  // message to reply to to let the script know it should create its second
-  // window.
-  ASSERT_TRUE(page2_listener.WaitUntilSatisfied());
-
-  // Wait for the first window to verify its geometry was correctly set
-  // from the default* attributes passed to the create function.
-  ASSERT_TRUE(done_listener.WaitUntilSatisfied());
-
-  // Programatically move and resize the window.
-  ShellWindow* window = GetFirstShellWindow();
-  ASSERT_TRUE(window);
-  gfx::Rect bounds(137, 143, 203, 187);
-  window->GetBaseWindow()->SetBounds(bounds);
-
-#if defined(TOOLKIT_GTK)
-  // TODO(mek): On GTK we have to wait for a roundtrip to the X server before
-  // a resize actually happens:
-  // "if you call gtk_window_resize() then immediately call
-  //  gtk_window_get_size(), the size won't have taken effect yet. After the
-  //  window manager processes the resize request, GTK+ receives notification
-  //  that the size has changed via a configure event, and the size of the
-  //  window gets updated."
-  // Because of this we have to wait for an unknown time for the resize to
-  // actually take effect. So wait some time or until the resize got
-  // handled.
-  base::TimeTicks end_time = base::TimeTicks::Now() +
-                             TestTimeouts::action_timeout();
-  while (base::TimeTicks::Now() < end_time &&
-         bounds != window->GetBaseWindow()->GetBounds()) {
-    content::RunAllPendingInMessageLoop();
-  }
-
-  // In the GTK ShellWindow implementation there also is a delay between
-  // getting the correct bounds and it calling SaveWindowPosition, so call a
-  // method explicitly to make sure the value was stored.
-  window->OnNativeWindowChanged();
-#endif  // defined(TOOLKIT_GTK)
-
-  // Make sure the window was properly moved&resized.
-  ASSERT_EQ(bounds, window->GetBaseWindow()->GetBounds());
-
-  // Tell javascript to open a second window.
-  page2_listener.Reply("continue");
-
-  // Wait for javascript to verify that the second window got the updated
-  // coordinates, ignoring the default coordinates passed to the create method.
-  ASSERT_TRUE(done2_listener.WaitUntilSatisfied());
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/geometry"));
 }
 
 namespace {

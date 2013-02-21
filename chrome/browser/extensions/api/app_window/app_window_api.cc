@@ -229,7 +229,7 @@ bool AppWindowCreateFunction::RunImpl() {
       base::Value::CreateBooleanValue(inject_html_titlebar));
   result->Set("id", base::Value::CreateStringValue(shell_window->window_key()));
   DictionaryValue* boundsValue = new DictionaryValue();
-  gfx::Rect bounds = shell_window->GetBaseWindow()->GetBounds();
+  gfx::Rect bounds = shell_window->GetClientBounds();
   boundsValue->SetInteger("left", bounds.x());
   boundsValue->SetInteger("top", bounds.y());
   boundsValue->SetInteger("width", bounds.width());

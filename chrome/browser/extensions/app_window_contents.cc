@@ -80,8 +80,7 @@ void AppWindowContents::NativeWindowChanged(
   DictionaryValue* dictionary = new DictionaryValue();
   args.Append(dictionary);
 
-  gfx::Rect bounds = native_app_window->GetBounds();
-  bounds.Inset(native_app_window->GetFrameInsets());
+  gfx::Rect bounds = host_->GetClientBounds();
   app_window::Bounds update;
   update.left.reset(new int(bounds.x()));
   update.top.reset(new int(bounds.y()));

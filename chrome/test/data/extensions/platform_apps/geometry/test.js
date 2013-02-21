@@ -2,42 +2,46 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-chrome.app.runtime.onLaunched.addListener(function() {
-  var win1;
-  chrome.app.window.create('empty.html',
-      { id: 'test',
-        left: 113, top: 117, width: 314, height: 271,
-        frame: 'none' }, function(win) {
-    win1 = win;
+var callbackPass = chrome.test.callbackPass;
 
+var assertBoundsEqual = function(a, b) {
+  chrome.test.assertEq(a.left, b.left, 'left');
+  chrome.test.assertEq(a.top, b.top, 'top');
+  chrome.test.assertEq(a.width, b.width, 'width');
+  chrome.test.assertEq(a.height, b.height, 'height');
+};
+
+var testRestoreSize = function(id, frameType) {
+  chrome.app.window.create('empty.html',
+      { id: id,
+        left: 113, top: 117, width: 314, height: 271,
+        frame: frameType }, callbackPass(function(win) {
     var bounds = win.getBounds();
 
-    // TODO(jeremya): convert to use getBounds() once
-    // https://codereview.chromium.org/11369039/ lands.
-    chrome.test.assertEq(113, bounds.left);
-    chrome.test.assertEq(117, bounds.top);
-    chrome.test.assertEq(314, bounds.width);
-    chrome.test.assertEq(271, bounds.height);
-    chrome.test.sendMessage('Done1');
-  });
+    assertBoundsEqual({ left:113, top:117, width:314, height:271 }, bounds);
+    var newBounds = { left:447, top:440, width:647, height:504 };
+    win.onBoundsChanged.addListener(callbackPass(boundsChanged));
+    win.setBounds(newBounds);
+    function boundsChanged() {
+      assertBoundsEqual(newBounds, win.getBounds());
+      win.close();
+      chrome.app.window.create('empty.html',
+          { id: id,
+            left: 113, top: 117, width: 314, height: 271,
+            frame: frameType }, callbackPass(function(win2) {
+        assertBoundsEqual(newBounds, win2.getBounds());
+      }));
+    }
+  }));
+}
 
-  chrome.test.sendMessage('WaitForPage2', function(response) {
-    win1.close();
-    chrome.app.window.create('empty.html',
-        { id: 'test',
-          left: 113, top: 117, width: 314, height: 271,
-          frame: 'none' }, function(win) {
-      var bounds = win.getBounds();
-
-      // TODO(jeremya): convert to use getBounds() once
-      // https://codereview.chromium.org/11369039/ lands.
-      chrome.test.assertEq(137, bounds.left);
-      chrome.test.assertEq(143, bounds.top);
-      chrome.test.assertEq(203, bounds.width);
-      chrome.test.assertEq(187, bounds.height);
-      chrome.test.sendMessage('Done2');
-      win.close()
-      window.close();
-    });
-  });
+chrome.app.runtime.onLaunched.addListener(function() {
+  chrome.test.runTests([
+    function testFramelessRestoreSize() {
+      testRestoreSize('frameless', 'none');
+    },
+    function testFramedRestoreSize() {
+      testRestoreSize('framed', 'chrome');
+    },
+  ]);
 });
