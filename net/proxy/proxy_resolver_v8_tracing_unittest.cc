@@ -945,6 +945,152 @@ TEST_F(ProxyResolverV8TracingTest, CancelSetPacWhileOutstandingBlockingDns) {
   EXPECT_EQ(1, host_resolver.num_cancelled_requests());
 }
 
+// This tests that the execution of a PAC script is terminated when the DNS
+// dependencies are missing. If the test fails, then it will hang.
+TEST_F(ProxyResolverV8TracingTest, Terminate) {
+  CapturingNetLog log;
+  CapturingBoundNetLog request_log;
+  MockCachingHostResolver host_resolver;
+  MockErrorObserver* error_observer = new MockErrorObserver;
+  ProxyResolverV8Tracing resolver(&host_resolver, error_observer, &log);
+
+  host_resolver.rules()->AddRule("host1", "182.111.0.222");
+  host_resolver.rules()->AddRule("host2", "111.33.44.55");
+
+  InitResolver(&resolver, "terminate.js");
+
+  TestCompletionCallback callback;
+  ProxyInfo proxy_info;
+
+  int rv = resolver.GetProxyForURL(
+      GURL("http://foopy/req1"),
+      &proxy_info,
+      callback.callback(),
+      NULL,
+      request_log.bound());
+
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_EQ(OK, callback.WaitForResult());
+
+  // The test does 2 DNS resolutions.
+  EXPECT_EQ(2u, host_resolver.num_resolve());
+
+  EXPECT_EQ("foopy:3", proxy_info.proxy_server().ToURI());
+
+  // No errors.
+  EXPECT_EQ("", error_observer->GetOutput());
+
+  EXPECT_EQ(0u, log.GetSize());
+  EXPECT_EQ(0u, request_log.GetSize());
+}
+
+// Tests that multiple instances of ProxyResolverV8Tracing can coexist and run
+// correctly at the same time. This is relevant because at the moment (time
+// this test was written) each ProxyResolverV8Tracing creates its own thread to
+// run V8 on, however each thread is operating on the same v8::Isolate.
+TEST_F(ProxyResolverV8TracingTest, MultipleResolvers) {
+  // ------------------------
+  // Setup resolver0
+  // ------------------------
+  MockHostResolver host_resolver0;
+  host_resolver0.rules()->AddRuleForAddressFamily(
+      "host1", ADDRESS_FAMILY_IPV4, "166.155.144.44");
+  host_resolver0.rules()->AddIPLiteralRule("host1", "::1,192.168.1.1", "");
+  host_resolver0.rules()->AddSimulatedFailure("host2");
+  host_resolver0.rules()->AddRule("host3", "166.155.144.33");
+  host_resolver0.rules()->AddRule("host5", "166.155.144.55");
+  host_resolver0.rules()->AddSimulatedFailure("host6");
+  host_resolver0.rules()->AddRuleForAddressFamily(
+      "*", ADDRESS_FAMILY_IPV4, "122.133.144.155");
+  host_resolver0.rules()->AddRule("*", "133.122.100.200");
+  ProxyResolverV8Tracing resolver0(
+      &host_resolver0, new MockErrorObserver, NULL);
+  InitResolver(&resolver0, "dns.js");
+
+  // ------------------------
+  // Setup resolver1
+  // ------------------------
+  ProxyResolverV8Tracing resolver1(
+      &host_resolver0, new MockErrorObserver, NULL);
+  InitResolver(&resolver1, "dns.js");
+
+  // ------------------------
+  // Setup resolver2
+  // ------------------------
+  ProxyResolverV8Tracing resolver2(
+      &host_resolver0, new MockErrorObserver, NULL);
+  InitResolver(&resolver2, "simple.js");
+
+  // ------------------------
+  // Setup resolver3
+  // ------------------------
+  MockHostResolver host_resolver3;
+  host_resolver3.rules()->AddRule("foo", "166.155.144.33");
+  ProxyResolverV8Tracing resolver3(
+      &host_resolver3, new MockErrorObserver, NULL);
+  InitResolver(&resolver3, "simple_dns.js");
+
+  // ------------------------
+  // Queue up work for each resolver (which will be running in parallel).
+  // ------------------------
+
+  ProxyResolverV8Tracing* resolver[] = {
+    &resolver0, &resolver1, &resolver2, &resolver3,
+  };
+
+  const size_t kNumResolvers = arraysize(resolver);
+  const size_t kNumIterations = 20;
+  const size_t kNumResults = kNumResolvers * kNumIterations;
+  TestCompletionCallback callback[kNumResults];
+  ProxyInfo proxy_info[kNumResults];
+
+  for (size_t i = 0; i < kNumResults; ++i) {
+    size_t resolver_i = i % kNumResolvers;
+    int rv = resolver[resolver_i]->GetProxyForURL(
+        GURL("http://foo/"), &proxy_info[i], callback[i].callback(), NULL,
+        BoundNetLog());
+    EXPECT_EQ(ERR_IO_PENDING, rv);
+  }
+
+  // ------------------------
+  // Verify all of the results.
+  // ------------------------
+
+  const char* kExpectedForDnsJs =
+    "122.133.144.155-"  // myIpAddress()
+    "null-"  // dnsResolve('')
+    "__1_192.168.1.1-"  // dnsResolveEx('host1')
+    "null-"  // dnsResolve('host2')
+    "166.155.144.33-"  // dnsResolve('host3')
+    "122.133.144.155-"  // myIpAddress()
+    "166.155.144.33-"  // dnsResolve('host3')
+    "__1_192.168.1.1-"  // dnsResolveEx('host1')
+    "122.133.144.155-"  // myIpAddress()
+    "null-"  // dnsResolve('host2')
+    "-"  // dnsResolveEx('host6')
+    "133.122.100.200-"  // myIpAddressEx()
+    "166.155.144.44"  // dnsResolve('host1')
+    ":99";
+
+  for (size_t i = 0; i < kNumResults; ++i) {
+    size_t resolver_i = i % kNumResolvers;
+    EXPECT_EQ(OK, callback[i].WaitForResult());
+
+    std::string proxy_uri = proxy_info[i].proxy_server().ToURI();
+
+    if (resolver_i == 0 || resolver_i == 1) {
+      EXPECT_EQ(kExpectedForDnsJs, proxy_uri);
+    } else if (resolver_i == 2) {
+      EXPECT_EQ("foo:99", proxy_uri);
+    } else if (resolver_i == 3) {
+      EXPECT_EQ("166.155.144.33:",
+                proxy_uri.substr(0, proxy_uri.find(':') + 1));
+    } else {
+      NOTREACHED();
+    }
+  }
+}
+
 }  // namespace
 
 }  // namespace net

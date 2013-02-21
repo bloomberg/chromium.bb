@@ -155,7 +155,8 @@ class ProxyResolverV8Tracing::Job
   // Implementation of ProxyResolverv8::JSBindings
   virtual bool ResolveDns(const std::string& host,
                           ResolveDnsOperation op,
-                          std::string* output) OVERRIDE;
+                          std::string* output,
+                          bool* terminate) OVERRIDE;
   virtual void Alert(const string16& message) OVERRIDE;
   virtual void OnError(int line_number, const string16& error) OVERRIDE;
 
@@ -165,7 +166,8 @@ class ProxyResolverV8Tracing::Job
 
   bool ResolveDnsNonBlocking(const std::string& host,
                              ResolveDnsOperation op,
-                             std::string* output);
+                             std::string* output,
+                             bool* terminate);
 
   bool PostDnsOperationAndWait(const std::string& host,
                                ResolveDnsOperation op,
@@ -658,9 +660,12 @@ int ProxyResolverV8Tracing::Job::ExecuteProxyResolver() {
 
 bool ProxyResolverV8Tracing::Job::ResolveDns(const std::string& host,
                                              ResolveDnsOperation op,
-                                             std::string* output) {
-  if (cancelled_.IsSet())
+                                             std::string* output,
+                                             bool* terminate) {
+  if (cancelled_.IsSet()) {
+    *terminate = true;
     return false;
+  }
 
   if ((op == DNS_RESOLVE || op == DNS_RESOLVE_EX) && host.empty()) {
     // a DNS resolve with an empty hostname is considered an error.
@@ -669,7 +674,7 @@ bool ProxyResolverV8Tracing::Job::ResolveDns(const std::string& host,
 
   return blocking_dns_ ?
       ResolveDnsBlocking(host, op, output) :
-      ResolveDnsNonBlocking(host, op, output);
+      ResolveDnsNonBlocking(host, op, output, terminate);
 }
 
 void ProxyResolverV8Tracing::Job::Alert(const string16& message) {
@@ -712,7 +717,8 @@ bool ProxyResolverV8Tracing::Job::ResolveDnsBlocking(const std::string& host,
 
 bool ProxyResolverV8Tracing::Job::ResolveDnsNonBlocking(const std::string& host,
                                                         ResolveDnsOperation op,
-                                                        std::string* output) {
+                                                        std::string* output,
+                                                        bool* terminate) {
   CheckIsOnWorkerThread();
 
   if (abandoned_) {
@@ -736,6 +742,7 @@ bool ProxyResolverV8Tracing::Job::ResolveDnsNonBlocking(const std::string& host,
   if (num_dns_ <= last_num_dns_) {
     // The sequence of DNS operations is different from last time!
     ScheduleRestartWithBlockingDns();
+    *terminate = true;
     return false;
   }
 
@@ -759,6 +766,7 @@ bool ProxyResolverV8Tracing::Job::ResolveDnsNonBlocking(const std::string& host,
   // been started. Abandon this invocation of FindProxyForURL(), it will be
   // restarted once the DNS request completes.
   abandoned_ = true;
+  *terminate = true;
   last_num_dns_ = num_dns_;
   return false;
 }

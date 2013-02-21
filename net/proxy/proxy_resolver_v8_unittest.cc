@@ -23,7 +23,8 @@ namespace {
 // list, for later verification.
 class MockJSBindings : public ProxyResolverV8::JSBindings {
  public:
-  MockJSBindings() : my_ip_address_count(0), my_ip_address_ex_count(0) {}
+  MockJSBindings() : my_ip_address_count(0), my_ip_address_ex_count(0),
+                     should_terminate(false) {}
 
   virtual void Alert(const string16& message) OVERRIDE {
     VLOG(1) << "PAC-alert: " << message;  // Helpful when debugging.
@@ -32,7 +33,10 @@ class MockJSBindings : public ProxyResolverV8::JSBindings {
 
   virtual bool ResolveDns(const std::string& host,
                           ResolveDnsOperation op,
-                          std::string* output) OVERRIDE {
+                          std::string* output,
+                          bool* terminate) OVERRIDE {
+    *terminate = should_terminate;
+
     if (op == MY_IP_ADDRESS) {
       my_ip_address_count++;
       *output = my_ip_address_result;
@@ -83,6 +87,9 @@ class MockJSBindings : public ProxyResolverV8::JSBindings {
   std::vector<std::string> dns_resolves_ex;
   int my_ip_address_count;
   int my_ip_address_ex_count;
+
+  // Whether ResolveDns() should terminate script execution.
+  bool should_terminate;
 };
 
 // This is the same as ProxyResolverV8, but it uses mock bindings in place of
@@ -571,6 +578,51 @@ TEST(ProxyResolverV8Test, IPv6HostnamesNotBracketed) {
   // argument to FindProxyForURL(). The brackets should have been stripped.
   ASSERT_EQ(1U, resolver.mock_js_bindings()->dns_resolves_ex.size());
   EXPECT_EQ("abcd::efff", resolver.mock_js_bindings()->dns_resolves_ex[0]);
+}
+
+// Test that terminating a script within DnsResolve() leads to eventual
+// termination of the script. Also test that repeatedly calling terminate is
+// safe, and running the script again after termination still works.
+TEST(ProxyResolverV8Test, Terminate) {
+  ProxyResolverV8WithMockBindings resolver;
+  int result = resolver.SetPacScriptFromDisk("terminate.js");
+  EXPECT_EQ(OK, result);
+
+  MockJSBindings* bindings = resolver.mock_js_bindings();
+
+  // Terminate script execution upon reaching dnsResolve(). Note that
+  // termination may not take effect right away (so the subsequent dnsResolve()
+  // and alert() may be run).
+  bindings->should_terminate = true;
+
+  ProxyInfo proxy_info;
+  result = resolver.GetProxyForURL(
+      GURL("http://hang/"), &proxy_info,
+      CompletionCallback(), NULL, BoundNetLog());
+
+  // The script execution was terminated.
+  EXPECT_EQ(ERR_PAC_SCRIPT_FAILED, result);
+
+  EXPECT_EQ(1U, resolver.mock_js_bindings()->dns_resolves.size());
+  EXPECT_GE(2U, resolver.mock_js_bindings()->dns_resolves_ex.size());
+  EXPECT_GE(1U, bindings->alerts.size());
+
+  EXPECT_EQ(1U, bindings->errors.size());
+
+  // Termination shows up as an uncaught exception without any message.
+  EXPECT_EQ("", bindings->errors[0]);
+
+  bindings->errors.clear();
+
+  // Try running the script again, this time with a different input which won't
+  // cause a termination+hang.
+  result = resolver.GetProxyForURL(
+      GURL("http://kittens/"), &proxy_info,
+      CompletionCallback(), NULL, BoundNetLog());
+
+  EXPECT_EQ(OK, result);
+  EXPECT_EQ(0u, bindings->errors.size());
+  EXPECT_EQ("kittens:88", proxy_info.proxy_server().ToURI());
 }
 
 }  // namespace

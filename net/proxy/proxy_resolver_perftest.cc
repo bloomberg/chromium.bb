@@ -205,7 +205,8 @@ class MockJSBindings : public net::ProxyResolverV8::JSBindings {
 
   virtual bool ResolveDns(const std::string& host,
                           ResolveDnsOperation op,
-                          std::string* output) OVERRIDE {
+                          std::string* output,
+                          bool* terminate) OVERRIDE {
     CHECK(false);
     return false;
   }

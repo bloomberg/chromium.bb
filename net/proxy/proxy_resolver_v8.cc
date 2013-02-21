@@ -493,13 +493,14 @@ class ProxyResolverV8::Context {
 
   // Handle an exception thrown by V8.
   void HandleError(v8::Handle<v8::Message> message) {
-    if (message.IsEmpty())
-      return;
-
-    // Otherwise dispatch to the bindings.
-    int line_number = message->GetLineNumber();
     string16 error_message;
-    V8ObjectToUTF16String(message->Get(), &error_message);
+    int line_number = -1;
+
+    if (!message.IsEmpty()) {
+      line_number = message->GetLineNumber();
+      V8ObjectToUTF16String(message->Get(), &error_message);
+    }
+
     js_bindings()->OnError(line_number, error_message);
   }
 
@@ -547,92 +548,70 @@ class ProxyResolverV8::Context {
 
   // V8 callback for when "myIpAddress()" is invoked by the PAC script.
   static v8::Handle<v8::Value> MyIpAddressCallback(const v8::Arguments& args) {
-    Context* context =
-        static_cast<Context*>(v8::External::Cast(*args.Data())->Value());
-
-    std::string result;
-    bool success;
-
-    {
-      v8::Unlocker unlocker(args.GetIsolate());
-      // We shouldn't be called with any arguments, but will not complain if
-      // we are.
-      success = context->js_bindings()->ResolveDns(
-          "", JSBindings::MY_IP_ADDRESS, &result);
-    }
-
-    if (!success)
-      return ASCIILiteralToV8String("127.0.0.1");
-    return ASCIIStringToV8String(result);
+    return DnsResolveCallbackHelper(args, JSBindings::MY_IP_ADDRESS);
   }
 
   // V8 callback for when "myIpAddressEx()" is invoked by the PAC script.
   static v8::Handle<v8::Value> MyIpAddressExCallback(
       const v8::Arguments& args) {
-    Context* context =
-        static_cast<Context*>(v8::External::Cast(*args.Data())->Value());
-
-    std::string ip_address_list;
-    bool success;
-
-    {
-      v8::Unlocker unlocker(args.GetIsolate());
-      // We shouldn't be called with any arguments, but will not complain if
-      // we are.
-      success = context->js_bindings()->ResolveDns(
-          "", JSBindings::MY_IP_ADDRESS_EX, &ip_address_list);
-    }
-
-    if (!success)
-      ip_address_list = std::string();
-    return ASCIIStringToV8String(ip_address_list);
+    return DnsResolveCallbackHelper(args, JSBindings::MY_IP_ADDRESS_EX);
   }
 
   // V8 callback for when "dnsResolve()" is invoked by the PAC script.
   static v8::Handle<v8::Value> DnsResolveCallback(const v8::Arguments& args) {
-    Context* context =
-        static_cast<Context*>(v8::External::Cast(*args.Data())->Value());
-
-    // We need at least one string argument.
-    std::string hostname;
-    if (!GetHostnameArgument(args, &hostname))
-      return v8::Null();
-
-    std::string ip_address;
-    bool success;
-
-    {
-      v8::Unlocker unlocker(args.GetIsolate());
-      success = context->js_bindings()->ResolveDns(
-          hostname, JSBindings::DNS_RESOLVE, &ip_address);
-    }
-
-    return success ? ASCIIStringToV8String(ip_address) : v8::Null();
+    return DnsResolveCallbackHelper(args, JSBindings::DNS_RESOLVE);
   }
 
   // V8 callback for when "dnsResolveEx()" is invoked by the PAC script.
   static v8::Handle<v8::Value> DnsResolveExCallback(const v8::Arguments& args) {
+    return DnsResolveCallbackHelper(args, JSBindings::DNS_RESOLVE_EX);
+  }
+
+  // Shared code for implementing:
+  //   - myIpAddress(), myIpAddressEx(), dnsResolve(), dnsResolveEx().
+  static v8::Handle<v8::Value> DnsResolveCallbackHelper(
+      const v8::Arguments& args, JSBindings::ResolveDnsOperation op) {
     Context* context =
         static_cast<Context*>(v8::External::Cast(*args.Data())->Value());
 
-    // We need at least one string argument.
     std::string hostname;
-    if (!GetHostnameArgument(args, &hostname))
-      return v8::Undefined();
 
-    std::string ip_address_list;
+    // dnsResolve() and dnsResolveEx() need at least 1 argument.
+    if (op == JSBindings::DNS_RESOLVE || op == JSBindings::DNS_RESOLVE_EX) {
+      if (!GetHostnameArgument(args, &hostname))
+        return (op == JSBindings::DNS_RESOLVE) ? v8::Null() : v8::Undefined();
+    }
+
+    std::string result;
     bool success;
+    bool terminate = false;
 
     {
       v8::Unlocker unlocker(args.GetIsolate());
       success = context->js_bindings()->ResolveDns(
-          hostname, JSBindings::DNS_RESOLVE_EX, &ip_address_list);
+          hostname, op, &result, &terminate);
     }
 
-    if (!success)
-      ip_address_list = std::string();
+    if (terminate)
+      v8::V8::TerminateExecution(args.GetIsolate());
 
-    return ASCIIStringToV8String(ip_address_list);
+    if (success)
+      return ASCIIStringToV8String(result);
+
+    // Each function handles resolution errors differently.
+    switch (op) {
+      case JSBindings::DNS_RESOLVE:
+        return v8::Null();
+      case JSBindings::DNS_RESOLVE_EX:
+        return v8::String::Empty();
+      case JSBindings::MY_IP_ADDRESS:
+        return ASCIILiteralToV8String("127.0.0.1");
+      case JSBindings::MY_IP_ADDRESS_EX:
+        return v8::String::Empty();
+    }
+
+    NOTREACHED();
+    return v8::Undefined();
   }
 
   // V8 callback for when "sortIpAddressList()" is invoked by the PAC script.
