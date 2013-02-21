@@ -26,6 +26,8 @@ if (!mediaType)
 // Default key used to encrypt many media files used in browser tests.
 var KEY = new Uint8Array([0xeb, 0xdd, 0x62, 0xf1, 0x68, 0x14, 0xd2, 0x7b,
                           0x68, 0xef, 0x12, 0x2a, 0xfc, 0xe4, 0xae, 0x3c]);
+// KEY_ID constant used as init data while encrypting test media files.
+var KEY_ID = getInitDataFromKeyId("0123456789012345");
 // Stores a failure message that is read by the browser test when it fails.
 var failMessage = '';
 // Heart beat message header.
@@ -154,7 +156,10 @@ function loadEncryptedMedia(video, mediaFile, keySystem, key) {
 
     // keymessage in response to generateKeyRequest. Reply with key.
     console.log('onKeyMessage - key request', e);
-    video.webkitAddKey(keySystem, key, e.message);
+    var initData = e.message;
+    if (mediaType.indexOf('mp4') != -1)
+      initData = KEY_ID; // Temporary hack for Clear Key in v0.1.
+    video.webkitAddKey(keySystem, key, initData);
   }
 
   function verifyHeartbeatMessage(e) {
@@ -181,4 +186,12 @@ function loadEncryptedMedia(video, mediaFile, keySystem, key) {
 
   video.src = window.URL.createObjectURL(mediaSource);
   return mediaSource;
+}
+
+function getInitDataFromKeyId(keyID) {
+  var init_key_id = new Uint8Array(keyID.length);
+  for(var i = 0; i < keyID.length; i++) {
+    init_key_id[i] = keyID.charCodeAt(i);
+  }
+  return init_key_id;
 }
