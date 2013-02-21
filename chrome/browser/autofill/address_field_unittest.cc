@@ -23,7 +23,7 @@ class AddressFieldTest : public testing::Test {
 
   // Downcast for tests.
   static AddressField* Parse(AutofillScanner* scanner) {
-    return static_cast<AddressField*>(AddressField::Parse(scanner, false));
+    return static_cast<AddressField*>(AddressField::Parse(scanner));
   }
 
  private:

@@ -6518,12 +6518,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_NEW_AUTOFILL_UI_DESCRIPTION" desc="Description for the flag to enable the new Autofill UI">
         Enable the browser process-based implementation of the Autofill UI, as opposed to the renderer process-based one.
       </message>
-      <message name="IDS_FLAGS_ENABLE_NEW_AUTOFILL_HEURISTICS_NAME" desc="Title for the flag to enable new Autofill heuristics">
-        Enable new Autofill heuristics
-      </message>
-      <message name="IDS_FLAGS_ENABLE_NEW_AUTOFILL_HEURISTICS_DESCRIPTION" desc="Description for the flag to enable new Autofill heuristics">
-        Enable new Autofill heuristics.  This primarily covers detection of additional field types, such as credit card type.
-      </message>
       <message name="IDS_FLAGS_ENABLE_INTERACTIVE_AUTOCOMPLETE_NAME" desc="Name of the flag that enables an interactive autocomplete UI.">
         Enable interactive autocomplete
       </message>

@@ -17,8 +17,7 @@
 #include "chrome/browser/autofill/field_types.h"
 #include "ui/base/l10n/l10n_util.h"
 
-FormField* AddressField::Parse(AutofillScanner* scanner,
-                               bool parse_new_field_types) {
+FormField* AddressField::Parse(AutofillScanner* scanner) {
   if (scanner->IsEnd())
     return NULL;
 

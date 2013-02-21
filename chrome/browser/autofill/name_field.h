@@ -17,7 +17,7 @@ class AutofillScanner;
 // A form field that can parse either a FullNameField or a FirstLastNameField.
 class NameField : public FormField {
  public:
-  static FormField* Parse(AutofillScanner* scanner, bool parse_new_field_types);
+  static FormField* Parse(AutofillScanner* scanner);
 
  protected:
   NameField() {}

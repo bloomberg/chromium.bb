@@ -22,7 +22,7 @@ class NameFieldTest : public testing::Test {
 
   // Downcast for tests.
   static NameField* Parse(AutofillScanner* scanner) {
-    return static_cast<NameField*>(NameField::Parse(scanner, false));
+    return static_cast<NameField*>(NameField::Parse(scanner));
   }
 
  private:

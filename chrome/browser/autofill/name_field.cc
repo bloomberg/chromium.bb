@@ -56,8 +56,7 @@ class FirstLastNameField : public NameField {
 
 }  // namespace
 
-FormField* NameField::Parse(AutofillScanner* scanner,
-                            bool parse_new_field_types) {
+FormField* NameField::Parse(AutofillScanner* scanner) {
   if (scanner->IsEnd())
     return NULL;
 

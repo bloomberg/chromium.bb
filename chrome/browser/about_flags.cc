@@ -1207,13 +1207,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableNewAutofillUi)
   },
   {
-    "enable-new-autofill-heuristics",
-    IDS_FLAGS_ENABLE_NEW_AUTOFILL_HEURISTICS_NAME,
-    IDS_FLAGS_ENABLE_NEW_AUTOFILL_HEURISTICS_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableNewAutofillHeuristics)
-  },
-  {
     "show-app-list-shortcut",
     IDS_FLAGS_SHOW_APP_LIST_SHORTCUT_NAME,
     IDS_FLAGS_SHOW_APP_LIST_SHORTCUT_DESCRIPTION,

@@ -11,7 +11,7 @@
 
 class EmailField : public FormField {
  public:
-  static FormField* Parse(AutofillScanner* scanner, bool parse_new_field_types);
+  static FormField* Parse(AutofillScanner* scanner);
 
  protected:
   // FormField:

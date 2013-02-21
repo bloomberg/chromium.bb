@@ -569,9 +569,6 @@ const char kEnableNetBenchmarking[]            = "enable-net-benchmarking";
 // part of the renderer process.  http://crbug.com/51644
 const char kEnableNewAutofillUi[]           = "enable-new-autofill-ui";
 
-// Enables new Autofill heuristics, such as adding support for new field types.
-const char kEnableNewAutofillHeuristics[]   = "enable-new-autofill-heuristics";
-
 // Enables NPN and SPDY. In case server supports SPDY, browser will use SPDY.
 const char kEnableNpn[]                     = "enable-npn";
 

@@ -88,8 +88,7 @@ class FormField {
 
   // Function pointer type for the parsing function that should be passed to the
   // ParseFormFieldsPass() helper function.
-  typedef FormField* ParseFunction(AutofillScanner* scanner,
-                                   bool parse_new_field_types);
+  typedef FormField* ParseFunction(AutofillScanner* scanner);
 
   // Matches |pattern| to the contents of the field at the head of the
   // |scanner|.
@@ -112,7 +111,6 @@ class FormField {
   // holds any remaining unclassified fields for further processing.
   // Classification results of the processed fields are stored in |map|.
   static void ParseFormFieldsPass(ParseFunction parse,
-                                  bool parse_new_field_types,
                                   std::vector<const AutofillField*>* fields,
                                   FieldTypeMap* map);
 
