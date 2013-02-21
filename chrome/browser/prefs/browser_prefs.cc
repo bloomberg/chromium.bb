@@ -34,6 +34,7 @@
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/gpu/gl_string_manager.h"
 #include "chrome/browser/intranet_redirect_detector.h"
+#include "chrome/browser/io_thread.h"
 #include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
@@ -176,6 +177,7 @@ void RegisterLocalState(PrefService* local_state,
   geolocation::RegisterPrefs(registry);
   GLStringManager::RegisterPrefs(registry);
   IntranetRedirectDetector::RegisterPrefs(registry);
+  IOThread::RegisterPrefs(registry);
   KeywordEditorController::RegisterPrefs(registry);
   MetricsLog::RegisterPrefs(registry);
   MetricsService::RegisterPrefs(registry);

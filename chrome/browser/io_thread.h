@@ -178,6 +178,8 @@ class IOThread : public content::BrowserThreadDelegate {
 
   virtual ~IOThread();
 
+  static void RegisterPrefs(PrefRegistrySimple* registry);
+
   // Can only be called on the IO thread.
   Globals* globals();
 
@@ -235,8 +237,6 @@ class IOThread : public content::BrowserThreadDelegate {
   // after global state has been initialized on the IO thread, and
   // SystemRequestContext state has been initialized on the UI thread.
   void InitSystemRequestContextOnIOThread();
-
-  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   net::HttpAuthHandlerFactory* CreateDefaultAuthHandlerFactory(
       net::HostResolver* resolver);

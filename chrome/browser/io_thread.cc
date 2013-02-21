@@ -377,14 +377,6 @@ IOThread::IOThread(
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
   net::ProxyResolverV8::RememberDefaultIsolate();
 #endif
-  // We call RegisterPrefs() here (instead of inside browser_prefs.cc) to make
-  // sure that everything is initialized in the right order.
-  //
-  // TODO(joi): See if we can fix so it does get registered from
-  // browser_prefs::RegisterLocalState.
-  PrefRegistrySimple* registry = static_cast<PrefRegistrySimple*>(
-      local_state->DeprecatedGetPrefRegistry());
-  RegisterPrefs(registry);
   auth_schemes_ = local_state->GetString(prefs::kAuthSchemes);
   negotiate_disable_cname_lookup_ = local_state->GetBoolean(
       prefs::kDisableAuthNegotiateCnameLookup);
