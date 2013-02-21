@@ -229,9 +229,9 @@ weston_zoom_run(struct weston_surface *surface, float start, float stop,
 static void
 fade_frame(struct weston_surface_animation *animation)
 {
-	if (animation->spring.current > 1)
+	if (animation->spring.current > 0.999)
 		animation->surface->alpha = 1;
-	else if (animation->spring.current < 0 )
+	else if (animation->spring.current < 0.001 )
 		animation->surface->alpha = 0;
 	else
 		animation->surface->alpha = animation->spring.current;
