@@ -159,11 +159,7 @@ enum MigratedPreferences {
 
 namespace chrome {
 
-// TODO(joi): Do the work needed to remove the PrefService parameter,
-// i.e. to do all registration up front before a PrefService is even
-// created.
-void RegisterLocalState(PrefService* local_state,
-                        PrefRegistrySimple* registry) {
+void RegisterLocalState(PrefRegistrySimple* registry) {
   // Prefs in Local State.
   registry->RegisterIntegerPref(prefs::kMultipleProfilePrefMigration, 0);
 

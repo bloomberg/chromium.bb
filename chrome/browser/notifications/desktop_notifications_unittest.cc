@@ -103,7 +103,7 @@ void DesktopNotificationsTest::SetUp() {
   active_desktop_monitor_.reset(new ActiveDesktopMonitor);
 #endif
 
-  chrome::RegisterLocalState(&local_state_, local_state_.registry());
+  chrome::RegisterLocalState(local_state_.registry());
   profile_.reset(new TestingProfile());
   ui_manager_.reset(new BalloonNotificationUIManager(&local_state_));
   balloon_collection_ = new MockBalloonCollection();

@@ -35,7 +35,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
       : store_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
-    chrome::RegisterLocalState(&prefs_, prefs_.registry());
+    chrome::RegisterLocalState(prefs_.registry());
 
     // Set up a policy map for testing.
     policy_map_.Set("key", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,

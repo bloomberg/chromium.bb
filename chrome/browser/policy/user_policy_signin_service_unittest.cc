@@ -91,7 +91,7 @@ class UserPolicySigninServiceTest : public testing::Test {
     g_browser_process->browser_policy_connector()->Init();
 
     local_state_.reset(new TestingPrefServiceSimple);
-    chrome::RegisterLocalState(local_state_.get(), local_state_->registry());
+    chrome::RegisterLocalState(local_state_->registry());
     TestingBrowserProcess::GetGlobal()->SetLocalState(
         local_state_.get());
 

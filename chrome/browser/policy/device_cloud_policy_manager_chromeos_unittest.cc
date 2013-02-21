@@ -47,7 +47,7 @@ class DeviceCloudPolicyManagerChromeOSTest
 
   virtual void SetUp() OVERRIDE {
     DeviceSettingsTestBase::SetUp();
-    chrome::RegisterLocalState(&local_state_, local_state_.registry());
+    chrome::RegisterLocalState(local_state_.registry());
     manager_.Init();
   }
 

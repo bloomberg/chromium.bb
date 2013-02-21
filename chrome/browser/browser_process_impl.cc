@@ -802,6 +802,10 @@ void BrowserProcessImpl::CreateLocalState() {
   base::FilePath local_state_path;
   CHECK(PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path));
   scoped_refptr<PrefRegistrySimple> pref_registry = new PrefRegistrySimple;
+
+  // Register local state preferences.
+  chrome::RegisterLocalState(pref_registry);
+
   local_state_.reset(
       chrome_prefs::CreateLocalState(local_state_path,
                                      local_state_task_runner_,
@@ -809,13 +813,6 @@ void BrowserProcessImpl::CreateLocalState() {
                                      NULL,
                                      pref_registry,
                                      false));
-
-  // Initialize the prefs of the local state.
-  //
-  // TODO(joi): Once we clean up so none of the registration methods
-  // need the PrefService pointer, this should happen before the call
-  // to CreateLocalState.
-  chrome::RegisterLocalState(local_state_.get(), pref_registry);
 
   pref_change_registrar_.Init(local_state_.get());
 
