@@ -135,7 +135,7 @@ common_gyp_vars() {
   export GYP_DEFINES="${DEFINES}"
 
   # Set GYP_GENERATORS to ninja if it's currently unset or null.
-  if [ -z $GYP_GENERATORS ]; then
+  if [ -z "$GYP_GENERATORS" ]; then
     echo "Defaulting GYP_GENERATORS to ninja."
     GYP_GENERATORS=ninja
   elif [ "$GYP_GENERATORS" != "ninja" ]; then
