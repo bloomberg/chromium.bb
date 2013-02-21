@@ -10,7 +10,6 @@
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
-#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
@@ -59,6 +58,10 @@
 using content::UserMetricsAction;
 
 namespace {
+
+// Flags for functions of similar name.
+bool should_show_welcome_page_ = false;
+bool should_do_autofill_personal_data_manager_first_run_ = false;
 
 // Helper class that performs delayed first-run tasks that need more of the
 // chrome infrastructure to be up and running before they can be attempted.
@@ -440,33 +443,24 @@ bool SetShowFirstRunBubblePref(FirstRunBubbleOptions show_bubble_option) {
   return true;
 }
 
-bool SetShowWelcomePagePref() {
-  PrefService* local_state = g_browser_process->local_state();
-  if (!local_state)
-    return false;
-  // TODO(joi): This should happen via browser_prefs::RegisterLocalState().
-  if (!local_state->FindPreference(prefs::kShouldShowWelcomePage)) {
-    static_cast<PrefRegistrySimple*>(
-        local_state->DeprecatedGetPrefRegistry())->RegisterBooleanPref(
-            prefs::kShouldShowWelcomePage, false);
-    local_state->SetBoolean(prefs::kShouldShowWelcomePage, true);
-  }
-  return true;
+void SetShouldShowWelcomePage() {
+  should_show_welcome_page_ = true;
 }
 
-bool SetPersonalDataManagerFirstRunPref() {
-  PrefService* local_state = g_browser_process->local_state();
-  if (!local_state)
-    return false;
-  if (!local_state->FindPreference(
-          prefs::kAutofillPersonalDataManagerFirstRun)) {
-    // TODO(joi): This should happen via browser_prefs::RegisterLocalState().
-    static_cast<PrefRegistrySimple*>(
-        local_state->DeprecatedGetPrefRegistry())->RegisterBooleanPref(
-            prefs::kAutofillPersonalDataManagerFirstRun, false);
-    local_state->SetBoolean(prefs::kAutofillPersonalDataManagerFirstRun, true);
-  }
-  return true;
+bool ShouldShowWelcomePage() {
+  bool retval = should_show_welcome_page_;
+  should_show_welcome_page_ = false;
+  return retval;
+}
+
+void SetShouldDoPersonalDataManagerFirstRun() {
+  should_do_autofill_personal_data_manager_first_run_ = true;
+}
+
+bool ShouldDoPersonalDataManagerFirstRun() {
+  bool retval = should_do_autofill_personal_data_manager_first_run_;
+  should_do_autofill_personal_data_manager_first_run_ = false;
+  return retval;
 }
 
 void LogFirstRunMetric(FirstRunBubbleMetric metric) {
@@ -720,8 +714,8 @@ void DoPostImportTasks(Profile* profile, bool make_chrome_default) {
       TemplateURLServiceFactory::GetForProfile(profile);
   if (template_url && template_url->GetDefaultSearchProvider())
     FirstRunBubbleLauncher::ShowFirstRunBubbleSoon();
-  SetShowWelcomePagePref();
-  SetPersonalDataManagerFirstRunPref();
+  SetShouldShowWelcomePage();
+  SetShouldDoPersonalDataManagerFirstRun();
 #endif  // !defined(USE_AURA)
 
   internal::DoPostImportPlatformSpecificTasks();

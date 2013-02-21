@@ -207,7 +207,7 @@ void FirstRunDialog::OnLearnMoreLinkClicked(GtkButton* button) {
 }
 
 void FirstRunDialog::FirstRunDone() {
-  first_run::SetShowWelcomePagePref();
+  first_run::SetShouldShowWelcomePage();
 
   if (dialog_)
     gtk_widget_destroy(dialog_);

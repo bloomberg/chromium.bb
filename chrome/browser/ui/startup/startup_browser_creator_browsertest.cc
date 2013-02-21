@@ -443,7 +443,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoWithWelcomePage) {
   // that it will show it again (otherwise it skips showing it since
   // --no-first-run is specified in browser tests).
   SyncPromoUI::DidShowSyncPromoAtStartup(browser()->profile());
-  first_run::SetShowWelcomePagePref();
+  first_run::SetShouldShowWelcomePage();
 
   // Do a simple non-process-startup browser launch.
   CommandLine dummy(CommandLine::NO_PROGRAM);
@@ -468,8 +468,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoWithWelcomePage) {
             tab_strip->GetWebContentsAt(1)->GetURL());
 }
 
-// The welcome page should not be shown, even if the pref says so, when there
-// are already more than 2 first run tabs.
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoWithFirstRunTabs) {
   StartupBrowserCreator browser_creator;
   browser_creator.AddFirstRunTab(test_server()->GetURL("files/title1.html"));
@@ -479,9 +477,10 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoWithFirstRunTabs) {
   // --no-first-run is specified in browser tests).
   SyncPromoUI::DidShowSyncPromoAtStartup(browser()->profile());
 
-  // The welcome page should not be added even if the pref says so (as there
-  // already are 2 first run tabs with the promo).
-  first_run::SetShowWelcomePagePref();
+  // The welcome page should not be shown, even if
+  // first_run::ShouldShowWelcomePage() says so, when there are already
+  // more than 2 first run tabs.
+  first_run::SetShouldShowWelcomePage();
 
   // Do a simple non-process-startup browser launch.
   CommandLine dummy(CommandLine::NO_PROGRAM);

@@ -450,16 +450,11 @@ Browser::Browser(const CreateParams& params)
       content::NotificationService::NoDetails());
 
   // TODO(beng): move to ChromeBrowserMain:
-  PrefService* local_state = g_browser_process->local_state();
-  if (local_state && local_state->FindPreference(
-      prefs::kAutofillPersonalDataManagerFirstRun) &&
-      local_state->GetBoolean(prefs::kAutofillPersonalDataManagerFirstRun)) {
-    // Notify PDM that this is a first run.
+  if (first_run::ShouldDoPersonalDataManagerFirstRun()) {
 #if defined(OS_WIN)
+    // Notify PDM that this is a first run.
     ImportAutofillDataWin(PersonalDataManagerFactory::GetForProfile(profile_));
 #endif  // defined(OS_WIN)
-    // Reset the preference so we don't call it again for subsequent windows.
-    local_state->ClearPref(prefs::kAutofillPersonalDataManagerFirstRun);
   }
 
   fullscreen_controller_.reset(new FullscreenController(this));

@@ -97,15 +97,28 @@ bool RemoveSentinel();
 // Returns false if the pref service could not be retrieved.
 bool SetShowFirstRunBubblePref(FirstRunBubbleOptions show_bubble_option);
 
-// Sets the kShouldShowWelcomePage local state pref so that the browser
-// loads the welcome tab once the message loop gets going. Returns false
-// if the pref could not be set.
-bool SetShowWelcomePagePref();
+// Sets a flag that will cause ShouldShowWelcomePage to return true
+// exactly once, so that the browser loads the welcome tab once the
+// message loop gets going.
+void SetShouldShowWelcomePage();
 
-// Sets the kAutofillPersonalDataManagerFirstRun local state pref so that the
-// browser loads PersonalDataManager once the main message loop gets going.
-// Returns false if the pref could not be set.
-bool SetPersonalDataManagerFirstRunPref();
+// Returns true if the welcome page should be shown.
+//
+// This will return true only once: The first time it is called after
+// SetShouldShowWelcomePage() is called.
+bool ShouldShowWelcomePage();
+
+// Sets a flag that will cause ShouldDoPersonalDataManagerFirstRun()
+// to return true exactly once, so that the browser loads
+// PersonalDataManager once the main message loop gets going.
+void SetShouldDoPersonalDataManagerFirstRun();
+
+// Returns true if the autofill personal data manager first-run action
+// should be taken.
+//
+// This will return true only once, the first time it is called after
+// SetShouldDoPersonalDataManagerFirstRun() is called.
+bool ShouldDoPersonalDataManagerFirstRun();
 
 // Log a metric for the "FirstRun.SearchEngineBubble" histogram.
 void LogFirstRunMetric(FirstRunBubbleMetric metric);

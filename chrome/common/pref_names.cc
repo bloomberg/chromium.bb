@@ -1098,9 +1098,6 @@ const char kAutofillPositiveUploadRate[] = "autofill.positive_upload_rate";
 // Double that indicates negative (for not matched forms) upload rate.
 const char kAutofillNegativeUploadRate[] = "autofill.negative_upload_rate";
 
-// Boolean option set to true on the first run. Non-persistent.
-const char kAutofillPersonalDataManagerFirstRun[] = "autofill.pdm.first_run";
-
 // Modifying bookmarks is completely disabled when this is set to false.
 const char kEditBookmarksEnabled[] = "bookmarks.editing_enabled";
 
@@ -1513,9 +1510,6 @@ const char kCertificateManagerWindowLastTabIndex[] =
 // Integer that specifies if the first run bubble should be shown.
 // This preference is only registered by the first-run procedure.
 const char kShowFirstRunBubbleOption[] = "show-first-run-bubble-option";
-
-// Signal that we should show the welcome page when we launch Chrome.
-const char kShouldShowWelcomePage[] = "show-welcome-page";
 
 // String containing the last known Google URL.  We re-detect this on startup in
 // most cases, and use it to send traffic to the correct Google host or with the

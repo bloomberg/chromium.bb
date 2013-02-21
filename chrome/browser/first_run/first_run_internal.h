@@ -57,9 +57,6 @@ void SetupMasterPrefsFromInstallPrefs(
     const installer::MasterPreferences& install_prefs,
     MasterPrefs* out_prefs);
 
-void SetShowWelcomePagePrefIfNeeded(
-    installer::MasterPreferences* install_prefs);
-
 void SetDefaultBrowser(installer::MasterPreferences* install_prefs);
 
 // Returns true if first run ui should be skipped, which is the case that

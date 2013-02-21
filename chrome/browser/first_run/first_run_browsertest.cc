@@ -55,14 +55,11 @@ IN_PROC_BROWSER_TEST_F(FirstRunBrowserTest, SetShowFirstRunBubblePref) {
                 prefs::kShowFirstRunBubbleOption));
 }
 
-IN_PROC_BROWSER_TEST_F(FirstRunBrowserTest, SetShowWelcomePagePref) {
-  EXPECT_FALSE(g_browser_process->local_state()->FindPreference(
-      prefs::kShouldShowWelcomePage));
-  EXPECT_TRUE(first_run::SetShowWelcomePagePref());
-  ASSERT_TRUE(g_browser_process->local_state()->FindPreference(
-      prefs::kShouldShowWelcomePage));
-  EXPECT_TRUE(g_browser_process->local_state()->GetBoolean(
-      prefs::kShouldShowWelcomePage));
+IN_PROC_BROWSER_TEST_F(FirstRunBrowserTest, SetShouldShowWelcomePage) {
+  EXPECT_FALSE(first_run::ShouldShowWelcomePage());
+  first_run::SetShouldShowWelcomePage();
+  EXPECT_TRUE(first_run::ShouldShowWelcomePage());
+  EXPECT_FALSE(first_run::ShouldShowWelcomePage());
 }
 
 #if !defined(OS_CHROMEOS)
