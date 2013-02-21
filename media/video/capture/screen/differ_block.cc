@@ -26,8 +26,8 @@ int BlockDifference(const uint8* image1, const uint8* image2, int stride) {
   static int (*diff_proc)(const uint8*, const uint8*, int) = NULL;
 
   if (!diff_proc) {
-#if defined(ARCH_CPU_ARM_FAMILY)
-    // For ARM processors, always use C version.
+#if defined(ARCH_CPU_ARM_FAMILY) || defined(ARCH_CPU_MIPS_FAMILY)
+    // For ARM and MIPS processors, always use C version.
     // TODO(hclam): Implement a NEON version.
     diff_proc = &BlockDifference_C;
 #else
