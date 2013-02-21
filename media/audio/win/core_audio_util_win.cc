@@ -468,7 +468,12 @@ HRESULT CoreAudioUtil::SharedModeInitialize(IAudioClient* client,
                                             HANDLE event_handle,
                                             uint32* endpoint_buffer_size) {
   DCHECK(IsSupported());
-  DWORD stream_flags = AUDCLNT_STREAMFLAGS_NOPERSIST;
+
+  // Use default flags (i.e, dont set AUDCLNT_STREAMFLAGS_NOPERSIST) to
+  // ensure that the volume level and muting state for a rendering session
+  // are persistent across system restarts. The volume level and muting
+  // state for a capture session are never persistent.
+  DWORD stream_flags = 0;
 
   // Enable event-driven streaming if a valid event handle is provided.
   // After the stream starts, the audio engine will signal the event handle
