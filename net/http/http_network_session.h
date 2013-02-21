@@ -36,6 +36,7 @@ class NetLog;
 class NetworkDelegate;
 class ServerBoundCertService;
 class ProxyService;
+class QuicClock;
 class SOCKSClientSocketPool;
 class SSLClientSocketPool;
 class SSLConfigService;
@@ -83,6 +84,8 @@ class NET_EXPORT HttpNetworkSession
     bool enable_quic;
     uint16 origin_port_to_force_quic_on;
     bool use_spdy_over_quic;
+    QuicClock* quic_clock;
+    QuicRandom* quic_random;
     bool enable_user_alternate_protocol_ports;
   };
 

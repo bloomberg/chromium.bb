@@ -59,8 +59,9 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl :
   typedef std::map<HttpPipelinedHost::Key,
                    RequestVector> HttpPipeliningRequestMap;
 
-  bool GetAlternateProtocolRequestFor(const GURL& original_url,
-                                      GURL* alternate_url) const;
+  PortAlternateProtocolPair GetAlternateProtocolRequestFor(
+      const GURL& original_url,
+      GURL* alternate_url) const;
 
   // Detaches |job| from |request|.
   void OrphanJob(Job* job, const Request* request);

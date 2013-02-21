@@ -1296,6 +1296,7 @@ MockUDPClientSocket::MockUDPClientSocket(SocketDataProvider* data,
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(data_);
   data_->Reset();
+  peer_addr_ = data->connect_data().peer_addr;
 }
 
 MockUDPClientSocket::~MockUDPClientSocket() {}
@@ -1359,7 +1360,7 @@ void MockUDPClientSocket::Close() {
 }
 
 int MockUDPClientSocket::GetPeerAddress(IPEndPoint* address) const {
-  NOTIMPLEMENTED();
+  *address = peer_addr_;
   return OK;
 }
 

@@ -466,8 +466,9 @@ int QuicHttpStream::ParseResponseHeaders() {
     size_t read_buf_len = static_cast<size_t>(read_buf_->offset());
     SpdyFramer framer(3);
     SpdyHeaderBlock headers;
-    size_t len = framer.ParseHeaderBlockInBuffer(
-        read_buf_->StartOfBuffer(), read_buf_->offset(), &headers);
+    char* data = read_buf_->StartOfBuffer();
+    size_t len = framer.ParseHeaderBlockInBuffer(data, read_buf_->offset(),
+                                                 &headers);
 
     if (len == 0) {
       return ERR_IO_PENDING;
@@ -476,7 +477,7 @@ int QuicHttpStream::ParseResponseHeaders() {
     // Save the remaining received data.
     size_t delta = read_buf_len - len;
     if (delta > 0) {
-      BufferResponseBody(read_buf_->data(), delta);
+      BufferResponseBody(data + len, delta);
     }
 
     // The URLRequest logs these headers, so only log to the QuicSession's
@@ -485,7 +486,10 @@ int QuicHttpStream::ParseResponseHeaders() {
         NetLog::TYPE_QUIC_HTTP_STREAM_READ_RESPONSE_HEADERS,
         base::Bind(&SpdyHeaderBlockNetLogCallback, &headers));
 
-    SpdyHeadersToHttpResponse(headers, 3, response_info_);
+    if (!SpdyHeadersToHttpResponse(headers, 3, response_info_)) {
+      DLOG(WARNING) << "Invalid headers";
+      return ERR_QUIC_PROTOCOL_ERROR;
+    }
     // Put the peer's IP address and port into the response.
     IPEndPoint address = stream_->GetPeerAddress();
     response_info_->socket_address = HostPortPair::FromIPEndPoint(address);

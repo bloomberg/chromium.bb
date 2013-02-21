@@ -844,6 +844,9 @@ class MockUDPClientSocket
   MockRead read_data_;
   bool need_read_data_;
 
+  // Address of the "remote" peer we're connected to.
+  IPEndPoint peer_addr_;
+
   // While an asynchronous IO is pending, we save our user-buffer state.
   IOBuffer* pending_buf_;
   int pending_buf_len_;

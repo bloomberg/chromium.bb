@@ -55,8 +55,10 @@ class HttpStreamFactoryImpl::Job {
 
   // Marks this Job as the "alternate" job, from Alternate-Protocol. Tracks the
   // original url so we can mark the Alternate-Protocol as broken if
-  // we fail to connect.
-  void MarkAsAlternate(const GURL& original_url);
+  // we fail to connect.  |alternate| specifies the alternate protocol to use
+  // and alternate port to connect to.
+  void MarkAsAlternate(const GURL& original_url,
+                       PortAlternateProtocolPair alternate);
 
   // Tells |this| to wait for |job| to resume it.
   void WaitFor(Job* job);
@@ -167,9 +169,6 @@ class HttpStreamFactoryImpl::Job {
   void InitSSLConfig(const HostPortPair& origin_server,
                      SSLConfig* ssl_config,
                      bool is_proxy) const;
-
-  // AlternateProtocol API
-  void MarkBrokenAlternateProtocolAndFallback();
 
   // Retrieve SSLInfo from our SSL Socket.
   // This must only be called when we are using an SSLSocket.

@@ -83,6 +83,8 @@ HttpNetworkSession::Params::Params()
       enable_quic(false),
       origin_port_to_force_quic_on(0),
       use_spdy_over_quic(false),
+      quic_clock(NULL),
+      quic_random(NULL),
       enable_user_alternate_protocol_ports(false) {
 }
 
@@ -101,9 +103,13 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
       websocket_socket_pool_manager_(
           CreateSocketPoolManager(WEBSOCKET_SOCKET_POOL, params)),
       quic_stream_factory_(params.host_resolver,
-                           net::ClientSocketFactory::GetDefaultFactory(),
-                           QuicRandom::GetInstance(),
-                           new QuicClock(),
+                           params.client_socket_factory ?
+                               params.client_socket_factory :
+                               net::ClientSocketFactory::GetDefaultFactory(),
+                           params.quic_random ? params.quic_random :
+                               QuicRandom::GetInstance(),
+                           params.quic_clock ? params. quic_clock :
+                               new QuicClock(),
                            params.use_spdy_over_quic),
       spdy_session_pool_(params.host_resolver,
                          params.ssl_config_service,

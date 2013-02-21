@@ -187,8 +187,11 @@ void HttpStreamFactory::SetNextProtos(const std::vector<std::string>& value) {
       enabled_protocols_[NPN_SPDY_2] = true;
     } else if (value[i] == "spdy/3") {
       enabled_protocols_[NPN_SPDY_3] = true;
+    } else if (value[i] == "quic/1") {
+      enabled_protocols_[QUIC_1] = true;
     }
   }
+  // TODO(rch): Remove all support for spdy/1.
   enabled_protocols_[NPN_SPDY_1] = false;
 }
 

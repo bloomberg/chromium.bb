@@ -168,9 +168,15 @@ LoadState HttpStreamFactoryImpl::Job::GetLoadState() const {
   }
 }
 
-void HttpStreamFactoryImpl::Job::MarkAsAlternate(const GURL& original_url) {
+void HttpStreamFactoryImpl::Job::MarkAsAlternate(
+    const GURL& original_url,
+    PortAlternateProtocolPair alternate) {
   DCHECK(!original_url_.get());
   original_url_.reset(new GURL(original_url));
+  if (alternate.protocol == QUIC_1) {
+    DCHECK(session_->params().enable_quic);
+    using_quic_ = true;
+  }
 }
 
 void HttpStreamFactoryImpl::Job::WaitFor(Job* job) {
@@ -676,9 +682,17 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
   using_ssl_ = request_info_.url.SchemeIs("https") || ShouldForceSpdySSL();
   using_spdy_ = false;
 
-  if (ShouldForceQuic()) {
-    next_state_ = STATE_CREATE_STREAM;
+  if (ShouldForceQuic())
     using_quic_ = true;
+
+  if (using_quic_) {
+    DCHECK(session_->params().enable_quic);
+    if (!proxy_info_.is_direct()) {
+      NOTREACHED();
+      // TODO(rch): support QUIC proxies.
+      return ERR_NOT_IMPLEMENTED;
+    }
+    next_state_ = STATE_CREATE_STREAM;
     return OK;
   }
 

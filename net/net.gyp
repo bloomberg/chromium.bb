@@ -1529,6 +1529,7 @@
         'quic/quic_fec_group_test.cc',
         'quic/quic_framer_test.cc',
         'quic/quic_http_stream_test.cc',
+        'quic/quic_network_transaction_unittest.cc',
         'quic/quic_packet_creator_test.cc',
         'quic/quic_protocol_test.cc',
         'quic/quic_reliable_client_stream_test.cc',
