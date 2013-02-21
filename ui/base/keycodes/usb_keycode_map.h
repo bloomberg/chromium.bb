@@ -378,7 +378,7 @@ const usb_keymap usb_keycode_map[] = {
 
 const uint16_t kInvalidKeycode = usb_keycode_map[0].native_keycode;
 
-inline uint16 UsbKeycodeToNativeKeycode(uint32_t usb_keycode) {
+static uint16 UsbKeycodeToNativeKeycode(uint32_t usb_keycode) {
   // Deal with some special-cases that don't fit the 1:1 mapping.
   if (usb_keycode == 0x070032) // non-US hash.
     usb_keycode = 0x070031; // US backslash.

@@ -24,7 +24,7 @@ uint32_t UsbKeyCodeForKeyboardEvent(const WebKeyboardEvent& key_event) {
   if (key_event.nativeKeyCode < 0 || key_event.nativeKeyCode > 0x7f)
     return 0;
 
-  for (size_t i = 0; i < arraysize(usb_keycode_map); i++) {
+  for (uint i = 0; i < arraysize(usb_keycode_map); i++) {
     if (usb_keycode_map[i].native_keycode == key_event.nativeKeyCode)
       return usb_keycode_map[i].usb_keycode;
   }
