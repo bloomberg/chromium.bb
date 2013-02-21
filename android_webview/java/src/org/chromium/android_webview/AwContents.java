@@ -338,6 +338,14 @@ public class AwContents {
         mLayoutSizer.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
+    public int getContentHeightCss() {
+        return getContentViewCore().getContentHeight();
+    }
+
+    public int getContentWidthCss() {
+        return getContentViewCore().getContentWidth();
+    }
+
     public Picture capturePicture() {
         return nativeCapturePicture(mNativeAwContents);
     }
