@@ -52,7 +52,7 @@ class TestWorker(unittest.TestCase):
     worker = shard._Worker(mock_runner, tests, results, retry)
     worker.start()
     worker.join()
-    worker.Reraise()
+    worker.ReraiseIfException()
     return (results, retry)
 
   def testRun(self):
