@@ -671,7 +671,8 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None,
   if not files:
     return []
 
-  input_api.logging.info('Running pylint on: %s', files)
+  input_api.logging.info('Running pylint on %d files', len(files))
+  input_api.logging.debug('Running pylint on: %s', files)
   # Copy the system path to the environment so pylint can find the right
   # imports.
   env = input_api.environ.copy()
