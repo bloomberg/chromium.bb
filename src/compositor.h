@@ -318,11 +318,6 @@ struct weston_compositor {
 	struct wl_list button_binding_list;
 	struct wl_list axis_binding_list;
 	struct wl_list debug_binding_list;
-	struct {
-		struct weston_spring spring;
-		struct weston_animation animation;
-		struct weston_surface *surface;
-	} fade;
 
 	uint32_t state;
 	struct wl_event_source *idle_source;

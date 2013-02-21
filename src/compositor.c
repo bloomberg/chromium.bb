@@ -1053,40 +1053,6 @@ weston_output_damage(struct weston_output *output)
 }
 
 static void
-fade_frame(struct weston_animation *animation,
-	   struct weston_output *output, uint32_t msecs)
-{
-	struct weston_compositor *compositor =
-		container_of(animation,
-			     struct weston_compositor, fade.animation);
-	struct weston_surface *surface;
-
-	if (animation->frame_counter <= 1)
-		compositor->fade.spring.timestamp = msecs;
-
-	surface = compositor->fade.surface;
-	weston_spring_update(&compositor->fade.spring, msecs);
-	weston_surface_set_color(surface, 0.0, 0.0, 0.0,
-				 compositor->fade.spring.current);
-	weston_surface_damage(surface);
-
-	if (weston_spring_done(&compositor->fade.spring)) {
-		compositor->fade.spring.current =
-			compositor->fade.spring.target;
-		wl_list_remove(&animation->link);
-		wl_list_init(&animation->link);
-
-		if (compositor->fade.spring.current < 0.001) {
-			destroy_surface(&surface->surface.resource);
-			compositor->fade.surface = NULL;
-		} else if (compositor->fade.spring.current > 0.999) {
-			compositor->state = WESTON_COMPOSITOR_SLEEPING;
-			wl_signal_emit(&compositor->lock_signal, compositor);
-		}
-	}
-}
-
-static void
 surface_accumulate_damage(struct weston_surface *surface,
 			  pixman_region32_t *opaque)
 {
@@ -1286,41 +1252,6 @@ weston_compositor_schedule_repaint(struct weston_compositor *compositor)
 
 	wl_list_for_each(output, &compositor->output_list, link)
 		weston_output_schedule_repaint(output);
-}
-
-WL_EXPORT void
-weston_compositor_fade(struct weston_compositor *compositor, float tint)
-{
-	struct weston_output *output;
-	struct weston_surface *surface;
-
-	output = container_of(compositor->output_list.next,
-                             struct weston_output, link);
-
-	compositor->fade.spring.target = tint;
-	if (weston_spring_done(&compositor->fade.spring))
-		return;
-
-	if (compositor->fade.surface == NULL) {
-		surface = weston_surface_create(compositor);
-		if (!surface)
-			return;
-
-		weston_surface_configure(surface, 0, 0, 8192, 8192);
-		weston_surface_set_color(surface, 0.0, 0.0, 0.0, 1.0 - tint);
-		wl_list_insert(&compositor->fade_layer.surface_list,
-			       &surface->layer_link);
-		weston_surface_update_transform(surface);
-		compositor->fade.surface = surface;
-		pixman_region32_init(&surface->input);
-	}
-
-	weston_surface_damage(compositor->fade.surface);
-	if (wl_list_empty(&compositor->fade.animation.link)) {
-		compositor->fade.animation.frame_counter = 0;
-		wl_list_insert(output->animation_list.prev,
-			       &compositor->fade.animation.link);
-	}
 }
 
 static void
@@ -1646,7 +1577,6 @@ WL_EXPORT void
 weston_compositor_wake(struct weston_compositor *compositor)
 {
 	compositor->state = WESTON_COMPOSITOR_ACTIVE;
-	weston_compositor_fade(compositor, 0.0);
 
 	wl_event_source_timer_update(compositor->idle_source,
 				     compositor->idle_time * 1000);
@@ -1695,7 +1625,8 @@ idle_handler(void *data)
 	if (compositor->idle_inhibit)
 		return 1;
 
-	weston_compositor_fade(compositor, 1.0);
+	compositor->state = WESTON_COMPOSITOR_IDLE;
+	wl_signal_emit(&compositor->lock_signal, compositor);
 
 	return 1;
 }
@@ -3094,7 +3025,6 @@ weston_compositor_init(struct weston_compositor *ec,
 	wl_list_init(&ec->button_binding_list);
 	wl_list_init(&ec->axis_binding_list);
 	wl_list_init(&ec->debug_binding_list);
-	wl_list_init(&ec->fade.animation.link);
 
 	weston_plane_init(&ec->primary_plane, 0, 0);
 
@@ -3116,9 +3046,6 @@ weston_compositor_init(struct weston_compositor *ec,
 	wl_event_source_timer_update(ec->idle_source, ec->idle_time * 1000);
 
 	ec->input_loop = wl_event_loop_create();
-
-	weston_spring_init(&ec->fade.spring, 30.0, 1.0, 1.0);
-	ec->fade.animation.frame = fade_frame;
 
 	weston_layer_init(&ec->fade_layer, &ec->layer_list);
 	weston_layer_init(&ec->cursor_layer, &ec->fade_layer.link);

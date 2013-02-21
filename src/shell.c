@@ -49,6 +49,11 @@ enum animation_type {
 	ANIMATION_FADE
 };
 
+enum fade_type {
+	FADE_IN,
+	FADE_OUT
+};
+
 struct focus_state {
 	struct weston_seat *seat;
 	struct workspace *ws;
@@ -136,6 +141,12 @@ struct desktop_shell {
 		struct wl_resource *binding;
 		struct wl_list surfaces;
 	} input_panel;
+
+	struct {
+		struct weston_surface *surface;
+		struct weston_surface_animation *animation;
+		enum fade_type type;
+	} fade;
 
 	uint32_t binding_modifier;
 	enum animation_type win_animation_type;
@@ -2754,10 +2765,8 @@ click_to_activate_binding(struct wl_seat *seat, uint32_t time, uint32_t button,
 }
 
 static void
-lock(struct wl_listener *listener, void *data)
+lock(struct desktop_shell *shell)
 {
-	struct desktop_shell *shell =
-		container_of(listener, struct desktop_shell, lock_listener);
 	struct weston_output *output;
 	struct workspace *ws = get_current_workspace(shell);
 
@@ -2791,11 +2800,8 @@ lock(struct wl_listener *listener, void *data)
 }
 
 static void
-unlock(struct wl_listener *listener, void *data)
+unlock(struct desktop_shell *shell)
 {
-	struct desktop_shell *shell =
-		container_of(listener, struct desktop_shell, unlock_listener);
-
 	if (!shell->locked || shell->lock_surface) {
 		weston_compositor_wake(shell->compositor);
 		return;
@@ -2812,6 +2818,91 @@ unlock(struct wl_listener *listener, void *data)
 
 	desktop_shell_send_prepare_lock_surface(shell->child.desktop_shell);
 	shell->prepare_event_sent = true;
+}
+
+static void
+shell_fade_done(struct weston_surface_animation *animation, void *data)
+{
+	struct desktop_shell *shell = data;
+
+	shell->fade.animation = NULL;
+
+	switch (shell->fade.type) {
+	case FADE_IN:
+		weston_surface_destroy(shell->fade.surface);
+		shell->fade.surface = NULL;
+		break;
+	case FADE_OUT:
+		shell->compositor->state = WESTON_COMPOSITOR_SLEEPING;
+		lock(shell);
+		break;
+	}
+}
+
+static void
+shell_fade(struct desktop_shell *shell, enum fade_type type)
+{
+	struct weston_compositor *compositor = shell->compositor;
+	struct weston_surface *surface;
+	float tint;
+
+	switch (type) {
+	case FADE_IN:
+		tint = 0.0;
+		break;
+	case FADE_OUT:
+		tint = 1.0;
+		break;
+	default:
+		weston_log("shell: invalid fade type\n");
+		return;
+	}
+
+	shell->fade.type = type;
+
+	if (shell->fade.surface == NULL) {
+		surface = weston_surface_create(compositor);
+		if (!surface)
+			return;
+
+		weston_surface_configure(surface, 0, 0, 8192, 8192);
+		weston_surface_set_color(surface, 0.0, 0.0, 0.0, 1.0);
+		surface->alpha = 1.0 - tint;
+		wl_list_insert(&compositor->fade_layer.surface_list,
+			       &surface->layer_link);
+		weston_surface_update_transform(surface);
+		shell->fade.surface = surface;
+		pixman_region32_init(&surface->input);
+	}
+
+	if (shell->fade.animation)
+		weston_fade_update(shell->fade.animation,
+				   shell->fade.surface->alpha, tint, 30.0);
+	else
+		shell->fade.animation =
+			weston_fade_run(shell->fade.surface,
+					1.0 - tint, tint, 30.0,
+					shell_fade_done, shell);
+}
+
+static void
+lock_handler(struct wl_listener *listener, void *data)
+{
+	struct desktop_shell *shell =
+		container_of(listener, struct desktop_shell, lock_listener);
+
+	shell_fade(shell, FADE_OUT);
+	/* lock() is called from shell_fade_done() */
+}
+
+static void
+unlock_handler(struct wl_listener *listener, void *data)
+{
+	struct desktop_shell *shell =
+		container_of(listener, struct desktop_shell, unlock_listener);
+
+	shell_fade(shell, FADE_IN);
+	unlock(shell);
 }
 
 static void
@@ -3216,6 +3307,7 @@ screensaver_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
 			       &surface->layer_link);
 		weston_surface_update_transform(surface);
 		shell->compositor->idle_time = shell->screensaver.duration;
+		shell_fade(shell, FADE_IN);
 		weston_compositor_wake(shell->compositor);
 		shell->compositor->state = WESTON_COMPOSITOR_IDLE;
 	}
@@ -3972,9 +4064,9 @@ module_init(struct weston_compositor *ec,
 
 	shell->destroy_listener.notify = shell_destroy;
 	wl_signal_add(&ec->destroy_signal, &shell->destroy_listener);
-	shell->lock_listener.notify = lock;
+	shell->lock_listener.notify = lock_handler;
 	wl_signal_add(&ec->lock_signal, &shell->lock_listener);
-	shell->unlock_listener.notify = unlock;
+	shell->unlock_listener.notify = unlock_handler;
 	wl_signal_add(&ec->unlock_signal, &shell->unlock_listener);
 	shell->show_input_panel_listener.notify = show_input_panels;
 	wl_signal_add(&ec->show_input_panel_signal, &shell->show_input_panel_listener);
@@ -4047,6 +4139,8 @@ module_init(struct weston_compositor *ec,
 		create_pointer_focus_listener(seat);
 
 	shell_add_bindings(ec, shell);
+
+	shell_fade(shell, FADE_IN);
 
 	return 0;
 }
