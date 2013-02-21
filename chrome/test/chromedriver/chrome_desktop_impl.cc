@@ -64,8 +64,12 @@ Status ChromeDesktopImpl::Launch(const base::FilePath& chrome_exe,
 }
 
 Status ChromeDesktopImpl::Quit() {
-  if (!base::KillProcess(process_, 0, true))
-    return Status(kUnknownError, "cannot kill Chrome");
+  if (!base::KillProcess(process_, 0, true)) {
+    int exit_code;
+    if (base::GetTerminationStatus(process_, &exit_code) ==
+        base::TERMINATION_STATUS_STILL_RUNNING)
+      return Status(kUnknownError, "cannot kill Chrome");
+  }
   return Status(kOk);
 }
 
