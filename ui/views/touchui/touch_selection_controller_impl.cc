@@ -72,7 +72,7 @@ namespace views {
 class TouchSelectionControllerImpl::EditingHandleView : public View {
  public:
   explicit EditingHandleView(TouchSelectionControllerImpl* controller,
-                               gfx::NativeView context)
+                             gfx::NativeView context)
       : controller_(controller),
         cursor_height_(0) {
     widget_.reset(CreateTouchSelectionPopupWidget(context));
@@ -165,9 +165,10 @@ TouchSelectionControllerImpl::TouchSelectionControllerImpl(
                      client_view->GetNativeView())),
       context_menu_(NULL),
       dragging_handle_(NULL) {
-  client_widget_ = Widget::GetWidgetForNativeView(
+  client_widget_ = Widget::GetTopLevelWidgetForNativeView(
       client_view_->GetNativeView());
-  client_widget_->AddObserver(this);
+  if (client_widget_)
+    client_widget_->AddObserver(this);
 }
 
 TouchSelectionControllerImpl::~TouchSelectionControllerImpl() {

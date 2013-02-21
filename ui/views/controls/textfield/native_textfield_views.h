@@ -81,7 +81,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
   virtual void SelectRect(const gfx::Point& start,
                           const gfx::Point& end) OVERRIDE;
   virtual void GetSelectionEndPoints(gfx::Rect* p1, gfx::Rect* p2) OVERRIDE;
-  virtual const gfx::Rect& GetBounds() OVERRIDE;
+  virtual gfx::Rect GetBounds() OVERRIDE;
   virtual gfx::NativeView GetNativeView() OVERRIDE;
   virtual void ConvertPointToScreen(gfx::Point* point) OVERRIDE;
   virtual void ConvertPointFromScreen(gfx::Point* point) OVERRIDE;

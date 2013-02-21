@@ -366,7 +366,7 @@ void NativeTextfieldViews::GetSelectionEndPoints(gfx::Rect* p1,
   *p2 = render_text->GetCursorBounds(sel, true);
 }
 
-const gfx::Rect& NativeTextfieldViews::GetBounds() {
+gfx::Rect NativeTextfieldViews::GetBounds() {
   return bounds();
 }
 

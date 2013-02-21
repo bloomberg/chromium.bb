@@ -32,7 +32,7 @@ class UI_EXPORT TouchEditable : public ui::SimpleMenuModel::Delegate {
   virtual void GetSelectionEndPoints(gfx::Rect* p1, gfx::Rect* p2) = 0;
 
   // Gets the bounds of the client view in parent's coordinates.
-  virtual const gfx::Rect& GetBounds() = 0;
+  virtual gfx::Rect GetBounds() = 0;
 
   // Gets the NativeView hosting the client.
   virtual gfx::NativeView GetNativeView() = 0;
