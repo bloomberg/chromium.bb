@@ -1860,10 +1860,12 @@ void TaskManagerGuestResourceProvider::StartUpdating() {
         i.GetCurrentValue()->GetRenderWidgetHostsIterator();
     for (; !iter.IsAtEnd(); iter.Advance()) {
       const RenderWidgetHost* widget = iter.GetCurrentValue();
-      RenderViewHost* rvh =
-          RenderViewHost::From(const_cast<RenderWidgetHost*>(widget));
-      if (rvh->IsSubframe())
-        Add(rvh);
+      if (widget->IsRenderView()) {
+        RenderViewHost* rvh =
+            RenderViewHost::From(const_cast<RenderWidgetHost*>(widget));
+        if (rvh->IsSubframe())
+          Add(rvh);
+      }
     }
   }
 
