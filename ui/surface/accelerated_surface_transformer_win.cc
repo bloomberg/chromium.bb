@@ -181,35 +181,35 @@ bool AcceleratedSurfaceTransformer::DoInit(IDirect3DDevice9* device) {
 
 bool AcceleratedSurfaceTransformer::CompileShaderCombo(
     ShaderCombo shader) {
-  vertex_shaders_[shader] = NULL;
+  if (!vertex_shaders_[shader]) {
+    HRESULT hr = device_->CreateVertexShader(
+        reinterpret_cast<const DWORD*>(vertex_shader_sources_[shader]),
+        vertex_shaders_[shader].Receive());
 
-  HRESULT hr = device_->CreateVertexShader(
-      reinterpret_cast<const DWORD*>(vertex_shader_sources_[shader]),
-      vertex_shaders_[shader].Receive());
+    if (FAILED(hr))
+      return false;
 
-  if (FAILED(hr))
-    return false;
-
-  for (int i = 0; i < NUM_SHADERS; ++i) {
-    if (vertex_shader_sources_[i] == vertex_shader_sources_[shader] &&
-        i != shader) {
-      vertex_shaders_[i] = vertex_shaders_[shader];
+    for (int i = 0; i < NUM_SHADERS; ++i) {
+      if (vertex_shader_sources_[i] == vertex_shader_sources_[shader] &&
+          i != shader) {
+        vertex_shaders_[i] = vertex_shaders_[shader];
+      }
     }
   }
 
-  pixel_shaders_[shader] = NULL;
+  if (!pixel_shaders_[shader]) {
+    HRESULT hr = device_->CreatePixelShader(
+        reinterpret_cast<const DWORD*>(pixel_shader_sources_[shader]),
+        pixel_shaders_[shader].Receive());
 
-  hr = device_->CreatePixelShader(
-      reinterpret_cast<const DWORD*>(pixel_shader_sources_[shader]),
-      pixel_shaders_[shader].Receive());
+    if (FAILED(hr))
+      return false;
 
-  if (FAILED(hr))
-    return false;
-
-  for (int i = 0; i < NUM_SHADERS; ++i) {
-    if (pixel_shader_sources_[i] == pixel_shader_sources_[shader] &&
-        i != shader) {
-      pixel_shaders_[i] = pixel_shaders_[shader];
+    for (int i = 0; i < NUM_SHADERS; ++i) {
+      if (pixel_shader_sources_[i] == pixel_shader_sources_[shader] &&
+          i != shader) {
+        pixel_shaders_[i] = pixel_shaders_[shader];
+      }
     }
   }
 
