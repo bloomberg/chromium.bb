@@ -42,6 +42,7 @@
 #include "chrome/installer/util/self_cleaning_temp_dir.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
+#include "content/public/common/result_codes.h"
 #include "rlz/lib/rlz_lib.h"
 
 // Build-time generated include file.

@@ -13,7 +13,6 @@
 
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
-#include "googleurl/src/gurl.h"
 
 namespace base {
 class DictionaryValue;
@@ -117,9 +116,8 @@ class MasterPreferences {
   //
   // Note that the entries are usually urls but they don't have to be.
   //
-  // This function returns the list as a vector of GURLs.  If the master
-  // preferences file does not contain such a list the vector is empty.
-  std::vector<GURL> GetFirstRunTabs() const;
+  // An empty vector is returned if the first_run_tabs preference is absent.
+  std::vector<std::string> GetFirstRunTabs() const;
 
   // The master preferences can also contain a regular extensions
   // preference block. If so, the extensions referenced there will be

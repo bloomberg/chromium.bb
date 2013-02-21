@@ -15,7 +15,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/util_constants.h"
-#include "googleurl/src/gurl.h"
 
 namespace {
 
@@ -24,33 +23,29 @@ const char kFirstRunTabs[] = "first_run_tabs";
 base::LazyInstance<installer::MasterPreferences> g_master_preferences =
     LAZY_INSTANCE_INITIALIZER;
 
-bool GetGURLFromValue(const Value* in_value, GURL* out_value) {
-  if (!in_value || !out_value)
-    return false;
-  std::string url;
-  if (!in_value->GetAsString(&url))
-    return false;
-  GURL gurl(url);
-  *out_value = gurl;
-  return true;
+bool GetURLFromValue(const Value* in_value, std::string* out_value) {
+  return in_value && out_value && in_value->GetAsString(out_value);
 }
 
-std::vector<GURL> GetNamedList(const char* name,
-                               const DictionaryValue* prefs) {
-  std::vector<GURL> list;
+std::vector<std::string> GetNamedList(const char* name,
+                                      const DictionaryValue* prefs) {
+  std::vector<std::string> list;
   if (!prefs)
     return list;
+
   const ListValue* value_list = NULL;
   if (!prefs->GetList(name, &value_list))
     return list;
+
+  list.reserve(value_list->GetSize());
   for (size_t i = 0; i < value_list->GetSize(); ++i) {
     const Value* entry;
-    GURL gurl_entry;
-    if (!value_list->Get(i, &entry) || !GetGURLFromValue(entry, &gurl_entry)) {
+    std::string url_entry;
+    if (!value_list->Get(i, &entry) || !GetURLFromValue(entry, &url_entry)) {
       NOTREACHED();
       break;
     }
-    list.push_back(gurl_entry);
+    list.push_back(url_entry);
   }
   return list;
 }
@@ -306,7 +301,7 @@ bool MasterPreferences::GetString(const std::string& name,
   return ret;
 }
 
-std::vector<GURL> MasterPreferences::GetFirstRunTabs() const {
+std::vector<std::string> MasterPreferences::GetFirstRunTabs() const {
   return GetNamedList(kFirstRunTabs, master_dictionary_.get());
 }
 
@@ -325,4 +320,5 @@ std::string MasterPreferences::GetVariationsSeed() const {
 const MasterPreferences& MasterPreferences::ForCurrentProcess() {
   return g_master_preferences.Get();
 }
-}  // installer_util
+
+}  // namespace installer

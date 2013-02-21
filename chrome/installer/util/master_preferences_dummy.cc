@@ -45,9 +45,9 @@ bool MasterPreferences::GetString(const std::string& name,
   return false;
 }
 
-std::vector<GURL> MasterPreferences::GetFirstRunTabs() const {
+std::vector<std::string> MasterPreferences::GetFirstRunTabs() const {
   NOTREACHED();
-  return std::vector<GURL>();
+  return std::vector<std::string>();
 }
 
 // static
@@ -55,24 +55,5 @@ const MasterPreferences& MasterPreferences::ForCurrentProcess() {
   static MasterPreferences prefs(*CommandLine::ForCurrentProcess());
   return prefs;
 }
-}
 
-// The use of std::vector<GURL>() above requires us to have destructors for
-// GURL and its contained types.  GURL contains a member of type
-// url_parse::Parsed.  Both Parsed and GURL declare (but do not implement)
-// explicit destructors in their header files.  We're missing the real
-// implementations by not depending on the googleurl library.  However, we don't
-// really need them, so we just replace them here rather than building a 64-bit
-// version of the googleurl library with all its dependencies.
-
-GURL::~GURL() {
-  NOTREACHED();
-}
-
-namespace url_parse {
-
-Parsed::~Parsed() {
-  NOTREACHED();
-}
-
-}
+}  // namespace installer

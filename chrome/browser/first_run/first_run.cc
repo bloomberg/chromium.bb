@@ -4,6 +4,8 @@
 
 #include "chrome/browser/first_run/first_run.h"
 
+#include <algorithm>
+
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
@@ -211,6 +213,17 @@ int ImportFromFile(Profile* profile, const CommandLine& cmdline) {
 
   importer_observer.RunLoop();
   return importer_observer.import_result();
+}
+
+GURL UrlFromString(const std::string& in) {
+  return GURL(in);
+}
+
+void ConvertStringVectorToGURLVector(
+    const std::vector<std::string>& src,
+    std::vector<GURL>* ret) {
+  ret->resize(src.size());
+  std::transform(src.begin(), src.end(), ret->begin(), &UrlFromString);
 }
 
 }  // namespace
@@ -579,7 +592,8 @@ ProcessMasterPreferencesResult ProcessMasterPreferences(
   if (!install_prefs.get())
     return DO_FIRST_RUN_TASKS;
 
-  out_prefs->new_tabs = install_prefs->GetFirstRunTabs();
+  ConvertStringVectorToGURLVector(
+      install_prefs->GetFirstRunTabs(), &out_prefs->new_tabs);
 
   internal::SetRLZPref(out_prefs, install_prefs.get());
 

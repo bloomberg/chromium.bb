@@ -13,7 +13,6 @@
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/util_constants.h"
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -192,12 +191,12 @@ TEST_F(MasterPreferencesTest, FirstRunTabs) {
 
   EXPECT_TRUE(file_util::WriteFile(prefs_file(), text, strlen(text)));
   installer::MasterPreferences prefs(prefs_file());
-  typedef std::vector<GURL> TabsVector;
+  typedef std::vector<std::string> TabsVector;
   TabsVector tabs = prefs.GetFirstRunTabs();
   ASSERT_EQ(3, tabs.size());
-  EXPECT_EQ(GURL("http://google.com/f1"), tabs[0]);
-  EXPECT_EQ(GURL("https://google.com/f2"), tabs[1]);
-  EXPECT_EQ(GURL("new_tab_page"), tabs[2]);
+  EXPECT_EQ("http://google.com/f1", tabs[0]);
+  EXPECT_EQ("https://google.com/f2", tabs[1]);
+  EXPECT_EQ("new_tab_page", tabs[2]);
 }
 
 // In this test instead of using our synthetic json file, we use an

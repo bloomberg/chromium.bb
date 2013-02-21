@@ -41,6 +41,7 @@
 #include "chrome/installer/util/product.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/wmi.h"
+#include "content/public/common/result_codes.h"
 
 #include "installer_util_strings.h"  // NOLINT
 
