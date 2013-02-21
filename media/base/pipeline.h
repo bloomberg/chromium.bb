@@ -11,6 +11,7 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/default_clock.h"
 #include "media/base/audio_renderer.h"
 #include "media/base/demuxer.h"
 #include "media/base/media_export.h"
@@ -403,6 +404,9 @@ class MEDIA_EXPORT Pipeline
   // SetPlaybackRate() and a task is dispatched on the message loop to notify
   // the filters.
   float playback_rate_;
+
+  // base::Clock used by |clock_|.
+  base::DefaultClock default_clock_;
 
   // Reference clock.  Keeps track of current playback time.  Uses system
   // clock and linear interpolation, but can have its time manually set

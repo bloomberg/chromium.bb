@@ -7,12 +7,13 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/time/clock.h"
 #include "media/base/buffers.h"
 
 namespace media {
 
-Clock::Clock(TimeProvider* time_provider)
-    : time_provider_(time_provider) {
+Clock::Clock(base::Clock* clock) : clock_(clock) {
+  DCHECK(clock_);
   Reset();
 }
 
@@ -95,12 +96,6 @@ base::TimeDelta Clock::ElapsedViaProvidedTime(const base::Time& time) const {
   return media_time_ + base::TimeDelta::FromMicroseconds(now_us);
 }
 
-base::Time Clock::GetTimeFromProvider() const {
-  if (time_provider_)
-    return time_provider_();
-  return base::Time();
-}
-
 base::TimeDelta Clock::ClampToValidTimeRange(base::TimeDelta time) const {
   if (duration_ == kNoTimestamp())
     return base::TimeDelta();
@@ -124,12 +119,11 @@ void Clock::UpdateReferencePoints() {
 
 void Clock::UpdateReferencePoints(base::TimeDelta current_time) {
   media_time_ = ClampToValidTimeRange(current_time);
-  reference_ = GetTimeFromProvider();
+  reference_ = clock_->Now();
 }
 
 base::TimeDelta Clock::EstimatedElapsedTime() {
-  return ClampToValidTimeRange(
-      ElapsedViaProvidedTime(GetTimeFromProvider()));
+  return ClampToValidTimeRange(ElapsedViaProvidedTime(clock_->Now()));
 }
 
 void Clock::Reset() {

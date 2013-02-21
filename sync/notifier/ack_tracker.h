@@ -17,6 +17,10 @@
 #include "sync/base/sync_export.h"
 #include "sync/notifier/invalidation_util.h"
 
+namespace base {
+class TickClock;
+}  // namespace base
+
 namespace syncer {
 
 // A simple class that tracks sets of object IDs that have not yet been
@@ -34,11 +38,10 @@ class SYNC_EXPORT_PRIVATE AckTracker {
     virtual void OnTimeout(const ObjectIdSet& ids) = 0;
   };
 
-  typedef base::Callback<base::TimeTicks()> NowCallback;
   typedef base::Callback<scoped_ptr<net::BackoffEntry>(
       const net::BackoffEntry::Policy* const)> CreateBackoffEntryCallback;
 
-  explicit AckTracker(Delegate* delegate);
+  AckTracker(base::TickClock* tick_clock, Delegate* delegate);
   ~AckTracker();
 
   // Equivalent to calling Ack() on all currently registered object IDs.
@@ -53,7 +56,6 @@ class SYNC_EXPORT_PRIVATE AckTracker {
   void Ack(const ObjectIdSet& ids);
 
   // Testing methods.
-  void SetNowCallbackForTest(const NowCallback& now_callback);
   void SetCreateBackoffEntryCallbackForTest(
       const CreateBackoffEntryCallback& create_backoff_entry_callback);
   // Returns true iff there are no timeouts scheduled to occur before |now|.
@@ -83,8 +85,9 @@ class SYNC_EXPORT_PRIVATE AckTracker {
       const net::BackoffEntry::Policy* const policy);
 
   // Used for testing purposes.
-  NowCallback now_callback_;
   CreateBackoffEntryCallback create_backoff_entry_callback_;
+
+  base::TickClock* const tick_clock_;
 
   Delegate* const delegate_;
 

@@ -4,8 +4,10 @@
 
 #include "sync/notifier/ack_tracker.h"
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
+#include "base/time/tick_clock.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "google/cacheinvalidation/types.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -15,15 +17,15 @@ namespace syncer {
 
 namespace {
 
-typedef AckTracker::NowCallback NowCallback;
-
-class MockTimeProvider : public base::RefCountedThreadSafe<MockTimeProvider> {
+class FakeTickClock : public base::TickClock {
  public:
-  MockTimeProvider() : fake_now_(base::TimeTicks::Now()) {}
+  FakeTickClock() {}
+
+  virtual ~FakeTickClock() {}
 
   void LeapForward(int seconds) {
     ASSERT_GT(seconds, 0);
-    fake_now_ += base::TimeDelta::FromSeconds(seconds);
+    fake_now_ticks_ += base::TimeDelta::FromSeconds(seconds);
   }
 
   // After the next call to Now(), immediately leap forward by |seconds|.
@@ -32,38 +34,34 @@ class MockTimeProvider : public base::RefCountedThreadSafe<MockTimeProvider> {
     delayed_leap_ = base::TimeDelta::FromSeconds(seconds);
   }
 
-  base::TimeTicks Now() {
-    base::TimeTicks fake_now = fake_now_;
+  virtual base::TimeTicks NowTicks() OVERRIDE {
+    base::TimeTicks fake_now_ticks = fake_now_ticks_;
     if (delayed_leap_ > base::TimeDelta()) {
-      fake_now_ += delayed_leap_;
+      fake_now_ticks_ += delayed_leap_;
       delayed_leap_ = base::TimeDelta();
     }
-    return fake_now;
+    return fake_now_ticks;
   }
 
  private:
-  friend class base::RefCountedThreadSafe<MockTimeProvider>;
-
-  ~MockTimeProvider() {}
-
-  base::TimeTicks fake_now_;
+  base::TimeTicks fake_now_ticks_;
   base::TimeDelta delayed_leap_;
 };
 
 class FakeBackoffEntry : public net::BackoffEntry {
  public:
-  FakeBackoffEntry(const Policy* const policy, const NowCallback& now_callback)
+  FakeBackoffEntry(const Policy* const policy, base::TickClock* tick_clock)
       : BackoffEntry(policy),
-        now_callback_(now_callback) {
+        tick_clock_(tick_clock) {
   }
 
  protected:
   virtual base::TimeTicks ImplGetTimeNow() const OVERRIDE {
-    return now_callback_.Run();
+    return tick_clock_->NowTicks();
   }
 
  private:
-  NowCallback now_callback_;
+  base::TickClock* const tick_clock_;
 };
 
 class MockDelegate : public AckTracker::Delegate {
@@ -72,10 +70,10 @@ class MockDelegate : public AckTracker::Delegate {
 };
 
 scoped_ptr<net::BackoffEntry> CreateMockEntry(
-    const NowCallback& now_callback,
+    base::TickClock* tick_clock,
     const net::BackoffEntry::Policy* const policy) {
   return scoped_ptr<net::BackoffEntry>(new FakeBackoffEntry(
-      policy, now_callback));
+      policy, tick_clock));
 }
 
 }  // namespace
@@ -83,21 +81,16 @@ scoped_ptr<net::BackoffEntry> CreateMockEntry(
 class AckTrackerTest : public testing::Test {
  public:
   AckTrackerTest()
-      : time_provider_(new MockTimeProvider),
-        ack_tracker_(&delegate_),
+      : ack_tracker_(&fake_tick_clock_, &delegate_),
         kIdOne(ipc::invalidation::ObjectSource::TEST, "one"),
         kIdTwo(ipc::invalidation::ObjectSource::TEST, "two") {
-    ack_tracker_.SetNowCallbackForTest(
-        base::Bind(&MockTimeProvider::Now, time_provider_));
     ack_tracker_.SetCreateBackoffEntryCallbackForTest(
-        base::Bind(&CreateMockEntry,
-                   base::Bind(&MockTimeProvider::Now,
-                              time_provider_)));
+        base::Bind(&CreateMockEntry, &fake_tick_clock_));
   }
 
  protected:
   bool TriggerTimeoutNow() {
-    return ack_tracker_.TriggerTimeoutAtForTest(time_provider_->Now());
+    return ack_tracker_.TriggerTimeoutAtForTest(fake_tick_clock_.NowTicks());
   }
 
   base::TimeDelta GetTimerDelay() const {
@@ -107,7 +100,7 @@ class AckTrackerTest : public testing::Test {
     return timer.GetCurrentDelay();
   }
 
-  scoped_refptr<MockTimeProvider> time_provider_;
+  FakeTickClock fake_tick_clock_;
   ::testing::StrictMock<MockDelegate> delegate_;
   AckTracker ack_tracker_;
 
@@ -200,32 +193,32 @@ TEST_F(AckTrackerTest, SimpleTimeout) {
   EXPECT_FALSE(ack_tracker_.IsQueueEmptyForTest());
 
   EXPECT_EQ(base::TimeDelta::FromSeconds(60), GetTimerDelay());
-  time_provider_->LeapForward(60);
+  fake_tick_clock_.LeapForward(60);
   EXPECT_CALL(delegate_, OnTimeout(ids));
   EXPECT_TRUE(TriggerTimeoutNow());
 
   EXPECT_EQ(base::TimeDelta::FromSeconds(120), GetTimerDelay());
-  time_provider_->LeapForward(120);
+  fake_tick_clock_.LeapForward(120);
   EXPECT_CALL(delegate_, OnTimeout(ids));
   EXPECT_TRUE(TriggerTimeoutNow());
 
   EXPECT_EQ(base::TimeDelta::FromSeconds(240), GetTimerDelay());
-  time_provider_->LeapForward(240);
+  fake_tick_clock_.LeapForward(240);
   EXPECT_CALL(delegate_, OnTimeout(ids));
   EXPECT_TRUE(TriggerTimeoutNow());
 
   EXPECT_EQ(base::TimeDelta::FromSeconds(480), GetTimerDelay());
-  time_provider_->LeapForward(480);
+  fake_tick_clock_.LeapForward(480);
   EXPECT_CALL(delegate_, OnTimeout(ids));
   EXPECT_TRUE(TriggerTimeoutNow());
 
   EXPECT_EQ(base::TimeDelta::FromSeconds(600), GetTimerDelay());
-  time_provider_->LeapForward(600);
+  fake_tick_clock_.LeapForward(600);
   EXPECT_CALL(delegate_, OnTimeout(ids));
   EXPECT_TRUE(TriggerTimeoutNow());
 
   EXPECT_EQ(base::TimeDelta::FromSeconds(600), GetTimerDelay());
-  time_provider_->LeapForward(600);
+  fake_tick_clock_.LeapForward(600);
   EXPECT_CALL(delegate_, OnTimeout(ids));
   EXPECT_TRUE(TriggerTimeoutNow());
 
@@ -238,7 +231,7 @@ TEST_F(AckTrackerTest, SimpleTimeout) {
   EXPECT_FALSE(ack_tracker_.IsQueueEmptyForTest());
 
   EXPECT_EQ(base::TimeDelta::FromSeconds(60), GetTimerDelay());
-  time_provider_->LeapForward(60);
+  fake_tick_clock_.LeapForward(60);
   EXPECT_CALL(delegate_, OnTimeout(ids));
   EXPECT_TRUE(TriggerTimeoutNow());
 
@@ -259,27 +252,27 @@ TEST_F(AckTrackerTest, InterleavedTimeout) {
   ack_tracker_.Track(ids_one);
   EXPECT_FALSE(ack_tracker_.IsQueueEmptyForTest());
 
-  time_provider_->LeapForward(30);
+  fake_tick_clock_.LeapForward(30);
   ack_tracker_.Track(ids_two);
   EXPECT_FALSE(ack_tracker_.IsQueueEmptyForTest());
 
   EXPECT_EQ(base::TimeDelta::FromSeconds(60), GetTimerDelay());
-  time_provider_->LeapForward(30);
+  fake_tick_clock_.LeapForward(30);
   EXPECT_CALL(delegate_, OnTimeout(ids_one));
   EXPECT_TRUE(TriggerTimeoutNow());
 
   EXPECT_EQ(base::TimeDelta::FromSeconds(30), GetTimerDelay());
-  time_provider_->LeapForward(30);
+  fake_tick_clock_.LeapForward(30);
   EXPECT_CALL(delegate_, OnTimeout(ids_two));
   EXPECT_TRUE(TriggerTimeoutNow());
 
   EXPECT_EQ(base::TimeDelta::FromSeconds(90), GetTimerDelay());
-  time_provider_->LeapForward(90);
+  fake_tick_clock_.LeapForward(90);
   EXPECT_CALL(delegate_, OnTimeout(ids_one));
   EXPECT_TRUE(TriggerTimeoutNow());
 
   EXPECT_EQ(base::TimeDelta::FromSeconds(30), GetTimerDelay());
-  time_provider_->LeapForward(30);
+  fake_tick_clock_.LeapForward(30);
   EXPECT_CALL(delegate_, OnTimeout(ids_two));
   EXPECT_TRUE(TriggerTimeoutNow());
 
@@ -301,27 +294,27 @@ TEST_F(AckTrackerTest, ShortenTimeout) {
   EXPECT_FALSE(ack_tracker_.IsQueueEmptyForTest());
 
   EXPECT_EQ(base::TimeDelta::FromSeconds(60), GetTimerDelay());
-  time_provider_->LeapForward(60);
+  fake_tick_clock_.LeapForward(60);
   EXPECT_CALL(delegate_, OnTimeout(ids_one));
   EXPECT_TRUE(TriggerTimeoutNow());
 
   // Without this next register, the next timeout should occur in 120 seconds
   // from the last timeout event.
   EXPECT_EQ(base::TimeDelta::FromSeconds(120), GetTimerDelay());
-  time_provider_->LeapForward(30);
+  fake_tick_clock_.LeapForward(30);
   ack_tracker_.Track(ids_two);
   EXPECT_FALSE(ack_tracker_.IsQueueEmptyForTest());
 
   // Now that we've registered another entry though, we should receive a timeout
   // in 60 seconds.
   EXPECT_EQ(base::TimeDelta::FromSeconds(60), GetTimerDelay());
-  time_provider_->LeapForward(60);
+  fake_tick_clock_.LeapForward(60);
   EXPECT_CALL(delegate_, OnTimeout(ids_two));
   EXPECT_TRUE(TriggerTimeoutNow());
 
   // Verify that the original timeout for kIdOne still occurs as expected.
   EXPECT_EQ(base::TimeDelta::FromSeconds(30), GetTimerDelay());
-  time_provider_->LeapForward(30);
+  fake_tick_clock_.LeapForward(30);
   EXPECT_CALL(delegate_, OnTimeout(ids_one));
   EXPECT_TRUE(TriggerTimeoutNow());
 
@@ -337,7 +330,7 @@ TEST_F(AckTrackerTest, ImmediateTimeout) {
   ObjectIdSet ids;
   ids.insert(kIdOne);
 
-  time_provider_->DelayedLeapForward(90);
+  fake_tick_clock_.DelayedLeapForward(90);
   EXPECT_TRUE(ack_tracker_.IsQueueEmptyForTest());
   ack_tracker_.Track(ids);
   EXPECT_FALSE(ack_tracker_.IsQueueEmptyForTest());
@@ -348,7 +341,7 @@ TEST_F(AckTrackerTest, ImmediateTimeout) {
 
   // The next timeout should still be scheduled normally.
   EXPECT_EQ(base::TimeDelta::FromSeconds(120), GetTimerDelay());
-  time_provider_->LeapForward(120);
+  fake_tick_clock_.LeapForward(120);
   EXPECT_CALL(delegate_, OnTimeout(ids));
   EXPECT_TRUE(TriggerTimeoutNow());
 

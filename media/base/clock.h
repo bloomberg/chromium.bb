@@ -9,6 +9,10 @@
 #include "base/time.h"
 #include "media/base/media_export.h"
 
+namespace base {
+class Clock;
+}  // namespace base
+
 namespace media {
 
 // A clock represents a single source of time to allow audio and video streams
@@ -26,10 +30,7 @@ namespace media {
 // we'll keep using a poll-and-sleep solution.
 class MEDIA_EXPORT Clock {
  public:
-  // Type for a static function pointer that acts as a time source.
-  typedef base::Time(TimeProvider)();
-
-  explicit Clock(TimeProvider* time_provider);
+  explicit Clock(base::Clock* clock);
   ~Clock();
 
   // Returns true if the clock is running.
@@ -91,12 +92,9 @@ class MEDIA_EXPORT Clock {
   // value as returned by |time_provider_|.
   base::TimeDelta ElapsedViaProvidedTime(const base::Time& time) const;
 
-  base::Time GetTimeFromProvider() const;
-
   base::TimeDelta ClampToValidTimeRange(base::TimeDelta time) const;
 
-  // Function returning current time in base::Time units.
-  TimeProvider* time_provider_;
+  base::Clock* const clock_;
 
   // Whether the clock is running.
   bool playing_;

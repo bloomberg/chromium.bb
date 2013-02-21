@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(akalin): Change all users of this class to use SimpleTestClock
+// or SimpleTestTickClock and remove this class.
+
 // A helper class used to mock out calls to the static method base::Time::Now.
 //
 // Example usage:

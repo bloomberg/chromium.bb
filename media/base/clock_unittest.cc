@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/test/mock_time_provider.h"
+#include "base/test/simple_test_clock.h"
+#include "base/time/clock.h"
 #include "media/base/clock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -28,11 +30,8 @@ static const int kDurationInSeconds = 120;
 
 class ClockTest : public ::testing::Test {
  public:
-  ClockTest()
-      : clock_(&base::MockTimeProvider::StaticNow) {
+  ClockTest() : clock_(&test_clock_) {
     SetDuration();
-    EXPECT_CALL(mock_time_, Now())
-        .WillRepeatedly(Return(base::Time::UnixEpoch()));
   }
 
  protected:
@@ -44,13 +43,11 @@ class ClockTest : public ::testing::Test {
   }
 
   void AdvanceSystemTime(base::TimeDelta delta) {
-    time_elapsed_ += delta;
-    EXPECT_CALL(mock_time_, Now())
-        .WillRepeatedly(Return(base::Time::UnixEpoch() + time_elapsed_));
+    test_clock_.Advance(delta);
   }
 
+  base::SimpleTestClock test_clock_;
   Clock clock_;
-  StrictMock<base::MockTimeProvider> mock_time_;
   base::TimeDelta time_elapsed_;
 };
 

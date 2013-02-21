@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/stl_util.h"
+#include "base/time/tick_clock.h"
 #include "google/cacheinvalidation/include/types.h"
 
 namespace syncer {
@@ -73,10 +74,11 @@ AckTracker::Entry::Entry(scoped_ptr<net::BackoffEntry> backoff,
 AckTracker::Entry::~Entry() {
 }
 
-AckTracker::AckTracker(Delegate* delegate)
-    : now_callback_(base::Bind(&base::TimeTicks::Now)),
-      create_backoff_entry_callback_(base::Bind(&CreateDefaultBackoffEntry)),
+AckTracker::AckTracker(base::TickClock* tick_clock, Delegate* delegate)
+    : create_backoff_entry_callback_(base::Bind(&CreateDefaultBackoffEntry)),
+      tick_clock_(tick_clock),
       delegate_(delegate) {
+  DCHECK(tick_clock_);
   DCHECK(delegate_);
 }
 
@@ -139,7 +141,7 @@ void AckTracker::NudgeTimer() {
     return;
   }
 
-  const base::TimeTicks now = now_callback_.Run();
+  const base::TimeTicks now = tick_clock_->NowTicks();
   // There are two cases when the timer needs to be started:
   // 1. |desired_run_time_| is in the past. By definition, the timer has already
   //    fired at this point. Since the queue is non-empty, we need to set the
@@ -159,7 +161,7 @@ void AckTracker::NudgeTimer() {
 void AckTracker::OnTimeout() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  OnTimeoutAt(now_callback_.Run());
+  OnTimeoutAt(tick_clock_->NowTicks());
 }
 
 void AckTracker::OnTimeoutAt(base::TimeTicks now) {
@@ -188,13 +190,6 @@ void AckTracker::OnTimeoutAt(base::TimeTicks now) {
 }
 
 // Testing helpers.
-void AckTracker::SetNowCallbackForTest(
-    const NowCallback& now_callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  now_callback_ = now_callback;
-}
-
 void AckTracker::SetCreateBackoffEntryCallbackForTest(
     const CreateBackoffEntryCallback& create_backoff_entry_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
