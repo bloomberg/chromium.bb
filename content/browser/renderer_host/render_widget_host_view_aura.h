@@ -275,11 +275,15 @@ class RenderWidgetHostViewAura
 
   // Overridden from ui::CompositorObserver:
   virtual void OnCompositingDidCommit(ui::Compositor* compositor) OVERRIDE;
-  virtual void OnCompositingStarted(ui::Compositor* compositor) OVERRIDE;
+  virtual void OnCompositingStarted(ui::Compositor* compositor,
+                                    base::TimeTicks start_time) OVERRIDE;
   virtual void OnCompositingEnded(ui::Compositor* compositor) OVERRIDE;
   virtual void OnCompositingAborted(ui::Compositor* compositor) OVERRIDE;
   virtual void OnCompositingLockStateChanged(
       ui::Compositor* compositor) OVERRIDE;
+  virtual void OnUpdateVSyncParameters(ui::Compositor* compositor,
+                                       base::TimeTicks timebase,
+                                       base::TimeDelta interval) OVERRIDE;
 
   // Overridden from ImageTransportFactoryObserver:
   virtual void OnLostResources() OVERRIDE;
@@ -521,6 +525,8 @@ class RenderWidgetHostViewAura
   // region for the HWND.
   PluginWindowMoves plugin_window_moves_;
 #endif
+
+  base::TimeTicks last_draw_ended_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAura);
 };

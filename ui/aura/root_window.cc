@@ -476,7 +476,8 @@ void RootWindow::ScheduleDraw() {
 void RootWindow::OnCompositingDidCommit(ui::Compositor*) {
 }
 
-void RootWindow::OnCompositingStarted(ui::Compositor*) {
+void RootWindow::OnCompositingStarted(ui::Compositor*,
+                                      base::TimeTicks start_time) {
 }
 
 void RootWindow::OnCompositingEnded(ui::Compositor*) {
@@ -497,6 +498,11 @@ void RootWindow::OnCompositingAborted(ui::Compositor*) {
 }
 
 void RootWindow::OnCompositingLockStateChanged(ui::Compositor*) {
+}
+
+void RootWindow::OnUpdateVSyncParameters(ui::Compositor* compositor,
+                                         base::TimeTicks timebase,
+                                         base::TimeDelta interval) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////

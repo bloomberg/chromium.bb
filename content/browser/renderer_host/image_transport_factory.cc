@@ -284,7 +284,6 @@ class BrowserCompositorOutputSurfaceProxy
   DISALLOW_COPY_AND_ASSIGN(BrowserCompositorOutputSurfaceProxy);
 };
 
-
 // Adapts a WebGraphicsContext3DCommandBufferImpl into a
 // cc::OutputSurface that also handles vsync parameter updates
 // arriving from the GPU process.
@@ -292,13 +291,17 @@ class BrowserCompositorOutputSurface
     : public cc::OutputSurface,
       public base::NonThreadSafe {
  public:
-  explicit BrowserCompositorOutputSurface(
+  BrowserCompositorOutputSurface(
       WebGraphicsContext3DCommandBufferImpl* context,
       int surface_id,
-      BrowserCompositorOutputSurfaceProxy* output_surface_proxy)
+      BrowserCompositorOutputSurfaceProxy* output_surface_proxy,
+      base::MessageLoopProxy* compositor_message_loop,
+      base::WeakPtr<ui::Compositor> compositor)
       : OutputSurface(scoped_ptr<WebKit::WebGraphicsContext3D>(context)),
         surface_id_(surface_id),
-        output_surface_proxy_(output_surface_proxy) {
+        output_surface_proxy_(output_surface_proxy),
+        compositor_message_loop_(compositor_message_loop),
+        compositor_(compositor) {
     DetachFromThread();
   }
 
@@ -325,11 +328,18 @@ class BrowserCompositorOutputSurface
     DCHECK(CalledOnValidThread());
     DCHECK(client_);
     client_->OnVSyncParametersChanged(timebase, interval);
+    compositor_message_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&ui::Compositor::OnUpdateVSyncParameters,
+                   compositor_, timebase, interval));
   }
 
  private:
   int surface_id_;
   scoped_refptr<BrowserCompositorOutputSurfaceProxy> output_surface_proxy_;
+
+  scoped_refptr<base::MessageLoopProxy> compositor_message_loop_;
+  base::WeakPtr<ui::Compositor> compositor_;
 };
 
 void BrowserCompositorOutputSurfaceProxy::OnUpdateVSyncParameters(
@@ -370,7 +380,9 @@ class GpuProcessTransportFactory
     return new BrowserCompositorOutputSurface(
         context,
         per_compositor_data_[compositor]->surface_id,
-        output_surface_proxy_);
+        output_surface_proxy_,
+        base::MessageLoopProxy::current(),
+        compositor->AsWeakPtr());
   }
 
   virtual void RemoveCompositor(ui::Compositor* compositor) OVERRIDE {

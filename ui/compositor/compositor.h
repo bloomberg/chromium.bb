@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/time.h"
 #include "cc/layer_tree_host_client.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/gfx/native_widget_types.h"
@@ -174,7 +175,8 @@ class COMPOSITOR_EXPORT CompositorLock
 // appropriately transformed texture for each transformed view in the widget's
 // view hierarchy.
 class COMPOSITOR_EXPORT Compositor
-    : NON_EXPORTED_BASE(public cc::LayerTreeHostClient) {
+    : NON_EXPORTED_BASE(public cc::LayerTreeHostClient),
+      public base::SupportsWeakPtr<Compositor> {
  public:
   Compositor(CompositorDelegate* delegate,
              gfx::AcceleratedWidget widget);
@@ -249,6 +251,9 @@ class COMPOSITOR_EXPORT Compositor
 
   // Signals swap has aborted (e.g. lost context).
   void OnSwapBuffersAborted();
+
+  void OnUpdateVSyncParameters(base::TimeTicks timebase,
+                               base::TimeDelta interval);
 
   // LayerTreeHostClient implementation.
   virtual void willBeginFrame() OVERRIDE;

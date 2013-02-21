@@ -442,6 +442,13 @@ void Compositor::OnSwapBuffersAborted() {
                     OnCompositingAborted(this));
 }
 
+void Compositor::OnUpdateVSyncParameters(base::TimeTicks timebase,
+                                         base::TimeDelta interval) {
+  FOR_EACH_OBSERVER(CompositorObserver,
+                    observer_list_,
+                    OnUpdateVSyncParameters(this, timebase, interval));
+}
+
 void Compositor::willBeginFrame() {
 }
 
@@ -495,9 +502,10 @@ void Compositor::didCommit() {
 }
 
 void Compositor::didCommitAndDrawFrame() {
+  base::TimeTicks start_time = base::TimeTicks::Now();
   FOR_EACH_OBSERVER(CompositorObserver,
                     observer_list_,
-                    OnCompositingStarted(this));
+                    OnCompositingStarted(this, start_time));
 }
 
 void Compositor::didCompleteSwapBuffers() {

@@ -2096,7 +2096,8 @@ void RenderWidgetHostViewAura::OnCompositingDidCommit(
 }
 
 void RenderWidgetHostViewAura::OnCompositingStarted(
-    ui::Compositor* compositor) {
+    ui::Compositor* compositor, base::TimeTicks start_time) {
+  last_draw_ended_ = start_time;
 }
 
 void RenderWidgetHostViewAura::OnCompositingEnded(
@@ -2116,6 +2117,14 @@ void RenderWidgetHostViewAura::OnCompositingLockStateChanged(
   if (!compositor->IsLocked() && can_lock_compositor_ == YES_DID_LOCK) {
     can_lock_compositor_ = NO_PENDING_RENDERER_FRAME;
   }
+}
+
+void RenderWidgetHostViewAura::OnUpdateVSyncParameters(
+    ui::Compositor* compositor,
+    base::TimeTicks timebase,
+    base::TimeDelta interval) {
+  if (IsShowing() && !last_draw_ended_.is_null())
+    host_->UpdateVSyncParameters(last_draw_ended_, interval);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

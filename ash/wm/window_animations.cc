@@ -288,7 +288,8 @@ class CrossFadeObserver : public ui::CompositorObserver,
   // ui::CompositorObserver overrides:
   virtual void OnCompositingDidCommit(ui::Compositor* compositor) OVERRIDE {
   }
-  virtual void OnCompositingStarted(ui::Compositor* compositor) OVERRIDE {
+  virtual void OnCompositingStarted(ui::Compositor* compositor,
+                                    base::TimeTicks start_time) OVERRIDE {
   }
   virtual void OnCompositingEnded(ui::Compositor* compositor) OVERRIDE {
   }
@@ -298,6 +299,10 @@ class CrossFadeObserver : public ui::CompositorObserver,
   }
   virtual void OnCompositingLockStateChanged(
       ui::Compositor* compositor) OVERRIDE {
+  }
+  virtual void OnUpdateVSyncParameters(ui::Compositor* compositor,
+                                       base::TimeTicks timebase,
+                                       base::TimeDelta interval) OVERRIDE {
   }
 
   // aura::WindowObserver overrides:

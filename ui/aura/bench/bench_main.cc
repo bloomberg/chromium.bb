@@ -95,7 +95,8 @@ class BenchCompositorObserver : public ui::CompositorObserver {
 
   virtual void OnCompositingDidCommit(ui::Compositor* compositor) OVERRIDE {}
 
-  virtual void OnCompositingStarted(Compositor* compositor) OVERRIDE {}
+  virtual void OnCompositingStarted(Compositor* compositor,
+                                    base::TimeTicks start_time) OVERRIDE {}
 
   virtual void OnCompositingEnded(Compositor* compositor) OVERRIDE {
     if (start_time_.is_null()) {
@@ -120,6 +121,11 @@ class BenchCompositorObserver : public ui::CompositorObserver {
 
   virtual void OnCompositingLockStateChanged(
       Compositor* compositor) OVERRIDE {}
+
+  virtual void OnUpdateVSyncParameters(ui::Compositor* compositor,
+                                       base::TimeTicks timebase,
+                                       base::TimeDelta interval) OVERRIDE {
+  }
 
   virtual void Draw() {}
 

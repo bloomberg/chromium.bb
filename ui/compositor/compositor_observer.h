@@ -5,6 +5,7 @@
 #ifndef UI_COMPOSITOR_COMPOSITOR_OBSERVER_H_
 #define UI_COMPOSITOR_COMPOSITOR_OBSERVER_H_
 
+#include "base/time.h"
 #include "ui/compositor/compositor_export.h"
 
 namespace ui {
@@ -25,7 +26,8 @@ class COMPOSITOR_EXPORT CompositorObserver {
 
   // Called when compositing started: it has taken all the layer changes into
   // account and has issued the graphics commands.
-  virtual void OnCompositingStarted(Compositor* compositor) = 0;
+  virtual void OnCompositingStarted(Compositor* compositor,
+                                    base::TimeTicks start_time) = 0;
 
   // Called when compositing completes: the present to screen has completed.
   virtual void OnCompositingEnded(Compositor* compositor) = 0;
@@ -35,6 +37,11 @@ class COMPOSITOR_EXPORT CompositorObserver {
 
   // Called when the compositor lock state changes.
   virtual void OnCompositingLockStateChanged(Compositor* compositor) = 0;
+
+  // Called when the compositor has received updated VSync parameters.
+  virtual void OnUpdateVSyncParameters(Compositor* compositor,
+                                       base::TimeTicks timebase,
+                                       base::TimeDelta interval) = 0;
 
  protected:
   virtual ~CompositorObserver() {}

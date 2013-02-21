@@ -244,10 +244,14 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   // Overridden from ui::CompositorObserver:
   virtual void OnCompositingDidCommit(ui::Compositor*) OVERRIDE;
-  virtual void OnCompositingStarted(ui::Compositor*) OVERRIDE;
+  virtual void OnCompositingStarted(ui::Compositor*,
+                                    base::TimeTicks start_time) OVERRIDE;
   virtual void OnCompositingEnded(ui::Compositor*) OVERRIDE;
   virtual void OnCompositingAborted(ui::Compositor*) OVERRIDE;
   virtual void OnCompositingLockStateChanged(ui::Compositor*) OVERRIDE;
+  virtual void OnUpdateVSyncParameters(ui::Compositor* compositor,
+                                       base::TimeTicks timebase,
+                                       base::TimeDelta interval) OVERRIDE;
 
   // Overridden from ui::LayerDelegate:
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
