@@ -214,6 +214,7 @@ void PresentThread::ResetDevice() {
   // reseting the device, which would be disappointing.
   query_ = NULL;
   device_ = NULL;
+  surface_transformer_.ReleaseAll();
 
   g_accelerated_presenter_map.Pointer()->ResetPresentThread(this);
 
