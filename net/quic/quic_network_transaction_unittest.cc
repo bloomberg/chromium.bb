@@ -58,7 +58,13 @@ namespace test {
 
 class QuicNetworkTransactionTest : public PlatformTest {
  protected:
-  QuicNetworkTransactionTest() : clock_(new MockClock()) {}
+  QuicNetworkTransactionTest()
+      : clock_(new MockClock),
+        ssl_config_service_(new SSLConfigServiceDefaults),
+        proxy_service_(ProxyService::CreateDirect()),
+        auth_handler_factory_(
+            HttpAuthHandlerFactory::CreateDefault(&host_resolver_)) {
+  }
 
   virtual void SetUp() {
     NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
@@ -198,12 +204,11 @@ class QuicNetworkTransactionTest : public PlatformTest {
 
   void CreateSession() {
     params_.client_socket_factory = &socket_factory_;
-    params_.host_resolver = new MockHostResolver;
-    params_.cert_verifier = new MockCertVerifier;
-    params_.proxy_service = ProxyService::CreateDirect();
-    params_.ssl_config_service = new SSLConfigServiceDefaults;
-    params_.http_auth_handler_factory =
-        HttpAuthHandlerFactory::CreateDefault(params_.host_resolver);
+    params_.host_resolver = &host_resolver_;
+    params_.cert_verifier = &cert_verifier_;
+    params_.proxy_service = proxy_service_.get();
+    params_.ssl_config_service = ssl_config_service_.get();
+    params_.http_auth_handler_factory = auth_handler_factory_.get();
     params_.http_server_properties = &http_server_properties;
 
     session_ = new HttpNetworkSession(params_);
@@ -212,7 +217,12 @@ class QuicNetworkTransactionTest : public PlatformTest {
   QuicPacketHeader header_;
   scoped_refptr<HttpNetworkSession> session_;
   MockClientSocketFactory socket_factory_;
-  MockClock* clock_;
+  MockClock* clock_;  // Owned by QuicStreamFactory after CreateSession.
+  MockHostResolver host_resolver_;
+  MockCertVerifier cert_verifier_;
+  scoped_refptr<SSLConfigServiceDefaults> ssl_config_service_;
+  scoped_ptr<ProxyService> proxy_service_;
+  scoped_ptr<HttpAuthHandlerFactory> auth_handler_factory_;
   MockRandom random_generator_;
   HttpServerPropertiesImpl http_server_properties;
   HttpNetworkSession::Params params_;
