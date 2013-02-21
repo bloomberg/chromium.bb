@@ -135,6 +135,7 @@ struct desktop_shell {
 		int duration;
 		struct wl_resource *binding;
 		struct weston_process process;
+		struct wl_event_source *timer;
 	} screensaver;
 
 	struct {
@@ -384,7 +385,7 @@ shell_configuration(struct desktop_shell *shell, const char *config_file)
 	parse_config_file(config_file, cs, ARRAY_LENGTH(cs), shell);
 
 	shell->screensaver.path = path;
-	shell->screensaver.duration = duration;
+	shell->screensaver.duration = duration * 1000;
 	shell->binding_modifier = get_modifier(modifier);
 	shell->win_animation_type = get_animation_type(win_animation);
 	shell->workspaces.num = num_workspaces > 0 ? num_workspaces : 1;
@@ -2136,6 +2137,19 @@ static const struct wl_shell_interface shell_implementation = {
 };
 
 static void
+shell_fade(struct desktop_shell *shell, enum fade_type type);
+
+static int
+screensaver_timeout(void *data)
+{
+	struct desktop_shell *shell = data;
+
+	shell_fade(shell, FADE_OUT);
+
+	return 1;
+}
+
+static void
 handle_screensaver_sigchld(struct weston_process *proc, int status)
 {
 	struct desktop_shell *shell =
@@ -2339,7 +2353,6 @@ resume_desktop(struct desktop_shell *shell)
 	restore_focus_state(shell, get_current_workspace(shell));
 
 	shell->locked = false;
-	shell->compositor->idle_time = shell->compositor->option_idle_time;
 	weston_compositor_wake(shell->compositor);
 	weston_compositor_damage_all(shell->compositor);
 }
@@ -3306,9 +3319,9 @@ screensaver_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
 		wl_list_insert(shell->lock_layer.surface_list.prev,
 			       &surface->layer_link);
 		weston_surface_update_transform(surface);
-		shell->compositor->idle_time = shell->screensaver.duration;
+		wl_event_source_timer_update(shell->screensaver.timer,
+					     shell->screensaver.duration);
 		shell_fade(shell, FADE_IN);
-		weston_compositor_wake(shell->compositor);
 		shell->compositor->state = WESTON_COMPOSITOR_IDLE;
 	}
 }
@@ -4134,6 +4147,9 @@ module_init(struct weston_compositor *ec,
 
 	loop = wl_display_get_event_loop(ec->wl_display);
 	wl_event_loop_add_idle(loop, launch_desktop_shell_process, shell);
+
+	shell->screensaver.timer =
+		wl_event_loop_add_timer(loop, screensaver_timeout, shell);
 
 	wl_list_for_each(seat, &ec->seat_list, link)
 		create_pointer_focus_listener(seat);
