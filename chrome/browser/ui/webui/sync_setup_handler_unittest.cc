@@ -48,25 +48,9 @@ const char kTestCaptcha[] = "pizzamyheart";
 const char kTestCaptchaImageUrl[] = "http://pizzamyheart/image";
 const char kTestCaptchaUnlockUrl[] = "http://pizzamyheart/unlock";
 
-// List of all the types a user can select in the sync config dialog.
-const syncer::ModelType kUserSelectableTypes[] = {
-  syncer::APPS,
-  syncer::AUTOFILL,
-  syncer::BOOKMARKS,
-  syncer::EXTENSIONS,
-  syncer::PASSWORDS,
-  syncer::PREFERENCES,
-  syncer::SESSIONS,
-  syncer::THEMES,
-  syncer::TYPED_URLS
-};
-
 // Returns a ModelTypeSet with all user selectable types set.
 syncer::ModelTypeSet GetAllTypes() {
-  syncer::ModelTypeSet types;
-  for (size_t i = 0; i < arraysize(kUserSelectableTypes); ++i)
-    types.Put(kUserSelectableTypes[i]);
-  return types;
+  return syncer::UserSelectableTypes();
 }
 
 enum SyncAllDataConfig {
@@ -999,9 +983,11 @@ TEST_P(SyncSetupHandlerTest, UnsuccessfullySetPassphrase) {
 // Walks through each user selectable type, and tries to sync just that single
 // data type.
 TEST_P(SyncSetupHandlerTest, TestSyncIndividualTypes) {
-  for (size_t i = 0; i < arraysize(kUserSelectableTypes); ++i) {
+  syncer::ModelTypeSet user_selectable_types = GetAllTypes();
+  syncer::ModelTypeSet::Iterator it;
+  for (it = user_selectable_types.First(); it.Good(); it.Inc()) {
     syncer::ModelTypeSet type_to_set;
-    type_to_set.Put(kUserSelectableTypes[i]);
+    type_to_set.Put(it.Get());
     std::string args = GetConfiguration(
         NULL, CHOOSE_WHAT_TO_SYNC, type_to_set, "", ENCRYPT_PASSWORDS);
     ListValue list_args;
@@ -1150,7 +1136,9 @@ TEST_P(SyncSetupHandlerTest, ShowSetupManuallySyncAll) {
 }
 
 TEST_P(SyncSetupHandlerTest, ShowSetupSyncForAllTypesIndividually) {
-  for (size_t i = 0; i < arraysize(kUserSelectableTypes); ++i) {
+  syncer::ModelTypeSet user_selectable_types = GetAllTypes();
+  syncer::ModelTypeSet::Iterator it;
+  for (it = user_selectable_types.First(); it.Good(); it.Inc()) {
     EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
@@ -1160,7 +1148,7 @@ TEST_P(SyncSetupHandlerTest, ShowSetupSyncForAllTypesIndividually) {
     sync_prefs.SetKeepEverythingSynced(false);
     SetDefaultExpectationsForConfigPage();
     syncer::ModelTypeSet types;
-    types.Put(kUserSelectableTypes[i]);
+    types.Put(it.Get());
     EXPECT_CALL(*mock_pss_, GetPreferredDataTypes()).
         WillRepeatedly(Return(types));
 

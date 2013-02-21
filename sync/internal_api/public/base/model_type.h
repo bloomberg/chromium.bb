@@ -110,6 +110,8 @@ enum ModelType {
   // sync preferences UI, be sure to update the list in
   // chrome/browser/sync/user_selectable_sync_type.h so that the UMA histograms
   // for sync include your new type.
+  // In this case, be sure to also update the UserSelectableTypes() definition
+  // in sync/syncable/model_type.cc.
 
   MODEL_TYPE_COUNT,
 };
@@ -151,9 +153,14 @@ bool ShouldMaintainPosition(ModelType model_type);
 // protocol representation and are never sent to the server.
 SYNC_EXPORT ModelTypeSet ProtocolTypes();
 
-// These are the user-selectable data types.  Note that some of these share a
+// These are the normal user-controlled types. This is to distinguish from
+// ControlTypes which are always enabled.  Note that some of these share a
 // preference flag, so not all of them are individually user-selectable.
 SYNC_EXPORT ModelTypeSet UserTypes();
+
+// These are the user-selectable data types.
+SYNC_EXPORT ModelTypeSet UserSelectableTypes();
+SYNC_EXPORT bool IsUserSelectableType(ModelType model_type);
 
 // This is the subset of UserTypes() that can be encrypted.
 SYNC_EXPORT_PRIVATE ModelTypeSet EncryptableUserTypes();

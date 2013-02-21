@@ -71,33 +71,36 @@ SyncConfigInfo::SyncConfigInfo()
 
 SyncConfigInfo::~SyncConfigInfo() {}
 
+// Note: The order of these types must match the ordering of
+// the respective types in ModelType
 const char* kDataTypeNames[] = {
-  "apps",
-  "autofill",
   "bookmarks",
-  "extensions",
-  "passwords",
   "preferences",
-  "sessions",
+  "passwords",
+  "autofill",
   "themes",
-  "typedUrls"
+  "typedUrls",
+  "extensions",
+  "sessions",
+  "apps"
 };
 
-const syncer::ModelType kDataTypes[] = {
-  syncer::APPS,
-  syncer::AUTOFILL,
-  syncer::BOOKMARKS,
-  syncer::EXTENSIONS,
-  syncer::PASSWORDS,
-  syncer::PREFERENCES,
-  syncer::SESSIONS,
-  syncer::THEMES,
-  syncer::TYPED_URLS
-};
+COMPILE_ASSERT(25 == syncer::MODEL_TYPE_COUNT,
+               update_kDataTypeNames_to_match_UserSelectableTypes);
 
-static const size_t kNumDataTypes = arraysize(kDataTypes);
-COMPILE_ASSERT(arraysize(kDataTypeNames) == arraysize(kDataTypes),
-               kDataTypes_does_not_match_kDataTypeNames);
+typedef std::map<syncer::ModelType, const char*> ModelTypeNameMap;
+
+ModelTypeNameMap GetSelectableTypeNameMap() {
+  ModelTypeNameMap type_names;
+  syncer::ModelTypeSet type_set = syncer::UserSelectableTypes();
+  syncer::ModelTypeSet::Iterator it = type_set.First();
+  DCHECK_EQ(arraysize(kDataTypeNames), type_set.Size());
+  for (size_t i = 0; i < arraysize(kDataTypeNames) && it.Good();
+       ++i, it.Inc()) {
+    type_names[it.Get()] = kDataTypeNames[i];
+  }
+  return type_names;
+}
 
 static const char kDefaultSigninDomain[] = "gmail.com";
 
@@ -135,15 +138,18 @@ bool GetConfiguration(const std::string& json, SyncConfigInfo* config) {
     return false;
   }
 
-  for (size_t i = 0; i < arraysize(kDataTypeNames); ++i) {
-    std::string key_name = kDataTypeNames[i] + std::string("Synced");
+  ModelTypeNameMap type_names = GetSelectableTypeNameMap();
+
+  for (ModelTypeNameMap::const_iterator it = type_names.begin();
+       it != type_names.end(); ++it) {
+    std::string key_name = it->second + std::string("Synced");
     bool sync_value;
     if (!result->GetBoolean(key_name, &sync_value)) {
       DLOG(ERROR) << "GetConfiguration() not passed a value for " << key_name;
       return false;
     }
     if (sync_value)
-      config->data_types.Put(kDataTypes[i]);
+      config->data_types.Put(it->first);
   }
 
   // Encryption settings.
@@ -429,11 +435,14 @@ void SyncSetupHandler::DisplayConfigureSync(bool show_advanced,
       service->GetRegisteredDataTypes();
   const syncer::ModelTypeSet preferred_types =
       service->GetPreferredDataTypes();
-  for (size_t i = 0; i < kNumDataTypes; ++i) {
-    const std::string key_name = kDataTypeNames[i];
+  ModelTypeNameMap type_names = GetSelectableTypeNameMap();
+  for (ModelTypeNameMap::const_iterator it = type_names.begin();
+       it != type_names.end(); ++it) {
+    syncer::ModelType sync_type = it->first;
+    const std::string key_name = it->second;
     args.SetBoolean(key_name + "Registered",
-                    registered_types.Has(kDataTypes[i]));
-    args.SetBoolean(key_name + "Synced", preferred_types.Has(kDataTypes[i]));
+                    registered_types.Has(sync_type));
+    args.SetBoolean(key_name + "Synced", preferred_types.Has(sync_type));
   }
   browser_sync::SyncPrefs sync_prefs(GetProfile()->GetPrefs());
   args.SetBoolean("passphraseFailed", passphrase_failed);

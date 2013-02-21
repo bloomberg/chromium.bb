@@ -327,6 +327,24 @@ ModelTypeSet UserTypes() {
   return set;
 }
 
+ModelTypeSet UserSelectableTypes() {
+  ModelTypeSet set;
+  set.Put(APPS);
+  set.Put(AUTOFILL);
+  set.Put(BOOKMARKS);
+  set.Put(EXTENSIONS);
+  set.Put(PASSWORDS);
+  set.Put(PREFERENCES);
+  set.Put(SESSIONS);
+  set.Put(THEMES);
+  set.Put(TYPED_URLS);
+  return set;
+}
+
+bool IsUserSelectableType(ModelType model_type) {
+  return UserSelectableTypes().Has(model_type);
+}
+
 ModelTypeSet EncryptableUserTypes() {
   ModelTypeSet encryptable_user_types = UserTypes();
   // We never encrypt history delete directives.

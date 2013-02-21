@@ -1326,44 +1326,34 @@ void ProfileSyncService::UpdateSelectedTypesHistogram(
   }
 
   // Only log the data types that are shown in the sync settings ui.
-  const syncer::ModelType model_types[] = {
-    syncer::APPS,
-    syncer::AUTOFILL,
-    syncer::BOOKMARKS,
-    syncer::EXTENSIONS,
-    syncer::PASSWORDS,
-    syncer::PREFERENCES,
-    syncer::SESSIONS,
-    syncer::SYNCED_NOTIFICATIONS,
-    syncer::THEMES,
-    syncer::TYPED_URLS
-  };
-
+  // Note: the order of these types must match the ordering of
+  // the respective types in ModelType
   const browser_sync::user_selectable_type::UserSelectableSyncType
       user_selectable_types[] = {
-    browser_sync::user_selectable_type::APPS,
-    browser_sync::user_selectable_type::AUTOFILL,
     browser_sync::user_selectable_type::BOOKMARKS,
-    browser_sync::user_selectable_type::EXTENSIONS,
-    browser_sync::user_selectable_type::PASSWORDS,
     browser_sync::user_selectable_type::PREFERENCES,
-    browser_sync::user_selectable_type::SESSIONS,
-    browser_sync::user_selectable_type::SYNCED_NOTIFICATIONS,
+    browser_sync::user_selectable_type::PASSWORDS,
+    browser_sync::user_selectable_type::AUTOFILL,
     browser_sync::user_selectable_type::THEMES,
-    browser_sync::user_selectable_type::TYPED_URLS
+    browser_sync::user_selectable_type::TYPED_URLS,
+    browser_sync::user_selectable_type::EXTENSIONS,
+    browser_sync::user_selectable_type::SESSIONS,
+    browser_sync::user_selectable_type::APPS
   };
 
   COMPILE_ASSERT(25 == syncer::MODEL_TYPE_COUNT, UpdateCustomConfigHistogram);
-  COMPILE_ASSERT(arraysize(model_types) ==
-                 browser_sync::user_selectable_type::SELECTABLE_DATATYPE_COUNT,
-                 UpdateCustomConfigHistogram);
-  COMPILE_ASSERT(arraysize(model_types) == arraysize(user_selectable_types),
-                 UpdateCustomConfigHistogram);
 
   if (!sync_everything) {
     const syncer::ModelTypeSet current_types = GetPreferredDataTypes();
-    for (size_t i = 0; i < arraysize(model_types); ++i) {
-      const syncer::ModelType type = model_types[i];
+
+    syncer::ModelTypeSet type_set = syncer::UserSelectableTypes();
+    syncer::ModelTypeSet::Iterator it = type_set.First();
+
+    DCHECK_EQ(arraysize(user_selectable_types), type_set.Size());
+
+    for (size_t i = 0; i < arraysize(user_selectable_types) && it.Good();
+         ++i, it.Inc()) {
+      const syncer::ModelType type = it.Get();
       if (chosen_types.Has(type) &&
           (!HasSyncSetupCompleted() || !current_types.Has(type))) {
         // Selected type has changed - log it.
