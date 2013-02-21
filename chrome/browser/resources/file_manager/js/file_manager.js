@@ -2857,11 +2857,8 @@ DialogType.isModal = function(type) {
 
     var reportEmptySearchResults = function() {
       if (this.directoryModel_.getFileList().length === 0) {
-        // The string 'SEARCH_NO_MATCHING_FILES_HTML' may contain HTML tags,
-        // hence we escapes |searchString| here.
-        var html = strf('SEARCH_NO_MATCHING_FILES_HTML',
-                        util.htmlEscape(searchString));
-        noResultsDiv.innerHTML = html;
+        var text = strf('SEARCH_NO_MATCHING_FILES', searchString);
+        noResultsDiv.innerHTML = text;
         noResultsDiv.setAttribute('show', 'true');
       } else {
         noResultsDiv.removeAttribute('show');
