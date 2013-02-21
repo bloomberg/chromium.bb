@@ -623,7 +623,8 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
     }
     browser_target_.reset(new DevToolsBrowserTarget(
         thread_->message_loop_proxy().get(), server_.get(), connection_id));
-    browser_target_->RegisterDomainHandler(new DevToolsTracingHandler());
+    browser_target_->RegisterDomainHandler(
+        DevToolsTracingHandler::kDomain, new DevToolsTracingHandler());
     AcceptWebSocket(connection_id, request);
     return;
   }

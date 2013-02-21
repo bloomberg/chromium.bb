@@ -18,6 +18,7 @@
 namespace content {
 
 class DevToolsAgentHostRvhObserver;
+class RendererOverridesHandler;
 class RenderViewHost;
 
 class CONTENT_EXPORT RenderViewDevToolsAgentHost
@@ -42,8 +43,6 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
 
   // DevToolsAgentHostImpl overrides.
   virtual void DispatchOnInspectorBackend(const std::string& message) OVERRIDE;
-
-  // DevToolsAgentHostImpl implementation.
   virtual void SendMessageToAgent(IPC::Message* msg) OVERRIDE;
   virtual void NotifyClientAttaching() OVERRIDE;
   virtual void NotifyClientDetaching() OVERRIDE;
@@ -68,6 +67,7 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
 
   RenderViewHost* render_view_host_;
   scoped_ptr<DevToolsAgentHostRvhObserver> rvh_observer_;
+  scoped_ptr<RendererOverridesHandler> overrides_handler_;
   std::string state_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewDevToolsAgentHost);

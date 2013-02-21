@@ -9,7 +9,8 @@
 #include "base/lazy_instance.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/devtools_manager_impl.h"
-#include "content/browser/devtools/render_view_devtools_agent_host.h"
+#include "content/browser/devtools/devtools_protocol.h"
+#include "content/browser/devtools/renderer_overrides_handler.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
@@ -135,7 +136,8 @@ void RenderViewDevToolsAgentHost::OnCancelPendingNavigation(
 }
 
 RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(
-    RenderViewHost* rvh) {
+    RenderViewHost* rvh)
+    : overrides_handler_(new RendererOverridesHandler(this)) {
   ConnectRenderViewHost(rvh, false);
   g_instances.Get().push_back(this);
   RenderViewHostDelegate* delegate = render_view_host_->GetDelegate();
@@ -149,7 +151,20 @@ RenderViewHost* RenderViewDevToolsAgentHost::GetRenderViewHost() {
 
 void RenderViewDevToolsAgentHost::DispatchOnInspectorBackend(
     const std::string& message) {
-  DevToolsAgentHostImpl::DispatchOnInspectorBackend(message);
+  std::string error_message;
+  scoped_ptr<DevToolsProtocol::Command> command(
+      DevToolsProtocol::ParseCommand(message, &error_message));
+  if (!command) {
+    OnDispatchOnInspectorFrontend(error_message);
+    return;
+  }
+
+  scoped_ptr<DevToolsProtocol::Response> overridden_response(
+      overrides_handler_->HandleCommand(command.get()));
+  if (overridden_response)
+    OnDispatchOnInspectorFrontend(overridden_response->Serialize());
+  else
+    DevToolsAgentHostImpl::DispatchOnInspectorBackend(message);
 }
 
 void RenderViewDevToolsAgentHost::SendMessageToAgent(IPC::Message* msg) {

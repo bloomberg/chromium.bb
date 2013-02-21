@@ -297,6 +297,8 @@
     'browser/devtools/devtools_tracing_handler.cc',
     'browser/devtools/render_view_devtools_agent_host.cc',
     'browser/devtools/render_view_devtools_agent_host.h',
+    'browser/devtools/renderer_overrides_handler.cc',
+    'browser/devtools/renderer_overrides_handler.h',
     'browser/devtools/worker_devtools_manager.cc',
     'browser/devtools/worker_devtools_manager.h',
     'browser/devtools/worker_devtools_message_filter.cc',

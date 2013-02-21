@@ -55,7 +55,7 @@ chrome.test.runTests([
         chrome.test.fail();
     }
     chrome.debugger.sendCommand(debuggee,
-                               "invalidMethod",
+                               "DOM.invalidMethod",
                                null,
                                onResponse);
   },

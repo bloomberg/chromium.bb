@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_TRACING_HANDLER_H_
 #define CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_TRACING_HANDLER_H_
 
-#include "content/browser/devtools/devtools_browser_target.h"
+#include "content/browser/devtools/devtools_protocol.h"
 #include "content/public/browser/trace_subscriber.h"
 
 namespace content {
@@ -16,8 +16,10 @@ class DevToolsWebSocketSender;
 // infrastructure.
 class DevToolsTracingHandler
     : public TraceSubscriber,
-      public DevToolsBrowserTarget::DomainHandler {
+      public DevToolsProtocol::Handler {
  public:
+  static const char kDomain[];
+
   DevToolsTracingHandler();
   virtual ~DevToolsTracingHandler();
 

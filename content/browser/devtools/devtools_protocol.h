@@ -5,8 +5,11 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_PROTOCOL_H_
 #define CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_PROTOCOL_H_
 
+#include <map>
 #include <string>
+
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/values.h"
 
@@ -16,6 +19,8 @@ namespace content {
 // https://developers.google.com/chrome-developer-tools/docs/debugger-protocol
 class DevToolsProtocol {
  public:
+  typedef base::Callback<void(const std::string& message)> Notifier;
+
   // JSON RPC 2.0 spec: http://www.jsonrpc.org/specification#error_object
   enum Error {
     kErrorParseError = -32700,
@@ -93,6 +98,37 @@ class DevToolsProtocol {
     scoped_ptr<base::DictionaryValue> params_;
 
     DISALLOW_COPY_AND_ASSIGN(Notification);
+  };
+
+  class Handler {
+   public:
+    typedef base::Callback<scoped_ptr<DevToolsProtocol::Response>(
+        DevToolsProtocol::Command* command)> CommandHandler;
+
+    virtual ~Handler();
+
+    virtual scoped_ptr<DevToolsProtocol::Response> HandleCommand(
+        DevToolsProtocol::Command* command);
+
+    void SetNotifier(const Notifier& notifier);
+
+   protected:
+    Handler();
+
+    void RegisterCommandHandler(const std::string& command,
+                                const CommandHandler& handler);
+
+    // Sends notification to the client. Takes ownership of |params|.
+    void SendNotification(const std::string& method,
+                          base::DictionaryValue* params);
+
+   private:
+    typedef std::map<std::string, CommandHandler> CommandHandlers;
+
+    Notifier notifier_;
+    CommandHandlers command_handlers_;
+
+    DISALLOW_COPY_AND_ASSIGN(Handler);
   };
 
   static Command* ParseCommand(const std::string& json,

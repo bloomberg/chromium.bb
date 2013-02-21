@@ -17,8 +17,6 @@ namespace content {
 
 namespace {
 
-const char kTracingDomain[] = "Tracing";
-
 const char kTracingStartCommand[] = "Tracing.start";
 const char kTracingEndCommand[] = "Tracing.end";
 
@@ -29,9 +27,10 @@ const char kCategoriesParam[] = "categories";
 
 }  // namespace
 
+const char DevToolsTracingHandler::kDomain[] = "Tracing";
+
 DevToolsTracingHandler::DevToolsTracingHandler()
-    : DevToolsBrowserTarget::DomainHandler(kTracingDomain),
-      is_running_(false) {
+    : is_running_(false) {
   RegisterCommandHandler(kTracingStartCommand,
                          base::Bind(&DevToolsTracingHandler::OnStart,
                                     base::Unretained(this)));
