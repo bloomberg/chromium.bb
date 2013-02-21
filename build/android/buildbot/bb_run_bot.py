@@ -178,7 +178,6 @@ def main(argv):
   for command_obj in command_objs:
     print 'Will run:', CommandToString(command_obj.command)
 
-  return_code = 0
   for command_obj in command_objs:
     if command_obj.step_name:
       buildbot_report.PrintNamedStep(command_obj.step_name)
@@ -193,8 +192,9 @@ def main(argv):
       env = dict(os.environ)
       env['BUILDBOT_TESTING'] = '1'
 
-    return_code |= subprocess.call(command, cwd=CHROME_SRC, env=env)
-  return return_code
+    return_code = subprocess.call(command, cwd=CHROME_SRC, env=env)
+    if return_code != 0:
+      return return_code
 
 
 if __name__ == '__main__':
