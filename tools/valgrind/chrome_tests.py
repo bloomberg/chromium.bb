@@ -425,6 +425,8 @@ class ChromeTests:
                   "--fully-parallel",
                   "--time-out-ms=200000",
                   "--no-retry-failures",  # retrying takes too much time
+                  # http://crbug.com/176908: Don't launch a browser when done.
+                  "--no-show-results",
                   "--nocheck-sys-deps"]
     # Pass build mode to run_webkit_tests.py.  We aren't passed it directly,
     # so parse it out of build_dir.  run_webkit_tests.py can only handle
