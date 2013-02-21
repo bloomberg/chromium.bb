@@ -3026,7 +3026,7 @@ map(struct desktop_shell *shell, struct weston_surface *surface,
 	{
 		switch (shell->win_animation_type) {
 		case ANIMATION_FADE:
-			weston_fade_run(surface, NULL, NULL);
+			weston_fade_run(surface, 0.0, 1.0, 200.0, NULL, NULL);
 			break;
 		case ANIMATION_ZOOM:
 			weston_zoom_run(surface, 0.8, 1.0, NULL, NULL);

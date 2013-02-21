@@ -239,10 +239,25 @@ fade_frame(struct weston_surface_animation *animation)
 
 WL_EXPORT struct weston_surface_animation *
 weston_fade_run(struct weston_surface *surface,
+		float start, float end, float k,
 		weston_surface_animation_done_func_t done, void *data)
 {
-	return weston_surface_animation_run(surface, 0, 0,
+	struct weston_surface_animation *fade;
+
+	fade = weston_surface_animation_run(surface, 0, 0,
 					    fade_frame, done, data);
+
+	weston_spring_init(&fade->spring, k, start, end);
+	surface->alpha = start;
+
+	return fade;
+}
+
+WL_EXPORT void
+weston_fade_update(struct weston_surface_animation *fade,
+		   float start, float end, float k)
+{
+	weston_spring_init(&fade->spring, k, start, end);
 }
 
 static void
