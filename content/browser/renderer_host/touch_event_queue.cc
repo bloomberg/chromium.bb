@@ -91,7 +91,10 @@ void TouchEventQueue::QueueEvent(const WebKit::WebTouchEvent& event) {
     // There is no touch event in the queue. Forward it to the renderer
     // immediately.
     touch_queue_.push_back(new CoalescedWebTouchEvent(event));
-    render_widget_host_->ForwardTouchEventImmediately(event);
+    if (ShouldForwardToRenderer(event))
+      render_widget_host_->ForwardTouchEventImmediately(event);
+    else
+      PopTouchEventToView(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
     return;
   }
 
@@ -106,11 +109,40 @@ void TouchEventQueue::QueueEvent(const WebKit::WebTouchEvent& event) {
 }
 
 void TouchEventQueue::ProcessTouchAck(InputEventAckState ack_result) {
+  if (touch_queue_.empty())
+    return;
+
+  // Update the ACK status for each touch point in the ACKed event.
+  const WebKit::WebTouchEvent& event = touch_queue_.front()->coalesced_event();
+  if (event.type == WebKit::WebInputEvent::TouchEnd ||
+      event.type == WebKit::WebInputEvent::TouchCancel) {
+    // The points have been released. Erase the ACK states.
+    for (unsigned i = 0; i < event.touchesLength; ++i) {
+      const WebKit::WebTouchPoint& point = event.touches[i];
+      if (point.state == WebKit::WebTouchPoint::StateReleased ||
+          point.state == WebKit::WebTouchPoint::StateCancelled)
+        touch_ack_states_.erase(point.id);
+    }
+  } else if (event.type == WebKit::WebInputEvent::TouchStart) {
+    for (unsigned i = 0; i < event.touchesLength; ++i) {
+      const WebKit::WebTouchPoint& point = event.touches[i];
+      if (point.state == WebKit::WebTouchPoint::StatePressed)
+        touch_ack_states_[point.id] = ack_result;
+    }
+  }
+
   PopTouchEventToView(ack_result);
-  // If there's a queued touch-event, then forward it to the renderer now.
-  if (!touch_queue_.empty()) {
-    render_widget_host_->ForwardTouchEventImmediately(
-        touch_queue_.front()->coalesced_event());
+
+  // If there are queued touch events, then try to forward them to the renderer
+  // immediately, or ACK the events back to the view if appropriate.
+  while (!touch_queue_.empty()) {
+    const WebKit::WebTouchEvent& touch =
+        touch_queue_.front()->coalesced_event();
+    if (ShouldForwardToRenderer(touch)) {
+      render_widget_host_->ForwardTouchEventImmediately(touch);
+      break;
+    }
+    PopTouchEventToView(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
   }
 }
 
@@ -146,6 +178,32 @@ void TouchEventQueue::PopTouchEventToView(InputEventAckState ack_result) {
        iter != end; ++iter) {
     view->ProcessAckedTouchEvent((*iter), ack_result);
   }
+}
+
+bool TouchEventQueue::ShouldForwardToRenderer(
+    const WebKit::WebTouchEvent& event) const {
+  // Touch press events should always be forwarded to the renderer.
+  if (event.type == WebKit::WebInputEvent::TouchStart)
+    return true;
+
+  for (unsigned int i = 0; i < event.touchesLength; ++i) {
+    const WebKit::WebTouchPoint& point = event.touches[i];
+    // If a point has been stationary, then don't take it into account.
+    if (point.state == WebKit::WebTouchPoint::StateStationary)
+      continue;
+
+    if (touch_ack_states_.count(point.id) > 0) {
+      if (touch_ack_states_.find(point.id)->second !=
+          INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS)
+        return true;
+    } else {
+      // If the ACK status of a point is unknown, then the event should be
+      // forwarded to the renderer.
+      return true;
+    }
+  }
+
+  return false;
 }
 
 }  // namespace content

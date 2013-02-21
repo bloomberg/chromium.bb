@@ -2885,146 +2885,158 @@ TEST_F(RenderWidgetHostTest, TouchEventQueueNoConsumer) {
   EXPECT_EQ(1, view_->acked_event_count());
   EXPECT_EQ(0U, host_->TouchEventQueueSize());
 
-  // Send a second press event. Since the first touch had NO_CONSUMER, this
-  // press event should not reach the renderer.
+  // Send a second press event. Even though the first touch had NO_CONSUMER,
+  // this press event should reach the renderer.
   PressTouchPoint(1, 1);
   SendTouchEvent();
-  EXPECT_EQ(0U, process_->sink().message_count());
-  EXPECT_EQ(0U, host_->TouchEventQueueSize());
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->TouchEventQueueSize());
 }
 
-// Tests that an ACK of NO_CONSUMER_EXISTS for touch-move/end or touch-press for
-// the second finger also stop sending touch events until all touches are
-// released.
-TEST_F(RenderWidgetHostTest, TouchEventQueueNoConsumerIgnore) {
+TEST_F(RenderWidgetHostTest, TouchEventQueueConsumerIgnoreMultiFinger) {
   process_->sink().ClearMessages();
 
-  // The first touch-press should reach the renderer.
+  // Press two touch points and move them around a bit. The renderer consumes
+  // the events for the first touch point, but returns NO_CONSUMER_EXISTS for
+  // the second touch point.
+
   PressTouchPoint(1, 1);
   SendTouchEvent();
   EXPECT_EQ(1U, process_->sink().message_count());
   process_->sink().ClearMessages();
 
-  // The second touch should not be sent since one is already in queue.
   MoveTouchPoint(0, 5, 5);
   SendTouchEvent();
-  EXPECT_EQ(0U, process_->sink().message_count());
-  EXPECT_EQ(2U, host_->TouchEventQueueSize());
 
-  // Receive an ACK for the first touch-event. This should send the touch-move
-  // event to the renderer.
-  SendInputEventACK(WebInputEvent::TouchStart,
-                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(1U, host_->TouchEventQueueSize());
-  EXPECT_EQ(WebKit::WebInputEvent::TouchStart, view_->acked_event().type);
-  EXPECT_EQ(1, view_->acked_event_count());
-  EXPECT_EQ(1U, process_->sink().message_count());
-  process_->sink().ClearMessages();
-  view_->ClearAckedEvent();
-
-  // Send a release event. This should be queued now.
-  ReleaseTouchPoint(0);
-  SendTouchEvent();
-  EXPECT_EQ(0U, process_->sink().message_count());
-  EXPECT_EQ(0, view_->acked_event_count());
-  EXPECT_EQ(2U, host_->TouchEventQueueSize());
-  view_->ClearAckedEvent();
-
-  // Now ACK the touch-move event with NO_CONSUMER_EXISTS. This should release
-  // all events from the touch queue. No event should be sent to the renderer.
-  SendInputEventACK(WebInputEvent::TouchMove,
-                    INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
-  EXPECT_EQ(0U, host_->TouchEventQueueSize());
-  EXPECT_EQ(WebKit::WebInputEvent::TouchEnd, view_->acked_event().type);
-  EXPECT_EQ(2, view_->acked_event_count());
-  EXPECT_EQ(0U, process_->sink().message_count());
-  view_->ClearAckedEvent();
-
-  // Send a press-event, followed by move and release events, and another press
-  // event, before the ACK for the first press event comes back. All of the
-  // events should be queued first.
   PressTouchPoint(10, 10);
   SendTouchEvent();
-  EXPECT_EQ(1U, process_->sink().message_count());
-  process_->sink().ClearMessages();
 
-  MoveTouchPoint(0, 5, 5);
-  SendTouchEvent();
-  MoveTouchPoint(0, 6, 5);
-  SendTouchEvent();
-  ReleaseTouchPoint(0);
+  MoveTouchPoint(0, 2, 2);
   SendTouchEvent();
 
-  PressTouchPoint(6, 5);
+  MoveTouchPoint(1, 4, 10);
   SendTouchEvent();
+
+  MoveTouchPoint(0, 10, 10);
+  MoveTouchPoint(1, 20, 20);
+  SendTouchEvent();
+
+  // Since the first touch-press is still pending ACK, no other event should
+  // have been sent to the renderer.
   EXPECT_EQ(0U, process_->sink().message_count());
-  // The queue should hold the first sent touch-press event, the coalesced
-  // touch-move event, the touch-end event and the second touch-press event.
+  // The queue includes the two presses, the first touch-move of the first
+  // point, and a coalesced touch-move of both points.
   EXPECT_EQ(4U, host_->TouchEventQueueSize());
 
-  // ACK the touch-start and touch-move events as not consumed.
-  SendInputEventACK(WebInputEvent::TouchStart,
-                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(1U, process_->sink().message_count());
-  EXPECT_EQ(WebInputEvent::TouchStart, view_->acked_event().type);
-  EXPECT_EQ(1, view_->acked_event_count());
-  EXPECT_EQ(3U, host_->TouchEventQueueSize());
-  process_->sink().ClearMessages();
-  view_->ClearAckedEvent();
-
-  SendInputEventACK(WebInputEvent::TouchMove,
-                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(1U, process_->sink().message_count());
-  EXPECT_EQ(WebInputEvent::TouchMove, view_->acked_event().type);
-  EXPECT_EQ(2, view_->acked_event_count());
-  EXPECT_EQ(2U, host_->TouchEventQueueSize());
-  process_->sink().ClearMessages();
-  view_->ClearAckedEvent();
-
-  // ACK the touch-end event as NO_CONSUMER_EXISTS. The queued second press
-  // should still reach the renderer.
-  SendInputEventACK(WebInputEvent::TouchEnd,
-                    INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
-  EXPECT_EQ(1U, process_->sink().message_count());
-  EXPECT_EQ(WebInputEvent::TouchEnd, view_->acked_event().type);
-  EXPECT_EQ(1, view_->acked_event_count());
-  EXPECT_EQ(1U, host_->TouchEventQueueSize());
-  process_->sink().ClearMessages();
-  view_->ClearAckedEvent();
-
-  MoveTouchPoint(0, 1, 1);
-  SendTouchEvent();
-  ReleaseTouchPoint(0);
-  SendTouchEvent();
-  EXPECT_EQ(0U, process_->sink().message_count());
-  EXPECT_EQ(3U, host_->TouchEventQueueSize());
-
+  // ACK the first press as CONSUMED. This should cause the first touch-move of
+  // the first touch-point to be dispatched.
   SendInputEventACK(WebInputEvent::TouchStart,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(1U, process_->sink().message_count());
-  EXPECT_EQ(WebInputEvent::TouchStart, view_->acked_event().type);
-  EXPECT_EQ(1, view_->acked_event_count());
-  EXPECT_EQ(2U, host_->TouchEventQueueSize());
   process_->sink().ClearMessages();
-  view_->ClearAckedEvent();
+  EXPECT_EQ(3U, host_->TouchEventQueueSize());
 
+  // ACK the first move as CONSUMED.
   SendInputEventACK(WebInputEvent::TouchMove,
-                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(1U, process_->sink().message_count());
-  EXPECT_EQ(WebInputEvent::TouchMove, view_->acked_event().type);
-  EXPECT_EQ(1, view_->acked_event_count());
-  EXPECT_EQ(1U, host_->TouchEventQueueSize());
   process_->sink().ClearMessages();
-  view_->ClearAckedEvent();
+  EXPECT_EQ(2U, host_->TouchEventQueueSize());
 
+  // ACK the second press as NO_CONSUMER_EXISTS. This will dequeue the coalesced
+  // touch-move event (which contains both touch points). Although the second
+  // touch-point does not need to be sent to the renderer, the first touch-point
+  // did move, and so the coalesced touch-event will be sent to the renderer.
+  SendInputEventACK(WebInputEvent::TouchStart,
+                    INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  process_->sink().ClearMessages();
+  EXPECT_EQ(1U, host_->TouchEventQueueSize());
+
+  // ACK the coalesced move as NOT_CONSUMED.
   SendInputEventACK(WebInputEvent::TouchMove,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(0U, process_->sink().message_count());
-  EXPECT_EQ(WebInputEvent::TouchEnd, view_->acked_event().type);
-  EXPECT_EQ(1, view_->acked_event_count());
   EXPECT_EQ(0U, host_->TouchEventQueueSize());
+
+  // Move just the second touch point. Because the first touch point did not
+  // move, this event should not reach the renderer.
+  MoveTouchPoint(1, 30, 30);
+  SendTouchEvent();
+  EXPECT_EQ(0U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->TouchEventQueueSize());
+
+  // Move just the first touch point. This should reach the renderer.
+  MoveTouchPoint(0, 10, 10);
+  SendTouchEvent();
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->TouchEventQueueSize());
   process_->sink().ClearMessages();
+
+  // Move both fingers. This event should reach the renderer (after the ACK of
+  // the previous move event is received), because the first touch point did
+  // move.
+  MoveTouchPoint(0, 15, 15);
+  MoveTouchPoint(1, 25, 25);
+  SendTouchEvent();
+  EXPECT_EQ(0U, process_->sink().message_count());
+
+  SendInputEventACK(WebInputEvent::TouchMove,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->TouchEventQueueSize());
+  process_->sink().ClearMessages();
+
+  SendInputEventACK(WebInputEvent::TouchMove,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(0U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->TouchEventQueueSize());
+
+  // Release the first finger. Then move the second finger around some, then
+  // press another finger. Once the release event is ACKed, the move events of
+  // the second finger should be immediately released to the view, and the
+  // touch-press event should be dispatched to the renderer.
+  ReleaseTouchPoint(0);
+  SendTouchEvent();
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->TouchEventQueueSize());
+  process_->sink().ClearMessages();
+
+  MoveTouchPoint(1, 40, 40);
+  SendTouchEvent();
+
+  MoveTouchPoint(1, 50, 50);
+  SendTouchEvent();
+
+  PressTouchPoint(1, 1);
+  SendTouchEvent();
+
+  MoveTouchPoint(1, 30, 30);
+  SendTouchEvent();
+  EXPECT_EQ(0U, process_->sink().message_count());
+  EXPECT_EQ(4U, host_->TouchEventQueueSize());
   view_->ClearAckedEvent();
+
+  SendInputEventACK(WebKit::WebInputEvent::TouchEnd,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(2U, host_->TouchEventQueueSize());
+  EXPECT_EQ(WebKit::WebInputEvent::TouchMove, view_->acked_event().type);
+  view_->ClearAckedEvent();
+  process_->sink().ClearMessages();
+
+  // ACK the press with NO_CONSUMED_EXISTS. This should release the queued
+  // touch-move events to the view.
+  SendInputEventACK(WebKit::WebInputEvent::TouchStart,
+                    INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  EXPECT_EQ(0U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->TouchEventQueueSize());
+  EXPECT_EQ(WebKit::WebInputEvent::TouchMove, view_->acked_event().type);
+
+  ReleaseTouchPoint(2);
+  ReleaseTouchPoint(1);
+  EXPECT_EQ(0U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->TouchEventQueueSize());
 }
 
 #if defined(OS_WIN) || defined(USE_AURA)

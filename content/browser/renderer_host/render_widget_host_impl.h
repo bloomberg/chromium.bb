@@ -839,11 +839,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   scoped_ptr<GestureEventFilter> gesture_event_filter_;
   scoped_ptr<OverscrollController> overscroll_controller_;
 
-  // This keeps track of the ACKs received for touch events from the renderer.
-  // If the ack for any event is NO_CONSUMER_EXISTS, then no subsequent touch
-  // events should reach the renderer until all the fingers have been lifted
-  InputEventAckState touch_event_state_;
-
 #if defined(OS_WIN)
   std::list<HWND> dummy_windows_for_activation_;
 #endif

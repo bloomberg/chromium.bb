@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_TOUCH_EVENT_QUEUE_H_
 
 #include <deque>
+#include <map>
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
@@ -58,11 +59,17 @@ class TouchEventQueue {
   // RenderWidgetHostView. This reduces the size of the queue by one.
   void PopTouchEventToView(InputEventAckState ack_result);
 
+  bool ShouldForwardToRenderer(const WebKit::WebTouchEvent& event) const;
+
   // The RenderWidgetHost that owns this event-queue.
   RenderWidgetHostImpl* render_widget_host_;
 
   typedef std::deque<CoalescedWebTouchEvent*> TouchQueue;
   TouchQueue touch_queue_;
+
+  // Maintain the ACK status for each touch point.
+  typedef std::map<int, InputEventAckState> TouchPointAckStates;
+  TouchPointAckStates touch_ack_states_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchEventQueue);
 };
