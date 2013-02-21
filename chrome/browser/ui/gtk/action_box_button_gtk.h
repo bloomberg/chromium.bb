@@ -27,6 +27,7 @@ class ActionBoxButtonGtk : public MenuGtk::Delegate,
 
   // MenuGtk::Delegate implementation.
   virtual bool AlwaysShowIconForCmd(int command_id) const OVERRIDE;
+  virtual GtkWidget* GetImageForCommandId(int command_id) const OVERRIDE;
 
   GtkWidget* widget();
 

@@ -6,16 +6,102 @@
 
 #include <gtk/gtk.h>
 
+#include "base/logging.h"
+#include "chrome/browser/extensions/extension_icon_image.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "chrome/browser/ui/toolbar/action_box_menu_model.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/common/extensions/api/extension_action/action_info.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/layout.h"
+#include "ui/gfx/gtk_util.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_rep.h"
+
+using extensions::ActionInfo;
+using extensions::Extension;
+using extensions::IconImage;
+
+namespace {
+
+// This class provides a GtkWidget that shows an Extension's page launcher icon.
+// We can't use GtkImage directly because loading the icon from the extension
+// must be done asynchronously. The lifetime of this object is tied to its
+// GtkWidget, and it will delete itself upon receiving a "destroy" signal from
+// the widget.
+class ExtensionIcon : public IconImage::Observer {
+ public:
+  ExtensionIcon(Profile* profile, const Extension* extension);
+
+  GtkWidget* GetWidget();
+
+ private:
+  virtual ~ExtensionIcon() {}
+
+  virtual void OnExtensionIconImageChanged(IconImage* image) OVERRIDE;
+  void UpdateIcon();
+
+  CHROMEGTK_CALLBACK_0(ExtensionIcon, void, OnDestroyed);
+
+  GtkWidget* image_;
+
+  scoped_ptr<IconImage> icon_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionIcon);
+};
+
+ExtensionIcon::ExtensionIcon(Profile* profile, const Extension* extension)
+    : image_(NULL) {
+  const ActionInfo* page_launcher_info =
+      ActionInfo::GetPageLauncherInfo(extension);
+  icon_.reset(new IconImage(profile,
+                            extension,
+                            page_launcher_info->default_icon,
+                            extension_misc::EXTENSION_ICON_ACTION,
+                            Extension::GetDefaultIcon(true),
+                            this));
+  UpdateIcon();
+}
+
+GtkWidget* ExtensionIcon::GetWidget() {
+  return image_;
+}
+
+void ExtensionIcon::OnExtensionIconImageChanged(IconImage* image)  {
+  DCHECK_EQ(image, icon_.get());
+  UpdateIcon();
+}
+
+void ExtensionIcon::UpdateIcon() {
+  const gfx::ImageSkiaRep& rep =
+      icon_->image_skia().GetRepresentation(ui::SCALE_FACTOR_NONE);
+  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(rep.sk_bitmap());
+
+  if (!image_) {
+    image_ = gtk_image_new_from_pixbuf(pixbuf);
+    g_signal_connect(image_, "destroy", G_CALLBACK(OnDestroyedThunk), this);
+  } else {
+    gtk_image_set_from_pixbuf(GTK_IMAGE(image_), pixbuf);
+  }
+  g_object_unref(pixbuf);
+}
+
+void ExtensionIcon::OnDestroyed(GtkWidget* sender) {
+  DCHECK_EQ(sender, image_);
+  delete this;
+}
+
+}  // namespace
 
 ActionBoxButtonGtk::ActionBoxButtonGtk(Browser* browser)
-    : controller_(browser, this) {
+    : controller_(browser, this),
+      browser_(browser) {
   button_.reset(new CustomDrawButton(
       IDR_ACTION_BOX_BUTTON,
       IDR_ACTION_BOX_BUTTON_PRESSED,
@@ -35,6 +121,16 @@ ActionBoxButtonGtk::~ActionBoxButtonGtk() {
 
 bool ActionBoxButtonGtk::AlwaysShowIconForCmd(int command_id) const {
   return true;
+}
+
+GtkWidget* ActionBoxButtonGtk::GetImageForCommandId(int command_id) const {
+  int index = model_->GetIndexOfCommandId(command_id);
+  if (model_->IsItemExtension(index)) {
+    const Extension* extension = model_->GetExtensionAt(index);
+    return (new ExtensionIcon(browser_->profile(), extension))->GetWidget();
+  }
+
+  return GetDefaultImageForCommandId(command_id);
 }
 
 GtkWidget* ActionBoxButtonGtk::widget() {
