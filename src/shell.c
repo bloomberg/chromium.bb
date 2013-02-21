@@ -1636,7 +1636,7 @@ shell_surface_set_maximized(struct wl_client *client,
 }
 
 static void
-black_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy);
+black_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy, int32_t width, int32_t height);
 
 static struct weston_surface *
 create_black_surface(struct weston_compositor *ec,
@@ -2032,7 +2032,7 @@ shell_handle_surface_destroy(struct wl_listener *listener, void *data)
 }
 
 static void
-shell_surface_configure(struct weston_surface *, int32_t, int32_t);
+shell_surface_configure(struct weston_surface *, int32_t, int32_t, int32_t, int32_t);
 
 static struct shell_surface *
 get_shell_surface(struct weston_surface *surface)
@@ -2193,9 +2193,12 @@ terminate_screensaver(struct desktop_shell *shell)
 }
 
 static void
-configure_static_surface(struct weston_surface *es, struct weston_layer *layer)
+configure_static_surface(struct weston_surface *es, struct weston_layer *layer, int32_t width, int32_t height)
 {
 	struct weston_surface *s, *next;
+
+	if (width == 0)
+		return;
 
 	wl_list_for_each_safe(s, next, &layer->surface_list, layer_link) {
 		if (s->output == es->output && s != es) {
@@ -2204,9 +2207,7 @@ configure_static_surface(struct weston_surface *es, struct weston_layer *layer)
 		}
 	}
 
-	weston_surface_configure(es, es->output->x, es->output->y,
-				 weston_surface_buffer_width(es),
-				 weston_surface_buffer_height(es));
+	weston_surface_configure(es, es->output->x, es->output->y, width, height);
 
 	if (wl_list_empty(&es->layer_link)) {
 		wl_list_insert(&layer->surface_list, &es->layer_link);
@@ -2215,11 +2216,11 @@ configure_static_surface(struct weston_surface *es, struct weston_layer *layer)
 }
 
 static void
-background_configure(struct weston_surface *es, int32_t sx, int32_t sy)
+background_configure(struct weston_surface *es, int32_t sx, int32_t sy, int32_t width, int32_t height)
 {
 	struct desktop_shell *shell = es->private;
 
-	configure_static_surface(es, &shell->background_layer);
+	configure_static_surface(es, &shell->background_layer, width, height);
 }
 
 static void
@@ -2248,11 +2249,11 @@ desktop_shell_set_background(struct wl_client *client,
 }
 
 static void
-panel_configure(struct weston_surface *es, int32_t sx, int32_t sy)
+panel_configure(struct weston_surface *es, int32_t sx, int32_t sy, int32_t width, int32_t height)
 {
 	struct desktop_shell *shell = es->private;
 
-	configure_static_surface(es, &shell->panel_layer);
+	configure_static_surface(es, &shell->panel_layer, width, height);
 }
 
 static void
@@ -2281,9 +2282,12 @@ desktop_shell_set_panel(struct wl_client *client,
 }
 
 static void
-lock_surface_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
+lock_surface_configure(struct weston_surface *surface, int32_t sx, int32_t sy, int32_t width, int32_t height)
 {
 	struct desktop_shell *shell = surface->private;
+
+	if (width == 0)
+		return;
 
 	center_on_output(surface, get_default_output(shell->compositor));
 
@@ -2738,7 +2742,7 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 
 /* no-op func for checking black surface */
 static void
-black_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
+black_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy, int32_t width, int32_t height)
 {
 }
 
@@ -3178,13 +3182,15 @@ configure(struct desktop_shell *shell, struct weston_surface *surface,
 }
 
 static void
-shell_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
+shell_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy, int32_t width, int32_t height)
 {
 	struct shell_surface *shsurf = get_shell_surface(es);
 	struct desktop_shell *shell = shsurf->shell;
-	int32_t width = weston_surface_buffer_width(es);
-	int32_t height = weston_surface_buffer_height(es);
+
 	int type_changed = 0;
+
+	if (width == 0)
+		return;
 
 	if (shsurf->next_type != SHELL_SURFACE_NONE &&
 	    shsurf->type != shsurf->next_type) {
@@ -3298,9 +3304,12 @@ bind_desktop_shell(struct wl_client *client,
 }
 
 static void
-screensaver_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
+screensaver_configure(struct weston_surface *surface, int32_t sx, int32_t sy, int32_t width, int32_t height)
 {
 	struct desktop_shell *shell = surface->private;
+
+	if (width == 0)
+		return;
 
 	/* XXX: starting weston-screensaver beforehand does not work */
 	if (!shell->locked)
@@ -3369,12 +3378,13 @@ bind_screensaver(struct wl_client *client,
 }
 
 static void
-input_panel_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
+input_panel_configure(struct weston_surface *surface, int32_t sx, int32_t sy, int32_t width, int32_t height)
 {
 	struct weston_mode *mode;
-	int32_t width = weston_surface_buffer_width(surface);
-	int32_t height = weston_surface_buffer_height(surface);
 	float x, y;
+
+	if (width == 0)
+		return;
 
 	if (!weston_surface_is_mapped(surface))
 		return;

@@ -290,6 +290,7 @@ weston_surface_create(struct weston_compositor *compositor)
 	surface->pending.buffer_transform = surface->buffer_transform;
 	surface->output = NULL;
 	surface->plane = &compositor->primary_plane;
+	surface->pending.newly_attached = 0;
 
 	pixman_region32_init(&surface->damage);
 	pixman_region32_init(&surface->opaque);
@@ -1279,12 +1280,10 @@ surface_attach(struct wl_client *client,
 	surface->pending.sx = sx;
 	surface->pending.sy = sy;
 	surface->pending.buffer = buffer;
+	surface->pending.newly_attached = 1;
 	if (buffer) {
 		wl_signal_add(&buffer->resource.destroy_signal,
 			      &surface->pending.buffer_destroy_listener);
-		surface->pending.remove_contents = 0;
-	} else {
-		surface->pending.remove_contents = 1;
 	}
 }
 
@@ -1397,6 +1396,8 @@ surface_commit(struct wl_client *client, struct wl_resource *resource)
 {
 	struct weston_surface *surface = resource->data;
 	pixman_region32_t opaque;
+	int buffer_width = 0;
+	int buffer_height = 0;
 
 	if (surface->pending.sx || surface->pending.sy ||
 	    (surface->pending.buffer &&
@@ -1407,14 +1408,21 @@ surface_commit(struct wl_client *client, struct wl_resource *resource)
 	surface->buffer_transform = surface->pending.buffer_transform;
 
 	/* wl_surface.attach */
-	if (surface->pending.buffer || surface->pending.remove_contents)
+	if (surface->pending.buffer || surface->pending.newly_attached)
 		weston_surface_attach(surface, surface->pending.buffer);
 
-	if (surface->buffer_ref.buffer && surface->configure)
+	if (surface->buffer_ref.buffer) {
+		buffer_width = weston_surface_buffer_width(surface);
+		buffer_height = weston_surface_buffer_height(surface);
+	}
+
+	if (surface->configure && surface->pending.newly_attached)
 		surface->configure(surface, surface->pending.sx,
-				   surface->pending.sy);
+				   surface->pending.sy, buffer_width, buffer_height);
+
 	surface->pending.sx = 0;
 	surface->pending.sy = 0;
+	surface->pending.newly_attached = 0;
 
 	/* wl_surface.damage */
 	pixman_region32_union(&surface->damage, &surface->damage,
@@ -2158,10 +2166,13 @@ pointer_handle_sprite_destroy(struct wl_listener *listener, void *data)
 
 static void
 pointer_cursor_surface_configure(struct weston_surface *es,
-				 int32_t dx, int32_t dy)
+				 int32_t dx, int32_t dy, int32_t width, int32_t height)
 {
 	struct weston_seat *seat = es->private;
 	int x, y;
+
+	if (width == 0)
+		return;
 
 	assert(es == seat->sprite);
 
@@ -2172,8 +2183,7 @@ pointer_cursor_surface_configure(struct weston_surface *es,
 	y = wl_fixed_to_int(seat->seat.pointer->y) - seat->hotspot_y;
 
 	weston_surface_configure(seat->sprite, x, y,
-				 es->buffer_ref.buffer->width,
-				 es->buffer_ref.buffer->height);
+				 width, height);
 
 	empty_region(&es->pending.input);
 
@@ -2240,7 +2250,8 @@ pointer_set_cursor(struct wl_client *client, struct wl_resource *resource,
 	seat->hotspot_y = y;
 
 	if (surface->buffer_ref.buffer)
-		pointer_cursor_surface_configure(surface, 0, 0);
+		pointer_cursor_surface_configure(surface, 0, 0, weston_surface_buffer_width(surface),
+								weston_surface_buffer_height(surface));
 }
 
 static const struct wl_pointer_interface pointer_interface = {
@@ -2618,14 +2629,13 @@ weston_seat_release(struct weston_seat *seat)
 }
 
 static void
-drag_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
+drag_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy, int32_t width, int32_t height)
 {
 	empty_region(&es->pending.input);
 
 	weston_surface_configure(es,
 				 es->geometry.x + sx, es->geometry.y + sy,
-				 es->buffer_ref.buffer->width,
-				 es->buffer_ref.buffer->height);
+				 width, height);
 }
 
 static int

@@ -74,7 +74,7 @@ notify_pointer_position(struct weston_test *test, struct wl_resource *resource)
 }
 
 static void
-test_surface_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
+test_surface_configure(struct weston_surface *surface, int32_t sx, int32_t sy, int32_t width, int32_t height)
 {
 	struct weston_test_surface *test_surface = surface->private;
 	struct weston_test *test = test_surface->test;
@@ -85,8 +85,8 @@ test_surface_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
 
 	surface->geometry.x = test_surface->x;
 	surface->geometry.y = test_surface->y;
-	surface->geometry.width = surface->buffer_ref.buffer->width;
-	surface->geometry.height = surface->buffer_ref.buffer->height;
+	surface->geometry.width = width;
+	surface->geometry.height = height;
 	surface->geometry.dirty = 1;
 
 	if (!weston_surface_is_mapped(surface))

@@ -124,16 +124,12 @@ tablet_shell_set_state(struct tablet_shell *shell, int state)
 
 static void
 tablet_shell_surface_configure(struct weston_surface *surface,
-			       int32_t sx, int32_t sy)
+			       int32_t sx, int32_t sy, int32_t width, int32_t height)
 {
 	struct tablet_shell *shell = get_shell(surface->compositor);
-	int32_t width, height;
 
-	if (weston_surface_is_mapped(surface))
+	if (weston_surface_is_mapped(surface) || width == 0)
 		return;
-
-	width = surface->buffer_ref.buffer->width;
-	height = surface->buffer_ref.buffer->height;
 
 	weston_surface_configure(surface, 0, 0, width, height);
 
