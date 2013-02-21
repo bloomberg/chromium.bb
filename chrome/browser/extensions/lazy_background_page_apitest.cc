@@ -265,7 +265,13 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForRequest) {
 
 // Tests that the lazy background page stays alive until all visible views are
 // closed.
-IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForNTP) {
+// http://crbug.com/175778; test fails frequently on OS X
+#if defined(OS_MACOSX)
+#define MAYBE_WaitForNTP DISABLED_WaitForNTP
+#else
+#define MAYBE_WaitForNTP WaitForNTP
+#endif
+IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, MAYBE_WaitForNTP) {
   LazyBackgroundObserver lazybg;
   ResultCatcher catcher;
   base::FilePath extdir = test_data_dir_.AppendASCII("lazy_background_page").
