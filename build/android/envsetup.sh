@@ -27,8 +27,8 @@ if [[ "${CHROME_ANDROID_BUILD_WEBVIEW}" -eq 1 ]]; then
   export ANDROID_SDK_BUILD=0
 fi
 
-if [[ "${ANDROID_SDK_BUILD}" -eq 1 ]]; then
-  echo "Using SDK build"
+if [[ "${ANDROID_SDK_BUILD}" -ne 1 ]]; then
+  echo "Initializing for non-SDK build."
 fi
 
 # Get host architecture, and abort if it is 32-bit, unless --try-32

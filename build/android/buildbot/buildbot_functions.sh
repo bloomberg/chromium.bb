@@ -47,10 +47,7 @@ function bb_baseline_setup {
   echo "@@@BUILD_STEP Environment setup@@@"
   bb_parse_args "$@"
 
-  local BUILDTOOL=$(bb_get_json_prop "$FACTORY_PROPERTIES" buildtool)
-  if [[ $BUILDTOOL = ninja ]]; then
-    export GYP_GENERATORS=ninja
-  fi
+  export GYP_GENERATORS=ninja
   export GOMA_DIR=/b/build/goma
   . build/android/envsetup.sh
 
@@ -87,12 +84,6 @@ function bb_baseline_setup {
   fi
 }
 
-function bb_compile_setup {
-  bb_setup_goma_internal
-  # Should be called only after envsetup is done.
-  gclient runhooks
-}
-
 function bb_asan_tests_setup {
   # Download or build the ASan runtime library.
   ${SRC_ROOT}/tools/clang/scripts/update.sh
@@ -100,15 +91,12 @@ function bb_asan_tests_setup {
 
 # Setup goma.  Used internally to buildbot_functions.sh.
 function bb_setup_goma_internal {
-  export GOMA_API_KEY_FILE=${GOMA_DIR}/goma.key
-  export GOMA_COMPILER_PROXY_DAEMON_MODE=true
-  export GOMA_COMPILER_PROXY_RPC_TIMEOUT_SECS=300
-
   echo "Killing old goma processes"
   ${GOMA_DIR}/goma_ctl.sh stop || true
   killall -9 compiler_proxy || true
 
   echo "Starting goma"
+  export GOMA_API_KEY_FILE=${GOMA_DIR}/goma.key
   ${GOMA_DIR}/goma_ctl.sh start
   trap bb_stop_goma_internal SIGHUP SIGINT SIGTERM
 }
@@ -119,65 +107,21 @@ function bb_stop_goma_internal {
   ${GOMA_DIR}/goma_ctl.sh stop
 }
 
-# $@: make args.
-# Use goma if possible; degrades to non-Goma if needed.
-function bb_goma_make {
-  if [ "${GOMA_DIR}" = "" ]; then
-    make -j${JOBS} "$@"
-    return
-  fi
-
-  HOST_CC=$GOMA_DIR/gcc
-  HOST_CXX=$GOMA_DIR/g++
-  TARGET_CC=$(/bin/ls $ANDROID_TOOLCHAIN/*-gcc | head -n1)
-  TARGET_CXX=$(/bin/ls $ANDROID_TOOLCHAIN/*-g++ | head -n1)
-  TARGET_CC="$GOMA_DIR/gomacc $TARGET_CC"
-  TARGET_CXX="$GOMA_DIR/gomacc $TARGET_CXX"
-  COMMON_JAVAC="$GOMA_DIR/gomacc /usr/bin/javac -J-Xmx512M \
-    -target 1.5 -Xmaxerrs 9999999"
-
-  command make \
-    -j100 \
-    -l20 \
-    HOST_CC="$HOST_CC" \
-    HOST_CXX="$HOST_CXX" \
-    TARGET_CC="$TARGET_CC" \
-    TARGET_CXX="$TARGET_CXX" \
-    CC.host="$HOST_CC" \
-    CXX.host="$HOST_CXX" \
-    CC.target="$TARGET_CC" \
-    CXX.target="$TARGET_CXX" \
-    LINK.target="$TARGET_CXX" \
-    COMMON_JAVAC="$COMMON_JAVAC" \
-    BUILDTYPE="$BUILDTYPE" \
-    "$@"
-
-  local make_exit_code=$?
-  return $make_exit_code
-}
-
 # Build using ninja.
 function bb_goma_ninja {
   echo "Using ninja to build."
   local TARGET=$1
+  bb_setup_goma_internal
   ninja -C out/$BUILDTYPE -j120 -l20 $TARGET
+  bb_stop_goma_internal
 }
 
 # Compile step
 function bb_compile {
-  # This must be named 'compile', not 'Compile', for CQ interaction.
-  # Talk to maruel for details.
+  # This must be named 'compile' for CQ.
   echo "@@@BUILD_STEP compile@@@"
-  bb_compile_setup
-
-  BUILDTOOL=$(bb_get_json_prop "$FACTORY_PROPERTIES" buildtool)
-  if [[ $BUILDTOOL = ninja ]]; then
-    bb_goma_ninja All
-  else
-    bb_goma_make
-  fi
-
-  bb_stop_goma_internal
+  gclient runhooks
+  bb_goma_ninja All
 }
 
 # Experimental compile step; does not turn the tree red if it fails.
@@ -187,11 +131,7 @@ function bb_compile_experimental {
   for target in ${EXPERIMENTAL_TARGETS} ; do
     echo "@@@BUILD_STEP Experimental Compile $target @@@"
     set +e
-    if [[ $BUILDTOOL = ninja ]]; then
-      bb_goma_ninja "${target}"
-    else
-      bb_goma_make -k "${target}"
-    fi
+    bb_goma_ninja "${target}"
     if [ $? -ne 0 ] ; then
       echo "@@@STEP_WARNINGS@@@"
     fi
