@@ -1573,40 +1573,48 @@ static const struct wl_compositor_interface compositor_interface = {
 	compositor_create_region
 };
 
-WL_EXPORT void
-weston_compositor_wake(struct weston_compositor *compositor)
-{
-	compositor->state = WESTON_COMPOSITOR_ACTIVE;
-
-	wl_event_source_timer_update(compositor->idle_source,
-				     compositor->idle_time * 1000);
-}
-
 static void
-weston_compositor_dpms_on(struct weston_compositor *compositor)
+weston_compositor_dpms(struct weston_compositor *compositor,
+		       enum dpms_enum state)
 {
         struct weston_output *output;
 
         wl_list_for_each(output, &compositor->output_list, link)
 		if (output->set_dpms)
-			output->set_dpms(output, WESTON_DPMS_ON);
+			output->set_dpms(output, state);
 }
 
 WL_EXPORT void
-weston_compositor_activity(struct weston_compositor *compositor)
+weston_compositor_wake(struct weston_compositor *compositor)
 {
-	if (compositor->state == WESTON_COMPOSITOR_ACTIVE) {
-		weston_compositor_wake(compositor);
-	} else {
-		weston_compositor_dpms_on(compositor);
+	switch (compositor->state) {
+	case WESTON_COMPOSITOR_SLEEPING:
+		weston_compositor_dpms(compositor, WESTON_DPMS_ON);
+		/* fall through */
+	case WESTON_COMPOSITOR_IDLE:
 		wl_signal_emit(&compositor->unlock_signal, compositor);
+		/* fall through */
+	default:
+		compositor->state = WESTON_COMPOSITOR_ACTIVE;
+		wl_event_source_timer_update(compositor->idle_source,
+					     compositor->idle_time * 1000);
 	}
+}
+
+WL_EXPORT void
+weston_compositor_sleep(struct weston_compositor *compositor)
+{
+	if (compositor->state == WESTON_COMPOSITOR_SLEEPING)
+		return;
+
+	compositor->state = WESTON_COMPOSITOR_SLEEPING;
+	weston_compositor_dpms(compositor, WESTON_DPMS_OFF);
 }
 
 static void
 weston_compositor_idle_inhibit(struct weston_compositor *compositor)
 {
-	weston_compositor_activity(compositor);
+	weston_compositor_wake(compositor);
 	compositor->idle_inhibit++;
 }
 
@@ -1614,7 +1622,7 @@ static void
 weston_compositor_idle_release(struct weston_compositor *compositor)
 {
 	compositor->idle_inhibit--;
-	weston_compositor_activity(compositor);
+	weston_compositor_wake(compositor);
 }
 
 static int
@@ -1694,7 +1702,7 @@ notify_motion(struct weston_seat *seat, uint32_t time, wl_fixed_t x, wl_fixed_t 
 	struct wl_pointer *pointer = seat->seat.pointer;
 	int32_t ix, iy;
 
-	weston_compositor_activity(ec);
+	weston_compositor_wake(ec);
 
 	clip_pointer_motion(seat, &x, &y);
 
@@ -1788,7 +1796,7 @@ notify_axis(struct weston_seat *seat, uint32_t time, uint32_t axis,
 	if (compositor->ping_handler && focus)
 		compositor->ping_handler(focus, serial);
 
-	weston_compositor_activity(compositor);
+	weston_compositor_wake(compositor);
 
 	if (value)
 		weston_compositor_run_axis_binding(compositor, seat,
@@ -3481,7 +3489,6 @@ int main(int argc, char *argv[])
 		goto out;
 	}
 
-	weston_compositor_dpms_on(ec);
 	weston_compositor_wake(ec);
 
 	wl_display_run(display);

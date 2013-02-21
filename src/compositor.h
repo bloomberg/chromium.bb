@@ -593,7 +593,7 @@ weston_compositor_unlock(struct weston_compositor *compositor);
 void
 weston_compositor_wake(struct weston_compositor *compositor);
 void
-weston_compositor_activity(struct weston_compositor *compositor);
+weston_compositor_sleep(struct weston_compositor *compositor);
 void
 weston_compositor_update_drag_surfaces(struct weston_compositor *compositor);
 

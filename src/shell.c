@@ -2292,7 +2292,7 @@ lock_surface_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
 		wl_list_insert(&shell->lock_layer.surface_list,
 			       &surface->layer_link);
 		weston_surface_update_transform(surface);
-		weston_compositor_wake(shell->compositor);
+		shell_fade(shell, FADE_IN);
 	}
 }
 
@@ -2353,7 +2353,7 @@ resume_desktop(struct desktop_shell *shell)
 	restore_focus_state(shell, get_current_workspace(shell));
 
 	shell->locked = false;
-	weston_compositor_wake(shell->compositor);
+	shell_fade(shell, FADE_IN);
 	weston_compositor_damage_all(shell->compositor);
 }
 
@@ -2780,14 +2780,10 @@ click_to_activate_binding(struct wl_seat *seat, uint32_t time, uint32_t button,
 static void
 lock(struct desktop_shell *shell)
 {
-	struct weston_output *output;
 	struct workspace *ws = get_current_workspace(shell);
 
 	if (shell->locked) {
-		wl_list_for_each(output, &shell->compositor->output_list, link)
-			/* TODO: find a way to jump to other DPMS levels */
-			if (output->set_dpms)
-				output->set_dpms(output, WESTON_DPMS_STANDBY);
+		weston_compositor_sleep(shell->compositor);
 		return;
 	}
 
@@ -2816,7 +2812,7 @@ static void
 unlock(struct desktop_shell *shell)
 {
 	if (!shell->locked || shell->lock_surface) {
-		weston_compositor_wake(shell->compositor);
+		shell_fade(shell, FADE_IN);
 		return;
 	}
 
@@ -2846,7 +2842,6 @@ shell_fade_done(struct weston_surface_animation *animation, void *data)
 		shell->fade.surface = NULL;
 		break;
 	case FADE_OUT:
-		shell->compositor->state = WESTON_COMPOSITOR_SLEEPING;
 		lock(shell);
 		break;
 	}
@@ -2914,7 +2909,6 @@ unlock_handler(struct wl_listener *listener, void *data)
 	struct desktop_shell *shell =
 		container_of(listener, struct desktop_shell, unlock_listener);
 
-	shell_fade(shell, FADE_IN);
 	unlock(shell);
 }
 
@@ -3322,7 +3316,6 @@ screensaver_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
 		wl_event_source_timer_update(shell->screensaver.timer,
 					     shell->screensaver.duration);
 		shell_fade(shell, FADE_IN);
-		shell->compositor->state = WESTON_COMPOSITOR_IDLE;
 	}
 }
 
