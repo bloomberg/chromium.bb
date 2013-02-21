@@ -341,9 +341,10 @@ class ChromeSwitchesCapabilitiesTest(unittest.TestCase):
     """
     driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB,
                                        chrome_binary=_CHROME_BINARY,
-                                       chrome_switches=['enable-benchmarking'])
+                                       chrome_switches=['enable-benchmarking',
+                                                        'enable-stats-table'])
     result = driver.ExecuteScript('return chrome.benchmarking')
-    self.assertIsNotNone(result)
+    self.assertNotEqual(None, result)
 
 
 if __name__ == '__main__':
