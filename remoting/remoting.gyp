@@ -9,8 +9,14 @@
     'chromium_code': 1,
 
     'variables': {
-      # Disable the multi-process host by default.
-      'remoting_multi_process%': 0,
+      'conditions': [
+        # Enable the multi-process host on Windows by default.
+        ['OS=="win"', {
+          'remoting_multi_process%': 1,
+        }, {
+          'remoting_multi_process%': 0,
+        }],
+      ],
     },
 
     'remoting_multi_process%': '<(remoting_multi_process)',
