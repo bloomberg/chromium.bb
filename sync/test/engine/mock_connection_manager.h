@@ -56,44 +56,85 @@ class MockConnectionManager : public ServerConnectionManager {
   // The SyncEntity returned is only valid until the Sync is completed
   // (e.g. with SyncShare.) It allows to add further entity properties before
   // sync, using SetLastXXX() methods and/or GetMutableLastUpdate().
-  sync_pb::SyncEntity* AddUpdateDirectory(syncable::Id id,
-                                          syncable::Id parent_id,
-                                          std::string name,
-                                          int64 version,
-                                          int64 sync_ts);
+  sync_pb::SyncEntity* AddUpdateDirectory(
+      syncable::Id id,
+      syncable::Id parent_id,
+      std::string name,
+      int64 version,
+      int64 sync_ts,
+      std::string originator_cache_guid,
+      std::string originator_client_item_id);
   sync_pb::SyncEntity* AddUpdateBookmark(syncable::Id id,
                                          syncable::Id parent_id,
                                          std::string name,
                                          int64 version,
-                                         int64 sync_ts);
+                                         int64 sync_ts,
+                                         std::string originator_cache_guid,
+                                         std::string originator_client_item_id);
   // Versions of the AddUpdate functions that accept integer IDs.
-  sync_pb::SyncEntity* AddUpdateDirectory(int id,
-                                          int parent_id,
-                                          std::string name,
-                                          int64 version,
-                                          int64 sync_ts);
+  sync_pb::SyncEntity* AddUpdateDirectory(
+      int id,
+      int parent_id,
+      std::string name,
+      int64 version,
+      int64 sync_ts,
+      std::string originator_cache_guid,
+      std::string originator_client_item_id);
   sync_pb::SyncEntity* AddUpdateBookmark(int id,
                                          int parent_id,
                                          std::string name,
                                          int64 version,
-                                         int64 sync_ts);
+                                         int64 sync_ts,
+                                         std::string originator_cache_guid,
+                                         std::string originator_client_item_id);
   // New protocol versions of the AddUpdate functions.
-  sync_pb::SyncEntity* AddUpdateDirectory(std::string id,
-                                          std::string parent_id,
-                                          std::string name,
-                                          int64 version,
-                                          int64 sync_ts);
+  sync_pb::SyncEntity* AddUpdateDirectory(
+      std::string id,
+      std::string parent_id,
+      std::string name,
+      int64 version,
+      int64 sync_ts,
+      std::string originator_cache_guid,
+      std::string originator_client_item_id);
   sync_pb::SyncEntity* AddUpdateBookmark(std::string id,
                                          std::string parent_id,
                                          std::string name,
                                          int64 version,
-                                         int64 sync_ts);
+                                         int64 sync_ts,
+                                         std::string originator_cache_guid,
+                                         std::string originator_client_item_id);
   // Versions of the AddUpdate function that accept specifics.
-  sync_pb::SyncEntity* AddUpdateSpecifics(int id, int parent_id,
-      std::string name,int64 version, int64 sync_ts, bool is_dir,
-      int64 position, const sync_pb::EntitySpecifics& specifics);
-  sync_pb::SyncEntity* SetNigori(int id, int64 version, int64 sync_ts,
+  sync_pb::SyncEntity* AddUpdateSpecifics(
+      int id,
+      int parent_id,
+      std::string name,
+      int64 version,
+      int64 sync_ts,
+      bool is_dir,
+      int64 position,
       const sync_pb::EntitySpecifics& specifics);
+  sync_pb::SyncEntity* AddUpdateSpecifics(
+      int id,
+      int parent_id,
+      std::string name,
+      int64 version,
+      int64 sync_ts,
+      bool is_dir,
+      int64 position,
+      const sync_pb::EntitySpecifics& specifics,
+      std::string originator_cache_guid,
+      std::string originator_client_item_id);
+  sync_pb::SyncEntity* SetNigori(
+      int id,
+      int64 version,
+      int64 sync_ts,
+      const sync_pb::EntitySpecifics& specifics);
+  // Unique client tag variant for adding items.
+  sync_pb::SyncEntity* AddUpdatePref(std::string id,
+                                     std::string parent_id,
+                                     std::string client_tag,
+                                     int64 version,
+                                     int64 sync_ts);
 
   // Find the last commit sent by the client, and replay it for the next get
   // updates command.  This can be used to simulate the GetUpdates that happens

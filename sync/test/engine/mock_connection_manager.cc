@@ -202,12 +202,16 @@ sync_pb::SyncEntity* MockConnectionManager::AddUpdateDirectory(
     int parent_id,
     string name,
     int64 version,
-    int64 sync_ts) {
+    int64 sync_ts,
+    std::string originator_cache_guid,
+    std::string originator_client_item_id) {
   return AddUpdateDirectory(TestIdFactory::FromNumber(id),
                             TestIdFactory::FromNumber(parent_id),
                             name,
                             version,
-                            sync_ts);
+                            sync_ts,
+                            originator_cache_guid,
+                            originator_client_item_id);
 }
 
 void MockConnectionManager::SetGUClientCommand(
@@ -223,17 +227,27 @@ void MockConnectionManager::SetCommitClientCommand(
 sync_pb::SyncEntity* MockConnectionManager::AddUpdateBookmark(
     int id, int parent_id,
     string name, int64 version,
-    int64 sync_ts) {
+    int64 sync_ts,
+    string originator_client_item_id,
+    string originator_cache_guid) {
   return AddUpdateBookmark(TestIdFactory::FromNumber(id),
                            TestIdFactory::FromNumber(parent_id),
                            name,
                            version,
-                           sync_ts);
+                           sync_ts,
+                           originator_client_item_id,
+                           originator_cache_guid);
 }
 
 sync_pb::SyncEntity* MockConnectionManager::AddUpdateSpecifics(
-    int id, int parent_id, string name, int64 version, int64 sync_ts,
-    bool is_dir, int64 position, const sync_pb::EntitySpecifics& specifics) {
+    int id,
+    int parent_id,
+    string name,
+    int64 version,
+    int64 sync_ts,
+    bool is_dir,
+    int64 position,
+    const sync_pb::EntitySpecifics& specifics) {
   sync_pb::SyncEntity* ent = AddUpdateMeta(
       TestIdFactory::FromNumber(id).GetServerId(),
       TestIdFactory::FromNumber(parent_id).GetServerId(),
@@ -244,8 +258,28 @@ sync_pb::SyncEntity* MockConnectionManager::AddUpdateSpecifics(
   return ent;
 }
 
+sync_pb::SyncEntity* MockConnectionManager::AddUpdateSpecifics(
+    int id,
+    int parent_id,
+    string name,
+    int64 version,
+    int64 sync_ts,
+    bool is_dir,
+    int64 position,
+    const sync_pb::EntitySpecifics& specifics,
+    string originator_cache_guid,
+    string originator_client_item_id) {
+  sync_pb::SyncEntity* ent = AddUpdateSpecifics(
+      id, parent_id, name, version, sync_ts, is_dir, position, specifics);
+  ent->set_originator_cache_guid(originator_cache_guid);
+  ent->set_originator_client_item_id(originator_client_item_id);
+  return ent;
+}
+
 sync_pb::SyncEntity* MockConnectionManager::SetNigori(
-    int id, int64 version,int64 sync_ts,
+    int id,
+    int64 version,
+    int64 sync_ts,
     const sync_pb::EntitySpecifics& specifics) {
   sync_pb::SyncEntity* ent = GetUpdateResponse()->add_entries();
   ent->set_id_string(TestIdFactory::FromNumber(id).GetServerId());
@@ -260,6 +294,23 @@ sync_pb::SyncEntity* MockConnectionManager::SetNigori(
   ent->set_position_in_parent(0);
   ent->set_folder(false);
   ent->mutable_specifics()->CopyFrom(specifics);
+  return ent;
+}
+
+sync_pb::SyncEntity* MockConnectionManager::AddUpdatePref(string id,
+                                                          string parent_id,
+                                                          string client_tag,
+                                                          int64 version,
+                                                          int64 sync_ts) {
+  sync_pb::SyncEntity* ent =
+      AddUpdateMeta(id, parent_id, " ", version, sync_ts);
+
+  ent->set_client_defined_unique_tag(client_tag);
+
+  sync_pb::EntitySpecifics specifics;
+  AddDefaultFieldValue(PREFERENCES, &specifics);
+  ent->mutable_specifics()->CopyFrom(specifics);
+
   return ent;
 }
 
@@ -295,16 +346,28 @@ sync_pb::SyncEntity* MockConnectionManager::AddUpdateDirectory(
     string parent_id,
     string name,
     int64 version,
-    int64 sync_ts) {
-  return AddUpdateFull(id, parent_id, name, version, sync_ts, true);
+    int64 sync_ts,
+    std::string originator_cache_guid,
+    std::string originator_client_item_id) {
+  sync_pb::SyncEntity* ret =
+      AddUpdateFull(id, parent_id, name, version, sync_ts, true);
+  ret->set_originator_cache_guid(originator_cache_guid);
+  ret->set_originator_client_item_id(originator_client_item_id);
+  return ret;
 }
 
 sync_pb::SyncEntity* MockConnectionManager::AddUpdateBookmark(
     string id,
     string parent_id,
     string name, int64 version,
-    int64 sync_ts) {
-  return AddUpdateFull(id, parent_id, name, version, sync_ts, false);
+    int64 sync_ts,
+    string originator_cache_guid,
+    string originator_client_item_id) {
+  sync_pb::SyncEntity* ret =
+      AddUpdateFull(id, parent_id, name, version, sync_ts, false);
+  ret->set_originator_cache_guid(originator_cache_guid);
+  ret->set_originator_client_item_id(originator_client_item_id);
+  return ret;
 }
 
 sync_pb::SyncEntity* MockConnectionManager::AddUpdateFromLastCommit() {
@@ -542,17 +605,29 @@ void MockConnectionManager::ProcessCommit(
 }
 
 sync_pb::SyncEntity* MockConnectionManager::AddUpdateDirectory(
-    syncable::Id id, syncable::Id parent_id, string name, int64 version,
-    int64 sync_ts) {
+    syncable::Id id,
+    syncable::Id parent_id,
+    string name,
+    int64 version,
+    int64 sync_ts,
+    string originator_cache_guid,
+    string originator_client_item_id) {
   return AddUpdateDirectory(id.GetServerId(), parent_id.GetServerId(),
-                            name, version, sync_ts);
+                            name, version, sync_ts, originator_cache_guid,
+                            originator_client_item_id);
 }
 
 sync_pb::SyncEntity* MockConnectionManager::AddUpdateBookmark(
-    syncable::Id id, syncable::Id parent_id, string name, int64 version,
-    int64 sync_ts) {
+    syncable::Id id,
+    syncable::Id parent_id,
+    string name,
+    int64 version,
+    int64 sync_ts,
+    string originator_cache_guid,
+    string originator_client_item_id) {
   return AddUpdateBookmark(id.GetServerId(), parent_id.GetServerId(),
-                           name, version, sync_ts);
+                           name, version, sync_ts, originator_cache_guid,
+                           originator_client_item_id);
 }
 
 sync_pb::SyncEntity* MockConnectionManager::GetMutableLastUpdate() {
