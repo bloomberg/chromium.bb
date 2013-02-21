@@ -483,6 +483,12 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       <message name="IDS_HISTORY_RANGE_TODAY" desc="The text on the button that sets the current time range back to today.">
         Today
       </message>
+      <message name="IDS_HISTORY_RANGE_NEXT" desc="The alt text on the button that moves the current time range forward.">
+        Next
+      </message>
+      <message name="IDS_HISTORY_RANGE_PREVIOUS" desc="The alt text on the button that moves the current time range backwards.">
+        Previous
+      </message>
       <message name="IDS_HISTORY_NUMBER_VISITS" desc="Format string for the number of visits of a site.">
         (<ph name="NUMBER_VISITS">$1<ex>3</ex></ph>)
       </message>

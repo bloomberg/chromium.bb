@@ -143,6 +143,8 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource() {
   source->AddLocalizedString("rangeweek", IDS_HISTORY_RANGE_WEEK);
   source->AddLocalizedString("rangemonth", IDS_HISTORY_RANGE_MONTH);
   source->AddLocalizedString("rangetoday", IDS_HISTORY_RANGE_TODAY);
+  source->AddLocalizedString("rangenext", IDS_HISTORY_RANGE_NEXT);
+  source->AddLocalizedString("rangeprevious", IDS_HISTORY_RANGE_PREVIOUS);
   source->AddLocalizedString("numbervisits", IDS_HISTORY_NUMBER_VISITS);
   source->AddBoolean("groupByDomain",
       CommandLine::ForCurrentProcess()->HasSwitch(

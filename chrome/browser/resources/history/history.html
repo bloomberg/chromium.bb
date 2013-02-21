@@ -50,8 +50,13 @@
   <div id="filter-controls" hidden>
     <button id="range-today" i18n-content="rangetoday" disabled>
     </button>
-    <button id="range-previous" disabled>◀</button>
-    <button id="range-next" disabled>▶</button>
+    <button id="range-previous" disabled>
+      <img src="../disclosure_triangle_small.png"
+          i18n-values="alt:rangeprevious">
+    </button>
+    <button id="range-next" disabled>
+      <img src="../disclosure_triangle_small.png" i18n-values="alt:rangenext">
+    </button>
     <div id="display-filter-controls">
       <label>
         <input type="checkbox" id="display-filter-sites" name="display-filter">

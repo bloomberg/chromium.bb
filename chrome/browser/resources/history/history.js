@@ -840,15 +840,15 @@ HistoryView.prototype.getGroupedVisitsDOM_ = function(
       createElementWithClassName('div', 'site-domain-wrapper'));
   var siteArrow = siteDomainWrapper.appendChild(
       createElementWithClassName('div', 'site-domain-arrow collapse'));
-  siteArrow.textContent = '►';
   var siteDomain = siteDomainWrapper.appendChild(
       createElementWithClassName('div', 'site-domain'));
+  var siteDomainLink = siteDomain.appendChild(
+      createElementWithClassName('button', 'link-button'));
+  siteDomainLink.addEventListener('click', function(e) { e.preventDefault(); });
+  siteDomainLink.textContent = domain;
   var numberOfVisits = createElementWithClassName('span', 'number-visits');
   numberOfVisits.textContent = loadTimeData.getStringF('numbervisits',
                                                        domainVisits.length);
-  var domainElement = document.createElement('span');
-  domainElement.textContent = domain;
-  siteDomain.appendChild(domainElement);
   siteDomain.appendChild(numberOfVisits);
   siteResults.appendChild(siteDomainWrapper);
   var resultsList = siteResults.appendChild(
