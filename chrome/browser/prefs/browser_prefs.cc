@@ -115,6 +115,7 @@
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/oauth2_login_manager.h"
 #include "chrome/browser/chromeos/login/user_image_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
@@ -154,6 +155,13 @@ enum MigratedPreferences {
   WINDOWS_PREFS = 1 << 1,
   GOOGLE_URL_TRACKER_PREFS = 1 << 2,
 };
+
+// A previous feature (see
+// chrome/browser/protector/protected_prefs_watcher.cc in source
+// control history) used this string as a prefix for various prefs it
+// registered. We keep it here for now to clear out those old prefs in
+// MigrateUserPrefs.
+const char kBackupPref[] = "backup";
 
 }  // namespace
 
@@ -337,6 +345,7 @@ void RegisterUserPrefs(PrefService* user_prefs,
 #endif
 
 #if defined(OS_CHROMEOS)
+  chromeos::OAuth2LoginManager::RegisterUserPrefs(registry);
   chromeos::Preferences::RegisterUserPrefs(registry);
   chromeos::ProxyConfigServiceImpl::RegisterUserPrefs(registry);
 #endif
@@ -344,21 +353,20 @@ void RegisterUserPrefs(PrefService* user_prefs,
 #if defined(OS_WIN)
   NetworkProfileBubble::RegisterUserPrefs(registry);
 #endif
+
+  // Prefs registered only for migration (clearing or moving to a new
+  // key) go here.
+  registry->RegisterDictionaryPref(kBackupPref, new DictionaryValue(),
+                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 void MigrateUserPrefs(Profile* profile) {
-  // Cleanup old prefs.
-  static const char kBackupPref[] = "backup";
   PrefService* prefs = profile->GetPrefs();
-  // TODO(joi): Fix to not require post-construction registration?
-  scoped_refptr<PrefRegistrySyncable> registry(
-      static_cast<PrefRegistrySyncable*>(prefs->DeprecatedGetPrefRegistry()));
-  registry->RegisterDictionaryPref(kBackupPref, new DictionaryValue(),
-                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
-  prefs->ClearPref(kBackupPref);
-  registry->DeprecatedUnregisterPreference(kBackupPref);
 
-  PrefsTabHelper::MigrateUserPrefs(prefs, registry);
+  // Cleanup prefs from now-removed protector feature.
+  prefs->ClearPref(kBackupPref);
+
+  PrefsTabHelper::MigrateUserPrefs(prefs);
 }
 
 void MigrateBrowserPrefs(Profile* profile, PrefService* local_state) {

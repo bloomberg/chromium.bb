@@ -28,8 +28,7 @@ class PrefsTabHelper : public content::NotificationObserver,
 
   static void InitIncognitoUserPrefStore(OverlayUserPrefStore* pref_store);
   static void RegisterUserPrefs(PrefRegistrySyncable* registry);
-  static void MigrateUserPrefs(PrefService* prefs,
-                               PrefRegistrySyncable* registry);
+  static void MigrateUserPrefs(PrefService* prefs);
 
  protected:
   // Update the RenderView's WebPreferences. Exposed as protected for testing.

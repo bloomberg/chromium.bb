@@ -787,12 +787,6 @@ const char kChromeOSReleaseNotesVersion[] = "settings.release_notes.version";
 // A boolean pref that uses shared proxies.
 const char kUseSharedProxies[] = "settings.use_shared_proxies";
 
-// A string prefs for OAuth1 token.
-const char kOAuth1Token[] = "settings.account.oauth1_token";
-
-// A string prefs for OAuth1 secret.
-const char kOAuth1Secret[] = "settings.account.oauth1_secret";
-
 // A boolean pref that enables the (private) pepper GetID() call.
 const char kEnableCrosDRM[] = "settings.privacy.drm_enabled";
 

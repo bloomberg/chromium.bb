@@ -576,20 +576,18 @@ void PrefsTabHelper::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   registry->RegisterStringPref(prefs::kRecentlySelectedEncoding,
                                "",
                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+
+  RegisterPrefsToMigrate(registry);
 }
 
-void PrefsTabHelper::MigrateUserPrefs(PrefService* prefs,
-                                      PrefRegistrySyncable* registry) {
-  RegisterPrefsToMigrate(registry);
+void PrefsTabHelper::MigrateUserPrefs(PrefService* prefs) {
   for (int i = 0; i < kPrefsToMigrateLength; ++i) {
     const PrefService::Preference* pref =
         prefs->FindPreference(kPrefNamesToMigrate[i].from);
-    if (!pref) continue;
-    if (!pref->IsDefaultValue()) {
+    if (pref && !pref->IsDefaultValue()) {
       prefs->Set(kPrefNamesToMigrate[i].to, *pref->GetValue());
+      prefs->ClearPref(kPrefNamesToMigrate[i].from);
     }
-    prefs->ClearPref(kPrefNamesToMigrate[i].from);
-    registry->DeprecatedUnregisterPreference(kPrefNamesToMigrate[i].from);
   }
 }
 

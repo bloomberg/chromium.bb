@@ -33,21 +33,6 @@ void PrefRegistry::SetRegistrationCallback(
   registration_callback_ = callback;
 }
 
-void PrefRegistry::SetUnregistrationCallback(
-    const UnregistrationCallback& callback) {
-  unregistration_callback_ = callback;
-}
-
-void PrefRegistry::DeprecatedUnregisterPreference(const char* path) {
-  DCHECK(defaults_->GetValue(path, NULL)) <<
-      "Trying to unregister an unregistered pref: " << path;
-
-  defaults_->RemoveDefaultValue(path);
-
-  if (!unregistration_callback_.is_null())
-    unregistration_callback_.Run(path);
-}
-
 void PrefRegistry::RegisterPreference(const char* path,
                                       base::Value* default_value) {
   base::Value::Type orig_type = default_value->GetType();

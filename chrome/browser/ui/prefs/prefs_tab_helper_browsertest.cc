@@ -69,19 +69,28 @@ class PrefsTabHelperBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(PrefsTabHelperBrowserTest, PrefsAreMigratedToFontMap) {
   PrefService* prefs = browser()->profile()->GetPrefs();
 
-  EXPECT_EQ(NULL, prefs->FindPreference(prefs::kGlobalDefaultCharset));
-  EXPECT_EQ(NULL, prefs->FindPreference(prefs::kWebKitGlobalDefaultFontSize));
-  EXPECT_EQ(NULL,
-            prefs->FindPreference(prefs::kWebKitGlobalDefaultFixedFontSize));
-  EXPECT_EQ(NULL, prefs->FindPreference(prefs::kWebKitGlobalMinimumFontSize));
-  EXPECT_EQ(NULL,
-            prefs->FindPreference(prefs::kWebKitGlobalMinimumLogicalFontSize));
-  EXPECT_EQ(NULL, prefs->FindPreference(prefs::kWebKitOldCursiveFontFamily));
-  EXPECT_EQ(NULL, prefs->FindPreference(prefs::kWebKitOldFantasyFontFamily));
-  EXPECT_EQ(NULL, prefs->FindPreference(prefs::kWebKitOldFixedFontFamily));
-  EXPECT_EQ(NULL, prefs->FindPreference(prefs::kWebKitOldSansSerifFontFamily));
-  EXPECT_EQ(NULL, prefs->FindPreference(prefs::kWebKitOldSerifFontFamily));
-  EXPECT_EQ(NULL, prefs->FindPreference(prefs::kWebKitOldStandardFontFamily));
+  EXPECT_TRUE(prefs->FindPreference(
+      prefs::kGlobalDefaultCharset)->IsDefaultValue());
+  EXPECT_TRUE(prefs->FindPreference(
+      prefs::kWebKitGlobalDefaultFontSize)->IsDefaultValue());
+  EXPECT_TRUE(prefs->FindPreference(
+      prefs::kWebKitGlobalDefaultFixedFontSize)->IsDefaultValue());
+  EXPECT_TRUE(prefs->FindPreference(
+      prefs::kWebKitGlobalMinimumFontSize)->IsDefaultValue());
+  EXPECT_TRUE(prefs->FindPreference(
+      prefs::kWebKitGlobalMinimumLogicalFontSize)->IsDefaultValue());
+  EXPECT_TRUE(prefs->FindPreference(
+      prefs::kWebKitOldCursiveFontFamily)->IsDefaultValue());
+  EXPECT_TRUE(prefs->FindPreference(
+      prefs::kWebKitOldFantasyFontFamily)->IsDefaultValue());
+  EXPECT_TRUE(prefs->FindPreference(
+      prefs::kWebKitOldFixedFontFamily)->IsDefaultValue());
+  EXPECT_TRUE(prefs->FindPreference(
+      prefs::kWebKitOldSansSerifFontFamily)->IsDefaultValue());
+  EXPECT_TRUE(prefs->FindPreference(
+      prefs::kWebKitOldSerifFontFamily)->IsDefaultValue());
+  EXPECT_TRUE(prefs->FindPreference(
+      prefs::kWebKitOldStandardFontFamily)->IsDefaultValue());
 
   EXPECT_EQ("ISO-8859-1", prefs->GetString(prefs::kDefaultCharset));
   EXPECT_EQ(42, prefs->GetInteger(prefs::kWebKitDefaultFontSize));
@@ -131,21 +140,28 @@ class PrefsTabHelperBrowserTest2 : public PrefsTabHelperBrowserTest {
 IN_PROC_BROWSER_TEST_F(PrefsTabHelperBrowserTest2, GlobalPrefsAreMigrated) {
   PrefService* prefs = browser()->profile()->GetPrefs();
 
-  EXPECT_EQ(NULL, prefs->FindPreference(prefs::kGlobalDefaultCharset));
-  EXPECT_EQ(NULL, prefs->FindPreference(prefs::kWebKitGlobalDefaultFontSize));
-  EXPECT_EQ(NULL,
-            prefs->FindPreference(prefs::kWebKitGlobalDefaultFixedFontSize));
-  EXPECT_EQ(NULL, prefs->FindPreference(prefs::kWebKitGlobalMinimumFontSize));
-  EXPECT_EQ(NULL,
-            prefs->FindPreference(prefs::kWebKitGlobalMinimumLogicalFontSize));
-  EXPECT_EQ(NULL, prefs->FindPreference(prefs::kWebKitGlobalCursiveFontFamily));
-  EXPECT_EQ(NULL, prefs->FindPreference(prefs::kWebKitGlobalFantasyFontFamily));
-  EXPECT_EQ(NULL, prefs->FindPreference(prefs::kWebKitGlobalFixedFontFamily));
-  EXPECT_EQ(NULL,
-            prefs->FindPreference(prefs::kWebKitGlobalSansSerifFontFamily));
-  EXPECT_EQ(NULL, prefs->FindPreference(prefs::kWebKitGlobalSerifFontFamily));
-  EXPECT_EQ(NULL,
-            prefs->FindPreference(prefs::kWebKitGlobalStandardFontFamily));
+  EXPECT_TRUE(prefs->FindPreference(
+      prefs::kGlobalDefaultCharset)->IsDefaultValue());
+  EXPECT_TRUE(prefs->FindPreference(
+      prefs::kWebKitGlobalDefaultFontSize)->IsDefaultValue());
+  EXPECT_TRUE(prefs->FindPreference(
+      prefs::kWebKitGlobalDefaultFixedFontSize)->IsDefaultValue());
+  EXPECT_TRUE(prefs->FindPreference(
+      prefs::kWebKitGlobalMinimumFontSize)->IsDefaultValue());
+  EXPECT_TRUE(prefs->FindPreference(
+      prefs::kWebKitGlobalMinimumLogicalFontSize)->IsDefaultValue());
+  EXPECT_TRUE(prefs->FindPreference(
+      prefs::kWebKitGlobalCursiveFontFamily)->IsDefaultValue());
+  EXPECT_TRUE(prefs->FindPreference(
+      prefs::kWebKitGlobalFantasyFontFamily)->IsDefaultValue());
+  EXPECT_TRUE(prefs->FindPreference(
+      prefs::kWebKitGlobalFixedFontFamily)->IsDefaultValue());
+  EXPECT_TRUE(prefs->FindPreference(
+      prefs::kWebKitGlobalSansSerifFontFamily)->IsDefaultValue());
+  EXPECT_TRUE(prefs->FindPreference(
+      prefs::kWebKitGlobalSerifFontFamily)->IsDefaultValue());
+  EXPECT_TRUE(prefs->FindPreference(
+      prefs::kWebKitGlobalStandardFontFamily)->IsDefaultValue());
 
   EXPECT_EQ("ISO-8859-1", prefs->GetString(prefs::kDefaultCharset));
   EXPECT_EQ(42, prefs->GetInteger(prefs::kWebKitDefaultFontSize));

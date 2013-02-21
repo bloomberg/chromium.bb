@@ -17,6 +17,7 @@
 #include "net/url_request/url_request_context_getter.h"
 
 class GoogleServiceAuthError;
+class PrefRegistrySyncable;
 class Profile;
 class TokenService;
 
@@ -30,6 +31,8 @@ class OAuth2LoginManager : public OAuthLoginManager,
  public:
   explicit OAuth2LoginManager(OAuthLoginManager::Delegate* delegate);
   virtual ~OAuth2LoginManager();
+
+  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
   // OAuthLoginManager overrides.
   virtual void RestorePolicyTokens(
@@ -73,7 +76,7 @@ class OAuth2LoginManager : public OAuthLoginManager,
   // observer events.
   TokenService* SetupTokenService();
 
-  // Removes legacy tokens form OAuth1 flow.
+  // Removes legacy tokens from OAuth1 flow.
   void RemoveLegacyTokens();
 
   // Records OAuth2 tokens fetched through either policy fetcher or cookies-to-

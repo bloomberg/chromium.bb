@@ -399,11 +399,6 @@ bool PrefModelAssociator::IsPrefRegistered(const char* name) {
   return registered_preferences_.count(name) > 0;
 }
 
-void PrefModelAssociator::UnregisterPref(const char* name) {
-  DCHECK(synced_preferences_.count(name) == 0);
-  registered_preferences_.erase(name);
-}
-
 void PrefModelAssociator::ProcessPrefChange(const std::string& name) {
   if (processing_syncer_changes_)
     return;  // These are changes originating from us, ignore.

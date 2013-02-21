@@ -20,6 +20,14 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/url_request/url_request_context_getter.h"
 
+namespace {
+
+// Prefs registered only for migration purposes.
+const char kOAuth1Token[] = "settings.account.oauth1_token";
+const char kOAuth1Secret[] = "settings.account.oauth1_secret";
+
+}  // namespace
+
 namespace chromeos {
 
 OAuth2LoginManager::OAuth2LoginManager(OAuthLoginManager::Delegate* delegate)
@@ -28,6 +36,15 @@ OAuth2LoginManager::OAuth2LoginManager(OAuthLoginManager::Delegate* delegate)
 }
 
 OAuth2LoginManager::~OAuth2LoginManager() {
+}
+
+void OAuth2LoginManager::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterStringPref(kOAuth1Token,
+                               "",
+                               PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(kOAuth1Secret,
+                               "",
+                               PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 void OAuth2LoginManager::RestoreSession(
@@ -93,19 +110,8 @@ TokenService* OAuth2LoginManager::SetupTokenService() {
 
 void OAuth2LoginManager::RemoveLegacyTokens() {
   PrefService* prefs = user_profile_->GetPrefs();
-  // TODO(joi): Handle migration more elegantly.
-  scoped_refptr<PrefRegistrySyncable> registry(
-      static_cast<PrefRegistrySyncable*>(prefs->DeprecatedGetPrefRegistry()));
-  registry->RegisterStringPref(prefs::kOAuth1Token,
-                               "",
-                               PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(prefs::kOAuth1Secret,
-                               "",
-                               PrefRegistrySyncable::UNSYNCABLE_PREF);
-  prefs->ClearPref(prefs::kOAuth1Token);
-  prefs->ClearPref(prefs::kOAuth1Secret);
-  registry->DeprecatedUnregisterPreference(prefs::kOAuth1Token);
-  registry->DeprecatedUnregisterPreference(prefs::kOAuth1Secret);
+  prefs->ClearPref(kOAuth1Token);
+  prefs->ClearPref(kOAuth1Secret);
 }
 
 void OAuth2LoginManager::StoreOAuth2Tokens(

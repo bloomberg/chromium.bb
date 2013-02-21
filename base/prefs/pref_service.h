@@ -264,9 +264,6 @@ class BASE_PREFS_EXPORT PrefService : public base::NonThreadSafe {
   void AddRegisteredPreference(const char* path,
                                base::Value* default_value);
 
-  // Updates local caches for a preference unregistered at |path|.
-  virtual void RemoveRegisteredPreference(const char* path);
-
   // The PrefNotifier handles registering and notifying preference observers.
   // It is created and owned by this PrefService. Subclasses may access it for
   // unit testing.

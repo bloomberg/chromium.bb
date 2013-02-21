@@ -132,13 +132,6 @@ void PrefServiceSyncable::AddRegisteredSyncablePreference(const char* path) {
   pref_sync_associator_.RegisterPref(path);
 }
 
-void PrefServiceSyncable::RemoveRegisteredPreference(const char* path) {
-  PrefService::RemoveRegisteredPreference(path);
-
-  if (pref_sync_associator_.IsPrefRegistered(path))
-    pref_sync_associator_.UnregisterPref(path);
-}
-
 void PrefServiceSyncable::OnIsSyncingChanged() {
   FOR_EACH_OBSERVER(PrefServiceSyncableObserver, observer_list_,
                     OnIsSyncingChanged());

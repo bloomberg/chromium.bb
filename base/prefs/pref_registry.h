@@ -30,7 +30,6 @@ class BASE_PREFS_EXPORT PrefRegistry : public base::RefCounted<PrefRegistry> {
  public:
   typedef PrefValueMap::const_iterator const_iterator;
   typedef base::Callback<void(const char*, base::Value*)> RegistrationCallback;
-  typedef base::Callback<void(const char*)> UnregistrationCallback;
 
   PrefRegistry();
 
@@ -41,19 +40,14 @@ class BASE_PREFS_EXPORT PrefRegistry : public base::RefCounted<PrefRegistry> {
   const_iterator begin() const;
   const_iterator end() const;
 
-  // Exactly one callback can be set for each of two events:
-  // Registration and unregistration. If either is set, the callback
-  // will be invoked each time registration and/or unregistration has
-  // been performed on this object.
+  // Exactly one callback can be set for registration. The callback
+  // will be invoked each time registration has been performed on this
+  // object.
   //
-  // Calling either of these methods after a callback has already been
-  // set will make the object forget the previous callback and use the
-  // new one instead.
+  // Calling this method after a callback has already been set will
+  // make the object forget the previous callback and use the new one
+  // instead.
   void SetRegistrationCallback(const RegistrationCallback& callback);
-  void SetUnregistrationCallback(const UnregistrationCallback& callback);
-
-  // Unregisters a preference. This is going away soon.
-  void DeprecatedUnregisterPreference(const char* path);
 
  protected:
   friend class base::RefCounted<PrefRegistry>;
@@ -66,7 +60,6 @@ class BASE_PREFS_EXPORT PrefRegistry : public base::RefCounted<PrefRegistry> {
 
  private:
   RegistrationCallback registration_callback_;
-  UnregistrationCallback unregistration_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefRegistry);
 };

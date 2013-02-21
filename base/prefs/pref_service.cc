@@ -58,9 +58,6 @@ PrefService::PrefService(
   pref_registry_->SetRegistrationCallback(
       base::Bind(&PrefService::AddRegisteredPreference,
                  base::Unretained(this)));
-  pref_registry_->SetUnregistrationCallback(
-      base::Bind(&PrefService::RemoveRegisteredPreference,
-                 base::Unretained(this)));
   AddInitialPreferences();
 
   InitFromStorage(async);
@@ -69,10 +66,8 @@ PrefService::PrefService(
 PrefService::~PrefService() {
   DCHECK(CalledOnValidThread());
 
-  // Remove our callbacks, setting NULL ones.
+  // Remove our callback, setting a NULL one.
   pref_registry_->SetRegistrationCallback(PrefRegistry::RegistrationCallback());
-  pref_registry_->SetUnregistrationCallback(
-      PrefRegistry::UnregistrationCallback());
 
   // Reset pointers so accesses after destruction reliably crash.
   pref_value_store_.reset();
@@ -354,14 +349,6 @@ void PrefService::AddRegisteredPreference(const char* path,
   }
   if (needs_empty_value)
     user_pref_store_->MarkNeedsEmptyValue(path);
-}
-
-// TODO(joi): We can get rid of this once the ability to unregister
-// prefs has been removed.
-void PrefService::RemoveRegisteredPreference(const char* path) {
-  DCHECK(CalledOnValidThread());
-
-  prefs_map_.erase(path);
 }
 
 void PrefService::ClearPref(const char* path) {

@@ -72,7 +72,6 @@ class PrefServiceSyncable : public PrefService {
   friend class PrefModelAssociator;
 
   void AddRegisteredSyncablePreference(const char* path);
-  virtual void RemoveRegisteredPreference(const char* path) OVERRIDE;
 
   // Invoked internally when the IsSyncing() state changes.
   void OnIsSyncingChanged();
