@@ -327,6 +327,25 @@ class ChromeDriverTest(unittest.TestCase):
     self._driver.MouseDoubleClick()
     self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
 
+
+class ChromeSwitchesCapabilitiesTest(unittest.TestCase):
+  """Tests that chromedriver properly processes chromeOptions.args capabilities.
+
+  Makes sure the switches are passed to Chrome.
+  """
+
+  def testSwitchWithoutArgument(self):
+    """Tests that switch --enable-benchmarking can be passed to Chrome.
+
+    Unless --enable-benchmarking is specified, chrome.benchmarking is undefined.
+    """
+    driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB,
+                                       chrome_binary=_CHROME_BINARY,
+                                       chrome_switches=['enable-benchmarking'])
+    result = driver.ExecuteScript('return chrome.benchmarking')
+    self.assertIsNotNone(result)
+
+
 if __name__ == '__main__':
   parser = optparse.OptionParser()
   parser.add_option(

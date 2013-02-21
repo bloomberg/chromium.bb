@@ -11,11 +11,13 @@
 #include "chrome/test/chromedriver/chrome_impl.h"
 #include "chrome/test/chromedriver/net/sync_websocket_factory.h"
 
+class CommandLine;
 class Status;
 class URLRequestContextGetter;
 
 namespace base {
 class FilePath;
+class ListValue;
 }
 
 class ChromeDesktopImpl : public ChromeImpl {
@@ -26,6 +28,7 @@ class ChromeDesktopImpl : public ChromeImpl {
   virtual ~ChromeDesktopImpl();
 
   virtual Status Launch(const base::FilePath& chrome_exe,
+                        const base::ListValue* chrome_args,
                         const std::string& landing_url);
 
   // Overridden from ChromeImpl:
@@ -35,5 +38,10 @@ class ChromeDesktopImpl : public ChromeImpl {
   base::ProcessHandle process_;
   base::ScopedTempDir user_data_dir_;
 };
+
+namespace internal {
+Status ProcessCommandLineArgs(const base::ListValue* args,
+                              CommandLine* command);
+}  // namespace internal
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_DESKTOP_IMPL_H_

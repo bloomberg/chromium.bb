@@ -906,6 +906,7 @@
         '../ui/ui.gyp:ui',
       ],
       'sources': [
+        'test/chromedriver/chrome_desktop_impl_unittest.cc',
         'test/chromedriver/chrome_finder_unittest.cc',
         'test/chromedriver/chrome_impl_unittest.cc',
         'test/chromedriver/chromedriver_unittest.cc',

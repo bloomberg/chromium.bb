@@ -9,6 +9,7 @@
 #include "base/process.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
+#include "base/values.h"
 #include "chrome/test/chromedriver/chrome_finder.h"
 #include "chrome/test/chromedriver/net/sync_websocket_impl.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
@@ -25,6 +26,7 @@ ChromeDesktopImpl::~ChromeDesktopImpl() {
 }
 
 Status ChromeDesktopImpl::Launch(const base::FilePath& chrome_exe,
+                                 const base::ListValue* chrome_args,
                                  const std::string& landing_url) {
   base::FilePath program = chrome_exe;
   if (program.empty()) {
@@ -42,6 +44,12 @@ Status ChromeDesktopImpl::Launch(const base::FilePath& chrome_exe,
     return Status(kUnknownError, "cannot create temp dir for user data dir");
   command.AppendSwitchPath("user-data-dir", user_data_dir_.path());
   command.AppendArg(landing_url);
+
+  if (chrome_args) {
+    Status status = internal::ProcessCommandLineArgs(chrome_args, &command);
+    if (status.IsError())
+      return status;
+  }
 
   base::LaunchOptions options;
   if (!base::LaunchProcess(command, options, &process_))
@@ -61,3 +69,27 @@ Status ChromeDesktopImpl::Quit() {
   return Status(kOk);
 }
 
+namespace internal {
+
+Status ProcessCommandLineArgs(const base::ListValue* args,
+                              CommandLine* command) {
+  for (size_t i = 0; i < args->GetSize(); ++i) {
+    std::string arg_string;
+    if (!args->GetString(i, &arg_string))
+      return Status(kUnknownError, "invalid chrome command line argument");
+    size_t separator_index = arg_string.find("=");
+    if (separator_index != std::string::npos) {
+      CommandLine::StringType arg_string_native;
+      if (!args->GetString(i, &arg_string_native))
+        return Status(kUnknownError, "invalid chrome command line argument");
+      command->AppendSwitchNative(
+          arg_string.substr(0, separator_index),
+          arg_string_native.substr(separator_index + 1));
+    } else {
+      command->AppendSwitch(arg_string);
+    }
+  }
+  return Status(kOk);
+}
+
+}  // namespace internal

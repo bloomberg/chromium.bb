@@ -112,9 +112,18 @@ Status ExecuteNewSession(
         return Status(kUnknownError, message);
       }
     }
+
+    const base::Value* args = NULL;
+    const base::ListValue* args_list = NULL;
+    if (params.Get("desiredCapabilities.chromeOptions.args", &args) &&
+        !args->GetAsList(&args_list)) {
+        return Status(kUnknownError,
+                      "command line arguments for chrome must be a list");
+    }
+
     scoped_ptr<ChromeDesktopImpl> chrome_desktop(new ChromeDesktopImpl(
         context_getter, port, socket_factory));
-    status = chrome_desktop->Launch(chrome_exe, landing_url);
+    status = chrome_desktop->Launch(chrome_exe, args_list, landing_url);
     chrome.reset(chrome_desktop.release());
   }
   if (status.IsError())
