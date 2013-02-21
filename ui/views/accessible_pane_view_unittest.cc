@@ -96,6 +96,50 @@ TEST_F(AccessiblePaneViewTest, SimpleSetPaneFocus) {
   widget.reset();
 }
 
+TEST_F(AccessiblePaneViewTest, SetPaneFocusAndRestore) {
+  View* test_view_main = new View();
+  scoped_ptr<Widget> widget_main(new Widget());
+  Widget::InitParams params_main = CreateParams(Widget::InitParams::TYPE_POPUP);
+  params_main.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params_main.bounds = gfx::Rect(0, 0, 20, 20);
+  widget_main->Init(params_main);
+  View* root_main = widget_main->GetRootView();
+  root_main->AddChildView(test_view_main);
+  widget_main->Activate();
+  test_view_main->GetFocusManager()->SetFocusedView(test_view_main);
+  EXPECT_TRUE(widget_main->IsActive());
+  EXPECT_TRUE(test_view_main->HasFocus());
+
+  TestBarView* test_view_bar = new TestBarView();
+  scoped_ptr<Widget> widget_bar(new Widget());
+  Widget::InitParams params_bar = CreateParams(Widget::InitParams::TYPE_POPUP);
+  params_bar.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params_bar.bounds = gfx::Rect(50, 50, 650, 650);
+  widget_bar->Init(params_bar);
+  View* root_bar = widget_bar->GetRootView();
+  root_bar->AddChildView(test_view_bar);
+  widget_bar->Show();
+  widget_bar->Activate();
+
+  // Set pane focus succeeds, focus on child.
+  EXPECT_TRUE(test_view_bar->SetPaneFocusAndFocusDefault());
+  EXPECT_FALSE(test_view_main->HasFocus());
+  EXPECT_FALSE(widget_main->IsActive());
+  EXPECT_EQ(test_view_bar, test_view_bar->GetPaneFocusTraversable());
+  EXPECT_EQ(test_view_bar->child_button(),
+            test_view_bar->GetWidget()->GetFocusManager()->GetFocusedView());
+
+  test_view_bar->AcceleratorPressed(test_view_bar->escape_key());
+  EXPECT_TRUE(widget_main->IsActive());
+  EXPECT_FALSE(widget_bar->IsActive());
+
+  widget_bar->CloseNow();
+  widget_bar.reset();
+
+  widget_main->CloseNow();
+  widget_main.reset();
+}
+
 TEST_F(AccessiblePaneViewTest, TwoSetPaneFocus) {
   TestBarView* test_view = new TestBarView();
   TestBarView* test_view_2 = new TestBarView();
