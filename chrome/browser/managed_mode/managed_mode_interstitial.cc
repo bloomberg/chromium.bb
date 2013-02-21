@@ -8,8 +8,11 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/ui/webui/managed_user_passphrase_dialog.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -69,6 +72,7 @@ ManagedModeInterstitial::ManagedModeInterstitial(
     const base::Callback<void(bool)>& callback)
     : web_contents_(web_contents),
       url_(url),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       callback_(callback) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
@@ -129,7 +133,19 @@ void ManagedModeInterstitial::CommandReceived(const std::string& command) {
     UMA_HISTOGRAM_ENUMERATION("ManagedMode.BlockingInterstitialCommand",
                               PREVIEW,
                               HISTOGRAM_BOUNDING_VALUE);
-    interstitial_page_->Proceed();
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+    ManagedUserService* service =
+        ManagedUserServiceFactory::GetForProfile(profile);
+    if (service->IsElevated()) {
+      OnAuthorizationResult(true);
+      return;
+    }
+    // Will be deleted automatically when the dialog is closed.
+    new ManagedUserPassphraseDialog(
+        web_contents_,
+        base::Bind(&ManagedModeInterstitial::OnAuthorizationResult,
+                   weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -158,6 +174,11 @@ void ManagedModeInterstitial::OnProceed() {
 
 void ManagedModeInterstitial::OnDontProceed() {
   DispatchContinueRequest(false);
+}
+
+void ManagedModeInterstitial::OnAuthorizationResult(bool success) {
+  if (success)
+    interstitial_page_->Proceed();
 }
 
 void ManagedModeInterstitial::DispatchContinueRequest(bool continue_request) {

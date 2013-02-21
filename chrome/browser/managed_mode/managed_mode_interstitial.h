@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "googleurl/src/gurl.h"
 
@@ -46,6 +47,9 @@ class ManagedModeInterstitial : public content::InterstitialPageDelegate {
   virtual void OnProceed() OVERRIDE;
   virtual void OnDontProceed() OVERRIDE;
 
+  // Will be called when the passphrase dialog is closed, which is shown after
+  // clicking the preview button.
+  void OnAuthorizationResult(bool success);
   void DispatchContinueRequest(bool continue_request);
 
   // Owns the interstitial, which owns us.
@@ -57,6 +61,7 @@ class ManagedModeInterstitial : public content::InterstitialPageDelegate {
   std::string languages_;
   GURL url_;
 
+  base::WeakPtrFactory<ManagedModeInterstitial> weak_ptr_factory_;
   base::Callback<void(bool)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagedModeInterstitial);
