@@ -2364,3 +2364,8 @@
    fun:-[NSButtonCell drawBezelWithFrame:inView:]
    ...
 }
+{
+   bug_177540
+   Memcheck:Uninitialized
+   fun:_ZN3WTF20TCMalloc_ThreadCache10DeallocateENS_11HardenedSLLEm
+}
