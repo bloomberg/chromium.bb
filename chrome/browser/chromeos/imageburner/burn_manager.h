@@ -160,6 +160,18 @@ class StateMachine {
 };
 
 // This is a system-wide singleton class to manage burning the recovery media.
+// Here is how the burning image procedure works:
+// 0) Choose the device the image to be burned (manually via web-ui).
+// 1) Create ImageDir, which is a working directory for the procedure.
+// 2) Download the config file.
+//   2-1) Fetch the config file from the server.
+//   2-2) Parse the config file content, and extract url and name of the image
+//        file.
+// 3) Fetch the image file.
+// 4) Burn the image to the device.
+//   4-1) Unzip the fetched image file.
+//   4-2) Unmount the device from file system.
+//   4-3) Copy the unzipped file to the device directly.
 // Currently, this only provides some methods to start/cancel background tasks,
 // and some accessors to obtain the current status. Other functions are
 // distributed among BurnController and BurnLibrary.
@@ -169,21 +181,39 @@ class BurnManager : public net::URLFetcherDelegate,
                     public BurnLibrary::Observer {
  public:
 
-  class Delegate : public base::SupportsWeakPtr<Delegate> {
+  // Interface for classes that need to observe events for the burning image
+  // tasks.
+  class Observer {
    public:
+    // Triggered when the creating a ImageDir is done.
+    // The status of the creating the directory is passed to |success|.
     virtual void OnImageDirCreated(bool success) = 0;
+
+    // Triggered when the fetching of the config file is done.
+    // If it is successfully done, |success| is set to true, and
+    // |image_file_name| and |image_download_url| is set to the name of
+    // of the image file for this device, and the url to download the file
+    // respectively.
+    // If failed, |success| is set to false, and remaining two arguments
+    // are set to empty.
     virtual void OnConfigFileFetched(bool success,
                                      const std::string& image_file_name,
                                      const GURL& image_download_url) = 0;
-  };
 
-  class Observer {
-   public:
-    virtual void OnDownloadUpdated(int64 received_bytes,
-                                   int64 total_bytes,
-                                   const base::TimeDelta& time_remaining) = 0;
-    virtual void OnDownloadCancelled() = 0;
-    virtual void OnDownloadCompleted() = 0;
+    // Triggered during the image file downloading periodically.
+    // |estimated_remaining_time| is the remaining duration to download the
+    // remaining content estimated based on the elapsed time.
+    virtual void OnImageFileFetchDownloadProgressUpdated(
+        int64 received_bytes,
+        int64 total_bytes,
+        const base::TimeDelta& estimated_remaining_time) = 0;
+
+    // Triggered when the fetching of the image file is done.
+    // The result status is passed to |success|.
+    virtual void OnImageFileFetched(bool success) = 0;
+
+    // Triggered during the burning the image to the device.
+    // See also BurnLibrary's comment for more details.
     virtual void OnBurnProgressUpdated(BurnEvent event,
                                        const ImageBurnStatus& status) = 0;
   };
@@ -206,7 +236,7 @@ class BurnManager : public net::URLFetcherDelegate,
 
   // Creates URL image should be fetched from.
   // Must be called from UI thread.
-  void FetchConfigFile(Delegate* delegate);
+  void FetchConfigFile();
 
   // Fetch a zipped recovery image.
   void FetchImage(const GURL& image_url, const base::FilePath& file_path);
@@ -236,7 +266,7 @@ class BurnManager : public net::URLFetcherDelegate,
 
   // Creates directory image will be downloaded to.
   // Must be called from FILE thread.
-  void CreateImageDir(Delegate* delegate);
+  void CreateImageDir();
 
   // Returns directory image should be dopwnloaded to.
   // The directory has to be previously created.
@@ -263,7 +293,7 @@ class BurnManager : public net::URLFetcherDelegate,
   BurnManager();
   virtual ~BurnManager();
 
-  void OnImageDirCreated(Delegate* delegate, bool success);
+  void OnImageDirCreated(bool success);
   void ConfigFileFetched(bool fetched, const std::string& content);
 
   base::WeakPtrFactory<BurnManager> weak_ptr_factory_;
@@ -276,7 +306,6 @@ class BurnManager : public net::URLFetcherDelegate,
   bool config_file_fetched_;
   std::string image_file_name_;
   GURL image_download_url_;
-  std::vector<base::WeakPtr<Delegate> > downloaders_;
 
   scoped_ptr<StateMachine> state_machine_;
 

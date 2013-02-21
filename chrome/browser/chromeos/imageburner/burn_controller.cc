@@ -35,7 +35,6 @@ class BurnControllerImpl
       public disks::DiskMountManager::Observer,
       public NetworkLibrary::NetworkManagerObserver,
       public StateMachine::Observer,
-      public BurnManager::Delegate,
       public BurnManager::Observer {
  public:
   explicit BurnControllerImpl(BurnController::Delegate* delegate)
@@ -100,26 +99,56 @@ class BurnControllerImpl
   }
 
   // BurnManager::Observer override.
-  virtual void OnDownloadUpdated(
-      int64 received_bytes,
-      int64 total_bytes,
-      const base::TimeDelta& time_remaining) OVERRIDE {
-    if (state_machine_->state() == StateMachine::DOWNLOADING) {
-      delegate_->OnProgressWithRemainingTime(DOWNLOADING,
-                                             received_bytes,
-                                             total_bytes,
-                                             time_remaining);
+  virtual void OnImageDirCreated(bool success) OVERRIDE {
+    if (!success) {
+      // Failed to create the directory. Finish the burning process
+      // with failure state.
+      DownloadCompleted(false);
+      return;
+    }
+
+    zip_image_file_path_ =
+        burn_manager_->GetImageDir().Append(kImageZipFileName);
+    burn_manager_->FetchConfigFile();
+  }
+
+  // Part of BurnManager::Delegate interface.
+  virtual void OnConfigFileFetched(bool success,
+                                   const std::string& image_file_name,
+                                   const GURL& image_download_url) OVERRIDE {
+    if (!success) {
+      DownloadCompleted(false);
+      return;
+    }
+    image_file_name_ = image_file_name;
+
+    if (state_machine_->download_finished()) {
+      BurnImage();
+      return;
+    }
+
+    if (!state_machine_->download_started()) {
+      burn_manager_->FetchImage(image_download_url, zip_image_file_path_);
+      state_machine_->OnDownloadStarted();
     }
   }
 
   // BurnManager::Observer override.
-  virtual void OnDownloadCancelled() OVERRIDE {
-    DownloadCompleted(false);
+  virtual void OnImageFileFetchDownloadProgressUpdated(
+      int64 received_bytes,
+      int64 total_bytes,
+      const base::TimeDelta& estimated_remaining_time) OVERRIDE {
+    if (state_machine_->state() == StateMachine::DOWNLOADING) {
+      delegate_->OnProgressWithRemainingTime(DOWNLOADING,
+                                             received_bytes,
+                                             total_bytes,
+                                             estimated_remaining_time);
+    }
   }
 
   // BurnManager::Observer override.
-  virtual void OnDownloadCompleted() OVERRIDE {
-    DownloadCompleted(true);
+  virtual void OnImageFileFetched(bool success) OVERRIDE {
+    DownloadCompleted(success);
   }
 
   // BurnManager::Observer override.
@@ -163,38 +192,6 @@ class BurnControllerImpl
   virtual void OnError(int error_message_id) OVERRIDE {
     delegate_->OnFail(error_message_id);
     working_ = false;
-  }
-
-  // Part of BurnManager::Delegate interface.
-  virtual void OnImageDirCreated(bool success) OVERRIDE {
-    if (success) {
-      zip_image_file_path_ =
-          burn_manager_->GetImageDir().Append(kImageZipFileName);
-      burn_manager_->FetchConfigFile(this);
-    } else {
-      DownloadCompleted(success);
-    }
-  }
-
-  // Part of BurnManager::Delegate interface.
-  virtual void OnConfigFileFetched(bool success,
-                                   const std::string& image_file_name,
-                                   const GURL& image_download_url) OVERRIDE {
-    if (!success) {
-      DownloadCompleted(false);
-      return;
-    }
-    image_file_name_ = image_file_name;
-
-    if (state_machine_->download_finished()) {
-      BurnImage();
-      return;
-    }
-
-    if (!state_machine_->download_started()) {
-      burn_manager_->FetchImage(image_download_url, zip_image_file_path_);
-      state_machine_->OnDownloadStarted();
-    }
   }
 
   // BurnController override.
@@ -256,7 +253,7 @@ class BurnControllerImpl
     // config file
     delegate_->OnProgress(DOWNLOADING, 0, 0);
     if (burn_manager_->GetImageDir().empty()) {
-      burn_manager_->CreateImageDir(this);
+      burn_manager_->CreateImageDir();
     } else {
       OnImageDirCreated(true);
     }
