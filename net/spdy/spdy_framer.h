@@ -441,8 +441,8 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // |len| is the length of the data
   // |flags| is the flags to use with the data.
   //    To mark this frame as the last data frame, enable DATA_FLAG_FIN.
-  SpdyDataFrame* CreateDataFrame(SpdyStreamId stream_id, const char* data,
-                                 uint32 len, SpdyDataFlags flags) const;
+  SpdyFrame* CreateDataFrame(SpdyStreamId stream_id, const char* data,
+                             uint32 len, SpdyDataFlags flags) const;
   SpdySerializedFrame* SerializeData(const SpdyDataIR& data) const;
   // Serializes just the data frame header, excluding actual data payload.
   SpdySerializedFrame* SerializeDataFrameHeader(const SpdyDataIR& data) const;
@@ -637,6 +637,9 @@ class NET_EXPORT_PRIVATE SpdyFramer {
 
   // The length field of the frame currently being read.
   uint32 current_frame_length_;
+
+  // The stream ID field of the frame currently being read, if applicable.
+  SpdyStreamId current_frame_stream_id_;
 
   // Scratch space for handling SETTINGS frames.
   // TODO(hkhalil): Unify memory for this scratch space with

@@ -104,7 +104,7 @@ class NET_EXPORT_PRIVATE SpdyStream
     FrameType type;
     union {
       SpdyHeaderBlock* header_block;
-      SpdyDataFrame* data_frame;
+      SpdyFrame* data_frame;
     };
   } PendingFrame;
 

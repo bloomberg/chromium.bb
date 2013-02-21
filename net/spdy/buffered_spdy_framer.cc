@@ -278,10 +278,10 @@ SpdyFrame* BufferedSpdyFramer::CreateCredentialFrame(
   return spdy_framer_.CreateCredentialFrame(credential);
 }
 
-SpdyDataFrame* BufferedSpdyFramer::CreateDataFrame(SpdyStreamId stream_id,
-                                                   const char* data,
-                                                   uint32 len,
-                                                   SpdyDataFlags flags) {
+SpdyFrame* BufferedSpdyFramer::CreateDataFrame(SpdyStreamId stream_id,
+                                               const char* data,
+                                               uint32 len,
+                                               SpdyDataFlags flags) {
   return spdy_framer_.CreateDataFrame(stream_id, data, len, flags);
 }
 

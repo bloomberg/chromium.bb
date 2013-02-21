@@ -176,10 +176,10 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
       uint32 delta_window_size) const;
   SpdyFrame* CreateCredentialFrame(
       const SpdyCredential& credential) const;
-  SpdyDataFrame* CreateDataFrame(SpdyStreamId stream_id,
-                                 const char* data,
-                                 uint32 len,
-                                 SpdyDataFlags flags);
+  SpdyFrame* CreateDataFrame(SpdyStreamId stream_id,
+                             const char* data,
+                             uint32 len,
+                             SpdyDataFlags flags);
   SpdyPriority GetHighestPriority() const;
 
   // Returns the (minimum) size of control frames (sans variable-length

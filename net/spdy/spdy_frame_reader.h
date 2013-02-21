@@ -90,6 +90,9 @@ class NET_EXPORT_PRIVATE SpdyFrameReader {
   // Returns true on success, false otherwise.
   bool Seek(size_t size);
 
+  // Rewinds this reader to the beginning of the frame.
+  void Rewind() { ofs_ = 0; }
+
   // Returns true if the entirety of the underlying buffer has been read via
   // Read*() calls.
   bool IsDoneReading() const;

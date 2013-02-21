@@ -604,7 +604,7 @@ int SpdyStream::WriteStreamData(IOBuffer* data,
   DCHECK_GT(io_state_, STATE_SEND_HEADERS_COMPLETE);
   CHECK_GT(stream_id_, 0u);
 
-  SpdyDataFrame* data_frame = session_->CreateDataFrame(
+  SpdyFrame* data_frame = session_->CreateDataFrame(
       stream_id_, data, length, flags);
   if (!data_frame)
     return ERR_IO_PENDING;

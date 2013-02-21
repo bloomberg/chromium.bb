@@ -102,7 +102,7 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
     return false;
   }
 
-  void OnDataFrameHeader(const SpdyDataFrame* frame) {
+  void OnDataFrameHeader(const SpdyFrame* frame) {
     LOG(FATAL) << "Unexpected OnDataFrameHeader call.";
   }
 

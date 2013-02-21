@@ -465,7 +465,7 @@ void SpdySM::SendDataFrameImpl(uint32 stream_id, const char* data, int64 len,
   //                 priority queue.  Compression needs to be done
   //                 with late binding.
   if (len == 0) {
-    SpdyDataFrame* fdf = buffered_spdy_framer_->CreateDataFrame(
+    SpdyFrame* fdf = buffered_spdy_framer_->CreateDataFrame(
         stream_id, data, len, flags);
     EnqueueDataFrame(new SpdyFrameDataFrame(fdf));
     return;
@@ -482,7 +482,7 @@ void SpdySM::SendDataFrameImpl(uint32 stream_id, const char* data, int64 len,
     if ((size < len) && (flags & DATA_FLAG_FIN))
       chunk_flags = static_cast<SpdyDataFlags>(chunk_flags & ~DATA_FLAG_FIN);
 
-    SpdyDataFrame* fdf = buffered_spdy_framer_->CreateDataFrame(
+    SpdyFrame* fdf = buffered_spdy_framer_->CreateDataFrame(
         stream_id, data, size, chunk_flags);
     EnqueueDataFrame(new SpdyFrameDataFrame(fdf));
 

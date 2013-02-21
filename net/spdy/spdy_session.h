@@ -228,9 +228,9 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
 
   // Write a data frame to the stream.
   // Used to create and queue a data frame for the given stream.
-  SpdyDataFrame* CreateDataFrame(SpdyStreamId stream_id,
-                                 net::IOBuffer* data, int len,
-                                 SpdyDataFlags flags);
+  SpdyFrame* CreateDataFrame(SpdyStreamId stream_id,
+                             net::IOBuffer* data, int len,
+                             SpdyDataFlags flags);
 
   // Close a stream.
   void CloseStream(SpdyStreamId stream_id, int status);

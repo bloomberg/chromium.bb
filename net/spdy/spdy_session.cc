@@ -669,9 +669,9 @@ SpdyFrame* SpdySession::CreateHeadersFrame(
   return frame.release();
 }
 
-SpdyDataFrame* SpdySession::CreateDataFrame(SpdyStreamId stream_id,
-                                            net::IOBuffer* data, int len,
-                                            SpdyDataFlags flags) {
+SpdyFrame* SpdySession::CreateDataFrame(SpdyStreamId stream_id,
+                                        net::IOBuffer* data, int len,
+                                        SpdyDataFlags flags) {
   // Find our stream
   CHECK(IsStreamActive(stream_id));
   scoped_refptr<SpdyStream> stream = active_streams_[stream_id];
@@ -717,7 +717,7 @@ SpdyDataFrame* SpdySession::CreateDataFrame(SpdyStreamId stream_id,
 
   // TODO(mbelshe): reduce memory copies here.
   DCHECK(buffered_spdy_framer_.get());
-  scoped_ptr<SpdyDataFrame> frame(
+  scoped_ptr<SpdyFrame> frame(
       buffered_spdy_framer_->CreateDataFrame(
           stream_id, data->data(), len, flags));
 

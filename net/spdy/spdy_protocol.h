@@ -870,37 +870,6 @@ class SpdyFrame {
   DISALLOW_COPY_AND_ASSIGN(SpdyFrame);
 };
 
-// A Data Frame.
-class SpdyDataFrame : public SpdyFrame {
- public:
-  SpdyDataFrame() : SpdyFrame(size()) {}
-  SpdyDataFrame(char* data, bool owns_buffer)
-      : SpdyFrame(data, owns_buffer) {}
-
-  SpdyStreamId stream_id() const {
-    return ntohl(frame_->data_.stream_id_) & kStreamIdMask;
-  }
-
-  // Note that setting the stream id sets the control bit to false.
-  // As stream id should always be set, this means the control bit
-  // should always be set correctly.
-  void set_stream_id(SpdyStreamId id) {
-    DCHECK_EQ(0u, (id & ~kStreamIdMask));
-    frame_->data_.stream_id_ = htonl(id & kStreamIdMask);
-  }
-
-  // Returns the size of the SpdyFrameBlock structure.
-  // Note: this is not the size of the SpdyDataFrame class.
-  static size_t size() { return SpdyFrame::kHeaderSize; }
-
-  const char* payload() const {
-    return reinterpret_cast<const char*>(frame_) + size();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SpdyDataFrame);
-};
-
 }  // namespace net
 
 #endif  // NET_SPDY_SPDY_PROTOCOL_H_
