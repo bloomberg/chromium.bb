@@ -24,6 +24,7 @@
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/threading/thread.h"
 #include "base/threading/worker_pool.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
@@ -169,7 +170,7 @@ AMDVideoCardType GetAMDVideocardType();
 
 // Collects information about the level of D3D11 support and records it in
 // the UMA stats. Records no stats when D3D11 in not supported at all.
-void CollectD3D11Support() {
+void CollectD3D11Support(HMODULE d3d11_module) {
   TRACE_EVENT0("gpu", "CollectD3D11Support");
 
   typedef HRESULT (WINAPI *D3D11CreateDeviceFunc)(
@@ -200,25 +201,15 @@ void CollectD3D11Support() {
     NUM_FEATURE_LEVELS
   };
 
-  // Windows XP is expected to not support D3D11.
-  if (base::win::GetVersion() <= base::win::VERSION_XP)
-    return;
-
-  // Creating a D3D11 device when DisplayLink is installed causes D3D11 to
-  // crash.
-  if (GetModuleHandle(L"dlumd32.dll"))
-    return;
-
   FeatureLevel feature_level = FEATURE_LEVEL_UNKNOWN;
   UINT bgra_support = 0;
 
-  base::ScopedNativeLibrary module(base::FilePath(L"d3d11.dll"));
-  if (!module.is_valid()) {
+  if (!d3d11_module) {
     feature_level = FEATURE_LEVEL_NO_D3D11_DLL;
   } else {
     D3D11CreateDeviceFunc create_func =
         reinterpret_cast<D3D11CreateDeviceFunc>(
-            module.GetFunctionPointer("D3D11CreateDevice"));
+            GetProcAddress(d3d11_module, "D3D11CreateDevice"));
     if (!create_func) {
       feature_level = FEATURE_LEVEL_NO_CREATE_DEVICE_ENTRY_POINT;
     } else {
@@ -295,13 +286,32 @@ void CollectD3D11Support() {
       (bgra_support & D3D11_FORMAT_SUPPORT_RENDER_TARGET) != 0);
 }
 
+void CollectD3D11SupportDelayed(
+    const scoped_refptr<base::MessageLoopProxy> main_loop) {
+  // Windows XP is expected to not support D3D11.
+  if (base::win::GetVersion() <= base::win::VERSION_XP)
+    return;
+
+  // This is leaked in case it is hooked by a third party DLL.
+  HMODULE d3d11_module = LoadLibrary(L"d3d11.dll");
+
+  // Collect the D3D11 stats after a delay to allow third party DLLs
+  // to hook D3D11 before we try to use it. Also do it on the main thread
+  // in case the third party DLL does this on the main thread.
+  main_loop->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(CollectD3D11Support, d3d11_module),
+      base::TimeDelta::FromSeconds(10));
+}
+
 bool CollectDriverInfoD3D(const std::wstring& device_id,
                           content::GPUInfo* gpu_info) {
   TRACE_EVENT0("gpu", "CollectDriverInfoD3D");
 
   base::WorkerPool::PostTask(
       FROM_HERE,
-      base::Bind(CollectD3D11Support),
+      base::Bind(CollectD3D11SupportDelayed,
+                 base::MessageLoopProxy::current()),
       false);
 
   // create device info for the display device
