@@ -156,7 +156,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpenPopupSmall) {
   EXPECT_TRUE(WaitForTabsAndPopups(browser(), num_tabs, num_popups, 0));
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PopupBlockingExtension) {
+// Disabled on Windows. Often times out or fails: crbug.com/177530
+#if defined(OS_WIN)
+#define MAYBE_PopupBlockingExtension DISABLED_PopupBlockingExtension
+#else
+#define MAYBE_PopupBlockingExtension PopupBlockingExtension
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_PopupBlockingExtension) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
 
