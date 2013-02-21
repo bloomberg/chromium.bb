@@ -56,4 +56,9 @@ void EnableDevToolsFrontendTesting() {
   DevToolsClient::EnableDevToolsFrontendTesting();
 }
 
+int GetLocalSessionHistoryLength(RenderView* render_view) {
+  return static_cast<RenderViewImpl*>(render_view)
+      ->GetLocalSessionHistoryLengthForTesting();
+}
+
 }  // namespace content

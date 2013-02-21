@@ -357,8 +357,7 @@ void WebKitTestRunner::closeRemainingWindows() {
 }
 
 int WebKitTestRunner::navigationEntryCount() {
-  // TODO(jochen): implement this.
-  return 0;
+  return GetLocalSessionHistoryLength(render_view());
 }
 
 void WebKitTestRunner::goToOffset(int offset) {

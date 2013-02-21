@@ -6673,6 +6673,10 @@ skia::RefPtr<SkPicture> RenderViewImpl::CapturePicture() {
 }
 #endif
 
+unsigned RenderViewImpl::GetLocalSessionHistoryLengthForTesting() const {
+  return history_list_length_;
+}
+
 void RenderViewImpl::OnReleaseDisambiguationPopupDIB(
     TransportDIB::Handle dib_handle) {
   TransportDIB* dib = TransportDIB::CreateWithHandle(dib_handle);
