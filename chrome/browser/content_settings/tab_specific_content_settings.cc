@@ -263,7 +263,7 @@ void TabSpecificContentSettings::OnContentBlocked(
       << "Geolocation settings handled by OnGeolocationPermissionSet";
   if (type < 0 || type >= CONTENT_SETTINGS_NUM_TYPES)
     return;
-  content_accessed_[type] = true;
+  content_accessed_[type] = false;
   // Unless UI for resource content settings is enabled, ignore the resource
   // identifier.
   // TODO(bauerb): The UI to unblock content should be disabled if the content
@@ -300,8 +300,18 @@ void TabSpecificContentSettings::OnContentBlocked(
 void TabSpecificContentSettings::OnContentAccessed(ContentSettingsType type) {
   DCHECK(type != CONTENT_SETTINGS_TYPE_GEOLOCATION)
       << "Geolocation settings handled by OnGeolocationPermissionSet";
+  bool access_changed = false;
+  if (content_blocked_[type]) {
+    content_blocked_[type] = false;
+    access_changed = true;
+  }
+
   if (!content_accessed_[type]) {
     content_accessed_[type] = true;
+    access_changed = true;
+  }
+
+  if (access_changed) {
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
         content::Source<WebContents>(web_contents()),

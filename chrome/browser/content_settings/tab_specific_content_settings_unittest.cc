@@ -187,7 +187,7 @@ TEST_F(TabSpecificContentSettingsTest, AllowedContent) {
                                     "C=D",
                                     options,
                                     true);
-  ASSERT_TRUE(
+  ASSERT_FALSE(
       content_settings->IsContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES));
   ASSERT_TRUE(
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
@@ -202,7 +202,7 @@ TEST_F(TabSpecificContentSettingsTest, AllowedContent) {
   // Record a blocked mediastream access request.
   content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM,
                                      std::string());
-  ASSERT_TRUE(
+  ASSERT_FALSE(
       content_settings->IsContentAccessed(CONTENT_SETTINGS_TYPE_MEDIASTREAM));
   ASSERT_TRUE(
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM));
@@ -261,4 +261,28 @@ TEST_F(TabSpecificContentSettingsTest, SiteDataObserver) {
                                           UTF8ToUTF16("name"),
                                           UTF8ToUTF16("display_name"),
                                           blocked_by_policy);
+}
+
+TEST_F(TabSpecificContentSettingsTest, BlockThenAllowMediaAccess) {
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
+  ContentSettingsType type = CONTENT_SETTINGS_TYPE_MEDIASTREAM;
+  content_settings->OnContentBlocked(type, std::string());
+  EXPECT_TRUE(content_settings->IsContentBlocked(type));
+  EXPECT_FALSE(content_settings->IsContentAccessed(type));
+  content_settings->OnContentAccessed(type);
+  EXPECT_TRUE(content_settings->IsContentAccessed(type));
+  EXPECT_FALSE(content_settings->IsContentBlocked(type));
+}
+
+TEST_F(TabSpecificContentSettingsTest, AllowThenBlockMediaAccess) {
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
+  ContentSettingsType type = CONTENT_SETTINGS_TYPE_MEDIASTREAM;
+  content_settings->OnContentAccessed(type);
+  EXPECT_TRUE(content_settings->IsContentAccessed(type));
+  EXPECT_FALSE(content_settings->IsContentBlocked(type));
+  content_settings->OnContentBlocked(type, std::string());
+  EXPECT_TRUE(content_settings->IsContentBlocked(type));
+  EXPECT_FALSE(content_settings->IsContentAccessed(type));
 }
