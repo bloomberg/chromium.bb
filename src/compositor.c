@@ -349,6 +349,81 @@ weston_surface_to_global_float(struct weston_surface *surface,
 }
 
 WL_EXPORT void
+weston_transformed_coord(int width, int height,
+			 enum wl_output_transform transform,
+			 float sx, float sy, float *bx, float *by)
+{
+	switch (transform) {
+	case WL_OUTPUT_TRANSFORM_NORMAL:
+	default:
+		*bx = sx;
+		*by = sy;
+		break;
+	case WL_OUTPUT_TRANSFORM_FLIPPED:
+		*bx = width - sx;
+		*by = sy;
+		break;
+	case WL_OUTPUT_TRANSFORM_90:
+		*bx = height - sy;
+		*by = sx;
+		break;
+	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+		*bx = height - sy;
+		*by = width - sx;
+		break;
+	case WL_OUTPUT_TRANSFORM_180:
+		*bx = width - sx;
+		*by = height - sy;
+		break;
+	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
+		*bx = sx;
+		*by = height - sy;
+		break;
+	case WL_OUTPUT_TRANSFORM_270:
+		*bx = sy;
+		*by = width - sx;
+		break;
+	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		*bx = sy;
+		*by = sx;
+		break;
+	}
+}
+
+WL_EXPORT pixman_box32_t
+weston_transformed_rect(int width, int height,
+			enum wl_output_transform transform,
+			pixman_box32_t rect)
+{
+	float x1, x2, y1, y2;
+
+	pixman_box32_t ret;
+
+	weston_transformed_coord(width, height, transform,
+				 rect.x1, rect.y1, &x1, &y1);
+	weston_transformed_coord(width, height, transform,
+				 rect.x2, rect.y2, &x2, &y2);
+
+	if (x1 <= x2) {
+		ret.x1 = x1;
+		ret.x2 = x2;
+	} else {
+		ret.x1 = x2;
+		ret.x2 = x1;
+	}
+
+	if (y1 <= y2) {
+		ret.y1 = y1;
+		ret.y2 = y2;
+	} else {
+		ret.y1 = y2;
+		ret.y2 = y1;
+	}
+
+	return ret;
+}
+
+WL_EXPORT void
 weston_surface_to_buffer_float(struct weston_surface *surface,
 			       float sx, float sy, float *bx, float *by)
 {
@@ -2946,6 +3021,29 @@ log_uname(void)
 
 	weston_log("OS: %s, %s, %s, %s\n", usys.sysname, usys.release,
 						usys.version, usys.machine);
+}
+
+WL_EXPORT int
+weston_environment_get_fd(const char *env)
+{
+	char *e, *end;
+	int fd, flags;
+
+	e = getenv(env);
+	if (!e)
+		return -1;
+	fd = strtol(e, &end, 0);
+	if (*end != '\0')
+		return -1;
+
+	flags = fcntl(fd, F_GETFD);
+	if (flags == -1)
+		return -1;
+
+	fcntl(fd, F_SETFD, flags | FD_CLOEXEC);
+	unsetenv(env);
+
+	return fd;
 }
 
 WL_EXPORT int

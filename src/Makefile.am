@@ -34,7 +34,8 @@ weston_SOURCES =				\
 	input-method-server-protocol.h		\
 	workspaces-protocol.c			\
 	workspaces-server-protocol.h		\
-	util.c					\
+	bindings.c				\
+	animation.c				\
 	gl-renderer.h				\
 	noop-renderer.c				\
 	pixman-renderer.c			\
