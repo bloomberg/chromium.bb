@@ -201,29 +201,19 @@ scoped_ptr<FormStructure> FakeUserSubmittedFormStructure() {
 
 class TestAutofillManagerDelegate : public AutofillManagerDelegate {
  public:
-  explicit TestAutofillManagerDelegate(
-      content::BrowserContext* browser_context)
-      : browser_context_(browser_context),
-        request_autocomplete_dialog_open_(false),
+  TestAutofillManagerDelegate()
+      : request_autocomplete_dialog_open_(false),
         autocheckout_bubble_shown_(false) {
   }
 
   virtual ~TestAutofillManagerDelegate() {
   }
 
-  virtual content::BrowserContext* GetBrowserContext() const OVERRIDE {
-    return browser_context_;
-  }
-
-  virtual content::BrowserContext* GetOriginalBrowserContext() const OVERRIDE {
-    return browser_context_;
-  }
-
-  virtual Profile* GetOriginalProfile() const OVERRIDE {
+  virtual InfoBarService* GetInfoBarService() OVERRIDE {
     return NULL;
   }
 
-  virtual InfoBarService* GetInfoBarService() OVERRIDE {
+  virtual PersonalDataManager* GetPersonalDataManager() OVERRIDE {
     return NULL;
   }
 
@@ -295,7 +285,6 @@ class TestAutofillManagerDelegate : public AutofillManagerDelegate {
   }
 
  private:
-  content::BrowserContext* browser_context_;
   bool request_autocomplete_dialog_open_;
   bool autocheckout_bubble_shown_;
   scoped_ptr<FormStructure> user_supplied_data_;
@@ -393,8 +382,7 @@ class AutocheckoutManagerTest : public ChromeRenderViewHostTestHarness {
  private:
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
-    autofill_manager_delegate_.reset(
-        new TestAutofillManagerDelegate(browser_context()));
+    autofill_manager_delegate_.reset(new TestAutofillManagerDelegate());
     autofill_manager_ = new TestAutofillManager(
         web_contents(),
         autofill_manager_delegate_.get());

@@ -198,8 +198,8 @@ AutofillManager::AutofillManager(content::WebContents* web_contents,
                                  autofill::AutofillManagerDelegate* delegate)
     : content::WebContentsObserver(web_contents),
       manager_delegate_(delegate),
-      personal_data_(NULL),
-      download_manager_(delegate->GetBrowserContext(), this),
+      personal_data_(delegate->GetPersonalDataManager()),
+      download_manager_(web_contents->GetBrowserContext(), this),
       disable_download_manager_requests_(false),
       autocomplete_history_manager_(web_contents),
       autocheckout_manager_(this),
@@ -212,9 +212,6 @@ AutofillManager::AutofillManager(content::WebContents* web_contents,
       user_did_edit_autofilled_field_(false),
       password_generation_enabled_(false),
       external_delegate_(NULL) {
-  // |personal_data_| is NULL when using test-enabled WebContents.
-  personal_data_ = PersonalDataManagerFactory::GetForProfile(
-      delegate->GetOriginalProfile());
   RegisterWithSyncService();
   registrar_.Init(manager_delegate_->GetPrefs());
   registrar_.Add(
@@ -998,7 +995,7 @@ AutofillManager::AutofillManager(content::WebContents* web_contents,
     : content::WebContentsObserver(web_contents),
       manager_delegate_(delegate),
       personal_data_(personal_data),
-      download_manager_(delegate->GetBrowserContext(), this),
+      download_manager_(web_contents->GetBrowserContext(), this),
       disable_download_manager_requests_(true),
       autocomplete_history_manager_(web_contents),
       autocheckout_manager_(this),

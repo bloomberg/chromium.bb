@@ -13,7 +13,6 @@ class PasswordGenerator;
 }
 
 namespace content {
-class BrowserContext;
 struct PasswordForm;
 struct SSLStatus;
 }
@@ -27,8 +26,8 @@ class AutofillMetrics;
 class FormStructure;
 class GURL;
 class InfoBarService;
+class PersonalDataManager;
 class PrefService;
-class Profile;
 class ProfileSyncServiceBase;
 
 struct FormData;
@@ -54,18 +53,11 @@ class AutofillManagerDelegate {
  public:
   virtual ~AutofillManagerDelegate() {}
 
-  // Gets the BrowserContext associated with the delegate.
-  virtual content::BrowserContext* GetBrowserContext() const = 0;
-
-  // Gets the BrowserContext associated with the delegate, or if in an
-  // incognito mode, the associated (original) BrowserContext.
-  virtual content::BrowserContext* GetOriginalBrowserContext() const = 0;
-
-  // TODO(joi): Remove, this is temporary.
-  virtual Profile* GetOriginalProfile() const = 0;
-
   // Gets the infobar service associated with the delegate.
   virtual InfoBarService* GetInfoBarService() = 0;
+
+  // Gets the PersonalDataManager instance associated with the delegate.
+  virtual PersonalDataManager* GetPersonalDataManager() = 0;
 
   // Gets the preferences associated with the delegate.
   virtual PrefService* GetPrefs() = 0;

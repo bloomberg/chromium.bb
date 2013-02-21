@@ -8,6 +8,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/autofill/password_generator.h"
+#include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -34,22 +35,15 @@ TabAutofillManagerDelegate::TabAutofillManagerDelegate(
   DCHECK(web_contents);
 }
 
-content::BrowserContext* TabAutofillManagerDelegate::GetBrowserContext() const {
-  return web_contents_->GetBrowserContext();
-}
-
-content::BrowserContext*
-TabAutofillManagerDelegate::GetOriginalBrowserContext() const {
-  return GetOriginalProfile();
-}
-
-Profile* TabAutofillManagerDelegate::GetOriginalProfile() const {
-  return Profile::FromBrowserContext(web_contents_->GetBrowserContext())->
-      GetOriginalProfile();
-}
-
 InfoBarService* TabAutofillManagerDelegate::GetInfoBarService() {
   return InfoBarService::FromWebContents(web_contents_);
+}
+
+PersonalDataManager* TabAutofillManagerDelegate::GetPersonalDataManager() {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+  return PersonalDataManagerFactory::GetForProfile(
+      profile->GetOriginalProfile());
 }
 
 PrefService* TabAutofillManagerDelegate::GetPrefs() {

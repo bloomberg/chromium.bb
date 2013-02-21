@@ -30,10 +30,8 @@ class TabAutofillManagerDelegate
   virtual ~TabAutofillManagerDelegate() {}
 
   // AutofillManagerDelegate implementation.
-  virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
-  virtual content::BrowserContext* GetOriginalBrowserContext() const OVERRIDE;
-  virtual Profile* GetOriginalProfile() const OVERRIDE;
   virtual InfoBarService* GetInfoBarService() OVERRIDE;
+  virtual PersonalDataManager* GetPersonalDataManager() OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;
   virtual ProfileSyncServiceBase* GetProfileSyncService() OVERRIDE;
   virtual void HideRequestAutocompleteDialog() OVERRIDE;
