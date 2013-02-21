@@ -221,6 +221,9 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/findbugs/doc': [ # http://crbug.com/157206
         'UNKNOWN',
     ],
+    'third_party/freetype2': [ # http://crbug.com/177319
+        'UNKNOWN',
+    ],
     'third_party/gles2_book': [  # http://crbug.com/98130
         'UNKNOWN',
     ],
