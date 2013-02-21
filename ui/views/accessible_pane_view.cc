@@ -156,15 +156,14 @@ views::FocusTraversable* AccessiblePaneView::GetPaneFocusTraversable() {
 bool AccessiblePaneView::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
 
-  views::View* focused_view = focus_manager_->GetFocusedView();
+  const views::View* focused_view = focus_manager_->GetFocusedView();
   if (!ContainsForFocusSearch(this, focused_view))
     return false;
 
   switch (accelerator.key_code()) {
     case ui::VKEY_ESCAPE:
       RemovePaneFocus();
-      if (!focus_manager_->RestoreFocusedView())
-        focused_view->GetWidget()->Deactivate();
+      focus_manager_->RestoreFocusedView();
       return true;
     case ui::VKEY_LEFT:
       focus_manager_->AdvanceFocus(true);

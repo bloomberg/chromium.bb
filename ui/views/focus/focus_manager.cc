@@ -310,12 +310,12 @@ void FocusManager::StoreFocusedView(bool clear_native_focus) {
     v->SchedulePaint();  // Remove focus border.
 }
 
-bool FocusManager::RestoreFocusedView() {
+void FocusManager::RestoreFocusedView() {
   ViewStorage* view_storage = ViewStorage::GetInstance();
   if (!view_storage) {
     // This should never happen but bug 981648 seems to indicate it could.
     NOTREACHED();
-    return false;
+    return;
   }
 
   View* view = view_storage->RetrieveView(stored_focused_view_storage_id_);
@@ -336,9 +336,7 @@ bool FocusManager::RestoreFocusedView() {
           focus_change_reason_ = kReasonFocusRestore;
       }
     }
-    return true;
   }
-  return false;
 }
 
 void FocusManager::ClearStoredFocusedView() {

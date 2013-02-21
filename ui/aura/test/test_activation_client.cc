@@ -15,8 +15,7 @@ namespace test {
 ////////////////////////////////////////////////////////////////////////////////
 // TestActivationClient, public:
 
-TestActivationClient::TestActivationClient(RootWindow* root_window)
-    : last_active_(NULL) {
+TestActivationClient::TestActivationClient(RootWindow* root_window) {
   client::SetActivationClient(root_window, this);
 }
 
@@ -44,7 +43,6 @@ void TestActivationClient::ActivateWindow(Window* window) {
   if (last_active == window)
     return;
 
-  last_active_ = last_active;
   RemoveActiveWindow(window);
   active_windows_.push_back(window);
   window->parent()->StackChildAtTop(window);
@@ -68,8 +66,6 @@ void TestActivationClient::DeactivateWindow(Window* window) {
       aura::client::GetActivationChangeObserver(window);
   if (observer)
     observer->OnWindowActivated(NULL, window);
-  if (last_active_)
-    ActivateWindow(last_active_);
 }
 
 Window* TestActivationClient::GetActiveWindow() {
@@ -99,9 +95,6 @@ bool TestActivationClient::CanActivateWindow(Window* window) const {
 // TestActivationClient, WindowObserver implementation:
 
 void TestActivationClient::OnWindowDestroyed(Window* window) {
-  if (window == last_active_)
-    last_active_ = NULL;
-
   if (window == GetActiveWindow()) {
     window->RemoveObserver(this);
     active_windows_.pop_back();

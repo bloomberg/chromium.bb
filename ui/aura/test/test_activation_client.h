@@ -49,9 +49,6 @@ class TestActivationClient : public client::ActivationClient,
   // fail.
   std::vector<Window*> active_windows_;
 
-  // The window which was active before the currently active one.
-  Window* last_active_;
-
   ObserverList<client::ActivationChangeObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TestActivationClient);

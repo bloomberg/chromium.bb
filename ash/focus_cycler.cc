@@ -76,12 +76,16 @@ void FocusCycler::RotateFocus(Direction direction) {
 }
 
 bool FocusCycler::FocusWidget(views::Widget* widget) {
-  // Note: It is not necessary to set the focus directly to the pane since that
-  // will be taken care of by the widget activation.
-  widget_activating_ = widget;
-  widget->Activate();
-  widget_activating_ = NULL;
-  return widget->IsActive();
+  views::AccessiblePaneView* view =
+      static_cast<views::AccessiblePaneView*>(widget->GetContentsView());
+  if (view->SetPaneFocusAndFocusDefault()) {
+    widget_activating_ = widget;
+    widget->Activate();
+    widget_activating_ = NULL;
+    if (widget->IsActive())
+      return true;
+  }
+  return false;
 }
 
 }  // namespace internal
