@@ -615,6 +615,9 @@ NetworkMenuIcon::NetworkMenuIcon(Delegate* delegate, Mode mode)
 }
 
 NetworkMenuIcon::~NetworkMenuIcon() {
+  // Remove itself from NetworkIconAnimation's observer list just in case
+  // it has been added before and not been removed yet.
+  NetworkIconAnimation::GetInstance()->RemoveObserver(this);
 }
 
 // Public methods:
