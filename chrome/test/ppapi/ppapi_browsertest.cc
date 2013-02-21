@@ -72,37 +72,6 @@ using content::RenderViewHost;
 #define TEST_PPAPI_NACL_DISALLOWED_SOCKETS(test_name)
 #define TEST_PPAPI_NACL_WITH_SSL_SERVER(test_name)
 #define TEST_PPAPI_NACL_WITH_WS(test_name)
-#elif defined(OS_WIN)  // http://crbug.com/162094
-
-#define TEST_PPAPI_NACL(test_name) \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
-      RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
-    } \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, DISABLED_##test_name) { \
-      RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
-    }
-
-#define TEST_PPAPI_NACL_DISALLOWED_SOCKETS(test_name) \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClTestDisallowedSockets, test_name) { \
-      RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
-    }
-
-#define TEST_PPAPI_NACL_WITH_SSL_SERVER(test_name) \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
-      RunTestWithSSLServer(STRIP_PREFIXES(test_name)); \
-    } \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, DISABLED_##test_name) { \
-      RunTestWithSSLServer(STRIP_PREFIXES(test_name)); \
-    }
-
-#define TEST_PPAPI_NACL_WITH_WS(test_name) \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
-      RunTestWithWebSocketServer(STRIP_PREFIXES(test_name)); \
-    } \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, DISABLED_##test_name) { \
-      RunTestWithWebSocketServer(STRIP_PREFIXES(test_name)); \
-    }
-
 #elif defined(ARCH_CPU_ARM_FAMILY)
 // NaCl glibc tests are not included in ARM as there is no glibc support
 // on ARM today.
