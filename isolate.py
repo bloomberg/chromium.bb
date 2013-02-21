@@ -2046,10 +2046,11 @@ def parse_variable_option(parser, options, cwd, require_isolated):
   # TODO(benrg): Maybe we should use a copy of gyp's NameValueListToDict here,
   # but it wouldn't be backward compatible.
   def try_make_int(s):
+    """Converts a value to int if possible, converts to unicode otherwise."""
     try:
       return int(s)
     except ValueError:
-      return s
+      return s.decode('utf-8')
   options.variables = dict((k, try_make_int(v)) for k, v in options.variables)
 
 
