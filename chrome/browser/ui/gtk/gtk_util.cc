@@ -26,7 +26,7 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
-#include "chrome/browser/ui/browser_list_impl.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
@@ -431,8 +431,8 @@ void MakeAppModalWindowGroup() {
 
 void AppModalDismissedUngroupWindows() {
   // GTK only has the native desktop.
-  const chrome::BrowserListImpl* native_browser_list =
-      chrome::BrowserListImpl::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
+  const BrowserList* native_browser_list =
+      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
   if (!native_browser_list->empty()) {
     std::vector<GtkWindow*> transient_windows;
 
