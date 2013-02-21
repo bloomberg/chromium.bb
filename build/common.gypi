@@ -2894,7 +2894,7 @@
           ['linux_dump_symbols==1', {
             'cflags': [ '-g' ],
             'conditions': [
-              ['target_arch=="ia32"', {
+              ['target_arch=="ia32" and OS!="android"', {
                 'target_conditions': [
                   ['_toolset=="target"', {
                     'ldflags': [
