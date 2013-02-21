@@ -35,14 +35,14 @@ An example usage (using git hashes):
 
 """
 
-
-import re
-import os
+import errno
 import imp
-import sys
-import shlex
 import optparse
+import os
+import re
+import shlex
 import subprocess
+import sys
 
 
 # The additional repositories that might need to be bisected.
@@ -88,6 +88,25 @@ DEPOT_DEPS_NAME = { 'webkit' : {
 DEPOT_NAMES = DEPOT_DEPS_NAME.keys()
 
 FILE_DEPS_GIT = '.DEPS.git'
+
+GCLIENT_SPEC = """
+solutions = [
+  { "name"        : "src",
+    "url"         : "https://chromium.googlesource.com/chromium/src.git",
+    "deps_file"   : ".DEPS.git",
+    "managed"     : True,
+    "custom_deps" : {
+    },
+    "safesync_url": "",
+  },
+  { "name"        : "src-internal",
+    "url"         : "ssh://gerrit-int.chromium.org:29419/" +
+                    "chrome/src-internal.git",
+    "deps_file"   : ".DEPS.git",
+  },
+]
+"""
+GCLIENT_SPEC = ''.join([l for l in GCLIENT_SPEC.splitlines()])
 
 
 
@@ -1134,6 +1153,84 @@ def DetermineAndCreateSourceControl():
   return None
 
 
+def CreateAndChangeToSourceDirectory(working_directory):
+  """Creates a directory 'bisect' as a subdirectory of 'working_directory'.  If
+  the function is successful, the current working directory will change to that
+  of the new 'bisect' directory.
+
+  Returns:
+    True if the directory was successfully created (or already existed).
+  """
+  cwd = os.getcwd()
+  os.chdir(working_directory)
+  try:
+    os.mkdir('bisect')
+  except OSError, e:
+    if e.errno != errno.EEXIST:
+      return False
+  os.chdir('bisect')
+  return True
+
+
+def RunGClient(params):
+  """Runs gclient with the specified parameters.
+
+  Args:
+    params: A list of parameters to pass to gclient.
+
+  Returns:
+    The return code of the call.
+  """
+  cmd = ['gclient'] + params
+  return subprocess.call(cmd)
+
+
+def RunGClientAndCreateConfig():
+  """Runs gclient and creates a config containing both src and src-internal.
+
+  Returns:
+    The return code of the call.
+  """
+  return_code = RunGClient(
+      ['config', '--spec=%s' % GCLIENT_SPEC, '--git-deps'])
+  return return_code
+
+
+def RunGClientAndSync():
+  """Runs gclient and does a normal sync.
+
+  Returns:
+    The return code of the call.
+  """
+  return RunGClient(['sync'])
+
+
+def SetupGitDepot(output_buildbot_annotations):
+  """Sets up the depot for the bisection. The depot will be located in a
+  subdirectory called 'bisect'.
+
+  Returns:
+    True if gclient successfully created the config file and did a sync, False
+    otherwise.
+  """
+  name = 'Setting up Bisection Depot'
+
+  if output_buildbot_annotations:
+    OutputAnnotationStepStart(name)
+
+  passed = False
+
+  if not RunGClientAndCreateConfig():
+    if not RunGClientAndSync():
+      passed = True
+
+  if output_buildbot_annotations:
+    print
+    OutputAnnotationStepClosed()
+
+  return passed
+
+
 def main():
 
   usage = ('%prog [options] [-- chromium-options]\n'
@@ -1160,6 +1257,14 @@ def main():
                     type='str',
                     help='The desired metric to bisect on. For example ' +
                     '"vm_rss_final_b/vm_rss_f_b"')
+  parser.add_option('-w', '--working_directory',
+                    type='str',
+                    help='Path to the working directory where the script will '
+                    'do an initial checkout of the chromium depot. The '
+                    'files will be placed in a subdirectory "bisect" under '
+                    'working_directory and that will be used to perform the '
+                    'bisection. This parameter is optional, if it is not '
+                    'supplied, the script will work from the current depot.')
   parser.add_option('--use_goma',
                     action="store_true",
                     help='Add a bunch of extra threads for goma.')
@@ -1207,6 +1312,24 @@ def main():
     print
     return 1
 
+  metric_values = opts.metric.split('/')
+  if len(metric_values) != 2:
+    print "Invalid metric specified: [%s]" % (opts.metric,)
+    print
+    return 1
+
+  if opts.working_directory:
+    if not CreateAndChangeToSourceDirectory(opts.working_directory):
+      print 'Error: Could not create bisect directory.'
+      print
+      return 1
+
+    if not SetupGitDepot(opts.output_buildbot_annotations):
+      print 'Error: Failed to grab source.'
+      print
+      return 1
+
+    os.chdir(os.path.join(os.getcwd(), 'src'))
 
   # Check what source control method they're using. Only support git workflow
   # at the moment.
@@ -1222,13 +1345,6 @@ def main():
     print "You must switch to master branch to run bisection."
     print
     return 1
-
-  metric_values = opts.metric.split('/')
-  if len(metric_values) < 2:
-    print "Invalid metric specified: [%s]" % (opts.metric,)
-    print
-    return 1
-
 
   bisect_test = BisectPerformanceMetrics(source_control, opts)
   bisect_results = bisect_test.Run(opts.command,
