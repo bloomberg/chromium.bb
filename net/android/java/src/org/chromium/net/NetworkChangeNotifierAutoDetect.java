@@ -171,13 +171,17 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
             // overwritten.
             mContext = context;
         }
-        if (state == ActivityStatus.CREATED) {
+        if (state == ActivityStatus.RESUMED) {
+            // Note that this also covers the case where the main activity is created. The CREATED
+            // event is always followed by the RESUMED event. This is a temporary "hack" until
+            // http://crbug.com/176837 is fixed. The CREATED event can't be used reliably for now
+            // since its notification is deferred. This means that it can immediately follow a
+            // DESTROYED/STOPPED/... event which is problematic.
+            // TODO(pliard): fix http://crbug.com/176837.
+            connectionTypeChanged();
             registerReceiver();
         } else if (state == ActivityStatus.PAUSED) {
             unregisterReceiver();
-        } else if (state == ActivityStatus.RESUMED) {
-            connectionTypeChanged();
-            registerReceiver();
         }
     }
 
