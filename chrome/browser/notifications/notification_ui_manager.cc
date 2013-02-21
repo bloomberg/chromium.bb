@@ -14,11 +14,12 @@
 
 // static
 bool NotificationUIManager::DelegatesToMessageCenter() {
-// MessageCenterNotificationManager doesn't work quite well with Ash
-// right now. Until it matures in ChromeOS, delegating to message center will
-// be done by BalloonCollectionImplAsh through BalloonNotificationUIManager.
-// TODO(mukai): remove this |&& !defined(USE_ASH)| when that's no problem.
-#if defined(ENABLE_MESSAGE_CENTER) && !defined(USE_ASH)
+  // In ChromeOS, it always uses MessageCenterNotificationManager. The flag of
+  // --enable-rich-notifications switches the contents and behaviors inside of
+  // the message center.
+#if defined(OS_CHROMEOS)
+  return true;
+#elif defined(ENABLE_MESSAGE_CENTER)
   return message_center::IsRichNotificationEnabled();
 #endif
   return false;
