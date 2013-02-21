@@ -711,6 +711,10 @@
           "output": "gázsugár"
         }, 
         {
+          "input": "⠛⠑⠛⠹⠈⠗⠕⠎", 
+          "output": "geggyáros"
+        }, 
+        {
           "input": "⠛⠑⠗⠊⠝⠉⠎⠡⠗⠷⠇⠞", 
           "output": "gerincsérült"
         }, 
@@ -1511,6 +1515,10 @@
           "output": "lakásszövetkezet"
         }, 
         {
+          "input": "⠇⠁⠅⠈⠎⠱⠑⠗⠣⠻⠅", 
+          "output": "lakásszerzők"
+        }, 
+        {
           "input": "⠇⠁⠅⠕⠎⠱⠈⠍", 
           "output": "lakosszám"
         }, 
@@ -2253,6 +2261,10 @@
         {
           "input": "⠏⠊⠱⠞⠕⠸⠇⠟⠧⠡⠎⠱⠑⠗⠾⠑⠝", 
           "output": "pisztolylövésszerűen"
+        }, 
+        {
+          "input": "⠏⠇⠁⠽⠎⠞⠁⠞⠊⠕⠝⠫⠊", 
+          "output": "playstationnyi"
         }, 
         {
           "input": "⠏⠇⠷⠎⠱⠑⠗⠾", 
@@ -4039,6 +4051,10 @@
           "output": "⠛⠈⠣⠎⠥⠛⠈⠗"
         }, 
         {
+          "input": "geggyáros", 
+          "output": "⠛⠑⠛⠹⠈⠗⠕⠎"
+        }, 
+        {
           "input": "gerincsérült", 
           "output": "⠛⠑⠗⠊⠝⠉⠎⠡⠗⠷⠇⠞"
         }, 
@@ -4839,6 +4855,10 @@
           "output": "⠇⠁⠅⠈⠎⠱⠟⠧⠑⠞⠅⠑⠣⠑⠞"
         }, 
         {
+          "input": "lakásszerzők", 
+          "output": "⠇⠁⠅⠈⠎⠱⠑⠗⠣⠻⠅"
+        }, 
+        {
           "input": "lakosszám", 
           "output": "⠇⠁⠅⠕⠎⠱⠈⠍"
         }, 
@@ -5581,6 +5601,10 @@
         {
           "input": "pisztolylövésszerűen", 
           "output": "⠏⠊⠱⠞⠕⠸⠇⠟⠧⠡⠎⠱⠑⠗⠾⠑⠝"
+        }, 
+        {
+          "input": "playstationnyi", 
+          "output": "⠏⠇⠁⠽⠎⠞⠁⠞⠊⠕⠝⠫⠊"
         }, 
         {
           "input": "plüsszerű", 

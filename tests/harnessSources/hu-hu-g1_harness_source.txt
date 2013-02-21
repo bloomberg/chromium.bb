@@ -880,6 +880,11 @@ gázsugár
 testmode: backtranslate
 gázsugár
 
+geggyáros
+
+testmode: backtranslate
+geggyáros
+
 gerincsérült
 
 testmode: backtranslate
@@ -1880,6 +1885,11 @@ lakásszövetkezet
 testmode: backtranslate
 lakásszövetkezet
 
+lakásszerzők
+
+testmode: backtranslate
+lakásszerzők
+
 lakosszám
 
 testmode: backtranslate
@@ -2809,6 +2819,11 @@ pisztolylövésszerűen
 
 testmode: backtranslate
 pisztolylövésszerűen
+
+playstationnyi
+
+testmode: backtranslate
+playstationnyi
 
 plüsszerű
 

@@ -736,6 +736,10 @@
           "output": "gáz-su-gár"
         }, 
         {
+          "input": "geggyáros", 
+          "output": "geg-gyá-ros"
+        }, 
+        {
           "input": "gerincsérült", 
           "output": "ge-rinc-sé-rült"
         }, 
@@ -1534,6 +1538,10 @@
         {
           "input": "lakásszövetkezet", 
           "output": "la-kás-szö-vet-ke-zet"
+        }, 
+        {
+          "input": "lakásszerzők", 
+          "output": "la-kás-szer-zők"
         }, 
         {
           "input": "lakosszám", 

@@ -547,6 +547,9 @@ testmode: hyphenate
 gázsugár
 
 testmode: hyphenate
+geggyáros
+
+testmode: hyphenate
 gerincsérült
 
 testmode: hyphenate
@@ -1145,6 +1148,9 @@ lakásszentelő
 
 testmode: hyphenate
 lakásszövetkezet
+
+testmode: hyphenate
+lakásszerzők
 
 testmode: hyphenate
 lakosszám

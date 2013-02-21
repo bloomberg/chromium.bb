@@ -195,6 +195,7 @@ partword csillaggy 146-24-123-123-1-1245-1456	For example csillaggyárnak word
 partword hazugság 125-1-126-136-1245-234-4-1245	For example hazugsággyár word need this exception
 partword édesség =	For example édességgyártók word need this exception
 partword tőzeggy 2345-12456-126-15-1245-1456	For example tőzeggyapot, tőzeggyár words
+always geggyár 1245-15-1245-1456-4-1235	For example geggyáros word
 
 #ny, nny related exceptions
 #Following exception parts need marking nny letter pairs with single n and nny braille dot combinations
@@ -327,6 +328,7 @@ begword vizeszs 1236-24-126-15-234-345	For example vizeszsemle word need this ex
 partword sertés =	For example sertészsír word
 partword tászsin 2345-4-234-345-24-1345	For example gyújtászsinór word
 partword rvaszsír 1235-1236-1-234-345-34-1235	For example szarvaszsír word
+partword lakás =	For example lakásszövetkezet, lakásszentelés, lakásszerzők word
 
 #ssz related exceptions
 #Following exception words and word parts need writing one s and one sz braille letter
@@ -415,7 +417,6 @@ partword fölélessze 124-12345-123-16-123-15-156-156-15	For example fölélessz
 partword dássze 145-4-234-156-15	For example adásszerű word
 partword dásszám 145-4-234-156-4-134	For example adásszerű word
 partword tosszer 2345-135-234-156-15-1235
-partword kásszö 13-4-234-156-12345	For example lakásszövetkezet word
 partword possz 1234-135-234-156	For example laposszárú word
 partword tásszö 2345-4-234-156-12345	For example látásszög word
 partword xussz 1346-136-234-156	For example luxusszálloda word
@@ -541,7 +542,6 @@ always kisszótár 13-24-234-156-246-2345-4-1235	For example kisszótár word
 partword klienssz 13-123-24-15-1345-234-156	For example kliensszoftver word
 partword köhögéssz 13-12345-125-12345-1245-16-234-156 For example köhögésszerű word
 partword könyvessz 13-12345-1246-1236-15-234-156	For example könyvesszekrény word
-partword lakásszen 123-1-13-4-234-156-15-1345	For example lakásszentelő word
 partword másszer 134-4-234-156-15-1235	For example látomásszerű, nyomásszerű, képmásszerű words
 partword frisszöld 124-1235-24-234-234-126-12345-123-145
 partword ésszög 2345-16-234-156-12345-1245	For example lejtésszöge word
@@ -775,10 +775,11 @@ always dactylus =
 always curiosity =
 always unity =
 always fifty =
-begword stylis =
+always stylis =
 always reality =	For example realityműsora word need this exception
 always style =
 always zloty 126-123-135-2345-13456	Old polish money name
+always station =	For example playstationnyi word
 
 #zs, zzs related exceptions
 partword ínházsi 34-1345-125-4-345-24
