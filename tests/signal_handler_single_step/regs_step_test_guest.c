@@ -73,10 +73,21 @@ int main(int argc, char **argv) {
   struct NaClSignalContext call_regs;
   char stack[0x10000];
 
-  uintptr_t syscall_addr = NACL_SYSCALL_ADDR(NACL_sys_test_syscall_1);
-
   int call_count = 0;
   for (call_count = 0; ; call_count++) {
+    uintptr_t syscall_addr;
+    /*
+     * Test fast-path TLS syscalls.  We shoe-horn these in after the
+     * first call to test_syscall_1 has enabled single-stepping.
+     */
+    if (call_count == 1) {
+      syscall_addr = NACL_SYSCALL_ADDR(NACL_sys_tls_get);
+    } else if (call_count == 2) {
+      syscall_addr = NACL_SYSCALL_ADDR(NACL_sys_second_tls_get);
+    } else {
+      syscall_addr = NACL_SYSCALL_ADDR(NACL_sys_test_syscall_1);
+    }
+
     /*
      * Use different expected register values for each call.
      * Otherwise, the test could accidentally pass because the

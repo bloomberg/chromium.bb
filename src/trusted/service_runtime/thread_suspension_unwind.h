@@ -21,6 +21,7 @@ enum NaClUnwindCase {
   NACL_UNWIND_in_pcrel_thunk,
   NACL_UNWIND_in_dispatch_thunk,
   NACL_UNWIND_in_syscallseg,
+  NACL_UNWIND_in_tls_fast_path,
   NACL_UNWIND_after_saving_regs,
 };
 
@@ -33,6 +34,7 @@ static INLINE const char *NaClUnwindCaseToString(
     NACL_MAP_NAME(in_pcrel_thunk);
     NACL_MAP_NAME(in_dispatch_thunk);
     NACL_MAP_NAME(in_syscallseg);
+    NACL_MAP_NAME(in_tls_fast_path);
     NACL_MAP_NAME(after_saving_regs);
     default: return NULL;
 #undef NACL_MAP_NAME

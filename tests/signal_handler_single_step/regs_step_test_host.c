@@ -49,6 +49,7 @@
  */
 
 static const int kNumberOfCallsToTest = 5;
+static const int kFastPathSyscallsToTest = 2;
 
 static int g_call_count = 0;
 static int g_in_untrusted_code = 0;
@@ -191,7 +192,8 @@ int main(int argc, char **argv) {
   CHECK(NaClWaitForMainThreadToExit(&app) == 0);
 
   CHECK(!g_in_untrusted_code);
-  ASSERT_EQ(g_context_switch_count, (kNumberOfCallsToTest - 1) * 2);
+  ASSERT_EQ(g_context_switch_count,
+            (kNumberOfCallsToTest + kFastPathSyscallsToTest - 1) * 2);
 
   /*
    * Avoid calling exit() because it runs process-global destructors

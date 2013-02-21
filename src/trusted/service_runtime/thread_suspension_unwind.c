@@ -7,6 +7,7 @@
 #include "native_client/src/trusted/service_runtime/thread_suspension_unwind.h"
 
 #include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86.h"
+#include "native_client/src/trusted/service_runtime/arch/x86_64/tramp_64.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/nacl_copy.h"
@@ -15,9 +16,6 @@
 
 /*
  * TODO(mseaborn): Extend this to handle ARM and MIPS.
- *
- * TODO(mseaborn): Extend this to handle x86-64's fast path syscalls
- * for TLS.
  */
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
@@ -83,6 +81,25 @@ static int Unwind(struct NaClAppThread *natp, struct NaClSignalContext *regs,
       regs->prog_ctr < nap->pcrel_thunk_end) {
     *unwind_case = NACL_UNWIND_in_pcrel_thunk;
     regs->stack_ptr += 4 + 8;  /* Pop user + trampoline return addresses */
+    return 1;
+  }
+#endif
+
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
+  if (regs->prog_ctr >= (uintptr_t) &NaClGetTlsFastPath1 &&
+      regs->prog_ctr < (uintptr_t) &NaClGetTlsFastPath1End) {
+    *unwind_case = NACL_UNWIND_in_tls_fast_path;
+    if (regs->prog_ctr < (uintptr_t) &NaClGetTlsFastPath1RspRestored) {
+      regs->stack_ptr += 8 * 2;  /* Pop user + trampoline return addresses */
+    }
+    return 1;
+  }
+  if (regs->prog_ctr >= (uintptr_t) &NaClGetTlsFastPath2 &&
+      regs->prog_ctr < (uintptr_t) &NaClGetTlsFastPath2End) {
+    *unwind_case = NACL_UNWIND_in_tls_fast_path;
+    if (regs->prog_ctr < (uintptr_t) &NaClGetTlsFastPath2RspRestored) {
+      regs->stack_ptr += 8 * 2;  /* Pop user + trampoline return addresses */
+    }
     return 1;
   }
 #endif

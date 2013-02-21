@@ -11,15 +11,17 @@
 #if NACL_OSX || defined(__clang__)
 # define MACRO(name)    .macro name
 # define ENDMACRO       .endmacro
-# define MACROENTRY     DEFINE_GLOBAL_HIDDEN_IDENTIFIER($0):
 # define MACROARG1      $0
 # define MACROARG2      $1
+# define MACROARG3      $2
+# define MACROARG4      $3
 #else
-# define MACRO(name)    .macro name arg1=0, arg2=0
+# define MACRO(name)    .macro name arg1=0, arg2=0, arg3=0, arg4=0
 # define ENDMACRO       .endm
-# define MACROENTRY     DEFINE_GLOBAL_HIDDEN_IDENTIFIER(\arg1):
 # define MACROARG1      \arg1
 # define MACROARG2      \arg2
+# define MACROARG3      \arg3
+# define MACROARG4      \arg4
 #endif
 /*
  * We must write x86 assembly immediates as "$ 0" rather than "$0" to
@@ -225,12 +227,13 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSegRegsSaved):
          */
 
 MACRO(tls_syscall)
-MACROENTRY
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(MACROARG1):  /* Entry */
         get_tls
-        movl    MACROARG2(%rdx), %eax
+        movl    MACROARG4(%rdx), %eax
         /* sandbox the return, straight off the untrusted stack */
         movq    0x8(%rsp), %rcx
         addq    DOLLAR 0x10, %rsp
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(MACROARG2):  /* RspRestored */
         addl    DOLLAR 31, %ecx
         andl    DOLLAR 0xffffffe0, %ecx
         addq    %r15, %rcx
@@ -243,7 +246,12 @@ MACROENTRY
          */
         xorl    %edx, %edx
         jmp     *%rcx
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(MACROARG3):  /* End */
 ENDMACRO
 
-        tls_syscall NaClGetTlsFastPath1, NACL_THREAD_CONTEXT_OFFSET_TLS_VALUE1
-        tls_syscall NaClGetTlsFastPath2, NACL_THREAD_CONTEXT_OFFSET_TLS_VALUE2
+        /*
+         * Note that long lines are required here because "\" does not
+         * work in the Windows build.
+         */
+        tls_syscall NaClGetTlsFastPath1, NaClGetTlsFastPath1RspRestored, NaClGetTlsFastPath1End, NACL_THREAD_CONTEXT_OFFSET_TLS_VALUE1
+        tls_syscall NaClGetTlsFastPath2, NaClGetTlsFastPath2RspRestored, NaClGetTlsFastPath2End, NACL_THREAD_CONTEXT_OFFSET_TLS_VALUE2
