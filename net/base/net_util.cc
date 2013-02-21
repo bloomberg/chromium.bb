@@ -1878,6 +1878,9 @@ IPv6SupportResult TestIPv6SupportInternal() {
       struct in6_addr* sin6_addr = &addr_in6->sin6_addr;
       if (IN6_IS_ADDR_LOOPBACK(sin6_addr) || IN6_IS_ADDR_LINKLOCAL(sin6_addr))
         continue;
+      const uint8 kTeredoPrefix[] = { 0x20, 0x01, 0, 0 };
+      if (!memcmp(sin6_addr->s6_addr, kTeredoPrefix, arraysize(kTeredoPrefix)))
+        continue;
       return IPv6SupportResult(true, IPV6_GLOBAL_ADDRESS_PRESENT, 0);
     }
   }
