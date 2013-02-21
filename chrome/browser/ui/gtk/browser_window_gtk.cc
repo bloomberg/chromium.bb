@@ -1486,16 +1486,13 @@ GtkWidget* BrowserWindowGtk::titlebar_widget() const {
 }
 
 // static
-void BrowserWindowGtk::RegisterUserPrefs(PrefService* prefs,
-                                         PrefRegistrySyncable* registry) {
-  // TODO(joi): Remove PrefService parameter.
+void BrowserWindowGtk::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   bool custom_frame_default = false;
   // Avoid checking the window manager if we're not connected to an X server (as
   // is the case in Valgrind tests).
-  if (ui::XDisplayExists() &&
-      !prefs->HasPrefPath(prefs::kUseCustomChromeFrame)) {
+  if (ui::XDisplayExists())
     custom_frame_default = GetCustomFramePrefDefault();
-  }
+
   registry->RegisterBooleanPref(prefs::kUseCustomChromeFrame,
                                 custom_frame_default,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);

@@ -2264,6 +2264,12 @@ void ExtensionPrefs::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(kSideloadWipeoutDone,
                                 false,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
+
+#if defined (TOOLKIT_VIEWS)
+  registry->RegisterIntegerPref(prefs::kBrowserActionContainerWidth,
+                                0,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+#endif
 }
 
 ExtensionIdList ExtensionPrefs::GetExtensionPrefAsVector(

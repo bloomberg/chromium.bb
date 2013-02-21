@@ -33,10 +33,11 @@ namespace browser_sync {
 class InvalidatorStorage : public base::SupportsWeakPtr<InvalidatorStorage>,
                            public syncer::InvalidationStateTracker {
  public:
+  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+
   // |pref_service| may be NULL (for unit tests), but in that case no setter
   // methods should be called. Does not own |pref_service|.
-  explicit InvalidatorStorage(PrefService* pref_service,
-                              PrefRegistrySyncable* registry);
+  explicit InvalidatorStorage(PrefService* pref_service);
   virtual ~InvalidatorStorage();
 
   // Erases invalidation versions and state stored on disk.
@@ -92,7 +93,7 @@ class InvalidatorStorage : public base::SupportsWeakPtr<InvalidatorStorage>,
 
   // Code for migrating from old MaxInvalidationVersions pref, which was a map
   // from sync types to max invalidation versions.
-  void MigrateMaxInvalidationVersionsPref(PrefRegistrySyncable* registry);
+  void MigrateMaxInvalidationVersionsPref();
   static void DeserializeMap(const base::DictionaryValue* max_versions_dict,
                              syncer::InvalidationStateMap* map);
 

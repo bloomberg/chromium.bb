@@ -63,6 +63,7 @@
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync/invalidations/invalidator_storage.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/translate/translate_prefs.h"
@@ -275,6 +276,7 @@ void RegisterUserPrefs(PrefService* user_prefs,
   HostContentSettingsMap::RegisterUserPrefs(registry);
   IncognitoModePrefs::RegisterUserPrefs(registry);
   InstantUI::RegisterUserPrefs(registry);
+  browser_sync::InvalidatorStorage::RegisterUserPrefs(registry);
   MediaCaptureDevicesDispatcher::RegisterUserPrefs(registry);
   MediaStreamDevicesController::RegisterUserPrefs(registry);
   NetPrefObserver::RegisterUserPrefs(registry);
@@ -305,7 +307,7 @@ void RegisterUserPrefs(PrefService* user_prefs,
 #if defined(TOOLKIT_VIEWS)
   RegisterInvertBubbleUserPrefs(registry);
 #elif defined(TOOLKIT_GTK)
-  BrowserWindowGtk::RegisterUserPrefs(user_prefs, registry);
+  BrowserWindowGtk::RegisterUserPrefs(registry);
 #endif
 
 #if defined(OS_ANDROID)

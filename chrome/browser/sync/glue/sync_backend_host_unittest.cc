@@ -147,9 +147,7 @@ class SyncBackendHostTest : public testing::Test {
     profile_->CreateRequestContext();
     sync_prefs_.reset(new SyncPrefs(profile_->GetPrefs()));
     invalidator_storage_.reset(new InvalidatorStorage(
-        profile_->GetPrefs(),
-        static_cast<PrefRegistrySyncable*>(
-            profile_->GetPrefs()->DeprecatedGetPrefRegistry())));
+        profile_->GetPrefs()));
     backend_.reset(new SyncBackendHost(
         profile_->GetDebugName(),
         profile_.get(),
