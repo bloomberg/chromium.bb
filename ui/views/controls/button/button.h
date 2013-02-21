@@ -28,6 +28,24 @@ class VIEWS_EXPORT Button : public View {
  public:
   virtual ~Button();
 
+  // Button states for various button sub-types.
+  // TODO(msw): Add toggled state for checkboxes, radio buttons, etc.
+  enum ButtonState {
+    STATE_NORMAL = 0,
+    STATE_HOVERED,
+    STATE_PRESSED,
+    STATE_DISABLED,
+    STATE_COUNT,
+  };
+
+  // Button styles with associated images and border painters.
+  // TODO(msw): Add "Chrome Style", Checkbox, Radio, Menu, ComboBox, etc.
+  enum ButtonStyle {
+    STYLE_TEXTBUTTON = 0,
+    STYLE_NATIVE_TEXTBUTTON,
+    STYLE_COUNT,
+  };
+
   void SetTooltipText(const string16& tooltip_text);
 
   int tag() const { return tag_; }

@@ -20,6 +20,8 @@ namespace views {
 class VIEWS_EXPORT LabelButton : public CustomButton,
                                  public NativeThemeDelegate {
  public:
+  static const char kViewClassName[];
+
   LabelButton(ButtonListener* listener, const string16& text);
   virtual ~LabelButton();
 
@@ -56,12 +58,13 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   bool is_default() const { return is_default_; }
   void SetIsDefault(bool is_default);
 
-  // Get or set the option to use a native button appearance; false by default.
-  bool native_theme() const { return native_theme_; }
-  void SetNativeTheme(bool native_theme);
+  // Get or set the button's overall style; the default is |STYLE_TEXTBUTTON|.
+  ButtonStyle style() const { return style_; }
+  void SetStyle(ButtonStyle style);
 
   // Overridden from View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, Init);
@@ -78,7 +81,6 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
 
   // Overridden from View:
   virtual void Layout() OVERRIDE;
-  virtual std::string GetClassName() const OVERRIDE;
   virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
   virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE;
 
@@ -117,8 +119,8 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   // current context;
   bool is_default_;
 
-  // Flag indicating native theme styling (or Views styling) of the button.
-  bool native_theme_;
+  // The button's overall style.
+  ButtonStyle style_;
 
   DISALLOW_COPY_AND_ASSIGN(LabelButton);
 };

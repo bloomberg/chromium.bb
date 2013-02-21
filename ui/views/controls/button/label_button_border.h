@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/painter.h"
 
 namespace views {
@@ -17,11 +17,10 @@ namespace views {
 // A Border that paints a LabelButton's background frame.
 class VIEWS_EXPORT LabelButtonBorder : public Border {
  public:
-  LabelButtonBorder();
+  explicit LabelButtonBorder(Button::ButtonStyle style);
   virtual ~LabelButtonBorder();
 
-  bool native_theme() const { return native_theme_; }
-  void set_native_theme(bool native_theme) { native_theme_ = native_theme; }
+  Button::ButtonStyle style() const { return style_; }
 
   // Overridden from Border:
   virtual void Paint(const View& view, gfx::Canvas* canvas) OVERRIDE;
@@ -29,15 +28,15 @@ class VIEWS_EXPORT LabelButtonBorder : public Border {
 
   // Get or set the painter used for the specified button state.
   // LabelButtonBorder takes and retains ownership of |painter|.
-  Painter* GetPainter(CustomButton::ButtonState state);
-  void SetPainter(CustomButton::ButtonState state, Painter* painter);
+  Painter* GetPainter(Button::ButtonState state);
+  void SetPainter(Button::ButtonState state, Painter* painter);
 
  private:
   // The painters used for each button state.
-  scoped_ptr<Painter> painters_[CustomButton::STATE_COUNT];
+  scoped_ptr<Painter> painters_[Button::STATE_COUNT];
 
-  // A flag controlling native (true) or Views theme styling; false by default.
-  bool native_theme_;
+  // The button style supplied in part by this border.
+  Button::ButtonStyle style_;
 
   DISALLOW_COPY_AND_ASSIGN(LabelButtonBorder);
 };

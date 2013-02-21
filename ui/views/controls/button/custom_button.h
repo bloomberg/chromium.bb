@@ -31,15 +31,6 @@ class VIEWS_EXPORT CustomButton : public Button,
 
   virtual ~CustomButton();
 
-  // Possible states
-  enum ButtonState {
-    STATE_NORMAL = 0,
-    STATE_HOVERED,
-    STATE_PRESSED,
-    STATE_DISABLED,
-    STATE_COUNT
-  };
-
   // Get/sets the current display state of the button.
   ButtonState state() const { return state_; }
   void SetState(ButtonState state);
@@ -158,7 +149,7 @@ class VIEWS_EXPORT CustomButton : public Button,
 class VIEWS_EXPORT CustomButtonStateChangedDelegate {
 public:
   virtual ~CustomButtonStateChangedDelegate() {}
-  virtual void StateChanged(CustomButton::ButtonState state) = 0;
+  virtual void StateChanged(Button::ButtonState state) = 0;
 
 protected:
   CustomButtonStateChangedDelegate() {}

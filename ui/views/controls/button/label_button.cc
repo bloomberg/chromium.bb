@@ -29,6 +29,9 @@ const int kHoverAnimationDurationMs = 170;
 
 namespace views {
 
+// static
+const char LabelButton::kViewClassName[] = "views/LabelButton";
+
 LabelButton::LabelButton(ButtonListener* listener, const string16& text)
     : CustomButton(listener),
       image_(new ImageView()),
@@ -37,10 +40,7 @@ LabelButton::LabelButton(ButtonListener* listener, const string16& text)
       button_state_colors_(),
       explicitly_set_colors_(),
       is_default_(false),
-      native_theme_(false) {
-  set_border(new LabelButtonBorder());
-  // Inset the button focus rect from the actual border; roughly match Windows.
-  set_focus_border(FocusBorder::CreateDashedFocusBorder(3, 3, 3, 3));
+      style_(STYLE_TEXTBUTTON) {
   SetAnimationDuration(kHoverAnimationDurationMs);
 
   AddChildView(image_);
@@ -50,8 +50,8 @@ LabelButton::LabelButton(ButtonListener* listener, const string16& text)
   label_->SetAutoColorReadabilityEnabled(false);
   label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
-  // Initialize the colors, border, and layout for a Views-themed button.
-  SetNativeTheme(false);
+  // Initialize the colors, border, and layout.
+  SetStyle(style_);
 }
 
 LabelButton::~LabelButton() {}
@@ -117,11 +117,11 @@ void LabelButton::SetIsDefault(bool is_default) {
   is_default_ ? AddAccelerator(accel) : RemoveAccelerator(accel);
 }
 
-void LabelButton::SetNativeTheme(bool native_theme) {
-  native_theme_ = native_theme;
-  LabelButtonBorder* border = new LabelButtonBorder();
-  border->set_native_theme(native_theme);
-  set_border(border);
+void LabelButton::SetStyle(ButtonStyle style) {
+  style_ = style;
+  set_border(new LabelButtonBorder(style));
+  // Inset the button focus rect from the actual border; roughly match Windows.
+  set_focus_border(FocusBorder::CreateDashedFocusBorder(3, 3, 3, 3));
   // Invalidate the layout to pickup the new insets from the border.
   InvalidateLayout();
   ResetColorsFromNativeTheme();
@@ -155,6 +155,10 @@ gfx::Size LabelButton::GetPreferredSize() {
   return size;
 }
 
+std::string LabelButton::GetClassName() const {
+  return kViewClassName;
+}
+
 void LabelButton::ResetColorsFromNativeTheme() {
   const ui::NativeTheme* theme = GetNativeTheme();
   SkColor colors[STATE_COUNT] = {
@@ -165,7 +169,8 @@ void LabelButton::ResetColorsFromNativeTheme() {
   };
 #if defined(OS_WIN)
   // Native Windows buttons do not change color on hover or when pressed.
-  if (native_theme_ && theme == ui::NativeThemeWin::instance())
+  if (style() == STYLE_NATIVE_TEXTBUTTON &&
+      theme == ui::NativeThemeWin::instance())
     colors[STATE_HOVERED] = colors[STATE_PRESSED] = colors[STATE_NORMAL];
 #endif
   for (size_t state = STATE_NORMAL; state < STATE_COUNT; ++state) {
@@ -229,10 +234,6 @@ void LabelButton::Layout() {
   label_->SetBoundsRect(gfx::Rect(label_origin, label_size));
 }
 
-std::string LabelButton::GetClassName() const {
-  return "views/LabelButton";
-}
-
 void LabelButton::ChildPreferredSizeChanged(View* child) {
   PreferredSizeChanged();
 }
@@ -264,7 +265,8 @@ ui::NativeTheme::State LabelButton::GetThemeState(
 
 const ui::Animation* LabelButton::GetThemeAnimation() const {
 #if defined(OS_WIN)
-  if (native_theme_ && GetNativeTheme() == ui::NativeThemeWin::instance()) {
+  if (style() == STYLE_NATIVE_TEXTBUTTON &&
+      GetNativeTheme() == ui::NativeThemeWin::instance()) {
     return ui::NativeThemeWin::instance()->IsThemingActive() ?
         hover_animation_.get() : NULL;
   }
@@ -289,7 +291,7 @@ void LabelButton::GetExtraParams(ui::NativeTheme::ExtraParams* params) const {
   params->button.indeterminate = false;
   params->button.is_default = is_default_;
   params->button.is_focused = HasFocus() && IsAccessibilityFocusable();
-  params->button.has_border = native_theme();
+  params->button.has_border = style() == STYLE_NATIVE_TEXTBUTTON;
   params->button.classic_state = 0;
   params->button.background_color = GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_TextButtonBackgroundColor);

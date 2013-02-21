@@ -80,17 +80,18 @@ class LogoutButton : public views::View,
         0, kTrayLabelItemHorizontalPaddingBottomAlignment, 0, 0));
 
     button_ = new views::LabelButton(this, string16());
-    for (size_t state = 0; state < views::CustomButton::STATE_COUNT; ++state) {
+    for (size_t state = 0; state < views::Button::STATE_COUNT; ++state) {
       button_->SetTextColor(
-          static_cast<views::CustomButton::ButtonState>(state), SK_ColorWHITE);
+          static_cast<views::Button::ButtonState>(state), SK_ColorWHITE);
     }
     button_->SetFont(button_->GetFont().DeriveFont(1));
-    views::LabelButtonBorder* border = new views::LabelButtonBorder();
-    border->SetPainter(views::CustomButton::STATE_NORMAL,
+    views::LabelButtonBorder* border =
+        new views::LabelButtonBorder(views::Button::STYLE_TEXTBUTTON);
+    border->SetPainter(views::Button::STATE_NORMAL,
         views::Painter::CreateImageGridPainter(kLogoutButtonNormalImages));
-    border->SetPainter(views::CustomButton::STATE_HOVERED,
+    border->SetPainter(views::Button::STATE_HOVERED,
         views::Painter::CreateImageGridPainter(kLogoutButtonHotImages));
-    border->SetPainter(views::CustomButton::STATE_PRESSED,
+    border->SetPainter(views::Button::STATE_PRESSED,
         views::Painter::CreateImageGridPainter(kLogoutButtonPushedImages));
     button_->set_border(border);
     AddChildView(button_);

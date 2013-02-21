@@ -62,7 +62,7 @@ SigninView::SigninView(SigninDelegate* delegate, int width)
   views::LabelButton* signin_button = new views::LabelButton(
       this,
       delegate_->GetSigninButtonText());
-  signin_button->SetNativeTheme(true);
+  signin_button->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   layout->StartRowWithPadding(0, kTopSetId, 0, kButtonPadding);
   layout->AddView(signin_button);
 

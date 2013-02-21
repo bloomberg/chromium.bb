@@ -42,7 +42,7 @@ void ButtonExample::CreateExampleView(View* container) {
 
   label_button_ = new LabelButton(this, ASCIIToUTF16("Label Button"));
   label_button_->set_focusable(true);
-  label_button_->SetTextColor(CustomButton::STATE_HOVERED, SK_ColorRED);
+  label_button_->SetTextColor(Button::STATE_HOVERED, SK_ColorRED);
   container->AddChildView(label_button_);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -145,8 +145,8 @@ void ButtonExample::LabelButtonPressed(const ui::Event& event) {
             string16() : ASCIIToUTF16("Label Button"));
       }
     } else if (event.IsAltDown()) {
-      label_button_->SetImage(CustomButton::STATE_NORMAL,
-          label_button_->GetImage(CustomButton::STATE_NORMAL).isNull() ?
+      label_button_->SetImage(Button::STATE_NORMAL,
+          label_button_->GetImage(Button::STATE_NORMAL).isNull() ?
           *icon_ : gfx::ImageSkia());
     } else {
       label_button_->SetHorizontalAlignment(
@@ -161,7 +161,8 @@ void ButtonExample::LabelButtonPressed(const ui::Event& event) {
           "ReallyReallyReallyReallyReallyReallyReally"
           "ReallyReallyReallyReallyReallyReallyReallyLongButtonText"));
     } else {
-      label_button_->SetNativeTheme(!label_button_->native_theme());
+      label_button_->SetStyle(static_cast<Button::ButtonStyle>(
+          (label_button_->style() + 1) % Button::STYLE_COUNT));
     }
   } else if (event.IsAltDown()) {
     label_button_->SetIsDefault(!label_button_->is_default());

@@ -145,17 +145,18 @@ void FixedSizedScrollView::OnPaintFocusBorder(gfx::Canvas* canvas) {
 ////////////////////////////////////////////////////////////////////////////////
 // TrayPopupLabelButtonBorder
 
-TrayPopupLabelButtonBorder::TrayPopupLabelButtonBorder() {
-  SetPainter(views::CustomButton::STATE_NORMAL,
+TrayPopupLabelButtonBorder::TrayPopupLabelButtonBorder()
+    : LabelButtonBorder(views::Button::STYLE_TEXTBUTTON) {
+  SetPainter(views::Button::STATE_NORMAL,
              views::Painter::CreateImageGridPainter(
                  kTrayPopupLabelButtonBorderImagesNormal));
-  SetPainter(views::CustomButton::STATE_DISABLED,
+  SetPainter(views::Button::STATE_DISABLED,
              views::Painter::CreateImageGridPainter(
                  kTrayPopupLabelButtonBorderImagesNormal));
-  SetPainter(views::CustomButton::STATE_HOVERED,
+  SetPainter(views::Button::STATE_HOVERED,
              views::Painter::CreateImageGridPainter(
                  kTrayPopupLabelButtonBorderImagesHovered));
-  SetPainter(views::CustomButton::STATE_PRESSED,
+  SetPainter(views::Button::STATE_PRESSED,
              views::Painter::CreateImageGridPainter(
                  kTrayPopupLabelButtonBorderImagesHovered));
 }
@@ -236,13 +237,13 @@ TrayPopupHeaderButton::TrayPopupHeaderButton(views::ButtonListener* listener,
                                              int accessible_name_id)
     : views::ToggleImageButton(listener) {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  SetImage(views::CustomButton::STATE_NORMAL,
+  SetImage(views::Button::STATE_NORMAL,
       bundle.GetImageNamed(enabled_resource_id).ToImageSkia());
-  SetToggledImage(views::CustomButton::STATE_NORMAL,
+  SetToggledImage(views::Button::STATE_NORMAL,
       bundle.GetImageNamed(disabled_resource_id).ToImageSkia());
-  SetImage(views::CustomButton::STATE_HOVERED,
+  SetImage(views::Button::STATE_HOVERED,
       bundle.GetImageNamed(enabled_resource_id_hover).ToImageSkia());
-  SetToggledImage(views::CustomButton::STATE_HOVERED,
+  SetToggledImage(views::Button::STATE_HOVERED,
       bundle.GetImageNamed(disabled_resource_id_hover).ToImageSkia());
   SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                     views::ImageButton::ALIGN_MIDDLE);
