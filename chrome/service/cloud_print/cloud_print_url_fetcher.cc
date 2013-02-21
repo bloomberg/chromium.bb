@@ -144,15 +144,17 @@ void CloudPrintURLFetcher::OnURLFetchComplete(
       // response, we will retry (to handle the case where we got redirected
       // to a non-cloudprint-server URL eg. for authentication).
       bool succeeded = false;
-      DictionaryValue* response_dict = NULL;
-      ParseResponseJSON(data, &succeeded, &response_dict);
-      if (response_dict)
+      scoped_ptr<DictionaryValue> response_dict =
+          ParseResponseJSON(data, &succeeded);
+
+      if (response_dict) {
         action = delegate_->HandleJSONData(source,
                                            source->GetURL(),
-                                           response_dict,
+                                           response_dict.get(),
                                            succeeded);
-      else
+      } else {
         action = RETRY_REQUEST;
+      }
     }
   }
   // Retry the request if needed.

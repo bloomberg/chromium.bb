@@ -192,13 +192,18 @@ const char kExamplePrinterDescription[] = "Example Description";
 
 class CloudPrintURLFetcherNoServiceProcess
     : public CloudPrintURLFetcher {
+ public:
+  CloudPrintURLFetcherNoServiceProcess() :
+      context_getter_(new net::TestURLRequestContextGetter(
+          base::MessageLoopProxy::current())) {}
  protected:
   virtual net::URLRequestContextGetter* GetRequestContextGetter() {
-    return new net::TestURLRequestContextGetter(
-        base::MessageLoopProxy::current());
+    return context_getter_.get();
   }
 
   virtual ~CloudPrintURLFetcherNoServiceProcess() {}
+ private:
+  scoped_refptr<net::URLRequestContextGetter> context_getter_;
 };
 
 

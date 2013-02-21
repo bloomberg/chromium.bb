@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
+
 class GURL;
 
 namespace base {
@@ -54,12 +56,12 @@ GURL GetUrlForGetAuthCode(const GURL& cloud_print_server_url,
                           const std::string& proxy_id);
 
 // Parses the response data for any cloud print server request. The method
-// returns false if there was an error in parsing the JSON. The succeeded
+// returns null if there was an error in parsing the JSON. The succeeded
 // value returns the value of the "success" value in the response JSON.
 // Returns the response as a dictionary value.
-bool ParseResponseJSON(const std::string& response_data,
-                       bool* succeeded,
-                       base::DictionaryValue** response_dict);
+scoped_ptr<base::DictionaryValue> ParseResponseJSON(
+    const std::string& response_data,
+    bool* succeeded);
 
 // Prepares one value as part of a multi-part upload request.
 void AddMultipartValueForUpload(const std::string& value_name,

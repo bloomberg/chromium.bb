@@ -170,24 +170,22 @@ GURL GetUrlForGetAuthCode(const GURL& cloud_print_server_url,
   return cloud_print_server_url.ReplaceComponents(replacements);
 }
 
-bool ParseResponseJSON(const std::string& response_data,
-                       bool* succeeded,
-                       DictionaryValue** response_dict) {
-  scoped_ptr<Value> message_value(base::JSONReader::Read(response_data));
+scoped_ptr<base::DictionaryValue> ParseResponseJSON(
+    const std::string& response_data,
+    bool* succeeded) {
+  scoped_ptr<base::Value> message_value(base::JSONReader::Read(response_data));
   if (!message_value.get())
-    return false;
+    return scoped_ptr<base::DictionaryValue>();
 
-  if (!message_value->IsType(Value::TYPE_DICTIONARY))
-    return false;
+  if (!message_value->IsType(base::Value::TYPE_DICTIONARY))
+    return scoped_ptr<base::DictionaryValue>();
 
-  scoped_ptr<DictionaryValue> response_dict_local(
-      static_cast<DictionaryValue*>(message_value.release()));
+  scoped_ptr<base::DictionaryValue> response_dict(
+      static_cast<base::DictionaryValue*>(message_value.release()));
   if (succeeded &&
-      !response_dict_local->GetBoolean(kSuccessValue, succeeded))
+      !response_dict->GetBoolean(kSuccessValue, succeeded))
     *succeeded = false;
-  if (response_dict)
-    *response_dict = response_dict_local.release();
-  return true;
+  return response_dict.Pass();
 }
 
 void AddMultipartValueForUpload(const std::string& value_name,
