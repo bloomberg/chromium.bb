@@ -258,6 +258,7 @@ def main(argv):
       logging.info('Not wiping the directory. You can inspect the failed '
                    'change at %s; After fixing the change (if trivial) you can '
                    'try to upload the change by running:\n'
+                   'git commit -a -c CHERRY_PICK_HEAD\n'
                    'git push %s HEAD:refs/for/%s', work_dir, patch.project_url,
                    branch)
     else:
