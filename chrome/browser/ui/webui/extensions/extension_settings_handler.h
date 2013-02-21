@@ -130,6 +130,9 @@ class ExtensionSettingsHandler
   // Helper method that reloads all unpacked extensions.
   void ReloadUnpackedExtensions();
 
+  // Callback for "setElevated" message.
+  void ManagedUserSetElevated(const base::ListValue* args);
+
   // Callback for "requestExtensionsData" message.
   void HandleRequestExtensionsData(const base::ListValue* args);
 

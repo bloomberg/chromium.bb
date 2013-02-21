@@ -345,6 +345,10 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_DETAILS));
   source->AddString("extensionSettingsHideDetails",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_HIDE_DETAILS));
+  source->AddString("unlockButton",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNLOCK_BUTTON));
+  source->AddString("lockButton",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOCK_BUTTON));
 
   // TODO(estade): comb through the above strings to find ones no longer used in
   // uber extensions.
@@ -370,6 +374,9 @@ void ExtensionSettingsHandler::RegisterMessages() {
         extension_service_->profile())->management_policy();
   }
 
+  web_ui()->RegisterMessageCallback("setElevated",
+      base::Bind(&ExtensionSettingsHandler::ManagedUserSetElevated,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("extensionSettingsRequestExtensionsData",
       base::Bind(&ExtensionSettingsHandler::HandleRequestExtensionsData,
                  base::Unretained(this)));
@@ -537,6 +544,17 @@ void ExtensionSettingsHandler::ReloadUnpackedExtensions() {
   }
 }
 
+void ExtensionSettingsHandler::ManagedUserSetElevated(const ListValue* args) {
+  ManagedUserService* service = ManagedUserServiceFactory::GetForProfile(
+      Profile::FromWebUI(web_ui()));
+  bool elevated;
+  CHECK(args->GetBoolean(0, &elevated));
+  // TODO(akuegel): Show the managed user passphrase dialog for authentication
+  // if elevated should be set to true.
+  service->SetElevated(elevated);
+  HandleRequestExtensionsData(NULL);
+}
+
 void ExtensionSettingsHandler::HandleRequestExtensionsData(
     const ListValue* args) {
   DictionaryValue results;
@@ -582,12 +600,16 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
   }
   results.Set("extensions", extensions_list);
 
-  bool is_managed =
-      ManagedUserServiceFactory::GetForProfile(profile)->ProfileIsManaged();
+  ManagedUserService* service =
+      ManagedUserServiceFactory::GetForProfile(profile);
+
+  bool is_managed = service->ProfileIsManaged();
+  bool is_elevated = service->IsElevated();
   bool developer_mode =
-      !is_managed &&
+      (!is_managed || is_elevated) &&
       profile->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode);
   results.SetBoolean("profileIsManaged", is_managed);
+  results.SetBoolean("profileIsElevated", service->IsElevated());
   results.SetBoolean("developerMode", developer_mode);
 
   // Check to see if we have any wiped out extensions.

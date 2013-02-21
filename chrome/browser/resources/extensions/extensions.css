@@ -297,7 +297,11 @@ html[dir='rtl'] #extension-settings .trash {
 
 /* Managed mode */
 
-.page:not(.profile-is-managed) .profile-is-managed-banner {
+.page:not(.managed-user-locked) .profile-is-managed-banner,
+.managed-user-locked .more-extensions-link,
+.page:not(.profile-is-managed) #managed-user-control-div,
+.page:not(.managed-user-locked) #unlock-button,
+.managed-user-locked #lock-button {
   display: none;
 }
 
@@ -305,8 +309,9 @@ html[dir='rtl'] #extension-settings .trash {
   background-image: url('chrome://theme/IDR_WARNING');
 }
 
-.profile-is-managed .more-extensions-link {
-  display: none;
+#managed-user-control-div {
+  display: inline-block;
+  padding-left: 7px;
 }
 
 /* Sideload Wipeout */

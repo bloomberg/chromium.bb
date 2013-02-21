@@ -5458,6 +5458,12 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <message name="IDS_EXTENSIONS_RESTART" desc="The link for restarting apps.">
         Restart
       </message>
+      <message name="IDS_EXTENSIONS_LOCK_BUTTON" desc="The button to lock the extensions for a managed user.">
+        Lock
+      </message>
+      <message name="IDS_EXTENSIONS_UNLOCK_BUTTON" desc="The button to unlock the extensions for a managed user.">
+        Unlock
+      </message>
       <if expr="is_macosx">
         <message name="IDS_EXTENSIONS_RELOAD_UNPACKED" desc="The link for reloading unpacked extensions.">
           Reload (⌘R)
