@@ -34,6 +34,10 @@ using ui::GestureConfiguration;
 
 namespace {
 
+// TODO(rjkroege): Remove this deprecated pref in M29. http://crbug.com/160243.
+const char kTouchScreenFlingAccelerationAdjustment[] =
+    "gesture.touchscreen_fling_acceleration_adjustment";
+
 struct OverscrollPref {
   const char* pref_name;
   content::OverscrollConfig config;
@@ -180,6 +184,9 @@ const char* kFlingTouchscreenPrefs[] = {
 
 GesturePrefsObserver::GesturePrefsObserver(PrefService* prefs)
     : prefs_(prefs) {
+  // Clear for migration.
+  prefs->ClearPref(kTouchScreenFlingAccelerationAdjustment);
+
   registrar_.Init(prefs);
   registrar_.RemoveAll();
   base::Closure callback = base::Bind(&GesturePrefsObserver::Update,
@@ -395,8 +402,7 @@ void GesturePrefsObserverFactoryAura::RegisterWorkspaceCyclerPrefs(
 #endif  // USE_ASH
 }
 
-void GesturePrefsObserverFactoryAura::DeprecatedRegisterUserPrefs(
-    PrefService* prefs,
+void GesturePrefsObserverFactoryAura::RegisterUserPrefs(
     PrefRegistrySyncable* registry) {
   registry->RegisterDoublePref(
       prefs::kFlingAccelerationCurveCoefficient0,
@@ -503,13 +509,10 @@ void GesturePrefsObserverFactoryAura::DeprecatedRegisterUserPrefs(
       GestureConfiguration::rail_start_proportion(),
       PrefRegistrySyncable::UNSYNCABLE_PREF);
 
-  // TODO(rjkroege): Remove this in M29. http://crbug.com/160243.
-  const char kTouchScreenFlingAccelerationAdjustment[] =
-      "gesture.touchscreen_fling_acceleration_adjustment";
+  // Register for migration.
   registry->RegisterDoublePref(kTouchScreenFlingAccelerationAdjustment,
                                0.0,
                                PrefRegistrySyncable::UNSYNCABLE_PREF);
-  prefs->ClearPref(kTouchScreenFlingAccelerationAdjustment);
 
   RegisterOverscrollPrefs(registry);
   RegisterFlingCurveParameters(registry);

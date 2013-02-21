@@ -82,9 +82,6 @@ void ProfileKeyedBaseFactory::RegisterUserPrefsOnProfile(Profile* profile) {
     PrefRegistrySyncable* registry = static_cast<PrefRegistrySyncable*>(
         prefs->DeprecatedGetPrefRegistry());
     RegisterUserPrefs(registry);
-    // A few registration functions still need the PrefService pointer
-    // (e.g. to clear preferences).
-    DeprecatedRegisterUserPrefs(prefs, registry);
     registered_preferences_.insert(profile);
   }
 }
