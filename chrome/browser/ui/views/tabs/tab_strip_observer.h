@@ -1,9 +1,11 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_OBSERVER_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_OBSERVER_H_
+
+#include "chrome/browser/ui/views/chrome_views_export.h"
 
 class TabStrip;
 
@@ -18,7 +20,7 @@ class TabStrip;
 //  Add/RemoveObserver methods.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class TabStripObserver {
+class CHROME_VIEWS_EXPORT TabStripObserver {
  public:
   // A new tab was added to |tab_strip| at |index|.
   virtual void TabStripAddedTabAt(TabStrip* tab_strip, int index);

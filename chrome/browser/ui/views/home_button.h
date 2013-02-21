@@ -1,12 +1,12 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_UI_VIEWS_HOME_BUTTON_H_
 #define CHROME_BROWSER_UI_VIEWS_HOME_BUTTON_H_
 
-#include <set>
-
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "ui/views/controls/button/image_button.h"
 
 class Browser;
@@ -30,4 +30,4 @@ class HomeImageButton : public views::ImageButton {
   DISALLOW_COPY_AND_ASSIGN(HomeImageButton);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_HOME_BUTTON_H__
+#endif  // CHROME_BROWSER_UI_VIEWS_HOME_BUTTON_H_
