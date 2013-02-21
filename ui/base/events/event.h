@@ -228,6 +228,12 @@ class UI_EXPORT Event {
   EventResult result_;
 };
 
+class UI_EXPORT CancelModeEvent : public Event {
+ public:
+  CancelModeEvent();
+  virtual ~CancelModeEvent();
+};
+
 class UI_EXPORT LocatedEvent : public Event {
  public:
   // For testing.

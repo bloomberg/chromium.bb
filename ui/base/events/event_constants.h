@@ -55,6 +55,10 @@ enum EventType {
   ET_SCROLL_FLING_START,
   ET_SCROLL_FLING_CANCEL,
 
+  // Sent by the system to indicate any modal type operations, such as drag and
+  // drop or menus, should stop.
+  ET_CANCEL_MODE,
+
   // Must always be last. User namespace starts above this value.
   // See ui::RegisterCustomEventType().
   ET_LAST

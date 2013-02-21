@@ -581,6 +581,10 @@ bool DesktopRootWindowHostWin::HandleAppCommand(short command) {
       GetWidget()->widget_delegate()->ExecuteWindowsCommand(command);
 }
 
+void DesktopRootWindowHostWin::HandleCancelMode() {
+  root_window_host_delegate_->OnHostCancelMode();
+}
+
 void DesktopRootWindowHostWin::HandleCaptureLost() {
   native_widget_delegate_->OnMouseCaptureLost();
 }

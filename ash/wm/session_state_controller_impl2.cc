@@ -5,6 +5,7 @@
 #include "ash/wm/session_state_controller_impl2.h"
 
 #include "ash/ash_switches.h"
+#include "ash/cancel_mode.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
@@ -450,6 +451,7 @@ void SessionStateControllerImpl2::StartImmediatePreLockAnimation(
 
   observer->Unpause();
 
+  DispatchCancelMode();
   FOR_EACH_OBSERVER(SessionStateObserver, observers_,
       OnSessionStateEvent(SessionStateObserver::EVENT_LOCK_ANIMATION_STARTED));
 }
@@ -485,6 +487,7 @@ void SessionStateControllerImpl2::StartCancellablePreLockAnimation() {
       internal::SessionStateAnimator::ANIMATION_SPEED_UNDOABLE,
       observer);
 
+  DispatchCancelMode();
   FOR_EACH_OBSERVER(SessionStateObserver, observers_,
       OnSessionStateEvent(
           SessionStateObserver::EVENT_PRELOCK_ANIMATION_STARTED));

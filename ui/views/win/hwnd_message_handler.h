@@ -274,6 +274,7 @@ class VIEWS_EXPORT HWNDMessageHandler : public ui::WindowImpl,
     // This list is in _ALPHABETICAL_ order! OR I WILL HURT YOU.
     MSG_WM_ACTIVATEAPP(OnActivateApp)
     MSG_WM_APPCOMMAND(OnAppCommand)
+    MSG_WM_CANCELMODE(OnCancelMode)
     MSG_WM_CAPTURECHANGED(OnCaptureChanged)
     MSG_WM_CLOSE(OnClose)
     MSG_WM_COMMAND(OnCommand)
@@ -315,6 +316,7 @@ class VIEWS_EXPORT HWNDMessageHandler : public ui::WindowImpl,
   // TODO(beng): return BOOL is temporary until this object becomes a
   //             WindowImpl.
   BOOL OnAppCommand(HWND window, short command, WORD device, int keystate);
+  void OnCancelMode();
   void OnCaptureChanged(HWND window);
   void OnClose();
   void OnCommand(UINT notification_code, int command, HWND window);

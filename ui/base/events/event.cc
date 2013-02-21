@@ -95,6 +95,7 @@ std::string EventTypeName(ui::EventType type) {
     CASE_TYPE(ET_SCROLL);
     CASE_TYPE(ET_SCROLL_FLING_START);
     CASE_TYPE(ET_SCROLL_FLING_CANCEL);
+    CASE_TYPE(ET_CANCEL_MODE);
     case ui::ET_LAST: NOTREACHED(); return std::string();
     // Don't include default, so that we get an error when new type is added.
   }
@@ -226,6 +227,17 @@ void Event::Init() {
 
 void Event::InitWithNativeEvent(const base::NativeEvent& native_event) {
   native_event_ = native_event;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// CancelModeEvent
+
+CancelModeEvent::CancelModeEvent()
+    : Event(ui::ET_CANCEL_MODE, base::TimeDelta(), 0) {
+  set_cancelable(false);
+}
+
+CancelModeEvent::~CancelModeEvent() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////

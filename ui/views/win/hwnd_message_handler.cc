@@ -1247,6 +1247,12 @@ BOOL HWNDMessageHandler::OnAppCommand(HWND window,
   return handled;
 }
 
+void HWNDMessageHandler::OnCancelMode() {
+  delegate_->HandleCancelMode();
+  // Need default handling, otherwise capture and other things aren't canceled.
+  SetMsgHandled(FALSE);
+}
+
 void HWNDMessageHandler::OnCaptureChanged(HWND window) {
   delegate_->HandleCaptureLost();
 }

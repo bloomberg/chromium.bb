@@ -7,7 +7,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/shelf_types.h"
-#include "ash/wm/session_state_observer.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "base/basictypes.h"
 #include "base/string16.h"
@@ -37,8 +36,7 @@ class LauncherView;
 // LauncherTooltipManager manages the tooltip balloon poping up on launcher
 // items.
 class ASH_EXPORT LauncherTooltipManager : public ui::EventHandler,
-                                          public ShelfLayoutManager::Observer,
-                                          public SessionStateObserver {
+                                          public ShelfLayoutManager::Observer {
  public:
   LauncherTooltipManager(ShelfLayoutManager* shelf_layout_manager,
                          LauncherView* launcher_view);
@@ -79,10 +77,7 @@ protected:
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
   virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
-
-  // SessionStateObserver override:
-  virtual void OnSessionStateEvent(SessionStateObserver::EventType event)
-      OVERRIDE;
+  virtual void OnCancelMode(ui::CancelModeEvent* event) OVERRIDE;
 
   // ShelfLayoutManager::Observer overrides:
   virtual void WillDeleteShelf() OVERRIDE;

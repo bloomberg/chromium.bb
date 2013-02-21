@@ -62,6 +62,8 @@
         'ash_constants.h',
         'ash_switches.cc',
         'ash_switches.h',
+        'cancel_mode.cc',
+        'cancel_mode.h',
         'caps_lock_delegate.h',
         'caps_lock_delegate_stub.cc',
         'caps_lock_delegate_stub.h',

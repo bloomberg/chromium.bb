@@ -876,6 +876,12 @@ bool RootWindow::OnHostTouchEvent(ui::TouchEvent* event) {
   return ProcessGestures(gestures.get()) ? true : handled;
 }
 
+void RootWindow::OnHostCancelMode() {
+  ui::CancelModeEvent event;
+  Window* focused_window = client::GetFocusClient(this)->GetFocusedWindow();
+  ProcessEvent(focused_window ? focused_window : this, &event);
+}
+
 void RootWindow::OnHostActivated() {
   Env::GetInstance()->RootWindowActivated(this);
 }

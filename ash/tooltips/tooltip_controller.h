@@ -6,7 +6,6 @@
 #define ASH_TOOLTIPS_TOOLTIP_CONTROLLER_H_
 
 #include "ash/ash_export.h"
-#include "ash/wm/session_state_observer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/timer.h"
@@ -33,8 +32,7 @@ namespace internal {
 // TooltipController provides tooltip functionality for aura shell.
 class ASH_EXPORT TooltipController : public aura::client::TooltipClient,
                                      public ui::EventHandler,
-                                     public aura::WindowObserver,
-                                     public SessionStateObserver {
+                                     public aura::WindowObserver {
  public:
   explicit TooltipController(aura::client::DragDropClient* drag_drop_client);
   virtual ~TooltipController();
@@ -47,10 +45,7 @@ class ASH_EXPORT TooltipController : public aura::client::TooltipClient,
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
   virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
-
-  // Overridden from SessionStateController.
-  virtual void OnSessionStateEvent(SessionStateObserver::EventType event)
-      OVERRIDE;
+  virtual void OnCancelMode(ui::CancelModeEvent* event) OVERRIDE;
 
   // Overridden from aura::WindowObserver.
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;

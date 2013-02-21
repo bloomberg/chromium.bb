@@ -7,8 +7,6 @@
 #include "ash/launcher/launcher_view.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/wm/session_state_controller.h"
-#include "ash/wm/session_state_observer.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_animations.h"
 #include "base/bind.h"
@@ -137,10 +135,8 @@ LauncherTooltipManager::LauncherTooltipManager(
       launcher_view_(launcher_view) {
   if (shelf_layout_manager)
     shelf_layout_manager->AddObserver(this);
-  if (Shell::HasInstance()) {
+  if (Shell::HasInstance())
     Shell::GetInstance()->AddPreTargetHandler(this);
-    Shell::GetInstance()->session_state_controller()->AddObserver(this);
-  }
 }
 
 LauncherTooltipManager::~LauncherTooltipManager() {
@@ -148,10 +144,8 @@ LauncherTooltipManager::~LauncherTooltipManager() {
   Close();
   if (shelf_layout_manager_)
     shelf_layout_manager_->RemoveObserver(this);
-  if (Shell::HasInstance()) {
+  if (Shell::HasInstance())
     Shell::GetInstance()->RemovePreTargetHandler(this);
-    Shell::GetInstance()->session_state_controller()->RemoveObserver(this);
-  }
 }
 
 void LauncherTooltipManager::ShowDelayed(views::View* anchor,
@@ -290,11 +284,8 @@ void LauncherTooltipManager::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-void LauncherTooltipManager::OnSessionStateEvent(
-    SessionStateObserver::EventType event) {
-  if (event == SessionStateObserver::EVENT_PRELOCK_ANIMATION_STARTED ||
-      event == SessionStateObserver::EVENT_LOCK_ANIMATION_STARTED)
-    Close();
+void LauncherTooltipManager::OnCancelMode(ui::CancelModeEvent* event) {
+  Close();
 }
 
 void LauncherTooltipManager::WillDeleteShelf() {

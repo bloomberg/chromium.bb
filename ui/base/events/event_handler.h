@@ -14,6 +14,7 @@
 
 namespace ui {
 
+class CancelModeEvent;
 class Event;
 class EventDispatcher;
 class EventTarget;
@@ -45,6 +46,8 @@ class UI_EXPORT EventHandler {
   virtual void OnTouchEvent(TouchEvent* event);
 
   virtual void OnGestureEvent(GestureEvent* event);
+
+  virtual void OnCancelMode(CancelModeEvent* event);
 
  private:
   friend class EventDispatcher;

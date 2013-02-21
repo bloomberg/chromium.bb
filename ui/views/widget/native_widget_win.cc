@@ -656,6 +656,9 @@ bool NativeWidgetWin::HandleAppCommand(short command) {
       GetWidget()->widget_delegate()->ExecuteWindowsCommand(command);
 }
 
+void NativeWidgetWin::HandleCancelMode() {
+}
+
 void NativeWidgetWin::HandleCaptureLost() {
   delegate_->OnMouseCaptureLost();
 }

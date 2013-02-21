@@ -101,6 +101,9 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   // Returns true if the command was handled.
   virtual bool HandleAppCommand(short command) = 0;
 
+  // Called from WM_CANCELMODE.
+  virtual void HandleCancelMode() = 0;
+
   // Called when the window has lost mouse capture.
   virtual void HandleCaptureLost() = 0;
 
