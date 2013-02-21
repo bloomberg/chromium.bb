@@ -830,6 +830,10 @@ void AutofillDialogControllerImpl::OnDidAcceptLegalDocuments() {
   NOTIMPLEMENTED();
 }
 
+void AutofillDialogControllerImpl::OnDidAuthenticateInstrument(bool success) {
+  NOTIMPLEMENTED() << " authenticated=" << success;
+}
+
 void AutofillDialogControllerImpl::OnDidGetFullWallet(
     scoped_ptr<wallet::FullWallet> full_wallet) {
   NOTIMPLEMENTED();

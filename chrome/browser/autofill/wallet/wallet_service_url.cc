@@ -57,6 +57,10 @@ GURL GetAcceptLegalDocumentsUrl() {
   return GetBaseAutocheckoutUrl().Resolve("acceptLegalDocuments");
 }
 
+GURL GetAuthenticateInstrumentUrl() {
+  return GetBaseAutocheckoutUrl().Resolve("authenticateInstrument");
+}
+
 GURL GetSendStatusUrl() {
   return GetBaseAutocheckoutUrl().Resolve("reportStatus");
 }

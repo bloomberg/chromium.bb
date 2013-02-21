@@ -39,10 +39,18 @@ class EncryptionEscrowClient : public net::URLFetcherDelegate {
       const std::vector<uint8>& one_time_pad,
       base::WeakPtr<EncryptionEscrowClientObserver> observer);
 
+  // Escrows the card verfication number of an existing instrument with Online
+  // Wallet. The escrow is keyed off of |obfuscated_gaia_id|. |observer| is
+  // notified when the request is complete.
+  void EscrowCardVerificationNumber(
+      const std::string& card_verification_number,
+      const std::string& obfuscated_gaia_id,
+      base::WeakPtr<EncryptionEscrowClientObserver> observer);
+
   // Escrows the primary account number and card verfication number of
   // |new_instrument| with Online Wallet. The escrow is keyed off of
   // |obfuscated_gaia_id|. |observer| is notified when the request is complete.
-  void EscrowSensitiveInformation(
+  void EscrowInstrumentInformation(
       const Instrument& new_instrument,
       const std::string& obfuscated_gaia_id,
       base::WeakPtr<EncryptionEscrowClientObserver> observer);
@@ -51,7 +59,8 @@ class EncryptionEscrowClient : public net::URLFetcherDelegate {
   enum RequestType {
     NO_PENDING_REQUEST,
     ENCRYPT_ONE_TIME_PAD,
-    ESCROW_SENSITIVE_INFORMATION,
+    ESCROW_INSTRUMENT_INFORMATION,
+    ESCROW_CARD_VERIFICATION_NUMBER,
   };
 
   // Posts |post_body| to |url|. When the request is complete, the |observer|

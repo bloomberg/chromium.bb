@@ -20,6 +20,9 @@ TEST(WalletServiceUrl, CheckDefaultUrls) {
             "acceptLegalDocuments",
             GetAcceptLegalDocumentsUrl().spec());
   ASSERT_EQ("https://wallet.google.com/online/v2/wallet/autocheckout/v1/"
+            "authenticateInstrument",
+            GetAuthenticateInstrumentUrl().spec());
+  ASSERT_EQ("https://wallet.google.com/online/v2/wallet/autocheckout/v1/"
             "reportStatus",
             GetSendStatusUrl().spec());
   ASSERT_EQ("https://wallet.google.com/online/v2/wallet/autocheckout/v1/"

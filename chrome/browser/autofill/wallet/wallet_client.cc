@@ -8,6 +8,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string_util.h"
 #include "chrome/browser/autofill/wallet/cart.h"
 #include "chrome/browser/autofill/wallet/instrument.h"
 #include "chrome/browser/autofill/wallet/wallet_address.h"
@@ -84,6 +85,27 @@ void WalletClient::AcceptLegalDocuments(
   MakeWalletRequest(GetAcceptLegalDocumentsUrl(), post_body, observer);
 }
 
+void WalletClient::AuthenticateInstrument(
+    const std::string& instrument_id,
+    const std::string& card_verification_number,
+    const std::string& obfuscated_gaia_id,
+    WalletClientObserver* observer) {
+  DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
+  DCHECK(observer);
+  DCHECK(pending_request_body_.empty());
+  request_type_ = AUTHENTICATE_INSTRUMENT;
+  observer_ = observer;
+
+  pending_request_body_.SetString("api_key", google_apis::GetAPIKey());
+  pending_request_body_.SetString("risk_params", GetRiskParams());
+  pending_request_body_.SetString("instrument_id", instrument_id);
+
+  encryption_escrow_client_.EscrowCardVerificationNumber(
+      card_verification_number,
+      obfuscated_gaia_id,
+      weak_ptr_factory_.GetWeakPtr());
+}
+
 void WalletClient::GetFullWallet(const std::string& instrument_id,
                                  const std::string& address_id,
                                  const std::string& merchant_domain,
@@ -158,7 +180,7 @@ void WalletClient::SaveInstrument(const Instrument& instrument,
   pending_request_body_.SetString("instrument_phone_number",
                                   instrument.address().phone_number());
 
-  encryption_escrow_client_.EscrowSensitiveInformation(
+  encryption_escrow_client_.EscrowInstrumentInformation(
       instrument,
       obfuscated_gaia_id,
       weak_ptr_factory_.GetWeakPtr());
@@ -185,7 +207,7 @@ void WalletClient::SaveInstrumentAndAddress(
   pending_request_body_.Set("shipping_address",
                         address.ToDictionaryWithID().release());
 
-  encryption_escrow_client_.EscrowSensitiveInformation(
+  encryption_escrow_client_.EscrowInstrumentInformation(
       instrument,
       obfuscated_gaia_id,
       weak_ptr_factory_.GetWeakPtr());
@@ -315,6 +337,20 @@ void WalletClient::OnURLFetchComplete(
     case ACCEPT_LEGAL_DOCUMENTS:
       observer_->OnDidAcceptLegalDocuments();
       break;
+    case AUTHENTICATE_INSTRUMENT: {
+      std::string auth_result;
+      if (response_dict->GetString("auth_result", &auth_result)) {
+        std::string trimmed;
+        TrimWhitespaceASCII(auth_result,
+                            TRIM_ALL,
+                            &trimmed);
+        observer_->OnDidAuthenticateInstrument(
+            LowerCaseEqualsASCII(trimmed, "success"));
+      } else {
+        HandleMalformedResponse(old_request.get());
+      }
+      break;
+    }
     case SEND_STATUS:
       observer_->OnDidSendAutocheckoutStatus();
       break;
@@ -403,7 +439,7 @@ void WalletClient::OnDidEncryptOneTimePad(
   MakeWalletRequest(GetGetFullWalletUrl(), post_body, observer_);
 }
 
-void WalletClient::OnDidEscrowSensitiveInformation(
+void WalletClient::OnDidEscrowInstrumentInformation(
     const std::string& escrow_handle) {
   DCHECK(request_type_ == SAVE_INSTRUMENT ||
          request_type_ == SAVE_INSTRUMENT_AND_ADDRESS);
@@ -415,6 +451,18 @@ void WalletClient::OnDidEscrowSensitiveInformation(
   pending_request_body_.Clear();
 
   MakeWalletRequest(GetSaveToWalletUrl(), post_body, observer_);
+}
+
+void WalletClient::OnDidEscrowCardVerificationNumber(
+    const std::string& escrow_handle) {
+  DCHECK_EQ(AUTHENTICATE_INSTRUMENT, request_type_);
+  pending_request_body_.SetString("instrument_escrow_handle", escrow_handle);
+
+  std::string post_body;
+  base::JSONWriter::Write(&pending_request_body_, &post_body);
+  pending_request_body_.Clear();
+
+  MakeWalletRequest(GetAuthenticateInstrumentUrl(), post_body, observer_);
 }
 
 void WalletClient::OnNetworkError(int response_code) {

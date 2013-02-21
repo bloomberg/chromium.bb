@@ -56,6 +56,15 @@ class WalletClient
                             const std::string& google_transaction_id,
                             WalletClientObserver* observer);
 
+  // Authenticates that |card_verification_number| is for the backing instrument
+  // with |instrument_id|. |obfuscated_gaia_id| is used as a key when escrowing
+  // |card_verification_number|. |observer| is notified when the request is
+  // complete. Used to respond to Risk challenges.
+  void AuthenticateInstrument(const std::string& instrument_id,
+                              const std::string& card_verification_number,
+                              const std::string& obfuscated_gaia_id,
+                              WalletClientObserver* observer);
+
   // GetFullWallet retrieves the a FullWallet for the user. |instrument_id| and
   // |adddress_id| should have been selected by the user in some UI,
   // |merchant_domain| should come from the BrowserContext, the |cart|
@@ -111,6 +120,7 @@ class WalletClient
   enum RequestType {
     NO_PENDING_REQUEST,
     ACCEPT_LEGAL_DOCUMENTS,
+    AUTHENTICATE_INSTRUMENT,
     GET_FULL_WALLET,
     GET_WALLET_ITEMS,
     SAVE_ADDRESS,
@@ -136,7 +146,9 @@ class WalletClient
   virtual void OnDidEncryptOneTimePad(
       const std::string& encrypted_one_time_pad,
       const std::string& session_material) OVERRIDE;
-  virtual void OnDidEscrowSensitiveInformation(
+  virtual void OnDidEscrowInstrumentInformation(
+      const std::string& escrow_handle)  OVERRIDE;
+  virtual void OnDidEscrowCardVerificationNumber(
       const std::string& escrow_handle) OVERRIDE;
   virtual void OnNetworkError(int response_code) OVERRIDE;
   virtual void OnMalformedResponse() OVERRIDE;

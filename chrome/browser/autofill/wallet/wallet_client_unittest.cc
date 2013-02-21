@@ -164,7 +164,17 @@ const char kUpdateInstrumentValidResponse[] =
 
 const char kUpdateInstrumentMalformedResponse[] =
     "{"
-    " \"cheese\":\"monkeys\""
+    "  \"cheese\":\"monkeys\""
+    "}";
+
+const char kAuthenticateInstrumentFailureResponse[] =
+    "{"
+    "  \"auth_result\":\"anything else\""
+    "}";
+
+const char kAuthenticateInstrumentSuccessResponse[] =
+    "{"
+    "  \"auth_result\":\"SUCCESS\""
     "}";
 
 // The JSON below is used to test against the request payload being sent to
@@ -179,6 +189,13 @@ const char kAcceptLegalDocumentsValidRequest[] =
             "\"doc_2\""
         "],"
         "\"google_transaction_id\":\"google-transaction-id\""
+    "}";
+
+const char kAuthenticateInstrumentValidRequest[] =
+    "{"
+        "\"instrument_escrow_handle\":\"escrow_handle\","
+        "\"instrument_id\":\"instrument_id\","
+        "\"risk_params\":\"\""
     "}";
 
 const char kGetFullWalletValidRequest[] =
@@ -397,6 +414,7 @@ class MockWalletClientObserver : public WalletClientObserver {
   ~MockWalletClientObserver() {}
 
   MOCK_METHOD0(OnDidAcceptLegalDocuments, void());
+  MOCK_METHOD1(OnDidAuthenticateInstrument, void(bool success));
   MOCK_METHOD1(OnDidSaveAddress, void(const std::string& address_id));
   MOCK_METHOD1(OnDidSaveInstrument, void(const std::string& instrument_id));
   MOCK_METHOD2(OnDidSaveInstrumentAndAddress,
@@ -635,6 +653,115 @@ TEST_F(WalletClientTest, AcceptLegalDocuments) {
   EXPECT_EQ(kAcceptLegalDocumentsValidRequest, GetData(fetcher));
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
+}
+
+TEST_F(WalletClientTest, AuthenticateInstrumentSucceeded) {
+  MockWalletClientObserver observer;
+  EXPECT_CALL(observer, OnDidAuthenticateInstrument(true)).Times(1);
+
+  net::TestURLFetcherFactory factory;
+
+  WalletClient wallet_client(profile_.GetRequestContext());
+  wallet_client.AuthenticateInstrument("instrument_id",
+                                       "cvv",
+                                       "obfuscated_gaia_id",
+                                       &observer);
+
+  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  ASSERT_TRUE(encryption_fetcher);
+  encryption_fetcher->set_response_code(net::HTTP_OK);
+  encryption_fetcher->SetResponseString("escrow_handle");
+  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_OK,
+                         kAuthenticateInstrumentValidRequest,
+                         kAuthenticateInstrumentSuccessResponse);
+}
+
+TEST_F(WalletClientTest, AuthenticateInstrumentFailed) {
+  MockWalletClientObserver observer;
+  EXPECT_CALL(observer, OnDidAuthenticateInstrument(false)).Times(1);
+
+  net::TestURLFetcherFactory factory;
+
+  WalletClient wallet_client(profile_.GetRequestContext());
+  wallet_client.AuthenticateInstrument("instrument_id",
+                                       "cvv",
+                                       "obfuscated_gaia_id",
+                                       &observer);
+
+  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  ASSERT_TRUE(encryption_fetcher);
+  encryption_fetcher->set_response_code(net::HTTP_OK);
+  encryption_fetcher->SetResponseString("escrow_handle");
+  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_OK,
+                         kAuthenticateInstrumentValidRequest,
+                         kAuthenticateInstrumentFailureResponse);
+}
+
+TEST_F(WalletClientTest, AuthenticateInstrumentEscrowDown) {
+  MockWalletClientObserver observer;
+  EXPECT_CALL(observer,
+              OnNetworkError(net::HTTP_INTERNAL_SERVER_ERROR)).Times(1);
+
+  net::TestURLFetcherFactory factory;
+
+  WalletClient wallet_client(profile_.GetRequestContext());
+  wallet_client.AuthenticateInstrument("instrument_id",
+                                       "cvv",
+                                       "obfuscated_gaia_id",
+                                       &observer);
+
+  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  ASSERT_TRUE(encryption_fetcher);
+  encryption_fetcher->set_response_code(net::HTTP_INTERNAL_SERVER_ERROR);
+  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+}
+
+TEST_F(WalletClientTest, AuthenticateInstrumentEscrowMalformed) {
+  MockWalletClientObserver observer;
+  EXPECT_CALL(observer, OnMalformedResponse()).Times(1);
+
+  net::TestURLFetcherFactory factory;
+
+  WalletClient wallet_client(profile_.GetRequestContext());
+  wallet_client.AuthenticateInstrument("instrument_id",
+                                       "cvv",
+                                       "obfuscated_gaia_id",
+                                       &observer);
+
+  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  ASSERT_TRUE(encryption_fetcher);
+  encryption_fetcher->set_response_code(net::HTTP_OK);
+  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+}
+
+TEST_F(WalletClientTest, AuthenticateInstrumentFailedMalformedResponse) {
+  MockWalletClientObserver observer;
+  EXPECT_CALL(observer, OnMalformedResponse()).Times(1);
+
+  net::TestURLFetcherFactory factory;
+
+  WalletClient wallet_client(profile_.GetRequestContext());
+  wallet_client.AuthenticateInstrument("instrument_id",
+                                       "cvv",
+                                       "obfuscated_gaia_id",
+                                       &observer);
+
+  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  ASSERT_TRUE(encryption_fetcher);
+  encryption_fetcher->set_response_code(net::HTTP_OK);
+  encryption_fetcher->SetResponseString("escrow_handle");
+  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_OK,
+                         kAuthenticateInstrumentValidRequest,
+                         kSaveInvalidResponse);
 }
 
 // TODO(ahutter): Add failure tests for GetWalletItems.

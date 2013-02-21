@@ -22,7 +22,8 @@
 namespace {
 
 const char kEncryptOtpBodyFormat[] = "cvv=%s:%s";
-const char kEscrowSensitiveInformationFormat[] = "gid=%s&cardNumber=%s&cvv=%s";
+const char kEscrowInstrumentInformationFormat[] = "gid=%s&cardNumber=%s&cvv=%s";
+const char kEscrowCardVerficationNumberFormat[] = "gid=%s&cvv=%s";
 const char kApplicationMimeType[] = "application/x-www-form-urlencoded";
 
 // The maximum number of bits in the one time pad that the server is willing to
@@ -65,12 +66,12 @@ void EncryptionEscrowClient::EncryptOneTimePad(
   MakeRequest(GetEncryptionUrl(), post_body, observer);
 }
 
-void EncryptionEscrowClient::EscrowSensitiveInformation(
+void EncryptionEscrowClient::EscrowInstrumentInformation(
     const Instrument& new_instrument,
     const std::string& obfuscated_gaia_id,
     base::WeakPtr<EncryptionEscrowClientObserver> observer) {
   DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
-  request_type_ = ESCROW_SENSITIVE_INFORMATION;
+  request_type_ = ESCROW_INSTRUMENT_INFORMATION;
 
   const std::string& primary_account_number =
       net::EscapeUrlEncodedData(
@@ -80,9 +81,24 @@ void EncryptionEscrowClient::EscrowSensitiveInformation(
           UTF16ToUTF8(new_instrument.card_verification_number()), true);
 
   std::string post_body = StringPrintf(
-      kEscrowSensitiveInformationFormat,
+      kEscrowInstrumentInformationFormat,
       obfuscated_gaia_id.c_str(),
       primary_account_number.c_str(),
+      card_verification_number.c_str());
+
+  MakeRequest(GetEscrowUrl(), post_body, observer);
+}
+
+void EncryptionEscrowClient::EscrowCardVerificationNumber(
+    const std::string& card_verification_number,
+    const std::string& obfuscated_gaia_id,
+    base::WeakPtr<EncryptionEscrowClientObserver> observer) {
+  DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
+  request_type_ = ESCROW_CARD_VERIFICATION_NUMBER;
+
+  std::string post_body = StringPrintf(
+      kEscrowCardVerficationNumberFormat,
+      obfuscated_gaia_id.c_str(),
       card_verification_number.c_str());
 
   MakeRequest(GetEscrowUrl(), post_body, observer);
@@ -144,10 +160,17 @@ void EncryptionEscrowClient::OnURLFetchComplete(
       }
       break;
     }
-    case ESCROW_SENSITIVE_INFORMATION:
+
+    case ESCROW_INSTRUMENT_INFORMATION:
       if (observer_)
-        observer_->OnDidEscrowSensitiveInformation(data);
+        observer_->OnDidEscrowInstrumentInformation(data);
       break;
+
+    case ESCROW_CARD_VERIFICATION_NUMBER:
+      if (observer_)
+        observer_->OnDidEscrowCardVerificationNumber(data);
+      break;
+
     case NO_PENDING_REQUEST:
       NOTREACHED();
   }

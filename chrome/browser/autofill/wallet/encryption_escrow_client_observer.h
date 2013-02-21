@@ -22,9 +22,15 @@ class EncryptionEscrowClientObserver {
   virtual void OnDidEncryptOneTimePad(const std::string& encrypted_one_time_pad,
                                       const std::string& session_material) = 0;
 
-  // Called when an EscrowSensitiveInformation request finishes successfully.
+  // Called when an EscrowCardVerificationNumber request finishes
+  // successfully. |escrow_handle| must be used when authenticating an
+  // instrument.
+  virtual void OnDidEscrowCardVerificationNumber(
+      const std::string& escrow_handle) = 0;
+
+  // Called when an EscrowInstrumentInformation request finishes successfully.
   // |escrow_handle| must be used when saving a new instrument.
-  virtual void OnDidEscrowSensitiveInformation(
+  virtual void OnDidEscrowInstrumentInformation(
       const std::string& escrow_handle) = 0;
 
   // Called when a request fails due to a network error or if the response was

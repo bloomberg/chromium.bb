@@ -21,8 +21,10 @@ namespace {
 
 const char kEncryptOtpRequest[] = "cvv=30:000102030405";
 const char kEncryptOtpResponse[] = "session_material|encrypted_one_time_pad";
-const char kEscrowSensitiveInformationRequest[] =
+const char kEscrowInstrumentInformationRequest[] =
     "gid=obfuscated_gaia_id&cardNumber=4444444444444448&cvv=123";
+const char kEscrowCardVerificationNumberRequest[] =
+    "gid=obfuscated_gaia_id&cvv=123";
 
 }  // namespace
 
@@ -39,7 +41,9 @@ class MockEncryptionEscrowClientObserver :
   MOCK_METHOD2(OnDidEncryptOneTimePad,
                void(const std::string& encrypted_one_time_pad,
                     const std::string& session_material));
-  MOCK_METHOD1(OnDidEscrowSensitiveInformation,
+  MOCK_METHOD1(OnDidEscrowCardVerificationNumber,
+               void(const std::string& escrow_handle));
+  MOCK_METHOD1(OnDidEscrowInstrumentInformation,
                void(const std::string& escrow_handle));
   MOCK_METHOD0(OnMalformedResponse, void());
   MOCK_METHOD1(OnNetworkError, void(int response_code));
@@ -98,45 +102,76 @@ TEST_F(EncryptionEscrowClientTest, NetworkError) {
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   EncryptionEscrowClient encryption_escrow_client(profile_.GetRequestContext());
-  encryption_escrow_client.EscrowSensitiveInformation(*instrument,
-                                                      "obfuscated_gaia_id",
-                                                      observer.AsWeakPtr());
+  encryption_escrow_client.EscrowInstrumentInformation(*instrument,
+                                                       "obfuscated_gaia_id",
+                                                       observer.AsWeakPtr());
   VerifyAndFinishRequest(factory,
                          net::HTTP_UNAUTHORIZED,
-                         kEscrowSensitiveInformationRequest,
+                         kEscrowInstrumentInformationRequest,
                          std::string());
 }
 
-TEST_F(EncryptionEscrowClientTest, EscrowSensitiveInformationSuccess) {
+TEST_F(EncryptionEscrowClientTest, EscrowInstrumentInformationSuccess) {
   MockEncryptionEscrowClientObserver observer;
-  EXPECT_CALL(observer, OnDidEscrowSensitiveInformation("abc")).Times(1);
+  EXPECT_CALL(observer, OnDidEscrowInstrumentInformation("abc")).Times(1);
 
   net::TestURLFetcherFactory factory;
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   EncryptionEscrowClient encryption_escrow_client(profile_.GetRequestContext());
-  encryption_escrow_client.EscrowSensitiveInformation(*instrument,
-                                                      "obfuscated_gaia_id",
-                                                      observer.AsWeakPtr());
+  encryption_escrow_client.EscrowInstrumentInformation(*instrument,
+                                                       "obfuscated_gaia_id",
+                                                       observer.AsWeakPtr());
   VerifyAndFinishRequest(factory,
                          net::HTTP_OK,
-                         kEscrowSensitiveInformationRequest,
+                         kEscrowInstrumentInformationRequest,
                          "abc");
 }
 
-TEST_F(EncryptionEscrowClientTest, EscrowSensitiveInformationFailure) {
+TEST_F(EncryptionEscrowClientTest, EscrowInstrumentInformationFailure) {
   MockEncryptionEscrowClientObserver observer;
   EXPECT_CALL(observer, OnMalformedResponse()).Times(1);
 
   net::TestURLFetcherFactory factory;
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   EncryptionEscrowClient encryption_escrow_client(profile_.GetRequestContext());
-  encryption_escrow_client.EscrowSensitiveInformation(*instrument,
-                                                      "obfuscated_gaia_id",
-                                                      observer.AsWeakPtr());
+  encryption_escrow_client.EscrowInstrumentInformation(*instrument,
+                                                       "obfuscated_gaia_id",
+                                                       observer.AsWeakPtr());
   VerifyAndFinishRequest(factory,
                          net::HTTP_OK,
-                         kEscrowSensitiveInformationRequest,
+                         kEscrowInstrumentInformationRequest,
+                         std::string());
+}
+
+TEST_F(EncryptionEscrowClientTest, EscrowCardVerificationNumberSuccess) {
+  MockEncryptionEscrowClientObserver observer;
+  EXPECT_CALL(observer, OnDidEscrowCardVerificationNumber("abc")).Times(1);
+
+  net::TestURLFetcherFactory factory;
+
+  EncryptionEscrowClient encryption_escrow_client(profile_.GetRequestContext());
+  encryption_escrow_client.EscrowCardVerificationNumber("123",
+                                                        "obfuscated_gaia_id",
+                                                        observer.AsWeakPtr());
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_OK,
+                         kEscrowCardVerificationNumberRequest,
+                         "abc");
+}
+
+TEST_F(EncryptionEscrowClientTest, EscrowCardVerificationNumberFailure) {
+  MockEncryptionEscrowClientObserver observer;
+  EXPECT_CALL(observer, OnMalformedResponse()).Times(1);
+
+  net::TestURLFetcherFactory factory;
+  EncryptionEscrowClient encryption_escrow_client(profile_.GetRequestContext());
+  encryption_escrow_client.EscrowCardVerificationNumber("123",
+                                                        "obfuscated_gaia_id",
+                                                        observer.AsWeakPtr());
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_OK,
+                         kEscrowCardVerificationNumberRequest,
                          std::string());
 }
 

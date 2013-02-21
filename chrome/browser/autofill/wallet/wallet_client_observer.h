@@ -23,6 +23,9 @@ class WalletClientObserver {
   // Called when an AcceptLegalDocuments request finishes successfully.
   virtual void OnDidAcceptLegalDocuments() = 0;
 
+  // Called when an AuthenticateInstrument request finishes successfully.
+  virtual void OnDidAuthenticateInstrument(bool success) = 0;
+
   // Called when a GetFullWallet request finishes successfully. Ownership is
   // transferred to implementer of this interface.
   virtual void OnDidGetFullWallet(scoped_ptr<FullWallet> full_wallet) = 0;

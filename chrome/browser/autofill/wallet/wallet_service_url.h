@@ -13,6 +13,7 @@ namespace wallet {
 GURL GetGetWalletItemsUrl();
 GURL GetGetFullWalletUrl();
 GURL GetAcceptLegalDocumentsUrl();
+GURL GetAuthenticateInstrumentUrl();
 GURL GetEncryptionUrl();
 GURL GetEscrowUrl();
 GURL GetSendStatusUrl();
