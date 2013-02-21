@@ -102,9 +102,9 @@ aura::RootWindow* DesktopRootWindowHostWin::Init(
   if (parent_window)
     parent_hwnd = parent_window->GetRootWindow()->GetAcceleratedWidget();
 
-  message_handler_->Init(parent_hwnd, params.bounds);
-
   message_handler_->set_remove_standard_frame(params.remove_standard_frame);
+
+  message_handler_->Init(parent_hwnd, params.bounds);
 
   aura::RootWindow::CreateParams rw_params(params.bounds);
   rw_params.host = this;
