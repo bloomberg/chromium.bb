@@ -579,6 +579,36 @@ TEST_F(WebContentsImplTest, NavigateTwoTabsCrossSite) {
   EXPECT_EQ(instance2a, instance2b);
 }
 
+// Test that we can find an opener RVH even if it's pending.
+// http://crbug.com/176252.
+TEST_F(WebContentsImplTest, FindOpenerRVHWhenPending) {
+  contents()->transition_cross_site = true;
+  TestRenderViewHost* orig_rvh = test_rvh();
+
+  // Navigate to a URL.
+  const GURL url("http://www.google.com");
+  controller().LoadURL(
+      url, Referrer(), PAGE_TRANSITION_TYPED, std::string());
+  contents()->TestDidNavigate(orig_rvh, 1, url, PAGE_TRANSITION_TYPED);
+
+  // Start to navigate first tab to a new site, so that it has a pending RVH.
+  const GURL url2("http://www.yahoo.com");
+  controller().LoadURL(
+      url2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
+  orig_rvh->SendShouldCloseACK(true);
+  TestRenderViewHost* pending_rvh =
+      static_cast<TestRenderViewHost*>(contents()->GetPendingRenderViewHost());
+
+  // While it is still pending, simulate opening a new tab with the first tab
+  // as its opener.  This will call WebContentsImpl::CreateOpenerRenderViews
+  // on the opener to ensure that an RVH exists.
+  int opener_routing_id = contents()->CreateOpenerRenderViews(
+      pending_rvh->GetSiteInstance());
+
+  // We should find the pending RVH and not create a new one.
+  EXPECT_EQ(pending_rvh->GetRoutingID(), opener_routing_id);
+}
+
 // Tests that WebContentsImpl uses the current URL, not the SiteInstance's site,
 // to determine whether a navigation is cross-site.
 TEST_F(WebContentsImplTest, CrossSiteComparesAgainstCurrentPage) {

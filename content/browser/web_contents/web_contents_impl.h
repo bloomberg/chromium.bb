@@ -481,6 +481,7 @@ class CONTENT_EXPORT WebContentsImpl
 
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest, NoJSMessageOnInterstitials);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest, UpdateTitle);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest, FindOpenerRVHWhenPending);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest,
                            CrossSiteCantPreemptAfterUnload);
   FRIEND_TEST_ALL_PREFIXES(FormStructureBrowserTest, HTMLFiles);

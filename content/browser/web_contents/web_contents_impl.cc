@@ -3423,10 +3423,14 @@ int WebContentsImpl::CreateOpenerRenderViews(SiteInstance* instance) {
   if (opener_)
     opener_route_id = opener_->CreateOpenerRenderViews(instance);
 
-  // If any of the renderers for this WebContents has the same SiteInstance,
-  // use it.
+  // If any of the renderers (current, pending, or swapped out) for this
+  // WebContents has the same SiteInstance, use it.
   if (render_manager_.current_host()->GetSiteInstance() == instance)
     return render_manager_.current_host()->GetRoutingID();
+
+  if (render_manager_.pending_render_view_host() &&
+      render_manager_.pending_render_view_host()->GetSiteInstance() == instance)
+    return render_manager_.pending_render_view_host()->GetRoutingID();
 
   RenderViewHostImpl* rvh = render_manager_.GetSwappedOutRenderViewHost(
       instance);
