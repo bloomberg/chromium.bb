@@ -104,13 +104,11 @@ const std::string DateTimeFormatter::FormatString() const {
   if (success <= U_ZERO_ERROR) {
     UDate time = calendar.getTime(success);
     icu::SimpleDateFormat formatter(*pattern_, success);
-    icu::UnicodeString formattedTime;
-    formatter.format(time, formattedTime, success);
-    // Android WebView builds with the system ICU which is different
-    // from Chromium's ICU; as such we can't easily get a UTF8 string
-    // from formattedTime but we can go round-the-houses a bit.
-    result = UTF16ToUTF8(string16(formattedTime.getBuffer(),
-        static_cast<size_t>(formattedTime.length())));
+    icu::UnicodeString formatted_time;
+    formatter.format(time, formatted_time, success);
+    UTF16ToUTF8(formatted_time.getBuffer(),
+                static_cast<size_t>(formatted_time.length()),
+                &result);
     if (success <= U_ZERO_ERROR)
       return result;
   }
@@ -164,8 +162,8 @@ bool DateTimeFormatter::ParseValues() {
   }
 
   UErrorCode success = U_ZERO_ERROR;
-  icu::UnicodeString icu_value =
-      icu::UnicodeString::fromUTF8(formatted_string_.c_str());
+  icu::UnicodeString icu_value = icu::UnicodeString::fromUTF8(
+      icu::StringPiece(formatted_string_.data(), formatted_string_.size()));
   if (type_ > 0 && type_ <= ui::TEXT_INPUT_TYPE_MAX) {
     const icu::UnicodeString pattern = patterns_[type_];
     icu::SimpleDateFormat formatter(pattern, success);
