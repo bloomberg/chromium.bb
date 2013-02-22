@@ -34,9 +34,9 @@ AlsaPcmInputStream::AlsaPcmInputStream(AudioManagerLinux* audio_manager,
       bytes_per_buffer_(params.frames_per_buffer() *
                         (params.channels() * params.bits_per_sample()) / 8),
       wrapper_(wrapper),
-      buffer_duration_ms_(
-          (params.frames_per_buffer() * base::Time::kMillisecondsPerSecond) /
-          params.sample_rate()),
+      buffer_duration_(base::TimeDelta::FromMicroseconds(
+          params.frames_per_buffer() * base::Time::kMicrosecondsPerSecond /
+          static_cast<float>(params.sample_rate()))),
       callback_(NULL),
       device_handle_(NULL),
       mixer_handle_(NULL),
@@ -59,8 +59,8 @@ bool AlsaPcmInputStream::Open() {
     return false;
   }
 
-  uint32 latency_us = buffer_duration_ms_ * kNumPacketsInRingBuffer *
-      base::Time::kMicrosecondsPerMillisecond;
+  uint32 latency_us =
+      buffer_duration_.InMicroseconds() * kNumPacketsInRingBuffer;
 
   // Use the same minimum required latency as output.
   latency_us = std::max(latency_us, AlsaPcmOutputStream::kMinLatencyMicros);
@@ -114,11 +114,10 @@ void AlsaPcmInputStream::Start(AudioInputCallback* callback) {
   if (error < 0) {
     callback_ = NULL;
   } else {
-    // We start reading data half |buffer_duration_ms_| later than when the
+    // We start reading data half |buffer_duration_| later than when the
     // buffer might have got filled, to accommodate some delays in the audio
     // driver. This could also give us a smooth read sequence going forward.
-    base::TimeDelta delay = base::TimeDelta::FromMilliseconds(
-        buffer_duration_ms_ + buffer_duration_ms_ / 2);
+    base::TimeDelta delay = buffer_duration_ + buffer_duration_ / 2;
     next_read_time_ = base::Time::Now() + delay;
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
@@ -188,8 +187,7 @@ void AlsaPcmInputStream::ReadAudio() {
       read_callback_behind_schedule_ = false;
     }
 
-    base::TimeDelta next_check_time = base::TimeDelta::FromMilliseconds(
-        buffer_duration_ms_ / 2);
+    base::TimeDelta next_check_time = buffer_duration_ / 2;
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&AlsaPcmInputStream::ReadAudio, weak_factory_.GetWeakPtr()),
@@ -220,12 +218,12 @@ void AlsaPcmInputStream::ReadAudio() {
     }
   }
 
-  next_read_time_ += base::TimeDelta::FromMilliseconds(buffer_duration_ms_);
+  next_read_time_ += buffer_duration_;
   base::TimeDelta delay = next_read_time_ - base::Time::Now();
   if (delay < base::TimeDelta()) {
-    LOG(WARNING) << "Audio read callback behind schedule by "
-                 << (buffer_duration_ms_ - delay.InMilliseconds())
-                 << " (ms).";
+    DVLOG(1) << "Audio read callback behind schedule by "
+             << (buffer_duration_ - delay).InMicroseconds()
+             << " (us).";
     // Read callback is behind schedule. Assuming there is data pending in
     // the soundcard, invoke the read callback immediate in order to catch up.
     read_callback_behind_schedule_ = true;

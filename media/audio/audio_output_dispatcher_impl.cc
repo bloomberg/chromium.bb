@@ -21,9 +21,9 @@ AudioOutputDispatcherImpl::AudioOutputDispatcherImpl(
     const AudioParameters& params,
     const base::TimeDelta& close_delay)
     : AudioOutputDispatcher(audio_manager, params),
-      pause_delay_(base::TimeDelta::FromMilliseconds(
-          2 * params.frames_per_buffer() *
-          base::Time::kMillisecondsPerSecond / params.sample_rate())),
+      pause_delay_(base::TimeDelta::FromMicroseconds(
+          2 * params.frames_per_buffer() * base::Time::kMicrosecondsPerSecond /
+          static_cast<float>(params.sample_rate()))),
       paused_proxies_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_this_(this)),
       close_timer_(FROM_HERE,
