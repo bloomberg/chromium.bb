@@ -61,6 +61,22 @@ BASELINE_TO_NAME_MAP = None
 # stored on.
 _BASELINE_DECODERS = 'baseline-decoders'
 
+"""Defines the decoder action fields that hold names of instruction decoders.
+   Such fields must be removed from baselines, so that the baselines remain
+   neutral for other instruction decoder naming conventions."""
+_DECODER_ACTION_DECODER_FIELD_NAMES = [
+    'actual', 'baseline', 'generated_baseline']
+
+def RemoveDecoderActionDecoderFieldNames(action):
+  """Returns a copy of the given decoder action, with fields that name
+     the instruction decoder to use removed. Neutralizes the corresponding
+     baseline action."""
+  action = action.copy()
+  for field in _DECODER_ACTION_DECODER_FIELD_NAMES:
+    action.remove(field)
+  action.freeze()
+  return action
+
 def GetBaselineDecoders(decoder):
   """Takes the given decoder table, and builds the corresponding
      internal maps, so that we can consistently name baseline classes.
@@ -70,7 +86,7 @@ def GetBaselineDecoders(decoder):
   # See if aready defined, and update accordingly.
   maps = decoder.get_value(_BASELINE_DECODERS)
   if maps:
-    _ReintsallBaselineMaps(maps)
+    _ReinstallBaselineMaps(maps)
   else:
     _BuildBaselineMaps(decoder)
   return BASELINE_DECODERS
@@ -92,8 +108,10 @@ def _BuildBaselineMaps(decoder):
   for baseline in decoder.decoders():
     if not dgen_decoder.ActionDefinesDecoder(baseline): continue
 
-    baselines.add(baseline)
-    _AddBaselineToBaselineNameToBaselinesMap(baseline)
+    simp_baseline = RemoveDecoderActionDecoderFieldNames(baseline)
+
+    baselines.add(simp_baseline)
+    _AddBaselineToBaselineNameToBaselinesMap(simp_baseline)
 
   _FixBaselineNameToBaselinesMap()
   _DefineBaselineNames()
@@ -305,7 +323,8 @@ def _DefineBaselineNames():
 
 def BaselineName(baseline):
   """Returns the name to use for the baseline."""
-  return BASELINE_TO_NAME_MAP[baseline]
+  simp_baseline = RemoveDecoderActionDecoderFieldNames(baseline)
+  return BASELINE_TO_NAME_MAP[simp_baseline]
 
 def GetBaselineDecodersBlock(decoder, n, separators):
   """Returns the (sorted) list of baseline class to include
