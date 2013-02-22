@@ -13,15 +13,15 @@ namespace content {
 int BrowserMain(const MainFunctionParams& parameters) {
   TRACE_EVENT_BEGIN_ETW("BrowserMain", 0, "");
 
-  scoped_ptr<BrowserMainRunner> main_runner_(BrowserMainRunner::Create());
+  scoped_ptr<BrowserMainRunner> main_runner(BrowserMainRunner::Create());
 
-  int exit_code = main_runner_->Initialize(parameters);
+  int exit_code = main_runner->Initialize(parameters);
   if (exit_code >= 0)
     return exit_code;
 
-  exit_code = main_runner_->Run();
+  exit_code = main_runner->Run();
 
-  main_runner_->Shutdown();
+  main_runner->Shutdown();
 
   TRACE_EVENT_END_ETW("BrowserMain", 0, 0);
 
