@@ -103,6 +103,23 @@ class YearComboboxModel : public ui::ComboboxModel {
   DISALLOW_COPY_AND_ASSIGN(YearComboboxModel);
 };
 
+// A model for countries.
+class CountryComboboxModel : public ui::ComboboxModel {
+ public:
+  CountryComboboxModel();
+  virtual ~CountryComboboxModel();
+
+  // ui::Combobox implementation:
+  virtual int GetItemCount() const OVERRIDE;
+  virtual string16 GetItemAt(int index) OVERRIDE;
+
+ private:
+  // The list of all countries.
+  std::vector<std::string> country_codes_;
+
+  DISALLOW_COPY_AND_ASSIGN(CountryComboboxModel);
+};
+
 }  // autofill
 
 #endif  // CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_MODELS_H_

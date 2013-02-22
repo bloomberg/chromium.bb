@@ -102,20 +102,13 @@ bool DetailInputMatchesShippingField(const DetailInput& input,
   return DetailInputMatchesField(input, field);
 }
 
-// Looks through |input_template| for the types in |requested_data|. Appends
-// DetailInput values to |inputs|.
-void FilterInputs(const FormStructure& form_structure,
-                  const DetailInput* input_template,
-                  size_t template_size,
-                  DetailInputs* inputs) {
+// Constructs |inputs| from template data.
+void BuildInputs(const DetailInput* input_template,
+                 size_t template_size,
+                 DetailInputs* inputs) {
   for (size_t i = 0; i < template_size; ++i) {
     const DetailInput* input = &input_template[i];
-    for (size_t j = 0; j < form_structure.field_count(); ++j) {
-      if (DetailInputMatchesField(*input, *form_structure.field(j))) {
-        inputs->push_back(*input);
-        break;
-      }
-    }
+    inputs->push_back(*input);
   }
 }
 
@@ -232,86 +225,67 @@ void AutofillDialogControllerImpl::Show() {
   };
 
   const DetailInput kCCInputs[] = {
-    { 1, CREDIT_CARD_NUMBER, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARD_NUMBER },
-    { 2, CREDIT_CARD_EXP_MONTH },
-    { 2, CREDIT_CARD_EXP_4_DIGIT_YEAR },
-    { 2, CREDIT_CARD_VERIFICATION_CODE, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC },
-    { 3, CREDIT_CARD_NAME, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARDHOLDER_NAME },
+    { 2, CREDIT_CARD_NUMBER, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARD_NUMBER },
+    { 3, CREDIT_CARD_EXP_MONTH },
+    { 3, CREDIT_CARD_EXP_4_DIGIT_YEAR },
+    { 3, CREDIT_CARD_VERIFICATION_CODE, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC },
+    { 4, CREDIT_CARD_NAME, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARDHOLDER_NAME },
   };
 
   const DetailInput kBillingInputs[] = {
-    { 1, ADDRESS_HOME_LINE1, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_1,
+    { 5, ADDRESS_HOME_LINE1, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_1,
       "billing" },
-    { 2, ADDRESS_HOME_LINE2, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_2,
+    { 6, ADDRESS_HOME_LINE2, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_2,
       "billing" },
-    { 3, ADDRESS_HOME_CITY, IDS_AUTOFILL_DIALOG_PLACEHOLDER_LOCALITY,
-      "billing" },
-    // TODO(estade): state is supposed to be a combobox.
-    { 4, ADDRESS_HOME_STATE, IDS_AUTOFILL_FIELD_LABEL_STATE, "billing" },
-    { 4, ADDRESS_HOME_ZIP, IDS_AUTOFILL_DIALOG_PLACEHOLDER_POSTAL_CODE,
-      "billing", 0.5 },
-  };
-
-  // TODO(estade): This is just kCCInputs + kBillingInputs. Is there a better
-  // way to combine them than copying?
-  const DetailInput kCCAndBillingInputs[] = {
-    { 1, CREDIT_CARD_NUMBER, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARD_NUMBER },
-    { 2, CREDIT_CARD_EXP_MONTH },
-    { 2, CREDIT_CARD_EXP_4_DIGIT_YEAR },
-    { 2, CREDIT_CARD_VERIFICATION_CODE, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC },
-    { 3, CREDIT_CARD_NAME, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARDHOLDER_NAME },
-    { 4, ADDRESS_HOME_LINE1, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_1,
-      "billing" },
-    { 5, ADDRESS_HOME_LINE2, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_2,
-      "billing" },
-    { 6, ADDRESS_HOME_CITY, IDS_AUTOFILL_DIALOG_PLACEHOLDER_LOCALITY,
+    { 7, ADDRESS_HOME_CITY, IDS_AUTOFILL_DIALOG_PLACEHOLDER_LOCALITY,
       "billing" },
     // TODO(estade): state is supposed to be a combobox.
-    { 7, ADDRESS_HOME_STATE, IDS_AUTOFILL_FIELD_LABEL_STATE, "billing" },
-    { 7, ADDRESS_HOME_ZIP, IDS_AUTOFILL_DIALOG_PLACEHOLDER_POSTAL_CODE,
+    { 8, ADDRESS_HOME_STATE, IDS_AUTOFILL_FIELD_LABEL_STATE, "billing" },
+    { 8, ADDRESS_HOME_ZIP, IDS_AUTOFILL_DIALOG_PLACEHOLDER_POSTAL_CODE,
       "billing", 0.5 },
+    // TODO(estade): this should have a default based on the locale.
+    { 9, ADDRESS_HOME_COUNTRY, 0, "billing" },
+    { 10, PHONE_HOME_WHOLE_NUMBER,
+      IDS_AUTOFILL_DIALOG_PLACEHOLDER_PHONE_NUMBER },
   };
 
   const DetailInput kShippingInputs[] = {
-    { 1, NAME_FULL, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESSEE_NAME,
+    { 11, NAME_FULL, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESSEE_NAME,
       "shipping" },
-    { 2, ADDRESS_HOME_LINE1, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_1,
+    { 12, ADDRESS_HOME_LINE1, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_1,
       "shipping" },
-    { 3, ADDRESS_HOME_LINE2, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_2,
+    { 13, ADDRESS_HOME_LINE2, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_2,
       "shipping" },
-    { 4, ADDRESS_HOME_CITY, IDS_AUTOFILL_DIALOG_PLACEHOLDER_LOCALITY,
+    { 14, ADDRESS_HOME_CITY, IDS_AUTOFILL_DIALOG_PLACEHOLDER_LOCALITY,
       "shipping" },
     // TODO(estade): state is supposed to be a combobox.
-    { 5, ADDRESS_HOME_STATE, IDS_AUTOFILL_FIELD_LABEL_STATE, "shipping" },
-    { 5, ADDRESS_HOME_ZIP, IDS_AUTOFILL_DIALOG_PLACEHOLDER_POSTAL_CODE,
+    { 15, ADDRESS_HOME_STATE, IDS_AUTOFILL_FIELD_LABEL_STATE, "shipping" },
+    { 15, ADDRESS_HOME_ZIP, IDS_AUTOFILL_DIALOG_PLACEHOLDER_POSTAL_CODE,
       "shipping", 0.5 },
   };
 
-  // TODO(estade): this filtering stuff probably can go away.
-  FilterInputs(form_structure_,
-               kEmailInputs,
-               arraysize(kEmailInputs),
-               &requested_email_fields_);
+  BuildInputs(kEmailInputs,
+              arraysize(kEmailInputs),
+              &requested_email_fields_);
 
-  FilterInputs(form_structure_,
-               kCCInputs,
-               arraysize(kCCInputs),
-               &requested_cc_fields_);
+  BuildInputs(kCCInputs,
+              arraysize(kCCInputs),
+              &requested_cc_fields_);
 
-  FilterInputs(form_structure_,
-               kBillingInputs,
-               arraysize(kBillingInputs),
-               &requested_billing_fields_);
+  BuildInputs(kBillingInputs,
+              arraysize(kBillingInputs),
+              &requested_billing_fields_);
 
-  FilterInputs(form_structure_,
-               kCCAndBillingInputs,
-               arraysize(kBillingInputs),
-               &requested_cc_billing_fields_);
+  BuildInputs(kCCInputs,
+              arraysize(kCCInputs),
+              &requested_cc_billing_fields_);
+  BuildInputs(kBillingInputs,
+              arraysize(kBillingInputs),
+              &requested_cc_billing_fields_);
 
-  FilterInputs(form_structure_,
-               kShippingInputs,
-               arraysize(kShippingInputs),
-               &requested_shipping_fields_);
+  BuildInputs(kShippingInputs,
+              arraysize(kShippingInputs),
+              &requested_shipping_fields_);
 
   GenerateSuggestionsModels();
 
@@ -451,6 +425,9 @@ ui::ComboboxModel* AutofillDialogControllerImpl::ComboboxModelForAutofillType(
 
     case CREDIT_CARD_EXP_4_DIGIT_YEAR:
       return &cc_exp_year_combobox_model_;
+
+    case ADDRESS_HOME_COUNTRY:
+      return &country_combobox_model_;
 
     default:
       return NULL;

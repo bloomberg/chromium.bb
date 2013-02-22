@@ -449,11 +449,21 @@ void AutofillDialogViews::UpdateSection(DialogSection section) {
 
   for (DetailInputs::const_iterator iter = updated_inputs.begin();
        iter != updated_inputs.end(); ++iter) {
-    TextfieldMap::iterator input = group->textfields.find(&(*iter));
-    if (input == group->textfields.end())
-      continue;
+    const DetailInput& input = *iter;
+    TextfieldMap::iterator text_mapping = group->textfields.find(&input);
+    if (text_mapping != group->textfields.end())
+      text_mapping->second->textfield()->SetText(iter->autofilled_value);
 
-    input->second->textfield()->SetText(iter->autofilled_value);
+    ComboboxMap::iterator combo_mapping = group->comboboxes.find(&input);
+    if (combo_mapping != group->comboboxes.end()) {
+      views::Combobox* combobox = combo_mapping->second;
+      for (int i = 0; i < combobox->model()->GetItemCount(); ++i) {
+        if (input.autofilled_value == combobox->model()->GetItemAt(i)) {
+          combobox->SetSelectedIndex(i);
+          break;
+        }
+      }
+    }
   }
 
   UpdateDetailsGroupState(*group);

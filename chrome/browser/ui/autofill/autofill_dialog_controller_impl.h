@@ -302,6 +302,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   MonthComboboxModel cc_exp_month_combobox_model_;
   YearComboboxModel cc_exp_year_combobox_model_;
 
+  // Model for the country input.
+  CountryComboboxModel country_combobox_model_;
+
   // Models for the suggestion views.
   SuggestionsMenuModel suggested_email_;
   SuggestionsMenuModel suggested_cc_;
