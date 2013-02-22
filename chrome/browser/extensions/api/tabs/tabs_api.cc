@@ -538,7 +538,8 @@ bool WindowsCreateFunction::RunImpl() {
 
     // Initialize default window bounds according to window type.
     if (Browser::TYPE_TABBED == window_type ||
-        Browser::TYPE_POPUP == window_type) {
+        Browser::TYPE_POPUP == window_type ||
+        Browser::TYPE_PANEL == window_type) {
       // Try to position the new browser relative to its originating
       // browser window. The call offsets the bounds by kWindowTilePixels
       // (defined in WindowSizer to be 10).
@@ -594,6 +595,9 @@ bool WindowsCreateFunction::RunImpl() {
   }
 
   if (window_type == Browser::TYPE_PANEL) {
+    if (urls.empty())
+      urls.push_back(GURL(chrome::kChromeUINewTabURL));
+
 #if defined(OS_CHROMEOS)
     if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePanels) &&
         PanelManager::ShouldUsePanels(extension_id)) {
