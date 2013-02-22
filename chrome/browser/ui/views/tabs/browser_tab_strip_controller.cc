@@ -455,6 +455,11 @@ void BrowserTabStripController::SetTabRendererDataFromModel(
     data->capture_state = TabRendererData::CAPTURE_STATE_RECORDING;
   else
     data->capture_state = TabRendererData::CAPTURE_STATE_NONE;
+
+  if (chrome::ShouldShowAudioIndicator(contents))
+    data->audio_state = TabRendererData::AUDIO_STATE_PLAYING;
+  else
+    data->audio_state = TabRendererData::AUDIO_STATE_NONE;
 }
 
 void BrowserTabStripController::SetTabDataAt(content::WebContents* web_contents,
