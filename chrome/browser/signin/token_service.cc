@@ -426,7 +426,7 @@ void TokenService::LoadTokensIntoMemory(
   LoadSingleTokenIntoMemory(db_tokens, in_memory_tokens,
       GaiaConstants::kGaiaOAuth2LoginAccessToken);
   // TODO(petewil): Remove next line when we refactor key-value
-  // storage out of token_service.
+  // storage out of token_service - http://crbug.com/177125.
   LoadSingleTokenIntoMemory(db_tokens, in_memory_tokens,
       GaiaConstants::kObfuscatedGaiaId);
 
