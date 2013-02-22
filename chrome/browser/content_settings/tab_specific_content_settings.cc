@@ -224,7 +224,7 @@ void TabSpecificContentSettings::SetBlockageHasBeenIndicated(
   content_blockage_indicated_to_user_[content_type] = true;
 }
 
-bool TabSpecificContentSettings::IsContentAccessed(
+bool TabSpecificContentSettings::IsContentAllowed(
     ContentSettingsType content_type) const {
   // This method currently only returns meaningful values for the content type
   // cookies, mediastream, and PPAPI broker.
@@ -234,7 +234,7 @@ bool TabSpecificContentSettings::IsContentAccessed(
     return false;
   }
 
-  return content_accessed_[content_type];
+  return content_allowed_[content_type];
 }
 
 const std::set<std::string>&
@@ -263,7 +263,9 @@ void TabSpecificContentSettings::OnContentBlocked(
       << "Geolocation settings handled by OnGeolocationPermissionSet";
   if (type < 0 || type >= CONTENT_SETTINGS_NUM_TYPES)
     return;
-  content_accessed_[type] = false;
+
+  content_allowed_[type] = false;
+
   // Unless UI for resource content settings is enabled, ignore the resource
   // identifier.
   // TODO(bauerb): The UI to unblock content should be disabled if the content
@@ -297,7 +299,7 @@ void TabSpecificContentSettings::OnContentBlocked(
   }
 }
 
-void TabSpecificContentSettings::OnContentAccessed(ContentSettingsType type) {
+void TabSpecificContentSettings::OnContentAllowed(ContentSettingsType type) {
   DCHECK(type != CONTENT_SETTINGS_TYPE_GEOLOCATION)
       << "Geolocation settings handled by OnGeolocationPermissionSet";
   bool access_changed = false;
@@ -306,8 +308,8 @@ void TabSpecificContentSettings::OnContentAccessed(ContentSettingsType type) {
     access_changed = true;
   }
 
-  if (!content_accessed_[type]) {
-    content_accessed_[type] = true;
+  if (!content_allowed_[type]) {
+    content_allowed_[type] = true;
     access_changed = true;
   }
 
@@ -333,7 +335,7 @@ void TabSpecificContentSettings::OnCookiesRead(
   } else {
     allowed_local_shared_objects_.cookies()->AddReadCookies(
         frame_url, url, cookie_list);
-    OnContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES);
+    OnContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES);
   }
 
   NotifySiteDataObservers();
@@ -352,7 +354,7 @@ void TabSpecificContentSettings::OnCookieChanged(
   } else {
     allowed_local_shared_objects_.cookies()->AddChangedCookie(
         frame_url, url, cookie_line, options);
-    OnContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES);
+    OnContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES);
   }
 
   NotifySiteDataObservers();
@@ -369,7 +371,7 @@ void TabSpecificContentSettings::OnIndexedDBAccessed(
   } else {
     allowed_local_shared_objects_.indexed_dbs()->AddIndexedDB(
         url, description);
-    OnContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES);
+    OnContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES);
   }
 
   NotifySiteDataObservers();
@@ -388,7 +390,7 @@ void TabSpecificContentSettings::OnLocalStorageAccessed(
   if (blocked_by_policy)
     OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
   else
-    OnContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES);
+    OnContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES);
 
   NotifySiteDataObservers();
 }
@@ -405,7 +407,7 @@ void TabSpecificContentSettings::OnWebDatabaseAccessed(
   } else {
     allowed_local_shared_objects_.databases()->AddDatabase(
         url, UTF16ToUTF8(name), UTF16ToUTF8(display_name));
-    OnContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES);
+    OnContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES);
   }
 
   NotifySiteDataObservers();
@@ -421,7 +423,7 @@ void TabSpecificContentSettings::OnFileSystemAccessed(
   } else {
     allowed_local_shared_objects_.file_systems()->AddFileSystem(url,
         fileapi::kFileSystemTypeTemporary, 0);
-    OnContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES);
+    OnContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES);
   }
 
   NotifySiteDataObservers();
@@ -438,8 +440,8 @@ void TabSpecificContentSettings::OnGeolocationPermissionSet(
       content::NotificationService::NoDetails());
 }
 
-void TabSpecificContentSettings::OnMediaStreamAccessed() {
-  OnContentAccessed(CONTENT_SETTINGS_TYPE_MEDIASTREAM);
+void TabSpecificContentSettings::OnMediaStreamAllowed() {
+  OnContentAllowed(CONTENT_SETTINGS_TYPE_MEDIASTREAM);
 }
 
 void TabSpecificContentSettings::ClearBlockedContentSettingsExceptForCookies() {
@@ -448,7 +450,7 @@ void TabSpecificContentSettings::ClearBlockedContentSettingsExceptForCookies() {
       continue;
     blocked_resources_[i].reset();
     content_blocked_[i] = false;
-    content_accessed_[i] = false;
+    content_allowed_[i] = false;
     content_blockage_indicated_to_user_[i] = false;
   }
   load_plugins_link_enabled_ = true;
@@ -462,7 +464,7 @@ void TabSpecificContentSettings::ClearCookieSpecificContentSettings() {
   blocked_local_shared_objects_.Reset();
   allowed_local_shared_objects_.Reset();
   content_blocked_[CONTENT_SETTINGS_TYPE_COOKIES] = false;
-  content_accessed_[CONTENT_SETTINGS_TYPE_COOKIES] = false;
+  content_allowed_[CONTENT_SETTINGS_TYPE_COOKIES] = false;
   content_blockage_indicated_to_user_[CONTENT_SETTINGS_TYPE_COOKIES] = false;
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
@@ -490,7 +492,7 @@ void TabSpecificContentSettings::ClearGeolocationContentSettings() {
 
 void TabSpecificContentSettings::SetPepperBrokerAllowed(bool allowed) {
   if (allowed) {
-    OnContentAccessed(CONTENT_SETTINGS_TYPE_PPAPI_BROKER);
+    OnContentAllowed(CONTENT_SETTINGS_TYPE_PPAPI_BROKER);
   } else {
     OnContentBlocked(CONTENT_SETTINGS_TYPE_PPAPI_BROKER, std::string());
   }
@@ -549,7 +551,7 @@ void TabSpecificContentSettings::AppCacheAccessed(const GURL& manifest_url,
     OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
   } else {
     allowed_local_shared_objects_.appcaches()->AddAppCache(manifest_url);
-    OnContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES);
+    OnContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES);
   }
 }
 

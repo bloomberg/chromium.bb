@@ -122,7 +122,7 @@ void ContentSettingBlockedImageModel::UpdateFromWebContents(
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   if (!content_settings->IsContentBlocked(get_content_settings_type())) {
-    if (!content_settings->IsContentAccessed(get_content_settings_type()))
+    if (!content_settings->IsContentAllowed(get_content_settings_type()))
       return;
 
     // For cookies, only show the accessed bubble if cookies are blocked by
@@ -204,7 +204,7 @@ void ContentSettingMediaImageModel::UpdateFromWebContents(
   bool blocked =
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM);
   if (!blocked &&
-      !content_settings->IsContentAccessed(get_content_settings_type()))
+      !content_settings->IsContentAllowed(get_content_settings_type()))
     return;
 
   set_tooltip(

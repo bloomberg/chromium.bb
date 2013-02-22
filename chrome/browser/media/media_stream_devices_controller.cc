@@ -133,7 +133,7 @@ const std::string& MediaStreamDevicesController::GetSecurityOriginSpec() const {
 
 void MediaStreamDevicesController::Accept(bool update_content_setting) {
   if (content_settings_)
-    content_settings_->OnMediaStreamAccessed();
+    content_settings_->OnMediaStreamAllowed();
 
   // Get the default devices for the request.
   content::MediaStreamDevices devices;

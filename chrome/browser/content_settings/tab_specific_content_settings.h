@@ -139,7 +139,7 @@ class TabSpecificContentSettings
                                  const GURL& url,
                                  bool blocked_by_policy);
 
-  // Resets the |content_blocked_| and |content_accessed_| arrays, except for
+  // Resets the |content_blocked_| and |content_allowed_| arrays, except for
   // CONTENT_SETTINGS_TYPE_COOKIES related information.
   void ClearBlockedContentSettingsExceptForCookies();
 
@@ -165,9 +165,9 @@ class TabSpecificContentSettings
 
   void SetBlockageHasBeenIndicated(ContentSettingsType content_type);
 
-  // Returns whether a particular kind of content has been accessed. Currently
+  // Returns whether a particular kind of content has been allowed. Currently
   // only tracks cookies.
-  bool IsContentAccessed(ContentSettingsType content_type) const;
+  bool IsContentAllowed(ContentSettingsType content_type) const;
 
   const std::set<std::string>& BlockedResourcesForType(
       ContentSettingsType content_type) const;
@@ -254,7 +254,7 @@ class TabSpecificContentSettings
   // Message handlers. Public for testing.
   void OnContentBlocked(ContentSettingsType type,
                         const std::string& resource_identifier);
-  void OnContentAccessed(ContentSettingsType type);
+  void OnContentAllowed(ContentSettingsType type);
 
   // These methods are invoked on the UI thread by the static functions above.
   // Public for testing.
@@ -282,8 +282,8 @@ class TabSpecificContentSettings
   void OnGeolocationPermissionSet(const GURL& requesting_frame,
                                   bool allowed);
 
-  // This method is called when a media stream is accessed.
-  void OnMediaStreamAccessed();
+  // This method is called when a media stream is allowed.
+  void OnMediaStreamAllowed();
 
   // Adds the given |SiteDataObserver|. The |observer| is notified when a
   // locale shared object, like for example a cookie, is accessed.
@@ -316,8 +316,8 @@ class TabSpecificContentSettings
   // Stores if the blocked content was messaged to the user.
   bool content_blockage_indicated_to_user_[CONTENT_SETTINGS_NUM_TYPES];
 
-  // Stores which content setting types actually were accessed.
-  bool content_accessed_[CONTENT_SETTINGS_NUM_TYPES];
+  // Stores which content setting types actually were allowed.
+  bool content_allowed_[CONTENT_SETTINGS_NUM_TYPES];
 
   // Stores the blocked resources for each content type.
   // Currently only used for plugins.

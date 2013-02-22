@@ -324,7 +324,7 @@ TEST_F(ContentSettingBubbleModelTest, PepperBroker) {
   EXPECT_FALSE(bubble_content.manage_link.empty());
 
   content_settings->ClearBlockedContentSettingsExceptForCookies();
-  content_settings->OnContentAccessed(CONTENT_SETTINGS_TYPE_PPAPI_BROKER);
+  content_settings->OnContentAllowed(CONTENT_SETTINGS_TYPE_PPAPI_BROKER);
   content_setting_bubble_model.reset(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           NULL, web_contents(), profile(),

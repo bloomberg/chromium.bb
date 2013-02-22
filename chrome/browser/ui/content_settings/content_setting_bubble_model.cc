@@ -127,7 +127,7 @@ void ContentSettingTitleAndLinkModel::SetTitle() {
   size_t num_title_ids = arraysize(kBlockedTitleIDs);
   if (web_contents() &&
       TabSpecificContentSettings::FromWebContents(
-          web_contents())->IsContentAccessed(content_type()) &&
+          web_contents())->IsContentAllowed(content_type()) &&
       !TabSpecificContentSettings::FromWebContents(
           web_contents())->IsContentBlocked(content_type())) {
     title_ids = kAccessedTitleIDs;
@@ -276,7 +276,7 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
   bool allowed =
       !content_settings->IsContentBlocked(content_type());
   DCHECK(!allowed ||
-         content_settings->IsContentAccessed(content_type()));
+         content_settings->IsContentAllowed(content_type()));
 
   RadioGroup radio_group;
   radio_group.url = url;

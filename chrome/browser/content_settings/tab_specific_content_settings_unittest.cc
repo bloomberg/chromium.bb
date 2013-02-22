@@ -162,13 +162,13 @@ TEST_F(TabSpecificContentSettingsTest, AllowedContent) {
 
   // Test default settings.
   ASSERT_FALSE(
-      content_settings->IsContentAccessed(CONTENT_SETTINGS_TYPE_IMAGES));
+      content_settings->IsContentAllowed(CONTENT_SETTINGS_TYPE_IMAGES));
   ASSERT_FALSE(
-      content_settings->IsContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES));
+      content_settings->IsContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES));
   ASSERT_FALSE(
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
   ASSERT_FALSE(
-      content_settings->IsContentAccessed(CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+      content_settings->IsContentAllowed(CONTENT_SETTINGS_TYPE_MEDIASTREAM));
 
   // Record a cookie.
   content_settings->OnCookieChanged(GURL("http://google.com"),
@@ -177,7 +177,7 @@ TEST_F(TabSpecificContentSettingsTest, AllowedContent) {
                                     options,
                                     false);
   ASSERT_TRUE(
-      content_settings->IsContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES));
+      content_settings->IsContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES));
   ASSERT_FALSE(
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
 
@@ -188,14 +188,14 @@ TEST_F(TabSpecificContentSettingsTest, AllowedContent) {
                                     options,
                                     true);
   ASSERT_FALSE(
-      content_settings->IsContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES));
+      content_settings->IsContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES));
   ASSERT_TRUE(
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
 
-  // Record mediastream access.
-  content_settings->OnMediaStreamAccessed();
+  // Allow mediastream access.
+  content_settings->OnMediaStreamAllowed();
   ASSERT_TRUE(
-      content_settings->IsContentAccessed(CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+      content_settings->IsContentAllowed(CONTENT_SETTINGS_TYPE_MEDIASTREAM));
   ASSERT_FALSE(
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM));
 
@@ -203,7 +203,7 @@ TEST_F(TabSpecificContentSettingsTest, AllowedContent) {
   content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM,
                                      std::string());
   ASSERT_FALSE(
-      content_settings->IsContentAccessed(CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+      content_settings->IsContentAllowed(CONTENT_SETTINGS_TYPE_MEDIASTREAM));
   ASSERT_TRUE(
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM));
 }
@@ -213,7 +213,7 @@ TEST_F(TabSpecificContentSettingsTest, EmptyCookieList) {
       TabSpecificContentSettings::FromWebContents(web_contents());
 
   ASSERT_FALSE(
-      content_settings->IsContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES));
+      content_settings->IsContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES));
   ASSERT_FALSE(
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
   content_settings->OnCookiesRead(GURL("http://google.com"),
@@ -221,7 +221,7 @@ TEST_F(TabSpecificContentSettingsTest, EmptyCookieList) {
                                   net::CookieList(),
                                   true);
   ASSERT_FALSE(
-      content_settings->IsContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES));
+      content_settings->IsContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES));
   ASSERT_FALSE(
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
 }
@@ -269,9 +269,9 @@ TEST_F(TabSpecificContentSettingsTest, BlockThenAllowMediaAccess) {
   ContentSettingsType type = CONTENT_SETTINGS_TYPE_MEDIASTREAM;
   content_settings->OnContentBlocked(type, std::string());
   EXPECT_TRUE(content_settings->IsContentBlocked(type));
-  EXPECT_FALSE(content_settings->IsContentAccessed(type));
-  content_settings->OnContentAccessed(type);
-  EXPECT_TRUE(content_settings->IsContentAccessed(type));
+  EXPECT_FALSE(content_settings->IsContentAllowed(type));
+  content_settings->OnContentAllowed(type);
+  EXPECT_TRUE(content_settings->IsContentAllowed(type));
   EXPECT_FALSE(content_settings->IsContentBlocked(type));
 }
 
@@ -279,10 +279,10 @@ TEST_F(TabSpecificContentSettingsTest, AllowThenBlockMediaAccess) {
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
   ContentSettingsType type = CONTENT_SETTINGS_TYPE_MEDIASTREAM;
-  content_settings->OnContentAccessed(type);
-  EXPECT_TRUE(content_settings->IsContentAccessed(type));
+  content_settings->OnContentAllowed(type);
+  EXPECT_TRUE(content_settings->IsContentAllowed(type));
   EXPECT_FALSE(content_settings->IsContentBlocked(type));
   content_settings->OnContentBlocked(type, std::string());
   EXPECT_TRUE(content_settings->IsContentBlocked(type));
-  EXPECT_FALSE(content_settings->IsContentAccessed(type));
+  EXPECT_FALSE(content_settings->IsContentAllowed(type));
 }
