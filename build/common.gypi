@@ -2597,6 +2597,14 @@
                   '-g',
                 ],
               }],
+              # Can be omitted to reduce output size. Does not seem to affect
+              # crash reporting.
+              ['target_arch=="ia32"', {
+                'cflags': [
+                  '-fno-unwind-tables',
+                  '-fno-asynchronous-unwind-tables',
+                ],
+              }],
             ],
           },
         },
