@@ -12,9 +12,13 @@
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents_delegate.h"
 
 namespace content {
 
@@ -22,6 +26,8 @@ namespace {
 
 const char kFileInputCommand[] = "DOM.setFileInputFiles";
 const char kFileInputFilesParam[] = "files";
+const char kHandleDialogCommand[] = "Page.handleJavaScriptDialog";
+const char kHandleDialogAcceptParam[] = "accept";
 
 }  // namespace
 
@@ -31,6 +37,11 @@ RendererOverridesHandler::RendererOverridesHandler(DevToolsAgentHost* agent)
       kFileInputCommand,
       base::Bind(
           &RendererOverridesHandler::GrantPermissionsForSetFileInputFiles,
+          base::Unretained(this)));
+  RegisterCommandHandler(
+      kHandleDialogCommand,
+      base::Bind(
+          &RendererOverridesHandler::HandleJavaScriptDialog,
           base::Unretained(this)));
 }
 
@@ -59,6 +70,30 @@ RendererOverridesHandler::GrantPermissionsForSetFileInputFiles(
         base::FilePath(file));
   }
   return scoped_ptr<DevToolsProtocol::Response>();
+}
+
+scoped_ptr<DevToolsProtocol::Response>
+RendererOverridesHandler::HandleJavaScriptDialog(
+    DevToolsProtocol::Command* command) {
+  bool accept;
+  if (!command->params()->GetBoolean(kHandleDialogAcceptParam, &accept)) {
+    return command->ErrorResponse(
+        DevToolsProtocol::kErrorInvalidParams,
+        base::StringPrintf("Missing or invalid '%s' parameter",
+                           kHandleDialogAcceptParam));
+  }
+
+  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
+      agent_->GetRenderViewHost()->GetDelegate()->GetAsWebContents());
+  if (web_contents) {
+    JavaScriptDialogManager* manager =
+        web_contents->GetDelegate()->GetJavaScriptDialogManager();
+    if (manager && manager->HandleJavaScriptDialog(web_contents, accept))
+      return scoped_ptr<DevToolsProtocol::Response>();
+  }
+  return command->ErrorResponse(
+      DevToolsProtocol::kErrorInternalError,
+      "No JavaScript dialog to handle");
 }
 
 }  // namespace content

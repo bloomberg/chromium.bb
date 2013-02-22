@@ -17,11 +17,9 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
@@ -311,17 +309,6 @@ void RenderViewDevToolsAgentHost::OnDispatchOnInspectorFrontend(
         }
         break;
       }
-    case WebDevToolsAgent::BrowserDataHintAcceptJavaScriptDialog:
-    case WebDevToolsAgent::BrowserDataHintDismissJavaScriptDialog:
-      {
-        bool accept =
-            dataHint == WebDevToolsAgent::BrowserDataHintAcceptJavaScriptDialog;
-        if (HandleJavaScriptDialog(accept)) {
-          overriden_message = WebDevToolsAgent::patchWithBrowserData(
-              WebKit::WebString::fromUTF8(message), dataHint, "").utf8();
-        }
-        break;
-      }
     case WebDevToolsAgent::BrowserDataHintNone:
       // Fall through.
     default:
@@ -357,20 +344,6 @@ bool RenderViewDevToolsAgentHost::CaptureScreenshot(std::string* base_64_data) {
                                 reinterpret_cast<char*>(&*png.begin()),
                                 png.size()),
                             base_64_data);
-}
-
-bool RenderViewDevToolsAgentHost::HandleJavaScriptDialog(bool accept) {
-  DCHECK(render_view_host_);
-  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-      render_view_host_->GetDelegate()->GetAsWebContents());
-  if (web_contents) {
-    JavaScriptDialogManager* manager =
-        web_contents->GetDelegate()->GetJavaScriptDialogManager();
-    if (!manager)
-      return false;
-    return manager->HandleJavaScriptDialog(web_contents, accept);
-  }
-  return false;
 }
 
 }  // namespace content
