@@ -2167,8 +2167,10 @@ launch_screensaver(struct desktop_shell *shell)
 	if (shell->screensaver.binding)
 		return;
 
-	if (!shell->screensaver.path)
+	if (!shell->screensaver.path) {
+		weston_compositor_sleep(shell->compositor);
 		return;
+	}
 
 	if (shell->screensaver.process.pid != 0) {
 		weston_log("old screensaver still running\n");
