@@ -102,12 +102,6 @@ scoped_ptr<LayerImpl> LayerImpl::removeChild(LayerImpl* child)
     return scoped_ptr<LayerImpl>();
 }
 
-void LayerImpl::removeAllChildren()
-{
-    m_children.clear();
-    layerTreeImpl()->set_needs_update_draw_properties();
-}
-
 void LayerImpl::clearChildList()
 {
     if (m_children.empty())
@@ -606,6 +600,8 @@ void LayerImpl::setMaskLayer(scoped_ptr<LayerImpl> maskLayer)
 
     m_maskLayer = maskLayer.Pass();
     m_maskLayerId = newLayerId;
+    if (m_maskLayer)
+      m_maskLayer->setParent(this);
     noteLayerPropertyChangedForSubtree();
 }
 
@@ -627,6 +623,8 @@ void LayerImpl::setReplicaLayer(scoped_ptr<LayerImpl> replicaLayer)
 
     m_replicaLayer = replicaLayer.Pass();
     m_replicaLayerId = newLayerId;
+    if (m_replicaLayer)
+      m_replicaLayer->setParent(this);
     noteLayerPropertyChangedForSubtree();
 }
 

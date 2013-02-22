@@ -339,7 +339,7 @@ private:
     int indexOfChild(const Layer*);
 
     // This should only be called from removeFromParent.
-    void removeChild(Layer*);
+    void removeChildOrDependent(Layer*);
 
     // LayerAnimationValueObserver implementation.
     virtual void OnOpacityAnimated(float) OVERRIDE;

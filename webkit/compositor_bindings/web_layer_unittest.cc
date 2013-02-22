@@ -104,10 +104,11 @@ TEST_F(WebLayerTest, Client)
     EXPECT_TRUE(layer->masksToBounds());
 
     EXPECT_CALL(m_client, scheduleComposite()).Times(AnyNumber());
-    scoped_ptr<WebLayer> otherLayer(new WebLayerImpl);
-    m_rootLayer->addChild(otherLayer.get());
+    scoped_ptr<WebLayer> otherLayer1(new WebLayerImpl);
+    m_rootLayer->addChild(otherLayer1.get());
     EXPECT_CALL(m_client, scheduleComposite()).Times(AtLeast(1));
-    layer->setMaskLayer(otherLayer.get());
+    scoped_ptr<WebLayer> otherLayer2(new WebLayerImpl);
+    layer->setMaskLayer(otherLayer2.get());
     Mock::VerifyAndClearExpectations(&m_client);
 
     EXPECT_CALL(m_client, scheduleComposite()).Times(AtLeast(1));

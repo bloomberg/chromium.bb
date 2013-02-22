@@ -74,8 +74,16 @@ Layer::~Layer()
 
     m_layerAnimationController->removeObserver(this);
 
-    // Remove the parent reference from all children.
+    // Remove the parent reference from all children and dependents.
     removeAllChildren();
+    if (m_maskLayer) {
+        DCHECK_EQ(this, m_maskLayer->parent());
+        m_maskLayer->removeFromParent();
+    }
+    if (m_replicaLayer) {
+        DCHECK_EQ(this, m_replicaLayer->parent());
+        m_replicaLayer->removeFromParent();
+    }
 }
 
 void Layer::setLayerTreeHost(LayerTreeHost* host)
@@ -158,6 +166,10 @@ void Layer::setParent(Layer* layer)
     setLayerTreeHost(m_parent ? m_parent->layerTreeHost() : 0);
 
     forceAutomaticRasterScaleToBeRecomputed();
+    if (m_maskLayer)
+        m_maskLayer->forceAutomaticRasterScaleToBeRecomputed();
+    if (m_replicaLayer && m_replicaLayer->m_maskLayer)
+        m_replicaLayer->m_maskLayer->forceAutomaticRasterScaleToBeRecomputed();
 }
 
 bool Layer::hasAncestor(Layer* ancestor) const
@@ -188,11 +200,24 @@ void Layer::insertChild(scoped_refptr<Layer> child, size_t index)
 void Layer::removeFromParent()
 {
     if (m_parent)
-        m_parent->removeChild(this);
+        m_parent->removeChildOrDependent(this);
 }
 
-void Layer::removeChild(Layer* child)
+void Layer::removeChildOrDependent(Layer* child)
 {
+    if (m_maskLayer == child) {
+        m_maskLayer->setParent(NULL);
+        m_maskLayer = NULL;
+        setNeedsFullTreeSync();
+        return;
+    }
+    if (m_replicaLayer == child) {
+        m_replicaLayer->setParent(NULL);
+        m_replicaLayer = NULL;
+        setNeedsFullTreeSync();
+        return;
+    }
+
     for (LayerList::iterator iter = m_children.begin(); iter != m_children.end(); ++iter)
     {
         if (*iter != child)
@@ -270,7 +295,7 @@ void Layer::removeAllChildren()
 {
     while (m_children.size()) {
         Layer* layer = m_children[0].get();
-        DCHECK(layer->parent());
+        DCHECK_EQ(this, layer->parent());
         layer->removeFromParent();
     }
 }
@@ -339,11 +364,15 @@ void Layer::setMaskLayer(Layer* maskLayer)
 {
     if (m_maskLayer == maskLayer)
         return;
-    if (m_maskLayer)
-        m_maskLayer->setLayerTreeHost(0);
+    if (m_maskLayer) {
+        DCHECK_EQ(this, m_maskLayer->parent());
+        m_maskLayer->removeFromParent();
+    }
     m_maskLayer = maskLayer;
     if (m_maskLayer) {
-        m_maskLayer->setLayerTreeHost(m_layerTreeHost);
+        DCHECK(!m_maskLayer->parent());
+        m_maskLayer->removeFromParent();
+        m_maskLayer->setParent(this);
         m_maskLayer->setIsMask(true);
     }
     setNeedsFullTreeSync();
@@ -353,11 +382,16 @@ void Layer::setReplicaLayer(Layer* layer)
 {
     if (m_replicaLayer == layer)
         return;
-    if (m_replicaLayer)
-        m_replicaLayer->setLayerTreeHost(0);
+    if (m_replicaLayer) {
+        DCHECK_EQ(this, m_replicaLayer->parent());
+        m_replicaLayer->removeFromParent();
+    }
     m_replicaLayer = layer;
-    if (m_replicaLayer)
-        m_replicaLayer->setLayerTreeHost(m_layerTreeHost);
+    if (m_replicaLayer) {
+        DCHECK(!m_replicaLayer->parent());
+        m_replicaLayer->removeFromParent();
+        m_replicaLayer->setParent(this);
+    }
     setNeedsFullTreeSync();
 }
 

@@ -72,7 +72,6 @@ public:
     LayerImpl* childAt(size_t index) const;
     void addChild(scoped_ptr<LayerImpl>);
     scoped_ptr<LayerImpl> removeChild(LayerImpl* child);
-    void removeAllChildren();
     void setParent(LayerImpl* parent) { m_parent = parent; }
     void clearChildList(); // Warning: This does not preserve tree structure invariants.
 
