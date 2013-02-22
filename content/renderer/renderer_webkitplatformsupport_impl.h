@@ -78,9 +78,15 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual WebKit::WebAudioDevice* createAudioDevice(
       size_t buffer_size, unsigned channels, double sample_rate,
       WebKit::WebAudioDevice::RenderCallback* callback);
+  // TODO(crogers): remove deprecated API as soon as WebKit calls new API.
   virtual WebKit::WebAudioDevice* createAudioDevice(
       size_t buffer_size, unsigned input_channels, unsigned channels,
       double sample_rate, WebKit::WebAudioDevice::RenderCallback* callback);
+
+  virtual WebKit::WebAudioDevice* createAudioDevice(
+      size_t buffer_size, unsigned input_channels, unsigned channels,
+      double sample_rate, WebKit::WebAudioDevice::RenderCallback* callback,
+      const WebKit::WebString& input_device_id);
 
   virtual WebKit::WebBlobRegistry* blobRegistry();
   virtual void sampleGamepads(WebKit::WebGamepads&);

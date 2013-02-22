@@ -571,7 +571,20 @@ RendererWebKitPlatformSupportImpl::createAudioDevice(
     unsigned channels,
     double sample_rate,
     WebAudioDevice::RenderCallback* callback) {
-  return createAudioDevice(buffer_size, 0, channels, sample_rate, callback);
+  return createAudioDevice(
+      buffer_size, 0, channels, sample_rate, callback, "default");
+}
+
+// TODO(crogers): remove deprecated API as soon as WebKit calls new API.
+WebAudioDevice*
+RendererWebKitPlatformSupportImpl::createAudioDevice(
+    size_t buffer_size,
+    unsigned input_channels,
+    unsigned channels,
+    double sample_rate,
+    WebAudioDevice::RenderCallback* callback) {
+  return createAudioDevice(
+      buffer_size, input_channels, channels, sample_rate, callback, "default");
 }
 
 WebAudioDevice*
@@ -580,14 +593,24 @@ RendererWebKitPlatformSupportImpl::createAudioDevice(
     unsigned input_channels,
     unsigned channels,
     double sample_rate,
-    WebAudioDevice::RenderCallback* callback) {
-  media::ChannelLayout layout = media::CHANNEL_LAYOUT_UNSUPPORTED;
+    WebAudioDevice::RenderCallback* callback,
+    const WebKit::WebString& input_device_id) {
+  if (input_device_id != "default") {
+    // Only allow audio input if we know for sure that WebKit is giving us the
+    // "default" input device.
+    // TODO(crogers): add support for non-default audio input devices when
+    // using synchronized audio I/O in WebAudio.
+    if (input_channels > 0)
+      DLOG(WARNING) << "createAudioDevice(): request for audio input ignored";
+    input_channels = 0;
+  }
 
   // The |channels| does not exactly identify the channel layout of the
   // device. The switch statement below assigns a best guess to the channel
   // layout based on number of channels.
   // TODO(crogers): WebKit should give the channel layout instead of the hard
   // channel count.
+  media::ChannelLayout layout = media::CHANNEL_LAYOUT_UNSUPPORTED;
   switch (channels) {
     case 1:
       layout = media::CHANNEL_LAYOUT_MONO;

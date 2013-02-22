@@ -94,6 +94,10 @@ void CreateWebKitSourceVector(
           UTF8ToUTF16(devices[i].device.name));
     webkit_sources[i].setExtraData(
         new content::MediaStreamSourceExtraData(devices[i]));
+#if 0
+    // TODO(crogers): enable once WebKit supports setDeviceId().
+    webkit_sources[i].setDeviceId(UTF8ToUTF16(devices[i].device.id.c_str()));
+#endif
   }
 }
 
