@@ -68,8 +68,7 @@ uint32_t linux_xkb_code_to_usb[] = {
   // 58-5b: Keypad_2  Keypad_3  Keypad_0  Keypad_.
   0x07005a, 0x07005b, 0x070062, 0x070063,
   // 5c-5f: ISO_Level3_Shift  unused  <>||  F11
-  // For 5e, consider USB#0064 : Non-US \ and |
-  0x000000, 0x000000, 0x000000, 0x070044,
+  0x000000, 0x000000, 0x070064, 0x070044,
   // 60-63: F12  unused  Katakana  Hiragana
   0x070045, 0x000000, 0x070092, 0x070093,
   // 64-67: Henkan  Hiragana_Katakana  Muhenkan  unused
