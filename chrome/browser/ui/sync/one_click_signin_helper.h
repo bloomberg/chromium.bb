@@ -173,7 +173,7 @@ class OneClickSigninHelper
                                   int child_id,
                                   int route_id);
 
-  void RedirectToNTP();
+  void RedirectToNTP(bool show_bubble);
   void RedirectToSignin();
 
   // Clear all data member of the helper, except for the error.
