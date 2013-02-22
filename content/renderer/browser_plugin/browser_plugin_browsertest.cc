@@ -99,6 +99,7 @@ void BrowserPluginTest::TearDown() {
 
 std::string BrowserPluginTest::ExecuteScriptAndReturnString(
     const std::string& script) {
+  v8::HandleScope handle_scope;
   v8::Handle<v8::Value> value = GetMainFrame()->executeScriptAndReturnValue(
       WebKit::WebScriptSource(WebKit::WebString::fromUTF8(script.c_str())));
   if (value.IsEmpty() || !value->IsString())
@@ -113,6 +114,7 @@ std::string BrowserPluginTest::ExecuteScriptAndReturnString(
 
 int BrowserPluginTest::ExecuteScriptAndReturnInt(
     const std::string& script) {
+  v8::HandleScope handle_scope;
   v8::Handle<v8::Value> value = GetMainFrame()->executeScriptAndReturnValue(
       WebKit::WebScriptSource(WebKit::WebString::fromUTF8(script.c_str())));
   if (value.IsEmpty() || !value->IsInt32())
@@ -125,6 +127,7 @@ int BrowserPluginTest::ExecuteScriptAndReturnInt(
 // of the script is stored in |result|
 bool BrowserPluginTest::ExecuteScriptAndReturnBool(
     const std::string& script, bool* result) {
+  v8::HandleScope handle_scope;
   v8::Handle<v8::Value> value = GetMainFrame()->executeScriptAndReturnValue(
       WebKit::WebScriptSource(WebKit::WebString::fromUTF8(script.c_str())));
   if (value.IsEmpty() || !value->IsBoolean())
