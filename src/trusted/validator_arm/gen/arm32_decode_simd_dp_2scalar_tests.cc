@@ -38,11 +38,10 @@ namespace nacl_arm_test {
 //       Vd: Vd(15:12),
 //       Vn: Vn(19:16),
 //       actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_2,
-//       baseline: VectorBinary2RegisterScalar_I16_32,
+//       baseline: VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       generated_baseline: VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
 //       pattern: 1111001q1dssnnnndddd0p0fn1m0mmmm,
 //       rule: VMLA_by_scalar_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -52,17 +51,17 @@ namespace nacl_arm_test {
 //            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalar_I16_32TesterCase0
-    : public VectorBinary2RegisterScalarTester {
+class VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1TesterCase0
+    : public Arm32DecoderTester {
  public:
-  VectorBinary2RegisterScalar_I16_32TesterCase0(const NamedClassDecoder& decoder)
-    : VectorBinary2RegisterScalarTester(decoder) {}
+  VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1TesterCase0(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary2RegisterScalar_I16_32TesterCase0
+bool VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1TesterCase0
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -78,7 +77,7 @@ bool VectorBinary2RegisterScalar_I16_32TesterCase0
           0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorBinary2RegisterScalarTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -87,11 +86,10 @@ bool VectorBinary2RegisterScalar_I16_32TesterCase0
 //       Vd: Vd(15:12),
 //       Vn: Vn(19:16),
 //       actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
-//       baseline: VectorBinary2RegisterScalar_F32,
+//       baseline: VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       generated_baseline: VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0,
 //       pattern: 1111001q1dssnnnndddd0p0fn1m0mmmm,
 //       rule: VMLA_by_scalar_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -102,17 +100,17 @@ bool VectorBinary2RegisterScalar_I16_32TesterCase0
 //            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalar_F32TesterCase1
-    : public VectorBinary2RegisterScalarTester {
+class VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0TesterCase1
+    : public Arm32DecoderTester {
  public:
-  VectorBinary2RegisterScalar_F32TesterCase1(const NamedClassDecoder& decoder)
-    : VectorBinary2RegisterScalarTester(decoder) {}
+  VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0TesterCase1(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary2RegisterScalar_F32TesterCase1
+bool VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0TesterCase1
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -128,18 +126,17 @@ bool VectorBinary2RegisterScalar_F32TesterCase1
           0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorBinary2RegisterScalarTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
 // A(11:8)=0010
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1,
-//       baseline: VectorBinary2RegisterScalar_I16_32L,
+//       baseline: VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0,
 //       pattern: 1111001u1dssnnnndddd0p10n1m0mmmm,
 //       rule: VMLAL_by_scalar_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -147,17 +144,17 @@ bool VectorBinary2RegisterScalar_F32TesterCase1
 //            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalar_I16_32LTesterCase2
-    : public VectorBinary2RegisterScalarTester {
+class VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0TesterCase2
+    : public Arm32DecoderTester {
  public:
-  VectorBinary2RegisterScalar_I16_32LTesterCase2(const NamedClassDecoder& decoder)
-    : VectorBinary2RegisterScalarTester(decoder) {}
+  VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0TesterCase2(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary2RegisterScalar_I16_32LTesterCase2
+bool VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0TesterCase2
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -173,18 +170,17 @@ bool VectorBinary2RegisterScalar_I16_32LTesterCase2
           0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorBinary2RegisterScalarTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
 // A(11:8)=0011 & U(24)=0
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1,
-//       baseline: VectorBinary2RegisterScalar_I16_32L,
+//       baseline: VQDMLAL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VQDMLAL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0,
 //       pattern: 111100101dssnnnndddd0p11n1m0mmmm,
 //       rule: VQDMLAL_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -192,17 +188,17 @@ bool VectorBinary2RegisterScalar_I16_32LTesterCase2
 //            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalar_I16_32LTesterCase3
-    : public VectorBinary2RegisterScalarTester {
+class VQDMLAL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0TesterCase3
+    : public Arm32DecoderTester {
  public:
-  VectorBinary2RegisterScalar_I16_32LTesterCase3(const NamedClassDecoder& decoder)
-    : VectorBinary2RegisterScalarTester(decoder) {}
+  VQDMLAL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0TesterCase3(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary2RegisterScalar_I16_32LTesterCase3
+bool VQDMLAL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0TesterCase3
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -221,7 +217,7 @@ bool VectorBinary2RegisterScalar_I16_32LTesterCase3
           0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorBinary2RegisterScalarTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -230,11 +226,10 @@ bool VectorBinary2RegisterScalar_I16_32LTesterCase3
 //       Vd: Vd(15:12),
 //       Vn: Vn(19:16),
 //       actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_2,
-//       baseline: VectorBinary2RegisterScalar_I16_32,
+//       baseline: VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       generated_baseline: VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
 //       pattern: 1111001q1dssnnnndddd0p0fn1m0mmmm,
 //       rule: VMLS_by_scalar_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -244,17 +239,17 @@ bool VectorBinary2RegisterScalar_I16_32LTesterCase3
 //            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalar_I16_32TesterCase4
-    : public VectorBinary2RegisterScalarTester {
+class VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1TesterCase4
+    : public Arm32DecoderTester {
  public:
-  VectorBinary2RegisterScalar_I16_32TesterCase4(const NamedClassDecoder& decoder)
-    : VectorBinary2RegisterScalarTester(decoder) {}
+  VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1TesterCase4(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary2RegisterScalar_I16_32TesterCase4
+bool VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1TesterCase4
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -270,7 +265,7 @@ bool VectorBinary2RegisterScalar_I16_32TesterCase4
           0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorBinary2RegisterScalarTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -279,11 +274,10 @@ bool VectorBinary2RegisterScalar_I16_32TesterCase4
 //       Vd: Vd(15:12),
 //       Vn: Vn(19:16),
 //       actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
-//       baseline: VectorBinary2RegisterScalar_F32,
+//       baseline: VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       generated_baseline: VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0,
 //       pattern: 1111001q1dssnnnndddd0p0fn1m0mmmm,
 //       rule: VMLS_by_scalar_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -294,17 +288,17 @@ bool VectorBinary2RegisterScalar_I16_32TesterCase4
 //            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalar_F32TesterCase5
-    : public VectorBinary2RegisterScalarTester {
+class VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0TesterCase5
+    : public Arm32DecoderTester {
  public:
-  VectorBinary2RegisterScalar_F32TesterCase5(const NamedClassDecoder& decoder)
-    : VectorBinary2RegisterScalarTester(decoder) {}
+  VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0TesterCase5(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary2RegisterScalar_F32TesterCase5
+bool VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0TesterCase5
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -320,18 +314,17 @@ bool VectorBinary2RegisterScalar_F32TesterCase5
           0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorBinary2RegisterScalarTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
 // A(11:8)=0110
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1,
-//       baseline: VectorBinary2RegisterScalar_I16_32L,
+//       baseline: VMLSL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VMLSL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0,
 //       pattern: 1111001u1dssnnnndddd0p10n1m0mmmm,
 //       rule: VMLSL_by_scalar_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -339,17 +332,17 @@ bool VectorBinary2RegisterScalar_F32TesterCase5
 //            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalar_I16_32LTesterCase6
-    : public VectorBinary2RegisterScalarTester {
+class VMLSL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0TesterCase6
+    : public Arm32DecoderTester {
  public:
-  VectorBinary2RegisterScalar_I16_32LTesterCase6(const NamedClassDecoder& decoder)
-    : VectorBinary2RegisterScalarTester(decoder) {}
+  VMLSL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0TesterCase6(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary2RegisterScalar_I16_32LTesterCase6
+bool VMLSL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0TesterCase6
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -365,18 +358,17 @@ bool VectorBinary2RegisterScalar_I16_32LTesterCase6
           0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorBinary2RegisterScalarTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
 // A(11:8)=0111 & U(24)=0
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1,
-//       baseline: VectorBinary2RegisterScalar_I16_32L,
+//       baseline: VQDMLSL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VQDMLSL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0,
 //       pattern: 111100101dssnnnndddd0p11n1m0mmmm,
 //       rule: VQDMLSL_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -384,17 +376,17 @@ bool VectorBinary2RegisterScalar_I16_32LTesterCase6
 //            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalar_I16_32LTesterCase7
-    : public VectorBinary2RegisterScalarTester {
+class VQDMLSL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0TesterCase7
+    : public Arm32DecoderTester {
  public:
-  VectorBinary2RegisterScalar_I16_32LTesterCase7(const NamedClassDecoder& decoder)
-    : VectorBinary2RegisterScalarTester(decoder) {}
+  VQDMLSL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0TesterCase7(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary2RegisterScalar_I16_32LTesterCase7
+bool VQDMLSL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0TesterCase7
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -413,7 +405,7 @@ bool VectorBinary2RegisterScalar_I16_32LTesterCase7
           0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorBinary2RegisterScalarTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -422,11 +414,10 @@ bool VectorBinary2RegisterScalar_I16_32LTesterCase7
 //       Vd: Vd(15:12),
 //       Vn: Vn(19:16),
 //       actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_2,
-//       baseline: VectorBinary2RegisterScalar_I16_32,
+//       baseline: VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_1,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       generated_baseline: VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_1,
 //       pattern: 1111001q1dssnnnndddd100fn1m0mmmm,
 //       rule: VMUL_by_scalar_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -436,17 +427,17 @@ bool VectorBinary2RegisterScalar_I16_32LTesterCase7
 //            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalar_I16_32TesterCase8
-    : public VectorBinary2RegisterScalarTester {
+class VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_1TesterCase8
+    : public Arm32DecoderTester {
  public:
-  VectorBinary2RegisterScalar_I16_32TesterCase8(const NamedClassDecoder& decoder)
-    : VectorBinary2RegisterScalarTester(decoder) {}
+  VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_1TesterCase8(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary2RegisterScalar_I16_32TesterCase8
+bool VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_1TesterCase8
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -462,7 +453,7 @@ bool VectorBinary2RegisterScalar_I16_32TesterCase8
           0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorBinary2RegisterScalarTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -471,11 +462,10 @@ bool VectorBinary2RegisterScalar_I16_32TesterCase8
 //       Vd: Vd(15:12),
 //       Vn: Vn(19:16),
 //       actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
-//       baseline: VectorBinary2RegisterScalar_F32,
+//       baseline: VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       generated_baseline: VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_0,
 //       pattern: 1111001q1dssnnnndddd100fn1m0mmmm,
 //       rule: VMUL_by_scalar_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -486,17 +476,17 @@ bool VectorBinary2RegisterScalar_I16_32TesterCase8
 //            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalar_F32TesterCase9
-    : public VectorBinary2RegisterScalarTester {
+class VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_0TesterCase9
+    : public Arm32DecoderTester {
  public:
-  VectorBinary2RegisterScalar_F32TesterCase9(const NamedClassDecoder& decoder)
-    : VectorBinary2RegisterScalarTester(decoder) {}
+  VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_0TesterCase9(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary2RegisterScalar_F32TesterCase9
+bool VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_0TesterCase9
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -512,18 +502,17 @@ bool VectorBinary2RegisterScalar_F32TesterCase9
           0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorBinary2RegisterScalarTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
 // A(11:8)=1010
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1,
-//       baseline: VectorBinary2RegisterScalar_I16_32L,
+//       baseline: VMULL_by_scalar_A2_1111001u1dssnnnndddd1010n1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VMULL_by_scalar_A2_1111001u1dssnnnndddd1010n1m0mmmm_case_0,
 //       pattern: 1111001u1dssnnnndddd1010n1m0mmmm,
 //       rule: VMULL_by_scalar_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -531,17 +520,17 @@ bool VectorBinary2RegisterScalar_F32TesterCase9
 //            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalar_I16_32LTesterCase10
-    : public VectorBinary2RegisterScalarTester {
+class VMULL_by_scalar_A2_1111001u1dssnnnndddd1010n1m0mmmm_case_0TesterCase10
+    : public Arm32DecoderTester {
  public:
-  VectorBinary2RegisterScalar_I16_32LTesterCase10(const NamedClassDecoder& decoder)
-    : VectorBinary2RegisterScalarTester(decoder) {}
+  VMULL_by_scalar_A2_1111001u1dssnnnndddd1010n1m0mmmm_case_0TesterCase10(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary2RegisterScalar_I16_32LTesterCase10
+bool VMULL_by_scalar_A2_1111001u1dssnnnndddd1010n1m0mmmm_case_0TesterCase10
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -557,18 +546,17 @@ bool VectorBinary2RegisterScalar_I16_32LTesterCase10
           0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorBinary2RegisterScalarTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
 // A(11:8)=1011 & U(24)=0
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1,
-//       baseline: VectorBinary2RegisterScalar_I16_32L,
+//       baseline: VQDMULL_A2_111100101dssnnnndddd1011n1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VQDMULL_A2_111100101dssnnnndddd1011n1m0mmmm_case_0,
 //       pattern: 111100101dssnnnndddd1011n1m0mmmm,
 //       rule: VQDMULL_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -576,17 +564,17 @@ bool VectorBinary2RegisterScalar_I16_32LTesterCase10
 //            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalar_I16_32LTesterCase11
-    : public VectorBinary2RegisterScalarTester {
+class VQDMULL_A2_111100101dssnnnndddd1011n1m0mmmm_case_0TesterCase11
+    : public Arm32DecoderTester {
  public:
-  VectorBinary2RegisterScalar_I16_32LTesterCase11(const NamedClassDecoder& decoder)
-    : VectorBinary2RegisterScalarTester(decoder) {}
+  VQDMULL_A2_111100101dssnnnndddd1011n1m0mmmm_case_0TesterCase11(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary2RegisterScalar_I16_32LTesterCase11
+bool VQDMULL_A2_111100101dssnnnndddd1011n1m0mmmm_case_0TesterCase11
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -605,7 +593,7 @@ bool VectorBinary2RegisterScalar_I16_32LTesterCase11
           0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorBinary2RegisterScalarTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -614,11 +602,10 @@ bool VectorBinary2RegisterScalar_I16_32LTesterCase11
 //       Vd: Vd(15:12),
 //       Vn: Vn(19:16),
 //       actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_2,
-//       baseline: VectorBinary2RegisterScalar_I16_32,
+//       baseline: VQDMULH_A2_1111001q1dssnnnndddd1100n1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       generated_baseline: VQDMULH_A2_1111001q1dssnnnndddd1100n1m0mmmm_case_0,
 //       pattern: 1111001q1dssnnnndddd1100n1m0mmmm,
 //       rule: VQDMULH_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -628,17 +615,17 @@ bool VectorBinary2RegisterScalar_I16_32LTesterCase11
 //            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalar_I16_32TesterCase12
-    : public VectorBinary2RegisterScalarTester {
+class VQDMULH_A2_1111001q1dssnnnndddd1100n1m0mmmm_case_0TesterCase12
+    : public Arm32DecoderTester {
  public:
-  VectorBinary2RegisterScalar_I16_32TesterCase12(const NamedClassDecoder& decoder)
-    : VectorBinary2RegisterScalarTester(decoder) {}
+  VQDMULH_A2_1111001q1dssnnnndddd1100n1m0mmmm_case_0TesterCase12(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary2RegisterScalar_I16_32TesterCase12
+bool VQDMULH_A2_1111001q1dssnnnndddd1100n1m0mmmm_case_0TesterCase12
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -654,7 +641,7 @@ bool VectorBinary2RegisterScalar_I16_32TesterCase12
           0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorBinary2RegisterScalarTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -663,11 +650,10 @@ bool VectorBinary2RegisterScalar_I16_32TesterCase12
 //       Vd: Vd(15:12),
 //       Vn: Vn(19:16),
 //       actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_2,
-//       baseline: VectorBinary2RegisterScalar_I16_32,
+//       baseline: VQRDMULH_1111001q1dssnnnndddd1101n1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       generated_baseline: VQRDMULH_1111001q1dssnnnndddd1101n1m0mmmm_case_0,
 //       pattern: 1111001q1dssnnnndddd1101n1m0mmmm,
 //       rule: VQRDMULH,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -677,17 +663,17 @@ bool VectorBinary2RegisterScalar_I16_32TesterCase12
 //            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalar_I16_32TesterCase13
-    : public VectorBinary2RegisterScalarTester {
+class VQRDMULH_1111001q1dssnnnndddd1101n1m0mmmm_case_0TesterCase13
+    : public Arm32DecoderTester {
  public:
-  VectorBinary2RegisterScalar_I16_32TesterCase13(const NamedClassDecoder& decoder)
-    : VectorBinary2RegisterScalarTester(decoder) {}
+  VQRDMULH_1111001q1dssnnnndddd1101n1m0mmmm_case_0TesterCase13(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary2RegisterScalar_I16_32TesterCase13
+bool VQRDMULH_1111001q1dssnnnndddd1101n1m0mmmm_case_0TesterCase13
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -703,7 +689,7 @@ bool VectorBinary2RegisterScalar_I16_32TesterCase13
           0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorBinary2RegisterScalarTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -717,11 +703,10 @@ bool VectorBinary2RegisterScalar_I16_32TesterCase13
 //       Vd: Vd(15:12),
 //       Vn: Vn(19:16),
 //       actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_2,
-//       baseline: VectorBinary2RegisterScalar_I16_32,
+//       baseline: VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       generated_baseline: VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
 //       pattern: 1111001q1dssnnnndddd0p0fn1m0mmmm,
 //       rule: VMLA_by_scalar_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -731,12 +716,12 @@ bool VectorBinary2RegisterScalar_I16_32TesterCase13
 //            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalar_I16_32Tester_Case0
-    : public VectorBinary2RegisterScalar_I16_32TesterCase0 {
+class VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1Tester_Case0
+    : public VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1TesterCase0 {
  public:
-  VectorBinary2RegisterScalar_I16_32Tester_Case0()
-    : VectorBinary2RegisterScalar_I16_32TesterCase0(
-      state_.VectorBinary2RegisterScalar_I16_32_VMLA_by_scalar_A1_instance_)
+  VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1Tester_Case0()
+    : VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1TesterCase0(
+      state_.VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1_VMLA_by_scalar_A1_instance_)
   {}
 };
 
@@ -745,11 +730,10 @@ class VectorBinary2RegisterScalar_I16_32Tester_Case0
 //       Vd: Vd(15:12),
 //       Vn: Vn(19:16),
 //       actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
-//       baseline: VectorBinary2RegisterScalar_F32,
+//       baseline: VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       generated_baseline: VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0,
 //       pattern: 1111001q1dssnnnndddd0p0fn1m0mmmm,
 //       rule: VMLA_by_scalar_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -760,23 +744,22 @@ class VectorBinary2RegisterScalar_I16_32Tester_Case0
 //            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalar_F32Tester_Case1
-    : public VectorBinary2RegisterScalar_F32TesterCase1 {
+class VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0Tester_Case1
+    : public VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0TesterCase1 {
  public:
-  VectorBinary2RegisterScalar_F32Tester_Case1()
-    : VectorBinary2RegisterScalar_F32TesterCase1(
-      state_.VectorBinary2RegisterScalar_F32_VMLA_by_scalar_A1_instance_)
+  VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0Tester_Case1()
+    : VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0TesterCase1(
+      state_.VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0_VMLA_by_scalar_A1_instance_)
   {}
 };
 
 // A(11:8)=0010
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1,
-//       baseline: VectorBinary2RegisterScalar_I16_32L,
+//       baseline: VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0,
 //       pattern: 1111001u1dssnnnndddd0p10n1m0mmmm,
 //       rule: VMLAL_by_scalar_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -784,23 +767,22 @@ class VectorBinary2RegisterScalar_F32Tester_Case1
 //            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalar_I16_32LTester_Case2
-    : public VectorBinary2RegisterScalar_I16_32LTesterCase2 {
+class VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0Tester_Case2
+    : public VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0TesterCase2 {
  public:
-  VectorBinary2RegisterScalar_I16_32LTester_Case2()
-    : VectorBinary2RegisterScalar_I16_32LTesterCase2(
-      state_.VectorBinary2RegisterScalar_I16_32L_VMLAL_by_scalar_A2_instance_)
+  VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0Tester_Case2()
+    : VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0TesterCase2(
+      state_.VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0_VMLAL_by_scalar_A2_instance_)
   {}
 };
 
 // A(11:8)=0011 & U(24)=0
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1,
-//       baseline: VectorBinary2RegisterScalar_I16_32L,
+//       baseline: VQDMLAL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VQDMLAL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0,
 //       pattern: 111100101dssnnnndddd0p11n1m0mmmm,
 //       rule: VQDMLAL_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -808,12 +790,12 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case2
 //            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalar_I16_32LTester_Case3
-    : public VectorBinary2RegisterScalar_I16_32LTesterCase3 {
+class VQDMLAL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0Tester_Case3
+    : public VQDMLAL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0TesterCase3 {
  public:
-  VectorBinary2RegisterScalar_I16_32LTester_Case3()
-    : VectorBinary2RegisterScalar_I16_32LTesterCase3(
-      state_.VectorBinary2RegisterScalar_I16_32L_VQDMLAL_A1_instance_)
+  VQDMLAL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0Tester_Case3()
+    : VQDMLAL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0TesterCase3(
+      state_.VQDMLAL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0_VQDMLAL_A1_instance_)
   {}
 };
 
@@ -822,11 +804,10 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case3
 //       Vd: Vd(15:12),
 //       Vn: Vn(19:16),
 //       actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_2,
-//       baseline: VectorBinary2RegisterScalar_I16_32,
+//       baseline: VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       generated_baseline: VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
 //       pattern: 1111001q1dssnnnndddd0p0fn1m0mmmm,
 //       rule: VMLS_by_scalar_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -836,12 +817,12 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case3
 //            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalar_I16_32Tester_Case4
-    : public VectorBinary2RegisterScalar_I16_32TesterCase4 {
+class VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1Tester_Case4
+    : public VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1TesterCase4 {
  public:
-  VectorBinary2RegisterScalar_I16_32Tester_Case4()
-    : VectorBinary2RegisterScalar_I16_32TesterCase4(
-      state_.VectorBinary2RegisterScalar_I16_32_VMLS_by_scalar_A1_instance_)
+  VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1Tester_Case4()
+    : VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1TesterCase4(
+      state_.VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1_VMLS_by_scalar_A1_instance_)
   {}
 };
 
@@ -850,11 +831,10 @@ class VectorBinary2RegisterScalar_I16_32Tester_Case4
 //       Vd: Vd(15:12),
 //       Vn: Vn(19:16),
 //       actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
-//       baseline: VectorBinary2RegisterScalar_F32,
+//       baseline: VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       generated_baseline: VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0,
 //       pattern: 1111001q1dssnnnndddd0p0fn1m0mmmm,
 //       rule: VMLS_by_scalar_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -865,23 +845,22 @@ class VectorBinary2RegisterScalar_I16_32Tester_Case4
 //            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalar_F32Tester_Case5
-    : public VectorBinary2RegisterScalar_F32TesterCase5 {
+class VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0Tester_Case5
+    : public VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0TesterCase5 {
  public:
-  VectorBinary2RegisterScalar_F32Tester_Case5()
-    : VectorBinary2RegisterScalar_F32TesterCase5(
-      state_.VectorBinary2RegisterScalar_F32_VMLS_by_scalar_A1_instance_)
+  VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0Tester_Case5()
+    : VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0TesterCase5(
+      state_.VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0_VMLS_by_scalar_A1_instance_)
   {}
 };
 
 // A(11:8)=0110
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1,
-//       baseline: VectorBinary2RegisterScalar_I16_32L,
+//       baseline: VMLSL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VMLSL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0,
 //       pattern: 1111001u1dssnnnndddd0p10n1m0mmmm,
 //       rule: VMLSL_by_scalar_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -889,23 +868,22 @@ class VectorBinary2RegisterScalar_F32Tester_Case5
 //            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalar_I16_32LTester_Case6
-    : public VectorBinary2RegisterScalar_I16_32LTesterCase6 {
+class VMLSL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0Tester_Case6
+    : public VMLSL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0TesterCase6 {
  public:
-  VectorBinary2RegisterScalar_I16_32LTester_Case6()
-    : VectorBinary2RegisterScalar_I16_32LTesterCase6(
-      state_.VectorBinary2RegisterScalar_I16_32L_VMLSL_by_scalar_A2_instance_)
+  VMLSL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0Tester_Case6()
+    : VMLSL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0TesterCase6(
+      state_.VMLSL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0_VMLSL_by_scalar_A2_instance_)
   {}
 };
 
 // A(11:8)=0111 & U(24)=0
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1,
-//       baseline: VectorBinary2RegisterScalar_I16_32L,
+//       baseline: VQDMLSL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VQDMLSL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0,
 //       pattern: 111100101dssnnnndddd0p11n1m0mmmm,
 //       rule: VQDMLSL_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -913,12 +891,12 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case6
 //            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalar_I16_32LTester_Case7
-    : public VectorBinary2RegisterScalar_I16_32LTesterCase7 {
+class VQDMLSL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0Tester_Case7
+    : public VQDMLSL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0TesterCase7 {
  public:
-  VectorBinary2RegisterScalar_I16_32LTester_Case7()
-    : VectorBinary2RegisterScalar_I16_32LTesterCase7(
-      state_.VectorBinary2RegisterScalar_I16_32L_VQDMLSL_A1_instance_)
+  VQDMLSL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0Tester_Case7()
+    : VQDMLSL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0TesterCase7(
+      state_.VQDMLSL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0_VQDMLSL_A1_instance_)
   {}
 };
 
@@ -927,11 +905,10 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case7
 //       Vd: Vd(15:12),
 //       Vn: Vn(19:16),
 //       actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_2,
-//       baseline: VectorBinary2RegisterScalar_I16_32,
+//       baseline: VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_1,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       generated_baseline: VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_1,
 //       pattern: 1111001q1dssnnnndddd100fn1m0mmmm,
 //       rule: VMUL_by_scalar_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -941,12 +918,12 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case7
 //            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalar_I16_32Tester_Case8
-    : public VectorBinary2RegisterScalar_I16_32TesterCase8 {
+class VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_1Tester_Case8
+    : public VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_1TesterCase8 {
  public:
-  VectorBinary2RegisterScalar_I16_32Tester_Case8()
-    : VectorBinary2RegisterScalar_I16_32TesterCase8(
-      state_.VectorBinary2RegisterScalar_I16_32_VMUL_by_scalar_A1_instance_)
+  VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_1Tester_Case8()
+    : VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_1TesterCase8(
+      state_.VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_1_VMUL_by_scalar_A1_instance_)
   {}
 };
 
@@ -955,11 +932,10 @@ class VectorBinary2RegisterScalar_I16_32Tester_Case8
 //       Vd: Vd(15:12),
 //       Vn: Vn(19:16),
 //       actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
-//       baseline: VectorBinary2RegisterScalar_F32,
+//       baseline: VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       generated_baseline: VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_0,
 //       pattern: 1111001q1dssnnnndddd100fn1m0mmmm,
 //       rule: VMUL_by_scalar_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -970,23 +946,22 @@ class VectorBinary2RegisterScalar_I16_32Tester_Case8
 //            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalar_F32Tester_Case9
-    : public VectorBinary2RegisterScalar_F32TesterCase9 {
+class VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_0Tester_Case9
+    : public VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_0TesterCase9 {
  public:
-  VectorBinary2RegisterScalar_F32Tester_Case9()
-    : VectorBinary2RegisterScalar_F32TesterCase9(
-      state_.VectorBinary2RegisterScalar_F32_VMUL_by_scalar_A1_instance_)
+  VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_0Tester_Case9()
+    : VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_0TesterCase9(
+      state_.VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_0_VMUL_by_scalar_A1_instance_)
   {}
 };
 
 // A(11:8)=1010
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1,
-//       baseline: VectorBinary2RegisterScalar_I16_32L,
+//       baseline: VMULL_by_scalar_A2_1111001u1dssnnnndddd1010n1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VMULL_by_scalar_A2_1111001u1dssnnnndddd1010n1m0mmmm_case_0,
 //       pattern: 1111001u1dssnnnndddd1010n1m0mmmm,
 //       rule: VMULL_by_scalar_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -994,23 +969,22 @@ class VectorBinary2RegisterScalar_F32Tester_Case9
 //            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalar_I16_32LTester_Case10
-    : public VectorBinary2RegisterScalar_I16_32LTesterCase10 {
+class VMULL_by_scalar_A2_1111001u1dssnnnndddd1010n1m0mmmm_case_0Tester_Case10
+    : public VMULL_by_scalar_A2_1111001u1dssnnnndddd1010n1m0mmmm_case_0TesterCase10 {
  public:
-  VectorBinary2RegisterScalar_I16_32LTester_Case10()
-    : VectorBinary2RegisterScalar_I16_32LTesterCase10(
-      state_.VectorBinary2RegisterScalar_I16_32L_VMULL_by_scalar_A2_instance_)
+  VMULL_by_scalar_A2_1111001u1dssnnnndddd1010n1m0mmmm_case_0Tester_Case10()
+    : VMULL_by_scalar_A2_1111001u1dssnnnndddd1010n1m0mmmm_case_0TesterCase10(
+      state_.VMULL_by_scalar_A2_1111001u1dssnnnndddd1010n1m0mmmm_case_0_VMULL_by_scalar_A2_instance_)
   {}
 };
 
 // A(11:8)=1011 & U(24)=0
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1,
-//       baseline: VectorBinary2RegisterScalar_I16_32L,
+//       baseline: VQDMULL_A2_111100101dssnnnndddd1011n1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VQDMULL_A2_111100101dssnnnndddd1011n1m0mmmm_case_0,
 //       pattern: 111100101dssnnnndddd1011n1m0mmmm,
 //       rule: VQDMULL_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -1018,12 +992,12 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case10
 //            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalar_I16_32LTester_Case11
-    : public VectorBinary2RegisterScalar_I16_32LTesterCase11 {
+class VQDMULL_A2_111100101dssnnnndddd1011n1m0mmmm_case_0Tester_Case11
+    : public VQDMULL_A2_111100101dssnnnndddd1011n1m0mmmm_case_0TesterCase11 {
  public:
-  VectorBinary2RegisterScalar_I16_32LTester_Case11()
-    : VectorBinary2RegisterScalar_I16_32LTesterCase11(
-      state_.VectorBinary2RegisterScalar_I16_32L_VQDMULL_A2_instance_)
+  VQDMULL_A2_111100101dssnnnndddd1011n1m0mmmm_case_0Tester_Case11()
+    : VQDMULL_A2_111100101dssnnnndddd1011n1m0mmmm_case_0TesterCase11(
+      state_.VQDMULL_A2_111100101dssnnnndddd1011n1m0mmmm_case_0_VQDMULL_A2_instance_)
   {}
 };
 
@@ -1032,11 +1006,10 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case11
 //       Vd: Vd(15:12),
 //       Vn: Vn(19:16),
 //       actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_2,
-//       baseline: VectorBinary2RegisterScalar_I16_32,
+//       baseline: VQDMULH_A2_1111001q1dssnnnndddd1100n1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       generated_baseline: VQDMULH_A2_1111001q1dssnnnndddd1100n1m0mmmm_case_0,
 //       pattern: 1111001q1dssnnnndddd1100n1m0mmmm,
 //       rule: VQDMULH_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -1046,12 +1019,12 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case11
 //            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalar_I16_32Tester_Case12
-    : public VectorBinary2RegisterScalar_I16_32TesterCase12 {
+class VQDMULH_A2_1111001q1dssnnnndddd1100n1m0mmmm_case_0Tester_Case12
+    : public VQDMULH_A2_1111001q1dssnnnndddd1100n1m0mmmm_case_0TesterCase12 {
  public:
-  VectorBinary2RegisterScalar_I16_32Tester_Case12()
-    : VectorBinary2RegisterScalar_I16_32TesterCase12(
-      state_.VectorBinary2RegisterScalar_I16_32_VQDMULH_A2_instance_)
+  VQDMULH_A2_1111001q1dssnnnndddd1100n1m0mmmm_case_0Tester_Case12()
+    : VQDMULH_A2_1111001q1dssnnnndddd1100n1m0mmmm_case_0TesterCase12(
+      state_.VQDMULH_A2_1111001q1dssnnnndddd1100n1m0mmmm_case_0_VQDMULH_A2_instance_)
   {}
 };
 
@@ -1060,11 +1033,10 @@ class VectorBinary2RegisterScalar_I16_32Tester_Case12
 //       Vd: Vd(15:12),
 //       Vn: Vn(19:16),
 //       actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_2,
-//       baseline: VectorBinary2RegisterScalar_I16_32,
+//       baseline: VQRDMULH_1111001q1dssnnnndddd1101n1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       generated_baseline: VQRDMULH_1111001q1dssnnnndddd1101n1m0mmmm_case_0,
 //       pattern: 1111001q1dssnnnndddd1101n1m0mmmm,
 //       rule: VQRDMULH,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -1074,12 +1046,12 @@ class VectorBinary2RegisterScalar_I16_32Tester_Case12
 //            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalar_I16_32Tester_Case13
-    : public VectorBinary2RegisterScalar_I16_32TesterCase13 {
+class VQRDMULH_1111001q1dssnnnndddd1101n1m0mmmm_case_0Tester_Case13
+    : public VQRDMULH_1111001q1dssnnnndddd1101n1m0mmmm_case_0TesterCase13 {
  public:
-  VectorBinary2RegisterScalar_I16_32Tester_Case13()
-    : VectorBinary2RegisterScalar_I16_32TesterCase13(
-      state_.VectorBinary2RegisterScalar_I16_32_VQRDMULH_instance_)
+  VQRDMULH_1111001q1dssnnnndddd1101n1m0mmmm_case_0Tester_Case13()
+    : VQRDMULH_1111001q1dssnnnndddd1101n1m0mmmm_case_0TesterCase13(
+      state_.VQRDMULH_1111001q1dssnnnndddd1101n1m0mmmm_case_0_VQRDMULH_instance_)
   {}
 };
 
@@ -1097,11 +1069,10 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       Vd: Vd(15:12),
 //       Vn: Vn(19:16),
 //       actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_2,
-//       baseline: VectorBinary2RegisterScalar_I16_32,
+//       baseline: VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       generated_baseline: VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
 //       pattern: 1111001q1dssnnnndddd0p0fn1m0mmmm,
 //       rule: VMLA_by_scalar_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -1112,8 +1083,8 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       size: size(21:20),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       VectorBinary2RegisterScalar_I16_32Tester_Case0_TestCase0) {
-  VectorBinary2RegisterScalar_I16_32Tester_Case0 baseline_tester;
+       VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1Tester_Case0_TestCase0) {
+  VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1Tester_Case0 baseline_tester;
   NamedActual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_2_VMLA_by_scalar_A1 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("1111001q1dssnnnndddd0p0fn1m0mmmm");
@@ -1124,11 +1095,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vn: Vn(19:16),
 //       actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
-//       baseline: VectorBinary2RegisterScalar_F32,
+//       baseline: VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       generated_baseline: VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0,
 //       pattern: 1111001q1dssnnnndddd0p0fn1m0mmmm,
 //       rule: VMLA_by_scalar_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -1140,8 +1110,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(21:20),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       VectorBinary2RegisterScalar_F32Tester_Case1_TestCase1) {
-  VectorBinary2RegisterScalar_F32Tester_Case1 baseline_tester;
+       VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0Tester_Case1_TestCase1) {
+  VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0Tester_Case1 baseline_tester;
   NamedActual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1_VMLA_by_scalar_A1 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("1111001q1dssnnnndddd0p0fn1m0mmmm");
@@ -1150,11 +1120,10 @@ TEST_F(Arm32DecoderStateTests,
 // A(11:8)=0010
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1,
-//       baseline: VectorBinary2RegisterScalar_I16_32L,
+//       baseline: VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0,
 //       pattern: 1111001u1dssnnnndddd0p10n1m0mmmm,
 //       rule: VMLAL_by_scalar_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -1163,8 +1132,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(21:20),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       VectorBinary2RegisterScalar_I16_32LTester_Case2_TestCase2) {
-  VectorBinary2RegisterScalar_I16_32LTester_Case2 baseline_tester;
+       VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0Tester_Case2_TestCase2) {
+  VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0Tester_Case2 baseline_tester;
   NamedActual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1_VMLAL_by_scalar_A2 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("1111001u1dssnnnndddd0p10n1m0mmmm");
@@ -1173,11 +1142,10 @@ TEST_F(Arm32DecoderStateTests,
 // A(11:8)=0011 & U(24)=0
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1,
-//       baseline: VectorBinary2RegisterScalar_I16_32L,
+//       baseline: VQDMLAL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VQDMLAL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0,
 //       pattern: 111100101dssnnnndddd0p11n1m0mmmm,
 //       rule: VQDMLAL_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -1186,8 +1154,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(21:20),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       VectorBinary2RegisterScalar_I16_32LTester_Case3_TestCase3) {
-  VectorBinary2RegisterScalar_I16_32LTester_Case3 baseline_tester;
+       VQDMLAL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0Tester_Case3_TestCase3) {
+  VQDMLAL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0Tester_Case3 baseline_tester;
   NamedActual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1_VQDMLAL_A1 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100101dssnnnndddd0p11n1m0mmmm");
@@ -1198,11 +1166,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vn: Vn(19:16),
 //       actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_2,
-//       baseline: VectorBinary2RegisterScalar_I16_32,
+//       baseline: VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       generated_baseline: VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
 //       pattern: 1111001q1dssnnnndddd0p0fn1m0mmmm,
 //       rule: VMLS_by_scalar_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -1213,8 +1180,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(21:20),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       VectorBinary2RegisterScalar_I16_32Tester_Case4_TestCase4) {
-  VectorBinary2RegisterScalar_I16_32Tester_Case4 baseline_tester;
+       VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1Tester_Case4_TestCase4) {
+  VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1Tester_Case4 baseline_tester;
   NamedActual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_2_VMLS_by_scalar_A1 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("1111001q1dssnnnndddd0p0fn1m0mmmm");
@@ -1225,11 +1192,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vn: Vn(19:16),
 //       actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
-//       baseline: VectorBinary2RegisterScalar_F32,
+//       baseline: VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       generated_baseline: VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0,
 //       pattern: 1111001q1dssnnnndddd0p0fn1m0mmmm,
 //       rule: VMLS_by_scalar_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -1241,8 +1207,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(21:20),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       VectorBinary2RegisterScalar_F32Tester_Case5_TestCase5) {
-  VectorBinary2RegisterScalar_F32Tester_Case5 baseline_tester;
+       VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0Tester_Case5_TestCase5) {
+  VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0Tester_Case5 baseline_tester;
   NamedActual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1_VMLS_by_scalar_A1 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("1111001q1dssnnnndddd0p0fn1m0mmmm");
@@ -1251,11 +1217,10 @@ TEST_F(Arm32DecoderStateTests,
 // A(11:8)=0110
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1,
-//       baseline: VectorBinary2RegisterScalar_I16_32L,
+//       baseline: VMLSL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VMLSL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0,
 //       pattern: 1111001u1dssnnnndddd0p10n1m0mmmm,
 //       rule: VMLSL_by_scalar_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -1264,8 +1229,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(21:20),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       VectorBinary2RegisterScalar_I16_32LTester_Case6_TestCase6) {
-  VectorBinary2RegisterScalar_I16_32LTester_Case6 baseline_tester;
+       VMLSL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0Tester_Case6_TestCase6) {
+  VMLSL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0Tester_Case6 baseline_tester;
   NamedActual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1_VMLSL_by_scalar_A2 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("1111001u1dssnnnndddd0p10n1m0mmmm");
@@ -1274,11 +1239,10 @@ TEST_F(Arm32DecoderStateTests,
 // A(11:8)=0111 & U(24)=0
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1,
-//       baseline: VectorBinary2RegisterScalar_I16_32L,
+//       baseline: VQDMLSL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VQDMLSL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0,
 //       pattern: 111100101dssnnnndddd0p11n1m0mmmm,
 //       rule: VQDMLSL_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -1287,8 +1251,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(21:20),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       VectorBinary2RegisterScalar_I16_32LTester_Case7_TestCase7) {
-  VectorBinary2RegisterScalar_I16_32LTester_Case7 baseline_tester;
+       VQDMLSL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0Tester_Case7_TestCase7) {
+  VQDMLSL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0Tester_Case7 baseline_tester;
   NamedActual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1_VQDMLSL_A1 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100101dssnnnndddd0p11n1m0mmmm");
@@ -1299,11 +1263,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vn: Vn(19:16),
 //       actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_2,
-//       baseline: VectorBinary2RegisterScalar_I16_32,
+//       baseline: VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_1,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       generated_baseline: VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_1,
 //       pattern: 1111001q1dssnnnndddd100fn1m0mmmm,
 //       rule: VMUL_by_scalar_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -1314,8 +1277,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(21:20),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       VectorBinary2RegisterScalar_I16_32Tester_Case8_TestCase8) {
-  VectorBinary2RegisterScalar_I16_32Tester_Case8 baseline_tester;
+       VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_1Tester_Case8_TestCase8) {
+  VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_1Tester_Case8 baseline_tester;
   NamedActual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_2_VMUL_by_scalar_A1 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("1111001q1dssnnnndddd100fn1m0mmmm");
@@ -1326,11 +1289,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vn: Vn(19:16),
 //       actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
-//       baseline: VectorBinary2RegisterScalar_F32,
+//       baseline: VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       generated_baseline: VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_0,
 //       pattern: 1111001q1dssnnnndddd100fn1m0mmmm,
 //       rule: VMUL_by_scalar_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -1342,8 +1304,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(21:20),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       VectorBinary2RegisterScalar_F32Tester_Case9_TestCase9) {
-  VectorBinary2RegisterScalar_F32Tester_Case9 baseline_tester;
+       VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_0Tester_Case9_TestCase9) {
+  VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_0Tester_Case9 baseline_tester;
   NamedActual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1_VMUL_by_scalar_A1 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("1111001q1dssnnnndddd100fn1m0mmmm");
@@ -1352,11 +1314,10 @@ TEST_F(Arm32DecoderStateTests,
 // A(11:8)=1010
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1,
-//       baseline: VectorBinary2RegisterScalar_I16_32L,
+//       baseline: VMULL_by_scalar_A2_1111001u1dssnnnndddd1010n1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VMULL_by_scalar_A2_1111001u1dssnnnndddd1010n1m0mmmm_case_0,
 //       pattern: 1111001u1dssnnnndddd1010n1m0mmmm,
 //       rule: VMULL_by_scalar_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -1365,8 +1326,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(21:20),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       VectorBinary2RegisterScalar_I16_32LTester_Case10_TestCase10) {
-  VectorBinary2RegisterScalar_I16_32LTester_Case10 baseline_tester;
+       VMULL_by_scalar_A2_1111001u1dssnnnndddd1010n1m0mmmm_case_0Tester_Case10_TestCase10) {
+  VMULL_by_scalar_A2_1111001u1dssnnnndddd1010n1m0mmmm_case_0Tester_Case10 baseline_tester;
   NamedActual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1_VMULL_by_scalar_A2 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("1111001u1dssnnnndddd1010n1m0mmmm");
@@ -1375,11 +1336,10 @@ TEST_F(Arm32DecoderStateTests,
 // A(11:8)=1011 & U(24)=0
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1,
-//       baseline: VectorBinary2RegisterScalar_I16_32L,
+//       baseline: VQDMULL_A2_111100101dssnnnndddd1011n1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VQDMULL_A2_111100101dssnnnndddd1011n1m0mmmm_case_0,
 //       pattern: 111100101dssnnnndddd1011n1m0mmmm,
 //       rule: VQDMULL_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -1388,8 +1348,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(21:20),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       VectorBinary2RegisterScalar_I16_32LTester_Case11_TestCase11) {
-  VectorBinary2RegisterScalar_I16_32LTester_Case11 baseline_tester;
+       VQDMULL_A2_111100101dssnnnndddd1011n1m0mmmm_case_0Tester_Case11_TestCase11) {
+  VQDMULL_A2_111100101dssnnnndddd1011n1m0mmmm_case_0Tester_Case11 baseline_tester;
   NamedActual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1_VQDMULL_A2 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100101dssnnnndddd1011n1m0mmmm");
@@ -1400,11 +1360,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vn: Vn(19:16),
 //       actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_2,
-//       baseline: VectorBinary2RegisterScalar_I16_32,
+//       baseline: VQDMULH_A2_1111001q1dssnnnndddd1100n1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       generated_baseline: VQDMULH_A2_1111001q1dssnnnndddd1100n1m0mmmm_case_0,
 //       pattern: 1111001q1dssnnnndddd1100n1m0mmmm,
 //       rule: VQDMULH_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -1415,8 +1374,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(21:20),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       VectorBinary2RegisterScalar_I16_32Tester_Case12_TestCase12) {
-  VectorBinary2RegisterScalar_I16_32Tester_Case12 baseline_tester;
+       VQDMULH_A2_1111001q1dssnnnndddd1100n1m0mmmm_case_0Tester_Case12_TestCase12) {
+  VQDMULH_A2_1111001q1dssnnnndddd1100n1m0mmmm_case_0Tester_Case12 baseline_tester;
   NamedActual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_2_VQDMULH_A2 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("1111001q1dssnnnndddd1100n1m0mmmm");
@@ -1427,11 +1386,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vn: Vn(19:16),
 //       actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_2,
-//       baseline: VectorBinary2RegisterScalar_I16_32,
+//       baseline: VQRDMULH_1111001q1dssnnnndddd1101n1m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       generated_baseline: VQRDMULH_1111001q1dssnnnndddd1101n1m0mmmm_case_0,
 //       pattern: 1111001q1dssnnnndddd1101n1m0mmmm,
 //       rule: VQRDMULH,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -1442,8 +1400,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(21:20),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       VectorBinary2RegisterScalar_I16_32Tester_Case13_TestCase13) {
-  VectorBinary2RegisterScalar_I16_32Tester_Case13 baseline_tester;
+       VQRDMULH_1111001q1dssnnnndddd1101n1m0mmmm_case_0Tester_Case13_TestCase13) {
+  VQRDMULH_1111001q1dssnnnndddd1101n1m0mmmm_case_0Tester_Case13 baseline_tester;
   NamedActual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_2_VQRDMULH actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("1111001q1dssnnnndddd1101n1m0mmmm");

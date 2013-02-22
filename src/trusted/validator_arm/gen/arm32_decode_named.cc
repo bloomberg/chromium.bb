@@ -3779,78 +3779,78 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_2scalar(
   UNREFERENCED_PARAMETER(inst);
   if ((inst.Bits() & 0x00000F00)  ==
           0x00000000 /* A(11:8)=0000 */) {
-    return VectorBinary2RegisterScalar_I16_32_VMLA_by_scalar_A1_instance_;
+    return VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1_VMLA_by_scalar_A1_instance_;
   }
 
   if ((inst.Bits() & 0x00000F00)  ==
           0x00000100 /* A(11:8)=0001 */) {
-    return VectorBinary2RegisterScalar_F32_VMLA_by_scalar_A1_instance_;
+    return VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0_VMLA_by_scalar_A1_instance_;
   }
 
   if ((inst.Bits() & 0x00000F00)  ==
           0x00000200 /* A(11:8)=0010 */) {
-    return VectorBinary2RegisterScalar_I16_32L_VMLAL_by_scalar_A2_instance_;
+    return VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0_VMLAL_by_scalar_A2_instance_;
   }
 
   if ((inst.Bits() & 0x00000F00)  ==
           0x00000300 /* A(11:8)=0011 */ &&
       (inst.Bits() & 0x01000000)  ==
           0x00000000 /* U(24)=0 */) {
-    return VectorBinary2RegisterScalar_I16_32L_VQDMLAL_A1_instance_;
+    return VQDMLAL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0_VQDMLAL_A1_instance_;
   }
 
   if ((inst.Bits() & 0x00000F00)  ==
           0x00000400 /* A(11:8)=0100 */) {
-    return VectorBinary2RegisterScalar_I16_32_VMLS_by_scalar_A1_instance_;
+    return VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1_VMLS_by_scalar_A1_instance_;
   }
 
   if ((inst.Bits() & 0x00000F00)  ==
           0x00000500 /* A(11:8)=0101 */) {
-    return VectorBinary2RegisterScalar_F32_VMLS_by_scalar_A1_instance_;
+    return VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0_VMLS_by_scalar_A1_instance_;
   }
 
   if ((inst.Bits() & 0x00000F00)  ==
           0x00000600 /* A(11:8)=0110 */) {
-    return VectorBinary2RegisterScalar_I16_32L_VMLSL_by_scalar_A2_instance_;
+    return VMLSL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0_VMLSL_by_scalar_A2_instance_;
   }
 
   if ((inst.Bits() & 0x00000F00)  ==
           0x00000700 /* A(11:8)=0111 */ &&
       (inst.Bits() & 0x01000000)  ==
           0x00000000 /* U(24)=0 */) {
-    return VectorBinary2RegisterScalar_I16_32L_VQDMLSL_A1_instance_;
+    return VQDMLSL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0_VQDMLSL_A1_instance_;
   }
 
   if ((inst.Bits() & 0x00000F00)  ==
           0x00000800 /* A(11:8)=1000 */) {
-    return VectorBinary2RegisterScalar_I16_32_VMUL_by_scalar_A1_instance_;
+    return VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_1_VMUL_by_scalar_A1_instance_;
   }
 
   if ((inst.Bits() & 0x00000F00)  ==
           0x00000900 /* A(11:8)=1001 */) {
-    return VectorBinary2RegisterScalar_F32_VMUL_by_scalar_A1_instance_;
+    return VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_0_VMUL_by_scalar_A1_instance_;
   }
 
   if ((inst.Bits() & 0x00000F00)  ==
           0x00000A00 /* A(11:8)=1010 */) {
-    return VectorBinary2RegisterScalar_I16_32L_VMULL_by_scalar_A2_instance_;
+    return VMULL_by_scalar_A2_1111001u1dssnnnndddd1010n1m0mmmm_case_0_VMULL_by_scalar_A2_instance_;
   }
 
   if ((inst.Bits() & 0x00000F00)  ==
           0x00000B00 /* A(11:8)=1011 */ &&
       (inst.Bits() & 0x01000000)  ==
           0x00000000 /* U(24)=0 */) {
-    return VectorBinary2RegisterScalar_I16_32L_VQDMULL_A2_instance_;
+    return VQDMULL_A2_111100101dssnnnndddd1011n1m0mmmm_case_0_VQDMULL_A2_instance_;
   }
 
   if ((inst.Bits() & 0x00000F00)  ==
           0x00000C00 /* A(11:8)=1100 */) {
-    return VectorBinary2RegisterScalar_I16_32_VQDMULH_A2_instance_;
+    return VQDMULH_A2_1111001q1dssnnnndddd1100n1m0mmmm_case_0_VQDMULH_A2_instance_;
   }
 
   if ((inst.Bits() & 0x00000F00)  ==
           0x00000D00 /* A(11:8)=1101 */) {
-    return VectorBinary2RegisterScalar_I16_32_VQRDMULH_instance_;
+    return VQRDMULH_1111001q1dssnnnndddd1101n1m0mmmm_case_0_VQRDMULH_instance_;
   }
 
   if (true) {

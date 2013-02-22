@@ -6244,7 +6244,7 @@ class Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1
 //    Vn: Vn(19:16),
 //    actual: Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1,
 //    arch: ASIMD,
-//    baseline: VectorBinary2RegisterScalar_I16_32L,
+//    baseline: VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0,
 //    constraints: & size(21:20)=~11 ,
 //    d: D:Vd,
 //    defs: {},
@@ -6260,7 +6260,6 @@ class Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0,
 //    index: M:Vm(3)
 //         if size(21:20)=01
 //         else M,
@@ -6290,7 +6289,7 @@ class Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1
 //    Vn: Vn(19:16),
 //    actual: Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1,
 //    arch: ASIMD,
-//    baseline: VectorBinary2RegisterScalar_I16_32L,
+//    baseline: VMLSL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0,
 //    constraints: & size(21:20)=~11 ,
 //    d: D:Vd,
 //    defs: {},
@@ -6306,7 +6305,6 @@ class Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VMLSL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0,
 //    index: M:Vm(3)
 //         if size(21:20)=01
 //         else M,
@@ -6336,7 +6334,7 @@ class Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1
 //    Vn: Vn(19:16),
 //    actual: Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1,
 //    arch: ASIMD,
-//    baseline: VectorBinary2RegisterScalar_I16_32L,
+//    baseline: VMULL_by_scalar_A2_1111001u1dssnnnndddd1010n1m0mmmm_case_0,
 //    constraints: & size(21:20)=~11 ,
 //    d: D:Vd,
 //    defs: {},
@@ -6352,7 +6350,6 @@ class Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VMULL_by_scalar_A2_1111001u1dssnnnndddd1010n1m0mmmm_case_0,
 //    index: M:Vm(3)
 //         if size(21:20)=01
 //         else M,
@@ -6382,7 +6379,7 @@ class Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1
 //    Vn: Vn(19:16),
 //    actual: Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1,
 //    arch: ASIMD,
-//    baseline: VectorBinary2RegisterScalar_I16_32L,
+//    baseline: VQDMLAL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0,
 //    constraints: & size(21:20)=~11 ,
 //    d: D:Vd,
 //    defs: {},
@@ -6398,7 +6395,6 @@ class Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VQDMLAL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0,
 //    index: M:Vm(3)
 //         if size(21:20)=01
 //         else M,
@@ -6428,7 +6424,7 @@ class Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1
 //    Vn: Vn(19:16),
 //    actual: Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1,
 //    arch: ASIMD,
-//    baseline: VectorBinary2RegisterScalar_I16_32L,
+//    baseline: VQDMLSL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0,
 //    constraints: & size(21:20)=~11 ,
 //    d: D:Vd,
 //    defs: {},
@@ -6444,7 +6440,6 @@ class Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VQDMLSL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0,
 //    index: M:Vm(3)
 //         if size(21:20)=01
 //         else M,
@@ -6474,7 +6469,7 @@ class Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1
 //    Vn: Vn(19:16),
 //    actual: Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1,
 //    arch: ASIMD,
-//    baseline: VectorBinary2RegisterScalar_I16_32L,
+//    baseline: VQDMULL_A2_111100101dssnnnndddd1011n1m0mmmm_case_0,
 //    constraints: & size(21:20)=~11 ,
 //    d: D:Vd,
 //    defs: {},
@@ -6490,7 +6485,6 @@ class Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VQDMULL_A2_111100101dssnnnndddd1011n1m0mmmm_case_0,
 //    index: M:Vm(3)
 //         if size(21:20)=01
 //         else M,
@@ -6544,7 +6538,7 @@ class Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1
 //    Vn: Vn(19:16),
 //    actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
 //    arch: ASIMD,
-//    baseline: VectorBinary2RegisterScalar_F32,
+//    baseline: VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0,
 //    constraints: & size(21:20)=~11 ,
 //    d: D:Vd,
 //    defs: {},
@@ -6560,7 +6554,6 @@ class Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0,
 //    index: M,
 //    m: Vm,
 //    n: N:Vn,
@@ -6590,7 +6583,7 @@ class Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1
 //    Vn: Vn(19:16),
 //    actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
 //    arch: ASIMD,
-//    baseline: VectorBinary2RegisterScalar_F32,
+//    baseline: VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0,
 //    constraints: & size(21:20)=~11 ,
 //    d: D:Vd,
 //    defs: {},
@@ -6606,7 +6599,6 @@ class Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0,
 //    index: M,
 //    m: Vm,
 //    n: N:Vn,
@@ -6636,7 +6628,7 @@ class Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1
 //    Vn: Vn(19:16),
 //    actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
 //    arch: ASIMD,
-//    baseline: VectorBinary2RegisterScalar_F32,
+//    baseline: VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_0,
 //    constraints: & size(21:20)=~11 ,
 //    d: D:Vd,
 //    defs: {},
@@ -6652,7 +6644,6 @@ class Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_0,
 //    index: M,
 //    m: Vm,
 //    n: N:Vn,
@@ -6705,7 +6696,7 @@ class Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1
 //    Vn: Vn(19:16),
 //    actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_2,
 //    arch: ASIMD,
-//    baseline: VectorBinary2RegisterScalar_I16_32,
+//    baseline: VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
 //    constraints: & size(21:20)=~11 ,
 //    d: D:Vd,
 //    defs: {},
@@ -6721,7 +6712,6 @@ class Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
 //    index: M:Vm(3)
 //         if size(21:20)=01
 //         else M,
@@ -6754,7 +6744,7 @@ class Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1
 //    Vn: Vn(19:16),
 //    actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_2,
 //    arch: ASIMD,
-//    baseline: VectorBinary2RegisterScalar_I16_32,
+//    baseline: VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
 //    constraints: & size(21:20)=~11 ,
 //    d: D:Vd,
 //    defs: {},
@@ -6770,7 +6760,6 @@ class Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
 //    index: M:Vm(3)
 //         if size(21:20)=01
 //         else M,
@@ -6803,7 +6792,7 @@ class Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1
 //    Vn: Vn(19:16),
 //    actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_2,
 //    arch: ASIMD,
-//    baseline: VectorBinary2RegisterScalar_I16_32,
+//    baseline: VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_1,
 //    constraints: & size(21:20)=~11 ,
 //    d: D:Vd,
 //    defs: {},
@@ -6819,7 +6808,6 @@ class Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_1,
 //    index: M:Vm(3)
 //         if size(21:20)=01
 //         else M,
@@ -6852,7 +6840,7 @@ class Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1
 //    Vn: Vn(19:16),
 //    actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_2,
 //    arch: ASIMD,
-//    baseline: VectorBinary2RegisterScalar_I16_32,
+//    baseline: VQDMULH_A2_1111001q1dssnnnndddd1100n1m0mmmm_case_0,
 //    constraints: & size(21:20)=~11 ,
 //    d: D:Vd,
 //    defs: {},
@@ -6868,7 +6856,6 @@ class Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VQDMULH_A2_1111001q1dssnnnndddd1100n1m0mmmm_case_0,
 //    index: M:Vm(3)
 //         if size(21:20)=01
 //         else M,
@@ -6901,7 +6888,7 @@ class Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1
 //    Vn: Vn(19:16),
 //    actual: Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_2,
 //    arch: ASIMD,
-//    baseline: VectorBinary2RegisterScalar_I16_32,
+//    baseline: VQRDMULH_1111001q1dssnnnndddd1101n1m0mmmm_case_0,
 //    constraints: & size(21:20)=~11 ,
 //    d: D:Vd,
 //    defs: {},
@@ -6917,7 +6904,6 @@ class Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VQRDMULH_1111001q1dssnnnndddd1101n1m0mmmm_case_0,
 //    index: M:Vm(3)
 //         if size(21:20)=01
 //         else M,
