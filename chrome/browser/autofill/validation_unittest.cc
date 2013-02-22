@@ -43,6 +43,18 @@ const char* const kInvalidCreditCardSecurityCode[] = {
   "12345",  // CSC too long.
   "asd",  // non-numeric CSC.
 };
+const char* const kValidEmailAddress[] = {
+  "user@example",
+  "user@example.com",
+  "user@subdomain.example.com",
+  "user+postfix@example.com",
+};
+const char* const kInvalidEmailAddress[] = {
+  "user",
+  "foo.com",
+  "user@",
+  "user@=example.com"
+};
 }  // namespace
 
 TEST(AutofillValidation, IsValidCreditCardNumber) {
@@ -72,4 +84,18 @@ TEST(AutofillValidation, IsValidCreditCardSecurityCode) {
             ASCIIToUTF16(kInvalidCreditCardSecurityCode[i])));
   }
 }
+
+TEST(AutofillValidation, IsValidEmailAddress) {
+  for (size_t i = 0; i < arraysize(kValidEmailAddress); ++i) {
+    SCOPED_TRACE(kValidEmailAddress[i]);
+    EXPECT_TRUE(
+        autofill::IsValidEmailAddress(ASCIIToUTF16(kValidEmailAddress[i])));
+  }
+  for (size_t i = 0; i < arraysize(kInvalidEmailAddress); ++i) {
+    SCOPED_TRACE(kInvalidEmailAddress[i]);
+    EXPECT_FALSE(
+        autofill::IsValidEmailAddress(ASCIIToUTF16(kInvalidEmailAddress[i])));
+  }
+}
+
 

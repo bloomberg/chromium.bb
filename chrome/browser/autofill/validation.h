@@ -16,6 +16,9 @@ bool IsValidCreditCardNumber(const string16& text);
 // Returns true if |text| looks like a valid credit card security code.
 bool IsValidCreditCardSecurityCode(const string16& text);
 
+// Returns true if |text| looks like a valid e-mail address.
+bool IsValidEmailAddress(const string16& text);
+
 }  // namespace autofill
 
 #endif  // CHROME_BROWSER_AUTOFILL_VALIDATION_H_

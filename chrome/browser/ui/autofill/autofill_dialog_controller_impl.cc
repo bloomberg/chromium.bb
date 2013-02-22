@@ -585,8 +585,7 @@ bool AutofillDialogControllerImpl::InputIsValid(AutofillFieldType type,
                                                 const string16& value) {
   switch (type) {
     case EMAIL_ADDRESS:
-      // TODO(groby): Add the missing check.
-      break;
+      return IsValidEmailAddress(value);
 
     case CREDIT_CARD_NUMBER:
       return autofill::IsValidCreditCardNumber(value);
