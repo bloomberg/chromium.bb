@@ -36,7 +36,6 @@ struct MESSAGE_CENTER_EXPORT Notification {
   // Begin unpacked values from optional_fields
   int priority;
   base::Time timestamp;
-  int unread_count;
   std::vector<string16> button_titles;
   string16 expanded_message;
   std::vector<NotificationItem> items;

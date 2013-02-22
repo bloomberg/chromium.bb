@@ -64,9 +64,7 @@ void NotificationList::AddNotification(
   notification.extension_id = extension_id;
 
   // Initialize primitive fields before unpacking optional fields.
-  // timestamp initializes to default NULL time.
   notification.priority = ui::notifications::DEFAULT_PRIORITY;
-  notification.unread_count = 0;
 
   UnpackOptionalFields(optional_fields, &notification);
 
@@ -80,12 +78,10 @@ void NotificationList::UnpackOptionalFields(const DictionaryValue* fields,
 
   fields->GetInteger(ui::notifications::kPriorityKey, &notification->priority);
   if (fields->HasKey(ui::notifications::kTimestampKey)) {
-    std::string time_string;
-    fields->GetString(ui::notifications::kTimestampKey, &time_string);
-    base::Time::FromString(time_string.c_str(), &notification->timestamp);
+    double time_double;
+    fields->GetDouble(ui::notifications::kTimestampKey, &time_double);
+    notification->timestamp = base::Time::FromJsTime(time_double);
   }
-  fields->GetInteger(ui::notifications::kUnreadCountKey,
-                     &notification->unread_count);
   if (fields->HasKey(ui::notifications::kButtonOneTitleKey) ||
       fields->HasKey(ui::notifications::kButtonOneIconUrlKey)) {
     string16 title;

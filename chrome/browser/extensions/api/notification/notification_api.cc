@@ -152,7 +152,7 @@ void NotificationApiFunction::CreateNotification(
     optional_fields->SetInteger(ui::notifications::kPriorityKey,
                                 *options->priority);
   if (options->event_time.get())
-    optional_fields->SetString(ui::notifications::kTimestampKey,
+    optional_fields->SetDouble(ui::notifications::kTimestampKey,
                                *options->event_time);
   if (options->buttons.get()) {
     if (options->buttons->size() > 0) {

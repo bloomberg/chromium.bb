@@ -171,7 +171,7 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestBaseFormatNotification) {
       "\"title\": \"Attention!\","
       "\"message\": \"Check out Cirque du Soleil\","
       "\"priority\": 1,"
-      "\"eventTime\": \"Tue, 15 Nov 1994 12:45:26 GMT\","
+      "\"eventTime\": 1234567890.12345678,"
       "\"buttons\": ["
       "  {"
       "   \"title\": \"Up\","
@@ -222,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestMultipleItemNotification) {
       " \"message\": \"I saw Frank steal a sandwich :-)\"}"
       "],"
       "\"priority\": 1,"
-      "\"eventTime\": \"Fri, 16 Nov 2012 01:17:15 GMT\""
+      "\"eventTime\": 1361488019.9999999"
       "}]",
       browser(), utils::NONE));
   // TODO(dharcourt): [...], items = [{title: foo, message: bar}, ...], [...]
