@@ -45,6 +45,11 @@ class ScopedForceDesktopType {
 HostDesktopType GetHostDesktopTypeForNativeView(gfx::NativeView native_view);
 HostDesktopType GetHostDesktopTypeForNativeWindow(
     gfx::NativeWindow native_window);
+
+// Returns the desktop type forced by an active ScopedForceDesktopType or
+// |browser|'s desktop type. Most consumers shouldn't need to care about
+// ScopedForceDesktopType and should use |browser|'s host_desktop_type()
+// directly.
 HostDesktopType GetHostDesktopTypeForBrowser(const Browser* browser);
 
 // Returns the type of host desktop most likely to be in use.  This is the one
