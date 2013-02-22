@@ -327,8 +327,6 @@
             'host/dns_blackhole_checker.cc',
             'host/dns_blackhole_checker.h',
             'host/event_executor.h',
-            'host/event_executor_fake.cc',
-            'host/event_executor_fake.h',
             'host/event_executor_linux.cc',
             'host/event_executor_mac.cc',
             'host/event_executor_win.cc',
