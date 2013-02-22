@@ -5,6 +5,3 @@ ADDRESS_HOME_CITY | city | City*: |
 ADDRESS_HOME_STATE | state | State*: | 
 ADDRESS_HOME_ZIP | zip | Zip Code*: | 
 PHONE_HOME_WHOLE_NUMBER | voice | Phone Number*: | 
-UNKNOWN_TYPE | order.188:217866256151.ShippingSpeed | (3-5 business days) | std-us
-UNKNOWN_TYPE | order.188:217866256151.ShippingSpeed | (2 business days) | second
-UNKNOWN_TYPE | order.188:217866256151.ShippingSpeed | Standard Shipping Two-Day Shipping One-Day Shipping | next

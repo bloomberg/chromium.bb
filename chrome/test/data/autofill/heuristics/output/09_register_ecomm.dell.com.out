@@ -7,6 +7,4 @@ ADDRESS_HOME_CITY | address$ctl00$address$addressValidator$_EditView$city | City
 ADDRESS_HOME_STATE | address$ctl00$address$addressValidator$_EditView$region$ctl01 | CityState | 
 ADDRESS_HOME_ZIP | address$ctl00$address$addressValidator$_EditView$postal_code | Zip Code4-digit Ext. | 
 UNKNOWN_TYPE | address$ctl00$address$addressValidator$_EditView$postal_code2 | Zip Code4-digit Ext. | 
-UNKNOWN_TYPE | address$ctl00$address$addressValidator$OverrideAddress | Problems? | on
 EMAIL_ADDRESS | email$ctl07 | Email Address (used to sign into your account) | 
-UNKNOWN_TYPE | Subscription |  | on

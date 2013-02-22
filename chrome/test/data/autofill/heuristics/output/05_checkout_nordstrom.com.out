@@ -10,7 +10,6 @@ ADDRESS_BILLING_CITY | ctl00$mainContentPlaceHolder$billingAddressForm$city | Ci
 ADDRESS_BILLING_STATE | ctl00$mainContentPlaceHolder$billingAddressForm$stateProvince | State/Province | -1
 ADDRESS_BILLING_ZIP | ctl00$mainContentPlaceHolder$billingAddressForm$zipCode | Zip/Postal Code | 
 ADDRESS_BILLING_COUNTRY | ctl00$mainContentPlaceHolder$billingAddressForm$country | Country | 249
-UNKNOWN_TYPE | ctl00$mainContentPlaceHolder$shippingSameAsBilling |  | on
 NAME_FIRST | ctl00$mainContentPlaceHolder$shippingAddressForm$firstName | First Name | 
 NAME_MIDDLE_INITIAL | ctl00$mainContentPlaceHolder$shippingAddressForm$middleInitial | M.I. | 
 NAME_LAST | ctl00$mainContentPlaceHolder$shippingAddressForm$lastName | Last Name | 

@@ -10,9 +10,6 @@ ADDRESS_HOME_LINE2 | address2 | Address |
 ADDRESS_HOME_CITY | city | City | 
 ADDRESS_HOME_STATE | state | State | 
 ADDRESS_HOME_ZIP | zip | Zip | 
-UNKNOWN_TYPE | shippingChoice | Shipping Method CLOSEWe ship using UPS and USPS Priority Mail within the continental United States, and USPS priority mail outside of the continental United States.Learn More about our shipping methods and prices.Place this order by 1PM EST to get it by the estimated dates below: | Standard
-UNKNOWN_TYPE | shippingChoice | Shipping Method CLOSEWe ship using UPS and USPS Priority Mail within the continental United States, and USPS priority mail outside of the continental United States.Learn More about our shipping methods and prices.Place this order by 1PM EST to get it by the estimated dates below: | SecondDay
-UNKNOWN_TYPE | shippingChoice | Standard3 - 7 business days$7dates: Jun 08 - Jun 14 Two Day2 business days$15date: Jun 07 Overnight1 business day$20date: Jun 06 | Overnight
 CREDIT_CARD_TYPE | ccType | Card Type: | 
 CREDIT_CARD_NUMBER | ccNumber | Card Number: | 
 CREDIT_CARD_EXP_MONTH | expMonth | Expiration: | 1
@@ -22,10 +19,7 @@ UNKNOWN_TYPE | birthMonthBMLField | Birthday: CLOSEWe need your birthday for the
 UNKNOWN_TYPE | birthDayBMLField | Birthday: CLOSEWe need your birthday for the Bill Me Later® credit check process. | 
 UNKNOWN_TYPE | birthYearBMLField | Birthday: CLOSEWe need your birthday for the Bill Me Later® credit check process. | 
 UNKNOWN_TYPE | SSN | Last 4 digits of your social security #: CLOSEWe need the last 4 digits of your SSN for the Bill Me Later® credit check process. If you do not have an SSN, you can still pay by Credit Card or PayPal. | 
-UNKNOWN_TYPE | agree | I agree to have the Terms and Conditions presented electronically. | yes
-UNKNOWN_TYPE | agreeTs | I agree to the Bill Me Later® Terms and Conditions. | yes
 ADDRESS_HOME_COUNTRY | countryType | Country Type | usa
-UNKNOWN_TYPE | billSameAsShip | My Billing & Shipping addresses are the same | yes
 ADDRESS_HOME_COUNTRY | country | Country, APO/FPO | US
 NAME_FIRST | firstName | First Name | 
 NAME_LAST | lastName | Last Name | 
@@ -38,12 +32,6 @@ EMAIL_ADDRESS | email | Email CLOSEWe use this to send you an order confirmation
 EMAIL_ADDRESS | confirmEmail | Re-Type Email | 
 PHONE_HOME_WHOLE_NUMBER | billingPhone | Billing Phone Number CLOSEThis must match the phone number on your credit card statement. Don't worry... we never share your number with anyone. | 
 UNKNOWN_TYPE | accessPassNumber | My AEREWARD$ # CLOSEAEREWARD$ NumberEnter the number found on the back of your AEREWARD$ card to earn rewards for your purchase.Learn More about AEREWARD$ | 
-UNKNOWN_TYPE | aeRewardsSignUp | Sign up now and receive 25 points  just for signing up! Learn More | true
-UNKNOWN_TYPE | aeAccount | Create my AE Account.CLOSECreate an AE Account to:Save Your Personal Info For Next TimeCheckout FasterTrack An Order Quicker Sign up now and receive 25 points just for signing up! Learn More | true
 UNKNOWN_TYPE | birthMonthBillAddField | Birthday: CLOSEWe'd love to wish you a happy birthday when it's time! However, you need to be 13 or older to create an account. | 
 UNKNOWN_TYPE | birthDayBillAddField | Birthday: CLOSEWe'd love to wish you a happy birthday when it's time! However, you need to be 13 or older to create an account. | 
 UNKNOWN_TYPE | birthYearBillAddField | Birthday: CLOSEWe'd love to wish you a happy birthday when it's time! However, you need to be 13 or older to create an account. | 
-UNKNOWN_TYPE | aeEmail | AE | on
-UNKNOWN_TYPE | aerieEmail | aerie | on
-UNKNOWN_TYPE | kidsEmail | 77kids | on
-UNKNOWN_TYPE | loyaltyTerms | I accept the Terms & Conditions | 

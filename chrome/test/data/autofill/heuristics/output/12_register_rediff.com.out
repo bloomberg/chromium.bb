@@ -1,14 +1,11 @@
 NAME_FULL | name | : | 
 UNKNOWN_TYPE | login | : | 
 EMAIL_ADDRESS | altemail | : | 
-UNKNOWN_TYPE | chk_altemail |  | on
 UNKNOWN_TYPE | hintq | : | 
 UNKNOWN_TYPE | mothername | : | 
 UNKNOWN_TYPE | DOB_Day | : | 
 UNKNOWN_TYPE | DOB_Month | : | 
 UNKNOWN_TYPE | DOB_Year | : | 
-UNKNOWN_TYPE | gender | : | m
-UNKNOWN_TYPE | gender | Male | f
 ADDRESS_HOME_COUNTRY | country | : | 99
 ADDRESS_HOME_CITY | city | : | 
 UNKNOWN_TYPE | othercity | City : | 
