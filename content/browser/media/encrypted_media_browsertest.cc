@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/windows_version.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -162,12 +163,12 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM) {
                          GetParam(), kExpected));
 }
 
-#if defined(OS_LINUX)
-#define MAYBE_FrameChangeVideo DISABLED_FrameChangeVideo
-#else
-#define MAYBE_FrameChangeVideo FrameChangeVideo
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameChangeVideo) {
+  // Times out on Windows XP. http://crbug.com/171937
+#if defined(OS_WIN)
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+    return;
 #endif
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, MAYBE_FrameChangeVideo) {
   const string16 kExpected = ASCIIToUTF16("ENDED");
   ASSERT_NO_FATAL_FAILURE(TestFrameSizeChange(GetParam(), kExpected));
 }
