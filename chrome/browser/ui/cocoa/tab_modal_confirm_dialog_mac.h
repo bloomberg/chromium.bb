@@ -38,6 +38,9 @@ class TabModalConfirmDialogMac : public TabModalConfirmDialog,
   virtual void AcceptTabModalDialog() OVERRIDE;
   virtual void CancelTabModalDialog() OVERRIDE;
 
+  // TabModalConfirmDialogCloseDelegate:
+  virtual void CloseDialog() OVERRIDE;
+
   // ConstrainedWindowMacDelegate:
   virtual void OnConstrainedWindowClosed(
       ConstrainedWindowMac* window) OVERRIDE;

@@ -13,7 +13,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 
-class WebContentsModalDialog;
 class GURL;
 
 namespace content {
@@ -83,13 +82,14 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
 
   void SetModel(LoginModel* model);
 
-  void SetDialog(WebContentsModalDialog* dialog);
-
   // Notify observers that authentication is needed.
   void NotifyAuthNeeded();
 
   // Performs necessary cleanup before deletion.
   void ReleaseSoon();
+
+  // Closes the native dialog.
+  virtual void CloseDialog() = 0;
 
  private:
   // Starts observing notifications from other LoginHandlers.
@@ -122,10 +122,6 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
   // True if we've handled auth (SetAuth or CancelAuth has been called).
   bool handled_auth_;
   mutable base::Lock handled_auth_lock_;
-
-  // The WebContentsModalDialog that is hosting our LoginView.
-  // This should only be accessed on the UI loop.
-  WebContentsModalDialog* dialog_;
 
   // Who/where/what asked for the authentication.
   scoped_refptr<net::AuthChallengeInfo> auth_info_;

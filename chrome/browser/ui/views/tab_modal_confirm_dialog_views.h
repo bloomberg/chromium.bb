@@ -11,6 +11,8 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/window/dialog_delegate.h"
 
+class ConstrainedWindowViews;
+
 namespace content {
 class WebContents;
 }
@@ -50,10 +52,15 @@ class TabModalConfirmDialogViews : public TabModalConfirmDialog,
   virtual void AcceptTabModalDialog() OVERRIDE;
   virtual void CancelTabModalDialog() OVERRIDE;
 
+  // TabModalConfirmDialogCloseDelegate:
+  virtual void CloseDialog() OVERRIDE;
+
   scoped_ptr<TabModalConfirmDialogDelegate> delegate_;
 
   // The message box view whose commands we handle.
   views::MessageBoxView* message_box_view_;
+
+  ConstrainedWindowViews* dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(TabModalConfirmDialogViews);
 };

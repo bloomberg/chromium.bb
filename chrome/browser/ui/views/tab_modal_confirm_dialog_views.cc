@@ -32,8 +32,10 @@ TabModalConfirmDialogViews::TabModalConfirmDialogViews(
     content::WebContents* web_contents)
     : delegate_(delegate),
       message_box_view_(new views::MessageBoxView(
-          views::MessageBoxView::InitParams(delegate->GetMessage()))) {
-  delegate_->set_window(ConstrainedWindowViews::Create(web_contents, this));
+          views::MessageBoxView::InitParams(delegate->GetMessage()))),
+      dialog_(NULL) {
+  dialog_ = ConstrainedWindowViews::Create(web_contents, this);
+  delegate_->set_close_delegate(this);
 }
 
 TabModalConfirmDialogViews::~TabModalConfirmDialogViews() {
@@ -45,6 +47,10 @@ void TabModalConfirmDialogViews::AcceptTabModalDialog() {
 
 void TabModalConfirmDialogViews::CancelTabModalDialog() {
   GetDialogClientView()->CancelWindow();
+}
+
+void TabModalConfirmDialogViews::CloseDialog() {
+  dialog_->CloseWebContentsModalDialog();
 }
 
 //////////////////////////////////////////////////////////////////////////////

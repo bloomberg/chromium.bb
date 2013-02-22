@@ -35,7 +35,8 @@ class LoginHandlerViews : public LoginHandler,
  public:
   LoginHandlerViews(net::AuthChallengeInfo* auth_info, net::URLRequest* request)
       : LoginHandler(auth_info, request),
-        login_view_(NULL) {
+        login_view_(NULL),
+        dialog_(NULL) {
   }
 
   // LoginModelObserver implementation.
@@ -64,7 +65,7 @@ class LoginHandlerViews : public LoginHandler,
       tab->GetRenderViewHost()->SetIgnoreInputEvents(false);
 
     // Reference is no longer valid.
-    SetDialog(NULL);
+    dialog_ = NULL;
 
     CancelAuth();
   }
@@ -73,7 +74,7 @@ class LoginHandlerViews : public LoginHandler,
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     // The constrained window is going to delete itself; clear our pointer.
-    SetDialog(NULL);
+    dialog_ = NULL;
     SetModel(NULL);
 
     ReleaseSoon();
@@ -135,8 +136,14 @@ class LoginHandlerViews : public LoginHandler,
     // will occur via an InvokeLater on the UI thread, which is guaranteed
     // to happen after this is called (since this was InvokeLater'd first).
     WebContents* requesting_contents = GetWebContentsForLogin();
-    SetDialog(ConstrainedWindowViews::Create(requesting_contents, this));
+    dialog_ = ConstrainedWindowViews::Create(requesting_contents, this);
     NotifyAuthNeeded();
+  }
+
+  virtual void CloseDialog() OVERRIDE {
+    // The hosting WebContentsModalDialog may have been freed.
+    if (dialog_)
+      dialog_->CloseWebContentsModalDialog();
   }
 
  private:
@@ -147,6 +154,8 @@ class LoginHandlerViews : public LoginHandler,
 
   // The LoginView that contains the user's login information
   LoginView* login_view_;
+
+  ConstrainedWindowViews* dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginHandlerViews);
 };

@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_WEBUI_CONSTRAINED_WEB_DIALOG_UI_H_
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/ui/native_web_contents_modal_dialog.h"
 #include "content/public/browser/web_ui_controller.h"
-
-class WebContentsModalDialog;
+#include "ui/gfx/native_widget_types.h"
 
 namespace content {
 class BrowserContext;
@@ -35,11 +35,11 @@ class ConstrainedWebDialogDelegate {
   // released WebContents.
   virtual void ReleaseWebContentsOnDialogClose() = 0;
 
-  // Returns the WebContentsModalDialog.
-  virtual WebContentsModalDialog* GetWindow() = 0;
-
   // Returns the WebContents owned by the constrained window.
   virtual content::WebContents* GetWebContents() = 0;
+
+  // Returns the native type used to display the dialog.
+  virtual NativeWebContentsModalDialog GetNativeDialog() = 0;
 
  protected:
   virtual ~ConstrainedWebDialogDelegate() {}

@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "ui/base/gtk/gtk_signal.h"
 
+class ConstrainedWindowGtk;
 class TabModalConfirmDialogDelegate;
 
 namespace content {
@@ -44,6 +45,9 @@ class TabModalConfirmDialogGtk : public TabModalConfirmDialog,
   virtual void AcceptTabModalDialog() OVERRIDE;
   virtual void CancelTabModalDialog() OVERRIDE;
 
+  // TabModalConfirmDialogCloseDelegate:
+  virtual void CloseDialog() OVERRIDE;
+
   // Callbacks:
   CHROMEGTK_CALLBACK_0(TabModalConfirmDialogGtk, void, OnAccept);
   CHROMEGTK_CALLBACK_0(TabModalConfirmDialogGtk, void, OnCancel);
@@ -53,6 +57,8 @@ class TabModalConfirmDialogGtk : public TabModalConfirmDialog,
   GtkWidget* dialog_;
   GtkWidget* ok_;
   GtkWidget* cancel_;
+
+  ConstrainedWindowGtk* window_;
 
   DISALLOW_COPY_AND_ASSIGN(TabModalConfirmDialogGtk);
 };

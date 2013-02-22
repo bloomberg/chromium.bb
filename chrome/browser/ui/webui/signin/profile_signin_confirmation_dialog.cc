@@ -130,7 +130,7 @@ ProfileSigninConfirmationDialog::~ProfileSigninConfirmationDialog() {
 
 void ProfileSigninConfirmationDialog::Close() const {
   closed_by_handler_ = true;
-  delegate_->GetWindow()->CloseWebContentsModalDialog();
+  delegate_->OnDialogCloseFromWebUI();
 }
 
 ui::ModalType ProfileSigninConfirmationDialog::GetDialogModalType() const {

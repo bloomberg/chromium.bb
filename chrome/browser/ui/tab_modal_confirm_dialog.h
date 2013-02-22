@@ -5,14 +5,14 @@
 #ifndef CHROME_BROWSER_UI_TAB_MODAL_CONFIRM_DIALOG_H_
 #define CHROME_BROWSER_UI_TAB_MODAL_CONFIRM_DIALOG_H_
 
-class TabModalConfirmDialogDelegate;
+#include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 
 namespace content {
 class WebContents;
 }
 
 // Base class for the tab modal confirm dialog.
-class TabModalConfirmDialog {
+class TabModalConfirmDialog : public TabModalConfirmDialogCloseDelegate {
  public:
   // Platform specific factory function. This function will automatically show
   // the dialog.
@@ -23,6 +23,10 @@ class TabModalConfirmDialog {
 
   // Cancels the dialog.
   virtual void CancelTabModalDialog() = 0;
+
+  // TabModalConfirmDialogCloseDelegate:
+  // Closes the dialog.
+  virtual void CloseDialog() = 0;
 
  protected:
   virtual ~TabModalConfirmDialog() {}

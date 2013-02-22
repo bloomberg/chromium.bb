@@ -70,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest, BasicTest) {
                                  NULL,
                                  web_contents);
   ASSERT_TRUE(dialog_delegate);
-  EXPECT_TRUE(dialog_delegate->GetWindow());
+  EXPECT_TRUE(dialog_delegate->GetNativeDialog());
   EXPECT_TRUE(IsShowingWebContentsModalDialog(web_contents));
 }
 

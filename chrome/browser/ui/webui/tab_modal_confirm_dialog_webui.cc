@@ -54,7 +54,7 @@ TabModalConfirmDialogWebUI::TabModalConfirmDialogWebUI(
 
   constrained_web_dialog_delegate_ =
       CreateConstrainedWebDialog(profile, this, NULL, web_contents);
-  delegate_->set_window(constrained_web_dialog_delegate_->GetWindow());
+  delegate_->set_close_delegate(this);
 }
 
 ui::ModalType TabModalConfirmDialogWebUI::GetDialogModalType() const {
@@ -96,7 +96,7 @@ void TabModalConfirmDialogWebUI::OnDialogClosed(
       NOTREACHED() << "Missing or unreadable response from dialog";
   }
 
-  delegate_->set_window(NULL);
+  delegate_->set_close_delegate(NULL);
   if (accepted)
     delegate_->Accept();
   else
@@ -116,4 +116,8 @@ void TabModalConfirmDialogWebUI::AcceptTabModalDialog() {
 }
 
 void TabModalConfirmDialogWebUI::CancelTabModalDialog() {
+}
+
+void TabModalConfirmDialogWebUI::CloseDialog() {
+  constrained_web_dialog_delegate_->OnDialogCloseFromWebUI();
 }

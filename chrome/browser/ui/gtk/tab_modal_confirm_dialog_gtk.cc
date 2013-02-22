@@ -23,7 +23,8 @@ TabModalConfirmDialog* TabModalConfirmDialog::Create(
 TabModalConfirmDialogGtk::TabModalConfirmDialogGtk(
     TabModalConfirmDialogDelegate* delegate,
     content::WebContents* web_contents)
-    : delegate_(delegate) {
+    : delegate_(delegate),
+      window_(NULL) {
   dialog_ = gtk_vbox_new(FALSE, ui::kContentAreaSpacing);
   GtkWidget* label = gtk_label_new(
       UTF16ToUTF8(delegate->GetMessage()).c_str());
@@ -69,7 +70,8 @@ TabModalConfirmDialogGtk::TabModalConfirmDialogGtk(
   g_signal_connect(ok_, "clicked", G_CALLBACK(OnAcceptThunk), this);
   gtk_box_pack_end(GTK_BOX(buttonBox), ok_, FALSE, TRUE, 0);
 
-  delegate->set_window(new ConstrainedWindowGtk(web_contents, this));
+  window_ = new ConstrainedWindowGtk(web_contents, this);
+  delegate_->set_close_delegate(this);
 }
 
 GtkWidget* TabModalConfirmDialogGtk::GetWidgetRoot() {
@@ -94,6 +96,10 @@ void TabModalConfirmDialogGtk::AcceptTabModalDialog() {
 
 void TabModalConfirmDialogGtk::CancelTabModalDialog() {
   OnCancel(NULL);
+}
+
+void TabModalConfirmDialogGtk::CloseDialog() {
+  window_->CloseWebContentsModalDialog();
 }
 
 void TabModalConfirmDialogGtk::OnAccept(GtkWidget* widget) {

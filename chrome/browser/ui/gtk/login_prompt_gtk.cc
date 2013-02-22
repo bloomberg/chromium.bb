@@ -41,7 +41,8 @@ class LoginHandlerGtk : public LoginHandler,
       : LoginHandler(auth_info, request),
         username_entry_(NULL),
         password_entry_(NULL),
-        ok_(NULL) {
+        ok_(NULL),
+        dialog_(NULL) {
   }
 
   // LoginModelObserver implementation.
@@ -113,8 +114,14 @@ class LoginHandlerGtk : public LoginHandler,
     WebContents* requesting_contents = GetWebContentsForLogin();
     DCHECK(requesting_contents);
 
-    SetDialog(new ConstrainedWindowGtk(requesting_contents, this));
+    dialog_ = new ConstrainedWindowGtk(requesting_contents, this);
     NotifyAuthNeeded();
+  }
+
+  virtual void CloseDialog() OVERRIDE {
+    // The hosting WebContentsModalDialog may have been freed.
+    if (dialog_)
+      dialog_->CloseWebContentsModalDialog();
   }
 
   // Overridden from ConstrainedWindowGtkDelegate:
@@ -130,7 +137,7 @@ class LoginHandlerGtk : public LoginHandler,
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     // The constrained window is going to delete itself; clear our pointer.
-    SetDialog(NULL);
+    dialog_ = NULL;
     SetModel(NULL);
 
     ReleaseSoon();
@@ -157,6 +164,8 @@ class LoginHandlerGtk : public LoginHandler,
   GtkWidget* username_entry_;
   GtkWidget* password_entry_;
   GtkWidget* ok_;
+
+  ConstrainedWindowGtk* dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginHandlerGtk);
 };

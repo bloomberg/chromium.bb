@@ -18,19 +18,44 @@ using content::WebContents;
 using ui::WebDialogDelegate;
 using ui::WebDialogWebContentsDelegate;
 
-class ConstrainedWebDialogDelegateGtk : public ConstrainedWindowGtkDelegate,
-                                        public ConstrainedWebDialogDelegate {
+namespace {
+
+class ConstrainedWebDialogDelegateGtk
+    : public ConstrainedWebDialogDelegateBase {
  public:
   ConstrainedWebDialogDelegateGtk(
       content::BrowserContext* browser_context,
       WebDialogDelegate* delegate,
+      WebDialogWebContentsDelegate* tab_delegate)
+      : ConstrainedWebDialogDelegateBase(
+            browser_context, delegate, tab_delegate) {}
+
+  // WebDialogWebContentsDelegate interface.
+  virtual void CloseContents(WebContents* source) OVERRIDE {
+    window_->CloseWebContentsModalDialog();
+  }
+
+  void set_window(ConstrainedWindowGtk* window) { window_ = window; }
+  ConstrainedWindowGtk* window() const { return window_; }
+
+ private:
+  ConstrainedWindowGtk* window_;
+
+  DISALLOW_COPY_AND_ASSIGN(ConstrainedWebDialogDelegateGtk);
+};
+
+}  // namespace
+
+class ConstrainedWebDialogDelegateViewGtk
+    : public ConstrainedWindowGtkDelegate,
+      public ConstrainedWebDialogDelegate {
+ public:
+  ConstrainedWebDialogDelegateViewGtk(
+      content::BrowserContext* browser_context,
+      WebDialogDelegate* delegate,
       WebDialogWebContentsDelegate* tab_delegate);
 
-  virtual ~ConstrainedWebDialogDelegateGtk() {}
-
-  void set_window(WebContentsModalDialog* dialog) {
-    return impl_->set_window(dialog);
-  }
+  virtual ~ConstrainedWebDialogDelegateViewGtk() {}
 
   // ConstrainedWebDialogDelegate interface
   virtual const WebDialogDelegate*
@@ -46,8 +71,8 @@ class ConstrainedWebDialogDelegateGtk : public ConstrainedWindowGtkDelegate,
   virtual void ReleaseWebContentsOnDialogClose() OVERRIDE {
     return impl_->ReleaseWebContentsOnDialogClose();
   }
-  virtual WebContentsModalDialog* GetWindow() OVERRIDE {
-    return impl_->GetWindow();
+  virtual NativeWebContentsModalDialog GetNativeDialog() OVERRIDE {
+    return impl_->window()->GetNativeDialog();
   }
   virtual WebContents* GetWebContents() OVERRIDE {
     return impl_->GetWebContents();
@@ -70,18 +95,28 @@ class ConstrainedWebDialogDelegateGtk : public ConstrainedWindowGtkDelegate,
     return true;
   }
 
- private:
-  scoped_ptr<ConstrainedWebDialogDelegateBase> impl_;
+  void SetWindow(ConstrainedWindowGtk* window) {
+    impl_->set_window(window);
+  }
 
-  DISALLOW_COPY_AND_ASSIGN(ConstrainedWebDialogDelegateGtk);
+  ConstrainedWindowGtk* GetWindow() {
+    return impl_->window();
+  }
+
+ private:
+  scoped_ptr<ConstrainedWebDialogDelegateGtk> impl_;
+
+  DISALLOW_COPY_AND_ASSIGN(ConstrainedWebDialogDelegateViewGtk);
 };
 
-ConstrainedWebDialogDelegateGtk::ConstrainedWebDialogDelegateGtk(
+ConstrainedWebDialogDelegateViewGtk::ConstrainedWebDialogDelegateViewGtk(
     content::BrowserContext* browser_context,
     WebDialogDelegate* delegate,
     WebDialogWebContentsDelegate* tab_delegate)
-    : impl_(new ConstrainedWebDialogDelegateBase(
-                    browser_context, delegate, tab_delegate)) {
+    : impl_(new ConstrainedWebDialogDelegateGtk(
+          browser_context,
+          delegate,
+          tab_delegate)) {
   gfx::Size dialog_size;
   delegate->GetDialogSize(&dialog_size);
   gtk_widget_set_size_request(GTK_WIDGET(GetWidgetRoot()),
@@ -96,11 +131,11 @@ ConstrainedWebDialogDelegate* CreateConstrainedWebDialog(
       WebDialogDelegate* delegate,
       WebDialogWebContentsDelegate* tab_delegate,
       content::WebContents* web_contents) {
-  ConstrainedWebDialogDelegateGtk* constrained_delegate =
-      new ConstrainedWebDialogDelegateGtk(
+  ConstrainedWebDialogDelegateViewGtk* constrained_delegate =
+      new ConstrainedWebDialogDelegateViewGtk(
           browser_context, delegate, tab_delegate);
-  WebContentsModalDialog* web_contents_modal_dialog =
+  ConstrainedWindowGtk* window =
       new ConstrainedWindowGtk(web_contents, constrained_delegate);
-  constrained_delegate->set_window(web_contents_modal_dialog);
+  constrained_delegate->SetWindow(window);
   return constrained_delegate;
 }

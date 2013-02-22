@@ -77,16 +77,20 @@ class LoginHandlerMac : public LoginHandler,
             initWithCustomWindow:[sheet_controller_ window]]);
     constrained_window_.reset(new ConstrainedWindowMac(
         this, requesting_contents, sheet));
-    SetDialog(constrained_window_.get());
 
     NotifyAuthNeeded();
+  }
+
+  virtual void CloseDialog() OVERRIDE {
+    // The hosting WebContentsModalDialog may have been freed.
+    if (constrained_window_)
+      constrained_window_->CloseWebContentsModalDialog();
   }
 
   // Overridden from ConstrainedWindowMacDelegate:
   virtual void OnConstrainedWindowClosed(
       ConstrainedWindowMac* window) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    SetDialog(NULL);
     SetModel(NULL);
     ReleaseSoon();
 

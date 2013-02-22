@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 
-#include "chrome/browser/ui/web_contents_modal_dialog.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_source.h"
@@ -17,7 +16,7 @@ using content::WebContents;
 
 TabModalConfirmDialogDelegate::TabModalConfirmDialogDelegate(
     WebContents* web_contents)
-    : window_(NULL),
+    : close_delegate_(NULL),
       closing_(false) {
   NavigationController* controller = &web_contents->GetController();
   registrar_.Add(this, content::NOTIFICATION_LOAD_START,
@@ -27,9 +26,9 @@ TabModalConfirmDialogDelegate::TabModalConfirmDialogDelegate(
 }
 
 TabModalConfirmDialogDelegate::~TabModalConfirmDialogDelegate() {
-  // If we end up here, the constrained window has been closed, so make sure we
-  // don't close it again.
-  window_ = NULL;
+  // If we end up here, the window has been closed, so make sure we don't close
+  // it again.
+  close_delegate_ = NULL;
   // Make sure everything is cleaned up.
   Cancel();
 }
@@ -96,6 +95,6 @@ void TabModalConfirmDialogDelegate::OnCanceled() {
 }
 
 void TabModalConfirmDialogDelegate::CloseDialog() {
-  if (window_)
-    window_->CloseWebContentsModalDialog();
+  if (close_delegate_)
+    close_delegate_->CloseDialog();
 }

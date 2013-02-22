@@ -57,6 +57,9 @@ class TabModalConfirmDialogWebUI : public TabModalConfirmDialog,
   virtual void AcceptTabModalDialog() OVERRIDE;
   virtual void CancelTabModalDialog() OVERRIDE;
 
+  // TabModalConfirmDialogCloseDelegate:
+  virtual void CloseDialog() OVERRIDE;
+
   scoped_ptr<TabModalConfirmDialogDelegate> delegate_;
 
   // Deletes itself.

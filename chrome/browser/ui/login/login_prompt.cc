@@ -12,7 +12,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/web_contents_modal_dialog.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_registrar.h"
@@ -78,7 +77,6 @@ std::string GetSignonRealm(const GURL& url,
 LoginHandler::LoginHandler(net::AuthChallengeInfo* auth_info,
                            net::URLRequest* request)
     : handled_auth_(false),
-      dialog_(NULL),
       auth_info_(auth_info),
       request_(request),
       http_network_session_(
@@ -242,10 +240,6 @@ void LoginHandler::SetModel(LoginModel* model) {
     login_model_->SetObserver(this);
 }
 
-void LoginHandler::SetDialog(WebContentsModalDialog* dialog) {
-  dialog_ = dialog;
-}
-
 void LoginHandler::NotifyAuthNeeded() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (WasAuthHandled())
@@ -377,9 +371,7 @@ void LoginHandler::CancelAuthDeferred() {
 void LoginHandler::CloseContentsDeferred() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // The hosting WebContentsModalDialog may have been freed.
-  if (dialog_)
-    dialog_->CloseWebContentsModalDialog();
+  CloseDialog();
 }
 
 // Helper to create a PasswordForm and stuff it into a vector as input

@@ -11,8 +11,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class WebContentsModalDialog;
-
 namespace content {
 class WebContents;
 }
@@ -21,6 +19,17 @@ namespace gfx {
 class Image;
 }
 
+class TabModalConfirmDialogCloseDelegate {
+ public:
+  TabModalConfirmDialogCloseDelegate() {}
+  virtual ~TabModalConfirmDialogCloseDelegate() {}
+
+  virtual void CloseDialog() = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TabModalConfirmDialogCloseDelegate);
+};
+
 // This class acts as the delegate for a simple tab-modal dialog confirming
 // whether the user wants to execute a certain action.
 class TabModalConfirmDialogDelegate : public content::NotificationObserver {
@@ -28,7 +37,9 @@ class TabModalConfirmDialogDelegate : public content::NotificationObserver {
   explicit TabModalConfirmDialogDelegate(content::WebContents* web_contents);
   virtual ~TabModalConfirmDialogDelegate();
 
-  void set_window(WebContentsModalDialog* window) { window_ = window; }
+  void set_close_delegate(TabModalConfirmDialogCloseDelegate* close_delegate) {
+    close_delegate_ = close_delegate;
+  }
 
   // Accepts the confirmation prompt and calls |OnAccepted|.
   // This method is safe to call even from an |OnAccepted| or |OnCanceled|
@@ -62,7 +73,9 @@ class TabModalConfirmDialogDelegate : public content::NotificationObserver {
   virtual const char* GetCancelButtonIcon();
 
  protected:
-  WebContentsModalDialog* window() { return window_; }
+  TabModalConfirmDialogCloseDelegate* close_delegate() {
+    return close_delegate_;
+  }
 
   // content::NotificationObserver implementation.
   // Watch for a new load or a closed tab and dismiss the dialog if they occur.
@@ -80,7 +93,7 @@ class TabModalConfirmDialogDelegate : public content::NotificationObserver {
   // Close the dialog.
   void CloseDialog();
 
-  WebContentsModalDialog* window_;
+  TabModalConfirmDialogCloseDelegate* close_delegate_;
   // True iff we are in the process of closing, to avoid running callbacks
   // multiple times.
   bool closing_;

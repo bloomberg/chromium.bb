@@ -70,6 +70,8 @@ class LoginHandlerAndroid : public LoginHandler {
  protected:
   virtual ~LoginHandlerAndroid() {}
 
+  virtual void CloseDialog() OVERRIDE {}
+
  private:
   scoped_ptr<ChromeHttpAuthHandler> chrome_http_auth_handler_;
 };
