@@ -33,7 +33,7 @@ ChromeSigninDelegate::ChromeSigninDelegate(Profile* profile)
     : profile_(profile) {}
 
 bool ChromeSigninDelegate::NeedSignin()  {
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
   return false;
 #else
   if (!profile_)
