@@ -38,8 +38,10 @@ base::SharedMemory* ScopedSafeSharedMemory::shared_memory() {
 
 
 SafeSharedMemoryPool::SafeSharedMemoryPool()
-    : handles_consumed_(0),
+    : handles_acquired_(0),
+      handles_consumed_(0),
       address_space_consumed_(0),
+      max_handles_acquired_(0),
       max_handles_consumed_(0),
       max_address_space_consumed_(0) {
 }
@@ -53,6 +55,11 @@ base::SharedMemory* SafeSharedMemoryPool::
   DCHECK(shared_memory);
   DCHECK(shared_memory->memory());
   base::AutoLock scoped_lock(lock_);
+
+  // Adjust stats.
+  handles_acquired_++;
+  max_handles_acquired_ = std::max(max_handles_acquired_,
+                                   handles_acquired_);
 
   MemoryMap::iterator it = memory_.find(shared_memory->handle());
   // If we don't already have it, duplicated it.
@@ -86,6 +93,10 @@ void SafeSharedMemoryPool::
     ReleaseSafeSharedMemory(const base::SharedMemoryHandle& handle) {
   base::AutoLock scoped_lock(lock_);
 
+  // Adjust stats.
+  handles_acquired_--;
+  DCHECK(handles_acquired_ >= 0);
+
   MemoryMap::iterator it = memory_.find(handle);
   CHECK(it != memory_.end());
   CHECK(it->second.reference_count);
@@ -110,8 +121,10 @@ SharedMemory* SafeSharedMemoryPool::DuplicateSharedMemory(
       base::GetCurrentProcessHandle(),
       &duped_shared_memory_handle)) {
     LOG(ERROR) << "Failed SharedMemory::ShareToProcess";
+    LOG(ERROR) << "Total handles acquired " << handles_acquired_;
     LOG(ERROR) << "Total handles open " << handles_consumed_;
     LOG(ERROR) << "Total address space " << address_space_consumed_;
+    LOG(ERROR) << "Max handles acquired " << max_handles_acquired_;
     LOG(ERROR) << "Max handles open " << max_handles_consumed_;
     LOG(ERROR) << "Max address space " << max_address_space_consumed_;
     CHECK(false); // Diagnosing a crash.
@@ -122,8 +135,10 @@ SharedMemory* SafeSharedMemoryPool::DuplicateSharedMemory(
   // Map the shared memory into this process. This validates the size.
   if (!duped_shared_memory->Map(size)) {
     LOG(ERROR) << "Failed SharedMemory::Map";
+    LOG(ERROR) << "Total handles acquired " << handles_acquired_;
     LOG(ERROR) << "Total handles open " << handles_consumed_;
     LOG(ERROR) << "Total address space " << address_space_consumed_;
+    LOG(ERROR) << "Max handles acquired " << max_handles_acquired_;
     LOG(ERROR) << "Max handles open " << max_handles_consumed_;
     LOG(ERROR) << "Max address space " << max_address_space_consumed_;
     CHECK(false); // Diagnosing a crash.
