@@ -4,9 +4,11 @@
 
 #include "android_webview/browser/aw_content_browser_client.h"
 
+#include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_browser_main_parts.h"
 #include "android_webview/browser/aw_cookie_access_policy.h"
 #include "android_webview/browser/aw_quota_permission_context.h"
+#include "android_webview/browser/jni_dependency_factory.h"
 #include "android_webview/browser/net_disk_cache_remover.h"
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
 #include "android_webview/common/url_constants.h"
@@ -49,16 +51,21 @@ class AwAccessTokenStore : public content::AccessTokenStore {
 
 namespace android_webview {
 
+// static
+AwContentBrowserClient* AwContentBrowserClient::FromContentBrowserClient(
+    content::ContentBrowserClient* client) {
+  return static_cast<AwContentBrowserClient*>(client);
+}
+
 AwContentBrowserClient::AwContentBrowserClient(
-    ViewDelegateFactoryFn* view_delegate_factory,
-    GeolocationPermissionFactoryFn* geolocation_permission_factory)
-    : view_delegate_factory_(view_delegate_factory) {
+    JniDependencyFactory* native_factory)
+    : native_factory_(native_factory) {
   base::FilePath user_data_dir;
   if (!PathService::Get(base::DIR_ANDROID_APP_DATA, &user_data_dir)) {
     NOTREACHED() << "Failed to get app data directory for Android WebView";
   }
   browser_context_.reset(
-      new AwBrowserContext(user_data_dir, geolocation_permission_factory));
+      new AwBrowserContext(user_data_dir, native_factory_));
 }
 
 AwContentBrowserClient::~AwContentBrowserClient() {
@@ -86,7 +93,7 @@ content::BrowserMainParts* AwContentBrowserClient::CreateBrowserMainParts(
 content::WebContentsViewDelegate*
 AwContentBrowserClient::GetWebContentsViewDelegate(
     content::WebContents* web_contents) {
-  return (*view_delegate_factory_)(web_contents);
+  return native_factory_->CreateViewDelegate(web_contents);
 }
 
 void AwContentBrowserClient::RenderProcessHostCreated(

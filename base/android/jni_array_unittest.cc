@@ -27,6 +27,34 @@ TEST(JniArray, BasicConversions) {
   EXPECT_EQ(8U, vec.size());
 }
 
+void CheckLongConversion(
+    JNIEnv* env,
+    const int64* long_array,
+    const size_t len,
+    const ScopedJavaLocalRef<jlongArray>& longs) {
+  ASSERT_TRUE(longs.obj());
+
+  jsize java_array_len = env->GetArrayLength(longs.obj());
+  ASSERT_EQ(static_cast<int>(len), java_array_len);
+
+  jlong value;
+  for (size_t i = 0; i < len; ++i) {
+    env->GetLongArrayRegion(longs.obj(), i, 1, &value);
+    ASSERT_EQ(long_array[i], value);
+  }
+}
+
+TEST(JniArray, LongConversions) {
+  const int64 kLongs[] = { 0, 1, -1, kint64min, kint64max};
+  const size_t kLen = arraysize(kLongs);
+
+  JNIEnv* env = AttachCurrentThread();
+  CheckLongConversion(env, kLongs, kLen, ToJavaLongArray(env, kLongs, kLen));
+
+  const std::vector<int64> vec(kLongs, kLongs + kLen);
+  CheckLongConversion(env, kLongs, kLen, ToJavaLongArray(env, vec));
+}
+
 TEST(JniArray, JavaArrayOfByteArrayToStringVector) {
   const int kMaxItems = 50;
   JNIEnv* env = AttachCurrentThread();

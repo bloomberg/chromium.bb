@@ -32,16 +32,15 @@ class WebContents;
 namespace android_webview {
 
 class AwURLRequestContextGetter;
-
-typedef content::GeolocationPermissionContext* GeolocationPermissionFactoryFn();
+class AwQuotaManagerBridge;
+class JniDependencyFactory;
 
 class AwBrowserContext : public content::BrowserContext,
                          public components::VisitedLinkDelegate {
  public:
 
-  AwBrowserContext(
-      const base::FilePath path,
-      GeolocationPermissionFactoryFn* geolocation_permission_factory);
+  AwBrowserContext(const base::FilePath path,
+                   JniDependencyFactory* native_factory);
   virtual ~AwBrowserContext();
 
   // Convenience method to returns the AwBrowserContext corresponding to the
@@ -83,6 +82,8 @@ class AwBrowserContext : public content::BrowserContext,
       scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
           chrome_devtools_protocol_handler);
 
+  AwQuotaManagerBridge* GetQuotaManagerBridge();
+
   // content::BrowserContext implementation.
   virtual base::FilePath GetPath() OVERRIDE;
   virtual bool IsOffTheRecord() const OVERRIDE;
@@ -112,10 +113,11 @@ class AwBrowserContext : public content::BrowserContext,
   // The file path where data for this context is persisted.
   base::FilePath context_storage_path_;
 
+  JniDependencyFactory* native_factory_;
   scoped_refptr<AwURLRequestContextGetter> url_request_context_getter_;
-  GeolocationPermissionFactoryFn* geolocation_permission_factory_;
   scoped_refptr<content::GeolocationPermissionContext>
       geolocation_permission_context_;
+  scoped_ptr<AwQuotaManagerBridge> quota_manager_bridge_;
 
   AwDownloadManagerDelegate download_manager_delegate_;
 

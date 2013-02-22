@@ -5,6 +5,7 @@
 #ifndef ANDROID_WEBVIEW_LIB_MAIN_AW_MAIN_DELEGATE_H_
 #define ANDROID_WEBVIEW_LIB_MAIN_AW_MAIN_DELEGATE_H_
 
+#include "android_webview/browser/jni_dependency_factory.h"
 #include "android_webview/common/aw_content_client.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/app/content_main_delegate.h"
@@ -19,7 +20,8 @@ class AwContentBrowserClient;
 class AwContentRendererClient;
 
 // Android WebView implementation of ContentMainDelegate.
-class AwMainDelegate : public content::ContentMainDelegate {
+class AwMainDelegate : public content::ContentMainDelegate,
+                       public JniDependencyFactory {
  public:
   AwMainDelegate();
   virtual ~AwMainDelegate();
@@ -36,6 +38,14 @@ class AwMainDelegate : public content::ContentMainDelegate {
   virtual content::ContentBrowserClient* CreateContentBrowserClient() OVERRIDE;
   virtual content::ContentRendererClient*
       CreateContentRendererClient() OVERRIDE;
+
+  // JniDependencyFactory implementation.
+  virtual AwQuotaManagerBridge* CreateAwQuotaManagerBridge(
+      AwBrowserContext* browser_context) OVERRIDE;
+  virtual content::GeolocationPermissionContext* CreateGeolocationPermission(
+      AwBrowserContext* browser_context) OVERRIDE;
+  virtual content::WebContentsViewDelegate* CreateViewDelegate(
+      content::WebContents* web_contents) OVERRIDE;
 
   scoped_ptr<content::BrowserMainRunner> browser_runner_;
   AwContentClient content_client_;

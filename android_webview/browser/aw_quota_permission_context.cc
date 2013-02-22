@@ -23,14 +23,10 @@ void AwQuotaPermissionContext::RequestQuotaPermission(
     int render_process_id,
     int render_view_id,
     const PermissionCallback& callback) {
-  if (type != quota::kStorageTypePersistent) {
-    callback.Run(QUOTA_PERMISSION_RESPONSE_DISALLOW);
-  } else {
-    // TODO(boliu): Implement this to power
-    // WebChromeClient.onExceededDatabaseQuota
-    NOTIMPLEMENTED();
-    callback.Run(QUOTA_PERMISSION_RESPONSE_CANCELLED);
-  }
+  // Android WebView only uses quota::kStorageTypeTemporary type of storage
+  // with quota managed automatically, not through this interface. Therefore
+  // unconditionally disallow all quota requests here.
+  callback.Run(QUOTA_PERMISSION_RESPONSE_DISALLOW);
 }
 
 }  // namespace android_webview

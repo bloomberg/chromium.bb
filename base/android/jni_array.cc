@@ -25,6 +25,26 @@ ScopedJavaLocalRef<jbyteArray> ToJavaByteArray(
   return ScopedJavaLocalRef<jbyteArray>(env, byte_array);
 }
 
+ScopedJavaLocalRef<jlongArray> ToJavaLongArray(
+    JNIEnv* env, const int64* longs, size_t len) {
+  jlongArray long_array = env->NewLongArray(len);
+  CheckException(env);
+  DCHECK(long_array);
+
+  jlong* elements = env->GetLongArrayElements(long_array, NULL);
+  memcpy(elements, longs, len * sizeof(*longs));
+  env->ReleaseLongArrayElements(long_array, elements, 0);
+  CheckException(env);
+
+  return ScopedJavaLocalRef<jlongArray>(env, long_array);
+}
+
+// Returns a new Java long array converted from the given int64 array.
+BASE_EXPORT ScopedJavaLocalRef<jlongArray> ToJavaLongArray(
+    JNIEnv* env, const std::vector<int64>& longs) {
+  return ToJavaLongArray(env, longs.begin(), longs.size());
+}
+
 ScopedJavaLocalRef<jobjectArray> ToJavaArrayOfByteArray(
     JNIEnv* env, const std::vector<std::string>& v) {
   ScopedJavaLocalRef<jclass> byte_array_clazz = GetClass(env, "[B");

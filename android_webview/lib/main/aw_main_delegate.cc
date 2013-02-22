@@ -7,6 +7,7 @@
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/lib/aw_browser_dependency_factory_impl.h"
 #include "android_webview/native/aw_geolocation_permission_context.h"
+#include "android_webview/native/aw_quota_manager_bridge_impl.h"
 #include "android_webview/native/aw_web_contents_view_delegate.h"
 #include "android_webview/renderer/aw_content_renderer_client.h"
 #include "base/command_line.h"
@@ -69,11 +70,7 @@ void AwMainDelegate::ProcessExiting(const std::string& process_type) {
 
 content::ContentBrowserClient*
     AwMainDelegate::CreateContentBrowserClient() {
-  content_browser_client_.reset(
-      new AwContentBrowserClient(
-          &AwWebContentsViewDelegate::Create,
-          &AwGeolocationPermissionContext::Create));
-
+  content_browser_client_.reset(new AwContentBrowserClient(this));
   return content_browser_client_.get();
 }
 
@@ -81,6 +78,22 @@ content::ContentRendererClient*
     AwMainDelegate::CreateContentRendererClient() {
   content_renderer_client_.reset(new AwContentRendererClient());
   return content_renderer_client_.get();
+}
+
+AwQuotaManagerBridge* AwMainDelegate::CreateAwQuotaManagerBridge(
+    AwBrowserContext* browser_context) {
+  return new AwQuotaManagerBridgeImpl(browser_context);
+}
+
+content::GeolocationPermissionContext*
+    AwMainDelegate::CreateGeolocationPermission(
+        AwBrowserContext* browser_context) {
+  return AwGeolocationPermissionContext::Create(browser_context);
+}
+
+content::WebContentsViewDelegate* AwMainDelegate::CreateViewDelegate(
+    content::WebContents* web_contents) {
+  return AwWebContentsViewDelegate::Create(web_contents);
 }
 
 }  // namespace android_webview

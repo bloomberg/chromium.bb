@@ -4,6 +4,7 @@
 
 #include "android_webview/lib/aw_browser_dependency_factory_impl.h"
 
+#include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "base/lazy_instance.h"
 #include "content/public/browser/content_browser_client.h"

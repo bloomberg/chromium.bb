@@ -56,7 +56,7 @@ AwGeolocationPermissionContext::RequestGeolocationPermission(
 
 // static
 content::GeolocationPermissionContext*
-AwGeolocationPermissionContext::Create() {
+AwGeolocationPermissionContext::Create(AwBrowserContext* browser_context) {
   return new AwGeolocationPermissionContext();
 }
 

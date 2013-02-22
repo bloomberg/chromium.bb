@@ -4,6 +4,8 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 
+#include "android_webview/browser/aw_quota_manager_bridge.h"
+#include "android_webview/browser/jni_dependency_factory.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "components/visitedlink/browser/visitedlink_master.h"
 #include "content/public/browser/browser_thread.h"
@@ -42,9 +44,9 @@ class AwResourceContext : public content::ResourceContext {
 
 AwBrowserContext::AwBrowserContext(
     const base::FilePath path,
-    GeolocationPermissionFactoryFn* geolocation_permission_factory)
+    JniDependencyFactory* native_factory)
     : context_storage_path_(path),
-      geolocation_permission_factory_(geolocation_permission_factory) {
+      native_factory_(native_factory) {
 }
 
 AwBrowserContext::~AwBrowserContext() {
@@ -110,6 +112,14 @@ AwBrowserContext::CreateRequestContextForStoragePartition(
   return url_request_context_getter_.get();
 }
 
+AwQuotaManagerBridge* AwBrowserContext::GetQuotaManagerBridge() {
+  if (!quota_manager_bridge_) {
+    quota_manager_bridge_.reset(
+        native_factory_->CreateAwQuotaManagerBridge(this));
+  }
+  return quota_manager_bridge_.get();
+}
+
 base::FilePath AwBrowserContext::GetPath() {
   return context_storage_path_;
 }
@@ -163,7 +173,8 @@ AwBrowserContext::GetDownloadManagerDelegate() {
 content::GeolocationPermissionContext*
 AwBrowserContext::GetGeolocationPermissionContext() {
   if (!geolocation_permission_context_) {
-    geolocation_permission_context_ = (*geolocation_permission_factory_)();
+    geolocation_permission_context_ =
+        native_factory_->CreateGeolocationPermission(this);
   }
   return geolocation_permission_context_;
 }

@@ -11,10 +11,13 @@ class GURL;
 
 namespace android_webview {
 
+class AwBrowserContext;
+
 class AwGeolocationPermissionContext :
     public content::GeolocationPermissionContext {
  public:
-  static content::GeolocationPermissionContext* Create();
+  static content::GeolocationPermissionContext* Create(
+      AwBrowserContext* browser_context);
 
   // content::GeolocationPermissionContext implementation
   virtual void RequestGeolocationPermission(
