@@ -280,7 +280,8 @@ TEST_F(PrintWebViewHelperTest, AllowUserOriginatedPrinting) {
   VerifyPagesPrinted(true);
 }
 
-TEST_F(PrintWebViewHelperTest, BlockScriptInitiatedPrintingFromPopup) {
+// Disabled due to flakiness. See http://crbug.com/177733.
+TEST_F(PrintWebViewHelperTest, DISABLED_BlockScriptInitiatedPrintingFromPopup) {
   PrintWebViewHelper* print_web_view_helper = PrintWebViewHelper::Get(view_);
   print_web_view_helper->SetScriptedPrintBlocked(true);
   LoadHTML(kPrintWithJSHTML);
