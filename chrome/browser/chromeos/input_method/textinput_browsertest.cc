@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
+
+namespace {
+struct InputTypeExpectation {
+  std::string node_id;
+  ui::TextInputType type;
+};
+}  // namespace
 
 typedef TextInputTestBase TextInput_TextInputStateChangedTest;
 
@@ -220,6 +227,78 @@ IN_PROC_BROWSER_TEST_F(TextInput_TextInputStateChangedTest,
           "document.getElementById('anchor_id').contentEditable = true;"));
   helper.WaitForTextInputStateChanged(ui::TEXT_INPUT_TYPE_CONTENT_EDITABLE);
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_CONTENT_EDITABLE, helper.GetTextInputType());
+}
+
+IN_PROC_BROWSER_TEST_F(TextInput_TextInputStateChangedTest,
+                       SwitchingAllTextInputTest) {
+  TextInputTestHelper helper;
+  EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE, helper.GetTextInputType());
+
+  GURL url = ui_test_utils::GetTestUrl(
+      base::FilePath(FILE_PATH_LITERAL("textinput")),
+      base::FilePath(FILE_PATH_LITERAL("all_input_node.html")));
+  ui_test_utils::NavigateToURL(browser(), url);
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  InputTypeExpectation expectations[] = {
+    { "text_id", ui::TEXT_INPUT_TYPE_TEXT },
+    { "password_id", ui::TEXT_INPUT_TYPE_PASSWORD },
+    { "search_id", ui::TEXT_INPUT_TYPE_SEARCH },
+    { "email_id", ui::TEXT_INPUT_TYPE_EMAIL },
+    { "number_id", ui::TEXT_INPUT_TYPE_NUMBER },
+    { "tel_id", ui::TEXT_INPUT_TYPE_TELEPHONE },
+    { "url_id", ui::TEXT_INPUT_TYPE_URL },
+    { "textarea_id", ui::TEXT_INPUT_TYPE_TEXT_AREA },
+    { "contenteditable_id", ui::TEXT_INPUT_TYPE_CONTENT_EDITABLE },
+  };  // The order should be same as tab order in all_input_node.html.
+
+  for (size_t i = 0; i < arraysize(expectations); ++i) {
+    content::SimulateKeyPress(tab, ui::VKEY_TAB, false, false, false, false);
+
+    helper.WaitForTextInputStateChanged(expectations[i].type);
+    EXPECT_EQ(expectations[i].type, helper.GetTextInputType());
+  }
+
+  for (size_t i = 0; i < arraysize(expectations); ++i) {
+    helper.ClickElement(expectations[i].node_id, tab);
+
+    helper.WaitForTextInputStateChanged(expectations[i].type);
+    EXPECT_EQ(expectations[i].type, helper.GetTextInputType());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(TextInput_TextInputStateChangedTest,
+                       OpenNewTabOnloadTest) {
+  TextInputTestHelper helper;
+  EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE, helper.GetTextInputType());
+
+  GURL base_url = ui_test_utils::GetTestUrl(
+      base::FilePath(FILE_PATH_LITERAL("textinput")),
+      base::FilePath(FILE_PATH_LITERAL("all_input_node.html")));
+  ui_test_utils::NavigateToURL(browser(), base_url);
+  content::WebContents* base_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Focus to password field.
+  helper.ClickElement("password_id", base_tab);
+  helper.WaitForTextInputStateChanged(ui::TEXT_INPUT_TYPE_PASSWORD);
+  EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, helper.GetTextInputType());
+
+  // Then opening new foreground tab and wait new TextInputType.
+  GURL new_url = ui_test_utils::GetTestUrl(
+      base::FilePath(FILE_PATH_LITERAL("textinput")),
+      base::FilePath(FILE_PATH_LITERAL("focus_input_on_load.html")));
+  ui_test_utils::NavigateToURLWithDisposition(browser(),
+                                              new_url,
+                                              NEW_FOREGROUND_TAB,
+                                              0);
+  content::WebContents* new_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_NE(base_tab, new_tab);
+
+  helper.WaitForTextInputStateChanged(ui::TEXT_INPUT_TYPE_TEXT);
+  EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT, helper.GetTextInputType());
 }
 
 } // namespace chromeos
