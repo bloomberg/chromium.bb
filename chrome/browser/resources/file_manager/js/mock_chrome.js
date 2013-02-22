@@ -618,6 +618,8 @@ chrome.fileBrowserPrivate = {
       DRIVE_LEARN_MORE: 'Learn more',
       DRIVE_CANNOT_REACH: '$1 cannot be reached at this time',
 
+      DRIVE_NOT_REACHED: 'Google Drive could not be reached. Please ' +
+          '<a href="javascript://">log out</a> and log back in.',
       DRIVE_WELCOME_TITLE: 'Welcome to Google Drive!',
       DRIVE_WELCOME_TITLE_ALTERNATIVE: 'Get 100 GB free with Google Drive',
       DRIVE_WELCOME_TEXT_SHORT:
