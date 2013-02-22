@@ -48,6 +48,10 @@ SpellcheckService::SpellcheckService(Profile* profile)
       prefs::kSpellCheckDictionary,
       base::Bind(&SpellcheckService::OnSpellCheckDictionaryChanged,
                  base::Unretained(this)));
+ pref_change_registrar_.Add(
+     prefs::kSpellCheckUseSpellingService,
+     base::Bind(&SpellcheckService::OnUseSpellingServiceChanged,
+                base::Unretained(this)));
   pref_change_registrar_.Add(
       prefs::kEnableContinuousSpellcheck,
       base::Bind(&SpellcheckService::InitForAllRenderers,
@@ -139,6 +143,7 @@ bool SpellcheckService::SignalStatusEvent(
 void SpellcheckService::StartRecordingMetrics(bool spellcheck_enabled) {
   metrics_.reset(new SpellCheckHostMetrics());
   metrics_->RecordEnabledStats(spellcheck_enabled);
+  OnUseSpellingServiceChanged();
 }
 
 void SpellcheckService::InitForRenderer(content::RenderProcessHost* process) {
@@ -270,4 +275,11 @@ void SpellcheckService::OnSpellCheckDictionaryChanged() {
       this));
   hunspell_dictionary_->AddObserver(this);
   hunspell_dictionary_->Load();
+}
+
+void SpellcheckService::OnUseSpellingServiceChanged() {
+  bool enabled = pref_change_registrar_.prefs()->GetBoolean(
+      prefs::kSpellCheckUseSpellingService);
+  if (metrics_)
+    metrics_->RecordSpellingServiceStats(enabled);
 }

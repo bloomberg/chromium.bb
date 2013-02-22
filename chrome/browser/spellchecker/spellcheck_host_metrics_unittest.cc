@@ -124,3 +124,35 @@ TEST_F(SpellcheckHostMetricsTest, RecordWordCountsDiscardsDuplicates) {
     EXPECT_EQ(0, samples[i]->TotalCount());
   }
 }
+
+TEST_F(SpellcheckHostMetricsTest, RecordSpellingServiceStats) {
+  const char kMetricName[] = "SpellCheck.SpellingService.Enabled";
+  scoped_ptr<HistogramSamples> baseline;
+  Histogram* histogram =
+      StatisticsRecorder::FindHistogram(kMetricName);
+  if (histogram)
+    baseline = histogram->SnapshotSamples();
+
+  metrics()->RecordSpellingServiceStats(false);
+
+  histogram =
+      StatisticsRecorder::FindHistogram(kMetricName);
+  ASSERT_TRUE(histogram != NULL);
+  scoped_ptr<HistogramSamples> samples(histogram->SnapshotSamples());
+  if (baseline.get())
+    samples->Subtract(*baseline);
+  EXPECT_EQ(1, samples->GetCount(0));
+  EXPECT_EQ(0, samples->GetCount(1));
+
+  baseline.reset(samples.release());
+
+  metrics()->RecordSpellingServiceStats(true);
+
+  histogram =
+      StatisticsRecorder::FindHistogram(kMetricName);
+  ASSERT_TRUE(histogram != NULL);
+  samples = histogram->SnapshotSamples();
+  samples->Subtract(*baseline);
+  EXPECT_EQ(0, samples->GetCount(0));
+  EXPECT_EQ(1, samples->GetCount(1));
+}

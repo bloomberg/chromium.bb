@@ -55,6 +55,9 @@ class SpellCheckHostMetrics {
   // attempt to be uploaded via UMA
   void RecordSuggestionStats(int delta);
 
+  // Records if spelling service is enabled or disabled.
+  void RecordSpellingServiceStats(bool enabled);
+
  private:
   friend class SpellcheckHostMetricsTest;
   void OnHistogramTimerExpired();

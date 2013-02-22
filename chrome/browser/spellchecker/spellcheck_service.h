@@ -121,6 +121,9 @@ class SpellcheckService : public ProfileKeyedService,
   // spellchecking.
   void OnSpellCheckDictionaryChanged();
 
+  // Notification handler for changes to prefs::kSpellCheckUseSpellingService.
+  void OnUseSpellingServiceChanged();
+
   PrefChangeRegistrar pref_change_registrar_;
   content::NotificationRegistrar registrar_;
 

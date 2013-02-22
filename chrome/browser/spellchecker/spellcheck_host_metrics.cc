@@ -140,3 +140,7 @@ void SpellCheckHostMetrics::RecordWordCounts() {
     last_suggestion_show_count_ = suggestion_show_count_;
   }
 }
+
+void SpellCheckHostMetrics::RecordSpellingServiceStats(bool enabled) {
+  UMA_HISTOGRAM_BOOLEAN("SpellCheck.SpellingService.Enabled", enabled);
+}
