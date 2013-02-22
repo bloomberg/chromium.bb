@@ -264,9 +264,6 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
       window,
       extensions::ExtensionKeybindingRegistry::PLATFORM_APPS_ONLY,
       shell_window));
-  registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-                 content::Source<content::NavigationController>(
-                     &web_contents()->GetController()));
 }
 
 void NativeAppWindowCocoa::InstallView() {
@@ -643,17 +640,6 @@ void NativeAppWindowCocoa::InstallDraggableRegionViews() {
   }
 }
 
-void NativeAppWindowCocoa::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (type == content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED) {
-    web_contents()->Focus();
-    return;
-  }
-  NOTREACHED();
-}
-
 void NativeAppWindowCocoa::FlashFrame(bool flash) {
   if (flash) {
     attention_request_id_ = [NSApp requestUserAttention:NSInformationalRequest];
@@ -665,6 +651,10 @@ void NativeAppWindowCocoa::FlashFrame(bool flash) {
 
 bool NativeAppWindowCocoa::IsAlwaysOnTop() const {
   return false;
+}
+
+void NativeAppWindowCocoa::RenderViewHostChanged() {
+  web_contents()->Focus();
 }
 
 gfx::Insets NativeAppWindowCocoa::GetFrameInsets() const {
