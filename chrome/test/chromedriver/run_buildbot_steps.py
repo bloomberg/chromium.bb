@@ -18,6 +18,31 @@ from common import chrome_paths
 from common import util
 
 
+def Archive(revision):
+  print '@@@BUILD_STEP archive@@@'
+  prebuilts = ['libchromedriver2.so', 'chromedriver2_server',
+               'chromedriver2_unittests', 'chromedriver2_tests']
+  build_dir = chrome_paths.GetBuildDir(prebuilts[0:1])
+  zip_name = 'chromedriver2_prebuilts_r%s.zip' % revision
+  temp_dir = util.MakeTempDir()
+  zip_path = os.path.join(temp_dir, zip_name)
+  print 'Zipping prebuilts %s' % zip_path
+  f = zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED)
+  for prebuilt in prebuilts:
+    f.write(os.path.join(build_dir, prebuilt), prebuilt)
+  f.close()
+
+  gs_bucket = 'gs://chromedriver-prebuilts'
+  cmd = [
+    sys.executable,
+    '../../../../../../../scripts/slave/skia/upload_to_bucket.py',
+    '--source_filepath=%s' % zip_path,
+    '--dest_gsbase=%s' % gs_bucket
+  ]
+  if util.RunCommand(cmd):
+    print '@@@STEP_FAILURE@@@'
+
+
 def MaybeRelease(revision):
   # Version is embedded as: const char kChromeDriverVersion[] = "0.1";
   with open(os.path.join(_THIS_DIR, 'version.cc'), 'r') as f:
@@ -79,6 +104,9 @@ def main():
   if options.revision is None:
     parser.error('Must supply a --revision')
 
+  platform = util.GetPlatformName()
+  if 'linux' in platform:
+    Archive(options.revision)
   cmd = [
     sys.executable,
     os.path.join(_THIS_DIR, 'run_all_tests.py'),
