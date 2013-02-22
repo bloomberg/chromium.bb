@@ -29,6 +29,10 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
 
+#if defined(ENABLE_PLUGINS)
+#include "chrome/browser/pepper_broker_infobar_delegate.h"
+#endif
+
 using base::android::AttachCurrentThread;
 using base::android::GetClass;
 using base::android::MethodID;
@@ -306,6 +310,21 @@ void ChromeWebContentsDelegateAndroid::RequestMediaAccessPermission(
     const content::MediaResponseCallback& callback) {
   MediaStreamInfoBarDelegate::Create(web_contents, request, callback);
 }
+
+bool ChromeWebContentsDelegateAndroid::RequestPpapiBrokerPermission(
+    WebContents* web_contents,
+    const GURL& url,
+    const base::FilePath& plugin_path,
+    const base::Callback<void(bool)>& callback) {
+#if defined(ENABLE_PLUGINS)
+    PepperBrokerInfoBarDelegate::Create(
+        web_contents, url, plugin_path, callback);
+    return true;
+#else
+    return false;
+#endif
+}
+
 
 }  // namespace android
 }  // namespace chrome

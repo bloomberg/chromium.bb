@@ -7,6 +7,7 @@
 
 #include <jni.h>
 
+#include "base/file_path.h"
 #include "base/time.h"
 #include "components/web_contents_delegate_android/web_contents_delegate_android.h"
 #include "content/public/browser/notification_observer.h"
@@ -65,6 +66,11 @@ class ChromeWebContentsDelegateAndroid
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) OVERRIDE;
+  virtual bool RequestPpapiBrokerPermission(
+      content::WebContents* web_contents,
+      const GURL& url,
+      const base::FilePath& plugin_path,
+      const base::Callback<void(bool)>& callback) OVERRIDE;
 
  private:
   // NotificationObserver implementation.
