@@ -17,6 +17,8 @@
 
 namespace policy {
 
+class PolicyBundle;
+
 // CloudPolicyManager is the main switching central between cloud policy and the
 // upper layers of the policy stack. It wires up a CloudPolicyCore to the
 // ConfigurationPolicyProvider interface.
@@ -47,6 +49,10 @@ class CloudPolicyManager : public ConfigurationPolicyProvider,
   // Check whether fully initialized and if so, publish policy by calling
   // ConfigurationPolicyStore::UpdatePolicy().
   void CheckAndPublishPolicy();
+
+  // Called by CheckAndPublishPolicy() to create a bundle with the current
+  // policies.
+  virtual scoped_ptr<PolicyBundle> CreatePolicyBundle();
 
   // Convenience accessors to core() components.
   CloudPolicyClient* client() { return core_.client(); }

@@ -69,11 +69,15 @@ void CloudPolicyManager::OnStoreError(CloudPolicyStore* cloud_policy_store) {
 void CloudPolicyManager::CheckAndPublishPolicy() {
   if (IsInitializationComplete(POLICY_DOMAIN_CHROME) &&
       !waiting_for_policy_refresh_) {
-    scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
-    bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
-        .CopyFrom(store()->policy_map());
-    UpdatePolicy(bundle.Pass());
+    UpdatePolicy(CreatePolicyBundle());
   }
+}
+
+scoped_ptr<PolicyBundle> CloudPolicyManager::CreatePolicyBundle() {
+  scoped_ptr<PolicyBundle> bundle(new PolicyBundle);
+  bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
+      .CopyFrom(store()->policy_map());
+  return bundle.Pass();
 }
 
 void CloudPolicyManager::OnRefreshComplete(bool success) {
