@@ -44,7 +44,7 @@ std::string AutocheckoutStatusToString(autofill::AutocheckoutStatus status) {
   return "NOT_POSSIBLE";
 }
 
-}  // anonymous namespace
+}  // namespace
 
 namespace autofill {
 namespace wallet {

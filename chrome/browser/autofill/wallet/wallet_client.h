@@ -35,12 +35,43 @@ class WalletClientObserver;
 class WalletItems;
 
 // WalletClient is responsible for making calls to the Online Wallet backend on
-// the user's behalf.
+// the user's behalf. The normal flow for using this class is as follows:
+// 1) GetWalletItems should be called to retrieve the user's Wallet.
+//   a) If the user does not have a Wallet, they must AcceptLegalDocuments and
+//      SaveInstrumentAndAddress before continuing.
+//   b) If the user has not acccepte the most recent legal documents for
+//      Wallet, they must AcceptLegalDocuments.
+// 2) The user then chooses what instrument and shipping address to use for the
+//    current transaction.
+//   a) If they choose an instrument with a zip code only address, the billing
+//      address will need to be updated using UpdateInstrument.
+//   b) The user may also choose to add a new instrument or address using
+//      SaveAddress, SaveInstrument, or SaveInstrumentAndAddress.
+// 3) Once the user has selected the backing instrument and shipping address
+//    for this transaction, a FullWallet with the fronting card is generated
+//    using GetFullWallet.
+//   a) GetFullWallet may return a Risk challenge for the user. In that case,
+//      the user will need to verify who they are by authenticating their
+//      chosen backing instrument through AuthenticateInstrument
+// 4) If the user initiated Autocheckout, SendAutocheckoutStatus to notify
+//    Online Wallet of the status flow to record various metrics.
+//
+// WalletClient is designed so only one request to Online Wallet can be
+// outgoing at any one time. Implementors of WalletClientObserver should wait
+// for a callback to be called for an outgoing request before making another.
+//
+// The |observer| passed in to each function of WalletClient must outlive the
+// instance of WalletClient it is passed to.
+// TODO(ahutter): Remove the above comment once |observer| is switched to
+// WeakPtr.
 class WalletClient
     : public net::URLFetcherDelegate,
       public EncryptionEscrowClientObserver {
  public:
+  // |context_getter| is reference counted so it has no lifetime or ownership
+  // requirements.
   explicit WalletClient(net::URLRequestContextGetter* context_getter);
+
   virtual ~WalletClient();
 
   // GetWalletItems retrieves the user's online wallet. The WalletItems

@@ -354,7 +354,7 @@ const char kUpdateInstrumentValidRequest[] =
         "\"upgraded_instrument_id\":\"instrument_id\""
     "}";
 
-}  // anonymous namespace
+}  // namespace
 
 namespace autofill {
 namespace wallet {
