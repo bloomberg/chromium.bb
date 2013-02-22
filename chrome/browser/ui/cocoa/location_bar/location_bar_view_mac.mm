@@ -244,6 +244,8 @@ void LocationBarViewMac::SaveStateToContents(WebContents* contents) {
 void LocationBarViewMac::Update(const WebContents* contents,
                                 bool should_restore_state) {
   command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, IsStarEnabled());
+  command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE_FROM_STAR,
+                                         IsStarEnabled());
   UpdateStarDecorationVisibility();
   UpdatePlusDecorationVisibility();
   UpdateZoomDecoration();
