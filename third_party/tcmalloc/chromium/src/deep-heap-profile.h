@@ -150,12 +150,6 @@ class DeepHeapProfile {
     DISALLOW_COPY_AND_ASSIGN(TextBuffer);
   };
 
-  struct MMapListEntry {
-    uint64 first_address;
-    uint64 last_address;
-    MapsRegionType type;
-  };
-
   // Contains extended information for HeapProfileTable::Bucket.  These objects
   // are managed in a hash table (DeepBucketTable) whose key is an address of
   // a Bucket and other additional information.
@@ -215,6 +209,13 @@ class DeepHeapProfile {
     HeapProfileTable::Allocator alloc_;
     HeapProfileTable::DeAllocator dealloc_;
     int bucket_id_;
+  };
+
+  struct MMapListEntry {
+    uint64 first_address;
+    uint64 last_address;
+    MapsRegionType type;
+    DeepBucket* deep_bucket;
   };
 
   class RegionStats {

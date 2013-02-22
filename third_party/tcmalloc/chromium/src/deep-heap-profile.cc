@@ -741,6 +741,9 @@ void DeepHeapProfile::GlobalStats::SnapshotProcMaps(
           mmap_dump_buffer->AppendString(continued ? ")" : " ", 0);
           mmap_dump_buffer->AppendString(" hooked ", 0);
           mmap_dump_buffer->AppendString(kMapsRegionTypeDict[type], 0);
+          mmap_dump_buffer->AppendString(" @ ", 0);
+          mmap_dump_buffer->AppendInt(
+              mmap_list[mmap_list_index].deep_bucket->id, 0);
           mmap_dump_buffer->AppendString("\n", 0);
         }
       } while (mmap_list_index < mmap_list_length &&
@@ -862,6 +865,8 @@ void DeepHeapProfile::GlobalStats::RecordMMap(const void* pointer,
     deep_profile->mmap_list_[deep_profile->mmap_list_length_].last_address =
         address - 1 + alloc_value->bytes;
     deep_profile->mmap_list_[deep_profile->mmap_list_length_].type = ABSENT;
+    deep_profile->mmap_list_[deep_profile->mmap_list_length_].deep_bucket =
+        deep_bucket;
     ++deep_profile->mmap_list_length_;
   } else {
     RAW_LOG(0, "Unexpected number of mmap entries: %d/%d",
