@@ -70,7 +70,7 @@ int64 Round64(float f) {
   return static_cast<int64>(f + 0.5f);
 }
 
-}
+}  // namespace
 
 gfx::Rect GetMinimizeRectForWindow(aura::Window* window) {
   Launcher* launcher = Launcher::ForWindow(window);
@@ -140,7 +140,7 @@ void AddLayerAnimationsForMinimize(aura::Window* window, bool show) {
   // to save bandwidth and reduce jank.
   if (!show) {
     window->layer()->GetAnimator()->SchedulePauseForProperties(
-        (duration * 3 ) / 4, ui::LayerAnimationElement::OPACITY, -1);
+        (duration * 3) / 4, ui::LayerAnimationElement::OPACITY, -1);
   }
 
   // Fade in and out quickly when the window is small to reduce jank.
@@ -207,13 +207,13 @@ void AnimateShowHideWindowCommon_BrightnessGrayscale(aura::Window* window,
         views::corewm::CreateHidingWindowAnimationObserver(window));
   }
 
-   window->layer()->GetAnimator()->
-       ScheduleTogether(
-           CreateBrightnessGrayscaleAnimationSequence(end_value, duration));
-   if (!show) {
-     window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
-     window->layer()->SetVisible(false);
-   }
+  window->layer()->GetAnimator()->
+      ScheduleTogether(
+          CreateBrightnessGrayscaleAnimationSequence(end_value, duration));
+  if (!show) {
+    window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
+    window->layer()->SetVisible(false);
+  }
 }
 
 void AnimateShowWindow_BrightnessGrayscale(aura::Window* window) {

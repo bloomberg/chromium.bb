@@ -173,7 +173,6 @@ BOOL CALLBACK SetCutoutRectsCallback(HWND window, LPARAM param) {
     }
     gfx::SubtractRectanglesFromRegion(hrgn, cutout_rects);
     SetWindowRgn(window, hrgn, TRUE);
-
   }
   return TRUE;
 }

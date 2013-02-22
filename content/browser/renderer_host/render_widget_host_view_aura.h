@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_AURA_H_
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
