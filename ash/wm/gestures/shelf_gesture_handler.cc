@@ -43,6 +43,17 @@ class ShelfResetHandler : public ui::EventHandler,
     delete this;
   }
 
+  bool ShelfIsEventTarget(const ui::Event& event) {
+    aura::Window* target = static_cast<aura::Window*>(event.target());
+    views::Widget* widget = shelf_->launcher_widget();
+    if (widget && widget->GetNativeWindow() == target)
+      return true;
+    widget = shelf_->status_area_widget();
+    if (widget && widget->GetNativeWindow() == target)
+      return true;
+    return false;
+  }
+
   void DecideShelfVisibility(const gfx::Point& location) {
     // For the rest of the mouse events, ignore if the event happens inside the
     // shelf.
@@ -63,7 +74,8 @@ class ShelfResetHandler : public ui::EventHandler,
 
   // Overridden from ui::EventHandler:
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
-    ResetShelfState();
+    if (!ShelfIsEventTarget(*event))
+      ResetShelfState();
   }
 
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
@@ -75,11 +87,13 @@ class ShelfResetHandler : public ui::EventHandler,
   }
 
   virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
-    DecideShelfVisibility(event->root_location());
+    if (!ShelfIsEventTarget(*event))
+      DecideShelfVisibility(event->root_location());
   }
 
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
-    DecideShelfVisibility(event->root_location());
+    if (!ShelfIsEventTarget(*event))
+      DecideShelfVisibility(event->root_location());
   }
 
   // Overridden from ash::internal::ShelfLayoutManager::Observer:
