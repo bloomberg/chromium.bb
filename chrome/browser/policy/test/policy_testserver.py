@@ -53,6 +53,7 @@ Example:
 
 import BaseHTTPServer
 import cgi
+import google.protobuf.text_format
 import hashlib
 import logging
 import os
@@ -63,6 +64,7 @@ import time
 import tlslite
 import tlslite.api
 import tlslite.utils
+import tlslite.utils.cryptomath
 
 # The name and availability of the json module varies in python versions.
 try:
@@ -460,10 +462,16 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
           msg.policy_type == 'google/chrome/user' or
           msg.policy_type == 'google/chromeos/publicaccount'):
         settings = cp.CloudPolicySettings()
-        self.GatherUserPolicySettings(settings, policy.get(policy_key, {}))
+        payload = self.server.ReadPolicyFromDataDir(policy_key, settings)
+        if payload is None:
+          self.GatherUserPolicySettings(settings, policy.get(policy_key, {}))
+          payload = settings.SerializeToString()
       elif msg.policy_type == 'google/chromeos/device':
         settings = dp.ChromeDeviceSettingsProto()
-        self.GatherDevicePolicySettings(settings, policy.get(policy_key, {}))
+        payload = self.server.ReadPolicyFromDataDir(policy_key, settings)
+        if payload is None:
+          self.GatherDevicePolicySettings(settings, policy.get(policy_key, {}))
+          payload = settings.SerializeToString()
 
     # Sign with 'current_key_index', defaulting to key 0.
     signing_key = None
@@ -482,7 +490,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     policy_data.policy_type = msg.policy_type
     policy_data.timestamp = int(time.time() * 1000)
     policy_data.request_token = token_info['device_token']
-    policy_data.policy_value = settings.SerializeToString()
+    policy_data.policy_value = payload
     policy_data.machine_name = token_info['machine_name']
     policy_data.valid_serial_number_missing = (
         token_info['machine_id'] in BAD_MACHINE_IDS)
@@ -561,7 +569,8 @@ class PolicyTestServer(testserver_base.ClientRestrictingServerMixIn,
                        testserver_base.StoppableHTTPServer):
   """Handles requests and keeps global service state."""
 
-  def __init__(self, server_address, policy_path, private_key_paths):
+  def __init__(self, server_address, data_dir, policy_path, client_state_file,
+               private_key_paths):
     """Initializes the server.
 
     Args:
@@ -572,17 +581,25 @@ class PolicyTestServer(testserver_base.ClientRestrictingServerMixIn,
     testserver_base.StoppableHTTPServer.__init__(self, server_address,
                                                  PolicyRequestHandler)
     self._registered_tokens = {}
+    self.data_dir = data_dir
     self.policy_path = policy_path
+    self.client_state_file = client_state_file
 
     self.keys = []
     if private_key_paths:
       # Load specified keys from the filesystem.
       for key_path in private_key_paths:
         try:
-          key = tlslite.api.parsePEMKey(open(key_path).read(), private=True)
+          key_str = open(key_path).read()
         except IOError:
           print 'Failed to load private key from %s' % key_path
           continue
+
+        try:
+          key = tlslite.api.parsePEMKey(key_str, private=True)
+        except SyntaxError:
+          key = tlslite.utils.Python_RSAKey.Python_RSAKey._parsePKCS8(
+              tlslite.utils.cryptomath.stringToBytes(key_str))
 
         assert key is not None
         self.keys.append({ 'private_key' : key })
@@ -604,6 +621,14 @@ class PolicyTestServer(testserver_base.ClientRestrictingServerMixIn,
                                       asn1der.Integer(key.e) ])
       pubkey = asn1der.Sequence([ algorithm, asn1der.Bitstring(rsa_pubkey) ])
       entry['public_key'] = pubkey;
+
+    # Load client state.
+    if self.client_state_file is not None:
+      try:
+        file_contents = open(self.client_state_file).read()
+        self._registered_tokens = json.loads(file_contents)
+      except IOError:
+        pass
 
   def GetPolicies(self):
     """Returns the policies to be used, reloaded form the backend file every
@@ -654,6 +679,7 @@ class PolicyTestServer(testserver_base.ClientRestrictingServerMixIn,
       'machine_id': machine_id,
       'enrollment_mode': enrollment_mode,
     }
+    self.WriteClientState()
     return self._registered_tokens[dmtoken]
 
   def UpdateMachineId(self, dmtoken, machine_id):
@@ -665,6 +691,7 @@ class PolicyTestServer(testserver_base.ClientRestrictingServerMixIn,
     """
     if dmtoken in self._registered_tokens:
       self._registered_tokens[dmtoken]['machine_id'] = machine_id
+      self.WriteClientState()
 
   def LookupToken(self, dmtoken):
     """Looks up a device or a user by DM token.
@@ -686,6 +713,53 @@ class PolicyTestServer(testserver_base.ClientRestrictingServerMixIn,
     """
     if dmtoken in self._registered_tokens.keys():
       del self._registered_tokens[dmtoken]
+      self.WriteClientState()
+
+  def WriteClientState(self):
+    """Writes the client state back to the file."""
+    if self.client_state_file is not None:
+      json_data = json.dumps(self._registered_tokens)
+      open(self.client_state_file, 'w').write(json_data)
+
+  def ReadPolicyFromDataDir(self, policy_selector, proto_message):
+    """Tries to read policy payload from a file in the data directory.
+
+    First checks for a binary rendition of the policy protobuf in
+    <data_dir>/policy_<sanitized_policy_selector>.bin. If that exists, returns
+    it. If that file doesn't exist, tries
+    <data_dir>/policy_<sanitized_policy_selector>.txt and decodes that as a
+    protobuf using proto_message. If that fails as well, returns None.
+
+    Args:
+      policy_selector: Selects with policy to read. This will be
+      proto_message: Optional protobuf message object used for decoding the
+          proto text format.
+
+    Returns:
+      The binary payload message, or None if not found.
+    """
+    sanitized_policy_selector = re.sub('[^A-Za-z0-9.@-]', '_', policy_selector)
+    base_filename = os.path.join(self.data_dir or '',
+                                 'policy_%s' % sanitized_policy_selector)
+
+    # Try the binary payload file first.
+    try:
+      return open(base_filename + '.bin').read()
+    except IOError:
+      pass
+
+    # If that fails, try the text version instead.
+    if proto_message is None:
+      return None
+
+    try:
+      text = open(base_filename + '.txt').read()
+      google.protobuf.text_format.Merge(text, proto_message)
+      return proto_message.SerializeToString()
+    except IOError:
+      return None
+    except google.protobuf.text_format.ParseError:
+      return None
 
 
 class PolicyServerRunner(testserver_base.TestServerRunner):
@@ -694,16 +768,24 @@ class PolicyServerRunner(testserver_base.TestServerRunner):
     super(PolicyServerRunner, self).__init__()
 
   def create_server(self, server_data):
-    config_file = (
-        self.options.config_file or
-        os.path.join(self.options.data_dir or '', 'device_management'))
+    data_dir = self.options.data_dir or ''
+    config_file = (self.options.config_file or
+                   os.path.join(data_dir, 'device_management'))
     server = PolicyTestServer((self.options.host, self.options.port),
-                              config_file, self.options.policy_keys)
+                              data_dir, config_file,
+                              self.options.client_state_file,
+                              self.options.policy_keys)
     server_data['port'] = server.server_port
     return server
 
   def add_options(self):
     testserver_base.TestServerRunner.add_options(self)
+    self.option_parser.add_option('--client-state', dest='client_state_file',
+                                  help='File that client state should be '
+                                  'persisted to. This allows the server to be '
+                                  'seeded by a list of pre-registered clients '
+                                  'and restarts without abandoning registered '
+                                  'clients.')
     self.option_parser.add_option('--policy-key', action='append',
                                   dest='policy_keys',
                                   help='Specify a path to a PEM-encoded '
