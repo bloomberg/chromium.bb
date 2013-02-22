@@ -239,8 +239,10 @@ rm -rf $@
 mkdir -p $@
 BUILD=$$PWD/BUILD && cd $@ && \
   ../../SRC/.gcc-extra-$(@:BUILD/.gcc-extra-build-%=%)/configure \
-  CFLAGS="-m$(HOST_TOOLCHAIN_BITS) $(CFLAGS)" \
-  CXXFLAGS="-m$(HOST_TOOLCHAIN_BITS) $(CXXFLAGS)" \
+  CC="$(GCC_CC)" \
+  CXX="$(GCC_CXX)" \
+  CFLAGS="$(CFLAGS)" \
+  CXXFLAGS="$(CXXFLAGS)" \
   CPPFLAGS="-fexceptions $(CPPFLAGS)" \
   --prefix=$$BUILD/.gcc-extra-install-$(@:BUILD/.gcc-extra-build-%=%) \
   --disable-shared
@@ -419,7 +421,13 @@ $(error MULTILIB: Bad value)
 endif
 endif
 
+ifeq ($(PLATFORM), mac)
+GCC_CC = clang -m$(HOST_TOOLCHAIN_BITS) -fgnu89-inline
+GCC_CXX = clang++ -m$(HOST_TOOLCHAIN_BITS)
+else
 GCC_CC = gcc -m$(HOST_TOOLCHAIN_BITS)
+GCC_CXX = g++ -m$(HOST_TOOLCHAIN_BITS)
+endif
 
 GCC_DEFINES = \
     -Dinhibit_libc \
