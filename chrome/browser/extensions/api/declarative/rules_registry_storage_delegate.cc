@@ -106,9 +106,7 @@ class RulesRegistryStorageDelegate::Inner
   const std::string storage_key_;
 
   // A set of extension IDs that have rules we are reading from storage.
-  // TODO(vabr): Once the migration code of http://crbug.com/166474 is removed,
-  // switch this back to just set. http://crbug.com/176926
-  std::multiset<std::string> waiting_for_extensions_;
+  std::set<std::string> waiting_for_extensions_;
 
   // The thread that our RulesRegistry lives on.
   content::BrowserThread::ID rules_registry_thread_;
@@ -277,14 +275,7 @@ void RulesRegistryStorageDelegate::Inner::ReadFromStorageCallback(
       base::Bind(&Inner::ReadFromStorageOnRegistryThread, this, extension_id,
                  base::Passed(&value)));
 
-  // TODO(vabr): Once the migration code of http://crbug.com/166474 is removed,
-  // and |waiting_for_extensions_| is just a set again, switch this back to only
-  // calling erase(extension_id). http://crbug.com/176926
-  std::multiset<std::string>::iterator it =
-      waiting_for_extensions_.find(extension_id);
-  CHECK(it != waiting_for_extensions_.end());
-  waiting_for_extensions_.erase(it);
-
+  waiting_for_extensions_.erase(extension_id);
   CheckIfReady();
   if (log_storage_init_delay_ && waiting_for_extensions_.empty()) {
     UMA_HISTOGRAM_TIMES("Extensions.DeclarativeRulesStorageInitialization",
