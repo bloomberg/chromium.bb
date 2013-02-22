@@ -48,7 +48,6 @@ using WebKit::WebIDBKey;
 using WebKit::WebIDBMetadata;
 using WebKit::WebIDBObjectStore;
 using WebKit::WebSecurityOrigin;
-using WebKit::WebSerializedScriptValue;
 using WebKit::WebVector;
 
 namespace content {
@@ -275,9 +274,9 @@ void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   Context()->GetIDBFactory()->deleteDatabase(
       params.name,
-      new IndexedDBCallbacks<WebSerializedScriptValue>(this,
-                                                       params.ipc_thread_id,
-                                                       params.ipc_response_id),
+      new IndexedDBCallbacks<WebData>(this,
+                                      params.ipc_thread_id,
+                                      params.ipc_response_id),
       WebSecurityOrigin::createFromDatabaseIdentifier(params.origin), NULL,
       webkit_base::FilePathToWebString(indexed_db_path));
 }
@@ -467,7 +466,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnGet(
     return;
 
   scoped_ptr<WebIDBCallbacks> callbacks(
-      new IndexedDBCallbacks<WebSerializedScriptValue>(
+      new IndexedDBCallbacks<WebData>(
           parent_, params.ipc_thread_id,
           params.ipc_response_id));
   database->get(parent_->HostTransactionId(params.transaction_id),
@@ -570,7 +569,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCount(
     return;
 
   scoped_ptr<WebIDBCallbacks> callbacks(
-      new IndexedDBCallbacks<WebSerializedScriptValue>(
+      new IndexedDBCallbacks<WebData>(
           parent_, params.ipc_thread_id,
           params.ipc_response_id));
   database->count(
@@ -588,7 +587,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDeleteRange(
     return;
 
   scoped_ptr<WebIDBCallbacks> callbacks(
-      new IndexedDBCallbacks<WebSerializedScriptValue>(
+      new IndexedDBCallbacks<WebData>(
           parent_, params.ipc_thread_id,
           params.ipc_response_id));
   database->deleteRange(parent_->HostTransactionId(params.transaction_id),
@@ -609,7 +608,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnClear(
     return;
 
   scoped_ptr<WebIDBCallbacks> callbacks(
-      new IndexedDBCallbacks<WebSerializedScriptValue>(
+      new IndexedDBCallbacks<WebData>(
           parent_, ipc_thread_id,
           ipc_response_id));
 
@@ -806,8 +805,8 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnDelete(
 
   WebKit::WebExceptionCode ec = 0;
   idb_cursor->deleteFunction(
-      new IndexedDBCallbacks<WebSerializedScriptValue>(parent_, ipc_thread_id,
-                                                       ipc_response_id), ec);
+      new IndexedDBCallbacks<WebData>(parent_, ipc_thread_id,
+                                      ipc_response_id), ec);
   DCHECK(!ec);
 }
 

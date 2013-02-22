@@ -19,14 +19,17 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabaseCallbacks.h"
 #include "webkit/glue/worker_task_runner.h"
 
-struct IndexedDBMsg_CallbacksSuccessCursorContinue_Params;
-struct IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params;
-struct IndexedDBMsg_CallbacksSuccessIDBCursor_Params;
 struct IndexedDBDatabaseMetadata;
+struct IndexedDBMsg_CallbacksSuccessCursorContinueOld_Params;
+struct IndexedDBMsg_CallbacksSuccessCursorContinue_Params;
+struct IndexedDBMsg_CallbacksSuccessCursorPrefetchOld_Params;
+struct IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params;
+struct IndexedDBMsg_CallbacksSuccessIDBCursorOld_Params;
+struct IndexedDBMsg_CallbacksSuccessIDBCursor_Params;
 
 namespace WebKit {
+class WebData;
 class WebFrame;
-class WebIDBKeyRange;
 }
 
 namespace content {
@@ -203,15 +206,26 @@ class CONTENT_EXPORT IndexedDBDispatcher
   void OnSuccessIndexedDBKey(int32 ipc_thread_id,
                              int32 ipc_response_id,
                              const IndexedDBKey& key);
+
+  void OnSuccessOpenCursorOld(
+      const IndexedDBMsg_CallbacksSuccessIDBCursorOld_Params& p);
   void OnSuccessOpenCursor(
       const IndexedDBMsg_CallbacksSuccessIDBCursor_Params& p);
+  void OnSuccessCursorContinueOld(
+      const IndexedDBMsg_CallbacksSuccessCursorContinueOld_Params& p);
   void OnSuccessCursorContinue(
       const IndexedDBMsg_CallbacksSuccessCursorContinue_Params& p);
+  void OnSuccessCursorPrefetchOld(
+      const IndexedDBMsg_CallbacksSuccessCursorPrefetchOld_Params& p);
   void OnSuccessCursorPrefetch(
       const IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params& p);
   void OnSuccessStringList(int32 ipc_thread_id,
                            int32 ipc_response_id,
                            const std::vector<string16>& value);
+  void OnSuccessValue(
+      int32 ipc_thread_id,
+      int32 ipc_response_id,
+      const std::vector<char>& value);
   void OnSuccessSerializedScriptValue(
       int32 ipc_thread_id,
       int32 ipc_response_id,
@@ -220,6 +234,12 @@ class CONTENT_EXPORT IndexedDBDispatcher
       int32 ipc_thread_id,
       int32 ipc_response_id,
       const SerializedScriptValue& value,
+      const IndexedDBKey& primary_key,
+      const IndexedDBKeyPath& key_path);
+  void OnSuccessValueWithKey(
+      int32 ipc_thread_id,
+      int32 ipc_response_id,
+      const std::vector<char>& value,
       const IndexedDBKey& primary_key,
       const IndexedDBKeyPath& key_path);
   void OnSuccessInteger(

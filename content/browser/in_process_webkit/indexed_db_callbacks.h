@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/browser/in_process_webkit/indexed_db_dispatcher_host.h"
 #include "googleurl/src/gurl.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebData.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCursor.h"
@@ -106,6 +107,19 @@ class IndexedDBCallbacks<WebKit::WebIDBCursor>
       const WebKit::WebVector<WebKit::WebIDBKey>& primaryKeys,
       const WebKit::WebVector<WebKit::WebSerializedScriptValue>& values);
 
+  virtual void onSuccess(WebKit::WebIDBCursor* idb_object,
+                         const WebKit::WebIDBKey& key,
+                         const WebKit::WebIDBKey& primaryKey,
+                         const WebKit::WebData& value);
+  virtual void onSuccess(const WebKit::WebIDBKey& key,
+                         const WebKit::WebIDBKey& primaryKey,
+                         const WebKit::WebData& value);
+  virtual void onSuccess(const WebKit::WebData& value);
+  virtual void onSuccessWithPrefetch(
+      const WebKit::WebVector<WebKit::WebIDBKey>& keys,
+      const WebKit::WebVector<WebKit::WebIDBKey>& primaryKeys,
+      const WebKit::WebVector<WebKit::WebData>& values);
+
  private:
   // The id of the cursor this callback concerns, or -1 if the cursor
   // does not exist yet.
@@ -153,11 +167,11 @@ class IndexedDBCallbacks<WebKit::WebDOMStringList>
   DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
 };
 
-// WebSerializedScriptValue is implemented in WebKit as opposed to being an
-// interface Chromium implements.  Thus we pass a const ___& version and thus
-// we need this specialization.
+// WebData is implemented in WebKit as opposed to being an interface
+// Chromium implements.  Thus we pass a const ___& version and thus we
+// need this specialization.
 template <>
-class IndexedDBCallbacks<WebKit::WebSerializedScriptValue>
+class IndexedDBCallbacks<WebKit::WebData>
     : public IndexedDBCallbacksBase {
  public:
   IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
@@ -168,6 +182,10 @@ class IndexedDBCallbacks<WebKit::WebSerializedScriptValue>
 
   virtual void onSuccess(const WebKit::WebSerializedScriptValue& value);
   virtual void onSuccess(const WebKit::WebSerializedScriptValue& value,
+                         const WebKit::WebIDBKey& key,
+                         const WebKit::WebIDBKeyPath& keyPath);
+  virtual void onSuccess(const WebKit::WebData& value);
+  virtual void onSuccess(const WebKit::WebData& value,
                          const WebKit::WebIDBKey& key,
                          const WebKit::WebIDBKeyPath& keyPath);
   virtual void onSuccess(long long value);

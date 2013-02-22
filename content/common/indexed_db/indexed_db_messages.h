@@ -229,7 +229,25 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseCreateIndex_Params)
   IPC_STRUCT_MEMBER(bool, multi_entry)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessIDBCursorOld_Params)
+  IPC_STRUCT_MEMBER(int32, ipc_thread_id)
+  IPC_STRUCT_MEMBER(int32, ipc_response_id)
+  IPC_STRUCT_MEMBER(int32, ipc_cursor_id)
+  IPC_STRUCT_MEMBER(content::IndexedDBKey, key)
+  IPC_STRUCT_MEMBER(content::IndexedDBKey, primary_key)
+  IPC_STRUCT_MEMBER(content::SerializedScriptValue, serialized_value)
+IPC_STRUCT_END()
+
 IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessIDBCursor_Params)
+  IPC_STRUCT_MEMBER(int32, ipc_thread_id)
+  IPC_STRUCT_MEMBER(int32, ipc_response_id)
+  IPC_STRUCT_MEMBER(int32, ipc_cursor_id)
+  IPC_STRUCT_MEMBER(content::IndexedDBKey, key)
+  IPC_STRUCT_MEMBER(content::IndexedDBKey, primary_key)
+  IPC_STRUCT_MEMBER(std::vector<char>, value)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessCursorContinueOld_Params)
   IPC_STRUCT_MEMBER(int32, ipc_thread_id)
   IPC_STRUCT_MEMBER(int32, ipc_response_id)
   IPC_STRUCT_MEMBER(int32, ipc_cursor_id)
@@ -244,7 +262,16 @@ IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessCursorContinue_Params)
   IPC_STRUCT_MEMBER(int32, ipc_cursor_id)
   IPC_STRUCT_MEMBER(content::IndexedDBKey, key)
   IPC_STRUCT_MEMBER(content::IndexedDBKey, primary_key)
-  IPC_STRUCT_MEMBER(content::SerializedScriptValue, serialized_value)
+  IPC_STRUCT_MEMBER(std::vector<char>, value)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessCursorPrefetchOld_Params)
+  IPC_STRUCT_MEMBER(int32, ipc_thread_id)
+  IPC_STRUCT_MEMBER(int32, ipc_response_id)
+  IPC_STRUCT_MEMBER(int32, ipc_cursor_id)
+  IPC_STRUCT_MEMBER(std::vector<content::IndexedDBKey>, keys)
+  IPC_STRUCT_MEMBER(std::vector<content::IndexedDBKey>, primary_keys)
+  IPC_STRUCT_MEMBER(std::vector<content::SerializedScriptValue>, values)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params)
@@ -253,7 +280,7 @@ IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params)
   IPC_STRUCT_MEMBER(int32, ipc_cursor_id)
   IPC_STRUCT_MEMBER(std::vector<content::IndexedDBKey>, keys)
   IPC_STRUCT_MEMBER(std::vector<content::IndexedDBKey>, primary_keys)
-  IPC_STRUCT_MEMBER(std::vector<content::SerializedScriptValue>, values)
+  IPC_STRUCT_MEMBER(std::vector<std::vector<char> >, values)
 IPC_STRUCT_END()
 
 // metadata payload for WebIDBMetadata
@@ -290,15 +317,23 @@ IPC_STRUCT_END()
 // thread_id is the first int.
 
 // IDBCallback message handlers.
+IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksSuccessIDBCursorOld,
+                     IndexedDBMsg_CallbacksSuccessIDBCursorOld_Params)
 IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksSuccessIDBCursor,
                      IndexedDBMsg_CallbacksSuccessIDBCursor_Params)
 
+IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksSuccessCursorContinueOld,
+                     IndexedDBMsg_CallbacksSuccessCursorContinueOld_Params)
 IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksSuccessCursorContinue,
                      IndexedDBMsg_CallbacksSuccessCursorContinue_Params)
 
+IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksSuccessCursorAdvanceOld,
+                     IndexedDBMsg_CallbacksSuccessCursorContinueOld_Params)
 IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksSuccessCursorAdvance,
                      IndexedDBMsg_CallbacksSuccessCursorContinue_Params)
 
+IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksSuccessCursorPrefetchOld,
+                     IndexedDBMsg_CallbacksSuccessCursorPrefetchOld_Params)
 IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksSuccessCursorPrefetch,
                      IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params)
 
@@ -315,10 +350,20 @@ IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksSuccessSerializedScriptValue,
                      int32 /* ipc_thread_id */,
                      int32 /* ipc_response_id */,
                      content::SerializedScriptValue /* value */)
+IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksSuccessValue,
+                     int32 /* ipc_thread_id */,
+                     int32 /* ipc_response_id */,
+                     std::vector<char> /* value */)
 IPC_MESSAGE_CONTROL5(IndexedDBMsg_CallbacksSuccessSerializedScriptValueWithKey,
                      int32 /* ipc_thread_id */,
                      int32 /* ipc_response_id */,
                      content::SerializedScriptValue /* value */,
+                     content::IndexedDBKey /* indexed_db_key */,
+                     content::IndexedDBKeyPath /* indexed_db_keypath */)
+IPC_MESSAGE_CONTROL5(IndexedDBMsg_CallbacksSuccessValueWithKey,
+                     int32 /* ipc_thread_id */,
+                     int32 /* ipc_response_id */,
+                     std::vector<char> /* value */,
                      content::IndexedDBKey /* indexed_db_key */,
                      content::IndexedDBKeyPath /* indexed_db_keypath */)
 IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksSuccessInteger,
