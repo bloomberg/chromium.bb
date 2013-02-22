@@ -102,6 +102,26 @@ UI_EXPORT SkColor CalculateKMeanColorOfBitmap(const SkBitmap& bitmap);
 // Compute color covariance matrix for the input bitmap.
 UI_EXPORT gfx::Matrix3F ComputeColorCovariance(const SkBitmap& bitmap);
 
+// Apply a color reduction transform defined by |color_transform| vector to
+// |source_bitmap|. The result is put into |target_bitmap|, which is expected
+// to be initialized to the required size and type (SkBitmap::kA8_Config).
+// If |fit_to_range|, result is transfored linearly to fit 0-0xFF range.
+// Otherwise, data is clipped.
+// Returns true if the target has been computed.
+UI_EXPORT bool ApplyColorReduction(const SkBitmap& source_bitmap,
+                                   const gfx::Vector3dF& color_transform,
+                                   bool fit_to_range,
+                                   SkBitmap* target_bitmap);
+
+// Compute a monochrome image representing the principal color component of
+// the |source_bitmap|. The result is stored in |target_bitmap|, which must be
+// initialized to the required size and type (SkBitmap::kA8_Config).
+// Returns true if the conversion succeeded. Note that there might be legitimate
+// reasons for the process to fail even if all input was correct. This is a
+// condition the caller must be able to handle.
+UI_EXPORT bool ComputePrincipalComponentImage(const SkBitmap& source_bitmap,
+                                              SkBitmap* target_bitmap);
+
 }  // namespace color_utils
 
 #endif  // UI_GFX_COLOR_ANALYSIS_H_

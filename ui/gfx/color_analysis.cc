@@ -5,6 +5,7 @@
 #include "ui/gfx/color_analysis.h"
 
 #include <algorithm>
+#include <limits>
 #include <vector>
 
 #include "base/logging.h"
@@ -465,6 +466,98 @@ gfx::Matrix3F ComputeColorCovariance(const SkBitmap& bitmap) {
       (static_cast<double>(bb_sum) / pixel_n -
        static_cast<double>(b_sum * b_sum) / pixel_n / pixel_n));
   return covariance;
+}
+
+bool ApplyColorReduction(const SkBitmap& source_bitmap,
+                         const gfx::Vector3dF& color_transform,
+                         bool fit_to_range,
+                         SkBitmap* target_bitmap) {
+  DCHECK(target_bitmap);
+  SkAutoLockPixels source_lock(source_bitmap);
+  SkAutoLockPixels target_lock(*target_bitmap);
+
+  DCHECK(source_bitmap.getPixels());
+  DCHECK(target_bitmap->getPixels());
+  DCHECK_EQ(SkBitmap::kARGB_8888_Config, source_bitmap.config());
+  DCHECK_EQ(SkBitmap::kA8_Config, target_bitmap->config());
+  DCHECK_EQ(source_bitmap.height(), target_bitmap->height());
+  DCHECK_EQ(source_bitmap.width(), target_bitmap->width());
+  DCHECK(!source_bitmap.empty());
+
+  // Elements of color_transform are explicitly off-loaded to local values for
+  // efficiency reasons. Note that in practice images may correspond to entire
+  // tab captures.
+  float t0 = 0.0;
+  float tr = color_transform.x();
+  float tg = color_transform.y();
+  float tb = color_transform.z();
+
+  if (fit_to_range) {
+    // We will figure out min/max in a preprocessing step and adjust
+    // actual_transform as required.
+    float max_val = std::numeric_limits<float>::min();
+    float min_val = std::numeric_limits<float>::max();
+    for (int y = 0; y < source_bitmap.height(); ++y) {
+      const SkPMColor* source_color_row = static_cast<SkPMColor*>(
+          source_bitmap.getAddr32(0, y));
+      for (int x = 0; x < source_bitmap.width(); ++x) {
+        SkColor c = SkUnPreMultiply::PMColorToColor(source_color_row[x]);
+        float r = SkColorGetR(c);
+        float g = SkColorGetG(c);
+        float b = SkColorGetB(c);
+        float gray_level = tr * r + tg * g + tb * b;
+        max_val = std::max(max_val, gray_level);
+        min_val = std::min(min_val, gray_level);
+      }
+    }
+
+    // Adjust the transform so that the result is scaling.
+    float scale = 0.0;
+    t0 = -min_val;
+    if (max_val > min_val)
+      scale = 255.0 / (max_val - min_val);
+    t0 *= scale;
+    tr *= scale;
+    tg *= scale;
+    tb *= scale;
+  }
+
+  for (int y = 0; y < source_bitmap.height(); ++y) {
+    const SkPMColor* source_color_row = static_cast<SkPMColor*>(
+        source_bitmap.getAddr32(0, y));
+    uint8_t* target_color_row = target_bitmap->getAddr8(0, y);
+    for (int x = 0; x < source_bitmap.width(); ++x) {
+      SkColor c = SkUnPreMultiply::PMColorToColor(source_color_row[x]);
+      float r = SkColorGetR(c);
+      float g = SkColorGetG(c);
+      float b = SkColorGetB(c);
+
+      float gl = t0 + tr * r + tg * g + tb * b;
+      if (gl < 0)
+        gl = 0;
+      if (gl > 0xFF)
+        gl = 0xFF;
+      target_color_row[x] = static_cast<uint8_t>(gl);
+    }
+  }
+
+  return true;
+}
+
+bool ComputePrincipalComponentImage(const SkBitmap& source_bitmap,
+                                    SkBitmap* target_bitmap) {
+  if (!target_bitmap) {
+    NOTREACHED();
+    return false;
+  }
+
+  gfx::Matrix3F covariance = ComputeColorCovariance(source_bitmap);
+  gfx::Matrix3F eigenvectors = gfx::Matrix3F::Zeros();
+  gfx::Vector3dF eigenvals = covariance.SolveEigenproblem(&eigenvectors);
+  gfx::Vector3dF principal = eigenvectors.get_column(0);
+  if (eigenvals == gfx::Vector3dF() || principal == gfx::Vector3dF())
+    return false;  // This may happen for some edge cases.
+  return ApplyColorReduction(source_bitmap, principal, true, target_bitmap);
 }
 
 }  // color_utils
