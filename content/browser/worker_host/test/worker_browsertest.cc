@@ -195,7 +195,13 @@ class WorkerXHRHttpLayoutTest : public InProcessBrowserLayoutTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(WorkerXHRHttpLayoutTest, Tests) {
+// TestRunner appears to be broken on Windows. See http://crbug.com/177798
+#if defined(OS_WIN)
+#define MAYBE_Tests DISABLED_Tests
+#else
+#define MAYBE_Tests Tests
+#endif
+IN_PROC_BROWSER_TEST_F(WorkerXHRHttpLayoutTest, MAYBE_Tests) {
   static const char* kLayoutTestFiles[] = {
     // worker thread count never drops to zero.
     // http://crbug.com/150565
