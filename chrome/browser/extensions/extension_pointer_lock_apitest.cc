@@ -13,9 +13,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
   ASSERT_TRUE(RunPlatformAppTest("pointer_lock/no_permission")) << message_;
 }
 
-// Disabled, RenderWidgetHostView doesn't gain focus. http://crbug.com/162978
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
-                       DISABLED_ExtensionPointerLockAccessPass) {
+                       ExtensionPointerLockAccessPass) {
   // Test that pointer lock can be accessed from an extension with permission.
   ASSERT_TRUE(RunPlatformAppTest("pointer_lock/has_permission")) << message_;
 }

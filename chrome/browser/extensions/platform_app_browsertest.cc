@@ -786,13 +786,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_Messaging) {
   EXPECT_TRUE(result_catcher.GetNextResult());
 }
 
-// TODO(jeremya): this doesn't work on GTK yet. See http://crbug.com/159450.
-#if defined(TOOLKIT_GTK)
-#define MAYBE_WebContentsHasFocus DISABLED_WebContentsHasFocus
-#else
-#define MAYBE_WebContentsHasFocus WebContentsHasFocus
-#endif
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_WebContentsHasFocus) {
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WebContentsHasFocus) {
   const Extension* extension = LoadAndLaunchPlatformApp("minimal");
   ShellWindow* window = CreateShellWindow(extension);
   EXPECT_TRUE(window->web_contents()->GetRenderWidgetHostView()->HasFocus());
