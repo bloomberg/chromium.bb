@@ -233,7 +233,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_FocusRestoreOnTabSwitch) {
 }
 
 // Flaky on XP: http://crbug.com/152100
-#if defined(OS_WIN)
+// Flaky on ChromiumOS: http://crbug.com/177487
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 #define MAYBE_PrepopulateRespectBlank DISABLED_PrepopulateRespectBlank
 #else
 #define MAYBE_PrepopulateRespectBlank PrepopulateRespectBlank
