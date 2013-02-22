@@ -30,9 +30,13 @@ class TestPackageApk(TestPackage):
   """
 
   def __init__(self, adb, device, test_suite, timeout,
-               cleanup_test_files, tool):
+               cleanup_test_files, tool, apk_package_name,
+               test_activity_name, command_line_file):
     TestPackage.__init__(self, adb, device, test_suite, timeout,
                          cleanup_test_files, tool)
+    self._apk_package_name = apk_package_name
+    self._test_activity_name = test_activity_name
+    self._command_line_file = command_line_file
 
   def _CreateTestRunnerScript(self, options):
     command_line_file = tempfile.NamedTemporaryFile()
@@ -40,8 +44,8 @@ class TestPackageApk(TestPackage):
     command_line_file.write(self.test_suite_basename + ' ' + options)
     command_line_file.flush()
     self.adb.PushIfNeeded(command_line_file.name,
-                          constants.TEST_EXECUTABLE_DIR +
-                          '/chrome-native-tests-command-line')
+                          constants.TEST_EXECUTABLE_DIR + '/' +
+                          self._command_line_file)
 
   def _GetGTestReturnCode(self):
     return None
@@ -51,7 +55,7 @@ class TestPackageApk(TestPackage):
     # testing/android/java/src/org/chromium/native_test/
     #     ChromeNativeTestActivity.java and
     # testing/android/native_test_launcher.cc
-    return '/data/data/org.chromium.native_test/files/test.fifo'
+    return '/data/data/' + self._apk_package_name + '/files/test.fifo'
 
   def _ClearFifo(self):
     self.adb.RunShellCommand('rm -f ' + self._GetFifo())
@@ -77,9 +81,8 @@ class TestPackageApk(TestPackage):
       # Clear and start monitoring logcat.
       self._ClearFifo()
       self.adb.RunShellCommand(
-          'am start -n '
-          'org.chromium.native_test/'
-          'org.chromium.native_test.ChromeNativeTestActivity')
+          'am start -n ' + self._apk_package_name + '/' +
+          self._test_activity_name)
       # Wait for native test to complete.
       p = self._WatchFifo(timeout=30 * self.tool.GetTimeoutScale())
       p.expect("<<ScopedMainEntryLogger")
@@ -100,9 +103,8 @@ class TestPackageApk(TestPackage):
       self.tool.SetupEnvironment()
       self._ClearFifo()
       self.adb.RunShellCommand(
-       'am start -n '
-        'org.chromium.native_test/'
-        'org.chromium.native_test.ChromeNativeTestActivity')
+        'am start -n ' + self._apk_package_name + '/' +
+        self._test_activity_name)
     finally:
       self.tool.CleanUpEnvironment()
     logfile = android_commands.NewLineNormalizer(sys.stdout)
@@ -113,7 +115,7 @@ class TestPackageApk(TestPackage):
     # Always uninstall the previous one (by activity name); we don't
     # know what was embedded in it.
     self.adb.ManagedInstall(self.test_suite_full, False,
-                            package_name='org.chromium.native_test')
+                            package_name=self._apk_package_name)
 
   def _GetTestSuiteBaseName(self):
     """Returns the  base name of the test suite."""

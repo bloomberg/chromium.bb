@@ -31,6 +31,15 @@ CHROMIUM_TEST_SHELL_DEVTOOLS_SOCKET = 'chromium_testshell_devtools_remote'
 CHROMIUM_TEST_SHELL_HOST_DRIVEN_DIR = os.path.join(
     CHROME_DIR, 'chrome', 'android')
 
+GTEST_TEST_PACKAGE_NAME = 'org.chromium.native_test'
+GTEST_TEST_ACTIVITY_NAME = 'org.chromium.native_test.ChromeNativeTestActivity'
+GTEST_COMMAND_LINE_FILE = 'chrome-native-tests-command-line'
+
+BROWSERTEST_TEST_PACKAGE_NAME = 'org.chromium.content_browsertests_apk'
+BROWSERTEST_TEST_ACTIVITY_NAME = (
+    'org.chromium.content_browsertests_apk.ContentBrowserTestsActivity')
+BROWSERTEST_COMMAND_LINE_FILE = 'content-browser-tests-command-line'
+
 # Ports arrangement for various test servers used in Chrome for Android.
 # Lighttpd server will attempt to use 9000 as default port, if unavailable it
 # will find a free port from 8001 - 8999.

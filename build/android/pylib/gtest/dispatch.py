@@ -9,9 +9,9 @@ import os
 
 from pylib import android_commands
 from pylib import cmd_helper
+from pylib import constants
 from pylib import ports
 from pylib.base import shard
-from pylib.base import test_result
 from pylib.utils import emulator
 from pylib.utils import xvfb
 
@@ -57,7 +57,7 @@ def _FullyQualifiedTestSuites(exe, option_test_suite, build_type):
   return zip(all_test_suites, qualified_test_suites)
 
 
-def _GetTestsFromDevice(runner):
+def GetTestsFromDevice(runner):
   """Get a list of tests from a device, excluding disabled tests.
 
   Args:
@@ -73,7 +73,7 @@ def _GetTestsFromDevice(runner):
                 all_tests)
 
 
-def _GetAllEnabledTests(runner_factory, devices):
+def GetAllEnabledTests(runner_factory, devices):
   """Get all enabled tests.
 
   Obtains a list of enabled tests from the test package on the device,
@@ -92,7 +92,7 @@ def _GetAllEnabledTests(runner_factory, devices):
     try:
       logging.info('Obtaining tests from %s', device)
       runner = runner_factory(device)
-      return _GetTestsFromDevice(runner)
+      return GetTestsFromDevice(runner)
     except Exception as e:
       logging.warning('Failed obtaining tests from %s with exception: %s',
                       device, e)
@@ -145,13 +145,16 @@ def _RunATestSuite(options, suite_name):
         options.cleanup_test_files,
         options.tool,
         options.build_type,
-        options.webkit)
+        options.webkit,
+        constants.GTEST_TEST_PACKAGE_NAME,
+        constants.GTEST_TEST_ACTIVITY_NAME,
+        constants.GTEST_COMMAND_LINE_FILE)
 
   # Get tests and split them up based on the number of devices.
   if options.gtest_filter:
     all_tests = [t for t in options.gtest_filter.split(':') if t]
   else:
-    all_tests = _GetAllEnabledTests(RunnerFactory, attached_devices)
+    all_tests = GetAllEnabledTests(RunnerFactory, attached_devices)
   num_devices = len(attached_devices)
   tests = [':'.join(all_tests[i::num_devices]) for i in xrange(num_devices)]
   tests = [t for t in tests if t]

@@ -121,13 +121,18 @@ def _GetDataFilesForTestSuite(test_suite_basename):
     return [
       'cc/test/data',
     ]
+  elif test_suite_basename == 'content_browsertests':
+    return [
+      'content/test/data',
+    ]
   return []
 
 
 def _TestSuiteRequiresMockTestServer(test_suite_basename):
   """Returns True if the test suite requires mock test server."""
   tests_require_net_test_server = ['unit_tests', 'net_unittests',
-                                   'content_unittests']
+                                   'content_unittests',
+                                   'content_browsertests']
   return (test_suite_basename in
           tests_require_net_test_server)
 
@@ -144,11 +149,15 @@ class TestRunner(base_test_runner.BaseTestRunner):
     tool_name: Name of the Valgrind tool.
     build_type: 'Release' or 'Debug'.
     in_webkit_checkout: Whether the suite is being run from a WebKit checkout.
+    test_apk_package_name: Apk package name for tests running in APKs.
+    test_activity_name: Test activity to invoke for APK tests.
+    command_line_file: Filename to use to pass arguments to tests.
   """
 
   def __init__(self, device, test_suite, test_arguments, timeout,
                cleanup_test_files, tool_name, build_type,
-               in_webkit_checkout):
+               in_webkit_checkout, test_apk_package_name=None,
+               test_activity_name=None, command_line_file=None):
     super(TestRunner, self).__init__(device, tool_name, build_type)
     self._running_on_emulator = self.device.startswith('emulator')
     self._test_arguments = test_arguments
@@ -163,7 +172,10 @@ class TestRunner(base_test_runner.BaseTestRunner):
           test_suite,
           timeout,
           self._cleanup_test_files,
-          self.tool)
+          self.tool,
+          test_apk_package_name,
+          test_activity_name,
+          command_line_file)
     else:
       # Put a copy into the android out/target directory, to allow stack trace
       # generation.
