@@ -282,14 +282,16 @@ AutofillDialogViews::SuggestionView::SuggestionView(
     const string16& edit_label,
     AutofillDialogViews* autofill_dialog)
     : label_(new views::Label()),
+      label_line_2_(new views::Label()),
       icon_(new views::ImageView()),
       label_container_(new views::View()),
       decorated_(
           new DecoratedTextfield(string16(), string16(), autofill_dialog)) {
   // Label and icon.
-  label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  const int kHorizontalLabelPadding = 4;
   label_container_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
+      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
+                           kHorizontalLabelPadding));
   label_container_->AddChildView(icon_);
   label_container_->AddChildView(label_);
   label_container_->AddChildView(decorated_);
@@ -297,6 +299,10 @@ AutofillDialogViews::SuggestionView::SuggestionView(
   // TODO(estade): get the sizing and spacing right on this textfield.
   decorated_->textfield()->set_default_width_in_chars(10);
   AddChildView(label_container_);
+
+  label_line_2_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label_line_2_->SetVisible(false);
+  AddChildView(label_line_2_);
 
   // TODO(estade): The link needs to have a different color when hovered.
   views::Link* edit_link = new views::Link(edit_label);
@@ -318,11 +324,22 @@ AutofillDialogViews::SuggestionView::~SuggestionView() {}
 
 void AutofillDialogViews::SuggestionView::SetSuggestionText(
     const string16& text) {
-  label_->SetText(text);
+  // TODO(estade): does this localize well?
+  string16 line_return(ASCIIToUTF16("\n"));
+  size_t position = text.find(line_return);
+  if (position == string16::npos) {
+    label_->SetText(text);
+    label_line_2_->SetVisible(false);
+  } else {
+    label_->SetText(text.substr(0, position));
+    label_line_2_->SetText(text.substr(position + line_return.length()));
+    label_line_2_->SetVisible(true);
+  }
 }
 
 void AutofillDialogViews::SuggestionView::SetSuggestionIcon(
     const gfx::Image& image) {
+  icon_->SetVisible(!image.IsEmpty());
   icon_->SetImage(image.AsImageSkia());
 }
 

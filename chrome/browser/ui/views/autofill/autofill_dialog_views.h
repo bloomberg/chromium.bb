@@ -229,6 +229,8 @@ class AutofillDialogViews : public AutofillDialogView,
    private:
     // The label that holds the suggestion description text.
     views::Label* label_;
+    // The second (and greater) line of text that describes the suggestion.
+    views::Label* label_line_2_;
     // The icon that comes just before |label_|.
     views::ImageView* icon_;
     // A view to contain |label_| and |icon_|.

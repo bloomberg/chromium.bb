@@ -144,13 +144,11 @@ WalletInstrumentWrapper::WalletInstrumentWrapper(
 WalletInstrumentWrapper::~WalletInstrumentWrapper() {}
 
 string16 WalletInstrumentWrapper::GetInfo(AutofillFieldType type) {
-  // TODO(estade): implement.
-  return string16(ASCIIToUTF16("foo"));
+  return instrument_->address().GetInfo(type);
 }
 
 gfx::Image WalletInstrumentWrapper::GetIcon() {
-  // TODO(estade): implement.
-  return gfx::Image();
+  return instrument_->CardIcon();
 }
 
 void WalletInstrumentWrapper::FillInputs(DetailInputs* inputs) {
@@ -158,8 +156,10 @@ void WalletInstrumentWrapper::FillInputs(DetailInputs* inputs) {
 }
 
 string16 WalletInstrumentWrapper::GetDisplayText() {
-  // TODO(estade): implement better.
-  return instrument_->descriptive_name();
+  // TODO(estade): descriptive_name() is user-provided. Should we use it or
+  // just type + last 4 digits?
+  string16 line1 = instrument_->descriptive_name();
+  return line1 + ASCIIToUTF16("\n") + DataModelWrapper::GetDisplayText();
 }
 
 void WalletInstrumentWrapper::FillFormField(AutofillField* field) {

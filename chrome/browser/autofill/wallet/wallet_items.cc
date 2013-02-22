@@ -7,6 +7,9 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "googleurl/src/gurl.h"
+#include "grit/webkit_resources.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image.h"
 
 namespace autofill {
 namespace wallet {
@@ -192,6 +195,39 @@ bool WalletItems::MaskedInstrument::operator==(
 bool WalletItems::MaskedInstrument::operator!=(
     const WalletItems::MaskedInstrument& other) const {
   return !(*this == other);
+}
+
+const gfx::Image& WalletItems::MaskedInstrument::CardIcon() const {
+  int idr = 0;
+  switch (type_) {
+    case AMEX:
+      idr = IDR_AUTOFILL_CC_AMEX;
+      break;
+
+    case DISCOVER:
+      idr = IDR_AUTOFILL_CC_DISCOVER;
+      break;
+
+    case MASTER_CARD:
+      idr = IDR_AUTOFILL_CC_MASTERCARD;
+      break;
+
+    case SOLO:
+      idr = IDR_AUTOFILL_CC_SOLO;
+      break;
+
+    case VISA:
+      idr = IDR_AUTOFILL_CC_VISA;
+      break;
+
+    case MAESTRO:
+    case SWITCH:
+    case UNKNOWN:
+      idr = IDR_AUTOFILL_CC_GENERIC;
+      break;
+  }
+
+  return ResourceBundle::GetSharedInstance().GetImageNamed(idr);
 }
 
 WalletItems::LegalDocument::LegalDocument(const std::string& document_id,

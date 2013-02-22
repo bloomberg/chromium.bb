@@ -545,9 +545,6 @@ scoped_ptr<DataModelWrapper> AutofillDialogControllerImpl::CreateWrapper(
 
 gfx::Image AutofillDialogControllerImpl::SuggestionIconForSection(
     DialogSection section) {
-  if (section != SECTION_CC)
-    return gfx::Image();
-
   scoped_ptr<DataModelWrapper> model = CreateWrapper(section);
   if (!model.get())
     return gfx::Image();

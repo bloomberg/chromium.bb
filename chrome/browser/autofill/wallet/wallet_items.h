@@ -23,6 +23,10 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace gfx {
+class Image;
+}
+
 namespace autofill {
 namespace wallet {
 
@@ -68,6 +72,9 @@ class WalletItems {
 
     bool operator==(const MaskedInstrument& other) const;
     bool operator!=(const MaskedInstrument& other) const;
+
+    // Gets an image to display for this instrument.
+    const gfx::Image& CardIcon() const;
 
     const string16& descriptive_name() const { return descriptive_name_; }
     const Type& type() const { return type_; }
