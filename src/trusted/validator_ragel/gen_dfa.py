@@ -408,6 +408,7 @@ class InstructionPrinter(object):
     self._mode = mode
     self._bitness = bitness
     self._out = StringIO.StringIO()
+    self._printed_operand_sources = set()
 
   def GetContent(self):
     return self._out.getvalue()
@@ -528,8 +529,13 @@ class InstructionPrinter(object):
       self._out.write(' (%s)' % '|'.join(
           hex(b) for b in range(last_byte, last_byte + 2**3)))
 
-      # TODO(shcherbina): Print operand*_from_opcode(_x87) actions (or maybe
-      # do it somewhere else).
+      operand = instruction.FindOperand(
+          def_format.OperandType.REGISTER_IN_OPCODE)
+      self._out.write(' ')
+      if operand.size == '7':
+        self._PrintOperandSource(operand, 'from_opcode_x87')
+      else:
+        self._PrintOperandSource(operand, 'from_opcode')
     else:
       self._out.write(' '.join(main_opcode_part))
 
@@ -603,10 +609,15 @@ class InstructionPrinter(object):
     # TODO(shcherbina): add mechanism to check that all operand sources are
     # printed.
     if self._NeedOperandInfo(operand):
+      assert operand.index not in self._printed_operand_sources
+      self._printed_operand_sources.add(operand.index)
       self._out.write('@operand%d_%s\n' % (operand.index, source))
 
-  def _PrintImplicitOperandSources(self, instruction):
-    """Print actions specifying sources of implicit operands.
+  def _PrintDetachedOperandSources(self, instruction):
+    """Print actions specifying sources of some operands.
+
+    Print operand source actions which do not need to read bytes relative to
+    current position.
 
     Args:
       instruction: instruction.
@@ -614,13 +625,24 @@ class InstructionPrinter(object):
     Returns:
       None.
     """
+    # TODO(shcherbina): maybe inline it into PrintSignature?
     for operand in instruction.operands:
       if operand.arg_type == def_format.OperandType.ACCUMULATOR:
         self._PrintOperandSource(operand, 'rax')
+      if operand.arg_type == def_format.OperandType.COUNTER:
+        self._PrintOperandSource(operand, 'rcx')
       elif operand.arg_type == def_format.OperandType.DS_SI:
         self._PrintOperandSource(operand, 'ds_rsi')
       elif operand.arg_type == def_format.OperandType.ES_DI:
         self._PrintOperandSource(operand, 'es_rdi')
+      elif operand.arg_type == def_format.OperandType.DS_BX:
+        self._PrintOperandSource(operand, 'ds_rbx')
+      elif operand.arg_type == def_format.OperandType.PORT_IN_DX:
+        self._PrintOperandSource(operand, 'port_dx')
+      elif operand.arg_type == def_format.OperandType.XMM_REGISTER_IN_VVVV:
+        self._PrintOperandSource(operand, 'from_vex')
+      elif operand.arg_type == def_format.OperandType.REGISTER_IN_VVVV:
+        self._PrintOperandSource(operand, 'from_vex')
 
     # TODO(shcherbina): handle other implicit operands.
 
@@ -687,7 +709,7 @@ class InstructionPrinter(object):
 
     self._PrintSignature(instruction)
     self._PrintSpuriousRexInfo(instruction)
-    self._PrintImplicitOperandSources(instruction)
+    self._PrintDetachedOperandSources(instruction)
 
     self._PrintImmediates(instruction)
 
@@ -710,6 +732,8 @@ class InstructionPrinter(object):
       else:
         assert False, format
       self._PrintOperandSource(operand, 'jmp_to')
+
+    self._FinalCheck(instruction)
 
   def _PrintModRMOperandSources(self, instruction):
     """Print sources for operands encoded in modrm."""
@@ -765,7 +789,7 @@ class InstructionPrinter(object):
     if opcode_in_modrm is None:
       if not instruction.HasOpcodeInsteadOfImmediate():
         self._PrintSignature(instruction)
-        self._PrintImplicitOperandSources(instruction)
+        self._PrintDetachedOperandSources(instruction)
 
       if instruction.FindOperand(
           def_format.OperandType.SEGMENT_REGISTER_IN_REG) is None:
@@ -778,7 +802,7 @@ class InstructionPrinter(object):
         assert instruction.opcodes[-2] == '/'
         self._out.write('%s\n' % instruction.opcodes[-1])
         self._PrintSignature(instruction)
-        self._PrintImplicitOperandSources(instruction)
+        self._PrintDetachedOperandSources(instruction)
     else:
       assert not instruction.HasOpcodeInsteadOfImmediate()
       assert instruction.FindOperand(
@@ -787,13 +811,14 @@ class InstructionPrinter(object):
 
       # We postpone printing signature until opcode in modrm is read.
       self._PrintSignature(instruction)
-      self._PrintImplicitOperandSources(instruction)
+      self._PrintDetachedOperandSources(instruction)
 
       self._PrintModRMOperandSources(instruction)
 
     self._PrintSpuriousRexInfo(instruction)
 
     self._PrintImmediates(instruction)
+    self._FinalCheck(instruction)
 
   def PrintInstructionWithModRMMemory(self, instruction, address_mode):
     """Print instruction that has memory access.
@@ -834,7 +859,7 @@ class InstructionPrinter(object):
     if opcode_in_modrm is None:
       if not instruction.HasOpcodeInsteadOfImmediate():
         self._PrintSignature(instruction)
-        self._PrintImplicitOperandSources(instruction)
+        self._PrintDetachedOperandSources(instruction)
 
       # Here we print something like
       # (any @operand0_from_modrm_reg @operand1_rm any* &
@@ -860,7 +885,7 @@ class InstructionPrinter(object):
         self._out.write('%s\n' % instruction.opcodes[-1])
 
         self._PrintSignature(instruction)
-        self._PrintImplicitOperandSources(instruction)
+        self._PrintDetachedOperandSources(instruction)
     else:
       # Here we print something like
       # (opcode_2 @operand1_rm any* &
@@ -871,7 +896,7 @@ class InstructionPrinter(object):
           def_format.OperandType.SEGMENT_REGISTER_IN_REG) is None
       self._out.write('(opcode_%d\n' % opcode_in_modrm)
       self._PrintSignature(instruction)
-      self._PrintImplicitOperandSources(instruction)
+      self._PrintDetachedOperandSources(instruction)
       self._PrintModRMOperandSources(instruction)
       self._out.write('  any* &\n')
 
@@ -885,6 +910,16 @@ class InstructionPrinter(object):
     # TODO(shcherbina): @check_access when appropriate.
 
     self._PrintImmediates(instruction)
+    self._FinalCheck(instruction)
+
+  def _FinalCheck(self, instruction):
+    if self._mode == VALIDATOR:
+      # TODO(shcherbina): implement.
+      return
+    all_operands = set(operand.index for operand in instruction.operands)
+    assert self._printed_operand_sources == all_operands, (
+        str(instruction),
+        self._printed_operand_sources, all_operands)
 
 
 def InstructionToString(mode, bitness, instruction):

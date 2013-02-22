@@ -145,8 +145,11 @@ class TestPrinterParts(unittest.TestCase):
     printer._PrintOpcode(instr)
 
     self.assertEquals(
-        printer.GetContent(),
-        '0x0f (0xc8|0xc9|0xca|0xcb|0xcc|0xcd|0xce|0xcf)')
+        printer.GetContent().split(),
+        """
+        0x0f (0xc8|0xc9|0xca|0xcb|0xcc|0xcd|0xce|0xcf)
+        @operand0_from_opcode
+        """.split())
 
   def test_opcode_in_modrm(self):
     printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 32)

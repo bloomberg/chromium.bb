@@ -395,3 +395,9 @@ class OperandType(object):
 
   DS_SI = 'X'
   ES_DI = 'Y'
+  DS_BX = 'x'
+
+  REGISTER_IN_VVVV = 'B'
+  XMM_REGISTER_IN_VVVV = 'H'
+
+  PORT_IN_DX = 'o'
