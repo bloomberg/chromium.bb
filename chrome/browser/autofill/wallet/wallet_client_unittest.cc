@@ -407,7 +407,9 @@ class WalletClientTest : public testing::Test {
   content::TestBrowserThread io_thread_;
 };
 
-class MockWalletClientObserver : public WalletClientObserver {
+class MockWalletClientObserver :
+  public WalletClientObserver,
+  public base::SupportsWeakPtr<MockWalletClientObserver> {
  public:
   MockWalletClientObserver()
       : full_wallets_received_(0), wallet_items_received_(0) {}
@@ -458,7 +460,7 @@ TEST_F(WalletClientTest, WalletErrorOnExpectedVoidResponse) {
   wallet_client.SendAutocheckoutStatus(autofill::SUCCESS,
                                        "",
                                        "",
-                                       &observer);
+                                       observer.AsWeakPtr());
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   fetcher->set_response_code(net::HTTP_INTERNAL_SERVER_ERROR);
@@ -474,7 +476,7 @@ TEST_F(WalletClientTest, WalletErrorOnExpectedResponse) {
   net::TestURLFetcherFactory factory;
 
   WalletClient wallet_client(profile_.GetRequestContext());
-  wallet_client.GetWalletItems(&observer);
+  wallet_client.GetWalletItems(observer.AsWeakPtr());
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   fetcher->set_response_code(net::HTTP_INTERNAL_SERVER_ERROR);
@@ -491,7 +493,7 @@ TEST_F(WalletClientTest, NetworkFailureOnExpectedVoidResponse) {
   wallet_client.SendAutocheckoutStatus(autofill::SUCCESS,
                                        "",
                                        "",
-                                       &observer);
+                                       observer.AsWeakPtr());
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   fetcher->set_response_code(net::HTTP_UNAUTHORIZED);
@@ -505,7 +507,7 @@ TEST_F(WalletClientTest, NetworkFailureOnExpectedResponse) {
   net::TestURLFetcherFactory factory;
 
   WalletClient wallet_client(profile_.GetRequestContext());
-  wallet_client.GetWalletItems(&observer);
+  wallet_client.GetWalletItems(observer.AsWeakPtr());
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   fetcher->set_response_code(net::HTTP_UNAUTHORIZED);
@@ -522,7 +524,7 @@ TEST_F(WalletClientTest, RequestError) {
   wallet_client.SendAutocheckoutStatus(autofill::SUCCESS,
                                        "",
                                        "",
-                                       &observer);
+                                       observer.AsWeakPtr());
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   fetcher->set_response_code(net::HTTP_BAD_REQUEST);
@@ -540,7 +542,7 @@ TEST_F(WalletClientTest, GetFullWalletSuccess) {
                               "merchant_domain",
                               cart,
                               "google_transaction_id",
-                              &observer);
+                              observer.AsWeakPtr());
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
@@ -570,7 +572,7 @@ TEST_F(WalletClientTest, GetFullWalletEncryptionDown) {
                               "merchant_domain",
                               cart,
                               "google_transaction_id",
-                              &observer);
+                              observer.AsWeakPtr());
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
@@ -594,7 +596,7 @@ TEST_F(WalletClientTest, GetFullWalletEncryptionMalformed) {
                               "merchant_domain",
                               cart,
                               "google_transaction_id",
-                              &observer);
+                              observer.AsWeakPtr());
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
@@ -619,7 +621,7 @@ TEST_F(WalletClientTest, GetFullWalletMalformedResponse) {
                               "merchant_domain",
                               cart,
                               "google_transaction_id",
-                              &observer);
+                              observer.AsWeakPtr());
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
@@ -647,7 +649,7 @@ TEST_F(WalletClientTest, AcceptLegalDocuments) {
   doc_ids.push_back("doc_2");
   wallet_client.AcceptLegalDocuments(doc_ids,
                                      kGoogleTransactionId,
-                                     &observer);
+                                     observer.AsWeakPtr());
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   EXPECT_EQ(kAcceptLegalDocumentsValidRequest, GetData(fetcher));
@@ -665,7 +667,7 @@ TEST_F(WalletClientTest, AuthenticateInstrumentSucceeded) {
   wallet_client.AuthenticateInstrument("instrument_id",
                                        "cvv",
                                        "obfuscated_gaia_id",
-                                       &observer);
+                                       observer.AsWeakPtr());
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
@@ -689,7 +691,7 @@ TEST_F(WalletClientTest, AuthenticateInstrumentFailed) {
   wallet_client.AuthenticateInstrument("instrument_id",
                                        "cvv",
                                        "obfuscated_gaia_id",
-                                       &observer);
+                                       observer.AsWeakPtr());
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
@@ -714,7 +716,7 @@ TEST_F(WalletClientTest, AuthenticateInstrumentEscrowDown) {
   wallet_client.AuthenticateInstrument("instrument_id",
                                        "cvv",
                                        "obfuscated_gaia_id",
-                                       &observer);
+                                       observer.AsWeakPtr());
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
@@ -732,7 +734,7 @@ TEST_F(WalletClientTest, AuthenticateInstrumentEscrowMalformed) {
   wallet_client.AuthenticateInstrument("instrument_id",
                                        "cvv",
                                        "obfuscated_gaia_id",
-                                       &observer);
+                                       observer.AsWeakPtr());
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
@@ -750,7 +752,7 @@ TEST_F(WalletClientTest, AuthenticateInstrumentFailedMalformedResponse) {
   wallet_client.AuthenticateInstrument("instrument_id",
                                        "cvv",
                                        "obfuscated_gaia_id",
-                                       &observer);
+                                       observer.AsWeakPtr());
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
@@ -771,7 +773,7 @@ TEST_F(WalletClientTest, GetWalletItems) {
   net::TestURLFetcherFactory factory;
 
   WalletClient wallet_client(profile_.GetRequestContext());
-  wallet_client.GetWalletItems(&observer);
+  wallet_client.GetWalletItems(observer.AsWeakPtr());
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   EXPECT_EQ(kGetWalletItemsValidRequest, GetData(fetcher));
@@ -791,7 +793,7 @@ TEST_F(WalletClientTest, SaveAddressSucceeded) {
   scoped_ptr<Address> address = GetTestShippingAddress();
 
   WalletClient wallet_client(profile_.GetRequestContext());
-  wallet_client.SaveAddress(*address, &observer);
+  wallet_client.SaveAddress(*address, observer.AsWeakPtr());
   VerifyAndFinishRequest(factory,
                          net::HTTP_OK,
                          kSaveAddressValidRequest,
@@ -807,7 +809,7 @@ TEST_F(WalletClientTest, SaveAddressFailedMalformedResponse) {
   scoped_ptr<Address> address = GetTestShippingAddress();
 
   WalletClient wallet_client(profile_.GetRequestContext());
-  wallet_client.SaveAddress(*address, &observer);
+  wallet_client.SaveAddress(*address, observer.AsWeakPtr());
   VerifyAndFinishRequest(factory,
                          net::HTTP_OK,
                          kSaveAddressValidRequest,
@@ -823,7 +825,9 @@ TEST_F(WalletClientTest, SaveInstrumentSucceeded) {
   scoped_ptr<Instrument> instrument = GetTestInstrument();
 
   WalletClient wallet_client(profile_.GetRequestContext());
-  wallet_client.SaveInstrument(*instrument, "obfuscated_gaia_id", &observer);
+  wallet_client.SaveInstrument(*instrument,
+                               "obfuscated_gaia_id",
+                               observer.AsWeakPtr());
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
@@ -849,7 +853,7 @@ TEST_F(WalletClientTest, SaveInstrumentEscrowDown) {
   WalletClient wallet_client(profile_.GetRequestContext());
   wallet_client.SaveInstrument(*instrument,
                                "obfuscated_gaia_id",
-                               &observer);
+                               observer.AsWeakPtr());
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
@@ -869,7 +873,7 @@ TEST_F(WalletClientTest, SaveInstrumentEscrowMalformed) {
   WalletClient wallet_client(profile_.GetRequestContext());
   wallet_client.SaveInstrument(*instrument,
                                "obfuscated_gaia_id",
-                               &observer);
+                               observer.AsWeakPtr());
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
@@ -887,7 +891,9 @@ TEST_F(WalletClientTest, SaveInstrumentFailedMalformedResponse) {
   scoped_ptr<Instrument> instrument = GetTestInstrument();
 
   WalletClient wallet_client(profile_.GetRequestContext());
-  wallet_client.SaveInstrument(*instrument, "obfuscated_gaia_id", &observer);
+  wallet_client.SaveInstrument(*instrument,
+                               "obfuscated_gaia_id",
+                               observer.AsWeakPtr());
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
@@ -917,7 +923,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressSucceeded) {
   wallet_client.SaveInstrumentAndAddress(*instrument,
                                          *address,
                                          "obfuscated_gaia_id",
-                                         &observer);
+                                         observer.AsWeakPtr());
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
@@ -945,7 +951,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressEscrowDown) {
   wallet_client.SaveInstrumentAndAddress(*instrument,
                                          *address,
                                          "obfuscated_gaia_id",
-                                         &observer);
+                                         observer.AsWeakPtr());
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
@@ -968,7 +974,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressEscrowMalformed) {
   wallet_client.SaveInstrumentAndAddress(*instrument,
                                          *address,
                                          "obfuscated_gaia_id",
-                                         &observer);
+                                         observer.AsWeakPtr());
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
@@ -991,7 +997,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedAddressMissing) {
   wallet_client.SaveInstrumentAndAddress(*instrument,
                                          *address,
                                          "obfuscated_gaia_id",
-                                         &observer);
+                                         observer.AsWeakPtr());
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
@@ -1019,7 +1025,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedInstrumentMissing) {
   wallet_client.SaveInstrumentAndAddress(*instrument,
                                          *address,
                                          "obfuscated_gaia_id",
-                                         &observer);
+                                         observer.AsWeakPtr());
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
@@ -1044,7 +1050,7 @@ TEST_F(WalletClientTest, UpdateInstrumentSucceeded) {
   WalletClient wallet_client(profile_.GetRequestContext());
   wallet_client.UpdateInstrument("instrument_id",
                                  *address,
-                                 &observer);
+                                 observer.AsWeakPtr());
   VerifyAndFinishRequest(factory,
                          net::HTTP_OK,
                          kUpdateInstrumentValidRequest,
@@ -1062,7 +1068,7 @@ TEST_F(WalletClientTest, UpdateInstrumentMalformedResponse) {
   WalletClient wallet_client(profile_.GetRequestContext());
   wallet_client.UpdateInstrument("instrument_id",
                                  *address,
-                                 &observer);
+                                 observer.AsWeakPtr());
   VerifyAndFinishRequest(factory,
                          net::HTTP_OK,
                          kUpdateInstrumentValidRequest,
@@ -1079,7 +1085,7 @@ TEST_F(WalletClientTest, SendAutocheckoutOfStatusSuccess) {
   wallet_client.SendAutocheckoutStatus(autofill::SUCCESS,
                                        "hostname",
                                        "google_transaction_id",
-                                       &observer);
+                                       observer.AsWeakPtr());
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   EXPECT_EQ(kSendAutocheckoutStatusOfSuccessValidRequest, GetData(fetcher));
@@ -1097,7 +1103,7 @@ TEST_F(WalletClientTest, SendAutocheckoutStatusOfFailure) {
   wallet_client.SendAutocheckoutStatus(autofill::CANNOT_PROCEED,
                                        "hostname",
                                        "google_transaction_id",
-                                       &observer);
+                                       observer.AsWeakPtr());
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   EXPECT_EQ(kSendAutocheckoutStatusOfFailureValidRequest, GetData(fetcher));
@@ -1112,7 +1118,7 @@ TEST_F(WalletClientTest, HasRequestInProgress) {
   WalletClient wallet_client(profile_.GetRequestContext());
   EXPECT_FALSE(wallet_client.HasRequestInProgress());
 
-  wallet_client.GetWalletItems(&observer);
+  wallet_client.GetWalletItems(observer.AsWeakPtr());
   EXPECT_TRUE(wallet_client.HasRequestInProgress());
 
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);

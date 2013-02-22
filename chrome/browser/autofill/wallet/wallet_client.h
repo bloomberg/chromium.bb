@@ -59,11 +59,6 @@ class WalletItems;
 // WalletClient is designed so only one request to Online Wallet can be
 // outgoing at any one time. Implementors of WalletClientObserver should wait
 // for a callback to be called for an outgoing request before making another.
-//
-// The |observer| passed in to each function of WalletClient must outlive the
-// instance of WalletClient it is passed to.
-// TODO(ahutter): Remove the above comment once |observer| is switched to
-// WeakPtr.
 class WalletClient
     : public net::URLFetcherDelegate,
       public EncryptionEscrowClientObserver {
@@ -77,7 +72,7 @@ class WalletClient
   // GetWalletItems retrieves the user's online wallet. The WalletItems
   // returned may require additional action such as presenting legal documents
   // to the user to be accepted.
-  void GetWalletItems(WalletClientObserver* observer);
+  void GetWalletItems(base::WeakPtr<WalletClientObserver> observer);
 
   // The GetWalletItems call to the Online Wallet backend may require the user
   // to accept various legal documents before a FullWallet can be generated.
@@ -85,7 +80,7 @@ class WalletClient
   // to the GetWalletItems call.
   void AcceptLegalDocuments(const std::vector<std::string>& document_ids,
                             const std::string& google_transaction_id,
-                            WalletClientObserver* observer);
+                            base::WeakPtr<WalletClientObserver> observer);
 
   // Authenticates that |card_verification_number| is for the backing instrument
   // with |instrument_id|. |obfuscated_gaia_id| is used as a key when escrowing
@@ -94,7 +89,7 @@ class WalletClient
   void AuthenticateInstrument(const std::string& instrument_id,
                               const std::string& card_verification_number,
                               const std::string& obfuscated_gaia_id,
-                              WalletClientObserver* observer);
+                              base::WeakPtr<WalletClientObserver> observer);
 
   // GetFullWallet retrieves the a FullWallet for the user. |instrument_id| and
   // |adddress_id| should have been selected by the user in some UI,
@@ -106,22 +101,22 @@ class WalletClient
                      const std::string& merchant_domain,
                      const Cart& cart,
                      const std::string& google_transaction_id,
-                     WalletClientObserver* observer);
+                     base::WeakPtr<WalletClientObserver> observer);
 
   // SaveAddress saves a new shipping address.
   void SaveAddress(const Address& address,
-                   WalletClientObserver* observer);
+                   base::WeakPtr<WalletClientObserver> observer);
 
   // SaveInstrument saves a new instrument.
   void SaveInstrument(const Instrument& instrument,
                       const std::string& obfuscated_gaia_id,
-                      WalletClientObserver* observer);
+                      base::WeakPtr<WalletClientObserver> observer);
 
   // SaveInstrumentAndAddress saves a new instrument and address.
   void SaveInstrumentAndAddress(const Instrument& instrument,
                                 const Address& shipping_address,
                                 const std::string& obfuscated_gaia_id,
-                                WalletClientObserver* observer);
+                                base::WeakPtr<WalletClientObserver> observer);
 
   // SendAutocheckoutStatus is used for tracking the success of Autocheckout
   // flows. |status| is the result of the flow, |merchant_domain| is the domain
@@ -130,7 +125,7 @@ class WalletClient
   void SendAutocheckoutStatus(autofill::AutocheckoutStatus status,
                               const std::string& merchant_domain,
                               const std::string& google_transaction_id,
-                              WalletClientObserver* observer);
+                              base::WeakPtr<WalletClientObserver> observer);
 
   // UpdateInstrument changes the instrument with id |instrument_id| with the
   // information in |billing_address|. Its primary use is for upgrading ZIP code
@@ -139,7 +134,7 @@ class WalletClient
   // fail.
   void UpdateInstrument(const std::string& instrument_id,
                         const Address& billing_address,
-                        WalletClientObserver* observer);
+                        base::WeakPtr<WalletClientObserver> observer);
 
   // Whether there is a currently running request (i.e. |request_| != NULL).
   bool HasRequestInProgress() const;
@@ -165,7 +160,7 @@ class WalletClient
   // complete.
   void MakeWalletRequest(const GURL& url,
                          const std::string& post_body,
-                         WalletClientObserver* observer);
+                         base::WeakPtr<WalletClientObserver> observer);
 
   // Performs bookkeeping tasks for any invalid requests.
   void HandleMalformedResponse(net::URLFetcher* request);
@@ -190,7 +185,7 @@ class WalletClient
 
   // Observer class that has its various On* methods called based on the results
   // of a request to Online Wallet.
-  WalletClientObserver* observer_;
+  base::WeakPtr<WalletClientObserver> observer_;
 
   // The current request object.
   scoped_ptr<net::URLFetcher> request_;
