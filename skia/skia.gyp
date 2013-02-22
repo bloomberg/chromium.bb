@@ -232,7 +232,6 @@
         'SK_ALLOW_STATIC_GLOBAL_INITIALIZERS=0',
 
         'SK_DISABLE_BLUR_ROUNDING',
-        'SK_IGNORE_BLUR_RADIUS_CORRECTNESS',
 
         # Disable this check because it is too strict for some Chromium-specific
         # subclasses of SkPixelRef. See bug: crbug.com/171776.
