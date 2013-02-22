@@ -596,34 +596,25 @@ void FakeDriveService::AddResourceToDirectory(
   base::DictionaryValue* entry = FindEntryByResourceId(resource_id);
   if (entry) {
     base::ListValue* links = NULL;
-    if (entry->GetList("link", &links)) {
-      bool parent_link_found = false;
-      for (size_t i = 0; i < links->GetSize(); ++i) {
-        base::DictionaryValue* link = NULL;
-        std::string rel;
-        if (links->GetDictionary(i, &link) &&
-            link->GetString("rel", &rel) &&
-            rel == "http://schemas.google.com/docs/2007#parent") {
-          link->SetString(
-              "href", GetFakeLinkUrl(parent_resource_id).spec());
-          parent_link_found = true;
-        }
-      }
-      // The parent link does not exist if a resource is in the root
-      // directory.
-      if (!parent_link_found) {
-        base::DictionaryValue* link = new base::DictionaryValue;
-        link->SetString("rel", "http://schemas.google.com/docs/2007#parent");
-        link->SetString(
-            "href", GetFakeLinkUrl(parent_resource_id).spec());
-        links->Append(link);
-      }
-
-      AddNewChangestamp(entry);
-      MessageLoop::current()->PostTask(
-          FROM_HERE, base::Bind(callback, HTTP_SUCCESS));
-      return;
+    if (!entry->GetList("link", &links)) {
+      links = new base::ListValue;
+      entry->Set("link", links);
     }
+
+    // On the real Drive server, resources do not necessary shape a tree
+    // structure. That is, each resource can have multiple parent.
+    // We mimic the behavior here; AddResourceToDirectoy just adds
+    // one more parent link, not overwriting old links.
+    base::DictionaryValue* link = new base::DictionaryValue;
+    link->SetString("rel", "http://schemas.google.com/docs/2007#parent");
+    link->SetString(
+        "href", GetFakeLinkUrl(parent_resource_id).spec());
+    links->Append(link);
+
+    AddNewChangestamp(entry);
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, HTTP_SUCCESS));
+    return;
   }
 
   MessageLoop::current()->PostTask(

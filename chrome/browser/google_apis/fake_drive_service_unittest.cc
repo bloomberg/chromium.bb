@@ -796,11 +796,14 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInNonRootDirectory) {
   scoped_ptr<ResourceEntry> resource_entry = FindEntry(kResourceId);
   ASSERT_TRUE(resource_entry);
   // Here's the original parent link.
-  const google_apis::Link* parent_link =
-      resource_entry->GetLinkByType(Link::LINK_PARENT);
-  ASSERT_TRUE(parent_link);
+  std::vector<GURL> original_parent_urls;
+  for (size_t i = 0; i < resource_entry->links().size(); ++i) {
+    if (resource_entry->links()[i]->type() == Link::LINK_PARENT)
+      original_parent_urls.push_back(resource_entry->links()[i]->href());
+  }
+  ASSERT_EQ(1U, original_parent_urls.size());
   EXPECT_EQ(FakeDriveService::GetFakeLinkUrl("folder:1_folder_resource_id"),
-            parent_link->href());
+            original_parent_urls[0]);
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.AddResourceToDirectory(
@@ -815,10 +818,15 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInNonRootDirectory) {
   resource_entry = FindEntry(kResourceId);
   ASSERT_TRUE(resource_entry);
   // The parent link should now be changed.
-  parent_link = resource_entry->GetLinkByType(Link::LINK_PARENT);
-  ASSERT_TRUE(parent_link);
+  std::vector<GURL> new_parent_urls;
+  for (size_t i = 0; i < resource_entry->links().size(); ++i) {
+    if (resource_entry->links()[i]->type() == Link::LINK_PARENT)
+      new_parent_urls.push_back(resource_entry->links()[i]->href());
+  }
+  ASSERT_EQ(2U, new_parent_urls.size());
+  EXPECT_EQ(original_parent_urls[0], new_parent_urls[0]);
   EXPECT_EQ(FakeDriveService::GetFakeLinkUrl(kNewParentResourceId),
-            parent_link->href());
+            new_parent_urls[1]);
   // Should be incremented as a file was moved.
   EXPECT_EQ(1, fake_service_.largest_changestamp());
 }
