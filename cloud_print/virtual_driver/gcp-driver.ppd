@@ -1,62 +1,106 @@
-*PPD-Adobe: "4.3"
-*% Minmalistic PPD file for Google cloud Print.
-*FormatVersion:	"4.3"
-*FileVersion:	"1.1"
-*LanguageVersion: English
-*LanguageEncoding: ISOLatin1
-*PCFileName:	"gcp-driver.ppd"
-*Manufacturer:	"Google Inc."
-*Product:	"(CUPS v1.1)"
-*ModelName:     "GCP Virtual Driver"
-*ShortNickName: "GCP Virtual Driver"
-*NickName:      "GCP Virtual Driver"
-*1284DeviceID:  "MFG:Google Inc.;MDL:GCP Virtual Driver;DES:GCP Virtual Driver;CLS:PRINTER;CMD:POSTSCRIPT;"
-*cupsFilter:    "application/vnd.cups-pdf 0 -"
-*PSVersion:	"(2017.000) 0"
-*LanguageLevel:	"3"
-*ColorDevice:	True
-*DefaultColorSpace: RGB
-*FileSystem:	False
-*Throughput:	"8"
-*LandscapeOrientation: Plus90
-*TTRasterizer:	Type42
+*% Copyright (c) 2012 The Chromium Authors. All rights reserved.
+*% Use of this source code is governed by a BSD-style license that can be
+*% found in the LICENSE file.
 
-*OpenGroup: General/General
+*GPDFileVersion: "1.0"
+*GPDSpecVersion: "1.0"
+*Include:        "StdNames.gpd"
+*ResourceDLL:    "unires.dll"
+*ModelName:      "Google Cloud Printer"
+*MasterUnits:    PAIR(1200, 1200)
+*MaxCopies:      1
+*PrintRatePPM: 200
+*PrinterType:    PAGE
+*IsXPSDriver?:   TRUE
 
-*OpenUI *PageSize/Page Size: PickOne
-*OrderDependency: 100 AnySetup *PageSize
-*DefaultPageSize: Letter
-*PageSize Letter/US Letter: "<</PageSize[612 792]/ImagingBBox null>>setpagedevice"
-*CloseUI: *PageSize
+*Feature: ColorMode {
+  *rcNameID: =COLOR_PRINTING_MODE_DISPLAY
+  *DefaultOption: 24bpp
+  *ConcealFromUI?: TRUE
+  *Option: 24bpp {
+    *rcNameID: =24BPP_DISPLAY
+    *DevNumOfPlanes: 1
+    *DevBPP: 24
+    *DrvBPP: 24
+  }
+}
 
-*OpenUI *PageRegion: PickOne
-*OrderDependency: 100 AnySetup *PageRegion
-*DefaultPageRegion: Letter
-*PageRegion Letter/US Letter: "<</PageSize[612 792]/ImagingBBox null>>setpagedevice"
-*CloseUI: *PageRegion
+*Feature: Memory {
+  *rcNameID: =PRINTER_MEMORY_DISPLAY
+  *DefaultOption: 65536KB
+  *Option: 16384KB {
+    *Name: "16MB"
+    *MemoryConfigKB: PAIR(16384, 13950)
+  }
+  *Option: 65536KB {
+    *Name: "64MB"
+    *MemoryConfigKB: PAIR(65536, 65536)
+  }
+}
 
-*DefaultImageableArea: Letter
-*ImageableArea Letter/US Letter: "18 36 594 786"
+*Feature: Orientation {
+  *rcNameID: =ORIENTATION_DISPLAY
+  *DefaultOption: PORTRAIT
+  *Option: PORTRAIT {
+    *rcNameID: =PORTRAIT_DISPLAY
+  }
+  *Option: LANDSCAPE_CC270 {
+    *rcNameID: =LANDSCAPE_DISPLAY
+  }
+}
 
-*DefaultPaperDimension: Letter
-*PaperDimension Letter/US Letter: "612 792"
+*Feature: PaperSize {
+  *rcNameID: =PAPER_SIZE_DISPLAY
+  *DefaultOption: LETTER
 
-*CloseGroup: General
+  *Option: A4 {
+    *rcNameID: =RCID_DMPAPER_SYSTEM_NAME
+    *switch: Orientation {
+      *case: PORTRAIT {
+        *PrintableArea: PAIR(9921, 14031)
+        *PrintableOrigin: PAIR(0, 0)
+        *CursorOrigin: PAIR(0, 0)
+      }
+      *case: LANDSCAPE_CC270 {
+        *PrintableArea: PAIR(14031, 9921)
+        *PrintableOrigin: PAIR(0, 0)
+        *CursorOrigin: PAIR(0, 0)
+      }
+    }
+  }
 
-*% List of 14 standard fonts and their common version numbers.
+  *Option: LETTER {
+  *rcNameID: =RCID_DMPAPER_SYSTEM_NAME
+  *switch: Orientation {
+    *case: PORTRAIT {
+        *PrintableArea: PAIR(10200, 13200)
+        *PrintableOrigin: PAIR(0, 0)
+        *CursorOrigin: PAIR(0, 0)
+      }
+      *case: LANDSCAPE_CC270 {
+        *PrintableArea: PAIR(13200, 10200)
+        *PrintableOrigin: PAIR(0, 0)
+        *CursorOrigin: PAIR(0, 0)
+      }
+    }
+  }
+}
 
-*DefaultFont: Courier
-*Font Courier: Standard "(002.004S)" Standard ROM
-*Font Courier-Bold: Standard "(002.004S)" Standard ROM
-*Font Courier-BoldOblique: Standard "(002.004S)" Standard ROM
-*Font Courier-Oblique: Standard "(002.004S)" Standard ROM
-*Font Helvetica: Standard "(001.006S)" Standard ROM
-*Font Helvetica-Bold: Standard "(001.007S)" Standard ROM
-*Font Helvetica-BoldOblique: Standard "(001.007S)" Standard ROM
-*Font Helvetica-Oblique: Standard "(001.006S)" Standard ROM
-*Font Symbol: Special "(001.007S)" Special ROM
-*Font Times-Bold: Standard "(001.007S)" Standard ROM
-*Font Times-BoldItalic: Standard "(001.009S)" Standard ROM
-*Font Times-Italic: Standard "(001.007S)" Standard ROM
-*Font Times-Roman: Standard "(001.007S)" Standard ROM
-*Font ZapfDingbats: Special "(001.004S)" Standard ROM
+*Feature: Resolution {
+  *rcNameID: =RESOLUTION_DISPLAY
+  *DefaultOption: 600dpi
+
+  *Option: 600dpi {
+    *Name: "600 x 600 " =DOTS_PER_INCH
+    *DPI: PAIR(600, 600)
+    *TextDPI: PAIR(600, 600)
+    *SpotDiameter: 100
+    *Command: CmdBeginRaster { *Cmd : "<1B>*v7S<1B>*r1A" }
+    *Command: CmdEndRaster { *Cmd : "<1B>*rC" }
+    *Command: CmdSendBlockData { *Cmd : "<1B>*b" %d{NumOfDataBytes}"W" }
+  }
+}
+
+*Command: CmdCR { *Cmd : "<0D>" }
+*Command: CmdLF { *Cmd : "<0A>" }
+*Command: CmdFF { *Cmd : "<0C>" }

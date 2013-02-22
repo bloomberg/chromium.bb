@@ -17,6 +17,7 @@
 #include "base/process.h"
 #include "base/process_util.h"
 #include "base/string16.h"
+#include "base/string_util.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
@@ -28,19 +29,32 @@
                       // warnings.
 
 namespace {
+
 const wchar_t kVersionKey[] = L"pv";
 const wchar_t kNameKey[] = L"name";
 const wchar_t kNameValue[] = L"GCP Virtual Driver";
-const wchar_t kPpdName[] = L"gcp-driver.ppd";
-const wchar_t kDriverName[] = L"MXDWDRV.DLL";
-const wchar_t kUiDriverName[] = L"PS5UI.DLL";
-const wchar_t kHelpName[] = L"PSCRIPT.HLP";
-const wchar_t* kDependencyList[] = {kDriverName, kUiDriverName, kHelpName};
 const wchar_t kUninstallRegistry[] =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\"
     L"{74AA24E0-AC50-4B28-BA46-9CF05467C9B7}";
 const wchar_t kInstallerName[] = L"virtual_driver_setup.exe";
 const wchar_t kGcpUrl[] = L"http://www.google.com/cloudprint";
+
+const wchar_t kDataFileName[] = L"gcp-driver.ppd";
+const wchar_t kDriverName[] = L"MXDWDRV.DLL";
+const wchar_t kUiDriverName[] = L"UNIDRVUI.DLL";
+const wchar_t kHelpName[] = L"UNIDRV.HLP";
+const wchar_t* kDependencyList[] = {
+  kDriverName,
+  kHelpName,
+  kUiDriverName,
+  L"STDDTYPE.GDL",
+  L"STDNAMES.GPD",
+  L"STDSCHEM.GDL",
+  L"STDSCHMX.GDL",
+  L"UNIDRV.DLL",
+  L"UNIRES.DLL",
+  L"XPSSVCS.DLL",
+};
 
 const char kDelete[] = "delete";
 const char kInstallSwitch[] = "install";
@@ -231,7 +245,6 @@ UINT CALLBACK CabinetCallback(PVOID data,
         return FILEOP_DOIT;
       }
     }
-
     return FILEOP_SKIP;
   }
   return NO_ERROR;
@@ -270,26 +283,38 @@ void ReadyPpdDependencies(const base::FilePath& destination) {
 }
 
 HRESULT InstallPpd(const base::FilePath& install_path) {
-  DRIVER_INFO_6 driver_info = {0};
-  HRESULT result = S_OK;
-
   base::ScopedTempDir temp_path;
   if (!temp_path.CreateUniqueTempDir())
     return HRESULT_FROM_WIN32(ERROR_CANNOT_MAKE);
   ReadyPpdDependencies(temp_path.path());
 
   // Set up paths for the files we depend on.
-  base::FilePath ppd_path = install_path.Append(kPpdName);
+  base::FilePath data_file = install_path.Append(kDataFileName);
   base::FilePath xps_path = temp_path.path().Append(kDriverName);
   base::FilePath ui_path = temp_path.path().Append(kUiDriverName);
   base::FilePath ui_help_path = temp_path.path().Append(kHelpName);
 
+  DRIVER_INFO_6 driver_info = {0};
+  // Set up supported print system version.  Must be 3.
+  driver_info.cVersion = 3;
+
   // None of the print API structures likes constant strings even though they
   // don't modify the string.  const_casting is the cleanest option.
-  driver_info.pDataFile = const_cast<LPWSTR>(ppd_path.value().c_str());
+  driver_info.pDataFile = const_cast<LPWSTR>(data_file.value().c_str());
   driver_info.pHelpFile = const_cast<LPWSTR>(ui_help_path.value().c_str());
   driver_info.pDriverPath = const_cast<LPWSTR>(xps_path.value().c_str());
   driver_info.pConfigFile = const_cast<LPWSTR>(ui_path.value().c_str());
+
+  std::vector<string16> dependent_array;
+  // Add all files. AddPrinterDriverEx will removes unnecessary.
+  for (size_t i = 0; i < arraysize(kDependencyList); ++i) {
+    dependent_array.push_back(
+        temp_path.path().Append(kDependencyList[i]).value());
+  }
+  string16 dependent_files(JoinString(dependent_array, L'\n'));
+  dependent_files.push_back(L'\n');
+  std::replace(dependent_files.begin(), dependent_files.end(), L'\n', L'\0');
+  driver_info.pDependentFiles = &dependent_files[0];
 
   // Set up user visible strings.
   string16 manufacturer = cloud_print::LoadLocalString(IDS_GOOGLE);
@@ -300,15 +325,12 @@ HRESULT InstallPpd(const base::FilePath& install_path) {
   string16 driver_name = cloud_print::LoadLocalString(IDS_DRIVER_NAME);
   driver_info.pName = const_cast<LPWSTR>(driver_name.c_str());
 
-  // Set up supported print system version.  Must be 3.
-  driver_info.cVersion = 3;
-
-  if (!AddPrinterDriverEx(NULL, 6, reinterpret_cast<BYTE*>(&driver_info),
-                          APD_COPY_NEW_FILES | APD_COPY_FROM_DIRECTORY)) {
-    result = cloud_print::GetLastHResult();
+  if (!::AddPrinterDriverEx(NULL, 6, reinterpret_cast<BYTE*>(&driver_info),
+                            APD_COPY_NEW_FILES | APD_COPY_FROM_DIRECTORY)) {
     LOG(ERROR) << "Unable to add printer driver";
+    return cloud_print::GetLastHResult();
   }
-  return result;
+  return S_OK;
 }
 
 HRESULT UninstallPpd() {
