@@ -581,6 +581,16 @@ class InstructionPrinter(object):
       self._out.write('@instruction_%s\n' % instruction.GetNameAsIdentifier())
       self._out.write('@operands_count_is_%d\n' % len(instruction.operands))
 
+      # For some instructions legacy prefixes are actually part of opcode,
+      # in such cases we conventionally refer to them as literal bytes ('0x66'
+      # instead of 'data16'). Disassembler should not print prefixes themselves.
+      if '0x66' in instruction.required_prefixes:
+        self._out.write('@not_data16_prefix\n')
+      if '0xf2' in instruction.required_prefixes:
+        self._out.write('@not_repnz_prefix\n')
+      if '0xf3' in instruction.required_prefixes:
+        self._out.write('@not_repz_prefix\n')
+
     # TODO(shcherbina): 'memory' format?
     for operand in instruction.operands:
       if self._NeedOperandInfo(operand):
