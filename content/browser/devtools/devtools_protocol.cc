@@ -184,7 +184,7 @@ DevToolsProtocol::Command* DevToolsProtocol::ParseCommand(
 
   size_t pos = method.find(".");
   if (pos == std::string::npos || pos == 0) {
-    Response response(kNoId, kErrorNoSuchMethod, "No such method");
+    Response response(id, kErrorNoSuchMethod, "No such method");
     *error_response = response.Serialize();
     return NULL;
   }
