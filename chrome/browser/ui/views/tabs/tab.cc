@@ -510,18 +510,15 @@ void Tab::SetData(const TabRendererData& data) {
       StartCrashAnimation();
 #endif
     }
+
   } else if ((data_.capture_state == TabRendererData::CAPTURE_STATE_NONE) &&
              (old.capture_state != TabRendererData::CAPTURE_STATE_NONE)) {
     StopRecordingAnimation();
+
   } else if ((data_.capture_state != TabRendererData::CAPTURE_STATE_NONE) &&
              (old.capture_state == TabRendererData::CAPTURE_STATE_NONE)) {
     StartRecordingAnimation();
-  } else if ((data_.audio_state == TabRendererData::AUDIO_STATE_NONE) &&
-             (old.audio_state != TabRendererData::AUDIO_STATE_NONE)) {
-    StopAudioPlayingAnimation();
-  } else if ((data_.audio_state != TabRendererData::AUDIO_STATE_NONE) &&
-             (old.audio_state == TabRendererData::AUDIO_STATE_NONE)) {
-    StartAudioPlayingAnimation();
+
   } else {
     if (IsPerformingCrashAnimation())
       StopCrashAnimation();
@@ -1368,8 +1365,7 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
     int icon_size = frames.height();
     int image_offset = loading_animation_frame_ * icon_size;
     DrawIconCenter(canvas, frames, image_offset,
-                   icon_size, icon_size,
-                   bounds, false, SkPaint());
+                   icon_size, icon_size, bounds, false, SkPaint());
     return;
   }
 
@@ -1382,8 +1378,7 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
     bounds.set_y(bounds.y() + favicon_hiding_offset_);
     DrawIconCenter(canvas, crashed_favicon, 0,
                     crashed_favicon.width(),
-                    crashed_favicon.height(),
-                    bounds, true, SkPaint());
+                    crashed_favicon.height(), bounds, true, SkPaint());
   } else {
     if (!data().favicon.isNull()) {
       if (data().capture_state == TabRendererData::CAPTURE_STATE_PROJECTING) {
@@ -1403,38 +1398,25 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
         resized_bounds.set_y(resized_bounds.y() - 1);
 
         DrawIconCenter(canvas, resized_icon, 0,
-                       resized_icon.width(),
-                       resized_icon.height(),
-                       resized_bounds, true, SkPaint());
+                        resized_icon.width(),
+                        resized_icon.height(),
+                        resized_bounds, true, SkPaint());
 
         ui::ThemeProvider* tp = GetThemeProvider();
         gfx::ImageSkia projection_screen(
             *tp->GetImageSkiaNamed(IDR_TAB_CAPTURE));
-        DrawIconCenter(canvas, projection_screen, 0,
-                       data().favicon.width(),
-                       data().favicon.height(),
-                       bounds, true, SkPaint());
-      } else {
-        DrawIconCenter(canvas, data().favicon, 0,
-                       data().favicon.width(),
-                       data().favicon.height(),
-                       bounds, true, SkPaint());
 
-        if (data().audio_state == TabRendererData::AUDIO_STATE_PLAYING) {
-          // If audio is playing, we draw on top of the icon the
-          // current equalizer animiation frame.
-          ui::ThemeProvider* tp = GetThemeProvider();
-          gfx::ImageSkia equalizer(*tp->GetImageSkiaNamed(IDR_AUDIO_ANIMATION));
-          int icon_size = equalizer.height();
-          int number_of_frames = equalizer.width() / icon_size;
-          int frame = static_cast<int>(
-              icon_animation_->GetCurrentValue() * number_of_frames);
-          int image_offset = frame * icon_size;
-          DrawIconAtLocation(canvas, equalizer, image_offset,
-                             bounds.x(), bounds.y() + 1,
-                             icon_size, icon_size,
-                             false, SkPaint());
-        }
+        DrawIconCenter(canvas, projection_screen, 0,
+                        data().favicon.width(),
+                        data().favicon.height(),
+                        bounds, true, SkPaint());
+      } else {
+        // TODO(pkasting): Use code in tab_icon_view.cc:PaintIcon() (or switch
+        // to using that class to render the favicon).
+        DrawIconCenter(canvas, data().favicon, 0,
+                        data().favicon.width(),
+                        data().favicon.height(),
+                        bounds, true, SkPaint());
       }
     }
   }
@@ -1615,21 +1597,6 @@ void Tab::StartRecordingAnimation() {
 }
 
 void Tab::StopRecordingAnimation() {
-  if (!icon_animation_.get())
-    return;
-  icon_animation_->Stop();
-  icon_animation_.reset();
-}
-
-void Tab::StartAudioPlayingAnimation() {
-  ui::ThrobAnimation* animation = new ui::ThrobAnimation(this);
-  animation->SetTweenType(ui::Tween::LINEAR);
-  animation->SetThrobDuration(2000);
-  animation->StartThrobbing(-1);
-  icon_animation_.reset(animation);
-}
-
-void Tab::StopAudioPlayingAnimation() {
   if (!icon_animation_.get())
     return;
   icon_animation_->Stop();

@@ -244,9 +244,6 @@ class Tab : public ui::AnimationDelegate,
   void StartRecordingAnimation();
   void StopRecordingAnimation();
 
-  void StartAudioPlayingAnimation();
-  void StopAudioPlayingAnimation();
-
   // Returns true if the crash animation is currently running.
   bool IsPerformingCrashAnimation() const;
 
