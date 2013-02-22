@@ -336,6 +336,28 @@ TEST_F(UDPSocketTest, ConnectRandomBind) {
   STLDeleteElements(&sockets);
 }
 
+// Return a privileged port (under 1024) so binding will fail.
+int PrivilegedRand(int min, int max) {
+  // Chosen by fair dice roll.  Guaranteed to be random.
+  return 4;
+}
+
+TEST_F(UDPSocketTest, ConnectFail) {
+  IPEndPoint peer_address;
+  CreateUDPAddress("0.0.0.0", 53, &peer_address);
+
+  scoped_ptr<UDPSocket> socket(
+      new UDPSocket(DatagramSocket::RANDOM_BIND,
+                    base::Bind(&PrivilegedRand),
+                    NULL,
+                    NetLog::Source()));
+  int rv = socket->Connect(peer_address);
+  // Connect should have failed since we couldn't bind to that port,
+  EXPECT_NE(OK, rv);
+  // Make sure that UDPSocket actually closed the socket.
+  EXPECT_FALSE(socket->is_connected());
+}
+
 // In this test, we verify that connect() on a socket will have the effect
 // of filtering reads on this socket only to data read from the destination
 // we connected to.
