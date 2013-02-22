@@ -23,6 +23,9 @@ cr.define('login', function() {
     // Current UI state of the sign-in screen.
     signinUIState_: SIGNIN_UI_STATE.HIDDEN,
 
+    // Whether to show kiosk apps menu.
+    hasApps_: false,
+
     /** @override */
     decorate: function() {
       $('shutdown-header-bar-item').addEventListener('click',
@@ -39,6 +42,11 @@ cr.define('login', function() {
           this.handleGuestClick_);
       $('sign-out-user-button').addEventListener('click',
           this.handleSignoutClick_);
+
+      if (templateData['enableAppMode'] &&
+          templateData['screenType'] == 'login') {
+        login.AppsMenuButton.decorate($('show-apps-button'));
+      }
     },
 
     /**
@@ -151,6 +159,15 @@ cr.define('login', function() {
     },
 
     /**
+     * Update whether there are kiosk apps.
+     * @type {boolean}
+     */
+    set hasApps(value) {
+      this.hasApps_ = value;
+      this.updateUI_();
+    },
+
+    /**
      * Updates visibility state of action buttons.
      * @private
      */
@@ -173,6 +190,8 @@ cr.define('login', function() {
           wrongHWIDWarningIsActive;
       $('add-user-header-bar-item').hidden =
           $('add-user-button').hidden && $('cancel-add-user-button').hidden;
+      $('apps-header-bar-item').hidden = !this.hasApps_ ||
+          (!gaiaIsActive && !accountPickerIsActive);
     },
 
     /**

@@ -23,6 +23,7 @@ namespace chromeos {
 class BaseScreenHandler;
 class CoreOobeHandler;
 class ErrorScreenHandler;
+class KioskAppMenuHandler;
 class NativeWindowDelegate;
 class NetworkStateInformer;
 class SigninScreenHandler;
@@ -150,6 +151,8 @@ class OobeUI : public OobeDisplay,
   UserImageScreenActor* user_image_screen_actor_;
 
   std::vector<BaseScreenHandler*> handlers_;  // Non-owning pointers.
+
+  KioskAppMenuHandler* kiosk_app_menu_handler_;  // Non-owning pointers.
 
   // Id of the current oobe/login screen.
   Screen current_screen_;

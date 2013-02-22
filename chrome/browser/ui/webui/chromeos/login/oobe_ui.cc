@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/enterprise_oauth_enrollment_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/kiosk_app_menu_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
@@ -156,6 +157,7 @@ OobeUI::OobeUI(content::WebUI* web_ui)
       signin_screen_handler_(NULL),
       terms_of_service_screen_actor_(NULL),
       user_image_screen_actor_(NULL),
+      kiosk_app_menu_handler_(NULL),
       current_screen_(SCREEN_UNKNOWN) {
   InitializeScreenMaps();
 
@@ -212,6 +214,10 @@ OobeUI::OobeUI(content::WebUI* web_ui)
   signin_screen_handler_ = new SigninScreenHandler(network_state_informer_,
                                                    error_screen_handler_);
   AddScreenHandler(signin_screen_handler_);
+
+  // Initialize KioskAppMenuHandler. Note that it is NOT a screen handler.
+  kiosk_app_menu_handler_ = new KioskAppMenuHandler;
+  web_ui->AddMessageHandler(kiosk_app_menu_handler_);
 
   network_state_informer_->SetDelegate(signin_screen_handler_);
 
@@ -293,6 +299,7 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   for (size_t i = 0; i < handlers_.size(); ++i)
     handlers_[i]->GetLocalizedStrings(localized_strings);
   webui::SetFontAndTextDirection(localized_strings);
+  kiosk_app_menu_handler_->GetLocalizedStrings(localized_strings);
 
 #if defined(GOOGLE_CHROME_BUILD)
   localized_strings->SetString("buildType", "chrome");
