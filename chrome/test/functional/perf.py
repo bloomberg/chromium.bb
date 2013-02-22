@@ -2299,6 +2299,7 @@ class PageCyclerReplay(object):
           '--enable-experimental-extension-apis',
           '--enable-logging',
           '--enable-benchmarking',
+          '--enable-net-benchmarking',
           '--metrics-recording-only',
           '--activate-on-launch',
           '--no-first-run',
