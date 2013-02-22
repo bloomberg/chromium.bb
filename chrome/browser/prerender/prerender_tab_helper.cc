@@ -30,6 +30,7 @@ namespace prerender {
 class PrerenderTabHelper::PixelStats {
  public:
   explicit PixelStats(PrerenderTabHelper* tab_helper) :
+      bitmap_web_contents_(NULL),
       weak_factory_(this),
       tab_helper_(tab_helper) {
   }
