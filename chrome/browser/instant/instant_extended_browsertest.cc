@@ -437,7 +437,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ProcessIsolation) {
 // a tab uses a new BrowsingInstance, to avoid conflicts in the
 // NavigationController.
 // Disabled on ChromeOS for flaky failures: crbug.com/177516
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
 #define MAYBE_UnrelatedSiteInstance DISABLED_UnrelatedSiteInstance
 #else
 #define MAYBE_UnrelatedSiteInstance UnrelatedSiteInstance
