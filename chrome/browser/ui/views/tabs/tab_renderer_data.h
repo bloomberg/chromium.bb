@@ -29,6 +29,13 @@ struct TabRendererData {
     CAPTURE_STATE_PROJECTING
   };
 
+  // Audio playing state of this tab. If muting is added this is where it
+  // should go.
+  enum AudioState {
+    AUDIO_STATE_NONE,
+    AUDIO_STATE_PLAYING
+  };
+
   TabRendererData();
   ~TabRendererData();
 
@@ -56,6 +63,7 @@ struct TabRendererData {
   bool blocked;
   bool app;
   CaptureState capture_state;
+  AudioState audio_state;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_RENDERER_DATA_H_
