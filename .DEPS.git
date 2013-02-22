@@ -12,23 +12,23 @@ vars = {
 
 deps = {
     'native_client/tools/perf_expectations':
-        Var('git_url') + '/chromium/src/tools/perf_expectations.git@c86fef0280ffe5b75dafd3b69f8f67a074dd4459',
+        Var('git_url') + '/chromium/src/tools/perf_expectations.git@32581063c565427d521bd19a291ddb80ea10e1d0',
     'testing/gtest':
-        Var('git_url') + '/external/googletest.git@a92a6f792395e1ad462472d474ab0c76949813fa',
+        Var('git_url') + '/external/googletest.git@a6772271f71672e889776bfe49ec4efd9da036df',
     'third_party':
         Var('git_url') + '/native_client/src/third_party.git@c3603e1b117444b7f0ed86e85157088a632fa985',
     'third_party/asan':
-        Var('git_url') + '/chromium/deps/asan.git@245a68a0347562da54e3e5881010f55a994c783f',
+        Var('git_url') + '/chromium/deps/asan.git@712c6329f0a76ba4d6aa45c4060009e3abb068c1',
     'third_party/lcov':
         Var('git_url') + '/chromium/src/third_party/lcov.git@ba4a791b2b525fc13d169b4cc671dede09bbfb64',
     'third_party/lss':
         Var('git_url') + '/external/linux-syscall-support/lss.git@8dce3586424b5811ca0c8c1938bc7d0826558e77',
     'tools/clang':
-        Var('git_url') + '/chromium/src/tools/clang.git@c230083d393a40cb8d6b6d4d745a77c1a6d8b555',
+        Var('git_url') + '/chromium/src/tools/clang.git@849f7d684336b8ff68163f528953ca4297d9caaf',
     'tools/gyp':
-        Var('git_url') + '/external/gyp.git@cb7a494ec635b2e8691af06ae557ed637e4e82f5',
+        Var('git_url') + '/external/gyp.git@1dde5400da286b65346f70da2dee4e1fbbe70b16',
     'tools/valgrind':
-        Var('git_url') + '/chromium/src/tools/valgrind.git@4cf074f2d2291065b4df2a7c60f5f632631ed2e7',
+        Var('git_url') + '/chromium/src/tools/valgrind.git@0cc2dde8f6af68831d4c12d20be8235586bbba3a',
     'validator_snapshots':
         Var('git_url') + '/native_client/src/validator_snapshots.git@4c1ea6b6ebe020993b0a091fd4e38a6487704b60',
 }
