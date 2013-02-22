@@ -760,8 +760,12 @@ void ResourceProvider::receiveFromParent(const TransferableResourceList& resourc
         DCHECK(resource->exported);
         resource->exported = false;
         DCHECK(resource->mailbox.Equals(it->mailbox));
-        GLC(context3d, context3d->bindTexture(GL_TEXTURE_2D, resource->glId));
-        GLC(context3d, context3d->consumeTextureCHROMIUM(GL_TEXTURE_2D, it->mailbox.name));
+        if (resource->glId) {
+          GLC(context3d, context3d->bindTexture(GL_TEXTURE_2D, resource->glId));
+          GLC(context3d, context3d->consumeTextureCHROMIUM(GL_TEXTURE_2D, it->mailbox.name));
+        } else {
+          resource->mailbox = TextureMailbox(resource->mailbox.name(), resource->mailbox.callback(), resources.sync_point);
+        }
         if (resource->markedForDeletion)
             deleteResourceInternal(mapIterator);
     }
@@ -791,8 +795,13 @@ bool ResourceProvider::transferResource(WebGraphicsContext3D* context, ResourceI
     } else
         resource->mailbox = source->mailbox.name();
 
-    GLC(context, context->bindTexture(GL_TEXTURE_2D, source->glId));
-    GLC(context, context->produceTextureCHROMIUM(GL_TEXTURE_2D, resource->mailbox.name));
+    if (source->glId) {
+        GLC(context, context->bindTexture(GL_TEXTURE_2D, source->glId));
+        GLC(context, context->produceTextureCHROMIUM(GL_TEXTURE_2D, resource->mailbox.name));
+    } else if (source->mailbox.sync_point()) {
+        GLC(context3d, context3d->waitSyncPoint(source->mailbox.sync_point()));
+        source->mailbox.ResetSyncPoint();
+    }
     return true;
 }
 
