@@ -150,32 +150,48 @@ class ExtensionIconLoaderBridge : public extensions::IconImage::Observer {
   // Leave some space at the bottom of the menu.
   CGFloat yOffset = kVerticalPadding;
 
+  // Keep track of a potential separator to resize it when we know the width.
+  scoped_nsobject<NSBox> separatorView;
+
   // Loop over the items in reverse, constructing the menu items.
   CGFloat width = kBubbleMinWidth;
   CGFloat minX = NSMinX([contentView bounds]);
   for (int i = model_->GetItemCount() - 1; i >= 0; --i) {
-    // Create the item controller. Autorelease it because it will be owned
-    // by the |items_| array.
-    scoped_nsobject<ActionBoxMenuItemController> itemController(
-        [[ActionBoxMenuItemController alloc]
-            initWithModelIndex:i
-                menuController:self
-                       profile:profile_]);
+    if (model_->GetTypeAt(i) == ui::MenuModel::TYPE_SEPARATOR) {
+      // Only supports one separator.
+      DCHECK(!separatorView);
+      yOffset += kVerticalPadding;
+      separatorView.reset([[NSBox alloc]
+          initWithFrame:NSMakeRect(0, yOffset, width, 1)]);
+      [separatorView setBorderType:NSNoBorder];
+      [separatorView setBoxType:NSBoxCustom];
+      [separatorView setFillColor:[NSColor grayColor]];
+      [contentView addSubview:separatorView];
+      yOffset += kVerticalPadding;
+    } else {
+      // Create the item controller. Autorelease it because it will be owned
+      // by the |items_| array.
+      scoped_nsobject<ActionBoxMenuItemController> itemController(
+          [[ActionBoxMenuItemController alloc]
+              initWithModelIndex:i
+                  menuController:self
+                         profile:profile_]);
 
-    // Adjust the name field to fit the string.
-    [GTMUILocalizerAndLayoutTweaker sizeToFitView:[itemController nameField]];
+      // Adjust the name field to fit the string.
+      [GTMUILocalizerAndLayoutTweaker sizeToFitView:[itemController nameField]];
 
-    // Expand the size of the window if required to fit the menu item.
-    width = std::max(width,
-        NSMaxX([[itemController nameField] frame]) - minX + kRightMargin);
+      // Expand the size of the window if required to fit the menu item.
+      width = std::max(width,
+          NSMaxX([[itemController nameField] frame]) - minX + kRightMargin);
 
-    // Add the item to the content view.
-    [[itemController view] setFrameOrigin:NSMakePoint(0, yOffset)];
-    [contentView addSubview:[itemController view]];
-    yOffset += NSHeight([[itemController view] frame]);
+      // Add the item to the content view.
+      [[itemController view] setFrameOrigin:NSMakePoint(0, yOffset)];
+      [contentView addSubview:[itemController view]];
+      yOffset += NSHeight([[itemController view] frame]);
 
-    // Keep track of the view controller.
-    [items_ addObject:itemController.get()];
+      // Keep track of the view controller.
+      [items_ addObject:itemController.get()];
+    }
   }
 
   // Leave some space at the top of the menu.
@@ -185,6 +201,14 @@ class ExtensionIconLoaderBridge : public extensions::IconImage::Observer {
   NSRect frame = [[self window] frame];
   frame.size.height = yOffset;
   frame.size.width = std::min(width, kBubbleMaxWidth);
+
+  // Resize the separator to full width.
+  if (separatorView) {
+    NSRect separatorFrame = [separatorView frame];
+    separatorFrame.size.width = width;
+    [separatorView setFrame:separatorFrame];
+  }
+
   [[self window] setFrame:frame display:YES];
 }
 

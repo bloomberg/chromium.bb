@@ -20,25 +20,6 @@ namespace {
 const CGFloat kAnchorPointX = 400;
 const CGFloat kAnchorPointY = 300;
 
-const int kExtension1CommandId = 0;
-const int kExtension2CommandId = 1;
-
-scoped_refptr<extensions::Extension> CreatePageLauncherExtension(
-    std::string title) {
-  return
-      extensions::ExtensionBuilder()
-      .SetManifest(extensions::DictionaryBuilder()
-                   .Set("name", "Extension with page launcher")
-                   .Set("version", "1.0.0")
-                   .Set("manifest_version", 2)
-                   .Set("page_launcher", extensions::DictionaryBuilder()
-                        .Set("default_title", title))
-                   .Set("app", extensions::DictionaryBuilder()
-                       .Set("background", extensions::DictionaryBuilder()
-                           .Set("page", ""))))
-      .Build();
-}
-
 class MenuDelegate : public ui::SimpleMenuModel::Delegate {
  public:
   // Methods for determining the state of specific command ids.
@@ -72,17 +53,10 @@ class ActionBoxMenuBubbleControllerTest : public CocoaProfileTest {
     extensions::TestExtensionSystem* test_ext_system =
         static_cast<extensions::TestExtensionSystem*>(
                 extensions::ExtensionSystem::Get(profile()));
-    ExtensionService* service = test_ext_system->CreateExtensionService(
+    service_ = test_ext_system->CreateExtensionService(
         &command_line, base::FilePath(), false);
-    EXPECT_TRUE(service->extensions_enabled());
-    service->Init();
-
-    // Make some fake extensions.
-    extension1 = CreatePageLauncherExtension("Launch extension 1");
-    service->AddExtension(extension1);
-
-    extension2 = CreatePageLauncherExtension("Launch extension 2");
-    service->AddExtension(extension2);
+    EXPECT_TRUE(service_->extensions_enabled());
+    service_->Init();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -91,6 +65,30 @@ class ActionBoxMenuBubbleControllerTest : public CocoaProfileTest {
     CocoaProfileTest::TearDown();
   }
 
+  // Add an extension with a page_launcher to the model and the extension
+  // service. Call this before calling CreateController.
+  scoped_refptr<extensions::Extension> AddPageLauncherExtension(
+      ActionBoxMenuModel* model,
+      const std::string& page_launcher_title,
+      int command_id) {
+    scoped_refptr<extensions::Extension> extension =
+        extensions::ExtensionBuilder()
+        .SetManifest(extensions::DictionaryBuilder()
+                     .Set("name", "Extension with page launcher")
+                     .Set("version", "1.0.0")
+                     .Set("manifest_version", 2)
+                     .Set("page_launcher", extensions::DictionaryBuilder()
+                          .Set("default_title", page_launcher_title))
+                     .Set("app", extensions::DictionaryBuilder()
+                         .Set("background", extensions::DictionaryBuilder()
+                             .Set("page", ""))))
+        .Build();
+    service_->AddExtension(extension);
+    model->AddExtension(*extension, command_id);
+    return extension;
+  }
+
+  // Creates a controller based on |model|. Takes ownership of |model|.
   void CreateController(scoped_ptr<ActionBoxMenuModel> model) {
     // The bubble controller will release itself when the window closes.
     controller_ = [[ActionBoxMenuBubbleController alloc]
@@ -102,20 +100,32 @@ class ActionBoxMenuBubbleControllerTest : public CocoaProfileTest {
     [controller_ showWindow:nil];
   }
 
+  // Checks that the controller's view contains at least one separator subview
+  // and that it has full width.
+  void EnsureSeparatorHasCorrectWidth() {
+    bool found = false;
+    for (id view in [[[controller_ window] contentView] subviews]) {
+      // Assume all NSBox subviews are separators.
+      if ([view isKindOfClass:[NSBox class]]) {
+        found = true;
+        ASSERT_EQ(NSWidth([[controller_ window] frame]),
+                  NSWidth([view bounds]));
+      }
+    }
+    ASSERT_TRUE(found);
+  }
+
  public:
   ActionBoxMenuBubbleController* controller_;
   MenuDelegate menu_delegate_;
-
-  scoped_refptr<extensions::Extension> extension1;
-  scoped_refptr<extensions::Extension> extension2;
+  ExtensionService* service_;
 };
 
 TEST_F(ActionBoxMenuBubbleControllerTest, CreateMenuWithExtensions) {
   scoped_ptr<ActionBoxMenuModel> model(new ActionBoxMenuModel(
       browser(), &menu_delegate_));
-  model->AddExtension(*extension1, kExtension1CommandId);
-  model->AddExtension(*extension2, kExtension2CommandId);
-
+  AddPageLauncherExtension(model.get(), "Launch extension 1", 0);
+  AddPageLauncherExtension(model.get(), "Launch extension 2", 1);
   CreateController(model.Pass());
 
   // Ensure extensions are there and in the right order.
@@ -142,6 +152,31 @@ TEST_F(ActionBoxMenuBubbleControllerTest, CreateMenuWithExtensions) {
   ASSERT_NE(-1, extension1Index);
   ASSERT_NE(-1, extension2Index);
   ASSERT_EQ(extension1Index, extension2Index - 1);
+}
+
+TEST_F(ActionBoxMenuBubbleControllerTest, CheckSeparatorWithShortExtensions) {
+  scoped_ptr<ActionBoxMenuModel> model(new ActionBoxMenuModel(
+      browser(), &menu_delegate_));
+  AddPageLauncherExtension(model.get(), "Short", 0);
+  CreateController(model.Pass());
+
+  // The width of the menu is dictated by the widest item which in this case
+  // is going to be "Bookmark this page", which comes before the separator.
+  // Ensure that, in this case, the separator has the full width.
+  EnsureSeparatorHasCorrectWidth();
+}
+
+TEST_F(ActionBoxMenuBubbleControllerTest, CheckSeparatorWithLongExtensions) {
+  scoped_ptr<ActionBoxMenuModel> model(new ActionBoxMenuModel(
+      browser(), &menu_delegate_));
+  AddPageLauncherExtension(model.get(),
+      "This is a long page launcher extension title...", 0);
+  CreateController(model.Pass());
+
+  // The width of the menu is dictated by the widest item which in this case
+  // is going to be the extension, which comes after the separator. Ensure that,
+  // in this case, the separator has the full width.
+  EnsureSeparatorHasCorrectWidth();
 }
 
 }  // namespace
