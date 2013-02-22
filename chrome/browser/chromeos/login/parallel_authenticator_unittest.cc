@@ -50,7 +50,7 @@ class TestOnlineAttempt : public OnlineAttempt {
  public:
   TestOnlineAttempt(AuthAttemptState* state,
                     AuthAttemptStateResolver* resolver)
-      : OnlineAttempt(false, state, resolver) {
+      : OnlineAttempt(state, resolver) {
   }
 };
 

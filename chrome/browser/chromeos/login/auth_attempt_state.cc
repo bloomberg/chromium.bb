@@ -138,11 +138,4 @@ cryptohome::MountError AuthAttemptState::cryptohome_code() {
   return cryptohome_code_;
 }
 
-void AuthAttemptState::SetOAuth1Token(const std::string& token,
-                                      const std::string& secret) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  oauth1_access_token_ = token;
-  oauth1_access_secret_ = secret;
-}
-
 }  // namespace chromeos

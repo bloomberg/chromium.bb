@@ -13,8 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
-#include "chrome/browser/net/gaia/gaia_oauth_consumer.h"
-#include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
@@ -26,11 +24,9 @@ class AuthAttemptState;
 class AuthAttemptStateResolver;
 
 class OnlineAttempt
-    : public GaiaAuthConsumer,
-      public GaiaOAuthConsumer {
+    : public GaiaAuthConsumer {
  public:
-  OnlineAttempt(bool using_oauth,
-                AuthAttemptState* current_attempt,
+  OnlineAttempt(AuthAttemptState* current_attempt,
                 AuthAttemptStateResolver* callback);
   virtual ~OnlineAttempt();
 
@@ -45,13 +41,6 @@ class OnlineAttempt
       const GoogleServiceAuthError& error) OVERRIDE;
   virtual void OnClientLoginSuccess(
       const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE;
-
-  // GaiaOAuthConsumer overrides. Callbacks from GaiaOAuthFetcher.
-  virtual void OnOAuthLoginSuccess(const std::string& sid,
-                                   const std::string& lsid,
-                                   const std::string& auth) OVERRIDE;
-  virtual void OnOAuthLoginFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(OnlineAttemptTest, LoginSuccess);
@@ -68,16 +57,11 @@ class OnlineAttempt
   bool HasPendingFetch();
   void CancelRequest();
 
-  // True if we use GAIA extension to perform authentication.
-  bool using_oauth_;
-
   AuthAttemptState* const attempt_;
   AuthAttemptStateResolver* const resolver_;
 
   // Handles ClientLogin communications with Gaia.
   scoped_ptr<GaiaAuthFetcher> client_fetcher_;
-  // Handles OAuthLogin communications with Gaia.
-  scoped_ptr<GaiaOAuthFetcher> oauth_fetcher_;
 
   // Used to cancel the CancelClientLogin closure.
   base::WeakPtrFactory<OnlineAttempt> weak_factory_;

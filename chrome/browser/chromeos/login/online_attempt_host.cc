@@ -42,8 +42,7 @@ void OnlineAttemptHost::Check(Profile* profile,
             std::string(),
             User::USER_TYPE_REGULAR,
             false));  // Isn't a new user.
-    online_attempt_.reset(new OnlineAttempt(false,  // Don't use oauth.
-                                            state_.get(),
+    online_attempt_.reset(new OnlineAttempt(state_.get(),
                                             this));
     online_attempt_->Initiate(profile);
   }

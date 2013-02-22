@@ -68,12 +68,6 @@ class AuthAttemptState {
   virtual bool cryptohome_outcome();
   virtual cryptohome::MountError cryptohome_code();
 
-  const std::string oauth1_access_token() const { return oauth1_access_token_; }
-  const std::string oauth1_access_secret() const {
-    return oauth1_access_secret_;
-  }
-  void SetOAuth1Token(const std::string& token, const std::string& secret);
-
   // Saved so we can retry client login, and also so we know for whom login
   // has succeeded, in the event of successful completion.
   const std::string username;
@@ -103,8 +97,6 @@ class AuthAttemptState {
   bool cryptohome_complete_;
   bool cryptohome_outcome_;
   cryptohome::MountError cryptohome_code_;
-  std::string oauth1_access_token_;
-  std::string oauth1_access_secret_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AuthAttemptState);

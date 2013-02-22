@@ -42,7 +42,7 @@ class OnlineAttemptTest : public testing::Test {
   virtual ~OnlineAttemptTest() {}
 
   virtual void SetUp() {
-    attempt_.reset(new OnlineAttempt(false, &state_, resolver_.get()));
+    attempt_.reset(new OnlineAttempt(&state_, resolver_.get()));
   }
 
   virtual void TearDown() {
@@ -170,7 +170,7 @@ TEST_F(OnlineAttemptTest, HostedLoginRejected) {
 
   TestAttemptState local_state("", "", "", "", "",
                                User::USER_TYPE_REGULAR, true);
-  attempt_.reset(new OnlineAttempt(false, &local_state, resolver_.get()));
+  attempt_.reset(new OnlineAttempt(&local_state, resolver_.get()));
   attempt_->Initiate(&profile);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -195,7 +195,7 @@ TEST_F(OnlineAttemptTest, FullLogin) {
 
   TestAttemptState local_state("", "", "", "", "",
                                User::USER_TYPE_REGULAR, true);
-  attempt_.reset(new OnlineAttempt(false, &local_state, resolver_.get()));
+  attempt_.reset(new OnlineAttempt(&local_state, resolver_.get()));
   attempt_->Initiate(&profile);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

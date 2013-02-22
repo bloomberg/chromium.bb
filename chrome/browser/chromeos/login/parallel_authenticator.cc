@@ -220,8 +220,7 @@ void ParallelAuthenticator::AuthenticateToLogin(
   // We should not try OAuthLogin check until the profile loads.
   if (!using_oauth_) {
     // Initiate ClientLogin-based post authentication.
-    current_online_.reset(new OnlineAttempt(using_oauth_,
-                                            current_state_.get(),
+    current_online_.reset(new OnlineAttempt(current_state_.get(),
                                             this));
     current_online_->Initiate(profile);
   }
@@ -254,8 +253,7 @@ void ParallelAuthenticator::CompleteLogin(Profile* profile,
     // services not being able to fetch a token, leading to browser crashes.
     // So initiate ClientLogin-based post authentication.
     // TODO(xiyuan): This should not be required.
-    current_online_.reset(new OnlineAttempt(using_oauth_,
-                                            current_state_.get(),
+    current_online_.reset(new OnlineAttempt(current_state_.get(),
                                             this));
     current_online_->Initiate(profile);
   } else {
@@ -478,8 +476,7 @@ void ParallelAuthenticator::RetryAuth(Profile* profile,
   // we are unable to renew oauth token on lock screen currently and will
   // stuck with lock screen if we use OAuthLogin here.
   // TODO(xiyuan): Revisit this after we support Gaia in lock screen.
-  current_online_.reset(new OnlineAttempt(false /* using_oauth */,
-                                          reauth_state_.get(),
+  current_online_.reset(new OnlineAttempt(reauth_state_.get(),
                                           this));
   current_online_->Initiate(profile);
 }
