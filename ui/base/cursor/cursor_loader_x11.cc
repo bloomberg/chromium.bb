@@ -18,7 +18,7 @@
 namespace {
 
 // Returns X font cursor shape from an Aura cursor.
-int CursorShapeFromNative(gfx::NativeCursor native_cursor) {
+int CursorShapeFromNative(const gfx::NativeCursor& native_cursor) {
   switch (native_cursor.native_type()) {
     case ui::kCursorMiddlePanning:
       return XC_fleur;

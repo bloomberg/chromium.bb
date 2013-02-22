@@ -209,9 +209,6 @@ class VIEWS_EXPORT DesktopRootWindowHostLinux
   // Current Aura cursor.
   gfx::NativeCursor current_cursor_;
 
-  // The invisible cursor.
-  ::Cursor invisible_cursor_;
-
   scoped_ptr<X11WindowEventFilter> x11_window_event_filter_;
   scoped_ptr<X11DesktopWindowMoveClient> x11_window_move_client_;
 

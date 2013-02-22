@@ -146,8 +146,6 @@ void DesktopRootWindowHostLinux::InitX11Window(
   if (base::MessagePumpForUI::HasXInput2())
     ui::TouchFactory::GetInstance()->SetupXI2ForXWindow(xwindow_);
 
-  invisible_cursor_ = ui::CreateInvisibleCursor();
-
   // TODO(erg): We currently only request window deletion events. We also
   // should listen for activation events and anything else that GTK+ listens
   // for, and do something useful.

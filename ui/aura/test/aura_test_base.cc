@@ -9,6 +9,10 @@
 #include "ui/base/gestures/gesture_configuration.h"
 #include "ui/base/ime/text_input_test_support.h"
 
+#if defined(OS_LINUX)
+#include "ui/base/x/x11_util.h"
+#endif
+
 namespace aura {
 namespace test {
 
@@ -68,6 +72,10 @@ void AuraTestBase::TearDown() {
   helper_->TearDown();
   ui::TextInputTestSupport::Shutdown();
   testing::Test::TearDown();
+
+#if defined(OS_LINUX)
+  ui::ResetXCursorCache();
+#endif
 }
 
 Window* AuraTestBase::CreateTransientChild(int id, Window* parent) {

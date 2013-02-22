@@ -78,6 +78,10 @@ int GetDefaultScreen(Display* display);
 // |cursor_shape| is an X font cursor shape, see XCreateFontCursor().
 UI_EXPORT ::Cursor GetXCursor(int cursor_shape);
 
+// Resets the cache used by GetXCursor(). Only useful for tests that may delete
+// the display.
+UI_EXPORT void ResetXCursorCache();
+
 #if defined(USE_AURA)
 // Creates a custom X cursor from the image. This takes ownership of image. The
 // caller must not free/modify the image. The refcount of the newly created
