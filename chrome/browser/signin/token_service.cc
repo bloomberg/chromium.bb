@@ -355,21 +355,26 @@ void TokenService::OnClientOAuthSuccess(const ClientOAuthResult& result) {
 void TokenService::SaveOAuth2Credentials(const ClientOAuthResult& result) {
   token_map_[GaiaConstants::kGaiaOAuth2LoginRefreshToken] =
       result.refresh_token;
-  token_map_[GaiaConstants::kGaiaOAuth2LoginAccessToken] = result.access_token;
   // Save refresh token only since access token is transient anyway.
   SaveAuthTokenToDB(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
       result.refresh_token);
   // We don't save expiration information for now.
 
   FOR_DIAGNOSTICS_OBSERVERS(
-      NotifyTokenReceivedSuccess(GaiaConstants::kGaiaOAuth2LoginAccessToken,
-                                 result.access_token, true));
-  FOR_DIAGNOSTICS_OBSERVERS(
       NotifyTokenReceivedSuccess(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
                                  result.refresh_token, true));
 
   FireTokenAvailableNotification(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
       result.refresh_token);
+
+  if (result.access_token.length()) {
+    token_map_[GaiaConstants::kGaiaOAuth2LoginAccessToken] =
+        result.access_token;
+
+    FOR_DIAGNOSTICS_OBSERVERS(
+        NotifyTokenReceivedSuccess(GaiaConstants::kGaiaOAuth2LoginAccessToken,
+                                   result.access_token, true));
+  }
 }
 
 void TokenService::OnClientOAuthFailure(

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/oauth2_login_manager.h"
 
+#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/string_util.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -75,6 +77,21 @@ void OAuth2LoginManager::RestoreSession(
 void OAuth2LoginManager::ContinueSessionRestore() {
   if (restore_from_auth_cookies_) {
     FetchOAuth2Tokens();
+    return;
+  }
+
+  // Save OAuth2 refresh token from the command line in forced
+  // app mode.
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kForceAppMode) &&
+      command_line->HasSwitch(switches::kAppId) &&
+      command_line->HasSwitch(switches::kAppModeOAuth2Token) &&
+      !command_line->GetSwitchValueASCII(
+          switches::kAppModeOAuth2Token).empty()) {
+    GaiaAuthConsumer::ClientOAuthResult oauth2_tokens;
+    oauth2_tokens.refresh_token =
+        command_line->GetSwitchValueASCII(switches::kAppModeOAuth2Token);
+    StoreOAuth2Tokens(oauth2_tokens);
     return;
   }
 
@@ -162,8 +179,6 @@ void OAuth2LoginManager::Observe(
   switch (type) {
     case chrome::NOTIFICATION_TOKEN_LOADING_FINISHED: {
       refresh_token_ = token_service->GetOAuth2LoginRefreshToken();
-      // TODO(zelidrag): Figure out why just getting GaiaConstants::kGaiaService
-      // token does not do the trick here.
       RestoreSessionCookies();
       break;
     }
