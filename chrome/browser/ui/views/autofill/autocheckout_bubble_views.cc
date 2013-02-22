@@ -97,7 +97,7 @@ void AutocheckoutBubbleViews::Init() {
 }
 
 gfx::Rect AutocheckoutBubbleViews::GetAnchorRect() {
-  return gfx::ToNearestRect(bounding_box_);
+  return gfx::ToEnclosingRect(bounding_box_);
 }
 
 void AutocheckoutBubbleViews::ButtonPressed(views::Button* sender,

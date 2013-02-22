@@ -588,7 +588,7 @@ WeakPtr<AutofillPopupControllerImpl> AutofillPopupControllerImpl::GetWeakPtr() {
 }
 
 const gfx::Rect AutofillPopupControllerImpl::RoundedElementBounds() const {
-  return gfx::ToNearestRect(element_bounds_);
+  return gfx::ToEnclosingRect(element_bounds_);
 }
 
 gfx::Display AutofillPopupControllerImpl::GetDisplayNearestPoint(
