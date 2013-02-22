@@ -339,15 +339,15 @@ class ChromeSwitchesCapabilitiesTest(unittest.TestCase):
   """
 
   def testSwitchWithoutArgument(self):
-    """Tests that switch --enable-benchmarking can be passed to Chrome.
+    """Tests that switch --dom-automation can be passed to Chrome.
 
-    Unless --enable-benchmarking is specified, chrome.benchmarking is undefined.
+    Unless --dom-automation is specified, window.domAutomationController
+    is undefined.
     """
     driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB,
                                        chrome_binary=_CHROME_BINARY,
-                                       chrome_switches=['enable-benchmarking',
-                                                        'enable-stats-table'])
-    result = driver.ExecuteScript('return chrome.benchmarking')
+                                       chrome_switches=['dom-automation'])
+    result = driver.ExecuteScript('return window.domAutomationController')
     self.assertNotEqual(None, result)
 
 
