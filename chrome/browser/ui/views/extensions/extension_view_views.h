@@ -52,9 +52,6 @@ class ExtensionViewViews : public views::NativeViewHost {
   // connection.
   void RenderViewCreated();
 
-  // Set a custom background for the view. The background will be tiled.
-  void SetBackground(const SkBitmap& background);
-
   // Sets the container for this view.
   void SetContainer(Container* container) { container_ = container; }
 
@@ -96,10 +93,6 @@ class ExtensionViewViews : public views::NativeViewHost {
 
   // True if we've been initialized.
   bool initialized_;
-
-  // The background the view should have once it is initialized. This is set
-  // when the view has a custom background, but hasn't been initialized yet.
-  SkBitmap pending_background_;
 
   // What we should set the preferred width to once the ExtensionViewViews has
   // loaded.

@@ -47,26 +47,12 @@ void ExtensionViewMac::DidStopLoading() {
   ShowIfCompletelyLoaded();
 }
 
-void ExtensionViewMac::SetBackground(const SkBitmap& background) {
-  if (!pending_background_.empty() && render_view_host()->GetView()) {
-    render_view_host()->GetView()->SetBackground(background);
-  } else {
-    pending_background_ = background;
-  }
-  ShowIfCompletelyLoaded();
-}
-
 void ExtensionViewMac::ResizeDueToAutoResize(const gfx::Size& new_size) {
   if (container_)
     container_->OnExtensionSizeChanged(this, new_size);
 }
 
 void ExtensionViewMac::RenderViewCreated() {
-  if (!pending_background_.empty() && render_view_host()->GetView()) {
-    render_view_host()->GetView()->SetBackground(pending_background_);
-    pending_background_.reset();
-  }
-
   chrome::ViewType host_type = extension_host_->extension_host_type();
   if (host_type == chrome::VIEW_TYPE_EXTENSION_POPUP) {
     gfx::Size min_size(ExtensionViewMac::kMinWidth,

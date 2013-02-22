@@ -51,9 +51,6 @@ class ExtensionViewMac {
   // loaded.
   void DidStopLoading();
 
-  // Sets the extensions's background image.
-  void SetBackground(const SkBitmap& background);
-
   // Sets the container for this view.
   void set_container(Container* container) { container_ = container; }
 
@@ -88,10 +85,6 @@ class ExtensionViewMac {
   Browser* browser_;  // weak
 
   extensions::ExtensionHost* extension_host_;  // weak
-
-  // The background the view should have once it is initialized. This is set
-  // when the view has a custom background, but hasn't been initialized yet.
-  SkBitmap pending_background_;
 
   // What we should set the preferred width to once the ExtensionView has
   // loaded.
