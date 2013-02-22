@@ -77,7 +77,7 @@ fi
 set -o pipefail
 dir="$1"
 solution="${1%%/*}"
-cd "$solution"
+cd "$solution" 1>/dev/null
 
 if [ "$solution" = "$1" ]; then
   # Skip git checkouts not managed by crup.
