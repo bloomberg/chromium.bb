@@ -3,32 +3,31 @@
     <script>
 
 var apiHandle;
-var onnativesuggestioncalls = 0;
-var onsubmitcalls = 0;
 var savedUserText = null;
 var suggestionIndex = -1;
 var suggestions = ["result 1", "result 2", "result 3"];
 var suggestion;
 var behavior = 2;
+var onMostVisitedChangedCalls = 0;
+var mostVisitedItemsCount = 0;
+var firstMostVisitedItemId = 0;
 
 function getApiHandle() {
-  if (window.navigator && window.navigator.embeddedSearch &&
-      window.navigator.embeddedSearch.searchBox)
-    return window.navigator.embeddedSearch.searchBox;
-  if (window.chrome && window.chrome.embeddedSearch &&
-      window.chrome.embeddedSearch.searchBox)
-    return window.chrome.embeddedSearch.searchBox;
+  if (window.navigator && window.navigator.searchBox)
+    return window.navigator.searchBox;
+  if (window.chrome && window.chrome.searchBox)
+    return window.chrome.searchBox;
   return null;
 }
 
 function handleNativeSuggestions() {
-  onnativesuggestioncalls++;
   // Showing the loader at 100% height.
-  apiHandle.showOverlay(2 /* QUERY_SUGGESTIONS */);
+  apiHandle.show(2 /* QUERY_SUGGESTIONS */);
 }
 
 function handleSubmit() {
-  onsubmitcalls++;
+  // Currently a NOOP in this testing framework, but needs to be defined
+  // so Chrome can correctly determine Instant support for the page.
 }
 
 function handleOnChange() {
@@ -62,14 +61,20 @@ function previousSuggestion() {
 function handleKeyPress(event) {
   var VKEY_UP = 0x26;
   var VKEY_DOWN = 0x28;
-  var VKEY_ESCAPE = 0x1B;
 
   if (event.keyCode == VKEY_DOWN) {
     nextSuggestion();
   } else if (event.keyCode == VKEY_UP) {
     previousSuggestion();
-  } else if (event.keyCode == VKEY_ESCAPE) {
-    suggestionIndex = -1;
+  }
+}
+
+function handleMostVisitedChange() {
+  onMostVisitedChangedCalls++;
+  var items = apiHandle.mostVisited;
+  if (items) {
+    mostVisitedItemsCount = items.length;
+    firstMostVisitedItemId = items[0] ? items[0].rid : 0;
   }
 }
 
@@ -79,9 +84,13 @@ function setUp() {
   apiHandle.onsubmit = handleSubmit;
   apiHandle.onchange = handleOnChange;
   apiHandle.onkeypress = handleKeyPress;
+  apiHandle.onmostvisitedchange = handleMostVisitedChange;
   if (apiHandle.value) {
     handleNativeSuggestions();
     handleOnChange();
+  }
+  if (apiHandle.mostVisited && apiHandle.mostVisited.length) {
+    handleMostVisitedChange();
   }
 }
 

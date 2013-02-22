@@ -1118,6 +1118,10 @@ enum NotificationType {
   // Instant API or not.
   NOTIFICATION_INSTANT_NTP_SUPPORT_DETERMINED,
 
+  // Sent when the Instant Controller has sent the Most Visited Items to the
+  // renderer.
+  NOTIFICATION_INSTANT_SENT_MOST_VISITED_ITEMS,
+
   // Sent when the CaptivePortalService checks if we're behind a captive portal.
   // The Source is the Profile the CaptivePortalService belongs to, and the
   // Details are a Details<CaptivePortalService::CheckResults>.

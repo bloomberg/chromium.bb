@@ -13,6 +13,7 @@
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_tab_helper.h"
+#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/instant/instant_ntp.h"
 #include "chrome/browser/instant/instant_overlay.h"
 #include "chrome/browser/instant/instant_tab.h"
@@ -203,7 +204,8 @@ InstantController::InstantController(chrome::BrowserInstantController* browser,
       omnibox_focus_state_(OMNIBOX_FOCUS_NONE),
       start_margin_(0),
       end_margin_(0),
-      allow_preview_to_show_search_suggestions_(false) {
+      allow_preview_to_show_search_suggestions_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 InstantController::~InstantController() {
@@ -847,6 +849,37 @@ void InstantController::LogDebugEvent(const std::string& info) const {
     debug_events_.pop_back();
 }
 
+void InstantController::DeleteMostVisitedItem(const GURL& url) {
+  history::TopSites* top_sites = browser_->profile()->GetTopSites();
+  if (!top_sites)
+    return;
+
+  top_sites->AddBlacklistedURL(url);
+}
+
+void InstantController::UndoMostVisitedDeletion(const GURL& url) {
+  history::TopSites* top_sites = browser_->profile()->GetTopSites();
+  if (!top_sites)
+    return;
+
+  top_sites->RemoveBlacklistedURL(url);
+}
+
+void InstantController::UndoAllMostVisitedDeletions() {
+  history::TopSites* top_sites = browser_->profile()->GetTopSites();
+  if (!top_sites)
+    return;
+
+  top_sites->ClearBlacklistedURLs();
+}
+
+void InstantController::Observe(int type,
+                                const content::NotificationSource& source,
+                                const content::NotificationDetails& details) {
+  DCHECK_EQ(type, chrome::NOTIFICATION_TOP_SITES_CHANGED);
+  RequestMostVisitedItems();
+}
+
 // TODO(shishir): We assume that the WebContent's current RenderViewHost is the
 // RenderViewHost being created which is not always true. Fix this.
 void InstantController::InstantPageRenderViewCreated(
@@ -871,6 +904,7 @@ void InstantController::InstantPageRenderViewCreated(
   } else {
     NOTREACHED();
   }
+  StartListeningToMostVisitedChanges();
 }
 
 void InstantController::InstantSupportDetermined(
@@ -1179,6 +1213,7 @@ void InstantController::ResetInstantTab() {
       instant_tab_->SetDisplayInstantResults(instant_enabled_);
       instant_tab_->SetMarginSize(start_margin_, end_margin_);
       instant_tab_->InitializeFonts();
+      StartListeningToMostVisitedChanges();
       instant_tab_->KeyCaptureChanged(
           omnibox_focus_state_ == OMNIBOX_FOCUS_INVISIBLE);
     }
@@ -1413,4 +1448,65 @@ void InstantController::RemoveFromBlacklist(const std::string& url) {
   if (blacklisted_urls_.erase(url)) {
     RecordEventHistogram(INSTANT_CONTROLLER_EVENT_URL_REMOVED_FROM_BLACKLIST);
   }
+}
+
+void InstantController::StartListeningToMostVisitedChanges() {
+  history::TopSites* top_sites = browser_->profile()->GetTopSites();
+  if (top_sites) {
+    if (!registrar_.IsRegistered(
+      this, chrome::NOTIFICATION_TOP_SITES_CHANGED,
+      content::Source<history::TopSites>(top_sites))) {
+      // TopSites updates itself after a delay. This is especially noticable
+      // when your profile is empty. Ask TopSites to update itself when we're
+      // about to show the new tab page.
+      top_sites->SyncWithHistory();
+
+      RequestMostVisitedItems();
+
+      // Register for notification when TopSites changes.
+      registrar_.Add(this, chrome::NOTIFICATION_TOP_SITES_CHANGED,
+                     content::Source<history::TopSites>(top_sites));
+    } else {
+      // We are already registered, so just get and send the most visited data.
+      RequestMostVisitedItems();
+    }
+  }
+}
+
+void InstantController::RequestMostVisitedItems() {
+  history::TopSites* top_sites = browser_->profile()->GetTopSites();
+  if (top_sites) {
+    top_sites->GetMostVisitedURLs(
+        base::Bind(&InstantController::OnMostVisitedItemsReceived,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
+void InstantController::OnMostVisitedItemsReceived(
+    const history::MostVisitedURLList& data) {
+  std::vector<MostVisitedItem> most_visited_items;
+  for (size_t i = 0; i < data.size(); i++) {
+    const history::MostVisitedURL& url = data[i];
+
+    MostVisitedItem item;
+    item.url = url.url;
+    item.title = url.title;
+
+    most_visited_items.push_back(item);
+  }
+  SendMostVisitedItems(most_visited_items);
+}
+
+void InstantController::SendMostVisitedItems(
+    const std::vector<MostVisitedItem>& items) {
+  if (overlay_)
+    overlay_->SendMostVisitedItems(items);
+  if (ntp_)
+    ntp_->SendMostVisitedItems(items);
+  if (instant_tab_)
+    instant_tab_->SendMostVisitedItems(items);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_INSTANT_SENT_MOST_VISITED_ITEMS,
+      content::Source<InstantController>(this),
+      content::NotificationService::NoDetails());
 }

@@ -156,4 +156,13 @@ struct ThemeBackgroundInfo {
   uint16 image_height;
 };
 
+// A most visited item.
+struct MostVisitedItem {
+  // URL of the most visited page.
+  GURL url;
+
+  // Title of the most visited page.
+  string16 title;
+};
+
 #endif  // CHROME_COMMON_INSTANT_TYPES_H_

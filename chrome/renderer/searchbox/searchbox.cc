@@ -4,10 +4,21 @@
 
 #include "chrome/renderer/searchbox/searchbox.h"
 
+#include "base/utf_string_conversions.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/searchbox/searchbox_extension.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+
+namespace {
+
+// Prefix for a thumbnail URL.
+const char kThumbnailUrlPrefix[] = "chrome-search://thumb/";
+
+// Prefix for a thumbnail URL.
+const char kFaviconUrlPrefix[] = "chrome-search://favicon/";
+
+}
 
 SearchBox::SearchBox(content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
@@ -21,7 +32,8 @@ SearchBox::SearchBox(content::RenderView* render_view)
       last_results_base_(0),
       is_key_capture_enabled_(false),
       display_instant_results_(false),
-      omnibox_font_size_(0) {
+      omnibox_font_size_(0),
+      last_restricted_id_(0) {
 }
 
 SearchBox::~SearchBox() {
@@ -63,6 +75,23 @@ void SearchBox::NavigateToURL(const GURL& url,
   render_view()->Send(new ChromeViewHostMsg_SearchBoxNavigate(
       render_view()->GetRoutingID(), render_view()->GetPageId(),
       url, transition));
+}
+
+void SearchBox::DeleteMostVisitedItem(int restrict_id) {
+  string16 url = RestrictedIdToURL(restrict_id);
+  render_view()->Send(new ChromeViewHostMsg_InstantDeleteMostVisitedItem(
+      render_view()->GetRoutingID(), GURL(url)));
+}
+
+void SearchBox::UndoMostVisitedDeletion(int restrict_id) {
+  string16 url = RestrictedIdToURL(restrict_id);
+  render_view()->Send(new ChromeViewHostMsg_InstantUndoMostVisitedDeletion(
+      render_view()->GetRoutingID(), GURL(url)));
+}
+
+void SearchBox::UndoAllMostVisitedDeletions() {
+  render_view()->Send(new ChromeViewHostMsg_InstantUndoAllMostVisitedDeletions(
+      render_view()->GetRoutingID()));
 }
 
 int SearchBox::GetStartMargin() const {
@@ -127,6 +156,8 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
                         OnThemeChanged)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxFontInformation,
                         OnFontInformationReceived)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_InstantMostVisitedItemsChanged,
+                        OnMostVisitedChanged)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -289,4 +320,47 @@ void SearchBox::Reset() {
   // a new loader is created when it changes; see crbug.com/164662.
   // Also don't reset omnibox_font_ or omnibox_font_size_ since it never
   // changes.
+}
+
+void SearchBox::OnMostVisitedChanged(
+    const std::vector<MostVisitedItem>& items) {
+  most_visited_items_ = items;
+
+  if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
+    extensions_v8::SearchBoxExtension::DispatchMostVisitedChanged(
+        render_view()->GetWebView()->mainFrame());
+  }
+}
+
+const std::vector<MostVisitedItem>& SearchBox::GetMostVisitedItems() {
+  return most_visited_items_;
+}
+
+int SearchBox::UrlToRestrictedId(string16 url) {
+  if (url_to_restricted_id_map_[url])
+    return url_to_restricted_id_map_[url];
+
+  last_restricted_id_++;
+  url_to_restricted_id_map_[url] = last_restricted_id_;
+  restricted_id_to_url_map_[last_restricted_id_] = url;
+
+  return last_restricted_id_;
+}
+
+string16 SearchBox::RestrictedIdToURL(int id) {
+  return restricted_id_to_url_map_[id];
+}
+
+string16 SearchBox::GenerateThumbnailUrl(int id) {
+  std::ostringstream ostr;
+  ostr << kThumbnailUrlPrefix << id;
+  GURL url = GURL(ostr.str());
+  return UTF8ToUTF16(url.spec());
+}
+
+string16 SearchBox::GenerateFaviconUrl(int id) {
+  std::ostringstream ostr;
+  ostr << kFaviconUrlPrefix << id;
+  GURL url = GURL(ostr.str());
+  return UTF8ToUTF16(url.spec());
 }

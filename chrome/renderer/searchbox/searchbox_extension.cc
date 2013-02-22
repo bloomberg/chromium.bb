@@ -7,6 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/renderer/searchbox/searchbox.h"
 #include "content/public/renderer/render_view.h"
@@ -200,6 +201,15 @@ static const char kDispatchMarginChangeEventScript[] =
     "  true;"
     "}";
 
+static const char kDispatchMostVisitedChangedScript[] =
+    "if (window.chrome &&"
+    "    window.chrome.searchBox &&"
+    "    window.chrome.searchBox.onmostvisitedchange &&"
+    "    typeof window.chrome.searchBox.onmostvisitedchange == 'function') {"
+    "  window.chrome.searchBox.onmostvisitedchange();"
+    "  true;"
+    "}";
+
 // ----------------------------------------------------------------------------
 
 class SearchBoxExtensionWrapper : public v8::Extension {
@@ -213,6 +223,9 @@ class SearchBoxExtensionWrapper : public v8::Extension {
 
   // Helper function to find the RenderView. May return NULL.
   static content::RenderView* GetRenderView();
+
+  // Deletes a Most Visited item.
+  static v8::Handle<v8::Value> DeleteMostVisitedItem(const v8::Arguments& args);
 
   // Gets the value of the user's search query.
   static v8::Handle<v8::Value> GetQuery(const v8::Arguments& args);
@@ -241,6 +254,9 @@ class SearchBoxExtensionWrapper : public v8::Extension {
 
   // Gets the height of the region of the search box that overlaps the window.
   static v8::Handle<v8::Value> GetHeight(const v8::Arguments& args);
+
+  // Gets Most Visited Items.
+  static v8::Handle<v8::Value> GetMostVisitedItems(const v8::Arguments& args);
 
   // Gets the width of the margin from the start-edge of the page to the start
   // of the suggestions dropdown.
@@ -307,6 +323,14 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   static v8::Handle<v8::Value> StopCapturingKeyStrokes(
       const v8::Arguments& args);
 
+  // Undoes the deletion of all Most Visited itens.
+  static v8::Handle<v8::Value> UndoAllMostVisitedDeletions(
+      const v8::Arguments& args);
+
+  // Undoes the deletion of a Most Visited item.
+  static v8::Handle<v8::Value> UndoMostVisitedDeletion(
+      const v8::Arguments& args);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SearchBoxExtensionWrapper);
 };
@@ -318,6 +342,8 @@ SearchBoxExtensionWrapper::SearchBoxExtensionWrapper(
 
 v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     v8::Handle<v8::String> name) {
+  if (name->Equals(v8::String::New("DeleteMostVisitedItem")))
+    return v8::FunctionTemplate::New(DeleteMostVisitedItem);
   if (name->Equals(v8::String::New("GetQuery")))
     return v8::FunctionTemplate::New(GetQuery);
   if (name->Equals(v8::String::New("GetVerbatim")))
@@ -334,6 +360,8 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(GetWidth);
   if (name->Equals(v8::String::New("GetHeight")))
     return v8::FunctionTemplate::New(GetHeight);
+  if (name->Equals(v8::String::New("GetMostVisitedItems")))
+    return v8::FunctionTemplate::New(GetMostVisitedItems);
   if (name->Equals(v8::String::New("GetStartMargin")))
     return v8::FunctionTemplate::New(GetStartMargin);
   if (name->Equals(v8::String::New("GetEndMargin")))
@@ -370,6 +398,10 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(StartCapturingKeyStrokes);
   if (name->Equals(v8::String::New("StopCapturingKeyStrokes")))
     return v8::FunctionTemplate::New(StopCapturingKeyStrokes);
+  if (name->Equals(v8::String::New("UndoAllMostVisitedDeletions")))
+    return v8::FunctionTemplate::New(UndoAllMostVisitedDeletions);
+  if (name->Equals(v8::String::New("UndoMostVisitedDeletion")))
+    return v8::FunctionTemplate::New(UndoMostVisitedDeletion);
   return v8::Handle<v8::FunctionTemplate>();
 }
 
@@ -841,6 +873,75 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::ShowOverlay(
 }
 
 // static
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetMostVisitedItems(
+    const v8::Arguments& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view) return v8::Undefined();
+
+  DVLOG(1) << render_view << " GetMostVisitedItems";
+
+  const std::vector<MostVisitedItem>& items =
+      SearchBox::Get(render_view)->GetMostVisitedItems();
+  v8::Handle<v8::Array> items_array = v8::Array::New(items.size());
+  for (size_t i = 0; i < items.size(); ++i) {
+
+    const string16 url = UTF8ToUTF16(items[i].url.spec());
+    const string16 host = UTF8ToUTF16(items[i].url.host());
+    int restrict_id =
+        SearchBox::Get(render_view)->UrlToRestrictedId(url);
+
+    v8::Handle<v8::Object> item = v8::Object::New();
+    item->Set(v8::String::New("rid"),
+              v8::Int32::New(restrict_id));
+    item->Set(v8::String::New("thumbnailUrl"),
+              UTF16ToV8String(SearchBox::Get(render_view)->
+                              GenerateThumbnailUrl(restrict_id)));
+    item->Set(v8::String::New("faviconUrl"),
+              UTF16ToV8String(SearchBox::Get(render_view)->
+                              GenerateFaviconUrl(restrict_id)));
+    item->Set(v8::String::New("title"),
+              UTF16ToV8String(items[i].title));
+    item->Set(v8::String::New("domain"), UTF16ToV8String(host));
+
+    items_array->Set(i, item);
+  }
+  return items_array;
+}
+
+// static
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::DeleteMostVisitedItem(
+    const v8::Arguments& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view || !args.Length()) return v8::Undefined();
+
+  DVLOG(1) << render_view << " DeleteMostVisitedItem";
+  SearchBox::Get(render_view)->DeleteMostVisitedItem(args[0]->IntegerValue());
+  return v8::Undefined();
+}
+
+// static
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::UndoMostVisitedDeletion(
+    const v8::Arguments& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view || !args.Length()) return v8::Undefined();
+
+  DVLOG(1) << render_view << " UndoMostVisitedDeletion";
+  SearchBox::Get(render_view)->UndoMostVisitedDeletion(args[0]->IntegerValue());
+  return v8::Undefined();
+}
+
+// static
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::UndoAllMostVisitedDeletions(
+    const v8::Arguments& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view) return v8::Undefined();
+
+  DVLOG(1) << render_view << " UndoAllMostVisitedDeletions";
+  SearchBox::Get(render_view)->UndoAllMostVisitedDeletions();
+  return v8::Undefined();
+}
+
+// static
 v8::Handle<v8::Value> SearchBoxExtensionWrapper::StartCapturingKeyStrokes(
     const v8::Arguments& args) {
   content::RenderView* render_view = GetRenderView();
@@ -936,4 +1037,9 @@ void SearchBoxExtension::DispatchThemeChange(WebKit::WebFrame* frame) {
   Dispatch(frame, kDispatchThemeChangeEventScript);
 }
 
+// static
+void SearchBoxExtension::DispatchMostVisitedChanged(
+    WebKit::WebFrame* frame) {
+  Dispatch(frame, kDispatchMostVisitedChangedScript);
+}
 }  // namespace extensions_v8

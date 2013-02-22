@@ -87,6 +87,11 @@ void InstantPage::KeyCaptureChanged(bool is_key_capture_enabled) {
       routing_id(), is_key_capture_enabled));
 }
 
+void InstantPage::SendMostVisitedItems(
+    const std::vector<MostVisitedItem>& items) {
+  Send(new ChromeViewMsg_InstantMostVisitedItemsChanged(routing_id(), items));
+}
+
 InstantPage::InstantPage(Delegate* delegate)
     : delegate_(delegate),
       supports_instant_(false) {
@@ -156,6 +161,12 @@ bool InstantPage::OnMessageReceived(const IPC::Message& message) {
                         OnStopCapturingKeyStrokes);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxNavigate,
                         OnSearchBoxNavigate);
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_InstantDeleteMostVisitedItem,
+                        OnDeleteMostVisitedItem);
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_InstantUndoMostVisitedDeletion,
+                        OnUndoMostVisitedDeletion);
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_InstantUndoAllMostVisitedDeletions,
+                        OnUndoAllMostVisitedDeletions);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -236,4 +247,16 @@ void InstantPage::OnSearchBoxNavigate(int page_id,
     if (ShouldProcessNavigateToURL())
       delegate_->NavigateToURL(contents(), url, transition);
   }
+}
+
+void InstantPage::OnDeleteMostVisitedItem(const GURL& url) {
+  delegate_->DeleteMostVisitedItem(url);
+}
+
+void InstantPage::OnUndoMostVisitedDeletion(const GURL& url) {
+  delegate_->UndoMostVisitedDeletion(url);
+}
+
+void InstantPage::OnUndoAllMostVisitedDeletions() {
+  delegate_->UndoAllMostVisitedDeletions();
 }

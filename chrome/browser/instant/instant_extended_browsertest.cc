@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <sstream>
+
 #include "chrome/browser/instant/instant_commit_type.h"
 #include "chrome/browser/instant/instant_ntp.h"
 #include "chrome/browser/instant/instant_overlay.h"
@@ -20,6 +22,12 @@
 #include "content/public/browser/web_contents.h"
 
 class InstantExtendedTest : public InstantTestBase {
+ public:
+  InstantExtendedTest()
+      : on_most_visited_change_calls_(0),
+        most_visited_items_count_(0),
+        first_most_visited_item_id_(0) {
+  }
  protected:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     chrome::search::EnableInstantExtendedAPIForTesting();
@@ -61,6 +69,19 @@ class InstantExtendedTest : public InstantTestBase {
     // Wait for JavaScript to run the key handler by executing a blank script.
     EXPECT_TRUE(ExecuteScript(std::string()));
   }
+
+  bool UpdateSearchState(content::WebContents* contents) WARN_UNUSED_RESULT {
+    return GetIntFromJS(contents, "onMostVisitedChangedCalls",
+                        &on_most_visited_change_calls_) &&
+           GetIntFromJS(contents, "mostVisitedItemsCount",
+                        &most_visited_items_count_) &&
+           GetIntFromJS(contents, "firstMostVisitedItemId",
+                        &first_most_visited_item_id_);
+  }
+
+  int on_most_visited_change_calls_;
+  int most_visited_items_count_;
+  int first_most_visited_item_id_;
 };
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ExtendedModeIsOn) {
@@ -521,3 +542,93 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ValidatesSuggestions) {
   EXPECT_EQ(ASCIIToUTF16("www.example.com/"), omnibox()->GetText());
 }
 
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, MostVisited) {
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_INSTANT_SENT_MOST_VISITED_ITEMS,
+      content::NotificationService::AllSources());
+
+  // Initialize Instant.
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
+
+  // Get a handle to the NTP and the current state of the JS.
+  ASSERT_NE(static_cast<InstantNTP*>(NULL), instant()->ntp());
+  content::WebContents* preview_tab = instant()->ntp_->contents();
+  EXPECT_TRUE(preview_tab);
+  EXPECT_TRUE(UpdateSearchState(preview_tab));
+
+  // Wait for most visited data to be ready, if necessary.
+  if (on_most_visited_change_calls_ == 0) {
+    observer.Wait();
+    EXPECT_TRUE(UpdateSearchState(preview_tab));
+  }
+
+  EXPECT_EQ(1, on_most_visited_change_calls_);
+
+  // Make sure we have at least two Most Visited Items and save that number.
+  // TODO(pedrosimonetti): For now, we're relying on the fact that the Top
+  // Sites will have at lease two items in it. The correct approach would be
+  // adding those items to the Top Sites manually before starting the test.
+  EXPECT_GT(most_visited_items_count_, 1);
+  int old_most_visited_items_count = most_visited_items_count_;
+
+  // Delete the fist Most Visited Item.
+  int rid = first_most_visited_item_id_;
+  std::ostringstream stream;
+  stream << "apiHandle.deleteMostVisitedItem(" << rid << ")";
+  EXPECT_TRUE(ExecuteScript(stream.str()));
+  observer.Wait();
+
+  // Update Most Visited state.
+  EXPECT_TRUE(UpdateSearchState(preview_tab));
+
+  // Make sure we have one less item in there.
+  EXPECT_EQ(most_visited_items_count_, old_most_visited_items_count - 1);
+
+  // Undo the deletion of the fist Most Visited Item.
+  stream.str(std::string());
+  stream << "apiHandle.undoMostVisitedDeletion(" << rid << ")";
+  EXPECT_TRUE(ExecuteScript(stream.str()));
+  observer.Wait();
+
+  // Update Most Visited state.
+  EXPECT_TRUE(UpdateSearchState(preview_tab));
+
+  // Make sure we have the same number of items as before.
+  EXPECT_EQ(most_visited_items_count_, old_most_visited_items_count);
+
+  // Delete the fist Most Visited Item.
+  rid = first_most_visited_item_id_;
+  stream.str(std::string());
+  stream << "apiHandle.deleteMostVisitedItem(" << rid << ")";
+  EXPECT_TRUE(ExecuteScript(stream.str()));
+  observer.Wait();
+
+  // Update Most Visited state.
+  EXPECT_TRUE(UpdateSearchState(preview_tab));
+
+  // Delete the second Most Visited Item.
+  rid = first_most_visited_item_id_;
+  stream.str(std::string());
+  stream << "apiHandle.deleteMostVisitedItem(" << rid << ")";
+  EXPECT_TRUE(ExecuteScript(stream.str()));
+  observer.Wait();
+
+  // Update Most Visited state.
+  EXPECT_TRUE(UpdateSearchState(preview_tab));
+
+  // Make sure we have two less items in there.
+  EXPECT_EQ(most_visited_items_count_, old_most_visited_items_count - 2);
+
+  // Delete the second Most Visited Item.
+  stream.str(std::string());
+  stream << "apiHandle.undoAllMostVisitedDeletions()";
+  EXPECT_TRUE(ExecuteScript(stream.str()));
+  observer.Wait();
+
+  // Update Most Visited state.
+  EXPECT_TRUE(UpdateSearchState(preview_tab));
+
+  // Make sure we have the same number of items as before.
+  EXPECT_EQ(most_visited_items_count_, old_most_visited_items_count);
+}

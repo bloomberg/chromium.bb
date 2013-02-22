@@ -41,6 +41,9 @@ class SearchBoxExtension {
   static void DispatchMarginChange(WebKit::WebFrame* frame);
   static void DispatchThemeChange(WebKit::WebFrame* frame);
 
+  // New Tab Page API.
+  static void DispatchMostVisitedChanged(WebKit::WebFrame* frame);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(SearchBoxExtension);
 };

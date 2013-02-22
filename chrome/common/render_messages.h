@@ -166,6 +166,11 @@ IPC_STRUCT_TRAITS_BEGIN(InstantAutocompleteResult)
   IPC_STRUCT_TRAITS_MEMBER(relevance)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(MostVisitedItem)
+  IPC_STRUCT_TRAITS_MEMBER(url)
+  IPC_STRUCT_TRAITS_MEMBER(title)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(InstantSuggestion)
   IPC_STRUCT_TRAITS_MEMBER(text)
   IPC_STRUCT_TRAITS_MEMBER(behavior)
@@ -333,6 +338,17 @@ IPC_MESSAGE_ROUTED2(ChromeViewMsg_SearchBoxFontInformation,
 
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxKeyCaptureChanged,
                     bool /* is_key_capture_enabled */)
+
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_InstantMostVisitedItemsChanged,
+                    std::vector<MostVisitedItem> /* items */)
+
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_InstantDeleteMostVisitedItem,
+                    GURL /* url */)
+
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_InstantUndoMostVisitedDeletion,
+                    GURL /* url */)
+
+IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_InstantUndoAllMostVisitedDeletions)
 
 // Toggles visual muting of the render view area. This is on when a constrained
 // window is showing.

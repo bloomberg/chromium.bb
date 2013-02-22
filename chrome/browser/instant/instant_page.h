@@ -85,6 +85,15 @@ class InstantPage : public content::WebContentsObserver {
                                const GURL& url,
                                content::PageTransition transition) = 0;
 
+    // Called when the SearchBox wants to delete a Most Visited item.
+    virtual void DeleteMostVisitedItem(const GURL& url) = 0;
+
+    // Called when the SearchBox wants to undo a Most Visited deletion.
+    virtual void UndoMostVisitedDeletion(const GURL& url) = 0;
+
+    // Called when the SearchBox wants to undo all Most Visited deletions.
+    virtual void UndoAllMostVisitedDeletions() = 0;
+
    protected:
     virtual ~Delegate();
   };
@@ -155,6 +164,9 @@ class InstantPage : public content::WebContentsObserver {
   // Tells the page whether the browser is capturing user key strokes.
   void KeyCaptureChanged(bool is_key_capture_enabled);
 
+  // Tells the page about new Most Visited data.
+  void SendMostVisitedItems(const std::vector<MostVisitedItem>& items);
+
  protected:
   explicit InstantPage(Delegate* delegate);
 
@@ -206,6 +218,9 @@ class InstantPage : public content::WebContentsObserver {
   void OnStopCapturingKeyStrokes(int page_id);
   void OnSearchBoxNavigate(int page_id, const GURL& url,
                            content::PageTransition transition);
+  void OnDeleteMostVisitedItem(const GURL& url);
+  void OnUndoMostVisitedDeletion(const GURL& url);
+  void OnUndoAllMostVisitedDeletions();
 
   Delegate* const delegate_;
   bool supports_instant_;
