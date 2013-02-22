@@ -5,7 +5,6 @@ include_rules = [
   # TODO(benwells): remove these (http://crbug.com/159366)
   "+chrome/browser/browser_process.h",
   "+chrome/browser/extensions",
-  "+chrome/browser/prefs",
   "+chrome/browser/profiles",
   "+chrome/browser/ui/host_desktop.h",
   "+chrome/common/chrome_notification_types.h",
