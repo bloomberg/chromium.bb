@@ -61,6 +61,10 @@ class CandidateView : public views::View {
   FRIEND_TEST_ALL_PREFIXES(CandidateWindowViewTest, ShortcutSettingTest);
   // Overridden from View:
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+
+  // Selects the candidate located at the point.
+  void SelectCandidateAt(const gfx::Point& location);
 
   // Notifies labels of their new background colors.  Called whenever the view's
   // background color changes.
