@@ -56,7 +56,7 @@ ExtensionInfoBarGtk::~ExtensionInfoBarGtk() {
 void ExtensionInfoBarGtk::PlatformSpecificHide(bool animate) {
   // This view is not owned by us; we can't unparent it because we aren't the
   // owning container.
-  gtk_container_remove(GTK_CONTAINER(alignment_), view_->native_view());
+  gtk_util::RemoveAllChildren(alignment_);
 }
 
 void ExtensionInfoBarGtk::GetTopColor(InfoBarDelegate::Type type,
