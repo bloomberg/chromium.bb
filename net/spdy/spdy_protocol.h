@@ -843,17 +843,8 @@ class SpdyFrame {
   // the frame packed as expected for sending over the wire.
   char* data() const { return reinterpret_cast<char*>(frame_); }
 
-  uint8 flags() const { return frame_->flags_length_.flags_[0]; }
-  void set_flags(uint8 flags) { frame_->flags_length_.flags_[0] = flags; }
-
   uint32 length() const {
     return ntohl(frame_->flags_length_.length_) & kLengthMask;
-  }
-
-  void set_length(uint32 length) {
-    DCHECK_EQ(0u, (length & ~kLengthMask));
-    length = htonl(length & kLengthMask);
-    frame_->flags_length_.length_ = flags() | length;
   }
 
   // The size of the SpdyFrameBlock structure.

@@ -27,6 +27,7 @@
 #include "net/spdy/spdy_session_pool.h"
 #include "net/spdy/spdy_test_util_common.h"
 #include "net/spdy/spdy_test_util_spdy3.h"
+#include "net/spdy/spdy_test_utils.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/platform_test.h"
 
@@ -1800,7 +1801,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, NullPost) {
   // expected to be 0.
   scoped_ptr<SpdyFrame> req(ConstructSpdyPost(0, NULL, 0));
   // Set the FIN bit since there will be no body.
-  req->set_flags(CONTROL_FLAG_FIN);
+  test::SetFrameFlags(req.get(), CONTROL_FLAG_FIN, kSpdyVersion3);
   MockWrite writes[] = {
     CreateMockWrite(*req),
   };
@@ -1840,7 +1841,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, EmptyPost) {
   const uint64 kContentLength = 0;
   scoped_ptr<SpdyFrame> req(ConstructSpdyPost(kContentLength, NULL, 0));
   // Set the FIN bit since there will be no body.
-  req->set_flags(CONTROL_FLAG_FIN);
+  test::SetFrameFlags(req.get(), CONTROL_FLAG_FIN, kSpdyVersion3);
   MockWrite writes[] = {
     CreateMockWrite(*req),
   };
@@ -4091,7 +4092,9 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, CorruptFrameSessionError) {
   // This is the length field that's too short.
   scoped_ptr<SpdyFrame> syn_reply_wrong_length(
       ConstructSpdyGetSynReply(NULL, 0, 1));
-  syn_reply_wrong_length->set_length(syn_reply_wrong_length->length() - 4);
+  test::SetFrameLength(syn_reply_wrong_length.get(),
+                       syn_reply_wrong_length->length() - 4,
+                       kSpdyVersion3);
 
   struct SynReplyTests {
     const SpdyFrame* syn_reply;
@@ -4483,7 +4486,8 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, BufferedAll) {
   // 5 data frames in a single read.
   scoped_ptr<SpdyFrame> syn_reply(
       ConstructSpdyGetSynReply(NULL, 0, 1));
-  syn_reply->set_flags(CONTROL_FLAG_NONE);  // turn off FIN bit
+  // turn off FIN bit
+  test::SetFrameFlags(syn_reply.get(), CONTROL_FLAG_NONE, kSpdyVersion3);
   scoped_ptr<SpdyFrame> data_frame(
       framer.CreateDataFrame(1, "message", 7, DATA_FLAG_NONE));
   scoped_ptr<SpdyFrame> data_frame_fin(

@@ -53,20 +53,6 @@ TEST_P(SpdyProtocolTest, ProtocolConstants) {
   EXPECT_EQ(9, WINDOW_UPDATE);
 }
 
-// Test some of the protocol helper functions
-TEST_P(SpdyProtocolTest, FrameStructs) {
-  SpdyFrame frame(SpdyFrame::kHeaderSize);
-  frame.set_length(12345);
-  frame.set_flags(10);
-  EXPECT_EQ(12345u, frame.length());
-  EXPECT_EQ(10u, frame.flags());
-
-  frame.set_length(0);
-  frame.set_flags(10);
-  EXPECT_EQ(0u, frame.length());
-  EXPECT_EQ(10u, frame.flags());
-}
-
 class SpdyProtocolDeathTest : public SpdyProtocolTest {};
 
 // All tests are run with two different SPDY versions: SPDY/2 and SPDY/3.

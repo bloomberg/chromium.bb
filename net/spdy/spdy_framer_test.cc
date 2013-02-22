@@ -86,7 +86,9 @@ class SpdyFramerTestUtil {
     char* buffer = visitor.ReleaseBuffer();
     CHECK(buffer != NULL);
     SpdyFrame* decompressed_frame = new SpdyFrame(buffer, true);
-    decompressed_frame->set_length(visitor.size() - SpdyFrame::kHeaderSize);
+    SetFrameLength(decompressed_frame,
+                   visitor.size() - SpdyFrame::kHeaderSize,
+                   framer->protocol_version());
     return decompressed_frame;
   }
 
@@ -529,6 +531,8 @@ base::StringPiece GetSerializedHeaders(const SpdyFrame* frame,
 
 }  // namespace net
 
+using net::test::SetFrameLength;
+using net::test::SetFrameFlags;
 using net::test::CompareCharArraysWithHexError;
 using net::test::SpdyFramerTestUtil;
 using net::test::TestSpdyVisitor;
@@ -2658,7 +2662,7 @@ TEST_P(SpdyFramerTest, ReadZeroLenSettingsFrame) {
   SpdyFramer framer(spdy_version_);
   SettingsMap settings;
   scoped_ptr<SpdyFrame> control_frame(framer.CreateSettings(settings));
-  control_frame->set_length(0);
+  SetFrameLength(control_frame.get(), 0, spdy_version_);
   TestSpdyVisitor visitor(spdy_version_);
   visitor.use_compression_ = false;
   visitor.SimulateInFramer(
@@ -2677,7 +2681,7 @@ TEST_P(SpdyFramerTest, ReadBogusLenSettingsFrame) {
   settings[SETTINGS_UPLOAD_BANDWIDTH] =
       SettingsFlagsAndValue(SETTINGS_FLAG_PLEASE_PERSIST, 0x00000002);
   scoped_ptr<SpdyFrame> control_frame(framer.CreateSettings(settings));
-  control_frame->set_length(5);
+  SetFrameLength(control_frame.get(), 5, spdy_version_);
   TestSpdyVisitor visitor(spdy_version_);
   visitor.use_compression_ = false;
   visitor.SimulateInFramer(
@@ -2888,7 +2892,7 @@ TEST_P(SpdyFramerTest, ReadCredentialFrameWithNoPayload) {
   EXPECT_TRUE(control_frame.get() != NULL);
   TestSpdyVisitor visitor(spdy_version_);
   visitor.use_compression_ = false;
-  control_frame->set_length(0);
+  SetFrameLength(control_frame.get(), 0, spdy_version_);
   unsigned char* data =
       reinterpret_cast<unsigned char*>(control_frame->data());
   visitor.SimulateInFramer(data, framer.GetControlFrameMinimumSize());
@@ -3124,7 +3128,7 @@ TEST_P(SpdyFramerTest, DataFrameFlags) {
 
     scoped_ptr<SpdyFrame> frame(
         framer.CreateDataFrame(1, "hello", 5, DATA_FLAG_NONE));
-    frame->set_flags(flags);
+    SetFrameFlags(frame.get(), flags, spdy_version_);
 
     if (flags & ~DATA_FLAG_FIN) {
       EXPECT_CALL(visitor, OnError(_));
@@ -3163,7 +3167,7 @@ TEST_P(SpdyFramerTest, SynStreamFrameFlags) {
     headers["foo"] = "bar";
     scoped_ptr<SpdyFrame> frame(
         framer.CreateSynStream(8, 3, 1, 0, CONTROL_FLAG_NONE, true, &headers));
-    frame->set_flags(flags);
+    SetFrameFlags(frame.get(), flags, spdy_version_);
 
     if (flags & ~(CONTROL_FLAG_FIN | CONTROL_FLAG_UNIDIRECTIONAL)) {
       EXPECT_CALL(visitor, OnError(_));
@@ -3202,7 +3206,7 @@ TEST_P(SpdyFramerTest, SynReplyFrameFlags) {
     headers["foo"] = "bar";
     scoped_ptr<SpdyFrame> frame(
         framer.CreateSynReply(37, CONTROL_FLAG_NONE, true, &headers));
-    frame->set_flags(flags);
+    SetFrameFlags(frame.get(), flags, spdy_version_);
 
     if (flags & ~CONTROL_FLAG_FIN) {
       EXPECT_CALL(visitor, OnError(_));
@@ -3237,7 +3241,7 @@ TEST_P(SpdyFramerTest, RstStreamFrameFlags) {
     framer.set_visitor(&visitor);
 
     scoped_ptr<SpdyFrame> frame(framer.CreateRstStream(13, RST_STREAM_CANCEL));
-    frame->set_flags(flags);
+    SetFrameFlags(frame.get(), flags, spdy_version_);
 
     if (flags != 0) {
       EXPECT_CALL(visitor, OnError(_));
@@ -3270,7 +3274,7 @@ TEST_P(SpdyFramerTest, SettingsFrameFlags) {
     settings[SETTINGS_UPLOAD_BANDWIDTH] =
         std::make_pair(SETTINGS_FLAG_NONE, 54321);
     scoped_ptr<SpdyFrame> frame(framer.CreateSettings(settings));
-    frame->set_flags(flags);
+    SetFrameFlags(frame.get(), flags, spdy_version_);
 
     if (flags & ~SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS) {
       EXPECT_CALL(visitor, OnError(_));
@@ -3301,7 +3305,7 @@ TEST_P(SpdyFramerTest, GoawayFrameFlags) {
     framer.set_visitor(&visitor);
 
     scoped_ptr<SpdyFrame> frame(framer.CreateGoAway(97, GOAWAY_OK));
-    frame->set_flags(flags);
+    SetFrameFlags(frame.get(), flags, spdy_version_);
 
     if (flags != 0) {
       EXPECT_CALL(visitor, OnError(_));
@@ -3334,7 +3338,7 @@ TEST_P(SpdyFramerTest, HeadersFrameFlags) {
     headers["foo"] = "bar";
     scoped_ptr<SpdyFrame> frame(
         framer.CreateHeaders(57, CONTROL_FLAG_NONE, true, &headers));
-    frame->set_flags(flags);
+    SetFrameFlags(frame.get(), flags, spdy_version_);
 
     if (flags & ~CONTROL_FLAG_FIN) {
       EXPECT_CALL(visitor, OnError(_));
@@ -3369,7 +3373,7 @@ TEST_P(SpdyFramerTest, PingFrameFlags) {
     framer.set_visitor(&visitor);
 
     scoped_ptr<SpdyFrame> frame(framer.CreatePingFrame(42));
-    frame->set_flags(flags);
+    SetFrameFlags(frame.get(), flags, spdy_version_);
 
     if (flags != 0) {
       EXPECT_CALL(visitor, OnError(_));
@@ -3399,7 +3403,7 @@ TEST_P(SpdyFramerTest, WindowUpdateFrameFlags) {
     framer.set_visitor(&visitor);
 
     scoped_ptr<SpdyFrame> frame(framer.CreateWindowUpdate(4, 1024));
-    frame->set_flags(flags);
+    SetFrameFlags(frame.get(), flags, spdy_version_);
 
     if (flags != 0) {
       EXPECT_CALL(visitor, OnError(_));
@@ -3430,7 +3434,7 @@ TEST_P(SpdyFramerTest, CredentialFrameFlags) {
 
     SpdyCredential credential;
     scoped_ptr<SpdyFrame> frame(framer.CreateCredentialFrame(credential));
-    frame->set_flags(flags);
+    SetFrameFlags(frame.get(), flags, spdy_version_);
 
     if (flags != 0) {
       EXPECT_CALL(visitor, OnError(_));
@@ -3464,8 +3468,10 @@ TEST_P(SpdyFramerTest, EmptySynStream) {
       frame(framer.CreateSynStream(1, 0, 1, 0, CONTROL_FLAG_NONE, true,
                                    &headers));
   // Adjust size to remove the name/value block.
-  frame->set_length(
-      framer.GetSynStreamMinimumSize() - framer.GetControlFrameMinimumSize());
+  SetFrameLength(
+      frame.get(),
+      framer.GetSynStreamMinimumSize() - framer.GetControlFrameMinimumSize(),
+      spdy_version_);
 
   EXPECT_CALL(visitor, OnSynStream(1, 0, 1, 0, false, false));
   EXPECT_CALL(visitor, OnControlFrameHeaderData(1, NULL, 0));
