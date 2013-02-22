@@ -37,11 +37,10 @@ namespace nacl_arm_test {
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I16_32_64,
+//       baseline: VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vm(3:0)],
-//       generated_baseline: VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_0,
 //       pattern: 111100101dssnnnndddd0100n0m0mmmm,
 //       rule: VADDHN,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -49,17 +48,17 @@ namespace nacl_arm_test {
 //            Vm(0)=1 => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary3RegisterDifferentLength_I16_32_64TesterCase0
-    : public VectorBinary3RegisterDifferentLengthTester {
+class VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_0TesterCase0
+    : public Arm32DecoderTester {
  public:
-  VectorBinary3RegisterDifferentLength_I16_32_64TesterCase0(const NamedClassDecoder& decoder)
-    : VectorBinary3RegisterDifferentLengthTester(decoder) {}
+  VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_0TesterCase0(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary3RegisterDifferentLength_I16_32_64TesterCase0
+bool VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_0TesterCase0
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -78,7 +77,7 @@ bool VectorBinary3RegisterDifferentLength_I16_32_64TesterCase0
           0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorBinary3RegisterDifferentLengthTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -86,11 +85,10 @@ bool VectorBinary3RegisterDifferentLength_I16_32_64TesterCase0
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I16_32_64,
+//       baseline: VRADDHN_111100111dssnnnndddd0100n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vm(3:0)],
-//       generated_baseline: VRADDHN_111100111dssnnnndddd0100n0m0mmmm_case_0,
 //       pattern: 111100111dssnnnndddd0100n0m0mmmm,
 //       rule: VRADDHN,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -98,17 +96,17 @@ bool VectorBinary3RegisterDifferentLength_I16_32_64TesterCase0
 //            Vm(0)=1 => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary3RegisterDifferentLength_I16_32_64TesterCase1
-    : public VectorBinary3RegisterDifferentLengthTester {
+class VRADDHN_111100111dssnnnndddd0100n0m0mmmm_case_0TesterCase1
+    : public Arm32DecoderTester {
  public:
-  VectorBinary3RegisterDifferentLength_I16_32_64TesterCase1(const NamedClassDecoder& decoder)
-    : VectorBinary3RegisterDifferentLengthTester(decoder) {}
+  VRADDHN_111100111dssnnnndddd0100n0m0mmmm_case_0TesterCase1(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary3RegisterDifferentLength_I16_32_64TesterCase1
+bool VRADDHN_111100111dssnnnndddd0100n0m0mmmm_case_0TesterCase1
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -127,34 +125,33 @@ bool VectorBinary3RegisterDifferentLength_I16_32_64TesterCase1
           0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorBinary3RegisterDifferentLengthTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
 // A(11:8)=0101
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I8_16_32L,
+//       baseline: VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_0,
 //       pattern: 1111001u1dssnnnndddd0101n0m0mmmm,
 //       rule: VABAL_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR, Vd(0)=1 => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase2
-    : public VectorBinary3RegisterDifferentLengthTester {
+class VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_0TesterCase2
+    : public Arm32DecoderTester {
  public:
-  VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase2(const NamedClassDecoder& decoder)
-    : VectorBinary3RegisterDifferentLengthTester(decoder) {}
+  VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_0TesterCase2(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase2
+bool VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_0TesterCase2
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -170,7 +167,7 @@ bool VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase2
           0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorBinary3RegisterDifferentLengthTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -178,11 +175,10 @@ bool VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase2
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I16_32_64,
+//       baseline: VSUBHN_111100101dssnnnndddd0110n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vm(3:0)],
-//       generated_baseline: VSUBHN_111100101dssnnnndddd0110n0m0mmmm_case_0,
 //       pattern: 111100101dssnnnndddd0110n0m0mmmm,
 //       rule: VSUBHN,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -190,17 +186,17 @@ bool VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase2
 //            Vm(0)=1 => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary3RegisterDifferentLength_I16_32_64TesterCase3
-    : public VectorBinary3RegisterDifferentLengthTester {
+class VSUBHN_111100101dssnnnndddd0110n0m0mmmm_case_0TesterCase3
+    : public Arm32DecoderTester {
  public:
-  VectorBinary3RegisterDifferentLength_I16_32_64TesterCase3(const NamedClassDecoder& decoder)
-    : VectorBinary3RegisterDifferentLengthTester(decoder) {}
+  VSUBHN_111100101dssnnnndddd0110n0m0mmmm_case_0TesterCase3(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary3RegisterDifferentLength_I16_32_64TesterCase3
+bool VSUBHN_111100101dssnnnndddd0110n0m0mmmm_case_0TesterCase3
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -219,7 +215,7 @@ bool VectorBinary3RegisterDifferentLength_I16_32_64TesterCase3
           0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorBinary3RegisterDifferentLengthTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -227,11 +223,10 @@ bool VectorBinary3RegisterDifferentLength_I16_32_64TesterCase3
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I16_32_64,
+//       baseline: VRSUBHN_111100111dssnnnndddd0110n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vm(3:0)],
-//       generated_baseline: VRSUBHN_111100111dssnnnndddd0110n0m0mmmm_case_0,
 //       pattern: 111100111dssnnnndddd0110n0m0mmmm,
 //       rule: VRSUBHN,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -239,17 +234,17 @@ bool VectorBinary3RegisterDifferentLength_I16_32_64TesterCase3
 //            Vm(0)=1 => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary3RegisterDifferentLength_I16_32_64TesterCase4
-    : public VectorBinary3RegisterDifferentLengthTester {
+class VRSUBHN_111100111dssnnnndddd0110n0m0mmmm_case_0TesterCase4
+    : public Arm32DecoderTester {
  public:
-  VectorBinary3RegisterDifferentLength_I16_32_64TesterCase4(const NamedClassDecoder& decoder)
-    : VectorBinary3RegisterDifferentLengthTester(decoder) {}
+  VRSUBHN_111100111dssnnnndddd0110n0m0mmmm_case_0TesterCase4(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary3RegisterDifferentLength_I16_32_64TesterCase4
+bool VRSUBHN_111100111dssnnnndddd0110n0m0mmmm_case_0TesterCase4
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -268,34 +263,33 @@ bool VectorBinary3RegisterDifferentLength_I16_32_64TesterCase4
           0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorBinary3RegisterDifferentLengthTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
 // A(11:8)=0111
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I8_16_32L,
+//       baseline: VABDL_integer_A2_1111001u1dssnnnndddd0111n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VABDL_integer_A2_1111001u1dssnnnndddd0111n0m0mmmm_case_0,
 //       pattern: 1111001u1dssnnnndddd0111n0m0mmmm,
 //       rule: VABDL_integer_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR, Vd(0)=1 => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase5
-    : public VectorBinary3RegisterDifferentLengthTester {
+class VABDL_integer_A2_1111001u1dssnnnndddd0111n0m0mmmm_case_0TesterCase5
+    : public Arm32DecoderTester {
  public:
-  VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase5(const NamedClassDecoder& decoder)
-    : VectorBinary3RegisterDifferentLengthTester(decoder) {}
+  VABDL_integer_A2_1111001u1dssnnnndddd0111n0m0mmmm_case_0TesterCase5(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase5
+bool VABDL_integer_A2_1111001u1dssnnnndddd0111n0m0mmmm_case_0TesterCase5
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -311,34 +305,33 @@ bool VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase5
           0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorBinary3RegisterDifferentLengthTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
 // A(11:8)=1100
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I8_16_32L,
+//       baseline: VMULL_integer_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VMULL_integer_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0,
 //       pattern: 1111001u1dssnnnndddd11p0n0m0mmmm,
 //       rule: VMULL_integer_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR, Vd(0)=1 => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase6
-    : public VectorBinary3RegisterDifferentLengthTester {
+class VMULL_integer_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0TesterCase6
+    : public Arm32DecoderTester {
  public:
-  VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase6(const NamedClassDecoder& decoder)
-    : VectorBinary3RegisterDifferentLengthTester(decoder) {}
+  VMULL_integer_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0TesterCase6(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase6
+bool VMULL_integer_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0TesterCase6
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -354,18 +347,17 @@ bool VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase6
           0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorBinary3RegisterDifferentLengthTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
 // A(11:8)=1101 & U(24)=0
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I16_32L,
+//       baseline: VQDMULL_A1_111100101dssnnnndddd1101n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VQDMULL_A1_111100101dssnnnndddd1101n0m0mmmm_case_0,
 //       pattern: 111100101dssnnnndddd1101n0m0mmmm,
 //       rule: VQDMULL_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -373,17 +365,17 @@ bool VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase6
 //            Vd(0)=1 => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary3RegisterDifferentLength_I16_32LTesterCase7
-    : public VectorBinary3RegisterDifferentLengthTester {
+class VQDMULL_A1_111100101dssnnnndddd1101n0m0mmmm_case_0TesterCase7
+    : public Arm32DecoderTester {
  public:
-  VectorBinary3RegisterDifferentLength_I16_32LTesterCase7(const NamedClassDecoder& decoder)
-    : VectorBinary3RegisterDifferentLengthTester(decoder) {}
+  VQDMULL_A1_111100101dssnnnndddd1101n0m0mmmm_case_0TesterCase7(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary3RegisterDifferentLength_I16_32LTesterCase7
+bool VQDMULL_A1_111100101dssnnnndddd1101n0m0mmmm_case_0TesterCase7
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -402,7 +394,7 @@ bool VectorBinary3RegisterDifferentLength_I16_32LTesterCase7
           0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorBinary3RegisterDifferentLengthTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -410,11 +402,10 @@ bool VectorBinary3RegisterDifferentLength_I16_32LTesterCase7
 //    = {U: U(24),
 //       Vd: Vd(15:12),
 //       actual: Actual_VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_P8,
+//       baseline: VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [U(24), size(21:20), Vd(15:12)],
-//       generated_baseline: VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0,
 //       pattern: 1111001u1dssnnnndddd11p0n0m0mmmm,
 //       rule: VMULL_polynomial_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -423,17 +414,17 @@ bool VectorBinary3RegisterDifferentLength_I16_32LTesterCase7
 //         Vd(0)=1 => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary3RegisterDifferentLength_P8TesterCase8
-    : public VectorBinary3RegisterDifferentLengthTester {
+class VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0TesterCase8
+    : public Arm32DecoderTester {
  public:
-  VectorBinary3RegisterDifferentLength_P8TesterCase8(const NamedClassDecoder& decoder)
-    : VectorBinary3RegisterDifferentLengthTester(decoder) {}
+  VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0TesterCase8(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary3RegisterDifferentLength_P8TesterCase8
+bool VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0TesterCase8
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -449,34 +440,33 @@ bool VectorBinary3RegisterDifferentLength_P8TesterCase8
           0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorBinary3RegisterDifferentLengthTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
 // A(11:8)=10x0
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I8_16_32L,
+//       baseline: VMLAL_VMLSL_integer_A2_1111001u1dssnnnndddd10p0n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VMLAL_VMLSL_integer_A2_1111001u1dssnnnndddd10p0n0m0mmmm_case_0,
 //       pattern: 1111001u1dssnnnndddd10p0n0m0mmmm,
 //       rule: VMLAL_VMLSL_integer_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR, Vd(0)=1 => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase9
-    : public VectorBinary3RegisterDifferentLengthTester {
+class VMLAL_VMLSL_integer_A2_1111001u1dssnnnndddd10p0n0m0mmmm_case_0TesterCase9
+    : public Arm32DecoderTester {
  public:
-  VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase9(const NamedClassDecoder& decoder)
-    : VectorBinary3RegisterDifferentLengthTester(decoder) {}
+  VMLAL_VMLSL_integer_A2_1111001u1dssnnnndddd10p0n0m0mmmm_case_0TesterCase9(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase9
+bool VMLAL_VMLSL_integer_A2_1111001u1dssnnnndddd10p0n0m0mmmm_case_0TesterCase9
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -492,18 +482,17 @@ bool VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase9
           0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorBinary3RegisterDifferentLengthTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
 // A(11:8)=10x1 & U(24)=0
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I16_32L,
+//       baseline: VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_0,
 //       pattern: 111100101dssnnnndddd10p1n0m0mmmm,
 //       rule: VQDMLAL_VQDMLSL_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -511,17 +500,17 @@ bool VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase9
 //            Vd(0)=1 => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary3RegisterDifferentLength_I16_32LTesterCase10
-    : public VectorBinary3RegisterDifferentLengthTester {
+class VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_0TesterCase10
+    : public Arm32DecoderTester {
  public:
-  VectorBinary3RegisterDifferentLength_I16_32LTesterCase10(const NamedClassDecoder& decoder)
-    : VectorBinary3RegisterDifferentLengthTester(decoder) {}
+  VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_0TesterCase10(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary3RegisterDifferentLength_I16_32LTesterCase10
+bool VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_0TesterCase10
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -540,7 +529,7 @@ bool VectorBinary3RegisterDifferentLength_I16_32LTesterCase10
           0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorBinary3RegisterDifferentLengthTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -548,11 +537,10 @@ bool VectorBinary3RegisterDifferentLength_I16_32LTesterCase10
 //    = {Vd: Vd(15:12),
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I8_16_32,
+//       baseline: VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vd(15:12), op(8)],
-//       generated_baseline: VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_0,
 //       op: op(8),
 //       pattern: 1111001u1dssnnnndddd000pn0m0mmmm,
 //       rule: VADDL_VADDW,
@@ -562,17 +550,17 @@ bool VectorBinary3RegisterDifferentLength_I16_32LTesterCase10
 //            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary3RegisterDifferentLength_I8_16_32TesterCase11
-    : public VectorBinary3RegisterDifferentLengthTester {
+class VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_0TesterCase11
+    : public Arm32DecoderTester {
  public:
-  VectorBinary3RegisterDifferentLength_I8_16_32TesterCase11(const NamedClassDecoder& decoder)
-    : VectorBinary3RegisterDifferentLengthTester(decoder) {}
+  VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_0TesterCase11(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary3RegisterDifferentLength_I8_16_32TesterCase11
+bool VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_0TesterCase11
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -588,7 +576,7 @@ bool VectorBinary3RegisterDifferentLength_I8_16_32TesterCase11
           0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorBinary3RegisterDifferentLengthTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -596,11 +584,10 @@ bool VectorBinary3RegisterDifferentLength_I8_16_32TesterCase11
 //    = {Vd: Vd(15:12),
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I8_16_32,
+//       baseline: VSUBL_VSUBW_1111001u1dssnnnndddd001pn0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vd(15:12), op(8)],
-//       generated_baseline: VSUBL_VSUBW_1111001u1dssnnnndddd001pn0m0mmmm_case_0,
 //       op: op(8),
 //       pattern: 1111001u1dssnnnndddd001pn0m0mmmm,
 //       rule: VSUBL_VSUBW,
@@ -610,17 +597,17 @@ bool VectorBinary3RegisterDifferentLength_I8_16_32TesterCase11
 //            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary3RegisterDifferentLength_I8_16_32TesterCase12
-    : public VectorBinary3RegisterDifferentLengthTester {
+class VSUBL_VSUBW_1111001u1dssnnnndddd001pn0m0mmmm_case_0TesterCase12
+    : public Arm32DecoderTester {
  public:
-  VectorBinary3RegisterDifferentLength_I8_16_32TesterCase12(const NamedClassDecoder& decoder)
-    : VectorBinary3RegisterDifferentLengthTester(decoder) {}
+  VSUBL_VSUBW_1111001u1dssnnnndddd001pn0m0mmmm_case_0TesterCase12(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary3RegisterDifferentLength_I8_16_32TesterCase12
+bool VSUBL_VSUBW_1111001u1dssnnnndddd001pn0m0mmmm_case_0TesterCase12
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -636,7 +623,7 @@ bool VectorBinary3RegisterDifferentLength_I8_16_32TesterCase12
           0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return VectorBinary3RegisterDifferentLengthTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -649,11 +636,10 @@ bool VectorBinary3RegisterDifferentLength_I8_16_32TesterCase12
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I16_32_64,
+//       baseline: VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vm(3:0)],
-//       generated_baseline: VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_0,
 //       pattern: 111100101dssnnnndddd0100n0m0mmmm,
 //       rule: VADDHN,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -661,12 +647,12 @@ bool VectorBinary3RegisterDifferentLength_I8_16_32TesterCase12
 //            Vm(0)=1 => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case0
-    : public VectorBinary3RegisterDifferentLength_I16_32_64TesterCase0 {
+class VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_0Tester_Case0
+    : public VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_0TesterCase0 {
  public:
-  VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case0()
-    : VectorBinary3RegisterDifferentLength_I16_32_64TesterCase0(
-      state_.VectorBinary3RegisterDifferentLength_I16_32_64_VADDHN_instance_)
+  VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_0Tester_Case0()
+    : VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_0TesterCase0(
+      state_.VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_0_VADDHN_instance_)
   {}
 };
 
@@ -674,11 +660,10 @@ class VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case0
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I16_32_64,
+//       baseline: VRADDHN_111100111dssnnnndddd0100n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vm(3:0)],
-//       generated_baseline: VRADDHN_111100111dssnnnndddd0100n0m0mmmm_case_0,
 //       pattern: 111100111dssnnnndddd0100n0m0mmmm,
 //       rule: VRADDHN,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -686,34 +671,33 @@ class VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case0
 //            Vm(0)=1 => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case1
-    : public VectorBinary3RegisterDifferentLength_I16_32_64TesterCase1 {
+class VRADDHN_111100111dssnnnndddd0100n0m0mmmm_case_0Tester_Case1
+    : public VRADDHN_111100111dssnnnndddd0100n0m0mmmm_case_0TesterCase1 {
  public:
-  VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case1()
-    : VectorBinary3RegisterDifferentLength_I16_32_64TesterCase1(
-      state_.VectorBinary3RegisterDifferentLength_I16_32_64_VRADDHN_instance_)
+  VRADDHN_111100111dssnnnndddd0100n0m0mmmm_case_0Tester_Case1()
+    : VRADDHN_111100111dssnnnndddd0100n0m0mmmm_case_0TesterCase1(
+      state_.VRADDHN_111100111dssnnnndddd0100n0m0mmmm_case_0_VRADDHN_instance_)
   {}
 };
 
 // A(11:8)=0101
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I8_16_32L,
+//       baseline: VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_0,
 //       pattern: 1111001u1dssnnnndddd0101n0m0mmmm,
 //       rule: VABAL_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR, Vd(0)=1 => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case2
-    : public VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase2 {
+class VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_0Tester_Case2
+    : public VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_0TesterCase2 {
  public:
-  VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case2()
-    : VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase2(
-      state_.VectorBinary3RegisterDifferentLength_I8_16_32L_VABAL_A2_instance_)
+  VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_0Tester_Case2()
+    : VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_0TesterCase2(
+      state_.VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_0_VABAL_A2_instance_)
   {}
 };
 
@@ -721,11 +705,10 @@ class VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case2
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I16_32_64,
+//       baseline: VSUBHN_111100101dssnnnndddd0110n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vm(3:0)],
-//       generated_baseline: VSUBHN_111100101dssnnnndddd0110n0m0mmmm_case_0,
 //       pattern: 111100101dssnnnndddd0110n0m0mmmm,
 //       rule: VSUBHN,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -733,12 +716,12 @@ class VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case2
 //            Vm(0)=1 => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case3
-    : public VectorBinary3RegisterDifferentLength_I16_32_64TesterCase3 {
+class VSUBHN_111100101dssnnnndddd0110n0m0mmmm_case_0Tester_Case3
+    : public VSUBHN_111100101dssnnnndddd0110n0m0mmmm_case_0TesterCase3 {
  public:
-  VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case3()
-    : VectorBinary3RegisterDifferentLength_I16_32_64TesterCase3(
-      state_.VectorBinary3RegisterDifferentLength_I16_32_64_VSUBHN_instance_)
+  VSUBHN_111100101dssnnnndddd0110n0m0mmmm_case_0Tester_Case3()
+    : VSUBHN_111100101dssnnnndddd0110n0m0mmmm_case_0TesterCase3(
+      state_.VSUBHN_111100101dssnnnndddd0110n0m0mmmm_case_0_VSUBHN_instance_)
   {}
 };
 
@@ -746,11 +729,10 @@ class VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case3
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I16_32_64,
+//       baseline: VRSUBHN_111100111dssnnnndddd0110n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vm(3:0)],
-//       generated_baseline: VRSUBHN_111100111dssnnnndddd0110n0m0mmmm_case_0,
 //       pattern: 111100111dssnnnndddd0110n0m0mmmm,
 //       rule: VRSUBHN,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -758,67 +740,64 @@ class VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case3
 //            Vm(0)=1 => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case4
-    : public VectorBinary3RegisterDifferentLength_I16_32_64TesterCase4 {
+class VRSUBHN_111100111dssnnnndddd0110n0m0mmmm_case_0Tester_Case4
+    : public VRSUBHN_111100111dssnnnndddd0110n0m0mmmm_case_0TesterCase4 {
  public:
-  VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case4()
-    : VectorBinary3RegisterDifferentLength_I16_32_64TesterCase4(
-      state_.VectorBinary3RegisterDifferentLength_I16_32_64_VRSUBHN_instance_)
+  VRSUBHN_111100111dssnnnndddd0110n0m0mmmm_case_0Tester_Case4()
+    : VRSUBHN_111100111dssnnnndddd0110n0m0mmmm_case_0TesterCase4(
+      state_.VRSUBHN_111100111dssnnnndddd0110n0m0mmmm_case_0_VRSUBHN_instance_)
   {}
 };
 
 // A(11:8)=0111
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I8_16_32L,
+//       baseline: VABDL_integer_A2_1111001u1dssnnnndddd0111n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VABDL_integer_A2_1111001u1dssnnnndddd0111n0m0mmmm_case_0,
 //       pattern: 1111001u1dssnnnndddd0111n0m0mmmm,
 //       rule: VABDL_integer_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR, Vd(0)=1 => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case5
-    : public VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase5 {
+class VABDL_integer_A2_1111001u1dssnnnndddd0111n0m0mmmm_case_0Tester_Case5
+    : public VABDL_integer_A2_1111001u1dssnnnndddd0111n0m0mmmm_case_0TesterCase5 {
  public:
-  VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case5()
-    : VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase5(
-      state_.VectorBinary3RegisterDifferentLength_I8_16_32L_VABDL_integer_A2_instance_)
+  VABDL_integer_A2_1111001u1dssnnnndddd0111n0m0mmmm_case_0Tester_Case5()
+    : VABDL_integer_A2_1111001u1dssnnnndddd0111n0m0mmmm_case_0TesterCase5(
+      state_.VABDL_integer_A2_1111001u1dssnnnndddd0111n0m0mmmm_case_0_VABDL_integer_A2_instance_)
   {}
 };
 
 // A(11:8)=1100
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I8_16_32L,
+//       baseline: VMULL_integer_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VMULL_integer_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0,
 //       pattern: 1111001u1dssnnnndddd11p0n0m0mmmm,
 //       rule: VMULL_integer_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR, Vd(0)=1 => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case6
-    : public VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase6 {
+class VMULL_integer_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0Tester_Case6
+    : public VMULL_integer_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0TesterCase6 {
  public:
-  VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case6()
-    : VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase6(
-      state_.VectorBinary3RegisterDifferentLength_I8_16_32L_VMULL_integer_A2_instance_)
+  VMULL_integer_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0Tester_Case6()
+    : VMULL_integer_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0TesterCase6(
+      state_.VMULL_integer_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0_VMULL_integer_A2_instance_)
   {}
 };
 
 // A(11:8)=1101 & U(24)=0
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I16_32L,
+//       baseline: VQDMULL_A1_111100101dssnnnndddd1101n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VQDMULL_A1_111100101dssnnnndddd1101n0m0mmmm_case_0,
 //       pattern: 111100101dssnnnndddd1101n0m0mmmm,
 //       rule: VQDMULL_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -826,12 +805,12 @@ class VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case6
 //            Vd(0)=1 => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary3RegisterDifferentLength_I16_32LTester_Case7
-    : public VectorBinary3RegisterDifferentLength_I16_32LTesterCase7 {
+class VQDMULL_A1_111100101dssnnnndddd1101n0m0mmmm_case_0Tester_Case7
+    : public VQDMULL_A1_111100101dssnnnndddd1101n0m0mmmm_case_0TesterCase7 {
  public:
-  VectorBinary3RegisterDifferentLength_I16_32LTester_Case7()
-    : VectorBinary3RegisterDifferentLength_I16_32LTesterCase7(
-      state_.VectorBinary3RegisterDifferentLength_I16_32L_VQDMULL_A1_instance_)
+  VQDMULL_A1_111100101dssnnnndddd1101n0m0mmmm_case_0Tester_Case7()
+    : VQDMULL_A1_111100101dssnnnndddd1101n0m0mmmm_case_0TesterCase7(
+      state_.VQDMULL_A1_111100101dssnnnndddd1101n0m0mmmm_case_0_VQDMULL_A1_instance_)
   {}
 };
 
@@ -839,11 +818,10 @@ class VectorBinary3RegisterDifferentLength_I16_32LTester_Case7
 //    = {U: U(24),
 //       Vd: Vd(15:12),
 //       actual: Actual_VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_P8,
+//       baseline: VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [U(24), size(21:20), Vd(15:12)],
-//       generated_baseline: VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0,
 //       pattern: 1111001u1dssnnnndddd11p0n0m0mmmm,
 //       rule: VMULL_polynomial_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -852,45 +830,43 @@ class VectorBinary3RegisterDifferentLength_I16_32LTester_Case7
 //         Vd(0)=1 => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary3RegisterDifferentLength_P8Tester_Case8
-    : public VectorBinary3RegisterDifferentLength_P8TesterCase8 {
+class VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0Tester_Case8
+    : public VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0TesterCase8 {
  public:
-  VectorBinary3RegisterDifferentLength_P8Tester_Case8()
-    : VectorBinary3RegisterDifferentLength_P8TesterCase8(
-      state_.VectorBinary3RegisterDifferentLength_P8_VMULL_polynomial_A2_instance_)
+  VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0Tester_Case8()
+    : VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0TesterCase8(
+      state_.VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0_VMULL_polynomial_A2_instance_)
   {}
 };
 
 // A(11:8)=10x0
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I8_16_32L,
+//       baseline: VMLAL_VMLSL_integer_A2_1111001u1dssnnnndddd10p0n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VMLAL_VMLSL_integer_A2_1111001u1dssnnnndddd10p0n0m0mmmm_case_0,
 //       pattern: 1111001u1dssnnnndddd10p0n0m0mmmm,
 //       rule: VMLAL_VMLSL_integer_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR, Vd(0)=1 => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case9
-    : public VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase9 {
+class VMLAL_VMLSL_integer_A2_1111001u1dssnnnndddd10p0n0m0mmmm_case_0Tester_Case9
+    : public VMLAL_VMLSL_integer_A2_1111001u1dssnnnndddd10p0n0m0mmmm_case_0TesterCase9 {
  public:
-  VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case9()
-    : VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase9(
-      state_.VectorBinary3RegisterDifferentLength_I8_16_32L_VMLAL_VMLSL_integer_A2_instance_)
+  VMLAL_VMLSL_integer_A2_1111001u1dssnnnndddd10p0n0m0mmmm_case_0Tester_Case9()
+    : VMLAL_VMLSL_integer_A2_1111001u1dssnnnndddd10p0n0m0mmmm_case_0TesterCase9(
+      state_.VMLAL_VMLSL_integer_A2_1111001u1dssnnnndddd10p0n0m0mmmm_case_0_VMLAL_VMLSL_integer_A2_instance_)
   {}
 };
 
 // A(11:8)=10x1 & U(24)=0
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I16_32L,
+//       baseline: VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_0,
 //       pattern: 111100101dssnnnndddd10p1n0m0mmmm,
 //       rule: VQDMLAL_VQDMLSL_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -898,12 +874,12 @@ class VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case9
 //            Vd(0)=1 => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary3RegisterDifferentLength_I16_32LTester_Case10
-    : public VectorBinary3RegisterDifferentLength_I16_32LTesterCase10 {
+class VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_0Tester_Case10
+    : public VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_0TesterCase10 {
  public:
-  VectorBinary3RegisterDifferentLength_I16_32LTester_Case10()
-    : VectorBinary3RegisterDifferentLength_I16_32LTesterCase10(
-      state_.VectorBinary3RegisterDifferentLength_I16_32L_VQDMLAL_VQDMLSL_A1_instance_)
+  VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_0Tester_Case10()
+    : VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_0TesterCase10(
+      state_.VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_0_VQDMLAL_VQDMLSL_A1_instance_)
   {}
 };
 
@@ -911,11 +887,10 @@ class VectorBinary3RegisterDifferentLength_I16_32LTester_Case10
 //    = {Vd: Vd(15:12),
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I8_16_32,
+//       baseline: VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vd(15:12), op(8)],
-//       generated_baseline: VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_0,
 //       op: op(8),
 //       pattern: 1111001u1dssnnnndddd000pn0m0mmmm,
 //       rule: VADDL_VADDW,
@@ -925,12 +900,12 @@ class VectorBinary3RegisterDifferentLength_I16_32LTester_Case10
 //            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary3RegisterDifferentLength_I8_16_32Tester_Case11
-    : public VectorBinary3RegisterDifferentLength_I8_16_32TesterCase11 {
+class VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_0Tester_Case11
+    : public VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_0TesterCase11 {
  public:
-  VectorBinary3RegisterDifferentLength_I8_16_32Tester_Case11()
-    : VectorBinary3RegisterDifferentLength_I8_16_32TesterCase11(
-      state_.VectorBinary3RegisterDifferentLength_I8_16_32_VADDL_VADDW_instance_)
+  VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_0Tester_Case11()
+    : VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_0TesterCase11(
+      state_.VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_0_VADDL_VADDW_instance_)
   {}
 };
 
@@ -938,11 +913,10 @@ class VectorBinary3RegisterDifferentLength_I8_16_32Tester_Case11
 //    = {Vd: Vd(15:12),
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I8_16_32,
+//       baseline: VSUBL_VSUBW_1111001u1dssnnnndddd001pn0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vd(15:12), op(8)],
-//       generated_baseline: VSUBL_VSUBW_1111001u1dssnnnndddd001pn0m0mmmm_case_0,
 //       op: op(8),
 //       pattern: 1111001u1dssnnnndddd001pn0m0mmmm,
 //       rule: VSUBL_VSUBW,
@@ -952,12 +926,12 @@ class VectorBinary3RegisterDifferentLength_I8_16_32Tester_Case11
 //            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary3RegisterDifferentLength_I8_16_32Tester_Case12
-    : public VectorBinary3RegisterDifferentLength_I8_16_32TesterCase12 {
+class VSUBL_VSUBW_1111001u1dssnnnndddd001pn0m0mmmm_case_0Tester_Case12
+    : public VSUBL_VSUBW_1111001u1dssnnnndddd001pn0m0mmmm_case_0TesterCase12 {
  public:
-  VectorBinary3RegisterDifferentLength_I8_16_32Tester_Case12()
-    : VectorBinary3RegisterDifferentLength_I8_16_32TesterCase12(
-      state_.VectorBinary3RegisterDifferentLength_I8_16_32_VSUBL_VSUBW_instance_)
+  VSUBL_VSUBW_1111001u1dssnnnndddd001pn0m0mmmm_case_0Tester_Case12()
+    : VSUBL_VSUBW_1111001u1dssnnnndddd001pn0m0mmmm_case_0TesterCase12(
+      state_.VSUBL_VSUBW_1111001u1dssnnnndddd001pn0m0mmmm_case_0_VSUBL_VSUBW_instance_)
   {}
 };
 
@@ -974,11 +948,10 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I16_32_64,
+//       baseline: VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vm(3:0)],
-//       generated_baseline: VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_0,
 //       pattern: 111100101dssnnnndddd0100n0m0mmmm,
 //       rule: VADDHN,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -987,8 +960,8 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       size: size(21:20),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case0_TestCase0) {
-  VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case0 baseline_tester;
+       VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_0Tester_Case0_TestCase0) {
+  VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_0Tester_Case0 baseline_tester;
   NamedActual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1_VADDHN actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100101dssnnnndddd0100n0m0mmmm");
@@ -998,11 +971,10 @@ TEST_F(Arm32DecoderStateTests,
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I16_32_64,
+//       baseline: VRADDHN_111100111dssnnnndddd0100n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vm(3:0)],
-//       generated_baseline: VRADDHN_111100111dssnnnndddd0100n0m0mmmm_case_0,
 //       pattern: 111100111dssnnnndddd0100n0m0mmmm,
 //       rule: VRADDHN,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -1011,8 +983,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(21:20),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case1_TestCase1) {
-  VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case1 baseline_tester;
+       VRADDHN_111100111dssnnnndddd0100n0m0mmmm_case_0Tester_Case1_TestCase1) {
+  VRADDHN_111100111dssnnnndddd0100n0m0mmmm_case_0Tester_Case1 baseline_tester;
   NamedActual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1_VRADDHN actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111dssnnnndddd0100n0m0mmmm");
@@ -1021,19 +993,18 @@ TEST_F(Arm32DecoderStateTests,
 // A(11:8)=0101
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I8_16_32L,
+//       baseline: VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_0,
 //       pattern: 1111001u1dssnnnndddd0101n0m0mmmm,
 //       rule: VABAL_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR, Vd(0)=1 => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case2_TestCase2) {
-  VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case2 baseline_tester;
+       VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_0Tester_Case2_TestCase2) {
+  VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_0Tester_Case2 baseline_tester;
   NamedActual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1_VABAL_A2 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("1111001u1dssnnnndddd0101n0m0mmmm");
@@ -1043,11 +1014,10 @@ TEST_F(Arm32DecoderStateTests,
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I16_32_64,
+//       baseline: VSUBHN_111100101dssnnnndddd0110n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vm(3:0)],
-//       generated_baseline: VSUBHN_111100101dssnnnndddd0110n0m0mmmm_case_0,
 //       pattern: 111100101dssnnnndddd0110n0m0mmmm,
 //       rule: VSUBHN,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -1056,8 +1026,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(21:20),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case3_TestCase3) {
-  VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case3 baseline_tester;
+       VSUBHN_111100101dssnnnndddd0110n0m0mmmm_case_0Tester_Case3_TestCase3) {
+  VSUBHN_111100101dssnnnndddd0110n0m0mmmm_case_0Tester_Case3 baseline_tester;
   NamedActual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1_VSUBHN actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100101dssnnnndddd0110n0m0mmmm");
@@ -1067,11 +1037,10 @@ TEST_F(Arm32DecoderStateTests,
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I16_32_64,
+//       baseline: VRSUBHN_111100111dssnnnndddd0110n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vm(3:0)],
-//       generated_baseline: VRSUBHN_111100111dssnnnndddd0110n0m0mmmm_case_0,
 //       pattern: 111100111dssnnnndddd0110n0m0mmmm,
 //       rule: VRSUBHN,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -1080,8 +1049,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(21:20),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case4_TestCase4) {
-  VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case4 baseline_tester;
+       VRSUBHN_111100111dssnnnndddd0110n0m0mmmm_case_0Tester_Case4_TestCase4) {
+  VRSUBHN_111100111dssnnnndddd0110n0m0mmmm_case_0Tester_Case4 baseline_tester;
   NamedActual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1_VRSUBHN actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111dssnnnndddd0110n0m0mmmm");
@@ -1090,19 +1059,18 @@ TEST_F(Arm32DecoderStateTests,
 // A(11:8)=0111
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I8_16_32L,
+//       baseline: VABDL_integer_A2_1111001u1dssnnnndddd0111n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VABDL_integer_A2_1111001u1dssnnnndddd0111n0m0mmmm_case_0,
 //       pattern: 1111001u1dssnnnndddd0111n0m0mmmm,
 //       rule: VABDL_integer_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR, Vd(0)=1 => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case5_TestCase5) {
-  VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case5 baseline_tester;
+       VABDL_integer_A2_1111001u1dssnnnndddd0111n0m0mmmm_case_0Tester_Case5_TestCase5) {
+  VABDL_integer_A2_1111001u1dssnnnndddd0111n0m0mmmm_case_0Tester_Case5 baseline_tester;
   NamedActual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1_VABDL_integer_A2 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("1111001u1dssnnnndddd0111n0m0mmmm");
@@ -1111,19 +1079,18 @@ TEST_F(Arm32DecoderStateTests,
 // A(11:8)=1100
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I8_16_32L,
+//       baseline: VMULL_integer_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VMULL_integer_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0,
 //       pattern: 1111001u1dssnnnndddd11p0n0m0mmmm,
 //       rule: VMULL_integer_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR, Vd(0)=1 => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case6_TestCase6) {
-  VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case6 baseline_tester;
+       VMULL_integer_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0Tester_Case6_TestCase6) {
+  VMULL_integer_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0Tester_Case6 baseline_tester;
   NamedActual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1_VMULL_integer_A2 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("1111001u1dssnnnndddd11p0n0m0mmmm");
@@ -1132,11 +1099,10 @@ TEST_F(Arm32DecoderStateTests,
 // A(11:8)=1101 & U(24)=0
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I16_32L,
+//       baseline: VQDMULL_A1_111100101dssnnnndddd1101n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VQDMULL_A1_111100101dssnnnndddd1101n0m0mmmm_case_0,
 //       pattern: 111100101dssnnnndddd1101n0m0mmmm,
 //       rule: VQDMULL_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -1145,8 +1111,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(21:20),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       VectorBinary3RegisterDifferentLength_I16_32LTester_Case7_TestCase7) {
-  VectorBinary3RegisterDifferentLength_I16_32LTester_Case7 baseline_tester;
+       VQDMULL_A1_111100101dssnnnndddd1101n0m0mmmm_case_0Tester_Case7_TestCase7) {
+  VQDMULL_A1_111100101dssnnnndddd1101n0m0mmmm_case_0Tester_Case7 baseline_tester;
   NamedActual_VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_1_VQDMULL_A1 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100101dssnnnndddd1101n0m0mmmm");
@@ -1156,11 +1122,10 @@ TEST_F(Arm32DecoderStateTests,
 //    = {U: U(24),
 //       Vd: Vd(15:12),
 //       actual: Actual_VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_P8,
+//       baseline: VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [U(24), size(21:20), Vd(15:12)],
-//       generated_baseline: VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0,
 //       pattern: 1111001u1dssnnnndddd11p0n0m0mmmm,
 //       rule: VMULL_polynomial_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -1170,8 +1135,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(21:20),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       VectorBinary3RegisterDifferentLength_P8Tester_Case8_TestCase8) {
-  VectorBinary3RegisterDifferentLength_P8Tester_Case8 baseline_tester;
+       VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0Tester_Case8_TestCase8) {
+  VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0Tester_Case8 baseline_tester;
   NamedActual_VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_1_VMULL_polynomial_A2 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("1111001u1dssnnnndddd11p0n0m0mmmm");
@@ -1180,19 +1145,18 @@ TEST_F(Arm32DecoderStateTests,
 // A(11:8)=10x0
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I8_16_32L,
+//       baseline: VMLAL_VMLSL_integer_A2_1111001u1dssnnnndddd10p0n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VMLAL_VMLSL_integer_A2_1111001u1dssnnnndddd10p0n0m0mmmm_case_0,
 //       pattern: 1111001u1dssnnnndddd10p0n0m0mmmm,
 //       rule: VMLAL_VMLSL_integer_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR, Vd(0)=1 => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case9_TestCase9) {
-  VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case9 baseline_tester;
+       VMLAL_VMLSL_integer_A2_1111001u1dssnnnndddd10p0n0m0mmmm_case_0Tester_Case9_TestCase9) {
+  VMLAL_VMLSL_integer_A2_1111001u1dssnnnndddd10p0n0m0mmmm_case_0Tester_Case9 baseline_tester;
   NamedActual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1_VMLAL_VMLSL_integer_A2 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("1111001u1dssnnnndddd10p0n0m0mmmm");
@@ -1201,11 +1165,10 @@ TEST_F(Arm32DecoderStateTests,
 // A(11:8)=10x1 & U(24)=0
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I16_32L,
+//       baseline: VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       generated_baseline: VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_0,
 //       pattern: 111100101dssnnnndddd10p1n0m0mmmm,
 //       rule: VQDMLAL_VQDMLSL_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
@@ -1214,8 +1177,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(21:20),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       VectorBinary3RegisterDifferentLength_I16_32LTester_Case10_TestCase10) {
-  VectorBinary3RegisterDifferentLength_I16_32LTester_Case10 baseline_tester;
+       VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_0Tester_Case10_TestCase10) {
+  VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_0Tester_Case10 baseline_tester;
   NamedActual_VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_1_VQDMLAL_VQDMLSL_A1 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100101dssnnnndddd10p1n0m0mmmm");
@@ -1225,11 +1188,10 @@ TEST_F(Arm32DecoderStateTests,
 //    = {Vd: Vd(15:12),
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I8_16_32,
+//       baseline: VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vd(15:12), op(8)],
-//       generated_baseline: VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_0,
 //       op: op(8),
 //       pattern: 1111001u1dssnnnndddd000pn0m0mmmm,
 //       rule: VADDL_VADDW,
@@ -1240,8 +1202,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(21:20),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       VectorBinary3RegisterDifferentLength_I8_16_32Tester_Case11_TestCase11) {
-  VectorBinary3RegisterDifferentLength_I8_16_32Tester_Case11 baseline_tester;
+       VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_0Tester_Case11_TestCase11) {
+  VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_0Tester_Case11 baseline_tester;
   NamedActual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1_VADDL_VADDW actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("1111001u1dssnnnndddd000pn0m0mmmm");
@@ -1251,11 +1213,10 @@ TEST_F(Arm32DecoderStateTests,
 //    = {Vd: Vd(15:12),
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1,
-//       baseline: VectorBinary3RegisterDifferentLength_I8_16_32,
+//       baseline: VSUBL_VSUBW_1111001u1dssnnnndddd001pn0m0mmmm_case_0,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vd(15:12), op(8)],
-//       generated_baseline: VSUBL_VSUBW_1111001u1dssnnnndddd001pn0m0mmmm_case_0,
 //       op: op(8),
 //       pattern: 1111001u1dssnnnndddd001pn0m0mmmm,
 //       rule: VSUBL_VSUBW,
@@ -1266,8 +1227,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(21:20),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       VectorBinary3RegisterDifferentLength_I8_16_32Tester_Case12_TestCase12) {
-  VectorBinary3RegisterDifferentLength_I8_16_32Tester_Case12 baseline_tester;
+       VSUBL_VSUBW_1111001u1dssnnnndddd001pn0m0mmmm_case_0Tester_Case12_TestCase12) {
+  VSUBL_VSUBW_1111001u1dssnnnndddd001pn0m0mmmm_case_0Tester_Case12 baseline_tester;
   NamedActual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1_VSUBL_VSUBW actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("1111001u1dssnnnndddd001pn0m0mmmm");
