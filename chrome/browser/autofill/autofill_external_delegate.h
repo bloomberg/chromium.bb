@@ -182,6 +182,9 @@ class AutofillExternalDelegate
   // Should we display a warning if Autofill is disabled?
   bool display_warning_if_disabled_;
 
+  // Does the popup include any Autofill profile or credit card suggestions?
+  bool has_autofill_suggestion_;
+
   // Have we already shown Autofill suggestions for the field the user is
   // currently editing?  Used to keep track of state for metrics logging.
   bool has_shown_autofill_popup_for_current_edit_;

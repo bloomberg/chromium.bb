@@ -49,6 +49,7 @@ AutofillExternalDelegate::AutofillExternalDelegate(
       password_autofill_manager_(web_contents),
       autofill_query_id_(0),
       display_warning_if_disabled_(false),
+      has_autofill_suggestion_(false),
       has_shown_autofill_popup_for_current_edit_(false),
       registered_keyboard_listener_with_(NULL) {
   registrar_.Add(this,
@@ -104,16 +105,16 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   ApplyAutofillWarnings(&values, &labels, &icons, &ids);
 
   // Only include "Autofill Options" special menu item if we have Autofill
-  // items, identified by |unique_ids| having at least one valid value.
-  bool has_autofill_item = false;
+  // suggestions.
+  bool has_autofill_suggestion_ = false;
   for (size_t i = 0; i < ids.size(); ++i) {
     if (ids[i] > 0) {
-      has_autofill_item = true;
+      has_autofill_suggestion_ = true;
       break;
     }
   }
 
-  if (has_autofill_item)
+  if (has_autofill_suggestion_)
     ApplyAutofillOptions(&values, &labels, &icons, &ids);
 
   // Remove the separator if it is the last element.
@@ -133,15 +134,8 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   }
 
   // Send to display.
-  if (autofill_query_field_.is_focusable) {
+  if (autofill_query_field_.is_focusable)
     ApplyAutofillSuggestions(values, labels, icons, ids);
-
-    if (autofill_manager_) {
-      autofill_manager_->OnDidShowAutofillSuggestions(
-          has_autofill_item && !has_shown_autofill_popup_for_current_edit_);
-    }
-    has_shown_autofill_popup_for_current_edit_ |= has_autofill_item;
-  }
 }
 
 void AutofillExternalDelegate::OnShowPasswordSuggestions(
@@ -211,6 +205,13 @@ void AutofillExternalDelegate::OnPopupShown(
     registered_keyboard_listener_with_ = web_contents_->GetRenderViewHost();
     registered_keyboard_listener_with_->AddKeyboardListener(listener);
   }
+
+  if (!autofill_manager_)
+    return;
+
+  autofill_manager_->OnDidShowAutofillSuggestions(
+      has_autofill_suggestion_ && !has_shown_autofill_popup_for_current_edit_);
+  has_shown_autofill_popup_for_current_edit_ |= has_autofill_suggestion_;
 }
 
 void AutofillExternalDelegate::OnPopupHidden(
