@@ -12,6 +12,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/sync/signin_histogram.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
@@ -629,6 +631,9 @@ void SyncSetupHandler::DisplayGaiaLoginInNewTabOrWindow() {
   std::string email = SigninManagerFactory::GetForProfile(
       browser->profile())->GetAuthenticatedUsername();
   if (!email.empty()) {
+    UMA_HISTOGRAM_ENUMERATION("Signin.Reauth",
+                              signin::HISTOGRAM_SHOWN,
+                              signin::HISTOGRAM_MAX);
     std::string fragment("Email=");
     fragment += email;
     GURL::Replacements replacements;

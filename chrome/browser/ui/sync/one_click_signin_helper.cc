@@ -43,6 +43,7 @@
 #include "chrome/browser/ui/sync/one_click_signin_histogram.h"
 #include "chrome/browser/ui/sync/one_click_signin_infobar_delegate.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
+#include "chrome/browser/ui/sync/signin_histogram.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -558,6 +559,9 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
     std::string current_email = manager->GetAuthenticatedUsername();
     const bool same_email = gaia::AreEmailsSame(current_email, email);
     if (!current_email.empty() && !same_email) {
+      UMA_HISTOGRAM_ENUMERATION("Signin.Reauth",
+                                signin::HISTOGRAM_ACCOUNT_MISSMATCH,
+                                signin::HISTOGRAM_MAX);
       if (error_message) {
         error_message->assign(
             l10n_util::GetStringFUTF8(IDS_SYNC_WRONG_EMAIL,
