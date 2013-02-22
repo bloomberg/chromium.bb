@@ -13104,12 +13104,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_TITLE" desc="In the Photo import, the window title.">
         Import media
       </message>
-      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_IMPORTING" desc="In the Photo import, text informing that import is running.">
-        Importing to Drive
-      </message>
-      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_IMPORT_COMPLETE" desc="In the Photo import, text informing that import is done.">
-        Import complete
-      </message>
       <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_IMPORT_BUTTON" desc="In the Photo import, label of import button.">
         Import
       </message>
@@ -13137,8 +13131,20 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_IMPORTING_ERROR" desc="In the Photo import, importing error message.">
         Cannot import. An error occured.
       </message>
+      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_IMPORTING" desc="In the Photo import, text informing that import is running.">
+        Importing to Drive
+      </message>
+      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_IMPORT_COMPLETE" desc="In the Photo import, text informing that import is done.">
+        Import complete
+      </message>
       <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_CAPTION" desc="In the Photo import, caption inside the dialog, with items 'All' and 'None' to select everything and nothing.">
         Select photos to import
+      </message>
+      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_ONE_SELECTED" desc="In the Photo import, message informing about one photo selected.">
+        1 selected
+      </message>
+      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_MANY_SELECTED" desc="In the Photo import, message informing about multiple photos selected.">
+        <ph name="COUNT">$1<ex>42</ex></ph> selected
       </message>
       <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_SELECT_ALL" desc="In the Photo import, link to select all photos.">
         Select all
@@ -13149,11 +13155,8 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_DELETE_AFTER" desc="In the Photo import, label of checkbox to remove files after import is done.">
         Delete photos after import
       </message>
-      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_ONE_SELECTED" desc="In the Photo import, message informing about one photo selected.">
-        1 selected
-      </message>
-      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_MANY_SELECTED" desc="In the Photo import, message informing about multiple photos selected.">
-        <ph name="COUNT">$1<ex>42</ex></ph> selected
+      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_MY_PHOTOS_DIRECTORY_NAME" desc="Directory name for storing photos.">
+        My Photos
       </message>
 
       <message name="IDS_FILE_BROWSER_CONFIRM_OVERWRITE_FILE" desc="Asks the user if they are sure they want to overwrite an existing file with another one.">

@@ -38,12 +38,6 @@ PhotoImport.prototype = { __proto__: cr.EventTarget.prototype };
 PhotoImport.ITEM_WIDTH = 164 + 8;
 
 /**
- * Directory name on the Drive containing the imported photos.
- * TODO(dgozman): localize
- */
-PhotoImport.DRIVE_PHOTOS_DIR = 'My Photos';
-
-/**
  * Number of tries in creating a destination directory.
  */
 PhotoImport.CREATE_DESTINATION_TRIES = 100;
@@ -135,7 +129,9 @@ PhotoImport.prototype.initMyPhotos_ = function() {
   }.bind(this);
 
   var onMounted = function() {
-    var dir = PathUtil.join(RootDirectory.DRIVE, PhotoImport.DRIVE_PHOTOS_DIR);
+    var dir = PathUtil.join(
+        RootDirectory.DRIVE,
+        loadTimeData.getString('PHOTO_IMPORT_MY_PHOTOS_DIRECTORY_NAME'));
     util.getOrCreateDirectory(this.filesystem_.root, dir, onDirectory, onError);
   }.bind(this);
 
@@ -159,9 +155,10 @@ PhotoImport.prototype.createDestination_ = function(onSuccess) {
       [] /* default locale */,
       {year: 'numeric', month: 'short', day: 'numeric'});
 
-  var baseName = PathUtil.join(RootDirectory.DRIVE,
-                               PhotoImport.DRIVE_PHOTOS_DIR,
-                               dateFormatter.format(new Date()));
+  var baseName = PathUtil.join(
+      RootDirectory.DRIVE,
+      loadTimeData.getString('PHOTO_IMPORT_MY_PHOTOS_DIRECTORY_NAME'),
+      dateFormatter.format(new Date()));
 
   var createDirectory = function(directoryName) {
     this.filesystem_.root.getDirectory(
