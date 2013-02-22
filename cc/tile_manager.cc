@@ -124,9 +124,9 @@ scoped_ptr<base::Value> TileRasterStateAsValue(
   case RASTER_STATE:
       return scoped_ptr<base::Value>(base::Value::CreateStringValue(
           "RASTER_STATE"));
-  case SET_PIXELS_STATE:
+  case UPLOAD_STATE:
       return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-          "SET_PIXELS_STATE"));
+          "UPLOAD_STATE"));
   default:
       DCHECK(false) << "Unrecognized TileRasterState value";
       return scoped_ptr<base::Value>(base::Value::CreateStringValue(
@@ -182,7 +182,7 @@ TileManager::TileManager(
       raster_worker_pool_(RasterWorkerPool::Create(this, num_raster_threads)),
       manage_tiles_pending_(false),
       manage_tiles_call_count_(0),
-      bytes_pending_set_pixels_(0),
+      bytes_pending_upload_(0),
       has_performed_uploads_since_last_flush_(false),
       ever_exceeded_memory_budget_(false),
       record_rendering_stats_(false),
@@ -206,7 +206,7 @@ TileManager::~TileManager() {
   // resources.
   raster_worker_pool_.reset();
   AbortPendingTileUploads();
-  DCHECK_EQ(tiles_with_pending_set_pixels_.size(), 0);
+  DCHECK_EQ(tiles_with_pending_upload_.size(), 0);
   DCHECK_EQ(all_tiles_.size(), 0);
   DCHECK_EQ(live_or_allocated_tiles_.size(), 0);
 }
@@ -393,8 +393,8 @@ void TileManager::ManageTiles() {
 }
 
 void TileManager::CheckForCompletedTileUploads() {
-  while (!tiles_with_pending_set_pixels_.empty()) {
-    Tile* tile = tiles_with_pending_set_pixels_.front();
+  while (!tiles_with_pending_upload_.empty()) {
+    Tile* tile = tiles_with_pending_upload_.front();
     DCHECK(tile->managed_state().resource);
 
     // Set pixel tasks complete in the order they are posted.
@@ -413,17 +413,17 @@ void TileManager::CheckForCompletedTileUploads() {
 
     DidFinishTileInitialization(tile);
 
-    bytes_pending_set_pixels_ -= tile->bytes_consumed_if_allocated();
+    bytes_pending_upload_ -= tile->bytes_consumed_if_allocated();
     DidTileRasterStateChange(tile, IDLE_STATE);
-    tiles_with_pending_set_pixels_.pop();
+    tiles_with_pending_upload_.pop();
   }
 
   DispatchMoreTasks();
 }
 
 void TileManager::AbortPendingTileUploads() {
-  while (!tiles_with_pending_set_pixels_.empty()) {
-    Tile* tile = tiles_with_pending_set_pixels_.front();
+  while (!tiles_with_pending_upload_.empty()) {
+    Tile* tile = tiles_with_pending_upload_.front();
     ManagedTileState& managed_tile_state = tile->managed_state();
     DCHECK(managed_tile_state.resource);
 
@@ -437,9 +437,9 @@ void TileManager::AbortPendingTileUploads() {
     managed_tile_state.can_use_gpu_memory = false;
     FreeResourcesForTile(tile);
 
-    bytes_pending_set_pixels_ -= tile->bytes_consumed_if_allocated();
+    bytes_pending_upload_ -= tile->bytes_consumed_if_allocated();
     DidTileRasterStateChange(tile, IDLE_STATE);
-    tiles_with_pending_set_pixels_.pop();
+    tiles_with_pending_upload_.pop();
   }
 }
 
@@ -529,7 +529,7 @@ bool TileManager::HasPendingWorkScheduled(WhichTree tree) const {
     switch (i) {
       case WAITING_FOR_RASTER_STATE:
       case RASTER_STATE:
-      case SET_PIXELS_STATE:
+      case UPLOAD_STATE:
         for (int j = 0; j < NEVER_BIN; ++j) {
           if (raster_state_count_[i][tree][j])
             return true;
@@ -648,10 +648,10 @@ void TileManager::FreeResourcesForTile(Tile* tile) {
 bool TileManager::CanDispatchRasterTask(Tile* tile) const {
   if (raster_worker_pool_->IsBusy())
     return false;
-  size_t new_bytes_pending = bytes_pending_set_pixels_;
+  size_t new_bytes_pending = bytes_pending_upload_;
   new_bytes_pending += tile->bytes_consumed_if_allocated();
   return new_bytes_pending <= kMaxPendingUploadBytes &&
-         tiles_with_pending_set_pixels_.size() < kMaxPendingUploads;
+         tiles_with_pending_upload_.size() < kMaxPendingUploads;
 }
 
 void TileManager::DispatchMoreTasks() {
@@ -860,9 +860,9 @@ void TileManager::OnRasterTaskCompleted(
 
     managed_tile_state.resource = resource.Pass();
 
-    bytes_pending_set_pixels_ += tile->bytes_consumed_if_allocated();
-    DidTileRasterStateChange(tile, SET_PIXELS_STATE);
-    tiles_with_pending_set_pixels_.push(tile);
+    bytes_pending_upload_ += tile->bytes_consumed_if_allocated();
+    DidTileRasterStateChange(tile, UPLOAD_STATE);
+    tiles_with_pending_upload_.push(tile);
   } else {
     resource_pool_->resource_provider()->releasePixelBuffer(resource->id());
     resource_pool_->ReleaseResource(resource.Pass());

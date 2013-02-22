@@ -59,7 +59,7 @@ enum TileRasterState {
   IDLE_STATE = 0,
   WAITING_FOR_RASTER_STATE = 1,
   RASTER_STATE = 2,
-  SET_PIXELS_STATE = 3,
+  UPLOAD_STATE = 3,
   NUM_STATES = 4
 };
 scoped_ptr<base::Value> TileRasterStateAsValue(
@@ -220,8 +220,8 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   PixelRefMap pending_decode_tasks_;
 
   typedef std::queue<scoped_refptr<Tile> > TileQueue;
-  TileQueue tiles_with_pending_set_pixels_;
-  size_t bytes_pending_set_pixels_;
+  TileQueue tiles_with_pending_upload_;
+  size_t bytes_pending_upload_;
   bool has_performed_uploads_since_last_flush_;
   bool ever_exceeded_memory_budget_;
   MemoryHistory::Entry memory_stats_from_last_assign_;
