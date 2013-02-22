@@ -14,6 +14,8 @@ usage() {
   echo "--[no-]syms: enable or disable installation of debugging symbols"
   echo "--[no-]lib32: enable or disable installation of 32 bit libraries"
   echo "--[no-]arm: enable or disable installation of arm cross toolchain"
+  echo "--[no-]chromeos-fonts: enable or disable installation of Chrome OS"\
+       "fonts"
   echo "--no-prompt: silently select standard options/defaults"
   echo "Script will prompt interactively if options not given."
   exit 1
@@ -28,6 +30,8 @@ do
   --no-lib32)               do_inst_lib32=0;;
   --arm)                    do_inst_arm=1;;
   --no-arm)                 do_inst_arm=0;;
+  --chromeos-fonts)         do_inst_chromeos_fonts=1;;
+  --no-chromeos-fonts)      do_inst_chromeos_fonts=0;;
   --no-prompt)              do_default=1
                             do_quietly="-qq --assume-yes"
     ;;
@@ -199,6 +203,15 @@ if test "$do_inst_syms" = "1"; then
 else
   echo "Skipping installation of debugging symbols."
   dbg_list=
+fi
+
+# Install the Chrome OS default fonts.
+if test "$do_inst_chromeos_fonts" != "0"; then
+  echo "Installing Chrome OS fonts."
+  dir=`echo $0 | sed -r -e 's/\/[^/]+$//'`
+  sudo $dir/linux/install-chromeos-fonts.py
+else
+  echo "Skipping installation of Chrome OS fonts."
 fi
 
 # When cross building for arm on 64-bit systems the host binaries
