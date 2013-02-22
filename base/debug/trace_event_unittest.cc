@@ -73,7 +73,7 @@ class TraceEventTestFixture : public testing::Test {
 
   void BeginTrace() {
     event_watch_notification_ = 0;
-    TraceLog::GetInstance()->SetEnabled("*");
+    TraceLog::GetInstance()->SetEnabled(std::string("*"));
   }
 
   void EndTraceAndFlush() {

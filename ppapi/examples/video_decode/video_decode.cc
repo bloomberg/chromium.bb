@@ -70,7 +70,7 @@ class VideoDecodeDemoInstance : public pp::Instance,
     // particular need to delete context_ and re-create textures.
     // Probably have to recreate the decoder from scratch, because old textures
     // can still be outstanding in the decoder!
-    assert(!"Unexpectedly lost graphics context");
+    assert(false && "Unexpectedly lost graphics context");
   }
 
   // pp::VideoDecoderClient_Dev implementation.
@@ -461,7 +461,7 @@ void VideoDecodeDemoInstance::PictureReady(PP_Resource decoder,
 void VideoDecodeDemoInstance::NotifyError(PP_Resource decoder,
                                           PP_VideoDecodeError_Dev error) {
   LogError(this).s() << "Received error: " << error;
-  assert(!"Unexpected error; see stderr for details");
+  assert(false && "Unexpected error; see stderr for details");
 }
 
 // This object is the global object representing this plugin library as long

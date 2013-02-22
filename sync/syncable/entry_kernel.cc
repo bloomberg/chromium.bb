@@ -74,7 +74,7 @@ void SetEncryptableProtoValues(
         cryptographer->CanDecrypt(encrypted) &&
         cryptographer->Decrypt(encrypted, &decrypted)) {
       value = EntitySpecificsToValue(decrypted);
-      value->SetBoolean("encrypted", "true");
+      value->SetBoolean("encrypted", true);
     } else {
       value = EntitySpecificsToValue(kernel.ref(field));
     }

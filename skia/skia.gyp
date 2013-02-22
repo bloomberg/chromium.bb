@@ -540,6 +540,18 @@
             ],
           },
         }],
+        # TODO(scottmg): http://crbug.com/177306
+        ['clang==1', {
+          'xcode_settings': {
+            'WARNING_CFLAGS!': [
+              # Don't warn about string->bool used in asserts.
+              '-Wstring-conversion',
+            ],
+          },
+          'cflags!': [
+            '-Wstring-conversion',
+          ],
+        }],
       ],
       'dependencies': [
         'skia_opts',

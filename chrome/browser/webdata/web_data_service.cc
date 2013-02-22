@@ -331,8 +331,7 @@ void WebDataService::RemoveAutofillProfilesAndCreditCardsModifiedBetween(
 
 WebDataService::~WebDataService() {
   if (is_running_ && db_) {
-    DLOG_ASSERT("WebDataService dtor called without Shutdown");
-    NOTREACHED();
+    NOTREACHED() << "WebDataService dtor called without Shutdown";
   }
 }
 

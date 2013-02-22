@@ -543,10 +543,17 @@
                   # to warn that -1 is implicitly converted to 255.
                   '-Wno-constant-conversion',
                 ],
+                'WARNING_CFLAGS!': [
+                  # Don't warn about string->bool used in asserts.
+                  '-Wstring-conversion',
+                ],
               },
               'cflags': [
                 '-Wno-unused-value',
                 '-Wno-constant-conversion',
+              ],
+              'cflags!': [
+                '-Wstring-conversion',
               ],
             }],
           ],

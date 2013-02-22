@@ -180,6 +180,17 @@
           }],
         ],
       }],
+      ['clang == 1', {
+        'xcode_settings': {
+          'WARNING_CFLAGS!': [
+            # Don't warn about string->bool used in asserts.
+            '-Wstring-conversion',
+          ],
+        },
+        'cflags!': [
+          '-Wstring-conversion',
+        ],
+      }],
       ['OS=="linux"', {
         'defines': [
           'LINUX',

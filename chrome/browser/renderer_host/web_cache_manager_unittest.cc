@@ -256,7 +256,7 @@ TEST_F(WebCacheManagerTest, AttemptTacticTest) {
     else if (iter->first == kRendererID2)
       EXPECT_LE(kStats2.liveSize, iter->second);
     else
-      EXPECT_FALSE("Unexpected entry in strategy");
+      ADD_FAILURE();   // Unexpected entry in strategy.
     ++iter;
   }
 
@@ -296,7 +296,7 @@ TEST_F(WebCacheManagerTest, AddToStrategyTest) {
     else if (iter->first == kRendererID2)
       EXPECT_LE(kStats2.liveSize + kStats2.deadSize, iter->second);
     else
-      EXPECT_FALSE("Unexpected entry in strategy");
+      ADD_FAILURE();  // Unexpected entry in strategy.
     ++iter;
   }
 
