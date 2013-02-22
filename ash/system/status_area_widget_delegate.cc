@@ -24,6 +24,9 @@ namespace internal {
 StatusAreaWidgetDelegate::StatusAreaWidgetDelegate()
     : focus_cycler_for_testing_(NULL),
       alignment_(SHELF_ALIGNMENT_BOTTOM) {
+  // Allow the launcher to surrender the focus to another window upon
+  // navigation completion by the user.
+  set_allow_deactivate_on_esc(true);
 }
 
 StatusAreaWidgetDelegate::~StatusAreaWidgetDelegate() {

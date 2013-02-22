@@ -88,8 +88,19 @@ class VIEWS_EXPORT AccessiblePaneView : public View,
 
   FocusManager* focus_manager() const { return focus_manager_; }
 
+  // When finishing navigation by pressing ESC, it is allowed to surrender the
+  // focus to another window if if |allow| is set and no previous view can be
+  // found.
+  void set_allow_deactivate_on_esc(bool allow) {
+    allow_deactivate_on_esc_ = allow;
+  }
+
  private:
   bool pane_has_focus_;
+
+  // If true, the panel should be de-activated upon escape when no active view
+  // is known where to return to.
+  bool allow_deactivate_on_esc_;
 
   base::WeakPtrFactory<AccessiblePaneView> method_factory_;
 

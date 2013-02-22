@@ -182,8 +182,9 @@ class VIEWS_EXPORT FocusManager {
   void StoreFocusedView(bool clear_native_focus);
 
   // Restore the view saved with a previous call to StoreFocusedView(). Used
-  // when the widget becomes active.
-  void RestoreFocusedView();
+  // when the widget becomes active. Returns true when the previous view was
+  // successfully refocused - otherwise false.
+  bool RestoreFocusedView();
 
   // Clears the stored focused view.
   void ClearStoredFocusedView();

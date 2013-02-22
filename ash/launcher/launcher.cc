@@ -158,6 +158,9 @@ Launcher::DelegateView::DelegateView(Launcher* launcher)
     : launcher_(launcher),
       focus_cycler_(NULL),
       alpha_(0) {
+  // Allow the launcher to surrender the focus to another window upon
+  // navigation completion by the user.
+  set_allow_deactivate_on_esc(true);
 }
 
 Launcher::DelegateView::~DelegateView() {
