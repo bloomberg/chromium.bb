@@ -771,7 +771,7 @@ void SigninManager::TransferCredentialsToNewProfile() {
       UTF8ToUTF16(ProfileInfoCache::GetDefaultAvatarIconUrl(1)),
       base::Bind(&SigninManager::CompleteSigninForNewProfile,
                  weak_pointer_factory_.GetWeakPtr()),
-      chrome::HOST_DESKTOP_TYPE_NATIVE,
+      chrome::GetActiveDesktop(),
       false);
 }
 

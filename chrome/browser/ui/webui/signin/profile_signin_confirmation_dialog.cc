@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/signin/profile_signin_confirmation_dialog.h"
 
 #include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -20,6 +21,10 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+
+namespace content {
+class WebContents;
+}
 
 namespace {
 
@@ -119,10 +124,22 @@ ProfileSigninConfirmationDialog::ProfileSigninConfirmationDialog(
     signin_with_new_profile_(signin_with_new_profile),
     continue_signin_(continue_signin) {
   Browser* browser = FindBrowserWithProfile(profile,
-                                            chrome::HOST_DESKTOP_TYPE_FIRST);
-  DCHECK(browser);
-  delegate_ = CreateConstrainedWebDialog(
-      profile, this, NULL, browser->tab_strip_model()->GetActiveWebContents());
+                                            chrome::GetActiveDesktop());
+  if (!browser) {
+    DLOG(WARNING) << "No browser found to display the confirmation dialog";
+    cancel_signin_.Run();
+    return;
+  }
+
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  if (!web_contents) {
+    DLOG(WARNING) << "No web contents found to display the confirmation dialog";
+    cancel_signin_.Run();
+    return;
+  }
+
+  delegate_ = CreateConstrainedWebDialog(profile, this, NULL, web_contents);
 }
 
 ProfileSigninConfirmationDialog::~ProfileSigninConfirmationDialog() {
