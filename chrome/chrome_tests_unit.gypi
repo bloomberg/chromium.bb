@@ -1182,8 +1182,6 @@
         'browser/sync_file_system/drive_file_sync_client_unittest.cc',
         'browser/sync_file_system/drive_file_sync_service_unittest.cc',
         'browser/sync_file_system/drive_metadata_store_unittest.cc',
-        'browser/sync_file_system/fake_remote_change_processor.cc',
-        'browser/sync_file_system/fake_remote_change_processor.h',
         'browser/sync_file_system/local_file_sync_service_unittest.cc',
         'browser/sync_file_system/mock_local_change_processor.cc',
         'browser/sync_file_system/mock_local_change_processor.h',
