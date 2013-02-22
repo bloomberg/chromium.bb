@@ -1,10 +1,18 @@
-ADDRESS_HOME_STATE | ctl00$CustomerHeader$ddlCountries | CountryClose Please select your location or where you receive credit card billing  statements to see pricing in your local currency.Available Languages:Save this preference | US
+ADDRESS_HOME_STATE | ctl00$CustomerHeader$ddlCountries | CountryClose Please select your location or where you receive credit card billing  statements to see pricing in your local currency.Available Languages: | US
+UNKNOWN_TYPE | ctl00$CustomerHeader$rdlang | Available Languages: | en-us
+UNKNOWN_TYPE | ctl00$CustomerHeader$rdlang | Available Languages: | es
+UNKNOWN_TYPE | ctl00$CustomerHeader$rdlang | Available Languages: | rd3
+UNKNOWN_TYPE | ctl00$CustomerHeader$chkSave | Save this preference | on
 UNKNOWN_TYPE | ctl00$ContentInfo$Name$cboTitle$cboTitle | Title: | 
 NAME_FIRST | ctl00$ContentInfo$Name$FName$txtFName | First Name: | 
 NAME_MIDDLE_INITIAL | ctl00$ContentInfo$Name$MName$txtMName | Middle Initial (optional): | 
 NAME_LAST | ctl00$ContentInfo$Name$LName$txtLName | Last Name: | 
 UNKNOWN_TYPE | ctl00$ContentInfo$Name$suffix$txtSuffix | Suffix (optional): | 
+UNKNOWN_TYPE | ctl00$ContentInfo$MemberAge$EnrollmentAge |  | rdoAdult
+UNKNOWN_TYPE | ctl00$ContentInfo$MemberAge$EnrollmentAge | This OnePass account is for an adult 18 years of age or older. This OnePass account is for a minor under the age of 18. | rdoMinor
 UNKNOWN_TYPE | ctl00$ContentInfo$BirthDate$txtDOB | Minorâ€™s Date of Birth: | mm/dd/yyyy
+UNKNOWN_TYPE | ctl00$ContentInfo$AddressType$AddressType | Address Type: | rdoAddTypeHome
+UNKNOWN_TYPE | ctl00$ContentInfo$AddressType$AddressType | Home Business/Other | rdoAddTypeBusiness
 ADDRESS_HOME_LINE1 | ctl00$ContentInfo$Address$address1$txtAddress1 | Street Address: | 
 ADDRESS_HOME_LINE2 | ctl00$ContentInfo$Address$address2$txtAddress2 | Street Address: | 
 UNKNOWN_TYPE | ctl00$ContentInfo$Address$address3$txtAddress2 | Street Address: | 
@@ -20,6 +28,10 @@ UNKNOWN_TYPE | ctl00$ContentInfo$BusinessPhone$txtExt$txtPhoneExt | Ext./PIN (op
 ADDRESS_HOME_COUNTRY | ctl00$ContentInfo$BusinessPhone$cboCountry$cboCountry | Country: | US
 UNKNOWN_TYPE | ctl00$ContentInfo$HomeAirport$txtAirport | Home Airport (optional): | 
 EMAIL_ADDRESS | ctl00$ContentInfo$Email$txtEmail | E-mail Address: | 
+UNKNOWN_TYPE | ctl00$ContentInfo$chkSubOpStatement |  | on
+UNKNOWN_TYPE | ctl00$ContentInfo$chkSubopnewsoffers |  | on
+UNKNOWN_TYPE | ctl00$ContentInfo$chkSubcocomspecials |  | on
+UNKNOWN_TYPE | ctl00$ContentInfo$chkSubtripnotes |  | on
 UNKNOWN_TYPE | ctl00$ContentInfo$UsernamePassword$username$txtUsername | Username: | 
 UNKNOWN_TYPE | ctl00$ContentInfo$PINPasswordReminder$PINReminder1$txtPINReminder | PIN Reminder: (cannot include any numbers) | 
 UNKNOWN_TYPE | ctl00$ContentInfo$SecurityQuestionAnswer$Question$txtSecurity | Security Question: | 

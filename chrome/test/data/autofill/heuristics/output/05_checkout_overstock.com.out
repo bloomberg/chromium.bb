@@ -7,6 +7,8 @@ ADDRESS_BILLING_STATE | BillingState | State | CA
 ADDRESS_BILLING_ZIP | BillingZipCode | Zip | 95014
 PHONE_HOME_WHOLE_NUMBER | BillingDaytimePhone | Day Phone | 4088737223
 PHONE_HOME_WHOLE_NUMBER | BillingEveningPhone | Evening Phone | 
+UNKNOWN_TYPE | checkbox2 | *Required Field | on
+UNKNOWN_TYPE | diffShip | *Required Field | on
 NAME_FIRST | ShippingFirstName | First Name | 
 NAME_LAST | ShippingLastName | Last Name | 
 ADDRESS_HOME_LINE1 | lineone | Address Line 1 | 7540 Donegal Dr
@@ -16,10 +18,15 @@ ADDRESS_HOME_CITY | city | City | Cupertino
 ADDRESS_HOME_STATE | state | State | CA
 ADDRESS_HOME_ZIP | zip | Zip | 95014
 UNKNOWN_TYPE | product6496917 | Black-plated Tungsten Carbide Comfort Fit Band (8 mm) Options: 10 1 | GROUND6496917
+UNKNOWN_TYPE | CC |  | CreditCardValue
 CREDIT_CARD_NUMBER | CC_number | Credit Card #: | 
 CREDIT_CARD_EXP_MONTH | exp_month | Expiration Date: | 0
 CREDIT_CARD_EXP_4_DIGIT_YEAR | exp_year | Expiration Date: | 
+UNKNOWN_TYPE | CC |  | PayPal
+UNKNOWN_TYPE | CC |  | bml
+UNKNOWN_TYPE | UsePromoCode | See Terms | on
 UNKNOWN_TYPE | PromoCode | See Terms | 
+UNKNOWN_TYPE | UseGiftCards | See Terms | on
 UNKNOWN_TYPE | GiftCardNumber0 | Gift Card 1: | 
 UNKNOWN_TYPE | PINNumber0 | PIN: | 
 UNKNOWN_TYPE | GiftCardNumber1 | Gift Card 2: | 

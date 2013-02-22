@@ -1,3 +1,6 @@
 UNKNOWN_TYPE | userName | Your name:* | 
 EMAIL_ADDRESS | email | Your email address:* | 
 EMAIL_ADDRESS | emailCheck | Re-enter email address:* | 
+UNKNOWN_TYPE | subscribeEmail | Yes, please send me e-mails about special offers, exclusives and promotions from Target. | 1
+UNKNOWN_TYPE | ageCheck |  | yes
+UNKNOWN_TYPE | ageCheck | Yes No | no
