@@ -33,8 +33,11 @@
       $(whitelistedSections[i]).hidden = false;
 
     // Hide irrelevant parts of privacy section.
-    document.querySelector(
-        '#privacy-section > div > .checkbox').hidden = true;
+    var hiddenPrivacyNodeList = document.querySelectorAll(
+        '#privacy-section > div > .checkbox');
+    for (var i = 0; i < hiddenPrivacyNodeList.length; i++)
+      hiddenPrivacyNodeList[i].hidden = true;
+
     document.querySelector(
         '#privacy-section > div > #privacy-explanation').
             hidden = true;
