@@ -1,25 +1,25 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_AUDIO_LINUX_AUDIO_MANAGER_LINUX_H_
-#define MEDIA_AUDIO_LINUX_AUDIO_MANAGER_LINUX_H_
+#ifndef MEDIA_AUDIO_PULSE_AUDIO_MANAGER_PULSE_H_
+#define MEDIA_AUDIO_PULSE_AUDIO_MANAGER_PULSE_H_
 
+#include <pulse/pulseaudio.h>
 #include <string>
+
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/thread.h"
 #include "media/audio/audio_manager_base.h"
 
 namespace media {
 
-class AlsaWrapper;
-
-class MEDIA_EXPORT AudioManagerLinux : public AudioManagerBase {
+class MEDIA_EXPORT AudioManagerPulse : public AudioManagerBase {
  public:
-  AudioManagerLinux();
+  AudioManagerPulse();
+  virtual ~AudioManagerPulse();
 
-  static void ShowLinuxAudioInputSettings();
+  static AudioManager* Create();
 
   // Implementation of AudioManager.
   virtual bool HasAudioOutputDevices() OVERRIDE;
@@ -40,26 +40,22 @@ class MEDIA_EXPORT AudioManagerLinux : public AudioManagerBase {
   virtual AudioParameters GetPreferredLowLatencyOutputStreamParameters(
       const AudioParameters& input_params) OVERRIDE;
 
- protected:
-  virtual ~AudioManagerLinux();
+  int GetNativeSampleRate();
 
  private:
-  enum StreamType {
-    kStreamPlayback = 0,
-    kStreamCapture,
-  };
+  bool Init();
+  void DestroyPulse();
 
-  // Gets a list of available ALSA input devices.
-  void GetAlsaAudioInputDevices(media::AudioDeviceNames* device_names);
+  // Callback to get the devices' info like names, used by GetInputDevices().
+  static void DevicesInfoCallback(pa_context* context,
+                                  const pa_source_info* info,
+                                  int error, void* user_data);
 
-  // Gets the ALSA devices' names and ids.
-  void GetAlsaDevicesInfo(void** hint, media::AudioDeviceNames* device_names);
-
-  // Checks if the specific ALSA device is available.
-  bool IsAlsaDeviceAvailable(const char* device_name);
-
-  // Returns true if a device is present for the given stream type.
-  bool HasAnyAlsaAudioDevice(StreamType stream);
+  // Callback to get the native sample rate of PulseAudio, used by
+  // GetNativeSampleRate().
+  static void SampleRateInfoCallback(pa_context* context,
+                                     const pa_server_info* info,
+                                     void* user_data);
 
   // Called by MakeLinearOutputStream and MakeLowLatencyOutputStream.
   AudioOutputStream* MakeOutputStream(const AudioParameters& params);
@@ -68,11 +64,14 @@ class MEDIA_EXPORT AudioManagerLinux : public AudioManagerBase {
   AudioInputStream* MakeInputStream(const AudioParameters& params,
                                     const std::string& device_id);
 
-  scoped_ptr<AlsaWrapper> wrapper_;
+  pa_threaded_mainloop* input_mainloop_;
+  pa_context* input_context_;
+  AudioDeviceNames* devices_;
+  int native_input_sample_rate_;
 
-  DISALLOW_COPY_AND_ASSIGN(AudioManagerLinux);
+  DISALLOW_COPY_AND_ASSIGN(AudioManagerPulse);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_AUDIO_LINUX_AUDIO_MANAGER_LINUX_H_
+#endif  // MEDIA_AUDIO_PULSE_AUDIO_MANAGER_PULSE_H_

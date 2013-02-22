@@ -54,9 +54,6 @@ class PulseAudioOutputStream : public AudioOutputStream {
   static void ContextNotifyCallback(pa_context* c, void* p_this);
   static void StreamNotifyCallback(pa_stream* s, void* p_this);
 
-  // Triggers pa_threaded_mainloop_signal() to avoid deadlocks.
-  static void StreamSuccessCallback(pa_stream* s, int success, void* p_this);
-
   // Called by PulseAudio when it needs more audio data.
   static void StreamRequestCallback(pa_stream* s, size_t len, void* p_this);
 
@@ -66,12 +63,6 @@ class PulseAudioOutputStream : public AudioOutputStream {
 
   // Close() helper function to free internal structs.
   void Reset();
-
-  // Returns the current hardware latency value in bytes.
-  int GetHardwareLatencyInBytes();
-
-  // Helper method for waiting on Pulse Audio operations to complete.
-  void WaitForPulseOperation(pa_operation* op);
 
   // AudioParameters from the constructor.
   const AudioParameters params_;

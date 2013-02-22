@@ -139,8 +139,14 @@
         'audio/null_audio_sink.h',
         'audio/openbsd/audio_manager_openbsd.cc',
         'audio/openbsd/audio_manager_openbsd.h',
+        'audio/pulse/audio_manager_pulse.cc',
+        'audio/pulse/audio_manager_pulse.h',
         'audio/pulse/pulse_output.cc',
         'audio/pulse/pulse_output.h',
+        'audio/pulse/pulse_input.cc',
+        'audio/pulse/pulse_input.h',
+        'audio/pulse/pulse_util.cc',
+        'audio/pulse/pulse_util.h',
         'audio/sample_rates.cc',
         'audio/sample_rates.h',
         'audio/scoped_loop_observer.cc',
@@ -630,18 +636,71 @@
               'cflags': [
                 '<!@(pkg-config --cflags libpulse)',
               ],
-              'link_settings': {
-                'libraries': [
-                  '<!@(pkg-config --libs-only-l libpulse)',
-                ],
-              },
               'defines': [
                 'USE_PULSEAUDIO',
               ],
+              'variables': {
+                'generate_stubs_script': '../tools/generate_stubs/generate_stubs.py',
+                'extra_header': 'audio/pulse/pulse_stub_header.fragment',
+                'sig_files': ['audio/pulse/pulse.sigs'],
+                'outfile_type': 'posix_stubs',
+                'stubs_filename_root': 'pulse_stubs',
+                'project_path': 'media/audio/pulse',
+                'intermediate_dir': '<(INTERMEDIATE_DIR)',
+                'output_root': '<(SHARED_INTERMEDIATE_DIR)/pulse',
+              },
+              'sources': [
+                '<(extra_header)',
+              ],
+              'include_dirs': [
+                '<(output_root)',
+               ],
+              'actions': [
+                {
+                  'action_name': 'generate_stubs',
+                  'inputs': [
+                    '<(generate_stubs_script)',
+                    '<(extra_header)',
+                    '<@(sig_files)',
+                  ],
+                  'outputs': [
+                    '<(intermediate_dir)/<(stubs_filename_root).cc',
+                    '<(output_root)/<(project_path)/<(stubs_filename_root).h',
+                  ],
+                  'action': ['python',
+                             '<(generate_stubs_script)',
+                             '-i', '<(intermediate_dir)',
+                             '-o', '<(output_root)/<(project_path)',
+                             '-t', '<(outfile_type)',
+                             '-e', '<(extra_header)',
+                             '-s', '<(stubs_filename_root)',
+                             '-p', '<(project_path)',
+                             '<@(_inputs)',
+                  ],
+                  'process_outputs_as_sources': 1,
+                  'message': 'Generating Pulse stubs for dynamic loading.',
+                },
+              ],
+              'conditions': [ 
+                # Linux/Solaris need libdl for dlopen() and friends.
+                ['OS == "linux" or OS == "solaris"', {
+                  'link_settings': {
+                    'libraries': [
+                      '-ldl',
+                    ],
+                  },
+                }],
+              ],
             }, {  # else: use_pulseaudio == 0
               'sources!': [
+                'audio/pulse/audio_manager_pulse.cc',
+                'audio/pulse/audio_manager_pulse.h',
+                'audio/pulse/pulse_input.cc',
+                'audio/pulse/pulse_input.h',
                 'audio/pulse/pulse_output.cc',
                 'audio/pulse/pulse_output.h',
+                'audio/pulse/pulse_util.cc',
+                'audio/pulse/pulse_util.h',
               ],
             }],
           ],
@@ -664,8 +723,14 @@
         }],
         ['OS=="win"', {
           'sources!': [
+            'audio/pulse/audio_manager_pulse.cc',
+            'audio/pulse/audio_manager_pulse.h',
+            'audio/pulse/pulse_input.cc',
+            'audio/pulse/pulse_input.h',
             'audio/pulse/pulse_output.cc',
             'audio/pulse/pulse_output.h',
+            'audio/pulse/pulse_util.cc',
+            'audio/pulse/pulse_util.h',
             'video/capture/video_capture_device_dummy.cc',
             'video/capture/video_capture_device_dummy.h',
           ],

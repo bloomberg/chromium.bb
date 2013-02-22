@@ -19,7 +19,7 @@
 #include "media/audio/linux/alsa_output.h"
 #include "media/audio/linux/alsa_wrapper.h"
 #if defined(USE_PULSEAUDIO)
-#include "media/audio/pulse/pulse_output.h"
+#include "media/audio/pulse/audio_manager_pulse.h"
 #endif
 #include "media/base/limits.h"
 #include "media/base/media_switches.h"
@@ -41,25 +41,8 @@ static const char* kInvalidAudioInputDevices[] = {
   "surround",
 };
 
-// Implementation of AudioManager.
-bool AudioManagerLinux::HasAudioOutputDevices() {
-  return HasAnyAlsaAudioDevice(kStreamPlayback);
-}
-
-bool AudioManagerLinux::HasAudioInputDevices() {
-  return HasAnyAlsaAudioDevice(kStreamCapture);
-}
-
-AudioManagerLinux::AudioManagerLinux()
-    : wrapper_(new AlsaWrapper()) {
-  SetMaxOutputStreamsAllowed(kMaxOutputStreams);
-}
-
-AudioManagerLinux::~AudioManagerLinux() {
-  Shutdown();
-}
-
-void AudioManagerLinux::ShowAudioInputSettings() {
+// static
+void AudioManagerLinux::ShowLinuxAudioInputSettings() {
   scoped_ptr<base::Environment> env(base::Environment::Create());
   CommandLine command_line(CommandLine::NO_PROGRAM);
   switch (base::nix::GetDesktopEnvironment(env.get())) {
@@ -81,6 +64,28 @@ void AudioManagerLinux::ShowAudioInputSettings() {
       return;
   }
   base::LaunchProcess(command_line, base::LaunchOptions(), NULL);
+}
+
+// Implementation of AudioManager.
+bool AudioManagerLinux::HasAudioOutputDevices() {
+  return HasAnyAlsaAudioDevice(kStreamPlayback);
+}
+
+bool AudioManagerLinux::HasAudioInputDevices() {
+  return HasAnyAlsaAudioDevice(kStreamCapture);
+}
+
+AudioManagerLinux::AudioManagerLinux()
+    : wrapper_(new AlsaWrapper()) {
+  SetMaxOutputStreamsAllowed(kMaxOutputStreams);
+}
+
+AudioManagerLinux::~AudioManagerLinux() {
+  Shutdown();
+}
+
+void AudioManagerLinux::ShowAudioInputSettings() {
+  ShowLinuxAudioInputSettings();
 }
 
 void AudioManagerLinux::GetAudioInputDeviceNames(
@@ -248,12 +253,6 @@ AudioInputStream* AudioManagerLinux::MakeLowLatencyInputStream(
 
 AudioOutputStream* AudioManagerLinux::MakeOutputStream(
     const AudioParameters& params) {
-#if defined(USE_PULSEAUDIO)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUsePulseAudio)) {
-    return new PulseAudioOutputStream(params, this);
-  }
-#endif
-
   std::string device_name = AlsaPcmOutputStream::kAutoSelectDevice;
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAlsaOutputDevice)) {
@@ -279,6 +278,14 @@ AudioManager* CreateAudioManager() {
 #if defined(USE_CRAS)
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseCras)) {
     return new AudioManagerCras();
+  }
+#endif
+
+#if defined(USE_PULSEAUDIO)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUsePulseAudio)) {
+    AudioManager* manager = AudioManagerPulse::Create();
+    if (manager)
+      return manager;
   }
 #endif
 
