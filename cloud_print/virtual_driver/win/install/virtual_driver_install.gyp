@@ -95,7 +95,7 @@
         {
           'destination': '<(PRODUCT_DIR)',
           'files': [
-            '../../GCP-driver.ppd',
+            '../../gcp_driver.gpd',
           ],
         },
       ], 

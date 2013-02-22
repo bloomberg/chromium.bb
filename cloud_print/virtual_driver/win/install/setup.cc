@@ -39,7 +39,7 @@ const wchar_t kUninstallRegistry[] =
 const wchar_t kInstallerName[] = L"virtual_driver_setup.exe";
 const wchar_t kGcpUrl[] = L"http://www.google.com/cloudprint";
 
-const wchar_t kDataFileName[] = L"gcp-driver.ppd";
+const wchar_t kDataFileName[] = L"gcp_driver.gpd";
 const wchar_t kDriverName[] = L"MXDWDRV.DLL";
 const wchar_t kUiDriverName[] = L"UNIDRVUI.DLL";
 const wchar_t kHelpName[] = L"UNIDRV.HLP";
