@@ -271,6 +271,8 @@ void WebDialogView::MoveContents(WebContents* source, const gfx::Rect& pos) {
 void WebDialogView::HandleKeyboardEvent(content::WebContents* source,
                                         const NativeWebKeyboardEvent& event) {
 #if defined(USE_AURA)
+  if (!event.os_event)
+    return;
   ui::KeyEvent aura_event(event.os_event->native_event(), false);
   views::NativeWidgetAura* aura_widget =
       static_cast<views::NativeWidgetAura*>(GetWidget()->native_widget());
