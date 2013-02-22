@@ -105,10 +105,22 @@ class Operand(object):
     if self.arg_type == def_format.OperandType.SEGMENT_REGISTER_IN_REG:
       return 'segreg'
 
+    # TODO(shcherbina): get rid of this way to refer to specific segment
+    # registers (it is only used in pop and push).
+    if self.size == 's':
+      return 'segreg'
+
     if self.arg_type in [def_format.OperandType.MMX_REGISTER_IN_REG,
                          def_format.OperandType.MMX_REGISTER_IN_RM]:
       assert self.size == 'q'
       return 'mmx'
+
+    if self.arg_type in [def_format.OperandType.XMM_REGISTER_IN_REG,
+                         def_format.OperandType.XMM_REGISTER_IN_RM]:
+      if self.size.endswith('-ymm'):
+        return 'ymm'
+      else:
+        return 'xmm'
 
     if self.size == 'b':
       return '8bit'
@@ -118,8 +130,18 @@ class Operand(object):
       return '32bit'
     if self.size == 'q':
       return '64bit'
+    if self.size == 'o':
+      return '128bit'
+
+    if self.size == 'r':
+      # TODO(shcherbina): explicitly set to 32bit or 64bit depending on bitness.
+      return 'regsize'
+
+    if self.size == 'p':
+      return 'farptr'
+
     # TODO(shcherbina): support other formats.
-    raise NotImplementedError()
+    raise NotImplementedError(self)
 
   def __str__(self):
     return '%s%s%s%s' % (
@@ -183,6 +205,13 @@ class Instruction(object):
           '0xf0',  # lock
           '0xf2',  # rep(nz)
           '0xf3']:  # repz/condrep/branch_hint
+        if opcode in self.required_prefixes:
+          # Long nops (see nops.def) are the only instruction that allow
+          # multiple data16 prefixes. Since we don't wont to deal with duplicate
+          # prefixes in general, we leave all except one as part of opcode.
+          assert opcode == '0x66'
+          assert 'nopw' in self.name
+          break
         self.required_prefixes.append(opcode)
       else:
         # Prefixes ended, we get to the regular part of the opcode.
@@ -682,8 +711,6 @@ class InstructionPrinter(object):
         assert False, format
       self._PrintOperandSource(operand, 'jmp_to')
 
-    # TODO(shcherbina): subtract NOP from XCHG
-
   def _PrintModRMOperandSources(self, instruction):
     """Print sources for operands encoded in modrm."""
     for operand in instruction.operands:
@@ -866,6 +893,9 @@ def InstructionToString(mode, bitness, instruction):
   if not instruction.HasModRM():
     printer = InstructionPrinter(mode, bitness)
     printer.PrintInstructionWithoutModRM(instruction)
+    if instruction.name == 'xchg':
+      # Exclude nop
+      return header + '(%s - (0x90 | 0x48 0x90))' % printer.GetContent()
     return header + printer.GetContent()
 
   if instruction.FindOperand(def_format.OperandType.MEMORY) is None:
