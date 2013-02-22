@@ -413,11 +413,9 @@ void DeleteDesktopShortcutsAndIconFile(const base::FilePath& profile_path,
 
   BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
   for (size_t i = 0; i < shortcuts.size(); ++i) {
-    const string16 shortcut_name =
-        shortcuts[i].BaseName().RemoveExtension().value();
-    ShellUtil::RemoveShortcut(ShellUtil::SHORTCUT_LOCATION_DESKTOP,
-                              distribution, chrome_exe, ShellUtil::CURRENT_USER,
-                              &shortcut_name);
+    // Use file_util::Delete() instead of ShellUtil::RemoveShortcut(), as the
+    // latter causes non-profile taskbar shortcuts to be unpinned.
+    file_util::Delete(shortcuts[i], false);
   }
 
   const base::FilePath icon_path =
