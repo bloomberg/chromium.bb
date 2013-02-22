@@ -190,7 +190,8 @@ clean:
 	$(MKDIR) -p $(dir $@)
 	@echo "Directory Stamp" > $@
 
-OUTDIR:=$(TOOLCHAIN)/$(CONFIG)
+OUTBASE?=.
+OUTDIR:=$(OUTBASE)/$(TOOLCHAIN)/$(CONFIG)
 STAMPDIR?=$(OUTDIR)
 
 #
@@ -300,9 +301,15 @@ endif
 
 
 #
+# Assign a sensible default to CHROME_PATH
+#
+ifndef CHROME_PATH
+CHROME_PATH:=$(shell python $(NACL_SDK_ROOT)/tools/getos.py --chrome)
+endif
+
+#
 # Verify we can find the Chrome executable if we need to launch it.
 #
-.PHONY: CHECK_FOR_CHROME RUN LAUNCH
 CHECK_FOR_CHROME:
 ifeq (,$(wildcard $(CHROME_PATH)))
 	$(warning No valid Chrome found at CHROME_PATH=$(CHROME_PATH))
@@ -347,7 +354,7 @@ endif
 
 SYSARCH=$(shell python $(NACL_SDK_ROOT)/tools/getos.py --chrome-arch)
 GDB_ARGS+=-D $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/$(SYSARCH)-nacl-gdb
-GDB_ARGS+=-D $(CURDIR)/$(OUTDIR)/$(TARGET)_$(SYSARCH).nexe
+GDB_ARGS+=-D $(abspath $(OUTDIR))/$(TARGET)_$(SYSARCH).nexe
 
 DEBUG: CHECK_FOR_CHROME all
 	$(RUN_PY) $(GDB_ARGS) \
@@ -355,3 +362,5 @@ DEBUG: CHECK_FOR_CHROME all
 	    $(addprefix -E ,$(CHROME_ENV)) -- $(CHROME_PATH) $(CHROME_ARGS) \
 	    --enable-nacl-debug \
 	    --register-pepper-plugins="$(PPAPI_DEBUG),$(PPAPI_RELEASE)"
+
+.PHONY: CHECK_FOR_CHROME RUN LAUNCH
