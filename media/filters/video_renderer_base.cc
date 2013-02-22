@@ -45,7 +45,7 @@ VideoRendererBase::VideoRendererBase(
 
 VideoRendererBase::~VideoRendererBase() {
   base::AutoLock auto_lock(lock_);
-  CHECK(state_ == kUninitialized || state_ == kStopped) << state_;
+  CHECK(state_ == kStopped || state_ == kUninitialized) << state_;
   CHECK_EQ(thread_, base::kNullThreadHandle);
 }
 
@@ -126,7 +126,12 @@ void VideoRendererBase::Stop(const base::Closure& callback) {
     return;
   }
 
-  decoder_->Stop(callback);
+  if (decoder_) {
+    decoder_->Stop(callback);
+    return;
+  }
+
+  callback.Run();
 }
 
 void VideoRendererBase::StopDecoder(const base::Closure& callback) {
@@ -189,6 +194,7 @@ void VideoRendererBase::Initialize(const scoped_refptr<DemuxerStream>& stream,
   error_cb_ = error_cb;
   get_time_cb_ = get_time_cb;
   get_duration_cb_ = get_duration_cb;
+  state_ = kInitializing;
 
   scoped_ptr<VideoDecoderSelector> decoder_selector(
       new VideoDecoderSelector(base::MessageLoopProxy::current(),
@@ -215,6 +221,8 @@ void VideoRendererBase::OnDecoderSelected(
 
   if (state_ == kStopped)
     return;
+
+  DCHECK_EQ(state_, kInitializing);
 
   if (!selected_decoder) {
     state_ = kUninitialized;
@@ -515,6 +523,7 @@ void VideoRendererBase::AttemptRead_Locked() {
       return;
 
     case kUninitialized:
+    case kInitializing:
     case kPrerolled:
     case kFlushingDecoder:
     case kFlushed:
@@ -527,6 +536,9 @@ void VideoRendererBase::AttemptRead_Locked() {
 
 void VideoRendererBase::OnDecoderResetDone() {
   base::AutoLock auto_lock(lock_);
+  if (state_ == kStopped)
+    return;
+
   DCHECK_EQ(kFlushingDecoder, state_);
   DCHECK(!pending_read_);
 
