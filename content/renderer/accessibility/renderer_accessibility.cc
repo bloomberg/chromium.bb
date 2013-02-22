@@ -49,6 +49,10 @@ const std::string RendererAccessibility::AccessibilityNotificationToString(
   switch (notification) {
     case AccessibilityNotificationActiveDescendantChanged:
       return "active descendant changed";
+    case AccessibilityNotificationAriaAttributeChanged:
+      return "aria attribute changed";
+    case AccessibilityNotificationAutocorrectionOccurred:
+      return "autocorrection occurred";
     case AccessibilityNotificationBlur:
       return "blur";
     case AccessibilityNotificationAlert:
@@ -59,12 +63,16 @@ const std::string RendererAccessibility::AccessibilityNotificationToString(
       return "children changed";
     case AccessibilityNotificationFocusChanged:
       return "focus changed";
+    case AccessibilityNotificationInvalidStatusChanged:
+      return "invalid status changed";
     case AccessibilityNotificationLayoutComplete:
       return "layout complete";
     case AccessibilityNotificationLiveRegionChanged:
       return "live region changed";
     case AccessibilityNotificationLoadComplete:
       return "load complete";
+    case AccessibilityNotificationMenuListItemSelected:
+      return "menu list item selected";
     case AccessibilityNotificationMenuListValueChanged:
       return "menu list changed";
     case AccessibilityNotificationObjectShow:
@@ -83,6 +91,8 @@ const std::string RendererAccessibility::AccessibilityNotificationToString(
       return "selected children changed";
     case AccessibilityNotificationSelectedTextChanged:
       return "selected text changed";
+    case AccessibilityNotificationTextChanged:
+      return "text changed";
     case AccessibilityNotificationTextInserted:
       return "text inserted";
     case AccessibilityNotificationTextRemoved:

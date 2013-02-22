@@ -34,6 +34,12 @@ bool WebAccessibilityNotificationToAccessibilityNotification(
     case WebKit::WebAccessibilityNotificationActiveDescendantChanged:
       *type = AccessibilityNotificationActiveDescendantChanged;
       break;
+    case WebKit::WebAccessibilityNotificationAriaAttributeChanged:
+      *type = AccessibilityNotificationAriaAttributeChanged;
+      break;
+    case WebKit::WebAccessibilityNotificationAutocorrectionOccured:
+      *type = AccessibilityNotificationAutocorrectionOccurred;
+      break;
     case WebKit::WebAccessibilityNotificationCheckedStateChanged:
       *type = AccessibilityNotificationCheckStateChanged;
       break;
@@ -42,6 +48,9 @@ bool WebAccessibilityNotificationToAccessibilityNotification(
       break;
     case WebKit::WebAccessibilityNotificationFocusedUIElementChanged:
       *type = AccessibilityNotificationFocusChanged;
+      break;
+    case WebKit::WebAccessibilityNotificationInvalidStatusChanged:
+      *type = AccessibilityNotificationInvalidStatusChanged;
       break;
     case WebKit::WebAccessibilityNotificationLayoutComplete:
       *type = AccessibilityNotificationLayoutComplete;
@@ -100,7 +109,7 @@ RendererAccessibilityComplete::RendererAccessibilityComplete(
   if (!document.isNull()) {
     // It's possible that the webview has already loaded a webpage without
     // accessibility being enabled. Initialize the browser's cached
-    // accessibility tree by sending it a 'load complete' notification.
+    // accessibility tree by sending it a notification.
     HandleAccessibilityNotification(
         document.accessibilityObject(),
         AccessibilityNotificationLayoutComplete);

@@ -29,6 +29,13 @@ enum AccessibilityNotification {
   // The active descendant of a node has changed.
   AccessibilityNotificationActiveDescendantChanged,
 
+  // An ARIA attribute changed, one that isn't covered by any
+  // other notification.
+  AccessibilityNotificationAriaAttributeChanged,
+
+  // Autocorrect changed the text of a node.
+  AccessibilityNotificationAutocorrectionOccurred,
+
   // An alert appeared.
   AccessibilityNotificationAlert,
 
@@ -44,6 +51,9 @@ enum AccessibilityNotification {
   // The node in focus has changed.
   AccessibilityNotificationFocusChanged,
 
+  // Whether or not the node is invalid has changed.
+  AccessibilityNotificationInvalidStatusChanged,
+
   // Page layout has completed.
   AccessibilityNotificationLayoutComplete,
 
@@ -58,6 +68,9 @@ enum AccessibilityNotification {
 
   // A menu list value changed.
   AccessibilityNotificationMenuListValueChanged,
+
+  // The object's accessible name changed.
+  AccessibilityNotificationTextChanged,
 
   // An object was shown.
   AccessibilityNotificationObjectShow,

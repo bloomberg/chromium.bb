@@ -65,6 +65,15 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
     case AccessibilityNotificationActiveDescendantChanged:
       event_id = IA2_EVENT_ACTIVE_DESCENDANT_CHANGED;
       break;
+    case AccessibilityNotificationAlert:
+      event_id = EVENT_SYSTEM_ALERT;
+      break;
+    case AccessibilityNotificationAriaAttributeChanged:
+      event_id = IA2_EVENT_OBJECT_ATTRIBUTE_CHANGED;
+      break;
+    case AccessibilityNotificationAutocorrectionOccurred:
+      event_id = IA2_EVENT_OBJECT_ATTRIBUTE_CHANGED;
+      break;
     case AccessibilityNotificationBlur:
       // Equivalent to focus on the root.
       event_id = EVENT_OBJECT_FOCUS;
@@ -79,32 +88,17 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
     case AccessibilityNotificationFocusChanged:
       event_id = EVENT_OBJECT_FOCUS;
       break;
-    case AccessibilityNotificationLoadComplete:
-      event_id = IA2_EVENT_DOCUMENT_LOAD_COMPLETE;
-      break;
-    case AccessibilityNotificationValueChanged:
-      event_id = EVENT_OBJECT_VALUECHANGE;
-      break;
-    case AccessibilityNotificationSelectedTextChanged:
-      event_id = IA2_EVENT_TEXT_CARET_MOVED;
+    case AccessibilityNotificationInvalidStatusChanged:
+      event_id = EVENT_OBJECT_STATECHANGE;
       break;
     case AccessibilityNotificationLiveRegionChanged:
+      // TODO: try not firing a native notification at all, since
+      // on Windows, each individual item in a live region that changes
+      // already gets its own notification.
       event_id = EVENT_OBJECT_REORDER;
       break;
-    case AccessibilityNotificationTextInserted:
-      event_id = IA2_EVENT_TEXT_INSERTED;
-      break;
-    case AccessibilityNotificationTextRemoved:
-      event_id = IA2_EVENT_TEXT_REMOVED;
-      break;
-    case AccessibilityNotificationObjectShow:
-      event_id = EVENT_OBJECT_SHOW;
-      break;
-    case AccessibilityNotificationObjectHide:
-      event_id = EVENT_OBJECT_HIDE;
-      break;
-    case AccessibilityNotificationAlert:
-      event_id = EVENT_SYSTEM_ALERT;
+    case AccessibilityNotificationLoadComplete:
+      event_id = IA2_EVENT_DOCUMENT_LOAD_COMPLETE;
       break;
     case AccessibilityNotificationMenuListItemSelected:
       event_id = EVENT_OBJECT_FOCUS;
@@ -112,8 +106,29 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
     case AccessibilityNotificationMenuListValueChanged:
       event_id = EVENT_OBJECT_VALUECHANGE;
       break;
+    case AccessibilityNotificationObjectHide:
+      event_id = EVENT_OBJECT_HIDE;
+      break;
+    case AccessibilityNotificationObjectShow:
+      event_id = EVENT_OBJECT_SHOW;
+      break;
     case AccessibilityNotificationSelectedChildrenChanged:
       event_id = EVENT_OBJECT_SELECTIONWITHIN;
+      break;
+    case AccessibilityNotificationSelectedTextChanged:
+      event_id = IA2_EVENT_TEXT_CARET_MOVED;
+      break;
+    case AccessibilityNotificationTextChanged:
+      event_id = EVENT_OBJECT_NAMECHANGE;
+      break;
+    case AccessibilityNotificationTextInserted:
+      event_id = IA2_EVENT_TEXT_INSERTED;
+      break;
+    case AccessibilityNotificationTextRemoved:
+      event_id = IA2_EVENT_TEXT_REMOVED;
+      break;
+    case AccessibilityNotificationValueChanged:
+      event_id = EVENT_OBJECT_VALUECHANGE;
       break;
     default:
       // Not all WebKit accessibility events result in a Windows
