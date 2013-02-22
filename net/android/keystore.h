@@ -40,8 +40,8 @@ enum PrivateKeyType {
 // |modulus| will receive the modulus bytes on success.
 // Returns true on success, or false on failure (e.g. if the key
 // is not RSA).
-bool GetRSAKeyModulus(jobject private_key,
-                      std::vector<uint8>* modulus);
+NET_EXPORT bool GetRSAKeyModulus(jobject private_key,
+                                 std::vector<uint8>* modulus);
 
 // Returns the Q parameter of a given DSAPrivateKey platform object,
 // as a series of bytes, in big-endian representation. This can be used
@@ -50,8 +50,8 @@ bool GetRSAKeyModulus(jobject private_key,
 // |q| will receive the result bytes on success.
 // Returns true on success, or false on failure (e.g. if the key is
 // not DSA).
-bool GetDSAKeyParamQ(jobject private_key,
-                     std::vector<uint8>* q);
+NET_EXPORT bool GetDSAKeyParamQ(jobject private_key,
+                                std::vector<uint8>* q);
 
 // Returns the order parameter of a given ECPrivateKey platform object,
 // as a series of bytes, in big-endian representation. This can be used
@@ -91,7 +91,7 @@ bool RawSignDigestWithPrivateKey(
 // |private_key| is a JNI reference for the private key.
 // Returns a PrivateKeyType, while will be CLIENT_CERT_INVALID_TYPE
 // on error.
-PrivateKeyType GetPrivateKeyType(jobject private_key);
+NET_EXPORT PrivateKeyType GetPrivateKeyType(jobject private_key);
 
 // Returns a handle to the system EVP_PKEY object used to back a given
 // private_key object. This must *only* be used for RSA private keys

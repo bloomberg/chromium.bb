@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_ANDROID_DOWNLOAD_CONTROLLER_ANDROID_H_
 #define CONTENT_PUBLIC_BROWSER_ANDROID_DOWNLOAD_CONTROLLER_ANDROID_H_
 
+#include "content/common/content_export.h"
+
 namespace content {
 class DownloadItem;
 class RenderViewHost;
@@ -12,7 +14,7 @@ class WebContents;
 
 // Interface to request GET downloads and send notifications for POST
 // downloads.
-class DownloadControllerAndroid {
+class CONTENT_EXPORT DownloadControllerAndroid {
  public:
   // Returns the singleton instance of the DownloadControllerAndroid.
   static DownloadControllerAndroid* Get();

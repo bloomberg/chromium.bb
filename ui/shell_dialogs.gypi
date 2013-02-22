@@ -18,6 +18,8 @@
         'SHELL_DIALOGS_IMPLEMENTATION',
       ],
       'sources': [
+        'shell_dialogs/android/shell_dialogs_jni_registrar.cc',
+        'shell_dialogs/android/shell_dialogs_jni_registrar.h',
         'shell_dialogs/base_shell_dialog.cc',
         'shell_dialogs/base_shell_dialog.h',
         'shell_dialogs/base_shell_dialog_win.cc',

@@ -8,11 +8,12 @@
 #include <jni.h>
 #include "base/android/jni_helper.h"
 #include "base/android/scoped_java_ref.h"
+#include "ui/base/ui_export.h"
 
 namespace ui {
 
 // Android implementation of the activity window.
-class WindowAndroid {
+class UI_EXPORT WindowAndroid {
  public:
   WindowAndroid(JNIEnv* env, jobject obj);
 

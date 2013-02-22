@@ -29,7 +29,7 @@ BASE_EXPORT bool GetCacheDirectory(FilePath* result);
 
 // Retrieves the path to the public downloads directory. The result is placed
 // in the FilePath pointed to by 'result'.
-bool GetDownloadsDirectory(FilePath* result);
+BASE_EXPORT bool GetDownloadsDirectory(FilePath* result);
 
 // Retrieves the path to the native JNI libraries via
 // ApplicationInfo.nativeLibraryDir on the Java side. The result is placed in

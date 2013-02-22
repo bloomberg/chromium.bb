@@ -5,9 +5,10 @@
 #ifndef CONTENT_PUBLIC_BROWSER_ANDROID_CONTENT_VIEW_CORE_H_
 #define CONTENT_PUBLIC_BROWSER_ANDROID_CONTENT_VIEW_CORE_H_
 
-#include "base/android/scoped_java_ref.h"
 #include <jni.h>
 
+#include "base/android/scoped_java_ref.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/navigation_controller.h"
 
 namespace cc {
@@ -28,7 +29,7 @@ class WebContents;
 // Native side of the ContentViewCore.java, which is the primary way of
 // communicating with the native Chromium code on Android.  This is a
 // public interface used by native code outside of the content module.
-class ContentViewCore {
+class CONTENT_EXPORT ContentViewCore {
  public:
   // Returns the existing ContentViewCore for |web_contents|, or NULL.
   static ContentViewCore* FromWebContents(WebContents* web_contents);

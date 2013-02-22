@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/base_export.h"
 #include "base/memory/singleton.h"
 
 namespace base {
@@ -20,7 +21,7 @@ namespace android {
 
 // It is also used to store the last java exception seen during JNI.
 // TODO(nileshagrawal): Find a better place to store this info.
-class BuildInfo {
+class BASE_EXPORT BuildInfo {
  public:
 
   ~BuildInfo() {}

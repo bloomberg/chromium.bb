@@ -11,6 +11,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
+#include "media/base/media_export.h"
 #include "media/video/capture/video_capture_device.h"
 
 namespace media {
@@ -19,7 +20,7 @@ namespace media {
 // by VideoCaptureManager on its own thread, while OnFrameAvailable is called
 // on JAVA thread (i.e., UI thread). Both will access |state_| and |observer_|,
 // but only VideoCaptureManager would change their value.
-class VideoCaptureDeviceAndroid : public VideoCaptureDevice {
+class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
  public:
   virtual ~VideoCaptureDeviceAndroid();
 

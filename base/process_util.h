@@ -79,7 +79,7 @@ const uint32 kProcessAccessQueryLimitedInfomation =
 const uint32 kProcessAccessWaitForTermination     = SYNCHRONIZE;
 #elif defined(OS_POSIX)
 
-struct ProcessEntry {
+struct BASE_EXPORT ProcessEntry {
   ProcessEntry();
   ~ProcessEntry();
 

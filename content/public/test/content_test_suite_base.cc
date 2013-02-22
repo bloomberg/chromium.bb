@@ -21,6 +21,7 @@
 #include "content/common/android/common_jni_registrar.h"
 #include "net/android/net_jni_registrar.h"
 #include "ui/android/ui_jni_registrar.h"
+#include "ui/shell_dialogs/android/shell_dialogs_jni_registrar.h"
 #endif
 
 namespace content {
@@ -40,6 +41,7 @@ void ContentTestSuiteBase::Initialize() {
   content::android::RegisterBrowserJni(env);
   net::android::RegisterJni(env);
   ui::android::RegisterJni(env);
+  ui::shell_dialogs::RegisterJni(env);
 #endif
 
   if (external_libraries_enabled_)

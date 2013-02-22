@@ -23,10 +23,11 @@
 #include "content/common/android/command_line.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
+#include "jni/LibraryLoader_jni.h"
 #include "media/base/android/media_jni_registrar.h"
 #include "net/android/net_jni_registrar.h"
 #include "ui/android/ui_jni_registrar.h"
-#include "jni/LibraryLoader_jni.h"
+#include "ui/shell_dialogs/android/shell_dialogs_jni_registrar.h"
 
 namespace {
 base::AtExitManager* g_at_exit_manager = NULL;
@@ -75,6 +76,9 @@ static jint LibraryLoadedOnMainThread(JNIEnv* env, jclass clazz,
     return RESULT_CODE_FAILED_TO_REGISTER_JNI;
 
   if (!ui::android::RegisterJni(env))
+    return RESULT_CODE_FAILED_TO_REGISTER_JNI;
+
+  if (!ui::shell_dialogs::RegisterJni(env))
     return RESULT_CODE_FAILED_TO_REGISTER_JNI;
 
   if (!content::android::RegisterCommonJni(env))

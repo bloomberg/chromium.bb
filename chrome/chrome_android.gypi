@@ -14,7 +14,10 @@
       'target_name': 'libchromiumtestshell',
       'type': 'shared_library',
       'dependencies': [
+        '../base/base.gyp:base',
+        '../jingle/jingle.gyp:notifier',
         'chrome_android_core',
+        'chrome.gyp:browser_ui',
       ],
       'sources': [
         # This file must always be included in the shared_library step to ensure
@@ -98,6 +101,7 @@
       'type': 'static_library',
       'dependencies': [
         'chrome.gyp:browser',
+        'chrome.gyp:browser_ui',
         'chrome.gyp:plugin',
         'chrome.gyp:renderer',
         'chrome.gyp:utility',
