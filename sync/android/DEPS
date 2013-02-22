@@ -1,4 +1,5 @@
 include_rules = [
   "+third_party/cacheinvalidation",  # For imports in sync/notifier.
   "+net", # For imports in sync/signin.
+  "+sync/test/android", # For sync test tools
 ]

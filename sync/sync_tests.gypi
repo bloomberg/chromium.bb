@@ -572,7 +572,20 @@
           },
           'dependencies': [
             'sync_java',
+            'sync_java_test_support',
             '../base/base.gyp:base_java_test_support',
+          ],
+          'includes': [ '../build/java.gypi' ],
+        },
+        {
+          'target_name': 'sync_java_test_support',
+          'type': 'none',
+          'variables': {
+            'package_name': 'sync_java_test_support',
+            'java_in_dir': '../sync/test/android/javatests',
+          },
+          'dependencies': [
+            'sync_java',
           ],
           'includes': [ '../build/java.gypi' ],
         },

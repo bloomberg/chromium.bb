@@ -16,6 +16,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
+import org.chromium.base.ActivityStatus;
 import org.chromium.sync.internal_api.pub.base.ModelType;
 
 import java.util.HashSet;
@@ -27,7 +28,7 @@ import javax.annotation.Nullable;
  * Controller used to send start, stop, and registration-change commands to the invalidation
  * client library used by Sync.
  */
-public class InvalidationController {
+public class InvalidationController implements ActivityStatus.StateListener {
     /**
      * Constants and utility methods to create the intents used to communicate between the
      * controller and the invalidation client library.
@@ -104,6 +105,10 @@ public class InvalidationController {
      */
     private static final String TAG = InvalidationController.class.getSimpleName();
 
+    private static final Object LOCK = new Object();
+
+    private static InvalidationController sInstance;
+
     private final Context mContext;
 
     /**
@@ -163,10 +168,30 @@ public class InvalidationController {
     }
 
     /**
-     * Returns a new instance that will use {@code context} to issue intents.
+     * Returns the instance that will use {@code context} to issue intents.
+     *
+     * Calling this method will create the instance if it does not yet exist.
      */
+    public static InvalidationController get(Context context) {
+        synchronized (LOCK) {
+            if (sInstance == null) {
+                sInstance = new InvalidationController(context);
+            }
+            return sInstance;
+        }
+    }
+
+    /**
+     * Returns the singleton instance that will use {@code context} to issue intents.
+     *
+     * This method is only kept until the downstream callers of this method have been changed to use
+     * {@link InvalidationController#get(android.content.Context)}.
+     *
+     * TODO(nyquist) Remove this method.
+     */
+    @Deprecated
     public static InvalidationController newInstance(Context context) {
-        return new InvalidationController(context);
+        return get(context);
     }
 
     /**
@@ -174,7 +199,8 @@ public class InvalidationController {
      */
     @VisibleForTesting
     InvalidationController(Context context) {
-        this.mContext = Preconditions.checkNotNull(context.getApplicationContext());
+        mContext = Preconditions.checkNotNull(context.getApplicationContext());
+        ActivityStatus.registerStateListener(this);
     }
 
     /**
@@ -217,5 +243,16 @@ public class InvalidationController {
     @VisibleForTesting
     ModelTypeResolver getModelTypeResolver() {
         return new ModelTypeResolverImpl();
+    }
+
+    @Override
+    public void onActivityStateChange(int newState) {
+        if (SyncStatusHelper.get(mContext).isSyncEnabled()) {
+            if (newState == ActivityStatus.PAUSED) {
+                stop();
+            } else if (newState == ActivityStatus.RESUMED) {
+                start();
+            }
+        }
     }
 }

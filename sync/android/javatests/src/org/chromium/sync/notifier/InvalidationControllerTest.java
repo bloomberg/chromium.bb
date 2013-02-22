@@ -5,6 +5,7 @@
 package org.chromium.sync.notifier;
 
 import android.accounts.Account;
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -15,11 +16,13 @@ import android.test.suitebuilder.annotation.SmallTest;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import org.chromium.base.ActivityStatus;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.sync.internal_api.pub.base.ModelType;
 import org.chromium.sync.notifier.InvalidationController.IntentProtocol;
 import org.chromium.sync.signin.AccountManagerHelper;
+import org.chromium.sync.test.util.MockSyncContentResolverDelegate;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -38,7 +41,7 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         mContext = new IntentSavingContext(getInstrumentation().getTargetContext());
-        mController = InvalidationController.newInstance(mContext);
+        mController = InvalidationController.get(mContext);
     }
 
     @SmallTest
@@ -61,6 +64,87 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         assertEquals(1, intent.getExtras().size());
         assertTrue(intent.hasExtra(IntentProtocol.EXTRA_STOP));
         assertTrue(intent.getBooleanExtra(IntentProtocol.EXTRA_STOP, false));
+    }
+
+    @SmallTest
+    @Feature({"Sync"})
+    public void testResumingMainActivity() throws Exception {
+        // Resuming main activity should trigger a start if sync is enabled.
+        setupSync(true);
+        mController.onActivityStateChange(ActivityStatus.RESUMED);
+        assertEquals(1, mContext.getNumStartedIntents());
+        Intent intent = mContext.getStartedIntent(0);
+        validateIntentComponent(intent);
+        assertNull(intent.getExtras());
+    }
+
+    @SmallTest
+    @Feature({"Sync"})
+    public void testResumingMainActivityWithSyncDisabled() throws Exception {
+        // Resuming main activity should NOT trigger a start if sync is disabled.
+        setupSync(false);
+        mController.onActivityStateChange(ActivityStatus.RESUMED);
+        assertEquals(0, mContext.getNumStartedIntents());
+    }
+
+    @SmallTest
+    @Feature({"Sync"})
+    public void testPausingMainActivity() throws Exception {
+        // Resuming main activity should trigger a stop if sync is enabled.
+        setupSync(true);
+        mController.onActivityStateChange(ActivityStatus.PAUSED);
+        assertEquals(1, mContext.getNumStartedIntents());
+        Intent intent = mContext.getStartedIntent(0);
+        validateIntentComponent(intent);
+        assertEquals(1, intent.getExtras().size());
+        assertTrue(intent.hasExtra(IntentProtocol.EXTRA_STOP));
+        assertTrue(intent.getBooleanExtra(IntentProtocol.EXTRA_STOP, false));
+    }
+
+    @SmallTest
+    @Feature({"Sync"})
+    public void testPausingMainActivityWithSyncDisabled() throws Exception {
+        // Resuming main activity should NOT trigger a stop if sync is disabled.
+        setupSync(false);
+        mController.onActivityStateChange(ActivityStatus.PAUSED);
+        assertEquals(0, mContext.getNumStartedIntents());
+    }
+
+    private void setupSync(boolean syncEnabled) {
+        MockSyncContentResolverDelegate contentResolver = new MockSyncContentResolverDelegate();
+        // Android master sync can safely always be on.
+        contentResolver.setMasterSyncAutomatically(true);
+        // We don't want to use the system content resolver, so we override it.
+        SyncStatusHelper.overrideSyncStatusHelperForTests(mContext, contentResolver);
+        Account account = AccountManagerHelper.createAccountFromName("test@gmail.com");
+        SyncStatusHelper syncStatusHelper = SyncStatusHelper.get(mContext);
+        syncStatusHelper.setSignedInAccountName(account.name);
+        if (syncEnabled) {
+            syncStatusHelper.enableAndroidSync(account);
+        } else {
+            syncStatusHelper.disableAndroidSync(account);
+        }
+    }
+
+    @SmallTest
+    @Feature({"Sync"})
+    public void testEnsureConstructorRegistersListener() throws Exception {
+        final AtomicBoolean listenerCallbackCalled = new AtomicBoolean();
+
+        // Create instance.
+        new InvalidationController(mContext) {
+            @Override
+            public void onActivityStateChange(int newState) {
+                listenerCallbackCalled.set(true);
+            }
+        };
+
+        // Ensure initial state is correct.
+        assertFalse(listenerCallbackCalled.get());
+
+        // Ensure we get a callback, which means we have registered for them.
+        ActivityStatus.onStateChange(new Activity(), ActivityStatus.RESUMED);
+        assertTrue(listenerCallbackCalled.get());
     }
 
     @SmallTest

@@ -131,7 +131,7 @@ public class SyncStatusHelper {
     public boolean isSyncEnabled(Account account) {
         StrictMode.ThreadPolicy oldPolicy = temporarilyAllowDiskWritesAndDiskReads();
         String contractAuthority =
-                InvalidationController.newInstance(mApplicationContext).getContractAuthority();
+                InvalidationController.get(mApplicationContext).getContractAuthority();
         boolean enabled = account != null &&
                 mSyncContentResolverWrapper.getMasterSyncAutomatically() &&
                 mSyncContentResolverWrapper.getSyncAutomatically(account, contractAuthority);
@@ -163,7 +163,7 @@ public class SyncStatusHelper {
     public boolean isSyncEnabledForChrome(Account account) {
         StrictMode.ThreadPolicy oldPolicy = temporarilyAllowDiskWritesAndDiskReads();
         String contractAuthority =
-                InvalidationController.newInstance(mApplicationContext).getContractAuthority();
+                InvalidationController.get(mApplicationContext).getContractAuthority();
         boolean enabled = account != null &&
                 mSyncContentResolverWrapper.getSyncAutomatically(account, contractAuthority);
         StrictMode.setThreadPolicy(oldPolicy);
@@ -191,7 +191,7 @@ public class SyncStatusHelper {
         StrictMode.ThreadPolicy oldPolicy = temporarilyAllowDiskWritesAndDiskReads();
         makeSyncable(account);
         String contractAuthority =
-                InvalidationController.newInstance(mApplicationContext).getContractAuthority();
+                InvalidationController.get(mApplicationContext).getContractAuthority();
         if (!mSyncContentResolverWrapper.getSyncAutomatically(account, contractAuthority)) {
             mSyncContentResolverWrapper.setSyncAutomatically(account, contractAuthority, true);
         }
@@ -206,13 +206,14 @@ public class SyncStatusHelper {
     public void disableAndroidSync(Account account) {
         StrictMode.ThreadPolicy oldPolicy = temporarilyAllowDiskWritesAndDiskReads();
         String contractAuthority =
-                InvalidationController.newInstance(mApplicationContext).getContractAuthority();
+                InvalidationController.get(mApplicationContext).getContractAuthority();
         if (mSyncContentResolverWrapper.getSyncAutomatically(account, contractAuthority)) {
             mSyncContentResolverWrapper.setSyncAutomatically(account, contractAuthority, false);
         }
         StrictMode.setThreadPolicy(oldPolicy);
     }
 
+    // TODO(nyquist) Move all these methods about signed in user to GoogleServicesManager.
     public Account getSignedInUser() {
         String syncAccountName = getSignedInAccountName();
         if (syncAccountName == null) {
@@ -252,7 +253,7 @@ public class SyncStatusHelper {
      */
     private void makeSyncable(Account account) {
         String contractAuthority =
-                InvalidationController.newInstance(mApplicationContext).getContractAuthority();
+                InvalidationController.get(mApplicationContext).getContractAuthority();
         if (hasFinishedFirstSync(account)) {
             mSyncContentResolverWrapper.setIsSyncable(account, contractAuthority, 1);
         }
@@ -274,7 +275,7 @@ public class SyncStatusHelper {
      */
     boolean hasFinishedFirstSync(Account account) {
         String contractAuthority =
-                InvalidationController.newInstance(mApplicationContext).getContractAuthority();
+                InvalidationController.get(mApplicationContext).getContractAuthority();
         return mSyncContentResolverWrapper.getIsSyncable(account, contractAuthority) <= 0;
     }
 

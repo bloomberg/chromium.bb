@@ -388,7 +388,7 @@ public class InvalidationService extends AndroidListener {
             bundle.putString("payload", (payload == null) ? "" : payload);
         }
         Account account = SyncStatusHelper.get(this).getSignedInUser();
-        String contractAuthority = InvalidationController.newInstance(this).getContractAuthority();
+        String contractAuthority = InvalidationController.get(this).getContractAuthority();
         requestSyncFromContentResolver(bundle, account, contractAuthority);
     }
 
