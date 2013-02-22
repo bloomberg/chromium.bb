@@ -207,8 +207,9 @@ TEST_F(PrintWebViewHelperTest, OnPrintPages) {
   VerifyPagesPrinted(true);
 }
 
+// Disabled due to flakiness. See http://crbug.com/177733.
 // Duplicate of OnPrintPagesTest only using javascript to print.
-TEST_F(PrintWebViewHelperTest, PrintWithJavascript) {
+TEST_F(PrintWebViewHelperTest, DISABLED_PrintWithJavascript) {
   // HTML contains a call to window.print()
   LoadHTML(kPrintWithJSHTML);
 
