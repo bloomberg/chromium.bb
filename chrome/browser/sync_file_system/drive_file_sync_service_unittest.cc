@@ -424,11 +424,11 @@ class DriveFileSyncServiceTest : public testing::Test {
     *url_out = url;
   }
 
-  void AppendIncrementalRemoteChangeByEntry(
+  bool AppendIncrementalRemoteChangeByEntry(
       const GURL& origin,
       const google_apis::ResourceEntry& entry,
       int64 changestamp) {
-    sync_service_->AppendRemoteChange(
+    return sync_service_->AppendRemoteChange(
         origin, entry, changestamp,
         DriveFileSyncService::REMOTE_SYNC_TYPE_INCREMENTAL);
   }
@@ -1075,6 +1075,32 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_Override) {
   EXPECT_TRUE(AppendIncrementalRemoteChange(
       kOrigin, kFilePath, false /* is_deleted */,
       kFileResourceId, 8, "updated_file_md5"));
+}
+
+TEST_F(DriveFileSyncServiceTest, RemoteChange_Folder) {
+  const GURL kOrigin = ExtensionNameToGURL(FPL("example1"));
+  const std::string kDirectoryResourceId("folder:origin_directory_resource_id");
+  const std::string kSyncRootResourceId("folder:sync_root_resource_id");
+
+  metadata_store()->SetSyncRootDirectory(kSyncRootResourceId);
+  metadata_store()->AddBatchSyncOrigin(kOrigin, kDirectoryResourceId);
+  metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin);
+
+  EXPECT_CALL(*mock_remote_observer(),
+              OnRemoteServiceStateUpdated(REMOTE_SERVICE_OK, _))
+      .Times(AnyNumber());
+  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(_))
+      .Times(AnyNumber());
+
+  SetUpDriveSyncService(true);
+
+  scoped_ptr<ResourceEntry> entry(ResourceEntry::ExtractAndParse(
+      *LoadJSONFile("gdata/file_entry.json")));
+  entry->set_kind(google_apis::ENTRY_KIND_FOLDER);
+
+  // Expect to drop this change for file.
+  EXPECT_FALSE(AppendIncrementalRemoteChangeByEntry(
+      kOrigin, *entry, 1));
 }
 
 #endif  // !defined(OS_ANDROID)

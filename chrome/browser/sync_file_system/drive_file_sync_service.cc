@@ -1657,7 +1657,8 @@ bool DriveFileSyncService::AppendRemoteChange(
     RemoteSyncType sync_type) {
   // TODO(tzik): Normalize the path here.
   base::FilePath path = base::FilePath::FromUTF8Unsafe(entry.title());
-  DCHECK(!entry.is_folder());
+  if (entry.is_folder())
+    return false;
   return AppendRemoteChangeInternal(
       origin, path, entry.deleted(),
       entry.resource_id(), changestamp,
@@ -1863,6 +1864,11 @@ void DriveFileSyncService::DidFetchChangesForIncrementalSync(
   for (iterator itr = changes->entries().begin();
        itr != changes->entries().end(); ++itr) {
     const google_apis::ResourceEntry& entry = **itr;
+
+    // TODO(tzik): Handle rename/delete of the sync root directory and the
+    // directory for a origin.
+    // http://crbug.com/177626
+
     GURL origin;
     if (!GetOriginForEntry(entry, &origin))
       continue;
