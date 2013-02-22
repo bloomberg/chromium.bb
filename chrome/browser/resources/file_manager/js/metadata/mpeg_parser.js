@@ -20,7 +20,7 @@ MpegParser.HEADER_SIZE = 8;
 
 /**
  * @param {ByteReader} br ByteReader instance.
- * @param {number} opt_end End of atom position.
+ * @param {number=} opt_end End of atom position.
  * @return {number} Atom size.
  */
 MpegParser.readAtomSize = function(br, opt_end) {
@@ -46,7 +46,7 @@ MpegParser.readAtomSize = function(br, opt_end) {
 
 /**
  * @param {ByteReader} br ByteReader instance.
- * @param {number} opt_end End of atom position.
+ * @param {number=} opt_end End of atom position.
  * @return {string} Atom name.
  */
 MpegParser.readAtomName = function(br, opt_end) {

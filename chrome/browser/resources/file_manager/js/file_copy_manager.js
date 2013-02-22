@@ -83,7 +83,7 @@ FileCopyManager.Task = function(sourceDirEntry, targetDirEntry) {
 
 /**
  * @param {Array.<Entry>} entries Entries.
- * @param {Function} callback When entries resolved.
+ * @param {function} callback When entries resolved.
  */
 FileCopyManager.Task.prototype.setEntries = function(entries, callback) {
   var self = this;
@@ -342,7 +342,7 @@ FileCopyManager.prototype.log_ = function() {
  * Dispatch a simple copy-progress event with reason and optional err data.
  *
  * @param {string} reason Event type.
- * @param {FileCopyManager.Error} opt_err Error.
+ * @param {FileCopyManager.Error=} opt_err Error.
  * @private
  */
 FileCopyManager.prototype.sendProgressEvent_ = function(reason, opt_err) {
@@ -386,7 +386,7 @@ FileCopyManager.prototype.resetQueue_ = function() {
 /**
  * Request that the current copy queue be abandoned.
  *
- * @param {Function} opt_callback On cancel.
+ * @param {function=} opt_callback On cancel.
  */
 FileCopyManager.prototype.requestCancel = function(opt_callback) {
   this.cancelRequested_ = true;
@@ -617,8 +617,8 @@ FileCopyManager.prototype.serviceAllTasks_ = function() {
 /**
  * Service all entries in the next copy task.
  *
- * @param {Function} successCallback On success.
- * @param {Function} errorCallback On error.
+ * @param {function} successCallback On success.
+ * @param {function} errorCallback On error.
  * @private
  */
 FileCopyManager.prototype.serviceNextTask_ = function(
@@ -685,8 +685,8 @@ FileCopyManager.prototype.serviceNextTask_ = function(
  * TODO(olege): Refactor this method into a separate class.
  *
  * @param {FileManager.Task} task A task.
- * @param {Function} successCallback On success.
- * @param {Function} errorCallback On error.
+ * @param {function} successCallback On success.
+ * @param {function} errorCallback On error.
  * @private
  */
 FileCopyManager.prototype.serviceNextTaskEntry_ = function(
@@ -1009,10 +1009,10 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
 /**
  * Service a zip file creation task.
  *
- * @private
  * @param {FileManager.Task} task A task.
- * @param {Function} completeCallback On complete.
- * @param {Function} errorCallback On error.
+ * @param {function} completeCallback On complete.
+ * @param {function} errorCallback On error.
+ * @private
  */
 FileCopyManager.prototype.serviceZipTask_ = function(task, completeCallback,
                                                      errorCallback) {
@@ -1225,7 +1225,7 @@ FileCopyManager.prototype.cancelDeleteTask = function(id) {
  * Finds the delete task, removes it from list and cancels the timeout.
  *
  * @param {number} id The delete task id (as returned by deleteEntries).
- * @return {object} The delete task.
+ * @return {Object} The delete task.
  * @private
  */
 FileCopyManager.prototype.findDeleteTaskAndCancelTimeout_ = function(id) {
@@ -1247,7 +1247,7 @@ FileCopyManager.prototype.findDeleteTaskAndCancelTimeout_ = function(id) {
 /**
  * Performs the deletion.
  *
- * @param {object} task The delete task (see deleteEntries function).
+ * @param {Object} task The delete task (see deleteEntries function).
  * @private
  */
 FileCopyManager.prototype.serviceDeleteTask_ = function(task) {

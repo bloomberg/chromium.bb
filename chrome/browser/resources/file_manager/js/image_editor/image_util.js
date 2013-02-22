@@ -263,10 +263,8 @@ Rect.prototype.toString = function() {
  * Draw the image in context with appropriate scaling.
  * @param {CanvasRenderingContext2D} context Context to draw.
  * @param {Image} image Image to draw.
- * @param {Rect=} opt_dstRect Rectangle in the canvas
- *                            (whole canvas by default).
- * @param {Rect=} opt_srcRect Rectangle in the imsge
- *                            (whole image by default).
+ * @param {Rect=} opt_dstRect Rectangle in the canvas (whole canvas by default).
+ * @param {Rect=} opt_srcRect Rectangle in the imsge (whole image by default).
  */
 Rect.drawImage = function(context, image, opt_dstRect, opt_srcRect) {
   opt_dstRect = opt_dstRect || new Rect(context.canvas);
@@ -427,7 +425,7 @@ ImageUtil.ImageLoader.IMAGE_SIZE_LIMIT = 25 * 1000 * 1000;
 
 /**
  * @param {HTMLImageElement|HTMLCanvasElement|Object} image Image or image
- *   metadata, should have |width| and |height| properties.
+ *     metadata, should have |width| and |height| properties.
  * @return {boolean} True if the image is too large to be loaded.
  */
 ImageUtil.ImageLoader.isTooLarge = function(image) {
@@ -437,10 +435,10 @@ ImageUtil.ImageLoader.isTooLarge = function(image) {
 /**
  * @param {string} url Image URL.
  * @param {function(function(object))} transformFetcher function to get
- *    the image transform (which we need for the image orientation).
+ *     the image transform (which we need for the image orientation).
  * @param {function(HTMLCanvasElement)} callback To be called when loaded.
- * @param {number} opt_delay Load delay in milliseconds, useful to let the
- *        animations play out before the computation heavy image loading starts.
+ * @param {number=} opt_delay Load delay in milliseconds, useful to let the
+ *     animations play out before the computation heavy image loading starts.
  */
 ImageUtil.ImageLoader.prototype.load = function(
     url, transformFetcher, callback, opt_delay) {
@@ -512,7 +510,7 @@ ImageUtil.ImageLoader.prototype.isLoading = function(url) {
 };
 
 /**
- * @param {Function} callback To be called when the image loaded.
+ * @param {function} callback To be called when the image loaded.
  */
 ImageUtil.ImageLoader.prototype.setCallback = function(callback) {
   this.callback_ = callback;
@@ -540,7 +538,7 @@ ImageUtil.ImageLoader.prototype.cancel = function() {
 
 /**
  * @param {HTMLImageElement} image Image to be transformed.
- * @param {object} transform rransformation description to applay to the image.
+ * @param {Object} transform rransformation description to applay to the image.
  * @private
  */
 ImageUtil.ImageLoader.prototype.convertImage_ = function(image, transform) {

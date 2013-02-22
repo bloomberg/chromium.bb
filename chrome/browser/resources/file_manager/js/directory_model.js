@@ -425,7 +425,7 @@ DirectoryModel.prototype.rescan = function() {
  *
  * @param {DirectoryContentes} newDirContents New DirectoryContents instance to
  *     replace currentDirContents_.
- * @param {Function} opt_callback Called on success.
+ * @param {function=} opt_callback Called on success.
  * @private
  */
 DirectoryModel.prototype.clearAndScan_ = function(newDirContents,
@@ -600,7 +600,7 @@ DirectoryModel.prototype.findIndexByName_ = function(name) {
  * @param {Entry} entry Entry to rename.
  * @param {string} newName New name.
  * @param {function} errorCallback Called on error.
- * @param {function} opt_successCallback Called on success.
+ * @param {function=} opt_successCallback Called on success.
  */
 DirectoryModel.prototype.renameEntry = function(entry, newName,
                                                 errorCallback,
@@ -790,7 +790,7 @@ DirectoryModel.prototype.changeRoot = function(path) {
 
 /**
  * @param {DirectoryEntry} dirEntry The absolute path to the new directory.
- * @param {function} opt_callback Executed if the directory loads successfully.
+ * @param {function=} opt_callback Executed if the directory loads successfully.
  * @private
  */
 DirectoryModel.prototype.changeDirectoryEntrySilent_ = function(dirEntry,
@@ -819,7 +819,7 @@ DirectoryModel.prototype.changeDirectoryEntrySilent_ = function(dirEntry,
  * @param {boolean} initial True if it comes from setupPath and
  *                          false if caused by an user action.
  * @param {DirectoryEntry} dirEntry The absolute path to the new directory.
- * @param {function} opt_callback Executed if the directory loads successfully.
+ * @param {function=} opt_callback Executed if the directory loads successfully.
  * @private
  */
 DirectoryModel.prototype.changeDirectoryEntry_ = function(initial, dirEntry,
@@ -1368,7 +1368,7 @@ DirectoryModel.prototype.clearSearch_ = function() {
 
 /**
  * @param {string} name Filter identifier.
- * @param {Function(Entry)} callback A filter — a function receiving an Entry,
+ * @param {function(Entry)} callback A filter — a function receiving an Entry,
  *     and returning bool.
  */
 DirectoryModel.prototype.addFilter = function(name, callback) {

@@ -264,7 +264,7 @@ Mosaic.prototype.scrollIntoView = function(index) {
  * Load multiple tiles.
  *
  * @param {Array.<Mosaic.Tile>} tiles Array of tiles.
- * @param {function} opt_callback Completion callback.
+ * @param {function=} opt_callback Completion callback.
  * @private
  */
 Mosaic.prototype.loadTiles_ = function(tiles, opt_callback) {
@@ -348,7 +348,7 @@ Mosaic.prototype.layout = function() {
 /**
  * Schedule the layout.
  *
- * @param {number} opt_delay Delay in ms.
+ * @param {number=} opt_delay Delay in ms.
  */
 Mosaic.prototype.scheduleLayout = function(opt_delay) {
   if (!this.layoutTimer_) {
@@ -532,7 +532,7 @@ Mosaic.prototype.hide = function() {
  *
  * @param {Rect} tileRect Tile rectangle. Reset the transform if null.
  * @param {Rect} imageRect Large image rectangle. Reset the transform if null.
- * @param {boolean} opt_instant True of the transition should be instant.
+ * @param {boolean=} opt_instant True of the transition should be instant.
  */
 Mosaic.prototype.transform = function(tileRect, imageRect, opt_instant) {
   if (opt_instant) {
@@ -608,8 +608,8 @@ Mosaic.SelectionController.prototype.getIndexBelow = function(index) {
 /**
  * Mosaic layout.
  *
- * @param {string} opt_mode Layout mode.
- * @param {Mosaic.Density} opt_maxDensity Layout density.
+ * @param {string=} opt_mode Layout mode.
+ * @param {Mosaic.Density=} opt_maxDensity Layout density.
  * @constructor
  */
 Mosaic.Layout = function(opt_mode, opt_maxDensity) {
@@ -813,8 +813,8 @@ Mosaic.Layout.prototype.add = function(tile, isLast) {
 /**
  * Commit the tentative layout.
  *
- * @param {number} opt_offsetX Horizontal offset.
- * @param {number} opt_offsetY Vertical offset.
+ * @param {number=} opt_offsetX Horizontal offset.
+ * @param {number=} opt_offsetY Vertical offset.
  * @private
  */
 Mosaic.Layout.prototype.commit_ = function(opt_offsetX, opt_offsetY) {
@@ -1240,7 +1240,7 @@ Mosaic.Column.prototype.add = function(tile) {
 /**
  * Prepare the column layout.
  *
- * @param {boolean} opt_force True if the layout must be performed even for an
+ * @param {boolean=} opt_force True if the layout must be performed even for an
  *   incomplete column.
  * @return {boolean} True if the layout was performed.
  */
@@ -1306,8 +1306,8 @@ Mosaic.Column.prototype.getHeight = function() { return this.height_ };
 
 /**
  * Perform the column layout.
- * @param {number} opt_offsetX Horizontal offset.
- * @param {number} opt_offsetY Vertical offset.
+ * @param {number=} opt_offsetX Horizontal offset.
+ * @param {number=} opt_offsetY Vertical offset.
  */
 Mosaic.Column.prototype.layout = function(opt_offsetX, opt_offsetY) {
   opt_offsetX = opt_offsetX || 0;
@@ -1602,7 +1602,7 @@ Mosaic.Tile.prototype.markUnloaded = function() {
 /**
  * Load the thumbnail image into the tile.
  *
- * @param {object} metadata Metadata object.
+ * @param {Object} metadata Metadata object.
  * @param {function} callback Completion callback.
  */
 Mosaic.Tile.prototype.load = function(metadata, callback) {
@@ -1684,7 +1684,7 @@ Mosaic.Tile.prototype.layout = function(left, top, width, height) {
 
 /**
  * If the tile is not fully visible scroll the parent to make it fully visible.
- * @param {boolean} opt_animated True, if scroll should be animated,
+ * @param {boolean=} opt_animated True, if scroll should be animated,
  *     default: true.
  */
 Mosaic.Tile.prototype.scrollIntoView = function(opt_animated) {

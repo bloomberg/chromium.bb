@@ -59,7 +59,7 @@ ButterBar.prototype.isError_ = function() {
   /**
  * Show butter bar.
  * @param {string} message The message to be shown.
- * @param {object} opt_options Options: 'actions', 'progress', 'timeout'.
+ * @param {Object=} opt_options Options: 'actions', 'progress', 'timeout'.
  */
 ButterBar.prototype.show = function(message, opt_options) {
   this.clearShowTimeout_();
@@ -97,7 +97,7 @@ ButterBar.prototype.show = function(message, opt_options) {
 /**
  * Show error message in butter bar.
  * @param {string} message Message.
- * @param {object} opt_options Same as in show().
+ * @param {Object=} opt_options Same as in show().
  * @private
  */
 ButterBar.prototype.showError_ = function(message, opt_options) {
@@ -108,7 +108,7 @@ ButterBar.prototype.showError_ = function(message, opt_options) {
 /**
  * Set message and/or progress.
  * @param {string} message Message.
- * @param {object} opt_options Same as in show().
+ * @param {Object=} opt_options Same as in show().
  * @private
  */
 ButterBar.prototype.update_ = function(message, opt_options) {
@@ -144,7 +144,7 @@ ButterBar.prototype.update_ = function(message, opt_options) {
 /**
  * Hide butter bar. There might be some delay before hiding so that butter bar
  * would be shown for no less than the minimal time.
- * @param {boolean} opt_force If true hide immediately.
+ * @param {boolean=} opt_force If true hide immediately.
  * @private
  */
 ButterBar.prototype.hide_ = function(opt_force) {

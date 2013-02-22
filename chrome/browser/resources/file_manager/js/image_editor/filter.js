@@ -32,8 +32,8 @@ filter.create = function(name, options) {
  *
  * @param {HTMLCanvasElement} dstCanvas Destination canvas.
  * @param {HTMLCanvasElement} srcCanvas Source canvas.
- * @param {Function(ImageData,ImageData,number,number)} filterFunc Filter.
- * @param {function(number,number)} progressCallback Progress callback.
+ * @param {function(ImageData,ImageData,number,number)} filterFunc Filter.
+ * @param {function(number, number)} progressCallback Progress callback.
  * @param {number} maxPixelsPerStrip Pixel number to process at once.
  */
 filter.applyByStrips = function(

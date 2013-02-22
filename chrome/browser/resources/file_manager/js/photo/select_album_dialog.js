@@ -162,7 +162,7 @@ SelectAlbumDialog.prototype.hide = function() {
 /**
  * List activation handler. Closes dialog and calls 'ok' callback.
  *
- * @param {int} index Activated index.
+ * @param {number} index Activated index.
  * @private
  */
 SelectAlbumDialog.prototype.activateItemAtIndex_ = function(index) {

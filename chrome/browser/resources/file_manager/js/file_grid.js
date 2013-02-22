@@ -88,9 +88,8 @@ FileGrid.decorateThumbnail = function(li, entry, metadataCache) {
  * @param {Entry} entry Entry which thumbnail is generating for.
  * @param {MetadataCache} metadataCache To retrieve metadata.
  * @param {ThumbnailLoader.FillMode} fillMode Fill mode.
- * @param {function(HTMLElement)} opt_imageLoadCallback Callback called when
- *                                the image has been loaded before inserting
- *                                it into the DOM.
+ * @param {function(HTMLElement)=} opt_imageLoadCallback Callback called when
+ *     the image has been loaded before inserting it into the DOM.
  */
 FileGrid.decorateThumbnailBox = function(
     box, entry, metadataCache, fillMode, opt_imageLoadCallback) {

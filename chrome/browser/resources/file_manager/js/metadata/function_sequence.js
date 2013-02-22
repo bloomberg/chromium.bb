@@ -8,8 +8,8 @@
  * @param {string} name                // TODO(JSDOC).
  * @param {Array} steps                array of functions to invoke in sequence.
  * @param {Object} logger              logger.
- * @param {Function} callback          callback to invoke on success.
- * @param {Function} failureCallback   callback to invoke on failure.
+ * @param {function} callback          callback to invoke on success.
+ * @param {function} failureCallback   callback to invoke on failure.
  * @constructor
  */
 function FunctionSequence(name, steps, logger, callback, failureCallback) {
@@ -31,7 +31,7 @@ function FunctionSequence(name, steps, logger, callback, failureCallback) {
 /**
  * Sets new callback
  *
- * @param {Function} callback new callback to call on succeed.
+ * @param {function} callback new callback to call on succeed.
  */
 FunctionSequence.prototype.setCallback = function(callback) {
     this.callback_ = callback;
@@ -40,7 +40,7 @@ FunctionSequence.prototype.setCallback = function(callback) {
 /**
  * Sets new error callback
  *
- * @param {Function} failureCallback new callback to call on failure.
+ * @param {function} failureCallback new callback to call on failure.
  */
 FunctionSequence.prototype.setFailureCallback = function(failureCallback) {
     this.failureCallback_ = failureCallback;

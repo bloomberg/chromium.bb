@@ -11,7 +11,7 @@ var util = {};
  * Returns a function that console.log's its arguments, prefixed by |msg|.
  *
  * @param {string} msg The message prefix to use in the log.
- * @param {function} opt_callback A function to invoke after logging.
+ * @param {function=} opt_callback A function to invoke after logging.
  * @return {function} Function that logs.
  */
 util.flog = function(msg, opt_callback) {
@@ -116,7 +116,7 @@ util.htmlUnescape = function(str) {
  * (including the original set).
  * @param {Array.<Entry>} entries List of entries.
  * @param {boolean} recurse Whether to recurse.
- * @param {function(object)} successCallback Object has the fields dirEntries,
+ * @param {function(Object)} successCallback Object has the fields dirEntries,
  *     fileEntries and fileBytes.
  */
 util.recurseAndResolveEntries = function(entries, recurse, successCallback) {
@@ -264,7 +264,7 @@ util.readDirectory = function(root, path, callback) {
  * @param {DirEntry} dirEntry The base directory.
  * @param {Object} params The parameters to pass to the underlying
  *     getDirectory calls.
- * @param {Array<string>} paths The list of directories to resolve.
+ * @param {Array.<string>} paths The list of directories to resolve.
  * @param {function(!DirEntry)} successCallback The function to invoke for
  *     each DirEntry found.  Also invoked once with null at the end of the
  *     process.
@@ -314,7 +314,7 @@ util.getDirectories = function(dirEntry, params, paths, successCallback,
  * @param {DirEntry} dirEntry The base directory.
  * @param {Object} params The parameters to pass to the underlying
  *     getFile calls.
- * @param {Array<string>} paths The list of files to resolve.
+ * @param {Array.<string>} paths The list of files to resolve.
  * @param {function(!FileEntry)} successCallback The function to invoke for
  *     each FileEntry found.  Also invoked once with null at the end of the
  *     process.
@@ -702,8 +702,8 @@ util.forEachEntryInTree = function(root, callback, max_depth, opt_filter) {
  * A shortcut function to create a child element with given tag and class.
  *
  * @param {HTMLElement} parent Parent element.
- * @param {string} opt_className Class name.
- * @param {string} opt_tag Element tag, DIV is omitted.
+ * @param {string=} opt_className Class name.
+ * @param {string=} opt_tag Element tag, DIV is omitted.
  * @return {Element} Newly created element.
  */
 util.createChild = function(parent, opt_className, opt_tag) {
@@ -723,7 +723,7 @@ util.createChild = function(parent, opt_className, opt_tag) {
  *                          false if pushed.
  * @param {string} path Path to be put in the address bar after the hash.
  *   If null the hash is left unchanged.
- * @param {string|object} opt_param Search parameter. Used directly if string,
+ * @param {string|Object=} opt_param Search parameter. Used directly if string,
  *   stringified if object. If omitted the search query is left unchanged.
  */
 util.updateAppState = function(replace, path, opt_param) {
@@ -835,8 +835,8 @@ util.platform = {
 
   /**
    * @param {string} key Preference name.
-   * @param {string|object} value Preference value.
-   * @param {function} opt_callback Completion callback.
+   * @param {string|Object} value Preference value.
+   * @param {function=} opt_callback Completion callback.
    */
   setPreference: function(key, value, opt_callback) {
     if (typeof value != 'string')
@@ -1007,7 +1007,7 @@ util.__defineGetter__('storage', function() {
 
   /**
    * Simulation of the AppsV2 storage interface.
-   * @type {object}
+   * @type {Object}
    */
   util.storage = {
     local: new StorageArea('local'),
@@ -1096,7 +1096,7 @@ util.AppCache.getValue = function(key, callback) {
  *
  * @param {string} key Key.
  * @param {string} value Value. Remove the key if value is null.
- * @param {number} opt_lifetime Maximim time to keep an item (in milliseconds).
+ * @param {number=} opt_lifetime Maximim time to keep an item (in milliseconds).
  */
 util.AppCache.update = function(key, value, opt_lifetime) {
   util.AppCache.read_(function(map) {

@@ -8,10 +8,10 @@
  * <canvas> renders faster than <img>, however has bigger memory overhead.
  *
  * @param {string} url File URL.
- * @param {ThumbnailLoader.LoaderType} opt_loaderType Canvas or Image loader,
+ * @param {ThumbnailLoader.LoaderType=} opt_loaderType Canvas or Image loader,
  *     default: IMAGE.
- * @param {Object} opt_metadata Metadata object.
- * @param {string} opt_mediaType Media type.
+ * @param {Object=} opt_metadata Metadata object.
+ * @param {string=} opt_mediaType Media type.
  * @constructor
  */
 function ThumbnailLoader(url, opt_loaderType, opt_metadata, opt_mediaType) {
@@ -203,7 +203,7 @@ ThumbnailLoader.prototype.getHeight = function() {
  * Load an image but do not attach it.
  *
  * @param {function(boolean)} callback Callback, parameter is true if the image
- *   has loaded successfully or a stock icon has been used.
+ *     has loaded successfully or a stock icon has been used.
  */
 ThumbnailLoader.prototype.loadDetachedImage = function(callback) {
   if (!this.thumbnailUrl_) {

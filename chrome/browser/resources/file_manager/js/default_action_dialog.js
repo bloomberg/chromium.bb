@@ -84,10 +84,10 @@ cr.define('cr.filebrowser', function() {
    * @param {string} title Title in dialog caption.
    * @param {string} message Message in dialog caption.
    * @param {Array} items Items to render in list.
-   * @param {int} defaultIndex Item to select by default.
-   * @param {Function} onOk Callback function.
-   * @param {Function} onCancel Callback function.
-   * @param {Function} onShow Callback function.
+   * @param {number} defaultIndex Item to select by default.
+   * @param {function} onOk Callback function.
+   * @param {function} onCancel Callback function.
+   * @param {function} onShow Callback function.
    */
   DefaultActionDialog.prototype.show = function(title, message, items,
       defaultIndex, onOk, onCancel, onShow) {
@@ -117,7 +117,7 @@ cr.define('cr.filebrowser', function() {
   /**
    * List activation handler. Closes dialog and calls 'ok' callback.
    *
-   * @param {int} index Activated index.
+   * @param {number} index Activated index.
    */
   DefaultActionDialog.prototype.activateItemAtIndex_ = function(index) {
     this.hide();

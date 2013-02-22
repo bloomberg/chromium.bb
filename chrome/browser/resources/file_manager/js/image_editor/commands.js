@@ -99,7 +99,7 @@ CommandQueue.prototype.clearBusy_ = function() {
 
 /**
  * Commit the image change: save and unlock the UI.
- * @param {number} opt_delay Delay in ms (to avoid disrupting the animation).
+ * @param {number=} opt_delay Delay in ms (to avoid disrupting the animation).
  * @private
  */
 CommandQueue.prototype.commit_ = function(opt_delay) {
@@ -111,7 +111,7 @@ CommandQueue.prototype.commit_ = function(opt_delay) {
  * Internal function to execute the command in a given context.
  *
  * @param {Command} command The command to execute.
- * @param {object} uiContext The UI context.
+ * @param {Object} uiContext The UI context.
  * @param {function} callback Completion callback.
  * @private
  */
@@ -135,7 +135,7 @@ CommandQueue.prototype.doExecute_ = function(command, uiContext, callback) {
  * Executes the command.
  *
  * @param {Command} command Command to execute.
- * @param {boolean} opt_keep_redo true if redo stack should not be cleared.
+ * @param {boolean=} opt_keep_redo True if redo stack should not be cleared.
  */
 CommandQueue.prototype.execute = function(command, opt_keep_redo) {
   this.setBusy_();
@@ -265,8 +265,8 @@ Command.prototype.revertView = function(canvas, imageView) {
  *
  * @param {Document} document Document to create canvas in.
  * @param {HTMLCanvasElement} srcCanvas to copy optional dimensions from.
- * @param {int} opt_width new canvas width.
- * @param {int} opt_height new canvas height.
+ * @param {number=} opt_width new canvas width.
+ * @param {number=} opt_height new canvas height.
  * @return {HTMLCanvasElement} Newly created canvas.
  * @private
  */

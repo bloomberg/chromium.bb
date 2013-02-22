@@ -471,7 +471,7 @@ ByteWriter.prototype.validateWrite = function(width) {
  * Writes scalar value to output stream.
  * @param {number} value Value to write.
  * @param {number} width Desired width of written value.
- * @param {boolean} opt_signed True if value represents signed number.
+ * @param {boolean=} opt_signed True if value represents signed number.
  */
 ByteWriter.prototype.writeScalar = function(value, width, opt_signed) {
   var method;

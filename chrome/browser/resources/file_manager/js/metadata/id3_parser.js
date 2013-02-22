@@ -16,8 +16,8 @@ Id3Parser.prototype = {__proto__: MetadataParser.prototype};
  * 'SynchSafe' term is taken from id3 documentation.
  *
  * @param {ByteReader} reader - reader to use.
- * @param {int} length - bytes to read.
- * @return {int}  // TODO(JSDOC).
+ * @param {number} length - bytes to read.
+ * @return {number}  // TODO(JSDOC).
  * @private
  */
 Id3Parser.readSynchSafe_ = function(reader, length) {
@@ -41,7 +41,7 @@ Id3Parser.readSynchSafe_ = function(reader, length) {
  * Reads 3bytes integer.
  *
  * @param {ByteReader} reader - reader to use.
- * @return {int}  // TODO(JSDOC).
+ * @return {number}  // TODO(JSDOC).
  * @private
  */
 Id3Parser.readUInt24_ = function(reader) {
@@ -52,8 +52,8 @@ Id3Parser.readUInt24_ = function(reader) {
  * Reads string from reader with specified encoding
  *
  * @param {ByteReader} reader reader to use.
- * @param {int} encoding string encoding.
- * @param {int} size maximum string size. Actual result may be shorter.
+ * @param {number} encoding string encoding.
+ * @param {number} size maximum string size. Actual result may be shorter.
  * @return {string}  // TODO(JSDOC).
  * @private
  */
@@ -84,9 +84,9 @@ Id3Parser.prototype.readString_ = function(reader, encoding, size) {
  * Reads text frame from reader.
  *
  * @param {ByteReader} reader reader to use.
- * @param {int} majorVersion major id3 version to use.
+ * @param {number} majorVersion major id3 version to use.
  * @param {Object} frame frame so store data at.
- * @param {int} end frame end position in reader.
+ * @param {number} end frame end position in reader.
  * @private
  */
 Id3Parser.prototype.readTextFrame_ = function(reader,
@@ -101,9 +101,9 @@ Id3Parser.prototype.readTextFrame_ = function(reader,
  * Reads user defined text frame from reader.
  *
  * @param {ByteReader} reader reader to use.
- * @param {int} majorVersion major id3 version to use.
+ * @param {number} majorVersion major id3 version to use.
  * @param {Object} frame frame so store data at.
- * @param {int} end frame end position in reader.
+ * @param {number} end frame end position in reader.
  * @private
  */
 Id3Parser.prototype.readUserDefinedTextFrame_ = function(reader,
@@ -629,7 +629,7 @@ Id3Parser.v2 = {
      * ISO-8859-1 [ISO-8859-1]. Terminated with $00.
      *
      * @const
-     * @type {int}
+     * @type {number}
      */
     ISO_8859_1: 0,
 
@@ -640,7 +640,7 @@ Id3Parser.v2 = {
      * Terminated with $00 00.
      *
      * @const
-     * @type {int}
+     * @type {number}
      */
     UTF_16: 1,
 
@@ -649,7 +649,7 @@ Id3Parser.v2 = {
      * Terminated with $00 00.
      *
      * @const
-     * @type {int}
+     * @type {number}
      */
     UTF_16BE: 2,
 
@@ -657,7 +657,7 @@ Id3Parser.v2 = {
      * UTF-8 [UTF-8] encoded Unicode [UNICODE]. Terminated with $00.
      *
      * @const
-     * @type {int}
+     * @type {number}
      */
     UTF_8: 3
   },

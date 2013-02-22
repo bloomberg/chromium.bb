@@ -33,7 +33,7 @@ function FileListContext(metadataCache, fileList, showHidden) {
 
 /**
  * @param {string} name Filter identifier.
- * @param {Function(Entry)} callback A filter — a function receiving an Entry,
+ * @param {function(Entry)} callback A filter — a function receiving an Entry,
  *     and returning bool.
  */
 FileListContext.prototype.addFilter = function(name, callback) {
@@ -48,7 +48,7 @@ FileListContext.prototype.removeFilter = function(name) {
 };
 
 /**
- * @param {bool} value If do not show hidden files.
+ * @param {boolean} value If do not show hidden files.
  */
 FileListContext.prototype.setFilterHidden = function(value) {
   if (value) {
@@ -70,7 +70,7 @@ FileListContext.prototype.isFilterHiddenOn = function() {
 
 /**
  * @param {Entry} entry File entry.
- * @return {bool} True if the file should be shown, false otherwise.
+ * @return {boolean} True if the file should be shown, false otherwise.
  */
 FileListContext.prototype.filter = function(entry) {
   for (var name in this.filters_) {

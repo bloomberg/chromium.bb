@@ -71,7 +71,7 @@ CommandUtil.getSingleEntry = function(event, fileManager) {
  * @param {Node} node Node to register command handler on.
  * @param {string} commandId Command id to respond to.
  * @param {{execute:function, canExecute:function}} handler Handler to use.
- * @param {Object...} var_args Additional arguments to pass to handler.
+ * @param {...Object} var_args Additional arguments to pass to handler.
  */
 CommandUtil.registerCommand = function(node, commandId, handler, var_args) {
   var args = Array.prototype.slice.call(arguments, 3);

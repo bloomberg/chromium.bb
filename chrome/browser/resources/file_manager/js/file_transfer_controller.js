@@ -622,7 +622,7 @@ FileTransferController.prototype = {
    *
    * @this {FileTransferController}
    * @param {string} command 'copy', 'cut' or 'paste'.
-   * @param {Function} handler Event handler.
+   * @param {function} handler Event handler.
    */
   simulateCommand_: function(command, handler) {
     var iframe = this.document_.querySelector('#command-dispatcher');

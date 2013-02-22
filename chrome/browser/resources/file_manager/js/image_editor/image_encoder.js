@@ -124,8 +124,8 @@ ImageEncoder.decodeDataURL = function(dataURL) {
 /**
  * Return a thumbnail for an image.
  * @param {HTMLCanvasElement} canvas Original image.
- * @param {number} opt_shrinkage Thumbnail should be at least this much smaller
- *                               than the original image (in each dimension).
+ * @param {number=} opt_shrinkage Thumbnail should be at least this much smaller
+ *     than the original image (in each dimension).
  * @return {HTMLCanvasElement} Thumbnail canvas.
  */
 ImageEncoder.createThumbnail = function(canvas, opt_shrinkage) {

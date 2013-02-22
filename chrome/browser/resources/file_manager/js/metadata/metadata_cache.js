@@ -137,7 +137,7 @@ MetadataCache.prototype.isInitialized = function() {
  * @param {string|Entry|Array.<string|Entry>} items The list of entries or
  *     file urls. May be just a single item.
  * @param {string} type The metadata type.
- * @param {Function(Object)} callback The metadata is passed to callback.
+ * @param {function(Object)} callback The metadata is passed to callback.
  */
 MetadataCache.prototype.get = function(items, type, callback) {
   if (!(items instanceof Array)) {
@@ -173,7 +173,7 @@ MetadataCache.prototype.get = function(items, type, callback) {
  * Fetches the metadata for one Entry/FileUrl. See comments to |get|.
  * @param {Entry|string} item The entry or url.
  * @param {string} type Metadata type.
- * @param {Function(Object)} callback The callback.
+ * @param {function(Object)} callback The callback.
  */
 MetadataCache.prototype.getOne = function(item, type, callback) {
   if (type.indexOf('|') != -1) {
@@ -347,7 +347,7 @@ MetadataCache.prototype.clear = function(items, type) {
  * @param {number} relation This defines, which items will trigger the observer.
  *     See comments to |MetadataCache.EXACT| and others.
  * @param {string} type The metadata type.
- * @param {Function(Array.<string>, Array.<Object>)} observer List of file urls
+ * @param {function(Array.<string>, Array.<Object>)} observer List of file urls
  *     and corresponding metadata values are passed to this callback.
  * @return {number} The observer id, which can be used to remove it.
  */
@@ -579,7 +579,7 @@ MetadataProvider.prototype.isInitialized = function() { return true; };
  * can fetch at once.
  * @param {string} url File url.
  * @param {string} type Requested metadata type.
- * @param {Function(Object)} callback Callback expects a map from metadata type
+ * @param {function(Object)} callback Callback expects a map from metadata type
  *     to metadata value.
  * @param {Entry=} opt_entry The file entry if present.
  */
@@ -627,7 +627,7 @@ FilesystemProvider.prototype.getId = function() { return 'filesystem'; };
  * Fetches the metadata.
  * @param {string} url File url.
  * @param {string} type Requested metadata type.
- * @param {Function(Object)} callback Callback expects a map from metadata type
+ * @param {function(Object)} callback Callback expects a map from metadata type
  *     to metadata value.
  * @param {Entry=} opt_entry The file entry if present.
  */
@@ -704,7 +704,7 @@ DriveProvider.prototype.getId = function() { return 'drive'; };
  * Fetches the metadata.
  * @param {string} url File url.
  * @param {string} type Requested metadata type.
- * @param {Function(Object)} callback Callback expects a map from metadata type
+ * @param {function(Object)} callback Callback expects a map from metadata type
  *     to metadata value.
  * @param {Entry=} opt_entry The file entry if present.
  */
@@ -879,7 +879,7 @@ ContentProvider.prototype.getId = function() { return 'content'; };
  * Fetches the metadata.
  * @param {string} url File url.
  * @param {string} type Requested metadata type.
- * @param {Function(Object)} callback Callback expects a map from metadata type
+ * @param {function(Object)} callback Callback expects a map from metadata type
  *     to metadata value.
  * @param {Entry=} opt_entry The file entry if present.
  */

@@ -398,7 +398,7 @@ SlideMode.prototype.onSelection_ = function() {
  * Change the selection.
  *
  * @param {number} index New selected index.
- * @param {number} opt_slideHint Slide animation direction (-1|1).
+ * @param {number=} opt_slideHint Slide animation direction (-1|1).
  */
 SlideMode.prototype.select = function(index, opt_slideHint) {
   this.slideHint_ = opt_slideHint;
@@ -1017,8 +1017,8 @@ SlideMode.prototype.isSlideshowOn_ = function() {
 
 /**
  * Start the slideshow.
- * @param {number} opt_interval First interval in ms.
- * @param {Event} opt_event Event.
+ * @param {number=} opt_interval First interval in ms.
+ * @param {Event=} opt_event Event.
  */
 SlideMode.prototype.startSlideshow = function(opt_interval, opt_event) {
   // Set the attribute early to prevent the toolbar from flashing when
@@ -1053,7 +1053,7 @@ SlideMode.prototype.startSlideshow = function(opt_interval, opt_event) {
 
 /**
  * Stop the slideshow.
- * @param {Event} opt_event Event.
+ * @param {Event=} opt_event Event.
  * @private
  */
 SlideMode.prototype.stopSlideshow_ = function(opt_event) {
@@ -1101,7 +1101,7 @@ SlideMode.prototype.toggleSlideshowPause_ = function() {
 };
 
 /**
- * @param {number} opt_interval Slideshow interval in ms.
+ * @param {number=} opt_interval Slideshow interval in ms.
  * @private
  */
 SlideMode.prototype.scheduleNextSlide_ = function(opt_interval) {
@@ -1119,7 +1119,7 @@ SlideMode.prototype.scheduleNextSlide_ = function(opt_interval) {
 
 /**
  * Resume the slideshow.
- * @param {number} opt_interval Slideshow interval in ms.
+ * @param {number=} opt_interval Slideshow interval in ms.
  * @private
  */
 SlideMode.prototype.resumeSlideshow_ = function(opt_interval) {
@@ -1157,7 +1157,7 @@ SlideMode.prototype.stopEditing_ = function() {
 
 /**
  * Activate/deactivate editor.
- * @param {Event} opt_event Event.
+ * @param {Event=} opt_event Event.
  */
 SlideMode.prototype.toggleEditor = function(opt_event) {
   if (opt_event)  // Caused by user action, notify the Gallery.

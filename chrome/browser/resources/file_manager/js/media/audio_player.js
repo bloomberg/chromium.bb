@@ -209,8 +209,8 @@ AudioPlayer.prototype.loadMetadata_ = function(track) {
 /**
  * Display track's metadata.
  * @param {number} track Track number.
- * @param {object} metadata Metadata object.
- * @param {string} opt_error Error message.
+ * @param {Object} metadata Metadata object.
+ * @param {string=} opt_error Error message.
  * @private
  */
 AudioPlayer.prototype.displayMetadata_ = function(track, metadata, opt_error) {
@@ -235,7 +235,7 @@ AudioPlayer.prototype.onExternallyUnmounted_ = function(event) {
 /**
  * Select a new track to play.
  * @param {number} newTrack New track number.
- * @param {boolean} opt_restoreState True if restoring the play state from URL.
+ * @param {boolean=} opt_restoreState True if restoring the play state from URL.
  * @private
  */
 AudioPlayer.prototype.select_ = function(newTrack, opt_restoreState) {
@@ -354,7 +354,7 @@ AudioPlayer.prototype.isCompact_ = function() {
 /**
  * Go to the previous or the next track.
  * @param {boolean} forward True if next, false if previous.
- * @param {boolean} opt_onlyIfValid True if invalid tracks should be selected.
+ * @param {boolean=} opt_onlyIfValid True if invalid tracks should be selected.
  * @private
  */
 AudioPlayer.prototype.advance_ = function(forward, opt_onlyIfValid) {

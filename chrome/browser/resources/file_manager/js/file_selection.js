@@ -587,7 +587,7 @@ FileSelectionHandler.prototype.showPreviewThumbnails_ = function(selection) {
  * Renders a thumbnail for the buttom panel.
  *
  * @param {Entry} entry Entry to render for.
- * @param {Function} callback Callend when image loaded.
+ * @param {function} callback Called when image loaded.
  * @return {HTMLDivElement} Created element.
  * @private
  */

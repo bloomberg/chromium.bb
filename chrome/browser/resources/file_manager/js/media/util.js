@@ -6,7 +6,7 @@
  * A controller class detects mouse inactivity and hides "tool" elements.
  *
  * @param {Element} container The main DOM container.
- * @param {number} opt_timeout Hide timeout in ms.
+ * @param {number=} opt_timeout Hide timeout in ms.
  * @param {function():boolean=} opt_toolsActive Function that returns |true|
  *     if the tools are active and should not be hidden.
  * @constructor
@@ -91,7 +91,7 @@ MouseInactivityWatcher.prototype.activityStarted_ = function() {
 
 /**
  * Called when user activity has stopped. Re-starts the countdown.
- * @param {number} opt_timeout Timeout.
+ * @param {number=} opt_timeout Timeout.
  * @private
  */
 MouseInactivityWatcher.prototype.activityStopped_ = function(opt_timeout) {
@@ -108,7 +108,7 @@ MouseInactivityWatcher.prototype.activityStopped_ = function(opt_timeout) {
 /**
  * Called when a user performed a short action (such as a click or a key press)
  * that should show the tools if they are not visible.
- * @param {number} opt_timeout Timeout.
+ * @param {number=} opt_timeout Timeout.
  */
 MouseInactivityWatcher.prototype.kick = function(opt_timeout) {
   this.activityStarted_();

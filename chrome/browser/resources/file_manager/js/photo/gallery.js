@@ -23,7 +23,7 @@ function beforeunload() { return Gallery.instance.onBeforeUnload() }
 
 /**
  * Called from the main frame when unloading.
- * @param {boolean} opt_exiting True if the app is exiting.
+ * @param {boolean=} opt_exiting True if the app is exiting.
  */
 function unload(opt_exiting) { Gallery.instance.onUnload(opt_exiting) }
 
@@ -83,7 +83,7 @@ Gallery.open = function(context, urls, selectedUrls) {
 /**
  * Create a Gallery object in a tab.
  * @param {string} path File system path to a selected file.
- * @param {object} pageState Page state object.
+ * @param {Object} pageState Page state object.
  * @param {function=} opt_callback Called when gallery object is constructed.
  */
 Gallery.openStandalone = function(path, pageState, opt_callback) {
@@ -438,7 +438,7 @@ Gallery.prototype.onUserAction_ = function() {
 
 /**
  * Set the current mode, update the UI.
- * @param {object} mode Current mode.
+ * @param {Object} mode Current mode.
  * @private
  */
 Gallery.prototype.setCurrentMode_ = function(mode) {
@@ -458,8 +458,8 @@ Gallery.prototype.setCurrentMode_ = function(mode) {
 
 /**
  * Mode toggle event handler.
- * @param {function} opt_callback Callback.
- * @param {Event} opt_event Event that caused this call.
+ * @param {function=} opt_callback Callback.
+ * @param {Event=} opt_event Event that caused this call.
  * @private
  */
 Gallery.prototype.toggleMode_ = function(opt_callback, opt_event) {

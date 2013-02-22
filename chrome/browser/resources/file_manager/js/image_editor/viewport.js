@@ -26,7 +26,7 @@ function Viewport() {
  */
 
 /**
- * @param {object} scaleControl The UI object responsible for scaling.
+ * @param {Object} scaleControl The UI object responsible for scaling.
  */
 Viewport.prototype.setScaleControl = function(scaleControl) {
   this.scaleControl_ = scaleControl;

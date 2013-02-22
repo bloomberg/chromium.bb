@@ -28,7 +28,7 @@ MockEventSource.prototype.removeListener = function(listener) {
 
 /**
  * Notify listeners in a fresh call stack.
- * @param {Object...} var_args Arguments.
+ * @param {...Object} var_args Arguments.
  */
 MockEventSource.prototype.notify = function(var_args) {
   setTimeout(function(args) {

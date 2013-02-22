@@ -37,7 +37,7 @@ ActionChoice.PREVIEW_COUNT = 3;
 /**
  * Loads app in the document body.
  * @param {FileSystem=} opt_filesystem Local file system.
- * @param {Object} opt_params Parameters.
+ * @param {Object=} opt_params Parameters.
  */
 ActionChoice.load = function(opt_filesystem, opt_params) {
   ImageUtil.metrics = metrics;

@@ -247,7 +247,7 @@ FileListBannerController.prototype.maybeShowBanner_ = function() {
 /**
  * Show or hide the "Low Google Drive space" warning.
  * @param {boolean} show True if the box need to be shown.
- * @param {object} sizeStats Size statistics. Should be defined when showing the
+ * @param {Object} sizeStats Size statistics. Should be defined when showing the
  *     warning.
  * @private
  */
@@ -579,7 +579,7 @@ FileListBannerController.prototype.checkPromoAvailable_ = function() {
 };
 
 /**
- * @param {Function} completeCallback To be called (may be directly) when
+ * @param {function} completeCallback To be called (may be directly) when
  *                                    this.newWelcome_ get ready.
  * @private
  */

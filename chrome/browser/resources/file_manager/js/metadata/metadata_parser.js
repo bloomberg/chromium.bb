@@ -18,7 +18,7 @@ function MetadataParser(parent, type, urlFilter) {
 
 /**
  * Output an error message.
- * @param {Object...} var_args Arguments.
+ * @param {...Object} var_args Arguments.
  */
 MetadataParser.prototype.error = function(var_args) {
   this.parent_.error.apply(this.parent_, arguments);
@@ -26,7 +26,7 @@ MetadataParser.prototype.error = function(var_args) {
 
 /**
  * Output a log message.
- * @param {Object...} var_args Arguments.
+ * @param {...Object} var_args Arguments.
  */
 MetadataParser.prototype.log = function(var_args) {
   this.parent_.log.apply(this.parent_, arguments);
@@ -34,7 +34,7 @@ MetadataParser.prototype.log = function(var_args) {
 
 /**
  * Output a log message if |verbose| flag is on.
- * @param {Object...} var_args Arguments.
+ * @param {...Object} var_args Arguments.
  */
 MetadataParser.prototype.vlog = function(var_args) {
   if (this.verbose)

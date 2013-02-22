@@ -6,7 +6,7 @@
  * This object encapsulates everything related to tasks execution.
  *
  * @param {FileManager} fileManager FileManager instance.
- * @param {object} opt_params File manager load parameters.
+ * @param {Object=} opt_params File manager load parameters.
  * @constructor
  */
 function FileTasks(fileManager, opt_params) {
@@ -545,7 +545,7 @@ FileTasks.prototype.updateMenuItem_ = function() {
  *
  * @param {Object} task Task to convert.
  * @param {string=} opt_title Title.
- * @param {boolean} opt_bold Make a menu item bold.
+ * @param {boolean=} opt_bold Make a menu item bold.
  * @return {Object} Item appendable to combobutton drop-down list.
  * @private
  */
