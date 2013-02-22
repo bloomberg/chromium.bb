@@ -7,6 +7,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/sessions/session_id.h"
+#include "chrome/browser/ui/toolbar/toolbar_model.h"
+#include "chrome/browser/ui/toolbar/toolbar_model_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -24,13 +26,17 @@ class Profile;
 // Abstract representation of a Tab Model for Android.  Since Android does
 // not use Browser/BrowserList, this is required to allow Chrome to interact
 // with Android's Tabs and Tab Model.
-class TabModel : public content::NotificationObserver {
+class TabModel : public content::NotificationObserver,
+                 public ToolbarModelDelegate {
  public:
   explicit TabModel(Profile* profile);
   // Deprecated: This constructor is deprecated and should be removed once
   // downstream Android uses new constructor. See crbug.com/159704.
   TabModel();
   virtual ~TabModel();
+
+  // Implementation of ToolbarDelegate
+  virtual content::WebContents* GetActiveWebContents() const OVERRIDE;
 
   virtual Profile* GetProfile() const;
   virtual bool IsOffTheRecord() const;
@@ -50,10 +56,14 @@ class TabModel : public content::NotificationObserver {
 
   virtual void OpenClearBrowsingData() const = 0;
 
+  ToolbarModel::SecurityLevel GetSecurityLevelForCurrentTab();
+
  protected:
   // Instructs the TabModel to broadcast a notification that all tabs are now
   // loaded from storage.
   void BroadcastSessionRestoreComplete();
+
+  ToolbarModel* GetToolbarModel();
 
  private:
   // Determines how TabModel will interact with the profile.
@@ -69,6 +79,8 @@ class TabModel : public content::NotificationObserver {
 
   // The SyncedWindowDelegate associated with this TabModel.
   scoped_ptr<browser_sync::SyncedWindowDelegateAndroid> synced_window_delegate_;
+
+  scoped_ptr<ToolbarModel> toolbar_model_;
 
   // Unique identifier of this TabModel for session restore. This id is only
   // unique within the current session, and is not guaranteed to be unique

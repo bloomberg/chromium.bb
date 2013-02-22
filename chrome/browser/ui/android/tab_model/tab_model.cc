@@ -8,6 +8,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/synced_window_delegate_android.h"
+#include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 
@@ -16,7 +17,8 @@ using content::NotificationService;
 TabModel::TabModel(Profile* profile)
   : profile_(profile),
     synced_window_delegate_(
-        new browser_sync::SyncedWindowDelegateAndroid(this)) {
+        new browser_sync::SyncedWindowDelegateAndroid(this)),
+    toolbar_model_(new ToolbarModelImpl(this)) {
 
   if (profile) {
     // A normal Profile creates an OTR profile if it does not exist when
@@ -46,6 +48,13 @@ TabModel::TabModel()
 TabModel::~TabModel() {
 }
 
+content::WebContents* TabModel::GetActiveWebContents() const {
+  if (GetTabCount() == 0 || GetActiveIndex() < 0 ||
+      GetActiveIndex() > GetTabCount())
+    return NULL;
+  return GetWebContentsAt(GetActiveIndex());
+}
+
 Profile* TabModel::GetProfile() const {
   return profile_;
 }
@@ -73,6 +82,14 @@ void TabModel::BroadcastSessionRestoreComplete() {
     // constructor that takes a Profile* argument. See crbug.com/159704.
     // NOTREACHED();
   }
+}
+
+ToolbarModel* TabModel::GetToolbarModel() {
+  return toolbar_model_.get();
+}
+
+ToolbarModel::SecurityLevel TabModel::GetSecurityLevelForCurrentTab() {
+  return toolbar_model_->GetSecurityLevel();
 }
 
 void TabModel::Observe(
