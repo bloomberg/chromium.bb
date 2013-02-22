@@ -4,6 +4,13 @@
 
 
 cr.define('bmm', function() {
+  /**
+   * The id of the bookmark root.
+   * @type {string}
+   * @const
+   */
+  var ROOT_ID = '0';
+
   /** @const */ var Tree = cr.ui.Tree;
   /** @const */ var TreeItem = cr.ui.TreeItem;
 
@@ -294,6 +301,7 @@ cr.define('bmm', function() {
     BookmarkTree: BookmarkTree,
     BookmarkTreeItem: BookmarkTreeItem,
     treeLookup: treeLookup,
-    tree: tree
+    tree: tree,
+    ROOT_ID: ROOT_ID
   };
 });
