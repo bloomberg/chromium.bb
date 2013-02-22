@@ -33,6 +33,7 @@ class URLFetcherFileWriter {
   void CreateTempFile(const CompletionCallback& callback);
 
   // Writes |num_bytes_| response bytes in |buffer| to the file.
+  // |callback| is run with the result upon completion.
   void Write(scoped_refptr<IOBuffer> buffer,
              int num_bytes,
              const CompletionCallback& callback);
@@ -49,6 +50,7 @@ class URLFetcherFileWriter {
   void DisownFile();
 
   // Closes the file if it is open.
+  // |callback| is run with the result upon completion.
   void CloseFile(const CompletionCallback& callback);
 
   // Closes the file if it is open and then delete it.
@@ -65,18 +67,22 @@ class URLFetcherFileWriter {
                      base::PlatformFileError error_code,
                      base::PassPlatformFile file_handle,
                      bool created);
+
   // Callback which gets the result of a temporary file creation.
   void DidCreateTempFile(const CompletionCallback& callback,
                          base::PlatformFileError error_code,
                          base::PassPlatformFile file_handle,
                          const base::FilePath& file_path);
+
   // This method is used to implement DidCreateFile and DidCreateTempFile.
+  // |callback| is run with the result.
   void DidCreateFileInternal(const CompletionCallback& callback,
                              const base::FilePath& file_path,
                              base::PlatformFileError error_code,
                              base::PassPlatformFile file_handle);
 
   // Callback which gets the result of closing the file.
+  // |callback| is run with the result.
   void DidCloseFile(const CompletionCallback& callback,
                     base::PlatformFileError error);
 
