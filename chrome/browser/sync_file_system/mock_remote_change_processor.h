@@ -32,7 +32,7 @@ class MockRemoteChangeProcessor : public RemoteChangeProcessor {
                     const std::string& service_name,
                     const PrepareChangeCallback& callback));
   MOCK_METHOD4(ApplyRemoteChange,
-               void(const fileapi::FileChange& change,
+               void(const FileChange& change,
                     const base::FilePath& local_path,
                     const fileapi::FileSystemURL& url,
                     const fileapi::SyncStatusCallback& callback));
@@ -41,7 +41,7 @@ class MockRemoteChangeProcessor : public RemoteChangeProcessor {
                     const base::Closure& completion_callback));
   MOCK_METHOD3(RecordFakeLocalChange,
                void(const fileapi::FileSystemURL& url,
-                    const fileapi::FileChange& change,
+                    const FileChange& change,
                     const fileapi::SyncStatusCallback& callback));
 
  private:

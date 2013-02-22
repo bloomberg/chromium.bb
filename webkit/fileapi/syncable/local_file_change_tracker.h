@@ -65,7 +65,8 @@ class WEBKIT_STORAGE_EXPORT LocalFileChangeTracker
 
   // Returns all changes recorded for the given |url|.
   // This should be called after writing is disabled.
-  void GetChangesForURL(const FileSystemURL& url, FileChangeList* changes);
+  void GetChangesForURL(const FileSystemURL& url,
+                        sync_file_system::FileChangeList* changes);
 
   // Clears the pending changes recorded in this tracker for |url|.
   void ClearChangesForURL(const FileSystemURL& url);
@@ -92,7 +93,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileChangeTracker
   struct ChangeInfo {
     ChangeInfo();
     ~ChangeInfo();
-    FileChangeList change_list;
+    sync_file_system::FileChangeList change_list;
     int64 change_seq;
   };
 
@@ -114,7 +115,8 @@ class WEBKIT_STORAGE_EXPORT LocalFileChangeTracker
 
   SyncStatusCode CollectLastDirtyChanges(
       FileSystemContext* file_system_context);
-  void RecordChange(const FileSystemURL& url, const FileChange& change);
+  void RecordChange(const FileSystemURL& url,
+                    const sync_file_system::FileChange& change);
 
   bool initialized_;
 

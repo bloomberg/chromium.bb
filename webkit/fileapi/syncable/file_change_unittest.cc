@@ -8,18 +8,16 @@
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace fileapi {
+namespace sync_file_system {
 
 namespace {
 
 FileChange AddOrUpdateFile() {
-  return FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                    SYNC_FILE_TYPE_FILE);
+  return FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE, SYNC_FILE_TYPE_FILE);
 }
 
 FileChange DeleteFile() {
-  return FileChange(FileChange::FILE_CHANGE_DELETE,
-                    SYNC_FILE_TYPE_FILE);
+  return FileChange(FileChange::FILE_CHANGE_DELETE, SYNC_FILE_TYPE_FILE);
 }
 
 FileChange AddDirectory() {
@@ -28,8 +26,7 @@ FileChange AddDirectory() {
 }
 
 FileChange DeleteDirectory() {
-  return FileChange(FileChange::FILE_CHANGE_DELETE,
-                    SYNC_FILE_TYPE_DIRECTORY);
+  return FileChange(FileChange::FILE_CHANGE_DELETE, SYNC_FILE_TYPE_DIRECTORY);
 }
 
 template <size_t INPUT_SIZE>
@@ -136,4 +133,4 @@ TEST(FileChangeListTest, UpdateCombined) {
   VerifyList(list, kExpected4);
 }
 
-}  // namespace fileapi
+}  // namespace sync_file_system

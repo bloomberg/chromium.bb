@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 
-namespace fileapi {
+namespace sync_file_system {
 
 FileChange::FileChange(
     ChangeType change,
@@ -87,4 +87,4 @@ std::string FileChangeList::DebugString() const {
   return ss.str();
 }
 
-}  // namespace fileapi
+}  // namespace sync_file_system

@@ -27,15 +27,16 @@
 #include "webkit/fileapi/syncable/sync_status_code.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
-using fileapi::FileChange;
-using fileapi::FileChangeList;
 using fileapi::FileSystemURL;
 using fileapi::LocalFileSyncStatus;
 using fileapi::MockSyncStatusObserver;
 using fileapi::SyncFileMetadata;
-using fileapi::SyncFileType;
 using fileapi::SyncStatusCallback;
 using fileapi::SyncStatusCode;
+
+using sync_file_system::FileChange;
+using sync_file_system::FileChangeList;
+using sync_file_system::SyncFileType;
 
 using ::testing::_;
 using ::testing::AtLeast;
@@ -212,7 +213,7 @@ TEST_F(LocalFileSyncServiceTest, RemoteSyncStepsSimple) {
 
   // Run PrepareForProcessRemoteChange for kFile.
   SyncFileMetadata expected_metadata;
-  expected_metadata.file_type = fileapi::SYNC_FILE_TYPE_UNKNOWN;
+  expected_metadata.file_type = SYNC_FILE_TYPE_UNKNOWN;
   expected_metadata.size = 0;
   PrepareForProcessRemoteChange(kFile, FROM_HERE,
                                 fileapi::SYNC_STATUS_OK,
@@ -220,7 +221,7 @@ TEST_F(LocalFileSyncServiceTest, RemoteSyncStepsSimple) {
 
   // Run ApplyRemoteChange for kFile.
   FileChange change(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                    fileapi::SYNC_FILE_TYPE_FILE);
+                    SYNC_FILE_TYPE_FILE);
   EXPECT_EQ(fileapi::SYNC_STATUS_OK,
             ApplyRemoteChange(change, local_path, kFile));
 
@@ -235,7 +236,7 @@ TEST_F(LocalFileSyncServiceTest, RemoteSyncStepsSimple) {
 
   // Run ApplyRemoteChange for kDir.
   change = FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                      fileapi::SYNC_FILE_TYPE_DIRECTORY);
+                      SYNC_FILE_TYPE_DIRECTORY);
   EXPECT_EQ(fileapi::SYNC_STATUS_OK,
             ApplyRemoteChange(change, base::FilePath(), kDir));
 
@@ -245,14 +246,13 @@ TEST_F(LocalFileSyncServiceTest, RemoteSyncStepsSimple) {
 
   // Run PrepareForProcessRemoteChange and ApplyRemoteChange for
   // kDir once again for deletion.
-  expected_metadata.file_type = fileapi::SYNC_FILE_TYPE_DIRECTORY;
+  expected_metadata.file_type = SYNC_FILE_TYPE_DIRECTORY;
   expected_metadata.size = 0;
   PrepareForProcessRemoteChange(kDir, FROM_HERE,
                                 fileapi::SYNC_STATUS_OK,
                                 expected_metadata);
 
-  change = FileChange(FileChange::FILE_CHANGE_DELETE,
-                      fileapi::SYNC_FILE_TYPE_UNKNOWN);
+  change = FileChange(FileChange::FILE_CHANGE_DELETE, SYNC_FILE_TYPE_UNKNOWN);
   EXPECT_EQ(fileapi::SYNC_STATUS_OK,
             ApplyRemoteChange(change, base::FilePath(), kDir));
 
@@ -349,7 +349,7 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_CreateFile) {
   // with ADD_OR_UPDATE change for TYPE_FILE.
   StrictMock<MockLocalChangeProcessor> local_change_processor;
   const FileChange change(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                          fileapi::SYNC_FILE_TYPE_FILE);
+                          SYNC_FILE_TYPE_FILE);
   EXPECT_CALL(local_change_processor,
               ApplyLocalChange(change, platform_path, kFile, _))
       .WillOnce(MockStatusCallback(fileapi::SYNC_STATUS_OK));
@@ -386,8 +386,7 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_CreateAndRemoveFile) {
   // The file will NOT exist in the remote side and the processor might
   // return SYNC_FILE_ERROR_NOT_FOUND (as mocked).
   StrictMock<MockLocalChangeProcessor> local_change_processor;
-  const FileChange change(FileChange::FILE_CHANGE_DELETE,
-                          fileapi::SYNC_FILE_TYPE_FILE);
+  const FileChange change(FileChange::FILE_CHANGE_DELETE, SYNC_FILE_TYPE_FILE);
   EXPECT_CALL(local_change_processor, ApplyLocalChange(change, _, kFile, _))
       .WillOnce(MockStatusCallback(fileapi::SYNC_FILE_ERROR_NOT_FOUND));
 
@@ -474,11 +473,10 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_MultipleChanges) {
   run_loop.Run();
 
   EXPECT_EQ(2U, changes.size());
-  EXPECT_EQ(FileChange(FileChange::FILE_CHANGE_DELETE,
-                       fileapi::SYNC_FILE_TYPE_FILE),
+  EXPECT_EQ(FileChange(FileChange::FILE_CHANGE_DELETE, SYNC_FILE_TYPE_FILE),
             changes[0]);
   EXPECT_EQ(FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                       fileapi::SYNC_FILE_TYPE_DIRECTORY),
+                       SYNC_FILE_TYPE_DIRECTORY),
             changes[1]);
 
   file_system_->RemoveSyncStatusObserver(&status_observer);
@@ -528,7 +526,7 @@ TEST_F(LocalFileSyncServiceTest, RecordFakeChange) {
   EXPECT_TRUE(urlset.empty());
 
   const FileChange change(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                          fileapi::SYNC_FILE_TYPE_FILE);
+                          SYNC_FILE_TYPE_FILE);
 
   // Call RecordFakeLocalChange to add an ADD_OR_UPDATE change.
   {

@@ -15,13 +15,14 @@ class FilePath;
 }
 
 namespace fileapi {
-class FileChange;
-class FileChangeList;
 class FileSystemURL;
 class SyncFileMetadata;
 }
 
 namespace sync_file_system {
+
+class FileChange;
+class FileChangeList;
 
 // Represents an interface to process one remote change and applies
 // it to the local file system.
@@ -36,7 +37,7 @@ class RemoteChangeProcessor {
   typedef base::Callback<void(
       fileapi::SyncStatusCode status,
       const fileapi::SyncFileMetadata& metadata,
-      const fileapi::FileChangeList& changes)> PrepareChangeCallback;
+      const FileChangeList& changes)> PrepareChangeCallback;
 
   RemoteChangeProcessor() {}
   virtual ~RemoteChangeProcessor() {}
@@ -60,7 +61,7 @@ class RemoteChangeProcessor {
   // (as we must have checked the change status in PrepareRemoteSync and
   // have disabled any further writing).
   virtual void ApplyRemoteChange(
-      const fileapi::FileChange& change,
+      const FileChange& change,
       const base::FilePath& local_path,
       const fileapi::FileSystemURL& url,
       const fileapi::SyncStatusCallback& callback) = 0;
@@ -79,7 +80,7 @@ class RemoteChangeProcessor {
   // resolve a conflict by uploading the local file).
   virtual void RecordFakeLocalChange(
       const fileapi::FileSystemURL& url,
-      const fileapi::FileChange& change,
+      const FileChange& change,
       const fileapi::SyncStatusCallback& callback) = 0;
 
  private:

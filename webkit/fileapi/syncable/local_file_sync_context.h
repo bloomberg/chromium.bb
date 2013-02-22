@@ -29,9 +29,12 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
+namespace sync_file_system {
+class FileChange;
+}
+
 namespace fileapi {
 
-class FileChange;
 class FileSystemContext;
 class LocalFileChangeTracker;
 struct LocalFileSyncInfo;
@@ -115,7 +118,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
   // This method must be called on UI thread.
   void ApplyRemoteChange(
       FileSystemContext* file_system_context,
-      const FileChange& change,
+      const sync_file_system::FileChange& change,
       const base::FilePath& local_path,
       const FileSystemURL& url,
       const SyncStatusCallback& callback);
@@ -124,7 +127,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
   void RecordFakeLocalChange(
       FileSystemContext* file_system_context,
       const fileapi::FileSystemURL& url,
-      const fileapi::FileChange& change,
+      const sync_file_system::FileChange& change,
       const fileapi::SyncStatusCallback& callback);
 
   // This must be called on UI thread.

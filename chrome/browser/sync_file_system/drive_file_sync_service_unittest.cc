@@ -145,7 +145,7 @@ ACTION(PrepareForRemoteChange_Busy) {
       base::Bind(arg2,
                  fileapi::SYNC_STATUS_FILE_BUSY,
                  fileapi::SyncFileMetadata(),
-                 fileapi::FileChangeList()));
+                 FileChangeList()));
 }
 
 ACTION(PrepareForRemoteChange_NotFound) {
@@ -153,9 +153,9 @@ ACTION(PrepareForRemoteChange_NotFound) {
       FROM_HERE,
       base::Bind(arg2,
                  fileapi::SYNC_STATUS_OK,
-                 fileapi::SyncFileMetadata(fileapi::SYNC_FILE_TYPE_UNKNOWN, 0,
+                 fileapi::SyncFileMetadata(SYNC_FILE_TYPE_UNKNOWN, 0,
                                            base::Time()),
-                 fileapi::FileChangeList()));
+                 FileChangeList()));
 }
 
 ACTION(PrepareForRemoteChange_NotModified) {
@@ -163,9 +163,9 @@ ACTION(PrepareForRemoteChange_NotModified) {
       FROM_HERE,
       base::Bind(arg2,
                  fileapi::SYNC_STATUS_OK,
-                 fileapi::SyncFileMetadata(fileapi::SYNC_FILE_TYPE_FILE, 0,
+                 fileapi::SyncFileMetadata(SYNC_FILE_TYPE_FILE, 0,
                                            base::Time()),
-                 fileapi::FileChangeList()));
+                 FileChangeList()));
 }
 
 ACTION(InvokeDidDownloadFile) {
@@ -284,7 +284,7 @@ class DriveFileSyncServiceTest : public testing::Test {
 
  protected:
   DriveFileSyncService::LocalSyncOperationType ResolveLocalSyncOperationType(
-      const fileapi::FileChange& local_change,
+      const FileChange& local_change,
       const fileapi::FileSystemURL& url) {
     return sync_service_->ResolveLocalSyncOperationType(local_change, url);
   }
@@ -323,7 +323,7 @@ class DriveFileSyncServiceTest : public testing::Test {
                        const std::string& resource_id,
                        const std::string& md5_checksum,
                        const fileapi::FileSystemURL& url,
-                       const fileapi::FileChange& file_change) {
+                       const FileChange& file_change) {
     typedef DriveFileSyncService::PendingChangeQueue::iterator iterator;
     typedef DriveFileSyncService::ChangeQueueItem ChangeQueueItem;
     typedef DriveFileSyncService::RemoteSyncType RemoteSyncType;
@@ -769,12 +769,10 @@ TEST_F(DriveFileSyncServiceTest, ResolveLocalSyncOperationType) {
   SetUpDriveSyncService(true);
   message_loop()->RunUntilIdle();
 
-  const fileapi::FileChange local_add_or_update_change(
-      fileapi::FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-      fileapi::SYNC_FILE_TYPE_FILE);
-  const fileapi::FileChange local_delete_change(
-      fileapi::FileChange::FILE_CHANGE_DELETE,
-      fileapi::SYNC_FILE_TYPE_FILE);
+  const FileChange local_add_or_update_change(
+      FileChange::FILE_CHANGE_ADD_OR_UPDATE, SYNC_FILE_TYPE_FILE);
+  const FileChange local_delete_change(
+      FileChange::FILE_CHANGE_DELETE, SYNC_FILE_TYPE_FILE);
 
   // There is no pending remote change and no metadata in DriveMetadataStore.
   EXPECT_TRUE(IsLocalSyncOperationAdd(
@@ -802,8 +800,7 @@ TEST_F(DriveFileSyncServiceTest, ResolveLocalSyncOperationType) {
   // Add an ADD_OR_UPDATE change for the file to the pending change queue.
   AddRemoteChange(
       kChangestamp, kResourceId, "hoge", url,
-      fileapi::FileChange(fileapi::FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                          fileapi::SYNC_FILE_TYPE_FILE));
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE, SYNC_FILE_TYPE_FILE));
 
   EXPECT_TRUE(IsLocalSyncOperationConflict(
       ResolveLocalSyncOperationType(local_add_or_update_change, url)));
@@ -813,8 +810,7 @@ TEST_F(DriveFileSyncServiceTest, ResolveLocalSyncOperationType) {
   // Add a DELETE change for the file to the pending change queue.
   AddRemoteChange(
       kChangestamp, kResourceId, "fuga", url,
-      fileapi::FileChange(fileapi::FileChange::FILE_CHANGE_DELETE,
-                          fileapi::SYNC_FILE_TYPE_FILE));
+      FileChange(FileChange::FILE_CHANGE_DELETE, SYNC_FILE_TYPE_FILE));
 
   EXPECT_TRUE(IsLocalSyncOperationAdd(
       ResolveLocalSyncOperationType(local_add_or_update_change, url)));

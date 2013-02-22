@@ -16,12 +16,12 @@ namespace fileapi {
 class WEBKIT_STORAGE_EXPORT SyncFileMetadata {
  public:
   SyncFileMetadata();
-  SyncFileMetadata(SyncFileType file_type,
+  SyncFileMetadata(sync_file_system::SyncFileType file_type,
                    int64 size,
                    const base::Time& last_modified);
   ~SyncFileMetadata();
 
-  SyncFileType file_type;
+  sync_file_system::SyncFileType file_type;
   int64 size;
   base::Time last_modified;
 
@@ -45,7 +45,7 @@ struct WEBKIT_STORAGE_EXPORT LocalFileSyncInfo {
   FileSystemURL url;
   base::FilePath local_file_path;
   SyncFileMetadata metadata;
-  FileChangeList changes;
+  sync_file_system::FileChangeList changes;
 };
 
 }  // namespace fileapi

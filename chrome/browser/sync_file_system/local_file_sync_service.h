@@ -23,7 +23,6 @@ class GURL;
 class Profile;
 
 namespace fileapi {
-class FileChange;
 class FileSystemContext;
 class LocalFileSyncContext;
 struct LocalFileSyncInfo;
@@ -31,6 +30,7 @@ struct LocalFileSyncInfo;
 
 namespace sync_file_system {
 
+class FileChange;
 class LocalChangeProcessor;
 
 // Maintains local file change tracker and sync status.
@@ -108,7 +108,7 @@ class LocalFileSyncService
       const std::string& service_name,
       const PrepareChangeCallback& callback) OVERRIDE;
   virtual void ApplyRemoteChange(
-      const fileapi::FileChange& change,
+      const FileChange& change,
       const base::FilePath& local_path,
       const fileapi::FileSystemURL& url,
       const fileapi::SyncStatusCallback& callback) OVERRIDE;
@@ -117,7 +117,7 @@ class LocalFileSyncService
       const base::Closure& completion_callback) OVERRIDE;
   virtual void RecordFakeLocalChange(
       const fileapi::FileSystemURL& url,
-      const fileapi::FileChange& change,
+      const FileChange& change,
       const fileapi::SyncStatusCallback& callback) OVERRIDE;
 
   // LocalOriginChangeObserver override.
@@ -185,8 +185,8 @@ class LocalFileSyncService
   void ProcessNextChangeForURL(
       LocalChangeProcessor* processor,
       const fileapi::LocalFileSyncInfo& sync_file_info,
-      const fileapi::FileChange& last_change,
-      const fileapi::FileChangeList& changes,
+      const FileChange& last_change,
+      const FileChangeList& changes,
       fileapi::SyncStatusCode status);
 
   Profile* profile_;

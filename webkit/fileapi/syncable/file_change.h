@@ -14,7 +14,7 @@
 #include "webkit/fileapi/syncable/sync_file_type.h"
 #include "webkit/storage/webkit_storage_export.h"
 
-namespace fileapi {
+namespace sync_file_system {
 
 class WEBKIT_STORAGE_EXPORT FileChange {
  public:
@@ -71,6 +71,6 @@ class WEBKIT_STORAGE_EXPORT FileChangeList {
   List list_;
 };
 
-}  // namespace fileapi
+}  // namespace sync_file_system
 
 #endif  // WEBKIT_FILEAPI_SYNCABLE_FILE_CHANGE_H_

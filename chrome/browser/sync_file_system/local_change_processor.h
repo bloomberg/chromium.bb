@@ -9,12 +9,12 @@
 #include "webkit/fileapi/syncable/sync_callbacks.h"
 
 namespace fileapi {
-class FileChange;
-class FileChangeList;
 class FileSystemURL;
 }
 
 namespace sync_file_system {
+
+class FileChange;
 
 // Represents an interface to process one local change and applies
 // it to the remote server.
@@ -31,7 +31,7 @@ class LocalChangeProcessor {
   // notify the backing RemoteFileSyncService of the existence of conflict
   // (as the remote service is supposed to maintain a list of conflict files).
   virtual void ApplyLocalChange(
-      const fileapi::FileChange& change,
+      const FileChange& change,
       const base::FilePath& local_file_path,
       const fileapi::FileSystemURL& url,
       const fileapi::SyncStatusCallback& callback) = 0;

@@ -4,10 +4,12 @@
 
 #include "webkit/fileapi/syncable/sync_file_metadata.h"
 
+using sync_file_system::SyncFileType;
+
 namespace fileapi {
 
 SyncFileMetadata::SyncFileMetadata()
-    : file_type(SYNC_FILE_TYPE_UNKNOWN),
+    : file_type(sync_file_system::SYNC_FILE_TYPE_UNKNOWN),
       size(-1) {
 }
 

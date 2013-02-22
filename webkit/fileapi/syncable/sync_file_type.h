@@ -5,7 +5,7 @@
 #ifndef WEBKIT_FILEAPI_SYNCABLE_SYNC_FILE_TYPE_H_
 #define WEBKIT_FILEAPI_SYNCABLE_SYNC_FILE_TYPE_H_
 
-namespace fileapi {
+namespace sync_file_system {
 
 enum SyncFileType {
   // For non-existent files or for files whose type is not known yet.
@@ -18,6 +18,6 @@ enum SyncFileType {
   SYNC_FILE_TYPE_DIRECTORY,
 };
 
-}  // namespace fileapi
+}  // namespace sync_file_system
 
 #endif  // WEBKIT_FILEAPI_SYNCABLE_SYNC_FILE_TYPE_H_

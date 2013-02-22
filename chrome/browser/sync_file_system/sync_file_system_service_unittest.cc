@@ -25,12 +25,12 @@
 #include "webkit/fileapi/syncable/sync_status_code.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
-using fileapi::FileChange;
 using fileapi::FileSystemURL;
 using fileapi::FileSystemURLSet;
 using fileapi::MockSyncStatusObserver;
 using fileapi::SyncFileMetadata;
 using fileapi::SyncStatusCode;
+using sync_file_system::FileChange;
 using ::testing::AnyNumber;
 using ::testing::AtLeast;
 using ::testing::InSequence;
@@ -328,7 +328,7 @@ TEST_F(SyncFileSystemServiceTest, SimpleLocalSyncFlow) {
   // The local_change_processor's ApplyLocalChange should be called once
   // with ADD_OR_UPDATE change for TYPE_FILE.
   const FileChange change(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                          fileapi::SYNC_FILE_TYPE_FILE);
+                          SYNC_FILE_TYPE_FILE);
   EXPECT_CALL(local_change_processor, ApplyLocalChange(change, _, kFile, _))
       .WillOnce(MockStatusCallback(fileapi::SYNC_STATUS_OK));
 

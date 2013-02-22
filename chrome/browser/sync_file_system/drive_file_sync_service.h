@@ -85,7 +85,7 @@ class DriveFileSyncService
 
   // LocalChangeProcessor overrides.
   virtual void ApplyLocalChange(
-      const fileapi::FileChange& change,
+      const FileChange& change,
       const base::FilePath& local_file_path,
       const fileapi::FileSystemURL& url,
       const fileapi::SyncStatusCallback& callback) OVERRIDE;
@@ -135,7 +135,7 @@ class DriveFileSyncService
     std::string md5_checksum;
     RemoteSyncType sync_type;
     fileapi::FileSystemURL url;
-    fileapi::FileChange change;
+    FileChange change;
     PendingChangeQueue::iterator position_in_queue;
 
     RemoteChange();
@@ -144,7 +144,7 @@ class DriveFileSyncService
                  const std::string& md5_checksum,
                  RemoteSyncType sync_type,
                  const fileapi::FileSystemURL& url,
-                 const fileapi::FileChange& change,
+                 const FileChange& change,
                  PendingChangeQueue::iterator position_in_queue);
     ~RemoteChange();
   };
@@ -203,7 +203,7 @@ class DriveFileSyncService
 
   // Local synchronization related methods.
   LocalSyncOperationType ResolveLocalSyncOperationType(
-      const fileapi::FileChange& local_file_change,
+      const FileChange& local_file_change,
       const fileapi::FileSystemURL& url);
   void DidApplyLocalChange(
       scoped_ptr<TaskToken> token,
@@ -284,7 +284,7 @@ class DriveFileSyncService
       scoped_ptr<ProcessRemoteChangeParam> param,
       fileapi::SyncStatusCode status,
       const fileapi::SyncFileMetadata& metadata,
-      const fileapi::FileChangeList& changes);
+      const FileChangeList& changes);
   void DidResolveConflictToLocalChange(
       scoped_ptr<ProcessRemoteChangeParam> param,
       fileapi::SyncStatusCode status);

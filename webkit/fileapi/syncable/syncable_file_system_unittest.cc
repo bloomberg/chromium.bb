@@ -20,6 +20,8 @@
 using base::PlatformFileError;
 using quota::QuotaManager;
 using quota::QuotaStatusCode;
+using sync_file_system::FileChange;
+using sync_file_system::FileChangeList;
 
 namespace fileapi {
 
@@ -187,13 +189,13 @@ TEST_F(SyncableFileSystemTest, ChangeTrackerSimple) {
 
   VerifyAndClearChange(URL(kPath0),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                                  SYNC_FILE_TYPE_DIRECTORY));
+                                  sync_file_system::SYNC_FILE_TYPE_DIRECTORY));
   VerifyAndClearChange(URL(kPath1),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                                  SYNC_FILE_TYPE_DIRECTORY));
+                                  sync_file_system::SYNC_FILE_TYPE_DIRECTORY));
   VerifyAndClearChange(URL(kPath2),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                                  SYNC_FILE_TYPE_FILE));
+                                  sync_file_system::SYNC_FILE_TYPE_FILE));
 
   // Creates and removes a same directory.
   EXPECT_EQ(base::PLATFORM_FILE_OK,
@@ -221,13 +223,13 @@ TEST_F(SyncableFileSystemTest, ChangeTrackerSimple) {
 
   VerifyAndClearChange(URL(kPath0),
                        FileChange(FileChange::FILE_CHANGE_DELETE,
-                                  SYNC_FILE_TYPE_DIRECTORY));
+                                  sync_file_system::SYNC_FILE_TYPE_DIRECTORY));
   VerifyAndClearChange(URL(kPath1),
                        FileChange(FileChange::FILE_CHANGE_DELETE,
-                                  SYNC_FILE_TYPE_DIRECTORY));
+                                  sync_file_system::SYNC_FILE_TYPE_DIRECTORY));
   VerifyAndClearChange(URL(kPath2),
                        FileChange(FileChange::FILE_CHANGE_DELETE,
-                                  SYNC_FILE_TYPE_FILE));
+                                  sync_file_system::SYNC_FILE_TYPE_FILE));
 }
 
 // Make sure directory operation is disabled (when it's configured so).

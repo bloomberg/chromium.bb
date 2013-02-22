@@ -83,13 +83,11 @@ void DidRemoveOrigin(const GURL& origin, fileapi::SyncStatusCode status) {
                << " status=" << status;
 }
 
-fileapi::FileChange CreateFileChange(bool is_deleted) {
+FileChange CreateFileChange(bool is_deleted) {
   if (is_deleted) {
-    return fileapi::FileChange(fileapi::FileChange::FILE_CHANGE_DELETE,
-                               fileapi::SYNC_FILE_TYPE_UNKNOWN);
+    return FileChange(FileChange::FILE_CHANGE_DELETE, SYNC_FILE_TYPE_UNKNOWN);
   }
-  return fileapi::FileChange(fileapi::FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                             fileapi::SYNC_FILE_TYPE_FILE);
+  return FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE, SYNC_FILE_TYPE_FILE);
 }
 
 }  // namespace
@@ -219,8 +217,7 @@ bool DriveFileSyncService::ChangeQueueComparator::operator()(
 DriveFileSyncService::RemoteChange::RemoteChange()
     : changestamp(0),
       sync_type(REMOTE_SYNC_TYPE_INCREMENTAL),
-      change(fileapi::FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-             fileapi::SYNC_FILE_TYPE_UNKNOWN) {
+      change(FileChange::FILE_CHANGE_ADD_OR_UPDATE, SYNC_FILE_TYPE_UNKNOWN) {
 }
 
 DriveFileSyncService::RemoteChange::RemoteChange(
@@ -229,7 +226,7 @@ DriveFileSyncService::RemoteChange::RemoteChange(
     const std::string& md5_checksum,
     RemoteSyncType sync_type,
     const fileapi::FileSystemURL& url,
-    const fileapi::FileChange& change,
+    const FileChange& change,
     PendingChangeQueue::iterator position_in_queue)
     : changestamp(changestamp),
       resource_id(resource_id),
@@ -508,7 +505,7 @@ void DriveFileSyncService::SetSyncEnabled(bool enabled) {
 }
 
 void DriveFileSyncService::ApplyLocalChange(
-    const fileapi::FileChange& local_file_change,
+    const FileChange& local_file_change,
     const base::FilePath& local_file_path,
     const fileapi::FileSystemURL& url,
     const fileapi::SyncStatusCallback& callback) {
@@ -1062,11 +1059,11 @@ void DriveFileSyncService::DidGetRemoteFileMetadata(
     const fileapi::SyncFileMetadataCallback& callback,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceEntry> entry) {
-  fileapi::SyncFileType file_type = fileapi::SYNC_FILE_TYPE_UNKNOWN;
+  SyncFileType file_type = SYNC_FILE_TYPE_UNKNOWN;
   if (entry->is_file())
-    file_type = fileapi::SYNC_FILE_TYPE_FILE;
+    file_type = SYNC_FILE_TYPE_FILE;
   else if (entry->is_folder())
-    file_type = fileapi::SYNC_FILE_TYPE_DIRECTORY;
+    file_type = SYNC_FILE_TYPE_DIRECTORY;
   callback.Run(GDataErrorCodeToSyncStatusCodeWrapper(error),
                fileapi::SyncFileMetadata(file_type,
                                          entry->file_size(),
@@ -1075,7 +1072,7 @@ void DriveFileSyncService::DidGetRemoteFileMetadata(
 
 DriveFileSyncService::LocalSyncOperationType
 DriveFileSyncService::ResolveLocalSyncOperationType(
-    const fileapi::FileChange& local_file_change,
+    const FileChange& local_file_change,
     const fileapi::FileSystemURL& url) {
   DriveMetadata metadata;
   const bool has_metadata =
@@ -1098,7 +1095,7 @@ DriveFileSyncService::ResolveLocalSyncOperationType(
   if (has_remote_change) {
     // Remote change for the file identified by |url| exists in the pending
     // change queue.
-    const fileapi::FileChange& remote_file_change = remote_change.change;
+    const FileChange& remote_file_change = remote_change.change;
 
     // (RemoteChange) + (LocalChange) -> (Operation Type)
     // AddOrUpdate    + AddOrUpdate   -> CONFLICT
@@ -1305,7 +1302,7 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
     scoped_ptr<ProcessRemoteChangeParam> param,
     fileapi::SyncStatusCode status,
     const fileapi::SyncFileMetadata& metadata,
-    const fileapi::FileChangeList& local_changes) {
+    const FileChangeList& local_changes) {
   if (status != fileapi::SYNC_STATUS_OK) {
     AbortRemoteSync(param.Pass(), status);
     return;
@@ -1313,7 +1310,7 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
 
   const fileapi::FileSystemURL& url = param->remote_change.url;
   const DriveMetadata& drive_metadata = param->drive_metadata;
-  const fileapi::FileChange& remote_file_change = param->remote_change.change;
+  const FileChange& remote_file_change = param->remote_change.change;
 
   status = metadata_store_->ReadEntry(param->remote_change.url,
                                       &param->drive_metadata);
@@ -1328,7 +1325,7 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
     param->drive_metadata.set_to_be_fetched(false);
   }
   bool missing_local_file =
-      (metadata.file_type == fileapi::SYNC_FILE_TYPE_UNKNOWN);
+      (metadata.file_type == SYNC_FILE_TYPE_UNKNOWN);
 
   if (param->drive_metadata.conflicted()) {
     if (missing_local_file) {
@@ -1383,8 +1380,7 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
     RemoteChangeProcessor* processor = param->processor;
     processor->RecordFakeLocalChange(
         url,
-        fileapi::FileChange(fileapi::FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                            fileapi::SYNC_FILE_TYPE_FILE),
+        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE, SYNC_FILE_TYPE_FILE),
         base::Bind(&DriveFileSyncService::DidResolveConflictToLocalChange,
                    AsWeakPtr(), base::Passed(&param)));
     return;
@@ -1440,7 +1436,7 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
     DCHECK(!missing_local_file);
     param->sync_action = SYNC_ACTION_DELETED;
 
-    const fileapi::FileChange& file_change = remote_file_change;
+    const FileChange& file_change = remote_file_change;
     param->processor->ApplyRemoteChange(
         file_change, base::FilePath(), url,
         base::Bind(&DriveFileSyncService::DidApplyRemoteChange, AsWeakPtr(),
@@ -1532,7 +1528,7 @@ void DriveFileSyncService::DidDownloadFileForRemoteSync(
   }
 
   param->drive_metadata.set_md5_checksum(md5_checksum);
-  const fileapi::FileChange& change = param->remote_change.change;
+  const FileChange& change = param->remote_change.change;
   const base::FilePath& temporary_file_path = param->temporary_file_path;
   const fileapi::FileSystemURL& url = param->remote_change.url;
   param->processor->ApplyRemoteChange(
@@ -1733,7 +1729,7 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
       remote_resource_id != local_resource_id)
     return false;
 
-  fileapi::FileChange file_change(CreateFileChange(is_deleted));
+  FileChange file_change(CreateFileChange(is_deleted));
 
   // Do not return in this block. These changes should be done together.
   {
