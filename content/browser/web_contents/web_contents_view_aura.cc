@@ -596,7 +596,8 @@ class OverscrollNavigationOverlay :
       : view_(NULL),
         loading_complete_(false),
         received_paint_update_(false),
-        compositor_updated_(false) {
+        compositor_updated_(false),
+        has_screenshot_(false) {
   }
 
   virtual ~OverscrollNavigationOverlay() {
@@ -621,18 +622,25 @@ class OverscrollNavigationOverlay :
       window_->parent()->StackChildAtTop(window_.get());
   }
 
-  void SetOverlayWindow(scoped_ptr<aura::Window> window) {
+  void SetOverlayWindow(scoped_ptr<aura::Window> window, bool has_screenshot) {
     window_ = window.Pass();
     if (window_.get() && window_->parent())
       window_->parent()->StackChildAtTop(window_.get());
+    has_screenshot_ = has_screenshot;
   }
 
  private:
   // Stop observing the page if the page-load has completed and the page has
   // been painted.
   void StopObservingIfDone() {
-    if (!received_paint_update_ || !loading_complete_)
+    // If there is a screenshot displayed in the overlay window, then wait for
+    // the navigated page to complete loading and some paint update before
+    // hiding the overlay.
+    // If there is no screenshot in the overlay window, then hide this view
+    // as soon as there is any new painting notification.
+    if (!received_paint_update_ || (has_screenshot_ && !loading_complete_))
       return;
+
     window_.reset();
     if (view_) {
       view_->set_paint_observer(NULL);
@@ -671,6 +679,7 @@ class OverscrollNavigationOverlay :
   bool loading_complete_;
   bool received_paint_update_;
   bool compositor_updated_;
+  bool has_screenshot_;
 
   DISALLOW_COPY_AND_ASSIGN(OverscrollNavigationOverlay);
 };
@@ -1044,7 +1053,8 @@ void WebContentsViewAura::PrepareOverscrollNavigationOverlay() {
   delegate->set_show_shadow(false);
   overscroll_window_->SchedulePaintInRect(
       gfx::Rect(overscroll_window_->bounds().size()));
-  navigation_overlay_->SetOverlayWindow(overscroll_window_.Pass());
+  navigation_overlay_->SetOverlayWindow(overscroll_window_.Pass(),
+                                        delegate->has_screenshot());
   navigation_overlay_->StartObservingView(static_cast<
       RenderWidgetHostViewAura*>(web_contents_->GetRenderWidgetHostView()));
 }
