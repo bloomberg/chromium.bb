@@ -10,6 +10,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
+#include "ui/base/win/dpi.h"
 #include "ui/native_theme/native_theme.h"
 
 using WebKit::WebCanvas;
@@ -992,6 +993,16 @@ WebSize WebThemeEngineImpl::getSize(int part) {
           ui::NativeTheme::kScrollbarUpArrow,
           ui::NativeTheme::kNormal,
           ui::NativeTheme::ExtraParams());
+      // GetPartSize returns a size of (0, 0) when not using a themed style
+      // (i.e. Windows Classic).  Returning a non-zero size in this context
+      // creates repaint conflicts, particularly in the window titlebar area
+      // which significantly degrades performance.  Fallback to using a system
+      // metric if required.
+      if (size.width() == 0) {
+        int width = static_cast<int>(GetSystemMetrics(SM_CXVSCROLL) /
+            ui::win::GetDeviceScaleFactor());
+        size = gfx::Size(width, width);
+      }
       return WebSize(size.width(), size.height());
     }
     default:
