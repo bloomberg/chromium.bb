@@ -48,6 +48,12 @@ cr.define('options', function() {
           !$('passphrase-confirm').validity.valid ||
           !$('managed-user-passphrase').validity.valid;
     },
+
+    /** @override */
+    canShowPage: function() {
+      return ManagedUserSettings.getInstance().authenticationState ==
+          options.ManagedUserAuthentication.AUTHENTICATED;
+    },
   };
 
   // This is a class used for browsertests.

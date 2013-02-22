@@ -28,11 +28,34 @@ class ManagedUserPassphraseHandler : public OptionsPageUIHandler {
       base::DictionaryValue* localized_strings) OVERRIDE;
 
  private:
-  // This function is used to set the passphrase of the manager of the managed
-  // account. The passphrase is expected as the parameter and is passed in from
-  // the UI.
+  // Sets the passphrase of the manager of the managed account. The
+  // passphrase is expected as the parameter and is passed in from the UI.
   void SetLocalPassphrase(const base::ListValue* args);
 
+  // Displays the passphrase dialog where the manager of the managed account
+  // can enter the passphrase which allows him to modify the settings. It
+  // expects as parameter the name of the Javascript function which should be
+  // called after the passphrase has been checked.
+  void DisplayPassphraseDialog(const base::ListValue* args);
+
+  // Calls the UI with the result of the authentication. |success| is true if
+  // the authentication was successful.
+  void PassphraseDialogCallback(bool success);
+
+  // Resets the authentication state of the manager of the managed account.
+  void EndAuthentication(const base::ListValue* args);
+
+  // Checks if there is already a passphrase specified. It expects as parameter
+  // the name of the Javascript function which should be called with the results
+  // of this check.
+  void IsPassphraseSet(const base::ListValue* args);
+
+  // Resets the passphrase to the empty string.
+  void ResetPassphrase(const base::ListValue* args);
+
+  // The name of the Javascript function which should be called after the
+  // passphrase has been checked.
+  std::string callback_function_name_;
   base::WeakPtrFactory<ManagedUserPassphraseHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagedUserPassphraseHandler);
