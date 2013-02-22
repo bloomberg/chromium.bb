@@ -210,7 +210,7 @@ void RulesRegistryStorageDelegate::Inner::InitForOTRProfile() {
         extension_service->IsIncognitoEnabled((*i)->id()))
       ReadFromStorage((*i)->id());
   }
-  ready_ = true;
+  CheckIfReady();
 }
 
 void RulesRegistryStorageDelegate::Inner::Observe(
