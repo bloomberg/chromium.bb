@@ -1801,14 +1801,6 @@
    fun:testing::internal::TestFactoryImpl::CreateTest
 }
 {
-   bug_176210
-   Heapcheck:Leak
-   ...
-   fun:disk_cache::*
-   fun:disk_cache::EntryImpl::*
-   fun:disk_cache::*
-}
-{
    bug_176888
    Heapcheck:Leak
    fun:__GI___strdup
