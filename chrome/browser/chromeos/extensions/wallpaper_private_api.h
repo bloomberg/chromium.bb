@@ -7,6 +7,7 @@
 
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "ui/gfx/image/image_skia.h"
@@ -70,15 +71,19 @@ class WallpaperPrivateSetWallpaperIfExistFunction
  private:
   virtual void OnWallpaperDecoded(const gfx::ImageSkia& wallpaper) OVERRIDE;
 
-  // Reads file specified by |file_name|. If success, post a task to start
+  // Reads file specified by |file_path|. If success, post a task to start
   // decoding the file.
-  void ReadFileAndInitiateStartDecode(const std::string& file_name);
+  void ReadFileAndInitiateStartDecode(const base::FilePath& file_path,
+                                      const base::FilePath& fallback_path);
 
-  // High resolution wallpaper URL.
-  std::string url_;
+  // Online wallpaper URL or file name of custom wallpaper.
+  std::string urlOrFile_;
 
-  // Layout of the downloaded wallpaper.
+  // Layout of the loaded wallpaper.
   ash::WallpaperLayout layout_;
+
+  // Type of the loaded wallpaper.
+  chromeos::User::WallpaperType type_;
 
   // Sequence token associated with wallpaper operations. Shared with
   // WallpaperManager.
@@ -152,7 +157,7 @@ class WallpaperPrivateSetCustomWallpaperFunction
                          scoped_ptr<gfx::ImageSkia> image);
 
   // Thumbnail is ready. Calls api function javascript callback.
-  void ThumbnailGenerated();
+  void ThumbnailGenerated(const std::string& file_name);
 
   // Layout of the downloaded wallpaper.
   ash::WallpaperLayout layout_;
@@ -166,6 +171,21 @@ class WallpaperPrivateSetCustomWallpaperFunction
   // Sequence token associated with wallpaper operations. Shared with
   // WallpaperManager.
   base::SequencedWorkerPool::SequenceToken sequence_token_;
+};
+
+class WallpaperPrivateSetCustomWallpaperLayoutFunction
+    : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.setCustomWallpaperLayout",
+                             WALLPAPERPRIVATE_SETCUSTOMWALLPAPERLAYOUT)
+
+  WallpaperPrivateSetCustomWallpaperLayoutFunction();
+
+ protected:
+  virtual ~WallpaperPrivateSetCustomWallpaperLayoutFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class WallpaperPrivateMinimizeInactiveWindowsFunction

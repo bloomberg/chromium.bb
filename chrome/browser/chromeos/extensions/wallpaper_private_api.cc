@@ -19,7 +19,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_image.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
@@ -215,12 +214,8 @@ bool WallpaperPrivateGetStringsFunction::RunImpl() {
       chromeos::WallpaperManager::Get();
   chromeos::WallpaperInfo info;
 
-  if (wallpaper_manager->GetLoggedInUserWallpaperInfo(&info)) {
-    if (info.type == chromeos::User::ONLINE)
-      dict->SetString("currentWallpaper", info.file);
-    else if (info.type == chromeos::User::CUSTOMIZED)
-      dict->SetString("currentWallpaper", "CUSTOM");
-  }
+  if (wallpaper_manager->GetLoggedInUserWallpaperInfo(&info))
+    dict->SetString("currentWallpaper", info.file);
 
   return true;
 }
@@ -307,14 +302,48 @@ WallpaperPrivateSetWallpaperIfExistFunction::
     ~WallpaperPrivateSetWallpaperIfExistFunction() {}
 
 bool WallpaperPrivateSetWallpaperIfExistFunction::RunImpl() {
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &url_));
-  EXTENSION_FUNCTION_VALIDATE(!url_.empty());
-  std::string file_name = GURL(url_).ExtractFileName();
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &urlOrFile_));
+  EXTENSION_FUNCTION_VALIDATE(!urlOrFile_.empty());
 
   std::string layout_string;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &layout_string));
   EXTENSION_FUNCTION_VALIDATE(!layout_string.empty());
   layout_ = GetLayoutEnum(layout_string);
+
+  std::string source;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(2, &source));
+  EXTENSION_FUNCTION_VALIDATE(!source.empty());
+
+  std::string file_name;
+  std::string email = chromeos::UserManager::Get()->GetLoggedInUser()->email();
+
+  base::FilePath wallpaper_path;
+  base::FilePath fallback_path;
+  ash::WallpaperResolution resolution = ash::Shell::GetInstance()->
+      desktop_background_controller()->GetAppropriateResolution();
+
+  if (source == kOnlineSource) {
+    type_ = chromeos::User::ONLINE;
+    file_name = GURL(urlOrFile_).ExtractFileName();
+    CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS,
+                           &wallpaper_path));
+    fallback_path = wallpaper_path.Append(file_name);
+    if (layout_ != ash::WALLPAPER_LAYOUT_STRETCH &&
+        resolution == ash::WALLPAPER_RESOLUTION_SMALL) {
+      file_name = base::FilePath(file_name).InsertBeforeExtension(
+          chromeos::kSmallWallpaperSuffix).value();
+    }
+    wallpaper_path = wallpaper_path.Append(file_name);
+  } else {
+    type_ = chromeos::User::CUSTOMIZED;
+    file_name = urlOrFile_;
+    const char* sub_dir = (resolution == ash::WALLPAPER_RESOLUTION_SMALL) ?
+        chromeos::kSmallWallpaperSubDir : chromeos::kLargeWallpaperSubDir;
+    wallpaper_path = chromeos::WallpaperManager::Get()->GetCustomWallpaperPath(
+        sub_dir, email, file_name);
+    fallback_path = chromeos::WallpaperManager::Get()->GetCustomWallpaperPath(
+        chromeos::kOriginalWallpaperSubDir, email, file_name);
+  }
 
   sequence_token_ = BrowserThread::GetBlockingPool()->
       GetNamedSequenceToken(chromeos::kWallpaperSequenceTokenName);
@@ -327,30 +356,31 @@ bool WallpaperPrivateSetWallpaperIfExistFunction::RunImpl() {
       base::Bind(
           &WallpaperPrivateSetWallpaperIfExistFunction::
               ReadFileAndInitiateStartDecode,
-          this,
-          file_name));
+          this, wallpaper_path, fallback_path));
   return true;
 }
 
 void WallpaperPrivateSetWallpaperIfExistFunction::
-    ReadFileAndInitiateStartDecode(const std::string& file_name) {
+    ReadFileAndInitiateStartDecode(const base::FilePath& file_path,
+                                   const base::FilePath& fallback_path) {
   DCHECK(BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
       sequence_token_));
   std::string data;
-  base::FilePath data_dir;
+  base::FilePath path = file_path;
 
-  CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS, &data_dir));
-  base::FilePath file_path = data_dir.Append(file_name);
+  if (!file_util::PathExists(file_path))
+    path = fallback_path;
 
-  if (file_util::PathExists(file_path) &&
-      file_util::ReadFileToString(file_path, &data)) {
+  if (file_util::PathExists(path) &&
+      file_util::ReadFileToString(path, &data)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(&WallpaperPrivateSetWallpaperIfExistFunction::StartDecode,
                    this, data));
     return;
   }
   std::string error = base::StringPrintf(
-        "Failed to set wallpaper %s from file system.", file_name.c_str());
+        "Failed to set wallpaper %s from file system.",
+        path.BaseName().value().c_str());
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&WallpaperPrivateSetWallpaperIfExistFunction::
@@ -369,9 +399,9 @@ void WallpaperPrivateSetWallpaperIfExistFunction::OnWallpaperDecoded(
   bool is_persistent =
       !chromeos::UserManager::Get()->IsCurrentUserNonCryptohomeDataEphemeral();
   chromeos::WallpaperInfo info = {
-      url_,
+      urlOrFile_,
       layout_,
-      chromeos::User::ONLINE,
+      type_,
       base::Time::Now().LocalMidnight()
   };
   std::string email = chromeos::UserManager::Get()->GetLoggedInUser()->email();
@@ -551,15 +581,51 @@ void WallpaperPrivateSetCustomWallpaperFunction::GenerateThumbnail(
       ash::WALLPAPER_LAYOUT_STRETCH,
       ash::kWallpaperThumbnailWidth,
       ash::kWallpaperThumbnailHeight);
+  std::string file_name = thumbnail_path.BaseName().value();
   BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(
             &WallpaperPrivateSetCustomWallpaperFunction::ThumbnailGenerated,
-            this));
+            this, file_name));
 }
 
-void WallpaperPrivateSetCustomWallpaperFunction::ThumbnailGenerated() {
+void WallpaperPrivateSetCustomWallpaperFunction::ThumbnailGenerated(
+    const std::string& file_name) {
+  SetResult(new base::StringValue(file_name));
   SendResponse(true);
+}
+
+WallpaperPrivateSetCustomWallpaperLayoutFunction::
+    WallpaperPrivateSetCustomWallpaperLayoutFunction() {}
+
+WallpaperPrivateSetCustomWallpaperLayoutFunction::
+    ~WallpaperPrivateSetCustomWallpaperLayoutFunction() {}
+
+bool WallpaperPrivateSetCustomWallpaperLayoutFunction::RunImpl() {
+  std::string layout_string;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &layout_string));
+  EXTENSION_FUNCTION_VALIDATE(!layout_string.empty());
+
+  chromeos::WallpaperManager* wallpaper_manager =
+      chromeos::WallpaperManager::Get();
+  chromeos::WallpaperInfo info;
+  wallpaper_manager->GetLoggedInUserWallpaperInfo(&info);
+  if (info.type != chromeos::User::CUSTOMIZED) {
+    SetError("Only custom wallpaper can change layout.");
+    SendResponse(false);
+    return false;
+  }
+  info.layout = GetLayoutEnum(layout_string);
+
+  std::string email = chromeos::UserManager::Get()->GetLoggedInUser()->email();
+  bool is_persistent =
+      !chromeos::UserManager::Get()->IsCurrentUserNonCryptohomeDataEphemeral();
+  wallpaper_manager->SetUserWallpaperInfo(email, info, is_persistent);
+  wallpaper_manager->UpdateWallpaper();
+  SendResponse(true);
+
+  // Gets email address while at UI thread.
+  return true;
 }
 
 WallpaperPrivateMinimizeInactiveWindowsFunction::
@@ -784,9 +850,14 @@ void WallpaperPrivateGetOfflineWallpaperListFunction::GetList(
     if (file_util::DirectoryExists(custom_thumbnails_dir)) {
       file_util::FileEnumerator files(custom_thumbnails_dir, false,
                                       file_util::FileEnumerator::FILES);
+      std::set<std::string> file_name_set;
       for (base::FilePath current = files.Next(); !current.empty();
            current = files.Next()) {
-        file_list.push_back(current.BaseName().value());
+        file_name_set.insert(current.BaseName().value());
+      }
+      for (std::set<std::string>::reverse_iterator rit = file_name_set.rbegin();
+           rit != file_name_set.rend(); ++rit) {
+        file_list.push_back(*rit);
       }
     }
   }

@@ -501,6 +501,7 @@ void WallpaperManager::SetInitialUserWallpaper(const std::string& username,
 
   WallpaperInfo info = current_user_wallpaper_info_;
   SetUserWallpaperInfo(username, info, is_persistent);
+  SetLastSelectedUser(username);
 
   // Some browser tests do not have a shell instance. As no wallpaper is needed
   // in these tests anyway, avoid loading one, preventing crashes and speeding

@@ -322,6 +322,7 @@ function WallpaperManager(dialogDom) {
 
       chrome.wallpaperPrivate.setWallpaperIfExist(wallpaperURL,
                                                   selectedItem.layout,
+                                                  'ONLINE',
                                                   function() {
         if (chrome.runtime.lastError == undefined) {
           self.currentWallpaper_ = wallpaperURL;
@@ -521,8 +522,11 @@ function WallpaperManager(dialogDom) {
    * Handles the layout setting change of custom wallpaper.
    */
   WallpaperManager.prototype.onWallpaperLayoutChanged_ = function() {
-    if (this.customWallpaperData_)
-      this.refreshWallpaper_(this.customWallpaperData_);
+    var setWallpaperLayout = $('set-wallpaper-layout');
+    var layout =
+        setWallpaperLayout.options[setWallpaperLayout.selectedIndex].value;
+     chrome.wallpaperPrivate.setCustomWallpaperLayout(layout,
+         this.onFinished_.bind(this));
   };
 
   /**

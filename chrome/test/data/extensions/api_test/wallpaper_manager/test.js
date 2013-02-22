@@ -41,7 +41,10 @@ chrome.test.getConfig(function(config) {
           chrome.wallpaperPrivate.setWallpaper(wallpaper,
                                                'CENTER_CROPPED',
                                                url,
-                                               pass());
+                                               pass(function() {
+            chrome.wallpaperPrivate.setCustomWallpaperLayout('CENTER',
+                fail('Only custom wallpaper can change layout.'));
+          }));
         } else {
           chrome.test.fail('Failed to load test.jpg from local server.');
         }
@@ -50,7 +53,12 @@ chrome.test.getConfig(function(config) {
     function setCustomJpegWallpaper() {
       chrome.wallpaperPrivate.setCustomWallpaper(wallpaper,
                                                  'CENTER_CROPPED',
-                                                 pass());
+                                                 pass(function(fileName) {
+        chrome.wallpaperPrivate.setCustomWallpaperLayout('CENTER',
+                                                         pass(function() {
+          chrome.wallpaperPrivate.setCustomWallpaperLayout('STRETCH', pass());
+        }));
+      }));
     },
     function getCustomWallpaperThumbnail() {
       chrome.wallpaperPrivate.getOfflineWallpaperList('CUSTOM',
@@ -81,10 +89,10 @@ chrome.test.getConfig(function(config) {
           "/wallpaper_manager/test.jpg";
       url = url.replace(/PORT/, config.testServer.port);
       chrome.wallpaperPrivate.setWallpaperIfExist(url, 'CENTER_CROPPED',
-                                                  pass(function() {
+                                                  'ONLINE', pass(function() {
         chrome.test.assertNoLastError();
         chrome.wallpaperPrivate.setWallpaperIfExist(
-            'http://dummyurl/test1.jpg', 'CENTER_CROPPED',
+            'http://dummyurl/test1.jpg', 'CENTER_CROPPED', 'ONLINE',
             fail('Failed to set wallpaper test1.jpg from file system.'));
       }));
     },
