@@ -34,7 +34,6 @@ specific_include_rules = {
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
   '.*_[a-z]*test\.cc': [
-    "!chrome/browser/history/in_memory_database.h",
     "!chrome/browser/importer/firefox2_importer.h",
   ]
 }
