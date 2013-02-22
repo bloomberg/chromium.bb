@@ -33,7 +33,13 @@ fi
 rewrite=`dirname $0`/rewrite_dirs.py
 package=${!#}
 
-config_path=$root/usr/$libpath/pkgconfig:$root/usr/share/pkgconfig
+if [ -z "$PKG_CONFIG_PATH" ]
+then
+  config_path=$root/usr/$libpath/pkgconfig:$root/usr/share/pkgconfig
+else
+  config_path="$PKG_CONFIG_PATH"
+fi
+
 set -e
 # Some sysroots, like the Chromium OS ones, may generate paths that are not
 # relative to the sysroot. For example,
