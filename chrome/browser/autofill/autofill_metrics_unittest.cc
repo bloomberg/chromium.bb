@@ -188,6 +188,7 @@ class TestAutofillManager : public AutofillManager {
         message_loop_is_running_(false) {
     set_metric_logger(new MockAutofillMetrics);
   }
+  virtual ~TestAutofillManager() {}
 
   virtual bool IsAutofillEnabled() const OVERRIDE { return autofill_enabled_; }
 
@@ -250,9 +251,6 @@ class TestAutofillManager : public AutofillManager {
   }
 
  private:
-  // AutofillManager is ref counted.
-  virtual ~TestAutofillManager() {}
-
   bool autofill_enabled_;
   bool did_finish_async_form_submit_;
   bool message_loop_is_running_;
@@ -279,7 +277,7 @@ class AutofillMetricsTest : public ChromeRenderViewHostTestHarness {
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
 
-  scoped_refptr<TestAutofillManager> autofill_manager_;
+  scoped_ptr<TestAutofillManager> autofill_manager_;
   TestPersonalDataManager personal_data_;
 
  private:
@@ -298,7 +296,7 @@ AutofillMetricsTest::AutofillMetricsTest()
 AutofillMetricsTest::~AutofillMetricsTest() {
   // Order of destruction is important as AutofillManager relies on
   // PersonalDataManager to be around when it gets destroyed.
-  autofill_manager_ = NULL;
+  autofill_manager_.reset();
 }
 
 void AutofillMetricsTest::SetUp() {
@@ -311,10 +309,10 @@ void AutofillMetricsTest::SetUp() {
   io_thread_.StartIOThread();
   autofill::TabAutofillManagerDelegate::CreateForWebContents(web_contents());
   personal_data_.SetBrowserContext(profile);
-  autofill_manager_ = new TestAutofillManager(
+  autofill_manager_.reset(new TestAutofillManager(
       web_contents(),
       autofill::TabAutofillManagerDelegate::FromWebContents(web_contents()),
-      &personal_data_);
+      &personal_data_));
 
   file_thread_.Start();
 
@@ -336,7 +334,7 @@ void AutofillMetricsTest::TearDown() {
   // PersonalDataManager to be around when it gets destroyed. Also, a real
   // AutofillManager is tied to the lifetime of the WebContents, so it must
   // be destroyed at the destruction of the WebContents.
-  autofill_manager_ = NULL;
+  autofill_manager_.reset();
   profile()->ResetRequestContext();
   file_thread_.Stop();
   ChromeRenderViewHostTestHarness::TearDown();

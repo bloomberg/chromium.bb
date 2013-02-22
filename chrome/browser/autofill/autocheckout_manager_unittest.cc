@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/ref_counted.h"
 #include "base/tuple.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autocheckout_manager.h"
@@ -296,14 +295,12 @@ class TestAutofillManager : public AutofillManager {
                                AutofillManagerDelegate* delegate)
       : AutofillManager(contents, delegate, NULL) {
   }
+  virtual ~TestAutofillManager() {}
 
   void SetFormStructure(scoped_ptr<FormStructure> form_structure) {
     form_structures()->clear();
     form_structures()->push_back(form_structure.release());
   }
-
- private:
-  virtual ~TestAutofillManager() {}
 };
 
 
@@ -375,7 +372,7 @@ class AutocheckoutManagerTest : public ChromeRenderViewHostTestHarness {
 
  protected:
   content::TestBrowserThread ui_thread_;
-  scoped_refptr<TestAutofillManager> autofill_manager_;
+  scoped_ptr<TestAutofillManager> autofill_manager_;
   scoped_ptr<TestAutocheckoutManager> autocheckout_manager_;
   scoped_ptr<TestAutofillManagerDelegate> autofill_manager_delegate_;
 
@@ -383,16 +380,17 @@ class AutocheckoutManagerTest : public ChromeRenderViewHostTestHarness {
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
     autofill_manager_delegate_.reset(new TestAutofillManagerDelegate());
-    autofill_manager_ = new TestAutofillManager(
+    autofill_manager_.reset(new TestAutofillManager(
         web_contents(),
-        autofill_manager_delegate_.get());
-    autocheckout_manager_.reset(new TestAutocheckoutManager(autofill_manager_));
+        autofill_manager_delegate_.get()));
+    autocheckout_manager_.reset(
+        new TestAutocheckoutManager(autofill_manager_.get()));
   }
 
   virtual void TearDown() OVERRIDE {
     autocheckout_manager_.reset();
     autofill_manager_delegate_.reset();
-    autofill_manager_ = NULL;
+    autofill_manager_.reset();
     ChromeRenderViewHostTestHarness::TearDown();
   }
 

@@ -18,7 +18,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/string16.h"
 #include "base/string_util.h"
-#include "base/supports_user_data.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
@@ -183,15 +182,14 @@ void AutofillManager::CreateForWebContentsAndDelegate(
     return;
 
   contents->SetUserData(kAutofillManagerWebContentsUserDataKey,
-                        new base::UserDataAdapter<AutofillManager>(
-                            new AutofillManager(contents, delegate)));
+                        new AutofillManager(contents, delegate));
 }
 
 // static
 AutofillManager* AutofillManager::FromWebContents(
     content::WebContents* contents) {
-  return base::UserDataAdapter<AutofillManager>::Get(
-      contents, kAutofillManagerWebContentsUserDataKey);
+  return static_cast<AutofillManager*>(
+      contents->GetUserData(kAutofillManagerWebContentsUserDataKey));
 }
 
 AutofillManager::AutofillManager(content::WebContents* web_contents,
@@ -211,7 +209,8 @@ AutofillManager::AutofillManager(content::WebContents* web_contents,
       user_did_autofill_(false),
       user_did_edit_autofilled_field_(false),
       password_generation_enabled_(false),
-      external_delegate_(NULL) {
+      external_delegate_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   RegisterWithSyncService();
   registrar_.Init(manager_delegate_->GetPrefs());
   registrar_.Add(
@@ -440,7 +439,7 @@ bool AutofillManager::OnFormSubmitted(const FormData& form,
                    AutofillCountry::ApplicationLocale(),
                    raw_submitted_form),
         base::Bind(&AutofillManager::UploadFormDataAsyncCallback,
-                   this,
+                   weak_ptr_factory_.GetWeakPtr(),
                    base::Owned(submitted_form.release()),
                    forms_loaded_timestamp_,
                    initial_interaction_timestamp_,
@@ -830,7 +829,8 @@ void AutofillManager::OnRequestAutocomplete(
   }
 
   base::Callback<void(const FormStructure*)> callback =
-      base::Bind(&AutofillManager::ReturnAutocompleteData, this);
+      base::Bind(&AutofillManager::ReturnAutocompleteData,
+                 weak_ptr_factory_.GetWeakPtr());
   ShowRequestAutocompleteDialog(
       form, frame_url, ssl_status,
       autofill::DIALOG_TYPE_REQUEST_AUTOCOMPLETE, callback);
@@ -1007,7 +1007,8 @@ AutofillManager::AutofillManager(content::WebContents* web_contents,
       user_did_autofill_(false),
       user_did_edit_autofilled_field_(false),
       password_generation_enabled_(false),
-      external_delegate_(NULL) {
+      external_delegate_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(web_contents);
   DCHECK(manager_delegate_);
   RegisterWithSyncService();

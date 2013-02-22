@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/autofill/test_autofill_external_delegate.h"
@@ -61,15 +60,13 @@ class MockAutofillManager : public AutofillManager {
       // really need personal_data in this test so we pass a NULL pointer.
       : AutofillManager(web_contents, delegate, NULL) {
   }
+  virtual ~MockAutofillManager() {}
 
   MOCK_METHOD4(OnFillAutofillFormData,
                void(int query_id,
                     const FormData& form,
                     const FormFieldData& field,
                     int unique_id));
-
- protected:
-  virtual ~MockAutofillManager() {}
 };
 
 }  // namespace
@@ -95,7 +92,7 @@ class AutofillExternalDelegateUnitTest
     external_delegate_->OnQuery(query_id, form, field, element_bounds, false);
   }
 
-  scoped_refptr<MockAutofillManager> autofill_manager_;
+  scoped_ptr<MockAutofillManager> autofill_manager_;
   scoped_ptr<testing::NiceMock<MockAutofillExternalDelegate> >
       external_delegate_;
 
@@ -103,13 +100,13 @@ class AutofillExternalDelegateUnitTest
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
     autofill::TabAutofillManagerDelegate::CreateForWebContents(web_contents());
-    autofill_manager_ = new MockAutofillManager(
+    autofill_manager_.reset(new MockAutofillManager(
         web_contents(),
-        autofill::TabAutofillManagerDelegate::FromWebContents(web_contents()));
+        autofill::TabAutofillManagerDelegate::FromWebContents(web_contents())));
     external_delegate_.reset(
         new testing::NiceMock<MockAutofillExternalDelegate>(
             web_contents(),
-            autofill_manager_));
+            autofill_manager_.get()));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -117,7 +114,7 @@ class AutofillExternalDelegateUnitTest
     // PersonalDataManager to be around when it gets destroyed. Also, a real
     // AutofillManager is tied to the lifetime of the WebContents, so it must
     // be destroyed at the destruction of the WebContents.
-    autofill_manager_ = NULL;
+    autofill_manager_.reset();
     external_delegate_.reset();
     ChromeRenderViewHostTestHarness::TearDown();
   }
