@@ -15,16 +15,16 @@ namespace pp {
 
 namespace {
 
-template <> const char* interface_name<PPB_DirectoryReader_Dev>() {
-  return PPB_DIRECTORYREADER_DEV_INTERFACE;
+template <> const char* interface_name<PPB_DirectoryReader_Dev_0_6>() {
+  return PPB_DIRECTORYREADER_DEV_INTERFACE_0_6;
 }
 
 }  // namespace
 
 DirectoryReader_Dev::DirectoryReader_Dev(const FileRef& directory_ref) {
-  if (!has_interface<PPB_DirectoryReader_Dev>())
+  if (!has_interface<PPB_DirectoryReader_Dev_0_6>())
     return;
-  PassRefFromConstructor(get_interface<PPB_DirectoryReader_Dev>()->Create(
+  PassRefFromConstructor(get_interface<PPB_DirectoryReader_Dev_0_6>()->Create(
       directory_ref.pp_resource()));
 }
 
@@ -32,12 +32,13 @@ DirectoryReader_Dev::DirectoryReader_Dev(const DirectoryReader_Dev& other)
     : Resource(other) {
 }
 
-int32_t DirectoryReader_Dev::GetNextEntry(DirectoryEntry_Dev* entry,
-                                          const CompletionCallback& cc) {
-  if (!has_interface<PPB_DirectoryReader_Dev>())
-    return cc.MayForce(PP_ERROR_NOINTERFACE);
-  return get_interface<PPB_DirectoryReader_Dev>()->GetNextEntry(
-      pp_resource(), &entry->data_, cc.pp_completion_callback());
+int32_t DirectoryReader_Dev::ReadEntries(
+    const CompletionCallbackWithOutput< std::vector<DirectoryEntry_Dev> >&
+        callback) {
+  if (!has_interface<PPB_DirectoryReader_Dev_0_6>())
+    return callback.MayForce(PP_ERROR_NOINTERFACE);
+  return get_interface<PPB_DirectoryReader_Dev_0_6>()->ReadEntries(
+      pp_resource(), callback.output(), callback.pp_completion_callback());
 }
 
 }  // namespace pp

@@ -18,8 +18,8 @@ class PPB_DirectoryReader_API {
  public:
   virtual ~PPB_DirectoryReader_API() {}
 
-  virtual int32_t GetNextEntry(PP_DirectoryEntry_Dev* entry,
-                               scoped_refptr<TrackedCallback> callback) = 0;
+  virtual int32_t ReadEntries(const PP_ArrayOutput& output,
+                              scoped_refptr<TrackedCallback> callback) = 0;
 };
 
 }  // namespace thunk

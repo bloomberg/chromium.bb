@@ -9,6 +9,10 @@
 
 #include "ppapi/tests/test_case.h"
 
+namespace pp {
+class FileRef;
+}
+
 class TestDirectoryReader : public TestCase {
  public:
   explicit TestDirectoryReader(TestingInstance* instance)
@@ -19,7 +23,9 @@ class TestDirectoryReader : public TestCase {
   virtual void RunTests(const std::string& filter);
 
  private:
-  std::string TestGetNextFile();
+  int32_t DeleteDirectoryRecursively(pp::FileRef*);
+
+  std::string TestReadEntries();
 };
 
 #endif  // PAPPI_TESTS_TEST_DIRECTORY_READER_H_

@@ -3,11 +3,12 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_directory_reader_dev.idl modified Mon Nov 26 13:52:22 2012. */
+/* From dev/ppb_directory_reader_dev.idl modified Fri Feb 15 16:46:46 2013. */
 
 #ifndef PPAPI_C_DEV_PPB_DIRECTORY_READER_DEV_H_
 #define PPAPI_C_DEV_PPB_DIRECTORY_READER_DEV_H_
 
+#include "ppapi/c/pp_array_output.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_file_info.h"
@@ -15,8 +16,8 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_DIRECTORYREADER_DEV_INTERFACE_0_5 "PPB_DirectoryReader(Dev);0.5"
-#define PPB_DIRECTORYREADER_DEV_INTERFACE PPB_DIRECTORYREADER_DEV_INTERFACE_0_5
+#define PPB_DIRECTORYREADER_DEV_INTERFACE_0_6 "PPB_DirectoryReader(Dev);0.6"
+#define PPB_DIRECTORYREADER_DEV_INTERFACE PPB_DIRECTORYREADER_DEV_INTERFACE_0_6
 
 /**
  * @file
@@ -42,7 +43,7 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_DirectoryEntry_Dev, 8);
  * @addtogroup Interfaces
  * @{
  */
-struct PPB_DirectoryReader_Dev_0_5 {
+struct PPB_DirectoryReader_Dev_0_6 {
   /* Creates a DirectoryReader for the given directory.  Upon success, the
    * corresponding directory is classified as "in use" by the resulting
    * DirectoryReader object until such time as the DirectoryReader object is
@@ -52,28 +53,23 @@ struct PPB_DirectoryReader_Dev_0_5 {
    * PP_FALSE if the resource is invalid or some type other than a
    * DirectoryReader. */
   PP_Bool (*IsDirectoryReader)(PP_Resource resource);
-  /* Reads the next entry in the directory.  Returns PP_OK and sets
-   * entry->file_ref to 0 to indicate reaching the end of the directory.  If
-   * entry->file_ref is non-zero when passed to GetNextEntry, it will be
-   * released before the next file_ref is stored.
+  /* Reads all entries in the directory.
    *
-   * EXAMPLE USAGE:
+   * @param[in] directory_reader A <code>PP_Resource</code>
+   * corresponding to a directory reader resource.
+   * @param[in] output An output array which will receive
+   * <code>PP_DirectoryEntry_Dev</code> objects on success.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to run on
+   * completion.
    *
-   *   PP_Resource reader = reader_funcs->Create(dir_ref);
-   *   PP_DirectoryEntry entry = {0};
-   *   while ((reader_funcs->GetNextEntry(reader, &entry,
-   *                                      PP_BlockUntilComplete()) == PP_OK) &&
-   *          entry->file_ref) {
-   *     ProcessDirectoryEntry(entry);
-   *   }
-   *   core_funcs->ReleaseResource(reader);
+   * @return An error code from <code>pp_errors.h</code>.
    */
-  int32_t (*GetNextEntry)(PP_Resource directory_reader,
-                          struct PP_DirectoryEntry_Dev* entry,
-                          struct PP_CompletionCallback callback);
+  int32_t (*ReadEntries)(PP_Resource directory_reader,
+                         struct PP_ArrayOutput output,
+                         struct PP_CompletionCallback callback);
 };
 
-typedef struct PPB_DirectoryReader_Dev_0_5 PPB_DirectoryReader_Dev;
+typedef struct PPB_DirectoryReader_Dev_0_6 PPB_DirectoryReader_Dev;
 /**
  * @}
  */
