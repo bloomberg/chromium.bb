@@ -77,7 +77,7 @@ class FakeAudioOutputStreamTest : public testing::Test {
     ASSERT_TRUE(audio_manager_->GetMessageLoop()->BelongsToCurrentThread());
     stream_->Stop();
     stream_->Close();
-    EXPECT_EQ(callbacks, source_.callbacks());
+    EXPECT_LE(callbacks, source_.callbacks());
     EXPECT_EQ(0, source_.errors());
     done_.Signal();
   }
@@ -115,7 +115,7 @@ TEST_F(FakeAudioOutputStreamTest, TimeBetweenCallbacks) {
 
   // There are only (kTestCallbacks - 1) intervals between kTestCallbacks.
   base::TimeDelta actual_time_between_callbacks =
-      (end_time_ - start_time_) / (kTestCallbacks - 1);
+      (end_time_ - start_time_) / (source_.callbacks() - 1);
 
   // Ensure callback time is no faster than the expected time between callbacks.
   EXPECT_TRUE(actual_time_between_callbacks >= time_between_callbacks_);
