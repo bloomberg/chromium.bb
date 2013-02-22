@@ -143,16 +143,15 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/default/WebRenderTheme.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/default/WebRenderTheme.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebColorName.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMEvent.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMMessageEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDateTimeChooserCompletion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDateTimeChooserParams.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMEvent.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMMessageEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileChooserParams.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystemCallbacks.h"
@@ -169,10 +168,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNavigationPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNodeList.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializer.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPlugin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginAction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginDocument.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPlugin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRange.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
@@ -185,6 +184,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebUserMediaClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWindowFeatures.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/default/WebRenderTheme.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/default/WebRenderTheme.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
@@ -2043,11 +2044,6 @@ scoped_ptr<cc::OutputSurface> RenderViewImpl::CreateOutputSurface() {
       return scoped_ptr<cc::OutputSurface>(
           new CompositorOutputSurface(routing_id(), context, NULL));
   }
-}
-
-WebKit::WebCompositorOutputSurface* RenderViewImpl::createOutputSurface() {
-  NOTREACHED();
-  return NULL;
 }
 
 void RenderViewImpl::didAddMessageToConsole(
@@ -6225,6 +6221,39 @@ void RenderViewImpl::GetCompositionCharacterBounds(
 bool RenderViewImpl::CanComposeInline() {
   return pepper_helper_->IsPluginFocused() ?
       pepper_helper_->CanComposeInline() : true;
+}
+
+void RenderViewImpl::InstrumentWillBeginFrame() {
+  if (!webview())
+    return;
+  if (!webview()->devToolsAgent())
+    return;
+  webview()->devToolsAgent()->didBeginFrame();
+}
+
+void RenderViewImpl::InstrumentDidBeginFrame() {
+  if (!webview())
+    return;
+  if (!webview()->devToolsAgent())
+    return;
+  // TODO(jamesr/caseq): Decide if this needs to be renamed.
+  webview()->devToolsAgent()->didComposite();
+}
+
+void RenderViewImpl::InstrumentDidCancelFrame() {
+  if (!webview())
+    return;
+  if (!webview()->devToolsAgent())
+    return;
+  webview()->devToolsAgent()->didCancelFrame();
+}
+
+void RenderViewImpl::InstrumentWillComposite() {
+  if (!webview())
+    return;
+  if (!webview()->devToolsAgent())
+    return;
+  webview()->devToolsAgent()->willComposite();
 }
 
 #if defined(OS_WIN)

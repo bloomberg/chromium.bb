@@ -201,6 +201,11 @@ class CONTENT_EXPORT RenderWidget
     SHOW_IME_IF_NEEDED
   };
 
+  virtual void InstrumentWillBeginFrame() {}
+  virtual void InstrumentDidBeginFrame() {}
+  virtual void InstrumentDidCancelFrame() {}
+  virtual void InstrumentWillComposite() {}
+
  protected:
   // Friend RefCounted so that the dtor can be non-public. Using this class
   // without ref-counting is an error.

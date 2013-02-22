@@ -372,16 +372,16 @@ void RenderWidgetCompositor::setContinuousPaintingEnabled(bool enabled) {
   layer_tree_host_->setDebugState(debug_state);
 }
 
-// TODO(jamesr): This should go through WebWidget.
 void RenderWidgetCompositor::willBeginFrame() {
-  client_->willBeginFrame();
+  widget_->InstrumentWillBeginFrame();
+  widget_->willBeginCompositorFrame();
 }
 
-// TODO(jamesr): This should go through WebWidget.
 void RenderWidgetCompositor::didBeginFrame() {
-  client_->didBeginFrame();
+  widget_->InstrumentDidBeginFrame();
 }
 
+// TODO(jamesr): This should go through WebWidget
 void RenderWidgetCompositor::animate(double monotonic_frame_begin_time) {
   client_->updateAnimations(monotonic_frame_begin_time);
 }
@@ -391,7 +391,7 @@ void RenderWidgetCompositor::layout() {
   widget_->webwidget()->layout();
 }
 
-// TODO(jamesr): This should go through WebWidget.
+// TODO(jamesr): This should go through WebWidget
 void RenderWidgetCompositor::applyScrollAndScale(gfx::Vector2d scroll_delta,
                                                  float page_scale) {
   client_->applyScrollAndScale(scroll_delta, page_scale);
@@ -416,9 +416,8 @@ scoped_ptr<cc::InputHandler> RenderWidgetCompositor::createInputHandler() {
   return ret.Pass();
 }
 
-// TODO(jamesr): This should go through WebWidget
 void RenderWidgetCompositor::willCommit() {
-  client_->willCommit();
+  widget_->InstrumentWillComposite();
 }
 
 void RenderWidgetCompositor::didCommit() {

@@ -429,7 +429,6 @@ class CONTENT_EXPORT RenderViewImpl
       WebKit::WebExternalPopupMenuClient* popup_menu_client);
   virtual WebKit::WebStorageNamespace* createSessionStorageNamespace(
       unsigned quota);
-  virtual WebKit::WebCompositorOutputSurface* createOutputSurface();
   virtual void didAddMessageToConsole(
       const WebKit::WebConsoleMessage& message,
       const WebKit::WebString& source_name,
@@ -812,6 +811,10 @@ class CONTENT_EXPORT RenderViewImpl
       std::vector<gfx::Rect>* character_bounds) OVERRIDE;
   virtual bool CanComposeInline() OVERRIDE;
   virtual void DidCommitCompositorFrame() OVERRIDE;
+  virtual void InstrumentWillBeginFrame() OVERRIDE;
+  virtual void InstrumentDidBeginFrame() OVERRIDE;
+  virtual void InstrumentDidCancelFrame() OVERRIDE;
+  virtual void InstrumentWillComposite() OVERRIDE;
 
  protected:
   explicit RenderViewImpl(RenderViewImplParams* params);
