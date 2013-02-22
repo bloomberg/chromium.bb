@@ -149,6 +149,9 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
   // A json string returned to WebUI from a "DialogClosed" message.
   std::string dialog_close_retval_;
 
+  // Whether CloseContents() has been called.
+  bool close_contents_called_;
+
   DISALLOW_COPY_AND_ASSIGN(WebDialogView);
 };
 

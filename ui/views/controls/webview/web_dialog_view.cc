@@ -50,7 +50,8 @@ WebDialogView::WebDialogView(
       web_view_(new views::WebView(context)),
       is_attempting_close_dialog_(false),
       before_unload_fired_(false),
-      closed_via_webui_(false) {
+      closed_via_webui_(false),
+      close_contents_called_(false) {
   web_view_->set_allow_accelerators(true);
   AddChildView(web_view_);
   set_contents_view(web_view_);
@@ -92,8 +93,11 @@ void WebDialogView::ViewHierarchyChanged(bool is_add,
 }
 
 bool WebDialogView::CanClose() {
-  if (is_attempting_close_dialog_ && before_unload_fired_) {
-    // Unload processing has been completed, dialog can be closed.
+  // If CloseContents() is called before CanClose(), which is called by
+  // RenderViewHostImpl::ClosePageIgnoringUnloadEvents, it indicates
+  // beforeunload event should not be fired during closing.
+  if ((is_attempting_close_dialog_ && before_unload_fired_) ||
+      close_contents_called_) {
     is_attempting_close_dialog_ = false;
     before_unload_fired_ = false;
     return true;
@@ -280,6 +284,7 @@ void WebDialogView::HandleKeyboardEvent(content::WebContents* source,
 }
 
 void WebDialogView::CloseContents(WebContents* source) {
+  close_contents_called_ = true;
   bool close_dialog = false;
   OnCloseContents(source, &close_dialog);
   if (close_dialog)
