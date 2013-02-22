@@ -172,6 +172,10 @@ class ChromeDriverTest(unittest.TestCase):
     self.assertEquals(1, self._driver.ExecuteScript(script))
     self.assertEquals('title', self._driver.GetTitle())
 
+  def testGetPageSource(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
+    self.assertTrue('Link to empty.html' in self._driver.GetPageSource())
+
   def testFindElement(self):
     self._driver.ExecuteScript(
         'document.body.innerHTML = "<div>a</div><div>b</div>";')

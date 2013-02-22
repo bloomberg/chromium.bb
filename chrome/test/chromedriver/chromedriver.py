@@ -160,6 +160,9 @@ class ChromeDriver(object):
   def GetTitle(self):
     return self.ExecuteSessionCommand('getTitle')
 
+  def GetPageSource(self):
+    return self.ExecuteSessionCommand('getPageSource')
+
   def FindElement(self, strategy, target):
     return self.ExecuteSessionCommand(
         'findElement', {'using': strategy, 'value': target})

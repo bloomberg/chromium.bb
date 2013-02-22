@@ -70,6 +70,8 @@ void CommandExecutorImpl::Init() {
       base::Bind(&ExecuteSwitchToFrame);
   window_command_map[CommandNames::kGetTitle] =
       base::Bind(&ExecuteGetTitle);
+  window_command_map[CommandNames::kGetPageSource] =
+      base::Bind(&ExecuteGetPageSource);
   window_command_map[CommandNames::kFindElement] =
       base::Bind(&ExecuteFindElement, 50);
   window_command_map[CommandNames::kFindElements] =

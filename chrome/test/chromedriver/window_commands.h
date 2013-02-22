@@ -60,6 +60,13 @@ Status ExecuteGetTitle(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
 
+// Get the current page source.
+Status ExecuteGetPageSource(
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
 // Search for an element on the page, starting from the document root.
 Status ExecuteFindElement(
     int interval_ms,

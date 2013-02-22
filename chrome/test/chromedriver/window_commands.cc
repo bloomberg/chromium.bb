@@ -155,6 +155,19 @@ Status ExecuteGetTitle(
   return web_view->CallFunction(session->frame, kGetTitleScript, args, value);
 }
 
+Status ExecuteGetPageSource(
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  const char* kGetPageSource =
+      "function() {"
+      "  return new XMLSerializer().serializeToString(document);"
+      "}";
+  base::ListValue args;
+  return web_view->CallFunction(session->frame, kGetPageSource, args, value);
+}
+
 Status ExecuteFindElement(
     int interval_ms,
     Session* session,
