@@ -44,6 +44,7 @@ TextureLayer::TextureLayer(TextureLayerClient* client, bool usesMailbox)
     , m_contextLost(false)
     , m_textureId(0)
     , m_contentCommitted(false)
+    , m_ownMailbox(false)
 {
   m_vertexOpacity[0] = 1.0f;
   m_vertexOpacity[1] = 1.0f;
@@ -59,7 +60,7 @@ TextureLayer::~TextureLayer()
         if (m_rateLimitContext && m_client)
             layerTreeHost()->stopRateLimiter(m_client->context());
     }
-    if (!m_contentCommitted)
+    if (m_ownMailbox)
         m_textureMailbox.RunReleaseCallback(m_textureMailbox.sync_point());
 }
 
@@ -124,12 +125,12 @@ void TextureLayer::setTextureId(unsigned id)
 void TextureLayer::setTextureMailbox(const TextureMailbox& mailbox)
 {
     DCHECK(m_usesMailbox);
-    if (m_textureMailbox.Equals(mailbox))
-        return;
+    DCHECK(mailbox.IsEmpty() || !mailbox.Equals(m_textureMailbox));
     // If we never commited the mailbox, we need to release it here
-    if (!m_contentCommitted)
+    if (m_ownMailbox)
         m_textureMailbox.RunReleaseCallback(m_textureMailbox.sync_point());
     m_textureMailbox = mailbox;
+    m_ownMailbox = true;
 
     setNeedsCommit();
 }
@@ -182,12 +183,13 @@ void TextureLayer::pushPropertiesTo(LayerImpl* layer)
     textureLayer->setUVBottomRight(m_uvBottomRight);
     textureLayer->setVertexOpacity(m_vertexOpacity);
     textureLayer->setPremultipliedAlpha(m_premultipliedAlpha);
-    if (m_usesMailbox) {
+    if (m_usesMailbox && m_ownMailbox) {
         Thread* mainThread = layerTreeHost()->proxy()->mainThread();
         TextureMailbox::ReleaseCallback callback;
         if (!m_textureMailbox.IsEmpty())
           callback = base::Bind(&postCallbackToMainThread, mainThread, m_textureMailbox.callback());
         textureLayer->setTextureMailbox(TextureMailbox(m_textureMailbox.name(), callback, m_textureMailbox.sync_point()));
+        m_ownMailbox = false;
     } else {
         textureLayer->setTextureId(m_textureId);
     }

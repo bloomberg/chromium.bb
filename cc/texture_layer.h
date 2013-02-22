@@ -90,6 +90,7 @@ private:
 
     unsigned m_textureId;
     TextureMailbox m_textureMailbox;
+    bool m_ownMailbox;
 };
 
 }

@@ -281,37 +281,104 @@ TEST_F(TextureLayerWithMailboxTest, replaceMailboxOnMainThreadBeforeCommit)
 class TextureLayerImplWithMailboxThreadedCallback : public ThreadedTest {
 public:
     TextureLayerImplWithMailboxThreadedCallback()
-        : m_resetMailbox(false)
+        : m_callbackCount(0)
+        , m_commitCount(0)
     {
     }
 
     // Make sure callback is received on main and doesn't block the impl thread.
     void releaseCallback(unsigned syncPoint) {
         EXPECT_EQ(true, proxy()->isMainThread());
-        endTest();
+        ++m_callbackCount;
     }
 
-    virtual void beginTest() OVERRIDE
-    {
-        m_layer = TextureLayer::createForMailbox();
-        m_layer->setIsDrawable(true);
-        m_layerTreeHost->setRootLayer(m_layer);
+    void setMailbox(char mailbox_char) {
         TextureMailbox mailbox(
-            std::string(64, '1'),
+            std::string(64, mailbox_char),
             base::Bind(
                 &TextureLayerImplWithMailboxThreadedCallback::releaseCallback,
                 base::Unretained(this)));
         m_layer->setTextureMailbox(mailbox);
+    }
+
+    virtual void beginTest() OVERRIDE
+    {
+        gfx::Size bounds(100, 100);
+        m_root = Layer::create();
+        m_root->setAnchorPoint(gfx::PointF());
+        m_root->setBounds(bounds);
+
+        m_layer = TextureLayer::createForMailbox();
+        m_layer->setIsDrawable(true);
+        m_layer->setAnchorPoint(gfx::PointF());
+        m_layer->setBounds(bounds);
+
+        m_root->addChild(m_layer);
+        m_layerTreeHost->setRootLayer(m_root);
+        m_layerTreeHost->setViewportSize(bounds, bounds);
+        setMailbox('1');
+        EXPECT_EQ(0, m_callbackCount);
+
+        // Case #1: change mailbox before the commit. The old mailbox should be
+        // released immediately.
+        setMailbox('2');
+        EXPECT_EQ(1, m_callbackCount);
         postSetNeedsCommitToMainThread();
     }
 
     virtual void didCommit() OVERRIDE
     {
-        if (m_resetMailbox)
-            return;
-
-        m_layer->setTextureMailbox(TextureMailbox());
-        m_resetMailbox = true;
+        ++m_commitCount;
+        switch (m_commitCount) {
+        case 1:
+            // Case #2: change mailbox after the commit (and draw), where the
+            // layer draws. The old mailbox should be released during the next
+            // commit.
+            setMailbox('3');
+            EXPECT_EQ(1, m_callbackCount);
+            break;
+        case 2:
+            // Old mailbox was released, task was posted, but won't execute
+            // until this didCommit returns.
+            // TODO(piman): fix this.
+            EXPECT_EQ(1, m_callbackCount);
+            m_layerTreeHost->setNeedsCommit();
+            break;
+        case 3:
+            EXPECT_EQ(2, m_callbackCount);
+            // Case #3: change mailbox when the layer doesn't draw. The old
+            // mailbox should be released during the next commit.
+            m_layer->setBounds(gfx::Size());
+            setMailbox('4');
+            break;
+        case 4:
+            // Old mailbox was released, task was posted, but won't execute
+            // until this didCommit returns.
+            // TODO(piman): fix this.
+            EXPECT_EQ(2, m_callbackCount);
+            m_layerTreeHost->setNeedsCommit();
+            break;
+        case 5:
+            EXPECT_EQ(3, m_callbackCount);
+            // Case #4: release mailbox that was committed but never drawn. The
+            // old mailbox should be released during the next commit.
+            m_layer->setTextureMailbox(TextureMailbox());
+            break;
+        case 6:
+            // Old mailbox was released, task was posted, but won't execute
+            // until this didCommit returns.
+            // TODO(piman): fix this.
+            EXPECT_EQ(3, m_callbackCount);
+            m_layerTreeHost->setNeedsCommit();
+            break;
+        case 7:
+            EXPECT_EQ(4, m_callbackCount);
+            endTest();
+            break;
+        default:
+            NOTREACHED();
+            break;
+        }
     }
 
     virtual void afterTest() OVERRIDE
@@ -319,7 +386,9 @@ public:
     }
 
 private:
-    bool m_resetMailbox;
+    int m_callbackCount;
+    int m_commitCount;
+    scoped_refptr<Layer> m_root;
     scoped_refptr<TextureLayer> m_layer;
 };
 
@@ -339,35 +408,52 @@ protected:
 
 TEST_F(TextureLayerImplWithMailboxTest, testImplLayerCallbacks)
 {
-    scoped_ptr<TextureLayerImpl> implLayer;
-    implLayer = TextureLayerImpl::create(m_hostImpl.activeTree(), 1, true);
-    ASSERT_TRUE(implLayer);
+    m_hostImpl.createPendingTree();
+    scoped_ptr<TextureLayerImpl> pendingLayer;
+    pendingLayer = TextureLayerImpl::create(m_hostImpl.pendingTree(), 1, true);
+    ASSERT_TRUE(pendingLayer);
 
-    // Test setting identical mailbox.
-    EXPECT_CALL(m_testData.m_mockCallback, Release(_, _)).Times(0);
-    implLayer->setTextureMailbox(m_testData.m_mailbox1);
-    implLayer->setTextureMailbox(m_testData.m_mailbox1);
-    Mock::VerifyAndClearExpectations(&m_testData.m_mockCallback);
+    scoped_ptr<LayerImpl> activeLayer(pendingLayer->createLayerImpl(
+        m_hostImpl.activeTree()));
+    ASSERT_TRUE(activeLayer);
 
-    // Test multiple commits without a draw.
+    pendingLayer->setTextureMailbox(m_testData.m_mailbox1);
+
+    // Test multiple commits without an activation.
     EXPECT_CALL(m_testData.m_mockCallback,
                 Release(m_testData.m_mailboxName1,
                         m_testData.m_syncPoint1)).Times(1);
-    implLayer->setTextureMailbox(m_testData.m_mailbox2);
+    pendingLayer->setTextureMailbox(m_testData.m_mailbox2);
+    Mock::VerifyAndClearExpectations(&m_testData.m_mockCallback);
+
+    // Test callback after activation.
+    pendingLayer->pushPropertiesTo(activeLayer.get());
+    activeLayer->didBecomeActive();
+
+    EXPECT_CALL(m_testData.m_mockCallback,
+                Release(_, _)).Times(0);
+    pendingLayer->setTextureMailbox(m_testData.m_mailbox1);
+    Mock::VerifyAndClearExpectations(&m_testData.m_mockCallback);
+
+    EXPECT_CALL(m_testData.m_mockCallback,
+                Release(m_testData.m_mailboxName2, _)).Times(1);
+    pendingLayer->pushPropertiesTo(activeLayer.get());
+    activeLayer->didBecomeActive();
     Mock::VerifyAndClearExpectations(&m_testData.m_mockCallback);
 
     // Test resetting the mailbox.
     EXPECT_CALL(m_testData.m_mockCallback,
-                Release(m_testData.m_mailboxName2,
-                        m_testData.m_syncPoint2)).Times(1);
-    implLayer->setTextureMailbox(TextureMailbox());
+                Release(m_testData.m_mailboxName1, _)).Times(1);
+    pendingLayer->setTextureMailbox(TextureMailbox());
+    pendingLayer->pushPropertiesTo(activeLayer.get());
+    activeLayer->didBecomeActive();
     Mock::VerifyAndClearExpectations(&m_testData.m_mockCallback);
 
     // Test destructor.
     EXPECT_CALL(m_testData.m_mockCallback,
                 Release(m_testData.m_mailboxName1,
                         m_testData.m_syncPoint1)).Times(1);
-    implLayer->setTextureMailbox(m_testData.m_mailbox1);
+    pendingLayer->setTextureMailbox(m_testData.m_mailbox1);
 }
 
 TEST_F(TextureLayerImplWithMailboxTest, testDestructorCallbackOnCreatedResource)

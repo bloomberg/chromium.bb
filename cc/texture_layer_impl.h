@@ -31,6 +31,7 @@ public:
     virtual void didLoseOutputSurface() OVERRIDE;
 
     virtual void dumpLayerProperties(std::string*, int indent) const OVERRIDE;
+    virtual void didBecomeActive() OVERRIDE;
 
     unsigned textureId() const { return m_textureId; }
     void setTextureId(unsigned id) { m_textureId = id; }
@@ -51,6 +52,7 @@ private:
     TextureLayerImpl(LayerTreeImpl* treeImpl, int id, bool usesMailbox);
 
     virtual const char* layerTypeAsString() const OVERRIDE;
+    void freeTextureMailbox();
 
     unsigned m_textureId;
     ResourceProvider::ResourceId m_externalTextureResource;
@@ -60,9 +62,9 @@ private:
     gfx::PointF m_uvBottomRight;
     float m_vertexOpacity[4];
 
-    bool m_hasPendingMailbox;
-    TextureMailbox m_pendingTextureMailbox;
+    TextureMailbox m_textureMailbox;
     bool m_usesMailbox;
+    bool m_ownMailbox;
 };
 
 }
