@@ -13,6 +13,7 @@
 #include "base/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -58,9 +59,6 @@ const char kHTTPOkText[] = "OK";
 const char kHTTPNotAllowedText[] = "Not Allowed";
 const char kHTTPNotFoundText[] = "Not Found";
 const char kHTTPInternalErrorText[] = "Internal Error";
-
-// Initial size of download buffer, same as kBufferSize used for URLFetcherCore.
-const int kInitialDownloadBufferSizeInBytes = 4096;
 
 struct MimeTypeReplacement {
   const char* original_type;
@@ -249,11 +247,12 @@ class DriveURLRequestJob : public net::URLRequestJob {
   int64 initial_file_size_;
   int64 remaining_bytes_;
   scoped_ptr<net::FileStream> stream_;
-  scoped_refptr<net::DrainableIOBuffer> read_buf_;
+  scoped_refptr<net::IOBuffer> read_buf_;
+  base::StringPiece read_buf_remaining_;
   scoped_ptr<net::HttpResponseInfo> response_info_;
   bool streaming_download_;
-  scoped_refptr<net::GrowableIOBuffer> download_growable_buf_;
-  scoped_refptr<net::DrainableIOBuffer> download_drainable_buf_;
+  std::string download_buf_;
+  base::StringPiece download_buf_remaining_;
 
   // This should remain the last member so it'll be destroyed first and
   // invalidate its weak pointers before other members are destroyed.
@@ -271,11 +270,7 @@ DriveURLRequestJob::DriveURLRequestJob(void* profile_id,
       initial_file_size_(0),
       remaining_bytes_(0),
       streaming_download_(false),
-      download_growable_buf_(new net::GrowableIOBuffer),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
-  download_growable_buf_->SetCapacity(kInitialDownloadBufferSizeInBytes);
-  download_drainable_buf_ = new net::DrainableIOBuffer(
-      download_growable_buf_, download_growable_buf_->capacity());
 }
 
 void DriveURLRequestJob::Start() {
@@ -492,7 +487,8 @@ bool DriveURLRequestJob::ReadRawData(net::IOBuffer* dest,
 
   // Keep track of the buffer.
   DCHECK(!read_buf_);
-  read_buf_ = new net::DrainableIOBuffer(dest, dest_size);
+  read_buf_ = dest;
+  read_buf_remaining_.set(dest, dest_size);
 
   bool rc = false;
   if (streaming_download_)
@@ -503,7 +499,7 @@ bool DriveURLRequestJob::ReadRawData(net::IOBuffer* dest,
            << (rc ? "has" : "no")
            << "_data, bytes_read=" << *bytes_read
            << ", buf_remaining="
-           << (read_buf_ ? read_buf_->BytesRemaining() : 0)
+           << (read_buf_ ? read_buf_remaining_.size() : 0)
            << ", " << (streaming_download_ ? "download" : "file")
            << "_remaining=" << remaining_bytes_;
   return rc;
@@ -559,36 +555,9 @@ void DriveURLRequestJob::OnUrlFetchDownloadData(
 
   if (download_data->empty())
     return;
-
-  // If there's insufficient space remaining in download buffer to copy download
-  // data, expand download buffer.
-  int bytes_needed = download_data->length() -
-                     download_drainable_buf_->BytesRemaining();
-  if (bytes_needed > 0) {
-    // Grow the download buffer to accommodate entire download data.
-    download_growable_buf_->SetCapacity(download_drainable_buf_->size() +
-                                        bytes_needed);
-    // Remember current offset of download buffer, i.e. where we last finished
-    // writing to.
-    int offset = download_drainable_buf_->BytesRemaining();
-    // Reinitialize drainable buffer with the new size.
-    download_drainable_buf_ = new net::DrainableIOBuffer(
-        download_growable_buf_, download_growable_buf_->capacity());
-    // Set offset in new drainable buffer to what it was before
-    // reinitialization, so that its data() points to where we last finished
-    // writing to, and the next memcpy will continue from there.
-    download_drainable_buf_->SetOffset(offset);
-  }
-
   // Copy from download data into download buffer.
-  memcpy(download_drainable_buf_->data(), download_data->data(),
-         download_data->length());
-  // Advance offset in download buffer.
-  download_drainable_buf_->DidConsume(download_data->length());
-  DVLOG(1) << "Got OnUrlFetchDownloadData: in_data_size="
-           << download_data->length()
-           << ", our_data_size=" << download_drainable_buf_->BytesConsumed();
-
+  download_buf_.assign(download_data->data(), download_data->length());
+  download_buf_remaining_.set(download_buf_.data(), download_buf_.size());
   // If this is the first data we have, report request has started successfully.
   if (!streaming_download_) {
     streaming_download_ = true;
@@ -612,7 +581,7 @@ void DriveURLRequestJob::OnUrlFetchDownloadData(
 bool DriveURLRequestJob::ContinueReadFromDownloadData(int* bytes_read) {
   // Continue to read if there's more to read from download data or read buffer
   // is not filled up.
-  if (remaining_bytes_ > 0 && read_buf_->BytesRemaining() > 0) {
+  if (remaining_bytes_ > 0 && read_buf_remaining_.size() > 0) {
     if (!ReadFromDownloadData()) {
       DVLOG(1) << "IO is pending for reading from download data";
       SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
@@ -633,41 +602,32 @@ bool DriveURLRequestJob::ReadFromDownloadData() {
   DCHECK(streaming_download_);
 
   // If download buffer is empty or there's no read buffer, return false.
-  if (download_drainable_buf_->BytesConsumed() <= 0 ||
-      !read_buf_ || read_buf_->BytesRemaining() <= 0) {
+  if (download_buf_remaining_.empty() ||
+      !read_buf_ || read_buf_remaining_.empty()) {
     return false;
   }
 
   // Number of bytes to read is the lesser of remaining bytes in read buffer or
   // written bytes in download buffer.
-  int bytes_to_read = std::min(read_buf_->BytesRemaining(),
-                               download_drainable_buf_->BytesConsumed());
+  int bytes_to_read = std::min(read_buf_remaining_.size(),
+                               download_buf_remaining_.size());
   // If read buffer doesn't have enough space, there will be bytes in download
   // buffer that will not be copied to read buffer.
-  int bytes_not_copied = download_drainable_buf_->BytesConsumed() -
-                         bytes_to_read;
-  // Set offset in download buffer to 0, so that its data() points to the
-  // beginning of the buffer where we'll copy bytes from.
-  download_drainable_buf_->SetOffset(0);
+  int bytes_not_copied = download_buf_remaining_.size() - bytes_to_read;
   // Copy from download buffer to read buffer.
-  memcpy(read_buf_->data(), download_drainable_buf_->data(), bytes_to_read);
+  const size_t offset = read_buf_remaining_.data() - read_buf_->data();
+  memmove(read_buf_->data() + offset, download_buf_remaining_.data(),
+          bytes_to_read);
   // Advance read buffer.
   RecordBytesRead(bytes_to_read);
+  DVLOG(1) << "Copied from download data: bytes_read=" << bytes_to_read;
   // If download buffer has bytes that are not copied over, move them to
   // beginning of download buffer.
-  if (bytes_not_copied > 0) {
-    // data() is pointing to the beginning, so the bytes to move start from
-    // where we finished copying to read buffer.
-    memmove(download_drainable_buf_->data(),
-            download_drainable_buf_->data() + bytes_to_read,
-            bytes_not_copied);
-    // Set offset in download buffer to where we finished moving.
-    download_drainable_buf_->SetOffset(bytes_not_copied);
-  }
-  DVLOG(1) << "Copied from download data: bytes_read=" << bytes_to_read;
+  if (bytes_not_copied > 0)
+    download_buf_remaining_.remove_prefix(bytes_to_read);
 
   // Return true if read buffer is filled up or there's no more bytes to read.
-  return read_buf_->BytesRemaining() == 0 || remaining_bytes_ == 0;
+  return read_buf_remaining_.empty() || remaining_bytes_ == 0;
 }
 
 void DriveURLRequestJob::OnGetFileByResourceId(
@@ -725,7 +685,7 @@ void DriveURLRequestJob::OnGetFileSize(int64 *file_size, bool success) {
 bool DriveURLRequestJob::ContinueReadFromFile(int* bytes_read) {
   // Continue to read if there's more to read from file or read buffer is not
   // filled up.
-  if (remaining_bytes_ > 0 && read_buf_->BytesRemaining() > 0) {
+  if (remaining_bytes_ > 0 && read_buf_remaining_.size() > 0) {
     ReadFromFile();
     // Either async IO is pending or there's an error, return false.
     return false;
@@ -740,8 +700,8 @@ bool DriveURLRequestJob::ContinueReadFromFile(int* bytes_read) {
 }
 
 void DriveURLRequestJob::ReadFromFile() {
-  int bytes_to_read = std::min(read_buf_->BytesRemaining(),
-                               static_cast<int>(remaining_bytes_));
+  int bytes_to_read = std::min(read_buf_remaining_.size(),
+                               static_cast<size_t>(remaining_bytes_));
 
   // If the stream already exists, keep reading from it.
   if (stream_.get()) {
@@ -787,7 +747,7 @@ void DriveURLRequestJob::OnFileOpen(int bytes_to_read, int open_result) {
 void DriveURLRequestJob::ReadFileStream(int bytes_to_read) {
   DCHECK(stream_.get());
   DCHECK(stream_->IsOpen());
-  DCHECK_GE(read_buf_->BytesRemaining(), bytes_to_read);
+  DCHECK_GE(static_cast<int>(read_buf_remaining_.size()), bytes_to_read);
 
   int result = stream_->Read(read_buf_, bytes_to_read,
                              base::Bind(&DriveURLRequestJob::OnReadFileStream,
@@ -796,7 +756,7 @@ void DriveURLRequestJob::ReadFileStream(int bytes_to_read) {
   // If IO is pending, we just need to wait.
   if (result == net::ERR_IO_PENDING) {
     DVLOG(1) << "IO pending: bytes_to_read=" << bytes_to_read
-             << ", buf_remaining=" << read_buf_->BytesRemaining()
+             << ", buf_remaining=" << read_buf_remaining_.size()
              << ", file_remaining=" << remaining_bytes_;
     SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
   } else {  // For all other errors, bail out.
@@ -820,11 +780,11 @@ void DriveURLRequestJob::OnReadFileStream(int bytes_read) {
   RecordBytesRead(bytes_read);
 
   DVLOG(1) << "Cleared IO pending: bytes_read=" << bytes_read
-           << ", buf_remaining=" << read_buf_->BytesRemaining()
+           << ", buf_remaining=" << read_buf_remaining_.size()
            << ", file_remaining=" << remaining_bytes_;
 
   // If the read buffer is completely filled, we're done.
-  if (!read_buf_->BytesRemaining()) {
+  if (read_buf_remaining_.size() > 0) {
     int bytes_read = BytesReadCompleted();
     DVLOG(1) << "Completed read: bytes_read=" << bytes_read
              << ", file_remaining=" << remaining_bytes_;
@@ -842,8 +802,9 @@ void DriveURLRequestJob::OnReadFileStream(int bytes_read) {
 }
 
 int DriveURLRequestJob::BytesReadCompleted() {
-  int bytes_read = read_buf_->BytesConsumed();
+  int bytes_read = read_buf_remaining_.data() - read_buf_->data();
   read_buf_ = NULL;
+  read_buf_remaining_.clear();
   return bytes_read;
 }
 
@@ -855,8 +816,7 @@ void DriveURLRequestJob::RecordBytesRead(int bytes_read) {
   DCHECK_GE(remaining_bytes_, 0);
 
   // Adjust the read buffer.
-  read_buf_->DidConsume(bytes_read);
-  DCHECK_GE(read_buf_->BytesRemaining(), 0);
+  read_buf_remaining_.remove_prefix(bytes_read);
 }
 
 void DriveURLRequestJob::CloseFileStream() {
