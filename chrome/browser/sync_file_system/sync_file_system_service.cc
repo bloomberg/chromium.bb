@@ -198,7 +198,7 @@ void SyncFileSystemService::GetFileSyncStatus(
         FROM_HERE,
         base::Bind(callback,
                    fileapi::SYNC_FILE_ERROR_INVALID_URL,
-                   fileapi::SYNC_FILE_STATUS_UNKNOWN));
+                   SYNC_FILE_STATUS_UNKNOWN));
     return;
   }
 
@@ -207,7 +207,7 @@ void SyncFileSystemService::GetFileSyncStatus(
         FROM_HERE,
         base::Bind(callback,
                    fileapi::SYNC_STATUS_OK,
-                   fileapi::SYNC_FILE_STATUS_CONFLICTING));
+                   SYNC_FILE_STATUS_CONFLICTING));
     return;
   }
 
@@ -425,8 +425,8 @@ void SyncFileSystemService::DidGetLocalChangeStatus(
     bool has_pending_local_changes) {
   callback.Run(
       status,
-      has_pending_local_changes ? fileapi::SYNC_FILE_STATUS_HAS_PENDING_CHANGES
-                                : fileapi::SYNC_FILE_STATUS_SYNCED);
+      has_pending_local_changes ?
+          SYNC_FILE_STATUS_HAS_PENDING_CHANGES : SYNC_FILE_STATUS_SYNCED);
 }
 
 void SyncFileSystemService::OnSyncEnabledForRemoteSync() {
@@ -514,9 +514,9 @@ void SyncFileSystemService::OnStateChanged() {
 
 void SyncFileSystemService::OnFileStatusChanged(
     const FileSystemURL& url,
-    fileapi::SyncFileStatus sync_status,
-    fileapi::SyncAction action_taken,
-    fileapi::SyncDirection direction) {
+    SyncFileStatus sync_status,
+    SyncAction action_taken,
+    SyncDirection direction) {
   FOR_EACH_OBSERVER(
       SyncEventObserver, observers_,
       OnFileSynced(url, sync_status, action_taken, direction));

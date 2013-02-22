@@ -131,9 +131,9 @@ class SyncFileSystemService
   // SyncFileStatusObserver:
   virtual void OnFileStatusChanged(
       const fileapi::FileSystemURL& url,
-      fileapi::SyncFileStatus sync_status,
-      fileapi::SyncAction action_taken,
-      fileapi::SyncDirection direction) OVERRIDE;
+      SyncFileStatus sync_status,
+      SyncAction action_taken,
+      SyncDirection direction) OVERRIDE;
 
   // Check the profile's sync preference settings and call
   // remote_file_service_->SetSyncEnabled() to update the status.

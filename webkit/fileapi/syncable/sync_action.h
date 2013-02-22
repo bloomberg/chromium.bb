@@ -5,9 +5,8 @@
 #ifndef WEBKIT_FILEAPI_SYNCABLE_SYNC_ACTION_H_
 #define WEBKIT_FILEAPI_SYNCABLE_SYNC_ACTION_H_
 
-namespace fileapi {
+namespace sync_file_system {
 
-// TODO(calvinlo): Move to sync_file_system namespace. http://crbug/174870.
 enum SyncAction {
   // Indicates no action has been made.
   SYNC_ACTION_NONE,

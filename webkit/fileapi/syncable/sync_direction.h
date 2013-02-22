@@ -5,9 +5,8 @@
 #ifndef WEBKIT_FILEAPI_SYNCABLE_SYNC_DIRECTION_H_
 #define WEBKIT_FILEAPI_SYNCABLE_SYNC_DIRECTION_H_
 
-namespace fileapi {
+namespace sync_file_system {
 
-// TODO(calvinlo): Move to sync_file_system namespace. http://crbug/174870.
 enum SyncDirection {
   SYNC_DIRECTION_NONE,
   SYNC_DIRECTION_LOCAL_TO_REMOTE,

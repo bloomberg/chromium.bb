@@ -10,6 +10,7 @@
 #include "webkit/fileapi/syncable/sync_file_status.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 
+// TODO(calvinlo): Move to sync_file_system namespace. http://crbug/174870.
 namespace fileapi {
 
 class FileSystemURL;
@@ -36,7 +37,7 @@ typedef base::Callback<void(fileapi::SyncStatusCode status,
     ConflictFileInfoCallback;
 
 typedef base::Callback<void(SyncStatusCode status,
-                            SyncFileStatus sync_file_status)>
+                            sync_file_system::SyncFileStatus sync_file_status)>
     SyncFileStatusCallback;
 
 }  // namespace fileapi

@@ -369,9 +369,9 @@ class DriveFileSyncService
   void RegisterDriveNotifications();
   void SetPushNotificationEnabled(syncer::InvalidatorState state);
   void NotifyObserversFileStatusChanged(const fileapi::FileSystemURL& url,
-                                        fileapi::SyncFileStatus sync_status,
-                                        fileapi::SyncAction action_taken,
-                                        fileapi::SyncDirection direction);
+                                        SyncFileStatus sync_status,
+                                        SyncAction action_taken,
+                                        SyncDirection direction);
 
   scoped_ptr<DriveMetadataStore> metadata_store_;
   scoped_ptr<DriveFileSyncClientInterface> sync_client_;

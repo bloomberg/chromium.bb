@@ -200,9 +200,9 @@ class MockFileStatusObserver: public FileStatusObserver {
 
   MOCK_METHOD4(OnFileStatusChanged,
                void(const fileapi::FileSystemURL& url,
-                    fileapi::SyncFileStatus sync_status,
-                    fileapi::SyncAction action_taken,
-                    fileapi::SyncDirection direction));
+                    SyncFileStatus sync_status,
+                    SyncAction action_taken,
+                    SyncDirection direction));
 };
 
 class DriveFileSyncServiceTest : public testing::Test {
@@ -390,13 +390,13 @@ class DriveFileSyncServiceTest : public testing::Test {
 
   void ProcessRemoteChange(fileapi::SyncStatusCode expected_status,
                            const fileapi::FileSystemURL& expected_url,
-                           fileapi::SyncFileStatus expected_sync_file_status,
-                           fileapi::SyncAction expected_sync_action,
-                           fileapi::SyncDirection expected_sync_direction) {
+                           SyncFileStatus expected_sync_file_status,
+                           SyncAction expected_sync_action,
+                           SyncDirection expected_sync_direction) {
     fileapi::SyncStatusCode actual_status = fileapi::SYNC_STATUS_UNKNOWN;
     fileapi::FileSystemURL actual_url;
 
-    if (expected_sync_file_status != fileapi::SYNC_FILE_STATUS_UNKNOWN) {
+    if (expected_sync_file_status != SYNC_FILE_STATUS_UNKNOWN) {
       EXPECT_CALL(*mock_file_status_observer(),
                   OnFileStatusChanged(expected_url,
                                       expected_sync_file_status,
@@ -847,9 +847,9 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_NoChange) {
 
   ProcessRemoteChange(fileapi::SYNC_STATUS_NO_CHANGE_TO_SYNC,
                       fileapi::FileSystemURL(),
-                      fileapi::SYNC_FILE_STATUS_UNKNOWN,
-                      fileapi::SYNC_ACTION_NONE,
-                      fileapi::SYNC_DIRECTION_NONE);
+                      SYNC_FILE_STATUS_UNKNOWN,
+                      SYNC_ACTION_NONE,
+                      SYNC_DIRECTION_NONE);
   EXPECT_TRUE(metadata_store()->batch_sync_origins().empty());
   EXPECT_TRUE(metadata_store()->incremental_sync_origins().empty());
   EXPECT_TRUE(pending_changes().empty());
@@ -887,9 +887,9 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_Busy) {
 
   ProcessRemoteChange(fileapi::SYNC_STATUS_FILE_BUSY,
                       CreateURL(kOrigin, kFileName),
-                      fileapi::SYNC_FILE_STATUS_UNKNOWN,
-                      fileapi::SYNC_ACTION_NONE,
-                      fileapi::SYNC_DIRECTION_NONE);
+                      SYNC_FILE_STATUS_UNKNOWN,
+                      SYNC_ACTION_NONE,
+                      SYNC_DIRECTION_NONE);
 }
 
 TEST_F(DriveFileSyncServiceTest, RemoteChange_NewFile) {
@@ -931,9 +931,9 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_NewFile) {
 
   ProcessRemoteChange(fileapi::SYNC_STATUS_OK,
                       CreateURL(kOrigin, kFileName),
-                      fileapi::SYNC_FILE_STATUS_SYNCED,
-                      fileapi::SYNC_ACTION_ADDED,
-                      fileapi::SYNC_DIRECTION_REMOTE_TO_LOCAL);
+                      SYNC_FILE_STATUS_SYNCED,
+                      SYNC_ACTION_ADDED,
+                      SYNC_DIRECTION_REMOTE_TO_LOCAL);
 }
 
 TEST_F(DriveFileSyncServiceTest, RemoteChange_UpdateFile) {
@@ -974,9 +974,9 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_UpdateFile) {
   AppendIncrementalRemoteChangeByEntry(kOrigin, *entry, 12345);
   ProcessRemoteChange(fileapi::SYNC_STATUS_OK,
                       CreateURL(kOrigin, kFileName),
-                      fileapi::SYNC_FILE_STATUS_SYNCED,
-                      fileapi::SYNC_ACTION_UPDATED,
-                      fileapi::SYNC_DIRECTION_REMOTE_TO_LOCAL);
+                      SYNC_FILE_STATUS_SYNCED,
+                      SYNC_ACTION_UPDATED,
+                      SYNC_DIRECTION_REMOTE_TO_LOCAL);
 }
 
 TEST_F(DriveFileSyncServiceTest, RegisterOriginWithSyncDisabled) {

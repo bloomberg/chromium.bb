@@ -50,9 +50,9 @@ class SyncEventObserver {
   // Reports the file |url| was updated and resulted in |result|
   // by the sync file system backend.
   virtual void OnFileSynced(const fileapi::FileSystemURL& url,
-                            fileapi::SyncFileStatus status,
-                            fileapi::SyncAction action,
-                            fileapi::SyncDirection direction) = 0;
+                            SyncFileStatus status,
+                            SyncAction action,
+                            SyncDirection direction) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncEventObserver);

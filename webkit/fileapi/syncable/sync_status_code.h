@@ -14,6 +14,7 @@ namespace leveldb {
 class Status;
 }
 
+// TODO(calvinlo): Move to sync_file_system namespace. http://crbug/174870.
 namespace fileapi {
 
 enum SyncStatusCode {

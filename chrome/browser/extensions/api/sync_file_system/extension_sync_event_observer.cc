@@ -38,15 +38,15 @@ api::sync_file_system::ServiceStatus SyncServiceStateEnumToExtensionEnum(
 }
 
 api::sync_file_system::FileStatus SyncFileStatusToExtensionEnum(
-    fileapi::SyncFileStatus status) {
+    sync_file_system::SyncFileStatus status) {
   switch (status) {
-    case fileapi::SYNC_FILE_STATUS_SYNCED:
+    case sync_file_system::SYNC_FILE_STATUS_SYNCED:
       return api::sync_file_system::FILE_STATUS_SYNCED;
-    case fileapi::SYNC_FILE_STATUS_HAS_PENDING_CHANGES:
+    case sync_file_system::SYNC_FILE_STATUS_HAS_PENDING_CHANGES:
       return api::sync_file_system::FILE_STATUS_PENDING;
-    case fileapi::SYNC_FILE_STATUS_CONFLICTING:
+    case sync_file_system::SYNC_FILE_STATUS_CONFLICTING:
       return api::sync_file_system::FILE_STATUS_CONFLICTING;
-    case fileapi::SYNC_FILE_STATUS_UNKNOWN:
+    case sync_file_system::SYNC_FILE_STATUS_UNKNOWN:
       return api::sync_file_system::FILE_STATUS_NONE;
   }
   NOTREACHED() << "Invalid status: " << status;
@@ -54,15 +54,15 @@ api::sync_file_system::FileStatus SyncFileStatusToExtensionEnum(
 }
 
 api::sync_file_system::SyncAction SyncActionToExtensionEnum(
-    fileapi::SyncAction action) {
+    sync_file_system::SyncAction action) {
   switch (action) {
-    case fileapi::SYNC_ACTION_ADDED:
+    case sync_file_system::SYNC_ACTION_ADDED:
       return api::sync_file_system::SYNC_ACTION_ADDED;
-    case fileapi::SYNC_ACTION_UPDATED:
+    case sync_file_system::SYNC_ACTION_UPDATED:
       return api::sync_file_system::SYNC_ACTION_UPDATED;
-    case fileapi::SYNC_ACTION_DELETED:
+    case sync_file_system::SYNC_ACTION_DELETED:
       return api::sync_file_system::SYNC_ACTION_DELETED;
-    case fileapi::SYNC_ACTION_NONE:
+    case sync_file_system::SYNC_ACTION_NONE:
       return api::sync_file_system::SYNC_ACTION_NONE;
   }
   NOTREACHED() << "Invalid action: " << action;
@@ -70,13 +70,13 @@ api::sync_file_system::SyncAction SyncActionToExtensionEnum(
 }
 
 api::sync_file_system::SyncDirection SyncDirectionToExtensionEnum(
-    fileapi::SyncDirection direction) {
+    sync_file_system::SyncDirection direction) {
   switch (direction) {
-    case fileapi::SYNC_DIRECTION_LOCAL_TO_REMOTE:
+    case sync_file_system::SYNC_DIRECTION_LOCAL_TO_REMOTE:
       return api::sync_file_system::SYNC_DIRECTION_LOCAL_TO_REMOTE;
-    case fileapi::SYNC_DIRECTION_REMOTE_TO_LOCAL:
+    case sync_file_system::SYNC_DIRECTION_REMOTE_TO_LOCAL:
       return api::sync_file_system::SYNC_DIRECTION_REMOTE_TO_LOCAL;
-    case fileapi::SYNC_DIRECTION_NONE:
+    case sync_file_system::SYNC_DIRECTION_NONE:
       return api::sync_file_system::SYNC_DIRECTION_NONE;
   }
   NOTREACHED() << "Invalid direction: " << direction;
@@ -136,9 +136,9 @@ void ExtensionSyncEventObserver::OnSyncStateUpdated(
 
 void ExtensionSyncEventObserver::OnFileSynced(
     const fileapi::FileSystemURL& url,
-    fileapi::SyncFileStatus status,
-    fileapi::SyncAction action,
-    fileapi::SyncDirection direction) {
+    sync_file_system::SyncFileStatus status,
+    sync_file_system::SyncAction action,
+    sync_file_system::SyncDirection direction) {
   // Get all values needed to build FileEntry in custom_bindings args massager.
   std::string mount_type = fileapi::GetFileSystemTypeString(url.mount_type());
   std::string file_system_name = fileapi::GetFileSystemName(url.origin(),

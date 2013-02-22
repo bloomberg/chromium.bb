@@ -43,17 +43,16 @@ const char kFileError[] = "File error %d.";
 const char kQuotaError[] = "Quota error %d.";
 
 api::sync_file_system::FileStatus FileSyncStatusEnumToExtensionEnum(
-    const fileapi::SyncFileStatus state) {
+    const sync_file_system::SyncFileStatus state) {
   switch (state) {
-    case fileapi::SYNC_FILE_STATUS_UNKNOWN:
+    case sync_file_system::SYNC_FILE_STATUS_UNKNOWN:
       return api::sync_file_system::FILE_STATUS_NONE;
-    case fileapi::SYNC_FILE_STATUS_SYNCED:
+    case sync_file_system::SYNC_FILE_STATUS_SYNCED:
       return api::sync_file_system::FILE_STATUS_SYNCED;
-    case fileapi::SYNC_FILE_STATUS_HAS_PENDING_CHANGES:
+    case sync_file_system::SYNC_FILE_STATUS_HAS_PENDING_CHANGES:
       return api::sync_file_system::FILE_STATUS_PENDING;
-    case fileapi::SYNC_FILE_STATUS_CONFLICTING:
-      return api::sync_file_system::
-          FILE_STATUS_CONFLICTING;
+    case sync_file_system::SYNC_FILE_STATUS_CONFLICTING:
+      return api::sync_file_system::FILE_STATUS_CONFLICTING;
   }
   NOTREACHED();
   return api::sync_file_system::FILE_STATUS_NONE;
@@ -244,7 +243,7 @@ bool SyncFileSystemGetFileStatusFunction::RunImpl() {
 
 void SyncFileSystemGetFileStatusFunction::DidGetFileStatus(
     const fileapi::SyncStatusCode sync_service_status,
-    const fileapi::SyncFileStatus sync_file_status) {
+    const sync_file_system::SyncFileStatus sync_file_status) {
   // Repost to switch from IO thread to UI thread for SendResponse().
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

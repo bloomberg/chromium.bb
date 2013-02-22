@@ -61,9 +61,9 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
       const std::string& description);
   void NotifyFileStatusChanged(
       const fileapi::FileSystemURL& url,
-      fileapi::SyncFileStatus sync_status,
-      fileapi::SyncAction action_taken,
-      fileapi::SyncDirection direction);
+      SyncFileStatus sync_status,
+      SyncAction action_taken,
+      SyncDirection direction);
 
   // Sets conflict file information.  The information is returned by
   // the default action for GetRemoteConflictFileInfo.

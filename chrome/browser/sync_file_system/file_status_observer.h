@@ -22,9 +22,9 @@ class FileStatusObserver {
   virtual ~FileStatusObserver() {}
 
   virtual void OnFileStatusChanged(const fileapi::FileSystemURL& url,
-                                   fileapi::SyncFileStatus sync_status,
-                                   fileapi::SyncAction action_taken,
-                                   fileapi::SyncDirection direction) = 0;
+                                   SyncFileStatus sync_status,
+                                   SyncAction action_taken,
+                                   SyncDirection direction) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FileStatusObserver);

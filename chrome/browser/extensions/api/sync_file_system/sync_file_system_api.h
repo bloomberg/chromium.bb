@@ -43,8 +43,9 @@ class SyncFileSystemGetFileStatusFunction
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  void DidGetFileStatus(const fileapi::SyncStatusCode sync_service_status,
-                            const fileapi::SyncFileStatus sync_file_status);
+  void DidGetFileStatus(
+      const fileapi::SyncStatusCode sync_service_status,
+      const sync_file_system::SyncFileStatus sync_file_status);
 };
 
 class SyncFileSystemGetUsageAndQuotaFunction
