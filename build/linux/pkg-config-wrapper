@@ -11,6 +11,9 @@
 # This assumption is valid for a range of sysroots, in particular: a
 # LSB-compliant root filesystem mounted at the sysroot, and a board build
 # directory of a Chromium OS chroot.
+# Additional directories containing .pc files may be specified by setting
+# the PKG_CONFIG_PATH environment variable- these will be prepended to the
+# generated paths.
 
 root="$1"
 shift
@@ -34,6 +37,13 @@ rewrite=`dirname $0`/rewrite_dirs.py
 package=${!#}
 
 config_path=$root/usr/$libpath/pkgconfig:$root/usr/share/pkgconfig
+
+# prepend any paths specified by the environment
+if [ -n "$PKG_CONFIG_PATH" ]
+then
+  config_path="$PKG_CONFIG_PATH:$config_path"
+fi
+
 set -e
 # Some sysroots, like the Chromium OS ones, may generate paths that are not
 # relative to the sysroot. For example,
