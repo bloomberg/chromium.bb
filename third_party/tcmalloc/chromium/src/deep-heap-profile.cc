@@ -702,24 +702,6 @@ void DeepHeapProfile::GlobalStats::SnapshotProcMaps(
         } else {
           last_address_of_unhooked =
               mmap_list[mmap_list_index].first_address - 1;
-          if (mmap_dump_buffer) {
-            bool trailing =
-              mmap_list[mmap_list_index].first_address < first_address;
-            bool continued =
-              mmap_list[mmap_list_index].last_address > last_address;
-            mmap_dump_buffer->AppendString(trailing ? " (" : "  ", 0);
-            mmap_dump_buffer->AppendPtr(
-                mmap_list[mmap_list_index].first_address, 0);
-            mmap_dump_buffer->AppendString(trailing ? ")" : " ", 0);
-            mmap_dump_buffer->AppendString("-", 0);
-            mmap_dump_buffer->AppendString(continued ? "(" : " ", 0);
-            mmap_dump_buffer->AppendPtr(
-                mmap_list[mmap_list_index].last_address + 1, 0);
-            mmap_dump_buffer->AppendString(continued ? ")" : " ", 0);
-            mmap_dump_buffer->AppendString(" hooked ", 0);
-            mmap_dump_buffer->AppendString(kMapsRegionTypeDict[type], 0);
-            mmap_dump_buffer->AppendString("\n", 0);
-          }
         }
 
         if (last_address_of_unhooked + 1 > cursor) {
@@ -739,6 +721,27 @@ void DeepHeapProfile::GlobalStats::SnapshotProcMaps(
             mmap_dump_buffer->AppendString("\n", 0);
           }
           cursor = last_address_of_unhooked + 1;
+        }
+
+        if (mmap_list_index < mmap_list_length &&
+            mmap_list[mmap_list_index].first_address <= last_address &&
+            mmap_dump_buffer) {
+          bool trailing =
+            mmap_list[mmap_list_index].first_address < first_address;
+          bool continued =
+            mmap_list[mmap_list_index].last_address > last_address;
+          mmap_dump_buffer->AppendString(trailing ? " (" : "  ", 0);
+          mmap_dump_buffer->AppendPtr(
+              mmap_list[mmap_list_index].first_address, 0);
+          mmap_dump_buffer->AppendString(trailing ? ")" : " ", 0);
+          mmap_dump_buffer->AppendString("-", 0);
+          mmap_dump_buffer->AppendString(continued ? "(" : " ", 0);
+          mmap_dump_buffer->AppendPtr(
+              mmap_list[mmap_list_index].last_address + 1, 0);
+          mmap_dump_buffer->AppendString(continued ? ")" : " ", 0);
+          mmap_dump_buffer->AppendString(" hooked ", 0);
+          mmap_dump_buffer->AppendString(kMapsRegionTypeDict[type], 0);
+          mmap_dump_buffer->AppendString("\n", 0);
         }
       } while (mmap_list_index < mmap_list_length &&
                mmap_list[mmap_list_index].last_address <= last_address);
