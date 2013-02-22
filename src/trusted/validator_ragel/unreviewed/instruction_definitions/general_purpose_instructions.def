@@ -600,13 +600,13 @@ pop Rr, 0x8f /0, amd64
 pop Mr, 0x8f /0, amd64 att-show-name-suffix-q
 pop rw, data16 0x58
 pop rr, 0x58
-pop as, 0x07, ia32 nacl-forbidden
-pop ds, 0x17, ia32 nacl-forbidden
-pop bs, 0x1f, ia32 nacl-forbidden
-pop fs, 0x0f 0xa1, ia32 nacl-forbidden
-pop gs, 0x0f 0xa9, ia32 nacl-forbidden
-pop fs, 0x0f 0xa1, amd64 att-show-name-suffix-q nacl-forbidden
-pop gs, 0x0f 0xa9, amd64 att-show-name-suffix-q nacl-forbidden
+"pop %es", 0x07, ia32 nacl-forbidden
+"pop %ss", 0x17, ia32 nacl-forbidden
+"pop %ds", 0x1f, ia32 nacl-forbidden
+"pop %fs", 0x0f 0xa1, ia32 nacl-forbidden
+"pop %gs", 0x0f 0xa9, ia32 nacl-forbidden
+"popq %fs", 0x0f 0xa1, amd64 nacl-forbidden
+"popq %gs", 0x0f 0xa9, amd64 nacl-forbidden
 ######## POPCNT ################################################################
 # Textbook definition of “popcnt” as per AMD/Intel manuals looks like this:
 #   popcnt Ev Gv, 0xf3 0x0f 0xb8, CPUFeature_POPCNT nacl-amd64-zero-extends
@@ -671,14 +671,14 @@ push =Id, 0x68, amd64 att-show-name-suffix-q
 push =Id, data16 rexw 0x68, amd64 att-show-name-suffix-q nacl-forbidden
 push =Ib, 0x6a, ia32
 push =Ib, 0x6a, amd64 att-show-name-suffix-q
-push =as, 0x06, ia32 nacl-forbidden
-push =cs, 0x0e, ia32 nacl-forbidden
-push =ds, 0x16, ia32 nacl-forbidden
-push =bs, 0x1e, ia32 nacl-forbidden
-push =fs, 0x0f 0xa0, ia32 nacl-forbidden
-push =gs, 0x0f 0xa8, ia32 nacl-forbidden
-push =fs, 0x0f 0xa0, amd64 att-show-name-suffix-q nacl-forbidden
-push =gs, 0x0f 0xa8, amd64 att-show-name-suffix-q nacl-forbidden
+"push %es", 0x06, ia32 nacl-forbidden
+"push %cs", 0x0e, ia32 nacl-forbidden
+"push %ss", 0x16, ia32 nacl-forbidden
+"push %ds", 0x1e, ia32 nacl-forbidden
+"push %fs", 0x0f 0xa0, ia32 nacl-forbidden
+"push %gs", 0x0f 0xa8, ia32 nacl-forbidden
+"pushq %fs", 0x0f 0xa0, amd64 nacl-forbidden
+"pushq %gs", 0x0f 0xa8, amd64 nacl-forbidden
 ######## PUSHF/PUSHFD/PUSHFQ ###################################################
 pushf, data16 0x9c, norexw att-show-name-suffix-w nacl-forbidden
 pushf, 0x9c, ia32 nacl-forbidden

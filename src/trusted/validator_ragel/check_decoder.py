@@ -92,6 +92,11 @@ def TraverseTree(state, final_callback, prefix, anyfield=0x01):
           prefix + ',' + hex(byte))
 
 
+def RoughlyEqual(s1, s2):
+  """Check whether lines are equal up to whitespaces."""
+  return s1.split() == s2.split()
+
+
 class WorkerState(object):
   __slots__ = [
       'total_instructions',
@@ -158,7 +163,7 @@ class WorkerState(object):
         if 'extrq' in line1 or 'insertq' in line1:
           continue
 
-        if line1 != line2:
+        if not RoughlyEqual(line1, line2):
           print 'objdump: %r' % line1
           print 'decoder: %r' % line2
           raise AssertionError('%r != %r' % (line1, line2))
