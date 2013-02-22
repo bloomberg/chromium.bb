@@ -465,3 +465,59 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, MAYBE_UnrelatedSiteInstance) {
   EXPECT_FALSE(first_site_instance->IsRelatedSiteInstance(
       second_site_instance));
 }
+
+// Tests that suggestions are sanity checked.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ValidatesSuggestions) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
+
+  // Do not set gray text that is not a suffix of the query.
+  EXPECT_TRUE(ExecuteScript("behavior = 2"));
+  EXPECT_TRUE(ExecuteScript("suggestion = 'potato'"));
+  SetOmniboxTextAndWaitForInstantToShow("query");
+  EXPECT_EQ(ASCIIToUTF16("query"), omnibox()->GetText());
+  EXPECT_EQ(ASCIIToUTF16(""), omnibox()->GetInstantSuggestion());
+
+  omnibox()->RevertAll();
+
+  // Do not set blue text that is not a valid URL completion.
+  EXPECT_TRUE(ExecuteScript("behavior = 1"));
+  EXPECT_TRUE(ExecuteScript("suggestion = 'this is not a url!'"));
+  SetOmniboxTextAndWaitForInstantToShow("this is");
+  EXPECT_EQ(ASCIIToUTF16("this is"), omnibox()->GetText());
+  EXPECT_EQ(ASCIIToUTF16(""), omnibox()->GetInstantSuggestion());
+
+  omnibox()->RevertAll();
+
+  // Do not set gray text when blue text is already set.
+  // First set up some blue text completion.
+  EXPECT_TRUE(ExecuteScript("behavior = 1"));
+  EXPECT_TRUE(ExecuteScript("suggestion = 'www.example.com'"));
+  SetOmniboxTextAndWaitForInstantToShow("http://www.ex");
+  string16 text = omnibox()->GetText();
+  EXPECT_EQ(ASCIIToUTF16("http://www.example.com"), text);
+  size_t start = 0, end = 0;
+  omnibox()->GetSelectionBounds(&start, &end);
+  if (start > end)
+    std::swap(start, end);
+  EXPECT_EQ(ASCIIToUTF16("ample.com"), text.substr(start, end - start));
+  EXPECT_TRUE(ExecuteScript("behavior = 2"));
+  EXPECT_TRUE(ExecuteScript("suggestion = 'www.example.com rocks'"));
+  // Now try to set gray text for the same query.
+  SetOmniboxText("http://www.ex");
+  EXPECT_EQ(ASCIIToUTF16("http://www.example.com"), omnibox()->GetText());
+  EXPECT_EQ(ASCIIToUTF16(""), omnibox()->GetInstantSuggestion());
+
+  omnibox()->RevertAll();
+
+  // When asked to suggest blue text in verbatim mode, suggest the exact
+  // omnibox text rather than using the supplied suggestion text.
+  EXPECT_TRUE(ExecuteScript("behavior = 1"));
+  EXPECT_TRUE(ExecuteScript("suggestion = 'www.example.com/q'"));
+  SetOmniboxText("www.example.com/q");
+  omnibox()->OnBeforePossibleChange();
+  SetOmniboxText("www.example.com/");
+  omnibox()->OnAfterPossibleChange();
+  EXPECT_EQ(ASCIIToUTF16("www.example.com/"), omnibox()->GetText());
+}
+

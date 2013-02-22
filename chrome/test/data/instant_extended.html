@@ -9,6 +9,7 @@ var savedUserText = null;
 var suggestionIndex = -1;
 var suggestions = ["result 1", "result 2", "result 3"];
 var suggestion;
+var behavior = 2;
 
 function getApiHandle() {
   if (window.navigator && window.navigator.embeddedSearch &&
@@ -34,7 +35,7 @@ function handleOnChange() {
   savedUserText = apiHandle.value;
   suggestionIndex = -1;
   if (suggestion) {
-    apiHandle.setAutocompleteText(suggestion, 2);
+    apiHandle.setAutocompleteText(suggestion, behavior);
     // Ensure this is only called once for this suggestion.
     suggestion = null;
   }

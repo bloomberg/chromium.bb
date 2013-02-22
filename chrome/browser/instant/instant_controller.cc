@@ -992,6 +992,13 @@ void InstantController::SetSuggestions(
   } else {
     bool is_valid_suggestion = true;
 
+    // If the page is trying to set inline autocompletion in verbatim mode,
+    // instead try suggesting the exact omnibox text. This makes the omnibox
+    // interpret user text as an URL if possible while preventing unwanted
+    // autocompletion during backspacing.
+    if (suggestion.behavior == INSTANT_COMPLETE_NOW && last_verbatim_)
+      suggestion.text = last_omnibox_text_;
+
     // Suggestion text should be a full URL for URL suggestions, or the
     // completion of a query for query suggestions.
     if (suggestion.type == INSTANT_SUGGESTION_URL) {
@@ -1018,10 +1025,6 @@ void InstantController::SetSuggestions(
     // http://crbug.com/162303
     if (suggestion.behavior == INSTANT_COMPLETE_NEVER &&
         last_omnibox_text_has_inline_autocompletion_)
-      is_valid_suggestion = false;
-
-    // Don't allow inline autocompletion if the query was verbatim.
-    if (suggestion.behavior == INSTANT_COMPLETE_NOW && last_verbatim_)
       is_valid_suggestion = false;
 
     if (is_valid_suggestion) {
