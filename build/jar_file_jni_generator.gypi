@@ -42,6 +42,8 @@
         '<(input_java_class)',
         '--output_dir',
         '<(SHARED_INTERMEDIATE_DIR)/<(jni_gen_dir)/jni',
+        '--optimize_generation',
+        '<(optimize_jni_generation)',
       ],
       'message': 'Generating JNI bindings from  <(input_jar_file)/<(input_java_class)',
       'process_outputs_as_sources': 1,
