@@ -1,0 +1,57 @@
+<h1 id="lab_9_multiple_views">Lab 9 - Multiple Views</h1>
+
+<p>Unlike standard web apps, a Chrome app has complete control of its windows. It can create any number of windows at arbitrary screen locations, control the window&#39;s look and feel, minimize, maximize and much more.</p>
+
+<p>In this lab, we will move the Drop area of our current application to another window. Here you can see how windows talk to each other and to the event page directly, synchronously, because they are all in the same thread.</p>
+
+<ol>
+<li><p>Let&#39;s adapt our code then. Start by removing the droptext <code>&lt;div&gt;</code> from <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab9_multipleviews/angularjs/index.html">index.html</a>.</p></li>
+<li><p>Create a new HTML with the drop area: <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab9_multipleviews/angularjs/droparea.html">droparea.html</a>
+<pre>
+&lt;html ng-app ng-csp&gt;
+  &lt;head&gt;
+    &lt;script src=&quot;angular.min.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;droparea.js&quot;&gt;&lt;/script&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;todo.css&quot;&gt;
+    &lt;title&gt;File Drop&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body ng-controller=&quot;DropCtrl&quot; ng-class=&quot;dropClass&quot;&gt;
+    &lt;h2&gt;Drop Area&lt;/h2&gt;
+    &lt;div&gt;&#123;&#123;dropText&#125;&#125;&lt;/div&gt;
+  &lt;/body&gt;
+&lt;/html&gt;    
+</pre></p></li>
+<li><p>Move all drop-related functionality from <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab9_multipleviews/angularjs/controller.js">controller.js</a> to a new file, <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab9_multipleviews/angularjs/droparea.js">droparea.js</a>:
+<pre>
+function DropCtrl($scope) {
+  // move here the variable initializations for defaultDropText and $scope.dropText
+  // move here the methods dragOver, dragLeave and drop
+}
+</pre></p></li>
+<li><p>In the existing <code>controller.js</code>, add the call to create a new window:
+<pre>
+chrome.app.window.create(&#39;droparea.html&#39;,
+  {id: &#39;dropArea&#39;, width: 200, height: 200 },
+  function(dropWin) {
+    dropWin.contentWindow.$parentScope = $scope; 
+  });
+</pre></p></li>
+</ol>
+
+<p>And that&#39;s all. Thanks to the hierarchical scope support on Angular, the <code>DropCtrl</code> controller is a child of the <code>TodoCtrl</code> and inherits all the context of its parent.</p>
+
+<p>To test, open the app, right-click, and select Reload App. Move the top view to the right, and you can see the additional view.</p>
+
+<p class="note"><b>Note:</b>  If you get stuck and want to see the app in action, go to <code>chrome://extensions</code>, load the unpacked <a href="app_codelab9_multipleviews.html">lab9_multipleviews</a>, and launch the app from a new tab.</p>
+
+<h1 id="takeaway_">Takeaway:</h1>
+
+<ul>
+<li>Web developers usually have a mindset of one-window-per-webapp.
+The Chrome app platform opens more possibilities for your creativity.
+A document editor, for example, can have one window per opened document, a more natural metaphor for native-like apps.</li>
+</ul>
+
+<h1 id="what_39_s_next_">What&#39;s next?</h1>
+
+<p>In <a href="app_codelab_10_publishing.html">lab_10_publishing</a>, we finish off with instructions on how to publish your app in the Chrome Web Store.</p>

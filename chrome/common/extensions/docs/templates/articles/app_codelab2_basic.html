@@ -1,0 +1,92 @@
+<h1 id="lab_2_work_with_code">Lab 2 - Work with code</h1>
+
+<h2 id="create_your_first_chrome_app">Create your first Chrome app</h2>
+
+<p>There are three core pieces to any Chrome app:</p>
+
+<ul>
+<li>The manifest that descibes meta-information about your applicaiton: name, description, version number and how to launch your application</li>
+<li>The background script, which sets up how your application responds to system events such as the user installing and launching the app and the system suspending it</li>
+<li>The view (which is optional, but you normally need to show the user something)</li>
+</ul>
+
+<p>Let&#39;s look at each of these components at their simplest level. </p>
+
+<ol>
+<li><p>In an empty directory (let&#39;s call it <code>&lt;myappdir&gt;</code>), create three files:</p>
+
+<ul>
+<li>Manifest: <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab2_basic/manifest.json">manifest.json</a>
+<pre>
+{
+  &quot;manifest_version&quot;: 2,
+  &quot;name&quot;: &quot;My first app&quot;,
+  &quot;version&quot;: &quot;1&quot;,
+  &quot;app&quot;: {
+    &quot;background&quot;: {
+      &quot;scripts&quot;: [&quot;main.js&quot;]
+    }
+  }
+}
+</pre></li>
+<li>Background script: <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab2_basic/main.js">main.js</a>
+<pre>
+chrome.app.runtime.onLaunched.addListener(function() {
+    chrome.app.window.create(&#39;index.html&#39;,
+      {width: 500, height: 309});
+  });
+</pre></li>
+<li>User interface: <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab2_basic/index.html">index.html</a>
+<pre>
+&lt;html&gt;
+  &lt;head&gt;
+      &lt;meta charset=&quot;utf-8&quot;&gt;
+      &lt;title&gt;Hello World&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+      &lt;h1&gt;Hello, World!&lt;/h1&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</pre></li>
+</ul></li>
+<li><p>Install and execute your sample app: </p>
+
+<ul>
+<li>Go to <code>chrome://extensions</code>.</li>
+<li>Load unpacked extension...</li>
+<li>Select the <code>&lt;myappdir&gt;</code> directory.</li>
+<li>Open a new Chrome tab.</li>
+<li>Click on the &quot;My First App&quot; icon.</li>
+</ul></li>
+</ol>
+
+<h2 id="you_should_also_read">You should also read</h2>
+
+<ul>
+<li><a href="http://developer.chrome.com/trunk/apps/first_app.html">Create Your First App</a></li>
+<li><a href="http://developer.chrome.com/trunk/apps/app.runtime.html">chrome.app.runtime</a></li>
+<li><a href="http://developer.chrome.com/trunk/apps/app.window.html">chrome.app.window</a></li>
+</ul>
+
+<h2 id="debug_fix_and_reload_app">Debug, fix, and reload app</h2>
+
+<p class="note"><b>Tip:</b>  If you have enabled Developer mode in <code>chrome://extensions</code>, your apps can be inspected and debugged using the Chrome Developer Tools just like any standard web page: right-click on page, select Inspect Element. For the background page, which doesn&#39;t have UI, you can either right-click on any app window and select <code>Inspect Background Page</code> or go to <code>chrome://extensions</code> and click on Inspect Views...</p>
+
+<ol>
+<li><p>Change the text &quot;Hello world&quot; to &quot;My first app&quot; in index.html.</p></li>
+<li><p>Change the <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab2_basic/main.js">main.js</a> background script to create two windows instead of one. Don&#39;t bother to create another html. For now, you can open index.html on both.</p></li>
+<li><p>After changing code, right-click on your app and select Reload App to reload the changed files. All Developer Tools windows will be reopened when you reload your app.</p></li>
+<li><p>Launch the app in a new tab page. Move the top window and you will see the second window behind it. </p></li>
+</ol>
+
+<h1 id="takeaways">Takeaways</h1>
+
+<ul>
+<li>Chrome apps have three basic pieces. The first and foremost is the manifest.json, which describes your app, requests special permissions, defines important meta information and much more. The second part is the background script, which contains all logic not tied to a specific user interface. The last part is the user interface: HTML, CSS, JavaScripts related to the interface, images, etc.</li>
+<li>Chrome apps can be debugged just like standard web pages using the Chrome Developer Tools. But since an app doesn&#39;t have the Reload control of a browser, a Reload App option has been added when you run in Developer mode.</li>
+</ul>
+
+<h1 id="what_39_s_next_">What&#39;s next?</h1>
+
+<p>In <a href="app_codelab3_mvc.html">lab3_mvc</a>,
+you will use the <a href="http://angularjs.org/">AngluarJS framework</a> to build your app.</p>

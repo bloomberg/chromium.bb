@@ -1,0 +1,40 @@
+<h1 id="lab_1_set_up_development_environment">Lab 1 - Set up development environment</h1>
+
+<h2 id="dependencies_and_prerequisites">Dependencies and prerequisites</h2>
+
+<ul>
+<li><p><a href="https://tools.google.com/dlpage/chromesxs">Chrome Canary on Mac and Windows</a> and <a href="http://www.chromium.org/getting-involved/dev-channel#TOC-Linux">Chromium Dev on Linux</a></p></li>
+<li><p>Open your preferred text editor. We have an under-development <a href="http://chrome-api.storage.googleapis.com/index.html">Chrome apps plugin</a> for <a href="http://www.sublimetext.com">Sublime</a>.</p></li>
+</ul>
+
+<h2 id="set_up_chrome">Set up Chrome</h2>
+
+<ol>
+<li><p>Make sure you are using Chrome Canary. Access <code>chrome://version</code> and check if there is a <code>canary</code> keyword at the end of the first line:<br>
+<img src="/static/images/codelab/screenshot1.png" alt="Checking Chrome version"></p></li>
+<li><p>Enable flags in <code>chrome://flags</code></p>
+
+<ul>
+<li>Experimental Extension APIs</li>
+<li>Enable debugging for packed apps</li>
+</ul></li>
+<li><p>Enable Developer mode in <code>chrome://extensions</code>:<br>
+<img src="/static/images/codelab/screenshot2.png" alt="Enabling developer mode"></p></li>
+</ol>
+
+<p class="note"><b>Note:</b>  Open the <code>chrome://extensions</code> page in its own window and keep it assessible as you work through the lab.
+You will use this page quite a bit to load and reload the Todo app.</p>
+
+<h2 id="set_up_workspace">Set up workspace</h2>
+
+<p>If you don&#39;t have it yet, <a href="https://help.github.com/articles/set-up-git">install git</a> and run </p>
+
+<p><pre>
+    git clone git://github.com/GoogleChrome/chrome-app-codelab.git
+</pre></p>
+
+<p>Note: for the rest of this tutorial, we&#39;ll refer to the directory for the cloned git repository as &lt;tutorial&gt;.</p>
+
+<h1 id="what_39_s_next_">What&#39;s next?</h1>
+
+<p>In <a href="app_codelab2_basic.html">lab2_basic</a>, you will create your first Chrome app!</p>

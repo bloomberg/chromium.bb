@@ -1,0 +1,181 @@
+<h1 id="lab_8_web_resources">Lab 8 - Web Resources</h1>
+
+<p>Chrome apps have a strict <a href="http://developer.chrome.com/trunk/apps/app_csp.html">Content Security Policy</a> which will not let the user execute code or load resources that are hosted remotely.</p>
+
+<p>Many applications, however, need to be able to load and display content from a remote location. A News Reader, for example, needs to display remote content inline or load and show images from a remote URL.</p>
+
+<h2 id="you_should_also_read">You should also read</h2>
+
+<ul>
+<li><a href="http://developer.chrome.com/apps/app_external.html">Embed Content</a> in Chrome app docs</li>
+</ul>
+
+<h2 id="loading_external_web_content_into_an_element">Loading external web content into an element</h2>
+
+<p>Sites on the internet are inherently a security risk and rendering arbitrary web pages directly into your application with elevated privileges would be a potential source of exploits.</p>
+
+<p>Chrome apps offer developers the ability to securely render third-party content in the <code>&lt;webview&gt;</code> tag. A WebView is like an iframe that you can control with greater flexibility and added security.
+It runs in a separate sandboxed process and can&#39;t communicate directly with the application.</p>
+
+<p class="note"><b>Tip:</b>  The WebView has a very simple API.  From your app you can:</p>
+
+<ul>
+<li> Change the URL of the WebView.</li>
+<li> Navigate forwards and backward, stop loading and reload.</li>
+<li> Check if the WebView has finished loading and if it is possible, go back and forward in the history stack.</li>
+</ul></p>
+
+<p>We will change our code to render the content of URLs dropped in the drag-and-drop operations in a WebView when the user clicks on a link.</p>
+
+<ol>
+<li><p>Request a new permission, &quot;webview&quot;, in <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab8_webresources/angularjs/1_webview/manifest.json">manifest.json</a>:
+<pre>
+&quot;permissions&quot;: [&quot;storage&quot;, &quot;webview&quot;]
+</pre></p></li>
+<li><p>Add a WebView tag and a link to <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab8_webresources/angularjs/1_webview/index.html">index.html</a>:
+<pre>
+&lt;!-- in TODO item: --&gt;
+&lt;a ng-show=&quot;todo.uri&quot; href=&quot;&quot; ng-click=&quot;showUri(todo.uri)&quot;&gt;(view url)&lt;/a&gt;
+&lt;!-- at the bottom, below the end of body: --&gt;
+&lt;webview&gt;&lt;/webview&gt;
+</pre></p></li>
+<li><p>Set an appropriate width and height to the webview tag in <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab8_webresources/angularjs/1_webview/todo.css">todo.css</a> (it has zero size by default):
+<pre>
+webview {
+  width: 100%;
+  height: 200px;
+}
+</pre></p></li>
+<li><p>Thanks to AngularJS, we now only need to add the <code>showUri</code> method to our <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab8_webresources/angularjs/1_webview/controller.js">controller.js</a> and we&#39;re done:
+<pre>
+$scope.showUri = function(uri) {
+  var webview=document.querySelector(&quot;webview&quot;);
+  webview.src=uri;
+};
+</pre></p></li>
+</ol>
+
+<p>To test, open the app, right-click, and select Reload App.
+You should be able to click on the &quot;view url&quot; link on any dropped URL Todo item, and the corresponding web page will show in the webview.
+If it&#39;s not showing, inspect the page and check if you set the webview size appropriately.</p>
+
+<p class="note"><b>Note:</b>  If you get stuck and want to see the app in action, go to <code>chrome://extensions</code>,
+load the unpacked <a href="https://github.com/GoogleChrome/chrome-app-codelab/tree/master/lab8_webresources/angularjs/1_webview">1_webview</a>, and launch the app from a new tab.</p>
+
+<h2 id="loading_external_images">Loading external images</h2>
+
+<p>If you try to add an <code>&lt;img&gt;</code> tag to your <code>index.html</code>, and point its <code>src</code> attribute to any site on the web, the following exception is thrown in the console and the image isn&#39;t loaded:</p>
+
+<p class="note"><b></b> Refused to load the image &#39;http://angularjs.org/img/AngularJS-large.png&#39; because it violates the following Content Security Policy directive: &quot;img-src &#39;self&#39; data: chrome-extension-resource:&quot;.</p>
+
+<p>Chrome apps cannot load any external resource directly in the DOM, because of the <a href="http://developer.chrome.com/apps/app_csp.html">CSP restrictions</a>.</p>
+
+<p>To avoid this restriction, you can use XHR requests, grab the blob corresponding to the remote file and use it appropriately.
+For example, <code>&lt;img&gt;</code> tags can use a blob URL.
+Let&#39;s change our application to show a small icon in the Todo list if the dropped URL represents an image:</p>
+
+<ol>
+<li><p>Before you start firing XHR requests, you must request permissions.
+Since we want to allow users to drag and drop images from any server, we need to request permission to XHR to any URL.
+Change <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab8_webresources/angularjs/2_loading_resources/manifest.json">manifest.json</a>:
+<pre>
+&quot;permissions&quot;: [&quot;storage&quot;, &quot;webview&quot;, &quot;&lt;all_urls&gt;&quot;]
+</pre></p></li>
+<li><p>Add to your project a placeholder image <img src="https://github.com/GoogleChrome/chrome-app-codelab/raw/master/lab8_webresources/angularjs/2_loading_resources/loading.gif" alt="loading.gif"> that will be shown while we are loading the proper image.</p></li>
+<li><p>Add the <code>&lt;img&gt;</code> tag to the Todo item on the <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab8_webresources/angularjs/2_loading_resources/index.html">index.html</a>:
+<pre>
+&lt;img style=&quot;max-height: 48px; max-width: 120px;&quot; ng-show=&quot;todo.validImage&quot; ng-src=&quot;&#123;&#123;todo.imageUrl&#125;&#125;&quot;&gt;&lt;/img&gt;
+</pre>
+As you will see soon, this element is only shown when the validImage attribute of the Todo item is true.</p></li>
+<li><p>Add the method loadImage (either in <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab8_webresources/angularjs/2_loading_resources/controller.js">controller.js</a> or in a <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab8_webresources/angularjs/2_loading_resources/loader.js">separate script file</a> as we did), that will start a XHR request and execute a callback with a Blob URL:
+<pre>
+var loadImage = function(uri, callback) {
+  var xhr = new XMLHttpRequest();
+  xhr.responseType = &#39;blob&#39;;
+  xhr.onload = function() {
+    callback(window.webkitURL.createObjectURL(xhr.response), uri);
+  }
+  xhr.open(&#39;GET&#39;, uri, true);
+  xhr.send();
+}
+</pre></p></li>
+<li><p>In the <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab8_webresources/angularjs/2_loading_resources/controller.js">controller.js</a>, add a new method that will search the scope.todolist looking for images that are not loaded yet:
+<pre>
+// for each image with no imageUrl, start a new loader
+$scope.loadImages = function() {
+  for (var i=0; i&lt;$scope.todos.length; i++) {
+    var todo=$scope.todos[i];
+    if (todo.validImage &amp;&amp; todo.imageUrl===PLACEHOLDER_IMAGE) {
+      loadImage(todo.uri, function(blob_uri, requested_uri) {
+        $scope.$apply(function(scope) {
+          for (var k=0; k&lt;scope.todos.length; k++) {
+            if (scope.todos[k].uri==requested_uri) {
+              scope.todos[k].imageUrl = blob_uri;
+            }
+          }
+        });
+      });
+    }
+  }
+};
+</pre></p></li>
+<li><p>In the <code>controller.js</code>, <code>drop()</code> method, change the handling of URIs to appropriately detect a valid image. For simplicity sake, we only tested for png and jpg extensions. Feel free to have a better coverage in your code.
+<pre>
+var uri=e.dataTransfer.getData(&quot;text/uri-list&quot;);
+var todo = {text:uri, done:false, uri: uri};
+if (/.png$/.test(uri) || /.jpg$/.test(uri)) {
+  hasImage = true;
+  todo.validImage = true;
+  todo.imageUrl = PLACEHOLDER_IMAGE;
+}
+newTodos.push(todo);
+
+// [...] inside the $apply method, before save(), call the loadImages method:
+$scope.loadImages();
+</pre></p></li><li><p>And, finally, we will change the load method to reset the Blob URLs, since Blob URLs don&#39;t span through sessions.
+Setting Todo&#39;s imageUrls to the PLACEHOLDER_IMAGE will force the loadImages method to request them again:
+<pre>
+// If there is saved data in storage, use it. Otherwise, bootstrap with sample todos
+$scope.load = function(value) {
+  if (value &amp;&amp; value.todolist) {
+    // ObjectURLs are revoked when the document is removed from memory,
+    // so we need to reload all images.
+    for (var i=0; i&lt;value.todolist.length; i++) {
+      value.todolist[i].imageUrl = PLACEHOLDER_IMAGE;
+    }
+    $scope.todos = value.todolist;
+    $scope.loadImages();
+  } else {
+    $scope.todos = [
+      {text:&#39;learn angular&#39;, done:true},
+      {text:&#39;build an angular app&#39;, done:false}];
+  }
+}
+</pre></p></li>
+</ol>
+
+<p>To test, open the app, right-click, and select Reload App.
+Go to <a href="https://www.google.com/imghp?hl=en&amp;tab=wi&amp;authuser=0">Google images</a>, search for and select an image,
+then drag and drop the image into the Todo list app.
+Assuming no mistakes were made, you should now have a thumbnail of every image URL dropped into the Todo list app.</p>
+
+<p class="note"><b>Note:</b>  If you get stuck and want to see the app in action, go to <code>chrome://extensions</code>,
+load the unpacked <a href="https://github.com/GoogleChrome/chrome-app-codelab/tree/master/lab8_webresources/angularjs/2_loading_resources">2_loading_resources</a>, and launch the app from a new tab.</p>
+
+<p>The <code>loadImage()</code> method above is not the best solution for this problem, because it doesn&#39;t handle errors correctly and it could cache images in a local filesystem.
+We are working on a library that will be much more robust and easier to use.</p>
+
+<h1 id="takeaways_">Takeaways:</h1>
+
+<ul>
+<li><p>The <code>&lt;webview&gt;</code> tag allows you to have a controlled browser inside your app.
+You can use it if you have part of your application that is not CSP compatible and you don&#39;t have resources to migrate it immediately, for example.
+One feature we didn&#39;t mention here is that WebViews can communicate with your app and vice-versa using asynchronous <a href="https://developer.chrome.com/trunk/apps/app_external.html#postMessage">postMessages</a>.</p></li>
+<li><p>Loading resources like images from the web is not straightforward compared to a standard web page.
+But it&#39;s not too different from traditional native platforms, where you need to handle the resource download and, only when it is correctly downloaded, you can render it in the UI. We have also developed <a href="https://github.com/GoogleChrome/apps-resource-loader">a sample library</a> to assyncronously handle resource loading from XHR calls. Feel free to use it in your projects.</p></li>
+</ul>
+
+<h1 id="what_39_s_next_">What&#39;s next?</h1>
+
+<p>In <a href="app_codelab9_multipleviews.html">lab9_multipleviews</a>,
+you will see how an app can have multiple windows that talk to each other and the event page directly.</p>

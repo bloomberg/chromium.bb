@@ -1,0 +1,149 @@
+<h1 id="lab_3_model_view_controller">Lab 3 - Model-View-Controller</h1>
+
+<p>Whenever your application grows beyond a single script with a few dozen lines, it gets
+harder and harder to manage without a good separation of roles among app components. One of the most common
+models for structuring a complex application, no matter what language, is the Model-View-Controller (MVC) and
+its variants, like Model-View-Presentation (MVP).</p>
+
+<p>There are several frameworks to help apply <a href="http://developer.chrome.com/trunk/apps/app_frameworks.html">MVC concepts</a> to a Javascript application, and most of them,
+as long as they are CSP compliant, can be used in a Chrome App. We will use the <a href="http://angularjs.org/">AngularJS</a> framework in parts of this tutorial, with a special focus on the framework in this section.</p>
+
+<h2 id="you_should_also_read">You should also read</h2>
+
+<ul>
+<li><p><a href="http://developer.chrome.com/trunk/apps/angular_framework.html">Build Apps with AngularJS</a> tutorial</p></li>
+<li><p><a href="http://angularjs.org/">AngularJS Todo</a> tutorial</p></li>
+</ul>
+
+<p class="note"><b>Note:</b>  Chrome apps don&#39;t enforce any specific framework or programming style. This section and additional parts of this tutorial use the AngularJS framework. Most of the code from this section was copied, with small changes, from the AngularJS Todo tutorial. </p>
+
+<h2 id="create_a_simple_view_using_angularjs">Create a simple view using AngularJS</h2>
+
+<ol>
+<li><p>Download the <a href="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.2/angular.min.js">Angular script</a> and save it as <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab3_mvc/angularjs/simpleview/angular.min.js">angular.min.js</a>.</p></li>
+<li><p>Change your <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab3_mvc/angularjs/simpleview/index.html">index.html</a> to use a simple Angular sample:
+<pre>
+&lt;html ng-app ng-csp&gt;
+  &lt;head&gt;
+    &lt;script src=&quot;angular.min.js&quot;&gt;&lt;/script&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;todo.css&quot;&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;h2&gt;Todo&lt;/h2&gt;
+    &lt;div&gt;
+      &lt;ul&gt;
+        &lt;li&gt;
+          &#123;&#123;todoText&#125;&#125;
+        &lt;/li&gt;
+      &lt;/ul&gt;
+      &lt;input type=&quot;text&quot; ng-model=&quot;todoText&quot;  size=&quot;30&quot;
+             placeholder=&quot;type your todo here&quot;&gt;
+    &lt;/div&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</pre></p></li>
+<li><p>Add a simple stylesheet: <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab3_mvc/angularjs/simpleview/todo.css">todo.css</a>
+<pre>
+body {
+  font-family: &quot;Helvetica Neue&quot;,Helvetica,Arial,sans-serif;
+}
+
+ul {
+  list-style: none;
+}
+
+button, input[type=submit] {
+  background-color: #0074CC;
+  background-image: linear-gradient(top, #08C, #05C);
+  border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+  color: white;
+}
+
+.done-true {
+  text-decoration: line-through;
+  color: grey;
+}
+</pre></li><li>Check the results by reloading the app: open the app, right-click and select Reload App.</li>
+</ol>
+
+<p class="note"><b>Note:</b>  The ng-csp directive tells Angular to run in a &quot;content security mode&quot;. You don&#39;t need this directive when using Angular v1.1.0+. We&#39;ve included it here so that the sample works regardless of the Angular version in use.</p>
+
+<h2 id="add_a_controller">Add a Controller</h2>
+
+The previous sample, although interesting, is not exactly useful. Let&#39;s transform it into a real Todo list, instead of a simple Todo item. We will create a controller (controller.js) and make some small changes in the index.html:
+
+<ol>
+<li>Add the <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab3_mvc/angularjs/withcontroller/controller.js">controller.js</a> file:
+<pre>
+function TodoCtrl($scope) {
+  $scope.todos = [
+    {text:&#39;learn angular&#39;, done:true},
+    {text:&#39;build an angular Chrome packaged app&#39;, done:false}];
+
+$scope.addTodo = function() {
+    $scope.todos.push({text:$scope.todoText, done:false});
+    $scope.todoText = &#39;&#39;;
+  };
+
+$scope.remaining = function() {
+    var count = 0;
+    angular.forEach($scope.todos, function(todo) {
+      count += todo.done ? 0 : 1;
+    });
+    return count;
+  };
+
+$scope.archive = function() {
+    var oldTodos = $scope.todos;
+    $scope.todos = [];
+    angular.forEach(oldTodos, function(todo) {
+      if (!todo.done) $scope.todos.push(todo);
+    });
+  };
+}
+</pre></p></li><li><p>Change <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab3_mvc/angularjs/withcontroller/index.html">index.html</a> file:
+<pre>
+&lt;html ng-app ng-csp&gt;
+  &lt;head&gt;
+    &lt;script src=&quot;angular.min.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;controller.js&quot;&gt;&lt;/script&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;todo.css&quot;&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;h2&gt;Todo&lt;/h2&gt;
+    &lt;div ng-controller=&quot;TodoCtrl&quot;&gt;
+      &lt;span&gt;&#123;&#123;remaining()&#125;&#125; of &#123;&#123;todos.length&#125;&#125; remaining&lt;/span&gt;
+      [ &lt;a href=&quot;&quot; ng-click=&quot;archive()&quot;&gt;archive&lt;/a&gt; ]
+      &lt;ul&gt;
+        &lt;li ng-repeat=&quot;todo in todos&quot;&gt;
+          &lt;input type=&quot;checkbox&quot; ng-model=&quot;todo.done&quot;&gt;
+          &lt;span class=&quot;done-&#123;&#123;todo.done&#125;&#125;&quot;&gt;&#123;&#123;todo.text&#125;&#125;&lt;/span&gt;
+        &lt;/li&gt;
+      &lt;/ul&gt;
+      &lt;form ng-submit=&quot;addTodo()&quot;&gt;
+        &lt;input type=&quot;text&quot; ng-model=&quot;todoText&quot; size=&quot;30&quot;
+               placeholder=&quot;add new todo here&quot;&gt;
+        &lt;input class=&quot;btn-primary&quot; type=&quot;submit&quot; value=&quot;add&quot;&gt;
+      &lt;/form&gt;
+    &lt;/div&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</pre></p></li>
+<li><p>Check the results by reloading the app: open the app, right-click and select Reload App.</p></li>
+</ol>
+
+<p>Note how the data, stored in an array inside the controller, binds to the view and is automatically updated when it is changed by the controller.</p>
+
+<h1 id="takeaways_">Takeaways:</h1>
+
+<ul>
+<li><p>Chrome apps are <a href="http://developer.chrome.com/apps/offline_apps.html">offline first</a>, so the recommended way to include third-party scripts is to download and package them inside your app.</p></li>
+<li><p>You can use any framework you want, as long as it complies with Content Security Policies and other restrictions that Chrome apps are enforced to follow.</p></li>
+<li><p>MVC frameworks make your life easier. Use them, specially if you want to build a non-trivial application.</p></li>
+</ul>
+
+<h1 id="what_39_s_next_">What&#39;s next?</h1>
+
+<p>Eventually in <a href="app_codelab4_testing.html">lab4_testing</a>, you will test your app.
+Right now this lab is a work-in-progress. You can skip ahead to <a href="app_codelab5_data.html">lab5_data</a>.</p>

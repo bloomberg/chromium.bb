@@ -1,0 +1,176 @@
+<h1 id="lab_5_manage_data">Lab 5 - Manage Data</h1>
+
+<p>The <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab3_mvc/angularjs/withcontroller/controller.js#L2-L4">sample from Lab 3</a> uses a static array of Todos. Every time your app restarts, whatever you&#39;ve changed is lost. In this section, we will save every change using <a href="http://developer.chrome.com/trunk/apps/storage.html">chrome.storage.sync</a>. This lets you store <em>small things</em> that automatically sync to the cloud if you are online and logged in to Chrome. If you are offline or unlogged, it saves locally and transparently: you don&#39;t have to handle online check and offline fallback in your application.</p>
+
+<h2 id="you_should_also_read">You should also read</h2>
+
+<p><a href="http://developer.chrome.com/apps/app_storage.html">Manage Data</a> in Chrome app docs</p>
+
+<h2 id="save_your_todos_in_the_cloud">Save your Todos in the cloud</h2>
+
+<p class="note"><b>Note:</b>  Chrome Sync Storage is not intended to be used as a generic database. There are several restrictions on the amount of information you can save, so it is more appropriate to save settings and other small chunks of data. </p>
+
+<ol>
+<li><p>Request permission to use storage in your <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab5_data/angularjs/1_storage_sync/manifest.json">manifest.json</a>:
+<pre>
+{
+  ... ,
+  &quot;permissions&quot;: [&quot;storage&quot;]
+}
+</pre></p></li>
+<li><p>Change your <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab5_data/angularjs/1_storage_sync/controller.js">controller.js</a> and, instead of a static list, get the Todo list from the syncable storage:
+<pre>
+// Notice that chrome.storage.sync.get is asynchronous
+chrome.storage.sync.get(&#39;todolist&#39;, function(value) {
+  // The $apply is only necessary to execute the function inside Angular scope
+  $scope.$apply(function() {
+    $scope.load(value);
+  });
+});
+
+// If there is saved data in storage, use it. Otherwise, bootstrap with sample todos
+$scope.load = function(value) {
+  if (value &amp;&amp; value.todolist) {
+    $scope.todos = value.todolist;
+  } else {
+    $scope.todos = [
+      {text:&#39;learn angular&#39;, done:true},
+      {text:&#39;build an angular app&#39;, done:false}];
+  }
+} 
+
+$scope.save = function() {
+  chrome.storage.sync.set({&#39;todolist&#39;: $scope.todos});
+};
+</pre></li><li>In the HTML, call <code>save()</code> whenever the data changes. There are many other ways of doing this in Angular, like using <code>$watchers</code> on the scope. The one used here makes the <code>save()</code> calls explicit.
+<pre>
+...
+       [ &lt;a href=&quot;&quot; ng-click=&quot;archive() || save()&quot;&gt;archive&lt;/a&gt; ]
+...
+            &lt;input type=&quot;checkbox&quot; ng-model=&quot;todo.done&quot; ng-change=&quot;save()&quot;&gt;
+...
+       &lt;form ng-submit=&quot;addTodo() || save()&quot;&gt;
+...
+</pre></li>
+<li>Check the results by reloading the app: open the app, right-click and select Reload App.
+You can now add Todo items, close the app, and the new items will still be there when you reopen the app.</li>
+</ol>
+
+<p class="note"><b>Note:</b>  If you get stuck and want to see the app in action,
+go to <code>chrome://extensions</code>, load the unpacked <a href="https://github.com/GoogleChrome/chrome-app-codelab/tree/master/lab5_data/angularjs/1_storage_sync">1_storage_sync</a> app,
+and launch the app from a new tab.</p>
+
+<h2 id="handle_drag_and_dropped_files_and_urls">Handle drag-and-dropped files and URLs</h2>
+
+Suppose you want to create Todos associated with local files and/or URLs. The natural way of doing this is to accept dropped items. It&#39;s simple enough to add drag-and-drop support in a Chrome app using the standard HTML5 Drag-and-Drop API.
+
+<ol>
+<li>In <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab5_data/angularjs/2_drop_files/controller.js">controller.js</a>, add code to handle the events of dragover, dragleave and drop:
+<pre>
+var defaultDropText = &quot;Or drop files here...&quot;;
+$scope.dropText = defaultDropText;
+
+// on dragOver, we will change the style and text accordingly, depending on 
+// the data being transferred
+var dragOver = function(e) {
+  e.stopPropagation();
+  e.preventDefault();
+  var valid = e.dataTransfer &amp;&amp; e.dataTransfer.types 
+    &amp;&amp; ( e.dataTransfer.types.indexOf(&#39;Files&#39;) &gt;= 0 
+      || e.dataTransfer.types.indexOf(&#39;text/uri-list&#39;) &gt;=0 )
+  $scope.$apply(function() {
+    $scope.dropText = valid ? &quot;Drop files and remote images and they will become Todos&quot;
+        : &quot;Can only drop files and remote images here&quot;;
+    $scope.dropClass = valid ? &quot;dragging&quot; : &quot;invalid-dragging&quot;;
+  });
+}
+
+// reset style and text to the default
+var dragLeave = function(e) {
+  $scope.$apply(function() {
+    $scope.dropText = defaultDropText;
+    $scope.dropClass = &#39;&#39;;
+  });
+}
+
+// on drop, we create the appropriate TODOs using dropped data
+var drop = function(e) {
+  e.preventDefault();
+  e.stopPropagation();
+
+var newTodos=[];
+  if (e.dataTransfer.types.indexOf(&#39;Files&#39;) &gt;= 0) {
+    var files = e.dataTransfer.files;
+    for (var i = 0; i &lt; files.length; i++) {
+      var text = files[i].name+&#39;, &#39;+files[i].size+&#39; bytes&#39;;
+      newTodos.push({text:text, done:false, file: files[i]});
+    }
+  } else { // uris
+    var uri=e.dataTransfer.getData(&quot;text/uri-list&quot;);
+    newTodos.push({text:uri, done:false, uri: uri});
+  }
+
+$scope.$apply(function() {
+    $scope.dropText = defaultDropText;
+    $scope.dropClass = &#39;&#39;;
+    for (var i = 0; i &lt; newTodos.length; i++) {
+      $scope.todos.push(newTodos[i]);
+    }
+    $scope.save();
+  });
+}
+
+document.body.addEventListener(&quot;dragover&quot;, dragOver, false);
+document.body.addEventListener(&quot;dragleave&quot;, dragLeave, false);
+document.body.addEventListener(&quot;drop&quot;, drop, false);
+</pre></li><li>To make all the area of the window accept the drop event and still work on the same scope, let&#39;s move the Angular scope definition from the div to the body in the <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab5_data/angularjs/2_drop_files/index.html">index.html</a> file.
+Also, let&#39;s associate the body&#39;s CSS class with the Angular controller&#39;s class, so we can change the class directly in the scope and have it automatically changed in the DOM:
+<pre>
+&lt;body ng-controller=&quot;TodoCtrl&quot; ng-class=&quot;dropClass&quot;&gt;
+&lt;!-- remember to remove the ng-controller attribute from the div where it was before --&gt;
+</pre></li>
+<li>Add a message placeholder (in <code>index.html</code>) to warn the user that some types of dragging are not allowed:
+<pre>
+&lt;div&gt;
+ &#123;&#123;dropText&#125;&#125;
+&lt;/div&gt;
+</pre></li>
+<li>Add appropriate styling for the <code>dragging</code> and <code>invalid-dragging</code> CSS classes in <a href="https://github.com/GoogleChrome/chrome-app-codelab/blob/master/lab5_data/angularjs/2_drop_files/todo.css">todo.css</a>. Here we used a green or red background color animation:
+<pre>
+@-webkit-keyframes switch-green {
+  from { background-color: white;} to {background-color: rgb(163, 255, 163);}
+}
+@-webkit-keyframes switch-red {
+  from { background-color: white;} to {background-color: rgb(255, 203, 203);}
+}
+.dragging {
+  -webkit-animation: switch-green 0.5s ease-in-out 0 infinite alternate;
+}
+
+.invalid-dragging {
+  -webkit-animation: switch-red 0.5s ease-in-out 0 infinite alternate;
+}
+</pre></p></li><li><p>Check the results by reloading the app: open the app, right-click and select Reload App.
+You can now drag files into the Todo list.</p></li>
+</ol>
+
+<p class="note"><b>Note:</b>  If you get stuck and want to see the app in action,
+go to <code>chrome://extensions</code>, load the unpacked <a href="https://github.com/GoogleChrome/chrome-app-codelab/tree/master/lab5_data/angularjs/2_drop_files">2_drop_files</a> app,
+and launch the app from a new tab.</p>
+
+<h1 id="challenge_">Challenge:</h1>
+
+<p>The current code only saves the file reference, but it doesn&#39;t open the file. Using the <a href="http://www.html5rocks.com/en/tutorials/file/filesystem/">HTML5 Filesystem API</a>, save the file contents in a sandboxed filesystem. When the Todo item is archived, remove the corresponding file from the sandboxed filesystem. Add an &quot;open&quot; link on each Todo that has an associated file. When the item is clicked and the file exists in the sandboxed filesystem, use the Chrome app <a href="http://developer.chrome.com/apps/fileSystem.html">Filesystem extension</a> to request a writable FileEntry from the user. Save the file data from the sandboxed filesystem into that entry.</p>
+
+<p class="note"><b>Tip:</b>  managing file entries using the raw HTML5 Filesystem API is not trivial. You might want to use a wrapper library, like Eric Bidelman&#39;s <a href="https://github.com/ebidel/filer.js">filer.js</a>.</p>
+
+<h1 id="takeaways_">Takeaways:</h1>
+
+<ul>
+<li><p>Use <a href="http://developer.chrome.com/apps/storage.html">chrome.storage.sync</a> to save small data that you need to be sync&#39;ed among devices, like configuration options, application state, etc. The sync is automatic, as long as the same user is logged into Chrome on all devices.</p></li>
+<li><p>Chrome apps support almost all HTML5 APIs, such as drag and drop. HTML Filesystem API is also supported, with extra features from the Chrome app&#39;s <a href="http://developer.chrome.com/apps/fileSystem.html">Filesystem API extension</a>, like asking the user to pick files on her local disk for read and write. The vanilla HTML5 Filesystem API only allows access to a sandboxed filesystem.</p></li>
+</ul>
+
+<h1 id="what_39_s_next_">What&#39;s next?</h1>
+
+<p>In <a href="app_codelab6_lifecycle.html">lab6_lifecycle</a>, you will learn the basics of the Chrome app lifecycle. </p>
