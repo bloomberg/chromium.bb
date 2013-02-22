@@ -13,9 +13,7 @@ namespace pp {
 class DirectoryEntry_Dev {
  public:
   DirectoryEntry_Dev();
-  DirectoryEntry_Dev(PassRef, const PP_DirectoryEntry_Dev& data);
   DirectoryEntry_Dev(const DirectoryEntry_Dev& other);
-
   ~DirectoryEntry_Dev();
 
   DirectoryEntry_Dev& operator=(const DirectoryEntry_Dev& other);
@@ -30,6 +28,7 @@ class DirectoryEntry_Dev {
   PP_FileType file_type() const { return data_.file_type; }
 
  private:
+  friend class DirectoryReader_Dev;
   PP_DirectoryEntry_Dev data_;
 };
 

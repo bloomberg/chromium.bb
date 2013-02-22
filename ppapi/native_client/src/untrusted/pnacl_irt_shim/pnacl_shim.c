@@ -1,4 +1,4 @@
-/* Copyright (c) 2013 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -114,8 +114,14 @@
 
 /* Use local strcmp to avoid dependency on libc. */
 static int mystrcmp(const char* s1, const char *s2) {
-  while((*s1 && *s2) && (*s1++ == *s2++));
-  return *(--s1) - *(--s2);
+  while (1) {
+    if (*s1 == 0) break;
+    if (*s2 == 0) break;
+    if (*s1 != *s2) break;
+    ++s1;
+    ++s2;
+  }
+  return *(s1) - *(s2);
 }
 
 /* BEGIN Declarations for all Wrapper Infos */
@@ -177,7 +183,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Buffer_Dev_0_4;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Crypto_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_CursorControl_Dev_0_4;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_DeviceRef_Dev_0_1;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_DirectoryReader_Dev_0_6;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_DirectoryReader_Dev_0_5;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_5;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_6;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Find_Dev_0_3;
@@ -1632,27 +1638,27 @@ struct PP_Var Pnacl_M18_PPB_DeviceRef_Dev_GetName(PP_Resource device_ref) {
 
 /* End wrapper methods for PPB_DeviceRef_Dev_0_1 */
 
-/* Begin wrapper methods for PPB_DirectoryReader_Dev_0_6 */
+/* Begin wrapper methods for PPB_DirectoryReader_Dev_0_5 */
 
 static __attribute__((pnaclcall))
-PP_Resource Pnacl_M27_PPB_DirectoryReader_Dev_Create(PP_Resource directory_ref) {
-  const struct PPB_DirectoryReader_Dev_0_6 *iface = Pnacl_WrapperInfo_PPB_DirectoryReader_Dev_0_6.real_iface;
+PP_Resource Pnacl_M13_PPB_DirectoryReader_Dev_Create(PP_Resource directory_ref) {
+  const struct PPB_DirectoryReader_Dev_0_5 *iface = Pnacl_WrapperInfo_PPB_DirectoryReader_Dev_0_5.real_iface;
   return iface->Create(directory_ref);
 }
 
 static __attribute__((pnaclcall))
-PP_Bool Pnacl_M27_PPB_DirectoryReader_Dev_IsDirectoryReader(PP_Resource resource) {
-  const struct PPB_DirectoryReader_Dev_0_6 *iface = Pnacl_WrapperInfo_PPB_DirectoryReader_Dev_0_6.real_iface;
+PP_Bool Pnacl_M13_PPB_DirectoryReader_Dev_IsDirectoryReader(PP_Resource resource) {
+  const struct PPB_DirectoryReader_Dev_0_5 *iface = Pnacl_WrapperInfo_PPB_DirectoryReader_Dev_0_5.real_iface;
   return iface->IsDirectoryReader(resource);
 }
 
 static __attribute__((pnaclcall))
-int32_t Pnacl_M27_PPB_DirectoryReader_Dev_ReadEntries(PP_Resource directory_reader, struct PP_ArrayOutput output, struct PP_CompletionCallback callback) {
-  const struct PPB_DirectoryReader_Dev_0_6 *iface = Pnacl_WrapperInfo_PPB_DirectoryReader_Dev_0_6.real_iface;
-  return iface->ReadEntries(directory_reader, output, callback);
+int32_t Pnacl_M13_PPB_DirectoryReader_Dev_GetNextEntry(PP_Resource directory_reader, struct PP_DirectoryEntry_Dev* entry, struct PP_CompletionCallback callback) {
+  const struct PPB_DirectoryReader_Dev_0_5 *iface = Pnacl_WrapperInfo_PPB_DirectoryReader_Dev_0_5.real_iface;
+  return iface->GetNextEntry(directory_reader, entry, callback);
 }
 
-/* End wrapper methods for PPB_DirectoryReader_Dev_0_6 */
+/* End wrapper methods for PPB_DirectoryReader_Dev_0_5 */
 
 /* Begin wrapper methods for PPB_FileChooser_Dev_0_5 */
 
@@ -3876,10 +3882,10 @@ struct PPB_DeviceRef_Dev_0_1 Pnacl_Wrappers_PPB_DeviceRef_Dev_0_1 = {
     .GetName = (struct PP_Var (*)(PP_Resource device_ref))&Pnacl_M18_PPB_DeviceRef_Dev_GetName
 };
 
-struct PPB_DirectoryReader_Dev_0_6 Pnacl_Wrappers_PPB_DirectoryReader_Dev_0_6 = {
-    .Create = (PP_Resource (*)(PP_Resource directory_ref))&Pnacl_M27_PPB_DirectoryReader_Dev_Create,
-    .IsDirectoryReader = (PP_Bool (*)(PP_Resource resource))&Pnacl_M27_PPB_DirectoryReader_Dev_IsDirectoryReader,
-    .ReadEntries = (int32_t (*)(PP_Resource directory_reader, struct PP_ArrayOutput output, struct PP_CompletionCallback callback))&Pnacl_M27_PPB_DirectoryReader_Dev_ReadEntries
+struct PPB_DirectoryReader_Dev_0_5 Pnacl_Wrappers_PPB_DirectoryReader_Dev_0_5 = {
+    .Create = (PP_Resource (*)(PP_Resource directory_ref))&Pnacl_M13_PPB_DirectoryReader_Dev_Create,
+    .IsDirectoryReader = (PP_Bool (*)(PP_Resource resource))&Pnacl_M13_PPB_DirectoryReader_Dev_IsDirectoryReader,
+    .GetNextEntry = (int32_t (*)(PP_Resource directory_reader, struct PP_DirectoryEntry_Dev* entry, struct PP_CompletionCallback callback))&Pnacl_M13_PPB_DirectoryReader_Dev_GetNextEntry
 };
 
 struct PPB_FileChooser_Dev_0_5 Pnacl_Wrappers_PPB_FileChooser_Dev_0_5 = {
@@ -4693,9 +4699,9 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_DeviceRef_Dev_0_1 = {
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_DirectoryReader_Dev_0_6 = {
-  .iface_macro = PPB_DIRECTORYREADER_DEV_INTERFACE_0_6,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_DirectoryReader_Dev_0_6,
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_DirectoryReader_Dev_0_5 = {
+  .iface_macro = PPB_DIRECTORYREADER_DEV_INTERFACE_0_5,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_DirectoryReader_Dev_0_5,
   .real_iface = NULL
 };
 
@@ -5219,7 +5225,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_Crypto_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_CursorControl_Dev_0_4,
   &Pnacl_WrapperInfo_PPB_DeviceRef_Dev_0_1,
-  &Pnacl_WrapperInfo_PPB_DirectoryReader_Dev_0_6,
+  &Pnacl_WrapperInfo_PPB_DirectoryReader_Dev_0_5,
   &Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_5,
   &Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_6,
   &Pnacl_WrapperInfo_PPB_Find_Dev_0_3,

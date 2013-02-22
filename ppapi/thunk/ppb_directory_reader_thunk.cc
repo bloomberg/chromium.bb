@@ -35,25 +35,25 @@ PP_Bool IsDirectoryReader(PP_Resource resource) {
   return PP_FromBool(enter.succeeded());
 }
 
-int32_t ReadEntries(PP_Resource directory_reader,
-                    PP_ArrayOutput output,
-                    PP_CompletionCallback callback) {
+int32_t GetNextEntry(PP_Resource directory_reader,
+                     PP_DirectoryEntry_Dev* entry,
+                     PP_CompletionCallback callback) {
   EnterResource<PPB_DirectoryReader_API> enter(
       directory_reader, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->ReadEntries(output, enter.callback()));
+  return enter.SetResult(enter.object()->GetNextEntry(entry, enter.callback()));
 }
 
 const PPB_DirectoryReader_Dev g_ppb_directory_reader_thunk = {
   &Create,
   &IsDirectoryReader,
-  &ReadEntries
+  &GetNextEntry
 };
 
 }  // namespace
 
-const PPB_DirectoryReader_Dev_0_6* GetPPB_DirectoryReader_Dev_0_6_Thunk() {
+const PPB_DirectoryReader_Dev_0_5* GetPPB_DirectoryReader_Dev_0_5_Thunk() {
   return &g_ppb_directory_reader_thunk;
 }
 

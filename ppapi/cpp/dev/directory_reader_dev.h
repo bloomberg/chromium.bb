@@ -5,50 +5,27 @@
 #ifndef PPAPI_CPP_DEV_DIRECTORY_READER_DEV_H_
 #define PPAPI_CPP_DEV_DIRECTORY_READER_DEV_H_
 
-#include <vector>
+#include <stdlib.h>
 
 #include "ppapi/c/dev/ppb_directory_reader_dev.h"
 #include "ppapi/cpp/resource.h"
 
 namespace pp {
 
+class CompletionCallback;
 class DirectoryEntry_Dev;
 class FileRef;
-template<typename T> class CompletionCallbackWithOutput;
 
 class DirectoryReader_Dev : public Resource {
  public:
-  /// A constructor that creates a DirectoryReader resource for the given
-  /// directory.
-  ///
-  /// @param[in] directory_ref A <code>PP_Resource</code> corresponding to the
-  /// directory reference to be read.
+  // Creates a DirectoryReader for the given directory.
   explicit DirectoryReader_Dev(const FileRef& directory_ref);
 
   DirectoryReader_Dev(const DirectoryReader_Dev& other);
 
-  /// ReadEntries() Reads all entries in the directory.
-  ///
-  /// @param[in] cc A <code>CompletionCallbackWithOutput</code> to be called
-  /// upon completion of ReadEntries(). On success, the directory entries will
-  /// be passed to the given function.
-  ///
-  /// Normally you would use a CompletionCallbackFactory to allow callbacks to
-  /// be bound to your class. See completion_callback_factory.h for more
-  /// discussion on how to use this. Your callback will generally look like:
-  ///
-  /// @code
-  ///   void OnReadEntries(int32_t result,
-  ///                      const std::vector<DirectoryEntry_Dev>& entries) {
-  ///     if (result == PP_OK)
-  ///       // use entries...
-  ///   }
-  /// @endcode
-  ///
-  /// @return An int32_t containing an error code from <code>pp_errors.h</code>.
-  int32_t ReadEntries(
-      const CompletionCallbackWithOutput< std::vector<DirectoryEntry_Dev> >&
-          callback);
+  // See PPB_DirectoryReader::GetNextEntry.
+  int32_t GetNextEntry(DirectoryEntry_Dev* entry,
+                       const CompletionCallback& cc);
 };
 
 }  // namespace pp

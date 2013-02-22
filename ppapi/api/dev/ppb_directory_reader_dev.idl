@@ -8,7 +8,7 @@
  */
 
 label Chrome {
-  M27 = 0.6
+  M13 = 0.5
 };
 
 [assert_size(8)]
@@ -29,18 +29,23 @@ interface PPB_DirectoryReader_Dev {
   // DirectoryReader.
   PP_Bool IsDirectoryReader([in] PP_Resource resource);
 
-  // Reads all entries in the directory.
+  // Reads the next entry in the directory.  Returns PP_OK and sets
+  // entry->file_ref to 0 to indicate reaching the end of the directory.  If
+  // entry->file_ref is non-zero when passed to GetNextEntry, it will be
+  // released before the next file_ref is stored.
   //
-  // @param[in] directory_reader A <code>PP_Resource</code>
-  // corresponding to a directory reader resource.
-  // @param[in] output An output array which will receive
-  // <code>PP_DirectoryEntry_Dev</code> objects on success.
-  // @param[in] callback A <code>PP_CompletionCallback</code> to run on
-  // completion.
+  // EXAMPLE USAGE:
   //
-  // @return An error code from <code>pp_errors.h</code>.
+  //   PP_Resource reader = reader_funcs->Create(dir_ref);
+  //   PP_DirectoryEntry entry = {0};
+  //   while ((reader_funcs->GetNextEntry(reader, &entry,
+  //                                      PP_BlockUntilComplete()) == PP_OK) &&
+  //          entry->file_ref) {
+  //     ProcessDirectoryEntry(entry);
+  //   }
+  //   core_funcs->ReleaseResource(reader);
   //
-  int32_t ReadEntries([in] PP_Resource directory_reader,
-                      [in] PP_ArrayOutput output,
-                      [in] PP_CompletionCallback callback);
+  int32_t GetNextEntry([in] PP_Resource directory_reader,
+                       [out] PP_DirectoryEntry_Dev entry,
+                       [in] PP_CompletionCallback callback);
 };
