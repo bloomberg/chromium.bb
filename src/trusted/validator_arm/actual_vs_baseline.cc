@@ -63,6 +63,7 @@ void ActualVsBaselineTester::ProcessMatch() {
   // consistent behaviour between the actual and basline class
   // decoders.
   CheckDefs();
+  CheckUses();
   CheckBaseAddressRegisterWritebackSmallImmediate();
   CheckBaseAddressRegister();
   CheckIsLiteralLoad();
@@ -107,6 +108,13 @@ void ActualVsBaselineTester::CheckDefs() {
   nacl_arm_dec::RegisterList actual_defs(actual_decoder_.defs(inst_));
   nacl_arm_dec::RegisterList baseline_defs(baseline_decoder_.defs(inst_));
   EXPECT_TRUE(baseline_defs.Equals(actual_defs));
+}
+
+void ActualVsBaselineTester::CheckUses() {
+  nacl_arm_dec::RegisterList actual_uses(actual_decoder_.uses(inst_));
+  nacl_arm_dec::RegisterList baseline_uses(baseline_decoder_.uses(inst_));
+  EXPECT_TRUE(baseline_decoder_.uses(inst_).
+              Equals(actual_decoder_.uses(inst_)));
 }
 
 void ActualVsBaselineTester::CheckBaseAddressRegisterWritebackSmallImmediate() {

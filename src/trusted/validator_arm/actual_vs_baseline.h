@@ -47,6 +47,7 @@ class ActualVsBaselineTester : public Arm32DecoderTester {
   virtual bool DoApplySanityChecks();
 
   void CheckDefs();
+  void CheckUses();
   void CheckBaseAddressRegisterWritebackSmallImmediate();
   void CheckBaseAddressRegister();
   void CheckIsLiteralLoad();
