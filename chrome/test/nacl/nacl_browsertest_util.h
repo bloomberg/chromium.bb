@@ -137,10 +137,12 @@ class NaClBrowserTestStatic : public NaClBrowserTestBase {
 IN_PROC_BROWSER_TEST_F(suite##Newlib, name) \
 body
 
-#elif defined(ADDRESS_SANITIZER)
-
+#elif defined(ADDRESS_SANITIZER) || (defined(OS_WIN) && !defined(NDEBUG))
 // PNaCl's cache and PPB_FileIO currently trip up under ASAN:
 // https://code.google.com/p/chromium/issues/detail?id=171810
+// PNaCl tests take a long time on windows debug builds
+// and sometimes time out.  Disable until it is made faster:
+// https://code.google.com/p/chromium/issues/detail?id=177555
 #define NACL_BROWSER_TEST_F(suite, name, body) \
 IN_PROC_BROWSER_TEST_F(suite##Newlib, name) \
 body \
