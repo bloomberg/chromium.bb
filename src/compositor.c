@@ -3431,8 +3431,6 @@ int main(int argc, char *argv[])
 	sigaction(SIGSEGV, &segv_action, NULL);
 	segv_compositor = ec;
 
-	free(config_file);
-
 	ec->option_idle_time = idle_time;
 	ec->idle_time = idle_time;
 
@@ -3442,6 +3440,8 @@ int main(int argc, char *argv[])
 		goto out;
 	if (load_modules(ec, option_modules, &argc, argv, config_file) < 0)
 		goto out;
+
+	free(config_file);
 
 	for (i = 1; i < argc; i++)
 		weston_log("fatal: unhandled option: %s\n", argv[i]);
