@@ -5,6 +5,7 @@
 #include "chrome/browser/webdata/web_data_service.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/threading/thread.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/browser/webdata/autocomplete_syncable_service.h"
@@ -88,6 +90,7 @@ WebDataService::WebDataService()
   // WebDataService requires DB thread if instantiated.
   // Set WebDataServiceFactory::GetInstance()->SetTestingFactory(&profile, NULL)
   // if you do not want to instantiate WebDataService in your test.
+  DCHECK(!ProfileManager::IsImportProcess(*CommandLine::ForCurrentProcess()));
   DCHECK(BrowserThread::IsWellKnownThread(BrowserThread::DB));
 }
 

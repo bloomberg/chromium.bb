@@ -17,6 +17,7 @@
 #include "chrome/browser/policy/user_cloud_policy_manager_factory.h"
 #include "chrome/browser/policy/user_info_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service.h"
@@ -227,8 +228,11 @@ void CloudPolicyClientRegistrationHelper::OnClientError(
 UserPolicySigninService::UserPolicySigninService(
     Profile* profile)
     : profile_(profile) {
-  if (profile_->GetPrefs()->GetBoolean(prefs::kDisableCloudPolicyOnSignin))
+  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  if (profile_->GetPrefs()->GetBoolean(prefs::kDisableCloudPolicyOnSignin) ||
+      ProfileManager::IsImportProcess(*cmd_line)) {
     return;
+  }
 
   // Initialize/shutdown the UserCloudPolicyManager when the user signs out.
   registrar_.Add(this,
