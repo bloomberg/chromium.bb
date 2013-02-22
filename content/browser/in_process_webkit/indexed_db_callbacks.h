@@ -75,11 +75,11 @@ class IndexedDBCallbacksDatabase : public IndexedDBCallbacksBase {
 };
 
 // WebIDBCursor uses:
-// * onSuccess(WebIDBCursor*, WebIDBKey, WebIDBKey, SerializedScriptValue)
+// * onSuccess(WebIDBCursor*, WebIDBKey, WebIDBKey, WebData)
 //   when an openCursor()/openKeyCursor() call has succeeded,
-// * onSuccess(WebIDBKey, WebIDBKey, SerializedScriptValue)
+// * onSuccess(WebIDBKey, WebIDBKey, WebData)
 //   when an advance()/continue() call has succeeded, or
-// * onSuccess(SerializedScriptValue::nullValue())
+// * onSuccess()
 //   to indicate it does not contain any data, i.e., there is no key within
 //   the key range, or it has reached the end.
 template <>
@@ -93,19 +93,6 @@ class IndexedDBCallbacks<WebKit::WebIDBCursor>
       int32 ipc_cursor_id)
       : IndexedDBCallbacksBase(dispatcher_host, ipc_thread_id, ipc_response_id),
         ipc_cursor_id_(ipc_cursor_id) { }
-
-  virtual void onSuccess(WebKit::WebIDBCursor* idb_object,
-                         const WebKit::WebIDBKey& key,
-                         const WebKit::WebIDBKey& primaryKey,
-                         const WebKit::WebSerializedScriptValue& value);
-  virtual void onSuccess(const WebKit::WebIDBKey& key,
-                         const WebKit::WebIDBKey& primaryKey,
-                         const WebKit::WebSerializedScriptValue& value);
-  virtual void onSuccess(const WebKit::WebSerializedScriptValue& value);
-  virtual void onSuccessWithPrefetch(
-      const WebKit::WebVector<WebKit::WebIDBKey>& keys,
-      const WebKit::WebVector<WebKit::WebIDBKey>& primaryKeys,
-      const WebKit::WebVector<WebKit::WebSerializedScriptValue>& values);
 
   virtual void onSuccess(WebKit::WebIDBCursor* idb_object,
                          const WebKit::WebIDBKey& key,
@@ -180,10 +167,6 @@ class IndexedDBCallbacks<WebKit::WebData>
       : IndexedDBCallbacksBase(dispatcher_host, ipc_thread_id,
                                ipc_response_id) { }
 
-  virtual void onSuccess(const WebKit::WebSerializedScriptValue& value);
-  virtual void onSuccess(const WebKit::WebSerializedScriptValue& value,
-                         const WebKit::WebIDBKey& key,
-                         const WebKit::WebIDBKeyPath& keyPath);
   virtual void onSuccess(const WebKit::WebData& value);
   virtual void onSuccess(const WebKit::WebData& value,
                          const WebKit::WebIDBKey& key,

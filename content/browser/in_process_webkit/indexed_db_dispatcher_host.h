@@ -41,7 +41,6 @@ class IndexedDBContextImpl;
 class IndexedDBKey;
 class IndexedDBKeyPath;
 class IndexedDBKeyRange;
-class SerializedScriptValue;
 
 // Handles all IndexedDB related messages from a particular renderer process.
 class IndexedDBDispatcherHost : public BrowserMessageFilter {
@@ -172,10 +171,6 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     bool OnMessageReceived(const IPC::Message& message, bool *msg_is_ok);
     void Send(IPC::Message* message);
 
-    void OnUpdate(int32 ipc_object_store_id,
-                  int32 ipc_thread_id,
-                  int32 ipc_response_id,
-                  const SerializedScriptValue& value);
     void OnAdvance(int32 ipc_object_store_id,
                    int32 ipc_thread_id,
                    int32 ipc_response_id,

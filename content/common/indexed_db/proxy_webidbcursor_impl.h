@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "content/common/indexed_db/indexed_db_key.h"
-#include "content/public/common/serialized_script_value.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCursor.h"
@@ -33,17 +32,12 @@ class RendererWebIDBCursorImpl : public WebKit::WebIDBCursor {
                               WebKit::WebExceptionCode& ec);
   virtual void postSuccessHandlerCallback();
 
-  void SetPrefetchDataOld(
-      const std::vector<IndexedDBKey>& keys,
-      const std::vector<IndexedDBKey>& primary_keys,
-      const std::vector<SerializedScriptValue>& values);
   void SetPrefetchData(
       const std::vector<IndexedDBKey>& keys,
       const std::vector<IndexedDBKey>& primary_keys,
       const std::vector<WebKit::WebData>& values);
 
   void CachedContinue(WebKit::WebIDBCallbacks* callbacks);
-  void CachedContinueOld(WebKit::WebIDBCallbacks* callbacks);
   void ResetPrefetchCache();
 
  private:

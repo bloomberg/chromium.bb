@@ -7,51 +7,13 @@
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
-#include "content/public/common/serialized_script_value.h"
 #include "ipc/ipc_message_utils.h"
 
 using content::IndexedDBKey;
 using content::IndexedDBKeyPath;
 using content::IndexedDBKeyRange;
-using content::SerializedScriptValue;
 
 namespace IPC {
-
-void ParamTraits<SerializedScriptValue>::Write(Message* m,
-                                               const param_type& p) {
-  WriteParam(m, p.is_null());
-  WriteParam(m, p.is_invalid());
-  WriteParam(m, p.data());
-}
-
-bool ParamTraits<SerializedScriptValue>::Read(const Message* m,
-                                              PickleIterator* iter,
-                                              param_type* r) {
-  bool is_null;
-  bool is_invalid;
-  string16 data;
-  bool ok =
-      ReadParam(m, iter, &is_null) &&
-      ReadParam(m, iter, &is_invalid) &&
-      ReadParam(m, iter, &data);
-  if (!ok)
-  return false;
-  r->set_is_null(is_null);
-  r->set_is_invalid(is_invalid);
-  r->set_data(data);
-  return true;
-}
-
-void ParamTraits<SerializedScriptValue>::Log(const param_type& p,
-                                             std::string* l) {
-  l->append("<SerializedScriptValue>(");
-  LogParam(p.is_null(), l);
-  l->append(", ");
-  LogParam(p.is_invalid(), l);
-  l->append(", ");
-  LogParam(p.data(), l);
-  l->append(")");
-}
 
 void ParamTraits<IndexedDBKey>::Write(Message* m,
                                       const param_type& p) {

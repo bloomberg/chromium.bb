@@ -9,13 +9,11 @@
 #include "content/common/child_thread.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "content/common/indexed_db/indexed_db_dispatcher.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
 
 using WebKit::WebData;
 using WebKit::WebExceptionCode;
 using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBKey;
-using WebKit::WebSerializedScriptValue;
 
 namespace content {
 
@@ -67,9 +65,7 @@ void RendererWebIDBCursorImpl::continueFunction(const WebIDBKey& key,
       return;
     }
 
-    // TODO(alecflett): Reenable prefetching after
-    // https://bugs.webkit.org/show_bug.cgi?id=110398 lands.
-    if (false && continue_count_ > kPrefetchContinueThreshold) {
+    if (continue_count_ > kPrefetchContinueThreshold) {
       // Request pre-fetch.
       dispatcher->RequestIDBCursorPrefetch(prefetch_amount_,
                                            callbacks.release(),
@@ -112,13 +108,6 @@ void RendererWebIDBCursorImpl::postSuccessHandlerCallback() {
     ResetPrefetchCache();
 }
 
-void RendererWebIDBCursorImpl::SetPrefetchDataOld(
-    const std::vector<IndexedDBKey>& keys,
-    const std::vector<IndexedDBKey>& primary_keys,
-    const std::vector<SerializedScriptValue>& values) {
-  NOTIMPLEMENTED();
-}
-
 void RendererWebIDBCursorImpl::SetPrefetchData(
     const std::vector<IndexedDBKey>& keys,
     const std::vector<IndexedDBKey>& primary_keys,
@@ -129,34 +118,6 @@ void RendererWebIDBCursorImpl::SetPrefetchData(
 
   used_prefetches_ = 0;
   pending_onsuccess_callbacks_ = 0;
-}
-
-void RendererWebIDBCursorImpl::CachedContinueOld(
-    WebKit::WebIDBCallbacks* callbacks) {
-  DCHECK_GT(prefetch_keys_.size(), 0ul);
-  DCHECK(prefetch_primary_keys_.size() == prefetch_keys_.size());
-  DCHECK(prefetch_values_.size() == prefetch_keys_.size());
-
-  IndexedDBKey key = prefetch_keys_.front();
-  IndexedDBKey primary_key = prefetch_primary_keys_.front();
-  // These casts are temporary as part of a refactoring.
-  // See https://code.google.com/p/chromium/issues/detail?id=156247
-  WebData prefetch_value = prefetch_values_.front();
-  string16 prefetch_string(
-      reinterpret_cast<string16::const_pointer>(prefetch_value.data()),
-      reinterpret_cast<string16::const_pointer>(prefetch_value.data() +
-                                                prefetch_value.size()));
-  SerializedScriptValue value(false, false, prefetch_string);
-
-  prefetch_keys_.pop_front();
-  prefetch_primary_keys_.pop_front();
-  prefetch_values_.pop_front();
-  used_prefetches_++;
-
-  pending_onsuccess_callbacks_++;
-
-  callbacks->onSuccess(key, primary_key,
-                       WebSerializedScriptValue(value));
 }
 
 void RendererWebIDBCursorImpl::CachedContinue(

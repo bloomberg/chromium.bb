@@ -6,7 +6,6 @@
 #include "base/values.h"
 #include "content/common/indexed_db/indexed_db_dispatcher.h"
 #include "content/common/indexed_db/indexed_db_key.h"
-#include "content/public/common/serialized_script_value.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebExceptionCode.h"

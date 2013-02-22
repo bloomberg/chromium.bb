@@ -20,11 +20,8 @@
 #include "webkit/glue/worker_task_runner.h"
 
 struct IndexedDBDatabaseMetadata;
-struct IndexedDBMsg_CallbacksSuccessCursorContinueOld_Params;
 struct IndexedDBMsg_CallbacksSuccessCursorContinue_Params;
-struct IndexedDBMsg_CallbacksSuccessCursorPrefetchOld_Params;
 struct IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params;
-struct IndexedDBMsg_CallbacksSuccessIDBCursorOld_Params;
 struct IndexedDBMsg_CallbacksSuccessIDBCursor_Params;
 
 namespace WebKit {
@@ -38,7 +35,6 @@ class IndexedDBKeyPath;
 class IndexedDBKeyRange;
 class RendererWebIDBCursorImpl;
 class RendererWebIDBDatabaseImpl;
-class SerializedScriptValue;
 
 CONTENT_EXPORT extern const size_t kMaxIDBValueSizeInBytes;
 
@@ -207,16 +203,10 @@ class CONTENT_EXPORT IndexedDBDispatcher
                              int32 ipc_response_id,
                              const IndexedDBKey& key);
 
-  void OnSuccessOpenCursorOld(
-      const IndexedDBMsg_CallbacksSuccessIDBCursorOld_Params& p);
   void OnSuccessOpenCursor(
       const IndexedDBMsg_CallbacksSuccessIDBCursor_Params& p);
-  void OnSuccessCursorContinueOld(
-      const IndexedDBMsg_CallbacksSuccessCursorContinueOld_Params& p);
   void OnSuccessCursorContinue(
       const IndexedDBMsg_CallbacksSuccessCursorContinue_Params& p);
-  void OnSuccessCursorPrefetchOld(
-      const IndexedDBMsg_CallbacksSuccessCursorPrefetchOld_Params& p);
   void OnSuccessCursorPrefetch(
       const IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params& p);
   void OnSuccessStringList(int32 ipc_thread_id,
@@ -226,16 +216,6 @@ class CONTENT_EXPORT IndexedDBDispatcher
       int32 ipc_thread_id,
       int32 ipc_response_id,
       const std::vector<char>& value);
-  void OnSuccessSerializedScriptValue(
-      int32 ipc_thread_id,
-      int32 ipc_response_id,
-      const SerializedScriptValue& value);
-  void OnSuccessSerializedScriptValueWithKey(
-      int32 ipc_thread_id,
-      int32 ipc_response_id,
-      const SerializedScriptValue& value,
-      const IndexedDBKey& primary_key,
-      const IndexedDBKeyPath& key_path);
   void OnSuccessValueWithKey(
       int32 ipc_thread_id,
       int32 ipc_response_id,

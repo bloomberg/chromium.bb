@@ -7,7 +7,6 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
-#include "content/public/common/serialized_script_value.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebData.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
