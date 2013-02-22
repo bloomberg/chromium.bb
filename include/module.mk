@@ -10,3 +10,7 @@ install-header: CC_LIBRARY(src/libevdev.so.0)
 		install -D -m 0644 $(SRC)/include/libevdev/$$h \
 			$(DESTDIR)/usr/include/libevdev/$$h; \
 	done
+
+
+setup-header-in-place:
+	ln -sfn $(SRC)/include/libevdev /usr/include/libevdev

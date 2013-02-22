@@ -28,15 +28,17 @@
 #define EVIOCSCLOCKID  _IOW('E', 0xa0, int)
 #endif
 
+static int EvdevWriteBitmask(FILE* fp, const char* name,
+                             unsigned long* bitmask, size_t num_bytes);
+static int EvdevReadBitmask(FILE* fp, const char* expected_name,
+                            unsigned long* bitmask, size_t num_bytes);
+
+#ifndef EVDEV_HOLLOW
+
 static void Absinfo_Print(EvdevPtr device, struct input_absinfo*);
 static const char* Event_Property_To_String(int type);
 static EvdevClass EvdevProbeClass(EvdevInfoPtr info);
 static const char* EvdevClassToString(EvdevClass cls);
-static int EvdevWriteBitmask(FILE* fp, const char* name,
-                              unsigned long* bitmask, size_t num_bytes);
-static int EvdevReadBitmask(FILE* fp, const char* expected_name,
-                              unsigned long* bitmask, size_t num_bytes);
-#ifndef EVDEV_HOLLOW
 
 int EvdevOpen(EvdevPtr evdev, const char* device) {
   evdev->fd = open(device, O_RDWR | O_NONBLOCK, 0);
@@ -434,6 +436,8 @@ static int EvdevWriteBitmask(FILE* fp, const char* name,
   return ret;
 }
 
+#ifndef EVDEV_HOLLOW
+
 static const char*
 Event_Property_To_String(int type) {
     switch (type) {
@@ -514,3 +518,5 @@ static const char* EvdevClassToString(EvdevClass cls) {
   }
   return "Unhandled Evdev Class";
 }
+
+#endif // #ifndef EVDEV_HOLLOW
