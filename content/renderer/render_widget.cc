@@ -774,6 +774,7 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
     // Canvas could contain multiple update rects. Clip to given rect so that
     // we don't accidentally clear other update rects.
     canvas->save();
+    canvas->scale(device_scale_factor_, device_scale_factor_);
     canvas->clipRect(gfx::RectToSkRect(rect));
     canvas->drawPaint(paint);
     canvas->restore();
