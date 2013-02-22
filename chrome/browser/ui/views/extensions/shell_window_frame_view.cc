@@ -31,6 +31,9 @@
 #include "ash/ash_constants.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "ui/aura/env.h"
+#endif
+
+#if defined(USE_AURA)
 #include "ui/aura/window.h"
 #endif
 
@@ -104,23 +107,29 @@ void ShellWindowFrameView::Init(views::Widget* frame) {
     AddChildView(minimize_button_);
   }
 
-#if defined(USE_ASH)
+#if defined(USE_AURA)
+  int resize_inside_bounds_size = kResizeInsideBoundsSize;
   aura::Window* window = frame->GetNativeWindow();
+#if defined(USE_ASH)
   if (chrome::IsNativeWindowInAsh(window)) {
-  // Ensure we get resize cursors for a few pixels outside our bounds.
-  window->SetHitTestBoundsOverrideOuter(
-      gfx::Insets(-ash::kResizeOutsideBoundsSize,
-                  -ash::kResizeOutsideBoundsSize,
-                  -ash::kResizeOutsideBoundsSize,
-                  -ash::kResizeOutsideBoundsSize),
-      ash::kResizeOutsideBoundsScaleForTouch);
+    // Ensure we get resize cursors for a few pixels outside our bounds.
+    window->SetHitTestBoundsOverrideOuter(
+        gfx::Insets(-ash::kResizeOutsideBoundsSize,
+                    -ash::kResizeOutsideBoundsSize,
+                    -ash::kResizeOutsideBoundsSize,
+                    -ash::kResizeOutsideBoundsSize),
+        ash::kResizeOutsideBoundsScaleForTouch);
+
+    // If the window is in ash, the inside area used for resizing will be
+    // smaller due to the fact that outside area is also used for resizing.
+    resize_inside_bounds_size = ash::kResizeInsideBoundsSize;
+  }
+#endif
   // Ensure we get resize cursors just inside our bounds as well.
   // TODO(jeremya): do we need to update these when in fullscreen/maximized?
   window->set_hit_test_bounds_override_inner(
-      gfx::Insets(ash::kResizeInsideBoundsSize, ash::kResizeInsideBoundsSize,
-                    ash::kResizeInsideBoundsSize,
-                    ash::kResizeInsideBoundsSize));
-  }
+      gfx::Insets(resize_inside_bounds_size, resize_inside_bounds_size,
+                  resize_inside_bounds_size, resize_inside_bounds_size));
 #endif
 }
 
@@ -164,16 +173,19 @@ int ShellWindowFrameView::NonClientHitTest(const gfx::Point& point) {
   int resize_area_corner_size = kResizeAreaCornerSize;
 
 #if defined(USE_ASH)
-  gfx::Rect expanded_bounds = bounds();
-  int outside_bounds = ash::kResizeOutsideBoundsSize;
-  if (aura::Env::GetInstance()->is_touch_down())
-    outside_bounds *= ash::kResizeOutsideBoundsScaleForTouch;
-  expanded_bounds.Inset(-outside_bounds, -outside_bounds);
-  if (!expanded_bounds.Contains(point))
-    return HTNOWHERE;
+  aura::Window* window = frame_->GetNativeWindow();
+  if (chrome::IsNativeWindowInAsh(window)) {
+    gfx::Rect expanded_bounds = bounds();
+    int outside_bounds = ash::kResizeOutsideBoundsSize;
+    if (aura::Env::GetInstance()->is_touch_down())
+      outside_bounds *= ash::kResizeOutsideBoundsScaleForTouch;
+    expanded_bounds.Inset(-outside_bounds, -outside_bounds);
+    if (!expanded_bounds.Contains(point))
+      return HTNOWHERE;
 
-  resize_inside_bounds_size = ash::kResizeInsideBoundsSize;
-  resize_area_corner_size = ash::kResizeAreaCornerSize;
+    resize_inside_bounds_size = ash::kResizeInsideBoundsSize;
+    resize_area_corner_size = ash::kResizeAreaCornerSize;
+  }
 #endif
 
   // Check the frame first, as we allow a small area overlapping the contents
