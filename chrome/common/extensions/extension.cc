@@ -603,8 +603,10 @@ bool Extension::ParsePermissions(const char* key,
       // permission is added.
       DCHECK(feature);
       // http://crbug.com/176381
-      if (!feature)
+      if (!feature) {
+        to_remove.push_back(it->id());
         continue;
+      }
 
       Feature::Availability availability =
           feature->IsAvailableToManifest(
