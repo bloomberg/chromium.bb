@@ -205,11 +205,9 @@ void ClearBrowserDataHandler::OnBrowsingDataRemoverDone() {
 }
 
 void ClearBrowserDataHandler::OnBrowsingHistoryPrefChanged() {
-  scoped_ptr<Value> allowed(
-      new base::FundamentalValue(*allow_deleting_browser_history_));
   web_ui()->CallJavascriptFunction(
       "ClearBrowserDataOverlay.updateHistoryCheckboxes",
-      base::FundamentalValue(allowed));
+      base::FundamentalValue(*allow_deleting_browser_history_));
 }
 
 }  // namespace options

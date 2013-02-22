@@ -22,6 +22,9 @@ cr.define('options', function() {
     // Inherit ClearBrowserDataOverlay from OptionsPage.
     __proto__: OptionsPage.prototype,
 
+    // Whether deleting history and downloads is allowed.
+    allowDeletingHistory_: true,
+
     /**
      * Initialize the page.
      */
@@ -71,6 +74,16 @@ cr.define('options', function() {
       }
       $('clear-browser-data-commit').disabled = !isChecked;
     },
+
+    setAllowDeletingHistory: function(allowed) {
+      this.allowDeletingHistory_ = allowed;
+    },
+
+    /** @override */
+    didShowPage: function() {
+      var allowed = ClearBrowserDataOverlay.getInstance().allowDeletingHistory_;
+      ClearBrowserDataOverlay.updateHistoryCheckboxes(allowed);
+    },
   };
 
   //
@@ -88,6 +101,7 @@ cr.define('options', function() {
       $('delete-browsing-history-checkbox').checked = false;
       $('delete-download-history-checkbox').checked = false;
     }
+    ClearBrowserDataOverlay.getInstance().setAllowDeletingHistory(allowed);
   };
 
   ClearBrowserDataOverlay.setClearingState = function(state) {
