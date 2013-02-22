@@ -99,6 +99,11 @@ class UserManagerImpl
   virtual void RemoveObserver(UserManager::Observer* obs) OVERRIDE;
   virtual void NotifyLocalStateChanged() OVERRIDE;
 
+  virtual UserFlow* GetCurrentUserFlow() const OVERRIDE;
+  virtual UserFlow* GetUserFlow(const std::string& email) const OVERRIDE;
+  virtual void SetUserFlow(const std::string& email, UserFlow* flow) OVERRIDE;
+  virtual void ResetUserFlow(const std::string& email) OVERRIDE;
+
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -176,6 +181,9 @@ class UserManagerImpl
   // Notifies observers that merge session state had changed.
   void NotifyMergeSessionStateChanged();
 
+  // Lazily creates default user flow.
+  UserFlow* GetDefaultUserFlow() const;
+
   // Interface to the signed settings store.
   CrosSettings* cros_settings_;
 
@@ -240,6 +248,14 @@ class UserManagerImpl
 
   // Session length limiter.
   scoped_ptr<SessionLengthLimiter> session_length_limiter_;
+
+  typedef std::map<std::string, UserFlow*> FlowMap;
+
+  // Lazy-initialized default flow.
+  mutable scoped_ptr<UserFlow> default_flow_;
+
+  // Specific flows by user e-mail.
+  FlowMap specific_flows_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManagerImpl);
 };

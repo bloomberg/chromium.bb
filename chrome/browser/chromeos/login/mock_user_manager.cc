@@ -6,7 +6,8 @@
 
 namespace chromeos {
 
-MockUserManager::MockUserManager() : user_(NULL) {}
+MockUserManager::MockUserManager() : user_(NULL),
+                                     user_flow_(new DefaultUserFlow()) {}
 
 MockUserManager::~MockUserManager() {
   delete user_;
@@ -28,6 +29,14 @@ UserImageManager* MockUserManager::GetUserImageManager() {
 void MockUserManager::SetLoggedInUser(const std::string& email) {
   delete user_;
   user_ = User::CreateRegularUser(email);
+}
+
+UserFlow* MockUserManager::GetCurrentUserFlow() const {
+  return user_flow_.get();
+}
+
+UserFlow* MockUserManager::GetUserFlow(const std::string&) const {
+  return user_flow_.get();
 }
 
 ScopedMockUserManagerEnabler::ScopedMockUserManagerEnabler() {
