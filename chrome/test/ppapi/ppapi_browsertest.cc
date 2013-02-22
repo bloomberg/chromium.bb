@@ -57,21 +57,11 @@ using content::RenderViewHost;
       RunTestWithSSLServer(STRIP_PREFIXES(test_name)); \
     }
 
-// Similar macros that test with WebSocket server.
-#define TEST_PPAPI_IN_PROCESS_WITH_WS(test_name) \
-    IN_PROC_BROWSER_TEST_F(PPAPITest, test_name) { \
-      RunTestWithWebSocketServer(STRIP_PREFIXES(test_name)); \
-    }
-#define TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(test_name) \
-    IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, test_name) { \
-      RunTestWithWebSocketServer(STRIP_PREFIXES(test_name)); \
-    }
-
 #if defined(DISABLE_NACL)
 #define TEST_PPAPI_NACL(test_name)
 #define TEST_PPAPI_NACL_DISALLOWED_SOCKETS(test_name)
 #define TEST_PPAPI_NACL_WITH_SSL_SERVER(test_name)
-#define TEST_PPAPI_NACL_WITH_WS(test_name)
+
 #elif defined(ARCH_CPU_ARM_FAMILY)
 // NaCl glibc tests are not included in ARM as there is no glibc support
 // on ARM today.
@@ -88,11 +78,6 @@ using content::RenderViewHost;
 #define TEST_PPAPI_NACL_WITH_SSL_SERVER(test_name) \
     IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
       RunTestWithSSLServer(STRIP_PREFIXES(test_name)); \
-    }
-
-#define TEST_PPAPI_NACL_WITH_WS(test_name) \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
-      RunTestWithWebSocketServer(STRIP_PREFIXES(test_name)); \
     }
 
 #else
@@ -119,15 +104,6 @@ using content::RenderViewHost;
     } \
     IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, test_name) { \
       RunTestWithSSLServer(STRIP_PREFIXES(test_name)); \
-    }
-
-// NaCl based PPAPI tests with WebSocket server
-#define TEST_PPAPI_NACL_WITH_WS(test_name) \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
-      RunTestWithWebSocketServer(STRIP_PREFIXES(test_name)); \
-    } \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, test_name) { \
-      RunTestWithWebSocketServer(STRIP_PREFIXES(test_name)); \
     }
 
 #endif
@@ -768,10 +744,9 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, WebSocket) {
 }
 
 // NaClGLibc WebSocket tests
-// GLibc tests are currently disabled on Windows: http://crbug.com/162094.
 // NaCl glibc tests are not included in ARM as there is no glibc support
 // on ARM today.
-#if defined(OS_WIN) || defined(ARCH_CPU_ARM_FAMILY)
+#if defined(ARCH_CPU_ARM_FAMILY)
 #define MAYBE_GLIBC_WebSocket DISABLED_WebSocket
 #else
 #define MAYBE_GLIBC_WebSocket WebSocket
@@ -808,15 +783,44 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC_WebSocket) {
       LIST_TEST(WebSocket_UtilityBufferedAmount));
 }
 
-TEST_PPAPI_IN_PROCESS(AudioConfig_RecommendSampleRate)
-TEST_PPAPI_IN_PROCESS(AudioConfig_ValidConfigs)
-TEST_PPAPI_IN_PROCESS(AudioConfig_InvalidConfigs)
-TEST_PPAPI_OUT_OF_PROCESS(AudioConfig_RecommendSampleRate)
-TEST_PPAPI_OUT_OF_PROCESS(AudioConfig_ValidConfigs)
-TEST_PPAPI_OUT_OF_PROCESS(AudioConfig_InvalidConfigs)
-TEST_PPAPI_NACL(AudioConfig_RecommendSampleRate)
-TEST_PPAPI_NACL(AudioConfig_ValidConfigs)
-TEST_PPAPI_NACL(AudioConfig_InvalidConfigs)
+// In-process AudioConfig tests
+IN_PROC_BROWSER_TEST_F(PPAPITest, AudioConfig) {
+  RunTest(
+      LIST_TEST(AudioConfig_RecommendSampleRate)
+      LIST_TEST(AudioConfig_ValidConfigs)
+      LIST_TEST(AudioConfig_InvalidConfigs));
+}
+
+// Out-of-process AudioConfig tests
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, AudioConfig) {
+  RunTest(
+      LIST_TEST(AudioConfig_RecommendSampleRate)
+      LIST_TEST(AudioConfig_ValidConfigs)
+      LIST_TEST(AudioConfig_InvalidConfigs));
+}
+
+// NaClNewlib AudioConfig tests
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, AudioConfig) {
+  RunTestViaHTTP(
+      LIST_TEST(AudioConfig_RecommendSampleRate)
+      LIST_TEST(AudioConfig_ValidConfigs)
+      LIST_TEST(AudioConfig_InvalidConfigs));
+}
+
+// NaClGLibc AudioConfig tests
+// NaCl glibc tests are not included in ARM as there is no glibc support
+// on ARM today.
+#if defined(ARCH_CPU_ARM_FAMILY)
+#define MAYBE_GLIBC_AudioConfig DISABLED_AudioConfig
+#else
+#define MAYBE_GLIBC_AudioConfig AudioConfig
+#endif
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC_AudioConfig) {
+  RunTestViaHTTP(
+      LIST_TEST(AudioConfig_RecommendSampleRate)
+      LIST_TEST(AudioConfig_ValidConfigs)
+      LIST_TEST(AudioConfig_InvalidConfigs));
+}
 
 // Only run audio output tests if we have an audio device available.
 // TODO(raymes): We should probably test scenarios where there is no audio
