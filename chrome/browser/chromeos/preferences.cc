@@ -25,7 +25,6 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/system/drm_settings.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
-#include "chrome/browser/chromeos/system/power_manager_settings.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/prefs/pref_registry_syncable.h"
@@ -714,12 +713,6 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
           language_prefs::kMozcIntegerPrefs[i].ibus_config_name,
           mozc_integer_prefs_[i].GetValue());
     }
-  }
-
-  // Init or update power manager config.
-  if (!pref_name || *pref_name == prefs::kEnableScreenLock) {
-    system::power_manager_settings::EnableScreenLock(
-        enable_screen_lock_.GetValue());
   }
 
   // Init or update protected content (DRM) support.

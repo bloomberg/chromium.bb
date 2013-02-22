@@ -621,8 +621,6 @@
         'browser/chromeos/system/name_value_pairs_parser.h',
         'browser/chromeos/system/pointer_device_observer.cc',
         'browser/chromeos/system/pointer_device_observer.h',
-        'browser/chromeos/system/power_manager_settings.cc',
-        'browser/chromeos/system/power_manager_settings.h',
         'browser/chromeos/system/statistics_provider.cc',
         'browser/chromeos/system/statistics_provider.h',
         'browser/chromeos/system/syslogs_provider.cc',
