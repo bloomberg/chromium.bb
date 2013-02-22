@@ -56,10 +56,6 @@ class WebCompositorSupportImpl : public WebKit::WebCompositorSupport {
   virtual WebKit::WebTransformOperations*
     createTransformOperations();
 
-  virtual WebKit::WebLayerTreeView* createLayerTreeView(
-      WebKit::WebLayerTreeViewClient* client, const WebKit::WebLayer& root,
-      const WebKit::WebLayerTreeView::Settings& settings);
-
   scoped_refptr<base::MessageLoopProxy> impl_thread_message_loop_proxy() {
     return impl_thread_message_loop_proxy_;
   }

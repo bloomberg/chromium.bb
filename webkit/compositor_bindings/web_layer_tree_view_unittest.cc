@@ -14,7 +14,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebThread.h"
 #include "webkit/compositor_bindings/test/web_layer_tree_view_test_common.h"
 #include "webkit/compositor_bindings/web_layer_impl.h"
-#include "webkit/compositor_bindings/web_layer_tree_view_impl.h"
+#include "webkit/compositor_bindings/web_layer_tree_view_impl_for_testing.h"
 
 using namespace WebKit;
 using testing::Mock;
@@ -41,13 +41,13 @@ public:
     {
         initializeCompositor();
         m_rootLayer.reset(new WebLayerImpl);
-        m_view.reset(new WebLayerTreeViewImpl(client()));
+        m_view.reset(new WebLayerTreeViewImplForTesting(
+            WebLayerTreeViewImplForTesting::FAKE_CONTEXT, client()));
         scoped_ptr<cc::Thread> implCCThread(NULL);
         if (m_implThread)
             implCCThread = cc::ThreadImpl::createForDifferentThread(
                 m_implThread->message_loop_proxy());
-        ASSERT_TRUE(m_view->initialize(WebLayerTreeView::Settings(),
-                                       implCCThread.Pass()));
+        ASSERT_TRUE(m_view->initialize(implCCThread.Pass()));
         m_view->setRootLayer(*m_rootLayer);
         m_view->setSurfaceReady();
     }
@@ -62,7 +62,7 @@ public:
 
 protected:
     scoped_ptr<WebLayer> m_rootLayer;
-    scoped_ptr<WebLayerTreeViewImpl> m_view;
+    scoped_ptr<WebLayerTreeViewImplForTesting> m_view;
     scoped_ptr<base::Thread> m_implThread;
 };
 
@@ -116,28 +116,5 @@ protected:
     MockWebLayerTreeViewClientForThreadedTests m_client;
     base::CancelableClosure m_timeout;
 };
-
-TEST_F(WebLayerTreeViewSingleThreadTest, InstrumentationCallbacks)
-{
-    ::testing::InSequence dummy;
-
-    EXPECT_CALL(m_client, willCommit());
-    EXPECT_CALL(m_client, didCommit());
-    EXPECT_CALL(m_client, didBeginFrame());
-
-    composite();
-}
-
-TEST_F(WebLayerTreeViewThreadedTest, InstrumentationCallbacks)
-{
-    ::testing::InSequence dummy;
-
-    EXPECT_CALL(m_client, willBeginFrame());
-    EXPECT_CALL(m_client, willCommit());
-    EXPECT_CALL(m_client, didCommit());
-    EXPECT_CALL(m_client, didBeginFrame());
-
-    composite();
-}
 
 } // namespace

@@ -20,7 +20,7 @@
 #include "webkit/compositor_bindings/web_content_layer_impl.h"
 #include "webkit/compositor_bindings/web_external_texture_layer_impl.h"
 #include "webkit/compositor_bindings/web_layer_impl.h"
-#include "webkit/compositor_bindings/web_layer_tree_view_impl.h"
+#include "webkit/compositor_bindings/web_layer_tree_view_impl_for_testing.h"
 #include "webkit/compositor_bindings/web_solid_color_layer_impl.h"
 
 using namespace WebKit;
@@ -47,8 +47,9 @@ public:
     {
         m_rootLayer.reset(new WebLayerImpl);
         EXPECT_CALL(m_client, scheduleComposite()).Times(AnyNumber());
-        m_view.reset(new WebLayerTreeViewImpl(&m_client));
-        EXPECT_TRUE(m_view->initialize(WebLayerTreeView::Settings(), scoped_ptr<cc::Thread>(NULL)));
+        m_view.reset(new WebLayerTreeViewImplForTesting(
+            WebLayerTreeViewImplForTesting::FAKE_CONTEXT, &m_client));
+        EXPECT_TRUE(m_view->initialize(scoped_ptr<cc::Thread>(NULL)));
         m_view->setRootLayer(*m_rootLayer);
         EXPECT_TRUE(m_view);
         Mock::VerifyAndClearExpectations(&m_client);
@@ -65,7 +66,7 @@ public:
 protected:
     MockWebLayerTreeViewClient m_client;
     scoped_ptr<WebLayer> m_rootLayer;
-    scoped_ptr<WebLayerTreeViewImpl> m_view;
+    scoped_ptr<WebLayerTreeViewImplForTesting> m_view;
 };
 
 // Tests that the client gets called to ask for a composite if we change the

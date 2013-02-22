@@ -32,7 +32,6 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/vector2d.h"
 #include "ui/surface/transport_dib.h"
-#include "webkit/compositor_bindings/web_layer_tree_view_impl.h"
 #include "webkit/glue/webcursor.h"
 
 struct ViewHostMsg_UpdateRect_Params;

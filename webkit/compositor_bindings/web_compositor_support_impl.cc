@@ -17,7 +17,6 @@
 #include "webkit/compositor_bindings/web_image_layer_impl.h"
 #include "webkit/compositor_bindings/web_io_surface_layer_impl.h"
 #include "webkit/compositor_bindings/web_layer_impl.h"
-#include "webkit/compositor_bindings/web_layer_tree_view_impl.h"
 #include "webkit/compositor_bindings/web_scrollbar_layer_impl.h"
 #include "webkit/compositor_bindings/web_solid_color_layer_impl.h"
 #include "webkit/compositor_bindings/web_transform_animation_curve_impl.h"
@@ -152,22 +151,6 @@ WebTransformAnimationCurve*
 
 WebTransformOperations* WebCompositorSupportImpl::createTransformOperations() {
   return new WebTransformOperationsImpl();
-}
-
-WebLayerTreeView* WebCompositorSupportImpl::createLayerTreeView(
-    WebLayerTreeViewClient* client, const WebLayer& root,
-    const WebLayerTreeView::Settings& settings) {
-  DCHECK(initialized_);
-  scoped_ptr<WebKit::WebLayerTreeViewImpl> layerTreeViewImpl(
-      new WebKit::WebLayerTreeViewImpl(client));
-  scoped_ptr<cc::Thread> impl_thread;
-  if (impl_thread_message_loop_proxy_)
-    impl_thread = cc::ThreadImpl::createForDifferentThread(
-        impl_thread_message_loop_proxy_);
-  if (!layerTreeViewImpl->initialize(settings, impl_thread.Pass()))
-    return NULL;
-  layerTreeViewImpl->setRootLayer(root);
-  return layerTreeViewImpl.release();
 }
 
 }  // namespace webkit
