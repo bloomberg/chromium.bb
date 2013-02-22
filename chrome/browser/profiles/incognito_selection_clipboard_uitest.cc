@@ -60,13 +60,15 @@ class IncognitoSelectionClipboardTest : public InProcessBrowserTest {
 // The test is executed on Linux only because it's the only OS with the
 // selection clipboard.
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
-// This test is flaky. See http://crbug.com/177140
 IN_PROC_BROWSER_TEST_F(IncognitoSelectionClipboardTest,
-                       DISABLED_ClearContentDataOnSelect) {
+                       ClearContentDataOnSelect) {
   EXPECT_FALSE(browser()->profile()->IsOffTheRecord());
   Browser* browser_incognito = CreateIncognitoBrowser();
-  ui_test_utils::NavigateToURL(browser_incognito, GURL("data:text/plain,foo"));
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser_incognito));
+  ui_test_utils::NavigateToURL(browser_incognito, GURL("data:text/plain,foo"));
+  ui_test_utils::ClickOnView(browser_incognito, VIEW_ID_TAB_CONTAINER);
+  ASSERT_TRUE(ui_test_utils::IsViewFocused(browser_incognito,
+                                           VIEW_ID_TAB_CONTAINER));
   // Select web-page content.
   ASSERT_NO_FATAL_FAILURE(SendKeyForBrowser(browser_incognito,
                                             ui::VKEY_A,
