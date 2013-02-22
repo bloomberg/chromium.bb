@@ -131,7 +131,8 @@ def expand_symlinks(indir, relfile):
     return relfile, []
 
   filepath = os.path.join(indir, relfile)
-  assert filepath == trace_inputs.get_native_path_case(filepath)
+  native_filepath = trace_inputs.get_native_path_case(filepath)
+  assert filepath == native_filepath, (filepath, native_filepath)
 
   is_directory = relfile.endswith(os.path.sep)
   done = indir
