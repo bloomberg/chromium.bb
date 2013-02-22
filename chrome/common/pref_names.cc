@@ -1078,6 +1078,11 @@ const char kDefaultZoomLevel[] = "profile.default_zoom_level";
 // be displayed at the default zoom level.
 const char kPerHostZoomLevels[] = "profile.per_host_zoom_levels";
 
+// Whether a user opted out of making purchases with Google Wallet; changed via
+// the autofill dialog's account chooser and set explicitly on dialog submission
+// (but not cancel). If this isn't set, the dialog assumes it's the first run.
+const char kAutofillDialogPayWithoutWallet[] = "autofill.pay_without_wallet";
+
 // Boolean that is true if Autofill is enabled and allowed to save profile data.
 const char kAutofillEnabled[] = "autofill.enabled";
 

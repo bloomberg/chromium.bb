@@ -25,6 +25,7 @@
 #include "chrome/browser/autofill/wallet/wallet_items.h"
 #include "chrome/browser/autofill/wallet/wallet_service_url.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/browser/ui/autofill/data_model_wrapper.h"
@@ -35,6 +36,7 @@
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/form_data.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -53,6 +55,8 @@
 namespace autofill {
 
 namespace {
+
+const bool kPayWithoutWalletDefault = false;
 
 // Returns true if |input| should be shown when |field| has been requested.
 bool InputTypeMatchesFieldType(const DetailInput& input,
@@ -185,6 +189,12 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
   // TODO(estade): |this| should observe PersonalDataManager.
   // TODO(estade): remove duplicates from |form|?
 
+  pref_change_registrar_.Init(profile_->GetPrefs());
+  pref_change_registrar_.Add(
+      prefs::kAutofillDialogPayWithoutWallet,
+      base::Bind(&AutofillDialogControllerImpl::PrefChanged,
+                 base::Unretained(this)));
+
   content::NavigationEntry* entry = contents->GetController().GetActiveEntry();
   const GURL& active_url = entry ? entry->GetURL() : web_contents()->GetURL();
   invoked_from_same_origin_ = active_url.GetOrigin() == source_url_.GetOrigin();
@@ -193,6 +203,14 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
 AutofillDialogControllerImpl::~AutofillDialogControllerImpl() {
   if (popup_controller_)
     popup_controller_->Hide();
+}
+
+// static
+void AutofillDialogControllerImpl::RegisterUserPrefs(
+    PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kAutofillDialogPayWithoutWallet,
+                                kPayWithoutWalletDefault,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 void AutofillDialogControllerImpl::Show() {
@@ -369,7 +387,11 @@ DialogSignedInState AutofillDialogControllerImpl::SignedInState() const {
 }
 
 bool AutofillDialogControllerImpl::CanPayWithWallet() const {
-  return !had_wallet_error_;
+  if (had_wallet_error_)
+    return false;
+
+  PrefService* prefs = profile_->GetPrefs();
+  return !prefs->GetBoolean(prefs::kAutofillDialogPayWithoutWallet);
 }
 
 string16 AutofillDialogControllerImpl::AccountChooserText() const {
@@ -687,6 +709,17 @@ void AutofillDialogControllerImpl::ViewClosed(DialogAction action) {
     } else {
       FillOutputForSection(SECTION_SHIPPING);
     }
+
+    if (IsFirstRun()) {
+      // Remove this listener manually before changing the pref.
+      pref_change_registrar_.Remove(prefs::kAutofillDialogPayWithoutWallet);
+
+      // If this pref has never been set, explicitly change it to the default
+      // value so that |IsFirstRun()| returns false on next run of the dialog.
+      profile_->GetPrefs()->SetBoolean(prefs::kAutofillDialogPayWithoutWallet,
+                                       kPayWithoutWalletDefault);
+    }
+
     callback_.Run(&form_structure_);
   } else {
     callback_.Run(NULL);
@@ -722,8 +755,9 @@ DialogNotification AutofillDialogControllerImpl::CurrentNotification() const {
             IDS_AUTOFILL_DIALOG_SITE_WARNING, UTF8ToUTF16(source_url_.host())));
   }
 
-  if (!CanPayWithWallet()) {
+  if (had_wallet_error_) {
     // TODO(dbeam): pass along the Wallet error or remove from the translation.
+    // TODO(dbeam): figure out a way to dismiss this error after a while.
     return DialogNotification(
         DialogNotification::WALLET_ERROR,
         l10n_util::GetStringFUTF16(
@@ -967,6 +1001,26 @@ void AutofillDialogControllerImpl::WalletRequestCompleted(bool success) {
   }
 
   if (refresh_wallet_items_queued_)
+    ScheduleRefreshWalletItems();
+}
+
+bool AutofillDialogControllerImpl::IsFirstRun() const {
+  PrefService* prefs = profile_->GetPrefs();
+  return !prefs->HasPrefPath(prefs::kAutofillDialogPayWithoutWallet);
+}
+
+void AutofillDialogControllerImpl::PrefChanged(const std::string& pref) {
+  DCHECK(pref == prefs::kAutofillDialogPayWithoutWallet);
+
+  if (!view_)
+    return;
+
+  GenerateSuggestionsModels();
+  view_->ModelChanged();
+  view_->UpdateAccountChooser();
+  view_->UpdateNotificationArea();
+
+  if (CanPayWithWallet() && !wallet_items_)
     ScheduleRefreshWalletItems();
 }
 

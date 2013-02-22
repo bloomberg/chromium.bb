@@ -377,6 +377,7 @@ extern const char kBlockThirdPartyCookies[];
 extern const char kClearSiteDataOnExit[];
 extern const char kDefaultZoomLevel[];
 extern const char kPerHostZoomLevels[];
+extern const char kAutofillDialogPayWithoutWallet[];
 extern const char kAutofillEnabled[];
 extern const char kAutofillAuxiliaryProfilesEnabled[];
 extern const char kAutofillPositiveUploadRate[];

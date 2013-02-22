@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/prefs/public/pref_change_registrar.h"
 #include "base/string16.h"
 #include "base/time.h"
 #include "chrome/browser/autofill/autofill_manager_delegate.h"
@@ -35,6 +36,7 @@
 class AutofillPopupControllerImpl;
 class FormGroup;
 class Profile;
+class PrefRegistrySyncable;
 
 namespace content {
 class WebContents;
@@ -68,10 +70,10 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
       const base::Callback<void(const FormStructure*)>& callback);
   virtual ~AutofillDialogControllerImpl();
 
+  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+
   void Show();
   void Hide();
-
-  DialogType dialog_type() const { return dialog_type_; }
 
   // Updates the progress bar based on the Autocheckout progress. |value| should
   // be in [0.0, 1.0].
@@ -160,6 +162,8 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // PersonalDataManagerObserver implementation.
   virtual void OnPersonalDataChanged() OVERRIDE;
 
+  DialogType dialog_type() const { return dialog_type_; }
+
  protected:
   // Exposed for testing.
   AutofillDialogView* view() { return view_.get(); }
@@ -183,6 +187,12 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
 
   // Convenience method to tell whether we need to address |action|.
   bool HasRequiredAction(wallet::RequiredAction action) const;
+
+  // Whether the user has ever seen this dialog before. Cancels don't count.
+  bool IsFirstRun() const;
+
+  // A callback for pref changes, used by |pref_change_registrar_|.
+  void PrefChanged(const std::string& pref);
 
   // Initializes |suggested_email_| et al.
   void GenerateSuggestionsModels();
@@ -320,6 +330,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   content::NotificationRegistrar registrar_;
 
   base::WeakPtrFactory<AutofillDialogControllerImpl> weak_ptr_factory_;
+
+  // A PrefChangeRegistrar for tracking prefs useful to this dialog.
+  PrefChangeRegistrar pref_change_registrar_;
 
   // For logging UMA metrics.
   const AutofillMetrics& metric_logger_;

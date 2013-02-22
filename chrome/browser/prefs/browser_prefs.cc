@@ -70,6 +70,7 @@
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/ui/alternate_error_tab_observer.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_controller_impl.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_ui_prefs.h"
 #include "chrome/browser/ui/network_profile_bubble.h"
@@ -263,6 +264,7 @@ void RegisterUserPrefs(PrefService* user_prefs,
 
   // User prefs. Please keep this list alphabetized.
   AlternateErrorPageTabObserver::RegisterUserPrefs(registry);
+  autofill::AutofillDialogControllerImpl::RegisterUserPrefs(registry);
   AutofillManager::RegisterUserPrefs(registry);
   BookmarkPromptPrefs::RegisterUserPrefs(registry);
   bookmark_utils::RegisterUserPrefs(registry);
