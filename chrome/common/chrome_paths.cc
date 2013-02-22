@@ -104,6 +104,12 @@ const base::FilePath::CharType kDefaultAppOrderFileName[] =
 const base::FilePath::CharType kDefaultUserPolicyKeysDir[] =
     FILE_PATH_LITERAL("/var/run/user_policy");
 
+const base::FilePath::CharType kOwnerKeyFileName[] =
+    FILE_PATH_LITERAL("/var/lib/whitelist/owner.key");
+
+const base::FilePath::CharType kInstallAttributesFileName[] =
+    FILE_PATH_LITERAL("/var/run/lockbox/install_attributes.pb");
+
 #endif  // defined(OS_CHROMEOS)
 
 }  // namespace
@@ -412,6 +418,12 @@ bool PathProvider(int key, base::FilePath* result) {
       break;
     case chrome::DIR_USER_POLICY_KEYS:
       cur = base::FilePath(kDefaultUserPolicyKeysDir);
+      break;
+    case chrome::FILE_OWNER_KEY:
+      cur = base::FilePath(kOwnerKeyFileName);
+      break;
+    case chrome::FILE_INSTALL_ATTRIBUTES:
+      cur = base::FilePath(kInstallAttributesFileName);
       break;
 #endif
 #if defined(ENABLE_MANAGED_USERS)

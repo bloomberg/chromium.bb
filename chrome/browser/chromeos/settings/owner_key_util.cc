@@ -8,7 +8,9 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/path_service.h"
 #include "base/stl_util.h"
+#include "chrome/common/chrome_paths.h"
 #include "crypto/rsa_private_key.h"
 
 namespace chromeos {
@@ -17,7 +19,9 @@ namespace chromeos {
 // OwnerKeyUtil
 
 OwnerKeyUtil* OwnerKeyUtil::Create() {
-  return new OwnerKeyUtilImpl(base::FilePath(OwnerKeyUtilImpl::kOwnerKeyFile));
+  base::FilePath owner_key_path;
+  CHECK(PathService::Get(chrome::FILE_OWNER_KEY, &owner_key_path));
+  return new OwnerKeyUtilImpl(owner_key_path);
 }
 
 OwnerKeyUtil::OwnerKeyUtil() {}
@@ -26,9 +30,6 @@ OwnerKeyUtil::~OwnerKeyUtil() {}
 
 ///////////////////////////////////////////////////////////////////////////
 // OwnerKeyUtilImpl
-
-// static
-const char OwnerKeyUtilImpl::kOwnerKeyFile[] = "/var/lib/whitelist/owner.key";
 
 OwnerKeyUtilImpl::OwnerKeyUtilImpl(const base::FilePath& key_file)
     : key_file_(key_file) {}

@@ -75,7 +75,7 @@ void SessionManagerOperation::EnsureOwnerKey(const base::Closure& callback) {
         FROM_HERE,
         base::Bind(&SessionManagerOperation::LoadOwnerKey,
                    owner_key_util_, owner_key_),
-        base::Bind(&SignAndStoreSettingsOperation::StoreOwnerKey,
+        base::Bind(&SessionManagerOperation::StoreOwnerKey,
                    weak_factory_.GetWeakPtr(), callback));
   } else {
     callback.Run();

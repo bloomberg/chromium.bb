@@ -15,44 +15,32 @@
 namespace policy {
 
 namespace {
-// Constants for the possible device modes that can be stored in the lockbox.
-const char kConsumerDeviceMode[] = "consumer";
-const char kEnterpiseDeviceMode[] = "enterprise";
-const char kKioskDeviceMode[] = "kiosk";
-const char kUnknownDeviceMode[] = "unknown";
-
-// Field names in the lockbox.
-const char kAttrEnterpriseDeviceId[] = "enterprise.device_id";
-const char kAttrEnterpriseDomain[] = "enterprise.domain";
-const char kAttrEnterpriseMode[] = "enterprise.mode";
-const char kAttrEnterpriseOwned[] = "enterprise.owned";
-const char kAttrEnterpriseUser[] = "enterprise.user";
 
 // Translates DeviceMode constants to strings used in the lockbox.
 std::string GetDeviceModeString(DeviceMode mode) {
   switch (mode) {
     case DEVICE_MODE_CONSUMER:
-      return kConsumerDeviceMode;
+      return EnterpriseInstallAttributes::kConsumerDeviceMode;
     case DEVICE_MODE_ENTERPRISE:
-      return kEnterpiseDeviceMode;
+      return EnterpriseInstallAttributes::kEnterpiseDeviceMode;
     case DEVICE_MODE_KIOSK:
-      return kKioskDeviceMode;
+      return EnterpriseInstallAttributes::kKioskDeviceMode;
     case DEVICE_MODE_PENDING:
     case DEVICE_MODE_NOT_SET:
       break;
   }
   NOTREACHED() << "Invalid device mode: " << mode;
-  return kUnknownDeviceMode;
+  return EnterpriseInstallAttributes::kUnknownDeviceMode;
 }
 
 // Translates strings used in the lockbox to DeviceMode values.
 DeviceMode GetDeviceModeFromString(
     const std::string& mode) {
-  if (mode == kConsumerDeviceMode)
+  if (mode == EnterpriseInstallAttributes::kConsumerDeviceMode)
     return DEVICE_MODE_CONSUMER;
-  else if (mode == kEnterpiseDeviceMode)
+  else if (mode == EnterpriseInstallAttributes::kEnterpiseDeviceMode)
     return DEVICE_MODE_ENTERPRISE;
-  else if (mode == kKioskDeviceMode)
+  else if (mode == EnterpriseInstallAttributes::kKioskDeviceMode)
     return DEVICE_MODE_KIOSK;
   NOTREACHED() << "Unknown device mode string: " << mode;
   return DEVICE_MODE_NOT_SET;
@@ -71,9 +59,21 @@ bool ReadMapKey(const std::map<std::string, std::string>& map,
 
 }  // namespace
 
-// Cache file name.
-const base::FilePath::CharType EnterpriseInstallAttributes::kCacheFilePath[] =
-    FILE_PATH_LITERAL("/var/run/lockbox/install_attributes.pb");
+const char EnterpriseInstallAttributes::kConsumerDeviceMode[] = "consumer";
+const char EnterpriseInstallAttributes::kEnterpiseDeviceMode[] = "enterprise";
+const char EnterpriseInstallAttributes::kKioskDeviceMode[] = "kiosk";
+const char EnterpriseInstallAttributes::kUnknownDeviceMode[] = "unknown";
+
+const char EnterpriseInstallAttributes::kAttrEnterpriseDeviceId[] =
+    "enterprise.device_id";
+const char EnterpriseInstallAttributes::kAttrEnterpriseDomain[] =
+    "enterprise.domain";
+const char EnterpriseInstallAttributes::kAttrEnterpriseMode[] =
+    "enterprise.mode";
+const char EnterpriseInstallAttributes::kAttrEnterpriseOwned[] =
+    "enterprise.owned";
+const char EnterpriseInstallAttributes::kAttrEnterpriseUser[] =
+    "enterprise.user";
 
 EnterpriseInstallAttributes::EnterpriseInstallAttributes(
     chromeos::CryptohomeLibrary* cryptohome)

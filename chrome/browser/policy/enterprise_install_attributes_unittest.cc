@@ -17,9 +17,6 @@ static const char kTestUser[] = "test@example.com";
 static const char kTestDomain[] = "example.com";
 static const char kTestDeviceId[] = "133750519";
 
-static const char kAttrEnterpriseOwned[] = "enterprise.owned";
-static const char kAttrEnterpriseUser[] = "enterprise.user";
-
 class EnterpriseInstallAttributesTest : public testing::Test {
  protected:
   EnterpriseInstallAttributesTest()
@@ -145,9 +142,10 @@ TEST_F(EnterpriseInstallAttributesTest, DeviceLockedFromOlderVersion) {
   install_attributes_.ReadCacheFile(GetTempPath());
   EXPECT_EQ(DEVICE_MODE_PENDING, install_attributes_.GetMode());
   // Lock the attributes as if it was done from older Chrome version.
-  ASSERT_TRUE(cryptohome_->InstallAttributesSet(kAttrEnterpriseOwned, "true"));
-  ASSERT_TRUE(cryptohome_->InstallAttributesSet(kAttrEnterpriseUser,
-                                                kTestUser));
+  ASSERT_TRUE(cryptohome_->InstallAttributesSet(
+      EnterpriseInstallAttributes::kAttrEnterpriseOwned, "true"));
+  ASSERT_TRUE(cryptohome_->InstallAttributesSet(
+      EnterpriseInstallAttributes::kAttrEnterpriseUser, kTestUser));
   ASSERT_TRUE(cryptohome_->InstallAttributesFinalize());
   install_attributes_.ReadImmutableAttributes();
   ASSERT_FALSE(cryptohome_->InstallAttributesIsFirstInstall());
@@ -159,8 +157,10 @@ TEST_F(EnterpriseInstallAttributesTest, DeviceLockedFromOlderVersion) {
 
 TEST_F(EnterpriseInstallAttributesTest, ReadCacheFile) {
   cryptohome::SerializedInstallAttributes install_attrs_proto;
-  SetAttribute(&install_attrs_proto, kAttrEnterpriseOwned, "true");
-  SetAttribute(&install_attrs_proto, kAttrEnterpriseUser, kTestUser);
+  SetAttribute(&install_attrs_proto,
+               EnterpriseInstallAttributes::kAttrEnterpriseOwned, "true");
+  SetAttribute(&install_attrs_proto,
+               EnterpriseInstallAttributes::kAttrEnterpriseUser, kTestUser);
   const std::string blob(install_attrs_proto.SerializeAsString());
   ASSERT_EQ(static_cast<int>(blob.size()),
             file_util::WriteFile(GetTempPath(), blob.c_str(), blob.size()));

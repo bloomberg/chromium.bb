@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -125,8 +126,9 @@ void BrowserPolicyConnector::Init() {
   chromeos::CryptohomeLibrary* cryptohome =
       chromeos::CrosLibrary::Get()->GetCryptohomeLibrary();
   install_attributes_.reset(new EnterpriseInstallAttributes(cryptohome));
-  install_attributes_->ReadCacheFile(
-      base::FilePath(policy::EnterpriseInstallAttributes::kCacheFilePath));
+  base::FilePath install_attrs_file;
+  CHECK(PathService::Get(chrome::FILE_INSTALL_ATTRIBUTES, &install_attrs_file));
+  install_attributes_->ReadCacheFile(install_attrs_file);
 
   scoped_ptr<DeviceCloudPolicyStoreChromeOS> device_cloud_policy_store(
       new DeviceCloudPolicyStoreChromeOS(
@@ -250,14 +252,14 @@ void BrowserPolicyConnector::InitializeUserPolicy(
   CommandLine* command_line = CommandLine::ForCurrentProcess();
 
   base::FilePath profile_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &profile_dir);
+  CHECK(PathService::Get(chrome::DIR_USER_DATA, &profile_dir));
   profile_dir = profile_dir.Append(
       command_line->GetSwitchValuePath(switches::kLoginProfile));
   const base::FilePath policy_dir = profile_dir.Append(kPolicyDir);
   const base::FilePath policy_cache_file = policy_dir.Append(kPolicyCacheFile);
   const base::FilePath token_cache_file = policy_dir.Append(kTokenCacheFile);
   base::FilePath policy_key_dir;
-  PathService::Get(chrome::DIR_USER_POLICY_KEYS, &policy_key_dir);
+  CHECK(PathService::Get(chrome::DIR_USER_POLICY_KEYS, &policy_key_dir));
 
   if (wait_for_policy_fetch)
     device_management_service_->ScheduleInitialization(0);

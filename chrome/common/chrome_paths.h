@@ -106,6 +106,8 @@ enum {
                                 // default app order.
   DIR_USER_POLICY_KEYS,         // Directory where the session_manager stores
                                 // the user policy keys.
+  FILE_OWNER_KEY,               // Full path to the owner key file.
+  FILE_INSTALL_ATTRIBUTES,      // Full path to the install attributes file.
 #endif
 #if defined(ENABLE_MANAGED_USERS)
   DIR_MANAGED_USERS_DEFAULT_APPS,  // Directory where installer places .crx

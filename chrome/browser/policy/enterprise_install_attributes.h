@@ -31,8 +31,18 @@ class EnterpriseInstallAttributes {
     LOCK_WRONG_USER,
   };
 
-  // Standard cache file name.
-  static const base::FilePath::CharType kCacheFilePath[];
+  // Constants for the possible device modes that can be stored in the lockbox.
+  static const char kConsumerDeviceMode[];
+  static const char kEnterpiseDeviceMode[];
+  static const char kKioskDeviceMode[];
+  static const char kUnknownDeviceMode[];
+
+  // Field names in the lockbox.
+  static const char kAttrEnterpriseDeviceId[];
+  static const char kAttrEnterpriseDomain[];
+  static const char kAttrEnterpriseMode[];
+  static const char kAttrEnterpriseOwned[];
+  static const char kAttrEnterpriseUser[];
 
   explicit EnterpriseInstallAttributes(chromeos::CryptohomeLibrary* cryptohome);
 
