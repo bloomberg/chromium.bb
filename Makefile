@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 OBJDIR = obj
+SRC=$(shell readlink -f .)
 
 # Objects for libgestures
 SO_OBJECTS=\
@@ -123,6 +124,7 @@ CXXFLAGS+=\
 	--coverage \
 	-ftest-coverage \
 	-fprofile-arcs
+LINK_FLAGS+=-lgcov
 else
 CXXFLAGS+=\
 	-DXLOGGING
@@ -176,6 +178,16 @@ install: $(SONAME)
 clean:
 	$(MAKE) -C $(LID_TOUCHPAD_HELPER) clean
 	rm -rf $(OBJDIR) $(DEPDIR) $(TEST_EXE) html app.info app.info.orig
+
+setup-in-place:
+	mkdir -p /usr/include/gestures || true
+	ln -sf $(SRC)/include/gestures.h /usr/include/gestures/gestures.h
+	ln -sf $(SRC)/$(SONAME) $(LIBDIR)/$(SONAME:$(OBJDIR)/%.0=%)
+	ln -sf $(SRC)/$(SONAME) $(LIBDIR)/$(SONAME:$(OBJDIR)/%=%)
+
+in-place: $(SONAME)
+
+clean-in-place: clean
 
 # Unittest coverage
 
