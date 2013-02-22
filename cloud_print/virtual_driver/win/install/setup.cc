@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/file_version_info_win.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process.h"
@@ -214,8 +215,9 @@ DWORDLONG GetVersionNumber() {
 UINT CALLBACK CabinetCallback(PVOID data,
                               UINT notification,
                               UINT_PTR param1,
-                              UINT_PTR param2 ) {
-  base::FilePath* temp_path = reinterpret_cast<base::FilePath*>(data);
+                              UINT_PTR param2) {
+  const base::FilePath* temp_path(
+      reinterpret_cast<const base::FilePath*>(data));
   if (notification == SPFILENOTIFY_FILEINCABINET) {
     FILE_IN_CABINET_INFO* info =
         reinterpret_cast<FILE_IN_CABINET_INFO*>(param1);
@@ -235,7 +237,7 @@ UINT CALLBACK CabinetCallback(PVOID data,
   return NO_ERROR;
 }
 
-void ReadyPpdDependencies(const base::FilePath& install_path) {
+void ReadyPpdDependencies(const base::FilePath& destination) {
   base::win::Version version = base::win::GetVersion();
   if (version >= base::win::VERSION_VISTA) {
     // GetCorePrinterDrivers and GetPrinterDriverPackagePath only exist on
@@ -244,38 +246,26 @@ void ReadyPpdDependencies(const base::FilePath& install_path) {
     DWORD size = MAX_PATH;
     wchar_t package_path[MAX_PATH] = {0};
     CORE_PRINTER_DRIVER driver;
-    GetCorePrinterDrivers(NULL,
-                          NULL,
-                          L"{D20EA372-DD35-4950-9ED8-A6335AFE79F5}",
-                          1,
-                          &driver);
-    GetPrinterDriverPackagePath(NULL,
-                                NULL,
-                                NULL,
-                                driver.szPackageID,
-                                package_path,
-                                MAX_PATH,
-                                &size);
-    SetupIterateCabinet(package_path,
-                        0,
-                        CabinetCallback,
-                        const_cast<base::FilePath*>(&install_path));
+    GetCorePrinterDrivers(NULL, NULL, L"{D20EA372-DD35-4950-9ED8-A6335AFE79F5}",
+                          1, &driver);
+    GetPrinterDriverPackagePath(NULL, NULL, NULL, driver.szPackageID,
+                                package_path, MAX_PATH, &size);
+    SetupIterateCabinet(package_path, 0, &CabinetCallback,
+                        &base::FilePath(destination));
   } else {
     // PS driver files are in the sp3 cab.
     base::FilePath package_path;
     PathService::Get(base::DIR_WINDOWS, &package_path);
     package_path = package_path.Append(L"Driver Cache\\i386\\sp3.cab");
-    SetupIterateCabinet(package_path.value().c_str(),
-                        0,
-                        CabinetCallback,
-                        const_cast<base::FilePath*>(&install_path));
+    SetupIterateCabinet(package_path.value().c_str(), 0, &CabinetCallback,
+                        &base::FilePath(destination));
 
     // The XPS driver files are just sitting uncompressed in the driver cache.
     base::FilePath xps_path;
     PathService::Get(base::DIR_WINDOWS, &xps_path);
     xps_path = xps_path.Append(L"Driver Cache\\i386");
     xps_path = xps_path.Append(kDriverName);
-    file_util::CopyFile(xps_path, install_path.Append(kDriverName));
+    file_util::CopyFile(xps_path, destination.Append(kDriverName));
   }
 }
 
@@ -283,12 +273,17 @@ HRESULT InstallPpd(const base::FilePath& install_path) {
   DRIVER_INFO_6 driver_info = {0};
   HRESULT result = S_OK;
 
+  base::ScopedTempDir temp_path;
+  if (!temp_path.CreateUniqueTempDir())
+    return HRESULT_FROM_WIN32(ERROR_CANNOT_MAKE);
+  ReadyPpdDependencies(temp_path.path());
+
   // Set up paths for the files we depend on.
   base::FilePath ppd_path = install_path.Append(kPpdName);
-  base::FilePath xps_path = install_path.Append(kDriverName);
-  base::FilePath ui_path = install_path.Append(kUiDriverName);
-  base::FilePath ui_help_path = install_path.Append(kHelpName);
-  ReadyPpdDependencies(install_path);
+  base::FilePath xps_path = temp_path.path().Append(kDriverName);
+  base::FilePath ui_path = temp_path.path().Append(kUiDriverName);
+  base::FilePath ui_help_path = temp_path.path().Append(kHelpName);
+
   // None of the print API structures likes constant strings even though they
   // don't modify the string.  const_casting is the cleanest option.
   driver_info.pDataFile = const_cast<LPWSTR>(ppd_path.value().c_str());
@@ -308,10 +303,8 @@ HRESULT InstallPpd(const base::FilePath& install_path) {
   // Set up supported print system version.  Must be 3.
   driver_info.cVersion = 3;
 
-  if (!AddPrinterDriverEx(NULL,
-                          6,
-                          reinterpret_cast<BYTE*>(&driver_info),
-                          APD_COPY_NEW_FILES|APD_COPY_FROM_DIRECTORY)) {
+  if (!AddPrinterDriverEx(NULL, 6, reinterpret_cast<BYTE*>(&driver_info),
+                          APD_COPY_NEW_FILES | APD_COPY_FROM_DIRECTORY)) {
     result = cloud_print::GetLastHResult();
     LOG(ERROR) << "Unable to add printer driver";
   }
