@@ -19,9 +19,9 @@ using base::win::ScopedCOMInitializer;
 
 namespace media {
 
-static const char* kNoDevice = "";
-static const char* kFirstTestDevice = "test_device_0";
-static const char* kSecondTestDevice = "test_device_1";
+static const char kNoDevice[] = "";
+static const char kFirstTestDevice[] = "test_device_0";
+static const char kSecondTestDevice[] = "test_device_1";
 
 class AudioDeviceListenerWinTest : public testing::Test {
  public:

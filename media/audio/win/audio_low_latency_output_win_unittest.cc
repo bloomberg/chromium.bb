@@ -46,7 +46,7 @@ static const size_t kFileDurationMs = 20000;
 static const size_t kNumFileSegments = 2;
 static const int kBitsPerSample = 16;
 static const size_t kMaxDeltaSamples = 1000;
-static const char* kDeltaTimeMsFileName = "delta_times_ms.txt";
+static const char kDeltaTimeMsFileName[] = "delta_times_ms.txt";
 
 MATCHER_P(HasValidDelay, value, "") {
   // It is difficult to come up with a perfect test condition for the delay

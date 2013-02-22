@@ -88,7 +88,7 @@ static const CodecInfo* kAudioMP4Codecs[] = {
 };
 
 // Mimetype codec string that indicates the content contains AAC SBR frames.
-static const char* kSBRCodecId = "mp4a.40.5";
+static const char kSBRCodecId[] = "mp4a.40.5";
 
 static StreamParser* BuildMP4Parser(const std::vector<std::string>& codecs) {
   std::set<int> audio_object_types;

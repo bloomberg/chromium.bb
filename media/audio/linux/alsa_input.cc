@@ -22,7 +22,7 @@ static const int kNumPacketsInRingBuffer = 3;
 static const char kDefaultDevice1[] = "default";
 static const char kDefaultDevice2[] = "plug:default";
 
-const char* AlsaPcmInputStream::kAutoSelectDevice = "";
+const char AlsaPcmInputStream::kAutoSelectDevice[] = "";
 
 AlsaPcmInputStream::AlsaPcmInputStream(AudioManagerLinux* audio_manager,
                                        const std::string& device_name,

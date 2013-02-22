@@ -61,8 +61,8 @@ static const int kAudioTrackNum = 2;
 static const int kAudioBlockDuration = 23;
 static const int kVideoBlockDuration = 33;
 
-static const char* kSourceId = "SourceId";
-static const char* kDefaultFirstClusterRange = "{ [0,46) }";
+static const char kSourceId[] = "SourceId";
+static const char kDefaultFirstClusterRange[] = "{ [0,46) }";
 static const int kDefaultFirstClusterEndTimestamp = 66;
 static const int kDefaultSecondClusterEndTimestamp = 132;
 

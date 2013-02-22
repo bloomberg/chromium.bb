@@ -51,7 +51,7 @@ static const size_t kMaxDelayMeasurements = 1000;
 // Example: \src\build\Debug\audio_delay_values_ms.txt.
 // See comments for the WASAPIAudioInputOutputFullDuplex test for more details
 // about the file format.
-static const char* kDelayValuesFileName = "audio_delay_values_ms.txt";
+static const char kDelayValuesFileName[] = "audio_delay_values_ms.txt";
 
 // Contains delay values which are reported during the full-duplex test.
 // Total delay = |buffer_delay_ms| + |input_delay_ms| + |output_delay_ms|.

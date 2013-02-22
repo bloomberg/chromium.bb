@@ -29,7 +29,7 @@ class AlsaPcmInputStream : public AudioInputStreamImpl {
  public:
   // Pass this to the constructor if you want to attempt auto-selection
   // of the audio recording device.
-  static const char* kAutoSelectDevice;
+  static const char kAutoSelectDevice[];
 
   // Create a PCM Output stream for the ALSA device identified by
   // |device_name|. If unsure of what to use for |device_name|, use
