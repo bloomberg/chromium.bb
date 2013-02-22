@@ -320,9 +320,16 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest,
   EXPECT_EQ(new_tab_url.spec(), web_contents->GetURL().spec());
 }
 
+// Fails flakily (once per 10-20 runs) on Win Aura only. http://crbug.com/177482
+#if defined(OS_WIN)
+#define MAYBE_EscapeCloseConstrainedWindow DISABLED_EscapeCloseConstrainedWindow
+#else
+#define MAYBE_EscapeCloseConstrainedWindow EscapeCloseConstrainedWindow
+#endif
+
 // Tests that escape closes the constrained window.
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest,
-                       EscapeCloseConstrainedWindow) {
+                       MAYBE_EscapeCloseConstrainedWindow) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents != NULL);
