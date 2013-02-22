@@ -477,6 +477,9 @@ sub parselicense($) {
         $license = "BSD-like $license";
     } elsif ($licensetext =~ /BSD terms apply/) {
         $license = "BSD-like $license";
+    } elsif ($licensetext =~ /subject to the BSD License/) {
+        # TODO(sbc): remove this case once we fix: http://crbug.com/177268
+        $license = "BSD-like $license";
     } elsif ($licensetext =~ /GOVERNED BY A BSD-STYLE SOURCE LICENSE/) {
         $license = "BSD-like $license";
     }
