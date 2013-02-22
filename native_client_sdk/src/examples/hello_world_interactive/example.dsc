@@ -14,7 +14,6 @@
   ],
   'DATA': [
     'example.js',
-    'Makefile',
   ],
   'DEST': 'examples',
   'NAME': 'hello_world_interactive',

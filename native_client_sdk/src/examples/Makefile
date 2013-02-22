@@ -7,7 +7,10 @@
 #   http://www.gnu.org/software/make/manual/make.html
 #
 
-__PROJECT_LIST__
+PROJECTS:= \
+[[for project in projects:]]
+  {{project}} \
+[[]]
 
 # Define the default target
 all:
@@ -38,8 +41,6 @@ endef
 
 # Define the various targets via the Macro
 $(foreach proj,$(PROJECTS),$(eval $(call TARGET,$(proj))))
-
-__DEPENDENCIES__
 
 all: $(TARGET_LIST)
 	echo "Done building targets."

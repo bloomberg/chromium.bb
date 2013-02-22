@@ -6,136 +6,96 @@
 # GNU Make based build file.  For details on GNU Make see:
 #   http://www.gnu.org/software/make/manual/make.html
 #
+#
+
+
+#
+# Default configuration
+#
+# By default we will build a Debug configuration using the GCC newlib toolcahin
+# to override this, specify TOOLCHAIN=newlib|glibc or CONFIG=Debug|Release on
+# the make command-line or in this file prior to including common.mk.  The
+# toolchain we use by default will be the first valid one listed
+VALID_TOOLCHAINS:={{' '.join(tools)}}
+
+
+{{pre}}
 
 #
 # Get pepper directory for toolchain and includes.
 #
-# If NACL_SDK_ROOT is not set, then assume it can be found a two directories up,
-# from the default example directory location.
+# If NACL_SDK_ROOT is not set, then assume it can be found relative to
+# to this Makefile.
 #
-THIS_MAKEFILE:=$(abspath $(lastword $(MAKEFILE_LIST)))
-THIS_DIR:=$(abspath $(dir $(THIS_MAKEFILE)))
-NACL_SDK_ROOT?=$(abspath $(dir $(THIS_MAKEFILE))../..)
-CHROME_PATH?=Undefined
-
-#
-# Defaults
-#
-NACL_WARNINGS:=-Wno-long-long -Wall -Wswitch-enum -Werror -pedantic
-
-#
-# Project Settings
-#
-__PROJECT_SETTINGS__
-
-#
-# Default target
-#
-__PROJECT_TARGETS__
-
-#
-# Alias for standard commands
-#
-CP:=python $(NACL_SDK_ROOT)/tools/oshelpers.py cp
-MKDIR:=python $(NACL_SDK_ROOT)/tools/oshelpers.py mkdir
-MV:=python $(NACL_SDK_ROOT)/tools/oshelpers.py mv
-RM:=python $(NACL_SDK_ROOT)/tools/oshelpers.py rm
+NACL_SDK_ROOT?=$(abspath $(CURDIR)/../..)
+include $(NACL_SDK_ROOT)/tools/common.mk
 
 
 #
-# Verify we selected a valid toolchain for this example
+# Target Name
 #
-ifeq (,$(findstring $(TOOLCHAIN),$(VALID_TOOLCHAINS)))
-$(warning Availbile choices are: $(VALID_TOOLCHAINS))
-$(error Can not use TOOLCHAIN=$(TOOLCHAIN) on this example.)
-endif
-
-
+# The base name of the final NEXE, also the name of the NMF file containing
+# the mapping between architecture and actual NEXE.
 #
-# Compute path to requested NaCl Toolchain
-#
-OSNAME:=$(shell python $(NACL_SDK_ROOT)/tools/getos.py)
-TC_PATH:=$(abspath $(NACL_SDK_ROOT)/toolchain)
-
+TARGET={{targets[0]['NAME']}}
 
 #
-# Verify we have a valid NACL_SDK_ROOT by looking for the toolchain directory
+# List of sources to compile
 #
-ifeq (,$(wildcard $(TC_PATH)))
-$(warning No valid NACL_SDK_ROOT at $(NACL_SDK_ROOT))
-ifeq ($(origin NACL_SDK_ROOT), 'file')
-$(error Override the default value via enviornment variable, or command-line.)
-else
-$(error Fix the NACL_SDK_ROOT specified in the environment or command-line.)
-endif
-endif
+[[for target in targets:]]
+{{target['NAME']}}_SOURCES= \
+[[  for source in sorted(target['SOURCES']):]]
+[[    if not source.endswith('.h'):]]
+  {{source}} \
+[[  ]]
+
+[[]]
 
 
 #
-# Disable DOS PATH warning when using Cygwin based NaCl tools on Windows
+# List of libraries to link against.  Unlike some tools, the GCC and LLVM
+# based tools require libraries to be specified in the correct order.  The
+# order should be symbol reference followed by symbol definition, with direct
+# sources to the link (object files) are left most.  In this case:
+#    hello_world -> ppapi_main -> ppapi_cpp -> ppapi -> pthread -> libc
+# Notice that libc is implied and come last through standard compiler/link
+# switches.
 #
-CYGWIN ?= nodosfilewarning
-export CYGWIN
-
-
+# We break this list down into two parts, the set we need to rebuild (DEPS)
+# and the set we do not.  This example does not havea any additional library
+# dependencies.
 #
-# Defaults for TOOLS
-#
-__PROJECT_TOOLS__
-
-
-#
-# NMF Manifiest generation
-#
-# Use the python script create_nmf to scan the binaries for dependencies using
-# objdump.  Pass in the (-L) paths to the default library toolchains so that we
-# can find those libraries and have it automatically copy the files (-s) to
-# the target directory for us.
-NMF:=python $(NACL_SDK_ROOT)/tools/create_nmf.py
+DEPS={{' '.join(targets[0].get('DEPS', []))}}
+LIBS=$(DEPS) {{' '.join(targets[0].get('LIBS'))}}
 
 
 #
-# Verify we can find the Chrome executable if we need to launch it.
+# Use the library dependency macro for each dependency
 #
-.PHONY: CHECK_FOR_CHROME RUN LAUNCH
-CHECK_FOR_CHROME:
-ifeq (,$(wildcard $(CHROME_PATH)))
-	$(warning No valid Chrome found at CHROME_PATH=$(CHROME_PATH))
-	$(error Set CHROME_PATH via an environment variable, or command-line.)
-else
-	$(warning Using chrome at: $(CHROME_PATH))
-endif
-
-__PROJECT_RULES__
-
-__PROJECT_PRERUN__
+$(foreach dep,$(DEPS),$(eval $(call DEPEND_RULE,$(dep))))
 
 #
-# Variables for running examples with Chrome.
+# Use the compile macro for each source.
 #
-RUN_PY:=python $(NACL_SDK_ROOT)/tools/run.py
+[[for target in targets:]]
+[[  name = target['NAME'] ]]
+[[  flags = ' '.join(target.get('CCFLAGS', []))]]
+[[  flags += ' '.join(target.get('CXXFLAGS', []))]]
+$(foreach src,$({{name}}_SOURCES),$(eval $(call COMPILE_RULE,$(src),{{flags}})))
+[[]]
 
-# Add this to launch Chrome with additional environment variables defined.
-# Each element should be specified as KEY=VALUE, with whitespace separating
-# key-value pairs. e.g.
-# CHROME_ENV=FOO=1 BAR=2 BAZ=3
-CHROME_ENV?=
+#
+# Use the link macro for this target on the list of sources.
+#
+[[for target in targets:]]
+[[  name = target['NAME'] ]]
+[[  if target['TYPE'] == 'so':]]
+$(eval $(call SO_RULE,{{name}},$({{name}}_SOURCES)))
+[[  else:]]
+$(eval $(call LINK_RULE,{{name}},$({{name}}_SOURCES),$(LIBS),$(DEPS)))
+[[]]
 
-# Additional arguments to pass to Chrome.
-CHROME_ARGS+=--enable-nacl --incognito
-
-
-CONFIG?=Debug
-PAGE?=index_$(TOOLCHAIN)_$(CONFIG).html
-
-RUN: LAUNCH
-LAUNCH: CHECK_FOR_CHROME all
-ifeq (,$(wildcard $(PAGE)))
-	$(warning No valid HTML page found at $(PAGE))
-	$(error Make sure TOOLCHAIN and CONFIG are properly set)
-endif
-	$(RUN_PY) -C $(THIS_DIR) -P $(PAGE) $(addprefix -E ,$(CHROME_ENV)) -- \
-	    $(CHROME_PATH) $(CHROME_ARGS) \
-	    --register-pepper-plugins="$(PPAPI_DEBUG),$(PPAPI_RELEASE)"
-
-__PROJECT_POSTLAUNCH__
+#
+# Specify the NMF to be created with no additional arugments.
+#
+$(eval $(call NMF_RULE,$(TARGET),))

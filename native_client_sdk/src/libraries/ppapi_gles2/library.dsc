@@ -14,9 +14,6 @@
       ],
     }
   ],
-  'DATA': [
-    'Makefile',
-  ],
   'DEST': 'src',
   'NAME': 'ppapi_gles2',
 }

@@ -29,23 +29,6 @@ BASIC_DESC = {
   'DEST' : 'examples'
 }
 
-class TestFunctions(unittest.TestCase):
-  def testSetVar(self):
-    val = generate_make.SetVar('FOO',[])
-    self.assertEqual(val, 'FOO:=\n')
-
-    val = generate_make.SetVar('FOO',['BAR'])
-    self.assertEqual(val, 'FOO:=BAR\n')
-
-    items = ['FOO_' + 'x' * (i % 13) for i in range(50)]
-    for i in range(10):
-      wrapped = generate_make.SetVar('BAR_' + 'x' * i, items)
-      lines = wrapped.split('\n')
-      for line in lines:
-        if len(line) > 79:
-          self.assertEqual(line, 'Less than 80 at ' + str(i))
-
-
 class TestValidateFormat(unittest.TestCase):
   def _append_result(self, msg):
     self.result += msg

@@ -16,7 +16,6 @@
     }
   ],
   'DATA': [
-    'Makefile',
     'example.js'
   ],
   'DEST': 'examples',

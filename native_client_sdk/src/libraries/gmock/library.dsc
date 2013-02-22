@@ -51,9 +51,6 @@
       'DEST': 'include/gmock/internal',
     },
   ],
-  'DATA': [
-    'Makefile'
-  ],
   'DEST': 'testlibs',
   'NAME': 'gmock',
 }

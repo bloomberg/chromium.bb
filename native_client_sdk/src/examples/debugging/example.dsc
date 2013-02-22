@@ -31,7 +31,6 @@ CHROME_ENV+=NACL_UNTRUSTED_EXCEPTION_HANDLING=1
 """,
 
   'DATA': [
-    'Makefile',
     'example.js',
     'handler.py'
   ],

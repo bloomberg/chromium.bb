@@ -85,9 +85,6 @@
       'DEST': 'include/utils',
     }
   ],
-  'DATA': [
-    'Makefile',
-  ],
   'DEST': 'src',
   'NAME': 'nacl_io',
 }

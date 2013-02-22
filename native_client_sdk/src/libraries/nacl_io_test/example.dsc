@@ -23,11 +23,14 @@
         'pepper_interface_mock.cc',
         'pepper_interface_mock.h',
       ],
-      'LIBS': ['ppapi', 'pthread', 'gtest', 'gmock', 'nacl_io', 'ppapi_cpp', 'gtest_ppapi']
+      'DEPS': ['nacl_io'],
+      # Order matters here: gtest has a "main" function that will be used if
+      # referenced before ppapi.
+      'LIBS': ['gtest_ppapi', 'gmock', 'ppapi_cpp', 'ppapi', 'gtest', 'pthread'],
+      'INCLUDES': ['$(NACL_SDK_ROOT)/include/gtest/internal'],
     }
   ],
   'DATA': [
-    'Makefile',
     'example.js'
   ],
   'DEST': 'tests',

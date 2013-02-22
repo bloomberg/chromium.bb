@@ -8,9 +8,6 @@
       'LIBS': ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
-  'DATA': [
-    'Makefile',
-  ],
   'DEST': 'examples',
   'NAME': 'mouselock',
   'TITLE': 'Mouse Lock',

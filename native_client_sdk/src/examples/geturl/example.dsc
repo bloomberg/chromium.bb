@@ -9,7 +9,6 @@
     }
   ],
   'DATA': [
-    'Makefile',
     'example.js',
     'geturl_success.html',
   ],

@@ -53,9 +53,6 @@
       ],
     }
   ],
-  'DATA': [
-    'Makefile',
-  ],
   'DEST': 'src',
   'NAME': 'ppapi_cpp',
 }

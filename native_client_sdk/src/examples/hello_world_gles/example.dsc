@@ -13,7 +13,6 @@
     }
   ],
   'DATA': [
-    'Makefile',
     'fragment_shader_es2.frag',
     'hello.raw',
     'vertex_shader_es2.vert'

@@ -7,9 +7,10 @@ import buildbot_common
 import optparse
 import os
 import sys
-from generate_index import LandingPage
+
 from buildbot_common import ErrorExit
-from make_rules import MakeRules, SetVar, GenerateCleanRules, GenerateNMFRules
+import easy_template
+from generate_index import LandingPage
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 SDK_SRC_DIR = os.path.dirname(SCRIPT_DIR)
@@ -30,18 +31,6 @@ def Trace(msg):
     sys.stderr.write(str(msg) + '\n')
 Trace.verbose = False
 
-
-def Replace(text, replacements):
-  for key, val in replacements.items():
-    if val is not None:
-      text = text.replace(key, val)
-  return text
-
-
-def WriteReplaced(srcpath, dstpath, replacements):
-  text = open(srcpath, 'rb').read()
-  text = Replace(text, replacements)
-  open(dstpath, 'wb').write(text)
 
 
 def ShouldProcessHTML(desc):
@@ -90,123 +79,6 @@ def GetPlatforms(plat_list, plat_filter):
   return platforms
 
 
-def GenerateToolDefaults(tools):
-  defaults = ''
-  for tool in tools:
-    defaults += MakeRules(tool).BuildDefaults()
-  return defaults
-
-
-def GenerateSettings(desc, tools):
-  settings = SetVar('VALID_TOOLCHAINS', tools)
-  settings += 'TOOLCHAIN?=%s\n\n' % desc['TOOLS'][0]
-  for target in desc['TARGETS']:
-    project = target['NAME']
-    macro = project.upper()
-
-    c_flags = target.get('CCFLAGS')
-    cc_flags = target.get('CXXFLAGS')
-    ld_flags = target.get('LDFLAGS')
-
-    if c_flags:
-      settings += SetVar(macro + '_CCFLAGS', c_flags)
-    if cc_flags:
-      settings += SetVar(macro + '_CXXFLAGS', cc_flags)
-    if ld_flags:
-      settings += SetVar(macro + '_LDFLAGS', ld_flags)
-  return settings
-
-
-def GenerateRules(desc, tools):
-  rules = '#\n# Per target object lists\n#\n'
-
-  #Determine which projects are in the NMF files.
-  executable = None
-  dlls = []
-  project_list = []
-  glibc_rename = []
-
-  for target in desc['TARGETS']:
-    ptype = target['TYPE'].upper()
-    project = target['NAME']
-    project_list.append(project)
-    srcs = GetSourcesDict(target['SOURCES'])
-    if ptype == 'MAIN':
-      executable = project
-    if ptype == 'SO':
-      dlls.append(project)
-      for arch in ['x86_32', 'x86_64']:
-        glibc_rename.append('-n %s_%s.so,%s.so' % (project, arch, project))
-
-    objects = GetProjectObjects(srcs)
-    rules += SetVar('%s_OBJS' % project.upper(), objects)
-    if glibc_rename:
-      rules += SetVar('GLIBC_REMAP', glibc_rename)
-
-  configs = desc.get('CONFIGS', ['Debug', 'Release'])
-  for tc, enabled_arches in tools.iteritems():
-    makeobj = MakeRules(tc)
-    arches = makeobj.GetArches()
-    rules += makeobj.BuildDirectoryRules(configs)
-
-    if enabled_arches:
-      # filter out all arches that don't match the list
-      # of enabled arches
-      arches = [a for a in arches if a.get('<arch>') in enabled_arches]
-
-    for cfg in configs:
-      makeobj.SetConfig(cfg)
-      for target in desc['TARGETS']:
-        project = target['NAME']
-        ptype = target['TYPE']
-        srcs = GetSourcesDict(target['SOURCES'])
-        defs = target.get('DEFINES', [])
-        incs = target.get('INCLUDES', [])
-        libs = target.get('LIBS', [])
-        makeobj.SetProject(project, ptype, defs=defs, incs=incs, libs=libs)
-        if ptype == 'main' and tc in ['linux', 'win']:
-          rules += makeobj.GetPepperPlugin()
-        for arch in arches:
-          makeobj.SetArch(arch)
-          for src in srcs.get('.c', []):
-            rules += makeobj.BuildCompileRule('CC', src)
-          for src in srcs.get('.cc', []):
-            rules += makeobj.BuildCompileRule('CXX', src)
-          rules += '\n'
-          rules += makeobj.BuildObjectList()
-          rules += makeobj.BuildLinkRule()
-      if executable:
-        rules += GenerateNMFRules(tc, executable, dlls, cfg, arches)
-
-  rules += GenerateCleanRules(tools, configs)
-  rules += '\nall: $(ALL_TARGETS)\n\nall_versions: all\n'
-
-  return '', rules
-
-
-def GenerateReplacements(desc, tools):
-  # Generate target settings
-  settings = GenerateSettings(desc, tools)
-  tool_def = GenerateToolDefaults(tools)
-  _, rules = GenerateRules(desc, tools)
-
-  prelaunch = desc.get('LAUNCH', '')
-  prerun = desc.get('PRE', '')
-  postlaunch = desc.get('POST', '')
-
-  target_def = 'all:'
-
-  return {
-      '__PROJECT_SETTINGS__' : settings,
-      '__PROJECT_TARGETS__' : target_def,
-      '__PROJECT_TOOLS__' : tool_def,
-      '__PROJECT_RULES__' : rules,
-      '__PROJECT_PRELAUNCH__' : prelaunch,
-      '__PROJECT_PRERUN__' : prerun,
-      '__PROJECT_POSTLAUNCH__' : postlaunch
-  }
-
-
 # 'KEY' : ( <TYPE>, [Accepted Values], <Required?>)
 DSC_FORMAT = {
     'TOOLS' : (list, ['newlib:arm', 'newlib:x64', 'newlib:x86', 'newlib',
@@ -215,7 +87,7 @@ DSC_FORMAT = {
     'PREREQ' : (list, '', False),
     'TARGETS' : (list, {
         'NAME': (str, '', True),
-        'TYPE': (str, ['main', 'nexe', 'lib', 'so'], True),
+        'TYPE': (str, ['main', 'lib', 'so'], True),
         'SOURCES': (list, '', True),
         'CCFLAGS': (list, '', False),
         'CXXFLAGS': (list, '', False),
@@ -383,12 +255,12 @@ def ProcessHTML(srcroot, dstroot, desc, toolchains):
     path = "{tc}/{config}"
 
   replace = {
-    '{{title}}': desc['TITLE'],
-    '{{attrs}}':
+    'title': desc['TITLE'],
+    'attrs':
         'data-name="%s" data-tools="%s" data-configs="%s" data-path="%s"' % (
         name, ' '.join(tools), ' '.join(configs), path),
   }
-  WriteReplaced(srcfile, dstfile, replace)
+  easy_template.RunTemplateFile(srcfile, dstfile, replace)
 
 
 def LoadProject(filename, toolchains):
@@ -494,12 +366,12 @@ def ProcessProject(srcroot, dstroot, desc, toolchains):
       if arch:
         tools[tool].append(arch)
 
-    desc['TOOLS'] = tool_list
-
-    # Add Makefile and make.bat
-    repdict = GenerateReplacements(desc, tools)
-    if not 'Makefile' in desc.get('DATA', []):
-      WriteReplaced(template, make_path, repdict)
+    template_dict = {
+      'pre': desc.get('PRE', ''),
+      'tools': tool_list,
+      'targets': desc['TARGETS'],
+    }
+    easy_template.RunTemplateFile(template, make_path, template_dict)
 
   outdir = os.path.dirname(os.path.abspath(make_path))
   pepperdir = os.path.dirname(os.path.dirname(outdir))
@@ -510,34 +382,8 @@ def ProcessProject(srcroot, dstroot, desc, toolchains):
 def GenerateMasterMakefile(in_path, out_path, projects):
   """Generate a Master Makefile that builds all examples. """
   project_names = [project['NAME'] for project in projects]
-
-  # TODO(binji): This is kind of a hack; we use the target's LIBS to determine
-  # dependencies. This project-level dependency is then injected into the
-  # master Makefile.
-  dependencies = []
-  for project in projects:
-    project_deps_set = set()
-    for target in project['TARGETS']:
-      target_libs = target.get('LIBS', [])
-      dependent_libs = set(target_libs) & set(project_names)
-      project_deps_set.update(dependent_libs)
-
-    if project_deps_set:
-      # If project foo depends on projects bar and baz, generate:
-      #   "foo_TARGET: bar_TARGET baz_TARGET"
-      # _TARGET is appended for all targets in the master makefile template.
-      project_deps = ' '.join(p + '_TARGET' for p in project_deps_set)
-      project_deps_string = '%s_TARGET: %s' % (project['NAME'], project_deps)
-      dependencies.append(project_deps_string)
-
-  dependencies_string = '\n'.join(dependencies)
-
-  replace = {
-      '__PROJECT_LIST__' : SetVar('PROJECTS', project_names),
-      '__DEPENDENCIES__': dependencies_string,
-  }
-
-  WriteReplaced(in_path, out_path, replace)
+  template_dict = { 'projects': project_names }
+  easy_template.RunTemplateFile(in_path, out_path, template_dict)
 
   outdir = os.path.dirname(os.path.abspath(out_path))
   pepperdir = os.path.dirname(outdir)

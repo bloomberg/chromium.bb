@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'win'],
+  'TOOLS': ['newlib', 'glibc'],
   'TARGETS': [
     {
       'NAME' : 'hello_world_stdio',
@@ -9,7 +9,6 @@
     }
   ],
   'DATA': [
-    'Makefile',
     'example.js',
   ],
   'DEST': 'examples',

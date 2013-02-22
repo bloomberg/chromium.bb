@@ -18,6 +18,7 @@ TEST_MODULES = [
     # https://codereview.chromium.org/12282013/
     #'getos_test',
     'create_nmf_test',
+    'easy_template_test',
     'httpd_test',
     'sdktools_test',
     'sdktools_commands_test',

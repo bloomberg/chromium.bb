@@ -6,83 +6,58 @@
 # GNU Make based build file.  For details on GNU Make see:
 #   http://www.gnu.org/software/make/manual/make.html
 #
+#
+
+# Default configuration
+#
+# By default we will build a Debug configuration using the GCC newlib toolcahin
+# to override this, specify TOOLCHAIN=newlib|glibc or CONFIG=Debug|Release on
+# the make command-line or in this file prior to including common.mk.  The
+# toolchain we use by default will be the first valid one listed
+VALID_TOOLCHAINS:={{' '.join(tools)}}
+
+
+[[# Only one target is allowed in a library project]]
+[[target = targets[0] ]]
+[[name = target['NAME'] ]]
+[[flags = ' '.join(target.get('CCFLAGS', []))]]
+[[flags += ' '.join(target.get('CXXFLAGS', []))]]
 
 #
 # Get pepper directory for toolchain and includes.
 #
-# If NACL_SDK_ROOT is not set, then assume it can be found a two directories up,
-# from the default example directory location.
+# If NACL_SDK_ROOT is not set, then assume it can be found relative to
+# to this Makefile.
 #
-THIS_MAKEFILE:=$(abspath $(lastword $(MAKEFILE_LIST)))
-NACL_SDK_ROOT?=$(abspath $(dir $(THIS_MAKEFILE))../..)
-CHROME_PATH?=Undefined
+NACL_SDK_ROOT?=$(abspath $(CURDIR)/../..)
+EXTRA_INC_PATHS={{' '.join(target.get('INCLUDES', []))}}
+
+include $(NACL_SDK_ROOT)/tools/common.mk
 
 #
-# Defaults
+# Target Name
 #
-NACL_WARNINGS:=-Wno-long-long
-
-
+# The base name of the final library, also the name of the NMF file containing
+# the mapping between architecture and actual NEXE.
 #
-# Compute path to requested NaCl Toolchain
-#
-OSNAME:=$(shell python $(NACL_SDK_ROOT)/tools/getos.py)
-TC_PATH:=$(abspath $(NACL_SDK_ROOT)/toolchain)
-
+TARGET={{name}}
 
 #
-# Project Settings
+# List of sources to compile
 #
-__PROJECT_SETTINGS__
+SOURCES= \
+[[for source in sorted(target['SOURCES']):]]
+  {{source}} \
+[[]]
 
-#
-# Project Targets
-#
-__PROJECT_TARGETS__
 
 
 #
-# Alias for standard commands
+# Use the compile macro for each source.
 #
-CP:=python $(NACL_SDK_ROOT)/tools/oshelpers.py cp
-MKDIR:=python $(NACL_SDK_ROOT)/tools/oshelpers.py mkdir
-MV:=python $(NACL_SDK_ROOT)/tools/oshelpers.py mv
-RM:=python $(NACL_SDK_ROOT)/tools/oshelpers.py rm
-
+$(foreach src,$(SOURCES),$(eval $(call COMPILE_RULE,$(src),{{flags}})))
 
 #
-# Verify we selected a valid toolchain for this example
+# Use the lib macro for this target on the list of sources.
 #
-ifeq (,$(findstring $(TOOLCHAIN),$(VALID_TOOLCHAINS)))
-$(warning Availbile choices are: $(VALID_TOOLCHAINS))
-$(error Can not use TOOLCHAIN=$(TOOLCHAIN) on this library.)
-endif
-
-
-#
-# Verify we have a valid NACL_SDK_ROOT by looking for the toolchain directory
-#
-ifeq (,$(wildcard $(TC_PATH)))
-$(warning No valid NACL_SDK_ROOT at $(NACL_SDK_ROOT))
-ifeq ($(origin NACL_SDK_ROOT), 'file')
-$(error Override the default value via enviornment variable, or command-line.)
-else
-$(error Fix the NACL_SDK_ROOT specified in the environment or command-line.)
-endif
-endif
-
-
-#
-# Disable DOS PATH warning when using Cygwin based NaCl tools on Windows
-#
-CYGWIN ?= nodosfilewarning
-export CYGWIN
-
-
-#
-# Defaults for TOOLS
-#
-__PROJECT_TOOLS__
-
-__PROJECT_RULES__
-
+$(eval $(call LIB_RULE,{{name}},$(SOURCES)))
