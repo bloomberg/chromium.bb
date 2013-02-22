@@ -193,10 +193,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Called from a site instance's destructor.
   virtual void SiteInstanceDeleting(SiteInstance* site_instance) {}
 
-  // Returns true if for the navigation from |current_url| to |new_url|,
-  // processes should be swapped (even if we are in a process model that
-  // doesn't usually swap).
-  virtual bool ShouldSwapProcessesForNavigation(const GURL& current_url,
+  // Returns true if for the navigation from |current_url| to |new_url|
+  // in |site_instance|, the process should be swapped (even if we are in a
+  // process model that doesn't usually swap).
+  virtual bool ShouldSwapProcessesForNavigation(SiteInstance* site_instance,
+                                                const GURL& current_url,
                                                 const GURL& new_url);
 
   // Returns true if the given navigation redirect should cause a renderer

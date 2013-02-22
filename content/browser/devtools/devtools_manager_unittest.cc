@@ -90,6 +90,7 @@ class DevToolsManagerTestBrowserClient : public TestContentBrowserClient {
   }
 
   virtual bool ShouldSwapProcessesForNavigation(
+      SiteInstance* site_instance,
       const GURL& current_url,
       const GURL& new_url) OVERRIDE {
     return true;

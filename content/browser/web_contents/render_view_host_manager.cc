@@ -431,7 +431,9 @@ bool RenderViewHostManager::ShouldSwapProcessesForNavigation(
   }
 
   if (GetContentClient()->browser()->ShouldSwapProcessesForNavigation(
-          curr_entry ? curr_entry->GetURL() : GURL(), new_entry->GetURL())) {
+          render_view_host_->GetSiteInstance(),
+          curr_entry ? curr_entry->GetURL() : GURL(),
+          new_entry->GetURL())) {
     return true;
   }
 
