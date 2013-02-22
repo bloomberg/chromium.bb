@@ -852,22 +852,15 @@ void MediaStreamManager::DevicesAccepted(const std::string& label,
       // mirroring, we don't go through EnumerateDevices where these are usually
       // initialized.
       if (device_info.device.type == content::MEDIA_TAB_AUDIO_CAPTURE) {
-        int sample_rate = media::GetAudioInputHardwareSampleRate(
-            media::AudioManagerBase::kDefaultDeviceId);
-        media::ChannelLayout channel_layout =
-            media::GetAudioInputHardwareChannelLayout(
-                media::AudioManagerBase::kDefaultDeviceId);
-
+        int sample_rate = media::GetAudioHardwareSampleRate();
         // If we weren't able to get the native sampling rate, it most likely
-        // means the system did not have an input device, but for mirroring we
+        // means the system did not have an output device, but for mirroring we
         // still want to startup the audio engine, so set reasonable defaults.
         if (sample_rate == 0)
           sample_rate = 44100;
-        if (channel_layout == 0)
-          channel_layout = media::CHANNEL_LAYOUT_STEREO;
 
         device_info.device.sample_rate = sample_rate;
-        device_info.device.channel_layout = channel_layout;
+        device_info.device.channel_layout = media::CHANNEL_LAYOUT_STEREO;
       }
     }
 
