@@ -1284,6 +1284,10 @@ ErrorCode GpuProcessPolicy(int sysno, void *broker_process) {
     case __NR_openat:
         return Sandbox::Trap(GpuOpenSIGSYS_Handler, broker_process);
     default:
+#if defined(__x86_64__) || defined(__arm__)
+      if (IsSystemVSharedMemory(sysno))
+        return ErrorCode(EACCES);
+#endif
       if (IsEventFd(sysno))
         return ErrorCode(ErrorCode::ERR_ALLOWED);
 
