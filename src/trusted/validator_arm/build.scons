@@ -124,6 +124,7 @@ BASELINE_GEN_TABLES = [
     "advanced_simd_data_processing_instructions",
     "simd_dp_3diff",
     "simd_dp_2scalar",
+    "simd_dp_2shift",
     "advanced_simd_element_or_structure_load_store_instructions",
     ]
 
