@@ -69,14 +69,9 @@ class SpdyHttpStreamSpdy2Test : public testing::Test {
   OrderedSocketData* data() { return data_.get(); }
 
  protected:
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     crypto::ECSignatureCreator::SetFactoryForTesting(NULL);
-    UploadDataStream::ResetMergeChunks();
     MessageLoop::current()->RunUntilIdle();
-  }
-
-  void set_merge_chunks(bool merge) {
-    UploadDataStream::set_merge_chunks(merge);
   }
 
   // Initializes the session using DeterministicSocketData.  It's advisable
@@ -296,22 +291,17 @@ TEST_F(SpdyHttpStreamSpdy2Test, LoadTimingTwoRequests) {
 }
 
 TEST_F(SpdyHttpStreamSpdy2Test, SendChunkedPost) {
-  set_merge_chunks(false);
-
   scoped_ptr<SpdyFrame> req(ConstructChunkedSpdyPost(NULL, 0));
-  scoped_ptr<SpdyFrame> chunk1(ConstructSpdyBodyFrame(1, false));
-  scoped_ptr<SpdyFrame> chunk2(ConstructSpdyBodyFrame(1, true));
+  scoped_ptr<SpdyFrame> body(ConstructSpdyBodyFrame(1, true));
   MockWrite writes[] = {
     CreateMockWrite(*req.get(), 0),
-    CreateMockWrite(*chunk1, 1),  // POST upload frames
-    CreateMockWrite(*chunk2, 2),
+    CreateMockWrite(*body, 1),  // POST upload frame
   };
   scoped_ptr<SpdyFrame> resp(ConstructSpdyPostSynReply(NULL, 0));
   MockRead reads[] = {
-    CreateMockRead(*resp, 3),
-    CreateMockRead(*chunk1, 4),
-    CreateMockRead(*chunk2, 5),
-    MockRead(SYNCHRONOUS, 0, 6)  // EOF
+    CreateMockRead(*resp, 2),
+    CreateMockRead(*body, 3),
+    MockRead(SYNCHRONOUS, 0, 4)  // EOF
   };
 
   HostPortPair host_port_pair("www.google.com", 80);
@@ -320,8 +310,10 @@ TEST_F(SpdyHttpStreamSpdy2Test, SendChunkedPost) {
                             host_port_pair));
 
   UploadDataStream upload_stream(UploadDataStream::CHUNKED, 0);
-  upload_stream.AppendChunk(kUploadData, kUploadDataSize, false);
-  upload_stream.AppendChunk(kUploadData, kUploadDataSize, true);
+  const int kFirstChunkSize = kUploadDataSize/2;
+  upload_stream.AppendChunk(kUploadData, kFirstChunkSize, false);
+  upload_stream.AppendChunk(kUploadData + kFirstChunkSize,
+                            kUploadDataSize - kFirstChunkSize, true);
 
   HttpRequestInfo request;
   request.method = "POST";
@@ -343,10 +335,11 @@ TEST_F(SpdyHttpStreamSpdy2Test, SendChunkedPost) {
       headers, &response, callback.callback()));
   EXPECT_TRUE(http_session_->spdy_session_pool()->HasSession(pair));
 
-  // This triggers the MockWrite and read 2
+  // This results in writing the post body and reading the response headers.
   callback.WaitForResult();
 
-  // This triggers read 3. The empty read causes the session to shut down.
+  // This triggers reading the body and the EOF, causing the session to shut
+  // down.
   data()->CompleteRead();
   MessageLoop::current()->RunUntilIdle();
 
@@ -360,8 +353,6 @@ TEST_F(SpdyHttpStreamSpdy2Test, SendChunkedPost) {
 // Test to ensure the SpdyStream state machine does not get confused when a
 // chunk becomes available while a write is pending.
 TEST_F(SpdyHttpStreamSpdy2Test, DelayedSendChunkedPost) {
-  set_merge_chunks(false);
-
   const char kUploadData1[] = "12345678";
   const int kUploadData1Size = arraysize(kUploadData1)-1;
   scoped_ptr<SpdyFrame> req(ConstructChunkedSpdyPost(NULL, 0));

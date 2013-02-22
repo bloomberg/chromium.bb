@@ -96,11 +96,6 @@ class NET_EXPORT UploadDataStream {
   void AppendChunk(const char* bytes, int bytes_len, bool is_last_chunk);
 
  private:
-  friend class SpdyHttpStreamSpdy2Test;
-  friend class SpdyHttpStreamSpdy3Test;
-  friend class SpdyNetworkTransactionSpdy2Test;
-  friend class SpdyNetworkTransactionSpdy3Test;
-
   // Resets this instance to the uninitialized state.
   void Reset();
 
@@ -127,10 +122,6 @@ class NET_EXPORT UploadDataStream {
   // success, updates |buf|'s offset. Otherwise, sets |read_failed_| to true.
   void ProcessReadResult(scoped_refptr<DrainableIOBuffer> buf,
                          int result);
-
-  // These methods are provided only to be used by unit tests.
-  static void ResetMergeChunks();
-  static void set_merge_chunks(bool merge) { merge_chunks_ = merge; }
 
   ScopedVector<UploadElementReader> element_readers_;
 
@@ -159,10 +150,6 @@ class NET_EXPORT UploadDataStream {
   base::Closure pending_chunked_read_callback_;
 
   base::WeakPtrFactory<UploadDataStream> weak_ptr_factory_;
-
-  // TODO(satish): Remove this once we have a better way to unit test POST
-  // requests with chunked uploads.
-  static bool merge_chunks_;
 
   DISALLOW_COPY_AND_ASSIGN(UploadDataStream);
 };

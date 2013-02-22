@@ -12,19 +12,6 @@
 
 namespace net {
 
-namespace {
-
-const bool kMergeChunksDefault = true;
-
-}  // namespace
-
-bool UploadDataStream::merge_chunks_ = kMergeChunksDefault;
-
-// static
-void UploadDataStream::ResetMergeChunks() {
-  merge_chunks_ = kMergeChunksDefault;
-}
-
 UploadDataStream::UploadDataStream(
     ScopedVector<UploadElementReader>* element_readers,
     int64 identifier)
@@ -199,10 +186,6 @@ int UploadDataStream::ReadInternal(scoped_refptr<DrainableIOBuffer> buf,
     }
 
     if (buf->BytesRemaining() == 0)
-      break;
-
-    // Some tests need chunks to be kept unmerged.
-    if (!merge_chunks_ && is_chunked_ && buf->BytesConsumed())
       break;
 
     int result = reader->Read(
