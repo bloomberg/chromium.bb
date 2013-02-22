@@ -121,6 +121,7 @@ BASELINE_GEN_TABLES = [
     "transfer_between_arm_core_and_extension_registers_64_bit",
     "unconditional_instructions",
     "memory_hints_advanced_simd_instructions_and_miscellaneous_instructions",
+    "advanced_simd_data_processing_instructions",
     "advanced_simd_element_or_structure_load_store_instructions",
     ]
 

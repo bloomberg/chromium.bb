@@ -1181,6 +1181,14 @@ class VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0_VDUP_ARM_co
     : public VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0 {
 };
 
+class VDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_0_VDUP_scalar
+    : public VDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_0 {
+};
+
+class VEXT_111100101d11nnnnddddiiiinqm0mmmm_case_0_VEXT
+    : public VEXT_111100101d11nnnnddddiiiinqm0mmmm_case_0 {
+};
+
 class VFMA_VFMS_cccc11101d10nnnndddd101snom0mmmm_case_0_VFMA_VFMS
     : public VFMA_VFMS_cccc11101d10nnnndddd101snom0mmmm_case_0 {
 };
@@ -1379,6 +1387,10 @@ class VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0_VSTR
 
 class VSUB_floating_point_cccc11100d11nnnndddd101sn1m0mmmm_case_0_VSUB_floating_point
     : public VSUB_floating_point_cccc11100d11nnnndddd101sn1m0mmmm_case_0 {
+};
+
+class VTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_0_VTBL_VTBX
+    : public VTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_0 {
 };
 
 class Vector1RegisterImmediate_BIT_VBIC_immediate
@@ -1717,14 +1729,6 @@ class VectorBinary3RegisterDifferentLength_P8_VMULL_polynomial_A2
     : public VectorBinary3RegisterDifferentLength_P8 {
 };
 
-class VectorBinary3RegisterImmOp_VEXT
-    : public VectorBinary3RegisterImmOp {
-};
-
-class VectorBinary3RegisterLookupOp_VTBL_VTBX
-    : public VectorBinary3RegisterLookupOp {
-};
-
 class VectorBinary3RegisterSameLength32P_VPADD_floating_point
     : public VectorBinary3RegisterSameLength32P {
 };
@@ -1947,10 +1951,6 @@ class VectorBinary3RegisterSameLengthDQI8_16_32_VRHADD
 
 class VectorBinary3RegisterSameLengthDQI8_16_32_VTST
     : public VectorBinary3RegisterSameLengthDQI8_16_32 {
-};
-
-class VectorUnary2RegisterDup_VDUP_scalar
-    : public VectorUnary2RegisterDup {
 };
 
 class WFE_cccc0011001000001111000000000010_case_0_WFE
@@ -7252,6 +7252,30 @@ class NamedVDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0_VDUP_A
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedVDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0_VDUP_ARM_core_register);
 };
 
+class NamedVDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_0_VDUP_scalar
+    : public NamedClassDecoder {
+ public:
+  NamedVDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_0_VDUP_scalar()
+    : NamedClassDecoder(decoder_, "VDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_0 VDUP_scalar")
+  {}
+
+ private:
+  nacl_arm_dec::VDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_0_VDUP_scalar decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_0_VDUP_scalar);
+};
+
+class NamedVEXT_111100101d11nnnnddddiiiinqm0mmmm_case_0_VEXT
+    : public NamedClassDecoder {
+ public:
+  NamedVEXT_111100101d11nnnnddddiiiinqm0mmmm_case_0_VEXT()
+    : NamedClassDecoder(decoder_, "VEXT_111100101d11nnnnddddiiiinqm0mmmm_case_0 VEXT")
+  {}
+
+ private:
+  nacl_arm_dec::VEXT_111100101d11nnnnddddiiiinqm0mmmm_case_0_VEXT decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVEXT_111100101d11nnnnddddiiiinqm0mmmm_case_0_VEXT);
+};
+
 class NamedVFMA_VFMS_cccc11101d10nnnndddd101snom0mmmm_case_0_VFMA_VFMS
     : public NamedClassDecoder {
  public:
@@ -7850,6 +7874,18 @@ class NamedVSUB_floating_point_cccc11100d11nnnndddd101sn1m0mmmm_case_0_VSUB_floa
  private:
   nacl_arm_dec::VSUB_floating_point_cccc11100d11nnnndddd101sn1m0mmmm_case_0_VSUB_floating_point decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedVSUB_floating_point_cccc11100d11nnnndddd101sn1m0mmmm_case_0_VSUB_floating_point);
+};
+
+class NamedVTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_0_VTBL_VTBX
+    : public NamedClassDecoder {
+ public:
+  NamedVTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_0_VTBL_VTBX()
+    : NamedClassDecoder(decoder_, "VTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_0 VTBL_VTBX")
+  {}
+
+ private:
+  nacl_arm_dec::VTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_0_VTBL_VTBX decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_0_VTBL_VTBX);
 };
 
 class NamedVector1RegisterImmediate_BIT_VBIC_immediate
@@ -8860,30 +8896,6 @@ class NamedVectorBinary3RegisterDifferentLength_P8_VMULL_polynomial_A2
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterDifferentLength_P8_VMULL_polynomial_A2);
 };
 
-class NamedVectorBinary3RegisterImmOp_VEXT
-    : public NamedClassDecoder {
- public:
-  NamedVectorBinary3RegisterImmOp_VEXT()
-    : NamedClassDecoder(decoder_, "VectorBinary3RegisterImmOp VEXT")
-  {}
-
- private:
-  nacl_arm_dec::VectorBinary3RegisterImmOp_VEXT decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterImmOp_VEXT);
-};
-
-class NamedVectorBinary3RegisterLookupOp_VTBL_VTBX
-    : public NamedClassDecoder {
- public:
-  NamedVectorBinary3RegisterLookupOp_VTBL_VTBX()
-    : NamedClassDecoder(decoder_, "VectorBinary3RegisterLookupOp VTBL_VTBX")
-  {}
-
- private:
-  nacl_arm_dec::VectorBinary3RegisterLookupOp_VTBL_VTBX decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterLookupOp_VTBL_VTBX);
-};
-
 class NamedVectorBinary3RegisterSameLength32P_VPADD_floating_point
     : public NamedClassDecoder {
  public:
@@ -9554,18 +9566,6 @@ class NamedVectorBinary3RegisterSameLengthDQI8_16_32_VTST
  private:
   nacl_arm_dec::VectorBinary3RegisterSameLengthDQI8_16_32_VTST decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQI8_16_32_VTST);
-};
-
-class NamedVectorUnary2RegisterDup_VDUP_scalar
-    : public NamedClassDecoder {
- public:
-  NamedVectorUnary2RegisterDup_VDUP_scalar()
-    : NamedClassDecoder(decoder_, "VectorUnary2RegisterDup VDUP_scalar")
-  {}
-
- private:
-  nacl_arm_dec::VectorUnary2RegisterDup_VDUP_scalar decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorUnary2RegisterDup_VDUP_scalar);
 };
 
 class NamedWFE_cccc0011001000001111000000000010_case_0_WFE

@@ -516,18 +516,6 @@ class NamedVCVT_between_floating_point_and_fixed_point_1111001u1diiiiiidddd111p0
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedVCVT_between_floating_point_and_fixed_point_1111001u1diiiiiidddd111p0qm1mmmm_case_0);
 };
 
-class NamedVDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_0
-    : public NamedClassDecoder {
- public:
-  NamedVDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_0()
-    : NamedClassDecoder(decoder_, "VDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_0")
-  {}
-
- private:
-  nacl_arm_dec::VDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_0 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_0);
-};
-
 class NamedVEOR_111100110d00nnnndddd0001nqm1mmmm_case_0
     : public NamedClassDecoder {
  public:
@@ -538,18 +526,6 @@ class NamedVEOR_111100110d00nnnndddd0001nqm1mmmm_case_0
  private:
   nacl_arm_dec::VEOR_111100110d00nnnndddd0001nqm1mmmm_case_0 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedVEOR_111100110d00nnnndddd0001nqm1mmmm_case_0);
-};
-
-class NamedVEXT_111100101d11nnnnddddiiiinqm0mmmm_case_0
-    : public NamedClassDecoder {
- public:
-  NamedVEXT_111100101d11nnnnddddiiiinqm0mmmm_case_0()
-    : NamedClassDecoder(decoder_, "VEXT_111100101d11nnnnddddiiiinqm0mmmm_case_0")
-  {}
-
- private:
-  nacl_arm_dec::VEXT_111100101d11nnnnddddiiiinqm0mmmm_case_0 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVEXT_111100101d11nnnnddddiiiinqm0mmmm_case_0);
 };
 
 class NamedVFMA_A1_111100100d00nnnndddd1100nqm1mmmm_case_0
@@ -1690,18 +1666,6 @@ class NamedVSWP_111100111d11ss10dddd00000qm0mmmm_case_0
  private:
   nacl_arm_dec::VSWP_111100111d11ss10dddd00000qm0mmmm_case_0 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedVSWP_111100111d11ss10dddd00000qm0mmmm_case_0);
-};
-
-class NamedVTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_0
-    : public NamedClassDecoder {
- public:
-  NamedVTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_0()
-    : NamedClassDecoder(decoder_, "VTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_0")
-  {}
-
- private:
-  nacl_arm_dec::VTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_0 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_0);
 };
 
 class NamedVTRN_111100111d11ss10dddd00001qm0mmmm_case_0
