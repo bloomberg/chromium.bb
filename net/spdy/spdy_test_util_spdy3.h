@@ -409,7 +409,7 @@ struct SpdySessionDependencies {
   bool enable_compression;
   bool enable_ping;
   bool enable_user_alternate_protocol_ports;
-  size_t initial_recv_window_size;
+  size_t stream_initial_recv_window_size;
   SpdySession::TimeFunc time_func;
   std::string trusted_spdy_proxy;
   NetLog* net_log;

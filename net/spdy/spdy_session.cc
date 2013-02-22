@@ -221,7 +221,7 @@ SpdySession::SpdySession(const HostPortProxyPair& host_port_proxy_pair,
                          bool enable_compression,
                          bool enable_ping_based_connection_checking,
                          NextProto default_protocol,
-                         size_t initial_recv_window_size,
+                         size_t stream_initial_recv_window_size,
                          size_t initial_max_concurrent_streams,
                          size_t max_concurrent_streams_limit,
                          TimeFunc time_func,
@@ -260,10 +260,10 @@ SpdySession::SpdySession(const HostPortProxyPair& host_port_proxy_pair,
       last_activity_time_(base::TimeTicks::Now()),
       check_ping_status_pending_(false),
       flow_control_(false),
-      initial_send_window_size_(kSpdyStreamInitialWindowSize),
-      initial_recv_window_size_(initial_recv_window_size == 0 ?
-                                kDefaultInitialRecvWindowSize :
-                                initial_recv_window_size),
+      stream_initial_send_window_size_(kSpdyStreamInitialWindowSize),
+      stream_initial_recv_window_size_(stream_initial_recv_window_size == 0 ?
+                                       kDefaultInitialRecvWindowSize :
+                                       stream_initial_recv_window_size),
       net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_SPDY_SESSION)),
       verify_domain_authentication_(verify_domain_authentication),
       enable_sending_initial_settings_(enable_sending_initial_settings),
@@ -546,8 +546,8 @@ int SpdySession::CreateStreamImpl(
 
   stream->set_priority(priority);
   stream->set_path(path);
-  stream->set_send_window_size(initial_send_window_size_);
-  stream->set_recv_window_size(initial_recv_window_size_);
+  stream->set_send_window_size(stream_initial_send_window_size_);
+  stream->set_recv_window_size(stream_initial_recv_window_size_);
   created_streams_.insert(stream);
 
   UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SpdyPriorityCount",
@@ -1443,8 +1443,8 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
   stream->set_stream_id(stream_id);
 
   stream->set_path(gurl.PathForRequest());
-  stream->set_send_window_size(initial_send_window_size_);
-  stream->set_recv_window_size(initial_recv_window_size_);
+  stream->set_send_window_size(stream_initial_send_window_size_);
+  stream->set_recv_window_size(stream_initial_recv_window_size_);
 
   DeleteExpiredPushedStreams();
   unclaimed_pushed_streams_[url] =
@@ -1713,9 +1713,10 @@ void SpdySession::SendInitialSettings() {
     settings_map[SETTINGS_MAX_CONCURRENT_STREAMS] =
         SettingsFlagsAndValue(SETTINGS_FLAG_NONE, kMaxConcurrentPushedStreams);
     if (GetProtocolVersion() > 2 &&
-        initial_recv_window_size_ != kSpdyStreamInitialWindowSize) {
+        stream_initial_recv_window_size_ != kSpdyStreamInitialWindowSize) {
       settings_map[SETTINGS_INITIAL_WINDOW_SIZE] =
-          SettingsFlagsAndValue(SETTINGS_FLAG_NONE, initial_recv_window_size_);
+          SettingsFlagsAndValue(SETTINGS_FLAG_NONE,
+                                stream_initial_recv_window_size_);
     }
     SendSettings(settings_map);
   }
@@ -1780,8 +1781,8 @@ void SpdySession::HandleSetting(uint32 id, uint32 value) {
             NetLog::IntegerCallback("initial_window_size", value));
       } else {
         // SETTINGS_INITIAL_WINDOW_SIZE updates initial_send_window_size_ only.
-        int32 delta_window_size = value - initial_send_window_size_;
-        initial_send_window_size_ = value;
+        int32 delta_window_size = value - stream_initial_send_window_size_;
+        stream_initial_send_window_size_ = value;
         UpdateStreamsSendWindowSize(delta_window_size);
         net_log().AddEvent(
             NetLog::TYPE_SPDY_SESSION_UPDATE_STREAMS_SEND_WINDOW_SIZE,

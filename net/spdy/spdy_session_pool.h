@@ -58,7 +58,7 @@ class NET_EXPORT SpdySessionPool
                   bool enable_compression,
                   bool enable_ping_based_connection_checking,
                   NextProto default_protocol,
-                  size_t default_initial_recv_window_size,
+                  size_t stream_initial_recv_window_size,
                   size_t initial_max_concurrent_streams,
                   size_t max_concurrent_streams_limit,
                   SpdySessionPool::TimeFunc time_func,
@@ -213,7 +213,7 @@ class NET_EXPORT SpdySessionPool
   bool enable_compression_;
   bool enable_ping_based_connection_checking_;
   NextProto default_protocol_;
-  size_t initial_recv_window_size_;
+  size_t stream_initial_recv_window_size_;
   size_t initial_max_concurrent_streams_;
   size_t max_concurrent_streams_limit_;
   TimeFunc time_func_;

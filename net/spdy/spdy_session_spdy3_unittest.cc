@@ -724,7 +724,7 @@ TEST_F(SpdySessionSpdy3Test, SendInitialSettingsOnNewSession) {
   MockWrite writes[] = {
     CreateMockWrite(*settings_frame),
   };
-  session_deps_.initial_recv_window_size = kInitialRecvWindowSize;
+  session_deps_.stream_initial_recv_window_size = kInitialRecvWindowSize;
 
   StaticSocketDataProvider data(
       reads, arraysize(reads), writes, arraysize(writes));
@@ -1740,7 +1740,7 @@ TEST_F(SpdySessionSpdy3Test, UpdateStreamsSendWindowSize) {
 
   data->RunFor(1);  // Process the SETTINGS frame, but not the EOF
   MessageLoop::current()->RunUntilIdle();
-  EXPECT_EQ(session->initial_send_window_size(), window_size);
+  EXPECT_EQ(session->stream_initial_send_window_size(), window_size);
   EXPECT_EQ(spdy_stream1->send_window_size(), window_size);
 
   // Release the first one, this will allow the second to be created.

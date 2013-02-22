@@ -76,7 +76,7 @@ class NET_EXPORT HttpNetworkSession
     bool enable_spdy_compression;
     bool enable_spdy_ping_based_connection_checking;
     NextProto spdy_default_protocol;
-    size_t spdy_initial_recv_window_size;
+    size_t spdy_stream_initial_recv_window_size;
     size_t spdy_initial_max_concurrent_streams;
     size_t spdy_max_concurrent_streams_limit;
     SpdySessionPool::TimeFunc time_func;
