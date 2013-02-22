@@ -117,6 +117,7 @@ class ComponentLoader {
   void AddDefaultComponentExtensionsWithBackgroundPages(
       bool skip_session_components);
   void AddFileManagerExtension();
+  void AddImageLoaderExtension();
 
 #if defined(OS_CHROMEOS)
   void AddGaiaAuthExtension();

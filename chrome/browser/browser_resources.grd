@@ -294,6 +294,9 @@
         <include name="IDR_FILEMANAGER_MANIFEST" file="resources\file_manager\manifest.json" type="BINDATA" />
         <include name="IDR_FILEMANAGER_MANIFEST_V1" file="resources\file_manager\manifest_v1.json" type="BINDATA" />
       </if>
+      <if expr="pp_ifdef('image_loader_extension')">
+        <include name="IDR_IMAGE_LOADER_MANIFEST" file="resources\image_loader\manifest.json" type="BINDATA" />
+      </if>
       <if expr="pp_ifdef('chromeos')">
         <include name="IDR_WALLPAPERMANAGER_MANIFEST" file="resources\chromeos\wallpaper_manager\manifest.json" type="BINDATA" />
       </if>

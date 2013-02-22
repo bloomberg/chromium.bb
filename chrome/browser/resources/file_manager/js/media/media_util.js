@@ -38,8 +38,7 @@ function ThumbnailLoader(url, opt_loaderType, opt_metadata, opt_mediaType) {
   if (opt_metadata.thumbnail && opt_metadata.thumbnail.url) {
     this.thumbnailUrl_ = opt_metadata.thumbnail.url;
     this.transform_ = opt_metadata.thumbnail.transform;
-  } else if (FileType.isImage(url) &&
-      ThumbnailLoader.canUseImageUrl_(opt_metadata)) {
+  } else if (FileType.isImage(url)) {
     this.thumbnailUrl_ = url;
     this.transform_ = opt_metadata.media && opt_metadata.media.imageTransform;
   } else if (this.fallbackUrl_) {
@@ -48,16 +47,6 @@ function ThumbnailLoader(url, opt_loaderType, opt_metadata, opt_mediaType) {
     this.fallbackUrl_ = null;
   } // else the generic thumbnail based on the media type will be used.
 }
-
-/**
- * Files with more pixels won't have thumbnails.
- */
-ThumbnailLoader.MAX_PIXEL_COUNT = 1 << 21; // 2 MPix
-
-/**
- * Files of bigger size won't have thumbnails.
- */
-ThumbnailLoader.MAX_FILE_SIZE = 1 << 20; // 1 Mb
 
 /**
  * In percents (0.0 - 1.0), how much area can be cropped to fill an image
@@ -78,6 +67,15 @@ ThumbnailLoader.FillMode = {
 };
 
 /**
+ * Optimization mode for downloading thumbnails.
+ * @enum
+ */
+ThumbnailLoader.OptimizationMode = {
+  NEVER_DISCARD: 0,    // Never discards downloading. No optimization.
+  DISCARD_DETACHED: 1  // Canceled if the container is not attached anymore.
+};
+
+/**
  * Type of element to store the image.
  * @enum
  */
@@ -87,33 +85,36 @@ ThumbnailLoader.LoaderType = {
 };
 
 /**
- * If an image file does not have an embedded thumbnail we might want to use
- * the image itself as a thumbnail. If the image is too large it hurts
- * the performance a lot so we allow it only for moderately sized files.
- *
- * @param {Object} metadata Metadata object.
- * @return {boolean} Whether it is OK to use the image url for a preview.
- * @private
+ * Maximum thumbnail's width when generating from the full resolution image.
+ * @const
+ * @type {number}
  */
-ThumbnailLoader.canUseImageUrl_ = function(metadata) {
-  return (metadata.filesystem && metadata.filesystem.size &&
-      metadata.filesystem.size <= ThumbnailLoader.MAX_FILE_SIZE) ||
-     (metadata.media && metadata.media.width && metadata.media.height &&
-      metadata.media.width * metadata.media.height <=
-          ThumbnailLoader.MAX_PIXEL_COUNT);
-};
+ThumbnailLoader.THUMBNAIL_MAX_WIDTH = 500;
 
 /**
+ * Maximum thumbnail's height when generating from the full resolution image.
+ * @const
+ * @type {number}
+ */
+ThumbnailLoader.THUMBNAIL_MAX_HEIGHT = 500;
+
+/**
+ * Loads and attaches an image.
  *
  * @param {HTMLElement} box Container element.
  * @param {ThumbnailLoader.FillMode} fillMode Fill mode.
+ * @param {ThumbnailLoader.OptimizationMode=} opt_optimizationMode Optimization
+ *     for downloading thumbnails. By default optimizations are disabled.
  * @param {function(Image, object} opt_onSuccess Success callback,
- *   accepts the image and the transform.
+ *     accepts the image and the transform.
  * @param {function} opt_onError Error callback.
  * @param {function} opt_onGeneric Callback for generic image used.
  */
-ThumbnailLoader.prototype.load = function(
-    box, fillMode, opt_onSuccess, opt_onError, opt_onGeneric) {
+ThumbnailLoader.prototype.load = function(box, fillMode, opt_optimizationMode,
+    opt_onSuccess, opt_onError, opt_onGeneric) {
+  opt_optimizationMode = opt_optimizationMode ||
+      ThumbnailLoader.OptimizationMode.NEVER_DISCARD;
+
   if (!this.thumbnailUrl_) {
     // Relevant CSS rules are in file_types.css.
     box.setAttribute('generic-thumbnail', this.mediaType_);
@@ -142,12 +143,31 @@ ThumbnailLoader.prototype.load = function(
     }
   }.bind(this);
 
-  if (this.image_.src == this.thumbnailUrl_) {
-    console.warn('Thumnbnail already loaded: ' + this.thumbnailUrl_);
+  if (this.image_.src) {
+    console.warn('Thumbnail already loaded: ' + this.thumbnailUrl_);
     return;
   }
 
-  util.loadImage(this.image_, this.thumbnailUrl_);
+  // TODO(mtomasz): Smarter calculation of the requested size.
+  var wasAttached = box.ownerDocument.contains(box);
+  var taskId = util.loadImage(
+      this.image_,
+      this.thumbnailUrl_,
+      { maxWidth: ThumbnailLoader.THUMBNAIL_MAX_WIDTH,
+        maxHeight: ThumbnailLoader.THUMBNAIL_MAX_HEIGHT,
+        cache: true },
+      function() {
+        if (opt_optimizationMode ==
+            ThumbnailLoader.OptimizationMode.DISCARD_DETACHED &&
+            !box.ownerDocument.contains(box)) {
+          // If the container is not attached, then invalidate the download.
+          return false;
+        }
+        return true;
+      });
+
+  if (!taskId)
+    this.image_.classList.add('cached');
 };
 
 /**
@@ -195,7 +215,17 @@ ThumbnailLoader.prototype.loadDetachedImage = function(callback) {
   this.image_ = new Image();
   this.image_.onload = callback.bind(null, true);
   this.image_.onerror = callback.bind(null, false);
-  util.loadImage(this.image_, this.thumbnailUrl_);
+
+  // TODO(mtomasz): Smarter calculation of the requested size.
+  var taskId = util.loadImage(
+      this.image_,
+      this.thumbnailUrl_,
+      { maxWidth: ThumbnailLoader.THUMBNAIL_MAX_WIDTH,
+        maxHeight: ThumbnailLoader.THUMBNAIL_MAX_HEIGHT,
+        cache: true });
+
+  if (!taskId)
+    this.image_.classList.add('cached');
 };
 
 /**

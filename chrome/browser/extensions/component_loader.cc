@@ -254,6 +254,22 @@ void ComponentLoader::AddFileManagerExtension() {
 #endif  // defined(FILE_MANAGER_EXTENSION)
 }
 
+void ComponentLoader::AddImageLoaderExtension() {
+#if defined(IMAGE_LOADER_EXTENSION)
+#ifndef NDEBUG
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kImageLoaderExtensionPath)) {
+    base::FilePath image_loader_extension_path(
+        command_line->GetSwitchValuePath(switches::kImageLoaderExtensionPath));
+    Add(IDR_IMAGE_LOADER_MANIFEST, image_loader_extension_path);
+    return;
+  }
+#endif  // NDEBUG
+  Add(IDR_IMAGE_LOADER_MANIFEST,
+      base::FilePath(FILE_PATH_LITERAL("image_loader")));
+#endif  // defined(IMAGE_LOADER_EXTENSION)
+}
+
 #if defined(OS_CHROMEOS)
 void ComponentLoader::AddGaiaAuthExtension() {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -390,6 +406,7 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
     }
 
     AddFileManagerExtension();
+    AddImageLoaderExtension();
 
 #if defined(ENABLE_SETTINGS_APP)
     Add(IDR_SETTINGS_APP_MANIFEST,

@@ -151,6 +151,21 @@ button.import {
   position: absolute;
 }
 
+.img-container > img:not(.cached) {
+  -webkit-animation: fadeIn ease-in 1;
+  -webkit-animation-duration: 100ms;
+  -webkit-animation-fill-mode: forwards;
+}
+
+@-webkit-keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity :1;
+  }
+}
+
 .grid-item[lead] {
   border: 2px solid transparent !important;
 }

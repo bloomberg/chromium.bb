@@ -487,7 +487,7 @@ ImageUtil.ImageLoader.prototype.load = function(
     // errorCallback has an optional error argument, which in case of general
     // error should not be specified
     this.image_.onerror = errorCallback.bind(this, 'IMAGE_ERROR');
-    this.remoteLoader_ = util.loadImage(this.image_, url);
+    this.taskId_ = util.loadImage(this.image_, url);
   }.bind(this);
   if (opt_delay) {
     this.timeout_ = setTimeout(startLoad, opt_delay);
@@ -533,10 +533,8 @@ ImageUtil.ImageLoader.prototype.cancel = function() {
     this.image_.onerror = function() {};
     this.image_.src = '';
   }
-  if (this.remoteLoader_) {
-    this.remoteLoader_.cancel();
-    this.remoteLoader_ = null;
-  }
+  if (this.taskId_)
+    util.cancelLoadImage(this.taskId_);
   this.generation_++;  // Silence the transform fetcher if it is in progress.
 };
 

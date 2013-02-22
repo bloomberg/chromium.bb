@@ -336,7 +336,8 @@ PhotoImport.prototype.decorateGridItem_ = function(li, entry) {
         new ThumbnailLoader(entry.toURL(),
                             ThumbnailLoader.LoaderType.IMAGE,
                             metadata).
-            load(box, ThumbnailLoader.FillMode.FIT);
+            load(box, ThumbnailLoader.FillMode.FIT,
+            ThumbnailLoader.OptimizationMode.DISCARD_DETACHED);
       });
   frame.appendChild(box);
 

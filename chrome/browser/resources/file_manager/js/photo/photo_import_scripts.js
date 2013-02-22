@@ -8,6 +8,8 @@
 // included file but that's all right since any javascript file should start
 // with a copyright comment anyway.
 
+//<include src="../../../image_loader/client.js"/>
+
 //<include src="../../../../../../ui/webui/resources/js/load_time_data.js"/>
 //<include src="../../../../../../ui/webui/resources/js/util.js"/>
 //<include src="../../../../../../ui/webui/resources/js/i18n_template_no_process.js"/>

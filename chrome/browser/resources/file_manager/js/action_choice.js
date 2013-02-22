@@ -220,7 +220,12 @@ ActionChoice.prototype.renderPreview_ = function(entries, count) {
         new ThumbnailLoader(entry.toURL(),
                             ThumbnailLoader.LoaderType.IMAGE,
                             metadata).load(
-            box, ThumbnailLoader.FillMode.FILL, onSuccess, onError, onError);
+            box,
+            ThumbnailLoader.OptimizationMode.DISCARD_DETACHED,
+            ThumbnailLoader.FillMode.FILL,
+            onSuccess,
+            onError,
+            onError);
       });
 };
 

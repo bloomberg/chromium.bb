@@ -1173,76 +1173,32 @@ util.AppCache.cleanup_ = function(map) {
 };
 
 /**
- * RemoteImageLoader loads an image from a remote url.
- *
- * Fetches a blob via XHR, converts it to a data: url and assigns to img.src.
- * @constructor
- */
-util.RemoteImageLoader = function() {};
-
-/**
- * @param {Image} image Image element.
- * @param {string} url Remote url to load into the image.
- */
-util.RemoteImageLoader.prototype.load = function(image, url) {
-  this.onSuccess_ = function(dataURL) { image.src = dataURL };
-  this.onError_ = function() { image.onerror() };
-
-  var xhr = new XMLHttpRequest();
-  xhr.responseType = 'blob';
-  xhr.onload = function() {
-    if (xhr.status == 200) {
-      var reader = new FileReader;
-      reader.onload = function(e) {
-        this.onSuccess_(e.target.result);
-      }.bind(this);
-      reader.onerror = this.onError_;
-      reader.readAsDataURL(xhr.response);
-    } else {
-      this.onError_();
-    }
-  }.bind(this);
-  xhr.onerror = this.onError_;
-
-  try {
-    xhr.open('GET', url, true);
-    xhr.send();
-  } catch (e) {
-    console.log(e);
-    this.onError_();
-  }
-};
-
-/**
- * Cancels the loading.
- */
-util.RemoteImageLoader.prototype.cancel = function() {
-  // We cannot really cancel the XHR.send and FileReader.readAsDataURL,
-  // silencing the callbacks instead.
-  this.onSuccess_ = this.onError_ = function() {};
-};
-
-/**
  * Load an image.
- *
- * In packaged apps img.src is not allowed to point to http(s)://.
- * For such urls util.RemoteImageLoader is used.
  *
  * @param {Image} image Image element.
  * @param {string} url Source url.
- * @return {util.RemoteImageLoader?} RemoteImageLoader object reference, use it
- *   to cancel the loading.
+ * @param {Object=} opt_options Hash array of options, eg. width, height,
+ *     maxWidth, maxHeight, scale, cache.
+ * @param {function()=} opt_isValid Function returning false iff the task
+ *     is not valid and should be aborted.
+ * @return {?number} Task identifier or null if fetched immediately from
+ *     cache.
  */
-util.loadImage = function(image, url) {
-  if (util.platform.v2() && url.match(/^http(s):/)) {
-    var imageLoader = new util.RemoteImageLoader();
-    imageLoader.load(image, url);
-    return imageLoader;
-  }
+util.loadImage = function(image, url, opt_options, opt_isValid) {
+  return ImageLoader.Client.loadToImage(url,
+                                        image,
+                                        opt_options || {},
+                                        function() { },
+                                        function() { image.onerror(); },
+                                        opt_isValid);
+};
 
-  // OK to load directly.
-  image.src = url;
-  return null;
+/**
+ * Cancels loading an image.
+ * @param {number} taskId Task identifier returned by util.loadImage().
+ */
+util.cancelLoadImage = function(taskId) {
+  ImageLoader.Client.getInstance().cancel(taskId);
 };
 
 /**

@@ -468,6 +468,7 @@ extern const char kWaitForMutex[];
 
 #ifndef NDEBUG
 extern const char kFileManagerExtensionPath[];
+extern const char kImageLoaderExtensionPath[];
 extern const char kDumpProfileDependencyGraph[];
 #endif
 

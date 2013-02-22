@@ -1650,6 +1650,9 @@ const char kWaitForMutex[]                  = "wait-for-mutex";
 // Enables overriding the path of file manager extension.
 const char kFileManagerExtensionPath[]      = "filemgr-ext-path";
 
+// Enables overriding the path of image loader extension.
+const char kImageLoaderExtensionPath[]      = "image-loader-ext-path";
+
 // Dumps dependency information about our profile services into a dot file in
 // the profile directory.
 const char kDumpProfileDependencyGraph[]    = "dump-profile-graph";

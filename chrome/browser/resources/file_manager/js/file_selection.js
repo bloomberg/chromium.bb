@@ -597,6 +597,7 @@ FileSelectionHandler.prototype.renderThumbnail_ = function(entry, callback) {
                                 entry,
                                 this.fileManager_.metadataCache_,
                                 ThumbnailLoader.FillMode.FILL,
+                                ThumbnailLoader.OptimizationMode.NEVER_DISCARD,
                                 callback);
   return thumbnail;
 };
