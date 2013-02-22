@@ -93,8 +93,7 @@ public:
                 NULL,
                 m_proxy->implThread(),
                 m_queue.Pass(),
-                m_resourceProvider.get(),
-                m_proxy->hasImplThread());
+                m_resourceProvider.get());
         updateController->finalize();
         m_queue = make_scoped_ptr(new ResourceUpdateQueue);
     }

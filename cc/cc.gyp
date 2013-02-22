@@ -35,6 +35,7 @@
       'content_layer_updater.h',
       'contents_scaling_layer.cc',
       'contents_scaling_layer.h',
+      'context_provider.h',
       'damage_tracker.cc',
       'damage_tracker.h',
       'debug_border_draw_quad.cc',

@@ -185,8 +185,7 @@ protected:
                 NULL,
                 m_proxy.implThread(),
                 m_queue.Pass(),
-                m_resourceProvider.get(),
-                m_proxy.hasImplThread());
+                m_resourceProvider.get());
         updateController->finalize();
     }
 
@@ -365,7 +364,7 @@ public:
 
 protected:
     FakeResourceUpdateController(cc::ResourceUpdateControllerClient* client, cc::Thread* thread, scoped_ptr<ResourceUpdateQueue> queue, ResourceProvider* resourceProvider)
-        : cc::ResourceUpdateController(client, thread, queue.Pass(), resourceProvider, false)
+        : cc::ResourceUpdateController(client, thread, queue.Pass(), resourceProvider)
         , m_updateMoreTexturesSize(0) { }
 
     base::TimeTicks m_now;

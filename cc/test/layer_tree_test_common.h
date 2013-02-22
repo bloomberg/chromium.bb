@@ -13,7 +13,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebAnimationDelegate.h"
 
+namespace Webkit {
+class WebGraphicsContext3D;
+}
+
 namespace cc {
+class FakeLayerImplTreeHostClient;
 class LayerImpl;
 class LayerTreeHost;
 class LayerTreeHostClient;
@@ -22,6 +27,9 @@ class LayerTreeHostImpl;
 // Used by test stubs to notify the test when something interesting happens.
 class TestHooks : public WebKit::WebAnimationDelegate {
 public:
+    TestHooks();
+    virtual ~TestHooks();
+
     virtual void beginCommitOnThread(LayerTreeHostImpl*) { }
     virtual void commitCompleteOnThread(LayerTreeHostImpl*) { }
     virtual bool prepareToDrawOnThread(
@@ -34,6 +42,7 @@ public:
     virtual void animate(base::TimeTicks monotonicTime) { }
     virtual void layout() { }
     virtual void didRecreateOutputSurface(bool succeeded) { }
+    virtual void willRetryRecreateOutputSurface() { }
     virtual void didAddAnimation() { }
     virtual void didCommit() { }
     virtual void didCommitAndDrawFrame() { }
@@ -46,6 +55,12 @@ public:
     virtual void notifyAnimationFinished(double time) OVERRIDE { }
 
     virtual scoped_ptr<OutputSurface> createOutputSurface();
+
+    virtual scoped_refptr<cc::ContextProvider> OffscreenContextProviderForMainThread();
+    virtual scoped_refptr<cc::ContextProvider> OffscreenContextProviderForCompositorThread();
+
+private:
+    scoped_ptr<FakeLayerImplTreeHostClient> m_fakeClient;
 };
 
 class TimeoutTask;

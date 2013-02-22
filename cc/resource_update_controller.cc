@@ -7,18 +7,17 @@
 #include <limits>
 
 #include "base/debug/trace_event.h"
+#include "cc/context_provider.h"
 #include "cc/prioritized_resource.h"
 #include "cc/resource_provider.h"
 #include "cc/texture_copier.h"
 #include "cc/thread.h"
 #include "skia/ext/refptr.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebSharedGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/gpu/SkGpuDevice.h"
 
 using WebKit::WebGraphicsContext3D;
-using WebKit::WebSharedGraphicsContext3D;
 
 namespace {
 
@@ -67,9 +66,8 @@ size_t ResourceUpdateController::maxFullUpdatesPerTick(
     return texturesPerTick ? texturesPerTick : 1;
 }
 
-ResourceUpdateController::ResourceUpdateController(ResourceUpdateControllerClient* client, Thread* thread, scoped_ptr<ResourceUpdateQueue> queue, ResourceProvider* resourceProvider, bool hasImplThread)
+ResourceUpdateController::ResourceUpdateController(ResourceUpdateControllerClient* client, Thread* thread, scoped_ptr<ResourceUpdateQueue> queue, ResourceProvider* resourceProvider)
     : m_client(client)
-    , m_hasImplThread(hasImplThread)
     , m_queue(queue.Pass())
     , m_resourceProvider(resourceProvider)
     , m_textureUpdatesPerTick(maxFullUpdatesPerTick(resourceProvider))
@@ -130,27 +128,22 @@ void ResourceUpdateController::updateTexture(ResourceUpdate update)
         DCHECK(m_resourceProvider->resourceType(texture->resourceId()) ==
                ResourceProvider::GLTexture);
 
-        WebGraphicsContext3D* paintContext = m_hasImplThread ?
-            WebSharedGraphicsContext3D::compositorThreadContext() :
-            WebSharedGraphicsContext3D::mainThreadContext();
-        GrContext* paintGrContext = m_hasImplThread ?
-            WebSharedGraphicsContext3D::compositorThreadGrContext() :
-            WebSharedGraphicsContext3D::mainThreadGrContext();
+        cc::ContextProvider* offscreenContexts = m_resourceProvider->offscreenContextProvider();
 
-        // Flush the context in which the backing texture is created so that it
-        // is available in other shared contexts. It is important to do here
-        // because the backing texture is created in one context while it is
-        // being written to in another.
         ResourceProvider::ScopedWriteLockGL lock(
             m_resourceProvider, texture->resourceId());
+
+        // Flush the compositor context to ensure that textures there are available
+        // in the shared context.  Do this after locking/creating the compositor
+        // texture.
         m_resourceProvider->flush();
 
-        // Make sure ganesh uses the correct GL context.
-        paintContext->makeContextCurrent();
+        // Make sure skia uses the correct GL context.
+        offscreenContexts->Context3d()->makeContextCurrent();
 
         // Create an accelerated canvas to draw on.
         skia::RefPtr<SkCanvas> canvas = createAcceleratedCanvas(
-            paintGrContext, texture->size(), lock.textureId());
+            offscreenContexts->GrContext(), texture->size(), lock.textureId());
 
         // The compositor expects the textures to be upside-down so it can flip
         // the final composited image. Ganesh renders the image upright so we
@@ -169,13 +162,16 @@ void ResourceUpdateController::updateTexture(ResourceUpdate update)
             pictureRect.y() - sourceRect.y() + destOffset.y());
         canvas->drawPicture(*update.picture);
 
-        // Flush ganesh context so that all the rendered stuff appears on the
+        // Flush skia context so that all the rendered stuff appears on the
         // texture.
-        paintGrContext->flush();
+        offscreenContexts->GrContext()->flush();
 
         // Flush the GL context so rendering results from this context are
         // visible in the compositor's context.
-        paintContext->flush();
+        offscreenContexts->Context3d()->flush();
+
+        // Use the compositor's GL context again.
+        m_resourceProvider->graphicsContext3D()->makeContextCurrent();
     }
 
     if (update.bitmap) {

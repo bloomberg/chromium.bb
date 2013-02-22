@@ -122,6 +122,11 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
     have_extension_egl_image_ = have;
   }
 
+  // When this context is lost, all contexts in its share group are also lost.
+  void add_share_group_context(WebKit::WebGraphicsContext3D* context3d) {
+    shared_contexts_.push_back(context3d);
+  }
+
   static const WebKit::WebGLId kExternalTextureId;
   virtual WebKit::WebGLId NextTextureId();
 
@@ -142,6 +147,7 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   WebGraphicsContextLostCallback* context_lost_callback_;
   std::vector<WebKit::WebGLId> textures_;
   base::hash_set<WebKit::WebGLId> used_textures_;
+  std::vector<WebKit::WebGraphicsContext3D*> shared_contexts_;
   int width_;
   int height_;
 };

@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "cc/compositor_frame.h"
 #include "cc/compositor_frame_metadata.h"
+#include "cc/context_provider.h"
 #include "cc/damage_tracker.h"
 #include "cc/geometry_binding.h"
 #include "cc/gl_frame_data.h"
@@ -31,7 +32,6 @@
 #include "cc/video_layer_impl.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebSharedGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -45,7 +45,6 @@
 
 using WebKit::WebGraphicsContext3D;
 using WebKit::WebGraphicsMemoryAllocation;
-using WebKit::WebSharedGraphicsContext3D;
 
 namespace cc {
 
@@ -154,6 +153,8 @@ bool GLRenderer::initialize()
     // Check for texture fast paths. Currently we always use MO8 textures,
     // so we only need to avoid POT textures if we have an NPOT fast-path.
     m_capabilities.avoidPow2Textures = extensions.count("GL_CHROMIUM_fast_NPOT_MO8_textures");
+
+    m_capabilities.usingOffscreenContext3d = true;
 
     m_isUsingBindUniform = extensions.count("GL_CHROMIUM_bind_uniform_location");
 
@@ -372,67 +373,71 @@ void GLRenderer::drawDebugBorderQuad(const DrawingFrame& frame, const DebugBorde
     GLC(context(), context()->drawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, 0));
 }
 
-static WebGraphicsContext3D* getFilterContext(bool hasImplThread)
-{
-    if (hasImplThread)
-        return WebSharedGraphicsContext3D::compositorThreadContext();
-    else
-        return WebSharedGraphicsContext3D::mainThreadContext();
-}
-
-static GrContext* getFilterGrContext(bool hasImplThread)
-{
-    if (hasImplThread)
-        return WebSharedGraphicsContext3D::compositorThreadGrContext();
-    else
-        return WebSharedGraphicsContext3D::mainThreadGrContext();
-}
-
-static inline SkBitmap applyFilters(GLRenderer* renderer, const WebKit::WebFilterOperations& filters, ScopedResource* sourceTexture, bool hasImplThread)
+static inline SkBitmap applyFilters(GLRenderer* renderer, const WebKit::WebFilterOperations& filters, ScopedResource* sourceTextureResource)
 {
     if (filters.isEmpty())
         return SkBitmap();
 
-    WebGraphicsContext3D* filterContext = getFilterContext(hasImplThread);
-    GrContext* filterGrContext = getFilterGrContext(hasImplThread);
-
-    if (!filterContext || !filterGrContext)
+    cc::ContextProvider* offscreenContexts = renderer->resourceProvider()->offscreenContextProvider();
+    if (!offscreenContexts || !offscreenContexts->Context3d() || !offscreenContexts->GrContext())
         return SkBitmap();
 
-    renderer->context()->flush();
+    ResourceProvider::ScopedWriteLockGL lock(renderer->resourceProvider(), sourceTextureResource->id());
 
-    ResourceProvider::ScopedWriteLockGL lock(renderer->resourceProvider(), sourceTexture->id());
-    SkBitmap source = RenderSurfaceFilters::apply(filters, lock.textureId(), sourceTexture->size(), filterContext, filterGrContext);
+    // Flush the compositor context to ensure that textures there are available
+    // in the shared context.  Do this after locking/creating the compositor
+    // texture.
+    renderer->resourceProvider()->flush();
+
+    // Make sure skia uses the correct GL context.
+    offscreenContexts->Context3d()->makeContextCurrent();
+
+    SkBitmap source = RenderSurfaceFilters::apply(filters, lock.textureId(), sourceTextureResource->size(), offscreenContexts->GrContext());
+
+    // Flush skia context so that all the rendered stuff appears on the
+    // texture.
+    offscreenContexts->GrContext()->flush();
+
+    // Flush the GL context so rendering results from this context are
+    // visible in the compositor's context.
+    offscreenContexts->Context3d()->flush();
+
+    // Use the compositor's GL context again.
+    renderer->resourceProvider()->graphicsContext3D()->makeContextCurrent();
     return source;
 }
 
-static SkBitmap applyImageFilter(GLRenderer* renderer, SkImageFilter* filter, ScopedResource* sourceTexture, bool hasImplThread)
+static SkBitmap applyImageFilter(GLRenderer* renderer, SkImageFilter* filter, ScopedResource* sourceTextureResource)
 {
     if (!filter)
         return SkBitmap();
 
-    WebGraphicsContext3D* context3d = getFilterContext(hasImplThread);
-    GrContext* grContext = getFilterGrContext(hasImplThread);
-
-    if (!context3d || !grContext)
+    cc::ContextProvider* offscreenContexts = renderer->resourceProvider()->offscreenContextProvider();
+    if (!offscreenContexts || !offscreenContexts->Context3d() || !offscreenContexts->GrContext())
         return SkBitmap();
 
-    renderer->context()->flush();
+    ResourceProvider::ScopedWriteLockGL lock(renderer->resourceProvider(), sourceTextureResource->id());
 
-    ResourceProvider::ScopedWriteLockGL lock(renderer->resourceProvider(), sourceTexture->id());
+    // Flush the compositor context to ensure that textures there are available
+    // in the shared context.  Do this after locking/creating the compositor
+    // texture.
+    renderer->resourceProvider()->flush();
+
+    // Make sure skia uses the correct GL context.
+    offscreenContexts->Context3d()->makeContextCurrent();
 
     // Wrap the source texture in a Ganesh platform texture.
     GrBackendTextureDesc backendTextureDescription;
-    backendTextureDescription.fWidth = sourceTexture->size().width();
-    backendTextureDescription.fHeight = sourceTexture->size().height();
+    backendTextureDescription.fWidth = sourceTextureResource->size().width();
+    backendTextureDescription.fHeight = sourceTextureResource->size().height();
     backendTextureDescription.fConfig = kSkia8888_GrPixelConfig;
     backendTextureDescription.fTextureHandle = lock.textureId();
     backendTextureDescription.fOrigin = kTopLeft_GrSurfaceOrigin;
-    skia::RefPtr<GrTexture> texture = skia::AdoptRef(grContext->wrapBackendTexture(backendTextureDescription));
+    skia::RefPtr<GrTexture> texture = skia::AdoptRef(offscreenContexts->GrContext()->wrapBackendTexture(backendTextureDescription));
 
     // Place the platform texture inside an SkBitmap.
     SkBitmap source;
-    source.setConfig(SkBitmap::kARGB_8888_Config, sourceTexture->size().width(), sourceTexture->size().height());
+    source.setConfig(SkBitmap::kARGB_8888_Config, sourceTextureResource->size().width(), sourceTextureResource->size().height());
     skia::RefPtr<SkGrPixelRef> pixelRef = skia::AdoptRef(new SkGrPixelRef(texture.get()));
     source.setPixelRef(pixelRef.get());
 
@@ -444,11 +449,11 @@ static SkBitmap applyImageFilter(GLRenderer* renderer, SkImageFilter* filter, Sc
     desc.fHeight = source.height();
     desc.fConfig = kSkia8888_GrPixelConfig;
     desc.fOrigin = kTopLeft_GrSurfaceOrigin;
-    GrAutoScratchTexture scratchTexture(grContext, desc, GrContext::kExact_ScratchTexMatch);
+    GrAutoScratchTexture scratchTexture(offscreenContexts->GrContext(), desc, GrContext::kExact_ScratchTexMatch);
     skia::RefPtr<GrTexture> backingStore = skia::AdoptRef(scratchTexture.detach());
 
     // Create a device and canvas using that backing store.
-    SkGpuDevice device(grContext, backingStore.get());
+    SkGpuDevice device(offscreenContexts->GrContext(), backingStore.get());
     SkCanvas canvas(&device);
 
     // Draw the source bitmap through the filter to the canvas.
@@ -456,8 +461,18 @@ static SkBitmap applyImageFilter(GLRenderer* renderer, SkImageFilter* filter, Sc
     paint.setImageFilter(filter);
     canvas.clear(0x0);
     canvas.drawSprite(source, 0, 0, &paint);
-    canvas.flush();
-    context3d->flush();
+
+    // Flush skia context so that all the rendered stuff appears on the
+    // texture.
+    offscreenContexts->GrContext()->flush();
+
+    // Flush the GL context so rendering results from this context are
+    // visible in the compositor's context.
+    offscreenContexts->Context3d()->flush();
+
+    // Use the compositor's GL context again.
+    renderer->resourceProvider()->graphicsContext3D()->makeContextCurrent();
+
     return device.accessBitmap(false);
 }
 
@@ -505,7 +520,7 @@ scoped_ptr<ScopedResource> GLRenderer::drawBackgroundFilters(
     if (!getFramebufferTexture(deviceBackgroundTexture.get(), deviceRect))
         return scoped_ptr<ScopedResource>();
 
-    SkBitmap filteredDeviceBackground = applyFilters(this, filters, deviceBackgroundTexture.get(), m_client->hasImplThread());
+    SkBitmap filteredDeviceBackground = applyFilters(this, filters, deviceBackgroundTexture.get());
     if (!filteredDeviceBackground.getTexture())
         return scoped_ptr<ScopedResource>();
 
@@ -558,9 +573,9 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
     // Apply filters to the contents texture.
     SkBitmap filterBitmap;
     if (quad->filter) {
-        filterBitmap = applyImageFilter(this, quad->filter.get(), contentsTexture, m_client->hasImplThread());
+        filterBitmap = applyImageFilter(this, quad->filter.get(), contentsTexture);
     } else {
-        filterBitmap = applyFilters(this, quad->filters, contentsTexture, m_client->hasImplThread());
+        filterBitmap = applyFilters(this, quad->filters, contentsTexture);
     }
 
     // Draw the background texture if there is one.

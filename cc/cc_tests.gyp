@@ -79,6 +79,8 @@
       'test/fake_content_layer_client.h',
       'test/fake_content_layer_impl.cc',
       'test/fake_content_layer_impl.h',
+      'test/fake_context_provider.cc',
+      'test/fake_context_provider.h',
       'test/fake_impl_proxy.h',
       'test/fake_output_surface.h',
       'test/fake_layer_tree_host_client.cc',

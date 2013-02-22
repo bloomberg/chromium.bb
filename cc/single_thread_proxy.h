@@ -14,6 +14,7 @@
 
 namespace cc {
 
+class ContextProvider;
 class LayerTreeHost;
 
 class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
@@ -73,12 +74,13 @@ private:
 
     bool commitAndComposite();
     void doCommit(scoped_ptr<ResourceUpdateQueue>);
-    bool doComposite();
+    bool doComposite(scoped_refptr<cc::ContextProvider> offscreenContextProvider);
     void didSwapFrame();
 
     // Accessed on main thread only.
     LayerTreeHost* m_layerTreeHost;
     bool m_outputSurfaceLost;
+    bool m_createdOffscreenContextProvider;
 
     // Holds on to the context between initializeContext() and initializeRenderer() calls. Shouldn't
     // be used for anything else.

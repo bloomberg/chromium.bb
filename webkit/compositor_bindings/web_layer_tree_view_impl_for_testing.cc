@@ -6,6 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/string_number_conversions.h"
+#include "base/synchronization/lock.h"
+#include "cc/context_provider.h"
 #include "cc/fake_web_graphics_context_3d.h"
 #include "cc/input_handler.h"
 #include "cc/layer.h"
@@ -21,6 +23,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeViewClient.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRenderingStats.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebSharedGraphicsContext3D.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "webkit/compositor_bindings/web_compositor_support_impl.h"
 #include "webkit/compositor_bindings/web_compositor_support_software_output_device.h"
@@ -220,6 +223,79 @@ void WebLayerTreeViewImplForTesting::didCompleteSwapBuffers() { }
 void WebLayerTreeViewImplForTesting::scheduleComposite() {
   if (client_)
     client_->scheduleComposite();
+}
+
+class WebLayerTreeViewImplForTesting::MainThreadContextProvider
+    : public cc::ContextProvider {
+ public:
+  virtual bool InitializeOnMainThread() OVERRIDE { return true; }
+  virtual bool BindToCurrentThread() OVERRIDE { return true; }
+
+  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE {
+    return WebSharedGraphicsContext3D::mainThreadContext();
+  }
+  virtual class GrContext* GrContext() OVERRIDE {
+    return WebSharedGraphicsContext3D::mainThreadGrContext();
+  }
+
+  virtual void VerifyContexts() OVERRIDE {}
+
+ protected:
+  virtual ~MainThreadContextProvider() {}
+};
+
+scoped_refptr<cc::ContextProvider>
+WebLayerTreeViewImplForTesting::OffscreenContextProviderForMainThread() {
+  if (!contexts_main_thread_)
+    contexts_main_thread_ = new MainThreadContextProvider;
+  return contexts_main_thread_;
+}
+
+class WebLayerTreeViewImplForTesting::CompositorThreadContextProvider
+    : public cc::ContextProvider {
+ public:
+  CompositorThreadContextProvider() : destroyed_(false) {}
+
+  virtual bool InitializeOnMainThread() OVERRIDE {
+    return WebSharedGraphicsContext3D::createCompositorThreadContext();
+  }
+  virtual bool BindToCurrentThread() OVERRIDE {
+    return Context3d()->makeContextCurrent();
+  }
+
+  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE {
+    return WebSharedGraphicsContext3D::compositorThreadContext();
+  }
+  virtual class GrContext* GrContext() OVERRIDE {
+    return WebSharedGraphicsContext3D::compositorThreadGrContext();
+  }
+
+  virtual void VerifyContexts() OVERRIDE {
+    if (Context3d() && !Context3d()->isContextLost())
+      return;
+    base::AutoLock lock(destroyed_lock_);
+    destroyed_ = true;
+  }
+
+  bool DestroyedOnMainThread() {
+    base::AutoLock lock(destroyed_lock_);
+    return destroyed_;
+  }
+
+ protected:
+  virtual ~CompositorThreadContextProvider() {}
+
+ private:
+  base::Lock destroyed_lock_;
+  bool destroyed_;
+};
+
+scoped_refptr<cc::ContextProvider>
+WebLayerTreeViewImplForTesting::OffscreenContextProviderForCompositorThread() {
+  if (!contexts_compositor_thread_ ||
+      contexts_compositor_thread_->DestroyedOnMainThread())
+    contexts_compositor_thread_ = new CompositorThreadContextProvider;
+  return contexts_compositor_thread_;
 }
 
 }  // namespace WebKit

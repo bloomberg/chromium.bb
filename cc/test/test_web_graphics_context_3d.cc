@@ -302,6 +302,10 @@ void TestWebGraphicsContext3D::loseContextCHROMIUM(WGC3Denum current,
   context_lost_ = true;
   if (context_lost_callback_)
     context_lost_callback_->onContextLost();
+
+  for (size_t i = 0; i < shared_contexts_.size(); ++i)
+    shared_contexts_[i]->loseContextCHROMIUM(current, other);
+  shared_contexts_.clear();
 }
 
 WebKit::WebGLId TestWebGraphicsContext3D::NextTextureId() {

@@ -27,9 +27,9 @@ protected:
 
 class CC_EXPORT ResourceUpdateController {
 public:
-    static scoped_ptr<ResourceUpdateController> create(ResourceUpdateControllerClient* client, Thread* thread, scoped_ptr<ResourceUpdateQueue> queue, ResourceProvider* resourceProvider, bool hasImplThread)
+    static scoped_ptr<ResourceUpdateController> create(ResourceUpdateControllerClient* client, Thread* thread, scoped_ptr<ResourceUpdateQueue> queue, ResourceProvider* resourceProvider)
     {
-        return make_scoped_ptr(new ResourceUpdateController(client, thread, queue.Pass(), resourceProvider, hasImplThread));
+        return make_scoped_ptr(new ResourceUpdateController(client, thread, queue.Pass(), resourceProvider));
     }
     static size_t maxPartialTextureUpdates();
 
@@ -48,7 +48,7 @@ public:
     virtual size_t updateMoreTexturesSize() const;
 
 protected:
-    ResourceUpdateController(ResourceUpdateControllerClient*, Thread*, scoped_ptr<ResourceUpdateQueue>, ResourceProvider*, bool hasImplThread);
+    ResourceUpdateController(ResourceUpdateControllerClient*, Thread*, scoped_ptr<ResourceUpdateQueue>, ResourceProvider*);
 
 private:
     static size_t maxFullUpdatesPerTick(ResourceProvider*);
@@ -64,7 +64,6 @@ private:
     void onTimerFired();
 
     ResourceUpdateControllerClient* m_client;
-    bool m_hasImplThread;
     scoped_ptr<ResourceUpdateQueue> m_queue;
     bool m_contentsTexturesPurged;
     ResourceProvider* m_resourceProvider;

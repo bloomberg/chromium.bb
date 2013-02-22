@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "cc/context_provider.h"
 #include "cc/input_handler.h"
 #include "cc/layer.h"
 #include "cc/layer_tree_host.h"
@@ -324,6 +325,38 @@ void CompositorImpl::didCompleteSwapBuffers() {
 
 void CompositorImpl::scheduleComposite() {
   client_->ScheduleComposite();
+}
+
+class NullContextProvider : public cc::ContextProvider {
+  virtual bool InitializeOnMainThread() { return false; }
+  virtual bool BindToCurrentThread() { return false; }
+  virtual WebKit::WebGraphicsContext3D* Context3d() { return NULL; }
+  virtual class GrContext* GrContext() { return NULL; }
+  virtual void VerifyContexts() {}
+ protected:
+  virtual ~NullContextProvider() {}
+};
+
+scoped_refptr<cc::ContextProvider>
+CompositorImpl::OffscreenContextProviderForMainThread() {
+  // There is no support for offscreen contexts, or compositor filters that
+  // would require them in this compositor instance. If they are needed,
+  // then implement a context provider that provides contexts from
+  // ImageTransportSurfaceAndroid.
+  if (!null_offscreen_context_provider_)
+    null_offscreen_context_provider_ = new NullContextProvider();
+  return null_offscreen_context_provider_;
+}
+
+scoped_refptr<cc::ContextProvider>
+CompositorImpl::OffscreenContextProviderForCompositorThread() {
+  // There is no support for offscreen contexts, or compositor filters that
+  // would require them in this compositor instance. If they are needed,
+  // then implement a context provider that provides contexts from
+  // ImageTransportSurfaceAndroid.
+  if (!null_offscreen_context_provider_)
+    null_offscreen_context_provider_ = new NullContextProvider();
+  return null_offscreen_context_provider_;
 }
 
 void CompositorImpl::OnViewContextSwapBuffersPosted() {

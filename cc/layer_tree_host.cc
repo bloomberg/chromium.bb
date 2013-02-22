@@ -36,8 +36,6 @@ static int numLayerTreeInstances;
 
 namespace cc {
 
-bool LayerTreeHost::s_needsFilterContext = false;
-
 RendererCapabilities::RendererCapabilities()
     : bestTextureFormat(0)
     , usingPartialSwap(false)
@@ -48,6 +46,7 @@ RendererCapabilities::RendererCapabilities()
     , usingDiscardBackbuffer(false)
     , usingEglImage(false)
     , allowPartialTextureUpdates(false)
+    , usingOffscreenContext3d(false)
     , maxTextureSize(0)
     , avoidPow2Textures(false)
 {
@@ -73,6 +72,7 @@ scoped_ptr<LayerTreeHost> LayerTreeHost::create(LayerTreeHostClient* client, con
 LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client, const LayerTreeSettings& settings)
     : m_animating(false)
     , m_needsFullTreeSync(true)
+    , m_needsFilterContext(false)
     , m_client(client)
     , m_commitNumber(0)
     , m_renderingStats()
@@ -182,6 +182,8 @@ LayerTreeHost::RecreateResult LayerTreeHost::recreateOutputSurface()
         m_outputSurfaceLost = false;
         return RecreateSucceeded;
     }
+
+    m_client->willRetryRecreateOutputSurface();
 
     // Tolerate a certain number of recreation failures to work around races
     // in the output-surface-lost machinery.

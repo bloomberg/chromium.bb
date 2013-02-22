@@ -15,6 +15,7 @@
 #include "cc/single_thread_proxy.h"
 #include "cc/thread_impl.h"
 #include "cc/test/animation_test_common.h"
+#include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/occlusion_tracker_test_common.h"
 #include "cc/test/tiled_layer_test_common.h"
@@ -27,6 +28,15 @@
 using namespace WebKit;
 
 namespace cc {
+
+TestHooks::TestHooks()
+{
+  bool useSoftwareRendering = false;
+  bool useDelegatingRenderer = false;
+  m_fakeClient.reset(new FakeLayerImplTreeHostClient(useSoftwareRendering, useDelegatingRenderer));
+}
+
+TestHooks::~TestHooks() { }
 
 bool TestHooks::prepareToDrawOnThread(cc::LayerTreeHostImpl*, LayerTreeHostImpl::FrameData&, bool)
 {
@@ -41,6 +51,16 @@ bool TestHooks::canActivatePendingTree()
 scoped_ptr<OutputSurface> TestHooks::createOutputSurface()
 {
     return createFakeOutputSurface();
+}
+
+scoped_refptr<cc::ContextProvider> TestHooks::OffscreenContextProviderForMainThread()
+{
+    return m_fakeClient->OffscreenContextProviderForMainThread();
+}
+
+scoped_refptr<cc::ContextProvider> TestHooks::OffscreenContextProviderForCompositorThread()
+{
+    return m_fakeClient->OffscreenContextProviderForCompositorThread();
 }
 
 scoped_ptr<MockLayerTreeHostImpl> MockLayerTreeHostImpl::create(TestHooks* testHooks, const LayerTreeSettings& settings, LayerTreeHostImplClient* client, Proxy* proxy)
@@ -198,6 +218,11 @@ public:
         m_testHooks->didRecreateOutputSurface(succeeded);
     }
 
+    virtual void willRetryRecreateOutputSurface() OVERRIDE
+    {
+        m_testHooks->willRetryRecreateOutputSurface();
+    }
+
     virtual scoped_ptr<InputHandler> createInputHandler() OVERRIDE
     {
         return scoped_ptr<InputHandler>();
@@ -224,6 +249,16 @@ public:
     virtual void scheduleComposite() OVERRIDE
     {
         m_testHooks->scheduleComposite();
+    }
+
+    virtual scoped_refptr<cc::ContextProvider> OffscreenContextProviderForMainThread() OVERRIDE
+    {
+        return m_testHooks->OffscreenContextProviderForMainThread();
+    }
+
+    virtual scoped_refptr<cc::ContextProvider> OffscreenContextProviderForCompositorThread() OVERRIDE
+    {
+        return m_testHooks->OffscreenContextProviderForCompositorThread();
     }
 
 private:
@@ -311,8 +346,6 @@ void ThreadedTest::doBeginTest()
     m_beginning = false;
     if (m_endWhenBeginReturns)
         realEndTest();
-
-    LayerTreeHost::setNeedsFilterContext(false);
 
     // Allow commits to happen once beginTest() has had a chance to post tasks
     // so that those tasks will happen before the first commit.

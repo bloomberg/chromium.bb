@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
+#include "cc/context_provider.h"
 #include "cc/delay_based_time_source.h"
 #include "cc/draw_quad.h"
 #include "cc/frame_rate_controller.h"
@@ -17,9 +18,6 @@
 #include "cc/prioritized_resource_manager.h"
 #include "cc/scheduler.h"
 #include "cc/thread.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebSharedGraphicsContext3D.h"
-
-using WebKit::WebSharedGraphicsContext3D;
 
 namespace {
 
@@ -43,6 +41,7 @@ ThreadProxy::ThreadProxy(LayerTreeHost* layerTreeHost, scoped_ptr<Thread> implTh
     , m_animateRequested(false)
     , m_commitRequested(false)
     , m_commitRequestSentToImplThread(false)
+    , m_createdOffscreenContextProvider(false)
     , m_layerTreeHost(layerTreeHost)
     , m_rendererInitialized(false)
     , m_started(false)
@@ -228,9 +227,12 @@ bool ThreadProxy::recreateOutputSurface()
     scoped_ptr<OutputSurface> outputSurface = m_layerTreeHost->createOutputSurface();
     if (!outputSurface.get())
         return false;
-    if (m_layerTreeHost->needsSharedContext())
-        if (!WebSharedGraphicsContext3D::createCompositorThreadContext())
+    scoped_refptr<cc::ContextProvider> offscreenContextProvider;
+    if (m_createdOffscreenContextProvider) {
+        offscreenContextProvider = m_layerTreeHost->client()->OffscreenContextProviderForCompositorThread();
+        if (!offscreenContextProvider->InitializeOnMainThread())
             return false;
+    }
 
     // Make a blocking call to recreateOutputSurfaceOnImplThread. The results of that
     // call are pushed into the recreateSucceeded and capabilities local
@@ -243,6 +245,7 @@ bool ThreadProxy::recreateOutputSurface()
                                              m_implThreadWeakPtr,
                                              &completion,
                                              base::Passed(&outputSurface),
+                                             offscreenContextProvider,
                                              &recreateSucceeded,
                                              &capabilities));
     completion.wait();
@@ -314,6 +317,8 @@ void ThreadProxy::checkOutputSurfaceStatusOnImplThread()
     TRACE_EVENT0("cc", "ThreadProxy::checkOutputSurfaceStatusOnImplThread");
     if (!m_layerTreeHostImpl->isContextLost())
         return;
+    if (cc::ContextProvider* offscreenContexts = m_layerTreeHostImpl->resourceProvider()->offscreenContextProvider())
+        offscreenContexts->VerifyContexts();
     m_schedulerOnImplThread->didLoseOutputSurface();
 }
 
@@ -599,9 +604,6 @@ void ThreadProxy::beginFrame(scoped_ptr<BeginFrameAndCommitState> beginFrameStat
         return;
     }
 
-    if (m_layerTreeHost->needsSharedContext() && !WebSharedGraphicsContext3D::haveCompositorThreadContext())
-        WebSharedGraphicsContext3D::createCompositorThreadContext();
-
     // Do not notify the impl thread of commit requests that occur during
     // the apply/animate/layout part of the beginFrameAndCommit process since
     // those commit requests will get painted immediately. Once we have done
@@ -671,6 +673,15 @@ void ThreadProxy::beginFrame(scoped_ptr<BeginFrameAndCommitState> beginFrameStat
         setNeedsAnimate();
     }
 
+    scoped_refptr<cc::ContextProvider> offscreenContextProvider;
+    if (m_RendererCapabilitiesMainThreadCopy.usingOffscreenContext3d && m_layerTreeHost->needsOffscreenContext()) {
+        offscreenContextProvider = m_layerTreeHost->client()->OffscreenContextProviderForCompositorThread();
+        if (offscreenContextProvider->InitializeOnMainThread())
+            m_createdOffscreenContextProvider = true;
+        else
+            offscreenContextProvider = NULL;
+    }
+
     // Notify the impl thread that the beginFrame has completed. This will
     // begin the commit process, which is blocking from the main thread's
     // point of view, but asynchronously performed on the impl thread,
@@ -682,7 +693,7 @@ void ThreadProxy::beginFrame(scoped_ptr<BeginFrameAndCommitState> beginFrameStat
 
         base::TimeTicks startTime = base::TimeTicks::HighResNow();
         CompletionEvent completion;
-        Proxy::implThread()->postTask(base::Bind(&ThreadProxy::beginFrameCompleteOnImplThread, m_implThreadWeakPtr, &completion, queue.release()));
+        Proxy::implThread()->postTask(base::Bind(&ThreadProxy::beginFrameCompleteOnImplThread, m_implThreadWeakPtr, &completion, queue.release(), offscreenContextProvider));
         completion.wait();
         base::TimeTicks endTime = base::TimeTicks::HighResNow();
 
@@ -694,7 +705,7 @@ void ThreadProxy::beginFrame(scoped_ptr<BeginFrameAndCommitState> beginFrameStat
     m_layerTreeHost->didBeginFrame();
 }
 
-void ThreadProxy::beginFrameCompleteOnImplThread(CompletionEvent* completion, ResourceUpdateQueue* rawQueue)
+void ThreadProxy::beginFrameCompleteOnImplThread(CompletionEvent* completion, ResourceUpdateQueue* rawQueue, scoped_refptr<cc::ContextProvider> offscreenContextProvider)
 {
     scoped_ptr<ResourceUpdateQueue> queue(rawQueue);
 
@@ -710,6 +721,8 @@ void ThreadProxy::beginFrameCompleteOnImplThread(CompletionEvent* completion, Re
         return;
     }
 
+    m_layerTreeHostImpl->resourceProvider()->setOffscreenContextProvider(offscreenContextProvider);
+
     if (m_layerTreeHost->contentsTextureManager()->linkedEvictedBackingsExist()) {
         // Clear any uploads we were making to textures linked to evicted
         // resources
@@ -721,7 +734,7 @@ void ThreadProxy::beginFrameCompleteOnImplThread(CompletionEvent* completion, Re
 
     m_layerTreeHost->contentsTextureManager()->pushTexturePrioritiesToBackings();
 
-    m_currentResourceUpdateControllerOnImplThread = ResourceUpdateController::create(this, Proxy::implThread(), queue.Pass(), m_layerTreeHostImpl->resourceProvider(), hasImplThread());
+    m_currentResourceUpdateControllerOnImplThread = ResourceUpdateController::create(this, Proxy::implThread(), queue.Pass(), m_layerTreeHostImpl->resourceProvider());
     m_currentResourceUpdateControllerOnImplThread->performMoreUpdates(
         m_schedulerOnImplThread->anticipatedDrawTime());
 
@@ -1059,7 +1072,7 @@ size_t ThreadProxy::maxPartialTextureUpdates() const
     return ResourceUpdateController::maxPartialTextureUpdates();
 }
 
-void ThreadProxy::recreateOutputSurfaceOnImplThread(CompletionEvent* completion, scoped_ptr<OutputSurface> outputSurface, bool* recreateSucceeded, RendererCapabilities* capabilities)
+void ThreadProxy::recreateOutputSurfaceOnImplThread(CompletionEvent* completion, scoped_ptr<OutputSurface> outputSurface, scoped_refptr<cc::ContextProvider> offscreenContextProvider, bool* recreateSucceeded, RendererCapabilities* capabilities)
 {
     TRACE_EVENT0("cc", "ThreadProxy::recreateOutputSurfaceOnImplThread");
     DCHECK(isImplThread());
@@ -1067,7 +1080,10 @@ void ThreadProxy::recreateOutputSurfaceOnImplThread(CompletionEvent* completion,
     *recreateSucceeded = m_layerTreeHostImpl->initializeRenderer(outputSurface.Pass());
     if (*recreateSucceeded) {
         *capabilities = m_layerTreeHostImpl->rendererCapabilities();
+        m_layerTreeHostImpl->resourceProvider()->setOffscreenContextProvider(offscreenContextProvider);
         m_schedulerOnImplThread->didRecreateOutputSurface();
+    } else if (offscreenContextProvider) {
+        offscreenContextProvider->VerifyContexts();
     }
     completion->signal();
 }

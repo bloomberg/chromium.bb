@@ -83,6 +83,10 @@ class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
   virtual void didCommitAndDrawFrame() OVERRIDE;
   virtual void didCompleteSwapBuffers() OVERRIDE;
   virtual void scheduleComposite() OVERRIDE;
+  virtual scoped_refptr<cc::ContextProvider>
+      OffscreenContextProviderForMainThread() OVERRIDE;
+  virtual scoped_refptr<cc::ContextProvider>
+      OffscreenContextProviderForCompositorThread() OVERRIDE;
 
 private:
   RenderWidgetCompositor(RenderWidget* widget,
@@ -94,6 +98,11 @@ private:
   RenderWidget* widget_;
   WebKit::WebLayerTreeViewClient* client_;
   scoped_ptr<cc::LayerTreeHost> layer_tree_host_;
+
+  class MainThreadContextProvider;
+  scoped_refptr<MainThreadContextProvider> contexts_main_thread_;
+  class CompositorThreadContextProvider;
+  scoped_refptr<CompositorThreadContextProvider> contexts_compositor_thread_;
 };
 
 }  // namespace content

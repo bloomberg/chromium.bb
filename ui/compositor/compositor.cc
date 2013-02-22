@@ -9,10 +9,12 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "cc/context_provider.h"
 #include "cc/input_handler.h"
 #include "cc/layer.h"
 #include "cc/layer_tree_host.h"
@@ -28,6 +30,7 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_switches.h"
+#include "webkit/gpu/grcontext_for_webgraphicscontext3d.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 
 #if defined(OS_CHROMEOS)
@@ -68,6 +71,34 @@ class PendingSwap {
   ui::PostedSwapQueue* posted_swaps_;
 
   DISALLOW_COPY_AND_ASSIGN(PendingSwap);
+};
+
+class NullContextProvider : public cc::ContextProvider {
+ public:
+  virtual bool InitializeOnMainThread() OVERRIDE { return false; }
+  virtual bool BindToCurrentThread() OVERRIDE { return false; }
+  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE { return NULL; }
+  virtual class GrContext* GrContext() OVERRIDE { return NULL; }
+  virtual void VerifyContexts() OVERRIDE {}
+
+ protected:
+  virtual ~NullContextProvider() {}
+};
+
+struct MainThreadNullContextProvider {
+  scoped_refptr<NullContextProvider> provider;
+
+  static MainThreadNullContextProvider* GetInstance() {
+    return Singleton<MainThreadNullContextProvider>::get();
+  }
+};
+
+struct CompositorThreadNullContextProvider {
+  scoped_refptr<NullContextProvider> provider;
+
+  static CompositorThreadNullContextProvider* GetInstance() {
+    return Singleton<CompositorThreadNullContextProvider>::get();
+  }
 };
 
 }  // namespace
@@ -120,6 +151,73 @@ cc::OutputSurface* DefaultContextFactory::CreateOutputSurface(
 
 WebKit::WebGraphicsContext3D* DefaultContextFactory::CreateOffscreenContext() {
   return CreateContextCommon(NULL, true);
+}
+
+class DefaultContextFactory::DefaultContextProvider
+    : public cc::ContextProvider {
+ public:
+  DefaultContextProvider(ContextFactory* factory)
+      : factory_(factory),
+        destroyed_(false) {}
+
+  virtual bool InitializeOnMainThread() OVERRIDE {
+    context3d_.reset(factory_->CreateOffscreenContext());
+    return !!context3d_;
+  }
+
+  virtual bool BindToCurrentThread() {
+    return context3d_->makeContextCurrent();
+  }
+
+  virtual WebKit::WebGraphicsContext3D* Context3d() { return context3d_.get(); }
+
+  virtual class GrContext* GrContext() {
+    if (!gr_context_) {
+      gr_context_.reset(
+          new webkit::gpu::GrContextForWebGraphicsContext3D(context3d_.get()));
+    }
+    return gr_context_->get();
+  }
+
+  virtual void VerifyContexts() OVERRIDE {
+    if (context3d_ && !context3d_->isContextLost())
+      return;
+    base::AutoLock lock(destroyed_lock_);
+    destroyed_ = true;
+  }
+
+  bool DestroyedOnMainThread() {
+    base::AutoLock lock(destroyed_lock_);
+    return destroyed_;
+  }
+
+ protected:
+  virtual ~DefaultContextProvider() {}
+
+ private:
+  ContextFactory* factory_;
+  base::Lock destroyed_lock_;
+  bool destroyed_;
+  scoped_ptr<WebKit::WebGraphicsContext3D> context3d_;
+  scoped_ptr<webkit::gpu::GrContextForWebGraphicsContext3D> gr_context_;
+};
+
+scoped_refptr<cc::ContextProvider>
+DefaultContextFactory::OffscreenContextProviderForMainThread() {
+  if (!offscreen_contexts_main_thread_ ||
+      !offscreen_contexts_main_thread_->DestroyedOnMainThread()) {
+    offscreen_contexts_main_thread_ = new DefaultContextProvider(this);
+  }
+  return offscreen_contexts_main_thread_;
+}
+
+scoped_refptr<cc::ContextProvider>
+DefaultContextFactory::OffscreenContextProviderForCompositorThread() {
+  if (!offscreen_contexts_compositor_thread_ ||
+      !offscreen_contexts_compositor_thread_->DestroyedOnMainThread()) {
+    offscreen_contexts_compositor_thread_ = new DefaultContextProvider(this);
+  }
+  return offscreen_contexts_compositor_thread_;
 }
 
 void DefaultContextFactory::RemoveCompositor(Compositor* compositor) {
@@ -516,6 +614,31 @@ void Compositor::didCompleteSwapBuffers() {
 void Compositor::scheduleComposite() {
   if (!disable_schedule_composite_)
     ScheduleDraw();
+}
+
+scoped_refptr<cc::ContextProvider>
+Compositor::OffscreenContextProviderForMainThread() {
+  if (g_test_compositor_enabled) {
+    if (!MainThreadNullContextProvider::GetInstance()->provider) {
+      MainThreadNullContextProvider::GetInstance()->provider =
+          new NullContextProvider;
+    }
+    return MainThreadNullContextProvider::GetInstance()->provider;
+  }
+  return ContextFactory::GetInstance()->OffscreenContextProviderForMainThread();
+}
+
+scoped_refptr<cc::ContextProvider>
+Compositor::OffscreenContextProviderForCompositorThread() {
+  if (g_test_compositor_enabled) {
+    if (!CompositorThreadNullContextProvider::GetInstance()->provider) {
+      CompositorThreadNullContextProvider::GetInstance()->provider =
+          new NullContextProvider;
+    }
+    return CompositorThreadNullContextProvider::GetInstance()->provider;
+  }
+  return ContextFactory::GetInstance()->
+      OffscreenContextProviderForCompositorThread();
 }
 
 scoped_refptr<CompositorLock> Compositor::GetCompositorLock() {

@@ -97,6 +97,9 @@ void Layer::setLayerTreeHost(LayerTreeHost* host)
 
     if (host && m_layerAnimationController->hasAnyAnimation())
         host->setNeedsCommit();
+    if (host && (!m_filters.isEmpty() || !m_backgroundFilters.isEmpty() || m_filter))
+        m_layerTreeHost->setNeedsFilterContext();
+
 }
 
 void Layer::setNeedsCommit()
@@ -365,8 +368,8 @@ void Layer::setFilters(const WebKit::WebFilterOperations& filters)
     DCHECK(!m_filter);
     m_filters = filters;
     setNeedsCommit();
-    if (!filters.isEmpty())
-        LayerTreeHost::setNeedsFilterContext(true);
+    if (!filters.isEmpty() && m_layerTreeHost)
+        m_layerTreeHost->setNeedsFilterContext();
 }
 
 void Layer::setFilter(const skia::RefPtr<SkImageFilter>& filter)
@@ -376,8 +379,8 @@ void Layer::setFilter(const skia::RefPtr<SkImageFilter>& filter)
     DCHECK(m_filters.isEmpty());
     m_filter = filter;
     setNeedsCommit();
-    if (filter)
-        LayerTreeHost::setNeedsFilterContext(true);
+    if (filter && m_layerTreeHost)
+        m_layerTreeHost->setNeedsFilterContext();
 }
 
 void Layer::setBackgroundFilters(const WebKit::WebFilterOperations& backgroundFilters)
@@ -386,8 +389,8 @@ void Layer::setBackgroundFilters(const WebKit::WebFilterOperations& backgroundFi
         return;
     m_backgroundFilters = backgroundFilters;
     setNeedsCommit();
-    if (!backgroundFilters.isEmpty())
-        LayerTreeHost::setNeedsFilterContext(true);
+    if (!backgroundFilters.isEmpty() && m_layerTreeHost)
+        m_layerTreeHost->setNeedsFilterContext();
 }
 
 void Layer::setOpacity(float opacity)

@@ -35,6 +35,8 @@
         # This list contains all .h and .cc in gpu except for test code.
         'gl_bindings_skia_cmd_buffer.cc',
         'gl_bindings_skia_cmd_buffer.h',
+	'grcontext_for_webgraphicscontext3d.cc',
+	'grcontext_for_webgraphicscontext3d.h',
         'webgraphicscontext3d_in_process_command_buffer_impl.cc',
         'webgraphicscontext3d_in_process_command_buffer_impl.h',
         'webgraphicscontext3d_in_process_impl.cc',

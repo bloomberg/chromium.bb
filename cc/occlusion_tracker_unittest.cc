@@ -189,7 +189,6 @@ protected:
         m_renderSurfaceLayerListImpl.clear();
         m_replicaLayers.clear();
         m_maskLayers.clear();
-        LayerTreeHost::setNeedsFilterContext(false);
     }
 
     typename Types::HostType* getHost();

@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/debug/trace_event.h"
+#include "cc/context_provider.h"
 #include "cc/draw_quad.h"
 #include "cc/layer_tree_host.h"
 #include "cc/layer_tree_impl.h"
@@ -25,6 +26,7 @@ SingleThreadProxy::SingleThreadProxy(LayerTreeHost* layerTreeHost)
     : Proxy(scoped_ptr<Thread>(NULL))
     , m_layerTreeHost(layerTreeHost)
     , m_outputSurfaceLost(false)
+    , m_createdOffscreenContextProvider(false)
     , m_rendererInitialized(false)
     , m_nextFrameIsNewlyCommittedFrame(false)
     , m_insideDraw(false)
@@ -139,6 +141,12 @@ bool SingleThreadProxy::recreateOutputSurface()
     scoped_ptr<OutputSurface> outputSurface = m_layerTreeHost->createOutputSurface();
     if (!outputSurface.get())
         return false;
+    scoped_refptr<cc::ContextProvider> offscreenContextProvider;
+    if (m_createdOffscreenContextProvider) {
+        offscreenContextProvider = m_layerTreeHost->client()->OffscreenContextProviderForMainThread();
+        if (!offscreenContextProvider->InitializeOnMainThread())
+            return false;
+    }
 
     bool initialized;
     {
@@ -148,6 +156,9 @@ bool SingleThreadProxy::recreateOutputSurface()
         initialized = m_layerTreeHostImpl->initializeRenderer(outputSurface.Pass());
         if (initialized) {
             m_RendererCapabilitiesForMainThread = m_layerTreeHostImpl->rendererCapabilities();
+            m_layerTreeHostImpl->resourceProvider()->setOffscreenContextProvider(offscreenContextProvider);
+        } else if (offscreenContextProvider) {
+            offscreenContextProvider->VerifyContexts();
         }
     }
 
@@ -196,8 +207,7 @@ void SingleThreadProxy::doCommit(scoped_ptr<ResourceUpdateQueue> queue)
                 NULL,
                 Proxy::mainThread(),
                 queue.Pass(),
-                m_layerTreeHostImpl->resourceProvider(),
-                hasImplThread());
+                m_layerTreeHostImpl->resourceProvider());
         updateController->finalize();
 
         m_layerTreeHost->finishCommitOnImplThread(m_layerTreeHostImpl.get());
@@ -382,6 +392,15 @@ bool SingleThreadProxy::commitAndComposite()
     if (!m_layerTreeHost->initializeRendererIfNeeded())
         return false;
 
+    scoped_refptr<cc::ContextProvider> offscreenContextProvider;
+    if (m_RendererCapabilitiesForMainThread.usingOffscreenContext3d && m_layerTreeHost->needsOffscreenContext()) {
+        offscreenContextProvider = m_layerTreeHost->client()->OffscreenContextProviderForMainThread();
+        if (offscreenContextProvider->InitializeOnMainThread())
+            m_createdOffscreenContextProvider = true;
+        else
+            offscreenContextProvider = NULL;
+    }
+
     m_layerTreeHost->contentsTextureManager()->unlinkAndClearEvictedBackings();
 
     scoped_ptr<ResourceUpdateQueue> queue = make_scoped_ptr(new ResourceUpdateQueue);
@@ -389,17 +408,19 @@ bool SingleThreadProxy::commitAndComposite()
 
     m_layerTreeHost->willCommit();
     doCommit(queue.Pass());
-    bool result = doComposite();
+    bool result = doComposite(offscreenContextProvider);
     m_layerTreeHost->didBeginFrame();
     return result;
 }
 
-bool SingleThreadProxy::doComposite()
+bool SingleThreadProxy::doComposite(scoped_refptr<cc::ContextProvider> offscreenContextProvider)
 {
     DCHECK(!m_outputSurfaceLost);
     {
         DebugScopedSetImplThread impl(this);
         base::AutoReset<bool> markInside(&m_insideDraw, true);
+
+        m_layerTreeHostImpl->resourceProvider()->setOffscreenContextProvider(offscreenContextProvider);
 
         if (!m_layerTreeHostImpl->visible())
             return false;
@@ -422,6 +443,8 @@ bool SingleThreadProxy::doComposite()
     }
 
     if (m_outputSurfaceLost) {
+        if (cc::ContextProvider* offscreenContexts = m_layerTreeHostImpl->resourceProvider()->offscreenContextProvider())
+            offscreenContexts->VerifyContexts();
         m_layerTreeHost->didLoseOutputSurface();
         return false;
     }

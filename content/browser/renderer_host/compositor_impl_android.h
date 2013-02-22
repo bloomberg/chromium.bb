@@ -77,6 +77,10 @@ class CONTENT_EXPORT CompositorImpl
   virtual void didCommitAndDrawFrame() OVERRIDE;
   virtual void didCompleteSwapBuffers() OVERRIDE;
   virtual void scheduleComposite() OVERRIDE;
+  virtual scoped_refptr<cc::ContextProvider>
+      OffscreenContextProviderForMainThread() OVERRIDE;
+  virtual scoped_refptr<cc::ContextProvider>
+      OffscreenContextProviderForCompositorThread() OVERRIDE;
 
   // WebGraphicsContext3DSwapBuffersClient implementation.
   virtual void OnViewContextSwapBuffersPosted() OVERRIDE;
@@ -99,6 +103,8 @@ class CONTENT_EXPORT CompositorImpl
 
   Compositor::Client* client_;
   base::WeakPtrFactory<CompositorImpl> weak_factory_;
+
+  scoped_refptr<cc::ContextProvider> null_offscreen_context_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorImpl);
 };

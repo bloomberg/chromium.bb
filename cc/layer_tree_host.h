@@ -69,6 +69,7 @@ struct CC_EXPORT RendererCapabilities {
     bool usingDiscardBackbuffer;
     bool usingEglImage;
     bool allowPartialTextureUpdates;
+    bool usingOffscreenContext3d;
     int maxTextureSize;
     bool avoidPow2Textures;
 };
@@ -83,9 +84,8 @@ public:
     // Returns true if any LayerTreeHost is alive.
     static bool anyLayerTreeHostInstanceExists();
 
-    static bool needsFilterContext() { return s_needsFilterContext; }
-    static void setNeedsFilterContext(bool needsFilterContext) { s_needsFilterContext = needsFilterContext; }
-    bool needsSharedContext() const { return needsFilterContext() || settings().acceleratePainting; }
+    void setNeedsFilterContext() { m_needsFilterContext = true; }
+    bool needsOffscreenContext() const { return m_needsFilterContext || settings().acceleratePainting; }
 
     // LayerTreeHost interface to Proxy.
     void willBeginFrame() { m_client->willBeginFrame(); }
@@ -233,6 +233,7 @@ private:
 
     bool m_animating;
     bool m_needsFullTreeSync;
+    bool m_needsFilterContext;
 
     base::CancelableClosure m_prepaintCallback;
 
@@ -276,8 +277,6 @@ private:
     size_t m_partialTextureUpdateRequests;
 
     scoped_ptr<AnimationRegistrar> m_animationRegistrar;
-
-    static bool s_needsFilterContext;
 
     DISALLOW_COPY_AND_ASSIGN(LayerTreeHost);
 };
