@@ -8,17 +8,14 @@
 }
 
 body {
-  color: #333;
   font: 13px/22px 'Open Sans',arial,sans-serif;
-  font-weight: 400;
-  background-color: white;
   margin: auto;
   padding: 0;
+  background-color: white;
 }
 
 p {
   margin: 1em 0 0 0;
-  color: #767676;
   font-size: 14px;
 }
 
@@ -65,46 +62,6 @@ a:hover {
 
 #toc a {
   color: black;
-}
-
-ol, ul {
-  color: #767676;
-}
-
-#header {
-  margin: auto;
-  max-width: 1160px;
-  padding: 0 50px;
-  position: relative;
-  height: 60px;
-}
-
-#logo {
-  position: relative;
-  padding-top: 10px;
-  z-index: 2;
-}
-
-#logo img {
-  padding: 10px 0;
-}
-
-#cse {
-  width: 400px;
-  padding-top: 5px;
-  z-index: 1;
-  position: absolute;
-  right: 50px;
-}
-
-/*
- * Without a border, the results from the custom search are hard to tell apart
- * from the rest of the content
- */
-.gsc-resultsbox-visible {
-  border-left: 1px solid #E9E9E9;
-  border-right: 1px solid #E9E9E9;
-  border-bottom: 1px solid #E9E9E9;
 }
 
 li {
@@ -193,9 +150,9 @@ span.displayModeWarning {
 
 #gc-container {
   margin: auto;
+  margin-top: 2em;
   max-width: 1160px;
   padding: 0 50px;
-  position: relative;
   height: auto;
 }
 
@@ -203,39 +160,21 @@ span.displayModeWarning {
   font-size: 1em;
   margin: auto;
   max-width: 1160px;
-  padding: 0;
   white-space: nowrap;
   background-color: white;
-  border-top: 1px solid #E5E5E5;
   border-bottom: 1px solid #E5E5E5;
-}
-
-#gc-topnav h1 {
-  font-size: 1.5em;
-  line-height: 1.3em;
-  font-weight: bold;
-  background-color: transparent;
-  border: 0;
-  margin: 0;
-  padding: 0 0 0 14px;
-  float: left;
-  border-top: 10px solid white;
 }
 
 #gc-topnav li {
   font-weight: 600;
-  height: 45px;
   text-transform: uppercase;
   white-space: nowrap;
   display: inline-block;
   margin: 0;
-  padding: 0;
 }
 
 #gc-topnav ul {
   font-size: 12px;
-  height: 45px;
-  text-align: right;
   list-style: none;
   margin: 0;
 }
@@ -254,34 +193,42 @@ span.displayModeWarning {
   height: 29px;
 }
 
+#gc-topnav #chrome-logo {
+  width: 100%;
+}
+#gc-topnav #chrome-logo a {
+  font-weight: 400;
+  font-size: 1.7em;
+  text-transform: lowercase;
+  color: #77787a;
+  margin: 0;
+}
+#gc-topnav #chrome-logo img {
+  padding: 0;
+  vertical-align: middle;
+}
+
 .pageData {
   display: none;
 }
 
 #gc-pagecontent {
-  margin: 30px 0 100px 250px;
+  margin: 0 0 100px 250px;
 }
 
 #gc-pagecontent h2 {
-  border-top: 1px solid #CCC;
   font-size: 170%;
   font-weight: normal;
-  margin: 2em 0 0 0;
-  padding: 40px 0;
+  margin: 2em 0 0.5em 0;
 }
 
 #gc-pagecontent h3 {
   font-size: 130%;
   font-weight: bold;
-  margin: 1.5em 0 0 0;
-  top: 0em;
 }
 
 #gc-pagecontent h4 {
   font-size: 110%;
-  margin: .7em 0 0 0;
-  position: relative;
-  top: .4em;
 }
 
 #gc-pagecontent h5 {
@@ -294,7 +241,6 @@ span.displayModeWarning {
   line-height: 130%;
   font-size: 320%;
   margin: 0;
-  padding: .8em 0 0;
   border: none;
   background: none;
   font-weight: normal;
@@ -391,8 +337,6 @@ span.displayModeWarning {
 }
 
 #gc-sidebar {
-  margin: 0;
-  margin-top: 2.5em;
   width: 180px;
   float: left;
 }
@@ -400,24 +344,23 @@ span.displayModeWarning {
 /* Sidebar link/button styling. */
 #gc-sidebar span,
 #gc-sidebar a {
-  color: #767676;
+  color: black;
   display: block;
   position: relative;
   font-weight: normal;
-}
-#gc-sidebar a:visited {
-  color: #767676;
 }
 #gc-sidebar a:hover,
 #gc-sidebar a.selected {
   color: #39F;
 }
-#gc-sidebar a.button {
-  color: #767676;
-}
 #gc-sidebar span.level2,
 #gc-sidebar a.level2 {
   font-weight: bold;
+}
+#gc-sidebar a.button,
+#gc-sidebar .level3,
+#gc-sidebar .level4 {
+  color: #444;
 }
 
 #gc-sidebar .toggleIndicator {
@@ -436,6 +379,7 @@ span.displayModeWarning {
 #gc-sidebar ul {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 #gc-sidebar ul.level2 {
   margin-left: 10px;
@@ -456,12 +400,8 @@ span.displayModeWarning {
 #gc-sidebar li.level2 {
   border-top: 1px solid #E5E5E5;
 }
-
-#gc-toc div.line {
-  border-top: thin solid #FAFAFA;
-  height: 1px;
-  margin: 1.3em 1em 0 0;
-  padding: 0;
+#gc-sidebar li.level2:first-child {
+  border-top: none;
 }
 
 #toc {
@@ -483,7 +423,9 @@ span.displayModeWarning {
 #toc * {
   padding: 0;
   list-style: none;
-  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 #toc h2 {
@@ -508,7 +450,7 @@ span.displayModeWarning {
 }
 
 #toc ol li ol li {
-  margin: .5em 0 .5em 1em;
+  margin: .5em 0 0 1em;
 }
 
 .filtered_item {
@@ -523,42 +465,12 @@ span.displayModeWarning {
   display: none;
 }
 
-input.gsc-search-button.gsc-search-button-v2 {
-  padding: 8px 30px;
-  margin-top: 5px;
-}
-
-div.gsc-control-cse {
-  margin: 0;
-  padding: 0;
-  position: relative;
-  z-index: 2;
-}
-
-td.gsc-input {
-  padding: 0 0;
-}
-
-div.gsc-input-box {
-  height: 30px;
-  width: 250px;
-  float: right;
-}
-
 #known_issues {
   background: #F5F5F5;
   padding-top: 1px;
   padding-bottom: 16px;
   padding-right: 16px;
   padding-left: 16px;
-}
-
-#search_results td {
-  border: none;
-}
-
-#search_results {
-  float: left;
 }
 
 /* List with largeish images floated to the right. */
