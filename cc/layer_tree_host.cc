@@ -313,24 +313,25 @@ void LayerTreeHost::finishCommitOnImplThread(LayerTreeHostImpl* hostImpl)
     syncTree->SetPageScaleFactorAndLimits(m_pageScaleFactor, m_minPageScaleFactor, m_maxPageScaleFactor);
     syncTree->SetPageScaleDelta(page_scale_delta / sent_page_scale_delta);
 
+    hostImpl->setViewportSize(layoutViewportSize(), deviceViewportSize());
+    hostImpl->setDeviceScaleFactor(deviceScaleFactor());
+    hostImpl->setDebugState(m_debugState);
+
+    DCHECK(!syncTree->ViewportSizeInvalid());
+
+    if (newImplTreeHasNoEvictedResources) {
+        if (syncTree->ContentsTexturesPurged())
+            syncTree->ResetContentsTexturesPurged();
+    }
+
     if (!m_settings.implSidePainting) {
         // If we're not in impl-side painting, the tree is immediately
         // considered active.
         syncTree->DidBecomeActive();
     }
 
-    hostImpl->setViewportSize(layoutViewportSize(), deviceViewportSize());
-    hostImpl->setDeviceScaleFactor(deviceScaleFactor());
-    hostImpl->setDebugState(m_debugState);
-
     if (m_debugState.continuousPainting)
         hostImpl->savePaintTime(m_renderingStats.totalPaintTime, commitNumber());
-
-    if (newImplTreeHasNoEvictedResources) {
-        if (syncTree->ContentsTexturesPurged())
-            syncTree->ResetContentsTexturesPurged();
-    }
-    syncTree->ResetViewportSizeInvalid();
 
     m_commitNumber++;
 }
