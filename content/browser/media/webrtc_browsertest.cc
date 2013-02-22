@@ -85,6 +85,17 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MANUAL_CanSetupCallAndSendDtmf) {
 
   EXPECT_TRUE(
       ExecuteJavascript("callAndSendDtmf('123,abc');"));
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
+                       CanMakeEmptyCallThenAddStreamsAndRenegotiate) {
+  GURL url(test_server()->GetURL("files/media/peerconnection-call.html"));
+  NavigateToURL(shell(), url);
+
+  const char* kJavascript =
+      "makeEmptyCallThenAddOneStreamAndRenegotiate("
+      "{video: true, audio: true});";
+  EXPECT_TRUE(ExecuteJavascript(kJavascript));
   ExpectTitle("OK");
 }
 

@@ -5,74 +5,95 @@
     return document.getElementById(id);
   };
 
+  // These must match with how the video and canvas tags are declared in html.
+  const VIDEO_TAG_WIDTH = 320;
+  const VIDEO_TAG_HEIGHT = 240;
+
   var gFirstConnection = null;
   var gSecondConnection = null;
   var gTestWithoutMsidAndBundle = false;
-  
+
   // Number of test events to occur before the test pass. When the test pass,
   // the document title change to OK.
   var gNumberOfExpectedEvents = 0;
-  
-  // Number of events that currently have occured.  
+
+  // Number of events that currently have occured.
   var gNumberOfEvents = 0;
 
   var gLocalStream = null;
-
   var gSentTones = '';
 
   // Test that we can setup call with an audio and video track.
   function call(constraints) {
     createConnections(null);
-    navigator.webkitGetUserMedia(constraints, okCallback, failedCallback);
-    waitForVideo($('remote-view'), 320, 240);
+    navigator.webkitGetUserMedia(constraints,
+      addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
+    waitForVideo('remote-view-1');
+    waitForVideo('remote-view-2');
   }
-  
-  // Test that we can setup call with an audio and video track and 
+
+  // First calls without streams on any connections, and then adds a stream
+  // to peer connection 1 which gets sent to peer connection 2.
+  function makeEmptyCallThenAddOneStreamAndRenegotiate(constraints) {
+    createConnections(null);
+    negotiate();
+    navigator.webkitGetUserMedia(constraints,
+      addStreamToTheFirstConnectionAndNegotiate, printGetUserMediaError);
+    // Only the first connection is sending here.
+    waitForVideo('remote-view-2');
+  }
+
+  // Test that we can setup call with an audio and video track and
   // simulate that the remote peer don't support MSID.
   function callWithoutMsidAndBundle() {
     createConnections(null);
     gTestWithoutMsidAndBundle = true;
-    navigator.webkitGetUserMedia({audio:true, video:true}, okCallback,
-        failedCallback);
-    waitForVideo($('remote-view'), 320, 240);
+    navigator.webkitGetUserMedia({audio:true, video:true},
+      addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
+    // TODO(phoglund): this should work but it doesn't! http://crbug.com/177443.
+    // waitForVideo('remote-view-1');
+    waitForVideo('remote-view-2');
   }
-  
-  // Test only a data channel. 
+
+  // Test only a data channel.
   function callWithDataOnly() {
     createConnections({optional:[{RtpDataChannels: true}]});
     setupDataChannel();
     gFirstConnection.createOffer(onOfferCreated);
   }
-  
+
   // Test call with audio, video and a data channel.
-  function callWithDataAndMedia() {    
-    createConnections({optional:[{RtpDataChannels: true}]});        
+  function callWithDataAndMedia() {
+    createConnections({optional:[{RtpDataChannels: true}]});
     setupDataChannel();
-    navigator.webkitGetUserMedia({audio:true, video:true}, okCallback,
-      failedCallback);
-    waitForVideo($('remote-view'), 320, 240);
+    navigator.webkitGetUserMedia({audio:true, video:true},
+      addStreamToBothConnectionsAndNegotiate,
+      printGetUserMediaError);
+    waitForVideo('remote-view-1');
+    waitForVideo('remote-view-2');
   }
-  
+
   // Test call with a data channel and later add audio and video.
   function callWithDataAndLaterAddMedia() {
-    // TODO(perkj): This is needed for now until 
+    // TODO(perkj): This is needed for now until
     // https://code.google.com/p/webrtc/issues/detail?id=1203 is fixed.
     gTestWithoutMsidAndBundle = true;
-    
-    createConnections({optional:[{RtpDataChannels: true}]});        
+
+    createConnections({optional:[{RtpDataChannels: true}]});
     setupDataChannel();
     gFirstConnection.createOffer(onOfferCreated);
-    
-    navigator.webkitGetUserMedia({audio:true, video:true}, okCallback,
-      failedCallback);
-    waitForVideo($('remote-view'), 320, 240);
+
+    navigator.webkitGetUserMedia({audio:true, video:true},
+      addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
+    waitForVideo('remote-view-1');
+    waitForVideo('remote-view-2');
   }
 
   // Test that we can setup call and send DTMF.
   function callAndSendDtmf(tones) {
     createConnections(null);
-    navigator.webkitGetUserMedia({audio:true, video:true}, okCallback,
-      failedCallback);
+    navigator.webkitGetUserMedia({audio:true, video:true},
+      addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
     var onCallEstablished = function() {
       // Send DTMF tones.
       var localAudioTrack = gLocalStream.getAudioTracks()[0];
@@ -89,26 +110,28 @@
         }
       }, 100);
     }
-    detectVideoIn($('remote-view'), 320, 240, onCallEstablished);
+
+    // Do the DTMF test after we have received video.
+    detectVideoIn('remote-view-2', onCallEstablished);
   }
 
-  // This function is used for setting up a test that: 
-  // 1. Creates a data channel on |gFirstConnection| and sends data to 
-  //    |gSecondConnection|. 
-  // 2. When data is received on |gSecondConnection| a message 
+  // This function is used for setting up a test that:
+  // 1. Creates a data channel on |gFirstConnection| and sends data to
+  //    |gSecondConnection|.
+  // 2. When data is received on |gSecondConnection| a message
   //    is sent to |gFirstConnection|.
-  // 3. When data is received on |gFirstConnection|, the data 
-  //    channel is closed. The test passes when the state transition completes.  
+  // 3. When data is received on |gFirstConnection|, the data
+  //    channel is closed. The test passes when the state transition completes.
   function setupDataChannel() {
-    var sendDataString = "send some text on a data channel."     
+    var sendDataString = "send some text on a data channel."
     firstDataChannel = gFirstConnection.createDataChannel(
         "sendDataChannel", {reliable : false});
     expectEquals('connecting', firstDataChannel.readyState);
 
-    // When |firstDataChannel| transition to open state, send a text string.     
+    // When |firstDataChannel| transition to open state, send a text string.
     firstDataChannel.onopen = function() {
       expectEquals('open', firstDataChannel.readyState);
-      firstDataChannel.send(sendDataString);  
+      firstDataChannel.send(sendDataString);
     }
 
     // When |firstDataChannel| receive a message, close the channel and
@@ -128,13 +151,13 @@
 
     // Event handler for when |gSecondConnection| receive a new dataChannel.
     gSecondConnection.ondatachannel = function (event) {
-      var secondDataChannel = event.channel;      
-      
-      // When |secondDataChannel| receive a message, send a message back.  
+      var secondDataChannel = event.channel;
+
+      // When |secondDataChannel| receive a message, send a message back.
       secondDataChannel.onmessage = function(event) {
         expectEquals(event.data, sendDataString);
-        expectEquals('open', secondDataChannel.readyState);                
-        secondDataChannel.send(sendDataString);        
+        expectEquals('open', secondDataChannel.readyState);
+        secondDataChannel.send(sendDataString);
       }
     }
   }
@@ -144,44 +167,62 @@
     document.title = gSentTones;
   }
 
-  function failedCallback(error) {
-    document.title = 'getUserMedia request failed with code ' + error.code;
-  }
-
-  function okCallback(localStream) {
-    var localStreamUrl = webkitURL.createObjectURL(localStream);
-    $('local-view').src = localStreamUrl;
-
-    callUsingStream(localStream);
-    gLocalStream = localStream;
-  }
-
   function createConnections(constraints) {
     gFirstConnection = new webkitRTCPeerConnection(null, constraints);
     gFirstConnection.onicecandidate = onIceCandidateToFirst;
+    gFirstConnection.onaddstream = function(event) {
+      onRemoteStream(event, 'remote-view-1');
+    }
     expectEquals('stable', gFirstConnection.signalingState);
-  
+
     gSecondConnection = new webkitRTCPeerConnection(null, constraints);
     gSecondConnection.onicecandidate = onIceCandidateToSecond;
-    gSecondConnection.onaddstream = onRemoteStream;       
+    gSecondConnection.onaddstream = function(event) {
+      onRemoteStream(event, 'remote-view-2');
+    }
   }
-  
-  function callUsingStream(localStream) {    
+
+  function displayAndRemember(localStream) {
+    var localStreamUrl = webkitURL.createObjectURL(localStream);
+    $('local-view').src = localStreamUrl;
+
+    gLocalStream = localStream;
+  }
+
+  // Called if getUserMedia fails.
+  function printGetUserMediaError(error) {
+    document.title = 'getUserMedia request failed with code ' + error.code;
+  }
+
+  // Called if getUserMedia succeeds and we want to send from both connections.
+  function addStreamToBothConnectionsAndNegotiate(localStream) {
+    displayAndRemember(localStream);
     gFirstConnection.addStream(localStream);
     gSecondConnection.addStream(localStream);
+    negotiate();
+  }
+
+  // Called if getUserMedia succeeds when we want to send from one connection.
+  function addStreamToTheFirstConnectionAndNegotiate(localStream) {
+    displayAndRemember(localStream);
+    gFirstConnection.addStream(localStream);
+    negotiate();
+  }
+
+  function negotiate() {
     gFirstConnection.createOffer(onOfferCreated);
   }
-  
+
   function onOfferCreated(offer) {
     gFirstConnection.setLocalDescription(offer);
     expectEquals('have-local-offer', gFirstConnection.signalingState);
     receiveOffer(offer.sdp);
   }
-  
+
   function receiveOffer(offerSdp) {
     if (gTestWithoutMsidAndBundle) {
       offerSdp = removeMsidAndBundle(offerSdp);
-    }    
+    }
 
     var parsedOffer = new RTCSessionDescription({ type: 'offer',
                                                   sdp: offerSdp });
@@ -189,7 +230,7 @@
     gSecondConnection.createAnswer(onAnswerCreated);
     expectEquals('have-remote-offer', gSecondConnection.signalingState);
   }
-  
+
   function removeMsidAndBundle(offerSdp) {
     offerSdp = offerSdp.replace(/a=msid-semantics.*\r\n/g, '');
     offerSdp = offerSdp.replace('a=group:BUNDLE audio video\r\n', '');
@@ -226,20 +267,23 @@
     }
   }
 
-  function onRemoteStream(e) {
+  function onRemoteStream(e, target) {
     if (gTestWithoutMsidAndBundle && e.stream.label != "default") {
-      document.title = 'a default remote stream was expected but instead ' + 
+      document.title = 'a default remote stream was expected but instead ' +
           e.stream.label + ' was received.';
       return;
     }
     var remoteStreamUrl = webkitURL.createObjectURL(e.stream);
-    var remoteVideo = $('remote-view');
+    var remoteVideo = $(target);
     remoteVideo.src = remoteStreamUrl;
   }
 
   // TODO(phoglund): perhaps use the video detector in chrome/test/data/webrtc/?
-  function detectVideoIn(videoElement, width, height, callback) {
-    var canvas = $('canvas');
+  function detectVideoIn(videoElementName, callback) {
+    var width = VIDEO_TAG_WIDTH;
+    var height = VIDEO_TAG_HEIGHT;
+    var videoElement = $(videoElementName);
+    var canvas = $(videoElementName + '-canvas');
     var waitVideo = setInterval(function() {
       var context = canvas.getContext('2d');
       context.drawImage(videoElement, 0, 0, width, height);
@@ -252,11 +296,10 @@
     }, 100);
   }
 
-  function waitForVideo(videoElement, width, height) {
+  function waitForVideo(videoElement) {
     document.title = 'Waiting for video...';
     addExpectedEvent();
-    detectVideoIn(videoElement, width, height,
-                  function () { eventOccured(); });
+    detectVideoIn(videoElement, function () { eventOccured(); });
   }
 
   // This very basic video verification algorithm will be satisfied if any
@@ -272,13 +315,13 @@
     }
     return false;
   }
-    
-  
-  // This function matches |left| and |right| and throws an exception if the 
-  // values don't match. 
+
+
+  // This function matches |left| and |right| and throws an exception if the
+  // values don't match.
   function expectEquals(left, right) {
     if (left != right) {
-      var s = "expectEquals failed left: " + left + " right: " + right;  
+      var s = "expectEquals failed left: " + left + " right: " + right;
       document.title = s;
       throw s;
     }
@@ -287,7 +330,7 @@
   function addExpectedEvent() {
     ++gNumberOfExpectedEvents;
   }
-  
+
   function eventOccured() {
     ++gNumberOfEvents;
     if (gNumberOfEvents == gNumberOfExpectedEvents) {
@@ -300,20 +343,22 @@
   <table border="0">
     <tr>
       <td>Local Preview</td>
-      <td>Remote Stream</td>
-      <td>Capturing Canvas</td>
+      <td>Remote Stream for Connection 1</td>
+      <td>Remote Stream for Connection 2</td>
     </tr>
     <tr>
       <td><video width="320" height="240" id="local-view"
           autoplay="autoplay"></video></td>
-      <td><video width="320" height="240" id="remote-view"
+      <td><video width="320" height="240" id="remote-view-1"
           autoplay="autoplay"></video></td>
-      <td><canvas width="320" height="240" id="canvas"></canvas></td>
+      <td><video width="320" height="240" id="remote-view-2"
+          autoplay="autoplay"></video></td>
+      <!-- Canvases are named after their corresponding video elements. -->
+      <td><canvas width="320" height="240" id="remote-view-1-canvas"
+          style="display:none"></canvas></td>
+      <td><canvas width="320" height="240" id="remote-view-2-canvas">
+          style="display:none"></canvas></td>
     </tr>
-    <tr>
-      <td colspan="3">You should see the same animated feed in all three
-          displays (the canvas will lag a bit).
-      </td>
   </table>
 </body>
 </html>
