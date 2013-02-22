@@ -338,13 +338,13 @@ std::string AboutDiscards(const std::string& path) {
   chromeos::OomPriorityManager* oom = g_browser_process->oom_priority_manager();
   std::vector<string16> titles = oom->GetTabTitles();
   if (!titles.empty()) {
-    output.append("<ol>");
+    output.append("<ul>");
     std::vector<string16>::iterator it = titles.begin();
     for ( ; it != titles.end(); ++it) {
       std::string title = UTF16ToUTF8(*it);
       output.append(WrapWithTag("li", title));
     }
-    output.append("</ol>");
+    output.append("</ul>");
   } else {
     output.append("<p>None found.  Wait 10 seconds, then refresh.</p>");
   }
@@ -383,10 +383,8 @@ std::string AboutDiscards(const std::string& path) {
       "Inactive Anon", base::IntToString(meminfo.inactive_anon / 1024)));
   output.append(AddStringRow(
       "Shared", base::IntToString(meminfo.shmem / 1024)));
-  if (meminfo.gem_size != -1) {
-    output.append(AddStringRow(
-        "Graphics", base::IntToString(meminfo.gem_size / 1024 / 1024)));
-  }
+  output.append(AddStringRow(
+      "Graphics", base::IntToString(meminfo.gem_size / 1024 / 1024)));
   output.append("</table>");
 
   AppendFooter(&output);

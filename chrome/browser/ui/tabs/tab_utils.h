@@ -17,8 +17,9 @@ bool ShouldShowProjectingIndicator(content::WebContents* contents);
 // Returns whether we should show a recording favicon indicator for this tab.
 bool ShouldShowRecordingIndicator(content::WebContents* contents);
 
-// Returns whether we should show an audio favicon indicator for this tab.
-bool ShouldShowAudioIndicator(content::WebContents* contents);
+// Returns whether the given |contents| is playing audio. We might choose to
+// show an audio favicon indicator for this tab.
+bool IsPlayingAudio(content::WebContents* contents);
 
 }  // namespace chrome
 

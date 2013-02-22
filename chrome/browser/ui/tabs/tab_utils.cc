@@ -35,7 +35,7 @@ bool ShouldShowRecordingIndicator(content::WebContents* contents) {
          indicator->IsBeingMirrored(render_process_id, render_view_id);
 }
 
-bool ShouldShowAudioIndicator(content::WebContents* contents) {
+bool IsPlayingAudio(content::WebContents* contents) {
   AudioStreamIndicator* audio_indicator =
       MediaCaptureDevicesDispatcher::GetInstance()->GetAudioStreamIndicator();
   return audio_indicator->IsPlayingAudio(contents);

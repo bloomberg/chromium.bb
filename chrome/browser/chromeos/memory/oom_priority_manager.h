@@ -72,6 +72,7 @@ class OomPriorityManager : public content::NotificationObserver {
     ~TabStats();
     bool is_app;  // browser window is an app
     bool is_reloadable_ui;  // Reloadable web UI page, like NTP or Settings.
+    bool is_playing_audio;
     bool is_pinned;
     bool is_selected;  // selected in the currently active browser window
     bool is_discarded;

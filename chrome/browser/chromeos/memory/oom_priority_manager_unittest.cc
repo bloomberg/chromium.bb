@@ -22,6 +22,7 @@ enum TestIndicies {
   kSelected,
   kPinned,
   kApp,
+  kPlayingAudio,
   kRecent,
   kOld,
   kReallyOld,
@@ -49,6 +50,13 @@ TEST_F(OomPriorityManagerTest, Comparator) {
     OomPriorityManager::TabStats stats;
     stats.is_app = true;
     stats.renderer_handle = kApp;
+    test_list.push_back(stats);
+  }
+
+  {
+    OomPriorityManager::TabStats stats;
+    stats.is_playing_audio = true;
+    stats.renderer_handle = kPlayingAudio;
     test_list.push_back(stats);
   }
 
@@ -101,14 +109,16 @@ TEST_F(OomPriorityManagerTest, Comparator) {
             test_list.end(),
             OomPriorityManager::CompareTabStats);
 
-  EXPECT_EQ(kSelected, test_list[0].renderer_handle);
-  EXPECT_EQ(kPinned, test_list[1].renderer_handle);
-  EXPECT_EQ(kOldButPinned, test_list[2].renderer_handle);
-  EXPECT_EQ(kApp, test_list[3].renderer_handle);
-  EXPECT_EQ(kRecent, test_list[4].renderer_handle);
-  EXPECT_EQ(kOld, test_list[5].renderer_handle);
-  EXPECT_EQ(kReallyOld, test_list[6].renderer_handle);
-  EXPECT_EQ(kReloadableUI, test_list[7].renderer_handle);
+  int index = 0;
+  EXPECT_EQ(kSelected, test_list[index++].renderer_handle);
+  EXPECT_EQ(kPinned, test_list[index++].renderer_handle);
+  EXPECT_EQ(kOldButPinned, test_list[index++].renderer_handle);
+  EXPECT_EQ(kApp, test_list[index++].renderer_handle);
+  EXPECT_EQ(kPlayingAudio, test_list[index++].renderer_handle);
+  EXPECT_EQ(kRecent, test_list[index++].renderer_handle);
+  EXPECT_EQ(kOld, test_list[index++].renderer_handle);
+  EXPECT_EQ(kReallyOld, test_list[index++].renderer_handle);
+  EXPECT_EQ(kReloadableUI, test_list[index++].renderer_handle);
 }
 
 TEST_F(OomPriorityManagerTest, IsReloadableUI) {

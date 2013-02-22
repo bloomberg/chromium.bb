@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -165,6 +166,7 @@ void OomMemoryDetails::OnDetailsAvailable() {
 OomPriorityManager::TabStats::TabStats()
   : is_app(false),
     is_reloadable_ui(false),
+    is_playing_audio(false),
     is_pinned(false),
     is_selected(false),
     is_discarded(false),
@@ -233,13 +235,13 @@ std::vector<string16> OomPriorityManager::GetTabTitles() {
   for ( ; it != stats.end(); ++it) {
     string16 str;
     str.reserve(4096);
-    str += it->title;
-    str += ASCIIToUTF16(" (");
     int score = pid_to_oom_score_[it->renderer_handle];
     str += base::IntToString16(score);
-    str += ASCIIToUTF16(")");
+    str += ASCIIToUTF16(" - ");
+    str += it->title;
     str += ASCIIToUTF16(it->is_app ? " app" : "");
     str += ASCIIToUTF16(it->is_reloadable_ui ? " reloadable_ui" : "");
+    str += ASCIIToUTF16(it->is_playing_audio ? " playing_audio" : "");
     str += ASCIIToUTF16(it->is_pinned ? " pinned" : "");
     str += ASCIIToUTF16(it->is_discarded ? " discarded" : "");
     titles.push_back(str);
@@ -441,6 +443,10 @@ bool OomPriorityManager::CompareTabStats(TabStats first,
   if (first.is_app != second.is_app)
     return first.is_app;
 
+  // Protect streaming audio and video conferencing tabs.
+  if (first.is_playing_audio != second.is_playing_audio)
+    return first.is_playing_audio;
+
   // TODO(jamescook): Incorporate sudden_termination_allowed into the sort
   // order.  We don't do this now because pages with unload handlers set
   // sudden_termination_allowed false, and that covers too many common pages
@@ -572,6 +578,7 @@ OomPriorityManager::TabStatsList OomPriorityManager::GetTabStatsOnUIThread() {
         TabStats stats;
         stats.is_app = is_browser_for_app;
         stats.is_reloadable_ui = IsReloadableUI(contents->GetURL());
+        stats.is_playing_audio = chrome::IsPlayingAudio(contents);
         stats.is_pinned = model->IsTabPinned(i);
         stats.is_selected = browser_active && model->IsTabSelected(i);
         stats.is_discarded = model->IsTabDiscarded(i);
