@@ -1140,6 +1140,10 @@ const char kRemoteDebuggingFrontend[]       = "remote-debugging-frontend";
 // Chrome and does nothing when directly passed to the browser.
 const char kRendererPrintPreview[]          = "renderer-print-preview";
 
+// Forces a reset of the local passphrase of the managed user account, and
+// the managed user settings dialog is shown where a new passphrase can be set.
+const char kResetLocalPassphrase[]          = "reset-local-passphrase";
+
 // Forces a reset of the one-time-randomized FieldTrials on this client, also
 // known as the Chrome Variations state.
 const char kResetVariationState[]           = "reset-variation-state";

@@ -903,10 +903,17 @@ void StartupBrowserCreatorImpl::AddStartupURLs(
   }
 
   PrefService* prefs = profile_->GetPrefs();
-  if (is_first_run_ && prefs->GetBoolean(prefs::kProfileIsManaged)) {
+  bool has_reset_local_passphrase_switch =
+      command_line_.HasSwitch(switches::kResetLocalPassphrase);
+  if ((is_first_run_ || has_reset_local_passphrase_switch) &&
+      prefs->GetBoolean(prefs::kProfileIsManaged)) {
     startup_urls->insert(startup_urls->begin(),
                          GURL(std::string(chrome::kChromeUISettingsURL) +
                               chrome::kManagedUserSettingsSubPage));
+    if (has_reset_local_passphrase_switch) {
+      prefs->SetString(prefs::kManagedModeLocalPassphrase, "");
+      prefs->SetString(prefs::kManagedModeLocalSalt, "");
+    }
   } else if (SyncPromoUI::ShouldShowSyncPromoAtStartup(profile_,
                                                        is_first_run_)) {
     // If the sync promo page is going to be displayed then insert it at the
