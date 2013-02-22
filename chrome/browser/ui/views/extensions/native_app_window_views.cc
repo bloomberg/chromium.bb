@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/extensions/native_app_window_views.h"
 
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -36,11 +37,37 @@
 #endif
 
 namespace {
+
 const int kMinPanelWidth = 100;
 const int kMinPanelHeight = 100;
 const int kDefaultPanelWidth = 200;
 const int kDefaultPanelHeight = 300;
 const int kResizeInsideBoundsSize = 5;
+
+struct AcceleratorMapping {
+  ui::KeyboardCode keycode;
+  int modifiers;
+  int command_id;
+};
+const AcceleratorMapping kAppWindowAcceleratorMap[] = {
+  { ui::VKEY_W, ui::EF_CONTROL_DOWN, IDC_CLOSE_WINDOW },
+  { ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_CLOSE_WINDOW },
+  { ui::VKEY_F4, ui::EF_ALT_DOWN, IDC_CLOSE_WINDOW },
+};
+
+const std::map<ui::Accelerator, int>& GetAcceleratorTable() {
+  typedef std::map<ui::Accelerator, int> AcceleratorMap;
+  CR_DEFINE_STATIC_LOCAL(AcceleratorMap, accelerators, ());
+  if (accelerators.empty()) {
+    for (size_t i = 0; i < arraysize(kAppWindowAcceleratorMap); ++i) {
+      ui::Accelerator accelerator(kAppWindowAcceleratorMap[i].keycode,
+                                  kAppWindowAcceleratorMap[i].modifiers);
+      accelerators[accelerator] = kAppWindowAcceleratorMap[i].command_id;
+    }
+  }
+  return accelerators;
+}
+
 }
 
 NativeAppWindowViews::NativeAppWindowViews(
@@ -96,6 +123,18 @@ void NativeAppWindowViews::InitializeDefaultWindow(
     window_->CenterWindow(window_bounds.size());
   } else {
     window_->SetBounds(window_bounds);
+  }
+
+  // Register accelarators supported by app windows.
+  // TODO(jeremya/stevenjb): should these be registered for panels too?
+  views::FocusManager* focus_manager = GetFocusManager();
+  const std::map<ui::Accelerator, int>& accelerator_table =
+      GetAcceleratorTable();
+  for (std::map<ui::Accelerator, int>::const_iterator iter =
+           accelerator_table.begin();
+       iter != accelerator_table.end(); ++iter) {
+    focus_manager->RegisterAccelerator(
+        iter->first, ui::AcceleratorManager::kNormalPriority, this);
   }
 
 #if defined(OS_WIN) && !defined(USE_AURA)
@@ -476,6 +515,24 @@ gfx::Size NativeAppWindowViews::GetMaximumSize() {
 
 void NativeAppWindowViews::OnFocus() {
   web_view_->RequestFocus();
+}
+
+bool NativeAppWindowViews::AcceleratorPressed(
+    const ui::Accelerator& accelerator) {
+  const std::map<ui::Accelerator, int>& accelerator_table =
+      GetAcceleratorTable();
+  std::map<ui::Accelerator, int>::const_iterator iter =
+      accelerator_table.find(accelerator);
+  DCHECK(iter != accelerator_table.end());
+  int command_id = iter->second;
+  switch (command_id) {
+    case IDC_CLOSE_WINDOW:
+      Close();
+      return true;
+    default:
+      NOTREACHED() << "Unknown accelerator sent to app window.";
+  }
+  return false;
 }
 
 // NativeAppWindow implementation.

@@ -111,6 +111,7 @@ class NativeAppWindowViews : public NativeAppWindow,
   virtual gfx::Size GetMinimumSize() OVERRIDE;
   virtual gfx::Size GetMaximumSize() OVERRIDE;
   virtual void OnFocus() OVERRIDE;
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 
   // NativeAppWindow implementation.
   virtual void SetFullscreen(bool fullscreen) OVERRIDE;
