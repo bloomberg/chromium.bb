@@ -200,13 +200,19 @@ void BlobStorageController::AppendStorageItems(
       target_blob_data->AppendData(
           iter->bytes() + static_cast<size_t>(iter->offset() + offset),
           static_cast<uint32>(new_length));
-    } else {
-      DCHECK(iter->type() == BlobData::Item::TYPE_FILE);
+    } else if (iter->type() == BlobData::Item::TYPE_FILE) {
       AppendFileItem(target_blob_data,
                      iter->path(),
                      iter->offset() + offset,
                      new_length,
                      iter->expected_modification_time());
+    } else {
+      DCHECK(iter->type() == BlobData::Item::TYPE_FILE_FILESYSTEM);
+      AppendFileSystemFileItem(target_blob_data,
+                               iter->url(),
+                               iter->offset() + offset,
+                               new_length,
+                               iter->expected_modification_time());
     }
     length -= new_length;
     offset = 0;
