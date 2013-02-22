@@ -267,6 +267,9 @@ class PepperPluginDelegateImpl
   virtual void TCPSocketWrite(uint32 socket_id,
                               const std::string& buffer) OVERRIDE;
   virtual void TCPSocketDisconnect(uint32 socket_id) OVERRIDE;
+  virtual void TCPSocketSetBoolOption(uint32 socket_id,
+                                      PP_TCPSocketOption_Private name,
+                                      bool value) OVERRIDE;
   virtual void RegisterTCPSocket(
       webkit::ppapi::PPB_TCPSocket_Private_Impl* socket,
       uint32 socket_id) OVERRIDE;
@@ -336,6 +339,9 @@ class PepperPluginDelegateImpl
                            uint32 socket_id,
                            bool succeeded,
                            int32_t bytes_written);
+  void OnTCPSocketSetBoolOptionACK(uint32 plugin_dispatcher_id,
+                                   uint32 socket_id,
+                                   bool succeeded);
   void OnTCPServerSocketListenACK(uint32 plugin_dispatcher_id,
                                   PP_Resource socket_resource,
                                   uint32 socket_id,

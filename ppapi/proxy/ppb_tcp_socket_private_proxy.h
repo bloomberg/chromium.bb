@@ -57,6 +57,9 @@ class PPB_TCPSocket_Private_Proxy : public InterfaceProxy {
                      uint32 socket_id,
                      bool succeeded,
                      int32_t bytes_written);
+  void OnMsgSetBoolOptionACK(uint32 plugin_dispatcher_id,
+                             uint32 socket_id,
+                             bool succeeded);
 
   DISALLOW_COPY_AND_ASSIGN(PPB_TCPSocket_Private_Proxy);
 };

@@ -1180,12 +1180,20 @@ void PepperPluginDelegateImpl::TCPSocketWrite(uint32 socket_id,
 }
 
 void PepperPluginDelegateImpl::TCPSocketDisconnect(uint32 socket_id) {
-  // There are no DCHECK(tcp_sockets_.Lookup(socket_id)) because it
-  // can be called before
-  // TCPSocketConnect/TCPSocketConnectWithNetAddress is called.
+  // There is no DCHECK(tcp_sockets_.Lookup(socket_id)) because this method
+  // can be called before TCPSocketConnect or TCPSocketConnectWithNetAddress.
   render_view_->Send(new PpapiHostMsg_PPBTCPSocket_Disconnect(socket_id));
   if (tcp_sockets_.Lookup(socket_id))
     tcp_sockets_.Remove(socket_id);
+}
+
+void PepperPluginDelegateImpl::TCPSocketSetBoolOption(
+    uint32 socket_id,
+    PP_TCPSocketOption_Private name,
+    bool value) {
+  DCHECK(tcp_sockets_.Lookup(socket_id));
+  render_view_->Send(
+      new PpapiHostMsg_PPBTCPSocket_SetBoolOption(socket_id, name, value));
 }
 
 void PepperPluginDelegateImpl::RegisterTCPSocket(
@@ -1401,6 +1409,8 @@ bool PepperPluginDelegateImpl::OnMessageReceived(const IPC::Message& message) {
                         OnTCPSocketSSLHandshakeACK)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_ReadACK, OnTCPSocketReadACK)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_WriteACK, OnTCPSocketWriteACK)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_SetBoolOptionACK,
+                        OnTCPSocketSetBoolOptionACK)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPServerSocket_ListenACK,
                         OnTCPServerSocketListenACK)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPServerSocket_AcceptACK,
@@ -1459,6 +1469,16 @@ void PepperPluginDelegateImpl::OnTCPSocketWriteACK(uint32 plugin_dispatcher_id,
       tcp_sockets_.Lookup(socket_id);
   if (socket)
     socket->OnWriteCompleted(succeeded, bytes_written);
+}
+
+void PepperPluginDelegateImpl::OnTCPSocketSetBoolOptionACK(
+    uint32 plugin_dispatcher_id,
+    uint32 socket_id,
+    bool succeeded) {
+  webkit::ppapi::PPB_TCPSocket_Private_Impl* socket =
+      tcp_sockets_.Lookup(socket_id);
+  if (socket)
+    socket->OnSetOptionCompleted(succeeded);
 }
 
 void PepperPluginDelegateImpl::OnTCPServerSocketListenACK(

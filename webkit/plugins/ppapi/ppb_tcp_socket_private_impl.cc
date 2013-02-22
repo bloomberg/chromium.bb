@@ -110,6 +110,16 @@ void PPB_TCPSocket_Private_Impl::SendDisconnect() {
   plugin_delegate->TCPSocketDisconnect(socket_id_);
 }
 
+void PPB_TCPSocket_Private_Impl::SendSetBoolOption(
+    PP_TCPSocketOption_Private name,
+    bool value) {
+  PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
+  if (!plugin_delegate)
+    return;
+
+  plugin_delegate->TCPSocketSetBoolOption(socket_id_, name, value);
+}
+
 PluginDelegate* PPB_TCPSocket_Private_Impl::GetPluginDelegate(
     PP_Instance instance) {
   PluginInstance* plugin_instance = HostGlobals::Get()->GetInstance(instance);

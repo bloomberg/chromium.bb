@@ -51,6 +51,7 @@ void TestTCPSocketPrivate::RunTests(const std::string& filter) {
   RUN_TEST_FORCEASYNC_AND_NOT(ReadWrite, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(ReadWriteSSL, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(ConnectAddress, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(SetOption, filter);
 }
 
 std::string TestTCPSocketPrivate::TestBasic() {
@@ -154,6 +155,39 @@ std::string TestTCPSocketPrivate::TestConnectAddress() {
   std::string s;
   ASSERT_EQ(PP_OK, ReadFirstLineFromSocket(&socket, &s));
   ASSERT_TRUE(ValidateHttpResponse(s));
+
+  socket.Disconnect();
+
+  PASS();
+}
+
+std::string TestTCPSocketPrivate::TestSetOption() {
+  pp::TCPSocketPrivate socket(instance_);
+  TestCompletionCallback cb(instance_->pp_instance(), force_async_);
+
+  int32_t rv = socket.SetOption(PP_TCPSOCKETOPTION_NO_DELAY, true, cb);
+  ASSERT_TRUE(!force_async_ || rv == PP_OK_COMPLETIONPENDING);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = cb.WaitForResult();
+  ASSERT_EQ(PP_ERROR_FAILED, rv);
+
+  rv = socket.Connect(host_.c_str(), port_, cb);
+  ASSERT_TRUE(!force_async_ || rv == PP_OK_COMPLETIONPENDING);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = cb.WaitForResult();
+  ASSERT_EQ(PP_OK, rv);
+
+  rv = socket.SetOption(PP_TCPSOCKETOPTION_NO_DELAY, true, cb);
+  ASSERT_TRUE(!force_async_ || rv == PP_OK_COMPLETIONPENDING);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = cb.WaitForResult();
+  ASSERT_EQ(PP_OK, rv);
+
+  rv = socket.SetOption(PP_TCPSOCKETOPTION_INVALID, true, cb);
+  ASSERT_TRUE(!force_async_ || rv == PP_OK_COMPLETIONPENDING);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = cb.WaitForResult();
+  ASSERT_EQ(PP_ERROR_BADARGUMENT, rv);
 
   socket.Disconnect();
 

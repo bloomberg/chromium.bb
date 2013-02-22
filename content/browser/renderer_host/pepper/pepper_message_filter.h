@@ -144,6 +144,7 @@ class PepperMessageFilter
   void OnTCPRead(uint32 socket_id, int32_t bytes_to_read);
   void OnTCPWrite(uint32 socket_id, const std::string& data);
   void OnTCPDisconnect(uint32 socket_id);
+  void OnTCPSetBoolOption(uint32 socket_id, uint32_t name, bool value);
   void OnTCPServerListen(int32 routing_id,
                          uint32 plugin_dispatcher_id,
                          PP_Resource socket_resource,

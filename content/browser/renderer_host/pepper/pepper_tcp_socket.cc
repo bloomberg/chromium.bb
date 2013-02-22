@@ -196,11 +196,33 @@ void PepperTCPSocket::Write(const std::string& data) {
   DoWrite();
 }
 
+void PepperTCPSocket::SetBoolOption(uint32_t name, bool value) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(socket_.get());
+
+  switch (name) {
+    case PP_TCPSOCKETOPTION_NO_DELAY:
+      if (!IsSsl()) {
+        net::TCPClientSocket* tcp_socket =
+            static_cast<net::TCPClientSocket*>(socket_.get());
+        SendSetBoolOptionACK(tcp_socket->SetNoDelay(value));
+      } else {
+        SendSetBoolOptionACK(false);
+      }
+      return;
+    default:
+      break;
+  }
+
+  NOTREACHED();
+  SendSetBoolOptionACK(false);
+}
+
 void PepperTCPSocket::StartConnect(const net::AddressList& addresses) {
   DCHECK(connection_state_ == CONNECT_IN_PROGRESS);
 
-  socket_.reset(
-      new net::TCPClientSocket(addresses, NULL, net::NetLog::Source()));
+  socket_.reset(new net::TCPClientSocket(addresses, NULL,
+                                         net::NetLog::Source()));
   int result = socket_->Connect(
       base::Bind(&PepperTCPSocket::OnConnectCompleted,
                  base::Unretained(this)));
@@ -303,6 +325,11 @@ void PepperTCPSocket::SendSSLHandshakeACK(bool succeeded) {
       certificate_fields));
 }
 
+void PepperTCPSocket::SendSetBoolOptionACK(bool succeeded) {
+  manager_->Send(new PpapiMsg_PPBTCPSocket_SetBoolOptionACK(
+      routing_id_, plugin_dispatcher_id_, socket_id_, succeeded));
+}
+
 void PepperTCPSocket::OnResolveCompleted(int result) {
   DCHECK(connection_state_ == CONNECT_IN_PROGRESS);
 
@@ -403,6 +430,12 @@ void PepperTCPSocket::OnWriteCompleted(int result) {
 
 bool PepperTCPSocket::IsConnected() const {
   return connection_state_ == CONNECTED || connection_state_ == SSL_CONNECTED;
+}
+
+bool PepperTCPSocket::IsSsl() const {
+ return connection_state_ == SSL_HANDSHAKE_IN_PROGRESS ||
+     connection_state_ == SSL_CONNECTED ||
+     connection_state_ == SSL_HANDSHAKE_FAILED;
 }
 
 void PepperTCPSocket::DoWrite() {

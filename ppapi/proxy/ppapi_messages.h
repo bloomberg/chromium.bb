@@ -674,6 +674,10 @@ IPC_MESSAGE_ROUTED4(PpapiMsg_PPBTCPSocket_WriteACK,
                     uint32 /* socket_id */,
                     bool /* succeeded */,
                     int32_t /* bytes_written */)
+IPC_MESSAGE_ROUTED3(PpapiMsg_PPBTCPSocket_SetBoolOptionACK,
+                    uint32 /* plugin_dispatcher_id */,
+                    uint32 /* socket_id */,
+                    bool /* succeeded */)
 
 // PPB_URLLoader_Trusted
 IPC_MESSAGE_ROUTED1(
@@ -1200,6 +1204,10 @@ IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBTCPSocket_Write,
                      std::string /* data */)
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBTCPSocket_Disconnect,
                      uint32 /* socket_id */)
+IPC_MESSAGE_CONTROL3(PpapiHostMsg_PPBTCPSocket_SetBoolOption,
+                     uint32 /* socket_id */,
+                     uint32 /* name */,
+                     bool /* value */)
 
 // UDPSocketPrivate.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_UDPSocketPrivate_Create)

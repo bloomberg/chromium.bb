@@ -66,6 +66,9 @@ class PPAPI_SHARED_EXPORT TCPSocketPrivateImpl
                         int32_t bytes_to_write,
                         scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual void Disconnect() OVERRIDE;
+  virtual int32_t SetOption(PP_TCPSocketOption_Private name,
+                            const PP_Var& value,
+                            scoped_refptr<TrackedCallback> callback) OVERRIDE;
 
   // Notifications on operations completion.
   void OnConnectCompleted(bool succeeded,
@@ -76,6 +79,7 @@ class PPAPI_SHARED_EXPORT TCPSocketPrivateImpl
       const PPB_X509Certificate_Fields& certificate_fields);
   void OnReadCompleted(bool succeeded, const std::string& data);
   void OnWriteCompleted(bool succeeded, int32_t bytes_written);
+  void OnSetOptionCompleted(bool succeeded);
 
   // Send functions that need to be implemented differently for the
   // proxied and non-proxied derived classes.
@@ -89,6 +93,8 @@ class PPAPI_SHARED_EXPORT TCPSocketPrivateImpl
   virtual void SendRead(int32_t bytes_to_read) = 0;
   virtual void SendWrite(const std::string& buffer) = 0;
   virtual void SendDisconnect() = 0;
+  virtual void SendSetBoolOption(PP_TCPSocketOption_Private name,
+                                 bool value) = 0;
 
  protected:
   enum ConnectionState {
@@ -117,6 +123,7 @@ class PPAPI_SHARED_EXPORT TCPSocketPrivateImpl
   scoped_refptr<TrackedCallback> ssl_handshake_callback_;
   scoped_refptr<TrackedCallback> read_callback_;
   scoped_refptr<TrackedCallback> write_callback_;
+  scoped_refptr<TrackedCallback> set_option_callback_;
 
   char* read_buffer_;
   int32_t bytes_to_read_;

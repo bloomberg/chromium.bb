@@ -27,6 +27,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/private/ppb_flash.h"
+#include "ppapi/c/private/ppb_tcp_socket_private.h"
 #include "ppapi/c/private/ppb_udp_socket_private.h"
 #include "ppapi/shared_impl/dir_contents.h"
 #include "ui/gfx/size.h"
@@ -542,6 +543,9 @@ class PluginDelegate {
   virtual void TCPSocketRead(uint32 socket_id, int32_t bytes_to_read) = 0;
   virtual void TCPSocketWrite(uint32 socket_id, const std::string& buffer) = 0;
   virtual void TCPSocketDisconnect(uint32 socket_id) = 0;
+  virtual void TCPSocketSetBoolOption(uint32 socket_id,
+                                      PP_TCPSocketOption_Private name,
+                                      bool value) = 0;
   virtual void RegisterTCPSocket(PPB_TCPSocket_Private_Impl* socket,
                                  uint32 socket_id) = 0;
 

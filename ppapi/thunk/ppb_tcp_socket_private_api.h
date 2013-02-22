@@ -40,6 +40,9 @@ class PPAPI_THUNK_EXPORT PPB_TCPSocket_Private_API {
                         int32_t bytes_to_write,
                         scoped_refptr<TrackedCallback> callback) = 0;
   virtual void Disconnect() = 0;
+  virtual int32_t SetOption(PP_TCPSocketOption_Private name,
+                            const PP_Var& value,
+                            scoped_refptr<TrackedCallback> callback) = 0;
 };
 
 }  // namespace thunk

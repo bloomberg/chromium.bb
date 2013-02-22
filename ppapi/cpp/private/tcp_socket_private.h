@@ -46,6 +46,9 @@ class TCPSocketPrivate : public Resource {
                 int32_t bytes_to_write,
                 const CompletionCallback& callback);
   void Disconnect();
+  int32_t SetOption(PP_TCPSocketOption_Private name,
+                    const Var& value,
+                    const CompletionCallback& callback);
 };
 
 }  // namespace pp

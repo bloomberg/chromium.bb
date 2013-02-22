@@ -124,6 +124,9 @@ class MockPluginDelegate : public PluginDelegate {
   virtual void TCPSocketRead(uint32 socket_id, int32_t bytes_to_read);
   virtual void TCPSocketWrite(uint32 socket_id, const std::string& buffer);
   virtual void TCPSocketDisconnect(uint32 socket_id);
+  virtual void TCPSocketSetBoolOption(uint32 socket_id,
+                                      PP_TCPSocketOption_Private name,
+                                      bool value);
   virtual void RegisterTCPSocket(PPB_TCPSocket_Private_Impl* socket,
                                  uint32 socket_id);
   virtual void TCPServerSocketListen(PP_Resource socket_resource,

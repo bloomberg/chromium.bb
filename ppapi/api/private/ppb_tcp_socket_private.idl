@@ -9,7 +9,19 @@
 
 label Chrome {
   M17 = 0.3,
-  M20 = 0.4
+  M20 = 0.4,
+  M27 = 0.5
+};
+
+[assert_size(4)]
+enum PP_TCPSocketOption_Private {
+  // Special value used for testing. Guaranteed to fail SetOption().
+  PP_TCPSOCKETOPTION_INVALID = 0,
+
+  // Disable coalescing of small writes to make TCP segments, and instead
+  // deliver data immediately. For SSL sockets, this option must be set before
+  // SSLHandshake() is called. Value type is PP_VARTYPE_BOOL.
+  PP_TCPSOCKETOPTION_NO_DELAY = 1
 };
 
 /**
@@ -134,4 +146,17 @@ interface PPB_TCPSocket_Private {
    * method.
    */
   void Disconnect([in] PP_Resource tcp_socket);
+
+  /**
+   * Sets an option on |tcp_socket|.  Supported |name| and |value| parameters
+   * are as described for PP_TCPSocketOption_Private.  |callback| will be
+   * invoked with PP_OK if setting the option succeeds, or an error code
+   * otherwise. The socket must be connection before SetOption is called.
+   */
+  [version=0.5]
+  int32_t SetOption([in] PP_Resource tcp_socket,
+                    [in] PP_TCPSocketOption_Private name,
+                    [in] PP_Var value,
+                    [in] PP_CompletionCallback callback);
+
 };

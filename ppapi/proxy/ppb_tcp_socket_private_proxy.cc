@@ -46,6 +46,8 @@ class TCPSocket : public TCPSocketPrivateImpl {
   virtual void SendRead(int32_t bytes_to_read) OVERRIDE;
   virtual void SendWrite(const std::string& buffer) OVERRIDE;
   virtual void SendDisconnect() OVERRIDE;
+  virtual void SendSetBoolOption(PP_TCPSocketOption_Private name,
+                                 bool value) OVERRIDE;
 
  private:
   void SendToBrowser(IPC::Message* msg);
@@ -116,6 +118,11 @@ void TCPSocket::SendDisconnect() {
   SendToBrowser(new PpapiHostMsg_PPBTCPSocket_Disconnect(socket_id_));
 }
 
+void TCPSocket::SendSetBoolOption(PP_TCPSocketOption_Private name, bool value) {
+  SendToBrowser(
+      new PpapiHostMsg_PPBTCPSocket_SetBoolOption(socket_id_, name, value));
+}
+
 void TCPSocket::SendToBrowser(IPC::Message* msg) {
   PluginGlobals::Get()->GetBrowserSender()->Send(msg);
 }
@@ -170,6 +177,8 @@ bool PPB_TCPSocket_Private_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgSSLHandshakeACK)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_ReadACK, OnMsgReadACK)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_WriteACK, OnMsgWriteACK)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_SetBoolOptionACK,
+                        OnMsgSetBoolOptionACK)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -234,6 +243,20 @@ void PPB_TCPSocket_Private_Proxy::OnMsgWriteACK(
   if (iter == g_id_to_socket->end())
     return;
   iter->second->OnWriteCompleted(succeeded, bytes_written);
+}
+
+void PPB_TCPSocket_Private_Proxy::OnMsgSetBoolOptionACK(
+    uint32 /* plugin_dispatcher_id */,
+    uint32 socket_id,
+    bool succeeded) {
+  if (!g_id_to_socket) {
+    NOTREACHED();
+    return;
+  }
+  IDToSocketMap::iterator iter = g_id_to_socket->find(socket_id);
+  if (iter == g_id_to_socket->end())
+    return;
+  iter->second->OnSetOptionCompleted(succeeded);
 }
 
 }  // namespace proxy

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_tcp_socket_private.idl modified Fri Apr  6 14:42:45 2012. */
+/* From private/ppb_tcp_socket_private.idl modified Sun Feb 10 00:28:07 2013. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_TCP_SOCKET_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_TCP_SOCKET_PRIVATE_H_
@@ -14,17 +14,36 @@
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/c/pp_var.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
 
 #define PPB_TCPSOCKET_PRIVATE_INTERFACE_0_3 "PPB_TCPSocket_Private;0.3"
 #define PPB_TCPSOCKET_PRIVATE_INTERFACE_0_4 "PPB_TCPSocket_Private;0.4"
-#define PPB_TCPSOCKET_PRIVATE_INTERFACE PPB_TCPSOCKET_PRIVATE_INTERFACE_0_4
+#define PPB_TCPSOCKET_PRIVATE_INTERFACE_0_5 "PPB_TCPSocket_Private;0.5"
+#define PPB_TCPSOCKET_PRIVATE_INTERFACE PPB_TCPSOCKET_PRIVATE_INTERFACE_0_5
 
 /**
  * @file
  * This file defines the <code>PPB_TCPSocket_Private</code> interface.
  */
 
+
+/**
+ * @addtogroup Enums
+ * @{
+ */
+typedef enum {
+  /* Special value used for testing. Guaranteed to fail SetOption(). */
+  PP_TCPSOCKETOPTION_INVALID = 0,
+  /* Disable coalescing of small writes to make TCP segments, and instead
+   * deliver data immediately. For SSL sockets, this option must be set before
+   * SSLHandshake() is called. Value type is PP_VARTYPE_BOOL. */
+  PP_TCPSOCKETOPTION_NO_DELAY = 1
+} PP_TCPSocketOption_Private;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_TCPSocketOption_Private, 4);
+/**
+ * @}
+ */
 
 /**
  * @addtogroup Interfaces
@@ -34,7 +53,7 @@
  * The <code>PPB_TCPSocket_Private</code> interface provides TCP socket
  * operations.
  */
-struct PPB_TCPSocket_Private_0_4 {
+struct PPB_TCPSocket_Private_0_5 {
   /**
    * Allocates a TCP socket resource.
    */
@@ -139,9 +158,19 @@ struct PPB_TCPSocket_Private_0_4 {
    * method.
    */
   void (*Disconnect)(PP_Resource tcp_socket);
+  /**
+   * Sets an option on |tcp_socket|.  Supported |name| and |value| parameters
+   * are as described for PP_TCPSocketOption_Private.  |callback| will be
+   * invoked with PP_OK if setting the option succeeds, or an error code
+   * otherwise. The socket must be connection before SetOption is called.
+   */
+  int32_t (*SetOption)(PP_Resource tcp_socket,
+                       PP_TCPSocketOption_Private name,
+                       struct PP_Var value,
+                       struct PP_CompletionCallback callback);
 };
 
-typedef struct PPB_TCPSocket_Private_0_4 PPB_TCPSocket_Private;
+typedef struct PPB_TCPSocket_Private_0_5 PPB_TCPSocket_Private;
 
 struct PPB_TCPSocket_Private_0_3 {
   PP_Resource (*Create)(PP_Instance instance);
@@ -161,6 +190,39 @@ struct PPB_TCPSocket_Private_0_3 {
                           const char* server_name,
                           uint16_t server_port,
                           struct PP_CompletionCallback callback);
+  int32_t (*Read)(PP_Resource tcp_socket,
+                  char* buffer,
+                  int32_t bytes_to_read,
+                  struct PP_CompletionCallback callback);
+  int32_t (*Write)(PP_Resource tcp_socket,
+                   const char* buffer,
+                   int32_t bytes_to_write,
+                   struct PP_CompletionCallback callback);
+  void (*Disconnect)(PP_Resource tcp_socket);
+};
+
+struct PPB_TCPSocket_Private_0_4 {
+  PP_Resource (*Create)(PP_Instance instance);
+  PP_Bool (*IsTCPSocket)(PP_Resource resource);
+  int32_t (*Connect)(PP_Resource tcp_socket,
+                     const char* host,
+                     uint16_t port,
+                     struct PP_CompletionCallback callback);
+  int32_t (*ConnectWithNetAddress)(PP_Resource tcp_socket,
+                                   const struct PP_NetAddress_Private* addr,
+                                   struct PP_CompletionCallback callback);
+  PP_Bool (*GetLocalAddress)(PP_Resource tcp_socket,
+                             struct PP_NetAddress_Private* local_addr);
+  PP_Bool (*GetRemoteAddress)(PP_Resource tcp_socket,
+                              struct PP_NetAddress_Private* remote_addr);
+  int32_t (*SSLHandshake)(PP_Resource tcp_socket,
+                          const char* server_name,
+                          uint16_t server_port,
+                          struct PP_CompletionCallback callback);
+  PP_Resource (*GetServerCertificate)(PP_Resource tcp_socket);
+  PP_Bool (*AddChainBuildingCertificate)(PP_Resource tcp_socket,
+                                         PP_Resource certificate,
+                                         PP_Bool is_trusted);
   int32_t (*Read)(PP_Resource tcp_socket,
                   char* buffer,
                   int32_t bytes_to_read,

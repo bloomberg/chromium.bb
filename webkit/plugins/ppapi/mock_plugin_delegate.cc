@@ -264,6 +264,11 @@ void MockPluginDelegate::TCPSocketWrite(uint32 socket_id,
                                         const std::string& buffer) {
 }
 
+void MockPluginDelegate::TCPSocketSetBoolOption(uint32 socket_id,
+                                                PP_TCPSocketOption_Private name,
+                                                bool value) {
+}
+
 void MockPluginDelegate::TCPSocketDisconnect(uint32 socket_id) {
 }
 

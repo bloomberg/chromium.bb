@@ -3,13 +3,13 @@
  * found in the LICENSE file.
  */
 
-/* From pp_macros.idl modified Wed Jan  9 18:07:46 2013. */
+/* From pp_macros.idl modified Wed Jan 30 13:26:34 2013. */
 
 #ifndef PPAPI_C_PP_MACROS_H_
 #define PPAPI_C_PP_MACROS_H_
 
 
-#define PPAPI_RELEASE 25
+#define PPAPI_RELEASE 27
 
 /**
  * @file

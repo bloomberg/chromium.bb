@@ -35,6 +35,8 @@ class PPB_TCPSocket_Private_Impl : public ::ppapi::TCPSocketPrivateImpl {
   virtual void SendRead(int32_t bytes_to_read) OVERRIDE;
   virtual void SendWrite(const std::string& buffer) OVERRIDE;
   virtual void SendDisconnect() OVERRIDE;
+  virtual void SendSetBoolOption(PP_TCPSocketOption_Private name,
+                                 bool value) OVERRIDE;
 
  private:
   PPB_TCPSocket_Private_Impl(PP_Instance instance, uint32 socket_id);

@@ -60,6 +60,7 @@ class PepperTCPSocket {
       const std::vector<std::vector<char> >& untrusted_certs);
   void Read(int32 bytes_to_read);
   void Write(const std::string& data);
+  void SetBoolOption(uint32_t name, bool value);
 
   void SendConnectACKError();
 
@@ -95,6 +96,7 @@ class PepperTCPSocket {
   void SendReadACKError();
   void SendWriteACKError();
   void SendSSLHandshakeACK(bool succeeded);
+  void SendSetBoolOptionACK(bool succeeded);
 
   void OnResolveCompleted(int result);
   void OnConnectCompleted(int result);
@@ -103,6 +105,7 @@ class PepperTCPSocket {
   void OnWriteCompleted(int result);
 
   bool IsConnected() const;
+  bool IsSsl() const;
 
   // Actually does a write from |write_buffer_|; possibly called many times for
   // each |Write()|.

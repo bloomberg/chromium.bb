@@ -121,6 +121,17 @@ void Disconnect(PP_Resource tcp_socket) {
     enter.object()->Disconnect();
 }
 
+int32_t SetOption(PP_Resource tcp_socket,
+                  PP_TCPSocketOption_Private name,
+                  PP_Var value,
+                  PP_CompletionCallback callback) {
+  EnterTCP enter(tcp_socket, callback, true);
+  if (enter.failed())
+    return enter.retval();
+  return enter.SetResult(
+      enter.object()->SetOption(name, value, enter.callback()));
+}
+
 const PPB_TCPSocket_Private_0_3 g_ppb_tcp_socket_thunk_0_3 = {
   &Create,
   &IsTCPSocket,
@@ -134,7 +145,7 @@ const PPB_TCPSocket_Private_0_3 g_ppb_tcp_socket_thunk_0_3 = {
   &Disconnect
 };
 
-const PPB_TCPSocket_Private g_ppb_tcp_socket_thunk_0_4 = {
+const PPB_TCPSocket_Private_0_4 g_ppb_tcp_socket_thunk_0_4 = {
   &Create,
   &IsTCPSocket,
   &Connect,
@@ -149,6 +160,22 @@ const PPB_TCPSocket_Private g_ppb_tcp_socket_thunk_0_4 = {
   &Disconnect
 };
 
+const PPB_TCPSocket_Private_0_5 g_ppb_tcp_socket_thunk_0_5 = {
+  &Create,
+  &IsTCPSocket,
+  &Connect,
+  &ConnectWithNetAddress,
+  &GetLocalAddress,
+  &GetRemoteAddress,
+  &SSLHandshake,
+  &GetServerCertificate,
+  &AddChainBuildingCertificate,
+  &Read,
+  &Write,
+  &Disconnect,
+  &SetOption
+};
+
 }  // namespace
 
 const PPB_TCPSocket_Private_0_3* GetPPB_TCPSocket_Private_0_3_Thunk() {
@@ -157,6 +184,10 @@ const PPB_TCPSocket_Private_0_3* GetPPB_TCPSocket_Private_0_3_Thunk() {
 
 const PPB_TCPSocket_Private_0_4* GetPPB_TCPSocket_Private_0_4_Thunk() {
   return &g_ppb_tcp_socket_thunk_0_4;
+}
+
+const PPB_TCPSocket_Private_0_5* GetPPB_TCPSocket_Private_0_5_Thunk() {
+  return &g_ppb_tcp_socket_thunk_0_5;
 }
 
 }  // namespace thunk

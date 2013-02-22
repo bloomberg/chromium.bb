@@ -124,6 +124,8 @@ bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPSocket_Read, OnTCPRead)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPSocket_Write, OnTCPWrite)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPSocket_Disconnect, OnTCPDisconnect)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPSocket_SetBoolOption,
+                        OnTCPSetBoolOption)
 
     // TCP Server messages.
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPServerSocket_Listen,
@@ -327,6 +329,18 @@ void PepperMessageFilter::OnTCPDisconnect(uint32 socket_id) {
   // callback. From this point on, there won't be any messages associated with
   // this socket sent to the plugin side.
   tcp_sockets_.erase(iter);
+}
+
+void PepperMessageFilter::OnTCPSetBoolOption(uint32 socket_id,
+                                             uint32_t name,
+                                             bool value) {
+  TCPSocketMap::iterator iter = tcp_sockets_.find(socket_id);
+  if (iter == tcp_sockets_.end()) {
+    NOTREACHED();
+    return;
+  }
+
+  iter->second->SetBoolOption(name, value);
 }
 
 void PepperMessageFilter::OnTCPServerListen(int32 routing_id,
