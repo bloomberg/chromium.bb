@@ -2351,7 +2351,7 @@ void BrowserView::LoadAccelerators() {
 }
 
 int BrowserView::GetCommandIDForAppCommandID(int app_command_id) const {
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   switch (app_command_id) {
     // NOTE: The order here matches the APPCOMMAND declaration order in the
     // Windows headers.

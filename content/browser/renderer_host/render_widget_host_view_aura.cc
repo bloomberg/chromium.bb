@@ -229,6 +229,19 @@ bool CanRendererHandleEvent(const ui::MouseEvent* event) {
   return true;
 }
 
+// We don't mark these as handled so that they're sent back to the
+// DefWindowProc so it can generate WM_APPCOMMAND as necessary.
+bool IsXButtonUpEvent(const ui::MouseEvent* event) {
+#if defined(OS_WIN)
+  switch (event->native_event().message) {
+    case WM_XBUTTONUP:
+    case WM_NCXBUTTONUP:
+      return true;
+  }
+#endif
+  return false;
+}
+
 void GetScreenInfoForWindow(WebScreenInfo* results, aura::Window* window) {
   const gfx::Display display = window ?
       gfx::Screen::GetScreenFor(window)->GetDisplayNearestWindow(window) :
@@ -1897,7 +1910,8 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
   if (window_->parent()->delegate() && !(event->flags() & ui::EF_FROM_TOUCH))
     window_->parent()->delegate()->OnMouseEvent(event);
 
-  event->SetHandled();
+  if (!IsXButtonUpEvent(event))
+    event->SetHandled();
 }
 
 void RenderWidgetHostViewAura::OnScrollEvent(ui::ScrollEvent* event) {
