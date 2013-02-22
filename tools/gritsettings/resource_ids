@@ -201,5 +201,9 @@
     "includes": [27500],
   },
 
+  "device/device_bluetooth_strings.grd": {
+    "messages": [28000],
+  },
+
   # Resource ids starting at 31000 are reserved for projects built on Chromium.
 }

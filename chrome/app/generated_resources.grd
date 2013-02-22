@@ -15718,46 +15718,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       Expand
     </message>
 
-    <message name="IDS_BLUETOOTH_DEVICE_UNKNOWN" desc="Text to identify Bluetooth devices of unknown or unsupported class.">
-      Unknown or Unsupported Device (<ph name="ADDRESS">$1<ex>12:34:56:78:9A:BC</ex></ph>)
-    </message>
-    <message name="IDS_BLUETOOTH_DEVICE_COMPUTER" desc="Text to identify Bluetooth devices of the computer class.">
-      Computer (<ph name="ADDRESS">$1<ex>12:34:56:78:9A:BC</ex></ph>)
-    </message>
-    <message name="IDS_BLUETOOTH_DEVICE_PHONE" desc="Text to identify Bluetooth devices of the phone class.">
-      Phone (<ph name="ADDRESS">$1<ex>12:34:56:78:9A:BC</ex></ph>)
-    </message>
-    <message name="IDS_BLUETOOTH_DEVICE_MODEM" desc="Text to identify Bluetooth devices of the modem class.">
-      Modem (<ph name="ADDRESS">$1<ex>12:34:56:78:9A:BC</ex></ph>)
-    </message>
-    <message name="IDS_BLUETOOTH_DEVICE_AUDIO" desc="Text to identify Bluetooth devices of the audio class.">
-      Audio (<ph name="ADDRESS">$1<ex>12:34:56:78:9A:BC</ex></ph>)
-    </message>
-    <message name="IDS_BLUETOOTH_DEVICE_CAR_AUDIO" desc="Text to identify Bluetooth devices of the car audio class.">
-      Car audio (<ph name="ADDRESS">$1<ex>12:34:56:78:9A:BC</ex></ph>)
-    </message>
-    <message name="IDS_BLUETOOTH_DEVICE_VIDEO" desc="Text to identify Bluetooth devices of the video class.">
-      Video (<ph name="ADDRESS">$1<ex>12:34:56:78:9A:BC</ex></ph>)
-    </message>
-    <message name="IDS_BLUETOOTH_DEVICE_JOYSTICK" desc="Text to identify Bluetooth devices of the joystick class.">
-      Joystick (<ph name="ADDRESS">$1<ex>12:34:56:78:9A:BC</ex></ph>)
-    </message>
-    <message name="IDS_BLUETOOTH_DEVICE_GAMEPAD" desc="Text to identify Bluetooth devices of the gamepad class.">
-      Gamepad (<ph name="ADDRESS">$1<ex>12:34:56:78:9A:BC</ex></ph>)
-    </message>
-    <message name="IDS_BLUETOOTH_DEVICE_KEYBOARD" desc="Text to identify Bluetooth devices of the keyboard class.">
-      Keyboard (<ph name="ADDRESS">$1<ex>12:34:56:78:9A:BC</ex></ph>)
-    </message>
-    <message name="IDS_BLUETOOTH_DEVICE_TABLET" desc="Text to identify Bluetooth devices of the tablet class.">
-      Tablet (<ph name="ADDRESS">$1<ex>12:34:56:78:9A:BC</ex></ph>)
-    </message>
-    <message name="IDS_BLUETOOTH_DEVICE_MOUSE" desc="Text to identify Bluetooth devices of the mouse class.">
-      Mouse (<ph name="ADDRESS">$1<ex>12:34:56:78:9A:BC</ex></ph>)
-    </message>
-    <message name="IDS_BLUETOOTH_DEVICE_KEYBOARD_MOUSE_COMBO" desc="Text to identify Bluetooth devices of both keyboard and mouse class.">
-      Keyboard/Mouse (<ph name="ADDRESS">$1<ex>12:34:56:78:9A:BC</ex></ph>)
-    </message>
-
     <!-- High-contrast mode. -->
     <message name="IDS_HIGH_CONTRAST_NOTIFICATION"
              desc="Text that explains that the user is using Windows High-Contrast mode, so they may be interested in a high-contrast extension or a dark theme. Note to translators: this is the name of a feature in Windows, so please try to find the correct name of that feature in your region.">

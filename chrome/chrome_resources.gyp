@@ -333,6 +333,7 @@
             # TODO(zork): Protect this with if use_aura==1
             '<(DEPTH)/ash/ash_strings.gyp:ash_strings',
             '<(DEPTH)/content/content_resources.gyp:content_resources',
+            '<(DEPTH)/device/device_bluetooth_strings.gyp:device_bluetooth_strings',
             '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_resources',
             '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_strings',
           ],

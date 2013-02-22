@@ -5,7 +5,7 @@
 #include "device/bluetooth/bluetooth_device.h"
 
 #include "base/utf_string_conversions.h"
-#include "grit/generated_resources.h"
+#include "grit/device_bluetooth_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace device {
