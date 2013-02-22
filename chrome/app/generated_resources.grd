@@ -13432,8 +13432,11 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_DRIVE_WELCOME_TITLE" desc="In the Welcome to Google Drive banner, title of banner.">
         Welcome to Google Drive!
       </message>
-      <message name="IDS_FILE_BROWSER_DRIVE_WELCOME_TITLE_ALTERNATIVE" desc="In the Welcome to Google Drive banner, title of the alternative banner.">
+      <message name="IDS_FILE_BROWSER_DRIVE_WELCOME_TITLE_ALTERNATIVE" desc="In the Welcome to Google Drive banner, title of the alternative banner offering 100GB free storage.">
         Get 100 GB free with Google Drive
+      </message>
+      <message name="IDS_FILE_BROWSER_DRIVE_WELCOME_TITLE_ALTERNATIVE_1TB" desc="In the Welcome to Google Drive banner, title of the alternative banner offering 1TB free storage.">
+        Get 1 TB free with Google Drive
       </message>
       <message name="IDS_FILE_BROWSER_DRIVE_WELCOME_TEXT_SHORT" desc="In the Welcome to Google Drive banner, text of the welcome message, short version.">
         All files saved in this folder are backed up online automatically

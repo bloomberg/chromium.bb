@@ -15,11 +15,14 @@ function FileListBannerController(directoryModel, volumeManager, document) {
   this.document_ = document;
   this.driveEnabled_ = false;
 
-  var board = str('CHROMEOS_RELEASE_BOARD');
-  if (!board.match(/^x86-(mario|zgb|alex)/i) && !board.match(/^stout/i))
+  if (!util.boardIs('x86-mario') &&
+      !util.boardIs('x86-zgb') &&
+      !util.boardIs('x86-alex') &&
+      !util.boardIs('stout')) {
     this.checkPromoAvailable_();
-  else
+  } else {
     this.newWelcome_ = false;
+  }
 
   var handler = this.checkSpaceAndShowBanner_.bind(this);
   this.directoryModel_.addEventListener('scan-completed', handler);
@@ -166,7 +169,10 @@ FileListBannerController.prototype.showBanner_ = function(type, messageId) {
 
   var more;
   if (this.newWelcome_) {
-    title.textContent = str('DRIVE_WELCOME_TITLE_ALTERNATIVE');
+    var welcomeTitle = str('DRIVE_WELCOME_TITLE_ALTERNATIVE');
+    if (util.boardIs('link'))
+      welcomeTitle = str('DRIVE_WELCOME_TITLE_ALTERNATIVE_1TB');
+    title.textContent = welcomeTitle;
     more = util.createChild(links,
         'drive-welcome-button drive-welcome-start', 'a');
     more.textContent = str('DRIVE_WELCOME_CHECK_ELIGIBILITY');
@@ -392,8 +398,10 @@ FileListBannerController.prototype.checkSpaceAndShowBanner_ = function() {
       chrome.fileBrowserPrivate.getSizeStats(
           util.makeFilesystemUrl(self.directoryModel_.getCurrentRootPath()),
           function(result) {
-            // Already >= 100 GB.
-            if (result && result.totalSizeKB >= 100 * 1024 * 1024)
+            var offerSpaceKb = 100 * 1024 * 1024;  // 100GB.
+            if (util.boardIs('link'))
+              offerSpaceKb = 1024 * 1024 * 1024;  // 1TB.
+            if (result && result.totalSizeKB >= offerSpaceKb)
               self.newWelcome_ = false;
             self.maybeShowBanner_();
           });
