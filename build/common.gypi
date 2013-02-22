@@ -333,6 +333,9 @@
       # disabling depends on the platform.
       'enable_themes%': 1,
 
+      # Enables autofill dialog and associated features; disabled by default.
+      'enable_autofill_dialog%' : 0,
+
       # Uses OEM-specific wallpaper resources on Chrome OS.
       'use_oem_wallpaper%': 0,
 
@@ -489,6 +492,11 @@
           'enable_themes%': 0,
           'proprietary_codecs%': 1,
           'remoting%': 0,
+        }],
+
+        # Enable autofill dialog for Android and Views-enabled platforms for now.
+        ['toolkit_views==1 or (OS=="android" and android_build_type==0)', {
+          'enable_autofill_dialog%': 1
         }],
 
         ['OS=="android" and android_build_type==0', {
@@ -712,6 +720,7 @@
     'enable_plugins%': '<(enable_plugins)',
     'enable_session_service%': '<(enable_session_service)',
     'enable_themes%': '<(enable_themes)',
+    'enable_autofill_dialog%': '<(enable_autofill_dialog)',
     'use_oem_wallpaper%': '<(use_oem_wallpaper)',
     'enable_background%': '<(enable_background)',
     'linux_use_gold_binary%': '<(linux_use_gold_binary)',
@@ -1978,6 +1987,9 @@
       }],
       ['enable_themes==1', {
         'defines': ['ENABLE_THEMES=1'],
+      }],
+      ['enable_autofill_dialog==1', {
+        'defines': ['ENABLE_AUTOFILL_DIALOG=1'],
       }],
       ['enable_background==1', {
         'defines': ['ENABLE_BACKGROUND=1'],

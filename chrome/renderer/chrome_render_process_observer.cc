@@ -169,7 +169,7 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver(
     base::StatisticsRecorder::set_dump_on_exit(true);
   }
 
-#if defined(TOOLKIT_VIEWS)
+#if defined(ENABLE_AUTOFILL_DIALOG)
   WebRuntimeFeatures::enableRequestAutocomplete(
       command_line.HasSwitch(switches::kEnableInteractiveAutocomplete) ||
       command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures));
