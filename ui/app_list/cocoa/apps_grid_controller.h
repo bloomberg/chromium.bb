@@ -37,6 +37,8 @@ class AppsGridDelegateBridge;
 
 - (void)setModel:(scoped_ptr<app_list::AppListModel>)model;
 
+- (void)activateSelection;
+
 @end
 
 #endif  // UI_APP_LIST_COCOA_APPS_GRID_CONTROLLER_H_

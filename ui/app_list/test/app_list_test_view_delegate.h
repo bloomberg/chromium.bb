@@ -18,6 +18,7 @@ class AppListTestViewDelegate  : public AppListViewDelegate {
   virtual ~AppListTestViewDelegate();
 
   int activate_count() { return activate_count_; }
+  int dismiss_count() { return dismiss_count_; }
   AppListItemModel* last_activated() { return last_activated_; }
 
   // AppListViewDelegate overrides:
@@ -32,13 +33,14 @@ class AppListTestViewDelegate  : public AppListViewDelegate {
   virtual void InvokeSearchResultAction(const SearchResult& result,
                                         int action_index,
                                         int event_flags) OVERRIDE {}
-  virtual void Dismiss() OVERRIDE {}
+  virtual void Dismiss() OVERRIDE;
   virtual void ViewClosing() OVERRIDE {}
   virtual void ViewActivationChanged(bool active) OVERRIDE {}
   virtual gfx::ImageSkia GetWindowIcon() OVERRIDE;
 
 private:
   int activate_count_;
+  int dismiss_count_;
   AppListItemModel* last_activated_;
 };
 

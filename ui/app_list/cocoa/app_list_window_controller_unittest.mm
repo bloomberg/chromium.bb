@@ -4,9 +4,10 @@
 
 #import "base/memory/scoped_nsobject.h"
 #import "testing/gtest_mac.h"
-#import "ui/app_list/app_list_view_delegate.h"
+#include "ui/app_list/app_list_view_delegate.h"
 #import "ui/app_list/cocoa/apps_grid_controller.h"
 #import "ui/app_list/cocoa/app_list_window_controller.h"
+#include "ui/app_list/test/app_list_test_view_delegate.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 
 namespace {
@@ -20,13 +21,19 @@ class AppListWindowControllerTest : public ui::CocoaTest {
 
   scoped_nsobject<AppListWindowController> controller_;
 
+  app_list::test::AppListTestViewDelegate* delegate() {
+    return static_cast<app_list::test::AppListTestViewDelegate*>(
+        [[controller_ appsGridController] delegate]);
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(AppListWindowControllerTest);
 };
 
 AppListWindowControllerTest::AppListWindowControllerTest() {
   Init();
-  scoped_ptr<app_list::AppListViewDelegate> delegate;
+  scoped_ptr<app_list::AppListViewDelegate> delegate(
+      new app_list::test::AppListTestViewDelegate);
   scoped_nsobject<AppsGridController> content(
       [[AppsGridController alloc] initWithViewDelegate:delegate.Pass()]);
   controller_.reset(
@@ -51,4 +58,13 @@ TEST_F(AppListWindowControllerTest, ShowHideCloseRelease) {
   [[controller_ window] close];  // Hide.
   EXPECT_FALSE([[controller_ window] isVisible]);
   [[controller_ window] makeKeyAndOrderFront:nil];
+}
+
+// Test that the key bound to cancel (usually Escape) asks the controller to
+// dismiss the window.
+TEST_F(AppListWindowControllerTest, DismissWithEscape) {
+  [[controller_ window] makeKeyAndOrderFront:nil];
+  EXPECT_EQ(0, delegate()->dismiss_count());
+  [[controller_ window] cancelOperation:controller_];
+  EXPECT_EQ(1, delegate()->dismiss_count());
 }

@@ -10,7 +10,9 @@ namespace app_list {
 namespace test {
 
 AppListTestViewDelegate::AppListTestViewDelegate()
-    : activate_count_(0), last_activated_(NULL) {
+    : activate_count_(0),
+      dismiss_count_(0),
+      last_activated_(NULL) {
 }
 
 AppListTestViewDelegate::~AppListTestViewDelegate() {}
@@ -23,6 +25,10 @@ void AppListTestViewDelegate::ActivateAppListItem(AppListItemModel* item,
                                                   int event_flags) {
   last_activated_ = item;
   ++activate_count_;
+}
+
+void AppListTestViewDelegate::Dismiss() {
+  ++dismiss_count_;
 }
 
 gfx::ImageSkia AppListTestViewDelegate::GetWindowIcon() {

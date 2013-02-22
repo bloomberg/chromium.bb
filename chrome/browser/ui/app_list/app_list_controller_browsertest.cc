@@ -38,7 +38,7 @@ class AppListControllerBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(AppListControllerBrowserTest);
 };
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if !defined(OS_CHROMEOS) && !defined(USE_AURA)
 // Show the app list, then dismiss it.
 IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, ShowAndDismiss) {
   ASSERT_FALSE(chrome::IsAppListVisible());
@@ -48,6 +48,9 @@ IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, ShowAndDismiss) {
   ASSERT_FALSE(chrome::IsAppListVisible());
 }
 
+// TODO(tapted): Enable this when profile switching code has been moved up the
+// app list controller hierarchy.
+#if !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, SwitchAppListProfiles) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ASSERT_TRUE(temp_profile_dir_.CreateUniqueTempDir());
@@ -92,4 +95,5 @@ IN_PROC_BROWSER_TEST_F(ShowAppListBrowserTest, ShowAppListFlag) {
   CreateBrowser(chrome::GetCurrentAppListProfile());
   chrome::DismissAppList();
 }
-#endif  // defined(OS_WIN) && !defined(USE_AURA)
+#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_CHROMEOS) && !defined(USE_AURA)

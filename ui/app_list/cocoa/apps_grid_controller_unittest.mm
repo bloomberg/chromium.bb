@@ -16,7 +16,9 @@ namespace {
 
 class AppsGridControllerTest : public ui::CocoaTest {
  public:
-  AppsGridControllerTest() {}
+  AppsGridControllerTest() {
+    Init();
+  }
 
   virtual void SetUp() OVERRIDE {
     ui::CocoaTest::SetUp();
@@ -30,6 +32,8 @@ class AppsGridControllerTest : public ui::CocoaTest {
     [apps_grid_controller_ setModel:model.Pass()];
 
     [[test_window() contentView] addSubview:[apps_grid_controller_ view]];
+    [test_window() makePretendKeyWindowAndSetFirstResponder:
+        [apps_grid_controller_ collectionView]];
   }
 
  protected:
@@ -39,6 +43,44 @@ class AppsGridControllerTest : public ui::CocoaTest {
         cocoa_test_event_utils::MouseClickInView(view, 1));
     [NSApp postEvent:events.first atStart:NO];
     [NSApp postEvent:events.second atStart:NO];
+  }
+
+  // Send a key press to the first responder.
+  void SimulateKeyPress(unichar c) {
+    [test_window() keyDown:cocoa_test_event_utils::KeyEventWithCharacter(c)];
+  }
+
+  void DelayForCollectionView() {
+    message_loop_.PostDelayedTask(FROM_HERE, MessageLoop::QuitClosure(),
+                                  base::TimeDelta::FromMilliseconds(100));
+    message_loop_.Run();
+  }
+
+  void SinkEvents() {
+    message_loop_.PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    message_loop_.Run();
+  }
+
+  NSView* GetItemViewAt(size_t index) {
+    if (index < [[[apps_grid_controller_ collectionView] content] count]) {
+      NSCollectionViewItem* item = [[apps_grid_controller_ collectionView]
+          itemAtIndex:index];
+      return [item view];
+    }
+
+    return nil;
+  }
+
+  NSView* GetSelectedView() {
+    NSIndexSet* selection =
+        [[apps_grid_controller_ collectionView] selectionIndexes];
+    if ([selection count]) {
+      NSCollectionViewItem* item = [[apps_grid_controller_ collectionView]
+          itemAtIndex:[selection firstIndex]];
+      return [item view];
+    }
+
+    return nil;
   }
 
   app_list::test::AppListTestViewDelegate* delegate() {
@@ -54,6 +96,8 @@ class AppsGridControllerTest : public ui::CocoaTest {
   scoped_nsobject<AppsGridController> apps_grid_controller_;
 
  private:
+  MessageLoopForUI message_loop_;
+
   DISALLOW_COPY_AND_ASSIGN(AppsGridControllerTest);
 };
 
@@ -69,35 +113,31 @@ TEST_F(AppsGridControllerTest, EmptyModelAndShow) {
 }
 
 // Test with a single item.
-// This test is disabled in builders until the delay to wait for the animations
-// can be removed, or some other solution is found.
+// This test is disabled in builders until the delay to wait for the collection
+// view to load subviews can be removed, or some other solution is found.
 TEST_F(AppsGridControllerTest, DISABLED_SingleEntryModel) {
-  const size_t kTotalItems = 1;
-  MessageLoopForUI message_loop;
-
+  // We need to "wake up" the NSCollectionView, otherwise it does not
+  // immediately update its subviews later in this function.
+  // When this test is run by itself, it's enough just to send a keypress (and
+  // this delay is not needed).
+  DelayForCollectionView();
   EXPECT_EQ(0u, [[[apps_grid_controller_ collectionView] content] count]);
 
-  [NSAnimationContext beginGrouping];
-  [[NSAnimationContext currentContext] setDuration:0.0];
-  model()->PopulateApps(kTotalItems);
-  [NSAnimationContext endGrouping];
+  model()->PopulateApps(1);
+  SinkEvents();
+  EXPECT_FALSE([[apps_grid_controller_ collectionView] animations]);
 
-  EXPECT_EQ(kTotalItems,
-            [[[apps_grid_controller_ collectionView] content] count]);
-
-  message_loop.PostDelayedTask(FROM_HERE,
-                               MessageLoop::QuitClosure(),
-                               base::TimeDelta::FromMilliseconds(100));
-  message_loop.Run();
-
+  EXPECT_EQ(1u, [[[apps_grid_controller_ collectionView] content] count]);
   NSArray* subviews = [[apps_grid_controller_ collectionView] subviews];
-  EXPECT_EQ(kTotalItems, [subviews count]);
+  EXPECT_EQ(1u, [subviews count]);
+
+  // Note that using GetItemViewAt(0) here also works, and returns non-nil even
+  // without the delay, but a "click" on it does not register without the delay.
   NSView* subview = [subviews objectAtIndex:0];
 
   // Launch the item.
   SimulateClick(subview);
-  message_loop.PostTask(FROM_HERE, MessageLoop::QuitClosure());
-  message_loop.Run();
+  SinkEvents();
   EXPECT_EQ(1, delegate()->activate_count());
   EXPECT_EQ(std::string("Item 0"), delegate()->last_activated()->title());
 }
@@ -117,4 +157,33 @@ TEST_F(AppsGridControllerTest, ReplaceModel) {
   [apps_grid_controller_ setModel:new_model.PassAs<app_list::AppListModel>()];
   EXPECT_EQ(kNewItems,
             [[[apps_grid_controller_ collectionView] content] count]);
+}
+
+// Tests basic left-right keyboard navigation on the first page, later tests
+// will test keyboard navigation across pages and other corner cases.
+TEST_F(AppsGridControllerTest, DISABLED_FirstPageKeyboardNavigation) {
+  model()->PopulateApps(3);
+  SinkEvents();
+  EXPECT_EQ(3u, [[[apps_grid_controller_ collectionView] content] count]);
+
+  SimulateKeyPress(NSRightArrowFunctionKey);
+  SinkEvents();
+  EXPECT_EQ(GetSelectedView(), GetItemViewAt(0));
+
+  SimulateKeyPress(NSRightArrowFunctionKey);
+  SinkEvents();
+  EXPECT_EQ(GetSelectedView(), GetItemViewAt(1));
+
+  SimulateKeyPress(NSLeftArrowFunctionKey);
+  SinkEvents();
+  EXPECT_EQ(GetSelectedView(), GetItemViewAt(0));
+
+  // Go to the last item, and launch it.
+  SimulateKeyPress(NSRightArrowFunctionKey);
+  SimulateKeyPress(NSRightArrowFunctionKey);
+  [apps_grid_controller_ activateSelection];
+  SinkEvents();
+  EXPECT_EQ(GetSelectedView(), GetItemViewAt(2));
+  EXPECT_EQ(1, delegate()->activate_count());
+  EXPECT_EQ(std::string("Item 2"), delegate()->last_activated()->title());
 }

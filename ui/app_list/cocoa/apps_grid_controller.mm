@@ -6,6 +6,8 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "skia/ext/skia_utils_mac.h"
+#include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_item_model.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_model_observer.h"
@@ -41,6 +43,27 @@ const CGFloat kPreferredTileHeight = 98;
                  count:(size_t)count;
 
 - (void)onItemClicked:(id)sender;
+
+- (NSButton*)selectedButton;
+
+@end
+
+@interface AppsGridViewItem : NSCollectionViewItem;
+@end
+
+@implementation AppsGridViewItem
+
+- (void)setSelected:(BOOL)flag {
+  if (flag) {
+    [[base::mac::ObjCCastStrict<NSButton>([self view]) cell]
+        setBackgroundColor:[NSColor lightGrayColor]];
+  } else {
+    [[base::mac::ObjCCastStrict<NSButton>([self view]) cell]
+        setBackgroundColor:gfx::SkColorToCalibratedNSColor(
+            app_list::kContentsBackgroundColor)];
+  }
+  [super setSelected:flag];
+}
 
 @end
 
@@ -116,6 +139,10 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
   [self modelUpdated];
 }
 
+- (void)activateSelection {
+  [[self selectedButton] performClick:self];
+}
+
 - (void)loadAndSetView {
   const CGFloat kViewWidth = kFixedColumns * kPreferredTileWidth +
       2 * kLeftRightPadding;
@@ -127,10 +154,9 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
   [prototypeButton setButtonType:NSMomentaryPushInButton];
   [prototypeButton setTarget:self];
   [prototypeButton setAction:@selector(onItemClicked:)];
-  [prototypeButton setShowsBorderOnlyWhileMouseInside:YES];
+  [prototypeButton setBordered:NO];
 
-  scoped_nsobject<NSCollectionViewItem> prototype(
-      [[NSCollectionViewItem alloc] init]);
+  scoped_nsobject<AppsGridViewItem> prototype([[AppsGridViewItem alloc] init]);
   [prototype setView:prototypeButton];
 
   NSSize itemSize = NSMakeSize(kPreferredTileWidth, kPreferredTileHeight);
@@ -140,6 +166,7 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
   [tmpCollectionView setMinItemSize:itemSize];
   [tmpCollectionView setMaxItemSize:itemSize];
   [tmpCollectionView setItemPrototype:prototype];
+  [tmpCollectionView setSelectable:YES];
 
   NSRect scrollFrame = NSMakeRect(0, 0, kViewWidth, kViewHeight);
   scoped_nsobject<NSScrollView> scrollView(
@@ -168,10 +195,20 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
                    count:model_->apps()->item_count()];
 }
 
+- (NSButton*)selectedButton {
+  NSIndexSet* selection = [[self collectionView] selectionIndexes];
+  if ([selection count]) {
+    NSCollectionViewItem* item =
+        [[self collectionView] itemAtIndex:[selection firstIndex]];
+    return base::mac::ObjCCastStrict<NSButton>([item view]);
+  }
+  return nil;
+}
+
 - (void)listItemsAdded:(size_t)start
                  count:(size_t)count {
   for (size_t i = start; i < start + count; ++i)
-    [items_ insertObject:[NSNull null] atIndex:i];
+    [items_ insertObject:[NSNumber numberWithInt:i] atIndex:i];
 
   [[self collectionView] setContent:items_];
 

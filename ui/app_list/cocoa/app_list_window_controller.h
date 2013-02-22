@@ -12,11 +12,13 @@
 @class AppsGridController;
 
 // Controller for the app list NSWindow.
-@interface AppListWindowController : NSWindowController {
+@interface AppListWindowController : NSWindowController<NSWindowDelegate> {
   scoped_nsobject<AppsGridController> appsGridController_;
 }
 
 - (id)initWithGridController:(AppsGridController*)gridController;
+
+- (AppsGridController*)appsGridController;
 
 @end
 
