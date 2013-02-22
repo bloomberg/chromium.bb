@@ -147,6 +147,7 @@ static const MimeInfo secondary_mappings[] = {
   { "application/x-font-woff", "woff" },
   { "image/bmp", "bmp" },
   { "image/x-icon", "ico" },
+  { "image/vnd.microsoft.icon", "ico" },
   { "image/jpeg", "jfif,pjpeg,pjp" },
   { "image/tiff", "tiff,tif" },
   { "image/x-xbitmap", "xbm" },
@@ -255,6 +256,7 @@ static const char* const supported_image_types[] = {
   "image/png",
   "image/gif",
   "image/bmp",
+  "image/vnd.microsoft.icon",    // ico
   "image/x-icon",    // ico
   "image/x-xbitmap"  // xbm
 };
@@ -767,6 +769,7 @@ static const char* const kStandardImageTypes[] = {
   "image/png",
   "image/svg+xml",
   "image/tiff",
+  "image/vnd.microsoft.icon",
   "image/x-cmu-raster",
   "image/x-cmx",
   "image/x-icon",
