@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/linked_ptr.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/extensions/api/tab_capture.h"
@@ -29,22 +30,25 @@ class TabCaptureRegistry : public ProfileKeyedService,
                            public MediaCaptureDevicesDispatcher::Observer {
  public:
   struct TabCaptureRequest {
-    TabCaptureRequest(std::string extension_id,
-                      int tab_id,
+    TabCaptureRequest(const std::string& extension_id,
+                      const int tab_id,
                       tab_capture::TabCaptureState status);
     ~TabCaptureRequest();
 
-    std::string extension_id;
-    int tab_id;
+    const std::string extension_id;
+    const int tab_id;
     tab_capture::TabCaptureState status;
+    tab_capture::TabCaptureState last_status;
   };
-  typedef std::vector<TabCaptureRequest> CaptureRequestList;
+  typedef std::vector<linked_ptr<TabCaptureRequest> > CaptureRequestList;
 
   explicit TabCaptureRegistry(Profile* profile);
 
-  const CaptureRequestList GetCapturedTabs(const std::string& extension_id);
+  const CaptureRequestList GetCapturedTabs(
+      const std::string& extension_id) const;
   bool AddRequest(const std::pair<int, int>, const TabCaptureRequest& request);
   bool VerifyRequest(int render_process_id, int render_view_id);
+  void RemoveRequest(int render_process_id, int render_view_id);
 
  private:
   // Maps device_id to information about the media stream request. This is
