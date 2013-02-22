@@ -21,6 +21,7 @@
 #include "clang/Basic/SourceManager.h"
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendPluginRegistry.h"
+#include "clang/Lex/Lexer.h"
 #include "llvm/Support/raw_ostream.h"
 
 #include "ChromeClassTester.h"
@@ -29,6 +30,10 @@ using namespace clang;
 
 namespace {
 
+const char kMethodRequiresOverride[] =
+    "[chromium-style] Overriding method must be marked with OVERRIDE.";
+const char kMethodRequiresVirtual[] =
+    "[chromium-style] Overriding method must have \"virtual\" keyword.";
 const char kNoExplicitDtor[] =
     "[chromium-style] Classes that are ref-counted should have explicit "
     "destructors that are declared protected or private.";
@@ -75,6 +80,10 @@ class FindBadConstructsConsumer : public ChromeClassTester {
         check_base_classes_(check_base_classes),
         check_virtuals_in_implementations_(check_virtuals_in_implementations) {
     // Register warning/error messages.
+    diag_method_requires_override_ = diagnostic().getCustomDiagID(
+        getErrorLevel(), kMethodRequiresOverride);
+    diag_method_requires_virtual_ = diagnostic().getCustomDiagID(
+        getErrorLevel(), kMethodRequiresVirtual);
     diag_no_explicit_dtor_ = diagnostic().getCustomDiagID(
         getErrorLevel(), kNoExplicitDtor);
     diag_public_dtor_ = diagnostic().getCustomDiagID(
@@ -125,6 +134,8 @@ class FindBadConstructsConsumer : public ChromeClassTester {
   bool check_base_classes_;
   bool check_virtuals_in_implementations_;
 
+  unsigned diag_method_requires_override_;
+  unsigned diag_method_requires_virtual_;
   unsigned diag_no_explicit_dtor_;
   unsigned diag_public_dtor_;
   unsigned diag_protected_non_virtual_dtor_;
@@ -238,7 +249,11 @@ class FindBadConstructsConsumer : public ChromeClassTester {
       SourceLocation loc = method->getTypeSpecStartLoc();
       if (isa<CXXDestructorDecl>(method))
         loc = method->getInnerLocStart();
-      emitWarning(loc, "Overriding method must have \"virtual\" keyword.");
+      SourceManager& manager = instance().getSourceManager();
+      FullSourceLoc full_loc(loc, manager);
+      SourceLocation spelling_loc = manager.getSpellingLoc(loc);
+      diagnostic().Report(full_loc, diag_method_requires_virtual_)
+          << FixItHint::CreateInsertion(spelling_loc, "virtual ");
     }
 
     // Virtual methods should not have inline definitions beyond "{}". This
@@ -260,15 +275,17 @@ class FindBadConstructsConsumer : public ChromeClassTester {
     return GetNamespace(record).find("testing") != std::string::npos;
   }
 
-  bool IsMethodInBannedNamespace(const CXXMethodDecl* method) {
+  bool IsMethodInBannedOrTestingNamespace(const CXXMethodDecl* method) {
     if (InBannedNamespace(method))
       return true;
     for (CXXMethodDecl::method_iterator i = method->begin_overridden_methods();
          i != method->end_overridden_methods();
          ++i) {
       const CXXMethodDecl* overridden = *i;
-      if (IsMethodInBannedNamespace(overridden))
+      if (IsMethodInBannedOrTestingNamespace(overridden) ||
+          InTestingNamespace(overridden)) {
         return true;
+      }
     }
 
     return false;
@@ -281,11 +298,27 @@ class FindBadConstructsConsumer : public ChromeClassTester {
     if (isa<CXXDestructorDecl>(method) || method->isPure())
       return;
 
-    if (IsMethodInBannedNamespace(method))
+    if (IsMethodInBannedOrTestingNamespace(method))
       return;
 
-    SourceLocation loc = method->getTypeSpecStartLoc();
-    emitWarning(loc, "Overriding method must be marked with OVERRIDE.");
+    SourceManager& manager = instance().getSourceManager();
+    SourceRange type_info_range =
+        method->getTypeSourceInfo()->getTypeLoc().getSourceRange();
+    FullSourceLoc loc(type_info_range.getBegin(), manager);
+
+    // Build the FixIt insertion point after the end of the method definition,
+    // including any const-qualifiers and attributes, and before the opening
+    // of the l-curly-brace (if inline) or the semi-color (if a declaration).
+    SourceLocation spelling_end =
+        manager.getSpellingLoc(type_info_range.getEnd());
+    if (spelling_end.isValid()) {
+      SourceLocation token_end = Lexer::getLocForEndOfToken(
+          spelling_end, 0, manager, LangOptions());
+      diagnostic().Report(token_end, diag_method_requires_override_)
+          << FixItHint::CreateInsertion(token_end, " OVERRIDE");
+    } else {
+      diagnostic().Report(loc, diag_method_requires_override_);
+    }
   }
 
   // Makes sure there is a "virtual" keyword on virtual methods.

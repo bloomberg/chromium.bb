@@ -28,8 +28,19 @@ class ImplementationDerivedClass : public ImplementationInterimClass,
   virtual void SomeInlineMethod() {}
   // Should not warn if overriding a method whose origin is WebKit.
   virtual void WebKitModifiedSomething();
-  // Should warn if overridden method isn't pure.
+  // Should warn with the insertion point after the const.
+  virtual void SomeConstMethod() const {}
+  // Should warn with the insertion point after the throw spec.
+  virtual void SomeMethodWithExceptionSpec() throw() {}
+  // Should warn with the insertion point after both the const and the throw
+  // specifiers.
+  virtual void SomeConstMethodWithExceptionSpec() const throw(int) {}
+  // Should warn even if overridden method isn't pure.
   virtual void SomeNonPureBaseMethod() {}
+  // Should warn and place correctly even when there is a comment.
+  virtual void SomeMethodWithComment();  // This is a comment.
+  // Should warn and place correctly even if there is a comment and body.
+  virtual void SomeMethodWithCommentAndBody() {}  // This is a comment.
 };
 
 int main() {
