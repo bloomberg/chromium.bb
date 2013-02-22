@@ -31,6 +31,12 @@ button:focus {
   display: none;
 }
 
+.action-choice h1 {
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 5px 3px;
+}
+
 /* The loading preview */
 
 .loading {
@@ -111,7 +117,7 @@ button:focus {
 
 .counter {
   color: #808080;
-  margin: 5px 0 20px 3px;
+  margin: 5px 3px;
   width: 100%;
 }
 

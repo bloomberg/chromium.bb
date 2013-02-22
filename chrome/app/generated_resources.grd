@@ -13070,6 +13070,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
         This file is not available offline.
       </message>
 
+      <message name="IDS_FILE_BROWSER_ACTION_CHOICE_OPENING_METHOD" desc="In the action choice dialog, header with a question about an action to choose.">
+        How would you like to open photos and videos from your SD card?
+      </message>
       <message name="IDS_FILE_BROWSER_ACTION_CHOICE_PHOTOS_DRIVE" desc="In the action choice dialog, label of action to import photos to Drive.">
         Import photos to Google Drive
       </message>
