@@ -696,6 +696,11 @@ const char kForceAppMode[]                  = "force-app-mode";
 // whether or not it's actually the First Run (this overrides kNoFirstRun).
 const char kForceFirstRun[]                 = "force-first-run";
 
+// Tries to load cloud policy for every signed in user, regardless of whether
+// they are a dasher user or not. Used to allow any GAIA account to be used for
+// testing the cloud policy framework.
+const char kForceLoadCloudPolicy[]          = "force-load-cloud-policy";
+
 // Enables using GAIA information to populate profile name and icon.
 const char kGaiaProfileInfo[]               = "gaia-profile-info";
 
