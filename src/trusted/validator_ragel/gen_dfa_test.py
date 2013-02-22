@@ -116,6 +116,7 @@ class TestPrinterParts(unittest.TestCase):
   def test_simple_mov_signature(self):
     printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 32)
     instr = gen_dfa.Instruction.Parse('mov =Ob !ab, 0xa0, ia32')
+    instr = printer._SetOperandIndices(instr)
 
     printer._PrintSignature(instr)
 
@@ -141,6 +142,7 @@ class TestPrinterParts(unittest.TestCase):
     printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 32)
     instr = gen_dfa.Instruction.Parse(
         'bswap ry, 0x0f 0xc8')
+    instr = printer._SetOperandIndices(instr)
 
     printer._PrintOpcode(instr)
 

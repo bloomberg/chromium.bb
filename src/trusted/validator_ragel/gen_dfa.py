@@ -274,7 +274,6 @@ class Instruction(object):
       else:
         default_rw = def_format.OperandReadWriteMode.READ
       operand = Operand.Parse(op, default_rw=default_rw)
-      operand.index = i
       self.operands.append(operand)
 
   def ParseOpcodes(self, opcodes_column):
@@ -408,6 +407,15 @@ class InstructionPrinter(object):
 
   def GetContent(self):
     return self._out.getvalue()
+
+  def _SetOperandIndices(self, instruction):
+    instruction = copy.deepcopy(instruction)
+    index = 0
+    for operand in instruction.operands:
+      if self._NeedOperandInfo(operand):
+        operand.index = index
+        index += 1
+    return instruction
 
   def _PrintRexPrefix(self, instruction):
     """Print a machine for REX prefix."""
@@ -593,12 +601,21 @@ class InstructionPrinter(object):
 
   def _NeedOperandInfo(self, operand):
     """Whether we need to print actions describing operand format and source."""
-    if self._mode == VALIDATOR and self._bitness == 64:
-      # TODO(shcherbina): In this case we are only interested in writable
-      # regular registers.
-      raise NotImplementedError()
+    if self._mode == DECODER:
+      return True
 
-    return self._mode == DECODER
+    if self._bitness == 32:
+      return False
+
+    # In 64-bit validator we only care about general purpose registers we
+    # are writing to.
+    return (
+        operand.Writable() and
+        operand.arg_type in [
+            def_format.OperandType.REGISTER_IN_OPCODE,
+            def_format.OperandType.REGISTER_IN_VVVV,
+            def_format.OperandType.REGISTER_IN_REG,
+            def_format.OperandType.REGISTER_IN_RM])
 
   def _PrintOperandSource(self, operand, source):
     """Print action specifying operand source."""
@@ -692,6 +709,7 @@ class InstructionPrinter(object):
   def PrintInstructionWithoutModRM(self, instruction):
     assert not instruction.HasModRM()
 
+    instruction = self._SetOperandIndices(instruction)
     self._PrintLegacyPrefixes(instruction)
     self._PrintRexPrefix(instruction)
     self._PrintVexOrXopPrefix(instruction)
@@ -759,7 +777,7 @@ class InstructionPrinter(object):
   def PrintInstructionWithModRMReg(self, instruction):
     """Print instruction that encodes register in its ModRM.r/m field."""
 
-    instruction = copy.deepcopy(instruction)
+    instruction = self._SetOperandIndices(instruction)
 
     assert instruction.HasModRM()
     assert instruction.FindOperand(def_format.OperandType.MEMORY) is None
@@ -830,7 +848,7 @@ class InstructionPrinter(object):
       None.
     """
 
-    instruction = copy.deepcopy(instruction)
+    instruction = self._SetOperandIndices(instruction)
 
     assert instruction.HasModRM()
     assert instruction.FindOperand(def_format.OperandType.MEMORY) is not None
