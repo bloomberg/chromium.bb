@@ -218,6 +218,7 @@ AutomationProviderList* TestingBrowserProcess::GetAutomationProviderList() {
 
 void TestingBrowserProcess::CreateDevToolsHttpProtocolHandler(
     Profile* profile,
+    chrome::HostDesktopType host_desktop_type,
     const std::string& ip,
     int port,
     const std::string& frontend_url) {

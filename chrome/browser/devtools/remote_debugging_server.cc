@@ -9,17 +9,19 @@
 #include "content/public/browser/devtools_http_handler.h"
 #include "net/base/tcp_listen_socket.h"
 
-RemoteDebuggingServer::RemoteDebuggingServer(Profile* profile,
-                                             const std::string& ip,
-                                             int port,
-                                             const std::string& frontend_url) {
+RemoteDebuggingServer::RemoteDebuggingServer(
+    Profile* profile,
+    chrome::HostDesktopType host_desktop_type,
+    const std::string& ip,
+    int port,
+    const std::string& frontend_url) {
   // Initialize DevTools data source.
   DevToolsUI::RegisterDevToolsDataSource(profile);
 
   devtools_http_handler_ = content::DevToolsHttpHandler::Start(
       new net::TCPListenSocketFactory(ip, port),
       frontend_url,
-      new BrowserListTabContentsProvider(profile));
+      new BrowserListTabContentsProvider(profile, host_desktop_type));
 }
 
 RemoteDebuggingServer::~RemoteDebuggingServer() {

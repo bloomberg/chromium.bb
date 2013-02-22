@@ -96,6 +96,7 @@
 #include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/startup/default_browser_prompt.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/uma_browsing_activity_observer.h"
@@ -544,6 +545,7 @@ void LaunchDevToolsHandlerIfNeeded(Profile* profile,
       }
       g_browser_process->CreateDevToolsHttpProtocolHandler(
           profile,
+          chrome::HOST_DESKTOP_TYPE_NATIVE,
           "127.0.0.1",
           port,
           frontend_str);

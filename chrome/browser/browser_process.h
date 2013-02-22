@@ -13,6 +13,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "chrome/browser/ui/host_desktop.h"
 
 class AutomationProviderList;
 class BackgroundModeManager;
@@ -154,6 +155,7 @@ class BrowserProcess {
 
   virtual void CreateDevToolsHttpProtocolHandler(
       Profile* profile,
+      chrome::HostDesktopType host_desktop_type,
       const std::string& ip,
       int port,
       const std::string& frontend_url) = 0;

@@ -40,7 +40,6 @@ void RemoveCommandObserver(Browser*, int command, CommandObserver* observer);
 int GetContentRestrictions(const Browser* browser);
 
 // Opens a new window with the default blank tab.
-void NewEmptyWindowDeprecated(Profile* profile);
 void NewEmptyWindow(Profile* profile, HostDesktopType desktop_type);
 
 // Opens a new window with the default blank tab. This bypasses metrics and

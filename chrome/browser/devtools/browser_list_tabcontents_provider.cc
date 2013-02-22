@@ -26,8 +26,9 @@ using content::DevToolsHttpHandlerDelegate;
 using content::RenderViewHost;
 
 BrowserListTabContentsProvider::BrowserListTabContentsProvider(
-    Profile* profile)
-    : profile_(profile) {
+    Profile* profile,
+    chrome::HostDesktopType host_desktop_type)
+    : profile_(profile), host_desktop_type_(host_desktop_type) {
 }
 
 BrowserListTabContentsProvider::~BrowserListTabContentsProvider() {
@@ -82,13 +83,11 @@ std::string BrowserListTabContentsProvider::GetPageThumbnailData(
 }
 
 RenderViewHost* BrowserListTabContentsProvider::CreateNewTarget() {
-  // TODO(gab): Do not hardcode HOST_DESKTOP_TYPE_NATIVE below once
-  // chrome::NewEmptyWindow() above has been made multi-desktop friendly.
   const BrowserList* browser_list =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
+      BrowserList::GetInstance(host_desktop_type_);
 
   if (browser_list->empty())
-    chrome::NewEmptyWindowDeprecated(profile_);
+    chrome::NewEmptyWindow(profile_, host_desktop_type_);
 
   if (browser_list->empty())
     return NULL;

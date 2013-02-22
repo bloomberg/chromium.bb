@@ -292,12 +292,6 @@ void NewEmptyWindow(Profile* profile, HostDesktopType desktop_type) {
   }
 }
 
-// TODO(gab): This method is deprecated and will be removed shortly. Please use
-// the new version of the NewEmptyWindow call.
-void NewEmptyWindowDeprecated(Profile* profile) {
-  NewEmptyWindow(profile, HOST_DESKTOP_TYPE_NATIVE);
-}
-
 Browser* OpenEmptyWindow(Profile* profile, HostDesktopType desktop_type) {
   // TODO(scottmg): http://crbug.com/128578
   // This is necessary because WebContentsViewAura doesn't have enough context

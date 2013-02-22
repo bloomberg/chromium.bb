@@ -528,6 +528,7 @@ AutomationProviderList* BrowserProcessImpl::GetAutomationProviderList() {
 
 void BrowserProcessImpl::CreateDevToolsHttpProtocolHandler(
     Profile* profile,
+    chrome::HostDesktopType host_desktop_type,
     const std::string& ip,
     int port,
     const std::string& frontend_url) {
@@ -537,7 +538,8 @@ void BrowserProcessImpl::CreateDevToolsHttpProtocolHandler(
   // is started with several profiles or existing browser process is reused.
   if (!remote_debugging_server_.get()) {
     remote_debugging_server_.reset(
-        new RemoteDebuggingServer(profile, ip, port, frontend_url));
+        new RemoteDebuggingServer(profile, host_desktop_type, ip, port,
+                                  frontend_url));
   }
 #endif
 }
