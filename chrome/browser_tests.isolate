@@ -6,7 +6,7 @@
     ['(OS=="linux" and chromeos==1) or ((OS=="linux" or OS=="mac" or OS=="win") and chromeos==0)', {
       'variables': {
         'isolate_dependency_tracked': [
-          '../net/data/ssl/certificates/expired_cert.pem',
+          '../net/data/ssl/certificates/expired_cert.pem', 
           '../net/data/ssl/certificates/ok_cert.pem',
           '../net/data/ssl/certificates/root_ca_cert.crt',
           '../net/tools/testserver/asn1.py',
