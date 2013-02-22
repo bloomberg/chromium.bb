@@ -33,6 +33,32 @@ namespace gfx {
 
 namespace {
 
+// Quick and dirty Atomic flag, that we use for
+// marking completion from the upload thread.
+class AtomicFlag {
+ public:
+  AtomicFlag() {
+    base::subtle::Acquire_Store(&value_, 0);
+  }
+  void Set() {
+    base::subtle::Atomic32 old_value = base::subtle::Acquire_CompareAndSwap(
+        &value_, 0, 1);
+    DCHECK_EQ(old_value, 0);
+  }
+  void Unset() {
+    base::subtle::Atomic32 old_value = base::subtle::Release_CompareAndSwap(
+        &value_, 1, 0);
+    DCHECK_EQ(old_value, 1);
+  }
+  bool IsSet() {
+    return base::subtle::Acquire_Load(&value_) == 1;
+  }
+ private:
+  base::subtle::Atomic32 value_;
+  DISALLOW_COPY_AND_ASSIGN(AtomicFlag);
+};
+
+
 class TextureUploadStats
     : public base::RefCountedThreadSafe<TextureUploadStats> {
  public:
@@ -192,12 +218,11 @@ class TransferStateInternal
         use_image_preserved_(use_image_preserved) {
     static const AsyncTexImage2DParams zero_params = {0, 0, 0, 0, 0, 0, 0, 0};
     late_bind_define_params_ = zero_params;
-    base::subtle::Acquire_Store(&transfer_in_progress_, 0);
   }
 
   // Implement AsyncPixelTransferState:
   bool TransferIsInProgress() {
-    return base::subtle::Acquire_Load(&transfer_in_progress_) == 1;
+    return transfer_in_progress_.IsSet();
   }
 
   void BindTransfer(AsyncTexImage2DParams* bound_params) {
@@ -269,15 +294,11 @@ class TransferStateInternal
   }
 
   void MarkAsTransferIsInProgress() {
-    base::subtle::Atomic32 old_value = base::subtle::Acquire_CompareAndSwap(
-        &transfer_in_progress_, 0, 1);
-    DCHECK_EQ(old_value, 0);
+    transfer_in_progress_.Set();
   }
 
   void MarkAsCompleted() {
-    base::subtle::Atomic32 old_value = base::subtle::Release_CompareAndSwap(
-        &transfer_in_progress_, 1, 0);
-    DCHECK_EQ(old_value, 1);
+    transfer_in_progress_.Unset();
   }
 
  protected:
@@ -313,7 +334,7 @@ class TransferStateInternal
   AsyncTexImage2DParams late_bind_define_params_;
 
   // Indicates that an async transfer is in progress.
-  base::subtle::Atomic32 transfer_in_progress_;
+  AtomicFlag transfer_in_progress_;
 
   // It would be nice if we could just create a new EGLImage for
   // every upload, but I found that didn't work, so this stores
