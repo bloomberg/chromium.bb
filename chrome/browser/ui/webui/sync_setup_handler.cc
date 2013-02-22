@@ -1238,14 +1238,14 @@ void SyncSetupHandler::DidStopLoading(
           continue_url.ReplaceComponents(replacements)) {
     content::WebContentsObserver::Observe(NULL);
     active_gaia_signin_tab_ = NULL;
-    CloseSyncSetup();
+    CloseOverlay();
   }
 }
 
 void SyncSetupHandler::WebContentsDestroyed(
     content::WebContents* web_contents) {
   DCHECK(active_gaia_signin_tab_);
-  CloseSyncSetup();
+  CloseOverlay();
 }
 
 // Private member functions.
