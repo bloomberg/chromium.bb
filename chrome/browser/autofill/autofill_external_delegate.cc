@@ -52,16 +52,16 @@ AutofillExternalDelegate::AutofillExternalDelegate(
       has_autofill_suggestion_(false),
       has_shown_autofill_popup_for_current_edit_(false),
       registered_keyboard_listener_with_(NULL) {
+  DCHECK(autofill_manager);
+
   registrar_.Add(this,
                  content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
                  content::Source<content::WebContents>(web_contents));
-  if (web_contents) {
-    registrar_.Add(
-        this,
-        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        content::Source<content::NavigationController>(
-            &(web_contents->GetController())));
-  }
+  registrar_.Add(
+      this,
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::Source<content::NavigationController>(
+          &(web_contents->GetController())));
 }
 
 AutofillExternalDelegate::~AutofillExternalDelegate() {
@@ -158,22 +158,17 @@ void AutofillExternalDelegate::OnShowPasswordSuggestions(
 
 void AutofillExternalDelegate::EnsurePopupForElement(
     const gfx::RectF& element_bounds) {
-  // Convert element_bounds to be in screen space. If |web_contents_| is NULL
-  // then assume the element_bounds is already in screen space (since we don't
-  // have any other way of converting to screen space).
-  gfx::RectF element_bounds_in_screen_space = element_bounds;
-  if (web_contents_) {
-    gfx::Rect client_area;
-    web_contents_->GetContainerBounds(&client_area);
-    element_bounds_in_screen_space += client_area.OffsetFromOrigin();
-  }
+  // Convert element_bounds to be in screen space.
+  gfx::Rect client_area;
+  web_contents_->GetContainerBounds(&client_area);
+  gfx::RectF element_bounds_in_screen_space =
+      element_bounds + client_area.OffsetFromOrigin();
 
   // |controller_| owns itself.
   controller_ = AutofillPopupControllerImpl::GetOrCreate(
       controller_,
       this,
-      // web_contents() may be NULL during testing.
-      web_contents() ? web_contents()->GetView()->GetContentNativeView() : NULL,
+      web_contents()->GetView()->GetContentNativeView(),
       element_bounds_in_screen_space);
 }
 
@@ -201,13 +196,10 @@ void AutofillExternalDelegate::SetCurrentDataListValues(
 
 void AutofillExternalDelegate::OnPopupShown(
     content::KeyboardListener* listener) {
-  if (web_contents_ && !registered_keyboard_listener_with_) {
+  if (!registered_keyboard_listener_with_) {
     registered_keyboard_listener_with_ = web_contents_->GetRenderViewHost();
     registered_keyboard_listener_with_->AddKeyboardListener(listener);
   }
-
-  if (!autofill_manager_)
-    return;
 
   autofill_manager_->OnDidShowAutofillSuggestions(
       has_autofill_suggestion_ && !has_shown_autofill_popup_for_current_edit_);
@@ -216,8 +208,7 @@ void AutofillExternalDelegate::OnPopupShown(
 
 void AutofillExternalDelegate::OnPopupHidden(
     content::KeyboardListener* listener) {
-  if (web_contents_ && registered_keyboard_listener_with_ ==
-      web_contents_->GetRenderViewHost())
+  if (registered_keyboard_listener_with_ == web_contents_->GetRenderViewHost())
     web_contents_->GetRenderViewHost()->RemoveKeyboardListener(listener);
 
   registered_keyboard_listener_with_ = NULL;
@@ -263,7 +254,7 @@ void AutofillExternalDelegate::RemoveSuggestion(const string16& value,
                                                 int identifier) {
   if (identifier > 0) {
     autofill_manager_->RemoveAutofillProfileOrCreditCard(identifier);
-  } else if (web_contents_) {
+  } else {
     autofill_manager_->RemoveAutocompleteEntry(autofill_query_field_.name,
                                                value);
   }
@@ -276,12 +267,9 @@ void AutofillExternalDelegate::DidEndTextFieldEditing() {
 }
 
 void AutofillExternalDelegate::ClearPreviewedForm() {
-  if (web_contents_) {
-    RenderViewHost* host = web_contents_->GetRenderViewHost();
-
-    if (host)
-      host->Send(new AutofillMsg_ClearPreviewedForm(host->GetRoutingID()));
-  }
+  RenderViewHost* host = web_contents_->GetRenderViewHost();
+  if (host)
+    host->Send(new AutofillMsg_ClearPreviewedForm(host->GetRoutingID()));
 }
 
 void AutofillExternalDelegate::HideAutofillPopup() {

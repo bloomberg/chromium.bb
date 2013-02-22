@@ -2,10 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/prefs/testing_pref_service.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autofill/autofill_manager.h"
+#include "chrome/browser/autofill/autofill_manager_delegate.h"
 #include "chrome/browser/autofill/test_autofill_external_delegate.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_profile.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
@@ -14,6 +20,7 @@
 
 using ::testing::_;
 using ::testing::AtLeast;
+using ::testing::NiceMock;
 using base::WeakPtr;
 using WebKit::WebAutofillClient;
 
@@ -22,8 +29,10 @@ namespace {
 class MockAutofillExternalDelegate :
       public autofill::TestAutofillExternalDelegate {
  public:
-  MockAutofillExternalDelegate() : TestAutofillExternalDelegate(NULL, NULL) {};
-  virtual ~MockAutofillExternalDelegate() {};
+  MockAutofillExternalDelegate(content::WebContents* web_contents,
+                               AutofillManager* autofill_manager)
+      : TestAutofillExternalDelegate(web_contents, autofill_manager) {}
+  virtual ~MockAutofillExternalDelegate() {}
 
   virtual void DidSelectSuggestion(int identifier) OVERRIDE {}
   virtual void RemoveSuggestion(const string16& value, int identifier) OVERRIDE
@@ -31,6 +40,46 @@ class MockAutofillExternalDelegate :
   virtual void ClearPreviewedForm() OVERRIDE {}
 
   MOCK_METHOD0(ControllerDestroyed, void());
+};
+
+class MockAutofillManagerDelegate : public autofill::AutofillManagerDelegate {
+ public:
+  MockAutofillManagerDelegate() {}
+  virtual ~MockAutofillManagerDelegate() {}
+
+  // AutofillManagerDelegate:
+  virtual PersonalDataManager* GetPersonalDataManager() OVERRIDE {
+    return NULL;
+  }
+  virtual InfoBarService* GetInfoBarService() { return NULL; }
+  virtual PrefService* GetPrefs() { return &prefs_; }
+  virtual ProfileSyncServiceBase* GetProfileSyncService() { return NULL; }
+  virtual void HideRequestAutocompleteDialog() OVERRIDE {}
+  virtual bool IsSavingPasswordsEnabled() const { return false; }
+  virtual void OnAutocheckoutError() OVERRIDE {}
+  virtual void ShowAutofillSettings() {}
+  virtual void ShowPasswordGenerationBubble(
+      const gfx::Rect& bounds,
+      const content::PasswordForm& form,
+      autofill::PasswordGenerator* generator) {}
+  virtual void ShowAutocheckoutBubble(
+      const gfx::RectF& bounding_box,
+      const gfx::NativeView& native_view,
+      const base::Closure& callback) {}
+  virtual void ShowRequestAutocompleteDialog(
+      const FormData& form,
+      const GURL& source_url,
+      const content::SSLStatus& ssl_status,
+      const AutofillMetrics& metric_logger,
+      autofill::DialogType dialog_type,
+      const base::Callback<void(const FormStructure*)>& callback) {}
+  virtual void RequestAutocompleteDialogClosed() {}
+  virtual void UpdateProgressBar(double value) {}
+
+ private:
+  TestingPrefServiceSimple prefs_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockAutofillManagerDelegate);
 };
 
 class TestAutofillPopupController : public AutofillPopupControllerImpl {
@@ -111,18 +160,35 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
 
 }  // namespace
 
-class AutofillPopupControllerUnitTest : public ::testing::Test {
+class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
  public:
   AutofillPopupControllerUnitTest()
-    : autofill_popup_controller_(
-          new testing::NiceMock<TestAutofillPopupController>(
-              &external_delegate_, gfx::Rect())) {}
+      : manager_delegate_(new MockAutofillManagerDelegate()),
+        autofill_popup_controller_(NULL) {}
+  virtual ~AutofillPopupControllerUnitTest() {}
 
-  virtual ~AutofillPopupControllerUnitTest() {
+  virtual void SetUp() OVERRIDE {
+    ChromeRenderViewHostTestHarness::SetUp();
+
+    AutofillManager::CreateForWebContentsAndDelegate(
+        web_contents(), manager_delegate_.get());
+    external_delegate_.reset(
+        new NiceMock<MockAutofillExternalDelegate>(
+            web_contents(), AutofillManager::FromWebContents(web_contents())));
+
+    autofill_popup_controller_ =
+        new testing::NiceMock<TestAutofillPopupController>(
+            external_delegate_.get(), gfx::Rect());
+  }
+
+  virtual void TearDown() OVERRIDE {
     // This will make sure the controller and the view (if any) are both
     // cleaned up.
     if (autofill_popup_controller_)
       autofill_popup_controller_->DoHide();
+
+    external_delegate_.reset();
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
   AutofillPopupController* popup_controller() {
@@ -130,7 +196,8 @@ class AutofillPopupControllerUnitTest : public ::testing::Test {
   }
 
  protected:
-  testing::NiceMock<MockAutofillExternalDelegate> external_delegate_;
+  scoped_ptr<MockAutofillManagerDelegate> manager_delegate_;
+  scoped_ptr<NiceMock<MockAutofillExternalDelegate> > external_delegate_;
   testing::NiceMock<TestAutofillPopupController>* autofill_popup_controller_;
 };
 
@@ -203,7 +270,7 @@ TEST_F(AutofillPopupControllerUnitTest, RemoveLine) {
   // Generate a popup, so it can be hidden later. It doesn't matter what the
   // external_delegate thinks is being shown in the process, since we are just
   // testing the popup here.
-  autofill::GenerateTestAutofillPopup(&external_delegate_);
+  autofill::GenerateTestAutofillPopup(external_delegate_.get());
 
   // No line is selected so the removal should fail.
   EXPECT_FALSE(autofill_popup_controller_->RemoveSelectedLine());
@@ -247,7 +314,8 @@ TEST_F(AutofillPopupControllerUnitTest, SkipSeparator) {
 }
 
 TEST_F(AutofillPopupControllerUnitTest, GetOrCreate) {
-  MockAutofillExternalDelegate delegate;
+  MockAutofillExternalDelegate delegate(
+      web_contents(), AutofillManager::FromWebContents(web_contents()));
 
   WeakPtr<AutofillPopupControllerImpl> controller =
       AutofillPopupControllerImpl::GetOrCreate(
@@ -332,9 +400,9 @@ TEST_F(AutofillPopupControllerUnitTest, GrowPopupInSpace) {
   int desired_width = autofill_popup_controller_->GetDesiredPopupWidth();
   int desired_height = autofill_popup_controller_->GetDesiredPopupHeight();
 
-  // Setup the visible screen space.
-  gfx::Display display(0, gfx::Rect(0, 0,
-                                    desired_width * 2, desired_height * 2));
+  // Set up the visible screen space.
+  gfx::Display display(0,
+                       gfx::Rect(0, 0, desired_width * 2, desired_height * 2));
 
   // Store the possible element bounds and the popup bounds they should result
   // in.
@@ -376,9 +444,10 @@ TEST_F(AutofillPopupControllerUnitTest, GrowPopupInSpace) {
           desired_width / 2, desired_height /2, desired_width, desired_height));
 
   for (size_t i = 0; i < element_bounds.size(); ++i) {
+    NiceMock<MockAutofillExternalDelegate> external_delegate(
+        web_contents(), AutofillManager::FromWebContents(web_contents()));
     TestAutofillPopupController* autofill_popup_controller =
-        new TestAutofillPopupController(&external_delegate_,
-                                        element_bounds[i]);
+        new TestAutofillPopupController(&external_delegate, element_bounds[i]);
 
     autofill_popup_controller->set_display(display);
     autofill_popup_controller->Show(names, names, names, autofill_ids);
