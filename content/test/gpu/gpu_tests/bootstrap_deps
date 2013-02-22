@@ -1,0 +1,21 @@
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This file specifies dependencies required to bootstrap perf_tools. It is in a
+# minimal version of the format used by other DEPS files that gclient can read,
+# but it should only be used to bootstrap perf_tools *outside* of a normal
+# Chrome checkout.
+
+deps = {
+  "src/content/test/gpu/gpu_tests":
+    "https://src.chromium.org/chrome/trunk/src/content/test/gpu/gpu_tests",
+  "src/content/test/gpu/page_sets":
+    "https://src.chromium.org/chrome/trunk/src/content/test/gpu/page_sets",
+  }
+
+# gpu_tests depends on Telemetry, so pull in the Telemetry deps, too.
+deps_includes = {
+  "src/tools/telemetry/tools/bootstrap_deps":
+      "https://src.chromium.org/chrome/trunk/src/tools/telemetry/tools/bootstrap_deps",
+  }

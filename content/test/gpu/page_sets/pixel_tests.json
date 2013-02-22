@@ -1,0 +1,10 @@
+{
+  "description": "Some basic test cases for GPU.",
+  "user_agent_type": "desktop",
+  "pages": [
+    {
+      "url": "file:///../../data/gpu/pixel_webgl.html",
+      "wait_seconds": 4
+    }
+  ]
+}

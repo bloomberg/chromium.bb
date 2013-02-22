@@ -35,10 +35,14 @@ def bootstrapIfNeeded(module_name, module_path, module_deps_url):
 
 
 if __name__ == '__main__':
-  bootstrapIfNeeded('perf_tools', 'src/tools/perf',
-                    'http://src.chromium.org/viewvc/chrome/trunk/src/tools/' +
-                    'perf/perf_lib/bootstrap_deps')
-  import perf_tools
-  from telemetry.page import multi_page_benchmark_runner
-  benchmark_dir = os.path.join(os.path.dirname(__file__), 'perf_tools')
-  sys.exit(multi_page_benchmark_runner.Main(benchmark_dir))
+  bootstrapIfNeeded('gpu_tests', 'src/content/test/gpu',
+                    'http://src.chromium.org/viewvc/chrome/trunk/src/content/' +
+                    'test/gpu/gpu_tests/bootstrap_deps')
+  import gpu_tests
+  from telemetry.page import page_test_runner
+  test_dir = os.path.join(os.path.dirname(__file__), 'gpu_tests')
+
+  import page_sets # pylint: disable=F0401
+  page_set_filenames = page_sets.GetAllPageSetFilenames()
+
+  sys.exit(page_test_runner.Main(test_dir, page_set_filenames))
