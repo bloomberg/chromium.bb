@@ -510,7 +510,7 @@ class TestParser(unittest.TestCase):
     def_filenames = sys.argv[1:]
     assert len(def_filenames) > 0
     for filename in def_filenames:
-      gen_dfa.ParseDefFile(filename)
+      list(gen_dfa.ParseDefFile(filename))
 
 
 if __name__ == '__main__':

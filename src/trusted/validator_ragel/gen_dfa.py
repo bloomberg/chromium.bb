@@ -32,7 +32,7 @@ class Operand(object):
       def_format.OperandReadWriteMode.READ,
       def_format.OperandReadWriteMode.WRITE,
       def_format.OperandReadWriteMode.READ_WRITE)
-  arg_type_regex = r'[acdbfgioprtxBCDEGHIJLMNOPQRSUVWXY]'
+  arg_type_regex = r'[acdioprtxBCDEGHIJLMNOPQRSUVWXY]'
   size_regex = (
       r'|2|7|b|d|do|dq|fq|o|p|pb|pd|pdw|pdwx|pdx|ph|phx|pi|pj|pjx|pk|pkx|'
       r'pq|pqw|pqwx|pqx|ps|psx|pw|q|r|s|sb|sd|se|si|sq|sr|ss|st|sw|sx|'
@@ -48,6 +48,7 @@ class Operand(object):
   @staticmethod
   def Parse(s, default_rw):
     m = Operand.operand_regex.match(s)
+    assert m is not None, s
 
     return Operand(
         read_write_attr=m.group(1) or default_rw,
@@ -103,11 +104,6 @@ class Operand(object):
       String like '8bit', '32bit', 'xmm', 'mmx', etc.
     """
     if self.arg_type == def_format.OperandType.SEGMENT_REGISTER_IN_REG:
-      return 'segreg'
-
-    # TODO(shcherbina): get rid of this way to refer to specific segment
-    # registers (it is only used in pop and push).
-    if self.size == 's':
       return 'segreg'
 
     if self.arg_type in [def_format.OperandType.MMX_REGISTER_IN_REG,

@@ -27,12 +27,9 @@
 #        three or more operands are assumed to read all operands except last one
 #        which is used to store the result of the execution.
 #      Possible argument types:
-#       a: Accumulator: %al/%ax/%eax/%rax/%es (depending on size).
-#       c: Counter register: %cl/%cx/%ecx/%rcx/%cs (depending on size).
-#       d: Data register: %dl/%dx/%edx/%rdx/%ss (depending on size).
-#       b: Base register: %bl/%bx/%ebx/%rbx/%ds (depending on size).
-#       f: Stack pointer: %spl/%sp/%esp/%rsp/%fs (depending on size).
-#       g: Base pointer: %bpl/%bp/%ebp/%rbp/%gs (depending on size).
+#       a: Accumulator: %al/%ax/%eax/%rax (depending on size).
+#       c: Counter register: %cl/%cx/%ecx/%rcx (depending on size).
+#       d: Data register: %dl/%dx/%edx/%rdx (depending on size).
 #       i: Second immediate value encoded in the instruction.
 #       o: I/O port in %dx (used in "in"/"out" instructions).
 #       p: Accumulator pair (%dx:%ax/%edx:%eax/%rdx:%rax depending on size).
