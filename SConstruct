@@ -1176,6 +1176,20 @@ def GetSelLdrSeccomp(env):
 pre_base_env.AddMethod(GetSelLdrSeccomp)
 
 
+def SupportsSeccompBpfSandbox(env):
+  if not (env.Bit('linux') and env.Bit('build_x86_64')):
+    return False
+
+  # This is a lame detection if seccomp bpf filters are supported by the kernel.
+  # We suppose that any Linux kernel v3.2+ supports it, but it is only true
+  # for Ubuntu kernels. Seccomp BPF filters reached the mainline at 3.5,
+  # so this check will be wrong on some relatively old non-Ubuntu Linux distros.
+  kernel_version = map(int, platform.release().split('.', 2)[:2])
+  return kernel_version >= [3, 2]
+
+pre_base_env.AddMethod(SupportsSeccompBpfSandbox)
+
+
 def GetBootstrap(env):
   if 'TRUSTED_ENV' in env:
     trusted_env = env['TRUSTED_ENV']
@@ -1993,6 +2007,7 @@ def MakeBaseTrustedEnv():
       'tests/common/build.scons',
       'tests/performance/build.scons',
       'tests/python_version/build.scons',
+      'tests/sel_ldr_seccomp/build.scons',
       'tests/srpc_message/build.scons',
       'tests/tools/build.scons',
       'tests/unittests/shared/srpc/build.scons',
