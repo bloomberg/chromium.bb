@@ -98,6 +98,15 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
     return display_;
   }
 
+  // TODO(isherman): This should be removed once the parent class's
+  // implementation for this method is restored.
+  virtual bool CanDelete(size_t index) const OVERRIDE {
+    int id = identifiers()[index];
+    return id > 0 ||
+        id == WebAutofillClient::MenuItemIDAutocompleteEntry ||
+        id == WebAutofillClient::MenuItemIDPasswordEntry;
+  }
+
   // Making protected functions public for testing
   const std::vector<string16>& names() const {
     return AutofillPopupControllerImpl::names();

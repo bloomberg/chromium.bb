@@ -6524,11 +6524,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_DESCRIPTION" desc="Description for the flag to show Autofill field type predictions for all forms">
         Annotates web forms with Autofill field type predictions as placeholder text.
       </message>
-      <message name="IDS_FLAGS_ENABLE_NEW_AUTOFILL_UI_NAME" desc="Title for the flag to enable the new Autofill UI">
-        Enable new Autofill UI
+      <message name="IDS_FLAGS_DISABLE_NATIVE_AUTOFILL_UI_NAME" desc="Title for the flag to disable the native Autofill UI">
+        Disable native Autofill UI
       </message>
-      <message name="IDS_FLAGS_ENABLE_NEW_AUTOFILL_UI_DESCRIPTION" desc="Description for the flag to enable the new Autofill UI">
-        Enable the browser process-based implementation of the Autofill UI, as opposed to the renderer process-based one.
+      <message name="IDS_FLAGS_DISABLE_NATIVE_AUTOFILL_UI_DESCRIPTION" desc="Description for the flag to enable the new Autofill UI">
+        Disable the native implementation of the Autofill popup UI, which is implemented in the browser process rather than in the renderer process.
       </message>
       <message name="IDS_FLAGS_ENABLE_INTERACTIVE_AUTOCOMPLETE_NAME" desc="Name of the flag that enables an interactive autocomplete UI.">
         Enable interactive autocomplete
