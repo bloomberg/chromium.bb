@@ -27,7 +27,6 @@ class MessageLite;
 namespace enterprise_management {
 class ChromeDeviceSettingsProto;
 class CloudPolicySettings;
-class ExternalPolicyData;
 class PolicyData;
 class PolicyFetchResponse;
 }
@@ -53,8 +52,6 @@ class CloudPolicyValidatorBase {
     VALIDATION_PAYLOAD_PARSE_ERROR,
     // Unexpected policy type.
     VALIDATION_WRONG_POLICY_TYPE,
-    // Unexpected settings entity id.
-    VALIDATION_WRONG_SETTINGS_ENTITY_ID,
     // Time stamp from the future.
     VALIDATION_BAD_TIMESTAMP,
     // Token doesn't match.
@@ -121,9 +118,6 @@ class CloudPolicyValidatorBase {
   // Validates the policy type.
   void ValidatePolicyType(const std::string& policy_type);
 
-  // Validates the settings_entity_id value.
-  void ValidateSettingsEntityId(const std::string& settings_entity_id);
-
   // Validates that the payload can be decoded successfully.
   void ValidatePayload();
 
@@ -176,10 +170,9 @@ class CloudPolicyValidatorBase {
     VALIDATE_DOMAIN      = 1 << 2,
     VALIDATE_TOKEN       = 1 << 3,
     VALIDATE_POLICY_TYPE = 1 << 4,
-    VALIDATE_ENTITY_ID   = 1 << 5,
-    VALIDATE_PAYLOAD     = 1 << 6,
-    VALIDATE_SIGNATURE   = 1 << 7,
-    VALIDATE_INITIAL_KEY = 1 << 8,
+    VALIDATE_PAYLOAD     = 1 << 5,
+    VALIDATE_SIGNATURE   = 1 << 6,
+    VALIDATE_INITIAL_KEY = 1 << 7,
   };
 
   // Reports completion to the |completion_callback_|.
@@ -195,7 +188,6 @@ class CloudPolicyValidatorBase {
   Status CheckDomain();
   Status CheckToken();
   Status CheckPolicyType();
-  Status CheckEntityId();
   Status CheckPayload();
   Status CheckSignature();
   Status CheckInitialKey();
@@ -219,7 +211,6 @@ class CloudPolicyValidatorBase {
   std::string domain_;
   std::string token_;
   std::string policy_type_;
-  std::string settings_entity_id_;
   std::string key_;
   bool allow_key_rotation_;
 
@@ -264,8 +255,6 @@ typedef CloudPolicyValidator<enterprise_management::ChromeDeviceSettingsProto>
     DeviceCloudPolicyValidator;
 typedef CloudPolicyValidator<enterprise_management::CloudPolicySettings>
     UserCloudPolicyValidator;
-typedef CloudPolicyValidator<enterprise_management::ExternalPolicyData>
-    ComponentCloudPolicyValidator;
 
 }  // namespace policy
 
