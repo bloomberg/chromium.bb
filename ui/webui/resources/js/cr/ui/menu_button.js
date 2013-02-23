@@ -94,7 +94,7 @@ cr.define('cr.ui', function() {
               this.hideMenu();
             } else if (e.button == 0) {  // Only show the menu when using left
                                          // mouse button.
-              this.showMenu(true);
+              this.showMenu(false);
 
               // Prevent the button from stealing focus on mousedown.
               e.preventDefault();
