@@ -129,13 +129,8 @@ class Database(object):
         suggested_owners = set(['<anyone>'])
     return suggested_owners
 
-  # TODO(dpranke): rename to objects_not_covered_by
-  def directories_not_covered_by(self, files, reviewers):
-    """Returns the set of directories that are not owned by a reviewer.
-
-    Determines which of the given files are not owned by at least one of the
-    reviewers, then returns a set containing the applicable enclosing
-    directories, i.e. the ones upward from the files that have OWNERS files.
+  def files_not_covered_by(self, files, reviewers):
+    """Returns the files not owned by one of the reviewers.
 
     Args:
         files is a sequence of paths relative to (and under) self.root.
@@ -145,20 +140,11 @@ class Database(object):
     self._check_reviewers(reviewers)
     self._load_data_needed_for(files)
 
-    objs = set()
-    for f in files:
-      if f in self.owners_for:
-        objs.add(f)
-      else:
-        objs.add(self.os_path.dirname(f))
-
     covered_objs = self._objs_covered_by(reviewers)
-    uncovered_objs = [self._enclosing_obj_with_owners(o) for o in objs
-                      if not self._is_obj_covered_by(o, covered_objs)]
+    uncovered_files = [f for f in files
+                       if not self._is_obj_covered_by(f, covered_objs)]
 
-    return set(uncovered_objs)
-
-  objects_not_covered_by = directories_not_covered_by
+    return set(uncovered_files)
 
   def _check_paths(self, files):
     def _is_under(f, pfx):
@@ -171,37 +157,28 @@ class Database(object):
     _assert_is_collection(reviewers)
     assert all(self.email_regexp.match(r) for r in reviewers)
 
-  # TODO(dpranke): Rename to _objs_covered_by and update_callers
-  def _dirs_covered_by(self, reviewers):
-    dirs = self.owned_by[EVERYONE]
+  def _objs_covered_by(self, reviewers):
+    objs = self.owned_by[EVERYONE]
     for r in reviewers:
-      dirs = dirs | self.owned_by.get(r, set())
-    return dirs
+      objs = objs | self.owned_by.get(r, set())
+    return objs
 
-  _objs_covered_by = _dirs_covered_by
+  def _stop_looking(self, objname):
+    return objname in self.stop_looking
 
-  def _stop_looking(self, dirname):
-    return dirname in self.stop_looking
+  def _is_obj_covered_by(self, objname, covered_objs):
+    while not objname in covered_objs and not self._stop_looking(objname):
+      objname = self.os_path.dirname(objname)
+    return objname in covered_objs
 
-  # TODO(dpranke): Rename to _is_dir_covered_by and update callers.
-  def _is_dir_covered_by(self, dirname, covered_dirs):
-    while not dirname in covered_dirs and not self._stop_looking(dirname):
-      dirname = self.os_path.dirname(dirname)
-    return dirname in covered_dirs
-
-  _is_obj_covered_by = _is_dir_covered_by
-
-  # TODO(dpranke): Rename to _enclosing_obj_with_owners and update callers.
-  def _enclosing_dir_with_owners(self, directory):
+  def _enclosing_dir_with_owners(self, objname):
     """Returns the innermost enclosing directory that has an OWNERS file."""
-    dirpath = directory
+    dirpath = objname
     while not dirpath in self.owners_for:
       if self._stop_looking(dirpath):
         break
       dirpath = self.os_path.dirname(dirpath)
     return dirpath
-
-  _enclosing_obj_with_owners = _enclosing_dir_with_owners
 
   def _load_data_needed_for(self, files):
     for f in files:

@@ -797,16 +797,16 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
     reviewers_plus_owner = reviewers.union(set([owner_email]))
   else:
     message = ('\nUntil the issue is uploaded, this list will include '
-               'directories for which you \nare an OWNER.')
+               'files for which you are an OWNER.')
     owner_email = ''
     reviewers_plus_owner = set()
 
-  missing_directories = owners_db.directories_not_covered_by(affected_files,
-      reviewers_plus_owner)
-  if missing_directories:
+  missing_files = owners_db.files_not_covered_by(affected_files,
+                                                 reviewers_plus_owner)
+  if missing_files:
     output_list = [
-        output('Missing %s for files in these directories:\n    %s%s' %
-               (needed, '\n    '.join(missing_directories), message))]
+        output('Missing %s for these files:\n    %s%s' %
+               (needed, '\n    '.join(missing_files), message))]
     if not input_api.is_committing:
       suggested_owners = owners_db.reviewers_for(affected_files)
       output_list.append(output('Suggested OWNERS:\n    %s' %

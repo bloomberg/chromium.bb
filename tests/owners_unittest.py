@@ -80,59 +80,59 @@ class OwnersDatabaseTest(_BaseTestCase):
   def test_constructor(self):
     self.assertNotEquals(self.db(), None)
 
-  def test_dirs_not_covered_by__valid_inputs(self):
+  def test_files_not_covered_by__valid_inputs(self):
     db = self.db()
 
     # Check that we're passed in a sequence that isn't a string.
-    self.assertRaises(AssertionError, db.directories_not_covered_by, 'foo', [])
+    self.assertRaises(AssertionError, db.files_not_covered_by, 'foo', [])
     if hasattr(owners.collections, 'Iterable'):
-      self.assertRaises(AssertionError, db.directories_not_covered_by,
+      self.assertRaises(AssertionError, db.files_not_covered_by,
                         (f for f in ['x', 'y']), [])
 
     # Check that the files are under the root.
     db.root = '/checkout'
-    self.assertRaises(AssertionError, db.directories_not_covered_by,
+    self.assertRaises(AssertionError, db.files_not_covered_by,
                       ['/OWNERS'], [])
     db.root = '/'
 
     # Check invalid email address.
-    self.assertRaises(AssertionError, db.directories_not_covered_by,
+    self.assertRaises(AssertionError, db.files_not_covered_by,
                       ['OWNERS'], ['foo'])
 
-  def assert_dirs_not_covered_by(self, files, reviewers, unreviewed_dirs):
+  def assert_files_not_covered_by(self, files, reviewers, unreviewed_files):
     db = self.db()
-    self.assertEquals(
-        db.directories_not_covered_by(set(files), set(reviewers)),
-        set(unreviewed_dirs))
+    self.assertEquals(db.files_not_covered_by(set(files), set(reviewers)),
+                      set(unreviewed_files))
 
-  def test_dirs_not_covered_by__owners_propagates_down(self):
-    self.assert_dirs_not_covered_by(
+  def test_files_not_covered_by__owners_propagates_down(self):
+    self.assert_files_not_covered_by(
       ['chrome/gpu/gpu_channel.h', 'chrome/renderer/gpu/gpu_channel_host.h'],
       [ben], [])
 
-  def test_dirs_not_covered_by__partial_covering(self):
-    self.assert_dirs_not_covered_by(
+  def test_files_not_covered_by__partial_covering(self):
+    self.assert_files_not_covered_by(
       ['content/content.gyp', 'chrome/renderer/gpu/gpu_channel_host.h'],
-      [peter], ['content'])
+      [peter], ['content/content.gyp'])
 
-  def test_dirs_not_covered_by__set_noparent_works(self):
-    self.assert_dirs_not_covered_by(['content/content.gyp'], [ben],
-                                    ['content'])
+  def test_files_not_covered_by__set_noparent_works(self):
+    self.assert_files_not_covered_by(['content/content.gyp'], [ben],
+                                    ['content/content.gyp'])
 
-  def test_dirs_not_covered_by__no_reviewer(self):
-    self.assert_dirs_not_covered_by(
+  def test_files_not_covered_by__no_reviewer(self):
+    self.assert_files_not_covered_by(
       ['content/content.gyp', 'chrome/renderer/gpu/gpu_channel_host.h'],
-      [], ['content'])
+      [], ['content/content.gyp'])
 
-  def test_dirs_not_covered_by__combines_directories(self):
-    self.assert_dirs_not_covered_by(['content/content.gyp',
+  def test_files_not_covered_by__combines_directories(self):
+    self.assert_files_not_covered_by(['content/content.gyp',
                                      'content/bar/foo.cc',
                                      'chrome/renderer/gpu/gpu_channel_host.h'],
                                     [peter],
-                                    ['content'])
+                                    ['content/content.gyp',
+                                     'content/bar/foo.cc'])
 
-  def test_dirs_not_covered_by__multiple_directories(self):
-    self.assert_dirs_not_covered_by(
+  def test_files_not_covered_by__multiple_directories(self):
+    self.assert_files_not_covered_by(
         ['content/content.gyp',                    # Not covered
          'content/bar/foo.cc',                     # Not covered (combines in)
          'content/baz/froboz.h',                   # Not covered
@@ -140,23 +140,23 @@ class OwnersDatabaseTest(_BaseTestCase):
          'chrome/renderer/gpu/gpu_channel_host.h'  # Owned by * via parent
         ],
         [ken],
-        ['content', 'content/baz'])
+        ['content/content.gyp', 'content/bar/foo.cc', 'content/baz/froboz.h'])
 
   def test_per_file(self):
     # brett isn't allowed to approve ugly.cc
     self.files['/content/baz/OWNERS'] = owners_file(brett,
         lines=['per-file ugly.*=tom@example.com'])
-    self.assert_dirs_not_covered_by(['content/baz/ugly.cc'],
+    self.assert_files_not_covered_by(['content/baz/ugly.cc'],
                                     [brett],
                                     [])
 
     # tom is allowed to approve ugly.cc, but not froboz.h
-    self.assert_dirs_not_covered_by(['content/baz/ugly.cc'],
+    self.assert_files_not_covered_by(['content/baz/ugly.cc'],
                                     [tom],
                                     [])
-    self.assert_dirs_not_covered_by(['content/baz/froboz.h'],
+    self.assert_files_not_covered_by(['content/baz/froboz.h'],
                                     [tom],
-                                    ['content/baz'])
+                                    ['content/baz/froboz.h'])
 
   def test_per_file_with_spaces(self):
     # This is the same as test_per_file(), except that we include spaces
@@ -164,16 +164,16 @@ class OwnersDatabaseTest(_BaseTestCase):
     # tom is allowed to approve ugly.cc, but not froboz.h
     self.files['/content/baz/OWNERS'] = owners_file(brett,
         lines=['per-file ugly.* = tom@example.com'])
-    self.assert_dirs_not_covered_by(['content/baz/ugly.cc'],
+    self.assert_files_not_covered_by(['content/baz/ugly.cc'],
                                     [brett],
                                     [])
 
-    self.assert_dirs_not_covered_by(['content/baz/ugly.cc'],
+    self.assert_files_not_covered_by(['content/baz/ugly.cc'],
                                     [tom],
                                     [])
-    self.assert_dirs_not_covered_by(['content/baz/froboz.h'],
+    self.assert_files_not_covered_by(['content/baz/froboz.h'],
                                     [tom],
-                                    ['content/baz'])
+                                    ['content/baz/froboz.h'])
 
   def test_per_file__set_noparent(self):
     self.files['/content/baz/OWNERS'] = owners_file(brett,
@@ -181,22 +181,22 @@ class OwnersDatabaseTest(_BaseTestCase):
                'per-file ugly.*=set noparent'])
 
     # brett isn't allowed to approve ugly.cc
-    self.assert_dirs_not_covered_by(['content/baz/ugly.cc'],
+    self.assert_files_not_covered_by(['content/baz/ugly.cc'],
                                     [brett],
                                     ['content/baz/ugly.cc'])
 
     # tom is allowed to approve ugly.cc, but not froboz.h
-    self.assert_dirs_not_covered_by(['content/baz/ugly.cc'],
+    self.assert_files_not_covered_by(['content/baz/ugly.cc'],
                                     [tom],
                                     [])
 
-    self.assert_dirs_not_covered_by(['content/baz/froboz.h'],
+    self.assert_files_not_covered_by(['content/baz/froboz.h'],
                                     [tom],
-                                    ['content/baz'])
+                                    ['content/baz/froboz.h'])
 
   def test_per_file_wildcard(self):
     self.files['/OWNERS'] = 'per-file DEPS=*\n'
-    self.assert_dirs_not_covered_by(['DEPS'], [brett], [])
+    self.assert_files_not_covered_by(['DEPS'], [brett], [])
 
   def test_mock_relpath(self):
     # This test ensures the mock relpath has the arguments in the right
@@ -207,7 +207,7 @@ class OwnersDatabaseTest(_BaseTestCase):
   def test_per_file_glob_across_dirs_not_allowed(self):
     self.files['/OWNERS'] = 'per-file content/*=john@example.org\n'
     self.assertRaises(owners.SyntaxErrorInOwnersFile,
-        self.db().directories_not_covered_by, ['DEPS'], [brett])
+        self.db().files_not_covered_by, ['DEPS'], [brett])
 
   def assert_syntax_error(self, owners_file_contents):
     db = self.db()

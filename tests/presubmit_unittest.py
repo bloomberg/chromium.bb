@@ -2219,14 +2219,14 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
   def AssertOwnersWorks(self, tbr=False, issue='1', approvers=None,
       reviewers=None, is_committing=True, rietveld_response=None,
-      uncovered_dirs=None, expected_output=''):
+      uncovered_files=None, expected_output=''):
     if approvers is None:
       approvers = set()
     if reviewers is None:
       reviewers = set()
     reviewers = reviewers.union(approvers)
-    if uncovered_dirs is None:
-      uncovered_dirs = set()
+    if uncovered_files is None:
+      uncovered_files = set()
 
     change = self.mox.CreateMock(presubmit.Change)
     change.issue = issue
@@ -2263,9 +2263,9 @@ class CannedChecksUnittest(PresubmitTestsBase):
                 rietveld_response)
         people.add(owner_email)
 
-      fake_db.directories_not_covered_by(set(['foo/xyz.cc']),
-          people).AndReturn(uncovered_dirs)
-      if not is_committing and uncovered_dirs:
+      fake_db.files_not_covered_by(set(['foo/xyz.cc']),
+          people).AndReturn(uncovered_files)
+      if not is_committing and uncovered_files:
         fake_db.reviewers_for(set(['foo/xyz.cc'])).AndReturn(owner_email)
 
     self.mox.ReplayAll()
@@ -2352,18 +2352,16 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
   def testCannedCheckOwners_NoIssue(self):
     self.AssertOwnersWorks(issue=None,
-        uncovered_dirs=set(['foo']),
+        uncovered_files=set(['foo']),
         expected_output="OWNERS check failed: this change has no Rietveld "
                         "issue number, so we can't check it for approvals.\n")
     self.AssertOwnersWorks(issue=None,
         is_committing=False,
-        uncovered_dirs=set(['foo']),
-        expected_output='Missing OWNER reviewers for files in these '
-                        'directories:\n'
+        uncovered_files=set(['foo']),
+        expected_output='Missing OWNER reviewers for these files:\n'
                         '    foo\n'
                         'Until the issue is uploaded, this list will include '
-                        'directories for which you \n'
-                        'are an OWNER.\n')
+                        'files for which you are an OWNER.\n')
 
   def testCannedCheckOwners_NoLGTM(self):
     self.AssertOwnersWorks(expected_output='Missing LGTM from someone '
@@ -2384,22 +2382,20 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.AssertOwnersWorks(tbr=True, is_committing=False, expected_output='')
 
   def testCannedCheckOwners_WithoutOwnerLGTM(self):
-    self.AssertOwnersWorks(uncovered_dirs=set(['foo']),
-        expected_output='Missing LGTM from an OWNER for files in these '
-                        'directories:\n'
+    self.AssertOwnersWorks(uncovered_files=set(['foo']),
+        expected_output='Missing LGTM from an OWNER for these files:\n'
                         '    foo\n')
-    self.AssertOwnersWorks(uncovered_dirs=set(['foo']),
-                           is_committing=False,
-        expected_output='Missing OWNER reviewers for files in these '
-                        'directories:\n'
+    self.AssertOwnersWorks(uncovered_files=set(['foo']),
+        is_committing=False,
+        expected_output='Missing OWNER reviewers for these files:\n'
                         '    foo\n')
 
   def testCannedCheckOwners_WithLGTMs(self):
     self.AssertOwnersWorks(approvers=set(['ben@example.com']),
-                           uncovered_dirs=set())
+                           uncovered_files=set())
     self.AssertOwnersWorks(approvers=set(['ben@example.com']),
                            is_committing=False,
-                           uncovered_dirs=set())
+                           uncovered_files=set())
 
   def testCannedRunUnitTests(self):
     change = presubmit.Change(
