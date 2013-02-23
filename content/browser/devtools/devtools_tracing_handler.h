@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_TRACING_HANDLER_H_
 #define CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_TRACING_HANDLER_H_
 
+#include "base/debug/trace_event.h"
 #include "content/browser/devtools/devtools_protocol.h"
 #include "content/public/browser/trace_subscriber.h"
 
@@ -33,6 +34,9 @@ class DevToolsTracingHandler
       DevToolsProtocol::Command* command);
   scoped_ptr<DevToolsProtocol::Response> OnEnd(
       DevToolsProtocol::Command* command);
+
+  base::debug::TraceLog::Options TraceOptionsFromString(
+      const std::string& options);
 
   bool is_running_;
 

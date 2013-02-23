@@ -16,7 +16,10 @@ TracingIntentHandler* g_trace_intent_handler = NULL;
 
 TracingIntentHandler::TracingIntentHandler(const base::FilePath& path)
     : TraceSubscriberStdio(path) {
-  TraceController::GetInstance()->BeginTracing(this, std::string("-test*"));
+  TraceController::GetInstance()->BeginTracing(
+      this,
+      std::string("-test*"),
+      base::debug::TraceLog::RECORD_UNTIL_FULL);
 }
 
 TracingIntentHandler::~TracingIntentHandler() {

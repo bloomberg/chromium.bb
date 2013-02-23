@@ -770,7 +770,10 @@ void AutomationProvider::JavaScriptStressTestControl(int tab_handle,
 void AutomationProvider::BeginTracing(const std::string& categories,
                                       bool* success) {
   tracing_data_.trace_output.clear();
-  *success = TraceController::GetInstance()->BeginTracing(this, categories);
+  *success = TraceController::GetInstance()->BeginTracing(
+      this,
+      categories,
+      base::debug::TraceLog::RECORD_UNTIL_FULL);
 }
 
 void AutomationProvider::EndTracing(IPC::Message* reply_message) {

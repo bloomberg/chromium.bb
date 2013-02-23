@@ -636,7 +636,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     // ignored.
     if (command_line.HasSwitch(switches::kTraceStartup)) {
       base::debug::TraceLog::GetInstance()->SetEnabled(
-          command_line.GetSwitchValueASCII(switches::kTraceStartup));
+          command_line.GetSwitchValueASCII(switches::kTraceStartup),
+          base::debug::TraceLog::RECORD_UNTIL_FULL);
     }
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)

@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_TRACE_CONTROLLER_H_
 #define CONTENT_PUBLIC_BROWSER_TRACE_CONTROLLER_H_
 
+#include "base/debug/trace_event.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -35,11 +36,14 @@ class TraceController {
   // All the same rules apply above, so for example, having both included and
   // excluded categories in the same list would not be supported.
   //
+  // |mode| is the tracing mode being used.
+  //
   // Example: BeginTracing("test_MyTest*");
   // Example: BeginTracing("test_MyTest*,test_OtherStuff");
   // Example: BeginTracing("-excluded_category1,-excluded_category2");
   virtual bool BeginTracing(TraceSubscriber* subscriber,
-                            const std::string& categories) = 0;
+                            const std::string& categories,
+                            base::debug::TraceLog::Options options) = 0;
 
   // Called by browser process to stop tracing events on all processes.
   //

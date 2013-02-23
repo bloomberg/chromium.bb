@@ -372,7 +372,8 @@ void TracingMessageHandler::SaveTraceFileComplete() {
 
 void TracingMessageHandler::OnBeginTracing(const base::ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(args->GetSize(), (size_t) 2);
+  DCHECK_GE(args->GetSize(), (size_t) 2);
+  DCHECK_LE(args->GetSize(), (size_t) 3);
 
   bool system_tracing_requested = false;
   bool ok = args->GetBoolean(0, &system_tracing_requested);
@@ -382,12 +383,22 @@ void TracingMessageHandler::OnBeginTracing(const base::ListValue* args) {
   ok = args->GetString(1, &chrome_categories);
   DCHECK(ok);
 
+  base::debug::TraceLog::Options options =
+      base::debug::TraceLog::RECORD_UNTIL_FULL;
+  if (args->GetSize() >= 3) {
+    std::string options_;
+    ok = args->GetString(2, &options_);
+    DCHECK(ok);
+    options = base::debug::TraceLog::TraceOptionsFromString(options_);
+  }
+
   trace_enabled_ = true;
   // TODO(jbates) This may fail, but that's OK for current use cases.
   //              Ex: Multiple about:gpu traces can not trace simultaneously.
   // TODO(nduca) send feedback to javascript about whether or not BeginTracing
   //             was successful.
-  TraceController::GetInstance()->BeginTracing(this, chrome_categories);
+  TraceController::GetInstance()->BeginTracing(this, chrome_categories,
+                                               options);
 
   if (system_tracing_requested) {
 #if defined(OS_CHROMEOS)

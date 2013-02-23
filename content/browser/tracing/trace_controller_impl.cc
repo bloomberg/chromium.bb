@@ -113,7 +113,8 @@ bool TraceControllerImpl::GetKnownCategoriesAsync(TraceSubscriber* subscriber) {
   // message. So to get known categories, just begin and end tracing immediately
   // afterwards. This will ping all the child processes for categories.
   is_get_categories_ = true;
-  bool success = BeginTracing(subscriber, "*") &&
+  bool success = BeginTracing(subscriber, "*",
+                              TraceLog::GetInstance()->trace_options()) &&
                  EndTracingAsync(subscriber);
   is_get_categories_ = success;
   return success;
@@ -122,28 +123,31 @@ bool TraceControllerImpl::GetKnownCategoriesAsync(TraceSubscriber* subscriber) {
 bool TraceControllerImpl::BeginTracing(
     TraceSubscriber* subscriber,
     const std::vector<std::string>& included_categories,
-    const std::vector<std::string>& excluded_categories) {
+    const std::vector<std::string>& excluded_categories,
+    base::debug::TraceLog::Options options) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!can_begin_tracing(subscriber))
     return false;
 
   // Enable tracing
-  TraceLog::GetInstance()->SetEnabled(included_categories, excluded_categories);
+  TraceLog::GetInstance()->SetEnabled(included_categories, excluded_categories,
+                                      options);
   OnTracingBegan(subscriber);
 
   return true;
 }
 
 bool TraceControllerImpl::BeginTracing(TraceSubscriber* subscriber,
-                                       const std::string& categories) {
+                                       const std::string& categories,
+                                       base::debug::TraceLog::Options options) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!can_begin_tracing(subscriber))
     return false;
 
   // Enable tracing
-  TraceLog::GetInstance()->SetEnabled(categories);
+  TraceLog::GetInstance()->SetEnabled(categories, options);
 
   OnTracingBegan(subscriber);
 
@@ -261,7 +265,8 @@ void TraceControllerImpl::AddFilter(TraceMessageFilter* filter) {
 
   filters_.insert(filter);
   if (is_tracing_enabled()) {
-    filter->SendBeginTracing(included_categories_, excluded_categories_);
+    filter->SendBeginTracing(included_categories_, excluded_categories_,
+                             trace_options_);
     if (!watch_category_.empty())
       filter->SendSetWatchEvent(watch_category_, watch_name_);
   }
@@ -285,9 +290,12 @@ void TraceControllerImpl::OnTracingBegan(TraceSubscriber* subscriber) {
 
   TraceLog::GetInstance()->GetEnabledTraceCategories(&included_categories_,
                                                      &excluded_categories_);
+  trace_options_ = TraceLog::GetInstance()->trace_options();
+
   // Notify all child processes.
   for (FilterMap::iterator it = filters_.begin(); it != filters_.end(); ++it) {
-    it->get()->SendBeginTracing(included_categories_, excluded_categories_);
+    it->get()->SendBeginTracing(included_categories_, excluded_categories_,
+                                trace_options_);
   }
 }
 

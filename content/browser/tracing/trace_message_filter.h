@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/debug/trace_event.h"
 #include "content/public/browser/browser_message_filter.h"
 
 namespace content {
@@ -28,7 +29,8 @@ class TraceMessageFilter : public BrowserMessageFilter {
                                  bool* message_was_ok) OVERRIDE;
 
   void SendBeginTracing(const std::vector<std::string>& included_categories,
-                        const std::vector<std::string>& excluded_categories);
+                        const std::vector<std::string>& excluded_categories,
+                        base::debug::TraceLog::Options options);
   void SendEndTracing();
   void SendGetTraceBufferPercentFull();
   void SendSetWatchEvent(const std::string& category_name,

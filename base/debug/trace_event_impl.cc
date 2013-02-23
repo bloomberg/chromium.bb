@@ -14,6 +14,7 @@
 #include "base/memory/singleton.h"
 #include "base/process_util.h"
 #include "base/stl_util.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_tokenizer.h"
@@ -71,6 +72,8 @@ int g_category_index = 3; // skip initial 3 categories
 // output name for the thread.
 LazyInstance<ThreadLocalPointer<const char> >::Leaky
     g_current_thread_name = LAZY_INSTANCE_INITIALIZER;
+
+const char kRecordUntilFull[] = "record-until-full";
 
 }  // namespace
 
@@ -348,10 +351,37 @@ TraceLog* TraceLog::GetInstance() {
   return Singleton<TraceLog, StaticMemorySingletonTraits<TraceLog> >::get();
 }
 
+// static
+// Note, if you add more options here you also need to update:
+// content/browser/devtools/devtools_tracing_handler:TraceOptionsFromString
+TraceLog::Options TraceLog::TraceOptionsFromString(const std::string& options) {
+  std::vector<std::string> split;
+  base::SplitString(options, ',', &split);
+  int ret = 0;
+  for (std::vector<std::string>::iterator iter = split.begin();
+       iter != split.end();
+       ++iter) {
+    if (*iter == kRecordUntilFull) {
+      ret |= RECORD_UNTIL_FULL;
+    } else {
+      NOTREACHED();  // Unknown option provided.
+    }
+  }
+  // Check to see if any RECORD_* options are set, and if none, then provide
+  // a default.
+  // TODO(dsinclair): Remove this comment when we have more then one RECORD_*
+  // flag and the code's structure is then sensible.
+  if (!(ret & RECORD_UNTIL_FULL))
+    ret |= RECORD_UNTIL_FULL;  // Default when no options are specified.
+
+  return static_cast<Options>(ret);
+}
+
 TraceLog::TraceLog()
     : enable_count_(0),
       dispatching_to_observer_list_(false),
-      watch_category_(NULL) {
+      watch_category_(NULL),
+      trace_options_(RECORD_UNTIL_FULL) {
   // Trace is enabled or disabled on one thread while other threads are
   // accessing the enabled flag. We don't care whether edge-case events are
   // traced or not, so we allow races on the enabled flag to keep the trace
@@ -478,10 +508,16 @@ void TraceLog::GetKnownCategories(std::vector<std::string>* categories) {
 }
 
 void TraceLog::SetEnabled(const std::vector<std::string>& included_categories,
-                          const std::vector<std::string>& excluded_categories) {
+                          const std::vector<std::string>& excluded_categories,
+                          Options options) {
   AutoLock lock(lock_);
 
   if (enable_count_++ > 0) {
+    if (options != trace_options_) {
+      DLOG(ERROR) << "Attemting to re-enable tracing with a different "
+                  << "set of options.";
+    }
+
     // Tracing is already enabled, so just merge in enabled categories.
     // We only expand the set of enabled categories upon nested SetEnable().
     if (!included_categories_.empty() && !included_categories.empty()) {
@@ -497,6 +533,7 @@ void TraceLog::SetEnabled(const std::vector<std::string>& included_categories,
     }
     return;
   }
+  trace_options_ = options;
 
   if (dispatching_to_observer_list_) {
     DLOG(ERROR) <<
@@ -520,7 +557,7 @@ void TraceLog::SetEnabled(const std::vector<std::string>& included_categories,
     EnableMatchingCategories(excluded_categories_, 0, CATEGORY_ENABLED);
 }
 
-void TraceLog::SetEnabled(const std::string& categories) {
+void TraceLog::SetEnabled(const std::string& categories, Options options) {
   std::vector<std::string> included, excluded;
   // Tokenize list of categories, delimited by ','.
   StringTokenizer tokens(categories, ",");
@@ -538,7 +575,7 @@ void TraceLog::SetEnabled(const std::string& categories) {
     else
       excluded.push_back(category);
   }
-  SetEnabled(included, excluded);
+  SetEnabled(included, excluded, options);
 }
 
 void TraceLog::GetEnabledTraceCategories(
@@ -577,9 +614,9 @@ void TraceLog::SetDisabled() {
   AddThreadNameMetadataEvents();
 }
 
-void TraceLog::SetEnabled(bool enabled) {
+void TraceLog::SetEnabled(bool enabled, Options options) {
   if (enabled)
-    SetEnabled(std::vector<std::string>(), std::vector<std::string>());
+    SetEnabled(std::vector<std::string>(), std::vector<std::string>(), options);
   else
     SetDisabled();
 }

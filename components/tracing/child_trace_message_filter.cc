@@ -48,7 +48,8 @@ ChildTraceMessageFilter::~ChildTraceMessageFilter() {}
 void ChildTraceMessageFilter::OnBeginTracing(
     const std::vector<std::string>& included_categories,
     const std::vector<std::string>& excluded_categories,
-    base::TimeTicks browser_time) {
+    base::TimeTicks browser_time,
+    int options) {
 #if defined(__native_client__)
   // NaCl and system times are offset by a bit, so subtract some time from
   // the captured timestamps. The value might be off by a bit due to messaging
@@ -57,8 +58,10 @@ void ChildTraceMessageFilter::OnBeginTracing(
       browser_time;
   TraceLog::GetInstance()->SetTimeOffset(time_offset);
 #endif
-  TraceLog::GetInstance()->SetEnabled(included_categories,
-                                      excluded_categories);
+  TraceLog::GetInstance()->SetEnabled(
+      included_categories,
+      excluded_categories,
+      static_cast<base::debug::TraceLog::Options>(options));
 }
 
 void ChildTraceMessageFilter::OnEndTracing() {

@@ -16,10 +16,11 @@
 #define IPC_MESSAGE_START TracingMsgStart
 
 // Sent to all child processes to enable trace event recording.
-IPC_MESSAGE_CONTROL3(TracingMsg_BeginTracing,
+IPC_MESSAGE_CONTROL4(TracingMsg_BeginTracing,
                      std::vector<std::string> /* included_categories */,
                      std::vector<std::string> /* excluded_categories */,
-                     base::TimeTicks /* browser_time */)
+                     base::TimeTicks /* browser_time */,
+                     int /* base::debug::TraceLog::Options */)
 
 // Sent to all child processes to disable trace event recording.
 IPC_MESSAGE_CONTROL0(TracingMsg_EndTracing)

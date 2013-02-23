@@ -56,11 +56,12 @@ bool TraceMessageFilter::OnMessageReceived(const IPC::Message& message,
 
 void TraceMessageFilter::SendBeginTracing(
     const std::vector<std::string>& included_categories,
-    const std::vector<std::string>& excluded_categories) {
+    const std::vector<std::string>& excluded_categories,
+    base::debug::TraceLog::Options options) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  Send(new TracingMsg_BeginTracing(included_categories,
-                                   excluded_categories,
-                                   base::TimeTicks::NowFromSystemTraceTime()));
+  Send(new TracingMsg_BeginTracing(included_categories, excluded_categories,
+                                   base::TimeTicks::NowFromSystemTraceTime(),
+                                   options));
 }
 
 void TraceMessageFilter::SendEndTracing() {

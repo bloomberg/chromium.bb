@@ -30,7 +30,7 @@ class InProcessTraceController : public content::TraceSubscriber {
   bool BeginTracing(const std::string& categories) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     return content::TraceController::GetInstance()->BeginTracing(
-        this, categories);
+        this, categories, base::debug::TraceLog::RECORD_UNTIL_FULL);
   }
 
   bool BeginTracingWithWatch(const std::string& categories,

@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
+#include "base/string_split.h"
 #include "base/values.h"
 #include "content/browser/devtools/devtools_http_handler_impl.h"
 #include "content/public/browser/trace_controller.h"
@@ -24,6 +25,9 @@ const char kTracingCompleteNotification[] = "Tracing.tracingComplete";
 const char kTracingDataCollected[] = "Tracing.dataCollected";
 
 const char kCategoriesParam[] = "categories";
+
+const char kTraceOptionsParam[] = "trace-options";
+const char kRecordUntilFull[]   = "record-until-full";
 
 }  // namespace
 
@@ -56,13 +60,42 @@ void DevToolsTracingHandler::OnTraceDataCollected(
   }
 }
 
+// Note, if you add more options here you also need to update:
+// base/debug/trace_event_impl:TraceOptionsFromString
+base::debug::TraceLog::Options DevToolsTracingHandler::TraceOptionsFromString(
+    const std::string& options) {
+  std::vector<std::string> split;
+  std::vector<std::string>::iterator iter;
+  int ret = 0;
+
+  base::SplitString(options, ',', &split);
+  for (iter = split.begin(); iter != split.end(); ++iter) {
+    if (*iter == kRecordUntilFull) {
+      ret |= base::debug::TraceLog::RECORD_UNTIL_FULL;
+    }
+  }
+  if (ret == 0)
+    ret = base::debug::TraceLog::RECORD_UNTIL_FULL;
+
+  return static_cast<base::debug::TraceLog::Options>(ret);
+}
+
 scoped_ptr<DevToolsProtocol::Response>
 DevToolsTracingHandler::OnStart(DevToolsProtocol::Command* command) {
   std::string categories;
   base::DictionaryValue* params = command->params();
   if (params && params->HasKey(kCategoriesParam))
     params->GetString(kCategoriesParam, &categories);
-  TraceController::GetInstance()->BeginTracing(this, categories);
+
+  base::debug::TraceLog::Options options =
+      base::debug::TraceLog::RECORD_UNTIL_FULL;
+  if (params && params->HasKey(kTraceOptionsParam)) {
+    std::string options_param;
+    params->GetString(kTraceOptionsParam, &options_param);
+    options = TraceOptionsFromString(options_param);
+  }
+
+  TraceController::GetInstance()->BeginTracing(this, categories, options);
   is_running_ = true;
   return command->SuccessResponse(NULL);
 }

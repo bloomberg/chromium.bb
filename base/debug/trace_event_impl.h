@@ -157,7 +157,6 @@ class BASE_EXPORT TraceResultBuffer {
   bool append_comma_;
 };
 
-
 class BASE_EXPORT TraceLog {
  public:
   // Notification is a mask of one or more of the following events.
@@ -170,7 +169,16 @@ class BASE_EXPORT TraceLog {
     EVENT_WATCH_NOTIFICATION = 1 << 1
   };
 
+  // Options determines how the trace buffer stores data.
+  enum Options {
+    RECORD_UNTIL_FULL = 1 << 0
+  };
+
   static TraceLog* GetInstance();
+
+  // Convert the given string to trace options. Defaults to RECORD_UNTIL_FULL if
+  // the string does not provide valid options.
+  static Options TraceOptionsFromString(const std::string& str);
 
   // Get set of known categories. This can change as new code paths are reached.
   // The known categories are inserted into |categories|.
@@ -185,7 +193,8 @@ class BASE_EXPORT TraceLog {
   // Else if excluded_categories is non-empty, everything but those are traced.
   // Wildcards * and ? are supported (see MatchPattern in string_util.h).
   void SetEnabled(const std::vector<std::string>& included_categories,
-                  const std::vector<std::string>& excluded_categories);
+                  const std::vector<std::string>& excluded_categories,
+                  Options options);
 
   // |categories| is a comma-delimited list of category wildcards.
   // A category can have an optional '-' prefix to make it an excluded category.
@@ -195,17 +204,19 @@ class BASE_EXPORT TraceLog {
   // Example: SetEnabled("test_MyTest*");
   // Example: SetEnabled("test_MyTest*,test_OtherStuff");
   // Example: SetEnabled("-excluded_category1,-excluded_category2");
-  void SetEnabled(const std::string& categories);
+  void SetEnabled(const std::string& categories, Options options);
 
   // Retieves the categories set via a prior call to SetEnabled(). Only
   // meaningful if |IsEnabled()| is true.
   void GetEnabledTraceCategories(std::vector<std::string>* included_out,
                                  std::vector<std::string>* excluded_out);
 
+  Options trace_options() const { return trace_options_; }
+
   // Disable tracing for all categories.
   void SetDisabled();
   // Helper method to enable/disable tracing for all categories.
-  void SetEnabled(bool enabled);
+  void SetEnabled(bool enabled, Options options);
   bool IsEnabled() { return !!enable_count_; }
 
 #if defined(OS_ANDROID)
@@ -399,6 +410,8 @@ class BASE_EXPORT TraceLog {
   // Allow tests to wake up when certain events occur.
   const unsigned char* watch_category_;
   std::string watch_event_name_;
+
+  Options trace_options_;
 
   DISALLOW_COPY_AND_ASSIGN(TraceLog);
 };

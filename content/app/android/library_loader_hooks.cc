@@ -43,7 +43,8 @@ static jint LibraryLoadedOnMainThread(JNIEnv* env, jclass clazz,
 
   if (command_line->HasSwitch(switches::kTraceStartup)) {
     base::debug::TraceLog::GetInstance()->SetEnabled(
-        command_line->GetSwitchValueASCII(switches::kTraceStartup));
+        command_line->GetSwitchValueASCII(switches::kTraceStartup),
+        base::debug::TraceLog::RECORD_UNTIL_FULL);
   }
 
   // Can only use event tracing after setting up the command line.

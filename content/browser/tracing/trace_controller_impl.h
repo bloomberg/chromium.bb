@@ -38,11 +38,13 @@ class TraceControllerImpl : public TraceController {
   // Else if excluded_categories is non-empty, everything but those are traced.
   bool BeginTracing(TraceSubscriber* subscriber,
                     const std::vector<std::string>& included_categories,
-                    const std::vector<std::string>& excluded_categories);
+                    const std::vector<std::string>& excluded_categories,
+                    base::debug::TraceLog::Options options);
 
   // TraceController implementation:
   virtual bool BeginTracing(TraceSubscriber* subscriber,
-                            const std::string& categories) OVERRIDE;
+                            const std::string& categories,
+                            base::debug::TraceLog::Options options) OVERRIDE;
   virtual  bool EndTracingAsync(TraceSubscriber* subscriber) OVERRIDE;
   virtual bool GetTraceBufferPercentFullAsync(
       TraceSubscriber* subscriber) OVERRIDE;
@@ -106,6 +108,7 @@ class TraceControllerImpl : public TraceController {
   std::vector<std::string> excluded_categories_;
   std::string watch_category_;
   std::string watch_name_;
+  base::debug::TraceLog::Options trace_options_;
 
   DISALLOW_COPY_AND_ASSIGN(TraceControllerImpl);
 };

@@ -39,11 +39,15 @@ void TraceEventAnalyzerTest::OnTraceDataCollected(
 void TraceEventAnalyzerTest::BeginTracing() {
   output_.json_output.clear();
   buffer_.Start();
-  base::debug::TraceLog::GetInstance()->SetEnabled(true);
+  base::debug::TraceLog::GetInstance()->SetEnabled(
+      true,
+      base::debug::TraceLog::RECORD_UNTIL_FULL);
 }
 
 void TraceEventAnalyzerTest::EndTracing() {
-  base::debug::TraceLog::GetInstance()->SetEnabled(false);
+  base::debug::TraceLog::GetInstance()->SetEnabled(
+      false,
+      base::debug::TraceLog::RECORD_UNTIL_FULL);
   base::debug::TraceLog::GetInstance()->Flush(
       base::Bind(&TraceEventAnalyzerTest::OnTraceDataCollected,
                  base::Unretained(this)));
