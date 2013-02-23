@@ -9,6 +9,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/aura/root_window.h"
+#include "ui/compositor/test/layer_animator_test_controller.h"
 
 using aura::RootWindow;
 using aura::Window;
@@ -35,12 +36,13 @@ void RunAnimationForWidget(views::Widget* widget) {
   DCHECK(!ui::LayerAnimator::disable_animations_for_test());
 
   ui::Layer* layer = widget->GetNativeView()->layer();
-  ui::LayerAnimator* animator = layer->GetAnimator();
+  ui::LayerAnimatorTestController controller(layer->GetAnimator());
   ui::AnimationContainerElement* element = layer->GetAnimator();
   // Multiple steps are required to complete complex animations.
   // TODO(vollick): This should not be necessary. crbug.com/154017
-  while (animator->is_animating()) {
-    base::TimeTicks step_time = animator->last_step_time();
+  while (controller.animator()->is_animating()) {
+    controller.StartThreadedAnimationsIfNeeded();
+    base::TimeTicks step_time = controller.animator()->last_step_time();
     element->Step(step_time + base::TimeDelta::FromMilliseconds(1000));
   }
 }

@@ -43,7 +43,7 @@ class ASH_EXPORT ScreenRotation : public ui::LayerAnimationElement {
   virtual bool OnProgress(double t,
                           ui::LayerAnimationDelegate* delegate) OVERRIDE;
   virtual void OnGetTarget(TargetValue* target) const OVERRIDE;
-  virtual void OnAbort() OVERRIDE;
+  virtual void OnAbort(ui::LayerAnimationDelegate* delegate) OVERRIDE;
 
   static const ui::LayerAnimationElement::AnimatableProperties&
       GetProperties();

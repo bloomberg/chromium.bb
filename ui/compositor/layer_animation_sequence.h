@@ -42,10 +42,24 @@ class COMPOSITOR_EXPORT LayerAnimationSequence
   virtual ~LayerAnimationSequence();
 
   // Sets the start time for the animation. This must be called before the
-  // first call to {Progress, IsFinished}. Once the animation is finished, this
+  // first call to {Start, IsFinished}. Once the animation is finished, this
   // must be called again in order to restart the animation.
   void set_start_time(base::TimeTicks start_time) { start_time_ = start_time; }
   base::TimeTicks start_time() const { return start_time_; }
+
+  // Sets a flag indicating that this sequence will start together with other
+  // sequences, and at least one of the sequences in this group has a threaded
+  // first element.
+  void set_waiting_for_group_start(bool waiting) {
+    waiting_for_group_start_ = waiting;
+  }
+  bool waiting_for_group_start() { return waiting_for_group_start_; }
+
+  // This must be called before the first call to Progress. If starting the
+  // animation involves dispatching to another thread, then this will proceed
+  // with that dispatch, ultimately resulting in the animation getting an
+  // effective start time (the time the animation starts on the other thread).
+  void Start(LayerAnimationDelegate* delegate);
 
   // Updates the delegate to the appropriate value for |now|. Requests a
   // redraw if it is required.
@@ -64,7 +78,7 @@ class COMPOSITOR_EXPORT LayerAnimationSequence
   void GetTargetValue(LayerAnimationElement::TargetValue* target) const;
 
   // Aborts the given animation.
-  void Abort();
+  void Abort(LayerAnimationDelegate* delegate);
 
   // All properties modified by the sequence.
   const LayerAnimationElement::AnimatableProperties& properties() const {
@@ -84,10 +98,20 @@ class COMPOSITOR_EXPORT LayerAnimationSequence
   bool HasCommonProperty(
       const LayerAnimationElement::AnimatableProperties& other) const;
 
+  // Returns true if the first element animates on the compositor thread.
+  bool IsFirstElementThreaded() const;
+
+  // Used to identify groups of sequences that are supposed to start together.
+  int animation_group_id() const { return animation_group_id_; }
+  void set_animation_group_id(int id) { animation_group_id_ = id; }
+
   // These functions are used for adding or removing observers from the observer
   // list. The observers are notified when animations end.
   void AddObserver(LayerAnimationObserver* observer);
   void RemoveObserver(LayerAnimationObserver* observer);
+
+  // Called when a threaded animation is actually started.
+  void OnThreadedAnimationStarted(const cc::AnimationEvent& event);
 
   // Called when the animator schedules this sequence.
   void OnScheduled();
@@ -95,7 +119,13 @@ class COMPOSITOR_EXPORT LayerAnimationSequence
   // Called when the animator is destroyed.
   void OnAnimatorDestroyed();
 
+  // The last_progressed_fraction of the element most recently progressed by
+  // by this sequence. Returns 0.0 if no elements have been progressed.
+  double last_progressed_fraction() const { return last_progressed_fraction_; }
+
  private:
+  friend class LayerAnimatorTestController;
+
   typedef std::vector<linked_ptr<LayerAnimationElement> > Elements;
 
   FRIEND_TEST_ALL_PREFIXES(LayerAnimatorTest,
@@ -109,6 +139,9 @@ class COMPOSITOR_EXPORT LayerAnimationSequence
 
   // Notifies the observers that this sequence has been aborted.
   void NotifyAborted();
+
+  // The currently animating element.
+  LayerAnimationElement* CurrentElement();
 
   // The union of all the properties modified by all elements in the sequence.
   LayerAnimationElement::AnimatableProperties properties_;
@@ -126,8 +159,19 @@ class COMPOSITOR_EXPORT LayerAnimationSequence
   // The start time of the current run of the sequence.
   base::TimeTicks start_time_;
 
+  // True if this sequence will start together with other sequences, and at
+  // least one of the sequences in this group has a threaded first element.
+  bool waiting_for_group_start_;
+
+  // Identifies groups of sequences that are supposed to start together.
+  int animation_group_id_;
+
   // These parties are notified when layer animations end.
   ObserverList<LayerAnimationObserver> observers_;
+
+  // Tracks the last_progressed_fraction() of the most recently progressed
+  // element.
+  double last_progressed_fraction_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerAnimationSequence);
 };

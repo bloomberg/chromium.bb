@@ -117,7 +117,7 @@ void ScreenRotation::OnGetTarget(TargetValue* target) const {
   target->transform = interpolated_transform_->Interpolate(1.0);
 }
 
-void ScreenRotation::OnAbort() {
+void ScreenRotation::OnAbort(ui::LayerAnimationDelegate* delegate) {
 }
 
 // static

@@ -7,6 +7,7 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/animation_id_provider.h"
 #include "ui/base/animation/animation_container.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
@@ -202,9 +203,17 @@ void LayerAnimator::StartTogether(
       LayerAnimationElement::CreatePauseElement(animated_properties,
                                                 base::TimeDelta())));
 
+  bool wait_for_group_start = false;
+  for (iter = animations.begin(); iter != animations.end(); ++iter)
+    wait_for_group_start |= (*iter)->IsFirstElementThreaded();
+
+  int group_id = cc::AnimationIdProvider::NextGroupId();
+
   // These animations (provided they don't animate any common properties) will
   // now animate together if trivially scheduled.
   for (iter = animations.begin(); iter != animations.end(); ++iter) {
+    (*iter)->set_animation_group_id(group_id);
+    (*iter)->set_waiting_for_group_start(wait_for_group_start);
     ScheduleAnimation(*iter);
   }
 
@@ -232,9 +241,17 @@ void LayerAnimator::ScheduleTogether(
       LayerAnimationElement::CreatePauseElement(animated_properties,
                                                 base::TimeDelta())));
 
+  bool wait_for_group_start = false;
+  for (iter = animations.begin(); iter != animations.end(); ++iter)
+    wait_for_group_start |= (*iter)->IsFirstElementThreaded();
+
+  int group_id = cc::AnimationIdProvider::NextGroupId();
+
   // These animations (provided they don't animate any common properties) will
   // now animate together if trivially scheduled.
   for (iter = animations.begin(); iter != animations.end(); ++iter) {
+    (*iter)->set_animation_group_id(group_id);
+    (*iter)->set_waiting_for_group_start(wait_for_group_start);
     ScheduleAnimation(*iter);
   }
 
@@ -299,11 +316,50 @@ void LayerAnimator::RemoveObserver(LayerAnimationObserver* observer) {
   }
 }
 
+void LayerAnimator::OnThreadedAnimationStarted(
+    const cc::AnimationEvent& event) {
+  LayerAnimationElement::AnimatableProperty property =
+    LayerAnimationElement::ToAnimatableProperty(event.targetProperty);
+
+  RunningAnimation* running = GetRunningAnimation(property);
+  if (!running)
+    return;
+  DCHECK(running->is_sequence_alive());
+
+  if (running->sequence()->animation_group_id() != event.groupId)
+    return;
+
+  running->sequence()->OnThreadedAnimationStarted(event);
+  if (!running->sequence()->waiting_for_group_start())
+    return;
+
+  base::TimeTicks start_time = base::TimeTicks::FromInternalValue(
+      event.monotonicTime * base::Time::kMicrosecondsPerSecond);
+
+  running->sequence()->set_waiting_for_group_start(false);
+
+  // The call to GetRunningAnimation made above already purged deleted
+  // animations, so we are guaranteed that all the animations we iterate
+  // over now are alive.
+  for (RunningAnimations::iterator iter = running_animations_.begin();
+       iter != running_animations_.end(); ++iter) {
+    // Ensure that each sequence is only Started once, regardless of the
+    // number of sequences in the group that have threaded first elements.
+    if (((*iter).sequence()->animation_group_id() == event.groupId) &&
+        !(*iter).sequence()->IsFirstElementThreaded() &&
+        (*iter).sequence()->waiting_for_group_start()) {
+      (*iter).sequence()->set_start_time(start_time);
+      (*iter).sequence()->set_waiting_for_group_start(false);
+      (*iter).sequence()->Start(delegate());
+    }
+  }
+}
+
 // LayerAnimator protected -----------------------------------------------------
 
 void LayerAnimator::ProgressAnimation(LayerAnimationSequence* sequence,
                                       base::TimeTicks now) {
-  if (!delegate())
+  if (!delegate() || sequence->waiting_for_group_start())
     return;
 
   sequence->Progress(now, delegate());
@@ -399,11 +455,14 @@ LayerAnimationSequence* LayerAnimator::RemoveAnimation(
     LayerAnimationSequence* sequence) {
   linked_ptr<LayerAnimationSequence> to_return;
 
+  bool is_running = false;
+
   // First remove from running animations
   for (RunningAnimations::iterator iter = running_animations_.begin();
        iter != running_animations_.end(); ++iter) {
     if ((*iter).sequence() == sequence) {
       running_animations_.erase(iter);
+      is_running = true;
       break;
     }
   }
@@ -418,6 +477,39 @@ LayerAnimationSequence* LayerAnimator::RemoveAnimation(
     }
   }
 
+  if (!to_return.get() ||
+      !to_return->waiting_for_group_start() ||
+      !to_return->IsFirstElementThreaded())
+    return to_return.release();
+
+  // The removed sequence may have been responsible for making other sequences
+  // wait for a group start. If no other sequences in the group have a
+  // threaded first element, the group no longer needs the additional wait.
+  bool is_wait_still_needed = false;
+  int group_id = to_return->animation_group_id();
+  for (AnimationQueue::iterator queue_iter = animation_queue_.begin();
+       queue_iter != animation_queue_.end(); ++queue_iter) {
+    if (((*queue_iter)->animation_group_id() == group_id) &&
+        (*queue_iter)->IsFirstElementThreaded()) {
+      is_wait_still_needed = true;
+      break;
+    }
+  }
+
+  if (is_wait_still_needed)
+    return to_return.release();
+
+  for (AnimationQueue::iterator queue_iter = animation_queue_.begin();
+       queue_iter != animation_queue_.end(); ++queue_iter) {
+    if ((*queue_iter)->animation_group_id() == group_id &&
+        (*queue_iter)->waiting_for_group_start()) {
+      (*queue_iter)->set_waiting_for_group_start(false);
+      if (is_running) {
+        (*queue_iter)->set_start_time(last_step_time_);
+        (*queue_iter)->Start(delegate());
+      }
+    }
+  }
   return to_return.release();
 }
 
@@ -426,7 +518,7 @@ void LayerAnimator::FinishAnimation(
   scoped_refptr<LayerAnimator> retain(this);
   scoped_ptr<LayerAnimationSequence> removed(RemoveAnimation(sequence));
   if (abort)
-    sequence->Abort();
+    sequence->Abort(delegate());
   else
     ProgressAnimationToEnd(sequence);
   ProcessQueue();
@@ -502,7 +594,7 @@ void LayerAnimator::RemoveAllAnimationsWithACommonProperty(
       scoped_ptr<LayerAnimationSequence> removed(
           SAFE_INVOKE_PTR(RemoveAnimation, running_animations_copy[i]));
       if (abort)
-        running_animations_copy[i].sequence()->Abort();
+        running_animations_copy[i].sequence()->Abort(delegate());
       else
         SAFE_INVOKE_VOID(ProgressAnimationToEnd, running_animations_copy[i]);
     }
@@ -522,7 +614,7 @@ void LayerAnimator::RemoveAllAnimationsWithACommonProperty(
     if (sequences[i]->HasCommonProperty(sequence->properties())) {
       scoped_ptr<LayerAnimationSequence> removed(RemoveAnimation(sequences[i]));
       if (abort)
-        sequences[i]->Abort();
+        sequences[i]->Abort(delegate());
       else
         ProgressAnimationToEnd(sequences[i]);
     }
@@ -684,7 +776,13 @@ bool LayerAnimator::StartSequenceImmediately(LayerAnimationSequence* sequence) {
   else
     start_time = base::TimeTicks::Now();
 
-  sequence->set_start_time(start_time);
+  if (!sequence->animation_group_id())
+    sequence->set_animation_group_id(cc::AnimationIdProvider::NextGroupId());
+  if (!sequence->waiting_for_group_start() ||
+      sequence->IsFirstElementThreaded()) {
+    sequence->set_start_time(start_time);
+    sequence->Start(delegate());
+  }
   running_animations_.push_back(
       RunningAnimation(sequence->AsWeakPtr()));
 
@@ -733,7 +831,7 @@ void LayerAnimator::ClearAnimationsInternal() {
     scoped_ptr<LayerAnimationSequence> removed(
         RemoveAnimation(running_animations_copy[i].sequence()));
     if (removed.get())
-      removed->Abort();
+      removed->Abort(delegate());
   }
   // This *should* have cleared the list of running animations.
   DCHECK(running_animations_.empty());

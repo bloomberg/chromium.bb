@@ -35,6 +35,9 @@ class TestLayerAnimationDelegate : public LayerAnimationDelegate {
   virtual float GetBrightnessForAnimation() const OVERRIDE;
   virtual float GetGrayscaleForAnimation() const OVERRIDE;
   virtual SkColor GetColorForAnimation() const OVERRIDE;
+  virtual void AddThreadedAnimation(
+      scoped_ptr<cc::Animation> animation) OVERRIDE;
+  virtual void RemoveThreadedAnimation(int animation_id) OVERRIDE;
 
  private:
   gfx::Rect bounds_;

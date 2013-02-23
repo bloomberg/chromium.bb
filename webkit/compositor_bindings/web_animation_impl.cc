@@ -6,23 +6,23 @@
 
 #include "cc/animation.h"
 #include "cc/animation_curve.h"
+#include "cc/animation_id_provider.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebAnimationCurve.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebAnimation.h"
-#include "webkit/compositor_bindings/web_animation_id_provider.h"
 #include "webkit/compositor_bindings/web_float_animation_curve_impl.h"
 #include "webkit/compositor_bindings/web_transform_animation_curve_impl.h"
 
 using cc::Animation;
-using webkit::WebAnimationIdProvider;
+using cc::AnimationIdProvider;
 
 namespace WebKit {
 
 WebAnimationImpl::WebAnimationImpl(const WebAnimationCurve& webCurve, TargetProperty targetProperty, int animationId, int groupId)
 {
     if (!animationId)
-        animationId = WebAnimationIdProvider::NextAnimationId();
+        animationId = AnimationIdProvider::NextAnimationId();
     if (!groupId)
-        groupId = WebAnimationIdProvider::NextGroupId();
+        groupId = AnimationIdProvider::NextGroupId();
 
     WebAnimationCurve::AnimationCurveType curveType = webCurve.type();
     scoped_ptr<cc::AnimationCurve> curve;

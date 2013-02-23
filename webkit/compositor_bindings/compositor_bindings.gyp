@@ -7,8 +7,6 @@
     'webkit_compositor_bindings_sources': [
       'web_animation_curve_common.cc',
       'web_animation_curve_common.h',
-      'web_animation_id_provider.cc',
-      'web_animation_id_provider.h',
       'web_animation_impl.cc',
       'web_animation_impl.h',
       'web_compositor_support_software_output_device.cc',

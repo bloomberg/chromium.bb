@@ -47,7 +47,6 @@ Layer::Layer()
       force_render_surface_(false),
       fills_bounds_opaquely_(true),
       layer_updated_externally_(false),
-      opacity_(1.0f),
       background_blur_radius_(0),
       layer_saturation_(0.0f),
       layer_brightness_(0.0f),
@@ -75,7 +74,6 @@ Layer::Layer(LayerType type)
       force_render_surface_(false),
       fills_bounds_opaquely_(true),
       layer_updated_externally_(false),
-      opacity_(1.0f),
       background_blur_radius_(0),
       layer_saturation_(0.0f),
       layer_brightness_(0.0f),
@@ -110,11 +108,16 @@ Layer::~Layer() {
     layer_mask_back_link_->SetMaskLayer(NULL);
   for (size_t i = 0; i < children_.size(); ++i)
     children_[i]->parent_ = NULL;
+  cc_layer_->removeLayerAnimationEventObserver(this);
   cc_layer_->removeFromParent();
 }
 
 Compositor* Layer::GetCompositor() {
   return GetRoot(this)->compositor_;
+}
+
+float Layer::opacity() const {
+  return cc_layer_->opacity();
 }
 
 void Layer::SetCompositor(Compositor* compositor) {
@@ -225,10 +228,10 @@ void Layer::SetOpacity(float opacity) {
 }
 
 float Layer::GetCombinedOpacity() const {
-  float opacity = opacity_;
+  float opacity = this->opacity();
   Layer* current = this->parent_;
   while (current) {
-    opacity *= current->opacity_;
+    opacity *= current->opacity();
     current = current->parent_;
   }
   return opacity;
@@ -355,7 +358,7 @@ float Layer::GetTargetOpacity() const {
   if (animator_.get() && animator_->IsAnimatingProperty(
       LayerAnimationElement::OPACITY))
     return animator_->GetTargetOpacity();
-  return opacity_;
+  return opacity();
 }
 
 void Layer::SetVisible(bool visible) {
@@ -444,7 +447,10 @@ void Layer::SetExternalTexture(Texture* texture) {
       DCHECK(parent_->cc_layer_);
       parent_->cc_layer_->replaceChild(cc_layer_, new_layer);
     }
+    cc_layer_->removeLayerAnimationEventObserver(this);
+    new_layer->setOpacity(cc_layer_->opacity());
     cc_layer_= new_layer;
+    cc_layer_->addLayerAnimationEventObserver(this);
     cc_layer_is_accelerated_ = layer_updated_externally_;
     for (size_t i = 0; i < children_.size(); ++i) {
       DCHECK(children_[i]->cc_layer_);
@@ -452,7 +458,6 @@ void Layer::SetExternalTexture(Texture* texture) {
     }
     cc_layer_->setAnchorPoint(gfx::PointF());
     cc_layer_->setContentsOpaque(fills_bounds_opaquely_);
-    cc_layer_->setOpacity(opacity_);
     cc_layer_->setForceRenderSurface(force_render_surface_);
     cc_layer_->setIsDrawable(IsDrawn());
     RecomputeTransform();
@@ -564,6 +569,11 @@ void Layer::SetForceRenderSurface(bool force) {
   cc_layer_->setForceRenderSurface(force_render_surface_);
 }
 
+void Layer::OnAnimationStarted(const cc::AnimationEvent& event) {
+  if (animator_)
+    animator_->OnThreadedAnimationStarted(event);
+}
+
 void Layer::StackRelativeTo(Layer* child, Layer* other, bool above) {
   DCHECK_NE(child, other);
   DCHECK_EQ(this, child->parent());
@@ -656,8 +666,6 @@ void Layer::SetTransformImmediately(const gfx::Transform& transform) {
 }
 
 void Layer::SetOpacityImmediately(float opacity) {
-  opacity_ = opacity;
-
   cc_layer_->setOpacity(opacity);
   ScheduleDraw();
 }
@@ -751,6 +759,16 @@ SkColor Layer::GetColorForAnimation() const {
       solid_color_layer_->backgroundColor() : SK_ColorBLACK;
 }
 
+void Layer::AddThreadedAnimation(scoped_ptr<cc::Animation> animation) {
+  DCHECK(cc_layer_);
+  cc_layer_->addAnimation(animation.Pass());
+}
+
+void Layer::RemoveThreadedAnimation(int animation_id) {
+  DCHECK(cc_layer_);
+  cc_layer_->removeAnimation(animation_id);
+}
+
 void Layer::CreateWebLayer() {
   if (type_ == LAYER_SOLID_COLOR) {
     solid_color_layer_ = cc::SolidColorLayer::create();
@@ -763,6 +781,7 @@ void Layer::CreateWebLayer() {
   cc_layer_->setAnchorPoint(gfx::PointF());
   cc_layer_->setContentsOpaque(true);
   cc_layer_->setIsDrawable(type_ != LAYER_NOT_DRAWN);
+  cc_layer_->addLayerAnimationEventObserver(this);
 }
 
 void Layer::RecomputeTransform() {

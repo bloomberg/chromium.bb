@@ -573,6 +573,8 @@
         'ash_test_support',
       ],
       'sources': [
+        '../ui/compositor/test/layer_animator_test_controller.cc',
+        '../ui/compositor/test/layer_animator_test_controller.h',
         '../ui/views/test/test_views_delegate.cc',
         '../ui/views/test/test_views_delegate.h',
         'accelerators/accelerator_controller_unittest.cc',

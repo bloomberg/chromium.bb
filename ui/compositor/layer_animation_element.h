@@ -8,6 +8,8 @@
 #include <set>
 
 #include "base/time.h"
+#include "cc/animation.h"
+#include "cc/animation_events.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/animation/tween.h"
 #include "ui/compositor/compositor_export.h"
@@ -33,6 +35,9 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
     GRAYSCALE,
     COLOR,
   };
+
+  static AnimatableProperty ToAnimatableProperty(
+      cc::Animation::TargetProperty property);
 
   struct COMPOSITOR_EXPORT TargetValue {
     TargetValue();
@@ -114,10 +119,28 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
       base::TimeDelta duration);
 
   // Sets the start time for the animation. This must be called before the first
-  // call to {Progress, IsFinished}. Once the animation is finished, this must
+  // call to {Start, IsFinished}. Once the animation is finished, this must
   // be called again in order to restart the animation.
-  void set_start_time(base::TimeTicks start_time) { start_time_ = start_time; }
-  base::TimeTicks start_time() const { return start_time_; }
+  void set_requested_start_time(base::TimeTicks start_time) {
+    requested_start_time_ = start_time;
+  }
+  base::TimeTicks requested_start_time() const { return requested_start_time_; }
+
+  // Sets the actual start time for the animation, taking into account any
+  // queueing delays.
+  void set_effective_start_time(base::TimeTicks start_time) {
+    effective_start_time_ = start_time;
+  }
+  base::TimeTicks effective_start_time() const { return effective_start_time_; }
+
+  // This must be called before the first call to Progress. If starting the
+  // animation involves dispatching to another thread, then this will proceed
+  // with that dispatch, ultimately resulting in the animation getting an
+  // effective start time (the time the animation starts on the other thread).
+  void Start(LayerAnimationDelegate* delegate, int animation_group_id);
+
+  // Returns true if the animation has started but hasn't finished.
+  bool Started() { return !first_frame_; }
 
   // Updates the delegate to the appropriate value for |now|. Returns true
   // if a redraw is required.
@@ -134,7 +157,7 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
 
   // Called if the animation is not allowed to complete. This may be called
   // before OnStarted or Progress.
-  void Abort();
+  void Abort(LayerAnimationDelegate* delegate);
 
   // Assigns the target value to |target|.
   void GetTargetValue(TargetValue* target) const;
@@ -142,8 +165,22 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   // The properties that the element modifies.
   const AnimatableProperties& properties() const { return properties_; }
 
+  // Whether this element animates on the compositor thread.
+  virtual bool IsThreaded() const;
+
   Tween::Type tween_type() const { return tween_type_; }
   void set_tween_type(Tween::Type tween_type) { tween_type_ = tween_type; }
+
+  // Each LayerAnimationElement has a unique animation_id. Elements belonging
+  // to sequences that are supposed to start together have the same
+  // animation_group_id.
+  int animation_id() const { return animation_id_; }
+  int animation_group_id() const { return animation_group_id_; }
+  void set_animation_group_id(int id) { animation_group_id_ = id; }
+
+  // The fraction of the animation that has been completed after the last
+  // call made to {Progress, ProgressToEnd}.
+  double last_progressed_fraction() const { return last_progressed_fraction_; }
 
  protected:
   // Called once each time the animation element is run before any call to
@@ -151,7 +188,12 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   virtual void OnStart(LayerAnimationDelegate* delegate) = 0;
   virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) = 0;
   virtual void OnGetTarget(TargetValue* target) const = 0;
-  virtual void OnAbort() = 0;
+  virtual void OnAbort(LayerAnimationDelegate* delegate) = 0;
+
+  base::TimeDelta duration() const { return duration_; }
+
+  // Actually start the animation, dispatching to another thread if needed.
+  virtual void RequestEffectiveStart(LayerAnimationDelegate* delegate);
 
  private:
   // For debugging purposes, we sometimes alter the duration we actually use.
@@ -161,9 +203,17 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
 
   bool first_frame_;
   const AnimatableProperties properties_;
-  base::TimeTicks start_time_;
+  base::TimeTicks requested_start_time_;
+
+  // When the animation actually started, taking into account queueing delays.
+  base::TimeTicks effective_start_time_;
   const base::TimeDelta duration_;
   Tween::Type tween_type_;
+
+  const int animation_id_;
+  int animation_group_id_;
+
+  double last_progressed_fraction_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerAnimationElement);
 };

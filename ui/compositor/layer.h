@@ -12,7 +12,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "cc/animation_events.h"
 #include "cc/content_layer_client.h"
+#include "cc/layer_animation_event_observer.h"
 #include "cc/texture_layer_client.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkRegion.h"
@@ -52,7 +54,8 @@ class Texture;
 class COMPOSITOR_EXPORT Layer
     : public LayerAnimationDelegate,
       NON_EXPORTED_BASE(public cc::ContentLayerClient),
-      NON_EXPORTED_BASE(public cc::TextureLayerClient) {
+      NON_EXPORTED_BASE(public cc::TextureLayerClient),
+      NON_EXPORTED_BASE(public cc::LayerAnimationEventObserver) {
  public:
   Layer();
   explicit Layer(LayerType type);
@@ -134,7 +137,7 @@ class COMPOSITOR_EXPORT Layer
 
   // The opacity of the layer. The opacity is applied to each pixel of the
   // texture (resulting alpha = opacity * alpha).
-  float opacity() const { return opacity_; }
+  float opacity() const;
   void SetOpacity(float opacity);
 
   // Returns the actual opacity, which the opacity of this layer multipled by
@@ -287,6 +290,9 @@ class COMPOSITOR_EXPORT Layer
   void SetForceRenderSurface(bool force);
   bool force_render_surface() const { return force_render_surface_; }
 
+  // LayerAnimationEventObserver
+  virtual void OnAnimationStarted(const cc::AnimationEvent& event) OVERRIDE;
+
  private:
   // Stacks |child| above or below |other|.  Helper method for StackAbove() and
   // StackBelow().
@@ -330,6 +336,9 @@ class COMPOSITOR_EXPORT Layer
   virtual float GetBrightnessForAnimation() const OVERRIDE;
   virtual float GetGrayscaleForAnimation() const OVERRIDE;
   virtual SkColor GetColorForAnimation() const OVERRIDE;
+  virtual void AddThreadedAnimation(
+      scoped_ptr<cc::Animation> animation) OVERRIDE;
+  virtual void RemoveThreadedAnimation(int animation_id) OVERRIDE;
 
   void CreateWebLayer();
   void RecomputeTransform();
@@ -375,7 +384,6 @@ class COMPOSITOR_EXPORT Layer
   // compositor is ready to paint the content.
   SkRegion damaged_region_;
 
-  float opacity_;
   int background_blur_radius_;
 
   // Several variables which will change the visible representation of

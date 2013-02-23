@@ -5,6 +5,8 @@
 #ifndef UI_COMPOSITOR_LAYER_ANIMATION_DELEGATE_H_
 #define UI_COMPOSITOR_LAYER_ANIMATION_DELEGATE_H_
 
+#include "base/memory/scoped_ptr.h"
+#include "cc/animation.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/gfx/rect.h"
@@ -30,6 +32,8 @@ class COMPOSITOR_EXPORT LayerAnimationDelegate {
   virtual float GetBrightnessForAnimation() const = 0;
   virtual float GetGrayscaleForAnimation() const = 0;
   virtual SkColor GetColorForAnimation() const = 0;
+  virtual void AddThreadedAnimation(scoped_ptr<cc::Animation> animation) = 0;
+  virtual void RemoveThreadedAnimation(int animation_id) = 0;
 
  protected:
   virtual ~LayerAnimationDelegate() {}

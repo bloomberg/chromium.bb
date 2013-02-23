@@ -88,4 +88,11 @@ SkColor TestLayerAnimationDelegate::GetColorForAnimation() const {
   return color_;
 }
 
+void TestLayerAnimationDelegate::AddThreadedAnimation(
+      scoped_ptr<cc::Animation> animation) {
+}
+
+void TestLayerAnimationDelegate::RemoveThreadedAnimation(int animation_id) {
+}
+
 }  // namespace ui

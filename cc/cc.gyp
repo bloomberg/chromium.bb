@@ -10,6 +10,8 @@
       'animation_curve.cc',
       'animation_curve.h',
       'animation_events.h',
+      'animation_id_provider.cc',
+      'animation_id_provider.h',
       'animation_registrar.cc',
       'animation_registrar.h',
       'append_quads_data.h',
