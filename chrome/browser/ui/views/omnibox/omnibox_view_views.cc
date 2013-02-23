@@ -796,6 +796,7 @@ void OmniboxViewViews::EmphasizeURLComponents() {
   // URLs with search terms, we may have a non-URL even when the user is not
   // editing; and in some cases, e.g. for "site:foo.com" searches, the parser
   // may have incorrectly identified a qualifier as a scheme.
+  SetStyle(gfx::DIAGONAL_STRIKE, false);
   if (!model()->user_input_in_progress() && model()->CurrentTextIsURL() &&
       scheme.is_nonempty() && (security_level_ != ToolbarModel::NONE)) {
     SkColor security_color = location_bar_view_->GetColor(
