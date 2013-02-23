@@ -2158,7 +2158,7 @@ drm_compositor_create(struct wl_display *display,
 
 	if (weston_compositor_init(&ec->base, display, argc, argv,
 				   config_file) < 0) {
-		weston_log("weston_compositor_init failed\n");
+		weston_log("%s failed\n", __func__);
 		goto err_base;
 	}
 
