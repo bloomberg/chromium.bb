@@ -558,20 +558,20 @@ void ThreadWatcherList::ParseCommandLine(
     return;
   }
 
-  // Set up a field trial for 10% of the users to crash if IO thread is not
+  // Set up a field trial for 100% of the users to crash if IO thread is not
   // responsive.
-  CrashOnHangThreadMap::iterator it = crash_on_hang_threads->find("IO");
-  if (crash_on_hang_threads->end() == it)
-    return;
-
   scoped_refptr<base::FieldTrial> field_trial(
       base::FieldTrialList::FactoryGetFieldTrial(
           "ThreadWatcher", 100, "default_hung_threads",
           2013, 10, 30, NULL));
-  int io_hung_thread_group = field_trial->AppendGroup("io_hung_thread", 10);
+  int io_hung_thread_group = field_trial->AppendGroup("io_hung_thread", 100);
   if (field_trial->group() == io_hung_thread_group) {
     // Crash anytime IO thread hangs.
-    it->second.live_threads_threshold = INT_MAX;
+    CrashOnHangThreadMap::iterator it = crash_on_hang_threads->find("IO");
+    if (crash_on_hang_threads->end() != it) {
+      it->second.live_threads_threshold = INT_MAX;
+      it->second.unresponsive_threshold = 5;
+    }
   }
 }
 
