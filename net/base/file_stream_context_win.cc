@@ -72,9 +72,10 @@ FileStream::Context::~Context() {
 int64 FileStream::Context::GetFileSize() const {
   LARGE_INTEGER file_size;
   if (!GetFileSizeEx(file_, &file_size)) {
-    DWORD error = GetLastError();
-    LOG(WARNING) << "GetFileSizeEx failed: " << error;
-    return RecordAndMapError(error, FILE_ERROR_SOURCE_GET_SIZE);
+    IOResult error = IOResult::FromOSError(GetLastError());
+    LOG(WARNING) << "GetFileSizeEx failed: " << error.os_error;
+    RecordError(error, FILE_ERROR_SOURCE_GET_SIZE);
+    return error.result;
   }
 
   return file_size.QuadPart;
@@ -86,44 +87,38 @@ int FileStream::Context::ReadAsync(IOBuffer* buf,
   DCHECK(!async_in_progress_);
   error_source_ = FILE_ERROR_SOURCE_READ;
 
-  int rv = 0;
-
   DWORD bytes_read;
   if (!ReadFile(file_, buf->data(), buf_len,
                 &bytes_read, &io_context_.overlapped)) {
-    DWORD error = GetLastError();
-    if (error == ERROR_IO_PENDING) {
+    IOResult error = IOResult::FromOSError(GetLastError());
+    if (error.os_error == ERROR_IO_PENDING) {
       IOCompletionIsPending(callback, buf);
-      rv = ERR_IO_PENDING;
-    } else if (error == ERROR_HANDLE_EOF) {
-      rv = 0;  // Report EOF by returning 0 bytes read.
+    } else if (error.os_error == ERROR_HANDLE_EOF) {
+      return 0;  // Report EOF by returning 0 bytes read.
     } else {
-      LOG(WARNING) << "ReadFile failed: " << error;
-      rv = RecordAndMapError(error, FILE_ERROR_SOURCE_READ);
+      LOG(WARNING) << "ReadFile failed: " << error.os_error;
+      RecordError(error, FILE_ERROR_SOURCE_READ);
     }
-  } else {
-    IOCompletionIsPending(callback, buf);
-    rv = ERR_IO_PENDING;
+    return error.result;
   }
-  return rv;
+
+  return bytes_read;
 }
 
 int FileStream::Context::ReadSync(char* buf, int buf_len) {
-  int rv = 0;
-
   DWORD bytes_read;
   if (!ReadFile(file_, buf, buf_len, &bytes_read, NULL)) {
-    DWORD error = GetLastError();
-    if (error == ERROR_HANDLE_EOF) {
-      rv = 0;  // Report EOF by returning 0 bytes read.
+    IOResult error = IOResult::FromOSError(GetLastError());
+    if (error.os_error == ERROR_HANDLE_EOF) {
+      return 0;  // Report EOF by returning 0 bytes read.
     } else {
-      LOG(WARNING) << "ReadFile failed: " << error;
-      rv = RecordAndMapError(error, FILE_ERROR_SOURCE_READ);
+      LOG(WARNING) << "ReadFile failed: " << error.os_error;
+      RecordError(error, FILE_ERROR_SOURCE_READ);
     }
-  } else {
-    rv = static_cast<int>(bytes_read);
+    return error.result;
   }
-  return rv;
+
+  return bytes_read;
 }
 
 int FileStream::Context::WriteAsync(IOBuffer* buf,
@@ -131,69 +126,67 @@ int FileStream::Context::WriteAsync(IOBuffer* buf,
                                     const CompletionCallback& callback) {
   error_source_ = FILE_ERROR_SOURCE_WRITE;
 
-  int rv = 0;
   DWORD bytes_written = 0;
   if (!WriteFile(file_, buf->data(), buf_len,
                  &bytes_written, &io_context_.overlapped)) {
-    DWORD error = GetLastError();
-    if (error == ERROR_IO_PENDING) {
+    IOResult error = IOResult::FromOSError(GetLastError());
+    if (error.os_error == ERROR_IO_PENDING) {
       IOCompletionIsPending(callback, buf);
-      rv = ERR_IO_PENDING;
     } else {
-      LOG(WARNING) << "WriteFile failed: " << error;
-      rv = RecordAndMapError(error, FILE_ERROR_SOURCE_WRITE);
+      LOG(WARNING) << "WriteFile failed: " << error.os_error;
+      RecordError(error, FILE_ERROR_SOURCE_WRITE);
     }
-  } else {
-    IOCompletionIsPending(callback, buf);
-    rv = ERR_IO_PENDING;
+    return error.result;
   }
-  return rv;
+
+  return bytes_written;
 }
 
 int FileStream::Context::WriteSync(const char* buf, int buf_len) {
-  int rv = 0;
   DWORD bytes_written = 0;
   if (!WriteFile(file_, buf, buf_len, &bytes_written, NULL)) {
-    DWORD error = GetLastError();
-    LOG(WARNING) << "WriteFile failed: " << error;
-    rv = RecordAndMapError(error, FILE_ERROR_SOURCE_WRITE);
-  } else {
-    rv = static_cast<int>(bytes_written);
+    IOResult error = IOResult::FromOSError(GetLastError());
+    LOG(WARNING) << "WriteFile failed: " << error.os_error;
+    RecordError(error, FILE_ERROR_SOURCE_WRITE);
+    return error.result;
   }
-  return rv;
+
+  return bytes_written;
 }
 
 int FileStream::Context::Truncate(int64 bytes) {
-  BOOL result = SetEndOfFile(file_);
-  if (result)
-    return bytes;
+  if (!SetEndOfFile(file_)) {
+    IOResult error = IOResult::FromOSError(GetLastError());
+    LOG(WARNING) << "SetEndOfFile failed: " << error.os_error;
+    RecordError(error, FILE_ERROR_SOURCE_SET_EOF);
+    return error.result;
+  }
 
-  DWORD error = GetLastError();
-  LOG(WARNING) << "SetEndOfFile failed: " << error;
-  return RecordAndMapError(error, FILE_ERROR_SOURCE_SET_EOF);
+  return bytes;
 }
 
 void FileStream::Context::OnAsyncFileOpened() {
   MessageLoopForIO::current()->RegisterIOHandler(file_, this);
 }
 
-int64 FileStream::Context::SeekFileImpl(Whence whence, int64 offset) {
+FileStream::Context::IOResult FileStream::Context::SeekFileImpl(Whence whence,
+                                                                int64 offset) {
   LARGE_INTEGER distance, res;
   distance.QuadPart = offset;
   DWORD move_method = static_cast<DWORD>(whence);
   if (SetFilePointerEx(file_, distance, &res, move_method)) {
     SetOffset(&io_context_.overlapped, res);
-    return res.QuadPart;
+    return IOResult(res.QuadPart, 0);
   }
 
-  return -static_cast<int>(GetLastError());
+  return IOResult::FromOSError(GetLastError());
 }
 
-int64 FileStream::Context::FlushFileImpl() {
+FileStream::Context::IOResult FileStream::Context::FlushFileImpl() {
   if (FlushFileBuffers(file_))
-    return OK;
+    return IOResult(OK, 0);
 
-  return -static_cast<int>(GetLastError());
+  return IOResult::FromOSError(GetLastError());
 }
 
 void FileStream::Context::IOCompletionIsPending(
@@ -220,12 +213,17 @@ void FileStream::Context::OnIOCompleted(MessageLoopForIO::IOContext* context,
     return;
   }
 
-  int result = static_cast<int>(bytes_read);
-  if (error && error != ERROR_HANDLE_EOF)
-    result = RecordAndMapError(error, error_source_);
-
-  if (bytes_read)
+  int result;
+  if (error == ERROR_HANDLE_EOF) {
+    result = 0;
+  } else if (error) {
+    IOResult error_result = IOResult::FromOSError(error);
+    RecordError(error_result, error_source_);
+    result = error_result.result;
+  } else {
+    result = bytes_read;
     IncrementOffset(&io_context_.overlapped, bytes_read);
+  }
 
   CompletionCallback temp_callback = callback_;
   callback_.Reset();
