@@ -83,7 +83,6 @@ class DeployChrome(object):
     self.options = options
     self.staging_dir = staging_dir
     self.host = remote.RemoteAccess(options.to, tempdir, port=options.port)
-    self.start_ui_needed = False
 
   def _ChromeFileInUse(self):
     result = self.host.RemoteSh('lsof /opt/google/chrome/chrome',
@@ -135,7 +134,6 @@ class DeployChrome(object):
   def _KillProcsIfNeeded(self):
     if self._CheckUiJobStarted():
       logging.info('Shutting down Chrome.')
-      self.start_ui_needed = True
       self.host.RemoteSh('stop ui')
 
     # Developers sometimes run session_manager manually, in which case we'll
@@ -177,7 +175,7 @@ class DeployChrome(object):
     # Show the output (status) for this command.
     self.host.Rsync('%s/' % os.path.abspath(self.staging_dir), '/',
                     inplace=True, debug_level=logging.INFO, sudo=True)
-    if self.start_ui_needed:
+    if self.options.startui:
       self.host.RemoteSh('start ui')
 
   def Perform(self):
@@ -227,6 +225,9 @@ def _CreateParser():
                          'environment variable must be set.')
   parser.add_option('-g', '--gs-path', type='gs_path',
                     help='GS path that contains the chrome to deploy.')
+  parser.add_option('--nostartui', action='store_false', dest='startui',
+                    default=True,
+                    help="Don't restart the ui daemon after deployment.")
   parser.add_option('-p', '--port', type=int, default=remote.DEFAULT_SSH_PORT,
                     help='Port of the target device to connect to.')
   parser.add_option('-t', '--to',
