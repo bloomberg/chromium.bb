@@ -829,6 +829,16 @@
             '../dbus/dbus.gyp:dbus',
           ],
         }],
+        ['safe_browsing==1', {
+          'defines': [
+            'FULL_SAFE_BROWSING',
+          ],
+        }],
+        ['safe_browsing==2', {
+          'defines': [
+            'MOBILE_SAFE_BROWSING',
+          ],
+        }],
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:dbus',
