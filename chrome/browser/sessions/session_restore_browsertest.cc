@@ -36,7 +36,9 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/bindings_policy.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "sync/protocol/session_specifics.pb.h"
@@ -582,6 +584,23 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, Basic) {
   GoBack(new_browser);
   ASSERT_EQ(url1_,
             new_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreWebUI) {
+  const GURL webui_url("chrome://newtab");
+  ui_test_utils::NavigateToURL(browser(), webui_url);
+  const content::WebContents* old_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(content::BINDINGS_POLICY_WEB_UI,
+            old_tab->GetRenderViewHost()->GetEnabledBindings());
+
+  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+  ASSERT_EQ(1u, native_browser_list->size());
+  const content::WebContents* new_tab =
+      new_browser->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(webui_url, new_tab->GetURL());
+  EXPECT_EQ(content::BINDINGS_POLICY_WEB_UI,
+            new_tab->GetRenderViewHost()->GetEnabledBindings());
 }
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoresForwardAndBackwardNavs) {
