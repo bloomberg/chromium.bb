@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/common/url_constants.h"
@@ -47,7 +48,8 @@ void LoginUIService::ShowLoginPopup() {
   }
 
   Browser* browser =
-      new Browser(Browser::CreateParams(Browser::TYPE_POPUP, profile_));
+      new Browser(Browser::CreateParams(Browser::TYPE_POPUP, profile_,
+                                        chrome::GetActiveDesktop()));
   // TODO(munjal): Change the source from SOURCE_NTP_LINK to something else
   // once we have added a new source for extension API.
   GURL signin_url(SyncPromoUI::GetSyncPromoURL(GURL(),
