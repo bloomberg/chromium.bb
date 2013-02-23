@@ -35,7 +35,7 @@ def Archive(revision):
   gs_bucket = 'gs://chromedriver-prebuilts'
   cmd = [
     sys.executable,
-    '../../../../../../../scripts/slave/skia/upload_to_bucket.py',
+    '../../../scripts/slave/skia/upload_to_bucket.py',
     '--source_filepath=%s' % zip_path,
     '--dest_gsbase=%s' % gs_bucket
   ]
