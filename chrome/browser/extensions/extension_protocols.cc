@@ -24,6 +24,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/web_accessible_resources_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/resource_request_info.h"
@@ -265,6 +266,7 @@ bool ExtensionCanLoadInIncognito(const ResourceRequestInfo* info,
 // first need to find a way to get CanLoadInIncognito state into the renderers.
 bool AllowExtensionResourceLoad(net::URLRequest* request,
                                 bool is_incognito,
+                                const Extension* extension,
                                 ExtensionInfoMap* extension_info_map) {
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
 
@@ -278,6 +280,56 @@ bool AllowExtensionResourceLoad(net::URLRequest* request,
 
   if (is_incognito && !ExtensionCanLoadInIncognito(info, request->url().host(),
                                                    extension_info_map)) {
+    return false;
+  }
+
+  // The following checks are meant to replicate similar set of checks in the
+  // renderer process, performed by ResourceRequestPolicy::CanRequestResource.
+  // These are not exactly equivalent, because we don't have the same bits of
+  // information. The two checks need to be kept in sync as much as possible, as
+  // an exploited renderer can bypass the checks in ResourceRequestPolicy.
+
+  // Check if the extension for which this request is made is indeed loaded in
+  // the process sending the request. If not, we need to explicitly check if
+  // the resource is explicitly accessible or fits in a set of exception cases.
+  // Note: This allows a case where two extensions execute in the same renderer
+  // process to request each other's resources. We can't do more precise check,
+  // since the renderer can lie which extension has made the request.
+  if (extension_info_map->process_map().Contains(
+      request->url().host(), info->GetChildID())) {
+    return true;
+  }
+
+  if (!content::PageTransitionIsWebTriggerable(info->GetPageTransition()))
+    return false;
+
+  // The following checks require that we have an actual extension object. If we
+  // don't have it, allow the request handling to continue with the rest of the
+  // checks.
+  if (!extension)
+    return true;
+
+  // Disallow loading of packaged resources for hosted apps. We don't allow
+  // hybrid hosted/packaged apps. The one exception is access to icons, since
+  // some extensions want to be able to do things like create their own
+  // launchers.
+  std::string resource_root_relative_path =
+      request->url().path().empty() ? "" : request->url().path().substr(1);
+  if (extension->is_hosted_app() &&
+      !extension->icons().ContainsPath(resource_root_relative_path)) {
+    LOG(ERROR) << "Denying load of " << request->url().spec() << " from "
+               << "hosted app.";
+    return false;
+  }
+
+  // If the resource is not expicitly marked as web accessible, it should only
+  // be allowed if it is being loaded by DevTools. A close approximation is
+  // checking if the extension contains DevTools page.
+  // IsResourceWebAccessible already does the manifest version check, so no
+  // need to explicitly do it.
+  if (!extensions::WebAccessibleResourcesInfo::IsResourceWebAccessible(
+          extension, request->url().path()) &&
+      extensions::ManifestURL::GetDevToolsPage(extension).is_empty()) {
     return false;
   }
 
@@ -322,17 +374,18 @@ class ExtensionProtocolHandler
 net::URLRequestJob*
 ExtensionProtocolHandler::MaybeCreateJob(
     net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
-  // TODO(mpcomplete): better error code.
-  if (!AllowExtensionResourceLoad(
-           request, is_incognito_, extension_info_map_)) {
-    return new net::URLRequestErrorJob(
-        request, network_delegate, net::ERR_ADDRESS_UNREACHABLE);
-  }
-
   // chrome-extension://extension-id/resource/path.js
   const std::string& extension_id = request->url().host();
   const Extension* extension =
       extension_info_map_->extensions().GetByID(extension_id);
+
+  // TODO(mpcomplete): better error code.
+  if (!AllowExtensionResourceLoad(
+           request, is_incognito_, extension, extension_info_map_)) {
+    return new net::URLRequestErrorJob(
+        request, network_delegate, net::ERR_ADDRESS_UNREACHABLE);
+  }
+
   base::FilePath directory_path;
   if (extension)
     directory_path = extension->path();

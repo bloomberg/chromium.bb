@@ -56,6 +56,9 @@ class APIPermissionSet;
 class PermissionSet;
 
 // Represents a Chrome extension.
+// Once created, an Extension object is immutable, with the exception of its
+// RuntimeData. This makes it safe to use on any thread, since access to the
+// RuntimeData is protected by a lock.
 class Extension : public base::RefCountedThreadSafe<Extension> {
  public:
   struct ManifestData;
