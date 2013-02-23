@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/stream_parser_buffer.h"
@@ -32,7 +33,7 @@ struct CodecInfo {
 };
 
 typedef StreamParser* (*ParserFactoryFunction)(
-    const std::vector<std::string>& codecs);
+    const std::vector<std::string>& codecs, const LogCB& log_cb);
 
 struct SupportedTypeInfo {
   const char* type;
@@ -54,18 +55,15 @@ static const CodecInfo* kAudioWebMCodecs[] = {
   NULL
 };
 
-static StreamParser* BuildWebMParser(const std::vector<std::string>& codecs) {
+static StreamParser* BuildWebMParser(const std::vector<std::string>& codecs,
+                                     const LogCB& log_cb) {
   return new WebMStreamParser();
 }
 
 #if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
 static const CodecInfo kH264CodecInfo = { "avc1.*", DemuxerStream::VIDEO };
-static const CodecInfo kMPEG4AACLCCodecInfo = {
-  "mp4a.40.2", DemuxerStream::AUDIO
-};
-
-static const CodecInfo kMPEG4AACSBRCodecInfo = {
-  "mp4a.40.5", DemuxerStream::AUDIO
+static const CodecInfo kMPEG4AACCodecInfo = {
+  "mp4a.40.*", DemuxerStream::AUDIO
 };
 
 static const CodecInfo kMPEG2AACLCCodecInfo = {
@@ -74,35 +72,51 @@ static const CodecInfo kMPEG2AACLCCodecInfo = {
 
 static const CodecInfo* kVideoMP4Codecs[] = {
   &kH264CodecInfo,
-  &kMPEG4AACLCCodecInfo,
-  &kMPEG4AACSBRCodecInfo,
+  &kMPEG4AACCodecInfo,
   &kMPEG2AACLCCodecInfo,
   NULL
 };
 
 static const CodecInfo* kAudioMP4Codecs[] = {
-  &kMPEG4AACLCCodecInfo,
-  &kMPEG4AACSBRCodecInfo,
+  &kMPEG4AACCodecInfo,
   &kMPEG2AACLCCodecInfo,
   NULL
 };
 
-// Mimetype codec string that indicates the content contains AAC SBR frames.
-static const char kSBRCodecId[] = "mp4a.40.5";
+// AAC Object Type IDs that Chrome supports.
+static const int kAACLCObjectType = 2;
+static const int kAACSBRObjectType = 5;
 
-static StreamParser* BuildMP4Parser(const std::vector<std::string>& codecs) {
+static StreamParser* BuildMP4Parser(const std::vector<std::string>& codecs,
+                                    const LogCB& log_cb) {
   std::set<int> audio_object_types;
   bool has_sbr = false;
   for (size_t i = 0; i < codecs.size(); ++i) {
     if (MatchPattern(codecs[i], kMPEG2AACLCCodecInfo.pattern)) {
       audio_object_types.insert(mp4::kISO_13818_7_AAC_LC);
-    } else {
-      audio_object_types.insert(mp4::kISO_14496_3);
-    }
+    } else if (MatchPattern(codecs[i], kMPEG4AACCodecInfo.pattern)) {
+      std::vector<std::string> tokens;
+      int audio_object_type;
+      if (Tokenize(codecs[i], ".", &tokens) != 3 ||
+          !base::HexStringToInt(tokens[2], &audio_object_type)) {
+        MEDIA_LOG(log_cb) << "Malformed mimetype codec '" << codecs[i] << "'";
+        return NULL;
+      }
 
-    if (codecs[i] == kSBRCodecId) {
-      has_sbr = true;
-      break;
+      if (audio_object_type != kAACLCObjectType &&
+          audio_object_type != kAACSBRObjectType) {
+        MEDIA_LOG(log_cb) << "Unsupported audio object type "
+                          << "0x" << std::hex << audio_object_type
+                          << " in codec '" << codecs[i] << "'";
+        return NULL;
+      }
+
+      audio_object_types.insert(mp4::kISO_14496_3);
+
+      if (audio_object_type == kAACSBRObjectType) {
+        has_sbr = true;
+        break;
+      }
     }
   }
 
@@ -717,6 +731,10 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
   StreamParser::NewBuffersCB audio_cb;
   StreamParser::NewBuffersCB video_cb;
 
+  scoped_ptr<StreamParser> stream_parser(factory_function(codecs, log_cb_));
+  if (!stream_parser)
+    return kNotSupported;
+
   if (has_audio) {
     source_id_audio_ = id;
     audio_cb = base::Bind(&ChunkDemuxer::OnAudioBuffers,
@@ -728,9 +746,6 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
     video_cb = base::Bind(&ChunkDemuxer::OnVideoBuffers,
                           base::Unretained(this));
   }
-
-  scoped_ptr<StreamParser> stream_parser(factory_function(codecs));
-  CHECK(stream_parser.get());
 
   stream_parser->Init(
       base::Bind(&ChunkDemuxer::OnStreamParserInitDone, base::Unretained(this)),
