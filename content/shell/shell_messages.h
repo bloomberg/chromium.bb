@@ -46,6 +46,16 @@ IPC_MESSAGE_CONTROL1(ShellViewMsg_SetWebKitSourceDir,
 IPC_MESSAGE_ROUTED1(ShellViewMsg_SetTestConfiguration,
                     ShellViewMsg_SetTestConfiguration_Params)
 
+// Pushes a snapshot of the current session history from the browser process.
+// This includes only information about those RenderViews that are in the
+// same process as the main window of the layout test and that are the current
+// active RenderView of their WebContents.
+IPC_MESSAGE_ROUTED3(
+    ShellViewMsg_SessionHistory,
+    std::vector<int> /* routing_ids */,
+    std::vector<std::vector<std::string> > /* session_histories */,
+    std::vector<unsigned> /* current_entry_indexes */)
+
 // Send a text dump of the WebContents to the render host.
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_TextDump,
                     std::string /* dump */)
@@ -96,3 +106,4 @@ IPC_MESSAGE_ROUTED1(ShellViewHostMsg_SetDeviceScaleFactor,
                     float /* factor */)
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_SetFocus,
                     bool /* focus */)
+IPC_MESSAGE_ROUTED0(ShellViewHostMsg_CaptureSessionHistory)

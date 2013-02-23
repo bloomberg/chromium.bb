@@ -13,6 +13,7 @@
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
@@ -24,6 +25,7 @@
 #include "content/shell/shell_messages.h"
 #include "content/shell/shell_switches.h"
 #include "content/shell/webkit_test_helpers.h"
+#include "webkit/glue/glue_serialize.h"
 #include "webkit/support/webkit_support_gfx.h"
 
 namespace content {
@@ -288,6 +290,8 @@ bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_SetClientWindowRect,
                         OnSetClientWindowRect)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_SetFocus, OnSetFocus)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_CaptureSessionHistory,
+                        OnCaptureSessionHistory)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_NotImplemented, OnNotImplemented)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -475,6 +479,50 @@ void WebKitTestController::OnSetFocus(bool focus) {
     main_window_->web_contents()->GetRenderViewHost()->Focus();
   else
     main_window_->web_contents()->GetRenderViewHost()->Blur();
+}
+
+void WebKitTestController::OnCaptureSessionHistory() {
+  std::vector<int> routing_ids;
+  std::vector<std::vector<std::string> > session_histories;
+  std::vector<unsigned> current_entry_indexes;
+
+  RenderViewHost* render_view_host =
+      main_window_->web_contents()->GetRenderViewHost();
+
+  for (std::vector<Shell*>::iterator window = Shell::windows().begin();
+       window != Shell::windows().end();
+       ++window) {
+    WebContents* web_contents = (*window)->web_contents();
+    // Only capture the history from windows in the same process as the main
+    // window. During layout tests, we only use two processes when an
+    // devtools window is open. This should not happen during history navigation
+    // tests.
+    if (render_view_host->GetProcess() !=
+        web_contents->GetRenderViewHost()->GetProcess()) {
+      NOTREACHED();
+      continue;
+    }
+    routing_ids.push_back(web_contents->GetRenderViewHost()->GetRoutingID());
+    current_entry_indexes.push_back(
+        web_contents->GetController().GetCurrentEntryIndex());
+    std::vector<std::string> history;
+    for (int entry = 0; entry < web_contents->GetController().GetEntryCount();
+         ++entry) {
+      std::string state = web_contents->GetController().GetEntryAtIndex(entry)
+          ->GetContentState();
+      if (state.empty()) {
+        state = webkit_glue::CreateHistoryStateForURL(
+            web_contents->GetController().GetEntryAtIndex(entry)->GetURL());
+      }
+      history.push_back(state);
+    }
+    session_histories.push_back(history);
+  }
+
+  Send(new ShellViewMsg_SessionHistory(render_view_host->GetRoutingID(),
+                                       routing_ids,
+                                       session_histories,
+                                       current_entry_indexes));
 }
 
 void WebKitTestController::OnNotImplemented(

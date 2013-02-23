@@ -5,6 +5,8 @@
 #ifndef CONTENT_SHELL_WEBKIT_TEST_RUNNER_H_
 #define CONTENT_SHELL_WEBKIT_TEST_RUNNER_H_
 
+#include <vector>
+
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_view_observer.h"
@@ -80,11 +82,7 @@ class WebKitTestRunner : public RenderViewObserver,
                                const std::string& frame_name);
   virtual bool allowExternalPages();
   virtual void captureHistoryForWindow(
-#if defined(WEBTESTRUNNER_NEW_HISTORY_CAPTURE)
       WebTestRunner::WebTestProxyBase* proxy,
-#else
-      size_t windowIndex,
-#endif
       WebKit::WebVector<WebKit::WebHistoryItem>* history,
       size_t* currentEntryIndex);
 
@@ -97,7 +95,13 @@ class WebKitTestRunner : public RenderViewObserver,
   // Message handlers.
   void OnSetTestConfiguration(
       const ShellViewMsg_SetTestConfiguration_Params& params);
+  void OnSessionHistory(
+      const std::vector<int>& routing_ids,
+      const std::vector<std::vector<std::string> >& session_histories,
+      const std::vector<unsigned>& current_entry_indexes);
 
+  // After finishing the test, retrieves the audio, text, and pixel dumps from
+  // the TestRunner library and sends them to the browser process.
   void CaptureDump();
 
   base::FilePath current_working_directory_;
@@ -111,6 +115,10 @@ class WebKitTestRunner : public RenderViewObserver,
   int layout_test_timeout_;
   bool allow_external_pages_;
   std::string expected_pixel_hash_;
+
+  std::vector<int> routing_ids_;
+  std::vector<std::vector<std::string> > session_histories_;
+  std::vector<unsigned> current_entry_indexes_;
 
   bool is_main_window_;
 

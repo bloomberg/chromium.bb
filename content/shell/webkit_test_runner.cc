@@ -42,6 +42,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebHistoryItem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTask.h"
@@ -50,6 +51,7 @@
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestRunner.h"
 #include "ui/gfx/rect.h"
 #include "webkit/base/file_path_string_conversions.h"
+#include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
 
@@ -61,6 +63,7 @@ using WebKit::WebDeviceOrientation;
 using WebKit::WebElement;
 using WebKit::WebFrame;
 using WebKit::WebGamepads;
+using WebKit::WebHistoryItem;
 using WebKit::WebRect;
 using WebKit::WebSize;
 using WebKit::WebString;
@@ -330,7 +333,11 @@ void WebKitTestRunner::testFinished() {
   WebTestInterfaces* interfaces =
       ShellRenderProcessObserver::GetInstance()->test_interfaces();
   interfaces->setTestIsRunning(false);
-  CaptureDump();
+  if (interfaces->testRunner()->shouldDumpBackForwardList()) {
+    Send(new ShellViewHostMsg_CaptureSessionHistory(routing_id()));
+  } else {
+    CaptureDump();
+  }
 }
 
 void WebKitTestRunner::testTimedOut() {
@@ -379,15 +386,33 @@ bool WebKitTestRunner::allowExternalPages() {
 }
 
 void WebKitTestRunner::captureHistoryForWindow(
-#if defined(WEBTESTRUNNER_NEW_HISTORY_CAPTURE)
     WebTestProxyBase* proxy,
-#else
-    size_t windowIndex,
-#endif
     WebVector<WebKit::WebHistoryItem>* history,
     size_t* currentEntryIndex) {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebKitTestRunner", "captureHistoryForWindow"));
+  size_t pos = 0;
+  std::vector<int>::iterator id;
+  for (id = routing_ids_.begin(); id != routing_ids_.end(); ++id, ++pos) {
+    RenderView* render_view = RenderView::FromRoutingID(*id);
+    if (!render_view) {
+      NOTREACHED();
+      continue;
+    }
+    if (WebKitTestRunner::Get(render_view)->proxy() == proxy)
+      break;
+  }
+
+  if (id == routing_ids_.end()) {
+    NOTREACHED();
+    return;
+  }
+  size_t num_entries = session_histories_[pos].size();
+  *currentEntryIndex = current_entry_indexes_[pos];
+  WebVector<WebHistoryItem> result(num_entries);
+  for (size_t entry = 0; entry < num_entries; ++entry) {
+    result[entry] =
+        webkit_glue::HistoryItemFromString(session_histories_[pos][entry]);
+  }
+  history->swap(result);
 }
 
 // RenderViewObserver  --------------------------------------------------------
@@ -401,6 +426,7 @@ bool WebKitTestRunner::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(WebKitTestRunner, message)
     IPC_MESSAGE_HANDLER(ShellViewMsg_SetTestConfiguration,
                         OnSetTestConfiguration)
+    IPC_MESSAGE_HANDLER(ShellViewMsg_SessionHistory, OnSessionHistory)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -418,6 +444,9 @@ void WebKitTestRunner::Reset() {
   layout_test_timeout_ = 30 * 1000;
   allow_external_pages_ = false;
   expected_pixel_hash_ = std::string();
+  routing_ids_.clear();
+  session_histories_.clear();
+  current_entry_indexes_.clear();
 }
 
 // Private methods  -----------------------------------------------------------
@@ -493,6 +522,16 @@ void WebKitTestRunner::OnSetTestConfiguration(
       ShellRenderProcessObserver::GetInstance()->test_interfaces();
   interfaces->setTestIsRunning(true);
   interfaces->configureForTestWithURL(params.test_url, enable_pixel_dumping_);
+}
+
+void WebKitTestRunner::OnSessionHistory(
+    const std::vector<int>& routing_ids,
+    const std::vector<std::vector<std::string> >& session_histories,
+    const std::vector<unsigned>& current_entry_indexes) {
+  routing_ids_ = routing_ids;
+  session_histories_ = session_histories;
+  current_entry_indexes_ = current_entry_indexes;
+  CaptureDump();
 }
 
 }  // namespace content
