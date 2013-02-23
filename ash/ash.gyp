@@ -291,8 +291,6 @@
         'system/user/user_observer.h',
         'system/web_notification/web_notification_tray.cc',
         'system/web_notification/web_notification_tray.h',
-        'tooltips/tooltip_controller.cc',
-        'tooltips/tooltip_controller.h',
         'touch/touch_observer_hud.cc',
         'touch/touch_observer_hud.h',
         'touch/touch_uma.cc',

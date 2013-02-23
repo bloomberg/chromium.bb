@@ -217,7 +217,7 @@ void ChromeViewsDelegate::OnBeforeWidgetInit(
   } else if (params->parent &&
              params->type != views::Widget::InitParams::TYPE_MENU) {
     params->native_widget = new views::NativeWidgetAura(delegate);
-  } else {
+  } else if (params->type != views::Widget::InitParams::TYPE_TOOLTIP) {
     // TODO(erg): Once we've threaded context to everywhere that needs it, we
     // should remove this check here.
     gfx::NativeView to_check =

@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_TOOLTIPS_TOOLTIP_CONTROLLER_H_
-#define ASH_TOOLTIPS_TOOLTIP_CONTROLLER_H_
+#ifndef UI_VIEWS_COREWM_TOOLTIP_CONTROLLER_H_
+#define UI_VIEWS_COREWM_TOOLTIP_CONTROLLER_H_
 
-#include "ash/ash_export.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/timer.h"
@@ -13,28 +12,26 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/events/event_handler.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/screen_type_delegate.h"
+#include "ui/views/views_export.h"
 
 namespace aura {
 class Window;
-namespace client {
-class DragDropClient;
-}
 }
 
-namespace ash {
+namespace views {
+namespace corewm {
 
 namespace test {
-class TooltipControllerTest;
+class TooltipControllerTestHelper;
 }  // namespace test
 
-namespace internal {
-
 // TooltipController provides tooltip functionality for aura shell.
-class ASH_EXPORT TooltipController : public aura::client::TooltipClient,
-                                     public ui::EventHandler,
-                                     public aura::WindowObserver {
+class VIEWS_EXPORT TooltipController : public aura::client::TooltipClient,
+                                       public ui::EventHandler,
+                                       public aura::WindowObserver {
  public:
-  explicit TooltipController(aura::client::DragDropClient* drag_drop_client);
+  explicit TooltipController(gfx::ScreenType screen_type);
   virtual ~TooltipController();
 
   // Overridden from aura::client::TooltipClient.
@@ -50,22 +47,28 @@ class ASH_EXPORT TooltipController : public aura::client::TooltipClient,
   // Overridden from aura::WindowObserver.
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
 
-  gfx::Point mouse_location() const { return curr_mouse_loc_; }
+  const gfx::Point& mouse_location() const { return curr_mouse_loc_; }
 
  private:
-  friend class ash::test::TooltipControllerTest;
+  friend class test::TooltipControllerTestHelper;
 
   class Tooltip;
 
-  // Trims the tooltip to fit, setting |text| to the clipped result,
-  // |max_width| to the width (in pixels) of the clipped text and |line_count|
-  // to the number of lines of text in the tooltip. |x| and |y| give the
-  // location of the tooltip in screen coordinates.
-  static void TrimTooltipToFit(string16* text,
-                               int* max_width,
-                               int* line_count,
-                               int x,
-                               int y);
+  // Returns the max width of the tooltip when shown at the specified location.
+  int GetMaxWidth(const gfx::Point& location) const;
+
+  // Returns the bounds to fit the tooltip in.
+  gfx::Rect GetBoundsForTooltip(const gfx::Point& origin) const;
+
+  // Trims the tooltip to fit in the width |max_width|, setting |text| to the
+  // clipped result, |width| to the width (in pixels) of the clipped text
+  // and |line_count| to the number of lines of text in the tooltip. |x| and |y|
+  // give the location of the tooltip in screen coordinates. |max_width| comes
+  // from GetMaxWidth().
+  static void TrimTooltipToFit(int max_width,
+                               string16* text,
+                               int* width,
+                               int* line_count);
 
   void TooltipTimerFired();
   void TooltipShownTimerFired();
@@ -83,7 +86,10 @@ class ASH_EXPORT TooltipController : public aura::client::TooltipClient,
   // be initialized with appropriate drop shadows.
   Tooltip* GetTooltip();
 
-  aura::client::DragDropClient* drag_drop_client_;
+  // Returns true if the cursor is visible.
+  bool IsCursorVisible();
+
+  const gfx::ScreenType screen_type_;
 
   aura::Window* tooltip_window_;
   string16 tooltip_text_;
@@ -108,7 +114,7 @@ class ASH_EXPORT TooltipController : public aura::client::TooltipClient,
   DISALLOW_COPY_AND_ASSIGN(TooltipController);
 };
 
-}  // namespace internal
-}  // namespace ash
+}  // namespace corewm
+}  // namespace views
 
-#endif  // ASH_TOOLTIPS_TOOLTIP_CONTROLLER_H_
+#endif  // UI_VIEWS_COREWM_TOOLTIP_CONTROLLER_H_

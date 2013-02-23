@@ -10,15 +10,18 @@
 #include "ui/gfx/point.h"
 #include "ui/views/widget/tooltip_manager.h"
 
+namespace aura {
+class Window;
+}
+
 namespace views {
 
-class NativeWidgetAura;
-class View;
+class Widget;
 
 // TooltipManager implementation for Aura.
 class TooltipManagerAura : public TooltipManager {
  public:
-  explicit TooltipManagerAura(NativeWidgetAura* native_widget_aura);
+  TooltipManagerAura(aura::Window* window, Widget* widget);
   virtual ~TooltipManagerAura();
 
   // TooltipManager.
@@ -30,7 +33,8 @@ class TooltipManagerAura : public TooltipManager {
  private:
   View* GetViewUnderPoint(const gfx::Point& point);
 
-  NativeWidgetAura* native_widget_aura_;
+  aura::Window* window_;
+  Widget* widget_;
   string16 tooltip_text_;
 
   DISALLOW_COPY_AND_ASSIGN(TooltipManagerAura);

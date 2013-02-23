@@ -18,6 +18,8 @@ const char kDisableFocusController[] = "disable-focus-controller";
 const char kDisableFocusControllerOnDesktop[] =
     "disable-focus-controller-on-desktop";
 
+const char kNoDropShadows[] = "aura-no-shadows";
+
 // If present animations are disabled.
 const char kWindowAnimationsDisabled[] =
     "views-corewm-window-animations-disabled";

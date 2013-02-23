@@ -58,6 +58,7 @@ namespace corewm {
 class CompoundEventFilter;
 class InputMethodEventFilter;
 class ShadowController;
+class TooltipController;
 class VisibilityController;
 class WindowModalityController;
 }
@@ -118,7 +119,6 @@ class SlowAnimationEventFilter;
 class StatusAreaWidget;
 class SystemGestureEventFilter;
 class SystemModalContainerEventFilter;
-class TooltipController;
 class TouchObserverHUD;
 class WorkspaceController;
 }
@@ -285,7 +285,7 @@ class ASH_EXPORT Shell
   views::corewm::CompoundEventFilter* env_filter() {
     return env_filter_.get();
   }
-  internal::TooltipController* tooltip_controller() {
+  views::corewm::TooltipController* tooltip_controller() {
     return tooltip_controller_.get();
   }
   internal::TouchObserverHUD* touch_observer_hud() {
@@ -526,7 +526,7 @@ class ASH_EXPORT Shell
   scoped_ptr<views::corewm::VisibilityController> visibility_controller_;
   scoped_ptr<views::corewm::WindowModalityController>
       window_modality_controller_;
-  scoped_ptr<internal::TooltipController> tooltip_controller_;
+  scoped_ptr<views::corewm::TooltipController> tooltip_controller_;
   scoped_ptr<DesktopBackgroundController> desktop_background_controller_;
   scoped_ptr<PowerButtonController> power_button_controller_;
   scoped_ptr<SessionStateController> session_state_controller_;

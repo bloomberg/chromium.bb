@@ -17,6 +17,7 @@ namespace switches {
 // see chromeos::LoginUtil::GetOffTheRecordCommandLine().)
 
 // Please keep alphabetized.
+VIEWS_EXPORT extern const char kNoDropShadows[];
 VIEWS_EXPORT extern const char kWindowAnimationsDisabled[];
 
 }  // namespace switches

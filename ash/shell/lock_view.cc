@@ -6,13 +6,13 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/shell/example_factory.h"
-#include "ash/tooltips/tooltip_controller.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/button/text_button.h"
+#include "ui/views/corewm/tooltip_controller.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -100,6 +100,7 @@ void CreateLockScreen() {
   widget->GetNativeView()->SetName("LockView");
   widget->GetNativeView()->Focus();
 
+  // TODO: it shouldn't be necessary to invoke UpdateTooltip() here.
   Shell::GetInstance()->tooltip_controller()->UpdateTooltip(
       widget->GetNativeView());
 }

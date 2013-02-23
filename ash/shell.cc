@@ -34,7 +34,6 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ash/tooltips/tooltip_controller.h"
 #include "ash/touch/touch_observer_hud.h"
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/always_on_top_controller.h"
@@ -89,6 +88,7 @@
 #include "ui/views/corewm/focus_controller.h"
 #include "ui/views/corewm/input_method_event_filter.h"
 #include "ui/views/corewm/shadow_controller.h"
+#include "ui/views/corewm/tooltip_controller.h"
 #include "ui/views/corewm/visibility_controller.h"
 #include "ui/views/corewm/window_modality_controller.h"
 #include "ui/views/focus/focus_manager_factory.h"
@@ -536,8 +536,8 @@ void Shell::Init() {
   video_detector_.reset(new VideoDetector);
   window_cycle_controller_.reset(new WindowCycleController(activation_client_));
 
-  tooltip_controller_.reset(new internal::TooltipController(
-      drag_drop_controller_.get()));
+  tooltip_controller_.reset(new views::corewm::TooltipController(
+                                gfx::SCREEN_TYPE_ALTERNATE));
   AddPreTargetHandler(tooltip_controller_.get());
 
   event_client_.reset(new internal::EventClientImpl);
@@ -553,7 +553,7 @@ void Shell::Init() {
   // StatusAreaWidget uses Shell's CapsLockDelegate.
   caps_lock_delegate_.reset(delegate_->CreateCapsLockDelegate());
 
-  if (!command_line->HasSwitch(switches::kAuraNoShadows)) {
+  if (!command_line->HasSwitch(views::corewm::switches::kNoDropShadows)) {
     resize_shadow_controller_.reset(new internal::ResizeShadowController());
     shadow_controller_.reset(
         new views::corewm::ShadowController(GetPrimaryRootWindow()));

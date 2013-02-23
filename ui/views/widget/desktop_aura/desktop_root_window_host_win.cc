@@ -610,7 +610,6 @@ void DesktopRootWindowHostWin::HandleCreate() {
 
   // 1. Window property association
   // 2. MouseWheel.
-  // 3. Tooltip Manager.
 }
 
 void DesktopRootWindowHostWin::HandleDestroying() {

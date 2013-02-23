@@ -18,6 +18,7 @@
 #include "ui/views/corewm/compound_event_filter.h"
 #include "ui/views/corewm/corewm_switches.h"
 #include "ui/views/corewm/input_method_event_filter.h"
+#include "ui/views/corewm/tooltip_controller.h"
 #include "ui/views/drag_utils.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/ime/input_method_bridge.h"
@@ -25,6 +26,7 @@
 #include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/native_widget_aura_window_observer.h"
 #include "ui/views/widget/root_view.h"
+#include "ui/views/widget/tooltip_manager_aura.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_aura_utils.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -150,6 +152,13 @@ void DesktopNativeWidgetAura::InitNativeWidget(
       static_cast<internal::RootView*>(GetWidget()->GetRootView())));
   aura::client::SetDragDropDelegate(window_, this);
 
+  tooltip_manager_.reset(new views::TooltipManagerAura(window_, GetWidget()));
+  tooltip_controller_.reset(
+      new corewm::TooltipController(gfx::SCREEN_TYPE_NATIVE));
+  aura::client::SetTooltipClient(root_window_.get(),
+                                 tooltip_controller_.get());
+  root_window_->AddPreTargetHandler(tooltip_controller_.get());
+
   aura::client::SetActivationDelegate(window_, this);
 }
 
@@ -213,7 +222,7 @@ void* DesktopNativeWidgetAura::GetNativeWindowProperty(const char* name) const {
 }
 
 TooltipManager* DesktopNativeWidgetAura::GetTooltipManager() const {
-  return NULL;
+  return tooltip_manager_.get();
 }
 
 bool DesktopNativeWidgetAura::IsScreenReaderActive() const {
@@ -528,6 +537,12 @@ void DesktopNativeWidgetAura::OnDeviceScaleFactorChanged(
 
 void DesktopNativeWidgetAura::OnWindowDestroying() {
   // The DesktopRootWindowHost implementation sends OnNativeWidgetDestroying().
+  tooltip_manager_.reset();
+  if (tooltip_controller_.get()) {
+    root_window_->RemovePreTargetHandler(tooltip_controller_.get());
+    tooltip_controller_.reset();
+    aura::client::SetTooltipClient(root_window_.get(), NULL);
+  }
 }
 
 void DesktopNativeWidgetAura::OnWindowDestroyed() {
@@ -583,6 +598,8 @@ void DesktopNativeWidgetAura::OnKeyEvent(ui::KeyEvent* event) {
 void DesktopNativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
   DCHECK(window_->IsVisible());
   native_widget_delegate_->OnMouseEvent(event);
+  if (tooltip_manager_.get())
+    tooltip_manager_->UpdateTooltip();
 }
 
 void DesktopNativeWidgetAura::OnScrollEvent(ui::ScrollEvent* event) {

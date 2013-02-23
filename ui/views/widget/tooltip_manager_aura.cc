@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/views/widget/tooltip_manager_aura.h"
+
 #include "base/logging.h"
 #include "ui/aura/client/tooltip_client.h"
 #include "ui/aura/root_window.h"
@@ -9,8 +11,7 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
-#include "ui/views/widget/native_widget_aura.h"
-#include "ui/views/widget/tooltip_manager_aura.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 
@@ -38,25 +39,24 @@ int TooltipManager::GetMaxWidth(int x, int y, gfx::NativeView context) {
 ////////////////////////////////////////////////////////////////////////////////
 // TooltipManagerAura public:
 
-TooltipManagerAura::TooltipManagerAura(NativeWidgetAura* native_widget_aura)
-    : native_widget_aura_(native_widget_aura) {
-  aura::client::SetTooltipText(native_widget_aura_->GetNativeView(),
-                               &tooltip_text_);
+TooltipManagerAura::TooltipManagerAura(aura::Window* window, Widget* widget)
+    : window_(window),
+      widget_(widget) {
+  aura::client::SetTooltipText(window_, &tooltip_text_);
 }
 
 TooltipManagerAura::~TooltipManagerAura() {
-  aura::client::SetTooltipText(native_widget_aura_->GetNativeView(), NULL);
+  aura::client::SetTooltipText(window_, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // TooltipManagerAura, TooltipManager implementation:
 
 void TooltipManagerAura::UpdateTooltip() {
-  aura::Window* window = native_widget_aura_->GetNativeView();
-  aura::RootWindow* root_window = window->GetRootWindow();
+  aura::RootWindow* root_window = window_->GetRootWindow();
   if (aura::client::GetTooltipClient(root_window)) {
     gfx::Point view_point = root_window->GetLastMouseLocationInRoot();
-    aura::Window::ConvertPointToTarget(root_window, window, &view_point);
+    aura::Window::ConvertPointToTarget(root_window, window_, &view_point);
     View* view = GetViewUnderPoint(view_point);
     if (view) {
       View::ConvertPointFromWidget(view, &view_point);
@@ -65,16 +65,15 @@ void TooltipManagerAura::UpdateTooltip() {
     } else {
       tooltip_text_.clear();
     }
-    aura::client::GetTooltipClient(root_window)->UpdateTooltip(window);
+    aura::client::GetTooltipClient(root_window)->UpdateTooltip(window_);
   }
 }
 
 void TooltipManagerAura::TooltipTextChanged(View* view)  {
-  aura::Window* window = native_widget_aura_->GetNativeView();
-  aura::RootWindow* root_window = window->GetRootWindow();
+  aura::RootWindow* root_window = window_->GetRootWindow();
   if (aura::client::GetTooltipClient(root_window)) {
     gfx::Point view_point = root_window->GetLastMouseLocationInRoot();
-    aura::Window::ConvertPointToTarget(root_window, window, &view_point);
+    aura::Window::ConvertPointToTarget(root_window, window_, &view_point);
     View* target = GetViewUnderPoint(view_point);
     if (target != view)
       return;
@@ -85,7 +84,7 @@ void TooltipManagerAura::TooltipTextChanged(View* view)  {
     } else {
       tooltip_text_.clear();
     }
-    aura::client::GetTooltipClient(root_window)->UpdateTooltip(window);
+    aura::client::GetTooltipClient(root_window)->UpdateTooltip(window_);
   }
 }
 
@@ -98,8 +97,7 @@ void TooltipManagerAura::HideKeyboardTooltip()  {
 }
 
 View* TooltipManagerAura::GetViewUnderPoint(const gfx::Point& point) {
-  View* root_view = native_widget_aura_->GetWidget()->GetRootView();
-  return root_view->GetEventHandlerForPoint(point);
+  return widget_->GetRootView()->GetEventHandlerForPoint(point);
 }
 
 }  // namespace views.

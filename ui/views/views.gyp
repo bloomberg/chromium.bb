@@ -242,6 +242,8 @@
         'corewm/shadow_controller.h',
         'corewm/shadow_types.cc',
         'corewm/shadow_types.h',
+        'corewm/tooltip_controller.cc',
+        'corewm/tooltip_controller.h',
         'corewm/visibility_controller.cc',
         'corewm/visibility_controller.h',
         'corewm/window_animations.cc',
@@ -440,6 +442,8 @@
             'widget/aero_tooltip_manager.h',
             'widget/child_window_message_processor.cc',
             'widget/child_window_message_processor.h',
+            'widget/tooltip_manager_win.cc',
+            'widget/tooltip_manager_win.h',
           ],
           'conditions': [
             ['OS=="mac"', {
@@ -551,6 +555,8 @@
         '..',
       ],
       'sources': [
+        'corewm/tooltip_controller_test_helper.cc',
+        'corewm/tooltip_controller_test_helper.h',
         'test/capture_tracking_view.cc',
         'test/capture_tracking_view.h',
         'test/child_modal_window.cc',
@@ -572,6 +578,8 @@
           ],
         }, {  # use_aura==0
           'sources!': [
+            'corewm/tooltip_controller_test_helper.cc',
+            'corewm/tooltip_controller_test_helper.h',
             'test/child_modal_window.cc',
             'test/child_modal_window.h',
           ],
@@ -660,6 +668,7 @@
         'corewm/image_grid_unittest.cc',
         'corewm/input_method_event_filter_unittest.cc',
         'corewm/shadow_controller_unittest.cc',
+        'corewm/tooltip_controller_unittest.cc',
         'corewm/visibility_controller_unittest.cc',
         'focus/focus_manager_test.h',
         'focus/focus_manager_test.cc',
