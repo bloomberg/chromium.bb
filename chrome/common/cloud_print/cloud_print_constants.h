@@ -100,6 +100,18 @@ const int kMaxFailedXmppPings = 2;
 // we try and refresh it.
 const int kTokenRefreshGracePeriodSecs = 5*60;  // 5 minutes in seconds
 
+// The number of retries before we abandon a print job in exponential backoff
+const int kNumRetriesBeforeAbandonJob = 10;
+
+// The wait time for the second (first with wait time) retry for a job that
+// fails due to network errors
+const int kJobFirstWaitTimeSecs = 1;
+
+// The multiplier for the wait time for retrying a job that fails due to
+// network errors
+const int kJobWaitTimeExponentialMultiplier = 2;
+
+
 }  // namespace cloud_print
 
 #endif  // CHROME_COMMON_CLOUD_PRINT_CLOUD_PRINT_CONSTANTS_H_

@@ -1615,6 +1615,7 @@
         'service/cloud_print/cloud_print_url_fetcher_unittest.cc',
         'service/cloud_print/connector_settings_unittest.cc',
 	'service/cloud_print/printer_job_handler_unittest.cc',
+	'service/cloud_print/printer_job_queue_handler_unittest.cc',
         'service/service_process_prefs_unittest.cc',
         'service/service_process_unittest.cc',
         'test/base/browser_with_test_window_test.cc',

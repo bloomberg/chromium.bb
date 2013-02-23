@@ -17,6 +17,7 @@
 #include "base/time.h"
 #include "chrome/service/cloud_print/cloud_print_url_fetcher.h"
 #include "chrome/service/cloud_print/job_status_updater.h"
+#include "chrome/service/cloud_print/printer_job_queue_handler.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
 #include "printing/backend/print_backend.h"
@@ -168,19 +169,6 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
                                         const GURL& url,
                                         const std::string& data);
 
-  struct JobDetails {
-    JobDetails();
-    ~JobDetails();
-    void Clear();
-
-    std::string job_id_;
-    std::string job_title_;
-    std::string print_ticket_;
-    base::FilePath print_data_file_path_;
-    std::string print_data_mime_type_;
-    std::vector<std::string> tags_;
-  };
-
   virtual ~PrinterJobHandler();
 
   // Begin request handlers for each state in the state machine
@@ -297,6 +285,9 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   scoped_refptr<PrintSystem::PrinterWatcher> printer_watcher_;
   typedef std::list< scoped_refptr<JobStatusUpdater> > JobStatusUpdaterList;
   JobStatusUpdaterList job_status_updater_list_;
+
+  // Manages parsing the job queue
+  PrinterJobQueueHandler job_queue_handler_;
 
   base::TimeTicks last_job_fetch_time_;
   base::WeakPtrFactory<PrinterJobHandler> weak_ptr_factory_;

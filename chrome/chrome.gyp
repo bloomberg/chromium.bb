@@ -343,6 +343,8 @@
             'service/cloud_print/print_system.h',
             'service/cloud_print/printer_job_handler.cc',
             'service/cloud_print/printer_job_handler.h',
+            'service/cloud_print/printer_job_queue_handler.cc',
+            'service/cloud_print/printer_job_queue_handler.h',
             'service/gaia/service_gaia_authenticator.cc',
             'service/gaia/service_gaia_authenticator.h',
             'service/net/service_url_request_context.cc',
