@@ -1,5 +1,5 @@
 {
-  "x-version": 2,
+  "x-version": 3,
   "google-talk": {
     "mime_types": [
     ],
@@ -164,9 +164,9 @@
     ],
     "versions": [
       {
-        "version": "11.6.8.638",
+        "version": "12.0.0.112",
         "status": "requires_authorization",
-        "reference": "http://www.adobe.com/support/security/bulletins/apsb12-23.html"
+        "reference": "https://www.adobe.com/support/security/bulletins/apsb13-06.html"
       }
     ],
     "lang": "en-US",
@@ -186,33 +186,33 @@
     ],
     "versions": [
       {
-        "version": "9.5.3",
+        "version": "9.5.4",
         "status": "requires_authorization",
-        "reference": "http://www.adobe.com/support/security/bulletins/apsb13-02.html"
+        "reference": "https://www.adobe.com/support/security/bulletins/apsb13-07.html"
       },
       {
         "version": "10",
         "status": "out_of_date"
       },
       {
-        "version": "10.1.5",
+        "version": "10.1.6",
         "status": "requires_authorization",
-        "reference": "http://www.adobe.com/support/security/bulletins/apsb13-02.html"
+        "reference": "https://www.adobe.com/support/security/bulletins/apsb13-07.html"
       },
       {
         "version": "11",
         "status": "out_of_date"
       },
       {
-        "version": "11.0.1",
+        "version": "11.0.2",
         "status": "up_to_date",
-        "reference": "http://www.adobe.com/support/security/bulletins/apsb13-02.html"
+        "reference": "https://www.adobe.com/support/security/bulletins/apsb13-07.html"
       }
     ],
     "lang": "en-US",
     "name": "Adobe Reader",
     "help_url": "https://support.google.com/chrome/?p=plugin_pdf",
-    "url": "http://ardownload.adobe.com/pub/adobe/reader/win/11.x/11.0.01/en_US/AdbeRdr11001_en_US.exe",
+    "url": "http://ardownload.adobe.com/pub/adobe/reader/win/11.x/11.0.02/en_US/AdbeRdr11002_en_US.exe",
     "group_name_matcher": "*Adobe Acrobat*"
   },
   "apple-quicktime": {
