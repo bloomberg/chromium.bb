@@ -41,8 +41,7 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestIdUsage) {
         "[\"\", "  // Empty string: ask API to generate ID
         "{"
         "\"templateType\": \"simple\","
-        "\"iconUrl\": \"http://www.google.com/intl/en/chrome/assets/"
-        "common/images/chrome_logo_2x.png\","
+        "\"iconUrl\": \"an/image/that/does/not/exist.png\","
         "\"title\": \"Attention!\","
         "\"message\": \"Check out Cirque du Soleil\""
         "}]",
@@ -67,8 +66,7 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestIdUsage) {
         "[\"" + notification_id + "\", "
         "{"
         "\"templateType\": \"simple\","
-        "\"iconUrl\": \"http://www.google.com/intl/en/chrome/assets/"
-        "common/images/chrome_logo_2x.png\","
+        "\"iconUrl\": \"an/image/that/does/not/exist.png\","
         "\"title\": \"Attention!\","
         "\"message\": \"Too late! The show ended yesterday\""
         "}]",
@@ -100,8 +98,7 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestIdUsage) {
         "[\"xxxxxxxxxxxx\", "
         "{"
         "\"templateType\": \"simple\","
-        "\"iconUrl\": \"http://www.google.com/intl/en/chrome/assets/"
-        "common/images/chrome_logo_2x.png\","
+        "\"iconUrl\": \"an/image/that/does/not/exist.png\","
         "\"title\": \"!\","
         "\"message\": \"!\""
         "}]",
@@ -166,8 +163,7 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestBaseFormatNotification) {
       "[\"\", "
       "{"
       "\"templateType\": \"basic\","
-      "\"iconUrl\": \"http://www.google.com/intl/en/chrome/assets/"
-      "common/images/chrome_logo_2x.png\","
+      "\"iconUrl\": \"an/image/that/does/not/exist.png\","
       "\"title\": \"Attention!\","
       "\"message\": \"Check out Cirque du Soleil\","
       "\"priority\": 1,"
@@ -206,7 +202,7 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestMultipleItemNotification) {
       "[\"\", "
       "{"
       "\"templateType\": \"list\","
-      "\"iconUrl\": \"https://code.google.com/p/chromium/logo\","
+      "\"iconUrl\": \"an/image/that/does/not/exist.png\","
       "\"title\": \"Multiple Item Notification Title\","
       "\"message\": \"Multiple item notification message.\","
       "\"items\": ["
@@ -235,4 +231,8 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestMultipleItemNotification) {
 
 IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestEvents) {
   ASSERT_TRUE(RunExtensionTest("notification/api/events")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestCSP) {
+    ASSERT_TRUE(RunExtensionTest("notification/api/csp")) << message_;
 }

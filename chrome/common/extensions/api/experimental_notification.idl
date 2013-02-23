@@ -35,7 +35,6 @@
     TemplateType templateType;
 
     // Sender's avatar, app icon, or a thumbnail for image notifications.
-    // TODO(miket): see browserAction.setIcon() for a better approach.
     DOMString iconUrl;
 
     // Title of the notification (e.g. sender name for email).

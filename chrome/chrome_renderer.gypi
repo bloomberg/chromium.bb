@@ -168,6 +168,7 @@
         'renderer/resources/extensions/json_schema.js',
         'renderer/resources/extensions/last_error.js',
         'renderer/resources/extensions/miscellaneous_bindings.js',
+        'renderer/resources/extensions/notification_custom_bindings.js',
         'renderer/resources/extensions/omnibox_custom_bindings.js',
         'renderer/resources/extensions/page_action_custom_bindings.js',
         'renderer/resources/extensions/page_actions_custom_bindings.js',

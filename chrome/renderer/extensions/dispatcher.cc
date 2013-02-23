@@ -632,6 +632,7 @@ void Dispatcher::PopulateSourceMap() {
 
   // Libraries.
   source_map_.RegisterSource("contentWatcher", IDR_CONTENT_WATCHER_JS);
+  source_map_.RegisterSource("imageUtil", IDR_IMAGE_UTIL_JS);
   source_map_.RegisterSource("lastError", IDR_LAST_ERROR_JS);
   source_map_.RegisterSource("schemaUtils", IDR_SCHEMA_UTILS_JS);
   source_map_.RegisterSource("sendRequest", IDR_SEND_REQUEST_JS);
@@ -659,6 +660,8 @@ void Dispatcher::PopulateSourceMap() {
       IDR_EXPERIMENTAL_MEDIA_GALLERIES_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("experimental.offscreen",
                              IDR_EXPERIMENTAL_OFFSCREENTABS_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource("experimental.notification",
+                             IDR_NOTIFICATION_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("extension", IDR_EXTENSION_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("fileBrowserHandler",
                              IDR_FILE_BROWSER_HANDLER_CUSTOM_BINDINGS_JS);

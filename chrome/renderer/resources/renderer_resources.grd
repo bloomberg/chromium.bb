@@ -37,6 +37,7 @@ without changes to the corresponding grd file. fb9 -->
 
       <!-- Libraries. -->
       <include name="IDR_TAG_WATCHER_JS" file="extensions\tag_watcher.js" type="BINDATA" />
+      <include name="IDR_IMAGE_UTIL_JS" file="extensions\image_util.js" type="BINDATA" />
       <include name="IDR_LAST_ERROR_JS" file="extensions\last_error.js" type="BINDATA" />
       <include name="IDR_SCHEMA_UTILS_JS" file="extensions\schema_utils.js" type="BINDATA" />
       <include name="IDR_SEND_REQUEST_JS" file="extensions\send_request.js" type="BINDATA" />
@@ -65,6 +66,7 @@ without changes to the corresponding grd file. fb9 -->
         <include name="IDR_I18N_CUSTOM_BINDINGS_JS" file="extensions\i18n_custom_bindings.js" type="BINDATA" />
         <include name="IDR_INPUT_IME_CUSTOM_BINDINGS_JS" file="extensions\input.ime_custom_bindings.js" type="BINDATA" />
         <include name="IDR_MEDIA_GALLERIES_CUSTOM_BINDINGS_JS" file="extensions\media_galleries_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_NOTIFICATION_CUSTOM_BINDINGS_JS" file="extensions\notification_custom_bindings.js" type="BINDATA" />
         <include name="IDR_OMNIBOX_CUSTOM_BINDINGS_JS" file="extensions\omnibox_custom_bindings.js" type="BINDATA" />
         <include name="IDR_PAGE_ACTIONS_CUSTOM_BINDINGS_JS" file="extensions\page_actions_custom_bindings.js" type="BINDATA" />
         <include name="IDR_PAGE_ACTION_CUSTOM_BINDINGS_JS" file="extensions\page_action_custom_bindings.js" type="BINDATA" />

@@ -26,8 +26,7 @@ var testBasicEvents = function() {
 
   var options = {
     templateType: "basic",
-    iconUrl: "http://www.google.com/intl/en/chrome/assets/" +
-        "common/images/chrome_logo_2x.png",
+    iconUrl: "/icon.png",
     title: "Attention!",
     message: "Check out Cirque du Soleil"
   };

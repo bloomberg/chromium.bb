@@ -1,0 +1,13 @@
+{
+  "name": "chrome.notification",
+  "version": "0.1",
+  "description": "chrome.notification API events",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "permissions": [
+    "experimental"
+  ]
+}
