@@ -74,13 +74,17 @@ class ActionBoxTest : public InProcessBrowserTest,
 
 // Test if Bookmark star appears after bookmarking a page in the action box, and
 // disappears after unbookmarking a page.
-// Flakily fails: http://crbug.com/163733
-IN_PROC_BROWSER_TEST_F(ActionBoxTest, DISABLED_BookmarkAPageTest) {
+IN_PROC_BROWSER_TEST_F(ActionBoxTest, BookmarkAPageTest) {
   LocationBarTesting* loc_bar =
       browser()->window()->GetLocationBar()->GetLocationBarForTesting();
 
   // Navigate somewhere we can bookmark.
   ui_test_utils::NavigateToURL(browser(), GURL("http://www.google.com"));
+
+  // Make sure the bookmarking system is up and running.
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForProfile(browser()->profile());
+  ui_test_utils::WaitForBookmarkModelToLoad(model);
 
   // Page is not bookmarked yet.
   ASSERT_FALSE(loc_bar->GetBookmarkStarVisibility());
@@ -92,9 +96,6 @@ IN_PROC_BROWSER_TEST_F(ActionBoxTest, DISABLED_BookmarkAPageTest) {
   ASSERT_TRUE(loc_bar->GetBookmarkStarVisibility());
 
   // Get the BookmarkModel to unbookmark the bookmark.
-  BookmarkModel* model =
-      BookmarkModelFactory::GetForProfile(browser()->profile());
-  ui_test_utils::WaitForBookmarkModelToLoad(model);
   bookmark_utils::RemoveAllBookmarks(model, GURL("http://www.google.com"));
 
   // Page is now unbookmarked.
