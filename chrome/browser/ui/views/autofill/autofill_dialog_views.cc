@@ -435,11 +435,7 @@ void AutofillDialogViews::UpdateAccountChooser() {
 void AutofillDialogViews::UpdateNotificationArea() {
   DCHECK(notification_area_);
   notification_area_->SetNotification(controller_->CurrentNotification());
-
-  if (GetWidget())
-    GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
-
-  contents_->Layout();
+  ContentsPreferredSizeChanged();
 }
 
 void AutofillDialogViews::UpdateSection(DialogSection section) {
@@ -951,8 +947,7 @@ void AutofillDialogViews::UpdateDetailsGroupState(const DetailsGroup& group) {
     group.container->SetVisible(controller_->SectionIsActive(group.section));
   }
 
-  if (GetWidget())
-    GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
+  ContentsPreferredSizeChanged();
 }
 
 bool AutofillDialogViews::AtLeastOneSectionIsEditing() {
@@ -1041,6 +1036,11 @@ void AutofillDialogViews::TextfieldEditedOrActivated(
   // If the field is marked as invalid, check if the text is now valid.
   if (decorated->invalid() && was_edit)
     decorated->SetInvalid(!controller_->InputIsValid(type, textfield->text()));
+}
+
+void AutofillDialogViews::ContentsPreferredSizeChanged() {
+  if (GetWidget())
+    GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
 }
 
 AutofillDialogViews::DetailsGroup* AutofillDialogViews::GroupForSection(

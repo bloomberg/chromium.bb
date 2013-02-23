@@ -329,6 +329,9 @@ class AutofillDialogViews : public AutofillDialogView,
   // the input.
   void TextfieldEditedOrActivated(views::Textfield* textfield, bool was_edit);
 
+  // Call this when the size of anything in |contents_| might've changed.
+  void ContentsPreferredSizeChanged();
+
   // The controller that drives this view. Weak pointer, always non-NULL.
   AutofillDialogController* const controller_;
 
