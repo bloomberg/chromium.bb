@@ -128,6 +128,9 @@ void WebContentsViewAndroid::SizeContents(const gfx::Size& size) {
 void WebContentsViewAndroid::RenderViewCreated(RenderViewHost* host) {
 }
 
+void WebContentsViewAndroid::RenderViewSwappedIn(RenderViewHost* host) {
+}
+
 void WebContentsViewAndroid::Focus() {
   if (web_contents_->ShowingInterstitialPage())
     web_contents_->GetInterstitialPage()->Focus();

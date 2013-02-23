@@ -84,6 +84,9 @@ void TestWebContentsView::SizeContents(const gfx::Size& size) {
 void TestWebContentsView::RenderViewCreated(RenderViewHost* host) {
 }
 
+void TestWebContentsView::RenderViewSwappedIn(RenderViewHost* host) {
+}
+
 void TestWebContentsView::Focus() {
 }
 

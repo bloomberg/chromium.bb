@@ -13,7 +13,7 @@
 #include "content/common/content_export.h"
 #include "content/common/drag_event_source_info.h"
 #include "content/port/browser/render_view_host_delegate_view.h"
-#include "content/public/browser/web_contents_view.h"
+#include "content/port/browser/web_contents_view_port.h"
 #include "ui/base/gtk/focus_store_gtk.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
@@ -28,7 +28,7 @@ class WebDragDestGtk;
 class WebDragSourceGtk;
 
 class CONTENT_EXPORT WebContentsViewGtk
-    : public WebContentsView,
+    : public WebContentsViewPort,
       public RenderViewHostDelegateView {
  public:
   // The corresponding WebContentsImpl is passed in the constructor, and manages
@@ -68,6 +68,9 @@ class CONTENT_EXPORT WebContentsViewGtk
   virtual bool IsEventTracking() const OVERRIDE;
   virtual void CloseTabAfterEventTracking() OVERRIDE;
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
+
+  // WebContentsViewPort implementation ----------------------------------------
+  virtual void RenderViewSwappedIn(RenderViewHost* host) OVERRIDE;
 
   // Backend implementation of RenderViewHostDelegateView.
   virtual void ShowContextMenu(

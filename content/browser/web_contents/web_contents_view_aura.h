@@ -12,7 +12,7 @@
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
 #include "content/common/content_export.h"
 #include "content/port/browser/render_view_host_delegate_view.h"
-#include "content/public/browser/web_contents_view.h"
+#include "content/port/browser/web_contents_view_port.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -33,7 +33,7 @@ class WebContentsImpl;
 class WebDragDestDelegate;
 
 class CONTENT_EXPORT WebContentsViewAura
-    : public WebContentsView,
+    : public WebContentsViewPort,
       public RenderViewHostDelegateView,
       NON_EXPORTED_BASE(public OverscrollControllerDelegate),
       public ui::ImplicitAnimationObserver,
@@ -114,6 +114,9 @@ class CONTENT_EXPORT WebContentsViewAura
   virtual bool IsEventTracking() const OVERRIDE;
   virtual void CloseTabAfterEventTracking() OVERRIDE;
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
+
+  // Overridden from WebContentsViewPort:
+  virtual void RenderViewSwappedIn(RenderViewHost* host) OVERRIDE;
 
   // Overridden from RenderViewHostDelegateView:
   virtual void ShowContextMenu(

@@ -1209,6 +1209,13 @@ void WebContentsViewAura::SizeContents(const gfx::Size& size) {
 void WebContentsViewAura::RenderViewCreated(RenderViewHost* host) {
 }
 
+void WebContentsViewAura::RenderViewSwappedIn(RenderViewHost* host) {
+  if (navigation_overlay_.get() && navigation_overlay_->has_window()) {
+    navigation_overlay_->StartObservingView(static_cast<
+        RenderWidgetHostViewAura*>(host->GetView()));
+  }
+}
+
 void WebContentsViewAura::Focus() {
   if (web_contents_->GetInterstitialPage()) {
     web_contents_->GetInterstitialPage()->Focus();

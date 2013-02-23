@@ -6,9 +6,9 @@
 #define CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_ANDROID_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "content/port/browser/render_view_host_delegate_view.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/port/browser/render_view_host_delegate_view.h"
+#include "content/port/browser/web_contents_view_port.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/common/context_menu_params.h"
 
@@ -16,7 +16,7 @@ namespace content {
 class ContentViewCoreImpl;
 
 // Android-specific implementation of the WebContentsView.
-class WebContentsViewAndroid : public WebContentsView,
+class WebContentsViewAndroid : public WebContentsViewPort,
                                public RenderViewHostDelegateView {
  public:
   WebContentsViewAndroid(WebContentsImpl* web_contents,
@@ -53,6 +53,9 @@ class WebContentsViewAndroid : public WebContentsView,
   virtual bool IsEventTracking() const OVERRIDE;
   virtual void CloseTabAfterEventTracking() OVERRIDE;
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
+
+  // WebContentsViewPort implementation ----------------------------------------
+  virtual void RenderViewSwappedIn(RenderViewHost* host) OVERRIDE;
 
   // Backend implementation of RenderViewHostDelegateView.
   virtual void ShowContextMenu(const ContextMenuParams& params,

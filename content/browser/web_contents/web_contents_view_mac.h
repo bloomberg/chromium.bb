@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/common/drag_event_source_info.h"
 #include "content/port/browser/render_view_host_delegate_view.h"
-#include "content/public/browser/web_contents_view.h"
+#include "content/port/browser/web_contents_view_port.h"
 #include "ui/base/cocoa/base_view.h"
 #include "ui/gfx/size.h"
 
@@ -52,7 +52,7 @@ namespace content {
 
 // Mac-specific implementation of the WebContentsView. It owns an NSView that
 // contains all of the contents of the tab and associated child views.
-class WebContentsViewMac : public WebContentsView,
+class WebContentsViewMac : public WebContentsViewPort,
                            public RenderViewHostDelegateView {
  public:
   // The corresponding WebContentsImpl is passed in the constructor, and manages
@@ -88,6 +88,9 @@ class WebContentsViewMac : public WebContentsView,
   virtual void CloseTabAfterEventTracking() OVERRIDE;
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
   virtual void SetAllowOverlappingViews(bool overlapping) OVERRIDE;
+
+  // WebContentsViewPort implementation ----------------------------------------
+  virtual void RenderViewSwappedIn(RenderViewHost* host) OVERRIDE;
 
   // Backend implementation of RenderViewHostDelegateView.
   virtual void ShowContextMenu(const ContextMenuParams& params,

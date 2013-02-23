@@ -7,11 +7,11 @@
 
 #include "base/compiler_specific.h"
 #include "content/port/browser/render_view_host_delegate_view.h"
-#include "content/public/browser/web_contents_view.h"
+#include "content/port/browser/web_contents_view_port.h"
 
 namespace content {
 
-class TestWebContentsView : public WebContentsView,
+class TestWebContentsView : public WebContentsViewPort,
                             public RenderViewHostDelegateView {
  public:
   TestWebContentsView();
@@ -63,6 +63,9 @@ class TestWebContentsView : public WebContentsView,
 #if defined(OS_MACOSX)
   virtual void SetAllowOverlappingViews(bool overlapping) OVERRIDE;
 #endif
+
+  // WebContentsViewPort:
+  virtual void RenderViewSwappedIn(RenderViewHost* host) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestWebContentsView);

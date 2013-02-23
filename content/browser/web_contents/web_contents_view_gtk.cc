@@ -219,6 +219,9 @@ void WebContentsViewGtk::SizeContents(const gfx::Size& size) {
 void WebContentsViewGtk::RenderViewCreated(RenderViewHost* host) {
 }
 
+void WebContentsViewGtk::RenderViewSwappedIn(RenderViewHost* host) {
+}
+
 void WebContentsViewGtk::Focus() {
   if (web_contents_->ShowingInterstitialPage()) {
     web_contents_->GetInterstitialPage()->Focus();

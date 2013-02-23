@@ -31,7 +31,7 @@ WebContentsViewGuest::WebContentsViewGuest(
     : web_contents_(web_contents),
       guest_(guest),
       enable_compositing_(enable_compositing),
-      platform_view_(platform_view) {
+      platform_view_(static_cast<WebContentsViewPort*>(platform_view)) {
 }
 
 WebContentsViewGuest::~WebContentsViewGuest() {
@@ -114,6 +114,10 @@ WebContents* WebContentsViewGuest::web_contents() {
 
 void WebContentsViewGuest::RenderViewCreated(RenderViewHost* host) {
   platform_view_->RenderViewCreated(host);
+}
+
+void WebContentsViewGuest::RenderViewSwappedIn(RenderViewHost* host) {
+  platform_view_->RenderViewSwappedIn(host);
 }
 
 bool WebContentsViewGuest::IsEventTracking() const {

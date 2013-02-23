@@ -3404,6 +3404,9 @@ void WebContentsImpl::NotifySwappedFromRenderManager(RenderViewHost* rvh) {
     if (host)
       host->SetOverscrollControllerEnabled(delegate_->CanOverscrollContent());
   }
+
+  static_cast<WebContentsViewPort*>(GetView())->
+      RenderViewSwappedIn(render_manager_.current_host());
 }
 
 int WebContentsImpl::CreateOpenerRenderViewsForRenderManager(

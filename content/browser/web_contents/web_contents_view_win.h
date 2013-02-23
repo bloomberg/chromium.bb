@@ -12,7 +12,7 @@
 #include "content/common/content_export.h"
 #include "content/common/drag_event_source_info.h"
 #include "content/port/browser/render_view_host_delegate_view.h"
-#include "content/public/browser/web_contents_view.h"
+#include "content/port/browser/web_contents_view_port.h"
 #include "ui/base/win/window_impl.h"
 
 namespace ui {
@@ -27,7 +27,7 @@ class WebDragDest;
 
 // An implementation of WebContentsView for Windows.
 class CONTENT_EXPORT WebContentsViewWin
-    : public WebContentsView,
+    : public WebContentsViewPort,
       public RenderViewHostDelegateView,
       public ui::WindowImpl {
  public:
@@ -75,6 +75,9 @@ class CONTENT_EXPORT WebContentsViewWin
   virtual bool IsEventTracking() const OVERRIDE;
   virtual void CloseTabAfterEventTracking() OVERRIDE;
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
+
+  // Overridden from WebContentsViewPort:
+  virtual void RenderViewSwappedIn(RenderViewHost* host) OVERRIDE;
 
   // Implementation of RenderViewHostDelegateView.
   virtual void ShowContextMenu(

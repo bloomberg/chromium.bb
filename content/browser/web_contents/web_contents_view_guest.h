@@ -11,7 +11,7 @@
 #include "content/common/content_export.h"
 #include "content/common/drag_event_source_info.h"
 #include "content/port/browser/render_view_host_delegate_view.h"
-#include "content/public/browser/web_contents_view.h"
+#include "content/port/browser/web_contents_view_port.h"
 
 namespace content {
 
@@ -20,7 +20,7 @@ class WebContentsImpl;
 class BrowserPluginGuest;
 
 class CONTENT_EXPORT WebContentsViewGuest
-    : public WebContentsView,
+    : public WebContentsViewPort,
       public RenderViewHostDelegateView {
  public:
   // The corresponding WebContentsImpl is passed in the constructor, and manages
@@ -65,6 +65,9 @@ class CONTENT_EXPORT WebContentsViewGuest
   virtual void SetAllowOverlappingViews(bool overlapping) OVERRIDE;
 #endif
 
+  // WebContentsViewPort implementation ----------------------------------------
+  virtual void RenderViewSwappedIn(RenderViewHost* host) OVERRIDE;
+
   // Backend implementation of RenderViewHostDelegateView.
   virtual void ShowContextMenu(
       const ContextMenuParams& params,
@@ -92,7 +95,7 @@ class CONTENT_EXPORT WebContentsViewGuest
   bool enable_compositing_;
   // The platform dependent view backing this WebContentsView.
   // Calls to this WebContentsViewGuest are forwarded to |platform_view_|.
-  WebContentsView* platform_view_;
+  WebContentsViewPort* platform_view_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewGuest);
 };

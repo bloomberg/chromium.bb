@@ -210,6 +210,9 @@ void WebContentsViewMac::RenderViewCreated(RenderViewHost* host) {
   host->EnablePreferredSizeMode();
 }
 
+void WebContentsViewMac::RenderViewSwappedIn(RenderViewHost* host) {
+}
+
 void WebContentsViewMac::SetPageTitle(const string16& title) {
   // Meaningless on the Mac; widgets don't have a "title" attribute
 }

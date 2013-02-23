@@ -196,6 +196,9 @@ void WebContentsViewWin::SizeContents(const gfx::Size& size) {
 void WebContentsViewWin::RenderViewCreated(RenderViewHost* host) {
 }
 
+void WebContentsViewWin::RenderViewSwappedIn(RenderViewHost* host) {
+}
+
 void WebContentsViewWin::Focus() {
   if (web_contents_->GetInterstitialPage()) {
     web_contents_->GetInterstitialPage()->Focus();
