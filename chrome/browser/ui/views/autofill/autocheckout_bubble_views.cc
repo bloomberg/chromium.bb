@@ -33,6 +33,7 @@ AutocheckoutBubbleViews::AutocheckoutBubbleViews(const gfx::RectF& bounding_box,
     cancel_button_(NULL),
     bounding_box_(bounding_box),
     callback_(callback) {
+  set_use_focusless(true);
   // TODO(ahutter): Add UMA stats here when they are finalized. See
   // http://crbug.com/172118.
 }

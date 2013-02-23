@@ -205,8 +205,8 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // The widget hosting the border for this bubble (non-Aura Windows only).
   Widget* border_widget_;
 
-  // Create a popup window for focusless bubbles on Linux/ChromeOS.
-  // These bubbles are not interactive and should not gain focus.
+  // If true (defaults to false), the bubble does not take user focus upon
+  // display.
   bool use_focusless_;
 
   // Specifies whether the popup accepts events or lets them pass through.
