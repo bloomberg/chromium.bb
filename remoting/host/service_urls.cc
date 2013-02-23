@@ -20,6 +20,8 @@ const char kDirectoryBaseUrlSwitch[] = "directory-base-url";
 const char kXmppServerAddressSwitch[] = "xmpp-server-address";
 const char kXmppServerDisableTlsSwitch[] = "disable-xmpp-server-tls";
 const char kDirectoryBotJidSwitch[] = "directory-bot-jid";
+const char kIgnoreUrlFetcherCertRequestsSwitch[] =
+    "ignore-urlfetcher-cert-requests";
 
 // Non-configurable service paths.
 const char kDirectoryHostsSuffix[] = "/@me/hosts/";
@@ -32,7 +34,8 @@ ServiceUrls::ServiceUrls()
   : directory_base_url_(kDirectoryBaseUrl),
     xmpp_server_address_(kXmppServerAddress),
     xmpp_server_use_tls_(kXmppServerUseTls),
-    directory_bot_jid_(kDirectoryBotJid) {
+    directory_bot_jid_(kDirectoryBotJid),
+    ignore_urlfetcher_cert_requests_(false) {
 #if !defined(NDEBUG)
   // Allow debug builds to override urls via command line.
   CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -48,6 +51,9 @@ ServiceUrls::ServiceUrls()
   }
   if (command_line->HasSwitch(kXmppServerDisableTlsSwitch)) {
     xmpp_server_use_tls_ = false;
+  }
+  if (command_line->HasSwitch(kIgnoreUrlFetcherCertRequestsSwitch)) {
+    ignore_urlfetcher_cert_requests_ = true;
   }
   if (command_line->HasSwitch(kDirectoryBotJidSwitch)) {
     directory_bot_jid_ = command_line->GetSwitchValueASCII(
@@ -81,6 +87,10 @@ bool ServiceUrls::xmpp_server_use_tls() const {
 
 const std::string& ServiceUrls::directory_bot_jid() const {
   return directory_bot_jid_;
+}
+
+bool ServiceUrls::ignore_urlfetcher_cert_requests() const {
+  return ignore_urlfetcher_cert_requests_;
 }
 
 }  // namespace remoting

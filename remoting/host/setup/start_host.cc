@@ -11,6 +11,7 @@
 #include "base/stringprintf.h"
 #include "base/threading/thread.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/host/service_urls.h"
 #include "remoting/host/setup/host_starter.h"
@@ -152,6 +153,10 @@ int main(int argc, char** argv) {
       new remoting::URLRequestContextGetter(
           g_message_loop->message_loop_proxy(),
           io_thread.message_loop_proxy()));
+
+  if (remoting::ServiceUrls::GetInstance()->ignore_urlfetcher_cert_requests()) {
+    net::URLFetcher::SetIgnoreCertificateRequests(true);
+  }
 
   // Start the host.
   scoped_ptr<HostStarter> host_starter(

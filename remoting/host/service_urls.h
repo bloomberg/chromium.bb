@@ -31,6 +31,9 @@ class ServiceUrls {
   // Remoting directory bot JID (for registering hosts, logging, heartbeats).
   const std::string& directory_bot_jid() const;
 
+  // Use a NULL certificate for URLFetcher SSL client certificate requests.
+  bool ignore_urlfetcher_cert_requests() const;
+
  private:
   friend struct DefaultSingletonTraits<ServiceUrls>;
 
@@ -42,6 +45,7 @@ class ServiceUrls {
   std::string xmpp_server_address_;
   bool xmpp_server_use_tls_;
   std::string directory_bot_jid_;
+  bool ignore_urlfetcher_cert_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceUrls);
 };

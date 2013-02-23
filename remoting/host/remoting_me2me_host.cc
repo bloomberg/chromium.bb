@@ -33,6 +33,7 @@
 #include "ipc/ipc_listener.h"
 #include "net/base/network_change_notifier.h"
 #include "net/socket/ssl_server_socket.h"
+#include "net/url_request/url_fetcher.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/breakpad.h"
 #include "remoting/base/constants.h"
@@ -418,6 +419,9 @@ bool HostProcess::InitWithCommandLine(const CommandLine* cmd_line) {
 #endif  // !defined(REMOTING_MULTI_PROCESS)
 
   ServiceUrls* service_urls = ServiceUrls::GetInstance();
+  if (service_urls->ignore_urlfetcher_cert_requests()) {
+    net::URLFetcher::SetIgnoreCertificateRequests(true);
+  }
   bool xmpp_server_valid = net::ParseHostAndPort(
       service_urls->xmpp_server_address(),
       &xmpp_server_config_.host, &xmpp_server_config_.port);
