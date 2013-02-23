@@ -4,8 +4,6 @@
 
 #include <windows.h>
 
-#include "remoting/host/remoting_me2me_host.h"
-
 BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, void* reserved) {
   if (reason == DLL_PROCESS_ATTACH)
     DisableThreadLibraryCalls(instance);

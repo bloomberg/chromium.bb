@@ -52,9 +52,6 @@ class HostService : public WtsConsoleMonitor {
   // Creates the process launcher.
   void CreateLauncher(scoped_refptr<AutoThreadTaskRunner> task_runner);
 
-  // Runs the binary specified by the command line, elevated.
-  int Elevate();
-
   // This function handshakes with the service control manager and starts
   // the service.
   int RunAsService();

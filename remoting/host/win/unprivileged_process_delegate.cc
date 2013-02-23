@@ -10,7 +10,6 @@
 
 #include <sddl.h>
 
-#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/process_util.h"
@@ -38,11 +37,6 @@ using base::win::ScopedHandle;
 namespace remoting {
 
 namespace {
-
-// The command line parameters that should be copied from the service's command
-// line to the host process.
-const char* kCopiedSwitchNames[] = {
-    "host-config", switches::kV, switches::kVModule };
 
 // The security descriptors below are used to lock down access to the worker
 // process launched by UnprivilegedProcessDelegate. UnprivilegedProcessDelegate
@@ -222,10 +216,10 @@ bool CreateWindowStationAndDesktop(ScopedSid logon_sid,
 UnprivilegedProcessDelegate::UnprivilegedProcessDelegate(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    const base::FilePath& binary_path)
+    scoped_ptr<CommandLine> target_command)
     : main_task_runner_(main_task_runner),
       io_task_runner_(io_task_runner),
-      binary_path_(binary_path) {
+      target_command_(target_command.Pass()) {
 }
 
 UnprivilegedProcessDelegate::~UnprivilegedProcessDelegate() {
@@ -334,14 +328,9 @@ bool UnprivilegedProcessDelegate::LaunchProcess(
     std::string pipe_handle = base::StringPrintf(
         "%d", reinterpret_cast<ULONG_PTR>(client.Get()));
 
-    // Create the command line passing the name of the IPC channel to use and
-    // copying known switches from the caller's command line.
-    CommandLine command_line(binary_path_);
+    // Pass the IPC channel via the command line.
+    CommandLine command_line(target_command_->argv());
     command_line.AppendSwitchASCII(kDaemonPipeSwitchName, pipe_handle);
-    command_line.CopySwitchesFrom(*CommandLine::ForCurrentProcess(),
-                                  kCopiedSwitchNames,
-                                  arraysize(kCopiedSwitchNames));
-
 
     // Create our own window station and desktop accessible by |logon_sid|.
     WindowStationAndDesktop handles;

@@ -7,7 +7,6 @@
 
 #include "remoting/host/win/wts_session_process_delegate.h"
 
-#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -24,6 +23,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message.h"
 #include "remoting/host/host_exit_codes.h"
+#include "remoting/host/host_main.h"
 #include "remoting/host/ipc_constants.h"
 #include "remoting/host/win/launch_process_with_token.h"
 #include "remoting/host/win/worker_process_launcher.h"
@@ -34,13 +34,6 @@ using base::win::ScopedHandle;
 
 // Name of the default session desktop.
 const char kDefaultDesktopName[] = "winsta0\\default";
-
-const char kElevateSwitchName[] = "elevate";
-
-// The command line parameters that should be copied from the service's command
-// line to the host process.
-const char* kCopiedSwitchNames[] = {
-    "host-config", switches::kV, switches::kVModule };
 
 namespace remoting {
 
@@ -56,7 +49,7 @@ class WtsSessionProcessDelegate::Core
   // Stop() method has been called.
   Core(scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
        scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-       const base::FilePath& binary_path,
+       scoped_ptr<CommandLine> target_command,
        bool launch_elevated,
        const std::string& channel_security);
 
@@ -109,8 +102,8 @@ class WtsSessionProcessDelegate::Core
   // The task runner serving job object notifications.
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
-  // Path to the worker process binary.
-  base::FilePath binary_path_;
+  // Command line of the launched process.
+  scoped_ptr<CommandLine> target_command_;
 
   // The server end of the IPC channel used to communicate to the worker
   // process.
@@ -151,12 +144,12 @@ class WtsSessionProcessDelegate::Core
 WtsSessionProcessDelegate::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    const base::FilePath& binary_path,
+    scoped_ptr<CommandLine> target_command,
     bool launch_elevated,
     const std::string& channel_security)
     : main_task_runner_(main_task_runner),
       io_task_runner_(io_task_runner),
-      binary_path_(binary_path),
+      target_command_(target_command.Pass()),
       channel_security_(channel_security),
       get_named_pipe_client_pid_(NULL),
       launch_elevated_(launch_elevated),
@@ -241,7 +234,7 @@ bool WtsSessionProcessDelegate::Core::LaunchProcess(
     ScopedHandle* process_exit_event_out) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  CommandLine command_line(CommandLine::NO_PROGRAM);
+  CommandLine command_line(target_command_->argv());
   if (launch_elevated_) {
     // The job object is not ready. Retry starting the host process later.
     if (!job_.IsValid()) {
@@ -249,18 +242,17 @@ bool WtsSessionProcessDelegate::Core::LaunchProcess(
     }
 
     // Construct the helper binary name.
-    base::FilePath daemon_binary;
-    if (!GetInstalledBinaryPath(kDaemonBinaryName, &daemon_binary))
+    base::FilePath helper_binary;
+    if (!GetInstalledBinaryPath(kHostBinaryName, &helper_binary))
       return false;
 
     // Create the command line passing the name of the IPC channel to use and
     // copying known switches from the caller's command line.
-    command_line.SetProgram(daemon_binary);
-    command_line.AppendSwitchPath(kElevateSwitchName, binary_path_);
+    command_line.SetProgram(helper_binary);
+    command_line.AppendSwitchPath(kElevateSwitchName,
+                                  target_command_->GetProgram());
 
     CHECK(ResetEvent(process_exit_event_));
-  } else {
-    command_line.SetProgram(binary_path_);
   }
 
   // Create the server end of the IPC channel.
@@ -276,13 +268,9 @@ bool WtsSessionProcessDelegate::Core::LaunchProcess(
       delegate,
       io_task_runner_));
 
-  // Create the command line passing the name of the IPC channel to use and
-  // copying known switches from the caller's command line.
+  // Pass the name of the IPC channel to use.
   command_line.AppendSwitchNative(kDaemonPipeSwitchName,
                                   UTF8ToWide(channel_name));
-  command_line.CopySwitchesFrom(*CommandLine::ForCurrentProcess(),
-                                kCopiedSwitchNames,
-                                arraysize(kCopiedSwitchNames));
 
   // Try to launch the process.
   ScopedHandle worker_process;
@@ -485,11 +473,11 @@ void WtsSessionProcessDelegate::Core::OnJobNotification(DWORD message,
 WtsSessionProcessDelegate::WtsSessionProcessDelegate(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    const base::FilePath& binary_path,
+    scoped_ptr<CommandLine> target_command,
     uint32 session_id,
     bool launch_elevated,
     const std::string& channel_security) {
-  core_ = new Core(main_task_runner, io_task_runner, binary_path,
+  core_ = new Core(main_task_runner, io_task_runner, target_command.Pass(),
                    launch_elevated, channel_security);
   if (!core_->Initialize(session_id)) {
     core_->Stop();

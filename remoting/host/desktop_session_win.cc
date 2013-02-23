@@ -4,11 +4,15 @@
 
 #include "remoting/host/desktop_session_win.h"
 
+#include "base/base_switches.h"
+#include "base/command_line.h"
 #include "base/path_service.h"
 #include "ipc/ipc_message_macros.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/daemon_process.h"
+#include "remoting/host/host_main.h"
+#include "remoting/host/ipc_constants.h"
 #include "remoting/host/sas_injector.h"
 #include "remoting/host/win/worker_process_launcher.h"
 #include "remoting/host/win/wts_console_monitor.h"
@@ -18,12 +22,13 @@ using base::win::ScopedHandle;
 
 namespace {
 
-const base::FilePath::CharType kDesktopBinaryName[] =
-    FILE_PATH_LITERAL("remoting_desktop.exe");
-
 // The security descriptor of the daemon IPC endpoint. It gives full access
 // to LocalSystem and denies access by anyone else.
 const char kDaemonIpcSecurityDescriptor[] = "O:SYG:SYD:(A;;GA;;;SY)";
+
+// The command line parameters that should be copied from the service's command
+// line to the host process.
+const char* kCopiedSwitchNames[] = { switches::kV, switches::kVModule };
 
 } // namespace
 
@@ -93,21 +98,23 @@ void DesktopSessionWin::OnSessionAttached(uint32 session_id) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK(launcher_.get() == NULL);
 
-  // Construct the host binary name.
-  if (desktop_binary_.empty()) {
-    base::FilePath dir_path;
-    if (!PathService::Get(base::DIR_EXE, &dir_path)) {
-      LOG(ERROR) << "Failed to get the executable file name.";
-      OnPermanentError();
-      return;
-    }
-    desktop_binary_ = dir_path.Append(kDesktopBinaryName);
+  // Get the desktop binary name.
+  base::FilePath desktop_binary;
+  if (!GetInstalledBinaryPath(kDesktopBinaryName, &desktop_binary)) {
+    OnPermanentError();
+    return;
   }
+
+  scoped_ptr<CommandLine> target(new CommandLine(desktop_binary));
+  target->AppendSwitchASCII(kProcessTypeSwitchName, kProcessTypeDesktop);
+  target->CopySwitchesFrom(*CommandLine::ForCurrentProcess(),
+                           kCopiedSwitchNames,
+                           arraysize(kCopiedSwitchNames));
 
   // Create a delegate to launch a process into the session.
   scoped_ptr<WtsSessionProcessDelegate> delegate(
       new WtsSessionProcessDelegate(main_task_runner_, io_task_runner_,
-                                    desktop_binary_, session_id,
+                                    target.Pass(), session_id,
                                     true, kDaemonIpcSecurityDescriptor));
 
   // Create a launcher for the desktop process, using the per-session delegate.

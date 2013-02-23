@@ -26,7 +26,7 @@
   <?define CoreBinary = "remoting_core.dll" ?>
 
   <?define ControllerAppid = "{4ff35d5e-d226-4550-9248-03e7779e67de}" ?>
-  <?define ControllerBinary = "remoting_controller.exe" ?>
+  <?define ControllerBinary = "remoting_host.exe" ?>
   <?define ControllerClass = "ElevatedController Class" ?>
   <?define ControllerProgid =
     "ChromotingElevatedController.ElevatedController" ?>
@@ -155,21 +155,28 @@
                           SupportsInformationals="yes"/>
       </Component>
 
-      <?if $(var.RemotingMultiProcess) != 0 ?>
-        <Component Id="remoting_desktop" Guid="*">
-          <File Id="remoting_desktop.exe"
-                DiskId="1"
-                KeyPath="yes"
-                Name="remoting_desktop.exe"
-                Vital="yes"/>
-        </Component>
-      <?endif?>
-
-      <Component Id="remoting_daemon" Guid="*">
-        <File Id="remoting_daemon.exe"
+      <Component Id="remoting_desktop" Guid="*">
+        <File Id="remoting_desktop.exe"
               DiskId="1"
               KeyPath="yes"
-              Name="remoting_daemon.exe"
+              Name="remoting_desktop.exe"
+              Vital="yes"/>
+
+        <?if $(var.RemotingMultiProcess) = 0 ?>
+          <fire:FirewallException xmlns:fire="http://schemas.microsoft.com/wix/FirewallExtension"
+                                  Id="me2me_firewall_exception"
+                                  IgnoreFailure="yes"
+                                  Name="$(var.FirewallName)"
+                                  Profile="all"
+                                  Program="[#remoting_desktop.exe]"
+                                  Scope="any" />
+        <?endif?>
+      </Component>
+
+      <Component Id="remoting_host" Guid="*">
+        <File Id="remoting_host.exe"
+              DiskId="1"
+              Name="remoting_host.exe"
               Vital="yes"/>
 
         <ServiceInstall Id="install_service"
@@ -178,7 +185,7 @@
                         Name="$(var.ServiceName)"
                         DisplayName="[chromoting_service_display_name]"
                         Description="[chromoting_service_description]"
-                        Arguments="--host-config=&quot;[config_files]host.json&quot;"
+                        Arguments="--type=daemon --host-config=&quot;[config_files]host.json&quot;"
                         Start="demand"
                         Account="LocalSystem"
                         ErrorControl="ignore"
@@ -189,20 +196,16 @@
                         Remove="uninstall"
                         Name="$(var.ServiceName)"
                         Wait="yes" />
-      </Component>
 
-      <Component Id="remoting_host" Guid="*">
-        <File Id="remoting_host.exe"
-              DiskId="1"
-              Name="remoting_host.exe"
-              Vital="yes"/>
-        <fire:FirewallException xmlns:fire="http://schemas.microsoft.com/wix/FirewallExtension"
-                                Id="me2me_firewall_exception"
-                                IgnoreFailure="yes"
-                                Name="$(var.FirewallName)"
-                                Profile="all"
-                                Program="[#remoting_host.exe]"
-                                Scope="any" />
+        <?if $(var.RemotingMultiProcess) != 0 ?>
+          <fire:FirewallException xmlns:fire="http://schemas.microsoft.com/wix/FirewallExtension"
+                                  Id="me2me_firewall_exception"
+                                  IgnoreFailure="yes"
+                                  Name="$(var.FirewallName)"
+                                  Profile="all"
+                                  Program="[#remoting_host.exe]"
+                                  Scope="any" />
+        <?endif?>
       </Component>
 
       <?if $(var.OfficialBuild) != 0 ?>
@@ -223,11 +226,6 @@
       <?endif?>
 
       <Component Id="remoting_controller" Guid="*">
-        <File Id="$(var.ControllerBinary)"
-              DiskId="1"
-              Name="$(var.ControllerBinary)"
-              Vital="yes"/>
-
         <RegistryKey Root="HKLM"
                      Key="SOFTWARE\Classes">
           <RegistryKey Key="AppId">
@@ -287,7 +285,7 @@
 
               <RegistryKey Key="LocalServer32" Action="create">
                 <RegistryValue Type="string"
-                               Value="[#$(var.ControllerBinary)]"/>
+                               Value="[binaries]$(var.ControllerBinary) --type=controller"/>
               </RegistryKey>
 
               <RegistryKey Key="ProgID" Action="create">
@@ -471,10 +469,7 @@
       <?endif?>
       <ComponentRef Id="remoting_controller"/>
       <ComponentRef Id="remoting_core"/>
-      <ComponentRef Id="remoting_daemon"/>
-      <?if $(var.RemotingMultiProcess) != 0 ?>
-        <ComponentRef Id="remoting_desktop"/>
-      <?endif?>
+      <ComponentRef Id="remoting_desktop"/>
       <ComponentRef Id="remoting_host"/>
       <ComponentRef Id="sas"/>
       <ComponentRef Id="sawbuck_provider"/>

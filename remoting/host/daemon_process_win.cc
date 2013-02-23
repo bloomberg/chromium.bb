@@ -22,6 +22,7 @@
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/desktop_session_win.h"
 #include "remoting/host/host_exit_codes.h"
+#include "remoting/host/host_main.h"
 #include "remoting/host/ipc_constants.h"
 #include "remoting/host/win/host_service.h"
 #include "remoting/host/win/launch_process_with_token.h"
@@ -34,6 +35,10 @@ using base::TimeDelta;
 namespace remoting {
 
 class WtsConsoleMonitor;
+
+// The command line parameters that should be copied from the service's command
+// line to the host process.
+const char* kCopiedSwitchNames[] = { switches::kV, switches::kVModule };
 
 class DaemonProcessWin : public DaemonProcess {
  public:
@@ -155,9 +160,15 @@ void DaemonProcessWin::LaunchNetworkProcess() {
     return;
   }
 
+  scoped_ptr<CommandLine> target(new CommandLine(host_binary));
+  target->AppendSwitchASCII(kProcessTypeSwitchName, kProcessTypeHost);
+  target->CopySwitchesFrom(*CommandLine::ForCurrentProcess(),
+                           kCopiedSwitchNames,
+                           arraysize(kCopiedSwitchNames));
+
   scoped_ptr<UnprivilegedProcessDelegate> delegate(
       new UnprivilegedProcessDelegate(caller_task_runner(), io_task_runner(),
-                                      host_binary));
+                                      target.Pass()));
   network_launcher_.reset(new WorkerProcessLauncher(
       caller_task_runner(), delegate.Pass(), this));
 }

@@ -9,8 +9,11 @@
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_handle.h"
 #include "remoting/host/win/worker_process_launcher.h"
+
+class CommandLine;
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -31,7 +34,7 @@ class UnprivilegedProcessDelegate : public WorkerProcessLauncher::Delegate {
   UnprivilegedProcessDelegate(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      const base::FilePath& binary_path);
+      scoped_ptr<CommandLine> target_command);
   virtual ~UnprivilegedProcessDelegate();
 
   // IPC::Sender implementation.
@@ -52,8 +55,8 @@ class UnprivilegedProcessDelegate : public WorkerProcessLauncher::Delegate {
   // The task runner serving job object notifications.
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
-  // Path to the worker process binary.
-  base::FilePath binary_path_;
+  // Command line of the launched process.
+  scoped_ptr<CommandLine> target_command_;
 
   // The server end of the IPC channel used to communicate to the worker
   // process.

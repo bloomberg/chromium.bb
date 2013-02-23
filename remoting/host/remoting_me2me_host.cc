@@ -4,8 +4,6 @@
 //
 // This file implements a standalone host process for Me2Me.
 
-#include "remoting/host/remoting_me2me_host.h"
-
 #include <string>
 
 #include "base/at_exit.h"
@@ -17,15 +15,12 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/scoped_native_library.h"
 #include "base/single_thread_task_runner.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "base/strings/stringize_macros.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
-#include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "crypto/nss_util.h"
 #include "ipc/ipc_channel.h"
@@ -55,6 +50,7 @@
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_event_logger.h"
 #include "remoting/host/host_exit_codes.h"
+#include "remoting/host/host_main.h"
 #include "remoting/host/host_user_interface.h"
 #include "remoting/host/ipc_constants.h"
 #include "remoting/host/ipc_desktop_environment.h"
@@ -82,7 +78,6 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_cftyperef.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_LINUX)
@@ -103,9 +98,6 @@ namespace {
 
 // This is used for tagging system event logs.
 const char kApplicationName[] = "chromoting";
-
-// The command line switch used to get version of the daemon.
-const char kVersionSwitchName[] = "version";
 
 // The command line switch used to pass name of the pipe to capture audio on
 // linux.
@@ -1072,62 +1064,12 @@ void HostProcess::OnCrash(const std::string& function_name,
   CHECK(false);
 }
 
-int HostProcessMain(int argc, char** argv) {
-#if defined(OS_MACOSX)
-  // Needed so we don't leak objects when threads are created.
-  base::mac::ScopedNSAutoreleasePool pool;
-#endif
-
-  CommandLine::Init(argc, argv);
-
-  // Initialize Breakpad as early as possible. On Mac the command-line needs to
-  // be initialized first, so that the preference for crash-reporting can be
-  // looked up in the config file.
-#if defined(OFFICIAL_BUILD) && (defined(MAC_BREAKPAD) || defined(OS_WIN))
-  if (IsUsageStatsAllowed()) {
-    InitializeCrashReporting();
-  }
-#endif  // defined(OFFICIAL_BUILD) && (defined(MAC_BREAKPAD) || defined(OS_WIN))
-
-  // This object instance is required by Chrome code (for example,
-  // LazyInstance, MessageLoop).
-  base::AtExitManager exit_manager;
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kVersionSwitchName)) {
-    printf("%s\n", STRINGIZE(VERSION));
-    return 0;
-  }
-
-  InitHostLogging();
-
-#if defined(OS_WIN)
-  // Register and initialize common controls.
-  INITCOMMONCONTROLSEX info;
-  info.dwSize = sizeof(info);
-  info.dwICC = ICC_STANDARD_CLASSES;
-  InitCommonControlsEx(&info);
-
-  // Mark the process as DPI-aware, so Windows won't scale coordinates in APIs.
-  // N.B. This API exists on Vista and above.
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    base::FilePath path(base::GetNativeLibraryName(UTF8ToUTF16("user32")));
-    base::ScopedNativeLibrary user32(path);
-    CHECK(user32.is_valid());
-
-    typedef BOOL (WINAPI * SetProcessDPIAwareFn)();
-    SetProcessDPIAwareFn set_process_dpi_aware =
-        static_cast<SetProcessDPIAwareFn>(
-            user32.GetFunctionPointer("SetProcessDPIAware"));
-    set_process_dpi_aware();
-  }
-#endif  // defined(OS_WIN)
-
+int HostProcessMain() {
 #if defined(TOOLKIT_GTK)
   // Required for any calls into GTK functions, such as the Disconnect and
   // Continue windows, though these should not be used for the Me2Me case
   // (crbug.com/104377).
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  gfx::GtkInitFromCommandLine(*cmd_line);
+  gfx::GtkInitFromCommandLine(*CommandLine::ForCurrentProcess());
 #endif  // TOOLKIT_GTK
 
   // Enable support for SSL server sockets, which must be done while still
@@ -1159,6 +1101,6 @@ int HostProcessMain(int argc, char** argv) {
 
 #if !defined(OS_WIN)
 int main(int argc, char** argv) {
-  return remoting::HostProcessMain(argc, argv);
+  return remoting::HostMain(argc, argv);
 }
 #endif  // !defined(OS_WIN)

@@ -12,11 +12,11 @@ namespace remoting {
 
 const char kDaemonPipeSwitchName[] = "daemon-pipe";
 
-const base::FilePath::CharType kDaemonBinaryName[] =
-    FILE_PATH_LITERAL("remoting_daemon");
-
 const base::FilePath::CharType kHostBinaryName[] =
     FILE_PATH_LITERAL("remoting_host");
+
+const base::FilePath::CharType kDesktopBinaryName[] =
+    FILE_PATH_LITERAL("remoting_desktop");
 
 bool GetInstalledBinaryPath(const base::FilePath::StringType& binary,
                             base::FilePath* full_path) {

@@ -8,7 +8,6 @@
 #include "remoting/host/win/host_service.h"
 
 #include <windows.h>
-#include <shellapi.h>
 #include <wtsapi32.h>
 
 #include "base/base_paths.h"
@@ -54,15 +53,6 @@ const wchar_t kSessionNotificationWindowClass[] =
 
 // "--console" runs the service interactively for debugging purposes.
 const char kConsoleSwitchName[] = "console";
-
-// "--elevate=<binary>" requests <binary> to be launched elevated, presenting
-// a UAC prompt if necessary.
-const char kElevateSwitchName[] = "elevate";
-
-// The command line parameters that should be copied from the service's command
-// line when launching an elevated child.
-const char* kCopiedSwitchNames[] = {
-    "host-config", "daemon-pipe", switches::kV, switches::kVModule };
 
 }  // namespace
 
@@ -149,12 +139,6 @@ HostService* HostService::GetInstance() {
 bool HostService::InitWithCommandLine(const CommandLine* command_line) {
   CommandLine::StringVector args = command_line->GetArgs();
 
-  // Check if launch with elevation was requested.
-  if (command_line->HasSwitch(kElevateSwitchName)) {
-    run_routine_ = &HostService::Elevate;
-    return true;
-  }
-
   if (!args.empty()) {
     LOG(ERROR) << "No positional parameters expected.";
     return false;
@@ -202,35 +186,6 @@ void HostService::CreateLauncher(
       io_task_runner));
 
 #endif  // !defined(REMOTING_MULTI_PROCESS)
-}
-
-int HostService::Elevate() {
-  // Get the name of the binary to launch.
-  base::FilePath binary =
-      CommandLine::ForCurrentProcess()->GetSwitchValuePath(kElevateSwitchName);
-
-  // Create the child process command line by copying known switches from our
-  // command line.
-  CommandLine command_line(CommandLine::NO_PROGRAM);
-  command_line.CopySwitchesFrom(*CommandLine::ForCurrentProcess(),
-                                kCopiedSwitchNames,
-                                arraysize(kCopiedSwitchNames));
-  CommandLine::StringType parameters = command_line.GetCommandLineString();
-
-  // Launch the child process requesting elevation.
-  SHELLEXECUTEINFO info;
-  memset(&info, 0, sizeof(info));
-  info.cbSize = sizeof(info);
-  info.lpVerb = L"runas";
-  info.lpFile = binary.value().c_str();
-  info.lpParameters = parameters.c_str();
-  info.nShow = SW_SHOWNORMAL;
-
-  if (!ShellExecuteEx(&info)) {
-    return GetLastError();
-  }
-
-  return kSuccessExitCode;
 }
 
 int HostService::RunAsService() {
@@ -429,6 +384,15 @@ LRESULT CALLBACK HostService::SessionChangeNotificationProc(HWND hwnd,
     default:
       return DefWindowProc(hwnd, message, wparam, lparam);
   }
+}
+
+int DaemonProcessMain() {
+  HostService* service = HostService::GetInstance();
+  if (!service->InitWithCommandLine(CommandLine::ForCurrentProcess())) {
+    return kUsageExitCode;
+  }
+
+  return service->Run();
 }
 
 } // namespace remoting

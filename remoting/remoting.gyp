@@ -248,6 +248,16 @@
       'win_debug_RuntimeChecks': '0',
     },
     'conditions': [
+      ['OS=="mac" and mac_breakpad==1', {
+        'defines': [
+          'REMOTING_ENABLE_BREAKPAD'
+        ],
+      }],
+      ['OS=="win" and buildtype == "Official"', {
+        'defines': [
+          'REMOTING_ENABLE_BREAKPAD'
+        ],
+      }],
       ['remoting_multi_process != 0', {
         'defines': [
           'REMOTING_MULTI_PROCESS',
@@ -384,8 +394,8 @@
             'host/pam_authorization_factory_posix.h',
             'host/pin_hash.cc',
             'host/pin_hash.h',
-            'host/policy_hack/policy_watcher.h',
             'host/policy_hack/policy_watcher.cc',
+            'host/policy_hack/policy_watcher.h',
             'host/policy_hack/policy_watcher_linux.cc',
             'host/policy_hack/policy_watcher_mac.mm',
             'host/policy_hack/policy_watcher_win.cc',
@@ -753,8 +763,9 @@
             'VERSION=<(version_full)',
           ],
           'sources': [
+            'host/host_main.cc',
+            'host/host_main.h',
             'host/remoting_me2me_host.cc',
-            'host/remoting_me2me_host.h',
           ],
           'conditions': [
             ['OS=="mac"', {
@@ -781,7 +792,6 @@
                     # A real .dSYM is needed for dump_syms to operate on.
                     'mac_real_dsym': 1,
                   },
-                  'defines': ['MAC_BREAKPAD'],
                   'copies': [
                     {
                       'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Resources',
@@ -1178,6 +1188,62 @@
             },
           },
         },  # end of target 'remoting_configurer'
+        # The only difference between |remoting_console.exe| and
+        # |remoting_host.exe| is that the former is a console application.
+        # |remoting_console.exe| is used for debugging purposes.
+        {
+          'target_name': 'remoting_console',
+          'type': 'executable',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'dependencies': [
+            'remoting_core',
+            'remoting_version_resources',
+          ],
+          'sources': [
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_host_version.rc',
+            'host/win/entry_point.cc',
+          ],
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'EntryPointSymbol': 'HostEntryPoint',
+              'IgnoreAllDefaultLibraries': 'true',
+              'SubSystem': '1', # /SUBSYSTEM:CONSOLE
+            },
+          },
+        },  # end of target 'remoting_console'
+        {
+          'target_name': 'remoting_console_manifest',
+          'type': 'none',
+          'dependencies': [
+            'remoting_console',
+          ],
+          'hard_dependency': '1',
+          'msvs_cygwin_shell': 0,
+          'actions': [
+            {
+              'action_name': 'Embedding manifest into remoting_console.exe',
+              'binary': '<(PRODUCT_DIR)/remoting_console.exe',
+              'manifests': [
+                'host/win/dpi_aware.manifest',
+              ],
+              'inputs': [
+                '<(_binary)',
+                '<@(_manifests)',
+              ],
+              'outputs': [
+                '<(_binary).embedded.manifest',
+              ],
+              'action': [
+                'mt',
+                '-nologo',
+                '-manifest',
+                '<@(_manifests)',
+                '-outputresource:<(_binary);#1',
+                '-out:<(_binary).embedded.manifest',
+              ],
+            },
+          ],  # actions
+        },  # end of target 'remoting_console_manifest'
         {
           'target_name': 'remoting_core',
           'type': 'shared_library',
@@ -1223,7 +1289,6 @@
             'host/desktop_process.cc',
             'host/desktop_process.h',
             'host/desktop_process_main.cc',
-            'host/desktop_process_main.h',
             'host/desktop_session.cc',
             'host/desktop_session.h',
             'host/desktop_session_agent.cc',
@@ -1234,10 +1299,11 @@
             'host/desktop_session_win.h',
             'host/host_exit_codes.h',
             'host/host_export.h',
+            'host/host_main.cc',
+            'host/host_main.h',
             'host/ipc_constants.cc',
             'host/ipc_constants.h',
             'host/remoting_me2me_host.cc',
-            'host/remoting_me2me_host.h',
             'host/sas_injector.h',
             'host/sas_injector_win.cc',
             'host/verify_config_window_win.cc',
@@ -1245,12 +1311,9 @@
             'host/win/core.cc',
             'host/win/core.rc',
             'host/win/core_resource.h',
-            'host/win/daemon_process_main.cc',
-            'host/win/daemon_process_main.h',
             'host/win/elevated_controller.cc',
             'host/win/elevated_controller.h',
             'host/win/elevated_controller_module.cc',
-            'host/win/elevated_controller_module.h',
             'host/win/host_service.cc',
             'host/win/host_service.h',
             'host/win/omaha.cc',
@@ -1288,10 +1351,12 @@
             {
               'action_name': 'Embedding manifest into remoting_core.dll',
               'binary': '<(PRODUCT_DIR)/remoting_core.dll',
-              'manifest': 'host/win/remoting_core.manifest',
+              'manifests': [
+                'host/win/comctl32_v6.manifest',
+              ],
               'inputs': [
                 '<(_binary)',
-                '<(_manifest)',
+                '<@(_manifests)',
               ],
               'outputs': [
                 '<(_binary).embedded.manifest',
@@ -1300,53 +1365,13 @@
                 'mt',
                 '-nologo',
                 '-manifest',
-                '<(_manifest)',
+                '<@(_manifests)',
                 '-outputresource:<(_binary);#2',
                 '-out:<(_binary).embedded.manifest',
               ],
             },
           ],  # actions
         },  # end of target 'remoting_core_manifest'
-        {
-          'target_name': 'remoting_controller',
-          'type': 'executable',
-          'variables': { 'enable_wexit_time_destructors': 1, },
-          'dependencies': [
-            'remoting_core',
-            'remoting_version_resources',
-          ],
-          'sources': [
-            '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_controller_version.rc',
-            'host/win/elevated_controller_entry_point.cc',
-          ],
-          'msvs_settings': {
-            'VCLinkerTool': {
-              'EntryPointSymbol': 'ElevatedControllerEntryPoint',
-              'IgnoreAllDefaultLibraries': 'true',
-              'SubSystem': '2', # /SUBSYSTEM:WINDOWS
-            },
-          },
-        },  # end of target 'remoting_controller'
-        {
-          'target_name': 'remoting_daemon',
-          'type': 'executable',
-          'variables': { 'enable_wexit_time_destructors': 1, },
-          'dependencies': [
-            'remoting_core',
-            'remoting_version_resources',
-          ],
-          'sources': [
-            '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_daemon_version.rc',
-            'host/win/daemon_process_entry_point.cc',
-          ],
-          'msvs_settings': {
-            'VCLinkerTool': {
-              'EntryPointSymbol': 'DaemonProcessEntryPoint',
-              'IgnoreAllDefaultLibraries': 'true',
-              'SubSystem': '2', # /SUBSYSTEM:WINDOWS
-            },
-          },
-        },  # end of target 'remoting_daemon'
         {
           'target_name': 'remoting_desktop',
           'type': 'executable',
@@ -1357,11 +1382,11 @@
           ],
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_desktop_version.rc',
-            'host/win/desktop_process_entry_point.cc',
+            'host/win/entry_point.cc',
           ],
           'msvs_settings': {
             'VCLinkerTool': {
-              'EntryPointSymbol': 'DesktopProcessEntryPoint',
+              'EntryPointSymbol': 'HostEntryPoint',
               'IgnoreAllDefaultLibraries': 'true',
               'SubSystem': '2', # /SUBSYSTEM:WINDOWS
             },
@@ -1379,10 +1404,22 @@
             {
               'action_name': 'Embedding manifest into remoting_desktop.exe',
               'binary': '<(PRODUCT_DIR)/remoting_desktop.exe',
-              'manifest': 'host/win/remoting_desktop.manifest',
+              'manifests': [
+                'host/win/dpi_aware.manifest',
+              ],
+              # Add 'level="requireAdministrator" uiAccess="true"' to
+              # the manifest only for the official builds because it requires
+              # the binary to be signed to work.
+              'conditions': [
+                ['buildtype == "Official"', {
+                  'manifests': [
+                    'host/win/require_administrator.manifest',
+                  ],
+                }],
+              ],
               'inputs': [
                 '<(_binary)',
-                '<(_manifest)',
+                '<@(_manifests)',
               ],
               'outputs': [
                 '<(_binary).embedded.manifest',
@@ -1391,7 +1428,7 @@
                 'mt',
                 '-nologo',
                 '-manifest',
-                '<(_manifest)',
+                '<@(_manifests)',
                 '-outputresource:<(_binary);#1',
                 '-out:<(_binary).embedded.manifest',
               ],
@@ -1409,11 +1446,11 @@
           ],
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_host_version.rc',
-            'host/win/host_process_entry_point.cc',
+            'host/win/entry_point.cc',
           ],
           'msvs_settings': {
             'VCLinkerTool': {
-              'EntryPointSymbol': 'HostProcessEntryPoint',
+              'EntryPointSymbol': 'HostEntryPoint',
               'IgnoreAllDefaultLibraries': 'true',
               'ImportLibrary': '$(OutDir)\\lib\\remoting_host_exe.lib',
               'OutputFile': '$(OutDir)\\remoting_host.exe',
@@ -1433,10 +1470,12 @@
             {
               'action_name': 'Embedding manifest into remoting_host.exe',
               'binary': '<(PRODUCT_DIR)/remoting_host.exe',
-              'manifest': 'host/win/remoting_host.manifest',
+              'manifests': [
+                'host/win/dpi_aware.manifest',
+              ],
               'inputs': [
                 '<(_binary)',
-                '<(_manifest)',
+                '<@(_manifests)',
               ],
               'outputs': [
                 '<(_binary).embedded.manifest',
@@ -1445,7 +1484,7 @@
                 'mt',
                 '-nologo',
                 '-manifest',
-                '<(_manifest)',
+                '<@(_manifests)',
                 '-outputresource:<(_binary);#1',
                 '-out:<(_binary).embedded.manifest',
               ],
@@ -1465,10 +1504,12 @@
             {
               'action_name': 'Embedding manifest into remoting_host_plugin.dll',
               'binary': '<(PRODUCT_DIR)/remoting_host_plugin.dll',
-              'manifest': 'host/plugin/remoting_host_plugin.manifest',
+              'manifests': [
+                'host/win/comctl32_v6.manifest',
+              ],
               'inputs': [
                 '<(_binary)',
-                '<(_manifest)',
+                '<@(_manifests)',
               ],
               'outputs': [
                 '<(_binary).embedded.manifest',
@@ -1477,7 +1518,7 @@
                 'mt',
                 '-nologo',
                 '-manifest',
-                '<(_manifest)',
+                '<@(_manifests)',
                 '-outputresource:<(_binary);#2',
                 '-out:<(_binary).embedded.manifest',
               ],
@@ -1513,9 +1554,7 @@
           },
           'sources': [
             'host/plugin/remoting_host_plugin.ver',
-            'host/win/remoting_controller.ver',
             'host/win/remoting_core.ver',
-            'host/win/remoting_daemon.ver',
             'host/win/remoting_desktop.ver',
             'host/win/remoting_host.ver',
           ],
@@ -1603,53 +1642,24 @@
           'target_name': 'remoting_me2me_host_archive',
           'type': 'none',
           'dependencies': [
-            'remoting_controller',
             'remoting_core_manifest',
-            'remoting_daemon',
-            'remoting_host_exe',
+            'remoting_desktop_manifest',
+            'remoting_host_manifest',
           ],
           'compiled_inputs': [
-            '<(PRODUCT_DIR)/remoting_controller.exe',
             '<(PRODUCT_DIR)/remoting_core.dll',
-            '<(PRODUCT_DIR)/remoting_daemon.exe',
+            '<(PRODUCT_DIR)/remoting_desktop.exe',
             '<(PRODUCT_DIR)/remoting_host.exe',
           ],
           'compiled_inputs_dst': [
-            'files/remoting_controller.exe',
             'files/remoting_core.dll',
-            'files/remoting_daemon.exe',
+            'files/remoting_desktop.exe',
             'files/remoting_host.exe',
           ],
           'conditions': [
-            ['remoting_multi_process != 0', {
-              'dependencies': [
-                'remoting_desktop',
-              ],
-              'compiled_inputs': [
-                '<(PRODUCT_DIR)/remoting_desktop.exe',
-              ],
-              'compiled_inputs_dst': [
-                'files/remoting_desktop.exe',
-              ],
-            }],
             ['buildtype == "Official"', {
               'defs': [
                 'OFFICIAL_BUILD=1',
-              ],
-
-              # Add 'level="requireAdministrator" uiAccess="true"' to
-              # the manifest only for the official builds because it requires
-              # the binary to be signed to work.
-              'conditions': [
-                ['remoting_multi_process != 0', {
-                  'dependencies': [
-                    'remoting_desktop_manifest',
-                  ],
-                }, {  # else remoting_multi_process == 0
-                  'dependencies': [
-                    'remoting_host_manifest',
-                  ],
-                }],
               ],
             }, {  # else buildtype != "Official"
               'defs': [

@@ -12,9 +12,7 @@
     "WixUtilExtension.dll"
   ],
   "sign": [
-    "remoting_controller.exe",
     "remoting_core.dll",
-    "remoting_daemon.exe",
     "remoting_desktop.exe",
     "remoting_host.exe"
   ],
