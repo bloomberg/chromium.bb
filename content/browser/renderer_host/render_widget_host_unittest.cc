@@ -3217,11 +3217,11 @@ TEST_F(RenderWidgetHostTest, WheelScrollEventOverscrolls) {
 
   // Simulate wheel events.
   SimulateWheelEvent(0, -5, 0, true);  // sent directly
-  SimulateWheelEvent(0, -10, 0, true);  // enqueued
+  SimulateWheelEvent(0, -1, 0, true);  // enqueued
   SimulateWheelEvent(-10, -3, 0, true);  // coalesced into previous event
   SimulateWheelEvent(-15, -1, 0, true);  // coalesced into previous event
-  SimulateWheelEvent(-10, -3, 0, true);  // coalesced into previous event
-  SimulateWheelEvent(-20, 16, 1, true);  // enqueued, different modifiers
+  SimulateWheelEvent(-30, -3, 0, true);  // coalesced into previous event
+  SimulateWheelEvent(-20, 6, 1, true);  // enqueued, different modifiers
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
   EXPECT_EQ(1U, process_->sink().message_count());
   process_->sink().ClearMessages();
@@ -3244,7 +3244,7 @@ TEST_F(RenderWidgetHostTest, WheelScrollEventOverscrolls) {
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(OVERSCROLL_WEST, host_->overscroll_mode());
   EXPECT_EQ(OVERSCROLL_WEST, host_->overscroll_delegate()->current_mode());
-  EXPECT_EQ(-55.f, host_->overscroll_delta_x());
+  EXPECT_EQ(-75.f, host_->overscroll_delta_x());
   EXPECT_EQ(-25.f, host_->overscroll_delegate()->delta_x());
   EXPECT_EQ(0.f, host_->overscroll_delegate()->delta_y());
   EXPECT_EQ(0U, process_->sink().message_count());
@@ -3280,13 +3280,13 @@ TEST_F(RenderWidgetHostTest, WheelScrollOverscrollToggle) {
   process_->sink().ClearMessages();
 
   // Scroll some more to initiate an overscroll.
-  SimulateWheelEvent(20, -4, 0, true);
+  SimulateWheelEvent(40, -4, 0, true);
   EXPECT_EQ(1U, process_->sink().message_count());
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_mode());
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_delegate()->current_mode());
-  EXPECT_EQ(40.f, host_->overscroll_delta_x());
+  EXPECT_EQ(60.f, host_->overscroll_delta_x());
   EXPECT_EQ(10.f, host_->overscroll_delegate()->delta_x());
   EXPECT_EQ(0.f, host_->overscroll_delegate()->delta_y());
   process_->sink().ClearMessages();
@@ -3308,13 +3308,13 @@ TEST_F(RenderWidgetHostTest, WheelScrollOverscrollToggle) {
 
   // Continue to scroll in the reverse direction enough to initiate overscroll
   // in that direction.
-  SimulateWheelEvent(-35, -2, 0, true);
+  SimulateWheelEvent(-55, -2, 0, true);
   EXPECT_EQ(1U, process_->sink().message_count());
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(OVERSCROLL_WEST, host_->overscroll_mode());
   EXPECT_EQ(OVERSCROLL_WEST, host_->overscroll_delegate()->current_mode());
-  EXPECT_EQ(-55.f, host_->overscroll_delta_x());
+  EXPECT_EQ(-75.f, host_->overscroll_delta_x());
   EXPECT_EQ(-25.f, host_->overscroll_delegate()->delta_x());
   EXPECT_EQ(0.f, host_->overscroll_delegate()->delta_y());
 }
@@ -3334,7 +3334,7 @@ TEST_F(RenderWidgetHostTest, ScrollEventsOverscrollWithFling) {
   process_->sink().ClearMessages();
 
   // Scroll some more so as to not overscroll.
-  SimulateWheelEvent(10, -4, 0, true);
+  SimulateWheelEvent(20, -4, 0, true);
   EXPECT_EQ(1U, process_->sink().message_count());
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -3343,13 +3343,13 @@ TEST_F(RenderWidgetHostTest, ScrollEventsOverscrollWithFling) {
   process_->sink().ClearMessages();
 
   // Scroll some more to initiate an overscroll.
-  SimulateWheelEvent(20, -4, 0, true);
+  SimulateWheelEvent(30, -4, 0, true);
   EXPECT_EQ(1U, process_->sink().message_count());
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_mode());
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_delegate()->current_mode());
-  EXPECT_EQ(40.f, host_->overscroll_delta_x());
+  EXPECT_EQ(60.f, host_->overscroll_delta_x());
   EXPECT_EQ(10.f, host_->overscroll_delegate()->delta_x());
   EXPECT_EQ(0.f, host_->overscroll_delegate()->delta_y());
   process_->sink().ClearMessages();
@@ -3381,7 +3381,7 @@ TEST_F(RenderWidgetHostTest, ScrollEventsOverscrollWithZeroFling) {
   process_->sink().ClearMessages();
 
   // Scroll some more so as to not overscroll.
-  SimulateWheelEvent(10, -4, 0, true);
+  SimulateWheelEvent(20, -4, 0, true);
   EXPECT_EQ(1U, process_->sink().message_count());
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -3390,13 +3390,13 @@ TEST_F(RenderWidgetHostTest, ScrollEventsOverscrollWithZeroFling) {
   process_->sink().ClearMessages();
 
   // Scroll some more to initiate an overscroll.
-  SimulateWheelEvent(20, -4, 0, true);
+  SimulateWheelEvent(30, -4, 0, true);
   EXPECT_EQ(1U, process_->sink().message_count());
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_mode());
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_delegate()->current_mode());
-  EXPECT_EQ(40.f, host_->overscroll_delta_x());
+  EXPECT_EQ(60.f, host_->overscroll_delta_x());
   EXPECT_EQ(10.f, host_->overscroll_delegate()->delta_x());
   EXPECT_EQ(0.f, host_->overscroll_delegate()->delta_y());
   process_->sink().ClearMessages();
@@ -3486,12 +3486,12 @@ TEST_F(RenderWidgetHostTest, GestureScrollOverscrolls) {
 
   // Send another gesture event and ACK as not being processed. This should
   // initiate the navigation gesture.
-  SimulateGestureScrollUpdateEvent(35, -5, 0);
+  SimulateGestureScrollUpdateEvent(55, -5, 0);
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_mode());
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_delegate()->current_mode());
-  EXPECT_EQ(35.f, host_->overscroll_delta_x());
+  EXPECT_EQ(55.f, host_->overscroll_delta_x());
   EXPECT_EQ(-5.f, host_->overscroll_delta_y());
   EXPECT_EQ(5.f, host_->overscroll_delegate()->delta_x());
   EXPECT_EQ(0.f, host_->overscroll_delegate()->delta_y());
@@ -3504,7 +3504,7 @@ TEST_F(RenderWidgetHostTest, GestureScrollOverscrolls) {
   SimulateGestureScrollUpdateEvent(10, -5, 0);
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_mode());
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_delegate()->current_mode());
-  EXPECT_EQ(45.f, host_->overscroll_delta_x());
+  EXPECT_EQ(65.f, host_->overscroll_delta_x());
   EXPECT_EQ(-10.f, host_->overscroll_delta_y());
   EXPECT_EQ(15.f, host_->overscroll_delegate()->delta_x());
   EXPECT_EQ(0.f, host_->overscroll_delegate()->delta_y());
@@ -3560,7 +3560,7 @@ TEST_F(RenderWidgetHostTest, GestureScrollDebounceOverscrolls) {
   EXPECT_EQ(2U, host_->GestureEventDebouncingQueueSize());
 
   // Send another update event. This should get into the queue.
-  SimulateGestureScrollUpdateEvent(10, 5, 0);
+  SimulateGestureScrollUpdateEvent(30, 5, 0);
   EXPECT_EQ(0U, process_->sink().message_count());
   EXPECT_EQ(2U, host_->GestureEventLastQueueEventSize());
   EXPECT_EQ(0U, host_->GestureEventDebouncingQueueSize());
@@ -3594,7 +3594,7 @@ TEST_F(RenderWidgetHostTest, GestureScrollDebounceOverscrolls) {
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_mode());
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_delegate()->current_mode());
-  EXPECT_EQ(45.f, host_->overscroll_delta_x());
+  EXPECT_EQ(65.f, host_->overscroll_delta_x());
   EXPECT_EQ(15.f, host_->overscroll_delegate()->delta_x());
   EXPECT_EQ(0.f, host_->overscroll_delegate()->delta_y());
   EXPECT_EQ(0U, process_->sink().message_count());
@@ -3618,7 +3618,7 @@ TEST_F(RenderWidgetHostTest, GestureScrollDebounceTimerOverscroll) {
                     INPUT_EVENT_ACK_STATE_CONSUMED);
 
   // Send update events.
-  SimulateGestureScrollUpdateEvent(35, -5, 0);
+  SimulateGestureScrollUpdateEvent(55, -5, 0);
   EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
   EXPECT_EQ(0U, host_->GestureEventDebouncingQueueSize());
   EXPECT_TRUE(host_->ScrollingInProgress());
@@ -3637,7 +3637,7 @@ TEST_F(RenderWidgetHostTest, GestureScrollDebounceTimerOverscroll) {
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_mode());
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_delegate()->current_mode());
-  EXPECT_EQ(35.f, host_->overscroll_delta_x());
+  EXPECT_EQ(55.f, host_->overscroll_delta_x());
   EXPECT_EQ(5.f, host_->overscroll_delegate()->delta_x());
   EXPECT_EQ(0.f, host_->overscroll_delegate()->delta_y());
   EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
@@ -3702,19 +3702,19 @@ TEST_F(RenderWidgetHostTest, OverscrollWithTouchEvents) {
 
   // Another touch move event should reach the renderer since overscroll hasn't
   // started yet.
-  MoveTouchPoint(0, 45, 10);
+  MoveTouchPoint(0, 65, 10);
   SendTouchEvent();
   EXPECT_EQ(1U, process_->sink().message_count());
   process_->sink().ClearMessages();
 
   SendInputEventACK(WebInputEvent::TouchMove,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  SimulateGestureScrollUpdateEvent(25, 5, 0);
+  SimulateGestureScrollUpdateEvent(45, 5, 0);
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_mode());
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_delegate()->current_mode());
-  EXPECT_EQ(45.f, host_->overscroll_delta_x());
+  EXPECT_EQ(65.f, host_->overscroll_delta_x());
   EXPECT_EQ(15.f, host_->overscroll_delegate()->delta_x());
   EXPECT_EQ(0.f, host_->overscroll_delegate()->delta_y());
   EXPECT_EQ(0U, host_->TouchEventQueueSize());
@@ -3723,13 +3723,13 @@ TEST_F(RenderWidgetHostTest, OverscrollWithTouchEvents) {
   // Try to send another touch event. Now that overscroll has started, the
   // controller should consume the touch event, and the touch-event queue should
   // remain empty.
-  MoveTouchPoint(0, 35, 5);
+  MoveTouchPoint(0, 55, 5);
   SendTouchEvent();
   EXPECT_EQ(0U, process_->sink().message_count());
   EXPECT_EQ(0U, host_->TouchEventQueueSize());
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_mode());
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_delegate()->current_mode());
-  EXPECT_EQ(45.f, host_->overscroll_delta_x());
+  EXPECT_EQ(65.f, host_->overscroll_delta_x());
   EXPECT_EQ(15.f, host_->overscroll_delegate()->delta_x());
   EXPECT_EQ(0.f, host_->overscroll_delegate()->delta_y());
 
@@ -3738,18 +3738,18 @@ TEST_F(RenderWidgetHostTest, OverscrollWithTouchEvents) {
   EXPECT_EQ(0U, host_->TouchEventQueueSize());
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_mode());
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_delegate()->current_mode());
-  EXPECT_EQ(35.f, host_->overscroll_delta_x());
+  EXPECT_EQ(55.f, host_->overscroll_delta_x());
   EXPECT_EQ(5.f, host_->overscroll_delegate()->delta_x());
   EXPECT_EQ(0.f, host_->overscroll_delegate()->delta_y());
 
-  MoveTouchPoint(0, 235, 5);
+  MoveTouchPoint(0, 255, 5);
   SendTouchEvent();
   SimulateGestureScrollUpdateEvent(200, 0, 0);
   EXPECT_EQ(0U, process_->sink().message_count());
   EXPECT_EQ(0U, host_->TouchEventQueueSize());
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_mode());
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_delegate()->current_mode());
-  EXPECT_EQ(235.f, host_->overscroll_delta_x());
+  EXPECT_EQ(255.f, host_->overscroll_delta_x());
   EXPECT_EQ(205.f, host_->overscroll_delegate()->delta_x());
   EXPECT_EQ(0.f, host_->overscroll_delegate()->delta_y());
 
@@ -3793,7 +3793,7 @@ TEST_F(RenderWidgetHostTest, TouchGestureEndDispatchedAfterOverscrollComplete) {
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_delegate()->current_mode());
 
   // Send update events.
-  SimulateGestureScrollUpdateEvent(35, -5, 0);
+  SimulateGestureScrollUpdateEvent(55, -5, 0);
   EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
   EXPECT_EQ(0U, host_->GestureEventDebouncingQueueSize());
   EXPECT_TRUE(host_->ScrollingInProgress());
@@ -3808,7 +3808,7 @@ TEST_F(RenderWidgetHostTest, TouchGestureEndDispatchedAfterOverscrollComplete) {
   EXPECT_EQ(0U, process_->sink().message_count());
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_mode());
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_delegate()->current_mode());
-  EXPECT_EQ(35.f, host_->overscroll_delta_x());
+  EXPECT_EQ(55.f, host_->overscroll_delta_x());
   EXPECT_EQ(5.f, host_->overscroll_delegate()->delta_x());
   EXPECT_EQ(0.f, host_->overscroll_delegate()->delta_y());
 
@@ -3865,7 +3865,7 @@ TEST_F(RenderWidgetHostTest, TouchGestureEndDispatchedAfterOverscrollComplete) {
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_mode());
   EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_delegate()->current_mode());
   EXPECT_EQ(235.f, host_->overscroll_delta_x());
-  EXPECT_EQ(205.f, host_->overscroll_delegate()->delta_x());
+  EXPECT_EQ(185.f, host_->overscroll_delegate()->delta_x());
   EXPECT_EQ(0.f, host_->overscroll_delegate()->delta_y());
 
   // Send end event.

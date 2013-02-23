@@ -11,7 +11,7 @@ namespace {
 float g_horiz_threshold_complete = 0.25f;
 float g_vert_threshold_complete = 0.20f;
 
-float g_min_threshold_start = 30.f;
+float g_min_threshold_start = 50.f;
 
 float g_horiz_resist_after = 30.f;
 float g_vert_resist_after = 30.f;

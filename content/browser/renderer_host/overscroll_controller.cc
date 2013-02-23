@@ -231,9 +231,10 @@ void OverscrollController::ProcessOverscroll(float delta_x, float delta_y) {
   // from the current direction, then always switch to no-overscroll mode first
   // to make sure that subsequent scroll events go through to the page first.
   OverscrollMode new_mode = OVERSCROLL_NONE;
-  if (fabs(overscroll_delta_x_) > fabs(overscroll_delta_y_))
+  const float kMinRatio = 2.5;
+  if (fabs(overscroll_delta_x_) > fabs(overscroll_delta_y_) * kMinRatio)
     new_mode = overscroll_delta_x_ > 0.f ? OVERSCROLL_EAST : OVERSCROLL_WEST;
-  else
+  else if (fabs(overscroll_delta_y_) > fabs(overscroll_delta_x_) * kMinRatio)
     new_mode = overscroll_delta_y_ > 0.f ? OVERSCROLL_SOUTH : OVERSCROLL_NORTH;
 
   if (overscroll_mode_ == OVERSCROLL_NONE) {
