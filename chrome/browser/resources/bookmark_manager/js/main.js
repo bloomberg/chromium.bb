@@ -1577,12 +1577,16 @@ function recordUserAction(name) {
 }
 
 /**
- * Returns the selected bookmark id of the active item in the list view.
+ * The currently selected bookmark, based on where the user is clicking.
+ * @return {string} The ID of the currently selected bookmark (could be from
+ *     tree view or list view).
  */
 function getSelectedId() {
+  if (document.activeElement == tree)
+    return tree.selectedItem.bookmarkId;
   var selectedItem = list.selectedItem;
   return selectedItem && bmm.isFolder(selectedItem) ?
-      selectedItem.id : list.parentId;
+      selectedItem.id : tree.selectedItem.bookmarkId;
 }
 
 /**
