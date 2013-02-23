@@ -30,7 +30,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_APP_HOST_MAIN  ICON  "..\\..\\..\\app\\theme\\app_list.ico"
+IDI_APP_HOST_MAIN  ICON  "..\\..\\chrome\\app\\theme\\app_list.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

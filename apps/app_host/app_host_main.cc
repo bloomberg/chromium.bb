@@ -4,13 +4,13 @@
 
 #include <windows.h>
 
+#include "apps/app_host/binaries_installer.h"
+#include "apps/app_host/update.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/process_util.h"
-#include "chrome/browser/extensions/app_host/binaries_installer.h"
-#include "chrome/browser/extensions/app_host/update.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
 
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, wchar_t*, int) {
