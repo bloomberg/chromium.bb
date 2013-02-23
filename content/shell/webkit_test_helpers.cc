@@ -50,6 +50,7 @@ void ExportLayoutTestSpecificPreferences(const WebPreferences& from,
   to->javascript_can_open_windows_automatically =
       from.javaScriptCanOpenWindowsAutomatically;
   to->user_style_sheet_location = from.userStyleSheetLocation;
+  to->touch_drag_drop_enabled = from.touchDragDropEnabled;
 }
 
 // Applies settings that differ between layout tests and regular mode. Some

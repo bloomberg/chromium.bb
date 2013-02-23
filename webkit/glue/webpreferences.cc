@@ -121,6 +121,7 @@ WebPreferences::WebPreferences()
       device_supports_touch(false),
       device_supports_mouse(true),
       touch_adjustment_enabled(true),
+      touch_drag_drop_enabled(false),
       default_tile_width(256),
       default_tile_height(256),
       max_untiled_layer_width(512),
@@ -467,6 +468,7 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setDeviceSupportsTouch(device_supports_touch);
   settings->setDeviceSupportsMouse(device_supports_mouse);
   settings->setEnableTouchAdjustment(touch_adjustment_enabled);
+  settings->setTouchDragDropEnabled(touch_drag_drop_enabled);
 
   settings->setDefaultTileSize(
       WebSize(default_tile_width, default_tile_height));

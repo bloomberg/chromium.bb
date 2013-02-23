@@ -145,6 +145,7 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool device_supports_touch;
   bool device_supports_mouse;
   bool touch_adjustment_enabled;
+  bool touch_drag_drop_enabled;
   int default_tile_width;
   int default_tile_height;
   int max_untiled_layer_width;
