@@ -1,0 +1,46 @@
+# List of suppressions
+# Timeouts
+Http/MediaTest.*
+File/MediaTest.*
+ExternalClearKey/EncryptedMediaTest.*
+ClearKey/EncryptedMediaTest.*
+WorkerTest.*
+MediaTest.*
+AudioLayoutTest.*
+WebGLConformanceTest.*
+MessagePortTest.Tests
+EncryptedMediaTest.InvalidKeySystem
+IndexedDBBrowserTest.NullKeyPathPersistence
+IndexedDBBrowserTest.VersionChangeCrashResilience
+CrossPlatformAccessibilityBrowserTest.*
+GpuCrashTest.MANUAL_WebkitLoseContext
+DatabaseTest.*
+BrowserPluginHostTest.*
+
+# Failures
+WebrtcBrowserTest.*
+WorkerLayoutTest.*
+MediaLayoutTest.*
+IndexedDBLayoutTest.*
+ContentBrowserTest.MANUAL_ShouldntRun
+RenderViewHostTest.BaseURLParam
+OffTheRecordClipboardTest.ClearContentData
+FileSystemLayoutTest.*
+GpuPixelTestCanvas2DSD.MANUAL_Canvas2DRedBoxSD
+GpuPixelBrowserTest.*
+BlobLayoutTest.XhrResponseBlob
+FileSystemBrowserTestWithLowQuota.QuotaTest
+BlobLayoutTest.*
+ChildProcessSecurityPolicyInProcessBrowserTest.NoLeak
+
+# Crashes
+RenderViewImplTest.*
+BrowserPluginTest.*
+PluginTest.*
+WorkerXHRHttpLayoutTest.Tests
+SecurityExploitBrowserTest.SetWebUIProperty
+RendererAccessibilityTest.EditableTextModeFocusNotifications
+RenderWidgetTest.OnMsgPaintAtSize
+GpuCrashTest.MANUAL_Kill
+DownloadContentTest.ResumeInterruptedDownload
+RenderViewHostManagerTest.*

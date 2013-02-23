@@ -111,6 +111,11 @@ class TestPackage(object):
       self.adb.PushIfNeeded(
           self.test_suite_dirname + '/linux_dumper_unittest_helper',
           constants.TEST_EXECUTABLE_DIR + '/linux_dumper_unittest_helper')
+    if self.test_suite_basename == 'content_browsertests':
+      self.adb.PushIfNeeded(
+          self.test_suite_dirname +
+          '/../content_shell/assets/content_shell.pak',
+          external_storage + '/paks/content_shell.pak')
 
   def _WatchTestOutput(self, p):
     """Watches the test output.
