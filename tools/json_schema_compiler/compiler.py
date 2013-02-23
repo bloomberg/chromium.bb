@@ -20,7 +20,7 @@ from cpp_generator import CppGenerator
 from cpp_type_generator import CppTypeGenerator
 from dart_generator import DartGenerator
 from cpp_bundle_generator import CppBundleGenerator
-from model import Model
+from model import Model, UnixName
 import idl_schema
 import json_schema
 
@@ -87,7 +87,7 @@ def GenerateSchema(generator,
             referenced_schema = split_schema[1]
 
         referenced_schema_path = os.path.join(
-            os.path.dirname(schema), referenced_schema + '.json')
+            os.path.dirname(schema), '%s.json' % UnixName(referenced_schema))
         referenced_api_defs = json_schema.Load(referenced_schema_path)
 
         for namespace in referenced_api_defs:

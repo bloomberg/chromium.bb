@@ -71,9 +71,9 @@ class CppTypeGeneratorTest(unittest.TestCase):
     self.assertEquals('#include "path/to/browser_action.h"\n'
                       '#include "path/to/font_settings.h"',
                       manager.GenerateIncludes().Render())
-    self.assertEquals('namespace browserAction {\n'
+    self.assertEquals('namespace browser_action {\n'
                       '}\n'
-                      'namespace fontSettings {\n'
+                      'namespace font_settings {\n'
                       '}',
                       manager.GenerateForwardDeclarations().Render())
 

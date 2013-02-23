@@ -97,7 +97,7 @@ class CppTypeGenerator(object):
       if self._default_namespace is ref_type.namespace:
         cpp_type = ref_type.name
       else:
-        cpp_type = '%s::%s' % (ref_type.namespace.name, ref_type.name)
+        cpp_type = '%s::%s' % (ref_type.namespace.unix_name, ref_type.name)
     elif type_.property_type == PropertyType.BOOLEAN:
       cpp_type = 'bool'
     elif type_.property_type == PropertyType.INTEGER:
@@ -151,7 +151,7 @@ class CppTypeGenerator(object):
     c = Code()
 
     for namespace, dependencies in self._NamespaceTypeDependencies().items():
-      c.Append('namespace %s {' % namespace.name)
+      c.Append('namespace %s {' % namespace.unix_name)
       for dependency in dependencies:
         # No point forward-declaring hard dependencies.
         if dependency.hard:
