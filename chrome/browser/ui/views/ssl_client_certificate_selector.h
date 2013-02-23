@@ -33,7 +33,7 @@ class TextButton;
 }
 
 class CertificateSelectorTableModel;
-class WebContentsModalDialog;
+class ConstrainedWindowViews;
 
 class SSLClientCertificateSelector : public SSLClientAuthObserver,
                                      public views::DialogDelegateView,
@@ -80,7 +80,7 @@ class SSLClientCertificateSelector : public SSLClientAuthObserver,
 
   content::WebContents* web_contents_;
 
-  WebContentsModalDialog* window_;
+  ConstrainedWindowViews* window_;
   views::TableView* table_;
   views::TextButton* view_cert_button_;
 

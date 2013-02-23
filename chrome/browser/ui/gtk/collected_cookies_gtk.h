@@ -87,7 +87,7 @@ class CollectedCookiesGtk : public ConstrainedWindowGtkDelegate,
 
   content::NotificationRegistrar registrar_;
 
-  WebContentsModalDialog* window_;
+  ConstrainedWindowGtk* window_;
 
   // Widgets of the dialog.
   GtkWidget* dialog_;

@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "chrome/browser/ui/web_contents_modal_dialog.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message.h"

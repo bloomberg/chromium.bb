@@ -176,7 +176,7 @@ void ChromeWebContentsViewDelegateGtk::OnSetFloatingPosition(
   if (!constrained_window_)
     return;
 
-  // Place each WebContentsModalDialog in the center of the view.
+  // Place each ConstrainedWindowGtk in the center of the view.
   GtkWidget* widget = constrained_window_->widget();
   DCHECK(gtk_widget_get_parent(widget) == floating_.get());
 

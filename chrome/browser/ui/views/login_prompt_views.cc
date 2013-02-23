@@ -141,7 +141,7 @@ class LoginHandlerViews : public LoginHandler,
   }
 
   virtual void CloseDialog() OVERRIDE {
-    // The hosting WebContentsModalDialog may have been freed.
+    // The hosting ConstrainedWindowViews may have been freed.
     if (dialog_)
       dialog_->CloseWebContentsModalDialog();
   }

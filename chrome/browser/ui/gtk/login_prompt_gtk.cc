@@ -119,7 +119,7 @@ class LoginHandlerGtk : public LoginHandler,
   }
 
   virtual void CloseDialog() OVERRIDE {
-    // The hosting WebContentsModalDialog may have been freed.
+    // The hosting ConstrainedWindowGtk may have been freed.
     if (dialog_)
       dialog_->CloseWebContentsModalDialog();
   }

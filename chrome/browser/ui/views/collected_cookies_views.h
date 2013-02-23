@@ -14,7 +14,7 @@
 #include "ui/views/controls/tree/tree_view_controller.h"
 #include "ui/views/window/dialog_delegate.h"
 
-class WebContentsModalDialog;
+class ConstrainedWindowViews;
 class CookieInfoView;
 class CookiesTreeModel;
 class InfobarView;
@@ -89,7 +89,7 @@ class CollectedCookiesViews : public views::DialogDelegateView,
 
   content::NotificationRegistrar registrar_;
 
-  WebContentsModalDialog* window_;
+  ConstrainedWindowViews* window_;
 
   // The web contents.
   content::WebContents* web_contents_;

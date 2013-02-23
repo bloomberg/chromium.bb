@@ -47,9 +47,9 @@ class ConstrainedWebDialogDelegate {
 
 // ConstrainedWebDialogUI is a facility to show HTML WebUI content
 // in a tab-modal constrained dialog.  It is implemented as an adapter
-// between an WebDialogUI object and a WebContentsModalDialog object.
+// between an WebDialogUI object and a web contents modal dialog.
 //
-// Since WebContentsModalDialog requires platform-specific delegate
+// Since the web contents modal dialog requires platform-specific delegate
 // implementations, this class is just a factory stub.
 // TODO(thestig): Refactor the platform-independent code out of the
 // platform-specific implementations.
