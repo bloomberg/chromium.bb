@@ -4184,6 +4184,10 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
      * clear previous state.
      */
     PORT_Memset(&ss->xtnData, 0, sizeof(TLSExtensionData));
+    ss->ssl3.hs.may_get_cert_status = PR_FALSE;
+    if (ss->ssl3.hs.cert_status.data) {
+	SECITEM_FreeItem(&ss->ssl3.hs.cert_status, PR_FALSE);
+    }
 
     SSL_TRC(30,("%d: SSL3[%d]: reset handshake hashes",
 	    SSL_GETPID(), ss->fd ));
