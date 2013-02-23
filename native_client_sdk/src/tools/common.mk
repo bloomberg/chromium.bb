@@ -11,11 +11,11 @@
 #
 # Toolchain
 #
-# This makefile is designed to work with the NEWLIB toolchain which is
-# currently supported by x86 and ARM.  To switch to glibc, you would need
-# to drop support for ARM.
+# By default the VALID_TOOLCHAINS list contains newlib and glibc.  If your
+# project only builds in one or the other then this should be overridden
+# accordingly.
 #
-VALID_TOOLCHAINS?=newlib
+VALID_TOOLCHAINS?=newlib glibc
 TOOLCHAIN?=$(word 1,$(VALID_TOOLCHAINS))
 
 
@@ -169,13 +169,19 @@ $(foreach tool,$(USABLE_TOOLCHAINS),$(eval $(call TOOLCHAIN_RULE,$(tool),$(dep))
 .PHONY: all_versions
 all_versions: $(TOOLCHAIN_LIST)
 
+
+OUTBASE?=.
+OUTDIR:=$(OUTBASE)/$(TOOLCHAIN)/$(CONFIG)
+STAMPDIR?=$(OUTDIR)
+
+
 #
 # Target to remove temporary files
 #
 .PHONY: clean
 clean:
 	$(RM) -f $(TARGET).nmf
-	$(RM) -fr $(TOOLCHAIN)
+	$(RM) -fr $(OUTDIR)
 
 
 #
@@ -190,9 +196,6 @@ clean:
 	$(MKDIR) -p $(dir $@)
 	@echo "Directory Stamp" > $@
 
-OUTBASE?=.
-OUTDIR:=$(OUTBASE)/$(TOOLCHAIN)/$(CONFIG)
-STAMPDIR?=$(OUTDIR)
 
 #
 # Dependency Macro
