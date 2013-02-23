@@ -33,8 +33,18 @@ class NativeWebContentsModalDialogManager {
   // notify the manager.
   virtual void ManageDialog(NativeWebContentsModalDialog dialog) = 0;
 
+  // Makes the web contents modal dialog visible. Only one web contents modal
+  // dialog is shown at a time per tab.
+  virtual void ShowDialog(NativeWebContentsModalDialog dialog) = 0;
+
   // Closes the web contents modal dialog.
   virtual void CloseDialog(NativeWebContentsModalDialog dialog) = 0;
+
+  // Sets focus on the web contents modal dialog.
+  virtual void FocusDialog(NativeWebContentsModalDialog dialog) = 0;
+
+  // Runs a pulse animation for the web contents modal dialog.
+  virtual void PulseDialog(NativeWebContentsModalDialog dialog) = 0;
 
  protected:
   NativeWebContentsModalDialogManager() {}

@@ -25,11 +25,10 @@ void WebContentsModalDialogManager::AddDialog(
     WebContentsModalDialog* dialog) {
   child_dialogs_.push_back(dialog);
 
-  if (native_manager_)
-    native_manager_->ManageDialog(dialog->GetNativeDialog());
+  native_manager_->ManageDialog(dialog->GetNativeDialog());
 
   if (child_dialogs_.size() == 1) {
-    dialog->ShowWebContentsModalDialog();
+    native_manager_->ShowDialog(dialog->GetNativeDialog());
     BlockWebContentsInteraction(true);
   }
 }
@@ -60,7 +59,7 @@ void WebContentsModalDialogManager::FocusTopmostDialog() {
   DCHECK(dialog_count());
   WebContentsModalDialog* window = *dialog_begin();
   DCHECK(window);
-  window->FocusWebContentsModalDialog();
+  native_manager_->FocusDialog(window->GetNativeDialog());
 }
 
 void WebContentsModalDialogManager::WillClose(WebContentsModalDialog* dialog) {
@@ -73,7 +72,7 @@ void WebContentsModalDialogManager::WillClose(WebContentsModalDialog* dialog) {
     BlockWebContentsInteraction(false);
   } else {
     if (removed_topmost_dialog)
-      child_dialogs_[0]->ShowWebContentsModalDialog();
+      native_manager_->ShowDialog(child_dialogs_[0]->GetNativeDialog());
     BlockWebContentsInteraction(true);
   }
 }
@@ -84,19 +83,20 @@ WebContentsModalDialogManager::WebContentsModalDialogManager(
       delegate_(NULL),
       native_manager_(
           ALLOW_THIS_IN_INITIALIZER_LIST(CreateNativeManager(this))) {
+  DCHECK(native_manager_);
 }
 
 void WebContentsModalDialogManager::CloseAllDialogs() {
   // Clear out any dialogs since we are leaving this page entirely.  To ensure
   // that we iterate over every element in child_dialogs_ we need to use a copy
-  // of child_dialogs_. Otherwise if dialog->CloseWebContentsModalDialog()
-  // modifies child_dialogs_ we could end up skipping some elements.
+  // of child_dialogs_. Otherwise if closing a dialog causes child_dialogs_ to
+  // be modified, we could end up skipping some elements.
   WebContentsModalDialogList child_dialogs_copy(child_dialogs_);
   for (WebContentsModalDialogList::iterator it = child_dialogs_copy.begin();
        it != child_dialogs_copy.end(); ++it) {
     WebContentsModalDialog* dialog = *it;
     if (dialog) {
-      dialog->CloseWebContentsModalDialog();
+      native_manager_->CloseDialog(dialog->GetNativeDialog());
       BlockWebContentsInteraction(false);
     }
   }
@@ -114,7 +114,7 @@ void WebContentsModalDialogManager::DidNavigateMainFrame(
 void WebContentsModalDialogManager::DidGetIgnoredUIEvent() {
   if (dialog_count()) {
     WebContentsModalDialog* dialog = *dialog_begin();
-    dialog->FocusWebContentsModalDialog();
+    native_manager_->FocusDialog(dialog->GetNativeDialog());
   }
 }
 

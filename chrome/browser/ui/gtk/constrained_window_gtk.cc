@@ -73,6 +73,11 @@ ConstrainedWindowGtk::ConstrainedWindowGtk(
   g_signal_connect(widget(), "hierarchy-changed",
                    G_CALLBACK(OnHierarchyChangedThunk), this);
 
+  // TODO(wittman): Getting/setting data on the widget is a hack to facilitate
+  // looking up the ConstrainedWindowGtk from the GtkWindow during refactoring.
+  // Remove once ConstrainedWindowGtk is gone.
+  g_object_set_data(G_OBJECT(widget()), "ConstrainedWindowGtk", this);
+
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents_);
   web_contents_modal_dialog_manager->AddDialog(this);

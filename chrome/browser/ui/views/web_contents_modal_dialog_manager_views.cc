@@ -74,6 +74,10 @@ class NativeWebContentsModalDialogManagerViews
 #endif
   }
 
+  virtual void ShowDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
+    return GetConstrainedWindowViews(dialog)->ShowWebContentsModalDialog();
+  }
+
   virtual void CloseDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
     views::Widget* widget = GetWidget(dialog);
 #if defined(USE_ASH)
@@ -83,6 +87,14 @@ class NativeWebContentsModalDialogManagerViews
       view->parent()->ClearProperty(aura::client::kAnimationsDisabledKey);
 #endif
     widget->Close();
+  }
+
+  virtual void FocusDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
+    return GetConstrainedWindowViews(dialog)->FocusWebContentsModalDialog();
+  }
+
+  virtual void PulseDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
+    return GetConstrainedWindowViews(dialog)->PulseWebContentsModalDialog();
   }
 
   // views::WidgetObserver overrides
@@ -96,6 +108,11 @@ class NativeWebContentsModalDialogManagerViews
     views::Widget* widget = views::Widget::GetWidgetForNativeWindow(dialog);
     DCHECK(widget);
     return widget;
+  }
+
+  static ConstrainedWindowViews* GetConstrainedWindowViews(
+      NativeWebContentsModalDialog dialog) {
+    return static_cast<ConstrainedWindowViews*>(GetWidget(dialog));
   }
 
   NativeWebContentsModalDialogManagerDelegate* native_delegate_;

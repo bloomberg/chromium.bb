@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/scoped_vector.h"
 #include "chrome/browser/ui/web_contents_modal_dialog.h"
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -29,8 +30,10 @@ class WebContentsModalDialogManagerTest
 
 class WebContentsModalDialogCloseTest : public WebContentsModalDialog {
  public:
-  explicit WebContentsModalDialogCloseTest(content::WebContents* web_contents)
-      : web_contents_(web_contents) {
+  explicit WebContentsModalDialogCloseTest(content::WebContents* web_contents,
+                                           int* close_count)
+      : close_count_(close_count),
+        web_contents_(web_contents) {
   }
 
   virtual void ShowWebContentsModalDialog() OVERRIDE {}
@@ -38,35 +41,56 @@ class WebContentsModalDialogCloseTest : public WebContentsModalDialog {
     WebContentsModalDialogManager* web_contents_modal_dialog_manager =
         WebContentsModalDialogManager::FromWebContents(web_contents_);
     web_contents_modal_dialog_manager->WillClose(this);
-    close_count++;
+    (*close_count_)++;
   }
   virtual void FocusWebContentsModalDialog() OVERRIDE {}
   virtual void PulseWebContentsModalDialog() OVERRIDE {}
   virtual NativeWebContentsModalDialog GetNativeDialog() OVERRIDE {
-    NOTREACHED();
-    return NULL;
+    // The WebContentsModalDialogManager requires a unique opaque ID for
+    // the dialog, so using reinterpret_cast of this is sufficient.
+    return reinterpret_cast<NativeWebContentsModalDialog>(this);
   }
   virtual ~WebContentsModalDialogCloseTest() {}
 
-  int close_count;
+  int* close_count_;
   content::WebContents* web_contents_;
 };
 
+class NativeWebContentsModalDialogManagerCloseTest
+    : public NativeWebContentsModalDialogManager {
+ public:
+  virtual void ManageDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
+  }
+  virtual void ShowDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
+  }
+  virtual void CloseDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
+    reinterpret_cast<WebContentsModalDialogCloseTest*>(dialog)->
+        CloseWebContentsModalDialog();
+  }
+  virtual void FocusDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
+  }
+  virtual void PulseDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
+  }
+};
+
 TEST_F(WebContentsModalDialogManagerTest, WebContentsModalDialogs) {
-  WebContentsModalDialogCloseTest window(web_contents());
-  window.close_count = 0;
+  ScopedVector<WebContentsModalDialogCloseTest> windows;
+  int close_count = 0;
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents());
   WebContentsModalDialogManager::TestApi test_api(
       web_contents_modal_dialog_manager);
 
-  test_api.ResetNativeManager(NULL);
+  test_api.ResetNativeManager(new NativeWebContentsModalDialogManagerCloseTest);
 
   const int kWindowCount = 4;
-  for (int i = 0; i < kWindowCount; i++)
-    web_contents_modal_dialog_manager->AddDialog(&window);
-  EXPECT_EQ(window.close_count, 0);
+  for (int i = 0; i < kWindowCount; i++) {
+    windows.push_back(
+        new WebContentsModalDialogCloseTest(web_contents(), &close_count));
+    web_contents_modal_dialog_manager->AddDialog(windows.back());
+  }
+  EXPECT_EQ(0, close_count);
 
   test_api.CloseAllDialogs();
-  EXPECT_EQ(window.close_count, kWindowCount);
+  EXPECT_EQ(kWindowCount, close_count);
 }
