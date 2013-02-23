@@ -1530,7 +1530,13 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, OnBeforeUnloadOnClose) {
   EXPECT_EQ(0, panel_manager->num_panels());
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, SizeClamping) {
+// http://crbug.com/175760; several panel tests failing regularly on mac.
+#if defined(OS_MACOSX)
+#define MAYBE_SizeClamping DISABLED_SizeClamping
+#else
+#define MAYBE_SizeClamping SizeClamping
+#endif
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_SizeClamping) {
   // Using '0' sizes is equivalent of not providing sizes in API and causes
   // minimum sizes to be applied to facilitate auto-sizing.
   CreatePanelParams params("Panel", gfx::Rect(), SHOW_AS_ACTIVE);
@@ -1562,8 +1568,15 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, SizeClamping) {
   panel->Close();
 }
 
+// http://crbug.com/175760; several panel tests failing regularly on mac.
+#if defined(OS_MACOSX)
+#define MAYBE_TightAutosizeAroundSingleLine \
+        DISABLED_TightAutosizeAroundSingleLine
+#else
+#define MAYBE_TightAutosizeAroundSingleLine TightAutosizeAroundSingleLine
+#endif
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
-                       TightAutosizeAroundSingleLine) {
+                       MAYBE_TightAutosizeAroundSingleLine) {
   PanelManager::GetInstance()->enable_auto_sizing(true);
   // Using 0 sizes triggers auto-sizing.
   CreatePanelParams params("Panel", gfx::Rect(), SHOW_AS_ACTIVE);
@@ -1594,8 +1607,16 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   panel->Close();
 }
 
+// http://crbug.com/175760; several panel tests failing regularly on mac.
+#if defined(OS_MACOSX)
+#define MAYBE_DefaultMaxSizeOnDisplaySettingsChange \
+        DISABLED_DefaultMaxSizeOnDisplaySettingsChange
+#else
+#define MAYBE_DefaultMaxSizeOnDisplaySettingsChange \
+        DefaultMaxSizeOnDisplaySettingsChange
+#endif
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
-                       DefaultMaxSizeOnDisplaySettingsChange) {
+                       MAYBE_DefaultMaxSizeOnDisplaySettingsChange) {
   Panel* panel = CreatePanelWithBounds("1", gfx::Rect(0, 0, 240, 220));
 
   gfx::Size old_max_size = panel->max_size();
@@ -1617,8 +1638,16 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   panel->Close();
 }
 
+// http://crbug.com/175760; several panel tests failing regularly on mac.
+#if defined(OS_MACOSX)
+#define MAYBE_CustomMaxSizeOnDisplaySettingsChange \
+        DISABLED_CustomMaxSizeOnDisplaySettingsChange
+#else
+#define MAYBE_CustomMaxSizeOnDisplaySettingsChange \
+        CustomMaxSizeOnDisplaySettingsChange
+#endif
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
-                       CustomMaxSizeOnDisplaySettingsChange) {
+                       MAYBE_CustomMaxSizeOnDisplaySettingsChange) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   Panel* panel = CreatePanelWithBounds("1", gfx::Rect(0, 0, 240, 220));
 
@@ -1655,6 +1684,12 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   panel->Close();
 }
 
+// http://crbug.com/175760; several panel tests failing regularly on mac.
+#if defined(OS_MACOSX)
+#define MAYBE_DevTools DISABLED_DevTools
+#else
+#define MAYBE_DevTools DevTools
+#endif
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DevTools) {
   // Create a test panel with web contents loaded.
   CreatePanelParams params("1", gfx::Rect(0, 0, 200, 220), SHOW_AS_ACTIVE);
@@ -1685,6 +1720,12 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DevTools) {
   panel->Close();
 }
 
+// http://crbug.com/175760; several panel tests failing regularly on mac.
+#if defined(OS_MACOSX)
+#define MAYBE_DevToolsConsole DISABLED_DevToolsConsole
+#else
+#define MAYBE_DevToolsConsole DevToolsConsole
+#endif
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DevToolsConsole) {
   // Create a test panel with web contents loaded.
   CreatePanelParams params("1", gfx::Rect(0, 0, 200, 220), SHOW_AS_ACTIVE);
@@ -1764,7 +1805,8 @@ class PanelExtensionApiTest : public ExtensionApiTest {
   }
 };
 
-#if defined(OS_LINUX) || (!defined(OS_WIN) && defined(USE_AURA))
+#if defined(OS_LINUX) || (!defined(OS_WIN) && defined(USE_AURA)) || \
+    defined(OS_MACOSX)
 // Focus test fails if there is no window manager on Linux.
 // Aura panels have different behavior that do not apply to this test.
 #define MAYBE_FocusChangeEventOnMinimize DISABLED_FocusChangeEventOnMinimize
