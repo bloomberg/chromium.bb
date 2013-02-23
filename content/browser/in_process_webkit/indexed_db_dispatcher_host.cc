@@ -399,7 +399,8 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateObjectStore(
       params.name, params.key_path, params.auto_increment);
   if (parent_->Context()->IsOverQuota(
       database_url_map_[params.ipc_database_id])) {
-    database->abort(host_transaction_id);
+    database->abort(host_transaction_id, WebIDBDatabaseError(
+        WebKit::WebIDBDatabaseExceptionQuotaError));
   }
 }
 
@@ -668,7 +669,8 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateIndex(
       params.multi_entry);
   if (parent_->Context()->IsOverQuota(
       database_url_map_[params.ipc_database_id])) {
-    database->abort(host_transaction_id);
+    database->abort(host_transaction_id, WebIDBDatabaseError(
+        WebKit::WebIDBDatabaseExceptionQuotaError));
   }
 }
 
