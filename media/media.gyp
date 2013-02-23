@@ -1457,9 +1457,7 @@
 
       ],
     }],
-    ['OS != "android" and OS != "ios"', {
-      # Android and iOS do not use ffmpeg, so disable the targets which require
-      # it.
+    ['use_ffmpeg == 1', {
       'targets': [
         {
           'target_name': 'ffmpeg_unittests',
