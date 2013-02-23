@@ -72,7 +72,8 @@ class WalletClient
   // GetWalletItems retrieves the user's online wallet. The WalletItems
   // returned may require additional action such as presenting legal documents
   // to the user to be accepted.
-  void GetWalletItems(base::WeakPtr<WalletClientObserver> observer);
+  void GetWalletItems(const GURL& source_url,
+                      base::WeakPtr<WalletClientObserver> observer);
 
   // The GetWalletItems call to the Online Wallet backend may require the user
   // to accept various legal documents before a FullWallet can be generated.
@@ -80,6 +81,7 @@ class WalletClient
   // to the GetWalletItems call.
   void AcceptLegalDocuments(const std::vector<std::string>& document_ids,
                             const std::string& google_transaction_id,
+                            const GURL& source_url,
                             base::WeakPtr<WalletClientObserver> observer);
 
   // Authenticates that |card_verification_number| is for the backing instrument
@@ -98,24 +100,27 @@ class WalletClient
   // |google_transaction_id| is the same one that GetWalletItems returns.
   void GetFullWallet(const std::string& instrument_id,
                      const std::string& address_id,
-                     const std::string& merchant_domain,
+                     const GURL& source_url,
                      const Cart& cart,
                      const std::string& google_transaction_id,
                      base::WeakPtr<WalletClientObserver> observer);
 
   // SaveAddress saves a new shipping address.
   void SaveAddress(const Address& address,
+                   const GURL& source_url,
                    base::WeakPtr<WalletClientObserver> observer);
 
   // SaveInstrument saves a new instrument.
   void SaveInstrument(const Instrument& instrument,
                       const std::string& obfuscated_gaia_id,
+                      const GURL& source_url,
                       base::WeakPtr<WalletClientObserver> observer);
 
   // SaveInstrumentAndAddress saves a new instrument and address.
   void SaveInstrumentAndAddress(const Instrument& instrument,
                                 const Address& shipping_address,
                                 const std::string& obfuscated_gaia_id,
+                                const GURL& source_url,
                                 base::WeakPtr<WalletClientObserver> observer);
 
   // SendAutocheckoutStatus is used for tracking the success of Autocheckout
@@ -123,7 +128,7 @@ class WalletClient
   // where the purchase occured, and |google_transaction_id| is the same as the
   // one provided by GetWalletItems.
   void SendAutocheckoutStatus(autofill::AutocheckoutStatus status,
-                              const std::string& merchant_domain,
+                              const GURL& source_url,
                               const std::string& google_transaction_id,
                               base::WeakPtr<WalletClientObserver> observer);
 
@@ -134,6 +139,7 @@ class WalletClient
   // fail.
   void UpdateInstrument(const std::string& instrument_id,
                         const Address& billing_address,
+                        const GURL& source_url,
                         base::WeakPtr<WalletClientObserver> observer);
 
   // Whether there is a currently running request (i.e. |request_| != NULL).

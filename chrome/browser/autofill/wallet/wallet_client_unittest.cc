@@ -31,6 +31,7 @@
 namespace {
 
 const char kGoogleTransactionId[] = "google-transaction-id";
+const char kMerchantUrl[] = "https://example.com/path?key=value";
 
 const char kGetFullWalletValidResponse[] =
     "{"
@@ -188,7 +189,8 @@ const char kAcceptLegalDocumentsValidRequest[] =
             "\"doc_1\","
             "\"doc_2\""
         "],"
-        "\"google_transaction_id\":\"google-transaction-id\""
+        "\"google_transaction_id\":\"google-transaction-id\","
+        "\"merchant_domain\":\"https://example.com/\""
     "}";
 
 const char kAuthenticateInstrumentValidRequest[] =
@@ -207,7 +209,7 @@ const char kGetFullWalletValidRequest[] =
         "},"
         "\"encrypted_otp\":\"encrypted_one_time_pad\","
         "\"google_transaction_id\":\"google_transaction_id\","
-        "\"merchant_domain\":\"merchant_domain\","
+        "\"merchant_domain\":\"https://example.com/\","
         "\"risk_params\":\"\","
         "\"selected_address_id\":\"shipping_address_id\","
         "\"selected_instrument_id\":\"instrument_id\","
@@ -216,11 +218,13 @@ const char kGetFullWalletValidRequest[] =
 
 const char kGetWalletItemsValidRequest[] =
     "{"
+        "\"merchant_domain\":\"https://example.com/\","
         "\"risk_params\":\"\""
     "}";
 
 const char kSaveAddressValidRequest[] =
     "{"
+        "\"merchant_domain\":\"https://example.com/\","
         "\"risk_params\":\"\","
         "\"shipping_address\":"
         "{"
@@ -269,6 +273,7 @@ const char kSaveInstrumentValidRequest[] =
         "},"
         "\"instrument_escrow_handle\":\"escrow_handle\","
         "\"instrument_phone_number\":\"phone_number\","
+        "\"merchant_domain\":\"https://example.com/\","
         "\"risk_params\":\"\""
       "}";
 
@@ -300,6 +305,7 @@ const char kSaveInstrumentAndAddressValidRequest[] =
         "},"
         "\"instrument_escrow_handle\":\"escrow_handle\","
         "\"instrument_phone_number\":\"phone_number\","
+        "\"merchant_domain\":\"https://example.com/\","
         "\"risk_params\":\"\","
         "\"shipping_address\":"
         "{"
@@ -323,14 +329,14 @@ const char kSaveInstrumentAndAddressValidRequest[] =
 const char kSendAutocheckoutStatusOfSuccessValidRequest[] =
     "{"
         "\"google_transaction_id\":\"google_transaction_id\","
-        "\"hostname\":\"hostname\","
+        "\"merchant_domain\":\"https://example.com/\","
         "\"success\":true"
     "}";
 
 const char kSendAutocheckoutStatusOfFailureValidRequest[] =
     "{"
         "\"google_transaction_id\":\"google_transaction_id\","
-        "\"hostname\":\"hostname\","
+        "\"merchant_domain\":\"https://example.com/\","
         "\"reason\":\"CANNOT_PROCEED\","
         "\"success\":false"
     "}";
@@ -338,6 +344,8 @@ const char kSendAutocheckoutStatusOfFailureValidRequest[] =
 const char kUpdateInstrumentValidRequest[] =
     "{"
         "\"instrument_phone_number\":\"phone_number\","
+        "\"merchant_domain\":\"https://example.com/\","
+        "\"risk_params\":\"\","
         "\"upgraded_billing_address\":"
         "{"
             "\"address_line\":"
@@ -458,7 +466,7 @@ TEST_F(WalletClientTest, WalletErrorOnExpectedVoidResponse) {
 
   WalletClient wallet_client(profile_.GetRequestContext());
   wallet_client.SendAutocheckoutStatus(autofill::SUCCESS,
-                                       "",
+                                       GURL(kMerchantUrl),
                                        "",
                                        observer.AsWeakPtr());
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
@@ -476,7 +484,7 @@ TEST_F(WalletClientTest, WalletErrorOnExpectedResponse) {
   net::TestURLFetcherFactory factory;
 
   WalletClient wallet_client(profile_.GetRequestContext());
-  wallet_client.GetWalletItems(observer.AsWeakPtr());
+  wallet_client.GetWalletItems(GURL(kMerchantUrl), observer.AsWeakPtr());
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   fetcher->set_response_code(net::HTTP_INTERNAL_SERVER_ERROR);
@@ -491,7 +499,7 @@ TEST_F(WalletClientTest, NetworkFailureOnExpectedVoidResponse) {
 
   WalletClient wallet_client(profile_.GetRequestContext());
   wallet_client.SendAutocheckoutStatus(autofill::SUCCESS,
-                                       "",
+                                       GURL(kMerchantUrl),
                                        "",
                                        observer.AsWeakPtr());
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
@@ -507,7 +515,7 @@ TEST_F(WalletClientTest, NetworkFailureOnExpectedResponse) {
   net::TestURLFetcherFactory factory;
 
   WalletClient wallet_client(profile_.GetRequestContext());
-  wallet_client.GetWalletItems(observer.AsWeakPtr());
+  wallet_client.GetWalletItems(GURL(kMerchantUrl), observer.AsWeakPtr());
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   fetcher->set_response_code(net::HTTP_UNAUTHORIZED);
@@ -522,7 +530,7 @@ TEST_F(WalletClientTest, RequestError) {
 
   WalletClient wallet_client(profile_.GetRequestContext());
   wallet_client.SendAutocheckoutStatus(autofill::SUCCESS,
-                                       "",
+                                       GURL(kMerchantUrl),
                                        "",
                                        observer.AsWeakPtr());
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
@@ -539,7 +547,7 @@ TEST_F(WalletClientTest, GetFullWalletSuccess) {
   Cart cart("currency_code", "currency_code");
   wallet_client.GetFullWallet("instrument_id",
                               "shipping_address_id",
-                              "merchant_domain",
+                              GURL(kMerchantUrl),
                               cart,
                               "google_transaction_id",
                               observer.AsWeakPtr());
@@ -569,7 +577,7 @@ TEST_F(WalletClientTest, GetFullWalletEncryptionDown) {
   Cart cart("currency_code", "currency_code");
   wallet_client.GetFullWallet("instrument_id",
                               "shipping_address_id",
-                              "merchant_domain",
+                              GURL(kMerchantUrl),
                               cart,
                               "google_transaction_id",
                               observer.AsWeakPtr());
@@ -593,7 +601,7 @@ TEST_F(WalletClientTest, GetFullWalletEncryptionMalformed) {
   Cart cart("currency_code", "currency_code");
   wallet_client.GetFullWallet("instrument_id",
                               "shipping_address_id",
-                              "merchant_domain",
+                              GURL(kMerchantUrl),
                               cart,
                               "google_transaction_id",
                               observer.AsWeakPtr());
@@ -618,7 +626,7 @@ TEST_F(WalletClientTest, GetFullWalletMalformedResponse) {
   Cart cart("currency_code", "currency_code");
   wallet_client.GetFullWallet("instrument_id",
                               "shipping_address_id",
-                              "merchant_domain",
+                              GURL(kMerchantUrl),
                               cart,
                               "google_transaction_id",
                               observer.AsWeakPtr());
@@ -649,6 +657,7 @@ TEST_F(WalletClientTest, AcceptLegalDocuments) {
   doc_ids.push_back("doc_2");
   wallet_client.AcceptLegalDocuments(doc_ids,
                                      kGoogleTransactionId,
+                                     GURL(kMerchantUrl),
                                      observer.AsWeakPtr());
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
@@ -773,7 +782,7 @@ TEST_F(WalletClientTest, GetWalletItems) {
   net::TestURLFetcherFactory factory;
 
   WalletClient wallet_client(profile_.GetRequestContext());
-  wallet_client.GetWalletItems(observer.AsWeakPtr());
+  wallet_client.GetWalletItems(GURL(kMerchantUrl), observer.AsWeakPtr());
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   EXPECT_EQ(kGetWalletItemsValidRequest, GetData(fetcher));
@@ -793,7 +802,7 @@ TEST_F(WalletClientTest, SaveAddressSucceeded) {
   scoped_ptr<Address> address = GetTestShippingAddress();
 
   WalletClient wallet_client(profile_.GetRequestContext());
-  wallet_client.SaveAddress(*address, observer.AsWeakPtr());
+  wallet_client.SaveAddress(*address, GURL(kMerchantUrl), observer.AsWeakPtr());
   VerifyAndFinishRequest(factory,
                          net::HTTP_OK,
                          kSaveAddressValidRequest,
@@ -809,7 +818,7 @@ TEST_F(WalletClientTest, SaveAddressFailedMalformedResponse) {
   scoped_ptr<Address> address = GetTestShippingAddress();
 
   WalletClient wallet_client(profile_.GetRequestContext());
-  wallet_client.SaveAddress(*address, observer.AsWeakPtr());
+  wallet_client.SaveAddress(*address, GURL(kMerchantUrl), observer.AsWeakPtr());
   VerifyAndFinishRequest(factory,
                          net::HTTP_OK,
                          kSaveAddressValidRequest,
@@ -827,6 +836,7 @@ TEST_F(WalletClientTest, SaveInstrumentSucceeded) {
   WalletClient wallet_client(profile_.GetRequestContext());
   wallet_client.SaveInstrument(*instrument,
                                "obfuscated_gaia_id",
+                               GURL(kMerchantUrl),
                                observer.AsWeakPtr());
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
@@ -853,6 +863,7 @@ TEST_F(WalletClientTest, SaveInstrumentEscrowDown) {
   WalletClient wallet_client(profile_.GetRequestContext());
   wallet_client.SaveInstrument(*instrument,
                                "obfuscated_gaia_id",
+                               GURL(kMerchantUrl),
                                observer.AsWeakPtr());
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
@@ -873,6 +884,7 @@ TEST_F(WalletClientTest, SaveInstrumentEscrowMalformed) {
   WalletClient wallet_client(profile_.GetRequestContext());
   wallet_client.SaveInstrument(*instrument,
                                "obfuscated_gaia_id",
+                               GURL(kMerchantUrl),
                                observer.AsWeakPtr());
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
@@ -893,6 +905,7 @@ TEST_F(WalletClientTest, SaveInstrumentFailedMalformedResponse) {
   WalletClient wallet_client(profile_.GetRequestContext());
   wallet_client.SaveInstrument(*instrument,
                                "obfuscated_gaia_id",
+                               GURL(kMerchantUrl),
                                observer.AsWeakPtr());
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
@@ -923,6 +936,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressSucceeded) {
   wallet_client.SaveInstrumentAndAddress(*instrument,
                                          *address,
                                          "obfuscated_gaia_id",
+                                         GURL(kMerchantUrl),
                                          observer.AsWeakPtr());
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
@@ -951,6 +965,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressEscrowDown) {
   wallet_client.SaveInstrumentAndAddress(*instrument,
                                          *address,
                                          "obfuscated_gaia_id",
+                                         GURL(kMerchantUrl),
                                          observer.AsWeakPtr());
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
@@ -974,6 +989,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressEscrowMalformed) {
   wallet_client.SaveInstrumentAndAddress(*instrument,
                                          *address,
                                          "obfuscated_gaia_id",
+                                         GURL(kMerchantUrl),
                                          observer.AsWeakPtr());
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
@@ -997,6 +1013,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedAddressMissing) {
   wallet_client.SaveInstrumentAndAddress(*instrument,
                                          *address,
                                          "obfuscated_gaia_id",
+                                         GURL(kMerchantUrl),
                                          observer.AsWeakPtr());
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
@@ -1025,6 +1042,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedInstrumentMissing) {
   wallet_client.SaveInstrumentAndAddress(*instrument,
                                          *address,
                                          "obfuscated_gaia_id",
+                                         GURL(kMerchantUrl),
                                          observer.AsWeakPtr());
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
@@ -1050,6 +1068,7 @@ TEST_F(WalletClientTest, UpdateInstrumentSucceeded) {
   WalletClient wallet_client(profile_.GetRequestContext());
   wallet_client.UpdateInstrument("instrument_id",
                                  *address,
+                                 GURL(kMerchantUrl),
                                  observer.AsWeakPtr());
   VerifyAndFinishRequest(factory,
                          net::HTTP_OK,
@@ -1068,6 +1087,7 @@ TEST_F(WalletClientTest, UpdateInstrumentMalformedResponse) {
   WalletClient wallet_client(profile_.GetRequestContext());
   wallet_client.UpdateInstrument("instrument_id",
                                  *address,
+                                 GURL(kMerchantUrl),
                                  observer.AsWeakPtr());
   VerifyAndFinishRequest(factory,
                          net::HTTP_OK,
@@ -1083,7 +1103,7 @@ TEST_F(WalletClientTest, SendAutocheckoutOfStatusSuccess) {
 
   WalletClient wallet_client(profile_.GetRequestContext());
   wallet_client.SendAutocheckoutStatus(autofill::SUCCESS,
-                                       "hostname",
+                                       GURL(kMerchantUrl),
                                        "google_transaction_id",
                                        observer.AsWeakPtr());
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
@@ -1101,7 +1121,7 @@ TEST_F(WalletClientTest, SendAutocheckoutStatusOfFailure) {
 
   WalletClient wallet_client(profile_.GetRequestContext());
   wallet_client.SendAutocheckoutStatus(autofill::CANNOT_PROCEED,
-                                       "hostname",
+                                       GURL(kMerchantUrl),
                                        "google_transaction_id",
                                        observer.AsWeakPtr());
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
@@ -1118,7 +1138,7 @@ TEST_F(WalletClientTest, HasRequestInProgress) {
   WalletClient wallet_client(profile_.GetRequestContext());
   EXPECT_FALSE(wallet_client.HasRequestInProgress());
 
-  wallet_client.GetWalletItems(observer.AsWeakPtr());
+  wallet_client.GetWalletItems(GURL(kMerchantUrl), observer.AsWeakPtr());
   EXPECT_TRUE(wallet_client.HasRequestInProgress());
 
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);

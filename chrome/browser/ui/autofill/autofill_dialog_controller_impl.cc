@@ -958,7 +958,7 @@ void AutofillDialogControllerImpl::ScheduleRefreshWalletItems() {
     return;
   }
 
-  wallet_client_.GetWalletItems(weak_ptr_factory_.GetWeakPtr());
+  wallet_client_.GetWalletItems(source_url_, weak_ptr_factory_.GetWeakPtr());
   refresh_wallet_items_queued_ = false;
 }
 
