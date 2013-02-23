@@ -1595,6 +1595,8 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
   EXPECT_EQ(3, controller.GetEntryCount());
   EXPECT_EQ(1, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
+  EXPECT_FALSE(controller.GetPendingEntry());
 
   // Go back one more.
   controller.GoBack();
@@ -1604,6 +1606,8 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
   EXPECT_EQ(3, controller.GetEntryCount());
   EXPECT_EQ(0, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
+  EXPECT_FALSE(controller.GetPendingEntry());
 }
 
 TEST_F(NavigationControllerTest, LinkClick) {

@@ -908,11 +908,15 @@ bool NavigationControllerImpl::RendererDidNavigate(
   DVLOG(1) << "Navigation finished at (smoothed) timestamp "
            << timestamp.ToInternalValue();
 
+  // We should not have a pending entry anymore.  Clear it again in case any
+  // error cases above forgot to do so.
+  DiscardNonCommittedEntriesInternal();
+
   // All committed entries should have nonempty content state so WebKit doesn't
   // get confused when we go back to them (see the function for details).
   DCHECK(!params.content_state.empty());
   NavigationEntryImpl* active_entry =
-      NavigationEntryImpl::FromNavigationEntry(GetActiveEntry());
+      NavigationEntryImpl::FromNavigationEntry(GetLastCommittedEntry());
   active_entry->SetTimestamp(timestamp);
   active_entry->SetContentState(params.content_state);
   // No longer needed since content state will hold the post data if any.
@@ -923,7 +927,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
   active_entry->set_is_renderer_initiated(false);
 
   // The active entry's SiteInstance should match our SiteInstance.
-  DCHECK(active_entry->site_instance() == web_contents_->GetSiteInstance());
+  CHECK(active_entry->site_instance() == web_contents_->GetSiteInstance());
 
   // Now prep the rest of the details for the notification and broadcast.
   details->entry = active_entry;
@@ -1229,6 +1233,7 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
   if (PageTransitionStripQualifier(params.transition) ==
       PAGE_TRANSITION_AUTO_SUBFRAME) {
     // This is not user-initiated. Ignore.
+    DiscardNonCommittedEntriesInternal();
     return;
   }
 
@@ -1265,8 +1270,12 @@ bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(
   // Update the current navigation entry in case we're going back/forward.
   if (entry_index != last_committed_entry_index_) {
     last_committed_entry_index_ = entry_index;
+    DiscardNonCommittedEntriesInternal();
     return true;
   }
+
+  // We do not need to discard the pending entry in this case, since we will
+  // not generate commit notifications for this auto-subframe navigation.
   return false;
 }
 
