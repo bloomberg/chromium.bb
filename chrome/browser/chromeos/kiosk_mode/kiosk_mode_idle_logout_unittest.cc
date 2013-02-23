@@ -63,12 +63,14 @@ class KioskModeIdleLogoutTest : public ash::test::AshTestBase {
   content::NotificationRegistrar registrar_;
 };
 
-TEST_F(KioskModeIdleLogoutTest, CheckObserversBeforeUserLogin) {
+// http://crbug.com/177918
+TEST_F(KioskModeIdleLogoutTest, DISABLED_CheckObserversBeforeUserLogin) {
   EXPECT_TRUE(LoginUserObserverRegistered());
   EXPECT_FALSE(PowerManagerObserverRegistered());
 }
 
-TEST_F(KioskModeIdleLogoutTest, CheckObserversAfterUserLogin) {
+// http://crbug.com/177918
+TEST_F(KioskModeIdleLogoutTest, DISABLED_CheckObserversAfterUserLogin) {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_USER_CHANGED,
       content::Source<UserManager>(UserManager::Get()),
