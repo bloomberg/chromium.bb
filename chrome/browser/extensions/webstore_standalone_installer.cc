@@ -51,22 +51,49 @@ const char kInlineInstallSupportedError[] =
     "redirected to the Chrome Web Store.";
 
 WebstoreStandaloneInstaller::WebstoreStandaloneInstaller(
-    WebContents* web_contents,
     std::string webstore_item_id,
     VerifiedSiteRequired require_verified_site,
     PromptType prompt_type,
     GURL requestor_url,
-    Callback callback)
-    : content::WebContentsObserver(web_contents),
+    Profile* profile,
+    WebContents* web_contents,
+    const Callback& callback)
+    : content::WebContentsObserver(
+          prompt_type == INLINE_PROMPT ?
+              web_contents :
+              content::WebContents::Create(
+                  content::WebContents::CreateParams(profile))),
       id_(webstore_item_id),
       require_verified_site_(require_verified_site == REQUIRE_VERIFIED_SITE),
       prompt_type_(prompt_type),
       requestor_url_(requestor_url),
+      profile_(profile),
       callback_(callback),
-      skip_post_install_ui_(false),
       average_rating_(0.0),
       rating_count_(0) {
-  CHECK(!callback.is_null());
+  DCHECK((prompt_type == SKIP_PROMPT &&
+          profile != NULL &&
+          web_contents == NULL) ||
+         (prompt_type == STANDARD_PROMPT &&
+          profile != NULL &&
+          web_contents == NULL) ||
+         (prompt_type == INLINE_PROMPT &&
+          profile != NULL &&
+          web_contents != NULL &&
+          profile == Profile::FromBrowserContext(
+              web_contents->GetBrowserContext()))
+  ) << " prompt_type=" << prompt_type
+    << " profile=" << profile
+    << " web_contents=" << web_contents;
+  DCHECK(this->web_contents() != NULL);
+  CHECK(!callback_.is_null());
+}
+
+WebstoreStandaloneInstaller::~WebstoreStandaloneInstaller() {
+  if (prompt_type_ != INLINE_PROMPT) {
+    // We create and own the web_contents in this case.
+    delete web_contents();
+  }
 }
 
 void WebstoreStandaloneInstaller::BeginInstall() {
@@ -77,20 +104,16 @@ void WebstoreStandaloneInstaller::BeginInstall() {
     return;
   }
 
-  Profile* profile = Profile::FromBrowserContext(
-      web_contents()->GetBrowserContext());
   // Use the requesting page as the referrer both since that is more correct
   // (it is the page that caused this request to happen) and so that we can
   // track top sites that trigger inline install requests.
   webstore_data_fetcher_.reset(new WebstoreDataFetcher(
       this,
-      profile->GetRequestContext(),
+      profile_->GetRequestContext(),
       requestor_url_,
       id_));
   webstore_data_fetcher_->Start();
 }
-
-WebstoreStandaloneInstaller::~WebstoreStandaloneInstaller() {}
 
 void WebstoreStandaloneInstaller::OnWebstoreRequestFailure() {
   CompleteInstall(kWebstoreRequestError);
@@ -99,7 +122,7 @@ void WebstoreStandaloneInstaller::OnWebstoreRequestFailure() {
 void WebstoreStandaloneInstaller::OnWebstoreResponseParseSuccess(
     DictionaryValue* webstore_data) {
   // Check if the tab has gone away in the meantime.
-  if (!web_contents()) {
+  if (prompt_type_ == INLINE_PROMPT && !web_contents()) {
     CompleteInstall("");
     return;
   }
@@ -123,13 +146,15 @@ void WebstoreStandaloneInstaller::OnWebstoreResponseParseSuccess(
       return;
     }
 
-    web_contents()->OpenURL(OpenURLParams(
-        GURL(redirect_url),
-        content::Referrer(web_contents()->GetURL(),
-                          WebKit::WebReferrerPolicyDefault),
-        NEW_FOREGROUND_TAB,
-        content::PAGE_TRANSITION_AUTO_BOOKMARK,
-        false));
+    if (prompt_type_ == INLINE_PROMPT) {
+      web_contents()->OpenURL(OpenURLParams(
+          GURL(redirect_url),
+          content::Referrer(web_contents()->GetURL(),
+                            WebKit::WebReferrerPolicyDefault),
+          NEW_FOREGROUND_TAB,
+          content::PAGE_TRANSITION_AUTO_BOOKMARK,
+          false));
+    }
     CompleteInstall(kInlineInstallSupportedError);
     return;
   }
@@ -199,8 +224,7 @@ void WebstoreStandaloneInstaller::OnWebstoreResponseParseSuccess(
       manifest,
       "",  // We don't have any icon data.
       icon_url,
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext())->
-          GetRequestContext());
+      profile_->GetRequestContext());
   // The helper will call us back via OnWebstoreParseSucces or
   // OnWebstoreParseFailure.
   helper->Start();
@@ -216,7 +240,7 @@ void WebstoreStandaloneInstaller::OnWebstoreParseSuccess(
     const SkBitmap& icon,
     base::DictionaryValue* manifest) {
   // Check if the tab has gone away in the meantime.
-  if (!web_contents()) {
+  if (prompt_type_ == INLINE_PROMPT && !web_contents()) {
     CompleteInstall("");
     return;
   }
@@ -271,26 +295,21 @@ void WebstoreStandaloneInstaller::OnWebstoreParseFailure(
 
 void WebstoreStandaloneInstaller::InstallUIProceed() {
   // Check if the tab has gone away in the meantime.
-  if (!web_contents()) {
+  if (prompt_type_ == INLINE_PROMPT && !web_contents()) {
     CompleteInstall("");
     return;
   }
 
-  Profile* profile = Profile::FromBrowserContext(
-      web_contents()->GetBrowserContext());
-
   scoped_ptr<WebstoreInstaller::Approval> approval(
       WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
-          profile,
+          profile_,
           id_,
           scoped_ptr<base::DictionaryValue>(manifest_.get()->DeepCopy())));
-  if (skip_post_install_ui_)
-    approval->skip_post_install_ui = true;
-  else
-    approval->use_app_installed_bubble = true;
+  approval->skip_post_install_ui = (prompt_type_ != INLINE_PROMPT);
+  approval->use_app_installed_bubble = (prompt_type_ == INLINE_PROMPT);
 
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
-      profile, this, &(web_contents()->GetController()), id_, approval.Pass(),
+      profile_, this, &(web_contents()->GetController()), id_, approval.Pass(),
       WebstoreInstaller::FLAG_INLINE_INSTALL);
   installer->Start();
 }

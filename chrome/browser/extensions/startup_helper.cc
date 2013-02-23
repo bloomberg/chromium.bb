@@ -136,22 +136,17 @@ void AppInstallHelper::BeginInstall(
     DoneCallback done_callback) {
   done_callback_ = done_callback;
 
-  // TODO(asargent) - it would be nice not to need a WebContents just to
-  // use the standalone installer. (crbug.com/149039)
-  web_contents_.reset(content::WebContents::Create(
-      content::WebContents::CreateParams(profile)));
-
   WebstoreStandaloneInstaller::Callback callback =
       base::Bind(&AppInstallHelper::OnAppInstallComplete,
                  base::Unretained(this));
   installer_ = new WebstoreStandaloneInstaller(
-      web_contents_.get(),
       id,
       WebstoreStandaloneInstaller::DO_NOT_REQUIRE_VERIFIED_SITE,
       prompt_type,
       GURL(),
+      profile,
+      NULL,
       callback);
-  installer_->set_skip_post_install_ui(true);
   installer_->BeginInstall();
 }
 

@@ -318,11 +318,12 @@ void TabHelper::OnInlineWebstoreInstall(
                  install_id, return_route_id);
   scoped_refptr<WebstoreStandaloneInstaller> installer(
       new WebstoreStandaloneInstaller(
-          web_contents(),
           webstore_item_id,
           WebstoreStandaloneInstaller::REQUIRE_VERIFIED_SITE,
           WebstoreStandaloneInstaller::INLINE_PROMPT,
           requestor_url,
+          Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
+          web_contents(),
           callback));
   installer->BeginInstall();
 }

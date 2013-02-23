@@ -59,15 +59,27 @@ class WebstoreStandaloneInstaller
   // developer-readable error message about why it failed.
   typedef base::Callback<void(bool success, const std::string& error)> Callback;
 
-  WebstoreStandaloneInstaller(content::WebContents* web_contents,
-                              std::string webstore_item_id,
+  // Two use cases are supported:
+  //
+  // 1) Basic ("standard") prompt: the dialog that pops up has no additional
+  // links:
+  // |prompt_type| - should be set to STANDARD_PROMPT;
+  // |profile| - points to the profile to install the app for;
+  // |web_contents| - must be NULL.
+  //
+  // 2) Extended ("inline") prompt: the dialog contains a 'View Details' link
+  // pointing to the app's page in the webstore:
+  // |prompt_type| - should be set to INLINE_PROMPT;
+  // |profile| - points to the profile to install the app for;
+  // |web_contents| - must be non-NULL and specify a WebContents to be used to
+  // navigate to the link's target if the link is clicked.
+  WebstoreStandaloneInstaller(std::string webstore_item_id,
                               VerifiedSiteRequired require_verified_site,
                               PromptType prompt_type,
                               GURL requestor_url,
-                              Callback callback);
-
-  void set_skip_post_install_ui(bool skip) { skip_post_install_ui_ = skip; }
-
+                              Profile* profile,
+                              content::WebContents* web_contents,
+                              const Callback& callback);
   void BeginInstall();
 
  private:
@@ -128,13 +140,16 @@ class WebstoreStandaloneInstaller
   static bool IsRequestorURLInVerifiedSite(const GURL& requestor_url,
                                            const std::string& verified_site);
 
+  // Input configuration.
   std::string id_;
   bool require_verified_site_;
   PromptType prompt_type_;
   GURL requestor_url_;
+  Profile* profile_;
   Callback callback_;
+
+  // Installation dialog.
   scoped_ptr<ExtensionInstallPrompt> install_ui_;
-  bool skip_post_install_ui_;
 
   // For fetching webstore JSON data.
   scoped_ptr<WebstoreDataFetcher> webstore_data_fetcher_;
