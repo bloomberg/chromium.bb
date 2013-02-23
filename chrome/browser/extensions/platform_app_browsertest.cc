@@ -786,7 +786,13 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_Messaging) {
   EXPECT_TRUE(result_catcher.GetNextResult());
 }
 
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WebContentsHasFocus) {
+// TODO(linux_aura) http://crbug.com/163931
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+#define MAYBE_WebContentsHasFocus DISABLED_WebContentsHasFocus
+#else
+#define MAYBE_WebContentsHasFocus WebContentsHasFocus
+#endif
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_WebContentsHasFocus) {
   const Extension* extension = LoadAndLaunchPlatformApp("minimal");
   ShellWindow* window = CreateShellWindow(extension);
   EXPECT_TRUE(window->web_contents()->GetRenderWidgetHostView()->HasFocus());

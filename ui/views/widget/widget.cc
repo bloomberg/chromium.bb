@@ -1354,7 +1354,8 @@ void Widget::SetInitialBounds(const gfx::Rect& bounds) {
       // If we're going to maximize, wait until Show is invoked to set the
       // bounds. That way we avoid a noticeable resize.
       initial_restored_bounds_ = saved_bounds;
-    } else {
+    } else if (!saved_bounds.IsEmpty()) {
+      // If the saved bounds are valid, use them.
       SetBounds(saved_bounds);
     }
   } else {

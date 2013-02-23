@@ -124,7 +124,8 @@ IN_PROC_BROWSER_TEST_F(ExperimentalPlatformAppBrowserTest, WindowsApiSetIcon) {
 // TODO(asargent) - Figure out what to do about the fact that minimize events
 // don't work under ubuntu unity.
 // (crbug.com/162794 and https://bugs.launchpad.net/unity/+bug/998073).
-#if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
+// TODO(linux_aura) http://crbug.com/163931
+#if (defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)) && !(defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA))
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiProperties) {
   EXPECT_TRUE(

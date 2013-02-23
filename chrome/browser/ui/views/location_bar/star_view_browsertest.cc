@@ -15,7 +15,12 @@ typedef InProcessBrowserTest StarViewTest;
 
 // Verify that clicking the bookmark star a second time hides the bookmark
 // bubble.
-IN_PROC_BROWSER_TEST_F(StarViewTest, HideOnSecondClick) {
+#if defined(OS_LINUX) && defined(USE_AURA) && !defined(OS_CHROMEOS)
+#define MAYBE_HideOnSecondClick DISABLED_HideOnSecondClick
+#else
+#define MAYBE_HideOnSecondClick HideOnSecondClick
+#endif
+IN_PROC_BROWSER_TEST_F(StarViewTest, MAYBE_HideOnSecondClick) {
   BrowserView* browser_view = reinterpret_cast<BrowserView*>(
       browser()->window());
   views::ImageView* star_view =

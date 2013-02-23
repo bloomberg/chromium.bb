@@ -91,7 +91,14 @@ Window FindEventTarget(const base::NativeEvent& xev) {
   if (xev->type == GenericEvent &&
       static_cast<XIEvent*>(xev->xcookie.data)->extension == g_xinput_opcode) {
     target = static_cast<XIDeviceEvent*>(xev->xcookie.data)->event;
+  } else if (xev->type == MapNotify) {
+    target = xev->xmap.window;
+  } else if (xev->type == UnmapNotify) {
+    target = xev->xunmap.window;
   }
+  // TODO(erg): Are there other events that we aren't reacting to properly
+  // because xev->xany.window != xev->eventname.window?
+
   return target;
 }
 

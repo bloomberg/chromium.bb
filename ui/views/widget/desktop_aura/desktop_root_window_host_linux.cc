@@ -449,10 +449,18 @@ gfx::Rect DesktopRootWindowHostLinux::GetWorkAreaBoundsInScreen() const {
     return gfx::Rect(value[0], value[1], value[2], value[3]);
   }
 
-  // TODO(erg): As a fallback, we should return the bounds for the current
-  // monitor. However, that's pretty difficult and requires futzing with XRR.
-  NOTIMPLEMENTED();
-  return gfx::Rect();
+  // Fetch the geometry of the root window.
+  Window root;
+  int x, y;
+  unsigned int width, height;
+  unsigned int border_width, depth;
+  if (!XGetGeometry(xdisplay_, x_root_window_, &root, &x, &y,
+                    &width, &height, &border_width, &depth)) {
+    NOTIMPLEMENTED();
+    return gfx::Rect(0, 0, 10, 10);
+  }
+
+  return gfx::Rect(x, y, width, height);
 }
 
 void DesktopRootWindowHostLinux::SetShape(gfx::NativeRegion native_region) {
@@ -690,6 +698,10 @@ void DesktopRootWindowHostLinux::SetBounds(const gfx::Rect& bounds) {
   unsigned value_mask = 0;
 
   if (size_changed) {
+    // X11 will send an XError at our process if have a 0 sized window.
+    DCHECK_GT(bounds.width(), 0);
+    DCHECK_GT(bounds.height(), 0);
+
     changes.width = bounds.width();
     changes.height = bounds.height();
     value_mask |= CWHeight | CWWidth;

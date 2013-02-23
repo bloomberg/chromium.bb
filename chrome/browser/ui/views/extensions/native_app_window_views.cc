@@ -121,7 +121,7 @@ void NativeAppWindowViews::InitializeDefaultWindow(
   if (create_params.bounds.x() == INT_MIN ||
       create_params.bounds.y() == INT_MIN) {
     window_->CenterWindow(window_bounds.size());
-  } else {
+  } else if (!window_bounds.IsEmpty()) {
     window_->SetBounds(window_bounds);
   }
 

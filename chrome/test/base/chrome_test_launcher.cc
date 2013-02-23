@@ -7,14 +7,18 @@
 #include <stack>
 
 #include "base/command_line.h"
+#include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
+#include "base/process_util.h"
 #include "base/run_loop.h"
 #include "base/string_util.h"
 #include "base/test/test_file_util.h"
 #include "chrome/app/chrome_main_delegate.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_test_suite.h"
 #include "content/public/app/content_main.h"
 #include "content/public/browser/browser_thread.h"
@@ -115,9 +119,18 @@ class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
 };
 
 int main(int argc, char** argv) {
-// http://crbug.com/163931 Disabled until browser_tests ready on Linux Aura.
+// http://crbug.com/163931 Disabled until interactive_ui_tests ready on Linux
+// Aura.
 #if defined(OS_LINUX) && defined(USE_AURA) && !defined(OS_CHROMEOS)
-  return 0;
+  base::FilePath bin_dir;
+  CHECK(file_util::ReadSymbolicLink(
+      base::FilePath(base::kProcSelfExe), &bin_dir));
+  std::string filename = bin_dir.value();
+  // http://crbug.com/154081: early exit until interactive_ui_tests are green.
+  if (EndsWith(filename, "interactive_ui_tests", false)) {
+    LOG(INFO) << "interactive_ui_tests on Linux Aura are not ready yet.";
+    return 0;
+  }
 #endif
 
 #if defined(OS_MACOSX)

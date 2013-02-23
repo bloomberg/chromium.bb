@@ -561,8 +561,14 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageTest);
 };
 
+// TODO(linux_aura) http://crbug.com/163931
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+#define MAYBE_MalwareRedirectInIFrameCanceled DISABLED_MalwareRedirectInIFrameCanceled
+#else
+#define MAYBE_MalwareRedirectInIFrameCanceled MalwareRedirectInIFrameCanceled
+#endif
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
-                       MalwareRedirectInIFrameCanceled) {
+                       MAYBE_MalwareRedirectInIFrameCanceled) {
   // 1. Test the case that redirect is a subresource.
   MalwareRedirectCancelAndProceed("openWinIFrame");
   // If the redirect was from subresource but canceled, "proceed" will continue
