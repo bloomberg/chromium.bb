@@ -11,8 +11,11 @@
 
 #include "ppapi/tests/test_struct_sizes.c"
 
+// TODO(jschuh): Resolve ILP64 to LLP64 issue. crbug.com/177779
+#if !defined(_WIN64)
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(GLintptr, 8);
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(GLsizeiptr, 8);
+#endif
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_CompletionCallback_Func, 8);
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_URLLoaderTrusted_StatusCallback, 8);
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_CompletionCallback, 24);
