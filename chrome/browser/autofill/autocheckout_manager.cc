@@ -52,7 +52,8 @@ FormData BuildAutocheckoutFormData() {
   formdata.fields.push_back(BuildField("email"));
   formdata.fields.push_back(BuildField("cc-name"));
   formdata.fields.push_back(BuildField("cc-number"));
-  formdata.fields.push_back(BuildField("cc-exp"));
+  formdata.fields.push_back(BuildField("cc-exp-month"));
+  formdata.fields.push_back(BuildField("cc-exp-year"));
   formdata.fields.push_back(BuildField("cc-csc"));
   formdata.fields.push_back(BuildField("billing street-address"));
   formdata.fields.push_back(BuildField("billing locality"));
