@@ -25,22 +25,21 @@ const size_t kExpectedMappedKeyCount = 0;
 #include "ui/base/keycodes/usb_keycode_map.h"
 #undef USB_KEYMAP
 
-const uint32_t kUsbInvalidKeycode =     0x000000;
 const uint32_t kUsbNonExistentKeycode = 0xffffff;
 const uint32_t kUsbUsBackslash =        0x070031;
 const uint32_t kUsbNonUsHash =          0x070032;
 
 TEST(UsbKeycodeMap, Basic) {
   // Verify that the first element in the table is the "invalid" code.
-  EXPECT_EQ(kUsbInvalidKeycode, usb_keycode_map[0].usb_keycode);
-  EXPECT_EQ(kInvalidKeycode, usb_keycode_map[0].native_keycode);
+  EXPECT_EQ(InvalidUsbKeycode(), usb_keycode_map[0].usb_keycode);
+  EXPECT_EQ(InvalidNativeKeycode(), usb_keycode_map[0].native_keycode);
 
   // Verify that there are no duplicate entries in the mapping.
   std::map<uint32_t, uint16_t> usb_to_native;
   std::map<uint16_t, uint32_t> native_to_usb;
   for (size_t i = 0; i < arraysize(usb_keycode_map); ++i) {
     // Don't test keys with no native keycode mapping on this platform.
-    if (usb_keycode_map[i].native_keycode == kInvalidKeycode)
+    if (usb_keycode_map[i].native_keycode == InvalidNativeKeycode())
       continue;
 
     // Verify UsbKeycodeToNativeKeycode works for this key.
@@ -78,7 +77,8 @@ TEST(UsbKeycodeMap, Basic) {
 
 TEST(UsbKeycodeMap, NonExistent) {
   // Verify that UsbKeycodeToNativeKeycode works for a non-existent USB keycode.
-  EXPECT_EQ(kInvalidKeycode, UsbKeycodeToNativeKeycode(kUsbNonExistentKeycode));
+  EXPECT_EQ(InvalidNativeKeycode(),
+      UsbKeycodeToNativeKeycode(kUsbNonExistentKeycode));
 }
 
 TEST(UsbKeycodeMap, UsBackslashIsNonUsHash) {

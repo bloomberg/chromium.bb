@@ -437,7 +437,8 @@ void DesktopSessionAgent::OnInjectKeyEvent(
 
   // Ignore unknown keycodes.
   if (event.has_usb_keycode() &&
-      UsbKeycodeToNativeKeycode(event.usb_keycode()) == kInvalidKeycode) {
+      (UsbKeycodeToNativeKeycode(event.usb_keycode()) ==
+           InvalidNativeKeycode())) {
     LOG(ERROR) << "KeyEvent: unknown USB keycode: "
                << std::hex << event.usb_keycode() << std::dec;
     return;

@@ -197,7 +197,7 @@ void EventExecutorWin::Core::HandleKey(const KeyEvent& event) {
           << " to scancode: " << scancode << std::dec;
 
   // Ignore events which can't be mapped.
-  if (scancode == kInvalidKeycode)
+  if (scancode == InvalidNativeKeycode())
     return;
 
   // Windows scancodes are only 8-bit, so store the low-order byte into the

@@ -215,7 +215,7 @@ void EventExecutorLinux::Core::InjectKeyEvent(const KeyEvent& event) {
           << " to keycode: " << keycode << std::dec;
 
   // Ignore events which can't be mapped.
-  if (keycode == kInvalidKeycode)
+  if (keycode == InvalidNativeKeycode())
     return;
 
   if (event.pressed()) {

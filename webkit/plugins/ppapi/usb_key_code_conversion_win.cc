@@ -20,19 +20,13 @@ namespace {
 
 }  // anonymous namespace
 
-
 uint32_t UsbKeyCodeForKeyboardEvent(const WebKeyboardEvent& key_event) {
   // Extract the scancode and extended bit from the native key event's lParam.
   int scancode = (key_event.nativeKeyCode >> 16) & 0x000000FF;
   if ((key_event.nativeKeyCode & (1 << 24)) != 0)
     scancode |= 0xe000;
 
-  for (int i = 0; i < arraysize(usb_keycode_map); i++) {
-    if (usb_keycode_map[i].native_keycode == scancode)
-      return usb_keycode_map[i].usb_keycode;
-  }
-
-  return 0;
+  return NativeKeycodeToUsbKeycode(scancode);
 }
 
 }  // namespace ppapi

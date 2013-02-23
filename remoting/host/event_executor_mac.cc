@@ -161,7 +161,7 @@ void EventExecutorMac::Core::InjectKeyEvent(const KeyEvent& event) {
           << " to keycode: " << keycode << std::dec;
 
   // If we couldn't determine the Mac virtual key code then ignore the event.
-  if (keycode == kInvalidKeycode)
+  if (keycode == InvalidNativeKeycode())
     return;
 
   // We use the deprecated event injection API because the new one doesn't

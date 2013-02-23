@@ -18,18 +18,10 @@ namespace {
 #include "ui/base/keycodes/usb_keycode_map.h"
 #undef USB_KEYMAP
 
-} // anonymous namespace
+}  // anonymous namespace
 
 uint32_t UsbKeyCodeForKeyboardEvent(const WebKeyboardEvent& key_event) {
-  if (key_event.nativeKeyCode < 0 || key_event.nativeKeyCode > 0x7f)
-    return 0;
-
-  for (uint i = 0; i < arraysize(usb_keycode_map); i++) {
-    if (usb_keycode_map[i].native_keycode == key_event.nativeKeyCode)
-      return usb_keycode_map[i].usb_keycode;
-  }
-
-  return 0;
+  return NativeKeycodeToUsbKeycode(key_event.nativeKeyCode);
 }
 
 }  // namespace ppapi

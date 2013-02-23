@@ -376,9 +376,15 @@ const usb_keymap usb_keycode_map[] = {
   USB_KEYMAP(0x0c028c, 0x00ef, 0x0000, 0xffff),  // AC_Send
 };
 
-const uint16_t kInvalidKeycode = usb_keycode_map[0].native_keycode;
+inline uint16_t InvalidNativeKeycode() {
+  return usb_keycode_map[0].native_keycode;
+}
 
-static uint16 UsbKeycodeToNativeKeycode(uint32_t usb_keycode) {
+inline uint16_t InvalidUsbKeycode() {
+  return usb_keycode_map[0].usb_keycode;
+}
+
+inline uint16_t UsbKeycodeToNativeKeycode(uint32_t usb_keycode) {
   // Deal with some special-cases that don't fit the 1:1 mapping.
   if (usb_keycode == 0x070032) // non-US hash.
     usb_keycode = 0x070031; // US backslash.
@@ -391,5 +397,13 @@ static uint16 UsbKeycodeToNativeKeycode(uint32_t usb_keycode) {
     if (usb_keycode_map[i].usb_keycode == usb_keycode)
       return usb_keycode_map[i].native_keycode;
   }
-  return kInvalidKeycode;
+  return InvalidNativeKeycode();
+}
+
+inline uint32_t NativeKeycodeToUsbKeycode(uint16_t native_keycode) {
+  for (size_t i = 0; i < arraysize(usb_keycode_map); ++i) {
+    if (usb_keycode_map[i].native_keycode == native_keycode)
+      return usb_keycode_map[i].usb_keycode;
+  }
+  return InvalidUsbKeycode();
 }
