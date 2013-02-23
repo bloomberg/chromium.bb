@@ -284,7 +284,8 @@ public class ImeTest extends ContentShellTestBase {
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return show == getImeAdapter().mIsShowWithoutHideOutstanding;
+                return show == getImeAdapter().mIsShowWithoutHideOutstanding &&
+                        (!show || getAdapterInputConnection() != null);
             }
         }));
     }
