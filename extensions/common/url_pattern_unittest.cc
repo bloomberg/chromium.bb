@@ -553,6 +553,26 @@ TEST(ExtensionURLPatternTest, IgnorePorts) {
   EXPECT_FALSE(pattern.MatchesURL(url));
 }
 
+TEST(ExtensionURLPatternTest, IgnoreMissingBackslashes) {
+  std::string pattern_str1 = "http://www.example.com/example";
+  std::string pattern_str2 = "http://www.example.com/example/*";
+  GURL url1("http://www.example.com/example");
+  GURL url2("http://www.example.com/example/");
+
+  URLPattern pattern1(kAllSchemes);
+  EXPECT_EQ(URLPattern::PARSE_SUCCESS, pattern1.Parse(pattern_str1));
+  URLPattern pattern2(kAllSchemes);
+  EXPECT_EQ(URLPattern::PARSE_SUCCESS, pattern2.Parse(pattern_str2));
+
+  // Same patterns should match same urls.
+  EXPECT_TRUE(pattern1.MatchesURL(url1));
+  EXPECT_TRUE(pattern2.MatchesURL(url2));
+  // The not terminated path should match the terminated pattern.
+  EXPECT_TRUE(pattern2.MatchesURL(url1));
+  // The terminated path however should not match the unterminated pattern.
+  EXPECT_FALSE(pattern1.MatchesURL(url2));
+}
+
 TEST(ExtensionURLPatternTest, Equals) {
   const struct {
     const char* pattern1;

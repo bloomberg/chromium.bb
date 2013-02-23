@@ -399,10 +399,12 @@ bool URLPattern::MatchesHost(const GURL& test) const {
 }
 
 bool URLPattern::MatchesPath(const std::string& test) const {
-  if (!MatchPattern(test, path_escaped_))
-    return false;
+  // Make the behaviour of OverlapsWith consistent with MatchesURL, which is
+  // need to match hosted apps on e.g. 'google.com' also run on 'google.com/'.
+  if (test + "/*" == path_escaped_)
+    return true;
 
-  return true;
+  return MatchPattern(test, path_escaped_);
 }
 
 const std::string& URLPattern::GetAsString() const {
