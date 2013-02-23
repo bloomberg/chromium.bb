@@ -98,8 +98,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
 
   settings.rightAlignedSchedulingEnabled =
       cmd->HasSwitch(cc::switches::kEnableRightAlignedScheduling);
-  settings.implSidePainting =
-      cmd->HasSwitch(cc::switches::kEnableImplSidePainting);
+  settings.implSidePainting = cc::switches::IsImplSidePaintingEnabled();
   settings.useCheapnessEstimator =
       cmd->HasSwitch(cc::switches::kUseCheapnessEstimator);
 

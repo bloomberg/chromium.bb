@@ -21,7 +21,7 @@ namespace WebKit {
 
 static bool usingPictureLayer()
 {
-    return CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kEnableImplSidePainting);
+    return cc::switches::IsImplSidePaintingEnabled();
 }
 
 WebContentLayerImpl::WebContentLayerImpl(WebContentLayerClient* client)

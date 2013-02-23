@@ -849,6 +849,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kWebCoreLogChannels,
     cc::switches::kBackgroundColorInsteadOfCheckerboard,
     cc::switches::kEnableCompositorFrameMessage,
+    cc::switches::kDisableImplSidePainting,
     cc::switches::kEnableImplSidePainting,
     cc::switches::kEnablePartialSwap,
     cc::switches::kEnableRightAlignedScheduling,
@@ -882,7 +883,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
   }
 
   // Enforce the extra command line flags for impl-side painting.
-  if (browser_cmd.HasSwitch(cc::switches::kEnableImplSidePainting) &&
+  if (cc::switches::IsImplSidePaintingEnabled() &&
       !browser_cmd.HasSwitch(switches::kEnableDeferredImageDecoding))
     renderer_cmd->AppendSwitch(switches::kEnableDeferredImageDecoding);
 }

@@ -4,6 +4,8 @@
 
 #include "cc/switches.h"
 
+#include "base/command_line.h"
+
 namespace cc {
 namespace switches {
 
@@ -16,6 +18,10 @@ const char kDisableThreadedAnimation[]      = "disable-threaded-animation";
 
 // Send a message for every frame from the impl thread to the parent compositor.
 const char kEnableCompositorFrameMessage[] = "enable-compositor-frame-message";
+
+// Paint content on the main thread instead of the compositor thread.
+// Overrides the kEnableImplSidePainting flag.
+const char kDisableImplSidePainting[] = "disable-impl-side-painting";
 
 // Paint content on the compositor thread instead of the main thread.
 const char kEnableImplSidePainting[] = "enable-impl-side-painting";
@@ -83,6 +89,21 @@ const char kUseCheapnessEstimator[] = "use-cheapness-estimator";
 // The scale factor for low resolution tile contents.
 const char kLowResolutionContentsScaleFactor[] =
     "low-resolution-contents-scale-factor";
+
+bool IsImplSidePaintingEnabled() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  if (command_line.HasSwitch(cc::switches::kDisableImplSidePainting))
+    return false;
+  else if (command_line.HasSwitch(cc::switches::kEnableImplSidePainting))
+    return true;
+
+#if defined(OS_ANDROID)
+  return true;
+#else
+  return false;
+#endif
+}
 
 }  // namespace switches
 }  // namespace cc

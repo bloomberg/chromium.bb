@@ -24,8 +24,6 @@ void SetContentCommandLineFlags(int max_render_process_count) {
 
   CommandLine* parsed_command_line = CommandLine::ForCurrentProcess();
 
-  parsed_command_line->AppendSwitch(cc::switches::kEnableImplSidePainting);
-
   if (parsed_command_line->HasSwitch(switches::kRendererProcessLimit)) {
     std::string limit = parsed_command_line->GetSwitchValueASCII(
         switches::kRendererProcessLimit);

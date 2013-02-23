@@ -7171,6 +7171,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
           <!-- TODO Add description of enable SPDY proxy auth flag. -->
         </message>
       </if>
+      <message name="IDS_FLAGS_IMPL_SIDE_PAINTING_NAME" desc="Name of about:flags option for impl-side painting.">
+        Impl-side painting
+      </message>
+      <message name="IDS_FLAGS_IMPL_SIDE_PAINTING_DESCRIPTION" desc="Description of about:flags option for impl-side painting.">
+        If enabled, painting is done on a separate thread instead of the main thread.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
