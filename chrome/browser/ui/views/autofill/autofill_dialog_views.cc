@@ -542,7 +542,7 @@ void AutofillDialogViews::WindowClosing() {
 void AutofillDialogViews::DeleteDelegate() {
   window_ = NULL;
   // |this| belongs to |controller_|.
-  controller_->ViewClosed(did_submit_ ? ACTION_SUBMIT : ACTION_ABORT);
+  controller_->ViewClosed(did_submit_ ? ACTION_SUBMIT : ACTION_CANCEL);
 }
 
 views::Widget* AutofillDialogViews::GetWidget() {

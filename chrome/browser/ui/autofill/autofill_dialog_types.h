@@ -55,7 +55,7 @@ enum DialogSection {
 
 // Termination actions for the dialog.
 enum DialogAction {
-  ACTION_ABORT,
+  ACTION_CANCEL,
   ACTION_SUBMIT,
 };
 
@@ -68,9 +68,9 @@ class DialogNotification {
     NONE,
     REQUIRED_ACTION,
     SECURITY_WARNING,
-    SUBMISSION_OPTION,
     VALIDATION_ERROR,
     WALLET_ERROR,
+    WALLET_PROMO,
   };
 
   DialogNotification();
@@ -84,7 +84,6 @@ class DialogNotification {
   // Whether this notification has an arrow pointing up at the account chooser.
   bool HasArrow() const;
 
-  Type type() const { return type_; }
   const string16& display_text() const { return display_text_; }
 
  private:
