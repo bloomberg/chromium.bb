@@ -257,6 +257,12 @@ html[dir=rtl] .action-box-area {
   padding: 7px 20px;
 }
 
+.action-box-menu-remove:hover,
+.action-box-menu-remove:focus {
+  background-color: #f3f3f3;
+  outline: none;
+}
+
 html[oobe=old] .pod.focused .action-box-area {
   /* Track shifting of .user-image on pod focus. */
   -webkit-transform: translateY(-1px);

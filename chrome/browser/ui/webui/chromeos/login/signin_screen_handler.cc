@@ -340,8 +340,11 @@ void SigninScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_SIGNIN_SCREEN_PASSWORD_CHANGED));
   localized_strings->SetString("passwordHint",
       l10n_util::GetStringUTF16(IDS_LOGIN_POD_EMPTY_PASSWORD_TEXT));
-  localized_strings->SetString("removeButtonAccessibleName",
-      l10n_util::GetStringUTF16(IDS_LOGIN_POD_REMOVE_BUTTON_ACCESSIBLE_NAME));
+  localized_strings->SetString("podMenuButtonAccessibleName",
+      l10n_util::GetStringUTF16(IDS_LOGIN_POD_MENU_BUTTON_ACCESSIBLE_NAME));
+  localized_strings->SetString("podMenuRemoveItemAccessibleName",
+      l10n_util::GetStringUTF16(
+          IDS_LOGIN_POD_MENU_REMOVE_ITEM_ACCESSIBLE_NAME));
   localized_strings->SetString("passwordFieldAccessibleName",
       l10n_util::GetStringUTF16(IDS_LOGIN_POD_PASSWORD_FIELD_ACCESSIBLE_NAME));
   localized_strings->SetString("signedIn",
