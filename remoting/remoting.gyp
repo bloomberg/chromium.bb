@@ -432,6 +432,10 @@
             'host/win/launch_process_with_token.h',
             'host/win/omaha.cc',
             'host/win/omaha.h',
+            'host/win/rdp_client.cc',
+            'host/win/rdp_client.h',
+            'host/win/rdp_client_window.cc',
+            'host/win/rdp_client_window.h',
             'host/win/security_descriptor.cc',
             'host/win/security_descriptor.h',
             'host/win/session_desktop_environment.cc',
@@ -487,11 +491,19 @@
             }],
             ['OS=="win"', {
               'defines': [
+                '_ATL_NO_EXCEPTIONS',
                 'ISOLATION_AWARE_ENABLED=1',
               ],
               'dependencies': [
                 '../sandbox/sandbox.gyp:sandbox',
               ],
+              'msvs_settings': {
+                'VCCLCompilerTool': {
+                  # /MP conflicts with #import directive so we limit the number
+                  # of processes to spawn to 1.
+                  'AdditionalOptions': ['/MP1'],
+                },
+              },
             }],
           ],
         },  # end of target 'remoting_host'
@@ -1156,6 +1168,9 @@
         {
           'target_name': 'remoting_configurer',
           'type': 'executable',
+          'defines': [
+            '_ATL_NO_EXCEPTIONS',
+          ],
           'dependencies': [
             '../base/base.gyp:base',
             '../crypto/crypto.gyp:crypto',
@@ -1252,6 +1267,7 @@
             '_ATL_APARTMENT_THREADED',
             '_ATL_CSTRING_EXPLICIT_CONSTRUCTORS',
             '_ATL_NO_AUTOMATIC_NAMESPACE',
+            '_ATL_NO_EXCEPTIONS',
             'DAEMON_CONTROLLER_CLSID="{<(daemon_controller_clsid)}"',
             'HOST_IMPLEMENTATION',
             'ISOLATION_AWARE_ENABLED=1',
@@ -2441,6 +2457,7 @@
         'host/setup/pin_validator_unittest.cc',
         'host/test_key_pair.h',
         'host/video_scheduler_unittest.cc',
+        'host/win/rdp_client_unittest.cc',
         'host/win/worker_process_launcher.cc',
         'host/win/worker_process_launcher.h',
         'host/win/worker_process_launcher_unittest.cc',
@@ -2480,6 +2497,9 @@
       ],
       'conditions': [
         [ 'OS=="win"', {
+          'defines': [
+            '_ATL_NO_EXCEPTIONS',
+          ],
           'include_dirs': [
             '../breakpad/src',
           ],
