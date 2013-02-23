@@ -57,8 +57,10 @@ var storage = chrome.storage.local;
  * Show a notification and remember information associated with it.
  * @param {Object} card Google Now card represented as a set of parameters for
  *     showing a Chrome notification.
+ * @param {Object} notificationsUrlInfo Map from notification id to the
+ *     notification's set of URLs.
  */
-function createNotification(card) {
+function createNotification(card, notificationsUrlInfo) {
   var notificationId = card.notificationId;
 
   // Fill the information about button actions for the notification. This is a
@@ -77,19 +79,13 @@ function createNotification(card) {
   delete card.buttonTwoUrl;
 
   // Create a notification or quietly update if it already exists.
-  // TODO(vadimt): Implement deleting and non-quiet updates.
+  // TODO(vadimt): Implement non-quiet updates.
   chrome.experimental.notification.create(
       notificationId,
       card,
-      function(assignedNotificationId) {
-        // Once the notification is created, store button actions for its ID.
-        storage.get('activeNotifications', function(items) {
-          // TODO(vadimt): Make sure that activeNotifications map cannot grow
-          // infinitely.
-          items.activeNotifications[assignedNotificationId] = actionUrls;
-          storage.set({activeNotifications: items.activeNotifications});
-        });
-      });
+      function(assignedNotificationId) {});
+
+  notificationsUrlInfo[notificationId] = actionUrls;
 }
 
 /**
@@ -117,21 +113,42 @@ function parseAndShowNotificationCards(response) {
     return;
   }
 
-  for (var i = 0; i < cards.length; ++i) {
-    try {
-      createNotification(cards[i]);
-    } catch (error) {
-      // TODO(vadimt): Report errors to the user.
-      return;
+  storage.get('activeNotifications', function(items) {
+    // Mark existing notifications that received an update in this server
+    // response.
+    for (var i = 0; i < cards.length; ++i) {
+      var notificationId = cards[i].notificationId;
+      if (notificationId in items.activeNotifications)
+        items.activeNotifications[notificationId].hasUpdate = true;
     }
-  }
 
-  scheduleNextUpdate(parsedResponse.expiration_timestamp_seconds);
+    // Delete notifications that didn't receive an update.
+    for (var notificationId in items.activeNotifications)
+      if (!items.activeNotifications[notificationId].hasUpdate) {
+        chrome.experimental.notification.delete(
+            notificationId,
+            function(wasDeleted) {});
+    }
 
-  // Now that we got a valid response from the server, reset the retry period to
-  // the initial value. This retry period will be used the next time we fail to
-  // get the server-provided period.
-  storage.set({retryDelaySeconds: INITIAL_POLLING_PERIOD_SECONDS});
+    // Create/update notifications and store their new properties.
+    var notificationsUrlInfo = {};
+
+    for (var i = 0; i < cards.length; ++i) {
+      try {
+        createNotification(cards[i], notificationsUrlInfo);
+      } catch (error) {
+        // TODO(vadimt): Report errors to the user.
+      }
+    }
+    storage.set({activeNotifications: notificationsUrlInfo});
+
+    scheduleNextUpdate(parsedResponse.expiration_timestamp_seconds);
+
+    // Now that we got a valid response from the server, reset the retry period
+    // to the initial value. This retry period will be used the next time we
+    // fail to get the server-provided period.
+    storage.set({retryDelaySeconds: INITIAL_POLLING_PERIOD_SECONDS});
+  });
 }
 
 /**
@@ -224,12 +241,6 @@ function onNotificationClicked(notificationId, area) {
  * @param {boolean} byUser Whether the notification was closed by the user.
  */
 function onNotificationClosed(notificationId, byUser) {
-  // Remove button actions entry for notificationId.
-  storage.get('activeNotifications', function(items) {
-    delete items.activeNotifications[notificationId];
-    storage.set({activeNotifications: items.activeNotifications});
-  });
-
   if (byUser) {
     // TODO(vadimt): Analyze possible race conditions between request for cards
     // and dismissal.
