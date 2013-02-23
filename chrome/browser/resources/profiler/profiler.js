@@ -110,7 +110,7 @@ var MainView = (function() {
   var SNAPSHOT_FILE_LOADER_ID = 'snapshot-file-loader';
   var LOAD_ERROR_ID = 'file-load-error';
 
-  var DOWNLOAD_IFRAME_ID = 'download-iframe';
+  var DOWNLOAD_ANCHOR_ID = 'download-anchor';
 
   // --------------------------------------------------------------------------
   // Row keys
@@ -1799,9 +1799,10 @@ var MainView = (function() {
       };
 
       var dumpText = JSON.stringify(dump, null, ' ');
-      var blobBuilder = new Blob([dumpText, 'native'], {type: 'octet/stream'});
+      var textBlob = new Blob([dumpText, 'native'], { type: 'octet/stream' });
       var blobUrl = window.webkitURL.createObjectURL(textBlob);
-      $(DOWNLOAD_IFRAME_ID).src = blobUrl;
+      $(DOWNLOAD_ANCHOR_ID).href = blobUrl;
+      $(DOWNLOAD_ANCHOR_ID).click();
     },
 
     loadFileChanged_: function() {
