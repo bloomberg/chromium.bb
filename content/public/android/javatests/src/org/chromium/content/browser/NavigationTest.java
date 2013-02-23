@@ -12,6 +12,8 @@ import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_shell.ContentShellTestBase;
 import org.chromium.content_shell_apk.ContentShellActivity;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Tests for various aspects of navigation.
  */
@@ -33,6 +35,18 @@ public class NavigationTest extends ContentShellTestBase {
                     @Override
                     public void run() {
                         contentView.goBack();
+                    }
+                });
+    }
+
+    private void reload(final ContentView contentView,
+            TestCallbackHelperContainer testCallbackHelperContainer) throws Throwable {
+        handleBlockingCallbackAction(
+                testCallbackHelperContainer.getOnPageFinishedHelper(),
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        contentView.reload();
                     }
                 });
     }
@@ -82,4 +96,39 @@ public class NavigationTest extends ContentShellTestBase {
         assertEquals(URL_7, history.getEntryAtIndex(2).getUrl());
     }
 
+    /**
+     * Tests whether a page was successfully reloaded.
+     * Checks to make sure that OnPageFinished events were fired and that the timestamps of when
+     * the page loaded are different after the reload.
+     */
+    @MediumTest
+    @Feature({"Navigation"})
+    public void testPageReload() throws Throwable {
+        final String HTML_LOADTIME = "<html><head>" +
+                "<script type=\"text/javascript\">var loadTimestamp = new Date().getTime();" +
+                "function getLoadtime() { return loadTimestamp; }</script></head></html>";
+        final String URL_LOADTIME = UrlUtils.encodeHtmlDataUri(HTML_LOADTIME);
+
+        ContentShellActivity activity = launchContentShellWithUrl(URL_LOADTIME);
+        waitForActiveShellToBeDoneLoading();
+        ContentView contentView = activity.getActiveContentView();
+        TestCallbackHelperContainer testCallbackHelperContainer =
+                new TestCallbackHelperContainer(contentView);
+        TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper javascriptHelper =
+                testCallbackHelperContainer.getOnEvaluateJavaScriptResultHelper();
+
+        // Grab the first timestamp.
+        javascriptHelper.evaluateJavaScript(contentView.getContentViewCore(), "getLoadtime();");
+        javascriptHelper.waitUntilHasValue();
+        String firstTimestamp = javascriptHelper.getJsonResultAndClear();
+        assertNotNull("Timestamp was null.", firstTimestamp);
+
+        // Grab the timestamp after a reload and make sure they don't match.
+        reload(contentView, testCallbackHelperContainer);
+        javascriptHelper.evaluateJavaScript(contentView.getContentViewCore(), "getLoadtime();");
+        javascriptHelper.waitUntilHasValue();
+        String secondTimestamp = javascriptHelper.getJsonResultAndClear();
+        assertNotNull("Timestamp was null.", secondTimestamp);
+        assertFalse("Timestamps matched.", firstTimestamp.equals(secondTimestamp));
+    }
 }
