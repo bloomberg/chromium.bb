@@ -32,16 +32,16 @@
 #include "ui/gfx/path_win.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ui/aura/window.h"
+#endif
+
 namespace {
 
 // The thickness of the border when Aero is not enabled. In this case, the
 // shadow around the window will not be painted by the system and we need to
 // paint a frame in order to differentiate the client area from the background.
 const int kNonAeroBorderThickness = 1;
-
-// In the window corners, the resize areas don't actually expand bigger, but the
-// 16 px at the end of each edge triggers diagonal resizing.
-const int kResizeAreaCornerSize = 16;
 
 // The spacing in pixels between the icon and the left border.
 const int kIconAndBorderSpacing = 4;
@@ -242,13 +242,30 @@ int GetFrameEdgeHitTest(const gfx::Point& point,
   return HTNOWHERE;
 }
 
+// Frameless is only supported when Aero is enabled and shadow effect is
+// present.
+bool ShouldRenderAsFrameless() {
+#if defined(OS_WIN)
+  bool is_frameless = ui::win::IsAeroGlassEnabled();
+  if (is_frameless) {
+    BOOL shadow_enabled = FALSE;
+    if (::SystemParametersInfo(SPI_GETDROPSHADOW, 0, &shadow_enabled, 0) &&
+        !shadow_enabled)
+      is_frameless = false;
+  }
+  return is_frameless;
+#else
+  return false;
+#endif
+}
+
 }  // namespace
 
 const char PanelFrameView::kViewClassName[] =
     "browser/ui/panels/PanelFrameView";
 
 PanelFrameView::PanelFrameView(PanelView* panel_view)
-    : is_frameless_(false),
+    : is_frameless_(ShouldRenderAsFrameless()),
       panel_view_(panel_view),
       close_button_(NULL),
       minimize_button_(NULL),
@@ -311,6 +328,17 @@ void PanelFrameView::Init() {
   title_label_->SetAutoColorReadabilityEnabled(false);
   title_label_->SetFont(GetTitleFont());
   AddChildView(title_label_);
+
+#if defined(USE_AURA)
+  // Compute the thickness of the client area that needs to be counted towards
+  // mouse resizing.
+  int thickness_for_mouse_resizing =
+      PanelView::kResizeInsideBoundsSize - BorderThickness();
+  aura::Window* window = panel_view_->GetNativePanelWindow();
+  window->set_hit_test_bounds_override_inner(
+      gfx::Insets(thickness_for_mouse_resizing, thickness_for_mouse_resizing,
+                  thickness_for_mouse_resizing, thickness_for_mouse_resizing));
+#endif
 }
 
 void PanelFrameView::UpdateTitle() {
@@ -510,18 +538,7 @@ ui::ThemeProvider* PanelFrameView::GetThemeProvider() const {
 }
 
 void PanelFrameView::Layout() {
-  // Frameless is only supported when Aero is enabled and shadow effect is
-  // present.
-#if defined(OS_WIN) && !defined(USE_AURA)
-  is_frameless_ = ui::win::IsAeroGlassEnabled();
-
-  if (is_frameless_) {
-    BOOL shadow_enabled = FALSE;
-    if (::SystemParametersInfo(SPI_GETDROPSHADOW, 0, &shadow_enabled, 0) &&
-        !shadow_enabled)
-      is_frameless_ = false;
-  }
-#endif
+  is_frameless_ = ShouldRenderAsFrameless();
 
   // Layout the close button.
   int right = width();
