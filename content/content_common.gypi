@@ -366,6 +366,8 @@
     'common/ssl_status_serialization.h',
     'common/swapped_out_messages.cc',
     'common/swapped_out_messages.h',
+    'common/thread_safe_sender.cc',
+    'common/thread_safe_sender.h',
     'common/text_input_client_messages.h',
     'common/url_schemes.cc',
     'common/url_schemes.h',

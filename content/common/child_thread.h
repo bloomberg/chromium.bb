@@ -32,6 +32,7 @@ class FileSystemDispatcher;
 class QuotaDispatcher;
 class ResourceDispatcher;
 class SocketStreamDispatcher;
+class ThreadSafeSender;
 
 // The main thread of a child process derives from this class.
 class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
@@ -64,9 +65,16 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   // but on windows the child process directly allocates the block.
   base::SharedMemory* AllocateSharedMemory(size_t buf_size);
 
-  ResourceDispatcher* resource_dispatcher();
+  // A static variant that can be called on background threads provided
+  // the |sender| passed in is safe to use on background threads.
+  static base::SharedMemory* AllocateSharedMemory(size_t buf_size,
+                                                  IPC::Sender* sender);
 
-  SocketStreamDispatcher* socket_stream_dispatcher() {
+  ResourceDispatcher* resource_dispatcher() const {
+    return resource_dispatcher_.get();
+  }
+
+  SocketStreamDispatcher* socket_stream_dispatcher() const {
     return socket_stream_dispatcher_.get();
   }
 
@@ -79,14 +87,24 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   }
 
   // Safe to call on any thread, as long as it's guaranteed that the thread's
-  // lifetime is less than the main thread.
-  IPC::SyncMessageFilter* sync_message_filter();
+  // lifetime is less than the main thread. The |filter| returned may only
+  // be used on background threads.
+  IPC::SyncMessageFilter* sync_message_filter() const {
+    return sync_message_filter_;
+  }
+
+  // The getter should only be called on the main thread, however the
+  // IPC::Sender it returns may be safely called on any thread including
+  // the main thread.
+  ThreadSafeSender* thread_safe_sender() const {
+    return thread_safe_sender_;
+  }
 
   ChildHistogramMessageFilter* child_histogram_message_filter() const {
     return histogram_message_filter_.get();
   }
 
-  MessageLoop* message_loop();
+  MessageLoop* message_loop() const { return message_loop_; }
 
   // Returns the one child thread.
   static ChildThread* current();
@@ -132,6 +150,8 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
 
   // Allows threads other than the main thread to send sync messages.
   scoped_refptr<IPC::SyncMessageFilter> sync_message_filter_;
+
+  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
   // Implements message routing functionality to the consumers of ChildThread.
   MessageRouter router_;

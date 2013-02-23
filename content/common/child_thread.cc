@@ -19,6 +19,7 @@
 #include "content/common/quota_dispatcher.h"
 #include "content/common/resource_dispatcher.h"
 #include "content/common/socket_stream_dispatcher.h"
+#include "content/common/thread_safe_sender.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_switches.h"
@@ -111,6 +112,9 @@ void ChildThread::Init() {
 
   sync_message_filter_ =
       new IPC::SyncMessageFilter(ChildProcess::current()->GetShutDownEvent());
+  thread_safe_sender_ =
+      new ThreadSafeSender(base::MessageLoopProxy::current(),
+                           sync_message_filter_);
   histogram_message_filter_ = new ChildHistogramMessageFilter();
 
   channel_->AddFilter(histogram_message_filter_.get());
@@ -193,8 +197,14 @@ webkit_glue::ResourceLoaderBridge* ChildThread::CreateBridge(
   return resource_dispatcher()->CreateBridge(request_info);
 }
 
+base::SharedMemory* ChildThread::AllocateSharedMemory(size_t buf_size) {
+  return AllocateSharedMemory(buf_size, this);
+}
+
+// static
 base::SharedMemory* ChildThread::AllocateSharedMemory(
-    size_t buf_size) {
+    size_t buf_size,
+    IPC::Sender* sender) {
   scoped_ptr<base::SharedMemory> shared_buf;
 #if defined(OS_WIN)
   shared_buf.reset(new base::SharedMemory);
@@ -206,8 +216,8 @@ base::SharedMemory* ChildThread::AllocateSharedMemory(
   // On POSIX, we need to ask the browser to create the shared memory for us,
   // since this is blocked by the sandbox.
   base::SharedMemoryHandle shared_mem_handle;
-  if (Send(new ChildProcessHostMsg_SyncAllocateSharedMemory(
-                   buf_size, &shared_mem_handle))) {
+  if (sender->Send(new ChildProcessHostMsg_SyncAllocateSharedMemory(
+                           buf_size, &shared_mem_handle))) {
     if (base::SharedMemory::IsHandleValid(shared_mem_handle)) {
       shared_buf.reset(new base::SharedMemory(shared_mem_handle, false));
       if (!shared_buf->Map(buf_size)) {
@@ -224,18 +234,6 @@ base::SharedMemory* ChildThread::AllocateSharedMemory(
   }
 #endif
   return shared_buf.release();
-}
-
-ResourceDispatcher* ChildThread::resource_dispatcher() {
-  return resource_dispatcher_.get();
-}
-
-IPC::SyncMessageFilter* ChildThread::sync_message_filter() {
-  return sync_message_filter_;
-}
-
-MessageLoop* ChildThread::message_loop() {
-  return message_loop_;
 }
 
 bool ChildThread::OnMessageReceived(const IPC::Message& msg) {
