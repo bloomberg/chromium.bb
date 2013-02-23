@@ -59,6 +59,10 @@ ContentRendererClient::OverrideCreateWebRTCPeerConnectionHandler(
   return NULL;
 }
 
+WebKit::WebClipboard* ContentRendererClient::OverrideWebClipboard() {
+  return NULL;
+}
+
 bool ContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
   return true;
 }

@@ -25,6 +25,7 @@ class FilePath;
 }
 
 namespace WebKit {
+class WebClipboard;
 class WebFrame;
 class WebMediaPlayerClient;
 class WebMediaStreamCenter;
@@ -133,6 +134,10 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual WebKit::WebRTCPeerConnectionHandler*
   OverrideCreateWebRTCPeerConnectionHandler(
       WebKit::WebRTCPeerConnectionHandlerClient* client);
+
+  // Allows the embedder to override the WebKit::WebClipboard used. If it
+  // returns NULL the content layer will handle clipboard interactions.
+  virtual WebKit::WebClipboard* OverrideWebClipboard();
 
   // Returns true if the renderer process should schedule the idle handler when
   // all widgets are hidden.

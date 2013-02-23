@@ -20,7 +20,7 @@
 class MockWebClipboardImpl : public WebKit::WebClipboard {
  public:
   MockWebClipboardImpl();
-  ~MockWebClipboardImpl();
+  virtual ~MockWebClipboardImpl();
 
   virtual bool isFormatAvailable(WebKit::WebClipboard::Format format,
                                  WebKit::WebClipboard::Buffer buffer);

@@ -20,7 +20,9 @@
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestInterfaces.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestProxy.h"
 #include "v8/include/v8.h"
+#include "webkit/tools/test_shell/mock_webclipboard_impl.h"
 
+using WebKit::WebClipboard;
 using WebKit::WebFrame;
 using WebKit::WebMediaStreamCenter;
 using WebKit::WebMediaStreamCenterClient;
@@ -108,6 +110,14 @@ ShellContentRendererClient::OverrideCreateWebRTCPeerConnectionHandler(
 #else
   return NULL;
 #endif
+}
+
+WebClipboard* ShellContentRendererClient::OverrideWebClipboard() {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+    return NULL;
+  if (!clipboard_)
+    clipboard_.reset(new MockWebClipboardImpl);
+  return clipboard_.get();
 }
 
 void ShellContentRendererClient::WebTestProxyCreated(RenderView* render_view,

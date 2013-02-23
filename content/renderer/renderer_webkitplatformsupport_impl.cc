@@ -200,6 +200,10 @@ bool SendSyncMessageFromAnyThread(IPC::SyncMessage* msg) {
 }  // namespace
 
 WebKit::WebClipboard* RendererWebKitPlatformSupportImpl::clipboard() {
+  WebKit::WebClipboard* clipboard =
+      GetContentClient()->renderer()->OverrideWebClipboard();
+  if (clipboard)
+    return clipboard;
   return clipboard_.get();
 }
 

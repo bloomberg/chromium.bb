@@ -19,6 +19,8 @@ namespace WebTestRunner {
 class WebTestProxyBase;
 }
 
+class MockWebClipboardImpl;
+
 namespace content {
 
 class ShellRenderProcessObserver;
@@ -39,12 +41,14 @@ class ShellContentRendererClient : public ContentRendererClient {
   virtual WebKit::WebRTCPeerConnectionHandler*
   OverrideCreateWebRTCPeerConnectionHandler(
       WebKit::WebRTCPeerConnectionHandlerClient* client) OVERRIDE;
+  virtual WebKit::WebClipboard* OverrideWebClipboard() OVERRIDE;
 
  private:
    void WebTestProxyCreated(RenderView* render_view,
                             WebTestRunner::WebTestProxyBase* proxy);
 
   scoped_ptr<ShellRenderProcessObserver> shell_observer_;
+  scoped_ptr<MockWebClipboardImpl> clipboard_;
 };
 
 }  // namespace content
