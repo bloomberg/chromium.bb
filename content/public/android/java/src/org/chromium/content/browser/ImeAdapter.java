@@ -507,17 +507,17 @@ class ImeAdapter {
 
             boolean textUnchanged = prevText.equals(text);
 
-            if (textUnchanged
-                    && prevSelectionStart == selectionStart && prevSelectionEnd == selectionEnd
+            if (!textUnchanged) {
+                editable.replace(0, editable.length(), text);
+            }
+
+            if (prevSelectionStart == selectionStart && prevSelectionEnd == selectionEnd
                     && prevCompositionStart == compositionStart
                     && prevCompositionEnd == compositionEnd) {
                 // Nothing has changed; don't need to do anything
                 return;
             }
 
-            if (!textUnchanged) {
-                editable.replace(0, editable.length(), text);
-            }
             Selection.setSelection(editable, selectionStart, selectionEnd);
             super.setComposingRegion(compositionStart, compositionEnd);
 
@@ -532,13 +532,6 @@ class ImeAdapter {
             // updateSelection should
             // be called every time the selection or composition changes if it happens not
             // within a batch edit, or at the end of each top level batch edit.
-            Editable editable = getEditable();
-            if (Selection.getSelectionStart(editable) == selectionStart &&
-                    Selection.getSelectionEnd(editable) == selectionEnd &&
-                    getComposingSpanStart(editable) == compositionStart &&
-                    getComposingSpanEnd(editable) == compositionEnd) {
-                return;
-            }
             getInputMethodManager().updateSelection(mInternalView,
                     selectionStart, selectionEnd, compositionStart, compositionEnd);
         }
