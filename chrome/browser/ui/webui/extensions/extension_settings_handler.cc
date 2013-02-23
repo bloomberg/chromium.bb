@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
+#include "chrome/browser/ui/webui/managed_user_passphrase_dialog.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -544,13 +545,23 @@ void ExtensionSettingsHandler::ReloadUnpackedExtensions() {
   }
 }
 
+void ExtensionSettingsHandler::PassphraseDialogCallback(bool success) {
+  if (success)
+    HandleRequestExtensionsData(NULL);
+}
+
 void ExtensionSettingsHandler::ManagedUserSetElevated(const ListValue* args) {
   ManagedUserService* service = ManagedUserServiceFactory::GetForProfile(
       Profile::FromWebUI(web_ui()));
   bool elevated;
   CHECK(args->GetBoolean(0, &elevated));
-  // TODO(akuegel): Show the managed user passphrase dialog for authentication
-  // if elevated should be set to true.
+  if (!service->IsElevated() && elevated) {
+    new ManagedUserPassphraseDialog(
+        web_ui()->GetWebContents(),
+        base::Bind(&ExtensionSettingsHandler::PassphraseDialogCallback,
+                   base::Unretained(this)));
+    return;
+  }
   service->SetElevated(elevated);
   HandleRequestExtensionsData(NULL);
 }

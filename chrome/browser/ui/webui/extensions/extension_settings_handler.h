@@ -133,6 +133,10 @@ class ExtensionSettingsHandler
   // Callback for "setElevated" message.
   void ManagedUserSetElevated(const base::ListValue* args);
 
+  // If the authentication of the managed user was successful,
+  // it gives this information back to the UI.
+  void PassphraseDialogCallback(bool success);
+
   // Callback for "requestExtensionsData" message.
   void HandleRequestExtensionsData(const base::ListValue* args);
 
