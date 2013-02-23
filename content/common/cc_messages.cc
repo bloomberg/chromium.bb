@@ -618,7 +618,6 @@ void ParamTraits<cc::CompositorFrame>::Log(const param_type& p,
 
 void ParamTraits<cc::DelegatedFrameData>::Write(Message* m,
                                                 const param_type& p) {
-  WriteParam(m, p.size);
   WriteParam(m, p.resource_list);
   WriteParam(m, p.render_pass_list.size());
   for (size_t i = 0; i < p.render_pass_list.size(); ++i)
@@ -631,8 +630,7 @@ bool ParamTraits<cc::DelegatedFrameData>::Read(const Message* m,
   const static size_t kMaxRenderPasses = 10000;
 
   size_t num_render_passes;
-  if (!ReadParam(m, iter, &p->size) ||
-      !ReadParam(m, iter, &p->resource_list) ||
+  if (!ReadParam(m, iter, &p->resource_list) ||
       !ReadParam(m, iter, &num_render_passes) ||
       num_render_passes > kMaxRenderPasses)
     return false;
@@ -648,8 +646,6 @@ bool ParamTraits<cc::DelegatedFrameData>::Read(const Message* m,
 void ParamTraits<cc::DelegatedFrameData>::Log(const param_type& p,
                                               std::string* l) {
   l->append("DelegatedFrameData(");
-  LogParam(p.size, l);
-  l->append(", ");
   LogParam(p.resource_list, l);
   l->append(", [");
   for (size_t i = 0; i < p.render_pass_list.size(); ++i) {

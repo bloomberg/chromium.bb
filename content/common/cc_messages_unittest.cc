@@ -455,7 +455,6 @@ TEST_F(CCMessagesTest, AllQuads) {
   }
 
   DelegatedFrameData frame_in;
-  frame_in.size = arbitrary_size1;
   frame_in.render_pass_list.push_back(pass_in.Pass());
 
   IPC::ParamTraits<DelegatedFrameData>::Write(&msg, frame_in);
@@ -464,8 +463,6 @@ TEST_F(CCMessagesTest, AllQuads) {
   PickleIterator iter(msg);
   EXPECT_TRUE(IPC::ParamTraits<DelegatedFrameData>::Read(&msg,
       &iter, &frame_out));
-
-  EXPECT_EQ(arbitrary_size1, frame_out.size);
 
   // Make sure the out and cmp RenderPasses match.
   scoped_ptr<RenderPass> pass_out = frame_out.render_pass_list.take(
@@ -522,8 +519,6 @@ TEST_F(CCMessagesTest, Resources) {
   arbitrary_resource2.mailbox.setName(arbitrary_mailbox2);
 
   DelegatedFrameData frame_in;
-  frame_in.size = arbitrary_size;
-
   frame_in.resource_list.sync_point = arbitrary_uint;
   frame_in.resource_list.resources.push_back(arbitrary_resource1);
   frame_in.resource_list.resources.push_back(arbitrary_resource2);
@@ -535,7 +530,6 @@ TEST_F(CCMessagesTest, Resources) {
   EXPECT_TRUE(IPC::ParamTraits<DelegatedFrameData>::Read(&msg,
       &iter, &frame_out));
 
-  EXPECT_EQ(arbitrary_size.ToString(), frame_out.size.ToString());
   EXPECT_EQ(arbitrary_uint, frame_out.resource_list.sync_point);
 
   EXPECT_EQ(2u, frame_out.resource_list.resources.size());

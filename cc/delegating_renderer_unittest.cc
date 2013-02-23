@@ -60,11 +60,12 @@ class DelegatingRendererTestDraw : public DelegatingRendererTest {
     EXPECT_EQ(1u, output_surface_->num_sent_frames());
 
     CompositorFrame& last_frame = output_surface_->last_sent_frame();
+    DelegatedFrameData* last_frame_data = last_frame.delegated_frame_data.get();
     ASSERT_TRUE(last_frame.delegated_frame_data);
     EXPECT_FALSE(last_frame.gl_frame_data);
     EXPECT_EQ(
-        host_impl->deviceViewportSize().ToString(),
-        last_frame.delegated_frame_data->size.ToString());
+        gfx::Rect(host_impl->deviceViewportSize()).ToString(),
+        last_frame_data->render_pass_list.back()->output_rect.ToString());
     EXPECT_EQ(0.5f, last_frame.metadata.min_page_scale_factor);
     EXPECT_EQ(4.f, last_frame.metadata.max_page_scale_factor);
 
