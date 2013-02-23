@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/policy/cloud_policy_constants.h"
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
+#include "chrome/browser/policy/proto/chrome_extension_policy.pb.h"
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "content/public/browser/browser_thread.h"
@@ -74,6 +75,12 @@ void CloudPolicyValidatorBase::ValidatePolicyType(
     const std::string& policy_type) {
   validation_flags_ |= VALIDATE_POLICY_TYPE;
   policy_type_ = policy_type;
+}
+
+void CloudPolicyValidatorBase::ValidateSettingsEntityId(
+    const std::string& settings_entity_id) {
+  validation_flags_ |= VALIDATE_ENTITY_ID;
+  settings_entity_id_ = settings_entity_id;
 }
 
 void CloudPolicyValidatorBase::ValidatePayload() {
@@ -178,6 +185,7 @@ void CloudPolicyValidatorBase::RunChecks() {
     { VALIDATE_SIGNATURE,   &CloudPolicyValidatorBase::CheckSignature },
     { VALIDATE_INITIAL_KEY, &CloudPolicyValidatorBase::CheckInitialKey },
     { VALIDATE_POLICY_TYPE, &CloudPolicyValidatorBase::CheckPolicyType },
+    { VALIDATE_ENTITY_ID,   &CloudPolicyValidatorBase::CheckEntityId },
     { VALIDATE_TOKEN,       &CloudPolicyValidatorBase::CheckToken },
     { VALIDATE_USERNAME,    &CloudPolicyValidatorBase::CheckUsername },
     { VALIDATE_DOMAIN,      &CloudPolicyValidatorBase::CheckDomain },
@@ -233,6 +241,18 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckPolicyType() {
        policy_data_->policy_type() != policy_type_) {
     LOG(ERROR) << "Wrong policy type " << policy_data_->policy_type();
     return VALIDATION_WRONG_POLICY_TYPE;
+  }
+
+  return VALIDATION_OK;
+}
+
+CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckEntityId() {
+  if (!policy_data_->has_settings_entity_id() ||
+      policy_data_->settings_entity_id() != settings_entity_id_) {
+    LOG(ERROR) << "Wrong settings_entity_id "
+               << policy_data_->settings_entity_id() << ", expected "
+               << settings_entity_id_;
+    return VALIDATION_WRONG_SETTINGS_ENTITY_ID;
   }
 
   return VALIDATION_OK;
@@ -375,5 +395,6 @@ void CloudPolicyValidator<PayloadProto>::StartValidation(
 
 template class CloudPolicyValidator<em::ChromeDeviceSettingsProto>;
 template class CloudPolicyValidator<em::CloudPolicySettings>;
+template class CloudPolicyValidator<em::ExternalPolicyData>;
 
 }  // namespace policy

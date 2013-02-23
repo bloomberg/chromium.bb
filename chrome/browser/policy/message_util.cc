@@ -59,6 +59,8 @@ int GetIDSForValidationStatus(CloudPolicyValidatorBase::Status status) {
       return IDS_POLICY_VALIDATION_PAYLOAD_PARSE_ERROR;
     case CloudPolicyValidatorBase::VALIDATION_WRONG_POLICY_TYPE:
       return IDS_POLICY_VALIDATION_WRONG_POLICY_TYPE;
+    case CloudPolicyValidatorBase::VALIDATION_WRONG_SETTINGS_ENTITY_ID:
+      return IDS_POLICY_VALIDATION_WRONG_SETTINGS_ENTITY_ID;
     case CloudPolicyValidatorBase::VALIDATION_BAD_TIMESTAMP:
       return IDS_POLICY_VALIDATION_BAD_TIMESTAMP;
     case CloudPolicyValidatorBase::VALIDATION_WRONG_TOKEN:

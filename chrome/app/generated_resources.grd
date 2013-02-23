@@ -5892,6 +5892,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_POLICY_VALIDATION_WRONG_POLICY_TYPE" desc="Message indicating the policy did not have the expected type.">
         Wrong policy type
       </message>
+      <message name="IDS_POLICY_VALIDATION_WRONG_SETTINGS_ENTITY_ID" desc="Message indicating the policy did not have the expected entity identifier.">
+        Wrong entity identifier
+      </message>
       <message name="IDS_POLICY_VALIDATION_BAD_TIMESTAMP" desc="Message indicating the policy timestamp is bad.">
         Bad policy timestamp
       </message>
