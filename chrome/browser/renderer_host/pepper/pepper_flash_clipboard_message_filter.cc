@@ -291,10 +291,11 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgWriteData(
     NOTIMPLEMENTED();
     return PP_ERROR_FAILED;
   }
+  if (formats.size() != data.size())
+    return PP_ERROR_FAILED;
 
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   ui::Clipboard::Buffer buffer_type = ConvertClipboardType(clipboard_type);
-  DCHECK(formats.size() == data.size());
   // If no formats are passed in clear the clipboard.
   if (formats.size() == 0) {
     clipboard->Clear(buffer_type);
