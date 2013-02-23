@@ -2243,10 +2243,6 @@
               ['<(windows_sdk_path)/Lib/win8/um/x64'],
           },
         },
-        'defines': [
-          # Not sure if tcmalloc works on 64-bit Windows.
-          'NO_TCMALLOC',
-        ],
       },
       'Debug_Base': {
         'abstract': 1,
