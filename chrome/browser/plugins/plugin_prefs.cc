@@ -66,6 +66,13 @@ void PluginPrefs::PluginState::Set(const base::FilePath& plugin, bool enabled) {
   state_[ConvertMapKey(plugin)] = enabled;
 }
 
+void PluginPrefs::PluginState::SetIgnorePseudoKey(const base::FilePath& plugin,
+                                                  bool enabled) {
+  base::FilePath key = ConvertMapKey(plugin);
+  if (key == plugin)
+    state_[key] = enabled;
+}
+
 base::FilePath PluginPrefs::PluginState::ConvertMapKey(
     const base::FilePath& plugin) const {
   // Keep the state of component-updated and bundled Pepper Flash in sync.
@@ -463,7 +470,7 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
               pepper_flash_node = plugin;
           }
 
-          plugin_state_.Set(plugin_path, enabled);
+          plugin_state_.SetIgnorePseudoKey(plugin_path, enabled);
         } else if (!enabled && plugin->GetString("name", &group_name)) {
           // Don't disable this group if it's for the pdf or nacl plugins and
           // we just forced it on.
