@@ -14,7 +14,8 @@ BluetoothDevice::BluetoothDevice()
     : bluetooth_class_(0),
       visible_(false),
       bonded_(false),
-      connected_(false) {
+      connected_(false),
+      connectable_(true) {
 }
 
 BluetoothDevice::~BluetoothDevice() {
@@ -165,6 +166,10 @@ bool BluetoothDevice::IsBonded() const {
 
 bool BluetoothDevice::IsConnected() const {
   return connected_;
+}
+
+bool BluetoothDevice::IsConnectable() const {
+  return connectable_;
 }
 
 }  // namespace device

@@ -29,6 +29,17 @@ class BluetoothServiceRecord {
   // specified in the service record.
   const std::string& uuid() const { return uuid_; }
 
+  // Indicates if this service supports HID.
+  bool SupportsHid() const { return supports_hid_; }
+
+  // For HID services, returns the HIDReconnectInitiate attribute. For non-HID
+  // or unknown services defaults to true.
+  bool hid_reconnect_initiate() const { return hid_reconnect_initiate_; }
+
+  // For HID services, returns the HIDNormallyConnectable attribute. For non-HID
+  // or unknown services defaults to true.
+  bool hid_normally_connectable() const { return hid_normally_connectable_; }
+
   // Indicates if this service supports RFCOMM communication.
   bool SupportsRfcomm() const { return supports_rfcomm_; }
 
@@ -42,6 +53,10 @@ class BluetoothServiceRecord {
   std::string address_;
   std::string name_;
   std::string uuid_;
+
+  bool supports_hid_;
+  bool hid_reconnect_initiate_;
+  bool hid_normally_connectable_;
 
   bool supports_rfcomm_;
   uint8 rfcomm_channel_;

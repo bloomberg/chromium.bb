@@ -26,8 +26,8 @@ class BluetoothServiceRecordChromeOS : public device::BluetoothServiceRecord {
   void GetBluetoothAddress(bdaddr_t* out_address) const;
 
  private:
-  void ExtractChannels(XmlReader* reader);
-  void ExtractUuid(XmlReader* reader);
+  void ExtractProtocolDescriptors(XmlReader* reader);
+  void ExtractServiceClassUuid(XmlReader* reader);
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothServiceRecordChromeOS);
 };

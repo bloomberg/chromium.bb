@@ -115,7 +115,7 @@ class BluetoothDeviceChromeOS
                            const std::string& error_name,
                            const std::string& error_message);
 
-  // Called by BluetoothAdapterClient when a call to DiscoverServices()
+  // Called by BluetoothAdapterClient when a call to GetServiceRecords()
   // completes.  |callback| and |error_callback| are the callbacks provided to
   // GetServiceRecords.
   void CollectServiceRecordsCallback(
@@ -125,13 +125,35 @@ class BluetoothDeviceChromeOS
       const BluetoothDeviceClient::ServiceMap& service_map,
       bool success);
 
+  // Called by CollectServiceRecordsCallback() every time |service_records_| is
+  // updated. |OnServiceRecordsChanged| updates the derived properties that
+  // depend on |service_records_|.
+  void OnServiceRecordsChanged(void);
+
   // Called by BluetoothProperty when the call to Set() for the Trusted
   // property completes. |success| indicates whether or not the request
-  // succeeded, |callback| and |error_callback| are the callbacks provided to
-  // Connect().
-  void OnSetTrusted(const base::Closure& callback,
-                    const ErrorCallback& error_callback,
-                    bool success);
+  // succeeded.
+  void OnSetTrusted(bool success);
+
+  // Called by BluetoothAdapterClient when a call to GetServiceRecords()
+  // fails.  |callback| and |error_callback| are the callbacks provided to
+  // GetServiceRecords().
+  void OnGetServiceRecordsError(const ServiceRecordsCallback& callback,
+                                const ErrorCallback& error_callback);
+
+  // Called by BluetoothAdapterClient when the initial call to
+  // GetServiceRecords() after pairing completes. |callback| and
+  // |error_callback| are the callbacks provided to Connect().
+  void OnInitialGetServiceRecords(const base::Closure& callback,
+                                  const ConnectErrorCallback& error_callback,
+                                  const ServiceRecordList& list);
+
+  // Called by BluetoothAdapterClient when the initial call to
+  // GetServiceRecords() after pairing fails. |callback| and |error_callback|
+  // are the callbacks provided to Connect().
+  void OnInitialGetServiceRecordsError(
+      const base::Closure& callback,
+      const ConnectErrorCallback& error_callback);
 
   // Connect application-level protocols of the device to the system, called
   // on a successful connection or to reconnect to a device that is already
@@ -367,6 +389,13 @@ class BluetoothDeviceChromeOS
 
   // Used to keep track of pending application connection requests.
   int connecting_applications_counter_;
+
+  // A service records cache.
+  ServiceRecordList service_records_;
+
+  // This says whether the |service_records_| cache is initialized. Note that an
+  // empty |service_records_| list can be a valid list.
+  bool service_records_loaded_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

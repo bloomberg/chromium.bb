@@ -46,6 +46,7 @@ BluetoothDeviceChromeOS::BluetoothDeviceChromeOS(
     adapter_(adapter),
     pairing_delegate_(NULL),
     connecting_applications_counter_(0),
+    service_records_loaded_(false),
     weak_ptr_factory_(this) {
 }
 
@@ -71,7 +72,11 @@ void BluetoothDeviceChromeOS::GetServiceRecords(
           base::Bind(&BluetoothDeviceChromeOS::CollectServiceRecordsCallback,
                      weak_ptr_factory_.GetWeakPtr(),
                      callback,
-                     error_callback));
+                     base::Bind(
+                         &BluetoothDeviceChromeOS::OnGetServiceRecordsError,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         callback,
+                         error_callback)));
 }
 
 bool BluetoothDeviceChromeOS::ProvidesServiceWithUUID(
@@ -369,14 +374,20 @@ void BluetoothDeviceChromeOS::OnCreateDevice(
       GetProperties(object_path_)->trusted.Set(
           true,
           base::Bind(&BluetoothDeviceChromeOS::OnSetTrusted,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     callback,
-                     base::Bind(error_callback,
-                                ERROR_UNKNOWN)));
-  // TODO(deymo): Replace ERROR_UNKNOWN with an appropriate new constant.
+                     weak_ptr_factory_.GetWeakPtr()));
 
-  // Connect application-layer protocols.
-  ConnectApplications(callback, error_callback);
+  // In parallel with the |trusted| property change, call GetServiceRecords to
+  // retrieve the SDP from the device and then, either on success or failure,
+  // call ConnectApplications.
+  GetServiceRecords(
+      base::Bind(&BluetoothDeviceChromeOS::OnInitialGetServiceRecords,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback,
+                 error_callback),
+      base::Bind(&BluetoothDeviceChromeOS::OnInitialGetServiceRecordsError,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback,
+                 error_callback));
 }
 
 void BluetoothDeviceChromeOS::OnCreateDeviceError(
@@ -416,22 +427,77 @@ void BluetoothDeviceChromeOS::CollectServiceRecordsCallback(
     return;
   }
 
-  ScopedVector<BluetoothServiceRecord> records;
+  // Update the cache. No other thread is executing a GetServiceRecords
+  // callback, so it is safe to delete the previous objects here.
+  service_records_.clear();
+  // TODO(deymo): Perhaps don't update the cache if the new SDP information is
+  // empty and we had something before. Some devices only answer this
+  // information while paired, and this callback could be called in any order if
+  // several calls to GetServiceRecords are made while initial pairing with the
+  // device. This requires more investigation.
   for (BluetoothDeviceClient::ServiceMap::const_iterator i =
       service_map.begin(); i != service_map.end(); ++i) {
-    records.push_back(
+    service_records_.push_back(
         new BluetoothServiceRecordChromeOS(address(), i->second));
   }
-  callback.Run(records);
+  service_records_loaded_ = true;
+  OnServiceRecordsChanged();
+
+  callback.Run(service_records_);
 }
 
-void BluetoothDeviceChromeOS::OnSetTrusted(const base::Closure& callback,
-                                           const ErrorCallback& error_callback,
-                                           bool success) {
-  if (success) {
-    callback.Run();
+void BluetoothDeviceChromeOS::OnServiceRecordsChanged(void) {
+  // Update the BluetoothDevice::connectable_ property.
+  bool hid_normally_connectable = true;
+  bool hid_reconnect_initiate = true;
+  for (ServiceRecordList::const_iterator it = service_records_.begin();
+      it != service_records_.end(); ++it) {
+    if ((*it)->SupportsHid()) {
+      // If there are several HID profiles, we assume the device is connectable
+      // if all them are connectable.
+      hid_normally_connectable =
+          hid_normally_connectable && (*it)->hid_normally_connectable();
+      hid_reconnect_initiate =
+          hid_reconnect_initiate && (*it)->hid_reconnect_initiate();
+    }
+  }
+  // The Bluetooth HID spec states that if HIDNormallyConnectable or
+  // HIDReconnectInitiate are not present in a HID profile, the value is false.
+  // Nevertheless, a device with both properties in false can't reconnect to the
+  // adapter and can't be reconnected from the adapter. To avoid problems with
+  // devices that don't export this properties we asume they are connectable.
+  connectable_ = hid_normally_connectable || !hid_reconnect_initiate;
+  DVLOG(1) << "ServiceRecordsChanged for " << address_
+           << ": connectable = " << connectable_;
+}
+
+void BluetoothDeviceChromeOS::OnSetTrusted(bool success) {
+  LOG_IF(WARNING, !success) << "Failed to set device as trusted: " << address_;
+}
+
+void BluetoothDeviceChromeOS::OnInitialGetServiceRecords(
+    const base::Closure& callback,
+    const ConnectErrorCallback& error_callback,
+    const ServiceRecordList& list) {
+  // Connect application-layer protocols.
+  ConnectApplications(callback, error_callback);
+}
+
+void BluetoothDeviceChromeOS::OnInitialGetServiceRecordsError(
+    const base::Closure& callback,
+    const ConnectErrorCallback& error_callback) {
+  // Ignore the error retrieving the service records and continue.
+  LOG(WARNING) << "Error retrieving SDP for " << address_ << " after pairing.";
+  // Connect application-layer protocols.
+  ConnectApplications(callback, error_callback);
+}
+
+void BluetoothDeviceChromeOS::OnGetServiceRecordsError(
+    const ServiceRecordsCallback& callback,
+    const ErrorCallback& error_callback) {
+  if (service_records_loaded_) {
+    callback.Run(service_records_);
   } else {
-    LOG(WARNING) << "Failed to set device as trusted: " << address_;
     error_callback.Run();
   }
 }

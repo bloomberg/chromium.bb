@@ -179,6 +179,10 @@ class BluetoothDevice {
   // and at least one service available for use.
   virtual bool IsConnected() const;
 
+  // Indicates whether the bonded device accepts connections initiated from the
+  // adapter. This value is undefined for unbonded devices.
+  virtual bool IsConnectable() const;
+
   // Returns the services (as UUID strings) that this device provides.
   typedef std::vector<std::string> ServiceList;
   virtual const ServiceList& GetServices() const = 0;
@@ -329,6 +333,10 @@ class BluetoothDevice {
   bool visible_;
   bool bonded_;
   bool connected_;
+
+  // Indicates whether the device normally accepts connections initiated from
+  // the adapter once paired.
+  bool connectable_;
 
  private:
   // Returns a localized string containing the device's bluetooth address and
