@@ -8,6 +8,7 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "net/base/net_errors.h"
 #include "net/socket/client_socket_handle.h"
 
 namespace net {
@@ -15,6 +16,7 @@ namespace net {
 using base::Histogram;
 using base::HistogramBase;
 using base::LinearHistogram;
+using base::CustomHistogram;
 
 ClientSocketPoolHistograms::ClientSocketPoolHistograms(
     const std::string& pool_name)
@@ -42,6 +44,11 @@ ClientSocketPoolHistograms::ClientSocketPoolHistograms(
       base::TimeDelta::FromMilliseconds(1),
       base::TimeDelta::FromMinutes(6),
       100, HistogramBase::kUmaTargetedHistogramFlag);
+  // UMA_HISTOGRAM_CUSTOM_ENUMERATION
+  error_code_ = CustomHistogram::FactoryGet(
+      "Net.SocketInitErrorCodes_" + pool_name,
+      GetAllErrorCodesForUma(),
+      HistogramBase::kUmaTargetedHistogramFlag);
 
   if (pool_name == "HTTPProxy")
     is_http_proxy_connection_ = true;
@@ -66,6 +73,11 @@ void ClientSocketPoolHistograms::AddUnusedIdleTime(base::TimeDelta time) const {
 
 void ClientSocketPoolHistograms::AddReusedIdleTime(base::TimeDelta time) const {
   reused_idle_time_->AddTime(time);
+}
+
+void ClientSocketPoolHistograms::AddErrorCode(int error_code) const {
+  // Error codes are positive (since histograms expect positive sample values).
+  error_code_->Add(-error_code);
 }
 
 }  // namespace net

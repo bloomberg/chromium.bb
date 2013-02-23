@@ -131,6 +131,8 @@ void ClientSocketHandle::OnIOComplete(int result) {
 
 void ClientSocketHandle::HandleInitCompletion(int result) {
   CHECK_NE(ERR_IO_PENDING, result);
+  ClientSocketPoolHistograms* histograms = pool_->histograms();
+  histograms->AddErrorCode(result);
   if (result != OK) {
     if (!socket_.get())
       ResetInternal(false);  // Nothing to cancel since the request failed.
@@ -142,7 +144,6 @@ void ClientSocketHandle::HandleInitCompletion(int result) {
   CHECK_NE(-1, pool_id_) << "Pool should have set |pool_id_| to a valid value.";
   setup_time_ = base::TimeTicks::Now() - init_time_;
 
-  ClientSocketPoolHistograms* histograms = pool_->histograms();
   histograms->AddSocketType(reuse_type());
   switch (reuse_type()) {
     case ClientSocketHandle::UNUSED:
