@@ -183,7 +183,9 @@ void PCMWaveInAudioInputStream::Close() {
   Stop();
 
   if (wavein_) {
-    // waveInClose() generates a WIM_CLOSE callback.  In case start was never
+    FreeBuffers();
+
+    // waveInClose() generates a WIM_CLOSE callback.  In case Start() was never
     // called, force a reset to ensure close succeeds.
     MMRESULT res = ::waveInReset(wavein_);
     DCHECK_EQ(res, static_cast<MMRESULT>(MMSYSERR_NOERROR));
@@ -191,7 +193,6 @@ void PCMWaveInAudioInputStream::Close() {
     DCHECK_EQ(res, static_cast<MMRESULT>(MMSYSERR_NOERROR));
     state_ = kStateClosed;
     wavein_ = NULL;
-    FreeBuffers();
   }
 
   // Tell the audio manager that we have been released. This can result in

@@ -298,20 +298,22 @@ void PCMWaveOutAudioOutputStream::Stop() {
 // as callback_ is set to NULL. Just print it and hope somebody somehow
 // will find it...
 void PCMWaveOutAudioOutputStream::Close() {
-  Stop();  // Just to be sure. No-op if not playing.
+  // Force Stop() to ensure it's safe to release buffers and free the stream.
+  Stop();
+
   if (waveout_) {
-    MMRESULT result = ::waveOutClose(waveout_);
-    // If ::waveOutClose() fails we cannot just delete the stream, callback
-    // may try to access it and would crash. Better to leak the stream.
-    if (result != MMSYSERR_NOERROR) {
-      HandleError(result);
-      state_ = PCMA_PLAYING;
-      return;
-    }
+    FreeBuffers();
+
+    // waveOutClose() generates a WIM_CLOSE callback.  In case Start() was never
+    // called, force a reset to ensure close succeeds.
+    MMRESULT res = ::waveOutReset(waveout_);
+    DCHECK_EQ(res, static_cast<MMRESULT>(MMSYSERR_NOERROR));
+    res = ::waveOutClose(waveout_);
+    DCHECK_EQ(res, static_cast<MMRESULT>(MMSYSERR_NOERROR));
     state_ = PCMA_CLOSED;
     waveout_ = NULL;
-    FreeBuffers();
   }
+
   // Tell the audio manager that we have been released. This can result in
   // the manager destroying us in-place so this needs to be the last thing
   // we do on this function.
