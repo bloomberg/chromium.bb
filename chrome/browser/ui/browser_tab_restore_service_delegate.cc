@@ -94,7 +94,8 @@ TabRestoreServiceDelegate* TabRestoreServiceDelegate::Create(
   } else {
     browser = new Browser(
         Browser::CreateParams::CreateForApp(
-            Browser::TYPE_POPUP, app_name, gfx::Rect(), profile));
+            Browser::TYPE_POPUP, app_name, gfx::Rect(), profile,
+            host_desktop_type));
   }
   if (browser)
     return browser->tab_restore_service_delegate();

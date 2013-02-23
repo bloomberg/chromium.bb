@@ -84,7 +84,7 @@ class LauncherFaviconLoaderBrowsertest : public InProcessBrowserTest {
     if (!panel_browser_) {
       panel_browser_ = new Browser(Browser::CreateParams::CreateForApp(
           Browser::TYPE_PANEL, "Test Panel", gfx::Rect(),
-          browser()->profile()));
+          browser()->profile(), browser()->host_desktop_type()));
       EXPECT_TRUE(panel_browser_->is_type_panel());
       // Load initial web contents before setting the observer.
       ui_test_utils::NavigateToURL(panel_browser_, GURL());

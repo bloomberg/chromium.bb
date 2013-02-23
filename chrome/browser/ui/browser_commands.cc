@@ -587,7 +587,8 @@ WebContents* DuplicateTabAt(Browser* browser, int index) {
           Browser::CreateParams::CreateForApp(Browser::TYPE_POPUP,
                                               browser->app_name(),
                                               gfx::Rect(),
-                                              browser->profile()));
+                                              browser->profile(),
+                                              browser->host_desktop_type()));
     } else if (browser->is_type_popup()) {
       browser = new Browser(
           Browser::CreateParams(Browser::TYPE_POPUP, browser->profile(),
@@ -1089,7 +1090,8 @@ void ConvertTabToAppWindow(Browser* browser,
 
   Browser* app_browser = new Browser(
       Browser::CreateParams::CreateForApp(
-          Browser::TYPE_POPUP, app_name, gfx::Rect(), browser->profile()));
+          Browser::TYPE_POPUP, app_name, gfx::Rect(), browser->profile(),
+          browser->host_desktop_type()));
   app_browser->tab_strip_model()->AppendWebContents(contents, true);
 
   contents->GetMutableRendererPrefs()->can_accept_load_drops = false;

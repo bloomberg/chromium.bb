@@ -61,7 +61,8 @@ class AppNonClientFrameViewAshTest : public InProcessBrowserTest {
         Browser::TYPE_POPUP,
         std::string("Test"),
         gfx::Rect(),
-        browser()->profile());
+        browser()->profile(),
+        browser()->host_desktop_type());
     params.initial_show_state = ui::SHOW_STATE_MAXIMIZED;
     params.app_type = Browser::APP_TYPE_HOST;
     app_browser_ = new Browser(params);

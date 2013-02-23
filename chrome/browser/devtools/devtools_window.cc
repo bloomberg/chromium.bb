@@ -408,7 +408,11 @@ void DevToolsWindow::CreateDevToolsBrowser() {
     defaults->SetBoolean("always_on_top", false);
   }
 
-  browser_ = new Browser(Browser::CreateParams::CreateForDevTools(profile_));
+  chrome::HostDesktopType host_desktop_type =
+      chrome::GetHostDesktopTypeForNativeView(web_contents_->GetNativeView());
+
+  browser_ = new Browser(Browser::CreateParams::CreateForDevTools(
+                             profile_, host_desktop_type));
   browser_->tab_strip_model()->AddWebContents(
       web_contents_, -1, content::PAGE_TRANSITION_AUTO_TOPLEVEL,
       TabStripModel::ADD_ACTIVE);

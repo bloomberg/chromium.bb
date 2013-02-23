@@ -9,6 +9,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -76,7 +77,8 @@ chrome::NavigateParams BrowserNavigatorTest::MakeNavigateParams(
 
 Browser* BrowserNavigatorTest::CreateEmptyBrowserForType(Browser::Type type,
                                                          Profile* profile) {
-  Browser* browser = new Browser(Browser::CreateParams(type, profile));
+  Browser* browser = new Browser(
+      Browser::CreateParams(type, profile, chrome::HOST_DESKTOP_TYPE_NATIVE));
   chrome::AddBlankTabAt(browser, -1, true);
   return browser;
 }
@@ -85,7 +87,8 @@ Browser* BrowserNavigatorTest::CreateEmptyBrowserForApp(Browser::Type type,
                                                         Profile* profile) {
   Browser* browser = new Browser(
       Browser::CreateParams::CreateForApp(
-          Browser::TYPE_POPUP, "Test", gfx::Rect(), profile));
+          Browser::TYPE_POPUP, "Test", gfx::Rect(), profile,
+          chrome::HOST_DESKTOP_TYPE_NATIVE));
   chrome::AddBlankTabAt(browser, -1, true);
   return browser;
 }

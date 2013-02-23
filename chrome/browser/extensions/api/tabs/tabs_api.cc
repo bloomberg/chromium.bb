@@ -649,7 +649,8 @@ bool WindowsCreateFunction::RunImpl() {
         window_type,
         web_app::GenerateApplicationNameFromExtensionId(extension_id),
         window_bounds,
-        window_profile);
+        window_profile,
+        host_desktop_type);
   }
   create_params.initial_show_state = ui::SHOW_STATE_NORMAL;
   create_params.host_desktop_type = chrome::GetActiveDesktop();

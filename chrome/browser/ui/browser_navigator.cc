@@ -165,7 +165,8 @@ Browser* GetBrowserForDisposition(chrome::NavigateParams* params) {
       }
 
       return new Browser(Browser::CreateParams::CreateForApp(
-          Browser::TYPE_POPUP, app_name, params->window_bounds, profile));
+          Browser::TYPE_POPUP, app_name, params->window_bounds, profile,
+          params->host_desktop_type));
     }
     case NEW_WINDOW: {
       // Make a new normal browser window.

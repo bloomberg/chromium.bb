@@ -304,11 +304,12 @@ Browser::CreateParams Browser::CreateParams::CreateForApp(
     Type type,
     const std::string& app_name,
     const gfx::Rect& window_bounds,
-    Profile* profile) {
+    Profile* profile,
+    chrome::HostDesktopType host_desktop_type) {
   DCHECK(type != TYPE_TABBED);
   DCHECK(!app_name.empty());
 
-  CreateParams params(type, profile);
+  CreateParams params(type, profile, host_desktop_type);
   params.app_name = app_name;
   params.app_type = APP_TYPE_CHILD;
   params.initial_bounds = window_bounds;
@@ -318,8 +319,9 @@ Browser::CreateParams Browser::CreateParams::CreateForApp(
 
 // static
 Browser::CreateParams Browser::CreateParams::CreateForDevTools(
-    Profile* profile) {
-  CreateParams params(TYPE_POPUP, profile);
+    Profile* profile,
+    chrome::HostDesktopType host_desktop_type) {
+  CreateParams params(TYPE_POPUP, profile, host_desktop_type);
   params.app_name = DevToolsWindow::kDevToolsApp;
   return params;
 }

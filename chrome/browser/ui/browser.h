@@ -167,9 +167,12 @@ class Browser : public TabStripModelObserver,
     static CreateParams CreateForApp(Type type,
                                      const std::string& app_name,
                                      const gfx::Rect& window_bounds,
-                                     Profile* profile);
+                                     Profile* profile,
+                                     chrome::HostDesktopType host_desktop_type);
 
-    static CreateParams CreateForDevTools(Profile* profile);
+    static CreateParams CreateForDevTools(
+        Profile* profile,
+        chrome::HostDesktopType host_desktop_type);
 
     // The browser type.
     Type type;

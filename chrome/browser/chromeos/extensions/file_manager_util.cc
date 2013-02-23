@@ -771,7 +771,8 @@ void OpenActionChoiceDialog(const base::FilePath& path) {
         Browser::CreateParams::CreateForApp(Browser::TYPE_POPUP,
                                             "action_choice",
                                             bounds,
-                                            profile));
+                                            profile,
+                                            chrome::HOST_DESKTOP_TYPE_ASH));
 
     chrome::AddSelectedTabWithURL(browser, dialog_url,
                                   content::PAGE_TRANSITION_LINK);
