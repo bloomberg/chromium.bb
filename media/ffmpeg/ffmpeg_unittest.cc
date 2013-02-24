@@ -14,6 +14,7 @@
 #include "base/base_paths.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/memory_mapped_file.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/perftimer.h"
@@ -392,7 +393,7 @@ class FFmpegTest : public testing::TestWithParam<const char*> {
   int64 decoded_video_duration_;
   int64 duration_;
 
-  file_util::MemoryMappedFile file_data_;
+  base::MemoryMappedFile file_data_;
   scoped_ptr<InMemoryUrlProtocol> protocol_;
   scoped_ptr<FFmpegGlue> glue_;
 

@@ -859,46 +859,6 @@ bool FileEnumerator::ReadDirectory(std::vector<DirectoryEntryInfo>* entries,
   return true;
 }
 
-///////////////////////////////////////////////
-// MemoryMappedFile
-
-MemoryMappedFile::MemoryMappedFile()
-    : file_(base::kInvalidPlatformFileValue),
-      data_(NULL),
-      length_(0) {
-}
-
-bool MemoryMappedFile::MapFileToMemoryInternal() {
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  struct stat file_stat;
-  if (fstat(file_, &file_stat) == base::kInvalidPlatformFileValue) {
-    DLOG(ERROR) << "Couldn't fstat " << file_ << ", errno " << errno;
-    return false;
-  }
-  length_ = file_stat.st_size;
-
-  data_ = static_cast<uint8*>(
-      mmap(NULL, length_, PROT_READ, MAP_SHARED, file_, 0));
-  if (data_ == MAP_FAILED)
-    DLOG(ERROR) << "Couldn't mmap " << file_ << ", errno " << errno;
-
-  return data_ != MAP_FAILED;
-}
-
-void MemoryMappedFile::CloseHandles() {
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  if (data_ != NULL)
-    munmap(data_, length_);
-  if (file_ != base::kInvalidPlatformFileValue)
-    ignore_result(HANDLE_EINTR(close(file_)));
-
-  data_ = NULL;
-  length_ = 0;
-  file_ = base::kInvalidPlatformFileValue;
-}
-
 bool HasFileBeenModifiedSince(const FileEnumerator::FindInfo& find_info,
                               const base::Time& cutoff_time) {
   return static_cast<time_t>(find_info.stat.st_mtime) >= cutoff_time.ToTimeT();

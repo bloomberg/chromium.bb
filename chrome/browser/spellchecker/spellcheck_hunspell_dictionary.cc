@@ -5,6 +5,7 @@
 #include "chrome/browser/spellchecker/spellcheck_hunspell_dictionary.h"
 
 #include "base/file_util.h"
+#include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -92,7 +93,7 @@ scoped_ptr<DictionaryFile> InitializeDictionaryLocation(
   // scoping closes the memory-mapped file before it is opened or deleted.
   bool bdict_is_valid;
   {
-    file_util::MemoryMappedFile map;
+    base::MemoryMappedFile map;
     bdict_is_valid = file_util::PathExists(file->path) &&
         map.Initialize(file->path) &&
         hunspell::BDict::Verify(reinterpret_cast<const char*>(map.data()),

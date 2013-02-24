@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
 #include "base/md5.h"
 #include "base/path_service.h"
@@ -115,7 +116,7 @@ int main(int argc, const char** argv) {
   __try {
 #endif
 
-  file_util::MemoryMappedFile file_data;
+  base::MemoryMappedFile file_data;
   file_data.Initialize(in_path);
   media::InMemoryUrlProtocol protocol(
       file_data.data(), file_data.length(), false);

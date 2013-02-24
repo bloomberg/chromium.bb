@@ -21,11 +21,8 @@
 
 namespace base {
 class FilePath;
-class RefCountedStaticMemory;
-}
-
-namespace file_util {
 class MemoryMappedFile;
+class RefCountedStaticMemory;
 }
 
 namespace ui {
@@ -63,7 +60,7 @@ class UI_EXPORT DataPack : public ResourceHandle {
   bool LoadImpl();
 
   // The memory-mapped data.
-  scoped_ptr<file_util::MemoryMappedFile> mmap_;
+  scoped_ptr<base::MemoryMappedFile> mmap_;
 
   // Number of resources in the data.
   size_t resource_count_;

@@ -351,56 +351,6 @@ int64 ComputeFilesSize(const FilePath& directory,
 }
 
 ///////////////////////////////////////////////
-// MemoryMappedFile
-
-MemoryMappedFile::~MemoryMappedFile() {
-  CloseHandles();
-}
-
-bool MemoryMappedFile::Initialize(const FilePath& file_name) {
-  if (IsValid())
-    return false;
-
-  if (!MapFileToMemory(file_name)) {
-    CloseHandles();
-    return false;
-  }
-
-  return true;
-}
-
-bool MemoryMappedFile::Initialize(base::PlatformFile file) {
-  if (IsValid())
-    return false;
-
-  file_ = file;
-
-  if (!MapFileToMemoryInternal()) {
-    CloseHandles();
-    return false;
-  }
-
-  return true;
-}
-
-bool MemoryMappedFile::IsValid() const {
-  return data_ != NULL;
-}
-
-bool MemoryMappedFile::MapFileToMemory(const FilePath& file_name) {
-  file_ = base::CreatePlatformFile(
-      file_name, base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
-      NULL, NULL);
-
-  if (file_ == base::kInvalidPlatformFileValue) {
-    DLOG(ERROR) << "Couldn't open " << file_name.value();
-    return false;
-  }
-
-  return MapFileToMemoryInternal();
-}
-
-///////////////////////////////////////////////
 // FileEnumerator
 //
 // Note: the main logic is in file_util_<platform>.cc

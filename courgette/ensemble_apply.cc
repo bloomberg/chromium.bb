@@ -8,8 +8,8 @@
 
 #include "base/basictypes.h"
 #include "base/file_util.h"
+#include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
-
 #include "courgette/crc.h"
 #include "courgette/region.h"
 #include "courgette/streams.h"
@@ -378,7 +378,7 @@ Status ApplyEnsemblePatch(const base::FilePath::CharType* old_file_name,
   // First read enough of the patch file to validate the header is well-formed.
   // A few varint32 numbers should fit in 100.
   base::FilePath patch_file_path(patch_file_name);
-  file_util::MemoryMappedFile patch_file;
+  base::MemoryMappedFile patch_file;
   if (!patch_file.Initialize(patch_file_path))
     return C_READ_OPEN_ERROR;
 
@@ -392,7 +392,7 @@ Status ApplyEnsemblePatch(const base::FilePath::CharType* old_file_name,
 
   // Read the old_file.
   base::FilePath old_file_path(old_file_name);
-  file_util::MemoryMappedFile old_file;
+  base::MemoryMappedFile old_file;
   if (!old_file.Initialize(old_file_path))
     return C_READ_ERROR;
 

@@ -5,6 +5,7 @@
 #include <mshtmcid.h>
 #include <string>
 
+#include "base/file_util.h"
 #include "base/test/test_file_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_bstr.h"

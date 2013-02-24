@@ -14,7 +14,7 @@
 #include "content/public/renderer/render_process_observer.h"
 #include "ipc/ipc_platform_file.h"
 
-namespace file_util {
+namespace base {
 class MemoryMappedFile;
 }
 
@@ -63,7 +63,7 @@ class CONTENT_EXPORT Hyphenator : public RenderProcessObserver {
   // it without opening the file.)
   string16 locale_;
   base::PlatformFile rule_file_;
-  scoped_ptr<file_util::MemoryMappedFile> rule_map_;
+  scoped_ptr<base::MemoryMappedFile> rule_map_;
 
   // A cached result. WebKit often calls ComputeLastHyphenLocation with the same
   // word multiple times to find the best hyphenation point when it finds a line

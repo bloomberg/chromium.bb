@@ -39,7 +39,8 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/file_util.h"
+#include "base/file_path.h"
+#include "base/files/memory_mapped_file.h"
 #include "base/message_loop.h"
 #include "net/base/stream_listen_socket.h"
 
@@ -251,7 +252,7 @@ class FileResponse : public ResponseForPath {
 
  protected:
   base::FilePath file_path_;
-  mutable scoped_ptr<file_util::MemoryMappedFile> file_;
+  mutable scoped_ptr<base::MemoryMappedFile> file_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FileResponse);

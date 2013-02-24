@@ -4,7 +4,7 @@
 
 #include "content/renderer/hyphenator/hyphenator.h"
 
-#include "base/file_util.h"
+#include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
@@ -203,7 +203,7 @@ bool Hyphenator::Initialize() {
   // succeeds, this class does not have to close this file because it is closed
   // by the MemoryMappedFile class. To prevent this class from closing this
   // file, we reset its handle.
-  rule_map_.reset(new file_util::MemoryMappedFile);
+  rule_map_.reset(new base::MemoryMappedFile);
   if (!rule_map_->Initialize(rule_file_))
     return false;
   rule_file_ = base::kInvalidPlatformFileValue;

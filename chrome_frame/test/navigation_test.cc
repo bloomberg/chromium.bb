@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/file_util.h"
 #include "base/test/test_file_util.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"

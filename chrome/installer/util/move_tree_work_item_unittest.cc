@@ -8,6 +8,7 @@
 
 #include "base/base_paths.h"
 #include "base/file_util.h"
+#include "base/files/memory_mapped_file.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
@@ -412,7 +413,7 @@ TEST_F(MoveTreeWorkItemTest, MoveDirectoryDestExistsCheckForDuplicatesFull) {
   // Lock one of the files in the to destination directory to prevent moves.
   base::FilePath orig_to_file(
       to_dir.AppendASCII("From_Dir2").AppendASCII("From_File"));
-  file_util::MemoryMappedFile mapped_file;
+  base::MemoryMappedFile mapped_file;
   EXPECT_TRUE(mapped_file.Initialize(orig_to_file));
 
   // First check that we can't do the regular Move().

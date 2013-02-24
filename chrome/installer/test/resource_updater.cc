@@ -6,8 +6,8 @@
 
 #include <windows.h>
 
-#include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
 
 namespace upgrade_test {
@@ -39,7 +39,7 @@ bool ResourceUpdater::Update(const std::wstring& name,
                              WORD language_id,
                              const base::FilePath& input_file) {
   DCHECK(handle_ != NULL);
-  file_util::MemoryMappedFile input;
+  base::MemoryMappedFile input;
 
   if (input.Initialize(input_file)) {
     if (UpdateResource(handle_, type.c_str(), name.c_str(), language_id,

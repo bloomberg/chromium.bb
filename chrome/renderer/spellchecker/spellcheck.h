@@ -21,10 +21,6 @@
 
 struct SpellCheckResult;
 
-namespace file_util {
-class MemoryMappedFile;
-}
-
 namespace WebKit {
 class WebTextCheckingCompletion;
 struct WebTextCheckingResult;

@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "hunspell_engine.h"
+#include "chrome/renderer/spellchecker/hunspell_engine.h"
 
 #include <algorithm>
 #include <iterator>
 
+#include "base/files/memory_mapped_file.h"
 #include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "chrome/common/spellcheck_common.h"
@@ -58,7 +59,7 @@ void HunspellEngine::InitializeHunspell() {
   if (hunspell_.get())
     return;
 
-  bdict_file_.reset(new file_util::MemoryMappedFile);
+  bdict_file_.reset(new base::MemoryMappedFile);
 
   if (bdict_file_->Initialize(file_)) {
     TimeTicks debug_start_time = base::Histogram::DebugNow();

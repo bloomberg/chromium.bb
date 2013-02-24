@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/files/memory_mapped_file.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
@@ -205,7 +206,7 @@ void GetJavaDirectory(std::set<base::FilePath>* plugin_dirs) {
 }
 
 bool IsValid32BitImage(const base::FilePath& path) {
-  file_util::MemoryMappedFile plugin_image;
+  base::MemoryMappedFile plugin_image;
 
   if (!plugin_image.InitializeAsImageSection(path))
     return false;

@@ -6,8 +6,10 @@
 
 #include <sys/mman.h>
 #include <errno.h>
+
 #include "base/logging.h"
 #include "base/file_util.h"
+#include "base/files/memory_mapped_file.h"
 
 namespace file_util {
 
@@ -30,7 +32,7 @@ bool EvictFileFromSystemCache(const base::FilePath& file) {
     return true;
   }
 
-  file_util::MemoryMappedFile mapped_file;
+  base::MemoryMappedFile mapped_file;
   if (!mapped_file.Initialize(file)) {
     DLOG(WARNING) << "failed to memory map " << file.value();
     return false;

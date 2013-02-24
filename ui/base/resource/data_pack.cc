@@ -7,6 +7,7 @@
 #include <errno.h>
 
 #include "base/file_util.h"
+#include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram.h"
@@ -72,7 +73,7 @@ DataPack::~DataPack() {
 }
 
 bool DataPack::LoadFromPath(const base::FilePath& path) {
-  mmap_.reset(new file_util::MemoryMappedFile);
+  mmap_.reset(new base::MemoryMappedFile);
   if (!mmap_->Initialize(path)) {
     DLOG(ERROR) << "Failed to mmap datapack";
     UMA_HISTOGRAM_ENUMERATION("DataPack.Load", INIT_FAILED,
@@ -84,7 +85,7 @@ bool DataPack::LoadFromPath(const base::FilePath& path) {
 }
 
 bool DataPack::LoadFromFile(base::PlatformFile file) {
-  mmap_.reset(new file_util::MemoryMappedFile);
+  mmap_.reset(new base::MemoryMappedFile);
   if (!mmap_->Initialize(file)) {
     DLOG(ERROR) << "Failed to mmap datapack";
     UMA_HISTOGRAM_ENUMERATION("DataPack.Load", INIT_FAILED_FROM_FILE,

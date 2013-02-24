@@ -5,7 +5,9 @@
 #include "chrome_frame/test/test_with_web_server.h"
 
 #include "base/base_paths.h"
+#include "base/file_util.h"
 #include "base/file_version_info.h"
+#include "base/files/memory_mapped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/stringprintf.h"

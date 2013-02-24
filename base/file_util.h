@@ -560,59 +560,6 @@ class BASE_EXPORT FileEnumerator {
   DISALLOW_COPY_AND_ASSIGN(FileEnumerator);
 };
 
-class BASE_EXPORT MemoryMappedFile {
- public:
-  // The default constructor sets all members to invalid/null values.
-  MemoryMappedFile();
-  ~MemoryMappedFile();
-
-  // Opens an existing file and maps it into memory. Access is restricted to
-  // read only. If this object already points to a valid memory mapped file
-  // then this method will fail and return false. If it cannot open the file,
-  // the file does not exist, or the memory mapping fails, it will return false.
-  // Later we may want to allow the user to specify access.
-  bool Initialize(const base::FilePath& file_name);
-  // As above, but works with an already-opened file. MemoryMappedFile will take
-  // ownership of |file| and close it when done.
-  bool Initialize(base::PlatformFile file);
-
-#if defined(OS_WIN)
-  // Opens an existing file and maps it as an image section. Please refer to
-  // the Initialize function above for additional information.
-  bool InitializeAsImageSection(const base::FilePath& file_name);
-#endif  // OS_WIN
-
-  const uint8* data() const { return data_; }
-  size_t length() const { return length_; }
-
-  // Is file_ a valid file handle that points to an open, memory mapped file?
-  bool IsValid() const;
-
- private:
-  // Open the given file and pass it to MapFileToMemoryInternal().
-  bool MapFileToMemory(const base::FilePath& file_name);
-
-  // Map the file to memory, set data_ to that memory address. Return true on
-  // success, false on any kind of failure. This is a helper for Initialize().
-  bool MapFileToMemoryInternal();
-
-  // Closes all open handles. Later we may want to make this public.
-  void CloseHandles();
-
-#if defined(OS_WIN)
-  // MapFileToMemoryInternal calls this function. It provides the ability to
-  // pass in flags which control the mapped section.
-  bool MapFileToMemoryInternalEx(int flags);
-
-  HANDLE file_mapping_;
-#endif
-  base::PlatformFile file_;
-  uint8* data_;
-  size_t length_;
-
-  DISALLOW_COPY_AND_ASSIGN(MemoryMappedFile);
-};
-
 // Returns whether the file has been modified since a particular date.
 BASE_EXPORT bool HasFileBeenModifiedSince(
     const FileEnumerator::FindInfo& find_info,
