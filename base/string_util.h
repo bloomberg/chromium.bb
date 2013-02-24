@@ -275,14 +275,8 @@ BASE_EXPORT bool ContainsOnlyChars(const std::string& input,
 
 // Converts to 7-bit ASCII by truncating. The result must be known to be ASCII
 // beforehand.
-namespace base {
 BASE_EXPORT std::string WideToASCII(const std::wstring& wide);
 BASE_EXPORT std::string UTF16ToASCII(const string16& utf16);
-}  // namespace base
-// TODO(brettw) convert this entier file to using the base namespace and remove
-// this using.
-using base::WideToASCII;
-using base::UTF16ToASCII;
 
 // Converts the given wide string to the corresponding Latin1. This will fail
 // (return false) if any characters are more than 255.
