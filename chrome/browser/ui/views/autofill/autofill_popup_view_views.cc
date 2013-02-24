@@ -118,7 +118,9 @@ void AutofillPopupViewViews::Show() {
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
     params.delegate = this;
     params.transparent = true;
-    params.parent = controller_->container_view();
+    // Note: since there is no parent specified, this popup must handle deleting
+    // itself.
+    params.context = controller_->container_view();
     widget->Init(params);
     widget->SetContentsView(this);
     widget->SetBounds(controller_->popup_bounds());
