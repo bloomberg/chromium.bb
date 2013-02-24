@@ -1127,7 +1127,8 @@ TEST(LayerAnimatorTest, MultiPreemptByImmediatelyAnimatingToNewTarget) {
 }
 
 // Preempt a threaded animation by animating to new target.
-TEST(LayerAnimatorTest, MultiPreemptThreadedByImmediatelyAnimatingToNewTarget) {
+// http://crbug.com/177930
+TEST(LayerAnimatorTest, DISABLED_MultiPreemptThreadedByImmediatelyAnimatingToNewTarget) {
   LayerAnimatorTestController test_controller(
       LayerAnimator::CreateDefaultAnimator());
   AnimationContainerElement* element = test_controller.animator();
