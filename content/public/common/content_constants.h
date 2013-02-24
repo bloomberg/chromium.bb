@@ -9,7 +9,7 @@
 
 #include <stddef.h>         // For size_t
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "content/common/content_export.h"
 
 namespace content {

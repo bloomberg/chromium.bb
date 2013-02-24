@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "chrome/installer/util/installation_validator.h"
 #include "chrome/test/mini_installer_test/switch_builder.h"
 

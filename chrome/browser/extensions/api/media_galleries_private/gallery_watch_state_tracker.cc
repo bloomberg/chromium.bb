@@ -7,7 +7,7 @@
 #include "chrome/browser/extensions/api/media_galleries_private/gallery_watch_state_tracker.h"
 
 #include "base/bind.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"

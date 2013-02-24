@@ -5,7 +5,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 
 #include "base/command_line.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/platform_file.h"

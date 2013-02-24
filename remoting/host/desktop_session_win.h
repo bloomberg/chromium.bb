@@ -5,7 +5,7 @@
 #ifndef REMOTING_HOST_DESKTOP_SESSION_WIN_H_
 #define REMOTING_HOST_DESKTOP_SESSION_WIN_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_handle.h"

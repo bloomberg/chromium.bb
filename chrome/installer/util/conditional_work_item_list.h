@@ -7,7 +7,7 @@
 
 #include "chrome/installer/util/work_item_list.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 
 // A WorkItemList subclass that permits conditionally executing a set of

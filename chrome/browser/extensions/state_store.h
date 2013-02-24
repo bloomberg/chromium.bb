@@ -8,7 +8,7 @@
 #include <set>
 #include <string>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/value_store/value_store_frontend.h"
 #include "content/public/browser/notification_observer.h"

@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/time.h"
 #include "device/media_transfer_protocol/mtp_file_entry.pb.h"

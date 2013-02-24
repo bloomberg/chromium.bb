@@ -4,7 +4,7 @@
 
 #include "ipc/ipc_message_utils.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

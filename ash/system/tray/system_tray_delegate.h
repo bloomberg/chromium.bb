@@ -11,7 +11,7 @@
 #include "ash/ash_export.h"
 #include "ash/system/power/power_supply_status.h"
 #include "ash/system/user/login_status.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/i18n/time_formatting.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"

@@ -5,11 +5,11 @@
 #include "ui/base/win/shell.h"
 
 #include <dwmapi.h>
-#include <shellapi.h>
 #include <shlobj.h>  // Must be before propkey.
 #include <propkey.h>
+#include <shellapi.h>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/native_library.h"
 #include "base/string_util.h"
 #include "base/win/metro.h"

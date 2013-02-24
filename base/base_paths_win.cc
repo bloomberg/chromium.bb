@@ -7,8 +7,8 @@
 #include <shlobj.h>
 
 #include "base/base_paths.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/windows_version.h"

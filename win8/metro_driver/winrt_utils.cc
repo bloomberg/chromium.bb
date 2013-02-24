@@ -7,7 +7,7 @@
 
 #include <shlobj.h>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"

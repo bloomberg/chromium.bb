@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/automation_constants.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/perf/perf_test.h"
 #include "chrome/test/ui/javascript_test_util.h"

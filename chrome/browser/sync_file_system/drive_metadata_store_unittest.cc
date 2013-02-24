@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/single_thread_task_runner.h"

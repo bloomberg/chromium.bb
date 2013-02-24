@@ -5,7 +5,7 @@
 #include "chrome/browser/prefs/pref_service_syncable.h"
 
 #include "base/bind.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/prefs/default_pref_store.h"
 #include "base/prefs/overlay_user_pref_store.h"
 #include "base/prefs/pref_notifier_impl.h"

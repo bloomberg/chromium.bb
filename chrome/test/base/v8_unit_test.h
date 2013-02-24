@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/string_piece.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"

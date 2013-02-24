@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/message_loop.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/views/window/dialog_delegate.h"

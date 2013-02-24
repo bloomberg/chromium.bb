@@ -6,12 +6,12 @@
 
 #include <dlfcn.h>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
 
-#include "chrome/browser/importer/nss_decryptor_mac.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
+#include "chrome/browser/importer/nss_decryptor_mac.h"
 
 // Important!! : On OS X the nss3 libraries are compiled with depedencies
 // on one another, referenced using dyld's @executable_path directive.

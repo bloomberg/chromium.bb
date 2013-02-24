@@ -6,7 +6,7 @@
 #define BASE_MAC_BUNDLE_LOCATIONS_H_
 
 #include "base/base_export.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 
 #if defined(__OBJC__)
 #import <Foundation/Foundation.h>

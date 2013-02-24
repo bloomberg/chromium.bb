@@ -7,8 +7,8 @@
 
 #include <windows.h>
 
+#include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/file_path.h"
 #include "base/string16.h"
 
 namespace base {

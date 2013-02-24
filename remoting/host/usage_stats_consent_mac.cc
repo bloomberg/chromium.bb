@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "remoting/host/config_file_watcher.h"
 #include "remoting/host/json_host_config.h"

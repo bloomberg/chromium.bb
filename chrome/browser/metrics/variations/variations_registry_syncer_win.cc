@@ -4,7 +4,7 @@
 
 #include "chrome/browser/metrics/variations/variations_registry_syncer_win.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/metrics/field_trial.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"

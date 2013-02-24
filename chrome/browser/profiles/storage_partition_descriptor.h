@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_PROFILES_STORAGE_PARTITION_DESCRIPTOR_H_
 #define CHROME_BROWSER_PROFILES_STORAGE_PARTITION_DESCRIPTOR_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/hash_tables.h"
 
 // This structure combines a StoragePartition's on-disk path and a boolean for

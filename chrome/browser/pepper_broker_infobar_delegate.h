@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_PEPPER_BROKER_INFOBAR_DELEGATE_H_
 
 #include "base/callback.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "googleurl/src/gurl.h"
 

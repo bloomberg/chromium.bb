@@ -5,7 +5,7 @@
 #ifndef CONTENT_SHELL_PATHS_MAC_H_
 #define CONTENT_SHELL_PATHS_MAC_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 
 // Sets up base::mac::FrameworkBundle.
 void OverrideFrameworkBundlePath();

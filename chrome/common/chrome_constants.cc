@@ -4,7 +4,7 @@
 
 #include "chrome/common/chrome_constants.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 
 #define FPL FILE_PATH_LITERAL
 

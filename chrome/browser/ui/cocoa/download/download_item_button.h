@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #import "chrome/browser/ui/cocoa/draggable_button.h"
 
 @class DownloadItemController;

@@ -6,7 +6,7 @@
 
 #include <set>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "googleurl/src/url_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/external_mount_points.h"

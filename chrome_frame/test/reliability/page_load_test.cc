@@ -23,9 +23,9 @@
 #include <ostream>
 
 #include "base/command_line.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
+#include "base/files/file_path.h"
 #include "base/i18n/time_formatting.h"
 #include "base/path_service.h"
 #include "base/prefs/json_pref_store.h"

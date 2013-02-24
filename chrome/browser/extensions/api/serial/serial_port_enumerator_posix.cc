@@ -4,8 +4,8 @@
 
 #include "chrome/browser/extensions/api/serial/serial_port_enumerator.h"
 
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/string_util.h"
 #include "content/public/browser/browser_thread.h"
 

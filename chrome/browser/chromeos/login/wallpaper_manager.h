@@ -8,7 +8,7 @@
 #include <string>
 
 #include "ash/desktop_background/desktop_background_controller.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/sequenced_worker_pool.h"

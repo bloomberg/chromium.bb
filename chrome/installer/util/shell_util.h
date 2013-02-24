@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/string16.h"
 #include "chrome/installer/util/work_item_list.h"

@@ -10,7 +10,7 @@
 #include "base/base_export.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
 

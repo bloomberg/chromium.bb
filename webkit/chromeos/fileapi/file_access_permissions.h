@@ -9,7 +9,7 @@
 #include <set>
 #include <string>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/synchronization/lock.h"
 
 namespace chromeos {

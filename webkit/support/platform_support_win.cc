@@ -5,8 +5,8 @@
 #include "webkit/support/platform_support.h"
 
 #include "base/base_paths.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/string16.h"

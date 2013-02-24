@@ -6,7 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 #include "base/command_line.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/native_library.h"
 #include "chrome/common/chrome_sandbox_type_mac.h"

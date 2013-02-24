@@ -5,11 +5,11 @@
 #include "chrome/common/chrome_version_info.h"
 
 #include "base/base_paths.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
-#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "chrome/installer/util/install_util.h"
 
 namespace chrome {
 

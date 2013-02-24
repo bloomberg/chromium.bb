@@ -4,7 +4,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"

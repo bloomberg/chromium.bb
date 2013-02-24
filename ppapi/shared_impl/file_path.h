@@ -5,7 +5,7 @@
 #ifndef PPAPI_SHARED_IMPL_FILE_PATH_H_
 #define PPAPI_SHARED_IMPL_FILE_PATH_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 
 namespace ppapi {

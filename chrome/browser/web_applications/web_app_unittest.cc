@@ -4,7 +4,7 @@
 
 #include "chrome/browser/web_applications/web_app.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/tab_helper.h"

@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 

@@ -5,8 +5,8 @@
 #include "chrome/browser/google_apis/mock_drive_service.h"
 
 #include "base/bind.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/location.h"
 #include "base/message_loop_proxy.h"

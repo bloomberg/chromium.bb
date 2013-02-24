@@ -5,7 +5,7 @@
 #ifndef CHROME_INSTALLER_UTIL_MOVE_TREE_WORK_ITEM_H_
 #define CHROME_INSTALLER_UTIL_MOVE_TREE_WORK_ITEM_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/gtest_prod_util.h"
 #include "chrome/installer/util/work_item.h"

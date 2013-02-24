@@ -24,7 +24,7 @@
 #include "ui/gfx/rect.h"
 
 #if defined(OS_WIN)
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_handle.h"
 #include "printing/emf_win.h"

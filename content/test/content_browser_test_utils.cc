@@ -5,7 +5,7 @@
 #include "content/test/content_browser_test_utils.h"
 
 #include "base/bind.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "content/public/browser/navigation_controller.h"

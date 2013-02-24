@@ -5,7 +5,7 @@
 #ifndef WEBKIT_FILEAPI_TEST_MOUNT_POINT_PROVIDER_H_
 #define WEBKIT_FILEAPI_TEST_MOUNT_POINT_PROVIDER_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "webkit/fileapi/async_file_util_adapter.h"

@@ -14,7 +14,7 @@
 #include "base/win/registry.h"
 #include "rlz/win/lib/rlz_lib.h"
 #elif defined(OS_POSIX)
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "rlz/lib/rlz_value_store.h"
 #endif
 

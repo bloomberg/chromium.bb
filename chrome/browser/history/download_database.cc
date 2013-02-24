@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/debug/alias.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"

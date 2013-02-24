@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/android/path_utils.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 

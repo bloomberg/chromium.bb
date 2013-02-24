@@ -7,7 +7,7 @@
 #include "chrome/browser/storage_monitor/test_volume_mount_watcher_win.h"
 
 #include "base/bind.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 
 namespace chrome {
 namespace test {

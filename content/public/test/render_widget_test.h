@@ -6,7 +6,7 @@
 #define CONTENT_PUBLIC_TEST_RENDER_WIDGET_TEST_H_
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "content/public/test/render_view_test.h"
 
 class SkBitmap;

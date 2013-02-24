@@ -4,7 +4,7 @@
 
 #include "ui/surface/d3d9_utils_win.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/scoped_native_library.h"
 #include "base/win/scoped_comptr.h"
 #include "ui/gfx/size.h"

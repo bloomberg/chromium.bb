@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_PAGE_CYCLER_PAGE_CYCLER_H_
 #define CHROME_BROWSER_PAGE_CYCLER_PAGE_CYCLER_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "content/public/browser/navigation_controller.h"

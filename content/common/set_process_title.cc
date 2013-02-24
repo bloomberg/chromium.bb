@@ -19,8 +19,8 @@
 #if defined(OS_LINUX)
 #include <sys/prctl.h>
 
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
 // Linux/glibc doesn't natively have setproctitle().

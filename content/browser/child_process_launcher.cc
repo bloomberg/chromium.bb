@@ -21,7 +21,7 @@
 #include "content/public/common/result_codes.h"
 
 #if defined(OS_WIN)
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "content/common/sandbox_policy.h"
 #include "content/public/common/sandbox_init.h"
 #elif defined(OS_MACOSX)

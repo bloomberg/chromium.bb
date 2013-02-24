@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 
 struct ImageBurnStatus {
   ImageBurnStatus() : amount_burnt(0), total_size(0) {

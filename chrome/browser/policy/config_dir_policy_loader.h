@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_POLICY_CONFIG_DIR_POLICY_LOADER_H_
 #define CHROME_BROWSER_POLICY_CONFIG_DIR_POLICY_LOADER_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "chrome/browser/policy/async_policy_loader.h"
 #include "chrome/browser/policy/policy_types.h"

@@ -5,7 +5,7 @@
 #include "chrome/browser/nacl_host/pnacl_file_host.h"
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/test/scoped_path_override.h"
 #include "chrome/common/chrome_paths.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/api/storage/policy_value_store.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

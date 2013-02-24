@@ -7,8 +7,8 @@
 #include <psapi.h>
 
 #include "base/bind.h"
-#include "base/file_path.h"
 #include "base/file_version_info.h"
+#include "base/files/file_path.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"

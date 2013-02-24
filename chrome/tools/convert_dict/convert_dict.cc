@@ -14,16 +14,16 @@
 #include <stdio.h>
 
 #include "base/at_exit.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
-#include "third_party/hunspell/google/bdict_reader.h"
-#include "third_party/hunspell/google/bdict_writer.h"
 #include "chrome/tools/convert_dict/aff_reader.h"
 #include "chrome/tools/convert_dict/dic_reader.h"
+#include "third_party/hunspell/google/bdict_reader.h"
+#include "third_party/hunspell/google/bdict_writer.h"
 
 namespace {
 

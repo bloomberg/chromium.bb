@@ -5,15 +5,15 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition_attribute.h"
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "content/public/browser/resource_request_info.h"
-#include "net/url_request/url_request_test_util.h"
 #include "net/test/test_server.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::DictionaryValue;

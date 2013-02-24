@@ -6,8 +6,8 @@
 
 #include <algorithm>
 
-#include "base/file_path.h"
 #include "base/file_version_info.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"

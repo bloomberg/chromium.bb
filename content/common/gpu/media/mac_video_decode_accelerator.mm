@@ -5,14 +5,14 @@
 #include "content/common/gpu/media/mac_video_decode_accelerator.h"
 
 #include "base/bind.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
+#include "base/location.h"
 #import "base/mac/foundation_util.h"
 #import "base/memory/ref_counted_memory.h"
 #import "base/message_loop.h"
-#include "base/location.h"
 #include "base/native_library.h"
-#include "ui/surface/io_surface_support_mac.h"
 #include "ui/gfx/video_decode_acceleration_support_mac.h"
+#include "ui/surface/io_surface_support_mac.h"
 
 namespace content {
 

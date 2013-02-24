@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_CACHE_METADATA_H_
 
 #include <map>
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 

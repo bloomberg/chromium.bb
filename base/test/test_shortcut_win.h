@@ -5,7 +5,7 @@
 #ifndef BASE_TEST_TEST_SHORTCUT_WIN_H_
 #define BASE_TEST_TEST_SHORTCUT_WIN_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/win/shortcut.h"
 
 // Windows shortcut functions used only by tests.

@@ -4,12 +4,12 @@
 
 #include "chrome/browser/component_updater/swiftshader_component_installer.h"
 
-#include "base/bind.h"
 #include "base/base_paths.h"
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/cpu.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/string_util.h"

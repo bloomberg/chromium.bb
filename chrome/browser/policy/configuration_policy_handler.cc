@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <string>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/prefs/pref_value_map.h"

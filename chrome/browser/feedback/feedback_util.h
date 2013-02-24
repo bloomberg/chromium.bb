@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "chrome/browser/feedback/feedback_data.h"
 #include "chrome/browser/feedback/proto/common.pb.h"
 #include "chrome/browser/feedback/proto/dom.pb.h"

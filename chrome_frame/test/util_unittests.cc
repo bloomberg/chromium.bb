@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/file_path.h"
 #include "base/file_version_info.h"
 #include "base/file_version_info_win.h"
+#include "base/files/file_path.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "chrome_frame/navigation_constraints.h"
-#include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/registry_list_preferences_holder.h"
+#include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/utils.h"
 
-#include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using base::win::RegKey;
 

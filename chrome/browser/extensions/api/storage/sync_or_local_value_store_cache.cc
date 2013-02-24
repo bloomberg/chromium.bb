@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/extensions/api/storage/settings_backend.h"
 #include "chrome/browser/extensions/api/storage/settings_frontend.h"

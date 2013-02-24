@@ -4,7 +4,7 @@
 
 #include "chrome/browser/history/in_memory_database.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/time.h"

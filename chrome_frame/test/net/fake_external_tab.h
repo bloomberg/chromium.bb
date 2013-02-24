@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/cancelable_callback.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/message_loop.h"
 #include "base/process.h"
 #include "base/win/scoped_handle.h"

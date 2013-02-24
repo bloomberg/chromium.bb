@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/base64.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/sha1.h"
 #include "base/string_piece.h"
 #include "crypto/sha2.h"

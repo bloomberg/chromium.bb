@@ -9,7 +9,7 @@
 #include <gtk/gtkunixprint.h>
 
 #include "base/compiler_specific.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/public/browser/browser_thread.h"

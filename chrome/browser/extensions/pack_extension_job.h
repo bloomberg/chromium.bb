@@ -7,11 +7,11 @@
 
 #include <string>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
-#include "content/public/browser/browser_thread.h"
 #include "chrome/browser/extensions/extension_creator.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace extensions {
 

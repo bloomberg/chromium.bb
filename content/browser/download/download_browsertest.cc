@@ -6,8 +6,8 @@
 // in a pure content context.  Over time tests should be migrated here.
 
 #include "base/command_line.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "content/browser/download/byte_stream.h"
 #include "content/browser/download/download_file_factory.h"

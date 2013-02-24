@@ -5,7 +5,7 @@
 #ifndef CONTENT_PLUGIN_PLUGIN_THREAD_H_
 #define CONTENT_PLUGIN_PLUGIN_THREAD_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/native_library.h"
 #include "build/build_config.h"
 #include "content/common/child_thread.h"

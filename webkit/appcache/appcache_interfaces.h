@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 #include "base/basictypes.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/storage/webkit_storage_export.h"

@@ -6,7 +6,7 @@
 #include <string.h>
 
 #include "base/android/path_utils.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"

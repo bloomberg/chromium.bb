@@ -5,8 +5,8 @@
 #include "chrome/browser/nacl_host/pnacl_file_host.h"
 
 #include "base/bind.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/platform_file.h"

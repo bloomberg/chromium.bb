@@ -8,7 +8,7 @@
 #include <shlobj.h>
 #include <propkey.h>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_comptr.h"

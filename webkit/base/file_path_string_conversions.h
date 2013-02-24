@@ -5,7 +5,7 @@
 #ifndef WEBKIT_BASE_FILE_PATH_STRING_CONVERSIONS_H_
 #define WEBKIT_BASE_FILE_PATH_STRING_CONVERSIONS_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "webkit/base/webkit_base_export.h"
 
 namespace WebKit {

@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/login/user_image_loader.h"
 
 #include "base/bind.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/threading/worker_pool.h"

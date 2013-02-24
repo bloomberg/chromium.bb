@@ -5,7 +5,7 @@
 #ifndef NET_TOOLS_DUMP_CACHE_SIMPLE_CACHE_DUMPER_H_
 #define NET_TOOLS_DUMP_CACHE_SIMPLE_CACHE_DUMPER_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "net/base/completion_callback.h"

@@ -8,7 +8,7 @@
 #include <pk11sdr.h>
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/stringprintf.h"
 #include "base/sys_string_conversions.h"
 #include "crypto/nss_util.h"

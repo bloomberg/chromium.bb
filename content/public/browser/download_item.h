@@ -21,7 +21,7 @@
 #include <string>
 #include <vector>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/string16.h"
 #include "base/supports_user_data.h"
 #include "content/public/browser/download_danger_type.h"

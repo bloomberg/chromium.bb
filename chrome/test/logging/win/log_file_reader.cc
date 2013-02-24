@@ -5,7 +5,7 @@
 #include "chrome/test/logging/win/log_file_reader.h"
 
 #include "base/debug/trace_event_win.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/logging_win.h"
 #include "base/synchronization/lock.h"

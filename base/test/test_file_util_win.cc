@@ -4,14 +4,14 @@
 
 #include "base/test/test_file_util.h"
 
+#include <windows.h>
 #include <aclapi.h>
 #include <shlwapi.h>
-#include <windows.h>
 
 #include <vector>
 
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/threading/platform_thread.h"

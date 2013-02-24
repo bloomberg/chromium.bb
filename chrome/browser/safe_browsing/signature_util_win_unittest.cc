@@ -8,9 +8,9 @@
 #include <vector>
 
 #include "base/base_paths.h"
-#include "base/file_path.h"
-#include "base/path_service.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/path_service.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "net/base/x509_cert_types.h"
 #include "net/base/x509_certificate.h"

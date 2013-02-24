@@ -7,7 +7,7 @@
 
 #include "build/build_config.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util_proxy.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"

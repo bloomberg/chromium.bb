@@ -4,7 +4,7 @@
 
 #include "chrome/browser/storage_monitor/media_transfer_protocol_device_observer_linux.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/stl_util.h"
 #include "base/string_split.h"
 #include "base/strings/string_number_conversions.h"

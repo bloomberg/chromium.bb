@@ -5,7 +5,7 @@
 #ifndef NET_BASE_TEST_DATA_DIRECTORY_H_
 #define NET_BASE_TEST_DATA_DIRECTORY_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 
 namespace net {
 

@@ -8,7 +8,7 @@
 #include <copyfile.h>
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/mac/foundation_util.h"
 #include "base/string_util.h"
 #include "base/threading/thread_restrictions.h"

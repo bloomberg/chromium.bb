@@ -6,8 +6,8 @@
 #include <map>
 
 #include "base/bind.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/message_loop_proxy.h"
 #include "base/string_split.h"
 #include "base/stringprintf.h"

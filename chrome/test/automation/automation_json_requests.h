@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/automation_id.h"

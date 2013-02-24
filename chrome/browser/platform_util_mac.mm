@@ -8,7 +8,7 @@
 #import <Cocoa/Cocoa.h>
 #include <CoreServices/CoreServices.h>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_aedesc.h"

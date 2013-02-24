@@ -5,7 +5,7 @@
 #include "media/audio/mac/audio_device_listener_mac.h"
 
 #include "base/bind.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/mac/libdispatch_task_runner.h"
 #include "base/mac/mac_logging.h"

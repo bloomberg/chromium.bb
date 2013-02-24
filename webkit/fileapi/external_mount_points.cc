@@ -4,7 +4,7 @@
 
 #include "webkit/fileapi/external_mount_points.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"

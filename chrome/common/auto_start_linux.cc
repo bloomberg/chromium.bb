@@ -5,8 +5,8 @@
 #include "chrome/common/auto_start_linux.h"
 
 #include "base/environment.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/nix/xdg_util.h"
 #include "base/strings/string_tokenizer.h"

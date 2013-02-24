@@ -12,7 +12,7 @@
 #include <sys/utsname.h>
 #include <sys/xattr.h>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"

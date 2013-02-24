@@ -7,7 +7,7 @@
 #include <sys/param.h>
 
 #include "base/bind.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/mac/mac_util.h"
 #include "base/pickle.h"
 #include "base/string_util.h"

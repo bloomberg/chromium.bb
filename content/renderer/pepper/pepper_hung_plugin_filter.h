@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_PEPPER_PEPPER_HUNG_PLUGIN_FILTER_H_
 #define CONTENT_RENDERER_PEPPER_PEPPER_HUNG_PLUGIN_FILTER_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
 #include "base/synchronization/lock.h"

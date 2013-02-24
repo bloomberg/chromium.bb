@@ -7,8 +7,8 @@
 #include <string>
 #include <vector>
 
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"

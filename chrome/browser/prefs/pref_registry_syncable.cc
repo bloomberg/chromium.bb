@@ -4,7 +4,7 @@
 
 #include "chrome/browser/prefs/pref_registry_syncable.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/prefs/default_pref_store.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"

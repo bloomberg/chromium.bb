@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_DOWNLOAD_SAVE_FILE_H_
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/download/base_file.h"
 #include "content/browser/download/save_types.h"

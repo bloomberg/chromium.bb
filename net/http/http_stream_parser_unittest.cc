@@ -4,8 +4,8 @@
 
 #include "net/http/http_stream_parser.h"
 
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/string_piece.h"

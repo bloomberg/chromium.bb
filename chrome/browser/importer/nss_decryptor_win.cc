@@ -4,7 +4,7 @@
 
 #include "chrome/browser/importer/nss_decryptor_win.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/sys_string_conversions.h"
 
 namespace {

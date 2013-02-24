@@ -5,7 +5,7 @@
 #include "content/shell/shell_main_delegate.h"
 
 #include "base/command_line.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "content/public/browser/browser_main_runner.h"
@@ -42,8 +42,8 @@
 #endif  // OS_MACOSX
 
 #if defined(OS_WIN)
-#include "base/logging_win.h"
 #include <initguid.h>
+#include "base/logging_win.h"
 #endif
 
 namespace {

@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "media/base/data_source.h"
 
 namespace media {

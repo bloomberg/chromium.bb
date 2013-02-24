@@ -5,7 +5,7 @@
 #include "chrome/nacl/nacl_main_platform_delegate.h"
 
 #include "base/command_line.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/native_library.h"
 #include "chrome/common/chrome_switches.h"

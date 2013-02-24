@@ -16,7 +16,7 @@
 // intervening calls to Delete or Take, or the calls will fail.
 
 #include "base/base_export.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 
 namespace base {
 

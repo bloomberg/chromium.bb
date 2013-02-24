@@ -5,7 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_DOWNLOAD_SAVE_INFO_H_
 #define CONTENT_PUBLIC_BROWSER_DOWNLOAD_SAVE_INFO_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/linked_ptr.h"
 #include "content/common/content_export.h"
 #include "net/base/file_stream.h"

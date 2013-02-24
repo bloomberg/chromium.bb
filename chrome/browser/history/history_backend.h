@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/containers/mru_cache.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/history/archived_database.h"

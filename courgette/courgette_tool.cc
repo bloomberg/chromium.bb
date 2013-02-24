@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "base/at_exit.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "courgette/third_party/bsdiff.h"
 #include "courgette/courgette.h"
 #include "courgette/streams.h"
+#include "courgette/third_party/bsdiff.h"
 
 
 void PrintHelp() {

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_STORAGE_MONITOR_REMOVABLE_STORAGE_NOTIFICATIONS_H_
 
 #include "base/callback.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/string16.h"
 #include "base/synchronization/lock.h"

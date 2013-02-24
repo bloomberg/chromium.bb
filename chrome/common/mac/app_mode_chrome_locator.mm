@@ -7,7 +7,7 @@
 #import <AppKit/AppKit.h>
 #include <CoreFoundation/CoreFoundation.h>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/mac/foundation_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/common/chrome_constants.h"

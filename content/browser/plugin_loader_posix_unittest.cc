@@ -6,7 +6,7 @@
 
 #include "base/at_exit.h"
 #include "base/bind.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"

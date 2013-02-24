@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/contacts/gdata_contacts_service.h"
 
 #include "base/bind.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
 #include "base/time.h"

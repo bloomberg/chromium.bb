@@ -6,8 +6,8 @@
 
 #include <dlfcn.h>
 
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/string_util.h"
 #include "base/threading/thread_restrictions.h"

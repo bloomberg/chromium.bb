@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/environment.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/nix/xdg_util.h"
 #include "base/process_util.h"
 #include "base/string_util.h"

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_HISTORY_TOP_SITES_BACKEND_H_
 
 #include "base/callback.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/history/history_types.h"

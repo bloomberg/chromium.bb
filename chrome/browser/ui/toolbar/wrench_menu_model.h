@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_TOOLBAR_WRENCH_MENU_MODEL_H_
 #define CHROME_BROWSER_UI_TOOLBAR_WRENCH_MENU_MODEL_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "content/public/browser/host_zoom_map.h"

@@ -9,11 +9,11 @@
 #include <algorithm>
 
 #include "base/base_paths.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/path_service.h"
+#include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/singleton.h"
+#include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/i18n.h"

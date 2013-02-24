@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/storage/webkit_storage_export.h"
 

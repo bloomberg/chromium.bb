@@ -7,7 +7,7 @@
 
 #include <stddef.h>   // Required to define size_t on GCC
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 
 namespace courgette {
 

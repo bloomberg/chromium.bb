@@ -4,7 +4,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "chrome/browser/importer/firefox_proxy_settings.h"
 #include "chrome/common/chrome_paths.h"

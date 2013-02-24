@@ -8,7 +8,7 @@
 #include <shellapi.h>
 
 #include "base/bind.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/browser_process.h"

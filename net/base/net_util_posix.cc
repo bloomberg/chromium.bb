@@ -6,7 +6,7 @@
 
 #include <sys/types.h>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/string_util.h"

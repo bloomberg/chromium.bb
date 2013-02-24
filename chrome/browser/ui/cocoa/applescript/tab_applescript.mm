@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/applescript/tab_applescript.h"
 
 #include "base/bind.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #import "base/memory/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"

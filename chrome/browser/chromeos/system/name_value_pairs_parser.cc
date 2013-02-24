@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/system/name_value_pairs_parser.h"
 
 #include "base/command_line.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/stl_util.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/gtk/custom_drag.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
 #include "content/public/browser/download_item.h"

@@ -7,7 +7,7 @@
 
 #include <map>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"

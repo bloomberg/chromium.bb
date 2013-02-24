@@ -6,7 +6,7 @@
 
 #include "ash/shell/content_client/shell_content_browser_client.h"
 #include "base/command_line.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "content/public/common/content_switches.h"
 #include "ui/base/resource/resource_bundle.h"

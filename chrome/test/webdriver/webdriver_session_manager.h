@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 

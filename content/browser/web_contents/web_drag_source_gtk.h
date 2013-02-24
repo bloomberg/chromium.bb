@@ -8,7 +8,7 @@
 #include <gtk/gtk.h>
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/message_loop.h"
 #include "base/string16.h"
 #include "content/common/content_export.h"

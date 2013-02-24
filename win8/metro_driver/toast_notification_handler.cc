@@ -7,7 +7,7 @@
 #include "win8/metro_driver/stdafx.h"
 #include "win8/metro_driver/toast_notification_handler.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"

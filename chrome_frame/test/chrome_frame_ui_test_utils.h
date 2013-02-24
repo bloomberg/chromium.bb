@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_variant.h"

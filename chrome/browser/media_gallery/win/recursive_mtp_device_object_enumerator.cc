@@ -6,7 +6,7 @@
 
 #include "chrome/browser/media_gallery/win/recursive_mtp_device_object_enumerator.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/media_gallery/win/mtp_device_object_entry.h"
 #include "chrome/browser/media_gallery/win/mtp_device_object_enumerator.h"

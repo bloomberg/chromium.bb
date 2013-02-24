@@ -7,7 +7,7 @@
 
 #include <windows.h>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "chrome/installer/util/work_item.h"
 
 // A WorkItem subclass that creates a directory with the specified path.

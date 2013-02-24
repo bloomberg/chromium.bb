@@ -5,7 +5,7 @@
 #ifndef RLZ_CHROMEOS_LIB_RLZ_VALUE_STORE_CHROMEOS_H_
 #define RLZ_CHROMEOS_LIB_RLZ_VALUE_STORE_CHROMEOS_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/values.h"
 #include "rlz/lib/rlz_value_store.h"

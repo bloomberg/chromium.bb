@@ -4,7 +4,7 @@
 
 #include "chrome/test/base/testing_profile_manager.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_info_cache.h"

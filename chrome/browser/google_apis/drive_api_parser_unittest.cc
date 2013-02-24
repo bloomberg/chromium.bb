@@ -4,8 +4,8 @@
 
 #include "chrome/browser/google_apis/drive_api_parser.h"
 
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
 #include "base/string16.h"

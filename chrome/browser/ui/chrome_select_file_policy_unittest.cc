@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/string16.h"

@@ -4,8 +4,8 @@
 
 #include "chrome/browser/sync/test/integration/sync_extension_helper.h"
 
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"

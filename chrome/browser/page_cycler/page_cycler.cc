@@ -5,8 +5,8 @@
 #include "chrome/browser/page_cycler/page_cycler.h"
 
 #include "base/bind.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/string_split.h"

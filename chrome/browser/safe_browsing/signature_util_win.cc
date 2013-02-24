@@ -8,7 +8,7 @@
 #include <softpub.h>
 #include <wintrust.h>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 

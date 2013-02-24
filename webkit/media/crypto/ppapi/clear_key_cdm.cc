@@ -24,7 +24,7 @@ static const int64 kNoTimestamp = kint64min;
 
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
 #include "base/at_exit.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "media/base/media.h"
 #include "webkit/media/crypto/ppapi/ffmpeg_cdm_audio_decoder.h"

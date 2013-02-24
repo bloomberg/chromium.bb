@@ -5,10 +5,10 @@
 #ifndef CONTENT_BROWSER_DOWNLOAD_MOCK_DOWNLOAD_FILE_H_
 #define CONTENT_BROWSER_DOWNLOAD_MOCK_DOWNLOAD_FILE_H_
 
-#include <string>
 #include <map>
+#include <string>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/download/download_file.h"
 #include "content/public/browser/download_id.h"

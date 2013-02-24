@@ -5,7 +5,7 @@
 #include "net/base/multi_threaded_cert_verifier.h"
 
 #include "base/bind.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/format_macros.h"
 #include "base/stringprintf.h"
 #include "net/base/cert_test_util.h"

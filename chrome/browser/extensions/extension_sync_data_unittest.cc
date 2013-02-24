@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/extension_sync_data.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/version.h"
 #include "googleurl/src/gurl.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/profiles/profile_metrics.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/browser_process.h"

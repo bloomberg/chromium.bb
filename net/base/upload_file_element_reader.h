@@ -6,7 +6,7 @@
 #define NET_BASE_UPLOAD_FILE_ELEMENT_READER_H_
 
 #include "base/compiler_specific.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

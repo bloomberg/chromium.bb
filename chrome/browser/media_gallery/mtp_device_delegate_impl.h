@@ -12,7 +12,7 @@
 #endif
 
 #include "base/callback_forward.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "webkit/fileapi/media/mtp_device_async_delegate.h"
 #include "webkit/fileapi/media/mtp_device_delegate.h"
 

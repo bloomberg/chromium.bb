@@ -6,10 +6,10 @@
 #define WEBKIT_CHROMEOS_FILEAPI_REMOTE_FILE_STREAM_WRITER_H_
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
-#include "base/platform_file.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/platform_file.h"
 #include "webkit/fileapi/file_stream_writer.h"
 #include "webkit/fileapi/file_system_url.h"
 

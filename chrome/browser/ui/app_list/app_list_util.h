@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_APP_LIST_UTIL_H_
 #define CHROME_BROWSER_UI_APP_LIST_APP_LIST_UTIL_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 
 class PrefRegistrySimple;
 class Profile;

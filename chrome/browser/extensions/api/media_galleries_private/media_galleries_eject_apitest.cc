@@ -4,7 +4,7 @@
 //
 // MediaGalleriesPrivate eject API browser tests.
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_apitest.h"

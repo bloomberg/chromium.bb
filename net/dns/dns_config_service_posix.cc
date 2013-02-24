@@ -8,9 +8,9 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/files/file_path_watcher.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
+#include "base/files/file_path_watcher.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/time.h"

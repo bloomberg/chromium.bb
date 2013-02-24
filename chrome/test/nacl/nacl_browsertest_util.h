@@ -5,7 +5,7 @@
 #ifndef CHROME_TEST_NACL_NACL_BROWSERTEST_UTIL_H_
 #define CHROME_TEST_NACL_NACL_BROWSERTEST_UTIL_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/javascript_test_observer.h"

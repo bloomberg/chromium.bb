@@ -5,7 +5,7 @@
 #include "content/browser/download/download_net_log_parameters.h"
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"

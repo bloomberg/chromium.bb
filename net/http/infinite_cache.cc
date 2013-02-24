@@ -6,11 +6,11 @@
 
 #include <algorithm>
 
-#include "base/compiler_specific.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/file_path.h"
+#include "base/compiler_specific.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/hash.h"
 #include "base/hash_tables.h"
 #include "base/location.h"
@@ -20,8 +20,8 @@
 #include "base/platform_file.h"
 #include "base/rand_util.h"
 #include "base/sha1.h"
-#include "base/time.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/time.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_cache_transaction.h"
 #include "net/http/http_request_info.h"

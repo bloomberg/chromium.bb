@@ -9,7 +9,7 @@
 
 #include "base/base_export.h"
 #include "base/basictypes.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/values.h"
 
 class BASE_EXPORT JSONFileValueSerializer : public base::ValueSerializer {

@@ -6,7 +6,7 @@
 
 #include "chrome/browser/storage_monitor/removable_device_notifications_chromeos.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"

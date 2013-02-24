@@ -5,7 +5,7 @@
 #include "content/browser/hyphenator/hyphenator_message_filter.h"
 
 #include "base/base_paths.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"

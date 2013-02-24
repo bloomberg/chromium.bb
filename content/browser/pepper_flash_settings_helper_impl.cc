@@ -4,7 +4,7 @@
 
 #include "content/browser/pepper_flash_settings_helper_impl.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_channel_handle.h"

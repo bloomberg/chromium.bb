@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/storage/webkit_storage_export.h"
 

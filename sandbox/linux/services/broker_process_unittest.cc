@@ -15,7 +15,7 @@
 #if defined(OS_ANDROID)
 #include "base/android/path_utils.h"
 #endif
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "sandbox/linux/tests/unit_tests.h"
 #include "testing/gtest/include/gtest/gtest.h"

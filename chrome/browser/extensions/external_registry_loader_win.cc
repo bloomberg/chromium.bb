@@ -5,8 +5,8 @@
 #include "chrome/browser/extensions/external_registry_loader_win.h"
 
 #include "base/bind.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_handle.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"

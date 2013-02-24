@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 
 // Represents a resource inside an extension. For example, an image, or a
 // JavaScript file. This is more complicated than just a simple FilePath

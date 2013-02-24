@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/string16.h"
 
 // This file contains constants, interfaces, etc. which are common to the

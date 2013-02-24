@@ -7,10 +7,10 @@
 
 #include <vector>
 
-#include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/message_loop_proxy.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop_proxy.h"
 #include "net/base/net_export.h"
 
 namespace net {

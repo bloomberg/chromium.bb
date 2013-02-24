@@ -5,7 +5,7 @@
 #include "chrome/installer/util/chrome_binaries_operations.h"
 
 #include "base/command_line.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/helper.h"

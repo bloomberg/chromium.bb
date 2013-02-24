@@ -9,8 +9,8 @@
 #include <atlsecurity.h>
 #include <sddl.h>
 
-#include "base/file_path.h"
 #include "base/file_version_info.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/shared_memory.h"

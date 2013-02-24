@@ -5,7 +5,7 @@
 #ifndef CC_TEST_PIXEL_TEST_UTILS_H_
 #define CC_TEST_PIXEL_TEST_UTILS_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 
 class SkBitmap;
 

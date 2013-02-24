@@ -4,8 +4,8 @@
 
 #include "chrome/browser/storage_monitor/media_device_notifications_utils.h"
 
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "chrome/browser/storage_monitor/removable_device_constants.h"

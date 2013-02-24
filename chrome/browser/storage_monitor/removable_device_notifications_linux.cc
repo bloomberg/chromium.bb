@@ -13,7 +13,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"

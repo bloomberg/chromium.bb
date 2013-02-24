@@ -5,9 +5,9 @@
 #ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_FILE_FACTORY_H_
 #define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_FILE_FACTORY_H_
 
-#include "base/file_path.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"

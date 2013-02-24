@@ -7,7 +7,7 @@
 
 #include "content/browser/safe_util_win.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/string_util.h"

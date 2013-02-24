@@ -10,7 +10,7 @@
 #define CHROME_BROWSER_MEDIA_GALLERY_SCOPED_MTP_DEVICE_MAP_ENTRY_H_
 
 #include "base/callback.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/public/browser/browser_thread.h"

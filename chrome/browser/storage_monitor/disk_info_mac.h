@@ -7,7 +7,7 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
 
 namespace chrome {

@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/drag_util.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/url_constants.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/webdata/web_data_service_factory.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/webdata/autofill_web_data_service_impl.h"
 #include "chrome/browser/webdata/web_data_service.h"

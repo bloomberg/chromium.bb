@@ -5,9 +5,9 @@
 // This little program attempts to flush the system cache for some files.
 // It's useful for testing Chrome with a cold database.
 
-#include "base/file_path.h"
-#include "base/string_piece.h"
+#include "base/files/file_path.h"
 #include "base/process_util.h"
+#include "base/string_piece.h"
 #include "base/sys_string_conversions.h"
 #include "base/test/test_file_util.h"
 

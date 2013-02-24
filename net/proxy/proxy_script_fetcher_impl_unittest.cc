@@ -6,14 +6,14 @@
 
 #include <string>
 
-#include "base/file_path.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
+#include "net/base/load_flags.h"
 #include "net/base/mock_cert_verifier.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/net_util.h"
-#include "net/base/load_flags.h"
 #include "net/base/ssl_config_service_defaults.h"
 #include "net/base/test_completion_callback.h"
 #include "net/disk_cache/disk_cache.h"

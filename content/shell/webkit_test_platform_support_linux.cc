@@ -9,8 +9,8 @@
 #include <fontconfig/fontconfig.h>
 #include <unistd.h>
 
-#include "base/file_path.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
+#include "base/files/file_path.h"
 #include "base/path_service.h"
 
 namespace content {

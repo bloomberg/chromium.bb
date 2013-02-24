@@ -6,7 +6,7 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "ipc/ipc_message.h"

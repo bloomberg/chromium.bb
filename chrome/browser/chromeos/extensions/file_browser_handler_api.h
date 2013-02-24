@@ -15,7 +15,7 @@
 #include <string>
 #include <vector>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "chrome/browser/extensions/extension_function.h"
 
 class Browser;

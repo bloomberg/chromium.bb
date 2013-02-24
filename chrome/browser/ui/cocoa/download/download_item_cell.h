@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/gradient_button_cell.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 
 class DownloadItemModel;
 @class IndeterminateProgressTimer;

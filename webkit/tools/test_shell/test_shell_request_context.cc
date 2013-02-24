@@ -7,7 +7,7 @@
 #include "build/build_config.h"
 
 #include "base/compiler_specific.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "net/base/cert_verifier.h"

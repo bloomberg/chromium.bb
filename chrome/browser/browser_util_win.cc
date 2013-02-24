@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/base_paths.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/path_service.h"
 
 namespace browser_util {

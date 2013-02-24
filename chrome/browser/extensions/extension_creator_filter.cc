@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/extension_creator_filter.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 
 #if defined(OS_WIN)
 #include <windows.h>

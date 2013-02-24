@@ -4,7 +4,7 @@
 
 #include "chrome_frame/simple_resource_loader.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/win/windows_version.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/data_pack.h"

@@ -5,7 +5,7 @@
 #ifndef WEBKIT_FILEAPI_FILE_SYSTEM_FILE_UTIL_H_
 #define WEBKIT_FILEAPI_FILE_SYSTEM_FILE_UTIL_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "webkit/fileapi/file_snapshot_policy.h"

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_HISTORY_ANDROID_ANDROID_CACHE_DATABASE_H_
 #define CHROME_BROWSER_HISTORY_ANDROID_ANDROID_CACHE_DATABASE_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/time.h"
 #include "chrome/browser/history/android/android_history_types.h"

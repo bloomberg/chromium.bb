@@ -9,7 +9,7 @@
 
 #include <algorithm>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_piece.h"

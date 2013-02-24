@@ -5,7 +5,7 @@
 #include "chrome/installer/setup/chrome_frame_ready_mode.h"
 
 #include "base/command_line.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/string_util.h"

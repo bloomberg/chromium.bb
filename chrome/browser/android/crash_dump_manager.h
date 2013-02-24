@@ -7,7 +7,7 @@
 
 #include <map>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/platform_file.h"
 #include "base/process.h"
 #include "base/synchronization/lock.h"

@@ -8,7 +8,7 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERY_WIN_MTP_DEVICE_OBJECT_ENUMERATOR_H_
 #define CHROME_BROWSER_MEDIA_GALLERY_WIN_MTP_DEVICE_OBJECT_ENUMERATOR_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/threading/thread_checker.h"
 #include "base/time.h"
 #include "chrome/browser/media_gallery/win/mtp_device_object_entry.h"

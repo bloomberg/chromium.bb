@@ -4,10 +4,10 @@
 
 #include "base/android/path_service_android.h"
 
-#include "base/file_path.h"
-#include "base/path_service.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "jni/PathService_jni.h"
 
 namespace base {

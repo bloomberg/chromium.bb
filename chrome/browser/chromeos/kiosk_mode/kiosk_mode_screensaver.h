@@ -7,7 +7,7 @@
 
 #include "ash/wm/user_activity_observer.h"
 #include "base/basictypes.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 
 namespace extensions {

@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "content/test/test_web_contents_view.h"
 #include "googleurl/src/gurl.h"

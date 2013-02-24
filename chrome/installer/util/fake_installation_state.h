@@ -5,7 +5,7 @@
 #ifndef CHROME_INSTALLER_UTIL_FAKE_INSTALLATION_STATE_H_
 #define CHROME_INSTALLER_UTIL_FAKE_INSTALLATION_STATE_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/version.h"
 #include "chrome/installer/util/fake_product_state.h"
 #include "chrome/installer/util/helper.h"

@@ -5,7 +5,7 @@
 #ifndef WEBKIT_DOM_STORAGE_DOM_STORAGE_AREA_H_
 #define WEBKIT_DOM_STORAGE_DOM_STORAGE_AREA_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

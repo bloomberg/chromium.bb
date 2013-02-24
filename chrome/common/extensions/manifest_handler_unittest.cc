@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/extensions/extension.h"

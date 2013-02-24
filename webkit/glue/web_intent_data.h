@@ -8,7 +8,7 @@
 #include <map>
 #include <vector>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/string16.h"
 #include "base/values.h"
 #include "googleurl/src/gurl.h"

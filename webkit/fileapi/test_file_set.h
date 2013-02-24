@@ -7,7 +7,7 @@
 
 #include <set>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 
 // Common test data structures and test cases.
 

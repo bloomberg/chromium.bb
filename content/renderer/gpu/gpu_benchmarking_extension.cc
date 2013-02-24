@@ -7,8 +7,8 @@
 #include <string>
 
 #include "base/base64.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_vector.h"
 #include "base/string_number_conversions.h"
 #include "content/common/gpu/gpu_rendering_stats.h"

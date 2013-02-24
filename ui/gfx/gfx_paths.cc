@@ -5,8 +5,8 @@
 #include "ui/gfx/gfx_paths.h"
 
 #include "base/command_line.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/path_service.h"
 
 namespace gfx {

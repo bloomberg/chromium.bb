@@ -13,7 +13,7 @@
 #include <map>
 #include <string>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/media_gallery/media_galleries_preferences.h"
 

@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_HYPHENATOR_HYPHENATOR_MESSAGE_FILTER_H_
 
 #include "base/compiler_specific.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "content/common/content_export.h"

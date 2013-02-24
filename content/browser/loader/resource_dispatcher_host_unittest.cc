@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop.h"
 #include "base/pickle.h"

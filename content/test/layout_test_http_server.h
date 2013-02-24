@@ -6,7 +6,7 @@
 #define CONTENT_TEST_LAYOUT_TEST_HTTP_SERVER_H_
 
 #include "base/compiler_specific.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_handle.h"

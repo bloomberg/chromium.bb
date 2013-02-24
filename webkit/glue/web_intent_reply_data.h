@@ -5,7 +5,7 @@
 #ifndef WEBKIT_GLUE_WEB_INTENT_REPLY_DATA_H_
 #define WEBKIT_GLUE_WEB_INTENT_REPLY_DATA_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/string16.h"
 #include "webkit/glue/webkit_glue_export.h"
 

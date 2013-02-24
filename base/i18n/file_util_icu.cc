@@ -6,7 +6,7 @@
 
 #include "base/i18n/file_util_icu.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"

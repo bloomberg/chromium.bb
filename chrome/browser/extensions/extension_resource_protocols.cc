@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/extension_resource_protocols.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_file_util.h"

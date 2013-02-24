@@ -4,11 +4,11 @@
 
 #include "content/browser/fileapi/browser_file_system_helper.h"
 
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "base/command_line.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"

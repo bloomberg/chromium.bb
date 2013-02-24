@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_test_util.h"

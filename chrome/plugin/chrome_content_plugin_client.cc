@@ -5,8 +5,8 @@
 #include "chrome/plugin/chrome_content_plugin_client.h"
 
 #if defined(ENABLE_REMOTING)
+#include "base/files/file_path.h"
 #include "base/path_service.h"
-#include "base/file_path.h"
 #include "content/public/common/content_paths.h"
 #include "media/base/media.h"
 #if defined(OS_WIN)

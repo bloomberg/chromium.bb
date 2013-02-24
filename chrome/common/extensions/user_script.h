@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/string_piece.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"

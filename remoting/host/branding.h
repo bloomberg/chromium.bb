@@ -5,7 +5,7 @@
 #ifndef REMOTING_HOST_BRANDING_H_
 #define REMOTING_HOST_BRANDING_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 
 namespace remoting {
 

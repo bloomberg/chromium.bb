@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/api/storage/settings_test_util.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "chrome/browser/extensions/api/storage/settings_frontend.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/common/extensions/extension.h"

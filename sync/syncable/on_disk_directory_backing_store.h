@@ -5,7 +5,7 @@
 #ifndef SYNC_SYNCABLE_ON_DISK_DIRECTORY_BACKING_STORE_H_
 #define SYNC_SYNCABLE_ON_DISK_DIRECTORY_BACKING_STORE_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "sync/base/sync_export.h"
 #include "sync/syncable/directory_backing_store.h"
 

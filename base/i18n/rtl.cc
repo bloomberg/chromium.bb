@@ -4,7 +4,7 @@
 
 #include "base/i18n/rtl.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/strings/sys_string_conversions.h"

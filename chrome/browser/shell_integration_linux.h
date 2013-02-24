@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "chrome/browser/shell_integration.h"
 #include "googleurl/src/gurl.h"
 

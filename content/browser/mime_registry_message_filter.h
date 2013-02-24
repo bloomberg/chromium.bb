@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_MIME_REGISTRY_MESSAGE_FILTER_H_
 #define CONTENT_BROWSER_MIME_REGISTRY_MESSAGE_FILTER_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "content/public/browser/browser_message_filter.h"
 
 namespace content {

@@ -3,14 +3,14 @@
 // found in the LICENSE file.
 
 #include <windows.h>
-#include <objbase.h>
 #include <dbghelp.h>
+#include <objbase.h>
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/win/scoped_handle.h"
 #include "gtest/gtest.h"

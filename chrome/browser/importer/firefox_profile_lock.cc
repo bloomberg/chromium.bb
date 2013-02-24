@@ -4,7 +4,7 @@
 
 #include "chrome/browser/importer/firefox_profile_lock.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/threading/thread_restrictions.h"
 
 // This class is based on Firefox code in:

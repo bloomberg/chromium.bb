@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/cancelable_callback.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/public/browser/notification_observer.h"

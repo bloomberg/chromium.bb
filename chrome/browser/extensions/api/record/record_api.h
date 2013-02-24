@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_RECORD_RECORD_API_H_
 
 #include "base/command_line.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/time.h"
 #include "chrome/browser/extensions/extension_function.h"
 

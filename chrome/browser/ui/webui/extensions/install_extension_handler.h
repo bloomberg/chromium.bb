@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_EXTENSIONS_INSTALL_EXTENSION_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_EXTENSIONS_INSTALL_EXTENSION_HANDLER_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/values.h"
 #include "content/public/browser/web_ui_message_handler.h"
 

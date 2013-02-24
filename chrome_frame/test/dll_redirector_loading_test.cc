@@ -6,9 +6,9 @@
 // generates a new version of CF from the one already in the build folder and
 // then loads them both into the current process to verify the handoff.
 
-#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
+#include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"

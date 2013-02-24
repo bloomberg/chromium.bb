@@ -6,13 +6,13 @@
 
 #include <string>
 
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/stringprintf.h"
-#include "ui/base/ui_base_paths.h"
 #include "ui/base/resource/resource_handle.h"
+#include "ui/base/ui_base_paths.h"
 
 namespace ui {
 

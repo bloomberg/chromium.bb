@@ -6,7 +6,7 @@
 #define CHROME_COMMON_ZIP_H_
 
 #include "base/callback.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 
 namespace zip {
 

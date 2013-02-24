@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/process_util.h"
 
 #if !defined(OS_MACOSX)
@@ -239,8 +239,8 @@ MULTIPROCESS_TEST_MAIN(ServiceProcessStateTestShutdown) {
 
 #include <CoreFoundation/CoreFoundation.h>
 
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/mac/mac_util.h"
 #include "base/test/test_timeouts.h"

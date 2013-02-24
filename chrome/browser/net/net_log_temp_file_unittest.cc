@@ -5,8 +5,8 @@
 #include "chrome/browser/net/net_log_temp_file.h"
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/message_loop.h"
 #include "base/values.h"
 #include "build/build_config.h"

@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "net/test/local_test_server.h"
 
 // Runs a Python-based safebrowsing test server on the same machine in which the

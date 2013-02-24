@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "content/common/content_export.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/webplugininfo.h"

@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/platform_file.h"
 

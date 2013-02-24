@@ -17,8 +17,8 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"

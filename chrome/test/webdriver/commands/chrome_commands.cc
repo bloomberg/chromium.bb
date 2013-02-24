@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/stringprintf.h"
 #include "chrome/test/automation/value_conversion_util.h"
 #include "chrome/test/webdriver/commands/response.h"

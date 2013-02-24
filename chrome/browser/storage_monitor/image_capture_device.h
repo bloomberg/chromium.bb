@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 #import <ImageCaptureCore/ImageCaptureCore.h>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/mac/cocoa_protocols.h"
 #include "base/mac/foundation_util.h"
 #include "base/memory/ref_counted.h"

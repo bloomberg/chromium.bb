@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 

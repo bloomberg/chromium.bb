@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/strings/string_number_conversions.h"

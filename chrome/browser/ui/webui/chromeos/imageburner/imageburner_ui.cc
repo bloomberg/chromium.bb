@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/imageburner/imageburner_ui.h"
 
 #include "base/bind.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
@@ -17,9 +17,9 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
-#include "googleurl/src/gurl.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 

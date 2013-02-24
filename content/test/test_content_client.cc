@@ -5,7 +5,7 @@
 #include "content/test/test_content_client.h"
 
 #include "base/base_paths.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/string_piece.h"

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_USER_STYLE_SHEET_WATCHER_H_
 #define CHROME_BROWSER_USER_STYLE_SHEET_WATCHER_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

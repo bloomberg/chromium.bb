@@ -6,8 +6,8 @@
 #include <string>
 
 #include "base/base64.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/test/webdriver/webdriver_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

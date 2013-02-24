@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "content/test/gpu/gpu_test_config.h"
 
 class GPUTestExpectationsParser {

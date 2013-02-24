@@ -7,8 +7,8 @@
 #include <sys/types.h>
 #include <sys/xattr.h>
 
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "googleurl/src/gurl.h"
 

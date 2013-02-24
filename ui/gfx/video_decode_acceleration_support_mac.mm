@@ -7,9 +7,9 @@
 #include <dlfcn.h>
 
 #include "base/bind.h"
-#include "base/file_path.h"
-#import "base/mac/foundation_util.h"
+#include "base/files/file_path.h"
 #include "base/location.h"
+#import "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/native_library.h"
 

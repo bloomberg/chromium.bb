@@ -4,7 +4,7 @@
 
 #include "chrome/browser/managed_mode/managed_mode_url_filter.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/hash_tables.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/metrics/histogram.h"

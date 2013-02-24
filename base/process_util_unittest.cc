@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/debug/alias.h"
 #include "base/debug/stack_trace.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
@@ -25,13 +25,13 @@
 #include "testing/multiprocess_func_list.h"
 
 #if defined(OS_LINUX)
-#include <malloc.h>
 #include <glib.h>
+#include <malloc.h>
 #include <sched.h>
 #endif
 #if defined(OS_POSIX)
-#include <errno.h>
 #include <dlfcn.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <sys/resource.h>

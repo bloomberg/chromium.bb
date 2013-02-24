@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/installed_loader.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"

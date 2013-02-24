@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "chrome/browser/icon_manager.h"
 #include "chrome/common/cancelable_task_tracker.h"
 #include "content/public/browser/url_data_source.h"

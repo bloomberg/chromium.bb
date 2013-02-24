@@ -6,7 +6,7 @@
 #define CONTENT_SHELL_SHELL_URL_REQUEST_CONTEXT_GETTER_H_
 
 #include "base/compiler_specific.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/url_request/url_request_context_getter.h"

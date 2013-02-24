@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {

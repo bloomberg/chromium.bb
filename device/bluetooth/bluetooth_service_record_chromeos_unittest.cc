@@ -8,8 +8,8 @@
 
 #include "base/base_paths.h"
 #include "base/basictypes.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "device/bluetooth/bluetooth_service_record_chromeos.h"
 #include "testing/gtest/include/gtest/gtest.h"

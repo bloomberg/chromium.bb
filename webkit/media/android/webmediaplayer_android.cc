@@ -4,7 +4,7 @@
 
 #include "webkit/media/android/webmediaplayer_android.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "media/base/android/media_player_bridge.h"
 #include "media/base/video_frame.h"

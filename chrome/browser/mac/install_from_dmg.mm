@@ -4,8 +4,8 @@
 
 #include "chrome/browser/mac/install_from_dmg.h"
 
-#include <ApplicationServices/ApplicationServices.h>
 #import <AppKit/AppKit.h>
+#include <ApplicationServices/ApplicationServices.h>
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreServices/CoreServices.h>
 #include <DiskArbitration/DiskArbitration.h>
@@ -19,7 +19,7 @@
 #include "base/auto_reset.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/mac/authorization_util.h"
 #include "base/mac/bundle_locations.h"

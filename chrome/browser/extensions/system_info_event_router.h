@@ -7,7 +7,7 @@
 
 #include <set>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/singleton.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/system_info_storage/storage_info_provider.h"

@@ -12,8 +12,8 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/platform_file.h"
 #include "base/threading/platform_thread.h"

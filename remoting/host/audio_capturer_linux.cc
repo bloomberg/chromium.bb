@@ -4,7 +4,7 @@
 
 #include "remoting/host/audio_capturer_linux.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "remoting/proto/audio.pb.h"

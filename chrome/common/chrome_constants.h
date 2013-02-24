@@ -7,7 +7,7 @@
 #ifndef CHROME_COMMON_CHROME_CONSTANTS_H_
 #define CHROME_COMMON_CHROME_CONSTANTS_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 
 namespace chrome {
 

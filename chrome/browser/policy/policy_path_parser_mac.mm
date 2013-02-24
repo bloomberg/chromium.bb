@@ -5,10 +5,10 @@
 #include "chrome/browser/policy/policy_path_parser.h"
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/sys_string_conversions.h"
 #import "base/mac/scoped_nsautorelease_pool.h"
+#include "base/sys_string_conversions.h"
 #include "policy/policy_constants.h"
 
 #import <Cocoa/Cocoa.h>

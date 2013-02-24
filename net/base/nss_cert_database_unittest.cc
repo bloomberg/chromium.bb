@@ -8,8 +8,8 @@
 
 #include <algorithm>
 
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"

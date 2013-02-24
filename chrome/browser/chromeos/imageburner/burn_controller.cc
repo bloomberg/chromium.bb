@@ -5,13 +5,13 @@
 #include "chrome/browser/chromeos/imageburner/burn_controller.h"
 
 #include "base/bind.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/imageburner/burn_manager.h"
-#include "grit/generated_resources.h"
 #include "googleurl/src/gurl.h"
+#include "grit/generated_resources.h"
 
 namespace chromeos {
 namespace imageburner {

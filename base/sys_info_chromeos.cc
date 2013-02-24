@@ -5,8 +5,8 @@
 #include "base/sys_info.h"
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/string_piece.h"
 #include "base/strings/string_number_conversions.h"

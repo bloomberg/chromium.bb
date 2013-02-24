@@ -4,7 +4,7 @@
 
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
 #include "content/renderer/pepper/pepper_in_process_resource_creation.h"

@@ -4,7 +4,7 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/mac/foundation_util.h"
 
 void GetApplicationDirs(std::vector<base::FilePath>* app_dirs) {

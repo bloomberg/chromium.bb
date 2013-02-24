@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_MOCK_DIRECTORY_CHANGE_OBSERVER_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_MOCK_DIRECTORY_CHANGE_OBSERVER_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

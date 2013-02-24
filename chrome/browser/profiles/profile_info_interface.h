@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_PROFILES_PROFILE_INFO_INTERFACE_H_
 #define CHROME_BROWSER_PROFILES_PROFILE_INFO_INTERFACE_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/string16.h"
 
 namespace gfx {

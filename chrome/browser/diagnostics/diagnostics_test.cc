@@ -4,7 +4,7 @@
 
 #include "chrome/browser/diagnostics/diagnostics_test.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"

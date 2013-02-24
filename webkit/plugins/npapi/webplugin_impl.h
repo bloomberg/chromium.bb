@@ -5,12 +5,12 @@
 #ifndef WEBKIT_PLUGINS_NPAPI_WEBPLUGIN_IMPL_H_
 #define WEBKIT_PLUGINS_NPAPI_WEBPLUGIN_IMPL_H_
 
-#include <string>
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "googleurl/src/gurl.h"

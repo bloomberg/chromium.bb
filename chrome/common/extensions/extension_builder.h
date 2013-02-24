@@ -5,7 +5,7 @@
 #ifndef CHROME_COMMON_EXTENSIONS_EXTENSION_BUILDER_H_
 #define CHROME_COMMON_EXTENSIONS_EXTENSION_BUILDER_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/extensions/manifest.h"

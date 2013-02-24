@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/string_util.h"
 #include "chrome/browser/extensions/api/api_resource.h"
 #include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/browser_thread.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "chrome/browser/profiles/profile.h"
 #include "googleurl/src/gurl.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace utils = extension_function_test_utils;
 

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_ACTIVITY_DATABASE_H_
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/extensions/api_actions.h"
 #include "chrome/browser/extensions/blocked_actions.h"

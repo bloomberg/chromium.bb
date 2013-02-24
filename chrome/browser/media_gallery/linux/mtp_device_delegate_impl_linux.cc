@@ -5,8 +5,8 @@
 #include "chrome/browser/media_gallery/linux/mtp_device_delegate_impl_linux.h"
 
 #include "base/bind.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/sequenced_task_runner.h"
 #include "base/string_util.h"
 #include "chrome/browser/media_gallery/linux/mtp_device_object_enumerator.h"

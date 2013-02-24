@@ -6,7 +6,7 @@
 #define CONTENT_SHELL_SHELL_BROWSER_CONTEXT_H_
 
 #include "base/compiler_specific.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_context.h"

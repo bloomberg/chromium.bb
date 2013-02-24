@@ -9,7 +9,7 @@
 // to the actual files (they still may change if an error is detected on the
 // files).
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 
 // Returns the major version of the specified cache.
 int GetMajorVersion(const base::FilePath& input_path);

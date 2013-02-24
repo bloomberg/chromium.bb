@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
@@ -13,8 +13,8 @@
 #include "chrome/installer/util/installation_validator.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/test/mini_installer_test/installer_path_provider.h"
-#include "chrome/test/mini_installer_test/mini_installer_test_constants.h"
 #include "chrome/test/mini_installer_test/installer_test_util.h"
+#include "chrome/test/mini_installer_test/mini_installer_test_constants.h"
 #include "chrome/test/mini_installer_test/switch_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

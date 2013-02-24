@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_TASK_PROFILER_AUTO_TRACKING_H_
 #define CHROME_BROWSER_TASK_PROFILER_AUTO_TRACKING_H_
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/tracked_objects.h"
 
 //------------------------------------------------------------------------------
