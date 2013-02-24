@@ -82,7 +82,7 @@ IMPL_TEMPLATE = """// This is generated file. Do not modify directly.
 #error both %(unique_prefix)s_DLOPEN and %(unique_prefix)s_DT_NEEDED defined
 #endif
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 
 %(class_name)s::%(class_name)s() : loaded_(false) {

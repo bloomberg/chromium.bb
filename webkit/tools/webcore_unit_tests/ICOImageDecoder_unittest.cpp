@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/file_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebImageDecoder.h"
 #include "webkit/tools/test_shell/image_decoder_unittest.h"
