@@ -47,10 +47,10 @@ cr.define('oobe', function() {
     updateLocalizedContent: function() {
       $('wrong-hwid-message-content').innerHTML =
           '<p>' +
-          localStrings.getStringF('wrongHWIDMessageFirstPart',
+          loadTimeData.getStringF('wrongHWIDMessageFirstPart',
               '<strong>', '</strong>') +
           '</p><p>' +
-          localStrings.getString('wrongHWIDMessageSecondPart') +
+          loadTimeData.getString('wrongHWIDMessageSecondPart') +
           '</p>';
     },
 

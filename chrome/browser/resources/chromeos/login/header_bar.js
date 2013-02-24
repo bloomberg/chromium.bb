@@ -43,8 +43,8 @@ cr.define('login', function() {
       $('sign-out-user-button').addEventListener('click',
           this.handleSignoutClick_);
 
-      if (templateData['enableAppMode'] &&
-          templateData['screenType'] == 'login') {
+      if (loadTimeData.getBoolean('enableAppMode') &&
+          loadTimeData.getString('screenType') == 'login') {
         login.AppsMenuButton.decorate($('show-apps-button'));
       }
     },

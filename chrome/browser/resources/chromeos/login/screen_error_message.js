@@ -55,7 +55,7 @@ cr.define('login', function() {
      * Updates localized content of the screen that is not updated via template.
      */
     updateLocalizedContent_: function() {
-      $('captive-portal-message-text').innerHTML = localStrings.getStringF(
+      $('captive-portal-message-text').innerHTML = loadTimeData.getStringF(
         'captivePortalMessage',
         '<b id="' + CURRENT_NETWORK_NAME_ID + '"></b>',
         '<a id="' + FIX_CAPTIVE_PORTAL_ID + '" class="signin-link" href="#">',
@@ -65,7 +65,7 @@ cr.define('login', function() {
       };
 
       $('captive-portal-proxy-message-text').innerHTML =
-        localStrings.getStringF(
+        loadTimeData.getStringF(
           'captivePortalProxyMessage',
           '<a id="' + FIX_PROXY_SETTINGS_ID + '" class="signin-link" href="#">',
           '</a>');
@@ -73,7 +73,7 @@ cr.define('login', function() {
         chrome.send('openProxySettings');
       };
 
-      $('proxy-message-text').innerHTML = localStrings.getStringF(
+      $('proxy-message-text').innerHTML = loadTimeData.getStringF(
           'proxyMessageText',
           '<a id="' + RELOAD_PAGE_ID + '" class="signin-link" href="#">',
           '</a>',
@@ -88,7 +88,7 @@ cr.define('login', function() {
         chrome.send('openProxySettings');
       };
 
-      $('error-guest-signin').innerHTML = localStrings.getStringF(
+      $('error-guest-signin').innerHTML = loadTimeData.getStringF(
           'guestSignin',
           '<a id="error-guest-signin-link" class="signin-link" href="#">',
           '</a>');
@@ -96,7 +96,7 @@ cr.define('login', function() {
         chrome.send('launchIncognito');
       };
 
-      $('error-offline-login').innerHTML = localStrings.getStringF(
+      $('error-offline-login').innerHTML = loadTimeData.getStringF(
           'offlineLogin',
           '<a id="error-offline-login-link" class="signin-link" href="#">',
           '</a>');

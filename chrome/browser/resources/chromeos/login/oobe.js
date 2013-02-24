@@ -7,7 +7,27 @@
  * This is the main code for the OOBE WebUI implementation.
  */
 
-var localStrings = new LocalStrings();
+<include src="../user_images_grid.js"></include>
+<include src="apps_menu.js"></include>
+<include src="bubble.js"></include>
+<include src="display_manager.js"></include>
+<include src="header_bar.js"></include>
+<include src="managed_user_creation.js"></include>
+<include src="network_dropdown.js"></include>
+<include src="oobe_screen_eula.js"></include>
+<include src="oobe_screen_network.js"></include>
+<include src="oobe_screen_reset.js"></include>
+<include src="oobe_screen_update.js"></include>
+<include src="oobe_screen_user_image.js"></include>
+<include src="oobe_screen_oauth_enrollment.js"></include>
+<include src="screen_account_picker.js"></include>
+<include src="screen_gaia_signin.js"></include>
+<include src="screen_error_message.js"></include>
+<include src="screen_tpm_error.js"></include>
+<include src="screen_password_changed.js"></include>
+<include src="oobe_screen_terms_of_service.js"></include>
+<include src="screen_wrong_hwid.js"></include>
+<include src="user_pod_row.js"></include>
 
 cr.define('cr.ui', function() {
   var DisplayManager = cr.ui.login.DisplayManager;
@@ -239,20 +259,20 @@ cr.define('cr.ui', function() {
     var minutes = Math.ceil(seconds / 60);
     var message = '';
     if (minutes > 60) {
-      message = localStrings.getString('downloadingTimeLeftLong');
+      message = loadTimeData.getString('downloadingTimeLeftLong');
     } else if (minutes > 55) {
-      message = localStrings.getString('downloadingTimeLeftStatusOneHour');
+      message = loadTimeData.getString('downloadingTimeLeftStatusOneHour');
     } else if (minutes > 20) {
-      message = localStrings.getStringF('downloadingTimeLeftStatusMinutes',
+      message = loadTimeData.getStringF('downloadingTimeLeftStatusMinutes',
                                         Math.ceil(minutes / 5) * 5);
     } else if (minutes > 1) {
-      message = localStrings.getStringF('downloadingTimeLeftStatusMinutes',
+      message = loadTimeData.getStringF('downloadingTimeLeftStatusMinutes',
                                         minutes);
     } else {
-      message = localStrings.getString('downloadingTimeLeftSmall');
+      message = loadTimeData.getString('downloadingTimeLeftSmall');
     }
     $('estimated-time-left').textContent =
-      localStrings.getStringF('downloading', message);
+      loadTimeData.getStringF('downloading', message);
   };
 
   /**
@@ -322,8 +342,8 @@ cr.define('cr.ui', function() {
    */
   Oobe.reloadContent = function(data) {
     // Reload global local strings, process DOM tree again.
-    templateData = data;
-    i18nTemplate.process(document, data);
+    loadTimeData.overrideValues(data);
+    i18nTemplate.process(document, loadTimeData);
 
     // Update language and input method menu lists.
     Oobe.setupSelect($('language-select'), data.languageList, '');

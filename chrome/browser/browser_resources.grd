@@ -37,6 +37,7 @@
       <structure name="IDR_INCOGNITO_TAB_HTML" file="resources\incognito_tab.html" flattenhtml="true" type="chrome_html" />
       <if expr="pp_ifdef('chromeos')">
         <structure name="IDR_LOGIN_HTML" file="resources\chromeos\login\login.html" flattenhtml="true" type="chrome_html" />
+        <structure name="IDR_LOGIN_JS" file="resources\chromeos\login\login.js" flattenhtml="true" type="chrome_html" />
       </if>
       <structure name="IDR_NEW_INCOGNITO_TAB_THEME_CSS" file="resources\new_incognito_tab_theme.css" flattenhtml="true" type="chrome_html" />
       <if expr="not pp_ifdef('android')">
@@ -48,6 +49,7 @@
       </if>
       <if expr="pp_ifdef('chromeos')">
         <structure name="IDR_OOBE_HTML" file="resources\chromeos\login\oobe.html" flattenhtml="true" type="chrome_html" />
+        <structure name="IDR_OOBE_JS" file="resources\chromeos\login\oobe.js" flattenhtml="true" type="chrome_html" />
       </if>
       <structure name="IDR_READER_OUT_OF_DATE_HTML" file="resources\reader_out_of_date.html" flattenhtml="true" type="chrome_html" />
       <structure name="IDR_SSL_ROAD_BLOCK_HTML" file="resources\ssl_roadblock.html" flattenhtml="true" type="chrome_html" />

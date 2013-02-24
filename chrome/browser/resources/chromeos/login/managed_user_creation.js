@@ -374,7 +374,7 @@ cr.define('login', function() {
 
       if (firstPassword != secondPassword) {
         this.showPasswordError(
-            localStrings.getString('createManagedUserPasswordMismatchError'));
+            loadTimeData.getString('createManagedUserPasswordMismatchError'));
         return;
       }
       chrome.send('tryCreateLocallyManagedUser', [userName, firstPassword]);
@@ -390,7 +390,7 @@ cr.define('login', function() {
       var continueButton = this.ownerDocument.createElement('button');
       continueButton.id = 'managed-user-creation-continue-button';
       continueButton.textContent =
-          localStrings.getString('createManagedUserContinueButton');
+          loadTimeData.getString('createManagedUserContinueButton');
       buttons.push(continueButton);
 
       var creationScreen = this;

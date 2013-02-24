@@ -77,7 +77,7 @@ cr.define('login', function() {
      * @type {string}
      */
     get header() {
-      return localStrings.getString('signinScreenTitle');
+      return loadTimeData.getString('signinScreenTitle');
     },
 
     /**
@@ -180,7 +180,7 @@ cr.define('login', function() {
 
       // Announce the name of the screen, if accessibility is on.
       $('gaia-signin-aria-label').setAttribute(
-          'aria-label', localStrings.getString('signinScreenTitle'));
+          'aria-label', loadTimeData.getString('signinScreenTitle'));
 
       // Button header is always visible when sign in is presented.
       // Header is hidden once GAIA reports on successful sign in.
@@ -262,7 +262,7 @@ cr.define('login', function() {
       var reasonLabel = $('gaia-signin-reason');
       if (data.passwordChanged) {
         reasonLabel.textContent =
-            localStrings.getString('signinScreenPasswordChanged');
+            loadTimeData.getString('signinScreenPasswordChanged');
         reasonLabel.hidden = false;
       } else {
         reasonLabel.hidden = true;
@@ -416,15 +416,15 @@ cr.define('login', function() {
      * Updates localized content of the screen that is not updated via template.
      */
     updateLocalizedContent: function() {
-      $('createAccount').innerHTML = localStrings.getStringF(
+      $('createAccount').innerHTML = loadTimeData.getStringF(
           'createAccount',
           '<a id="createAccountLink" class="signin-link" href="#">',
           '</a>');
-      $('guestSignin').innerHTML = localStrings.getStringF(
+      $('guestSignin').innerHTML = loadTimeData.getStringF(
           'guestSignin',
           '<a id="guestSigninLink" class="signin-link" href="#">',
           '</a>');
-      $('createLocallyManagedUser').innerHTML = localStrings.getStringF(
+      $('createLocallyManagedUser').innerHTML = loadTimeData.getStringF(
           'createLocallyManagedUser',
           '<a id="createLocallyManagedUserLink" class="signin-link" href="#">',
           '</a>');

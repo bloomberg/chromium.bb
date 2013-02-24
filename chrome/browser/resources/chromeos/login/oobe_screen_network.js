@@ -34,11 +34,11 @@ cr.define('oobe', function() {
     /** @override */
     decorate: function() {
       Oobe.setupSelect($('language-select'),
-                       templateData.languageList,
+                       loadTimeData.getValue('languageList'),
                        'networkOnLanguageChanged');
 
       Oobe.setupSelect($('keyboard-select'),
-                       templateData.inputMethodsList,
+                       loadTimeData.getValue('inputMethodsList'),
                        'networkOnInputMethodChanged');
 
       this.dropdown_ = $('networks-list');
@@ -58,7 +58,7 @@ cr.define('oobe', function() {
      * @type {string}
      */
     get header() {
-      return localStrings.getString('networkScreenTitle');
+      return loadTimeData.getString('networkScreenTitle');
     },
 
     /**
@@ -70,7 +70,7 @@ cr.define('oobe', function() {
 
       var continueButton = this.ownerDocument.createElement('button');
       continueButton.id = 'continue-button';
-      continueButton.textContent = localStrings.getString('continueButton');
+      continueButton.textContent = loadTimeData.getString('continueButton');
       continueButton.addEventListener('click', function(e) {
         chrome.send('networkOnExit');
         e.stopPropagation();

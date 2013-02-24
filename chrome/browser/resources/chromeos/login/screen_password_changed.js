@@ -68,7 +68,7 @@ cr.define('login', function() {
       var backButton = this.ownerDocument.createElement('button');
       backButton.id = 'password-changed-back-button';
       backButton.textContent =
-          localStrings.getString('passwordChangedBackButton');
+          loadTimeData.getString('passwordChangedBackButton');
       backButton.addEventListener('click', function(e) {
         var screen = $('password-changed');
         if (screen.classList.contains('migrate')) {
@@ -85,7 +85,7 @@ cr.define('login', function() {
 
       var okButton = this.ownerDocument.createElement('button');
       okButton.id = 'password-changed-ok-button';
-      okButton.textContent = localStrings.getString('passwordChangedsOkButton');
+      okButton.textContent = loadTimeData.getString('passwordChangedsOkButton');
       okButton.addEventListener('click', function(e) {
         $('password-changed').migrate();
         e.stopPropagation();
@@ -95,7 +95,7 @@ cr.define('login', function() {
       var proceedAnywayButton = this.ownerDocument.createElement('button');
       proceedAnywayButton.id = 'password-changed-proceed-button';
       proceedAnywayButton.textContent =
-          localStrings.getString('proceedAnywayButton');
+          loadTimeData.getString('proceedAnywayButton');
       proceedAnywayButton.addEventListener('click', function(e) {
         var screen = $('password-changed');
         if (screen.classList.contains('resync'))

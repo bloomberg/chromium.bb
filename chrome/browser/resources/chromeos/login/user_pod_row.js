@@ -301,18 +301,18 @@ cr.define('login', function() {
       var needSignin = this.needGaiaSignin;
       this.passwordElement.hidden = needSignin;
       this.actionBoxAreaElement.setAttribute(
-          'aria-label', localStrings.getStringF(
+          'aria-label', loadTimeData.getStringF(
               'podMenuButtonAccessibleName', this.user_.emailAddress));
       this.actionBoxMenuRemoveElement.setAttribute(
-          'aria-label', localStrings.getString(
+          'aria-label', loadTimeData.getString(
                'podMenuRemoveItemAccessibleName'));
       this.actionBoxMenuTitleNameElement.textContent = !this.user_.canRemove ?
-          localStrings.getStringF('ownerUserPattern', this.user_.displayName) :
+          loadTimeData.getStringF('ownerUserPattern', this.user_.displayName) :
           this.user_.displayName;
       this.actionBoxMenuTitleEmailElement.textContent = this.user_.emailAddress;
       this.actionBoxMenuCommandElement.textContent =
-          localStrings.getString('removeUser');
-      this.passwordElement.setAttribute('aria-label', localStrings.getStringF(
+          loadTimeData.getString('removeUser');
+      this.passwordElement.setAttribute('aria-label', loadTimeData.getStringF(
           'passwordFieldAccessibleName', this.user_.emailAddress));
       this.signinButtonElement.hidden = !needSignin;
     },
@@ -644,7 +644,7 @@ cr.define('login', function() {
       this.querySelector('.side-pane-name').textContent =
           this.user_.displayName;
       this.querySelector('.info').textContent =
-          localStrings.getStringF('publicAccountInfoFormat',
+          loadTimeData.getStringF('publicAccountInfoFormat',
                                   this.user_.enterpriseDomain);
     },
 

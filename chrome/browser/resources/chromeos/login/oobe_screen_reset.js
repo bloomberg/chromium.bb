@@ -35,7 +35,7 @@ cr.define('oobe', function() {
      * @type {string}
      */
     get header() {
-      return localStrings.getString('resetScreenTitle');
+      return loadTimeData.getString('resetScreenTitle');
     },
 
     /**
@@ -47,7 +47,7 @@ cr.define('oobe', function() {
 
       var resetButton = this.ownerDocument.createElement('button');
       resetButton.id = 'reset-button';
-      resetButton.textContent = localStrings.getString('resetButton');
+      resetButton.textContent = loadTimeData.getString('resetButton');
       resetButton.addEventListener('click', function(e) {
         chrome.send('resetOnReset');
         e.stopPropagation();
@@ -56,7 +56,7 @@ cr.define('oobe', function() {
 
       var cancelButton = this.ownerDocument.createElement('button');
       cancelButton.id = 'reset-cancel-button';
-      cancelButton.textContent = localStrings.getString('cancelButton');
+      cancelButton.textContent = loadTimeData.getString('cancelButton');
       cancelButton.addEventListener('click', function(e) {
         chrome.send('resetOnCancel');
         e.stopPropagation();

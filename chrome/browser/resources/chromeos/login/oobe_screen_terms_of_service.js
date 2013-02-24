@@ -30,11 +30,11 @@ cr.define('oobe', function() {
    */
   TermsOfServiceScreen.setDomain = function(domain) {
     $('tos-heading').textContent =
-        localStrings.getStringF('termsOfServiceScreenHeading', domain);
+        loadTimeData.getStringF('termsOfServiceScreenHeading', domain);
     $('tos-subheading').textContent =
-        localStrings.getStringF('termsOfServiceScreenSubheading', domain);
+        loadTimeData.getStringF('termsOfServiceScreenSubheading', domain);
     $('tos-content-heading').textContent =
-        localStrings.getStringF('termsOfServiceContentHeading', domain);
+        loadTimeData.getStringF('termsOfServiceContentHeading', domain);
   };
 
   /**
@@ -71,7 +71,7 @@ cr.define('oobe', function() {
       var backButton = this.ownerDocument.createElement('button');
       backButton.id = 'tos-back-button';
       backButton.textContent =
-          localStrings.getString('termsOfServiceBackButton');
+          loadTimeData.getString('termsOfServiceBackButton');
       backButton.addEventListener('click', function(event) {
         $('tos-back-button').disabled = true;
         $('tos-accept-button').disabled = true;
@@ -87,7 +87,7 @@ cr.define('oobe', function() {
       acceptButton.disabled = true;
       acceptButton.classList.add('preserve-disabled-state');
       acceptButton.textContent =
-          localStrings.getString('termsOfServiceAcceptButton');
+          loadTimeData.getString('termsOfServiceAcceptButton');
       acceptButton.addEventListener('click', function(event) {
         $('tos-back-button').disabled = true;
         $('tos-accept-button').disabled = true;

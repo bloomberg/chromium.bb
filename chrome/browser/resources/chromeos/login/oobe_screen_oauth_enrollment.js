@@ -108,7 +108,7 @@ cr.define('oobe', function() {
      * @type {string}
      */
     get header() {
-      return localStrings.getString('oauthEnrollScreenTitle');
+      return loadTimeData.getString('oauthEnrollScreenTitle');
     },
 
     /**
@@ -121,7 +121,7 @@ cr.define('oobe', function() {
       var cancelButton = this.ownerDocument.createElement('button');
       cancelButton.id = 'oauth-enroll-cancel-button';
       cancelButton.textContent =
-          localStrings.getString('oauthEnrollCancel');
+          loadTimeData.getString('oauthEnrollCancel');
       cancelButton.addEventListener('click', function(e) {
         chrome.send('oauthEnrollClose', ['cancel']);
       });
@@ -131,7 +131,7 @@ cr.define('oobe', function() {
       tryAgainButton.id = 'oauth-enroll-try-again-button';
       tryAgainButton.hidden = true;
       tryAgainButton.textContent =
-          localStrings.getString('oauthEnrollRetry');
+          loadTimeData.getString('oauthEnrollRetry');
       tryAgainButton.addEventListener('click', this.doRetry_.bind(this));
       buttons.push(tryAgainButton);
 
@@ -139,7 +139,7 @@ cr.define('oobe', function() {
       explainButton.id = 'oauth-enroll-explain-button';
       explainButton.hidden = true;
       explainButton.textContent =
-          localStrings.getString('oauthEnrollExplainButton');
+          loadTimeData.getString('oauthEnrollExplainButton');
       explainButton.addEventListener('click', this.doRetry_.bind(this));
       buttons.push(explainButton);
 
@@ -147,7 +147,7 @@ cr.define('oobe', function() {
       doneButton.id = 'oauth-enroll-done-button';
       doneButton.hidden = true;
       doneButton.textContent =
-          localStrings.getString('oauthEnrollDone');
+          loadTimeData.getString('oauthEnrollDone');
       doneButton.addEventListener('click', function(e) {
         chrome.send('oauthEnrollClose', ['done']);
       });
@@ -273,13 +273,13 @@ cr.define('oobe', function() {
       if (!this.confirmDialog_) {
         this.confirmDialog_ = new cr.ui.dialogs.ConfirmDialog(document.body);
         this.confirmDialog_.setOkLabel(
-            localStrings.getString('oauthEnrollCancelAutoEnrollmentConfirm'));
+            loadTimeData.getString('oauthEnrollCancelAutoEnrollmentConfirm'));
         this.confirmDialog_.setCancelLabel(
-            localStrings.getString('oauthEnrollCancelAutoEnrollmentGoBack'));
+            loadTimeData.getString('oauthEnrollCancelAutoEnrollmentGoBack'));
         this.confirmDialog_.setInitialFocusOnCancel();
       }
       this.confirmDialog_.show(
-          localStrings.getString('oauthEnrollCancelAutoEnrollmentReally'),
+          loadTimeData.getString('oauthEnrollCancelAutoEnrollmentReally'),
           this.onConfirmCancelAutoEnrollment_.bind(this));
     },
 

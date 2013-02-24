@@ -41,27 +41,10 @@
 <script src="chrome://resources/js/cr/ui/menu_item.js"></script>
 <script src="chrome://resources/js/cr/ui/menu.js"></script>
 <script src="chrome://resources/js/cr/ui/menu_button.js"></script>
-<script src="chrome://resources/js/local_strings.js"></script>
+<script src="chrome://resources/js/load_time_data.js"></script>
 <script src="chrome://resources/js/util.js"></script>
-<script src="../user_images_grid.js"></script>
-<script src="apps_menu.js"></script>
-<script src="bubble.js"></script>
-<script src="display_manager.js"></script>
-<script src="header_bar.js"></script>
-<script src="login.js"></script>
-<script src="managed_user_creation.js"></script>
-<script src="network_dropdown.js"></script>
-<script src="oobe_screen_oauth_enrollment.js"></script>
-<script src="oobe_screen_user_image.js"></script>
-<script src="oobe_screen_reset.js"></script>
-<script src="screen_wrong_hwid.js"></script>
-<script src="screen_account_picker.js"></script>
-<script src="screen_gaia_signin.js"></script>
-<script src="screen_error_message.js"></script>
-<script src="screen_tpm_error.js"></script>
-<script src="screen_password_changed.js"></script>
-<script src="oobe_screen_terms_of_service.js"></script>
-<script src="user_pod_row.js"></script>
+<script src="chrome://oobe/strings.js"></script>
+<script src="chrome://oobe/login.js"></script>
 </head>
 <body class="login-display" i18n-values=".style.fontFamily:fontfamily;">
   <div id="background" class="background-initial"></div>
@@ -92,5 +75,6 @@
   <div id="bubble" class="bubble faded" hidden></div>
   <include src="header_bar.html">
   <include src="user_pod_template.html">
+  <script src="chrome://resources/js/i18n_template2.js"></script>
 </body>
 </html>

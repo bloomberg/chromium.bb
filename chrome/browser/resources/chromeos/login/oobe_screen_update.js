@@ -46,7 +46,7 @@ cr.define('oobe', function() {
      * @type {string}
      */
     get header() {
-      return localStrings.getString('updateScreenTitle');
+      return loadTimeData.getString('updateScreenTitle');
     },
 
     /**
@@ -65,7 +65,7 @@ cr.define('oobe', function() {
       // builds, since Chrome will just ignore the message in that case.
       var updateCancelHint = $('update-cancel-hint').firstElementChild;
       updateCancelHint.textContent =
-          localStrings.getString('cancelledUpdateMessage');
+          loadTimeData.getString('cancelledUpdateMessage');
       chrome.send('cancelUpdate');
     },
   };

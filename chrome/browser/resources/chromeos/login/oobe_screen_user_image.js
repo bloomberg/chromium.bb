@@ -81,13 +81,13 @@ cr.define('oobe', function() {
 
       // Set the title for camera item in the grid.
       imageGrid.setCameraTitles(
-          localStrings.getString('takePhoto'),
-          localStrings.getString('photoFromCamera'));
+          loadTimeData.getString('takePhoto'),
+          loadTimeData.getString('photoFromCamera'));
 
       // Profile image data (if present).
       this.profileImage_ = imageGrid.addItem(
           ButtonImages.PROFILE_PICTURE,  // Image URL.
-          localStrings.getString('profilePhoto'),  // Title.
+          loadTimeData.getString('profilePhoto'),  // Title.
           undefined,  // Click handler.
           undefined,  // Position.
           function(el) {  // Custom decorator for Profile image element.
@@ -132,7 +132,7 @@ cr.define('oobe', function() {
      * @type {string}
      */
     get header() {
-      return localStrings.getString('userImageScreenTitle');
+      return loadTimeData.getString('userImageScreenTitle');
     },
 
     /**
@@ -142,7 +142,7 @@ cr.define('oobe', function() {
     get buttons() {
       var okButton = this.ownerDocument.createElement('button');
       okButton.id = 'ok-button';
-      okButton.textContent = localStrings.getString('okButtonText');
+      okButton.textContent = loadTimeData.getString('okButtonText');
       okButton.addEventListener('click', this.acceptImage_.bind(this));
       return [okButton];
     },
@@ -242,7 +242,7 @@ cr.define('oobe', function() {
     handlePhotoTaken_: function(e) {
       chrome.send('photoTaken', [e.dataURL]);
       this.announceAccessibleMessage_(
-          localStrings.getString('photoCaptureAccessibleText'));
+          loadTimeData.getString('photoCaptureAccessibleText'));
     },
 
     /**
@@ -260,7 +260,7 @@ cr.define('oobe', function() {
       var imageGrid = $('user-image-grid');
       imageGrid.discardPhoto();
       this.announceAccessibleMessage_(
-          localStrings.getString('photoDiscardAccessibleText'));
+          loadTimeData.getString('photoDiscardAccessibleText'));
     },
 
     /**
@@ -384,7 +384,7 @@ cr.define('oobe', function() {
      * @private
      */
     updateProfileImageCaption_: function() {
-      this.profileImageCaption = localStrings.getString(
+      this.profileImageCaption = loadTimeData.getString(
         this.profileImageLoading_ ? 'profilePhotoLoading' : 'profilePhoto');
     }
   };

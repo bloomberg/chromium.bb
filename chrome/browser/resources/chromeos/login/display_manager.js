@@ -475,7 +475,7 @@ cr.define('cr.ui.login', function() {
      * Returns true if sign in UI should trigger wallpaper load on boot.
      */
     shouldLoadWallpaperOnBoot: function() {
-      return localStrings.getString('bootIntoWallpaper') == 'on';
+      return loadTimeData.getString('bootIntoWallpaper') == 'on';
     },
   };
 
@@ -655,7 +655,7 @@ cr.define('cr.ui.login', function() {
     $('add-user-button').classList[
         disable ? 'add' : 'remove']('button-restricted');
     $('add-user-button').title = disable ?
-        localStrings.getString('disabledAddUserTooltip') : '';
+        loadTimeData.getString('disabledAddUserTooltip') : '';
   }
 
   // Export
