@@ -324,7 +324,7 @@ TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest, ValidationFailed) {
       device_policy_.policy());
   RunTest();
   ExpectFailedEnrollment(EnrollmentStatus::STATUS_VALIDATION_FAILED);
-  EXPECT_EQ(CloudPolicyValidatorBase::VALIDATION_BAD_SIGNATURE,
+  EXPECT_EQ(CloudPolicyValidatorBase::VALIDATION_BAD_INITIAL_SIGNATURE,
             status_.validation_status());
 }
 

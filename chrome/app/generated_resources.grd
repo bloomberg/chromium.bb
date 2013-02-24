@@ -5880,6 +5880,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_POLICY_VALIDATION_OK" desc="Message indicating successful policy validation.">
         Validation successful
       </message>
+      <message name="IDS_POLICY_VALIDATION_BAD_INITIAL_SIGNATURE" desc="Message indicating a bad signature on policy validation using the initial key.">
+        Bad intial signature
+      </message>
       <message name="IDS_POLICY_VALIDATION_BAD_SIGNATURE" desc="Message indicating a bad signature on policy validation.">
         Bad signature
       </message>

@@ -51,6 +51,8 @@ int GetIDSForValidationStatus(CloudPolicyValidatorBase::Status status) {
   switch (status) {
     case CloudPolicyValidatorBase::VALIDATION_OK:
       return IDS_POLICY_VALIDATION_OK;
+    case CloudPolicyValidatorBase::VALIDATION_BAD_INITIAL_SIGNATURE:
+      return IDS_POLICY_VALIDATION_BAD_INITIAL_SIGNATURE;
     case CloudPolicyValidatorBase::VALIDATION_BAD_SIGNATURE:
       return IDS_POLICY_VALIDATION_BAD_SIGNATURE;
     case CloudPolicyValidatorBase::VALIDATION_ERROR_CODE_PRESENT:

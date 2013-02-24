@@ -172,7 +172,7 @@ TEST_F(DeviceCloudPolicyStoreChromeOSTest, InstallInitialPolicyNoSignature) {
   store_->InstallInitialPolicy(device_policy_.policy());
   FlushDeviceSettings();
   ExpectFailure(CloudPolicyStore::STATUS_VALIDATION_ERROR);
-  EXPECT_EQ(CloudPolicyValidatorBase::VALIDATION_BAD_SIGNATURE,
+  EXPECT_EQ(CloudPolicyValidatorBase::VALIDATION_BAD_INITIAL_SIGNATURE,
             store_->validation_status());
 }
 
@@ -182,7 +182,7 @@ TEST_F(DeviceCloudPolicyStoreChromeOSTest, InstallInitialPolicyNoKey) {
   store_->InstallInitialPolicy(device_policy_.policy());
   FlushDeviceSettings();
   ExpectFailure(CloudPolicyStore::STATUS_VALIDATION_ERROR);
-  EXPECT_EQ(CloudPolicyValidatorBase::VALIDATION_BAD_SIGNATURE,
+  EXPECT_EQ(CloudPolicyValidatorBase::VALIDATION_BAD_INITIAL_SIGNATURE,
             store_->validation_status());
 }
 

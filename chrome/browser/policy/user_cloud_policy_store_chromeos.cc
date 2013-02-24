@@ -10,6 +10,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
@@ -34,6 +35,18 @@ const base::FilePath::CharType kPolicyKeyFile[] =
 
 // Maximum key size that will be loaded, in bytes.
 const int kKeySizeLimit = 16 * 1024;
+
+enum ValidationFailure {
+  VALIDATION_FAILURE_DBUS,
+  VALIDATION_FAILURE_LOAD_KEY,
+  VALIDATION_FAILURE_SIZE,
+};
+
+void SampleValidationFailure(ValidationFailure sample) {
+  UMA_HISTOGRAM_ENUMERATION("Enterprise.UserPolicyValidationFailure",
+                            sample,
+                            VALIDATION_FAILURE_SIZE);
+}
 
 }  // namespace
 
@@ -212,6 +225,12 @@ void UserCloudPolicyStoreChromeOS::ValidatePolicyForStore(
 void UserCloudPolicyStoreChromeOS::OnPolicyToStoreValidated(
     UserCloudPolicyValidator* validator) {
   validation_status_ = validator->status();
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "Enterprise.UserPolicyValidationStoreStatus",
+      validation_status_,
+      UserCloudPolicyValidator::VALIDATION_POLICY_PARSE_ERROR + 1);
+
   if (!validator->success()) {
     status_ = STATUS_VALIDATION_ERROR;
     NotifyStoreError();
@@ -297,6 +316,12 @@ void UserCloudPolicyStoreChromeOS::ValidateRetrievedPolicy(
 void UserCloudPolicyStoreChromeOS::OnRetrievedPolicyValidated(
     UserCloudPolicyValidator* validator) {
   validation_status_ = validator->status();
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "Enterprise.UserPolicyValidationLoadStatus",
+      validation_status_,
+      UserCloudPolicyValidator::VALIDATION_POLICY_PARSE_ERROR + 1);
+
   if (!validator->success()) {
     status_ = STATUS_VALIDATION_ERROR;
     NotifyStoreError();
@@ -403,6 +428,9 @@ void UserCloudPolicyStoreChromeOS::ReloadPolicyKey(
 void UserCloudPolicyStoreChromeOS::LoadPolicyKey(const base::FilePath& path,
                                                  std::vector<uint8>* key) {
   if (!file_util::PathExists(path)) {
+    // There is no policy key the first time that a user fetches policy. If
+    // |path| does not exist then that is the most likely scenario, so there's
+    // no need to sample a failure.
     VLOG(1) << "No key at " << path.value();
     return;
   }
@@ -421,6 +449,9 @@ void UserCloudPolicyStoreChromeOS::LoadPolicyKey(const base::FilePath& path,
       key->clear();
     }
   }
+
+  if (key->empty())
+    SampleValidationFailure(VALIDATION_FAILURE_LOAD_KEY);
 }
 
 void UserCloudPolicyStoreChromeOS::OnPolicyKeyReloaded(
@@ -454,6 +485,8 @@ void UserCloudPolicyStoreChromeOS::OnGetSanitizedUsername(
       !sanitized_username.empty()) {
     policy_key_path_ = user_policy_key_dir_.Append(
         base::StringPrintf(kPolicyKeyFile, sanitized_username.c_str()));
+  } else {
+    SampleValidationFailure(VALIDATION_FAILURE_DBUS);
   }
   ReloadPolicyKey(callback);
 }

@@ -41,10 +41,14 @@ namespace policy {
 // RunValidation() can be used to perform validation on the current thread.
 class CloudPolicyValidatorBase {
  public:
-  // Validation result codes.
+  // Validation result codes. These values are also used for UMA histograms;
+  // they must stay stable, and the UMA counters must be updated if new elements
+  // are appended at the end.
   enum Status {
     // Indicates successful validation.
     VALIDATION_OK,
+    // Bad signature on the initial key.
+    VALIDATION_BAD_INITIAL_SIGNATURE,
     // Bad signature.
     VALIDATION_BAD_SIGNATURE,
     // Policy blob contains error code.

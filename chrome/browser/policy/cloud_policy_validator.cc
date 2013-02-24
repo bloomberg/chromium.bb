@@ -230,7 +230,7 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckInitialKey() {
       !VerifySignature(policy_->policy_data(), policy_->new_public_key(),
                        policy_->policy_data_signature())) {
     LOG(ERROR) << "Initial policy signature validation failed";
-    return VALIDATION_BAD_SIGNATURE;
+    return VALIDATION_BAD_INITIAL_SIGNATURE;
   }
 
   return VALIDATION_OK;
