@@ -40,6 +40,10 @@ vars = {
   "webrtc_revision": "3501",
   "jsoncpp_revision": "248",
   "nss_revision": "182578",
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling swarm_client
+  # and whatever else without interference from each other.
+  "swarm_revision": "184106",
 }
 
 deps = {
@@ -106,7 +110,7 @@ deps = {
     (Var("googlecode_url") % "gyp") + "/trunk@1580",
 
   "src/tools/swarm_client":
-    "/trunk/tools/swarm_client@183805",
+    "/trunk/tools/swarm_client@" + Var("swarm_revision"),
 
   "src/v8":
     (Var("googlecode_url") % "v8") + "/trunk@" + Var("v8_revision"),
