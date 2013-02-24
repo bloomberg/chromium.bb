@@ -292,8 +292,7 @@ void WebKitTestRunner::setDatabaseQuota(int quota) {
 }
 
 void WebKitTestRunner::setDeviceScaleFactor(float factor) {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebKitTestRunner", "setDeviceScaleFactor"));
+  render_view()->GetWebView()->setDeviceScaleFactor(factor);
 }
 
 void WebKitTestRunner::setFocus(bool focus) {
