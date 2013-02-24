@@ -41,13 +41,6 @@ scoped_refptr<Authenticator> TestLoginUtils::CreateAuthenticator(
 void TestLoginUtils::InitRlzDelayed(Profile* user_profile) {
 }
 
-std::string TestLoginUtils::GetOffTheRecordCommandLine(
-    const GURL& start_url,
-    const CommandLine& base_command_line,
-    CommandLine* command_line) {
-  return std::string();
-}
-
 void TestLoginUtils::StopBackgroundFetchers() {
 }
 

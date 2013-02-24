@@ -47,11 +47,6 @@ class TestLoginUtils : public LoginUtils {
 
   virtual void RestoreAuthenticationSession(Profile* profile) OVERRIDE {}
 
-  virtual std::string GetOffTheRecordCommandLine(
-      const GURL& start_url,
-      const CommandLine& base_command_line,
-      CommandLine* command_line) OVERRIDE;
-
   virtual void InitRlzDelayed(Profile* user_profile) OVERRIDE;
 
   virtual void StopBackgroundFetchers() OVERRIDE;

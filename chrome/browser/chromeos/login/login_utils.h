@@ -15,10 +15,6 @@ class Profile;
 class PrefRegistrySimple;
 class PrefService;
 
-namespace {
-class BrowserGuestSessionNavigatorTest;
-}  // namespace
-
 namespace chromeos {
 
 class Authenticator;
@@ -36,6 +32,8 @@ class LoginUtils {
     // Called after post-profile RLZ initialization.
     virtual void OnRlzInitialized(Profile* profile) {}
 #endif
+   protected:
+    virtual ~Delegate() {}
   };
 
   // Registers log-in related preferences.
@@ -108,16 +106,6 @@ class LoginUtils {
 
   // Initialize RLZ.
   virtual void InitRlzDelayed(Profile* user_profile) = 0;
-
- protected:
-  friend class ::BrowserGuestSessionNavigatorTest;
-
-  // Returns command line string to be used for the OTR process. Also modifies
-  // given command line.
-  virtual std::string GetOffTheRecordCommandLine(
-      const GURL& start_url,
-      const CommandLine& base_command_line,
-      CommandLine* command_line) = 0;
 };
 
 }  // namespace chromeos

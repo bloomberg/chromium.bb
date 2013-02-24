@@ -378,6 +378,8 @@
         'browser/chromeos/login/captive_portal_view.h',
         'browser/chromeos/login/captive_portal_window_proxy.cc',
         'browser/chromeos/login/captive_portal_window_proxy.h',
+        'browser/chromeos/login/chrome_restart_request.cc',
+        'browser/chromeos/login/chrome_restart_request.h',
         'browser/chromeos/login/default_user_images.cc',
         'browser/chromeos/login/default_user_images.h',
         'browser/chromeos/login/error_screen_actor.cc',

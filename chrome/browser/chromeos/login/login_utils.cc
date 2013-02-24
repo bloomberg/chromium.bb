@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "ash/ash_switches.h"
 #include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -22,13 +21,11 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/public/pref_member.h"
 #include "base/string_util.h"
-#include "base/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner_util.h"
 #include "base/threading/worker_pool.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "cc/switches.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
@@ -38,6 +35,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chrome/browser/chromeos/login/chrome_restart_request.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/oauth_login_manager.h"
@@ -69,32 +67,20 @@
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
-#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/common/content_switches.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "googleurl/src/gurl.h"
-#include "gpu/command_buffer/service/gpu_switches.h"
-#include "media/base/media_switches.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "ui/base/ui_base_switches.h"
-#include "ui/compositor/compositor_switches.h"
-#include "ui/gfx/switches.h"
-#include "ui/gl/gl_switches.h"
-#include "ui/views/corewm/corewm_switches.h"
-#include "webkit/plugins/plugin_switches.h"
 
 using content::BrowserThread;
 
@@ -105,16 +91,6 @@ namespace {
 // Affixes for Auth token received from ClientLogin request.
 const char kAuthPrefix[] = "Auth=";
 const char kAuthSuffix[] = "\n";
-
-// Increase logging level for Guest mode to avoid LOG(INFO) messages in logs.
-const char kGuestModeLoggingLevel[] = "1";
-
-// Format of command line switch.
-const char kSwitchFormatString[] = " --%s=\"%s\"";
-
-// User name which is used in the Guest session.
-const char kGuestUserName[] = "";
-
 
 #if defined(ENABLE_RLZ)
 // Flag file that disables RLZ tracking, when present.
@@ -128,57 +104,6 @@ base::FilePath GetRlzDisabledFlagPath() {
 
 }  // namespace
 
-// Used to request a restart to switch to the guest mode.
-class JobRestartRequest
-    : public base::RefCountedThreadSafe<JobRestartRequest> {
- public:
-  JobRestartRequest(int pid, const std::string& command_line)
-      : pid_(pid),
-        command_line_(command_line),
-        local_state_(g_browser_process->local_state()) {
-    AddRef();
-    if (local_state_) {
-      // XXX: normally this call must not be needed, however RestartJob
-      // just kills us so settings may be lost. See http://crosbug.com/13102
-      local_state_->CommitPendingWrite();
-      timer_.Start(
-          FROM_HERE, base::TimeDelta::FromSeconds(3), this,
-          &JobRestartRequest::RestartJob);
-      // Post task on FILE thread thus it occurs last on task queue, so it
-      // would be executed after committing pending write on file thread.
-      BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
-          base::Bind(&JobRestartRequest::RestartJob, this));
-    } else {
-      RestartJob();
-    }
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<JobRestartRequest>;
-
-  ~JobRestartRequest() {}
-
-  void RestartJob() {
-    if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      DBusThreadManager::Get()->GetSessionManagerClient()->RestartJob(
-          pid_, command_line_);
-    } else {
-      // This function can be called on FILE thread. See PostTask in the
-      // constructor.
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&JobRestartRequest::RestartJob, this));
-      MessageLoop::current()->AssertIdle();
-    }
-  }
-
-  int pid_;
-  std::string command_line_;
-  PrefService* local_state_;
-  base::OneShotTimer<JobRestartRequest> timer_;
-};
-
 class LoginUtilsImpl
     : public LoginUtils,
       public OAuthLoginManager::Delegate,
@@ -191,7 +116,6 @@ class LoginUtilsImpl
         has_web_auth_cookies_(false),
         login_manager_(OAuthLoginManager::Create(this)),
         delegate_(NULL),
-        job_restart_request_(NULL),
         should_restore_auth_session_(false),
         url_request_context_getter_(NULL) {
     net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
@@ -242,12 +166,6 @@ class LoginUtilsImpl
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
- protected:
-  virtual std::string GetOffTheRecordCommandLine(
-      const GURL& start_url,
-      const CommandLine& base_command_line,
-      CommandLine *command_line) OVERRIDE;
 
  private:
   // Restarts OAuth session authentication check.
@@ -301,9 +219,6 @@ class LoginUtilsImpl
 
   // Delegate to be fired when the profile will be prepared.
   LoginUtils::Delegate* delegate_;
-
-  // Used to restart Chrome to switch to the guest mode.
-  JobRestartRequest* job_restart_request_;
 
   // True if should restore authentication session when notified about
   // online state change.
@@ -720,124 +635,15 @@ void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
 
   UserManager::Get()->GuestUserLoggedIn();
 
-  // Session Manager may kill the chrome anytime after this point.
-  // Write exit_cleanly and other stuff to the disk here.
-  g_browser_process->EndSession();
-
   // For guest session we ask session manager to restart Chrome with --bwsi
   // flag. We keep only some of the arguments of this process.
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   CommandLine command_line(browser_command_line.GetProgram());
-  std::string cmd_line_str =
-      GetOffTheRecordCommandLine(start_url,
-                                 browser_command_line,
-                                 &command_line);
+  std::string cmd_line_str = GetOffTheRecordCommandLine(start_url,
+                                                        browser_command_line,
+                                                        &command_line);
 
-  if (job_restart_request_) {
-    NOTREACHED();
-  }
-  VLOG(1) << "Requesting a restart with PID " << getpid()
-          << " and command line: " << cmd_line_str;
-  job_restart_request_ = new JobRestartRequest(getpid(), cmd_line_str);
-}
-
-std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
-    const GURL& start_url,
-    const CommandLine& base_command_line,
-    CommandLine* command_line) {
-  static const char* kForwardSwitches[] = {
-      ::switches::kAllowWebUICompositing,
-      ::switches::kDeviceManagementUrl,
-      ::switches::kDisableAccelerated2dCanvas,
-      ::switches::kDisableAcceleratedOverflowScroll,
-      ::switches::kDisableAcceleratedPlugins,
-      ::switches::kDisableAcceleratedVideoDecode,
-      ::switches::kDisableEncryptedMedia,
-      ::switches::kDisableForceCompositingMode,
-      ::switches::kDisableGpuWatchdog,
-      ::switches::kDisableLoginAnimations,
-      ::switches::kDisableNonuniformGpuMemPolicy,
-      ::switches::kDisableOobeAnimation,
-      ::switches::kDisablePanelFitting,
-      ::switches::kDisableThreadedCompositing,
-      ::switches::kDisableSeccompFilterSandbox,
-      ::switches::kDisableSeccompSandbox,
-      ::switches::kEnableAcceleratedOverflowScroll,
-      ::switches::kEnableCompositingForFixedPosition,
-      ::switches::kEnableLogging,
-      ::switches::kEnablePinch,
-      ::switches::kEnableGestureTapHighlight,
-      ::switches::kEnableViewport,
-      ::switches::kForceDeviceScaleFactor,
-      ::switches::kGpuStartupDialog,
-      ::switches::kHasChromeOSKeyboard,
-      ::switches::kLoginProfile,
-      ::switches::kNaturalScrollDefault,
-      ::switches::kNoSandbox,
-      ::switches::kPpapiFlashArgs,
-      ::switches::kPpapiFlashInProcess,
-      ::switches::kPpapiFlashPath,
-      ::switches::kPpapiFlashVersion,
-      ::switches::kPpapiOutOfProcess,
-      ::switches::kRendererStartupDialog,
-#if defined(USE_XI2_MT)
-      ::switches::kTouchCalibration,
-#endif
-      ::switches::kTouchDevices,
-      ::switches::kTouchEvents,
-      ::switches::kTouchOptimizedUI,
-      ::switches::kOldCheckboxStyle,
-      ::switches::kUIEnablePartialSwap,
-      ::switches::kUIEnableThreadedCompositing,
-      ::switches::kUIPrioritizeInGpuProcess,
-#if defined(USE_CRAS)
-      ::switches::kUseCras,
-#endif
-      ::switches::kUseGL,
-      ::switches::kUserDataDir,
-      ::switches::kUseExynosVda,
-      ash::switches::kAshTouchHud,
-      ash::switches::kAuraLegacyPowerButton,
-      ash::switches::kAshEnableNewNetworkStatusArea,
-      cc::switches::kDisableThreadedAnimation,
-      cc::switches::kEnablePartialSwap,
-      chromeos::switches::kDbusStub,
-      gfx::switches::kEnableBrowserTextSubpixelPositioning,
-      gfx::switches::kEnableWebkitTextSubpixelPositioning,
-      views::corewm::switches::kNoDropShadows,
-      views::corewm::switches::kWindowAnimationsDisabled,
-  };
-  command_line->CopySwitchesFrom(base_command_line,
-                                 kForwardSwitches,
-                                 arraysize(kForwardSwitches));
-  command_line->AppendSwitch(::switches::kGuestSession);
-  command_line->AppendSwitch(::switches::kIncognito);
-  command_line->AppendSwitchASCII(::switches::kLoggingLevel,
-                                 kGuestModeLoggingLevel);
-
-  command_line->AppendSwitchASCII(::switches::kLoginUser, kGuestUserName);
-
-  if (start_url.is_valid())
-    command_line->AppendArg(start_url.spec());
-
-  // Override the home page.
-  command_line->AppendSwitchASCII(
-      ::switches::kHomePage,
-      GURL(chrome::kChromeUINewTabURL).spec());
-
-  std::string cmd_line_str = command_line->GetCommandLineString();
-  // Special workaround for the arguments that should be quoted.
-  // Copying switches won't be needed when Guest mode won't need restart
-  // http://crosbug.com/6924
-  if (base_command_line.HasSwitch(::switches::kRegisterPepperPlugins)) {
-    cmd_line_str += base::StringPrintf(
-        kSwitchFormatString,
-        ::switches::kRegisterPepperPlugins,
-        base_command_line.GetSwitchValueNative(
-            ::switches::kRegisterPepperPlugins).c_str());
-  }
-
-  return cmd_line_str;
+  RestartChrome(cmd_line_str);
 }
 
 void LoginUtilsImpl::SetFirstLoginPrefs(PrefService* prefs) {
@@ -912,7 +718,7 @@ class WarmingObserver : public NetworkLibrary::NetworkManagerObserver,
  public:
   WarmingObserver()
       : url_request_context_getter_(NULL) {
-    NetworkLibrary *netlib = CrosLibrary::Get()->GetNetworkLibrary();
+    NetworkLibrary* netlib = CrosLibrary::Get()->GetNetworkLibrary();
     netlib->AddNetworkManagerObserver(this);
     // During tests, the browser_process may not be initialized yet causing
     // this to fail.
@@ -965,7 +771,7 @@ class WarmingObserver : public NetworkLibrary::NetworkManagerObserver,
 };
 
 void LoginUtilsImpl::PrewarmAuthentication() {
-  NetworkLibrary *network = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* network = CrosLibrary::Get()->GetNetworkLibrary();
   if (network->Connected()) {
     const int kConnectionsNeeded = 1;
     chrome_browser_net::PreconnectOnUIThread(
