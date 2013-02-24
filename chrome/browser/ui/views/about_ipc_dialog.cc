@@ -96,7 +96,7 @@ void InitDialog(HWND hwnd) {
     (*i->second)(&name, NULL, NULL);
     if (name.empty())
       continue;  // Will happen if the message file isn't included above.
-    std::wstring wname = UTF8ToWide(name);
+    std::wstring wname = base::UTF8ToWide(name);
 
     int index = messages->InsertItem(
         LVIF_TEXT | LVIF_PARAM, 0, wname.c_str(), 0, 0, 0, i->first);
@@ -304,14 +304,14 @@ void AboutIPCDialog::Log(const IPC::LogData& data) {
 
   message_list_.SetItemText(index, kTimeColumn, sent_str.c_str());
   message_list_.SetItemText(index, kChannelColumn,
-                            ASCIIToWide(data.channel).c_str());
+                            base::ASCIIToWide(data.channel).c_str());
 
   std::string message_name;
   IPC::Logging::GetMessageText(data.type, &message_name, NULL, NULL);
   message_list_.SetItemText(index, kMessageColumn,
-                            UTF8ToWide(message_name).c_str());
+                            base::UTF8ToWide(message_name).c_str());
   message_list_.SetItemText(index, kFlagsColumn,
-                            UTF8ToWide(data.flags).c_str());
+                            base::UTF8ToWide(data.flags).c_str());
 
   int64 time_to_send = (base::Time::FromInternalValue(data.receive) -
       sent).InMilliseconds();
@@ -327,7 +327,7 @@ void AboutIPCDialog::Log(const IPC::LogData& data) {
   message_list_.SetItemText(index, kProcessColumn, temp.c_str());
 
   message_list_.SetItemText(index, kParamsColumn,
-                            UTF8ToWide(data.params).c_str());
+                            base::UTF8ToWide(data.params).c_str());
   message_list_.EnsureVisible(index, FALSE);
 }
 

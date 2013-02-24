@@ -100,7 +100,7 @@ bool TtsPlatformImplWin::Speak(
 
   // TODO(dmazzoni): convert SSML to SAPI xml. http://crbug.com/88072
 
-  utterance_ = UTF8ToWide(src_utterance);
+  utterance_ = base::UTF8ToWide(src_utterance);
   utterance_id_ = utterance_id;
   char_position_ = 0;
   std::wstring merged_utterance = prefix + utterance_ + suffix;

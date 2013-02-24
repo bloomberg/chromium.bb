@@ -15,7 +15,7 @@ bool LoginsTable::AddIE7Login(const IE7PasswordInfo& info) {
       "INSERT OR REPLACE INTO ie7_logins "
       "(url_hash, password_value, date_created) "
       "VALUES (?,?,?)"));
-  s.BindString(0, WideToUTF8(info.url_hash));
+  s.BindString(0, base::WideToUTF8(info.url_hash));
   s.BindBlob(1, &info.encrypted_data.front(),
              static_cast<int>(info.encrypted_data.size()));
   s.BindInt64(2, info.date_created.ToTimeT());
@@ -27,7 +27,7 @@ bool LoginsTable::RemoveIE7Login(const IE7PasswordInfo& info) {
   // Remove a login by UNIQUE-constrained fields.
   sql::Statement s(db_->GetUniqueStatement(
       "DELETE FROM ie7_logins WHERE url_hash = ?"));
-  s.BindString(0, WideToUTF8(info.url_hash));
+  s.BindString(0, base::WideToUTF8(info.url_hash));
 
   return s.Run();
 }

@@ -167,7 +167,7 @@ class DomCheckerTest : public UITest {
     if (!succeeded)
       return false;
 
-    std::string json = WideToUTF8(json_wide);
+    std::string json = base::WideToUTF8(json_wide);
     JSONStringValueSerializer deserializer(json);
     scoped_ptr<Value> value(deserializer.Deserialize(NULL, NULL));
 

@@ -12,10 +12,10 @@ bool EqualBookmarkEntry(const ProfileWriter::BookmarkEntry& entry,
   if (expected.in_toolbar != entry.in_toolbar ||
       expected.path_size != entry.path.size() ||
       expected.url != entry.url.spec() ||
-      WideToUTF16Hack(expected.title) != entry.title)
+      base::WideToUTF16Hack(expected.title) != entry.title)
     return false;
   for (size_t i = 0; i < expected.path_size; ++i) {
-    if (WideToUTF16Hack(expected.path[i]) != entry.path[i])
+    if (base::WideToUTF16Hack(expected.path[i]) != entry.path[i])
       return false;
   }
   return true;

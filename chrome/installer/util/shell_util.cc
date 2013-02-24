@@ -370,11 +370,12 @@ class RegistryEntry {
     // Note: not using CommandLine since it has ambiguous rules for quoting
     // strings.
     entries->push_back(new RegistryEntry(install_info, kReinstallCommand,
-        quoted_exe_path + L" --" + ASCIIToWide(switches::kMakeDefaultBrowser)));
+        quoted_exe_path + L" --" +
+        base::ASCIIToWide(switches::kMakeDefaultBrowser)));
     entries->push_back(new RegistryEntry(install_info, L"HideIconsCommand",
-        quoted_exe_path + L" --" + ASCIIToWide(switches::kHideIcons)));
+        quoted_exe_path + L" --" + base::ASCIIToWide(switches::kHideIcons)));
     entries->push_back(new RegistryEntry(install_info, L"ShowIconsCommand",
-        quoted_exe_path + L" --" + ASCIIToWide(switches::kShowIcons)));
+        quoted_exe_path + L" --" + base::ASCIIToWide(switches::kShowIcons)));
     entries->push_back(new RegistryEntry(install_info, L"IconsVisible", 1));
 
     // Register with Default Programs.

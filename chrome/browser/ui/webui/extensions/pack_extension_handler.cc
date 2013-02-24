@@ -119,9 +119,9 @@ void PackExtensionHandler::HandlePackMessage(const ListValue* args) {
   int run_flags = static_cast<int>(flags_double);
 
   base::FilePath root_directory =
-      base::FilePath::FromWStringHack(UTF8ToWide(extension_path_));
+      base::FilePath::FromWStringHack(base::UTF8ToWide(extension_path_));
   base::FilePath key_file =
-      base::FilePath::FromWStringHack(UTF8ToWide(private_key_path_));
+      base::FilePath::FromWStringHack(base::UTF8ToWide(private_key_path_));
 
   if (root_directory.empty()) {
     if (extension_path_.empty()) {

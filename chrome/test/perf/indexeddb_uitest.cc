@@ -72,7 +72,7 @@ class IndexedDBTest : public UIPerfTest {
     if (!succeeded)
       return false;
 
-    std::string json = WideToUTF8(json_wide);
+    std::string json = base::WideToUTF8(json_wide);
     return JsonDictionaryToMap(json, results);
   }
 

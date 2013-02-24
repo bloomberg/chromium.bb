@@ -47,6 +47,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
+using base::WideToUTF16;
 using content::RenderViewHost;
 using content::RenderViewHostTester;
 using content::WebContents;

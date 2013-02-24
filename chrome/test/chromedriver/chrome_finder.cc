@@ -29,7 +29,7 @@ void GetApplicationDirs(std::vector<base::FilePath>* locations) {
   scoped_ptr<base::Environment> env(base::Environment::Create());
   std::string home_dir;
   if (env->GetVar("userprofile", &home_dir)) {
-    base::FilePath default_location(UTF8ToWide(home_dir));
+    base::FilePath default_location(base::UTF8ToWide(home_dir));
     if (base::win::GetVersion() < base::win::VERSION_VISTA) {
       default_location = default_location.Append(
           L"Local Settings\\Application Data");
@@ -42,9 +42,9 @@ void GetApplicationDirs(std::vector<base::FilePath>* locations) {
   // Add the system-level location.
   std::string program_dir;
   if (env->GetVar("ProgramFiles", &program_dir))
-    locations->push_back(base::FilePath(UTF8ToWide(program_dir)));
+    locations->push_back(base::FilePath(base::UTF8ToWide(program_dir)));
   if (env->GetVar("ProgramFiles(x86)", &program_dir))
-    locations->push_back(base::FilePath(UTF8ToWide(program_dir)));
+    locations->push_back(base::FilePath(base::UTF8ToWide(program_dir)));
 }
 #elif defined(OS_LINUX)
 void GetApplicationDirs(std::vector<base::FilePath>* locations) {

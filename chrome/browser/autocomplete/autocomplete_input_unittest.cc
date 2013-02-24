@@ -106,7 +106,7 @@ TEST(AutocompleteInputTest, InputType) {
     { ASCIIToUTF16("127.0.1"), AutocompleteInput::UNKNOWN },
     { ASCIIToUTF16("127.0.1/"), AutocompleteInput::URL },
     { ASCIIToUTF16("browser.tabs.closeButtons"), AutocompleteInput::UNKNOWN },
-    { WideToUTF16(L"\u6d4b\u8bd5"), AutocompleteInput::UNKNOWN },
+    { base::WideToUTF16(L"\u6d4b\u8bd5"), AutocompleteInput::UNKNOWN },
     { ASCIIToUTF16("[2001:]"), AutocompleteInput::QUERY },
     { ASCIIToUTF16("[2001:dB8::1]"), AutocompleteInput::URL },
     { ASCIIToUTF16("192.168.0.256"), AutocompleteInput::QUERY },
@@ -150,8 +150,9 @@ TEST(AutocompleteInputTest, InputTypeWithDesiredTLD) {
 // This tests for a regression where certain input in the omnibox caused us to
 // crash. As long as the test completes without crashing, we're fine.
 TEST(AutocompleteInputTest, InputCrash) {
-  AutocompleteInput input(WideToUTF16(L"\uff65@s"), string16::npos, string16(),
-                          true, false, true, AutocompleteInput::ALL_MATCHES);
+  AutocompleteInput input(base::WideToUTF16(L"\uff65@s"), string16::npos,
+                          string16(), true, false, true,
+                          AutocompleteInput::ALL_MATCHES);
 }
 
 TEST(AutocompleteInputTest, ParseForEmphasizeComponent) {
@@ -170,7 +171,7 @@ TEST(AutocompleteInputTest, ParseForEmphasizeComponent) {
     { ASCIIToUTF16("http://foo/bar baz"), Component(0, 4), Component(7, 3) },
     { ASCIIToUTF16("link:foo.com"), Component(0, 4), kInvalidComponent },
     { ASCIIToUTF16("www.foo.com:81"), kInvalidComponent, Component(0, 11) },
-    { WideToUTF16(L"\u6d4b\u8bd5"), kInvalidComponent, Component(0, 2) },
+    { base::WideToUTF16(L"\u6d4b\u8bd5"), kInvalidComponent, Component(0, 2) },
     { ASCIIToUTF16("view-source:http://www.foo.com/"), Component(12, 4),
         Component(19, 11) },
     { ASCIIToUTF16("view-source:https://example.com/"),

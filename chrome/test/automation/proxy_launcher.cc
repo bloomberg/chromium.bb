@@ -443,7 +443,7 @@ bool ProxyLauncher::LaunchBrowserHelper(const LaunchState& state,
   const char* browser_wrapper = getenv("BROWSER_WRAPPER");
   if (browser_wrapper) {
 #if defined(OS_WIN)
-    command_line.PrependWrapper(ASCIIToWide(browser_wrapper));
+    command_line.PrependWrapper(base::ASCIIToWide(browser_wrapper));
 #elif defined(OS_POSIX)
     command_line.PrependWrapper(browser_wrapper);
 #endif

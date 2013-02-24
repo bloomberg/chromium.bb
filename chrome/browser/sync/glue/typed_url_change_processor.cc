@@ -168,7 +168,7 @@ bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
       return false;
     }
 
-    create_node.SetTitle(UTF8ToWide(tag));
+    create_node.SetTitle(base::UTF8ToWide(tag));
     model_associator_->WriteToSyncNode(url, visit_vector, &create_node);
   }
   return true;

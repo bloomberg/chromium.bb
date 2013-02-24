@@ -2100,7 +2100,7 @@ void ExecuteCodeInTabFunction::DidLoadAndLocalizeFile(bool success,
         resource_.relative_path().value());
 #elif defined(OS_WIN)
     error_ = ErrorUtils::FormatErrorMessage(keys::kLoadFileError,
-        WideToUTF8(resource_.relative_path().value()));
+        base::WideToUTF8(resource_.relative_path().value()));
 #endif  // OS_WIN
     SendResponse(false);
   }

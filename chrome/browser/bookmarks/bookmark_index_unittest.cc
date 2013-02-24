@@ -220,7 +220,7 @@ TEST_F(BookmarkIndexTest, HonorMax) {
 // than the upper case string no match positions are returned.
 TEST_F(BookmarkIndexTest, EmptyMatchOnMultiwideLowercaseString) {
   const BookmarkNode* n1 = model_->AddURL(model_->other_node(), 0,
-                                          WideToUTF16(L"\u0130 i"),
+                                          base::WideToUTF16(L"\u0130 i"),
                                           GURL("http://www.google.com"));
 
   std::vector<bookmark_utils::TitleMatch> matches;

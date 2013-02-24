@@ -61,7 +61,7 @@ int TabProxy::FindInPage(const std::wstring& search_string,
     return -1;
 
   AutomationMsg_Find_Params params;
-  params.search_string = WideToUTF16Hack(search_string);
+  params.search_string = base::WideToUTF16Hack(search_string);
   params.find_next = find_next;
   params.match_case = (match_case == CASE_SENSITIVE);
   params.forward = (forward == FWD);
@@ -182,7 +182,7 @@ bool TabProxy::ExecuteAndExtractString(const std::wstring& frame_xpath,
     succeeded = value->GetAsString(&read_value);
     if (succeeded) {
       // TODO(viettrungluu): remove conversion. (But should |jscript| be UTF-8?)
-      *string_value = UTF16ToWideHack(read_value);
+      *string_value = base::UTF16ToWideHack(read_value);
     }
   }
   return succeeded;

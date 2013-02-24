@@ -54,7 +54,7 @@ static string16 GetGroupName(const webkit::WebPluginInfo& plugin) {
 #if defined(OS_POSIX)
   return UTF8ToUTF16(path);
 #elif defined(OS_WIN)
-  return WideToUTF16(path);
+  return base::WideToUTF16(path);
 #endif
 }
 

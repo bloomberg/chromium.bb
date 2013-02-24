@@ -211,7 +211,7 @@ void SavePackageFilePicker::FileSelected(const base::FilePath& path,
 #if defined(OS_POSIX)
     std::string path_string = path.DirName().value();
 #elif defined(OS_WIN)
-    std::string path_string = WideToUTF8(path.DirName().value());
+    std::string path_string = base::WideToUTF8(path.DirName().value());
 #endif
     // If user change the default saving directory, we will remember it just
     // like IE and FireFox.

@@ -779,7 +779,8 @@ class OmniboxViewTest : public InProcessBrowserTest,
     // Keyword should also be accepted by typing an ideographic space.
     omnibox_view->OnBeforePossibleChange();
     omnibox_view->SetWindowTextAndCaretPos(search_keyword +
-        WideToUTF16(L"\x3000"), search_keyword.length() + 1, false, false);
+        base::WideToUTF16(L"\x3000"), search_keyword.length() + 1, false,
+        false);
     omnibox_view->OnAfterPossibleChange();
     ASSERT_FALSE(omnibox_view->model()->is_keyword_hint());
     ASSERT_EQ(search_keyword, omnibox_view->model()->keyword());

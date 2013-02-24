@@ -154,7 +154,7 @@ void CheckUserDataDirPolicy(base::FilePath* user_data_dir) {
   // we don't have to try to load HKCU.
   const char* key_name_ascii = (is_chrome_frame ? policy::key::kGCFUserDataDir :
                                 policy::key::kUserDataDir);
-  std::wstring key_name(ASCIIToWide(key_name_ascii));
+  std::wstring key_name(base::ASCIIToWide(key_name_ascii));
   if (LoadUserDataDirPolicyFromRegistry(HKEY_LOCAL_MACHINE, key_name,
                                         user_data_dir) ||
       LoadUserDataDirPolicyFromRegistry(HKEY_CURRENT_USER, key_name,

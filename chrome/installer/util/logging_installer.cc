@@ -117,7 +117,7 @@ base::FilePath GetLogFilePath(const installer::MasterPreferences& prefs) {
   std::string path;
   prefs.GetString(installer::master_preferences::kLogFile, &path);
   if (!path.empty()) {
-    return base::FilePath(UTF8ToWide(path));
+    return base::FilePath(base::UTF8ToWide(path));
   }
 
   std::wstring log_filename = prefs.install_chrome_frame() ?

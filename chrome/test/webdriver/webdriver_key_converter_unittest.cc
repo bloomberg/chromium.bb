@@ -140,9 +140,10 @@ TEST(WebDriverKeyConverter, WebDriverSpecialNonCharKey) {
 TEST(WebDriverKeyConverter, FrenchKeyOnEnglishLayout) {
   WebKeyEvent event_array[] = {
       CreateKeyDownEvent(ui::VKEY_UNKNOWN, 0),
-      CreateCharEvent(WideToUTF8(L"\u00E9"), WideToUTF8(L"\u00E9"), 0),
+      CreateCharEvent(base::WideToUTF8(L"\u00E9"),
+                      base::WideToUTF8(L"\u00E9"), 0),
       CreateKeyUpEvent(ui::VKEY_UNKNOWN, 0)};
-  CheckEventsReleaseModifiers(WideToUTF16(L"\u00E9"),
+  CheckEventsReleaseModifiers(base::WideToUTF16(L"\u00E9"),
       event_array, arraysize(event_array));
 }
 

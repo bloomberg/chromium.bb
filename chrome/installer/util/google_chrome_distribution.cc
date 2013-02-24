@@ -300,12 +300,12 @@ bool GoogleChromeDistribution::BuildUninstallMetricsString(
        iter.Advance()) {
     has_values = true;
     metrics->append(L"&");
-    metrics->append(UTF8ToWide(iter.key()));
+    metrics->append(base::UTF8ToWide(iter.key()));
     metrics->append(L"=");
 
     std::string value;
     iter.value().GetAsString(&value);
-    metrics->append(UTF8ToWide(value));
+    metrics->append(base::UTF8ToWide(value));
   }
 
   return has_values;
@@ -382,7 +382,8 @@ void GoogleChromeDistribution::DoPostUninstallOperations(
   iexplore = iexplore.AppendASCII("iexplore.exe");
 
   string16 command = iexplore.value() + L" " + GetUninstallSurveyUrl() +
-      L"&" + kVersionParam + L"=" + UTF8ToWide(version.GetString()) + L"&" +
+      L"&" + kVersionParam + L"=" +
+      base::UTF8ToWide(version.GetString()) + L"&" +
       kOSParam + L"=" + os_version;
 
   string16 uninstall_metrics;
@@ -660,16 +661,18 @@ bool GoogleChromeDistribution::GetExperimentDetails(
 
   string16 locale;
   GoogleUpdateSettings::GetLanguage(&locale);
-  if (locale.empty() || (locale == ASCIIToWide("en")))
-    locale = ASCIIToWide("en-US");
+  if (locale.empty() || (locale == base::ASCIIToWide("en")))
+    locale = base::ASCIIToWide("en-US");
 
   string16 brand;
-  if (!GoogleUpdateSettings::GetBrand(&brand))
-    brand = ASCIIToWide("");  // Could still be viable for catch-all rules.
+  if (!GoogleUpdateSettings::GetBrand(&brand)) {
+    // Could still be viable for catch-all rules.
+    brand = base::ASCIIToWide("");
+  }
 
   for (int i = 0; i < arraysize(kExperiments); ++i) {
     if (kExperiments[i].locale != locale &&
-        kExperiments[i].locale != ASCIIToWide("*"))
+        kExperiments[i].locale != base::ASCIIToWide("*"))
       continue;
 
     std::vector<string16> brand_codes;
@@ -808,7 +811,7 @@ void GoogleChromeDistribution::LaunchUserExperiment(
   cmd_line.AppendSwitchASCII(installer::switches::kInactiveUserToast,
                              base::IntToString(flavor));
   cmd_line.AppendSwitchASCII(installer::switches::kExperimentGroup,
-                             WideToASCII(base_group));
+                             base::WideToASCII(base_group));
   LaunchSetup(&cmd_line, product, system_level);
 }
 

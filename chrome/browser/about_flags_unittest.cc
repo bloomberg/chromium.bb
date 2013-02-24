@@ -251,7 +251,7 @@ TEST_F(AboutFlagsTest, CheckValues) {
 #if defined(OS_WIN)
   EXPECT_EQ(std::wstring::npos,
             command_line.GetCommandLineString().find(
-                ASCIIToWide(switch1_with_equals)));
+                base::ASCIIToWide(switch1_with_equals)));
 #else
   EXPECT_EQ(std::string::npos,
             command_line.GetCommandLineString().find(switch1_with_equals));
@@ -264,7 +264,7 @@ TEST_F(AboutFlagsTest, CheckValues) {
 #if defined(OS_WIN)
   EXPECT_NE(std::wstring::npos,
             command_line.GetCommandLineString().find(
-                ASCIIToWide(switch2_with_equals)));
+                base::ASCIIToWide(switch2_with_equals)));
 #else
   EXPECT_NE(std::string::npos,
             command_line.GetCommandLineString().find(switch2_with_equals));

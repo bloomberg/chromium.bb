@@ -38,7 +38,7 @@ enum {
 MemoryDetails::MemoryDetails()
     : user_metrics_mode_(UPDATE_USER_METRICS) {
   static const std::wstring google_browser_name =
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+      base::UTF16ToWide(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   struct {
     const wchar_t* name;
     const wchar_t* process_name;
@@ -122,7 +122,7 @@ void MemoryDetails::CollectProcessData(
       if (index2 == CHROME_BROWSER || index2 == CHROME_NACL_PROCESS) {
         chrome::VersionInfo version_info;
         if (version_info.is_valid())
-          info.version = ASCIIToWide(version_info.Version());
+          info.version = base::ASCIIToWide(version_info.Version());
         // Check if this is one of the child processes whose data we collected
         // on the IO thread, and if so copy over that data.
         for (size_t child = 0; child < child_info.size(); child++) {

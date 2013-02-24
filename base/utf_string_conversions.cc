@@ -8,10 +8,7 @@
 #include "base/string_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
 
-using base::PrepareForUTF8Output;
-using base::PrepareForUTF16Or32Output;
-using base::ReadUnicodeCharacter;
-using base::WriteUnicodeCharacter;
+namespace base {
 
 namespace {
 
@@ -63,7 +60,7 @@ bool UTF8ToWide(const char* src, size_t src_len, std::wstring* output) {
   return ConvertUnicode(src, src_len, output);
 }
 
-std::wstring UTF8ToWide(const base::StringPiece& utf8) {
+std::wstring UTF8ToWide(const StringPiece& utf8) {
   std::wstring ret;
   UTF8ToWide(utf8.data(), utf8.length(), &ret);
   return ret;
@@ -133,7 +130,7 @@ bool UTF8ToUTF16(const char* src, size_t src_len, string16* output) {
   return ConvertUnicode(src, src_len, output);
 }
 
-string16 UTF8ToUTF16(const base::StringPiece& utf8) {
+string16 UTF8ToUTF16(const StringPiece& utf8) {
   string16 ret;
   // Ignore the success flag of this call, it will do the best it can for
   // invalid input, which is what we want here.
@@ -161,7 +158,7 @@ bool UTF8ToUTF16(const char* src, size_t src_len, string16* output) {
   return UTF8ToWide(src, src_len, output);
 }
 
-string16 UTF8ToUTF16(const base::StringPiece& utf8) {
+string16 UTF8ToUTF16(const StringPiece& utf8) {
   return UTF8ToWide(utf8);
 }
 
@@ -175,12 +172,14 @@ std::string UTF16ToUTF8(const string16& utf16) {
 
 #endif
 
-std::wstring ASCIIToWide(const base::StringPiece& ascii) {
+std::wstring ASCIIToWide(const StringPiece& ascii) {
   DCHECK(IsStringASCII(ascii)) << ascii;
   return std::wstring(ascii.begin(), ascii.end());
 }
 
-string16 ASCIIToUTF16(const base::StringPiece& ascii) {
+string16 ASCIIToUTF16(const StringPiece& ascii) {
   DCHECK(IsStringASCII(ascii)) << ascii;
   return string16(ascii.begin(), ascii.end());
 }
+
+}  // namespace base

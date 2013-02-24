@@ -89,8 +89,8 @@ content::WebUIDataSource* CreateVersionUIDataSource(Profile* profile) {
                                   IDS_ABOUT_VERSION_COMMAND_LINE);
 
 #if defined(OS_WIN)
-  html_source->AddString("command_line",
-      WideToUTF16(CommandLine::ForCurrentProcess()->GetCommandLineString()));
+  html_source->AddString("command_line", base::WideToUTF16(
+      CommandLine::ForCurrentProcess()->GetCommandLineString()));
 #elif defined(OS_POSIX)
   std::string command_line = "";
   typedef std::vector<std::string> ArgvList;

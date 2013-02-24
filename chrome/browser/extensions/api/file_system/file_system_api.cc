@@ -231,7 +231,7 @@ bool GetFileTypesFromAcceptOption(
       std::string extension = *iter;
       StringToLowerASCII(&extension);
 #if defined(OS_WIN)
-      extension_set.insert(UTF8ToWide(*iter));
+      extension_set.insert(base::UTF8ToWide(*iter));
 #else
       extension_set.insert(*iter);
 #endif

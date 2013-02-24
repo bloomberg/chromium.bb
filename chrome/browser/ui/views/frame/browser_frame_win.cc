@@ -518,7 +518,7 @@ void BrowserFrameWin::GetMetroCurrentTabInfo(WPARAM w_param) {
   DCHECK(current_tab);
 
   current_tab_info->url = base::win::LocalAllocAndCopyString(
-      UTF8ToWide(current_tab->GetURL().spec()));
+      base::UTF8ToWide(current_tab->GetURL().spec()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

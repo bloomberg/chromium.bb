@@ -300,7 +300,7 @@ TEST_F(ExtensionFileUtilTest, ExtensionURLToRelativeFilePath) {
     base::FilePath expected_path(test_cases[i].expected_relative_path);
 #elif defined(OS_WIN)
     base::FilePath expected_path(
-        UTF8ToWide(test_cases[i].expected_relative_path));
+        base::UTF8ToWide(test_cases[i].expected_relative_path));
 #endif
 
     base::FilePath actual_path =

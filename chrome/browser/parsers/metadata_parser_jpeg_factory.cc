@@ -16,7 +16,7 @@ bool MetadataParserJpegFactory::CanParse(const base::FilePath& path,
                                          char* bytes,
                                          int bytes_size) {
 #if defined(OS_WIN)
-  base::FilePath::StringType ext = UTF8ToWide(std::string(".jpg"));
+  base::FilePath::StringType ext = base::UTF8ToWide(std::string(".jpg"));
 #elif defined(OS_POSIX)
   base::FilePath::StringType ext = ".jpg";
 #endif

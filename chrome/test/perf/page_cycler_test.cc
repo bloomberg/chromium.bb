@@ -205,7 +205,7 @@ class PageCyclerTest : public UIPerfTest {
 
     std::string cookie;
     ASSERT_TRUE(tab->GetCookieByName(test_url, "__pc_pages", &cookie));
-    pages->assign(UTF8ToWide(cookie));
+    pages->assign(base::UTF8ToWide(cookie));
     ASSERT_FALSE(pages->empty());
 
     // Wait for the report.html to be loaded.
@@ -279,7 +279,7 @@ class PageCyclerTest : public UIPerfTest {
         L"window.domAutomationController.send("
         L"window.domAutomationController.getHistogram ? "
         L"window.domAutomationController.getHistogram(\"" +
-        base::SysUTF8ToWide(name) + L"\") : '')",
+        base::Sysbase::UTF8ToWide(name) + L"\") : '')",
         &whistogram));
     std::string histogram = base::SysWideToNativeMB(whistogram);
     printf("HISTOGRAM %s: %s = %s %s\n",

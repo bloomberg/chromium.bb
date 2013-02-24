@@ -159,15 +159,15 @@ static PasswordForm* CreatePasswordFormFromData(
   if (form_data.action)
     form->action = GURL(form_data.action);
   if (form_data.submit_element)
-    form->submit_element = WideToUTF16(form_data.submit_element);
+    form->submit_element = base::WideToUTF16(form_data.submit_element);
   if (form_data.username_element)
-    form->username_element = WideToUTF16(form_data.username_element);
+    form->username_element = base::WideToUTF16(form_data.username_element);
   if (form_data.password_element)
-    form->password_element = WideToUTF16(form_data.password_element);
+    form->password_element = base::WideToUTF16(form_data.password_element);
   if (form_data.username_value) {
-    form->username_value = WideToUTF16(form_data.username_value);
+    form->username_value = base::WideToUTF16(form_data.username_value);
     if (form_data.password_value)
-      form->password_value = WideToUTF16(form_data.password_value);
+      form->password_value = base::WideToUTF16(form_data.password_value);
   } else {
     form->blacklisted_by_user = true;
   }
@@ -204,16 +204,16 @@ static void CheckFormsAgainstExpectations(
         << test_label;
     EXPECT_EQ(GURL(expectation->origin), form->origin) << test_label;
     EXPECT_EQ(GURL(expectation->action), form->action) << test_label;
-    EXPECT_EQ(WideToUTF16(expectation->submit_element), form->submit_element)
-        << test_label;
-    EXPECT_EQ(WideToUTF16(expectation->username_element),
+    EXPECT_EQ(base::WideToUTF16(expectation->submit_element),
+              form->submit_element) << test_label;
+    EXPECT_EQ(base::WideToUTF16(expectation->username_element),
               form->username_element) << test_label;
-    EXPECT_EQ(WideToUTF16(expectation->password_element),
+    EXPECT_EQ(base::WideToUTF16(expectation->password_element),
               form->password_element) << test_label;
     if (expectation->username_value) {
-      EXPECT_EQ(WideToUTF16(expectation->username_value),
+      EXPECT_EQ(base::WideToUTF16(expectation->username_value),
                 form->username_value) << test_label;
-      EXPECT_EQ(WideToUTF16(expectation->password_value),
+      EXPECT_EQ(base::WideToUTF16(expectation->password_value),
                 form->password_value) << test_label;
     } else {
       EXPECT_TRUE(form->blacklisted_by_user) << test_label;
@@ -291,9 +291,9 @@ TEST_F(PasswordStoreMacInternalsTest, TestKeychainToFormTranslation) {
     EXPECT_EQ(std::string(expected[i].signon_realm), form.signon_realm)
         << "In iteration " << i;
     if (expected[i].username) {
-      EXPECT_EQ(WideToUTF16(expected[i].username), form.username_value)
+      EXPECT_EQ(base::WideToUTF16(expected[i].username), form.username_value)
           << "In iteration " << i;
-      EXPECT_EQ(WideToUTF16(expected[i].password), form.password_value)
+      EXPECT_EQ(base::WideToUTF16(expected[i].password), form.password_value)
           << "In iteration " << i;
       EXPECT_FALSE(form.blacklisted_by_user) << "In iteration " << i;
     } else {

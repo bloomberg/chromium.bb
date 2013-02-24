@@ -161,17 +161,17 @@ string16 GetSwitchValueString16(const CommandLine& command_line,
 
 void CloudPrintDataSenderHelper::CallJavascriptFunction(
     const std::wstring& function_name) {
-  web_ui_->CallJavascriptFunction(WideToASCII(function_name));
+  web_ui_->CallJavascriptFunction(base::WideToASCII(function_name));
 }
 
 void CloudPrintDataSenderHelper::CallJavascriptFunction(
     const std::wstring& function_name, const Value& arg) {
-  web_ui_->CallJavascriptFunction(WideToASCII(function_name), arg);
+  web_ui_->CallJavascriptFunction(base::WideToASCII(function_name), arg);
 }
 
 void CloudPrintDataSenderHelper::CallJavascriptFunction(
     const std::wstring& function_name, const Value& arg1, const Value& arg2) {
-  web_ui_->CallJavascriptFunction(WideToASCII(function_name), arg1, arg2);
+  web_ui_->CallJavascriptFunction(base::WideToASCII(function_name), arg1, arg2);
 }
 
 void CloudPrintDataSenderHelper::CallJavascriptFunction(
@@ -180,7 +180,7 @@ void CloudPrintDataSenderHelper::CallJavascriptFunction(
     const Value& arg2,
     const Value& arg3) {
   web_ui_->CallJavascriptFunction(
-      WideToASCII(function_name), arg1, arg2, arg3);
+      base::WideToASCII(function_name), arg1, arg2, arg3);
 }
 
 // Clears out the pointer we're using to communicate.  Either routine is

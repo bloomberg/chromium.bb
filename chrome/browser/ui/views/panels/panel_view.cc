@@ -273,8 +273,9 @@ PanelView::PanelView(Panel* panel, const gfx::Rect& bounds)
 
 #if defined(OS_WIN)
   ui::win::SetAppIdForWindow(
-      ShellIntegration::GetAppModelIdForProfile(UTF8ToWide(panel->app_name()),
-                                                panel->profile()->GetPath()),
+      ShellIntegration::GetAppModelIdForProfile(
+          base::UTF8ToWide(panel->app_name()),
+          panel->profile()->GetPath()),
       chrome::HWNDForWidget(window_));
 #endif
 }

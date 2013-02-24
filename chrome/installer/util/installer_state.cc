@@ -599,7 +599,7 @@ bool InstallerState::IsChromeFrameRunning(
 
 base::FilePath InstallerState::GetInstallerDirectory(
     const Version& version) const {
-  return target_path().Append(ASCIIToWide(version.GetString()))
+  return target_path().Append(base::ASCIIToWide(version.GetString()))
       .Append(kInstallerDir);
 }
 
@@ -628,7 +628,7 @@ void InstallerState::GetExistingExeVersions(
     if (file_version_info) {
       string16 version_string = file_version_info->file_version();
       if (!version_string.empty() && IsStringASCII(version_string))
-        existing_versions->insert(WideToASCII(version_string));
+        existing_versions->insert(base::WideToASCII(version_string));
     }
   }
 }
@@ -656,7 +656,7 @@ void InstallerState::RemoveOldVersionDirectories(
   for (base::FilePath next_version = version_enum.Next(); !next_version.empty();
        next_version = version_enum.Next()) {
     base::FilePath dir_name(next_version.BaseName());
-    version = Version(WideToASCII(dir_name.value()));
+    version = Version(base::WideToASCII(dir_name.value()));
     // Delete the version folder if it is less than the new version and not
     // equal to the old version (if we have an old version).
     if (version.IsValid() &&

@@ -154,7 +154,7 @@ class FakeServerChange {
     std::string old_title = node.GetTitle();
     node.SetTitle(new_title);
     SetModified(id);
-    return UTF8ToWide(old_title);
+    return base::UTF8ToWide(old_title);
   }
 
   // Set a new parent and predecessor value.  Return the old parent id.
@@ -367,7 +367,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
       node.SetIsFolder(true);
       node.GetMutableEntryForTest()->Put(
           syncer::syncable::UNIQUE_SERVER_TAG, permanent_tags[i]);
-      node.SetTitle(UTF8ToWide(permanent_tags[i]));
+      node.SetTitle(base::UTF8ToWide(permanent_tags[i]));
       node.SetExternalId(0);
       last_child_id = node.GetId();
     }
@@ -529,7 +529,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     const BookmarkNode* bnode =
         model_associator_->GetChromeNodeFromSyncId(sync_id);
     ASSERT_TRUE(bnode);
-    EXPECT_EQ(bnode->GetTitle(), WideToUTF16Hack(title));
+    EXPECT_EQ(bnode->GetTitle(), base::WideToUTF16Hack(title));
   }
 
   void ExpectBrowserNodeURL(int64 sync_id, const std::string& url) {
@@ -1266,10 +1266,10 @@ void ProfileSyncServiceBookmarkTestWithData::PopulateFromTestData(
     if (item.url) {
       const base::Time add_time =
           start_time_ + base::TimeDelta::FromMinutes(*running_count);
-      model_->AddURLWithCreationTime(node, i, WideToUTF16Hack(item.title),
+      model_->AddURLWithCreationTime(node, i, base::WideToUTF16Hack(item.title),
                                      GURL(item.url), add_time);
     } else {
-      model_->AddFolder(node, i, WideToUTF16Hack(item.title));
+      model_->AddFolder(node, i, base::WideToUTF16Hack(item.title));
     }
     (*running_count)++;
   }
@@ -1289,7 +1289,7 @@ void ProfileSyncServiceBookmarkTestWithData::CompareWithTestData(
     const TestData& item = data[i];
     GURL url = GURL(item.url == NULL ? "" : item.url);
     BookmarkNode test_node(url);
-    test_node.SetTitle(WideToUTF16Hack(item.title));
+    test_node.SetTitle(base::WideToUTF16Hack(item.title));
     EXPECT_EQ(child_node->GetTitle(), test_node.GetTitle());
     if (item.url) {
       EXPECT_FALSE(child_node->is_folder());
@@ -1724,7 +1724,7 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData, UpdateDateAdded) {
   const BookmarkNode* node = model_->bookmark_bar_node()->GetChild(0);
   ASSERT_TRUE(node);
   EXPECT_TRUE(node->is_url());
-  EXPECT_EQ(WideToUTF16Hack(kTitle), node->GetTitle());
+  EXPECT_EQ(base::WideToUTF16Hack(kTitle), node->GetTitle());
   EXPECT_EQ(kUrl, node->url().possibly_invalid_spec());
   EXPECT_EQ(node->date_added(), base::Time::FromInternalValue(30));
 }
@@ -1823,7 +1823,7 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData, UpdateTransactionVersion) {
   // versions of others remain same.
   const BookmarkNode* changed_bookmark =
       model_->bookmark_bar_node()->GetChild(0);
-  model_->SetTitle(changed_bookmark, WideToUTF16Hack(L"test"));
+  model_->SetTitle(changed_bookmark, base::WideToUTF16Hack(L"test"));
   MessageLoop::current()->RunUntilIdle();
   GetTransactionVersions(model_->root_node(), &new_versions);
   EXPECT_EQ(initial_versions[model_->root_node()->id()] + 2,

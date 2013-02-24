@@ -1205,8 +1205,8 @@ TemplateURL* MakePrepopulatedTemplateURLFromPrepopulateEngine(
       alternate_urls.AppendString(std::string(engine.alternate_urls[i]));
   }
 
-  return MakePrepopulatedTemplateURL(profile, WideToUTF16(engine.name),
-      WideToUTF16(engine.keyword), engine.search_url, engine.suggest_url,
+  return MakePrepopulatedTemplateURL(profile, base::WideToUTF16(engine.name),
+      base::WideToUTF16(engine.keyword), engine.search_url, engine.suggest_url,
       engine.instant_url, engine.favicon_url, engine.encoding, alternate_urls,
       engine.search_terms_replacement_key, engine.id);
 }

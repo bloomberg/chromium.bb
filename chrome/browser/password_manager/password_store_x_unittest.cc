@@ -365,7 +365,7 @@ TEST_P(PasswordStoreXTest, Notifications) {
   done.Wait();
 
   // Change the password.
-  form->password_value = WideToUTF16(L"a different password");
+  form->password_value = base::WideToUTF16(L"a different password");
 
   const PasswordStoreChange expected_update_changes[] = {
     PasswordStoreChange(PasswordStoreChange::UPDATE, *form),

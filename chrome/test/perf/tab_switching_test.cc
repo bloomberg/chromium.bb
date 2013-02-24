@@ -50,7 +50,8 @@ class TabSwitchingUITest : public UIPerfTest {
     // Set the log file path for the browser test.
     scoped_ptr<base::Environment> env(base::Environment::Create());
 #if defined(OS_WIN)
-    env->SetVar(env_vars::kLogFileName, WideToUTF8(log_file_name_.value()));
+    env->SetVar(env_vars::kLogFileName,
+                base::WideToUTF8(log_file_name_.value()));
 #else
     env->SetVar(env_vars::kLogFileName, log_file_name_.value());
 #endif

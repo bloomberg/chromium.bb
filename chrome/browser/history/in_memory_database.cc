@@ -72,7 +72,7 @@ bool InMemoryDatabase::InitFromDisk(const base::FilePath& history_name) {
 #if defined(OS_POSIX)
   attach.BindString(0, history_name.value());
 #else
-  attach.BindString(0, WideToUTF8(history_name.value()));
+  attach.BindString(0, base::WideToUTF8(history_name.value()));
 #endif
   if (!attach.Run())
     return false;

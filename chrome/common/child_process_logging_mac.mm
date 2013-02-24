@@ -95,7 +95,7 @@ void SetClientId(const std::string& client_id) {
   base::strlcpy(g_client_id, str.c_str(), kClientIdSize);
     SetClientIdImpl(str, SetCrashKeyValue);
 
-  std::wstring wstr = ASCIIToWide(str);
+  std::wstring wstr = base::ASCIIToWide(str);
   GoogleUpdateSettings::SetMetricsId(wstr);
 }
 

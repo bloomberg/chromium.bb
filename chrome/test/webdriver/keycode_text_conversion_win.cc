@@ -31,7 +31,7 @@ std::string ConvertKeyCodeToText(ui::KeyboardCode key_code, int modifiers) {
     return "";
   } else {
     std::string text;
-    WideToUTF8(chars, code, &text);
+    base::WideToUTF8(chars, code, &text);
     return text;
   }
 }

@@ -669,7 +669,7 @@ bool GenerateAlternatePEFileVersion(const base::FilePath& original_file,
     return false;
   }
 
-  Version new_version(WideToASCII(ctx.new_version_str));
+  Version new_version(base::WideToASCII(ctx.new_version_str));
   GenerateSpecificPEFileVersion(original_file, target_file, new_version);
 
   return true;

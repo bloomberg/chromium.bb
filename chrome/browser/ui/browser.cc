@@ -428,7 +428,7 @@ Browser::Browser(const CreateParams& params)
   // name.  See http://crbug.com/7028.
   ui::win::SetAppIdForWindow(
       is_app() && !is_type_panel() ?
-      ShellIntegration::GetAppModelIdForProfile(UTF8ToWide(app_name_),
+      ShellIntegration::GetAppModelIdForProfile(base::UTF8ToWide(app_name_),
                                                 profile_->GetPath()) :
       ShellIntegration::GetChromiumModelIdForProfile(profile_->GetPath()),
       window()->GetNativeWindow());

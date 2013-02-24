@@ -701,7 +701,7 @@ void SetCrashKeyValue(const base::StringPiece& key,
     entry = it->second;
   }
 
-  entry->set(UTF8ToWide(key).data(), UTF8ToWide(value).data());
+  entry->set(base::UTF8ToWide(key).data(), base::UTF8ToWide(value).data());
 }
 
 void ClearCrashKeyValue(const base::StringPiece& key) {
@@ -743,8 +743,8 @@ bool WrapMessageBoxWithSEH(const wchar_t* text, const wchar_t* caption,
 // spawned and basically just shows the 'chrome has crashed' dialog if
 // the CHROME_CRASHED environment variable is present.
 bool ShowRestartDialogIfCrashed(bool* exit_now) {
-  if (!::GetEnvironmentVariableW(ASCIIToWide(env_vars::kShowRestart).c_str(),
-                                 NULL, 0)) {
+  if (!::GetEnvironmentVariableW(
+          base::ASCIIToWide(env_vars::kShowRestart).c_str(), NULL, 0)) {
     return false;
   }
 
@@ -757,12 +757,12 @@ bool ShowRestartDialogIfCrashed(bool* exit_now) {
   }
 
   DWORD len = ::GetEnvironmentVariableW(
-      ASCIIToWide(env_vars::kRestartInfo).c_str(), NULL, 0);
+      base::ASCIIToWide(env_vars::kRestartInfo).c_str(), NULL, 0);
   if (!len)
     return true;
 
   wchar_t* restart_data = new wchar_t[len + 1];
-  ::GetEnvironmentVariableW(ASCIIToWide(env_vars::kRestartInfo).c_str(),
+  ::GetEnvironmentVariableW(base::ASCIIToWide(env_vars::kRestartInfo).c_str(),
                             restart_data, len);
   restart_data[len] = 0;
   // The CHROME_RESTART var contains the dialog strings separated by '|'.
@@ -777,7 +777,7 @@ bool ShowRestartDialogIfCrashed(bool* exit_now) {
   // If the UI layout is right-to-left, we need to pass the appropriate MB_XXX
   // flags so that an RTL message box is displayed.
   UINT flags = MB_OKCANCEL | MB_ICONWARNING;
-  if (dlg_strings[2] == ASCIIToWide(env_vars::kRtlLocale))
+  if (dlg_strings[2] == base::ASCIIToWide(env_vars::kRtlLocale))
     flags |= MB_RIGHT | MB_RTLREADING;
 
   return WrapMessageBoxWithSEH(dlg_strings[1].c_str(), dlg_strings[0].c_str(),
@@ -804,7 +804,8 @@ extern "C" int __declspec(dllexport) CrashForException(
 // indicates whether policy data was successfully read. If it is true, |result|
 // contains the value set by policy.
 static bool MetricsReportingControlledByPolicy(bool* result) {
-  std::wstring key_name = UTF8ToWide(policy::key::kMetricsReportingEnabled);
+  std::wstring key_name =
+      base::UTF8ToWide(policy::key::kMetricsReportingEnabled);
   DWORD value = 0;
   base::win::RegKey hklm_policy_key(HKEY_LOCAL_MACHINE,
                                     policy::kRegistryMandatorySubKey, KEY_READ);
@@ -851,7 +852,7 @@ static void InitPipeNameEnvVar(bool is_per_user_install) {
   bool use_crash_service = !controlled_by_policy &&
       ((command.HasSwitch(switches::kNoErrorDialogs) ||
       GetEnvironmentVariable(
-          ASCIIToWide(env_vars::kHeadless).c_str(), NULL, 0)));
+          base::ASCIIToWide(env_vars::kHeadless).c_str(), NULL, 0)));
 
   std::wstring pipe_name;
   if (use_crash_service) {
@@ -887,7 +888,7 @@ static void InitPipeNameEnvVar(bool is_per_user_install) {
     pipe_name = kGoogleUpdatePipeName;
     pipe_name += user_sid;
   }
-  env->SetVar(kPipeNameVar, WideToASCII(pipe_name));
+  env->SetVar(kPipeNameVar, base::WideToASCII(pipe_name));
 }
 
 void InitCrashReporter() {
@@ -946,7 +947,7 @@ void InitCrashReporter() {
       InitDefaultCrashCallback(default_filter);
     return;
   }
-  std::wstring pipe_name = ASCIIToWide(pipe_name_ascii);
+  std::wstring pipe_name = base::ASCIIToWide(pipe_name_ascii);
 
 #ifdef _WIN64
   // The protocol for connecting to the out-of-process Breakpad crash

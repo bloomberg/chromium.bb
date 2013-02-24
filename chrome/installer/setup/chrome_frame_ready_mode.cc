@@ -215,7 +215,8 @@ InstallStatus ChromeFrameReadyModeEndTempOptOut(
   HKEY root = installer_state.root_key();
 
   std::wstring chrome_frame_ua_value_name(kChromeFramePrefix);
-  chrome_frame_ua_value_name += ASCIIToWide(installed_version.GetString());
+  chrome_frame_ua_value_name +=
+      base::ASCIIToWide(installed_version.GetString());
 
   // Store the Chrome Frame user agent string
   item_list->AddSetRegValueWorkItem(root, kPostPlatformUAKey,

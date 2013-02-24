@@ -225,7 +225,7 @@ void InstallUtil::GetChromeVersion(BrowserDistribution* dist,
   if (result == ERROR_SUCCESS && !version_str.empty()) {
     VLOG(1) << "Existing " << dist->GetAppShortCutName() << " version found "
             << version_str;
-    *version = Version(WideToASCII(version_str));
+    *version = Version(base::WideToASCII(version_str));
   } else {
     DCHECK_EQ(ERROR_FILE_NOT_FOUND, result);
     VLOG(1) << "No existing " << dist->GetAppShortCutName()
@@ -251,7 +251,7 @@ void InstallUtil::GetCriticalUpdateVersion(BrowserDistribution* dist,
   if (result == ERROR_SUCCESS && !version_str.empty()) {
     VLOG(1) << "Critical Update version for " << dist->GetAppShortCutName()
             << " found " << version_str;
-    *version = Version(WideToASCII(version_str));
+    *version = Version(base::WideToASCII(version_str));
   } else {
     DCHECK_EQ(ERROR_FILE_NOT_FOUND, result);
     VLOG(1) << "No existing " << dist->GetAppShortCutName()

@@ -390,7 +390,7 @@ TEST_F(SpellCheckTest, SpellCheckStrings_EN_US) {
     int misspelling_start;
     int misspelling_length;
     bool result = spell_check()->SpellCheckWord(
-        WideToUTF16(kTestCases[i].input).c_str(),
+        base::WideToUTF16(kTestCases[i].input).c_str(),
         static_cast<int>(input_length),
         0,
         &misspelling_start,
@@ -441,7 +441,7 @@ TEST_F(SpellCheckTest, SpellCheckSuggestions_EN_US) {
     int misspelling_start;
     int misspelling_length;
     bool result = spell_check()->SpellCheckWord(
-        WideToUTF16(kTestCases[i].input).c_str(),
+        base::WideToUTF16(kTestCases[i].input).c_str(),
         static_cast<int>(input_length),
         0,
         &misspelling_start,
@@ -454,8 +454,8 @@ TEST_F(SpellCheckTest, SpellCheckSuggestions_EN_US) {
     // Check if the suggested words occur.
     bool suggested_word_is_present = false;
     for (int j = 0; j < static_cast<int>(suggestions.size()); j++) {
-      if (suggestions.at(j).compare(WideToUTF16(kTestCases[i].suggested_word))
-          == 0) {
+      if (suggestions.at(j).compare(base::WideToUTF16(
+              kTestCases[i].suggested_word)) == 0) {
         suggested_word_is_present = true;
         break;
       }
@@ -799,7 +799,7 @@ TEST_F(SpellCheckTest, SpellCheckText) {
     int misspelling_start = 0;
     int misspelling_length = 0;
     bool result = spell_check()->SpellCheckWord(
-        WideToUTF16(kTestCases[i].input).c_str(),
+        base::WideToUTF16(kTestCases[i].input).c_str(),
         static_cast<int>(input_length),
         0,
         &misspelling_start,
@@ -880,7 +880,7 @@ TEST_F(SpellCheckTest, MisspelledWords) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
     ReinitializeSpellCheck(kTestCases[i].language);
 
-    string16 word(WideToUTF16(kTestCases[i].input));
+    string16 word(base::WideToUTF16(kTestCases[i].input));
     int word_length = static_cast<int>(word.length());
     int misspelling_start = 0;
     int misspelling_length = 0;

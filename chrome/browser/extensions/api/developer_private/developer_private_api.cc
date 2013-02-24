@@ -635,10 +635,10 @@ bool DeveloperPrivatePackDirectoryFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(2, &flags));
 
  base::FilePath root_directory =
-     base::FilePath::FromWStringHack(UTF8ToWide(item_path_str_));
+     base::FilePath::FromWStringHack(base::UTF8ToWide(item_path_str_));
 
  base::FilePath key_file =
-     base::FilePath::FromWStringHack(UTF8ToWide(key_path_str_));
+     base::FilePath::FromWStringHack(base::UTF8ToWide(key_path_str_));
 
   developer::PackDirectoryResponse response;
   if (root_directory.empty()) {

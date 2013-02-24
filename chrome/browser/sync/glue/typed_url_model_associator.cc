@@ -299,7 +299,7 @@ syncer::SyncError TypedUrlModelAssociator::DoAssociateModels() {
               model_type());
         }
 
-        node.SetTitle(UTF8ToWide(tag));
+        node.SetTitle(base::UTF8ToWide(tag));
         WriteToSyncNode(*ix, visits, &node);
       }
 

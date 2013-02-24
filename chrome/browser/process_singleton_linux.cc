@@ -302,9 +302,9 @@ void DisplayProfileInUseError(const std::string& lock_path,
       IDS_PROFILE_IN_USE_LINUX,
       base::IntToString16(pid),
       ASCIIToUTF16(hostname),
-      WideToUTF16(base::SysNativeMBToWide(lock_path)),
+      base::WideToUTF16(base::SysNativeMBToWide(lock_path)),
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-  LOG(ERROR) << base::SysWideToNativeMB(UTF16ToWide(error)).c_str();
+  LOG(ERROR) << base::SysWideToNativeMB(base::UTF16ToWide(error)).c_str();
   if (!g_disable_prompt) {
 #if defined(TOOLKIT_GTK)
     ProcessSingletonDialog::ShowAndRun(UTF16ToUTF8(error));

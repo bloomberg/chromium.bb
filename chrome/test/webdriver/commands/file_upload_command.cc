@@ -54,7 +54,7 @@ void FileUploadCommand::ExecutePost(Response* const response) {
   }
 
 #if defined(OS_WIN)
-  response->SetValue(new base::StringValue(WideToUTF8(upload.value())));
+  response->SetValue(new base::StringValue(base::WideToUTF8(upload.value())));
 #else
   response->SetValue(new base::StringValue(upload.value()));
 #endif

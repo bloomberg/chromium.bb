@@ -104,8 +104,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, AddUnicodeProfile) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   std::set<AutofillKey> keys;
-  keys.insert(AutofillKey(WideToUTF16(L"Sigur R\u00F3s"),
-                          WideToUTF16(L"\u00C1g\u00E6tis byrjun")));
+  keys.insert(AutofillKey(base::WideToUTF16(L"Sigur R\u00F3s"),
+                          base::WideToUTF16(L"\u00C1g\u00E6tis byrjun")));
   AddKeys(0, keys);
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AwaitQuiescence());

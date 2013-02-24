@@ -69,7 +69,7 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
 #if defined(OS_POSIX)
     base::FilePath path(extensions[i]);
 #elif defined(OS_WIN)
-    base::FilePath path(UTF8ToWide(extensions[i]));
+    base::FilePath path(base::UTF8ToWide(extensions[i]));
 #endif
     if (!extensions[i].empty() &&
         download_util::GetFileDangerLevel(path) == download_util::NotDangerous)
@@ -196,7 +196,7 @@ void DownloadPrefs::SaveAutoOpenState() {
     std::string this_extension = *it;
 #elif defined(OS_WIN)
     // TODO(phajdan.jr): Why we're using Sys conversion here, but not in ctor?
-    std::string this_extension = base::SysWideToUTF8(*it);
+    std::string this_extension = base::Sysbase::WideToUTF8(*it);
 #endif
     extensions += this_extension + ":";
   }

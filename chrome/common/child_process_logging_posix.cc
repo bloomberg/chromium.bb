@@ -72,7 +72,7 @@ void SetClientId(const std::string& client_id) {
     return;
 
   base::strlcpy(g_client_id, str.c_str(), kClientIdSize);
-  std::wstring wstr = ASCIIToWide(str);
+  std::wstring wstr = base::ASCIIToWide(str);
   GoogleUpdateSettings::SetMetricsId(wstr);
 }
 

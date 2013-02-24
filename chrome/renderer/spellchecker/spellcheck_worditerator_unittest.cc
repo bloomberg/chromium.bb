@@ -119,7 +119,7 @@ TEST(SpellcheckWordIteratorTest, SplitWord) {
     SpellcheckCharAttribute attributes;
     attributes.SetDefaultLanguage(kTestCases[i].language);
 
-    string16 input(WideToUTF16(kTestText));
+    string16 input(base::WideToUTF16(kTestText));
     SpellcheckWordIterator iterator;
     EXPECT_TRUE(iterator.Initialize(&attributes,
                                     kTestCases[i].allow_contraction));
@@ -127,7 +127,7 @@ TEST(SpellcheckWordIteratorTest, SplitWord) {
 
     std::vector<string16> expected_words;
     base::SplitString(
-        WideToUTF16(kTestCases[i].expected_words), ' ', &expected_words);
+        base::WideToUTF16(kTestCases[i].expected_words), ' ', &expected_words);
 
     string16 actual_word;
     int actual_start, actual_end;
@@ -149,7 +149,7 @@ TEST(SpellcheckWordIteratorTest, RuleSetConsistency) {
   attributes.SetDefaultLanguage("en-US");
 
   const wchar_t kTestText[] = L"\x1791\x17c1\x002e";
-  string16 input(WideToUTF16(kTestText));
+  string16 input(base::WideToUTF16(kTestText));
 
   SpellcheckWordIterator iterator;
   EXPECT_TRUE(iterator.Initialize(&attributes, true));
@@ -214,7 +214,7 @@ TEST(SpellcheckWordIteratorTest, TreatNumbersAsWordCharacters) {
     SpellcheckCharAttribute attributes;
     attributes.SetDefaultLanguage(kTestCases[i].language);
 
-    string16 input_word(WideToUTF16(kTestCases[i].text));
+    string16 input_word(base::WideToUTF16(kTestCases[i].text));
     SpellcheckWordIterator iterator;
     EXPECT_TRUE(iterator.Initialize(&attributes, true));
     EXPECT_TRUE(iterator.SetText(input_word.c_str(), input_word.length()));

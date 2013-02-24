@@ -245,7 +245,7 @@ void AddCommandWithParameterWorkItems(const InstallerState& installer_state,
   if (installer_state.operation() == InstallerState::UNINSTALL) {
     work_item_list->AddDeleteRegKeyWorkItem(
         installer_state.root_key(), full_cmd_key)->set_log_message(
-            "removing " + WideToASCII(command_key) + " command");
+            "removing " + base::WideToASCII(command_key) + " command");
   } else {
     CommandLine cmd_line(installer_state.target_path().Append(app));
     cmd_line.AppendSwitchASCII(command_with_parameter, "%1");
@@ -750,14 +750,16 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
                                          L"Publisher",
                                          browser_dist->GetPublisherName(),
                                          true);
-    install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
-                                         L"Version",
-                                         ASCIIToWide(new_version.GetString()),
-                                         true);
-    install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
-                                         L"DisplayVersion",
-                                         ASCIIToWide(new_version.GetString()),
-                                         true);
+    install_list->AddSetRegValueWorkItem(
+        reg_root, uninstall_reg,
+        L"Version",
+        base::ASCIIToWide(new_version.GetString()),
+        true);
+    install_list->AddSetRegValueWorkItem(
+        reg_root, uninstall_reg,
+        L"DisplayVersion",
+        base::ASCIIToWide(new_version.GetString()),
+        true);
     install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
                                          L"InstallDate",
                                          InstallUtil::GetCurrentDate(),
@@ -806,7 +808,7 @@ void AddVersionKeyWorkItems(HKEY root,
   }
   list->AddSetRegValueWorkItem(root, version_key,
                                google_update::kRegVersionField,
-                               ASCIIToWide(new_version.GetString()),
+                               base::ASCIIToWide(new_version.GetString()),
                                true);  // overwrite version
 }
 
@@ -1070,12 +1072,12 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
       if (current_version) {
         in_use_update_work_items->AddSetRegValueWorkItem(root, version_key,
             google_update::kRegOldVersionField,
-            ASCIIToWide(current_version->GetString()), true);
+            base::ASCIIToWide(current_version->GetString()), true);
       }
       if (critical_version.IsValid()) {
         in_use_update_work_items->AddSetRegValueWorkItem(root, version_key,
             google_update::kRegCriticalVersionField,
-            ASCIIToWide(critical_version.GetString()), true);
+            base::ASCIIToWide(critical_version.GetString()), true);
       } else {
         in_use_update_work_items->AddDeleteRegValueWorkItem(root, version_key,
             google_update::kRegCriticalVersionField);
@@ -1682,7 +1684,7 @@ void AddQuickEnableChromeFrameWorkItems(const InstallerState& installer_state,
     // isn't installed since we don't want them left behind in any case.
     work_item_list->AddDeleteRegKeyWorkItem(
         installer_state.root_key(), cmd_key)->set_log_message(
-            "removing " + WideToASCII(kCmdQuickEnableCf) + " command");
+            "removing " + base::WideToASCII(kCmdQuickEnableCf) + " command");
 
   } else if (will_have_chrome_binaries) {
     // Chrome Frame isn't (to be) installed while some other multi-install

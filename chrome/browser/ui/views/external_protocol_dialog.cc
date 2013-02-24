@@ -134,7 +134,8 @@ ExternalProtocolDialog::ExternalProtocolDialog(WebContents* web_contents,
   string16 elided_command;
   ui::ElideString(ASCIIToUTF16(url.possibly_invalid_spec()),
                   kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
-  ui::ElideString(WideToUTF16Hack(command), kMaxCommandSize, &elided_command);
+  ui::ElideString(base::WideToUTF16Hack(command), kMaxCommandSize,
+                  &elided_command);
 
   string16 message_text = l10n_util::GetStringFUTF16(
       IDS_EXTERNAL_PROTOCOL_INFORMATION,
@@ -171,9 +172,9 @@ std::wstring ExternalProtocolDialog::GetApplicationForProtocol(
   // to disk.  http://crbug.com/61996
   base::ThreadRestrictions::ScopedAllowIO allow_io;
 
-  std::wstring url_spec = ASCIIToWide(url.possibly_invalid_spec());
+  std::wstring url_spec = base::ASCIIToWide(url.possibly_invalid_spec());
   std::wstring cmd_key_path =
-      ASCIIToWide(url.scheme() + "\\shell\\open\\command");
+      base::ASCIIToWide(url.scheme() + "\\shell\\open\\command");
   base::win::RegKey cmd_key(HKEY_CLASSES_ROOT, cmd_key_path.c_str(), KEY_READ);
   size_t split_offset = url_spec.find(L':');
   if (split_offset == std::wstring::npos)

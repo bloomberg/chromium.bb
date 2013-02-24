@@ -151,8 +151,8 @@ TEST(ConvertDictTest, English) {
 
   std::map<string16, bool> word_list;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kWords); ++i)
-    word_list.insert(std::make_pair<string16, bool>(WideToUTF16(kWords[i]),
-                                                    true));
+    word_list.insert(std::make_pair<string16, bool>(
+        base::WideToUTF16(kWords[i]), true));
 
   RunDictionaryTest(kCodepage, word_list);
 }
@@ -173,8 +173,8 @@ TEST(ConvertDictTest, Russian) {
 
   std::map<string16, bool> word_list;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kWords); ++i)
-    word_list.insert(std::make_pair<string16, bool>(WideToUTF16(kWords[i]),
-                                                    true));
+    word_list.insert(std::make_pair<string16, bool>(
+        base::WideToUTF16(kWords[i]), true));
 
   RunDictionaryTest(kCodepage, word_list);
 }
@@ -197,8 +197,8 @@ TEST(ConvertDictTest, Hungarian) {
 
   std::map<string16, bool> word_list;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kWords); ++i)
-    word_list.insert(std::make_pair<string16, bool>(WideToUTF16(kWords[i]),
-                                                    true));
+    word_list.insert(std::make_pair<string16, bool>(
+        base::WideToUTF16(kWords[i]), true));
 
   RunDictionaryTest(kCodepage, word_list);
 }

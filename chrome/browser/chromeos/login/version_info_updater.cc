@@ -159,7 +159,7 @@ void VersionInfoUpdater::OnBootTimes(
             boot_times.pre_startup,
             boot_times.system);
   }
-  // Use UTF8ToWide once this string is localized.
+  // Use base::UTF8ToWide once this string is localized.
   if (delegate_)
     delegate_->OnBootTimesLabelTextUpdated(boot_times_text);
 }

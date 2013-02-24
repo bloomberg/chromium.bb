@@ -707,7 +707,7 @@ base::FilePath ExtensionURLToRelativeFilePath(const GURL& url) {
 #if defined(OS_POSIX)
     base::FilePath(file_path);
 #elif defined(OS_WIN)
-    base::FilePath(UTF8ToWide(file_path));
+    base::FilePath(base::UTF8ToWide(file_path));
 #else
     base::FilePath();
     NOTIMPLEMENTED();

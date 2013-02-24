@@ -458,24 +458,28 @@ void Database::InitDBs() {
   event_db_ = scoped_ptr<leveldb::DB>(new_db);
 #elif defined(OS_WIN)
   leveldb::DB::Open(open_options,
-                    WideToUTF8(path_.AppendASCII(kRecentDb).value()), &new_db);
+                    base::WideToUTF8(path_.AppendASCII(kRecentDb).value()),
+                    &new_db);
   recent_db_ = scoped_ptr<leveldb::DB>(new_db);
   leveldb::DB::Open(open_options,
-                    WideToUTF8(path_.AppendASCII(kMaxValueDb).value()),
+                    base::WideToUTF8(path_.AppendASCII(kMaxValueDb).value()),
                     &new_db);
   max_value_db_ = scoped_ptr<leveldb::DB>(new_db);
   leveldb::DB::Open(open_options,
-                    WideToUTF8(path_.AppendASCII(kStateDb).value()), &new_db);
+                    base::WideToUTF8(path_.AppendASCII(kStateDb).value()),
+                    &new_db);
   state_db_ = scoped_ptr<leveldb::DB>(new_db);
   leveldb::DB::Open(open_options,
-                    WideToUTF8(path_.AppendASCII(kActiveIntervalDb).value()),
-                    &new_db);
+      base::WideToUTF8(path_.AppendASCII(kActiveIntervalDb).value()),
+      &new_db);
   active_interval_db_ = scoped_ptr<leveldb::DB>(new_db);
   leveldb::DB::Open(open_options,
-                    WideToUTF8(path_.AppendASCII(kMetricDb).value()), &new_db);
+                    base::WideToUTF8(path_.AppendASCII(kMetricDb).value()),
+                    &new_db);
   metric_db_ = scoped_ptr<leveldb::DB>(new_db);
   leveldb::DB::Open(open_options,
-                    WideToUTF8(path_.AppendASCII(kEventDb).value()), &new_db);
+                    base::WideToUTF8(path_.AppendASCII(kEventDb).value()),
+                    &new_db);
   event_db_ = scoped_ptr<leveldb::DB>(new_db);
 #endif
 }

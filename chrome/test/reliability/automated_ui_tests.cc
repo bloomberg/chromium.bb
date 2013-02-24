@@ -113,7 +113,7 @@ std::string GetChromeRevision() {
   scoped_ptr<FileVersionInfo> file_info;
   file_info.reset(
       FileVersionInfo::CreateFileVersionInfo(base::FilePath(kChromeDll)));
-  last_change = WideToASCII(file_info->last_change());
+  last_change = base::WideToASCII(file_info->last_change());
 #elif defined(OS_POSIX)
   chrome::VersionInfo version_info;
   last_change = version_info.LastChange();
@@ -717,7 +717,7 @@ void AutomatedUITest::LogCrashResult(const base::FilePath& crash_dump,
   xml_writer_.AddAttribute("revision", GetChromeRevision());
   xml_writer_.StartElement("crash");
 #if defined(OS_WIN)
-  xml_writer_.AddAttribute("crash_dump", WideToASCII(crash_dump.value()));
+  xml_writer_.AddAttribute("crash_dump", base::WideToASCII(crash_dump.value()));
 #else
   xml_writer_.AddAttribute("crash_dump", crash_dump.value());
 #endif
