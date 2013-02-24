@@ -18,9 +18,6 @@
 #include "chrome/browser/themes/theme_syncable_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/extensions/api/themes/theme_handler.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
@@ -81,10 +78,6 @@ ThemeService::ThemeService()
     : rb_(ResourceBundle::GetSharedInstance()),
       profile_(NULL),
       number_of_infobars_(0) {
-  // Register the ManifestHandler for parsing 'theme' manifest key.
-  extensions::ManifestHandler::Register(
-      extension_manifest_keys::kTheme,
-      make_linked_ptr(new extensions::ThemeHandler));
 }
 
 ThemeService::~ThemeService() {
