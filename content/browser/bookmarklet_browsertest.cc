@@ -50,7 +50,8 @@ IN_PROC_BROWSER_TEST_F(BookmarkletTest, RedirectVoided) {
   EXPECT_EQ("SUCCESS", GetBodyText());
 }
 
-IN_PROC_BROWSER_TEST_F(BookmarkletTest, NonEmptyResult) {
+// http://crbug.com/177957
+IN_PROC_BROWSER_TEST_F(BookmarkletTest, DISABLED_NonEmptyResult) {
   NavigateToStartPage();
   // If there's no navigation, javascript: URLs are run synchronously.
   shell()->LoadURL(GURL("javascript:'hello world'"));
