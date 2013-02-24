@@ -80,9 +80,6 @@ bool IsGoogleHostname(const std::string& host,
 bool IsGoogleHomePageUrl(const std::string& url);
 // True if |url| represents a valid Google search URL.
 bool IsGoogleSearchUrl(const std::string& url);
-// True if |url| represents a valid Google search URL used by the Instant
-// Extended API.
-bool IsInstantExtendedAPIGoogleSearchUrl(const std::string& url);
 
 // True if a build is strictly organic, according to its brand code.
 bool IsOrganic(const std::string& brand);

@@ -12,7 +12,6 @@
 using google_util::IsGoogleDomainUrl;
 using google_util::IsGoogleHomePageUrl;
 using google_util::IsGoogleSearchUrl;
-using google_util::IsInstantExtendedAPIGoogleSearchUrl;
 
 TEST(GoogleUtilTest, GoodHomePagesNonSecure) {
   // Valid home page hosts.
@@ -245,35 +244,6 @@ TEST(GoogleUtilTest, BadSearches) {
       "http://www.google.com/SEARCH?q=something"));
   EXPECT_FALSE(IsGoogleSearchUrl(
       "http://www.google.com/WEBHP#q=something"));
-}
-
-TEST(GoogleUtilTest, IsInstantExtendedAPIGoogleSearchUrl) {
-  EXPECT_TRUE(IsInstantExtendedAPIGoogleSearchUrl(
-        "http://www.google.com/search?q=something&espv=1"));
-  EXPECT_TRUE(IsInstantExtendedAPIGoogleSearchUrl(
-        "http://www.google.com/search?q=something&espv=3"));
-  EXPECT_TRUE(IsInstantExtendedAPIGoogleSearchUrl(
-        "http://www.google.com/search?q=something&espv=42"));
-
-  EXPECT_FALSE(IsInstantExtendedAPIGoogleSearchUrl(
-        "http://www.google.com/search?q=something&espv="));
-  EXPECT_FALSE(IsInstantExtendedAPIGoogleSearchUrl(
-        "http://www.google.com/search?q=something&espv=0"));
-  EXPECT_FALSE(IsInstantExtendedAPIGoogleSearchUrl(
-        "http://www.google.com/search?q=something&espv=00"));
-
-  EXPECT_FALSE(IsInstantExtendedAPIGoogleSearchUrl(
-        "http://www.foo.com/search?q=something&espv=0"));
-  EXPECT_FALSE(IsInstantExtendedAPIGoogleSearchUrl(
-        "http://www.foo.com/search?q=something&espv=1"));
-  EXPECT_FALSE(IsInstantExtendedAPIGoogleSearchUrl(
-        "http://www.google.com/bing?q=something&espv=1"));
-  EXPECT_FALSE(IsInstantExtendedAPIGoogleSearchUrl(
-        "http://www.google.com/search?q=something&vespv=1"));
-  EXPECT_FALSE(IsInstantExtendedAPIGoogleSearchUrl(
-        "http://www.google.com/search?q=something&espvx=1"));
-  EXPECT_FALSE(IsInstantExtendedAPIGoogleSearchUrl(
-        "http://www.google.com/search#q=something&espv=1"));
 }
 
 TEST(GoogleUtilTest, GoogleDomains) {

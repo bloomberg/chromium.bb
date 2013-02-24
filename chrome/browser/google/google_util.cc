@@ -242,29 +242,6 @@ bool IsGoogleSearchUrl(const std::string& url) {
       (!is_home_page_base && HasQueryParameter(query));
 }
 
-bool IsInstantExtendedAPIGoogleSearchUrl(const std::string& url) {
-  if (!IsGoogleSearchUrl(url))
-    return false;
-
-  const std::string embedded_search_key = kInstantExtendedAPIParam;
-
-  url_parse::Parsed parsed_url;
-  url_parse::ParseStandardURL(url.c_str(), url.length(), &parsed_url);
-  url_parse::Component key, value;
-  while (url_parse::ExtractQueryKeyValue(
-      url.c_str(), &parsed_url.query, &key, &value)) {
-    // If the parameter key is |embedded_search_key| and the value is not 0 this
-    // is an Instant Extended API Google search URL.
-    if (!url.compare(key.begin, key.len, embedded_search_key)) {
-      int int_value = 0;
-      if (value.is_nonempty())
-        base::StringToInt(url.substr(value.begin, value.len), &int_value);
-      return int_value != 0;
-    }
-  }
-  return false;
-}
-
 bool IsOrganic(const std::string& brand) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kOrganicInstall))
