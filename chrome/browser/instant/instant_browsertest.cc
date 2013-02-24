@@ -812,23 +812,23 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionsAreCaseInsensitive) {
 
   omnibox()->RevertAll();
   SetOmniboxTextAndWaitForInstantToShow("i");
-  EXPECT_EQ(base::WideToUTF16(L"i\u0307nstant"), omnibox()->GetText());
+  EXPECT_EQ(WideToUTF16(L"i\u0307nstant"), omnibox()->GetText());
 
   omnibox()->RevertAll();
   SetOmniboxTextAndWaitForInstantToShow("I");
-  EXPECT_EQ(base::WideToUTF16(L"I\u0307nstant"), omnibox()->GetText());
+  EXPECT_EQ(WideToUTF16(L"I\u0307nstant"), omnibox()->GetText());
 
   omnibox()->RevertAll();
-  SetOmniboxTextAndWaitForInstantToShow(base::WideToUTF8(L"i\u0307"));
-  EXPECT_EQ(base::WideToUTF16(L"i\u0307nstant"), omnibox()->GetText());
+  SetOmniboxTextAndWaitForInstantToShow(WideToUTF8(L"i\u0307"));
+  EXPECT_EQ(WideToUTF16(L"i\u0307nstant"), omnibox()->GetText());
 
   omnibox()->RevertAll();
-  SetOmniboxTextAndWaitForInstantToShow(base::WideToUTF8(L"I\u0307"));
-  EXPECT_EQ(base::WideToUTF16(L"I\u0307nstant"), omnibox()->GetText());
+  SetOmniboxTextAndWaitForInstantToShow(WideToUTF8(L"I\u0307"));
+  EXPECT_EQ(WideToUTF16(L"I\u0307nstant"), omnibox()->GetText());
 
   omnibox()->RevertAll();
-  SetOmniboxTextAndWaitForInstantToShow(base::WideToUTF8(L"\u0130"));
-  EXPECT_EQ(base::WideToUTF16(L"\u0130NSTANT"), omnibox()->GetText());
+  SetOmniboxTextAndWaitForInstantToShow(WideToUTF8(L"\u0130"));
+  EXPECT_EQ(WideToUTF16(L"\u0130NSTANT"), omnibox()->GetText());
 
   omnibox()->RevertAll();
   SetOmniboxTextAndWaitForInstantToShow("in");
@@ -845,8 +845,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionsAreCaseInsensitive) {
   EXPECT_TRUE(ExecuteScript("suggestion = [ { value: '\\u1e0d\\u0307oh' } ]"));
 
   omnibox()->RevertAll();
-  SetOmniboxTextAndWaitForInstantToShow(base::WideToUTF8(L"\u1e0b\u0323"));
-  EXPECT_EQ(base::WideToUTF16(L"\u1e0b\u0323oh"), omnibox()->GetText());
+  SetOmniboxTextAndWaitForInstantToShow(WideToUTF8(L"\u1e0b\u0323"));
+  EXPECT_EQ(WideToUTF16(L"\u1e0b\u0323oh"), omnibox()->GetText());
 }
 
 // Flakes on Windows and Mac: http://crbug.com/170677

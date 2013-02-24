@@ -70,9 +70,8 @@ void PanelStackView::EnsureInitialized() {
 
 #if defined(OS_WIN)
   ui::win::SetAppIdForWindow(
-      ShellIntegration::GetAppModelIdForProfile(
-          base::UTF8ToWide(panel->app_name()),
-          panel->profile()->GetPath()),
+      ShellIntegration::GetAppModelIdForProfile(UTF8ToWide(panel->app_name()),
+                                                panel->profile()->GetPath()),
       chrome::HWNDForWidget(window_));
 #endif
 }

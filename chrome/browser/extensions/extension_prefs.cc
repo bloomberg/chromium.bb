@@ -1551,7 +1551,7 @@ base::FilePath ExtensionPrefs::GetExtensionPath(
     return base::FilePath();
 
   return install_directory_.Append(
-      base::FilePath::FromWStringHack(base::UTF8ToWide(path)));
+      base::FilePath::FromWStringHack(UTF8ToWide(path)));
 }
 
 void ExtensionPrefs::UpdateExtensionPref(const std::string& extension_id,

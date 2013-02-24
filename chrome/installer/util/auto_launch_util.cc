@@ -62,7 +62,7 @@ string16 ProfileToKeyName(const string16& profile_directory) {
   crypto::SHA256HashString(input, hash, sizeof(hash));
   std::string hash_string = base::HexEncode(hash, sizeof(hash));
   return string16(kAutolaunchKeyValue) +
-      base::ASCIIToWide("_") + base::ASCIIToWide(hash_string);
+      ASCIIToWide("_") + ASCIIToWide(hash_string);
 }
 
 // Returns whether the Chrome executable specified in |application_path| is set

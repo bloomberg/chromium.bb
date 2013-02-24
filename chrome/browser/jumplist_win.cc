@@ -274,8 +274,7 @@ HRESULT UpdateCategory(base::win::ScopedComPtr<ICustomDestinationList> list,
   if (data.empty() || !max_slots)
     return S_OK;
 
-  std::wstring category =
-      base::UTF16ToWide(l10n_util::GetStringUTF16(category_id));
+  std::wstring category = UTF16ToWide(l10n_util::GetStringUTF16(category_id));
 
   // Create an EnumerableObjectCollection object.
   // We once add the given items to this collection object and add this
@@ -331,7 +330,7 @@ HRESULT UpdateTaskCategory(base::win::ScopedComPtr<ICustomDestinationList> list,
   // system menu.
   scoped_refptr<ShellLinkItem> chrome(new ShellLinkItem);
   std::wstring chrome_title =
-      base::UTF16ToWide(l10n_util::GetStringUTF16(IDS_NEW_WINDOW));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_NEW_WINDOW));
   ReplaceSubstringsAfterOffset(&chrome_title, 0, L"&", L"");
   chrome->SetTitle(chrome_title);
   chrome->SetIcon(chrome_path, 0, false);
@@ -342,9 +341,9 @@ HRESULT UpdateTaskCategory(base::win::ScopedComPtr<ICustomDestinationList> list,
   // this item.
   scoped_refptr<ShellLinkItem> incognito(new ShellLinkItem);
   incognito->SetArguments(
-      base::ASCIIToWide(std::string("--") + switches::kIncognito));
+      ASCIIToWide(std::string("--") + switches::kIncognito));
   std::wstring incognito_title =
-      base::UTF16ToWide(l10n_util::GetStringUTF16(IDS_NEW_INCOGNITO_WINDOW));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_NEW_INCOGNITO_WINDOW));
   ReplaceSubstringsAfterOffset(&incognito_title, 0, L"&", L"");
   incognito->SetTitle(incognito_title);
   incognito->SetIcon(chrome_path, 0, false);
@@ -573,7 +572,7 @@ void JumpList::OnMostVisitedURLsAvailable(
       const history::MostVisitedURL& url = data[i];
       scoped_refptr<ShellLinkItem> link(new ShellLinkItem);
       std::string url_string = url.url.spec();
-      link->SetArguments(base::UTF8ToWide(url_string));
+      link->SetArguments(UTF8ToWide(url_string));
       link->SetTitle(!url.title.empty()? url.title : link->arguments());
       most_visited_pages_.push_back(link);
       icon_urls_.push_back(make_pair(url_string, link));
@@ -642,7 +641,7 @@ bool JumpList::AddTab(const TabRestoreService::Tab* tab,
   const TabNavigation& current_navigation =
       tab->navigations.at(tab->current_navigation_index);
   std::string url = current_navigation.virtual_url().spec();
-  link->SetArguments(base::UTF8ToWide(url));
+  link->SetArguments(UTF8ToWide(url));
   link->SetTitle(current_navigation.title());
   list->push_back(link);
   icon_urls_.push_back(make_pair(url, link));

@@ -129,7 +129,7 @@ bool GetDefaultChromeExe(base::FilePath* browser_exe) {
   scoped_ptr<base::Environment> env(base::Environment::Create());
   std::string home_dir;
   if (env->GetVar("userprofile", &home_dir)) {
-    base::FilePath default_location(base::UTF8ToWide(home_dir));
+    base::FilePath default_location(UTF8ToWide(home_dir));
     if (base::win::GetVersion() < base::win::VERSION_VISTA) {
       default_location = default_location.Append(
           L"Local Settings\\Application Data");
@@ -143,15 +143,15 @@ bool GetDefaultChromeExe(base::FilePath* browser_exe) {
   // Add the system-level location for Chrome.
   std::string program_dir;
   if (env->GetVar("ProgramFiles", &program_dir)) {
-    locations.push_back(base::FilePath(base::UTF8ToWide(program_dir))
+    locations.push_back(base::FilePath(UTF8ToWide(program_dir))
         .Append(app_from_google));
-    chromium_locations.push_back(base::FilePath(base::UTF8ToWide(program_dir))
+    chromium_locations.push_back(base::FilePath(UTF8ToWide(program_dir))
         .Append(app_from_chromium));
   }
   if (env->GetVar("ProgramFiles(x86)", &program_dir)) {
-    locations.push_back(base::FilePath(base::UTF8ToWide(program_dir))
+    locations.push_back(base::FilePath(UTF8ToWide(program_dir))
         .Append(app_from_google));
-    chromium_locations.push_back(base::FilePath(base::UTF8ToWide(program_dir))
+    chromium_locations.push_back(base::FilePath(UTF8ToWide(program_dir))
         .Append(app_from_chromium));
   }
 #elif defined(OS_MACOSX)
@@ -450,7 +450,7 @@ void Automation::Init(
   if (channel_id.empty()) {
     std::string command_line_str;
 #if defined(OS_WIN)
-    command_line_str = base::WideToUTF8(command.GetCommandLineString());
+    command_line_str = WideToUTF8(command.GetCommandLineString());
 #elif defined(OS_POSIX)
     command_line_str = command.GetCommandLineString();
 #endif

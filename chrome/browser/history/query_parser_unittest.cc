@@ -39,12 +39,12 @@ TEST_F(QueryParserTest, SimpleQueries) {
   // the minimum is 2 while for other scripts, it's 3.
   EXPECT_EQ("f b", QueryToString(" f b"));
   // KA JANG
-  EXPECT_EQ(base::WideToUTF8(L"\xAC00 \xC7A5"),
-            QueryToString(base::WideToUTF8(L" \xAC00 \xC7A5")));
+  EXPECT_EQ(WideToUTF8(L"\xAC00 \xC7A5"),
+            QueryToString(WideToUTF8(L" \xAC00 \xC7A5")));
   EXPECT_EQ("foo* bar*", QueryToString(" foo   bar "));
   // KA-JANG BICH-GO
-  EXPECT_EQ(base::WideToUTF8(L"\xAC00\xC7A5* \xBE5B\xACE0*"),
-            QueryToString(base::WideToUTF8(L"\xAC00\xC7A5 \xBE5B\xACE0")));
+  EXPECT_EQ(WideToUTF8(L"\xAC00\xC7A5* \xBE5B\xACE0*"),
+            QueryToString(WideToUTF8(L"\xAC00\xC7A5 \xBE5B\xACE0")));
 }
 
 // Quoted substring parsing.

@@ -664,7 +664,7 @@ syncer::SyncError SessionModelAssociator::AssociateModels(
 
       // Write the initial values to the specifics so that in case of a crash or
       // error we don't persist a half-written node.
-      write_node.SetTitle(base::UTF8ToWide(current_machine_tag_));
+      write_node.SetTitle(UTF8ToWide(current_machine_tag_));
       sync_pb::SessionSpecifics base_specifics;
       base_specifics.set_session_tag(current_machine_tag_);
       sync_pb::SessionHeader* header_s = base_specifics.mutable_header();

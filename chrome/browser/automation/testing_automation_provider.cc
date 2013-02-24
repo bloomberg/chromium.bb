@@ -989,7 +989,7 @@ void TestingAutomationProvider::GetTabTitle(int handle,
     NavigationController* tab = tab_tracker_->GetResource(handle);
     NavigationEntry* entry = tab->GetActiveEntry();
     if (entry != NULL) {
-      *title = base::UTF16ToWideHack(entry->GetTitleForDisplay(""));
+      *title = UTF16ToWideHack(entry->GetTitleForDisplay(""));
     } else {
       *title = std::wstring();
     }
@@ -1050,9 +1050,8 @@ void TestingAutomationProvider::ExecuteJavascript(
   }
 
   new DomOperationMessageSender(this, reply_message, false);
-  ExecuteJavascriptInRenderViewFrame(base::WideToUTF16Hack(frame_xpath),
-                                     base::WideToUTF16Hack(script),
-                                     reply_message,
+  ExecuteJavascriptInRenderViewFrame(WideToUTF16Hack(frame_xpath),
+                                     WideToUTF16Hack(script), reply_message,
                                      web_contents->GetRenderViewHost());
 }
 

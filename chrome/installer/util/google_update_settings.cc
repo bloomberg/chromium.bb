@@ -609,7 +609,7 @@ bool GoogleUpdateSettings::GetUpdateDetailForApp(bool system_install,
         (clientstate.ReadValue(google_update::kRegVersionField,
                                &version) == ERROR_SUCCESS)) {
       product_found = true;
-      data->version = base::WideToASCII(version);
+      data->version = WideToASCII(version);
       data->last_success = base::Time::FromTimeT(dword_value);
       data->last_result = 0;
       data->last_error_code = 0;

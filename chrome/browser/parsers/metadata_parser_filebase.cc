@@ -22,7 +22,7 @@ bool FileMetadataParser::Parse() {
     properties_[MetadataParser::kPropertyFilesize] = base::Int64ToString(size);
   }
 #if defined(OS_WIN)
-  value = base::WideToUTF8(path_.BaseName().value());
+  value = WideToUTF8(path_.BaseName().value());
   properties_[MetadataParser::kPropertyTitle] = value;
 #elif defined(OS_POSIX)
   properties_[MetadataParser::kPropertyTitle] = path_.BaseName().value();

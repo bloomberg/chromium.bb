@@ -208,4 +208,4 @@ TEST(UTFStringConversionsTest, ConvertMultiString) {
   EXPECT_EQ(expected, converted);
 }
 
-}  // namespace base
+}  // base

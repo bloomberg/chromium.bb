@@ -361,7 +361,7 @@ HMODULE MainDllLoader::Load(string16* out_version, string16* out_file) {
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
   if (cmd_line.HasSwitch(switches::kChromeVersion)) {
     version_string = cmd_line.GetSwitchValueNative(switches::kChromeVersion);
-    version = Version(base::WideToASCII(version_string));
+    version = Version(WideToASCII(version_string));
 
     if (!version.IsValid()) {
       // If a bogus command line flag was given, then abort.
@@ -377,7 +377,7 @@ HMODULE MainDllLoader::Load(string16* out_version, string16* out_file) {
         FileVersionInfo::CreateFileVersionInfoForCurrentModule());
     if (file_version_info.get()) {
       version_string = file_version_info->file_version();
-      version = Version(base::WideToASCII(version_string));
+      version = Version(WideToASCII(version_string));
     }
   }
 
@@ -387,9 +387,9 @@ HMODULE MainDllLoader::Load(string16* out_version, string16* out_file) {
 
   // If no version in the current module, then look in the environment.
   if (!version.IsValid()) {
-    if (EnvQueryStr(base::ASCIIToWide(chrome::kChromeVersionEnvVar).c_str(),
+    if (EnvQueryStr(ASCIIToWide(chrome::kChromeVersionEnvVar).c_str(),
                     &version_string)) {
-      version = Version(base::WideToASCII(version_string));
+      version = Version(WideToASCII(version_string));
       LOG_IF(ERROR, !version.IsValid()) << "Invalid environment version: "
                                         << version_string;
     }
@@ -428,7 +428,7 @@ int MainDllLoader::Launch(HINSTANCE instance,
     return chrome::RESULT_CODE_MISSING_DATA;
 
   scoped_ptr<base::Environment> env(base::Environment::Create());
-  env->SetVar(chrome::kChromeVersionEnvVar, base::WideToUTF8(version));
+  env->SetVar(chrome::kChromeVersionEnvVar, WideToUTF8(version));
   // TODO(erikwright): Remove this when http://crbug.com/174953 is fixed and
   // widely deployed.
   env->UnSetVar(env_vars::kGoogleUpdateIsMachineEnvVar);

@@ -210,7 +210,7 @@ bool SwapNewChromeExeIfPresent() {
       std::wstring pv_value;
       if (key.ReadValue(google_update::kRegVersionField,
                         &pv_value) == ERROR_SUCCESS) {
-        Version pv_version(base::WideToASCII(pv_value));
+        Version pv_version(WideToASCII(pv_value));
         if (cmd_version.IsValid() && pv_version.IsValid() &&
             !cmd_version.Equals(pv_version)) {
           return false;

@@ -99,7 +99,7 @@ void SyncedDeviceTracker::WriteLocalDeviceInfo(const DeviceInfo& info) {
   if (node.InitByClientTagLookup(syncer::DEVICE_INFO, local_device_info_tag_) ==
       syncer::BaseNode::INIT_OK) {
     node.SetDeviceInfoSpecifics(specifics);
-    node.SetTitle(base::ASCIIToWide(specifics.client_name()));
+    node.SetTitle(ASCIIToWide(specifics.client_name()));
   } else {
     syncer::ReadNode type_root(&trans);
     syncer::BaseNode::InitByLookupResult type_root_lookup_result =
@@ -113,7 +113,7 @@ void SyncedDeviceTracker::WriteLocalDeviceInfo(const DeviceInfo& info) {
                                       local_device_info_tag_);
     DCHECK_EQ(syncer::WriteNode::INIT_SUCCESS, create_result);
     new_node.SetDeviceInfoSpecifics(specifics);
-    new_node.SetTitle(base::ASCIIToWide(specifics.client_name()));
+    new_node.SetTitle(ASCIIToWide(specifics.client_name()));
   }
 }
 

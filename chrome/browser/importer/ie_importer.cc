@@ -296,7 +296,7 @@ GURL ReadURLFromInternetShortcut(IUniformResourceLocator* url_locator) {
   base::win::ScopedCoMem<wchar_t> url;
   // GetURL can return S_FALSE (FAILED(S_FALSE) is false) when url == NULL.
   return (FAILED(url_locator->GetURL(&url)) || !url) ?
-      GURL() : GURL(base::WideToUTF16(std::wstring(url)));
+      GURL() : GURL(WideToUTF16(std::wstring(url)));
 }
 
 // Reads the URL of the favicon of the internet shortcut.
@@ -321,7 +321,7 @@ GURL ReadFaviconURLFromInternetShortcut(IUniformResourceLocator* url_locator) {
   if (FAILED(property_storage->ReadMultiple(1, properties, output.Receive())) ||
       output.get().vt != VT_LPWSTR)
     return GURL();
-  return GURL(base::WideToUTF16(output.get().pwszVal));
+  return GURL(WideToUTF16(output.get().pwszVal));
 }
 
 // Reads the favicon imaga data in an NTFS alternate data stream. This is where
@@ -335,7 +335,7 @@ bool ReadFaviconDataFromInternetShortcut(const string16& file,
 // Reads the favicon imaga data in the Internet cache. IE6 doesn't hold the data
 // explicitly, but it might be found in the cache.
 bool ReadFaviconDataFromCache(const GURL& favicon_url, std::string* data) {
-  std::wstring url_wstring(base::UTF8ToWide(favicon_url.spec()));
+  std::wstring url_wstring(UTF8ToWide(favicon_url.spec()));
   DWORD info_size = 0;
   GetUrlCacheEntryInfoEx(url_wstring.c_str(), NULL, &info_size, NULL, NULL,
                          NULL, 0);
@@ -711,7 +711,7 @@ void IEImporter::ImportSearchEngines() {
       }
     }
 
-    std::string url(base::WideToUTF8(wide_url));
+    std::string url(WideToUTF8(wide_url));
     SearchEnginesMap::iterator t_iter = search_engines_map.find(url);
     if (t_iter == search_engines_map.end()) {
       // First time we see that URL.

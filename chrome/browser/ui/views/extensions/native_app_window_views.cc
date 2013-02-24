@@ -142,7 +142,7 @@ void NativeAppWindowViews::InitializeDefaultWindow(
       extension()->id());
   ui::win::SetAppIdForWindow(
       ShellIntegration::GetAppModelIdForProfile(
-          base::UTF8ToWide(app_name), shell_window_->profile()->GetPath()),
+          UTF8ToWide(app_name), shell_window_->profile()->GetPath()),
       GetWidget()->GetTopLevelWidget()->GetNativeWindow());
 #endif
 }

@@ -119,7 +119,7 @@ HRESULT PrintTicketToDevMode(const std::string& printer_name,
     return hr;
 
   HPTPROVIDER provider = NULL;
-  hr = printing::XPSModule::OpenProvider(base::UTF8ToWide(printer_name),
+  hr = printing::XPSModule::OpenProvider(UTF8ToWide(printer_name),
                                          1,
                                          &provider);
   if (SUCCEEDED(hr)) {
@@ -178,7 +178,7 @@ class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
     LPTSTR printer_name_to_use = NULL;
     std::wstring printer_name_wide;
     if (!printer_name.empty()) {
-      printer_name_wide = base::UTF8ToWide(printer_name);
+      printer_name_wide = UTF8ToWide(printer_name);
       printer_name_to_use = const_cast<LPTSTR>(printer_name_wide.c_str());
     }
     bool ret = false;
@@ -422,7 +422,7 @@ class PrintSystemWin : public PrintSystem {
             return false;
           }
 
-          HDC dc = CreateDC(L"WINSPOOL", base::UTF8ToWide(printer_name).c_str(),
+          HDC dc = CreateDC(L"WINSPOOL", UTF8ToWide(printer_name).c_str(),
                             NULL, pt_dev_mode.dm_);
           if (!dc) {
             NOTREACHED();
@@ -602,8 +602,8 @@ class PrintSystemWin : public PrintSystem {
         bool ret = false;
         // Use nested SUCCEEDED checks because we want a common return point.
         if (SUCCEEDED(printing::XPSPrintModule::StartXpsPrintJob(
-                base::UTF8ToWide(printer_name).c_str(),
-                base::UTF8ToWide(job_title).c_str(),
+                UTF8ToWide(printer_name).c_str(),
+                UTF8ToWide(job_title).c_str(),
                 NULL,
                 job_progress_event_.Get(),
                 NULL,
@@ -789,7 +789,7 @@ bool PrintSystemWin::ValidatePrintTicket(
   }
   bool ret = false;
   HPTPROVIDER provider = NULL;
-  printing::XPSModule::OpenProvider(base::UTF8ToWide(printer_name.c_str()),
+  printing::XPSModule::OpenProvider(UTF8ToWide(printer_name.c_str()),
                                     1,
                                     &provider);
   if (provider) {
@@ -825,7 +825,7 @@ bool PrintSystemWin::GetJobDetails(const std::string& printer_name,
       print_backend_->GetPrinterDriverInfo(printer_name));
   DCHECK(job_details);
   printing::ScopedPrinterHandle printer_handle;
-  std::wstring printer_name_wide = base::UTF8ToWide(printer_name);
+  std::wstring printer_name_wide = UTF8ToWide(printer_name);
   OpenPrinter(const_cast<LPTSTR>(printer_name_wide.c_str()),
               printer_handle.Receive(), NULL);
   DCHECK(printer_handle.IsValid());
@@ -843,7 +843,7 @@ bool PrintSystemWin::GetJobDetails(const std::string& printer_name,
         JOB_INFO_1 *job_info =
             reinterpret_cast<JOB_INFO_1 *>(job_info_buffer.get());
         if (job_info->pStatus) {
-          base::WideToUTF8(job_info->pStatus, wcslen(job_info->pStatus),
+          WideToUTF8(job_info->pStatus, wcslen(job_info->pStatus),
                      &job_details->status_message);
         }
         job_details->platform_status_flags = job_info->Status;

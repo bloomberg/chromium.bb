@@ -214,7 +214,7 @@ bool LevelDbAppNotificationStorage::OpenDbIfNeeded(bool create_if_missing) {
 #if defined(OS_POSIX)
   std::string os_path = path_.value();
 #elif defined(OS_WIN)
-  std::string os_path = base::Sysbase::WideToUTF8(path_.value());
+  std::string os_path = base::SysWideToUTF8(path_.value());
 #endif
 
   leveldb::Options options;

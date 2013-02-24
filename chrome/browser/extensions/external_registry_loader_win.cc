@@ -56,11 +56,11 @@ void ExternalRegistryLoader::LoadOnFileThread() {
   // A map of IDs, to weed out duplicates between HKCU and HKLM.
   std::set<string16> keys;
   base::win::RegistryKeyIterator iterator_machine_key(
-      HKEY_LOCAL_MACHINE, base::ASCIIToWide(kRegistryExtensions).c_str());
+      HKEY_LOCAL_MACHINE, ASCIIToWide(kRegistryExtensions).c_str());
   for (; iterator_machine_key.Valid(); ++iterator_machine_key)
     keys.insert(iterator_machine_key.Name());
   base::win::RegistryKeyIterator iterator_user_key(
-      HKEY_CURRENT_USER, base::ASCIIToWide(kRegistryExtensions).c_str());
+      HKEY_CURRENT_USER, ASCIIToWide(kRegistryExtensions).c_str());
   for (; iterator_user_key.Valid(); ++iterator_user_key)
     keys.insert(iterator_user_key.Name());
 
@@ -70,7 +70,7 @@ void ExternalRegistryLoader::LoadOnFileThread() {
   for (std::set<string16>::const_iterator it = keys.begin();
        it != keys.end(); ++it) {
     base::win::RegKey key;
-    string16 key_path = base::ASCIIToWide(kRegistryExtensions);
+    string16 key_path = ASCIIToWide(kRegistryExtensions);
     key_path.append(L"\\");
     key_path.append(*it);
     if (key.Open(HKEY_LOCAL_MACHINE,
@@ -124,7 +124,7 @@ void ExternalRegistryLoader::LoadOnFileThread() {
       continue;
     }
 
-    std::string id = base::WideToASCII(*it);
+    std::string id = WideToASCII(*it);
     StringToLowerASCII(&id);
     if (!Extension::IdIsValid(id)) {
       LOG(ERROR) << "Invalid id value " << id
@@ -132,7 +132,7 @@ void ExternalRegistryLoader::LoadOnFileThread() {
       continue;
     }
 
-    Version version(base::WideToASCII(extension_version));
+    Version version(WideToASCII(extension_version));
     if (!version.IsValid()) {
       LOG(ERROR) << "Invalid version value " << extension_version
                  << " for key " << key_path << ".";
@@ -141,7 +141,7 @@ void ExternalRegistryLoader::LoadOnFileThread() {
 
     prefs->SetString(
         id + "." + ExternalProviderImpl::kExternalVersion,
-        base::WideToASCII(extension_version));
+        WideToASCII(extension_version));
     prefs->SetString(
         id + "." + ExternalProviderImpl::kExternalCrx,
         extension_path_str);

@@ -335,8 +335,8 @@ ModuleEnumerator::ModuleStatus ModuleEnumerator::Match(
   DCHECK(!strstr(blacklisted.version_to, " "));
 
   std::string filename_hash, location_hash;
-  GenerateHash(base::WideToUTF8(module.name), &filename_hash);
-  GenerateHash(base::WideToUTF8(module.location), &location_hash);
+  GenerateHash(WideToUTF8(module.name), &filename_hash);
+  GenerateHash(WideToUTF8(module.location), &location_hash);
 
   // Filenames are mandatory. Location is mandatory if given.
   if (filename_hash == blacklisted.filename &&
@@ -364,8 +364,8 @@ ModuleEnumerator::ModuleStatus ModuleEnumerator::Match(
 
       std::string desc_or_signer(blacklisted.desc_or_signer);
       std::string signer_hash, description_hash;
-      GenerateHash(base::WideToUTF8(module.digital_signer), &signer_hash);
-      GenerateHash(base::WideToUTF8(module.description), &description_hash);
+      GenerateHash(WideToUTF8(module.digital_signer), &signer_hash);
+      GenerateHash(WideToUTF8(module.description), &description_hash);
 
       // If signatures match (or both are empty), then we have a winner.
       if (signer_hash == desc_or_signer)
@@ -606,7 +606,7 @@ void ModuleEnumerator::PreparePathMappings() {
   for (std::vector<string16>::const_iterator variable = env_vars.begin();
        variable != env_vars.end(); ++variable) {
     std::string path;
-    if (environment->GetVar(base::WideToASCII(*variable).c_str(), &path)) {
+    if (environment->GetVar(WideToASCII(*variable).c_str(), &path)) {
       path_mapping_.push_back(
           std::make_pair(base::i18n::ToLower(UTF8ToUTF16(path)) + L"\\",
                          L"%" + base::i18n::ToLower(*variable) + L"%"));
@@ -834,16 +834,16 @@ ListValue* EnumerateModulesModel::GetModuleList() const {
     if ((module->type & ModuleEnumerator::LOADED_MODULE) == 0) {
       // Module is not loaded, denote type of module.
       if (module->type & ModuleEnumerator::SHELL_EXTENSION)
-        type_string = base::ASCIIToWide("Shell Extension");
+        type_string = ASCIIToWide("Shell Extension");
       if (module->type & ModuleEnumerator::WINSOCK_MODULE_REGISTRATION) {
         if (!type_string.empty())
-          type_string += base::ASCIIToWide(", ");
-        type_string += base::ASCIIToWide("Winsock");
+          type_string += ASCIIToWide(", ");
+        type_string += ASCIIToWide("Winsock");
       }
       // Must be one of the above type.
       DCHECK(!type_string.empty());
       if (!limited_mode_) {
-        type_string += base::ASCIIToWide(" -- ");
+        type_string += ASCIIToWide(" -- ");
         type_string += l10n_util::GetStringUTF16(IDS_CONFLICTS_NOT_LOADED_YET);
       }
     }
@@ -859,9 +859,9 @@ ListValue* EnumerateModulesModel::GetModuleList() const {
     if (!limited_mode_) {
       // Figure out the possible resolution help string.
       string16 actions;
-      string16 separator = base::ASCIIToWide(" ") + l10n_util::GetStringUTF16(
+      string16 separator = ASCIIToWide(" ") + l10n_util::GetStringUTF16(
           IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_SEPERATOR) +
-          base::ASCIIToWide(" ");
+          ASCIIToWide(" ");
 
       if (module->recommended_action & ModuleEnumerator::NONE) {
         actions = l10n_util::GetStringUTF16(
@@ -885,9 +885,9 @@ ListValue* EnumerateModulesModel::GetModuleList() const {
         actions += l10n_util::GetStringUTF16(
             IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_DISABLE);
       }
-      string16 possible_resolution = actions.empty() ? base::ASCIIToWide("") :
+      string16 possible_resolution = actions.empty() ? ASCIIToWide("") :
           l10n_util::GetStringUTF16(IDS_CONFLICTS_CHECK_POSSIBLE_ACTIONS) +
-          base::ASCIIToWide(" ") +
+          ASCIIToWide(" ") +
           actions;
       data->SetString("possibleResolution", possible_resolution);
       data->SetString("help_url",
@@ -970,10 +970,10 @@ GURL EnumerateModulesModel::ConstructHelpCenterUrl(
 
   // Construct the needed hashes.
   std::string filename, location, description, signer;
-  GenerateHash(base::WideToUTF8(module.name), &filename);
-  GenerateHash(base::WideToUTF8(module.location), &location);
-  GenerateHash(base::WideToUTF8(module.description), &description);
-  GenerateHash(base::WideToUTF8(module.digital_signer), &signer);
+  GenerateHash(WideToUTF8(module.name), &filename);
+  GenerateHash(WideToUTF8(module.location), &location);
+  GenerateHash(WideToUTF8(module.description), &description);
+  GenerateHash(WideToUTF8(module.digital_signer), &signer);
 
   string16 url = l10n_util::GetStringFUTF16(IDS_HELP_CENTER_VIEW_CONFLICTS,
       ASCIIToUTF16(filename), ASCIIToUTF16(location),

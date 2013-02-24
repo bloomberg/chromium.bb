@@ -139,7 +139,7 @@ bool AffReader::EncodingToUTF8(const std::string& encoded,
   if (!base::CodepageToWide(encoded, encoding(),
                             base::OnStringConversionError::FAIL, &wide_word))
     return false;
-  *utf8 = base::WideToUTF8(wide_word);
+  *utf8 = WideToUTF8(wide_word);
   return true;
 }
 

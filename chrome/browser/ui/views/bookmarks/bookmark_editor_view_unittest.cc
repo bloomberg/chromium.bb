@@ -185,7 +185,7 @@ TEST_F(BookmarkEditorViewTest, EditURLKeepsPosition) {
                BookmarkEditor::EditDetails::EditNode(GetNode("a")),
                BookmarkEditorView::SHOW_TREE);
 
-  SetURLText(base::UTF8ToWide(GURL(base_path() + "new_a").spec()));
+  SetURLText(UTF8ToWide(GURL(base_path() + "new_a").spec()));
 
   ApplyEdits(editor_tree_model()->GetRoot()->GetChild(0));
 
@@ -219,7 +219,7 @@ TEST_F(BookmarkEditorViewTest, ChangeParentAndURL) {
                BookmarkEditor::EditDetails::EditNode(GetNode("a")),
                BookmarkEditorView::SHOW_TREE);
 
-  SetURLText(base::UTF8ToWide(GURL(base_path() + "new_a").spec()));
+  SetURLText(UTF8ToWide(GURL(base_path() + "new_a").spec()));
 
   ApplyEdits(editor_tree_model()->GetRoot()->GetChild(1));
 
@@ -274,7 +274,7 @@ TEST_F(BookmarkEditorViewTest, NewURL) {
                    bb_node, 1, GURL(), string16()),
                BookmarkEditorView::SHOW_TREE);
 
-  SetURLText(base::UTF8ToWide(GURL(base_path() + "a").spec()));
+  SetURLText(UTF8ToWide(GURL(base_path() + "a").spec()));
   SetTitleText(L"new_a");
 
   ApplyEdits(editor_tree_model()->GetRoot()->GetChild(0));
@@ -294,7 +294,7 @@ TEST_F(BookmarkEditorViewTest, ChangeURLNoTree) {
                  model_->other_node()->GetChild(0)),
                BookmarkEditorView::NO_TREE);
 
-  SetURLText(base::UTF8ToWide(GURL(base_path() + "a").spec()));
+  SetURLText(UTF8ToWide(GURL(base_path() + "a").spec()));
   SetTitleText(L"new_a");
 
   ApplyEdits(NULL);

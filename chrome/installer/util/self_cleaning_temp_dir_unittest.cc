@@ -34,7 +34,7 @@ std::wstring GetRandomFilename() {
   // Replace the first digit with the letter 'R' (for "random", get it?).
   result[0] = 'R';
 
-  return base::ASCIIToWide(result);
+  return ASCIIToWide(result);
 }
 
 }  // namespace

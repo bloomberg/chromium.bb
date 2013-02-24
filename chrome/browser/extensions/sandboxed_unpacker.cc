@@ -749,7 +749,7 @@ bool SandboxedUnpacker::RewriteCatalogFiles() {
     // TODO(viettrungluu): Fix the |FilePath::FromWStringHack(UTF8ToWide())|
     // hack and remove the corresponding #include.
     base::FilePath relative_path =
-        base::FilePath::FromWStringHack(base::UTF8ToWide(*key_it));
+        base::FilePath::FromWStringHack(UTF8ToWide(*key_it));
     relative_path = relative_path.Append(Extension::kMessagesFilename);
     if (relative_path.IsAbsolute() || relative_path.ReferencesParent()) {
       // Invalid path for catalog.

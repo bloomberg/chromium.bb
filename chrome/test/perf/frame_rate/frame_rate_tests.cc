@@ -231,7 +231,7 @@ class FrameRateTest
         &json));
 
     std::map<std::string, std::string> results;
-    ASSERT_TRUE(JsonDictionaryToMap(base::WideToUTF8(json), &results));
+    ASSERT_TRUE(JsonDictionaryToMap(WideToUTF8(json), &results));
 
     ASSERT_TRUE(results.find("mean") != results.end());
     ASSERT_TRUE(results.find("sigma") != results.end());

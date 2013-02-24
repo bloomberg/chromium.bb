@@ -80,7 +80,7 @@ void SetActiveURL(const GURL& url) {
       return;
   }
 
-  (set_active_url)(base::UTF8ToWide(url.possibly_invalid_spec()).c_str());
+  (set_active_url)(UTF8ToWide(url.possibly_invalid_spec()).c_str());
 }
 
 void SetClientId(const std::string& client_id) {
@@ -91,7 +91,7 @@ void SetClientId(const std::string& client_id) {
   if (str.empty())
     return;
 
-  std::wstring wstr = base::ASCIIToWide(str);
+  std::wstring wstr = ASCIIToWide(str);
   std::wstring old_wstr;
   if (!GoogleUpdateSettings::GetMetricsId(&old_wstr) ||
       wstr != old_wstr)
@@ -114,7 +114,7 @@ void SetClientId(const std::string& client_id) {
 std::string GetClientId() {
   std::wstring wstr_client_id;
   if (GoogleUpdateSettings::GetMetricsId(&wstr_client_id))
-    return base::WideToASCII(wstr_client_id);
+    return WideToASCII(wstr_client_id);
   else
     return std::string();
 }
@@ -149,7 +149,7 @@ void SetActiveExtensions(const std::set<std::string>& extension_ids) {
   std::set<std::string>::const_iterator iter = extension_ids.begin();
   for (size_t i = 0; i < kMaxReportedActiveExtensions; ++i) {
     if (iter != extension_ids.end()) {
-      (set_extension_id)(i, base::ASCIIToWide(iter->c_str()).c_str());
+      (set_extension_id)(i, ASCIIToWide(iter->c_str()).c_str());
       ++iter;
     } else {
       (set_extension_id)(i, L"");
@@ -189,7 +189,7 @@ void SetPrinterInfo(const char* printer_info) {
     if (!set_printer_info)
       return;
   }
-  (set_printer_info)(base::UTF8ToWide(printer_info).c_str());
+  (set_printer_info)(UTF8ToWide(printer_info).c_str());
 }
 
 void SetCommandLine(const CommandLine* command_line) {

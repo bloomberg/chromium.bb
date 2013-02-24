@@ -552,7 +552,7 @@ void ExternalTabContainerWin::AddNewContents(WebContents* source,
     attach_params_.dimensions = initial_pos;
     attach_params_.user_gesture = user_gesture;
     attach_params_.disposition = disposition;
-    attach_params_.profile_name = base::WideToUTF8(
+    attach_params_.profile_name = WideToUTF8(
         profile->GetPath().DirName().BaseName().value());
     automation_->Send(new AutomationMsg_AttachExternalTab(
         tab_handle_, attach_params_));
@@ -1020,9 +1020,9 @@ bool ExternalTabContainerWin::InitNavigationInfo(
       web_contents_->GetController().GetCurrentEntryIndex();
   nav_info->url = entry->GetURL();
   nav_info->referrer = entry->GetReferrer().url;
-  nav_info->title = base::UTF16ToWideHack(entry->GetTitle());
+  nav_info->title = UTF16ToWideHack(entry->GetTitle());
   if (nav_info->title.empty())
-    nav_info->title = base::UTF8ToWide(nav_info->url.spec());
+    nav_info->title = UTF8ToWide(nav_info->url.spec());
 
   nav_info->security_style = entry->GetSSL().security_style;
   int content_status = entry->GetSSL().content_status;

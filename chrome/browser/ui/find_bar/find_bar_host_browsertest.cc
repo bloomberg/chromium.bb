@@ -138,7 +138,7 @@ class FindInPageControllerTest : public InProcessBrowserTest {
                       bool case_sensitive,
                       int* ordinal) {
     return ui_test_utils::FindInPage(
-        web_contents, base::WideToUTF16(std::wstring(search_str)),
+        web_contents, WideToUTF16(std::wstring(search_str)),
         forward, case_sensitive, ordinal, NULL);
   }
 
@@ -320,8 +320,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_SearchWithinSpecialURL) {
   FlushHistoryService();
   EXPECT_EQ(1,
             FindInPageWchar(web_contents,
-                            base::ASCIIToWide(download_url.spec()).c_str(),
-                            kFwd, kIgnoreCase, NULL));
+                            ASCIIToWide(download_url.spec()).c_str(), kFwd,
+                            kIgnoreCase, NULL));
 }
 
 // Verify search selection coordinates. The data file used is set-up such that
@@ -333,9 +333,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageSpecialURLs) {
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ui_test_utils::NavigateToURL(browser(), GetURL("specialchar.html"));
-  ui_test_utils::FindInPage(web_contents, base::WideToUTF16(search_string),
+  ui_test_utils::FindInPage(web_contents, WideToUTF16(search_string),
                             kFwd, kIgnoreCase, NULL, &first);
-  ui_test_utils::FindInPage(web_contents, base::WideToUTF16(search_string),
+  ui_test_utils::FindInPage(web_contents, WideToUTF16(search_string),
                             kFwd, kIgnoreCase, NULL, &second);
 
   // We have search occurrence in the same row, so top-bottom coordinates should
@@ -346,7 +346,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageSpecialURLs) {
   ASSERT_LT(first.right(), second.right());
 
   ui_test_utils::FindInPage(
-      web_contents, base::WideToUTF16(search_string), kBack, kIgnoreCase, NULL,
+      web_contents, WideToUTF16(search_string), kBack, kIgnoreCase, NULL,
       &first_reverse);
   // We find next and we go back so find coordinates should be the same as
   // previous ones.
@@ -361,11 +361,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   ui_test_utils::NavigateToURL(browser(), GetURL("specialchar.html"));
 
   std::wstring search_string =
-      L"\u4e2d\u65b0\u793e\u8bb0\u8005\u5b8b"
-      L"\u5409\u6cb3\u6444\u4e2d\u65b0\u7f51";
+      L"\u4e2d\u65b0\u793e\u8bb0\u8005\u5b8b\u5409\u6cb3\u6444\u4e2d\u65b0\u7f51";
   EXPECT_EQ(0, ui_test_utils::FindInPage(
-      web_contents, base::WideToUTF16(search_string), kFwd, kIgnoreCase, NULL,
-      NULL));
+      web_contents, WideToUTF16(search_string), kFwd, kIgnoreCase, NULL, NULL));
 }
 
 // Verifies that span and lists are searchable.
@@ -376,13 +374,11 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, SpanAndListsSearchable) {
 
   std::wstring search_string = L"has light blue eyes and my father has dark";
   EXPECT_EQ(1, ui_test_utils::FindInPage(
-      web_contents, base::WideToUTF16(search_string), kFwd, kIgnoreCase, NULL,
-      NULL));
+      web_contents, WideToUTF16(search_string), kFwd, kIgnoreCase, NULL, NULL));
 
   search_string = L"Google\nApple\nandroid";
   EXPECT_EQ(1, ui_test_utils::FindInPage(
-      web_contents, base::WideToUTF16(search_string), kFwd, kIgnoreCase, NULL,
-      NULL));
+      web_contents, WideToUTF16(search_string), kFwd, kIgnoreCase, NULL, NULL));
 }
 
 // Find in a very large page.
@@ -408,7 +404,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindLongString) {
       base::FilePath().AppendASCII("LongFind.txt"));
   std::string query;
   file_util::ReadFileToString(path, &query);
-  std::wstring search_string = base::UTF8ToWide(query);
+  std::wstring search_string = UTF8ToWide(query);
   EXPECT_EQ(1,
             FindInPageWchar(web_contents, search_string.c_str(),
                             kFwd, kIgnoreCase, NULL));
@@ -471,7 +467,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindWholeFileContent) {
 
   std::string query;
   file_util::ReadFileToString(path, &query);
-  std::wstring search_string = base::UTF8ToWide(query);
+  std::wstring search_string = UTF8ToWide(query);
   EXPECT_EQ(1,
             FindInPageWchar(web_contents, search_string.c_str(),
                             false, false, NULL));
@@ -1194,7 +1190,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PreferPreviousSearch) {
   ui_test_utils::FindInPage(web_contents_1, string16(),
                             kFwd, kIgnoreCase, &ordinal, NULL);
   EXPECT_EQ(FindTabHelper::FromWebContents(web_contents_1)->find_text(),
-            base::WideToUTF16(L"text"));
+            WideToUTF16(L"text"));
 }
 
 // This tests that whenever you close and reopen the Find bar, it should show

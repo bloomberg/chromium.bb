@@ -88,8 +88,7 @@ void PasswordStoreWin::DBHandler::GetIE7Login(
     const PasswordStoreWin::ConsumerCallbackRunner& callback_runner) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   IE7PasswordInfo info;
-  info.url_hash =
-      ie7_password::GetUrlHash(base::UTF8ToWide(form.origin.spec()));
+  info.url_hash = ie7_password::GetUrlHash(UTF8ToWide(form.origin.spec()));
   WebDataService::Handle handle = web_data_service_->GetIE7Login(info, this);
   pending_requests_[handle] =
       RequestInfo(new PasswordForm(form), callback_runner);
@@ -111,7 +110,7 @@ PasswordForm* PasswordStoreWin::DBHandler::GetIE7Result(
     web_data_service_->RemoveIE7Login(info);
     std::wstring username;
     std::wstring password;
-    std::wstring url = base::ASCIIToWide(form.origin.spec());
+    std::wstring url = ASCIIToWide(form.origin.spec());
     if (!ie7_password::DecryptPassword(url, info.encrypted_data,
                                        &username, &password)) {
       return NULL;

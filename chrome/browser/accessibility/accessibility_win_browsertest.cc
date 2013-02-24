@@ -176,7 +176,7 @@ void RecursiveFindNodeInAccessibilityTree(
   for (int i = 0; i < depth; i++) {
     printf("  ");
   }
-  printf("role=%d name=%s\n", role.lVal, base::WideToUTF8(name).c_str());
+  printf("role=%d name=%s\n", role.lVal, WideToUTF8(name).c_str());
 
   if (expected_role == role.lVal && expected_name == name) {
     *found = true;

@@ -141,7 +141,7 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
       Image png_content(png);
       double diff_emf = emf_content.PercentageDifferent(test_content);
 
-      EXPECT_EQ(0., diff_emf) << base::WideToUTF8(verification_name) <<
+      EXPECT_EQ(0., diff_emf) << WideToUTF8(verification_name) <<
           " original size:" << emf_content.size().ToString() <<
           " result size:" << test_content.size().ToString();
       if (diff_emf) {
@@ -154,7 +154,7 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
       // This verification is only to know that the EMF rendering stays
       // immutable.
       double diff_png = emf_content.PercentageDifferent(png_content);
-      EXPECT_EQ(0., diff_png) << base::WideToUTF8(verification_name) <<
+      EXPECT_EQ(0., diff_png) << WideToUTF8(verification_name) <<
           " original size:" << emf_content.size().ToString() <<
           " result size:" << test_content.size().ToString();
       if (diff_png) {
@@ -204,7 +204,7 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
       base::FilePath file;
       while (!(file = enumerator.Next()).empty()) {
         std::wstring ext = file.Extension();
-        if (base::strcasecmp(base::WideToUTF8(ext).c_str(), ".emf") == 0) {
+        if (base::strcasecmp(WideToUTF8(ext).c_str(), ".emf") == 0) {
           EXPECT_FALSE(found_emf) << "Found a leftover .EMF file: \"" <<
               emf_file << "\" and \"" << file.value() <<
               "\" when looking for \"" << verification_name << "\"";
@@ -212,7 +212,7 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
           emf_file = file.value();
           continue;
         }
-        if (base::strcasecmp(base::WideToUTF8(ext).c_str(), ".prn") == 0) {
+        if (base::strcasecmp(WideToUTF8(ext).c_str(), ".prn") == 0) {
           EXPECT_FALSE(found_prn) << "Found a leftover .PRN file: \"" <<
               prn_file << "\" and \"" << file.value() <<
               "\" when looking for \"" << verification_name << "\"";

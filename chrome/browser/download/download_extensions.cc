@@ -219,7 +219,7 @@ DownloadDangerLevel GetFileDangerLevel(const base::FilePath& path) {
   if (!IsStringASCII(extension))
     return NotDangerous;
 #if defined(OS_WIN)
-  std::string ascii_extension = base::WideToASCII(extension);
+  std::string ascii_extension = WideToASCII(extension);
 #elif defined(OS_POSIX)
   std::string ascii_extension = extension;
 #endif

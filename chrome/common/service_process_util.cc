@@ -107,7 +107,7 @@ std::string GetServiceProcessScopedName(const std::string& append_str) {
   base::FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
 #if defined(OS_WIN)
-  std::string user_data_dir_path = base::WideToUTF8(user_data_dir.value());
+  std::string user_data_dir_path = WideToUTF8(user_data_dir.value());
 #elif defined(OS_POSIX)
   std::string user_data_dir_path = user_data_dir.value();
 #endif  // defined(OS_WIN)

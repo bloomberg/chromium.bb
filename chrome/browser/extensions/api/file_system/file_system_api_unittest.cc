@@ -48,7 +48,7 @@ AcceptOption* BuildAcceptOption(std::string description,
 }
 
 #if defined(OS_WIN)
-#define ToStringType base::UTF8ToWide
+#define ToStringType UTF8ToWide
 #else
 #define ToStringType
 #endif

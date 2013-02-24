@@ -155,10 +155,10 @@ class FirefoxObserver : public ProfileWriter,
     EXPECT_EQ(p.origin, form.origin.spec());
     EXPECT_EQ(p.realm, form.signon_realm);
     EXPECT_EQ(p.action, form.action.spec());
-    EXPECT_EQ(base::WideToUTF16(p.username_element), form.username_element);
-    EXPECT_EQ(base::WideToUTF16(p.username), form.username_value);
-    EXPECT_EQ(base::WideToUTF16(p.password_element), form.password_element);
-    EXPECT_EQ(base::WideToUTF16(p.password), form.password_value);
+    EXPECT_EQ(WideToUTF16(p.username_element), form.username_element);
+    EXPECT_EQ(WideToUTF16(p.username), form.username_value);
+    EXPECT_EQ(WideToUTF16(p.password_element), form.password_element);
+    EXPECT_EQ(WideToUTF16(p.password), form.password_value);
     EXPECT_EQ(p.blacklisted, form.blacklisted_by_user);
     ++password_count_;
   }
@@ -190,7 +190,7 @@ class FirefoxObserver : public ProfileWriter,
       string16 keyword = template_urls[i]->keyword();
       for (size_t j = 0; j < arraysize(kFirefox2Keywords); ++j) {
         if (template_urls[i]->keyword() ==
-            base::WideToUTF16Hack(kFirefox2Keywords[j].keyword)) {
+            WideToUTF16Hack(kFirefox2Keywords[j].keyword)) {
           EXPECT_EQ(kFirefox2Keywords[j].url, template_urls[i]->url());
           found = true;
           break;
@@ -301,10 +301,10 @@ class Firefox3Observer : public ProfileWriter,
     EXPECT_EQ(p.origin, form.origin.spec());
     EXPECT_EQ(p.realm, form.signon_realm);
     EXPECT_EQ(p.action, form.action.spec());
-    EXPECT_EQ(base::WideToUTF16(p.username_element), form.username_element);
-    EXPECT_EQ(base::WideToUTF16(p.username), form.username_value);
-    EXPECT_EQ(base::WideToUTF16(p.password_element), form.password_element);
-    EXPECT_EQ(base::WideToUTF16(p.password), form.password_value);
+    EXPECT_EQ(WideToUTF16(p.username_element), form.username_element);
+    EXPECT_EQ(WideToUTF16(p.username), form.username_value);
+    EXPECT_EQ(WideToUTF16(p.password_element), form.password_element);
+    EXPECT_EQ(WideToUTF16(p.password), form.password_value);
     EXPECT_EQ(p.blacklisted, form.blacklisted_by_user);
     ++password_count_;
   }
@@ -341,7 +341,7 @@ class Firefox3Observer : public ProfileWriter,
       string16 keyword = template_urls[i]->keyword();
       for (size_t j = 0; j < arraysize(kFirefox3Keywords); ++j) {
         if (template_urls[i]->keyword() ==
-            base::WideToUTF16Hack(kFirefox3Keywords[j].keyword)) {
+            WideToUTF16Hack(kFirefox3Keywords[j].keyword)) {
           EXPECT_EQ(kFirefox3Keywords[j].url, template_urls[i]->url());
           found = true;
           break;
@@ -507,7 +507,7 @@ TEST(FirefoxImporterTest, Firefox2NSS3Decryptor) {
       decryptor_proxy.Decrypt("MDIEEPgAAAAAAAAAAAAAAAAAAAEwFAYIKoZIhvcNAwcECBJ"
                               "M63MpT9rtBAjMCm7qo/EhlA=="));
   // Test UTF-16 encoding.
-  EXPECT_EQ(base::WideToUTF16(L"\x4E2D"),
+  EXPECT_EQ(WideToUTF16(L"\x4E2D"),
       decryptor_proxy.Decrypt("MDIEEPgAAAAAAAAAAAAAAAAAAAEwFAYIKoZIhvcNAwcECN9"
                               "OQ5ZFmhb8BAiFo1Z+fUvaIQ=="));
 }
@@ -532,7 +532,7 @@ TEST(FirefoxImporterTest, Firefox3NSS3Decryptor) {
       decryptor_proxy.Decrypt("MDIEEPgAAAAAAAAAAAAAAAAAAAEwFAYIKoZIhvcNAwcECKa"
                               "jtRg4qFSHBAhv9luFkXgDJA=="));
   // Test UTF-16 encoding.
-  EXPECT_EQ(base::WideToUTF16(L"\x4E2D"),
+  EXPECT_EQ(WideToUTF16(L"\x4E2D"),
       decryptor_proxy.Decrypt("MDIEEPgAAAAAAAAAAAAAAAAAAAEwFAYIKoZIhvcNAwcECLW"
                               "qqiccfQHWBAie74hxnULxlw=="));
 }
@@ -581,9 +581,9 @@ TEST(FirefoxImporterTest, Firefox2BookmarkParse) {
       "SHORTCUTURL=\"\xE4\xB8\xAD\">\xE4\xB8\xAD\xE6\x96\x87</A>",
       charset, &title, &url, &favicon, &shortcut, &add_date, &post_data);
   EXPECT_TRUE(result);
-  EXPECT_EQ(L"\x4E2D\x6587", base::UTF16ToWide(title));
+  EXPECT_EQ(L"\x4E2D\x6587", UTF16ToWide(title));
   EXPECT_EQ("http://chinese.site.cn/path?query=1#ref", url.spec());
-  EXPECT_EQ(L"\x4E2D", base::UTF16ToWide(shortcut));
+  EXPECT_EQ(L"\x4E2D", UTF16ToWide(shortcut));
   EXPECT_EQ(string16(), post_data);
   EXPECT_TRUE(base::Time() == add_date);
 

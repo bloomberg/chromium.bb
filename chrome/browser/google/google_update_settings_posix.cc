@@ -65,7 +65,7 @@ bool GoogleUpdateSettings::SetMetricsId(const std::wstring& client_id) {
     return false;
 
   // Since user has consented, write the metrics id to the file.
-  google_update::posix_guid() = base::WideToASCII(client_id);
+  google_update::posix_guid() = WideToASCII(client_id);
   return GoogleUpdateSettings::SetCollectStatsConsent(true);
 }
 

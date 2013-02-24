@@ -448,9 +448,8 @@ void SetImportPreferencesAndLaunchImport(
     importer_list->DetectSourceProfilesHack();
     if (!ImportSettingsWin(
         NULL, importer_list->GetSourceProfileAt(0).importer_type,
-        out_prefs->do_import_items,
-        base::FilePath::FromWStringHack(
-            base::UTF8ToWide(import_bookmarks_path)), true)) {
+        out_prefs->do_import_items, base::FilePath::FromWStringHack(UTF8ToWide(
+                                        import_bookmarks_path)), true)) {
       LOG(WARNING) << "silent import failed";
     }
   }

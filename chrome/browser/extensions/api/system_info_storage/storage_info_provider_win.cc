@@ -47,8 +47,7 @@ bool StorageInfoProviderWin::QueryInfo(StorageInfo* info) {
   // Iterate the drive string by 4 wchars each step
   for (unsigned int i = 0; i < string_length; i += 4) {
     linked_ptr<StorageUnitInfo> unit(new StorageUnitInfo());
-    if (QueryUnitInfo(base::WideToUTF8(&logical_drive_strings[i]),
-                      unit.get())) {
+    if (QueryUnitInfo(WideToUTF8(&logical_drive_strings[i]), unit.get())) {
       info->push_back(unit);
     }
   }

@@ -8,7 +8,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/string_util.h"  // TODO(brettw) remove when base::WideToASCII moves.
+#include "base/string_util.h"  // TODO(brettw) remove when WideToASCII moves.
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/parsers/metadata_parser_filebase.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,7 +34,7 @@ class FileMetaDataParserTest : public testing::Test {
 #if defined(OS_POSIX)
     return test_file_.BaseName().value();
 #elif defined(OS_WIN)
-    return base::WideToASCII(test_file_.BaseName().value());
+    return WideToASCII(test_file_.BaseName().value());
 #endif  // defined(OS_POSIX)
   }
 

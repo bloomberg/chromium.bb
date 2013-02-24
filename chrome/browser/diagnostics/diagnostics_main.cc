@@ -216,7 +216,7 @@ class TestWriter {
   }
 
   bool WriteInfoText(const std::string& txt) {
-    return WriteInfoText(base::UTF8ToWide(txt));
+    return WriteInfoText(UTF8ToWide(txt));
   }
 
   // Write a result block. It consist of two lines. The first line
@@ -318,8 +318,8 @@ class TestController : public DiagnosticsModel::Observer {
  private:
   void ShowResult(DiagnosticsModel::TestInfo* test_info) {
     bool success = (DiagnosticsModel::TEST_OK == test_info->GetResult());
-    writer_->WriteResult(success, base::UTF16ToWide(test_info->GetTitle()),
-                         base::UTF16ToWide(test_info->GetAdditionalInfo()));
+    writer_->WriteResult(success, UTF16ToWide(test_info->GetTitle()),
+                         UTF16ToWide(test_info->GetAdditionalInfo()));
   }
 
   DiagnosticsModel* model_;

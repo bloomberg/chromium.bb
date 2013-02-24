@@ -109,8 +109,8 @@ TEST_F(SpellCheckProviderTest, CancelUnnecessaryRequests) {
   // Test that the SpellCheckProvider class sends a request when it receives a
   // Russian word.
   const wchar_t kRussianWord[] = L"\x0431\x0451\x0434\x0440\x0430";
-  provider_.RequestTextChecking(WebKit::WebString(
-      base::WideToUTF16(kRussianWord)), &completion);
+  provider_.RequestTextChecking(WebKit::WebString(WideToUTF16(kRussianWord)),
+                                &completion);
   EXPECT_EQ(completion.completion_count_, 4U);
   EXPECT_EQ(completion.cancellation_count_, 2U);
 }

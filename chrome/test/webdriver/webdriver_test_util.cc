@@ -32,7 +32,7 @@ RestoreKeyboardLayoutOnDestruct::~RestoreKeyboardLayoutOnDestruct() {
 #if defined(OS_WIN)
 bool SwitchKeyboardLayout(const std::string& input_locale_identifier) {
   HKL layout = LoadKeyboardLayout(
-      base::UTF8ToWide(input_locale_identifier).c_str(), 0);
+      UTF8ToWide(input_locale_identifier).c_str(), 0);
   if (!layout)
     return false;
   return !!ActivateKeyboardLayout(layout, 0);

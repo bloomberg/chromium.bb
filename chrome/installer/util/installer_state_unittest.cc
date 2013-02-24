@@ -276,9 +276,9 @@ TEST_F(InstallerStateTest, Basic) {
   EXPECT_FALSE(installer_dir.empty());
 
   base::FilePath new_version_dir(installer_state.target_path().Append(
-      base::UTF8ToWide(new_version.GetString())));
+      UTF8ToWide(new_version.GetString())));
   base::FilePath old_version_dir(installer_state.target_path().Append(
-      base::UTF8ToWide(old_version.GetString())));
+      UTF8ToWide(old_version.GetString())));
 
   EXPECT_FALSE(file_util::PathExists(new_version_dir));
   EXPECT_FALSE(file_util::PathExists(old_version_dir));
@@ -361,8 +361,7 @@ TEST_F(InstallerStateTest, WithProduct) {
     EXPECT_TRUE(chrome_key.Valid());
     if (chrome_key.Valid()) {
       chrome_key.WriteValue(google_update::kRegVersionField,
-                            base::UTF8ToWide(
-                                current_version.GetString()).c_str());
+                            UTF8ToWide(current_version.GetString()).c_str());
       machine_state.Initialize();
       // TODO(tommi): Also test for when there exists a new_chrome.exe.
       Version found_version(*installer_state.GetCurrentVersion(machine_state));
@@ -533,12 +532,11 @@ TEST_F(InstallerStateTest, MAYBE_RemoveOldVersionDirs) {
     installer_state.target_path().Append(L"1.2.3.4"),
     installer_state.target_path().Append(L"1.2.3.5"),
     installer_state.target_path().Append(L"1.2.3.6"),
-    installer_state.target_path().Append(base::ASCIIToWide(kOldVersion)),
-    installer_state.target_path().Append(
-        base::ASCIIToWide(kOldChromeExeVersion)),
+    installer_state.target_path().Append(ASCIIToWide(kOldVersion)),
+    installer_state.target_path().Append(ASCIIToWide(kOldChromeExeVersion)),
     installer_state.target_path().Append(L"2.1.1.0"),
-    installer_state.target_path().Append(base::ASCIIToWide(kChromeExeVersion)),
-    installer_state.target_path().Append(base::ASCIIToWide(kNewVersion)),
+    installer_state.target_path().Append(ASCIIToWide(kChromeExeVersion)),
+    installer_state.target_path().Append(ASCIIToWide(kNewVersion)),
     installer_state.target_path().Append(L"3.9.1.1"),
   };
 
@@ -599,7 +597,7 @@ TEST_F(InstallerStateTest, MAYBE_RemoveOldVersionDirs) {
   for (base::FilePath next_version = version_enum.Next(); !next_version.empty();
        next_version = version_enum.Next()) {
     base::FilePath dir_name(next_version.BaseName());
-    Version version(base::WideToASCII(dir_name.value()));
+    Version version(WideToASCII(dir_name.value()));
     if (version.IsValid()) {
       EXPECT_TRUE(expected_remaining_dirs.erase(version.GetString()))
           << "Unexpected version dir found: " << version.GetString();
@@ -645,7 +643,7 @@ class InstallerStateCriticalVersionTest : public ::testing::Test {
         CommandLine::FromString(L"setup.exe") :
         CommandLine::FromString(
             L"setup.exe --critical-update-version=" +
-            base::ASCIIToWide(version->GetString()));
+            ASCIIToWide(version->GetString()));
     prefs_.reset(new MasterPreferences(cmd_line_));
     machine_state_.Initialize();
     installer_state_.Initialize(cmd_line_, *prefs_, machine_state_);

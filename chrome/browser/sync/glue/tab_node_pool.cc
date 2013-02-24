@@ -63,7 +63,7 @@ int64 TabNodePool::GetFreeTabNode() {
     }
     // We fill the new node with just enough data so that in case of a crash/bug
     // we can identify the node as our own on re-association and reuse it.
-    tab_node.SetTitle(base::UTF8ToWide(tab_node_tag));
+    tab_node.SetTitle(UTF8ToWide(tab_node_tag));
     sync_pb::SessionSpecifics specifics;
     specifics.set_session_tag(machine_tag_);
     specifics.set_tab_node_id(tab_node_id);

@@ -67,8 +67,8 @@ class UrlFetchTest : public UIPerfTest {
     } else if (!wait_js_expr.empty()) {
       bool completed = WaitUntilJavaScriptCondition(
           tab.get(),
-          base::UTF8ToWide(wait_js_frame_xpath),
-          base::UTF8ToWide(wait_js_expr),
+          UTF8ToWide(wait_js_frame_xpath),
+          UTF8ToWide(wait_js_expr),
           wait_js_timeout);
       ASSERT_TRUE(completed);
     }
@@ -77,10 +77,10 @@ class UrlFetchTest : public UIPerfTest {
           "window.domAutomationController.send(%s);", var_to_fetch);
 
       std::wstring value;
-      bool success = tab->ExecuteAndExtractString(L"",
-          base::ASCIIToWide(script), &value);
+      bool success = tab->ExecuteAndExtractString(L"", ASCIIToWide(script),
+                                                  &value);
       ASSERT_TRUE(success);
-      result->javascript_variable = base::WideToUTF8(value);
+      result->javascript_variable = WideToUTF8(value);
     }
   }
 };

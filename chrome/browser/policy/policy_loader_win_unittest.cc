@@ -262,7 +262,7 @@ ScopedGroupPolicyRegistrySandbox::ScopedGroupPolicyRegistrySandbox() {
   // Generate a unique registry key for the override for each test. This
   // makes sure that tests executing in parallel won't delete each other's
   // key, at DeleteKeys().
-  key_name_ = base::ASCIIToWide(base::StringPrintf(
+  key_name_ = ASCIIToWide(base::StringPrintf(
         "SOFTWARE\\chromium unittest %d",
         base::Process::Current().pid()));
   std::wstring hklm_key_name = key_name_ + L"\\HKLM";

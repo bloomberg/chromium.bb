@@ -73,7 +73,7 @@ void CrashUploadListWin::ProcessPossibleCrashLogRecord(EVENTLOGRECORD* record) {
       std::wstring crash_id =
           message.substr(start_index, end_index - start_index);
       crashes().push_back(
-          CrashInfo(base::Sysbase::WideToUTF8(crash_id),
+          CrashInfo(base::SysWideToUTF8(crash_id),
                     base::Time::FromDoubleT(record->TimeGenerated)));
     }
   }

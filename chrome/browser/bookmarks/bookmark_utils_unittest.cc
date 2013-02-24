@@ -78,7 +78,7 @@ TEST_F(BookmarkUtilsTest, DoesBookmarkContainText) {
   EXPECT_FALSE(DoesBookmarkContainText(node, ASCIIToUTF16("cnn"), string()));
 
   // Tests for a Japanese IDN.
-  const string16 kDecodedIdn = base::WideToUTF16(L"\x30B0\x30FC\x30B0\x30EB");
+  const string16 kDecodedIdn = WideToUTF16(L"\x30B0\x30FC\x30B0\x30EB");
   node = model.AddURL(model.other_node(),
                       0,
                       ASCIIToUTF16("foo bar"),
@@ -108,24 +108,24 @@ TEST_F(BookmarkUtilsTest, DoesBookmarkContainText) {
   // Test with accents.
   node = model.AddURL(model.other_node(),
                       0,
-                      base::WideToUTF16(L"fr\u00E4n\u00E7\u00F3s\u00EA"),
+                      WideToUTF16(L"fr\u00E4n\u00E7\u00F3s\u00EA"),
                       GURL("http://www.google.com/search?q=FBA"));
   EXPECT_TRUE(DoesBookmarkContainText(node, ASCIIToUTF16("francose"),
                                       string()));
   EXPECT_TRUE(DoesBookmarkContainText(node, ASCIIToUTF16("FrAnCoSe"),
                                       string()));
-  EXPECT_TRUE(DoesBookmarkContainText(node, base::WideToUTF16(L"fr\u00E4ncose"),
+  EXPECT_TRUE(DoesBookmarkContainText(node, WideToUTF16(L"fr\u00E4ncose"),
                                       string()));
-  EXPECT_TRUE(DoesBookmarkContainText(node, base::WideToUTF16(L"fran\u00E7ose"),
+  EXPECT_TRUE(DoesBookmarkContainText(node, WideToUTF16(L"fran\u00E7ose"),
                                       string()));
-  EXPECT_TRUE(DoesBookmarkContainText(node, base::WideToUTF16(L"franc\u00F3se"),
+  EXPECT_TRUE(DoesBookmarkContainText(node, WideToUTF16(L"franc\u00F3se"),
                                       string()));
-  EXPECT_TRUE(DoesBookmarkContainText(node, base::WideToUTF16(L"francos\u00EA"),
+  EXPECT_TRUE(DoesBookmarkContainText(node, WideToUTF16(L"francos\u00EA"),
                                       string()));
   EXPECT_TRUE(DoesBookmarkContainText(
-      node, base::WideToUTF16(L"Fr\u00C4n\u00C7\u00F3S\u00EA"), string()));
+      node, WideToUTF16(L"Fr\u00C4n\u00C7\u00F3S\u00EA"), string()));
   EXPECT_TRUE(DoesBookmarkContainText(
-      node, base::WideToUTF16(L"fr\u00C4n\u00C7\u00D3s\u00CA"), string()));
+      node, WideToUTF16(L"fr\u00C4n\u00C7\u00D3s\u00CA"), string()));
   EXPECT_TRUE(DoesBookmarkContainText(node, ASCIIToUTF16("fba"), string()));
   EXPECT_TRUE(DoesBookmarkContainText(node, ASCIIToUTF16("FBA"), string()));
 }

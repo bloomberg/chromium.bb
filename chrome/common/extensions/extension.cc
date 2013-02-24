@@ -387,7 +387,7 @@ ExtensionResource Extension::GetResource(
 #if defined(OS_POSIX)
   base::FilePath relative_file_path(new_path);
 #elif defined(OS_WIN)
-  base::FilePath relative_file_path(base::UTF8ToWide(new_path));
+  base::FilePath relative_file_path(UTF8ToWide(new_path));
 #endif
   ExtensionResource r(id(), path(), relative_file_path);
   if ((creation_flags() & Extension::FOLLOW_SYMLINKS_ANYWHERE)) {
@@ -790,14 +790,14 @@ bool Extension::ShowConfigureContextMenus() const {
 
 std::set<base::FilePath> Extension::GetBrowserImages() const {
   std::set<base::FilePath> image_paths;
-  // TODO(viettrungluu): These |FilePath::FromWStringHack(base::UTF8ToWide())|
+  // TODO(viettrungluu): These |FilePath::FromWStringHack(UTF8ToWide())|
   // indicate that we're doing something wrong.
 
   // Extension icons.
   for (ExtensionIconSet::IconMap::const_iterator iter = icons().map().begin();
        iter != icons().map().end(); ++iter) {
     image_paths.insert(
-        base::FilePath::FromWStringHack(base::UTF8ToWide(iter->second)));
+        base::FilePath::FromWStringHack(UTF8ToWide(iter->second)));
   }
 
   // Theme images.
@@ -806,10 +806,8 @@ std::set<base::FilePath> Extension::GetBrowserImages() const {
     for (DictionaryValue::Iterator it(*theme_images); !it.IsAtEnd();
          it.Advance()) {
       std::string val;
-      if (it.value().GetAsString(&val)) {
-        image_paths.insert(base::FilePath::FromWStringHack(
-            base::UTF8ToWide(val)));
-      }
+      if (it.value().GetAsString(&val))
+        image_paths.insert(base::FilePath::FromWStringHack(UTF8ToWide(val)));
     }
   }
 
@@ -820,7 +818,7 @@ std::set<base::FilePath> Extension::GetBrowserImages() const {
          iter != page_action_info->default_icon.map().end();
          ++iter) {
       image_paths.insert(
-          base::FilePath::FromWStringHack(base::UTF8ToWide(iter->second)));
+          base::FilePath::FromWStringHack(UTF8ToWide(iter->second)));
     }
   }
 
@@ -831,7 +829,7 @@ std::set<base::FilePath> Extension::GetBrowserImages() const {
          iter != browser_action->default_icon.map().end();
          ++iter) {
       image_paths.insert(
-          base::FilePath::FromWStringHack(base::UTF8ToWide(iter->second)));
+          base::FilePath::FromWStringHack(UTF8ToWide(iter->second)));
     }
   }
 

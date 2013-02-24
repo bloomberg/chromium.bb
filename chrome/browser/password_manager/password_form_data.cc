@@ -22,15 +22,15 @@ PasswordForm* CreatePasswordFormFromData(
   if (form_data.action)
     form->action = GURL(form_data.action);
   if (form_data.submit_element)
-    form->submit_element = base::WideToUTF16(form_data.submit_element);
+    form->submit_element = WideToUTF16(form_data.submit_element);
   if (form_data.username_element)
-    form->username_element = base::WideToUTF16(form_data.username_element);
+    form->username_element = WideToUTF16(form_data.username_element);
   if (form_data.password_element)
-    form->password_element = base::WideToUTF16(form_data.password_element);
+    form->password_element = WideToUTF16(form_data.password_element);
   if (form_data.username_value) {
-    form->username_value = base::WideToUTF16(form_data.username_value);
+    form->username_value = WideToUTF16(form_data.username_value);
     if (form_data.password_value)
-      form->password_value = base::WideToUTF16(form_data.password_value);
+      form->password_value = WideToUTF16(form_data.password_value);
   } else {
     form->blacklisted_by_user = true;
   }

@@ -138,7 +138,7 @@ Version* GetMaxVersionFromArchiveDir(const base::FilePath& chrome_path) {
     VLOG(1) << "directory found: " << find_data.cFileName;
 
     scoped_ptr<Version> found_version(
-        new Version(base::WideToASCII(find_data.cFileName)));
+        new Version(WideToASCII(find_data.cFileName)));
     if (found_version->IsValid() &&
         found_version->CompareTo(*max_version.get()) > 0) {
       max_version.reset(found_version.release());

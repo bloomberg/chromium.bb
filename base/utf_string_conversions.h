@@ -11,8 +11,6 @@
 #include "base/string16.h"
 #include "base/string_piece.h"
 
-namespace base {
-
 // These convert between UTF-8, -16, and -32 strings. They are potentially slow,
 // so avoid unnecessary conversions. The low-level versions return a boolean
 // indicating whether the conversion was 100% valid. In this case, it will still
@@ -56,24 +54,5 @@ BASE_EXPORT std::string UTF16ToUTF8(const string16& utf16);
 // UTF16/Wide string.
 BASE_EXPORT std::wstring ASCIIToWide(const base::StringPiece& ascii);
 BASE_EXPORT string16 ASCIIToUTF16(const base::StringPiece& ascii);
-
-}  // namespace base
-
-// TODO(brettw) remove these usings once all code has been converted to using
-// the namespaces.
-using base::WideToUTF8;
-using base::WideToUTF8;
-using base::UTF8ToWide;
-using base::UTF8ToWide;
-using base::WideToUTF16;
-using base::WideToUTF16;
-using base::UTF16ToWide;
-using base::UTF16ToWide;
-using base::UTF8ToUTF16;
-using base::UTF8ToUTF16;
-using base::UTF16ToUTF8;
-using base::UTF16ToUTF8;
-using base::ASCIIToWide;
-using base::ASCIIToUTF16;
 
 #endif  // BASE_UTF_STRING_CONVERSIONS_H_

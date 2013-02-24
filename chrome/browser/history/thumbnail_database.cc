@@ -990,7 +990,7 @@ bool ThumbnailDatabase::RenameAndDropThumbnails(
 #if defined(OS_POSIX)
     attach.BindString(0, new_db_file.value());
 #else
-    attach.BindString(0, base::WideToUTF8(new_db_file.value()));
+    attach.BindString(0, WideToUTF8(new_db_file.value()));
 #endif
 
     if (!attach.Run()) {

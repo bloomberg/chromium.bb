@@ -122,7 +122,7 @@ TEST(JSONValueSerializerTest, StringEscape) {
 TEST(JSONValueSerializerTest, UnicodeStrings) {
   // unicode string json -> escaped ascii text
   DictionaryValue root;
-  string16 test(base::WideToUTF16(L"\x7F51\x9875"));
+  string16 test(WideToUTF16(L"\x7F51\x9875"));
   root.SetString("web", test);
 
   std::string expected = "{\"web\":\"\\u7F51\\u9875\"}";
@@ -146,7 +146,7 @@ TEST(JSONValueSerializerTest, UnicodeStrings) {
 TEST(JSONValueSerializerTest, HexStrings) {
   // hex string json -> escaped ascii text
   DictionaryValue root;
-  string16 test(base::WideToUTF16(L"\x01\x02"));
+  string16 test(WideToUTF16(L"\x01\x02"));
   root.SetString("test", test);
 
   std::string expected = "{\"test\":\"\\u0001\\u0002\"}";

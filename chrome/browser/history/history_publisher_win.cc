@@ -101,12 +101,12 @@ void HistoryPublisher::PublishDataToIndexers(const PageData& page_data)
 
   // Send data to registered indexers.
   base::win::ScopedVariant time(var_time, VT_DATE);
-  base::win::ScopedBstr url(base::ASCIIToWide(page_data.url.spec()).c_str());
+  base::win::ScopedBstr url(ASCIIToWide(page_data.url.spec()).c_str());
   base::win::ScopedBstr html(page_data.html);
   base::win::ScopedBstr title(page_data.title);
-  // Don't send a NULL string through base::ASCIIToWide.
+  // Don't send a NULL string through ASCIIToWide.
   base::win::ScopedBstr format(page_data.thumbnail_format ?
-      base::ASCIIToWide(page_data.thumbnail_format).c_str() :
+      ASCIIToWide(page_data.thumbnail_format).c_str() :
       NULL);
   base::win::ScopedVariant psa(thumbnail_arr.m_psa);
   for (size_t i = 0; i < indexers_.size(); ++i) {

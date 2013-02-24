@@ -71,7 +71,7 @@ base::FilePath GetFirefoxProfilePath() {
           &path16, 0, ASCIIToUTF16("/"), ASCIIToUTF16("\\"));
 #endif
       base::FilePath path =
-          base::FilePath::FromWStringHack(base::UTF16ToWide(path16));
+          base::FilePath::FromWStringHack(UTF16ToWide(path16));
 
       // IsRelative=1 means the folder path would be relative to the
       // path of profiles.ini. IsRelative=0 refers to a custom profile
@@ -123,7 +123,7 @@ bool GetFirefoxVersionAndPathFromProfile(const base::FilePath& profile_path,
         // file, we could go straight from bytes -> filepath;
         // otherwise, we're out of luck here.
         *app_path = base::FilePath::FromWStringHack(
-            base::UTF8ToWide(line.substr(equal + 1)));
+            UTF8ToWide(line.substr(equal + 1)));
       }
     }
   }

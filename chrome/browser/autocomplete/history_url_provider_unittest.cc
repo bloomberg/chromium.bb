@@ -485,10 +485,9 @@ TEST_F(HistoryURLProviderTest, Fixup) {
   RunTest(ASCIIToUTF16("#"), string16(), false, NULL, 0);
   RunTest(ASCIIToUTF16("%20"), string16(), false, NULL, 0);
   const std::string fixup_crash[] = {"http://%EF%BD%A5@s/"};
-  RunTest(base::WideToUTF16(L"\uff65@s"), string16(), false, fixup_crash,
+  RunTest(WideToUTF16(L"\uff65@s"), string16(), false, fixup_crash,
           arraysize(fixup_crash));
-  RunTest(base::WideToUTF16(L"\u2015\u2015@ \uff7c"), string16(), false,
-          NULL, 0);
+  RunTest(WideToUTF16(L"\u2015\u2015@ \uff7c"), string16(), false, NULL, 0);
 
   // Fixing up "file:" should result in an inline autocomplete offset of just
   // after "file:", not just after "file://".
@@ -529,7 +528,7 @@ TEST_F(HistoryURLProviderTest, Fixup) {
 }
 
 TEST_F(HistoryURLProviderTest, AdjustOffset) {
-  RunAdjustOffsetTest(base::WideToUTF16(L"http://www.\uAD50\uC721"), 13);
+  RunAdjustOffsetTest(WideToUTF16(L"http://www.\uAD50\uC721"), 13);
   RunAdjustOffsetTest(ASCIIToUTF16("http://spaces.com/path%20with%20spa"), 31);
   RunAdjustOffsetTest(ASCIIToUTF16("http://ms/c++ s"), 15);
 }

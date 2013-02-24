@@ -156,7 +156,7 @@ static std::string FixupPath(const std::string& text) {
 
   base::FilePath::StringType filename;
 #if defined(OS_WIN)
-  base::FilePath input_path(base::UTF8ToWide(text));
+  base::FilePath input_path(UTF8ToWide(text));
   PrepareStringForFileOps(input_path, &filename);
 
   // Fixup Windows-style drive letters, where "C:" gets rewritten to "C|".
@@ -563,8 +563,8 @@ GURL URLFixerUpper::FixupRelativeFile(const base::FilePath& base_dir,
     // escaped things. We need to go through 8-bit since the escaped values
     // only represent 8-bit values.
 #if defined(OS_WIN)
-    std::wstring unescaped = base::UTF8ToWide(net::UnescapeURLComponent(
-        base::WideToUTF8(trimmed),
+    std::wstring unescaped = UTF8ToWide(net::UnescapeURLComponent(
+        WideToUTF8(trimmed),
         net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS));
 #elif defined(OS_POSIX)
     std::string unescaped = net::UnescapeURLComponent(
@@ -591,7 +591,7 @@ GURL URLFixerUpper::FixupRelativeFile(const base::FilePath& base_dir,
 
   // Fall back on regular fixup for this input.
 #if defined(OS_WIN)
-  std::string text_utf8 = base::WideToUTF8(text.value());
+  std::string text_utf8 = WideToUTF8(text.value());
 #elif defined(OS_POSIX)
   std::string text_utf8 = text.value();
 #endif

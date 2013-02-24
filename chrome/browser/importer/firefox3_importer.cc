@@ -395,7 +395,7 @@ void Firefox3Importer::GetSearchEnginesXMLFiles(
       } else {
         // Looks like absolute path to the file.
 #if defined(OS_WIN)
-        file = base::FilePath(base::UTF8ToWide(engine));
+        file = base::FilePath(UTF8ToWide(engine));
 #else
         file = base::FilePath(engine);
 #endif

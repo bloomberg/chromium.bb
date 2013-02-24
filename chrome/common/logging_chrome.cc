@@ -383,7 +383,7 @@ base::FilePath GetLogFileName() {
   scoped_ptr<base::Environment> env(base::Environment::Create());
   if (env->GetVar(env_vars::kLogFileName, &filename) && !filename.empty()) {
 #if defined(OS_WIN)
-    return base::FilePath(base::UTF8ToWide(filename));
+    return base::FilePath(UTF8ToWide(filename));
 #elif defined(OS_POSIX)
     return base::FilePath(filename);
 #endif
@@ -422,7 +422,7 @@ size_t GetFatalAssertions(AssertionList* assertions) {
   while (!log_file.eof()) {
     getline(log_file, utf8_line);
     if (utf8_line.find(":FATAL:") != std::string::npos) {
-      wide_line = base::UTF8ToWide(utf8_line);
+      wide_line = UTF8ToWide(utf8_line);
       if (assertions)
         assertions->push_back(wide_line);
       ++assertion_count;

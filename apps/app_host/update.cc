@@ -42,7 +42,7 @@ const wchar_t kBrowserAppGuid[] = L"{8A69D345-D564-463c-AFF1-A69D9E530F96}";
 Version GetAppHostVersion() {
   scoped_ptr<FileVersionInfo> version_info(
       FileVersionInfo::CreateFileVersionInfoForCurrentModule());
-  Version app_host_version(base::WideToASCII(version_info->product_version()));
+  Version app_host_version(WideToASCII(version_info->product_version()));
   DCHECK(app_host_version.IsValid());
   return app_host_version;
 }
@@ -58,7 +58,7 @@ Version GetAppVersionFromRegistry(const wchar_t* app_guid) {
   if ((reg_key.Open(root_key, client_key.c_str(),
                     KEY_QUERY_VALUE) == ERROR_SUCCESS) &&
       (reg_key.ReadValue(kRegVersionField, &version_str) == ERROR_SUCCESS)) {
-    return Version(base::WideToASCII(version_str));
+    return Version(WideToASCII(version_str));
   }
   return Version();
 }

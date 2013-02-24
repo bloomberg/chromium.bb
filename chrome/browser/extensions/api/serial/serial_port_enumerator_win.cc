@@ -22,7 +22,7 @@ SerialPortEnumerator::GenerateValidSerialPortNames() {
 
   for (; iter_key.Valid(); ++iter_key) {
     string16 str(iter_key.Value());
-    std::string device_string(base::WideToASCII(str));
+    std::string device_string(WideToASCII(str));
     name_set.insert(device_string);
   }
   return name_set;

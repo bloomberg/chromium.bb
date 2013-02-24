@@ -134,7 +134,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
   ASSERT_TRUE(NULL != acc_obj);
 
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kAboutBlankURL));
-  std::wstring title = base::UTF16ToWide(l10n_util::GetStringFUTF16(
+  std::wstring title = UTF16ToWide(l10n_util::GetStringFUTF16(
       IDS_BROWSER_WINDOW_TITLE_FORMAT,
       ASCIIToUTF16(chrome::kAboutBlankURL)));
   TestAccessibilityInfo(acc_obj, title, ROLE_SYSTEM_WINDOW);
@@ -149,7 +149,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
   GetBrowserView()->GetWidget()->non_client_view();
 
   TestViewAccessibilityObject(non_client_view,
-      base::UTF16ToWide(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)),
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)),
       ROLE_SYSTEM_WINDOW);
 }
 
@@ -162,7 +162,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
 
   TestViewAccessibilityObject(
       browser_root_view,
-      base::UTF16ToWide(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)),
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)),
       ROLE_SYSTEM_APPLICATION);
 }
 
@@ -173,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
   // Verify root view MSAA name and role.
   TestViewAccessibilityObject(
       GetBrowserView(),
-      base::UTF16ToWide(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)),
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)),
       ROLE_SYSTEM_CLIENT);
 }
 
@@ -184,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
   // Verify toolbar MSAA name and role.
   TestViewAccessibilityObject(
       GetToolbarView(),
-      base::UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_TOOLBAR)),
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_TOOLBAR)),
       ROLE_SYSTEM_TOOLBAR);
 }
 
@@ -195,7 +195,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
   // Verify Back button MSAA name and role.
   TestViewAccessibilityObject(
       GetToolbarView()->GetViewByID(VIEW_ID_BACK_BUTTON),
-      base::UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_BACK)),
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_BACK)),
       ROLE_SYSTEM_BUTTONDROPDOWN);
 }
 
@@ -207,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
   // Verify Forward button MSAA name and role.
   TestViewAccessibilityObject(
       GetToolbarView()->GetViewByID(VIEW_ID_FORWARD_BUTTON),
-      base::UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_FORWARD)),
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_FORWARD)),
       ROLE_SYSTEM_BUTTONDROPDOWN);
 }
 
@@ -219,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
   // Verify Reload button MSAA name and role.
   TestViewAccessibilityObject(
       GetToolbarView()->GetViewByID(VIEW_ID_RELOAD_BUTTON),
-      base::UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_RELOAD)),
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_RELOAD)),
       ROLE_SYSTEM_PUSHBUTTON);
 }
 
@@ -230,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
   // Verify Home button MSAA name and role.
   TestViewAccessibilityObject(
       GetToolbarView()->GetViewByID(VIEW_ID_HOME_BUTTON),
-      base::UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_HOME)),
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_HOME)),
       ROLE_SYSTEM_PUSHBUTTON);
 }
 
@@ -241,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
   // Verify Star button MSAA name and role.
   TestViewAccessibilityObject(
       GetToolbarView()->GetViewByID(VIEW_ID_STAR_BUTTON),
-      base::UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_STAR)),
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_STAR)),
       ROLE_SYSTEM_PUSHBUTTON);
 }
 
@@ -253,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
   // Verify App menu button MSAA name and role.
   TestViewAccessibilityObject(
       GetToolbarView()->GetViewByID(VIEW_ID_APP_MENU),
-      base::UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_APP)),
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_APP)),
       ROLE_SYSTEM_BUTTONMENU);
 }
 
@@ -262,6 +262,6 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
                        DISABLED_TestBookmarkBarViewAccObj) {
   TestViewAccessibilityObject(
       GetBookmarkBarView(),
-      base::UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_BOOKMARKS)),
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_BOOKMARKS)),
       ROLE_SYSTEM_TOOLBAR);
 }

@@ -403,7 +403,7 @@ bool BrowserPolicyConnector::IsNonEnterpriseUser(const std::string& username) {
   const string16 domain =
       UTF8ToUTF16(gaia::ExtractDomainName(gaia::CanonicalizeEmail(username)));
   for (size_t i = 0; i < arraysize(kNonManagedDomainPatterns); i++) {
-    string16 pattern = base::WideToUTF16(kNonManagedDomainPatterns[i]);
+    string16 pattern = WideToUTF16(kNonManagedDomainPatterns[i]);
     if (MatchDomain(domain, pattern))
       return true;
   }

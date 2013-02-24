@@ -240,8 +240,7 @@ class MediaGalleriesPreferencesTest : public testing::Test {
 
 base::FilePath MakePath(std::string dir) {
 #if defined(OS_WIN)
-  return base::FilePath(FILE_PATH_LITERAL("C:\\")).Append(
-      base::UTF8ToWide(dir));
+  return base::FilePath(FILE_PATH_LITERAL("C:\\")).Append(UTF8ToWide(dir));
 #elif defined(OS_POSIX)
   return base::FilePath(FILE_PATH_LITERAL("/")).Append(dir);
 #else

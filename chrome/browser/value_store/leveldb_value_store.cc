@@ -339,7 +339,7 @@ std::string LeveldbValueStore::EnsureDbIsOpen() {
 #if defined(OS_POSIX)
   std::string os_path(db_path_.value());
 #elif defined(OS_WIN)
-  std::string os_path = base::Sysbase::WideToUTF8(db_path_.value());
+  std::string os_path = base::SysWideToUTF8(db_path_.value());
 #endif
 
   leveldb::Options options;

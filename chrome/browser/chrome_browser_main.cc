@@ -278,7 +278,7 @@ PrefService* InitializeLocalState(
     std::wstring install_lang;
     if (GoogleUpdateSettings::GetLanguage(&install_lang)) {
       local_state->SetString(prefs::kApplicationLocale,
-                             base::WideToASCII(install_lang));
+                             WideToASCII(install_lang));
     }
 #endif  // defined(OS_WIN)
   }
@@ -1186,7 +1186,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
       case ProcessSingleton::PROCESS_NOTIFIED:
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-        printf("%s\n", base::SysWideToNativeMB(base::UTF16ToWide(
+        printf("%s\n", base::SysWideToNativeMB(UTF16ToWide(
             l10n_util::GetStringUTF16(IDS_USED_EXISTING_BROWSER))).c_str());
 #endif
         // Having a differentiated return type for testing allows for tests to
