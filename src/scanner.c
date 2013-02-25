@@ -568,7 +568,7 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 	wl_list_for_each(m, message_list, link) {
 		if (m->destructor)
 			has_destructor = 1;
-		if (strcmp(m->name, "destroy)") == 0)
+		if (strcmp(m->name, "destroy") == 0)
 			has_destroy = 1;
 	}
 
