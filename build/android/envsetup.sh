@@ -56,8 +56,6 @@ very large binaries."
     return 1
 esac
 
-host_os=$(uname -s | sed -e 's/Linux/linux/;s/Darwin/mac/')
-
 case "${host_os}" in
   "linux")
     toolchain_dir="linux-${host_arch}"
