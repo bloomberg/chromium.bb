@@ -2212,6 +2212,7 @@
               'uuid.lib',
               'odbc32.lib',
               'odbccp32.lib',
+              'delayimp.lib',
             ],
           },
         },
