@@ -99,10 +99,6 @@
 #include <X11/Xlib.h>
 #endif
 
-#if !defined(OS_IOS)
-#include "webkit/glue/webkit_glue.h"
-#endif
-
 // One of the linux specific headers defines this as a macro.
 #ifdef DestroyAll
 #undef DestroyAll
@@ -241,8 +237,17 @@ class BrowserMainLoop::MemoryObserver : public MessageLoop::TaskObserver {
   }
 
   virtual void DidProcessTask(const base::PendingTask& pending_task) OVERRIDE {
-#if !defined(OS_IOS)
-    HISTOGRAM_MEMORY_KB("Memory.BrowserUsed", webkit_glue::MemoryUsageKB());
+#if !defined(OS_IOS)  // No ProcessMetrics on IOS.
+    scoped_ptr<base::ProcessMetrics> process_metrics(
+        base::ProcessMetrics::CreateProcessMetrics(
+#if defined(OS_MACOSX)
+            base::GetCurrentProcessHandle(), NULL));
+#else
+            base::GetCurrentProcessHandle()));
+#endif
+    size_t private_bytes;
+    process_metrics->GetMemoryBytes(&private_bytes, NULL);
+    HISTOGRAM_MEMORY_KB("Memory.BrowserUsed", private_bytes >> 10);
 #endif
   }
  private:

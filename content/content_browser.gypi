@@ -989,7 +989,6 @@
         '../printing/printing.gyp:printing',
         '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
         '../ui/surface/surface.gyp:surface',
-        '../webkit/support/webkit_support.gyp:glue',
         '../webkit/support/webkit_support.gyp:webkit_resources',
         '../webkit/support/webkit_support.gyp:webkit_storage',
         '../webkit/support/webkit_support.gyp:webkit_strings',
