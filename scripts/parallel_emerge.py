@@ -1199,8 +1199,7 @@ class EmergeQueue(object):
     # jobs.
     procs = min(self._total_jobs,
                 emerge.opts.pop("--jobs", multiprocessing.cpu_count()))
-    self._build_procs = procs
-    self._fetch_procs = procs
+    self._build_procs = self._fetch_procs = max(1, procs)
     self._load_avg = emerge.opts.pop("--load-average", None)
     self._job_queue = multiprocessing.Queue()
     self._print_queue = multiprocessing.Queue()
