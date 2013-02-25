@@ -908,7 +908,7 @@ class BuildTargetStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
     self.build_config['images'] = ['base', 'dev', 'test', 'factory_test',
                                    'factory_install']
     self.build_config['useflags'] = ['ALPHA', 'BRAVO', 'CHARLIE',
-                                     'pgo_generate']
+                                     constants.USE_PGO_GENERATE]
     self.build_config['skip_toolchain_update'] = False
     self.build_config['nowithdebug'] = False
     self.build_config['hw_tests'] = ['bvt']

@@ -112,7 +112,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
   # Max timeout before assuming other builders have failed.
   MAX_TIMEOUT_SECONDS = 300
   # Polling timeout for checking git repo for other build statuses.
-  SLEEP_TIMEOUT = 30
+  SLEEP_TIMEOUT = constants.SLEEP_TIMEOUT
 
   # Sub-directories for LKGM and Chrome LKGM's.
   LKGM_SUBDIR = 'LKGM-candidates'

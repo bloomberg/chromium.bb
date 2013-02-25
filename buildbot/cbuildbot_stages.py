@@ -1017,6 +1017,9 @@ class UprevStage(bs.BuilderStage):
           self._chrome_rev, self._boards,
           chrome_version=self._options.chrome_version)
 
+    useflags = self._build_config['useflags'] or []
+    pgo_generate = constants.USE_PGO_GENERATE in useflags
+
     # Perform other uprevs.
     if self._build_config['uprev']:
       overlays, _ = self._ExtractOverlays()
@@ -1024,7 +1027,7 @@ class UprevStage(bs.BuilderStage):
                              self._boards,
                              overlays,
                              enter_chroot=self._enter_chroot)
-    elif self._chrome_rev and not chrome_atom_to_build:
+    elif self._chrome_rev and not chrome_atom_to_build and not pgo_generate:
       # TODO(sosa): Do this in a better way.
       sys.exit(0)
 
@@ -1034,10 +1037,15 @@ class SyncChromeStage(bs.BuilderStage):
 
   option_name = 'managed_chrome'
 
+  def _GetArchitectures(self):
+    """Get the list of architectures built by this builder."""
+    return set(self._GetPortageEnvVar('ARCH', b) for b in self._boards)
+
   def _PerformStage(self):
     kwargs = {}
     if self._chrome_rev == constants.CHROME_REV_SPEC:
       kwargs['revision'] = self._options.chrome_version
+      cpv = None
     else:
       cpv = portage_utilities.BestVisible(constants.CHROME_CP,
                                           buildroot=self._build_root)
@@ -1045,6 +1053,12 @@ class SyncChromeStage(bs.BuilderStage):
     useflags = self._build_config['useflags'] or []
     commands.SyncChrome(self._build_root, self._options.chrome_root, useflags,
                         **kwargs)
+    if constants.USE_PGO_USE in useflags and cpv is not None:
+      commands.WaitForPGOData(self._GetArchitectures(), cpv)
+    if (constants.USE_PGO_GENERATE in useflags and cpv is not None and
+        commands.CheckPGOData(self._GetArchitectures(), cpv)):
+      cros_build_lib.Info('PGO data already generated')
+      sys.exit(0)
 
 
 class PatchChromeStage(bs.BuilderStage):

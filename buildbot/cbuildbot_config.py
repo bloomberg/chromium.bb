@@ -732,7 +732,7 @@ chrome_pfq.add_config('lumpy-chrome-pfq',
 )
 
 chrome_pgo = chrome_pfq.derive(
-  useflags=official['useflags'] + ['pgo_generate'],
+  useflags=official['useflags'] + [constants.USE_PGO_GENERATE],
   usepkg_build_packages=False,
 
   vm_tests=None,

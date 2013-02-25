@@ -67,6 +67,9 @@ class GSContextException(Exception):
 class GSContextPreconditionFailed(GSContextException):
   """Thrown when google storage returns code=PreconditionFailed."""
 
+class GSNoSuchKey(GSContextException):
+  """Thrown when google storage returns code=NoSuchKey."""
+
 
 class GSContext(object):
   """A class to wrap common google storage operations."""
@@ -228,6 +231,21 @@ class GSContext(object):
                       '%s/%s' % (remote_dir, os.path.basename(filename)),
                       acl=acl, version=version)
 
+  def _RunCommand(self, cmd, **kwargs):
+    try:
+      return cros_build_lib.RunCommand(cmd, **kwargs)
+    # gsutil uses the same exit code for any failure, so we are left to
+    # parse the output as needed.
+    except cros_build_lib.RunCommandError as e:
+      error = e.result.error
+      if error and 'GSResponseError' in error:
+        if 'code=PreconditionFailed' in error:
+          raise GSContextPreconditionFailed(e)
+        if 'code=NoSuchKey' in error:
+          raise GSNoSuchKey(e)
+      raise
+
+
   def _DoCommand(self, gsutil_cmd, headers=(), retries=None, **kwargs):
     """Run a gsutil command, suppressing output, and setting retry/sleep.
 
@@ -249,7 +267,7 @@ class GSContext(object):
       logging.debug("%s: would've ran %r", self.__class__.__name__, cmd)
     else:
       return cros_build_lib.RetryCommand(
-          cros_build_lib.RunCommand, retries, cmd, sleep=self._sleep_time,
+          self._RunCommand, retries, cmd, sleep=self._sleep_time,
           extra_env=extra_env, **kwargs)
 
   def Copy(self, src_path, dest_path, acl=None, version=None, **kwargs):
@@ -291,17 +309,10 @@ class GSContext(object):
 
     cmd += ['--', src_path, dest_path]
 
-    try:
-      # For ease of testing, only pass headers if we got some.
-      if headers:
-        kwargs['headers'] = headers
-      return self._DoCommand(cmd, redirect_stderr=True, **kwargs)
-    # gsutil uses the same exit code for any failure, so we are left to
-    # parse the output as needed.
-    except cros_build_lib.RunCommandError as e:
-      if 'code=PreconditionFailed' in e.result.error:
-        raise GSContextPreconditionFailed(e)
-      raise
+    # For ease of testing, only pass headers if we got some.
+    if headers:
+      kwargs['headers'] = headers
+    return self._DoCommand(cmd, redirect_stderr=True, **kwargs)
 
   def LS(self, path):
     """Does a directory listing of the given gs path."""
@@ -321,6 +332,22 @@ class GSContext(object):
       acl = self.acl_file
 
     self._DoCommand(['setacl', acl, upload_url])
+
+  def Exists(self, path):
+    """Checks whether the given object exists.
+
+    Args:
+       path: Full gs:// url of the path to check.
+
+    Returns:
+      True if the path exists; otherwise returns False.
+    """
+    try:
+      self._DoCommand(['getacl', path], redirect_stdout=True,
+                      redirect_stderr=True)
+    except GSNoSuchKey:
+      return False
+    return True
 
 # Set GSUTIL_BIN now.
 GSUTIL_BIN = GSContext.GetDefaultGSUtilBin()

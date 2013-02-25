@@ -14,6 +14,7 @@ import os
 import re
 import shutil
 import tempfile
+import time
 
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_results as results_lib
@@ -22,6 +23,7 @@ from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
 from chromite.lib import gclient
 from chromite.lib import git
+from chromite.lib import gs
 from chromite.lib import locking
 from chromite.lib import osutils
 from chromite.lib import parallel
@@ -1445,6 +1447,46 @@ def SyncChrome(build_root, chrome_root, useflags, tag=None, revision=None):
   cmd += [chrome_root]
   cros_build_lib.RunCommandWithRetries(constants.SYNC_RETRIES, cmd,
                                        cwd=build_root)
+
+
+def CheckPGOData(architectures, cpv):
+  """Check whether PGO data exists for the given architectures.
+
+  Args:
+    architectures: Set of architectures we're going to build Chrome for.
+    cpv: The portage_utilities.CPV object for chromeos-chrome.
+  Returns:
+    True if PGO data is available; false otherwise.
+  """
+  gs_context = gs.GSContext()
+  for arch in architectures:
+    url = constants.CHROME_PGO_URL % {'package': cpv.package, 'arch': arch,
+                                      'pv': cpv.pv}
+    if not gs_context.Exists(url):
+      return False
+  return True
+
+
+class MissingPGOData(results_lib.StepFailure):
+  """Exception thrown when necessary PGO data is missing."""
+
+
+def WaitForPGOData(architectures, cpv, timeout=60*120):
+  """Wait for PGO data to show up (with an appropriate timeout).
+
+  Args:
+    architectures: Set of architectures we're going to build Chrome for.
+    cpv: CPV object for Chrome.
+    timeout: How long to wait total, in seconds (default: 2 hours)
+  """
+  end_time = time.time() + timeout
+  while time.time() < end_time:
+    if CheckPGOData(architectures, cpv):
+      cros_build_lib.Info('Found PGO data')
+      return
+    cros_build_lib.Info('Waiting for PGO data')
+    time.sleep(constants.SLEEP_TIMEOUT)
+  raise MissingPGOData('Could not find necessary PGO data.')
 
 
 def PatchChrome(chrome_root, patch, subdir):

@@ -84,9 +84,15 @@ CREATED_BRANCHES = [
 CHROME_PN = 'chromeos-chrome'
 CHROME_CP = 'chromeos-base/%s' % CHROME_PN
 
+# Chrome URL where PGO data is stored.
+CHROME_PGO_URL = ('gs://chromeos-prebuilt/pgo-job/canonicals/'
+                  '%(package)s-%(arch)s-%(pv)s.pgo.tar.bz2')
+
 # Chrome use flags
 USE_CHROME_INTERNAL = 'chrome_internal'
 USE_CHROME_PDF = 'chrome_pdf'
+USE_PGO_GENERATE = 'pgo_generate'
+USE_PGO_USE = 'pgo_use'
 
 # Builds and validates _alpha ebuilds.  These builds sync to the latest
 # revsion of the Chromium src tree and build with that checkout.
@@ -269,3 +275,4 @@ METADATA_JSON = 'metadata.json'
 CHROMITE_CONFIG_DIR = os.path.expanduser('~/.chromite')
 CHROME_SDK_BASHRC = os.path.join(CHROMITE_CONFIG_DIR, 'chrome_sdk.bashrc')
 SYNC_RETRIES = 2
+SLEEP_TIMEOUT = 30
