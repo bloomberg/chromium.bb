@@ -1112,13 +1112,15 @@ void DownloadItemImpl::OnDownloadFileInitialized(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (result != DOWNLOAD_INTERRUPT_REASON_NONE) {
     Interrupt(result);
-    // TODO(rdsmith): It makes no sense to continue along the
-    // regular download path after we've gotten an error.  But it's
-    // the way the code has historically worked, and this allows us
-    // to get the download persisted and observers of the download manager
-    // notified, so tests work.  When we execute all side effects of cancel
-    // (including queue removal) immediately rather than waiting for
-    // persistence we should replace this comment with a "return;".
+    // TODO(rdsmith/asanka): Arguably we should show this in the UI, but
+    // it's not at all clear what to show--we haven't done filename
+    // determination, so we don't know what name to display.  OTOH,
+    // the failure mode of not showing the DI if the file initialization
+    // fails isn't a good one.  Can we hack up a name based on the
+    // URLRequest?  We'll need to make sure that initialization happens
+    // properly.  Possibly the right thing is to have the UI handle
+    // this case specially.
+    return;
   }
 
   // If we're resuming an interrupted download, we may already know
@@ -1199,10 +1201,13 @@ void DownloadItemImpl::OnDownloadRenamedToIntermediateName(
     const base::FilePath& full_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   VLOG(20) << __FUNCTION__ << " download=" << DebugString(true);
-  if (DOWNLOAD_INTERRUPT_REASON_NONE != reason)
+  if (DOWNLOAD_INTERRUPT_REASON_NONE != reason) {
     Interrupt(reason);
-  else
+    // MaybeCompleteDownload() is a no-op if we've been interrupted,
+    // so it's safe to fall through.
+  } else {
     SetFullPath(full_path);
+  }
   delegate_->ShowDownloadInBrowser(this);
 
   MaybeCompleteDownload();
