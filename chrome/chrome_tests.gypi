@@ -1341,6 +1341,7 @@
         'browser/task_manager/task_manager_browsertest_util.cc',
         'browser/task_manager/task_manager_browsertest_util.h',
         'browser/task_manager/task_manager_notification_browsertest.cc',
+        'browser/themes/theme_service_browsertest.cc',
         'browser/translate/translate_manager_browsertest.cc',
         'browser/ui/app_list/app_list_controller_browsertest.cc',
         'browser/ui/ash/caps_lock_delegate_chromeos_browsertest.cc',
