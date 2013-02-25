@@ -26,8 +26,8 @@ class PrefService;
 class PromoResourceService : public WebResourceService {
  public:
   static void RegisterPrefs(PrefRegistrySimple* registry);
-  static void RegisterUserPrefs(PrefService* prefs,
-                                PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void MigrateUserPrefs(PrefService* user_prefs);
 
   PromoResourceService();
 

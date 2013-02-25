@@ -293,7 +293,7 @@ void RegisterUserPrefs(PrefService* user_prefs,
   PrefProxyConfigTrackerImpl::RegisterUserPrefs(registry);
   PrefsTabHelper::RegisterUserPrefs(registry);
   ProfileImpl::RegisterUserPrefs(registry);
-  PromoResourceService::RegisterUserPrefs(user_prefs, registry);
+  PromoResourceService::RegisterUserPrefs(registry);
   ProtocolHandlerRegistry::RegisterUserPrefs(registry);
   RegisterBrowserUserPrefs(registry);
   SessionStartupPref::RegisterUserPrefs(registry);
@@ -369,6 +369,7 @@ void MigrateUserPrefs(Profile* profile) {
   prefs->ClearPref(kBackupPref);
 
   PrefsTabHelper::MigrateUserPrefs(prefs);
+  PromoResourceService::MigrateUserPrefs(prefs);
 }
 
 void MigrateBrowserPrefs(Profile* profile, PrefService* local_state) {

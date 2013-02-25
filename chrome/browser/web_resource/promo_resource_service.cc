@@ -68,16 +68,19 @@ void PromoResourceService::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 // static
-void PromoResourceService::RegisterUserPrefs(PrefService* prefs,
-                                             PrefRegistrySyncable* registry) {
-  // TODO(dbeam): remove in M28 when all prefs have been cleared.
-  // http://crbug.com/168887
-  // TODO(joi): Remove PrefService parameter; move this to migration code.
+void PromoResourceService::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  // TODO(dbeam): This is registered only for migration; remove in M28
+  // when all prefs have been cleared.  http://crbug.com/168887
   registry->RegisterStringPref(prefs::kNtpPromoResourceCacheUpdate,
                                "0",
                                PrefRegistrySyncable::UNSYNCABLE_PREF);
-  prefs->ClearPref(prefs::kNtpPromoResourceCacheUpdate);
-  NotificationPromo::RegisterUserPrefs(prefs, registry);
+  NotificationPromo::RegisterUserPrefs(registry);
+}
+
+// static
+void PromoResourceService::MigrateUserPrefs(PrefService* user_prefs) {
+  user_prefs->ClearPref(prefs::kNtpPromoResourceCacheUpdate);
+  NotificationPromo::MigrateUserPrefs(user_prefs);
 }
 
 PromoResourceService::PromoResourceService()

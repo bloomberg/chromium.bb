@@ -67,8 +67,8 @@ class NotificationPromo {
 
   // Register preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
-  static void RegisterUserPrefs(PrefService* prefs,
-                                PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
+  static void MigrateUserPrefs(PrefService* user_prefs);
 
  private:
   // For testing.
