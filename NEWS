@@ -14,6 +14,9 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
       Poretsky.
 
 ** Braille Table Improvements
+
+   - Most tables: removed the default collapse whitespace statements, if you need to compress 
+     whitespace, consider adding compress.ctb to the list of tables when processing.
    - Corrections to Unified English Braille Code (Grade 2), thanks to
      Joseph Lee
    - Corrections to apostrophes in the Computer Spanish 8 dots Braille
