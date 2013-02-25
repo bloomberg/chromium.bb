@@ -584,7 +584,8 @@ int CoalescePendingMotionEvents(const XEvent* xev,
 
     if (next_event.type == GenericEvent &&
         next_event.xgeneric.evtype == event_type &&
-        !ui::GetScrollOffsets(&next_event, NULL, NULL, NULL, NULL, NULL)) {
+        !ui::GetScrollOffsets(&next_event, NULL, NULL, NULL, NULL, NULL) &&
+        !ui::GetFlingData(&next_event, NULL, NULL, NULL, NULL, NULL)) {
       XIDeviceEvent* next_xievent =
           static_cast<XIDeviceEvent*>(next_event.xcookie.data);
 #if defined(USE_XI2_MT)
