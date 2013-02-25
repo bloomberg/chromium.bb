@@ -4,6 +4,8 @@
 
 #include "chrome/browser/profiles/profile_shortcut_manager_win.h"
 
+#include <shlobj.h>  // For SHChangeNotify().
+
 #include <string>
 #include <vector>
 
@@ -416,6 +418,9 @@ void DeleteDesktopShortcutsAndIconFile(const base::FilePath& profile_path,
     // Use file_util::Delete() instead of ShellUtil::RemoveShortcut(), as the
     // latter causes non-profile taskbar shortcuts to be unpinned.
     file_util::Delete(shortcuts[i], false);
+    // Notify the shell that the shortcut was deleted to ensure desktop refresh.
+    SHChangeNotify(SHCNE_DELETE, SHCNF_PATH, shortcuts[i].value().c_str(),
+                   NULL);
   }
 
   const base::FilePath icon_path =
