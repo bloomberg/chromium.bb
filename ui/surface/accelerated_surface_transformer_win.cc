@@ -219,14 +219,14 @@ bool AcceleratedSurfaceTransformer::CompileShaderCombo(
 void AcceleratedSurfaceTransformer::ReleaseAll() {
   for (int i = 0; i < NUM_SHADERS; i++) {
     vertex_shaders_[i] = NULL;
-    vertex_shaders_[i] = NULL;
+    pixel_shaders_[i] = NULL;
   }
   device_ = NULL;
 }
 void AcceleratedSurfaceTransformer::DetachAll() {
   for (int i = 0; i < NUM_SHADERS; i++) {
     vertex_shaders_[i].Detach();
-    vertex_shaders_[i].Detach();
+    pixel_shaders_[i].Detach();
   }
   device_.Detach();
 }
