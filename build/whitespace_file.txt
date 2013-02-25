@@ -70,6 +70,8 @@ A RELAXED MAN IS NOT NECESSARILY A BETTER MAN
 NO ONE SHOULD EVER HAVE TO USE SVN
 AN INFLEXIBLE POSITION SOMETIMES IS A SIGN OF PARALYSIS
 
+fold ALL the things!
+
 This commit will change the world as we know it. For the better.
 So in a way, this changes everything. Again.
 
