@@ -50,7 +50,7 @@ class TrayBubbleBorder : public BubbleBorder {
         tray_arrow_offset_(params.arrow_offset) {
     set_alignment(params.arrow_alignment);
     set_background_color(params.arrow_color);
-    set_paint_arrow(!params.hide_arrow);
+    set_paint_arrow(params.arrow_paint_type);
   }
 
   virtual ~TrayBubbleBorder() {}
@@ -227,7 +227,7 @@ TrayBubbleView::InitParams::InitParams(AnchorType anchor_type,
       arrow_color(SK_ColorBLACK),
       arrow_location(BubbleBorder::NONE),
       arrow_offset(kArrowDefaultOffset),
-      hide_arrow(false),
+      arrow_paint_type(BubbleBorder::PAINT_NORMAL),
       shadow(BubbleBorder::BIG_SHADOW),
       arrow_alignment(BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE) {
 }
@@ -321,8 +321,9 @@ void TrayBubbleView::SetWidth(int width) {
     SizeToContents();
 }
 
-void TrayBubbleView::SetPaintArrow(bool paint_arrow) {
-  bubble_border_->set_paint_arrow(paint_arrow && !params_.hide_arrow);
+void TrayBubbleView::SetArrowPaintType(
+    views::BubbleBorder::ArrowPaintType paint_type) {
+  bubble_border_->set_paint_arrow(paint_type);
 }
 
 gfx::Insets TrayBubbleView::GetBorderInsets() const {

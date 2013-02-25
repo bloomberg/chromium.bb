@@ -136,7 +136,7 @@ struct BubbleBorder::BorderImages*
 BubbleBorder::BubbleBorder(ArrowLocation arrow, Shadow shadow, SkColor color)
     : override_arrow_offset_(0),
       arrow_location_(arrow),
-      paint_arrow_(true),
+      arrow_paint_type_(PAINT_NORMAL),
       alignment_(ALIGN_ARROW_TO_MID_ANCHOR),
       background_color_(color) {
   DCHECK(shadow < SHADOW_COUNT);
@@ -182,7 +182,7 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& position_relative_to,
   int w = position_relative_to.width();
   int h = position_relative_to.height();
 
-  const int arrow_size = images_->arrow_interior_height + kBorderStrokeSize;
+  const int arrow_size = GetArrowSize();
   const int arrow_offset = GetArrowOffset(border_size);
 
   // Calculate bubble x coordinate.
@@ -320,6 +320,12 @@ int BubbleBorder::GetBorderCornerRadius() const {
   return images_->corner_radius;
 }
 
+int BubbleBorder::GetArrowSize() const {
+  if (arrow_paint_type_ == PAINT_NONE)
+    return 0;
+  return images_->arrow_interior_height + kBorderStrokeSize;
+}
+
 int BubbleBorder::GetArrowOffset(const gfx::Size& border_size) const {
   int arrow_offset = arrow_offset_;
   if (override_arrow_offset_) {
@@ -414,7 +420,8 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
     }
   }
 
-  const ArrowLocation arrow_location = paint_arrow_ ? arrow_location_ : NONE;
+  const ArrowLocation arrow_location =
+      arrow_paint_type_ == PAINT_NORMAL ? arrow_location_ : NONE;
 
   // Left edge.
   if (arrow_location == LEFT_TOP ||

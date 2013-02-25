@@ -41,7 +41,7 @@ NotificationBubbleWrapperWin::NotificationBubbleWrapperWin(
       bubble_->GetInitParams(anchor_alignment);
   init_params.close_on_deactivate = false;
   init_params.arrow_alignment = views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE;
-  init_params.hide_arrow = true;
+  init_params.arrow_paint_type = views::BubbleBorder::PAINT_NONE;
   // TODO(dewittj): Show big shadow without blocking clicks.
   init_params.shadow = views::BubbleBorder::NO_SHADOW;
 

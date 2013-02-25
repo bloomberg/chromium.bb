@@ -375,7 +375,9 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
     init_params.arrow_offset = arrow_offset;
     // For Volume and Brightness we don't want to show an arrow when
     // they are shown in a bubble by themselves.
-    init_params.hide_arrow = items.size() == 1 && items[0]->ShouldHideArrow();
+    init_params.arrow_paint_type = views::BubbleBorder::PAINT_NORMAL;
+    if (items.size() == 1 && items[0]->ShouldHideArrow())
+      init_params.arrow_paint_type = views::BubbleBorder::PAINT_TRANSPARENT;
     SystemTrayBubble* bubble = new SystemTrayBubble(this, items, bubble_type);
     system_bubble_.reset(new internal::SystemBubbleWrapper(bubble));
     system_bubble_->InitView(this, tray_container(), &init_params);

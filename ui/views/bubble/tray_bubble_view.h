@@ -100,7 +100,7 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView {
     SkColor arrow_color;
     views::BubbleBorder::ArrowLocation arrow_location;
     int arrow_offset;
-    bool hide_arrow;  // hides arrow, but may still use "arrow geometry"
+    views::BubbleBorder::ArrowPaintType arrow_paint_type;
     views::BubbleBorder::Shadow shadow;
     views::BubbleBorder::BubbleAlignment arrow_alignment;
   };
@@ -127,7 +127,7 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView {
   void SetWidth(int width);
 
   // Sets whether or not to paint the bubble border arrow.
-  void SetPaintArrow(bool paint_arrow);
+  void SetArrowPaintType(views::BubbleBorder::ArrowPaintType arrow_paint_type);
 
   // Returns the border insets. Called by TrayEventFilter.
   gfx::Insets GetBorderInsets() const;

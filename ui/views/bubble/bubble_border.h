@@ -65,6 +65,16 @@ class VIEWS_EXPORT BubbleBorder : public Border {
     ALIGN_EDGE_TO_ANCHOR_EDGE
   };
 
+  // The way the arrow should be painted.
+  enum ArrowPaintType {
+    // Fully render the arrow.
+    PAINT_NORMAL,
+    // Leave space for the arrow, but do not paint it.
+    PAINT_TRANSPARENT,
+    // Neither paint nor leave space for the arrow.
+    PAINT_NONE,
+  };
+
   BubbleBorder(ArrowLocation arrow, Shadow shadow, SkColor color);
 
   // Returns the radius of the corner of the border.
@@ -130,9 +140,8 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   // location to make that happen.
   void set_arrow_offset(int offset) { override_arrow_offset_ = offset; }
 
-  // Sets whether the arrow is actually painted. If false, an arrow may still be
-  // used for the geometry computations, but it is not shown. Default is true.
-  void set_paint_arrow(bool value) { paint_arrow_ = value; }
+  // Sets the way the arrow is actually painted.  Default is PAINT_NORMAL.
+  void set_paint_arrow(ArrowPaintType value) { arrow_paint_type_ = value; }
 
   // For borders with an arrow, gives the desired bounds (in screen coordinates)
   // given the rect to point to and the size of the contained contents.  This
@@ -167,6 +176,8 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   // Loads images if necessary.
   static BorderImages* GetBorderImages(Shadow shadow);
 
+  int GetArrowSize() const;
+
   // Overridden from Border:
   virtual void Paint(const View& view, gfx::Canvas* canvas) OVERRIDE;
 
@@ -195,8 +206,7 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   int override_arrow_offset_;
 
   ArrowLocation arrow_location_;
-  // See description above setter.
-  bool paint_arrow_;
+  ArrowPaintType arrow_paint_type_;
   BubbleAlignment alignment_;
   SkColor background_color_;
 
