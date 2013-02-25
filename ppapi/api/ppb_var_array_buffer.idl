@@ -57,10 +57,13 @@ interface PPB_VarArrayBuffer {
   /**
    * Map() maps the <code>ArrayBuffer</code> in to the module's address space
    * and returns a pointer to the beginning of the buffer for the given
-   * <code>ArrayBuffer PP_Var</code>. Note that calling Map() can be a
-   * relatively expensive operation. Use care when calling it in
-   * performance-critical code. For example, you should call it only once when
-   * looping over an <code>ArrayBuffer</code>.
+   * <code>ArrayBuffer PP_Var</code>. ArrayBuffers are copied when transmitted,
+   * so changes to the underlying memory are not automatically available to
+   * other processes.
+   *
+   * Note that calling Map() can be a relatively expensive operation. Use care
+   * when calling it in performance-critical code. For example, you should call
+   * it only once when looping over an <code>ArrayBuffer</code>.
    *
    * <strong>Example:</strong>
    *
