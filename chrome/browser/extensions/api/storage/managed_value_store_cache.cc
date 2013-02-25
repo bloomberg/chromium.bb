@@ -11,38 +11,115 @@
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
 #include "chrome/browser/extensions/api/storage/policy_value_store.h"
 #include "chrome/browser/extensions/api/storage/settings_storage_factory.h"
 #include "chrome/browser/extensions/event_names.h"
+#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/value_store/value_store_change.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/extensions/permissions/api_permission.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 using content::BrowserThread;
 
 namespace extensions {
 
+// This helper observes initialization of all the installed extensions and
+// subsequent loads and unloads, and keeps the PolicyService of the Profile
+// in sync with the current list of extensions. This allows the PolicyService
+// to fetch cloud policy for those extensions, and allows its providers to
+// selectively load only extension policy that has users.
+class ManagedValueStoreCache::ExtensionTracker
+    : public content::NotificationObserver {
+ public:
+  explicit ExtensionTracker(Profile* profile);
+  virtual ~ExtensionTracker() {}
+
+  // NotificationObserver implementation:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+ private:
+  Profile* profile_;
+  bool is_ready_;
+  content::NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionTracker);
+};
+
+ManagedValueStoreCache::ExtensionTracker::ExtensionTracker(Profile* profile)
+    : profile_(profile),
+      is_ready_(false) {
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSIONS_READY,
+                 content::Source<Profile>(profile_));
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED,
+                 content::Source<Profile>(profile_));
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 content::Source<Profile>(profile_));
+}
+
+void ManagedValueStoreCache::ExtensionTracker::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  if (type == chrome::NOTIFICATION_EXTENSIONS_READY)
+    is_ready_ = true;
+
+  if (!is_ready_)
+    return;
+
+  // TODO(joaodasilva): this currently only registers extensions that use
+  // the storage API, but that still includes a lot of extensions that don't
+  // use the storage.managed namespace. Use the presence of a schema for the
+  // managed namespace in the manifest as a better signal, once available.
+
+  const ExtensionSet* set =
+      ExtensionSystem::Get(profile_)->extension_service()->extensions();
+  std::set<std::string> use_storage_set;
+  for (ExtensionSet::const_iterator it = set->begin();
+       it != set->end(); ++it) {
+    if ((*it)->HasAPIPermission(APIPermission::kStorage))
+      use_storage_set.insert((*it)->id());
+  }
+
+  profile_->GetPolicyService()->RegisterPolicyDomain(
+      policy::POLICY_DOMAIN_EXTENSIONS,
+      use_storage_set);
+}
+
 ManagedValueStoreCache::ManagedValueStoreCache(
-    policy::PolicyService* policy_service,
-    EventRouter* event_router,
+    Profile* profile,
     const scoped_refptr<SettingsStorageFactory>& factory,
-    const scoped_refptr<SettingsObserverList>& observers,
-    const base::FilePath& profile_path)
+    const scoped_refptr<SettingsObserverList>& observers)
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       weak_this_on_ui_(weak_factory_.GetWeakPtr()),
-      policy_service_(policy_service),
-      event_router_(event_router),
+      profile_(profile),
+      event_router_(ExtensionSystem::Get(profile)->event_router()),
       storage_factory_(factory),
       observers_(observers),
-      base_path_(profile_path.AppendASCII(
+      base_path_(profile->GetPath().AppendASCII(
           ExtensionService::kManagedSettingsDirectoryName)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // |event_router| can be NULL on unit_tests.
+  // |event_router_| can be NULL on unit_tests.
   if (event_router_)
     event_router_->RegisterObserver(this, event_names::kOnSettingsChanged);
-  policy_service_->AddObserver(policy::POLICY_DOMAIN_EXTENSIONS, this);
+
+  profile_->GetPolicyService()->AddObserver(
+      policy::POLICY_DOMAIN_EXTENSIONS, this);
+
+  extension_tracker_.reset(new ExtensionTracker(profile_));
 }
 
 ManagedValueStoreCache::~ManagedValueStoreCache() {
@@ -54,12 +131,13 @@ ManagedValueStoreCache::~ManagedValueStoreCache() {
 
 void ManagedValueStoreCache::ShutdownOnUI() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  policy_service_->RemoveObserver(policy::POLICY_DOMAIN_EXTENSIONS, this);
-  policy_service_ = NULL;
+  profile_->GetPolicyService()->RemoveObserver(
+      policy::POLICY_DOMAIN_EXTENSIONS, this);
   if (event_router_)
     event_router_->UnregisterObserver(this);
   event_router_ = NULL;
   weak_factory_.InvalidateWeakPtrs();
+  extension_tracker_.reset();
 }
 
 void ManagedValueStoreCache::RunWithValueStoreForExtension(
@@ -198,8 +276,20 @@ void ManagedValueStoreCache::GetInitialPolicy(
     bool notify_if_changed,
     const base::Closure& continuation) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  const policy::PolicyMap& policy = policy_service_->GetPolicies(
-      policy::PolicyNamespace(policy::POLICY_DOMAIN_EXTENSIONS, extension_id));
+
+  policy::PolicyService* policy_service = profile_->GetPolicyService();
+
+  // If initialization of POLICY_DOMAIN_EXTENSIONS isn't complete then all the
+  // policies served are empty; let the extension see what's cached in LevelDB
+  // in that case. The PolicyService will issue notifications once new policies
+  // are ready.
+  scoped_ptr<policy::PolicyMap> policy;
+  if (policy_service->IsInitializationComplete(
+          policy::POLICY_DOMAIN_EXTENSIONS)) {
+    policy::PolicyNamespace ns(policy::POLICY_DOMAIN_EXTENSIONS, extension_id);
+    policy = policy_service->GetPolicies(ns).DeepCopy();
+  }
+
   // Now post back to FILE to create the database.
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
@@ -207,7 +297,7 @@ void ManagedValueStoreCache::GetInitialPolicy(
                  base::Unretained(this),
                  extension_id,
                  notify_if_changed,
-                 base::Passed(policy.DeepCopy()),
+                 base::Passed(&policy),
                  continuation));
 }
 
@@ -238,8 +328,9 @@ void ManagedValueStoreCache::CreateStoreWithInitialPolicy(
     store_map_[extension_id] = make_linked_ptr(store);
   }
 
-  // Send the latest policy to the store.
-  store->SetCurrentPolicy(*initial_policy, notify_if_changed);
+  // Send the latest policy to the store, if it's already available.
+  if (initial_policy)
+    store->SetCurrentPolicy(*initial_policy, notify_if_changed);
 
   // And finally resume from where this process started.
   if (!continuation.is_null())

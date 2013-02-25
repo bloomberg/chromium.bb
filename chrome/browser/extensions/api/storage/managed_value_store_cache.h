@@ -21,6 +21,8 @@
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/policy/policy_service.h"
 
+class Profile;
+
 namespace policy {
 class PolicyMap;
 }
@@ -38,22 +40,17 @@ class ManagedValueStoreCache : public ValueStoreCache,
                                public policy::PolicyService::Observer,
                                public EventRouter::Observer {
  public:
-  // |policy_service| is used to retrieve policy for extensions, and to observe
-  // policy updates.
-  // ||event_router| is used to observe which extensions listen for onChanged.
   // |factory| is used to create databases for the PolicyValueStores.
   // |observers| is the list of SettingsObservers to notify when a ValueStore
   // changes.
-  // |profile_path| is the path for the profile. The databases are created in
-  // a directory under this path.
-  ManagedValueStoreCache(policy::PolicyService* policy_service,
-                         EventRouter* event_router,
+  ManagedValueStoreCache(Profile* profile,
                          const scoped_refptr<SettingsStorageFactory>& factory,
-                         const scoped_refptr<SettingsObserverList>& observers,
-                         const base::FilePath& profile_path);
+                         const scoped_refptr<SettingsObserverList>& observers);
   virtual ~ManagedValueStoreCache();
 
  private:
+  class ExtensionTracker;
+
   // Maps an extension ID to its PolicyValueStoreMap.
   typedef std::map<std::string, linked_ptr<PolicyValueStore> >
       PolicyValueStoreMap;
@@ -127,14 +124,19 @@ class ManagedValueStoreCache : public ValueStoreCache,
   // thread to post back to UI.
   base::WeakPtr<ManagedValueStoreCache> weak_this_on_ui_;
 
-  // The PolicyService that is observed for policy updates. Lives on UI.
-  policy::PolicyService* policy_service_;
+  // The profile that owns the extension system being used. This is used to
+  // get the PolicyService, the EventRouter and the ExtensionService.
+  Profile* profile_;
 
   // The EventRouter is created before the SettingsFrontend (which owns the
   // instance of this class), and the SettingsFrontend is also destroyed before
   // the EventRouter is. |event_router_| is thus valid for the lifetime of this
   // object, until ShutdownOnUI() is invoked. Lives on UI.
   EventRouter* event_router_;
+
+  // Observes extension loading and unloading, and keeps the Profile's
+  // PolicyService aware of the current list of extensions.
+  scoped_ptr<ExtensionTracker> extension_tracker_;
 
   // These live on the FILE thread.
   scoped_refptr<SettingsStorageFactory> storage_factory_;

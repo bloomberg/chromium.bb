@@ -121,11 +121,9 @@ SettingsFrontend::SettingsFrontend(
 #if defined(ENABLE_CONFIGURATION_POLICY)
   caches_[settings_namespace::MANAGED] =
       new ManagedValueStoreCache(
-          profile->GetPolicyService(),
-          ExtensionSystem::Get(profile)->event_router(),
+          profile,
           factory,
-          observers_,
-          profile_path);
+          observers_);
 #endif
 }
 
