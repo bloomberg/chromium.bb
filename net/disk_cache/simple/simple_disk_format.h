@@ -16,6 +16,8 @@ const uint64 kSimpleInitialMagicNumber = GG_UINT64_C(0xfcfb6d1ba7725c30);
 
 const uint32 kSimpleVersion = 1;
 
+static const int kSimpleEntryFileCount = 3;
+
 struct SimpleFileHeader {
   uint64 initial_magic_number;
   uint32 version;

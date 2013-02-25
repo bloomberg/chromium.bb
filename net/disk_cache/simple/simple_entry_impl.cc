@@ -110,27 +110,15 @@ std::string SimpleEntryImpl::GetKey() const {
 }
 
 Time SimpleEntryImpl::GetLastUsed() const {
-  if (synchronous_entry_in_use_by_worker_) {
-    NOTIMPLEMENTED();
-    CHECK(false);
-  }
-  return synchronous_entry_->last_used();
+  return last_used_;
 }
 
 Time SimpleEntryImpl::GetLastModified() const {
-  if (synchronous_entry_in_use_by_worker_) {
-    NOTIMPLEMENTED();
-    CHECK(false);
-  }
-  return synchronous_entry_->last_modified();
+  return last_modified_;
 }
 
 int32 SimpleEntryImpl::GetDataSize(int index) const {
-  if (synchronous_entry_in_use_by_worker_) {
-    NOTIMPLEMENTED();
-    CHECK(false);
-  }
-  return synchronous_entry_->data_size(index);
+  return data_size_[index];
 }
 
 int SimpleEntryImpl::ReadData(int index,
@@ -227,11 +215,13 @@ int SimpleEntryImpl::ReadyForSparseIO(const CompletionCallback& callback) {
 SimpleEntryImpl::SimpleEntryImpl(
     SimpleSynchronousEntry* synchronous_entry)
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      path_(synchronous_entry->path()),
       key_(synchronous_entry->key()),
       synchronous_entry_(synchronous_entry),
       synchronous_entry_in_use_by_worker_(false),
       has_been_doomed_(false) {
   DCHECK(synchronous_entry);
+  SetSynchronousData();
 }
 
 SimpleEntryImpl::~SimpleEntryImpl() {
@@ -259,8 +249,23 @@ void SimpleEntryImpl::EntryOperationComplete(
   if (entry) {
     DCHECK(entry->synchronous_entry_in_use_by_worker_);
     entry->synchronous_entry_in_use_by_worker_ = false;
+    entry->SetSynchronousData();
   }
   completion_callback.Run(result);
+}
+
+void SimpleEntryImpl::SetSynchronousData() {
+  DCHECK(!synchronous_entry_in_use_by_worker_);
+
+  // TODO(felipeg): These copies to avoid data races are not optimal. While
+  // adding an IO thread index (for fast misses etc...), we can store this data
+  // in that structure. This also solves problems with last_used() on ext4
+  // filesystems not being accurate.
+
+  last_used_ = synchronous_entry_->last_used();
+  last_modified_ = synchronous_entry_->last_modified();
+  for (int i = 0; i < kSimpleEntryFileCount; ++i)
+    data_size_[i] = synchronous_entry_->data_size(i);
 }
 
 }  // namespace disk_cache

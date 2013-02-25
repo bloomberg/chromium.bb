@@ -20,7 +20,6 @@
 #include "base/task_runner.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "net/disk_cache/simple/simple_disk_format.h"
 
 using base::ClosePlatformFile;
 using base::FilePath;
@@ -104,7 +103,7 @@ void SimpleSynchronousEntry::DoomEntry(
     const std::string& key,
     scoped_refptr<TaskRunner> callback_runner,
     const net::CompletionCallback& callback) {
-  for (int i = 0; i < kIndexCount; ++i) {
+  for (int i = 0; i < kSimpleEntryFileCount; ++i) {
     FilePath to_delete = path.AppendASCII(GetFilenameForKeyAndIndex(key, i));
     bool ALLOW_UNUSED result = file_util::Delete(to_delete, false);
     DLOG_IF(ERROR, !result) << "Could not delete " << to_delete.MaybeAsASCII();
@@ -125,7 +124,7 @@ void SimpleSynchronousEntry::DoomAndClose() {
 }
 
 void SimpleSynchronousEntry::Close() {
-  for (int i = 0; i < kIndexCount; ++i) {
+  for (int i = 0; i < kSimpleEntryFileCount; ++i) {
     bool ALLOW_UNUSED result = ClosePlatformFile(files_[i]);
     DLOG_IF(INFO, !result) << "Could not Close() file.";
   }
@@ -194,7 +193,7 @@ SimpleSynchronousEntry::~SimpleSynchronousEntry() {
 }
 
 bool SimpleSynchronousEntry::OpenOrCreateFiles(bool create) {
-  for (int i = 0; i < kIndexCount; ++i) {
+  for (int i = 0; i < kSimpleEntryFileCount; ++i) {
     FilePath filename = path_.AppendASCII(GetFilenameForKeyAndIndex(key_, i));
     int flags = PLATFORM_FILE_READ | PLATFORM_FILE_WRITE;
     if (create)
@@ -216,7 +215,7 @@ bool SimpleSynchronousEntry::OpenOrCreateFiles(bool create) {
     }
   }
 
-  for (int i = 0; i < kIndexCount; ++i) {
+  for (int i = 0; i < kSimpleEntryFileCount; ++i) {
     PlatformFileInfo file_info;
     bool success = GetPlatformFileInfo(files_[i], &file_info);
     if (!success) {
@@ -236,7 +235,7 @@ bool SimpleSynchronousEntry::InitializeForOpen() {
   if (!OpenOrCreateFiles(false))
     return false;
 
-  for (int i = 0; i < kIndexCount; ++i) {
+  for (int i = 0; i < kSimpleEntryFileCount; ++i) {
     SimpleFileHeader header;
     int header_read_result =
         ReadPlatformFile(files_[i], 0, reinterpret_cast<char*>(&header),
@@ -292,7 +291,7 @@ bool SimpleSynchronousEntry::InitializeForCreate() {
     return false;
   }
 
-  for (int i = 0; i < kIndexCount; ++i) {
+  for (int i = 0; i < kSimpleEntryFileCount; ++i) {
     SimpleFileHeader header;
     header.initial_magic_number = kSimpleInitialMagicNumber;
     header.version = kSimpleVersion;

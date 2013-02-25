@@ -7,8 +7,10 @@
 
 #include <string>
 
+#include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "net/disk_cache/disk_cache.h"
+#include "net/disk_cache/simple/simple_disk_format.h"
 
 namespace net {
 class IOBuffer;
@@ -92,8 +94,24 @@ class SimpleEntryImpl : public Entry {
       base::WeakPtr<SimpleEntryImpl> entry,
       int result);
 
+  // Called on construction and also after the completion of asynchronous IO to
+  // initialize the IO thread copies of data returned by synchronous accessor
+  // functions. Copies data from |synchronous_entry_| into |this|, so that
+  // values can be returned during our next IO operation.
+  void SetSynchronousData();
+
   base::WeakPtrFactory<SimpleEntryImpl> weak_ptr_factory_;
-  std::string key_;
+
+  // |path_| and |key_| are copied from the synchronous entry on construction,
+  // and never updated as they are const.
+  const base::FilePath path_;
+  const std::string key_;
+
+  // |last_used_|, |last_modified_| and |data_size_| are copied from the
+  // synchronous entry at the completion of each item of asynchronous IO.
+  base::Time last_used_;
+  base::Time last_modified_;
+  int32 data_size_[kSimpleEntryFileCount];
 
   // The |synchronous_entry_| is the worker thread object that performs IO on
   // entries.

@@ -14,6 +14,7 @@
 #include "base/task_runner.h"
 #include "base/time.h"
 #include "net/base/completion_callback.h"
+#include "net/disk_cache/simple/simple_disk_format.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -72,14 +73,13 @@ class SimpleSynchronousEntry {
                  const SynchronousOperationCallback& callback,
                  bool truncate);
 
+  const base::FilePath& path() const { return path_; }
   std::string key() const { return key_; }
   base::Time last_used() const { return last_used_; }
   base::Time last_modified() const { return last_modified_; }
   int32 data_size(int index) const { return data_size_[index]; }
 
  private:
-  static const int kIndexCount = 3;
-
   SimpleSynchronousEntry(
       const scoped_refptr<base::TaskRunner>& callback_runner,
       const base::FilePath& path,
@@ -101,9 +101,9 @@ class SimpleSynchronousEntry {
 
   base::Time last_used_;
   base::Time last_modified_;
-  int32 data_size_[kIndexCount];
+  int32 data_size_[kSimpleEntryFileCount];
 
-  base::PlatformFile files_[kIndexCount];
+  base::PlatformFile files_[kSimpleEntryFileCount];
 };
 
 }  // namespace disk_cache
