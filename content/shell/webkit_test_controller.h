@@ -133,9 +133,6 @@ class WebKitTestController : public base::NonThreadSafe,
   void OnSetFocus(bool focus);
   void OnCaptureSessionHistory();
 
-  void OnNotImplemented(const std::string& object_name,
-                        const std::string& method_name);
-
   scoped_ptr<WebKitTestResultPrinter> printer_;
 
   base::FilePath current_working_directory_;

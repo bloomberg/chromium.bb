@@ -292,7 +292,6 @@ bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_SetFocus, OnSetFocus)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_CaptureSessionHistory,
                         OnCaptureSessionHistory)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_NotImplemented, OnNotImplemented)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -523,14 +522,6 @@ void WebKitTestController::OnCaptureSessionHistory() {
                                        routing_ids,
                                        session_histories,
                                        current_entry_indexes));
-}
-
-void WebKitTestController::OnNotImplemented(
-    const std::string& object_name,
-    const std::string& property_name) {
-  printer_->AddErrorMessage(
-      std::string("FAIL: NOT IMPLEMENTED: ") +
-      object_name + "." + property_name);
 }
 
 }  // namespace content
