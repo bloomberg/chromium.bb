@@ -74,6 +74,7 @@ cr.define('cr.ui', function() {
      */
     addSeparator: function() {
       var separator = this.ownerDocument.createElement('hr');
+      cr.ui.decorate(separator, MenuItem);
       this.appendChild(separator);
     },
 
@@ -227,8 +228,10 @@ cr.define('cr.ui', function() {
     updateCommands: function(node) {
       var menuItems = this.menuItems;
 
-      for (var i = 0, menuItem; menuItem = menuItems[i]; i++)
-        menuItem.updateCommand(node);
+      for (var i = 0, menuItem; menuItem = menuItems[i]; i++) {
+        if (!menuItem.isSeparator())
+          menuItem.updateCommand(node);
+      }
     }
   };
 
