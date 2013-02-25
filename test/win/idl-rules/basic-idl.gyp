@@ -27,6 +27,7 @@
         '<(midl_out_dir)/history_indexer_i.c',
         'history_indexer_user.cc',
       ],
+      'libraries': ['ole32.lib'],
       'include_dirs': [
         '<(midl_out_dir)',
       ],
