@@ -250,8 +250,8 @@ div =E, 0xf6 /6
 # AMD/Intel manual but it does complex manipulations and is very rarely used
 # (GCC, in particular, never use it).  As a rule we don't allow complex and
 # rarely used instructions such as “aaa” or “bound”.  Disable it for now.
-enter iw =Ib, 0xc8, ia32 nacl-forbidden
-enter iw =Ib, 0xc8, amd64 att-show-name-suffix-q nacl-forbidden
+enter Iw =ib, 0xc8, ia32 nacl-forbidden
+enter Iw =ib, 0xc8, amd64 att-show-name-suffix-q nacl-forbidden
 ######## IDIV ##################################################################
 # “idiv” is not marked as nacl-amd64-zero-extends because we never allowed it.
 idiv =E, 0xf6 /7

@@ -270,20 +270,21 @@
 
   action operand4_2bit       { SET_OPERAND_TYPE(4, OPERAND_TYPE_2_BIT); }
 
-  action operand0_ds_rbx     { SET_OPERAND_NAME(0, REG_DS_RBX); }
-  action operand0_ds_rsi     { SET_OPERAND_NAME(0, REG_DS_RSI); }
-  action operand0_es_rdi     { SET_OPERAND_NAME(0, REG_ES_RDI); }
-  action operand0_immediate  { SET_OPERAND_NAME(0, REG_IMM); }
-  action operand0_jmp_to     { SET_OPERAND_NAME(0, JMP_TO); }
-  action operand0_port_dx    { SET_OPERAND_NAME(0, REG_PORT_DX); }
-  action operand0_rax        { SET_OPERAND_NAME(0, REG_RAX); }
-  action operand0_rcx        { SET_OPERAND_NAME(0, REG_RCX); }
-  action operand0_rdx        { SET_OPERAND_NAME(0, REG_RDX); }
-  action operand0_rbx        { SET_OPERAND_NAME(0, REG_RBX); }
-  action operand0_rsp        { SET_OPERAND_NAME(0, REG_RSP); }
-  action operand0_rbp        { SET_OPERAND_NAME(0, REG_RBP); }
-  action operand0_rm         { SET_OPERAND_NAME(0, REG_RM); }
-  action operand0_st         { SET_OPERAND_NAME(0, REG_ST); }
+  action operand0_ds_rbx           { SET_OPERAND_NAME(0, REG_DS_RBX); }
+  action operand0_ds_rsi           { SET_OPERAND_NAME(0, REG_DS_RSI); }
+  action operand0_es_rdi           { SET_OPERAND_NAME(0, REG_ES_RDI); }
+  action operand0_immediate        { SET_OPERAND_NAME(0, REG_IMM); }
+  action operand0_jmp_to           { SET_OPERAND_NAME(0, JMP_TO); }
+  action operand0_port_dx          { SET_OPERAND_NAME(0, REG_PORT_DX); }
+  action operand0_rax              { SET_OPERAND_NAME(0, REG_RAX); }
+  action operand0_rcx              { SET_OPERAND_NAME(0, REG_RCX); }
+  action operand0_rdx              { SET_OPERAND_NAME(0, REG_RDX); }
+  action operand0_rbx              { SET_OPERAND_NAME(0, REG_RBX); }
+  action operand0_rsp              { SET_OPERAND_NAME(0, REG_RSP); }
+  action operand0_rbp              { SET_OPERAND_NAME(0, REG_RBP); }
+  action operand0_rm               { SET_OPERAND_NAME(0, REG_RM); }
+  action operand0_second_immediate { SET_OPERAND_NAME(0, REG_IMM2); }
+  action operand0_st               { SET_OPERAND_NAME(0, REG_ST); }
 
   action operand1_ds_rsi           { SET_OPERAND_NAME(1, REG_DS_RSI); }
   action operand1_es_rdi           { SET_OPERAND_NAME(1, REG_ES_RDI); }

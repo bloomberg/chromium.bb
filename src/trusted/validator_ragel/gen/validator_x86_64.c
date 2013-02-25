@@ -11652,9 +11652,9 @@ st196:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof196;
 case 196:
-	if ( (*( current_position)) <= 127u )
-		goto tr52;
-	goto tr466;
+	if ( 128u <= (*( current_position)) )
+		goto tr466;
+	goto tr52;
 tr402:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
