@@ -21,6 +21,7 @@ table_files = \
 	ckb-g1.ctb \
 	ckb-translation.ctb \
 	compress.ctb \
+	controlchars.cti \
 	corrections.ctb \
 	countries.cti \
 	cs-chardefs.cti \
