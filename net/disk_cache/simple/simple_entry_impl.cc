@@ -74,16 +74,15 @@ int SimpleEntryImpl::DoomEntry(const FilePath& path,
 }
 
 void SimpleEntryImpl::Doom() {
-  if (synchronous_entry_in_use_by_worker_) {
-    NOTIMPLEMENTED();
-    return;
-  }
-  WorkerPool::PostTask(FROM_HERE,
-                       base::Bind(&SimpleSynchronousEntry::DoomAndClose,
-                                  base::Unretained(synchronous_entry_)),
-                       true);
-  synchronous_entry_ = NULL;
-  has_been_doomed_ = true;
+#if defined(OS_POSIX)
+  // This call to static SimpleEntryImpl::DoomEntry() will just erase the
+  // underlying files. On POSIX, this is fine; the files are still open on the
+  // SimpleSynchronousEntry, and operations can even happen on them. The files
+  // will be removed from the filesystem when they are closed.
+  DoomEntry(path_, key_, CompletionCallback());
+#else
+  NOTIMPLEMENTED();
+#endif
 }
 
 void SimpleEntryImpl::Close() {
@@ -92,14 +91,12 @@ void SimpleEntryImpl::Close() {
     delete this;
     return;
   }
-  DCHECK(synchronous_entry_ || has_been_doomed_);
-  if (!has_been_doomed_) {
-    WorkerPool::PostTask(FROM_HERE,
-                         base::Bind(&SimpleSynchronousEntry::Close,
-                                    base::Unretained(synchronous_entry_)),
-                         true);
-    synchronous_entry_ = NULL;
-  }
+  DCHECK(synchronous_entry_);
+  WorkerPool::PostTask(FROM_HERE,
+                       base::Bind(&SimpleSynchronousEntry::Close,
+                                  base::Unretained(synchronous_entry_)),
+                       true);
+  synchronous_entry_ = NULL;
   // Entry::Close() is expected to release this entry. See disk_cache.h for
   // details.
   delete this;
@@ -218,8 +215,7 @@ SimpleEntryImpl::SimpleEntryImpl(
       path_(synchronous_entry->path()),
       key_(synchronous_entry->key()),
       synchronous_entry_(synchronous_entry),
-      synchronous_entry_in_use_by_worker_(false),
-      has_been_doomed_(false) {
+      synchronous_entry_in_use_by_worker_(false) {
   DCHECK(synchronous_entry);
   SetSynchronousData();
 }

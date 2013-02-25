@@ -112,17 +112,6 @@ void SimpleSynchronousEntry::DoomEntry(
     callback_runner->PostTask(FROM_HERE, base::Bind(callback, net::OK));
 }
 
-void SimpleSynchronousEntry::DoomAndClose() {
-  scoped_refptr<TaskRunner> callback_runner = callback_runner_;
-  FilePath path = path_;
-  std::string key = key_;
-
-  Close();
-  // |this| is now deleted.
-
-  DoomEntry(path, key, callback_runner, net::CompletionCallback());
-}
-
 void SimpleSynchronousEntry::Close() {
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
     bool ALLOW_UNUSED result = ClosePlatformFile(files_[i]);

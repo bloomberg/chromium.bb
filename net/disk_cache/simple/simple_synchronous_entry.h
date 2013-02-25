@@ -58,8 +58,7 @@ class SimpleSynchronousEntry {
                         scoped_refptr<base::TaskRunner> callback_runner,
                         const net::CompletionCallback& callback);
 
-  // N.B. DoomAndClose(), Close(), ReadData() and WriteData() may block on IO.
-  void DoomAndClose();
+  // N.B. Close(), ReadData() and WriteData() may block on IO.
   void Close();
   void ReadData(int index,
                 int offset,

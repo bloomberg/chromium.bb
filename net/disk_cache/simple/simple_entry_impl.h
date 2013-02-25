@@ -121,8 +121,6 @@ class SimpleEntryImpl : public Entry {
   // and false after. Used to insure thread safety by not allowing multiple
   // threads to access the |synchronous_entry_| simultaneously.
   bool synchronous_entry_in_use_by_worker_;
-
-  bool has_been_doomed_;
 };
 
 }  // namespace disk_cache
