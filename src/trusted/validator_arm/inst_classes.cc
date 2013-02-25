@@ -144,20 +144,6 @@ SafetyLevel UnsafeClassDecoder::safety(Instruction i) const {
   return safety_;
 }
 
-// PermanentlyUndefined
-SafetyLevel PermanentlyUndefined::safety(Instruction i) const {
-  // Restrict UDF's encoding to values we've chosen as safe.
-  if ((i.Bits(31, 0) == kHaltFill) ||
-      (i.Bits(31, 0) == kAbortNow))
-    return MAY_BE_SAFE;
-  return FORBIDDEN_OPERANDS;
-}
-
-RegisterList PermanentlyUndefined::defs(Instruction i) const {
-  UNREFERENCED_PARAMETER(i);
-  return RegisterList();
-}
-
 RegisterList UnsafeClassDecoder::defs(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
   return RegisterList();

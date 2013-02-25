@@ -201,7 +201,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_data_proce
   }
 
   if (true) {
-    return Undefined_None_instance_;
+    return Unnamed_case_1_None_instance_;
   }
 
   // Catch any attempt to fall through...
@@ -505,7 +505,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
   }
 
   if (true) {
-    return Undefined_None_instance_;
+    return Unnamed_case_1_None_instance_;
   }
 
   // Catch any attempt to fall through...
@@ -1919,7 +1919,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_media_instructions(
           0x01F00000 /* op1(24:20)=11111 */ &&
       (inst.Bits() & 0x000000E0)  ==
           0x000000E0 /* op2(7:5)=111 */) {
-    return PermanentlyUndefined_UDF_instance_;
+    return UDF_cccc01111111iiiiiiiiiiii1111iiii_case_0_UDF_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000)  ==
@@ -1975,7 +1975,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_media_instructions(
   }
 
   if (true) {
-    return Undefined_None_instance_;
+    return Unnamed_case_1_None_instance_;
   }
 
   // Catch any attempt to fall through...
@@ -2227,7 +2227,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_miscellaneous_instructio
           0x00010000 /* op1(19:16)=xx01 */ &&
       (inst.Bits() & 0x0000FD00)  ==
           0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx111100x0xxxxxxxx */) {
-    return ForbiddenCondDecoder_MSR_register_instance_;
+    return MSR_register_cccc00010r10mmmm111100000000nnnn_case_0_MSR_register_instance_;
   }
 
   if ((inst.Bits() & 0x00000070)  ==
@@ -2240,7 +2240,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_miscellaneous_instructio
           0x00020000 /* op1(19:16)=xx1x */ &&
       (inst.Bits() & 0x0000FD00)  ==
           0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx111100x0xxxxxxxx */) {
-    return ForbiddenCondDecoder_MSR_register_instance_;
+    return MSR_register_cccc00010r10mmmm111100000000nnnn_case_0_MSR_register_instance_;
   }
 
   if ((inst.Bits() & 0x00000070)  ==
@@ -2251,7 +2251,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_miscellaneous_instructio
           0x00600000 /* op(22:21)=11 */ &&
       (inst.Bits() & 0x0000FD00)  ==
           0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx111100x0xxxxxxxx */) {
-    return ForbiddenCondDecoder_MSR_register_instance_;
+    return MSR_register_cccc00010r10mmmm111100000000nnnn_case_0_MSR_register_instance_;
   }
 
   if ((inst.Bits() & 0x00000070)  ==
@@ -2273,7 +2273,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_miscellaneous_instructio
           0x00000000 /* op(22:21)=x0 */ &&
       (inst.Bits() & 0x00000C0F)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx00xxxxxx0000 */) {
-    return ForbiddenCondDecoder_MRS_Banked_register_instance_;
+    return MRS_Banked_register_cccc00010r00mmmmdddd001m00000000_case_0_MRS_Banked_register_instance_;
   }
 
   if ((inst.Bits() & 0x00000070)  ==
@@ -2284,7 +2284,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_miscellaneous_instructio
           0x00200000 /* op(22:21)=x1 */ &&
       (inst.Bits() & 0x0000FC00)  ==
           0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx111100xxxxxxxxxx */) {
-    return ForbiddenCondDecoder_MSR_Banked_register_instance_;
+    return MRS_Banked_register_cccc00010r10mmmm1111001m0000nnnn_case_0_MRS_Banked_register_instance_;
   }
 
   if ((inst.Bits() & 0x00000070)  ==
@@ -2311,7 +2311,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_miscellaneous_instructio
           0x00200000 /* op(22:21)=01 */ &&
       (inst.Bits() & 0x000FFF00)  ==
           0x000FFF00 /* $pattern(31:0)=xxxxxxxxxxxx111111111111xxxxxxxx */) {
-    return ForbiddenCondDecoder_BXJ_instance_;
+    return BXJ_cccc000100101111111111110010mmmm_case_0_BXJ_instance_;
   }
 
   if ((inst.Bits() & 0x00000070)  ==
@@ -2334,7 +2334,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_miscellaneous_instructio
           0x00600000 /* op(22:21)=11 */ &&
       (inst.Bits() & 0x000FFF0F)  ==
           0x0000000E /* $pattern(31:0)=xxxxxxxxxxxx000000000000xxxx1110 */) {
-    return ForbiddenCondDecoder_ERET_instance_;
+    return ERET_cccc0001011000000000000001101110_case_0_ERET_instance_;
   }
 
   if ((inst.Bits() & 0x00000070)  ==
@@ -2348,7 +2348,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_miscellaneous_instructio
           0x00000070 /* op2(6:4)=111 */ &&
       (inst.Bits() & 0x00600000)  ==
           0x00400000 /* op(22:21)=10 */) {
-    return ForbiddenCondDecoder_HVC_instance_;
+    return HVC_cccc00010100iiiiiiiiiiii0111iiii_case_0_HVC_instance_;
   }
 
   if ((inst.Bits() & 0x00000070)  ==
@@ -2357,11 +2357,11 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_miscellaneous_instructio
           0x00600000 /* op(22:21)=11 */ &&
       (inst.Bits() & 0x000FFF00)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx000000000000xxxxxxxx */) {
-    return ForbiddenCondDecoder_SMC_instance_;
+    return SMC_cccc000101100000000000000111iiii_case_0_SMC_instance_;
   }
 
   if (true) {
-    return Undefined_None_instance_;
+    return Unnamed_case_1_None_instance_;
   }
 
   // Catch any attempt to fall through...
@@ -2882,7 +2882,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_packing_unpacking_satura
   }
 
   if (true) {
-    return Undefined_None_instance_;
+    return Unnamed_case_1_None_instance_;
   }
 
   // Catch any attempt to fall through...
@@ -3060,7 +3060,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
   }
 
   if (true) {
-    return Undefined_None_instance_;
+    return Unnamed_case_1_None_instance_;
   }
 
   // Catch any attempt to fall through...
@@ -3238,7 +3238,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
   }
 
   if (true) {
-    return Undefined_None_instance_;
+    return Unnamed_case_1_None_instance_;
   }
 
   // Catch any attempt to fall through...
@@ -3387,7 +3387,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_signed_multiply_signed_a
   }
 
   if (true) {
-    return Undefined_None_instance_;
+    return Unnamed_case_1_None_instance_;
   }
 
   // Catch any attempt to fall through...
@@ -3448,7 +3448,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_1imm(
           0x00000020 /* op(5)=1 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* cmode(11:8)=1111 */) {
-    return Undefined_None_instance_;
+    return Unnamed_case_1_None_instance_;
   }
 
   if ((inst.Bits() & 0x00000020)  ==
@@ -3762,7 +3762,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_2misc(
   }
 
   if (true) {
-    return Undefined_None_instance_;
+    return Unnamed_case_1_None_instance_;
   }
 
   // Catch any attempt to fall through...
@@ -3854,7 +3854,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_2scalar(
   }
 
   if (true) {
-    return Undefined_None_instance_;
+    return Unnamed_case_1_None_instance_;
   }
 
   // Catch any attempt to fall through...
@@ -4007,7 +4007,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_2shift(
   }
 
   if (true) {
-    return Undefined_None_instance_;
+    return Unnamed_case_1_None_instance_;
   }
 
   // Catch any attempt to fall through...
@@ -4100,7 +4100,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_3diff(
   }
 
   if (true) {
-    return Undefined_None_instance_;
+    return Unnamed_case_1_None_instance_;
   }
 
   // Catch any attempt to fall through...
@@ -4652,7 +4652,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_3same(
   }
 
   if (true) {
-    return Undefined_None_instance_;
+    return Unnamed_case_1_None_instance_;
   }
 
   // Catch any attempt to fall through...
@@ -4731,7 +4731,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_synchronization_primitiv
   }
 
   if (true) {
-    return Undefined_None_instance_;
+    return Unnamed_case_1_None_instance_;
   }
 
   // Catch any attempt to fall through...
@@ -4824,7 +4824,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_transfer_between_arm_cor
   }
 
   if (true) {
-    return Undefined_None_instance_;
+    return Unnamed_case_1_None_instance_;
   }
 
   // Catch any attempt to fall through...
@@ -4854,7 +4854,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_transfer_between_arm_cor
   }
 
   if (true) {
-    return Undefined_None_instance_;
+    return Unnamed_case_1_None_instance_;
   }
 
   // Catch any attempt to fall through...

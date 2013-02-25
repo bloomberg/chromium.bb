@@ -26,23 +26,7 @@
 # class may indicate the rev or feature that makes the encoding valid in
 # parentheses.
 #
-# For documentation and testing, an "=InstClass" can be followed by up to 3
-# additional identifiers, and has the form:
-#     =InstClass Rule Pattern Constraints
-# where
-#     InstClass - is the class decoder to return when matched.
-#     Rule - is the Arm rule that applies to the match (see below).
-#     Pattern - is a bitpattern for testing instances of the rule.
-#     Constraints - identifies what additional constraints are assumed
-#            by the corresponding rule.
-#
-# The Rules are identified with an identifier of the form:
-#     NNN_Rule_SS_AA_Pppp
-# where
-#    NNN is the nmenonic of the instruction.
-#    SS is the section number in A8.6.SS that define the instruction.
-#    AA is the instruction form on that page,
-#    pp is the page number in A8-pp that the instruction is on.
+# See dgen_input.py for more information on formatting "=InstClass".
 #
 # Patterns are sequences of 32 characters as follows:
 #   '1' - Bit must be value 1.
@@ -113,125 +97,8 @@
 # overrides the field in the template.
 ##############################################################
 
-##############################################################
-# The following defines a class decoder hierarchy used to select the
-# appropriate tester. We want to add class hierarchy information for
-# classes that want their tester to be defined on a superclass.
-# By providing this information, the generator can pick out
-# the corresponding baseline class tester to use, and does
-# not need to define separate testers for derived classes of
-# the baseline class tester.
-# #############################################################
 
-class BreakPointAndConstantPoolHead : Immediate16Use
-class Binary2RegisterImmediateOpDynCodeReplace : Binary2RegisterImmediateOp
-class Binary2RegisterImmediateOpAddSub : Binary2RegisterImmediateOp
-class Binary3RegisterOpAltANoCondsUpdate : Binary3RegisterOpAltA
-class Binary4RegisterDualOpLtV6RdNotRn : Binary4RegisterDualOp
-class Binary4RegisterDualOpNoCondsUpdate : Binary4RegisterDualOp
-class Binary4RegisterDualResultLtV6RdHiLoNotRn : Binary4RegisterDualResult
-class Binary4RegisterDualResultNoCondsUpdate : Binary4RegisterDualResult
-class Binary4RegisterDualResultUsesRnRm : Binary4RegisterDualResult
-class VcvtPtAndFixedPoint_FloatingPoint : CondVfpOp
-class Deprecated : UnsafeCondDecoder
-class Forbidden : UnsafeCondDecoder
-class Undefined : UnsafeCondDecoder
-class Unpredictable : UnsafeCondDecoder
-class ForbiddenCondDecoder : UnsafeCondDecoder
-class ForbiddenUncondDecoder : UnsafeUncondDecoder
-class LdrImmediateOp : Load2RegisterImm12Op
-class LoadRegisterList : LoadStoreRegisterList
-class LoadStoreVectorRegister : LoadStoreVectorOp
-class LoadVectorRegister : LoadStoreVectorRegister
-class LoadVectorRegisterList : LoadStoreVectorRegisterList
-class Load3RegisterDoubleOp : LoadStore3RegisterDoubleOp
-class Load2RegisterImm8DoubleOp : LoadStore2RegisterImm8DoubleOp
-class Load2RegisterImm8Op : LoadStore2RegisterImm8Op
-class Load2RegisterImm12Op : LoadStore2RegisterImm12Op
-class Load3RegisterImm5Op : LoadStore3RegisterImm5Op
-class Load3RegisterOp : LoadStore3RegisterOp
-class MaskedBinary2RegisterImmediateOp : Binary2RegisterImmediateOp
-class MaskedBinaryRegisterImmediateTest : BinaryRegisterImmediateTest
-class StoreRegisterList : LoadStoreRegisterList
-class Store2RegisterImm12OpRnNotRtOnWriteback : Store2RegisterImm12Op
-class Store3RegisterDoubleOp : LoadStore3RegisterDoubleOp
-class Store2RegisterImm8DoubleOp : LoadStore2RegisterImm8DoubleOp
-class Store2RegisterImm8Op : LoadStore2RegisterImm8Op
-class Store2RegisterImm12Op : LoadStore2RegisterImm12Op
-class Store3RegisterImm5Op : LoadStore3RegisterImm5Op
-class Store3RegisterOp : LoadStore3RegisterOp
-class Unary1RegisterImmediateOpDynCodeReplace : Unary1RegisterImmediateOp
-class Unary1RegisterImmediateOp12DynCodeReplace : Unary1RegisterImmediateOp12
-class Unary2RegisterShiftedOpImmNotZero : Unary2RegisterShiftedOp
-class UndefinedCondDecoder : UnsafeCondDecoder
-class UnpredictableUncondDecoder : UnsafeUncondDecoder
-class Vector2RegisterMiscellaneous_RG : Vector2RegisterMiscellaneous
-class Vector2RegisterMiscellaneous_V8_16_32 : Vector2RegisterMiscellaneous
-class Vector2RegisterMiscellaneous_V8 : Vector2RegisterMiscellaneous
-class Vector2RegisterMiscellaneous_V8S : Vector2RegisterMiscellaneous
-class Vector2RegisterMiscellaneous_F32 : Vector2RegisterMiscellaneous
-class Vector2RegisterMiscellaneous_V8_16_32I : Vector2RegisterMiscellaneous
-class Vector2RegisterMiscellaneous_V8_16_32T : Vector2RegisterMiscellaneous
-class Vector2RegisterMiscellaneous_V16_32_64N : Vector2RegisterMiscellaneous
-class Vector2RegisterMiscellaneous_I8_16_32L : Vector2RegisterMiscellaneous
-class Vector2RegisterMiscellaneous_CVT_F2I : Vector2RegisterMiscellaneous
-class VectorBinary2RegisterScalar_I16_32 : VectorBinary2RegisterScalar
-class VectorBinary2RegisterScalar_I16_32L : VectorBinary2RegisterScalar
-class VectorBinary2RegisterScalar_F32 : VectorBinary2RegisterScalar
-class VectorBinary3RegisterDifferentLength_I8_16_32
-         : VectorBinary3RegisterDifferentLength
-class VectorBinary3RegisterDifferentLength_I8_16_32
-         : VectorBinary3RegisterDifferentLength
-class VectorBinary3RegisterDifferentLength_I16_32_64
-         : VectorBinary3RegisterDifferentLength
-class VectorBinary3RegisterDifferentLength_I8_16_32L
-         : VectorBinary3RegisterDifferentLength
-class VectorBinary3RegisterDifferentLength_I16_32L
-         : VectorBinary3RegisterDifferentLength
-class VectorBinary3RegisterDifferentLength_P8
-         : VectorBinary3RegisterDifferentLength
-class VectorBinary3RegisterSameLengthDQ
-         : VectorBinary3RegisterSameLength
-class VectorBinary3RegisterSameLengthDQI16_32
-         : VectorBinary3RegisterSameLength
-class VectorBinary3RegisterSameLengthDQI8_16_32
-         : VectorBinary3RegisterSameLength
-class VectorBinary3RegisterSameLengthDQI8P
-         : VectorBinary3RegisterSameLength
-class VectorBinary3RegisterSameLength32P
-         : VectorBinary3RegisterSameLength
-class VectorBinary3RegisterSameLength32_DQ
-         : VectorBinary3RegisterSameLength
-class VectorBinary3RegisterSameLengthDI
-         : VectorBinary3RegisterSameLength
-class VectorBinary2RegisterShiftAmount_E8_16_32L
-        : VectorBinary2RegisterShiftAmount
-class VectorBinary2RegisterShiftAmount_CVT
-        : VectorBinary2RegisterShiftAmount
-class VectorBinary2RegisterShiftAmount_E8_16_32L
-        : VectorBinary2RegisterShiftAmount
-class VectorBinary2RegisterShiftAmount_I : VectorBinary2RegisterShiftAmount
-class VectorBinary2RegisterShiftAmount_ILS : VectorBinary2RegisterShiftAmount
-class VectorBinary2RegisterShiftAmount_N16_32_64R
-        : VectorBinary2RegisterShiftAmount
-class VectorBinary2RegisterShiftAmount_N16_32_64RS
-        : VectorBinary2RegisterShiftAmount
-class VectorBinary2RegisterShiftAmount_CVT : VectorBinary2RegisterShiftAmount
-class VectorLoadStoreMultiple1 : VectorLoadStoreMultiple
-class VectorLoadStoreMultiple2 : VectorLoadStoreMultiple
-class VectorLoadStoreMultiple3 : VectorLoadStoreMultiple
-class VectorLoadStoreMultiple4 : VectorLoadStoreMultiple
-class VectorLoadStoreSingle1 : VectorLoadStoreSingle
-class VectorLoadStoreSingle2 : VectorLoadStoreSingle
-class VectorLoadStoreSingle3 : VectorLoadStoreSingle
-class VectorLoadStoreSingle4 : VectorLoadStoreSingle
-class VectorLoadSingle1AllLanes : VectorLoadSingleAllLanes
-class VectorLoadSingle2AllLanes : VectorLoadSingleAllLanes
-class VectorLoadSingle3AllLanes : VectorLoadSingleAllLanes
-class VectorLoadSingle4AllLanes : VectorLoadSingleAllLanes
-class Vector1RegisterImmediate_MOV : Vector1RegisterImmediate
-class Vector1RegisterImmediate_BIT : Vector1RegisterImmediate
-class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
+
 
 ##############################################################
 # The following define decoder tables.
@@ -926,6 +793,10 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
   uses := {Rn, Rt, Rt2};
   safety := Pc in {Rd, Rn} | Rt(0)=1 | Rt == Lr  => UNPREDICTABLE &
             Rd in {Rn, Rt, Rt2} => UNPREDICTABLE;
+*Undefined
+  defs := {};
+  uses := {};
+  safety := true => UNDEFINED;
 *Deprecated
   { cond(31:28) }
   safety := true => DEPRECATED;
@@ -962,7 +833,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | 1111      = *LdRtRn
               pattern := cccc00011111nnnntttt111110011111;
               rule := STREXH;  arch := v6K;
-| else:     = Undefined  # Note on table description.
+| else:     = *Undefined  # Note on table description.
 +--
 
 +-- msr_immediate_and_hints (See Section A5.2.11)
@@ -1073,53 +944,65 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    safety := cond=~1110 => UNPREDICTABLE &
              not IsBreakPointAndConstantPoolHead(inst) => FORBIDDEN_OPERANDS;
    arch := v5T;
+*Undefined
+  defs := {};
+  uses := {};
+  safety := true => UNDEFINED;
+*Forbidden
+  defs := {};
+  uses := {};
+  safety := true => FORBIDDEN;
 +--
 | op2(6:4) B(9) op(22:21) op1(19:16)
-| 000      1    x0        xxxx       = ForbiddenCondDecoder => Forbidden
-                                       MRS_Banked_register
-                                       cccc00010r00mmmmdddd001m00000000 (v7VE)
-| "        "    x1        "          = ForbiddenCondDecoder => Forbidden
-                                       MSR_Banked_register
-                                       cccc00010r10mmmm1111001m0000nnnn (v7VE)
+| 000      1    x0        xxxx       = *Forbidden
+                                       pattern := cccc00010r00mmmmdddd001m00000000;
+                                       rule := MRS_Banked_register;
+                                       arch := v7VE;
+| "        "    x1        "          = *Forbidden
+                                       pattern := cccc00010r10mmmm1111001m0000nnnn;
+                                       rule := MRS_Banked_register;
+                                       arch := v7VE;
 | "        0    x0        xxxx       = *RnSet
                                        pattern := cccc00010r001111dddd000000000000;
                                        rule := MRS;
 | "        "    01        xx00       = *RnUse
                                        pattern := cccc00010010mm00111100000000nnnn;
                                        rule := MSR_register;
-| "        "    01        xx01       = ForbiddenCondDecoder => Forbidden
-                                       MSR_register
-                                       cccc00010r10mmmm111100000000nnnn
+| "        "    01        xx01       = *Forbidden
+                                       pattern := cccc00010r10mmmm111100000000nnnn;
+                                       rule := MSR_register;
 | "        "    "         xx1x       "
-| "        "    11        -          = ForbiddenCondDecoder => Forbidden
-                                       MSR_register
-                                       cccc00010r10mmmm111100000000nnnn
+| "        "    11        -          "
 | 001      -    01        -          = *Bx
                                        pattern := cccc000100101111111111110001mmmm;
                                        rule := Bx;
 | "        -    11        -          = *Clz
                                        pattern := cccc000101101111dddd11110001mmmm;
                                        rule := CLZ;
-| 010      -    01        -          = ForbiddenCondDecoder => Forbidden
-                                       BXJ
-                                       cccc000100101111111111110010mmmm (v5TEJ)
+| 010      -    01        -          = *Forbidden
+                                       pattern := cccc000100101111111111110010mmmm;
+                                       rule := BXJ;
+                                       arch := v5TEJ;
 | 011      -    01        -          = *Blx
                                        pattern := cccc000100101111111111110011mmmm;
                                        rule := BLX_register;
 | 101      -    -         -          ->saturating_addition_and_subtraction
-| 110      -    11        -          = ForbiddenCondDecoder => Forbidden
-                                       ERET
-                                       cccc0001011000000000000001101110 (v7VE)
+| 110      -    11        -          = *Forbidden
+                                       pattern := cccc0001011000000000000001101110;
+                                       rule := ERET;
+                                       arch := v7VE;
 | 111      -    01        -          = *Bkpt
                                        pattern := cccc00010010iiiiiiiiiiii0111iiii;
                                        rule := BKPT;
-| "        -    10        -          = ForbiddenCondDecoder => Forbidden
-                                       HVC
-                                       cccc00010100iiiiiiiiiiii0111iiii (v7VE)
-| "        -    11        -          = ForbiddenCondDecoder => Forbidden
-                                       SMC
-                                       cccc000101100000000000000111iiii (SE)
-| else:                              = Undefined     # Note on page A5-18
+| "        -    10        -          = *Forbidden
+                                       pattern := cccc00010100iiiiiiiiiiii0111iiii;
+                                       rule := HVC;
+                                       arch := v7VE;
+| "        -    11        -          = *Forbidden
+                                       pattern := cccc000101100000000000000111iiii;
+                                       rule := SMC;
+                                       arch := SE;
+| else:                              = *Undefined     # Note on page A5-18
 +--
 
 
@@ -1306,6 +1189,14 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
   uses := {Rd};
   safety := Rd == Pc => UNPREDICTABLE &
             msb < lsb => UNPREDICTABLE;
+*Udf
+  defs := {};
+  uses := {};
+  safety := not IsUDFNaClSafe(inst) => FORBIDDEN_OPERANDS;
+*Undefined
+  defs := {};
+  uses := {};
+  safety := true => UNDEFINED;
 +--
 | op1(24:20) op2(7:5) Rd(15:12) Rn(3:0)
 | 000xx      -        -         -     ->parallel_addition_and_subtraction_signed
@@ -1337,13 +1228,13 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
                         pattern := cccc0111111mmmmmddddlllll101nnnn;
                         rule := UBFX;  arch := v6T2;
 | 11111      111      -         -
-                      = baseline := PermanentlyUndefined;
+                      = *Udf
                         pattern := cccc01111111iiiiiiiiiiii1111iiii;
                         # Note: the UDF mnemonic only applies
                         #   when cond == 0b1110, but all
                         #   encodings are permanently undefined.
                         rule := UDF;
-| else:               = Undefined  # Note on table a5.4
+| else:               = *Undefined  # Note on table a5.4
 +--
 
 # None of the instructions in the following table set NZCV flags.
@@ -1356,6 +1247,10 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
   uses := {Rn, Rm};
   safety := Pc in {Rd, Rn, Rm} => UNPREDICTABLE;
   arch := v6;
+*Undefined
+  defs := {};
+  uses := {};
+  safety := true => UNDEFINED;
 +--
 | op1(21:20) op2(7:5)
 | 01         000      = *RdRnRm
@@ -1412,7 +1307,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | 11         111      = *RdRnRm
                          pattern := cccc01100011nnnndddd11111111mmmm;
                          rule := SHSUB8;
-| else:               = Undefined  # Note on table description.
+| else:               = *Undefined  # Note on table description.
 +--
 
 # None of the instructions in the following table set NZCV flags.
@@ -1425,6 +1320,10 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
   uses := {Rn, Rm};
   safety := Pc in {Rd, Rn, Rm} => UNPREDICTABLE;
   arch := v6;
+*Undefined
+  defs := {};
+  uses := {};
+  safety := true => UNDEFINED;
 +--
 | op1(21:20) op2(7:5)
 | 01         000      = *RdRnRm
@@ -1481,7 +1380,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | 11         111      = *RdRnRm
                          pattern := cccc01100111nnnndddd11111111mmmm;
                          rule := UHSUB8;
-| else:               = Undefined  # Note on table description.
+| else:               = *Undefined  # Note on table description.
 +--
 
 # None of the instructions in the following table set NZCV flags.
@@ -1532,6 +1431,10 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
   shift := DecodeImmShift(sh:'0', imm5);
 *URdImmRnSh *RdImmRnSh
   saturate_to := sat_imm;
+*Undefined
+  defs := {};
+  uses := {};
+  safety := true => UNDEFINED;
 +--
 | op1(22:20) op2(7:5) A(19:16)
 | 000        xx0      -        = *RdRnRmImm
@@ -1600,7 +1503,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | "          101      -        = *RdRm
                                   pattern := cccc011011111111dddd11111011mmmm;
                                   rule := REVSH;
-| else:                        = Undefined  # Note on table description.
+| else:                        = *Undefined  # Note on table description.
 +--
 
 +-- signed_multiply_signed_and_unsigned_divide (See Section A5.4.4)
@@ -1624,6 +1527,10 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
   safety := Pc in { RdHi, RdLo, Rn, Rm} => UNPREDICTABLE &
             RdHi == RdLo => UNPREDICTABLE;
   arch := v6;
+*Undefined
+  defs := {};
+  uses := {};
+  safety := true => UNDEFINED;
 +--
 | op1(22:20) op2(7:5) A(15:12)
                                  # Implements Smlad and Smladx, where
@@ -1687,7 +1594,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | "          11x      -        = *RdRnRmRa
                                  pattern := cccc01110101ddddaaaammmm11r1nnnn;
                                  rule := SMMLS;
-| else:                        = Undefined  # Note associated with table.
+| else:                        = *Undefined  # Note associated with table.
 +--
 
 +-- branch_branch_with_link_and_block_data_transfer (See Section A5.5)
@@ -2304,6 +2211,10 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
   safety := sel in bitset {10x00, x0x10} => UNDEFINED &
             t == Pc => UNPREDICTABLE;
   # TODO(karl): Add vector defs/uses etc.
+*Undefined
+  defs := {};
+  uses := {};
+  safety := true => UNDEFINED;
 +--
 | L(20) C(8) A(23:21) B(6:5)
 | 0     0    000      -      =
@@ -2329,7 +2240,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | "     1    xxx      -      =
         *VmovRtDd pattern := cccc1110iii1nnnntttt1011nii10000;
         rule := MOVE_scalar_to_ARM_core_register;  arch := (VFPv2, AdvSIMD);
-| else: = Undefined  # Note on table description.
+| else: = *Undefined  # Note on table description.
 +--
 
 +-- transfer_between_arm_core_and_extension_registers_64_bit (A7.9)
@@ -2348,6 +2259,10 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
   safety := Pc in {t, t2} => UNPREDICTABLE &
             to_arm_registers & t == t2 => UNPREDICTABLE;
   # TODO(karl): Add vector defs/uses etc.
+*Undefined
+  defs := {};
+  uses := {};
+  safety := true => UNDEFINED;
 +--
 | C(8) op(7:4)
 | 0    00x1    = *VmovSnRtRt2
@@ -2358,7 +2273,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
                   pattern := cccc1100010otttttttt101100m1mmmm;
                   rule := VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register;
                   arch := (VFPv2, AdvSIMD);
-| else:        = Undefined
+| else:        = *Undefined
 +--
 
 +-- unconditional_instructions (See Section A5.7)
@@ -2601,6 +2516,10 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    regs := 1 if Q=0 else 2;
    safety := imm4=x000 => UNDEFINED &
              Q=1 & Vd(0)=1 => UNDEFINED;
+*Undefined
+  defs := {};
+  uses := {};
+  safety := true => UNDEFINED;
 +--
 | U(24) A(23:19) B(11:8) C(7:4)
 | -     0xxxx    -       -      -> simd_dp_3same
@@ -2623,7 +2542,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | "     "        1100    0xx0   = *Vdup
                                    pattern := 111100111d11iiiidddd11000qm0mmmm;
                                    rule := VDUP_scalar;
-| else:                         = Undefined  # Note on table description.
+| else:                         = *Undefined  # Note on table description.
 +--
 
 +-- simd_dp_3same (See Section A7.4.1)
@@ -2636,7 +2555,6 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    # TODO(karl): Add vector defs/uses etc.
    arch := ASIMD;
 *V3RSL_DQ *V3RSL  # Uses Q registers if Q=1, D registers otherwise.
-   baseline := VectorBinary3RegisterSameLengthDQ;
    # TODO(karl): Add vector defs/uses etc.
    regs := 1 if Q=0 else 2;
    safety := Q=1 & (Vd(0)=1 | Vn(0)=1 | Vm(0)=1) => UNDEFINED;
@@ -2648,17 +2566,14 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 *V3RSL_DQI16_32 *V3RSL_DQI
    # Works on 16 and 32-bit integers.
    # TODO(karl): Add vector defs/uses etc.
-   baseline := VectorBinary3RegisterSameLengthDQI16_32;
    safety := Q=1 & (Vd(0)=1 | Vn(0)=1 | Vm(0)=1) => UNDEFINED &
              (size=11 | size=00) => UNDEFINED;
 *V3RSL_DQI8_16_32 *V3RSL_DQI
    # Only works on 8, 16, and 32-bit integers.
    # TODO(karl): Add vector defs/uses etc.
-   baseline := VectorBinary3RegisterSameLengthDQI8_16_32;
    safety := Q=1 & (Vd(0)=1 | Vn(0)=1 | Vm(0)=1) => UNDEFINED &
              size=11 => UNDEFINED;
 *V3RSL_DQI8P *V3RSL_DQI
-   baseline := VectorBinary3RegisterSameLengthDQI8P;
    # TODO(karl): Add vector defs/uses etc.
    # Operates on 8-bit and polynomials.
    unsigned := false;
@@ -2668,19 +2583,20 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    sz := size(0); op1_neg := size(1);
    esize := 32; elements := 2;
 *V3RSL32P *V3RSL32  # Operates on pairs of 32-bit values.
-   baseline := VectorBinary3RegisterSameLength32P;
    safety := sz=1 | Q=1 => UNDEFINED;
 *V3RSL32_DQ *V3RSL32  # Uses Q registers if Q=1, D registers otherwise.
-   baseline := VectorBinary3RegisterSameLength32_DQ;
    # TODO(karl): Add vector defs/uses etc.
    safety := Q=1 & (Vd(0)=1 | Vn(0)=1 | Vm(0)=1) => UNDEFINED &
              sz=1 =>UNDEFINED;
 *V3RSL_DI *V3RSL  # double word (D registers) 8, 16, and 32 integers
-   baseline := VectorBinary3RegisterSameLengthDI;
    # TODO(karl): Add vector defs/uses etc.
    unsigned := U=1;
    esize := 8  << size; elements := 64 / esize;
    safety := size=11 => UNDEFINED & Q=1 => UNDEFINED;
+*Undefined
+  defs := {};
+  uses := {};
+  safety := true => UNDEFINED;
 +--
 # To further separate instruction selection, we have duplicated
 # some rows, filling in possible values for rows U and B and C.
@@ -2855,7 +2771,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | "       "    "     1x       = *V3RSL32_DQ
                                 pattern := 111100100d1snnnndddd1111nqm1mmmm;
                                 rule := VRSQRTS;
-| else:                       = Undefined
+| else:                       = *Undefined
 +--
 
 +-- simd_dp_3diff (See Section A7.4.2)
@@ -2898,6 +2814,10 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    safety := size=11 => DECODER_ERROR &
              U=1 | size=~00 => UNDEFINED &
              Vd(0)=1 => UNDEFINED;
+*Undefined
+  defs := {};
+  uses := {};
+  safety := true => UNDEFINED;
 +--
 # Note: Table advanced_simd_data_processing_instructions (the
 # caller of this table) restricts size(21:20) to be in {0x, 10}.
@@ -2942,7 +2862,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | 1110    -     = *V3RDL_P8  # Note: inst(9)=1, implying polynomial.
                   pattern := 1111001u1dssnnnndddd11p0n0m0mmmm & size=~11;
                   rule := VMULL_polynomial_A2;
-| else:         = Undefined
+| else:         = *Undefined
 +--
 
 +-- simd_dp_2scalar (See Section A7.4.3)
@@ -2980,6 +2900,10 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    safety := size=11 => DECODER_ERROR &
              (size=00 | size=01) => UNDEFINED &
              Q=1 & (Vd(0)=1 | Vn(0)=1) => UNDEFINED;
+*Undefined
+  defs := {};
+  uses := {};
+  safety := true => UNDEFINED;
 +--
 # Note: for and/sub operations defined by bit 10, we have duplicated
 # rows and back filled bit 10 into A.
@@ -3028,7 +2952,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | 1101    -     = *V2RS_I16_32
                   pattern := 1111001q1dssnnnndddd1101n1m0mmmm & size=~11;
                   rule := VQRDMULH;
-| else:         = Undefined
+| else:         = *Undefined
 +--
 
 +-- simd_dp_2shift (See Section A7.4.4)
@@ -3126,6 +3050,10 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    safety := imm6=000xxx => DECODER_ERROR &
              imm6=0xxxxx => UNDEFINED &
              Q=1 & (Vd(0)=1 | Vm(0)=1)  => UNDEFINED;
+*Undefined
+  defs := {};
+  uses := {};
+  safety := true => UNDEFINED;
 +--
 | A(11:8) U(24) B(6) L(7)
 | 0000    -     -    -    = *V2RSA_IR
@@ -3182,13 +3110,12 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | 111x    -     -    0    = *V2RSA_CVT
                             pattern := 1111001u1diiiiiidddd111p0qm1mmmm;
                             rule := VCVT_between_floating_point_and_fixed_point;
-| else:                   = Undefined
+| else:                   = *Undefined
 +--
 
 +-- simd_dp_2misc (See Section A7.4.5)
 *V2RM
    { D(22), size(19:18), Vd(15:12), F(10), op(8:7), Q(6), M(5), Vm(3:0) }
-   baseline := Vector2RegisterMiscellaneous;
    esize := 8 << size;  elements := 64 / esize;
    d := D:Vd; m := M:Vm; regs := 1 if Q=0 else 2;
    defs := {};  # Doesn't affect general purpose registers.
@@ -3196,7 +3123,6 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    arch := ASIMD;
 *V2RM_RG *V2RM
    # Reverse a group of values.
-   baseline := Vector2RegisterMiscellaneous_RG;
    # TODO(karl): Add vector defs/uses etc.
    # Note: rev_groupsize(op, size) = 1 << (3 - op - size);
    # Uses rev_groupsize since the table generator can't handle non-constant
@@ -3209,7 +3135,6 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
              Q=1 & (Vd(0)=1 | Vm(0)=1) => UNDEFINED;
 *V2RM_V8_16_32 *V2RM
    # Operates on 8, 16, and 32-bit values.
-   baseline := Vector2RegisterMiscellaneous_V8_16_32;
    # TODO(karl): Add vector defs/uses etc.
    safety := size=11 => UNDEFINED &
              Q=1 & (Vd(0)=1 | Vm(0)=1) => UNDEFINED;             
@@ -3220,13 +3145,11 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    unsigned := (op(0)=1);
 *V2RM_V8 *V2RM
    # Operates on 8-bit values.
-   baseline := Vector2RegisterMiscellaneous_V8;
    # TODO(karl): Add vector defs/uses etc.
    safety := size=~00 => UNDEFINED &
              Q=1 & (Vd(0)=1 | Vm(0)=1) => UNDEFINED;
 *V2RM_F32 *V2RM
    # Operates on 32-bit floating-point values.
-   baseline := Vector2RegisterMiscellaneous_F32;
    # TODO(karl): Add vector defs/uses etc.
    safety := Q=1 & (Vd(0)=1 | Vm(0)=1) => UNDEFINED &
              size=~10 => UNDEFINED;
@@ -3235,14 +3158,12 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    floating_point := F=1;
 *V2RM_V8S *V2RM
    # Swaps 8-bit values.
-   baseline := Vector2RegisterMiscellaneous_V8S;
    # TODO(karl): Add vector defs/uses etc.
    safety := d == m => UNKNOWN &
              size=~00 => UNDEFINED &
              Q=1 & (Vd(0)=1 | Vm(0)=1) => UNDEFINED;
 *V2RM_V8_16_32T *V2RM
    # Transposes vectors of 8, 16, and 32-bit values.
-   baseline := Vector2RegisterMiscellaneous_V8_16_32T;
    # TODO(karl): Add vector defs/uses etc.
    quadword_operation := Q=1;
    safety := d == m => UNKNOWN &
@@ -3250,7 +3171,6 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
              Q=1 & (Vd(0)=1 | Vm(0)=1) => UNDEFINED;
 *V2RM_V8_16_32I *V2RM
    # Interleaves vectors of 8, 16, and 32-bit values.
-   baseline := Vector2RegisterMiscellaneous_V8_16_32I;
    # TODO(karl): Add vector defs/uses etc.
    quadword_operation := Q=1;
    safety := d == m => UNKNOWN &
@@ -3258,21 +3178,18 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
              Q=1 & (Vd(0)=1 | Vm(0)=1) => UNDEFINED;
 *V2RM_V16_32_64N *V2RM
    # Narrows 16, 32, or 64-bit values.
-   baseline := Vector2RegisterMiscellaneous_V16_32_64N;
    # TODO(karl): Add vector defs/uses etc.
    safety := size=11 => UNDEFINED &
              Vm(0)=1 => UNDEFINED;
 *V2RM_I8_16_32L *V2RM
    # Vector apply an immediate shift value to 8, 16, or 32-bit value,
    # expanding the result to twice the length of the argument.
-   baseline := Vector2RegisterMiscellaneous_I8_16_32L;
    # TODO(karl): Add vector defs/uses etc.
    shift_amount := esize;
    safety := size=11 | Vd(0)=1 => UNDEFINED;
 *V2RM_I16_32_64N
    # Narrow  16, 32, or 64-bit signed/unsigned values.
    { D(22), size(19:18), Vd(15:12), op(7:6), M(5), Vm(3:0) }
-   baseline := Vector2RegisterMiscellaneous_I16_32_64N;
    # TODO(karl): Add vector defs/uses etc.
    src_unsigned := op=11; dest_unsigned := op(0)=1;
    d := D:Vd; m := M:Vm;
@@ -3284,7 +3201,6 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 *V2RM_CVT_H2S
    { D(22), size(19:18), Vd(15:12), op(8), M(5), Vm(3:0) }
    # Convert between half-precision and single-precision.
-   baseline := Vector2RegisterMiscellaneous_CVT_H2S;
    # TODO(karl): Add vector defs/uses etc.
    half_to_single := op=1;
    esize := 16; elements := 4;
@@ -3297,11 +3213,14 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    arch := ASIMDhp;
 *V2RM_CVT_F2I *V2RM
    # Convert between floating-point and integer.
-   baseline := Vector2RegisterMiscellaneous_CVT_F2I;
    # TODO(karl): Add vector defs/uses etc.
    to_integer := op(1)=1; unsigned := op(0)=1;
    safety := Q=1 & (Vd(0)=1 | Vm(0)=1) => UNDEFINED &
              size=~10 => UNDEFINED;
+*Undefined
+  defs := {};
+  uses := {};
+  safety := true => UNDEFINED;
 +--
 | A(17:16) B(10:6)
 | 00       0000x   = *V2RM_RG
@@ -3415,13 +3334,12 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | "        11xxx   = *V2RM_CVT_F2I
                      pattern := 111100111d11ss11dddd011ppqm0mmmm;
                      rule := VCVT;
-| else:            = Undefined
+| else:            = *Undefined
 +--
 
 +-- simd_dp_1imm (See Section A7.4.6)
 *V1RI
    { i(24), D(22), imm3(18:16), Vd(15:12), cmode(11:8), Q(6), op(5), imm4(3:0) }
-   baseline := Vector1RegisterImmediate;
    imm64 := AdvSIMDExpandImm(op, cmode, i:imm3:imm4);
    d := D:Vd; regs := 1 if Q=0 else 2;
    # TODO(karl): Add vector defs/uses etc.
@@ -3429,19 +3347,20 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    uses := {};
    arch := ASIMD;
 *V1RI_MOV *V1RI
-   baseline := Vector1RegisterImmediate_MOV;
    single_register := false;
    safety := op=0 & cmode(0)=1 & cmode(3:2)=~11 => DECODER_ERROR &
              op=1 & cmode=~1110 => DECODER_ERROR &
              Q=1 & Vd(0)=1 => UNDEFINED;
 *V1RI_BIT *V1RI
-   baseline := Vector1RegisterImmediate_BIT;
    safety := cmode(0)=0 | cmode(3:2)=11 => DECODER_ERROR &
              Q=1 & Vd(0)=1 => UNDEFINED;
 *V1RI_MVN *V1RI
-   baseline := Vector1RegisterImmediate_MVN;
    safety := (cmode(0)=1 & cmode(3:2)=~11) | cmode(3:1)=111 => DECODER_ERROR &
              Q=1 & Vd(0)=1 => UNDEFINED;
+*Undefined
+  defs := {};
+  uses := {};
+  safety := true => UNDEFINED;
 +--
 | op(5) cmode(11:8)
 | 0     0xx0        = *V1RI_MOV
@@ -3477,7 +3396,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | "     1110        = *V1RI_MOV
                       pattern := 1111001m1d000mmmddddcccc0qp1mmmm;
                       rule := VMOV_immediate_A1;
-| "     1111        = Undefined
+| "     1111        = *Undefined
 +--
 
 +-- advanced_simd_element_or_structure_load_store_instructions (See Section A7.7)
@@ -3628,6 +3547,10 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    d2 := d + inc; d3 := d2 + inc; d4 := d3 + inc;
    safety := size=11 & a=0 => UNDEFINED &
              n == Pc | d4 > 31 => UNPREDICTABLE;
+*Undefined
+  defs := {};
+  uses := {};
+  safety := true => UNDEFINED;
 +--
 | L(21) A(23) B(11:8)
 | 0 0     0010    = *VLSM1
@@ -3704,5 +3627,5 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | " "     1111    = *VLS4A
                     pattern := 111101001d10nnnndddd1111sstammmm;
                     rule := VLD4_single_4_element_structure_to_all_lanes;
-| else:           = Undefined
+| else:           = *Undefined
 +--

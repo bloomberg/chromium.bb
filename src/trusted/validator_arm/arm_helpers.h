@@ -72,6 +72,12 @@ inline uint32_t LiteralPoolHeadConstant() {
   return kLiteralPoolHead;
 }
 
+// Returns true if the UDF instruction matches encoding values we've chosen
+// to be safe.
+inline bool IsUDFNaClSafe(uint32_t inst_bits) {
+  return inst_bits == kHaltFill || inst_bits == kAbortNow;
+}
+
 }  // namespace nacl_arm_dec
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_V2_ARM_HELPERS_H

@@ -133,22 +133,26 @@ bool USAD8_cccc01111000dddd1111mmmm0001nnnn_case_0TesterCase1
 }
 
 // op1(24:20)=11111 & op2(7:5)=111
-//    = {actual: PermanentlyUndefined,
-//       baseline: PermanentlyUndefined,
+//    = {actual: Actual_UDF_cccc01111111iiiiiiiiiiii1111iiii_case_1,
+//       baseline: UDF_cccc01111111iiiiiiiiiiii1111iiii_case_0,
 //       constraints: ,
+//       defs: {},
+//       inst: inst,
 //       pattern: cccc01111111iiiiiiiiiiii1111iiii,
-//       rule: UDF}
-class PermanentlyUndefinedTesterCase2
-    : public PermanentlyUndefinedTester {
+//       rule: UDF,
+//       safety: [not IsUDFNaClSafe(inst) => FORBIDDEN_OPERANDS],
+//       uses: {}}
+class UDF_cccc01111111iiiiiiiiiiii1111iiii_case_0TesterCase2
+    : public Arm32DecoderTester {
  public:
-  PermanentlyUndefinedTesterCase2(const NamedClassDecoder& decoder)
-    : PermanentlyUndefinedTester(decoder) {}
+  UDF_cccc01111111iiiiiiiiiiii1111iiii_case_0TesterCase2(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool PermanentlyUndefinedTesterCase2
+bool UDF_cccc01111111iiiiiiiiiiii1111iiii_case_0TesterCase2
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -165,7 +169,7 @@ bool PermanentlyUndefinedTesterCase2
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return PermanentlyUndefinedTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -425,17 +429,21 @@ class USAD8_cccc01111000dddd1111mmmm0001nnnn_case_0Tester_Case1
 };
 
 // op1(24:20)=11111 & op2(7:5)=111
-//    = {actual: PermanentlyUndefined,
-//       baseline: PermanentlyUndefined,
+//    = {actual: Actual_UDF_cccc01111111iiiiiiiiiiii1111iiii_case_1,
+//       baseline: UDF_cccc01111111iiiiiiiiiiii1111iiii_case_0,
 //       constraints: ,
+//       defs: {},
+//       inst: inst,
 //       pattern: cccc01111111iiiiiiiiiiii1111iiii,
-//       rule: UDF}
-class PermanentlyUndefinedTester_Case2
-    : public PermanentlyUndefinedTesterCase2 {
+//       rule: UDF,
+//       safety: [not IsUDFNaClSafe(inst) => FORBIDDEN_OPERANDS],
+//       uses: {}}
+class UDF_cccc01111111iiiiiiiiiiii1111iiii_case_0Tester_Case2
+    : public UDF_cccc01111111iiiiiiiiiiii1111iiii_case_0TesterCase2 {
  public:
-  PermanentlyUndefinedTester_Case2()
-    : PermanentlyUndefinedTesterCase2(
-      state_.PermanentlyUndefined_UDF_instance_)
+  UDF_cccc01111111iiiiiiiiiiii1111iiii_case_0Tester_Case2()
+    : UDF_cccc01111111iiiiiiiiiiii1111iiii_case_0TesterCase2(
+      state_.UDF_cccc01111111iiiiiiiiiiii1111iiii_case_0_UDF_instance_)
   {}
 };
 
@@ -603,15 +611,21 @@ TEST_F(Arm32DecoderStateTests,
 }
 
 // op1(24:20)=11111 & op2(7:5)=111
-//    = {actual: PermanentlyUndefined,
-//       baseline: PermanentlyUndefined,
+//    = {actual: Actual_UDF_cccc01111111iiiiiiiiiiii1111iiii_case_1,
+//       baseline: UDF_cccc01111111iiiiiiiiiiii1111iiii_case_0,
 //       constraints: ,
+//       defs: {},
+//       inst: inst,
 //       pattern: cccc01111111iiiiiiiiiiii1111iiii,
-//       rule: UDF}
+//       rule: UDF,
+//       safety: [not IsUDFNaClSafe(inst) => FORBIDDEN_OPERANDS],
+//       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       PermanentlyUndefinedTester_Case2_TestCase2) {
-  PermanentlyUndefinedTester_Case2 tester;
-  tester.Test("cccc01111111iiiiiiiiiiii1111iiii");
+       UDF_cccc01111111iiiiiiiiiiii1111iiii_case_0Tester_Case2_TestCase2) {
+  UDF_cccc01111111iiiiiiiiiiii1111iiii_case_0Tester_Case2 baseline_tester;
+  NamedActual_UDF_cccc01111111iiiiiiiiiiii1111iiii_case_1_UDF actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01111111iiiiiiiiiiii1111iiii");
 }
 
 // op1(24:20)=1101x & op2(7:5)=x10

@@ -3936,6 +3936,41 @@ uses(Instruction inst) const {
    Add(Register((inst.Bits() & 0x0000000F)));
 }
 
+// UDF_cccc01111111iiiiiiiiiiii1111iiii_case_0:
+//
+//   {constraints: ,
+//    defs: {},
+//    inst: inst,
+//    pattern: cccc01111111iiiiiiiiiiii1111iiii,
+//    rule: UDF,
+//    safety: [not IsUDFNaClSafe(inst) => FORBIDDEN_OPERANDS],
+//    uses: {}}
+RegisterList UDF_cccc01111111iiiiiiiiiiii1111iiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel UDF_cccc01111111iiiiiiiiiiii1111iiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // not IsUDFNaClSafe(inst) => FORBIDDEN_OPERANDS
+  if (!(nacl_arm_dec::IsUDFNaClSafe(inst.Bits())))
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList UDF_cccc01111111iiiiiiiiiiii1111iiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // UDIV_cccc01110011dddd1111mmmm0001nnnn_case_0:
 //
 //   {M: M(5),

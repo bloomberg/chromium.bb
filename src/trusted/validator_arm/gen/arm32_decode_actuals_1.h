@@ -1482,6 +1482,18 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //
 // Baseline:
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v5TEJ,
+//    baseline: BXJ_cccc000100101111111111110010mmmm_case_0,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc000100101111111111110010mmmm,
+//    rule: BXJ,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v5,
 //    baseline: CDP2_11111110iiiiiiiiiiiiiiiiiii0iiii_case_0,
 //    constraints: ,
@@ -1537,6 +1549,30 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    fields: [cond(31:28)],
 //    pattern: cccc001100100000111100001111iiii,
 //    rule: DBG,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v7VE,
+//    baseline: ERET_cccc0001011000000000000001101110_case_0,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc0001011000000000000001101110,
+//    rule: ERET,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v7VE,
+//    baseline: HVC_cccc00010100iiiiiiiiiiii0111iiii_case_0,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc00010100iiiiiiiiiiii0111iiii,
+//    rule: HVC,
 //    safety: [true => FORBIDDEN],
 //    true: true,
 //    uses: {}}
@@ -1761,6 +1797,30 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //
 // Baseline:
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v7VE,
+//    baseline: MRS_Banked_register_cccc00010r00mmmmdddd001m00000000_case_0,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc00010r00mmmmdddd001m00000000,
+//    rule: MRS_Banked_register,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v7VE,
+//    baseline: MRS_Banked_register_cccc00010r10mmmm1111001m0000nnnn_case_0,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc00010r10mmmm1111001m0000nnnn,
+//    rule: MRS_Banked_register,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    baseline: MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
@@ -1768,6 +1828,17 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    fields: [cond(31:28)],
 //    pattern: cccc00110r10mmmm1111iiiiiiiiiiii,
 //    rule: MSR_immediate,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: MSR_register_cccc00010r10mmmm111100000000nnnn_case_0,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc00010r10mmmm111100000000nnnn,
+//    rule: MSR_register,
 //    safety: [true => FORBIDDEN],
 //    true: true,
 //    uses: {}}
@@ -1806,6 +1877,18 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    fields: [cond(31:28)],
 //    pattern: cccc0011001000001111000000000100,
 //    rule: SEV,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: SE,
+//    baseline: SMC_cccc000101100000000000000111iiii_case_0,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc000101100000000000000111iiii,
+//    rule: SMC,
 //    safety: [true => FORBIDDEN],
 //    true: true,
 //    uses: {}}
@@ -8163,6 +8246,36 @@ class Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1);
+};
+
+// Actual_UDF_cccc01111111iiiiiiiiiiii1111iiii_case_1
+//
+// Actual:
+//   {defs: {},
+//    safety: [not IsUDFNaClSafe(inst) => FORBIDDEN_OPERANDS],
+//    uses: {}}
+//
+// Baseline:
+//   {actual: Actual_UDF_cccc01111111iiiiiiiiiiii1111iiii_case_1,
+//    baseline: UDF_cccc01111111iiiiiiiiiiii1111iiii_case_0,
+//    constraints: ,
+//    defs: {},
+//    inst: inst,
+//    pattern: cccc01111111iiiiiiiiiiii1111iiii,
+//    rule: UDF,
+//    safety: [not IsUDFNaClSafe(inst) => FORBIDDEN_OPERANDS],
+//    uses: {}}
+class Actual_UDF_cccc01111111iiiiiiiiiiii1111iiii_case_1
+     : public ClassDecoder {
+ public:
+  Actual_UDF_cccc01111111iiiiiiiiiiii1111iiii_case_1()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Actual_UDF_cccc01111111iiiiiiiiiiii1111iiii_case_1);
 };
 
 // Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1

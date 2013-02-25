@@ -91,6 +91,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_1_instance_()
   , Actual_SXTAB16_cccc01101000nnnnddddrr000111mmmm_case_1_instance_()
   , Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1_instance_()
+  , Actual_UDF_cccc01111111iiiiiiiiiiii1111iiii_case_1_instance_()
   , Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1_instance_()
   , Actual_Unnamed_case_1_instance_()
   , Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1_instance_()
@@ -161,9 +162,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_VTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_1_instance_()
   , Actual_VTRN_111100111d11ss10dddd00001qm0mmmm_case_1_instance_()
   , Actual_VUZP_111100111d11ss10dddd00010qm0mmmm_case_1_instance_()
-  , Forbidden_instance_()
-  , PermanentlyUndefined_instance_()
-  , Undefined_instance_()
   , not_implemented_()
 {}
 
@@ -343,7 +341,7 @@ const ClassDecoder& Arm32DecoderState::decode_advanced_simd_data_processing_inst
   }
 
   if (true) {
-    return Undefined_instance_;
+    return Actual_Unnamed_case_1_instance_;
   }
 
   // Catch any attempt to fall though ...
@@ -491,7 +489,7 @@ const ClassDecoder& Arm32DecoderState::decode_advanced_simd_element_or_structure
   }
 
   if (true) {
-    return Undefined_instance_;
+    return Actual_Unnamed_case_1_instance_;
   }
 
   // Catch any attempt to fall though ...
@@ -1494,7 +1492,7 @@ const ClassDecoder& Arm32DecoderState::decode_media_instructions(
           0x01F00000 /* op1(24:20)=11111 */ &&
       (inst.Bits() & 0x000000E0)  ==
           0x000000E0 /* op2(7:5)=111 */) {
-    return PermanentlyUndefined_instance_;
+    return Actual_UDF_cccc01111111iiiiiiiiiiii1111iiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000)  ==
@@ -1543,7 +1541,7 @@ const ClassDecoder& Arm32DecoderState::decode_media_instructions(
   }
 
   if (true) {
-    return Undefined_instance_;
+    return Actual_Unnamed_case_1_instance_;
   }
 
   // Catch any attempt to fall though ...
@@ -1762,7 +1760,7 @@ const ClassDecoder& Arm32DecoderState::decode_miscellaneous_instructions(
           0x00010000 /* op1(19:16)=xx01 */ &&
       (inst.Bits() & 0x0000FD00)  ==
           0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx111100x0xxxxxxxx */) {
-    return Forbidden_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000070)  ==
@@ -1775,7 +1773,7 @@ const ClassDecoder& Arm32DecoderState::decode_miscellaneous_instructions(
           0x00020000 /* op1(19:16)=xx1x */ &&
       (inst.Bits() & 0x0000FD00)  ==
           0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx111100x0xxxxxxxx */) {
-    return Forbidden_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000070)  ==
@@ -1786,7 +1784,7 @@ const ClassDecoder& Arm32DecoderState::decode_miscellaneous_instructions(
           0x00600000 /* op(22:21)=11 */ &&
       (inst.Bits() & 0x0000FD00)  ==
           0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx111100x0xxxxxxxx */) {
-    return Forbidden_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000070)  ==
@@ -1808,7 +1806,7 @@ const ClassDecoder& Arm32DecoderState::decode_miscellaneous_instructions(
           0x00000000 /* op(22:21)=x0 */ &&
       (inst.Bits() & 0x00000C0F)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx00xxxxxx0000 */) {
-    return Forbidden_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000070)  ==
@@ -1819,7 +1817,7 @@ const ClassDecoder& Arm32DecoderState::decode_miscellaneous_instructions(
           0x00200000 /* op(22:21)=x1 */ &&
       (inst.Bits() & 0x0000FC00)  ==
           0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx111100xxxxxxxxxx */) {
-    return Forbidden_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000070)  ==
@@ -1846,7 +1844,7 @@ const ClassDecoder& Arm32DecoderState::decode_miscellaneous_instructions(
           0x00200000 /* op(22:21)=01 */ &&
       (inst.Bits() & 0x000FFF00)  ==
           0x000FFF00 /* $pattern(31:0)=xxxxxxxxxxxx111111111111xxxxxxxx */) {
-    return Forbidden_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000070)  ==
@@ -1869,7 +1867,7 @@ const ClassDecoder& Arm32DecoderState::decode_miscellaneous_instructions(
           0x00600000 /* op(22:21)=11 */ &&
       (inst.Bits() & 0x000FFF0F)  ==
           0x0000000E /* $pattern(31:0)=xxxxxxxxxxxx000000000000xxxx1110 */) {
-    return Forbidden_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000070)  ==
@@ -1883,7 +1881,7 @@ const ClassDecoder& Arm32DecoderState::decode_miscellaneous_instructions(
           0x00000070 /* op2(6:4)=111 */ &&
       (inst.Bits() & 0x00600000)  ==
           0x00400000 /* op(22:21)=10 */) {
-    return Forbidden_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000070)  ==
@@ -1892,11 +1890,11 @@ const ClassDecoder& Arm32DecoderState::decode_miscellaneous_instructions(
           0x00600000 /* op(22:21)=11 */ &&
       (inst.Bits() & 0x000FFF00)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx000000000000xxxxxxxx */) {
-    return Forbidden_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if (true) {
-    return Undefined_instance_;
+    return Actual_Unnamed_case_1_instance_;
   }
 
   // Catch any attempt to fall though ...
@@ -2220,7 +2218,7 @@ const ClassDecoder& Arm32DecoderState::decode_packing_unpacking_saturation_and_r
   }
 
   if (true) {
-    return Undefined_instance_;
+    return Actual_Unnamed_case_1_instance_;
   }
 
   // Catch any attempt to fall though ...
@@ -2288,7 +2286,7 @@ const ClassDecoder& Arm32DecoderState::decode_parallel_addition_and_subtraction_
   }
 
   if (true) {
-    return Undefined_instance_;
+    return Actual_Unnamed_case_1_instance_;
   }
 
   // Catch any attempt to fall though ...
@@ -2356,7 +2354,7 @@ const ClassDecoder& Arm32DecoderState::decode_parallel_addition_and_subtraction_
   }
 
   if (true) {
-    return Undefined_instance_;
+    return Actual_Unnamed_case_1_instance_;
   }
 
   // Catch any attempt to fall though ...
@@ -2444,7 +2442,7 @@ const ClassDecoder& Arm32DecoderState::decode_signed_multiply_signed_and_unsigne
   }
 
   if (true) {
-    return Undefined_instance_;
+    return Actual_Unnamed_case_1_instance_;
   }
 
   // Catch any attempt to fall though ...
@@ -2499,7 +2497,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_1imm(
           0x00000020 /* op(5)=1 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* cmode(11:8)=1111 */) {
-    return Undefined_instance_;
+    return Actual_Unnamed_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000020)  ==
@@ -2683,7 +2681,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_2misc(
   }
 
   if (true) {
-    return Undefined_instance_;
+    return Actual_Unnamed_case_1_instance_;
   }
 
   // Catch any attempt to fall though ...
@@ -2741,7 +2739,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_2scalar(
   }
 
   if (true) {
-    return Undefined_instance_;
+    return Actual_Unnamed_case_1_instance_;
   }
 
   // Catch any attempt to fall though ...
@@ -2820,7 +2818,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_2shift(
   }
 
   if (true) {
-    return Undefined_instance_;
+    return Actual_Unnamed_case_1_instance_;
   }
 
   // Catch any attempt to fall though ...
@@ -2878,7 +2876,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_3diff(
   }
 
   if (true) {
-    return Undefined_instance_;
+    return Actual_Unnamed_case_1_instance_;
   }
 
   // Catch any attempt to fall though ...
@@ -3092,7 +3090,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_3same(
   }
 
   if (true) {
-    return Undefined_instance_;
+    return Actual_Unnamed_case_1_instance_;
   }
 
   // Catch any attempt to fall though ...
@@ -3155,7 +3153,7 @@ const ClassDecoder& Arm32DecoderState::decode_synchronization_primitives(
   }
 
   if (true) {
-    return Undefined_instance_;
+    return Actual_Unnamed_case_1_instance_;
   }
 
   // Catch any attempt to fall though ...
@@ -3233,7 +3231,7 @@ const ClassDecoder& Arm32DecoderState::decode_transfer_between_arm_core_and_exte
   }
 
   if (true) {
-    return Undefined_instance_;
+    return Actual_Unnamed_case_1_instance_;
   }
 
   // Catch any attempt to fall though ...
@@ -3261,7 +3259,7 @@ const ClassDecoder& Arm32DecoderState::decode_transfer_between_arm_core_and_exte
   }
 
   if (true) {
-    return Undefined_instance_;
+    return Actual_Unnamed_case_1_instance_;
   }
 
   // Catch any attempt to fall though ...

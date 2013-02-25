@@ -1418,6 +1418,42 @@ uses(Instruction inst) const {
    Add(Register(15));
 }
 
+// BXJ_cccc000100101111111111110010mmmm_case_0:
+//
+//   {arch: v5TEJ,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc000100101111111111110010mmmm,
+//    rule: BXJ,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList BXJ_cccc000100101111111111110010mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel BXJ_cccc000100101111111111110010mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList BXJ_cccc000100101111111111110010mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0:
 //
 //   {Cond: Cond(31:28),
@@ -2439,6 +2475,78 @@ uses(Instruction inst) const {
    Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
    Add(Register((inst.Bits() & 0x0000000F))).
    Add(Register(((inst.Bits() & 0x00000F00) >> 8)));
+}
+
+// ERET_cccc0001011000000000000001101110_case_0:
+//
+//   {arch: v7VE,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc0001011000000000000001101110,
+//    rule: ERET,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList ERET_cccc0001011000000000000001101110_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel ERET_cccc0001011000000000000001101110_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList ERET_cccc0001011000000000000001101110_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// HVC_cccc00010100iiiiiiiiiiii0111iiii_case_0:
+//
+//   {arch: v7VE,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc00010100iiiiiiiiiiii0111iiii,
+//    rule: HVC,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList HVC_cccc00010100iiiiiiiiiiii0111iiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel HVC_cccc00010100iiiiiiiiiiii0111iiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList HVC_cccc00010100iiiiiiiiiiii0111iiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
 }
 
 // ISB_1111010101111111111100000110xxxx_case_0:
@@ -6564,6 +6672,78 @@ uses(Instruction inst) const {
   return RegisterList();
 }
 
+// MRS_Banked_register_cccc00010r00mmmmdddd001m00000000_case_0:
+//
+//   {arch: v7VE,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc00010r00mmmmdddd001m00000000,
+//    rule: MRS_Banked_register,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList MRS_Banked_register_cccc00010r00mmmmdddd001m00000000_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel MRS_Banked_register_cccc00010r00mmmmdddd001m00000000_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList MRS_Banked_register_cccc00010r00mmmmdddd001m00000000_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// MRS_Banked_register_cccc00010r10mmmm1111001m0000nnnn_case_0:
+//
+//   {arch: v7VE,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc00010r10mmmm1111001m0000nnnn,
+//    rule: MRS_Banked_register,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList MRS_Banked_register_cccc00010r10mmmm1111001m0000nnnn_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel MRS_Banked_register_cccc00010r10mmmm1111001m0000nnnn_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList MRS_Banked_register_cccc00010r10mmmm1111001m0000nnnn_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // MRS_cccc00010r001111dddd000000000000_case_0:
 //
 //   {R: R(22),
@@ -6758,6 +6938,41 @@ uses(Instruction inst) const {
   // uses: '{inst(3:0)}'
   return RegisterList().
    Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// MSR_register_cccc00010r10mmmm111100000000nnnn_case_0:
+//
+//   {constraints: ,
+//    defs: {},
+//    pattern: cccc00010r10mmmm111100000000nnnn,
+//    rule: MSR_register,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList MSR_register_cccc00010r10mmmm111100000000nnnn_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel MSR_register_cccc00010r10mmmm111100000000nnnn_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList MSR_register_cccc00010r10mmmm111100000000nnnn_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
 }
 
 // MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_0:
@@ -10073,6 +10288,42 @@ uses(Instruction inst) const {
   return RegisterList().
    Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
    Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// SMC_cccc000101100000000000000111iiii_case_0:
+//
+//   {arch: SE,
+//    constraints: ,
+//    defs: {},
+//    pattern: cccc000101100000000000000111iiii,
+//    rule: SMC,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList SMC_cccc000101100000000000000111iiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel SMC_cccc000101100000000000000111iiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList SMC_cccc000101100000000000000111iiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
 }
 
 // SMLABB_SMLABT_SMLATB_SMLATT_cccc00010000ddddaaaammmm1xx0nnnn_case_0:

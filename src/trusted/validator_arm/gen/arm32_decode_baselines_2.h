@@ -2107,6 +2107,28 @@ class UBFX_cccc0111111mmmmmddddlllll101nnnn_case_0
       UBFX_cccc0111111mmmmmddddlllll101nnnn_case_0);
 };
 
+// UDF_cccc01111111iiiiiiiiiiii1111iiii_case_0:
+//
+//   {constraints: ,
+//    defs: {},
+//    inst: inst,
+//    pattern: cccc01111111iiiiiiiiiiii1111iiii,
+//    rule: UDF,
+//    safety: [not IsUDFNaClSafe(inst) => FORBIDDEN_OPERANDS],
+//    uses: {}}
+class UDF_cccc01111111iiiiiiiiiiii1111iiii_case_0
+     : public ClassDecoder {
+ public:
+  UDF_cccc01111111iiiiiiiiiiii1111iiii_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      UDF_cccc01111111iiiiiiiiiiii1111iiii_case_0);
+};
+
 // UDIV_cccc01110011dddd1111mmmm0001nnnn_case_0:
 //
 //   {M: M(5),
