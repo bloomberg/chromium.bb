@@ -11,7 +11,7 @@ vars = {
     'git_url':
          'https://chromium.googlesource.com',
     'webkit_rev':
-         '@107a3f72e94f18259187867bed205380134eb2d9'
+         '@d9b3e6c278a56cc514cf1b4419086ad026a1c279'
 }
 
 deps = {
@@ -138,7 +138,7 @@ deps = {
     'src/tools/swarm_client':
         Var('git_url') + '/chromium/tools/swarm_client.git@1e375abb6aa74bbbf22afcc56f1e30e0cfe056c0',
     'src/v8':
-        Var('git_url') + '/external/v8.git@c03a1924dcc113678c0ebe58aa7d3c855a657719',
+        Var('git_url') + '/external/v8.git@09d7ab5aba54ebac170eac755664c45eefb0be7d',
     'src/webkit/media/crypto/ppapi/cdm':
         Var('git_url') + '/chromium/cdm.git@c2b192a02546916d28233cfd8b7717ffcdcc8347',
 }
