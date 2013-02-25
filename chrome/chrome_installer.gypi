@@ -291,6 +291,8 @@
               'AdditionalManifestFiles': '$(ProjectDir)\\installer\\setup\\setup.exe.manifest',
             },
           },
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [ 4267, ],
           'rules': [
             {
               'rule_name': 'setup_version',
@@ -372,7 +374,7 @@
                  'branding_dir_100': 'app/theme/default_100_percent/chromium',
               },
             }],
-            ['use_aura==1', {
+            ['use_aura==1 or target_arch=="x64"', {
               'dependencies!': [
                 '../chrome_frame/chrome_frame.gyp:chrome_tab_idl',
                 '../chrome_frame/chrome_frame.gyp:npchrome_frame',

@@ -130,11 +130,12 @@
               'dependencies': [
                 # TODO(jschuh) Enable Win64 Memory Watcher. crbug.com/176877
                 '../tools/memory_watcher/memory_watcher.gyp:*',
+                # TODO(jschuh) Enable Win64 Chrome Frame. crbug.com/176875
+                '../chrome_frame/chrome_frame.gyp:*',
               ],
             }],
           ],
           'dependencies': [
-            '../chrome_frame/chrome_frame.gyp:*',
             '../cloud_print/cloud_print.gyp:*',
             '../courgette/courgette.gyp:*',
             '../rlz/rlz.gyp:*',
@@ -238,11 +239,6 @@
             # mini_installer_tests depends on mini_installer. This should be
             # defined in installer.gyp.
             '../chrome/installer/mini_installer.gyp:mini_installer',
-            '../chrome_frame/chrome_frame.gyp:chrome_frame_net_tests',
-            '../chrome_frame/chrome_frame.gyp:chrome_frame_perftests',
-            '../chrome_frame/chrome_frame.gyp:chrome_frame_reliability_tests',
-            '../chrome_frame/chrome_frame.gyp:chrome_frame_tests',
-            '../chrome_frame/chrome_frame.gyp:chrome_frame_unittests',
             '../chrome_frame/chrome_frame.gyp:npchrome_frame',
             '../courgette/courgette.gyp:courgette_unittests',
             '../sandbox/sandbox.gyp:sbox_integration_tests',
@@ -254,14 +250,23 @@
             '../webkit/webkit.gyp:test_shell_common',
            ],
            'conditions': [
-              ['use_aura==1', {
+             ['target_arch!="x64"', {
+               'dependencies': [
+                 '../chrome_frame/chrome_frame.gyp:chrome_frame_net_tests',
+                 '../chrome_frame/chrome_frame.gyp:chrome_frame_perftests',
+                 '../chrome_frame/chrome_frame.gyp:chrome_frame_reliability_tests',
+                 '../chrome_frame/chrome_frame.gyp:chrome_frame_tests',
+                 '../chrome_frame/chrome_frame.gyp:chrome_frame_unittests',
+               ]
+             }], # target_arch!="x64"
+             ['use_aura==1 or target_arch=="x64"', {
                'dependencies!': [
                  '../chrome_frame/chrome_frame.gyp:npchrome_frame',
                ],
                'defines': [
                  'OMIT_CHROME_FRAME',
                ],
-             }], # use_aura==1
+             }], # use_aura==1 or target_arch=="x64"
            ],
         }],
         ['OS=="linux"', {
@@ -545,11 +550,6 @@
             # mini_installer_tests depends on mini_installer. This should be
             # defined in installer.gyp.
             '../chrome/installer/mini_installer.gyp:mini_installer',
-            '../chrome_frame/chrome_frame.gyp:chrome_frame_net_tests',
-            '../chrome_frame/chrome_frame.gyp:chrome_frame_perftests',
-            '../chrome_frame/chrome_frame.gyp:chrome_frame_reliability_tests',
-            '../chrome_frame/chrome_frame.gyp:chrome_frame_tests',
-            '../chrome_frame/chrome_frame.gyp:chrome_frame_unittests',
             '../chrome_frame/chrome_frame.gyp:npchrome_frame',
             '../courgette/courgette.gyp:courgette_unittests',
             '../device/device.gyp:device_unittests',
@@ -571,26 +571,39 @@
             'temp_gyp/googleurl.gyp:googleurl_unittests',
           ],
           'conditions': [
-              ['use_aura==1', {
+             ['target_arch!="x64"', {
+               'dependencies': [
+                 '../chrome_frame/chrome_frame.gyp:chrome_frame_net_tests',
+                 '../chrome_frame/chrome_frame.gyp:chrome_frame_perftests',
+                 '../chrome_frame/chrome_frame.gyp:chrome_frame_reliability_tests',
+                 '../chrome_frame/chrome_frame.gyp:chrome_frame_tests',
+                 '../chrome_frame/chrome_frame.gyp:chrome_frame_unittests',
+               ]
+             }], # target_arch!="x64"
+              ['use_aura==1 or target_arch=="x64"', {
                'dependencies!': [
                  '../chrome_frame/chrome_frame.gyp:npchrome_frame',
                ],
                'defines': [
                  'OMIT_CHROME_FRAME',
                ],
-             }], # use_aura==1
+             }], # use_aura==1 or target_arch=="x64"
           ],
         },
         {
           'target_name': 'chromium_builder_win_cf',
           'type': 'none',
-          'dependencies': [
-            '../chrome_frame/chrome_frame.gyp:chrome_frame_net_tests',
-            '../chrome_frame/chrome_frame.gyp:chrome_frame_perftests',
-            '../chrome_frame/chrome_frame.gyp:chrome_frame_reliability_tests',
-            '../chrome_frame/chrome_frame.gyp:chrome_frame_tests',
-            '../chrome_frame/chrome_frame.gyp:chrome_frame_unittests',
-            '../chrome_frame/chrome_frame.gyp:npchrome_frame',
+          'conditions': [
+            ['target_arch!="x64"', {
+              'dependencies': [
+                '../chrome_frame/chrome_frame.gyp:chrome_frame_net_tests',
+                '../chrome_frame/chrome_frame.gyp:chrome_frame_perftests',
+                '../chrome_frame/chrome_frame.gyp:chrome_frame_reliability_tests',
+                '../chrome_frame/chrome_frame.gyp:chrome_frame_tests',
+                '../chrome_frame/chrome_frame.gyp:chrome_frame_unittests',
+                '../chrome_frame/chrome_frame.gyp:npchrome_frame',
+              ],
+            }], # target_arch!="x64"
           ],
         },
         {
@@ -693,14 +706,14 @@
                     '../remoting/remoting.gyp:remoting_host_installation',
                   ],
                 }], # component != "shared_library"
-                ['use_aura==1', {
+                ['use_aura==1 or target_arch=="x64"', {
                   'dependencies!': [
                     '../chrome_frame/chrome_frame.gyp:npchrome_frame',
                   ],
                   'defines': [
                     'OMIT_CHROME_FRAME',
                   ],
-                }], # use_aura==1
+                }], # use_aura==1 or target_arch=="x64"
               ]
             },
           ], # targets
