@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
 
 #include "base/bind.h"
+#include "base/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/message_loop.h"
 #include "base/prefs/pref_service.h"
@@ -29,8 +30,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -142,7 +145,7 @@ class SuspendStateDelegateImpl
 
   // FileBrowserEventRouter::SuspendStateDelegate implementation.
   virtual bool DiskWasPresentBeforeSuspend(
-      const chromeos::disks::DiskMountManager::Disk& disk) const OVERRIDE {
+      const DiskMountManager::Disk& disk) const OVERRIDE {
     // TODO(tbarzic): Implement this. Blocked on http://crbug.com/153338.
     return false;
   }
@@ -157,6 +160,30 @@ class SuspendStateDelegateImpl
   base::WeakPtrFactory<SuspendStateDelegateImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SuspendStateDelegateImpl);
+};
+
+void DirectoryExistsOnBlockingPool(const base::FilePath& directory_path,
+                                   const base::Closure& success_callback,
+                                   const base::Closure& failure_callback) {
+  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+
+  if (file_util::DirectoryExists(directory_path))
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, success_callback);
+  else
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, failure_callback);
+};
+
+void DirectoryExistsOnUIThread(const base::FilePath& directory_path,
+                               const base::Closure& success_callback,
+                               const base::Closure& failure_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  content::BrowserThread::PostBlockingPoolTask(
+      FROM_HERE,
+      base::Bind(&DirectoryExistsOnBlockingPool,
+                 directory_path,
+                 success_callback,
+                 failure_callback));
 };
 
 }  // namespace
@@ -434,7 +461,9 @@ void FileBrowserEventRouter::OnMountEvent(
     // If a new device was mounted, a new File manager window may need to be
     // opened.
     if (error_code == chromeos::MOUNT_ERROR_NONE)
-      ShowRemovableDeviceInFileManager(mount_info.mount_path);
+      ShowRemovableDeviceInFileManager(
+          *disk,
+          base::FilePath::FromUTF8Unsafe(mount_info.mount_path));
   } else if (mount_info.mount_type == chromeos::MOUNT_TYPE_ARCHIVE) {
     // Clear the "mounted" state for archive files in gdata cache
     // when mounting failed or unmounting succeeded.
@@ -653,7 +682,6 @@ void FileBrowserEventRouter::DispatchMountEvent(
       mount_info_value->SetString("mountPath",
                                   "/" + relative_mount_path.value());
     } else {
-      LOG(ERROR) << "Mount path is not accessible: " << mount_info.mount_path;
       mount_info_value->SetString("status",
           MountErrorToString(chromeos::MOUNT_ERROR_PATH_UNMOUNTED));
     }
@@ -666,14 +694,27 @@ void FileBrowserEventRouter::DispatchMountEvent(
 }
 
 void FileBrowserEventRouter::ShowRemovableDeviceInFileManager(
-    const std::string& mount_path) {
+    const DiskMountManager::Disk& disk, const base::FilePath& mount_path) {
   // Do not attempt to open File Manager while the login is in progress or
   // the screen is locked.
   if (chromeos::BaseLoginDisplayHost::default_host() ||
       chromeos::ScreenLocker::default_screen_locker())
     return;
 
-  file_manager_util::OpenActionChoiceDialog(base::FilePath(mount_path));
+  // According to DCF (Design rule of Camera File system) by JEITA / CP-3461
+  // cameras should have pictures located in the DCIM root directory.
+  const base::FilePath dcim_path = mount_path.Append(
+      FILE_PATH_LITERAL("DCIM"));
+
+  // Show the action choice dialog only for sd cards with a DCIM directory.
+  if (disk.device_type() == chromeos::DEVICE_TYPE_SD) {
+      DirectoryExistsOnUIThread(
+          dcim_path,
+          base::Bind(&file_manager_util::OpenActionChoiceDialog, mount_path),
+          base::Bind(&file_manager_util::ViewRemovableDrive, mount_path));
+  } else {
+    file_manager_util::ViewRemovableDrive(mount_path);
+  }
 }
 
 void FileBrowserEventRouter::OnDiskAdded(

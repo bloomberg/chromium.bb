@@ -176,8 +176,11 @@ class FileBrowserEventRouter
       const chromeos::disks::DiskMountManager::MountPointInfo& mount_info);
 
   // If needed, opens a file manager window for the removable device mounted at
-  // |mount_path|.
-  void ShowRemovableDeviceInFileManager(const std::string& mount_path);
+  // |mount_path|. Disk.mount_path() is empty, since it is being filled out
+  // after calling notifying observers by DiskMountManager.
+  void ShowRemovableDeviceInFileManager(
+      const chromeos::disks::DiskMountManager::Disk& disk,
+      const base::FilePath& mount_path);
 
   // Returns the DriveFileSystem for the current profile.
   drive::DriveFileSystemInterface* GetRemoteFileSystem() const;
