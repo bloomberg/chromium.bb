@@ -316,80 +316,124 @@ TEST_PPAPI_NACL(HostResolverPrivate_Resolve)
 TEST_PPAPI_NACL(HostResolverPrivate_ResolveIPv4)
 
 // URLLoader tests.
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_BasicGET)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_BasicPOST)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_BasicFilePOST)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_BasicFileRangePOST)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_CompoundBodyPOST)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_EmptyDataPOST)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_BinaryDataPOST)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_CustomRequestHeader)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_FailsBogusContentLength)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_StreamToFile)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_UntrustedSameOriginRestriction)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_TrustedSameOriginRestriction)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_UntrustedCrossOriginRequest)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_TrustedCrossOriginRequest)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_UntrustedJavascriptURLRestriction)
-// TODO(bbudge) Fix Javascript URLs for trusted loaders.
-// http://crbug.com/103062
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(
-    DISABLED_URLLoader_TrustedJavascriptURLRestriction)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_UntrustedHttpRequests)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_TrustedHttpRequests)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_FollowURLRedirect)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_AuditURLRedirect)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_AbortCalls)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_UntendedLoad)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_PrefetchBufferThreshold)
-
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_BasicGET)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_BasicPOST)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_BasicFilePOST)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_BasicFileRangePOST)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_CompoundBodyPOST)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_EmptyDataPOST)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_BinaryDataPOST)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_CustomRequestHeader)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_FailsBogusContentLength)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_StreamToFile)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_UntrustedSameOriginRestriction)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_TrustedSameOriginRestriction)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_UntrustedCrossOriginRequest)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_TrustedCrossOriginRequest)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_UntrustedJavascriptURLRestriction)
-// TODO(bbudge) Fix Javascript URLs for trusted loaders.
-// http://crbug.com/103062
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(
-    DISABLED_URLLoader_TrustedJavascriptURLRestriction)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_UntrustedHttpRequests)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_TrustedHttpRequests)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_FollowURLRedirect)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_AuditURLRedirect)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_AbortCalls)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_UntendedLoad)
-
-// These tests are failing a lot on Win 7 bots: http://crbug.com/167150
-TEST_PPAPI_NACL(DISABLED_URLLoader_BasicGET)
-// Note this one that never failed - can it provide a clue to the failures of
-// the others?
-TEST_PPAPI_NACL(URLLoader_BasicPOST)
-TEST_PPAPI_NACL(DISABLED_URLLoader_BasicFilePOST)
-TEST_PPAPI_NACL(DISABLED_URLLoader_BasicFileRangePOST)
-TEST_PPAPI_NACL(DISABLED_URLLoader_CompoundBodyPOST)
-TEST_PPAPI_NACL(DISABLED_URLLoader_EmptyDataPOST)
-TEST_PPAPI_NACL(DISABLED_URLLoader_BinaryDataPOST)
-TEST_PPAPI_NACL(DISABLED_URLLoader_CustomRequestHeader)
-TEST_PPAPI_NACL(DISABLED_URLLoader_FailsBogusContentLength)
-TEST_PPAPI_NACL(DISABLED_URLLoader_StreamToFile)
-TEST_PPAPI_NACL(DISABLED_URLLoader_UntrustedSameOriginRestriction)
-TEST_PPAPI_NACL(DISABLED_URLLoader_UntrustedCrossOriginRequest)
-TEST_PPAPI_NACL(DISABLED_URLLoader_UntrustedJavascriptURLRestriction)
-TEST_PPAPI_NACL(DISABLED_URLLoader_UntrustedHttpRequests)
-TEST_PPAPI_NACL(DISABLED_URLLoader_FollowURLRedirect)
-TEST_PPAPI_NACL(DISABLED_URLLoader_AuditURLRedirect)
-TEST_PPAPI_NACL(DISABLED_URLLoader_AbortCalls)
-TEST_PPAPI_NACL(DISABLED_URLLoader_UntendedLoad)
+IN_PROC_BROWSER_TEST_F(PPAPITest, URLLoader) {
+  RunTestViaHTTP(
+      LIST_TEST(URLLoader_BasicGET)
+      LIST_TEST(URLLoader_BasicPOST)
+      LIST_TEST(URLLoader_BasicFilePOST)
+      LIST_TEST(URLLoader_BasicFileRangePOST)
+      LIST_TEST(URLLoader_CompoundBodyPOST)
+      LIST_TEST(URLLoader_EmptyDataPOST)
+      LIST_TEST(URLLoader_BinaryDataPOST)
+      LIST_TEST(URLLoader_CustomRequestHeader)
+      LIST_TEST(URLLoader_FailsBogusContentLength)
+      LIST_TEST(URLLoader_StreamToFile)
+      LIST_TEST(URLLoader_UntrustedSameOriginRestriction)
+      LIST_TEST(URLLoader_TrustedSameOriginRestriction)
+      LIST_TEST(URLLoader_UntrustedCrossOriginRequest)
+      LIST_TEST(URLLoader_TrustedCrossOriginRequest)
+      LIST_TEST(URLLoader_UntrustedJavascriptURLRestriction)
+      // TODO(bbudge) Fix Javascript URLs for trusted loaders.
+      // http://crbug.com/103062
+      LIST_TEST(DISABLED_URLLoader_TrustedJavascriptURLRestriction)
+      LIST_TEST(URLLoader_UntrustedHttpRequests)
+      LIST_TEST(URLLoader_TrustedHttpRequests)
+      LIST_TEST(URLLoader_FollowURLRedirect)
+      LIST_TEST(URLLoader_AuditURLRedirect)
+      LIST_TEST(URLLoader_AbortCalls)
+      LIST_TEST(URLLoader_UntendedLoad)
+      LIST_TEST(URLLoader_PrefetchBufferThreshold)
+  );
+}
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, URLLoader) {
+  RunTestViaHTTP(
+      LIST_TEST(URLLoader_BasicGET)
+      LIST_TEST(URLLoader_BasicPOST)
+      LIST_TEST(URLLoader_BasicFilePOST)
+      LIST_TEST(URLLoader_BasicFileRangePOST)
+      LIST_TEST(URLLoader_CompoundBodyPOST)
+      LIST_TEST(URLLoader_EmptyDataPOST)
+      LIST_TEST(URLLoader_BinaryDataPOST)
+      LIST_TEST(URLLoader_CustomRequestHeader)
+      LIST_TEST(URLLoader_FailsBogusContentLength)
+      LIST_TEST(URLLoader_StreamToFile)
+      LIST_TEST(URLLoader_UntrustedSameOriginRestriction)
+      LIST_TEST(URLLoader_TrustedSameOriginRestriction)
+      LIST_TEST(URLLoader_UntrustedCrossOriginRequest)
+      LIST_TEST(URLLoader_TrustedCrossOriginRequest)
+      LIST_TEST(URLLoader_UntrustedJavascriptURLRestriction)
+      // TODO(bbudge) Fix Javascript URLs for trusted loaders.
+      // http://crbug.com/103062
+      LIST_TEST(DISABLED_URLLoader_TrustedJavascriptURLRestriction)
+      LIST_TEST(URLLoader_UntrustedHttpRequests)
+      LIST_TEST(URLLoader_TrustedHttpRequests)
+      LIST_TEST(URLLoader_FollowURLRedirect)
+      LIST_TEST(URLLoader_AuditURLRedirect)
+      LIST_TEST(URLLoader_AbortCalls)
+      LIST_TEST(URLLoader_UntendedLoad)
+      LIST_TEST(URLLoader_PrefetchBufferThreshold)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, URLLoader) {
+  RunTestViaHTTP(
+      LIST_TEST(URLLoader_BasicGET)
+      LIST_TEST(URLLoader_BasicPOST)
+      LIST_TEST(URLLoader_BasicFilePOST)
+      LIST_TEST(URLLoader_BasicFileRangePOST)
+      LIST_TEST(URLLoader_CompoundBodyPOST)
+      LIST_TEST(URLLoader_EmptyDataPOST)
+      LIST_TEST(URLLoader_BinaryDataPOST)
+      LIST_TEST(URLLoader_CustomRequestHeader)
+      LIST_TEST(URLLoader_FailsBogusContentLength)
+      LIST_TEST(URLLoader_StreamToFile)
+      LIST_TEST(URLLoader_UntrustedSameOriginRestriction)
+      // We don't support Trusted APIs in NaCl.
+      LIST_TEST(DISABLED_URLLoader_TrustedSameOriginRestriction)
+      LIST_TEST(URLLoader_UntrustedCrossOriginRequest)
+      LIST_TEST(DISABLED_URLLoader_TrustedCrossOriginRequest)
+      LIST_TEST(URLLoader_UntrustedJavascriptURLRestriction)
+      // TODO(bbudge) Fix Javascript URLs for trusted loaders.
+      // http://crbug.com/103062
+      LIST_TEST(DISABLED_URLLoader_TrustedJavascriptURLRestriction)
+      LIST_TEST(URLLoader_UntrustedHttpRequests)
+      LIST_TEST(DISABLED_URLLoader_TrustedHttpRequests)
+      LIST_TEST(URLLoader_FollowURLRedirect)
+      LIST_TEST(URLLoader_AuditURLRedirect)
+      LIST_TEST(URLLoader_AbortCalls)
+      LIST_TEST(URLLoader_UntendedLoad)
+      LIST_TEST(URLLoader_PrefetchBufferThreshold)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, URLLoader) {
+  RunTestViaHTTP(
+      LIST_TEST(URLLoader_BasicGET)
+      LIST_TEST(URLLoader_BasicPOST)
+      LIST_TEST(URLLoader_BasicFilePOST)
+      LIST_TEST(URLLoader_BasicFileRangePOST)
+      LIST_TEST(URLLoader_CompoundBodyPOST)
+      LIST_TEST(URLLoader_EmptyDataPOST)
+      LIST_TEST(URLLoader_BinaryDataPOST)
+      LIST_TEST(URLLoader_CustomRequestHeader)
+      LIST_TEST(URLLoader_FailsBogusContentLength)
+      LIST_TEST(URLLoader_StreamToFile)
+      LIST_TEST(URLLoader_UntrustedSameOriginRestriction)
+      // We don't support Trusted APIs in NaCl.
+      LIST_TEST(DISABLED_URLLoader_TrustedSameOriginRestriction)
+      LIST_TEST(URLLoader_UntrustedCrossOriginRequest)
+      LIST_TEST(DISABLED_URLLoader_TrustedCrossOriginRequest)
+      LIST_TEST(URLLoader_UntrustedJavascriptURLRestriction)
+      // TODO(bbudge) Fix Javascript URLs for trusted loaders.
+      // http://crbug.com/103062
+      LIST_TEST(DISABLED_URLLoader_TrustedJavascriptURLRestriction)
+      LIST_TEST(URLLoader_UntrustedHttpRequests)
+      LIST_TEST(DISABLED_URLLoader_TrustedHttpRequests)
+      LIST_TEST(URLLoader_FollowURLRedirect)
+      LIST_TEST(URLLoader_AuditURLRedirect)
+      LIST_TEST(URLLoader_AbortCalls)
+      LIST_TEST(URLLoader_UntendedLoad)
+      LIST_TEST(URLLoader_PrefetchBufferThreshold)
+  );
+}
 
 // URLRequestInfo tests.
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLRequest_CreateAndIsURLRequestInfo)
