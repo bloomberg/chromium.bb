@@ -389,6 +389,18 @@ void FlushBlacklistPolicy() {
   content::RunAllPendingInMessageLoop(BrowserThread::IO);
 }
 
+bool ContainsVisibleElement(content::WebContents* contents,
+                            const std::string& id) {
+  bool result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      contents,
+      "var elem = document.getElementById('" + id + "');"
+      "domAutomationController.send("
+      "    !!elem && !elem.classList.contains('invisible'));",
+      &result));
+  return result;
+}
+
 #if defined(OS_CHROMEOS)
 // Volume observer mock used by the audio policy tests.
 class TestVolumeObserver : public chromeos::AudioHandler::VolumeObserver {
@@ -1116,6 +1128,37 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabled) {
   // And it's not possible to open it again.
   EXPECT_FALSE(chrome::ExecuteCommand(browser(), IDC_DEV_TOOLS));
   EXPECT_FALSE(DevToolsWindow::GetDockedInstanceForInspectedTab(contents));
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, WebStoreIconHidden) {
+  // Verifies that the web store icons can be hidden from the new tab page.
+
+  // Open new tab page and look for the web store icons.
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  content::WebContents* contents =
+    browser()->tab_strip_model()->GetActiveWebContents();
+
+#if !defined(OS_CHROMEOS)
+  // Look for web store's app ID in the apps page.
+  EXPECT_TRUE(ContainsVisibleElement(contents,
+                                     "ahfgeienlihckogmohjhadlkjgocpleb"));
+#endif
+
+  // The next NTP has no footer.
+  if (ContainsVisibleElement(contents, "footer"))
+    EXPECT_TRUE(ContainsVisibleElement(contents, "chrome-web-store-link"));
+
+  // Turn off the web store icons.
+  PolicyMap policies;
+  policies.Set(key::kHideWebStoreIcon, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
+  UpdateProviderPolicy(policies);
+
+  // The web store icons should now be hidden.
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  EXPECT_FALSE(ContainsVisibleElement(contents,
+                                      "ahfgeienlihckogmohjhadlkjgocpleb"));
+  EXPECT_FALSE(ContainsVisibleElement(contents, "chrome-web-store-link"));
 }
 
 // This policy isn't available on Chrome OS.

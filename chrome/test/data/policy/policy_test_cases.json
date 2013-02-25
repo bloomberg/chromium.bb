@@ -1458,6 +1458,14 @@
     ]
   },
 
+  "HideWebStoreIcon": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "HideWebStoreIcon": true },
+    "pref_mappings": [
+      { "pref": "hide_web_store_icon" }
+    ]
+  },
+
   "----- Chrome OS policies ------------------------------------------------": {},
 
   "ChromeOsLockOnIdleSuspend": {

@@ -182,6 +182,7 @@ NTPResourceCache::NTPResourceCache(Profile* profile)
   pref_change_registrar_.Add(prefs::kShowBookmarkBar, callback);
   pref_change_registrar_.Add(prefs::kNtpShownPage, callback);
   pref_change_registrar_.Add(prefs::kSyncPromoShowNTPBubble, callback);
+  pref_change_registrar_.Add(prefs::kHideWebStoreIcon, callback);
 }
 
 NTPResourceCache::~NTPResourceCache() {}
@@ -407,6 +408,8 @@ void NTPResourceCache::CreateNewTabHTML() {
   load_time_data.SetBoolean("isSwipeTrackingFromScrollEventsEnabled",
                             is_swipe_tracking_from_scroll_events_enabled_);
   load_time_data.SetBoolean("showApps", should_show_apps_page_);
+  load_time_data.SetBoolean("showWebStoreIcon",
+                            !prefs->GetBoolean(prefs::kHideWebStoreIcon));
 
 #if defined(OS_CHROMEOS)
   load_time_data.SetString("expandMenu",

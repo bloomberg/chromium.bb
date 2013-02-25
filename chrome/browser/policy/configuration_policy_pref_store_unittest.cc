@@ -284,7 +284,9 @@ INSTANTIATE_TEST_CASE_P(
         PolicyAndPref(key::kDisablePrintPreview,
                       prefs::kPrintPreviewDisabled),
         PolicyAndPref(key::kDeveloperToolsDisabled,
-                      prefs::kDevToolsDisabled)));
+                      prefs::kDevToolsDisabled),
+        PolicyAndPref(key::kHideWebStoreIcon,
+                      prefs::kHideWebStoreIcon)));
 
 #if defined(OS_CHROMEOS)
 INSTANTIATE_TEST_CASE_P(

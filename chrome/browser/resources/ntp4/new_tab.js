@@ -173,11 +173,18 @@ cr.define('ntp', function() {
       document.querySelector('head').appendChild(suggestions_script);
     }
 
-    var webStoreLink = loadTimeData.getString('webStoreLink');
-    var url = appendParam(webStoreLink, 'utm_source', 'chrome-ntp-launcher');
-    $('chrome-web-store-link').href = url;
-    $('chrome-web-store-link').addEventListener('click',
-        onChromeWebStoreButtonClick);
+    if (!loadTimeData.getBoolean('showWebStoreIcon')) {
+      var webStoreIcon = $('chrome-web-store-link');
+      // Not all versions of the NTP have a footer, so this may not exist.
+      if (webStoreIcon)
+        webStoreIcon.classList.add('invisible');
+    } else {
+      var webStoreLink = loadTimeData.getString('webStoreLink');
+      var url = appendParam(webStoreLink, 'utm_source', 'chrome-ntp-launcher');
+      $('chrome-web-store-link').href = url;
+      $('chrome-web-store-link').addEventListener('click',
+          onChromeWebStoreButtonClick);
+    }
 
     if (loadTimeData.getString('login_status_message')) {
       loginBubble = new cr.ui.Bubble;

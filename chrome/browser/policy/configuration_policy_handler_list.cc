@@ -322,6 +322,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kVideoCaptureAllowed,
     prefs::kVideoCaptureAllowed,
     Value::TYPE_BOOLEAN },
+  { key::kHideWebStoreIcon,
+    prefs::kHideWebStoreIcon,
+    Value::TYPE_BOOLEAN },
 
 #if defined(OS_CHROMEOS)
   { key::kChromeOsLockOnIdleSuspend,

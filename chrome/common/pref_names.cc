@@ -532,6 +532,10 @@ const char kNetworkPredictionEnabled[] = "dns_prefetching.enabled";
 // See possible values in external_provider_impl.cc.
 const char kDefaultAppsInstallState[] = "default_apps_install_state";
 
+// A boolean pref set to true if the Chrome Web Store icons should be hidden
+// from the New Tab Page and app launcher.
+const char kHideWebStoreIcon[] = "hide_web_store_icon";
+
 #if defined(OS_CHROMEOS)
 // An integer pref to initially mute volume if 1. This pref is ignored if
 // |kAudioOutputAllowed| is set to false, but its value is preserved, therefore

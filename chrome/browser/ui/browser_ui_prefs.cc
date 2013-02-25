@@ -156,6 +156,9 @@ void RegisterBrowserUserPrefs(PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kClearPluginLSODataEnabled,
                                 true,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kHideWebStoreIcon,
+                                false,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 void RegisterAppPrefs(const std::string& app_name, Profile* profile) {

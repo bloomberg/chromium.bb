@@ -61,6 +61,18 @@ using extensions::CrxInstaller;
 using extensions::Extension;
 using extensions::ExtensionPrefs;
 
+namespace {
+
+bool ShouldDisplayInNewTabPage(const Extension* app, PrefService* prefs) {
+  bool blocked_by_policy =
+    (app->id() == extension_misc::kWebStoreAppId ||
+     app->id() == extension_misc::kEnterpriseWebStoreAppId) &&
+    prefs->GetBoolean(prefs::kHideWebStoreIcon);
+  return app->ShouldDisplayInNewTabPage() && !blocked_by_policy;
+}
+
+}  // namespace
+
 const net::UnescapeRule::Type kUnescapeRules =
     net::UnescapeRule::NORMAL | net::UnescapeRule::URL_SPECIAL_CHARS;
 
@@ -337,11 +349,12 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
   base::AutoReset<bool> auto_reset(&ignore_changes_, true);
 
   ListValue* list = new ListValue();
+  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
 
   for (std::set<std::string>::iterator it = visible_apps_.begin();
        it != visible_apps_.end(); ++it) {
     const Extension* extension = extension_service_->GetInstalledExtension(*it);
-    if (extension && extension->ShouldDisplayInNewTabPage()) {
+    if (extension && ShouldDisplayInNewTabPage(extension, prefs)) {
       DictionaryValue* app_info = GetAppInfo(extension);
       list->Append(app_info);
     }
@@ -363,7 +376,6 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
   dictionary->SetBoolean("disableCreateAppShortcut", true);
 #endif
 
-  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
   const ListValue* app_page_names = prefs->GetList(prefs::kNtpAppPageNames);
   if (!app_page_names || !app_page_names->GetSize()) {
     ListPrefUpdate update(prefs, prefs::kNtpAppPageNames);

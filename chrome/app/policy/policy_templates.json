@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 188
+#   For your editing convenience: highest ID currently used: 189
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -4299,6 +4299,24 @@
           If this policy is left unset, Accessibility options will not appear in the system tray menu, but the user can cause the Accessibility options to appear via the Settings page.'''
         },
       ],
+    },
+    {
+      'name': 'HideWebStoreIcon',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:26-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 189,
+      'caption': '''Hide the web store from the new tab page and app launcher''',
+      'desc': '''Hide the Chrome Web Store app and footer link from the New Tab Page and Chrome OS app launcher.
+
+      When this policy is set to true, the icons are hidden.
+
+      When this policy is set to false or is not configured, the icons are visible.''',
     },
   ],
   'messages': {
