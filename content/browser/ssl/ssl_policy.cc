@@ -194,15 +194,6 @@ void SSLPolicy::OnAllowCertificate(scoped_refptr<SSLCertErrorHandler> handler,
 void SSLPolicy::OnCertErrorInternal(SSLCertErrorHandler* handler,
                                     bool overridable,
                                     bool strict_enforcement) {
-  if (handler->resource_type() != ResourceType::MAIN_FRAME) {
-    // A sub-resource has a certificate error.  The user doesn't really
-    // have a context for making the right decision, so block the
-    // request hard, without an info bar to allow showing the insecure
-    // content.
-    handler->DenyRequest();
-    return;
-  }
-
   bool cancel_request = false;
   GetContentClient()->browser()->AllowCertificateError(
       handler->render_process_id(),
@@ -210,6 +201,7 @@ void SSLPolicy::OnCertErrorInternal(SSLCertErrorHandler* handler,
       handler->cert_error(),
       handler->ssl_info(),
       handler->request_url(),
+      handler->resource_type(),
       overridable,
       strict_enforcement,
       base::Bind(&SSLPolicy::OnAllowCertificate, base::Unretained(this),

@@ -1377,10 +1377,20 @@ void ChromeContentBrowserClient::AllowCertificateError(
     int cert_error,
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
+    ResourceType::Type resource_type,
     bool overridable,
     bool strict_enforcement,
     const base::Callback<void(bool)>& callback,
     bool* cancel_request) {
+  if (resource_type != ResourceType::MAIN_FRAME) {
+    // A sub-resource has a certificate error.  The user doesn't really
+    // have a context for making the right decision, so block the
+    // request hard, without an info bar to allow showing the insecure
+    // content.
+    *cancel_request = true;
+    return;
+  }
+
   // If the tab is being prerendered, cancel the prerender and the request.
   WebContents* tab = tab_util::GetWebContentsByID(
       render_process_id, render_view_id);

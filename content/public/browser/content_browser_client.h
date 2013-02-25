@@ -19,6 +19,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
+#include "webkit/glue/resource_type.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "base/posix/global_descriptors.h"
@@ -340,6 +341,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       int cert_error,
       const net::SSLInfo& ssl_info,
       const GURL& request_url,
+      ResourceType::Type resource_type,
       bool overridable,
       bool strict_enforcement,
       const base::Callback<void(bool)>& callback,
