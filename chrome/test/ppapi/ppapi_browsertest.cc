@@ -582,15 +582,7 @@ TEST_PPAPI_NACL(MAYBE_Fullscreen)
 TEST_PPAPI_IN_PROCESS(X509CertificatePrivate)
 TEST_PPAPI_OUT_OF_PROCESS(X509CertificatePrivate)
 
-// http://crbug.com/63239
-#if defined(OS_POSIX)
-#define MAYBE_DirectoryReader DISABLED_DirectoryReader
-#else
-#define MAYBE_DirectoryReader DirectoryReader
-#endif
-
-// Flaky on Mac + Linux, maybe http://codereview.chromium.org/7094008
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(MAYBE_DirectoryReader)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(DirectoryReader)
 
 // There is no proxy. This is used for PDF metrics reporting, and PDF only
 // runs in process, so there's currently no need for a proxy.
