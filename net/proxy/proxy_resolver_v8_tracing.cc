@@ -309,6 +309,10 @@ class ProxyResolverV8Tracing::Job
   // origin thread.
   base::TimeTicks metrics_start_time_;
 
+  // The time when the proxy resolve request completes on the worker thread.
+  // Written on the worker thread, read on the origin thread.
+  base::TimeTicks metrics_end_time_;
+
   // The time when PostDnsOperationAndWait() was called. Written on the worker
   // thread, read by the origin thread.
   base::TimeTicks metrics_pending_dns_start_;
@@ -486,6 +490,8 @@ NetLog* ProxyResolverV8Tracing::Job::net_log() {
 void ProxyResolverV8Tracing::Job::NotifyCaller(int result) {
   CheckIsOnWorkerThread();
 
+  metrics_end_time_ = base::TimeTicks::Now();
+
   origin_loop_->PostTask(
       FROM_HERE,
       base::Bind(&Job::NotifyCallerOnOriginLoop, this, result));
@@ -535,6 +541,10 @@ void ProxyResolverV8Tracing::Job::RecordMetrics() const {
 #define UPDATE_HISTOGRAMS(base_name) \
   do {\
   UMA_HISTOGRAM_MEDIUM_TIMES(base_name "TotalTime", now - metrics_start_time_);\
+  UMA_HISTOGRAM_MEDIUM_TIMES(base_name "TotalTimeWorkerThread",\
+                             metrics_end_time_ - metrics_start_time_);\
+  UMA_HISTOGRAM_TIMES(base_name "OriginThreadLatency",\
+                      now - metrics_end_time_);\
   UMA_HISTOGRAM_MEDIUM_TIMES(base_name "TotalTimeDNS",\
                              metrics_dns_total_time_);\
   UMA_HISTOGRAM_MEDIUM_TIMES(base_name "ExecutionTime",\
