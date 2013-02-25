@@ -797,21 +797,8 @@ bool Layer::IsActive() const
 
 bool Layer::addAnimation(scoped_ptr <Animation> animation)
 {
-    // WebCore currently assumes that accelerated animations will start soon
-    // after the animation is added. However we cannot guarantee that if we do
-    // not have a layerTreeHost that will setNeedsCommit().
-    // Unfortunately, the fix below to guarantee correctness causes performance
-    // regressions on Android, since Android has shipped for a long time
-    // with all animations accelerated. For this reason, we will live with
-    // this bug only on Android until the bug is fixed.
-    // http://crbug.com/129683
-#if !defined(OS_ANDROID)
-    if (!m_layerTreeHost)
+    if (!m_layerAnimationController->animationRegistrar())
         return false;
-
-    if (!m_layerTreeHost->settings().acceleratedAnimationEnabled)
-        return false;
-#endif
 
     m_layerAnimationController->addAnimation(animation.Pass());
     setNeedsCommit();
@@ -859,6 +846,7 @@ scoped_refptr<LayerAnimationController> Layer::releaseLayerAnimationController()
     scoped_refptr<LayerAnimationController> toReturn = m_layerAnimationController;
     m_layerAnimationController = LayerAnimationController::create(id());
     m_layerAnimationController->addObserver(this);
+    m_layerAnimationController->setAnimationRegistrar(toReturn->animationRegistrar());
     return toReturn;
 }
 

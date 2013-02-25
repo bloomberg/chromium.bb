@@ -78,6 +78,7 @@ public:
     void setForceSync() { m_forceSync = true; }
 
     void setAnimationRegistrar(AnimationRegistrar*);
+    AnimationRegistrar* animationRegistrar() { return m_registrar; }
 
     void addObserver(LayerAnimationValueObserver*);
     void removeObserver(LayerAnimationValueObserver*);
