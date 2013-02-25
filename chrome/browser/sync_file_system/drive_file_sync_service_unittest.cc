@@ -144,7 +144,7 @@ ACTION(PrepareForRemoteChange_Busy) {
       FROM_HERE,
       base::Bind(arg2,
                  fileapi::SYNC_STATUS_FILE_BUSY,
-                 fileapi::SyncFileMetadata(),
+                 SyncFileMetadata(),
                  FileChangeList()));
 }
 
@@ -153,8 +153,7 @@ ACTION(PrepareForRemoteChange_NotFound) {
       FROM_HERE,
       base::Bind(arg2,
                  fileapi::SYNC_STATUS_OK,
-                 fileapi::SyncFileMetadata(SYNC_FILE_TYPE_UNKNOWN, 0,
-                                           base::Time()),
+                 SyncFileMetadata(SYNC_FILE_TYPE_UNKNOWN, 0, base::Time()),
                  FileChangeList()));
 }
 
@@ -163,8 +162,7 @@ ACTION(PrepareForRemoteChange_NotModified) {
       FROM_HERE,
       base::Bind(arg2,
                  fileapi::SYNC_STATUS_OK,
-                 fileapi::SyncFileMetadata(SYNC_FILE_TYPE_FILE, 0,
-                                           base::Time()),
+                 SyncFileMetadata(SYNC_FILE_TYPE_FILE, 0, base::Time()),
                  FileChangeList()));
 }
 

@@ -30,9 +30,7 @@
 #include "webkit/fileapi/syncable/sync_status_code.h"
 
 using content::BrowserThread;
-using fileapi::ConflictFileInfoCallback;
 using fileapi::FileSystemURL;
-using fileapi::SyncFileMetadata;
 using fileapi::SyncStatusCallback;
 using fileapi::SyncStatusCode;
 
@@ -263,21 +261,6 @@ void SyncFileSystemService::Initialize(
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_));
-}
-
-void SyncFileSystemService::DidGetConflictFileInfo(
-    const ConflictFileInfoCallback& callback,
-    const FileSystemURL& url,
-    const SyncFileMetadata* local_metadata,
-    const SyncFileMetadata* remote_metadata,
-    SyncStatusCode status) {
-  DCHECK(local_metadata);
-  DCHECK(remote_metadata);
-  fileapi::ConflictFileInfo info;
-  info.url = url;
-  info.local_metadata = *local_metadata;
-  info.remote_metadata = *remote_metadata;
-  callback.Run(status, info);
 }
 
 void SyncFileSystemService::DidInitializeFileSystem(

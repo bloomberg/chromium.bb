@@ -113,7 +113,7 @@ void MockRemoteFileSyncService::GetRemoteFileMetadataStub(
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, fileapi::SYNC_FILE_ERROR_NOT_FOUND,
-                   fileapi::SyncFileMetadata()));
+                   SyncFileMetadata()));
     return;
   }
   base::MessageLoopProxy::current()->PostTask(

@@ -24,14 +24,10 @@
 using content::BrowserThread;
 using fileapi::FileSystemURL;
 using fileapi::LocalFileSyncContext;
-using fileapi::LocalFileSyncInfo;
 using fileapi::SyncFileCallback;
 using fileapi::SyncFileMetadataCallback;
 using fileapi::SyncStatusCallback;
-using fileapi::SyncStatusCallback;
 using fileapi::SyncStatusCode;
-using sync_file_system::FileChange;
-using sync_file_system::FileChangeList;
 
 namespace sync_file_system {
 
@@ -327,8 +323,7 @@ void LocalFileSyncService::DidInitializeForRemoteSync(
     DVLOG(1) << "FileSystemContext initialization failed for remote sync:"
              << url.DebugString() << " status=" << status
              << " (" << SyncStatusCodeToString(status) << ")";
-    callback.Run(status, fileapi::SyncFileMetadata(),
-                 FileChangeList());
+    callback.Run(status, SyncFileMetadata(), FileChangeList());
     return;
   }
   origin_to_contexts_[url.origin()] = file_system_context;

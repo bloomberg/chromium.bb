@@ -6,7 +6,7 @@
 
 using sync_file_system::SyncFileType;
 
-namespace fileapi {
+namespace sync_file_system {
 
 SyncFileMetadata::SyncFileMetadata()
     : file_type(sync_file_system::SYNC_FILE_TYPE_UNKNOWN),
@@ -30,10 +30,7 @@ bool SyncFileMetadata::operator==(const SyncFileMetadata& that) const {
          last_modified == that.last_modified;
 }
 
-ConflictFileInfo::ConflictFileInfo() {}
-ConflictFileInfo::~ConflictFileInfo() {}
-
 LocalFileSyncInfo::LocalFileSyncInfo() {}
 LocalFileSyncInfo::~LocalFileSyncInfo() {}
 
-}  // namespace fileapi
+}  // namespace sync_file_system

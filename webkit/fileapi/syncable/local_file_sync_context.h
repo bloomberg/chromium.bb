@@ -31,13 +31,13 @@ class SingleThreadTaskRunner;
 
 namespace sync_file_system {
 class FileChange;
+struct LocalFileSyncInfo;
 }
 
 namespace fileapi {
 
 class FileSystemContext;
 class LocalFileChangeTracker;
-struct LocalFileSyncInfo;
 class LocalOriginChangeObserver;
 class SyncableFileOperationRunner;
 
@@ -50,9 +50,10 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
     : public base::RefCountedThreadSafe<LocalFileSyncContext>,
       public LocalFileSyncStatus::Observer {
  public:
-  typedef base::Callback<void(SyncStatusCode status,
-                              const LocalFileSyncInfo& sync_file_info)>
-      LocalFileSyncInfoCallback;
+  typedef base::Callback<void(
+      SyncStatusCode status,
+      const sync_file_system::LocalFileSyncInfo& sync_file_info)>
+          LocalFileSyncInfoCallback;
 
   typedef base::Callback<void(fileapi::SyncStatusCode status,
                               bool has_pending_changes)>
@@ -218,7 +219,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
       std::deque<FileSystemURL>* remaining_urls,
       const LocalFileSyncInfoCallback& callback,
       SyncStatusCode status,
-      const LocalFileSyncInfo& sync_file_info);
+      const sync_file_system::LocalFileSyncInfo& sync_file_info);
 
   // Callback routine for PrepareForSync and GetFileForLocalSync.
   void DidGetWritingStatusForSync(

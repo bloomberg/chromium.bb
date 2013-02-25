@@ -28,7 +28,7 @@ void FakeRemoteChangeProcessor::PrepareForProcessRemoteChange(
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, fileapi::SYNC_STATUS_OK,
-                 fileapi::SyncFileMetadata(), FileChangeList()));
+                 SyncFileMetadata(), FileChangeList()));
 }
 
 void FakeRemoteChangeProcessor::ApplyRemoteChange(

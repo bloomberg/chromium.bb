@@ -68,7 +68,7 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
   // Sets conflict file information.  The information is returned by
   // the default action for GetRemoteConflictFileInfo.
   void add_conflict_file(const fileapi::FileSystemURL& url,
-                         const fileapi::SyncFileMetadata& metadata) {
+                         const SyncFileMetadata& metadata) {
     conflict_file_urls_[url.origin()].insert(url);
     conflict_file_metadata_[url] = metadata;
   }
@@ -80,7 +80,7 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
 
  private:
   typedef std::map<GURL, fileapi::FileSystemURLSet> OriginToURLSetMap;
-  typedef std::map<fileapi::FileSystemURL, fileapi::SyncFileMetadata,
+  typedef std::map<fileapi::FileSystemURL, SyncFileMetadata,
                    fileapi::FileSystemURL::Comparator> FileMetadataMap;
 
   void AddServiceObserverStub(Observer* observer);

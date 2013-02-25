@@ -28,9 +28,7 @@
 using fileapi::FileSystemURL;
 using fileapi::FileSystemURLSet;
 using fileapi::MockSyncStatusObserver;
-using fileapi::SyncFileMetadata;
 using fileapi::SyncStatusCode;
-using sync_file_system::FileChange;
 using ::testing::AnyNumber;
 using ::testing::AtLeast;
 using ::testing::InSequence;

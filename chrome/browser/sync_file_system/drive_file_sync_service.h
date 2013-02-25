@@ -283,7 +283,7 @@ class DriveFileSyncService
   void DidPrepareForProcessRemoteChange(
       scoped_ptr<ProcessRemoteChangeParam> param,
       fileapi::SyncStatusCode status,
-      const fileapi::SyncFileMetadata& metadata,
+      const SyncFileMetadata& metadata,
       const FileChangeList& changes);
   void DidResolveConflictToLocalChange(
       scoped_ptr<ProcessRemoteChangeParam> param,

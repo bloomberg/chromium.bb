@@ -30,13 +30,8 @@
 using fileapi::FileSystemURL;
 using fileapi::LocalFileSyncStatus;
 using fileapi::MockSyncStatusObserver;
-using fileapi::SyncFileMetadata;
 using fileapi::SyncStatusCallback;
 using fileapi::SyncStatusCode;
-
-using sync_file_system::FileChange;
-using sync_file_system::FileChangeList;
-using sync_file_system::SyncFileType;
 
 using ::testing::_;
 using ::testing::AtLeast;

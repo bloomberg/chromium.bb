@@ -464,7 +464,7 @@ void DriveFileSyncService::GetRemoteFileMetadata(
   const fileapi::SyncStatusCode status =
       metadata_store_->ReadEntry(url, &metadata);
   if (status != fileapi::SYNC_STATUS_OK)
-    callback.Run(status, fileapi::SyncFileMetadata());
+    callback.Run(status, SyncFileMetadata());
   sync_client_->GetResourceEntry(
       metadata.resource_id(),
       base::Bind(&DriveFileSyncService::DidGetRemoteFileMetadata,
@@ -1065,9 +1065,9 @@ void DriveFileSyncService::DidGetRemoteFileMetadata(
   else if (entry->is_folder())
     file_type = SYNC_FILE_TYPE_DIRECTORY;
   callback.Run(GDataErrorCodeToSyncStatusCodeWrapper(error),
-               fileapi::SyncFileMetadata(file_type,
-                                         entry->file_size(),
-                                         entry->updated_time()));
+               SyncFileMetadata(file_type,
+                                entry->file_size(),
+                                entry->updated_time()));
 }
 
 DriveFileSyncService::LocalSyncOperationType
@@ -1301,7 +1301,7 @@ void DriveFileSyncService::DidDeleteFileForLocalSync(
 void DriveFileSyncService::DidPrepareForProcessRemoteChange(
     scoped_ptr<ProcessRemoteChangeParam> param,
     fileapi::SyncStatusCode status,
-    const fileapi::SyncFileMetadata& metadata,
+    const SyncFileMetadata& metadata,
     const FileChangeList& local_changes) {
   if (status != fileapi::SYNC_STATUS_OK) {
     AbortRemoteSync(param.Pass(), status);

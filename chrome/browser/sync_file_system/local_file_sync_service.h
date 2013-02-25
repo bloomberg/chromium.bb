@@ -25,13 +25,13 @@ class Profile;
 namespace fileapi {
 class FileSystemContext;
 class LocalFileSyncContext;
-struct LocalFileSyncInfo;
 }
 
 namespace sync_file_system {
 
 class FileChange;
 class LocalChangeProcessor;
+struct LocalFileSyncInfo;
 
 // Maintains local file change tracker and sync status.
 // Owned by SyncFileSystemService (which is a per-profile object).
@@ -181,10 +181,10 @@ class LocalFileSyncService
   void DidGetFileForLocalSync(
       LocalChangeProcessor* processor,
       fileapi::SyncStatusCode status,
-      const fileapi::LocalFileSyncInfo& sync_file_info);
+      const LocalFileSyncInfo& sync_file_info);
   void ProcessNextChangeForURL(
       LocalChangeProcessor* processor,
-      const fileapi::LocalFileSyncInfo& sync_file_info,
+      const LocalFileSyncInfo& sync_file_info,
       const FileChange& last_change,
       const FileChangeList& changes,
       fileapi::SyncStatusCode status);

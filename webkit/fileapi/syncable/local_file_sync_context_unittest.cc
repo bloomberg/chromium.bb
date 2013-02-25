@@ -36,6 +36,8 @@
 
 using sync_file_system::FileChange;
 using sync_file_system::FileChangeList;
+using sync_file_system::LocalFileSyncInfo;
+using sync_file_system::SyncFileMetadata;
 using sync_file_system::SyncFileType;
 
 namespace fileapi {

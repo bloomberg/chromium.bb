@@ -16,13 +16,13 @@ class FilePath;
 
 namespace fileapi {
 class FileSystemURL;
-class SyncFileMetadata;
 }
 
 namespace sync_file_system {
 
 class FileChange;
 class FileChangeList;
+class SyncFileMetadata;
 
 // Represents an interface to process one remote change and applies
 // it to the local file system.
@@ -36,7 +36,7 @@ class RemoteChangeProcessor {
   // |changes| indicates a set of pending changes for the target URL.
   typedef base::Callback<void(
       fileapi::SyncStatusCode status,
-      const fileapi::SyncFileMetadata& metadata,
+      const SyncFileMetadata& metadata,
       const FileChangeList& changes)> PrepareChangeCallback;
 
   RemoteChangeProcessor() {}

@@ -72,12 +72,6 @@ class SyncFileSystemService
   void Initialize(scoped_ptr<LocalFileSyncService> local_file_service,
                   scoped_ptr<RemoteFileSyncService> remote_file_service);
 
-  void DidGetConflictFileInfo(const fileapi::ConflictFileInfoCallback& callback,
-                              const fileapi::FileSystemURL& url,
-                              const fileapi::SyncFileMetadata* local_metadata,
-                              const fileapi::SyncFileMetadata* remote_metadata,
-                              fileapi::SyncStatusCode status);
-
   // Callbacks for InitializeForApp.
   void DidInitializeFileSystem(const GURL& app_origin,
                                const fileapi::SyncStatusCallback& callback,
