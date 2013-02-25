@@ -436,13 +436,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ProcessIsolation) {
 // Verification of fix for BUG=176365.  Ensure that each Instant WebContents in
 // a tab uses a new BrowsingInstance, to avoid conflicts in the
 // NavigationController.
-// Disabled on ChromeOS for flaky failures: crbug.com/177516
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
-#define MAYBE_UnrelatedSiteInstance DISABLED_UnrelatedSiteInstance
-#else
-#define MAYBE_UnrelatedSiteInstance UnrelatedSiteInstance
-#endif
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, MAYBE_UnrelatedSiteInstance) {
+// Flaky: http://crbug.com/177516
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_UnrelatedSiteInstance) {
   // Setup Instant.
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
