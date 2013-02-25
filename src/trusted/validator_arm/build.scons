@@ -194,7 +194,6 @@ for tbl in GEN_TABLES:
 
 env.ComponentLibrary('arm_validator_core',
                      ['address_set.cc',
-                      'baseline_classes.cc',
                       'inst_classes.cc',
                       'model.cc',
                       'arm_helpers.cc',
@@ -279,9 +278,7 @@ if env.Bit('target_arm'):
 
 gtest_env.ComponentLibrary('decoder_test_tools',
                            ['decoder_tester.cc',
-                            'inst_classes_testers.cc',
                             'actual_vs_baseline.cc',
-                            'baseline_vs_baseline.cc',
                             'named_class_decoder.cc',
                             _gen_dir('arm32_decode_named.cc')] +
                            _gen_dirs(GenerateBaselineFiles(

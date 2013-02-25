@@ -51,7 +51,6 @@ H_HEADER="""%(FILE_HEADER)s
 #define %(IFDEF_NAME)s
 
 #include "native_client/src/trusted/validator_arm/decode.h"
-#include "native_client/src/trusted/validator_arm/baseline_classes.h"
 #include "%(FILENAME_BASE)s_actuals.h"
 
 namespace nacl_arm_dec {

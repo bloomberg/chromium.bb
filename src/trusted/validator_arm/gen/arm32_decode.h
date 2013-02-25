@@ -11,7 +11,6 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_GEN_ARM32_DECODE_H_
 
 #include "native_client/src/trusted/validator_arm/decode.h"
-#include "native_client/src/trusted/validator_arm/baseline_classes.h"
 #include "native_client/src/trusted/validator_arm/gen/arm32_decode_actuals.h"
 
 namespace nacl_arm_dec {

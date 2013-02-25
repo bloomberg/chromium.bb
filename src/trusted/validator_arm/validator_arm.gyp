@@ -41,7 +41,6 @@
       'type': 'static_library',
       'sources': [
         'address_set.cc',
-        'baseline_classes.cc',
         'inst_classes.cc',
         'model.cc',
         'arm_helpers.cc',
