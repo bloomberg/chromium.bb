@@ -1702,12 +1702,13 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   const DictionaryValue* inspector_settings =
       prefs->GetDictionary(prefs::kWebKitInspectorSettings);
   if (inspector_settings) {
-    for (DictionaryValue::key_iterator iter(inspector_settings->begin_keys());
-         iter != inspector_settings->end_keys(); ++iter) {
+    for (DictionaryValue::Iterator iter(*inspector_settings); !iter.IsAtEnd();
+         iter.Advance()) {
       std::string value;
-      if (inspector_settings->GetStringWithoutPathExpansion(*iter, &value))
+      if (iter.value().GetAsString(&value)) {
           web_prefs->inspector_settings.push_back(
-              std::make_pair(*iter, value));
+              std::make_pair(iter.key(), value));
+      }
     }
   }
   web_prefs->tabs_to_links = prefs->GetBoolean(prefs::kWebkitTabsToLinks);

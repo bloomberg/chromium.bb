@@ -229,12 +229,11 @@ void InvalidatorStorage::DeserializeMap(
   map->clear();
   // Convert from a string -> string DictionaryValue to a
   // ModelType -> int64 map.
-  for (base::DictionaryValue::key_iterator it =
-           max_versions_dict->begin_keys();
-       it != max_versions_dict->end_keys(); ++it) {
+  for (base::DictionaryValue::Iterator it(*max_versions_dict); !it.IsAtEnd();
+       it.Advance()) {
     int model_type_int = 0;
-    if (!base::StringToInt(*it, &model_type_int)) {
-      LOG(WARNING) << "Invalid model type key: " << *it;
+    if (!base::StringToInt(it.key(), &model_type_int)) {
+      LOG(WARNING) << "Invalid model type key: " << it.key();
       continue;
     }
     if ((model_type_int < syncer::FIRST_REAL_MODEL_TYPE) ||
@@ -245,7 +244,7 @@ void InvalidatorStorage::DeserializeMap(
     const syncer::ModelType model_type =
         syncer::ModelTypeFromInt(model_type_int);
     std::string max_version_str;
-    CHECK(max_versions_dict->GetString(*it, &max_version_str));
+    CHECK(it.value().GetAsString(&max_version_str));
     int64 max_version = 0;
     if (!base::StringToInt64(max_version_str, &max_version)) {
       LOG(WARNING) << "Invalid max invalidation version for "

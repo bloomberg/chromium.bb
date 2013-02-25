@@ -384,11 +384,10 @@ void BackgroundContentsService::LoadBackgroundContentsFromPrefs(
   ExtensionService* extensions_service =
           extensions::ExtensionSystem::Get(profile)->extension_service();
   DCHECK(extensions_service);
-  for (DictionaryValue::key_iterator it = contents->begin_keys();
-       it != contents->end_keys(); ++it) {
+  for (DictionaryValue::Iterator it(*contents); !it.IsAtEnd(); it.Advance()) {
     // Check to make sure that the parent extension is still enabled.
     const Extension* extension = extensions_service->
-        GetExtensionById(*it, false);
+        GetExtensionById(it.key(), false);
     if (!extension) {
       // We should never reach here - it should not be possible for an app
       // to become uninstalled without the associated BackgroundContents being
@@ -396,12 +395,12 @@ void BackgroundContentsService::LoadBackgroundContentsFromPrefs(
       // crash before we could save our prefs, or if the user deletes the
       // extension files manually rather than uninstalling it.
       NOTREACHED() << "No extension found for BackgroundContents - id = "
-                   << *it;
+                   << it.key();
       // Don't cancel out of our loop, just ignore this BackgroundContents and
       // load the next one.
       continue;
     }
-    LoadBackgroundContentsFromDictionary(profile, *it, contents);
+    LoadBackgroundContentsFromDictionary(profile, it.key(), contents);
   }
 }
 
