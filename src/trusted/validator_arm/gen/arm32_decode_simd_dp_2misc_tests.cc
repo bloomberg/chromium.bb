@@ -38,11 +38,10 @@ namespace nacl_arm_test {
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VREV16_111100111d11ss00dddd000ppqm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_RG,
+//       baseline: VREV64_111100111d11ss00dddd000ppqm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), op(8:7), Q(6), Vm(3:0)],
-//       generated_baseline: VREV64_111100111d11ss00dddd000ppqm0mmmm_case_0,
 //       op: op(8:7),
 //       pattern: 111100111d11ss00dddd000ppqm0mmmm,
 //       rule: VREV64,
@@ -53,17 +52,17 @@ namespace nacl_arm_test {
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_RGTesterCase0
-    : public Vector2RegisterMiscellaneousTester {
+class VREV64_111100111d11ss00dddd000ppqm0mmmm_case_0TesterCase0
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_RGTesterCase0(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VREV64_111100111d11ss00dddd000ppqm0mmmm_case_0TesterCase0(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_RGTesterCase0
+bool VREV64_111100111d11ss00dddd000ppqm0mmmm_case_0TesterCase0
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -77,7 +76,7 @@ bool Vector2RegisterMiscellaneous_RGTesterCase0
           0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -86,11 +85,10 @@ bool Vector2RegisterMiscellaneous_RGTesterCase0
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VREV16_111100111d11ss00dddd000ppqm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_RG,
+//       baseline: VREV32_111100111d11ss00dddd000ppqm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), op(8:7), Q(6), Vm(3:0)],
-//       generated_baseline: VREV32_111100111d11ss00dddd000ppqm0mmmm_case_0,
 //       op: op(8:7),
 //       pattern: 111100111d11ss00dddd000ppqm0mmmm,
 //       rule: VREV32,
@@ -101,17 +99,17 @@ bool Vector2RegisterMiscellaneous_RGTesterCase0
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_RGTesterCase1
-    : public Vector2RegisterMiscellaneousTester {
+class VREV32_111100111d11ss00dddd000ppqm0mmmm_case_0TesterCase1
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_RGTesterCase1(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VREV32_111100111d11ss00dddd000ppqm0mmmm_case_0TesterCase1(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_RGTesterCase1
+bool VREV32_111100111d11ss00dddd000ppqm0mmmm_case_0TesterCase1
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -125,7 +123,7 @@ bool Vector2RegisterMiscellaneous_RGTesterCase1
           0x00000080) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -134,11 +132,10 @@ bool Vector2RegisterMiscellaneous_RGTesterCase1
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VREV16_111100111d11ss00dddd000ppqm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_RG,
+//       baseline: VREV16_111100111d11ss00dddd000ppqm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), op(8:7), Q(6), Vm(3:0)],
-//       generated_baseline: VREV16_111100111d11ss00dddd000ppqm0mmmm_case_0,
 //       op: op(8:7),
 //       pattern: 111100111d11ss00dddd000ppqm0mmmm,
 //       rule: VREV16,
@@ -149,17 +146,17 @@ bool Vector2RegisterMiscellaneous_RGTesterCase1
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_RGTesterCase2
-    : public Vector2RegisterMiscellaneousTester {
+class VREV16_111100111d11ss00dddd000ppqm0mmmm_case_0TesterCase2
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_RGTesterCase2(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VREV16_111100111d11ss00dddd000ppqm0mmmm_case_0TesterCase2(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_RGTesterCase2
+bool VREV16_111100111d11ss00dddd000ppqm0mmmm_case_0TesterCase2
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -173,7 +170,7 @@ bool Vector2RegisterMiscellaneous_RGTesterCase2
           0x00000100) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -182,11 +179,10 @@ bool Vector2RegisterMiscellaneous_RGTesterCase2
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VCLS_111100111d11ss00dddd01000qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCLS_111100111d11ss00dddd01000qm0mmmm_case_0,
 //       pattern: 111100111d11ss00dddd01000qm0mmmm,
 //       rule: VCLS,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -195,17 +191,17 @@ bool Vector2RegisterMiscellaneous_RGTesterCase2
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32TesterCase3
-    : public Vector2RegisterMiscellaneousTester {
+class VCLS_111100111d11ss00dddd01000qm0mmmm_case_0TesterCase3
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32TesterCase3(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VCLS_111100111d11ss00dddd01000qm0mmmm_case_0TesterCase3(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_V8_16_32TesterCase3
+bool VCLS_111100111d11ss00dddd01000qm0mmmm_case_0TesterCase3
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -219,7 +215,7 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase3
           0x00000400) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -228,11 +224,10 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase3
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VCLZ_111100111d11ss00dddd01001qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCLZ_111100111d11ss00dddd01001qm0mmmm_case_0,
 //       pattern: 111100111d11ss00dddd01001qm0mmmm,
 //       rule: VCLZ,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -241,17 +236,17 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase3
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32TesterCase4
-    : public Vector2RegisterMiscellaneousTester {
+class VCLZ_111100111d11ss00dddd01001qm0mmmm_case_0TesterCase4
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32TesterCase4(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VCLZ_111100111d11ss00dddd01001qm0mmmm_case_0TesterCase4(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_V8_16_32TesterCase4
+bool VCLZ_111100111d11ss00dddd01001qm0mmmm_case_0TesterCase4
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -265,7 +260,7 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase4
           0x00000480) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -274,11 +269,10 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase4
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VCNT_111100111d11ss00dddd01010qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8,
+//       baseline: VCNT_111100111d11ss00dddd01010qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCNT_111100111d11ss00dddd01010qm0mmmm_case_0,
 //       pattern: 111100111d11ss00dddd01010qm0mmmm,
 //       rule: VCNT,
 //       safety: [size(19:18)=~00 => UNDEFINED,
@@ -287,17 +281,17 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase4
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8TesterCase5
-    : public Vector2RegisterMiscellaneousTester {
+class VCNT_111100111d11ss00dddd01010qm0mmmm_case_0TesterCase5
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_V8TesterCase5(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VCNT_111100111d11ss00dddd01010qm0mmmm_case_0TesterCase5(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_V8TesterCase5
+bool VCNT_111100111d11ss00dddd01010qm0mmmm_case_0TesterCase5
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -311,7 +305,7 @@ bool Vector2RegisterMiscellaneous_V8TesterCase5
           0x00000500) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -320,11 +314,10 @@ bool Vector2RegisterMiscellaneous_V8TesterCase5
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VCNT_111100111d11ss00dddd01010qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8,
+//       baseline: VMVN_register_111100111d11ss00dddd01011qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VMVN_register_111100111d11ss00dddd01011qm0mmmm_case_0,
 //       pattern: 111100111d11ss00dddd01011qm0mmmm,
 //       rule: VMVN_register,
 //       safety: [size(19:18)=~00 => UNDEFINED,
@@ -333,17 +326,17 @@ bool Vector2RegisterMiscellaneous_V8TesterCase5
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8TesterCase6
-    : public Vector2RegisterMiscellaneousTester {
+class VMVN_register_111100111d11ss00dddd01011qm0mmmm_case_0TesterCase6
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_V8TesterCase6(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VMVN_register_111100111d11ss00dddd01011qm0mmmm_case_0TesterCase6(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_V8TesterCase6
+bool VMVN_register_111100111d11ss00dddd01011qm0mmmm_case_0TesterCase6
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -357,7 +350,7 @@ bool Vector2RegisterMiscellaneous_V8TesterCase6
           0x00000580) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -366,11 +359,10 @@ bool Vector2RegisterMiscellaneous_V8TesterCase6
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VQABS_111100111d11ss00dddd01110qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VQABS_111100111d11ss00dddd01110qm0mmmm_case_0,
 //       pattern: 111100111d11ss00dddd01110qm0mmmm,
 //       rule: VQABS,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -379,17 +371,17 @@ bool Vector2RegisterMiscellaneous_V8TesterCase6
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32TesterCase7
-    : public Vector2RegisterMiscellaneousTester {
+class VQABS_111100111d11ss00dddd01110qm0mmmm_case_0TesterCase7
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32TesterCase7(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VQABS_111100111d11ss00dddd01110qm0mmmm_case_0TesterCase7(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_V8_16_32TesterCase7
+bool VQABS_111100111d11ss00dddd01110qm0mmmm_case_0TesterCase7
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -403,7 +395,7 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase7
           0x00000700) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -412,11 +404,10 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase7
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VQNEG_111100111d11ss00dddd01111qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VQNEG_111100111d11ss00dddd01111qm0mmmm_case_0,
 //       pattern: 111100111d11ss00dddd01111qm0mmmm,
 //       rule: VQNEG,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -425,17 +416,17 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase7
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32TesterCase8
-    : public Vector2RegisterMiscellaneousTester {
+class VQNEG_111100111d11ss00dddd01111qm0mmmm_case_0TesterCase8
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32TesterCase8(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VQNEG_111100111d11ss00dddd01111qm0mmmm_case_0TesterCase8(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_V8_16_32TesterCase8
+bool VQNEG_111100111d11ss00dddd01111qm0mmmm_case_0TesterCase8
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -449,7 +440,7 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase8
           0x00000780) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -458,11 +449,10 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase8
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0,
 //       pattern: 111100111d11ss00dddd0010p1m0mmmm,
 //       rule: VPADDL,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -471,17 +461,17 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase8
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32TesterCase9
-    : public Vector2RegisterMiscellaneousTester {
+class VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0TesterCase9
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32TesterCase9(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0TesterCase9(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_V8_16_32TesterCase9
+bool VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0TesterCase9
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -498,7 +488,7 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase9
           0x00000040) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -507,11 +497,10 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase9
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0,
 //       pattern: 111100111d11ss00dddd0110p1m0mmmm,
 //       rule: VPADAL,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -520,17 +509,17 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase9
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32TesterCase10
-    : public Vector2RegisterMiscellaneousTester {
+class VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0TesterCase10
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32TesterCase10(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0TesterCase10(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_V8_16_32TesterCase10
+bool VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0TesterCase10
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -547,7 +536,7 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase10
           0x00000040) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -556,11 +545,10 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase10
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0,
 //       pattern: 111100111d11ss01dddd0f000qm0mmmm,
 //       rule: VCGT_immediate_0,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -569,17 +557,17 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase10
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32TesterCase11
-    : public Vector2RegisterMiscellaneousTester {
+class VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0TesterCase11
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32TesterCase11(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0TesterCase11(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_V8_16_32TesterCase11
+bool VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0TesterCase11
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -593,7 +581,7 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase11
           0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -602,11 +590,10 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase11
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0,
 //       pattern: 111100111d11ss01dddd0f001qm0mmmm,
 //       rule: VCGE_immediate_0,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -615,17 +602,17 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase11
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32TesterCase12
-    : public Vector2RegisterMiscellaneousTester {
+class VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0TesterCase12
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32TesterCase12(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0TesterCase12(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_V8_16_32TesterCase12
+bool VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0TesterCase12
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -639,7 +626,7 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase12
           0x00000080) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -648,11 +635,10 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase12
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0,
 //       pattern: 111100111d11ss01dddd0f010qm0mmmm,
 //       rule: VCEQ_immediate_0,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -661,17 +647,17 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase12
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32TesterCase13
-    : public Vector2RegisterMiscellaneousTester {
+class VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0TesterCase13
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32TesterCase13(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0TesterCase13(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_V8_16_32TesterCase13
+bool VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0TesterCase13
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -685,7 +671,7 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase13
           0x00000100) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -694,11 +680,10 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase13
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0,
 //       pattern: 111100111d11ss01dddd0f011qm0mmmm,
 //       rule: VCLE_immediate_0,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -707,17 +692,17 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase13
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32TesterCase14
-    : public Vector2RegisterMiscellaneousTester {
+class VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0TesterCase14
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32TesterCase14(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0TesterCase14(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_V8_16_32TesterCase14
+bool VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0TesterCase14
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -731,7 +716,7 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase14
           0x00000180) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -740,11 +725,10 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase14
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0,
 //       pattern: 111100111d11ss01dddd0f100qm0mmmm,
 //       rule: VCLT_immediate_0,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -753,17 +737,17 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase14
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32TesterCase15
-    : public Vector2RegisterMiscellaneousTester {
+class VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0TesterCase15
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32TesterCase15(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0TesterCase15(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_V8_16_32TesterCase15
+bool VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0TesterCase15
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -777,7 +761,7 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase15
           0x00000200) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -786,11 +770,10 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase15
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0,
 //       pattern: 111100111d11ss01dddd0f110qm0mmmm,
 //       rule: VABS_A1,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -799,17 +782,17 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase15
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32TesterCase16
-    : public Vector2RegisterMiscellaneousTester {
+class VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0TesterCase16
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32TesterCase16(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0TesterCase16(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_V8_16_32TesterCase16
+bool VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0TesterCase16
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -823,7 +806,7 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase16
           0x00000300) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -832,11 +815,10 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase16
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VNEG_111100111d11ss01dddd0f111qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VNEG_111100111d11ss01dddd0f111qm0mmmm_case_0,
 //       pattern: 111100111d11ss01dddd0f111qm0mmmm,
 //       rule: VNEG,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -845,17 +827,17 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase16
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32TesterCase17
-    : public Vector2RegisterMiscellaneousTester {
+class VNEG_111100111d11ss01dddd0f111qm0mmmm_case_0TesterCase17
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32TesterCase17(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VNEG_111100111d11ss01dddd0f111qm0mmmm_case_0TesterCase17(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_V8_16_32TesterCase17
+bool VNEG_111100111d11ss01dddd0f111qm0mmmm_case_0TesterCase17
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -869,7 +851,7 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase17
           0x00000380) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -878,11 +860,10 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase17
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
-//       baseline: Vector2RegisterMiscellaneous_F32,
+//       baseline: VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_1,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_1,
 //       pattern: 111100111d11ss01dddd0f000qm0mmmm,
 //       rule: VCGT_immediate_0,
 //       safety: [Q(6)=1 &&
@@ -891,17 +872,17 @@ bool Vector2RegisterMiscellaneous_V8_16_32TesterCase17
 //         size(19:18)=~10 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_F32TesterCase18
-    : public Vector2RegisterMiscellaneousTester {
+class VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_1TesterCase18
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_F32TesterCase18(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_1TesterCase18(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_F32TesterCase18
+bool VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_1TesterCase18
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -915,7 +896,7 @@ bool Vector2RegisterMiscellaneous_F32TesterCase18
           0x00000400) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -924,11 +905,10 @@ bool Vector2RegisterMiscellaneous_F32TesterCase18
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
-//       baseline: Vector2RegisterMiscellaneous_F32,
+//       baseline: VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_1,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_1,
 //       pattern: 111100111d11ss01dddd0f001qm0mmmm,
 //       rule: VCGE_immediate_0,
 //       safety: [Q(6)=1 &&
@@ -937,17 +917,17 @@ bool Vector2RegisterMiscellaneous_F32TesterCase18
 //         size(19:18)=~10 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_F32TesterCase19
-    : public Vector2RegisterMiscellaneousTester {
+class VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_1TesterCase19
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_F32TesterCase19(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_1TesterCase19(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_F32TesterCase19
+bool VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_1TesterCase19
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -961,7 +941,7 @@ bool Vector2RegisterMiscellaneous_F32TesterCase19
           0x00000480) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -970,11 +950,10 @@ bool Vector2RegisterMiscellaneous_F32TesterCase19
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
-//       baseline: Vector2RegisterMiscellaneous_F32,
+//       baseline: VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_1,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_1,
 //       pattern: 111100111d11ss01dddd0f010qm0mmmm,
 //       rule: VCEQ_immediate_0,
 //       safety: [Q(6)=1 &&
@@ -983,17 +962,17 @@ bool Vector2RegisterMiscellaneous_F32TesterCase19
 //         size(19:18)=~10 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_F32TesterCase20
-    : public Vector2RegisterMiscellaneousTester {
+class VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_1TesterCase20
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_F32TesterCase20(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_1TesterCase20(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_F32TesterCase20
+bool VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_1TesterCase20
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1007,7 +986,7 @@ bool Vector2RegisterMiscellaneous_F32TesterCase20
           0x00000500) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -1016,11 +995,10 @@ bool Vector2RegisterMiscellaneous_F32TesterCase20
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
-//       baseline: Vector2RegisterMiscellaneous_F32,
+//       baseline: VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_1,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_1,
 //       pattern: 111100111d11ss01dddd0f011qm0mmmm,
 //       rule: VCLE_immediate_0,
 //       safety: [Q(6)=1 &&
@@ -1029,17 +1007,17 @@ bool Vector2RegisterMiscellaneous_F32TesterCase20
 //         size(19:18)=~10 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_F32TesterCase21
-    : public Vector2RegisterMiscellaneousTester {
+class VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_1TesterCase21
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_F32TesterCase21(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_1TesterCase21(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_F32TesterCase21
+bool VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_1TesterCase21
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1053,7 +1031,7 @@ bool Vector2RegisterMiscellaneous_F32TesterCase21
           0x00000580) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -1062,11 +1040,10 @@ bool Vector2RegisterMiscellaneous_F32TesterCase21
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
-//       baseline: Vector2RegisterMiscellaneous_F32,
+//       baseline: VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_1,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_1,
 //       pattern: 111100111d11ss01dddd0f100qm0mmmm,
 //       rule: VCLT_immediate_0,
 //       safety: [Q(6)=1 &&
@@ -1075,17 +1052,17 @@ bool Vector2RegisterMiscellaneous_F32TesterCase21
 //         size(19:18)=~10 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_F32TesterCase22
-    : public Vector2RegisterMiscellaneousTester {
+class VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_1TesterCase22
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_F32TesterCase22(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_1TesterCase22(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_F32TesterCase22
+bool VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_1TesterCase22
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1099,7 +1076,7 @@ bool Vector2RegisterMiscellaneous_F32TesterCase22
           0x00000600) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -1108,11 +1085,10 @@ bool Vector2RegisterMiscellaneous_F32TesterCase22
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
-//       baseline: Vector2RegisterMiscellaneous_F32,
+//       baseline: VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
 //       pattern: 111100111d11ss01dddd0f110qm0mmmm,
 //       rule: VABS_A1,
 //       safety: [Q(6)=1 &&
@@ -1121,17 +1097,17 @@ bool Vector2RegisterMiscellaneous_F32TesterCase22
 //         size(19:18)=~10 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_F32TesterCase23
-    : public Vector2RegisterMiscellaneousTester {
+class VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1TesterCase23
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_F32TesterCase23(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1TesterCase23(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_F32TesterCase23
+bool VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1TesterCase23
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1145,7 +1121,7 @@ bool Vector2RegisterMiscellaneous_F32TesterCase23
           0x00000700) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -1154,11 +1130,10 @@ bool Vector2RegisterMiscellaneous_F32TesterCase23
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
-//       baseline: Vector2RegisterMiscellaneous_F32,
+//       baseline: VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1,
 //       pattern: 111100111d11ss01dddd0f111qm0mmmm,
 //       rule: VNEG,
 //       safety: [Q(6)=1 &&
@@ -1167,17 +1142,17 @@ bool Vector2RegisterMiscellaneous_F32TesterCase23
 //         size(19:18)=~10 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_F32TesterCase24
-    : public Vector2RegisterMiscellaneousTester {
+class VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1TesterCase24
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_F32TesterCase24(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1TesterCase24(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_F32TesterCase24
+bool VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1TesterCase24
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1191,34 +1166,33 @@ bool Vector2RegisterMiscellaneous_F32TesterCase24
           0x00000780) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
 // A(17:16)=10 & B(10:6)=01000
 //    = {Vm: Vm(3:0),
 //       actual: Actual_VMOVN_111100111d11ss10dddd001000m0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V16_32_64N,
+//       baseline: VMOVN_111100111d11ss10dddd001000m0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vm(3:0)],
-//       generated_baseline: VMOVN_111100111d11ss10dddd001000m0mmmm_case_0,
 //       pattern: 111100111d11ss10dddd001000m0mmmm,
 //       rule: VMOVN,
 //       safety: [size(19:18)=11 => UNDEFINED, Vm(0)=1 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V16_32_64NTesterCase25
-    : public Vector2RegisterMiscellaneousTester {
+class VMOVN_111100111d11ss10dddd001000m0mmmm_case_0TesterCase25
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_V16_32_64NTesterCase25(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VMOVN_111100111d11ss10dddd001000m0mmmm_case_0TesterCase25(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_V16_32_64NTesterCase25
+bool VMOVN_111100111d11ss10dddd001000m0mmmm_case_0TesterCase25
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1232,18 +1206,17 @@ bool Vector2RegisterMiscellaneous_V16_32_64NTesterCase25
           0x00000200) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
 // A(17:16)=10 & B(10:6)=01001
 //    = {Vm: Vm(3:0),
 //       actual: Actual_VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_I16_32_64N,
+//       baseline: VQMOVUN_111100111d11ss10dddd0010ppm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), op(7:6), Vm(3:0)],
-//       generated_baseline: VQMOVUN_111100111d11ss10dddd0010ppm0mmmm_case_0,
 //       op: op(7:6),
 //       pattern: 111100111d11ss10dddd0010ppm0mmmm,
 //       rule: VQMOVUN,
@@ -1252,17 +1225,17 @@ bool Vector2RegisterMiscellaneous_V16_32_64NTesterCase25
 //            Vm(0)=1 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_I16_32_64NTesterCase26
-    : public Vector2RegisterMiscellaneous_I16_32_64NTester {
+class VQMOVUN_111100111d11ss10dddd0010ppm0mmmm_case_0TesterCase26
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_I16_32_64NTesterCase26(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneous_I16_32_64NTester(decoder) {}
+  VQMOVUN_111100111d11ss10dddd0010ppm0mmmm_case_0TesterCase26(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_I16_32_64NTesterCase26
+bool VQMOVUN_111100111d11ss10dddd0010ppm0mmmm_case_0TesterCase26
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1276,35 +1249,34 @@ bool Vector2RegisterMiscellaneous_I16_32_64NTesterCase26
           0x00000240) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneous_I16_32_64NTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
 // A(17:16)=10 & B(10:6)=01100
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VSHLL_A2_111100111d11ss10dddd001100m0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_I8_16_32L,
+//       baseline: VSHLL_A2_111100111d11ss10dddd001100m0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12)],
-//       generated_baseline: VSHLL_A2_111100111d11ss10dddd001100m0mmmm_case_0,
 //       pattern: 111100111d11ss10dddd001100m0mmmm,
 //       rule: VSHLL_A2,
 //       safety: [size(19:18)=11 ||
 //            Vd(0)=1 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_I8_16_32LTesterCase27
-    : public Vector2RegisterMiscellaneousTester {
+class VSHLL_A2_111100111d11ss10dddd001100m0mmmm_case_0TesterCase27
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_I8_16_32LTesterCase27(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VSHLL_A2_111100111d11ss10dddd001100m0mmmm_case_0TesterCase27(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_I8_16_32LTesterCase27
+bool VSHLL_A2_111100111d11ss10dddd001100m0mmmm_case_0TesterCase27
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1318,7 +1290,7 @@ bool Vector2RegisterMiscellaneous_I8_16_32LTesterCase27
           0x00000300) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -1326,11 +1298,10 @@ bool Vector2RegisterMiscellaneous_I8_16_32LTesterCase27
 //    = {Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_CVT_H2S,
+//       baseline: CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), op(8), Vm(3:0)],
-//       generated_baseline: CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_0,
 //       half_to_single: op(8)=1,
 //       op: op(8),
 //       pattern: 111100111d11ss10dddd011p00m0mmmm,
@@ -1342,17 +1313,17 @@ bool Vector2RegisterMiscellaneous_I8_16_32LTesterCase27
 //            Vm(0)=1 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_CVT_H2STesterCase28
-    : public Vector2RegisterMiscellaneous_CVT_H2STester {
+class CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_0TesterCase28
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_CVT_H2STesterCase28(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneous_CVT_H2STester(decoder) {}
+  CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_0TesterCase28(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_CVT_H2STesterCase28
+bool CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_0TesterCase28
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1366,7 +1337,7 @@ bool Vector2RegisterMiscellaneous_CVT_H2STesterCase28
           0x00000600) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneous_CVT_H2STester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -1377,12 +1348,11 @@ bool Vector2RegisterMiscellaneous_CVT_H2STesterCase28
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VSWP_111100111d11ss10dddd00000qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8S,
+//       baseline: VSWP_111100111d11ss10dddd00000qm0mmmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {},
 //       fields: [D(22), size(19:18), Vd(15:12), Q(6), M(5), Vm(3:0)],
-//       generated_baseline: VSWP_111100111d11ss10dddd00000qm0mmmm_case_0,
 //       m: M:Vm,
 //       pattern: 111100111d11ss10dddd00000qm0mmmm,
 //       rule: VSWP,
@@ -1394,17 +1364,17 @@ bool Vector2RegisterMiscellaneous_CVT_H2STesterCase28
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8STesterCase29
-    : public Vector2RegisterMiscellaneousTester {
+class VSWP_111100111d11ss10dddd00000qm0mmmm_case_0TesterCase29
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_V8STesterCase29(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VSWP_111100111d11ss10dddd00000qm0mmmm_case_0TesterCase29(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_V8STesterCase29
+bool VSWP_111100111d11ss10dddd00000qm0mmmm_case_0TesterCase29
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1418,7 +1388,7 @@ bool Vector2RegisterMiscellaneous_V8STesterCase29
           0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -1429,12 +1399,11 @@ bool Vector2RegisterMiscellaneous_V8STesterCase29
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VTRN_111100111d11ss10dddd00001qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32T,
+//       baseline: VTRN_111100111d11ss10dddd00001qm0mmmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {},
 //       fields: [D(22), size(19:18), Vd(15:12), Q(6), M(5), Vm(3:0)],
-//       generated_baseline: VTRN_111100111d11ss10dddd00001qm0mmmm_case_0,
 //       m: M:Vm,
 //       pattern: 111100111d11ss10dddd00001qm0mmmm,
 //       rule: VTRN,
@@ -1446,17 +1415,17 @@ bool Vector2RegisterMiscellaneous_V8STesterCase29
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32TTesterCase30
-    : public Vector2RegisterMiscellaneousTester {
+class VTRN_111100111d11ss10dddd00001qm0mmmm_case_0TesterCase30
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32TTesterCase30(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VTRN_111100111d11ss10dddd00001qm0mmmm_case_0TesterCase30(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_V8_16_32TTesterCase30
+bool VTRN_111100111d11ss10dddd00001qm0mmmm_case_0TesterCase30
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1470,7 +1439,7 @@ bool Vector2RegisterMiscellaneous_V8_16_32TTesterCase30
           0x00000080) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -1481,12 +1450,11 @@ bool Vector2RegisterMiscellaneous_V8_16_32TTesterCase30
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VUZP_111100111d11ss10dddd00010qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32I,
+//       baseline: VUZP_111100111d11ss10dddd00010qm0mmmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {},
 //       fields: [D(22), size(19:18), Vd(15:12), Q(6), M(5), Vm(3:0)],
-//       generated_baseline: VUZP_111100111d11ss10dddd00010qm0mmmm_case_0,
 //       m: M:Vm,
 //       pattern: 111100111d11ss10dddd00010qm0mmmm,
 //       rule: VUZP,
@@ -1500,17 +1468,17 @@ bool Vector2RegisterMiscellaneous_V8_16_32TTesterCase30
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32ITesterCase31
-    : public Vector2RegisterMiscellaneousTester {
+class VUZP_111100111d11ss10dddd00010qm0mmmm_case_0TesterCase31
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32ITesterCase31(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VUZP_111100111d11ss10dddd00010qm0mmmm_case_0TesterCase31(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_V8_16_32ITesterCase31
+bool VUZP_111100111d11ss10dddd00010qm0mmmm_case_0TesterCase31
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1524,7 +1492,7 @@ bool Vector2RegisterMiscellaneous_V8_16_32ITesterCase31
           0x00000100) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -1535,12 +1503,11 @@ bool Vector2RegisterMiscellaneous_V8_16_32ITesterCase31
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VUZP_111100111d11ss10dddd00010qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32I,
+//       baseline: VZIP_111100111d11ss10dddd00011qm0mmmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {},
 //       fields: [D(22), size(19:18), Vd(15:12), Q(6), M(5), Vm(3:0)],
-//       generated_baseline: VZIP_111100111d11ss10dddd00011qm0mmmm_case_0,
 //       m: M:Vm,
 //       pattern: 111100111d11ss10dddd00011qm0mmmm,
 //       rule: VZIP,
@@ -1554,17 +1521,17 @@ bool Vector2RegisterMiscellaneous_V8_16_32ITesterCase31
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32ITesterCase32
-    : public Vector2RegisterMiscellaneousTester {
+class VZIP_111100111d11ss10dddd00011qm0mmmm_case_0TesterCase32
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32ITesterCase32(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VZIP_111100111d11ss10dddd00011qm0mmmm_case_0TesterCase32(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_V8_16_32ITesterCase32
+bool VZIP_111100111d11ss10dddd00011qm0mmmm_case_0TesterCase32
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1578,18 +1545,17 @@ bool Vector2RegisterMiscellaneous_V8_16_32ITesterCase32
           0x00000180) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
 // A(17:16)=10 & B(10:6)=0101x
 //    = {Vm: Vm(3:0),
 //       actual: Actual_VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_I16_32_64N,
+//       baseline: VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), op(7:6), Vm(3:0)],
-//       generated_baseline: VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_0,
 //       op: op(7:6),
 //       pattern: 111100111d11ss10dddd0010ppm0mmmm,
 //       rule: VQMOVN,
@@ -1598,17 +1564,17 @@ bool Vector2RegisterMiscellaneous_V8_16_32ITesterCase32
 //            Vm(0)=1 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_I16_32_64NTesterCase33
-    : public Vector2RegisterMiscellaneous_I16_32_64NTester {
+class VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_0TesterCase33
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_I16_32_64NTesterCase33(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneous_I16_32_64NTester(decoder) {}
+  VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_0TesterCase33(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_I16_32_64NTesterCase33
+bool VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_0TesterCase33
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1622,7 +1588,7 @@ bool Vector2RegisterMiscellaneous_I16_32_64NTesterCase33
           0x00000280) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneous_I16_32_64NTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -1631,11 +1597,10 @@ bool Vector2RegisterMiscellaneous_I16_32_64NTesterCase33
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
-//       baseline: Vector2RegisterMiscellaneous_F32,
+//       baseline: VRECPE_111100111d11ss11dddd010f0qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VRECPE_111100111d11ss11dddd010f0qm0mmmm_case_0,
 //       pattern: 111100111d11ss11dddd010f0qm0mmmm,
 //       rule: VRECPE,
 //       safety: [Q(6)=1 &&
@@ -1644,17 +1609,17 @@ bool Vector2RegisterMiscellaneous_I16_32_64NTesterCase33
 //         size(19:18)=~10 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_F32TesterCase34
-    : public Vector2RegisterMiscellaneousTester {
+class VRECPE_111100111d11ss11dddd010f0qm0mmmm_case_0TesterCase34
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_F32TesterCase34(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VRECPE_111100111d11ss11dddd010f0qm0mmmm_case_0TesterCase34(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_F32TesterCase34
+bool VRECPE_111100111d11ss11dddd010f0qm0mmmm_case_0TesterCase34
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1668,7 +1633,7 @@ bool Vector2RegisterMiscellaneous_F32TesterCase34
           0x00000400) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -1677,11 +1642,10 @@ bool Vector2RegisterMiscellaneous_F32TesterCase34
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
-//       baseline: Vector2RegisterMiscellaneous_F32,
+//       baseline: VRSQRTE_111100111d11ss11dddd010f1qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VRSQRTE_111100111d11ss11dddd010f1qm0mmmm_case_0,
 //       pattern: 111100111d11ss11dddd010f1qm0mmmm,
 //       rule: VRSQRTE,
 //       safety: [Q(6)=1 &&
@@ -1690,17 +1654,17 @@ bool Vector2RegisterMiscellaneous_F32TesterCase34
 //         size(19:18)=~10 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_F32TesterCase35
-    : public Vector2RegisterMiscellaneousTester {
+class VRSQRTE_111100111d11ss11dddd010f1qm0mmmm_case_0TesterCase35
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_F32TesterCase35(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VRSQRTE_111100111d11ss11dddd010f1qm0mmmm_case_0TesterCase35(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_F32TesterCase35
+bool VRSQRTE_111100111d11ss11dddd010f1qm0mmmm_case_0TesterCase35
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1714,7 +1678,7 @@ bool Vector2RegisterMiscellaneous_F32TesterCase35
           0x00000480) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -1723,11 +1687,10 @@ bool Vector2RegisterMiscellaneous_F32TesterCase35
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
-//       baseline: Vector2RegisterMiscellaneous_CVT_F2I,
+//       baseline: VCVT_111100111d11ss11dddd011ppqm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCVT_111100111d11ss11dddd011ppqm0mmmm_case_0,
 //       pattern: 111100111d11ss11dddd011ppqm0mmmm,
 //       rule: VCVT,
 //       safety: [Q(6)=1 &&
@@ -1736,17 +1699,17 @@ bool Vector2RegisterMiscellaneous_F32TesterCase35
 //         size(19:18)=~10 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_CVT_F2ITesterCase36
-    : public Vector2RegisterMiscellaneousTester {
+class VCVT_111100111d11ss11dddd011ppqm0mmmm_case_0TesterCase36
+    : public Arm32DecoderTester {
  public:
-  Vector2RegisterMiscellaneous_CVT_F2ITesterCase36(const NamedClassDecoder& decoder)
-    : Vector2RegisterMiscellaneousTester(decoder) {}
+  VCVT_111100111d11ss11dddd011ppqm0mmmm_case_0TesterCase36(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneous_CVT_F2ITesterCase36
+bool VCVT_111100111d11ss11dddd011ppqm0mmmm_case_0TesterCase36
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1760,7 +1723,7 @@ bool Vector2RegisterMiscellaneous_CVT_F2ITesterCase36
           0x00000600) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector2RegisterMiscellaneousTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -1774,11 +1737,10 @@ bool Vector2RegisterMiscellaneous_CVT_F2ITesterCase36
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VREV16_111100111d11ss00dddd000ppqm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_RG,
+//       baseline: VREV64_111100111d11ss00dddd000ppqm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), op(8:7), Q(6), Vm(3:0)],
-//       generated_baseline: VREV64_111100111d11ss00dddd000ppqm0mmmm_case_0,
 //       op: op(8:7),
 //       pattern: 111100111d11ss00dddd000ppqm0mmmm,
 //       rule: VREV64,
@@ -1789,12 +1751,12 @@ bool Vector2RegisterMiscellaneous_CVT_F2ITesterCase36
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_RGTester_Case0
-    : public Vector2RegisterMiscellaneous_RGTesterCase0 {
+class VREV64_111100111d11ss00dddd000ppqm0mmmm_case_0Tester_Case0
+    : public VREV64_111100111d11ss00dddd000ppqm0mmmm_case_0TesterCase0 {
  public:
-  Vector2RegisterMiscellaneous_RGTester_Case0()
-    : Vector2RegisterMiscellaneous_RGTesterCase0(
-      state_.Vector2RegisterMiscellaneous_RG_VREV64_instance_)
+  VREV64_111100111d11ss00dddd000ppqm0mmmm_case_0Tester_Case0()
+    : VREV64_111100111d11ss00dddd000ppqm0mmmm_case_0TesterCase0(
+      state_.VREV64_111100111d11ss00dddd000ppqm0mmmm_case_0_VREV64_instance_)
   {}
 };
 
@@ -1803,11 +1765,10 @@ class Vector2RegisterMiscellaneous_RGTester_Case0
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VREV16_111100111d11ss00dddd000ppqm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_RG,
+//       baseline: VREV32_111100111d11ss00dddd000ppqm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), op(8:7), Q(6), Vm(3:0)],
-//       generated_baseline: VREV32_111100111d11ss00dddd000ppqm0mmmm_case_0,
 //       op: op(8:7),
 //       pattern: 111100111d11ss00dddd000ppqm0mmmm,
 //       rule: VREV32,
@@ -1818,12 +1779,12 @@ class Vector2RegisterMiscellaneous_RGTester_Case0
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_RGTester_Case1
-    : public Vector2RegisterMiscellaneous_RGTesterCase1 {
+class VREV32_111100111d11ss00dddd000ppqm0mmmm_case_0Tester_Case1
+    : public VREV32_111100111d11ss00dddd000ppqm0mmmm_case_0TesterCase1 {
  public:
-  Vector2RegisterMiscellaneous_RGTester_Case1()
-    : Vector2RegisterMiscellaneous_RGTesterCase1(
-      state_.Vector2RegisterMiscellaneous_RG_VREV32_instance_)
+  VREV32_111100111d11ss00dddd000ppqm0mmmm_case_0Tester_Case1()
+    : VREV32_111100111d11ss00dddd000ppqm0mmmm_case_0TesterCase1(
+      state_.VREV32_111100111d11ss00dddd000ppqm0mmmm_case_0_VREV32_instance_)
   {}
 };
 
@@ -1832,11 +1793,10 @@ class Vector2RegisterMiscellaneous_RGTester_Case1
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VREV16_111100111d11ss00dddd000ppqm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_RG,
+//       baseline: VREV16_111100111d11ss00dddd000ppqm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), op(8:7), Q(6), Vm(3:0)],
-//       generated_baseline: VREV16_111100111d11ss00dddd000ppqm0mmmm_case_0,
 //       op: op(8:7),
 //       pattern: 111100111d11ss00dddd000ppqm0mmmm,
 //       rule: VREV16,
@@ -1847,12 +1807,12 @@ class Vector2RegisterMiscellaneous_RGTester_Case1
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_RGTester_Case2
-    : public Vector2RegisterMiscellaneous_RGTesterCase2 {
+class VREV16_111100111d11ss00dddd000ppqm0mmmm_case_0Tester_Case2
+    : public VREV16_111100111d11ss00dddd000ppqm0mmmm_case_0TesterCase2 {
  public:
-  Vector2RegisterMiscellaneous_RGTester_Case2()
-    : Vector2RegisterMiscellaneous_RGTesterCase2(
-      state_.Vector2RegisterMiscellaneous_RG_VREV16_instance_)
+  VREV16_111100111d11ss00dddd000ppqm0mmmm_case_0Tester_Case2()
+    : VREV16_111100111d11ss00dddd000ppqm0mmmm_case_0TesterCase2(
+      state_.VREV16_111100111d11ss00dddd000ppqm0mmmm_case_0_VREV16_instance_)
   {}
 };
 
@@ -1861,11 +1821,10 @@ class Vector2RegisterMiscellaneous_RGTester_Case2
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VCLS_111100111d11ss00dddd01000qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCLS_111100111d11ss00dddd01000qm0mmmm_case_0,
 //       pattern: 111100111d11ss00dddd01000qm0mmmm,
 //       rule: VCLS,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -1874,12 +1833,12 @@ class Vector2RegisterMiscellaneous_RGTester_Case2
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32Tester_Case3
-    : public Vector2RegisterMiscellaneous_V8_16_32TesterCase3 {
+class VCLS_111100111d11ss00dddd01000qm0mmmm_case_0Tester_Case3
+    : public VCLS_111100111d11ss00dddd01000qm0mmmm_case_0TesterCase3 {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32Tester_Case3()
-    : Vector2RegisterMiscellaneous_V8_16_32TesterCase3(
-      state_.Vector2RegisterMiscellaneous_V8_16_32_VCLS_instance_)
+  VCLS_111100111d11ss00dddd01000qm0mmmm_case_0Tester_Case3()
+    : VCLS_111100111d11ss00dddd01000qm0mmmm_case_0TesterCase3(
+      state_.VCLS_111100111d11ss00dddd01000qm0mmmm_case_0_VCLS_instance_)
   {}
 };
 
@@ -1888,11 +1847,10 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case3
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VCLZ_111100111d11ss00dddd01001qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCLZ_111100111d11ss00dddd01001qm0mmmm_case_0,
 //       pattern: 111100111d11ss00dddd01001qm0mmmm,
 //       rule: VCLZ,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -1901,12 +1859,12 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case3
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32Tester_Case4
-    : public Vector2RegisterMiscellaneous_V8_16_32TesterCase4 {
+class VCLZ_111100111d11ss00dddd01001qm0mmmm_case_0Tester_Case4
+    : public VCLZ_111100111d11ss00dddd01001qm0mmmm_case_0TesterCase4 {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32Tester_Case4()
-    : Vector2RegisterMiscellaneous_V8_16_32TesterCase4(
-      state_.Vector2RegisterMiscellaneous_V8_16_32_VCLZ_instance_)
+  VCLZ_111100111d11ss00dddd01001qm0mmmm_case_0Tester_Case4()
+    : VCLZ_111100111d11ss00dddd01001qm0mmmm_case_0TesterCase4(
+      state_.VCLZ_111100111d11ss00dddd01001qm0mmmm_case_0_VCLZ_instance_)
   {}
 };
 
@@ -1915,11 +1873,10 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case4
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VCNT_111100111d11ss00dddd01010qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8,
+//       baseline: VCNT_111100111d11ss00dddd01010qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCNT_111100111d11ss00dddd01010qm0mmmm_case_0,
 //       pattern: 111100111d11ss00dddd01010qm0mmmm,
 //       rule: VCNT,
 //       safety: [size(19:18)=~00 => UNDEFINED,
@@ -1928,12 +1885,12 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case4
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8Tester_Case5
-    : public Vector2RegisterMiscellaneous_V8TesterCase5 {
+class VCNT_111100111d11ss00dddd01010qm0mmmm_case_0Tester_Case5
+    : public VCNT_111100111d11ss00dddd01010qm0mmmm_case_0TesterCase5 {
  public:
-  Vector2RegisterMiscellaneous_V8Tester_Case5()
-    : Vector2RegisterMiscellaneous_V8TesterCase5(
-      state_.Vector2RegisterMiscellaneous_V8_VCNT_instance_)
+  VCNT_111100111d11ss00dddd01010qm0mmmm_case_0Tester_Case5()
+    : VCNT_111100111d11ss00dddd01010qm0mmmm_case_0TesterCase5(
+      state_.VCNT_111100111d11ss00dddd01010qm0mmmm_case_0_VCNT_instance_)
   {}
 };
 
@@ -1942,11 +1899,10 @@ class Vector2RegisterMiscellaneous_V8Tester_Case5
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VCNT_111100111d11ss00dddd01010qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8,
+//       baseline: VMVN_register_111100111d11ss00dddd01011qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VMVN_register_111100111d11ss00dddd01011qm0mmmm_case_0,
 //       pattern: 111100111d11ss00dddd01011qm0mmmm,
 //       rule: VMVN_register,
 //       safety: [size(19:18)=~00 => UNDEFINED,
@@ -1955,12 +1911,12 @@ class Vector2RegisterMiscellaneous_V8Tester_Case5
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8Tester_Case6
-    : public Vector2RegisterMiscellaneous_V8TesterCase6 {
+class VMVN_register_111100111d11ss00dddd01011qm0mmmm_case_0Tester_Case6
+    : public VMVN_register_111100111d11ss00dddd01011qm0mmmm_case_0TesterCase6 {
  public:
-  Vector2RegisterMiscellaneous_V8Tester_Case6()
-    : Vector2RegisterMiscellaneous_V8TesterCase6(
-      state_.Vector2RegisterMiscellaneous_V8_VMVN_register_instance_)
+  VMVN_register_111100111d11ss00dddd01011qm0mmmm_case_0Tester_Case6()
+    : VMVN_register_111100111d11ss00dddd01011qm0mmmm_case_0TesterCase6(
+      state_.VMVN_register_111100111d11ss00dddd01011qm0mmmm_case_0_VMVN_register_instance_)
   {}
 };
 
@@ -1969,11 +1925,10 @@ class Vector2RegisterMiscellaneous_V8Tester_Case6
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VQABS_111100111d11ss00dddd01110qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VQABS_111100111d11ss00dddd01110qm0mmmm_case_0,
 //       pattern: 111100111d11ss00dddd01110qm0mmmm,
 //       rule: VQABS,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -1982,12 +1937,12 @@ class Vector2RegisterMiscellaneous_V8Tester_Case6
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32Tester_Case7
-    : public Vector2RegisterMiscellaneous_V8_16_32TesterCase7 {
+class VQABS_111100111d11ss00dddd01110qm0mmmm_case_0Tester_Case7
+    : public VQABS_111100111d11ss00dddd01110qm0mmmm_case_0TesterCase7 {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32Tester_Case7()
-    : Vector2RegisterMiscellaneous_V8_16_32TesterCase7(
-      state_.Vector2RegisterMiscellaneous_V8_16_32_VQABS_instance_)
+  VQABS_111100111d11ss00dddd01110qm0mmmm_case_0Tester_Case7()
+    : VQABS_111100111d11ss00dddd01110qm0mmmm_case_0TesterCase7(
+      state_.VQABS_111100111d11ss00dddd01110qm0mmmm_case_0_VQABS_instance_)
   {}
 };
 
@@ -1996,11 +1951,10 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case7
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VQNEG_111100111d11ss00dddd01111qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VQNEG_111100111d11ss00dddd01111qm0mmmm_case_0,
 //       pattern: 111100111d11ss00dddd01111qm0mmmm,
 //       rule: VQNEG,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -2009,12 +1963,12 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case7
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32Tester_Case8
-    : public Vector2RegisterMiscellaneous_V8_16_32TesterCase8 {
+class VQNEG_111100111d11ss00dddd01111qm0mmmm_case_0Tester_Case8
+    : public VQNEG_111100111d11ss00dddd01111qm0mmmm_case_0TesterCase8 {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32Tester_Case8()
-    : Vector2RegisterMiscellaneous_V8_16_32TesterCase8(
-      state_.Vector2RegisterMiscellaneous_V8_16_32_VQNEG_instance_)
+  VQNEG_111100111d11ss00dddd01111qm0mmmm_case_0Tester_Case8()
+    : VQNEG_111100111d11ss00dddd01111qm0mmmm_case_0TesterCase8(
+      state_.VQNEG_111100111d11ss00dddd01111qm0mmmm_case_0_VQNEG_instance_)
   {}
 };
 
@@ -2023,11 +1977,10 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case8
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0,
 //       pattern: 111100111d11ss00dddd0010p1m0mmmm,
 //       rule: VPADDL,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -2036,12 +1989,12 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case8
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32Tester_Case9
-    : public Vector2RegisterMiscellaneous_V8_16_32TesterCase9 {
+class VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0Tester_Case9
+    : public VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0TesterCase9 {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32Tester_Case9()
-    : Vector2RegisterMiscellaneous_V8_16_32TesterCase9(
-      state_.Vector2RegisterMiscellaneous_V8_16_32_VPADDL_instance_)
+  VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0Tester_Case9()
+    : VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0TesterCase9(
+      state_.VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0_VPADDL_instance_)
   {}
 };
 
@@ -2050,11 +2003,10 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case9
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0,
 //       pattern: 111100111d11ss00dddd0110p1m0mmmm,
 //       rule: VPADAL,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -2063,12 +2015,12 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case9
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32Tester_Case10
-    : public Vector2RegisterMiscellaneous_V8_16_32TesterCase10 {
+class VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0Tester_Case10
+    : public VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0TesterCase10 {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32Tester_Case10()
-    : Vector2RegisterMiscellaneous_V8_16_32TesterCase10(
-      state_.Vector2RegisterMiscellaneous_V8_16_32_VPADAL_instance_)
+  VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0Tester_Case10()
+    : VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0TesterCase10(
+      state_.VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0_VPADAL_instance_)
   {}
 };
 
@@ -2077,11 +2029,10 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case10
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0,
 //       pattern: 111100111d11ss01dddd0f000qm0mmmm,
 //       rule: VCGT_immediate_0,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -2090,12 +2041,12 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case10
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32Tester_Case11
-    : public Vector2RegisterMiscellaneous_V8_16_32TesterCase11 {
+class VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0Tester_Case11
+    : public VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0TesterCase11 {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32Tester_Case11()
-    : Vector2RegisterMiscellaneous_V8_16_32TesterCase11(
-      state_.Vector2RegisterMiscellaneous_V8_16_32_VCGT_immediate_0_instance_)
+  VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0Tester_Case11()
+    : VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0TesterCase11(
+      state_.VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0_VCGT_immediate_0_instance_)
   {}
 };
 
@@ -2104,11 +2055,10 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case11
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0,
 //       pattern: 111100111d11ss01dddd0f001qm0mmmm,
 //       rule: VCGE_immediate_0,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -2117,12 +2067,12 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case11
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32Tester_Case12
-    : public Vector2RegisterMiscellaneous_V8_16_32TesterCase12 {
+class VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0Tester_Case12
+    : public VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0TesterCase12 {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32Tester_Case12()
-    : Vector2RegisterMiscellaneous_V8_16_32TesterCase12(
-      state_.Vector2RegisterMiscellaneous_V8_16_32_VCGE_immediate_0_instance_)
+  VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0Tester_Case12()
+    : VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0TesterCase12(
+      state_.VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0_VCGE_immediate_0_instance_)
   {}
 };
 
@@ -2131,11 +2081,10 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case12
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0,
 //       pattern: 111100111d11ss01dddd0f010qm0mmmm,
 //       rule: VCEQ_immediate_0,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -2144,12 +2093,12 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case12
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32Tester_Case13
-    : public Vector2RegisterMiscellaneous_V8_16_32TesterCase13 {
+class VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0Tester_Case13
+    : public VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0TesterCase13 {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32Tester_Case13()
-    : Vector2RegisterMiscellaneous_V8_16_32TesterCase13(
-      state_.Vector2RegisterMiscellaneous_V8_16_32_VCEQ_immediate_0_instance_)
+  VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0Tester_Case13()
+    : VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0TesterCase13(
+      state_.VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0_VCEQ_immediate_0_instance_)
   {}
 };
 
@@ -2158,11 +2107,10 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case13
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0,
 //       pattern: 111100111d11ss01dddd0f011qm0mmmm,
 //       rule: VCLE_immediate_0,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -2171,12 +2119,12 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case13
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32Tester_Case14
-    : public Vector2RegisterMiscellaneous_V8_16_32TesterCase14 {
+class VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0Tester_Case14
+    : public VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0TesterCase14 {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32Tester_Case14()
-    : Vector2RegisterMiscellaneous_V8_16_32TesterCase14(
-      state_.Vector2RegisterMiscellaneous_V8_16_32_VCLE_immediate_0_instance_)
+  VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0Tester_Case14()
+    : VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0TesterCase14(
+      state_.VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0_VCLE_immediate_0_instance_)
   {}
 };
 
@@ -2185,11 +2133,10 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case14
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0,
 //       pattern: 111100111d11ss01dddd0f100qm0mmmm,
 //       rule: VCLT_immediate_0,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -2198,12 +2145,12 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case14
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32Tester_Case15
-    : public Vector2RegisterMiscellaneous_V8_16_32TesterCase15 {
+class VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0Tester_Case15
+    : public VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0TesterCase15 {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32Tester_Case15()
-    : Vector2RegisterMiscellaneous_V8_16_32TesterCase15(
-      state_.Vector2RegisterMiscellaneous_V8_16_32_VCLT_immediate_0_instance_)
+  VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0Tester_Case15()
+    : VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0TesterCase15(
+      state_.VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0_VCLT_immediate_0_instance_)
   {}
 };
 
@@ -2212,11 +2159,10 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case15
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0,
 //       pattern: 111100111d11ss01dddd0f110qm0mmmm,
 //       rule: VABS_A1,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -2225,12 +2171,12 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case15
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32Tester_Case16
-    : public Vector2RegisterMiscellaneous_V8_16_32TesterCase16 {
+class VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0Tester_Case16
+    : public VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0TesterCase16 {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32Tester_Case16()
-    : Vector2RegisterMiscellaneous_V8_16_32TesterCase16(
-      state_.Vector2RegisterMiscellaneous_V8_16_32_VABS_A1_instance_)
+  VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0Tester_Case16()
+    : VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0TesterCase16(
+      state_.VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0_VABS_A1_instance_)
   {}
 };
 
@@ -2239,11 +2185,10 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case16
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VNEG_111100111d11ss01dddd0f111qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VNEG_111100111d11ss01dddd0f111qm0mmmm_case_0,
 //       pattern: 111100111d11ss01dddd0f111qm0mmmm,
 //       rule: VNEG,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -2252,12 +2197,12 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case16
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32Tester_Case17
-    : public Vector2RegisterMiscellaneous_V8_16_32TesterCase17 {
+class VNEG_111100111d11ss01dddd0f111qm0mmmm_case_0Tester_Case17
+    : public VNEG_111100111d11ss01dddd0f111qm0mmmm_case_0TesterCase17 {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32Tester_Case17()
-    : Vector2RegisterMiscellaneous_V8_16_32TesterCase17(
-      state_.Vector2RegisterMiscellaneous_V8_16_32_VNEG_instance_)
+  VNEG_111100111d11ss01dddd0f111qm0mmmm_case_0Tester_Case17()
+    : VNEG_111100111d11ss01dddd0f111qm0mmmm_case_0TesterCase17(
+      state_.VNEG_111100111d11ss01dddd0f111qm0mmmm_case_0_VNEG_instance_)
   {}
 };
 
@@ -2266,11 +2211,10 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case17
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
-//       baseline: Vector2RegisterMiscellaneous_F32,
+//       baseline: VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_1,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_1,
 //       pattern: 111100111d11ss01dddd0f000qm0mmmm,
 //       rule: VCGT_immediate_0,
 //       safety: [Q(6)=1 &&
@@ -2279,12 +2223,12 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case17
 //         size(19:18)=~10 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_F32Tester_Case18
-    : public Vector2RegisterMiscellaneous_F32TesterCase18 {
+class VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_1Tester_Case18
+    : public VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_1TesterCase18 {
  public:
-  Vector2RegisterMiscellaneous_F32Tester_Case18()
-    : Vector2RegisterMiscellaneous_F32TesterCase18(
-      state_.Vector2RegisterMiscellaneous_F32_VCGT_immediate_0_instance_)
+  VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_1Tester_Case18()
+    : VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_1TesterCase18(
+      state_.VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_1_VCGT_immediate_0_instance_)
   {}
 };
 
@@ -2293,11 +2237,10 @@ class Vector2RegisterMiscellaneous_F32Tester_Case18
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
-//       baseline: Vector2RegisterMiscellaneous_F32,
+//       baseline: VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_1,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_1,
 //       pattern: 111100111d11ss01dddd0f001qm0mmmm,
 //       rule: VCGE_immediate_0,
 //       safety: [Q(6)=1 &&
@@ -2306,12 +2249,12 @@ class Vector2RegisterMiscellaneous_F32Tester_Case18
 //         size(19:18)=~10 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_F32Tester_Case19
-    : public Vector2RegisterMiscellaneous_F32TesterCase19 {
+class VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_1Tester_Case19
+    : public VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_1TesterCase19 {
  public:
-  Vector2RegisterMiscellaneous_F32Tester_Case19()
-    : Vector2RegisterMiscellaneous_F32TesterCase19(
-      state_.Vector2RegisterMiscellaneous_F32_VCGE_immediate_0_instance_)
+  VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_1Tester_Case19()
+    : VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_1TesterCase19(
+      state_.VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_1_VCGE_immediate_0_instance_)
   {}
 };
 
@@ -2320,11 +2263,10 @@ class Vector2RegisterMiscellaneous_F32Tester_Case19
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
-//       baseline: Vector2RegisterMiscellaneous_F32,
+//       baseline: VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_1,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_1,
 //       pattern: 111100111d11ss01dddd0f010qm0mmmm,
 //       rule: VCEQ_immediate_0,
 //       safety: [Q(6)=1 &&
@@ -2333,12 +2275,12 @@ class Vector2RegisterMiscellaneous_F32Tester_Case19
 //         size(19:18)=~10 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_F32Tester_Case20
-    : public Vector2RegisterMiscellaneous_F32TesterCase20 {
+class VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_1Tester_Case20
+    : public VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_1TesterCase20 {
  public:
-  Vector2RegisterMiscellaneous_F32Tester_Case20()
-    : Vector2RegisterMiscellaneous_F32TesterCase20(
-      state_.Vector2RegisterMiscellaneous_F32_VCEQ_immediate_0_instance_)
+  VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_1Tester_Case20()
+    : VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_1TesterCase20(
+      state_.VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_1_VCEQ_immediate_0_instance_)
   {}
 };
 
@@ -2347,11 +2289,10 @@ class Vector2RegisterMiscellaneous_F32Tester_Case20
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
-//       baseline: Vector2RegisterMiscellaneous_F32,
+//       baseline: VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_1,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_1,
 //       pattern: 111100111d11ss01dddd0f011qm0mmmm,
 //       rule: VCLE_immediate_0,
 //       safety: [Q(6)=1 &&
@@ -2360,12 +2301,12 @@ class Vector2RegisterMiscellaneous_F32Tester_Case20
 //         size(19:18)=~10 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_F32Tester_Case21
-    : public Vector2RegisterMiscellaneous_F32TesterCase21 {
+class VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_1Tester_Case21
+    : public VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_1TesterCase21 {
  public:
-  Vector2RegisterMiscellaneous_F32Tester_Case21()
-    : Vector2RegisterMiscellaneous_F32TesterCase21(
-      state_.Vector2RegisterMiscellaneous_F32_VCLE_immediate_0_instance_)
+  VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_1Tester_Case21()
+    : VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_1TesterCase21(
+      state_.VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_1_VCLE_immediate_0_instance_)
   {}
 };
 
@@ -2374,11 +2315,10 @@ class Vector2RegisterMiscellaneous_F32Tester_Case21
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
-//       baseline: Vector2RegisterMiscellaneous_F32,
+//       baseline: VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_1,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_1,
 //       pattern: 111100111d11ss01dddd0f100qm0mmmm,
 //       rule: VCLT_immediate_0,
 //       safety: [Q(6)=1 &&
@@ -2387,12 +2327,12 @@ class Vector2RegisterMiscellaneous_F32Tester_Case21
 //         size(19:18)=~10 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_F32Tester_Case22
-    : public Vector2RegisterMiscellaneous_F32TesterCase22 {
+class VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_1Tester_Case22
+    : public VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_1TesterCase22 {
  public:
-  Vector2RegisterMiscellaneous_F32Tester_Case22()
-    : Vector2RegisterMiscellaneous_F32TesterCase22(
-      state_.Vector2RegisterMiscellaneous_F32_VCLT_immediate_0_instance_)
+  VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_1Tester_Case22()
+    : VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_1TesterCase22(
+      state_.VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_1_VCLT_immediate_0_instance_)
   {}
 };
 
@@ -2401,11 +2341,10 @@ class Vector2RegisterMiscellaneous_F32Tester_Case22
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
-//       baseline: Vector2RegisterMiscellaneous_F32,
+//       baseline: VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
 //       pattern: 111100111d11ss01dddd0f110qm0mmmm,
 //       rule: VABS_A1,
 //       safety: [Q(6)=1 &&
@@ -2414,12 +2353,12 @@ class Vector2RegisterMiscellaneous_F32Tester_Case22
 //         size(19:18)=~10 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_F32Tester_Case23
-    : public Vector2RegisterMiscellaneous_F32TesterCase23 {
+class VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1Tester_Case23
+    : public VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1TesterCase23 {
  public:
-  Vector2RegisterMiscellaneous_F32Tester_Case23()
-    : Vector2RegisterMiscellaneous_F32TesterCase23(
-      state_.Vector2RegisterMiscellaneous_F32_VABS_A1_instance_)
+  VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1Tester_Case23()
+    : VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1TesterCase23(
+      state_.VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1_VABS_A1_instance_)
   {}
 };
 
@@ -2428,11 +2367,10 @@ class Vector2RegisterMiscellaneous_F32Tester_Case23
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
-//       baseline: Vector2RegisterMiscellaneous_F32,
+//       baseline: VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1,
 //       pattern: 111100111d11ss01dddd0f111qm0mmmm,
 //       rule: VNEG,
 //       safety: [Q(6)=1 &&
@@ -2441,45 +2379,43 @@ class Vector2RegisterMiscellaneous_F32Tester_Case23
 //         size(19:18)=~10 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_F32Tester_Case24
-    : public Vector2RegisterMiscellaneous_F32TesterCase24 {
+class VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1Tester_Case24
+    : public VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1TesterCase24 {
  public:
-  Vector2RegisterMiscellaneous_F32Tester_Case24()
-    : Vector2RegisterMiscellaneous_F32TesterCase24(
-      state_.Vector2RegisterMiscellaneous_F32_VNEG_instance_)
+  VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1Tester_Case24()
+    : VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1TesterCase24(
+      state_.VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1_VNEG_instance_)
   {}
 };
 
 // A(17:16)=10 & B(10:6)=01000
 //    = {Vm: Vm(3:0),
 //       actual: Actual_VMOVN_111100111d11ss10dddd001000m0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V16_32_64N,
+//       baseline: VMOVN_111100111d11ss10dddd001000m0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vm(3:0)],
-//       generated_baseline: VMOVN_111100111d11ss10dddd001000m0mmmm_case_0,
 //       pattern: 111100111d11ss10dddd001000m0mmmm,
 //       rule: VMOVN,
 //       safety: [size(19:18)=11 => UNDEFINED, Vm(0)=1 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V16_32_64NTester_Case25
-    : public Vector2RegisterMiscellaneous_V16_32_64NTesterCase25 {
+class VMOVN_111100111d11ss10dddd001000m0mmmm_case_0Tester_Case25
+    : public VMOVN_111100111d11ss10dddd001000m0mmmm_case_0TesterCase25 {
  public:
-  Vector2RegisterMiscellaneous_V16_32_64NTester_Case25()
-    : Vector2RegisterMiscellaneous_V16_32_64NTesterCase25(
-      state_.Vector2RegisterMiscellaneous_V16_32_64N_VMOVN_instance_)
+  VMOVN_111100111d11ss10dddd001000m0mmmm_case_0Tester_Case25()
+    : VMOVN_111100111d11ss10dddd001000m0mmmm_case_0TesterCase25(
+      state_.VMOVN_111100111d11ss10dddd001000m0mmmm_case_0_VMOVN_instance_)
   {}
 };
 
 // A(17:16)=10 & B(10:6)=01001
 //    = {Vm: Vm(3:0),
 //       actual: Actual_VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_I16_32_64N,
+//       baseline: VQMOVUN_111100111d11ss10dddd0010ppm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), op(7:6), Vm(3:0)],
-//       generated_baseline: VQMOVUN_111100111d11ss10dddd0010ppm0mmmm_case_0,
 //       op: op(7:6),
 //       pattern: 111100111d11ss10dddd0010ppm0mmmm,
 //       rule: VQMOVUN,
@@ -2488,35 +2424,34 @@ class Vector2RegisterMiscellaneous_V16_32_64NTester_Case25
 //            Vm(0)=1 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_I16_32_64NTester_Case26
-    : public Vector2RegisterMiscellaneous_I16_32_64NTesterCase26 {
+class VQMOVUN_111100111d11ss10dddd0010ppm0mmmm_case_0Tester_Case26
+    : public VQMOVUN_111100111d11ss10dddd0010ppm0mmmm_case_0TesterCase26 {
  public:
-  Vector2RegisterMiscellaneous_I16_32_64NTester_Case26()
-    : Vector2RegisterMiscellaneous_I16_32_64NTesterCase26(
-      state_.Vector2RegisterMiscellaneous_I16_32_64N_VQMOVUN_instance_)
+  VQMOVUN_111100111d11ss10dddd0010ppm0mmmm_case_0Tester_Case26()
+    : VQMOVUN_111100111d11ss10dddd0010ppm0mmmm_case_0TesterCase26(
+      state_.VQMOVUN_111100111d11ss10dddd0010ppm0mmmm_case_0_VQMOVUN_instance_)
   {}
 };
 
 // A(17:16)=10 & B(10:6)=01100
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VSHLL_A2_111100111d11ss10dddd001100m0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_I8_16_32L,
+//       baseline: VSHLL_A2_111100111d11ss10dddd001100m0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12)],
-//       generated_baseline: VSHLL_A2_111100111d11ss10dddd001100m0mmmm_case_0,
 //       pattern: 111100111d11ss10dddd001100m0mmmm,
 //       rule: VSHLL_A2,
 //       safety: [size(19:18)=11 ||
 //            Vd(0)=1 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_I8_16_32LTester_Case27
-    : public Vector2RegisterMiscellaneous_I8_16_32LTesterCase27 {
+class VSHLL_A2_111100111d11ss10dddd001100m0mmmm_case_0Tester_Case27
+    : public VSHLL_A2_111100111d11ss10dddd001100m0mmmm_case_0TesterCase27 {
  public:
-  Vector2RegisterMiscellaneous_I8_16_32LTester_Case27()
-    : Vector2RegisterMiscellaneous_I8_16_32LTesterCase27(
-      state_.Vector2RegisterMiscellaneous_I8_16_32L_VSHLL_A2_instance_)
+  VSHLL_A2_111100111d11ss10dddd001100m0mmmm_case_0Tester_Case27()
+    : VSHLL_A2_111100111d11ss10dddd001100m0mmmm_case_0TesterCase27(
+      state_.VSHLL_A2_111100111d11ss10dddd001100m0mmmm_case_0_VSHLL_A2_instance_)
   {}
 };
 
@@ -2524,11 +2459,10 @@ class Vector2RegisterMiscellaneous_I8_16_32LTester_Case27
 //    = {Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_CVT_H2S,
+//       baseline: CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), op(8), Vm(3:0)],
-//       generated_baseline: CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_0,
 //       half_to_single: op(8)=1,
 //       op: op(8),
 //       pattern: 111100111d11ss10dddd011p00m0mmmm,
@@ -2540,12 +2474,12 @@ class Vector2RegisterMiscellaneous_I8_16_32LTester_Case27
 //            Vm(0)=1 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_CVT_H2STester_Case28
-    : public Vector2RegisterMiscellaneous_CVT_H2STesterCase28 {
+class CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_0Tester_Case28
+    : public CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_0TesterCase28 {
  public:
-  Vector2RegisterMiscellaneous_CVT_H2STester_Case28()
-    : Vector2RegisterMiscellaneous_CVT_H2STesterCase28(
-      state_.Vector2RegisterMiscellaneous_CVT_H2S_CVT_between_half_precision_and_single_precision_instance_)
+  CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_0Tester_Case28()
+    : CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_0TesterCase28(
+      state_.CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_0_CVT_between_half_precision_and_single_precision_instance_)
   {}
 };
 
@@ -2556,12 +2490,11 @@ class Vector2RegisterMiscellaneous_CVT_H2STester_Case28
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VSWP_111100111d11ss10dddd00000qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8S,
+//       baseline: VSWP_111100111d11ss10dddd00000qm0mmmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {},
 //       fields: [D(22), size(19:18), Vd(15:12), Q(6), M(5), Vm(3:0)],
-//       generated_baseline: VSWP_111100111d11ss10dddd00000qm0mmmm_case_0,
 //       m: M:Vm,
 //       pattern: 111100111d11ss10dddd00000qm0mmmm,
 //       rule: VSWP,
@@ -2573,12 +2506,12 @@ class Vector2RegisterMiscellaneous_CVT_H2STester_Case28
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8STester_Case29
-    : public Vector2RegisterMiscellaneous_V8STesterCase29 {
+class VSWP_111100111d11ss10dddd00000qm0mmmm_case_0Tester_Case29
+    : public VSWP_111100111d11ss10dddd00000qm0mmmm_case_0TesterCase29 {
  public:
-  Vector2RegisterMiscellaneous_V8STester_Case29()
-    : Vector2RegisterMiscellaneous_V8STesterCase29(
-      state_.Vector2RegisterMiscellaneous_V8S_VSWP_instance_)
+  VSWP_111100111d11ss10dddd00000qm0mmmm_case_0Tester_Case29()
+    : VSWP_111100111d11ss10dddd00000qm0mmmm_case_0TesterCase29(
+      state_.VSWP_111100111d11ss10dddd00000qm0mmmm_case_0_VSWP_instance_)
   {}
 };
 
@@ -2589,12 +2522,11 @@ class Vector2RegisterMiscellaneous_V8STester_Case29
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VTRN_111100111d11ss10dddd00001qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32T,
+//       baseline: VTRN_111100111d11ss10dddd00001qm0mmmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {},
 //       fields: [D(22), size(19:18), Vd(15:12), Q(6), M(5), Vm(3:0)],
-//       generated_baseline: VTRN_111100111d11ss10dddd00001qm0mmmm_case_0,
 //       m: M:Vm,
 //       pattern: 111100111d11ss10dddd00001qm0mmmm,
 //       rule: VTRN,
@@ -2606,12 +2538,12 @@ class Vector2RegisterMiscellaneous_V8STester_Case29
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32TTester_Case30
-    : public Vector2RegisterMiscellaneous_V8_16_32TTesterCase30 {
+class VTRN_111100111d11ss10dddd00001qm0mmmm_case_0Tester_Case30
+    : public VTRN_111100111d11ss10dddd00001qm0mmmm_case_0TesterCase30 {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32TTester_Case30()
-    : Vector2RegisterMiscellaneous_V8_16_32TTesterCase30(
-      state_.Vector2RegisterMiscellaneous_V8_16_32T_VTRN_instance_)
+  VTRN_111100111d11ss10dddd00001qm0mmmm_case_0Tester_Case30()
+    : VTRN_111100111d11ss10dddd00001qm0mmmm_case_0TesterCase30(
+      state_.VTRN_111100111d11ss10dddd00001qm0mmmm_case_0_VTRN_instance_)
   {}
 };
 
@@ -2622,12 +2554,11 @@ class Vector2RegisterMiscellaneous_V8_16_32TTester_Case30
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VUZP_111100111d11ss10dddd00010qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32I,
+//       baseline: VUZP_111100111d11ss10dddd00010qm0mmmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {},
 //       fields: [D(22), size(19:18), Vd(15:12), Q(6), M(5), Vm(3:0)],
-//       generated_baseline: VUZP_111100111d11ss10dddd00010qm0mmmm_case_0,
 //       m: M:Vm,
 //       pattern: 111100111d11ss10dddd00010qm0mmmm,
 //       rule: VUZP,
@@ -2641,12 +2572,12 @@ class Vector2RegisterMiscellaneous_V8_16_32TTester_Case30
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32ITester_Case31
-    : public Vector2RegisterMiscellaneous_V8_16_32ITesterCase31 {
+class VUZP_111100111d11ss10dddd00010qm0mmmm_case_0Tester_Case31
+    : public VUZP_111100111d11ss10dddd00010qm0mmmm_case_0TesterCase31 {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32ITester_Case31()
-    : Vector2RegisterMiscellaneous_V8_16_32ITesterCase31(
-      state_.Vector2RegisterMiscellaneous_V8_16_32I_VUZP_instance_)
+  VUZP_111100111d11ss10dddd00010qm0mmmm_case_0Tester_Case31()
+    : VUZP_111100111d11ss10dddd00010qm0mmmm_case_0TesterCase31(
+      state_.VUZP_111100111d11ss10dddd00010qm0mmmm_case_0_VUZP_instance_)
   {}
 };
 
@@ -2657,12 +2588,11 @@ class Vector2RegisterMiscellaneous_V8_16_32ITester_Case31
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VUZP_111100111d11ss10dddd00010qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32I,
+//       baseline: VZIP_111100111d11ss10dddd00011qm0mmmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {},
 //       fields: [D(22), size(19:18), Vd(15:12), Q(6), M(5), Vm(3:0)],
-//       generated_baseline: VZIP_111100111d11ss10dddd00011qm0mmmm_case_0,
 //       m: M:Vm,
 //       pattern: 111100111d11ss10dddd00011qm0mmmm,
 //       rule: VZIP,
@@ -2676,23 +2606,22 @@ class Vector2RegisterMiscellaneous_V8_16_32ITester_Case31
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_V8_16_32ITester_Case32
-    : public Vector2RegisterMiscellaneous_V8_16_32ITesterCase32 {
+class VZIP_111100111d11ss10dddd00011qm0mmmm_case_0Tester_Case32
+    : public VZIP_111100111d11ss10dddd00011qm0mmmm_case_0TesterCase32 {
  public:
-  Vector2RegisterMiscellaneous_V8_16_32ITester_Case32()
-    : Vector2RegisterMiscellaneous_V8_16_32ITesterCase32(
-      state_.Vector2RegisterMiscellaneous_V8_16_32I_VZIP_instance_)
+  VZIP_111100111d11ss10dddd00011qm0mmmm_case_0Tester_Case32()
+    : VZIP_111100111d11ss10dddd00011qm0mmmm_case_0TesterCase32(
+      state_.VZIP_111100111d11ss10dddd00011qm0mmmm_case_0_VZIP_instance_)
   {}
 };
 
 // A(17:16)=10 & B(10:6)=0101x
 //    = {Vm: Vm(3:0),
 //       actual: Actual_VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_I16_32_64N,
+//       baseline: VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), op(7:6), Vm(3:0)],
-//       generated_baseline: VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_0,
 //       op: op(7:6),
 //       pattern: 111100111d11ss10dddd0010ppm0mmmm,
 //       rule: VQMOVN,
@@ -2701,12 +2630,12 @@ class Vector2RegisterMiscellaneous_V8_16_32ITester_Case32
 //            Vm(0)=1 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_I16_32_64NTester_Case33
-    : public Vector2RegisterMiscellaneous_I16_32_64NTesterCase33 {
+class VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_0Tester_Case33
+    : public VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_0TesterCase33 {
  public:
-  Vector2RegisterMiscellaneous_I16_32_64NTester_Case33()
-    : Vector2RegisterMiscellaneous_I16_32_64NTesterCase33(
-      state_.Vector2RegisterMiscellaneous_I16_32_64N_VQMOVN_instance_)
+  VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_0Tester_Case33()
+    : VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_0TesterCase33(
+      state_.VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_0_VQMOVN_instance_)
   {}
 };
 
@@ -2715,11 +2644,10 @@ class Vector2RegisterMiscellaneous_I16_32_64NTester_Case33
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
-//       baseline: Vector2RegisterMiscellaneous_F32,
+//       baseline: VRECPE_111100111d11ss11dddd010f0qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VRECPE_111100111d11ss11dddd010f0qm0mmmm_case_0,
 //       pattern: 111100111d11ss11dddd010f0qm0mmmm,
 //       rule: VRECPE,
 //       safety: [Q(6)=1 &&
@@ -2728,12 +2656,12 @@ class Vector2RegisterMiscellaneous_I16_32_64NTester_Case33
 //         size(19:18)=~10 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_F32Tester_Case34
-    : public Vector2RegisterMiscellaneous_F32TesterCase34 {
+class VRECPE_111100111d11ss11dddd010f0qm0mmmm_case_0Tester_Case34
+    : public VRECPE_111100111d11ss11dddd010f0qm0mmmm_case_0TesterCase34 {
  public:
-  Vector2RegisterMiscellaneous_F32Tester_Case34()
-    : Vector2RegisterMiscellaneous_F32TesterCase34(
-      state_.Vector2RegisterMiscellaneous_F32_VRECPE_instance_)
+  VRECPE_111100111d11ss11dddd010f0qm0mmmm_case_0Tester_Case34()
+    : VRECPE_111100111d11ss11dddd010f0qm0mmmm_case_0TesterCase34(
+      state_.VRECPE_111100111d11ss11dddd010f0qm0mmmm_case_0_VRECPE_instance_)
   {}
 };
 
@@ -2742,11 +2670,10 @@ class Vector2RegisterMiscellaneous_F32Tester_Case34
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
-//       baseline: Vector2RegisterMiscellaneous_F32,
+//       baseline: VRSQRTE_111100111d11ss11dddd010f1qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VRSQRTE_111100111d11ss11dddd010f1qm0mmmm_case_0,
 //       pattern: 111100111d11ss11dddd010f1qm0mmmm,
 //       rule: VRSQRTE,
 //       safety: [Q(6)=1 &&
@@ -2755,12 +2682,12 @@ class Vector2RegisterMiscellaneous_F32Tester_Case34
 //         size(19:18)=~10 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_F32Tester_Case35
-    : public Vector2RegisterMiscellaneous_F32TesterCase35 {
+class VRSQRTE_111100111d11ss11dddd010f1qm0mmmm_case_0Tester_Case35
+    : public VRSQRTE_111100111d11ss11dddd010f1qm0mmmm_case_0TesterCase35 {
  public:
-  Vector2RegisterMiscellaneous_F32Tester_Case35()
-    : Vector2RegisterMiscellaneous_F32TesterCase35(
-      state_.Vector2RegisterMiscellaneous_F32_VRSQRTE_instance_)
+  VRSQRTE_111100111d11ss11dddd010f1qm0mmmm_case_0Tester_Case35()
+    : VRSQRTE_111100111d11ss11dddd010f1qm0mmmm_case_0TesterCase35(
+      state_.VRSQRTE_111100111d11ss11dddd010f1qm0mmmm_case_0_VRSQRTE_instance_)
   {}
 };
 
@@ -2769,11 +2696,10 @@ class Vector2RegisterMiscellaneous_F32Tester_Case35
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
-//       baseline: Vector2RegisterMiscellaneous_CVT_F2I,
+//       baseline: VCVT_111100111d11ss11dddd011ppqm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCVT_111100111d11ss11dddd011ppqm0mmmm_case_0,
 //       pattern: 111100111d11ss11dddd011ppqm0mmmm,
 //       rule: VCVT,
 //       safety: [Q(6)=1 &&
@@ -2782,12 +2708,12 @@ class Vector2RegisterMiscellaneous_F32Tester_Case35
 //         size(19:18)=~10 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneous_CVT_F2ITester_Case36
-    : public Vector2RegisterMiscellaneous_CVT_F2ITesterCase36 {
+class VCVT_111100111d11ss11dddd011ppqm0mmmm_case_0Tester_Case36
+    : public VCVT_111100111d11ss11dddd011ppqm0mmmm_case_0TesterCase36 {
  public:
-  Vector2RegisterMiscellaneous_CVT_F2ITester_Case36()
-    : Vector2RegisterMiscellaneous_CVT_F2ITesterCase36(
-      state_.Vector2RegisterMiscellaneous_CVT_F2I_VCVT_instance_)
+  VCVT_111100111d11ss11dddd011ppqm0mmmm_case_0Tester_Case36()
+    : VCVT_111100111d11ss11dddd011ppqm0mmmm_case_0TesterCase36(
+      state_.VCVT_111100111d11ss11dddd011ppqm0mmmm_case_0_VCVT_instance_)
   {}
 };
 
@@ -2805,11 +2731,10 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VREV16_111100111d11ss00dddd000ppqm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_RG,
+//       baseline: VREV64_111100111d11ss00dddd000ppqm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), op(8:7), Q(6), Vm(3:0)],
-//       generated_baseline: VREV64_111100111d11ss00dddd000ppqm0mmmm_case_0,
 //       op: op(8:7),
 //       pattern: 111100111d11ss00dddd000ppqm0mmmm,
 //       rule: VREV64,
@@ -2821,8 +2746,8 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_RGTester_Case0_TestCase0) {
-  Vector2RegisterMiscellaneous_RGTester_Case0 baseline_tester;
+       VREV64_111100111d11ss00dddd000ppqm0mmmm_case_0Tester_Case0_TestCase0) {
+  VREV64_111100111d11ss00dddd000ppqm0mmmm_case_0Tester_Case0 baseline_tester;
   NamedActual_VREV16_111100111d11ss00dddd000ppqm0mmmm_case_1_VREV64 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss00dddd000ppqm0mmmm");
@@ -2833,11 +2758,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VREV16_111100111d11ss00dddd000ppqm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_RG,
+//       baseline: VREV32_111100111d11ss00dddd000ppqm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), op(8:7), Q(6), Vm(3:0)],
-//       generated_baseline: VREV32_111100111d11ss00dddd000ppqm0mmmm_case_0,
 //       op: op(8:7),
 //       pattern: 111100111d11ss00dddd000ppqm0mmmm,
 //       rule: VREV32,
@@ -2849,8 +2773,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_RGTester_Case1_TestCase1) {
-  Vector2RegisterMiscellaneous_RGTester_Case1 baseline_tester;
+       VREV32_111100111d11ss00dddd000ppqm0mmmm_case_0Tester_Case1_TestCase1) {
+  VREV32_111100111d11ss00dddd000ppqm0mmmm_case_0Tester_Case1 baseline_tester;
   NamedActual_VREV16_111100111d11ss00dddd000ppqm0mmmm_case_1_VREV32 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss00dddd000ppqm0mmmm");
@@ -2861,11 +2785,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VREV16_111100111d11ss00dddd000ppqm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_RG,
+//       baseline: VREV16_111100111d11ss00dddd000ppqm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), op(8:7), Q(6), Vm(3:0)],
-//       generated_baseline: VREV16_111100111d11ss00dddd000ppqm0mmmm_case_0,
 //       op: op(8:7),
 //       pattern: 111100111d11ss00dddd000ppqm0mmmm,
 //       rule: VREV16,
@@ -2877,8 +2800,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_RGTester_Case2_TestCase2) {
-  Vector2RegisterMiscellaneous_RGTester_Case2 baseline_tester;
+       VREV16_111100111d11ss00dddd000ppqm0mmmm_case_0Tester_Case2_TestCase2) {
+  VREV16_111100111d11ss00dddd000ppqm0mmmm_case_0Tester_Case2 baseline_tester;
   NamedActual_VREV16_111100111d11ss00dddd000ppqm0mmmm_case_1_VREV16 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss00dddd000ppqm0mmmm");
@@ -2889,11 +2812,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VCLS_111100111d11ss00dddd01000qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCLS_111100111d11ss00dddd01000qm0mmmm_case_0,
 //       pattern: 111100111d11ss00dddd01000qm0mmmm,
 //       rule: VCLS,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -2903,8 +2825,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_V8_16_32Tester_Case3_TestCase3) {
-  Vector2RegisterMiscellaneous_V8_16_32Tester_Case3 baseline_tester;
+       VCLS_111100111d11ss00dddd01000qm0mmmm_case_0Tester_Case3_TestCase3) {
+  VCLS_111100111d11ss00dddd01000qm0mmmm_case_0Tester_Case3 baseline_tester;
   NamedActual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1_VCLS actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss00dddd01000qm0mmmm");
@@ -2915,11 +2837,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VCLZ_111100111d11ss00dddd01001qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCLZ_111100111d11ss00dddd01001qm0mmmm_case_0,
 //       pattern: 111100111d11ss00dddd01001qm0mmmm,
 //       rule: VCLZ,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -2929,8 +2850,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_V8_16_32Tester_Case4_TestCase4) {
-  Vector2RegisterMiscellaneous_V8_16_32Tester_Case4 baseline_tester;
+       VCLZ_111100111d11ss00dddd01001qm0mmmm_case_0Tester_Case4_TestCase4) {
+  VCLZ_111100111d11ss00dddd01001qm0mmmm_case_0Tester_Case4 baseline_tester;
   NamedActual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1_VCLZ actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss00dddd01001qm0mmmm");
@@ -2941,11 +2862,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VCNT_111100111d11ss00dddd01010qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8,
+//       baseline: VCNT_111100111d11ss00dddd01010qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCNT_111100111d11ss00dddd01010qm0mmmm_case_0,
 //       pattern: 111100111d11ss00dddd01010qm0mmmm,
 //       rule: VCNT,
 //       safety: [size(19:18)=~00 => UNDEFINED,
@@ -2955,8 +2875,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_V8Tester_Case5_TestCase5) {
-  Vector2RegisterMiscellaneous_V8Tester_Case5 baseline_tester;
+       VCNT_111100111d11ss00dddd01010qm0mmmm_case_0Tester_Case5_TestCase5) {
+  VCNT_111100111d11ss00dddd01010qm0mmmm_case_0Tester_Case5 baseline_tester;
   NamedActual_VCNT_111100111d11ss00dddd01010qm0mmmm_case_1_VCNT actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss00dddd01010qm0mmmm");
@@ -2967,11 +2887,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VCNT_111100111d11ss00dddd01010qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8,
+//       baseline: VMVN_register_111100111d11ss00dddd01011qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VMVN_register_111100111d11ss00dddd01011qm0mmmm_case_0,
 //       pattern: 111100111d11ss00dddd01011qm0mmmm,
 //       rule: VMVN_register,
 //       safety: [size(19:18)=~00 => UNDEFINED,
@@ -2981,8 +2900,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_V8Tester_Case6_TestCase6) {
-  Vector2RegisterMiscellaneous_V8Tester_Case6 baseline_tester;
+       VMVN_register_111100111d11ss00dddd01011qm0mmmm_case_0Tester_Case6_TestCase6) {
+  VMVN_register_111100111d11ss00dddd01011qm0mmmm_case_0Tester_Case6 baseline_tester;
   NamedActual_VCNT_111100111d11ss00dddd01010qm0mmmm_case_1_VMVN_register actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss00dddd01011qm0mmmm");
@@ -2993,11 +2912,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VQABS_111100111d11ss00dddd01110qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VQABS_111100111d11ss00dddd01110qm0mmmm_case_0,
 //       pattern: 111100111d11ss00dddd01110qm0mmmm,
 //       rule: VQABS,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -3007,8 +2925,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_V8_16_32Tester_Case7_TestCase7) {
-  Vector2RegisterMiscellaneous_V8_16_32Tester_Case7 baseline_tester;
+       VQABS_111100111d11ss00dddd01110qm0mmmm_case_0Tester_Case7_TestCase7) {
+  VQABS_111100111d11ss00dddd01110qm0mmmm_case_0Tester_Case7 baseline_tester;
   NamedActual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1_VQABS actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss00dddd01110qm0mmmm");
@@ -3019,11 +2937,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VQNEG_111100111d11ss00dddd01111qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VQNEG_111100111d11ss00dddd01111qm0mmmm_case_0,
 //       pattern: 111100111d11ss00dddd01111qm0mmmm,
 //       rule: VQNEG,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -3033,8 +2950,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_V8_16_32Tester_Case8_TestCase8) {
-  Vector2RegisterMiscellaneous_V8_16_32Tester_Case8 baseline_tester;
+       VQNEG_111100111d11ss00dddd01111qm0mmmm_case_0Tester_Case8_TestCase8) {
+  VQNEG_111100111d11ss00dddd01111qm0mmmm_case_0Tester_Case8 baseline_tester;
   NamedActual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1_VQNEG actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss00dddd01111qm0mmmm");
@@ -3045,11 +2962,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0,
 //       pattern: 111100111d11ss00dddd0010p1m0mmmm,
 //       rule: VPADDL,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -3059,8 +2975,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_V8_16_32Tester_Case9_TestCase9) {
-  Vector2RegisterMiscellaneous_V8_16_32Tester_Case9 baseline_tester;
+       VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0Tester_Case9_TestCase9) {
+  VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0Tester_Case9 baseline_tester;
   NamedActual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1_VPADDL actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss00dddd0010p1m0mmmm");
@@ -3071,11 +2987,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0,
 //       pattern: 111100111d11ss00dddd0110p1m0mmmm,
 //       rule: VPADAL,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -3085,8 +3000,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_V8_16_32Tester_Case10_TestCase10) {
-  Vector2RegisterMiscellaneous_V8_16_32Tester_Case10 baseline_tester;
+       VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0Tester_Case10_TestCase10) {
+  VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0Tester_Case10 baseline_tester;
   NamedActual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1_VPADAL actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss00dddd0110p1m0mmmm");
@@ -3097,11 +3012,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0,
 //       pattern: 111100111d11ss01dddd0f000qm0mmmm,
 //       rule: VCGT_immediate_0,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -3111,8 +3025,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_V8_16_32Tester_Case11_TestCase11) {
-  Vector2RegisterMiscellaneous_V8_16_32Tester_Case11 baseline_tester;
+       VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0Tester_Case11_TestCase11) {
+  VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0Tester_Case11 baseline_tester;
   NamedActual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1_VCGT_immediate_0 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss01dddd0f000qm0mmmm");
@@ -3123,11 +3037,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0,
 //       pattern: 111100111d11ss01dddd0f001qm0mmmm,
 //       rule: VCGE_immediate_0,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -3137,8 +3050,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_V8_16_32Tester_Case12_TestCase12) {
-  Vector2RegisterMiscellaneous_V8_16_32Tester_Case12 baseline_tester;
+       VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0Tester_Case12_TestCase12) {
+  VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0Tester_Case12 baseline_tester;
   NamedActual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1_VCGE_immediate_0 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss01dddd0f001qm0mmmm");
@@ -3149,11 +3062,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0,
 //       pattern: 111100111d11ss01dddd0f010qm0mmmm,
 //       rule: VCEQ_immediate_0,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -3163,8 +3075,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_V8_16_32Tester_Case13_TestCase13) {
-  Vector2RegisterMiscellaneous_V8_16_32Tester_Case13 baseline_tester;
+       VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0Tester_Case13_TestCase13) {
+  VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0Tester_Case13 baseline_tester;
   NamedActual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1_VCEQ_immediate_0 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss01dddd0f010qm0mmmm");
@@ -3175,11 +3087,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0,
 //       pattern: 111100111d11ss01dddd0f011qm0mmmm,
 //       rule: VCLE_immediate_0,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -3189,8 +3100,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_V8_16_32Tester_Case14_TestCase14) {
-  Vector2RegisterMiscellaneous_V8_16_32Tester_Case14 baseline_tester;
+       VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0Tester_Case14_TestCase14) {
+  VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0Tester_Case14 baseline_tester;
   NamedActual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1_VCLE_immediate_0 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss01dddd0f011qm0mmmm");
@@ -3201,11 +3112,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0,
 //       pattern: 111100111d11ss01dddd0f100qm0mmmm,
 //       rule: VCLT_immediate_0,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -3215,8 +3125,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_V8_16_32Tester_Case15_TestCase15) {
-  Vector2RegisterMiscellaneous_V8_16_32Tester_Case15 baseline_tester;
+       VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0Tester_Case15_TestCase15) {
+  VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0Tester_Case15 baseline_tester;
   NamedActual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1_VCLT_immediate_0 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss01dddd0f100qm0mmmm");
@@ -3227,11 +3137,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0,
 //       pattern: 111100111d11ss01dddd0f110qm0mmmm,
 //       rule: VABS_A1,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -3241,8 +3150,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_V8_16_32Tester_Case16_TestCase16) {
-  Vector2RegisterMiscellaneous_V8_16_32Tester_Case16 baseline_tester;
+       VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0Tester_Case16_TestCase16) {
+  VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0Tester_Case16 baseline_tester;
   NamedActual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1_VABS_A1 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss01dddd0f110qm0mmmm");
@@ -3253,11 +3162,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32,
+//       baseline: VNEG_111100111d11ss01dddd0f111qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VNEG_111100111d11ss01dddd0f111qm0mmmm_case_0,
 //       pattern: 111100111d11ss01dddd0f111qm0mmmm,
 //       rule: VNEG,
 //       safety: [size(19:18)=11 => UNDEFINED,
@@ -3267,8 +3175,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_V8_16_32Tester_Case17_TestCase17) {
-  Vector2RegisterMiscellaneous_V8_16_32Tester_Case17 baseline_tester;
+       VNEG_111100111d11ss01dddd0f111qm0mmmm_case_0Tester_Case17_TestCase17) {
+  VNEG_111100111d11ss01dddd0f111qm0mmmm_case_0Tester_Case17 baseline_tester;
   NamedActual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1_VNEG actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss01dddd0f111qm0mmmm");
@@ -3279,11 +3187,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
-//       baseline: Vector2RegisterMiscellaneous_F32,
+//       baseline: VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_1,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_1,
 //       pattern: 111100111d11ss01dddd0f000qm0mmmm,
 //       rule: VCGT_immediate_0,
 //       safety: [Q(6)=1 &&
@@ -3293,8 +3200,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_F32Tester_Case18_TestCase18) {
-  Vector2RegisterMiscellaneous_F32Tester_Case18 baseline_tester;
+       VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_1Tester_Case18_TestCase18) {
+  VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_1Tester_Case18 baseline_tester;
   NamedActual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2_VCGT_immediate_0 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss01dddd0f000qm0mmmm");
@@ -3305,11 +3212,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
-//       baseline: Vector2RegisterMiscellaneous_F32,
+//       baseline: VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_1,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_1,
 //       pattern: 111100111d11ss01dddd0f001qm0mmmm,
 //       rule: VCGE_immediate_0,
 //       safety: [Q(6)=1 &&
@@ -3319,8 +3225,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_F32Tester_Case19_TestCase19) {
-  Vector2RegisterMiscellaneous_F32Tester_Case19 baseline_tester;
+       VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_1Tester_Case19_TestCase19) {
+  VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_1Tester_Case19 baseline_tester;
   NamedActual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2_VCGE_immediate_0 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss01dddd0f001qm0mmmm");
@@ -3331,11 +3237,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
-//       baseline: Vector2RegisterMiscellaneous_F32,
+//       baseline: VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_1,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_1,
 //       pattern: 111100111d11ss01dddd0f010qm0mmmm,
 //       rule: VCEQ_immediate_0,
 //       safety: [Q(6)=1 &&
@@ -3345,8 +3250,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_F32Tester_Case20_TestCase20) {
-  Vector2RegisterMiscellaneous_F32Tester_Case20 baseline_tester;
+       VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_1Tester_Case20_TestCase20) {
+  VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_1Tester_Case20 baseline_tester;
   NamedActual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2_VCEQ_immediate_0 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss01dddd0f010qm0mmmm");
@@ -3357,11 +3262,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
-//       baseline: Vector2RegisterMiscellaneous_F32,
+//       baseline: VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_1,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_1,
 //       pattern: 111100111d11ss01dddd0f011qm0mmmm,
 //       rule: VCLE_immediate_0,
 //       safety: [Q(6)=1 &&
@@ -3371,8 +3275,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_F32Tester_Case21_TestCase21) {
-  Vector2RegisterMiscellaneous_F32Tester_Case21 baseline_tester;
+       VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_1Tester_Case21_TestCase21) {
+  VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_1Tester_Case21 baseline_tester;
   NamedActual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2_VCLE_immediate_0 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss01dddd0f011qm0mmmm");
@@ -3383,11 +3287,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
-//       baseline: Vector2RegisterMiscellaneous_F32,
+//       baseline: VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_1,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_1,
 //       pattern: 111100111d11ss01dddd0f100qm0mmmm,
 //       rule: VCLT_immediate_0,
 //       safety: [Q(6)=1 &&
@@ -3397,8 +3300,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_F32Tester_Case22_TestCase22) {
-  Vector2RegisterMiscellaneous_F32Tester_Case22 baseline_tester;
+       VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_1Tester_Case22_TestCase22) {
+  VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_1Tester_Case22 baseline_tester;
   NamedActual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2_VCLT_immediate_0 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss01dddd0f100qm0mmmm");
@@ -3409,11 +3312,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
-//       baseline: Vector2RegisterMiscellaneous_F32,
+//       baseline: VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
 //       pattern: 111100111d11ss01dddd0f110qm0mmmm,
 //       rule: VABS_A1,
 //       safety: [Q(6)=1 &&
@@ -3423,8 +3325,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_F32Tester_Case23_TestCase23) {
-  Vector2RegisterMiscellaneous_F32Tester_Case23 baseline_tester;
+       VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1Tester_Case23_TestCase23) {
+  VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1Tester_Case23 baseline_tester;
   NamedActual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2_VABS_A1 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss01dddd0f110qm0mmmm");
@@ -3435,11 +3337,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
-//       baseline: Vector2RegisterMiscellaneous_F32,
+//       baseline: VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1,
 //       pattern: 111100111d11ss01dddd0f111qm0mmmm,
 //       rule: VNEG,
 //       safety: [Q(6)=1 &&
@@ -3449,8 +3350,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_F32Tester_Case24_TestCase24) {
-  Vector2RegisterMiscellaneous_F32Tester_Case24 baseline_tester;
+       VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1Tester_Case24_TestCase24) {
+  VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1Tester_Case24 baseline_tester;
   NamedActual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2_VNEG actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss01dddd0f111qm0mmmm");
@@ -3459,19 +3360,18 @@ TEST_F(Arm32DecoderStateTests,
 // A(17:16)=10 & B(10:6)=01000
 //    = {Vm: Vm(3:0),
 //       actual: Actual_VMOVN_111100111d11ss10dddd001000m0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V16_32_64N,
+//       baseline: VMOVN_111100111d11ss10dddd001000m0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vm(3:0)],
-//       generated_baseline: VMOVN_111100111d11ss10dddd001000m0mmmm_case_0,
 //       pattern: 111100111d11ss10dddd001000m0mmmm,
 //       rule: VMOVN,
 //       safety: [size(19:18)=11 => UNDEFINED, Vm(0)=1 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_V16_32_64NTester_Case25_TestCase25) {
-  Vector2RegisterMiscellaneous_V16_32_64NTester_Case25 baseline_tester;
+       VMOVN_111100111d11ss10dddd001000m0mmmm_case_0Tester_Case25_TestCase25) {
+  VMOVN_111100111d11ss10dddd001000m0mmmm_case_0Tester_Case25 baseline_tester;
   NamedActual_VMOVN_111100111d11ss10dddd001000m0mmmm_case_1_VMOVN actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss10dddd001000m0mmmm");
@@ -3480,11 +3380,10 @@ TEST_F(Arm32DecoderStateTests,
 // A(17:16)=10 & B(10:6)=01001
 //    = {Vm: Vm(3:0),
 //       actual: Actual_VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_I16_32_64N,
+//       baseline: VQMOVUN_111100111d11ss10dddd0010ppm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), op(7:6), Vm(3:0)],
-//       generated_baseline: VQMOVUN_111100111d11ss10dddd0010ppm0mmmm_case_0,
 //       op: op(7:6),
 //       pattern: 111100111d11ss10dddd0010ppm0mmmm,
 //       rule: VQMOVUN,
@@ -3494,8 +3393,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_I16_32_64NTester_Case26_TestCase26) {
-  Vector2RegisterMiscellaneous_I16_32_64NTester_Case26 baseline_tester;
+       VQMOVUN_111100111d11ss10dddd0010ppm0mmmm_case_0Tester_Case26_TestCase26) {
+  VQMOVUN_111100111d11ss10dddd0010ppm0mmmm_case_0Tester_Case26 baseline_tester;
   NamedActual_VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_1_VQMOVUN actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss10dddd0010ppm0mmmm");
@@ -3504,11 +3403,10 @@ TEST_F(Arm32DecoderStateTests,
 // A(17:16)=10 & B(10:6)=01100
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VSHLL_A2_111100111d11ss10dddd001100m0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_I8_16_32L,
+//       baseline: VSHLL_A2_111100111d11ss10dddd001100m0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12)],
-//       generated_baseline: VSHLL_A2_111100111d11ss10dddd001100m0mmmm_case_0,
 //       pattern: 111100111d11ss10dddd001100m0mmmm,
 //       rule: VSHLL_A2,
 //       safety: [size(19:18)=11 ||
@@ -3516,8 +3414,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_I8_16_32LTester_Case27_TestCase27) {
-  Vector2RegisterMiscellaneous_I8_16_32LTester_Case27 baseline_tester;
+       VSHLL_A2_111100111d11ss10dddd001100m0mmmm_case_0Tester_Case27_TestCase27) {
+  VSHLL_A2_111100111d11ss10dddd001100m0mmmm_case_0Tester_Case27 baseline_tester;
   NamedActual_VSHLL_A2_111100111d11ss10dddd001100m0mmmm_case_1_VSHLL_A2 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss10dddd001100m0mmmm");
@@ -3527,11 +3425,10 @@ TEST_F(Arm32DecoderStateTests,
 //    = {Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_CVT_H2S,
+//       baseline: CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), op(8), Vm(3:0)],
-//       generated_baseline: CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_0,
 //       half_to_single: op(8)=1,
 //       op: op(8),
 //       pattern: 111100111d11ss10dddd011p00m0mmmm,
@@ -3544,8 +3441,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_CVT_H2STester_Case28_TestCase28) {
-  Vector2RegisterMiscellaneous_CVT_H2STester_Case28 baseline_tester;
+       CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_0Tester_Case28_TestCase28) {
+  CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_0Tester_Case28 baseline_tester;
   NamedActual_CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_1_CVT_between_half_precision_and_single_precision actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss10dddd011p00m0mmmm");
@@ -3558,12 +3455,11 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VSWP_111100111d11ss10dddd00000qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8S,
+//       baseline: VSWP_111100111d11ss10dddd00000qm0mmmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {},
 //       fields: [D(22), size(19:18), Vd(15:12), Q(6), M(5), Vm(3:0)],
-//       generated_baseline: VSWP_111100111d11ss10dddd00000qm0mmmm_case_0,
 //       m: M:Vm,
 //       pattern: 111100111d11ss10dddd00000qm0mmmm,
 //       rule: VSWP,
@@ -3576,8 +3472,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_V8STester_Case29_TestCase29) {
-  Vector2RegisterMiscellaneous_V8STester_Case29 baseline_tester;
+       VSWP_111100111d11ss10dddd00000qm0mmmm_case_0Tester_Case29_TestCase29) {
+  VSWP_111100111d11ss10dddd00000qm0mmmm_case_0Tester_Case29 baseline_tester;
   NamedActual_VSWP_111100111d11ss10dddd00000qm0mmmm_case_1_VSWP actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss10dddd00000qm0mmmm");
@@ -3590,12 +3486,11 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VTRN_111100111d11ss10dddd00001qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32T,
+//       baseline: VTRN_111100111d11ss10dddd00001qm0mmmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {},
 //       fields: [D(22), size(19:18), Vd(15:12), Q(6), M(5), Vm(3:0)],
-//       generated_baseline: VTRN_111100111d11ss10dddd00001qm0mmmm_case_0,
 //       m: M:Vm,
 //       pattern: 111100111d11ss10dddd00001qm0mmmm,
 //       rule: VTRN,
@@ -3608,8 +3503,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_V8_16_32TTester_Case30_TestCase30) {
-  Vector2RegisterMiscellaneous_V8_16_32TTester_Case30 baseline_tester;
+       VTRN_111100111d11ss10dddd00001qm0mmmm_case_0Tester_Case30_TestCase30) {
+  VTRN_111100111d11ss10dddd00001qm0mmmm_case_0Tester_Case30 baseline_tester;
   NamedActual_VTRN_111100111d11ss10dddd00001qm0mmmm_case_1_VTRN actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss10dddd00001qm0mmmm");
@@ -3622,12 +3517,11 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VUZP_111100111d11ss10dddd00010qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32I,
+//       baseline: VUZP_111100111d11ss10dddd00010qm0mmmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {},
 //       fields: [D(22), size(19:18), Vd(15:12), Q(6), M(5), Vm(3:0)],
-//       generated_baseline: VUZP_111100111d11ss10dddd00010qm0mmmm_case_0,
 //       m: M:Vm,
 //       pattern: 111100111d11ss10dddd00010qm0mmmm,
 //       rule: VUZP,
@@ -3642,8 +3536,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_V8_16_32ITester_Case31_TestCase31) {
-  Vector2RegisterMiscellaneous_V8_16_32ITester_Case31 baseline_tester;
+       VUZP_111100111d11ss10dddd00010qm0mmmm_case_0Tester_Case31_TestCase31) {
+  VUZP_111100111d11ss10dddd00010qm0mmmm_case_0Tester_Case31 baseline_tester;
   NamedActual_VUZP_111100111d11ss10dddd00010qm0mmmm_case_1_VUZP actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss10dddd00010qm0mmmm");
@@ -3656,12 +3550,11 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VUZP_111100111d11ss10dddd00010qm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_V8_16_32I,
+//       baseline: VZIP_111100111d11ss10dddd00011qm0mmmm_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {},
 //       fields: [D(22), size(19:18), Vd(15:12), Q(6), M(5), Vm(3:0)],
-//       generated_baseline: VZIP_111100111d11ss10dddd00011qm0mmmm_case_0,
 //       m: M:Vm,
 //       pattern: 111100111d11ss10dddd00011qm0mmmm,
 //       rule: VZIP,
@@ -3676,8 +3569,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_V8_16_32ITester_Case32_TestCase32) {
-  Vector2RegisterMiscellaneous_V8_16_32ITester_Case32 baseline_tester;
+       VZIP_111100111d11ss10dddd00011qm0mmmm_case_0Tester_Case32_TestCase32) {
+  VZIP_111100111d11ss10dddd00011qm0mmmm_case_0Tester_Case32 baseline_tester;
   NamedActual_VUZP_111100111d11ss10dddd00010qm0mmmm_case_1_VZIP actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss10dddd00011qm0mmmm");
@@ -3686,11 +3579,10 @@ TEST_F(Arm32DecoderStateTests,
 // A(17:16)=10 & B(10:6)=0101x
 //    = {Vm: Vm(3:0),
 //       actual: Actual_VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_1,
-//       baseline: Vector2RegisterMiscellaneous_I16_32_64N,
+//       baseline: VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), op(7:6), Vm(3:0)],
-//       generated_baseline: VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_0,
 //       op: op(7:6),
 //       pattern: 111100111d11ss10dddd0010ppm0mmmm,
 //       rule: VQMOVN,
@@ -3700,8 +3592,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_I16_32_64NTester_Case33_TestCase33) {
-  Vector2RegisterMiscellaneous_I16_32_64NTester_Case33 baseline_tester;
+       VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_0Tester_Case33_TestCase33) {
+  VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_0Tester_Case33 baseline_tester;
   NamedActual_VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_1_VQMOVN actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss10dddd0010ppm0mmmm");
@@ -3712,11 +3604,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
-//       baseline: Vector2RegisterMiscellaneous_F32,
+//       baseline: VRECPE_111100111d11ss11dddd010f0qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VRECPE_111100111d11ss11dddd010f0qm0mmmm_case_0,
 //       pattern: 111100111d11ss11dddd010f0qm0mmmm,
 //       rule: VRECPE,
 //       safety: [Q(6)=1 &&
@@ -3726,8 +3617,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_F32Tester_Case34_TestCase34) {
-  Vector2RegisterMiscellaneous_F32Tester_Case34 baseline_tester;
+       VRECPE_111100111d11ss11dddd010f0qm0mmmm_case_0Tester_Case34_TestCase34) {
+  VRECPE_111100111d11ss11dddd010f0qm0mmmm_case_0Tester_Case34 baseline_tester;
   NamedActual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2_VRECPE actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss11dddd010f0qm0mmmm");
@@ -3738,11 +3629,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
-//       baseline: Vector2RegisterMiscellaneous_F32,
+//       baseline: VRSQRTE_111100111d11ss11dddd010f1qm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VRSQRTE_111100111d11ss11dddd010f1qm0mmmm_case_0,
 //       pattern: 111100111d11ss11dddd010f1qm0mmmm,
 //       rule: VRSQRTE,
 //       safety: [Q(6)=1 &&
@@ -3752,8 +3642,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_F32Tester_Case35_TestCase35) {
-  Vector2RegisterMiscellaneous_F32Tester_Case35 baseline_tester;
+       VRSQRTE_111100111d11ss11dddd010f1qm0mmmm_case_0Tester_Case35_TestCase35) {
+  VRSQRTE_111100111d11ss11dddd010f1qm0mmmm_case_0Tester_Case35 baseline_tester;
   NamedActual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2_VRSQRTE actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss11dddd010f1qm0mmmm");
@@ -3764,11 +3654,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
 //       actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
-//       baseline: Vector2RegisterMiscellaneous_CVT_F2I,
+//       baseline: VCVT_111100111d11ss11dddd011ppqm0mmmm_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
-//       generated_baseline: VCVT_111100111d11ss11dddd011ppqm0mmmm_case_0,
 //       pattern: 111100111d11ss11dddd011ppqm0mmmm,
 //       rule: VCVT,
 //       safety: [Q(6)=1 &&
@@ -3778,8 +3667,8 @@ TEST_F(Arm32DecoderStateTests,
 //       size: size(19:18),
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector2RegisterMiscellaneous_CVT_F2ITester_Case36_TestCase36) {
-  Vector2RegisterMiscellaneous_CVT_F2ITester_Case36 baseline_tester;
+       VCVT_111100111d11ss11dddd011ppqm0mmmm_case_0Tester_Case36_TestCase36) {
+  VCVT_111100111d11ss11dddd011ppqm0mmmm_case_0Tester_Case36 baseline_tester;
   NamedActual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2_VCVT actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("111100111d11ss11dddd011ppqm0mmmm");

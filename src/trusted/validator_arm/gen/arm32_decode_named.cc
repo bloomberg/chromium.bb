@@ -3502,63 +3502,63 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_2misc(
           0x00000000 /* A(17:16)=00 */ &&
       (inst.Bits() & 0x00000780)  ==
           0x00000000 /* B(10:6)=0000x */) {
-    return Vector2RegisterMiscellaneous_RG_VREV64_instance_;
+    return VREV64_111100111d11ss00dddd000ppqm0mmmm_case_0_VREV64_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00000000 /* A(17:16)=00 */ &&
       (inst.Bits() & 0x00000780)  ==
           0x00000080 /* B(10:6)=0001x */) {
-    return Vector2RegisterMiscellaneous_RG_VREV32_instance_;
+    return VREV32_111100111d11ss00dddd000ppqm0mmmm_case_0_VREV32_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00000000 /* A(17:16)=00 */ &&
       (inst.Bits() & 0x00000780)  ==
           0x00000100 /* B(10:6)=0010x */) {
-    return Vector2RegisterMiscellaneous_RG_VREV16_instance_;
+    return VREV16_111100111d11ss00dddd000ppqm0mmmm_case_0_VREV16_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00000000 /* A(17:16)=00 */ &&
       (inst.Bits() & 0x00000780)  ==
           0x00000400 /* B(10:6)=1000x */) {
-    return Vector2RegisterMiscellaneous_V8_16_32_VCLS_instance_;
+    return VCLS_111100111d11ss00dddd01000qm0mmmm_case_0_VCLS_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00000000 /* A(17:16)=00 */ &&
       (inst.Bits() & 0x00000780)  ==
           0x00000480 /* B(10:6)=1001x */) {
-    return Vector2RegisterMiscellaneous_V8_16_32_VCLZ_instance_;
+    return VCLZ_111100111d11ss00dddd01001qm0mmmm_case_0_VCLZ_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00000000 /* A(17:16)=00 */ &&
       (inst.Bits() & 0x00000780)  ==
           0x00000500 /* B(10:6)=1010x */) {
-    return Vector2RegisterMiscellaneous_V8_VCNT_instance_;
+    return VCNT_111100111d11ss00dddd01010qm0mmmm_case_0_VCNT_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00000000 /* A(17:16)=00 */ &&
       (inst.Bits() & 0x00000780)  ==
           0x00000580 /* B(10:6)=1011x */) {
-    return Vector2RegisterMiscellaneous_V8_VMVN_register_instance_;
+    return VMVN_register_111100111d11ss00dddd01011qm0mmmm_case_0_VMVN_register_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00000000 /* A(17:16)=00 */ &&
       (inst.Bits() & 0x00000780)  ==
           0x00000700 /* B(10:6)=1110x */) {
-    return Vector2RegisterMiscellaneous_V8_16_32_VQABS_instance_;
+    return VQABS_111100111d11ss00dddd01110qm0mmmm_case_0_VQABS_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00000000 /* A(17:16)=00 */ &&
       (inst.Bits() & 0x00000780)  ==
           0x00000780 /* B(10:6)=1111x */) {
-    return Vector2RegisterMiscellaneous_V8_16_32_VQNEG_instance_;
+    return VQNEG_111100111d11ss00dddd01111qm0mmmm_case_0_VQNEG_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
@@ -3567,7 +3567,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_2misc(
           0x00000200 /* B(10:6)=010xx */ &&
       (inst.Bits() & 0x00000040)  ==
           0x00000040 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxx1xxxxxx */) {
-    return Vector2RegisterMiscellaneous_V8_16_32_VPADDL_instance_;
+    return VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0_VPADDL_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
@@ -3576,189 +3576,189 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_2misc(
           0x00000600 /* B(10:6)=110xx */ &&
       (inst.Bits() & 0x00000040)  ==
           0x00000040 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxx1xxxxxx */) {
-    return Vector2RegisterMiscellaneous_V8_16_32_VPADAL_instance_;
+    return VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0_VPADAL_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00010000 /* A(17:16)=01 */ &&
       (inst.Bits() & 0x00000780)  ==
           0x00000000 /* B(10:6)=0000x */) {
-    return Vector2RegisterMiscellaneous_V8_16_32_VCGT_immediate_0_instance_;
+    return VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0_VCGT_immediate_0_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00010000 /* A(17:16)=01 */ &&
       (inst.Bits() & 0x00000780)  ==
           0x00000080 /* B(10:6)=0001x */) {
-    return Vector2RegisterMiscellaneous_V8_16_32_VCGE_immediate_0_instance_;
+    return VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0_VCGE_immediate_0_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00010000 /* A(17:16)=01 */ &&
       (inst.Bits() & 0x00000780)  ==
           0x00000100 /* B(10:6)=0010x */) {
-    return Vector2RegisterMiscellaneous_V8_16_32_VCEQ_immediate_0_instance_;
+    return VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0_VCEQ_immediate_0_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00010000 /* A(17:16)=01 */ &&
       (inst.Bits() & 0x00000780)  ==
           0x00000180 /* B(10:6)=0011x */) {
-    return Vector2RegisterMiscellaneous_V8_16_32_VCLE_immediate_0_instance_;
+    return VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0_VCLE_immediate_0_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00010000 /* A(17:16)=01 */ &&
       (inst.Bits() & 0x00000780)  ==
           0x00000200 /* B(10:6)=0100x */) {
-    return Vector2RegisterMiscellaneous_V8_16_32_VCLT_immediate_0_instance_;
+    return VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0_VCLT_immediate_0_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00010000 /* A(17:16)=01 */ &&
       (inst.Bits() & 0x00000780)  ==
           0x00000300 /* B(10:6)=0110x */) {
-    return Vector2RegisterMiscellaneous_V8_16_32_VABS_A1_instance_;
+    return VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0_VABS_A1_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00010000 /* A(17:16)=01 */ &&
       (inst.Bits() & 0x00000780)  ==
           0x00000380 /* B(10:6)=0111x */) {
-    return Vector2RegisterMiscellaneous_V8_16_32_VNEG_instance_;
+    return VNEG_111100111d11ss01dddd0f111qm0mmmm_case_0_VNEG_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00010000 /* A(17:16)=01 */ &&
       (inst.Bits() & 0x00000780)  ==
           0x00000400 /* B(10:6)=1000x */) {
-    return Vector2RegisterMiscellaneous_F32_VCGT_immediate_0_instance_;
+    return VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_1_VCGT_immediate_0_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00010000 /* A(17:16)=01 */ &&
       (inst.Bits() & 0x00000780)  ==
           0x00000480 /* B(10:6)=1001x */) {
-    return Vector2RegisterMiscellaneous_F32_VCGE_immediate_0_instance_;
+    return VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_1_VCGE_immediate_0_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00010000 /* A(17:16)=01 */ &&
       (inst.Bits() & 0x00000780)  ==
           0x00000500 /* B(10:6)=1010x */) {
-    return Vector2RegisterMiscellaneous_F32_VCEQ_immediate_0_instance_;
+    return VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_1_VCEQ_immediate_0_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00010000 /* A(17:16)=01 */ &&
       (inst.Bits() & 0x00000780)  ==
           0x00000580 /* B(10:6)=1011x */) {
-    return Vector2RegisterMiscellaneous_F32_VCLE_immediate_0_instance_;
+    return VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_1_VCLE_immediate_0_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00010000 /* A(17:16)=01 */ &&
       (inst.Bits() & 0x00000780)  ==
           0x00000600 /* B(10:6)=1100x */) {
-    return Vector2RegisterMiscellaneous_F32_VCLT_immediate_0_instance_;
+    return VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_1_VCLT_immediate_0_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00010000 /* A(17:16)=01 */ &&
       (inst.Bits() & 0x00000780)  ==
           0x00000700 /* B(10:6)=1110x */) {
-    return Vector2RegisterMiscellaneous_F32_VABS_A1_instance_;
+    return VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1_VABS_A1_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00010000 /* A(17:16)=01 */ &&
       (inst.Bits() & 0x00000780)  ==
           0x00000780 /* B(10:6)=1111x */) {
-    return Vector2RegisterMiscellaneous_F32_VNEG_instance_;
+    return VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1_VNEG_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00020000 /* A(17:16)=10 */ &&
       (inst.Bits() & 0x000007C0)  ==
           0x00000200 /* B(10:6)=01000 */) {
-    return Vector2RegisterMiscellaneous_V16_32_64N_VMOVN_instance_;
+    return VMOVN_111100111d11ss10dddd001000m0mmmm_case_0_VMOVN_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00020000 /* A(17:16)=10 */ &&
       (inst.Bits() & 0x000007C0)  ==
           0x00000240 /* B(10:6)=01001 */) {
-    return Vector2RegisterMiscellaneous_I16_32_64N_VQMOVUN_instance_;
+    return VQMOVUN_111100111d11ss10dddd0010ppm0mmmm_case_0_VQMOVUN_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00020000 /* A(17:16)=10 */ &&
       (inst.Bits() & 0x000007C0)  ==
           0x00000300 /* B(10:6)=01100 */) {
-    return Vector2RegisterMiscellaneous_I8_16_32L_VSHLL_A2_instance_;
+    return VSHLL_A2_111100111d11ss10dddd001100m0mmmm_case_0_VSHLL_A2_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00020000 /* A(17:16)=10 */ &&
       (inst.Bits() & 0x000006C0)  ==
           0x00000600 /* B(10:6)=11x00 */) {
-    return Vector2RegisterMiscellaneous_CVT_H2S_CVT_between_half_precision_and_single_precision_instance_;
+    return CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_0_CVT_between_half_precision_and_single_precision_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00020000 /* A(17:16)=10 */ &&
       (inst.Bits() & 0x00000780)  ==
           0x00000000 /* B(10:6)=0000x */) {
-    return Vector2RegisterMiscellaneous_V8S_VSWP_instance_;
+    return VSWP_111100111d11ss10dddd00000qm0mmmm_case_0_VSWP_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00020000 /* A(17:16)=10 */ &&
       (inst.Bits() & 0x00000780)  ==
           0x00000080 /* B(10:6)=0001x */) {
-    return Vector2RegisterMiscellaneous_V8_16_32T_VTRN_instance_;
+    return VTRN_111100111d11ss10dddd00001qm0mmmm_case_0_VTRN_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00020000 /* A(17:16)=10 */ &&
       (inst.Bits() & 0x00000780)  ==
           0x00000100 /* B(10:6)=0010x */) {
-    return Vector2RegisterMiscellaneous_V8_16_32I_VUZP_instance_;
+    return VUZP_111100111d11ss10dddd00010qm0mmmm_case_0_VUZP_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00020000 /* A(17:16)=10 */ &&
       (inst.Bits() & 0x00000780)  ==
           0x00000180 /* B(10:6)=0011x */) {
-    return Vector2RegisterMiscellaneous_V8_16_32I_VZIP_instance_;
+    return VZIP_111100111d11ss10dddd00011qm0mmmm_case_0_VZIP_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00020000 /* A(17:16)=10 */ &&
       (inst.Bits() & 0x00000780)  ==
           0x00000280 /* B(10:6)=0101x */) {
-    return Vector2RegisterMiscellaneous_I16_32_64N_VQMOVN_instance_;
+    return VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_0_VQMOVN_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00030000 /* A(17:16)=11 */ &&
       (inst.Bits() & 0x00000680)  ==
           0x00000400 /* B(10:6)=10x0x */) {
-    return Vector2RegisterMiscellaneous_F32_VRECPE_instance_;
+    return VRECPE_111100111d11ss11dddd010f0qm0mmmm_case_0_VRECPE_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00030000 /* A(17:16)=11 */ &&
       (inst.Bits() & 0x00000680)  ==
           0x00000480 /* B(10:6)=10x1x */) {
-    return Vector2RegisterMiscellaneous_F32_VRSQRTE_instance_;
+    return VRSQRTE_111100111d11ss11dddd010f1qm0mmmm_case_0_VRSQRTE_instance_;
   }
 
   if ((inst.Bits() & 0x00030000)  ==
           0x00030000 /* A(17:16)=11 */ &&
       (inst.Bits() & 0x00000600)  ==
           0x00000600 /* B(10:6)=11xxx */) {
-    return Vector2RegisterMiscellaneous_CVT_F2I_VCVT_instance_;
+    return VCVT_111100111d11ss11dddd011ppqm0mmmm_case_0_VCVT_instance_;
   }
 
   if (true) {
