@@ -36,11 +36,23 @@ class AdapterObserver : public device::BluetoothAdapter::Observer {
   }
 
   void Clear() {
+    num_present_changed_ = 0;
+    num_powered_changed_ = 0;
     num_discovering_changed_ = 0;
     num_scanning_changed_ = 0;
     num_device_added_ = 0;
     num_device_changed_ = 0;
     num_device_removed_ = 0;
+  }
+
+  virtual void AdapterPresentChanged(
+      device::BluetoothAdapter* adapter, bool present) OVERRIDE {
+    num_present_changed_++;
+  }
+
+  virtual void AdapterPoweredChanged(
+      device::BluetoothAdapter* adapter, bool powered) OVERRIDE {
+    num_powered_changed_++;
   }
 
   virtual void AdapterDiscoveringChanged(
@@ -71,6 +83,14 @@ class AdapterObserver : public device::BluetoothAdapter::Observer {
     num_device_removed_++;
   }
 
+  int num_present_changed() const {
+    return num_present_changed_;
+  }
+
+  int num_powered_changed() const {
+    return num_powered_changed_;
+  }
+
   int num_discovering_changed() const {
     return num_discovering_changed_;
   }
@@ -92,6 +112,8 @@ class AdapterObserver : public device::BluetoothAdapter::Observer {
   }
 
  private:
+  int num_present_changed_;
+  int num_powered_changed_;
   int num_discovering_changed_;
   int num_scanning_changed_;
   int num_device_added_;
@@ -174,6 +196,31 @@ TEST_F(BluetoothAdapterWinTest, AdapterPresent) {
   state.name = kAdapterName;
   adapter_win_->AdapterStateChanged(state);
   EXPECT_TRUE(adapter_win_->IsPresent());
+}
+
+TEST_F(BluetoothAdapterWinTest, AdapterPresentChanged) {
+  BluetoothTaskManagerWin::AdapterState state;
+  state.address = kAdapterAddress;
+  state.name = kAdapterName;
+  adapter_win_->AdapterStateChanged(state);
+  EXPECT_EQ(1, adapter_observer_.num_present_changed());
+  adapter_win_->AdapterStateChanged(state);
+  EXPECT_EQ(1, adapter_observer_.num_present_changed());
+  BluetoothTaskManagerWin::AdapterState empty_state;
+  adapter_win_->AdapterStateChanged(empty_state);
+  EXPECT_EQ(2, adapter_observer_.num_present_changed());
+}
+
+TEST_F(BluetoothAdapterWinTest, AdapterPoweredChanged) {
+  BluetoothTaskManagerWin::AdapterState state;
+  state.powered = true;
+  adapter_win_->AdapterStateChanged(state);
+  EXPECT_EQ(1, adapter_observer_.num_powered_changed());
+  adapter_win_->AdapterStateChanged(state);
+  EXPECT_EQ(1, adapter_observer_.num_powered_changed());
+  state.powered = false;
+  adapter_win_->AdapterStateChanged(state);
+  EXPECT_EQ(2, adapter_observer_.num_powered_changed());
 }
 
 TEST_F(BluetoothAdapterWinTest, AdapterInitialized) {

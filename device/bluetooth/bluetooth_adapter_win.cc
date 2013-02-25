@@ -1,8 +1,6 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// TODO(youngki): Implement this file.
 
 #include "device/bluetooth/bluetooth_adapter_win.h"
 
@@ -162,8 +160,18 @@ void BluetoothAdapterWin::AdapterStateChanged(
     const BluetoothTaskManagerWin::AdapterState& state) {
   DCHECK(thread_checker_.CalledOnValidThread());
   name_ = state.name;
+  bool was_present = IsPresent();
+  bool is_present = !state.address.empty();
   address_ = state.address;
-  powered_ = state.powered;
+  if (was_present != is_present) {
+    FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                      AdapterPresentChanged(this, is_present));
+  }
+  if (powered_ != state.powered) {
+    powered_ = state.powered;
+    FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                      AdapterPoweredChanged(this, powered_));
+  }
   if (!initialized_) {
     initialized_ = true;
     init_callback_.Run();
