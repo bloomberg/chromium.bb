@@ -4,6 +4,7 @@
     "EAP.Identity": "madmax@my.domain.com",
     "EAP.UseSystemCAs": true,
     "GUID": "{77db0089-0bc8-4358-929c-123xcv}",
+    "Mode": "managed",
     "Profile": "user",
     "ProxyConfig": "{\"mode\":\"pac_script\",\"pac_mandatory\":false,\"pac_url\":\"https://proxycfg.my.domain.com/proxy.dat\"}",
     "SSID": "SomeWifi-XY",

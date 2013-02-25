@@ -1,7 +1,7 @@
-{ 
-  "{485d6076-dd44-6b6d-69787465725f5045}":
-  {
+{
+  "{485d6076-dd44-6b6d-69787465725f5045}": {
     "GUID": "{485d6076-dd44-6b6d-69787465725f5045}",
+    "Mode": "managed",
     "Passphrase": "z123456789012",
     "Profile": "user",
     "ProxyConfig": "{\"bypass_list\":\"google.com;\\u003Clocal\\u003E;\",\"mode\":\"fixed_servers\",\"server\":\"ftp=ftp.example.com:5678;http=http.example.com:1234;socks=socks5://socks.example.com:7890;https=https.example.com:3456\"}",

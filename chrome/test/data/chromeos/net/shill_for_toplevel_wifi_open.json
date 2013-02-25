@@ -1,6 +1,7 @@
 {
   "{485d6076-dd44-6b6d-69787465725f5040}": {
     "GUID": "{485d6076-dd44-6b6d-69787465725f5040}",
+    "Mode": "managed",
     "Profile": "default",
     "SSID": "ssid-none",
     "Security": "none",

@@ -3,6 +3,7 @@
    "EAP.Identity": "abc ${LOGIN_ID}@my.domain.com",
    "EAP.UseSystemCAs": true,
    "GUID": "{77db0089-0bc8-4358-929c-123xcv}",
+   "Mode": "managed",
    "SSID": "SomeWifi-XY",
    "SaveCredentials": true,
    "Security": "802_1x",

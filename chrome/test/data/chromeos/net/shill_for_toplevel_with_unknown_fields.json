@@ -1,6 +1,7 @@
 {
   "{485d6076-dd44-6b6d-69787465725f5045}": {
     "GUID": "{485d6076-dd44-6b6d-69787465725f5045}",
+    "Mode": "managed",
     "Profile": "user",
     "SSID": "ssid-none",
     "Security": "none",
@@ -9,6 +10,7 @@
   },
   "{485d6076-dd44-6b6d-69787465725f5046}": {
     "GUID": "{485d6076-dd44-6b6d-69787465725f5046}",
+    "Mode": "managed",
     "Passphrase": "12345678",
     "Profile": "user",
     "SSID": "ssid-wpa",

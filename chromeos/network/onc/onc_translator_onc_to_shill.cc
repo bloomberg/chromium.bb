@@ -135,6 +135,9 @@ void LocalTranslator::TranslateWiFi() {
   TranslateWithTableAndSet(security, kWiFiSecurityTable,
                            flimflam::kSecurityProperty);
 
+  // We currently only support managed and no adhoc networks.
+  shill_dictionary_->SetStringWithoutPathExpansion(flimflam::kModeProperty,
+                                                   flimflam::kModeManaged);
   CopyFieldsAccordingToSignature();
 }
 
