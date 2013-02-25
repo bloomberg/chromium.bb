@@ -263,6 +263,26 @@ class TestInstructionPrinter(unittest.TestCase):
         @set_spurious_rex_r
         """.split())
 
+  def test_rex_b_for_opcode_in_register(self):
+    printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 64)
+    instr = gen_dfa.Instruction.Parse(
+        'bswap rd, 0x0f 0xc8')
+
+    printer.PrintInstructionWithoutModRM(instr)
+
+    self.assertEquals(
+        printer.GetContent().split(),
+        """
+        REX_RXB?
+        0x0f
+        (0xc8|0xc9|0xca|0xcb|0xcc|0xcd|0xce|0xcf) @operand0_from_opcode
+        @instruction_bswap
+        @operands_count_is_1
+        @operand0_32bit
+        @set_spurious_rex_x
+        @set_spurious_rex_r
+        """.split())
+
   def test_with_prefixes(self):
     printer = gen_dfa.InstructionPrinter(gen_dfa.VALIDATOR, 32)
     instr = gen_dfa.Instruction.Parse(

@@ -728,6 +728,15 @@ class InstructionPrinter(object):
 
     assert not instruction.HasOpcodeInsteadOfImmediate(), 'should not happen'
 
+    operand = instruction.FindOperand(def_format.OperandType.REGISTER_IN_OPCODE)
+    if operand is not None:
+      # Register in opcode could be either general-purpose register (there are
+      # 16 of them in 64-bit mode) or x87 register (there are 8 of them even in
+      # 64-bit mode). Fourth bit (when required) goes to rex.B.
+      if self._bitness == 64 and operand.size != '7':
+        assert operand.size in ['b', 'w', 'd', 'q', 'r']
+        instruction.rex.b_matters = True
+
     self._PrintOpcode(instruction)
     self._out.write('\n')
 
@@ -791,6 +800,9 @@ class InstructionPrinter(object):
 
     assert instruction.HasModRM()
     assert instruction.FindOperand(def_format.OperandType.MEMORY) is None
+
+    assert instruction.FindOperand(
+        def_format.OperandType.REGISTER_IN_OPCODE) is None
 
     if instruction.RMatters():
       instruction.rex.r_matters = True
@@ -864,6 +876,9 @@ class InstructionPrinter(object):
     assert instruction.FindOperand(def_format.OperandType.MEMORY) is not None
 
     assert address_mode in ALL_ADDRESS_MODES
+
+    assert instruction.FindOperand(
+        def_format.OperandType.REGISTER_IN_OPCODE) is None
 
     if instruction.RMatters():
       instruction.rex.r_matters = True
