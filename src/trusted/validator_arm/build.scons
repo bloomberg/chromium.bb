@@ -122,6 +122,7 @@ BASELINE_GEN_TABLES = [
     "unconditional_instructions",
     "memory_hints_advanced_simd_instructions_and_miscellaneous_instructions",
     "advanced_simd_data_processing_instructions",
+    "simd_dp_3same",
     "simd_dp_3diff",
     "simd_dp_2scalar",
     "simd_dp_2shift",
