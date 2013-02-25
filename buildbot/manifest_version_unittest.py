@@ -193,8 +193,6 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase):
         for_build, 'fail', CHROME_BRANCH, os.path.basename(m1)))
     manifest_version.CreateSymlink(m1, os.path.join(
         for_build, 'pass', CHROME_BRANCH, os.path.basename(m2)))
-    self.mox.StubOutWithMock(self.manager, '_GetSpecAge')
-    self.manager._GetSpecAge('1.2.5').AndReturn(100)
     self.mox.ReplayAll()
     self.manager.InitializeManifestVariables(info)
     self.mox.VerifyAll()

@@ -102,6 +102,9 @@ class LKGMManager(manifest_version.BuildSpecsManager):
   Vars:
     lkgm_subdir:  Subdirectory within manifest repo to store candidates.
   """
+  # Max timeout before assuming other builders have failed.
+  LONG_MAX_TIMEOUT_SECONDS = 1200
+
   # Max timeout before assuming other builders have failed for Chrome PFQ.
   # Longer as there is little to lose for Chrome PFQ waiting and arm
   # has been slower often.
@@ -120,7 +123,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
   LKGM_PATH = 'LKGM/lkgm.xml'
 
   def __init__(self, source_repo, manifest_repo, build_name, build_type,
-               incr_type, force, branch, dry_run=True):
+               incr_type, force, branch, dry_run=True, master=False):
     """Initialize an LKGM Manager.
 
     Args:
@@ -130,7 +133,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     super(LKGMManager, self).__init__(
         source_repo=source_repo, manifest_repo=manifest_repo,
         build_name=build_name, incr_type=incr_type, force=force,
-        branch=branch, dry_run=dry_run)
+        branch=branch, dry_run=dry_run, master=master)
 
     self.lkgm_path = os.path.join(self.manifest_dir, self.LKGM_PATH)
     self.compare_versions_fn = _LKGMCandidateInfo.VersionCompare

@@ -1052,6 +1052,7 @@ _release = full.derive(official, internal,
 _release.add_config('x86-mario-release',
   boards=['x86-mario'],
   hw_tests=['bvt'],
+  master=True,
 )
 
 _config.add_group('x86-alex-release-group',

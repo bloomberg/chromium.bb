@@ -13,7 +13,6 @@ import os
 import re
 import shutil
 import tempfile
-import time
 
 from chromite.buildbot import constants, repository
 from chromite.lib import cros_build_lib
@@ -356,11 +355,8 @@ class BuilderStatus(object):
 class BuildSpecsManager(object):
   """A Class to manage buildspecs and their states."""
 
-  # Max timeout before assuming other builders have failed.
-  LONG_MAX_TIMEOUT_SECONDS = 1200
-
   def __init__(self, source_repo, manifest_repo, build_name, incr_type, force,
-               branch, dry_run=True):
+               branch, dry_run=True, master=False):
     """Initializes a build specs manager.
     Args:
       source_repo: Repository object for the source code.
@@ -370,6 +366,7 @@ class BuildSpecsManager(object):
       force: Create a new manifest even if there are no changes.
       branch: Branch this builder is running on.
       dry_run: Whether we actually commit changes we make or not.
+      master: Whether we are the master builder.
     """
     self.cros_source = source_repo
     buildroot = source_repo.directory
@@ -384,6 +381,7 @@ class BuildSpecsManager(object):
     self.force = force
     self.branch = branch
     self.dry_run = dry_run
+    self.master = master
 
     # Directories and specifications are set once we load the specs.
     self.all_specs_dir = None
@@ -424,12 +422,6 @@ class BuildSpecsManager(object):
       specs = fnmatch.filter(os.listdir(directory), match_string)
       return self._LatestSpecFromList([os.path.splitext(m)[0] for m in specs])
 
-  def _GetSpecAge(self, version):
-    cmd = ['git', 'log', '-1', '--format=%ct', '%s.xml' % version]
-    result = cros_build_lib.RunCommand(cmd, cwd=self.all_specs_dir,
-                                       redirect_stdout=True)
-    return time.time() - int(result.output.strip())
-
   def RefreshManifestCheckout(self):
     """Checks out manifest versions into the manifest directory."""
     RefreshManifestCheckout(self.manifest_dir, self.manifest_repo)
@@ -452,13 +444,11 @@ class BuildSpecsManager(object):
                                  BuilderStatus.STATUS_FAILED, dir_pfx)
 
     # Calculate the status of the latest build, and whether the build was
-    # processed. We consider a spec unprocessed if we have not started a build
-    # with that spec yet, and it is newer than LONG_MAX_TIMEOUT_SECONDS.
+    # processed.
     self.latest = self._LatestSpecFromDir(version_info, self.all_specs_dir)
     if self.latest is not None:
       self._latest_status = self.GetBuildStatus(self.build_name, self.latest)
-      if (self._latest_status is None and
-          self._GetSpecAge(self.latest) < self.LONG_MAX_TIMEOUT_SECONDS):
+      if self._latest_status is None:
         self.latest_unprocessed = self.latest
 
   def GetCurrentVersionInfo(self):
@@ -612,13 +602,16 @@ class BuildSpecsManager(object):
         if not self.force and self.HasCheckoutBeenBuilt():
           return None
 
-        if self.latest_unprocessed:
-          version = self.latest_unprocessed
-        else:
+        # If we're the master, always create a new build spec. Otherwise,
+        # only create a new build spec if we've already built the existing
+        # spec.
+        if self.master or not self.latest_unprocessed:
           git.CreatePushBranch(PUSH_BRANCH, self.manifest_dir, sync=False)
           version = self.GetNextVersion(version_info)
           new_manifest = self.CreateManifest()
           self.PublishManifest(new_manifest, version)
+        else:
+          version = self.latest_unprocessed
 
         self.SetInFlight(version)
         self.current_version = version

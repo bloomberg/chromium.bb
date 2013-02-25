@@ -577,7 +577,8 @@ class ManifestVersionedSyncStage(SyncStage):
             incr_type=increment,
             force=self._force,
             branch=self._target_manifest_branch,
-            dry_run=dry_run)
+            dry_run=dry_run,
+            master=self._build_config['master'])
 
   def GetNextManifest(self):
     """Uses the initialized manifest manager to get the next manifest."""
@@ -641,7 +642,8 @@ class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
         incr_type=increment,
         force=self._force,
         branch=self._target_manifest_branch,
-        dry_run=self._options.debug)
+        dry_run=self._options.debug,
+        master=self._build_config['master'])
 
   def Initialize(self):
     """Override: Creates an LKGMManager rather than a ManifestManager."""
