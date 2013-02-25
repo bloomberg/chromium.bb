@@ -22,8 +22,7 @@ namespace net {
 
 static const size_t kHeaderBufInitialSize = 4096;
 
-QuicHttpStream::QuicHttpStream(QuicReliableClientStream* stream,
-                               bool use_spdy)
+QuicHttpStream::QuicHttpStream(QuicReliableClientStream* stream)
     : io_state_(STATE_NONE),
       stream_(stream),
       request_info_(NULL),
@@ -31,7 +30,6 @@ QuicHttpStream::QuicHttpStream(QuicReliableClientStream* stream,
       response_info_(NULL),
       response_status_(OK),
       response_headers_received_(false),
-      use_spdy_(use_spdy),
       read_buf_(new GrowableIOBuffer()),
       user_buffer_len_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
@@ -64,42 +62,22 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   CHECK(response);
 
   // Store the serialized request headers.
-  if (use_spdy_) {
-    SpdyHeaderBlock headers;
-    CreateSpdyHeadersFromHttpRequest(*request_info_, request_headers,
-                                     &headers, 3, /*direct=*/true);
-    size_t len = SpdyFramer::GetSerializedLength(3, &headers);
-    SpdyFrameBuilder builder(len);
-    SpdyFramer::WriteHeaderBlock(&builder, 3, &headers);
-    scoped_ptr<SpdyFrame> frame(builder.take());
-    request_ = std::string(frame->data(), len);
-    // Log the actual request with the URL Request's net log.
-    stream_net_log_.AddEvent(
-        NetLog::TYPE_HTTP_TRANSACTION_SPDY_SEND_REQUEST_HEADERS,
-        base::Bind(&SpdyHeaderBlockNetLogCallback, &headers));
-    // Also log to the QuicSession's net log.
-    stream_->net_log().AddEvent(
-        NetLog::TYPE_QUIC_HTTP_STREAM_SEND_REQUEST_HEADERS,
-        base::Bind(&SpdyHeaderBlockNetLogCallback, &headers));
-  } else {
-    std::string path = HttpUtil::PathForRequest(request_info_->url);
-    std::string first_line = base::StringPrintf("%s %s HTTP/1.1\r\n",
-                                                request_info_->method.c_str(),
-                                                path.c_str());
-    request_ = first_line + request_headers.ToString();
-    // Log the actual request with the URL Request's net log.
-    stream_net_log_.AddEvent(
-        NetLog::TYPE_HTTP_TRANSACTION_SEND_REQUEST_HEADERS,
-        base::Bind(&HttpRequestHeaders::NetLogCallback,
-                   base::Unretained(&request_headers),
-                   &first_line));
-    // Also log to the QuicSession's net log.
-    stream_->net_log().AddEvent(
-        NetLog::TYPE_QUIC_HTTP_STREAM_SEND_REQUEST_HEADERS,
-        base::Bind(&HttpRequestHeaders::NetLogCallback,
-                   base::Unretained(&request_headers),
-                   &first_line));
-  }
+  SpdyHeaderBlock headers;
+  CreateSpdyHeadersFromHttpRequest(*request_info_, request_headers,
+                                   &headers, 3, /*direct=*/true);
+  size_t len = SpdyFramer::GetSerializedLength(3, &headers);
+  SpdyFrameBuilder builder(len);
+  SpdyFramer::WriteHeaderBlock(&builder, 3, &headers);
+  scoped_ptr<SpdyFrame> frame(builder.take());
+  request_ = std::string(frame->data(), len);
+  // Log the actual request with the URL Request's net log.
+  stream_net_log_.AddEvent(
+      NetLog::TYPE_HTTP_TRANSACTION_SPDY_SEND_REQUEST_HEADERS,
+      base::Bind(&SpdyHeaderBlockNetLogCallback, &headers));
+  // Also log to the QuicSession's net log.
+  stream_->net_log().AddEvent(
+      NetLog::TYPE_QUIC_HTTP_STREAM_SEND_REQUEST_HEADERS,
+      base::Bind(&SpdyHeaderBlockNetLogCallback, &headers));
 
   // Store the request body.
   request_body_stream_ = request_info_->upload_data_stream;
@@ -462,74 +440,38 @@ int QuicHttpStream::DoSendBodyComplete(int rv) {
 }
 
 int QuicHttpStream::ParseResponseHeaders() {
-  if (use_spdy_) {
-    size_t read_buf_len = static_cast<size_t>(read_buf_->offset());
-    SpdyFramer framer(3);
-    SpdyHeaderBlock headers;
-    char* data = read_buf_->StartOfBuffer();
-    size_t len = framer.ParseHeaderBlockInBuffer(data, read_buf_->offset(),
-                                                 &headers);
+  size_t read_buf_len = static_cast<size_t>(read_buf_->offset());
+  SpdyFramer framer(3);
+  SpdyHeaderBlock headers;
+  char* data = read_buf_->StartOfBuffer();
+  size_t len = framer.ParseHeaderBlockInBuffer(data, read_buf_->offset(),
+                                               &headers);
 
-    if (len == 0) {
-      return ERR_IO_PENDING;
-    }
-
-    // Save the remaining received data.
-    size_t delta = read_buf_len - len;
-    if (delta > 0) {
-      BufferResponseBody(data + len, delta);
-    }
-
-    // The URLRequest logs these headers, so only log to the QuicSession's
-    // net log.
-    stream_->net_log().AddEvent(
-        NetLog::TYPE_QUIC_HTTP_STREAM_READ_RESPONSE_HEADERS,
-        base::Bind(&SpdyHeaderBlockNetLogCallback, &headers));
-
-    if (!SpdyHeadersToHttpResponse(headers, 3, response_info_)) {
-      DLOG(WARNING) << "Invalid headers";
-      return ERR_QUIC_PROTOCOL_ERROR;
-    }
-    // Put the peer's IP address and port into the response.
-    IPEndPoint address = stream_->GetPeerAddress();
-    response_info_->socket_address = HostPortPair::FromIPEndPoint(address);
-    response_info_->vary_data.Init(*request_info_, *response_info_->headers);
-    response_headers_received_ = true;
-
-    return OK;
-  }
-  int end_offset = HttpUtil::LocateEndOfHeaders(read_buf_->StartOfBuffer(),
-                                                read_buf_->offset(), 0);
-
-  if (end_offset == -1) {
+  if (len == 0) {
     return ERR_IO_PENDING;
   }
 
-  if (!stream_)
-    return ERR_UNEXPECTED;
-
-  scoped_refptr<HttpResponseHeaders> headers = new HttpResponseHeaders(
-      HttpUtil::AssembleRawHeaders(read_buf_->StartOfBuffer(), end_offset));
-
-  // Put the peer's IP address and port into the response.
-  IPEndPoint address = stream_->GetPeerAddress();
-  response_info_->socket_address = HostPortPair::FromIPEndPoint(address);
-  response_info_->headers = headers;
-  response_info_->vary_data.Init(*request_info_, *response_info_->headers);
-  response_headers_received_ = true;
+  // Save the remaining received data.
+  size_t delta = read_buf_len - len;
+  if (delta > 0) {
+    BufferResponseBody(data + len, delta);
+  }
 
   // The URLRequest logs these headers, so only log to the QuicSession's
   // net log.
   stream_->net_log().AddEvent(
       NetLog::TYPE_QUIC_HTTP_STREAM_READ_RESPONSE_HEADERS,
-      base::Bind(&HttpResponseHeaders::NetLogCallback,
-                 response_info_->headers));
+      base::Bind(&SpdyHeaderBlockNetLogCallback, &headers));
 
-  // Save the remaining received data.
-  int delta = read_buf_->offset() - end_offset;
-  if (delta > 0) {
-    BufferResponseBody(read_buf_->data(), delta);
+  if (!SpdyHeadersToHttpResponse(headers, 3, response_info_)) {
+    DLOG(WARNING) << "Invalid headers";
+    return ERR_QUIC_PROTOCOL_ERROR;
   }
+  // Put the peer's IP address and port into the response.
+  IPEndPoint address = stream_->GetPeerAddress();
+  response_info_->socket_address = HostPortPair::FromIPEndPoint(address);
+  response_info_->vary_data.Init(*request_info_, *response_info_->headers);
+  response_headers_received_ = true;
 
   return OK;
 }

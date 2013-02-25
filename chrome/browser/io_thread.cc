@@ -529,9 +529,6 @@ void IOThread::Init() {
         GetSwitchValueAsInt(command_line,
                             switches::kOriginPortToForceQuicOn));
   }
-  if (command_line.HasSwitch(switches::kUseSpdyOverQuic)) {
-    globals_->use_spdy_over_quic.set(true);
-  }
   if (command_line.HasSwitch(
           switches::kEnableUserAlternateProtocolPorts)) {
     globals_->enable_user_alternate_protocol_ports = true;
@@ -842,7 +839,6 @@ void IOThread::InitializeNetworkSessionParams(
   globals_->enable_quic.CopyToIfSet(&params->enable_quic);
   globals_->origin_port_to_force_quic_on.CopyToIfSet(
       &params->origin_port_to_force_quic_on);
-  globals_->use_spdy_over_quic.CopyToIfSet(&params->use_spdy_over_quic);
   params->enable_user_alternate_protocol_ports =
       globals_->enable_user_alternate_protocol_ports;
 }

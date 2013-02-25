@@ -360,7 +360,6 @@ extern const char kTrustedSpdyProxy[];
 extern const char kTryChromeAgain[];
 extern const char kUninstall[];
 extern const char kUseSpdy[];
-extern const char kUseSpdyOverQuic[];
 extern const char kUseSpellingSuggestions[];
 extern const char kMaxSpdySessionsPerDomain[];
 extern const char kMaxSpdyConcurrentStreams[];

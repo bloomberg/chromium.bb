@@ -220,13 +220,11 @@ QuicStreamFactory::QuicStreamFactory(
     HostResolver* host_resolver,
     ClientSocketFactory* client_socket_factory,
     QuicRandom* random_generator,
-    QuicClock* clock,
-    bool use_spdy_over_quic)
+    QuicClock* clock)
     : host_resolver_(host_resolver),
       client_socket_factory_(client_socket_factory),
       random_generator_(random_generator),
       clock_(clock),
-      use_spdy_over_quic_(use_spdy_over_quic),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
@@ -303,8 +301,7 @@ scoped_ptr<QuicHttpStream> QuicStreamFactory::CreateIfSessionExists(
   QuicClientSession* session = active_sessions_[host_port_proxy_pair];
   DCHECK(session);
   return scoped_ptr<QuicHttpStream>(
-      new QuicHttpStream(session->CreateOutgoingReliableStream(),
-                         use_spdy_over_quic_));
+      new QuicHttpStream(session->CreateOutgoingReliableStream()));
 }
 
 void QuicStreamFactory::OnIdleSession(QuicClientSession* session) {

@@ -82,7 +82,6 @@ HttpNetworkSession::Params::Params()
       time_func(&base::TimeTicks::Now),
       enable_quic(false),
       origin_port_to_force_quic_on(0),
-      use_spdy_over_quic(false),
       quic_clock(NULL),
       quic_random(NULL),
       enable_user_alternate_protocol_ports(false) {
@@ -109,8 +108,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
                            params.quic_random ? params.quic_random :
                                QuicRandom::GetInstance(),
                            params.quic_clock ? params. quic_clock :
-                               new QuicClock(),
-                           params.use_spdy_over_quic),
+                               new QuicClock()),
       spdy_session_pool_(params.host_resolver,
                          params.ssl_config_service,
                          params.http_server_properties,
@@ -195,8 +193,6 @@ Value* HttpNetworkSession::QuicInfoToValue() const {
   dict->SetBoolean("quic_enabled", params_.enable_quic);
   dict->SetInteger("origin_port_to_force_quic_on",
                    params_.origin_port_to_force_quic_on);
-  dict->SetBoolean("use_spdy_over_quic", params_.use_spdy_over_quic);
-
   return dict;
 }
 

@@ -244,7 +244,6 @@ TEST_F(QuicNetworkTransactionTest, UseAlternateProtocolForQuic) {
   HttpStreamFactory::SetNextProtos(QuicNextProtos());
   params_.enable_quic = true;
   params_.quic_clock = clock_;
-  params_.use_spdy_over_quic = true;
   params_.quic_random = &random_generator_;
 
   HttpRequestInfo request;
