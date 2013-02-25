@@ -198,6 +198,17 @@ TEST_F(QuicSessionTest, OnCanWriteWithClosedStream) {
   EXPECT_TRUE(session_.OnCanWrite());
 }
 
+TEST_F(QuicSessionTest, SendGoAway) {
+  // After sending a GoAway, ensure new incoming streams cannot be created and
+  // result in a RST being sent.
+  EXPECT_CALL(*connection_,
+              SendGoAway(QUIC_PEER_GOING_AWAY, 0u, "Going Away."));
+  session_.SendGoAway(QUIC_PEER_GOING_AWAY, "Going Away.");
+  EXPECT_TRUE(session_.goaway_sent());
+
+  EXPECT_CALL(*connection_, SendRstStream(3u, QUIC_PEER_GOING_AWAY));
+  EXPECT_FALSE(session_.GetIncomingReliableStream(3u));
+}
 }  // namespace
 }  // namespace test
 }  // namespace net

@@ -33,7 +33,9 @@ void QuicConnectionPeer::SetSendAlgorithm(
 }
 
 // static
-QuicAckFrame* QuicConnectionPeer::GetOutgoingAck(QuicConnection* connection) {
+QuicAckFrame* QuicConnectionPeer::GetOutgoingAck(
+    QuicConnection* connection) {
+  connection->UpdateOutgoingAck();
   return &connection->outgoing_ack_;
 }
 
@@ -72,7 +74,32 @@ size_t QuicConnectionPeer::GetRetransmissionCount(
     QuicPacketSequenceNumber sequence_number) {
   QuicConnection::RetransmissionMap::iterator it =
       connection->retransmission_map_.find(sequence_number);
+  DCHECK(connection->retransmission_map_.end() != it);
   return it->second.number_retransmissions;
+}
+
+// static
+QuicPacketEntropyHash QuicConnectionPeer::GetSentEntropyHash(
+    QuicConnection* connection,
+    QuicPacketSequenceNumber sequence_number) {
+  return connection->entropy_manager_.SentEntropyHash(sequence_number);
+}
+
+// static
+bool QuicConnectionPeer::IsValidEntropy(
+    QuicConnection* connection,
+    QuicPacketSequenceNumber largest_observed,
+    const SequenceNumberSet& missing_packets,
+    QuicPacketEntropyHash entropy_hash) {
+  return connection->entropy_manager_.IsValidEntropy(
+      largest_observed, missing_packets, entropy_hash);
+}
+
+// static
+QuicPacketEntropyHash QuicConnectionPeer::ReceivedEntropyHash(
+    QuicConnection* connection,
+    QuicPacketSequenceNumber sequence_number) {
+  return connection->entropy_manager_.ReceivedEntropyHash(sequence_number);
 }
 
 }  // namespace test

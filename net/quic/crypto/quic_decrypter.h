@@ -17,9 +17,37 @@ class NET_EXPORT_PRIVATE QuicDecrypter {
 
   static QuicDecrypter* Create(CryptoTag algorithm);
 
+  // Sets the encryption key. Returns true on success, false on failure.
+  //
+  // NOTE: The key is the client_write_key or server_write_key derived from
+  // the master secret.
+  virtual bool SetKey(base::StringPiece key) = 0;
+
+  // Sets the fixed initial bytes of the nonce. Returns true on success,
+  // false on failure.
+  //
+  // NOTE: The nonce prefix is the client_write_iv or server_write_iv
+  // derived from the master secret. A 64-bit packet sequence number will
+  // be appended to form the nonce.
+  //
+  //                          <------------ 64 bits ----------->
+  //   +---------------------+----------------------------------+
+  //   |    Fixed prefix     |      Packet sequence number      |
+  //   +---------------------+----------------------------------+
+  //                          Nonce format
+  //
+  // The security of the nonce format requires that QUIC never reuse a
+  // packet sequence number, even when retransmitting a lost packet.
+  virtual bool SetNoncePrefix(base::StringPiece nonce_prefix) = 0;
+
   // Returns a newly created QuicData object containing the decrypted
-  // |ciphertext| or NULL if there is an error.
-  virtual QuicData* Decrypt(base::StringPiece associated_data,
+  // |ciphertext| or NULL if there is an error. |sequence_number| is
+  // appended to the |nonce_prefix| value provided in SetNoncePrefix()
+  // to form the nonce.
+  // TODO(wtc): add a way for Decrypt to report decryption failure due
+  // to non-authentic inputs, as opposed to other reasons for failure.
+  virtual QuicData* Decrypt(QuicPacketSequenceNumber sequence_number,
+                            base::StringPiece associated_data,
                             base::StringPiece ciphertext) = 0;
 };
 

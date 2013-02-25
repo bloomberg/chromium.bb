@@ -11,7 +11,16 @@ using std::string;
 
 namespace net {
 
-QuicData* NullDecrypter::Decrypt(StringPiece associated_data,
+bool NullDecrypter::SetKey(StringPiece key) {
+  return key.empty();
+}
+
+bool NullDecrypter::SetNoncePrefix(StringPiece nonce_prefix) {
+  return nonce_prefix.empty();
+}
+
+QuicData* NullDecrypter::Decrypt(QuicPacketSequenceNumber /*sequence_number*/,
+                                 StringPiece associated_data,
                                  StringPiece ciphertext) {
   QuicDataReader reader(ciphertext.data(), ciphertext.length());
 

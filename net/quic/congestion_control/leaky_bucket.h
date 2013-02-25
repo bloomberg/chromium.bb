@@ -21,25 +21,23 @@ namespace net {
 
 class NET_EXPORT_PRIVATE LeakyBucket {
  public:
-  // clock is not owned by this class.
-  LeakyBucket(const QuicClock* clock, QuicBandwidth draining_rate);
+  explicit LeakyBucket(QuicBandwidth draining_rate);
 
   // Set the rate at which the bytes leave the buffer.
-  void SetDrainingRate(QuicBandwidth draining_rate);
+  void SetDrainingRate(QuicTime now, QuicBandwidth draining_rate);
 
   // Add data to the buffer.
-  void Add(QuicByteCount bytes);
+  void Add(QuicTime now, QuicByteCount bytes);
 
-  // Time until the buffer is empty in us.
-  QuicTime::Delta TimeRemaining();
+  // Time until the buffer is empty.
+  QuicTime::Delta TimeRemaining(QuicTime now);
 
   // Number of bytes in the buffer.
-  QuicByteCount BytesPending();
+  QuicByteCount BytesPending(QuicTime now);
 
  private:
-  void Update();
+  void Update(QuicTime now);
 
-  const QuicClock* clock_;
   QuicByteCount bytes_;
   QuicTime time_last_updated_;
   QuicBandwidth draining_rate_;

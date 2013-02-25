@@ -12,12 +12,13 @@
 #include "net/quic/congestion_control/send_algorithm_interface.h"
 
 namespace {
-const int kBitrateSmoothingPeriodMs = 3000;
+const int kBitrateSmoothingPeriodMs = 1000;
 const int kMinBitrateSmoothingPeriodMs = 500;
 const int kHistoryPeriodMs = 5000;
 
 const int kDefaultRetransmissionTimeMs = 500;
-const size_t kMaxRetransmissions = 15;
+const size_t kMaxRetransmissions = 10;
+const size_t kTailDropWindowSize = 5;
 
 COMPILE_ASSERT(kHistoryPeriodMs >= kBitrateSmoothingPeriodMs,
                history_must_be_longer_or_equal_to_the_smoothing_period);
@@ -33,7 +34,8 @@ QuicCongestionManager::QuicCongestionManager(
     CongestionFeedbackType type)
     : clock_(clock),
       receive_algorithm_(ReceiveAlgorithmInterface::Create(clock, type)),
-      send_algorithm_(SendAlgorithmInterface::Create(clock, type)) {
+      send_algorithm_(SendAlgorithmInterface::Create(clock, type)),
+      largest_missing_(0) {
 }
 
 QuicCongestionManager::~QuicCongestionManager() {
@@ -41,32 +43,36 @@ QuicCongestionManager::~QuicCongestionManager() {
 }
 
 void QuicCongestionManager::SentPacket(QuicPacketSequenceNumber sequence_number,
+                                       QuicTime sent_time,
                                        QuicByteCount bytes,
                                        bool is_retransmission) {
   DCHECK(!ContainsKey(pending_packets_, sequence_number));
-  send_algorithm_->SentPacket(sequence_number, bytes, is_retransmission);
+  send_algorithm_->SentPacket(sent_time, sequence_number, bytes,
+                              is_retransmission);
 
   packet_history_map_[sequence_number] =
-      new class SendAlgorithmInterface::SentPacket(bytes, clock_->Now());
+      new class SendAlgorithmInterface::SentPacket(bytes, sent_time);
   pending_packets_[sequence_number] = bytes;
   CleanupPacketHistory();
-  DLOG(INFO) << "Sent sequence number:" << sequence_number;
 }
 
 void QuicCongestionManager::OnIncomingQuicCongestionFeedbackFrame(
-    const QuicCongestionFeedbackFrame& frame) {
-  send_algorithm_->OnIncomingQuicCongestionFeedbackFrame(frame,
-                                                         packet_history_map_);
+    const QuicCongestionFeedbackFrame& frame, QuicTime feedback_receive_time) {
+  QuicBandwidth sent_bandwidth = SentBandwidth(feedback_receive_time);
+  send_algorithm_->OnIncomingQuicCongestionFeedbackFrame(
+      frame, feedback_receive_time, sent_bandwidth, packet_history_map_);
 }
 
-void QuicCongestionManager::OnIncomingAckFrame(const QuicAckFrame& frame) {
+void QuicCongestionManager::OnIncomingAckFrame(const QuicAckFrame& frame,
+                                               QuicTime ack_receive_time) {
   // We calculate the RTT based on the highest ACKed sequence number, the lower
   // sequence numbers will include the ACK aggregation delay.
   QuicTime::Delta rtt = QuicTime::Delta::Zero();
   SendAlgorithmInterface::SentPacketsMap::iterator history_it =
       packet_history_map_.find(frame.received_info.largest_observed);
   if (history_it != packet_history_map_.end()) {
-    rtt = clock_->Now().Subtract(history_it->second->SendTimestamp());
+    // TODO(pwestin): we need to add the delta to the feedback message.
+    rtt = ack_receive_time.Subtract(history_it->second->SendTimestamp());
   }
   // We want to.
   // * Get all packets lower(including) than largest_observed
@@ -77,23 +83,32 @@ void QuicCongestionManager::OnIncomingAckFrame(const QuicAckFrame& frame) {
   it = pending_packets_.begin();
   it_upper = pending_packets_.upper_bound(frame.received_info.largest_observed);
 
+  bool new_packet_loss_reported = false;
   while (it != it_upper) {
     QuicPacketSequenceNumber sequence_number = it->first;
-    if (!frame.received_info.IsAwaitingPacket(sequence_number)) {
+    if (!IsAwaitingPacket(frame.received_info, sequence_number)) {
       // Not missing, hence implicitly acked.
       send_algorithm_->OnIncomingAck(sequence_number,
                                      it->second,
                                      rtt);
-      DLOG(INFO) << "ACKed sequence number:" << sequence_number;
       pending_packets_.erase(it++);  // Must be incremented post to work.
     } else {
+      if (sequence_number > largest_missing_) {
+        // We have a new loss reported.
+        new_packet_loss_reported = true;
+        largest_missing_ = sequence_number;
+      }
       ++it;
     }
   }
+  if (new_packet_loss_reported) {
+    send_algorithm_->OnIncomingLoss(ack_receive_time);
+  }
 }
 
-QuicTime::Delta QuicCongestionManager::TimeUntilSend(bool is_retransmission) {
-  return send_algorithm_->TimeUntilSend(is_retransmission);
+QuicTime::Delta QuicCongestionManager::TimeUntilSend(QuicTime now,
+                                                     bool is_retransmission) {
+  return send_algorithm_->TimeUntilSend(now, is_retransmission);
 }
 
 bool QuicCongestionManager::GenerateCongestionFeedback(
@@ -117,19 +132,24 @@ const QuicTime::Delta QuicCongestionManager::DefaultRetransmissionTime() {
 
 // static
 const QuicTime::Delta QuicCongestionManager::GetRetransmissionDelay(
+    size_t unacked_packets_count,
     size_t number_retransmissions) {
+  if (unacked_packets_count <= kTailDropWindowSize) {
+    return QuicTime::Delta::FromMilliseconds(kDefaultRetransmissionTimeMs);
+  }
+
   return QuicTime::Delta::FromMilliseconds(
       kDefaultRetransmissionTimeMs *
       (1 << min<size_t>(number_retransmissions, kMaxRetransmissions)));
 }
 
-QuicBandwidth QuicCongestionManager::SentBandwidth() const {
+QuicBandwidth QuicCongestionManager::SentBandwidth(
+    QuicTime feedback_receive_time) const {
   const QuicTime::Delta kBitrateSmoothingPeriod =
       QuicTime::Delta::FromMilliseconds(kBitrateSmoothingPeriodMs);
   const QuicTime::Delta kMinBitrateSmoothingPeriod =
       QuicTime::Delta::FromMilliseconds(kMinBitrateSmoothingPeriodMs);
 
-  QuicTime now = clock_->Now();
   QuicByteCount sum_bytes_sent = 0;
 
   // Sum packet from new until they are kBitrateSmoothingPeriod old.
@@ -138,7 +158,8 @@ QuicBandwidth QuicCongestionManager::SentBandwidth() const {
 
   QuicTime::Delta max_diff = QuicTime::Delta::Zero();
   for (; history_rit != packet_history_map_.rend(); ++history_rit) {
-    QuicTime::Delta diff = now.Subtract(history_rit->second->SendTimestamp());
+    QuicTime::Delta diff =
+        feedback_receive_time.Subtract(history_rit->second->SendTimestamp());
     if (diff > kBitrateSmoothingPeriod) {
       break;
     }
@@ -159,16 +180,14 @@ QuicBandwidth QuicCongestionManager::BandwidthEstimate() {
 void QuicCongestionManager::CleanupPacketHistory() {
   const QuicTime::Delta kHistoryPeriod =
       QuicTime::Delta::FromMilliseconds(kHistoryPeriodMs);
-  QuicTime Now = clock_->Now();
+  QuicTime now = clock_->ApproximateNow();
 
   SendAlgorithmInterface::SentPacketsMap::iterator history_it =
       packet_history_map_.begin();
   for (; history_it != packet_history_map_.end(); ++history_it) {
-    if (Now.Subtract(history_it->second->SendTimestamp()) <= kHistoryPeriod) {
+    if (now.Subtract(history_it->second->SendTimestamp()) <= kHistoryPeriod) {
       return;
     }
-    DLOG(INFO) << "Clear sequence number:" << history_it->first
-               << "from history";
     delete history_it->second;
     packet_history_map_.erase(history_it);
     history_it = packet_history_map_.begin();

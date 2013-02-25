@@ -23,7 +23,7 @@ TEST(NullDecrypterTest, Decrypt) {
   };
   NullDecrypter decrypter;
   scoped_ptr<QuicData> decrypted(
-      decrypter.Decrypt("hello world!",
+      decrypter.Decrypt(0, "hello world!",
                         StringPiece(reinterpret_cast<const char*>(expected),
                                     arraysize(expected))));
   ASSERT_TRUE(decrypted.get());
@@ -43,7 +43,7 @@ TEST(NullDecrypterTest, BadHash) {
   };
   NullDecrypter decrypter;
   scoped_ptr<QuicData> decrypted(
-      decrypter.Decrypt("hello world!",
+      decrypter.Decrypt(0, "hello world!",
                         StringPiece(reinterpret_cast<const char*>(expected),
                                     arraysize(expected))));
   ASSERT_FALSE(decrypted.get());
@@ -59,7 +59,7 @@ TEST(NullDecrypterTest, ShortInput) {
   };
   NullDecrypter decrypter;
   scoped_ptr<QuicData> decrypted(
-      decrypter.Decrypt("hello world!",
+      decrypter.Decrypt(0, "hello world!",
                         StringPiece(reinterpret_cast<const char*>(expected),
                                     arraysize(expected))));
   ASSERT_FALSE(decrypted.get());

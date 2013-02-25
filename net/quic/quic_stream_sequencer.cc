@@ -44,11 +44,10 @@ bool QuicStreamSequencer::WillAcceptStreamFrame(
   size_t data_len = frame.data.size();
   DCHECK_LE(data_len, max_frame_memory_);
 
-  QuicStreamOffset byte_offset = frame.offset;
-  if (byte_offset < num_bytes_consumed_ ||
-      frames_.find(byte_offset) != frames_.end()) {
-    return false;
+  if (IsDuplicate(frame)) {
+    return true;
   }
+  QuicStreamOffset byte_offset = frame.offset;
   if (data_len > max_frame_memory_) {
     // We're never going to buffer this frame and we can't pass it up.
     // The stream might only consume part of it and we'd need a partial ack.
@@ -71,6 +70,10 @@ bool QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
     // This should not happen, as WillAcceptFrame should be called before
     // OnStreamFrame.  Error handling should be done by the caller.
     return false;
+  }
+  if (IsDuplicate(frame)) {
+    // Silently ignore duplicates.
+    return true;
   }
 
   QuicStreamOffset byte_offset = frame.offset;
@@ -98,7 +101,6 @@ bool QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
       byte_offset += bytes_consumed;
     }
   }
-
   DVLOG(1) << "Buffering packet at offset " << byte_offset;
   frames_.insert(make_pair(byte_offset, string(data, data_len)));
   return true;
@@ -149,6 +151,15 @@ bool QuicStreamSequencer::IsHalfClosed() const {
 
 bool QuicStreamSequencer::IsClosed() const {
   return num_bytes_consumed_ >= close_offset_ && half_close_ == false;
+}
+
+bool QuicStreamSequencer::IsDuplicate(const QuicStreamFrame& frame) const {
+  // A frame is duplicate if the frame offset is smaller than our bytes consumed
+  // or we have stored the frame in our map.
+  // TODO(pwestin): Is it possible that a new frame contain more data even if
+  // the offset is the same?
+  return (frame.offset < num_bytes_consumed_ ||
+      frames_.find(frame.offset) != frames_.end());
 }
 
 void QuicStreamSequencer::FlushBufferedFrames() {

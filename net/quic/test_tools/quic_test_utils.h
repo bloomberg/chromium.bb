@@ -7,6 +7,8 @@
 #ifndef NET_QUIC_TEST_TOOLS_QUIC_TEST_UTILS_H_
 #define NET_QUIC_TEST_TOOLS_QUIC_TEST_UTILS_H_
 
+#include <vector>
+
 #include "net/quic/congestion_control/send_algorithm_interface.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_framer.h"
@@ -63,6 +65,7 @@ class MockFramerVisitor : public QuicFramerVisitorInterface {
   MOCK_METHOD1(OnRstStreamFrame, void(const QuicRstStreamFrame& frame));
   MOCK_METHOD1(OnConnectionCloseFrame,
                void(const QuicConnectionCloseFrame& frame));
+  MOCK_METHOD1(OnGoAwayFrame, void(const QuicGoAwayFrame& frame));
   MOCK_METHOD0(OnPacketComplete, void());
 
  private:
@@ -88,34 +91,11 @@ class NoOpFramerVisitor : public QuicFramerVisitorInterface {
   virtual void OnRstStreamFrame(const QuicRstStreamFrame& frame) OVERRIDE {}
   virtual void OnConnectionCloseFrame(
       const QuicConnectionCloseFrame& frame) OVERRIDE {}
+  virtual void OnGoAwayFrame(const QuicGoAwayFrame& frame) OVERRIDE {}
   virtual void OnPacketComplete() OVERRIDE {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NoOpFramerVisitor);
-};
-
-class FramerVisitorCapturingAcks : public NoOpFramerVisitor {
- public:
-  FramerVisitorCapturingAcks();
-  virtual ~FramerVisitorCapturingAcks();
-
-  // NoOpFramerVisitor
-  virtual bool OnPacketHeader(const QuicPacketHeader& header) OVERRIDE;
-  virtual void OnAckFrame(const QuicAckFrame& frame) OVERRIDE;
-  virtual void OnCongestionFeedbackFrame(
-      const QuicCongestionFeedbackFrame& frame) OVERRIDE;
-
-  QuicPacketHeader* header() { return &header_; }
-
-  QuicAckFrame* ack() { return ack_.get(); }
-  QuicCongestionFeedbackFrame* feedback() { return feedback_.get(); }
-
- private:
-  QuicPacketHeader header_;
-  scoped_ptr<QuicAckFrame> ack_;
-  scoped_ptr<QuicCongestionFeedbackFrame> feedback_;
-
-  DISALLOW_COPY_AND_ASSIGN(FramerVisitorCapturingAcks);
 };
 
 class FramerVisitorCapturingPublicReset : public NoOpFramerVisitor {
@@ -134,6 +114,47 @@ class FramerVisitorCapturingPublicReset : public NoOpFramerVisitor {
   QuicPublicResetPacket public_reset_packet_;
 };
 
+class FramerVisitorCapturingFrames : public NoOpFramerVisitor {
+ public:
+  FramerVisitorCapturingFrames();
+  virtual ~FramerVisitorCapturingFrames();
+
+  // NoOpFramerVisitor
+
+  virtual bool OnPacketHeader(const QuicPacketHeader& header) OVERRIDE;
+  virtual void OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE;
+  virtual void OnAckFrame(const QuicAckFrame& frame) OVERRIDE;
+  virtual void OnCongestionFeedbackFrame(
+      const QuicCongestionFeedbackFrame& frame) OVERRIDE;
+  virtual void OnRstStreamFrame(const QuicRstStreamFrame& frame) OVERRIDE;
+  virtual void OnConnectionCloseFrame(
+      const QuicConnectionCloseFrame& frame) OVERRIDE;
+  virtual void OnGoAwayFrame(const QuicGoAwayFrame& frame) OVERRIDE;
+
+  size_t frame_count() { return frame_count_; }
+  QuicPacketHeader* header() { return &header_; }
+  const std::vector<QuicStreamFrame>* stream_frames() {
+    return &stream_frames_;
+  }
+  QuicAckFrame* ack() { return ack_.get(); }
+  QuicCongestionFeedbackFrame* feedback() { return feedback_.get(); }
+  QuicRstStreamFrame* rst() { return rst_.get(); }
+  QuicConnectionCloseFrame* close() { return close_.get(); }
+  QuicGoAwayFrame* goaway() { return goaway_.get(); }
+
+ private:
+  size_t frame_count_;
+  QuicPacketHeader header_;
+  std::vector<QuicStreamFrame> stream_frames_;
+  scoped_ptr<QuicAckFrame> ack_;
+  scoped_ptr<QuicCongestionFeedbackFrame> feedback_;
+  scoped_ptr<QuicRstStreamFrame> rst_;
+  scoped_ptr<QuicConnectionCloseFrame> close_;
+  scoped_ptr<QuicGoAwayFrame> goaway_;
+
+  DISALLOW_COPY_AND_ASSIGN(FramerVisitorCapturingFrames);
+};
+
 class MockConnectionVisitor : public QuicConnectionVisitorInterface {
  public:
   MockConnectionVisitor();
@@ -144,8 +165,9 @@ class MockConnectionVisitor : public QuicConnectionVisitorInterface {
                               const QuicPacketHeader& header,
                               const std::vector<QuicStreamFrame>& frame));
   MOCK_METHOD1(OnRstStream, void(const QuicRstStreamFrame& frame));
+  MOCK_METHOD1(OnGoAway, void(const QuicGoAwayFrame& frame));
   MOCK_METHOD2(ConnectionClose, void(QuicErrorCode error, bool from_peer));
-  MOCK_METHOD1(OnAck, void(AckedPackets acked_packets));
+  MOCK_METHOD1(OnAck, void(const SequenceNumberSet& acked_packets));
   MOCK_METHOD0(OnCanWrite, bool());
 
  private:
@@ -188,10 +210,11 @@ class MockConnection : public QuicConnection {
                                       const QuicEncryptedPacket& packet));
   MOCK_METHOD1(SendConnectionClose, void(QuicErrorCode error));
 
-  MOCK_METHOD3(SendRstStream, void(QuicStreamId id,
-                                   QuicErrorCode error,
-                                   QuicStreamOffset offset));
-
+  MOCK_METHOD2(SendRstStream, void(QuicStreamId id,
+                                   QuicErrorCode error));
+  MOCK_METHOD3(SendGoAway, void(QuicErrorCode error,
+                                QuicStreamId last_good_stream_id,
+                                const string& reason));
   MOCK_METHOD0(OnCanWrite, bool());
 
   void ProcessUdpPacketInternal(const IPEndPoint& self_address,
@@ -212,7 +235,7 @@ class PacketSavingConnection : public MockConnection {
 
   virtual bool SendOrQueuePacket(QuicPacketSequenceNumber sequence_number,
                                  QuicPacket* packet,
-                                 bool force) OVERRIDE;
+                                 QuicPacketEntropyHash entropy_hash) OVERRIDE;
 
   std::vector<QuicPacket*> packets_;
 
@@ -249,17 +272,32 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
   MockSendAlgorithm();
   virtual ~MockSendAlgorithm();
 
-  MOCK_METHOD2(OnIncomingQuicCongestionFeedbackFrame,
-               void(const QuicCongestionFeedbackFrame&, const SentPacketsMap&));
+  MOCK_METHOD4(OnIncomingQuicCongestionFeedbackFrame,
+               void(const QuicCongestionFeedbackFrame&,
+                    QuicTime feedback_receive_time,
+                    QuicBandwidth sent_bandwidth,
+                    const SentPacketsMap&));
   MOCK_METHOD3(OnIncomingAck,
                void(QuicPacketSequenceNumber, QuicByteCount, QuicTime::Delta));
-  MOCK_METHOD1(OnIncomingLoss, void(int number_of_lost_packets));
-  MOCK_METHOD3(SentPacket, void(QuicPacketSequenceNumber, QuicByteCount, bool));
-  MOCK_METHOD1(TimeUntilSend, QuicTime::Delta(bool));
+  MOCK_METHOD1(OnIncomingLoss, void(QuicTime));
+  MOCK_METHOD4(SentPacket, void(QuicTime sent_time, QuicPacketSequenceNumber,
+                                QuicByteCount, bool));
+  MOCK_METHOD2(TimeUntilSend, QuicTime::Delta(QuicTime now, bool));
   MOCK_METHOD0(BandwidthEstimate, QuicBandwidth(void));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSendAlgorithm);
+};
+
+class TestEntropyCalculator :
+      public QuicReceivedEntropyHashCalculatorInterface {
+ public:
+  TestEntropyCalculator() { }
+  virtual ~TestEntropyCalculator() { }
+
+  virtual QuicPacketEntropyHash ReceivedEntropyHash(
+      QuicPacketSequenceNumber sequence_number) const OVERRIDE;
+
 };
 
 }  // namespace test

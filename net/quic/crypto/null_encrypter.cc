@@ -13,7 +13,16 @@ namespace net {
 
 const size_t kHashSize = 16;  // size of uint128 serialized
 
-QuicData* NullEncrypter::Encrypt(StringPiece associated_data,
+bool NullEncrypter::SetKey(StringPiece key) {
+  return key.empty();
+}
+
+bool NullEncrypter::SetNoncePrefix(StringPiece nonce_prefix) {
+  return nonce_prefix.empty();
+}
+
+QuicData* NullEncrypter::Encrypt(QuicPacketSequenceNumber /*sequence_number*/,
+                                 StringPiece associated_data,
                                  StringPiece plaintext) {
   // TODO(rch): avoid buffer copy here
   string buffer = associated_data.as_string();
@@ -26,11 +35,19 @@ QuicData* NullEncrypter::Encrypt(StringPiece associated_data,
   return new QuicData(writer.take(), len, true);
 }
 
-size_t NullEncrypter::GetMaxPlaintextSize(size_t ciphertext_size) {
+size_t NullEncrypter::GetKeySize() const {
+  return 0;
+}
+
+size_t NullEncrypter::GetNoncePrefixSize() const {
+  return 0;
+}
+
+size_t NullEncrypter::GetMaxPlaintextSize(size_t ciphertext_size) const {
   return ciphertext_size - kHashSize;
 }
 
-size_t NullEncrypter::GetCiphertextSize(size_t plaintext_size) {
+size_t NullEncrypter::GetCiphertextSize(size_t plaintext_size) const {
   return plaintext_size + kHashSize;
 }
 

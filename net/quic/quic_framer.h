@@ -74,6 +74,9 @@ class NET_EXPORT_PRIVATE QuicFramerVisitorInterface {
   virtual void OnConnectionCloseFrame(
       const QuicConnectionCloseFrame& frame) = 0;
 
+  // Called when a GoAwayFrame has been parsed.
+  virtual void OnGoAwayFrame(const QuicGoAwayFrame& frame) = 0;
+
   // Called when FEC data has been parsed.
   virtual void OnFecData(const QuicFecData& fec) = 0;
 
@@ -91,6 +94,21 @@ class NET_EXPORT_PRIVATE QuicFecBuilderInterface {
                                           base::StringPiece payload) = 0;
 };
 
+// This class calculates the received entropy of the ack packet being
+// framed, should it get truncated.
+class NET_EXPORT_PRIVATE QuicReceivedEntropyHashCalculatorInterface {
+ public:
+  virtual ~QuicReceivedEntropyHashCalculatorInterface() {}
+
+  // When an ack frame gets truncated while being framed the received
+  // entropy of the ack frame needs to be calculated since the some of the
+  // missing packets are not added and the largest observed might be lowered.
+  // This should return the received entropy hash of the packets received up to
+  // and including |sequence_number|.
+  virtual QuicPacketEntropyHash ReceivedEntropyHash(
+      QuicPacketSequenceNumber sequence_number) const = 0;
+};
+
 // Class for parsing and constructing QUIC packets.  It has a
 // QuicFramerVisitorInterface that is called when packets are parsed.
 // It also has a QuicFecBuilder that is called when packets are constructed
@@ -106,8 +124,8 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // Frame was truncated.  last_written in this case is the iterator for the
   // last missing packet which fit in the outgoing ack.
   static QuicPacketSequenceNumber CalculateLargestObserved(
-      const SequenceSet& missing_packets,
-      SequenceSet::const_iterator last_written);
+      const SequenceNumberSet& missing_packets,
+      SequenceNumberSet::const_iterator last_written);
 
   // Set callbacks to be called from the framer.  A visitor must be set, or
   // else the framer will likely crash.  It is acceptable for the visitor
@@ -122,6 +140,15 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // will be used.  The builder need not be set.
   void set_fec_builder(QuicFecBuilderInterface* builder) {
     fec_builder_ = builder;
+  }
+
+  // Set entropy calculator to be called from the framer when it needs the
+  // entropy of a truncated ack frame. An entropy calculator must be set or else
+  // the framer will likely crash. If this is called multiple times, only the
+  // last visitor will be used.
+  void set_entropy_calculator(
+      QuicReceivedEntropyHashCalculatorInterface* entropy_calculator) {
+    entropy_calculator_ = entropy_calculator;
   }
 
   QuicErrorCode error() const {
@@ -139,7 +166,7 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // for parsing.
   // Return true if the packet was processed succesfully. |payload| must be
   // the complete DECRYPTED payload of the revived packet.
-  bool ProcessRevivedPacket(const QuicPacketHeader& header,
+  bool ProcessRevivedPacket(QuicPacketHeader* header,
                             base::StringPiece payload);
 
   // Returns the number of bytes added to the packet for the specified frame,
@@ -148,22 +175,24 @@ class NET_EXPORT_PRIVATE QuicFramer {
   size_t GetSerializedFrameLength(
       const QuicFrame& frame, size_t free_bytes, bool first_frame);
 
-  // Returns a new QuicPacket, owned by the caller, populated with the fields
-  // in |header| and |frames|, or NULL if the packet could not be created.
+  // Returns a SerializedPacket whose |packet| member is owned by the caller,
+  // and is populated with the fields in |header| and |frames|, or is NULL if
+  // the packet could not be created.
   // TODO(ianswett): Used for testing only.
-  QuicPacket* ConstructFrameDataPacket(const QuicPacketHeader& header,
-                                       const QuicFrames& frames);
+  SerializedPacket ConstructFrameDataPacket(const QuicPacketHeader& header,
+                                            const QuicFrames& frames);
 
-  // Returns a new QuicPacket from the first |num_frames| frames, owned by the
-  // caller or NULL if the packet could not be created.  The packet must be of
-  // size |packet_size|.
-  QuicPacket* ConstructFrameDataPacket(const QuicPacketHeader& header,
-                                       const QuicFrames& frames,
-                                       size_t packet_size);
+  // Returns a SerializedPacket whose |packet| member is owned by the caller,
+  // is created from the first |num_frames| frames, or is NULL if the packet
+  // could not be created.  The packet must be of size |packet_size|.
+  SerializedPacket ConstructFrameDataPacket(const QuicPacketHeader& header,
+                                            const QuicFrames& frames,
+                                            size_t packet_size);
 
-  // Returns a new QuicPacket, owned by the caller, populated with the fields
-  // in |header| and |fec|, or NULL if the packet could not be created.
-  QuicPacket* ConstructFecPacket(const QuicPacketHeader& header,
+  // Returns a SerializedPacket whose |packet| member is owned by the caller,
+  // and is populated with the fields in |header| and |fec|, or is NULL if the
+  // packet could not be created.
+  SerializedPacket ConstructFecPacket(const QuicPacketHeader& header,
                                  const QuicFecData& fec);
 
   // Returns a new public reset packet, owned by the caller.
@@ -171,7 +200,8 @@ class NET_EXPORT_PRIVATE QuicFramer {
       const QuicPublicResetPacket& packet);
 
   // Returns a new encrypted packet, owned by the caller.
-  QuicEncryptedPacket* EncryptPacket(const QuicPacket& packet);
+  QuicEncryptedPacket* EncryptPacket(QuicPacketSequenceNumber sequence_number,
+                                     const QuicPacket& packet);
 
   // Returns the maximum length of plaintext that can be encrypted
   // to ciphertext no larger than |ciphertext_size|.
@@ -186,6 +216,9 @@ class NET_EXPORT_PRIVATE QuicFramer {
 
  private:
   friend class test::QuicFramerPeer;
+
+  QuicPacketEntropyHash GetPacketEntropyHash(
+      const QuicPacketHeader& header) const;
 
   bool ProcessDataPacket(const QuicPacketPublicHeader& public_header,
                          const QuicEncryptedPacket& packet);
@@ -210,8 +243,10 @@ class NET_EXPORT_PRIVATE QuicFramer {
       QuicCongestionFeedbackFrame* congestion_feedback);
   bool ProcessRstStreamFrame();
   bool ProcessConnectionCloseFrame();
+  bool ProcessGoAwayFrame();
 
-  bool DecryptPayload(const QuicEncryptedPacket& packet);
+  bool DecryptPayload(QuicPacketSequenceNumber packet_sequence_number,
+                      const QuicEncryptedPacket& packet);
 
   // Returns the full packet sequence number from the truncated
   // wire format version and the last seen packet sequence number.
@@ -237,6 +272,8 @@ class NET_EXPORT_PRIVATE QuicFramer {
   bool AppendConnectionCloseFramePayload(
       const QuicConnectionCloseFrame& frame,
       QuicDataWriter* builder);
+  bool AppendGoAwayFramePayload(const QuicGoAwayFrame& frame,
+                                QuicDataWriter* writer);
   bool RaiseError(QuicErrorCode error);
 
   void set_error(QuicErrorCode error) {
@@ -251,6 +288,7 @@ class NET_EXPORT_PRIVATE QuicFramer {
   scoped_ptr<QuicDataReader> reader_;
   QuicFramerVisitorInterface* visitor_;
   QuicFecBuilderInterface* fec_builder_;
+  QuicReceivedEntropyHashCalculatorInterface* entropy_calculator_;
   QuicErrorCode error_;
   QuicPacketSequenceNumber last_sequence_number_;
   // Buffer containing decrypted payload data during parsing.

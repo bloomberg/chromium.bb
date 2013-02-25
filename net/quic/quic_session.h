@@ -40,9 +40,10 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
                         const QuicPacketHeader& header,
                         const std::vector<QuicStreamFrame>& frame) OVERRIDE;
   virtual void OnRstStream(const QuicRstStreamFrame& frame) OVERRIDE;
+  virtual void OnGoAway(const QuicGoAwayFrame& frame) OVERRIDE;
   virtual void ConnectionClose(QuicErrorCode error, bool from_peer) OVERRIDE;
   // Not needed for HTTP.
-  virtual void OnAck(AckedPackets acked_packets) OVERRIDE {}
+  virtual void OnAck(const SequenceNumberSet& acked_packets) OVERRIDE {}
   virtual bool OnCanWrite() OVERRIDE;
 
   // Called by streams when they want to write data to the peer.
@@ -56,8 +57,10 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
                                      bool fin);
   // Called by streams when they want to close the stream in both directions.
   void SendRstStream(QuicStreamId id,
-                     QuicErrorCode error,
-                     QuicStreamOffset offset);
+                     QuicErrorCode error);
+
+  // Called when the session wants to go away and not accept any new streams.
+  void SendGoAway(QuicErrorCode error_code, const std::string& reason);
 
   // Removes the stream associated with 'stream_id' from the active stream map.
   virtual void CloseStream(QuicStreamId stream_id);
@@ -90,6 +93,14 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   void MarkWriteBlocked(QuicStreamId id);
 
+  bool goaway_received() const {
+    return goaway_received_;
+  }
+
+  bool goaway_sent() const {
+    return goaway_sent_;
+  }
+
  protected:
   // Creates a new stream, owned by the caller, to handle a peer-initiated
   // stream.  Returns NULL and does error handling if the stream can not be
@@ -111,15 +122,10 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   ReliableQuicStream* GetIncomingReliableStream(QuicStreamId stream_id);
 
-  size_t get_max_open_streams() const {
-    return max_open_streams_;
-  }
-
- protected:
   // This is called after every call other than OnConnectionClose from the
   // QuicConnectionVisitor to allow post-processing once the work has been done.
   // In this case, it deletes streams given that it's safe to do so (no other
-  // opterations are being done on the streams at this time)
+  // operations are being done on the streams at this time)
   virtual void PostProcessAfterData();
 
   base::hash_map<QuicStreamId, ReliableQuicStream*>* streams() {
@@ -127,6 +133,10 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   }
   std::vector<ReliableQuicStream*>* closed_streams() {
     return &closed_streams_;
+  }
+
+  size_t get_max_open_streams() const {
+    return max_open_streams_;
   }
 
  private:
@@ -161,6 +171,11 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   std::list<QuicStreamId> write_blocked_streams_;
 
   QuicStreamId largest_peer_created_stream_id_;
+
+  // Whether a GoAway has been received.
+  bool goaway_received_;
+  // Whether a GoAway has been sent.
+  bool goaway_sent_;
 };
 
 }  // namespace net

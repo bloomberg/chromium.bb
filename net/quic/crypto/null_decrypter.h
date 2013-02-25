@@ -19,7 +19,10 @@ class NET_EXPORT_PRIVATE NullDecrypter : public QuicDecrypter {
   virtual ~NullDecrypter() {}
 
   // QuicDecrypter implementation
-  virtual QuicData* Decrypt(base::StringPiece associated_data,
+  virtual bool SetKey(base::StringPiece key) OVERRIDE;
+  virtual bool SetNoncePrefix(base::StringPiece nonce_prefix) OVERRIDE;
+  virtual QuicData* Decrypt(QuicPacketSequenceNumber sequence_number,
+                            base::StringPiece associated_data,
                             base::StringPiece ciphertext) OVERRIDE;
 };
 

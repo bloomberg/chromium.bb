@@ -30,10 +30,13 @@ Value* NetLogQuicPacketHeaderCallback(const QuicPacketHeader* header,
   DictionaryValue* dict = new DictionaryValue();
   dict->SetString("guid",
                   base::Uint64ToString(header->public_header.guid));
-  dict->SetInteger("public_flags", header->public_header.flags);
+  dict->SetInteger("reset_flag", header->public_header.reset_flag);
+  dict->SetInteger("version_flag", header->public_header.version_flag);
   dict->SetString("packet_sequence_number",
                   base::Uint64ToString(header->packet_sequence_number));
-  dict->SetInteger("private_flags", header->private_flags);
+  dict->SetInteger("entropy_flag", header->entropy_flag);
+  dict->SetInteger("fec_flag", header->fec_flag);
+  dict->SetInteger("fec_entropy_flag", header->fec_entropy_flag);
   dict->SetInteger("fec_group", header->fec_group);
   return dict;
 }
@@ -62,8 +65,9 @@ Value* NetLogQuicAckFrameCallback(const QuicAckFrame* frame,
       base::Uint64ToString(frame->received_info.largest_observed));
   ListValue* missing = new ListValue();
   received_info->Set("missing_packets", missing);
-  const SequenceSet& missing_packets = frame->received_info.missing_packets;
-  for (SequenceSet::const_iterator it = missing_packets.begin();
+  const SequenceNumberSet& missing_packets =
+      frame->received_info.missing_packets;
+  for (SequenceNumberSet::const_iterator it = missing_packets.begin();
        it != missing_packets.end(); ++it) {
     missing->Append(new base::StringValue(base::Uint64ToString(*it)));
   }
@@ -110,7 +114,6 @@ Value* NetLogQuicRstStreamFrameCallback(const QuicRstStreamFrame* frame,
                                         NetLog::LogLevel /* log_level */) {
   DictionaryValue* dict = new DictionaryValue();
   dict->SetInteger("stream_id", frame->stream_id);
-  dict->SetInteger("offset", frame->offset);
   dict->SetInteger("error_code", frame->error_code);
   dict->SetString("details", frame->error_details);
   return dict;

@@ -29,25 +29,52 @@ bool NoOpFramerVisitor::OnPacketHeader(const QuicPacketHeader& header) {
   return true;
 }
 
-FramerVisitorCapturingAcks::FramerVisitorCapturingAcks() {
+FramerVisitorCapturingFrames::FramerVisitorCapturingFrames() : frame_count_(0) {
 }
 
-FramerVisitorCapturingAcks::~FramerVisitorCapturingAcks() {
+FramerVisitorCapturingFrames::~FramerVisitorCapturingFrames() {
 }
 
-bool FramerVisitorCapturingAcks::OnPacketHeader(
+bool FramerVisitorCapturingFrames::OnPacketHeader(
     const QuicPacketHeader& header) {
   header_ = header;
+  frame_count_ = 0;
   return true;
 }
 
-void FramerVisitorCapturingAcks::OnAckFrame(const QuicAckFrame& frame) {
-  ack_.reset(new QuicAckFrame(frame));
+void FramerVisitorCapturingFrames::OnStreamFrame(const QuicStreamFrame& frame) {
+  // TODO(ianswett): Own the underlying string, so it will not exist outside
+  // this callback.
+  stream_frames_.push_back(frame);
+  ++frame_count_;
 }
 
-void FramerVisitorCapturingAcks::OnCongestionFeedbackFrame(
+void FramerVisitorCapturingFrames::OnAckFrame(const QuicAckFrame& frame) {
+  ack_.reset(new QuicAckFrame(frame));
+  ++frame_count_;
+}
+
+void FramerVisitorCapturingFrames::OnCongestionFeedbackFrame(
     const QuicCongestionFeedbackFrame& frame) {
   feedback_.reset(new QuicCongestionFeedbackFrame(frame));
+  ++frame_count_;
+}
+
+void FramerVisitorCapturingFrames::OnRstStreamFrame(
+    const QuicRstStreamFrame& frame) {
+  rst_.reset(new QuicRstStreamFrame(frame));
+  ++frame_count_;
+}
+
+void FramerVisitorCapturingFrames::OnConnectionCloseFrame(
+    const QuicConnectionCloseFrame& frame) {
+  close_.reset(new QuicConnectionCloseFrame(frame));
+  ++frame_count_;
+}
+
+void FramerVisitorCapturingFrames::OnGoAwayFrame(const QuicGoAwayFrame& frame) {
+  goaway_.reset(new QuicGoAwayFrame(frame));
+  ++frame_count_;
 }
 
 FramerVisitorCapturingPublicReset::FramerVisitorCapturingPublicReset() {
@@ -108,7 +135,7 @@ PacketSavingConnection::~PacketSavingConnection() {
 bool PacketSavingConnection::SendOrQueuePacket(
     QuicPacketSequenceNumber sequence_number,
     QuicPacket* packet,
-    bool force) {
+    QuicPacketEntropyHash hash) {
   packets_.push_back(packet);
   return true;
 }
@@ -220,9 +247,13 @@ static QuicPacket* ConstructPacketFromHandshakeMessage(
 
   QuicPacketHeader header;
   header.public_header.guid = guid;
-  header.public_header.flags = PACKET_PUBLIC_FLAGS_NONE;
+  header.public_header.reset_flag = false;
+  header.public_header.version_flag = false;
   header.packet_sequence_number = 1;
-  header.private_flags = PACKET_PRIVATE_FLAGS_NONE;
+  header.entropy_flag = false;
+  header.entropy_hash = 0;
+  header.fec_flag = false;
+  header.fec_entropy_flag = false;
   header.fec_group = 0;
 
   QuicStreamFrame stream_frame(kCryptoStreamId, false, 0,
@@ -231,7 +262,7 @@ static QuicPacket* ConstructPacketFromHandshakeMessage(
   QuicFrame frame(&stream_frame);
   QuicFrames frames;
   frames.push_back(frame);
-  return quic_framer.ConstructFrameDataPacket(header, frames);
+  return quic_framer.ConstructFrameDataPacket(header, frames).packet;
 }
 
 QuicPacket* ConstructHandshakePacket(QuicGuid guid, CryptoTag tag) {
@@ -266,6 +297,11 @@ QuicPacket* ConstructServerHelloPacket(QuicGuid guid,
   CryptoHandshakeMessage message;
   CryptoUtils::FillServerHelloMessage(negotiated_params, nonce, &message);
   return ConstructPacketFromHandshakeMessage(guid, message);
+}
+
+QuicPacketEntropyHash TestEntropyCalculator::ReceivedEntropyHash(
+    QuicPacketSequenceNumber sequence_number) const {
+  return 1u;
 }
 
 }  // namespace test

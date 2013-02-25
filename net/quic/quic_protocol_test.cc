@@ -11,41 +11,26 @@ namespace net {
 namespace test {
 namespace {
 
-TEST(QuicProtocolTest, ReceivedInfo_RecordReceived) {
+TEST(QuicProtocolTest, IsAawaitingPacket) {
   ReceivedPacketInfo received_info;
-  received_info.RecordReceived(1u);
+  received_info.largest_observed = 10u;
+  EXPECT_TRUE(IsAwaitingPacket(received_info, 11u));
+  EXPECT_FALSE(IsAwaitingPacket(received_info, 1u));
 
-  EXPECT_EQ(1u, received_info.largest_observed);
-  EXPECT_EQ(0u, received_info.missing_packets.size());
-
-  received_info.RecordReceived(3u);
-
-  EXPECT_EQ(3u, received_info.largest_observed);
-  EXPECT_EQ(1u, received_info.missing_packets.size());
-
-  received_info.RecordReceived(2u);
-
-  EXPECT_EQ(3u, received_info.largest_observed);
-  EXPECT_EQ(0u, received_info.missing_packets.size());
+  received_info.missing_packets.insert(10);
+  EXPECT_TRUE(IsAwaitingPacket(received_info, 10u));
 }
 
-TEST(QuicProtocolTest, ReceivedInfo_ClearMissingBefore) {
+TEST(QuicProtocolTest, InsertMissingPacketsBetween) {
   ReceivedPacketInfo received_info;
-  received_info.RecordReceived(1u);
+  InsertMissingPacketsBetween(&received_info, 4u, 10u);
+  EXPECT_EQ(6u, received_info.missing_packets.size());
 
-  // Clear nothing.
-  received_info.ClearMissingBefore(1);
-  EXPECT_EQ(0u, received_info.missing_packets.size());
-
-  received_info.RecordReceived(3u);
-
-  // Clear the first packet.
-  received_info.ClearMissingBefore(2);
-  EXPECT_EQ(1u, received_info.missing_packets.size());
-
-  // Clear the second packet, which has not been received.
-  received_info.ClearMissingBefore(3);
-  EXPECT_EQ(0u, received_info.missing_packets.size());
+  QuicPacketSequenceNumber i = 4;
+  for (SequenceNumberSet::iterator it = received_info.missing_packets.begin();
+       it != received_info.missing_packets.end(); ++it, ++i) {
+    EXPECT_EQ(i, *it);
+  }
 }
 
 }  // namespace

@@ -92,9 +92,9 @@ TEST_F(QuicStreamSequencerTest, RejectOldFrame) {
   EXPECT_TRUE(sequencer_->OnFrame(0, "abc", 3));
   EXPECT_EQ(0u, sequencer_->frames()->size());
   EXPECT_EQ(3u, sequencer_->num_bytes_consumed());
-  // Nack this - it matches a past sequence number and we should not see it
+  // Ignore this - it matches a past sequence number and we should not see it
   // again.
-  EXPECT_FALSE(sequencer_->OnFrame(0, "def", 3));
+  EXPECT_TRUE(sequencer_->OnFrame(0, "def", 3));
   EXPECT_EQ(0u, sequencer_->frames()->size());
 }
 
@@ -122,7 +122,7 @@ TEST_F(QuicStreamSequencerTest, RejectBufferedFrame) {
   EXPECT_EQ(0u, sequencer_->num_bytes_consumed());
   // Ignore this - it matches a buffered frame.
   // Right now there's no checking that the payload is consistent.
-  EXPECT_FALSE(sequencer_->OnFrame(0, "def", 3));
+  EXPECT_TRUE(sequencer_->OnFrame(0, "def", 3));
   EXPECT_EQ(1u, sequencer_->frames()->size());
 }
 

@@ -5,7 +5,10 @@
 #include "net/quic/quic_packet_creator.h"
 
 #include "base/logging.h"
+#include "net/quic/crypto/quic_random.h"
+#include "net/quic/quic_fec_group.h"
 #include "net/quic/quic_utils.h"
+
 
 using base::StringPiece;
 using std::make_pair;
@@ -15,9 +18,12 @@ using std::vector;
 
 namespace net {
 
-QuicPacketCreator::QuicPacketCreator(QuicGuid guid, QuicFramer* framer)
+QuicPacketCreator::QuicPacketCreator(QuicGuid guid,
+                                     QuicFramer* framer,
+                                     QuicRandom* random_generator)
     : guid_(guid),
       framer_(framer),
+      random_generator_(random_generator),
       sequence_number_(0),
       fec_group_number_(0),
       packet_size_(kPacketHeaderSize) {
@@ -48,6 +54,10 @@ void QuicPacketCreator::MaybeStartFEC() {
   }
 }
 
+bool QuicPacketCreator::HasRoomForStreamFrame() const {
+  return (BytesFree() > kFrameTypeSize + kMinStreamFrameLength);
+}
+
 size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
                                             StringPiece data,
                                             QuicStreamOffset offset,
@@ -55,10 +65,11 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
                                             QuicFrame* frame) {
   DCHECK_GT(options_.max_packet_length,
             QuicUtils::StreamFramePacketOverhead(1));
-  const size_t free_bytes = BytesFree();
-  DCHECK_GE(free_bytes, kFrameTypeSize + kMinStreamFrameLength);
+  DCHECK(HasRoomForStreamFrame());
 
+  const size_t free_bytes = BytesFree();
   size_t bytes_consumed = 0;
+
   if (data.size() != 0) {
     size_t max_data_len = free_bytes - kFrameTypeSize - kMinStreamFrameLength;
     bytes_consumed = min<size_t>(max_data_len, data.size());
@@ -75,76 +86,69 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
   return bytes_consumed;
 }
 
-PacketPair QuicPacketCreator::SerializeAllFrames(const QuicFrames& frames) {
+SerializedPacket QuicPacketCreator::SerializeAllFrames(
+    const QuicFrames& frames) {
+  // TODO(satyamshekhar): Verify that this DCHECK won't fail. What about queued
+  // frames from SendStreamData()[send_stream_should_flush_ == false &&
+  // data.empty() == true] and retransmit due to RTO.
   DCHECK_EQ(0u, queued_frames_.size());
   for (size_t i = 0; i < frames.size(); ++i) {
-    bool success = AddFrame(frames[i]);
+    bool success = AddFrame(frames[i], false);
     DCHECK(success);
   }
-  return SerializePacket(NULL);
+  SerializedPacket packet = SerializePacket();
+  DCHECK(packet.retransmittable_frames == NULL);
+  return packet;
 }
 
 bool QuicPacketCreator::HasPendingFrames() {
   return !queued_frames_.empty();
 }
 
-size_t QuicPacketCreator::BytesFree() {
+size_t QuicPacketCreator::BytesFree() const {
   const size_t max_plaintext_size =
       framer_->GetMaxPlaintextSize(options_.max_packet_length);
   if (packet_size_ > max_plaintext_size) {
     return 0;
-  } else {
-    return max_plaintext_size - packet_size_;
   }
+  return max_plaintext_size - packet_size_;
 }
 
-bool QuicPacketCreator::AddFrame(const QuicFrame& frame) {
-  size_t frame_len = framer_->GetSerializedFrameLength(
-      frame, BytesFree(), queued_frames_.empty());
-  if (frame_len == 0) {
-    return false;
-  }
-  packet_size_ += frame_len;
-  queued_frames_.push_back(frame);
-  return true;
+bool QuicPacketCreator::AddSavedFrame(const QuicFrame& frame) {
+  return AddFrame(frame, true);
 }
 
-PacketPair QuicPacketCreator::SerializePacket(
-    QuicFrames* retransmittable_frames) {
+SerializedPacket QuicPacketCreator::SerializePacket() {
   DCHECK_EQ(false, queued_frames_.empty());
   QuicPacketHeader header;
-  FillPacketHeader(fec_group_number_, PACKET_PRIVATE_FLAGS_NONE, &header);
+  FillPacketHeader(fec_group_number_, false, false, &header);
 
-  QuicPacket* packet = framer_->ConstructFrameDataPacket(
+  SerializedPacket serialized = framer_->ConstructFrameDataPacket(
       header, queued_frames_, packet_size_);
-  for (size_t i = 0; i < queued_frames_.size(); ++i) {
-    if (retransmittable_frames != NULL && ShouldRetransmit(queued_frames_[i])) {
-      retransmittable_frames->push_back(queued_frames_[i]);
-    }
-  }
   queued_frames_.clear();
   packet_size_ = kPacketHeaderSize;
-  return make_pair(header.packet_sequence_number, packet);
+  serialized.retransmittable_frames = queued_retransmittable_frames_.release();
+  return serialized;
 }
 
-QuicPacketCreator::PacketPair QuicPacketCreator::SerializeFec() {
+SerializedPacket QuicPacketCreator::SerializeFec() {
   DCHECK_LT(0u, fec_group_->NumReceivedPackets());
   DCHECK_EQ(0u, queued_frames_.size());
   QuicPacketHeader header;
-  FillPacketHeader(fec_group_number_, PACKET_PRIVATE_FLAGS_FEC, &header);
-
+  FillPacketHeader(fec_group_number_, true,
+                   fec_group_->entropy_parity(), &header);
   QuicFecData fec_data;
   fec_data.fec_group = fec_group_->min_protected_packet();
-  fec_data.redundancy = fec_group_->parity();
-  QuicPacket* packet = framer_->ConstructFecPacket(header, fec_data);
+  fec_data.redundancy = fec_group_->payload_parity();
+  SerializedPacket serialized = framer_->ConstructFecPacket(header, fec_data);
   fec_group_.reset(NULL);
   fec_group_number_ = 0;
-  DCHECK(packet);
-  DCHECK_GE(options_.max_packet_length, packet->length());
-  return make_pair(header.packet_sequence_number, packet);
+  DCHECK(serialized.packet);
+  DCHECK_GE(options_.max_packet_length, serialized.packet->length());
+  return serialized;
 }
 
-QuicPacketCreator::PacketPair QuicPacketCreator::CloseConnection(
+SerializedPacket QuicPacketCreator::SerializeConnectionClose(
     QuicConnectionCloseFrame* close_frame) {
   QuicFrames frames;
   frames.push_back(QuicFrame(close_frame));
@@ -152,18 +156,54 @@ QuicPacketCreator::PacketPair QuicPacketCreator::CloseConnection(
 }
 
 void QuicPacketCreator::FillPacketHeader(QuicFecGroupNumber fec_group,
-                                         QuicPacketPrivateFlags flags,
+                                         bool fec_flag,
+                                         bool fec_entropy_flag,
                                          QuicPacketHeader* header) {
   header->public_header.guid = guid_;
-  header->public_header.flags = PACKET_PUBLIC_FLAGS_NONE;
-  header->private_flags = flags;
+  header->public_header.reset_flag = false;
+  header->public_header.version_flag = false;
+  header->fec_flag = fec_flag;
+  header->fec_entropy_flag = fec_entropy_flag;
   header->packet_sequence_number = ++sequence_number_;
+  if (header->packet_sequence_number == 1) {
+    // TODO(satyamshekhar): No entropy in the first message.
+    // For crypto tests to pass. Fix this by using deterministic QuicRandom.
+    header->entropy_flag = 0;
+  } else {
+    header->entropy_flag = random_generator_->RandBool();
+  }
   header->fec_group = fec_group;
 }
 
 bool QuicPacketCreator::ShouldRetransmit(const QuicFrame& frame) {
   return frame.type != ACK_FRAME && frame.type != CONGESTION_FEEDBACK_FRAME &&
       frame.type != PADDING_FRAME;
+}
+
+bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
+                                 bool save_retransmittable_frames) {
+  size_t frame_len = framer_->GetSerializedFrameLength(
+      frame, BytesFree(), queued_frames_.empty());
+  if (frame_len == 0) {
+    return false;
+  }
+  packet_size_ += frame_len;
+
+  if (save_retransmittable_frames && ShouldRetransmit(frame)) {
+    if (queued_retransmittable_frames_.get() == NULL) {
+      queued_retransmittable_frames_.reset(new RetransmittableFrames());
+    }
+    if (frame.type == STREAM_FRAME) {
+      queued_frames_.push_back(
+        queued_retransmittable_frames_->AddStreamFrame(frame.stream_frame));
+    } else {
+      queued_frames_.push_back(
+        queued_retransmittable_frames_->AddNonStreamFrame(frame));
+    }
+  } else {
+    queued_frames_.push_back(frame);
+  }
+  return true;
 }
 
 }  // namespace net

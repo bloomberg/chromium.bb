@@ -98,13 +98,13 @@ TEST_F(QuicTimeTest, SubtractDelta) {
 TEST_F(QuicTimeTest, MockClock) {
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
 
-  QuicTime now = clock_.Now();
+  QuicTime now = clock_.ApproximateNow();
   QuicTime time = QuicTime::FromMicroseconds(1000);
 
   EXPECT_EQ(now, time);
 
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
-  now = clock_.Now();
+  now = clock_.ApproximateNow();
 
   EXPECT_NE(now, time);
 

@@ -21,6 +21,10 @@ QuicTime MockClock::Now() const {
   return now_;
 }
 
+QuicTime MockClock::ApproximateNow() const {
+  return now_;
+}
+
 QuicTime::Delta MockClock::NowAsDeltaSinceUnixEpoch() const {
   return now_.Subtract(QuicTime::Zero());
 }

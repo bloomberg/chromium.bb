@@ -14,7 +14,6 @@ ReliableQuicStream::ReliableQuicStream(QuicStreamId id,
                                        QuicSession* session)
     : sequencer_(this),
       id_(id),
-      offset_(0),
       session_(session),
       visitor_(NULL),
       stream_bytes_read_(0),
@@ -48,21 +47,21 @@ bool ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
     // We don't want to be reading: blackhole the data.
     return true;
   }
+  // Note: This count include duplicate data received.
+  stream_bytes_read_ += frame.data.length();
 
   bool accepted = sequencer_.OnStreamFrame(frame);
 
   if (frame.fin) {
-    sequencer_.CloseStreamAtOffset(frame.offset + frame.data.size(),
-                                   true);
+    sequencer_.CloseStreamAtOffset(frame.offset + frame.data.size(), true);
   }
 
   return accepted;
 }
 
-void ReliableQuicStream::OnStreamReset(QuicErrorCode error,
-                                       QuicStreamOffset offset) {
+void ReliableQuicStream::OnStreamReset(QuicErrorCode error) {
   error_ = error;
-  sequencer_.CloseStreamAtOffset(offset, false);  // Full close.
+  TerminateFromPeer(false);  // Full close.
 }
 
 void ReliableQuicStream::ConnectionClose(QuicErrorCode error, bool from_peer) {
@@ -84,7 +83,7 @@ void ReliableQuicStream::TerminateFromPeer(bool half_close) {
 
 void ReliableQuicStream::Close(QuicErrorCode error) {
   error_ = error;
-  session()->SendRstStream(id(), error, offset_);
+  session()->SendRstStream(id(), error);
 }
 
 bool ReliableQuicStream::IsHalfClosed() const {
@@ -151,8 +150,7 @@ QuicConsumedData ReliableQuicStream::WriteDataInternal(
   }
 
   QuicConsumedData consumed_data =
-      session()->WriteData(id(), data, offset_, fin);
-  offset_ += consumed_data.bytes_consumed;
+      session()->WriteData(id(), data, stream_bytes_written_, fin);
   stream_bytes_written_ += consumed_data.bytes_consumed;
   if (consumed_data.bytes_consumed == data.length()) {
     if (fin && consumed_data.fin_consumed) {

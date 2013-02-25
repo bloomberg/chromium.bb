@@ -15,7 +15,6 @@
 #include "net/quic/congestion_control/hybrid_slow_start.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
 #include "net/quic/quic_bandwidth.h"
-#include "net/quic/quic_clock.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_time.h"
 
@@ -33,15 +32,19 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   // Start implementation of SendAlgorithmInterface.
   virtual void OnIncomingQuicCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& feedback,
+      QuicTime feedback_receive_time,
+      QuicBandwidth sent_bandwidth,
       const SentPacketsMap& sent_packets) OVERRIDE;
   virtual void OnIncomingAck(QuicPacketSequenceNumber acked_sequence_number,
                              QuicByteCount acked_bytes,
                              QuicTime::Delta rtt) OVERRIDE;
-  virtual void OnIncomingLoss(int number_of_lost_packets) OVERRIDE;
-  virtual void SentPacket(QuicPacketSequenceNumber sequence_number,
+  virtual void OnIncomingLoss(QuicTime ack_receive_time) OVERRIDE;
+  virtual void SentPacket(QuicTime sent_time,
+                          QuicPacketSequenceNumber sequence_number,
                           QuicByteCount bytes,
                           bool is_retransmission) OVERRIDE;
-  virtual QuicTime::Delta TimeUntilSend(bool is_retransmission) OVERRIDE;
+  virtual QuicTime::Delta TimeUntilSend(QuicTime now,
+                                        bool is_retransmission) OVERRIDE;
   virtual QuicBandwidth BandwidthEstimate() OVERRIDE;
   // End implementation of SendAlgorithmInterface.
 

@@ -30,6 +30,7 @@ class NET_EXPORT_PRIVATE QuicFecGroup {
   // Returns false if this packet has already been seen or if it does
   // not claim to protect all the packets previously seen in this group.
   bool UpdateFec(QuicPacketSequenceNumber fec_packet_sequence_number,
+                 bool fec_entropy_flag,
                  const QuicFecData& fec);
 
   // Returns true if a packet can be revived from this FEC group.
@@ -51,8 +52,12 @@ class NET_EXPORT_PRIVATE QuicFecGroup {
   // numbers less than |num|.
   bool ProtectsPacketsBefore(QuicPacketSequenceNumber num) const;
 
-  const base::StringPiece parity() const {
-    return base::StringPiece(parity_, parity_len_);
+  const base::StringPiece payload_parity() const {
+    return base::StringPiece(payload_parity_, payload_parity_len_);
+  }
+
+  bool entropy_parity() const {
+    return entropy_parity_;
   }
 
   QuicPacketSequenceNumber min_protected_packet() const {
@@ -64,13 +69,13 @@ class NET_EXPORT_PRIVATE QuicFecGroup {
   }
 
  private:
-  bool UpdateParity(base::StringPiece payload);
+  bool UpdateParity(base::StringPiece payload, bool entropy);
   // Returns the number of missing packets, or size_t max if the number
   // of missing packets is not known.
   size_t NumMissingPackets() const;
 
   // Set of packets that we have recevied.
-  std::set<QuicPacketSequenceNumber> received_packets_;
+  SequenceNumberSet received_packets_;
   // Sequence number of the first protected packet in this group (the one
   // with the lowest packet sequence number).  Will only be set once the FEC
   // packet has been seen.
@@ -80,8 +85,9 @@ class NET_EXPORT_PRIVATE QuicFecGroup {
   // packet has been seen.
   QuicPacketSequenceNumber max_protected_packet_;
   // The cumulative parity calculation of all received packets.
-  char parity_[kMaxPacketSize];
-  size_t parity_len_;
+  char payload_parity_[kMaxPacketSize];
+  size_t payload_parity_len_;
+  bool entropy_parity_;
 };
 
 }  // namespace net

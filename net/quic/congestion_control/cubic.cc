@@ -134,12 +134,11 @@ QuicTcpCongestionWindow Cubic::CongestionWindowAfterAck(
     QuicTcpCongestionWindow current_congestion_window,
     QuicTime::Delta delay_min) {
   acked_packets_count_ += 1;  // Packets acked.
-  QuicTime current_time = clock_->Now();
+  QuicTime current_time = clock_->ApproximateNow();
 
   // Cubic is "independent" of RTT, the update is limited by the time elapsed.
   if (last_congestion_window_ == current_congestion_window &&
       (current_time.Subtract(last_update_time_) <= MaxCubicTimeInterval())) {
-    DCHECK(epoch_.IsInitialized());
     return std::max(last_target_congestion_window_,
                     estimated_tcp_congestion_window_);
   }

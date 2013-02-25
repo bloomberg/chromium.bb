@@ -18,33 +18,31 @@
 
 namespace net {
 
-namespace test {
-class FixRateSenderPeer;
-}  // namespace test
-
 class NET_EXPORT_PRIVATE FixRateSender : public SendAlgorithmInterface {
+
  public:
   explicit FixRateSender(const QuicClock* clock);
 
   // Start implementation of SendAlgorithmInterface.
   virtual void OnIncomingQuicCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& feedback,
+      QuicTime feedback_receive_time,
+      QuicBandwidth sent_bandwidth,
       const SentPacketsMap& sent_packets) OVERRIDE;
   virtual void OnIncomingAck(QuicPacketSequenceNumber acked_sequence_number,
                              QuicByteCount acked_bytes,
                              QuicTime::Delta rtt) OVERRIDE;
-  virtual void OnIncomingLoss(int number_of_lost_packets) OVERRIDE;
-  virtual void SentPacket(QuicPacketSequenceNumber equence_number,
+  virtual void OnIncomingLoss(QuicTime ack_receive_time) OVERRIDE;
+  virtual void SentPacket(QuicTime sent_time,
+                          QuicPacketSequenceNumber equence_number,
                           QuicByteCount bytes,
                           bool is_retransmission) OVERRIDE;
-  virtual QuicTime::Delta TimeUntilSend(bool is_retransmission) OVERRIDE;
+  virtual QuicTime::Delta TimeUntilSend(QuicTime now,
+                                        bool is_retransmission) OVERRIDE;
   virtual QuicBandwidth BandwidthEstimate() OVERRIDE;
   // End implementation of SendAlgorithmInterface.
 
  private:
-  friend class test::FixRateSenderPeer;
-
-  QuicByteCount AvailableCongestionWindow();
   QuicByteCount CongestionWindow();
 
   QuicBandwidth bitrate_;

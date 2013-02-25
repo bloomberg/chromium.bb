@@ -11,28 +11,22 @@
 #include "net/base/net_export.h"
 #include "net/quic/congestion_control/leaky_bucket.h"
 #include "net/quic/quic_bandwidth.h"
-#include "net/quic/quic_clock.h"
 #include "net/quic/quic_time.h"
 
 namespace net {
 
 class NET_EXPORT_PRIVATE PacedSender {
  public:
-  PacedSender(const QuicClock* clock, QuicBandwidth bandwidth_estimate);
+  explicit PacedSender(QuicBandwidth bandwidth_estimate);
 
   // The estimated bandidth from the congestion algorithm changed.
-  void UpdateBandwidthEstimate(QuicBandwidth bandwidth_estimate);
+  void UpdateBandwidthEstimate(QuicTime now, QuicBandwidth bandwidth_estimate);
 
   // A packet of size bytes was sent.
-  void SentPacket(QuicByteCount bytes);
+  void SentPacket(QuicTime now, QuicByteCount bytes);
 
   // Return time until we can send based on the pacing.
-  QuicTime::Delta TimeUntilSend(QuicTime::Delta time_until_send);
-
-  // Return the amount of data in bytes we can send based on the pacing.
-  // available_congestion_window is the congestion algorithms available
-  // congestion window in bytes.
-  QuicByteCount AvailableWindow(QuicByteCount available_congestion_window);
+  QuicTime::Delta TimeUntilSend(QuicTime now, QuicTime::Delta time_until_send);
 
  private:
   // Helper object to track the rate data can leave the buffer for pacing.

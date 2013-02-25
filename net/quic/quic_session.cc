@@ -39,7 +39,12 @@ class VisitorShim : public QuicConnectionVisitorInterface {
     session_->PostProcessAfterData();
   }
 
-  virtual void OnAck(AckedPackets acked_packets) OVERRIDE {
+  virtual void OnGoAway(const QuicGoAwayFrame& frame) OVERRIDE {
+    session_->OnGoAway(frame);
+    session_->PostProcessAfterData();
+  }
+
+  virtual void OnAck(const SequenceNumberSet& acked_packets) OVERRIDE {
     session_->OnAck(acked_packets);
     session_->PostProcessAfterData();
   }
@@ -65,7 +70,9 @@ QuicSession::QuicSession(QuicConnection* connection, bool is_server)
       max_open_streams_(kDefaultMaxStreamsPerConnection),
       next_stream_id_(is_server ? 2 : 3),
       is_server_(is_server),
-      largest_peer_created_stream_id_(0) {
+      largest_peer_created_stream_id_(0),
+      goaway_received_(false),
+      goaway_sent_(false) {
   connection->set_visitor(visitor_shim_.get());
 }
 
@@ -109,7 +116,12 @@ void QuicSession::OnRstStream(const QuicRstStreamFrame& frame) {
   if (!stream) {
     return;  // Errors are handled by GetStream.
   }
-  stream->OnStreamReset(frame.error_code, frame.offset);
+  stream->OnStreamReset(frame.error_code);
+}
+
+void QuicSession::OnGoAway(const QuicGoAwayFrame& frame) {
+  DCHECK(frame.last_good_stream_id < next_stream_id_);
+  goaway_received_ = true;
 }
 
 void QuicSession::ConnectionClose(QuicErrorCode error, bool from_peer) {
@@ -150,16 +162,18 @@ QuicConsumedData QuicSession::WriteData(QuicStreamId id,
                                         StringPiece data,
                                         QuicStreamOffset offset,
                                         bool fin) {
-  // TODO(wtc): type mismatch -- connection_->SendStreamData() returns a
-  // size_t.
   return connection_->SendStreamData(id, data, offset, fin);
 }
 
 void QuicSession::SendRstStream(QuicStreamId id,
-                                QuicErrorCode error,
-                                QuicStreamOffset offset) {
-  connection_->SendRstStream(id, error, offset);
+                                QuicErrorCode error) {
+  connection_->SendRstStream(id, error);
   CloseStream(id);
+}
+
+void QuicSession::SendGoAway(QuicErrorCode error_code, const string& reason) {
+  goaway_sent_ = true;
+  connection_->SendGoAway(error_code, largest_peer_created_stream_id_, reason);
 }
 
 void QuicSession::CloseStream(QuicStreamId stream_id) {
@@ -223,6 +237,12 @@ ReliableQuicStream* QuicSession::GetStream(const QuicStreamId stream_id) {
 ReliableQuicStream* QuicSession::GetIncomingReliableStream(
     QuicStreamId stream_id) {
   if (IsClosedStream(stream_id)) {
+    return NULL;
+  }
+
+  if (goaway_sent_) {
+    // We've already sent a GoAway
+    connection()->SendRstStream(stream_id, QUIC_PEER_GOING_AWAY);
     return NULL;
   }
 

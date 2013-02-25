@@ -42,6 +42,8 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   // Called when we receive congestion feedback from remote peer.
   virtual void OnIncomingQuicCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& feedback,
+      QuicTime feedback_receive_time,
+      QuicBandwidth sent_bandwidth,
       const SentPacketsMap& sent_packets) = 0;
 
   // Called for each received ACK, with sequence number from remote peer.
@@ -49,18 +51,18 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
                              QuicByteCount acked_bytes,
                              QuicTime::Delta rtt) = 0;
 
-  virtual void OnIncomingLoss(int number_of_lost_packets) = 0;
+  virtual void OnIncomingLoss(QuicTime ack_receive_time) = 0;
 
   // Inform that we sent x bytes to the wire, and if that was a retransmission.
   // Note: this function must be called for every packet sent to the wire.
-  virtual void SentPacket(QuicPacketSequenceNumber sequence_number,
+  virtual void SentPacket(QuicTime sent_time,
+                          QuicPacketSequenceNumber sequence_number,
                           QuicByteCount bytes,
                           bool is_retransmission) = 0;
 
   // Calculate the time until we can send the next packet.
-  // Usage: When this returns 0, CongestionWindow returns the number of bytes
-  // of the congestion window.
-  virtual QuicTime::Delta TimeUntilSend(bool is_retransmission) = 0;
+  virtual QuicTime::Delta TimeUntilSend(QuicTime now,
+                                        bool is_retransmission) = 0;
 
   // What's the current estimated bandwidth in bytes per second.
   // Returns 0 when it does not have an estimate.

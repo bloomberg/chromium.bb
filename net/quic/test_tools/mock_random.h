@@ -17,6 +17,8 @@ class MockRandom : public QuicRandom {
   virtual void RandBytes(void* data, size_t len) OVERRIDE;
   // Returns 0xDEADBEEF.
   virtual uint64 RandUint64() OVERRIDE;
+  // Returns false.
+  virtual bool RandBool() OVERRIDE;
   // Does nothing.
   virtual void Reseed(const void* additional_entropy,
                       size_t entropy_len) OVERRIDE;

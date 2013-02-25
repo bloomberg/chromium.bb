@@ -17,7 +17,8 @@ namespace test {
 class ReliableQuicStreamPeer {
  public:
   static void SetWriteSideClosed(bool value, ReliableQuicStream* stream);
-  static void SetOffset(QuicStreamOffset offset, ReliableQuicStream* stream);
+  static void SetStreamBytesWritten(QuicStreamOffset stream_bytes_written,
+                                    ReliableQuicStream* stream);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ReliableQuicStreamPeer);

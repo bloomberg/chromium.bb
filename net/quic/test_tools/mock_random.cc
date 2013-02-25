@@ -14,6 +14,10 @@ uint64 MockRandom::RandUint64() {
   return 0xDEADBEEF;
 }
 
+bool MockRandom::RandBool() {
+  return false;
+}
+
 void MockRandom::Reseed(const void* additional_entropy, size_t entropy_len) {
 }
 

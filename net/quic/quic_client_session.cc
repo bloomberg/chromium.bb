@@ -53,6 +53,11 @@ QuicReliableClientStream* QuicClientSession::CreateOutgoingReliableStream() {
                << "Already " << GetNumOpenStreams() << " open.";
     return NULL;
   }
+  if (goaway_received()) {
+    DLOG(INFO) << "Failed to create a new outgoing stream. "
+               << "Already received goaway.";
+    return NULL;
+  }
   QuicReliableClientStream* stream =
       new QuicReliableClientStream(GetNextStreamId(), this, net_log_);
   ActivateStream(stream);

@@ -49,6 +49,8 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
   bool OnStreamFrame(const QuicStreamFrame& frame);
 
   // Wait until we've seen 'offset' bytes, and then terminate the stream.
+  // TODO(ianswett): Simplify this method by removing half_close, now that
+  // the sequencer is bypassed for stream resets and half_close is always true.
   void CloseStreamAtOffset(QuicStreamOffset offset, bool half_close);
 
   // Once data is buffered, it's up to the stream to read it when the stream
@@ -62,6 +64,9 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
 
   // Returns true if the sequencer has delivered a full close.
   bool IsClosed() const;
+
+  // Returns true if the sequencer has received this frame before.
+  bool IsDuplicate(const QuicStreamFrame& frame) const;
 
  private:
   friend class test::QuicStreamSequencerPeer;

@@ -13,7 +13,7 @@ TEST(QuicClockTest, Now) {
   QuicClock clock;
 
   QuicTime start(base::TimeTicks::Now());
-  QuicTime now = clock.Now();
+  QuicTime now = clock.ApproximateNow();
   QuicTime end(base::TimeTicks::Now());
 
   EXPECT_LE(start, now);

@@ -16,9 +16,10 @@ void ReliableQuicStreamPeer::SetWriteSideClosed(bool value,
 }
 
 // static
-void ReliableQuicStreamPeer::SetOffset(QuicStreamOffset offset,
-                                       ReliableQuicStream* stream) {
-  stream->offset_ = offset;
+void ReliableQuicStreamPeer::SetStreamBytesWritten(
+    QuicStreamOffset stream_bytes_written,
+    ReliableQuicStream* stream) {
+  stream->stream_bytes_written_ = stream_bytes_written;
 }
 
 }  // namespace test

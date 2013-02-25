@@ -27,6 +27,9 @@ class NET_EXPORT_PRIVATE QuicRandom {
   // Returns a random number in the range [0, kuint64max].
   virtual uint64 RandUint64() = 0;
 
+  // Returns a random boolean value.
+  virtual bool RandBool() = 0;
+
   // Reseeds the random number generator with additional entropy input.
   // NOTE: the constructor of a QuicRandom object is responsible for seeding
   // itself with enough entropy input.

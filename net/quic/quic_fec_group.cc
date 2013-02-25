@@ -21,7 +21,8 @@ const QuicPacketSequenceNumber kNoSequenceNumber = kuint64max;
 QuicFecGroup::QuicFecGroup()
     : min_protected_packet_(kNoSequenceNumber),
       max_protected_packet_(kNoSequenceNumber),
-      parity_len_(0) {
+      payload_parity_len_(0),
+      entropy_parity_(false) {
 }
 
 QuicFecGroup::~QuicFecGroup() {}
@@ -39,7 +40,7 @@ bool QuicFecGroup::Update(const QuicPacketHeader& header,
                 << header.packet_sequence_number;
     return false;
   }
-  if (!UpdateParity(decrypted_payload)) {
+  if (!UpdateParity(decrypted_payload, header.entropy_flag)) {
     return false;
   }
   received_packets_.insert(header.packet_sequence_number);
@@ -48,11 +49,12 @@ bool QuicFecGroup::Update(const QuicPacketHeader& header,
 
 bool QuicFecGroup::UpdateFec(
     QuicPacketSequenceNumber fec_packet_sequence_number,
+    bool fec_entropy_flag,
     const QuicFecData& fec) {
   if (min_protected_packet_ != kNoSequenceNumber) {
     return false;
   }
-  set<QuicPacketSequenceNumber>::const_iterator it = received_packets_.begin();
+  SequenceNumberSet::const_iterator it = received_packets_.begin();
   while (it != received_packets_.end()) {
     if ((*it < fec.fec_group) ||
         (*it >= fec_packet_sequence_number)) {
@@ -61,7 +63,7 @@ bool QuicFecGroup::UpdateFec(
     }
     ++it;
   }
-  if (!UpdateParity(fec.redundancy)) {
+  if (!UpdateParity(fec.redundancy, fec_entropy_flag)) {
     return false;
   }
   min_protected_packet_ = fec.fec_group;
@@ -98,16 +100,19 @@ size_t QuicFecGroup::Revive(QuicPacketHeader* header,
   }
   DCHECK_NE(kNoSequenceNumber, missing);
 
-  DCHECK_LE(parity_len_, decrypted_payload_len);
-  if (parity_len_ > decrypted_payload_len) {
+  DCHECK_LE(payload_parity_len_, decrypted_payload_len);
+  if (payload_parity_len_ > decrypted_payload_len) {
     return 0;
   }
-  for (size_t i = 0; i < parity_len_; ++i) {
-    decrypted_payload[i] = parity_[i];
+  for (size_t i = 0; i < payload_parity_len_; ++i) {
+    decrypted_payload[i] = payload_parity_[i];
   }
+
   header->packet_sequence_number = missing;
+  header->entropy_flag = entropy_parity_;
+
   received_packets_.insert(missing);
-  return parity_len_;
+  return payload_parity_len_;
 }
 
 bool QuicFecGroup::ProtectsPacketsBefore(QuicPacketSequenceNumber num) const {
@@ -119,32 +124,35 @@ bool QuicFecGroup::ProtectsPacketsBefore(QuicPacketSequenceNumber num) const {
   return *received_packets_.begin() < num;
 }
 
-bool QuicFecGroup::UpdateParity(StringPiece payload) {
+bool QuicFecGroup::UpdateParity(StringPiece payload, bool entropy) {
   DCHECK_LE(payload.size(), kMaxPacketSize);
   if (payload.size() > kMaxPacketSize) {
     DLOG(ERROR) << "Illegal payload size: " << payload.size();
     return false;
   }
-  if (parity_len_ < payload.size()) {
-    parity_len_ = payload.size();
+  if (payload_parity_len_ < payload.size()) {
+    payload_parity_len_ = payload.size();
   }
   DCHECK_LE(payload.size(), kMaxPacketSize);
   if (received_packets_.size() == 0 &&
       min_protected_packet_ == kNoSequenceNumber) {
     // Initialize the parity to the value of this payload
-    memcpy(parity_, payload.data(), payload.size());
+    memcpy(payload_parity_, payload.data(), payload.size());
     if (payload.size() < kMaxPacketSize) {
       // TODO(rch): expand as needed.
-      memset(parity_ + payload.size(), 0,
+      memset(payload_parity_ + payload.size(), 0,
              kMaxPacketSize - payload.size());
     }
+    entropy_parity_ = entropy;
     return true;
   }
   // Update the parity by XORing in the data (padding with 0s if necessary).
   for (size_t i = 0; i < kMaxPacketSize; ++i) {
     uint8 byte = i < payload.size() ? payload[i] : 0x00;
-    parity_[i] ^= byte;
+    payload_parity_[i] ^= byte;
   }
+  // xor of boolean values.
+  entropy_parity_ = (entropy_parity_ != entropy);
   return true;
 }
 

@@ -77,6 +77,20 @@ TEST_F(QuicClientSessionTest, MaxNumConnections) {
   EXPECT_TRUE(session_.CreateOutgoingReliableStream());
 }
 
+TEST_F(QuicClientSessionTest, GoAwayReceived) {
+  // Initialize crypto before the client session will create a stream.
+  ASSERT_TRUE(session_.CryptoConnect(callback_.callback()));
+  // Simulate the server crypto handshake.
+  CryptoHandshakeMessage server_message;
+  server_message.tag = kSHLO;
+  session_.GetCryptoStream()->OnHandshakeMessage(server_message);
+
+  // After receiving a GoAway, I should no longer be able to create outgoing
+  // streams.
+  session_.OnGoAway(QuicGoAwayFrame(QUIC_PEER_GOING_AWAY, 1u, "Going away."));
+  EXPECT_EQ(NULL, session_.CreateOutgoingReliableStream());
+}
+
 TEST_F(QuicClientSessionTest, Logging) {
   // Initialize crypto before the client session will create a stream.
   ASSERT_EQ(ERR_IO_PENDING, session_.CryptoConnect(callback_.callback()));
@@ -91,7 +105,6 @@ TEST_F(QuicClientSessionTest, Logging) {
   QuicFramer framer(QuicDecrypter::Create(kNULL), QuicEncrypter::Create(kNULL));
   QuicRstStreamFrame frame;
   frame.stream_id = 2;
-  frame.offset = 7;
   frame.error_code = QUIC_CONNECTION_TIMED_OUT;
   frame.error_details = "doh!";
 
@@ -99,12 +112,16 @@ TEST_F(QuicClientSessionTest, Logging) {
   frames.push_back(QuicFrame(&frame));
   QuicPacketHeader header;
   header.public_header.guid = 1;
-  header.public_header.flags = PACKET_PUBLIC_FLAGS_NONE;
+  header.public_header.reset_flag = false;
+  header.public_header.version_flag = false;
   header.packet_sequence_number = 1;
-  header.private_flags = PACKET_PRIVATE_FLAGS_NONE;
+  header.entropy_flag = false;
+  header.fec_flag = false;
+  header.fec_entropy_flag = false;
   header.fec_group = 0;
-  scoped_ptr<QuicPacket> p(framer.ConstructFrameDataPacket(header, frames));
-  scoped_ptr<QuicEncryptedPacket> packet(framer.EncryptPacket(*p));
+  scoped_ptr<QuicPacket> p(
+      framer.ConstructFrameDataPacket(header, frames).packet);
+  scoped_ptr<QuicEncryptedPacket> packet(framer.EncryptPacket(1, *p));
   IPAddressNumber ip;
   CHECK(ParseIPLiteralToNumber("192.0.2.33", &ip));
   IPEndPoint peer_addr = IPEndPoint(ip, 443);
@@ -134,9 +151,6 @@ TEST_F(QuicClientSessionTest, Logging) {
   int stream_id;
   ASSERT_TRUE(entries[pos].GetIntegerValue("stream_id", &stream_id));
   EXPECT_EQ(frame.stream_id, static_cast<QuicStreamId>(stream_id));
-  int offset;
-  ASSERT_TRUE(entries[pos].GetIntegerValue("offset", &offset));
-  EXPECT_EQ(frame.offset, static_cast<QuicStreamOffset>(offset));
   int error_code;
   ASSERT_TRUE(entries[pos].GetIntegerValue("error_code", &error_code));
   EXPECT_EQ(frame.error_code, static_cast<QuicErrorCode>(error_code));

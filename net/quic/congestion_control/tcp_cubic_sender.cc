@@ -4,17 +4,17 @@
 
 #include "net/quic/congestion_control/tcp_cubic_sender.h"
 
+namespace net {
+
 namespace {
 // Constants based on TCP defaults.
 const int64 kHybridStartLowWindow = 16;
-const net::QuicByteCount kMaxSegmentSize = net::kMaxPacketSize;
-const net::QuicByteCount kDefaultReceiveWindow = 64000;
+const QuicByteCount kMaxSegmentSize = kMaxPacketSize;
+const QuicByteCount kDefaultReceiveWindow = 64000;
 const int64 kInitialCongestionWindow = 10;
 const int64 kMaxCongestionWindow = 10000;
 const int kMaxBurstLength = 3;
 };
-
-namespace net {
 
 TcpCubicSender::TcpCubicSender(const QuicClock* clock, bool reno)
     : hybrid_slow_start_(clock),
@@ -33,6 +33,8 @@ TcpCubicSender::TcpCubicSender(const QuicClock* clock, bool reno)
 
 void TcpCubicSender::OnIncomingQuicCongestionFeedbackFrame(
     const QuicCongestionFeedbackFrame& feedback,
+    QuicTime feedback_receive_time,
+    QuicBandwidth /*sent_bandwidth*/,
     const SentPacketsMap& /*sent_packets*/) {
   if (last_received_accumulated_number_of_lost_packets_ !=
       feedback.tcp.accumulated_number_of_lost_packets) {
@@ -42,7 +44,7 @@ void TcpCubicSender::OnIncomingQuicCongestionFeedbackFrame(
     last_received_accumulated_number_of_lost_packets_ =
         feedback.tcp.accumulated_number_of_lost_packets;
     if (recovered_lost_packets > 0) {
-      OnIncomingLoss(recovered_lost_packets);
+      OnIncomingLoss(feedback_receive_time);
     }
   }
   receiver_congestion_window_ = feedback.tcp.receive_window;
@@ -60,7 +62,7 @@ void TcpCubicSender::OnIncomingAck(
   }
 }
 
-void TcpCubicSender::OnIncomingLoss(int /*number_of_lost_packets*/) {
+void TcpCubicSender::OnIncomingLoss(QuicTime /*ack_receive_time*/) {
   // In a normal TCP we would need to know the lowest missing packet to detect
   // if we receive 3 missing packets. Here we get a missing packet for which we
   // enter TCP Fast Retransmit immediately.
@@ -76,9 +78,11 @@ void TcpCubicSender::OnIncomingLoss(int /*number_of_lost_packets*/) {
   if (congestion_window_ == 0) {
     congestion_window_ = 1;
   }
+  DLOG(INFO) << "Incoming loss; congestion window:" << congestion_window_;
 }
 
-void TcpCubicSender::SentPacket(QuicPacketSequenceNumber sequence_number,
+void TcpCubicSender::SentPacket(QuicTime /*sent_time*/,
+                                QuicPacketSequenceNumber sequence_number,
                                 QuicByteCount bytes,
                                 bool is_retransmission) {
   if (!is_retransmission) {
@@ -93,7 +97,8 @@ void TcpCubicSender::SentPacket(QuicPacketSequenceNumber sequence_number,
   }
 }
 
-QuicTime::Delta TcpCubicSender::TimeUntilSend(bool is_retransmission) {
+QuicTime::Delta TcpCubicSender::TimeUntilSend(QuicTime now,
+                                              bool is_retransmission) {
   if (is_retransmission) {
     // For TCP we can always send a retransmission immediately.
     return QuicTime::Delta::Zero();
@@ -146,7 +151,6 @@ void TcpCubicSender::CongestionAvoidance(QuicPacketSequenceNumber ack) {
   if (!IsCwndLimited()) {
     // We don't update the congestion window unless we are close to using the
     // window we have available.
-    DLOG(INFO) << "Congestion avoidance window not limited";
     return;
   }
   if (congestion_window_ < slowstart_threshold_) {

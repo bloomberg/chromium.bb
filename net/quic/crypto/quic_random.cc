@@ -19,6 +19,7 @@ class DefaultRandom : public QuicRandom {
   // QuicRandom implementation
   virtual void RandBytes(void* data, size_t len) OVERRIDE;
   virtual uint64 RandUint64() OVERRIDE;
+  virtual bool RandBool() OVERRIDE;
   virtual void Reseed(const void* additional_entropy,
                       size_t entropy_len) OVERRIDE;
 
@@ -42,6 +43,12 @@ uint64 DefaultRandom::RandUint64() {
   uint64 value;
   RandBytes(&value, sizeof(value));
   return value;
+}
+
+bool DefaultRandom::RandBool() {
+  char value;
+  RandBytes(&value, sizeof(value));
+  return (value & 1) == 1;
 }
 
 void DefaultRandom::Reseed(const void* additional_entropy, size_t entropy_len) {

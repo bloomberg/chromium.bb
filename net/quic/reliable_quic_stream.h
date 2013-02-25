@@ -54,9 +54,7 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   virtual void OnClose();
 
   // Called when we get a stream reset from the client.
-  // The rst will be passed through the sequencer, which will call
-  // TerminateFromPeer when 'offset' bytes have been processed.
-  void OnStreamReset(QuicErrorCode error, QuicStreamOffset ofset);
+  void OnStreamReset(QuicErrorCode error);
 
   // Called when we get or send a connection close, and should immediately
   // close the stream.  This is not passed through the sequencer,
@@ -126,7 +124,6 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
 
   QuicStreamSequencer sequencer_;
   QuicStreamId id_;
-  QuicStreamOffset offset_;
   QuicSession* session_;
   // Optional visitor of this stream to be notified when the stream is closed.
   Visitor* visitor_;

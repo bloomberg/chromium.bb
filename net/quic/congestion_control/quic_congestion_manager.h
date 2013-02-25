@@ -33,15 +33,18 @@ class QuicCongestionManager {
   virtual ~QuicCongestionManager();
 
   // Called when we have received an ack frame from peer.
-  virtual void OnIncomingAckFrame(const QuicAckFrame& frame);
+  virtual void OnIncomingAckFrame(const QuicAckFrame& frame,
+                                  QuicTime ack_receive_time);
 
   // Called when a congestion feedback frame is received from peer.
   virtual void OnIncomingQuicCongestionFeedbackFrame(
-      const QuicCongestionFeedbackFrame& frame);
+      const QuicCongestionFeedbackFrame& frame,
+      QuicTime feedback_receive_time);
 
   // Called when we have sent bytes to the peer.  This informs the manager both
   // the number of bytes sent and if they were retransmitted.
   virtual void SentPacket(QuicPacketSequenceNumber sequence_number,
+                          QuicTime sent_time,
                           QuicByteCount bytes,
                           bool is_retransmission);
 
@@ -50,7 +53,8 @@ class QuicCongestionManager {
   // TimeUntilSend again until we receive an OnIncomingAckFrame event.
   // Note 2: Send algorithms may or may not use |retransmit| in their
   // calculations.
-  virtual QuicTime::Delta TimeUntilSend(bool is_retransmission);
+  virtual QuicTime::Delta TimeUntilSend(QuicTime now,
+                                        bool is_retransmission);
 
   // Should be called before sending an ACK packet, to decide if we need
   // to attach a QuicCongestionFeedbackFrame block.
@@ -73,6 +77,7 @@ class QuicCongestionManager {
   const QuicTime::Delta DefaultRetransmissionTime();
 
   const QuicTime::Delta GetRetransmissionDelay(
+      size_t unacked_packets_count,
       size_t number_retransmissions);
 
  private:
@@ -80,8 +85,7 @@ class QuicCongestionManager {
   friend class test::QuicCongestionManagerPeer;
   typedef std::map<QuicPacketSequenceNumber, size_t> PendingPacketsMap;
 
-  // TODO(pwestin): Currently only used for testing. How do we surface this?
-  QuicBandwidth SentBandwidth() const;
+  QuicBandwidth SentBandwidth(QuicTime feedback_receive_time) const;
   // TODO(pwestin): Currently only used for testing. How do we surface this?
   QuicBandwidth BandwidthEstimate();
   void CleanupPacketHistory();
@@ -91,6 +95,7 @@ class QuicCongestionManager {
   scoped_ptr<SendAlgorithmInterface> send_algorithm_;
   SendAlgorithmInterface::SentPacketsMap packet_history_map_;
   PendingPacketsMap pending_packets_;
+  QuicPacketSequenceNumber largest_missing_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicCongestionManager);
 };

@@ -13,6 +13,11 @@ QuicClock::QuicClock() {
 
 QuicClock::~QuicClock() {}
 
+QuicTime QuicClock::ApproximateNow() const {
+  // Chrome does not have a distinct notion of ApproximateNow().
+  return Now();
+}
+
 QuicTime QuicClock::Now() const {
   return QuicTime(base::TimeTicks::Now());
 }

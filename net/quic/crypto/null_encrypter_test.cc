@@ -22,7 +22,7 @@ TEST(NullEncrypterTest, Encrypt) {
     'b',  'y',  'e',  '!',
   };
   NullEncrypter encrypter;
-  scoped_ptr<QuicData> encrypted(encrypter.Encrypt("hello world!",
+  scoped_ptr<QuicData> encrypted(encrypter.Encrypt(0, "hello world!",
                                                    "goodbye!"));
   ASSERT_TRUE(encrypted.get());
   test::CompareCharArraysWithHexError(

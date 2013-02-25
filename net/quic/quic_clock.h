@@ -21,6 +21,10 @@ class NET_EXPORT_PRIVATE QuicClock {
   virtual ~QuicClock();
 
   // Returns the approximate current time as a QuicTime object.
+  virtual QuicTime ApproximateNow() const;
+
+  // Returns the current time as a QuicTime object.
+  // Note: this use significant resources please use only if needed.
   virtual QuicTime Now() const;
 
   // Returns the current time as an offset from the Unix epoch (1970-01-01

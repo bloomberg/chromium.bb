@@ -91,14 +91,14 @@ class QuicNetworkTransactionTest : public PlatformTest {
                                                            host));
     QuicFramer framer(QuicDecrypter::Create(kNULL),
                       QuicEncrypter::Create(kNULL));
-    return scoped_ptr<QuicEncryptedPacket>(framer.EncryptPacket(*chlo));
+    return scoped_ptr<QuicEncryptedPacket>(framer.EncryptPacket(1, *chlo));
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructShlo() {
     scoped_ptr<QuicPacket> shlo(ConstructHandshakePacket(0xDEADBEEF, kSHLO));
     QuicFramer framer(QuicDecrypter::Create(kNULL),
                       QuicEncrypter::Create(kNULL));
-    return scoped_ptr<QuicEncryptedPacket>(framer.EncryptPacket(*shlo));
+    return scoped_ptr<QuicEncryptedPacket>(framer.EncryptPacket(1, *shlo));
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructRstPacket(
@@ -106,12 +106,15 @@ class QuicNetworkTransactionTest : public PlatformTest {
       QuicStreamId stream_id) {
     QuicPacketHeader header;
     header.public_header.guid = 0xDEADBEEF;
-    header.public_header.flags = PACKET_PUBLIC_FLAGS_NONE;
+    header.public_header.reset_flag = false;
+    header.public_header.version_flag = false;
     header.packet_sequence_number = num;
-    header.private_flags = PACKET_PRIVATE_FLAGS_NONE;
+    header.entropy_flag = false;
+    header.fec_flag = false;
+    header.fec_entropy_flag = false;
     header.fec_group = 0;
 
-    QuicRstStreamFrame rst(stream_id, 0, QUIC_NO_ERROR);
+    QuicRstStreamFrame rst(stream_id, QUIC_NO_ERROR);
     return scoped_ptr<QuicEncryptedPacket>(
         ConstructPacket(header, QuicFrame(&rst)));
   }
@@ -121,9 +124,12 @@ class QuicNetworkTransactionTest : public PlatformTest {
       QuicPacketSequenceNumber least_unacked) {
     QuicPacketHeader header;
     header.public_header.guid = 0xDEADBEEF;
-    header.public_header.flags = PACKET_PUBLIC_FLAGS_NONE;
+    header.public_header.reset_flag = false;
+    header.public_header.version_flag = false;
     header.packet_sequence_number = 3;
-    header.private_flags = PACKET_PRIVATE_FLAGS_NONE;
+    header.entropy_flag = false;
+    header.fec_flag = false;
+    header.fec_entropy_flag = false;
     header.fec_group = 0;
 
     QuicAckFrame ack(largest_received, least_unacked);
@@ -139,8 +145,9 @@ class QuicNetworkTransactionTest : public PlatformTest {
     frames.push_back(QuicFrame(&ack));
     frames.push_back(QuicFrame(&feedback));
     scoped_ptr<QuicPacket> packet(
-        framer.ConstructFrameDataPacket(header, frames));
-    return scoped_ptr<QuicEncryptedPacket>(framer.EncryptPacket(*packet));
+        framer.ConstructFrameDataPacket(header, frames).packet);
+    return scoped_ptr<QuicEncryptedPacket>(
+        framer.EncryptPacket(header.packet_sequence_number, *packet));
   }
 
   std::string GetRequestString(const std::string& method,
@@ -190,16 +197,20 @@ class QuicNetworkTransactionTest : public PlatformTest {
     QuicFrames frames;
     frames.push_back(frame);
     scoped_ptr<QuicPacket> packet(
-        framer.ConstructFrameDataPacket(header, frames));
-    return scoped_ptr<QuicEncryptedPacket>(framer.EncryptPacket(*packet));
+        framer.ConstructFrameDataPacket(header, frames).packet);
+    return scoped_ptr<QuicEncryptedPacket>(
+        framer.EncryptPacket(header.packet_sequence_number, *packet));
   }
 
   void InitializeHeader(QuicPacketSequenceNumber sequence_number) {
     header_.public_header.guid = random_generator_.RandUint64();
-    header_.public_header.flags = PACKET_PUBLIC_FLAGS_NONE;
+    header_.public_header.reset_flag = false;
+    header_.public_header.version_flag = false;
     header_.packet_sequence_number = sequence_number;
     header_.fec_group = 0;
-    header_.private_flags = PACKET_PRIVATE_FLAGS_NONE;
+    header_.entropy_flag = false;
+    header_.fec_flag = false;
+    header_.fec_entropy_flag = false;
   }
 
   void CreateSession() {
