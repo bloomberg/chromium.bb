@@ -27,48 +27,14 @@ WebContentsViewGuest::WebContentsViewGuest(
     WebContentsImpl* web_contents,
     BrowserPluginGuest* guest,
     bool enable_compositing,
-    WebContentsView* platform_view)
+    WebContentsViewPort* platform_view)
     : web_contents_(web_contents),
       guest_(guest),
       enable_compositing_(enable_compositing),
-      platform_view_(static_cast<WebContentsViewPort*>(platform_view)) {
+      platform_view_(platform_view) {
 }
 
 WebContentsViewGuest::~WebContentsViewGuest() {
-}
-
-void WebContentsViewGuest::CreateView(const gfx::Size& initial_size,
-                                      gfx::NativeView context) {
-  platform_view_->CreateView(initial_size, context);
-}
-
-RenderWidgetHostView* WebContentsViewGuest::CreateViewForWidget(
-    RenderWidgetHost* render_widget_host) {
-  if (render_widget_host->GetView()) {
-    // During testing, the view will already be set up in most cases to the
-    // test view, so we don't want to clobber it with a real one. To verify that
-    // this actually is happening (and somebody isn't accidentally creating the
-    // view twice), we check for the RVH Factory, which will be set when we're
-    // making special ones (which go along with the special views).
-    DCHECK(RenderViewHostFactory::has_factory());
-    return render_widget_host->GetView();
-  }
-
-  RenderWidgetHostView* platform_widget = NULL;
-  platform_widget = platform_view_->CreateViewForWidget(render_widget_host);
-
-  RenderWidgetHostView* view = new RenderWidgetHostViewGuest(
-      render_widget_host,
-      guest_,
-      enable_compositing_,
-      platform_widget);
-
-  return view;
-}
-
-RenderWidgetHostView* WebContentsViewGuest::CreateViewForPopupWidget(
-    RenderWidgetHost* render_widget_host) {
-  return RenderWidgetHostViewPort::CreateViewForWidget(render_widget_host);
 }
 
 gfx::NativeView WebContentsViewGuest::GetNativeView() const {
@@ -108,8 +74,41 @@ void WebContentsViewGuest::SetAllowOverlappingViews(bool overlapping) {
 }
 #endif
 
-WebContents* WebContentsViewGuest::web_contents() {
-  return web_contents_;
+void WebContentsViewGuest::CreateView(const gfx::Size& initial_size,
+                                      gfx::NativeView context) {
+  platform_view_->CreateView(initial_size, context);
+}
+
+RenderWidgetHostView* WebContentsViewGuest::CreateViewForWidget(
+    RenderWidgetHost* render_widget_host) {
+  if (render_widget_host->GetView()) {
+    // During testing, the view will already be set up in most cases to the
+    // test view, so we don't want to clobber it with a real one. To verify that
+    // this actually is happening (and somebody isn't accidentally creating the
+    // view twice), we check for the RVH Factory, which will be set when we're
+    // making special ones (which go along with the special views).
+    DCHECK(RenderViewHostFactory::has_factory());
+    return render_widget_host->GetView();
+  }
+
+  RenderWidgetHostView* platform_widget = NULL;
+  platform_widget = platform_view_->CreateViewForWidget(render_widget_host);
+
+  RenderWidgetHostView* view = new RenderWidgetHostViewGuest(
+      render_widget_host,
+      guest_,
+      enable_compositing_,
+      platform_widget);
+
+  return view;
+}
+
+RenderWidgetHostView* WebContentsViewGuest::CreateViewForPopupWidget(
+    RenderWidgetHost* render_widget_host) {
+  return RenderWidgetHostViewPort::CreateViewForWidget(render_widget_host);
+}
+
+void WebContentsViewGuest::SetPageTitle(const string16& title) {
 }
 
 void WebContentsViewGuest::RenderViewCreated(RenderViewHost* host) {
@@ -120,15 +119,21 @@ void WebContentsViewGuest::RenderViewSwappedIn(RenderViewHost* host) {
   platform_view_->RenderViewSwappedIn(host);
 }
 
+#if defined(OS_MACOSX)
 bool WebContentsViewGuest::IsEventTracking() const {
   return false;
 }
 
-void WebContentsViewGuest::RestoreFocus() {
-  platform_view_->RestoreFocus();
+void WebContentsViewGuest::CloseTabAfterEventTracking() {
+}
+#endif
+
+WebContents* WebContentsViewGuest::web_contents() {
+  return web_contents_;
 }
 
-void WebContentsViewGuest::SetPageTitle(const string16& title) {
+void WebContentsViewGuest::RestoreFocus() {
+  platform_view_->RestoreFocus();
 }
 
 void WebContentsViewGuest::OnTabCrashed(base::TerminationStatus status,
@@ -146,9 +151,6 @@ void WebContentsViewGuest::StoreFocus() {
 WebDropData* WebContentsViewGuest::GetDropData() const {
   NOTIMPLEMENTED();
   return NULL;
-}
-
-void WebContentsViewGuest::CloseTabAfterEventTracking() {
 }
 
 void WebContentsViewGuest::UpdateDragCursor(WebDragOperation operation) {

@@ -76,8 +76,8 @@ class ResourceContext;
 class SiteInstance;
 class SpeechRecognitionManagerDelegate;
 class WebContents;
-class WebContentsView;
 class WebContentsViewDelegate;
+class WebContentsViewPort;
 struct MainFunctionParams;
 struct ShowDesktopNotificationHostMsgParams;
 
@@ -99,11 +99,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual BrowserMainParts* CreateBrowserMainParts(
       const MainFunctionParams& parameters);
 
-  // Allows an embedder to return their own WebContentsView implementation.
+  // Allows an embedder to return their own WebContentsViewPort implementation.
   // Return NULL to let the default one for the platform be created. Otherwise
   // |render_view_host_delegate_view| also needs to be provided, and it is
   // owned by the embedder.
-  virtual WebContentsView* OverrideCreateWebContentsView(
+  virtual WebContentsViewPort* OverrideCreateWebContentsView(
       WebContents* web_contents,
       RenderViewHostDelegateView** render_view_host_delegate_view);
 

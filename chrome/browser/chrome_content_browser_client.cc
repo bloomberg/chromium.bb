@@ -505,13 +505,6 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
   return main_parts;
 }
 
-content::WebContentsView*
-    ChromeContentBrowserClient::OverrideCreateWebContentsView(
-        WebContents* web_contents,
-        content::RenderViewHostDelegateView** render_view_host_delegate_view) {
-  return NULL;
-}
-
 std::string ChromeContentBrowserClient::GetStoragePartitionIdForSite(
     content::BrowserContext* browser_context,
     const GURL& site) {

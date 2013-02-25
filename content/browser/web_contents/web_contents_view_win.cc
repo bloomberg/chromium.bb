@@ -20,7 +20,7 @@
 #include "ui/gfx/screen.h"
 
 namespace content {
-WebContentsView* CreateWebContentsView(
+WebContentsViewPort* CreateWebContentsView(
     WebContentsImpl* web_contents,
     WebContentsViewDelegate* delegate,
     RenderViewHostDelegateView** render_view_host_delegate_view) {
@@ -101,49 +101,6 @@ WebContentsViewWin::~WebContentsViewWin() {
     DestroyWindow(hwnd());
 }
 
-void WebContentsViewWin::CreateView(
-    const gfx::Size& initial_size, gfx::NativeView context) {
-  initial_size_ = initial_size;
-
-  set_window_style(WS_VISIBLE | WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
-
-  Init(ui::GetHiddenWindow(), gfx::Rect(initial_size_));
-
-  // Remove the root view drop target so we can register our own.
-  RevokeDragDrop(GetNativeView());
-  drag_dest_ = new WebDragDest(hwnd(), web_contents_);
-  if (delegate_.get()) {
-    WebDragDestDelegate* delegate = delegate_->GetDragDestDelegate();
-    if (delegate)
-      drag_dest_->set_delegate(delegate);
-  }
-}
-
-RenderWidgetHostView* WebContentsViewWin::CreateViewForWidget(
-    RenderWidgetHost* render_widget_host)  {
-  if (render_widget_host->GetView()) {
-    // During testing, the view will already be set up in most cases to the
-    // test view, so we don't want to clobber it with a real one. To verify that
-    // this actually is happening (and somebody isn't accidentally creating the
-    // view twice), we check for the RVH Factory, which will be set when we're
-    // making special ones (which go along with the special views).
-    DCHECK(RenderViewHostFactory::has_factory());
-    return render_widget_host->GetView();
-  }
-
-  RenderWidgetHostViewWin* view = static_cast<RenderWidgetHostViewWin*>(
-      RenderWidgetHostView::CreateViewForWidget(render_widget_host));
-  view->CreateWnd(GetNativeView());
-  view->ShowWindow(SW_SHOW);
-  view->SetSize(initial_size_);
-  return view;
-}
-
-RenderWidgetHostView* WebContentsViewWin::CreateViewForPopupWidget(
-    RenderWidgetHost* render_widget_host) {
-  return RenderWidgetHostViewPort::CreateViewForWidget(render_widget_host);
-}
-
 gfx::NativeView WebContentsViewWin::GetNativeView() const {
   return hwnd();
 }
@@ -164,12 +121,6 @@ void WebContentsViewWin::GetContainerBounds(gfx::Rect *out) const {
   POINT point = { r.left, r.top };
   ClientToScreen(hwnd(), &point);
   *out = gfx::Rect(point.x, point.y, r.right - r.left, r.bottom - r.top);
-}
-
-void WebContentsViewWin::SetPageTitle(const string16& title) {
-  // It's possible to get this after the hwnd has been destroyed.
-  if (GetNativeView())
-    ::SetWindowText(GetNativeView(), title.c_str());
 }
 
 void WebContentsViewWin::OnTabCrashed(base::TerminationStatus status,
@@ -193,10 +144,22 @@ void WebContentsViewWin::SizeContents(const gfx::Size& size) {
   }
 }
 
-void WebContentsViewWin::RenderViewCreated(RenderViewHost* host) {
-}
+void WebContentsViewWin::CreateView(
+    const gfx::Size& initial_size, gfx::NativeView context) {
+  initial_size_ = initial_size;
 
-void WebContentsViewWin::RenderViewSwappedIn(RenderViewHost* host) {
+  set_window_style(WS_VISIBLE | WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
+
+  Init(ui::GetHiddenWindow(), gfx::Rect(initial_size_));
+
+  // Remove the root view drop target so we can register our own.
+  RevokeDragDrop(GetNativeView());
+  drag_dest_ = new WebDragDest(hwnd(), web_contents_);
+  if (delegate_.get()) {
+    WebDragDestDelegate* delegate = delegate_->GetDragDestDelegate();
+    if (delegate)
+      drag_dest_->set_delegate(delegate);
+  }
 }
 
 void WebContentsViewWin::Focus() {
@@ -234,17 +197,47 @@ WebDropData* WebContentsViewWin::GetDropData() const {
   return drag_dest_->current_drop_data();
 }
 
-bool WebContentsViewWin::IsEventTracking() const {
-  return false;
-}
-
-void WebContentsViewWin::CloseTabAfterEventTracking() {
-}
-
 gfx::Rect WebContentsViewWin::GetViewBounds() const {
   RECT r;
   GetWindowRect(hwnd(), &r);
   return gfx::Rect(r);
+}
+
+RenderWidgetHostView* WebContentsViewWin::CreateViewForWidget(
+    RenderWidgetHost* render_widget_host)  {
+  if (render_widget_host->GetView()) {
+    // During testing, the view will already be set up in most cases to the
+    // test view, so we don't want to clobber it with a real one. To verify that
+    // this actually is happening (and somebody isn't accidentally creating the
+    // view twice), we check for the RVH Factory, which will be set when we're
+    // making special ones (which go along with the special views).
+    DCHECK(RenderViewHostFactory::has_factory());
+    return render_widget_host->GetView();
+  }
+
+  RenderWidgetHostViewWin* view = static_cast<RenderWidgetHostViewWin*>(
+      RenderWidgetHostView::CreateViewForWidget(render_widget_host));
+  view->CreateWnd(GetNativeView());
+  view->ShowWindow(SW_SHOW);
+  view->SetSize(initial_size_);
+  return view;
+}
+
+RenderWidgetHostView* WebContentsViewWin::CreateViewForPopupWidget(
+    RenderWidgetHost* render_widget_host) {
+  return RenderWidgetHostViewPort::CreateViewForWidget(render_widget_host);
+}
+
+void WebContentsViewWin::SetPageTitle(const string16& title) {
+  // It's possible to get this after the hwnd has been destroyed.
+  if (GetNativeView())
+    ::SetWindowText(GetNativeView(), title.c_str());
+}
+
+void WebContentsViewWin::RenderViewCreated(RenderViewHost* host) {
+}
+
+void WebContentsViewWin::RenderViewSwappedIn(RenderViewHost* host) {
 }
 
 void WebContentsViewWin::ShowContextMenu(

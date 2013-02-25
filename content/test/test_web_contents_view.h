@@ -37,35 +37,37 @@ class TestWebContentsView : public WebContentsViewPort,
   virtual void TakeFocus(bool reverse) OVERRIDE;
 
   // WebContentsView:
-  virtual void CreateView(const gfx::Size& initial_size,
-                          gfx::NativeView context) OVERRIDE;
-  virtual RenderWidgetHostView* CreateViewForWidget(
-      RenderWidgetHost* render_widget_host) OVERRIDE;
-  virtual RenderWidgetHostView* CreateViewForPopupWidget(
-      RenderWidgetHost* render_widget_host) OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeView GetContentNativeView() const OVERRIDE;
   virtual gfx::NativeWindow GetTopLevelNativeWindow() const OVERRIDE;
   virtual void GetContainerBounds(gfx::Rect *out) const OVERRIDE;
-  virtual void SetPageTitle(const string16& title) OVERRIDE;
   virtual void OnTabCrashed(base::TerminationStatus status,
                             int error_code) OVERRIDE;
   virtual void SizeContents(const gfx::Size& size) OVERRIDE;
-  virtual void RenderViewCreated(RenderViewHost* host) OVERRIDE;
   virtual void Focus() OVERRIDE;
   virtual void SetInitialFocus() OVERRIDE;
   virtual void StoreFocus() OVERRIDE;
   virtual void RestoreFocus() OVERRIDE;
   virtual WebDropData* GetDropData() const OVERRIDE;
-  virtual bool IsEventTracking() const OVERRIDE;
-  virtual void CloseTabAfterEventTracking() OVERRIDE;
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
 #if defined(OS_MACOSX)
   virtual void SetAllowOverlappingViews(bool overlapping) OVERRIDE;
 #endif
 
   // WebContentsViewPort:
+  virtual void CreateView(const gfx::Size& initial_size,
+                          gfx::NativeView context) OVERRIDE;
+  virtual RenderWidgetHostView* CreateViewForWidget(
+      RenderWidgetHost* render_widget_host) OVERRIDE;
+  virtual RenderWidgetHostView* CreateViewForPopupWidget(
+      RenderWidgetHost* render_widget_host) OVERRIDE;
+  virtual void SetPageTitle(const string16& title) OVERRIDE;
+  virtual void RenderViewCreated(RenderViewHost* host) OVERRIDE;
   virtual void RenderViewSwappedIn(RenderViewHost* host) OVERRIDE;
+#if defined(OS_MACOSX)
+  virtual bool IsEventTracking() const OVERRIDE;
+  virtual void CloseTabAfterEventTracking() OVERRIDE;
+#endif
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestWebContentsView);

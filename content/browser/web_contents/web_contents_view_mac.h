@@ -63,19 +63,10 @@ class WebContentsViewMac : public WebContentsViewPort,
   virtual ~WebContentsViewMac();
 
   // WebContentsView implementation --------------------------------------------
-
-  virtual void CreateView(
-      const gfx::Size& initial_size, gfx::NativeView context) OVERRIDE;
-  virtual RenderWidgetHostView* CreateViewForWidget(
-      RenderWidgetHost* render_widget_host) OVERRIDE;
-  virtual RenderWidgetHostView* CreateViewForPopupWidget(
-      RenderWidgetHost* render_widget_host) OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeView GetContentNativeView() const OVERRIDE;
   virtual gfx::NativeWindow GetTopLevelNativeWindow() const OVERRIDE;
   virtual void GetContainerBounds(gfx::Rect* out) const OVERRIDE;
-  virtual void RenderViewCreated(RenderViewHost* host) OVERRIDE;
-  virtual void SetPageTitle(const string16& title) OVERRIDE;
   virtual void OnTabCrashed(base::TerminationStatus status,
                             int error_code) OVERRIDE;
   virtual void SizeContents(const gfx::Size& size) OVERRIDE;
@@ -84,13 +75,21 @@ class WebContentsViewMac : public WebContentsViewPort,
   virtual void StoreFocus() OVERRIDE;
   virtual void RestoreFocus() OVERRIDE;
   virtual WebDropData* GetDropData() const OVERRIDE;
-  virtual bool IsEventTracking() const OVERRIDE;
-  virtual void CloseTabAfterEventTracking() OVERRIDE;
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
   virtual void SetAllowOverlappingViews(bool overlapping) OVERRIDE;
 
   // WebContentsViewPort implementation ----------------------------------------
+  virtual void CreateView(
+      const gfx::Size& initial_size, gfx::NativeView context) OVERRIDE;
+  virtual RenderWidgetHostView* CreateViewForWidget(
+      RenderWidgetHost* render_widget_host) OVERRIDE;
+  virtual RenderWidgetHostView* CreateViewForPopupWidget(
+      RenderWidgetHost* render_widget_host) OVERRIDE;
+  virtual void SetPageTitle(const string16& title) OVERRIDE;
+  virtual void RenderViewCreated(RenderViewHost* host) OVERRIDE;
   virtual void RenderViewSwappedIn(RenderViewHost* host) OVERRIDE;
+  virtual bool IsEventTracking() const OVERRIDE;
+  virtual void CloseTabAfterEventTracking() OVERRIDE;
 
   // Backend implementation of RenderViewHostDelegateView.
   virtual void ShowContextMenu(const ContextMenuParams& params,

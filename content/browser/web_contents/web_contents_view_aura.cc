@@ -57,7 +57,7 @@
 #endif
 
 namespace content {
-WebContentsView* CreateWebContentsView(
+WebContentsViewPort* CreateWebContentsView(
     WebContentsImpl* web_contents,
     WebContentsViewDelegate* delegate,
     RenderViewHostDelegateView** render_view_host_delegate_view) {
@@ -1082,6 +1082,85 @@ void WebContentsViewAura::UpdateOverscrollWindowBrightness(float delta_x) {
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsViewAura, WebContentsView implementation:
 
+gfx::NativeView WebContentsViewAura::GetNativeView() const {
+  return window_.get();
+}
+
+gfx::NativeView WebContentsViewAura::GetContentNativeView() const {
+  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
+  return rwhv ? rwhv->GetNativeView() : NULL;
+}
+
+gfx::NativeWindow WebContentsViewAura::GetTopLevelNativeWindow() const {
+  return window_->GetToplevelWindow();
+}
+
+void WebContentsViewAura::GetContainerBounds(gfx::Rect *out) const {
+  *out = window_->GetBoundsInScreen();
+}
+
+void WebContentsViewAura::OnTabCrashed(base::TerminationStatus status,
+                                       int error_code) {
+  // Set the focus to the parent because neither the view window nor this
+  // window can handle key events.
+  if (window_->HasFocus() && window_->parent())
+    window_->parent()->Focus();
+}
+
+void WebContentsViewAura::SizeContents(const gfx::Size& size) {
+  gfx::Rect bounds = window_->bounds();
+  if (bounds.size() != size) {
+    bounds.set_size(size);
+    window_->SetBounds(bounds);
+  } else {
+    // Our size matches what we want but the renderers size may not match.
+    // Pretend we were resized so that the renderers size is updated too.
+    SizeChangedCommon(size);
+  }
+}
+
+void WebContentsViewAura::Focus() {
+  if (web_contents_->GetInterstitialPage()) {
+    web_contents_->GetInterstitialPage()->Focus();
+    return;
+  }
+
+  if (delegate_.get() && delegate_->Focus())
+    return;
+
+  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
+  if (rwhv)
+    rwhv->Focus();
+}
+
+void WebContentsViewAura::SetInitialFocus() {
+  if (web_contents_->FocusLocationBarByDefault())
+    web_contents_->SetFocusToLocationBar(false);
+  else
+    Focus();
+}
+
+void WebContentsViewAura::StoreFocus() {
+  if (delegate_.get())
+    delegate_->StoreFocus();
+}
+
+void WebContentsViewAura::RestoreFocus() {
+  if (delegate_.get())
+    delegate_->RestoreFocus();
+}
+
+WebDropData* WebContentsViewAura::GetDropData() const {
+  return current_drop_data_.get();
+}
+
+gfx::Rect WebContentsViewAura::GetViewBounds() const {
+  return window_->GetBoundsInRootWindow();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WebContentsViewAura, WebContentsViewPort implementation:
+
 void WebContentsViewAura::CreateView(
     const gfx::Size& initial_size, gfx::NativeView context) {
   // NOTE: we ignore |initial_size| since in some cases it's wrong (such as
@@ -1165,45 +1244,8 @@ RenderWidgetHostView* WebContentsViewAura::CreateViewForPopupWidget(
   return RenderWidgetHostViewPort::CreateViewForWidget(render_widget_host);
 }
 
-gfx::NativeView WebContentsViewAura::GetNativeView() const {
-  return window_.get();
-}
-
-gfx::NativeView WebContentsViewAura::GetContentNativeView() const {
-  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
-  return rwhv ? rwhv->GetNativeView() : NULL;
-}
-
-gfx::NativeWindow WebContentsViewAura::GetTopLevelNativeWindow() const {
-  return window_->GetToplevelWindow();
-}
-
-void WebContentsViewAura::GetContainerBounds(gfx::Rect *out) const {
-  *out = window_->GetBoundsInScreen();
-}
-
 void WebContentsViewAura::SetPageTitle(const string16& title) {
   window_->set_title(title);
-}
-
-void WebContentsViewAura::OnTabCrashed(base::TerminationStatus status,
-                                       int error_code) {
-  // Set the focus to the parent because neither the view window nor this
-  // window can handle key events.
-  if (window_->HasFocus() && window_->parent())
-    window_->parent()->Focus();
-}
-
-void WebContentsViewAura::SizeContents(const gfx::Size& size) {
-  gfx::Rect bounds = window_->bounds();
-  if (bounds.size() != size) {
-    bounds.set_size(size);
-    window_->SetBounds(bounds);
-  } else {
-    // Our size matches what we want but the renderers size may not match.
-    // Pretend we were resized so that the renderers size is updated too.
-    SizeChangedCommon(size);
-  }
 }
 
 void WebContentsViewAura::RenderViewCreated(RenderViewHost* host) {
@@ -1214,52 +1256,6 @@ void WebContentsViewAura::RenderViewSwappedIn(RenderViewHost* host) {
     navigation_overlay_->StartObservingView(static_cast<
         RenderWidgetHostViewAura*>(host->GetView()));
   }
-}
-
-void WebContentsViewAura::Focus() {
-  if (web_contents_->GetInterstitialPage()) {
-    web_contents_->GetInterstitialPage()->Focus();
-    return;
-  }
-
-  if (delegate_.get() && delegate_->Focus())
-    return;
-
-  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
-  if (rwhv)
-    rwhv->Focus();
-}
-
-void WebContentsViewAura::SetInitialFocus() {
-  if (web_contents_->FocusLocationBarByDefault())
-    web_contents_->SetFocusToLocationBar(false);
-  else
-    Focus();
-}
-
-void WebContentsViewAura::StoreFocus() {
-  if (delegate_.get())
-    delegate_->StoreFocus();
-}
-
-void WebContentsViewAura::RestoreFocus() {
-  if (delegate_.get())
-    delegate_->RestoreFocus();
-}
-
-WebDropData* WebContentsViewAura::GetDropData() const {
-  return current_drop_data_.get();
-}
-
-bool WebContentsViewAura::IsEventTracking() const {
-  return false;
-}
-
-void WebContentsViewAura::CloseTabAfterEventTracking() {
-}
-
-gfx::Rect WebContentsViewAura::GetViewBounds() const {
-  return window_->GetBoundsInRootWindow();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -70,12 +70,6 @@ class TestWebContentsView : public WebContentsView {
   }
 
   // The rest of WebContentsView:
-  virtual void CreateView(const gfx::Size& initial_size,
-                          gfx::NativeView context) OVERRIDE {}
-  virtual RenderWidgetHostView* CreateViewForWidget(
-      RenderWidgetHost* render_widget_host) OVERRIDE { return NULL; }
-  virtual RenderWidgetHostView* CreateViewForPopupWidget(
-      RenderWidgetHost* render_widget_host) OVERRIDE { return NULL; }
   virtual gfx::NativeView GetNativeView() const OVERRIDE {
     return gfx::NativeView();
   }
@@ -85,18 +79,14 @@ class TestWebContentsView : public WebContentsView {
   virtual gfx::NativeWindow GetTopLevelNativeWindow() const OVERRIDE {
     return gfx::NativeWindow();
   }
-  virtual void SetPageTitle(const string16& title) OVERRIDE {}
   virtual void OnTabCrashed(base::TerminationStatus status,
                             int error_code) OVERRIDE {}
   virtual void SizeContents(const gfx::Size& size) OVERRIDE {}
-  virtual void RenderViewCreated(RenderViewHost* host) OVERRIDE {}
   virtual void Focus() OVERRIDE {}
   virtual void SetInitialFocus() OVERRIDE {}
   virtual void StoreFocus() OVERRIDE {}
   virtual void RestoreFocus() OVERRIDE {}
   virtual WebDropData* GetDropData() const OVERRIDE { return NULL; }
-  virtual bool IsEventTracking() const OVERRIDE { return false; }
-  virtual void CloseTabAfterEventTracking() OVERRIDE {}
   virtual gfx::Rect GetViewBounds() const OVERRIDE { return gfx::Rect(); }
 #if defined(OS_MACOSX)
   virtual void SetAllowOverlappingViews(bool overlapping) OVERRIDE {}
