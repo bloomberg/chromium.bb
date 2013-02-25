@@ -18,6 +18,10 @@ static const float Scale(float width, const LayerTreeImpl* tree_impl) {
 SkColor DebugColors::TiledContentLayerBorderColor() { return SkColorSetARGB(128, 255, 128, 0); }
 int DebugColors::TiledContentLayerBorderWidth(const LayerTreeImpl* tree_impl) { return Scale(2, tree_impl); }
 
+// Image layers are olive.
+SkColor DebugColors::ImageLayerBorderColor() { return SkColorSetARGB(128, 128, 128, 0); }
+int DebugColors::ImageLayerBorderWidth(const LayerTreeImpl* tree_impl) { return Scale(2, tree_impl); }
+
 // Non-tiled content layers area green.
 SkColor DebugColors::ContentLayerBorderColor() { return SkColorSetARGB(128, 0, 128, 32); }
 int DebugColors::ContentLayerBorderWidth(const LayerTreeImpl* tree_impl) { return Scale(2, tree_impl); }

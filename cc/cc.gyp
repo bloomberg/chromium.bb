@@ -150,6 +150,8 @@
       'picture.h',
       'picture_image_layer.cc',
       'picture_image_layer.h',
+      'picture_image_layer_impl.cc',
+      'picture_image_layer_impl.h',
       'picture_layer.cc',
       'picture_layer.h',
       'picture_layer_impl.cc',

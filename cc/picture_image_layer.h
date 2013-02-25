@@ -20,10 +20,9 @@ class CC_EXPORT PictureImageLayer : public PictureLayer, ContentLayerClient {
   void setBitmap(const SkBitmap& image);
 
   // Layer implementation.
-  virtual void update(
-      ResourceUpdateQueue& queue,
-      const OcclusionTracker* tracker,
-      RenderingStats* stats) OVERRIDE;
+  virtual scoped_ptr<LayerImpl> createLayerImpl(
+      LayerTreeImpl* treeImpl) OVERRIDE;
+  virtual bool drawsContent() const OVERRIDE;
 
   // ContentLayerClient implementation.
   virtual void paintContents(
@@ -36,7 +35,6 @@ class CC_EXPORT PictureImageLayer : public PictureLayer, ContentLayerClient {
   virtual ~PictureImageLayer();
 
   SkBitmap bitmap_;
-  gfx::Size bounds_;
 };
 
 }  // namespace cc

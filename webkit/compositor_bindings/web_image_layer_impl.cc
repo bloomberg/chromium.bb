@@ -9,6 +9,7 @@
 #include "cc/picture_image_layer.h"
 #include "cc/switches.h"
 #include "webkit/compositor_bindings/web_layer_impl.h"
+#include "webkit/compositor_bindings/web_layer_impl_fixed_bounds.h"
 
 static bool usingPictureLayer()
 {
@@ -20,7 +21,7 @@ namespace WebKit {
 WebImageLayerImpl::WebImageLayerImpl()
 {
     if (usingPictureLayer())
-        m_layer.reset(new WebLayerImpl(cc::PictureImageLayer::create()));
+        m_layer.reset(new WebLayerImplFixedBounds(cc::PictureImageLayer::create()));
     else
         m_layer.reset(new WebLayerImpl(cc::ImageLayer::create()));
 }
@@ -36,9 +37,10 @@ WebLayer* WebImageLayerImpl::layer()
 
 void WebImageLayerImpl::setBitmap(SkBitmap bitmap)
 {
-    if (usingPictureLayer())
+    if (usingPictureLayer()) {
         static_cast<cc::PictureImageLayer*>(m_layer->layer())->setBitmap(bitmap);
-    else
+        static_cast<WebLayerImplFixedBounds*>(m_layer.get())->SetFixedBounds(gfx::Size(bitmap.width(), bitmap.height()));
+    } else
         static_cast<cc::ImageLayer*>(m_layer->layer())->setBitmap(bitmap);
 }
 

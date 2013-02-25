@@ -4,6 +4,7 @@
 
 #include "cc/picture_image_layer.h"
 
+#include "cc/picture_image_layer_impl.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
 namespace cc {
@@ -23,6 +24,15 @@ PictureImageLayer::~PictureImageLayer()
   clearClient();
 }
 
+scoped_ptr<LayerImpl> PictureImageLayer::createLayerImpl(
+    LayerTreeImpl* treeImpl) {
+  return PictureImageLayerImpl::create(treeImpl, id()).PassAs<LayerImpl>();
+}
+
+bool PictureImageLayer::drawsContent() const {
+  return !bitmap_.isNull() && PictureLayer::drawsContent();
+}
+
 void PictureImageLayer::setBitmap(const SkBitmap& bitmap)
 {
   // setBitmap() currently gets called whenever there is any
@@ -34,21 +44,6 @@ void PictureImageLayer::setBitmap(const SkBitmap& bitmap)
 
   bitmap_ = bitmap;
   setNeedsDisplay();
-}
-
-void PictureImageLayer::update(
-    ResourceUpdateQueue& queue,
-    const OcclusionTracker* tracker,
-    RenderingStats* stats) {
-  if (bounds() != bounds_) {
-    // Pictures are recorded in layer space, so if the layer size changes,
-    // then the picture needs to be re-scaled, as a directly composited image
-    // always fills its entire layer bounds.  This could be improved by
-    // recording pictures of images at their actual resolution somehow.
-    bounds_ = bounds();
-    setNeedsDisplay();
-  }
-  PictureLayer::update(queue, tracker, stats);
 }
 
 void PictureImageLayer::paintContents(

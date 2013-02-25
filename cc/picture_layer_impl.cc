@@ -579,8 +579,6 @@ void PictureLayerImpl::ManageTilings(bool animating_transform_to_screen) {
   if (pile_->recorded_region().IsEmpty())
     return;
 
-  float low_res_factor = layerTreeImpl()->settings().lowResContentsScaleFactor;
-
   bool is_active_layer = layerTreeImpl()->IsActiveTree();
   bool is_pinching = layerTreeImpl()->PinchGestureActive();
 
@@ -625,17 +623,11 @@ void PictureLayerImpl::ManageTilings(bool animating_transform_to_screen) {
   raster_device_scale_ = ideal_device_scale_;
   raster_source_scale_ = ideal_source_scale_;
 
-  float raster_contents_scale = ideal_contents_scale_;
-
-  // Don't allow animating CSS scales to drop below 1.
-  if (animating_transform_to_screen) {
-    raster_contents_scale = std::max(
-        raster_contents_scale, 1.f * ideal_page_scale_ * ideal_device_scale_);
-  }
-
-  float low_res_raster_contents_scale = std::max(
-      raster_contents_scale * low_res_factor,
-      layerTreeImpl()->settings().minimumContentsScale);
+  float raster_contents_scale;
+  float low_res_raster_contents_scale;
+  CalculateRasterContentsScale(animating_transform_to_screen,
+                               &raster_contents_scale,
+                               &low_res_raster_contents_scale);
 
   PictureLayerTiling* high_res = NULL;
   PictureLayerTiling* low_res = NULL;
@@ -651,8 +643,11 @@ void PictureLayerImpl::ManageTilings(bool animating_transform_to_screen) {
     tiling->set_resolution(NON_IDEAL_RESOLUTION);
   }
 
-  if (!high_res)
+  if (!high_res) {
     high_res = AddTiling(raster_contents_scale);
+    if (raster_contents_scale == low_res_raster_contents_scale)
+      low_res = high_res;
+  }
   if (!low_res && low_res != high_res)
     low_res = AddTiling(low_res_raster_contents_scale);
 
@@ -660,6 +655,24 @@ void PictureLayerImpl::ManageTilings(bool animating_transform_to_screen) {
     high_res->set_resolution(HIGH_RESOLUTION);
   if (low_res && low_res != high_res)
     low_res->set_resolution(LOW_RESOLUTION);
+}
+
+void PictureLayerImpl::CalculateRasterContentsScale(
+    bool animating_transform_to_screen,
+    float* raster_contents_scale,
+    float* low_res_raster_contents_scale) {
+  *raster_contents_scale = ideal_contents_scale_;
+
+  // Don't allow animating CSS scales to drop below 1.
+  if (animating_transform_to_screen) {
+    *raster_contents_scale = std::max(
+        *raster_contents_scale, 1.f * ideal_page_scale_ * ideal_device_scale_);
+  }
+
+  float low_res_factor = layerTreeImpl()->settings().lowResContentsScaleFactor;
+  *low_res_raster_contents_scale = std::max(
+      *raster_contents_scale * low_res_factor,
+      layerTreeImpl()->settings().minimumContentsScale);
 }
 
 void PictureLayerImpl::CleanUpTilingsOnActiveLayer(

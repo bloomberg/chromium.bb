@@ -76,6 +76,10 @@ protected:
   void RemoveTiling(float contents_scale);
   void SyncFromActiveLayer(const PictureLayerImpl* other);
   void ManageTilings(bool animating_transform_to_screen);
+  virtual void CalculateRasterContentsScale(
+      bool animating_transform_to_screen,
+      float* raster_contents_scale,
+      float* low_res_raster_contents_scale);
   void CleanUpTilingsOnActiveLayer(
       std::vector<PictureLayerTiling*> used_tilings);
   PictureLayerImpl* PendingTwin() const;
