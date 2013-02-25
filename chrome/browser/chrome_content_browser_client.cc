@@ -28,6 +28,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/download/download_util.h"
+#include "chrome/browser/extensions/activity_log.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_info_map.h"
@@ -619,6 +620,13 @@ void ChromeContentBrowserClient::RenderViewHostCreated(
   new extensions::MessageHandler(render_view_host);
 }
 
+// Check if the extension activity log is enabled for the profile.
+static bool IsExtensionActivityLogEnabledForProfile(Profile* profile) {
+  extensions::ActivityLog* activity_log =
+      extensions::ActivityLog::GetInstance(profile);
+  return activity_log->IsLogEnabled();
+}
+
 void ChromeContentBrowserClient::GuestWebContentsCreated(
     WebContents* guest_web_contents, WebContents* embedder_web_contents) {
   Profile* profile = Profile::FromBrowserContext(
@@ -665,6 +673,9 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
 
   host->Send(new ChromeViewMsg_SetIsIncognitoProcess(
       profile->IsOffTheRecord()));
+
+  host->Send(new ChromeViewMsg_SetExtensionActivityLogEnabled(
+      IsExtensionActivityLogEnabledForProfile(profile)));
 
   SendExtensionWebRequestStatusToHost(host);
 

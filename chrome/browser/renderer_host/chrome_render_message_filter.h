@@ -17,6 +17,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
 class CookieSettings;
+struct ExtensionHostMsg_DOMAction_Params;
 struct ExtensionHostMsg_Request_Params;
 class ExtensionInfoMap;
 class GURL;
@@ -151,6 +152,9 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   void OnExtensionSuspendAck(const std::string& extension_id);
   void OnExtensionGenerateUniqueID(int* unique_id);
   void OnExtensionResumeRequests(int route_id);
+  void OnAddDOMActionToExtensionActivityLog(
+      const std::string& extension_id,
+      const ExtensionHostMsg_DOMAction_Params& params);
   void OnAllowDatabase(int render_view_id,
                        const GURL& origin_url,
                        const GURL& top_origin_url,

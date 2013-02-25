@@ -375,6 +375,11 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_RevertTranslation,
 IPC_MESSAGE_CONTROL1(ChromeViewMsg_SetIsIncognitoProcess,
                      bool /* is_incognito_processs */)
 
+// Sent on process startup to indicate whether the extension activity
+// log is enabled.
+IPC_MESSAGE_CONTROL1(ChromeViewMsg_SetExtensionActivityLogEnabled,
+                     bool /* extension_activity_log_enabled */)
+
 // Sent in response to ViewHostMsg_DidBlockDisplayingInsecureContent.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetAllowDisplayingInsecureContent,
                     bool /* allowed */)

@@ -30,6 +30,24 @@
 
 IPC_ENUM_TRAITS(chrome::ViewType)
 
+// Parameters structure for ExtensionHostMsg_AddDOMActionToActivityLog.
+IPC_STRUCT_BEGIN(ExtensionHostMsg_DOMAction_Params)
+  // URL of the page.
+  IPC_STRUCT_MEMBER(GURL, url)
+
+  // Title of the page.
+  IPC_STRUCT_MEMBER(string16, url_title)
+
+  // API name.
+  IPC_STRUCT_MEMBER(std::string, api_call)
+
+  // List of arguments.
+  IPC_STRUCT_MEMBER(ListValue, arguments)
+
+  // Extra logging information.
+  IPC_STRUCT_MEMBER(std::string, extra)
+IPC_STRUCT_END()
+
 // Parameters structure for ExtensionHostMsg_Request.
 IPC_STRUCT_BEGIN(ExtensionHostMsg_Request_Params)
   // Message name.
@@ -587,6 +605,11 @@ IPC_MESSAGE_CONTROL1(ExtensionHostMsg_ResumeRequests, int /* route_id */)
 // Sent by the renderer when the draggable regions are updated.
 IPC_MESSAGE_ROUTED1(ExtensionHostMsg_UpdateDraggableRegions,
                     std::vector<extensions::DraggableRegion> /* regions */)
+
+// Sent by the renderer to log a DOM action on the extension activity log.
+IPC_MESSAGE_CONTROL2(ExtensionHostMsg_AddDOMActionToActivityLog,
+                     std::string /* extension_id */,
+                     ExtensionHostMsg_DOMAction_Params)
 
 // Notifies the browser process that a tab has started or stopped matching
 // certain conditions.  This message is sent in response to several events:
