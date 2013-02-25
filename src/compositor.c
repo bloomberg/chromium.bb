@@ -1712,16 +1712,13 @@ clip_pointer_motion(struct weston_seat *seat, wl_fixed_t *fx, wl_fixed_t *fy)
 	}
 }
 
-WL_EXPORT void
-notify_motion(struct weston_seat *seat, uint32_t time, wl_fixed_t x, wl_fixed_t y)
+static void
+move_pointer(struct weston_seat *seat, wl_fixed_t x, wl_fixed_t y)
 {
-	const struct wl_pointer_grab_interface *interface;
 	struct weston_compositor *ec = seat->compositor;
-	struct weston_output *output;
 	struct wl_pointer *pointer = seat->seat.pointer;
+	struct weston_output *output;
 	int32_t ix, iy;
-
-	weston_compositor_wake(ec);
 
 	clip_pointer_motion(seat, &x, &y);
 
@@ -1740,9 +1737,6 @@ notify_motion(struct weston_seat *seat, uint32_t time, wl_fixed_t x, wl_fixed_t 
 			weston_output_update_zoom(output, ZOOM_FOCUS_POINTER);
 
 	weston_device_repick(seat);
-	interface = pointer->grab->interface;
-	interface->motion(pointer->grab, time,
-			  pointer->grab->x, pointer->grab->y);
 
 	if (seat->sprite) {
 		weston_surface_set_position(seat->sprite,
@@ -1750,6 +1744,23 @@ notify_motion(struct weston_seat *seat, uint32_t time, wl_fixed_t x, wl_fixed_t 
 					    iy - seat->hotspot_y);
 		weston_surface_schedule_repaint(seat->sprite);
 	}
+}
+
+WL_EXPORT void
+notify_motion(struct weston_seat *seat,
+	      uint32_t time, wl_fixed_t x, wl_fixed_t y)
+{
+	const struct wl_pointer_grab_interface *interface;
+	struct weston_compositor *ec = seat->compositor;
+	struct wl_pointer *pointer = seat->seat.pointer;
+
+	weston_compositor_wake(ec);
+
+	move_pointer(seat, x, y);
+
+	interface = pointer->grab->interface;
+	interface->motion(pointer->grab, time,
+			  pointer->grab->x, pointer->grab->y);
 }
 
 WL_EXPORT void
