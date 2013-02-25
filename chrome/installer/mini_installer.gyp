@@ -176,6 +176,9 @@
           'msvs_precompiled_header': '',
           'msvs_precompiled_source': '',
 
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [ 4267, ],
+          
           'sources': [
             'mini_installer/chrome.release',
             'mini_installer/chrome_appid.cc',
