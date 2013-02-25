@@ -3,12 +3,15 @@
 // found in the LICENSE file.
 
 cr.define('bmm', function() {
-  const Promise = cr.Promise;
+  var Promise = cr.Promise;
 
   /**
    * Whether a node contains another node.
-   * @param {!BookmarkTreeNode} parent
-   * @param {!BookmarkTreeNode} descendant
+   * TODO(yosin): Once JavaScript style guide is updated and linter follows
+   * that, we'll remove useless documentations for |parent| and |descendant|.
+   * TODO(yosin): bmm.contains() should be method of BookmarkTreeNode.
+   * @param {!BookmarkTreeNode} parent .
+   * @param {!BookmarkTreeNode} descendant .
    * @return {boolean} Whether the parent contains the descendant.
    */
   function contains(parent, descendant) {
@@ -109,8 +112,8 @@ cr.define('bmm', function() {
 
   /**
    * Called when the title of a bookmark changes.
-   * @param {string} id
-   * @param {!Object} changeInfo
+   * @param {string} id The id of changed bookmark node.
+   * @param {!Object} changeInfo The information about how the node changed.
    */
   function handleBookmarkChanged(id, changeInfo) {
     if (bmm.tree)
