@@ -1,0 +1,17 @@
+<style>
+* { color: green; background: black; }
+*::selection { background: red; color: orange; }
+</style>
+<div id="editable" contenteditable="true">hello<div>computer</div>world
+<ol>
+<li>first</li>
+<li>second</li>
+<li>third</li>
+<li>fourth</li>
+</ol></div>
+<script>
+var node = document.getElementById("editable");
+node.focus();
+document.execCommand("selectAll", false, true);
+</script>
+
