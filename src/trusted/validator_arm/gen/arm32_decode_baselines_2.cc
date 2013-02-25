@@ -1223,6 +1223,117 @@ uses(Instruction inst) const {
    Add(Register(((inst.Bits() & 0x000F0000) >> 16))), nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)));
 }
 
+// STM_User_registers_cccc100pu100nnnnrrrrrrrrrrrrrrrr_case_0:
+//
+//   {cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc100pu100nnnnrrrrrrrrrrrrrrrr,
+//    rule: STM_User_registers,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList STM_User_registers_cccc100pu100nnnnrrrrrrrrrrrrrrrr_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel STM_User_registers_cccc100pu100nnnnrrrrrrrrrrrrrrrr_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList STM_User_registers_cccc100pu100nnnnrrrrrrrrrrrrrrrr_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// STRBT_A1_cccc0100u110nnnnttttiiiiiiiiiiii_case_0:
+//
+//   {cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0100u110nnnnttttiiiiiiiiiiii,
+//    rule: STRBT_A1,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList STRBT_A1_cccc0100u110nnnnttttiiiiiiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel STRBT_A1_cccc0100u110nnnnttttiiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList STRBT_A1_cccc0100u110nnnnttttiiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// STRBT_A2_cccc0110u110nnnnttttiiiiitt0mmmm_case_0:
+//
+//   {cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0110u110nnnnttttiiiiitt0mmmm,
+//    rule: STRBT_A2,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList STRBT_A2_cccc0110u110nnnnttttiiiiitt0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel STRBT_A2_cccc0110u110nnnnttttiiiiitt0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList STRBT_A2_cccc0110u110nnnnttttiiiiitt0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // STRB_immediate_cccc010pu1w0nnnnttttiiiiiiiiiiii_case_0:
 //
 //   {None: 32,
@@ -2380,6 +2491,80 @@ uses(Instruction inst) const {
    Add(Register((inst.Bits() & 0x0000000F)));
 }
 
+// STRT_A1_cccc0100u010nnnnttttiiiiiiiiiiii_case_0:
+//
+//   {cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0100u010nnnnttttiiiiiiiiiiii,
+//    rule: STRT_A1,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList STRT_A1_cccc0100u010nnnnttttiiiiiiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel STRT_A1_cccc0100u010nnnnttttiiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList STRT_A1_cccc0100u010nnnnttttiiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// STRT_A2_cccc0110u010nnnnttttiiiiitt0mmmm_case_0:
+//
+//   {cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0110u010nnnnttttiiiiitt0mmmm,
+//    rule: STRT_A2,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList STRT_A2_cccc0110u010nnnnttttiiiiitt0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel STRT_A2_cccc0110u010nnnnttttiiiiitt0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList STRT_A2_cccc0110u010nnnnttttiiiiitt0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_0:
 //
 //   {None: 32,
@@ -2881,6 +3066,43 @@ safety(Instruction inst) const {
 
 
 RegisterList SVC_cccc1111iiiiiiiiiiiiiiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_0:
+//
+//   {cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc00010b00nnnntttt00001001tttt,
+//    rule: SWP_SWPB,
+//    safety: [true => DEPRECATED],
+//    true: true,
+//    uses: {}}
+RegisterList SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => DEPRECATED
+  if (true)
+    return DEPRECATED;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_0::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // uses: '{}'

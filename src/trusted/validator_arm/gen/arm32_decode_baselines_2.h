@@ -670,6 +670,78 @@ class STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0
       STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0);
 };
 
+// STM_User_registers_cccc100pu100nnnnrrrrrrrrrrrrrrrr_case_0:
+//
+//   {cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc100pu100nnnnrrrrrrrrrrrrrrrr,
+//    rule: STM_User_registers,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+class STM_User_registers_cccc100pu100nnnnrrrrrrrrrrrrrrrr_case_0
+     : public ClassDecoder {
+ public:
+  STM_User_registers_cccc100pu100nnnnrrrrrrrrrrrrrrrr_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      STM_User_registers_cccc100pu100nnnnrrrrrrrrrrrrrrrr_case_0);
+};
+
+// STRBT_A1_cccc0100u110nnnnttttiiiiiiiiiiii_case_0:
+//
+//   {cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0100u110nnnnttttiiiiiiiiiiii,
+//    rule: STRBT_A1,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+class STRBT_A1_cccc0100u110nnnnttttiiiiiiiiiiii_case_0
+     : public ClassDecoder {
+ public:
+  STRBT_A1_cccc0100u110nnnnttttiiiiiiiiiiii_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      STRBT_A1_cccc0100u110nnnnttttiiiiiiiiiiii_case_0);
+};
+
+// STRBT_A2_cccc0110u110nnnnttttiiiiitt0mmmm_case_0:
+//
+//   {cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0110u110nnnnttttiiiiitt0mmmm,
+//    rule: STRBT_A2,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+class STRBT_A2_cccc0110u110nnnnttttiiiiitt0mmmm_case_0
+     : public ClassDecoder {
+ public:
+  STRBT_A2_cccc0110u110nnnnttttiiiiitt0mmmm_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      STRBT_A2_cccc0110u110nnnnttttiiiiitt0mmmm_case_0);
+};
+
 // STRB_immediate_cccc010pu1w0nnnnttttiiiiiiiiiiii_case_0:
 //
 //   {None: 32,
@@ -1212,6 +1284,54 @@ class STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_0
       STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_0);
 };
 
+// STRT_A1_cccc0100u010nnnnttttiiiiiiiiiiii_case_0:
+//
+//   {cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0100u010nnnnttttiiiiiiiiiiii,
+//    rule: STRT_A1,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+class STRT_A1_cccc0100u010nnnnttttiiiiiiiiiiii_case_0
+     : public ClassDecoder {
+ public:
+  STRT_A1_cccc0100u010nnnnttttiiiiiiiiiiii_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      STRT_A1_cccc0100u010nnnnttttiiiiiiiiiiii_case_0);
+};
+
+// STRT_A2_cccc0110u010nnnnttttiiiiitt0mmmm_case_0:
+//
+//   {cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0110u010nnnnttttiiiiitt0mmmm,
+//    rule: STRT_A2,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+class STRT_A2_cccc0110u010nnnnttttiiiiitt0mmmm_case_0
+     : public ClassDecoder {
+ public:
+  STRT_A2_cccc0110u010nnnnttttiiiiitt0mmmm_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      STRT_A2_cccc0110u010nnnnttttiiiiitt0mmmm_case_0);
+};
+
 // STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_0:
 //
 //   {None: 32,
@@ -1472,6 +1592,30 @@ class SVC_cccc1111iiiiiiiiiiiiiiiiiiiiiiii_case_0
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       SVC_cccc1111iiiiiiiiiiiiiiiiiiiiiiii_case_0);
+};
+
+// SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_0:
+//
+//   {cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc00010b00nnnntttt00001001tttt,
+//    rule: SWP_SWPB,
+//    safety: [true => DEPRECATED],
+//    true: true,
+//    uses: {}}
+class SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_0
+     : public ClassDecoder {
+ public:
+  SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_0);
 };
 
 // SXTAB16_cccc01101000nnnnddddrr000111mmmm_case_0:

@@ -88,6 +88,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_1_instance_()
   , Actual_STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_1_instance_()
   , Actual_STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_1_instance_()
+  , Actual_SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_1_instance_()
   , Actual_SXTAB16_cccc01101000nnnnddddrr000111mmmm_case_1_instance_()
   , Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1_instance_()
   , Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1_instance_()
@@ -160,9 +161,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_VTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_1_instance_()
   , Actual_VTRN_111100111d11ss10dddd00001qm0mmmm_case_1_instance_()
   , Actual_VUZP_111100111d11ss10dddd00010qm0mmmm_case_1_instance_()
-  , Deprecated_instance_()
   , Forbidden_instance_()
-  , ForbiddenCondDecoder_instance_()
   , PermanentlyUndefined_instance_()
   , Undefined_instance_()
   , not_implemented_()
@@ -519,7 +518,7 @@ const ClassDecoder& Arm32DecoderState::decode_branch_branch_with_link_and_block_
           0x00400000 /* op(25:20)=0xx1x0 */ &&
       (inst.Bits() & 0x00200000)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx */) {
-    return ForbiddenCondDecoder_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x02500000)  ==
@@ -528,14 +527,14 @@ const ClassDecoder& Arm32DecoderState::decode_branch_branch_with_link_and_block_
           0x00000000 /* R(15)=0 */ &&
       (inst.Bits() & 0x00200000)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx */) {
-    return ForbiddenCondDecoder_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x02500000)  ==
           0x00500000 /* op(25:20)=0xx1x1 */ &&
       (inst.Bits() & 0x00008000)  ==
           0x00008000 /* R(15)=1 */) {
-    return ForbiddenCondDecoder_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x03000000)  ==
@@ -702,7 +701,7 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_and_miscellaneous_
           0x00200000 /* op1(24:20)=0xx1x */ &&
       (inst.Bits() & 0x000000F0)  ==
           0x000000B0 /* op2(7:4)=1011 */) {
-    return ForbiddenCondDecoder_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x02000000)  ==
@@ -711,7 +710,7 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_and_miscellaneous_
           0x00200000 /* op1(24:20)=0xx1x */ &&
       (inst.Bits() & 0x000000D0)  ==
           0x000000D0 /* op2(7:4)=11x1 */) {
-    return ForbiddenCondDecoder_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x02000000)  ==
@@ -1408,7 +1407,7 @@ const ClassDecoder& Arm32DecoderState::decode_load_store_word_and_unsigned_byte(
           0x00000000 /* A(25)=0 */ &&
       (inst.Bits() & 0x01200000)  ==
           0x00200000 /* op1(24:20)=0xx1x */) {
-    return ForbiddenCondDecoder_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x02000000)  ==
@@ -1461,7 +1460,7 @@ const ClassDecoder& Arm32DecoderState::decode_load_store_word_and_unsigned_byte(
           0x00200000 /* op1(24:20)=0xx1x */ &&
       (inst.Bits() & 0x00000010)  ==
           0x00000000 /* B(4)=0 */) {
-    return ForbiddenCondDecoder_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   // Catch any attempt to fall though ...
@@ -3138,7 +3137,7 @@ const ClassDecoder& Arm32DecoderState::decode_synchronization_primitives(
           0x00000000 /* op(23:20)=0x00 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx */) {
-    return Deprecated_instance_;
+    return Actual_SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00B00000)  ==

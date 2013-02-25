@@ -13619,4 +13619,41 @@ uses(Instruction inst) const {
   return RegisterList();
 }
 
+// extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0:
+//
+//   {cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0000xx1xxxxxxxxxxxxx1xx1xxxx,
+//    rule: extra_load_store_instructions_unpriviledged,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 }  // namespace nacl_arm_dec

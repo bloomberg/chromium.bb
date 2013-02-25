@@ -605,8 +605,7 @@ class Parser(object):
     """decoder_action ::= '=" decoder_defn"""
     self._read_token('=')
     action = self._decoder_defn(starred_actions)
-    if not action.baseline():
-      self._unexpected("No baseline class defined for row")
+    self._check_action_is_well_defined(action)
     return self._decoder_defn_end(action)
 
   def _decoder_defn_end(self, action):
@@ -689,8 +688,7 @@ class Parser(object):
     self._read_token('else')
     self._read_token(':')
     action = self._action(starred_actions, last_action)
-    if not action.baseline():
-      self._unexpected("No baseline class defined for row")
+    self._check_action_is_well_defined(action)
     if not table.add_default_row(action):
       self._unexpected('Unable to install row default')
     return (None, self._decoder_defn_end(action))
@@ -1098,6 +1096,10 @@ class Parser(object):
         matches = True
       self._pushback_token(token)
     return matches
+
+  def _check_action_is_well_defined(self, action):
+    if not (action.baseline() or dgen_decoder.ActionDefinesDecoder(action)):
+      self._unexpected("No virtual fields defined for decoder")
 
   #------ Helper functions.
 

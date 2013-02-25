@@ -413,22 +413,26 @@ bool STREXH_cccc00011111nnnntttt111110011111_case_0TesterCase7
 }
 
 // op(23:20)=0x00 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
-//    = {actual: Deprecated,
-//       baseline: Deprecated,
+//    = {actual: Actual_SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_1,
+//       baseline: SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_0,
 //       constraints: ,
+//       defs: {},
 //       pattern: cccc00010b00nnnntttt00001001tttt,
-//       rule: SWP_SWPB}
-class DeprecatedTesterCase8
-    : public UnsafeCondDecoderTester {
+//       rule: SWP_SWPB,
+//       safety: [true => DEPRECATED],
+//       true: true,
+//       uses: {}}
+class SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_0TesterCase8
+    : public Arm32DecoderTester {
  public:
-  DeprecatedTesterCase8(const NamedClassDecoder& decoder)
-    : UnsafeCondDecoderTester(decoder) {}
+  SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_0TesterCase8(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool DeprecatedTesterCase8
+bool SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_0TesterCase8
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -445,7 +449,7 @@ bool DeprecatedTesterCase8
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return UnsafeCondDecoderTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -658,17 +662,21 @@ class STREXH_cccc00011111nnnntttt111110011111_case_0Tester_Case7
 };
 
 // op(23:20)=0x00 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
-//    = {actual: Deprecated,
-//       baseline: Deprecated,
+//    = {actual: Actual_SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_1,
+//       baseline: SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_0,
 //       constraints: ,
+//       defs: {},
 //       pattern: cccc00010b00nnnntttt00001001tttt,
-//       rule: SWP_SWPB}
-class DeprecatedTester_Case8
-    : public DeprecatedTesterCase8 {
+//       rule: SWP_SWPB,
+//       safety: [true => DEPRECATED],
+//       true: true,
+//       uses: {}}
+class SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_0Tester_Case8
+    : public SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_0TesterCase8 {
  public:
-  DeprecatedTester_Case8()
-    : DeprecatedTesterCase8(
-      state_.Deprecated_SWP_SWPB_instance_)
+  SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_0Tester_Case8()
+    : SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_0TesterCase8(
+      state_.SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_0_SWP_SWPB_instance_)
   {}
 };
 
@@ -877,15 +885,21 @@ TEST_F(Arm32DecoderStateTests,
 }
 
 // op(23:20)=0x00 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
-//    = {actual: Deprecated,
-//       baseline: Deprecated,
+//    = {actual: Actual_SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_1,
+//       baseline: SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_0,
 //       constraints: ,
+//       defs: {},
 //       pattern: cccc00010b00nnnntttt00001001tttt,
-//       rule: SWP_SWPB}
+//       rule: SWP_SWPB,
+//       safety: [true => DEPRECATED],
+//       true: true,
+//       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       DeprecatedTester_Case8_TestCase8) {
-  DeprecatedTester_Case8 tester;
-  tester.Test("cccc00010b00nnnntttt00001001tttt");
+       SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_0Tester_Case8_TestCase8) {
+  SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_0Tester_Case8 baseline_tester;
+  NamedActual_SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_1_SWP_SWPB actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00010b00nnnntttt00001001tttt");
 }
 
 }  // namespace nacl_arm_test

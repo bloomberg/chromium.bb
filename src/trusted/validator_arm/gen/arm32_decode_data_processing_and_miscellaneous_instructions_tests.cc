@@ -34,22 +34,26 @@ namespace nacl_arm_test {
 
 
 // op(25)=0 & op1(24:20)=0xx1x & op2(7:4)=1011
-//    = {actual: ForbiddenCondDecoder,
-//       baseline: ForbiddenCondDecoder,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//       baseline: extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0,
 //       constraints: ,
+//       defs: {},
 //       pattern: cccc0000xx1xxxxxxxxxxxxx1xx1xxxx,
-//       rule: extra_load_store_instructions_unpriviledged}
-class ForbiddenCondDecoderTesterCase0
-    : public UnsafeCondDecoderTester {
+//       rule: extra_load_store_instructions_unpriviledged,
+//       safety: [true => FORBIDDEN],
+//       true: true,
+//       uses: {}}
+class extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0TesterCase0
+    : public Arm32DecoderTester {
  public:
-  ForbiddenCondDecoderTesterCase0(const NamedClassDecoder& decoder)
-    : UnsafeCondDecoderTester(decoder) {}
+  extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0TesterCase0(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool ForbiddenCondDecoderTesterCase0
+bool extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0TesterCase0
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -69,27 +73,31 @@ bool ForbiddenCondDecoderTesterCase0
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return UnsafeCondDecoderTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
 // op(25)=0 & op1(24:20)=0xx1x & op2(7:4)=11x1
-//    = {actual: ForbiddenCondDecoder,
-//       baseline: ForbiddenCondDecoder,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//       baseline: extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0,
 //       constraints: ,
+//       defs: {},
 //       pattern: cccc0000xx1xxxxxxxxxxxxx1xx1xxxx,
-//       rule: extra_load_store_instructions_unpriviledged}
-class ForbiddenCondDecoderTesterCase1
-    : public UnsafeCondDecoderTester {
+//       rule: extra_load_store_instructions_unpriviledged,
+//       safety: [true => FORBIDDEN],
+//       true: true,
+//       uses: {}}
+class extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0TesterCase1
+    : public Arm32DecoderTester {
  public:
-  ForbiddenCondDecoderTesterCase1(const NamedClassDecoder& decoder)
-    : UnsafeCondDecoderTester(decoder) {}
+  extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0TesterCase1(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool ForbiddenCondDecoderTesterCase1
+bool extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0TesterCase1
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -109,7 +117,7 @@ bool ForbiddenCondDecoderTesterCase1
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return UnsafeCondDecoderTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -219,32 +227,40 @@ bool MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0TesterCase3
 // to the corresponding instance in the generated DecoderState.
 
 // op(25)=0 & op1(24:20)=0xx1x & op2(7:4)=1011
-//    = {actual: ForbiddenCondDecoder,
-//       baseline: ForbiddenCondDecoder,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//       baseline: extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0,
 //       constraints: ,
+//       defs: {},
 //       pattern: cccc0000xx1xxxxxxxxxxxxx1xx1xxxx,
-//       rule: extra_load_store_instructions_unpriviledged}
-class ForbiddenCondDecoderTester_Case0
-    : public ForbiddenCondDecoderTesterCase0 {
+//       rule: extra_load_store_instructions_unpriviledged,
+//       safety: [true => FORBIDDEN],
+//       true: true,
+//       uses: {}}
+class extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0Tester_Case0
+    : public extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0TesterCase0 {
  public:
-  ForbiddenCondDecoderTester_Case0()
-    : ForbiddenCondDecoderTesterCase0(
-      state_.ForbiddenCondDecoder_extra_load_store_instructions_unpriviledged_instance_)
+  extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0Tester_Case0()
+    : extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0TesterCase0(
+      state_.extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0_extra_load_store_instructions_unpriviledged_instance_)
   {}
 };
 
 // op(25)=0 & op1(24:20)=0xx1x & op2(7:4)=11x1
-//    = {actual: ForbiddenCondDecoder,
-//       baseline: ForbiddenCondDecoder,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//       baseline: extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0,
 //       constraints: ,
+//       defs: {},
 //       pattern: cccc0000xx1xxxxxxxxxxxxx1xx1xxxx,
-//       rule: extra_load_store_instructions_unpriviledged}
-class ForbiddenCondDecoderTester_Case1
-    : public ForbiddenCondDecoderTesterCase1 {
+//       rule: extra_load_store_instructions_unpriviledged,
+//       safety: [true => FORBIDDEN],
+//       true: true,
+//       uses: {}}
+class extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0Tester_Case1
+    : public extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0TesterCase1 {
  public:
-  ForbiddenCondDecoderTester_Case1()
-    : ForbiddenCondDecoderTesterCase1(
-      state_.ForbiddenCondDecoder_extra_load_store_instructions_unpriviledged_instance_)
+  extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0Tester_Case1()
+    : extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0TesterCase1(
+      state_.extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0_extra_load_store_instructions_unpriviledged_instance_)
   {}
 };
 
@@ -314,27 +330,39 @@ class Arm32DecoderStateTests : public ::testing::Test {
 // decoder tables.
 
 // op(25)=0 & op1(24:20)=0xx1x & op2(7:4)=1011
-//    = {actual: ForbiddenCondDecoder,
-//       baseline: ForbiddenCondDecoder,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//       baseline: extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0,
 //       constraints: ,
+//       defs: {},
 //       pattern: cccc0000xx1xxxxxxxxxxxxx1xx1xxxx,
-//       rule: extra_load_store_instructions_unpriviledged}
+//       rule: extra_load_store_instructions_unpriviledged,
+//       safety: [true => FORBIDDEN],
+//       true: true,
+//       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       ForbiddenCondDecoderTester_Case0_TestCase0) {
-  ForbiddenCondDecoderTester_Case0 tester;
-  tester.Test("cccc0000xx1xxxxxxxxxxxxx1xx1xxxx");
+       extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0Tester_Case0_TestCase0) {
+  extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0Tester_Case0 baseline_tester;
+  NamedActual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_extra_load_store_instructions_unpriviledged actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc0000xx1xxxxxxxxxxxxx1xx1xxxx");
 }
 
 // op(25)=0 & op1(24:20)=0xx1x & op2(7:4)=11x1
-//    = {actual: ForbiddenCondDecoder,
-//       baseline: ForbiddenCondDecoder,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//       baseline: extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0,
 //       constraints: ,
+//       defs: {},
 //       pattern: cccc0000xx1xxxxxxxxxxxxx1xx1xxxx,
-//       rule: extra_load_store_instructions_unpriviledged}
+//       rule: extra_load_store_instructions_unpriviledged,
+//       safety: [true => FORBIDDEN],
+//       true: true,
+//       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       ForbiddenCondDecoderTester_Case1_TestCase1) {
-  ForbiddenCondDecoderTester_Case1 tester;
-  tester.Test("cccc0000xx1xxxxxxxxxxxxx1xx1xxxx");
+       extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0Tester_Case1_TestCase1) {
+  extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0Tester_Case1 baseline_tester;
+  NamedActual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_extra_load_store_instructions_unpriviledged actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc0000xx1xxxxxxxxxxxxx1xx1xxxx");
 }
 
 // op(25)=1 & op1(24:20)=10000

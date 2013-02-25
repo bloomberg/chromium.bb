@@ -5101,6 +5101,39 @@ uses(Instruction inst) const {
    Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
 }
 
+// Actual_SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_1
+//
+// Actual:
+//   {defs: {},
+//    safety: [true => DEPRECATED],
+//    uses: {}}
+
+RegisterList Actual_SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel Actual_SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => DEPRECATED
+  if (true)
+    return DEPRECATED;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList Actual_SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // Actual_SXTAB16_cccc01101000nnnnddddrr000111mmmm_case_1
 //
 // Actual:

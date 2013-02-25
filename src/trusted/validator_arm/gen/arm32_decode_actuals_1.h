@@ -1589,6 +1589,84 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //
 // Baseline:
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: LDM_User_registers_cccc100pu101nnnn0rrrrrrrrrrrrrrr_case_0,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc100pu101nnnn0rrrrrrrrrrrrrrr,
+//    rule: LDM_User_registers,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: LDM_exception_return_cccc100pu1w1nnnn1rrrrrrrrrrrrrrr_case_0,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc100pu1w1nnnn1rrrrrrrrrrrrrrr,
+//    rule: LDM_exception_return,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: LDRBT_A1_cccc0100u111nnnnttttiiiiiiiiiiii_case_0,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0100u111nnnnttttiiiiiiiiiiii,
+//    rule: LDRBT_A1,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: LDRBT_A2_cccc0110u111nnnnttttiiiiitt0mmmm_case_0,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0110u111nnnnttttiiiiitt0mmmm,
+//    rule: LDRBT_A2,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: LDRT_A1_cccc0100u011nnnnttttiiiiiiiiiiii_case_0,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0100u011nnnnttttiiiiiiiiiiii,
+//    rule: LDRT_A1,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: LDRT_A2_cccc0110u011nnnnttttiiiiitt0mmmm_case_0,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0110u011nnnnttttiiiiitt0mmmm,
+//    rule: LDRT_A2,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v5,
 //    baseline: MCR2_11111110iii0iiiittttiiiiiii1iiii_case_0,
 //    constraints: ,
@@ -1769,6 +1847,71 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //
 // Baseline:
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: STM_User_registers_cccc100pu100nnnnrrrrrrrrrrrrrrrr_case_0,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc100pu100nnnnrrrrrrrrrrrrrrrr,
+//    rule: STM_User_registers,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: STRBT_A1_cccc0100u110nnnnttttiiiiiiiiiiii_case_0,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0100u110nnnnttttiiiiiiiiiiii,
+//    rule: STRBT_A1,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: STRBT_A2_cccc0110u110nnnnttttiiiiitt0mmmm_case_0,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0110u110nnnnttttiiiiitt0mmmm,
+//    rule: STRBT_A2,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: STRT_A1_cccc0100u010nnnnttttiiiiiiiiiiii_case_0,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0100u010nnnnttttiiiiiiiiiiii,
+//    rule: STRT_A1,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: STRT_A2_cccc0110u010nnnnttttiiiiitt0mmmm_case_0,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0110u010nnnnttttiiiiitt0mmmm,
+//    rule: STRT_A2,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    baseline: SVC_cccc1111iiiiiiiiiiiiiiiiiiiiiiii_case_0,
 //    constraints: ,
 //    defs: {},
@@ -1835,6 +1978,19 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    fields: [cond(31:28)],
 //    pattern: cccc0011001000001111000000000011,
 //    rule: WFI,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0000xx1xxxxxxxxxxxxx1xx1xxxx,
+//    rule: extra_load_store_instructions_unpriviledged,
 //    safety: [true => FORBIDDEN],
 //    true: true,
 //    uses: {}}
@@ -7786,6 +7942,38 @@ class Actual_STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_1
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       Actual_STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_1);
+};
+
+// Actual_SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_1
+//
+// Actual:
+//   {defs: {},
+//    safety: [true => DEPRECATED],
+//    uses: {}}
+//
+// Baseline:
+//   {actual: Actual_SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_1,
+//    baseline: SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_0,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc00010b00nnnntttt00001001tttt,
+//    rule: SWP_SWPB,
+//    safety: [true => DEPRECATED],
+//    true: true,
+//    uses: {}}
+class Actual_SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_1
+     : public ClassDecoder {
+ public:
+  Actual_SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_1()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Actual_SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_1);
 };
 
 // Actual_SXTAB16_cccc01101000nnnnddddrr000111mmmm_case_1

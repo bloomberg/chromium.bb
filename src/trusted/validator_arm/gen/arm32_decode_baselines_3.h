@@ -8392,6 +8392,30 @@ class YIELD_cccc0011001000001111000000000001_case_0
       YIELD_cccc0011001000001111000000000001_case_0);
 };
 
+// extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0:
+//
+//   {cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0000xx1xxxxxxxxxxxxx1xx1xxxx,
+//    rule: extra_load_store_instructions_unpriviledged,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+class extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0
+     : public ClassDecoder {
+ public:
+  extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0);
+};
+
 } // namespace nacl_arm_test
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_GEN_ARM32_DECODE_BASELINES_3_H_
