@@ -80,7 +80,7 @@ ConstrainedWindowGtk::ConstrainedWindowGtk(
 
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents_);
-  web_contents_modal_dialog_manager->AddDialog(this);
+  web_contents_modal_dialog_manager->AddDialog(widget());
 }
 
 ConstrainedWindowGtk::~ConstrainedWindowGtk() {
@@ -103,7 +103,7 @@ void ConstrainedWindowGtk::CloseWebContentsModalDialog() {
   delegate_->DeleteDelegate();
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents_);
-  web_contents_modal_dialog_manager->WillClose(this);
+  web_contents_modal_dialog_manager->WillClose(widget());
 
   delete this;
 }

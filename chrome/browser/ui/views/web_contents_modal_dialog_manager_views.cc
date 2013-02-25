@@ -99,7 +99,7 @@ class NativeWebContentsModalDialogManagerViews
 
   // views::WidgetObserver overrides
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE {
-    native_delegate_->WillClose(static_cast<ConstrainedWindowViews*>(widget));
+    native_delegate_->WillClose(widget->GetNativeView());
     observed_widgets_.erase(widget);
   }
 

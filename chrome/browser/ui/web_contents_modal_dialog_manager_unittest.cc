@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_vector.h"
-#include "chrome/browser/ui/web_contents_modal_dialog.h"
+#include "chrome/browser/ui/native_web_contents_modal_dialog_manager.h"
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/test/test_browser_thread.h"
@@ -28,69 +27,51 @@ class WebContentsModalDialogManagerTest
   content::TestBrowserThread ui_thread_;
 };
 
-class WebContentsModalDialogCloseTest : public WebContentsModalDialog {
- public:
-  explicit WebContentsModalDialogCloseTest(content::WebContents* web_contents,
-                                           int* close_count)
-      : close_count_(close_count),
-        web_contents_(web_contents) {
-  }
-
-  virtual void ShowWebContentsModalDialog() OVERRIDE {}
-  virtual void CloseWebContentsModalDialog() OVERRIDE {
-    WebContentsModalDialogManager* web_contents_modal_dialog_manager =
-        WebContentsModalDialogManager::FromWebContents(web_contents_);
-    web_contents_modal_dialog_manager->WillClose(this);
-    (*close_count_)++;
-  }
-  virtual void FocusWebContentsModalDialog() OVERRIDE {}
-  virtual void PulseWebContentsModalDialog() OVERRIDE {}
-  virtual NativeWebContentsModalDialog GetNativeDialog() OVERRIDE {
-    // The WebContentsModalDialogManager requires a unique opaque ID for
-    // the dialog, so using reinterpret_cast of this is sufficient.
-    return reinterpret_cast<NativeWebContentsModalDialog>(this);
-  }
-  virtual ~WebContentsModalDialogCloseTest() {}
-
-  int* close_count_;
-  content::WebContents* web_contents_;
-};
-
 class NativeWebContentsModalDialogManagerCloseTest
     : public NativeWebContentsModalDialogManager {
  public:
+  NativeWebContentsModalDialogManagerCloseTest(
+      NativeWebContentsModalDialogManagerDelegate* delegate)
+      : delegate_(delegate) {}
   virtual void ManageDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
   }
   virtual void ShowDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
   }
   virtual void CloseDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
-    reinterpret_cast<WebContentsModalDialogCloseTest*>(dialog)->
-        CloseWebContentsModalDialog();
+    delegate_->WillClose(dialog);
+    close_count++;
   }
   virtual void FocusDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
   }
   virtual void PulseDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
   }
+
+  int close_count;
+  NativeWebContentsModalDialogManagerDelegate* delegate_;
 };
 
 TEST_F(WebContentsModalDialogManagerTest, WebContentsModalDialogs) {
-  ScopedVector<WebContentsModalDialogCloseTest> windows;
-  int close_count = 0;
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents());
   WebContentsModalDialogManager::TestApi test_api(
       web_contents_modal_dialog_manager);
 
-  test_api.ResetNativeManager(new NativeWebContentsModalDialogManagerCloseTest);
+  NativeWebContentsModalDialogManagerCloseTest* native_manager =
+      new NativeWebContentsModalDialogManagerCloseTest(
+          web_contents_modal_dialog_manager);
+  native_manager->close_count = 0;
+
+  test_api.ResetNativeManager(native_manager);
 
   const int kWindowCount = 4;
-  for (int i = 0; i < kWindowCount; i++) {
-    windows.push_back(
-        new WebContentsModalDialogCloseTest(web_contents(), &close_count));
-    web_contents_modal_dialog_manager->AddDialog(windows.back());
-  }
-  EXPECT_EQ(0, close_count);
+  for (int i = 0; i < kWindowCount; i++)
+    // WebContentsModalDialogManager treats the NativeWebContentsModalDialog as
+    // an opaque type, so creating fake NativeWebContentsModalDialogs using
+    // reinterpret_cast is valid.
+    web_contents_modal_dialog_manager->AddDialog(
+        reinterpret_cast<NativeWebContentsModalDialog>(i));
+  EXPECT_EQ(native_manager->close_count, 0);
 
   test_api.CloseAllDialogs();
-  EXPECT_EQ(kWindowCount, close_count);
+  EXPECT_EQ(native_manager->close_count, kWindowCount);
 }

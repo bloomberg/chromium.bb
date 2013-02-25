@@ -32,7 +32,7 @@ class WebContentsModalDialogManager
 
   // Adds the given dialog to the list of child dialogs. The dialog will notify
   // via WillClose() when it is being destroyed.
-  void AddDialog(WebContentsModalDialog* dialog);
+  void AddDialog(NativeWebContentsModalDialog dialog);
 
   // Blocks/unblocks interaction with renderer process.
   void BlockWebContentsInteraction(bool blocked);
@@ -46,7 +46,7 @@ class WebContentsModalDialogManager
 
   // Overriden from NativeWebContentsModalDialogManagerDelegate:
   // Called when a WebContentsModalDialogs we own is about to be closed.
-  virtual void WillClose(WebContentsModalDialog* dialog) OVERRIDE;
+  virtual void WillClose(NativeWebContentsModalDialog dialog) OVERRIDE;
 
   // For testing.
   class TestApi {
@@ -69,7 +69,7 @@ class WebContentsModalDialogManager
   explicit WebContentsModalDialogManager(content::WebContents* web_contents);
   friend class content::WebContentsUserData<WebContentsModalDialogManager>;
 
-  typedef std::deque<WebContentsModalDialog*> WebContentsModalDialogList;
+  typedef std::deque<NativeWebContentsModalDialog> WebContentsModalDialogList;
 
   // Returns the number of dialogs in this tab.
   size_t dialog_count() const { return child_dialogs_.size(); }
