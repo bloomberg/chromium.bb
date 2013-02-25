@@ -369,11 +369,16 @@ TEST_F(ClientSessionTest, LocalInputTest) {
       .WillOnce(DoAll(
           // This event should get through to the input stub.
           InjectMouseEvent(connection_, mouse_event1),
-          // This one should too because the local event echoes the remote one.
+#if !defined(OS_WIN)
+          // The OS echoes the injected event back.
           LocalMouseMoved(client_session_.get(), mouse_event1),
+#endif  // !defined(OS_WIN)
+          // This one should get throught as well.
           InjectMouseEvent(connection_, mouse_event2),
-          // This one should not.
+          // Now this is a genuine local event.
           LocalMouseMoved(client_session_.get(), mouse_event1),
+          // This one should be blocked because of the previous  local input
+          // event.
           InjectMouseEvent(connection_, mouse_event3),
           // TODO(jamiewalch): Verify that remote inputs are re-enabled
           // eventually (via dependency injection, not sleep!)

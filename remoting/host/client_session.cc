@@ -78,6 +78,12 @@ ClientSession::ClientSession(
   // |auth_*_filter_|'s states reflect whether the session is authenticated.
   auth_input_filter_.set_enabled(false);
   auth_clipboard_filter_.set_enabled(false);
+
+#if defined(OS_WIN)
+  // LocalInputMonitorWin filters out an echo of the injected input before it
+  // reaches |remote_input_filter_|.
+  remote_input_filter_.SetExpectLocalEcho(false);
+#endif  // defined(OS_WIN)
 }
 
 void ClientSession::NotifyClientResolution(

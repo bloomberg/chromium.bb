@@ -30,6 +30,9 @@ class RemoteInputFilter : public protocol::InputStub {
   // and block remote input for a short while.
   void LocalMouseMoved(const SkIPoint& mouse_pos);
 
+  // Informs the filter that injecting input causes an echo.
+  void SetExpectLocalEcho(bool expect_local_echo);
+
   // InputStub overrides.
   virtual void InjectKeyEvent(const protocol::KeyEvent& event) OVERRIDE;
   virtual void InjectMouseEvent(const protocol::MouseEvent& event) OVERRIDE;
@@ -45,6 +48,9 @@ class RemoteInputFilter : public protocol::InputStub {
 
   // Time at which local input events were most recently observed.
   base::TimeTicks latest_local_input_time_;
+
+  // If |true| than the filter assumes that injecting input causes an echo.
+  bool expect_local_echo_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteInputFilter);
 };

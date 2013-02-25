@@ -26,7 +26,8 @@ const int64 kRemoteBlockTimeoutMillis = 2000;
 namespace remoting {
 
 RemoteInputFilter::RemoteInputFilter(protocol::InputEventTracker* event_tracker)
-    : event_tracker_(event_tracker) {
+    : event_tracker_(event_tracker),
+      expect_local_echo_(true) {
 }
 
 RemoteInputFilter::~RemoteInputFilter() {
@@ -36,25 +37,34 @@ void RemoteInputFilter::LocalMouseMoved(const SkIPoint& mouse_pos) {
   // If this is a genuine local input event (rather than an echo of a remote
   // input event that we've just injected), then ignore remote inputs for a
   // short time.
-  std::list<SkIPoint>::iterator found_position =
-      std::find(injected_mouse_positions_.begin(),
-                injected_mouse_positions_.end(), mouse_pos);
-  if (found_position != injected_mouse_positions_.end()) {
-    // Remove it from the list, and any positions that were added before it,
-    // if any.  This is because the local input monitor is assumed to receive
-    // injected mouse position events in the order in which they were injected
-    // (if at all).  If the position is found somewhere other than the front of
-    // the queue, this would be because the earlier positions weren't
-    // successfully injected (or the local input monitor might have skipped over
-    // some positions), and not because the events were out-of-sequence.  These
-    // spurious positions should therefore be discarded.
-    injected_mouse_positions_.erase(injected_mouse_positions_.begin(),
-                                    ++found_position);
-  } else {
-    // Release all pressed buttons or keys, disable inputs, and note the time.
-    event_tracker_->ReleaseAll();
-    latest_local_input_time_ = base::TimeTicks::Now();
+  if (expect_local_echo_) {
+    std::list<SkIPoint>::iterator found_position =
+        std::find(injected_mouse_positions_.begin(),
+                  injected_mouse_positions_.end(), mouse_pos);
+    if (found_position != injected_mouse_positions_.end()) {
+      // Remove it from the list, and any positions that were added before it,
+      // if any.  This is because the local input monitor is assumed to receive
+      // injected mouse position events in the order in which they were injected
+      // (if at all).  If the position is found somewhere other than the front
+      // of the queue, this would be because the earlier positions weren't
+      // successfully injected (or the local input monitor might have skipped
+      // over some positions), and not because the events were out-of-sequence.
+      // These spurious positions should therefore be discarded.
+      injected_mouse_positions_.erase(injected_mouse_positions_.begin(),
+                                      ++found_position);
+      return;
+    }
   }
+
+  // Release all pressed buttons or keys, disable inputs, and note the time.
+  event_tracker_->ReleaseAll();
+  latest_local_input_time_ = base::TimeTicks::Now();
+}
+
+void RemoteInputFilter::SetExpectLocalEcho(bool expect_local_echo) {
+  expect_local_echo_ = expect_local_echo;
+  if (!expect_local_echo_)
+    injected_mouse_positions_.clear();
 }
 
 void RemoteInputFilter::InjectKeyEvent(const protocol::KeyEvent& event) {
@@ -66,7 +76,7 @@ void RemoteInputFilter::InjectKeyEvent(const protocol::KeyEvent& event) {
 void RemoteInputFilter::InjectMouseEvent(const protocol::MouseEvent& event) {
   if (ShouldIgnoreInput())
     return;
-  if (event.has_x() && event.has_y()) {
+  if (expect_local_echo_ && event.has_x() && event.has_y()) {
     injected_mouse_positions_.push_back(SkIPoint::Make(event.x(), event.y()));
     if (injected_mouse_positions_.size() > kNumRemoteMousePositions) {
       VLOG(1) << "Injected mouse positions queue full.";
