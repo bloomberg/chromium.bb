@@ -930,7 +930,14 @@ bool DesktopRootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
       // It's possible that the X window may be resized by some other means than
       // from within aura (e.g. the X window manager can change the size). Make
       // sure the root window size is maintained properly.
-      gfx::Rect bounds(xev->xconfigure.x, xev->xconfigure.y,
+      int translated_x = xev->xconfigure.x;
+      int translated_y = xev->xconfigure.y;
+      if (!xev->xconfigure.send_event && !xev->xconfigure.override_redirect) {
+        Window unused;
+        XTranslateCoordinates(xdisplay_, xwindow_, x_root_window_,
+            0, 0, &translated_x, &translated_y, &unused);
+      }
+      gfx::Rect bounds(translated_x, translated_y,
                        xev->xconfigure.width, xev->xconfigure.height);
       bool size_changed = bounds_.size() != bounds.size();
       bool origin_changed = bounds_.origin() != bounds.origin();
