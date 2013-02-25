@@ -68,11 +68,22 @@ int32_t AudioInputResource::MonitorDeviceChange(
   return enumeration_helper_.MonitorDeviceChange(callback, user_data);
 }
 
-int32_t AudioInputResource::Open(const std::string& device_id,
+int32_t AudioInputResource::Open(PP_Resource device_ref,
                                  PP_Resource config,
                                  PPB_AudioInput_Callback audio_input_callback,
                                  void* user_data,
                                  scoped_refptr<TrackedCallback> callback) {
+  std::string device_id;
+  // |device_id| remains empty if |device_ref| is 0, which means the default
+  // device.
+  if (device_ref != 0) {
+    thunk::EnterResourceNoLock<thunk::PPB_DeviceRef_API> enter_device_ref(
+        device_ref, true);
+    if (enter_device_ref.failed())
+      return PP_ERROR_BADRESOURCE;
+    device_id = enter_device_ref.object()->GetDeviceRefData().id;
+  }
+
   if (TrackedCallback::IsPending(open_callback_))
     return PP_ERROR_INPROGRESS;
   if (open_state_ != BEFORE_OPEN)

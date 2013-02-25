@@ -8,6 +8,8 @@
  * provides realtime audio input capture.
  */
 
+[generate_thunk]
+
 label Chrome {
   M19 = 0.2,
   M25 = 0.3

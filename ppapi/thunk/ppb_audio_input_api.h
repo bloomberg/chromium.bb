@@ -27,7 +27,7 @@ class PPB_AudioInput_API {
                                    scoped_refptr<TrackedCallback> callback) = 0;
   virtual int32_t MonitorDeviceChange(PP_MonitorDeviceChangeCallback callback,
                                       void* user_data) = 0;
-  virtual int32_t Open(const std::string& device_id,
+  virtual int32_t Open(PP_Resource device_ref,
                        PP_Resource config,
                        PPB_AudioInput_Callback audio_input_callback,
                        void* user_data,

@@ -163,38 +163,41 @@ def _MakeCreateMemberBody(interface, member, args):
     args - List of arguments for the Create() function
   """
   if args[0][0] == 'PP_Resource':
-    body = '  Resource* object =\n'
-    body += '      PpapiGlobals::Get()->GetResourceTracker()->'
+    body = 'Resource* object =\n'
+    body += '    PpapiGlobals::Get()->GetResourceTracker()->'
     body += 'GetResource(%s);\n' % args[0][1]
-    body += '  if (!object)\n'
-    body += '    return 0;\n'
-    body += '  EnterResourceCreation enter(object->pp_instance());\n'
+    body += 'if (!object)\n'
+    body += '  return 0;\n'
+    body += 'EnterResourceCreation enter(object->pp_instance());\n'
   elif args[0][0] == 'PP_Instance':
-    body = '  EnterResourceCreation enter(%s);\n' % args[0][1]
+    body = 'EnterResourceCreation enter(%s);\n' % args[0][1]
   else:
     raise TGenError('Unknown arg type for Create(): %s' % args[0][0])
 
-  body += '  if (enter.failed())\n'
-  body += '    return 0;\n'
+  body += 'if (enter.failed())\n'
+  body += '  return 0;\n'
   arg_list = ', '.join([a[1] for a in args])
   if member.GetProperty('create_func'):
     create_func = member.GetProperty('create_func')
   else:
     create_func = _GetCreateFuncName(interface)
-  body += '  return enter.functions()->%s(%s);' % (create_func,
-                                                   arg_list)
+  body += 'return enter.functions()->%s(%s);' % (create_func,
+                                                 arg_list)
   return body
 
 
-def _MakeNormalMemberBody(filenode, node, member, rtype, args, meta):
+def _MakeNormalMemberBody(filenode, release, node, member, rtype, args,
+                          include_version, meta):
   """Returns the body of a typical function.
 
   Args:
     filenode - IDLNode for the file
+    release - release to generate body for
     node - IDLNode for the interface
     member - IDLNode for the member function
     rtype - Return type for the member function
     args - List of 4-tuple arguments for the member function
+    include_version - whether to include the version in the invocation
     meta - ThunkBodyMetadata for header hints
   """
   is_callback_func = args[len(args) - 1][0] == 'struct PP_CompletionCallback'
@@ -212,25 +215,30 @@ def _MakeNormalMemberBody(filenode, node, member, rtype, args, meta):
     call_arglist = ', '.join(a[1] for a in call_args[1:])
     function_container = 'object'
 
+  function_name = member.GetName()
+  if include_version:
+    version = node.GetVersion(release).replace('.', '_')
+    function_name += version
+
   invocation = 'enter.%s()->%s(%s)' % (function_container,
-                                       member.GetName(),
+                                       function_name,
                                        call_arglist)
 
   handle_errors = not (member.GetProperty('report_errors') == 'False')
   if is_callback_func:
-    body = '  %s\n' % _MakeEnterLine(filenode, node, args[0], handle_errors,
-                                     args[len(args) - 1][1], meta)
-    body += '  if (enter.failed())\n'
+    body = '%s\n' % _MakeEnterLine(filenode, node, args[0], handle_errors,
+                                   args[len(args) - 1][1], meta)
+    body += 'if (enter.failed())\n'
     value = member.GetProperty('on_failure')
     if value is None:
       value = 'enter.retval()'
-    body += '    return %s;\n' % value
-    body += '  return enter.SetResult(%s);' % invocation
+    body += '  return %s;\n' % value
+    body += 'return enter.SetResult(%s);' % invocation
   elif rtype == 'void':
-    body = '  %s\n' % _MakeEnterLine(filenode, node, args[0], handle_errors,
-                                     None, meta)
-    body += '  if (enter.succeeded())\n'
-    body += '    %s;' % invocation
+    body = '%s\n' % _MakeEnterLine(filenode, node, args[0], handle_errors,
+                                   None, meta)
+    body += 'if (enter.succeeded())\n'
+    body += '  %s;' % invocation
   else:
     value = member.GetProperty('on_failure')
     if value is None:
@@ -238,11 +246,11 @@ def _MakeNormalMemberBody(filenode, node, member, rtype, args, meta):
     if value is None:
       raise TGenError('No default value for rtype %s' % rtype)
 
-    body = '  %s\n' % _MakeEnterLine(filenode, node, args[0], handle_errors,
-                                     None, meta)
-    body += '  if (enter.failed())\n'
-    body += '    return %s;\n' % value
-    body += '  return %s;' % invocation
+    body = '%s\n' % _MakeEnterLine(filenode, node, args[0], handle_errors,
+                                   None, meta)
+    body += 'if (enter.failed())\n'
+    body += '  return %s;\n' % value
+    body += 'return %s;' % invocation
   return body
 
 
@@ -263,17 +271,49 @@ def DefineMember(filenode, node, member, release, include_version, meta):
   rtype, name, arrays, args = cgen.GetComponents(member, release, 'return')
 
   if _IsTypeCheck(node, member):
-    body = '  %s\n' % _MakeEnterLine(filenode, node, args[0], False, None, meta)
-    body += '  return PP_FromBool(enter.succeeded());'
+    body = '%s\n' % _MakeEnterLine(filenode, node, args[0], False, None, meta)
+    body += 'return PP_FromBool(enter.succeeded());'
   elif member.GetName() == 'Create':
     body = _MakeCreateMemberBody(node, member, args)
   else:
-    body = _MakeNormalMemberBody(filenode, node, member, rtype, args, meta)
+    body = _MakeNormalMemberBody(filenode, release, node, member, rtype, args,
+                                 include_version, meta)
 
   signature = cgen.GetSignature(member, release, 'return', func_as_ptr=False,
                                 include_version=include_version)
-  member_code = '%s {\n%s\n}' % (signature, body)
-  return cgen.Indent(member_code, tabs=0)
+  return '%s\n%s\n}' % (cgen.Indent('%s {' % signature, tabs=0),
+                        cgen.Indent(body, tabs=1))
+
+
+def _IsNewestMember(member, members, releases):
+  """Returns true if member is the newest node with its name in members.
+
+  Currently, every node in the AST only has one version. This means that we
+  will have two sibling nodes with the same name to represent different
+  versions.
+  See http://crbug.com/157017 .
+
+  Special handling is required for nodes which share their name with others,
+  but aren't the newest version in the IDL.
+
+  Args:
+    member - The member which is checked if it's newest
+    members - The list of members to inspect
+    releases - The set of releases to check for versions in.
+  """
+  build_list = member.GetUniqueReleases(releases)
+  assert(len(build_list) == 1)
+  release = build_list[-1]  # Pick the newest release.
+  same_name_siblings = filter(
+      lambda n: str(n) == str(member) and n != member, members)
+
+  for s in same_name_siblings:
+    sibling_build_list = s.GetUniqueReleases(releases)
+    assert(len(sibling_build_list) == 1)
+    sibling_release = sibling_build_list[-1]
+    if sibling_release > release:
+      return False
+  return True
 
 
 class TGen(GeneratorByFile):
@@ -347,7 +387,7 @@ class TGen(GeneratorByFile):
       meta - a ThunkMetadata instance for hinting which headers are needed.
     """
     __pychecker__ = 'unusednames=options'
-    members = []
+    out_members = []
     meta = ThunkBodyMetadata()
     for node in filenode.GetListOf('Interface'):
       # Skip if this node is not in this release
@@ -357,23 +397,22 @@ class TGen(GeneratorByFile):
 
       # Generate Member functions
       if node.IsA('Interface'):
-        for child in node.GetListOf('Member'):
+        members = node.GetListOf('Member')
+        for child in members:
           build_list = child.GetUniqueReleases(releases)
           # We have to filter out releases this node isn't in.
           build_list = filter(lambda r: child.InReleases([r]), build_list)
           if len(build_list) == 0:
             continue
-          release = build_list[-1]  # Pick the newest release.
-          member = DefineMember(filenode, node, child, release, False, meta)
+          assert(len(build_list) == 1)
+          release = build_list[-1]
+          include_version = not _IsNewestMember(child, members, releases)
+          member = DefineMember(filenode, node, child, release, include_version,
+                                meta)
           if not member:
             continue
-          members.append(member)
-          for build in build_list[:-1]:
-            member = DefineMember(filenode, node, child, build, True, meta)
-            if not member:
-              continue
-            members.append(member)
-    return (members, meta)
+          out_members.append(member)
+    return (out_members, meta)
 
   def WriteTail(self, out, filenode, releases, options):
     __pychecker__ = 'unusednames=options'
@@ -392,9 +431,13 @@ class TGen(GeneratorByFile):
 
         out.Write('const %s %s = {\n' % (thunk_type, thunk_name))
         generated_functions = []
-        for child in node.GetListOf('Member'):
+        members = node.GetListOf('Member')
+        for child in members:
           rtype, name, arrays, args = cgen.GetComponents(
               child, build, 'return')
+          if not _IsNewestMember(child, members, releases):
+            version = node.GetVersion(build).replace('.', '_')
+            name += '_' + version
           if child.InReleases([build]):
             generated_functions.append(name)
         out.Write(',\n'.join(['  &%s' % f for f in generated_functions]))
