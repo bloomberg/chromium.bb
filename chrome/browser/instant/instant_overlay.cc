@@ -134,6 +134,22 @@ void InstantOverlay::OnMouseUp() {
 content::WebContents* InstantOverlay::OpenURLFromTab(
     content::WebContents* source,
     const content::OpenURLParams& params) {
+  if (!supports_instant()) {
+    // If the page doesn't yet support Instant, it hasn't fully loaded.
+    // This is a redirect that we should allow. http://crbug.com/177948
+    content::NavigationController::LoadURLParams load_params(params.url);
+    load_params.transition_type = params.transition;
+    load_params.referrer = params.referrer;
+    load_params.extra_headers = params.extra_headers;
+    load_params.is_renderer_initiated = params.is_renderer_initiated;
+    load_params.transferred_global_request_id =
+        params.transferred_global_request_id;
+    load_params.is_cross_site_redirect = params.is_cross_site_redirect;
+
+    contents()->GetController().LoadURLWithParams(load_params);
+    return contents();
+  }
+
   // We will allow the navigate to continue if we are able to commit the
   // overlay.
   //
