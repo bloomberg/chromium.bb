@@ -11678,6 +11678,10 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
                desc="Default name for the first 'Apps' page on the New Tab Page.">
         Apps
       </message>
+      <message name="IDS_APP_LAUNCHER_TAB_TITLE"
+               desc="Default name for stand alone web page to serve as an App launcher when the new tab doesn't show apps.">
+        Apps
+      </message>
       <message name="IDS_NEW_TAB_RESTORE_THUMBNAILS_SHORT_LINK"
          desc="The link that restores previously removed thumbnails. Context is 'Thumbnail removed. Undo | Restore all'">
         Restore all

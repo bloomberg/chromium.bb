@@ -31,6 +31,16 @@ class NTPResourceCache : public content::NotificationObserver,
   base::RefCountedMemory* GetNewTabHTML(bool is_incognito);
   base::RefCountedMemory* GetNewTabCSS(bool is_incognito);
 
+  void set_should_show_most_visited_page(bool should_show_most_visited_page) {
+    should_show_most_visited_page_ = should_show_most_visited_page;
+  }
+  void set_should_show_other_devices_menu(bool should_show_other_devices_menu) {
+    should_show_other_devices_menu_ = should_show_other_devices_menu;
+  }
+  void set_should_show_recently_closed_menu(
+      bool should_show_recently_closed_menu) {
+    should_show_recently_closed_menu_ = should_show_recently_closed_menu;
+  }
   // content::NotificationObserver interface.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -68,8 +78,15 @@ class NTPResourceCache : public content::NotificationObserver,
   PrefChangeRegistrar pref_change_registrar_;
 #endif
 
+  // Set based on platform_util::IsSwipeTrackingFromScrollEventsEnabled.
   bool is_swipe_tracking_from_scroll_events_enabled_;
+  // Set based on extensions::IsAppLauncherEnabled.
   bool should_show_apps_page_;
+  // The next three all default to true and can be manually set, e.g., by the
+  // chrome://apps page.
+  bool should_show_most_visited_page_;
+  bool should_show_other_devices_menu_;
+  bool should_show_recently_closed_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPResourceCache);
 };

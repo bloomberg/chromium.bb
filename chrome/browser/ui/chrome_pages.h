@@ -32,6 +32,7 @@ enum HelpSource {
 };
 
 
+void ShowAppLauncherPage(Browser* browser);
 void ShowBookmarkManager(Browser* browser);
 void ShowBookmarkManagerForNode(Browser* browser, int64 node_id);
 void ShowHistory(Browser* browser);

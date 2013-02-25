@@ -124,7 +124,11 @@ cr.define('ntp', function() {
   function onLoad() {
     // This will end up calling ntp.gotShouldShowApps.
     chrome.send('getShouldShowApps');
-    sectionsToWaitFor = loadTimeData.getBoolean('showApps') ? 2 : 1;
+    sectionsToWaitFor = 0;
+    if (loadTimeData.getBoolean('showMostvisited'))
+      sectionsToWaitFor++;
+    if (loadTimeData.getBoolean('showApps'))
+      sectionsToWaitFor++;
     if (loadTimeData.getBoolean('isDiscoveryInNTPEnabled'))
       sectionsToWaitFor++;
     measureNavDots();
@@ -139,24 +143,32 @@ cr.define('ntp', function() {
     notificationContainer.addEventListener(
         'webkitTransitionEnd', onNotificationTransitionEnd);
 
-    cr.ui.decorate($('recently-closed-menu-button'), ntp.RecentMenuButton);
-    chrome.send('getRecentlyClosedTabs');
+    if (loadTimeData.getBoolean('showRecentlyClosed')) {
+      cr.ui.decorate($('recently-closed-menu-button'), ntp.RecentMenuButton);
+      chrome.send('getRecentlyClosedTabs');
+    } else {
+      $('recently-closed-menu-button').hidden = true;
+    }
 
     if (loadTimeData.getBoolean('showOtherSessionsMenu')) {
       otherSessionsButton = getRequiredElement('other-sessions-menu-button');
       cr.ui.decorate(otherSessionsButton, ntp.OtherSessionsMenuButton);
       otherSessionsButton.initialize(loadTimeData.getBoolean('isUserSignedIn'));
+    } else {
+      getRequiredElement('other-sessions-menu-button').hidden = true;
     }
 
-    var mostVisited = new ntp.MostVisitedPage();
-    // Move the footer into the most visited page if we are in "bare minimum"
-    // mode.
-    if (document.body.classList.contains('bare-minimum'))
-      mostVisited.appendFooter(getRequiredElement('footer'));
-    newTabView.appendTilePage(mostVisited,
-                              loadTimeData.getString('mostvisited'),
-                              false);
-    chrome.send('getMostVisited');
+    if (loadTimeData.getBoolean('showMostvisited')) {
+      var mostVisited = new ntp.MostVisitedPage();
+      // Move the footer into the most visited page if we are in "bare minimum"
+      // mode.
+      if (document.body.classList.contains('bare-minimum'))
+        mostVisited.appendFooter(getRequiredElement('footer'));
+      newTabView.appendTilePage(mostVisited,
+                                loadTimeData.getString('mostvisited'),
+                                false);
+      chrome.send('getMostVisited');
+    }
 
     if (loadTimeData.getBoolean('isDiscoveryInNTPEnabled')) {
       var suggestions_script = document.createElement('script');
@@ -332,7 +344,9 @@ cr.define('ntp', function() {
    */
   function measureNavDots() {
     var measuringDiv = $('fontMeasuringDiv');
-    measuringDiv.textContent = loadTimeData.getString('mostvisited');
+    if (loadTimeData.getBoolean('showMostvisited'))
+      measuringDiv.textContent = loadTimeData.getString('mostvisited');
+
     // The 4 is for border and padding.
     var pxWidth = Math.max(measuringDiv.clientWidth * 1.15 + 4, 80);
 

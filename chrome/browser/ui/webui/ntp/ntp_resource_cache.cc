@@ -166,7 +166,10 @@ std::string GetNewTabBackgroundTilingCSS(
 
 NTPResourceCache::NTPResourceCache(Profile* profile)
     : profile_(profile), is_swipe_tracking_from_scroll_events_enabled_(false),
-      should_show_apps_page_(NewTabUI::ShouldShowApps()) {
+      should_show_apps_page_(NewTabUI::ShouldShowApps()),
+      should_show_most_visited_page_(true),
+      should_show_other_devices_menu_(true),
+      should_show_recently_closed_menu_(true) {
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(
                      ThemeServiceFactory::GetForProfile(profile)));
@@ -324,6 +327,9 @@ void NTPResourceCache::CreateNewTabHTML() {
   load_time_data.SetBoolean("hasattribution",
       ThemeServiceFactory::GetForProfile(profile_)->HasCustomImage(
           IDR_THEME_NTP_ATTRIBUTION));
+  load_time_data.SetBoolean("showMostvisited", should_show_most_visited_page_);
+  load_time_data.SetBoolean("showRecentlyClosed",
+      should_show_recently_closed_menu_);
   load_time_data.SetString("title",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
   load_time_data.SetString("mostvisited",
@@ -454,14 +460,14 @@ void NTPResourceCache::CreateNewTabHTML() {
   }
 
   // Determine whether to show the menu for accessing tabs on other devices.
-  bool show_other_sessions_menu = !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableNTPOtherSessionsMenu);
-  load_time_data.SetBoolean("showOtherSessionsMenu",
-                            show_other_sessions_menu);
+  bool show_other_sessions_menu = should_show_other_devices_menu_ &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableNTPOtherSessionsMenu);
+  load_time_data.SetBoolean("showOtherSessionsMenu", show_other_sessions_menu);
   load_time_data.SetBoolean("isUserSignedIn",
       !prefs->GetString(prefs::kGoogleServicesUsername).empty());
 
-  // Load the new tab page appropriate for this build
+  // Load the new tab page appropriate for this build.
   base::StringPiece new_tab_html(ResourceBundle::GetSharedInstance().
       GetRawDataResource(IDR_NEW_TAB_4_HTML));
   webui::UseVersion2 version2;

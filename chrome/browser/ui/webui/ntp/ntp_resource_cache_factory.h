@@ -10,9 +10,9 @@
 
 class NTPResourceCache;
 
-// Singleton that owns all NTPResourceCaches and associates them with
-// Profiles. Listens for the Profile's destruction notification and cleans up
-// the associated ThemeService.
+// Singleton that owns the NTPResourceCaches used by the NTP and associates them
+// with Profiles. Listens for the Profile's destruction notification and cleans
+// up the associated ThemeService.
 class NTPResourceCacheFactory : public ProfileKeyedServiceFactory {
  public:
   static NTPResourceCache* GetForProfile(Profile* profile);
