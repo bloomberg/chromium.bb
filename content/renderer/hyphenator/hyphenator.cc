@@ -184,31 +184,22 @@ namespace content {
 
 Hyphenator::Hyphenator(base::PlatformFile file)
     : dictionary_(NULL),
-      rule_file_(file),
+      dictionary_file_(base::FdopenPlatformFile(file, "r")),
       result_(0) {
 }
 
 Hyphenator::~Hyphenator() {
   if (dictionary_)
     hnj_hyphen_free(dictionary_);
-  if (rule_file_ != base::kInvalidPlatformFileValue)
-    base::ClosePlatformFile(rule_file_);
 }
 
 bool Hyphenator::Initialize() {
   if (dictionary_)
     return true;
 
-  // Attach the dictionary file to the MemoryMappedFile object. When it
-  // succeeds, this class does not have to close this file because it is closed
-  // by the MemoryMappedFile class. To prevent this class from closing this
-  // file, we reset its handle.
-  rule_map_.reset(new base::MemoryMappedFile);
-  if (!rule_map_->Initialize(rule_file_))
+  if (!dictionary_file_.get())
     return false;
-  rule_file_ = base::kInvalidPlatformFileValue;
-
-  dictionary_ = hnj_hyphen_load(rule_map_->data(), rule_map_->length());
+  dictionary_ = hnj_hyphen_load_file(dictionary_file_.get());
   return !!dictionary_;
 }
 
@@ -273,8 +264,7 @@ void Hyphenator::OnSetDictionary(IPC::PlatformFileForTransit file) {
     hnj_hyphen_free(dictionary_);
     dictionary_ = NULL;
   }
-  rule_map_.reset();
-  rule_file_ = rule_file;
+  dictionary_file_.Set(base::FdopenPlatformFile(rule_file, "r"));
 }
 
 }  // namespace content

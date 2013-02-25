@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/scoped_handle.h"
 #include "base/metrics/stats_counters.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
@@ -495,12 +496,18 @@ size_t TestWebKitPlatformSupport::computeLastHyphenLocation(
     // flakiness, this code synchronously loads the dictionary.
     base::FilePath path = webkit_support::GetChromiumRootDirFilePath();
     path = path.Append(FILE_PATH_LITERAL("third_party/hyphen/hyph_en_US.dic"));
-    std::string dictionary;
-    if (!file_util::ReadFileToString(path, &dictionary))
+    base::PlatformFile dict_file = base::CreatePlatformFile(
+        path,
+        base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
+        NULL, NULL);
+    if (dict_file == base::kInvalidPlatformFileValue)
       return 0;
-    hyphen_dictionary_ = hnj_hyphen_load(
-        reinterpret_cast<const unsigned char*>(dictionary.data()),
-        dictionary.length());
+    ScopedStdioHandle dict_handle(base::FdopenPlatformFile(dict_file, "r"));
+    if (!dict_handle.get()) {
+      base::ClosePlatformFile(dict_file);
+      return 0;
+    }
+    hyphen_dictionary_ = hnj_hyphen_load_file(dict_handle.get());
     if (!hyphen_dictionary_)
       return 0;
   }

@@ -7,16 +7,12 @@
 
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_handle.h"
 #include "base/platform_file.h"
 #include "base/string16.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "ipc/ipc_platform_file.h"
-
-namespace base {
-class MemoryMappedFile;
-}
 
 typedef struct _HyphenDict HyphenDict;
 
@@ -58,12 +54,8 @@ class CONTENT_EXPORT Hyphenator : public RenderProcessObserver {
   // The dictionary used by the hyphen library.
   HyphenDict* dictionary_;
 
-  // The dictionary file and its memory-mapping object. (Our copy of the hyphen
-  // library uses a memory-mapped file opened by a browser so renderers can use
-  // it without opening the file.)
   string16 locale_;
-  base::PlatformFile rule_file_;
-  scoped_ptr<base::MemoryMappedFile> rule_map_;
+  ScopedStdioHandle dictionary_file_;
 
   // A cached result. WebKit often calls ComputeLastHyphenLocation with the same
   // word multiple times to find the best hyphenation point when it finds a line

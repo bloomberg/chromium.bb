@@ -160,6 +160,10 @@ PlatformFile CreatePlatformFileUnsafe(const FilePath& name,
   return descriptor;
 }
 
+FILE* FdopenPlatformFile(PlatformFile file, const char* mode) {
+  return fdopen(file, mode);
+}
+
 bool ClosePlatformFile(PlatformFile file) {
   base::ThreadRestrictions::AssertIOAllowed();
   return !HANDLE_EINTR(close(file));

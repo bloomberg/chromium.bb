@@ -90,11 +90,11 @@ struct _HyphenTrans {
   int new_state;
 };
 
-#ifdef HYPHEN_CHROME_CLIENT
-HyphenDict *hnj_hyphen_load (const unsigned char *data, size_t size);
-#else
+#if 0
+/* DO NOT USE, there are known problems with Unicode on Windows. */
 HyphenDict *hnj_hyphen_load (const char *fn);
 #endif
+HyphenDict *hnj_hyphen_load_file (FILE *f);
 void hnj_hyphen_free (HyphenDict *dict);
 
 /* obsolete, use hnj_hyphen_hyphenate2() or *hyphenate3() functions) */

@@ -242,71 +242,26 @@ get_state_str (int state)
 }
 #endif
 
-#ifdef HYPHEN_CHROME_CLIENT
-typedef struct {
-  const unsigned char *data;
-  size_t offset;
-  size_t size;
-} hnj_file;
-
-static hnj_file *
-hnj_fopen (const unsigned char *data, size_t size)
-{
-  hnj_file *f;
-
-  f = hnj_malloc (sizeof(hnj_file));
-  if (f == NULL)
-    return NULL;
-  f->offset = 0;
-  f->data = data;
-  f->size = size;
-  return f;
-}
-
-static void
-hnj_fclose (hnj_file *f)
-{
-  hnj_free (f);
-}
-
-static char *
-hnj_fgets (char *s, int size, hnj_file *f)
-{
-  int i;
-
-  if (f->offset >= f->size)
-    return NULL;
-  for (i = 0; i < size - 1; i++) {
-    char c;
-
-    if (f->offset >= f->size)
-      break;
-    c = f->data[f->offset++];
-    if (c == '\r' || c == '\n')
-      break;
-    s[i] = c;
-  }
-  s[i] = '\0';
-  return s;
-}
-#else
-typedef FILE hnj_file;
-#define hnj_fopen(fn, mode) fopen((fn), (mode))
-#define hnj_fclose(f) fclose(f)
-#define hnj_fgets(s, size, f) fgets((s), (size), (f))
-#endif
-
-#ifdef HYPHEN_CHROME_CLIENT
-HyphenDict *
-hnj_hyphen_load (const unsigned char *data, size_t size)
-#else
 HyphenDict *
 hnj_hyphen_load (const char *fn)
-#endif
+{
+  HyphenDict *result;
+  FILE *f;
+  f = fopen (fn, "r");
+  if (f == NULL)
+    return NULL;
+
+  result = hnj_hyphen_load_file(f);
+
+  fclose(f);
+  return result;
+}
+
+HyphenDict *
+hnj_hyphen_load_file (FILE *f)
 {
   HyphenDict *dict[2];
   HashTab *hashtab;
-  hnj_file *f;
   char buf[MAX_CHARS];
   char word[MAX_CHARS];
   char pattern[MAX_CHARS];
@@ -319,14 +274,6 @@ hnj_hyphen_load (const char *fn)
   int found;
   HashEntry *e;
   int nextlevel = 0;
-
-#ifdef HYPHEN_CHROME_CLIENT
-  f = hnj_fopen (data, size);
-#else
-  f = hnj_fopen (fn, "r");
-#endif
-  if (f == NULL)
-    return NULL;
 
 // loading one or two dictionaries (separated by NEXTLEVEL keyword)
 for (k = 0; k == 0 || (k == 1 && nextlevel); k++) { 
@@ -352,7 +299,7 @@ for (k = 0; k == 0 || (k == 1 && nextlevel); k++) {
   /* read in character set info */
   if (k == 0) {
     for (i=0;i<MAX_NAME;i++) dict[k]->cset[i]= 0;
-    if (hnj_fgets(dict[k]->cset,  sizeof(dict[k]->cset),f) != NULL) {
+    if (fgets(dict[k]->cset,  sizeof(dict[k]->cset),f) != NULL) {
       for (i=0;i<MAX_NAME;i++)
         if ((dict[k]->cset[i] == '\r') || (dict[k]->cset[i] == '\n'))
           dict[k]->cset[i] = 0;
@@ -365,7 +312,7 @@ for (k = 0; k == 0 || (k == 1 && nextlevel); k++) {
     dict[k]->utf8 = dict[0]->utf8;
   }
 
-  while (hnj_fgets (buf, sizeof(buf), f) != NULL)
+  while (fgets (buf, sizeof(buf), f) != NULL)
     {
       if (buf[0] != '%')
 	{
@@ -431,7 +378,7 @@ for (k = 0; k == 0 || (k == 1 && nextlevel); k++) {
             if (dict[k]->utf8) {
                 int pu = -1;        /* unicode character position */
                 int ps = -1;        /* unicode start position (original replindex) */
-                size_t pc = (*word == '.') ? 1: 0; /* 8-bit character position */
+                int pc = (*word == '.') ? 1: 0; /* 8-bit character position */
                 for (; pc < (strlen(word) + 1); pc++) {
                 /* beginning of an UTF-8 character (not '10' start bits) */
                     if ((((unsigned char) word[pc]) >> 6) != 2) pu++;
@@ -524,7 +471,6 @@ for (k = 0; k == 0 || (k == 1 && nextlevel); k++) {
 #endif
   state_num = 0;
 }
-  hnj_fclose(f);
   if (k == 2) dict[0]->nextlevel = dict[1];
   return dict[0];
 }

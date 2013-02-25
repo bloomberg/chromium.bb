@@ -10,9 +10,6 @@
       'include_dirs': [
         '.',
       ],
-      'defines': [
-        'HYPHEN_CHROME_CLIENT',
-      ],
       'sources': [
         'hnjalloc.c',
         'hnjalloc.h',
@@ -20,15 +17,13 @@
         'hyphen.c',
       ],
       'direct_dependent_settings': {
-        'defines': [
-          'HYPHEN_CHROME_CLIENT',
-        ],
         'include_dirs': [
           '.',
         ],
       },
       # TODO(jschuh): http://crbug.com/167187
       'msvs_disabled_warnings': [
+        4018,
         4267,
       ],
     },

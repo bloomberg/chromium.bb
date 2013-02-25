@@ -4,6 +4,8 @@
 
 #include "base/platform_file.h"
 
+#include <io.h>
+
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
@@ -107,6 +109,15 @@ PlatformFile CreatePlatformFileUnsafe(const FilePath& name,
   }
 
   return file;
+}
+
+FILE* FdopenPlatformFile(PlatformFile file, const char* mode) {
+  if (file == kInvalidPlatformFileValue)
+    return NULL;
+  int fd = _open_osfhandle(reinterpret_cast<intptr_t>(file), 0);
+  if (fd < 0)
+    return NULL;
+  return _fdopen(fd, mode);
 }
 
 bool ClosePlatformFile(PlatformFile file) {

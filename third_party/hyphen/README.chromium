@@ -7,8 +7,7 @@ License: MPL 1.1/GPL 2.0/LGPL 2.1
 
 Description:
 This is a partial copy of Hyphen 2.6 with the following changes:
-* Change the input params of hnj_hyphen_load to receive the pointer to a ruleset
-  instead of a file path.
+* Make it possible to pass a FILE* instead of file path (for sandbox).
 * Change RIGHTHYPHENMIN to 2 in hyph_en_US.dic so it hyphenates rec-i-proc-i-ty
   as expected.
 The patch is in google.patch.

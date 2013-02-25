@@ -135,6 +135,8 @@ BASE_EXPORT PlatformFile CreatePlatformFileUnsafe(const FilePath& name,
                                                   bool* created,
                                                   PlatformFileError* error);
 
+BASE_EXPORT FILE* FdopenPlatformFile(PlatformFile file, const char* mode);
+
 // Closes a file handle. Returns |true| on success and |false| otherwise.
 BASE_EXPORT bool ClosePlatformFile(PlatformFile file);
 
