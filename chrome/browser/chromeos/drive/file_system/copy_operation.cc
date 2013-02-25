@@ -363,7 +363,7 @@ void CopyOperation::StartFileUploadAfterGetEntryInfo(
   }
   DCHECK(entry_proto.get());
 
-  uploader_->UploadNewFile(GURL(entry_proto->upload_url()),
+  uploader_->UploadNewFile(entry_proto->resource_id(),
                            params.remote_file_path,
                            params.local_file_path,
                            params.remote_file_path.BaseName().value(),

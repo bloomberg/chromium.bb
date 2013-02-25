@@ -280,7 +280,7 @@ void DriveScheduler::DownloadFile(
 }
 
 void DriveScheduler::UploadExistingFile(
-    const GURL& upload_location,
+    const std::string& resource_id,
     const base::FilePath& drive_file_path,
     const base::FilePath& local_file_path,
     const std::string& content_type,
@@ -290,7 +290,7 @@ void DriveScheduler::UploadExistingFile(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_UPLOAD_EXISTING_FILE));
-  new_job->upload_location = upload_location;
+  new_job->resource_id = resource_id;
   new_job->drive_file_path = drive_file_path;
   new_job->local_file_path = local_file_path;
   new_job->content_type = content_type;
@@ -462,7 +462,7 @@ void DriveScheduler::DoJobLoop(QueueType queue_type) {
 
     case TYPE_UPLOAD_EXISTING_FILE: {
       uploader_->UploadExistingFile(
-          entry->upload_location,
+          entry->resource_id,
           entry->drive_file_path,
           entry->local_file_path,
           entry->content_type,

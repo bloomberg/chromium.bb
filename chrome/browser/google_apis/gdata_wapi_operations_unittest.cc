@@ -216,12 +216,10 @@ class GDataWapiOperationsTest : public testing::Test {
     http_request_ = request;
 
     const GURL absolute_url = test_server_.GetURL(request.relative_url);
-    if (absolute_url.path() ==
-        // This is an upload URL of the root directory.
-        "/feeds/upload/create-session/default/private/full" ||
-        absolute_url.path() ==
-        // This is an upload URL of an existing file.
-        "/feeds/upload/create-session/default/private/full/file:foo") {
+    if (StartsWithASCII(absolute_url.path(),
+                        "/feeds/upload/create-session/default/private/full",
+                        true)) {  // case sensitive
+      // This is an initiating upload URL.
       scoped_ptr<test_server::HttpResponse> http_response(
           new test_server::HttpResponse);
 
@@ -778,14 +776,14 @@ TEST_F(GDataWapiOperationsTest, UploadNewFile) {
       new InitiateUploadNewFileOperation(
           &operation_registry_,
           request_context_getter_.get(),
+          *url_generator_,
           base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
                      &result_code,
                      &upload_url),
           base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
           "text/plain",
           kUploadContent.size(),
-          test_server_.GetURL(
-              "/feeds/upload/create-session/default/private/full"),
+          "folder:id",
           "New file");
 
   initiate_operation->Start(
@@ -797,9 +795,10 @@ TEST_F(GDataWapiOperationsTest, UploadNewFile) {
   EXPECT_EQ(test_server_.GetURL("/upload_new_file"), upload_url);
   EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
   // convert=false should be passed as files should be uploaded as-is.
-  EXPECT_EQ("/feeds/upload/create-session/default/private/full"
-            "?convert=false&v=3&alt=json",
-            http_request_.relative_url);
+  EXPECT_EQ(
+      "/feeds/upload/create-session/default/private/full/folder%3Aid/contents"
+      "?convert=false&v=3&alt=json",
+      http_request_.relative_url);
   EXPECT_EQ("text/plain", http_request_.headers["X-Upload-Content-Type"]);
   EXPECT_EQ("application/atom+xml", http_request_.headers["Content-Type"]);
   EXPECT_EQ(base::Int64ToString(kUploadContent.size()),
@@ -877,14 +876,14 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
       new InitiateUploadNewFileOperation(
           &operation_registry_,
           request_context_getter_.get(),
+          *url_generator_,
           base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
                      &result_code,
                      &upload_url),
           base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
           "text/plain",
           kUploadContent.size(),
-          test_server_.GetURL(
-              "/feeds/upload/create-session/default/private/full"),
+          "folder:id",
           "New file");
 
   initiate_operation->Start(
@@ -896,9 +895,10 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
   EXPECT_EQ(test_server_.GetURL("/upload_new_file"), upload_url);
   EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
   // convert=false should be passed as files should be uploaded as-is.
-  EXPECT_EQ("/feeds/upload/create-session/default/private/full?convert=false"
-            "&v=3&alt=json",
-            http_request_.relative_url);
+  EXPECT_EQ(
+      "/feeds/upload/create-session/default/private/full/folder%3Aid/contents"
+      "?convert=false&v=3&alt=json",
+      http_request_.relative_url);
   EXPECT_EQ("text/plain", http_request_.headers["X-Upload-Content-Type"]);
   EXPECT_EQ("application/atom+xml", http_request_.headers["Content-Type"]);
   EXPECT_EQ(base::Int64ToString(kUploadContent.size()),
@@ -1001,14 +1001,14 @@ TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
       new InitiateUploadNewFileOperation(
           &operation_registry_,
           request_context_getter_.get(),
+          *url_generator_,
           base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
                      &result_code,
                      &upload_url),
           base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
           "text/plain",
           kUploadContent.size(),
-          test_server_.GetURL(
-              "/feeds/upload/create-session/default/private/full"),
+          "folder:id",
           "New file");
 
   initiate_operation->Start(
@@ -1020,9 +1020,10 @@ TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
   EXPECT_EQ(test_server_.GetURL("/upload_new_file"), upload_url);
   EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
   // convert=false should be passed as files should be uploaded as-is.
-  EXPECT_EQ("/feeds/upload/create-session/default/private/full?convert=false"
-            "&v=3&alt=json",
-            http_request_.relative_url);
+  EXPECT_EQ(
+      "/feeds/upload/create-session/default/private/full/folder%3Aid/contents"
+      "?convert=false&v=3&alt=json",
+      http_request_.relative_url);
   EXPECT_EQ("text/plain", http_request_.headers["X-Upload-Content-Type"]);
   EXPECT_EQ("application/atom+xml", http_request_.headers["Content-Type"]);
   EXPECT_EQ(base::Int64ToString(kUploadContent.size()),
@@ -1094,14 +1095,14 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
       new InitiateUploadExistingFileOperation(
           &operation_registry_,
           request_context_getter_.get(),
+          *url_generator_,
           base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
                      &result_code,
                      &upload_url),
           base::FilePath::FromUTF8Unsafe("drive/existingfile.txt"),
           "text/plain",
           kUploadContent.size(),
-          test_server_.GetURL(
-              "/feeds/upload/create-session/default/private/full/file:foo"),
+          "file:foo",
           "" /* etag */);
 
   initiate_operation->Start(
@@ -1114,7 +1115,7 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
   // For updating an existing file, METHOD_PUT should be used.
   EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
   // convert=false should be passed as files should be uploaded as-is.
-  EXPECT_EQ("/feeds/upload/create-session/default/private/full/file:foo"
+  EXPECT_EQ("/feeds/upload/create-session/default/private/full/file%3Afoo"
             "?convert=false&v=3&alt=json",
             http_request_.relative_url);
   // Even though the body is empty, the content type should be set to
@@ -1189,14 +1190,14 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFileWithETag) {
       new InitiateUploadExistingFileOperation(
           &operation_registry_,
           request_context_getter_.get(),
+          *url_generator_,
           base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
                      &result_code,
                      &upload_url),
           base::FilePath::FromUTF8Unsafe("drive/existingfile.txt"),
           "text/plain",
           kUploadContent.size(),
-          test_server_.GetURL(
-              "/feeds/upload/create-session/default/private/full/file:foo"),
+          "file:foo",
           kTestETag);
 
   initiate_operation->Start(
@@ -1209,7 +1210,7 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFileWithETag) {
   // For updating an existing file, METHOD_PUT should be used.
   EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
   // convert=false should be passed as files should be uploaded as-is.
-  EXPECT_EQ("/feeds/upload/create-session/default/private/full/file:foo"
+  EXPECT_EQ("/feeds/upload/create-session/default/private/full/file%3Afoo"
             "?convert=false&v=3&alt=json",
             http_request_.relative_url);
   // Even though the body is empty, the content type should be set to
@@ -1284,14 +1285,14 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFileWithETagConflict) {
       new InitiateUploadExistingFileOperation(
           &operation_registry_,
           request_context_getter_.get(),
+          *url_generator_,
           base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
                      &result_code,
                      &upload_url),
           base::FilePath::FromUTF8Unsafe("drive/existingfile.txt"),
           "text/plain",
           kUploadContent.size(),
-          test_server_.GetURL(
-              "/feeds/upload/create-session/default/private/full/file:foo"),
+          "file:foo",
           kWrongETag);
 
   initiate_operation->Start(
@@ -1303,7 +1304,7 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFileWithETagConflict) {
   // For updating an existing file, METHOD_PUT should be used.
   EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
   // convert=false should be passed as files should be uploaded as-is.
-  EXPECT_EQ("/feeds/upload/create-session/default/private/full/file:foo"
+  EXPECT_EQ("/feeds/upload/create-session/default/private/full/file%3Afoo"
             "?convert=false&v=3&alt=json",
             http_request_.relative_url);
   // Even though the body is empty, the content type should be set to

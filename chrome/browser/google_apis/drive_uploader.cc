@@ -137,14 +137,14 @@ DriveUploader::DriveUploader(DriveServiceInterface* drive_service)
 
 DriveUploader::~DriveUploader() {}
 
-void DriveUploader::UploadNewFile(const GURL& parent_upload_url,
+void DriveUploader::UploadNewFile(const std::string& parent_resource_id,
                                   const base::FilePath& drive_file_path,
                                   const base::FilePath& local_file_path,
                                   const std::string& title,
                                   const std::string& content_type,
                                   const UploadCompletionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!parent_upload_url.is_empty());
+  DCHECK(!parent_resource_id.empty());
   DCHECK(!drive_file_path.empty());
   DCHECK(!local_file_path.empty());
   DCHECK(!title.empty());
@@ -160,19 +160,19 @@ void DriveUploader::UploadNewFile(const GURL& parent_upload_url,
                                                     callback)),
       base::Bind(&DriveUploader::StartInitiateUploadNewFile,
                  weak_ptr_factory_.GetWeakPtr(),
-                 parent_upload_url,
+                 parent_resource_id,
                  title));
 }
 
 void DriveUploader::UploadExistingFile(
-    const GURL& upload_url,
+    const std::string& resource_id,
     const base::FilePath& drive_file_path,
     const base::FilePath& local_file_path,
     const std::string& content_type,
     const std::string& etag,
     const UploadCompletionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!upload_url.is_empty());
+  DCHECK(!resource_id.empty());
   DCHECK(!drive_file_path.empty());
   DCHECK(!local_file_path.empty());
   DCHECK(!content_type.empty());
@@ -187,7 +187,7 @@ void DriveUploader::UploadExistingFile(
                                                     callback)),
       base::Bind(&DriveUploader::StartInitiateUploadExistingFile,
                  weak_ptr_factory_.GetWeakPtr(),
-                 upload_url,
+                 resource_id,
                  etag));
 }
 
@@ -230,7 +230,7 @@ void DriveUploader::OpenCompletionCallback(
 }
 
 void DriveUploader::StartInitiateUploadNewFile(
-    const GURL& parent_upload_url,
+    const std::string& parent_resource_id,
     const std::string& title,
     scoped_ptr<UploadFileInfo> upload_file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -240,7 +240,7 @@ void DriveUploader::StartInitiateUploadNewFile(
       info_ptr->drive_path,
       info_ptr->content_type,
       info_ptr->content_length,
-      parent_upload_url,
+      parent_resource_id,
       title,
       base::Bind(&DriveUploader::OnUploadLocationReceived,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -248,7 +248,7 @@ void DriveUploader::StartInitiateUploadNewFile(
 }
 
 void DriveUploader::StartInitiateUploadExistingFile(
-    const GURL& upload_url,
+    const std::string& resource_id,
     const std::string& etag,
     scoped_ptr<UploadFileInfo> upload_file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -258,7 +258,7 @@ void DriveUploader::StartInitiateUploadExistingFile(
       info_ptr->drive_path,
       info_ptr->content_type,
       info_ptr->content_length,
-      upload_url,
+      resource_id,
       etag,
       base::Bind(&DriveUploader::OnUploadLocationReceived,
                  weak_ptr_factory_.GetWeakPtr(),

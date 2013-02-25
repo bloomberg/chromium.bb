@@ -25,8 +25,8 @@ namespace {
 const char kTestDummyId[] = "file:dummy_id";
 const char kTestDocumentTitle[] = "Hello world";
 const char kTestDrivePath[] = "drive/dummy.txt";
-const char kTestInitialUploadURL[] =
-    "http://test/feeds/upload/create-session/default/private/full";
+const char kTestInitiateUploadParentResourceId[] = "parent_resource_id";
+const char kTestInitiateUploadResourceId[] = "resource_id";
 const char kTestMimeType[] = "text/plain";
 const char kTestUploadURL[] = "http://test/upload_location";
 const int64 kUploadChunkSize = 512 * 1024;
@@ -71,14 +71,14 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
       const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
-      const GURL& parent_upload_url,
+      const std::string& parent_resource_id,
       const std::string& title,
       const InitiateUploadCallback& callback) OVERRIDE {
     EXPECT_EQ(kTestDocumentTitle, title);
     EXPECT_EQ(kTestMimeType, content_type);
     const int64 expected_size = expected_upload_content_.size();
     EXPECT_EQ(expected_size, content_length);
-    EXPECT_EQ(GURL(kTestInitialUploadURL), parent_upload_url);
+    EXPECT_EQ(kTestInitiateUploadParentResourceId, parent_resource_id);
 
     // Calls back the upload URL for subsequent ResumeUpload operations.
     // InitiateUpload is an asynchronous function, so don't callback directly.
@@ -90,13 +90,13 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
       const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
-      const GURL& upload_url,
+      const std::string& resource_id,
       const std::string& etag,
       const InitiateUploadCallback& callback) OVERRIDE {
     EXPECT_EQ(kTestMimeType, content_type);
     const int64 expected_size = expected_upload_content_.size();
     EXPECT_EQ(expected_size, content_length);
-    EXPECT_EQ(GURL(kTestInitialUploadURL), upload_url);
+    EXPECT_EQ(kTestInitiateUploadResourceId, resource_id);
 
     if (!etag.empty() && etag != kTestETag) {
       MessageLoop::current()->PostTask(FROM_HERE,
@@ -174,7 +174,7 @@ class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
       const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
-      const GURL& parent_upload_url,
+      const std::string& parent_resource_id,
       const std::string& title,
       const InitiateUploadCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(FROM_HERE,
@@ -185,7 +185,7 @@ class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
       const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
-      const GURL& upload_url,
+      const std::string& resource_id,
       const std::string& etag,
       const InitiateUploadCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(FROM_HERE,
@@ -206,22 +206,22 @@ class MockDriveServiceNoConnectionAtResume : public DummyDriveService {
       const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
-      const GURL& parent_upload_url,
+      const std::string& parent_resource_id,
       const std::string& title,
       const InitiateUploadCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(callback, HTTP_SUCCESS, GURL(kTestInitialUploadURL)));
+        base::Bind(callback, HTTP_SUCCESS, GURL(kTestUploadURL)));
   }
 
   virtual void InitiateUploadExistingFile(
       const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
-      const GURL& upload_url,
+      const std::string& resource_id,
       const std::string& etag,
       const InitiateUploadCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(callback, HTTP_SUCCESS, GURL(kTestInitialUploadURL)));
+        base::Bind(callback, HTTP_SUCCESS, GURL(kTestUploadURL)));
   }
 
   // Returns error.
@@ -290,7 +290,7 @@ TEST_F(DriveUploaderTest, UploadExisting0KB) {
   MockDriveServiceWithUploadExpectation mock_service(data);
   DriveUploader uploader(&mock_service);
   uploader.UploadExistingFile(
-      GURL(kTestInitialUploadURL),
+      kTestInitiateUploadResourceId,
       base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestMimeType,
@@ -318,7 +318,7 @@ TEST_F(DriveUploaderTest, UploadExisting512KB) {
   MockDriveServiceWithUploadExpectation mock_service(data);
   DriveUploader uploader(&mock_service);
   uploader.UploadExistingFile(
-      GURL(kTestInitialUploadURL),
+      kTestInitiateUploadResourceId,
       base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestMimeType,
@@ -347,7 +347,7 @@ TEST_F(DriveUploaderTest, UploadExisting1234KB) {
   MockDriveServiceWithUploadExpectation mock_service(data);
   DriveUploader uploader(&mock_service);
   uploader.UploadExistingFile(
-      GURL(kTestInitialUploadURL),
+      kTestInitiateUploadResourceId,
       base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestMimeType,
@@ -376,7 +376,7 @@ TEST_F(DriveUploaderTest, UploadNew1234KB) {
   MockDriveServiceWithUploadExpectation mock_service(data);
   DriveUploader uploader(&mock_service);
   uploader.UploadNewFile(
-      GURL(kTestInitialUploadURL),
+      kTestInitiateUploadParentResourceId,
       base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestDocumentTitle,
@@ -405,7 +405,7 @@ TEST_F(DriveUploaderTest, InitiateUploadFail) {
   MockDriveServiceNoConnectionAtInitiate mock_service;
   DriveUploader uploader(&mock_service);
   uploader.UploadExistingFile(
-      GURL(kTestInitialUploadURL),
+      kTestInitiateUploadResourceId,
       base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestMimeType,
@@ -425,7 +425,7 @@ TEST_F(DriveUploaderTest, InitiateUploadNoConflict) {
   MockDriveServiceWithUploadExpectation mock_service(data);
   DriveUploader uploader(&mock_service);
   uploader.UploadExistingFile(
-      GURL(kTestInitialUploadURL),
+      kTestInitiateUploadResourceId,
       base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestMimeType,
@@ -447,7 +447,7 @@ TEST_F(DriveUploaderTest, InitiateUploadConflict) {
   MockDriveServiceWithUploadExpectation mock_service(data);
   DriveUploader uploader(&mock_service);
   uploader.UploadExistingFile(
-      GURL(kTestInitialUploadURL),
+      kTestInitiateUploadResourceId,
       base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestMimeType,
@@ -469,7 +469,7 @@ TEST_F(DriveUploaderTest, ResumeUploadFail) {
   MockDriveServiceNoConnectionAtResume mock_service;
   DriveUploader uploader(&mock_service);
   uploader.UploadExistingFile(
-      GURL(kTestInitialUploadURL),
+      kTestInitiateUploadResourceId,
       base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestMimeType,
@@ -485,7 +485,7 @@ TEST_F(DriveUploaderTest, NonExistingSourceFile) {
 
   DriveUploader uploader(NULL);  // NULL, the service won't be used.
   uploader.UploadExistingFile(
-      GURL(kTestInitialUploadURL),
+      kTestInitiateUploadResourceId,
       base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       temp_dir_.path().AppendASCII("_this_path_should_not_exist_"),
       kTestMimeType,

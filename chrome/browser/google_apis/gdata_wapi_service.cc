@@ -412,25 +412,22 @@ void GDataWapiService::InitiateUploadNewFile(
     const base::FilePath& drive_file_path,
     const std::string& content_type,
     int64 content_length,
-    const GURL& parent_upload_url,
+    const std::string& parent_resource_id,
     const std::string& title,
     const InitiateUploadCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-
-  if (parent_upload_url.is_empty()) {
-    callback.Run(HTTP_BAD_REQUEST, GURL());
-    return;
-  }
+  DCHECK(!parent_resource_id.empty());
 
   runner_->StartOperationWithRetry(
       new InitiateUploadNewFileOperation(operation_registry(),
                                          url_request_context_getter_,
+                                         url_generator_,
                                          callback,
                                          drive_file_path,
                                          content_type,
                                          content_length,
-                                         parent_upload_url,
+                                         parent_resource_id,
                                          title));
 }
 
@@ -438,25 +435,22 @@ void GDataWapiService::InitiateUploadExistingFile(
     const base::FilePath& drive_file_path,
     const std::string& content_type,
     int64 content_length,
-    const GURL& upload_url,
+    const std::string& resource_id,
     const std::string& etag,
     const InitiateUploadCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-
-  if (upload_url.is_empty()) {
-    callback.Run(HTTP_BAD_REQUEST, GURL());
-    return;
-  }
+  DCHECK(!resource_id.empty());
 
   runner_->StartOperationWithRetry(
       new InitiateUploadExistingFileOperation(operation_registry(),
                                               url_request_context_getter_,
+                                              url_generator_,
                                               callback,
                                               drive_file_path,
                                               content_type,
                                               content_length,
-                                              upload_url,
+                                              resource_id,
                                               etag));
 }
 

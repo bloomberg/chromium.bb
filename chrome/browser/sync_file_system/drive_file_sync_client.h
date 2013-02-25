@@ -153,12 +153,6 @@ class DriveFileSyncClient
                        google_apis::GDataErrorCode error,
                        const base::FilePath& downloaded_file_path);
 
-  void UploadNewFileInternal(
-      const base::FilePath& local_file_path,
-      const std::string& title,
-      const UploadFileCallback& callback,
-      google_apis::GDataErrorCode error,
-      scoped_ptr<google_apis::ResourceEntry> parent_directory_entry);
   void DidUploadNewFile(const std::string& parent_resource_id,
                         const std::string& title,
                         const UploadFileCallback& callback,

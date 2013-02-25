@@ -772,7 +772,7 @@ void FakeDriveService::InitiateUploadNewFile(
     const base::FilePath& drive_file_path,
     const std::string& content_type,
     int64 content_length,
-    const GURL& parent_upload_url,
+    const std::string& parent_resource_id,
     const std::string& title,
     const InitiateUploadCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -785,7 +785,7 @@ void FakeDriveService::InitiateUploadNewFile(
     return;
   }
 
-  DictionaryValue* entry = FindEntryByUploadUrl(parent_upload_url);
+  DictionaryValue* entry = FindEntryByResourceId(parent_resource_id);
   if (!entry) {
     MessageLoop::current()->PostTask(
         FROM_HERE,
@@ -796,9 +796,6 @@ void FakeDriveService::InitiateUploadNewFile(
   // If the title was set, the upload_location is the location of the parent
   // directory of the file that will be uploaded. The file does not yet exist
   // and it must be created. Its title will be the passed title param.
-  std::string parent_resource_id;
-  entry->GetString("gd$resourceId.$t", &parent_resource_id);
-
   std::string resource_id = GetNewResourceId();
   GURL upload_url = GURL("https://xxx/upload/" + resource_id);
 
@@ -874,7 +871,7 @@ void FakeDriveService::InitiateUploadExistingFile(
     const base::FilePath& drive_file_path,
     const std::string& content_type,
     int64 content_length,
-    const GURL& upload_url,
+    const std::string& resource_id,
     const std::string& etag,
     const InitiateUploadCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -887,7 +884,7 @@ void FakeDriveService::InitiateUploadExistingFile(
     return;
   }
 
-  DictionaryValue* entry = FindEntryByUploadUrl(upload_url);
+  DictionaryValue* entry = FindEntryByResourceId(resource_id);
   if (!entry) {
     MessageLoop::current()->PostTask(
         FROM_HERE,
@@ -903,9 +900,28 @@ void FakeDriveService::InitiateUploadExistingFile(
         base::Bind(callback, HTTP_PRECONDITION, GURL()));
     return;
   }
+
+  std::string upload_url;
+  base::ListValue* links = NULL;
+  if (entry->GetList("link", &links) && links) {
+    for (size_t link_index = 0;
+         link_index < links->GetSize();
+         ++link_index) {
+      base::DictionaryValue* link = NULL;
+      std::string rel;
+      if (links->GetDictionary(link_index, &link) &&
+          link && link->GetString("rel", &rel) &&
+          rel == kUploadUrlRel &&
+          link->GetString("href", &upload_url)) {
+        break;
+      }
+    }
+  }
+
+  DCHECK(!upload_url.empty());
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, HTTP_SUCCESS, upload_url));
+      base::Bind(callback, HTTP_SUCCESS, GURL(upload_url)));
 }
 
 void FakeDriveService::GetUploadStatus(

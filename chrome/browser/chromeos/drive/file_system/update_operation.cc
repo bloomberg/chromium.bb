@@ -102,7 +102,7 @@ void UpdateOperation::OnGetFileCompleteForUpdateFile(
   }
 
   scheduler_->UploadExistingFile(
-      GURL(entry_proto->upload_url()),
+      entry_proto->resource_id(),
       drive_file_path,
       cache_file_path,
       entry_proto->file_specific_info().content_mime_type(),

@@ -403,12 +403,21 @@ void DriveFileSyncClient::UploadNewFile(
            << directory_resource_id << "] with title ["
            << title << "]";
 
-  drive_service_->GetResourceEntry(
+  std::string mime_type;
+  if (!net::GetWellKnownMimeTypeFromExtension(
+          local_file_path.Extension(), &mime_type))
+    mime_type = kMimeTypeOctetStream;
+
+  ResourceEntryCallback did_upload_callback =
+      base::Bind(&DriveFileSyncClient::DidUploadNewFile, AsWeakPtr(),
+                 directory_resource_id, title, callback);
+  drive_uploader_->UploadNewFile(
       directory_resource_id,
-      base::Bind(&DriveFileSyncClient::DidGetResourceEntry,
-                 AsWeakPtr(),
-                 base::Bind(&DriveFileSyncClient::UploadNewFileInternal,
-                            AsWeakPtr(), local_file_path, title, callback)));
+      base::FilePath(kDummyDrivePath),
+      local_file_path,
+      title,
+      mime_type,
+      base::Bind(&UploadResultAdapter, did_upload_callback));
 }
 
 void DriveFileSyncClient::UploadExistingFile(
@@ -578,40 +587,6 @@ void DriveFileSyncClient::DidDownloadFile(
   callback.Run(error, downloaded_file_md5);
 }
 
-void DriveFileSyncClient::UploadNewFileInternal(
-    const base::FilePath& local_file_path,
-    const std::string& title,
-    const UploadFileCallback& callback,
-    google_apis::GDataErrorCode error,
-    scoped_ptr<google_apis::ResourceEntry> parent_directory_entry) {
-  DCHECK(CalledOnValidThread());
-
-  if (error != google_apis::HTTP_SUCCESS) {
-    DVLOG(2) << "Error on getting parent resource id for upload: " << error;
-    callback.Run(error, std::string(), std::string());
-    return;
-  }
-  DCHECK(parent_directory_entry);
-  DVLOG(2) << "Got resource entry of parent directory for upload";
-
-  std::string mime_type;
-  if (!net::GetWellKnownMimeTypeFromExtension(
-          local_file_path.Extension(), &mime_type))
-    mime_type = kMimeTypeOctetStream;
-
-  ResourceEntryCallback did_upload_callback =
-      base::Bind(&DriveFileSyncClient::DidUploadNewFile, AsWeakPtr(),
-                 parent_directory_entry->resource_id(), title, callback);
-  drive_uploader_->UploadNewFile(
-      parent_directory_entry->GetLinkByType(
-          google_apis::Link::LINK_RESUMABLE_CREATE_MEDIA)->href(),
-      base::FilePath(kDummyDrivePath),
-      local_file_path,
-      title,
-      mime_type,
-      base::Bind(&UploadResultAdapter, did_upload_callback));
-}
-
 void DriveFileSyncClient::DidUploadNewFile(
     const std::string& parent_resource_id,
     const std::string& title,
@@ -699,8 +674,7 @@ void DriveFileSyncClient::UploadExistingFileInternal(
       base::Bind(&DriveFileSyncClient::DidUploadExistingFile,
                  AsWeakPtr(), callback);
   drive_uploader_->UploadExistingFile(
-      entry->GetLinkByType(
-          google_apis::Link::LINK_RESUMABLE_EDIT_MEDIA)->href(),
+      entry->resource_id(),
       base::FilePath(kDummyDrivePath),
       local_file_path,
       mime_type,

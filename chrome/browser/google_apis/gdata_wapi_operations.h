@@ -348,7 +348,6 @@ class RemoveResourceFromDirectoryOperation : public EntryActionOperation {
 //======================= InitiateUploadNewFileOperation =======================
 
 // This class performs the operation for initiating the upload of a new file.
-// TODO(hidehiko): Replace |parent_upload_url| by |parent_resource_id|.
 class InitiateUploadNewFileOperation : public InitiateUploadOperationBase {
  public:
   // |title| should be set.
@@ -359,11 +358,12 @@ class InitiateUploadNewFileOperation : public InitiateUploadOperationBase {
   InitiateUploadNewFileOperation(
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
+      const GDataWapiUrlGenerator& url_generator,
       const InitiateUploadCallback& callback,
       const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
-      const GURL& parent_upload_url,
+      const std::string& parent_resource_id,
       const std::string& title);
   virtual ~InitiateUploadNewFileOperation();
 
@@ -375,7 +375,8 @@ class InitiateUploadNewFileOperation : public InitiateUploadOperationBase {
                               std::string* upload_content) OVERRIDE;
 
  private:
-  const GURL parent_upload_url_;
+  const GDataWapiUrlGenerator url_generator_;
+  const std::string parent_resource_id_;
   const std::string title_;
 
   DISALLOW_COPY_AND_ASSIGN(InitiateUploadNewFileOperation);
@@ -385,7 +386,6 @@ class InitiateUploadNewFileOperation : public InitiateUploadOperationBase {
 
 // This class performs the operation for initiating the upload of an existing
 // file.
-// TODO(hidehiko): Replace |upload_url| by |resource_id|.
 class InitiateUploadExistingFileOperation
     : public InitiateUploadOperationBase {
  public:
@@ -397,11 +397,12 @@ class InitiateUploadExistingFileOperation
   InitiateUploadExistingFileOperation(
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
+      const GDataWapiUrlGenerator& url_generator,
       const InitiateUploadCallback& callback,
       const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
-      const GURL& upload_url,
+      const std::string& resource_id,
       const std::string& etag);
   virtual ~InitiateUploadExistingFileOperation();
 
@@ -414,7 +415,8 @@ class InitiateUploadExistingFileOperation
                               std::string* upload_content) OVERRIDE;
 
  private:
-  const GURL upload_url_;
+  const GDataWapiUrlGenerator url_generator_;
+  const std::string resource_id_;
   const std::string etag_;
 
   DISALLOW_COPY_AND_ASSIGN(InitiateUploadExistingFileOperation);

@@ -103,7 +103,7 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
   // Pretends that a new file was uploaded successfully, and returns the
   // contents of "gdata/uploaded_file.json" to the caller.
   virtual void UploadNewFile(
-      const GURL& upload_location,
+      const std::string& parent_resource_id,
       const base::FilePath& drive_file_path,
       const base::FilePath& local_file_path,
       const std::string& title,
@@ -129,7 +129,7 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
   // successfully, and returns an entry for the file in
   // "gdata/root_feed.json" to the caller.
   virtual void UploadExistingFile(
-      const GURL& upload_location,
+      const std::string& resource_id,
       const base::FilePath& drive_file_path,
       const base::FilePath& local_file_path,
       const std::string& content_type,
@@ -141,6 +141,7 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
     // "file:2_file_resource_id".
     DCHECK_EQ("drive/File 1.txt", drive_file_path.value());
     const std::string kResourceId = "file:2_file_resource_id";
+    EXPECT_EQ(kResourceId, resource_id);
 
     // Create a google_apis::ResourceEntry, which is needed to return a value
     // from this function. TODO(satorux): This should be cleaned
@@ -157,10 +158,10 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
         as_dict->GetList("feed.entry", &entry_list)) {
       for (size_t i = 0; i < entry_list->GetSize(); ++i) {
         base::DictionaryValue* entry = NULL;
-        std::string resource_id;
+        std::string entry_resource_id;
         if (entry_list->GetDictionary(i, &entry) &&
-            entry->GetString("gd$resourceId.$t", &resource_id) &&
-            resource_id == kResourceId) {
+            entry->GetString("gd$resourceId.$t", &entry_resource_id) &&
+            entry_resource_id == kResourceId) {
           resource_entry = google_apis::ResourceEntry::CreateFrom(*entry);
         }
       }

@@ -48,7 +48,7 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
   // Pretends that a new file was uploaded successfully, and returns the
   // contents of "gdata/file_entry.json" to the caller.
   virtual void UploadNewFile(
-      const GURL& upload_location,
+      const std::string& parent_resource_id,
       const base::FilePath& drive_file_path,
       const base::FilePath& local_file_path,
       const std::string& title,
@@ -74,7 +74,7 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
   // successfully, and returns the contents of "gdata/file_entry.json" to the
   // caller.
   virtual void UploadExistingFile(
-      const GURL& upload_location,
+      const std::string& resource_id,
       const base::FilePath& drive_file_path,
       const base::FilePath& local_file_path,
       const std::string& content_type,
@@ -824,23 +824,10 @@ TEST_F(DriveFileSyncClientTest, UploadNewFile) {
   const base::FilePath kLocalFilePath(FPL("/tmp/dir/file"));
   const std::string kTitle("testfile");
 
-  scoped_ptr<base::Value> dir_entry_data(
-      LoadJSONFile("gdata/directory_entry.json").Pass());
-  scoped_ptr<ResourceEntry> dir_entry(
-      ResourceEntry::ExtractAndParse(*dir_entry_data));
   scoped_ptr<base::Value> verifying_file_found_data(
       LoadJSONFile("sync_file_system/verifing_file_found.json").Pass());
   scoped_ptr<ResourceList> verifying_file_found(
       ResourceList::ExtractAndParse(*verifying_file_found_data));
-  const GURL link_url =
-      dir_entry->GetLinkByType(Link::LINK_RESUMABLE_CREATE_MEDIA)->href();
-
-  // Expect to call GetResourceEntry from DriveFileSyncClient::UploadNewFile.
-  EXPECT_CALL(*mock_drive_service(),
-              GetResourceEntry(kDirectoryResourceId, _))
-      .WillOnce(InvokeGetResourceEntryCallback1(
-          google_apis::HTTP_SUCCESS,
-          base::Passed(&dir_entry)));
 
   // Expect to call GetResourceList from
   // DriveFileSyncClient::EnsureTitleUniqueness.

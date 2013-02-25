@@ -471,11 +471,12 @@ RemoveResourceFromDirectoryOperation::GetExtraRequestHeaders() const {
 InitiateUploadNewFileOperation::InitiateUploadNewFileOperation(
     OperationRegistry* registry,
     net::URLRequestContextGetter* url_request_context_getter,
+    const GDataWapiUrlGenerator& url_generator,
     const InitiateUploadCallback& callback,
     const base::FilePath& drive_file_path,
     const std::string& content_type,
     int64 content_length,
-    const GURL& parent_upload_url,
+    const std::string& parent_resource_id,
     const std::string& title)
     : InitiateUploadOperationBase(registry,
                                   url_request_context_getter,
@@ -483,14 +484,15 @@ InitiateUploadNewFileOperation::InitiateUploadNewFileOperation(
                                   drive_file_path,
                                   content_type,
                                   content_length),
-      parent_upload_url_(parent_upload_url),
+      url_generator_(url_generator),
+      parent_resource_id_(parent_resource_id),
       title_(title) {
 }
 
 InitiateUploadNewFileOperation::~InitiateUploadNewFileOperation() {}
 
 GURL InitiateUploadNewFileOperation::GetURL() const {
-  return GDataWapiUrlGenerator::AddInitiateUploadUrlParams(parent_upload_url_);
+  return url_generator_.GenerateInitiateUploadNewFileUrl(parent_resource_id_);
 }
 
 net::URLFetcher::RequestType
@@ -522,11 +524,12 @@ bool InitiateUploadNewFileOperation::GetContentData(
 InitiateUploadExistingFileOperation::InitiateUploadExistingFileOperation(
     OperationRegistry* registry,
     net::URLRequestContextGetter* url_request_context_getter,
+    const GDataWapiUrlGenerator& url_generator,
     const InitiateUploadCallback& callback,
     const base::FilePath& drive_file_path,
     const std::string& content_type,
     int64 content_length,
-    const GURL& upload_url,
+    const std::string& resource_id,
     const std::string& etag)
     : InitiateUploadOperationBase(registry,
                                   url_request_context_getter,
@@ -534,14 +537,15 @@ InitiateUploadExistingFileOperation::InitiateUploadExistingFileOperation(
                                   drive_file_path,
                                   content_type,
                                   content_length),
-      upload_url_(upload_url),
+      url_generator_(url_generator),
+      resource_id_(resource_id),
       etag_(etag) {
 }
 
 InitiateUploadExistingFileOperation::~InitiateUploadExistingFileOperation() {}
 
 GURL InitiateUploadExistingFileOperation::GetURL() const {
-  return GDataWapiUrlGenerator::AddInitiateUploadUrlParams(upload_url_);
+  return url_generator_.GenerateInitiateUploadExistingFileUrl(resource_id_);
 }
 
 net::URLFetcher::RequestType
