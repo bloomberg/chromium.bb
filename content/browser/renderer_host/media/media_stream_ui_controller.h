@@ -38,7 +38,7 @@ class CONTENT_EXPORT MediaStreamUIController {
   virtual ~MediaStreamUIController();
 
   // Called when a new request for the capture device access is made.
-  // Users are responsbile for cancel the pending request if they don't wait
+  // Users are responsible for canceling the pending request if they don't wait
   // for the result from the UI.
   void MakeUIRequest(const std::string& label,
                      int render_process_id,
