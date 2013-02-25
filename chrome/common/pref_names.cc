@@ -1281,6 +1281,10 @@ const char kBookmarkPromptEnabled[] = "bookmark_prompt_enabled";
 const char kBookmarkPromptImpressionCount[] =
     "bookmark_prompt_impression_count";
 
+// 64-bit integer serialization of the base::Time from the last successful seed
+// fetch (i.e. when the Variations server responds with 200 or 304).
+const char kVariationsLastFetchTime[] = "variations_last_fetch_time";
+
 // String serialized form of variations seed protobuf.
 const char kVariationsSeed[] = "variations_seed";
 

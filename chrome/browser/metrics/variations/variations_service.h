@@ -164,6 +164,9 @@ class VariationsService
   void CreateTrialFromStudy(const Study& study,
                             const base::Time& reference_date);
 
+  // Record the time of the most recent successful fetch.
+  void RecordLastFetchTime();
+
   // The pref service used to store persist the variations seed.
   PrefService* local_state_;
 

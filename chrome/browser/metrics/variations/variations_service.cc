@@ -177,6 +177,19 @@ bool VariationsService::CreateTrialsFromSeed() {
     }
   }
 
+  // Log the "freshness" of the seed that was just used. The freshness is the
+  // time between the last successful seed download and now.
+  const int64 last_fetch_time_internal =
+      local_state_->GetInt64(prefs::kVariationsLastFetchTime);
+  if (last_fetch_time_internal) {
+    const base::Time now = base::Time::Now();
+    const base::TimeDelta delta =
+        now - base::Time::FromInternalValue(last_fetch_time_internal);
+    // Log the value in number of minutes.
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Variations.SeedFreshness", delta.InMinutes(),
+        1, base::TimeDelta::FromDays(30).InMinutes(), 50);
+  }
+
   return true;
 }
 
@@ -215,6 +228,7 @@ void VariationsService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kVariationsSeed, std::string());
   registry->RegisterInt64Pref(prefs::kVariationsSeedDate,
                               base::Time().ToInternalValue());
+  registry->RegisterInt64Pref(prefs::kVariationsLastFetchTime, 0);
 }
 
 // static
@@ -293,10 +307,12 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
   if (response_code != net::HTTP_OK) {
     DVLOG(1) << "Variations server request returned non-HTTP_OK response code: "
              << response_code;
-    if (response_code == net::HTTP_NOT_MODIFIED)
+    if (response_code == net::HTTP_NOT_MODIFIED) {
       UMA_HISTOGRAM_MEDIUM_TIMES("Variations.FetchNotModifiedLatency", latency);
-    else
+      RecordLastFetchTime();
+    } else {
       UMA_HISTOGRAM_MEDIUM_TIMES("Variations.FetchOtherLatency", latency);
+    }
     return;
   }
   UMA_HISTOGRAM_MEDIUM_TIMES("Variations.FetchSuccessLatency", latency);
@@ -348,6 +364,9 @@ bool VariationsService::StoreSeedData(const std::string& seed_data,
   local_prefs->SetInt64(prefs::kVariationsSeedDate,
                         seed_date.ToInternalValue());
   variations_serial_number_ = seed.serial_number();
+
+  RecordLastFetchTime();
+
   return true;
 }
 
@@ -599,6 +618,14 @@ void VariationsService::CreateTrialFromStudy(const Study& study,
   trial->SetForced();
   if (IsStudyExpired(study, reference_date))
     trial->Disable();
+}
+
+void VariationsService::RecordLastFetchTime() {
+  // local_state_ is NULL in tests, so check it first.
+  if (local_state_) {
+    local_state_->SetInt64(prefs::kVariationsLastFetchTime,
+                           base::Time::Now().ToInternalValue());
+  }
 }
 
 }  // namespace chrome_variations
