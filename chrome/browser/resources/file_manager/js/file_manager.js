@@ -490,8 +490,6 @@ DialogType.isModal = function(type) {
 
     this.butterBar_ = new ButterBar(this.dialogDom_, this.copyManager_,
         this.metadataCache_);
-    this.directoryModel_.addEventListener('directory-changed',
-        this.butterBar_.forceDeleteAndHide.bind(this.butterBar_));
 
     // CopyManager and ButterBar are required for 'Delete' operation in
     // Open and Save dialogs. But drag-n-drop and copy-paste are not needed.
@@ -1840,7 +1838,7 @@ DialogType.isModal = function(type) {
   };
 
   FileManager.prototype.deleteSelection = function() {
-    this.butterBar_.initiateDelete(this.getSelection().entries);
+    this.copyManager_.deleteEntries(this.getSelection().entries);
   };
 
   FileManager.prototype.blinkSelection = function() {
