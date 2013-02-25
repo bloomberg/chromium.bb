@@ -80,7 +80,7 @@ void TestShellDelegate::ToggleMaximized() {
     ash::wm::ToggleMaximizedWindow(window);
 }
 
-void TestShellDelegate::OpenFileManager() {
+void TestShellDelegate::OpenFileManager(bool as_dialog) {
 }
 
 void TestShellDelegate::OpenCrosh() {

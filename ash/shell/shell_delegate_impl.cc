@@ -91,7 +91,7 @@ void ShellDelegateImpl::ToggleMaximized() {
     ash::wm::ToggleMaximizedWindow(window);
 }
 
-void ShellDelegateImpl::OpenFileManager() {
+void ShellDelegateImpl::OpenFileManager(bool as_dialog) {
 }
 
 void ShellDelegateImpl::OpenCrosh() {

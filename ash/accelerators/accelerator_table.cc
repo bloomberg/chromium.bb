@@ -78,7 +78,9 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_POWER, ui::EF_SHIFT_DOWN, LOCK_PRESSED },
   { false, ui::VKEY_POWER, ui::EF_SHIFT_DOWN, LOCK_RELEASED },
 #endif  // !defined(NDEBUG)
-  { true, ui::VKEY_O, ui::EF_CONTROL_DOWN, OPEN_FILE_MANAGER_DIALOG },
+  { true, ui::VKEY_O, ui::EF_CONTROL_DOWN, OPEN_FILE_DIALOG },
+  { true, ui::VKEY_M, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
+    OPEN_FILE_MANAGER },
   { true, ui::VKEY_T, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN, OPEN_CROSH },
   { true, ui::VKEY_G, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     DISABLE_GPU_WATCHDOG },

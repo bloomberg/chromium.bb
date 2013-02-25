@@ -32,7 +32,7 @@ class TestShellDelegate : public ShellDelegate {
   virtual void NewTab() OVERRIDE;
   virtual void NewWindow(bool incognito) OVERRIDE;
   virtual void ToggleMaximized() OVERRIDE;
-  virtual void OpenFileManager() OVERRIDE;
+  virtual void OpenFileManager(bool as_dialog) OVERRIDE;
   virtual void OpenCrosh() OVERRIDE;
   virtual void OpenMobileSetup(const std::string& service_path) OVERRIDE;
   virtual void RestoreTab() OVERRIDE;

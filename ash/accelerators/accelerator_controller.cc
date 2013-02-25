@@ -100,8 +100,8 @@ bool HandleLock() {
   return true;
 }
 
-bool HandleFileManager() {
-  Shell::GetInstance()->delegate()->OpenFileManager();
+bool HandleFileManager(bool as_dialog) {
+  Shell::GetInstance()->delegate()->OpenFileManager(as_dialog);
   return true;
 }
 
@@ -465,8 +465,10 @@ bool AcceleratorController::PerformAction(int action,
       return true;
     case LOCK_SCREEN:
       return HandleLock();
-    case OPEN_FILE_MANAGER_DIALOG:
-      return HandleFileManager();
+    case OPEN_FILE_DIALOG:
+      return HandleFileManager(true /* as_dialog */);
+    case OPEN_FILE_MANAGER:
+      return HandleFileManager(false /* as_dialog */);
     case OPEN_CROSH:
       return HandleCrosh();
     case SWAP_PRIMARY_DISPLAY:

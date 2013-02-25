@@ -378,9 +378,9 @@ void ExecuteHandler(Profile* profile,
   executor->Execute(urls);
 }
 
-void OpenFileBrowser(const base::FilePath& path,
-                     TAB_REUSE_MODE mode,
-                     const std::string& action_id) {
+void OpenFileBrowserImpl(const base::FilePath& path,
+                         TAB_REUSE_MODE mode,
+                         const std::string& action_id) {
   content::RecordAction(UserMetricsAction("ShowFileBrowserFullTab"));
 
   if (FileManageTabExists(path, mode))
@@ -485,7 +485,7 @@ bool ExecuteDefaultHandler(Profile* profile, const base::FilePath& path) {
       // |gallery| tries to put the file url into the tab url but it does not
       // work on Chrome OS.
       // |mount-archive| does not even try.
-      OpenFileBrowser(path, REUSE_SAME_PATH, "");
+      OpenFileBrowserImpl(path, REUSE_SAME_PATH, "");
       return true;
     }
     return ExecuteBuiltinHandler(browser, path, action_id);
@@ -546,7 +546,7 @@ void ContinueViewItem(Profile* profile,
 
   if (error == base::PLATFORM_FILE_OK) {
     // A directory exists at |path|. Open it with FileBrowser.
-    OpenFileBrowser(path, REUSE_SAME_PATH, "open");
+    OpenFileBrowserImpl(path, REUSE_SAME_PATH, "open");
   } else {
     if (!ExecuteDefaultHandler(profile, path))
       ShowWarningMessageBox(profile, path);
@@ -739,7 +739,7 @@ string16 GetTitleFromType(ui::SelectFileDialog::Type dialog_type) {
 }
 
 void ViewRemovableDrive(const base::FilePath& path) {
-  OpenFileBrowser(path, REUSE_ANY_FILE_MANAGER, "auto-open");
+  OpenFileBrowserImpl(path, REUSE_ANY_FILE_MANAGER, "auto-open");
 }
 
 void OpenActionChoiceDialog(const base::FilePath& path) {
@@ -803,7 +803,11 @@ void ViewItem(const base::FilePath& path) {
 
 void ShowFileInFolder(const base::FilePath& path) {
   // This action changes the selection so we do not reuse existing tabs.
-  OpenFileBrowser(path, REUSE_NEVER, "select");
+  OpenFileBrowserImpl(path, REUSE_NEVER, "select");
+}
+
+void OpenFileBrowser() {
+  OpenFileBrowserImpl(base::FilePath(), REUSE_NEVER, "");
 }
 
 bool ExecuteBuiltinHandler(Browser* browser, const base::FilePath& path,

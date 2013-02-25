@@ -86,7 +86,8 @@ enum AcceleratorAction {
   CYCLE_DISPLAY_MODE,
   LOCK_SCREEN,
   OPEN_CROSH,
-  OPEN_FILE_MANAGER_DIALOG,
+  OPEN_FILE_DIALOG,  // Open 'Open file' dialog.
+  OPEN_FILE_MANAGER,
   DISABLE_GPU_WATCHDOG,
 #endif
 #if !defined(NDEBUG)
