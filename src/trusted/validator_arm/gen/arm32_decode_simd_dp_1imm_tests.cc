@@ -37,12 +37,11 @@ namespace nacl_arm_test {
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_MOV,
+//       baseline: VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6), op(5)],
-//       generated_baseline: VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0,
 //       op: op(5),
 //       pattern: 1111001m1d000mmmddddcccc0qp1mmmm,
 //       rule: VMOV_immediate_A1,
@@ -54,17 +53,17 @@ namespace nacl_arm_test {
 //         Q(6)=1 &&
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
-class Vector1RegisterImmediate_MOVTesterCase0
-    : public Vector1RegisterImmediateTester {
+class VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0TesterCase0
+    : public Arm32DecoderTester {
  public:
-  Vector1RegisterImmediate_MOVTesterCase0(const NamedClassDecoder& decoder)
-    : Vector1RegisterImmediateTester(decoder) {}
+  VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0TesterCase0(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector1RegisterImmediate_MOVTesterCase0
+bool VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0TesterCase0
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -78,7 +77,7 @@ bool Vector1RegisterImmediate_MOVTesterCase0
           0x00000800) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector1RegisterImmediateTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -86,12 +85,11 @@ bool Vector1RegisterImmediate_MOVTesterCase0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_BIT,
+//       baseline: VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6)],
-//       generated_baseline: VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0,
 //       pattern: 1111001i1d000mmmddddcccc0q01mmmm,
 //       rule: VORR_immediate,
 //       safety: [cmode(0)=0 ||
@@ -99,17 +97,17 @@ bool Vector1RegisterImmediate_MOVTesterCase0
 //         Q(6)=1 &&
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
-class Vector1RegisterImmediate_BITTesterCase1
-    : public Vector1RegisterImmediateTester {
+class VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0TesterCase1
+    : public Arm32DecoderTester {
  public:
-  Vector1RegisterImmediate_BITTesterCase1(const NamedClassDecoder& decoder)
-    : Vector1RegisterImmediateTester(decoder) {}
+  VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0TesterCase1(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector1RegisterImmediate_BITTesterCase1
+bool VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0TesterCase1
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -123,7 +121,7 @@ bool Vector1RegisterImmediate_BITTesterCase1
           0x00000900) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector1RegisterImmediateTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -131,12 +129,11 @@ bool Vector1RegisterImmediate_BITTesterCase1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_MOV,
+//       baseline: VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6), op(5)],
-//       generated_baseline: VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0,
 //       op: op(5),
 //       pattern: 1111001m1d000mmmddddcccc0qp1mmmm,
 //       rule: VMOV_immediate_A1,
@@ -148,17 +145,17 @@ bool Vector1RegisterImmediate_BITTesterCase1
 //         Q(6)=1 &&
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
-class Vector1RegisterImmediate_MOVTesterCase2
-    : public Vector1RegisterImmediateTester {
+class VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0TesterCase2
+    : public Arm32DecoderTester {
  public:
-  Vector1RegisterImmediate_MOVTesterCase2(const NamedClassDecoder& decoder)
-    : Vector1RegisterImmediateTester(decoder) {}
+  VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0TesterCase2(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector1RegisterImmediate_MOVTesterCase2
+bool VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0TesterCase2
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -172,7 +169,7 @@ bool Vector1RegisterImmediate_MOVTesterCase2
           0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector1RegisterImmediateTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -180,12 +177,11 @@ bool Vector1RegisterImmediate_MOVTesterCase2
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_BIT,
+//       baseline: VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6)],
-//       generated_baseline: VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0,
 //       pattern: 1111001i1d000mmmddddcccc0q01mmmm,
 //       rule: VORR_immediate,
 //       safety: [cmode(0)=0 ||
@@ -193,17 +189,17 @@ bool Vector1RegisterImmediate_MOVTesterCase2
 //         Q(6)=1 &&
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
-class Vector1RegisterImmediate_BITTesterCase3
-    : public Vector1RegisterImmediateTester {
+class VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0TesterCase3
+    : public Arm32DecoderTester {
  public:
-  Vector1RegisterImmediate_BITTesterCase3(const NamedClassDecoder& decoder)
-    : Vector1RegisterImmediateTester(decoder) {}
+  VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0TesterCase3(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector1RegisterImmediate_BITTesterCase3
+bool VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0TesterCase3
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -217,7 +213,7 @@ bool Vector1RegisterImmediate_BITTesterCase3
           0x00000100) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector1RegisterImmediateTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -225,12 +221,11 @@ bool Vector1RegisterImmediate_BITTesterCase3
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_MOV,
+//       baseline: VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6), op(5)],
-//       generated_baseline: VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0,
 //       op: op(5),
 //       pattern: 1111001m1d000mmmddddcccc0qp1mmmm,
 //       rule: VMOV_immediate_A1,
@@ -242,17 +237,17 @@ bool Vector1RegisterImmediate_BITTesterCase3
 //         Q(6)=1 &&
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
-class Vector1RegisterImmediate_MOVTesterCase4
-    : public Vector1RegisterImmediateTester {
+class VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0TesterCase4
+    : public Arm32DecoderTester {
  public:
-  Vector1RegisterImmediate_MOVTesterCase4(const NamedClassDecoder& decoder)
-    : Vector1RegisterImmediateTester(decoder) {}
+  VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0TesterCase4(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector1RegisterImmediate_MOVTesterCase4
+bool VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0TesterCase4
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -266,7 +261,7 @@ bool Vector1RegisterImmediate_MOVTesterCase4
           0x00000C00) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector1RegisterImmediateTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -274,12 +269,11 @@ bool Vector1RegisterImmediate_MOVTesterCase4
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_MOV,
+//       baseline: VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6), op(5)],
-//       generated_baseline: VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0,
 //       op: op(5),
 //       pattern: 1111001m1d000mmmddddcccc0qp1mmmm,
 //       rule: VMOV_immediate_A1,
@@ -291,17 +285,17 @@ bool Vector1RegisterImmediate_MOVTesterCase4
 //         Q(6)=1 &&
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
-class Vector1RegisterImmediate_MOVTesterCase5
-    : public Vector1RegisterImmediateTester {
+class VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0TesterCase5
+    : public Arm32DecoderTester {
  public:
-  Vector1RegisterImmediate_MOVTesterCase5(const NamedClassDecoder& decoder)
-    : Vector1RegisterImmediateTester(decoder) {}
+  VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0TesterCase5(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector1RegisterImmediate_MOVTesterCase5
+bool VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0TesterCase5
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -315,7 +309,7 @@ bool Vector1RegisterImmediate_MOVTesterCase5
           0x00000E00) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector1RegisterImmediateTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -323,12 +317,11 @@ bool Vector1RegisterImmediate_MOVTesterCase5
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_MVN,
+//       baseline: VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6)],
-//       generated_baseline: VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0,
 //       pattern: 1111001i1d000mmmddddcccc0q11mmmm,
 //       rule: VMVN_immediate,
 //       safety: [(cmode(0)=1 &&
@@ -337,17 +330,17 @@ bool Vector1RegisterImmediate_MOVTesterCase5
 //         Q(6)=1 &&
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
-class Vector1RegisterImmediate_MVNTesterCase6
-    : public Vector1RegisterImmediateTester {
+class VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0TesterCase6
+    : public Arm32DecoderTester {
  public:
-  Vector1RegisterImmediate_MVNTesterCase6(const NamedClassDecoder& decoder)
-    : Vector1RegisterImmediateTester(decoder) {}
+  VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0TesterCase6(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector1RegisterImmediate_MVNTesterCase6
+bool VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0TesterCase6
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -361,7 +354,7 @@ bool Vector1RegisterImmediate_MVNTesterCase6
           0x00000800) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector1RegisterImmediateTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -369,12 +362,11 @@ bool Vector1RegisterImmediate_MVNTesterCase6
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_BIT,
+//       baseline: VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6)],
-//       generated_baseline: VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0,
 //       pattern: 1111001i1d000mmmddddcccc0q11mmmm,
 //       rule: VBIC_immediate,
 //       safety: [cmode(0)=0 ||
@@ -382,17 +374,17 @@ bool Vector1RegisterImmediate_MVNTesterCase6
 //         Q(6)=1 &&
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
-class Vector1RegisterImmediate_BITTesterCase7
-    : public Vector1RegisterImmediateTester {
+class VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0TesterCase7
+    : public Arm32DecoderTester {
  public:
-  Vector1RegisterImmediate_BITTesterCase7(const NamedClassDecoder& decoder)
-    : Vector1RegisterImmediateTester(decoder) {}
+  VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0TesterCase7(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector1RegisterImmediate_BITTesterCase7
+bool VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0TesterCase7
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -406,7 +398,7 @@ bool Vector1RegisterImmediate_BITTesterCase7
           0x00000900) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector1RegisterImmediateTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -414,12 +406,11 @@ bool Vector1RegisterImmediate_BITTesterCase7
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_MVN,
+//       baseline: VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6)],
-//       generated_baseline: VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0,
 //       pattern: 1111001i1d000mmmddddcccc0q11mmmm,
 //       rule: VMVN_immediate,
 //       safety: [(cmode(0)=1 &&
@@ -428,17 +419,17 @@ bool Vector1RegisterImmediate_BITTesterCase7
 //         Q(6)=1 &&
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
-class Vector1RegisterImmediate_MVNTesterCase8
-    : public Vector1RegisterImmediateTester {
+class VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0TesterCase8
+    : public Arm32DecoderTester {
  public:
-  Vector1RegisterImmediate_MVNTesterCase8(const NamedClassDecoder& decoder)
-    : Vector1RegisterImmediateTester(decoder) {}
+  VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0TesterCase8(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector1RegisterImmediate_MVNTesterCase8
+bool VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0TesterCase8
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -452,7 +443,7 @@ bool Vector1RegisterImmediate_MVNTesterCase8
           0x00000C00) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector1RegisterImmediateTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -460,12 +451,11 @@ bool Vector1RegisterImmediate_MVNTesterCase8
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_MVN,
+//       baseline: VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6)],
-//       generated_baseline: VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0,
 //       pattern: 1111001i1d000mmmddddcccc0q11mmmm,
 //       rule: VMVN_immediate,
 //       safety: [(cmode(0)=1 &&
@@ -474,17 +464,17 @@ bool Vector1RegisterImmediate_MVNTesterCase8
 //         Q(6)=1 &&
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
-class Vector1RegisterImmediate_MVNTesterCase9
-    : public Vector1RegisterImmediateTester {
+class VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0TesterCase9
+    : public Arm32DecoderTester {
  public:
-  Vector1RegisterImmediate_MVNTesterCase9(const NamedClassDecoder& decoder)
-    : Vector1RegisterImmediateTester(decoder) {}
+  VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0TesterCase9(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector1RegisterImmediate_MVNTesterCase9
+bool VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0TesterCase9
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -498,7 +488,7 @@ bool Vector1RegisterImmediate_MVNTesterCase9
           0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector1RegisterImmediateTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -506,12 +496,11 @@ bool Vector1RegisterImmediate_MVNTesterCase9
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_BIT,
+//       baseline: VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6)],
-//       generated_baseline: VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0,
 //       pattern: 1111001i1d000mmmddddcccc0q11mmmm,
 //       rule: VBIC_immediate,
 //       safety: [cmode(0)=0 ||
@@ -519,17 +508,17 @@ bool Vector1RegisterImmediate_MVNTesterCase9
 //         Q(6)=1 &&
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
-class Vector1RegisterImmediate_BITTesterCase10
-    : public Vector1RegisterImmediateTester {
+class VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0TesterCase10
+    : public Arm32DecoderTester {
  public:
-  Vector1RegisterImmediate_BITTesterCase10(const NamedClassDecoder& decoder)
-    : Vector1RegisterImmediateTester(decoder) {}
+  VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0TesterCase10(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool Vector1RegisterImmediate_BITTesterCase10
+bool VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0TesterCase10
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -543,7 +532,7 @@ bool Vector1RegisterImmediate_BITTesterCase10
           0x00000100) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Vector1RegisterImmediateTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -556,12 +545,11 @@ bool Vector1RegisterImmediate_BITTesterCase10
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_MOV,
+//       baseline: VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6), op(5)],
-//       generated_baseline: VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0,
 //       op: op(5),
 //       pattern: 1111001m1d000mmmddddcccc0qp1mmmm,
 //       rule: VMOV_immediate_A1,
@@ -573,12 +561,12 @@ bool Vector1RegisterImmediate_BITTesterCase10
 //         Q(6)=1 &&
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
-class Vector1RegisterImmediate_MOVTester_Case0
-    : public Vector1RegisterImmediate_MOVTesterCase0 {
+class VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0Tester_Case0
+    : public VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0TesterCase0 {
  public:
-  Vector1RegisterImmediate_MOVTester_Case0()
-    : Vector1RegisterImmediate_MOVTesterCase0(
-      state_.Vector1RegisterImmediate_MOV_VMOV_immediate_A1_instance_)
+  VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0Tester_Case0()
+    : VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0TesterCase0(
+      state_.VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0_VMOV_immediate_A1_instance_)
   {}
 };
 
@@ -586,12 +574,11 @@ class Vector1RegisterImmediate_MOVTester_Case0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_BIT,
+//       baseline: VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6)],
-//       generated_baseline: VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0,
 //       pattern: 1111001i1d000mmmddddcccc0q01mmmm,
 //       rule: VORR_immediate,
 //       safety: [cmode(0)=0 ||
@@ -599,12 +586,12 @@ class Vector1RegisterImmediate_MOVTester_Case0
 //         Q(6)=1 &&
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
-class Vector1RegisterImmediate_BITTester_Case1
-    : public Vector1RegisterImmediate_BITTesterCase1 {
+class VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0Tester_Case1
+    : public VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0TesterCase1 {
  public:
-  Vector1RegisterImmediate_BITTester_Case1()
-    : Vector1RegisterImmediate_BITTesterCase1(
-      state_.Vector1RegisterImmediate_BIT_VORR_immediate_instance_)
+  VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0Tester_Case1()
+    : VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0TesterCase1(
+      state_.VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0_VORR_immediate_instance_)
   {}
 };
 
@@ -612,12 +599,11 @@ class Vector1RegisterImmediate_BITTester_Case1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_MOV,
+//       baseline: VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6), op(5)],
-//       generated_baseline: VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0,
 //       op: op(5),
 //       pattern: 1111001m1d000mmmddddcccc0qp1mmmm,
 //       rule: VMOV_immediate_A1,
@@ -629,12 +615,12 @@ class Vector1RegisterImmediate_BITTester_Case1
 //         Q(6)=1 &&
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
-class Vector1RegisterImmediate_MOVTester_Case2
-    : public Vector1RegisterImmediate_MOVTesterCase2 {
+class VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0Tester_Case2
+    : public VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0TesterCase2 {
  public:
-  Vector1RegisterImmediate_MOVTester_Case2()
-    : Vector1RegisterImmediate_MOVTesterCase2(
-      state_.Vector1RegisterImmediate_MOV_VMOV_immediate_A1_instance_)
+  VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0Tester_Case2()
+    : VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0TesterCase2(
+      state_.VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0_VMOV_immediate_A1_instance_)
   {}
 };
 
@@ -642,12 +628,11 @@ class Vector1RegisterImmediate_MOVTester_Case2
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_BIT,
+//       baseline: VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6)],
-//       generated_baseline: VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0,
 //       pattern: 1111001i1d000mmmddddcccc0q01mmmm,
 //       rule: VORR_immediate,
 //       safety: [cmode(0)=0 ||
@@ -655,12 +640,12 @@ class Vector1RegisterImmediate_MOVTester_Case2
 //         Q(6)=1 &&
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
-class Vector1RegisterImmediate_BITTester_Case3
-    : public Vector1RegisterImmediate_BITTesterCase3 {
+class VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0Tester_Case3
+    : public VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0TesterCase3 {
  public:
-  Vector1RegisterImmediate_BITTester_Case3()
-    : Vector1RegisterImmediate_BITTesterCase3(
-      state_.Vector1RegisterImmediate_BIT_VORR_immediate_instance_)
+  VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0Tester_Case3()
+    : VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0TesterCase3(
+      state_.VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0_VORR_immediate_instance_)
   {}
 };
 
@@ -668,12 +653,11 @@ class Vector1RegisterImmediate_BITTester_Case3
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_MOV,
+//       baseline: VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6), op(5)],
-//       generated_baseline: VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0,
 //       op: op(5),
 //       pattern: 1111001m1d000mmmddddcccc0qp1mmmm,
 //       rule: VMOV_immediate_A1,
@@ -685,12 +669,12 @@ class Vector1RegisterImmediate_BITTester_Case3
 //         Q(6)=1 &&
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
-class Vector1RegisterImmediate_MOVTester_Case4
-    : public Vector1RegisterImmediate_MOVTesterCase4 {
+class VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0Tester_Case4
+    : public VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0TesterCase4 {
  public:
-  Vector1RegisterImmediate_MOVTester_Case4()
-    : Vector1RegisterImmediate_MOVTesterCase4(
-      state_.Vector1RegisterImmediate_MOV_VMOV_immediate_A1_instance_)
+  VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0Tester_Case4()
+    : VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0TesterCase4(
+      state_.VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0_VMOV_immediate_A1_instance_)
   {}
 };
 
@@ -698,12 +682,11 @@ class Vector1RegisterImmediate_MOVTester_Case4
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_MOV,
+//       baseline: VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6), op(5)],
-//       generated_baseline: VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0,
 //       op: op(5),
 //       pattern: 1111001m1d000mmmddddcccc0qp1mmmm,
 //       rule: VMOV_immediate_A1,
@@ -715,12 +698,12 @@ class Vector1RegisterImmediate_MOVTester_Case4
 //         Q(6)=1 &&
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
-class Vector1RegisterImmediate_MOVTester_Case5
-    : public Vector1RegisterImmediate_MOVTesterCase5 {
+class VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0Tester_Case5
+    : public VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0TesterCase5 {
  public:
-  Vector1RegisterImmediate_MOVTester_Case5()
-    : Vector1RegisterImmediate_MOVTesterCase5(
-      state_.Vector1RegisterImmediate_MOV_VMOV_immediate_A1_instance_)
+  VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0Tester_Case5()
+    : VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0TesterCase5(
+      state_.VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0_VMOV_immediate_A1_instance_)
   {}
 };
 
@@ -728,12 +711,11 @@ class Vector1RegisterImmediate_MOVTester_Case5
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_MVN,
+//       baseline: VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6)],
-//       generated_baseline: VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0,
 //       pattern: 1111001i1d000mmmddddcccc0q11mmmm,
 //       rule: VMVN_immediate,
 //       safety: [(cmode(0)=1 &&
@@ -742,12 +724,12 @@ class Vector1RegisterImmediate_MOVTester_Case5
 //         Q(6)=1 &&
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
-class Vector1RegisterImmediate_MVNTester_Case6
-    : public Vector1RegisterImmediate_MVNTesterCase6 {
+class VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0Tester_Case6
+    : public VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0TesterCase6 {
  public:
-  Vector1RegisterImmediate_MVNTester_Case6()
-    : Vector1RegisterImmediate_MVNTesterCase6(
-      state_.Vector1RegisterImmediate_MVN_VMVN_immediate_instance_)
+  VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0Tester_Case6()
+    : VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0TesterCase6(
+      state_.VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0_VMVN_immediate_instance_)
   {}
 };
 
@@ -755,12 +737,11 @@ class Vector1RegisterImmediate_MVNTester_Case6
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_BIT,
+//       baseline: VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6)],
-//       generated_baseline: VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0,
 //       pattern: 1111001i1d000mmmddddcccc0q11mmmm,
 //       rule: VBIC_immediate,
 //       safety: [cmode(0)=0 ||
@@ -768,12 +749,12 @@ class Vector1RegisterImmediate_MVNTester_Case6
 //         Q(6)=1 &&
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
-class Vector1RegisterImmediate_BITTester_Case7
-    : public Vector1RegisterImmediate_BITTesterCase7 {
+class VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0Tester_Case7
+    : public VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0TesterCase7 {
  public:
-  Vector1RegisterImmediate_BITTester_Case7()
-    : Vector1RegisterImmediate_BITTesterCase7(
-      state_.Vector1RegisterImmediate_BIT_VBIC_immediate_instance_)
+  VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0Tester_Case7()
+    : VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0TesterCase7(
+      state_.VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0_VBIC_immediate_instance_)
   {}
 };
 
@@ -781,12 +762,11 @@ class Vector1RegisterImmediate_BITTester_Case7
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_MVN,
+//       baseline: VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6)],
-//       generated_baseline: VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0,
 //       pattern: 1111001i1d000mmmddddcccc0q11mmmm,
 //       rule: VMVN_immediate,
 //       safety: [(cmode(0)=1 &&
@@ -795,12 +775,12 @@ class Vector1RegisterImmediate_BITTester_Case7
 //         Q(6)=1 &&
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
-class Vector1RegisterImmediate_MVNTester_Case8
-    : public Vector1RegisterImmediate_MVNTesterCase8 {
+class VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0Tester_Case8
+    : public VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0TesterCase8 {
  public:
-  Vector1RegisterImmediate_MVNTester_Case8()
-    : Vector1RegisterImmediate_MVNTesterCase8(
-      state_.Vector1RegisterImmediate_MVN_VMVN_immediate_instance_)
+  VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0Tester_Case8()
+    : VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0TesterCase8(
+      state_.VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0_VMVN_immediate_instance_)
   {}
 };
 
@@ -808,12 +788,11 @@ class Vector1RegisterImmediate_MVNTester_Case8
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_MVN,
+//       baseline: VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6)],
-//       generated_baseline: VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0,
 //       pattern: 1111001i1d000mmmddddcccc0q11mmmm,
 //       rule: VMVN_immediate,
 //       safety: [(cmode(0)=1 &&
@@ -822,12 +801,12 @@ class Vector1RegisterImmediate_MVNTester_Case8
 //         Q(6)=1 &&
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
-class Vector1RegisterImmediate_MVNTester_Case9
-    : public Vector1RegisterImmediate_MVNTesterCase9 {
+class VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0Tester_Case9
+    : public VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0TesterCase9 {
  public:
-  Vector1RegisterImmediate_MVNTester_Case9()
-    : Vector1RegisterImmediate_MVNTesterCase9(
-      state_.Vector1RegisterImmediate_MVN_VMVN_immediate_instance_)
+  VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0Tester_Case9()
+    : VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0TesterCase9(
+      state_.VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0_VMVN_immediate_instance_)
   {}
 };
 
@@ -835,12 +814,11 @@ class Vector1RegisterImmediate_MVNTester_Case9
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_BIT,
+//       baseline: VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6)],
-//       generated_baseline: VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0,
 //       pattern: 1111001i1d000mmmddddcccc0q11mmmm,
 //       rule: VBIC_immediate,
 //       safety: [cmode(0)=0 ||
@@ -848,12 +826,12 @@ class Vector1RegisterImmediate_MVNTester_Case9
 //         Q(6)=1 &&
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
-class Vector1RegisterImmediate_BITTester_Case10
-    : public Vector1RegisterImmediate_BITTesterCase10 {
+class VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0Tester_Case10
+    : public VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0TesterCase10 {
  public:
-  Vector1RegisterImmediate_BITTester_Case10()
-    : Vector1RegisterImmediate_BITTesterCase10(
-      state_.Vector1RegisterImmediate_BIT_VBIC_immediate_instance_)
+  VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0Tester_Case10()
+    : VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0TesterCase10(
+      state_.VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0_VBIC_immediate_instance_)
   {}
 };
 
@@ -870,12 +848,11 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_MOV,
+//       baseline: VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6), op(5)],
-//       generated_baseline: VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0,
 //       op: op(5),
 //       pattern: 1111001m1d000mmmddddcccc0qp1mmmm,
 //       rule: VMOV_immediate_A1,
@@ -888,8 +865,8 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector1RegisterImmediate_MOVTester_Case0_TestCase0) {
-  Vector1RegisterImmediate_MOVTester_Case0 baseline_tester;
+       VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0Tester_Case0_TestCase0) {
+  VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0Tester_Case0 baseline_tester;
   NamedActual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1_VMOV_immediate_A1 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("1111001m1d000mmmddddcccc0qp1mmmm");
@@ -899,12 +876,11 @@ TEST_F(Arm32DecoderStateTests,
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_BIT,
+//       baseline: VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6)],
-//       generated_baseline: VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0,
 //       pattern: 1111001i1d000mmmddddcccc0q01mmmm,
 //       rule: VORR_immediate,
 //       safety: [cmode(0)=0 ||
@@ -913,8 +889,8 @@ TEST_F(Arm32DecoderStateTests,
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector1RegisterImmediate_BITTester_Case1_TestCase1) {
-  Vector1RegisterImmediate_BITTester_Case1 baseline_tester;
+       VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0Tester_Case1_TestCase1) {
+  VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0Tester_Case1 baseline_tester;
   NamedActual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1_VORR_immediate actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("1111001i1d000mmmddddcccc0q01mmmm");
@@ -924,12 +900,11 @@ TEST_F(Arm32DecoderStateTests,
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_MOV,
+//       baseline: VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6), op(5)],
-//       generated_baseline: VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0,
 //       op: op(5),
 //       pattern: 1111001m1d000mmmddddcccc0qp1mmmm,
 //       rule: VMOV_immediate_A1,
@@ -942,8 +917,8 @@ TEST_F(Arm32DecoderStateTests,
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector1RegisterImmediate_MOVTester_Case2_TestCase2) {
-  Vector1RegisterImmediate_MOVTester_Case2 baseline_tester;
+       VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0Tester_Case2_TestCase2) {
+  VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0Tester_Case2 baseline_tester;
   NamedActual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1_VMOV_immediate_A1 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("1111001m1d000mmmddddcccc0qp1mmmm");
@@ -953,12 +928,11 @@ TEST_F(Arm32DecoderStateTests,
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_BIT,
+//       baseline: VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6)],
-//       generated_baseline: VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0,
 //       pattern: 1111001i1d000mmmddddcccc0q01mmmm,
 //       rule: VORR_immediate,
 //       safety: [cmode(0)=0 ||
@@ -967,8 +941,8 @@ TEST_F(Arm32DecoderStateTests,
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector1RegisterImmediate_BITTester_Case3_TestCase3) {
-  Vector1RegisterImmediate_BITTester_Case3 baseline_tester;
+       VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0Tester_Case3_TestCase3) {
+  VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0Tester_Case3 baseline_tester;
   NamedActual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1_VORR_immediate actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("1111001i1d000mmmddddcccc0q01mmmm");
@@ -978,12 +952,11 @@ TEST_F(Arm32DecoderStateTests,
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_MOV,
+//       baseline: VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6), op(5)],
-//       generated_baseline: VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0,
 //       op: op(5),
 //       pattern: 1111001m1d000mmmddddcccc0qp1mmmm,
 //       rule: VMOV_immediate_A1,
@@ -996,8 +969,8 @@ TEST_F(Arm32DecoderStateTests,
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector1RegisterImmediate_MOVTester_Case4_TestCase4) {
-  Vector1RegisterImmediate_MOVTester_Case4 baseline_tester;
+       VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0Tester_Case4_TestCase4) {
+  VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0Tester_Case4 baseline_tester;
   NamedActual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1_VMOV_immediate_A1 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("1111001m1d000mmmddddcccc0qp1mmmm");
@@ -1007,12 +980,11 @@ TEST_F(Arm32DecoderStateTests,
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_MOV,
+//       baseline: VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6), op(5)],
-//       generated_baseline: VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0,
 //       op: op(5),
 //       pattern: 1111001m1d000mmmddddcccc0qp1mmmm,
 //       rule: VMOV_immediate_A1,
@@ -1025,8 +997,8 @@ TEST_F(Arm32DecoderStateTests,
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector1RegisterImmediate_MOVTester_Case5_TestCase5) {
-  Vector1RegisterImmediate_MOVTester_Case5 baseline_tester;
+       VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0Tester_Case5_TestCase5) {
+  VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0Tester_Case5 baseline_tester;
   NamedActual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1_VMOV_immediate_A1 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("1111001m1d000mmmddddcccc0qp1mmmm");
@@ -1036,12 +1008,11 @@ TEST_F(Arm32DecoderStateTests,
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_MVN,
+//       baseline: VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6)],
-//       generated_baseline: VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0,
 //       pattern: 1111001i1d000mmmddddcccc0q11mmmm,
 //       rule: VMVN_immediate,
 //       safety: [(cmode(0)=1 &&
@@ -1051,8 +1022,8 @@ TEST_F(Arm32DecoderStateTests,
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector1RegisterImmediate_MVNTester_Case6_TestCase6) {
-  Vector1RegisterImmediate_MVNTester_Case6 baseline_tester;
+       VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0Tester_Case6_TestCase6) {
+  VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0Tester_Case6 baseline_tester;
   NamedActual_VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1_VMVN_immediate actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("1111001i1d000mmmddddcccc0q11mmmm");
@@ -1062,12 +1033,11 @@ TEST_F(Arm32DecoderStateTests,
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_BIT,
+//       baseline: VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6)],
-//       generated_baseline: VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0,
 //       pattern: 1111001i1d000mmmddddcccc0q11mmmm,
 //       rule: VBIC_immediate,
 //       safety: [cmode(0)=0 ||
@@ -1076,8 +1046,8 @@ TEST_F(Arm32DecoderStateTests,
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector1RegisterImmediate_BITTester_Case7_TestCase7) {
-  Vector1RegisterImmediate_BITTester_Case7 baseline_tester;
+       VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0Tester_Case7_TestCase7) {
+  VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0Tester_Case7 baseline_tester;
   NamedActual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1_VBIC_immediate actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("1111001i1d000mmmddddcccc0q11mmmm");
@@ -1087,12 +1057,11 @@ TEST_F(Arm32DecoderStateTests,
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_MVN,
+//       baseline: VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6)],
-//       generated_baseline: VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0,
 //       pattern: 1111001i1d000mmmddddcccc0q11mmmm,
 //       rule: VMVN_immediate,
 //       safety: [(cmode(0)=1 &&
@@ -1102,8 +1071,8 @@ TEST_F(Arm32DecoderStateTests,
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector1RegisterImmediate_MVNTester_Case8_TestCase8) {
-  Vector1RegisterImmediate_MVNTester_Case8 baseline_tester;
+       VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0Tester_Case8_TestCase8) {
+  VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0Tester_Case8 baseline_tester;
   NamedActual_VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1_VMVN_immediate actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("1111001i1d000mmmddddcccc0q11mmmm");
@@ -1113,12 +1082,11 @@ TEST_F(Arm32DecoderStateTests,
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_MVN,
+//       baseline: VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6)],
-//       generated_baseline: VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0,
 //       pattern: 1111001i1d000mmmddddcccc0q11mmmm,
 //       rule: VMVN_immediate,
 //       safety: [(cmode(0)=1 &&
@@ -1128,8 +1096,8 @@ TEST_F(Arm32DecoderStateTests,
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector1RegisterImmediate_MVNTester_Case9_TestCase9) {
-  Vector1RegisterImmediate_MVNTester_Case9 baseline_tester;
+       VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0Tester_Case9_TestCase9) {
+  VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0Tester_Case9 baseline_tester;
   NamedActual_VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1_VMVN_immediate actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("1111001i1d000mmmddddcccc0q11mmmm");
@@ -1139,12 +1107,11 @@ TEST_F(Arm32DecoderStateTests,
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       actual: Actual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1,
-//       baseline: Vector1RegisterImmediate_BIT,
+//       baseline: VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0,
 //       cmode: cmode(11:8),
 //       constraints: ,
 //       defs: {},
 //       fields: [Vd(15:12), cmode(11:8), Q(6)],
-//       generated_baseline: VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0,
 //       pattern: 1111001i1d000mmmddddcccc0q11mmmm,
 //       rule: VBIC_immediate,
 //       safety: [cmode(0)=0 ||
@@ -1153,8 +1120,8 @@ TEST_F(Arm32DecoderStateTests,
 //            Vd(0)=1 => UNDEFINED],
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Vector1RegisterImmediate_BITTester_Case10_TestCase10) {
-  Vector1RegisterImmediate_BITTester_Case10 baseline_tester;
+       VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0Tester_Case10_TestCase10) {
+  VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0Tester_Case10 baseline_tester;
   NamedActual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1_VBIC_immediate actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("1111001i1d000mmmddddcccc0q11mmmm");

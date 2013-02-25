@@ -3406,42 +3406,42 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_1imm(
           0x00000000 /* op(5)=0 */ &&
       (inst.Bits() & 0x00000D00)  ==
           0x00000800 /* cmode(11:8)=10x0 */) {
-    return Vector1RegisterImmediate_MOV_VMOV_immediate_A1_instance_;
+    return VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0_VMOV_immediate_A1_instance_;
   }
 
   if ((inst.Bits() & 0x00000020)  ==
           0x00000000 /* op(5)=0 */ &&
       (inst.Bits() & 0x00000D00)  ==
           0x00000900 /* cmode(11:8)=10x1 */) {
-    return Vector1RegisterImmediate_BIT_VORR_immediate_instance_;
+    return VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0_VORR_immediate_instance_;
   }
 
   if ((inst.Bits() & 0x00000020)  ==
           0x00000000 /* op(5)=0 */ &&
       (inst.Bits() & 0x00000900)  ==
           0x00000000 /* cmode(11:8)=0xx0 */) {
-    return Vector1RegisterImmediate_MOV_VMOV_immediate_A1_instance_;
+    return VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0_VMOV_immediate_A1_instance_;
   }
 
   if ((inst.Bits() & 0x00000020)  ==
           0x00000000 /* op(5)=0 */ &&
       (inst.Bits() & 0x00000900)  ==
           0x00000100 /* cmode(11:8)=0xx1 */) {
-    return Vector1RegisterImmediate_BIT_VORR_immediate_instance_;
+    return VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0_VORR_immediate_instance_;
   }
 
   if ((inst.Bits() & 0x00000020)  ==
           0x00000000 /* op(5)=0 */ &&
       (inst.Bits() & 0x00000C00)  ==
           0x00000C00 /* cmode(11:8)=11xx */) {
-    return Vector1RegisterImmediate_MOV_VMOV_immediate_A1_instance_;
+    return VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0_VMOV_immediate_A1_instance_;
   }
 
   if ((inst.Bits() & 0x00000020)  ==
           0x00000020 /* op(5)=1 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000E00 /* cmode(11:8)=1110 */) {
-    return Vector1RegisterImmediate_MOV_VMOV_immediate_A1_instance_;
+    return VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0_VMOV_immediate_A1_instance_;
   }
 
   if ((inst.Bits() & 0x00000020)  ==
@@ -3455,35 +3455,35 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_1imm(
           0x00000020 /* op(5)=1 */ &&
       (inst.Bits() & 0x00000D00)  ==
           0x00000800 /* cmode(11:8)=10x0 */) {
-    return Vector1RegisterImmediate_MVN_VMVN_immediate_instance_;
+    return VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0_VMVN_immediate_instance_;
   }
 
   if ((inst.Bits() & 0x00000020)  ==
           0x00000020 /* op(5)=1 */ &&
       (inst.Bits() & 0x00000D00)  ==
           0x00000900 /* cmode(11:8)=10x1 */) {
-    return Vector1RegisterImmediate_BIT_VBIC_immediate_instance_;
+    return VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0_VBIC_immediate_instance_;
   }
 
   if ((inst.Bits() & 0x00000020)  ==
           0x00000020 /* op(5)=1 */ &&
       (inst.Bits() & 0x00000E00)  ==
           0x00000C00 /* cmode(11:8)=110x */) {
-    return Vector1RegisterImmediate_MVN_VMVN_immediate_instance_;
+    return VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0_VMVN_immediate_instance_;
   }
 
   if ((inst.Bits() & 0x00000020)  ==
           0x00000020 /* op(5)=1 */ &&
       (inst.Bits() & 0x00000900)  ==
           0x00000000 /* cmode(11:8)=0xx0 */) {
-    return Vector1RegisterImmediate_MVN_VMVN_immediate_instance_;
+    return VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0_VMVN_immediate_instance_;
   }
 
   if ((inst.Bits() & 0x00000020)  ==
           0x00000020 /* op(5)=1 */ &&
       (inst.Bits() & 0x00000900)  ==
           0x00000100 /* cmode(11:8)=0xx1 */) {
-    return Vector1RegisterImmediate_BIT_VBIC_immediate_instance_;
+    return VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0_VBIC_immediate_instance_;
   }
 
   // Catch any attempt to fall through...
