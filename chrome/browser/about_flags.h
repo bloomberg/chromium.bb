@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/string16.h"
 
 class PrefService;
 
@@ -37,6 +38,12 @@ struct Experiment {
     // command_line of the Experiment is not used. If the experiment is enabled
     // the command line of the selected Choice is enabled.
     MULTI_VALUE,
+
+    // The experiment has three possible values: Default, Enabled and Disabled.
+    // This should be used for experiments that may have their own logic to
+    // decide if the feature should be on when not explicitly specified via
+    // about flags - for example via FieldTrials.
+    ENABLE_DISABLE_VALUE,
   };
 
   // Used for MULTI_VALUE types to describe one of the possible values the user
@@ -69,13 +76,18 @@ struct Experiment {
   // Type of experiment.
   Type type;
 
-  // The commandline switch and value that are added when this lab is active.
+  // The commandline switch and value that are added when this flag is active.
   // This is different from |internal_name| so that the commandline flag can be
   // renamed without breaking the prefs file.
-  // This is used if type is SINGLE_VALUE.
+  // This is used if type is SINGLE_VALUE or ENABLE_DISABLE_VALUE.
   const char* command_line_switch;
   // Simple switches that have no value should use "" for command_line_value.
   const char* command_line_value;
+
+  // For ENABLE_DISABLE_VALUE, the command line switch and value to explictly
+  // disable the feature.
+  const char* disable_command_line_switch;
+  const char* disable_command_line_value;
 
   // This is used if type is MULTI_VALUE.
   const Choice* choices;
@@ -83,6 +95,12 @@ struct Experiment {
   // Number of |choices|.
   // This is used if type is MULTI_VALUE.
   int num_choices;
+
+  // Returns the name used in prefs for the choice at the specified |index|.
+  std::string NameForChoice(int index) const;
+
+  // Returns the human readable description for the choice at |index|.
+  string16 DescriptionForChoice(int index) const;
 };
 
 // Reads the Labs |prefs| (called "Labs" for historical reasons) and adds the
@@ -117,6 +135,7 @@ int GetCurrentPlatform();
 void RecordUMAStatistics(const PrefService* prefs);
 
 namespace testing {
+
 // Clears internal global state, for unit tests.
 void ClearState();
 

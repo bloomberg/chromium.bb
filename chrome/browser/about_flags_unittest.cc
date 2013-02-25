@@ -17,6 +17,7 @@ const char kFlags1[] = "flag1";
 const char kFlags2[] = "flag2";
 const char kFlags3[] = "flag3";
 const char kFlags4[] = "flag4";
+const char kFlags5[] = "flag5";
 
 const char kSwitch1[] = "switch";
 const char kSwitch2[] = "switch2";
@@ -26,6 +27,9 @@ const char kValueForSwitch2[] = "value_for_switch2";
 const char kMultiSwitch1[] = "multi_switch1";
 const char kMultiSwitch2[] = "multi_switch2";
 const char kValueForMultiSwitch2[] = "value_for_multi_switch2";
+
+const char kEnableDisableValue1[] = "value1";
+const char kEnableDisableValue2[] = "value2";
 
 namespace about_flags {
 
@@ -47,6 +51,8 @@ static Experiment kExperiments[] = {
     kSwitch1,
     "",
     NULL,
+    NULL,
+    NULL,
     0
   },
   {
@@ -57,6 +63,8 @@ static Experiment kExperiments[] = {
     Experiment::SINGLE_VALUE,
     kSwitch2,
     kValueForSwitch2,
+    NULL,
+    NULL,
     NULL,
     0
   },
@@ -69,6 +77,8 @@ static Experiment kExperiments[] = {
     kSwitch3,
     "",
     NULL,
+    NULL,
+    NULL,
     0
   },
   {
@@ -79,8 +89,23 @@ static Experiment kExperiments[] = {
     Experiment::MULTI_VALUE,
     "",
     "",
+    "",
+    "",
     kMultiChoices,
     arraysize(kMultiChoices)
+  },
+  {
+    kFlags5,
+    IDS_PRODUCT_NAME,
+    IDS_PRODUCT_NAME,
+    0,  // Ends up being mapped to the current platform.
+    Experiment::ENABLE_DISABLE_VALUE,
+    kSwitch1,
+    kEnableDisableValue1,
+    kSwitch2,
+    kEnableDisableValue2,
+    NULL,
+    3
   },
 };
 
@@ -91,7 +116,7 @@ class AboutFlagsTest : public ::testing::Test {
     testing::ClearState();
   }
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     for (size_t i = 0; i < arraysize(kExperiments); ++i)
       kExperiments[i].supported_platforms = GetCurrentPlatform();
 
@@ -103,7 +128,7 @@ class AboutFlagsTest : public ::testing::Test {
     testing::SetExperiments(kExperiments, arraysize(kExperiments));
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     testing::SetExperiments(NULL, 0);
   }
 
@@ -278,6 +303,9 @@ TEST_F(AboutFlagsTest, CheckValues) {
 
 // Tests multi-value type experiments.
 TEST_F(AboutFlagsTest, MultiValues) {
+  const Experiment& experiment = kExperiments[3];
+  ASSERT_EQ(kFlags4, experiment.internal_name);
+
   // Initially, the first "deactivated" option of the multi experiment should
   // be set.
   {
@@ -288,9 +316,7 @@ TEST_F(AboutFlagsTest, MultiValues) {
   }
 
   // Enable the 2nd choice of the multi-value.
-  SetExperimentEnabled(&prefs_, std::string(kFlags4) +
-                       std::string(testing::kMultiSeparator) +
-                       base::IntToString(2), true);
+  SetExperimentEnabled(&prefs_, experiment.NameForChoice(2), true);
   {
     CommandLine command_line(CommandLine::NO_PROGRAM);
     ConvertFlagsToSwitches(&prefs_, &command_line);
@@ -301,9 +327,49 @@ TEST_F(AboutFlagsTest, MultiValues) {
   }
 
   // Disable the multi-value experiment.
-  SetExperimentEnabled(&prefs_, std::string(kFlags4) +
-                       std::string(testing::kMultiSeparator) +
-                       base::IntToString(0), true);
+  SetExperimentEnabled(&prefs_, experiment.NameForChoice(0), true);
+  {
+    CommandLine command_line(CommandLine::NO_PROGRAM);
+    ConvertFlagsToSwitches(&prefs_, &command_line);
+    EXPECT_FALSE(command_line.HasSwitch(kMultiSwitch1));
+    EXPECT_FALSE(command_line.HasSwitch(kMultiSwitch2));
+  }
+}
+
+TEST_F(AboutFlagsTest, EnableDisableValues) {
+  const Experiment& experiment = kExperiments[4];
+  ASSERT_EQ(kFlags5, experiment.internal_name);
+
+  // Nothing selected.
+  {
+    CommandLine command_line(CommandLine::NO_PROGRAM);
+    ConvertFlagsToSwitches(&prefs_, &command_line);
+    EXPECT_FALSE(command_line.HasSwitch(kSwitch1));
+    EXPECT_FALSE(command_line.HasSwitch(kSwitch2));
+  }
+
+  // "Enable" option selected.
+  SetExperimentEnabled(&prefs_, experiment.NameForChoice(1), true);
+  {
+    CommandLine command_line(CommandLine::NO_PROGRAM);
+    ConvertFlagsToSwitches(&prefs_, &command_line);
+    EXPECT_TRUE(command_line.HasSwitch(kSwitch1));
+    EXPECT_FALSE(command_line.HasSwitch(kSwitch2));
+    EXPECT_EQ(kEnableDisableValue1, command_line.GetSwitchValueASCII(kSwitch1));
+  }
+
+  // "Disable" option selected.
+  SetExperimentEnabled(&prefs_, experiment.NameForChoice(2), true);
+  {
+    CommandLine command_line(CommandLine::NO_PROGRAM);
+    ConvertFlagsToSwitches(&prefs_, &command_line);
+    EXPECT_FALSE(command_line.HasSwitch(kSwitch1));
+    EXPECT_TRUE(command_line.HasSwitch(kSwitch2));
+    EXPECT_EQ(kEnableDisableValue2, command_line.GetSwitchValueASCII(kSwitch2));
+  }
+
+  // "Default" option selected, same as nothing selected.
+  SetExperimentEnabled(&prefs_, experiment.NameForChoice(0), true);
   {
     CommandLine command_line(CommandLine::NO_PROGRAM);
     ConvertFlagsToSwitches(&prefs_, &command_line);
