@@ -597,9 +597,10 @@ void DesktopNativeWidgetAura::OnKeyEvent(ui::KeyEvent* event) {
 
 void DesktopNativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
   DCHECK(window_->IsVisible());
-  native_widget_delegate_->OnMouseEvent(event);
   if (tooltip_manager_.get())
     tooltip_manager_->UpdateTooltip();
+  native_widget_delegate_->OnMouseEvent(event);
+  // WARNING: we may have been deleted.
 }
 
 void DesktopNativeWidgetAura::OnScrollEvent(ui::ScrollEvent* event) {

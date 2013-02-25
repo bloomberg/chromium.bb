@@ -1380,13 +1380,7 @@ class BookmarkBarViewTest16 : public BookmarkBarViewEventTestBase {
   }
 };
 
-#if defined(USE_AURA) && defined(OS_WIN)
-// http://crbug.com/177921
-#define MAYBE_DeleteMenu DISABLED_DeleteMenu
-#else
-#define MAYBE_DeleteMenu DeleteMenu
-#endif  // defined(USE_AURA) && defined(OS_WIN)
-VIEW_TEST(BookmarkBarViewTest16, MAYBE_DeleteMenu)
+VIEW_TEST(BookmarkBarViewTest16, DeleteMenu)
 
 // Makes sure right clicking on an item while a context menu is already showing
 // doesn't crash and works.
