@@ -10,9 +10,9 @@ namespace autofill {
 
 AutofillDialogView::~AutofillDialogView() {}
 
-#if !defined(TOOLKIT_VIEWS)
+#if !defined(TOOLKIT_VIEWS) && !defined(OS_ANDROID)
 // TODO(estade): implement the dialog on other platforms. See
-// http://crbug.com/157274 http://crbug.com/157275 http://crbug.com/157277
+// http://crbug.com/157274 http://crbug.com/157275
 AutofillDialogView* AutofillDialogView::Create(
     AutofillDialogController* controller) {
   return NULL;

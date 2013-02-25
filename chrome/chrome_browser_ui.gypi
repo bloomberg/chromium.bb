@@ -69,6 +69,8 @@
         'browser/ui/alternate_error_tab_observer.h',
         'browser/ui/android/android_about_app_info.cc',
         'browser/ui/android/android_about_app_info.h',
+        'browser/ui/android/autofill/autofill_dialog_view_android.cc',
+        'browser/ui/android/autofill/autofill_dialog_view_android.h',
         'browser/ui/android/autofill/autofill_popup_view_android.cc',
         'browser/ui/android/autofill/autofill_popup_view_android.h',
         'browser/ui/android/certificate_viewer_android.cc',
