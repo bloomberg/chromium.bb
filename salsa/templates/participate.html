@@ -88,12 +88,12 @@
     function removeUnneededStartingBox() {
         // Check if there are any rankable objects remaining in the starting box
         // If they've all been moved elsewhere, get rid of the arrow and box
-        var box = document.getElementById("starting_box");
+        var box = document.getElementById('starting_box');
         if (box) {
-            var num_remaining = box.innerHTML.search("rankable");
+            var num_remaining = box.innerHTML.search('rankable');
             if (num_remaining <= 0) {
                 box.parentNode.removeChild(box);
-                var arrow = document.getElementById("arrow");
+                var arrow = document.getElementById('arrow');
                 arrow.parentNode.removeChild(arrow);
             }
         }
@@ -133,6 +133,19 @@
 
     function unhighlight(rank) {
       rank.className = rank.className.replace(/highlighted/, ' ');
+    }
+
+    function update_characters_remaining() {
+      var remaining_field = document.getElementById('remaining_characters');
+      var feedback_field = document.getElementById('feedback');
+      var MAX_LEN = 800;
+
+      if (feedback_field.value.length > MAX_LEN)
+        feedback_field.value = feedback_field.value.substring(0, MAX_LEN);
+      else
+        remaining_field.innerHTML = 'Characters remaining: ' +
+                                    (MAX_LEN - feedback_field.value.length) +
+                                    '/' + MAX_LEN;
     }
   </script>
 {% endblock %}
@@ -250,7 +263,10 @@
     anything you think might be useful.
   </p>
   <p>
-    <textarea rows="3" cols="40" id="feedback"></textarea>
+    <textarea rows="3" cols="40" id="feedback"
+              onKeyUp="update_characters_remaining()"
+              onKeyDown="update_characters_remaining()"></textarea>
+    <div id="remaining_characters"></div>
   </p>
 
   <p><button name="submit" onclick="submitReview()">Submit</button></p>

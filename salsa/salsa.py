@@ -86,12 +86,12 @@ class Submit(webapp2.RequestHandler):
         feedback = self.request.get('feedback')
         if str(users.get_current_user()) not in exp.participants:
             exp.participants.append(participant)
-            exp.feedback.append('')
+            exp.feedback.append(db.Text(''))
         participant_number = exp.participants.index(participant)
 
         while participant_number >= len(exp.feedback):
-            exp.feedback.append('')
-        exp.feedback[participant_number] = feedback
+            exp.feedback.append(db.Text(''))
+        exp.feedback[participant_number] = db.Text(feedback)
 
         score = 0
         updated_treatments = []

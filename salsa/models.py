@@ -13,7 +13,7 @@ class Experiment(db.Model):
     owner = db.UserProperty()
     created = db.DateTimeProperty(auto_now_add=True)
     participants = db.ListProperty(str)
-    feedback = db.ListProperty(str)
+    feedback = db.ListProperty(db.Text)
 
 class Treatment(db.Model):
     """ Models a single treament for experimentation """
