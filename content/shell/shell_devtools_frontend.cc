@@ -4,6 +4,8 @@
 
 #include "content/shell/shell_devtools_frontend.h"
 
+#include "base/command_line.h"
+#include "base/path_service.h"
 #include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/web_contents.h"
@@ -13,8 +15,29 @@
 #include "content/shell/shell_browser_main_parts.h"
 #include "content/shell/shell_content_browser_client.h"
 #include "content/shell/shell_devtools_delegate.h"
+#include "content/shell/shell_switches.h"
+#include "net/base/net_util.h"
 
 namespace content {
+
+namespace {
+
+// DevTools frontend path for inspector LayoutTests.
+GURL GetDevToolsPathAsURL() {
+  base::FilePath dir_exe;
+  if (!PathService::Get(base::DIR_EXE, &dir_exe)) {
+    NOTREACHED();
+    return GURL();
+  }
+#if defined(OS_MACOSX)
+  dir_exe = dir_exe.AppendASCII("../../..");
+#endif
+  base::FilePath dev_tools_path = dir_exe.AppendASCII(
+      "resources/inspector/devtools.html");
+  return net::FilePathToFileURL(dev_tools_path);
+}
+
+}  // namespace
 
 // static
 ShellDevToolsFrontend* ShellDevToolsFrontend::Show(
@@ -33,7 +56,10 @@ ShellDevToolsFrontend* ShellDevToolsFrontend::Show(
           GetContentClient()->browser());
   ShellDevToolsDelegate* delegate =
       browser_client->shell_browser_main_parts()->devtools_delegate();
-  shell->LoadURL(delegate->devtools_http_handler()->GetFrontendURL(NULL));
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+    shell->LoadURL(GetDevToolsPathAsURL());
+  else
+    shell->LoadURL(delegate->devtools_http_handler()->GetFrontendURL(NULL));
 
   return devtools_frontend;
 }
