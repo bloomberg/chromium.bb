@@ -48,8 +48,10 @@ def IncludeCompareKey(line):
   # other headers.
   if line.startswith('<windows.h>'):  # Must be before e.g. shellapi.h
     return '0'
+  if line.startswith('<atlbase.h>'):  # Must be before atlapp.h.
+    return '1' + line
   if line.startswith('<unknwn.h>'):  # Must be before e.g. intshcut.h
-    return '1'
+    return '1' + line
 
   # C++ system headers should come after C system headers.
   if line.startswith('<'):
