@@ -237,6 +237,8 @@ ProfileItemView::ProfileItemView(const AvatarMenuModel::Item& item,
     : views::CustomButton(parent),
       item_(item),
       parent_(parent) {
+  set_notify_enter_exit_on_child(true);
+
   image_view_ = new ProfileImageView();
   gfx::ImageSkia profile_icon = *item_.icon.ToImageSkia();
   if (item_.active)
