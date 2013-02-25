@@ -9,7 +9,6 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/interstitial_page_impl.h"
 #include "content/browser/web_contents/navigation_entry_impl.h"
-#include "content/browser/web_contents/test_web_contents.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/interstitial_page_delegate.h"
@@ -28,6 +27,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
+#include "content/test/test_web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/webkit_glue.h"
 

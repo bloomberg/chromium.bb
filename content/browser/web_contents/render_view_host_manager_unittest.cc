@@ -9,7 +9,6 @@
 #include "content/browser/web_contents/navigation_controller_impl.h"
 #include "content/browser/web_contents/navigation_entry_impl.h"
 #include "content/browser/web_contents/render_view_host_manager.h"
-#include "content/browser/web_contents/test_web_contents.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_details.h"
@@ -25,6 +24,7 @@
 #include "content/public/test/test_notification_tracker.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
+#include "content/test/test_web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/glue_serialize.h"
 

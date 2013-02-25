@@ -97,8 +97,6 @@
         'browser/renderer_host/test_backing_store.h',
         'browser/renderer_host/test_render_view_host.cc',
         'browser/renderer_host/test_render_view_host.h',
-        'browser/web_contents/test_web_contents.cc',
-        'browser/web_contents/test_web_contents.h',
         'gpu/gpu_idirect3d9_mock_win.cc',
         'gpu/gpu_idirect3d9_mock_win.h',
         'test/content_test_suite.cc',
@@ -130,6 +128,8 @@
         'test/test_content_client.h',
         'test/test_render_view_host_factory.cc',
         'test/test_render_view_host_factory.h',
+        'test/test_web_contents.cc',
+        'test/test_web_contents.h',
         'test/test_web_contents_view.cc',
         'test/test_web_contents_view.h',
 

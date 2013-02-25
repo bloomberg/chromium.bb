@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/web_contents/test_web_contents.h"
+#include "content/test/test_web_contents.h"
 
 #include <utility>
 

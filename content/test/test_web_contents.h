@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_WEB_CONTENTS_TEST_WEB_CONTENTS_H_
-#define CONTENT_BROWSER_WEB_CONTENTS_TEST_WEB_CONTENTS_H_
+#ifndef CONTENT_TEST_TEST_WEB_CONTENTS_H_
+#define CONTENT_TEST_TEST_WEB_CONTENTS_H_
 
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/page_transition_types.h"
@@ -131,4 +131,4 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_WEB_CONTENTS_TEST_WEB_CONTENTS_H_
+#endif  // CONTENT_TEST_TEST_WEB_CONTENTS_H_

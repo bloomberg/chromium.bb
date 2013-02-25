@@ -4,7 +4,7 @@
 
 #include "content/public/test/web_contents_tester.h"
 
-#include "content/browser/web_contents/test_web_contents.h"
+#include "content/test/test_web_contents.h"
 
 namespace content {
 
