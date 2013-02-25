@@ -15,3 +15,5 @@ media-libs/mesa
 # kernel and u-boot source to be public.
 sys-boot/puppy-u-boot
 sys-kernel/puppy-kernel
+
+sys-kernel/raspberrypi-kernel
