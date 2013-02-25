@@ -93,6 +93,7 @@ FeatureInfo::Workarounds::Workarounds()
       use_current_program_after_successful_link(false),
       restore_scissor_on_fbo_change(false),
       flush_on_context_switch(false),
+      delete_instead_of_resize_fbo(false),
       max_texture_size(0),
       max_cube_map_texture_size(0) {
 }
@@ -611,6 +612,8 @@ void FeatureInfo::AddFeatures() {
     if (is_qualcomm) {
       workarounds_.restore_scissor_on_fbo_change = true;
       workarounds_.flush_on_context_switch = true;
+      // This is only needed on the ICS driver.
+      workarounds_.delete_instead_of_resize_fbo = true;
     }
 
 #if defined(OS_MACOSX)
