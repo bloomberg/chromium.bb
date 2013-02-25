@@ -32,6 +32,11 @@ name=crbug.com/177832: mstscax.dll causes "GDI USAGE ERROR" errors.
 ...
 mstscax.dll!*
 
+UNADDRESSABLE ACCESS
+name=crbug.com/177832: mstscax.dll causes "UNADDRESSABLE ACCESS" errors.
+...
+mstscax.dll!*
+
 ############################
 # Suppress some false reports due to bugs in Dr.Memory like wrong analysis
 # assumptions or unhandled syscalls
