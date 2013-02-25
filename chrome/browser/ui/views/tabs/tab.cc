@@ -512,20 +512,25 @@ void Tab::SetData(const TabRendererData& data) {
     }
   } else if ((data_.capture_state == TabRendererData::CAPTURE_STATE_NONE) &&
              (old.capture_state != TabRendererData::CAPTURE_STATE_NONE)) {
-    StopRecordingAnimation();
+    StopIconAnimation();
   } else if ((data_.capture_state != TabRendererData::CAPTURE_STATE_NONE) &&
              (old.capture_state == TabRendererData::CAPTURE_STATE_NONE)) {
     StartRecordingAnimation();
-  } else if ((data_.audio_state == TabRendererData::AUDIO_STATE_NONE) &&
-             (old.audio_state != TabRendererData::AUDIO_STATE_NONE)) {
-    StopAudioPlayingAnimation();
-  } else if ((data_.audio_state != TabRendererData::AUDIO_STATE_NONE) &&
-             (old.audio_state == TabRendererData::AUDIO_STATE_NONE)) {
-    StartAudioPlayingAnimation();
   } else {
     if (IsPerformingCrashAnimation())
-      StopCrashAnimation();
+      StopIconAnimation();
     ResetCrashedFavicon();
+  }
+
+  // Don't clobber the recording or projecting animation for audio indicator.
+  if (data_.capture_state == TabRendererData::CAPTURE_STATE_NONE) {
+    if ((data_.audio_state == TabRendererData::AUDIO_STATE_NONE) &&
+        (old.audio_state != TabRendererData::AUDIO_STATE_NONE)) {
+      StopIconAnimation();
+    } else if ((data_.audio_state != TabRendererData::AUDIO_STATE_NONE) &&
+               (old.audio_state == TabRendererData::AUDIO_STATE_NONE)) {
+      StartAudioPlayingAnimation();
+    }
   }
 
   if (old.mini != data_.mini) {
@@ -1595,15 +1600,16 @@ void Tab::ResetCrashedFavicon() {
   should_display_crashed_favicon_ = false;
 }
 
+void Tab::StopIconAnimation() {
+  if (!icon_animation_.get())
+    return;
+  icon_animation_->Stop();
+  icon_animation_.reset();
+}
+
 void Tab::StartCrashAnimation() {
   icon_animation_.reset(new FaviconCrashAnimation(this));
   icon_animation_->Start();
-}
-
-void Tab::StopCrashAnimation() {
-  if (!icon_animation_.get())
-    return;
-  icon_animation_.reset();
 }
 
 void Tab::StartRecordingAnimation() {
@@ -1614,26 +1620,12 @@ void Tab::StartRecordingAnimation() {
   icon_animation_.reset(animation);
 }
 
-void Tab::StopRecordingAnimation() {
-  if (!icon_animation_.get())
-    return;
-  icon_animation_->Stop();
-  icon_animation_.reset();
-}
-
 void Tab::StartAudioPlayingAnimation() {
   ui::ThrobAnimation* animation = new ui::ThrobAnimation(this);
   animation->SetTweenType(ui::Tween::LINEAR);
   animation->SetThrobDuration(2000);
   animation->StartThrobbing(-1);
   icon_animation_.reset(animation);
-}
-
-void Tab::StopAudioPlayingAnimation() {
-  if (!icon_animation_.get())
-    return;
-  icon_animation_->Stop();
-  icon_animation_.reset();
 }
 
 bool Tab::IsPerformingCrashAnimation() const {

@@ -238,14 +238,10 @@ class Tab : public ui::AnimationDelegate,
   void DisplayCrashedFavicon();
   void ResetCrashedFavicon();
 
+  void StopIconAnimation();
   void StartCrashAnimation();
-  void StopCrashAnimation();
-
   void StartRecordingAnimation();
-  void StopRecordingAnimation();
-
   void StartAudioPlayingAnimation();
-  void StopAudioPlayingAnimation();
 
   // Returns true if the crash animation is currently running.
   bool IsPerformingCrashAnimation() const;
