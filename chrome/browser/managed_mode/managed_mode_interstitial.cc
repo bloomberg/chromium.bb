@@ -46,7 +46,8 @@ void ShowInterstitialOnUIThread(int render_process_host_id,
 
   ManagedModeNavigationObserver* navigation_observer =
       ManagedModeNavigationObserver::FromWebContents(web_contents);
-  navigation_observer->SetStateToRecordingAfterPreview();
+  if (navigation_observer)
+    navigation_observer->SetStateToRecordingAfterPreview();
 
   new ManagedModeInterstitial(web_contents, url, callback);
 }
