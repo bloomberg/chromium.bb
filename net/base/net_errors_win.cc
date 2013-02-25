@@ -19,6 +19,7 @@ Error MapSystemError(int os_error) {
   // find interesting.
   switch (os_error) {
     case WSAEWOULDBLOCK:
+    case WSA_IO_PENDING:
       return ERR_IO_PENDING;
     case WSAEACCES:
       return ERR_ACCESS_DENIED;
