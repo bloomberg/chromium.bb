@@ -234,13 +234,6 @@ BrowserWindow* CreateBrowserWindow(Browser* browser) {
   return BrowserWindow::CreateBrowserWindow(browser);
 }
 
-#if defined(OS_CHROMEOS)
-chrome::HostDesktopType kDefaultHostDesktopType = chrome::HOST_DESKTOP_TYPE_ASH;
-#else
-chrome::HostDesktopType kDefaultHostDesktopType =
-    chrome::HOST_DESKTOP_TYPE_NATIVE;
-#endif
-
 bool ShouldReloadCrashedTab(WebContents* contents) {
 #if defined(OS_CHROMEOS)
   return contents->IsCrashed();
@@ -253,28 +246,6 @@ bool ShouldReloadCrashedTab(WebContents* contents) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Browser, CreateParams:
-
-// Deprecated: please use the form taking |host_desktop_type| below.
-Browser::CreateParams::CreateParams(Profile* profile)
-    : type(TYPE_TABBED),
-      profile(profile),
-      host_desktop_type(kDefaultHostDesktopType),
-      app_type(APP_TYPE_HOST),
-      initial_show_state(ui::SHOW_STATE_DEFAULT),
-      is_session_restore(false),
-      window(NULL) {
-}
-
-// Deprecated: please use the form taking |host_desktop_type| below.
-Browser::CreateParams::CreateParams(Type type, Profile* profile)
-    : type(type),
-      profile(profile),
-      host_desktop_type(kDefaultHostDesktopType),
-      app_type(APP_TYPE_HOST),
-      initial_show_state(ui::SHOW_STATE_DEFAULT),
-      is_session_restore(false),
-      window(NULL) {
-}
 
 Browser::CreateParams::CreateParams(Profile* profile,
                                     chrome::HostDesktopType host_desktop_type)

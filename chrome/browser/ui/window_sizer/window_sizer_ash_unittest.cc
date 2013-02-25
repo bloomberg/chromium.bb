@@ -473,7 +473,7 @@ TEST_F(WindowSizerTestWithBrowser, PlaceNewWindows) {
   // Creating a popup handler here to make sure it does not interfere with the
   // existing windows.
   Browser::CreateParams native_params(profile.get(),
-                                      chrome::HOST_DESKTOP_TYPE_NATIVE);
+                                      chrome::HOST_DESKTOP_TYPE_ASH);
   scoped_ptr<Browser> browser(
       chrome::CreateBrowserWithTestWindowForParams(&native_params));
 
@@ -481,21 +481,24 @@ TEST_F(WindowSizerTestWithBrowser, PlaceNewWindows) {
   // existing windows.
   scoped_ptr<BrowserWindow> browser_window(
       new TestBrowserWindowAura(window.get()));
-  Browser::CreateParams window_params(profile.get());
+  Browser::CreateParams window_params(profile.get(),
+                                      chrome::HOST_DESKTOP_TYPE_ASH);
   window_params.window = browser_window.get();
   scoped_ptr<Browser> window_owning_browser(new Browser(window_params));
 
   // Creating a popup to make sure it does not interfere with the positioning.
   scoped_ptr<BrowserWindow> browser_popup(
       new TestBrowserWindowAura(popup.get()));
-  Browser::CreateParams popup_params(Browser::TYPE_POPUP, profile.get());
+  Browser::CreateParams popup_params(Browser::TYPE_POPUP, profile.get(),
+                                     chrome::HOST_DESKTOP_TYPE_ASH);
   popup_params.window = browser_popup.get();
   scoped_ptr<Browser> popup_owning_browser(new Browser(popup_params));
 
   // Creating a panel to make sure it does not interfere with the positioning.
   scoped_ptr<BrowserWindow> browser_panel(
       new TestBrowserWindowAura(panel.get()));
-  Browser::CreateParams panel_params(Browser::TYPE_POPUP, profile.get());
+  Browser::CreateParams panel_params(Browser::TYPE_POPUP, profile.get(),
+                                     chrome::HOST_DESKTOP_TYPE_ASH);
   panel_params.window = browser_panel.get();
   scoped_ptr<Browser> panel_owning_browser(new Browser(panel_params));
 
@@ -592,7 +595,8 @@ TEST_F(WindowSizerTestWithBrowser, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
   window->SetBounds(gfx::Rect(10, 10, 200, 200));
   scoped_ptr<BrowserWindow> browser_window(
       new TestBrowserWindowAura(window.get()));
-  Browser::CreateParams window_params(profile.get());
+  Browser::CreateParams window_params(profile.get(),
+                                      chrome::HOST_DESKTOP_TYPE_ASH);
   window_params.window = browser_window.get();
   scoped_ptr<Browser> window_owning_browser(new Browser(window_params));
   browser_window->Show();
@@ -602,7 +606,8 @@ TEST_F(WindowSizerTestWithBrowser, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
   another_window->SetBounds(gfx::Rect(1600 - 200, 10, 300, 300));
   scoped_ptr<BrowserWindow> another_browser_window(
       new TestBrowserWindowAura(another_window.get()));
-  Browser::CreateParams another_window_params(profile.get());
+  Browser::CreateParams another_window_params(profile.get(),
+                                              chrome::HOST_DESKTOP_TYPE_ASH);
   another_window_params.window = another_browser_window.get();
   scoped_ptr<Browser> another_window_owning_browser(
       new Browser(another_window_params));
@@ -612,7 +617,8 @@ TEST_F(WindowSizerTestWithBrowser, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
   scoped_ptr<aura::Window> new_window(CreateTestWindowInShellWithId(0));
   scoped_ptr<BrowserWindow> new_browser_window(
       new TestBrowserWindowAura(new_window.get()));
-  Browser::CreateParams new_window_params(profile.get());
+  Browser::CreateParams new_window_params(profile.get(),
+                                          chrome::HOST_DESKTOP_TYPE_ASH);
   new_window_params.window = new_browser_window.get();
   scoped_ptr<Browser> new_browser(new Browser(new_window_params));
 
@@ -673,7 +679,8 @@ TEST_F(WindowSizerTestWithBrowser, TestShowState) {
 
   scoped_ptr<BrowserWindow> browser_window(
       new TestBrowserWindowAura(window.get()));
-  Browser::CreateParams window_params(Browser::TYPE_TABBED, profile.get());
+  Browser::CreateParams window_params(Browser::TYPE_TABBED, profile.get(),
+                                      chrome::HOST_DESKTOP_TYPE_ASH);
   window_params.window = browser_window.get();
   scoped_ptr<Browser> browser(new Browser(window_params));
 
@@ -683,7 +690,8 @@ TEST_F(WindowSizerTestWithBrowser, TestShowState) {
 
   scoped_ptr<BrowserWindow> browser_popup(
       new TestBrowserWindowAura(popup.get()));
-  Browser::CreateParams popup_params(Browser::TYPE_POPUP, profile.get());
+  Browser::CreateParams popup_params(Browser::TYPE_POPUP, profile.get(),
+                                     chrome::HOST_DESKTOP_TYPE_ASH);
   popup_params.window = browser_window.get();
   scoped_ptr<Browser> popup_browser(new Browser(popup_params));
 
@@ -724,7 +732,8 @@ TEST_F(WindowSizerTestWithBrowser, TestShowState) {
 
   scoped_ptr<BrowserWindow> browser_window2(
       new TestBrowserWindowAura(window2.get()));
-  Browser::CreateParams window2_params(Browser::TYPE_TABBED, profile.get());
+  Browser::CreateParams window2_params(Browser::TYPE_TABBED, profile.get(),
+                                       chrome::HOST_DESKTOP_TYPE_ASH);
   window2_params.window = browser_window2.get();
   scoped_ptr<Browser> browser2(new Browser(window2_params));
 
@@ -775,7 +784,8 @@ TEST_F(WindowSizerTestWithBrowser, TestShowStateDefaults) {
 
   scoped_ptr<BrowserWindow> browser_window(
       new TestBrowserWindowAura(window.get()));
-  Browser::CreateParams window_params(Browser::TYPE_TABBED, profile.get());
+  Browser::CreateParams window_params(Browser::TYPE_TABBED, profile.get(),
+                                      chrome::HOST_DESKTOP_TYPE_ASH);
   window_params.window = browser_window.get();
   scoped_ptr<Browser> browser(new Browser(window_params));
 
@@ -786,7 +796,8 @@ TEST_F(WindowSizerTestWithBrowser, TestShowStateDefaults) {
 
   scoped_ptr<BrowserWindow> browser_popup(
       new TestBrowserWindowAura(popup.get()));
-  Browser::CreateParams popup_params(Browser::TYPE_POPUP, profile.get());
+  Browser::CreateParams popup_params(Browser::TYPE_POPUP, profile.get(),
+                                     chrome::HOST_DESKTOP_TYPE_ASH);
   popup_params.window = browser_window.get();
   scoped_ptr<Browser> popup_browser(new Browser(popup_params));
 

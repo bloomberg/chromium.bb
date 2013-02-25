@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/cocoa/applescript/constants_applescript.h"
 #include "chrome/browser/ui/cocoa/applescript/error_applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/tab_applescript.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
@@ -69,7 +70,8 @@
   }
 
   if ((self = [super init])) {
-    browser_ = new Browser(Browser::CreateParams(aProfile));
+    browser_ = new Browser(
+        Browser::CreateParams(aProfile, chrome::HOST_DESKTOP_TYPE_NATIVE));
     chrome::NewTab(browser_);
     browser_->window()->Show();
     scoped_nsobject<NSNumber> numID(

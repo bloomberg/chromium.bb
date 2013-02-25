@@ -15,6 +15,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
 #include "chrome/browser/ui/cocoa/menu_controller.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "content/public/browser/user_metrics.h"
 
 using content::OpenURLParams;
@@ -92,8 +93,10 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
       chrome::FindTabbedBrowser(bridge_->GetProfile(),
                                 true,
                                 chrome::HOST_DESKTOP_TYPE_NATIVE);
-  if (!browser)
-    browser = new Browser(Browser::CreateParams(bridge_->GetProfile()));
+  if (!browser) {
+    browser = new Browser(Browser::CreateParams(
+        bridge_->GetProfile(), chrome::HOST_DESKTOP_TYPE_NATIVE));
+  }
   WindowOpenDisposition disposition =
       event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
   OpenURLParams params(
@@ -114,8 +117,10 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
       chrome::FindTabbedBrowser(bridge_->GetProfile(),
                                 true,
                                 chrome::HOST_DESKTOP_TYPE_NATIVE);
-  if (!browser)
-    browser = new Browser(Browser::CreateParams(bridge_->GetProfile()));
+  if (!browser) {
+    browser = new Browser(Browser::CreateParams(
+        bridge_->GetProfile(), chrome::HOST_DESKTOP_TYPE_NATIVE));
+  }
   DCHECK(browser);
 
   if (!node || !browser)

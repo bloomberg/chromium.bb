@@ -101,7 +101,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionContextMenuTest, BrowserAction) {
   EXPECT_TRUE(action_);
 
   Browser* empty_browser(
-       new Browser(Browser::CreateParams(browser()->profile())));
+       new Browser(Browser::CreateParams(browser()->profile(),
+                                         browser()->host_desktop_type())));
 
   scoped_nsobject<ExtensionActionContextMenu> menu;
   menu.reset([[ExtensionActionContextMenu alloc]

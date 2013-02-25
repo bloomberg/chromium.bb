@@ -52,7 +52,8 @@ TEST_F(PinnedTabServiceTest, Popup) {
   browser()->tab_strip_model()->SetTabPinned(0, true);
 
   // Create a popup.
-  Browser::CreateParams params(Browser::TYPE_POPUP, profile());
+  Browser::CreateParams params(Browser::TYPE_POPUP, profile(),
+                               browser()->host_desktop_type());
   scoped_ptr<Browser> popup(
       chrome::CreateBrowserWithTestWindowForParams(&params));
 

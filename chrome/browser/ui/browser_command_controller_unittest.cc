@@ -136,7 +136,8 @@ TEST_F(BrowserCommandControllerTest, AppFullScreen) {
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FULLSCREEN));
 
   // Enabled for panels.
-  Browser::CreateParams panel_params(Browser::TYPE_PANEL, profile());
+  Browser::CreateParams panel_params(Browser::TYPE_PANEL, profile(),
+                                     browser()->host_desktop_type());
   TestBrowserWindow panel_window;
   panel_params.window = &panel_window;
   Browser panel_browser(panel_params);

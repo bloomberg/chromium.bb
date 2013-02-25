@@ -9,6 +9,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/public/test/test_browser_thread.h"
@@ -93,5 +94,6 @@ void CocoaProfileTest::CloseBrowserWindow() {
 }
 
 Browser* CocoaProfileTest::CreateBrowser() {
-  return new Browser(Browser::CreateParams(profile()));
+  return new Browser(Browser::CreateParams(profile(),
+                                           chrome::HOST_DESKTOP_TYPE_NATIVE));
 }

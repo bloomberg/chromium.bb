@@ -692,7 +692,8 @@ void RecordLastRunAppBundlePath() {
         Browser* browser = chrome::FindBrowserWithProfile(
             profiles[i], chrome::HOST_DESKTOP_TYPE_NATIVE);
         if (!browser) {
-          browser = new Browser(Browser::CreateParams(profiles[i]));
+          browser = new Browser(Browser::CreateParams(
+              profiles[i], chrome::HOST_DESKTOP_TYPE_NATIVE));
           browser->window()->Show();
         }
         DCHECK(browser);
@@ -1114,7 +1115,8 @@ void RecordLastRunAppBundlePath() {
   Browser* browser = chrome::GetLastActiveBrowser();
   // if no browser window exists then create one with no tabs to be filled in
   if (!browser) {
-    browser = new Browser(Browser::CreateParams([self lastProfile]));
+    browser = new Browser(Browser::CreateParams(
+        [self lastProfile], chrome::HOST_DESKTOP_TYPE_NATIVE));
     browser->window()->Show();
   }
 

@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -173,8 +174,10 @@ class BrowserCloseTest : public InProcessBrowserTest {
   }
 
   // Create a Browser (with associated window) on the specified profile.
-  Browser* CreateBrowserOnProfile(Profile* profile) {
-    Browser* new_browser = new Browser(Browser::CreateParams(profile));
+  Browser* CreateBrowserOnProfile(Profile* profile,
+                                  chrome::HostDesktopType host_desktop_type) {
+    Browser* new_browser =
+        new Browser(Browser::CreateParams(profile, host_desktop_type));
     chrome::AddSelectedTabWithURL(new_browser, GURL(chrome::kAboutBlankURL),
                                   content::PAGE_TRANSITION_AUTO_TOPLEVEL);
     content::WaitForLoadStop(
@@ -203,8 +206,10 @@ class BrowserCloseTest : public InProcessBrowserTest {
 
     // num_windows > 0
     Profile* profile((*base_browser)->profile());
+    chrome::HostDesktopType host_desktop_type =
+        (*base_browser)->host_desktop_type();
     for (int w = 1; w < num_windows; ++w) {
-      CreateBrowserOnProfile(profile);
+      CreateBrowserOnProfile(profile, host_desktop_type);
     }
     return true;
   }
@@ -288,12 +293,16 @@ class BrowserCloseTest : public InProcessBrowserTest {
     // For simplicty of coding, we create a window on each profile so that
     // we can easily create downloads, then we destroy or create windows
     // as necessary.
-    Browser* browser_a_regular(CreateBrowserOnProfile(first_profile_));
+    chrome::HostDesktopType host_desktop_type =
+        entry_browser->host_desktop_type();
+    Browser* browser_a_regular(CreateBrowserOnProfile(first_profile_,
+                                                      host_desktop_type));
     Browser* browser_a_incognito(
-        CreateBrowserOnProfile(first_profile_incognito));
-    Browser* browser_b_regular(CreateBrowserOnProfile(second_profile_));
+        CreateBrowserOnProfile(first_profile_incognito, host_desktop_type));
+    Browser* browser_b_regular(CreateBrowserOnProfile(second_profile_,
+                                                      host_desktop_type));
     Browser* browser_b_incognito(
-        CreateBrowserOnProfile(second_profile_incognito));
+        CreateBrowserOnProfile(second_profile_incognito, host_desktop_type));
 
     // Kill our entry browser.
     entry_browser->window()->Close();
@@ -358,7 +367,7 @@ class BrowserCloseTest : public InProcessBrowserTest {
     CompleteAllDownloads(browser_to_probe);
 
     // Create a new main window and kill everything else.
-    entry_browser = CreateBrowserOnProfile(first_profile_);
+    entry_browser = CreateBrowserOnProfile(first_profile_, host_desktop_type);
     for (chrome::BrowserIterator it; !it.done(); it.Next()) {
       if ((*it) != entry_browser) {
         if (!it->window()) {

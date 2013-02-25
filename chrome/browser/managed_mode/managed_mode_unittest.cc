@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
@@ -72,7 +73,7 @@ class BrowserFixture {
  public:
   BrowserFixture(FakeManagedMode* managed_mode,
                  TestingProfile* profile) {
-    Browser::CreateParams params(profile);
+    Browser::CreateParams params(profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
     params.window = &window_;
     browser_.reset(new Browser(params));
   }

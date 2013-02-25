@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #include "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -137,7 +138,8 @@ TEST_F(BrowserWindowControllerTest, TestNormal) {
   // And make sure a controller for a pop-up window is not normal.
   // popup_browser will be owned by its window.
   Browser* popup_browser(new Browser(
-      Browser::CreateParams(Browser::TYPE_POPUP, profile())));
+      Browser::CreateParams(Browser::TYPE_POPUP, profile(),
+                            chrome::HOST_DESKTOP_TYPE_NATIVE)));
   NSWindow *cocoaWindow = popup_browser->window()->GetNativeWindow();
   BrowserWindowController* controller =
       static_cast<BrowserWindowController*>([cocoaWindow windowController]);
@@ -151,7 +153,8 @@ TEST_F(BrowserWindowControllerTest, TestNormal) {
 
 TEST_F(BrowserWindowControllerTest, TestSetBounds) {
   // Create a normal browser with bounds smaller than the minimum.
-  Browser::CreateParams params(Browser::TYPE_TABBED, profile());
+  Browser::CreateParams params(Browser::TYPE_TABBED, profile(),
+                               chrome::HOST_DESKTOP_TYPE_NATIVE);
   params.initial_bounds = gfx::Rect(0, 0, 50, 50);
   Browser* browser = new Browser(params);
   NSWindow *cocoaWindow = browser->window()->GetNativeWindow();
@@ -176,7 +179,8 @@ TEST_F(BrowserWindowControllerTest, TestSetBounds) {
 
 TEST_F(BrowserWindowControllerTest, TestSetBoundsPopup) {
   // Create a popup with bounds smaller than the minimum.
-  Browser::CreateParams params(Browser::TYPE_POPUP, profile());
+  Browser::CreateParams params(Browser::TYPE_POPUP, profile(),
+                               chrome::HOST_DESKTOP_TYPE_NATIVE);
   params.initial_bounds = gfx::Rect(0, 0, 50, 50);
   Browser* browser = new Browser(params);
   NSWindow *cocoaWindow = browser->window()->GetNativeWindow();
@@ -222,7 +226,8 @@ TEST_F(BrowserWindowControllerTest, TestIncognitoWidthSpace) {
   scoped_ptr<TestingProfile> incognito_profile(new TestingProfile());
   incognito_profile->set_off_the_record(true);
   scoped_ptr<Browser> browser(
-      new Browser(Browser::CreateParams(incognito_profile.get()));
+      new Browser(Browser::CreateParams(incognito_profile.get(),
+                                        chrome::HOST_DESKTOP_TYPE_NATIVE));
   controller_.reset([[BrowserWindowController alloc]
                               initWithBrowser:browser.get()
                                 takeOwnership:NO]);

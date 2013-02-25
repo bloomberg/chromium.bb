@@ -23,7 +23,8 @@ IN_PROC_BROWSER_TEST_F(BrowserCrApplicationAppleScriptTest, Creation) {
   // Create additional |Browser*| objects of different type.
   Profile* profile = browser()->profile();
   Browser* b1 =
-      new Browser(Browser::CreateParams(Browser::TYPE_POPUP, profile));
+      new Browser(Browser::CreateParams(Browser::TYPE_POPUP, profile,
+                                        browser()->host_desktop_type()));
   Browser* b2 = new Browser(
       Browser::CreateParams::CreateForApp(
           Browser::TYPE_PANEL, "Test", gfx::Rect(), profile,

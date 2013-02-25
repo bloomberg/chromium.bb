@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/test_management_policy.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/extensions/value_builder.h"
 #include "chrome/test/base/test_browser_window.h"
@@ -38,7 +39,8 @@ TEST_F(ExtensionContextMenuModelTest, PolicyDisablesItems) {
   service_->AddExtension(extension);
 
   // Create a Browser for the ExtensionContextMenuModel to use.
-  Browser::CreateParams params(profile_.get());
+  Browser::CreateParams params(profile_.get(),
+                               chrome::HOST_DESKTOP_TYPE_NATIVE);
   TestBrowserWindow test_window;
   params.window = &test_window;
   Browser browser(params);
