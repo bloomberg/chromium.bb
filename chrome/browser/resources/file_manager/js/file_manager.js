@@ -1937,9 +1937,11 @@ DialogType.isModal = function(type) {
     var mountError = this.volumeManager_.getMountError(
         PathUtil.getRootPath(entry.fullPath));
     if (mountError == VolumeManager.Error.UNKNOWN_FILESYSTEM) {
-      return this.butterBar_.show(str('UNKNOWN_FILESYSTEM_WARNING'));
+      return this.butterBar_.show(ButterBar.Mode.ERROR,
+                                  str('UNKNOWN_FILESYSTEM_WARNING'));
     } else if (mountError == VolumeManager.Error.UNSUPPORTED_FILESYSTEM) {
-      return this.butterBar_.show(str('UNSUPPORTED_FILESYSTEM_WARNING'));
+      return this.butterBar_.show(ButterBar.Mode.ERROR,
+                                  str('UNSUPPORTED_FILESYSTEM_WARNING'));
     }
 
     return this.directoryModel_.changeDirectory(entry.fullPath);

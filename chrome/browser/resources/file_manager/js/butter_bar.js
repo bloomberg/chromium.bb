@@ -27,6 +27,7 @@ function ButterBar(dialogDom, copyManager, metadataCache) {
   this.showTimeout_ = null;
   this.lastShowTime_ = 0;
   this.deleteTaskId_ = null;
+  this.currentMode_ = null;
 
   this.copyManager_.addEventListener('copy-progress',
                                      this.onCopyProgress_.bind(this));
@@ -37,8 +38,19 @@ function ButterBar(dialogDom, copyManager, metadataCache) {
 /**
  * Name of action which should be displayed as an 'x' button instead of
  * link with text.
+ * @const
  */
 ButterBar.ACTION_X = '--action--x--';
+
+/**
+ * Butter bar mode.
+ * @const
+ */
+ButterBar.Mode = {
+  COPY: 1,
+  DELETE: 2,
+  ERROR: 3
+};
 
 /**
  * @return {boolean} True if visible.
@@ -56,12 +68,15 @@ ButterBar.prototype.isError_ = function() {
   return this.butter_.classList.contains('error');
 };
 
-  /**
+/**
  * Show butter bar.
+ * @param {ButterBar.Mode} mode Butter bar mode.
  * @param {string} message The message to be shown.
  * @param {Object=} opt_options Options: 'actions', 'progress', 'timeout'.
  */
-ButterBar.prototype.show = function(message, opt_options) {
+ButterBar.prototype.show = function(mode, message, opt_options) {
+  this.currentMode_ = mode;
+
   this.clearShowTimeout_();
   this.clearHideTimeout_();
 
@@ -101,7 +116,7 @@ ButterBar.prototype.show = function(message, opt_options) {
  * @private
  */
 ButterBar.prototype.showError_ = function(message, opt_options) {
-  this.show(message, opt_options);
+  this.show(ButterBar.Mode.ERROR, message, opt_options);
   this.butter_.classList.add('error');
 };
 
@@ -157,6 +172,7 @@ ButterBar.prototype.hide_ = function(opt_force) {
       MINIMUM_BUTTER_DISPLAY_TIME_MS - (Date.now() - this.lastShowTime_);
 
   if (opt_force || delay <= 0) {
+    this.currentMode_ = null;
     this.butter_.classList.remove('visible');
     this.butter_.querySelector('.progress-bar').hidden = true;
   } else {
@@ -240,12 +256,12 @@ ButterBar.prototype.showProgress_ = function() {
           strf(type + '_FILE_NAME', this.progress_.filename) :
           strf(type + '_ITEMS_REMAINING', this.progress_.pendingItems);
 
-  if (this.isVisible_()) {
+  if (this.currentMode_ == ButterBar.Mode.COPY) {
     this.update_(progressString, options);
   } else {
     options.actions[ButterBar.ACTION_X] =
         this.copyManager_.requestCancel.bind(this.copyManager_);
-    this.show(progressString, options);
+    this.show(ButterBar.Mode.COPY, progressString, options);
   }
 };
 
@@ -278,7 +294,8 @@ ButterBar.prototype.onCopyProgress_ = function(event) {
       break;
 
     case 'CANCELLED':
-      this.show(str(this.transferType_() + '_CANCELLED'), {timeout: 1000});
+      this.show(ButterBar.Mode.DELETE,
+                str(this.transferType_() + '_CANCELLED'), { timeout: 1000 });
       break;
 
     case 'ERROR':
@@ -376,14 +393,16 @@ ButterBar.prototype.onDelete_ = function(event) {
 
       var actions = {};
       actions[str('UNDO_DELETE')] = this.undoDelete_.bind(this);
-      this.show(title, { actions: actions, timeout: 0 });
+      this.show(ButterBar.Mode.DELETE,
+                title,
+                { actions: actions, timeout: 0 });
       break;
 
     case 'CANCELLED':
     case 'SUCCESS':
       var props = [];
       for (var i = 0; i < event.urls.length; i++) {
-        props[i] = {deleted: false};
+        props[i] = { deleted: false };
       }
       this.metadataCache_.set(event.urls, 'internal', props);
 
