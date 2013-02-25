@@ -86,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest, NewTabPageURL) {
 IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest, NewTabPageURLOverride) {
   // Load an extension to override the NTP and check that the location bar text
   // is blank after navigating to chrome://newtab.
-  LoadExtension(GetTestExtensionPath("newtab"));
+  ASSERT_TRUE(LoadExtension(GetTestExtensionPath("newtab")));
   TestURLNotShown(GURL(chrome::kChromeUINewTabURL));
   // Check that the internal URL uses the chrome-extension:// scheme.
   EXPECT_TRUE(GetNavigationEntry()->GetURL().SchemeIs(
@@ -102,7 +102,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest, NewTabPageURLOverride) {
 IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest, MAYBE_BookmarksURL) {
   // Navigate to chrome://bookmarks and check that the location bar URL is
   // what was entered and the internal URL uses the chrome-extension:// scheme.
-  TestExtensionURLOverride(GURL(chrome::kChromeUIBookmarksURL));
+  const GURL bookmarks_url(chrome::kChromeUIBookmarksURL);
+  ui_test_utils::NavigateToURL(browser(), bookmarks_url);
+  // The default chrome://bookmarks implementation will append /#1 to the URL
+  // once loaded. Use |GetWithEmptyPath()| to avoid flakyness.
+  EXPECT_EQ(bookmarks_url, GetLocationBarTextAsURL().GetWithEmptyPath());
+  NavigationEntry* navigation = GetNavigationEntry();
+  EXPECT_EQ(bookmarks_url, navigation->GetVirtualURL().GetWithEmptyPath());
+  EXPECT_TRUE(navigation->GetURL().SchemeIs(extensions::kExtensionScheme));
 }
 
 #if defined(FILE_MANAGER_EXTENSION)
@@ -120,11 +127,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest, BookmarksURLWithRef) {
   TestExtensionURLOverride(url_with_ref);
 }
 
-// Disabled for flakiness: crbug.com/176332
-IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest,
-                       DISABLED_BookmarksURLOverride) {
+IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest, BookmarksURLOverride) {
   // Load an extension that overrides chrome://bookmarks.
-  LoadExtension(GetTestExtensionPath("bookmarks"));
+  ASSERT_TRUE(LoadExtension(GetTestExtensionPath("bookmarks")));
   // Navigate to chrome://bookmarks and check that the location bar URL is what
   // was entered and the internal URL uses the chrome-extension:// scheme.
   TestExtensionURLOverride(GURL(chrome::kChromeUIBookmarksURL));
