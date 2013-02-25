@@ -2901,7 +2901,10 @@ class LogmanTrace(ApiBase):
               state = self.HAD_DELIMITER
               fields[-1] = fields[-1] + '"'
             else:
-              assert False, (i, c, line, fields)
+              # That's just how the logger rolls. Revert back to appending the
+              # char and "guess" it was a quote in a double-quoted string.
+              state = self.IN_STR_QUOTED
+              fields[-1] = fields[-1] + '"' + c
 
           elif state == self.IN_STR_QUOTED:
             if c == '"':

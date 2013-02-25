@@ -93,10 +93,13 @@ class TraceInputs(unittest.TestCase):
     test_cases = {
       u'   Next is empty, ,  {00000000-0000}':
         [u'Next is empty', u'', u'{00000000-0000}'],
+
       u'   Foo, , "\\\\NT AUTHORITY\\SYSTEM", "Idle", ""':
         [u'Foo', u'', u'\\\\NT AUTHORITY\\SYSTEM', u'Idle', u''],
+
       u'   Foo,  ""Who the hell thought delimiters are great as escape too""':
         [u'Foo', u'"Who the hell thought delimiters are great as escape too"'],
+
       (
         u'  "remoting.exe", ""C:\\Program Files\\remoting.exe" '
         u'--host="C:\\ProgramData\\host.json""'
@@ -106,7 +109,12 @@ class TraceInputs(unittest.TestCase):
           u'"C:\\Program Files\\remoting.exe" '
           u'--host="C:\\ProgramData\\host.json"'
         ],
+
       u'"MONSTRE", "", 0x0': [u'MONSTRE', u'', u'0x0'],
+
+      # To whoever wrote this code at Microsoft: You did it wrong.
+      u'"cmd.exe", ""C:\\\\Winz\\\\cmd.exe" /k ""C:\\\\MSVS\\\\vc.bat"" x86"':
+        [u'cmd.exe', u'"C:\\\\Winz\\\\cmd.exe" /k "C:\\\\MSVS\\\\vc.bat" x86'],
     }
     for data, expected in test_cases.iteritems():
       csv = trace_inputs.LogmanTrace.Tracer.CsvReader(StringIO.StringIO(data))
