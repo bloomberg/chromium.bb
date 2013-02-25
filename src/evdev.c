@@ -254,9 +254,7 @@ evdev_flush_motion(struct evdev_device *device, uint32_t time)
 
 	device->pending_events &= ~EVDEV_SYN;
 	if (device->pending_events & EVDEV_RELATIVE_MOTION) {
-		notify_motion(master, time,
-			      master->seat.pointer->x + device->rel.dx,
-			      master->seat.pointer->y + device->rel.dy);
+		notify_motion(master, time, device->rel.dx, device->rel.dy);
 		device->pending_events &= ~EVDEV_RELATIVE_MOTION;
 		device->rel.dx = 0;
 		device->rel.dy = 0;

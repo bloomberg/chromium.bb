@@ -1713,13 +1713,16 @@ clip_pointer_motion(struct weston_seat *seat, wl_fixed_t *fx, wl_fixed_t *fy)
 }
 
 static void
-move_pointer(struct weston_seat *seat, wl_fixed_t x, wl_fixed_t y)
+move_pointer(struct weston_seat *seat, wl_fixed_t dx, wl_fixed_t dy)
 {
 	struct weston_compositor *ec = seat->compositor;
 	struct wl_pointer *pointer = seat->seat.pointer;
 	struct weston_output *output;
+	wl_fixed_t x, y;
 	int32_t ix, iy;
 
+	x = pointer->x + dx;
+	y = pointer->y + dy;
 	clip_pointer_motion(seat, &x, &y);
 
 	weston_seat_update_drag_surface(seat, x - pointer->x, y - pointer->y);
@@ -1748,7 +1751,7 @@ move_pointer(struct weston_seat *seat, wl_fixed_t x, wl_fixed_t y)
 
 WL_EXPORT void
 notify_motion(struct weston_seat *seat,
-	      uint32_t time, wl_fixed_t x, wl_fixed_t y)
+	      uint32_t time, wl_fixed_t dx, wl_fixed_t dy)
 {
 	const struct wl_pointer_grab_interface *interface;
 	struct weston_compositor *ec = seat->compositor;
@@ -1756,7 +1759,7 @@ notify_motion(struct weston_seat *seat,
 
 	weston_compositor_wake(ec);
 
-	move_pointer(seat, x, y);
+	move_pointer(seat, dx, dy);
 
 	interface = pointer->grab->interface;
 	interface->motion(pointer->grab, time,

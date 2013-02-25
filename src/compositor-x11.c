@@ -89,7 +89,9 @@ struct x11_compositor {
 
 	/* We could map multi-pointer X to multiple wayland seats, but
 	 * for now we only support core X input. */
-	struct weston_seat	 core_seat;
+	struct weston_seat		 core_seat;
+	int				 prev_x;
+	int				 prev_y;
 
 	struct {
 		xcb_atom_t		 wm_protocols;
@@ -1008,8 +1010,10 @@ x11_compositor_deliver_motion_event(struct x11_compositor *c,
 	if (!c->has_xkb)
 		update_xkb_state_from_core(c, motion_notify->state);
 	output = x11_compositor_find_output(c, motion_notify->event);
-	x = wl_fixed_from_int(motion_notify->event_x);
-	y = wl_fixed_from_int(motion_notify->event_y);
+	x = wl_fixed_from_int(motion_notify->event_x - c->prev_x);
+	y = wl_fixed_from_int(motion_notify->event_y - c->prev_y);
+	c->prev_x = motion_notify->event_x;
+	c->prev_y = motion_notify->event_y;
 	x11_output_transform_coordinate(output, &x, &y);
 
 	notify_motion(&c->core_seat, weston_compositor_get_time(), x, y);
@@ -1029,6 +1033,8 @@ x11_compositor_deliver_enter_event(struct x11_compositor *c,
 	if (!c->has_xkb)
 		update_xkb_state_from_core(c, enter_notify->state);
 	output = x11_compositor_find_output(c, enter_notify->event);
+	c->prev_x = enter_notify->event_x;
+	c->prev_y = enter_notify->event_y;
 	x = wl_fixed_from_int(enter_notify->event_x);
 	y = wl_fixed_from_int(enter_notify->event_y);
 	x11_output_transform_coordinate(output, &x, &y);

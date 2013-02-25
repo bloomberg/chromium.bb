@@ -361,8 +361,10 @@ input_handle_motion(void *data, struct wl_pointer *pointer,
 	check_focus(input, x, y);
 	if (input->focus)
 		notify_motion(&input->base, time,
-			      x - wl_fixed_from_int(c->border.left),
-			      y - wl_fixed_from_int(c->border.top));
+			      x - wl_fixed_from_int(c->border.left) -
+			      input->base.seat.pointer->x,
+			      y - wl_fixed_from_int(c->border.top) -
+			      input->base.seat.pointer->y);
 }
 
 static void

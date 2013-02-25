@@ -122,10 +122,13 @@ move_pointer(struct wl_client *client, struct wl_resource *resource,
 {
 	struct weston_test *test = resource->data;
 	struct weston_seat *seat = get_seat(test);
+	struct wl_pointer *pointer = seat->seat.pointer;
 
 	test->compositor->focus = 1;
 
-	notify_motion(seat, 100, wl_fixed_from_int(x), wl_fixed_from_int(y));
+	notify_motion(seat, 100,
+		      wl_fixed_from_int(x) - pointer->x,
+		      wl_fixed_from_int(y) - pointer->y);
 
 	notify_pointer_position(test, resource);
 }
