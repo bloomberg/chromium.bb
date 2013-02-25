@@ -402,8 +402,7 @@ bool DeveloperPrivateAllowFileAccessFunction::RunImpl() {
     result = true;
   }
 
-  SetResult(Value::CreateBooleanValue(result));
-  return true;
+  return result;
 }
 
 DeveloperPrivateAllowFileAccessFunction::
@@ -415,11 +414,21 @@ bool DeveloperPrivateReloadFunction::RunImpl() {
   ExtensionService* service = profile()->GetExtensionService();
   CHECK(!extension_id.empty());
   service->ReloadExtension(extension_id);
-  SetResult(Value::CreateBooleanValue(true));
   return true;
 }
 
 DeveloperPrivateReloadFunction::~DeveloperPrivateReloadFunction() {}
+
+bool DeveloperPrivateRestartFunction::RunImpl() {
+  std::string extension_id;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &extension_id));
+  ExtensionService* service = profile()->GetExtensionService();
+  EXTENSION_FUNCTION_VALIDATE(!extension_id.empty());
+  service->RestartExtension(extension_id);
+  return true;
+}
+
+DeveloperPrivateRestartFunction::~DeveloperPrivateRestartFunction() {}
 
 DeveloperPrivateEnableFunction::DeveloperPrivateEnableFunction() {}
 
@@ -478,7 +487,6 @@ bool DeveloperPrivateEnableFunction::RunImpl() {
   } else {
     service->DisableExtension(extension_id, Extension::DISABLE_USER_ACTION);
   }
-  SetResult(Value::CreateBooleanValue(true));
   return true;
 }
 
@@ -506,7 +514,6 @@ bool DeveloperPrivateInspectFunction::RunImpl() {
 
   int render_process_id;
   base::StringToInt(options.render_process_id, &render_process_id);
-  SetResult(Value::CreateBooleanValue(false));
 
   if (render_process_id == -1) {
     // This is a lazy background page. Identify if it is a normal
@@ -533,7 +540,6 @@ bool DeveloperPrivateInspectFunction::RunImpl() {
     return false;
   }
 
-  SetResult(Value::CreateBooleanValue(true));
   DevToolsWindow::OpenDevToolsWindow(host);
   return true;
 }
@@ -544,7 +550,6 @@ bool DeveloperPrivateLoadUnpackedFunction::RunImpl() {
   string16 select_title =
       l10n_util::GetStringUTF16(IDS_EXTENSION_LOAD_FROM_DIRECTORY);
 
-  SetResult(Value::CreateBooleanValue(true));
   // Balanced in FileSelected / FileSelectionCanceled.
   AddRef();
   bool result = ShowPicker(
@@ -765,6 +770,8 @@ bool DeveloperPrivateGetStringsFunction::RunImpl() {
   SET_STRING("extensionSettingsReloadTerminated",
              IDS_EXTENSIONS_RELOAD_TERMINATED);
   SET_STRING("extensionSettingsReloadUnpacked", IDS_EXTENSIONS_RELOAD_UNPACKED);
+  SET_STRING("extensionSettingsLaunch", IDS_EXTENSIONS_LAUNCH);
+  SET_STRING("extensionSettingsRestart", IDS_EXTENSIONS_RESTART);
   SET_STRING("extensionSettingsOptions", IDS_EXTENSIONS_OPTIONS_LINK);
   SET_STRING("extensionSettingsActivity", IDS_EXTENSIONS_ACTIVITY_LINK);
   SET_STRING("extensionSettingsVisitWebsite", IDS_EXTENSIONS_VISIT_WEBSITE);

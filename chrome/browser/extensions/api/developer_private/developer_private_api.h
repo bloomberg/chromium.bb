@@ -175,6 +175,18 @@ class DeveloperPrivateReloadFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
+class DeveloperPrivateRestartFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("developerPrivate.restart",
+                             DEVELOPERPRIVATE_RESTART);
+
+ protected:
+  virtual ~DeveloperPrivateRestartFunction();
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
 class DeveloperPrivateEnableFunction
     : public SyncExtensionFunction,
       public base::SupportsWeakPtr<DeveloperPrivateEnableFunction> {

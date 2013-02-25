@@ -162,8 +162,27 @@ cr.define('apps_dev_tool', function() {
         this.setWebstoreLink_(item, node);
 
       // The 'Reload' checkbox.
-      if (item.allow_reload)
+      if (item.allow_reload) {
         this.setReloadLink_(item, node);
+
+        if (item.type == 'packaged_app') {
+          // The 'Launch' link.
+          var launch = node.querySelector('.launch-link');
+          launch.addEventListener('click', function(e) {
+            ItemsList.launchApp(item.id);
+          });
+          launch.hidden = false;
+
+          // The 'Restart' link.
+          var restart = node.querySelector('.restart-link');
+          restart.addEventListener('click', function(e) {
+            chrome.developerPrivate.restart(item.id, function() {
+              ItemsList.loadItemsInfo();
+            });
+          });
+          restart.hidden = false;
+        }
+      }
 
       // The terminated reload link.
       if (!item.terminated)
@@ -219,7 +238,7 @@ cr.define('apps_dev_tool', function() {
     setReloadLink_: function(item, el) {
       var reload = el.querySelector('.reload-link');
       reload.addEventListener('click', function(e) {
-        chrome.developerPrivate.reload(item.id, function(success) {
+        chrome.developerPrivate.reload(item.id, function() {
           ItemsList.loadItemsInfo();
         });
       });
@@ -235,7 +254,7 @@ cr.define('apps_dev_tool', function() {
     setTerminatedReloadLink_: function(item, el) {
       var terminatedReload = el.querySelector('.terminated-reload-link');
       terminatedReload.hidden = false;
-      chrome.developerPrivate.reload(item.id, function(success) {
+      chrome.developerPrivate.reload(item.id, function() {
         ItemsList.loadItemsInfo();
       });
     },
@@ -289,9 +308,7 @@ cr.define('apps_dev_tool', function() {
     setAllowFileAccessCheckbox_: function(item, el) {
       var fileAccess = el.querySelector('.file-access-control');
       fileAccess.addEventListener('click', function(e) {
-        chrome.developerPrivate.allowFileAccess(
-            item.id, !!e.target.checked, function(result) {
-        });
+        chrome.developerPrivate.allowFileAccess(item.id, !!e.target.checked);
       });
       fileAccess.querySelector('input').checked = item.allow_file_access;
       fileAccess.hidden = false;
@@ -326,8 +343,7 @@ cr.define('apps_dev_tool', function() {
           };
 
           // Opens the devtools inspect window for the page.
-          chrome.developerPrivate.inspect(inspectOptions, function(result) {
-          });
+          chrome.developerPrivate.inspect(inspectOptions);
         });
 
         if (i < item.views.length - 1) {

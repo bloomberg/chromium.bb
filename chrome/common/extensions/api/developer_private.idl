@@ -103,6 +103,7 @@ namespace developerPrivate {
   callback GetStringsCallback = void (object result);
   callback PathCallback = void (DOMString path);
   callback PackCallback = void (PackDirectoryResponse response);
+  callback VoidCallback = void();
 
   interface Functions {
     // Runs auto update for extensions and apps immediately.
@@ -120,23 +121,26 @@ namespace developerPrivate {
 
     // Opens an inspect window for given |options|
     static void inspect(InspectOptions options,
-                        BooleanCallback callback);
+                        optional VoidCallback callback);
 
     // Enable / Disable file access for a given |item_id|
     static void allowFileAccess(DOMString item_id,
                                 boolean allow,
-                                BooleanCallback callback);
+                                optional VoidCallback callback);
 
     // Reloads a given item with |itemId|.
-    static void reload(DOMString itemId, BooleanCallback callback);
+    static void reload(DOMString itemId, optional VoidCallback callback);
+
+    // Restarts a given item with |itemId|.
+    static void restart(DOMString itemId, optional VoidCallback callback);
 
     // Enable / Disable a given item with id |itemId|.
     static void enable(DOMString itemId,
                        boolean enable,
-                       BooleanCallback callback);
+                       optional VoidCallback callback);
 
     // Load a user selected unpacked item
-    static void loadUnpacked(BooleanCallback callback);
+    static void loadUnpacked(optional VoidCallback callback);
 
     // Open Dialog to browse to an entry.
     // |select_type| : Select a file or a folder.
