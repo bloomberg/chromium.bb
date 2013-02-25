@@ -16,8 +16,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/shadow_value.h"
 
-class SkBitmap;
-
 namespace gfx {
 
 class Rect;

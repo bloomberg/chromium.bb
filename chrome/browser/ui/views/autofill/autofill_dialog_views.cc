@@ -826,7 +826,8 @@ views::View* AutofillDialogViews::CreateInputsContainer(DialogSection section) {
     // TODO(estade): don't hardcode this string.
     suggested_info->ShowTextfield(
         ASCIIToUTF16("CVC"),
-        controller_->IconForType(CREDIT_CARD_VERIFICATION_CODE).AsImageSkia());
+        controller_->IconForField(CREDIT_CARD_VERIFICATION_CODE,
+                                  string16()).AsImageSkia());
   }
 
   // TODO(estade): Fix the appearance of this button.
@@ -902,7 +903,8 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
           l10n_util::GetStringUTF16(input.placeholder_text_rid),
           this);
 
-      gfx::Image icon = controller_->IconForType(input.type);
+      gfx::Image icon =
+          controller_->IconForField(input.type, input.autofilled_value);
       field->textfield()->SetIcon(icon.AsImageSkia());
 
       textfields->insert(std::make_pair(&input, field));
@@ -1036,6 +1038,9 @@ void AutofillDialogViews::TextfieldEditedOrActivated(
   // If the field is marked as invalid, check if the text is now valid.
   if (decorated->invalid() && was_edit)
     decorated->SetInvalid(!controller_->InputIsValid(type, textfield->text()));
+
+  gfx::Image icon = controller_->IconForField(type, textfield->text());
+  textfield->SetIcon(icon.AsImageSkia());
 }
 
 void AutofillDialogViews::ContentsPreferredSizeChanged() {

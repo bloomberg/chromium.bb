@@ -48,9 +48,13 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "grit/webkit_resources.h"
 #include "net/base/cert_status_flags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/skbitmap_operations.h"
 
 namespace autofill {
 
@@ -549,11 +553,52 @@ void AutofillDialogControllerImpl::EditClickedForSection(
   view_->UpdateSection(section);
 }
 
-gfx::Image AutofillDialogControllerImpl::IconForType(AutofillFieldType type)
-    const {
+gfx::Image AutofillDialogControllerImpl::IconForField(
+    AutofillFieldType type, const string16& user_input) const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (type == CREDIT_CARD_VERIFICATION_CODE)
     return rb.GetImageNamed(IDR_CREDIT_CARD_CVC_HINT);
+
+  // For the credit card, we show a few grayscale images, and possibly one
+  // color image if |user_input| is a valid card number.
+  if (type == CREDIT_CARD_NUMBER) {
+    const int card_idrs[] = {
+      IDR_AUTOFILL_CC_VISA,
+      IDR_AUTOFILL_CC_MASTERCARD,
+      IDR_AUTOFILL_CC_AMEX,
+      IDR_AUTOFILL_CC_DISCOVER
+    };
+    const int number_of_cards = arraysize(card_idrs);
+    // The number of pixels between card icons.
+    const int kCardPadding = 2;
+
+    gfx::ImageSkia some_card = *rb.GetImageSkiaNamed(card_idrs[0]);
+    const int card_width = some_card.width();
+    gfx::Canvas canvas(
+        gfx::Size((card_width + kCardPadding) * number_of_cards - kCardPadding,
+                  some_card.height()),
+        ui::SCALE_FACTOR_100P,
+        true);
+    CreditCard card;
+    card.SetRawInfo(CREDIT_CARD_NUMBER, user_input);
+
+    for (int i = 0; i < number_of_cards; ++i) {
+      int idr = card_idrs[i];
+      gfx::ImageSkia card_image = *rb.GetImageSkiaNamed(idr);
+      if (card.IconResourceId() != idr) {
+        color_utils::HSL shift = {-1, 0, 0.8};
+        SkBitmap disabled_bitmap =
+            SkBitmapOperations::CreateHSLShiftedBitmap(*card_image.bitmap(),
+                                                       shift);
+        card_image = gfx::ImageSkia::CreateFrom1xBitmap(disabled_bitmap);
+      }
+
+      canvas.DrawImageInt(card_image, i * (card_width + kCardPadding), 0);
+    }
+
+    gfx::ImageSkia skia(canvas.ExtractImageRep());
+    return gfx::Image(skia);
+  }
 
   return gfx::Image();
 }

@@ -86,7 +86,9 @@ class AutofillDialogController {
   virtual void EditClickedForSection(DialogSection section) = 0;
 
   // Returns an icon to be displayed along with the input for the given type.
-  virtual gfx::Image IconForType(AutofillFieldType type) const = 0;
+  // |user_input| is the current text in the textfield.
+  virtual gfx::Image IconForField(AutofillFieldType type,
+                                  const string16& user_input) const = 0;
 
   // Decides whether input of |value| is valid for a field of type |type|.
   virtual bool InputIsValid(AutofillFieldType type,
