@@ -276,6 +276,7 @@ TEST(LayerAnimatorTest, ScheduleAnimationThatCanRunImmediately) {
 
 // Schedule a threaded animation that can run immediately.
 TEST(LayerAnimatorTest, ScheduleThreadedAnimationThatCanRunImmediately) {
+  double epsilon = 0.00001;
   LayerAnimatorTestController test_controller(
       LayerAnimator::CreateDefaultAnimator());
   AnimationContainerElement* element = test_controller.animator();
@@ -311,10 +312,11 @@ TEST(LayerAnimatorTest, ScheduleThreadedAnimationThatCanRunImmediately) {
   element->Step(effective_start + delta/2);
 
   EXPECT_TRUE(test_controller.animator()->is_animating());
-  EXPECT_FLOAT_EQ(
+  EXPECT_NEAR(
       0.5,
       test_controller.GetRunningSequence(LayerAnimationElement::OPACITY)->
-          last_progressed_fraction());
+          last_progressed_fraction(),
+      epsilon);
 
   element->Step(effective_start + delta);
 
@@ -376,6 +378,7 @@ TEST(LayerAnimatorTest, ScheduleTwoAnimationsThatCanRunImmediately) {
 // Schedule a threaded and a non-threaded animation on separate properties. Both
 // animations should progress in lock step.
 TEST(LayerAnimatorTest, ScheduleThreadedAndNonThreadedAnimations) {
+  double epsilon = 0.00001;
   LayerAnimatorTestController test_controller(
       LayerAnimator::CreateDefaultAnimator());
   AnimationContainerElement* element = test_controller.animator();
@@ -425,10 +428,11 @@ TEST(LayerAnimatorTest, ScheduleThreadedAndNonThreadedAnimations) {
   element->Step(effective_start + delta/2);
 
   EXPECT_TRUE(test_controller.animator()->is_animating());
-  EXPECT_FLOAT_EQ(
+  EXPECT_NEAR(
       0.5,
       test_controller.GetRunningSequence(LayerAnimationElement::OPACITY)->
-          last_progressed_fraction());
+          last_progressed_fraction(),
+      epsilon);
   CheckApproximatelyEqual(delegate.GetBoundsForAnimation(), middle_bounds);
 
   element->Step(effective_start + delta);
@@ -666,6 +670,7 @@ TEST(LayerAnimatorTest, StartAnimationThatCanRunImmediately) {
 
 // Start threaded animation (that can run immediately).
 TEST(LayerAnimatorTest, StartThreadedAnimationThatCanRunImmediately) {
+  double epsilon = 0.00001;
   LayerAnimatorTestController test_controller(
       LayerAnimator::CreateDefaultAnimator());
   AnimationContainerElement* element = test_controller.animator();
@@ -701,10 +706,11 @@ TEST(LayerAnimatorTest, StartThreadedAnimationThatCanRunImmediately) {
   element->Step(effective_start + delta/2);
 
   EXPECT_TRUE(test_controller.animator()->is_animating());
-  EXPECT_FLOAT_EQ(
+  EXPECT_NEAR(
       0.5,
       test_controller.GetRunningSequence(LayerAnimationElement::OPACITY)->
-          last_progressed_fraction());
+          last_progressed_fraction(),
+      epsilon);
 
   element->Step(effective_start + delta);
   EXPECT_FALSE(test_controller.animator()->is_animating());
@@ -796,6 +802,7 @@ TEST(LayerAnimatorTest, PreemptByImmediatelyAnimatingToNewTarget) {
 
 // Preempt by animating to new target, with a threaded animation.
 TEST(LayerAnimatorTest, PreemptThreadedByImmediatelyAnimatingToNewTarget) {
+  double epsilon = 0.00001;
   LayerAnimatorTestController test_controller(
       LayerAnimator::CreateDefaultAnimator());
   AnimationContainerElement* element = test_controller.animator();
@@ -836,7 +843,7 @@ TEST(LayerAnimatorTest, PreemptThreadedByImmediatelyAnimatingToNewTarget) {
           LayerAnimationElement::CreateOpacityElement(start_opacity, delta)));
 
   EXPECT_TRUE(test_controller.animator()->is_animating());
-  EXPECT_FLOAT_EQ(delegate.GetOpacityForAnimation(), middle_opacity);
+  EXPECT_NEAR(delegate.GetOpacityForAnimation(), middle_opacity, epsilon);
 
   test_controller.animator()->StartAnimation(
       new LayerAnimationSequence(
@@ -857,10 +864,11 @@ TEST(LayerAnimatorTest, PreemptThreadedByImmediatelyAnimatingToNewTarget) {
   element->Step(second_effective_start + delta/2);
 
   EXPECT_TRUE(test_controller.animator()->is_animating());
-  EXPECT_FLOAT_EQ(
+  EXPECT_NEAR(
       0.5,
       test_controller.GetRunningSequence(LayerAnimationElement::OPACITY)->
-          last_progressed_fraction());
+          last_progressed_fraction(),
+      epsilon);
 
   element->Step(second_effective_start + delta);
 
@@ -1127,8 +1135,8 @@ TEST(LayerAnimatorTest, MultiPreemptByImmediatelyAnimatingToNewTarget) {
 }
 
 // Preempt a threaded animation by animating to new target.
-// http://crbug.com/177930
-TEST(LayerAnimatorTest, DISABLED_MultiPreemptThreadedByImmediatelyAnimatingToNewTarget) {
+TEST(LayerAnimatorTest, MultiPreemptThreadedByImmediatelyAnimatingToNewTarget) {
+  double epsilon = 0.00001;
   LayerAnimatorTestController test_controller(
       LayerAnimator::CreateDefaultAnimator());
   AnimationContainerElement* element = test_controller.animator();
@@ -1179,8 +1187,8 @@ TEST(LayerAnimatorTest, DISABLED_MultiPreemptThreadedByImmediatelyAnimatingToNew
                                                          delta)));
 
   EXPECT_TRUE(test_controller.animator()->is_animating());
-  EXPECT_FLOAT_EQ(delegate.GetOpacityForAnimation(), middle_opacity);
-  EXPECT_FLOAT_EQ(delegate.GetBrightnessForAnimation(), middle_brightness);
+  EXPECT_NEAR(delegate.GetOpacityForAnimation(), middle_opacity, epsilon);
+  EXPECT_NEAR(delegate.GetBrightnessForAnimation(), middle_brightness, epsilon);
 
   test_controller.animator()->StartTogether(
       CreateMultiSequence(
@@ -1203,12 +1211,14 @@ TEST(LayerAnimatorTest, DISABLED_MultiPreemptThreadedByImmediatelyAnimatingToNew
   element->Step(second_effective_start + delta/2);
 
   EXPECT_TRUE(test_controller.animator()->is_animating());
-  EXPECT_FLOAT_EQ(
+  EXPECT_NEAR(
       0.5,
       test_controller.GetRunningSequence(LayerAnimationElement::OPACITY)->
-          last_progressed_fraction());
-  EXPECT_FLOAT_EQ(delegate.GetBrightnessForAnimation(),
-                  0.5 * (start_brightness + middle_brightness));
+          last_progressed_fraction(),
+      epsilon);
+  EXPECT_NEAR(delegate.GetBrightnessForAnimation(),
+              0.5 * (start_brightness + middle_brightness),
+              epsilon);
 
   element->Step(second_effective_start + delta);
 
