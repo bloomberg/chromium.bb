@@ -13,12 +13,10 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+class Browser;
+
 namespace ash {
 class WindowPositioner;
-}
-
-namespace views {
-class View;
 }
 
 class ChromeLauncherController;
@@ -92,6 +90,12 @@ class ChromeShellDelegate : public ash::ShellDelegate,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
+  void PlatformInit();
+
+  // Returns the browser for active ash window if any. Otherwise it searches
+  // for a browser or create one for default profile and returns it.
+  Browser* GetTargetBrowser();
+
   static ChromeShellDelegate* instance_;
 
   content::NotificationRegistrar registrar_;
