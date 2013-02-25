@@ -83,62 +83,6 @@ GEN_TABLES = ["ARMv7",
               "advanced_simd_element_or_structure_load_store_instructions",
               ]
 
-# The list of tables in armv7.table that should test the automatically
-# generated baseline decoders. This list is used to allow us to incrementally
-# switch tables over to using automatically generated baselines, as they
-# pass the appropriate tests.
-BASELINE_TEST_TABLES = [
-  ]
-
-# The list of tables in armv7.table that should use the automatically generated,
-# baseline decoders. This list is used to allow us to incrementally change over
-# testing, as baselines pass the appropriate tests.
-BASELINE_GEN_TABLES = [
-    "ARMv7",
-    "data_processing_and_miscellaneous_instructions",
-    "data_processing_register",
-    "data_processing_register_shifted_register",
-    "data_processing_immediate",
-    "multiply_and_multiply_accumulate",
-    "extra_load_store_instructions",
-    "saturating_addition_and_subtraction",
-    "halfword_multiply_and_multiply_accumulate",
-    "synchronization_primitives",
-    "msr_immediate_and_hints",
-    "miscellaneous_instructions",
-    "load_store_word_and_unsigned_byte",
-    "media_instructions",
-    "parallel_addition_and_subtraction_signed",
-    "parallel_addition_and_subtraction_unsigned",
-    "packing_unpacking_saturation_and_reversal",
-    "signed_multiply_signed_and_unsigned_divide",
-    "branch_branch_with_link_and_block_data_transfer",
-    "coprocessor_instructions_and_supervisor_call",
-    "floating_point_data_processing_instructions",
-    "other_floating_point_data_processing_instructions",
-    "extension_register_load_store_instructions",
-    "transfer_between_arm_core_and_extension_register_8_16_and_32_bit",
-    "transfer_between_arm_core_and_extension_registers_64_bit",
-    "unconditional_instructions",
-    "memory_hints_advanced_simd_instructions_and_miscellaneous_instructions",
-    "advanced_simd_data_processing_instructions",
-    "simd_dp_3same",
-    "simd_dp_3diff",
-    "simd_dp_2scalar",
-    "simd_dp_2shift",
-    "simd_dp_2misc",
-    "simd_dp_1imm",
-    "advanced_simd_element_or_structure_load_store_instructions",
-    ]
-
-# Verify that BASELINE_TEST_TABLES and BASELINE_GEN_TABLES don't intersect.
-# Generated baselines should first be added to BASELINE_TEST_TABLES to verify
-# that they implement the same concept as the hand written code, and then
-# should be moved to BASELINE_GEN_TABLES to replace the hand written code.
-_BAD_BASES = [b for b in BASELINE_GEN_TABLES if b in BASELINE_TEST_TABLES]
-if any(_BAD_BASES):
-  raise Exception('Bad handling of baseline classes: %s' % _BAD_BASES)
-
 # The separators to use for splitting up automatically generated actual
 # classes.
 AUTO_ACTUAL_SEPARATORS = ['VABD']
@@ -220,10 +164,6 @@ def _generate_source(filename, table=None):
   cl_args = GEN_CL_ARGS
   if table:
     cl_args += ' --table=' + table
-  for tbl in BASELINE_GEN_TABLES:
-    cl_args += ' --auto-base=' + tbl
-  for tbl in BASELINE_TEST_TABLES:
-    cl_args += ' --test-base=' + tbl
   for sep in AUTO_ACTUAL_SEPARATORS:
     cl_args += ' --auto-actual-sep=' + sep
   for sep in AUTO_BASELINE_SEPARATORS:

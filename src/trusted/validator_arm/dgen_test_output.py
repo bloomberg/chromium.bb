@@ -834,26 +834,6 @@ TEST_F(%(decoder_name)sTests,
 }
 """
 
-TEST_FUNCTION_BASELINE="""
-// %(row_comment)s
-TEST_F(%(decoder_name)sTests,
-       %(decoder_tester)s_Test%(test_pattern)s) {
-  %(decoder_tester)s tester;
-  tester.Test("%(pattern)s");
-}
-"""
-
-TEST_FUNCTION_BASELINE_VS_BASELINE="""
-// %(row_comment)s
-TEST_F(%(decoder_name)sTests,
-       BvB_%(decoder_tester)s_Test%(test_pattern)s) {
-  %(decoder_tester)s old_baseline_tester;
-  Named%(gen_decoder)s gen_baseline;
-  BaselineVsBaselineTester b_vs_b_tester(gen_baseline, old_baseline_tester);
-  b_vs_b_tester.Test("%(pattern)s");
-}
-"""
-
 TEST_CC_FOOTER="""
 }  // namespace nacl_arm_test
 
@@ -869,8 +849,6 @@ def generate_tests_cc(decoder, decoder_name, out, cl_args, tables):
   global _cl_args
   _cl_args = cl_args
 
-  baselines = cl_args.get('test-base')
-  if not baselines: baselines = []
   decoder = _decoder_restricted_to_tables(decoder, tables)
 
   values = {
@@ -882,7 +860,7 @@ def generate_tests_cc(decoder, decoder_name, out, cl_args, tables):
   _generate_constraint_testers(decoder, values, out)
   _generate_rule_testers(decoder, values, out)
   out.write(TEST_HARNESS % values)
-  _generate_test_patterns_with_baseline_tests(decoder, values, out, baselines)
+  _generate_test_patterns(decoder, values, out)
   out.write(TEST_CC_FOOTER % values)
 
 def _filter_test_action(action):
@@ -1031,16 +1009,7 @@ def _decoder_restricted_to_tables(decoder, tables):
   new_decoder.set_class_defs(decoder.get_class_defs())
   return new_decoder
 
-def _generate_test_patterns_with_baseline_tests(
-    decoder, values, out, baseline_test_tables):
-  _generate_test_patterns(decoder, values, out, False)
-  # Don't add baseline tests unless it is possible to have baseline tests.
-  if baseline_test_tables:
-    _generate_test_patterns(
-      _decoder_restricted_to_tables(decoder, baseline_test_tables),
-      values, out, True)
-
-def _generate_test_patterns(decoder, values, out, add_baseline_tests):
+def _generate_test_patterns(decoder, values, out):
   """Generates a test function for each row having a pattern associated
      with the table row.
      """
@@ -1050,14 +1019,7 @@ def _generate_test_patterns(decoder, values, out, add_baseline_tests):
     _install_row_cases(r, values)
     row = _row_filter_interesting_patterns(r)
     action = _install_test_row(row, decoder, values)
-    if add_baseline_tests:
-      if action.find('generated_baseline'):
-        values['gen_decoder'] = action.find('generated_baseline')
-        out.write(TEST_FUNCTION_BASELINE_VS_BASELINE % values)
-    elif action.actual() == action.baseline():
-      out.write(TEST_FUNCTION_BASELINE % values)
-    else:
-      out.write(TEST_FUNCTION_ACTUAL_VS_BASELINE % values)
+    out.write(TEST_FUNCTION_ACTUAL_VS_BASELINE % values)
 
 def _index_neutral_map(values):
   """Returns a dictionary from each neutral_repr(value) in list

@@ -20,12 +20,8 @@ Options include:
         decoder table with the given name. May be repeated.
   --auto-actual-sep=name - Use as separator to split up automatically
         generated actual classes.
-  --auto-base=name - Use automatically generated baselines instead of
-        the baselines specified in the table specifications.
   --auto-baseline-sep=name - Use as separator to split up automatically
         generated baseline classes.
-  --test-base=name - Test automatically genererated baseline for the
-        decoder table with the given name. May be repeated.
 
   name - Only generate tests for table 'name'. May be repeated.
 
@@ -67,7 +63,7 @@ def install_actuals_and_baselines(decoder, cl_args):
         decoder, decoder.table_names())
 
     decoder = dgen_baselines.InstallGeneratedBaselinesIntoTables(
-      decoder, cl_args['auto-base'])
+      decoder, decoder.table_names())
 
     print "Installed generated actuals and baselines."
 
@@ -83,9 +79,7 @@ def main(argv):
     cl_args = {'add-rule-patterns': 'True',
                'auto-actual': [],
                'auto-actual-sep': [],
-               'auto-base': [],
                'auto-baseline-sep': [],
-               'test-base': [],
                'table_remove': [],
                'table': [],
                }
