@@ -64,7 +64,7 @@ MAKE = 'nacl_sdk/make_3_81/make.exe'
 CYGTAR = os.path.join(NACL_DIR, 'build', 'cygtar.py')
 
 NACLPORTS_URL = 'https://naclports.googlecode.com/svn/trunk/src'
-NACLPORTS_REV = 706
+NACLPORTS_REV = 712
 
 options = None
 
