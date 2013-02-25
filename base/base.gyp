@@ -849,6 +849,8 @@
         'test/test_listener_ios.mm',
         'test/test_pending_task.cc',
         'test/test_pending_task.h',
+        'test/test_process_killer_win.cc',
+        'test/test_process_killer_win.h',
         'test/test_reg_util_win.cc',
         'test/test_reg_util_win.h',
         'test/test_shortcut_win.cc',

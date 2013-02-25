@@ -32,6 +32,7 @@
 
 #if defined(OS_WIN)
 #include "ash/test/test_metro_viewer_process_host.h"
+#include "base/test/test_process_killer_win.h"
 #include "base/win/windows_version.h"
 #include "ui/aura/remote_root_window_host_win.h"
 #include "ui/aura/root_window_host_win.h"
@@ -131,11 +132,21 @@ void AshTestBase::TearDown() {
   Shell::DeleteInstance();
   aura::Env::DeleteInstance();
   ui::TextInputTestSupport::Shutdown();
+
 #if defined(OS_WIN)
   aura::test::SetUsePopupAsRootWindowForTest(false);
   // Kill the viewer process if we spun one up.
   metro_viewer_host_.reset();
+
+  // Clean up any dangling viewer processes as the metro APIs sometimes leave
+  // zombies behind. A default browser process in metro will have the
+  // following command line arg so use that to avoid killing all processes named
+  // win8::test::kDefaultTestExePath.
+  const wchar_t kViewerProcessArgument[] = L"DefaultBrowserServer";
+  base::KillAllNamedProcessesWithArgument(win8::test::kDefaultTestExePath,
+                                          kViewerProcessArgument);
 #endif
+
   event_generator_.reset();
   // Some tests set an internal display id,
   // reset it here, so other tests will continue in a clean environment.

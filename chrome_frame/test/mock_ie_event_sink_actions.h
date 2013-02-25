@@ -13,10 +13,10 @@
 #include "base/bind.h"
 #include "base/string_util.h"
 #include "base/string16.h"
+#include "base/test/test_process_killer_win.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/chrome_frame_ui_test_utils.h"
 #include "chrome_frame/test/ie_event_sink.h"
 #include "chrome_frame/test/mock_ie_event_sink_test.h"
@@ -315,7 +315,7 @@ ACTION_P(DelayDoCloseWindow, delay) {
 }
 
 ACTION(KillChromeFrameProcesses) {
-  KillAllNamedProcessesWithArgument(
+  base::KillAllNamedProcessesWithArgument(
       UTF8ToWide(chrome_frame_test::kChromeImageName),
       UTF8ToWide(switches::kChromeFrame));
 }

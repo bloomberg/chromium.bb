@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/string16.h"
+#include "base/test/test_process_killer_win.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
@@ -102,7 +103,7 @@ void TestScrubber::CleanUpFromTestRun() {
   base::KillProcesses(chrome_frame_test::kChromeLauncher, 0, NULL);
 
   // Kill all chrome.exe processes with --chrome-frame.
-  KillAllNamedProcessesWithArgument(
+  base::KillAllNamedProcessesWithArgument(
       chrome::kBrowserProcessExecutableName,
       ASCIIToWide(switches::kChromeFrame));
 

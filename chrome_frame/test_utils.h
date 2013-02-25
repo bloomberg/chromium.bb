@@ -128,12 +128,6 @@ class DispCallback
   Method method_;
 };
 
-// Kills all running processes named |process_name| that have the string
-// |argument| on their command line. Useful for killing all Chrome Frame
-// instances of Chrome that all have --chrome-frame in their command line.
-bool KillAllNamedProcessesWithArgument(const std::wstring& process_name,
-                                       const std::wstring& argument);
-
 // If the workstation is locked and cannot receive user input.
 bool IsWorkstationLocked();
 
