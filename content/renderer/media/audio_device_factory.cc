@@ -5,7 +5,6 @@
 #include "content/renderer/media/audio_device_factory.h"
 
 #include "base/logging.h"
-#include "content/common/child_process.h"
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/renderer_audio_output_device.h"
@@ -23,8 +22,7 @@ scoped_refptr<RendererAudioOutputDevice> AudioDeviceFactory::NewOutputDevice() {
     device = factory_->CreateOutputDevice();
 
   return device ? device : new RendererAudioOutputDevice(
-      AudioMessageFilter::Get(),
-      ChildProcess::current()->io_message_loop()->message_loop_proxy());
+      AudioMessageFilter::Get(), AudioMessageFilter::Get()->io_message_loop());
 }
 
 // static
@@ -35,7 +33,7 @@ scoped_refptr<media::AudioInputDevice> AudioDeviceFactory::NewInputDevice() {
 
   return device ? device : new media::AudioInputDevice(
       AudioInputMessageFilter::Get(),
-      ChildProcess::current()->io_message_loop()->message_loop_proxy());
+      AudioInputMessageFilter::Get()->io_message_loop());
 }
 
 AudioDeviceFactory::AudioDeviceFactory() {

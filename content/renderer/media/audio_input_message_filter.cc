@@ -5,9 +5,7 @@
 #include "content/renderer/media/audio_input_message_filter.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
-#include "base/time.h"
-#include "content/common/child_process.h"
+#include "base/message_loop_proxy.h"
 #include "content/common/media/audio_messages.h"
 #include "ipc/ipc_logging.h"
 
@@ -15,20 +13,16 @@ namespace content {
 
 AudioInputMessageFilter* AudioInputMessageFilter::filter_ = NULL;
 
-AudioInputMessageFilter::AudioInputMessageFilter()
-    : channel_(NULL) {
-  DVLOG(1) << "AudioInputMessageFilter()";
+AudioInputMessageFilter::AudioInputMessageFilter(
+    const scoped_refptr<base::MessageLoopProxy>& io_message_loop)
+    : channel_(NULL),
+      io_message_loop_(io_message_loop) {
   DCHECK(!filter_);
   filter_ = this;
 }
 
 AudioInputMessageFilter::~AudioInputMessageFilter() {
-  DVLOG(1) << "AudioInputMessageFilter::~AudioInputMessageFilter()";
-
-  // Just in case the message filter is deleted before the channel
-  // is closed and there are still living audio devices.
-  OnChannelClosing();
-
+  CHECK(delegates_.IsEmpty());
   DCHECK_EQ(filter_, this);
   filter_ = NULL;
 }
@@ -38,26 +32,17 @@ AudioInputMessageFilter* AudioInputMessageFilter::Get() {
   return filter_;
 }
 
-bool AudioInputMessageFilter::Send(IPC::Message* message) {
+void AudioInputMessageFilter::Send(IPC::Message* message) {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
   if (!channel_) {
     delete message;
-    return false;
+  } else {
+    channel_->Send(message);
   }
-
-  if (MessageLoop::current() != ChildProcess::current()->io_message_loop()) {
-    // Can only access the IPC::Channel on the IPC thread since it's not thread
-    // safe.
-    ChildProcess::current()->io_message_loop()->PostTask(
-        FROM_HERE,
-        base::Bind(base::IgnoreResult(&AudioInputMessageFilter::Send), this,
-                   message));
-    return true;
-  }
-
-  return channel_->Send(message);
 }
 
 bool AudioInputMessageFilter::OnMessageReceived(const IPC::Message& message) {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AudioInputMessageFilter, message)
     IPC_MESSAGE_HANDLER(AudioInputMsg_NotifyStreamCreated,
@@ -73,18 +58,22 @@ bool AudioInputMessageFilter::OnMessageReceived(const IPC::Message& message) {
 }
 
 void AudioInputMessageFilter::OnFilterAdded(IPC::Channel* channel) {
-  DVLOG(1) << "AudioInputMessageFilter::OnFilterAdded()";
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
+
   // Captures the channel for IPC.
   channel_ = channel;
 }
 
 void AudioInputMessageFilter::OnFilterRemoved() {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
   channel_ = NULL;
 }
 
 void AudioInputMessageFilter::OnChannelClosing() {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
   channel_ = NULL;
-  LOG_IF(WARNING, !delegates_.IsEmpty())
+
+  DLOG_IF(WARNING, !delegates_.IsEmpty())
       << "Not all audio devices have been closed.";
 
   IDMap<media::AudioInputIPCDelegate>::iterator it(&delegates_);
@@ -104,13 +93,15 @@ void AudioInputMessageFilter::OnStreamCreated(
     base::FileDescriptor socket_descriptor,
 #endif
     uint32 length) {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
+
 #if !defined(OS_WIN)
   base::SyncSocket::Handle socket_handle = socket_descriptor.fd;
 #endif
   media::AudioInputIPCDelegate* delegate = delegates_.Lookup(stream_id);
   if (!delegate) {
     DLOG(WARNING) << "Got audio stream event for a non-existent or removed"
-        " audio capturer (stream_id=" << stream_id << ").";
+                  << " audio capturer (stream_id=" << stream_id << ").";
     base::SharedMemory::CloseHandle(handle);
     base::SyncSocket socket(socket_handle);
     return;
@@ -120,10 +111,11 @@ void AudioInputMessageFilter::OnStreamCreated(
 }
 
 void AudioInputMessageFilter::OnStreamVolume(int stream_id, double volume) {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
   media::AudioInputIPCDelegate* delegate = delegates_.Lookup(stream_id);
   if (!delegate) {
     DLOG(WARNING) << "Got audio stream event for a non-existent or removed"
-        " audio capturer.";
+                  << " audio capturer.";
     return;
   }
   delegate->OnVolume(volume);
@@ -131,10 +123,11 @@ void AudioInputMessageFilter::OnStreamVolume(int stream_id, double volume) {
 
 void AudioInputMessageFilter::OnStreamStateChanged(
     int stream_id, media::AudioInputIPCDelegate::State state) {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
   media::AudioInputIPCDelegate* delegate = delegates_.Lookup(stream_id);
   if (!delegate) {
     DLOG(WARNING) << "Got audio stream event for a non-existent or removed"
-        " audio renderer.";
+                  << " audio renderer.";
     return;
   }
   delegate->OnStateChanged(state);
@@ -142,6 +135,7 @@ void AudioInputMessageFilter::OnStreamStateChanged(
 
 void AudioInputMessageFilter::OnDeviceStarted(int stream_id,
                                               const std::string& device_id) {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
   media::AudioInputIPCDelegate* delegate = delegates_.Lookup(stream_id);
   if (!delegate) {
     NOTREACHED();
@@ -152,23 +146,25 @@ void AudioInputMessageFilter::OnDeviceStarted(int stream_id,
 
 int AudioInputMessageFilter::AddDelegate(
     media::AudioInputIPCDelegate* delegate) {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
   return delegates_.Add(delegate);
 }
 
 void AudioInputMessageFilter::RemoveDelegate(int id) {
-  DVLOG(1) << "AudioInputMessageFilter::RemoveDelegate(id=" << id << ")";
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
   delegates_.Remove(id);
 }
 
 void AudioInputMessageFilter::CreateStream(int stream_id,
-    const media::AudioParameters& params, const std::string& device_id,
-    bool automatic_gain_control) {
+                                           const media::AudioParameters& params,
+                                           const std::string& device_id,
+                                           bool automatic_gain_control) {
   Send(new AudioInputHostMsg_CreateStream(
       stream_id, params, device_id, automatic_gain_control));
 }
 
-void AudioInputMessageFilter::AssociateStreamWithConsumer(
-    int stream_id, int render_view_id) {
+void AudioInputMessageFilter::AssociateStreamWithConsumer(int stream_id,
+                                                          int render_view_id) {
   Send(new AudioInputHostMsg_AssociateStreamWithConsumer(
       stream_id, render_view_id));
 }

@@ -5,9 +5,7 @@
 #include "content/renderer/media/audio_message_filter.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
-#include "base/time.h"
-#include "content/common/child_process.h"
+#include "base/message_loop_proxy.h"
 #include "content/common/media/audio_messages.h"
 #include "content/renderer/render_thread_impl.h"
 #include "ipc/ipc_logging.h"
@@ -21,11 +19,12 @@ AudioMessageFilter* AudioMessageFilter::Get() {
   return filter_;
 }
 
-AudioMessageFilter::AudioMessageFilter()
-    : next_stream_id_(1),
-      channel_(NULL),
-      audio_hardware_config_(NULL) {
-  DVLOG(1) << "AudioMessageFilter::AudioMessageFilter()";
+AudioMessageFilter::AudioMessageFilter(
+    const scoped_refptr<base::MessageLoopProxy>& io_message_loop)
+    : channel_(NULL),
+      next_stream_id_(1),
+      audio_hardware_config_(NULL),
+      io_message_loop_(io_message_loop) {
   DCHECK(!filter_);
   filter_ = this;
 }
@@ -72,26 +71,17 @@ void AudioMessageFilter::SetVolume(int stream_id, double volume) {
   Send(new AudioHostMsg_SetVolume(stream_id, volume));
 }
 
-bool AudioMessageFilter::Send(IPC::Message* message) {
+void AudioMessageFilter::Send(IPC::Message* message) {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
   if (!channel_) {
     delete message;
-    return false;
+  } else {
+    channel_->Send(message);
   }
-
-  if (MessageLoop::current() != ChildProcess::current()->io_message_loop()) {
-    // Can only access the IPC::Channel on the IPC thread since it's not thread
-    // safe.
-    ChildProcess::current()->io_message_loop()->PostTask(
-        FROM_HERE,
-        base::Bind(base::IgnoreResult(&AudioMessageFilter::Send), this,
-                   message));
-    return true;
-  }
-
-  return channel_->Send(message);
 }
 
 bool AudioMessageFilter::OnMessageReceived(const IPC::Message& message) {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AudioMessageFilter, message)
     IPC_MESSAGE_HANDLER(AudioMsg_NotifyStreamCreated, OnStreamCreated)
@@ -103,40 +93,32 @@ bool AudioMessageFilter::OnMessageReceived(const IPC::Message& message) {
 }
 
 void AudioMessageFilter::OnFilterAdded(IPC::Channel* channel) {
-  DVLOG(1) << "AudioMessageFilter::OnFilterAdded()";
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
   channel_ = channel;
 }
 
 void AudioMessageFilter::OnFilterRemoved() {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
   channel_ = NULL;
 }
 
 void AudioMessageFilter::OnChannelClosing() {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
   channel_ = NULL;
 
-  DelegateMap zombies;
-  {
-    base::AutoLock auto_lock(lock_);
-    delegates_.swap(zombies);
-  }
-
-  LOG_IF(WARNING, !zombies.empty())
+  base::AutoLock auto_lock(lock_);
+  DLOG_IF(WARNING, !delegates_.empty())
       << "Not all audio devices have been closed.";
 
-  for (DelegateMap::const_iterator it = zombies.begin(); it != zombies.end();
-       ++it) {
+  for (DelegateMap::const_iterator it = delegates_.begin();
+       it != delegates_.end(); ++it) {
     it->second->OnIPCClosed();
   }
 }
 
 AudioMessageFilter::~AudioMessageFilter() {
-  DVLOG(1) << "AudioMessageFilter::~AudioMessageFilter()";
-
-  // Just in case the message filter is deleted before the channel
-  // is closed and there are still living audio devices.
-  OnChannelClosing();
-
-  DCHECK(filter_);
+  CHECK(delegates_.empty());
+  DCHECK_EQ(filter_, this);
   filter_ = NULL;
 }
 
@@ -149,6 +131,8 @@ void AudioMessageFilter::OnStreamCreated(
     base::FileDescriptor socket_descriptor,
 #endif
     uint32 length) {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
+
 #if !defined(OS_WIN)
   base::SyncSocket::Handle socket_handle = socket_descriptor.fd;
 #endif
@@ -170,6 +154,8 @@ void AudioMessageFilter::OnStreamCreated(
 
 void AudioMessageFilter::OnStreamStateChanged(
     int stream_id, media::AudioOutputIPCDelegate::State state) {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
+
   base::AutoLock auto_lock(lock_);
   DelegateMap::const_iterator it = delegates_.find(stream_id);
   DLOG_IF(WARNING, it == delegates_.end())
@@ -181,6 +167,7 @@ void AudioMessageFilter::OnStreamStateChanged(
 void AudioMessageFilter::OnOutputDeviceChanged(int stream_id,
                                                int new_buffer_size,
                                                int new_sample_rate) {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
 
   // Ignore the message if an audio hardware config hasn't been created; this
