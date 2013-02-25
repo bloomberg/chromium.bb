@@ -143,6 +143,7 @@
         'bluetooth/bluetooth_adapter_chromeos_unittest.cc',
         'bluetooth/bluetooth_adapter_devices_chromeos_unittest.cc',
         'bluetooth/bluetooth_adapter_win_unittest.cc',
+        'bluetooth/bluetooth_device_win_unittest.cc',
         'bluetooth/bluetooth_service_record_chromeos_unittest.cc',
         'bluetooth/bluetooth_service_record_win_unittest.cc',
         'bluetooth/bluetooth_task_manager_win_unittest.cc',

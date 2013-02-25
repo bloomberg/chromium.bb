@@ -45,7 +45,6 @@ class BluetoothDeviceChromeOS
   virtual void GetServiceRecords(
       const ServiceRecordsCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE;
-  virtual bool ProvidesServiceWithUUID(const std::string& uuid) const OVERRIDE;
   virtual void ProvidesServiceWithName(
       const std::string& name,
       const ProvidesServiceCallback& callback) OVERRIDE;

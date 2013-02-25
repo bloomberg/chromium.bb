@@ -1,8 +1,6 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// TODO(youngki): Implement this file.
 
 #include "device/bluetooth/bluetooth_device_win.h"
 
@@ -15,6 +13,8 @@
 #include "base/stringprintf.h"
 #include "device/bluetooth/bluetooth_out_of_band_pairing_data.h"
 #include "device/bluetooth/bluetooth_service_record_win.h"
+#include "device/bluetooth/bluetooth_socket_win.h"
+#include "device/bluetooth/bluetooth_task_manager_win.h"
 
 namespace {
 
@@ -63,26 +63,27 @@ bool BluetoothDeviceWin::IsPaired() const {
 }
 
 const BluetoothDevice::ServiceList& BluetoothDeviceWin::GetServices() const {
-  NOTIMPLEMENTED();
   return service_uuids_;
 }
 
 void BluetoothDeviceWin::GetServiceRecords(
     const ServiceRecordsCallback& callback,
     const ErrorCallback& error_callback) {
-  NOTIMPLEMENTED();
-}
-
-bool BluetoothDeviceWin::ProvidesServiceWithUUID(
-    const std::string& uuid) const {
-  NOTIMPLEMENTED();
-  return false;
+  callback.Run(service_record_list_);
 }
 
 void BluetoothDeviceWin::ProvidesServiceWithName(
     const std::string& name,
     const ProvidesServiceCallback& callback) {
-  NOTIMPLEMENTED();
+  for (ServiceRecordList::const_iterator iter = service_record_list_.begin();
+       iter != service_record_list_.end();
+       ++iter) {
+    if ((*iter)->name() == name) {
+      callback.Run(true);
+      return;
+    }
+  }
+  callback.Run(false);
 }
 
 bool BluetoothDeviceWin::ExpectingPinCode() const {
@@ -140,7 +141,19 @@ void BluetoothDeviceWin::Forget(const ErrorCallback& error_callback) {
 void BluetoothDeviceWin::ConnectToService(
     const std::string& service_uuid,
     const SocketCallback& callback) {
-  NOTIMPLEMENTED();
+  for (ServiceRecordList::const_iterator iter = service_record_list_.begin();
+       iter != service_record_list_.end();
+       ++iter) {
+    if ((*iter)->uuid() == service_uuid) {
+      // If multiple service records are found, use the first one that works.
+      scoped_refptr<BluetoothSocket> socket(
+          BluetoothSocketWin::CreateBluetoothSocket(**iter));
+      if (socket.get() != NULL) {
+        callback.Run(socket);
+        return;
+      }
+    }
+  }
 }
 
 void BluetoothDeviceWin::SetOutOfBandPairingData(

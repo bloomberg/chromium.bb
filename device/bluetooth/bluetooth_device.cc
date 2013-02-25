@@ -4,11 +4,19 @@
 
 #include "device/bluetooth/bluetooth_device.h"
 
+#include <string>
+
 #include "base/utf_string_conversions.h"
+#include "device/bluetooth/bluetooth_utils.h"
 #include "grit/device_bluetooth_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace device {
+
+// static
+bool BluetoothDevice::IsUUIDValid(const std::string& uuid) {
+  return !bluetooth_utils::CanonicalUuid(uuid).empty();
+}
 
 BluetoothDevice::BluetoothDevice()
     : bluetooth_class_(0),
@@ -170,6 +178,19 @@ bool BluetoothDevice::IsConnected() const {
 
 bool BluetoothDevice::IsConnectable() const {
   return connectable_;
+}
+
+bool BluetoothDevice::ProvidesServiceWithUUID(
+    const std::string& uuid) const {
+  std::string canonical_uuid = bluetooth_utils::CanonicalUuid(uuid);
+  const BluetoothDevice::ServiceList& services = GetServices();
+  for (BluetoothDevice::ServiceList::const_iterator iter = services.begin();
+       iter != services.end();
+       ++iter) {
+    if (bluetooth_utils::CanonicalUuid(*iter) == canonical_uuid)
+      return true;
+  }
+  return false;
 }
 
 }  // namespace device

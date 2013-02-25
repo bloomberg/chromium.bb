@@ -43,7 +43,7 @@ TEST_F(BluetoothServiceRecordWinTest, NoRfcommSdp) {
   uint8 sdp_bytes_array[kTestNoRfcommSdpBytesSize];
   ConvertSdpBytes(kTestNoRfcommSdpBytes, sdp_bytes_array);
   BluetoothServiceRecordWin service_record("NoRfcommSdp",
-                                           "Service Address",
+                                           "01:02:03:0A:10:A0",
                                            kTestNoRfcommSdpBytesSize,
                                            sdp_bytes_array);
   EXPECT_STREQ(kTestNoRfcommSdpUuid, service_record.uuid().c_str());
@@ -55,7 +55,7 @@ TEST_F(BluetoothServiceRecordWinTest, RfcommSdp) {
   uint8 sdp_bytes_array[kTestRfcommSdpBytesSize];
   ConvertSdpBytes(kTestRfcommSdpBytes, sdp_bytes_array);
   BluetoothServiceRecordWin service_record("RfcommSdp",
-                                           "Service Address",
+                                           "01:02:03:0A:10:A0",
                                            kTestRfcommSdpBytesSize,
                                            sdp_bytes_array);
   EXPECT_STREQ(kTestRfcommSdpUuid, service_record.uuid().c_str());

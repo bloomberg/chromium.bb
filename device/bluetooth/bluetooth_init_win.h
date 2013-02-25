@@ -14,6 +14,7 @@
 #undef FACILITY_VISUALCPP
 #endif
 #include <delayimp.h>
+#include <ws2def.h>
 #include <ws2bth.h>
 
 #pragma comment(lib, "Bthprops.lib")

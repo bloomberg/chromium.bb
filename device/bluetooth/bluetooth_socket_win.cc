@@ -11,7 +11,6 @@
 #include "base/sys_string_conversions.h"
 #include "device/bluetooth/bluetooth_init_win.h"
 #include "device/bluetooth/bluetooth_service_record_win.h"
-#include "device/bluetooth/bluetooth_utils.h"
 #include "net/base/io_buffer.h"
 #include "net/base/winsock_init.h"
 

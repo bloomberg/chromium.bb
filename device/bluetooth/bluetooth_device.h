@@ -145,6 +145,10 @@ class BluetoothDevice {
     virtual void DismissDisplayOrConfirm() = 0;
   };
 
+  // Returns true if uuid is in a a valid canonical format
+  // (see utils::CanonicalUuid).
+  static bool IsUUIDValid(const std::string& uuid);
+
   virtual ~BluetoothDevice();
 
   // Returns the Bluetooth of address the device. This should be used as
@@ -203,9 +207,8 @@ class BluetoothDevice {
   virtual void GetServiceRecords(const ServiceRecordsCallback& callback,
                                  const ErrorCallback& error_callback) = 0;
 
-  // Indicates whether this device provides the given service.  |uuid| should
-  // be in canonical form (see utils::CanonicalUuid).
-  virtual bool ProvidesServiceWithUUID(const std::string& uuid) const = 0;
+  // Indicates whether this device provides the given service.
+  virtual bool ProvidesServiceWithUUID(const std::string& uuid) const;
 
   // The ProvidesServiceCallback is used by ProvidesServiceWithName to indicate
   // whether or not a matching service was found.
@@ -337,6 +340,9 @@ class BluetoothDevice {
   // Indicates whether the device normally accepts connections initiated from
   // the adapter once paired.
   bool connectable_;
+
+  // The services (identified by UUIDs) that this device provides.
+  ServiceList service_uuids_;
 
  private:
   // Returns a localized string containing the device's bluetooth address and

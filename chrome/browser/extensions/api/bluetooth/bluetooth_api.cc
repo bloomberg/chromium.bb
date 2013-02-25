@@ -163,8 +163,8 @@ bool BluetoothGetDevicesFunction::DoWork(
 
   std::string uuid;
   if (options.uuid.get() != NULL) {
-    uuid = device::bluetooth_utils::CanonicalUuid(*options.uuid.get());
-    if (uuid.empty()) {
+    uuid = *options.uuid.get();
+    if (!BluetoothDevice::IsUUIDValid(uuid)) {
       SetError(kInvalidUuid);
       SendResponse(false);
       return false;
@@ -284,9 +284,7 @@ bool BluetoothConnectFunction::DoWork(scoped_refptr<BluetoothAdapter> adapter) {
     return false;
   }
 
-  std::string uuid = device::bluetooth_utils::CanonicalUuid(
-      options.service_uuid);
-  if (uuid.empty()) {
+  if (!BluetoothDevice::IsUUIDValid(options.service_uuid)) {
     SetError(kInvalidUuid);
     SendResponse(false);
     return false;
@@ -298,6 +296,9 @@ bool BluetoothConnectFunction::DoWork(scoped_refptr<BluetoothAdapter> adapter) {
     SendResponse(false);
     return false;
   }
+
+  std::string uuid = device::bluetooth_utils::CanonicalUuid(
+      options.service_uuid);
 
   device->ConnectToService(uuid,
       base::Bind(&BluetoothConnectFunction::ConnectToServiceCallback,

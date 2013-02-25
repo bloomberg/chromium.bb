@@ -29,7 +29,6 @@ class BluetoothDeviceWin : public BluetoothDevice {
   virtual void GetServiceRecords(
       const ServiceRecordsCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE;
-  virtual bool ProvidesServiceWithUUID(const std::string& uuid) const OVERRIDE;
   virtual void ProvidesServiceWithName(
       const std::string& name,
       const ProvidesServiceCallback& callback) OVERRIDE;
@@ -74,8 +73,6 @@ class BluetoothDeviceWin : public BluetoothDevice {
   // Used to compare the devices.
   uint32 device_fingerprint_;
   ServiceRecordList service_record_list_;
-  // The services (identified by UUIDs) that this device provides.
-  ServiceList service_uuids_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDeviceWin);
 };

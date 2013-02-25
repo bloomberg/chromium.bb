@@ -79,18 +79,6 @@ void BluetoothDeviceChromeOS::GetServiceRecords(
                          error_callback)));
 }
 
-bool BluetoothDeviceChromeOS::ProvidesServiceWithUUID(
-    const std::string& uuid) const {
-  const BluetoothDevice::ServiceList& services = GetServices();
-  for (BluetoothDevice::ServiceList::const_iterator iter = services.begin();
-       iter != services.end();
-       ++iter) {
-    if (device::bluetooth_utils::CanonicalUuid(*iter) == uuid)
-      return true;
-  }
-  return false;
-}
-
 void BluetoothDeviceChromeOS::ProvidesServiceWithName(
     const std::string& name,
     const ProvidesServiceCallback& callback) {
