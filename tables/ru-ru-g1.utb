@@ -333,8 +333,6 @@ prepunc ` 6-236
 always @ 146
 always \\ 456-16
 always | 456
-repeated \s 0
-repeated \t 0
 always ... 256-256-256
 always .\s.\s. 256-256-256 . . .
 always $ 256-3456

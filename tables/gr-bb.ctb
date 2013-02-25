@@ -55,7 +55,6 @@ letter \x00e0 4-1
 replace \x0088 # CHARACTER TABULATION SET 
 replace \x0089 # CHARACTER TABULATION WITH JUSTIFICATION 
 midnum \x0009 46
-repeated \t 0
 always ? 56
 always / 0-456-34-0
 always // 0-456-34-34-0
@@ -132,8 +131,6 @@ prepunc ` 6-236
 always @ 4-1
 always \\ 456-16
 always | 456-1256
-repeated \s 0
-repeated \t 0
 always \s-\s 36-36
 always ... 3-3-3
 always .\s.\s. 3-3-3 . . .

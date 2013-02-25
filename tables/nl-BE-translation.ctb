@@ -65,10 +65,6 @@ hyphen    \x002D  36
 # Translation opcodes
 # ----------------------------------------------------------------------------------------------
 
-# spaties
-repeated \s 0
-repeated \t 0
-
 # paragraafteken §
 begword \x00A7   346-0
 midword \x00A7 0-346-0

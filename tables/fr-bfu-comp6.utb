@@ -241,10 +241,6 @@ litdigit 7 12456				sept
 litdigit 8 1256				huit
 litdigit 9 246					neuf
 
-repeated \s 0							espaces
-repeated \t 0							tabulations
-repeated \x00a0 0					no-break spaces
-
 repeated ... 256-256-256				points de suspension
 repeated --- 36-36-36
 repeated ___ 456-456-456

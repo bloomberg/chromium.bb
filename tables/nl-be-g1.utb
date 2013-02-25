@@ -211,9 +211,6 @@ postpunc " 2356
 prepunc ' 3
 postpunc ' 3
 prepunc ° 4-356			born sign														x00B0
-repeated \s 0					espaces
-repeated \t 0					tabulations
-repeated \x00A0 0			espaces insécables
 
 repeated ... 256-256-256		points de suite
 repeated --- 36-36-36

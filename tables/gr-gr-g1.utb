@@ -276,10 +276,6 @@ endnum \X03C9 6-245			Greek letter Omega
 prepunc " 236
 postpunc " 356
 
-repeated \s 0					espaces
-repeated \t 0					tabulations
-repeated \x00A0 0			espaces insécables
-
 repeated ... 3-3-3		points de suite
 repeated --- 36-36-36
 repeated ___ 456-456-456

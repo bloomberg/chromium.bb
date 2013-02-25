@@ -163,10 +163,6 @@ midnum = 2356
 
 endnum # 56-3456
 
-repeated \s 0
-repeated \t 0
-repeated \x00a0 0
-
 repeated ... 3-3-3
 repeated --- 36-36-36
 repeated ___ 456-456-456

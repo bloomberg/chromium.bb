@@ -37,10 +37,6 @@ begcaps 4-6
 
 prepunc `` 236
 
-repeated \s 0
-repeated \t 0
-repeated \x00a0 0 							# no break space
-
 repeated ... 256-256-256
 
 

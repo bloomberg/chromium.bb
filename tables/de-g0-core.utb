@@ -29,8 +29,6 @@
 
 include countries.cti
 
-repeated \s 0
-
 # --- Braille indicator opcodes ------------------------------------------------
 
 # letsign 6
@@ -78,8 +76,6 @@ capsnocont
 # --- Translation opcodes ------------------------------------------------------
 
 # Mehrfach-Leerschläge eliminieren
-#repeated \t 346
-repeated \s 0
 
 midnum , 2 Komma
 endnum ; 6-23 Strichpunkt

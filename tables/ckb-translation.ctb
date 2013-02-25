@@ -111,8 +111,6 @@ prepunc ` 6-236
 always @ 4
 always \\ 1256		#[Peter Engström 2011-03-15]
 always | 1245
-repeated \s 0
-repeated \t 0
 always ... 3-3-3
 always .\s.\s. 3-3-3 . . .
 always $ 1246		#[Peter Engström 2011-03-15]

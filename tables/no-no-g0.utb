@@ -215,9 +215,6 @@ endnum g 56-1245
 endnum h 56-125
 endnum i 56-24
 endnum j 56-245
-repeated \s 0		espaces
-repeated \t 0		tabulations
-repeated \x00a0 0		espaces insécables
 
 repeated ... 3-3-3		points de suite
 repeated --- 36-36-36

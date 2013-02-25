@@ -116,9 +116,6 @@ always ` 46-16
 always @ 4-1
 always \\ 456-16
 always | 456-1256
-#	repeated \s 0		Uncomment if you want a single space for repeated spaces 
-#	repeated \t 0		Uncomment if you want TABs converted to a space
-repeated \x00a0 0 no break space
 repeated --- 6-36-6-36-6-36
 
 repeated ___ 46-36-46-36-46-36

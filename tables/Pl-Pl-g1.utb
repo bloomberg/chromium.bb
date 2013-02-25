@@ -175,9 +175,6 @@ prepunc `` 236
 prepunc ` 6-236
 
 
-repeated \s 0
-repeated \t 0
-repeated \x00a0 0 no break space
 repeated --- 36-36-36
 
 repeated ___ 46-46-46

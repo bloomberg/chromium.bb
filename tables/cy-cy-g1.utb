@@ -206,9 +206,6 @@ always ` 4
 always @ 2346
 always \\ 5-16
 always | 5-123
-#	repeated \s 0		Uncomment if you want a single space for repeated spaces 
-#	repeated \t 0		Uncomment if you want TABs converted to a space
-repeated \x00a0 0 no break space
 repeated --- 36-36-36
 
 # repeated ___ 78-78-78

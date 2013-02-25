@@ -230,12 +230,6 @@ midnum / 34
 midnum : 25
 midnum   7          # no-break space
 always   7
-#repeated \s 0							espaces
-#repeated \t 0							tabulations
-#repeated \x00a0 0					no-break space
-#repeated ... 256-256-256				points de suspension
-#repeated --- 36-36-36
-#repeated ___ 578-578-578
 #always \s--\s 36-36	tiret
 
 #unicode braille

@@ -129,8 +129,6 @@ always } 456-345
 always @ 4
 always \\ 456-16
 always | 456-1256
-repeated \s 0
-repeated \t 0
 always \s-\s 36
 always ..." 256-256-256-356
 always ... 256-256-256

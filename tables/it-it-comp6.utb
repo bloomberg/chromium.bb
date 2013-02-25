@@ -94,10 +94,6 @@ prepunc `` 236
 prepunc " 236
 postpunc " 356
 
-repeated \s 0
-repeated \t 0
-repeated \x00a0 0 no break space
-
 repeated ___ 46-46-46
 
 repeated ::: 25-25-25

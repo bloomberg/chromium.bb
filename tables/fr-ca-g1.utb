@@ -120,10 +120,6 @@ endnum # 56-3456
 
 sign _ 456		souligné 		
 
-repeated \s 0		espaces
-repeated \t 0		tabulations
-repeated \x00a0 0		espaces insécables
-
 repeated ... 256-256-256	points de suite		
 repeated --- 36-36-36
 repeated ___ 456-456-456				

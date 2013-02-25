@@ -270,11 +270,7 @@ prepunc ` 6-236
 always @ 4
 always \\ 6-34
 always | 1245
-repeated \s 0
-repeated \t 0
-# always \s-\s 36-36
 always ... 3-3-3
-always .\s.\s. 3-3-3 . . .
 always $ 4-234
 
 # special character sequences

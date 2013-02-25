@@ -60,10 +60,6 @@ always ! 235
 always ' 3
 always ` 4
 
-# Eliminate spare spaces.
-repeated \s 0
-repeated \t 0
-
 # Special symbols:
 always @ 4-1
 always # 4-1345

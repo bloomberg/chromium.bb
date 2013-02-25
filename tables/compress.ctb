@@ -19,6 +19,7 @@
 
 # Sequences which should be represented by no dots.
 repeated \s 0
+repeated \x00a0 0 # no breaking space
 repeated \t 0
 
 # cut down lines of hyphens, underscores, etc.

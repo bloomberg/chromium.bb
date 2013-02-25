@@ -123,10 +123,6 @@ midnum = 2356
 
 endnum # 56-3456
 
-repeated \s 0		espaces
-repeated \t 0		tabulations
-repeated \x00a0 0		espaces insécables
-
 repeated ... 3-3-3		points de suite
 repeated --- 36-36-36
 repeated ___ 6-6-6

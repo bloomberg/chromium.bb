@@ -117,10 +117,6 @@ midnum : 25
 
 endnum # 56-3456
 
-repeated \s 0		spaces
-repeated \t 0		tabulations
-repeated \x00a0 0		espaces insécables
-
 repeated ... 3-3-3		ellipsis
 repeated --- 36-36-36
 repeated ___ 6-6-6
