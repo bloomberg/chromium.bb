@@ -240,6 +240,15 @@ DirectoryContents.prototype.prefetchMetadata = function(entries, callback) {
 };
 
 /**
+ * @param {Array.<Entry>} entries Files.
+ * @param {function} callback Callback on done.
+ */
+DirectoryContents.prototype.reloadMetadata = function(entries, callback) {
+  this.context_.metadataCache.clear(entries, '*');
+  this.context_.metadataCache.get(entries, 'filesystem', callback);
+};
+
+/**
  * @protected
  * @param {Array.<Entry>} entries File list.
  */
@@ -381,7 +390,9 @@ DirectoryContentsBasic.prototype.recordMetrics_ = function() {
 DirectoryContentsBasic.prototype.createDirectory = function(
     name, successCallback, errorCallback) {
   var onSuccess = function(newEntry) {
-    this.prefetchMetadata([newEntry], function() {successCallback(newEntry);});
+    this.reloadMetadata([newEntry], function() {
+      successCallback(newEntry);
+    });
   };
 
   this.entry_.getDirectory(name, {create: true, exclusive: true},

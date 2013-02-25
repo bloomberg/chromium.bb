@@ -1477,17 +1477,19 @@ DialogType.isModal = function(type) {
 
   FileManager.prototype.refreshCurrentDirectoryMetadata_ = function() {
     var entries = this.directoryModel_.getFileList().slice();
+    var directoryEntry = this.directoryModel_.getCurrentDirEntry();
     // We don't pass callback here. When new metadata arrives, we have an
     // observer registered to update the UI.
 
     // TODO(dgozman): refresh content metadata only when modificationTime
     // changed.
-    this.metadataCache_.clear(entries, 'filesystem|thumbnail|media');
-    this.metadataCache_.get(entries, 'filesystem', null);
-    if (this.isOnDrive()) {
-      this.metadataCache_.clear(entries, 'drive');
-      this.metadataCache_.get(entries, 'drive', null);
-    }
+    var isFakeEntry = typeof directoryEntry.toURL !== 'function';
+    var getEntries = (isFakeEntry ? [] : [directoryEntry]).concat(entries);
+    this.metadataCache_.clearRecursively(directoryEntry, '*');
+    this.metadataCache_.get(getEntries, 'filesystem', null);
+
+    if (this.isOnDrive())
+      this.metadataCache_.get(getEntries, 'drive', null);
 
     var visibleItems = this.currentList_.items;
     var visibleEntries = [];

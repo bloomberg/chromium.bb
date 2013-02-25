@@ -322,7 +322,7 @@ MetadataCache.prototype.set = function(items, type, values) {
  * Clears the cached metadata values.
  * @param {string|Entry|Array.<string|Entry>} items The list of entries or
  *     file urls. May be just a single item.
- * @param {string} type The metadata type.
+ * @param {string} type The metadata types or * for any type.
  */
 MetadataCache.prototype.clear = function(items, type) {
   if (!(items instanceof Array))
@@ -333,9 +333,37 @@ MetadataCache.prototype.clear = function(items, type) {
   for (var index = 0; index < items.length; index++) {
     var url = this.itemToUrl_(items[index]);
     if (url in this.cache_) {
-      for (var j = 0; j < types.length; j++) {
-        var type = types[j];
-        delete this.cache_[url].properties[type];
+      if (type === '*') {
+        this.cache_[url].properties = {};
+      } else {
+        for (var j = 0; j < types.length; j++) {
+          var type = types[j];
+          delete this.cache_[url].properties[type];
+        }
+      }
+    }
+  }
+};
+
+/**
+ * Clears the cached metadata values recursively.
+ * @param {Entry|string} item An entry or a url.
+ * @param {string} type The metadata types or * for any type.
+ */
+MetadataCache.prototype.clearRecursively = function(item, type) {
+  var types = type.split('|');
+  var keys = Object.keys(this.cache_);
+  var url = this.itemToUrl_(item);
+
+  for (entryUrl in keys) {
+    if (entryUrl.substring(0, url.length) === url) {
+      if (type === '*') {
+        this.cache_[entryUrl].properties = {};
+      } else {
+        for (var index = 0; index < types.length; index++) {
+          var type = types[index];
+          delete this.cache_[entryUrl].properties[type];
+        }
       }
     }
   }
@@ -480,7 +508,15 @@ MetadataCache.prototype.itemToUrl_ = function(item) {
   if (typeof(item) == 'string')
     return item;
 
-  return item._URL_ || (item._URL_ = item.toURL());
+  if (!item._URL_) {
+    // Is a fake entry.
+    if (typeof item.toURL !== 'function')
+      item._URL_ = util.makeFilesystemUrl(item.fullPath);
+    else
+      item._URL_ = item.toURL();
+  }
+
+  return item._URL_;
 };
 
 /**
