@@ -317,5 +317,5 @@ void BookmarkBubbleGtk::InitFolderComboModel() {
   }
 
   gtk_combo_box_set_active(GTK_COMBO_BOX(folder_combo_),
-                           folder_combo_model_->node_parent_index());
+                           folder_combo_model_->GetDefaultIndex());
 }

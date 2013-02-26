@@ -219,6 +219,7 @@
         'base/layout_mac.mm',
         'base/models/button_menu_item_model.cc',
         'base/models/button_menu_item_model.h',
+        'base/models/combobox_model.cc',
         'base/models/combobox_model.h',
         'base/models/list_model.h',
         'base/models/list_model_observer.h',

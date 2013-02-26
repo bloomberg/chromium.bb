@@ -65,6 +65,10 @@ string16 RecentlyUsedFoldersComboModel::GetItemAt(int index) {
   return nodes_[index]->GetTitle();
 }
 
+int RecentlyUsedFoldersComboModel::GetDefaultIndex() const {
+  return node_parent_index_;
+}
+
 const BookmarkNode* RecentlyUsedFoldersComboModel::GetNodeAt(int index) {
   if (index < 0 || index >= static_cast<int>(nodes_.size()))
     return NULL;

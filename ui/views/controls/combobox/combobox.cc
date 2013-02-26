@@ -27,8 +27,7 @@ Combobox::Combobox(ui::ComboboxModel* model)
     : native_wrapper_(NULL),
       model_(model),
       listener_(NULL),
-      selected_index_(0) {
-  DCHECK(model);
+      selected_index_(model_->GetDefaultIndex()) {
   set_focusable(true);
 }
 

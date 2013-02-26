@@ -25,18 +25,18 @@ class RecentlyUsedFoldersComboModel : public ui::ComboboxModel {
   // Overridden from ui::ComboboxModel:
   virtual int GetItemCount() const OVERRIDE;
   virtual string16 GetItemAt(int index) OVERRIDE;
+  virtual int GetDefaultIndex() const OVERRIDE;
 
   // Returns the node at the specified |index|.
   const BookmarkNode* GetNodeAt(int index);
-
-  // Returns the index of the original parent folder.
-  int node_parent_index() const { return node_parent_index_; }
 
  private:
   // Removes |node| from |nodes_|. Does nothing if |node| is not in |nodes_|.
   void RemoveNode(const BookmarkNode* node);
 
   std::vector<const BookmarkNode*> nodes_;
+
+  // The index of the original parent folder.
   int node_parent_index_;
 
   DISALLOW_COPY_AND_ASSIGN(RecentlyUsedFoldersComboModel);
