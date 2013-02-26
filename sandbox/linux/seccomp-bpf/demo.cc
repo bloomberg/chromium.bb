@@ -10,6 +10,7 @@
 #include <netinet/udp.h>
 #include <pthread.h>
 #include <signal.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,12 +27,10 @@
 #include <unistd.h>
 
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
-#include "sandbox/linux/seccomp-bpf/util.h"
 
 using playground2::arch_seccomp_data;
 using playground2::ErrorCode;
 using playground2::Sandbox;
-using playground2::Util;
 
 #define ERR EPERM
 
@@ -41,6 +40,106 @@ using playground2::Util;
 // actually enforce restrictions in a meaningful way:
 #define _exit(x) do { } while (0)
 
+namespace {
+
+bool SendFds(int transport, const void *buf, size_t len, ...) {
+  int count = 0;
+  va_list ap;
+  va_start(ap, len);
+  while (va_arg(ap, int) >= 0) {
+    ++count;
+  }
+  va_end(ap);
+  if (!count) {
+    return false;
+  }
+  char cmsg_buf[CMSG_SPACE(count*sizeof(int))];
+  memset(cmsg_buf, 0, sizeof(cmsg_buf));
+  struct iovec  iov[2] = { { 0 } };
+  struct msghdr msg    = { 0 };
+  int dummy            = 0;
+  iov[0].iov_base      = &dummy;
+  iov[0].iov_len       = sizeof(dummy);
+  if (buf && len > 0) {
+    iov[1].iov_base    = const_cast<void *>(buf);
+    iov[1].iov_len     = len;
+  }
+  msg.msg_iov          = iov;
+  msg.msg_iovlen       = (buf && len > 0) ? 2 : 1;
+  msg.msg_control      = cmsg_buf;
+  msg.msg_controllen   = CMSG_LEN(count*sizeof(int));
+  struct cmsghdr *cmsg = CMSG_FIRSTHDR(&msg);
+  cmsg->cmsg_level     = SOL_SOCKET;
+  cmsg->cmsg_type      = SCM_RIGHTS;
+  cmsg->cmsg_len       = CMSG_LEN(count*sizeof(int));
+  va_start(ap, len);
+  for (int i = 0, fd; (fd = va_arg(ap, int)) >= 0; ++i) {
+    (reinterpret_cast<int *>(CMSG_DATA(cmsg)))[i] = fd;
+  }
+  return sendmsg(transport, &msg, 0) ==
+      static_cast<ssize_t>(sizeof(dummy) + ((buf && len > 0) ? len : 0));
+}
+
+bool GetFds(int transport, void *buf, size_t *len, ...) {
+  int count = 0;
+  va_list ap;
+  va_start(ap, len);
+  for (int *fd; (fd = va_arg(ap, int *)) != NULL; ++count) {
+    *fd = -1;
+  }
+  va_end(ap);
+  if (!count) {
+    return false;
+  }
+  char cmsg_buf[CMSG_SPACE(count*sizeof(int))];
+  memset(cmsg_buf, 0, sizeof(cmsg_buf));
+  struct iovec iov[2] = { { 0 } };
+  struct msghdr msg   = { 0 };
+  int err;
+  iov[0].iov_base     = &err;
+  iov[0].iov_len      = sizeof(int);
+  if (buf && len && *len > 0) {
+    iov[1].iov_base   = buf;
+    iov[1].iov_len    = *len;
+  }
+  msg.msg_iov         = iov;
+  msg.msg_iovlen      = (buf && len && *len > 0) ? 2 : 1;
+  msg.msg_control     = cmsg_buf;
+  msg.msg_controllen  = CMSG_LEN(count*sizeof(int));
+  ssize_t bytes = recvmsg(transport, &msg, 0);
+  if (len) {
+    *len = bytes > static_cast<int>(sizeof(int)) ? bytes - sizeof(int) : 0;
+  }
+  if (bytes != static_cast<ssize_t>(sizeof(int) + iov[1].iov_len)) {
+    if (bytes >= 0) {
+      errno = 0;
+    }
+    return false;
+  }
+  if (err) {
+    // "err" is the first four bytes of the payload. If these are non-zero,
+    // the sender on the other side of the socketpair sent us an errno value.
+    // We don't expect to get any file handles in this case.
+    errno = err;
+    return false;
+  }
+  struct cmsghdr *cmsg = CMSG_FIRSTHDR(&msg);
+  if ((msg.msg_flags & (MSG_TRUNC|MSG_CTRUNC)) ||
+      !cmsg                                    ||
+      cmsg->cmsg_level != SOL_SOCKET           ||
+      cmsg->cmsg_type  != SCM_RIGHTS           ||
+      cmsg->cmsg_len   != CMSG_LEN(count*sizeof(int))) {
+    errno = EBADF;
+    return false;
+  }
+  va_start(ap, len);
+  for (int *fd, i = 0; (fd = va_arg(ap, int *)) != NULL; ++i) {
+    *fd = (reinterpret_cast<int *>(CMSG_DATA(cmsg)))[i];
+  }
+  va_end(ap);
+  return true;
+}
+
 
 // POSIX doesn't define any async-signal safe function for converting
 // an integer to ASCII. We'll have to define our own version.
@@ -48,7 +147,7 @@ using playground2::Util;
 // conversion was successful or NULL otherwise. It never writes more than "sz"
 // bytes. Output will be truncated as needed, and a NUL character is always
 // appended.
-static char *itoa_r(int i, char *buf, size_t sz) {
+char *itoa_r(int i, char *buf, size_t sz) {
   // Make sure we can write at least one NUL byte.
   size_t n = 1;
   if (n > sz) {
@@ -116,8 +215,7 @@ static char *itoa_r(int i, char *buf, size_t sz) {
 // might try to evaluate the system call in user-space, instead.
 // The only notable complication is that this function must be async-signal
 // safe. This restricts the libary functions that we can call.
-static intptr_t defaultHandler(const struct arch_seccomp_data& data,
-                               void *) {
+intptr_t DefaultHandler(const struct arch_seccomp_data& data, void *) {
   static const char msg0[] = "Disallowed system call #";
   static const char msg1[] = "\n";
   char buf[sizeof(msg0) - 1 + 25 + sizeof(msg1)];
@@ -137,7 +235,7 @@ static intptr_t defaultHandler(const struct arch_seccomp_data& data,
   return -ERR;
 }
 
-static ErrorCode evaluator(int sysno, void *) {
+ErrorCode Evaluator(Sandbox *sandbox, int sysno, void *) {
   switch (sysno) {
 #if defined(__NR_accept)
   case __NR_accept: case __NR_accept4:
@@ -226,13 +324,13 @@ static ErrorCode evaluator(int sysno, void *) {
 
   case __NR_prctl:
     // Allow PR_SET_DUMPABLE and PR_GET_DUMPABLE. Do not allow anything else.
-    return Sandbox::Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+    return sandbox->Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
                          PR_SET_DUMPABLE,
                          ErrorCode(ErrorCode::ERR_ALLOWED),
-           Sandbox::Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+           sandbox->Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
                          PR_GET_DUMPABLE,
                          ErrorCode(ErrorCode::ERR_ALLOWED),
-           Sandbox::Trap(defaultHandler, NULL)));
+           sandbox->Trap(DefaultHandler, NULL)));
 
   // The following system calls are temporarily permitted. This must be
   // tightened later. But we currently don't implement enough of the sandboxing
@@ -267,15 +365,15 @@ static ErrorCode evaluator(int sysno, void *) {
 
   // Everything that isn't explicitly allowed is denied.
   default:
-    return Sandbox::Trap(defaultHandler, NULL);
+    return sandbox->Trap(DefaultHandler, NULL);
   }
 }
 
-static void *threadFnc(void *arg) {
+void *ThreadFnc(void *arg) {
   return arg;
 }
 
-static void *sendmsgStressThreadFnc(void *arg) {
+void *SendmsgStressThreadFnc(void *arg) {
   if (arg) { }
   static const int repetitions = 100;
   static const int kNumFds = 3;
@@ -287,8 +385,8 @@ static void *sendmsgStressThreadFnc(void *arg) {
     }
     size_t len = 4;
     char buf[4];
-    if (!Util::SendFds(fds[0], "test", 4, fds[1], fds[1], fds[1], -1) ||
-        !Util::GetFds(fds[1], buf, &len, fds+2, fds+3, fds+4, NULL) ||
+    if (!SendFds(fds[0], "test", 4, fds[1], fds[1], fds[1], -1) ||
+        !GetFds(fds[1], buf, &len, fds+2, fds+3, fds+4, NULL) ||
         len != 4 ||
         memcmp(buf, "test", len) ||
         write(fds[2], "demo", 4) != 4 ||
@@ -307,6 +405,8 @@ static void *sendmsgStressThreadFnc(void *arg) {
   return NULL;
 }
 
+}  // namespace
+
 int main(int argc, char *argv[]) {
   if (argc) { }
   if (argv) { }
@@ -316,13 +416,14 @@ int main(int argc, char *argv[]) {
     perror("sandbox");
     _exit(1);
   }
-  Sandbox::set_proc_fd(proc_fd);
-  Sandbox::SetSandboxPolicy(evaluator, NULL);
-  Sandbox::StartSandbox();
+  Sandbox sandbox;
+  sandbox.set_proc_fd(proc_fd);
+  sandbox.SetSandboxPolicy(Evaluator, NULL);
+  sandbox.StartSandbox();
 
   // Check that we can create threads
   pthread_t thr;
-  if (!pthread_create(&thr, NULL, threadFnc,
+  if (!pthread_create(&thr, NULL, ThreadFnc,
                       reinterpret_cast<void *>(0x1234))) {
     void *ret;
     pthread_join(thr, &ret);
@@ -376,8 +477,8 @@ int main(int argc, char *argv[]) {
   }
   size_t len = 4;
   char buf[4];
-  if (!Util::SendFds(fds[0], "test", 4, fds[1], -1) ||
-      !Util::GetFds(fds[1], buf, &len, fds+2, NULL) ||
+  if (!SendFds(fds[0], "test", 4, fds[1], -1) ||
+      !GetFds(fds[1], buf, &len, fds+2, NULL) ||
       len != 4 ||
       memcmp(buf, "test", len) ||
       write(fds[2], "demo", 4) != 4 ||
@@ -410,7 +511,7 @@ int main(int argc, char *argv[]) {
   pthread_t sendmsgStressThreads[kSendmsgStressNumThreads];
   for (int i = 0; i < kSendmsgStressNumThreads; ++i) {
     if (pthread_create(sendmsgStressThreads + i, NULL,
-                       sendmsgStressThreadFnc, NULL)) {
+                       SendmsgStressThreadFnc, NULL)) {
       perror("pthread_create");
       _exit(1);
     }

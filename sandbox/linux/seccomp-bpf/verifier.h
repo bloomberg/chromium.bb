@@ -10,8 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
-
 
 namespace playground2 {
 
@@ -24,7 +22,8 @@ class Verifier {
   // set by the "evaluators".
   // Upon success, "err" is set to NULL. Upon failure, it contains a static
   // error message that does not need to be free()'d.
-  static bool VerifyBPF(const std::vector<struct sock_filter>& program,
+  static bool VerifyBPF(Sandbox *sandbox,
+                        const std::vector<struct sock_filter>& program,
                         const Sandbox::Evaluators& evaluators,
                         const char **err);
 
@@ -41,40 +40,6 @@ class Verifier {
                               const char **err);
 
  private:
-  struct State {
-    State(const std::vector<struct sock_filter>& p,
-          const struct arch_seccomp_data& d) :
-      program(p),
-      data(d),
-      ip(0),
-      accumulator(0),
-      acc_is_valid(false) {
-    }
-    const std::vector<struct sock_filter>& program;
-    const struct arch_seccomp_data&        data;
-    unsigned int                           ip;
-    uint32_t                               accumulator;
-    bool                                   acc_is_valid;
-
-   private:
-    DISALLOW_IMPLICIT_CONSTRUCTORS(State);
-  };
-
-  static uint32_t EvaluateErrorCode(const ErrorCode& code,
-                                    const struct arch_seccomp_data& data);
-  static bool     VerifyErrorCode(const std::vector<struct sock_filter>& prg,
-                                  struct arch_seccomp_data *data,
-                                  const ErrorCode& root_code,
-                                  const ErrorCode& code, const char **err);
-  static void     Ld (State *state, const struct sock_filter& insn,
-                      const char **err);
-  static void     Jmp(State *state, const struct sock_filter& insn,
-                      const char **err);
-  static uint32_t Ret(State *state, const struct sock_filter& insn,
-                      const char **err);
-  static void     Alu(State *state, const struct sock_filter& insn,
-                      const char **err);
-
   DISALLOW_IMPLICIT_CONSTRUCTORS(Verifier);
 };
 

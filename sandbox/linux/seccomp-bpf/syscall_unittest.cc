@@ -78,12 +78,12 @@ intptr_t CopySyscallArgsToAux(const struct arch_seccomp_data& args, void *aux) {
   return -ENOMEM;
 }
 
-ErrorCode CopyAllArgsOnUnamePolicy(int sysno, void *aux) {
+ErrorCode CopyAllArgsOnUnamePolicy(Sandbox *sandbox, int sysno, void *aux) {
   if (!Sandbox::IsValidSyscallNumber(sysno)) {
     return ErrorCode(ENOSYS);
   }
   if (sysno == __NR_uname) {
-    return Sandbox::Trap(CopySyscallArgsToAux, aux);
+    return sandbox->Trap(CopySyscallArgsToAux, aux);
   } else {
     return ErrorCode(ErrorCode::ERR_ALLOWED);
   }

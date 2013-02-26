@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <errno.h>
+#include <linux/unistd.h>
+#include <stdio.h>
+#include <sys/prctl.h>
+
 #include <string>
 
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"

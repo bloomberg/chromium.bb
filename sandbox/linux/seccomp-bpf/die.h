@@ -5,6 +5,9 @@
 #ifndef SANDBOX_LINUX_SECCOMP_BPF_DIE_H__
 #define SANDBOX_LINUX_SECCOMP_BPF_DIE_H__
 
+#include "sandbox/linux/seccomp-bpf/port.h"
+
+
 namespace playground2 {
 
 class Die {

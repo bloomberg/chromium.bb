@@ -5,6 +5,7 @@
 #ifndef SANDBOX_LINUX_SECCOMP_BPF_ERRORCODE_H__
 #define SANDBOX_LINUX_SECCOMP_BPF_ERRORCODE_H__
 
+#include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
 #include "sandbox/linux/seccomp-bpf/trap.h"
 
 namespace playground2 {
@@ -95,6 +96,10 @@ class ErrorCode {
     OP_NUM_OPS,
   };
 
+  enum ErrorType {
+    ET_INVALID, ET_SIMPLE, ET_TRAP, ET_COND,
+  };
+
   // We allow the default constructor, as it makes the ErrorCode class
   // much easier to use. But if we ever encounter an invalid ErrorCode
   // when compiling a BPF filter, we deliberately generate an invalid
@@ -120,6 +125,16 @@ class ErrorCode {
   bool LessThan(const ErrorCode& err) const;
 
   uint32_t err() const { return err_; }
+  ErrorType error_type() const { return error_type_; }
+
+  bool safe() const { return safe_; }
+
+  uint64_t value() const { return value_; }
+  int argno() const { return argno_; }
+  ArgType width() const { return width_; }
+  Operation op() const { return op_; }
+  const ErrorCode *passed() const { return passed_; }
+  const ErrorCode *failed() const { return failed_; }
 
   struct LessThan {
     bool operator()(const ErrorCode& a, const ErrorCode& b) const {
@@ -131,11 +146,6 @@ class ErrorCode {
   friend class CodeGen;
   friend class Sandbox;
   friend class Trap;
-  friend class Verifier;
-
-  enum ErrorType {
-    ET_INVALID, ET_SIMPLE, ET_TRAP, ET_COND,
-  };
 
   // If we are wrapping a callback, we must assign a unique id. This id is
   // how the kernel tells us which one of our different SECCOMP_RET_TRAP

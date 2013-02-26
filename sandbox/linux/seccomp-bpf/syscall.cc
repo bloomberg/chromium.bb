@@ -5,7 +5,7 @@
 #include <asm/unistd.h>
 #include <errno.h>
 
-#include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
+#include "sandbox/linux/seccomp-bpf/port.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
 
 

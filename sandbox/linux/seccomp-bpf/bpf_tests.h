@@ -5,6 +5,10 @@
 #ifndef SANDBOX_LINUX_SECCOMP_BPF_BPF_TESTS_H__
 #define SANDBOX_LINUX_SECCOMP_BPF_BPF_TESTS_H__
 
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
 #include "sandbox/linux/tests/unit_tests.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 
@@ -81,17 +85,19 @@ class BpfTests : public UnitTests {
                  playground2::Sandbox::STATUS_AVAILABLE);
 
       // Initialize and then start the sandbox with our custom policy
-      playground2::Sandbox::set_proc_fd(proc_fd);
-      playground2::Sandbox::SetSandboxPolicy(arg->policy(), &arg->aux_);
-      playground2::Sandbox::StartSandbox();
+      playground2::Sandbox sandbox;
+      sandbox.set_proc_fd(proc_fd);
+      sandbox.SetSandboxPolicy(arg->policy(), &arg->aux_);
+      sandbox.Sandbox::StartSandbox();
 
       arg->test()(arg->aux_);
     } else {
       // Call the compiler and verify the policy. That's the least we can do,
       // if we don't have kernel support.
-      playground2::Sandbox::SetSandboxPolicy(arg->policy(), &arg->aux_);
+      playground2::Sandbox sandbox;
+      sandbox.SetSandboxPolicy(arg->policy(), &arg->aux_);
       playground2::Sandbox::Program *program =
-          playground2::Sandbox::AssembleFilter(true /* force_verification */);
+          sandbox.AssembleFilter(true /* force_verification */);
       delete program;
       sandbox::UnitTests::IgnoreThisTest();
     }

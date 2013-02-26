@@ -5,8 +5,14 @@
 #ifndef SANDBOX_LINUX_SECCOMP_BPF_TRAP_H__
 #define SANDBOX_LINUX_SECCOMP_BPF_TRAP_H__
 
+#include <signal.h>
+#include <stdint.h>
+
 #include <map>
 #include <vector>
+
+#include "sandbox/linux/seccomp-bpf/port.h"
+
 
 namespace playground2 {
 
