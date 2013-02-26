@@ -13,7 +13,6 @@
 #include "base/prefs/public/pref_change_registrar.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
-#include "chrome/browser/chromeos/drive/drive_sync_client_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -153,14 +152,6 @@ void DriveSyncClient::OnCacheCommitted(const std::string& resource_id) {
   AddTaskToQueue(UPLOAD, resource_id);
 }
 
-void DriveSyncClient::AddObserver(DriveSyncClientObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void DriveSyncClient::RemoveObserver(DriveSyncClientObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
 void DriveSyncClient::AddTaskToQueue(SyncType type,
                                      const std::string& resource_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -194,8 +185,6 @@ void DriveSyncClient::AddTaskToQueue(SyncType type,
 }
 
 void DriveSyncClient::StartTask(SyncType type, const std::string& resource_id) {
-  FOR_EACH_OBSERVER(DriveSyncClientObserver, observers_, OnSyncTaskStarted());
-
   switch (type) {
     case FETCH:
       // Check if the resource has been removed from the start list.
@@ -344,10 +333,6 @@ void DriveSyncClient::OnFetchFileComplete(const std::string& resource_id,
                      << ": " << error;
     }
   }
-
-  if (fetch_list_.empty() && upload_list_.empty()) {
-    FOR_EACH_OBSERVER(DriveSyncClientObserver, observers_, OnSyncClientIdle());
-  }
 }
 
 void DriveSyncClient::OnUploadFileComplete(const std::string& resource_id,
@@ -361,10 +346,6 @@ void DriveSyncClient::OnUploadFileComplete(const std::string& resource_id,
   } else {
     // TODO(satorux): We should re-queue if the error is recoverable.
     LOG(WARNING) << "Failed to upload " << resource_id << ": " << error;
-  }
-
-  if (fetch_list_.empty() && upload_list_.empty()) {
-    FOR_EACH_OBSERVER(DriveSyncClientObserver, observers_, OnSyncClientIdle());
   }
 }
 

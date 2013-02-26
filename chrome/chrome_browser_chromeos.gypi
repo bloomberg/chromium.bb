@@ -232,7 +232,6 @@
         'browser/chromeos/drive/drive_scheduler.h',
         'browser/chromeos/drive/drive_sync_client.cc',
         'browser/chromeos/drive/drive_sync_client.h',
-        'browser/chromeos/drive/drive_sync_client_observer.h',
         'browser/chromeos/drive/drive_system_service.cc',
         'browser/chromeos/drive/drive_system_service.h',
         'browser/chromeos/drive/drive_task_executor.cc',

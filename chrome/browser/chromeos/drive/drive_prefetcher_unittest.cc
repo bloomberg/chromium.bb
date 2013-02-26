@@ -168,18 +168,14 @@ class DrivePrefetcherTest : public testing::Test {
   // correctly fetches the |expected| files, in the given order.
   void VerifyFullScan(const std::vector<TestEntry>& test_entries,
                       const std::vector<std::string>& expected) {
+    std::vector<std::string> fetched_list;
     EXPECT_CALL(*mock_file_system_, ReadDirectoryByPath(_, _))
         .WillRepeatedly(MockReadDirectory(test_entries));
     EXPECT_CALL(*mock_file_system_, GetFileByResourceId(_, _, _, _)).Times(0);
-    prefetcher_->OnInitialLoadFinished(DRIVE_FILE_OK);
-    RunMessageLoop();
-
-    std::vector<std::string> fetched_list;
     EXPECT_CALL(*mock_file_system_, GetFileByResourceId(_, _, _, _))
         .WillRepeatedly(MockGetFile(&fetched_list));
-    prefetcher_->OnSyncClientIdle();
+    prefetcher_->OnInitialLoadFinished(DRIVE_FILE_OK);
     RunMessageLoop();
-
     EXPECT_EQ(expected, fetched_list);
   }
 

@@ -47,8 +47,7 @@ DriveScheduler::QueueEntry::~QueueEntry() {
 bool DriveScheduler::QueueEntry::Compare(
     const DriveScheduler::QueueEntry* left,
     const DriveScheduler::QueueEntry* right) {
-  return (right->context.type == BACKGROUND &&
-          left->context.type != BACKGROUND);
+  return (left->context.type < right->context.type);
 }
 
 DriveScheduler::DriveScheduler(
@@ -491,13 +490,23 @@ bool DriveScheduler::ShouldStopJobLoop(QueueType queue_type,
   if (net::NetworkChangeNotifier::IsOffline())
     return true;
 
-  if (queue_type == FILE_QUEUE && context.type == BACKGROUND) {
-    // Should stop if the current connection is on cellular network, and
-    // fetching is disabled over cellular.
-    if (profile_->GetPrefs()->GetBoolean(prefs::kDisableDriveOverCellular) &&
-        net::NetworkChangeNotifier::IsConnectionCellular(
-            net::NetworkChangeNotifier::GetConnectionType()))
-      return true;
+  // Should stop background jobs if the current connection is on cellular
+  // network, and fetching is disabled over cellular.
+  bool should_stop_on_cellular_network = false;
+  switch (context.type) {
+    case USER_INITIATED:
+      should_stop_on_cellular_network = false;
+      break;
+    case BACKGROUND:
+    case PREFETCH:
+      should_stop_on_cellular_network = (queue_type == FILE_QUEUE);
+      break;
+  }
+  if (should_stop_on_cellular_network &&
+      profile_->GetPrefs()->GetBoolean(prefs::kDisableDriveOverCellular) &&
+      net::NetworkChangeNotifier::IsConnectionCellular(
+          net::NetworkChangeNotifier::GetConnectionType())) {
+    return true;
   }
 
   return false;

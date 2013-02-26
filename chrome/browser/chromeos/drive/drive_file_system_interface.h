@@ -80,6 +80,7 @@ typedef base::Callback<void(const DriveFileSystemMetadata&)>
 enum ContextType {
   USER_INITIATED,
   BACKGROUND,
+  PREFETCH,
 };
 
 struct DriveClientContext {

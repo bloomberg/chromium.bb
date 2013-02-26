@@ -57,9 +57,7 @@ DrivePrefetcher::DrivePrefetcher(DriveFileSystemInterface* file_system,
                                  EventLogger* event_logger,
                                  const DrivePrefetcherOptions& options)
     : latest_files_(&ComparePrefetchPriority),
-      number_of_inflight_prefetches_(0),
       number_of_inflight_traversals_(0),
-      should_suspend_prefetch_(true),
       initial_prefetch_count_(options.initial_prefetch_count),
       prefetch_file_size_limit_(options.prefetch_file_size_limit),
       file_system_(file_system),
@@ -84,7 +82,7 @@ void DrivePrefetcher::OnInitialLoadFinished(DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error == DRIVE_FILE_OK)
-    DoFullScan();
+    StartPrefetcherCycle();
 }
 
 void DrivePrefetcher::OnDirectoryChanged(const base::FilePath& directory_path) {
@@ -94,22 +92,10 @@ void DrivePrefetcher::OnDirectoryChanged(const base::FilePath& directory_path) {
   // Update the list of latest files and the prefetch queue if needed.
 }
 
-void DrivePrefetcher::OnSyncTaskStarted() {
-  should_suspend_prefetch_ = true;
-}
-
-void DrivePrefetcher::OnSyncClientStopped() {
-  should_suspend_prefetch_ = true;
-}
-
-void DrivePrefetcher::OnSyncClientIdle() {
-  should_suspend_prefetch_ = false;
-  DoPrefetch();
-}
-
-void DrivePrefetcher::DoFullScan() {
+void DrivePrefetcher::StartPrefetcherCycle() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  // Scans the filesystem. When it is finished, DoPrefetch() will be called.
   base::FilePath root(util::ExtractDrivePath(util::GetDriveMountPointPath()));
   VisitDirectory(root);
 }
@@ -117,24 +103,18 @@ void DrivePrefetcher::DoFullScan() {
 void DrivePrefetcher::DoPrefetch() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (should_suspend_prefetch_ ||
-      queue_.empty() ||
-      number_of_inflight_prefetches_ > 0)
-    return;
-
-  std::string resource_id = queue_.front();
-  queue_.pop_front();
-
-  event_logger_->Log("Prefetcher: Start fetching " + resource_id);
-
-  ++number_of_inflight_prefetches_;
-  file_system_->GetFileByResourceId(
-      resource_id,
-      DriveClientContext(BACKGROUND),
-      base::Bind(&DrivePrefetcher::OnPrefetchFinished,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 resource_id),
-      google_apis::GetContentCallback());
+  for (LatestFileSet::reverse_iterator it = latest_files_.rbegin();
+      it != latest_files_.rend(); ++it) {
+    const std::string& resource_id = it->resource_id();
+    event_logger_->Log("Prefetcher: Enqueue prefetching " + resource_id);
+    file_system_->GetFileByResourceId(
+        resource_id,
+        DriveClientContext(PREFETCH),
+        base::Bind(&DrivePrefetcher::OnPrefetchFinished,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   resource_id),
+        google_apis::GetContentCallback());
+  }
 }
 
 void DrivePrefetcher::OnPrefetchFinished(const std::string& resource_id,
@@ -148,20 +128,6 @@ void DrivePrefetcher::OnPrefetchFinished(const std::string& resource_id,
   event_logger_->Log(base::StringPrintf("Prefetcher: Finish fetching (%s) %s",
                                         DriveFileErrorToString(error).c_str(),
                                         resource_id.c_str()));
-
-  --number_of_inflight_prefetches_;
-  DoPrefetch();  // Start next prefetch.
-}
-
-void DrivePrefetcher::ReconstructQueue() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Put the files with latest timestamp into the queue.
-  queue_.clear();
-  for (LatestFileSet::reverse_iterator it = latest_files_.rbegin();
-      it != latest_files_.rend(); ++it) {
-    queue_.push_back(it->resource_id());
-  }
 }
 
 void DrivePrefetcher::VisitFile(const DriveEntryProto& entry) {
@@ -224,10 +190,8 @@ void DrivePrefetcher::OnReadDirectoryFinished() {
   DCHECK(number_of_inflight_traversals_ > 0);
 
   --number_of_inflight_traversals_;
-  if (number_of_inflight_traversals_ == 0) {
-    ReconstructQueue();
+  if (number_of_inflight_traversals_ == 0)
     DoPrefetch();  // Start prefetching.
-  }
 }
 
 }  // namespace drive

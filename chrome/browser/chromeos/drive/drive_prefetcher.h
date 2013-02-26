@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_PREFETCHER_H_
 
 #include <set>
-#include <deque>
 #include <string>
 
 #include "base/basictypes.h"
@@ -15,7 +14,6 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_observer.h"
-#include "chrome/browser/chromeos/drive/drive_sync_client_observer.h"
 
 namespace base {
 class FilePath;
@@ -37,8 +35,7 @@ struct DrivePrefetcherOptions {
 // maintaining the prioritized list of files to prefetch into the cache.
 //
 // All the methods (including ctor and dtor) must be called from UI thread.
-class DrivePrefetcher : public DriveFileSystemObserver,
-                        public DriveSyncClientObserver {
+class DrivePrefetcher : public DriveFileSystemObserver {
  public:
   DrivePrefetcher(DriveFileSystemInterface* file_system,
                   EventLogger* event_logger,
@@ -50,14 +47,9 @@ class DrivePrefetcher : public DriveFileSystemObserver,
   virtual void OnDirectoryChanged(
       const base::FilePath& directory_path) OVERRIDE;
 
-  // DriveSyncClientObserver overrides.
-  virtual void OnSyncTaskStarted() OVERRIDE;
-  virtual void OnSyncClientStopped() OVERRIDE;
-  virtual void OnSyncClientIdle() OVERRIDE;
-
  private:
-  // Initializes the internal data to keep the prefetch priority among files.
-  void DoFullScan();
+  // Scans the file system and calls DoPrefetch().
+  void StartPrefetcherCycle();
 
   // Fetches the file with the highest prefetch priority. If prefetching is
   // currently suspended, do nothing.
@@ -88,18 +80,8 @@ class DrivePrefetcher : public DriveFileSystemObserver,
   typedef std::set<DriveEntryProto, PrefetchPriorityComparator> LatestFileSet;
   LatestFileSet latest_files_;
 
-  // The queue of files to fetch. Files with higher priority comes front.
-  std::deque<std::string> queue_;
-
-  // Number of in-flight |ExecuteOnePrefetch| calls that has not finished yet.
-  int number_of_inflight_prefetches_;
-
   // Number of in-flight |VisitDirectory| calls that has not finished yet.
   int number_of_inflight_traversals_;
-
-  // Indicates whether or not prefetching should be suspended, depending on
-  // the command line flag and the SyncClient's activity.
-  bool should_suspend_prefetch_;
 
   // Number of files to put into prefetch queue
   int initial_prefetch_count_;
