@@ -15,6 +15,7 @@
 class GURL;
 class Profile;
 class TemplateURL;
+class TemplateURLRef;
 
 namespace content {
 class NavigationEntry;
@@ -121,6 +122,11 @@ uint64 GetUInt64ValueForFlagWithDefault(const std::string& flag,
 bool GetBoolValueForFlagWithDefault(const std::string& flag,
                                     bool default_value,
                                     const FieldTrialFlags& flags);
+
+// Coerces the commandline Instant URL to look like a template URL, so that we
+// can extract search terms from it.
+GURL CoerceCommandLineURLToTemplateURL(const GURL& instant_url,
+                                       const TemplateURLRef& ref);
 
 }  // namespace search
 }  // namespace chrome

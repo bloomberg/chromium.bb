@@ -115,5 +115,20 @@ TEST(SearchTest, ShouldAssignURLToInstantRendererImpl) {
   }
 }
 
+TEST(SearchTest, CoerceCommandLineURLToTemplateURL) {
+  TemplateURLData data;
+  data.SetURL("http://foo.com/url?bar={searchTerms}");
+  data.instant_url = "http://foo.com/instant?foo=foo#foo=foo";
+  data.alternate_urls.push_back("http://foo.com/alt#quux={searchTerms}");
+  data.search_terms_replacement_key = "strk";
+  TemplateURL url(NULL, data);
+
+  EXPECT_EQ(
+      GURL("https://foo.com/instant?bar=bar#bar=bar"),
+      CoerceCommandLineURLToTemplateURL(
+          GURL("http://myserver.com:9000/dev?bar=bar#bar=bar"),
+          url.instant_url_ref()));
+}
+
 }  // namespace search
 }  // namespace chrome

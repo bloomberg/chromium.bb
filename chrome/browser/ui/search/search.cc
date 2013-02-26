@@ -81,21 +81,6 @@ bool IsCommandLineInstantURL(const GURL& url) {
   return instant_url.is_valid() && MatchesOriginAndPath(url, instant_url);
 }
 
-// Coerces the commandline Instant URL to look like a template URL, so that we
-// can extract search terms from it.
-GURL CoerceCommandLineURLToTemplateURL(const GURL& instant_url,
-                                       const TemplateURLRef& ref) {
-  GURL search_url = TemplateURLRefToGURL(ref);
-
-  GURL::Replacements replacements;
-  replacements.SetSchemeStr(chrome::kHttpsScheme);
-  replacements.SetHostStr(search_url.host());
-  replacements.SetPortStr(search_url.port());
-  replacements.SetPathStr(search_url.path());
-
-  return instant_url.ReplaceComponents(replacements);
-}
-
 bool MatchesAnySearchURL(const GURL& url, TemplateURL* template_url) {
   GURL search_url = TemplateURLRefToGURL(template_url->url_ref());
   if (search_url.is_valid() && MatchesOriginAndPath(url, search_url))
@@ -368,6 +353,27 @@ bool GetBoolValueForFlagWithDefault(const std::string& flag,
                                     bool default_value,
                                     const FieldTrialFlags& flags) {
   return !!GetUInt64ValueForFlagWithDefault(flag, default_value ? 1 : 0, flags);
+}
+
+// Coerces the commandline Instant URL to look like a template URL, so that we
+// can extract search terms from it.
+GURL CoerceCommandLineURLToTemplateURL(const GURL& instant_url,
+                                       const TemplateURLRef& ref) {
+  GURL search_url = TemplateURLRefToGURL(ref);
+  // NOTE(samarth): GURL returns temporaries which we must save because
+  // GURL::Replacements expects the replacements to live until
+  // ReplaceComponents is called.
+  const std::string search_scheme = chrome::kHttpsScheme;
+  const std::string search_host = search_url.host();
+  const std::string search_port = search_url.port();
+  const std::string search_path = search_url.path();
+
+  GURL::Replacements replacements;
+  replacements.SetSchemeStr(search_scheme);
+  replacements.SetHostStr(search_host);
+  replacements.SetPortStr(search_port);
+  replacements.SetPathStr(search_path);
+  return instant_url.ReplaceComponents(replacements);
 }
 
 }  // namespace search
