@@ -156,9 +156,16 @@ void InitializeCompositingFieldTrial() {
   // http://crbug.com/133602 for mac
   // http://crbug.com/140866 for linux
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN)
     // Enable threaded compositing on Windows.
   threaded_compositing_probability = kDivisor;
+#elif defined(OS_MACOSX)
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == chrome::VersionInfo::CHANNEL_CANARY ||
+      channel == chrome::VersionInfo::CHANNEL_DEV) {
+    // Enable force-compositing-mode on the Mac.
+    force_compositing_mode_probability = kDivisor;
+  }
 #endif
 
   int force_compositing_group = trial->AppendGroup(
