@@ -689,6 +689,7 @@
             'HAS_OUT_OF_PROC_TEST_RUNNER',
           ],
           'sources': [
+            'browser/accessibility/accessibility_win_browsertest.cc',
             'browser/accessibility/cross_platform_accessibility_browsertest.cc',
             'browser/accessibility/dump_accessibility_tree_browsertest.cc',
             'browser/accessibility/dump_accessibility_tree_helper.cc',
@@ -794,6 +795,7 @@
               'dependencies': [
                 '<(DEPTH)/net/net.gyp:net_resources',
                 '<(DEPTH)/third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
+                '<(DEPTH)/third_party/isimpledom/isimpledom.gyp:isimpledom',
                 '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_resources',
                 '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_strings',
               ],
@@ -810,6 +812,7 @@
               'msvs_disabled_warnings': [ 4267, ],
             }, {  # OS!="win"
               'sources!': [
+                'browser/accessibility/accessibility_win_browsertest.cc',
                 'browser/renderer_host/render_widget_host_view_win_browsertest.cc',
               ],
             }],
@@ -853,6 +856,7 @@
             }],
             ['use_aura==1', {
               'sources!': [
+                'browser/accessibility/accessibility_win_browsertest.cc',
                 'browser/accessibility/dump_accessibility_tree_browsertest.cc',
                 'browser/accessibility/dump_accessibility_tree_helper_win.cc',
                 'browser/accessibility/dump_accessibility_tree_helper.cc',

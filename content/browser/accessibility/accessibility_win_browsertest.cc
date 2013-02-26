@@ -9,49 +9,38 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_comptr.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/url_constants.h"
-#include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/ui_controls.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/accessibility_test_utils_win.h"
+#include "content/public/test/test_utils.h"
+#include "content/shell/shell.h"
+#include "content/test/content_browser_test.h"
+#include "content/test/content_browser_test_utils.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "third_party/isimpledom/ISimpleDOMNode.h"
 
-using content::OpenURLParams;
-using content::Referrer;
 using std::auto_ptr;
 using std::string;
 using std::vector;
 using std::wstring;
 
+namespace content {
+
 namespace {
 
-class AccessibilityWinBrowserTest : public InProcessBrowserTest {
+class AccessibilityWinBrowserTest : public ContentBrowserTest {
  public:
   AccessibilityWinBrowserTest() {}
-
-  // InProcessBrowserTest
-  void SetUpInProcessBrowserTestFixture();
 
  protected:
   void LoadInitialAccessibilityTreeFromHtml(string html);
   IAccessible* GetRendererAccessible();
   void ExecuteScript(wstring script);
 };
-
-void AccessibilityWinBrowserTest::SetUpInProcessBrowserTestFixture() {
-  // If the mouse happens to be on the document then it will have the unexpected
-  // STATE_SYSTEM_HOTTRACKED state. Move it to a non-document location.
-  ui_controls::SendMouseMove(0, 0);
-}
 
 class AccessibleChecker {
  public:
@@ -211,7 +200,7 @@ void AccessibilityWinBrowserTest::LoadInitialAccessibilityTreeFromHtml(
     string html) {
   // Load the html using a data url and wait for the navigation to finish.
   GURL html_data_url(string("data:text/html,") + html);
-  ui_test_utils::NavigateToURL(browser(), html_data_url);
+  NavigateToURL(shell(), html_data_url);
 
   // At this point, renderer accessibility is off and the page has completed
   // loading. (Both of these must be strictly true or there will be test
@@ -220,9 +209,9 @@ void AccessibilityWinBrowserTest::LoadInitialAccessibilityTreeFromHtml(
   // the renderer switches accessibility on, it will send a Layout Complete
   // accessibility notification containing the full accessibility tree, which
   // we can wait for.
-  content::WindowedNotificationObserver tree_updated_observer(
-      content::NOTIFICATION_ACCESSIBILITY_LAYOUT_COMPLETE,
-      content::NotificationService::AllSources());
+  WindowedNotificationObserver tree_updated_observer(
+      NOTIFICATION_ACCESSIBILITY_LAYOUT_COMPLETE,
+      NotificationService::AllSources());
   GetRendererAccessible();
   tree_updated_observer.Wait();
 }
@@ -231,8 +220,8 @@ void AccessibilityWinBrowserTest::LoadInitialAccessibilityTreeFromHtml(
 // of the selected tab.
 IAccessible*
 AccessibilityWinBrowserTest::GetRendererAccessible() {
-  HWND hwnd_render_widget_host_view = browser()->tab_strip_model()->
-      GetActiveWebContents()->GetRenderWidgetHostView()->GetNativeView();
+  HWND hwnd_render_widget_host_view =
+      shell()->web_contents()->GetRenderWidgetHostView()->GetNativeView();
 
   // Invoke windows screen reader detection by sending the WM_GETOBJECT message
   // with kIdCustom as the LPARAM.
@@ -244,6 +233,7 @@ AccessibilityWinBrowserTest::GetRendererAccessible() {
   HRESULT hr = AccessibleObjectFromWindow(
       hwnd_render_widget_host_view, OBJID_CLIENT,
       IID_IAccessible, reinterpret_cast<void**>(&accessible));
+
   EXPECT_EQ(S_OK, hr);
   EXPECT_NE(accessible, reinterpret_cast<IAccessible*>(NULL));
 
@@ -251,7 +241,7 @@ AccessibilityWinBrowserTest::GetRendererAccessible() {
 }
 
 void AccessibilityWinBrowserTest::ExecuteScript(wstring script) {
-  browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost()->
+  shell()->web_contents()->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(L"", script);
 }
 
@@ -350,9 +340,9 @@ void AccessibleChecker::CheckIA2Role(IAccessible* accessible) {
   EXPECT_EQ(ia2_role_, ia2_role);
   if (ia2_role_ != ia2_role) {
     LOG(ERROR) << "Expected ia2 role: " <<
-        content::IAccessible2RoleToString(ia2_role_);
+        IAccessible2RoleToString(ia2_role_);
     LOG(ERROR) << "Got ia2 role: " <<
-        content::IAccessible2RoleToString(ia2_role);
+        IAccessible2RoleToString(ia2_role);
   }
 }
 
@@ -379,9 +369,9 @@ void AccessibleChecker::CheckAccessibleState(IAccessible* accessible) {
   EXPECT_EQ(state_, V_I4(&var_state));
   if (state_ != V_I4(&var_state)) {
     LOG(ERROR) << "Expected state: " <<
-        content::IAccessibleStateToString(state_);
+        IAccessibleStateToString(state_);
     LOG(ERROR) << "Got state: " <<
-        content::IAccessibleStateToString(V_I4(&var_state));
+        IAccessibleStateToString(V_I4(&var_state));
   }
 }
 
@@ -411,7 +401,7 @@ void AccessibleChecker::CheckAccessibleChildren(IAccessible* parent) {
 
 string16 AccessibleChecker::RoleVariantToString(VARIANT* role_variant) {
   if (V_VT(role_variant) == VT_I4)
-    return content::IAccessibleRoleToString(V_I4(role_variant));
+    return IAccessibleRoleToString(V_I4(role_variant));
   else if (V_VT(role_variant) == VT_BSTR)
     return string16(V_BSTR(role_variant), SysStringLen(V_BSTR(role_variant)));
   return string16();
@@ -419,6 +409,8 @@ string16 AccessibleChecker::RoleVariantToString(VARIANT* role_variant) {
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        TestBusyAccessibilityTree) {
+  NavigateToURL(shell(), GURL(chrome::kAboutBlankURL));
+
   // The initial accessible returned should have state STATE_SYSTEM_BUSY while
   // the accessibility tree is being requested from the renderer.
   AccessibleChecker document1_checker(L"", ROLE_SYSTEM_DOCUMENT, L"");
@@ -457,7 +449,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_NE(parent_dispatch, reinterpret_cast<IDispatch*>(NULL));
 
   // Navigate to another page.
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIVersionURL));
+  NavigateToURL(shell(), GURL(chrome::kAboutBlankURL));
 
   // Verify that the IAccessible reference still points to a valid object and
   // that calls to its methods fail since the tree is no longer valid after
@@ -491,9 +483,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 
   // Set focus to the radio group.
-  content::WindowedNotificationObserver tree_updated_observer(
-      content::NOTIFICATION_ACCESSIBILITY_OTHER,
-      content::NotificationService::AllSources());
+  WindowedNotificationObserver tree_updated_observer(
+      NOTIFICATION_ACCESSIBILITY_OTHER,
+      NotificationService::AllSources());
   ExecuteScript(L"document.body.children[0].focus()");
   tree_updated_observer.Wait();
 
@@ -503,9 +495,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 
   // Set the active descendant of the radio group
-  content::WindowedNotificationObserver tree_updated_observer3(
-      content::NOTIFICATION_ACCESSIBILITY_OTHER,
-      content::NotificationService::AllSources());
+  WindowedNotificationObserver tree_updated_observer3(
+      NOTIFICATION_ACCESSIBILITY_OTHER,
+      NotificationService::AllSources());
   ExecuteScript(
       L"document.body.children[0].setAttribute('aria-activedescendant', 'li')");
   tree_updated_observer3.Wait();
@@ -532,9 +524,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 
   // Check the checkbox.
-  content::WindowedNotificationObserver tree_updated_observer(
-      content::NOTIFICATION_ACCESSIBILITY_OTHER,
-      content::NotificationService::AllSources());
+  WindowedNotificationObserver tree_updated_observer(
+      NOTIFICATION_ACCESSIBILITY_OTHER,
+      NotificationService::AllSources());
   ExecuteScript(L"document.body.children[0].checked=true");
   tree_updated_observer.Wait();
 
@@ -556,9 +548,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 
   // Change the children of the document body.
-  content::WindowedNotificationObserver tree_updated_observer(
-      content::NOTIFICATION_ACCESSIBILITY_OTHER,
-      content::NotificationService::AllSources());
+  WindowedNotificationObserver tree_updated_observer(
+      NOTIFICATION_ACCESSIBILITY_OTHER,
+      NotificationService::AllSources());
   ExecuteScript(L"document.body.innerHTML='<b>new text</b>'");
   tree_updated_observer.Wait();
 
@@ -579,9 +571,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 
   // Change the children of the document body.
-  content::WindowedNotificationObserver tree_updated_observer2(
-      content::NOTIFICATION_ACCESSIBILITY_OTHER,
-      content::NotificationService::AllSources());
+  WindowedNotificationObserver tree_updated_observer2(
+      NOTIFICATION_ACCESSIBILITY_OTHER,
+      NotificationService::AllSources());
   ExecuteScript(L"document.body.children[0].style.visibility='visible'");
   tree_updated_observer2.Wait();
 
@@ -608,9 +600,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 
   // Focus the div in the document
-  content::WindowedNotificationObserver tree_updated_observer(
-      content::NOTIFICATION_ACCESSIBILITY_OTHER,
-      content::NotificationService::AllSources());
+  WindowedNotificationObserver tree_updated_observer(
+      NOTIFICATION_ACCESSIBILITY_OTHER,
+      NotificationService::AllSources());
   ExecuteScript(L"document.body.children[0].focus()");
   tree_updated_observer.Wait();
 
@@ -621,9 +613,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 
   // Focus the document accessible. This will un-focus the current node.
-  content::WindowedNotificationObserver tree_updated_observer2(
-      content::NOTIFICATION_ACCESSIBILITY_OTHER,
-      content::NotificationService::AllSources());
+  WindowedNotificationObserver tree_updated_observer2(
+      NOTIFICATION_ACCESSIBILITY_OTHER,
+      NotificationService::AllSources());
   base::win::ScopedComPtr<IAccessible> document_accessible(
       GetRendererAccessible());
   ASSERT_NE(document_accessible.get(), reinterpret_cast<IAccessible*>(NULL));
@@ -653,9 +645,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 
   // Set the value of the text control
-  content::WindowedNotificationObserver tree_updated_observer(
-      content::NOTIFICATION_ACCESSIBILITY_OTHER,
-      content::NotificationService::AllSources());
+  WindowedNotificationObserver tree_updated_observer(
+      NOTIFICATION_ACCESSIBILITY_OTHER,
+      NotificationService::AllSources());
   ExecuteScript(L"document.body.children[0].value='new value'");
   tree_updated_observer.Wait();
 
@@ -679,7 +671,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
       "<body>Content</body></html>");
 
   // Get the accessibility object for the browser window.
-  HWND browser_hwnd = browser()->window()->GetNativeWindow();
+  HWND browser_hwnd = shell()->window();
   base::win::ScopedComPtr<IAccessible> browser_accessible;
   HRESULT hr = AccessibleObjectFromWindow(
       browser_hwnd,
@@ -841,3 +833,5 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestRoleGroup) {
   document_checker.CheckAccessible(GetRendererAccessible());
 }
 }  // namespace.
+
+}  // namespace content
