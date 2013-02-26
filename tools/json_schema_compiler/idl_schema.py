@@ -88,7 +88,8 @@ def ProcessComment(comment):
 class Callspec(object):
   '''
   Given a Callspec node representing an IDL function declaration, converts into
-  a name/value pair where the value is a list of function parameters.
+  a tuple:
+      (name, list of function parameters, return type)
   '''
   def __init__(self, callspec_node, comment):
     self.node = callspec_node
@@ -96,12 +97,22 @@ class Callspec(object):
 
   def process(self, callbacks):
     parameters = []
+    return_type = None
+    if self.node.GetProperty('TYPEREF') not in ('void', None):
+      return_type = Typeref(self.node.GetProperty('TYPEREF'),
+                            self.node,
+                            {'name': self.node.GetName()}).process(callbacks)
+      # The IDL parser doesn't allow specifying return types as optional.
+      # Instead we infer any object return values to be optional.
+      # TODO(asargent): fix the IDL parser to support optional return types.
+      if return_type.get('type') == 'object' or '$ref' in return_type:
+        return_type['optional'] = True;
     for node in self.node.children:
       parameter = Param(node).process(callbacks)
       if parameter['name'] in self.comment:
         parameter['description'] = self.comment[parameter['name']]
       parameters.append(parameter)
-    return self.node.GetName(), parameters
+    return (self.node.GetName(), parameters, return_type)
 
 class Param(object):
   '''
@@ -161,8 +172,11 @@ class Member(object):
         properties['description'] = parent_comment
       elif node.cls == 'Callspec':
         is_function = True
-        name, parameters = Callspec(node, parameter_comments).process(callbacks)
+        name, parameters, return_type = (Callspec(node, parameter_comments)
+                                         .process(callbacks))
         properties['parameters'] = parameters
+        if return_type is not None:
+          properties['returns'] = return_type
     properties['name'] = name
     if is_function:
       properties['type'] = 'function'
@@ -226,6 +240,12 @@ class Typeref(object):
     elif self.typeref == 'ArrayBuffer':
       properties['type'] = 'binary'
       properties['isInstanceOf'] = 'ArrayBuffer'
+    elif self.typeref == 'FileEntry':
+      properties['type'] = 'object'
+      properties['isInstanceOf'] = 'FileEntry'
+      if 'additionalProperties' not in properties:
+        properties['additionalProperties'] = OrderedDict()
+      properties['additionalProperties']['type'] = 'any'
     elif self.typeref is None:
       properties['type'] = 'function'
     else:

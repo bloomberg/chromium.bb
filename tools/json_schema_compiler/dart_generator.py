@@ -224,8 +224,13 @@ class _Generator(object):
       )
     elif self._IsObjectType(prop.type_):
       # TODO(sashab): Think of a way to serialize generic Dart objects.
-      c.Append("%s get %s => JS('%s', '#.%s', this._jsObject);" %
-          (type_name, prop.name, type_name, prop.name))
+      if type_name in self._types:
+        c.Append("%s get %s => new %s._proxy(JS('%s', '#.%s', "
+                 "this._jsObject));" %
+            (type_name, prop.name, type_name, type_name, prop.name))
+      else:
+        c.Append("%s get %s => JS('%s', '#.%s', this._jsObject);" %
+            (type_name, prop.name, type_name, prop.name))
     else:
       raise Exception(
           "Could not generate wrapper for %s.%s: unserializable type %s" %
@@ -373,9 +378,18 @@ class _Generator(object):
     if function.callback:
       n_params += 1
 
-    params = ["'%s'" % self._GetDartType(function.returns),
-              "'#.%s(%s)'" % (function.name, ', '.join(['#'] * n_params)),
-              call_target]
+    return_type_str = self._GetDartType(function.returns)
+    params = []
+
+    # If this object is serializable, don't convert the type from JS - pass the
+    # JS object straight into the proxy.
+    if self._IsSerializableObjectType(function.returns):
+      params.append("''")
+    else:
+      params.append("'%s'" % return_type_str)
+
+    params.append("'#.%s(%s)'" % (function.name, ', '.join(['#'] * n_params)))
+    params.append(call_target)
 
     for param in function.params:
       if not self._IsBaseType(param.type_):
@@ -390,7 +404,12 @@ class _Generator(object):
       params.append('convertDartClosureToJS(%s, %s)' % (callback_name,
                     len(function.callback.params)))
 
-    return 'JS(%s)' % ', '.join(params)
+    # If the object is serializable, call the proxy constructor for this type.
+    proxy_call = 'JS(%s)' % ', '.join(params)
+    if self._IsSerializableObjectType(function.returns):
+      proxy_call = 'new %s._proxy(%s)' % (return_type_str, proxy_call)
+
+    return proxy_call
 
   def _GenerateEvent(self, event):
     """Given a Function object, returns the Code with the .dart for this event,
@@ -609,7 +628,7 @@ class _Generator(object):
 
   def _AddPrefix(self, name):
     """Given the name of a type, prefixes the namespace (as camelcase) and
-    return the new name.
+    returns the new name.
     """
     # TODO(sashab): Split the dart library into multiple files, avoiding the
     # need for this prefixing.
@@ -629,6 +648,8 @@ class _Generator(object):
     If this object is a reference to something not in this namespace, assumes
     its a serializable object.
     """
+    if type_ is None:
+      return False
     if type_.property_type is PropertyType.CHOICES:
       return all(self._IsSerializableObjectType(c) for c in type_.choices)
     if type_.property_type is PropertyType.REF:
