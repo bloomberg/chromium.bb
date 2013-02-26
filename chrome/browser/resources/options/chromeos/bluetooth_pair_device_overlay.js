@@ -345,7 +345,7 @@ cr.define('options', function() {
     if (name.length == 0)
       return;
     var dialog = BluetoothPairing.getInstance();
-    if (name == dialog.device_.address &&
+    if (dialog.device_ && name == dialog.device_.address &&
         dialog.device_.pairing == PAIRING.CANCELED) {
       // Do not show any error message after cancelation of the pairing.
       return;
