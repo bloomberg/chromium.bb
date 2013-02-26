@@ -166,30 +166,20 @@ bool TranslatePrefs::ShouldAutoTranslate(PrefService* user_prefs,
   return prefs.IsLanguageWhitelisted(original_language, target_language);
 }
 
-void TranslatePrefs::RegisterUserPrefs(PrefService* prefs,
-                                       PrefRegistrySyncable* registry) {
-  if (!prefs->FindPreference(kPrefTranslateLanguageBlacklist))
-    registry->RegisterListPref(kPrefTranslateLanguageBlacklist,
-                               PrefRegistrySyncable::SYNCABLE_PREF);
-  if (!prefs->FindPreference(kPrefTranslateSiteBlacklist))
-    registry->RegisterListPref(kPrefTranslateSiteBlacklist,
-                               PrefRegistrySyncable::SYNCABLE_PREF);
-  if (!prefs->FindPreference(kPrefTranslateWhitelists)) {
-    registry->RegisterDictionaryPref(kPrefTranslateWhitelists,
-                                     PrefRegistrySyncable::SYNCABLE_PREF);
-    MigrateTranslateWhitelists(prefs);
-  }
-  if (!prefs->FindPreference(kPrefTranslateDeniedCount))
-    registry->RegisterDictionaryPref(kPrefTranslateDeniedCount,
-                                     PrefRegistrySyncable::SYNCABLE_PREF);
-  if (!prefs->FindPreference(kPrefTranslateAcceptedCount))
-    registry->RegisterDictionaryPref(kPrefTranslateAcceptedCount,
-                                     PrefRegistrySyncable::SYNCABLE_PREF);
+void TranslatePrefs::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterListPref(kPrefTranslateLanguageBlacklist,
+                             PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterListPref(kPrefTranslateSiteBlacklist,
+                             PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterDictionaryPref(kPrefTranslateWhitelists,
+                                   PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterDictionaryPref(kPrefTranslateDeniedCount,
+                                   PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterDictionaryPref(kPrefTranslateAcceptedCount,
+                                   PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
-// TranslatePrefs: private, static: --------------------------------------------
-
-void TranslatePrefs::MigrateTranslateWhitelists(PrefService* user_prefs) {
+void TranslatePrefs::MigrateUserPrefs(PrefService* user_prefs) {
   // Old format of kPrefTranslateWhitelists
   // - original language -> list of target langs to auto-translate
   // - list of langs is in order of being enabled i.e. last in list is the

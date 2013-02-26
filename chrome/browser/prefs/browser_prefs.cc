@@ -298,7 +298,7 @@ void RegisterUserPrefs(PrefService* user_prefs,
   RegisterBrowserUserPrefs(registry);
   SessionStartupPref::RegisterUserPrefs(registry);
   TemplateURLPrepopulateData::RegisterUserPrefs(registry);
-  TranslatePrefs::RegisterUserPrefs(user_prefs, registry);
+  TranslatePrefs::RegisterUserPrefs(registry);
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   policy::URLBlacklistManager::RegisterUserPrefs(registry);
@@ -370,6 +370,7 @@ void MigrateUserPrefs(Profile* profile) {
 
   PrefsTabHelper::MigrateUserPrefs(prefs);
   PromoResourceService::MigrateUserPrefs(prefs);
+  TranslatePrefs::MigrateUserPrefs(prefs);
 }
 
 void MigrateBrowserPrefs(Profile* profile, PrefService* local_state) {
