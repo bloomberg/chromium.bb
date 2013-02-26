@@ -297,8 +297,6 @@ class PageCyclerTest : public UIPerfTest {
 
  protected:
   bool print_times_only_;
-
- private:
   int num_test_iterations_;
 };
 
@@ -344,6 +342,17 @@ class PageCyclerExtensionWebRequestTest : public PageCyclerExtensionTest {
   {
     // Enable experimental extension APIs for webrequest tests.
     launch_arguments_.AppendSwitch(switches::kEnableExperimentalExtensionApis);
+  }
+};
+
+class PageCyclerAccessibilityTest : public PageCyclerTest {
+ public:
+  PageCyclerAccessibilityTest()
+      : PageCyclerTest()
+  {
+    // Enable accessibility support, to compare the performance overhead
+    // when accessibility is enabled to when it's off.
+    launch_arguments_.AppendSwitch(switches::kForceRendererAccessibility);
   }
 };
 
@@ -663,5 +672,15 @@ PAGE_CYCLER_DATABASE_TESTS("pseudo-random-transactions",
 
 // Indexed DB tests.
 PAGE_CYCLER_IDB_TESTS("basic_insert", BasicInsert);
+
+// Tests with accessibility enabled.
+TEST_F(PageCyclerAccessibilityTest, MozFileWithAccessibilityEnabled) {
+  num_test_iterations_ = 1;
+  RunTest("times", "moz", false);
+}
+
+TEST_F(PageCyclerAccessibilityTest, MorejsFileWithAccessibilityEnabled) {
+  RunTest("times", "morejs", false);
+}
 
 }  // namespace
