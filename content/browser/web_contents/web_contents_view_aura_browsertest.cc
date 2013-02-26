@@ -98,6 +98,9 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
     NavigationController& controller = web_contents->GetController();
     RenderViewHostImpl* view_host = static_cast<RenderViewHostImpl*>(
         web_contents->GetRenderViewHost());
+    WebContentsViewAura* view_aura = static_cast<WebContentsViewAura*>(
+        web_contents->GetView());
+    view_aura->SetupOverlayWindowForTesting();
 
     EXPECT_FALSE(controller.CanGoBack());
     EXPECT_FALSE(controller.CanGoForward());

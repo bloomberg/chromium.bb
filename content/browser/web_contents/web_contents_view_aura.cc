@@ -100,7 +100,8 @@ class OverscrollWindowDelegate : public aura::WindowDelegate {
   OverscrollWindowDelegate(WebContentsImpl* web_contents,
                            OverscrollMode overscroll_mode)
       : web_contents_(web_contents),
-        show_shadow_(false) {
+        show_shadow_(false),
+        forward_events_(true) {
     const NavigationControllerImpl& controller = web_contents->GetController();
     const NavigationEntryImpl* entry = NULL;
     if (ShouldNavigateForward(controller, overscroll_mode)) {
@@ -126,6 +127,8 @@ class OverscrollWindowDelegate : public aura::WindowDelegate {
   void set_show_shadow(bool show) {
     show_shadow_ = show;
   }
+
+  void stop_forwarding_events() { forward_events_ = false; }
 
  private:
   virtual ~OverscrollWindowDelegate() {}
@@ -224,18 +227,26 @@ class OverscrollWindowDelegate : public aura::WindowDelegate {
 
   // Overridden from ui::EventHandler.
   virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE {
-    if (web_contents_window())
+    if (forward_events_ && web_contents_window())
       web_contents_window()->delegate()->OnScrollEvent(event);
   }
 
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
-    if (web_contents_window())
+    if (forward_events_ && web_contents_window())
       web_contents_window()->delegate()->OnGestureEvent(event);
   }
 
   WebContents* web_contents_;
   gfx::Image image_;
   bool show_shadow_;
+
+  // The window is displayed both during the gesture, and after the gesture
+  // while the navigation is in progress. During the gesture, it is necessary to
+  // forward input events to the content page (e.g. when the overscroll window
+  // slides under the cursor and starts receiving scroll events). However, once
+  // the gesture is complete, and the window is being displayed as an overlay
+  // window during navigation, events should not be forwarded anymore.
+  bool forward_events_;
 
   DISALLOW_COPY_AND_ASSIGN(OverscrollWindowDelegate);
 };
@@ -597,7 +608,8 @@ class OverscrollNavigationOverlay :
         loading_complete_(false),
         received_paint_update_(false),
         compositor_updated_(false),
-        has_screenshot_(false) {
+        has_screenshot_(false),
+        need_paint_update_(true) {
   }
 
   virtual ~OverscrollNavigationOverlay() {
@@ -629,6 +641,10 @@ class OverscrollNavigationOverlay :
     has_screenshot_ = has_screenshot;
   }
 
+  void SetupForTesting() {
+    need_paint_update_ = false;
+  }
+
  private:
   // Stop observing the page if the page-load has completed and the page has
   // been painted.
@@ -638,8 +654,10 @@ class OverscrollNavigationOverlay :
     // hiding the overlay.
     // If there is no screenshot in the overlay window, then hide this view
     // as soon as there is any new painting notification.
-    if (!received_paint_update_ || (has_screenshot_ && !loading_complete_))
+    if ((need_paint_update_ && !received_paint_update_) ||
+        (has_screenshot_ && !loading_complete_)) {
       return;
+    }
 
     window_.reset();
     if (view_) {
@@ -680,6 +698,11 @@ class OverscrollNavigationOverlay :
   bool received_paint_update_;
   bool compositor_updated_;
   bool has_screenshot_;
+
+  // During tests, the aura windows don't get any paint updates. So the overlay
+  // container keeps waiting for a paint update it never receives, causing a
+  // timeout. So during tests, disable the wait for paint updates.
+  bool need_paint_update_;
 
   DISALLOW_COPY_AND_ASSIGN(OverscrollNavigationOverlay);
 };
@@ -856,6 +879,11 @@ WebContentsViewAura::~WebContentsViewAura() {
   // Window needs a valid delegate during its destructor, so we explicitly
   // delete it here.
   window_.reset();
+}
+
+void WebContentsViewAura::SetupOverlayWindowForTesting() {
+  if (navigation_overlay_.get())
+    navigation_overlay_->SetupForTesting();
 }
 
 void WebContentsViewAura::SizeChangedCommon(const gfx::Size& size) {
@@ -1051,6 +1079,7 @@ void WebContentsViewAura::PrepareOverscrollNavigationOverlay() {
   OverscrollWindowDelegate* delegate = static_cast<OverscrollWindowDelegate*>(
       overscroll_window_->delegate());
   delegate->set_show_shadow(false);
+  delegate->stop_forwarding_events();
   overscroll_window_->SchedulePaintInRect(
       gfx::Rect(overscroll_window_->bounds().size()));
   navigation_overlay_->SetOverlayWindow(overscroll_window_.Pass(),
@@ -1379,7 +1408,8 @@ void WebContentsViewAura::OnOverscrollModeChange(OverscrollMode old_mode,
   // Reset any in-progress overscroll animation first.
   ResetOverscrollTransform();
 
-  if (new_mode == OVERSCROLL_NONE) {
+  if (new_mode == OVERSCROLL_NONE ||
+      (navigation_overlay_.get() && navigation_overlay_->has_window())) {
     current_overscroll_gesture_ = OVERSCROLL_NONE;
   } else {
     // Cleanup state of the content window first, because that can reset the

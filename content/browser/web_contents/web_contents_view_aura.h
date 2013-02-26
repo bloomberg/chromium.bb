@@ -43,6 +43,8 @@ class CONTENT_EXPORT WebContentsViewAura
   WebContentsViewAura(WebContentsImpl* web_contents,
                       WebContentsViewDelegate* delegate);
 
+  void SetupOverlayWindowForTesting();
+
  private:
   class WindowObserver;
 #if defined(OS_WIN)
