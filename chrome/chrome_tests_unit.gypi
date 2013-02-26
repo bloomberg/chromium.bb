@@ -982,6 +982,7 @@
         'browser/policy/preferences_mock_mac.cc',
         'browser/policy/preferences_mock_mac.h',
         'browser/policy/proxy_policy_provider_unittest.cc',
+        'browser/policy/resource_cache_unittest.cc',
         'browser/policy/url_blacklist_manager_unittest.cc',
         'browser/policy/user_cloud_policy_manager_chromeos_unittest.cc',
         'browser/policy/user_cloud_policy_manager_unittest.cc',
