@@ -241,7 +241,7 @@ decode_cmsg(struct wl_buffer *buffer, struct msghdr *msg)
 		if (size > max || overflow) {
 			overflow = 1;
 			size /= sizeof(int32_t);
-			for (i = 0; i < size; ++i)
+			for (i = 0; i < size; i++)
 				close(((int*)CMSG_DATA(cmsg))[i]);
 		} else {
 			wl_buffer_put(buffer, CMSG_DATA(cmsg), size);
@@ -379,7 +379,7 @@ wl_message_count_arrays(const struct wl_message *message)
 
 	for (i = 0, arrays = 0; message->signature[i]; i++) {
 		if (message->signature[i] == 'a')
-			++arrays;
+			arrays++;
 	}
 
 	return arrays;
@@ -503,11 +503,11 @@ wl_closure_marshal(struct wl_object *sender, uint32_t opcode,
 		case 'i':
 			break;
 		case 's':
-			if (! arg.nullable && args[i].s == NULL)
+			if (!arg.nullable && args[i].s == NULL)
 				goto err_null;
 			break;
 		case 'o':
-			if (! arg.nullable && args[i].o == NULL)
+			if (!arg.nullable && args[i].o == NULL)
 				goto err_null;
 			break;
 		case 'n':
@@ -518,7 +518,7 @@ wl_closure_marshal(struct wl_object *sender, uint32_t opcode,
 			closure->args[i].n = object ? object->id : 0;
 			break;
 		case 'a':
-			if (! arg.nullable && args[i].a == NULL)
+			if (!arg.nullable && args[i].a == NULL)
 				goto err_null;
 			break;
 		case 'h':
