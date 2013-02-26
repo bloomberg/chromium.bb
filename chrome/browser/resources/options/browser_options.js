@@ -293,7 +293,7 @@ cr.define('options', function() {
         $('bluetooth-paired-devices-list').addEventListener('change',
             function() {
           var item = $('bluetooth-paired-devices-list').selectedItem;
-          var disabled = !item || item.connected;
+          var disabled = !item || item.connected || !item.connectable;
           $('bluetooth-reconnect-device').disabled = disabled;
         });
       }

@@ -410,6 +410,7 @@ void BluetoothOptionsHandler::SendDeviceNotification(
   js_properties.SetBoolean("paired", device->IsPaired());
   js_properties.SetBoolean("bonded", device->IsBonded());
   js_properties.SetBoolean("connected", device->IsConnected());
+  js_properties.SetBoolean("connectable", device->IsConnectable());
   if (params)
     js_properties.MergeDictionary(params);
   web_ui()->CallJavascriptFunction(
