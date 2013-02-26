@@ -147,4 +147,9 @@ IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, RegressionTests) {
   RunLayoutTests(kRegressionTests);
 }
 
+// TODO(jsbell): Remove this when data has been gathered.
+IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, FLAKY_FlakyTests) {
+  RunLayoutTest("key-type-array.html");
+}
+
 }  // namespace content
