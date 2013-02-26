@@ -22,6 +22,7 @@
 #include "gestures/include/logging_filter_interpreter.h"
 #include "gestures/include/lookahead_filter_interpreter.h"
 #include "gestures/include/mouse_interpreter.h"
+#include "gestures/include/multitouch_mouse_interpreter.h"
 #include "gestures/include/non_linearity_filter_interpreter.h"
 #include "gestures/include/palm_classifying_filter_interpreter.h"
 #include "gestures/include/prop_registry.h"
@@ -482,13 +483,12 @@ void GestureInterpreter::InitializeMouse(void) {
 }
 
 void GestureInterpreter::InitializeMultitouchMouse(void) {
-  // TODO(clchiou;chromium-os:36322): Update ImmediateInterpreter so that it
-  // interprets multi-touch mouse gestures
-  Interpreter* temp = new ImmediateInterpreter(prop_reg_.get(),
-                                               finger_metrics_.get(),
-                                               tracer_.get());
+  Interpreter* temp = new MultitouchMouseInterpreter(prop_reg_.get(),
+                                                     tracer_.get());
   temp = new FlingStopFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
+  temp = new ClickWiggleFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
   temp = new LookaheadFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
+  temp = new BoxFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
   // TODO(clchiou;chromium-os:36321): Use mouse acceleration algorithm for mice
   temp = new AccelFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
   temp = new ScalingFilterInterpreter(prop_reg_.get(), temp, tracer_.get(),

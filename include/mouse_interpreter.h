@@ -29,6 +29,14 @@ class MouseInterpreter : public Interpreter, public PropertyDelegate {
   Gesture result_;
 };
 
+// This function interprets mouse events, which include button clicking,
+// scroll wheel movement, and mouse movement.  This function needs two
+// consecutive HardwareState.  If no mouse events are presented, result
+// object is not modified.
+void InterpretMouseEvent(const HardwareState& prev_state,
+                         const HardwareState& hwstate,
+                         Gesture* result);
+
 }  // namespace gestures
 
 #endif  // GESTURES_MOUSE_INTERPRETER_H_

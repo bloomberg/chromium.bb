@@ -23,6 +23,7 @@ SO_OBJECTS=\
 	$(OBJDIR)/logging_filter_interpreter.o \
 	$(OBJDIR)/lookahead_filter_interpreter.o \
 	$(OBJDIR)/mouse_interpreter.o \
+	$(OBJDIR)/multitouch_mouse_interpreter.o \
 	$(OBJDIR)/non_linearity_filter_interpreter.o \
 	$(OBJDIR)/palm_classifying_filter_interpreter.o \
 	$(OBJDIR)/prop_registry.o \
@@ -55,6 +56,7 @@ TEST_OBJECTS=\
 	$(OBJDIR)/non_linearity_filter_interpreter_unittest.o \
 	$(OBJDIR)/map_unittest.o \
 	$(OBJDIR)/mouse_interpreter_unittest.o \
+	$(OBJDIR)/multitouch_mouse_interpreter_unittest.o \
 	$(OBJDIR)/palm_classifying_filter_interpreter_unittest.o \
 	$(OBJDIR)/prop_registry_unittest.o \
 	$(OBJDIR)/scaling_filter_interpreter_unittest.o \
