@@ -288,12 +288,12 @@ void DeviceStatusCollector::GetActivityTimes(
   DictionaryPrefUpdate update(local_state_, prefs::kDeviceActivityTimes);
   base::DictionaryValue* activity_times = update.Get();
 
-  for (base::DictionaryValue::key_iterator it = activity_times->begin_keys();
-       it != activity_times->end_keys(); ++it) {
+  for (base::DictionaryValue::Iterator it(*activity_times); !it.IsAtEnd();
+       it.Advance()) {
     int64 start_timestamp;
     int activity_milliseconds;
-    if (base::StringToInt64(*it, &start_timestamp) &&
-        activity_times->GetInteger(*it, &activity_milliseconds)) {
+    if (base::StringToInt64(it.key(), &start_timestamp) &&
+        it.value().GetAsInteger(&activity_milliseconds)) {
       // This is correct even when there are leap seconds, because when a leap
       // second occurs, two consecutive seconds have the same timestamp.
       int64 end_timestamp = start_timestamp + kMillisecondsPerDay;

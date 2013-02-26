@@ -265,22 +265,19 @@ Value* PrefModelAssociator::MergeDictionaryValues(
       static_cast<const DictionaryValue&>(to_value);
   DictionaryValue* result = to_dict_value.DeepCopy();
 
-  for (DictionaryValue::key_iterator key = from_dict_value.begin_keys();
-       key != from_dict_value.end_keys(); ++key) {
-    const Value* from_value;
-    bool success = from_dict_value.GetWithoutPathExpansion(*key, &from_value);
-    DCHECK(success);
-
+  for (DictionaryValue::Iterator it(from_dict_value); !it.IsAtEnd();
+       it.Advance()) {
+    const Value* from_value = &it.value();
     Value* to_key_value;
-    if (result->GetWithoutPathExpansion(*key, &to_key_value)) {
+    if (result->GetWithoutPathExpansion(it.key(), &to_key_value)) {
       if (to_key_value->GetType() == Value::TYPE_DICTIONARY) {
         Value* merged_value = MergeDictionaryValues(*from_value, *to_key_value);
-        result->SetWithoutPathExpansion(*key, merged_value);
+        result->SetWithoutPathExpansion(it.key(), merged_value);
       }
       // Note that for all other types we want to preserve the "to"
       // values so we do nothing here.
     } else {
-      result->SetWithoutPathExpansion(*key, from_value->DeepCopy());
+      result->SetWithoutPathExpansion(it.key(), from_value->DeepCopy());
     }
   }
   return result;

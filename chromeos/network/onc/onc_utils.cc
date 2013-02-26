@@ -201,14 +201,14 @@ void ExpandStringsInOncObject(
   }
 
   // Recurse into nested objects.
-  for (base::DictionaryValue::key_iterator it = onc_object->begin_keys();
-       it != onc_object->end_keys(); ++it) {
+  for (base::DictionaryValue::Iterator it(*onc_object); !it.IsAtEnd();
+       it.Advance()) {
     base::DictionaryValue* inner_object = NULL;
-    if (!onc_object->GetDictionaryWithoutPathExpansion(*it, &inner_object))
+    if (!onc_object->GetDictionaryWithoutPathExpansion(it.key(), &inner_object))
       continue;
 
     const OncFieldSignature* field_signature =
-        GetFieldSignature(signature, *it);
+        GetFieldSignature(signature, it.key());
 
     ExpandStringsInOncObject(*field_signature->value_signature,
                              substitution, inner_object);
