@@ -93,6 +93,7 @@ void BrowserPluginGuest::Destroy() {
   if (destroy_called_)
     return;
   destroy_called_ = true;
+  embedder_web_contents_ = NULL;
   MessageLoop::current()->DeleteSoon(FROM_HERE, web_contents());
 }
 
@@ -240,7 +241,7 @@ void BrowserPluginGuest::RendererUnresponsive(WebContents* source) {
   int process_id =
       web_contents()->GetRenderProcessHost()->GetID();
   SendMessageToEmbedder(
-      new BrowserPluginMsg_GuestUnresponsive(embedder_routing_id(),
+      new BrowserPluginMsg_GuestUnresponsive(MSG_ROUTING_NONE,
                                              instance_id(),
                                              process_id));
   RecordAction(UserMetricsAction("BrowserPlugin.Guest.Hung"));
@@ -250,7 +251,7 @@ void BrowserPluginGuest::RendererResponsive(WebContents* source) {
   int process_id =
       web_contents()->GetRenderProcessHost()->GetID();
   SendMessageToEmbedder(
-      new BrowserPluginMsg_GuestResponsive(embedder_routing_id(),
+      new BrowserPluginMsg_GuestResponsive(MSG_ROUTING_NONE,
                                            instance_id(),
                                            process_id));
   RecordAction(UserMetricsAction("BrowserPlugin.Guest.Responsive"));
@@ -327,7 +328,7 @@ void BrowserPluginGuest::DidStartProvisionalLoadForFrame(
     RenderViewHost* render_view_host) {
   // Inform the embedder of the loadStart.
   SendMessageToEmbedder(
-      new BrowserPluginMsg_LoadStart(embedder_routing_id(),
+      new BrowserPluginMsg_LoadStart(MSG_ROUTING_NONE,
                                      instance_id(),
                                      validated_url,
                                      is_main_frame));
@@ -345,7 +346,7 @@ void BrowserPluginGuest::DidFailProvisionalLoad(
   RemoveChars(net::ErrorToString(error_code), "net::", &error_type);
   // Inform the embedder of the loadAbort.
   SendMessageToEmbedder(
-      new BrowserPluginMsg_LoadAbort(embedder_routing_id(),
+      new BrowserPluginMsg_LoadAbort(MSG_ROUTING_NONE,
                                      instance_id(),
                                      validated_url,
                                      is_main_frame,
@@ -353,6 +354,9 @@ void BrowserPluginGuest::DidFailProvisionalLoad(
 }
 
 void BrowserPluginGuest::SendMessageToEmbedder(IPC::Message* msg) {
+  if (destroy_called_)
+    return;
+  msg->set_routing_id(embedder_routing_id());
   embedder_web_contents_->Send(msg);
 }
 
@@ -361,7 +365,7 @@ void BrowserPluginGuest::LoadRedirect(
     const GURL& new_url,
     bool is_top_level) {
   SendMessageToEmbedder(
-      new BrowserPluginMsg_LoadRedirect(embedder_routing_id(),
+      new BrowserPluginMsg_LoadRedirect(MSG_ROUTING_NONE,
                                         instance_id(),
                                         old_url,
                                         new_url,
@@ -385,7 +389,7 @@ void BrowserPluginGuest::DidCommitProvisionalLoadForFrame(
   params.entry_count =
       web_contents()->GetController().GetEntryCount();
   SendMessageToEmbedder(
-      new BrowserPluginMsg_LoadCommit(embedder_routing_id(),
+      new BrowserPluginMsg_LoadCommit(MSG_ROUTING_NONE,
                                       instance_id(),
                                       params));
   RecordAction(UserMetricsAction("BrowserPlugin.Guest.DidNavigate"));
@@ -399,7 +403,7 @@ void BrowserPluginGuest::DidStopLoading(RenderViewHost* render_view_host) {
                         "});";
   render_view_host->ExecuteJavascriptInWebFrame(string16(),
                                                 ASCIIToUTF16(script));
-  SendMessageToEmbedder(new BrowserPluginMsg_LoadStop(embedder_routing_id(),
+  SendMessageToEmbedder(new BrowserPluginMsg_LoadStop(MSG_ROUTING_NONE,
                                                       instance_id()));
 }
 
@@ -419,7 +423,7 @@ void BrowserPluginGuest::RenderViewReady() {
 
 void BrowserPluginGuest::RenderViewGone(base::TerminationStatus status) {
   int process_id = web_contents()->GetRenderProcessHost()->GetID();
-  SendMessageToEmbedder(new BrowserPluginMsg_GuestGone(embedder_routing_id(),
+  SendMessageToEmbedder(new BrowserPluginMsg_GuestGone(MSG_ROUTING_NONE,
                                                        instance_id(),
                                                        process_id,
                                                        status));
@@ -707,13 +711,13 @@ void BrowserPluginGuest::OnHandleInputEventAck(
 
 void BrowserPluginGuest::OnHasTouchEventHandlers(bool accept) {
   SendMessageToEmbedder(
-      new BrowserPluginMsg_ShouldAcceptTouchEvents(embedder_routing_id(),
+      new BrowserPluginMsg_ShouldAcceptTouchEvents(MSG_ROUTING_NONE,
                                                    instance_id(),
                                                    accept));
 }
 
 void BrowserPluginGuest::OnSetCursor(const WebCursor& cursor) {
-  SendMessageToEmbedder(new BrowserPluginMsg_SetCursor(embedder_routing_id(),
+  SendMessageToEmbedder(new BrowserPluginMsg_SetCursor(MSG_ROUTING_NONE,
                                                        instance_id(),
                                                        cursor));
 }
@@ -746,7 +750,7 @@ void BrowserPluginGuest::OnShowWidget(int route_id,
 
 void BrowserPluginGuest::OnTakeFocus(bool reverse) {
   SendMessageToEmbedder(
-      new BrowserPluginMsg_AdvanceFocus(embedder_routing_id(),
+      new BrowserPluginMsg_AdvanceFocus(MSG_ROUTING_NONE,
                                         instance_id(),
                                         reverse));
 }
@@ -771,7 +775,7 @@ void BrowserPluginGuest::OnUpdateFrameName(int frame_id,
 
   name_ = name;
   SendMessageToEmbedder(new BrowserPluginMsg_UpdatedName(
-      embedder_routing_id(),
+      MSG_ROUTING_NONE,
       instance_id_,
       name));
 }
@@ -790,7 +794,7 @@ void BrowserPluginGuest::OnUpdateRect(
   if (!params.needs_ack || !damage_buffer_) {
     relay_params.damage_buffer_sequence_id = 0;
     SendMessageToEmbedder(new BrowserPluginMsg_UpdateRect(
-        embedder_routing_id(),
+        MSG_ROUTING_NONE,
         instance_id(),
         relay_params));
      return;
@@ -831,7 +835,7 @@ void BrowserPluginGuest::OnUpdateRect(
   relay_params.scroll_rect = params.scroll_rect;
   relay_params.copy_rects = params.copy_rects;
 
-  SendMessageToEmbedder(new BrowserPluginMsg_UpdateRect(embedder_routing_id(),
+  SendMessageToEmbedder(new BrowserPluginMsg_UpdateRect(MSG_ROUTING_NONE,
                                                         instance_id(),
                                                         relay_params));
 }

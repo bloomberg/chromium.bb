@@ -676,6 +676,16 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, IndexedDBIsolation) {
   ExecuteScriptWaitForTitle(default_tag_contents1, script, "db not found");
 }
 
+// This test ensures that closing app window on 'loadcommit' does not crash.
+// The test launches an app with guest and closes the window on loadcommit. It
+// then launches the app window again. The process is repeated 3 times.
+IN_PROC_BROWSER_TEST_F(WebViewTest, CloseOnLoadcommit) {
+  ExtensionTestMessageListener done_test_listener(
+      "done-close-on-loadcommit", false);
+  LoadAndLaunchPlatformApp("web_view/close_on_loadcommit");
+  ASSERT_TRUE(done_test_listener.WaitUntilSatisfied());
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewTest, SpeechRecognition) {
   ASSERT_TRUE(StartTestServer());
   std::string host_str("localhost");  // Must stay in scope with replace_host.

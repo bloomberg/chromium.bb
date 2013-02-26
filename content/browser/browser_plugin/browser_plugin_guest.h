@@ -160,8 +160,10 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
 
   gfx::Point GetScreenCoordinates(const gfx::Point& relative_position) const;
 
-  // Helper to send messages to embedder. Overridden in test implementation
-  // since we want to intercept certain messages for testing.
+  // Helper to send messages to embedder. This methods fills the message with
+  // the correct routing id.
+  // Overridden in test implementation since we want to intercept certain
+  // messages for testing.
   virtual void SendMessageToEmbedder(IPC::Message* msg);
 
   // Returns the embedder's routing ID.
