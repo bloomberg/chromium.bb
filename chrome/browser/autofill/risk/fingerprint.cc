@@ -396,11 +396,26 @@ void GetFingerprint(
   if (host_view)
     host_view->GetRenderWidgetHost()->GetWebScreenInfo(&screen_info);
 
+  internal::GetFingerprintInternal(
+      gaia_id, window_bounds, content_bounds, screen_info, prefs, callback);
+}
+
+namespace internal {
+
+void GetFingerprintInternal(
+    int64 gaia_id,
+    const gfx::Rect& window_bounds,
+    const gfx::Rect& content_bounds,
+    const WebKit::WebScreenInfo& screen_info,
+    const PrefService& prefs,
+    const base::Callback<void(scoped_ptr<Fingerprint>)>& callback) {
   // Begin loading all of the data that we need to load asynchronously.
   // This class is responsible for freeing its own memory.
   new FingerprintDataLoader(gaia_id, window_bounds, content_bounds, screen_info,
                             prefs, callback);
 }
+
+}  // namespace internal
 
 }  // namespace risk
 }  // namespace autofill

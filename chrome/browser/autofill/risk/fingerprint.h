@@ -41,6 +41,19 @@ void GetFingerprint(
     const PrefService& prefs,
     const base::Callback<void(scoped_ptr<Fingerprint>)>& callback);
 
+// Exposed for testing:
+namespace internal {
+
+void GetFingerprintInternal(
+    int64 gaia_id,
+    const gfx::Rect& window_bounds,
+    const gfx::Rect& content_bounds,
+    const WebKit::WebScreenInfo& screen_info,
+    const PrefService& prefs,
+    const base::Callback<void(scoped_ptr<Fingerprint>)>& callback);
+
+}  // namespace internal
+
 }  // namespace risk
 }  // namespace autofill
 
