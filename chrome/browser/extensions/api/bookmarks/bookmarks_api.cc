@@ -915,6 +915,9 @@ void BookmarksIOFunction::SelectFile(ui::SelectFileDialog::Type type) {
 void BookmarksIOFunction::ShowSelectFileDialog(
     ui::SelectFileDialog::Type type,
     const base::FilePath& default_path) {
+  if (!dispatcher())
+    return;  // Extension was unloaded.
+
   // Balanced in one of the three callbacks of SelectFileDialog:
   // either FileSelectionCanceled, MultiFilesSelected, or FileSelected
   AddRef();
