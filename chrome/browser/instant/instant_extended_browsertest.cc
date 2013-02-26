@@ -4,6 +4,7 @@
 
 #include <sstream>
 
+#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/instant/instant_commit_type.h"
 #include "chrome/browser/instant/instant_ntp.h"
 #include "chrome/browser/instant/instant_overlay.h"
@@ -366,6 +367,32 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxEmptyOnNewTabPage) {
 
   // Omnibox should be empty.
   EXPECT_TRUE(omnibox()->GetText().empty());
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NoFaviconOnNewTabPage) {
+  // Setup Instant.
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
+
+  // Open new tab. Preloaded NTP contents should have been used.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+
+  // No favicon should be shown.
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  FaviconTabHelper* favicon_tab_helper =
+      FaviconTabHelper::FromWebContents(active_tab);
+  EXPECT_FALSE(favicon_tab_helper->ShouldDisplayFavicon());
+
+  // Favicon should be shown off the NTP.
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIAboutURL));
+  active_tab = browser()->tab_strip_model()->GetActiveWebContents();
+  favicon_tab_helper = FaviconTabHelper::FromWebContents(active_tab);
+  EXPECT_TRUE(favicon_tab_helper->ShouldDisplayFavicon());
 }
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, InputOnNTPDoesntShowOverlay) {
