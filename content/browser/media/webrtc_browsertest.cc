@@ -12,6 +12,10 @@
 #include "content/test/content_browser_test_utils.h"
 #include "net/test/test_server.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 namespace content {
 
 class WebrtcBrowserTest: public ContentBrowserTest {
@@ -89,6 +93,12 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MANUAL_CanSetupCallAndSendDtmf) {
 
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
                        CanMakeEmptyCallThenAddStreamsAndRenegotiate) {
+#if defined(OS_WIN)
+  // This test is flaky on Win XP.
+  if (base::win::GetVersion() <= base::win::VERSION_XP)
+    return;
+#endif
+
   GURL url(test_server()->GetURL("files/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
