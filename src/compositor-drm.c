@@ -1973,6 +1973,16 @@ drm_compositor_set_modes(struct drm_compositor *compositor)
 	int ret;
 
 	wl_list_for_each(output, &compositor->base.output_list, base.link) {
+		if (!output->current) {
+			/* If something that would cause the output to
+			 * switch mode happened while in another vt, we
+			 * might not have a current drm_fb. In that case,
+			 * schedule a repaint and let drm_output_repaint
+			 * handle setting the mode. */
+			weston_output_schedule_repaint(&output->base);
+			continue;
+		}
+
 		drm_mode = (struct drm_mode *) output->base.current;
 		ret = drmModeSetCrtc(compositor->drm.fd, output->crtc_id,
 				     output->current->fb_id, 0, 0,
