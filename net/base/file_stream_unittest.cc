@@ -1031,44 +1031,6 @@ TEST_F(FileStreamTest, AsyncOpenAndDelete) {
   EXPECT_FALSE(open_callback.have_result());
 }
 
-// Verify that async Write() errors are mapped correctly.
-TEST_F(FileStreamTest, AsyncWriteError) {
-  scoped_ptr<FileStream> stream(new FileStream(NULL));
-  int flags = base::PLATFORM_FILE_CREATE_ALWAYS |
-              base::PLATFORM_FILE_WRITE |
-              base::PLATFORM_FILE_ASYNC;
-  int rv = stream->OpenSync(temp_file_path(), flags);
-  EXPECT_EQ(OK, rv);
-
-  TestCompletionCallback callback;
-
-  // Try passing NULL buffer to Write() and check that it fails.
-  scoped_refptr<IOBuffer> buf = new WrappedIOBuffer(NULL);
-  rv = stream->Write(buf, 1, callback.callback());
-  if (rv == ERR_IO_PENDING)
-    rv = callback.WaitForResult();
-  EXPECT_LT(rv, 0);
-}
-
-// Verify that async Read() errors are mapped correctly.
-TEST_F(FileStreamTest, AsyncReadError) {
-  scoped_ptr<FileStream> stream(new FileStream(NULL));
-  int flags = base::PLATFORM_FILE_OPEN |
-              base::PLATFORM_FILE_READ |
-              base::PLATFORM_FILE_ASYNC;
-  int rv = stream->OpenSync(temp_file_path(), flags);
-  EXPECT_EQ(OK, rv);
-
-  TestCompletionCallback callback;
-
-  // Try passing NULL buffer to Read() and check that it fails.
-  scoped_refptr<IOBuffer> buf = new WrappedIOBuffer(NULL);
-  rv = stream->Read(buf, 1, callback.callback());
-  if (rv == ERR_IO_PENDING)
-    rv = callback.WaitForResult();
-  EXPECT_LT(rv, 0);
-}
-
 }  // namespace
 
 }  // namespace net
