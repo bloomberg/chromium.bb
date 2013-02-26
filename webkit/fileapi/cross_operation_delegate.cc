@@ -8,6 +8,7 @@
 #include "webkit/blob/shareable_file_reference.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
+#include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/local_file_system_operation.h"
 
 namespace fileapi {
@@ -24,9 +25,7 @@ CrossOperationDelegate::CrossOperationDelegate(
       operation_type_(operation_type),
       callback_(callback),
       src_root_operation_(NULL) {
-  same_file_system_ =
-      src_root_.origin() == dest_root_.origin() &&
-      src_root_.type() == dest_root_.type();
+  same_file_system_ = AreSameFileSystem(src_root_, dest_root_);
 }
 
 CrossOperationDelegate::~CrossOperationDelegate() {

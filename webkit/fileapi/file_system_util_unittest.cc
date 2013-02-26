@@ -7,7 +7,7 @@
 #include "base/files/file_path.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/fileapi/file_system_types.h"
+#include "webkit/fileapi/file_system_url.h"
 
 namespace fileapi {
 namespace {
@@ -194,6 +194,30 @@ TEST_F(FileSystemUtilTest, RejectBadIsolatedFileSystemName) {
   EXPECT_FALSE(CrackIsolatedFileSystemName("foo:External", &fsid));
   EXPECT_FALSE(CrackIsolatedFileSystemName(":Isolated_bar", &fsid));
   EXPECT_FALSE(CrackIsolatedFileSystemName("foo:Isolated_", &fsid));
+}
+
+TEST_F(FileSystemUtilTest, AreSameFileSystem) {
+  FileSystemURL url_foo_temp_a = FileSystemURL::CreateForTest(
+      GURL("http://foo"), kFileSystemTypeTemporary,
+      base::FilePath::FromUTF8Unsafe("a"));
+  FileSystemURL url_foo_temp_b = FileSystemURL::CreateForTest(
+      GURL("http://foo"), kFileSystemTypeTemporary,
+      base::FilePath::FromUTF8Unsafe("b"));
+  FileSystemURL url_foo_perm_a = FileSystemURL::CreateForTest(
+      GURL("http://foo"), kFileSystemTypePersistent,
+      base::FilePath::FromUTF8Unsafe("a"));
+  FileSystemURL url_bar_temp_a = FileSystemURL::CreateForTest(
+      GURL("http://bar"), kFileSystemTypeTemporary,
+      base::FilePath::FromUTF8Unsafe("a"));
+  FileSystemURL url_bar_perm_a = FileSystemURL::CreateForTest(
+      GURL("http://bar"), kFileSystemTypePersistent,
+      base::FilePath::FromUTF8Unsafe("a"));
+
+  EXPECT_TRUE(AreSameFileSystem(url_foo_temp_a, url_foo_temp_a));
+  EXPECT_TRUE(AreSameFileSystem(url_foo_temp_a, url_foo_temp_b));
+  EXPECT_FALSE(AreSameFileSystem(url_foo_temp_a, url_foo_perm_a));
+  EXPECT_FALSE(AreSameFileSystem(url_foo_temp_a, url_bar_temp_a));
+  EXPECT_FALSE(AreSameFileSystem(url_foo_temp_a, url_bar_perm_a));
 }
 
 }  // namespace (anonymous)

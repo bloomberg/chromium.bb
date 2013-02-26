@@ -475,8 +475,7 @@ void LocalFileSystemOperation::CopyFileLocal(
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationCopy));
-  DCHECK_EQ(src_url.origin(), dest_url.origin());
-  DCHECK_EQ(src_url.type(), dest_url.type());
+  DCHECK(AreSameFileSystem(src_url, dest_url));
 
   base::PlatformFileError result = SetUp(src_url, SETUP_FOR_READ);
   if (result == base::PLATFORM_FILE_OK)
@@ -506,8 +505,7 @@ void LocalFileSystemOperation::MoveFileLocal(
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationMove));
-  DCHECK_EQ(src_url.origin(), dest_url.origin());
-  DCHECK_EQ(src_url.type(), dest_url.type());
+  DCHECK(AreSameFileSystem(src_url, dest_url));
 
   base::PlatformFileError result = SetUp(src_url, SETUP_FOR_WRITE);
   if (result == base::PLATFORM_FILE_OK)
