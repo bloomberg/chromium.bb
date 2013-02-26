@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/policy/cloud_policy_constants.h"
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
+#include "chrome/browser/policy/proto/chrome_extension_policy.pb.h"
 #include "crypto/signature_creator.h"
 
 namespace em = enterprise_management;
@@ -210,5 +211,6 @@ void TypedPolicyBuilder<PayloadProto>::Build() {
 // Have the instantiations compiled into the module.
 template class TypedPolicyBuilder<em::CloudPolicySettings>;
 template class TypedPolicyBuilder<em::ChromeDeviceSettingsProto>;
+template class TypedPolicyBuilder<em::ExternalPolicyData>;
 
 }  // namespace policy

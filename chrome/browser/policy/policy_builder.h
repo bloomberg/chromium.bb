@@ -16,6 +16,7 @@
 
 namespace enterprise_management {
 class ChromeDeviceSettingsProto;
+class ExternalPolicyData;
 }  // namespace enterprise_management
 
 namespace policy {
@@ -129,6 +130,8 @@ typedef TypedPolicyBuilder<enterprise_management::CloudPolicySettings>
     UserPolicyBuilder;
 typedef TypedPolicyBuilder<enterprise_management::ChromeDeviceSettingsProto>
     DevicePolicyBuilder;
+typedef TypedPolicyBuilder<enterprise_management::ExternalPolicyData>
+    ComponentPolicyBuilder;
 
 }  // namespace policy
 
