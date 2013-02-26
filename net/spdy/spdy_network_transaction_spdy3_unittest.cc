@@ -4093,8 +4093,9 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, CorruptFrameSessionError) {
   scoped_ptr<SpdyFrame> syn_reply_wrong_length(
       ConstructSpdyGetSynReply(NULL, 0, 1));
   size_t wrong_size = syn_reply_wrong_length->size() - 4;
+  BufferedSpdyFramer framer(kSpdyVersion3, false);
   test::SetFrameLength(syn_reply_wrong_length.get(),
-                       wrong_size - SpdyFrame::kHeaderSize,
+                       wrong_size - framer.GetControlFrameMinimumSize(),
                        kSpdyVersion3);
 
   struct SynReplyTests {

@@ -32,37 +32,6 @@ SpdyFrameBuilder::SpdyFrameBuilder(size_t size)
       length_(0) {
 }
 
-SpdyFrameBuilder::SpdyFrameBuilder(SpdyControlType type,
-                                   uint8 flags,
-                                   int spdy_version,
-                                   size_t size)
-    : buffer_(new char[size]),
-      capacity_(size),
-      length_(0) {
-  FlagsAndLength flags_length = CreateFlagsAndLength(
-      flags, size - SpdyFrame::kHeaderSize);
-  WriteUInt16(kControlFlagMask | spdy_version);
-  WriteUInt16(type);
-  WriteBytes(&flags_length, sizeof(flags_length));
-}
-
-SpdyFrameBuilder::SpdyFrameBuilder(SpdyStreamId stream_id,
-                                   SpdyDataFlags flags,
-                                   size_t size)
-    : buffer_(new char[size]),
-      capacity_(size),
-      length_(0) {
-  DCHECK_EQ(0u, stream_id & ~kStreamIdMask);
-  WriteUInt32(stream_id);
-  size_t length = size - SpdyFrame::kHeaderSize;
-  DCHECK_EQ(0u, length & ~static_cast<size_t>(kLengthMask));
-  FlagsAndLength flags_length;
-  flags_length.length_ = htonl(length);
-  DCHECK_EQ(0, flags & ~kDataFlagsMask);
-  flags_length.flags_[0] = flags;
-  WriteBytes(&flags_length, sizeof(flags_length));
-}
-
 SpdyFrameBuilder::~SpdyFrameBuilder() {
 }
 
@@ -80,6 +49,34 @@ bool SpdyFrameBuilder::Seek(size_t length) {
 
   length_ += length;
   return true;
+}
+
+bool SpdyFrameBuilder::WriteControlFrameHeader(const SpdyFramer& framer,
+                                               SpdyControlType type,
+                                               uint8 flags) {
+  FlagsAndLength flags_length = CreateFlagsAndLength(
+      flags, capacity_ - framer.GetControlFrameMinimumSize());
+  bool success = WriteUInt16(kControlFlagMask | framer.protocol_version());
+  success &= WriteUInt16(type);
+  success &= WriteBytes(&flags_length, sizeof(flags_length));
+  DCHECK_EQ(framer.GetControlFrameMinimumSize(), length());
+  return success;
+}
+
+bool SpdyFrameBuilder::WriteDataFrameHeader(const SpdyFramer& framer,
+                                            SpdyStreamId stream_id,
+                                            SpdyDataFlags flags) {
+  DCHECK_EQ(0u, stream_id & ~kStreamIdMask);
+  bool success = WriteUInt32(stream_id);
+  size_t length_field = capacity_ - framer.GetDataFrameMinimumSize();
+  DCHECK_EQ(0u, length_field & ~static_cast<size_t>(kLengthMask));
+  FlagsAndLength flags_length;
+  flags_length.length_ = htonl(length_field);
+  DCHECK_EQ(0, flags & ~kDataFlagsMask);
+  flags_length.flags_[0] = flags;
+  success &= WriteBytes(&flags_length, sizeof(flags_length));
+  DCHECK_EQ(framer.GetDataFrameMinimumSize(), length());
+  return success;
 }
 
 bool SpdyFrameBuilder::WriteString(const std::string& value) {

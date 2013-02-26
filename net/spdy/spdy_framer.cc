@@ -1455,7 +1455,8 @@ SpdySerializedFrame* SpdyFramer::SerializeSynStream(
   const size_t size = GetSynStreamMinimumSize()
       + GetSerializedLength(syn_stream.name_value_block());
 
-  SpdyFrameBuilder builder(SYN_STREAM, flags, protocol_version(), size);
+  SpdyFrameBuilder builder(size);
+  builder.WriteControlFrameHeader(*this, SYN_STREAM, flags);
   builder.WriteUInt32(syn_stream.stream_id());
   builder.WriteUInt32(syn_stream.associated_to_stream_id());
   uint8 priority = syn_stream.priority();
@@ -1502,7 +1503,8 @@ SpdySerializedFrame* SpdyFramer::SerializeSynReply(
   size_t size = GetSynReplyMinimumSize()
       + GetSerializedLength(syn_reply.name_value_block());
 
-  SpdyFrameBuilder builder(SYN_REPLY, flags, protocol_version(), size);
+  SpdyFrameBuilder builder(size);
+  builder.WriteControlFrameHeader(*this, SYN_REPLY, flags);
   builder.WriteUInt32(syn_reply.stream_id());
   if (protocol_version() < 3) {
     builder.WriteUInt16(0);  // Unused.
@@ -1522,10 +1524,8 @@ SpdyFrame* SpdyFramer::CreateRstStream(
 
 SpdySerializedFrame* SpdyFramer::SerializeRstStream(
     const SpdyRstStreamIR& rst_stream) const {
-  SpdyFrameBuilder builder(RST_STREAM,
-                           kNoFlags,
-                           protocol_version(),
-                           GetRstStreamSize());
+  SpdyFrameBuilder builder(GetRstStreamSize());
+  builder.WriteControlFrameHeader(*this, RST_STREAM, 0);
   builder.WriteUInt32(rst_stream.stream_id());
   builder.WriteUInt32(rst_stream.status());
   DCHECK_EQ(GetRstStreamSize(), builder.length());
@@ -1557,7 +1557,8 @@ SpdySerializedFrame* SpdyFramer::SerializeSettings(
   // Size, in bytes, of this SETTINGS frame.
   const size_t size = GetSettingsMinimumSize() + (values->size() * 8);
 
-  SpdyFrameBuilder builder(SETTINGS, flags, protocol_version(), size);
+  SpdyFrameBuilder builder(size);
+  builder.WriteControlFrameHeader(*this, SETTINGS, flags);
   builder.WriteUInt32(values->size());
   DCHECK_EQ(GetSettingsMinimumSize(), builder.length());
   for (SpdySettingsIR::ValueMap::const_iterator it = values->begin();
@@ -1585,7 +1586,8 @@ SpdyFrame* SpdyFramer::CreatePingFrame(uint32 unique_id) const {
 }
 
 SpdySerializedFrame* SpdyFramer::SerializePing(const SpdyPingIR& ping) const {
-  SpdyFrameBuilder builder(PING, 0, protocol_version(), GetPingSize());
+  SpdyFrameBuilder builder(GetPingSize());
+  builder.WriteControlFrameHeader(*this, PING, 0);
   builder.WriteUInt32(ping.id());
   DCHECK_EQ(GetPingSize(), builder.length());
   return builder.take();
@@ -1600,7 +1602,8 @@ SpdyFrame* SpdyFramer::CreateGoAway(
 
 SpdySerializedFrame* SpdyFramer::SerializeGoAway(
     const SpdyGoAwayIR& goaway) const {
-  SpdyFrameBuilder builder(GOAWAY, 0, protocol_version(), GetGoAwaySize());
+  SpdyFrameBuilder builder(GetGoAwaySize());
+  builder.WriteControlFrameHeader(*this, GOAWAY, 0);
   builder.WriteUInt32(goaway.last_good_stream_id());
   if (protocol_version() >= 3) {
     builder.WriteUInt32(goaway.status());
@@ -1638,7 +1641,8 @@ SpdySerializedFrame* SpdyFramer::SerializeHeaders(
   size_t size = GetHeadersMinimumSize()
       + GetSerializedLength(headers.name_value_block());
 
-  SpdyFrameBuilder builder(HEADERS, flags, protocol_version(), size);
+  SpdyFrameBuilder builder(size);
+  builder.WriteControlFrameHeader(*this, HEADERS, flags);
   builder.WriteUInt32(headers.stream_id());
   if (protocol_version() < 3) {
     builder.WriteUInt16(0);  // Unused.
@@ -1659,10 +1663,8 @@ SpdyFrame* SpdyFramer::CreateWindowUpdate(
 
 SpdySerializedFrame* SpdyFramer::SerializeWindowUpdate(
     const SpdyWindowUpdateIR& window_update) const {
-  SpdyFrameBuilder builder(WINDOW_UPDATE,
-                           kNoFlags,
-                           protocol_version(),
-                           GetWindowUpdateSize());
+  SpdyFrameBuilder builder(GetWindowUpdateSize());
+  builder.WriteControlFrameHeader(*this, WINDOW_UPDATE, kNoFlags);
   builder.WriteUInt32(window_update.stream_id());
   builder.WriteUInt32(window_update.delta());
   DCHECK_EQ(GetWindowUpdateSize(), builder.length());
@@ -1693,7 +1695,8 @@ SpdySerializedFrame* SpdyFramer::SerializeCredential(
     size += 4 + it->length();  // Room for certificate.
   }
 
-  SpdyFrameBuilder builder(CREDENTIAL, 0, protocol_version(), size);
+  SpdyFrameBuilder builder(size);
+  builder.WriteControlFrameHeader(*this, CREDENTIAL, 0);
   builder.WriteUInt16(credential.slot());
   DCHECK_EQ(GetCredentialMinimumSize(), builder.length());
   builder.WriteStringPiece32(credential.proof());
@@ -1725,7 +1728,8 @@ SpdySerializedFrame* SpdyFramer::SerializeData(const SpdyDataIR& data) const {
     flags = DATA_FLAG_FIN;
   }
 
-  SpdyFrameBuilder builder(data.stream_id(), flags, kSize);
+  SpdyFrameBuilder builder(kSize);
+  builder.WriteDataFrameHeader(*this, data.stream_id(), flags);
   builder.WriteBytes(data.data().data(), data.data().length());
   DCHECK_EQ(kSize, builder.length());
   return builder.take();
@@ -1740,7 +1744,8 @@ SpdySerializedFrame* SpdyFramer::SerializeDataFrameHeader(
     flags = DATA_FLAG_FIN;
   }
 
-  SpdyFrameBuilder builder(data.stream_id(), flags, kSize);
+  SpdyFrameBuilder builder(kSize);
+  builder.WriteDataFrameHeader(*this, data.stream_id(), flags);
   builder.OverwriteLength(*this, data.data().length());
   DCHECK_EQ(kSize, builder.length());
   return builder.take();

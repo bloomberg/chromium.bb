@@ -30,19 +30,6 @@ class NET_EXPORT_PRIVATE SpdyFrameBuilder {
   // Initializes a SpdyFrameBuilder with a buffer of given size
   explicit SpdyFrameBuilder(size_t size);
 
-  // Initializes a SpdyFrameBuilder with a buffer of given size,
-  // populate with a SPDY control frame header based on
-  // |type|, |flags|, and |spdy_version|.
-  //
-  // TODO(akalin): Add a typedef for this uint8.
-  SpdyFrameBuilder(SpdyControlType type, uint8 flags,
-                   int spdy_version, size_t size);
-
-  // Initiailizes a SpdyFrameBuilder with a buffer of given size,
-  // populated with a SPDY data frame header based on
-  // |stream_id| and |flags|.
-  SpdyFrameBuilder(SpdyStreamId stream_id, SpdyDataFlags flags, size_t size);
-
   ~SpdyFrameBuilder();
 
   // Returns the size of the SpdyFrameBuilder's data.
@@ -59,6 +46,19 @@ class NET_EXPORT_PRIVATE SpdyFrameBuilder {
   // Seeks forward by the given number of bytes. Useful in conjunction with
   // GetWriteableBuffer() above.
   bool Seek(size_t length);
+
+  // Populates this frame with a SPDY control frame header using
+  // version-specific information from the |framer| and length information from
+  // capacity_.
+  bool WriteControlFrameHeader(const SpdyFramer& framer,
+                               SpdyControlType type,
+                               uint8 flags);
+
+  // Populates this frame with a SPDY data frame header using version-specific
+  // information from the |framer| and length information from capacity_.
+  bool WriteDataFrameHeader(const SpdyFramer& framer,
+                            SpdyStreamId stream_id,
+                            SpdyDataFlags flags);
 
   // Takes the buffer from the SpdyFrameBuilder.
   SpdyFrame* take() {
@@ -110,8 +110,8 @@ class NET_EXPORT_PRIVATE SpdyFrameBuilder {
   bool CanWrite(size_t length) const;
 
   scoped_ptr<char[]> buffer_;
-  size_t capacity_;  // Allocation size of payload (or -1 if buffer is const).
-  size_t length_;    // current length of the buffer
+  size_t capacity_;  // Allocation size of payload, set by constructor.
+  size_t length_;    // Current length of the buffer.
 };
 
 }  // namespace net

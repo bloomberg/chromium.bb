@@ -10,6 +10,7 @@
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/tools/dump_cache/url_utilities.h"
+#include "net/tools/flip_server/constants.h"
 #include "net/tools/flip_server/flip_config.h"
 #include "net/tools/flip_server/http_interface.h"
 #include "net/tools/flip_server/spdy_util.h"
@@ -488,8 +489,7 @@ void SpdySM::SendDataFrameImpl(uint32 stream_id, const char* data, int64 len,
 
     VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: Sending data frame "
             << stream_id << " [" << size << "] shrunk to "
-            << (fdf->size() - SpdyFrame::kHeaderSize)
-            << ", flags=" << flags;
+            << (fdf->size() - kSpdyOverhead) << ", flags=" << flags;
 
     data += size;
     len -= size;

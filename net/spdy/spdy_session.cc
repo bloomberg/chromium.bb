@@ -899,8 +899,10 @@ void SpdySession::OnWriteComplete(int result) {
         // size.
         if (result > 0) {
           result = in_flight_write_.buffer()->size();
-          DCHECK_GE(result, static_cast<int>(SpdyFrame::kHeaderSize));
-          result -= static_cast<int>(SpdyFrame::kHeaderSize);
+          DCHECK_GE(result,
+                    static_cast<int>(
+                        buffered_spdy_framer_->GetControlFrameMinimumSize()));
+          result -= buffered_spdy_framer_->GetControlFrameMinimumSize();
         }
 
         // It is possible that the stream was cancelled while we were writing

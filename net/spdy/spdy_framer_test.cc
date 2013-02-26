@@ -87,7 +87,7 @@ class SpdyFramerTestUtil {
     CHECK(buffer != NULL);
     SpdyFrame* decompressed_frame = new SpdyFrame(buffer, visitor.size(), true);
     SetFrameLength(decompressed_frame,
-                   visitor.size() - SpdyFrame::kHeaderSize,
+                   visitor.size() - framer->GetControlFrameMinimumSize(),
                    framer->protocol_version());
     return decompressed_frame;
   }
@@ -538,17 +538,6 @@ using net::test::GetSerializedHeaders;
 
 namespace net {
 
-TEST(SpdyFrameBuilderTest, WriteLimits) {
-  SpdyFrameBuilder builder(1, DATA_FLAG_NONE, kLengthMask + 8);
-  // Data frame header is 8 bytes
-  EXPECT_EQ(8u, builder.length());
-  const string kLargeData(kLengthMask, 'A');
-  builder.WriteUInt32(kLengthMask);
-  EXPECT_EQ(12u, builder.length());
-  EXPECT_TRUE(builder.WriteBytes(kLargeData.data(), kLengthMask - 4));
-  EXPECT_EQ(kLengthMask + 8u, builder.length());
-}
-
 enum SpdyFramerTestTypes {
   SPDY2 = 2,
   SPDY3 = 3,
@@ -694,7 +683,8 @@ TEST_P(SpdyFramerTest, OutOfOrderHeaders) {
   framer.set_enable_compression(false);
 
   // Frame builder with plentiful buffer size.
-  SpdyFrameBuilder frame(SYN_STREAM, CONTROL_FLAG_NONE, 1, 1024);
+  SpdyFrameBuilder frame(1024);
+  frame.WriteControlFrameHeader(framer, SYN_STREAM, CONTROL_FLAG_NONE);
 
   frame.WriteUInt32(3);  // stream_id
   frame.WriteUInt32(0);  // Associated stream id
@@ -801,7 +791,8 @@ TEST_P(SpdyFramerTest, ParseCredentialFrameData) {
 TEST_P(SpdyFramerTest, DuplicateHeader) {
   SpdyFramer framer(spdy_version_);
   // Frame builder with plentiful buffer size.
-  SpdyFrameBuilder frame(SYN_STREAM, CONTROL_FLAG_NONE, 1, 1024);
+  SpdyFrameBuilder frame(1024);
+  frame.WriteControlFrameHeader(framer, SYN_STREAM, CONTROL_FLAG_NONE);
 
   frame.WriteUInt32(3);  // stream_id
   frame.WriteUInt32(0);  // associated stream id
@@ -837,7 +828,8 @@ TEST_P(SpdyFramerTest, DuplicateHeader) {
 TEST_P(SpdyFramerTest, MultiValueHeader) {
   SpdyFramer framer(spdy_version_);
   // Frame builder with plentiful buffer size.
-  SpdyFrameBuilder frame(SYN_STREAM, CONTROL_FLAG_NONE, 1, 1024);
+  SpdyFrameBuilder frame(1024);
+  frame.WriteControlFrameHeader(framer, SYN_STREAM, CONTROL_FLAG_NONE);
 
   frame.WriteUInt32(3);  // stream_id
   frame.WriteUInt32(0);  // associated stream id

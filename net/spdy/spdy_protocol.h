@@ -847,12 +847,6 @@ class SpdyFrame {
   // Returns the actual size of the underlying buffer.
   size_t size() const { return size_; }
 
-  // The size of the SpdyFrameBlock structure.
-  // Every SpdyFrame* class has a static size() method for accessing
-  // the size of the data structure which will be sent over the wire.
-  // Note:  this is not the same as sizeof(SpdyFrame).
-  enum { kHeaderSize = sizeof(struct SpdyFrameBlock) };
-
  protected:
   SpdyFrameBlock* frame_;
 

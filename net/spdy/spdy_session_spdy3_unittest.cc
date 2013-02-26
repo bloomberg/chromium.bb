@@ -1770,7 +1770,8 @@ TEST_F(SpdySessionSpdy3Test, ReadDataWithoutYielding) {
 
   // Build buffer of size kMaxReadBytes / 4 (-spdy_data_frame_size).
   ASSERT_EQ(32 * 1024, kMaxReadBytes);
-  const int kPayloadSize = kMaxReadBytes / 4 - SpdyFrame::kHeaderSize;
+  const int kPayloadSize =
+      kMaxReadBytes / 4 - framer.GetControlFrameMinimumSize();
   TestDataStream test_stream;
   scoped_refptr<net::IOBuffer> payload(new net::IOBuffer(kPayloadSize));
   char* payload_data = payload->data();
@@ -1860,7 +1861,8 @@ TEST_F(SpdySessionSpdy3Test, TestYieldingDuringReadData) {
 
   // Build buffer of size kMaxReadBytes / 4 (-spdy_data_frame_size).
   ASSERT_EQ(32 * 1024, kMaxReadBytes);
-  const int kPayloadSize = kMaxReadBytes / 4 - SpdyFrame::kHeaderSize;
+  const int kPayloadSize =
+      kMaxReadBytes / 4 - framer.GetControlFrameMinimumSize();
   TestDataStream test_stream;
   scoped_refptr<net::IOBuffer> payload(new net::IOBuffer(kPayloadSize));
   char* payload_data = payload->data();
@@ -1959,7 +1961,8 @@ TEST_F(SpdySessionSpdy3Test, TestYieldingDuringAsyncReadData) {
   // Build buffer of size kMaxReadBytes / 4 (-spdy_data_frame_size).
   ASSERT_EQ(32 * 1024, kMaxReadBytes);
   TestDataStream test_stream;
-  const int kEightKPayloadSize = kMaxReadBytes / 4 - SpdyFrame::kHeaderSize;
+  const int kEightKPayloadSize =
+      kMaxReadBytes / 4 - framer.GetControlFrameMinimumSize();
   scoped_refptr<net::IOBuffer> eightk_payload(
       new net::IOBuffer(kEightKPayloadSize));
   char* eightk_payload_data = eightk_payload->data();

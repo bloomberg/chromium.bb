@@ -9,7 +9,7 @@
 
 const int kMSS = 1460;
 const int kSSLOverhead = 25;
-const int kSpdyOverhead = net::SpdyFrame::kHeaderSize;
+const int kSpdyOverhead = 8;
 const int kInitialDataSendersThreshold = (2 * kMSS) - kSpdyOverhead;
 const int kSSLSegmentSize = (1 * kMSS) - kSSLOverhead;
 const int kSpdySegmentSize = kSSLSegmentSize - kSpdyOverhead;
