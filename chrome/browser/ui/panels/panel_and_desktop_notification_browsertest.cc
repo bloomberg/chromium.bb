@@ -121,7 +121,9 @@ class PanelAndDesktopNotificationTest : public BasePanelBrowserTest {
   scoped_ptr<DesktopNotificationService> service_;
 };
 
-IN_PROC_BROWSER_TEST_F(PanelAndDesktopNotificationTest, AddAndClosePanel) {
+// As filed in http://crbug.com/178292.
+IN_PROC_BROWSER_TEST_F(PanelAndDesktopNotificationTest,
+                       DISABLED_AddAndClosePanel) {
   Balloon* balloon = CreateBalloon();
   int original_balloon_bottom = GetBalloonBottomPosition(balloon);
 
