@@ -913,6 +913,11 @@ void SigninScreenHandler::ShowErrorScreen(LoginDisplay::SigninError error_id) {
   }
 }
 
+void SigninScreenHandler::ShowSigninUI(const std::string& email) {
+  base::StringValue email_value(email);
+  web_ui()->CallJavascriptFunction("cr.ui.Oobe.showSigninUI", email_value);
+}
+
 void SigninScreenHandler::ShowGaiaPasswordChanged(const std::string& username) {
   email_ = username;
   password_changed_for_.insert(email_);

@@ -452,9 +452,16 @@ cr.define('login', function() {
         // error itself.
         chrome.send('offlineLogin', [this.email]);
       } else if (!this.loading) {
+        // We want to show bubble near "Email" field, but we can't calculate
+        // it's position because it is located inside iframe. So we only
+        // can hardcode some constants.
+        /** @const */ var ERROR_BUBBLE_OFFSET = 84;
+        /** @const */ var ERROR_BUBBLE_PADDING = 0;
         $('bubble').showContentForElement($('login-box'),
                                           cr.ui.Bubble.Attachment.LEFT,
-                                          error);
+                                          error,
+                                          ERROR_BUBBLE_OFFSET,
+                                          ERROR_BUBBLE_PADDING);
       } else {
         // Defer the bubble until the frame has been loaded.
         this.errorBubble_ = [loginAttempts, error];

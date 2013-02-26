@@ -186,6 +186,11 @@ void WebUILoginDisplay::ShowPasswordChangedDialog(bool show_password_error) {
     webui_handler_->ShowPasswordChangedDialog(show_password_error);
 }
 
+void WebUILoginDisplay::ShowSigninUI(const std::string& email) {
+  if (webui_handler_)
+    webui_handler_->ShowSigninUI(email);
+}
+
 // WebUILoginDisplay, NativeWindowDelegate implementation: ---------------------
 gfx::NativeWindow WebUILoginDisplay::GetNativeWindow() const {
   return parent_window();

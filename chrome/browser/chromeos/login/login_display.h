@@ -145,6 +145,9 @@ class LoginDisplay : public RemoveUserDelegate {
   // user already tried to enter old password but it turned out to be incorrect.
   virtual void ShowPasswordChangedDialog(bool show_password_error) = 0;
 
+  // Shows signin UI with specified email.
+  virtual void ShowSigninUI(const std::string& email) = 0;
+
   gfx::Rect background_bounds() const { return background_bounds_; }
   void set_background_bounds(const gfx::Rect background_bounds){
     background_bounds_ = background_bounds;

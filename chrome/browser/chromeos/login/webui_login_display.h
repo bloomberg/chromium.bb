@@ -43,6 +43,7 @@ class WebUILoginDisplay : public LoginDisplay,
   virtual void ShowErrorScreen(LoginDisplay::SigninError error_id) OVERRIDE;
   virtual void ShowGaiaPasswordChanged(const std::string& username) OVERRIDE;
   virtual void ShowPasswordChangedDialog(bool show_password_error) OVERRIDE;
+  virtual void ShowSigninUI(const std::string& email) OVERRIDE;
 
   // NativeWindowDelegate implementation:
   virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
