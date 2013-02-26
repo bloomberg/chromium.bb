@@ -560,6 +560,10 @@ void LookaheadFilterInterpreter::QState::set_state(
   }
   state_.finger_cnt = copy_count;
   std::copy(new_state.fingers, new_state.fingers + copy_count, state_.fingers);
+  state_.rel_x = new_state.rel_x;
+  state_.rel_y = new_state.rel_y;
+  state_.rel_wheel = new_state.rel_wheel;
+  state_.rel_hwheel = new_state.rel_hwheel;
 }
 
 }  // namespace gestures
