@@ -2,9 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.core import util
-from telemetry.page import multi_page_benchmark
+from telemetry.page import page_benchmark
 
-class RobohornetPro(multi_page_benchmark.MultiPageBenchmark):
+class RobohornetPro(page_benchmark.PageBenchmark):
   def CustomizeBrowserOptions(self, options):
     # Benchmark require use of real Date.now() for measurement.
     options.wpr_make_javascript_deterministic = False

@@ -3,11 +3,11 @@
 # found in the LICENSE file.
 import os
 
-from telemetry.page import multi_page_benchmark
+from telemetry.page import page_benchmark
 
 _JS = 'chrome.gpuBenchmarking.printToSkPicture("{0}");'
 
-class SkPicturePrinter(multi_page_benchmark.MultiPageBenchmark):
+class SkPicturePrinter(page_benchmark.PageBenchmark):
   def AddCommandLineOptions(self, parser):
     parser.add_option('-o', '--outdir', help='Output directory')
 

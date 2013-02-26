@@ -39,6 +39,6 @@ if __name__ == '__main__':
                     'http://src.chromium.org/viewvc/chrome/trunk/src/tools/' +
                     'perf/perf_lib/bootstrap_deps')
   import perf_tools
-  from telemetry.page import multi_page_benchmark_runner
+  from telemetry.page import page_benchmark_runner
   benchmark_dir = os.path.join(os.path.dirname(__file__), 'perf_tools')
-  sys.exit(multi_page_benchmark_runner.Main(benchmark_dir))
+  sys.exit(page_benchmark_runner.Main(benchmark_dir))

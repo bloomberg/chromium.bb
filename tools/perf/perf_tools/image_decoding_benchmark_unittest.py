@@ -2,12 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry.page import multi_page_benchmark_unittest_base
+from telemetry.page import page_benchmark_unittest_base
 # from perf_tools import image_decoding_benchmark
 
 
 class ImageDecodingBenchmarkUnitTest(
-  multi_page_benchmark_unittest_base.MultiPageBenchmarkUnitTestBase):
+  page_benchmark_unittest_base.PageBenchmarkUnitTestBase):
 
   def testImageDecodingMeasurement(self):
     # TODO(qinmin): uncomment this after we fix the image decoding benchmark

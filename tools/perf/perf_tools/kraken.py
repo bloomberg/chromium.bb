@@ -3,12 +3,12 @@
 # found in the LICENSE file.
 
 from telemetry.core import util
-from telemetry.page import multi_page_benchmark
+from telemetry.page import page_benchmark
 
 def _Mean(l):
   return float(sum(l)) / len(l) if len(l) > 0 else 0.0
 
-class Kraken(multi_page_benchmark.MultiPageBenchmark):
+class Kraken(page_benchmark.PageBenchmark):
   def MeasurePage(self, _, tab, results):
     js_is_done = """
 document.title.indexOf("Results") != -1 && document.readyState == "complete"

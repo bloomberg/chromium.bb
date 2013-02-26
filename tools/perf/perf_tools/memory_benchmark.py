@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from perf_tools import histogram_measurement
-from telemetry.page import multi_page_benchmark
+from telemetry.page import page_benchmark
 
 MEMORY_HISTOGRAMS = [
     {'name': 'V8.MemoryExternalFragmentationTotal', 'units': 'percent'},
@@ -13,7 +13,7 @@ MEMORY_HISTOGRAMS = [
 BROWSER_MEMORY_HISTOGRAMS =  [
     {'name': 'Memory.BrowserUsed', 'units': 'kb'}]
 
-class MemoryBenchmark(multi_page_benchmark.MultiPageBenchmark):
+class MemoryBenchmark(page_benchmark.PageBenchmark):
   def __init__(self):
     super(MemoryBenchmark, self).__init__('stress_memory')
     self.histograms = (

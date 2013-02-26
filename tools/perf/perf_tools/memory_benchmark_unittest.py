@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from perf_tools import memory_benchmark
-from telemetry.page import multi_page_benchmark_unittest_base
+from telemetry.page import page_benchmark_unittest_base
 
 class MemoryBenchmarkUnitTest(
-  multi_page_benchmark_unittest_base.MultiPageBenchmarkUnitTestBase):
+  page_benchmark_unittest_base.PageBenchmarkUnitTestBase):
 
   def testMemoryBenchmark(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('page_with_link.html')
