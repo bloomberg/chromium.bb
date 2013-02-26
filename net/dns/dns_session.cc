@@ -56,7 +56,9 @@ int DnsSession::NextFirstServerIndex() {
 base::TimeDelta DnsSession::NextTimeout(int attempt) {
   // The timeout doubles every full round (each nameserver once).
   // TODO(szym): Adapt timeout to observed RTT. http://crbug.com/110197
-  return config_.timeout * (1 << (attempt / config_.nameservers.size()));
+  const base::TimeDelta kMaxTimeout = base::TimeDelta::FromSeconds(5);
+  unsigned num_backoffs = attempt / config_.nameservers.size();
+  return std::min(config_.timeout * (1 << num_backoffs), kMaxTimeout);
 }
 
 // Allocate a socket, already connected to the server address.
