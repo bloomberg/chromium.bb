@@ -135,6 +135,9 @@ class ScreenCapturerMac : public ScreenCapturer {
   // Called when the screen configuration is changed.
   void ScreenConfigurationChanged();
 
+  bool RegisterRefreshAndMoveHandlers();
+  void UnregisterRefreshAndMoveHandlers();
+
   void ScreenRefresh(CGRectCount count, const CGRect *rect_array);
   void ScreenUpdateMove(CGScreenUpdateMoveDelta delta,
                         size_t count,
@@ -233,10 +236,7 @@ ScreenCapturerMac::ScreenCapturerMac()
 
 ScreenCapturerMac::~ScreenCapturerMac() {
   ReleaseBuffers();
-  CGUnregisterScreenRefreshCallback(
-      ScreenCapturerMac::ScreenRefreshCallback, this);
-  CGScreenUnregisterMoveCallback(
-      ScreenCapturerMac::ScreenUpdateMoveCallback, this);
+  UnregisterRefreshAndMoveHandlers();
   CGError err = CGDisplayRemoveReconfigurationCallback(
       ScreenCapturerMac::DisplaysReconfiguredCallback, this);
   if (err != kCGErrorSuccess) {
@@ -245,20 +245,11 @@ ScreenCapturerMac::~ScreenCapturerMac() {
 }
 
 bool ScreenCapturerMac::Init() {
-  CGError err = CGRegisterScreenRefreshCallback(
-      ScreenCapturerMac::ScreenRefreshCallback, this);
-  if (err != kCGErrorSuccess) {
-    LOG(ERROR) << "CGRegisterScreenRefreshCallback " << err;
+  if (!RegisterRefreshAndMoveHandlers()) {
     return false;
   }
 
-  err = CGScreenRegisterMoveCallback(
-      ScreenCapturerMac::ScreenUpdateMoveCallback, this);
-  if (err != kCGErrorSuccess) {
-    LOG(ERROR) << "CGScreenRegisterMoveCallback " << err;
-    return false;
-  }
-  err = CGDisplayRegisterReconfigurationCallback(
+  CGError err = CGDisplayRegisterReconfigurationCallback(
       ScreenCapturerMac::DisplaysReconfiguredCallback, this);
   if (err != kCGErrorSuccess) {
     LOG(ERROR) << "CGDisplayRegisterReconfigurationCallback " << err;
@@ -657,7 +648,7 @@ void ScreenCapturerMac::CgBlitPostLion(const ScreenCaptureFrame& buffer,
         (display_bounds.top() * buffer.bytes_per_row());
 
     // Copy the dirty region from the display buffer into our desktop buffer.
-    for(SkRegion::Iterator i(copy_region); !i.done(); i.next()) {
+    for (SkRegion::Iterator i(copy_region); !i.done(); i.next()) {
       CopyRect(display_base_address,
                src_bytes_per_row,
                out_ptr,
@@ -758,8 +749,33 @@ void ScreenCapturerMac::ScreenConfigurationChanged() {
   pixel_buffer_object_.Init(cgl_context_, buffer_size);
 }
 
+bool ScreenCapturerMac::RegisterRefreshAndMoveHandlers() {
+  CGError err = CGRegisterScreenRefreshCallback(
+      ScreenCapturerMac::ScreenRefreshCallback, this);
+  if (err != kCGErrorSuccess) {
+    LOG(ERROR) << "CGRegisterScreenRefreshCallback " << err;
+    return false;
+  }
+
+  err = CGScreenRegisterMoveCallback(
+      ScreenCapturerMac::ScreenUpdateMoveCallback, this);
+  if (err != kCGErrorSuccess) {
+    LOG(ERROR) << "CGScreenRegisterMoveCallback " << err;
+    return false;
+  }
+
+  return true;
+}
+
+void ScreenCapturerMac::UnregisterRefreshAndMoveHandlers() {
+  CGUnregisterScreenRefreshCallback(
+      ScreenCapturerMac::ScreenRefreshCallback, this);
+  CGScreenUnregisterMoveCallback(
+      ScreenCapturerMac::ScreenUpdateMoveCallback, this);
+}
+
 void ScreenCapturerMac::ScreenRefresh(CGRectCount count,
-                                          const CGRect* rect_array) {
+                                      const CGRect* rect_array) {
   if (desktop_config_.pixel_bounds.isEmpty()) {
     return;
   }
@@ -814,7 +830,12 @@ void ScreenCapturerMac::DisplaysReconfigured(
 
     if (reconfiguring_displays_.empty()) {
       // If no other displays are reconfiguring then refresh capturer data
-      // structures and un-block the capturer thread.
+      // structures and un-block the capturer thread. Occasionally, the
+      // refresh and move handlers are lost when the screen mode changes,
+      // so re-register them here (the same does not appear to be true for
+      // the reconfiguration handler itself).
+      UnregisterRefreshAndMoveHandlers();
+      RegisterRefreshAndMoveHandlers();
       ScreenConfigurationChanged();
       display_configuration_capture_event_.Signal();
     }
