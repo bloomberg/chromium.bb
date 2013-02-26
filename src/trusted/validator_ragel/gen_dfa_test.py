@@ -311,13 +311,13 @@ class TestInstructionPrinter(unittest.TestCase):
         """
         REX_RXB?
         0x89
+        modrm_registers
+        @operand0_from_modrm_reg
+        @operand1_from_modrm_rm
         @instruction_mov
         @operands_count_is_2
         @operand0_32bit
         @operand1_32bit
-        modrm_registers
-        @operand0_from_modrm_reg
-        @operand1_from_modrm_rm
         @set_spurious_rex_x
         """.split())
 
@@ -337,11 +337,11 @@ class TestInstructionPrinter(unittest.TestCase):
         """
         REX_RXB?
         0x89
-        @instruction_mov
-        @operands_count_is_2
-        @operand0_32bit
-        @operand1_32bit
         (any
+         @instruction_mov
+         @operands_count_is_2
+         @operand0_32bit
+         @operand1_32bit
          @operand0_from_modrm_reg
          @operand1_rm
          any* &
@@ -361,11 +361,11 @@ class TestInstructionPrinter(unittest.TestCase):
         """
         0x80
         (modrm_registers & opcode_2)
+        @operand1_from_modrm_rm
         @instruction_adc
         @operands_count_is_2
         @operand0_8bit
         @operand1_8bit
-        @operand1_from_modrm_rm
         imm8
         @operand0_immediate
         """.split())
@@ -381,13 +381,13 @@ class TestInstructionPrinter(unittest.TestCase):
         printer.GetContent().split(),
         """
         0x8c
+        (modrm_registers & opcode_s)
+        @operand0_from_modrm_reg_norex
+        @operand1_from_modrm_rm
         @instruction_mov
         @operands_count_is_2
         @operand0_segreg
         @operand1_16bit
-        (modrm_registers & opcode_s)
-        @operand0_from_modrm_reg_norex
-        @operand1_from_modrm_rm
         """.split())
 
   def test_cpu_features(self):

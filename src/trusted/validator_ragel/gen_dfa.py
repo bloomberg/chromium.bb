@@ -838,34 +838,26 @@ class InstructionPrinter(object):
     self._out.write('\n')
 
     opcode_in_modrm = instruction.GetOpcodeInModRM()
-    if opcode_in_modrm is None:
-      if not instruction.HasOpcodeInsteadOfImmediate():
-        self._PrintSignature(instruction)
-        self._PrintDetachedOperandSources(instruction)
 
-      if instruction.FindOperand(
-          def_format.OperandType.SEGMENT_REGISTER_IN_REG) is None:
-        self._out.write('modrm_registers\n')
-      else:
-        self._out.write('(modrm_registers & opcode_s)\n')
-      self._PrintModRMOperandSources(instruction)
-
-      if instruction.HasOpcodeInsteadOfImmediate():
-        assert instruction.opcodes[-2] == '/'
-        self._out.write('%s\n' % instruction.opcodes[-1])
-        self._PrintSignature(instruction)
-        self._PrintDetachedOperandSources(instruction)
-    else:
+    if opcode_in_modrm is not None:
       assert not instruction.HasOpcodeInsteadOfImmediate()
       assert instruction.FindOperand(
           def_format.OperandType.SEGMENT_REGISTER_IN_REG) is None
       self._out.write('(modrm_registers & opcode_%d)\n' % opcode_in_modrm)
+    elif instruction.FindOperand(
+          def_format.OperandType.SEGMENT_REGISTER_IN_REG) is not None:
+      self._out.write('(modrm_registers & opcode_s)\n')
+    else:
+      self._out.write('modrm_registers\n')
 
-      # We postpone printing signature until opcode in modrm is read.
-      self._PrintSignature(instruction)
-      self._PrintDetachedOperandSources(instruction)
+    self._PrintModRMOperandSources(instruction)
 
-      self._PrintModRMOperandSources(instruction)
+    if instruction.HasOpcodeInsteadOfImmediate():
+      assert instruction.opcodes[-2] == '/'
+      self._out.write('%s\n' % instruction.opcodes[-1])
+
+    self._PrintSignature(instruction)
+    self._PrintDetachedOperandSources(instruction)
 
     self._PrintSpuriousRexInfo(instruction)
 
@@ -910,52 +902,40 @@ class InstructionPrinter(object):
     self._PrintOpcode(instruction)
     self._out.write('\n')
 
+    # Here we print something like
+    # (any @operand0_from_modrm_reg @operand1_rm any* &
+    #  operand_sib_base_index)
+    # The first term specifies operand sources (they are known after the first
+    # byte we read, ModRM), in this case operand0 come from ModRM.reg, and
+    # operand1 is memory operand.
+    # The second term parses information about specific addressing mode
+    # (together with disp), independently of which operand will refer to it.
+    # Signature is printed either after ModRM byte or after 3dnow opcode
+    # extension.
+    self._out.write('(')
     opcode_in_modrm = instruction.GetOpcodeInModRM()
-    if opcode_in_modrm is None:
-      if not instruction.HasOpcodeInsteadOfImmediate():
-        self._PrintSignature(instruction)
-        self._PrintDetachedOperandSources(instruction)
-
-      # Here we print something like
-      # (any @operand0_from_modrm_reg @operand1_rm any* &
-      #  operand_sib_base_index)
-      # The first term specifies operand sources (they are known after the first
-      # byte we read, ModRM), in this case operand0 come from ModRM.reg, and
-      # operand1 is memory operand.
-      # The second term parses information about specific addressing mode
-      # (together with disp), independently of which operand will refer to it.
-
-      if instruction.FindOperand(
-          def_format.OperandType.SEGMENT_REGISTER_IN_REG) is None:
-        self._out.write('(any\n')
-      else:
-        self._out.write('(opcode_s\n')
-      self._PrintModRMOperandSources(instruction)
-      self._out.write('  any* &\n')
-
-      self._out.write('%s)\n' % address_mode.mode)
-
-      if instruction.HasOpcodeInsteadOfImmediate():
-        assert instruction.opcodes[-2] == '/'
-        self._out.write('%s\n' % instruction.opcodes[-1])
-
-        self._PrintSignature(instruction)
-        self._PrintDetachedOperandSources(instruction)
+    if opcode_in_modrm is not None:
+      self._out.write('opcode_%d\n' % opcode_in_modrm)
+    elif instruction.FindOperand(
+        def_format.OperandType.SEGMENT_REGISTER_IN_REG) is not None:
+      self._out.write('opcode_s\n')
     else:
-      # Here we print something like
-      # (opcode_2 @operand1_rm any* &
-      #  operand_sib_base_index)
-      # Note that we postpone printing signature until we read opcode in modrm.
-      assert not instruction.HasOpcodeInsteadOfImmediate()
-      assert instruction.FindOperand(
-          def_format.OperandType.SEGMENT_REGISTER_IN_REG) is None
-      self._out.write('(opcode_%d\n' % opcode_in_modrm)
+      self._out.write('any\n')
+
+    if not instruction.HasOpcodeInsteadOfImmediate():
       self._PrintSignature(instruction)
       self._PrintDetachedOperandSources(instruction)
-      self._PrintModRMOperandSources(instruction)
-      self._out.write('  any* &\n')
 
-      self._out.write('%s)\n' % address_mode.mode)
+    self._PrintModRMOperandSources(instruction)
+
+    self._out.write('  any* &\n')
+    self._out.write('%s)\n' % address_mode.mode)
+
+    if instruction.HasOpcodeInsteadOfImmediate():
+      assert instruction.opcodes[-2] == '/'
+      self._out.write('%s\n' % instruction.opcodes[-1])
+      self._PrintSignature(instruction)
+      self._PrintDetachedOperandSources(instruction)
 
     # TODO(shcherbina): we don't have to parse parts like disp (only ModRM
     # (and possibly SIB)) to determine spurious rex bits. Perhaps move it
