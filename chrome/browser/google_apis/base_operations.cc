@@ -477,8 +477,11 @@ void UploadRangeOperationBase::ProcessURLFetchResults(
 
   if (code == HTTP_RESUME_INCOMPLETE) {
     // Retrieve value of the first "Range" header.
-    int64 start_position_received = -1;
-    int64 end_position_received = -1;
+    // The Range header is appeared only if there is at least one received
+    // byte. So, initialize the positions by 0 so that the [0,0) will be
+    // returned via the |callback_| for empty data case.
+    int64 start_position_received = 0;
+    int64 end_position_received = 0;
     std::string range_received;
     hdrs->EnumerateHeader(NULL, kUploadResponseRange, &range_received);
     if (!range_received.empty()) {  // Parse the range header.
@@ -494,6 +497,9 @@ void UploadRangeOperationBase::ProcessURLFetchResults(
         end_position_received = ranges[0].last_byte_position() + 1;
       }
     }
+    // The Range header has the received data range, so the start position
+    // should be always 0.
+    DCHECK_EQ(start_position_received, 0);
     DVLOG(1) << "Got response for [" << drive_file_path_.value()
              << "]: code=" << code
              << ", range_hdr=[" << range_received

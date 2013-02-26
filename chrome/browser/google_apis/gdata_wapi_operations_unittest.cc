@@ -127,6 +127,9 @@ class GDataWapiOperationsTest : public testing::Test {
 
     url_generator_.reset(new GDataWapiUrlGenerator(
         test_util::GetBaseUrlForTesting(test_server_.port())));
+
+    received_bytes_ = 0;
+    content_length_ = 0;
   }
 
   virtual void TearDown() OVERRIDE {
@@ -223,6 +226,7 @@ class GDataWapiOperationsTest : public testing::Test {
       scoped_ptr<test_server::HttpResponse> http_response(
           new test_server::HttpResponse);
 
+      // Check an ETag.
       std::map<std::string, std::string>::const_iterator found =
           request.headers.find("If-Match");
       if (found != request.headers.end() &&
@@ -231,6 +235,15 @@ class GDataWapiOperationsTest : public testing::Test {
         http_response->set_code(test_server::PRECONDITION);
         return http_response.Pass();
       }
+
+      // Check if the X-Upload-Content-Length is present. If yes, store the
+      // length of the file.
+      found = request.headers.find("X-Upload-Content-Length");
+      if (found == request.headers.end() ||
+          !base::StringToInt64(found->second, &content_length_)) {
+        return scoped_ptr<test_server::HttpResponse>();
+      }
+      received_bytes_ = 0;
 
       http_response->set_code(test_server::SUCCESS);
       GURL upload_url;
@@ -277,28 +290,33 @@ class GDataWapiOperationsTest : public testing::Test {
           request.headers.find("Content-Range");
       if (iter == request.headers.end())
         return scoped_ptr<test_server::HttpResponse>();
+      int64 length = 0;
       int64 start_position = 0;
       int64 end_position = 0;
-      int64 length = 0;
       if (!ParseContentRangeHeader(iter->second,
                                    &start_position,
                                    &end_position,
                                    &length)) {
         return scoped_ptr<test_server::HttpResponse>();
       }
+      EXPECT_EQ(start_position, received_bytes_);
+      EXPECT_EQ(length, content_length_);
+      // end_position is inclusive, but so +1 to change the range to byte size.
+      received_bytes_ = end_position + 1;
+    }
 
-      // Add Range header to the response, based on the values of
-      // Content-Range header in the request.
+    // Add Range header to the response, based on the values of
+    // Content-Range header in the request.
+    // The header is annotated only when at least one byte is received.
+    if (received_bytes_ > 0) {
       response->AddCustomHeader(
           "Range",
-          "bytes=" +
-          base::Int64ToString(start_position) + "-" +
-          base::Int64ToString(end_position));
-
-      // Change the code to RESUME_INCOMPLETE if upload is not complete.
-      if (end_position + 1 < length)
-        response->set_code(test_server::RESUME_INCOMPLETE);
+          "bytes=0-" + base::Int64ToString(received_bytes_ - 1));
     }
+
+    // Change the code to RESUME_INCOMPLETE if upload is not complete.
+    if (received_bytes_ < content_length_)
+      response->set_code(test_server::RESUME_INCOMPLETE);
 
     return response.Pass();
   }
@@ -312,6 +330,14 @@ class GDataWapiOperationsTest : public testing::Test {
   OperationRegistry operation_registry_;
   scoped_ptr<GDataWapiUrlGenerator> url_generator_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
+
+  // These fields are used to keep the current upload state during a
+  // test case. These values are updated by the request from
+  // ResumeUploadOperation, and used to construct the response for
+  // both ResumeUploadOperation and GetUploadStatusOperation, to emulate
+  // the WAPI server.
+  int64 received_bytes_;
+  int64 content_length_;
 
   // The incoming HTTP request is saved so tests can verify the request
   // parameters like HTTP method (ex. some operations should use DELETE
@@ -862,12 +888,15 @@ TEST_F(GDataWapiOperationsTest, UploadNewFile) {
 
 // This test exercises InitiateUploadNewFileOperation and ResumeUploadOperation
 // for a scenario of uploading a new *large* file, which requires multiple
-// requests of ResumeUploadOperation.
+// requests of ResumeUploadOperation. GetUploadOperation is also tested in this
+// test case.
 TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
   const size_t kMaxNumBytes = 10;
   // This is big enough to cause multiple requests of ResumeUploadOperation
   // as we are going to send at most kMaxNumBytes at a time.
-  const std::string kUploadContent(kMaxNumBytes + 1, 'a');
+  // So, sending "kMaxNumBytes * 2 + 1" bytes ensures three
+  // ResumeUploadOperations, which are start, middle and last operations.
+  const std::string kUploadContent(kMaxNumBytes * 2 + 1, 'a');
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   GURL upload_url;
 
@@ -912,7 +941,47 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
             "</entry>\n",
             http_request_.content);
 
-  // 2) Upload the content to the upload URL with multiple requests.
+  // 2) Before sending any data, check the current status.
+  // This is an edge case test for GetUploadStatusOperation
+  // (UploadRangeOperationBase).
+  {
+    UploadRangeResponse response;
+    scoped_ptr<ResourceEntry> new_entry;
+
+    // Check the response by GetUploadStatusOperation.
+    GetUploadStatusOperation* get_upload_status_operation =
+        new GetUploadStatusOperation(
+            &operation_registry_,
+            request_context_getter_.get(),
+            base::Bind(&CopyResultFromUploadRangeCallbackAndQuit,
+                       &response,
+                       &new_entry),
+            UPLOAD_NEW_FILE,
+            base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
+            upload_url,
+            kUploadContent.size());
+    get_upload_status_operation->Start(
+        kTestGDataAuthToken, kTestUserAgent,
+        base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+    MessageLoop::current()->Run();
+
+    // METHOD_PUT should be used to upload data.
+    EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+    // Request should go to the upload URL.
+    EXPECT_EQ(upload_url.path(), http_request_.relative_url);
+    // Content-Range header should be added.
+    EXPECT_EQ("bytes */" + base::Int64ToString(kUploadContent.size()),
+              http_request_.headers["Content-Range"]);
+    EXPECT_TRUE(http_request_.has_content);
+    EXPECT_TRUE(http_request_.content.empty());
+
+    // Check the response.
+    EXPECT_EQ(HTTP_RESUME_INCOMPLETE, response.code);
+    EXPECT_EQ(0, response.start_position_received);
+    EXPECT_EQ(0, response.end_position_received);
+  }
+
+  // 3) Upload the content to the upload URL with multiple requests.
   size_t num_bytes_consumed = 0;
   for (size_t start_position = 0; start_position < kUploadContent.size();
        start_position += kMaxNumBytes) {
@@ -974,13 +1043,47 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
       // complete.
       EXPECT_EQ(-1, response.start_position_received);
       EXPECT_EQ(-1, response.end_position_received);
-    } else {
-      EXPECT_EQ(HTTP_RESUME_INCOMPLETE, response.code);
-      EXPECT_EQ(static_cast<int64>(start_position),
-                response.start_position_received);
-      EXPECT_EQ(static_cast<int64>(end_position),
-                response.end_position_received);
+      // The upload process is completed, so exit from the loop.
+      break;
     }
+
+    EXPECT_EQ(HTTP_RESUME_INCOMPLETE, response.code);
+    EXPECT_EQ(0, response.start_position_received);
+    EXPECT_EQ(static_cast<int64>(end_position),
+              response.end_position_received);
+
+    // Check the response by GetUploadStatusOperation.
+    GetUploadStatusOperation* get_upload_status_operation =
+        new GetUploadStatusOperation(
+            &operation_registry_,
+            request_context_getter_.get(),
+            base::Bind(&CopyResultFromUploadRangeCallbackAndQuit,
+                       &response,
+                       &new_entry),
+            UPLOAD_NEW_FILE,
+            base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
+            upload_url,
+            kUploadContent.size());
+    get_upload_status_operation->Start(
+        kTestGDataAuthToken, kTestUserAgent,
+        base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+    MessageLoop::current()->Run();
+
+    // METHOD_PUT should be used to upload data.
+    EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+    // Request should go to the upload URL.
+    EXPECT_EQ(upload_url.path(), http_request_.relative_url);
+    // Content-Range header should be added.
+    EXPECT_EQ("bytes */" + base::Int64ToString(kUploadContent.size()),
+              http_request_.headers["Content-Range"]);
+    EXPECT_TRUE(http_request_.has_content);
+    EXPECT_TRUE(http_request_.content.empty());
+
+    // Check the response.
+    EXPECT_EQ(HTTP_RESUME_INCOMPLETE, response.code);
+    EXPECT_EQ(0, response.start_position_received);
+    EXPECT_EQ(static_cast<int64>(end_position),
+              response.end_position_received);
   }
 
   EXPECT_EQ(kUploadContent.size(), num_bytes_consumed);

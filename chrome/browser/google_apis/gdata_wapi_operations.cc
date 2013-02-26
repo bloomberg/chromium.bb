@@ -18,6 +18,8 @@
 using content::BrowserThread;
 using net::URLFetcher;
 
+namespace google_apis {
+
 namespace {
 
 // etag matching header.
@@ -34,9 +36,24 @@ std::string GenerateIfMatchHeader(const std::string& etag) {
   return etag.empty() ? kIfMatchAllHeader : (kIfMatchHeaderPrefix + etag);
 }
 
-}  // namespace
+// Parses the |value| to ResourceEntry with error handling.
+// This is designed to be used for ResumeUploadOperation and
+// GetUploadStatusOperation.
+scoped_ptr<ResourceEntry> ParseResourceEntry(scoped_ptr<base::Value> value) {
+  scoped_ptr<ResourceEntry> entry;
+  if (value.get()) {
+    entry = ResourceEntry::ExtractAndParse(*value);
 
-namespace google_apis {
+    // Note: |value| may be NULL, in particular if the callback is for a
+    // failure.
+    if (!entry.get())
+      LOG(WARNING) << "Invalid entry received on upload.";
+  }
+
+  return entry.Pass();
+}
+
+}  // namespace
 
 //============================ Structs ===========================
 
@@ -604,19 +621,17 @@ std::vector<std::string> ResumeUploadOperation::GetExtraRequestHeaders() const {
   // Content-Range: bytes <start_position>-<end_position>/<content_length>
   // for example:
   // Content-Range: bytes 7864320-8388607/13851821
-  // Use * for unknown/streaming content length.
   // The header takes inclusive range, so we adjust by "end_position - 1".
   DCHECK_GE(start_position_, 0);
   DCHECK_GT(end_position_, 0);
-  DCHECK_GE(content_length_, -1);
+  DCHECK_GE(content_length_, 0);
 
   std::vector<std::string> headers;
   headers.push_back(
       std::string(kUploadContentRange) +
       base::Int64ToString(start_position_) + "-" +
       base::Int64ToString(end_position_ - 1) + "/" +
-      (content_length_ == -1 ? "*" :
-          base::Int64ToString(content_length_)));
+      base::Int64ToString(content_length_));
   return headers;
 }
 
@@ -635,17 +650,47 @@ void ResumeUploadOperation::OnURLFetchUploadProgress(
 
 void ResumeUploadOperation::OnRangeOperationComplete(
     const UploadRangeResponse& response, scoped_ptr<base::Value> value) {
-  scoped_ptr<ResourceEntry> entry;
-  if (value.get()) {
-    entry = ResourceEntry::ExtractAndParse(*value);
+  callback_.Run(response, ParseResourceEntry(value.Pass()));
+}
 
-    // Note: |value| may be NULL, in particular if the callback is for a
-    // failure.
-    if (!entry.get())
-      LOG(WARNING) << "Invalid entry received on upload.";
-  }
+//========================== GetUploadStatusOperation ==========================
 
-  callback_.Run(response, entry.Pass());
+GetUploadStatusOperation::GetUploadStatusOperation(
+    OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
+    const UploadRangeCallback& callback,
+    UploadMode upload_mode,
+    const base::FilePath& drive_file_path,
+    const GURL& upload_url,
+    int64 content_length)
+  : UploadRangeOperationBase(registry,
+                             url_request_context_getter,
+                             upload_mode,
+                             drive_file_path,
+                             upload_url),
+    callback_(callback),
+    content_length_(content_length) {}
+
+GetUploadStatusOperation::~GetUploadStatusOperation() {}
+
+std::vector<std::string>
+GetUploadStatusOperation::GetExtraRequestHeaders() const {
+  // The header looks like
+  // Content-Range: bytes */<content_length>
+  // for example:
+  // Content-Range: bytes */13851821
+  DCHECK_GE(content_length_, 0);
+
+  std::vector<std::string> headers;
+  headers.push_back(
+      std::string(kUploadContentRange) + "*/" +
+      base::Int64ToString(content_length_));
+  return headers;
+}
+
+void GetUploadStatusOperation::OnRangeOperationComplete(
+    const UploadRangeResponse& response, scoped_ptr<base::Value> value) {
+  callback_.Run(response, ParseResourceEntry(value.Pass()));
 }
 
 }  // namespace google_apis

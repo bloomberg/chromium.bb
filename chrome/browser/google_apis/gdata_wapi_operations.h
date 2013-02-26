@@ -507,6 +507,49 @@ class ResumeUploadOperation : public UploadRangeOperationBase {
   DISALLOW_COPY_AND_ASSIGN(ResumeUploadOperation);
 };
 
+//========================== GetUploadStatusOperation ==========================
+
+// This class performs the operation for getting the current upload status
+// of a file.
+// This operation calls |callback| with:
+// - HTTP_RESUME_INCOMPLETE and the range of previously uploaded data,
+//   if a file has been partially uploaded. |new_entry| of the |callback| is
+//   not used.
+// - HTTP_SUCCESS or HTTP_CREATED (up to the upload mode) and |new_entry|
+//   for the uploaded data, if a file has been completely uploaded.
+//   |range| of the |callback| is not used.
+// See also UploadRangeOperationBase.
+class GetUploadStatusOperation : public UploadRangeOperationBase {
+ public:
+  // |callback| must not be null. See also UploadRangeOperationBase's
+  // constructor for more details.
+  // |content_length| is the whole data size to be uploaded.
+  GetUploadStatusOperation(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const UploadRangeCallback& callback,
+      UploadMode upload_mode,
+      const base::FilePath& drive_file_path,
+      const GURL& upload_url,
+      int64 content_length);
+  virtual ~GetUploadStatusOperation();
+
+ protected:
+  // UrlFetchOperationBase overrides.
+  virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
+
+  // UploadRangeOperationBase overrides.
+  virtual void OnRangeOperationComplete(
+      const UploadRangeResponse& response,
+      scoped_ptr<base::Value> value) OVERRIDE;
+
+ private:
+  const UploadRangeCallback callback_;
+  const int64 content_length_;
+
+  DISALLOW_COPY_AND_ASSIGN(GetUploadStatusOperation);
+};
+
 }  // namespace google_apis
 
 #endif  // CHROME_BROWSER_GOOGLE_APIS_GDATA_WAPI_OPERATIONS_H_

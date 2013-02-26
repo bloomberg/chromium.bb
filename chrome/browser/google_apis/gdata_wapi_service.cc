@@ -475,8 +475,14 @@ void GDataWapiService::GetUploadStatus(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Implement this.
-  NOTREACHED();
+  runner_->StartOperationWithRetry(
+      new GetUploadStatusOperation(operation_registry(),
+                                   url_request_context_getter_,
+                                   callback,
+                                   upload_mode,
+                                   drive_file_path,
+                                   upload_url,
+                                   content_length));
 }
 
 void GDataWapiService::AuthorizeApp(const GURL& edit_url,
