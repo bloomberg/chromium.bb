@@ -31,16 +31,6 @@ class AppListViewDelegate : public app_list::AppListViewDelegate {
   AppListViewDelegate(AppListControllerDelegate* controller, Profile* profile);
   virtual ~AppListViewDelegate();
 
-  // Called when an extension with the given id starts being installed.
-  void OnBeginExtensionInstall(const std::string& extension_id,
-                               const std::string& extension_name,
-                               const gfx::ImageSkia& installing_icon);
-
-  // Called when the download of an extension makes progress.
-  void OnDownloadProgress(const std::string& extension_id,
-                          int percent_downloaded);
-  void OnInstallFailure(const std::string& extension_id);
-
  private:
   // Overridden from app_list::AppListViewDelegate:
   virtual void SetModel(app_list::AppListModel* model) OVERRIDE;
