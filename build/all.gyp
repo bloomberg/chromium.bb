@@ -10,6 +10,7 @@
         '../src/shared/gio/gio.gyp:*',
         '../src/shared/imc/imc.gyp:*',
         '../src/shared/platform/platform.gyp:*',
+        '../src/shared/serialization/serialization.gyp:*',
         '../src/shared/srpc/srpc.gyp:*',
         '../src/shared/utils/utils.gyp:*',
         '../src/trusted/cpu_features/cpu_features.gyp:*',

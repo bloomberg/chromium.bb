@@ -42,6 +42,9 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
         'sel',
         'debug_stub',
         ],
+    'serialization': [
+        'platform',
+        ],
     'testrunner_browser': [
         'ppapi',
         ],

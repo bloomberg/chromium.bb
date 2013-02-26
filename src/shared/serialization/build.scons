@@ -1,0 +1,25 @@
+# -*- python -*-
+# Copyright 2013 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+Import('env')
+
+serialization_inputs = [
+  'serialization.cc',
+]
+
+serialization_inputs = env.DualObject(serialization_inputs)
+
+env.DualLibrary('serialization', serialization_inputs)
+
+serialization_test_exe = env.ComponentProgram(
+    'serialization_test',
+    ['serialization_test.cc'],
+    EXTRA_LIBS=['serialization'])
+
+node = env.CommandTest(
+    'serialization_test.out',
+    command=[serialization_test_exe])
+
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_serialization_test')

@@ -1966,6 +1966,7 @@ def MakeBaseTrustedEnv():
       'src/shared/imc/build.scons',
       'src/shared/ldr/build.scons',
       'src/shared/platform/build.scons',
+      'src/shared/serialization/build.scons',
       'src/shared/srpc/build.scons',
       'src/shared/utils/build.scons',
       'src/third_party_mod/gtest/build.scons',
