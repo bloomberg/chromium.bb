@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 #include "ui/gfx/native_widget_types.h"
@@ -68,6 +69,9 @@ class ImageTransportSurface {
       CreateSurface(GpuChannelManager* manager,
                     GpuCommandBufferStub* stub,
                     const gfx::GLSurfaceHandle& handle);
+#if defined(OS_MACOSX)
+  CONTENT_EXPORT static void SetAllowOSMesaForTesting(bool allow);
+#endif
 
   virtual gfx::Size GetSize() = 0;
 

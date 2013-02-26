@@ -16,6 +16,7 @@
 #include "content/shell/shell_content_renderer_client.h"
 #include "content/shell/shell_switches.h"
 #include "content/shell/webkit_test_platform_support.h"
+#include "content/public/test/layouttest_support.h"
 #include "net/cookies/cookie_monster.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
@@ -100,6 +101,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     command_line.AppendSwitch(switches::kAllowFileAccessFromFiles);
     command_line.AppendSwitchASCII(
         switches::kUseGL, gfx::kGLImplementationOSMesaName);
+    SetAllowOSMesaImageTransportForTesting();
     command_line.AppendSwitch(switches::kIgnoreGpuBlacklist);
     command_line.AppendSwitch(switches::kEnableExperimentalWebKitFeatures);
     command_line.AppendSwitch(switches::kEnableCssShaders);

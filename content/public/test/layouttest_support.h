@@ -38,6 +38,8 @@ void EnableDevToolsFrontendTesting();
 // Returns the length of the local session history of a render view.
 int GetLocalSessionHistoryLength(RenderView* render_view);
 
+void SetAllowOSMesaImageTransportForTesting();
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_TEST_LAYOUTTEST_SUPPORT_H_
