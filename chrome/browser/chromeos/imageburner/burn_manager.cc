@@ -31,6 +31,8 @@ const char kConfigFileUrl[] =
     "https://dl.google.com/dl/edgedl/chromeos/recovery/recovery.conf";
 const char kTempImageFolderName[] = "chromeos_image";
 
+const char kImageZipFileName[] = "chromeos_image.bin.zip";
+
 const int64 kBytesImageDownloadProgressReportInterval = 10240;
 
 BurnManager* g_burn_manager = NULL;
@@ -267,6 +269,7 @@ void BurnManager::CreateImageDir() {
 }
 
 void BurnManager::OnImageDirCreated(bool success) {
+  zip_image_file_path_ = image_dir_.Append(kImageZipFileName);
   FOR_EACH_OBSERVER(Observer, observers_, OnImageDirCreated(success));
 }
 
@@ -276,9 +279,7 @@ const base::FilePath& BurnManager::GetImageDir() {
 
 void BurnManager::FetchConfigFile() {
   if (config_file_fetched_) {
-    FOR_EACH_OBSERVER(
-        Observer, observers_,
-        OnConfigFileFetched(true, image_file_name_, image_download_url_));
+    FOR_EACH_OBSERVER(Observer, observers_, OnConfigFileFetched(true));
     return;
   }
 
@@ -292,17 +293,16 @@ void BurnManager::FetchConfigFile() {
   config_fetcher_->Start();
 }
 
-void BurnManager::FetchImage(const GURL& image_url,
-                             const base::FilePath& file_path) {
+void BurnManager::FetchImage() {
   tick_image_download_start_ = base::TimeTicks::Now();
   bytes_image_download_progress_last_reported_ = 0;
-  image_fetcher_.reset(net::URLFetcher::Create(image_url,
+  image_fetcher_.reset(net::URLFetcher::Create(image_download_url_,
                                                net::URLFetcher::GET,
                                                this));
   image_fetcher_->SetRequestContext(
       g_browser_process->system_request_context());
   image_fetcher_->SaveResponseToFileAtPath(
-      file_path,
+      zip_image_file_path_,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   image_fetcher_->Start();
 }
@@ -311,10 +311,10 @@ void BurnManager::CancelImageFetch() {
   image_fetcher_.reset();
 }
 
-void BurnManager::DoBurn(const base::FilePath& source_path,
-                         const std::string& image_name) {
+void BurnManager::DoBurn() {
   CrosLibrary::Get()->GetBurnLibrary()->DoBurn(
-      source_path, image_name, target_file_path(), target_device_path());
+      zip_image_file_path_, image_file_name_,
+      target_file_path(), target_device_path());
 }
 
 void BurnManager::CancelBurnImage() {
@@ -387,9 +387,7 @@ void BurnManager::ConfigFileFetched(bool fetched, const std::string& content) {
     image_download_url_ = GURL();
   }
 
-  FOR_EACH_OBSERVER(
-      Observer, observers_,
-      OnConfigFileFetched(fetched, image_file_name_, image_download_url_));
+  FOR_EACH_OBSERVER(Observer, observers_, OnConfigFileFetched(fetched));
 }
 
 }  // namespace imageburner

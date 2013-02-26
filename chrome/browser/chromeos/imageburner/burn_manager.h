@@ -190,15 +190,8 @@ class BurnManager : public net::URLFetcherDelegate,
     virtual void OnImageDirCreated(bool success) = 0;
 
     // Triggered when the fetching of the config file is done.
-    // If it is successfully done, |success| is set to true, and
-    // |image_file_name| and |image_download_url| is set to the name of
-    // of the image file for this device, and the url to download the file
-    // respectively.
-    // If failed, |success| is set to false, and remaining two arguments
-    // are set to empty.
-    virtual void OnConfigFileFetched(bool success,
-                                     const std::string& image_file_name,
-                                     const GURL& image_download_url) = 0;
+    // The result status of the fetch is passed to |success|.
+    virtual void OnConfigFileFetched(bool success) = 0;
 
     // Triggered during the image file downloading periodically.
     // |estimated_remaining_time| is the remaining duration to download the
@@ -239,12 +232,11 @@ class BurnManager : public net::URLFetcherDelegate,
   void FetchConfigFile();
 
   // Fetch a zipped recovery image.
-  void FetchImage(const GURL& image_url, const base::FilePath& file_path);
+  void FetchImage();
 
-  // Burns the image of given |source_path| and |image_name| to the
-  // |target_file_path| and |target_device_path|.
-  void DoBurn(const base::FilePath& source_path,
-              const std::string& image_name);
+  // Burns the image of |zip_image_file_path_| and |image_file_name|
+  // to |target_device_path_| and |target_file_path_|.
+  void DoBurn();
 
   // Cancels the image burning.
   void CancelBurnImage();
@@ -299,6 +291,7 @@ class BurnManager : public net::URLFetcherDelegate,
   base::WeakPtrFactory<BurnManager> weak_ptr_factory_;
 
   base::FilePath image_dir_;
+  base::FilePath zip_image_file_path_;
   base::FilePath target_device_path_;
   base::FilePath target_file_path_;
 

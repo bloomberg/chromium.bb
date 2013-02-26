@@ -18,8 +18,6 @@ namespace imageburner {
 
 namespace {
 
-const char kImageZipFileName[] = "chromeos_image.bin.zip";
-
 // 3.9GB. It is less than 4GB because true device size ussually varies a little.
 const uint64 kMinDeviceSize = static_cast<uint64>(3.9 * 1000 * 1000 * 1000);
 
@@ -107,20 +105,15 @@ class BurnControllerImpl
       return;
     }
 
-    zip_image_file_path_ =
-        burn_manager_->GetImageDir().Append(kImageZipFileName);
     burn_manager_->FetchConfigFile();
   }
 
   // Part of BurnManager::Delegate interface.
-  virtual void OnConfigFileFetched(bool success,
-                                   const std::string& image_file_name,
-                                   const GURL& image_download_url) OVERRIDE {
+  virtual void OnConfigFileFetched(bool success) OVERRIDE {
     if (!success) {
       DownloadCompleted(false);
       return;
     }
-    image_file_name_ = image_file_name;
 
     if (state_machine_->download_finished()) {
       BurnImage();
@@ -128,7 +121,7 @@ class BurnControllerImpl
     }
 
     if (!state_machine_->download_started()) {
-      burn_manager_->FetchImage(image_download_url, zip_image_file_path_);
+      burn_manager_->FetchImage();
       state_machine_->OnDownloadStarted();
     }
   }
@@ -273,7 +266,7 @@ class BurnControllerImpl
     if (state_machine_->state() == StateMachine::BURNING)
       return;
     state_machine_->OnBurnStarted();
-    burn_manager_->DoBurn(zip_image_file_path_, image_file_name_);
+    burn_manager_->DoBurn();
   }
 
   void FinalizeBurn() {
@@ -321,8 +314,6 @@ class BurnControllerImpl
     return CrosLibrary::Get()->GetNetworkLibrary()->Connected();
   }
 
-  base::FilePath zip_image_file_path_;
-  std::string image_file_name_;
   BurnManager* burn_manager_;
   StateMachine* state_machine_;
   bool working_;
