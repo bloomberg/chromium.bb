@@ -393,6 +393,11 @@ void TraceWithAllMacroVariants(WaitableEvent* task_complete_event) {
         "TRACE_EVENT_END_WITH_ID_TID_AND_TIMESTAMP0 call",
         kAsyncId + 1, kThreadId, 45678);
 
+    TRACE_EVENT_OBJECT_CREATED_WITH_ID("all", "tracked object 1", 0x42);
+    TRACE_EVENT_OBJECT_DELETED_WITH_ID("all", "tracked object 1", 0x42);
+
+    TraceScopedTrackableObject<int> trackable("all", "tracked object 2",
+                                              0x2128506);
   } // Scope close causes TRACE_EVENT0 etc to send their END events.
 
   if (task_complete_event)
@@ -649,6 +654,40 @@ void ValidateAllTraceMacrosCreatedData(const ListValue& trace_parsed) {
     std::string id;
     EXPECT_TRUE((item && item->GetString("id", &id)));
     EXPECT_EQ(kAsyncId + 1, atoi(id.c_str()));
+  }
+
+  EXPECT_FIND_("tracked object 1");
+  {
+    std::string phase;
+    std::string id;
+
+    EXPECT_TRUE((item && item->GetString("ph", &phase)));
+    EXPECT_EQ("N", phase);
+    EXPECT_TRUE((item && item->GetString("id", &id)));
+    EXPECT_EQ("42", id);
+    EXPECT_TRUE((item = FindTraceEntry(trace_parsed, "tracked object 1",
+                                       item)));
+    EXPECT_TRUE((item && item->GetString("ph", &phase)));
+    EXPECT_EQ("D", phase);
+    EXPECT_TRUE((item && item->GetString("id", &id)));
+    EXPECT_EQ("42", id);
+  }
+
+  EXPECT_FIND_("tracked object 2");
+  {
+    std::string phase;
+    std::string id;
+
+    EXPECT_TRUE((item && item->GetString("ph", &phase)));
+    EXPECT_EQ("N", phase);
+    EXPECT_TRUE((item && item->GetString("id", &id)));
+    EXPECT_EQ("2128506", id);
+    EXPECT_TRUE((item = FindTraceEntry(trace_parsed, "tracked object 2",
+                                       item)));
+    EXPECT_TRUE((item && item->GetString("ph", &phase)));
+    EXPECT_EQ("D", phase);
+    EXPECT_TRUE((item && item->GetString("id", &id)));
+    EXPECT_EQ("2128506", id);
   }
 }
 
