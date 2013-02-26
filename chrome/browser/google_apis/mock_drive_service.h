@@ -48,6 +48,8 @@ class MockDriveService : public DriveServiceInterface {
           const GetResourceEntryCallback& callback));
   MOCK_METHOD1(GetAccountMetadata,
       void(const GetAccountMetadataCallback& callback));
+  MOCK_METHOD1(GetAboutResource,
+      void(const GetAboutResourceCallback& callback));
   MOCK_METHOD1(GetAppList, void(const GetAppListCallback& callback));
   MOCK_METHOD3(DeleteResource,
       void(const std::string& resource_id,

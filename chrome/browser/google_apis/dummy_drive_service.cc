@@ -55,6 +55,9 @@ void DummyDriveService::GetResourceEntry(
 void DummyDriveService::GetAccountMetadata(
     const GetAccountMetadataCallback& callback) {}
 
+void DummyDriveService::GetAboutResource(
+    const GetAboutResourceCallback& callback) {}
+
 void DummyDriveService::GetAppList(const GetAppListCallback& callback) {}
 
 void DummyDriveService::DeleteResource(const std::string& resource_id,

@@ -284,9 +284,20 @@ void GDataWapiService::GetAccountMetadata(
           base::Bind(&ParseAccounetMetadataAndRun, callback)));
 }
 
+void GDataWapiService::GetAboutResource(
+    const GetAboutResourceCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this.
+  NOTREACHED();
+}
+
 void GDataWapiService::GetAppList(const GetAppListCallback& callback) {
-  // For WAPI, AccountMetadata includes Drive application information, and
-  // this function is not used.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this.
   NOTREACHED();
 }
 

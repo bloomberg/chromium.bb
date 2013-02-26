@@ -73,6 +73,8 @@ class DriveAPIService : public DriveServiceInterface,
 
   virtual void GetAccountMetadata(
       const GetAccountMetadataCallback& callback) OVERRIDE;
+  virtual void GetAboutResource(
+      const GetAboutResourceCallback& callback) OVERRIDE;
   virtual void GetAppList(const GetAppListCallback& callback) OVERRIDE;
   virtual void DeleteResource(
       const std::string& resource_id,

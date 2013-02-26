@@ -17,10 +17,11 @@ class Profile;
 
 namespace google_apis {
 
-class AppList;
+class AboutResource;
 class AccountMetadataFeed;
-class ResourceList;
+class AppList;
 class OperationRegistry;
+class ResourceList;
 
 // Observer interface for DriveServiceInterface.
 class DriveServiceObserver {
@@ -53,8 +54,13 @@ typedef base::Callback<void(GDataErrorCode error,
                             scoped_ptr<AccountMetadataFeed> account_metadata)>
     GetAccountMetadataCallback;
 
+// Callback used for GetAboutResource().
+typedef base::Callback<void(GDataErrorCode error,
+                            scoped_ptr<AboutResource> about_resource)>
+    GetAboutResourceCallback;
+
 // Callback used for GetApplicationInfo().
-typedef base::Callback<void(GDataErrorCode erro,
+typedef base::Callback<void(GDataErrorCode error,
                             scoped_ptr<AppList> app_list)>
     GetAppListCallback;
 
@@ -153,6 +159,11 @@ class DriveServiceInterface {
   // |callback| must not be null.
   virtual void GetAccountMetadata(
       const GetAccountMetadataCallback& callback) = 0;
+
+  // Gets the about resource information from the server.
+  // Upon completion, invokes |callback| with results on the calling thread.
+  // |callback| must not be null.
+  virtual void GetAboutResource(const GetAboutResourceCallback& callback) = 0;
 
   // Gets the application information from the server.
   // Upon completion, invokes |callback| with results on the calling thread.

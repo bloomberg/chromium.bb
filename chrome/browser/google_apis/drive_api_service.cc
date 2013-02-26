@@ -322,6 +322,15 @@ void DriveAPIService::GetAccountMetadata(
           base::Bind(&ParseAccounetMetadataAndRun, callback)));
 }
 
+void DriveAPIService::GetAboutResource(
+    const GetAboutResourceCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this.
+  NOTREACHED();
+}
+
 void DriveAPIService::GetAppList(const GetAppListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());

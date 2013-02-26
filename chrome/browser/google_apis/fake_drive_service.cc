@@ -369,6 +369,15 @@ void FakeDriveService::GetAccountMetadata(
                  base::Passed(&account_metadata)));
 }
 
+void FakeDriveService::GetAboutResource(
+    const GetAboutResourceCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this.
+  NOTREACHED();
+}
+
 void FakeDriveService::GetAppList(const GetAppListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());

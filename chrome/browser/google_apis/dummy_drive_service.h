@@ -41,6 +41,8 @@ class DummyDriveService : public DriveServiceInterface {
       const GetResourceEntryCallback& callback) OVERRIDE;
   virtual void GetAccountMetadata(
       const GetAccountMetadataCallback& callback) OVERRIDE;
+  virtual void GetAboutResource(
+      const GetAboutResourceCallback& callback) OVERRIDE;
   virtual void GetAppList(const GetAppListCallback& callback) OVERRIDE;
   virtual void DeleteResource(const std::string& resource_id,
                               const std::string& etag,
