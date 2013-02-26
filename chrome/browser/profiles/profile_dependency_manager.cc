@@ -45,7 +45,6 @@
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/csp_parser.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
-#include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/extensions/manifest_url_parser.h"
 #include "chrome/browser/extensions/web_accessible_resources_parser.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -276,7 +275,6 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::I18nAPI::GetFactoryInstance();
   extensions::IdentityAPI::GetFactoryInstance();
   extensions::IdleManagerFactory::GetInstance();
-  extensions::InstallTrackerFactory::GetInstance();
 #if defined(TOOLKIT_VIEWS)
   extensions::InputAPI::GetFactoryInstance();
 #endif

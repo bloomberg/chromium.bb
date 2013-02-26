@@ -70,8 +70,7 @@ namespace chrome {
 
 // In the win_aura build these are defined in app_list_controller_win.cc.
 void ShowAppList(Profile* default_profile) {
-  if (!ash::Shell::GetInstance()->GetAppListTargetVisibility())
-    ash::Shell::GetInstance()->ToggleAppList(NULL);
+  ash::Shell::GetInstance()->ToggleAppList(NULL);
 }
 
 bool IsAppListVisible() {
@@ -84,6 +83,24 @@ void DismissAppList() {
 }
 
 void SetAppListProfile(const base::FilePath& profile_file_path) {
+}
+
+void NotifyAppListOfBeginExtensionInstall(
+    Profile* profile,
+    const std::string& extension_id,
+    const std::string& extension_name,
+    const gfx::ImageSkia& installing_icon) {
+}
+
+void NotifyAppListOfDownloadProgress(
+    Profile* profile,
+    const std::string& extension_id,
+    int percent_downloaded) {
+}
+
+void NotifyAppListOfExtensionInstallFailure(
+    Profile* profile,
+    const std::string& extension_id) {
 }
 
 }  // namespace chrome

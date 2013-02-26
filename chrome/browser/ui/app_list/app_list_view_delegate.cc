@@ -54,6 +54,25 @@ app_list::SigninDelegate* AppListViewDelegate::GetSigninDelegate() {
   return signin_delegate_.get();
 }
 
+void AppListViewDelegate::OnBeginExtensionInstall(
+    const std::string& extension_id,
+    const std::string& extension_name,
+    const gfx::ImageSkia& installing_icon) {
+  apps_builder_->OnBeginExtensionInstall(extension_id,
+                                         extension_name,
+                                         installing_icon);
+}
+
+void AppListViewDelegate::OnDownloadProgress(
+    const std::string& extension_id,
+    int percent_downloaded) {
+  apps_builder_->OnDownloadProgress(extension_id, percent_downloaded);
+}
+
+void AppListViewDelegate::OnInstallFailure(const std::string& extension_id) {
+  apps_builder_->OnInstallFailure(extension_id);
+}
+
 void AppListViewDelegate::ActivateAppListItem(
     app_list::AppListItemModel* item,
     int event_flags) {

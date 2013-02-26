@@ -11,8 +11,6 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/install_tracker.h"
-#include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/extension_app_item.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -45,9 +43,6 @@ AppsModelBuilder::AppsModelBuilder(Profile* profile,
       controller_(controller),
       model_(model),
       ignore_changes_(false) {
-  extensions::InstallTracker* tracker =
-      extensions::InstallTrackerFactory::GetForProfile(profile_);
-  tracker->AddObserver(this);
   extensions::ExtensionPrefs* extension_prefs =
       extensions::ExtensionSystem::Get(profile_)->extension_service()->
           extension_prefs();
@@ -70,9 +65,6 @@ AppsModelBuilder::AppsModelBuilder(Profile* profile,
 }
 
 AppsModelBuilder::~AppsModelBuilder() {
-  extensions::InstallTracker* tracker =
-      extensions::InstallTrackerFactory::GetForProfile(profile_);
-  tracker->RemoveObserver(this);
   model_->RemoveObserver(this);
 }
 
@@ -86,10 +78,7 @@ void AppsModelBuilder::Build() {
 void AppsModelBuilder::OnBeginExtensionInstall(
     const std::string& extension_id,
     const std::string& extension_name,
-    const gfx::ImageSkia& installing_icon,
-    bool is_app) {
-  if (!is_app)
-    return;
+    const gfx::ImageSkia& installing_icon) {
   InsertApp(new ExtensionAppItem(profile_,
                                  extension_id,
                                  controller_,

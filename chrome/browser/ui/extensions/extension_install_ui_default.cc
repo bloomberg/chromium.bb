@@ -175,6 +175,10 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
   Browser* browser =
       chrome::FindOrCreateTabbedBrowser(current_profile,
                                         chrome::GetActiveDesktop());
+  if (browser->tab_strip_model()->count() == 0)
+    chrome::AddBlankTabAt(browser, -1, true);
+  browser->window()->Show();
+
   if (extension->is_app()) {
     bool use_bubble = false;
 
@@ -235,10 +239,6 @@ void ExtensionInstallUI::OpenAppInstalledUI(Browser* browser,
       content::Source<Profile>(browser->profile()),
       content::Details<const std::string>(&app_id));
 #else
-  if (browser->tab_strip_model()->count() == 0)
-    chrome::AddBlankTabAt(browser, -1, true);
-  browser->window()->Show();
-
   chrome::NavigateParams params(chrome::GetSingletonTabNavigateParams(
       browser, GURL(chrome::kChromeUINewTabURL)));
   chrome::Navigate(&params);

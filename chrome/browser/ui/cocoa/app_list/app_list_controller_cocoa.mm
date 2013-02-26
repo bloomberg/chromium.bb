@@ -139,6 +139,24 @@ void ShowAppList(Profile* profile) {
   g_app_list_controller.Get().ShowAppList(profile);
 }
 
+void NotifyAppListOfBeginExtensionInstall(
+    Profile* profile,
+    const std::string& extension_id,
+    const std::string& extension_name,
+    const gfx::ImageSkia& installing_icon) {
+}
+
+void NotifyAppListOfDownloadProgress(
+    Profile* profile,
+    const std::string& extension_id,
+    int percent_downloaded) {
+}
+
+void NotifyAppListOfExtensionInstallFailure(
+    Profile* profile,
+    const std::string& extension_id) {
+}
+
 void DismissAppList() {
   g_app_list_controller.Get().DismissAppList();
 }
