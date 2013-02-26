@@ -43,8 +43,8 @@ Gesture* MouseInterpreter::SyncInterpretImpl(HardwareState* hwstate,
     result_ = Gesture(kGestureScroll,
                       prev_state_.timestamp,
                       hwstate->timestamp,
-                      hwstate->rel_hwheel,
-                      hwstate->rel_wheel);
+                      -hwstate->rel_hwheel,
+                      -hwstate->rel_wheel);
   } else if (hwstate->rel_x || hwstate->rel_y) {
     result_ = Gesture(kGestureMove,
                       prev_state_.timestamp,

@@ -53,8 +53,8 @@ TEST(MouseInterpreterTest, SimpleTest) {
   gs = mi.SyncInterpret(&hwstates[4], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeScroll, gs->type);
-  EXPECT_EQ(4, gs->details.scroll.dx);
-  EXPECT_EQ(-3, gs->details.scroll.dy);
+  EXPECT_EQ(-4, gs->details.scroll.dx);
+  EXPECT_EQ(3, gs->details.scroll.dy);
   EXPECT_EQ(230000, gs->start_time);
   EXPECT_EQ(240000, gs->end_time);
 }
