@@ -53,6 +53,9 @@ def TarballsAvailableForVersion(base, version):
       all_flavors.extend(flavors)
   res = {'x86': 'OK', 'pnacl': 'OK'}
   for flavor in set(all_flavors):
+    if type(flavor) is tuple:
+      # This script doesn't handle multi-package toolchains.
+      continue
     # The linux_arm-trusted set is going away and new ones don't matter now.
     if toolchainbinaries.IsArmTrustedFlavor(flavor):
       continue
