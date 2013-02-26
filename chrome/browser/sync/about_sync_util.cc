@@ -193,6 +193,7 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
 
   ListValue* section_network = AddSection(stats_list, "Network");
   BoolSyncStat is_throttled(section_network, "Throttled");
+  StringSyncStat retry_time(section_network, "Retry time (maybe stale)");
   BoolSyncStat are_notifications_enabled(section_network,
                                          "Notifications Enabled");
 
@@ -299,6 +300,8 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
   is_backend_initialized.SetValue(sync_initialized);
   if (is_status_valid) {
     is_syncing.SetValue(full_status.syncing);
+    retry_time.SetValue(GetTimeStr(full_status.retry_time,
+        "Scheduler is not in backoff or throttled"));
   }
 
   if (snapshot.is_initialized())

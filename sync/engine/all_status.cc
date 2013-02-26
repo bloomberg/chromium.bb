@@ -108,6 +108,9 @@ void AllStatus::OnSyncEngineEvent(const SyncEngineEvent& event) {
       status_.sync_protocol_error =
           event.snapshot.model_neutral_state().sync_protocol_error;
       break;
+    case SyncEngineEvent::RETRY_TIME_CHANGED:
+      status_.retry_time = event.retry_time;
+      break;
     default:
       LOG(ERROR) << "Unrecognized Syncer Event: " << event.what_happened;
       break;

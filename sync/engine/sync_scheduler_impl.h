@@ -220,6 +220,9 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl :
   // Helper to signal all listeners registered with |session_context_|.
   void Notify(SyncEngineEvent::EventCause cause);
 
+  // Helper to signal listeners about changed retry time
+  void NotifyRetryTime(base::Time retry_time);
+
   // Callback to change backoff state. |to_be_canary| in both cases is the job
   // that should be granted canary privileges. Note: it is possible that the
   // job that gets scheduled when this callback is scheduled is different from

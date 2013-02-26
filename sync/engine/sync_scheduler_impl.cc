@@ -848,6 +848,7 @@ void SyncSchedulerImpl::ScheduleNextSync(
     // successfully reaching the server.  Therefore, if we make it here, it is
     // appropriate to reset the backoff interval.
     wait_interval_.reset();
+    NotifyRetryTime(base::Time());
     SDVLOG(2) << "Job succeeded so not scheduling more jobs";
     return;
   }
@@ -965,6 +966,7 @@ void SyncSchedulerImpl::HandleContinuationError(
   // This will reset the had_nudge variable as well.
   wait_interval_.reset(new WaitInterval(WaitInterval::EXPONENTIAL_BACKOFF,
                                         length));
+  NotifyRetryTime(base::Time::Now() + length);
   scoped_ptr<SyncSessionJob> new_job(old_job->CloneFromLocation(FROM_HERE));
   new_job->set_scheduled_start(TimeTicks::Now() + length);
   if (old_job->purpose() == SyncSessionJob::CONFIGURATION) {
@@ -999,6 +1001,7 @@ void SyncSchedulerImpl::StopImpl(const base::Closure& callback) {
   // Kill any in-flight method calls.
   weak_ptr_factory_.InvalidateWeakPtrs();
   wait_interval_.reset();
+  NotifyRetryTime(base::Time());
   poll_timer_.Stop();
   pending_nudge_ = NULL;
   unscheduled_nudge_storage_.reset();
@@ -1092,6 +1095,7 @@ void SyncSchedulerImpl::Unthrottle(scoped_ptr<SyncSessionJob> to_be_canary) {
 
   // We're no longer throttled, so clear the wait interval.
   wait_interval_.reset();
+  NotifyRetryTime(base::Time());
 
   // We treat this as a 'canary' in the sense that it was originally scheduled
   // to run some time ago, failed, and we now want to retry, versus a job that
@@ -1110,6 +1114,12 @@ void SyncSchedulerImpl::Notify(SyncEngineEvent::EventCause cause) {
   session_context_->NotifyListeners(SyncEngineEvent(cause));
 }
 
+void SyncSchedulerImpl::NotifyRetryTime(base::Time retry_time) {
+  SyncEngineEvent event(SyncEngineEvent::RETRY_TIME_CHANGED);
+  event.retry_time = retry_time;
+  session_context_->NotifyListeners(event);
+}
+
 bool SyncSchedulerImpl::IsBackingOff() const {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   return wait_interval_.get() && wait_interval_->mode ==
@@ -1121,6 +1131,7 @@ void SyncSchedulerImpl::OnSilencedUntil(
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   wait_interval_.reset(new WaitInterval(WaitInterval::THROTTLED,
                                         silenced_until - TimeTicks::Now()));
+  NotifyRetryTime(base::Time::Now() + wait_interval_->length);
 }
 
 bool SyncSchedulerImpl::IsSyncingCurrentlySilenced() {

@@ -44,6 +44,11 @@ struct SYNC_EXPORT_PRIVATE SyncEngineEvent {
     // This event is sent when we receive an actionable error. It is upto
     // the listeners to figure out the action to take using the snapshot sent.
     ACTIONABLE_ERROR,
+
+    // This event is sent when scheduler decides to wait before next request
+    // either because it gets throttled by server or because it backs off after
+    // request failure. Retry time is passed in retry_time field of event.
+    RETRY_TIME_CHANGED,
   };
 
   explicit SyncEngineEvent(EventCause cause);
@@ -56,6 +61,9 @@ struct SYNC_EXPORT_PRIVATE SyncEngineEvent {
 
   // Update-Client-Auth returns a new token for sync use.
   std::string updated_token;
+
+  // Time when scheduler will try to send request after backoff
+  base::Time retry_time;
 };
 
 class SYNC_EXPORT_PRIVATE SyncEngineEventListener {
