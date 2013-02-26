@@ -103,6 +103,11 @@ class ScreenCapturerLinux : public ScreenCapturer {
                 const SkIRect& rect,
                 ScreenCaptureData* capture_data);
 
+  // Returns the number of bits |mask| has to be shifted left so its last
+  // (most-significant) bit set becomes the most-significant bit of the word.
+  // When |mask| is 0 the function returns 31.
+  static uint32 GetRgbShift(uint32 mask);
+
   Delegate* delegate_;
 
   // X11 graphics context.
@@ -508,9 +513,11 @@ void ScreenCapturerLinux::CaptureRect(const SkIRect& rect,
                                       ScreenCaptureData* capture_data) {
   uint8* image = x_server_pixel_buffer_.CaptureRect(rect);
   int depth = x_server_pixel_buffer_.GetDepth();
-  int bpp = x_server_pixel_buffer_.GetBitsPerPixel();
-  bool is_rgb = x_server_pixel_buffer_.IsRgb();
-  if ((depth == 24 || depth == 32) && bpp == 32 && is_rgb) {
+  if ((depth == 24 || depth == 32) &&
+      x_server_pixel_buffer_.GetBitsPerPixel() == 32 &&
+      x_server_pixel_buffer_.GetRedMask() == 0xff0000 &&
+      x_server_pixel_buffer_.GetGreenMask() == 0xff00 &&
+      x_server_pixel_buffer_.GetBlueMask() == 0xff) {
     DVLOG(3) << "Fast blitting";
     FastBlit(image, rect, capture_data);
   } else {
@@ -543,16 +550,13 @@ void ScreenCapturerLinux::SlowBlit(uint8* image, const SkIRect& rect,
   int dst_x = rect.fLeft, dst_y = rect.fTop;
   int width = rect.width(), height = rect.height();
 
-  unsigned int red_mask = x_server_pixel_buffer_.GetRedMask();
-  unsigned int blue_mask = x_server_pixel_buffer_.GetBlueMask();
-  unsigned int green_mask = x_server_pixel_buffer_.GetGreenMask();
-  unsigned int red_shift = x_server_pixel_buffer_.GetRedShift();
-  unsigned int blue_shift = x_server_pixel_buffer_.GetBlueShift();
-  unsigned int green_shift = x_server_pixel_buffer_.GetGreenShift();
+  uint32 red_mask = x_server_pixel_buffer_.GetRedMask();
+  uint32 green_mask = x_server_pixel_buffer_.GetGreenMask();
+  uint32 blue_mask = x_server_pixel_buffer_.GetBlueMask();
 
-  unsigned int max_red = red_mask >> red_shift;
-  unsigned int max_blue = blue_mask >> blue_shift;
-  unsigned int max_green = green_mask >> green_shift;
+  uint32 red_shift = GetRgbShift(red_mask);
+  uint32 green_shift = GetRgbShift(green_mask);
+  uint32 blue_shift = GetRgbShift(blue_mask);
 
   unsigned int bits_per_pixel = x_server_pixel_buffer_.GetBitsPerPixel();
 
@@ -562,27 +566,54 @@ void ScreenCapturerLinux::SlowBlit(uint8* image, const SkIRect& rect,
   // TODO(hclam): Optimize, perhaps using MMX code or by converting to
   // YUV directly
   for (int y = 0; y < height; y++) {
-    uint32_t* dst_pos_32 = reinterpret_cast<uint32_t*>(dst_pos);
-    uint32_t* src_pos_32 = reinterpret_cast<uint32_t*>(src_pos);
-    uint16_t* src_pos_16 = reinterpret_cast<uint16_t*>(src_pos);
+    uint32* dst_pos_32 = reinterpret_cast<uint32*>(dst_pos);
+    uint32* src_pos_32 = reinterpret_cast<uint32*>(src_pos);
+    uint16* src_pos_16 = reinterpret_cast<uint16*>(src_pos);
     for (int x = 0; x < width; x++) {
       // Dereference through an appropriately-aligned pointer.
-      uint32_t pixel;
+      uint32 pixel;
       if (bits_per_pixel == 32)
         pixel = src_pos_32[x];
       else if (bits_per_pixel == 16)
         pixel = src_pos_16[x];
       else
         pixel = src_pos[x];
-      uint32_t r = (((pixel & red_mask) >> red_shift) * 255) / max_red;
-      uint32_t b = (((pixel & blue_mask) >> blue_shift) * 255) / max_blue;
-      uint32_t g = (((pixel & green_mask) >> green_shift) * 255) / max_green;
+      uint32 r = (pixel & red_mask) << red_shift;
+      uint32 g = (pixel & green_mask) << green_shift;
+      uint32 b = (pixel & blue_mask) << blue_shift;
+
       // Write as 32-bit RGB.
-      dst_pos_32[x] = r << 16 | g << 8 | b;
+      dst_pos_32[x] = ((r >> 8) & 0xff0000) | ((g >> 16) & 0xff00) |
+          ((b >> 24) & 0xff);
     }
     dst_pos += capture_data->stride();
     src_pos += src_stride;
   }
+}
+
+// static
+uint32 ScreenCapturerLinux::GetRgbShift(uint32 mask) {
+  int shift = 0;
+  if ((mask & 0xffff0000u) == 0) {
+    mask <<= 16;
+    shift += 16;
+  }
+  if ((mask & 0xff000000u) == 0) {
+    mask <<= 8;
+    shift += 8;
+  }
+  if ((mask & 0xf0000000u) == 0) {
+    mask <<= 4;
+    shift += 4;
+  }
+  if ((mask & 0xc0000000u) == 0) {
+    mask <<= 2;
+    shift += 2;
+  }
+  if ((mask & 0x80000000u) == 0)
+    shift += 1;
+
+  return shift;
 }
 
 }  // namespace

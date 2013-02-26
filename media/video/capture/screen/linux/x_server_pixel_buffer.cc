@@ -256,20 +256,4 @@ int XServerPixelBuffer::GetGreenMask() const {
   return x_image_->green_mask;
 }
 
-int XServerPixelBuffer::GetRedShift() const {
-  return ffs(x_image_->red_mask) - 1;
-}
-
-int XServerPixelBuffer::GetBlueShift() const {
-  return ffs(x_image_->blue_mask) - 1;
-}
-
-int XServerPixelBuffer::GetGreenShift() const {
-  return ffs(x_image_->green_mask) - 1;
-}
-
-bool XServerPixelBuffer::IsRgb() const {
-  return GetRedShift() == 16 && GetGreenShift() == 8 && GetBlueShift() == 0;
-}
-
 }  // namespace media

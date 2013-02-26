@@ -57,10 +57,6 @@ class XServerPixelBuffer {
   int GetRedMask() const;
   int GetBlueMask() const;
   int GetGreenMask() const;
-  int GetRedShift() const;
-  int GetBlueShift() const;
-  int GetGreenShift() const;
-  bool IsRgb() const;
 
  private:
   void InitShm(int screen);
