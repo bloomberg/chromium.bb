@@ -176,7 +176,7 @@ def BuildStepCopyTextFiles(pepperdir, pepper_ver, revision):
   oshelpers.Copy(['-v'] + files + [pepperdir])
 
   # Replace a few placeholders in README
-  readme_text = open(os.path.join(SDK_SRC_DIR, 'README'), 'rt').read()
+  readme_text = open(os.path.join(SDK_SRC_DIR, 'README')).read()
   readme_text = readme_text.replace('${VERSION}', pepper_ver)
   readme_text = readme_text.replace('${REVISION}', revision)
 
@@ -185,7 +185,7 @@ def BuildStepCopyTextFiles(pepperdir, pepper_ver, revision):
   readme_text = readme_text.replace('${DATE}',
       datetime.datetime.now().strftime(time_format))
 
-  open(os.path.join(pepperdir, 'README'), 'wt').write(readme_text)
+  open(os.path.join(pepperdir, 'README'), 'w').write(readme_text)
 
 
 def BuildStepUntarToolchains(pepperdir, platform, arch, toolchains):
@@ -741,27 +741,26 @@ def BuildStepMakeAll(pepperdir, platform, directory, step_name,
                      clean=False, deps=True, config='Debug'):
   buildbot_common.BuildStep(step_name)
   make_dir = os.path.join(pepperdir, directory)
-  makefile = os.path.join(make_dir, 'Makefile')
-  if os.path.isfile(makefile):
-    print "\n\nMake: " + make_dir
-    if platform == 'win':
-      # We need to modify the environment to build host on Windows.
-      env = GetWindowsEnvironment()
-      make = os.path.join(make_dir, 'make.bat')
-    else:
-      env = os.environ
-      make = 'make'
 
-    extra_args = ['CONFIG='+config]
-    if not deps:
-      extra_args += ['IGNORE_DEPS=1']
+  print "\n\nMake: " + make_dir
+  if platform == 'win':
+    # We need to modify the environment to build host on Windows.
+    env = GetWindowsEnvironment()
+    make = os.path.join(make_dir, 'make.bat')
+  else:
+    env = os.environ
+    make = 'make'
 
-    buildbot_common.Run([make, '-j8', 'all_versions'] + extra_args,
+  extra_args = ['CONFIG='+config]
+  if not deps:
+    extra_args += ['IGNORE_DEPS=1']
+
+  buildbot_common.Run([make, '-j8', 'all_versions'] + extra_args,
+                      cwd=os.path.abspath(make_dir), env=env)
+  if clean:
+    # Clean to remove temporary files but keep the built libraries.
+    buildbot_common.Run([make, '-j8', 'clean'] + extra_args,
                         cwd=os.path.abspath(make_dir), env=env)
-    if clean:
-      # Clean to remove temporary files but keep the built libraries.
-      buildbot_common.Run([make, '-j8', 'clean'] + extra_args,
-                          cwd=os.path.abspath(make_dir), env=env)
 
 
 def BuildStepBuildLibraries(pepperdir, platform, directory, clean=True):
@@ -964,11 +963,12 @@ def main(args):
   if options.archive and options.skip_tar:
     parser.error('Incompatible arguments with archive.')
 
-  pepper_ver = str(int(build_utils.ChromeMajorVersion()))
-  pepper_old = str(int(build_utils.ChromeMajorVersion()) - 1)
+  chrome_version = int(build_utils.ChromeMajorVersion())
+  clnumber = build_utils.ChromeRevision()
+  pepper_ver = str(chrome_version)
+  pepper_old = str(chrome_version - 1)
   pepperdir = os.path.join(OUT_DIR, 'pepper_' + pepper_ver)
   pepperdir_old = os.path.join(OUT_DIR, 'pepper_' + pepper_old)
-  clnumber = build_utils.ChromeRevision()
   tarname = 'naclsdk_' + platform + '.tar.bz2'
   tarfile = os.path.join(OUT_DIR, tarname)
 
