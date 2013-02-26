@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/default_clock.h"
 #include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/browser/extensions/api/serial/serial_connection.h"
 #include "chrome/browser/extensions/api/socket/socket.h"
@@ -211,6 +212,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     // ProfileKeyedService implementation.
     virtual void Shutdown() OVERRIDE;
 
+    base::Clock* clock();
     StateStore* state_store();
     StateStore* rules_store();
     ExtensionPrefs* extension_prefs();
@@ -230,6 +232,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
 
     // The services that are shared between normal and incognito profiles.
 
+    base::DefaultClock clock_;
     scoped_ptr<StateStore> state_store_;
     scoped_ptr<StateStore> rules_store_;
     scoped_ptr<ExtensionPrefs> extension_prefs_;

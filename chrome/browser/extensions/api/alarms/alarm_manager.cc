@@ -8,6 +8,7 @@
 #include "base/json/json_writer.h"
 #include "base/message_loop.h"
 #include "base/time.h"
+#include "base/time/clock.h"
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/event_router.h"
@@ -88,11 +89,10 @@ scoped_ptr<base::ListValue> AlarmsToValue(const std::vector<Alarm>& alarms) {
 
 // AlarmManager
 
-AlarmManager::AlarmManager(Profile* profile, TimeProvider now)
+AlarmManager::AlarmManager(Profile* profile, base::Clock* clock)
     : profile_(profile),
-      now_(now),
-      delegate_(new DefaultAlarmDelegate(profile)),
-      last_poll_time_(base::Time()) {
+      clock_(clock),
+      delegate_(new DefaultAlarmDelegate(profile)) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_));
 
@@ -276,7 +276,7 @@ void AlarmManager::ScheduleNextPoll() {
   // Schedule the poll.
   next_poll_time_ = next_poll;
   base::TimeDelta delay = std::max(base::TimeDelta::FromSeconds(0),
-                                   next_poll - now_());
+                                   next_poll - clock_->Now());
   timer_.Start(FROM_HERE,
                delay,
                this,
@@ -284,7 +284,7 @@ void AlarmManager::ScheduleNextPoll() {
 }
 
 void AlarmManager::PollAlarms() {
-  last_poll_time_ = now_();
+  last_poll_time_ = clock_->Now();
 
   // Run any alarms scheduled in the past. OnAlarm uses vector::erase to remove
   // elements from the AlarmList, and map::erase to remove AlarmLists from the
@@ -340,14 +340,14 @@ Alarm::Alarm()
 Alarm::Alarm(const std::string& name,
              const api::alarms::AlarmCreateInfo& create_info,
              base::TimeDelta min_granularity,
-             TimeProvider now)
+             base::Time now)
     : js_alarm(new api::alarms::Alarm()) {
   js_alarm->name = name;
 
   if (create_info.when.get()) {
     // Absolute scheduling.
     js_alarm->scheduled_time = *create_info.when;
-    granularity = base::Time::FromJsTime(js_alarm->scheduled_time) - now();
+    granularity = base::Time::FromJsTime(js_alarm->scheduled_time) - now;
   } else {
     // Relative scheduling.
     double* delay_in_minutes = create_info.delay_in_minutes.get();
@@ -357,7 +357,7 @@ Alarm::Alarm(const std::string& name,
         << "ValidateAlarmCreateInfo in alarms_api.cc should have "
         << "prevented this call.";
     base::TimeDelta delay = TimeDeltaFromDelay(*delay_in_minutes);
-    js_alarm->scheduled_time = (now() + delay).ToJsTime();
+    js_alarm->scheduled_time = (now + delay).ToJsTime();
     granularity = delay;
   }
 

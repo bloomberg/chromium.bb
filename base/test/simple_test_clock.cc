@@ -20,4 +20,9 @@ void SimpleTestClock::Advance(TimeDelta delta) {
   now_ += delta;
 }
 
+void SimpleTestClock::SetNow(Time now) {
+  AutoLock lock(lock_);
+  now_ = now;
+}
+
 }  // namespace base

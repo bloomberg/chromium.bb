@@ -236,6 +236,10 @@ void ExtensionSystemImpl::Shared::Shutdown() {
     extension_service_->Shutdown();
 }
 
+base::Clock* ExtensionSystemImpl::Shared::clock() {
+  return &clock_;
+}
+
 StateStore* ExtensionSystemImpl::Shared::state_store() {
   return state_store_.get();
 }
@@ -326,7 +330,7 @@ void ExtensionSystemImpl::InitForRegularProfile(bool extensions_enabled) {
   shared_->info_map();
 
   extension_process_manager_.reset(ExtensionProcessManager::Create(profile_));
-  alarm_manager_.reset(new AlarmManager(profile_, &base::Time::Now));
+  alarm_manager_.reset(new AlarmManager(profile_, shared_->clock()));
 
   serial_connection_manager_.reset(new ApiResourceManager<SerialConnection>(
       BrowserThread::FILE));

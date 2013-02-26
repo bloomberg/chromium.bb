@@ -13,7 +13,7 @@
 namespace base {
 
 // SimpleTestTickClock is a TickClock implementation that gives
-// control over the returned TimeTicks objects.  All methods can be
+// control over the returned TimeTicks objects.  All methods may be
 // called from any thread.
 class SimpleTestTickClock : public TickClock {
  public:
@@ -23,8 +23,7 @@ class SimpleTestTickClock : public TickClock {
 
   virtual TimeTicks NowTicks() OVERRIDE;
 
-  // Sets the current time forward by |delta|.  Safe to call from any
-  // thread.
+  // Advances the clock by |delta|, which must not be negative.
   void Advance(TimeDelta delta);
 
  private:

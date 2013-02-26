@@ -10,6 +10,7 @@
 class CommandLine;
 
 namespace base {
+class Clock;
 class FilePath;
 class Time;
 }
@@ -36,7 +37,7 @@ class TestExtensionSystem : public ExtensionSystem {
   void CreateExtensionProcessManager();
 
   // Creates an AlarmManager. Will be NULL otherwise.
-  void CreateAlarmManager(base::Time (*now)());
+  void CreateAlarmManager(base::Clock* clock);
 
   void CreateSocketManager();
 

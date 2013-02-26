@@ -13,7 +13,7 @@
 namespace base {
 
 // SimpleTestClock is a Clock implementation that gives control over
-// the returned Time objects.  All methods can be called from any
+// the returned Time objects.  All methods may be called from any
 // thread.
 class SimpleTestClock : public Clock {
  public:
@@ -23,9 +23,11 @@ class SimpleTestClock : public Clock {
 
   virtual Time Now() OVERRIDE;
 
-  // Sets the current time forward by |delta|.  Safe to call from any
-  // thread.
+  // Advances the clock by |delta|.
   void Advance(TimeDelta delta);
+
+  // Sets the clock to the given time.
+  void SetNow(Time now);
 
  private:
   // Protects |now_|.

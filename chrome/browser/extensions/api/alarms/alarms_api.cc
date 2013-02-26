@@ -5,6 +5,8 @@
 #include "chrome/browser/extensions/api/alarms/alarms_api.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "base/time/clock.h"
+#include "base/time/default_clock.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/alarms/alarm_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -88,7 +90,14 @@ bool ValidateAlarmCreateInfo(const std::string& alarm_name,
 }  // namespace
 
 AlarmsCreateFunction::AlarmsCreateFunction()
-    : now_(&base::Time::Now) {
+    : clock_(new base::DefaultClock()), owns_clock_(true) {}
+
+AlarmsCreateFunction::AlarmsCreateFunction(base::Clock* clock)
+    : clock_(clock), owns_clock_(false) {}
+
+AlarmsCreateFunction::~AlarmsCreateFunction() {
+  if (owns_clock_)
+    delete clock_;
 }
 
 bool AlarmsCreateFunction::RunImpl() {
@@ -110,7 +119,7 @@ bool AlarmsCreateFunction::RunImpl() {
               base::TimeDelta::FromMinutes(
                   GetExtension()->location() == Manifest::LOAD ?
                   kDevDelayMinimum : kReleaseDelayMinimum),
-              now_);
+              clock_->Now());
   ExtensionSystem::Get(profile())->alarm_manager()->AddAlarm(
       extension_id(), alarm);
 

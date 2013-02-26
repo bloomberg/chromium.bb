@@ -7,21 +7,30 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 
+namespace base {
+class Clock;
+}  // namespace base
+
 namespace extensions {
 
 class AlarmsCreateFunction : public SyncExtensionFunction {
-  typedef base::Time (*TimeProvider)();
  public:
   AlarmsCreateFunction();
-  explicit AlarmsCreateFunction(TimeProvider now) : now_(now) {}
+  // Use |clock| instead of the default clock. Does not take ownership
+  // of |clock|. Used for testing.
+  explicit AlarmsCreateFunction(base::Clock* clock);
  protected:
-  virtual ~AlarmsCreateFunction() {}
+  virtual ~AlarmsCreateFunction();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION("alarms.create", ALARMS_CREATE)
  private:
-  TimeProvider now_;
+  base::Clock* const clock_;
+  // Whether or not we own |clock_|. This is needed because we own it
+  // when we create it ourselves, but not when it's passed in for
+  // testing.
+  bool owns_clock_;
 };
 
 class AlarmsGetFunction : public SyncExtensionFunction {

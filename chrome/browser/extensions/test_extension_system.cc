@@ -46,9 +46,8 @@ void TestExtensionSystem::CreateExtensionProcessManager() {
   extension_process_manager_.reset(ExtensionProcessManager::Create(profile_));
 }
 
-void TestExtensionSystem::CreateAlarmManager(
-    AlarmManager::TimeProvider now) {
-  alarm_manager_.reset(new AlarmManager(profile_, now));
+void TestExtensionSystem::CreateAlarmManager(base::Clock* clock) {
+  alarm_manager_.reset(new AlarmManager(profile_, clock));
 }
 
 void TestExtensionSystem::CreateSocketManager() {
