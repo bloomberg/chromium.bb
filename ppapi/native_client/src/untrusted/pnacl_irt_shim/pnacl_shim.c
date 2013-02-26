@@ -121,7 +121,7 @@ static int mystrcmp(const char* s1, const char *s2) {
     ++s1;
     ++s2;
   }
-  return *(s1) - *(s2);
+  return (int)(*s1) - (int)(*s2);
 }
 
 /* BEGIN Declarations for all Wrapper Infos */
