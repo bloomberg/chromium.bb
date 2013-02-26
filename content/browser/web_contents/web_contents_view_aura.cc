@@ -1088,7 +1088,7 @@ void WebContentsViewAura::UpdateOverscrollWindowBrightness(float delta_x) {
   if (!overscroll_change_brightness_)
     return;
 
-  const float kBrightnessMin = -.5f;
+  const float kBrightnessMin = -.1f;
   const float kBrightnessMax = -.01f;
 
   float ratio = fabs(delta_x) / GetViewBounds().width();
