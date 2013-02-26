@@ -379,6 +379,8 @@ ExtensionService::ExtensionService(Profile* profile,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
                  content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
+                 content::NotificationService::AllBrowserContextsAndSources());
   pref_change_registrar_.Init(profile->GetPrefs());
   base::Closure callback =
       base::Bind(&ExtensionService::OnExtensionInstallPrefChanged,
@@ -2746,6 +2748,12 @@ void ExtensionService::Observe(int type,
                        AsWeakPtr(), extension_id),
             base::TimeDelta::FromSeconds(kUpdateIdleDelay));
       }
+      break;
+    }
+    case chrome::NOTIFICATION_UPGRADE_RECOMMENDED: {
+      // Notify extensions that chrome update is available.
+      extensions::RuntimeEventRouter::DispatchOnBrowserUpdateAvailableEvent(
+          profile_);
       break;
     }
 

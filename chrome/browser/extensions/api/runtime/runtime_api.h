@@ -31,6 +31,9 @@ class RuntimeEventRouter {
       Profile* profile,
       const std::string& extension_id,
       const base::DictionaryValue* manifest);
+
+  // Dispatches the onBrowserUpdateAvailable event to all extensions.
+  static void DispatchOnBrowserUpdateAvailableEvent(Profile* profile);
 };
 
 class RuntimeGetBackgroundPageFunction : public AsyncExtensionFunction {

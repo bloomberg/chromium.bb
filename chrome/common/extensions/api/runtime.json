@@ -307,6 +307,12 @@
         ]
       },
       {
+        "name": "onBrowserUpdateAvailable",
+        "type": "function",
+        "description": "Fired when a Chrome update is available, but isn't installed immediately because a browser restart is required.",
+        "parameters": []
+      },
+      {
         "name": "onConnect",
         "type": "function",
         "unprivileged": true,

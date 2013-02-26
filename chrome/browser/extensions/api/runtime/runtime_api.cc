@@ -24,6 +24,8 @@ namespace {
 const char kOnStartupEvent[] = "runtime.onStartup";
 const char kOnInstalledEvent[] = "runtime.onInstalled";
 const char kOnUpdateAvailableEvent[] = "runtime.onUpdateAvailable";
+const char kOnBrowserUpdateAvailableEvent[] =
+    "runtime.onBrowserUpdateAvailable";
 const char kNoBackgroundPageError[] = "You do not have a background page.";
 const char kPageLoadError[] = "Background page failed to load.";
 const char kInstallReason[] = "reason";
@@ -129,6 +131,20 @@ void RuntimeEventRouter::DispatchOnUpdateAvailableEvent(
   DCHECK(system->event_router());
   scoped_ptr<Event> event(new Event(kOnUpdateAvailableEvent, args.Pass()));
   system->event_router()->DispatchEventToExtension(extension_id, event.Pass());
+}
+
+// static
+void RuntimeEventRouter::DispatchOnBrowserUpdateAvailableEvent(
+    Profile* profile) {
+  ExtensionSystem* system = ExtensionSystem::Get(profile);
+  if (!system)
+    return;
+
+  scoped_ptr<ListValue> args(new ListValue);
+  DCHECK(system->event_router());
+  scoped_ptr<Event> event(new Event(kOnBrowserUpdateAvailableEvent,
+                                    args.Pass()));
+  system->event_router()->BroadcastEvent(event.Pass());
 }
 
 bool RuntimeGetBackgroundPageFunction::RunImpl() {
