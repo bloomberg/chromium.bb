@@ -60,12 +60,6 @@ class ProfileSyncServiceHarness
   // in |synced_datatypes|.
   bool SetupSync(syncer::ModelTypeSet synced_datatypes);
 
-  // Prepare for setting up to sync, but without clearing the existing items.
-  bool InitializeSync();
-
-  // Returns true if the sync client has no unsynced items.
-  bool IsDataSynced();
-
   // ProfileSyncServiceObserver implementation.
   virtual void OnStateChanged() OVERRIDE;
 
@@ -299,6 +293,9 @@ class ProfileSyncServiceHarness
   // A helper for implementing IsDataSynced() and IsFullySynced().
   bool IsDataSyncedImpl(
       const syncer::sessions::SyncSessionSnapshot& snapshot);
+
+  // Returns true if the sync client has no unsynced items.
+  bool IsDataSynced();
 
   // Returns true if the sync client has no unsynced items and its progress
   // markers are believed to be up to date.

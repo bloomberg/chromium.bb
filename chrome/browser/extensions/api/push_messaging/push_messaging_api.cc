@@ -66,11 +66,6 @@ void PushMessagingEventRouter::OnMessage(const std::string& extension_id,
   message.subchannel_id = subchannel;
   message.payload = payload;
 
-  DVLOG(2) << "PushMessagingEventRouter::OnMessage"
-           << " payload = '" << payload
-           << "' subchannel = '" << subchannel
-           << "' extension = '" << extension_id << "'";
-
   scoped_ptr<base::ListValue> args(glue::OnMessage::Create(message));
   scoped_ptr<extensions::Event> event(new extensions::Event(
       event_names::kOnPushMessage, args.Pass()));
@@ -227,7 +222,6 @@ void PushMessagingGetChannelIdFunction::OnObfuscatedGaiaIdFetchFailure(
   }
 
   ReportResult(std::string(), error_text);
-  DVLOG(1) << "GetChannelId status: '" << error_text << "'";
 }
 
 PushMessagingAPI::PushMessagingAPI(Profile* profile) : profile_(profile) {
