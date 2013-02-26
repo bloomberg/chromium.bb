@@ -55,8 +55,8 @@ namespace {
 // Default bounds for a display.
 const int kDefaultHostWindowX = 200;
 const int kDefaultHostWindowY = 200;
-const int kDefaultHostWindowWidth = 1280;
-const int kDefaultHostWindowHeight = 1024;
+const int kDefaultHostWindowWidth = 1366;
+const int kDefaultHostWindowHeight = 768;
 
 struct DisplaySortFunctor {
   bool operator()(const gfx::Display& a, const gfx::Display& b) {
