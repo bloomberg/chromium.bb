@@ -810,13 +810,24 @@ void LocationBarView::Layout() {
   // text to force using minimum size if necessary, but currently the chance of
   // showing keyword hints and suggested text is minimal and we're not confident
   // this is the right approach for suggested text.
+
   if (suggested_text_view_) {
+    // We do not display the suggested text when it contains a mix of RTL and
+    // LTR characters since this could mean the suggestion should be displayed
+    // in the middle of the string.
+    base::i18n::TextDirection text_direction = base::i18n::GetStringDirection(
+        location_entry_->GetText());
+    text_direction = text_direction == base::i18n::GetStringDirection(
+        suggested_text_view_->text()) ? text_direction :
+            base::i18n::UNKNOWN_DIRECTION;
+
     // TODO(sky): need to layout when the user changes caret position.
     int suggested_text_width =
         suggested_text_view_->GetPreferredSize().width();
-    if (suggested_text_width > available_width) {
+    if (suggested_text_width > available_width ||
+        text_direction == base::i18n::UNKNOWN_DIRECTION) {
       // Hide the suggested text if the user has scrolled or we can't fit all
-      // the suggested text.
+      // the suggested text, or we have a mix of RTL and LTR characters.
       suggested_text_view_->SetBounds(0, 0, 0, 0);
     } else {
       int location_needed_width = location_entry_->TextWidth();
@@ -827,12 +838,26 @@ void LocationBarView::Layout() {
 #endif
       location_bounds.set_width(
           std::min(location_needed_width,
-          location_bounds.width() - suggested_text_width));
+                   location_bounds.width() - suggested_text_width));
       // TODO(sky): figure out why this needs the -1.
-      suggested_text_view_->SetBounds(location_bounds.right() - 1,
+      gfx::Rect suggested_text_bounds(location_bounds.right() - 1,
                                       location_bounds.y(),
                                       suggested_text_width,
                                       location_bounds.height());
+
+      // We reverse the order of the location entry and suggested text if:
+      // - Chrome is RTL but the text is fully LTR, or
+      // - Chrome is LTR but the text is fully RTL.
+      // This ensures the suggested text is correctly displayed to the right
+      // (or left) of the user text.
+      if (base::i18n::IsRTL() ? text_direction == base::i18n::LEFT_TO_RIGHT :
+          text_direction == base::i18n::RIGHT_TO_LEFT) {
+        // TODO(sky): Figure out why we need the +1.
+        suggested_text_bounds.set_x(location_bounds.x() + 1);
+        location_bounds.set_x(
+            location_bounds.x() + suggested_text_bounds.width());
+      }
+      suggested_text_view_->SetBoundsRect(suggested_text_bounds);
     }
   }
 

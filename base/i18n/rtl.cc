@@ -44,6 +44,26 @@ std::string GetLocaleString(const icu::Locale& locale) {
   return result;
 }
 
+// Returns LEFT_TO_RIGHT or RIGHT_TO_LEFT if |character| has strong
+// directionality, returns UNKNOWN_DIRECTION if it doesn't. Please refer to
+// http://unicode.org/reports/tr9/ for more information.
+base::i18n::TextDirection GetCharacterDirection(UChar32 character) {
+  // Now that we have the character, we use ICU in order to query for the
+  // appropriate Unicode BiDi character type.
+  int32_t property = u_getIntPropertyValue(character, UCHAR_BIDI_CLASS);
+  if ((property == U_RIGHT_TO_LEFT) ||
+      (property == U_RIGHT_TO_LEFT_ARABIC) ||
+      (property == U_RIGHT_TO_LEFT_EMBEDDING) ||
+      (property == U_RIGHT_TO_LEFT_OVERRIDE)) {
+    return base::i18n::RIGHT_TO_LEFT;
+  } else if ((property == U_LEFT_TO_RIGHT) ||
+             (property == U_LEFT_TO_RIGHT_EMBEDDING) ||
+             (property == U_LEFT_TO_RIGHT_OVERRIDE)) {
+    return base::i18n::LEFT_TO_RIGHT;
+  }
+  return base::i18n::UNKNOWN_DIRECTION;
+}
+
 }  // namespace
 
 namespace base {
@@ -135,25 +155,39 @@ TextDirection GetFirstStrongCharacterDirection(const string16& text) {
     UChar32 character;
     size_t next_position = position;
     U16_NEXT(string, next_position, length, character);
+    TextDirection direction = GetCharacterDirection(character);
+    if (direction != UNKNOWN_DIRECTION)
+      return direction;
+    position = next_position;
+  }
+  return LEFT_TO_RIGHT;
+}
 
-    // Now that we have the character, we use ICU in order to query for the
-    // appropriate Unicode BiDi character type.
-    int32_t property = u_getIntPropertyValue(character, UCHAR_BIDI_CLASS);
-    if ((property == U_RIGHT_TO_LEFT) ||
-        (property == U_RIGHT_TO_LEFT_ARABIC) ||
-        (property == U_RIGHT_TO_LEFT_EMBEDDING) ||
-        (property == U_RIGHT_TO_LEFT_OVERRIDE)) {
-      return RIGHT_TO_LEFT;
-    } else if ((property == U_LEFT_TO_RIGHT) ||
-               (property == U_LEFT_TO_RIGHT_EMBEDDING) ||
-               (property == U_LEFT_TO_RIGHT_OVERRIDE)) {
-      return LEFT_TO_RIGHT;
+TextDirection GetStringDirection(const string16& text) {
+  const UChar* string = text.c_str();
+  size_t length = text.length();
+  size_t position = 0;
+
+  TextDirection result(UNKNOWN_DIRECTION);
+  while (position < length) {
+    UChar32 character;
+    size_t next_position = position;
+    U16_NEXT(string, next_position, length, character);
+    TextDirection direction = GetCharacterDirection(character);
+    if (direction != UNKNOWN_DIRECTION) {
+      if (result != UNKNOWN_DIRECTION && result != direction)
+        return UNKNOWN_DIRECTION;
+      result = direction;
     }
-
     position = next_position;
   }
 
-  return LEFT_TO_RIGHT;
+  // Handle the case of a string not containing any strong directionality
+  // characters defaulting to LEFT_TO_RIGHT.
+  if (result == UNKNOWN_DIRECTION)
+    return LEFT_TO_RIGHT;
+
+  return result;
 }
 
 #if defined(OS_WIN)

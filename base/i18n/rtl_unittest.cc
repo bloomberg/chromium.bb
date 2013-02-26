@@ -107,6 +107,84 @@ TEST_F(RTLTest, GetFirstStrongCharacterDirection) {
               GetFirstStrongCharacterDirection(WideToUTF16(cases[i].text)));
 }
 
+TEST_F(RTLTest, GetStringDirection) {
+  struct {
+    const wchar_t* text;
+    TextDirection direction;
+  } cases[] = {
+    // Test pure LTR string.
+    { L"foobar", LEFT_TO_RIGHT },
+    { L".foobar", LEFT_TO_RIGHT },
+    { L"foo, bar", LEFT_TO_RIGHT },
+    // Test pure LTR with strong directionality characters of type LRE.
+    { L"\x202a\x202a", LEFT_TO_RIGHT },
+    { L".\x202a\x202a", LEFT_TO_RIGHT },
+    { L"\x202a, \x202a", LEFT_TO_RIGHT },
+    // Test pure LTR with strong directionality characters of type LRO.
+    { L"\x202d\x202d", LEFT_TO_RIGHT },
+    { L".\x202d\x202d", LEFT_TO_RIGHT },
+    { L"\x202d, \x202d", LEFT_TO_RIGHT },
+    // Test pure LTR with various types of strong directionality characters.
+    { L"foo \x202a\x202d", LEFT_TO_RIGHT },
+    { L".\x202d foo \x202a", LEFT_TO_RIGHT },
+    { L"\x202a, \x202d foo", LEFT_TO_RIGHT },
+    // Test pure RTL with strong directionality characters of type R.
+    { L"\x05d0\x05d0", RIGHT_TO_LEFT },
+    { L".\x05d0\x05d0", RIGHT_TO_LEFT },
+    { L"\x05d0, \x05d0", RIGHT_TO_LEFT },
+    // Test pure RTL with strong directionality characters of type RLE.
+    { L"\x202b\x202b", RIGHT_TO_LEFT },
+    { L".\x202b\x202b", RIGHT_TO_LEFT },
+    { L"\x202b, \x202b", RIGHT_TO_LEFT },
+    // Test pure RTL with strong directionality characters of type RLO.
+    { L"\x202e\x202e", RIGHT_TO_LEFT },
+    { L".\x202e\x202e", RIGHT_TO_LEFT },
+    { L"\x202e, \x202e", RIGHT_TO_LEFT },
+    // Test pure RTL with strong directionality characters of type AL.
+    { L"\x0622\x0622", RIGHT_TO_LEFT },
+    { L".\x0622\x0622", RIGHT_TO_LEFT },
+    { L"\x0622, \x0622", RIGHT_TO_LEFT },
+    // Test pure RTL with various types of strong directionality characters.
+    { L"\x05d0\x202b\x202e\x0622", RIGHT_TO_LEFT },
+    { L".\x202b\x202e\x0622\x05d0", RIGHT_TO_LEFT },
+    { L"\x0622\x202e, \x202b\x05d0", RIGHT_TO_LEFT },
+    // Test bidi strings.
+    { L"foo \x05d0 bar", UNKNOWN_DIRECTION },
+    { L"\x202b foo bar", UNKNOWN_DIRECTION },
+    { L"!foo \x0622 bar", UNKNOWN_DIRECTION },
+    { L"\x202a\x202b", UNKNOWN_DIRECTION },
+    { L"\x202e\x202d", UNKNOWN_DIRECTION },
+    { L"\x0622\x202a", UNKNOWN_DIRECTION },
+    { L"\x202d\x05d0", UNKNOWN_DIRECTION },
+    // Test a string without strong directionality characters.
+    { L",!.{}", LEFT_TO_RIGHT },
+    // Test empty string.
+    { L"", LEFT_TO_RIGHT },
+    {
+#if defined(WCHAR_T_IS_UTF32)
+      L" ! \x10910" L"abc 123",
+#elif defined(WCHAR_T_IS_UTF16)
+      L" ! \xd802\xdd10" L"abc 123",
+#else
+#error wchar_t should be either UTF-16 or UTF-32
+#endif
+      UNKNOWN_DIRECTION },
+    {
+#if defined(WCHAR_T_IS_UTF32)
+      L" ! \x10401" L"abc 123",
+#elif defined(WCHAR_T_IS_UTF16)
+      L" ! \xd801\xdc01" L"abc 123",
+#else
+#error wchar_t should be either UTF-16 or UTF-32
+#endif
+      LEFT_TO_RIGHT },
+   };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i)
+    EXPECT_EQ(cases[i].direction,
+              GetStringDirection(WideToUTF16(cases[i].text)));
+}
+
 TEST_F(RTLTest, WrapPathWithLTRFormatting) {
   const wchar_t* cases[] = {
     // Test common path, such as "c:\foo\bar".
