@@ -665,8 +665,9 @@ const char kGetNetworksForGeolocation[] = "GetNetworksForGeolocation";
 const char kRefreshFunction[] = "Refresh";
 const char kResetFunction[] = "Reset";
 const char kSetCarrierFunction[] = "SetCarrier";
-const char kVerifyAndSignCredentialsFunction[] = "VerifyAndSignCredentials";
-const char kVerifyAndSignDataFunction[] = "VerifyAndSignData";
+const char kVerifyAndEncryptCredentialsFunction[] =
+    "VerifyAndEncryptCredentials";
+const char kVerifyAndEncryptDataFunction[] = "VerifyAndEncryptData";
 const char kVerifyDestinationFunction[] = "VerifyDestination";
 
 // Device property names.
