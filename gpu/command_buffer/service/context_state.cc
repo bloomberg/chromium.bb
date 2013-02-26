@@ -151,8 +151,10 @@ void ContextState::RestoreState() const {
     }
   }
 
+  RestoreBufferBindings();
   RestoreRenderbufferBindings();
   RestoreProgramBindings();
+  RestoreGlobalState();
 }
 
 // Include the auto-generated part of this file. We split this because it means
