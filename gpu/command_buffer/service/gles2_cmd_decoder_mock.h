@@ -53,6 +53,15 @@ class MockGLES2Decoder : public GLES2Decoder {
   MOCK_METHOD0(GetContextGroup, ContextGroup*());
   MOCK_METHOD0(ProcessPendingQueries, bool());
   MOCK_CONST_METHOD0(RestoreState, void());
+  MOCK_CONST_METHOD0(RestoreActiveTexture, void());
+  MOCK_CONST_METHOD1(RestoreAttribute, void(unsigned index));
+  MOCK_CONST_METHOD0(RestoreBufferBindings, void());
+  MOCK_CONST_METHOD0(RestoreFramebufferBindings, void());
+  MOCK_CONST_METHOD0(RestoreGlobalState, void());
+  MOCK_CONST_METHOD0(RestoreProgramBindings, void());
+  MOCK_CONST_METHOD0(RestoreRenderbufferBindings, void());
+  MOCK_CONST_METHOD1(RestoreTextureState, void(unsigned service_id));
+  MOCK_CONST_METHOD1(RestoreTextureUnitBindings, void(unsigned unit));
   MOCK_METHOD0(GetQueryManager, gpu::gles2::QueryManager*());
   MOCK_METHOD0(GetVertexArrayManager, gpu::gles2::VertexArrayManager*());
   MOCK_METHOD1(SetResizeCallback, void(const base::Callback<void(gfx::Size)>&));

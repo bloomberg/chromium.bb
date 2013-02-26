@@ -540,6 +540,31 @@ class GLES2DecoderImpl : public GLES2Decoder {
   virtual gfx::GLContext* GetGLContext() OVERRIDE { return context_.get(); }
   virtual ContextGroup* GetContextGroup() OVERRIDE { return group_.get(); }
   virtual void RestoreState() const OVERRIDE;
+
+  virtual void RestoreActiveTexture() const OVERRIDE {
+    state_.RestoreActiveTexture();
+  }
+  virtual void RestoreAttribute(unsigned index) const OVERRIDE {
+    state_.RestoreAttribute(index);
+  }
+  virtual void RestoreBufferBindings() const OVERRIDE {
+    state_.RestoreBufferBindings();
+  }
+  virtual void RestoreGlobalState() const OVERRIDE {
+    state_.RestoreGlobalState();
+  }
+  virtual void RestoreProgramBindings() const OVERRIDE {
+    state_.RestoreProgramBindings();
+  }
+  virtual void RestoreRenderbufferBindings() const OVERRIDE {
+    state_.RestoreRenderbufferBindings();
+  }
+  virtual void RestoreTextureUnitBindings(unsigned unit) const OVERRIDE {
+    state_.RestoreTextureUnitBindings(unit);
+  }
+  virtual void RestoreFramebufferBindings() const OVERRIDE;
+  virtual void RestoreTextureState(unsigned service_id) const OVERRIDE;
+
   virtual QueryManager* GetQueryManager() OVERRIDE {
     return query_manager_.get();
   }
@@ -644,6 +669,10 @@ class GLES2DecoderImpl : public GLES2Decoder {
     return group_->shader_manager();
   }
 
+  const TextureManager* texture_manager() const {
+    return group_->texture_manager();
+  }
+
   TextureManager* texture_manager() {
     return group_->texture_manager();
   }
@@ -683,7 +712,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
   }
 
   // Gets the texture info for the given texture. Returns NULL if none exists.
-  TextureManager::TextureInfo* GetTextureInfo(GLuint client_id) {
+  TextureManager::TextureInfo* GetTextureInfo(GLuint client_id) const {
     TextureManager::TextureInfo* info =
         texture_manager()->GetTextureInfo(client_id);
     return info;
@@ -3605,17 +3634,45 @@ GLuint GLES2DecoderImpl::GetBackbufferServiceId() const {
 }
 
 void GLES2DecoderImpl::RestoreState() const {
-  // TODO: Restore multisample bindings
+  // Restore the Framebuffer first because of bugs in Intel drivers.
+  // Intel drivers incorrectly clip the viewport settings to
+  // the size of the current framebuffer object.
+  RestoreFramebufferBindings();
+  state_.RestoreState();
+}
+
+void GLES2DecoderImpl::RestoreFramebufferBindings() const {
   GLuint service_id = state_.bound_draw_framebuffer ?
       state_.bound_draw_framebuffer->service_id() :
       GetBackbufferServiceId();
-  glBindFramebufferEXT(GL_FRAMEBUFFER, service_id);
+  if (!features().chromium_framebuffer_multisample) {
+    glBindFramebufferEXT(GL_FRAMEBUFFER, service_id);
+  } else {
+    glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, service_id);
+    service_id = state_.bound_read_framebuffer ?
+        state_.bound_read_framebuffer->service_id() :
+        GetBackbufferServiceId();
+    glBindFramebufferEXT(GL_READ_FRAMEBUFFER, service_id);
+  }
   OnFboChanged();
 
-  // Restore gl states after bind framebuffer, to ensure the gl states
-  // applied to right FBO
-  // gman: There is no framebuffer state so this is a bug in the driver
-  state_.RestoreState();
+}
+
+void GLES2DecoderImpl::RestoreTextureState(unsigned service_id) const {
+  GLuint client_id = 0;
+  if (texture_manager()->GetClientId(service_id, &client_id)) {
+    TextureManager::TextureInfo* texture = GetTextureInfo(client_id);
+    glBindTexture(GL_TEXTURE_2D, service_id);
+    glTexParameteri(
+        GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, texture->wrap_s());
+    glTexParameteri(
+        GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, texture->wrap_t());
+    glTexParameteri(
+        GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, texture->min_filter());
+    glTexParameteri(
+        GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, texture->mag_filter());
+    RestoreTextureUnitBindings(state_.active_texture_unit);
+  }
 }
 
 void GLES2DecoderImpl::OnFboChanged() const {

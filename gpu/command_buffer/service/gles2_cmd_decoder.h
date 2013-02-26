@@ -142,6 +142,17 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   // Gets the service id for any simulated backbuffer fbo.
   virtual void RestoreState() const = 0;
 
+  // Restore States.
+  virtual void RestoreActiveTexture() const = 0;
+  virtual void RestoreAttribute(unsigned index) const = 0;
+  virtual void RestoreBufferBindings() const = 0;
+  virtual void RestoreFramebufferBindings() const = 0;
+  virtual void RestoreGlobalState() const = 0;
+  virtual void RestoreProgramBindings() const = 0;
+  virtual void RestoreRenderbufferBindings() const = 0;
+  virtual void RestoreTextureState(unsigned service_id) const = 0;
+  virtual void RestoreTextureUnitBindings(unsigned unit) const = 0;
+
   // Gets the QueryManager for this context.
   virtual QueryManager* GetQueryManager() = 0;
 

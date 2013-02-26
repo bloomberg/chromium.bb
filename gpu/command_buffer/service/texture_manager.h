@@ -481,7 +481,7 @@ class GPU_EXPORT TextureManager {
   TextureInfo* CreateTextureInfo(GLuint client_id, GLuint service_id);
 
   // Gets the texture info for the given texture.
-  TextureInfo* GetTextureInfo(GLuint client_id);
+  TextureInfo* GetTextureInfo(GLuint client_id) const;
 
   // Removes a texture info.
   void RemoveTextureInfo(GLuint client_id);
