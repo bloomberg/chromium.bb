@@ -1,0 +1,8 @@
+specific_include_rules = {
+  # GoogleURLTracker can't use WebContents, since it is used by iOS.
+  # If WebContents functionality is needed, add it to
+  # GoogleURLTrackerNavigationHelperImpl.
+  'google_url_tracker\.': [
+    "-content/public/browser/web_contents.h",
+  ],
+}

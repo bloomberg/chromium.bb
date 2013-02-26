@@ -20,12 +20,12 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
+class GoogleURLTrackerNavigationHelper;
 class PrefService;
 class Profile;
 
 namespace content {
 class NavigationController;
-class WebContents;
 }
 
 // This object is responsible for checking the Google URL once per network
@@ -42,7 +42,6 @@ class WebContents;
 // performed (ever) unless at least one consumer registers interest by calling
 // RequestServerCheck().
 class GoogleURLTracker : public net::URLFetcherDelegate,
-                         public content::NotificationObserver,
                          public net::NetworkChangeNotifier::IPAddressObserver,
                          public ProfileKeyedService {
  public:
@@ -59,7 +58,9 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   // Only the GoogleURLTrackerFactory and tests should call this.  No code other
   // than the GoogleURLTracker itself should actually use
   // GoogleURLTrackerFactory::GetForProfile().
-  GoogleURLTracker(Profile* profile, Mode mode);
+  GoogleURLTracker(Profile* profile,
+                   scoped_ptr<GoogleURLTrackerNavigationHelper> nav_helper,
+                   Mode mode);
 
   virtual ~GoogleURLTracker();
 
@@ -79,9 +80,9 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   static void RequestServerCheck(Profile* profile);
 
   // Notifies the tracker that the user has started a Google search.
-  // If prompting is necessary, we then listen for the subsequent
-  // NAV_ENTRY_PENDING notification to get the appropriate NavigationController.
-  // When the load commits, we'll show the infobar.
+  // If prompting is necessary, we then listen for the subsequent pending
+  // navigation to get the appropriate NavigationController. When the load
+  // commits, we'll show the infobar.
   //
   // When |profile| is NULL or a testing profile, this function does nothing.
   static void GoogleURLSearchCommitted(Profile* profile);
@@ -95,6 +96,30 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   // No one but GoogleURLTrackerMapEntry should call this.
   void DeleteMapEntryForService(const InfoBarService* infobar_service);
 
+  // Called by the navigation observer after SearchCommitted() registers
+  // listeners, to indicate that we've received the "load now pending"
+  // notification.  |navigation_controller| is the NavigationController for this
+  // load; |infobar_service| is the InfoBarService of the associated tab; and
+  // |pending_id| is the unique ID of the newly pending NavigationEntry.
+  // If there is already a visible GoogleURLTracker infobar for this tab, this
+  // function resets its associated pending entry ID to the new ID.  Otherwise
+  // this function creates a (still-invisible) InfoBarDelegate for the
+  // associated tab.
+  virtual void OnNavigationPending(
+      content::NavigationController* navigation_controller,
+      InfoBarService* infobar_service,
+      int pending_id);
+
+  // Called by the navigation observer once a load we're watching commits.
+  // |infobar_service| is the same as for OnNavigationPending();
+  // |search_url| is guaranteed to be valid.
+  virtual void OnNavigationCommitted(InfoBarService* infobar_service,
+                                     const GURL& search_url);
+
+  // Called by the navigation observer when a tab closes.
+  virtual void OnTabClosed(
+      content::NavigationController* navigation_controller);
+
   static const char kDefaultGoogleHomepage[];
   static const char kSearchDomainCheckURL[];
 
@@ -105,11 +130,6 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
 
   // net::URLFetcherDelegate:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
-
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
 
   // NetworkChangeNotifier::IPAddressObserver:
   virtual void OnIPAddressChanged() OVERRIDE;
@@ -135,60 +155,24 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   // the notifications sent when the actual load is triggered.
   void SearchCommitted();
 
-  // Called by Observe() after SearchCommitted() registers notification
-  // listeners, to indicate that we've received the "load now pending"
-  // notification.  |navigation_controller_source| and |web_contents_source| are
-  // NotificationSources pointing to the associated NavigationController and
-  // WebContents, respectively, for this load; |infobar_service| is the
-  // InfoBarService of the associated tab; and |pending_id| is the unique ID
-  // of the newly pending NavigationEntry.  If there is already a visible
-  // GoogleURLTracker infobar for this tab, this function resets its associated
-  // pending entry ID to the new ID.  Otherwise this function creates a
-  // (still-invisible) InfoBarDelegate for the associated tab.
-  void OnNavigationPending(
-      const content::NotificationSource& navigation_controller_source,
-      const content::NotificationSource& web_contents_source,
-      InfoBarService* infobar_service,
-      int pending_id);
-
-  // Called by Observe() once a load we're watching commits.  |infobar_service|
-  // is the same as for OnNavigationPending(); |search_url| is guaranteed to be
-  // valid.
-  void OnNavigationCommitted(InfoBarService* infobar_service,
-                             const GURL& search_url);
-
-  // Called by Observe() when a tab closes.  Because the InfoBarService may
-  // have already been torn down in this case, we look up the appropriate map
-  // entry by |web_contents_source| instead.
-  void OnTabClosed(const content::NotificationSource& web_contents_source);
-
-  // Called by Observe() when an instant navigation occurs.  This will call
-  // OnNavigationPending(), and, depending on whether this is a search we were
-  // listening for, may then also call OnNavigationCommitted().
-  void OnInstantCommitted(
-    const content::NotificationSource& navigation_controller_source,
-    const content::NotificationSource& web_contents_source,
-    InfoBarService* infobar_service,
-    const GURL& search_url);
-
   // Closes all map entries.  If |redo_searches| is true, this also triggers
   // each tab with an infobar to re-perform the user's search, but on the new
   // Google TLD.
   void CloseAllEntries(bool redo_searches);
 
-  // Unregisters any listeners for the notification sources in |map_entry|.
+  // Unregisters any listeners for the navigation controller in |map_entry|.
   // This sanity-DCHECKs that these are registered (or not) in the specific
   // cases we expect.  (|must_be_listening_for_commit| is used purely for this
-  // sanity-checking.)  This also unregisters our global NAV_ENTRY_PENDING/
-  // INSTANT_COMMITTED listeners if there are no remaining listeners for
-  // NAV_ENTRY_COMMITTED, as we no longer need them until another search is
-  // committed.
+  // sanity-checking.)  This also unregisters the global navigation pending
+  // listener if there are no remaining listeners for navigation commits, as we
+  // no longer need them until another search is committed.
   void UnregisterForEntrySpecificNotifications(
       const GoogleURLTrackerMapEntry& map_entry,
       bool must_be_listening_for_commit);
 
   Profile* profile_;
-  content::NotificationRegistrar registrar_;
+
+  scoped_ptr<GoogleURLTrackerNavigationHelper> nav_helper_;
 
   // Creates an infobar delegate and adds it to the provided InfoBarService.
   // Returns the delegate pointer on success or NULL on failure.  The caller

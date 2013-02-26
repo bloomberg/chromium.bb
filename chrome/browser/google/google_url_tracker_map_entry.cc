@@ -9,18 +9,17 @@
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 
 
 GoogleURLTrackerMapEntry::GoogleURLTrackerMapEntry(
     GoogleURLTracker* google_url_tracker,
     InfoBarService* infobar_service,
-    const content::NotificationSource& navigation_controller_source,
-    const content::NotificationSource& web_contents_source)
+    const content::NavigationController* navigation_controller)
     : google_url_tracker_(google_url_tracker),
       infobar_service_(infobar_service),
       infobar_(NULL),
-      navigation_controller_source_(navigation_controller_source),
-      web_contents_source_(web_contents_source) {
+      navigation_controller_(navigation_controller) {
 }
 
 GoogleURLTrackerMapEntry::~GoogleURLTrackerMapEntry() {

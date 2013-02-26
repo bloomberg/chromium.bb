@@ -7,30 +7,29 @@
 
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
 
 class GoogleURLTracker;
 class GoogleURLTrackerInfoBarDelegate;
 class InfoBarService;
+
+namespace content {
+class NavigationController;
+}
 
 class GoogleURLTrackerMapEntry : public content::NotificationObserver {
  public:
   GoogleURLTrackerMapEntry(
       GoogleURLTracker* google_url_tracker,
       InfoBarService* infobar_service,
-      const content::NotificationSource& navigation_controller_source,
-      const content::NotificationSource& web_contents_source);
+      const content::NavigationController* navigation_controller);
   virtual ~GoogleURLTrackerMapEntry();
 
   bool has_infobar() const { return !!infobar_; }
   GoogleURLTrackerInfoBarDelegate* infobar() { return infobar_; }
   void SetInfoBar(GoogleURLTrackerInfoBarDelegate* infobar);
 
-  const content::NotificationSource& navigation_controller_source() const {
-    return navigation_controller_source_;
-  }
-  const content::NotificationSource& web_contents_source() const {
-    return web_contents_source_;
+  const content::NavigationController* navigation_controller() const {
+    return navigation_controller_;
   }
 
   void Close(bool redo_search);
@@ -47,8 +46,7 @@ class GoogleURLTrackerMapEntry : public content::NotificationObserver {
   GoogleURLTracker* const google_url_tracker_;
   const InfoBarService* const infobar_service_;
   GoogleURLTrackerInfoBarDelegate* infobar_;
-  const content::NotificationSource navigation_controller_source_;
-  const content::NotificationSource web_contents_source_;
+  const content::NavigationController* const navigation_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleURLTrackerMapEntry);
 };

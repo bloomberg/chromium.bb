@@ -6,6 +6,7 @@
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/google/google_url_tracker.h"
+#include "chrome/browser/google/google_url_tracker_navigation_helper_impl.h"
 #include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/common/pref_names.h"
@@ -32,7 +33,10 @@ GoogleURLTrackerFactory::~GoogleURLTrackerFactory() {
 
 ProfileKeyedService* GoogleURLTrackerFactory::BuildServiceInstanceFor(
     Profile* profile) const {
-  return new GoogleURLTracker(profile, GoogleURLTracker::NORMAL_MODE);
+  scoped_ptr<GoogleURLTrackerNavigationHelper> nav_helper(
+      new GoogleURLTrackerNavigationHelperImpl());
+  return new GoogleURLTracker(profile, nav_helper.Pass(),
+                              GoogleURLTracker::NORMAL_MODE);
 }
 
 void GoogleURLTrackerFactory::RegisterUserPrefs(
