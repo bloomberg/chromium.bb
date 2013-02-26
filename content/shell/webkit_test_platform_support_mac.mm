@@ -19,14 +19,11 @@ void SetDefaultsToLayoutTestValues(void) {
   // the settings are in before any higher layers could cache values.)
 
   NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-
-  const NSInteger kMinFontSizeCGSmoothes = 4;
-  const NSInteger kNoFontSmoothing = 0;
+  // Do not set text-rendering prefs (AppleFontSmoothing,
+  // AppleAntiAliasingThreshold) here: Skia picks the right settings for this
+  // in layout test mode, see FontSkia.cpp in WebKit and
+  // SkFontHost_mac_coretext.cpp in skia.
   const NSInteger kBlueTintedAppearance = 1;
-  [defaults setInteger:kMinFontSizeCGSmoothes
-                forKey:@"AppleAntiAliasingThreshold"];
-  [defaults setInteger:kNoFontSmoothing
-                forKey:@"AppleFontSmoothing"];
   [defaults setInteger:kBlueTintedAppearance
                 forKey:@"AppleAquaColorVariant"];
   [defaults setObject:@"0.709800 0.835300 1.000000"
