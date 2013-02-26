@@ -243,15 +243,19 @@ html[dir='rtl'] .site-domain {
 <if expr="not pp_ifdef('android')">
 /* Checkboxes are shown when checked or focused, or when the entry is hovered.
  * Fade in on focus, but not on hover, because it makes the UI feel laggy. */
+.site-domain-wrapper input[type=checkbox]:not(:checked),
 .entry input[type=checkbox]:not(:checked) {
   opacity: 0;
 }
 
+.site-domain-wrapper:hover input[type=checkbox],
+.site-domain-wrapper input[type=checkbox]:focus,
 .entry-box:hover input[type=checkbox],
 .entry-box input[type=checkbox]:focus {
   opacity: 1;
 }
 
+.site-domain-wrapper input[type=checkbox]:focus,
 .entry-box input[type=checkbox]:focus {
   -webkit-transition: opacity 150ms;
 }

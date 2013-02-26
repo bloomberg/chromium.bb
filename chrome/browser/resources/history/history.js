@@ -835,9 +835,15 @@ HistoryView.prototype.getGroupedVisitsDOM_ = function(
   // Add a new domain entry.
   var siteResults = results.appendChild(
       createElementWithClassName('li', 'site-entry'));
+  var siteDomainCheckbox =
+      createElementWithClassName('input', 'domain-checkbox');
+  siteDomainCheckbox.type = 'checkbox';
+  siteDomainCheckbox.addEventListener('click', domainCheckboxClicked);
+  siteDomainCheckbox.domain_ = domain;
   // Make a wrapper that will contain the arrow, the favicon and the domain.
   var siteDomainWrapper = siteResults.appendChild(
       createElementWithClassName('div', 'site-domain-wrapper'));
+  siteDomainWrapper.appendChild(siteDomainCheckbox);
   var siteArrow = siteDomainWrapper.appendChild(
       createElementWithClassName('div', 'site-domain-arrow collapse'));
   var siteDomain = siteDomainWrapper.appendChild(
@@ -1330,7 +1336,7 @@ function reloadHistory() {
  */
 function removeItems() {
   var checked = $('results-display').querySelectorAll(
-      'input[type=checkbox]:checked:not([disabled])');
+      '.entry-box input[type=checkbox]:checked:not([disabled])');
   var urls = [];
   var disabledItems = [];
   var queue = [];
@@ -1383,6 +1389,7 @@ function removeItems() {
  */
 function checkboxClicked(e) {
   var checkbox = e.currentTarget;
+  updateParentCheckbox(checkbox);
   var id = Number(checkbox.id.slice('checkbox-'.length));
   // Handle multi-select if shift was pressed.
   if (event.shiftKey && (selectionAnchor != -1)) {
@@ -1393,13 +1400,50 @@ function checkboxClicked(e) {
     var end = Math.max(id, selectionAnchor);
     for (var i = begin; i <= end; i++) {
       var checkbox = document.querySelector('#checkbox-' + i);
-      if (checkbox)
+      if (checkbox) {
         checkbox.checked = checked;
+        updateParentCheckbox(checkbox);
+      }
     }
   }
   selectionAnchor = id;
 
   historyView.updateRemoveButton();
+}
+
+/**
+ * Handler for the 'click' event on a domain checkbox. Checkes or unchecks the
+ * checkboxes of the visits to this domain in the respective group.
+ * @param {Event} e The click event.
+ */
+function domainCheckboxClicked(e) {
+  var siteEntry = findAncestorByClass(e.currentTarget, 'site-entry');
+  var checkboxes =
+      siteEntry.querySelectorAll('.site-results input[type=checkbox]');
+  for (var i = 0; i < checkboxes.length; i++)
+    checkboxes[i].checked = e.currentTarget.checked;
+  historyView.updateRemoveButton();
+  // Stop propagation as clicking the checkbox would otherwise trigger the
+  // group to collapse/expand.
+  e.stopPropagation();
+}
+
+/**
+ * Updates the domain checkbox for this visit checkbox if it has been
+ * unchecked.
+ * @param {Element} checkbox The checkbox that has been clicked.
+ */
+function updateParentCheckbox(checkbox) {
+  if (checkbox.checked)
+    return;
+
+  var entry = findAncestorByClass(checkbox, 'site-entry');
+  if (!entry)
+    return;
+
+  var group_checkbox = entry.querySelector('.site-domain-wrapper input');
+  if (group_checkbox)
+      group_checkbox.checked = false;
 }
 
 function entryBoxMousedown(event) {
