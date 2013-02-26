@@ -19,9 +19,12 @@ import subprocess
 import sys
 
 
-def LoadConfigFile():
+def LoadConfigFile(path_to_file):
   """Attempts to load the file 'run-bisect-perf-regression.cfg' as a module
   and grab the global config dict.
+
+  Args:
+    path_to_file: Path to the run-bisect-perf-regression.cfg file.
 
   Returns:
     The config dict which should be formatted as follows:
@@ -31,25 +34,30 @@ def LoadConfigFile():
   """
   try:
     local_vars = {}
-    execfile('run-bisect-perf-regression.cfg', local_vars)
+    execfile(os.path.join(path_to_file, 'run-bisect-perf-regression.cfg'),
+             local_vars)
 
     return local_vars['config']
   except:
     return None
 
 
-def RunBisectionScript(config, working_directory):
+def RunBisectionScript(config, working_directory, path_to_file):
   """Attempts to execute src/tools/bisect-perf-regression.py with the parameters
   passed in.
 
   Args:
     config: A dict containing the parameters to pass to the script.
+    working_directory: A working directory to provide to the
+      bisect-perf-regression.py script, where it will store it's own copy of
+      the depot.
+    path_to_file: Path to the bisect-perf-regression.py script.
 
   Returns:
     0 on success, otherwise 1.
   """
 
-  cmd = ['python', 'bisect-perf-regression.py',
+  cmd = ['python', os.path.join(path_to_file, 'bisect-perf-regression.py'),
          '-c', config['command'],
          '-g', config['good_revision'],
          '-b', config['bad_revision'],
@@ -87,13 +95,15 @@ def main():
     parser.print_help()
     return 1
 
-  config = LoadConfigFile()
+  path_to_file = os.path.abspath(os.path.dirname(sys.argv[0]))
+
+  config = LoadConfigFile(path_to_file)
   if not config:
     print 'Error: Could not load config file.'
     print
     return 1
 
-  return RunBisectionScript(config, opts.working_directory)
+  return RunBisectionScript(config, opts.working_directory, path_to_file)
 
 
 if __name__ == '__main__':
