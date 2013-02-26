@@ -14,6 +14,7 @@
 #include "chrome/browser/android/provider/chrome_browser_provider.h"
 #include "chrome/browser/history/android/sqlite_cursor.h"
 #include "chrome/browser/lifetime/application_lifetime_android.h"
+#include "chrome/browser/search_engines/template_url_service_android.h"
 #include "chrome/browser/ui/android/autofill/autofill_dialog_view_android.h"
 #include "chrome/browser/ui/android/autofill/autofill_popup_view_android.h"
 #include "chrome/browser/ui/android/chrome_http_auth_handler.h"
@@ -54,6 +55,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "NavigationPopup", NavigationPopup::RegisterNavigationPopup },
   { "ProcessUtils", RegisterProcessUtils },
   { "SqliteCursor", SQLiteCursor::RegisterSqliteCursor },
+  { "TemplateUrlServiceAndroid", TemplateUrlServiceAndroid::Register },
   { "WebsiteSettingsPopupAndroid",
       WebsiteSettingsPopupAndroid::RegisterWebsiteSettingsPopupAndroid },
 };

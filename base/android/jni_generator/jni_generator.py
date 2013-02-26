@@ -423,8 +423,9 @@ class JNIFromJavaP(object):
   def __init__(self, contents, namespace):
     self.contents = contents
     self.namespace = namespace
-    self.fully_qualified_class = re.match('.*?class (?P<class_name>.*?) ',
-                                          contents[1]).group('class_name')
+    self.fully_qualified_class = re.match(
+        '.*?(class|interface) (?P<class_name>.*?)( |{)',
+        contents[1]).group('class_name')
     self.fully_qualified_class = self.fully_qualified_class.replace('.', '/')
     JniParams.SetFullyQualifiedClass(self.fully_qualified_class)
     self.java_class_name = self.fully_qualified_class.split('/')[-1]
