@@ -11,6 +11,13 @@
         '../base/base.gyp:base',
         '../ui/ui.gyp:ui',
       ],
+      'conditions': [
+        ['use_ash==1', {
+          'dependencies': [
+            '../ash/ash.gyp:ash',
+          ],
+        }],
+      ],
       'defines': [
         'CHROME_VIEWS_IMPLEMENTATION',
       ],
