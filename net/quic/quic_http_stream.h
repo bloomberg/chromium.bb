@@ -91,7 +91,7 @@ class NET_EXPORT_PRIVATE QuicHttpStream :
 
   void BufferResponseBody(const char* data, int length);
 
-  State io_state_;
+  State next_state_;
 
   QuicReliableClientStream* stream_;  // Non-owning.
 

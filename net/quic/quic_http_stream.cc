@@ -23,7 +23,7 @@ namespace net {
 static const size_t kHeaderBufInitialSize = 4096;
 
 QuicHttpStream::QuicHttpStream(QuicReliableClientStream* stream)
-    : io_state_(STATE_NONE),
+    : next_state_(STATE_NONE),
       stream_(stream),
       request_info_(NULL),
       request_body_stream_(NULL),
@@ -95,7 +95,7 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   // Store the response info.
   response_info_ = response;
 
-  io_state_ = STATE_SEND_HEADERS;
+  next_state_ = STATE_SEND_HEADERS;
   int rv = DoLoop(OK);
   if (rv == ERR_IO_PENDING)
     callback_ = callback;
@@ -189,7 +189,7 @@ HttpStream* QuicHttpStream::RenewStreamForAuth() {
 }
 
 bool QuicHttpStream::IsResponseBodyComplete() const {
-  return io_state_ == STATE_OPEN && !stream_;
+  return next_state_ == STATE_OPEN && !stream_;
 }
 
 bool QuicHttpStream::CanFindEndOfResponse() const {
@@ -323,7 +323,9 @@ void QuicHttpStream::DoCallback(int rv) {
 
 int QuicHttpStream::DoLoop(int rv) {
   do {
-    switch (io_state_) {
+    State state = next_state_;
+    next_state_ = STATE_NONE;
+    switch (state) {
       case STATE_SEND_HEADERS:
         CHECK_EQ(OK, rv);
         rv = DoSendHeaders();
@@ -349,10 +351,10 @@ int QuicHttpStream::DoLoop(int rv) {
         CHECK_EQ(OK, rv);
         break;
       default:
-        NOTREACHED() << "io_state_: " << io_state_;
+        NOTREACHED() << "next_state_: " << next_state_;
         break;
     }
-  } while (io_state_ != STATE_NONE && io_state_ != STATE_OPEN &&
+  } while (next_state_ != STATE_NONE && next_state_ != STATE_OPEN &&
            rv != ERR_IO_PENDING);
 
   return rv;
@@ -364,25 +366,23 @@ int QuicHttpStream::DoSendHeaders() {
 
   bool has_upload_data = request_body_stream_ != NULL;
 
-  io_state_ = STATE_SEND_HEADERS_COMPLETE;
+  next_state_ = STATE_SEND_HEADERS_COMPLETE;
   QuicConsumedData rv = stream_->WriteData(request_, !has_upload_data);
   return rv.bytes_consumed;
 }
 
 int QuicHttpStream::DoSendHeadersComplete(int rv) {
-  if (rv < 0) {
-    io_state_ = STATE_NONE;
+  if (rv < 0)
     return rv;
-  }
 
-  io_state_ = request_body_stream_ ?
+  next_state_ = request_body_stream_ ?
       STATE_READ_REQUEST_BODY : STATE_OPEN;
 
   return OK;
 }
 
 int QuicHttpStream::DoReadRequestBody() {
-  io_state_ = STATE_READ_REQUEST_BODY_COMPLETE;
+  next_state_ = STATE_READ_REQUEST_BODY_COMPLETE;
   return request_body_stream_->Read(raw_request_body_buf_,
                                     raw_request_body_buf_->size(),
                                     base::Bind(&QuicHttpStream::OnIOComplete,
@@ -392,17 +392,15 @@ int QuicHttpStream::DoReadRequestBody() {
 int QuicHttpStream::DoReadRequestBodyComplete(int rv) {
   // |rv| is the result of read from the request body from the last call to
   // DoSendBody().
-  if (rv < 0) {
-    io_state_ = STATE_NONE;
+  if (rv < 0)
     return rv;
-  }
 
   request_body_buf_ = new DrainableIOBuffer(raw_request_body_buf_, rv);
   if (rv == 0) {  // Reached the end.
     DCHECK(request_body_stream_->IsEOF());
   }
 
-  io_state_ = STATE_SEND_BODY;
+  next_state_ = STATE_SEND_BODY;
   return OK;
 }
 
@@ -419,23 +417,22 @@ int QuicHttpStream::DoSendBody() {
     QuicConsumedData rv = stream_->WriteData(data, eof);
     request_body_buf_->DidConsume(rv.bytes_consumed);
     if (eof) {
-      io_state_ = STATE_OPEN;
+      next_state_ = STATE_OPEN;
       return OK;
     }
+    next_state_ = STATE_SEND_BODY_COMPLETE;
     return rv.bytes_consumed;
   }
 
-  io_state_ = STATE_SEND_BODY_COMPLETE;
+  next_state_ = STATE_SEND_BODY_COMPLETE;
   return OK;
 }
 
 int QuicHttpStream::DoSendBodyComplete(int rv) {
-  if (rv < 0) {
-    io_state_ = STATE_NONE;
+  if (rv < 0)
     return rv;
-  }
 
-  io_state_ = STATE_READ_REQUEST_BODY;
+  next_state_ = STATE_READ_REQUEST_BODY;
   return OK;
 }
 
