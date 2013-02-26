@@ -170,6 +170,9 @@ AMDVideoCardType GetAMDVideocardType();
 
 // Collects information about the level of D3D11 support and records it in
 // the UMA stats. Records no stats when D3D11 in not supported at all.
+//
+// http://crbug.com/175525. Using D3D11 seems to crash when dlumd32.dll is
+// loaded. This function is not currently called.
 void CollectD3D11Support(HMODULE d3d11_module) {
   TRACE_EVENT0("gpu", "CollectD3D11Support");
 
@@ -307,12 +310,6 @@ void CollectD3D11SupportDelayed(
 bool CollectDriverInfoD3D(const std::wstring& device_id,
                           content::GPUInfo* gpu_info) {
   TRACE_EVENT0("gpu", "CollectDriverInfoD3D");
-
-  base::WorkerPool::PostTask(
-      FROM_HERE,
-      base::Bind(CollectD3D11SupportDelayed,
-                 base::MessageLoopProxy::current()),
-      false);
 
   // create device info for the display device
   HDEVINFO device_info = SetupDiGetClassDevsW(
