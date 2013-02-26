@@ -3095,12 +3095,15 @@ TEST_F(NavigationControllerTest, MAYBE_PurgeScreenshot) {
     const GURL url(base::StringPrintf("http://foo%d/", i));
     NavigateAndCommit(url);
     EXPECT_EQ(i, controller.GetCurrentEntryIndex());
+  }
 
+  for (int i = 0; i < controller.GetEntryCount(); ++i) {
     entry = NavigationEntryImpl::FromNavigationEntry(
         controller.GetEntryAtIndex(i));
     controller.OnScreenshotTaken(entry->GetUniqueID(), true, bitmap);
     EXPECT_TRUE(entry->screenshot());
   }
+
   NavigateAndCommit(GURL("https://foo/"));
   EXPECT_EQ(13, controller.GetEntryCount());
   entry = NavigationEntryImpl::FromNavigationEntry(

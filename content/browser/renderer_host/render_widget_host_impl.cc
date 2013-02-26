@@ -195,8 +195,8 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
   process_->WidgetRestored();
 
 #if defined(USE_AURA)
-  bool overscroll_enabled = CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kEnableOverscrollHistoryNavigation);
+  bool overscroll_enabled = !CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kDisableOverscrollHistoryNavigation);
   SetOverscrollControllerEnabled(overscroll_enabled);
 #endif
 }

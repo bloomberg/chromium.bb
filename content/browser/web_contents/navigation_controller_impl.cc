@@ -479,8 +479,8 @@ int NavigationControllerImpl::GetIndexForOffset(int offset) const {
 }
 
 void NavigationControllerImpl::TakeScreenshot() {
-  static bool overscroll_enabled = CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kEnableOverscrollHistoryNavigation);
+  static bool overscroll_enabled = !CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kDisableOverscrollHistoryNavigation);
   if (!overscroll_enabled)
     return;
 
