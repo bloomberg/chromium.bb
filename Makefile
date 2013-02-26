@@ -184,10 +184,10 @@ clean:
 	rm -rf $(OBJDIR) $(DEPDIR) $(TEST_EXE) html app.info app.info.orig
 
 setup-in-place:
-	mkdir -p /usr/include/gestures || true
-	ln -sf $(SRC)/include/gestures.h /usr/include/gestures/gestures.h
-	ln -sf $(SRC)/$(SONAME) $(LIBDIR)/$(SONAME:$(OBJDIR)/%.0=%)
-	ln -sf $(SRC)/$(SONAME) $(LIBDIR)/$(SONAME:$(OBJDIR)/%=%)
+	mkdir -p $(SRC)/in-place/gestures || true
+	ln -sf $(SRC)/include/gestures.h $(SRC)/in-place/gestures/gestures.h
+	ln -sf $(SRC)/$(SONAME) $(SRC)/in-place/$(SONAME:$(OBJDIR)/%.0=%)
+	ln -sf $(SRC)/$(SONAME) $(SRC)/in-place/$(SONAME:$(OBJDIR)/%=%)
 
 in-place: $(SONAME)
 
