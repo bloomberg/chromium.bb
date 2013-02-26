@@ -13,32 +13,25 @@ using cc::ScrollbarThemePainter;
 
 namespace WebKit {
 
-WebScrollbarLayerImpl::WebScrollbarLayerImpl(WebScrollbar* scrollbar, WebScrollbarThemePainter painter, WebScrollbarThemeGeometry* geometry)
-    : m_layer(new WebLayerImpl(ScrollbarLayer::create(
-        make_scoped_ptr(scrollbar),
-        WebToCCScrollbarThemePainterAdapter::Create(
-            make_scoped_ptr(new WebScrollbarThemePainter(painter)))
-            .PassAs<ScrollbarThemePainter>(),
-        make_scoped_ptr(geometry),
-        0)))
-{
+WebScrollbarLayerImpl::WebScrollbarLayerImpl(
+    WebScrollbar* scrollbar,
+    WebScrollbarThemePainter painter,
+    WebScrollbarThemeGeometry* geometry)
+    : layer_(new WebLayerImpl(ScrollbarLayer::create(
+          make_scoped_ptr(scrollbar),
+          WebToCCScrollbarThemePainterAdapter::Create(
+              make_scoped_ptr(new WebScrollbarThemePainter(painter)))
+              .PassAs<ScrollbarThemePainter>(),
+          make_scoped_ptr(geometry),
+          0))) {}
+
+WebScrollbarLayerImpl::~WebScrollbarLayerImpl() {}
+
+WebLayer* WebScrollbarLayerImpl::layer() { return layer_.get(); }
+
+void WebScrollbarLayerImpl::setScrollLayer(WebLayer* layer) {
+  int id = layer ? static_cast<WebLayerImpl*>(layer)->layer()->id() : 0;
+  static_cast<ScrollbarLayer*>(layer_->layer())->setScrollLayerId(id);
 }
 
-WebScrollbarLayerImpl::~WebScrollbarLayerImpl()
-{
-}
-
-WebLayer* WebScrollbarLayerImpl::layer()
-{
-    return m_layer.get();
-}
-
-void WebScrollbarLayerImpl::setScrollLayer(WebLayer* layer)
-{
-    int id = layer ? static_cast<WebLayerImpl*>(layer)->layer()->id() : 0;
-    static_cast<ScrollbarLayer*>(m_layer->layer())->setScrollLayerId(id);
-}
-
-
-
-} // namespace WebKit
+}  // namespace WebKit

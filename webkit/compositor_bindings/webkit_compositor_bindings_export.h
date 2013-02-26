@@ -14,15 +14,16 @@
 #define WEBKIT_COMPOSITOR_BINDINGS_EXPORT __declspec(dllimport)
 #endif  // defined(WEBKIT_COMPOSITOR_BINDINGS_IMPLEMENTATION)
 
-#else // defined(WIN32)
+#else  // defined(WIN32)
 #if defined(WEBKIT_COMPOSITOR_BINDINGS_IMPLEMENTATION)
-#define WEBKIT_COMPOSITOR_BINDINGS_EXPORT __attribute__((visibility("default")))
+#define WEBKIT_COMPOSITOR_BINDINGS_EXPORT                                      \
+  __attribute__((visibility("default")))
 #else
 #define WEBKIT_COMPOSITOR_BINDINGS_EXPORT
 #endif
 #endif
 
-#else // defined(COMPONENT_BUILD)
+#else  // defined(COMPONENT_BUILD)
 #define WEBKIT_COMPOSITOR_BINDINGS_EXPORT
 #endif
 

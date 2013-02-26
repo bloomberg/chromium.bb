@@ -13,18 +13,18 @@ namespace WebKit {
 class WebLayerImpl;
 
 class WebImageLayerImpl : public WebImageLayer {
-public:
-    WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebImageLayerImpl();
-    virtual ~WebImageLayerImpl();
+ public:
+  WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebImageLayerImpl();
+  virtual ~WebImageLayerImpl();
 
-    // WebImageLayer implementation.
-    virtual WebLayer* layer() OVERRIDE;
-    virtual void setBitmap(SkBitmap) OVERRIDE;
+  // WebImageLayer implementation.
+  virtual WebLayer* layer() OVERRIDE;
+  virtual void setBitmap(SkBitmap) OVERRIDE;
 
-private:
-    scoped_ptr<WebLayerImpl> m_layer;
+ private:
+  scoped_ptr<WebLayerImpl> layer_;
 };
 
 }
 
-#endif // WebImageLayerImpl_h
+#endif  // WebImageLayerImpl_h

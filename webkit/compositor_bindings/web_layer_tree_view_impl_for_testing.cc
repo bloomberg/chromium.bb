@@ -35,20 +35,20 @@
 namespace WebKit {
 
 WebLayerTreeViewImplForTesting::WebLayerTreeViewImplForTesting(
-    RenderingType type, WebKit::WebLayerTreeViewClient* client)
-    : type_(type),
-      client_(client) {}
+    RenderingType type,
+    WebKit::WebLayerTreeViewClient* client)
+    : type_(type), client_(client) {}
 
 WebLayerTreeViewImplForTesting::~WebLayerTreeViewImplForTesting() {}
 
 bool WebLayerTreeViewImplForTesting::initialize(
-      scoped_ptr<cc::Thread> compositor_thread) {
+    scoped_ptr<cc::Thread> compositor_thread) {
   cc::LayerTreeSettings settings;
   // Accelerated animations are disabled for layout tests, but enabled for unit
   // tests.
   settings.acceleratedAnimationEnabled = type_ == FAKE_CONTEXT;
-  layer_tree_host_ = cc::LayerTreeHost::create(this, settings,
-                                               compositor_thread.Pass());
+  layer_tree_host_ =
+      cc::LayerTreeHost::create(this, settings, compositor_thread.Pass());
   if (!layer_tree_host_.get())
     return false;
   return true;
@@ -59,8 +59,8 @@ void WebLayerTreeViewImplForTesting::setSurfaceReady() {
 }
 
 void WebLayerTreeViewImplForTesting::setRootLayer(const WebLayer& root) {
-  layer_tree_host_->setRootLayer(
-      static_cast<const WebLayerImpl*>(&root)->layer());
+  layer_tree_host_->setRootLayer(static_cast<const WebLayerImpl*>(&root)
+                                     ->layer());
 }
 
 void WebLayerTreeViewImplForTesting::clearRootLayer() {
@@ -68,7 +68,8 @@ void WebLayerTreeViewImplForTesting::clearRootLayer() {
 }
 
 void WebLayerTreeViewImplForTesting::setViewportSize(
-    const WebSize& layout_viewport_size, const WebSize& device_viewport_size) {
+    const WebSize& layout_viewport_size,
+    const WebSize& device_viewport_size) {
   layer_tree_host_->setViewportSize(layout_viewport_size, device_viewport_size);
 }
 
@@ -103,15 +104,18 @@ void WebLayerTreeViewImplForTesting::setVisible(bool visible) {
 }
 
 void WebLayerTreeViewImplForTesting::setPageScaleFactorAndLimits(
-    float page_scale_factor, float minimum, float maximum) {
-  layer_tree_host_->setPageScaleFactorAndLimits(page_scale_factor, minimum,
-                                               maximum);
+    float page_scale_factor,
+    float minimum,
+    float maximum) {
+  layer_tree_host_->setPageScaleFactorAndLimits(
+      page_scale_factor, minimum, maximum);
 }
 
 void WebLayerTreeViewImplForTesting::startPageScaleAnimation(
-    const WebPoint& scroll, bool use_anchor, float new_page_scale,
-    double duration_sec) {
-}
+    const WebPoint& scroll,
+    bool use_anchor,
+    float new_page_scale,
+    double duration_sec) {}
 
 void WebLayerTreeViewImplForTesting::setNeedsAnimate() {
   layer_tree_host_->setNeedsAnimate();
@@ -136,8 +140,7 @@ void WebLayerTreeViewImplForTesting::updateAnimations(
   layer_tree_host_->updateAnimations(frame_begin_time);
 }
 
-void WebLayerTreeViewImplForTesting::didStopFlinging() {
-}
+void WebLayerTreeViewImplForTesting::didStopFlinging() {}
 
 bool WebLayerTreeViewImplForTesting::compositeAndReadback(void* pixels,
                                                           const WebRect& rect) {
@@ -152,14 +155,11 @@ void WebLayerTreeViewImplForTesting::setDeferCommits(bool defer_commits) {
   layer_tree_host_->setDeferCommits(defer_commits);
 }
 
-void WebLayerTreeViewImplForTesting::renderingStats(WebRenderingStats&) const {
-}
+void WebLayerTreeViewImplForTesting::renderingStats(WebRenderingStats&) const {}
 
-void WebLayerTreeViewImplForTesting::willBeginFrame() {
-}
+void WebLayerTreeViewImplForTesting::willBeginFrame() {}
 
-void WebLayerTreeViewImplForTesting::didBeginFrame() {
-}
+void WebLayerTreeViewImplForTesting::didBeginFrame() {}
 
 void WebLayerTreeViewImplForTesting::animate(
     double monotonic_frame_begin_time) {
@@ -173,11 +173,11 @@ void WebLayerTreeViewImplForTesting::layout() {
 }
 
 void WebLayerTreeViewImplForTesting::applyScrollAndScale(
-    gfx::Vector2d scroll_delta, float page_scale) {
-}
+    gfx::Vector2d scroll_delta,
+    float page_scale) {}
 
 scoped_ptr<cc::OutputSurface>
-    WebLayerTreeViewImplForTesting::createOutputSurface() {
+WebLayerTreeViewImplForTesting::createOutputSurface() {
   scoped_ptr<cc::OutputSurface> surface;
   switch (type_) {
     case FAKE_CONTEXT: {
@@ -191,13 +191,13 @@ scoped_ptr<cc::OutputSurface>
       scoped_ptr<WebCompositorSupportSoftwareOutputDevice> software_device =
           make_scoped_ptr(new WebCompositorSupportSoftwareOutputDevice);
       surface.reset(new cc::OutputSurface(
-            software_device.PassAs<cc::SoftwareOutputDevice>()));
+          software_device.PassAs<cc::SoftwareOutputDevice>()));
       break;
     }
     case MESA_CONTEXT: {
       scoped_ptr<WebGraphicsContext3D> context3d(
           WebKit::Platform::current()->createOffscreenGraphicsContext3D(
-            WebGraphicsContext3D::Attributes()));
+              WebGraphicsContext3D::Attributes()));
       surface.reset(new cc::OutputSurface(context3d.Pass()));
       break;
     }
@@ -205,28 +205,28 @@ scoped_ptr<cc::OutputSurface>
   return surface.Pass();
 }
 
-void WebLayerTreeViewImplForTesting::didRecreateOutputSurface(bool success) { }
+void WebLayerTreeViewImplForTesting::didRecreateOutputSurface(bool success) {}
 
 scoped_ptr<cc::InputHandler>
-    WebLayerTreeViewImplForTesting::createInputHandler() {
+WebLayerTreeViewImplForTesting::createInputHandler() {
   return scoped_ptr<cc::InputHandler>();
 }
 
-void WebLayerTreeViewImplForTesting::willCommit() { }
+void WebLayerTreeViewImplForTesting::willCommit() {}
 
-void WebLayerTreeViewImplForTesting::didCommit() { }
+void WebLayerTreeViewImplForTesting::didCommit() {}
 
-void WebLayerTreeViewImplForTesting::didCommitAndDrawFrame() { }
+void WebLayerTreeViewImplForTesting::didCommitAndDrawFrame() {}
 
-void WebLayerTreeViewImplForTesting::didCompleteSwapBuffers() { }
+void WebLayerTreeViewImplForTesting::didCompleteSwapBuffers() {}
 
 void WebLayerTreeViewImplForTesting::scheduleComposite() {
   if (client_)
     client_->scheduleComposite();
 }
 
-class WebLayerTreeViewImplForTesting::MainThreadContextProvider
-    : public cc::ContextProvider {
+class WebLayerTreeViewImplForTesting::MainThreadContextProvider :
+    public cc::ContextProvider {
  public:
   virtual bool InitializeOnMainThread() OVERRIDE { return true; }
   virtual bool BindToCurrentThread() OVERRIDE { return true; }
@@ -251,8 +251,8 @@ WebLayerTreeViewImplForTesting::OffscreenContextProviderForMainThread() {
   return contexts_main_thread_;
 }
 
-class WebLayerTreeViewImplForTesting::CompositorThreadContextProvider
-    : public cc::ContextProvider {
+class WebLayerTreeViewImplForTesting::CompositorThreadContextProvider :
+    public cc::ContextProvider {
  public:
   CompositorThreadContextProvider() : destroyed_(false) {}
 

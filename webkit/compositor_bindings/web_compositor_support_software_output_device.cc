@@ -13,15 +13,13 @@ WebCompositorSupportSoftwareOutputDevice::
     ~WebCompositorSupportSoftwareOutputDevice() {}
 
 WebKit::WebImage* WebCompositorSupportSoftwareOutputDevice::Lock(
-    bool forWrite) {
+    bool for_write) {
   DCHECK(device_);
-  image_ = device_->accessBitmap(forWrite);
+  image_ = device_->accessBitmap(for_write);
   return &image_;
 }
 
-void WebCompositorSupportSoftwareOutputDevice::Unlock() {
-  image_.reset();
-}
+void WebCompositorSupportSoftwareOutputDevice::Unlock() { image_.reset(); }
 
 void WebCompositorSupportSoftwareOutputDevice::DidChangeViewportSize(
     gfx::Size size) {

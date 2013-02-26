@@ -36,7 +36,7 @@ void WebLayerImplFixedBounds::invalidateRect(const WebFloatRect& rect) {
 void WebLayerImplFixedBounds::setAnchorPoint(
     const WebFloatPoint& anchor_point) {
   if (anchor_point != this->anchorPoint()) {
-    m_layer->setAnchorPoint(anchor_point);
+    layer_->setAnchorPoint(anchor_point);
     UpdateLayerBoundsAndTransform();
   }
 }
@@ -113,31 +113,31 @@ void WebLayerImplFixedBounds::UpdateLayerBoundsAndTransform()
       // For now fall back to non-fixed bounds for non-zero anchor point.
       // TODO(wangxianzhu): Support non-zero anchor point for fixed bounds.
       anchorPoint().x || anchorPoint().y) {
-    m_layer->setBounds(original_bounds_);
-    m_layer->setTransform(original_transform_);
-    m_layer->setSublayerTransform(original_sublayer_transform_);
+    layer_->setBounds(original_bounds_);
+    layer_->setTransform(original_transform_);
+    layer_->setSublayerTransform(original_sublayer_transform_);
     return;
   }
 
-  m_layer->setBounds(fixed_bounds_);
+  layer_->setBounds(fixed_bounds_);
 
-  // Apply bounds scale (bounds/fixedBounds) over original transform.
+  // Apply bounds scale (bounds/fixed_bounds) over original transform.
   gfx::Transform transform_with_bounds_scale(original_transform_);
-  float boundsScaleX =
+  float bounds_scale_x =
       static_cast<float>(original_bounds_.width()) / fixed_bounds_.width();
-  float boundsScaleY =
+  float bounds_scale_y =
       static_cast<float>(original_bounds_.height()) / fixed_bounds_.height();
-  transform_with_bounds_scale.Scale(boundsScaleX, boundsScaleY);
-  m_layer->setTransform(transform_with_bounds_scale);
+  transform_with_bounds_scale.Scale(bounds_scale_x, bounds_scale_y);
+  layer_->setTransform(transform_with_bounds_scale);
 
   // As we apply extra scale transform on this layer which will propagate to the
   // sublayers, here undo the scale on sublayers.
   gfx::Transform sublayer_transform_with_inverse_bounds_scale;
-  sublayer_transform_with_inverse_bounds_scale.Scale(1.f / boundsScaleX,
-                                                     1.f / boundsScaleY);
+  sublayer_transform_with_inverse_bounds_scale.Scale(1.f / bounds_scale_x,
+                                                     1.f / bounds_scale_y);
   sublayer_transform_with_inverse_bounds_scale.PreconcatTransform(
       original_sublayer_transform_);
-  m_layer->setSublayerTransform(sublayer_transform_with_inverse_bounds_scale);
+  layer_->setSublayerTransform(sublayer_transform_with_inverse_bounds_scale);
 }
 
 } // namespace WebKit

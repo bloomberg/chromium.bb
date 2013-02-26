@@ -21,11 +21,16 @@ class WebLayerTreeViewClient;
 class WebLayerTreeViewClientAdapter;
 
 class WebLayerTreeViewImplForTesting : public WebKit::WebLayerTreeView,
-    public cc::LayerTreeHostClient {
+                                       public cc::LayerTreeHostClient {
  public:
-  enum RenderingType { FAKE_CONTEXT, SOFTWARE_CONTEXT, MESA_CONTEXT };
+  enum RenderingType {
+    FAKE_CONTEXT,
+    SOFTWARE_CONTEXT,
+    MESA_CONTEXT
+  };
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebLayerTreeViewImplForTesting(
-      RenderingType type, WebKit::WebLayerTreeViewClient* client);
+      RenderingType type,
+      WebKit::WebLayerTreeViewClient* client);
   virtual ~WebLayerTreeViewImplForTesting();
 
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT bool initialize(
@@ -48,7 +53,8 @@ class WebLayerTreeViewImplForTesting : public WebKit::WebLayerTreeView,
                                            float minimum,
                                            float maximum);
   virtual void startPageScaleAnimation(const WebPoint& destination,
-                                       bool use_anchor, float new_page_scale,
+                                       bool use_anchor,
+                                       float new_page_scale,
                                        double duration_sec);
   virtual void setNeedsAnimate();
   virtual void setNeedsRedraw();
@@ -77,9 +83,9 @@ class WebLayerTreeViewImplForTesting : public WebKit::WebLayerTreeView,
   virtual void didCompleteSwapBuffers() OVERRIDE;
   virtual void scheduleComposite() OVERRIDE;
   virtual scoped_refptr<cc::ContextProvider>
-      OffscreenContextProviderForMainThread() OVERRIDE;
+  OffscreenContextProviderForMainThread() OVERRIDE;
   virtual scoped_refptr<cc::ContextProvider>
-      OffscreenContextProviderForCompositorThread() OVERRIDE;
+  OffscreenContextProviderForCompositorThread() OVERRIDE;
 
  private:
   RenderingType type_;

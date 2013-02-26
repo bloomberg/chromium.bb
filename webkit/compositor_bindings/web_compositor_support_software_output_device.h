@@ -14,13 +14,13 @@
 
 namespace webkit {
 
-class WebCompositorSupportSoftwareOutputDevice
-    : public cc::SoftwareOutputDevice {
+class WebCompositorSupportSoftwareOutputDevice :
+    public cc::SoftwareOutputDevice {
  public:
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebCompositorSupportSoftwareOutputDevice();
   virtual ~WebCompositorSupportSoftwareOutputDevice();
 
-  virtual WebKit::WebImage* Lock(bool forWrite) OVERRIDE;
+  virtual WebKit::WebImage* Lock(bool for_write) OVERRIDE;
   virtual void Unlock() OVERRIDE;
 
   virtual void DidChangeViewportSize(gfx::Size size) OVERRIDE;

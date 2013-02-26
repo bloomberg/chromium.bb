@@ -11,9 +11,9 @@
 namespace WebKit {
 
 struct WebRenderingStatsImpl : public WebRenderingStats {
-    WebRenderingStatsImpl() { }
+  WebRenderingStatsImpl() {}
 
-    cc::RenderingStats rendering_stats;
+  cc::RenderingStats rendering_stats;
 };
 
 }  // namespace WebKit

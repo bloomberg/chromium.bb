@@ -21,30 +21,32 @@ class WebContentLayerClient;
 
 class WebContentLayerImpl : public WebContentLayer,
                             public cc::ContentLayerClient {
-public:
-    WEBKIT_COMPOSITOR_BINDINGS_EXPORT explicit WebContentLayerImpl(
-        WebContentLayerClient*);
+ public:
+  WEBKIT_COMPOSITOR_BINDINGS_EXPORT explicit WebContentLayerImpl(
+      WebContentLayerClient*);
 
-    // WebContentLayer implementation.
-    virtual WebLayer* layer() OVERRIDE;
-    virtual void setDoubleSided(bool)  OVERRIDE;
-    virtual void setBoundsContainPageScale(bool) OVERRIDE;
-    virtual bool boundsContainPageScale() const OVERRIDE;
-    virtual void setUseLCDText(bool)  OVERRIDE;
-    virtual void setDrawCheckerboardForMissingTiles(bool)  OVERRIDE;
-    virtual void setAutomaticallyComputeRasterScale(bool);
+  // WebContentLayer implementation.
+  virtual WebLayer* layer() OVERRIDE;
+  virtual void setDoubleSided(bool) OVERRIDE;
+  virtual void setBoundsContainPageScale(bool) OVERRIDE;
+  virtual bool boundsContainPageScale() const OVERRIDE;
+  virtual void setUseLCDText(bool) OVERRIDE;
+  virtual void setDrawCheckerboardForMissingTiles(bool) OVERRIDE;
+  virtual void setAutomaticallyComputeRasterScale(bool);
 
-protected:
-    virtual ~WebContentLayerImpl();
+ protected:
+  virtual ~WebContentLayerImpl();
 
-    // ContentLayerClient implementation.
-    virtual void paintContents(SkCanvas*, const gfx::Rect& clip, gfx::RectF& opaque) OVERRIDE;
+  // ContentLayerClient implementation.
+  virtual void paintContents(SkCanvas*,
+                             const gfx::Rect& clip,
+                             gfx::RectF& opaque) OVERRIDE;
 
-    scoped_ptr<WebLayerImpl> m_layer;
-    WebContentLayerClient* m_client;
-    bool m_drawsContent;
+  scoped_ptr<WebLayerImpl> layer_;
+  WebContentLayerClient* client_;
+  bool draws_content_;
 };
 
-} // namespace WebKit
+}  // namespace WebKit
 
-#endif // WebContentLayerImpl_h
+#endif  // WebContentLayerImpl_h

@@ -13,23 +13,17 @@
 namespace WebKit {
 
 WebVideoLayerImpl::WebVideoLayerImpl(WebVideoFrameProvider* web_provider)
-    : m_providerAdapter(webkit::WebToCCVideoFrameProvider::Create(web_provider))
-    , m_layer(new WebLayerImpl(cc::VideoLayer::create(m_providerAdapter.get())))
-{
+    : provider_adapter_(
+          webkit::WebToCCVideoFrameProvider::Create(web_provider)),
+      layer_(
+          new WebLayerImpl(cc::VideoLayer::create(provider_adapter_.get()))) {}
+
+WebVideoLayerImpl::~WebVideoLayerImpl() {}
+
+WebLayer* WebVideoLayerImpl::layer() { return layer_.get(); }
+
+bool WebVideoLayerImpl::active() const {
+  return layer_->layer()->layerTreeHost();
 }
 
-WebVideoLayerImpl::~WebVideoLayerImpl()
-{
-}
-
-WebLayer* WebVideoLayerImpl::layer()
-{
-    return m_layer.get();
-}
-
-bool WebVideoLayerImpl::active() const
-{
-    return m_layer->layer()->layerTreeHost();
-}
-
-} // namespace WebKit
+}  // namespace WebKit

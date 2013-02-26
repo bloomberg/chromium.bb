@@ -20,11 +20,11 @@ class WebTransformOperationsImpl : public WebKit::WebTransformOperations {
   const cc::TransformOperations& AsTransformOperations() const;
 
   // Implementation of WebKit::WebTransformOperations methods
-  virtual bool canBlendWith(
-      const WebKit::WebTransformOperations& other) const OVERRIDE;
+  virtual bool canBlendWith(const WebKit::WebTransformOperations& other) const
+      OVERRIDE;
   virtual void appendTranslate(double x, double y, double z) OVERRIDE;
-  virtual void appendRotate(
-      double x, double y, double z, double degrees) OVERRIDE;
+  virtual void appendRotate(double x, double y, double z, double degrees)
+      OVERRIDE;
   virtual void appendScale(double x, double y, double z) OVERRIDE;
   virtual void appendSkew(double x, double y) OVERRIDE;
   virtual void appendPerspective(double depth) OVERRIDE;

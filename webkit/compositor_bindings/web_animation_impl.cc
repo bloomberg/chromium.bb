@@ -17,89 +17,76 @@ using cc::AnimationIdProvider;
 
 namespace WebKit {
 
-WebAnimationImpl::WebAnimationImpl(const WebAnimationCurve& webCurve, TargetProperty targetProperty, int animationId, int groupId)
-{
-    if (!animationId)
-        animationId = AnimationIdProvider::NextAnimationId();
-    if (!groupId)
-        groupId = AnimationIdProvider::NextGroupId();
+WebAnimationImpl::WebAnimationImpl(const WebAnimationCurve& web_curve,
+                                   TargetProperty target_property,
+                                   int animation_id,
+                                   int group_id) {
+  if (!animation_id)
+    animation_id = AnimationIdProvider::NextAnimationId();
+  if (!group_id)
+    group_id = AnimationIdProvider::NextGroupId();
 
-    WebAnimationCurve::AnimationCurveType curveType = webCurve.type();
-    scoped_ptr<cc::AnimationCurve> curve;
-    switch (curveType) {
+  WebAnimationCurve::AnimationCurveType curve_type = web_curve.type();
+  scoped_ptr<cc::AnimationCurve> curve;
+  switch (curve_type) {
     case WebAnimationCurve::AnimationCurveTypeFloat: {
-        const WebFloatAnimationCurveImpl* floatCurveImpl = static_cast<const WebFloatAnimationCurveImpl*>(&webCurve);
-        curve = floatCurveImpl->cloneToAnimationCurve();
-        break;
+      const WebFloatAnimationCurveImpl* float_curve_impl =
+          static_cast<const WebFloatAnimationCurveImpl*>(&web_curve);
+      curve = float_curve_impl->cloneToAnimationCurve();
+      break;
     }
     case WebAnimationCurve::AnimationCurveTypeTransform: {
-        const WebTransformAnimationCurveImpl* transformCurveImpl = static_cast<const WebTransformAnimationCurveImpl*>(&webCurve);
-        curve = transformCurveImpl->cloneToAnimationCurve();
-        break;
+      const WebTransformAnimationCurveImpl* transform_curve_impl =
+          static_cast<const WebTransformAnimationCurveImpl*>(&web_curve);
+      curve = transform_curve_impl->cloneToAnimationCurve();
+      break;
     }
-    }
-    m_animation = Animation::create(curve.Pass(), animationId, groupId, static_cast<cc::Animation::TargetProperty>(targetProperty));
+  }
+  animation_ = Animation::create(
+      curve.Pass(),
+      animation_id,
+      group_id,
+      static_cast<cc::Animation::TargetProperty>(target_property));
 }
 
-WebAnimationImpl::~WebAnimationImpl()
-{
+WebAnimationImpl::~WebAnimationImpl() {}
+
+int WebAnimationImpl::id() { return animation_->id(); }
+
+WebAnimation::TargetProperty WebAnimationImpl::targetProperty() const {
+  return static_cast<WebAnimationImpl::TargetProperty>(
+      animation_->targetProperty());
 }
 
-int WebAnimationImpl::id()
-{
-    return m_animation->id();
+int WebAnimationImpl::iterations() const { return animation_->iterations(); }
+
+void WebAnimationImpl::setIterations(int n) { animation_->setIterations(n); }
+
+double WebAnimationImpl::startTime() const { return animation_->startTime(); }
+
+void WebAnimationImpl::setStartTime(double monotonic_time) {
+  animation_->setStartTime(monotonic_time);
 }
 
-WebAnimation::TargetProperty WebAnimationImpl::targetProperty() const
-{
-    return static_cast<WebAnimationImpl::TargetProperty>(m_animation->targetProperty());
+double WebAnimationImpl::timeOffset() const { return animation_->timeOffset(); }
+
+void WebAnimationImpl::setTimeOffset(double monotonic_time) {
+  animation_->setTimeOffset(monotonic_time);
 }
 
-int WebAnimationImpl::iterations() const
-{
-    return m_animation->iterations();
+bool WebAnimationImpl::alternatesDirection() const {
+  return animation_->alternatesDirection();
 }
 
-void WebAnimationImpl::setIterations(int n)
-{
-    m_animation->setIterations(n);
+void WebAnimationImpl::setAlternatesDirection(bool alternates) {
+  animation_->setAlternatesDirection(alternates);
 }
 
-double WebAnimationImpl::startTime() const
-{
-    return m_animation->startTime();
+scoped_ptr<cc::Animation> WebAnimationImpl::cloneToAnimation() {
+  scoped_ptr<cc::Animation> to_return(
+      animation_->clone(cc::Animation::NonControllingInstance));
+  to_return->setNeedsSynchronizedStartTime(true);
+  return to_return.Pass();
 }
 
-void WebAnimationImpl::setStartTime(double monotonicTime)
-{
-    m_animation->setStartTime(monotonicTime);
-}
-
-double WebAnimationImpl::timeOffset() const
-{
-    return m_animation->timeOffset();
-}
-
-void WebAnimationImpl::setTimeOffset(double monotonicTime)
-{
-    m_animation->setTimeOffset(monotonicTime);
-}
-
-bool WebAnimationImpl::alternatesDirection() const
-{
-    return m_animation->alternatesDirection();
-}
-
-void WebAnimationImpl::setAlternatesDirection(bool alternates)
-{
-    m_animation->setAlternatesDirection(alternates);
-}
-
-scoped_ptr<cc::Animation> WebAnimationImpl::cloneToAnimation()
-{
-    scoped_ptr<cc::Animation> toReturn(m_animation->clone(cc::Animation::NonControllingInstance));
-    toReturn->setNeedsSynchronizedStartTime(true);
-    return toReturn.Pass();
-}
-
-} // namespace WebKit
+}  // namespace WebKit

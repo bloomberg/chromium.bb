@@ -21,28 +21,21 @@ scoped_ptr<WebToCCVideoFrameProvider> WebToCCVideoFrameProvider::Create(
 
 WebToCCVideoFrameProvider::WebToCCVideoFrameProvider(
     WebVideoFrameProvider* web_provider)
-    : web_provider_(web_provider),
-      web_frame_(NULL) {
-}
+    : web_provider_(web_provider), web_frame_(NULL) {}
 
-WebToCCVideoFrameProvider::~WebToCCVideoFrameProvider() {
-}
+WebToCCVideoFrameProvider::~WebToCCVideoFrameProvider() {}
 
-class WebToCCVideoFrameProvider::ClientAdapter
-    : public WebVideoFrameProvider::Client {
+class WebToCCVideoFrameProvider::ClientAdapter :
+    public WebVideoFrameProvider::Client {
  public:
   explicit ClientAdapter(cc::VideoFrameProvider::Client* cc_client)
       : cc_client_(cc_client) {}
   virtual ~ClientAdapter() {}
 
   // WebVideoFrameProvider::Client implementation.
-  virtual void stopUsingProvider() {
-    cc_client_->StopUsingProvider();
-  }
+  virtual void stopUsingProvider() { cc_client_->StopUsingProvider(); }
 
-  virtual void didReceiveFrame() {
-    cc_client_->DidReceiveFrame();
-  }
+  virtual void didReceiveFrame() { cc_client_->DidReceiveFrame(); }
 
   virtual void didUpdateMatrix(const float* matrix) {
     cc_client_->DidUpdateMatrix(matrix);
@@ -51,7 +44,7 @@ class WebToCCVideoFrameProvider::ClientAdapter
  private:
   cc::VideoFrameProvider::Client* cc_client_;
 };
-   
+
 void WebToCCVideoFrameProvider::SetVideoFrameProviderClient(Client* client) {
   scoped_ptr<ClientAdapter> client_adapter;
   if (client)

@@ -14,22 +14,18 @@ using cc::NinePatchLayer;
 namespace WebKit {
 
 WebNinePatchLayerImpl::WebNinePatchLayerImpl()
-    : m_layer(new WebLayerImpl(NinePatchLayer::create()))
-{
-    m_layer->layer()->setIsDrawable(true);
+    : layer_(new WebLayerImpl(NinePatchLayer::create())) {
+  layer_->layer()->setIsDrawable(true);
 }
 
-WebNinePatchLayerImpl::~WebNinePatchLayerImpl()
-{
+WebNinePatchLayerImpl::~WebNinePatchLayerImpl() {}
+
+WebLayer* WebNinePatchLayerImpl::layer() { return layer_.get(); }
+
+void WebNinePatchLayerImpl::setBitmap(const SkBitmap& bitmap,
+                                      const WebRect& aperture) {
+  static_cast<NinePatchLayer*>(layer_->layer())
+      ->setBitmap(bitmap, gfx::Rect(aperture));
 }
 
-WebLayer* WebNinePatchLayerImpl::layer()
-{
-    return m_layer.get();
-}
-
-void WebNinePatchLayerImpl::setBitmap(const SkBitmap& bitmap, const WebRect& aperture) {
-    static_cast<NinePatchLayer*>(m_layer->layer())->setBitmap(bitmap, gfx::Rect(aperture));
-}
-
-} // namespace WebKit
+}  // namespace WebKit

@@ -13,19 +13,21 @@ namespace WebKit {
 class WebLayerImpl;
 
 class WebScrollbarLayerImpl : public WebScrollbarLayer {
-public:
-    WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebScrollbarLayerImpl(
-        WebScrollbar*, WebScrollbarThemePainter, WebScrollbarThemeGeometry*);
-    virtual ~WebScrollbarLayerImpl();
+ public:
+  WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebScrollbarLayerImpl(
+      WebScrollbar*,
+      WebScrollbarThemePainter,
+      WebScrollbarThemeGeometry*);
+  virtual ~WebScrollbarLayerImpl();
 
-    // WebScrollbarLayer implementation.
-    virtual WebLayer* layer() OVERRIDE;
-    virtual void setScrollLayer(WebLayer*) OVERRIDE;
+  // WebScrollbarLayer implementation.
+  virtual WebLayer* layer() OVERRIDE;
+  virtual void setScrollLayer(WebLayer*) OVERRIDE;
 
-private:
-    scoped_ptr<WebLayerImpl> m_layer;
+ private:
+  scoped_ptr<WebLayerImpl> layer_;
 };
 
 }
 
-#endif // WebScrollbarLayerImpl_h
+#endif  // WebScrollbarLayerImpl_h

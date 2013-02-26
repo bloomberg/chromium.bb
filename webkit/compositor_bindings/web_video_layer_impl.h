@@ -9,28 +9,26 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebVideoLayer.h"
 #include "webkit/compositor_bindings/webkit_compositor_bindings_export.h"
 
-namespace webkit {
-class WebToCCVideoFrameProvider;
-}
+namespace webkit { class WebToCCVideoFrameProvider; }
 
 namespace WebKit {
 class WebLayerImpl;
 
 class WebVideoLayerImpl : public WebVideoLayer {
-public:
-    WEBKIT_COMPOSITOR_BINDINGS_EXPORT explicit WebVideoLayerImpl(
-        WebVideoFrameProvider*);
-    virtual ~WebVideoLayerImpl();
+ public:
+  WEBKIT_COMPOSITOR_BINDINGS_EXPORT explicit WebVideoLayerImpl(
+      WebVideoFrameProvider*);
+  virtual ~WebVideoLayerImpl();
 
-    // WebVideoLayer implementation.
-    virtual WebLayer* layer() OVERRIDE;
-    virtual bool active() const OVERRIDE;
+  // WebVideoLayer implementation.
+  virtual WebLayer* layer() OVERRIDE;
+  virtual bool active() const OVERRIDE;
 
-private:
-    scoped_ptr<webkit::WebToCCVideoFrameProvider> m_providerAdapter;
-    scoped_ptr<WebLayerImpl> m_layer;
+ private:
+  scoped_ptr<webkit::WebToCCVideoFrameProvider> provider_adapter_;
+  scoped_ptr<WebLayerImpl> layer_;
 };
 
 }
 
-#endif // WebVideoLayerImpl_h
+#endif  // WebVideoLayerImpl_h

@@ -16,30 +16,30 @@ class WebLayerImpl;
 
 class WebExternalTextureLayerImpl : public WebExternalTextureLayer,
                                     public cc::TextureLayerClient {
-public:
-    WEBKIT_COMPOSITOR_BINDINGS_EXPORT explicit WebExternalTextureLayerImpl(
-        WebExternalTextureLayerClient*);
-    virtual ~WebExternalTextureLayerImpl();
+ public:
+  WEBKIT_COMPOSITOR_BINDINGS_EXPORT explicit WebExternalTextureLayerImpl(
+      WebExternalTextureLayerClient*);
+  virtual ~WebExternalTextureLayerImpl();
 
-    // WebExternalTextureLayer implementation.
-    virtual WebLayer* layer() OVERRIDE;
-    virtual void setTextureId(unsigned) OVERRIDE;
-    virtual void setFlipped(bool) OVERRIDE;
-    virtual void setUVRect(const WebFloatRect&) OVERRIDE;
-    virtual void setOpaque(bool) OVERRIDE;
-    virtual void setPremultipliedAlpha(bool) OVERRIDE;
-    virtual void willModifyTexture() OVERRIDE;
-    virtual void setRateLimitContext(bool) OVERRIDE;
+  // WebExternalTextureLayer implementation.
+  virtual WebLayer* layer() OVERRIDE;
+  virtual void setTextureId(unsigned) OVERRIDE;
+  virtual void setFlipped(bool) OVERRIDE;
+  virtual void setUVRect(const WebFloatRect&) OVERRIDE;
+  virtual void setOpaque(bool) OVERRIDE;
+  virtual void setPremultipliedAlpha(bool) OVERRIDE;
+  virtual void willModifyTexture() OVERRIDE;
+  virtual void setRateLimitContext(bool) OVERRIDE;
 
-    // TextureLayerClient implementation.
-    virtual unsigned prepareTexture(cc::ResourceUpdateQueue&) OVERRIDE;
-    virtual WebGraphicsContext3D* context() OVERRIDE;
+  // TextureLayerClient implementation.
+  virtual unsigned prepareTexture(cc::ResourceUpdateQueue&) OVERRIDE;
+  virtual WebGraphicsContext3D* context() OVERRIDE;
 
-private:
-    WebExternalTextureLayerClient* m_client;
-    scoped_ptr<WebLayerImpl> m_layer;
+ private:
+  WebExternalTextureLayerClient* client_;
+  scoped_ptr<WebLayerImpl> layer_;
 };
 
 }
 
-#endif // WebExternalTextureLayerImpl_h
+#endif  // WebExternalTextureLayerImpl_h

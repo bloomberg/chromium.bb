@@ -63,7 +63,7 @@ TEST(WebLayerImplFixedBoundsTest, BoundsScaleSimple) {
   scoped_ptr<WebLayerImplFixedBounds> layer(new WebLayerImplFixedBounds());
   layer->setAnchorPoint(WebFloatPoint(0, 0));
   CheckBoundsScaleSimple(layer.get(), WebSize(100, 200), gfx::Size(150, 250));
-  // Change fixedBounds.
+  // Change fixed_bounds.
   CheckBoundsScaleSimple(layer.get(), WebSize(100, 200), gfx::Size(75, 100));
   // Change bounds.
   CheckBoundsScaleSimple(layer.get(), WebSize(300, 100), gfx::Size(75, 100));
@@ -123,7 +123,7 @@ void CompareFixedBoundsLayerAndNormalLayer(
   normal_layer->setPosition(position);
   root_layer->addChild(normal_layer);
 
-  std::vector<scoped_refptr<cc::Layer> > renderSurfaceLayerList;
+  std::vector<scoped_refptr<cc::Layer> > render_surface_layer_list;
   cc::LayerTreeHostCommon::calculateDrawProperties(
       root_layer->layer(),
       kDeviceViewportSize,
@@ -131,7 +131,7 @@ void CompareFixedBoundsLayerAndNormalLayer(
       kPageScaleFactor,
       kMaxTextureSize,
       false,
-      renderSurfaceLayerList);
+      render_surface_layer_list);
   ExpectEqualLayerRectsInTarget(normal_layer->layer(),
                                 fixed_bounds_layer->layer());
   ExpectEqualLayerRectsInTarget(sublayer_under_normal_layer->layer(),
@@ -147,7 +147,7 @@ void CompareFixedBoundsLayerAndNormalLayer(
       kPageScaleFactor,
       kMaxTextureSize,
       false,
-      renderSurfaceLayerList);
+      render_surface_layer_list);
   ExpectEqualLayerRectsInTarget(normal_layer->layer(),
                                 fixed_bounds_layer->layer());
   ExpectEqualLayerRectsInTarget(sublayer_under_normal_layer->layer(),

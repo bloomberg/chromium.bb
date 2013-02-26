@@ -15,91 +15,82 @@ using namespace cc;
 
 namespace WebKit {
 
-WebExternalTextureLayerImpl::WebExternalTextureLayerImpl(WebExternalTextureLayerClient* client)
-    : m_client(client)
-{
-    scoped_refptr<TextureLayer> layer;
-    if (m_client)
-        layer = TextureLayer::create(this);
-    else
-        layer = TextureLayer::create(0);
-    layer->setIsDrawable(true);
-    m_layer.reset(new WebLayerImpl(layer));
+WebExternalTextureLayerImpl::WebExternalTextureLayerImpl(
+    WebExternalTextureLayerClient* client)
+    : client_(client) {
+  scoped_refptr<TextureLayer> layer;
+  if (client_)
+    layer = TextureLayer::create(this);
+  else
+    layer = TextureLayer::create(0);
+  layer->setIsDrawable(true);
+  layer_.reset(new WebLayerImpl(layer));
 }
 
-WebExternalTextureLayerImpl::~WebExternalTextureLayerImpl()
-{
-    static_cast<TextureLayer*>(m_layer->layer())->clearClient();
+WebExternalTextureLayerImpl::~WebExternalTextureLayerImpl() {
+  static_cast<TextureLayer*>(layer_->layer())->clearClient();
 }
 
-WebLayer* WebExternalTextureLayerImpl::layer()
-{
-    return m_layer.get();
+WebLayer* WebExternalTextureLayerImpl::layer() { return layer_.get(); }
+
+void WebExternalTextureLayerImpl::setTextureId(unsigned id) {
+  static_cast<TextureLayer*>(layer_->layer())->setTextureId(id);
 }
 
-void WebExternalTextureLayerImpl::setTextureId(unsigned id)
-{
-    static_cast<TextureLayer*>(m_layer->layer())->setTextureId(id);
+void WebExternalTextureLayerImpl::setFlipped(bool flipped) {
+  static_cast<TextureLayer*>(layer_->layer())->setFlipped(flipped);
 }
 
-void WebExternalTextureLayerImpl::setFlipped(bool flipped)
-{
-    static_cast<TextureLayer*>(m_layer->layer())->setFlipped(flipped);
+void WebExternalTextureLayerImpl::setUVRect(const WebFloatRect& rect) {
+  static_cast<TextureLayer*>(layer_->layer())
+      ->setUV(gfx::PointF(rect.x, rect.y),
+              gfx::PointF(rect.x + rect.width, rect.y + rect.height));
 }
 
-void WebExternalTextureLayerImpl::setUVRect(const WebFloatRect& rect)
-{
-    static_cast<TextureLayer*>(m_layer->layer())->setUV(gfx::PointF(rect.x, rect.y), gfx::PointF(rect.x + rect.width, rect.y + rect.height));
+void WebExternalTextureLayerImpl::setOpaque(bool opaque) {
+  static_cast<TextureLayer*>(layer_->layer())->setContentsOpaque(opaque);
 }
 
-void WebExternalTextureLayerImpl::setOpaque(bool opaque)
-{
-    static_cast<TextureLayer*>(m_layer->layer())->setContentsOpaque(opaque);
+void WebExternalTextureLayerImpl::setPremultipliedAlpha(
+    bool premultiplied_alpha) {
+  static_cast<TextureLayer*>(layer_->layer())
+      ->setPremultipliedAlpha(premultiplied_alpha);
 }
 
-void WebExternalTextureLayerImpl::setPremultipliedAlpha(bool premultipliedAlpha)
-{
-    static_cast<TextureLayer*>(m_layer->layer())->setPremultipliedAlpha(premultipliedAlpha);
+void WebExternalTextureLayerImpl::willModifyTexture() {
+  static_cast<TextureLayer*>(layer_->layer())->willModifyTexture();
 }
 
-void WebExternalTextureLayerImpl::willModifyTexture()
-{
-    static_cast<TextureLayer*>(m_layer->layer())->willModifyTexture();
-}
-
-void WebExternalTextureLayerImpl::setRateLimitContext(bool rateLimit)
-{
-    static_cast<TextureLayer*>(m_layer->layer())->setRateLimitContext(rateLimit);
+void WebExternalTextureLayerImpl::setRateLimitContext(bool rate_limit) {
+  static_cast<TextureLayer*>(layer_->layer())->setRateLimitContext(rate_limit);
 }
 
 class WebTextureUpdaterImpl : public WebTextureUpdater {
-public:
-    explicit WebTextureUpdaterImpl(ResourceUpdateQueue& queue)
-        : m_queue(queue)
-    {
-    }
+ public:
+  explicit WebTextureUpdaterImpl(ResourceUpdateQueue& queue) : queue_(queue) {}
 
-    virtual void appendCopy(unsigned sourceTexture, unsigned destinationTexture, WebSize size) OVERRIDE
-    {
-        TextureCopier::Parameters copy = { sourceTexture, destinationTexture, size };
-        m_queue.appendCopy(copy);
-    }
+  virtual void appendCopy(unsigned source_texture,
+                          unsigned destination_texture,
+                          WebSize size) OVERRIDE {
+    TextureCopier::Parameters copy = { source_texture, destination_texture,
+                                       size };
+    queue_.appendCopy(copy);
+  }
 
-private:
-    ResourceUpdateQueue& m_queue;
+ private:
+  ResourceUpdateQueue& queue_;
 };
 
-unsigned WebExternalTextureLayerImpl::prepareTexture(ResourceUpdateQueue& queue)
-{
-    DCHECK(m_client);
-    WebTextureUpdaterImpl updaterImpl(queue);
-    return m_client->prepareTexture(updaterImpl);
+unsigned WebExternalTextureLayerImpl::prepareTexture(
+    ResourceUpdateQueue& queue) {
+  DCHECK(client_);
+  WebTextureUpdaterImpl updater_impl(queue);
+  return client_->prepareTexture(updater_impl);
 }
 
-WebGraphicsContext3D* WebExternalTextureLayerImpl::context()
-{
-    DCHECK(m_client);
-    return m_client->context();
+WebGraphicsContext3D* WebExternalTextureLayerImpl::context() {
+  DCHECK(client_);
+  return client_->context();
 }
 
-} // namespace WebKit
+}  // namespace WebKit

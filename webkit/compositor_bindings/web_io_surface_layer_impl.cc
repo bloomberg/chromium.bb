@@ -12,23 +12,18 @@ using cc::IOSurfaceLayer;
 namespace WebKit {
 
 WebIOSurfaceLayerImpl::WebIOSurfaceLayerImpl()
-    : m_layer(new WebLayerImpl(IOSurfaceLayer::create()))
-{
-    m_layer->layer()->setIsDrawable(true);
+    : layer_(new WebLayerImpl(IOSurfaceLayer::create())) {
+  layer_->layer()->setIsDrawable(true);
 }
 
-WebIOSurfaceLayerImpl::~WebIOSurfaceLayerImpl()
-{
+WebIOSurfaceLayerImpl::~WebIOSurfaceLayerImpl() {}
+
+void WebIOSurfaceLayerImpl::setIOSurfaceProperties(unsigned io_surface_id,
+                                                   WebSize size) {
+  static_cast<IOSurfaceLayer*>(layer_->layer())
+      ->setIOSurfaceProperties(io_surface_id, size);
 }
 
-void WebIOSurfaceLayerImpl::setIOSurfaceProperties(unsigned ioSurfaceId, WebSize size)
-{
-    static_cast<IOSurfaceLayer*>(m_layer->layer())->setIOSurfaceProperties(ioSurfaceId, size);
-}
+WebLayer* WebIOSurfaceLayerImpl::layer() { return layer_.get(); }
 
-WebLayer* WebIOSurfaceLayerImpl::layer()
-{
-    return m_layer.get();
-}
-
-} // namespace WebKit
+}  // namespace WebKit

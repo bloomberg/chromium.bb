@@ -39,4 +39,4 @@ class WebToCCVideoFrameProvider : public cc::VideoFrameProvider {
 
 }  // namespace webkit
 
-#endif // WEBKIT_COMPOSITOR_BINDINGS_WEB_TO_CCVIDEO_FRAME_PROVIDER_H_
+#endif  // WEBKIT_COMPOSITOR_BINDINGS_WEB_TO_CCVIDEO_FRAME_PROVIDER_H_

@@ -13,19 +13,19 @@ namespace WebKit {
 class WebLayerImpl;
 
 class WebSolidColorLayerImpl : public WebSolidColorLayer {
-public:
-    WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebSolidColorLayerImpl();
-    virtual ~WebSolidColorLayerImpl();
+ public:
+  WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebSolidColorLayerImpl();
+  virtual ~WebSolidColorLayerImpl();
 
-    // WebSolidColorLayer implementation.
-    virtual WebLayer* layer() OVERRIDE;
-    virtual void setBackgroundColor(WebColor) OVERRIDE;
+  // WebSolidColorLayer implementation.
+  virtual WebLayer* layer() OVERRIDE;
+  virtual void setBackgroundColor(WebColor) OVERRIDE;
 
-private:
-    scoped_ptr<WebLayerImpl> m_layer;
+ private:
+  scoped_ptr<WebLayerImpl> layer_;
 };
 
-} // namespace WebKit
+}  // namespace WebKit
 
-#endif // WebSolidColorLayerImpl_h
+#endif  // WebSolidColorLayerImpl_h
 

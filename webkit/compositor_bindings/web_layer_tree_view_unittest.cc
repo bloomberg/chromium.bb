@@ -22,99 +22,82 @@ using testing::Test;
 
 namespace {
 
-class MockWebLayerTreeViewClientForThreadedTests : public MockWebLayerTreeViewClient {
-public:
-    virtual void didBeginFrame() OVERRIDE
-    {
-        MessageLoop::current()->Quit();
-        MockWebLayerTreeViewClient::didBeginFrame();
-    }
+class MockWebLayerTreeViewClientForThreadedTests :
+    public MockWebLayerTreeViewClient {
+ public:
+  virtual void didBeginFrame() OVERRIDE {
+    MessageLoop::current()->Quit();
+    MockWebLayerTreeViewClient::didBeginFrame();
+  }
 };
 
 class WebLayerTreeViewTestBase : public Test {
-protected:
-    virtual void initializeCompositor() = 0;
-    virtual WebLayerTreeViewClient* client() = 0;
+ protected:
+  virtual void initializeCompositor() = 0;
+  virtual WebLayerTreeViewClient* client() = 0;
 
-public:
-    virtual void SetUp()
-    {
-        initializeCompositor();
-        m_rootLayer.reset(new WebLayerImpl);
-        m_view.reset(new WebLayerTreeViewImplForTesting(
-            WebLayerTreeViewImplForTesting::FAKE_CONTEXT, client()));
-        scoped_ptr<cc::Thread> implCCThread(NULL);
-        if (m_implThread)
-            implCCThread = cc::ThreadImpl::createForDifferentThread(
-                m_implThread->message_loop_proxy());
-        ASSERT_TRUE(m_view->initialize(implCCThread.Pass()));
-        m_view->setRootLayer(*m_rootLayer);
-        m_view->setSurfaceReady();
-    }
+ public:
+  virtual void SetUp() {
+    initializeCompositor();
+    root_layer_.reset(new WebLayerImpl);
+    view_.reset(new WebLayerTreeViewImplForTesting(
+        WebLayerTreeViewImplForTesting::FAKE_CONTEXT, client()));
+    scoped_ptr<cc::Thread> impl_cc_thread(NULL);
+    if (impl_thread_)
+      impl_cc_thread = cc::ThreadImpl::createForDifferentThread(
+          impl_thread_->message_loop_proxy());
+    ASSERT_TRUE(view_->initialize(impl_cc_thread.Pass()));
+    view_->setRootLayer(*root_layer_);
+    view_->setSurfaceReady();
+  }
 
-    virtual void TearDown()
-    {
-        Mock::VerifyAndClearExpectations(client());
+  virtual void TearDown() {
+    Mock::VerifyAndClearExpectations(client());
 
-        m_rootLayer.reset();
-        m_view.reset();
-    }
+    root_layer_.reset();
+    view_.reset();
+  }
 
-protected:
-    scoped_ptr<WebLayer> m_rootLayer;
-    scoped_ptr<WebLayerTreeViewImplForTesting> m_view;
-    scoped_ptr<base::Thread> m_implThread;
+ protected:
+  scoped_ptr<WebLayer> root_layer_;
+  scoped_ptr<WebLayerTreeViewImplForTesting> view_;
+  scoped_ptr<base::Thread> impl_thread_;
 };
 
 class WebLayerTreeViewSingleThreadTest : public WebLayerTreeViewTestBase {
-protected:
-    void composite()
-    {
-        m_view->composite();
-    }
+ protected:
+  void composite() { view_->composite(); }
 
-    virtual void initializeCompositor() OVERRIDE
-    {
-    }
+  virtual void initializeCompositor() OVERRIDE {}
 
-    virtual WebLayerTreeViewClient* client() OVERRIDE
-    {
-        return &m_client;
-    }
+  virtual WebLayerTreeViewClient* client() OVERRIDE { return &client_; }
 
-    MockWebLayerTreeViewClient m_client;
+  MockWebLayerTreeViewClient client_;
 };
 
 class WebLayerTreeViewThreadedTest : public WebLayerTreeViewTestBase {
-protected:
-    virtual ~WebLayerTreeViewThreadedTest()
-    {
-    }
+ protected:
+  virtual ~WebLayerTreeViewThreadedTest() {}
 
-    void composite()
-    {
-        m_view->setNeedsRedraw();
-        base::CancelableClosure timeout(base::Bind(&MessageLoop::Quit, base::Unretained(MessageLoop::current())));
-        MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                                timeout.callback(),
-                                                base::TimeDelta::FromSeconds(5));
-        MessageLoop::current()->Run();
-        m_view->finishAllRendering();
-    }
+  void composite() {
+    view_->setNeedsRedraw();
+    base::CancelableClosure timeout(base::Bind(
+        &MessageLoop::Quit, base::Unretained(MessageLoop::current())));
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, timeout.callback(), base::TimeDelta::FromSeconds(5));
+    MessageLoop::current()->Run();
+    view_->finishAllRendering();
+  }
 
-    virtual void initializeCompositor() OVERRIDE
-    {
-        m_implThread.reset(new base::Thread("ThreadedTest"));
-        ASSERT_TRUE(m_implThread->Start());
-    }
+  virtual void initializeCompositor() OVERRIDE {
+    impl_thread_.reset(new base::Thread("ThreadedTest"));
+    ASSERT_TRUE(impl_thread_->Start());
+  }
 
-    virtual WebLayerTreeViewClient* client() OVERRIDE
-    {
-        return &m_client;
-    }
+  virtual WebLayerTreeViewClient* client() OVERRIDE { return &client_; }
 
-    MockWebLayerTreeViewClientForThreadedTests m_client;
-    base::CancelableClosure m_timeout;
+  MockWebLayerTreeViewClientForThreadedTests client_;
+  base::CancelableClosure timeout_;
 };
 
-} // namespace
+}  // namespace

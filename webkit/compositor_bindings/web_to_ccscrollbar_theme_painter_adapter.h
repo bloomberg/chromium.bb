@@ -15,9 +15,9 @@ class WebScrollbarThemePainter;
 class WebToCCScrollbarThemePainterAdapter : public cc::ScrollbarThemePainter {
  public:
   static scoped_ptr<WebToCCScrollbarThemePainterAdapter> Create(
-      scoped_ptr<WebScrollbarThemePainter> webPainter) {
-    return make_scoped_ptr(new WebToCCScrollbarThemePainterAdapter(
-        webPainter.Pass()));
+      scoped_ptr<WebScrollbarThemePainter> web_painter) {
+    return make_scoped_ptr(
+        new WebToCCScrollbarThemePainterAdapter(web_painter.Pass()));
   }
   virtual ~WebToCCScrollbarThemePainterAdapter();
 
@@ -37,15 +37,13 @@ class WebToCCScrollbarThemePainterAdapter : public cc::ScrollbarThemePainter {
       OVERRIDE;
   virtual void PaintForwardButtonEnd(SkCanvas* canvas, const gfx::Rect& rect)
       OVERRIDE;
-  virtual void PaintTickmarks(SkCanvas* canvas, const gfx::Rect& rect)
-      OVERRIDE;
-  virtual void PaintThumb(SkCanvas* canvas, const gfx::Rect& rect)
-      OVERRIDE;
+  virtual void PaintTickmarks(SkCanvas* canvas, const gfx::Rect& rect) OVERRIDE;
+  virtual void PaintThumb(SkCanvas* canvas, const gfx::Rect& rect) OVERRIDE;
 
  private:
   WebToCCScrollbarThemePainterAdapter(
-      scoped_ptr<WebScrollbarThemePainter> webPainter)
-      : painter_(webPainter.Pass()) {}
+      scoped_ptr<WebScrollbarThemePainter> web_painter)
+      : painter_(web_painter.Pass()) {}
 
   scoped_ptr<WebScrollbarThemePainter> painter_;
 };

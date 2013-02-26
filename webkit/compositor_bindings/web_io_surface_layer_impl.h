@@ -12,19 +12,19 @@
 namespace WebKit {
 
 class WebIOSurfaceLayerImpl : public WebIOSurfaceLayer {
-public:
-    WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebIOSurfaceLayerImpl();
-    virtual ~WebIOSurfaceLayerImpl();
+ public:
+  WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebIOSurfaceLayerImpl();
+  virtual ~WebIOSurfaceLayerImpl();
 
-    // WebIOSurfaceLayer implementation.
-    virtual WebLayer* layer() OVERRIDE;
-    virtual void setIOSurfaceProperties(unsigned ioSurfaceId, WebSize) OVERRIDE;
+  // WebIOSurfaceLayer implementation.
+  virtual WebLayer* layer() OVERRIDE;
+  virtual void setIOSurfaceProperties(unsigned io_surface_id, WebSize) OVERRIDE;
 
-private:
-    scoped_ptr<WebLayerImpl> m_layer;
+ private:
+  scoped_ptr<WebLayerImpl> layer_;
 };
 
 }
 
-#endif // WebIOSurfaceLayerImpl_h
+#endif  // WebIOSurfaceLayerImpl_h
 

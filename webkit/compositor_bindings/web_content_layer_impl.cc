@@ -19,73 +19,62 @@ using namespace cc;
 
 namespace WebKit {
 
-static bool usingPictureLayer()
-{
-    return cc::switches::IsImplSidePaintingEnabled();
+static bool usingPictureLayer() {
+  return cc::switches::IsImplSidePaintingEnabled();
 }
 
 WebContentLayerImpl::WebContentLayerImpl(WebContentLayerClient* client)
-    : m_client(client)
-{
-    if (usingPictureLayer())
-        m_layer = make_scoped_ptr(new WebLayerImpl(PictureLayer::create(this)));
-    else
-        m_layer = make_scoped_ptr(new WebLayerImpl(ContentLayer::create(this)));
-    m_layer->layer()->setIsDrawable(true);
+    : client_(client) {
+  if (usingPictureLayer())
+    layer_ = make_scoped_ptr(new WebLayerImpl(PictureLayer::create(this)));
+  else
+    layer_ = make_scoped_ptr(new WebLayerImpl(ContentLayer::create(this)));
+  layer_->layer()->setIsDrawable(true);
 }
 
-WebContentLayerImpl::~WebContentLayerImpl()
-{
-    if (usingPictureLayer())
-        static_cast<PictureLayer*>(m_layer->layer())->clearClient();
-    else
-        static_cast<ContentLayer*>(m_layer->layer())->clearClient();
+WebContentLayerImpl::~WebContentLayerImpl() {
+  if (usingPictureLayer())
+    static_cast<PictureLayer*>(layer_->layer())->clearClient();
+  else
+    static_cast<ContentLayer*>(layer_->layer())->clearClient();
 }
 
-WebLayer* WebContentLayerImpl::layer()
-{
-    return m_layer.get();
+WebLayer* WebContentLayerImpl::layer() { return layer_.get(); }
+
+void WebContentLayerImpl::setDoubleSided(bool double_sided) {
+  layer_->layer()->setDoubleSided(double_sided);
 }
 
-void WebContentLayerImpl::setDoubleSided(bool doubleSided)
-{
-    m_layer->layer()->setDoubleSided(doubleSided);
+void WebContentLayerImpl::setBoundsContainPageScale(
+    bool bounds_contain_page_scale) {
+  return layer_->layer()->setBoundsContainPageScale(bounds_contain_page_scale);
 }
 
-void WebContentLayerImpl::setBoundsContainPageScale(bool boundsContainPageScale)
-{
-    return m_layer->layer()->setBoundsContainPageScale(boundsContainPageScale);
+bool WebContentLayerImpl::boundsContainPageScale() const {
+  return layer_->layer()->boundsContainPageScale();
 }
 
-bool WebContentLayerImpl::boundsContainPageScale() const
-{
-    return m_layer->layer()->boundsContainPageScale();
-}
-
-void WebContentLayerImpl::setAutomaticallyComputeRasterScale(bool automatic)
-{
-  m_layer->layer()->setAutomaticallyComputeRasterScale(automatic);
+void WebContentLayerImpl::setAutomaticallyComputeRasterScale(bool automatic) {
+  layer_->layer()->setAutomaticallyComputeRasterScale(automatic);
 }
 
 // TODO(alokp): Remove this function from WebContentLayer API.
-void WebContentLayerImpl::setUseLCDText(bool enable)
-{
+void WebContentLayerImpl::setUseLCDText(bool enable) {}
+
+void WebContentLayerImpl::setDrawCheckerboardForMissingTiles(bool enable) {
+  layer_->layer()->setDrawCheckerboardForMissingTiles(enable);
 }
 
-void WebContentLayerImpl::setDrawCheckerboardForMissingTiles(bool enable)
-{
-    m_layer->layer()->setDrawCheckerboardForMissingTiles(enable);
+void WebContentLayerImpl::paintContents(SkCanvas* canvas,
+                                        const gfx::Rect& clip,
+                                        gfx::RectF& opaque) {
+  if (!client_)
+    return;
+
+  WebFloatRect web_opaque;
+  client_->paintContents(
+      canvas, clip, layer_->layer()->canUseLCDText(), web_opaque);
+  opaque = web_opaque;
 }
 
-
-void WebContentLayerImpl::paintContents(SkCanvas* canvas, const gfx::Rect& clip, gfx::RectF& opaque)
-{
-    if (!m_client)
-        return;
-
-    WebFloatRect webOpaque;
-    m_client->paintContents(canvas, clip, m_layer->layer()->canUseLCDText(), webOpaque);
-    opaque = webOpaque;
-}
-
-} // namespace WebKit
+}  // namespace WebKit

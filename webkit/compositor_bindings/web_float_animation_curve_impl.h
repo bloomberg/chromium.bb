@@ -17,26 +17,30 @@ class KeyframedFloatAnimationCurve;
 namespace WebKit {
 
 class WebFloatAnimationCurveImpl : public WebFloatAnimationCurve {
-public:
-    WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebFloatAnimationCurveImpl();
-    virtual ~WebFloatAnimationCurveImpl();
+ public:
+  WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebFloatAnimationCurveImpl();
+  virtual ~WebFloatAnimationCurveImpl();
 
-    // WebAnimationCurve implementation.
-    virtual AnimationCurveType type() const OVERRIDE;
+  // WebAnimationCurve implementation.
+  virtual AnimationCurveType type() const OVERRIDE;
 
-    // WebFloatAnimationCurve implementation.
-    virtual void add(const WebFloatKeyframe&) OVERRIDE;
-    virtual void add(const WebFloatKeyframe&, TimingFunctionType) OVERRIDE;
-    virtual void add(const WebFloatKeyframe&, double x1, double y1, double x2, double y2) OVERRIDE;
+  // WebFloatAnimationCurve implementation.
+  virtual void add(const WebFloatKeyframe&) OVERRIDE;
+  virtual void add(const WebFloatKeyframe&, TimingFunctionType) OVERRIDE;
+  virtual void add(const WebFloatKeyframe&,
+                   double x1,
+                   double y1,
+                   double x2,
+                   double y2) OVERRIDE;
 
-    virtual float getValue(double time) const OVERRIDE;
+  virtual float getValue(double time) const OVERRIDE;
 
-    scoped_ptr<cc::AnimationCurve> cloneToAnimationCurve() const;
+  scoped_ptr<cc::AnimationCurve> cloneToAnimationCurve() const;
 
-private:
-    scoped_ptr<cc::KeyframedFloatAnimationCurve> m_curve;
+ private:
+  scoped_ptr<cc::KeyframedFloatAnimationCurve> curve_;
 };
 
 }
 
-#endif // WebFloatAnimationCurveImpl_h
+#endif  // WebFloatAnimationCurveImpl_h

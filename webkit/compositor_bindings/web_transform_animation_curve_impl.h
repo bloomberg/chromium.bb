@@ -17,26 +17,30 @@ class KeyframedTransformAnimationCurve;
 namespace WebKit {
 
 class WebTransformAnimationCurveImpl : public WebTransformAnimationCurve {
-public:
-    WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebTransformAnimationCurveImpl();
-    virtual ~WebTransformAnimationCurveImpl();
+ public:
+  WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebTransformAnimationCurveImpl();
+  virtual ~WebTransformAnimationCurveImpl();
 
-    // WebAnimationCurve implementation.
-    virtual AnimationCurveType type() const OVERRIDE;
+  // WebAnimationCurve implementation.
+  virtual AnimationCurveType type() const OVERRIDE;
 
-    // WebTransformAnimationCurve implementation.
-    virtual void add(const WebTransformKeyframe&) OVERRIDE;
-    virtual void add(const WebTransformKeyframe&, TimingFunctionType) OVERRIDE;
-    virtual void add(const WebTransformKeyframe&, double x1, double y1, double x2, double y2) OVERRIDE;
+  // WebTransformAnimationCurve implementation.
+  virtual void add(const WebTransformKeyframe&) OVERRIDE;
+  virtual void add(const WebTransformKeyframe&, TimingFunctionType) OVERRIDE;
+  virtual void add(const WebTransformKeyframe&,
+                   double x1,
+                   double y1,
+                   double x2,
+                   double y2) OVERRIDE;
 
-    virtual WebTransformationMatrix getValue(double time) const OVERRIDE;
+  virtual WebTransformationMatrix getValue(double time) const OVERRIDE;
 
-    scoped_ptr<cc::AnimationCurve> cloneToAnimationCurve() const;
+  scoped_ptr<cc::AnimationCurve> cloneToAnimationCurve() const;
 
-private:
-    scoped_ptr<cc::KeyframedTransformAnimationCurve> m_curve;
+ private:
+  scoped_ptr<cc::KeyframedTransformAnimationCurve> curve_;
 };
 
 }
 
-#endif // WebTransformAnimationCurveImpl_h
+#endif  // WebTransformAnimationCurveImpl_h

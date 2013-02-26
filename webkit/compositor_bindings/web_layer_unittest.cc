@@ -33,164 +33,163 @@ using testing::_;
 namespace {
 
 class MockWebContentLayerClient : public WebContentLayerClient {
-public:
-    MOCK_METHOD4(paintContents, void(WebCanvas*, const WebRect& clip, bool canPaintLCDText, WebFloatRect& opaque));
+ public:
+  MOCK_METHOD4(paintContents,
+               void(WebCanvas*,
+                    const WebRect& clip,
+                    bool can_paint_lcd_text,
+                    WebFloatRect& opaque));
 };
 
 class WebLayerTest : public Test {
-public:
-    WebLayerTest()
-    {
-    }
+ public:
+  WebLayerTest() {}
 
-    virtual void SetUp()
-    {
-        m_rootLayer.reset(new WebLayerImpl);
-        EXPECT_CALL(m_client, scheduleComposite()).Times(AnyNumber());
-        m_view.reset(new WebLayerTreeViewImplForTesting(
-            WebLayerTreeViewImplForTesting::FAKE_CONTEXT, &m_client));
-        EXPECT_TRUE(m_view->initialize(scoped_ptr<cc::Thread>(NULL)));
-        m_view->setRootLayer(*m_rootLayer);
-        EXPECT_TRUE(m_view);
-        Mock::VerifyAndClearExpectations(&m_client);
-    }
+  virtual void SetUp() {
+    root_layer_.reset(new WebLayerImpl);
+    EXPECT_CALL(client_, scheduleComposite()).Times(AnyNumber());
+    view_.reset(new WebLayerTreeViewImplForTesting(
+        WebLayerTreeViewImplForTesting::FAKE_CONTEXT, &client_));
+    EXPECT_TRUE(view_->initialize(scoped_ptr<cc::Thread>(NULL)));
+    view_->setRootLayer(*root_layer_);
+    EXPECT_TRUE(view_);
+    Mock::VerifyAndClearExpectations(&client_);
+  }
 
-    virtual void TearDown()
-    {
-        // We may get any number of scheduleComposite calls during shutdown.
-        EXPECT_CALL(m_client, scheduleComposite()).Times(AnyNumber());
-        m_rootLayer.reset();
-        m_view.reset();
-    }
+  virtual void TearDown() {
+    // We may get any number of scheduleComposite calls during shutdown.
+    EXPECT_CALL(client_, scheduleComposite()).Times(AnyNumber());
+    root_layer_.reset();
+    view_.reset();
+  }
 
-protected:
-    MockWebLayerTreeViewClient m_client;
-    scoped_ptr<WebLayer> m_rootLayer;
-    scoped_ptr<WebLayerTreeViewImplForTesting> m_view;
+ protected:
+  MockWebLayerTreeViewClient client_;
+  scoped_ptr<WebLayer> root_layer_;
+  scoped_ptr<WebLayerTreeViewImplForTesting> view_;
 };
 
 // Tests that the client gets called to ask for a composite if we change the
 // fields.
-TEST_F(WebLayerTest, Client)
-{
-    // Base layer.
-    EXPECT_CALL(m_client, scheduleComposite()).Times(AnyNumber());
-    scoped_ptr<WebLayer> layer(new WebLayerImpl);
-    layer->setDrawsContent(true);
-    m_rootLayer->addChild(layer.get());
-    Mock::VerifyAndClearExpectations(&m_client);
+TEST_F(WebLayerTest, Client) {
+  // Base layer.
+  EXPECT_CALL(client_, scheduleComposite()).Times(AnyNumber());
+  scoped_ptr<WebLayer> layer(new WebLayerImpl);
+  layer->setDrawsContent(true);
+  root_layer_->addChild(layer.get());
+  Mock::VerifyAndClearExpectations(&client_);
 
-    WebFloatPoint point(3, 4);
-    EXPECT_CALL(m_client, scheduleComposite()).Times(AtLeast(1));
-    layer->setAnchorPoint(point);
-    Mock::VerifyAndClearExpectations(&m_client);
-    EXPECT_EQ(point, layer->anchorPoint());
+  WebFloatPoint point(3, 4);
+  EXPECT_CALL(client_, scheduleComposite()).Times(AtLeast(1));
+  layer->setAnchorPoint(point);
+  Mock::VerifyAndClearExpectations(&client_);
+  EXPECT_EQ(point, layer->anchorPoint());
 
-    EXPECT_CALL(m_client, scheduleComposite()).Times(AtLeast(1));
-    float anchorZ = 5;
-    layer->setAnchorPointZ(anchorZ);
-    Mock::VerifyAndClearExpectations(&m_client);
-    EXPECT_EQ(anchorZ, layer->anchorPointZ());
+  EXPECT_CALL(client_, scheduleComposite()).Times(AtLeast(1));
+  float anchorZ = 5;
+  layer->setAnchorPointZ(anchorZ);
+  Mock::VerifyAndClearExpectations(&client_);
+  EXPECT_EQ(anchorZ, layer->anchorPointZ());
 
-    WebSize size(7, 8);
-    EXPECT_CALL(m_client, scheduleComposite()).Times(AtLeast(1));
-    layer->setBounds(size);
-    Mock::VerifyAndClearExpectations(&m_client);
-    EXPECT_EQ(size, layer->bounds());
+  WebSize size(7, 8);
+  EXPECT_CALL(client_, scheduleComposite()).Times(AtLeast(1));
+  layer->setBounds(size);
+  Mock::VerifyAndClearExpectations(&client_);
+  EXPECT_EQ(size, layer->bounds());
 
-    EXPECT_CALL(m_client, scheduleComposite()).Times(AtLeast(1));
-    layer->setMasksToBounds(true);
-    Mock::VerifyAndClearExpectations(&m_client);
-    EXPECT_TRUE(layer->masksToBounds());
+  EXPECT_CALL(client_, scheduleComposite()).Times(AtLeast(1));
+  layer->setMasksToBounds(true);
+  Mock::VerifyAndClearExpectations(&client_);
+  EXPECT_TRUE(layer->masksToBounds());
 
-    EXPECT_CALL(m_client, scheduleComposite()).Times(AnyNumber());
-    scoped_ptr<WebLayer> otherLayer1(new WebLayerImpl);
-    m_rootLayer->addChild(otherLayer1.get());
-    EXPECT_CALL(m_client, scheduleComposite()).Times(AtLeast(1));
-    scoped_ptr<WebLayer> otherLayer2(new WebLayerImpl);
-    layer->setMaskLayer(otherLayer2.get());
-    Mock::VerifyAndClearExpectations(&m_client);
+  EXPECT_CALL(client_, scheduleComposite()).Times(AnyNumber());
+  scoped_ptr<WebLayer> other_layer_1(new WebLayerImpl);
+  root_layer_->addChild(other_layer_1.get());
+  EXPECT_CALL(client_, scheduleComposite()).Times(AtLeast(1));
+  scoped_ptr<WebLayer> other_layer_2(new WebLayerImpl);
+  layer->setMaskLayer(other_layer_2.get());
+  Mock::VerifyAndClearExpectations(&client_);
 
-    EXPECT_CALL(m_client, scheduleComposite()).Times(AtLeast(1));
-    float opacity = 0.123f;
-    layer->setOpacity(opacity);
-    Mock::VerifyAndClearExpectations(&m_client);
-    EXPECT_EQ(opacity, layer->opacity());
+  EXPECT_CALL(client_, scheduleComposite()).Times(AtLeast(1));
+  float opacity = 0.123f;
+  layer->setOpacity(opacity);
+  Mock::VerifyAndClearExpectations(&client_);
+  EXPECT_EQ(opacity, layer->opacity());
 
-    EXPECT_CALL(m_client, scheduleComposite()).Times(AtLeast(1));
-    layer->setOpaque(true);
-    Mock::VerifyAndClearExpectations(&m_client);
-    EXPECT_TRUE(layer->opaque());
+  EXPECT_CALL(client_, scheduleComposite()).Times(AtLeast(1));
+  layer->setOpaque(true);
+  Mock::VerifyAndClearExpectations(&client_);
+  EXPECT_TRUE(layer->opaque());
 
-    EXPECT_CALL(m_client, scheduleComposite()).Times(AtLeast(1));
-    layer->setPosition(point);
-    Mock::VerifyAndClearExpectations(&m_client);
-    EXPECT_EQ(point, layer->position());
+  EXPECT_CALL(client_, scheduleComposite()).Times(AtLeast(1));
+  layer->setPosition(point);
+  Mock::VerifyAndClearExpectations(&client_);
+  EXPECT_EQ(point, layer->position());
 
-    // Texture layer.
-    EXPECT_CALL(m_client, scheduleComposite()).Times(AtLeast(1));
-    scoped_ptr<WebExternalTextureLayer> textureLayer(new WebExternalTextureLayerImpl(NULL));
-    m_rootLayer->addChild(textureLayer->layer());
-    Mock::VerifyAndClearExpectations(&m_client);
+  // Texture layer.
+  EXPECT_CALL(client_, scheduleComposite()).Times(AtLeast(1));
+  scoped_ptr<WebExternalTextureLayer> texture_layer(
+      new WebExternalTextureLayerImpl(NULL));
+  root_layer_->addChild(texture_layer->layer());
+  Mock::VerifyAndClearExpectations(&client_);
 
-    EXPECT_CALL(m_client, scheduleComposite()).Times(AtLeast(1));
-    textureLayer->setTextureId(3);
-    Mock::VerifyAndClearExpectations(&m_client);
+  EXPECT_CALL(client_, scheduleComposite()).Times(AtLeast(1));
+  texture_layer->setTextureId(3);
+  Mock::VerifyAndClearExpectations(&client_);
 
-    EXPECT_CALL(m_client, scheduleComposite()).Times(AtLeast(1));
-    textureLayer->setFlipped(true);
-    Mock::VerifyAndClearExpectations(&m_client);
+  EXPECT_CALL(client_, scheduleComposite()).Times(AtLeast(1));
+  texture_layer->setFlipped(true);
+  Mock::VerifyAndClearExpectations(&client_);
 
-    EXPECT_CALL(m_client, scheduleComposite()).Times(AtLeast(1));
-    WebFloatRect uvRect(0.1f, 0.1f, 0.9f, 0.9f);
-    textureLayer->setUVRect(uvRect);
-    Mock::VerifyAndClearExpectations(&m_client);
+  EXPECT_CALL(client_, scheduleComposite()).Times(AtLeast(1));
+  WebFloatRect uv_rect(0.1f, 0.1f, 0.9f, 0.9f);
+  texture_layer->setUVRect(uv_rect);
+  Mock::VerifyAndClearExpectations(&client_);
 
+  // Content layer.
+  MockWebContentLayerClient content_client;
+  EXPECT_CALL(content_client, paintContents(_, _, _, _)).Times(AnyNumber());
 
-    // Content layer.
-    MockWebContentLayerClient contentClient;
-    EXPECT_CALL(contentClient, paintContents(_, _, _, _)).Times(AnyNumber());
-                                             
-    EXPECT_CALL(m_client, scheduleComposite()).Times(AnyNumber());
-    scoped_ptr<WebContentLayer> contentLayer(new WebContentLayerImpl(&contentClient));
-    m_rootLayer->addChild(contentLayer->layer());
-    Mock::VerifyAndClearExpectations(&m_client);
+  EXPECT_CALL(client_, scheduleComposite()).Times(AnyNumber());
+  scoped_ptr<WebContentLayer> content_layer(
+      new WebContentLayerImpl(&content_client));
+  root_layer_->addChild(content_layer->layer());
+  Mock::VerifyAndClearExpectations(&client_);
 
-    EXPECT_CALL(m_client, scheduleComposite()).Times(AtLeast(1));
-    contentLayer->layer()->setDrawsContent(false);
-    Mock::VerifyAndClearExpectations(&m_client);
-    EXPECT_FALSE(contentLayer->layer()->drawsContent());
+  EXPECT_CALL(client_, scheduleComposite()).Times(AtLeast(1));
+  content_layer->layer()->setDrawsContent(false);
+  Mock::VerifyAndClearExpectations(&client_);
+  EXPECT_FALSE(content_layer->layer()->drawsContent());
 
-    // Solid color layer.
-    EXPECT_CALL(m_client, scheduleComposite()).Times(AtLeast(1));
-    scoped_ptr<WebSolidColorLayer> solidColorLayer(new WebSolidColorLayerImpl);
-    m_rootLayer->addChild(solidColorLayer->layer());
-    Mock::VerifyAndClearExpectations(&m_client);
+  // Solid color layer.
+  EXPECT_CALL(client_, scheduleComposite()).Times(AtLeast(1));
+  scoped_ptr<WebSolidColorLayer> solid_color_layer(new WebSolidColorLayerImpl);
+  root_layer_->addChild(solid_color_layer->layer());
+  Mock::VerifyAndClearExpectations(&client_);
 
 }
 
 class MockScrollClient : public WebLayerScrollClient {
-public:
-    MOCK_METHOD0(didScroll, void());
+ public:
+  MOCK_METHOD0(didScroll, void());
 };
 
-TEST_F(WebLayerTest, notifyScrollClient)
-{
-    MockScrollClient scrollClient;
+TEST_F(WebLayerTest, notify_scroll_client) {
+  MockScrollClient scroll_client;
 
-    EXPECT_CALL(scrollClient, didScroll()).Times(0);
-    m_rootLayer->setScrollClient(&scrollClient);
-    Mock::VerifyAndClearExpectations(&scrollClient);
+  EXPECT_CALL(scroll_client, didScroll()).Times(0);
+  root_layer_->setScrollClient(&scroll_client);
+  Mock::VerifyAndClearExpectations(&scroll_client);
 
-    EXPECT_CALL(scrollClient, didScroll()).Times(1);
-    m_rootLayer->setScrollPosition(WebPoint(14, 19));
-    Mock::VerifyAndClearExpectations(&scrollClient);
+  EXPECT_CALL(scroll_client, didScroll()).Times(1);
+  root_layer_->setScrollPosition(WebPoint(14, 19));
+  Mock::VerifyAndClearExpectations(&scroll_client);
 
-    EXPECT_CALL(scrollClient, didScroll()).Times(0);
-    m_rootLayer->setScrollPosition(WebPoint(14, 19));
-    Mock::VerifyAndClearExpectations(&scrollClient);
+  EXPECT_CALL(scroll_client, didScroll()).Times(0);
+  root_layer_->setScrollPosition(WebPoint(14, 19));
+  Mock::VerifyAndClearExpectations(&scroll_client);
 
-    m_rootLayer->setScrollClient(0);
+  root_layer_->setScrollClient(0);
 }
 
 }

@@ -12,23 +12,16 @@ using cc::SolidColorLayer;
 namespace WebKit {
 
 WebSolidColorLayerImpl::WebSolidColorLayerImpl()
-    : m_layer(new WebLayerImpl(SolidColorLayer::create()))
-{
-    m_layer->layer()->setIsDrawable(true);
+    : layer_(new WebLayerImpl(SolidColorLayer::create())) {
+  layer_->layer()->setIsDrawable(true);
 }
 
-WebSolidColorLayerImpl::~WebSolidColorLayerImpl()
-{
+WebSolidColorLayerImpl::~WebSolidColorLayerImpl() {}
+
+WebLayer* WebSolidColorLayerImpl::layer() { return layer_.get(); }
+
+void WebSolidColorLayerImpl::setBackgroundColor(WebColor color) {
+  layer_->setBackgroundColor(color);
 }
 
-WebLayer* WebSolidColorLayerImpl::layer()
-{
-    return m_layer.get();
-}
-
-void WebSolidColorLayerImpl::setBackgroundColor(WebColor color)
-{
-    m_layer->setBackgroundColor(color);
-}
-
-} // namespace WebKit
+}  // namespace WebKit

@@ -530,9 +530,9 @@ static WebKit::WebLayerTreeView* CreateLayerTreeView(
 
   webkit::WebCompositorSupportImpl* compositor_support_impl =
       test_environment->webkit_platform_support()->compositor_support_impl();
-  if (compositor_support_impl->impl_thread_message_loop_proxy())
+  if (compositor_support_impl->compositor_thread_message_loop_proxy())
     compositor_thread = cc::ThreadImpl::createForDifferentThread(
-        compositor_support_impl->impl_thread_message_loop_proxy());
+        compositor_support_impl->compositor_thread_message_loop_proxy());
 
   if (!view->initialize(compositor_thread.Pass()))
     return NULL;
