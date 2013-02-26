@@ -1039,3 +1039,18 @@
   fun:StartupBrowserCreatorImpl::ProcessLaunchURLs
   fun:StartupBrowserCreatorImpl::Launch
 }
+{
+   bug_178433a
+   ThreadSanitizer:Race
+   fun:scoped_refptr::operator->
+   fun:base::WaitableEvent::Signal
+   fun:base::debug::TraceSamplingThread::ThreadMain
+   fun:base::::ThreadFunc
+}
+{
+   bug_178433b
+   ThreadSanitizer:Race
+   fun:base::internal::scoped_ptr_impl::get
+   ...
+   fun:base::debug::TraceSamplingThread::ThreadMain
+}
