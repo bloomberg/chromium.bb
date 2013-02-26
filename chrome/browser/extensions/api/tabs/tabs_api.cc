@@ -1953,9 +1953,9 @@ bool ExecuteCodeInTabFunction::RunImpl() {
   // If |tab_id| is specified, look for the tab. Otherwise default to selected
   // tab in the current window.
   CHECK_GE(execute_tab_id_, 0);
-  if (!ExtensionTabUtil::GetTabById(execute_tab_id_, profile(),
-                                    include_incognito(),
-                                    NULL, NULL, &contents, NULL)) {
+  if (!GetTabById(execute_tab_id_, profile(),
+                  include_incognito(),
+                  NULL, NULL, &contents, NULL, &error_)) {
     return false;
   }
 
@@ -2014,7 +2014,8 @@ bool ExecuteCodeInTabFunction::Init() {
 
   // |tab_id| is optional so it's ok if it's not there.
   int tab_id = -1;
-  args_->GetInteger(0, &tab_id);
+  if (args_->GetInteger(0, &tab_id))
+    EXTENSION_FUNCTION_VALIDATE(tab_id >= 0);
 
   // |details| are not optional.
   DictionaryValue* details_value = NULL;
@@ -2024,8 +2025,8 @@ bool ExecuteCodeInTabFunction::Init() {
   if (!InjectDetails::Populate(*details_value, details.get()))
     return false;
 
-  // If the tab ID is -1 then it needs to be converted to the currently active
-  // tab's ID.
+  // If the tab ID wasn't given then it needs to be converted to the
+  // currently active tab's ID.
   if (tab_id == -1) {
     Browser* browser = GetCurrentBrowser();
     if (!browser)
@@ -2110,9 +2111,9 @@ bool ExecuteCodeInTabFunction::Execute(const std::string& code_string) {
   content::WebContents* contents = NULL;
   Browser* browser = NULL;
 
-  bool success = ExtensionTabUtil::GetTabById(
+  bool success = GetTabById(
       execute_tab_id_, profile(), include_incognito(), &browser, NULL,
-      &contents, NULL) && contents && browser;
+      &contents, NULL, &error_) && contents && browser;
 
   if (!success)
     return false;
