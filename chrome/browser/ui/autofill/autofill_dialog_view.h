@@ -46,6 +46,9 @@ class AutofillDialogView {
   // Returns the state of the "use billing address for shipping" checkbox.
   virtual bool UseBillingForShipping() = 0;
 
+  // Returns true if current input should be saved in Wallet (if it differs).
+  virtual bool SaveDetailsInWallet() = 0;
+
   // Returns true if new or edited autofill details should be saved.
   virtual bool SaveDetailsLocally() = 0;
 

@@ -45,6 +45,9 @@ namespace {
 // Size of the triangular mark that indicates an invalid textfield.
 const size_t kDogEarSize = 10;
 
+// The space between the top/bottom edge of the notification area and the text.
+const size_t kNotificationAreaPadding = 10;
+
 const size_t kAutocheckoutProgressBarWidth = 300;
 const size_t kAutocheckoutProgressBarHeight = 11;
 
@@ -125,22 +128,20 @@ void AutofillDialogViews::DecoratedTextfield::OnPaint(gfx::Canvas* canvas) {
 // AutofillDialogViews::NotificationArea ---------------------------------------
 
 AutofillDialogViews::NotificationArea::NotificationArea()
-    : label_(new views::Label()) {
-  views::BoxLayout* layout =
+    : container_(new views::View()),
+      checkbox_(NULL),
+      label_(NULL) {
+  views::BoxLayout* box_layout =
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
-  layout->set_spread_blank_space(true);
-  SetLayoutManager(layout);
+  box_layout->set_spread_blank_space(true);
+  SetLayoutManager(box_layout);
 
-  // This background is re-used and the color is changed in |SetNotification()|.
-  label_->set_background(
-      views::Background::CreateSolidBackground(SK_ColorTRANSPARENT));
-  label_->set_border(views::Border::CreateEmptyBorder(10, 10, 10, 10));
-  label_->set_collapse_when_hidden(true);
-  label_->SetAutoColorReadabilityEnabled(false);
-  label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label_->SetMultiLine(true);
-
-  AddChildView(label_);
+  container_->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical,
+                           kNotificationAreaPadding,
+                           kNotificationAreaPadding,
+                           0));
+  AddChildView(container_);
 }
 
 AutofillDialogViews::NotificationArea::~NotificationArea() {}
@@ -149,17 +150,46 @@ void AutofillDialogViews::NotificationArea::SetNotification(
     const DialogNotification& notification) {
   notification_ = notification;
 
-  const string16& display_text = notification.display_text();
-  label_->SetVisible(!display_text.empty());
-  label_->SetEnabledColor(notification.GetTextColor());
-  label_->SetText(display_text);
-  label_->background()->SetNativeControlColor(
-      notification.GetBackgroundColor());
-
   // Reserve vertical space for the arrow if necessary.
   const size_t arrow_height = notification_.HasArrow() ? kArrowHeight : 0;
   set_border(views::Border::CreateSolidSidedBorder(
       arrow_height, 0, 0, 0, SK_ColorTRANSPARENT));
+
+  container_->set_background(views::Background::CreateSolidBackground(
+      notification_.GetBackgroundColor()));
+
+  const string16& display_text = notification_.display_text();
+
+  if (notification_.HasCheckbox()) {
+    if (!checkbox_) {
+      checkbox_ = new views::Checkbox(string16());
+      static_cast<views::CheckboxNativeThemeBorder*>(checkbox_->border())->
+          SetCustomInsets(gfx::Insets());
+      checkbox_->set_alignment(views::TextButtonBase::ALIGN_LEFT);
+      checkbox_->SetMultiLine(true);
+      container_->AddChildView(checkbox_);
+    }
+    checkbox_->SetEnabledColor(notification_.GetTextColor());
+    checkbox_->SetHoverColor(notification_.GetTextColor());
+    checkbox_->SetText(display_text);
+  } else {
+    if (!label_) {
+      label_ = new views::Label();
+      label_->SetAutoColorReadabilityEnabled(false);
+      label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+      label_->SetMultiLine(true);
+      container_->AddChildView(label_);
+    }
+    label_->SetEnabledColor(notification_.GetTextColor());
+    label_->SetText(display_text);
+  }
+
+  if (checkbox_)
+    checkbox_->SetVisible(notification_.HasCheckbox() && !display_text.empty());
+  if (label_)
+    label_->SetVisible(!notification_.HasCheckbox() && !display_text.empty());
+
+  Layout();
 }
 
 std::string AutofillDialogViews::NotificationArea::GetClassName() const {
@@ -428,13 +458,25 @@ void AutofillDialogViews::Hide() {
 void AutofillDialogViews::UpdateAccountChooser() {
   // TODO(dbeam): show/hide account chooser combobox when it exists?
   // TODO(dbeam): show/hide fancy Google Wallet logo when it exists.
-  account_chooser_link_->SetText(controller_->AccountChooserText());
   account_chooser_link_->SetEnabled(controller_->AccountChooserEnabled());
+  account_chooser_link_->SetText(controller_->AccountChooserText());
 }
 
 void AutofillDialogViews::UpdateNotificationArea() {
   DCHECK(notification_area_);
-  notification_area_->SetNotification(controller_->CurrentNotification());
+
+  bool had_checkbox = notification_area_->checkbox() != NULL;
+
+  // TODO(dbeam): support multiple notifications (see: http://crbug.com/174814).
+  const std::vector<DialogNotification>& notifications =
+      controller_->CurrentNotifications();
+  notification_area_->SetNotification(
+      !notifications.empty() ? notifications[0] : DialogNotification());
+
+  // "Save details in Wallet" should be checked by default the first time shown.
+  if (!had_checkbox && notification_area_->checkbox())
+    notification_area_->checkbox()->SetChecked(true);
+
   ContentsPreferredSizeChanged();
 }
 
@@ -481,6 +523,12 @@ string16 AutofillDialogViews::GetCvc() {
 
 bool AutofillDialogViews::UseBillingForShipping() {
   return use_billing_for_shipping_->checked();
+}
+
+bool AutofillDialogViews::SaveDetailsInWallet() {
+  return notification_area_->checkbox() &&
+         notification_area_->checkbox()->visible() &&
+         notification_area_->checkbox()->checked();
 }
 
 bool AutofillDialogViews::SaveDetailsLocally() {

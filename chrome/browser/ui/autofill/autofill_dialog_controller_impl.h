@@ -117,7 +117,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void FocusMoved() OVERRIDE;
   virtual void ViewClosed(DialogAction action) OVERRIDE;
-  virtual DialogNotification CurrentNotification() const OVERRIDE;
+  virtual std::vector<DialogNotification> CurrentNotifications() const OVERRIDE;
   virtual void StartSignInFlow() OVERRIDE;
   virtual void EndSignInFlow() OVERRIDE;
   virtual Profile* profile() OVERRIDE;
@@ -202,6 +202,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // address info. Incomplete profiles will not be displayed in the dropdown
   // menu.
   bool IsCompleteProfile(const AutofillProfile& profile);
+
+  // Whether the user's wallet items have at least one address and instrument.
+  bool HasCompleteWallet() const;
 
   // Creates a DataModelWrapper item for the item that's checked in the
   // suggestion model for |section|. This may represent Autofill

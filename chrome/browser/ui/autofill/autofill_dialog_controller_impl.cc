@@ -12,6 +12,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_country.h"
 #include "chrome/browser/autofill/autofill_manager.h"
@@ -402,6 +403,12 @@ bool AutofillDialogControllerImpl::SectionIsActive(DialogSection section)
   return section != SECTION_CC_BILLING;
 }
 
+bool AutofillDialogControllerImpl::HasCompleteWallet() const {
+  return wallet_items_.get() != NULL &&
+         !wallet_items_->instruments().empty() &&
+         !wallet_items_->addresses().empty();
+}
+
 const DetailInputs& AutofillDialogControllerImpl::RequestedFieldsForSection(
     DialogSection section) const {
   switch (section) {
@@ -753,37 +760,72 @@ void AutofillDialogControllerImpl::ViewClosed(DialogAction action) {
   delete this;
 }
 
-DialogNotification AutofillDialogControllerImpl::CurrentNotification() const {
-  if (HasRequiredAction(wallet::VERIFY_CVV)) {
-    return DialogNotification(
-        DialogNotification::REQUIRED_ACTION,
-        l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_VERIFY_CVV));
+std::vector<DialogNotification>
+    AutofillDialogControllerImpl::CurrentNotifications() const {
+  std::vector<DialogNotification> notifications;
+
+  if (CanPayWithWallet()) {
+    // TODO(dbeam): what about REQUIRES_PASSIVE_SIGN_IN?
+    if (SignedInState() == SIGNED_IN) {
+      // On first run with a complete wallet profile, show a notification
+      // explaining where this data came from.
+      if (IsFirstRun() && HasCompleteWallet()) {
+        notifications.push_back(
+            DialogNotification(
+                DialogNotification::EXPLANATORY_MESSAGE,
+                l10n_util::GetStringUTF16(
+                    IDS_AUTOFILL_DIALOG_DETAILS_FROM_WALLET)));
+      } else {
+        notifications.push_back(
+            DialogNotification(
+                DialogNotification::WALLET_PROMO,
+                l10n_util::GetStringUTF16(
+                    IDS_AUTOFILL_DIALOG_SAVE_DETAILS_IN_WALLET)));
+      }
+    } else if (IsFirstRun()) {
+      // If the user is not signed in, show an upsell notification on first run.
+      notifications.push_back(
+          DialogNotification(
+              DialogNotification::WALLET_PROMO,
+              l10n_util::GetStringUTF16(
+                  IDS_AUTOFILL_DIALOG_SIGN_IN_AND_SAVE_DETAILS)));
+    }
+
+    if (HasRequiredAction(wallet::VERIFY_CVV)) {
+      notifications.push_back(
+          DialogNotification(
+              DialogNotification::REQUIRED_ACTION,
+              l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_VERIFY_CVV)));
+    }
   }
 
   if (RequestingCreditCardInfo() && !TransmissionWillBeSecure()) {
-    return DialogNotification(
-        DialogNotification::SECURITY_WARNING,
-        l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECURITY_WARNING));
+    notifications.push_back(
+        DialogNotification(
+            DialogNotification::SECURITY_WARNING,
+            l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECURITY_WARNING)));
   }
 
   if (!invoked_from_same_origin_) {
-    return DialogNotification(
-        DialogNotification::SECURITY_WARNING,
-        l10n_util::GetStringFUTF16(
-            IDS_AUTOFILL_DIALOG_SITE_WARNING, UTF8ToUTF16(source_url_.host())));
+    notifications.push_back(
+        DialogNotification(
+            DialogNotification::SECURITY_WARNING,
+            l10n_util::GetStringFUTF16(
+                IDS_AUTOFILL_DIALOG_SITE_WARNING,
+                UTF8ToUTF16(source_url_.host()))));
   }
 
   if (had_wallet_error_) {
     // TODO(dbeam): pass along the Wallet error or remove from the translation.
     // TODO(dbeam): figure out a way to dismiss this error after a while.
-    return DialogNotification(
+    notifications.push_back(DialogNotification(
         DialogNotification::WALLET_ERROR,
         l10n_util::GetStringFUTF16(
             IDS_AUTOFILL_DIALOG_COMPLETE_WITHOUT_WALLET,
-            ASCIIToUTF16("Oops, [Wallet-Error].")));
+            ASCIIToUTF16("Oops, [Wallet-Error]."))));
   }
 
-  return DialogNotification();
+  return notifications;
 }
 
 void AutofillDialogControllerImpl::StartSignInFlow() {

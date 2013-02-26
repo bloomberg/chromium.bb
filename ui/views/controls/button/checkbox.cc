@@ -17,30 +17,31 @@ const int kCheckboxLabelSpacing = 4;
 
 const int kFocusBorderWidth = 1;
 
-// A border with zero left inset.
-class CheckboxNativeThemeBorder : public TextButtonNativeThemeBorder {
- public:
-  explicit CheckboxNativeThemeBorder(views::NativeThemeDelegate* delegate)
-      : TextButtonNativeThemeBorder(delegate) {}
-  virtual ~CheckboxNativeThemeBorder() {}
-
-  // The insets apply to the whole view (checkbox + text), not just the square
-  // with the checkmark in it. The insets do not visibly affect the checkbox,
-  // except to ensure that there is enough padding between this and other
-  // elements.
-  virtual gfx::Insets GetInsets() const OVERRIDE {
-    gfx::Insets insets = TextButtonNativeThemeBorder::GetInsets();
-    return gfx::Insets(insets.top(), 0, insets.bottom(), 0);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CheckboxNativeThemeBorder);
-};
-
 }  // namespace
 
 // static
 const char Checkbox::kViewClassName[] = "views/Checkbox";
+
+////////////////////////////////////////////////////////////////////////////////
+// CheckboxNativeThemeBorder, public:
+
+gfx::Insets CheckboxNativeThemeBorder::GetInsets() const {
+  if (use_custom_insets_)
+    return custom_insets_;
+
+  const gfx::Insets& insets = TextButtonNativeThemeBorder::GetInsets();
+  return gfx::Insets(insets.top(), 0, insets.bottom(), 0);
+}
+
+void CheckboxNativeThemeBorder::SetCustomInsets(
+    const gfx::Insets& custom_insets) {
+ custom_insets_ = custom_insets;
+ use_custom_insets_ = true;
+}
+
+void CheckboxNativeThemeBorder::UseDefaultInsets() {
+  use_custom_insets_ = false;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Checkbox, public:

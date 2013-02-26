@@ -72,6 +72,7 @@ class AutofillDialogViews : public AutofillDialogView,
                             DetailOutputMap* output) OVERRIDE;
   virtual string16 GetCvc() OVERRIDE;
   virtual bool UseBillingForShipping() OVERRIDE;
+  virtual bool SaveDetailsInWallet() OVERRIDE;
   virtual bool SaveDetailsLocally() OVERRIDE;
   virtual const content::NavigationController& ShowSignIn() OVERRIDE;
   virtual void HideSignIn() OVERRIDE;
@@ -150,6 +151,8 @@ class AutofillDialogViews : public AutofillDialogView,
     NotificationArea();
     virtual ~NotificationArea();
 
+    views::Checkbox* checkbox() { return checkbox_; }
+
     void set_arrow_centering_anchor(views::View* arrow_centering_anchor) {
       arrow_centering_anchor_ = arrow_centering_anchor;
     }
@@ -161,6 +164,8 @@ class AutofillDialogViews : public AutofillDialogView,
     virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
    private:
+    views::View* container_;
+    views::Checkbox* checkbox_;
     views::Label* label_;
 
     // If |notification_.HasArrow()| is true, the arrow should point at this.

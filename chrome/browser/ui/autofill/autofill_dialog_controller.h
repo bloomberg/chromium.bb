@@ -118,8 +118,9 @@ class AutofillDialogController {
   // whether the Autofill operation should be aborted.
   virtual void ViewClosed(DialogAction action) = 0;
 
-  // Returns any dialog notification that should currently be showing.
-  virtual DialogNotification CurrentNotification() const = 0;
+  // Returns dialog notifications that the view should currently be showing in
+  // order from top to bottom.
+  virtual std::vector<DialogNotification> CurrentNotifications() const = 0;
 
   // Begins the flow to sign into Wallet.
   virtual void StartSignInFlow() = 0;

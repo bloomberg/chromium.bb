@@ -65,6 +65,11 @@ bool AutofillDialogViewAndroid::UseBillingForShipping() {
   return true;
 }
 
+bool AutofillDialogViewAndroid::SaveDetailsInWallet() {
+  NOTIMPLEMENTED();
+  return true;
+}
+
 bool AutofillDialogViewAndroid::SaveDetailsLocally() {
   NOTIMPLEMENTED();
   return true;

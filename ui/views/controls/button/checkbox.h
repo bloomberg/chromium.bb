@@ -13,6 +13,36 @@
 
 namespace views {
 
+// A border with zero left inset.
+class VIEWS_EXPORT CheckboxNativeThemeBorder
+    : public TextButtonNativeThemeBorder {
+ public:
+  explicit CheckboxNativeThemeBorder(views::NativeThemeDelegate* delegate)
+      : TextButtonNativeThemeBorder(delegate) {}
+  virtual ~CheckboxNativeThemeBorder() {}
+
+  // The insets apply to the whole view (checkbox + text), not just the square
+  // with the checkmark in it. The insets do not visibly affect the checkbox,
+  // except to ensure that there is enough padding between this and other
+  // elements.
+  virtual gfx::Insets GetInsets() const OVERRIDE;
+
+  // Use the |custom_insets_| provided instead of those from the theme.
+  void SetCustomInsets(const gfx::Insets& custom_insets);
+
+  // Use the default insets and ignore any |custom_insets_| that may be set.
+  void UseDefaultInsets();
+
+ private:
+  // Only used if |use_custom_insets_| is true.
+  gfx::Insets custom_insets_;
+
+  // Whether |custom_insets_| should be used in |GetInsets()|.
+  bool use_custom_insets_;
+
+  DISALLOW_COPY_AND_ASSIGN(CheckboxNativeThemeBorder);
+};
+
 // A native themed class representing a checkbox.  This class does not use
 // platform specific objects to replicate the native platforms looks and feel.
 class VIEWS_EXPORT Checkbox : public TextButtonBase {

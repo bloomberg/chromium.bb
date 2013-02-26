@@ -11005,7 +11005,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Expiration date
       </message>
 
-      <!-- requestAutocomplete field labels. -->
+      <!-- autofill dialog: field labels. -->
       <message name="IDS_AUTOFILL_DIALOG_PLACEHOLDER_EMAIL" desc="The placeholder/label text for email in the requestAutocomplete dialog.">
         Email address
       </message>
@@ -11061,41 +11061,56 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         The form signature <ph name="FORM_SIGNATURE">$1<ex>15146752457155269744</ex></ph> is for <ph name="FORM_URL">$2<ex>http://www.facebook.com</ex></ph>.
       </message>
 
-      <message name="IDS_AUTOFILL_DIALOG_TITLE" desc="Title for imperative autofill dialog which asks user to input address + payment info.">
+      <!-- autofill dialog: title bar -->
+      <message name="IDS_AUTOFILL_DIALOG_TITLE" desc="Title for autofill dialog which asks user to input address + payment info.">
         Submit Payment Details
       </message>
       <!-- TODO(dbeam): should Google Wallet be wrapped with ph/ex? -->
       <message name="IDS_AUTOFILL_DIALOG_PAY_WITHOUT_WALLET" desc="This text is shown in a payment method chooser when a user is forced to pay without Google Wallet because the service is unavailable.">
         Pay without Google Wallet
       </message>
+      <message name="IDS_AUTOFILL_DIALOG_DETAILS_FROM_WALLET" desc="">
+        The following details are saved in your Google Wallet.
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_SIGN_IN_AND_SAVE_DETAILS" desc="">
+        Sign in and save these details in your Google Wallet.
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_SAVE_DETAILS_IN_WALLET" desc="">
+        Save these details in your Google Wallet.
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_LEARN_MORE" desc="">
+        Learn more
+      </message>
       <message name="IDS_AUTOFILL_DIALOG_COMPLETE_WITHOUT_WALLET" desc="An error notification shown to users when Google Wallet is found to be unavailable.">
         <ph name="WALLET_ERROR">$1<ex>Oops, Google Wallet is unavailable at this time.</ex></ph> You can complete this transaction without Google Wallet.
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_EDIT" desc="Text of link in imperative autofill dialog which allows user to edit address + payment info.">
-        Edit
+      <message name="IDS_AUTOFILL_DIALOG_VERIFY_CVV" desc="Text explaining that the user needs to enter their credit card's verification code before they can continue their transaction.">
+        For your security, please verify your card details.
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_SECURITY_WARNING" desc="Warning on imperative autofill dialog informing users that they're likely to transmit their credit card information insecurely.">
+      <message name="IDS_AUTOFILL_DIALOG_SECURITY_WARNING" desc="Warning on autofill dialog informing users that they're likely to transmit their credit card information insecurely.">
         Warning: this site has requested your payment details over an insecure connection.
       </message>
       <message name="IDS_AUTOFILL_DIALOG_SITE_WARNING" desc="Text that explains that user data will be sent to the site.">
         The following details will be shared with <ph name="SITE">$1<ex>www.shopping.com</ex></ph>
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_VERIFY_CVV" desc="Text explaining that the user needs to enter their credit card's verification code before they can continue their transaction.">
-        For your security, please verify your card details.
+
+      <!-- autofill dialog: detail section -->
+      <message name="IDS_AUTOFILL_DIALOG_EDIT" desc="Text of link in autofill dialog which allows user to edit address + payment info.">
+        Edit
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_SECTION_EMAIL" desc="Label for the email section of the imperative autofill dialog.">
+      <message name="IDS_AUTOFILL_DIALOG_SECTION_EMAIL" desc="Label for the email section of the autofill dialog.">
         Email address
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_SECTION_CC" desc="Label for the credit card section of the imperative autofill dialog.">
+      <message name="IDS_AUTOFILL_DIALOG_SECTION_CC" desc="Label for the credit card section of the autofill dialog.">
         Credit card
       </message>
       <message name="IDS_AUTOFILL_DIALOG_SECTION_BILLING" desc="Label for the billing address section of the imperative autofill dialog.">
         Billing address
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_SECTION_CC_BILLING" desc="Label for the billing details (credit card + address) section of the imperative autofill dialog.">
+      <message name="IDS_AUTOFILL_DIALOG_SECTION_CC_BILLING" desc="Label for the billing details (credit card + address) section of the autofill dialog.">
         Billing details
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_SECTION_SHIPPING" desc="Label for the shipping details section of the imperative autofill dialog.">
+      <message name="IDS_AUTOFILL_DIALOG_SECTION_SHIPPING" desc="Label for the shipping details section of the autofill dialog.">
         Shipping details
       </message>
       <message name="IDS_AUTOFILL_DIALOG_USE_BILLING_FOR_SHIPPING" desc="Checkbox label that asks whether the billing info should also be used for shipping info.">
@@ -11107,7 +11122,8 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_AUTOFILL_DIALOG_AUTOCHECKOUT_PROGRESS_BAR" desc="Label for Autocheckout progres bar.">
         Auto-Checkout...
       </message>
-      <!-- Menu items in the requestAutocomplete dialog. -->
+
+      <!-- autofill dialog: combobox menu items -->
       <message name="IDS_AUTOFILL_DIALOG_ADD_EMAIL_ADDRESS" desc="Menu item for adding a new email address in the autofill dialog.">
         Add email address...
       </message>
@@ -11123,7 +11139,6 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_AUTOFILL_DIALOG_ADD_SHIPPING_ADDRESS" desc="Menu item for adding new shipping address in the autofill dialog.">
         Add shipping address...
       </message>
-
 
       <message name="IDS_APPEARANCE_GROUP_NAME" desc="The title of the appearance group">
         Appearance
