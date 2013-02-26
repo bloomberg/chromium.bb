@@ -227,6 +227,17 @@ class BurnManager : public net::URLFetcherDelegate,
   // Remove an observer.
   void RemoveObserver(Observer* observer);
 
+  // Error is usually detected by all existing Burn handlers, but only first
+  // one that calls this method should actually process it.
+  // The |message_id| is the id for human readable error message, although
+  // here is not the place to handle UI.
+  // TODO(hidehiko): Replace it with semantical enum value.
+  // Note: currently, due to some implementation reasons, the errors can be
+  // observed in outside classes, and this method is public to be accessed from
+  // them.
+  // TODO(hidehiko): Refactor the structure.
+  void OnError(int message_id);
+
   // Creates URL image should be fetched from.
   // Must be called from UI thread.
   void FetchConfigFile();

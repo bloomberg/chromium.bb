@@ -66,7 +66,7 @@ class BurnControllerImpl
     } else if (event == disks::DiskMountManager::DISK_REMOVED) {
       delegate_->OnDeviceRemoved(*disk);
       if (burn_manager_->target_device_path().value() == disk->device_path())
-        ProcessError(IDS_IMAGEBURN_DEVICE_NOT_FOUND_ERROR);
+        burn_manager_->OnError(IDS_IMAGEBURN_DEVICE_NOT_FOUND_ERROR);
     }
   }
 
@@ -93,7 +93,7 @@ class BurnControllerImpl
 
     if (state_machine_->state() == StateMachine::DOWNLOADING &&
         !CheckNetwork())
-      ProcessError(IDS_IMAGEBURN_NETWORK_ERROR);
+      burn_manager_->OnError(IDS_IMAGEBURN_NETWORK_ERROR);
   }
 
   // BurnManager::Observer override.
@@ -152,7 +152,7 @@ class BurnControllerImpl
         FinalizeBurn();
         break;
       case(BURN_FAIL):
-        ProcessError(IDS_IMAGEBURN_BURN_ERROR);
+        burn_manager_->OnError(IDS_IMAGEBURN_BURN_ERROR);
         break;
       case(BURN_UPDATE):
         delegate_->OnProgress(BURNING, status.amount_burnt, status.total_size);
@@ -161,7 +161,7 @@ class BurnControllerImpl
         delegate_->OnProgress(UNZIPPING, 0, 0);
         break;
       case(UNZIP_FAIL):
-        ProcessError(IDS_IMAGEBURN_EXTRACTING_ERROR);
+        burn_manager_->OnError(IDS_IMAGEBURN_EXTRACTING_ERROR);
         break;
       case(UNZIP_COMPLETE):
         // We ignore this.
@@ -175,7 +175,7 @@ class BurnControllerImpl
   // StateMachine::Observer interface.
   virtual void OnBurnStateChanged(StateMachine::State state) OVERRIDE {
     if (state == StateMachine::CANCELLED) {
-      ProcessError(IDS_IMAGEBURN_USER_ERROR);
+      burn_manager_->OnError(IDS_IMAGEBURN_USER_ERROR);
     } else if (state != StateMachine::INITIAL && !working_) {
       // User has started burn process, so let's start observing.
       StartBurnImage(base::FilePath(), base::FilePath());
@@ -258,7 +258,7 @@ class BurnControllerImpl
       state_machine_->OnDownloadFinished();
       BurnImage();
     } else {
-      ProcessError(IDS_IMAGEBURN_DOWNLOAD_ERROR);
+      burn_manager_->OnError(IDS_IMAGEBURN_DOWNLOAD_ERROR);
     }
   }
 
@@ -274,32 +274,6 @@ class BurnControllerImpl
     burn_manager_->ResetTargetPaths();
     delegate_->OnSuccess();
     working_ = false;
-  }
-
-  // Error is ussually detected by all existing Burn handlers, but only first
-  // one that calls ProcessError should actually process it.
-  void ProcessError(int message_id) {
-    // If we are in intial state, error has already been dispached.
-    if (state_machine_->state() == StateMachine::INITIAL) {
-      return;
-    }
-
-    // Remember burner state, since it will be reset after OnError call.
-    StateMachine::State state = state_machine_->state();
-
-    // Dispach error. All hadlers' OnError event will be called before returning
-    // from this. This includes us, too.
-    state_machine_->OnError(message_id);
-
-    // Do cleanup.
-    if (state  == StateMachine::DOWNLOADING) {
-      burn_manager_->CancelImageFetch();
-    } else if (state == StateMachine::BURNING) {
-      // Burn library doesn't send cancelled signal upon CancelBurnImage
-      // invokation.
-      burn_manager_->CancelBurnImage();
-    }
-    burn_manager_->ResetTargetPaths();
   }
 
   int64 GetDeviceSize(const std::string& device_path) {

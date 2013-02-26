@@ -252,6 +252,35 @@ void BurnManager::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void BurnManager::OnError(int message_id) {
+  // If we are in intial state, error has already been dispached.
+  if (state_machine_->state() == StateMachine::INITIAL) {
+    return;
+  }
+
+  // Remember burner state, since it will be reset after OnError call.
+  StateMachine::State state = state_machine_->state();
+
+  // Dispach error. All hadlers' OnError event will be called before returning
+  // from this. This includes us, too.
+  state_machine_->OnError(message_id);
+
+  // Cancel and clean up the current task.
+  // Note: the cancellation of this class looks not handled correctly.
+  // In particular, there seems no clean-up code for creating a temporary
+  // directory, or fetching config files. Also, there seems an issue
+  // about the cancellation of BurnLibrary.
+  // TODO(hidehiko): Fix the issue.
+  if (state  == StateMachine::DOWNLOADING) {
+    CancelImageFetch();
+  } else if (state == StateMachine::BURNING) {
+    // Burn library doesn't send cancelled signal upon CancelBurnImage
+    // invokation.
+    CancelBurnImage();
+  }
+  ResetTargetPaths();
+}
+
 void BurnManager::CreateImageDir() {
   if (image_dir_.empty()) {
     CHECK(PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &image_dir_));
