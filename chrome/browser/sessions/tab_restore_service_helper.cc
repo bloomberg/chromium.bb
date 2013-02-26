@@ -435,8 +435,10 @@ TabRestoreServiceDelegate* TabRestoreServiceHelper::RestoreTab(
                                  tab.user_agent_override);
   } else {
     // We only respsect the tab's original browser if there's no disposition.
-    if (disposition == UNKNOWN && tab.has_browser())
-      delegate = TabRestoreServiceDelegate::FindDelegateWithID(tab.browser_id);
+    if (disposition == UNKNOWN && tab.has_browser()) {
+      delegate = TabRestoreServiceDelegate::FindDelegateWithID(
+                     tab.browser_id, host_desktop_type);
+    }
 
     int tab_index = -1;
 

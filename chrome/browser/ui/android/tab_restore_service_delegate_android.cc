@@ -25,6 +25,7 @@ TabRestoreServiceDelegate*
 
 // static
 TabRestoreServiceDelegate* TabRestoreServiceDelegate::FindDelegateWithID(
-    SessionID::id_type desired_id) {
+    SessionID::id_type desired_id,
+    chrome::HostDesktopType host_desktop_type) {
   return NULL;
 }

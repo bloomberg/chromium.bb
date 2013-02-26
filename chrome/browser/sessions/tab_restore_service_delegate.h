@@ -75,8 +75,11 @@ class TabRestoreServiceDelegate {
       const content::WebContents* contents);
 
   // see chrome::FindBrowserWithID
+  // Returns the TabRestoreServiceDelegate of the Browser with |desired_id| if
+  // such a Browser exists and is on the desktop defined by |host_desktop_type|.
   static TabRestoreServiceDelegate* FindDelegateWithID(
-      SessionID::id_type desired_id);
+      SessionID::id_type desired_id,
+      chrome::HostDesktopType host_desktop_type);
 
  protected:
   virtual ~TabRestoreServiceDelegate() {}
