@@ -266,19 +266,26 @@ void ReadyPpdDependencies(const base::FilePath& destination) {
     SetupIterateCabinet(package_path, 0, &CabinetCallback,
                         &base::FilePath(destination));
   } else {
-    // PS driver files are in the sp3 cab.
+    // Driver files are in the sp3 cab.
     base::FilePath package_path;
     PathService::Get(base::DIR_WINDOWS, &package_path);
     package_path = package_path.Append(L"Driver Cache\\i386\\sp3.cab");
     SetupIterateCabinet(package_path.value().c_str(), 0, &CabinetCallback,
                         &base::FilePath(destination));
 
-    // The XPS driver files are just sitting uncompressed in the driver cache.
-    base::FilePath xps_path;
-    PathService::Get(base::DIR_WINDOWS, &xps_path);
-    xps_path = xps_path.Append(L"Driver Cache\\i386");
-    xps_path = xps_path.Append(kDriverName);
-    file_util::CopyFile(xps_path, destination.Append(kDriverName));
+    // Copy the rest from the driver cache or system dir.
+    base::FilePath driver_cache_path;
+    PathService::Get(base::DIR_WINDOWS, &driver_cache_path);
+    driver_cache_path = driver_cache_path.Append(L"Driver Cache\\i386");
+    for (size_t i = 0; i < arraysize(kDependencyList); ++i) {
+      base::FilePath dst_path = destination.Append(kDependencyList[i]);
+      if (!file_util::PathExists(dst_path)) {
+        base::FilePath src_path = driver_cache_path.Append(kDependencyList[i]);
+        if (!file_util::PathExists(src_path))
+          src_path = GetSystemPath(kDependencyList[i]);
+        file_util::CopyFile(src_path, dst_path);
+      }
+    }
   }
 }
 
@@ -308,8 +315,11 @@ HRESULT InstallPpd(const base::FilePath& install_path) {
   std::vector<string16> dependent_array;
   // Add all files. AddPrinterDriverEx will removes unnecessary.
   for (size_t i = 0; i < arraysize(kDependencyList); ++i) {
-    dependent_array.push_back(
-        temp_path.path().Append(kDependencyList[i]).value());
+    base::FilePath file_path = temp_path.path().Append(kDependencyList[i]);
+    if (file_util::PathExists(file_path))
+      dependent_array.push_back(file_path.value());
+    else
+      LOG(WARNING) << "File is missing: " << file_path.BaseName().value();
   }
   string16 dependent_files(JoinString(dependent_array, L'\n'));
   dependent_files.push_back(L'\n');

@@ -106,8 +106,11 @@ MONITOR2 g_monitor_2 = {
 
 base::FilePath GetAppDataDir() {
   base::FilePath file_path;
-  if (!PathService::Get(base::DIR_LOCAL_APP_DATA_LOW, &file_path)) {
-    LOG(ERROR) << "Can't get DIR_LOCAL_APP_DATA_LOW";
+  base::win::Version version = base::win::GetVersion();
+  int path_id = (version >= base::win::VERSION_VISTA) ?
+                base::DIR_LOCAL_APP_DATA_LOW : base::DIR_LOCAL_APP_DATA;
+  if (!PathService::Get(path_id, &file_path)) {
+    LOG(ERROR) << "Can't get DIR_LOCAL_APP_DATA";
     return base::FilePath();
   }
   return file_path.Append(kAppDataDir);
