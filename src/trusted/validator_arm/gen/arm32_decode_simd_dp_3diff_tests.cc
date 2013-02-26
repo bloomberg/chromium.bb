@@ -35,7 +35,7 @@ namespace nacl_arm_test {
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
 //       baseline: VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vm(3:0)],
 //       pattern: 111100101dssnnnndddd0100n0m0mmmm,
@@ -68,11 +68,6 @@ bool VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_0TesterCase0
   if ((inst.Bits() & 0x01000000)  !=
           0x00000000) return false;
 
-  // Check pattern restrictions of row.
-  // size(21:20)=11
-  if ((inst.Bits() & 0x00300000)  ==
-          0x00300000) return false;
-
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
@@ -83,7 +78,7 @@ bool VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_0TesterCase0
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
 //       baseline: VRADDHN_111100111dssnnnndddd0100n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vm(3:0)],
 //       pattern: 111100111dssnnnndddd0100n0m0mmmm,
@@ -116,11 +111,6 @@ bool VRADDHN_111100111dssnnnndddd0100n0m0mmmm_case_0TesterCase1
   if ((inst.Bits() & 0x01000000)  !=
           0x01000000) return false;
 
-  // Check pattern restrictions of row.
-  // size(21:20)=11
-  if ((inst.Bits() & 0x00300000)  ==
-          0x00300000) return false;
-
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
@@ -130,7 +120,7 @@ bool VRADDHN_111100111dssnnnndddd0100n0m0mmmm_case_0TesterCase1
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
 //       baseline: VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       pattern: 1111001u1dssnnnndddd0101n0m0mmmm,
@@ -158,11 +148,6 @@ bool VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_0TesterCase2
   if ((inst.Bits() & 0x00000F00)  !=
           0x00000500) return false;
 
-  // Check pattern restrictions of row.
-  // size(21:20)=11
-  if ((inst.Bits() & 0x00300000)  ==
-          0x00300000) return false;
-
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
@@ -173,7 +158,7 @@ bool VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_0TesterCase2
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
 //       baseline: VSUBHN_111100101dssnnnndddd0110n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vm(3:0)],
 //       pattern: 111100101dssnnnndddd0110n0m0mmmm,
@@ -206,11 +191,6 @@ bool VSUBHN_111100101dssnnnndddd0110n0m0mmmm_case_0TesterCase3
   if ((inst.Bits() & 0x01000000)  !=
           0x00000000) return false;
 
-  // Check pattern restrictions of row.
-  // size(21:20)=11
-  if ((inst.Bits() & 0x00300000)  ==
-          0x00300000) return false;
-
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
@@ -221,7 +201,7 @@ bool VSUBHN_111100101dssnnnndddd0110n0m0mmmm_case_0TesterCase3
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
 //       baseline: VRSUBHN_111100111dssnnnndddd0110n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vm(3:0)],
 //       pattern: 111100111dssnnnndddd0110n0m0mmmm,
@@ -254,11 +234,6 @@ bool VRSUBHN_111100111dssnnnndddd0110n0m0mmmm_case_0TesterCase4
   if ((inst.Bits() & 0x01000000)  !=
           0x01000000) return false;
 
-  // Check pattern restrictions of row.
-  // size(21:20)=11
-  if ((inst.Bits() & 0x00300000)  ==
-          0x00300000) return false;
-
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
@@ -268,7 +243,7 @@ bool VRSUBHN_111100111dssnnnndddd0110n0m0mmmm_case_0TesterCase4
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
 //       baseline: VABDL_integer_A2_1111001u1dssnnnndddd0111n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       pattern: 1111001u1dssnnnndddd0111n0m0mmmm,
@@ -296,11 +271,6 @@ bool VABDL_integer_A2_1111001u1dssnnnndddd0111n0m0mmmm_case_0TesterCase5
   if ((inst.Bits() & 0x00000F00)  !=
           0x00000700) return false;
 
-  // Check pattern restrictions of row.
-  // size(21:20)=11
-  if ((inst.Bits() & 0x00300000)  ==
-          0x00300000) return false;
-
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
@@ -310,7 +280,7 @@ bool VABDL_integer_A2_1111001u1dssnnnndddd0111n0m0mmmm_case_0TesterCase5
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
 //       baseline: VMULL_integer_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       pattern: 1111001u1dssnnnndddd11p0n0m0mmmm,
@@ -338,11 +308,6 @@ bool VMULL_integer_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0TesterCase6
   if ((inst.Bits() & 0x00000F00)  !=
           0x00000C00) return false;
 
-  // Check pattern restrictions of row.
-  // size(21:20)=11
-  if ((inst.Bits() & 0x00300000)  ==
-          0x00300000) return false;
-
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
@@ -352,7 +317,7 @@ bool VMULL_integer_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0TesterCase6
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_1,
 //       baseline: VQDMULL_A1_111100101dssnnnndddd1101n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       pattern: 111100101dssnnnndddd1101n0m0mmmm,
@@ -385,11 +350,6 @@ bool VQDMULL_A1_111100101dssnnnndddd1101n0m0mmmm_case_0TesterCase7
   if ((inst.Bits() & 0x01000000)  !=
           0x00000000) return false;
 
-  // Check pattern restrictions of row.
-  // size(21:20)=11
-  if ((inst.Bits() & 0x00300000)  ==
-          0x00300000) return false;
-
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
@@ -400,7 +360,7 @@ bool VQDMULL_A1_111100101dssnnnndddd1101n0m0mmmm_case_0TesterCase7
 //       Vd: Vd(15:12),
 //       actual: Actual_VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_1,
 //       baseline: VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [U(24), size(21:20), Vd(15:12)],
 //       pattern: 1111001u1dssnnnndddd11p0n0m0mmmm,
@@ -431,11 +391,6 @@ bool VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0TesterCase8
   if ((inst.Bits() & 0x00000F00)  !=
           0x00000E00) return false;
 
-  // Check pattern restrictions of row.
-  // size(21:20)=11
-  if ((inst.Bits() & 0x00300000)  ==
-          0x00300000) return false;
-
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
@@ -445,7 +400,7 @@ bool VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0TesterCase8
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
 //       baseline: VMLAL_VMLSL_integer_A2_1111001u1dssnnnndddd10p0n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       pattern: 1111001u1dssnnnndddd10p0n0m0mmmm,
@@ -473,11 +428,6 @@ bool VMLAL_VMLSL_integer_A2_1111001u1dssnnnndddd10p0n0m0mmmm_case_0TesterCase9
   if ((inst.Bits() & 0x00000D00)  !=
           0x00000800) return false;
 
-  // Check pattern restrictions of row.
-  // size(21:20)=11
-  if ((inst.Bits() & 0x00300000)  ==
-          0x00300000) return false;
-
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
@@ -487,7 +437,7 @@ bool VMLAL_VMLSL_integer_A2_1111001u1dssnnnndddd10p0n0m0mmmm_case_0TesterCase9
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_1,
 //       baseline: VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       pattern: 111100101dssnnnndddd10p1n0m0mmmm,
@@ -520,11 +470,6 @@ bool VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_0TesterCase10
   if ((inst.Bits() & 0x01000000)  !=
           0x00000000) return false;
 
-  // Check pattern restrictions of row.
-  // size(21:20)=11
-  if ((inst.Bits() & 0x00300000)  ==
-          0x00300000) return false;
-
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
@@ -535,7 +480,7 @@ bool VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_0TesterCase10
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1,
 //       baseline: VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vd(15:12), op(8)],
 //       op: op(8),
@@ -567,11 +512,6 @@ bool VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_0TesterCase11
   if ((inst.Bits() & 0x00000E00)  !=
           0x00000000) return false;
 
-  // Check pattern restrictions of row.
-  // size(21:20)=11
-  if ((inst.Bits() & 0x00300000)  ==
-          0x00300000) return false;
-
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
@@ -582,7 +522,7 @@ bool VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_0TesterCase11
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1,
 //       baseline: VSUBL_VSUBW_1111001u1dssnnnndddd001pn0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vd(15:12), op(8)],
 //       op: op(8),
@@ -614,11 +554,6 @@ bool VSUBL_VSUBW_1111001u1dssnnnndddd001pn0m0mmmm_case_0TesterCase12
   if ((inst.Bits() & 0x00000E00)  !=
           0x00000200) return false;
 
-  // Check pattern restrictions of row.
-  // size(21:20)=11
-  if ((inst.Bits() & 0x00300000)  ==
-          0x00300000) return false;
-
   // Check other preconditions defined for the base decoder.
   return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
@@ -634,7 +569,7 @@ bool VSUBL_VSUBW_1111001u1dssnnnndddd001pn0m0mmmm_case_0TesterCase12
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
 //       baseline: VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vm(3:0)],
 //       pattern: 111100101dssnnnndddd0100n0m0mmmm,
@@ -658,7 +593,7 @@ class VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_0Tester_Case0
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
 //       baseline: VRADDHN_111100111dssnnnndddd0100n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vm(3:0)],
 //       pattern: 111100111dssnnnndddd0100n0m0mmmm,
@@ -681,7 +616,7 @@ class VRADDHN_111100111dssnnnndddd0100n0m0mmmm_case_0Tester_Case1
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
 //       baseline: VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       pattern: 1111001u1dssnnnndddd0101n0m0mmmm,
@@ -703,7 +638,7 @@ class VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_0Tester_Case2
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
 //       baseline: VSUBHN_111100101dssnnnndddd0110n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vm(3:0)],
 //       pattern: 111100101dssnnnndddd0110n0m0mmmm,
@@ -727,7 +662,7 @@ class VSUBHN_111100101dssnnnndddd0110n0m0mmmm_case_0Tester_Case3
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
 //       baseline: VRSUBHN_111100111dssnnnndddd0110n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vm(3:0)],
 //       pattern: 111100111dssnnnndddd0110n0m0mmmm,
@@ -750,7 +685,7 @@ class VRSUBHN_111100111dssnnnndddd0110n0m0mmmm_case_0Tester_Case4
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
 //       baseline: VABDL_integer_A2_1111001u1dssnnnndddd0111n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       pattern: 1111001u1dssnnnndddd0111n0m0mmmm,
@@ -771,7 +706,7 @@ class VABDL_integer_A2_1111001u1dssnnnndddd0111n0m0mmmm_case_0Tester_Case5
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
 //       baseline: VMULL_integer_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       pattern: 1111001u1dssnnnndddd11p0n0m0mmmm,
@@ -792,7 +727,7 @@ class VMULL_integer_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0Tester_Case6
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_1,
 //       baseline: VQDMULL_A1_111100101dssnnnndddd1101n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       pattern: 111100101dssnnnndddd1101n0m0mmmm,
@@ -816,7 +751,7 @@ class VQDMULL_A1_111100101dssnnnndddd1101n0m0mmmm_case_0Tester_Case7
 //       Vd: Vd(15:12),
 //       actual: Actual_VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_1,
 //       baseline: VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [U(24), size(21:20), Vd(15:12)],
 //       pattern: 1111001u1dssnnnndddd11p0n0m0mmmm,
@@ -840,7 +775,7 @@ class VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0Tester_Case8
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
 //       baseline: VMLAL_VMLSL_integer_A2_1111001u1dssnnnndddd10p0n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       pattern: 1111001u1dssnnnndddd10p0n0m0mmmm,
@@ -861,7 +796,7 @@ class VMLAL_VMLSL_integer_A2_1111001u1dssnnnndddd10p0n0m0mmmm_case_0Tester_Case9
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_1,
 //       baseline: VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       pattern: 111100101dssnnnndddd10p1n0m0mmmm,
@@ -885,7 +820,7 @@ class VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_0Tester_Case10
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1,
 //       baseline: VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vd(15:12), op(8)],
 //       op: op(8),
@@ -911,7 +846,7 @@ class VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_0Tester_Case11
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1,
 //       baseline: VSUBL_VSUBW_1111001u1dssnnnndddd001pn0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vd(15:12), op(8)],
 //       op: op(8),
@@ -946,7 +881,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
 //       baseline: VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vm(3:0)],
 //       pattern: 111100101dssnnnndddd0100n0m0mmmm,
@@ -969,7 +904,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
 //       baseline: VRADDHN_111100111dssnnnndddd0100n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vm(3:0)],
 //       pattern: 111100111dssnnnndddd0100n0m0mmmm,
@@ -991,7 +926,7 @@ TEST_F(Arm32DecoderStateTests,
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
 //       baseline: VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       pattern: 1111001u1dssnnnndddd0101n0m0mmmm,
@@ -1012,7 +947,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
 //       baseline: VSUBHN_111100101dssnnnndddd0110n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vm(3:0)],
 //       pattern: 111100101dssnnnndddd0110n0m0mmmm,
@@ -1035,7 +970,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
 //       baseline: VRSUBHN_111100111dssnnnndddd0110n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vm(3:0)],
 //       pattern: 111100111dssnnnndddd0110n0m0mmmm,
@@ -1057,7 +992,7 @@ TEST_F(Arm32DecoderStateTests,
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
 //       baseline: VABDL_integer_A2_1111001u1dssnnnndddd0111n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       pattern: 1111001u1dssnnnndddd0111n0m0mmmm,
@@ -1077,7 +1012,7 @@ TEST_F(Arm32DecoderStateTests,
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
 //       baseline: VMULL_integer_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       pattern: 1111001u1dssnnnndddd11p0n0m0mmmm,
@@ -1097,7 +1032,7 @@ TEST_F(Arm32DecoderStateTests,
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_1,
 //       baseline: VQDMULL_A1_111100101dssnnnndddd1101n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       pattern: 111100101dssnnnndddd1101n0m0mmmm,
@@ -1120,7 +1055,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       actual: Actual_VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_1,
 //       baseline: VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [U(24), size(21:20), Vd(15:12)],
 //       pattern: 1111001u1dssnnnndddd11p0n0m0mmmm,
@@ -1143,7 +1078,7 @@ TEST_F(Arm32DecoderStateTests,
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
 //       baseline: VMLAL_VMLSL_integer_A2_1111001u1dssnnnndddd10p0n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       pattern: 1111001u1dssnnnndddd10p0n0m0mmmm,
@@ -1163,7 +1098,7 @@ TEST_F(Arm32DecoderStateTests,
 //    = {Vd: Vd(15:12),
 //       actual: Actual_VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_1,
 //       baseline: VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       pattern: 111100101dssnnnndddd10p1n0m0mmmm,
@@ -1186,7 +1121,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1,
 //       baseline: VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vd(15:12), op(8)],
 //       op: op(8),
@@ -1211,7 +1146,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Vn: Vn(19:16),
 //       actual: Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1,
 //       baseline: VSUBL_VSUBW_1111001u1dssnnnndddd001pn0m0mmmm_case_0,
-//       constraints: & size(21:20)=~11 ,
+//       constraints: ,
 //       defs: {},
 //       fields: [size(21:20), Vn(19:16), Vd(15:12), op(8)],
 //       op: op(8),

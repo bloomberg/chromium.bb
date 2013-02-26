@@ -2546,7 +2546,7 @@
 +--
 
 +-- simd_dp_3same (See Section A7.4.1)
-*V3RSL VectorBinary3RegisterSameLength
+*V3RSL
    { U(24), D(22), size(21:20), Vn(19:16), Vd(15:12), op(9),
      N(7), Q(6), M(5), Vm(3:0) }
    d := D:Vd; n := N:Vn; m := M:Vm;
@@ -2775,7 +2775,7 @@
 +--
 
 +-- simd_dp_3diff (See Section A7.4.2)
-*V3RDL VectorBinary3RegisterDifferentLength
+*V3RDL
    { U(24), D(22), size(21:20), Vn(19:16), Vd(15:12), op(8),
      N(7), M(5), Vm(3:0) }
    d := D:Vd; n := N:Vn; m := M:Vm;
@@ -2819,54 +2819,52 @@
   uses := {};
   safety := true => UNDEFINED;
 +--
-# Note: Table advanced_simd_data_processing_instructions (the
-# caller of this table) restricts size(21:20) to be in {0x, 10}.
 | A(11:8) U(24)
 | 000x    -     = *V3RDL_I8_16_32
-                  pattern := 1111001u1dssnnnndddd000pn0m0mmmm & size=~11;
+                  pattern := 1111001u1dssnnnndddd000pn0m0mmmm;
                   is_vaddw := U=1;
                   rule := VADDL_VADDW;
 | 001x    -     = *V3RDL_I8_16_32
-                  pattern := 1111001u1dssnnnndddd001pn0m0mmmm & size=~11;
+                  pattern := 1111001u1dssnnnndddd001pn0m0mmmm;
                   rule := VSUBL_VSUBW;
 | 0100    0     = *V3RDL_I16_32_64
-                  pattern := 111100101dssnnnndddd0100n0m0mmmm & size=~11;
+                  pattern := 111100101dssnnnndddd0100n0m0mmmm;
                   rule := VADDHN;
 | "       1     = *V3RDL_I16_32_64
-                  pattern := 111100111dssnnnndddd0100n0m0mmmm & size=~11;
+                  pattern := 111100111dssnnnndddd0100n0m0mmmm;
                   rule := VRADDHN;
 | 0101    -     = *V3RDL_I8_16_32L
-                  pattern := 1111001u1dssnnnndddd0101n0m0mmmm & size=~11;
+                  pattern := 1111001u1dssnnnndddd0101n0m0mmmm;
                   rule := VABAL_A2;
 | 0110    0     = *V3RDL_I16_32_64
-                  pattern := 111100101dssnnnndddd0110n0m0mmmm & size=~11;
+                  pattern := 111100101dssnnnndddd0110n0m0mmmm;
                   rule := VSUBHN;
 | "       1     = *V3RDL_I16_32_64
-                  pattern := 111100111dssnnnndddd0110n0m0mmmm & size=~11;
+                  pattern := 111100111dssnnnndddd0110n0m0mmmm;
                   rule := VRSUBHN;
 | 0111    -     = *V3RDL_I8_16_32L
-                  pattern := 1111001u1dssnnnndddd0111n0m0mmmm & size=~11;
+                  pattern := 1111001u1dssnnnndddd0111n0m0mmmm;
                   rule := VABDL_integer_A2;
 | 10x0    -     = *V3RDL_I8_16_32L
-                  pattern := 1111001u1dssnnnndddd10p0n0m0mmmm & size=~11;
+                  pattern := 1111001u1dssnnnndddd10p0n0m0mmmm;
                   rule := VMLAL_VMLSL_integer_A2;
 | 10x1    0     = *V3RDL_I16_32L
-                  pattern := 111100101dssnnnndddd10p1n0m0mmmm & size=~11;
+                  pattern := 111100101dssnnnndddd10p1n0m0mmmm;
                   rule := VQDMLAL_VQDMLSL_A1;
 | 1100    -     = *V3RDL_I8_16_32L  # Note: inst(9)=0, implying not polynomial.
-                  pattern := 1111001u1dssnnnndddd11p0n0m0mmmm & size=~11;
+                  pattern := 1111001u1dssnnnndddd11p0n0m0mmmm;
                   rule := VMULL_integer_A2;
 | 1101    0     = *V3RDL_I16_32L
-                  pattern := 111100101dssnnnndddd1101n0m0mmmm & size=~11;
+                  pattern := 111100101dssnnnndddd1101n0m0mmmm;
                   rule := VQDMULL_A1;
 | 1110    -     = *V3RDL_P8  # Note: inst(9)=1, implying polynomial.
-                  pattern := 1111001u1dssnnnndddd11p0n0m0mmmm & size=~11;
+                  pattern := 1111001u1dssnnnndddd11p0n0m0mmmm;
                   rule := VMULL_polynomial_A2;
 | else:         = *Undefined
 +--
 
 +-- simd_dp_2scalar (See Section A7.4.3)
-*V2RS VectorBinary2RegisterScalar
+*V2RS
    { Q(24), D(22), size(21:20), Vn(19:16), Vd(15:12), op(10),
      F(8), N(7), M(5), Vm(3:0) }
    d := D:Vd; n := N:Vn;
@@ -2907,50 +2905,48 @@
 +--
 # Note: for and/sub operations defined by bit 10, we have duplicated
 # rows and back filled bit 10 into A.
-# Note: Table advanced_simd_data_processing_instructions (the
-# caller of this table) restricts size(21:20) to be in {0x, 10}.
 | A(11:8) U(24)
 | 0000    -     = *V2RS_I16_32
-                  pattern := 1111001q1dssnnnndddd0p0fn1m0mmmm & size=~11;
+                  pattern := 1111001q1dssnnnndddd0p0fn1m0mmmm;
                   rule := VMLA_by_scalar_A1;
 | 0001    -     = *V2RS_F32
-                  pattern := 1111001q1dssnnnndddd0p0fn1m0mmmm & size=~11;
+                  pattern := 1111001q1dssnnnndddd0p0fn1m0mmmm;
                   rule := VMLA_by_scalar_A1;
 | 0100    -     = *V2RS_I16_32
-                  pattern := 1111001q1dssnnnndddd0p0fn1m0mmmm & size=~11;
+                  pattern := 1111001q1dssnnnndddd0p0fn1m0mmmm;
                   rule := VMLS_by_scalar_A1;
 | 0101    -     = *V2RS_F32
-                  pattern := 1111001q1dssnnnndddd0p0fn1m0mmmm & size=~11;
+                  pattern := 1111001q1dssnnnndddd0p0fn1m0mmmm;
                   rule := VMLS_by_scalar_A1;
 | 0010    -     = *V2RS_I16_32L
-                  pattern := 1111001u1dssnnnndddd0p10n1m0mmmm & size=~11;
+                  pattern := 1111001u1dssnnnndddd0p10n1m0mmmm;
                   rule := VMLAL_by_scalar_A2;
 | 0110    -     = *V2RS_I16_32L
-                  pattern := 1111001u1dssnnnndddd0p10n1m0mmmm & size=~11;
+                  pattern := 1111001u1dssnnnndddd0p10n1m0mmmm;
                   rule := VMLSL_by_scalar_A2;
 | 0011    0     = *V2RS_I16_32L
-                  pattern := 111100101dssnnnndddd0p11n1m0mmmm & size=~11;
+                  pattern := 111100101dssnnnndddd0p11n1m0mmmm;
                   rule := VQDMLAL_A1;
 | 0111    0     = *V2RS_I16_32L
-                  pattern := 111100101dssnnnndddd0p11n1m0mmmm & size=~11;
+                  pattern := 111100101dssnnnndddd0p11n1m0mmmm;
                   rule := VQDMLSL_A1;
 | 1000    -     = *V2RS_I16_32
-                  pattern := 1111001q1dssnnnndddd100fn1m0mmmm & size=~11;
+                  pattern := 1111001q1dssnnnndddd100fn1m0mmmm;
                   rule := VMUL_by_scalar_A1;
 | 1001    -     = *V2RS_F32
-                  pattern := 1111001q1dssnnnndddd100fn1m0mmmm & size=~11;
+                  pattern := 1111001q1dssnnnndddd100fn1m0mmmm;
                   rule := VMUL_by_scalar_A1;
 | 1010    -     = *V2RS_I16_32L
-                  pattern := 1111001u1dssnnnndddd1010n1m0mmmm & size=~11;
+                  pattern := 1111001u1dssnnnndddd1010n1m0mmmm;
                   rule := VMULL_by_scalar_A2;
 | 1011    0     = *V2RS_I16_32L
-                  pattern := 111100101dssnnnndddd1011n1m0mmmm & size=~11;
+                  pattern := 111100101dssnnnndddd1011n1m0mmmm;
                   rule := VQDMULL_A2;
 | 1100    -     = *V2RS_I16_32
-                  pattern := 1111001q1dssnnnndddd1100n1m0mmmm & size=~11;
+                  pattern := 1111001q1dssnnnndddd1100n1m0mmmm;
                   rule := VQDMULH_A2;
 | 1101    -     = *V2RS_I16_32
-                  pattern := 1111001q1dssnnnndddd1101n1m0mmmm & size=~11;
+                  pattern := 1111001q1dssnnnndddd1101n1m0mmmm;
                   rule := VQRDMULH;
 | else:         = *Undefined
 +--
