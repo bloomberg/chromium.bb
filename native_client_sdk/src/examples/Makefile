@@ -43,15 +43,15 @@ endef
 $(foreach proj,$(PROJECTS),$(eval $(call TARGET,$(proj))))
 
 all: $(TARGET_LIST)
-	echo "Done building targets."
+	@echo Done building targets.
 
 all_versions: $(VERSIONS_LIST)
-	echo "Done building all versions."
+	@echo Done building all versions.
 
 clean: $(CLEAN_LIST)
-	echo "Done cleaning targets."
+	@echo Done cleaning targets.
 
 .PHONY: RUN
 RUN: all
-	echo "Starting up python webserver."
+	@echo Starting up python webserver.
 	python ../tools/httpd.py

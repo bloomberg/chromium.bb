@@ -194,7 +194,7 @@ clean:
 #
 %dir.stamp :
 	$(MKDIR) -p $(dir $@)
-	@echo "Directory Stamp" > $@
+	@echo Directory Stamp > $@
 
 
 #
@@ -222,7 +222,7 @@ else
 
 .PHONY : $(STAMPDIR)/$(1).stamp
 $(STAMPDIR)/$(1).stamp :
-	@echo "Ignore $(1)"
+	@echo Ignore $(1)
 endif
 endef
 
@@ -275,9 +275,15 @@ define LOG
 $(3)
 endef
 else
+ifeq ($(OSNAME),win)
+define LOG
+@echo   $(1) $(2) && $(3)
+endef
+else
 define LOG
 @echo "  $(1) $(2)" && $(3)
 endef
+endif
 endif
 
 
@@ -302,12 +308,20 @@ ifneq (,$(findstring $(TOOLCHAIN),pnacl))
 include $(NACL_SDK_ROOT)/tools/nacl_llvm.mk
 endif
 
+#
+# File to redirect to to in order to hide output.
+#
+ifeq ($(OSNAME),win)
+DEV_NULL=nul
+else
+DEV_NULL=/dev/null
+endif
 
 #
-# Assign a sensible default to CHROME_PATH
+# Assign a sensible default to CHROME_PATH.
 #
 ifndef CHROME_PATH
-CHROME_PATH:=$(shell python $(NACL_SDK_ROOT)/tools/getos.py --chrome)
+CHROME_PATH:=$(shell python $(NACL_SDK_ROOT)/tools/getos.py --chrome 2> $(DEV_NULL))
 endif
 
 #
