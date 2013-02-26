@@ -131,6 +131,7 @@ int wl_proxy_add_listener(struct wl_proxy *proxy,
 void wl_proxy_set_user_data(struct wl_proxy *proxy, void *user_data);
 void *wl_proxy_get_user_data(struct wl_proxy *proxy);
 uint32_t wl_proxy_get_id(struct wl_proxy *proxy);
+const char *wl_proxy_get_class(struct wl_proxy *proxy);
 void wl_proxy_set_queue(struct wl_proxy *proxy, struct wl_event_queue *queue);
 
 #include "wayland-client-protocol.h"

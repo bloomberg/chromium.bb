@@ -1127,6 +1127,18 @@ wl_proxy_get_id(struct wl_proxy *proxy)
 	return proxy->object.id;
 }
 
+/** Get the interface name (class) of a proxy object
+ *
+ * \param proxy The proxy object
+ * \return The interface name of the object associated with the proxy
+ *
+ * \memberof wl_proxy
+ */
+WL_EXPORT const char *
+wl_proxy_get_class(struct wl_proxy *proxy)
+{
+	return proxy->object.interface->name;
+}
 
 /** Assign a proxy to an event queue
  *
