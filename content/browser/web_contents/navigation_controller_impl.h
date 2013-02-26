@@ -292,6 +292,11 @@ class CONTENT_EXPORT NavigationControllerImpl
   // preparation to add another.
   void PruneOldestEntryIfFull();
 
+  // Removes all the entries except the active entry. If there is a new pending
+  // navigation it is preserved. In contrast to PruneAllButActive() this does
+  // not update the session history of the RenderView.
+  void PruneAllButActiveInternal();
+
   // Returns true if the navigation is redirect.
   bool IsRedirect(const ViewHostMsg_FrameNavigate_Params& params);
 

@@ -1356,7 +1356,7 @@ void NavigationControllerImpl::CopyStateFromAndPrune(
       (!pending_entry_ && last_committed_entry_index_ == GetEntryCount() - 1));
 
   // Remove all the entries leaving the active entry.
-  PruneAllButActive();
+  PruneAllButActiveInternal();
 
   // We now have zero or one entries.  Ensure that adding the entries from
   // source won't put us over the limit.
@@ -1404,6 +1404,26 @@ void NavigationControllerImpl::CopyStateFromAndPrune(
 }
 
 void NavigationControllerImpl::PruneAllButActive() {
+  PruneAllButActiveInternal();
+
+  // If there is an entry left, we need to update the session history length of
+  // the RenderView.
+  if (!GetEntryCount())
+    return;
+
+  NavigationEntryImpl* entry =
+      NavigationEntryImpl::FromNavigationEntry(GetActiveEntry());
+  CHECK(entry);
+  // We pass 0 instead of GetEntryCount() for the history_length parameter of
+  // SetHistoryLengthAndPrune, because it will create history_length additional
+  // history entries.
+  // TODO(jochen): This API is confusing and we should clean it up.
+  // http://crbug.com/178491
+  web_contents_->SetHistoryLengthAndPrune(
+      entry->site_instance(), 0, entry->GetPageID());
+}
+
+void NavigationControllerImpl::PruneAllButActiveInternal() {
   if (transient_entry_index_ != -1) {
     // There is a transient entry. Prune up to it.
     DCHECK_EQ(GetEntryCount() - 1, transient_entry_index_);

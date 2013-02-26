@@ -2861,6 +2861,11 @@ TEST_F(NavigationControllerTest, PruneAllButActiveForSingle) {
   NavigationControllerImpl& controller = controller_impl();
   const GURL url1("http://foo1");
   NavigateAndCommit(url1);
+
+  contents()->ExpectSetHistoryLengthAndPrune(
+      GetSiteInstanceFromEntry(controller.GetEntryAtIndex(0)), 0,
+      controller.GetEntryAtIndex(0)->GetPageID());
+
   controller.PruneAllButActive();
 
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
@@ -2881,6 +2886,10 @@ TEST_F(NavigationControllerTest, PruneAllButActiveForLast) {
   controller.GoBack();
   contents()->CommitPendingNavigation();
 
+  contents()->ExpectSetHistoryLengthAndPrune(
+      GetSiteInstanceFromEntry(controller.GetEntryAtIndex(0)), 0,
+      controller.GetEntryAtIndex(0)->GetPageID());
+
   controller.PruneAllButActive();
 
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
@@ -2900,6 +2909,10 @@ TEST_F(NavigationControllerTest, PruneAllButActiveForIntermediate) {
   controller.GoBack();
   contents()->CommitPendingNavigation();
 
+  contents()->ExpectSetHistoryLengthAndPrune(
+      GetSiteInstanceFromEntry(controller.GetEntryAtIndex(1)), 0,
+      controller.GetEntryAtIndex(1)->GetPageID());
+
   controller.PruneAllButActive();
 
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
@@ -2917,6 +2930,10 @@ TEST_F(NavigationControllerTest, PruneAllButActiveForPending) {
   NavigateAndCommit(url2);
   NavigateAndCommit(url3);
   controller.GoBack();
+
+  contents()->ExpectSetHistoryLengthAndPrune(
+      GetSiteInstanceFromEntry(controller.GetEntryAtIndex(1)), 0,
+      controller.GetEntryAtIndex(1)->GetPageID());
 
   controller.PruneAllButActive();
 
@@ -2941,6 +2958,10 @@ TEST_F(NavigationControllerTest, PruneAllButActiveForTransient) {
   NavigationEntryImpl* transient_entry = new NavigationEntryImpl;
   transient_entry->SetURL(transient_url);
   controller.SetTransientEntry(transient_entry);
+
+  contents()->ExpectSetHistoryLengthAndPrune(
+      GetSiteInstanceFromEntry(controller.GetTransientEntry()), 0,
+      controller.GetTransientEntry()->GetPageID());
 
   controller.PruneAllButActive();
 

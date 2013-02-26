@@ -40,6 +40,7 @@ TestWebContents* TestWebContents::Create(BrowserContext* browser_context,
 }
 
 TestWebContents::~TestWebContents() {
+  EXPECT_FALSE(expect_set_history_length_and_prune_);
 }
 
 RenderViewHost* TestWebContents::GetPendingRenderViewHost() const {
