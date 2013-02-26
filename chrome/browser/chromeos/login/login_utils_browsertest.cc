@@ -26,6 +26,7 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/device_management_service.h"
 #include "chrome/browser/policy/enterprise_install_attributes.h"
 #include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
@@ -85,10 +86,21 @@ const char kAttrEnterpriseMode[] = "enterprise.mode";
 const char kAttrEnterpriseDeviceId[] = "enterprise.device_id";
 
 const char kOAuthTokenCookie[] = "oauth_token=1234";
-const char kOAuthGetAccessTokenData[] =
-    "oauth_token=1234&oauth_token_secret=1234";
-const char kOAuthServiceTokenData[] =
-    "wrap_access_token=1234&wrap_access_token_expires_in=123456789";
+
+const char kGaiaAccountDisabledResponse[] = "Error=AccountDeleted";
+
+const char kOAuth2TokenPairData[] =
+    "{"
+    "  \"refresh_token\": \"1234\","
+    "  \"access_token\": \"5678\","
+    "  \"expires_in\": 3600"
+    "}";
+
+const char kOAuth2AccessTokenData[] =
+    "{"
+    "  \"access_token\": \"5678\","
+    "  \"expires_in\": 3600"
+    "}";
 
 const char kDMServer[] = "http://server/device_management";
 const char kDMRegisterRequest[] =
@@ -142,7 +154,7 @@ class LoginUtilsTest : public testing::Test,
         browser_process_(TestingBrowserProcess::GetGlobal()),
         local_state_(browser_process_),
         ui_thread_(BrowserThread::UI, &loop_),
-        db_thread_(BrowserThread::DB),
+        db_thread_(BrowserThread::DB, &loop_),
         file_thread_(BrowserThread::FILE, &loop_),
         mock_async_method_caller_(NULL),
         connector_(NULL),
@@ -413,6 +425,8 @@ class LoginUtilsTest : public testing::Test,
   net::TestURLFetcher* PrepareOAuthFetcher(const std::string& expected_url) {
     net::TestURLFetcher* fetcher = test_url_fetcher_factory_.GetFetcherByID(0);
     EXPECT_TRUE(fetcher);
+    if (!fetcher)
+      return NULL;
     EXPECT_TRUE(fetcher->delegate());
     EXPECT_TRUE(StartsWithASCII(fetcher->GetOriginalURL().spec(),
                                 expected_url,
@@ -426,8 +440,11 @@ class LoginUtilsTest : public testing::Test,
   net::TestURLFetcher* PrepareDMServiceFetcher(
       const std::string& expected_url,
       const em::DeviceManagementResponse& response) {
-    net::TestURLFetcher* fetcher = test_url_fetcher_factory_.GetFetcherByID(0);
+    net::TestURLFetcher* fetcher = test_url_fetcher_factory_.GetFetcherByID(
+        policy::DeviceManagementService::kURLFetcherID);
     EXPECT_TRUE(fetcher);
+    if (!fetcher)
+      return NULL;
     EXPECT_TRUE(fetcher->delegate());
     EXPECT_TRUE(StartsWithASCII(fetcher->GetOriginalURL().spec(),
                                 expected_url,
@@ -500,7 +517,7 @@ class LoginUtilsBlockingLoginTest
     : public LoginUtilsTest,
       public testing::WithParamInterface<int> {};
 
-TEST_F(LoginUtilsTest, DISABLED_NormalLoginDoesntBlock) {
+TEST_F(LoginUtilsTest, NormalLoginDoesntBlock) {
   UserManager* user_manager = UserManager::Get();
   EXPECT_FALSE(user_manager->IsUserLoggedIn());
   EXPECT_FALSE(connector_->IsEnterpriseManaged());
@@ -516,7 +533,7 @@ TEST_F(LoginUtilsTest, DISABLED_NormalLoginDoesntBlock) {
   EXPECT_EQ(kUsername, user_manager->GetLoggedInUser()->email());
 }
 
-TEST_F(LoginUtilsTest, DISABLED_EnterpriseLoginDoesntBlockForNormalUser) {
+TEST_F(LoginUtilsTest, EnterpriseLoginDoesntBlockForNormalUser) {
   UserManager* user_manager = UserManager::Get();
   EXPECT_FALSE(user_manager->IsUserLoggedIn());
   EXPECT_FALSE(connector_->IsEnterpriseManaged());
@@ -566,8 +583,7 @@ TEST_F(LoginUtilsTest, RlzInitialized) {
 }
 #endif
 
-TEST_P(LoginUtilsBlockingLoginTest,
-       DISABLED_EnterpriseLoginBlocksForEnterpriseUser) {
+TEST_P(LoginUtilsBlockingLoginTest, EnterpriseLoginBlocksForEnterpriseUser) {
   UserManager* user_manager = UserManager::Get();
   EXPECT_FALSE(user_manager->IsUserLoggedIn());
   EXPECT_FALSE(connector_->IsEnterpriseManaged());
@@ -599,11 +615,14 @@ TEST_P(LoginUtilsBlockingLoginTest,
   // should resume.
   int steps = GetParam();
 
+  // The next expected fetcher ID. This is used to make it fail.
+  int next_expected_fetcher_id = 0;
+
   do {
     if (steps < 1) break;
 
-    // Fake OAuth token retrieval:
-    fetcher = PrepareOAuthFetcher(gaia_urls->get_oauth_token_url());
+    // Fake refresh token retrieval:
+    fetcher = PrepareOAuthFetcher(gaia_urls->client_login_to_oauth2_url());
     ASSERT_TRUE(fetcher);
     net::ResponseCookies cookies;
     cookies.push_back(kOAuthTokenCookie);
@@ -611,21 +630,22 @@ TEST_P(LoginUtilsBlockingLoginTest,
     fetcher->delegate()->OnURLFetchComplete(fetcher);
     if (steps < 2) break;
 
-    // Fake OAuth access token retrieval:
-    fetcher = PrepareOAuthFetcher(gaia_urls->oauth_get_access_token_url());
+    // Fake OAuth2 token pair retrieval:
+    fetcher = PrepareOAuthFetcher(gaia_urls->oauth2_token_url());
     ASSERT_TRUE(fetcher);
-    fetcher->SetResponseString(kOAuthGetAccessTokenData);
+    fetcher->SetResponseString(kOAuth2TokenPairData);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
     if (steps < 3) break;
 
-    // Fake OAuth service token retrieval:
-    fetcher = PrepareOAuthFetcher(gaia_urls->oauth_wrap_bridge_url());
+    // Fake OAuth2 access token retrieval:
+    fetcher = PrepareOAuthFetcher(gaia_urls->oauth2_token_url());
     ASSERT_TRUE(fetcher);
-    fetcher->SetResponseString(kOAuthServiceTokenData);
+    fetcher->SetResponseString(kOAuth2AccessTokenData);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
 
     // The cloud policy subsystem is now ready to fetch the dmtoken and the user
     // policy.
+    next_expected_fetcher_id = policy::DeviceManagementService::kURLFetcherID;
     RunUntilIdle();
     if (steps < 4) break;
 
@@ -649,12 +669,17 @@ TEST_P(LoginUtilsBlockingLoginTest,
     // Verify that the profile hasn't been created yet.
     EXPECT_FALSE(prepared_profile_);
 
-    // Make the current fetcher fail.
-    net::TestURLFetcher* fetcher = test_url_fetcher_factory_.GetFetcherByID(0);
+    // Make the current fetcher fail with a Gaia error.
+    net::TestURLFetcher* fetcher = test_url_fetcher_factory_.GetFetcherByID(
+        next_expected_fetcher_id);
     ASSERT_TRUE(fetcher);
     EXPECT_TRUE(fetcher->delegate());
     fetcher->set_url(fetcher->GetOriginalURL());
-    fetcher->set_response_code(500);
+    fetcher->set_response_code(403);
+    // This response body is important to make the gaia fetcher skip its delayed
+    // retry behavior, which makes testing harder. If this is sent to the policy
+    // fetchers then it will make them fail too.
+    fetcher->SetResponseString(kGaiaAccountDisabledResponse);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
     RunUntilIdle();
   }
