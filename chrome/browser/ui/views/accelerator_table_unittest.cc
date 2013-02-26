@@ -31,8 +31,10 @@ struct Cmp {
 
 TEST(AcceleratorTableTest, CheckDuplicatedAccelerators) {
   std::set<AcceleratorMapping, Cmp> acclerators;
-  for (size_t i = 0; i < kAcceleratorMapLength; ++i) {
-    const AcceleratorMapping& entry = kAcceleratorMap[i];
+  const std::vector<AcceleratorMapping> accelerator_list(GetAcceleratorList());
+  for (std::vector<AcceleratorMapping>::const_iterator it =
+           accelerator_list.begin(); it != accelerator_list.end(); ++it) {
+    const AcceleratorMapping& entry = *it;
     EXPECT_TRUE(acclerators.insert(entry).second)
         << "Duplicated accelerator: " << entry.keycode << ", "
         << (entry.modifiers & ui::EF_SHIFT_DOWN) << ", "
@@ -44,8 +46,10 @@ TEST(AcceleratorTableTest, CheckDuplicatedAccelerators) {
 #if defined(USE_ASH) && !defined(OS_WIN)
 TEST(AcceleratorTableTest, CheckDuplicatedAcceleratorsAsh) {
   std::set<AcceleratorMapping, Cmp> acclerators;
-  for (size_t i = 0; i < kAcceleratorMapLength; ++i) {
-    const AcceleratorMapping& entry = kAcceleratorMap[i];
+  const std::vector<AcceleratorMapping> accelerator_list(GetAcceleratorList());
+  for (std::vector<AcceleratorMapping>::const_iterator it =
+           accelerator_list.begin(); it != accelerator_list.end(); ++it) {
+    const AcceleratorMapping& entry = *it;
     acclerators.insert(entry);
   }
   for (size_t i = 0; i < ash::kAcceleratorDataLength; ++i) {

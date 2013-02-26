@@ -94,10 +94,6 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_I, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN,
     TOUCH_HUD_CLEAR },
 
-  // When you change the shortcuts for NEW_INCOGNITO_WINDOW, NEW_WINDOW, or
-  // NEW_TAB, you also need to modify
-  // ToolbarView::GetAcceleratorForCommandId() in
-  // chrome/browser/ui/views/toolbar_view.cc.
   { true, ui::VKEY_N, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     NEW_INCOGNITO_WINDOW },
   { true, ui::VKEY_N, ui::EF_CONTROL_DOWN, NEW_WINDOW },

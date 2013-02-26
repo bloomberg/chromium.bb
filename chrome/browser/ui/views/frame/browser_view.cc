@@ -53,6 +53,7 @@
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/accelerator_table.h"
 #include "chrome/browser/ui/views/accessibility/invert_bubble_view.h"
 #include "chrome/browser/ui/views/avatar_menu_bubble_view.h"
 #include "chrome/browser/ui/views/avatar_menu_button.h"
@@ -132,7 +133,6 @@
 #endif
 
 #if defined(USE_AURA)
-#include "chrome/browser/ui/views/accelerator_table.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/screen.h"
 #elif defined(OS_WIN)  // !defined(USE_AURA)
@@ -539,28 +539,21 @@ bool BrowserView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 }
 
 bool BrowserView::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) {
-  // The standard Ctrl-X, Ctrl-V and Ctrl-C are not defined as accelerators
-  // anywhere so we need to check for them explicitly here.
-  switch (cmd_id) {
-    case IDC_CUT:
-      *accelerator = ui::Accelerator(ui::VKEY_X, ui::EF_CONTROL_DOWN);
-      return true;
-    case IDC_COPY:
-      *accelerator = ui::Accelerator(ui::VKEY_C, ui::EF_CONTROL_DOWN);
-      return true;
-    case IDC_PASTE:
-      *accelerator = ui::Accelerator(ui::VKEY_V, ui::EF_CONTROL_DOWN);
-      return true;
-  }
+  // We retrieve the accelerator information for standard accelerators
+  // for cut, copy and paste.
+  if (chrome::GetStandardAcceleratorForCommandId(cmd_id, accelerator))
+    return true;
   // Else, we retrieve the accelerator information from the accelerator table.
-  std::map<ui::Accelerator, int>::iterator it = accelerator_table_.begin();
-  for (; it != accelerator_table_.end(); ++it) {
+  for (std::map<ui::Accelerator, int>::const_iterator it =
+           accelerator_table_.begin(); it != accelerator_table_.end(); ++it) {
     if (it->second == cmd_id) {
       *accelerator = it->first;
       return true;
     }
   }
-  return false;
+  // Else, we retrieve the accelerator information from Ash (if applicable).
+  return chrome::GetAshAcceleratorForCommandId(
+      cmd_id, browser_->host_desktop_type(), accelerator);
 }
 
 WebContents* BrowserView::GetActiveWebContents() const {
@@ -2367,11 +2360,14 @@ void BrowserView::LoadAccelerators() {
 #else
   views::FocusManager* focus_manager = GetFocusManager();
   DCHECK(focus_manager);
+
   // Let's fill our own accelerator table.
-  for (size_t i = 0; i < chrome::kAcceleratorMapLength; ++i) {
-    ui::Accelerator accelerator(chrome::kAcceleratorMap[i].keycode,
-                                chrome::kAcceleratorMap[i].modifiers);
-    accelerator_table_[accelerator] = chrome::kAcceleratorMap[i].command_id;
+  const std::vector<chrome::AcceleratorMapping> accelerator_list(
+      chrome::GetAcceleratorList());
+  for (std::vector<chrome::AcceleratorMapping>::const_iterator it =
+           accelerator_list.begin(); it != accelerator_list.end(); ++it) {
+    ui::Accelerator accelerator(it->keycode, it->modifiers);
+    accelerator_table_[accelerator] = it->command_id;
 
     // Also register with the focus manager.
     focus_manager->RegisterAccelerator(

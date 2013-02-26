@@ -6,9 +6,15 @@
 
 #include "base/basictypes.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/events/event_constants.h"
 
+#if defined(USE_ASH)
+#include "ash/accelerators/accelerator_table.h"
+#endif
+
 namespace chrome {
+namespace {
 
 // NOTE: Keep this list in the same (mostly-alphabetical) order as
 // the Windows accelerators in ../../app/chrome_dll.rc.
@@ -132,6 +138,8 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_M, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_SHOW_AVATAR_MENU},
 #endif  // OS_CHROMEOS
 #if !defined(OS_CHROMEOS)
+  // For each entry here add an entry into kChromeCmdId2AshActionId below
+  // if Ash has a corresponding accelerator.
   { ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, IDC_FEEDBACK },
   { ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_EXIT },
   { ui::VKEY_N, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
@@ -143,7 +151,77 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN, IDC_TASK_MANAGER },
 #endif
 };
-
 const size_t kAcceleratorMapLength = arraysize(kAcceleratorMap);
+
+#if defined(USE_ASH)
+// Below we map Chrome command ids to Ash action ids for commands that have
+// an shortcut that is handled by Ash (instead of Chrome). Adding entries
+// here will show shortcut text on menus. See comment above.
+struct ChromeCmdId2AshActionId {
+  const int chrome_cmd_id;
+  const ash::AcceleratorAction ash_action_id;
+};
+const ChromeCmdId2AshActionId kChromeCmdId2AshActionId[] = {
+  { IDC_FEEDBACK,             ash::OPEN_FEEDBACK_PAGE },
+  { IDC_EXIT,                 ash::EXIT },
+  { IDC_NEW_INCOGNITO_WINDOW, ash::NEW_INCOGNITO_WINDOW },
+  { IDC_NEW_TAB,              ash::NEW_TAB },
+  { IDC_NEW_WINDOW,           ash::NEW_WINDOW },
+#if defined(OS_CHROMEOS)
+  { IDC_OPEN_FILE,            ash::OPEN_FILE_DIALOG },
+#endif
+  { IDC_RESTORE_TAB,          ash::RESTORE_TAB },
+  { IDC_TASK_MANAGER,         ash::SHOW_TASK_MANAGER },
+};
+const size_t kChromeCmdId2AshActionIdLength =
+    arraysize(kChromeCmdId2AshActionId);
+#endif // defined(USE_ASH)
+
+} // namespace
+
+std::vector<AcceleratorMapping> GetAcceleratorList() {
+  return std::vector<AcceleratorMapping>(
+      kAcceleratorMap, kAcceleratorMap + kAcceleratorMapLength);
+}
+
+bool GetAshAcceleratorForCommandId(int command_id,
+                                   HostDesktopType host_desktop_type,
+                                   ui::Accelerator* accelerator) {
+#if defined(USE_ASH)
+  if (host_desktop_type != chrome::HOST_DESKTOP_TYPE_ASH)
+    return false;
+  for (size_t i = 0; i <  kChromeCmdId2AshActionIdLength; ++i) {
+    if (command_id == kChromeCmdId2AshActionId[i].chrome_cmd_id) {
+      for (size_t j = 0; j < ash::kAcceleratorDataLength; ++j) {
+        if (kChromeCmdId2AshActionId[i].ash_action_id ==
+            ash::kAcceleratorData[j].action) {
+          *accelerator = ui::Accelerator(ash::kAcceleratorData[j].keycode,
+                                         ash::kAcceleratorData[j].modifiers);
+          return true;
+        }
+      }
+    }
+  }
+#endif // defined(USE_ASH)
+  return false;
+}
+
+bool GetStandardAcceleratorForCommandId(int command_id,
+                                        ui::Accelerator* accelerator) {
+  // The standard Ctrl-X, Ctrl-V and Ctrl-C are not defined as accelerators
+  // anywhere else.
+  switch (command_id) {
+    case IDC_CUT:
+      *accelerator = ui::Accelerator(ui::VKEY_X, ui::EF_CONTROL_DOWN);
+      return true;
+    case IDC_COPY:
+      *accelerator = ui::Accelerator(ui::VKEY_C, ui::EF_CONTROL_DOWN);
+      return true;
+    case IDC_PASTE:
+      *accelerator = ui::Accelerator(ui::VKEY_V, ui::EF_CONTROL_DOWN);
+      return true;
+  }
+  return false;
+}
 
 }  // namespace chrome

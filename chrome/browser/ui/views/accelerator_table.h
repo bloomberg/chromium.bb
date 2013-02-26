@@ -5,10 +5,15 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_ACCELERATOR_TABLE_H_
 #define CHROME_BROWSER_UI_VIEWS_ACCELERATOR_TABLE_H_
 
-#include <stddef.h>
+#include <vector>
 
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/views/chrome_views_export.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+
+namespace ui {
+class Accelerator;
+}
 
 // This contains the list of accelerators for the Aura implementation.
 namespace chrome {
@@ -19,11 +24,25 @@ struct AcceleratorMapping {
   int command_id;
 };
 
-// The list of accelerators.
-CHROME_VIEWS_EXPORT extern const AcceleratorMapping kAcceleratorMap[];
+// Returns a list of accelerator mapping information for accelerators
+// handled by Chrome but excluding accelerators handled by Ash.
+CHROME_VIEWS_EXPORT std::vector<AcceleratorMapping> GetAcceleratorList();
 
-// The numbers of elements in kAcceleratorMap.
-CHROME_VIEWS_EXPORT extern const size_t kAcceleratorMapLength;
+// Returns true if the desktop host type indicates Ash and if the
+// command id has an associated accelerator which is handled by
+// Ash. If the return is true the accelerator is returned via the
+// second argument.
+CHROME_VIEWS_EXPORT bool GetAshAcceleratorForCommandId(
+    int command_id,
+    HostDesktopType host_desktop_type,
+    ui::Accelerator* accelerator);
+
+// Returns true if the command id has an associated standard
+// accelerator like cut, copy and paste. If the return is true the
+// accelerator is returned via the second argument.
+CHROME_VIEWS_EXPORT bool GetStandardAcceleratorForCommandId(
+    int command_id,
+    ui::Accelerator* accelerator);
 
 }  // namespace chrome
 

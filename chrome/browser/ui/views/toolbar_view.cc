@@ -587,46 +587,6 @@ void ToolbarView::Observe(int type,
 
 bool ToolbarView::GetAcceleratorForCommandId(int command_id,
     ui::Accelerator* accelerator) {
-  // The standard Ctrl-X, Ctrl-V and Ctrl-C are not defined as accelerators
-  // anywhere so we need to check for them explicitly here.
-  // TODO(cpu) Bug 1109102. Query WebKit land for the actual bindings.
-  switch (command_id) {
-    case IDC_CUT:
-      *accelerator = ui::Accelerator(ui::VKEY_X, ui::EF_CONTROL_DOWN);
-      return true;
-    case IDC_COPY:
-      *accelerator = ui::Accelerator(ui::VKEY_C, ui::EF_CONTROL_DOWN);
-      return true;
-    case IDC_PASTE:
-      *accelerator = ui::Accelerator(ui::VKEY_V, ui::EF_CONTROL_DOWN);
-      return true;
-#if defined(USE_ASH)
-    // When USE_ASH is defined, the commands listed here are handled outside
-    // Chrome, in ash/accelerators/accelerator_table.cc (crbug.com/120196).
-    case IDC_CLEAR_BROWSING_DATA:
-      *accelerator = ui::Accelerator(ui::VKEY_BACK,
-                                     ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN);
-      return true;
-    case IDC_NEW_TAB:
-      *accelerator = ui::Accelerator(ui::VKEY_T, ui::EF_CONTROL_DOWN);
-      return true;
-    case IDC_NEW_WINDOW:
-      *accelerator = ui::Accelerator(ui::VKEY_N, ui::EF_CONTROL_DOWN);
-      return true;
-    case IDC_NEW_INCOGNITO_WINDOW:
-      *accelerator = ui::Accelerator(ui::VKEY_N,
-                                     ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN);
-      return true;
-    case IDC_TASK_MANAGER:
-      *accelerator = ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN);
-      return true;
-    case IDC_FEEDBACK:
-      *accelerator = ui::Accelerator(ui::VKEY_I,
-                                     ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
-      return true;
-#endif
-  }
-  // Else, we retrieve the accelerator information from the frame.
   return GetWidget()->GetAccelerator(command_id, accelerator);
 }
 
