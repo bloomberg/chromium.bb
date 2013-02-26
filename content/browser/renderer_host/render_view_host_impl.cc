@@ -1941,6 +1941,8 @@ void RenderViewHostImpl::OnMediaNotification(int64 player_cookie,
                                              bool has_video,
                                              bool has_audio,
                                              bool is_playing) {
+  // Chrome OS does its own detection of audio and video.
+#if !defined(OS_CHROMEOS)
   if (is_playing) {
     scoped_ptr<PowerSaveBlocker> blocker;
     if (has_video) {
@@ -1959,6 +1961,7 @@ void RenderViewHostImpl::OnMediaNotification(int64 player_cookie,
     delete power_save_blockers_[player_cookie];
     power_save_blockers_.erase(player_cookie);
   }
+#endif
 }
 
 void RenderViewHostImpl::OnRequestDesktopNotificationPermission(
