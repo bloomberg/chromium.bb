@@ -314,12 +314,19 @@ iframe scrolls.  This is because the clipRect is not being calculated correctly
 due to the scale transform being applied.</p>
 
 <h3><a name="bugfix-selectionGapTransform">bugfix/selectionGapTransform</a> (Shezan Baig)</h3>
-<p>Open <a href="repros/selectionGapTransform.html">this link</a> in Chrome,
-and play around with selection.  For example, use the mouse to select from the
-first line of text to the last line of text, then move the mouse back to
-unselect.  While playing with it, at some points you will notice that the
-selection highlights are not properly being removed when unselecting, and
-sometimes the selection highlights don't properly appear at the right time.</p>
+<p>This bug is a little hard to reproduce programatically, so you may need to
+play around with selection after the file has loaded.</p>
+<p>Open <a href="repros/selectionGapTransform.html">this link</a> in Chrome.
+The selection will be modified by script.  Once it settles, the selected range
+should start at "tempus" on the second line, and end at "Vestibulim" on the
+fourth line.  However, there are gaps in the selection being highlighted
+outside this range.</p>
+<p>If this is not reproduced on document load, try play around with selection.
+For example, use the mouse to select from the first line of text to the last
+line of text, then move the mouse back to unselect.  While playing with it, at
+some points you will notice that the selection highlights are not properly
+being removed when unselecting, and sometimes the selection highlights don't
+properly appear at the right time.</p>
 <p>This is because the code that fills the gaps between elements does not
 handle transforms properly.</p>
 
