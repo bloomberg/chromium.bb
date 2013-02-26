@@ -66,10 +66,6 @@ const char kHTMLWithLandscapePageCss[] =
     "<body>Lorem Ipsum:"
     "</body></html>";
 
-// A simple webpage that prints itself.
-const char kPrintWithJSHTML[] =
-    "<body>Hello<script>window.print()</script>World</body>";
-
 // A simple webpage with a button to print itself with.
 const char kPrintOnUserAction[] =
     "<body>"
@@ -111,6 +107,10 @@ class PrintWebViewHelperTestBase : public ChromeRenderViewTest {
   virtual ~PrintWebViewHelperTestBase() {}
 
  protected:
+  void PrintWithJavaScript() {
+    ExecuteJavaScript("window.print();");
+    ProcessPendingMessages();
+  }
   // The renderer should be done calculating the number of rendered pages
   // according to the specified settings defined in the mock render thread.
   // Verify the page count is correct.
@@ -207,11 +207,9 @@ TEST_F(PrintWebViewHelperTest, OnPrintPages) {
   VerifyPagesPrinted(true);
 }
 
-// Disabled due to flakiness. See http://crbug.com/177733.
 // Duplicate of OnPrintPagesTest only using javascript to print.
-TEST_F(PrintWebViewHelperTest, DISABLED_PrintWithJavascript) {
-  // HTML contains a call to window.print()
-  LoadHTML(kPrintWithJSHTML);
+TEST_F(PrintWebViewHelperTest, PrintWithJavascript) {
+  PrintWithJavaScript();
 
   VerifyPageCount(1);
   VerifyPagesPrinted(true);
@@ -223,20 +221,20 @@ TEST_F(PrintWebViewHelperTest, BlockScriptInitiatedPrinting) {
   // Pretend user will cancel printing.
   chrome_render_thread_->set_print_dialog_user_response(false);
   // Try to print with window.print() a few times.
-  LoadHTML(kPrintWithJSHTML);
-  LoadHTML(kPrintWithJSHTML);
-  LoadHTML(kPrintWithJSHTML);
+  PrintWithJavaScript();
+  PrintWithJavaScript();
+  PrintWithJavaScript();
   VerifyPagesPrinted(false);
 
   // Pretend user will print. (but printing is blocked.)
   chrome_render_thread_->set_print_dialog_user_response(true);
-  LoadHTML(kPrintWithJSHTML);
+  PrintWithJavaScript();
   VerifyPagesPrinted(false);
 
   // Unblock script initiated printing and verify printing works.
   PrintWebViewHelper::Get(view_)->ResetScriptedPrintCount();
   chrome_render_thread_->printer()->ResetPrinter();
-  LoadHTML(kPrintWithJSHTML);
+  PrintWithJavaScript();
   VerifyPageCount(1);
   VerifyPagesPrinted(true);
 }
@@ -247,14 +245,14 @@ TEST_F(PrintWebViewHelperTest, AllowUserOriginatedPrinting) {
   // Pretend user will cancel printing.
   chrome_render_thread_->set_print_dialog_user_response(false);
   // Try to print with window.print() a few times.
-  LoadHTML(kPrintWithJSHTML);
-  LoadHTML(kPrintWithJSHTML);
-  LoadHTML(kPrintWithJSHTML);
+  PrintWithJavaScript();
+  PrintWithJavaScript();
+  PrintWithJavaScript();
   VerifyPagesPrinted(false);
 
   // Pretend user will print. (but printing is blocked.)
   chrome_render_thread_->set_print_dialog_user_response(true);
-  LoadHTML(kPrintWithJSHTML);
+  PrintWithJavaScript();
   VerifyPagesPrinted(false);
 
   // Try again as if user initiated, without resetting the print count.
@@ -280,15 +278,14 @@ TEST_F(PrintWebViewHelperTest, AllowUserOriginatedPrinting) {
   VerifyPagesPrinted(true);
 }
 
-// Disabled due to flakiness. See http://crbug.com/177733.
-TEST_F(PrintWebViewHelperTest, DISABLED_BlockScriptInitiatedPrintingFromPopup) {
+TEST_F(PrintWebViewHelperTest, BlockScriptInitiatedPrintingFromPopup) {
   PrintWebViewHelper* print_web_view_helper = PrintWebViewHelper::Get(view_);
   print_web_view_helper->SetScriptedPrintBlocked(true);
-  LoadHTML(kPrintWithJSHTML);
+  PrintWithJavaScript();
   VerifyPagesPrinted(false);
 
   print_web_view_helper->SetScriptedPrintBlocked(false);
-  LoadHTML(kPrintWithJSHTML);
+  PrintWithJavaScript();
   VerifyPageCount(1);
   VerifyPagesPrinted(true);
 }
@@ -962,17 +959,17 @@ TEST_F(PrintWebViewHelperKioskTest, DontBlockScriptInitiatedPrinting) {
   // Pretend user will cancel printing.
   chrome_render_thread_->set_print_dialog_user_response(false);
   // Try to print with window.print() a few times.
-  LoadHTML(kPrintWithJSHTML);
+  PrintWithJavaScript();
   chrome_render_thread_->printer()->ResetPrinter();
-  LoadHTML(kPrintWithJSHTML);
+  PrintWithJavaScript();
   chrome_render_thread_->printer()->ResetPrinter();
-  LoadHTML(kPrintWithJSHTML);
+  PrintWithJavaScript();
   chrome_render_thread_->printer()->ResetPrinter();
   VerifyPagesPrinted(false);
 
   // Pretend user will print, should not be throttled.
   chrome_render_thread_->set_print_dialog_user_response(true);
-  LoadHTML(kPrintWithJSHTML);
+  PrintWithJavaScript();
   VerifyPagesPrinted(true);
 }
 
