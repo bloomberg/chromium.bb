@@ -331,6 +331,20 @@ class ChromeDriverTest(unittest.TestCase):
     self._driver.MouseDoubleClick()
     self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
 
+  def testAlert(self):
+    self.assertFalse(self._driver.IsAlertOpen())
+    # TODO(kkania): Don't use setTimeout once crbug.com/177511 is fixed.
+    div = self._driver.ExecuteScript(
+        'window.setTimeout('
+        '    function() { window.confirmed = confirm(\'HI\'); },'
+        '    0);')
+    self.assertTrue(self._driver.IsAlertOpen())
+    self.assertEquals('HI', self._driver.GetAlertMessage())
+    self._driver.HandleAlert(False)
+    self.assertFalse(self._driver.IsAlertOpen())
+    self.assertEquals(False,
+                      self._driver.ExecuteScript('return window.confirmed'))
+
 
 class ChromeSwitchesCapabilitiesTest(unittest.TestCase):
   """Tests that chromedriver properly processes chromeOptions.args capabilities.

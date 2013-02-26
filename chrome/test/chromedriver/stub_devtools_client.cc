@@ -13,7 +13,8 @@ StubDevToolsClient::~StubDevToolsClient() {}
 
 Status StubDevToolsClient::SendCommand(const std::string& method,
                                        const base::DictionaryValue& params) {
-  return Status(kOk);
+  scoped_ptr<base::DictionaryValue> result;
+  return SendCommandAndGetResult(method, params, &result);
 }
 
 Status StubDevToolsClient::SendCommandAndGetResult(

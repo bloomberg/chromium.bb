@@ -116,6 +116,16 @@ void CommandExecutorImpl::Init() {
       base::Bind(&ExecuteSwitchToWindow);
   session_command_map[CommandNames::kSetTimeout] =
       base::Bind(&ExecuteSetTimeout);
+  session_command_map[CommandNames::kGetAlert] =
+      base::Bind(&ExecuteGetAlert);
+  session_command_map[CommandNames::kGetAlertText] =
+      base::Bind(&ExecuteGetAlertText);
+  session_command_map[CommandNames::kSetAlertValue] =
+      base::Bind(&ExecuteSetAlertValue);
+  session_command_map[CommandNames::kAcceptAlert] =
+      base::Bind(&ExecuteAcceptAlert);
+  session_command_map[CommandNames::kDismissAlert] =
+      base::Bind(&ExecuteDismissAlert);
 
   // Wrap SessionCommand into non-session Command.
   base::Callback<Status(

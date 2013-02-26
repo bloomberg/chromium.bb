@@ -6,6 +6,7 @@
 #define CHROME_TEST_CHROMEDRIVER_CHROME_H_
 
 #include <list>
+#include <string>
 
 class Status;
 class WebView;
@@ -16,6 +17,16 @@ class Chrome {
 
   // Return a list of opened WebViews.
   virtual Status GetWebViews(std::list<WebView*>* web_views) = 0;
+
+  // Returns whether a JavaScript dialog is open.
+  virtual Status IsJavaScriptDialogOpen(bool* is_open) = 0;
+
+  // Returns the message of the open JavaScript dialog.
+  virtual Status GetJavaScriptDialogMessage(std::string* message) = 0;
+
+  // Handles an open JavaScript dialog.
+  virtual Status HandleJavaScriptDialog(bool accept,
+                                        const std::string& prompt_text) = 0;
 
   // Quits Chrome.
   virtual Status Quit() = 0;

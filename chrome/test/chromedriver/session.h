@@ -32,6 +32,7 @@ struct Session {
   int implicit_wait;
   int page_load_timeout;
   int script_timeout;
+  std::string prompt_text;
 };
 
 class SessionAccessor : public base::RefCountedThreadSafe<SessionAccessor> {

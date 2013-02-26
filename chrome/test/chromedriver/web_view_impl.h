@@ -31,6 +31,7 @@ class WebViewDelegate;
 class WebViewImpl : public WebView {
  public:
   typedef base::Callback<Status()> CloserFunc;
+  // Takes ownership of |client|.
   WebViewImpl(const std::string& id,
               DevToolsClient* client,
               WebViewDelegate* delegate,
@@ -59,12 +60,14 @@ class WebViewImpl : public WebView {
   virtual Status WaitForPendingNavigations(
       const std::string& frame_id) OVERRIDE;
   virtual Status GetMainFrame(std::string* out_frame) OVERRIDE;
+  virtual JavaScriptDialogManager* GetJavaScriptDialogManager() OVERRIDE;
 
  private:
   std::string id_;
   scoped_ptr<DomTracker> dom_tracker_;
   scoped_ptr<FrameTracker> frame_tracker_;
   scoped_ptr<NavigationTracker> navigation_tracker_;
+  scoped_ptr<JavaScriptDialogManager> dialog_manager_;
   scoped_ptr<DevToolsClient> client_;
   WebViewDelegate* delegate_;
   CloserFunc closer_func_;

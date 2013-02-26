@@ -14,6 +14,20 @@ Status StubChrome::GetWebViews(std::list<WebView*>* web_views) {
   return Status(kOk);
 }
 
+Status StubChrome::IsJavaScriptDialogOpen(bool* is_open) {
+  return Status(kOk);
+}
+
+Status StubChrome::GetJavaScriptDialogMessage(std::string* message) {
+  return Status(kOk);
+}
+
+Status StubChrome::HandleJavaScriptDialog(
+    bool accept,
+    const std::string& prompt_text) {
+  return Status(kOk);
+}
+
 Status StubChrome::Quit() {
   return Status(kOk);
 }

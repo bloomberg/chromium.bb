@@ -15,6 +15,7 @@ class ListValue;
 class Value;
 }
 
+class JavaScriptDialogManager;
 struct KeyEvent;
 struct MouseEvent;
 class Status;
@@ -73,6 +74,9 @@ class WebView {
 
   // Returns the frame id for the main frame.
   virtual Status GetMainFrame(std::string* out_frame) = 0;
+
+  // Returns the JavaScriptDialogManager. Never null.
+  virtual JavaScriptDialogManager* GetJavaScriptDialogManager() = 0;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_WEB_VIEW_H_

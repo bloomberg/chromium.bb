@@ -40,8 +40,15 @@ Status ExecuteWindowCommand(
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
+  bool is_dialog_open;
+  Status status = session->chrome->IsJavaScriptDialogOpen(&is_dialog_open);
+  if (status.IsError())
+    return status;
+  if (is_dialog_open)
+    return Status(kUnexpectedAlertOpen);
+
   WebView* web_view = NULL;
-  Status status = session->GetTargetWindow(&web_view);
+  status = session->GetTargetWindow(&web_view);
   if (status.IsError())
     return status;
 

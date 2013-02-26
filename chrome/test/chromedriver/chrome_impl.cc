@@ -14,6 +14,7 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/devtools_client_impl.h"
+#include "chrome/test/chromedriver/javascript_dialog_manager.h"
 #include "chrome/test/chromedriver/net/net_util.h"
 #include "chrome/test/chromedriver/net/sync_websocket_impl.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
@@ -110,6 +111,38 @@ Status ChromeImpl::GetWebViews(std::list<WebView*>* web_views) {
   return Status(kOk);
 }
 
+Status ChromeImpl::IsJavaScriptDialogOpen(bool* is_open) {
+  JavaScriptDialogManager* manager;
+  Status status = GetDialogManagerForOpenDialog(&manager);
+  if (status.IsError())
+    return status;
+  *is_open = manager != NULL;
+  return Status(kOk);
+}
+
+Status ChromeImpl::GetJavaScriptDialogMessage(std::string* message) {
+  JavaScriptDialogManager* manager;
+  Status status = GetDialogManagerForOpenDialog(&manager);
+  if (status.IsError())
+    return status;
+  if (!manager)
+    return Status(kNoAlertOpen);
+
+  return manager->GetDialogMessage(message);
+}
+
+Status ChromeImpl::HandleJavaScriptDialog(bool accept,
+                                          const std::string& prompt_text) {
+  JavaScriptDialogManager* manager;
+  Status status = GetDialogManagerForOpenDialog(&manager);
+  if (status.IsError())
+    return status;
+  if (!manager)
+    return Status(kNoAlertOpen);
+
+  return manager->HandleDialog(accept, prompt_text);
+}
+
 void ChromeImpl::OnWebViewClose(WebView* web_view) {
   web_view_map_.erase(web_view->GetId());
 }
@@ -132,6 +165,24 @@ Status ChromeImpl::Init() {
 
 int ChromeImpl::GetPort() const {
   return port_;
+}
+
+Status ChromeImpl::GetDialogManagerForOpenDialog(
+    JavaScriptDialogManager** manager) {
+  std::list<WebView*> web_views;
+  Status status = GetWebViews(&web_views);
+  if (status.IsError())
+    return status;
+
+  for (std::list<WebView*>::const_iterator it = web_views.begin();
+       it != web_views.end(); ++it) {
+    if ((*it)->GetJavaScriptDialogManager()->IsDialogOpen()) {
+      *manager = (*it)->GetJavaScriptDialogManager();
+      return Status(kOk);
+    }
+  }
+  *manager = NULL;
+  return Status(kOk);
 }
 
 namespace internal {

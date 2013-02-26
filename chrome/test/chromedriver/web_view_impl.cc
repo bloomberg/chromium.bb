@@ -12,6 +12,7 @@
 #include "chrome/test/chromedriver/devtools_client_impl.h"
 #include "chrome/test/chromedriver/dom_tracker.h"
 #include "chrome/test/chromedriver/frame_tracker.h"
+#include "chrome/test/chromedriver/javascript_dialog_manager.h"
 #include "chrome/test/chromedriver/js.h"
 #include "chrome/test/chromedriver/navigation_tracker.h"
 #include "chrome/test/chromedriver/status.h"
@@ -91,6 +92,7 @@ WebViewImpl::WebViewImpl(const std::string& id,
       dom_tracker_(new DomTracker(client)),
       frame_tracker_(new FrameTracker(client)),
       navigation_tracker_(new NavigationTracker(client)),
+      dialog_manager_(new JavaScriptDialogManager(client)),
       client_(client),
       delegate_(delegate),
       closer_func_(closer_func) {}
@@ -229,6 +231,10 @@ Status WebViewImpl::GetMainFrame(std::string* out_frame) {
   if (!result->GetString("frameTree.frame.id", out_frame))
     return Status(kUnknownError, "missing 'frameTree.frame.id' in response");
   return Status(kOk);
+}
+
+JavaScriptDialogManager* WebViewImpl::GetJavaScriptDialogManager() {
+  return dialog_manager_.get();
 }
 
 namespace internal {

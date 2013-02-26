@@ -16,6 +16,7 @@
 #include "chrome/test/chromedriver/net/sync_websocket_factory.h"
 #include "chrome/test/chromedriver/web_view_delegate.h"
 
+class JavaScriptDialogManager;
 class Status;
 class URLRequestContextGetter;
 class WebView;
@@ -30,6 +31,11 @@ class ChromeImpl : public Chrome, public WebViewDelegate {
 
   // Overridden from Chrome:
   virtual Status GetWebViews(std::list<WebView*>* web_views) OVERRIDE;
+  virtual Status IsJavaScriptDialogOpen(bool* is_open) OVERRIDE;
+  virtual Status GetJavaScriptDialogMessage(std::string* message) OVERRIDE;
+  virtual Status HandleJavaScriptDialog(
+      bool accept,
+      const std::string& prompt_text) OVERRIDE;
 
   // Overridden from WebViewDelegate:
   virtual void OnWebViewClose(WebView* web_view) OVERRIDE;
@@ -40,6 +46,8 @@ class ChromeImpl : public Chrome, public WebViewDelegate {
 
  private:
   typedef std::map<std::string, linked_ptr<WebViewImpl> > WebViewMap;
+
+  Status GetDialogManagerForOpenDialog(JavaScriptDialogManager** manager);
 
   scoped_refptr<URLRequestContextGetter> context_getter_;
   int port_;

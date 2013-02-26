@@ -180,3 +180,66 @@ Status ExecuteSetTimeout(
     return Status(kUnknownError, "unknown type of timeout:" + type);
   return Status(kOk);
 }
+
+Status ExecuteGetAlert(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  bool is_open;
+  Status status = session->chrome->IsJavaScriptDialogOpen(&is_open);
+  if (status.IsError())
+    return status;
+  value->reset(base::Value::CreateBooleanValue(is_open));
+  return Status(kOk);
+}
+
+Status ExecuteGetAlertText(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  std::string message;
+  Status status = session->chrome->GetJavaScriptDialogMessage(&message);
+  if (status.IsError())
+    return status;
+  value->reset(base::Value::CreateStringValue(message));
+  return Status(kOk);
+}
+
+Status ExecuteSetAlertValue(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  std::string text;
+  if (!params.GetString("text", &text))
+    return Status(kUnknownError, "missing or invalid 'text'");
+
+  bool is_open;
+  Status status = session->chrome->IsJavaScriptDialogOpen(&is_open);
+  if (status.IsError())
+    return status;
+  if (!is_open)
+    return Status(kNoAlertOpen);
+
+  session->prompt_text = text;
+  return Status(kOk);
+}
+
+Status ExecuteAcceptAlert(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  Status status = session->chrome->HandleJavaScriptDialog(
+      true, session->prompt_text);
+  session->prompt_text = "";
+  return status;
+}
+
+Status ExecuteDismissAlert(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  Status status = session->chrome->HandleJavaScriptDialog(
+      false, session->prompt_text);
+  session->prompt_text = "";
+  return status;
+}

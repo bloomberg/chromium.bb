@@ -209,6 +209,21 @@ class ChromeDriver(object):
   def MouseDoubleClick(self, button=0):
     self.ExecuteSessionCommand('mouseDoubleClick', {'button': button})
 
+  def IsAlertOpen(self):
+    return self.ExecuteSessionCommand('getAlert')
+
+  def GetAlertMessage(self):
+    return self.ExecuteSessionCommand('getAlertText')
+
+  def HandleAlert(self, accept, prompt_text=''):
+    if prompt_text:
+      self.ExecuteSessionCommand('setAlertValue', {'text': prompt_text})
+    if accept:
+      cmd = 'acceptAlert'
+    else:
+      cmd = 'dismissAlert'
+    self.ExecuteSessionCommand(cmd)
+
   def Quit(self):
     """Quits the browser and ends the session."""
     self.ExecuteSessionCommand('quit')
