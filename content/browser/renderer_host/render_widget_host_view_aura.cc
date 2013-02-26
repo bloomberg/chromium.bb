@@ -383,7 +383,7 @@ class RenderWidgetHostViewAura::TransientWindowObserver
 
     StopObserving();
     top_level_ = top_level;
-    if (top_level_)
+    if (top_level_ && top_level_ != view_->window_)
       top_level_->AddObserver(this);
   }
 
@@ -437,7 +437,8 @@ class RenderWidgetHostViewAura::TransientWindowObserver
     for (size_t i = 0; i < transients.size(); ++i)
       transients[i]->RemoveObserver(this);
 
-    top_level_->RemoveObserver(this);
+    if (top_level_ != view_->window_)
+      top_level_->RemoveObserver(this);
     top_level_ = NULL;
   }
 
@@ -632,7 +633,6 @@ void RenderWidgetHostViewAura::InitAsFullscreen(
     bounds = display.bounds();
   }
   window_->SetDefaultParentByRootWindow(parent, bounds);
-
   Show();
   Focus();
 }
