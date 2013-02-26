@@ -51,6 +51,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/page_transition_types.h"
@@ -250,7 +251,7 @@ bool ExternalTabContainerWin::Init(Profile* profile,
   if (parent)
     SetParent(GetNativeView(), parent);
 
-  ::ShowWindow(existing_contents->GetNativeView(), SW_SHOWNA);
+  ::ShowWindow(existing_contents->GetView()->GetNativeView(), SW_SHOWNA);
 
   LoadAccelerators();
   SetupExternalTabView();
@@ -398,7 +399,7 @@ void ExternalTabContainerWin::FocusThroughTabTraversal(
     bool restore_focus_to_view) {
   DCHECK(web_contents_.get());
   if (web_contents_.get())
-    web_contents_->Focus();
+    web_contents_->GetView()->Focus();
 
   // The web_contents_ member can get destroyed in the context of the call to
   // WebContentsViewViews::Focus() above. This method eventually calls SetFocus

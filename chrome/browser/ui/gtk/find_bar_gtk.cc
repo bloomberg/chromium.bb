@@ -37,6 +37,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
@@ -465,7 +466,7 @@ void FindBarGtk::RestoreSavedFocus() {
   if (focus_store_.widget())
     gtk_widget_grab_focus(focus_store_.widget());
   else
-    find_bar_controller_->web_contents()->Focus();
+    find_bar_controller_->web_contents()->GetView()->Focus();
 }
 
 FindBarTesting* FindBarGtk::GetFindBarTesting() {

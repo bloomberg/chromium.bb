@@ -26,6 +26,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -404,7 +405,7 @@ bool BookmarkManagerPrivateStartDragFunction::RunImpl() {
         dispatcher()->delegate()->GetAssociatedWebContents();
     CHECK(web_contents);
     bookmark_utils::DragBookmarks(profile(), nodes,
-                                  web_contents->GetNativeView());
+                                  web_contents->GetView()->GetNativeView());
 
     return true;
   } else {

@@ -9,6 +9,7 @@
 #include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/content_client.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
@@ -65,7 +66,7 @@ ShellDevToolsFrontend* ShellDevToolsFrontend::Show(
 }
 
 void ShellDevToolsFrontend::Focus() {
-  web_contents()->Focus();
+  web_contents()->GetView()->Focus();
 }
 
 void ShellDevToolsFrontend::Close() {

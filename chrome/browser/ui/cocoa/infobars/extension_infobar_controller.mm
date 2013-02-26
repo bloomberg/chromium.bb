@@ -20,6 +20,7 @@
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -272,7 +273,8 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver {
 
 InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   NSWindow* window =
-      [(NSView*)owner->GetWebContents()->GetContentNativeView() window];
+      [(NSView*)owner->GetWebContents()->GetView()->GetContentNativeView()
+          window];
   ExtensionInfoBarController* controller =
       [[ExtensionInfoBarController alloc] initWithDelegate:this
                                                      owner:owner

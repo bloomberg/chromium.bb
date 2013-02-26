@@ -126,7 +126,7 @@ void SpeechRecognitionBubbleView::OnWidgetActivationChanged(
 
 gfx::Rect SpeechRecognitionBubbleView::GetAnchorRect() {
   gfx::Rect container_rect;
-  web_contents_->GetContainerBounds(&container_rect);
+  web_contents_->GetView()->GetContainerBounds(&container_rect);
   gfx::Rect anchor(element_rect_);
   anchor.Offset(container_rect.OffsetFromOrigin());
   if (!container_rect.Intersects(anchor))

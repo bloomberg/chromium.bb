@@ -8,6 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -140,7 +141,8 @@ SpeechRecognitionBubbleBase::SpeechRecognitionBubbleBase(
       display_mode_(DISPLAY_MODE_RECORDING),
       web_contents_(web_contents),
       scale_factor_(ui::SCALE_FACTOR_NONE) {
-  gfx::NativeView view = web_contents_ ? web_contents_->GetNativeView() : NULL;
+  gfx::NativeView view =
+      web_contents_ ? web_contents_->GetView()->GetNativeView() : NULL;
   gfx::Screen* screen = gfx::Screen::GetScreenFor(view);
   gfx::Display display = screen->GetDisplayNearestWindow(view);
   scale_factor_ = ui::GetScaleFactorFromScale(

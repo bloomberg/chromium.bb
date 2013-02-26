@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 
 namespace {
@@ -53,15 +54,15 @@ SavePackageFilePickerChromeOS::SavePackageFilePickerChromeOS(
         this, new ChromeSelectFilePolicy(web_contents));
     ui::SelectFileDialog::FileTypeInfo file_types;
     file_types.support_drive = true;
-    select_file_dialog_->SelectFile(ui::SelectFileDialog::SELECT_SAVEAS_FILE,
-                                    string16(),
-                                    suggested_path.ReplaceExtension("mhtml"),
-                                    &file_types,
-                                    0,
-                                    "mhtml",
-                                    platform_util::GetTopLevel(
-                                        web_contents->GetNativeView()),
-                                    NULL);
+    select_file_dialog_->SelectFile(
+        ui::SelectFileDialog::SELECT_SAVEAS_FILE,
+        string16(),
+        suggested_path.ReplaceExtension("mhtml"),
+        &file_types,
+        0,
+        "mhtml",
+        platform_util::GetTopLevel(web_contents->GetView()->GetNativeView()),
+        NULL);
   } else {
     FileSelected(suggested_path.ReplaceExtension("mhtml"), 0, NULL);
   }

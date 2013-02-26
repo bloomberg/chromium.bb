@@ -201,7 +201,7 @@ void ShellWebContentsViewDelegate::ShowContextMenu(
                       YES,
                       delegate);
 
-  NSView* parent_view = web_contents_->GetContentNativeView();
+  NSView* parent_view = web_contents_->GetView()->GetContentNativeView();
   NSEvent* currentEvent = [NSApp currentEvent];
   NSWindow* window = [parent_view window];
   NSPoint position = [window mouseLocationOutsideOfEventStream];
@@ -248,15 +248,15 @@ void ShellWebContentsViewDelegate::ActionPerformed(int tag) {
     }
     case ShellContextMenuItemBackTag:
       web_contents_->GetController().GoToOffset(-1);
-      web_contents_->Focus();
+      web_contents_->GetView()->Focus();
       break;
     case ShellContextMenuItemForwardTag:
       web_contents_->GetController().GoToOffset(1);
-      web_contents_->Focus();
+      web_contents_->GetView()->Focus();
       break;
     case ShellContextMenuItemReloadTag: {
       web_contents_->GetController().Reload(false);
-      web_contents_->Focus();
+      web_contents_->GetView()->Focus();
       break;
     }
     case ShellContextMenuItemInspectTag: {

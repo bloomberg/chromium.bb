@@ -22,6 +22,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "net/base/mime_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -390,7 +391,8 @@ class FileSystemChooseEntryFunction::FilePicker
     select_file_dialog_ = ui::SelectFileDialog::Create(
         this, new ChromeSelectFilePolicy(web_contents));
     gfx::NativeWindow owning_window = web_contents ?
-        platform_util::GetTopLevel(web_contents->GetNativeView()) : NULL;
+        platform_util::GetTopLevel(web_contents->GetView()->GetNativeView()) :
+        NULL;
 
     if (g_skip_picker_for_test) {
       if (g_path_to_be_picked_for_test) {

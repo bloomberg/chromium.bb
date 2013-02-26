@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -100,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, ShowInUninitializedTab) {
   content::WebContents* tab2 =
       browser()->tab_strip_model()->GetWebContentsAt(2);
   ASSERT_TRUE(tab2);
-  EXPECT_FALSE([tab2->GetNativeView() superview]);
+  EXPECT_FALSE([tab2->GetView()->GetNativeView() superview]);
 
   // Show dialog and verify that it's not visible yet.
   NiceMock<ConstrainedWindowDelegateMock> delegate;
@@ -109,7 +110,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, ShowInUninitializedTab) {
 
   // Activate the tab and verify that the constrained window is shown.
   browser()->tab_strip_model()->ActivateTabAt(2, true);
-  EXPECT_TRUE([tab2->GetNativeView() superview]);
+  EXPECT_TRUE([tab2->GetView()->GetNativeView() superview]);
   EXPECT_TRUE([sheet_window_ isVisible]);
   EXPECT_EQ(1.0, [sheet_window_ alphaValue]);
 

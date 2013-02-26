@@ -216,15 +216,15 @@ void ShellWebContentsViewDelegate::MenuItemSelected(int selection) {
     }
     case ShellContextMenuItemBackId:
       web_contents_->GetController().GoToOffset(-1);
-      web_contents_->Focus();
+      web_contents_->GetView()->Focus();
       break;
     case ShellContextMenuItemForwardId:
       web_contents_->GetController().GoToOffset(1);
-      web_contents_->Focus();
+      web_contents_->GetView()->Focus();
       break;
     case ShellContextMenuItemReloadId:
       web_contents_->GetController().Reload(false);
-      web_contents_->Focus();
+      web_contents_->GetView()->Focus();
       break;
     case ShellContextMenuItemInspectId: {
       ShellDevToolsFrontend::Show(web_contents_);

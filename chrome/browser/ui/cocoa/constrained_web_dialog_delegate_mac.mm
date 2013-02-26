@@ -11,6 +11,7 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "ui/gfx/size.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
@@ -113,8 +114,9 @@ ConstrainedWebDialogDelegateViewMac::ConstrainedWebDialogDelegateViewMac(
 
   window_.reset(
       [[ConstrainedWindowCustomWindow alloc] initWithContentRect:frame]);
-  [GetWebContents()->GetNativeView() setFrame:frame];
-  [[window_ contentView] addSubview:GetWebContents()->GetNativeView()];
+  [GetWebContents()->GetView()->GetNativeView() setFrame:frame];
+  [[window_ contentView]
+      addSubview:GetWebContents()->GetView()->GetNativeView()];
 
   scoped_nsobject<CustomConstrainedWindowSheet> sheet(
       [[CustomConstrainedWindowSheet alloc]

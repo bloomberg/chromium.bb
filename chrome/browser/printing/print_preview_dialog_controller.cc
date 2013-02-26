@@ -40,6 +40,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_view.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_web_contents_delegate.h"
 #include "webkit/plugins/webplugininfo.h"
@@ -127,7 +128,7 @@ void PrintPreviewTabDelegate::GetDialogSize(gfx::Size* size) const {
   const gfx::Size kMinDialogSize(800, 480);
   const int kBorder = 50;
   gfx::Rect rect;
-  initiator_tab_->GetContainerBounds(&rect);
+  initiator_tab_->GetView()->GetContainerBounds(&rect);
   size->set_width(std::max(rect.width(), kMinDialogSize.width()) - kBorder);
   size->set_height(std::max(rect.height(), kMinDialogSize.height()) - kBorder);
 
@@ -305,10 +306,6 @@ void PrintPreviewDialogController::EraseInitiatorTabInfo(
   preview_tab_map_[preview_tab] = NULL;
 }
 
-bool PrintPreviewDialogController::is_creating_print_preview_dialog() const {
-  return is_creating_print_preview_dialog_;
-}
-
 PrintPreviewDialogController::~PrintPreviewDialogController() {}
 
 void PrintPreviewDialogController::OnRendererProcessClosed(
@@ -433,6 +430,9 @@ WebContents* PrintPreviewDialogController::CreatePrintPreviewTab(
 
   AddObservers(initiator_tab);
   AddObservers(preview_tab);
+
+  if (!print_preview_tab_created_callback_.is_null())
+    print_preview_tab_created_callback_.Run();
 
   return preview_tab;
 }

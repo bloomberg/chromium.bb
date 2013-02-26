@@ -26,6 +26,7 @@
 #include "chrome/test/perf/browser_perf_test.h"
 #include "chrome/test/perf/perf_test.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -220,8 +221,8 @@ class ThroughputTest : public BrowserPerfTest {
 
     gfx::Rect root_bounds = browser()->window()->GetBounds();
     gfx::Rect tab_contents_bounds;
-    browser()->tab_strip_model()->GetActiveWebContents()->GetContainerBounds(
-        &tab_contents_bounds);
+    browser()->tab_strip_model()->GetActiveWebContents()->GetView()->
+        GetContainerBounds(&tab_contents_bounds);
 
     gfx::Rect snapshot_bounds(tab_contents_bounds.x() - root_bounds.x(),
                               tab_contents_bounds.y() - root_bounds.y(),

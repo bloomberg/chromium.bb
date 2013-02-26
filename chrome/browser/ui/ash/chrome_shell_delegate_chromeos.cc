@@ -44,6 +44,7 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -122,7 +123,7 @@ void ChromeShellDelegate::OpenCrosh() {
                              false));
   browser->window()->Show();
   browser->window()->Activate();
-  page->Focus();
+  page->GetView()->Focus();
 }
 
 void ChromeShellDelegate::OpenMobileSetup(const std::string& service_path) {

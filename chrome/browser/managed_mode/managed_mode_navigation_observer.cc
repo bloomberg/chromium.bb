@@ -32,6 +32,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -91,7 +92,8 @@ void GoBackToSafety(content::WebContents* web_contents) {
   // If we can't go back (because we opened a new tab), try to close the tab.
   // If this is the last tab on this desktop, open a new window.
   chrome::HostDesktopType host_desktop_type =
-      chrome::GetHostDesktopTypeForNativeView(web_contents->GetNativeView());
+      chrome::GetHostDesktopTypeForNativeView(
+          web_contents->GetView()->GetNativeView());
   const BrowserList* browser_list = BrowserList::GetInstance(host_desktop_type);
   if (browser_list->size() == 1) {
     Browser* browser = browser_list->get(0);

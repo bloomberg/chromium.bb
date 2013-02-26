@@ -327,7 +327,8 @@ void NativeAppWindowViews::OnViewWasResized() {
     path.lineTo(0, height - radius - 1);
     path.close();
   }
-  SetWindowRgn(web_contents()->GetNativeView(), path.CreateNativeRegion(), 1);
+  SetWindowRgn(web_contents()->GetView()->GetNativeView(),
+               path.CreateNativeRegion(), 1);
 
   SkRegion* rgn = new SkRegion;
   if (!window_->IsFullscreen()) {

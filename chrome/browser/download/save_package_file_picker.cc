@@ -20,6 +20,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/save_page_type.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -159,15 +160,15 @@ SavePackageFilePicker::SavePackageFilePicker(
   if (g_should_prompt_for_filename) {
     select_file_dialog_ = ui::SelectFileDialog::Create(
         this, new ChromeSelectFilePolicy(web_contents));
-    select_file_dialog_->SelectFile(ui::SelectFileDialog::SELECT_SAVEAS_FILE,
-                                    string16(),
-                                    suggested_path,
-                                    &file_type_info,
-                                    file_type_index,
-                                    default_extension,
-                                    platform_util::GetTopLevel(
-                                        web_contents->GetNativeView()),
-                                    NULL);
+    select_file_dialog_->SelectFile(
+        ui::SelectFileDialog::SELECT_SAVEAS_FILE,
+        string16(),
+        suggested_path,
+        &file_type_info,
+        file_type_index,
+        default_extension,
+        platform_util::GetTopLevel(web_contents->GetView()->GetNativeView()),
+        NULL);
   } else {
     // Just use 'suggested_path' instead of opening the dialog prompt.
     // Go through FileSelected() for consistency.

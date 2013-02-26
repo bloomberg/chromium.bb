@@ -240,6 +240,7 @@
         'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc',
         'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.h',
         'browser/ui/views/tabs/tab_drag_controller_interactive_uitest_win.cc',
+        'browser/ui/webui/print_preview/print_preview_ui_interactive_browsertest.cc',
         'test/base/chrome_test_launcher.cc',
         'test/base/interactive_test_utils.cc',
         'test/base/interactive_test_utils.h',

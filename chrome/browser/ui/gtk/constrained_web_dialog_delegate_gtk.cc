@@ -83,7 +83,7 @@ class ConstrainedWebDialogDelegateViewGtk
     return GetWebContents()->GetView()->GetNativeView();
   }
   virtual GtkWidget* GetFocusWidget() OVERRIDE {
-    return GetWebContents()->GetContentNativeView();
+    return GetWebContents()->GetView()->GetContentNativeView();
   }
   virtual void DeleteDelegate() OVERRIDE {
     if (!impl_->closed_via_webui())

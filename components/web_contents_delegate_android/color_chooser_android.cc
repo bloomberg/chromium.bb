@@ -6,6 +6,7 @@
 
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "jni/ColorChooserAndroid_jni.h"
 
 namespace content {
@@ -25,7 +26,8 @@ ColorChooserAndroid::ColorChooserAndroid(int identifier,
     : ColorChooser::ColorChooser(identifier),
       content::WebContentsObserver(tab) {
   JNIEnv* env = AttachCurrentThread();
-  content::ContentViewCore* content_view_core = tab->GetContentNativeView();
+  content::ContentViewCore* content_view_core =
+      tab->GetView()->GetContentNativeView();
   DCHECK(content_view_core);
 
   j_color_chooser_.Reset(Java_ColorChooserAndroid_createColorChooserAndroid(

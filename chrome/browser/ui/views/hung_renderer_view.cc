@@ -22,6 +22,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/result_codes.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -206,7 +207,7 @@ HungRendererDialogView* HungRendererDialogView::GetInstance() {
 // static
 bool HungRendererDialogView::IsFrameActive(WebContents* contents) {
   gfx::NativeView frame_view =
-      platform_util::GetTopLevel(contents->GetNativeView());
+      platform_util::GetTopLevel(contents->GetView()->GetNativeView());
   return platform_util::IsWindowActive(frame_view);
 }
 
@@ -244,7 +245,7 @@ void HungRendererDialogView::ShowForWebContents(WebContents* contents) {
     gfx::Rect bounds = GetDisplayBounds(contents);
 
     gfx::NativeView frame_view =
-        platform_util::GetTopLevel(contents->GetNativeView());
+        platform_util::GetTopLevel(contents->GetView()->GetNativeView());
 
     views::Widget* insert_after =
         views::Widget::GetWidgetForNativeView(frame_view);
@@ -410,9 +411,10 @@ void HungRendererDialogView::Init() {
 gfx::Rect HungRendererDialogView::GetDisplayBounds(
     WebContents* contents) {
 #if defined(USE_AURA)
-  gfx::Rect contents_bounds(contents->GetNativeView()->GetBoundsInRootWindow());
+  gfx::Rect contents_bounds(
+      contents->GetView()->GetNativeView()->GetBoundsInRootWindow());
 #elif defined(OS_WIN)
-  HWND contents_hwnd = contents->GetNativeView();
+  HWND contents_hwnd = contents->GetView()->GetNativeView();
   RECT contents_bounds_rect;
   GetWindowRect(contents_hwnd, &contents_bounds_rect);
   gfx::Rect contents_bounds(contents_bounds_rect);

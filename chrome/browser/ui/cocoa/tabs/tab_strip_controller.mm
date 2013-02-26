@@ -2237,5 +2237,5 @@ NSView* GetSheetParentViewForWebContents(WebContents* web_contents) {
   //
   // Changing it? Do not forget to modify
   // -[TabStripController swapInTabAtIndex:] too.
-  return [web_contents->GetNativeView() superview];
+  return [web_contents->GetView()->GetNativeView() superview];
 }

@@ -24,6 +24,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/page_zoom.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/views/focus/accelerator_handler.h"
@@ -63,7 +64,7 @@ void AutomationProvider::CreateExternalTab(
         SessionTabHelper::FromWebContents(web_contents);
     *tab_handle = external_tab_container->GetTabHandle();
     *tab_container_window = external_tab_container->GetExternalTabNativeView();
-    *tab_window = web_contents->GetNativeView();
+    *tab_window = web_contents->GetView()->GetNativeView();
     *session_id = session_tab_helper->session_id().id();
   } else {
     external_tab_container->Uninitialize();
@@ -118,7 +119,7 @@ ExternalTabContainer* AutomationProvider::GetExternalTabForHandle(int handle) {
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
     return ExternalTabContainer::GetContainerForTab(
-        tab->GetWebContents()->GetNativeView());
+        tab->GetWebContents()->GetView()->GetNativeView());
   }
 
   return NULL;
@@ -191,7 +192,7 @@ void AutomationProvider::ConnectExternalTab(
         SessionTabHelper::FromWebContents(web_contents);
     *tab_handle = external_tab_container->GetTabHandle();
     *tab_container_window = external_tab_container->GetExternalTabNativeView();
-    *tab_window = web_contents->GetNativeView();
+    *tab_window = web_contents->GetView()->GetNativeView();
     *session_id = session_tab_helper->session_id().id();
   } else {
     external_tab_container->Uninitialize();

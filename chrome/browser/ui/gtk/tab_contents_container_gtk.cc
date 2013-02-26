@@ -12,6 +12,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "ui/base/gtk/gtk_expanded_container.h"
 #include "ui/base/gtk/gtk_floating_container.h"
 #include "ui/gfx/native_widget_types.h"
@@ -80,7 +81,7 @@ void TabContentsContainerGtk::SetTab(content::WebContents* tab) {
 
     // Make sure that the tab is below the find bar. Sometimes the content
     // native view will be null.
-    GtkWidget* widget = tab_->GetContentNativeView();
+    GtkWidget* widget = tab_->GetView()->GetContentNativeView();
     if (widget) {
       GdkWindow* content_gdk_window = gtk_widget_get_window(widget);
       if (content_gdk_window)
@@ -95,7 +96,7 @@ void TabContentsContainerGtk::SetPreview(content::WebContents* preview) {
 
   if (preview_) {
     HideTab(preview_);
-    GtkWidget* preview_widget = preview_->GetNativeView();
+    GtkWidget* preview_widget = preview_->GetView()->GetNativeView();
     if (preview_widget)
       gtk_container_remove(GTK_CONTAINER(expanded_), preview_widget);
   }
@@ -107,7 +108,7 @@ void TabContentsContainerGtk::SetPreview(content::WebContents* preview) {
 }
 
 void TabContentsContainerGtk::PackTab(content::WebContents* tab) {
-  gfx::NativeView widget = tab->GetNativeView();
+  gfx::NativeView widget = tab->GetView()->GetNativeView();
   if (widget) {
     if (gtk_widget_get_parent(widget) != expanded_)
       gtk_container_add(GTK_CONTAINER(expanded_), widget);
@@ -120,7 +121,7 @@ void TabContentsContainerGtk::PackTab(content::WebContents* tab) {
 }
 
 void TabContentsContainerGtk::HideTab(content::WebContents* tab) {
-  gfx::NativeView widget = tab->GetNativeView();
+  gfx::NativeView widget = tab->GetView()->GetNativeView();
   if (widget)
     gtk_widget_hide(widget);
 
@@ -130,7 +131,7 @@ void TabContentsContainerGtk::HideTab(content::WebContents* tab) {
 }
 
 void TabContentsContainerGtk::DetachTab(content::WebContents* tab) {
-  gfx::NativeView widget = tab->GetNativeView();
+  gfx::NativeView widget = tab->GetView()->GetNativeView();
 
   // It is possible to detach an unrealized, unparented WebContents if you
   // slow things down enough in valgrind. Might happen in the real world, too.
@@ -169,7 +170,7 @@ void TabContentsContainerGtk::WebContentsDestroyed(
 gboolean TabContentsContainerGtk::OnFocus(GtkWidget* widget,
                                           GtkDirectionType focus) {
   if (preview_) {
-    gtk_widget_child_focus(tab_->GetContentNativeView(), focus);
+    gtk_widget_child_focus(tab_->GetView()->GetContentNativeView(), focus);
     return TRUE;
   }
 

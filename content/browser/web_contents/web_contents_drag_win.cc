@@ -24,6 +24,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_drag_dest_delegate.h"
 #include "net/base/net_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -348,7 +349,7 @@ bool WebContentsDragWin::DoDragging(const WebDropData& drop_data,
   // Use a local variable to keep track of the contents view window handle.
   // It might not be safe to access the instance after DoDragDrop returns
   // because the window could be disposed in the nested message loop.
-  HWND native_window = web_contents_->GetNativeView();
+  HWND native_window = web_contents_->GetView()->GetNativeView();
 
   // We need to enable recursive tasks on the message loop so we can get
   // updates while in the system DoDragDrop loop.

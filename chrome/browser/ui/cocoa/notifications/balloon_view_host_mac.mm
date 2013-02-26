@@ -30,5 +30,5 @@ void BalloonViewHost::UpdateActualSize(const gfx::Size& new_size) {
 }
 
 gfx::NativeView BalloonViewHost::native_view() const {
-  return web_contents_->GetContentNativeView();
+  return web_contents_->GetView()->GetContentNativeView();
 }

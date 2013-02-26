@@ -39,6 +39,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
@@ -344,7 +345,7 @@ void DownloadsDOMHandler::HandleDrag(const base::ListValue* args) {
     return;
   gfx::Image* icon = g_browser_process->icon_manager()->LookupIcon(
       file->GetTargetFilePath(), IconLoader::NORMAL);
-  gfx::NativeView view = web_contents->GetNativeView();
+  gfx::NativeView view = web_contents->GetView()->GetNativeView();
   {
     // Enable nested tasks during DnD, while |DragDownload()| blocks.
     MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());

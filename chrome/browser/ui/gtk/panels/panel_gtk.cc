@@ -29,6 +29,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "ui/base/accelerators/platform_accelerator_gtk.h"
@@ -941,7 +942,7 @@ void PanelGtk::PanelExpansionStateChanging(
 void PanelGtk::AttachWebContents(content::WebContents* contents) {
   if (!contents)
     return;
-  gfx::NativeView widget = contents->GetNativeView();
+  gfx::NativeView widget = contents->GetView()->GetNativeView();
   if (widget) {
     gtk_container_add(GTK_CONTAINER(contents_expanded_), widget);
     gtk_widget_show(widget);
@@ -950,7 +951,7 @@ void PanelGtk::AttachWebContents(content::WebContents* contents) {
 }
 
 void PanelGtk::DetachWebContents(content::WebContents* contents) {
-  gfx::NativeView widget = contents->GetNativeView();
+  gfx::NativeView widget = contents->GetView()->GetNativeView();
   if (widget) {
     GtkWidget* parent = gtk_widget_get_parent(widget);
     if (parent) {

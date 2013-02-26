@@ -32,6 +32,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -213,7 +214,7 @@ void ThumbnailLoader::LoadThumbnail() {
 
   // Medium term, we want to show thumbs of the actual info bar views, which
   // means I need to create InfoBarControllers here.
-  NSWindow* window = [contents_->GetNativeView() window];
+  NSWindow* window = [contents_->GetView()->GetNativeView() window];
   NSWindowController* windowController = [window windowController];
   if ([windowController isKindOfClass:[BrowserWindowController class]]) {
     BrowserWindowController* bwc =

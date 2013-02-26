@@ -70,7 +70,7 @@
 
   // Remove any old preview contents before showing the new one.
   if (previewContents_) {
-    [previewContents_->GetNativeView() removeFromSuperview];
+    [previewContents_->GetView()->GetNativeView() removeFromSuperview];
     previewContents_->WasHidden();
   }
 
@@ -83,7 +83,7 @@
   if (previewContents_) {
     [[[self view] window] disableScreenUpdatesUntilFlush];
     previewContents_->GetView()->SetAllowOverlappingViews(true);
-    [[self view] addSubview:previewContents_->GetNativeView()];
+    [[self view] addSubview:previewContents_->GetView()->GetNativeView()];
   }
 
   if (drawDropShadow_) {
@@ -106,7 +106,7 @@
 - (void)onActivateTabWithContents:(content::WebContents*)contents {
   if (previewContents_ == contents) {
     if (previewContents_) {
-      [previewContents_->GetNativeView() removeFromSuperview];
+      [previewContents_->GetView()->GetNativeView() removeFromSuperview];
       previewContents_ = NULL;
     }
     [self setPreview:NULL
@@ -151,7 +151,7 @@
     NSRect previewFrame = bounds;
     previewFrame.size.height = [self previewHeightInPixels];
     previewFrame.origin.y = NSMaxY(bounds) - NSHeight(previewFrame);
-    [previewContents_->GetNativeView() setFrame:previewFrame];
+    [previewContents_->GetView()->GetNativeView() setFrame:previewFrame];
 
     if (dropShadowView_) {
       NSRect dropShadowFrame = bounds;

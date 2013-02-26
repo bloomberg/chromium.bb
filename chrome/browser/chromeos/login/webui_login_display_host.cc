@@ -26,6 +26,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -322,7 +323,7 @@ void WebUILoginDisplayHost::ShowWebUI() {
   }
   LOG(INFO) << "Login WebUI >> Show already initialized UI";
   login_window_->Show();
-  login_view_->GetWebContents()->Focus();
+  login_view_->GetWebContents()->GetView()->Focus();
   login_view_->SetStatusAreaVisible(status_area_saved_visibility_);
   login_view_->OnPostponedShow();
   // We should reset this flag to allow changing of status area visibility.

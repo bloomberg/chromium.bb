@@ -17,6 +17,7 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "ui/base/animation/animation.h"
 
 using content::DownloadItem;
@@ -124,7 +125,7 @@ void DownloadShelf::ShowDownload(DownloadItem* download) {
       browser()->tab_strip_model()->GetActiveWebContents();
   if (DownloadItemModel(download).ShouldShowDownloadStartedAnimation() &&
       shelf_tab &&
-      platform_util::IsVisible(shelf_tab->GetNativeView()) &&
+      platform_util::IsVisible(shelf_tab->GetView()->GetNativeView()) &&
       ui::Animation::ShouldRenderRichAnimation()) {
     DownloadStartedAnimation::Show(shelf_tab);
   }

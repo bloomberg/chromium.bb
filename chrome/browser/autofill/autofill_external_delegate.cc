@@ -160,7 +160,7 @@ void AutofillExternalDelegate::EnsurePopupForElement(
     const gfx::RectF& element_bounds) {
   // Convert element_bounds to be in screen space.
   gfx::Rect client_area;
-  web_contents_->GetContainerBounds(&client_area);
+  web_contents_->GetView()->GetContainerBounds(&client_area);
   gfx::RectF element_bounds_in_screen_space =
       element_bounds + client_area.OffsetFromOrigin();
 

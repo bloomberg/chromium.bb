@@ -21,6 +21,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "ui/base/gtk/gtk_screen_util.h"
 #include "ui/gfx/screen.h"
 
@@ -786,7 +787,7 @@ void DraggedTabControllerGtk::ResetDelegates() {
 void DraggedTabControllerGtk::EnsureDraggedView() {
   if (!dragged_view_.get()) {
     gfx::Rect rect;
-    drag_data_->GetSourceWebContents()->GetContainerBounds(&rect);
+    drag_data_->GetSourceWebContents()->GetView()->GetContainerBounds(&rect);
     dragged_view_.reset(new DraggedViewGtk(drag_data_.get(), mouse_offset_,
                                            rect.size()));
   }

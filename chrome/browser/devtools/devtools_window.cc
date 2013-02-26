@@ -409,7 +409,8 @@ void DevToolsWindow::CreateDevToolsBrowser() {
   }
 
   chrome::HostDesktopType host_desktop_type =
-      chrome::GetHostDesktopTypeForNativeView(web_contents_->GetNativeView());
+      chrome::GetHostDesktopTypeForNativeView(
+          web_contents_->GetView()->GetNativeView());
 
   browser_ = new Browser(Browser::CreateParams::CreateForDevTools(
                              profile_, host_desktop_type));

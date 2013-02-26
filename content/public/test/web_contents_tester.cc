@@ -13,24 +13,6 @@ namespace {
 // The two subclasses here are instantiated via the deprecated
 // CreateWebContentsFor... factories below.
 
-class TestWebContentsCountFocus : public TestWebContents {
- public:
-  explicit TestWebContentsCountFocus(BrowserContext* browser_context)
-      : TestWebContents(browser_context), focus_called_(0) {
-  }
-
-  virtual int GetNumberOfFocusCalls() OVERRIDE {
-    return focus_called_;
-  }
-
-  virtual void Focus() OVERRIDE {
-    focus_called_++;
-  }
-
- private:
-  int focus_called_;
-};
-
 class TestWebContentsCountSetFocusToLocationBar : public TestWebContents {
  public:
   explicit TestWebContentsCountSetFocusToLocationBar(
@@ -69,16 +51,6 @@ WebContents* WebContentsTester::CreateTestWebContentsCountSetFocusToLocationBar(
     SiteInstance* instance) {
   TestWebContentsCountSetFocusToLocationBar* web_contents =
       new TestWebContentsCountSetFocusToLocationBar(browser_context);
-  web_contents->Init(WebContents::CreateParams(browser_context, instance));
-  return web_contents;
-}
-
-// static
-WebContents* WebContentsTester::CreateTestWebContentsCountFocus(
-    BrowserContext* browser_context,
-    SiteInstance* instance) {
-  TestWebContentsCountFocus* web_contents =
-      new TestWebContentsCountFocus(browser_context);
   web_contents->Init(WebContents::CreateParams(browser_context, instance));
   return web_contents;
 }

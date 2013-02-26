@@ -168,7 +168,7 @@ void ReloadInternal(Browser* browser,
   WebContents* web_contents = GetOrCloneTabForDisposition(browser, disposition);
   web_contents->UserGestureDone();
   if (!web_contents->FocusLocationBarByDefault())
-    web_contents->Focus();
+    web_contents->GetView()->Focus();
   if (ignore_cache)
     web_contents->GetController().ReloadIgnoringCache(true);
   else

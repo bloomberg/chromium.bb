@@ -654,7 +654,7 @@ bool NativeAppWindowCocoa::IsAlwaysOnTop() const {
 }
 
 void NativeAppWindowCocoa::RenderViewHostChanged() {
-  web_contents()->Focus();
+  web_contents()->GetView()->Focus();
 }
 
 gfx::Insets NativeAppWindowCocoa::GetFrameInsets() const {

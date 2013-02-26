@@ -40,8 +40,10 @@ using content::WebContents;
 - (void)ensureContentsSizeDoesNotChange {
   NSView* contentsContainer = [self view];
   NSArray* subviews = [contentsContainer subviews];
-  if ([subviews count] > 0)
-    [contents_->GetNativeView() setAutoresizingMask:NSViewNotSizable];
+  if ([subviews count] > 0) {
+    [contents_->GetView()->GetNativeView()
+        setAutoresizingMask:NSViewNotSizable];
+  }
 }
 
 // Call when the tab view is properly sized and the render widget host view
@@ -51,7 +53,7 @@ using content::WebContents;
     return;
   NSView* contentsContainer = [self view];
   NSArray* subviews = [contentsContainer subviews];
-  NSView* contentsNativeView = contents_->GetNativeView();
+  NSView* contentsNativeView = contents_->GetView()->GetNativeView();
   [contentsNativeView setFrame:[contentsContainer frame]];
   if ([subviews count] == 0) {
     [contentsContainer addSubview:contentsNativeView];

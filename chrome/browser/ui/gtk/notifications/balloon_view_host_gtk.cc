@@ -10,6 +10,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 
 BalloonViewHost::BalloonViewHost(Balloon* balloon)
     : BalloonHost(balloon) {
@@ -32,5 +33,5 @@ void BalloonViewHost::UpdateActualSize(const gfx::Size& new_size) {
 }
 
 gfx::NativeView BalloonViewHost::native_view() const {
-  return web_contents_->GetNativeView();
+  return web_contents_->GetView()->GetNativeView();
 }

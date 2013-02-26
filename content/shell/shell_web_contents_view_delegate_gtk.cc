@@ -196,17 +196,17 @@ gboolean ShellWebContentsViewDelegate::OnNativeViewFocusEvent(
 
 void ShellWebContentsViewDelegate::OnBackMenuActivated(GtkWidget* widget) {
   web_contents_->GetController().GoToOffset(-1);
-  web_contents_->Focus();
+  web_contents_->GetView()->Focus();
 }
 
 void ShellWebContentsViewDelegate::OnForwardMenuActivated(GtkWidget* widget) {
   web_contents_->GetController().GoToOffset(1);
-  web_contents_->Focus();
+  web_contents_->GetView()->Focus();
 }
 
 void ShellWebContentsViewDelegate::OnReloadMenuActivated(GtkWidget* widget) {
   web_contents_->GetController().Reload(false);
-  web_contents_->Focus();
+  web_contents_->GetView()->Focus();
 }
 
 void ShellWebContentsViewDelegate::OnOpenURLMenuActivated(GtkWidget* widget) {

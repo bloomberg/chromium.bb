@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/base_window.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 
 using content::RenderWidgetHost;
 using content::WebContents;
@@ -36,7 +37,8 @@ void DoCutCopyPaste(GtkWindow* window,
   if (widget == NULL)
     return;  // Do nothing if no focused widget.
 
-  if (web_contents && widget == web_contents->GetContentNativeView()) {
+  if (web_contents &&
+      widget == web_contents->GetView()->GetContentNativeView()) {
     (web_contents->GetRenderViewHost()->*method)();
   } else {
     guint id;

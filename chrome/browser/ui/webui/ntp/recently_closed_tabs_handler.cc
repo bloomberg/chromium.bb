@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/webui/web_ui_util.h"
 
@@ -106,7 +107,7 @@ void RecentlyClosedTabsHandler::HandleReopenTab(const ListValue* args) {
     return;
   chrome::HostDesktopType host_desktop_type =
       chrome::GetHostDesktopTypeForNativeView(
-          web_ui()->GetWebContents()->GetNativeView());
+          web_ui()->GetWebContents()->GetView()->GetNativeView());
   WindowOpenDisposition disposition = webui::GetDispositionFromClick(args, 2);
   tab_restore_service_->RestoreEntryById(delegate,
                                          static_cast<int>(session_to_restore),

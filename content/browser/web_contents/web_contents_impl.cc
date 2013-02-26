@@ -344,7 +344,7 @@ WebContentsImpl::~WebContentsImpl() {
 #if defined(OS_WIN) && !defined(USE_AURA)
   // If we still have a window handle, destroy it. GetNativeView can return
   // NULL if this contents was part of a window that closed.
-  if (GetNativeView()) {
+  if (view_->GetNativeView()) {
     RenderViewHost* host = GetRenderViewHost();
     if (host && host->GetView())
       RenderWidgetHostViewPort::FromRWHV(host->GetView())->WillWmDestroy();
@@ -1184,22 +1184,6 @@ WebContents* WebContentsImpl::Clone() {
                     observers_,
                     DidCloneToNewWebContents(this, tc));
   return tc;
-}
-
-gfx::NativeView WebContentsImpl::GetContentNativeView() const {
-  return view_->GetContentNativeView();
-}
-
-gfx::NativeView WebContentsImpl::GetNativeView() const {
-  return view_->GetNativeView();
-}
-
-void WebContentsImpl::GetContainerBounds(gfx::Rect* out) const {
-  view_->GetContainerBounds(out);
-}
-
-void WebContentsImpl::Focus() {
-  view_->Focus();
 }
 
 void WebContentsImpl::Observe(int type,
@@ -2385,7 +2369,7 @@ void WebContentsImpl::OnFindMatchRectsReply(
 void WebContentsImpl::OnOpenDateTimeDialog(
     const ViewHostMsg_DateTimeDialogValue_Params& value) {
   date_time_chooser_->ShowDialog(
-      GetContentNativeView(), GetRenderViewHost(), value.dialog_type,
+      view_->GetContentNativeView(), GetRenderViewHost(), value.dialog_type,
       value.year, value.month, value.day, value.hour,
       value.minute, value.second);
 }
@@ -2787,7 +2771,7 @@ void WebContentsImpl::RenderViewReady(RenderViewHost* rvh) {
   // window).
   if (was_crashed && !FocusLocationBarByDefault() &&
       (!delegate_ || delegate_->ShouldFocusPageAfterCrash())) {
-    Focus();
+    view_->Focus();
   }
 
   FOR_EACH_OBSERVER(WebContentsObserver, observers_, RenderViewReady());

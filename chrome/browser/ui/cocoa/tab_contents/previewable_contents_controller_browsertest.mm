@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/cocoa/tab_contents/preview_drop_shadow_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #import "testing/gtest_mac.h"
 
 class PreviewableContentsControllerTest : public InProcessBrowserTest {
@@ -43,7 +44,7 @@ class PreviewableContentsControllerTest : public InProcessBrowserTest {
                           InstantSizeUnits units) {
     NSRect container_bounds = [[controller_ view] bounds];
     NSRect preview_frame =
-        [web_contents_->GetNativeView() frame];
+        [web_contents_->GetView()->GetNativeView() frame];
 
     EXPECT_EQ(NSMinX(container_bounds), NSMinX(preview_frame));
     EXPECT_EQ(NSWidth(container_bounds), NSWidth(preview_frame));
@@ -73,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(PreviewableContentsControllerTest, SizePerecent) {
   InstantSizeUnits units = INSTANT_SIZE_PERCENT;
   instant_model_.SetPreviewState(mode, expected_height, units);
 
-  EXPECT_NSEQ([web_contents_->GetNativeView() superview],
+  EXPECT_NSEQ([web_contents_->GetView()->GetNativeView() superview],
               [controller_ view]);
   VerifyPreviewFrame(expected_height, units);
 
@@ -90,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(PreviewableContentsControllerTest, SizePixels) {
   InstantSizeUnits units = INSTANT_SIZE_PIXELS;
   instant_model_.SetPreviewState(mode, expected_height, units);
 
-  EXPECT_NSEQ([web_contents_->GetNativeView() superview],
+  EXPECT_NSEQ([web_contents_->GetView()->GetNativeView() superview],
               [controller_ view]);
   VerifyPreviewFrame(expected_height, units);
 

@@ -234,7 +234,7 @@ bool NativeAppWindowGtk::IsAlwaysOnTop() const {
 }
 
 void NativeAppWindowGtk::RenderViewHostChanged() {
-  web_contents()->Focus();
+  web_contents()->GetView()->Focus();
 }
 
 gfx::Insets NativeAppWindowGtk::GetFrameInsets() const {

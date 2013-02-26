@@ -19,7 +19,7 @@ using content::WebContents;
 NativeWebKeyboardEvent DropdownBarHost::GetKeyboardEvent(
      const WebContents* contents,
      const ui::KeyEvent& key_event) {
-  HWND hwnd = contents->GetContentNativeView();
+  HWND hwnd = contents->GetView()->GetContentNativeView();
   WORD key = WindowsKeyCodeForKeyboardCode(key_event.key_code());
 
   MSG msg = { hwnd, key_event.native_event().message, key, 0 };

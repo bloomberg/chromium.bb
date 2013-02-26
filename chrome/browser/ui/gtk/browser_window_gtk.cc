@@ -1139,7 +1139,7 @@ bool BrowserWindowGtk::GetConstrainedWindowTopY(int* top_y) {
 
 void BrowserWindowGtk::ShowAvatarBubble(WebContents* web_contents,
                                         const gfx::Rect& rect) {
-  GtkWidget* widget = web_contents->GetContentNativeView();
+  GtkWidget* widget = web_contents->GetView()->GetContentNativeView();
   new AvatarMenuBubbleGtk(browser_.get(), widget,
       BubbleGtk::ANCHOR_TOP_LEFT, &rect);
 }
@@ -1155,7 +1155,7 @@ void BrowserWindowGtk::ShowPasswordGenerationBubble(
     autofill::PasswordGenerator* password_generator) {
   WebContents* web_contents =
       browser_->tab_strip_model()->GetActiveWebContents();
-  if (!web_contents || !web_contents->GetContentNativeView()) {
+  if (!web_contents || !web_contents->GetView()->GetContentNativeView()) {
     return;
   }
 
@@ -1979,8 +1979,10 @@ gboolean BrowserWindowGtk::OnKeyPress(GtkWidget* widget, GdkEventKey* event) {
   WebContents* current_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   // The current tab might not have a render view if it crashed.
-  if (!current_web_contents || !current_web_contents->GetContentNativeView() ||
-      !gtk_widget_is_focus(current_web_contents->GetContentNativeView())) {
+  if (!current_web_contents ||
+      !current_web_contents->GetView()->GetContentNativeView() ||
+      !gtk_widget_is_focus(
+          current_web_contents->GetView()->GetContentNativeView())) {
     int command_id = GetCustomCommandId(event);
     if (command_id == -1)
       command_id = GetPreHandleCommandId(event);

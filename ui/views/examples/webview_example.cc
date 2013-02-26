@@ -6,6 +6,7 @@
 
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/fill_layout.h"
 
@@ -27,7 +28,7 @@ void WebViewExample::CreateExampleView(View* container) {
   container->AddChildView(webview_);
 
   webview_->LoadInitialURL(GURL("http://www.google.com/"));
-  webview_->web_contents()->Focus();
+  webview_->web_contents()->GetView()->Focus();
 }
 
 }  // namespace examples

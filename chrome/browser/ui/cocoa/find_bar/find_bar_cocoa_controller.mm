@@ -312,7 +312,7 @@ const float kRightEdgeOffset = 25;
   if (!(focusTracker_.get() &&
         [focusTracker_ restoreFocusInWindow:[findBarView_ window]])) {
     // Fall back to giving focus to the tab contents.
-    findBarBridge_->GetFindBarController()->web_contents()->Focus();
+    findBarBridge_->GetFindBarController()->web_contents()->GetView()->Focus();
   }
   focusTracker_.reset(nil);
 }

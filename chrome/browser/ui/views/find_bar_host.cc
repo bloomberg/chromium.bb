@@ -159,7 +159,7 @@ bool FindBarHost::IsFindBarVisible() {
 void FindBarHost::RestoreSavedFocus() {
   if (focus_tracker() == NULL) {
     // TODO(brettw): Focus() should be on WebContentsView.
-    find_bar_controller_->web_contents()->Focus();
+    find_bar_controller_->web_contents()->GetView()->Focus();
   } else {
     focus_tracker()->FocusLastFocusedExternalView();
   }

@@ -916,7 +916,7 @@ void Browser::UpdateUIForNavigationInTab(WebContents* contents,
   ScheduleUIUpdate(contents, content::INVALIDATE_TYPE_URL);
 
   if (contents_is_selected)
-    contents->Focus();
+    contents->GetView()->Focus();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1658,7 +1658,7 @@ void Browser::SetWebContentsBlocked(content::WebContents* web_contents,
   }
   tab_strip_model_->SetTabBlocked(index, blocked);
   if (!blocked && tab_strip_model_->GetActiveWebContents() == web_contents)
-    web_contents->Focus();
+    web_contents->GetView()->Focus();
 }
 
 bool Browser::GetDialogTopCenter(gfx::Point* point) {

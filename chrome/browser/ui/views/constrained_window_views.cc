@@ -622,7 +622,7 @@ ConstrainedWindowViews* ConstrainedWindowViews::Create(
   WebContentsModalDialogManager* manager =
       WebContentsModalDialogManager::FromWebContents(web_contents);
   ConstrainedWindowViews* dialog = new ConstrainedWindowViews(
-      web_contents->GetNativeView(),
+      web_contents->GetView()->GetNativeView(),
       web_contents->GetBrowserContext()->IsOffTheRecord(),
       widget_delegate);
   manager->AddDialog(dialog->GetNativeView());

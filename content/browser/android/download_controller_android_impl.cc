@@ -18,6 +18,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/browser/web_contents_view.h"
 #include "jni/DownloadController_jni.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
@@ -311,7 +312,7 @@ ScopedJavaLocalRef<jobject>
   if (!web_contents)
     return ScopedJavaLocalRef<jobject>();
 
-  ContentViewCore* view_core = web_contents->GetContentNativeView();
+  ContentViewCore* view_core = web_contents->GetView()->GetContentNativeView();
   return view_core ? view_core->GetJavaObject() :
       ScopedJavaLocalRef<jobject>();
 }

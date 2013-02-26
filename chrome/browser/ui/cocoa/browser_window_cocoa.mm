@@ -51,6 +51,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/password_form.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -91,7 +92,7 @@ namespace {
 NSPoint GetPointForBubble(content::WebContents* web_contents,
                           int x_offset,
                           int y_offset) {
-  NSView* view = web_contents->GetNativeView();
+  NSView* view = web_contents->GetView()->GetNativeView();
   NSRect bounds = [view bounds];
   NSPoint point;
   point.x = NSMinX(bounds) + x_offset;

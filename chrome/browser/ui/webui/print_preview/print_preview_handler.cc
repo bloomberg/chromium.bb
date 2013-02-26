@@ -505,7 +505,7 @@ void PrintPreviewHandler::PrintToPdf() {
   } else if (!select_file_dialog_ ||
              !select_file_dialog_->IsRunning(
                   platform_util::GetTopLevel(
-                      preview_web_contents()->GetNativeView()))) {
+                      preview_web_contents()->GetView()->GetNativeView()))) {
     PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
         web_ui()->GetController());
     // Pre-populating select file dialog with print job title.
@@ -582,8 +582,8 @@ void PrintPreviewHandler::OnSigninComplete(
 }
 
 void PrintPreviewHandler::HandleSignin(const ListValue* /*args*/) {
-  gfx::NativeWindow modal_parent =
-      platform_util::GetTopLevel(preview_web_contents()->GetNativeView());
+  gfx::NativeWindow modal_parent = platform_util::GetTopLevel(
+      preview_web_contents()->GetView()->GetNativeView());
   print_dialog_cloud::CreateCloudPrintSigninDialog(
       preview_web_contents()->GetBrowserContext(),
       modal_parent,
@@ -597,8 +597,8 @@ void PrintPreviewHandler::PrintWithCloudPrintDialog(
   // instead of the print preview dialog.
   ReportStats();
 
-  gfx::NativeWindow modal_parent =
-      platform_util::GetTopLevel(preview_web_contents()->GetNativeView());
+  gfx::NativeWindow modal_parent = platform_util::GetTopLevel(
+      preview_web_contents()->GetView()->GetNativeView());
   print_dialog_cloud::CreatePrintDialogForBytes(
       preview_web_contents()->GetBrowserContext(),
       modal_parent,
@@ -877,7 +877,8 @@ void PrintPreviewHandler::SelectFile(const base::FilePath& default_filename) {
       &file_type_info,
       0,
       FILE_PATH_LITERAL(""),
-      platform_util::GetTopLevel(preview_web_contents()->GetNativeView()),
+      platform_util::GetTopLevel(
+          preview_web_contents()->GetView()->GetNativeView()),
       NULL);
 }
 

@@ -576,7 +576,7 @@ void Navigate(NavigateParams* params) {
       (params->disposition == NEW_FOREGROUND_TAB ||
        params->disposition == NEW_WINDOW) &&
       (params->tabstrip_add_types & TabStripModel::ADD_INHERIT_OPENER))
-    params->source_contents->Focus();
+    params->source_contents->GetView()->Focus();
 
   if (params->source_contents == params->target_contents ||
       (swapped_in_instant && params->disposition == CURRENT_TAB)) {

@@ -18,6 +18,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
@@ -88,7 +89,7 @@ PasswordGenerationBubbleGtk::PasswordGenerationBubbleGtk(
   GtkThemeService* theme_service = GtkThemeService::GetFrom(
       Profile::FromBrowserContext(web_contents->GetBrowserContext()));
 
-  bubble_ = BubbleGtk::Show(web_contents->GetContentNativeView(),
+  bubble_ = BubbleGtk::Show(web_contents->GetView()->GetContentNativeView(),
                             &anchor_rect,
                             content,
                             BubbleGtk::ANCHOR_TOP_LEFT,

@@ -30,6 +30,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "net/base/escape.h"
 #include "third_party/icu/public/common/unicode/normalizer2.h"
 
@@ -140,7 +141,7 @@ bool IsViewInContents(gfx::NativeView view, content::WebContents* contents) {
   if (!view || !rwhv)
     return false;
 
-  gfx::NativeView tab_view = contents->GetNativeView();
+  gfx::NativeView tab_view = contents->GetView()->GetNativeView();
   if (view == rwhv->GetNativeView() || view == tab_view)
     return true;
 
@@ -581,7 +582,7 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
          last_suggestion_.behavior == INSTANT_COMPLETE_NEVER)) {
       EnsureSearchTermsAreSet(instant_tab_->contents(), last_omnibox_text_);
       instant_tab_->Submit(last_omnibox_text_);
-      instant_tab_->contents()->Focus();
+      instant_tab_->contents()->GetView()->Focus();
       return true;
     }
     return false;
@@ -1101,7 +1102,7 @@ void InstantController::StopCapturingKeyStrokes(
     return;
 
   DCHECK(IsContentsFrom(instant_tab(), contents));
-  contents->Focus();
+  contents->GetView()->Focus();
 }
 
 void InstantController::NavigateToURL(const content::WebContents* contents,

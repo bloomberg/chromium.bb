@@ -52,6 +52,7 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
@@ -971,7 +972,7 @@ bool DownloadsDragFunction::RunImpl() {
   RecordApiFunctions(DOWNLOADS_FUNCTION_DRAG);
   gfx::Image* icon = g_browser_process->icon_manager()->LookupIcon(
       download_item->GetUserVerifiedFilePath(), IconLoader::NORMAL);
-  gfx::NativeView view = web_contents->GetNativeView();
+  gfx::NativeView view = web_contents->GetView()->GetNativeView();
   {
     // Enable nested tasks during DnD, while |DragDownload()| blocks.
     MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());

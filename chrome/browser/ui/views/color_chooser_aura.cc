@@ -4,6 +4,7 @@
 
 #include "content/public/browser/color_chooser.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "ui/views/color_chooser/color_chooser_listener.h"
 #include "ui/views/color_chooser/color_chooser_view.h"
 #include "ui/views/widget/widget.h"
@@ -49,7 +50,8 @@ ColorChooserAura::ColorChooserAura(int identifier,
       tab_(tab) {
   DCHECK(tab_);
   view_ = new views::ColorChooserView(this, initial_color);
-  widget_ = views::Widget::CreateWindowWithContext(view_, tab->GetNativeView());
+  widget_ = views::Widget::CreateWindowWithContext(
+      view_, tab->GetView()->GetNativeView());
   widget_->SetAlwaysOnTop(true);
   widget_->Show();
 }

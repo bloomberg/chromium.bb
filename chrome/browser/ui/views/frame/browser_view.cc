@@ -2578,7 +2578,7 @@ void BrowserView::DoCutCopyPaste(void (content::RenderWidgetHost::*method)(),
 bool BrowserView::DoCutCopyPasteForWebContents(
     WebContents* contents,
     void (content::RenderWidgetHost::*method)()) {
-  gfx::NativeView native_view = contents->GetContentNativeView();
+  gfx::NativeView native_view = contents->GetView()->GetContentNativeView();
   if (!native_view)
     return false;
 #if defined(USE_AURA)

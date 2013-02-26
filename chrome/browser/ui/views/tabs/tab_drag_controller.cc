@@ -32,6 +32,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/theme_resources.h"
 #include "ui/base/animation/animation.h"
 #include "ui/base/animation/animation_delegate.h"
@@ -1849,11 +1850,11 @@ void TabDragController::CreateDraggedView(
 
   // Set up the photo booth to start capturing the contents of the dragged
   // WebContents.
-  NativeViewPhotobooth* photobooth =
-      NativeViewPhotobooth::Create(source_dragged_contents()->GetNativeView());
+  NativeViewPhotobooth* photobooth = NativeViewPhotobooth::Create(
+      source_dragged_contents()->GetView()->GetNativeView());
 
   gfx::Rect content_bounds;
-  source_dragged_contents()->GetContainerBounds(&content_bounds);
+  source_dragged_contents()->GetView()->GetContainerBounds(&content_bounds);
 
   std::vector<views::View*> renderers;
   for (size_t i = 0; i < drag_data_.size(); ++i) {

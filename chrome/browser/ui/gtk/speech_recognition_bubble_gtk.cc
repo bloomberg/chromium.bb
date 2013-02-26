@@ -18,6 +18,7 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/speech_recognition_manager.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
@@ -176,9 +177,9 @@ void SpeechRecognitionBubbleGtk::Show() {
   gtk_container_add(GTK_CONTAINER(content), vbox);
 
   GtkThemeService* theme_provider = GtkThemeService::GetFrom(profile);
-  GtkWidget* reference_widget = GetWebContents()->GetNativeView();
+  GtkWidget* reference_widget = GetWebContents()->GetView()->GetNativeView();
   gfx::Rect container_rect;
-  GetWebContents()->GetContainerBounds(&container_rect);
+  GetWebContents()->GetView()->GetContainerBounds(&container_rect);
   gfx::Rect target_rect(element_rect_.right() - kBubbleTargetOffsetX,
       element_rect_.bottom(), 1, 1);
 
