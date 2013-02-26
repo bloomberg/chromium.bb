@@ -204,7 +204,7 @@ class ShelfLayoutManagerTest : public ash::test::AshTestBase {
 };
 
 // Fails on Mac only.  Need to be implemented.  http://crbug.com/111279.
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_SetVisible DISABLED_SetVisible
 #else
 #define MAYBE_SetVisible SetVisible
@@ -326,8 +326,15 @@ TEST_F(ShelfLayoutManagerTest, DontReferenceLauncherAfterDeletion) {
   widget->SetFullscreen(true);
 }
 
+#if defined(OS_WIN)
+// RootWindow and Display can't resize on Windows Ash. http://crbug.com/165962
+#define MAYBE_AutoHide DISABLED_AutoHide
+#else
+#define MAYBE_AutoHide AutoHide
+#endif
+
 // Various assertions around auto-hide.
-TEST_F(ShelfLayoutManagerTest, AutoHide) {
+TEST_F(ShelfLayoutManagerTest, MAYBE_AutoHide) {
   aura::RootWindow* root = Shell::GetPrimaryRootWindow();
   aura::test::EventGenerator generator(root, root);
   generator.MoveMouseTo(0, 0);
@@ -623,8 +630,15 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfHiddenState) {
   EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
 }
 
+#if defined(OS_WIN)
+// RootWindow and Display can't resize on Windows Ash. http://crbug.com/165962
+#define MAYBE_SetAlignment DISABLED_SetAlignment
+#else
+#define MAYBE_SetAlignment SetAlignment
+#endif
+
 // Tests SHELF_ALIGNMENT_(LEFT, RIGHT, TOP).
-TEST_F(ShelfLayoutManagerTest, SetAlignment) {
+TEST_F(ShelfLayoutManagerTest, MAYBE_SetAlignment) {
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
   // Force an initial layout.
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
@@ -722,7 +736,14 @@ TEST_F(ShelfLayoutManagerTest, SetAlignment) {
             display.work_area().y() - display.bounds().y());
 }
 
-TEST_F(ShelfLayoutManagerTest, GestureDrag) {
+#if defined(OS_WIN)
+// RootWindow and Display can't resize on Windows Ash. http://crbug.com/165962
+#define MAYBE_GestureDrag DISABLED_GestureDrag
+#else
+#define MAYBE_GestureDrag GestureDrag
+#endif
+
+TEST_F(ShelfLayoutManagerTest, MAYBE_GestureDrag) {
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
   internal::RootWindowController* controller =
       Shell::GetPrimaryRootWindowController();
@@ -889,7 +910,14 @@ TEST_F(ShelfLayoutManagerTest, WindowVisibilityDisablesAutoHide) {
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
 }
 
-TEST_F(ShelfLayoutManagerTest, GestureRevealsTrayBubble) {
+#if defined(OS_WIN)
+// RootWindow and Display can't resize on Windows Ash. http://crbug.com/165962
+#define MAYBE_GestureRevealsTrayBubble DISABLED_GestureRevealsTrayBubble
+#else
+#define MAYBE_GestureRevealsTrayBubble GestureRevealsTrayBubble
+#endif
+
+TEST_F(ShelfLayoutManagerTest, MAYBE_GestureRevealsTrayBubble) {
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
   shelf->LayoutShelf();
 

@@ -662,6 +662,9 @@
             # All tests for multiple displays: not supported on Windows Ash.
             ['exclude', 'accelerators/nested_dispatcher_controller_unittest.cc'],
             ['exclude', 'wm/drag_window_resizer_unittest.cc'],
+            # Can't resize on Windows Ash. http://crbug.com/165962
+            ['exclude', 'magnifier/magnification_controller_unittest.cc'],
+            ['exclude', 'wm/workspace/workspace_window_resizer_unittest.cc'],
           ],
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],

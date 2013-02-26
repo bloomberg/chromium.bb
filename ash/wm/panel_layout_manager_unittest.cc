@@ -330,7 +330,14 @@ TEST_F(PanelLayoutManagerTest, SplitView) {
   EXPECT_NO_FATAL_FAILURE(PanelsNotOverlapping(w1.get(), w2.get()));
 }
 
-TEST_F(PanelLayoutManagerTest, SplitViewOverlapWhenLarge) {
+#if defined(OS_WIN)
+// RootWindow and Display can't resize on Windows Ash. http://crbug.com/165962
+#define MAYBE_SplitViewOverlapWhenLarge DISABLED_SplitViewOverlapWhenLarge
+#else
+#define MAYBE_SplitViewOverlapWhenLarge SplitViewOverlapWhenLarge
+#endif
+
+TEST_F(PanelLayoutManagerTest, MAYBE_SplitViewOverlapWhenLarge) {
   gfx::Rect bounds(0, 0, 600, 201);
   scoped_ptr<aura::Window> w1(CreatePanelWindow(bounds));
   scoped_ptr<aura::Window> w2(CreatePanelWindow(bounds));
@@ -379,7 +386,16 @@ TEST_F(PanelLayoutManagerTest, MinimizeRestorePanel) {
   EXPECT_TRUE(IsPanelCalloutVisible(window.get()));
 }
 
-TEST_F(PanelLayoutManagerTest, PanelMoveBetweenMultipleDisplays) {
+#if defined(OS_WIN)
+// Multiple displays aren't supported on Windows Metro/Ash.
+// http://crbug.com/165962
+#define MAYBE_PanelMoveBetweenMultipleDisplays \
+        DISABLED_PanelMoveBetweenMultipleDisplays
+#else
+#define MAYBE_PanelMoveBetweenMultipleDisplays PanelMoveBetweenMultipleDisplays
+#endif
+
+TEST_F(PanelLayoutManagerTest, MAYBE_PanelMoveBetweenMultipleDisplays) {
   // Keep the displays wide so that launchers have enough
   // spaces for launcher buttons.
   UpdateDisplay("500x400,500x400");

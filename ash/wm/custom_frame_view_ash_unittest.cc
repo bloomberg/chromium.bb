@@ -151,8 +151,15 @@ TEST_F(CustomFrameViewAshTest, ResizeButtonToggleMaximize) {
   widget->Close();
 }
 
+#if defined(OS_WIN)
+// RootWindow and Display can't resize on Windows Ash. http://crbug.com/165962
+#define MAYBE_ResizeButtonDrag DISABLED_ResizeButtonDrag
+#else
+#define MAYBE_ResizeButtonDrag ResizeButtonDrag
+#endif
+
 // Tests that click+dragging on the resize-button tiles or minimizes the window.
-TEST_F(CustomFrameViewAshTest, ResizeButtonDrag) {
+TEST_F(CustomFrameViewAshTest, MAYBE_ResizeButtonDrag) {
   views::Widget* widget = CreateWidget();
   aura::Window* window = widget->GetNativeWindow();
   CustomFrameViewAsh* frame = custom_frame_view_ash(widget);
@@ -265,9 +272,19 @@ TEST_F(CustomFrameViewAshTest, ResizeButtonDrag) {
   widget->Close();
 }
 
+#if defined(OS_WIN)
+// RootWindow and Display can't resize on Windows Ash. http://crbug.com/165962
+#define MAYBE_TouchDragResizeCloseToCornerDiffersFromMouse \
+        DISABLED_TouchDragResizeCloseToCornerDiffersFromMouse
+#else
+#define MAYBE_TouchDragResizeCloseToCornerDiffersFromMouse \
+        TouchDragResizeCloseToCornerDiffersFromMouse
+#endif
+
 // Tests Left/Right snapping with resize button touch dragging - which should
 // trigger dependent on the available drag distance.
-TEST_F(CustomFrameViewAshTest, TouchDragResizeCloseToCornerDiffersFromMouse) {
+TEST_F(CustomFrameViewAshTest,
+       MAYBE_TouchDragResizeCloseToCornerDiffersFromMouse) {
   views::Widget* widget = CreateWidget();
   aura::Window* window = widget->GetNativeWindow();
   CustomFrameViewAsh* frame = custom_frame_view_ash(widget);

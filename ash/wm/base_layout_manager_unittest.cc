@@ -127,8 +127,15 @@ TEST_F(BaseLayoutManagerTest, FocusDuringUnminimize) {
   EXPECT_EQ(ui::SHOW_STATE_DEFAULT, delegate.GetShowStateAndReset());
 }
 
+#if defined(OS_WIN)
+// RootWindow and Display can't resize on Windows Ash. http://crbug.com/165962
+#define MAYBE_MaximizeRootWindowResize DISABLED_MaximizeRootWindowResize
+#else
+#define MAYBE_MaximizeRootWindowResize MaximizeRootWindowResize
+#endif
+
 // Tests maximized window size during root window resize.
-TEST_F(BaseLayoutManagerTest, MaximizeRootWindowResize) {
+TEST_F(BaseLayoutManagerTest, MAYBE_MaximizeRootWindowResize) {
   gfx::Rect bounds(100, 100, 200, 200);
   scoped_ptr<aura::Window> window(CreateTestWindow(bounds));
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
