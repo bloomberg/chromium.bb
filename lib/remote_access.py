@@ -184,10 +184,11 @@ class RemoteAccess(object):
       debug_level = self.debug_level
 
     ssh_cmd = ' '.join(self._GetSSHCmd())
-    rsync_cmd = ['rsync', '-avz']
+    rsync_cmd = ['rsync', '--recursive', '--links', '--perms',  '--verbose',
+                 '--compress']
     if inplace:
       rsync_cmd.append('--inplace')
-    rsync_cmd += ['--progress', '-e', ssh_cmd, src,
+    rsync_cmd += ['--progress', '--rsh', ssh_cmd, src,
                   '%s:%s' % (self.target_ssh_url, dest)]
     rc_func = cros_build_lib.RunCommand
     if sudo:
