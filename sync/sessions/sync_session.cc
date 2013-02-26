@@ -75,12 +75,5 @@ void SyncSession::SendEventNotification(SyncEngineEvent::EventCause cause) {
   context()->NotifyListeners(event);
 }
 
-bool SyncSession::DidReachServer() const {
-  const ModelNeutralState& state = status_controller_->model_neutral_state();
-  return state.last_get_key_result >= FIRST_SERVER_RETURN_VALUE ||
-      state.last_download_updates_result >= FIRST_SERVER_RETURN_VALUE ||
-      state.commit_result >= FIRST_SERVER_RETURN_VALUE;
-}
-
 }  // namespace sessions
 }  // namespace syncer

@@ -844,14 +844,10 @@ void SyncSchedulerImpl::ScheduleNextSync(
   AdjustPolling(finished_job.get());
 
   if (succeeded) {
-    // Only reset backoff if we actually reached the server.
-    // It's possible that we reached the server on one attempt, then had an
-    // error on the next (or didn't perform some of the server-communicating
-    // commands). We want to verify that, for all commands attempted, we
-    // successfully spoke with the server. Therefore, we verify no errors
-    // and at least one SYNCER_OK.
-    if (finished_job->session()->DidReachServer())
-      wait_interval_.reset();
+    // No job currently supported by the scheduler could succeed without
+    // successfully reaching the server.  Therefore, if we make it here, it is
+    // appropriate to reset the backoff interval.
+    wait_interval_.reset();
     SDVLOG(2) << "Job succeeded so not scheduling more jobs";
     return;
   }

@@ -106,12 +106,6 @@ class SYNC_EXPORT_PRIVATE SyncSession {
   // Builds and sends a snapshot to the session context's listeners.
   void SendEventNotification(SyncEngineEvent::EventCause cause);
 
-  // Returns true if we reached the server. Note that "reaching the server"
-  // here means that from an HTTP perspective, we succeeded (HTTP 200).  The
-  // server **MAY** have returned a sync protocol error.
-  // See SERVER_RETURN_* in the SyncerError enum for values.
-  bool DidReachServer() const;
-
   // Overwrite the sync update source with the most recent and merge the
   // type/state map.
   void CoalesceSources(const SyncSourceInfo& source);
