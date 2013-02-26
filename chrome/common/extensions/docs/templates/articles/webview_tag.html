@@ -1,0 +1,502 @@
+<h1>Webview Tag API</h1>
+
+<table class="intro">
+  <tr>
+    <th scope="col"></th>
+    <th scope="col"></th>
+  </tr>
+  <tr>
+    <td><strong>Description:</strong></td>
+    <td>Use the <code>webview</code> tag to actively load live content
+    from the web over the network and embed it in your packaged app.
+    Your app can control the appearance of the <code>webview</code> and
+    interact with the web content,
+    initiate navigations in an embedded web page,
+    react to error events that happen within it, and more
+    (see <a href="#usage">Usage</a>).
+    </td>
+  </tr>
+  <tr>
+    <td><strong>Availability:</strong></td>
+    <td>Available in Chrome 25 or later</td>
+  </tr>
+  <tr>
+    <td><strong>Permissions:</strong></td>
+    <td><code>"webview"</code></td>
+  </tr>
+  <tr>
+    <td><strong>Samples:</strong></td>
+    <td><a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/browser">browser</a>;<br>
+    <a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/tcpserver">tcpserver</a>;<br>
+    <a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/webview">webview</a>
+    </td>
+  </tr>
+  <tr>
+    <td><strong>Learn more:</strong></td>
+    <td><a href="app_external.html">Embed Content</a>;<br>
+    <a href="https://developers.google.com/live/shows/7320022-11001/">Chrome Apps Office Hours - the WebView Control</a></td>
+  </tr>
+</table>
+
+<h2 id="usage">Usage</h2>
+
+<p>
+Use the <code>webview</code> tag to embed 'guest' content
+(such as web pages) in your packaged app.
+The guest content is contained within the <code>webview</code> container;
+an embedder page within your packaged app controls
+how the guest content is laid out and rendered.
+</p>
+
+<p>
+Different from the <code>iframe</code>,
+the <code>webview</code>
+runs in a separate process than your app;
+it doesn't have the same permissions as your app and
+all interactions between your app and embedded content will be asynchronous.
+This keeps your app safe from the embedded content.
+</p>
+
+<h2 id="example">Example</h2>
+
+<p>
+To embed a web page in your app,
+add the <code>webview</code> tag to your app's embedder page
+(this is the app page that will display the guest content).
+In its simplest form,
+the <code>webview</code> tag includes the <code>src</code> of the web page
+and css styles that control the appearance of the <code>webview</code> container:
+</p>
+
+<pre>&lt;webview id="foo" src="http://www.google.com/" style="width:640px; height:480px">&lt;/webview></pre>
+
+<p class="note">
+<b>Note:</b>
+You can only use css styles
+to control the look and feel of the container,
+for example, the container size.
+You cannot use css to control the guest content itself.
+</p>
+
+<p>
+If you want to control the guest content in any way,
+you can write JavaScript that listens for <a href="#events">webview events</a>
+and responds to those events using the <a href="#methods">webview methods</a>.
+Here's sample code in <code>app.js</code>
+with two event listeners:
+one that listens for the web page to start loading,
+the other for the web page to stop loading,
+and displays a "loading..." message during the load time:
+</p>
+
+<pre>
+onload = function() {
+  var webview = document.getElementById("foo");
+  var indicator = document.querySelector(".indicator");
+
+  var loadstart = function() {
+    indicator.innerText = "loading...";
+  }
+  var loadstop = function() {
+    indicator.innerText = "";
+  }
+  webview.addEventListener("loadstart", loadstart);
+  webview.addEvevntListener("loadstop", loadstop);
+}
+</pre>
+
+<h2 id="tag">Tag attributes</h2>
+
+<h3 id="src">src</h3>
+  <div class="summary">
+    <pre>&lt;webview id="foo" <strong>src="http://www.google.com/"</strong> style="width:640px; height:480px">&lt;/webview></pre>
+  </div>
+  <div class="description">
+    <p>
+    Returns the visible URL.
+    Mirrors the logic in the browser's omnibox:
+    either returning a pending new navigation if initiated by the embedder page,
+    or the last committed navigation.
+    Writing to this attribute initiates top-level navigation.
+    </p>
+  </div>
+
+<h3 id="partition">partition</h3>
+  <div class="summary">
+    <pre>&lt;webview id="foo" src="http://www.google.com/" style="width:640px; height:480px" <strong>partition="persist:googlepluswidgets"</strong>>&lt;/webview></pre>
+  </div>
+  <div class="description">
+    <p>
+    Storage partition ID used by the <code>webview</code> tag.
+    If the storage partition ID starts with <code>persist:</code>
+    (<code>partition="persist:googlepluswidgets"</code>),
+    the <code>webview</code> will use a persistent storage partition
+    available to all guests in the app
+    with the same storage partition ID.
+    If the ID is unset or if there is no <code>'persist':</code> prefix,
+    the <code>webview</code> will use an in-memory storage partition.
+    This value can only be modified before the first navigation,
+    since the storage partition of an active renderer process cannot change.
+    Subsequent attempts to modify the value will fail with a DOM exception.
+    By assigning the same partition ID,
+    multiple webviews can share the same storage partition.
+    </p>
+    <p class="note">
+    <strong>Exception thrown:</strong>
+    The partition attribute must be valid for navigation to proceed.
+    In the case of an invalid partition, such as <code>partition="persist:"</code>,
+    the <a href="#src">src attribute</a> cannot be set and an exception is thrown.
+    </p>
+  </div>
+
+<h3 id="autosize">autosize</h3>
+  <div class="summary">
+    <pre>&lt;webview id="foo" src="http://www.google.com/" style="width:640px; height:480px" <strong>autosize="on" minwidth="576" minheight="432"</strong>>&lt;/webview></pre>
+  </div>
+  <div class="description">
+    <p>
+    If "on", the <code>webview</code> will fire the <a href="#event-sizechanged">sizechanged</a> event
+    and adjust the size of the guest content within the <code>webview</code> container,
+    provided you have written event handlers to change these dimensions.
+    You can also include size contraints on the guest content:
+    <code>minwidth</code>, <code>minheight</code>,
+    <code>maxwidth</code>, <code>maxheight</code>.
+    These contraints do not impact the <code>webview</code> UNLESS <code>autosize</code> is enabled.
+    When autosize is enabled, the <code>webview</code> content cannot be less than the minimum values
+    or greater than the maximum.
+    </p>
+  </div>
+
+<h2 id="methods">Methods</h2>
+
+<h3 id="stop">stop</h3>
+  <div class="summary">
+    <pre>stop()</pre>
+  </div>
+  <div class="description">
+    <p>
+    Stops the loading of the current <code>webview</code> navigation, if one is in progress.
+    </p>
+  </div>
+
+<h3 id="reload">reload</h3>
+  <div class="summary">
+    <pre>reload()</pre>
+  </div>
+  <div class="description">
+    <p>
+    Reloads the current top-level page.
+    </p>
+  </div>
+
+<h3 id="back">back / forward / go</h3>
+  <div class="summary">
+    <pre>back()<br>forward()<br>go(integer <i>relativeIndex</i>)</pre>
+  </div>
+  <div class="description">
+    <p>
+    Initiates a history navigation back, forward, or to a relative index, if possible.
+    Includes history navigations to subframes.
+    The <code>go()</code> method has a <code>relativeIndex</code> parameter,
+    which can either be a positive integer, meaning to go forward a certain number of entries,
+    or negative, meaning to go back.
+    </p>
+  </div>
+
+<h3 id="canGoBack">canGoBack / canGoForward</h3>
+  <div class="summary">
+    <pre>canGoBack()<br>canGoForward()</pre>
+  </div>
+  <div class="description">
+    <p>
+    Indicates whether it is possible to go back or forward from the current state.
+    </p>
+  </div>
+
+<h3 id="postMessage">contentWindow.postMessage</h3>
+  <div class="summary">
+    <pre>contentWindow.postMessage(message, targetOrigin)</pre>
+  </div>
+  <div class="description">
+    <p>
+    Posts <code>message</code> (example: "Message from app to embedded page")
+    to the embedded web content,
+    as long as the embedded content is displaying a page
+    from the <code>targetOrigin</code> (example: "https://www.google.com").
+    This method isn't available until the page has completed loading.
+    Listen to the <a href="#event-loadstop">loadstop event</a>
+    and then call the method.
+    Allows the guest to send replies and
+    provides the guest web page with a JavaScript reference
+    to the embedder page's window (via <code>event.source</code>).
+    Uses the same
+    <a href="https://developer.mozilla.org/en-US/docs/DOM/window.postMessage">HTML5 postMessage</a>
+    API as between web pages.
+    The embedder should listen for replies
+    by adding a <code>message</code> event listener to its own frame.
+    The <code>event.source</code> corresponds to the guest frame that sent the reply.
+    </p>
+  </div>
+
+<h3 id="getProcessID">getProcessId</h3>
+  <div class="summary">
+    <pre>getProcessId()</pre>
+  </div>
+  <div class="description">
+    <p>
+    Returns Chrome's internal process ID
+    for the guest web page's current process,
+    allowing embedders to know how many guests would be affected
+    by terminating the process.
+    Two guests will share a process only if
+    they belong to the same app and have the same
+    <a href="#partition">storage partition ID</a>.
+    The call is synchronous and returns the embedder's cached notion
+    of the current process ID.
+    The process ID isn't the same as the operating system's process ID.
+    </p>
+  </div>
+
+<h3 id="terminate">terminate</h3>
+  <div>
+    <pre>terminate()</pre>
+  </div>
+  <div class="description">
+    <p>
+    Forcibly kills the guest web page's renderer process.
+    This may affect multiple <code>webview</code> tags in the current app
+    if they share the same process,
+    but it will not affect <code>webview</code> tags in other apps.
+    </p>
+  </div>
+
+<h2 id="events">Events</h2>
+  
+  <p>
+  Each event handler is a function that takes in an event object.
+  Each event object has a <code>name</code> property matching the event's name,
+  so that one event handler function can be used to handle multiple types of events.
+  Event handlers are specified using
+  <code>addEventListener("eventName", function)</code>.
+  </p>
+
+<h3 id="event-loadstart">loadstart</h3>
+  <div class="summary">
+    <pre>addEventListener("loadstart", function(string <i>url</i>, boolean <i>isTopLevel</i>))</pre>
+  </div>
+  <div class="description">
+    <p>
+    Fired when a load has begun.
+    </p>    
+    <h4>Properties</h4>
+      <dt>
+        <span class="property">url</span>
+      </dt>
+      <dd>
+        Requested URL.
+      </dd>
+      <dt>
+        <span class="property">isTopLevel</span>
+      </dt>
+      <dd>
+        Whether the load is top-level or in a subframe.
+      </dd>
+  </div>
+
+<h3 id="event-loadabort">loadabort</h3>
+  <div class="summary">
+    <pre>addEventListener("loadabort", function(string <i>url</i>, boolean <i>isTopLevel</i>, string <i>reason</i>))</pre>
+  </div>
+  <div class="description">
+    <p>
+    Fired when a top-level load has aborted without committing.
+    </p>
+    <h4>Properties</h4>
+      <dt>
+       	<span class="property">url</span>
+      </dt>
+      <dd>
+        Requested URL.
+      </dd>
+      <dt>
+        <span class="property">isTopLevel</span>
+      </dt>
+      <dd>
+       	Whether the load was top-level or in a subframe.
+      </dd>
+      <dt>
+       	<span class="property">reason</span>
+      </dt>
+      <dd>
+        String indicating what type of abort occurred:
+        <code>networkError</code>, <code>download</code>,
+       	<code>canceled</code>, <code>sslError</code>, <code>safeBrowsingError</code>.
+      </dd>
+  </div>
+
+<h3 id="event-loadredirect">loadredirect</h3>
+  <div class="summary">
+    <pre>addEventListener("loadredirect", function(string <i>oldUrl</i>, string <i>newUrl</i>, boolean <i>isTopLevel</i>))</pre>
+  </div>
+  <div class="description">
+      <p>
+      Fired when a top-level load request has redirected to a different URL.
+      </p>
+      <h4>Properties</h4>
+        <dt>
+       	  <span class="property">oldUrl</span>
+        </dt>
+        <dd>
+       	  The requested URL, before the redirect.
+        </dd>
+        <dt>
+       	  <span class="property">newUrl</span>
+        </dt>
+        <dd>
+       	  The new requested URL.
+        </dd>
+        <dt>
+       	  <span class="property">isTopLevel</span>
+        </dt>
+        <dd>
+       	  Whether the redirect happened at top-level or in a subframe.
+        </dd>
+  </div>
+  <div>
+
+<h3 id="event-loadcommit">loadcommit</h3>
+  <div class="summary">
+    <pre>addEventListener("loadcommit", function(string <i>url</i>, boolean <i>isTopLevel</i>))</pre>
+  </div>
+  <div class="description">
+    <p>
+    Fired when a load has committed.
+    </p>
+    <h4>Properties</h4>
+      <dt>
+        <span class="property">url</span>
+      </dt>
+      <dd>
+        The URL that committed.
+      </dd>
+      <dt>
+        <span class="property">isTopLevel</span>
+      </dt>
+      <dd>
+        Whether the load is top-level or in a subframe.
+      </dd>
+  </div>
+
+<h3 id="event-loadstop">loadstop</h3>
+  <div class="summary">
+    <pre>addEventListener("loadstop", function)</pre>
+  </div>
+  <div class="description">
+    <p>
+    Fired when all loads in the tag (including all subframes) have completed.
+    Fires in addition to any <a href="#event-loadcommit">loadCommit</a>
+    or <a href="#event-loadabort">loadAbort</a> events,
+    which occur per-frame.
+    </p>
+  </div>
+
+<h3 id="event-sizechanged">sizechanged</h3>
+  <div class="summary">
+    <pre>addEventListener("sizechanged", function(integer <i>oldWidth</i>, integer <i>oldHeight</i>, integer <i>newWidth</i>, integer <i>newHeight</i>))</pre>
+  </div>
+  <div class="description">
+    <p>
+    Fired when the embedded web content has been resized.
+    Only fires if <a href="#autosize">autosize</a> enabled.
+    </p>
+    <h4>Properties</h4>
+      <dt>
+        <span class="property">oldWidth</span>
+      </dt>
+      <dd>
+        Old width of embedded web content.
+      </dd>
+      <dt>
+        <span class="property">oldHeight</span>
+      </dt>
+      <dd>
+        Old height of embedded web content.
+      </dd>
+      <dt>
+        <span class="property">newWidth</span>
+      </dt>
+      <dd>
+        New width of embedded web content.
+      </dd>
+      <dt>
+        <span class="property">newHeight</span>
+      </dt>
+      <dd>
+        New height of embedded web content.
+      </dd>
+  </div>
+
+<h3 id="event-exit">exit</h3>
+  <div class="summary">
+    <pre>addEventListener("exit", function(integer <i>processID</i>, string <i>reason</i>))</pre>
+  </div>
+  <div class="description">
+    <p>
+    Fired when the process rendering the guest web content has exited.
+    </p>
+    <h4>Properties</h4>
+      <dt>
+        <span class="property">processID</span>
+      </dt>
+      <dd>
+        Chrome's internal ID of the process that exited.
+      </dd>
+      <dt>
+        <span class="property">reason</span>
+      </dt>
+      <dd>
+        String indicating a reason for the exit:
+       	<code>normal</code>, <code>abnormal</code>,
+       	<code>crash</code>, <code>kill</code>.
+      </dd>
+  </div>
+
+<h3 id="event-unresponsive">unresponsive</h3>
+  <div class="summary">
+    <pre>addEventListener("unresponsive", function(integer <i>processID</i>))</pre>
+  </div>
+  <div class="description">
+    <p>
+    Fired when the process rendering the guest web content has become unresponsive.
+    This event will be generated once,
+    with a matching <a href="#event-responsive">responsive</a> event
+    if the guest begins to respond again.
+    </p>
+    <h4>Properties</h4>
+      <dt>
+        <span class="property">processID</span>
+      </dt>
+      <dd>
+        Chrome's internal ID of the process that hung.
+      </dd>
+  </div>
+    
+<h3 id="event-responsive">responsive</h3>
+  <div class="summary">
+    <pre>addEventListener("responsive", function(integer <i>processID</i>))</pre>
+  </div>
+  <div class="description">
+    <p>
+    Fired when the process rendering the guest web content has become responsive again
+    after being unresponsive.
+    </p>
+    <h4>Properties</h4>
+      <dt>
+        <span class="property">processID</span>
+      </dt>
+      <dd>
+        Chrome's internal ID of the process that became responsive.
+      </dd>
+  </div>
+
+<p class="backtotop"><a href="#top">Back to top</a></p>
