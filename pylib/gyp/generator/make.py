@@ -2002,14 +2002,22 @@ def GenerateOutput(target_list, target_dicts, data, params):
 
   build_file, _, _ = gyp.common.ParseQualifiedTarget(target_list[0])
   make_global_settings_array = data[build_file].get('make_global_settings', [])
+  wrappers = {}
+  wrappers['LINK'] = '%s $(builddir)/linker.lock' % flock_command
+  for key, value in make_global_settings_array:
+    if key.endswith('_wrapper'):
+      wrappers[key[:-len('_wrapper')]] = '$(abspath %s)' % value
   make_global_settings = ''
   for key, value in make_global_settings_array:
+    if re.match('.*_wrapper', key):
+      continue
     if value[0] != '$':
       value = '$(abspath %s)' % value
-    if key == 'LINK':
-      make_global_settings += ('%s ?= %s $(builddir)/linker.lock %s\n' %
-                               (key, flock_command, value))
-    elif key in ('CC', 'CC.host', 'CXX', 'CXX.host'):
+    wrapper = wrappers.get(key)
+    if wrapper:
+      value = '%s %s' % (wrapper, value)
+      del wrappers[key]
+    if key in ('CC', 'CC.host', 'CXX', 'CXX.host'):
       make_global_settings += (
           'ifneq (,$(filter $(origin %s), undefined default))\n' % key)
       # Let gyp-time envvars win over global settings.
@@ -2019,6 +2027,9 @@ def GenerateOutput(target_list, target_dicts, data, params):
       make_global_settings += 'endif\n'
     else:
       make_global_settings += '%s ?= %s\n' % (key, value)
+  # TODO(ukai): define cmd when only wrapper is specified in
+  # make_global_settings.
+
   header_params['make_global_settings'] = make_global_settings
 
   ensure_directory_exists(makefile_path)
