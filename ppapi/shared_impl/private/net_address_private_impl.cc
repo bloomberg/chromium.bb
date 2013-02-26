@@ -24,6 +24,7 @@
 #include "build/build_config.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/thunk.h"
 
@@ -285,6 +286,9 @@ PP_Var Describe(PP_Module /*module*/,
       *addr, PP_ToBool(include_port));
   if (str.empty())
     return PP_MakeUndefined();
+  // We must acquire the lock while accessing the VarTracker, which is part of
+  // the critical section of the proxy which may be accessed by other threads.
+  ProxyAutoLock lock;
   return StringVar::StringToPPVar(str);
 }
 

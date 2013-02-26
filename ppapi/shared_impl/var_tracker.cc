@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "ppapi/shared_impl/id_assignment.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/var.h"
 
 namespace ppapi {
@@ -34,12 +35,14 @@ VarTracker::~VarTracker() {
 
 int32 VarTracker::AddVar(Var* var) {
   DCHECK(CalledOnValidThread());
+  ProxyLock::AssertAcquired();
 
   return AddVarInternal(var, ADD_VAR_TAKE_ONE_REFERENCE);
 }
 
 Var* VarTracker::GetVar(int32 var_id) const {
   DCHECK(CalledOnValidThread());
+  ProxyLock::AssertAcquired();
 
   VarMap::const_iterator result = live_vars_.find(var_id);
   if (result == live_vars_.end())
@@ -49,6 +52,7 @@ Var* VarTracker::GetVar(int32 var_id) const {
 
 Var* VarTracker::GetVar(const PP_Var& var) const {
   DCHECK(CalledOnValidThread());
+  ProxyLock::AssertAcquired();
 
   if (!IsVarTypeRefcounted(var.type))
     return NULL;
@@ -57,6 +61,7 @@ Var* VarTracker::GetVar(const PP_Var& var) const {
 
 bool VarTracker::AddRefVar(int32 var_id) {
   DCHECK(CalledOnValidThread());
+  ProxyLock::AssertAcquired();
 
   DLOG_IF(ERROR, !CheckIdType(var_id, PP_ID_TYPE_VAR))
       << var_id << " is not a PP_Var ID.";
@@ -82,6 +87,7 @@ bool VarTracker::AddRefVar(int32 var_id) {
 
 bool VarTracker::AddRefVar(const PP_Var& var) {
   DCHECK(CalledOnValidThread());
+  ProxyLock::AssertAcquired();
 
   if (!IsVarTypeRefcounted(var.type))
     return false;
@@ -90,6 +96,7 @@ bool VarTracker::AddRefVar(const PP_Var& var) {
 
 bool VarTracker::ReleaseVar(int32 var_id) {
   DCHECK(CalledOnValidThread());
+  ProxyLock::AssertAcquired();
 
   DLOG_IF(ERROR, !CheckIdType(var_id, PP_ID_TYPE_VAR))
       << var_id << " is not a PP_Var ID.";
@@ -121,6 +128,7 @@ bool VarTracker::ReleaseVar(int32 var_id) {
 
 bool VarTracker::ReleaseVar(const PP_Var& var) {
   DCHECK(CalledOnValidThread());
+  ProxyLock::AssertAcquired();
 
   if (!IsVarTypeRefcounted(var.type))
     return false;
@@ -145,6 +153,7 @@ VarTracker::VarMap::iterator VarTracker::GetLiveVar(int32 id) {
 
 int VarTracker::GetRefCountForObject(const PP_Var& plugin_object) {
   DCHECK(CalledOnValidThread());
+  ProxyLock::AssertAcquired();
 
   VarMap::iterator found = GetLiveVar(plugin_object);
   if (found == live_vars_.end())
@@ -155,6 +164,7 @@ int VarTracker::GetRefCountForObject(const PP_Var& plugin_object) {
 int VarTracker::GetTrackedWithNoReferenceCountForObject(
     const PP_Var& plugin_object) {
   DCHECK(CalledOnValidThread());
+  ProxyLock::AssertAcquired();
 
   VarMap::iterator found = GetLiveVar(plugin_object);
   if (found == live_vars_.end())
@@ -177,6 +187,7 @@ bool VarTracker::IsVarTypeRefcounted(PP_VarType type) const {
 
 PP_Var VarTracker::MakeArrayBufferPPVar(uint32 size_in_bytes) {
   DCHECK(CalledOnValidThread());
+  ProxyLock::AssertAcquired();
 
   scoped_refptr<ArrayBufferVar> array_buffer(CreateArrayBuffer(size_in_bytes));
   if (!array_buffer)
@@ -186,6 +197,9 @@ PP_Var VarTracker::MakeArrayBufferPPVar(uint32 size_in_bytes) {
 
 PP_Var VarTracker::MakeArrayBufferPPVar(uint32 size_in_bytes,
                                         const void* data) {
+  DCHECK(CalledOnValidThread());
+  ProxyLock::AssertAcquired();
+
   ArrayBufferVar* array_buffer = MakeArrayBufferVar(size_in_bytes, data);
   return array_buffer ? array_buffer->GetPPVar() : PP_MakeNull();
 }
@@ -193,6 +207,8 @@ PP_Var VarTracker::MakeArrayBufferPPVar(uint32 size_in_bytes,
 ArrayBufferVar* VarTracker::MakeArrayBufferVar(uint32 size_in_bytes,
                                                const void* data) {
   DCHECK(CalledOnValidThread());
+  ProxyLock::AssertAcquired();
+
   ArrayBufferVar* array_buffer(CreateArrayBuffer(size_in_bytes));
   if (!array_buffer)
     return NULL;
@@ -202,6 +218,7 @@ ArrayBufferVar* VarTracker::MakeArrayBufferVar(uint32 size_in_bytes,
 
 std::vector<PP_Var> VarTracker::GetLiveVars() {
   DCHECK(CalledOnValidThread());
+  ProxyLock::AssertAcquired();
 
   std::vector<PP_Var> var_vector;
   var_vector.reserve(live_vars_.size());

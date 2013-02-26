@@ -8,10 +8,11 @@
 #include "ppapi/proxy/file_chooser_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppapi_proxy_test.h"
-#include "ppapi/thunk/thunk.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/shared_impl/scoped_pp_var.h"
 #include "ppapi/shared_impl/var.h"
+#include "ppapi/thunk/thunk.h"
 
 namespace ppapi {
 namespace proxy {
@@ -110,14 +111,19 @@ TEST_F(FileChooserResourceTest, Show) {
   EXPECT_EQ(PP_FILESYSTEMTYPE_EXTERNAL,
             file_ref_iface->GetFileSystemType(dest[0]));
 
-  ScopedPPVar name_var(ScopedPPVar::PassRef(),
-                       file_ref_iface->GetName(dest[0]));
-  EXPECT_VAR_IS_STRING(create_info.name, name_var.get());
-
+  PP_Var name_var(file_ref_iface->GetName(dest[0]));
+  {
+    ProxyAutoLock lock;
+    ScopedPPVar release_name_var(ScopedPPVar::PassRef(), name_var);
+    EXPECT_VAR_IS_STRING(create_info.name, name_var);
+  }
   // Path should be undefined since it's external filesystem.
-  ScopedPPVar path_var(ScopedPPVar::PassRef(),
-                       file_ref_iface->GetPath(dest[0]));
-  EXPECT_EQ(PP_VARTYPE_UNDEFINED, path_var.get().type);
+  PP_Var path_var(file_ref_iface->GetPath(dest[0]));
+  {
+    ProxyAutoLock lock;
+    ScopedPPVar release_path_var(ScopedPPVar::PassRef(), path_var);
+    EXPECT_EQ(PP_VARTYPE_UNDEFINED, path_var.type);
+  }
 }
 
 TEST_F(FileChooserResourceTest, PopulateAcceptTypes) {

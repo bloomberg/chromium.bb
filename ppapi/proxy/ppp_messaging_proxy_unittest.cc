@@ -9,6 +9,7 @@
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppp_messaging.h"
 #include "ppapi/proxy/ppapi_proxy_test.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/var.h"
 
 namespace ppapi {
@@ -53,6 +54,7 @@ class PPP_Messaging_ProxyTest : public TwoWayTest {
 void CompareAndReleaseStringVar(PluginProxyTestHarness* plugin_harness,
                                 PP_Var received_var,
                                 const std::string& test_string) {
+  ProxyAutoLock lock;
   Var* received_string = plugin_harness->var_tracker().GetVar(received_var);
   ASSERT_TRUE(received_string);
   ASSERT_TRUE(received_string->AsStringVar());
