@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/file_path.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/syncable/file_change.h"
@@ -36,9 +35,9 @@ void FakeRemoteChangeProcessor::ApplyRemoteChange(
     const base::FilePath& local_path,
     const fileapi::FileSystemURL& url,
     const fileapi::SyncStatusCallback& callback) {
-  // TODO(nhiroki): record the given change and the local directory structure
-  // after the change is processed (actually not processed) (crbug.com/177162).
-  NOTIMPLEMENTED();
+  applied_changes_[url].push_back(change);
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE, base::Bind(callback, fileapi::SYNC_STATUS_OK));
 }
 
 void FakeRemoteChangeProcessor::ClearLocalChanges(
@@ -53,6 +52,11 @@ void FakeRemoteChangeProcessor::RecordFakeLocalChange(
     const fileapi::SyncStatusCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE, base::Bind(callback, fileapi::SYNC_STATUS_OK));
+}
+
+const FakeRemoteChangeProcessor::URLToFileChangesMap&
+FakeRemoteChangeProcessor::GetAppliedRemoteChanges() const {
+  return applied_changes_;
 }
 
 }  // namespace sync_file_system

@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_FAKE_REMOTE_CHANGE_PROCESSOR_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_FAKE_REMOTE_CHANGE_PROCESSOR_H_
 
+#include <map>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "chrome/browser/sync_file_system/remote_change_processor.h"
@@ -16,7 +18,7 @@ class FilePath;
 }
 
 namespace fileapi {
-class FileChange;
+class FileSystemURL;
 }
 
 namespace sync_file_system {
@@ -25,6 +27,9 @@ class FileChange;
 
 class FakeRemoteChangeProcessor : public RemoteChangeProcessor {
  public:
+  typedef std::map<fileapi::FileSystemURL, std::vector<FileChange>,
+                   fileapi::FileSystemURL::Comparator> URLToFileChangesMap;
+
   FakeRemoteChangeProcessor();
   virtual ~FakeRemoteChangeProcessor();
 
@@ -46,7 +51,14 @@ class FakeRemoteChangeProcessor : public RemoteChangeProcessor {
       const FileChange& change,
       const fileapi::SyncStatusCallback& callback) OVERRIDE;
 
+  const URLToFileChangesMap& GetAppliedRemoteChanges() const;
+
  private:
+  // History of file changes given by ApplyRemoteChange(). Changes are arranged
+  // in chronological order, that is, the end of the vector represents the last
+  // change.
+  URLToFileChangesMap applied_changes_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeRemoteChangeProcessor);
 };
 
