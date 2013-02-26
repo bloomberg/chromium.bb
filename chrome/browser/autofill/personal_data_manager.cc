@@ -18,12 +18,12 @@
 #include "chrome/browser/autofill/autofill_country.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/autofill_metrics.h"
-#include "chrome/browser/autofill/autofill_regexes.h"
 #include "chrome/browser/autofill/form_group.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/personal_data_manager_observer.h"
 #include "chrome/browser/autofill/phone_number.h"
 #include "chrome/browser/autofill/phone_number_i18n.h"
+#include "chrome/browser/autofill/validation.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_context.h"
@@ -76,20 +76,6 @@ T* address_of(T& v) {
   return &v;
 }
 
-bool IsValidEmail(const string16& value) {
-  // This regex is more permissive than the official rfc2822 spec on the
-  // subject, but it does reject obvious non-email addresses.
-  const string16 kEmailPattern = ASCIIToUTF16("^[^@]+@[^@]+\\.[a-z]{2,6}$");
-  return autofill::MatchesPattern(value, kEmailPattern);
-}
-
-// Valid for US zip codes only.
-bool IsValidZip(const string16& value) {
-  // Basic US zip code matching.
-  const string16 kZipPattern = ASCIIToUTF16("^\\d{5}(-\\d{4})?$");
-  return autofill::MatchesPattern(value, kZipPattern);
-}
-
 // Returns true if minimum requirements for import of a given |profile| have
 // been met.  An address submitted via a form must have at least these fields
 // filled.  No verification of validity of the contents is preformed.  This is
@@ -115,7 +101,7 @@ bool IsValidFieldTypeAndValue(const std::set<AutofillFieldType>& types_seen,
 
   // Abandon the import if an email address value shows up in a field that is
   // not an email address.
-  if (field_type != EMAIL_ADDRESS && IsValidEmail(value))
+  if (field_type != EMAIL_ADDRESS && autofill::IsValidEmailAddress(value))
     return false;
 
   return true;
@@ -695,7 +681,7 @@ bool PersonalDataManager::IsValidLearnableProfile(
     return false;
 
   string16 email = profile.GetRawInfo(EMAIL_ADDRESS);
-  if (!email.empty() && !IsValidEmail(email))
+  if (!email.empty() && !autofill::IsValidEmailAddress(email))
     return false;
 
   // Reject profiles with invalid US state information.
@@ -707,7 +693,8 @@ bool PersonalDataManager::IsValidLearnableProfile(
 
   // Reject profiles with invalid US zip information.
   string16 zip = profile.GetRawInfo(ADDRESS_HOME_ZIP);
-  if (profile.CountryCode() == "US" && !zip.empty() && !IsValidZip(zip))
+  if (profile.CountryCode() == "US" && !zip.empty() &&
+      !autofill::IsValidZip(zip))
     return false;
 
   return true;

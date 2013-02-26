@@ -65,7 +65,12 @@ bool IsValidEmailAddress(const string16& text) {
   const string16 kEmailPattern = ASCIIToUTF16(
       "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@"
       "[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$");
-  return autofill::MatchesPattern(text, kEmailPattern);
+  return MatchesPattern(text, kEmailPattern);
+}
+
+bool IsValidZip(const string16& value) {
+  const string16 kZipPattern = ASCIIToUTF16("^\\d{5}(-\\d{4})?$");
+  return MatchesPattern(value, kZipPattern);
 }
 
 }  // namespace autofill
