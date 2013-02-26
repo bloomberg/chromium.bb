@@ -40,12 +40,14 @@ void BookmarkDataTypeController::Observe(
     const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(state_, MODEL_STARTING);
-  if (type != chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED &&
-      type != chrome::NOTIFICATION_HISTORY_LOADED) {
-    return;
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_HISTORY_LOADED, type);
+
   if (!DependentsLoaded())
     return;
+
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile_);
+  model->RemoveObserver(this);
+
   registrar_.RemoveAll();
   OnModelLoaded();
 }
@@ -54,8 +56,9 @@ BookmarkDataTypeController::~BookmarkDataTypeController() {}
 
 bool BookmarkDataTypeController::StartModels() {
   if (!DependentsLoaded()) {
-    registrar_.Add(this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
-                   content::Source<Profile>(sync_service_->profile()));
+    BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile_);
+    model->AddObserver(this);
+
     registrar_.Add(this, chrome::NOTIFICATION_HISTORY_LOADED,
                    content::Source<Profile>(sync_service_->profile()));
     return false;
@@ -74,6 +77,20 @@ void BookmarkDataTypeController::CreateSyncComponents() {
                                                           this);
   set_model_associator(sync_components.model_associator);
   set_change_processor(sync_components.change_processor);
+}
+
+void BookmarkDataTypeController::BookmarkModelChanged() {
+}
+
+void BookmarkDataTypeController::Loaded(BookmarkModel* model,
+                                        bool ids_reassigned) {
+  model->RemoveObserver(this);
+
+  if (!DependentsLoaded())
+    return;
+
+  registrar_.RemoveAll();
+  OnModelLoaded();
 }
 
 // Check that both the bookmark model and the history service (for favicons)
