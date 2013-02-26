@@ -1,4 +1,5 @@
 git-version.h
+version.h
 weston
 weston-launch
 screenshooter-protocol.c
