@@ -9,6 +9,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
+#include "content/common/content_export.h"
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCallbacks.h"
@@ -17,7 +20,8 @@
 
 namespace content {
 
-class RendererWebIDBCursorImpl : public WebKit::WebIDBCursor {
+class CONTENT_EXPORT RendererWebIDBCursorImpl
+    : NON_EXPORTED_BASE(public WebKit::WebIDBCursor) {
  public:
   explicit RendererWebIDBCursorImpl(int32 ipc_cursor_id);
   virtual ~RendererWebIDBCursorImpl();
@@ -41,6 +45,8 @@ class RendererWebIDBCursorImpl : public WebKit::WebIDBCursor {
   void ResetPrefetchCache();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(RendererWebIDBCursorImplTest, PrefetchTest);
+
   int32 ipc_cursor_id_;
 
   // Prefetch cache.
@@ -60,6 +66,7 @@ class RendererWebIDBCursorImpl : public WebKit::WebIDBCursor {
   // Number of items to request in next prefetch.
   int prefetch_amount_;
 
+  enum { kInvalidCursorId = -1 };
   enum { kPrefetchContinueThreshold = 2 };
   enum { kMinPrefetchAmount = 5 };
   enum { kMaxPrefetchAmount = 100 };

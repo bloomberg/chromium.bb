@@ -8,12 +8,13 @@
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebData.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebExceptionCode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCallbacks.h"
 
 using WebKit::WebData;
 using WebKit::WebIDBCallbacks;
+using WebKit::WebIDBDatabase;
 using WebKit::WebIDBDatabaseError;
+using WebKit::WebIDBKey;
 using WebKit::WebVector;
 
 namespace content {
@@ -35,7 +36,7 @@ class MockCallbacks : public WebIDBCallbacks {
   bool error_seen_;
 };
 
-}
+}  // namespace
 
 TEST(IndexedDBDispatcherTest, ValueSizeTest) {
   const std::vector<char> data(kMaxIDBValueSizeInBytes + 1);
@@ -54,10 +55,10 @@ TEST(IndexedDBDispatcherTest, ValueSizeTest) {
       object_store_id,
       value,
       key,
-      WebKit::WebIDBDatabase::AddOrUpdate,
+      WebIDBDatabase::AddOrUpdate,
       &callbacks,
       WebVector<long long>(),
-      WebVector<WebVector<WebKit::WebIDBKey> >());
+      WebVector<WebVector<WebIDBKey> >());
 
   EXPECT_TRUE(callbacks.error_seen());
 }

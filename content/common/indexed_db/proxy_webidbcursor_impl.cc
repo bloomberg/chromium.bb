@@ -27,11 +27,15 @@ RendererWebIDBCursorImpl::RendererWebIDBCursorImpl(int32 ipc_cursor_id)
 
 RendererWebIDBCursorImpl::~RendererWebIDBCursorImpl() {
   // It's not possible for there to be pending callbacks that address this
-  // object since inside WebKit, they hold a reference to the object wich owns
+  // object since inside WebKit, they hold a reference to the object which owns
   // this object. But, if that ever changed, then we'd need to invalidate
   // any such pointers.
-  IndexedDBDispatcher::Send(new IndexedDBHostMsg_CursorDestroyed(
-      ipc_cursor_id_));
+
+  if (ipc_cursor_id_ != kInvalidCursorId) {
+    // Invalid ID used in tests to avoid really sending this message.
+    IndexedDBDispatcher::Send(new IndexedDBHostMsg_CursorDestroyed(
+        ipc_cursor_id_));
+  }
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->CursorDestroyed(ipc_cursor_id_);
@@ -67,6 +71,7 @@ void RendererWebIDBCursorImpl::continueFunction(const WebIDBKey& key,
 
     if (continue_count_ > kPrefetchContinueThreshold) {
       // Request pre-fetch.
+      ++pending_onsuccess_callbacks_;
       dispatcher->RequestIDBCursorPrefetch(prefetch_amount_,
                                            callbacks.release(),
                                            ipc_cursor_id_, &ec);

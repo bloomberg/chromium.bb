@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/id_map.h"
 #include "base/nullable_string16.h"
 #include "content/common/content_export.h"
@@ -94,13 +95,13 @@ class CONTENT_EXPORT IndexedDBDispatcher
       int32 ipc_cursor_id,
       WebKit::WebExceptionCode* ec);
 
-  void RequestIDBCursorContinue(
+  virtual void RequestIDBCursorContinue(
       const IndexedDBKey& key,
       WebKit::WebIDBCallbacks* callbacks_ptr,
       int32 ipc_cursor_id,
       WebKit::WebExceptionCode* ec);
 
-  void RequestIDBCursorPrefetch(
+  virtual void RequestIDBCursorPrefetch(
       int n,
       WebKit::WebIDBCallbacks* callbacks_ptr,
       int32 ipc_cursor_id,
@@ -177,7 +178,7 @@ class CONTENT_EXPORT IndexedDBDispatcher
       int64 object_store_id,
       WebKit::WebIDBCallbacks* callbacks);
 
-  void CursorDestroyed(int32 ipc_cursor_id);
+  virtual void CursorDestroyed(int32 ipc_cursor_id);
   void DatabaseDestroyed(int32 ipc_database_id);
 
  private:

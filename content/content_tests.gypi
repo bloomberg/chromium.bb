@@ -357,6 +357,7 @@
         'common/gpu/gpu_memory_manager_unittest.cc',
         'common/gpu/media/avc_config_record_builder_unittest.cc',
         'common/indexed_db/indexed_db_dispatcher_unittest.cc',
+        'common/indexed_db/proxy_webidbcursor_impl_unittest.cc',
         'common/inter_process_time_ticks_converter_unittest.cc',
         'common/page_zoom_unittest.cc',
         'common/resource_dispatcher_unittest.cc',
