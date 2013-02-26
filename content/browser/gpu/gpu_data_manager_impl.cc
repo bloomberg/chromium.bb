@@ -23,6 +23,7 @@
 #include "content/browser/gpu/gpu_util.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/gpu/gpu_info_collector.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
@@ -560,9 +561,21 @@ void GpuDataManagerImpl::BlockDomainFrom3DAPIs(
   BlockDomainFrom3DAPIsAtTime(url, guilt, base::Time::Now());
 }
 
-GpuDataManagerImpl::DomainBlockStatus
-GpuDataManagerImpl::Are3DAPIsBlocked(const GURL& url) const {
-  return Are3DAPIsBlockedAtTime(url, base::Time::Now());
+bool GpuDataManagerImpl::Are3DAPIsBlocked(const GURL& url,
+                                          int render_process_id,
+                                          int render_view_id,
+                                          ThreeDAPIType requester) {
+  bool blocked = Are3DAPIsBlockedAtTime(url, base::Time::Now()) !=
+      GpuDataManagerImpl::DOMAIN_BLOCK_STATUS_NOT_BLOCKED;
+  if (blocked) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&GpuDataManagerImpl::Notify3DAPIBlocked,
+                   base::Unretained(this), url, render_process_id,
+                   render_view_id, requester));
+  }
+
+  return blocked;
 }
 
 void GpuDataManagerImpl::DisableDomainBlockingFor3DAPIsForTesting() {
@@ -780,6 +793,14 @@ GpuDataManagerImpl::Are3DAPIsBlockedAtTime(
 
 int64 GpuDataManagerImpl::GetBlockAllDomainsDurationInMs() const {
   return kBlockAllDomainsMs;
+}
+
+void GpuDataManagerImpl::Notify3DAPIBlocked(const GURL& url,
+                                            int render_process_id,
+                                            int render_view_id,
+                                            ThreeDAPIType requester) {
+  observer_list_->Notify(&GpuDataManagerObserver::DidBlock3DAPIs,
+                         url, render_process_id, render_view_id, requester);
 }
 
 }  // namespace content

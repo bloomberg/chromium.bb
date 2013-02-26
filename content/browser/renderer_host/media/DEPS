@@ -1,3 +1,7 @@
 include_rules = [
   "+media",
+  
+  # TODO: this is temporary, this directory doesn't belong under renderer_host
+  # since it depends on web_contents.
+  "+content/browser/web_contents",
 ]

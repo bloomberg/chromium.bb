@@ -27,7 +27,6 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ssl/ssl_tab_helper.h"
 #include "chrome/browser/tab_contents/navigation_metrics_recorder.h"
-#include "chrome/browser/three_d_api_observer.h"
 #include "chrome/browser/thumbnails/thumbnail_tab_helper.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/alternate_error_tab_observer.h"
@@ -150,7 +149,6 @@ void BrowserTabContents::AttachTabHelpers(WebContents* web_contents) {
   SSLTabHelper::CreateForWebContents(web_contents);
   TabContentsSyncedTabDelegate::CreateForWebContents(web_contents);
   TabSpecificContentSettings::CreateForWebContents(web_contents);
-  ThreeDAPIObserver::CreateForWebContents(web_contents);
   ThumbnailTabHelper::CreateForWebContents(web_contents);
   TranslateTabHelper::CreateForWebContents(web_contents);
   ZoomController::CreateForWebContents(web_contents);

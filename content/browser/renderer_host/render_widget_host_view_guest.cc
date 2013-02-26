@@ -8,7 +8,6 @@
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_guest.h"
-#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/browser_plugin_messages.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
@@ -159,18 +158,15 @@ void RenderWidgetHostViewGuest::InitAsFullscreen(
 }
 
 gfx::NativeView RenderWidgetHostViewGuest::GetNativeView() const {
-  return guest_->embedder_web_contents()->GetRenderWidgetHostView()->
-      GetNativeView();
+  return guest_->GetEmbedderRenderWidgetHostView()->GetNativeView();
 }
 
 gfx::NativeViewId RenderWidgetHostViewGuest::GetNativeViewId() const {
-  return guest_->embedder_web_contents()->GetRenderWidgetHostView()->
-      GetNativeViewId();
+  return guest_->GetEmbedderRenderWidgetHostView()->GetNativeViewId();
 }
 
 gfx::NativeViewAccessible RenderWidgetHostViewGuest::GetNativeViewAccessible() {
-  return guest_->embedder_web_contents()->GetRenderWidgetHostView()->
-      GetNativeViewAccessible();
+  return guest_->GetEmbedderRenderWidgetHostView()->GetNativeViewAccessible();
 }
 
 void RenderWidgetHostViewGuest::MovePluginWindows(

@@ -7,12 +7,13 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
+#include "chrome/browser/tab_contents/tab_util.h"
 #include "content/public/browser/gpu_data_manager.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/three_d_api_types.h"
+#include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(ThreeDAPIObserver);
 
 namespace {
 
@@ -162,13 +163,20 @@ bool ThreeDAPIInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
 
 // ThreeDAPIObserver ----------------------------------------------------
 
-ThreeDAPIObserver::ThreeDAPIObserver(content::WebContents* web_contents)
-    : WebContentsObserver(web_contents) {}
+ThreeDAPIObserver::ThreeDAPIObserver() {
+  content::GpuDataManager::GetInstance()->AddObserver(this);
+}
 
-ThreeDAPIObserver::~ThreeDAPIObserver() {}
+ThreeDAPIObserver::~ThreeDAPIObserver() {
+  content::GpuDataManager::GetInstance()->RemoveObserver(this);
+}
 
 void ThreeDAPIObserver::DidBlock3DAPIs(const GURL& url,
+                                       int render_process_id,
+                                       int render_view_id,
                                        content::ThreeDAPIType requester) {
+  content::WebContents* web_contents = tab_util::GetWebContentsByID(
+      render_process_id, render_view_id);
   ThreeDAPIInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(web_contents()), url, requester);
+      InfoBarService::FromWebContents(web_contents), url, requester);
 }

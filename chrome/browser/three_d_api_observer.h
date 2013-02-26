@@ -5,20 +5,18 @@
 #ifndef CHROME_BROWSER_THREE_D_API_OBSERVER_H_
 #define CHROME_BROWSER_THREE_D_API_OBSERVER_H_
 
-#include "content/public/browser/web_contents_observer.h"
-#include "content/public/browser/web_contents_user_data.h"
+#include "base/compiler_specific.h"
+#include "content/public/browser/gpu_data_manager_observer.h"
 
-class ThreeDAPIObserver
-    : public content::WebContentsObserver,
-      public content::WebContentsUserData<ThreeDAPIObserver> {
+class ThreeDAPIObserver : public content::GpuDataManagerObserver {
  public:
+  ThreeDAPIObserver();
   virtual ~ThreeDAPIObserver();
 
  private:
-  explicit ThreeDAPIObserver(content::WebContents* web_contents);
-  friend class content::WebContentsUserData<ThreeDAPIObserver>;
-
   virtual void DidBlock3DAPIs(const GURL& url,
+                              int render_process_id,
+                              int render_view_id,
                               content::ThreeDAPIType requester) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ThreeDAPIObserver);

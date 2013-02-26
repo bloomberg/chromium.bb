@@ -7,6 +7,9 @@
 
 #include "content/common/content_export.h"
 #include "content/public/common/gpu_memory_stats.h"
+#include "content/public/common/three_d_api_types.h"
+
+class GURL;
 
 namespace content {
 
@@ -15,11 +18,18 @@ namespace content {
 class GpuDataManagerObserver {
  public:
   // Called for any observers whenever there is a GPU info update.
-  virtual void OnGpuInfoUpdate() = 0;
+  virtual void OnGpuInfoUpdate() {}
 
   // Called for any observers whenever there is a GPU video memory update.
   virtual void OnVideoMemoryUsageStatsUpdate(
-      const GPUVideoMemoryUsageStats& video_memory_usage_stats) = 0;
+      const GPUVideoMemoryUsageStats& video_memory_usage_stats) {}
+
+  // Indicates that client 3D APIs (Pepper 3D, WebGL) were just blocked on the
+  // given page, specifically because the GPU was reset recently.
+  virtual void DidBlock3DAPIs(const GURL& url,
+                              int render_process_id,
+                              int render_view_id,
+                              ThreeDAPIType requester) {}
 
  protected:
   virtual ~GpuDataManagerObserver() {}

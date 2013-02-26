@@ -92,6 +92,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/service/service_process_control.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/three_d_api_observer.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -1045,6 +1046,8 @@ void ChromeBrowserMainParts::PreBrowserStart() {
 #if !defined(OS_ANDROID)
   gpu_util::InstallBrowserMonitor();
 #endif
+
+  three_d_observer_.reset(new ThreeDAPIObserver());
 }
 
 void ChromeBrowserMainParts::PostBrowserStart() {

@@ -8,6 +8,7 @@
 #include <list>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/process.h"
 #include "content/common/content_export.h"
 #include "content/public/common/gpu_feature_type.h"

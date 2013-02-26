@@ -8,7 +8,6 @@
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/renderer_host/test_backing_store.h"
 #include "content/browser/site_instance_impl.h"
-#include "content/browser/web_contents/navigation_controller_impl.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"

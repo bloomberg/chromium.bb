@@ -177,8 +177,6 @@ class CONTENT_EXPORT WebContentsImpl
   // MSG_ROUTING_NONE when there is no fullscreen render widget.
   int GetFullscreenWidgetRoutingID() const;
 
-  void DidBlock3DAPIs(const GURL& url, ThreeDAPIType requester);
-
   // Invoked when visible SSL state (as defined by SSLStatus) changes.
   void DidChangeVisibleSSLState();
 

@@ -58,6 +58,7 @@ namespace content {
 class BrowserPluginHostFactory;
 class BrowserPluginEmbedder;
 class RenderProcessHost;
+class RenderWidgetHostView;
 
 // A browser plugin guest provides functionality for WebContents to operate in
 // the guest role and implements guest specific overrides for ViewHostMsg_*
@@ -96,6 +97,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   WebContentsImpl* embedder_web_contents() const {
     return embedder_web_contents_;
   }
+
+  RenderWidgetHostView* GetEmbedderRenderWidgetHostView();
 
   bool focused() const { return focused_; }
   bool visible() const { return guest_visible_; }

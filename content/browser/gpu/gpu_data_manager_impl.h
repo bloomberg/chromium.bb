@@ -22,6 +22,7 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/gpu_info.h"
 #include "content/public/common/gpu_memory_stats.h"
+#include "content/public/common/three_d_api_types.h"
 
 class CommandLine;
 class GURL;
@@ -146,7 +147,10 @@ class CONTENT_EXPORT GpuDataManagerImpl
   // Note that the unblocking API must be part of the content API
   // because it is called from Chrome side code.
   void BlockDomainFrom3DAPIs(const GURL& url, DomainGuilt guilt);
-  DomainBlockStatus Are3DAPIsBlocked(const GURL& url) const;
+  bool Are3DAPIsBlocked(const GURL& url,
+                        int render_process_id,
+                        int render_view_id,
+                        ThreeDAPIType requester);
 
   // Disables domain blocking for 3D APIs. For use only in tests.
   void DisableDomainBlockingFor3DAPIsForTesting();
@@ -217,6 +221,11 @@ class CONTENT_EXPORT GpuDataManagerImpl
   DomainBlockStatus Are3DAPIsBlockedAtTime(
       const GURL& url, base::Time at_time) const;
   int64 GetBlockAllDomainsDurationInMs() const;
+
+  void Notify3DAPIBlocked(const GURL& url,
+                          int render_process_id,
+                          int render_view_id,
+                          ThreeDAPIType requester);
 
   bool complete_gpu_info_already_requested_;
 

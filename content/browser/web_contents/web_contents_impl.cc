@@ -2499,12 +2499,6 @@ void WebContentsImpl::OnFrameDetached(int64 frame_id) {
                     FrameDetached(message_source_, frame_id));
 }
 
-void WebContentsImpl::DidBlock3DAPIs(const GURL& url,
-                                     ThreeDAPIType requester) {
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DidBlock3DAPIs(url, requester));
-}
-
 void WebContentsImpl::DidChangeVisibleSSLState() {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidChangeVisibleSSLState());

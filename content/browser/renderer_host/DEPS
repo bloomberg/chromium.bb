@@ -8,5 +8,11 @@ include_rules = [
 
   # The renderer_host files should only call upwards in the layering via the
   # delegate interfaces.
-  "-content/browser/tab_contents",
+  "-content/browser/web_contents",
 ]
+
+specific_include_rules = {
+  ".*_(unit|browser)test\.cc": [
+    "+content/browser/web_contents",
+  ],
+}

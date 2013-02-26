@@ -10,7 +10,6 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/common/page_transition_types.h"
-#include "content/public/common/three_d_api_types.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "ui/base/window_open_disposition.h"
@@ -233,12 +232,6 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
 
   // Called when the user agent override for a WebContents has been changed.
   virtual void UserAgentOverrideSet(const std::string& user_agent) {}
-
-  // Indicates that client 3D APIs (Pepper 3D, WebGL) were just
-  // blocked on the current page, specifically because the GPU was
-  // reset recently.
-  virtual void DidBlock3DAPIs(const GURL& url,
-                              ThreeDAPIType requester) {}
 
   // Invoked when new FaviconURL candidates are received from the renderer.
   virtual void DidUpdateFaviconURL(int32 page_id,

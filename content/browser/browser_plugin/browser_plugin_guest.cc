@@ -184,6 +184,10 @@ BrowserPluginGuest* BrowserPluginGuest::Create(
                                 web_contents, params);
 }
 
+RenderWidgetHostView* BrowserPluginGuest::GetEmbedderRenderWidgetHostView() {
+  return embedder_web_contents_->GetRenderWidgetHostView();
+}
+
 void BrowserPluginGuest::UpdateVisibility() {
   OnSetVisibility(instance_id_, visible());
 }

@@ -29,7 +29,6 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
-#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/desktop_notification_messages.h"
@@ -200,22 +199,6 @@ class OpenChannelToPpapiBrokerCallback
   int routing_id_;
   int request_id_;
 };
-
-void RaiseInfobarForBlocked3DContentOnUIThread(
-    int render_process_id,
-    int render_view_id,
-    const GURL& url,
-    content::ThreeDAPIType requester) {
-  RenderViewHost* rvh = RenderViewHost::FromID(
-      render_process_id, render_view_id);
-  if (!rvh)
-    return;
-  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-      WebContents::FromRenderViewHost(rvh));
-  if (!web_contents)
-    return;
-  web_contents->DidBlock3DAPIs(url, requester);
-}
 
 }  // namespace
 
@@ -1074,17 +1057,8 @@ void RenderMessageFilter::OnAre3DAPIsBlocked(int render_view_id,
                                              const GURL& top_origin_url,
                                              ThreeDAPIType requester,
                                              bool* blocked) {
-  GpuDataManagerImpl::DomainBlockStatus block_status =
-      GpuDataManagerImpl::GetInstance()->Are3DAPIsBlocked(top_origin_url);
-  *blocked = (block_status !=
-              GpuDataManagerImpl::DOMAIN_BLOCK_STATUS_NOT_BLOCKED);
-  if (*blocked) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&RaiseInfobarForBlocked3DContentOnUIThread,
-                   render_process_id_, render_view_id,
-                   top_origin_url, requester));
-  }
+  *blocked = GpuDataManagerImpl::GetInstance()->Are3DAPIsBlocked(
+      top_origin_url, render_process_id_, render_view_id, requester);
 }
 
 void RenderMessageFilter::OnDidLose3DContext(
