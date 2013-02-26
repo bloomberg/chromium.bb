@@ -475,10 +475,14 @@ RenderWidgetCompositor::OffscreenContextProviderForMainThread() {
 class RenderWidgetCompositor::CompositorThreadContextProvider
     : public cc::ContextProvider {
  public:
-  CompositorThreadContextProvider() : destroyed_(false) {}
+  CompositorThreadContextProvider() : initialized_(false), destroyed_(false) {}
 
   virtual bool InitializeOnMainThread() OVERRIDE {
-    return WebKit::WebSharedGraphicsContext3D::createCompositorThreadContext();
+    if (!initialized_) {
+      initialized_ =
+          WebKit::WebSharedGraphicsContext3D::createCompositorThreadContext();
+    }
+    return initialized_;
   }
   virtual bool BindToCurrentThread() OVERRIDE {
     return Context3d()->makeContextCurrent();
@@ -506,6 +510,8 @@ class RenderWidgetCompositor::CompositorThreadContextProvider
   virtual ~CompositorThreadContextProvider() {}
 
  private:
+  bool initialized_;
+
   base::Lock destroyed_lock_;
   bool destroyed_;
 };
