@@ -263,15 +263,9 @@ imul Iz Ev Gv, 0x69, nacl-amd64-zero-extends
 ######## IN ####################################################################
 # “in” is not marked as nacl-amd64-zero-extends just because it shouldn't be.
 in Ib ab, 0xe4, nacl-forbidden
-in Ib aw, data16 0xe5, nacl-forbidden
-in Ib ad, 0xe5, nacl-forbidden
-in Ib ad, rexw 0xe5, amd64 spurious-rex.w nacl-forbidden
-in Ib ad, data16 rexw 0xe5, amd64 nacl-forbidden
+in Ib az, 0xe5, nacl-forbidden
 in ob ab, 0xec, nacl-forbidden
-in ow aw, data16 0xed, nacl-forbidden
-in od ad, 0xed, nacl-forbidden
-in od ad, rexw 0xed, amd64 spurious-rex.w nacl-forbidden
-in od ad, data16 rexw 0xed, amd64 nacl-forbidden
+in oz az, 0xed, nacl-forbidden
 ######## INC ###################################################################
 inc E, 0xfe /0, lock nacl-amd64-zero-extends
 inc rz, 0x40, ia32
@@ -539,7 +533,7 @@ neg E, 0xf6 /3, lock nacl-amd64-zero-extends
 ######## NOP ###################################################################
 nop, 0x90, norex
 nop, 0x40 0x90, amd64 norex
-nop, 0x48 0x90, amd64 norex spurious-rex.w
+"rex.W nop", 0x48 0x90, amd64 norex
 # Textbook definition of “nop” as per AMD/Intel manuals looks like this:
 #  nop 'Ev, 0x0f 0x1f /0, no_memory_access
 # For consistency with the production validators, drop support for the 16-bit
@@ -570,15 +564,9 @@ or G E, 0x08, lock nacl-amd64-zero-extends
 or E G, 0x0a, nacl-amd64-zero-extends
 ######## OUT ###################################################################
 out ab =Ib, 0xe6, nacl-forbidden
-out aw =Ib, data16 0xe7, nacl-forbidden
-out ad =Ib, 0xe7, nacl-forbidden
-out ad =Ib, rexw 0xe7, amd64 spurious-rex.w nacl-forbidden
-out ad =Ib, data16 rexw 0xe7, amd64 nacl-forbidden
+out az =Ib, 0xe7, nacl-forbidden
 out ab =ob, 0xee, nacl-forbidden
-out aw =ow, data16 0xef, nacl-forbidden
-out ad =od, 0xef, nacl-forbidden
-out ad =od, rexw 0xef, amd64 spurious-rex.w nacl-forbidden
-out ad =od, data16 rexw 0xef, amd64 nacl-forbidden
+out az =oz, 0xef, nacl-forbidden
 ######## OUTS/OUTSB/OUTSW/OUTSD ################################################
 outs Xb =ob, 0x6e, rep att-show-name-suffix-b nacl-forbidden
 outs Xw =ow, data16 0x6f, rep att-show-name-suffix-w nacl-forbidden

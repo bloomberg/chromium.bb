@@ -14,9 +14,6 @@
 # it's low priority, so maybe we'll drop support for it at all).
 # See http://code.google.com/p/nativeclient/issues/detail?id=3251
 ######## F2XM1 #################################################################
-nop, 0x90, norex
-nop, 0x40 0x90, amd64 norex
-nop, 0x48 0x90, amd64 norex
 f2xm1, 0xd9 0xf0, CPUFeature_x87
 ######## FABS ##################################################################
 fabs, 0xd9 0xe1, CPUFeature_x87
