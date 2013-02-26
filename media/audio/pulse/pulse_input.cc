@@ -217,16 +217,33 @@ void PulseAudioInputStream::SetVolume(double volume) {
 }
 
 double PulseAudioInputStream::GetVolume() {
-  AutoPulseLock auto_lock(pa_mainloop_);
-  if (!handle_)
+  if (pa_threaded_mainloop_in_thread(pa_mainloop_)) {
+    // When being called by the pulse thread, GetVolume() is asynchronous and
+    // called under AutoPulseLock.
+    if (!handle_)
+      return 0.0;
+
+    size_t index = pa_stream_get_device_index(handle_);
+    pa_operation* operation = pa_context_get_source_info_by_index(
+        pa_context_, index, &VolumeCallback, this);
+    // Do not wait for the operation since we can't block the pulse thread.
+    pa_operation_unref(operation);
+
+    // Return zero and the callback will asynchronously update the |volume_|.
     return 0.0;
+  } else {
+    // Called by other thread, put an AutoPulseLock and wait for the operation.
+    AutoPulseLock auto_lock(pa_mainloop_);
+    if (!handle_)
+      return 0.0;
 
-  size_t index = pa_stream_get_device_index(handle_);
-  pa_operation* operation = pa_context_get_source_info_by_index(
-      pa_context_, index, &VolumeCallback, this);
-  WaitForOperationCompletion(pa_mainloop_, operation);
+    size_t index = pa_stream_get_device_index(handle_);
+    pa_operation* operation = pa_context_get_source_info_by_index(
+        pa_context_, index, &VolumeCallback, this);
+    WaitForOperationCompletion(pa_mainloop_, operation);
 
-  return volume_;
+    return volume_;
+  }
 }
 
 // static, used by pa_stream_set_read_callback.
@@ -261,6 +278,8 @@ void PulseAudioInputStream::VolumeCallback(pa_context* context,
       volume = info->volume.values[i];
   }
 
+  // It is safe to access |volume_| here since VolumeCallback() is running
+  // under PulseLock.
   stream->volume_ = static_cast<double>(volume);
 }
 
@@ -284,8 +303,12 @@ void PulseAudioInputStream::ReadData() {
   // Update the AGC volume level once every second. Note that,
   // |volume| is also updated each time SetVolume() is called
   // through IPC by the render-side AGC.
+  // QueryAgcVolume() will trigger a callback to asynchronously update the
+  // |volume_|, we disregard the |normalized_volume| from QueryAgcVolume()
+  // and use the value calculated by |volume_|.
   double normalized_volume = 0.0;
   QueryAgcVolume(&normalized_volume);
+  normalized_volume = volume_ / GetMaxVolume();
 
   do {
     size_t length = 0;

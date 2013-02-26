@@ -144,8 +144,8 @@ void WebRtcAudioDeviceImpl::CaptureData(const int16* audio_data,
   // "higher than maximum". The input volume slider in the sound preference
   // allows the user to set a scaling that is higher than 100%. It means that
   // even if the reported maximum levels is N, the actual microphone level can
-  // go up to 1.5*N and that corresponds to a normalized |volume| of 1.5.
-  DCHECK_LE(volume, 1.5);
+  // go up to 1.5x*N and that corresponds to a normalized |volume| of 1.5x.
+  DCHECK_LE(volume, 1.6);
 #endif
 
   int output_delay_ms = 0;
