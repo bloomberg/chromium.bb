@@ -86,7 +86,7 @@ CHROME_CP = 'chromeos-base/%s' % CHROME_PN
 
 # Chrome URL where PGO data is stored.
 CHROME_PGO_URL = ('gs://chromeos-prebuilt/pgo-job/canonicals/'
-                  '%(package)s-%(arch)s-%(pv)s.pgo.tar.bz2')
+                  '%(package)s-%(arch)s-%(version_no_rev)s.pgo.tar.bz2')
 
 # Chrome use flags
 USE_CHROME_INTERNAL = 'chrome_internal'

@@ -1461,7 +1461,7 @@ def CheckPGOData(architectures, cpv):
   gs_context = gs.GSContext()
   for arch in architectures:
     url = constants.CHROME_PGO_URL % {'package': cpv.package, 'arch': arch,
-                                      'pv': cpv.pv}
+                                      'version_no_rev': cpv.version_no_rev}
     if not gs_context.Exists(url):
       return False
   return True
