@@ -79,6 +79,11 @@
           '<(ft2_dir)/include',
         ],
       },
+      'link_settings': {
+        'libraries': [
+          '-lz',
+        ],
+      },
     },
   ], # targets
 }
