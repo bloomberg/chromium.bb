@@ -13,5 +13,11 @@ set -e
 export CHROME_ANDROID_BUILD_WEBVIEW=1
 export CHROME_SRC="$(readlink -f "$(dirname "$0")/../..")"
 export PYTHONDONTWRITEBYTECODE=1
-. build/android/envsetup.sh --target-arch=arm
-android_gyp --suffix .linux-arm
+( . build/android/envsetup.sh --target-arch=arm --host-os=linux && \
+  android_gyp --suffix .linux-arm )
+( . build/android/envsetup.sh --target-arch=x86 --host-os=linux && \
+  android_gyp --suffix .linux-x86 )
+( . build/android/envsetup.sh --target-arch=arm --host-os=mac && \
+  android_gyp --suffix .mac-arm )
+( . build/android/envsetup.sh --target-arch=x86 --host-os=mac && \
+  android_gyp --suffix .mac-x86 )
