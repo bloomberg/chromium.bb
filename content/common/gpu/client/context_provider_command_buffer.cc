@@ -11,7 +11,7 @@ namespace content {
 class ContextProviderCommandBuffer::LostContextCallbackProxy
     : public WebKit::WebGraphicsContext3D::WebGraphicsContextLostCallback {
  public:
-  LostContextCallbackProxy(ContextProviderCommandBuffer* provider)
+  explicit LostContextCallbackProxy(ContextProviderCommandBuffer* provider)
       : provider_(provider) {
     provider_->context3d_->setContextLostCallback(this);
   }
@@ -28,7 +28,7 @@ class ContextProviderCommandBuffer::MemoryAllocationCallbackProxy
     : public WebKit::WebGraphicsContext3D::
           WebGraphicsMemoryAllocationChangedCallbackCHROMIUM {
  public:
-  MemoryAllocationCallbackProxy(ContextProviderCommandBuffer* provider)
+  explicit MemoryAllocationCallbackProxy(ContextProviderCommandBuffer* provider)
       : provider_(provider) {
     provider_->context3d_->setMemoryAllocationChangedCallbackCHROMIUM(this);
   }
