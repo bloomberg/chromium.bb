@@ -67,6 +67,14 @@ const char kReplacementTerm[] = "blah.blah.blah.blah.blah";
 // comment for DefaultSearchChangeOrigin.
 const char kDSPChangeHistogramName[] = "Search.DefaultSearchChangeOrigin";
 
+// The name of the histogram used to track whether or not the user has a default
+// search provider.
+const char kHasDSPHistogramName[] = "Search.HasDefaultSearchProvider";
+
+// The name of the histogram used to store the id of the default search
+// provider.
+const char kDSPHistogramName[] = "Search.DefaultSearchProvider";
+
 bool TemplateURLsHaveSamePrefs(const TemplateURL* url1,
                                const TemplateURL* url2) {
   if (url1 == url2)
@@ -810,7 +818,7 @@ void TemplateURLService::OnWebDataServiceRequestDone(
   if (!is_default_search_managed_) {
     bool has_default_search_provider = default_search_provider_ != NULL &&
         default_search_provider_->SupportsReplacement();
-    UMA_HISTOGRAM_BOOLEAN("Search.HasDefaultSearchProvider",
+    UMA_HISTOGRAM_BOOLEAN(kHasDSPHistogramName,
                           has_default_search_provider);
     // Ensure that default search provider exists. See http://crbug.com/116952.
     if (!has_default_search_provider) {
@@ -818,6 +826,10 @@ void TemplateURLService::OnWebDataServiceRequestDone(
           SetDefaultSearchProviderNoNotify(FindNewDefaultSearchProvider());
       DCHECK(success);
     }
+    UMA_HISTOGRAM_ENUMERATION(
+        kDSPHistogramName,
+        default_search_provider_->prepopulate_id(),
+        TemplateURLPrepopulateData::kMaxPrepopulatedEngineID);
   }
 
   NotifyObservers();
