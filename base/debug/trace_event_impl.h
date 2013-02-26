@@ -6,8 +6,6 @@
 #ifndef BASE_DEBUG_TRACE_EVENT_IMPL_H_
 #define BASE_DEBUG_TRACE_EVENT_IMPL_H_
 
-#include "build/build_config.h"
-
 #include <string>
 #include <vector>
 
@@ -18,6 +16,7 @@
 #include "base/string_util.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread.h"
 #include "base/timer.h"
 
 // Older style trace macros with explicit id and extra data
@@ -41,6 +40,8 @@ template <typename Type>
 struct StaticMemorySingletonTraits;
 
 namespace base {
+
+class WaitableEvent;
 
 namespace debug {
 
@@ -157,6 +158,8 @@ class BASE_EXPORT TraceResultBuffer {
   bool append_comma_;
 };
 
+class TraceSamplingThread;
+
 class BASE_EXPORT TraceLog {
  public:
   // Notification is a mask of one or more of the following events.
@@ -171,7 +174,9 @@ class BASE_EXPORT TraceLog {
 
   // Options determines how the trace buffer stores data.
   enum Options {
-    RECORD_UNTIL_FULL = 1 << 0
+    RECORD_UNTIL_FULL = 1 << 0,
+    // Enable the sampling profiler.
+    ENABLE_SAMPLING = 1 << 1,
   };
 
   static TraceLog* GetInstance();
@@ -312,6 +317,8 @@ class BASE_EXPORT TraceLog {
 
   // Exposed for unittesting:
 
+  void InstallWaitableEventForSamplingTesting(WaitableEvent* waitable_event);
+
   // Allows deleting our singleton instance.
   static void DeleteForTesting();
 
@@ -412,6 +419,10 @@ class BASE_EXPORT TraceLog {
   std::string watch_event_name_;
 
   Options trace_options_;
+
+  // Sampling thread handles.
+  scoped_ptr<TraceSamplingThread> sampling_thread_;
+  PlatformThreadHandle sampling_thread_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(TraceLog);
 };

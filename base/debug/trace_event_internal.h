@@ -233,6 +233,17 @@
         category, name, TRACE_EVENT_FLAG_COPY, arg1_name, arg1_val, \
         arg2_name, arg2_val)
 
+// Sets the current sample state to the given category and name (both must be
+// constant strings). These states are intended for a sampling profiler.
+// Implementation note: we store category and name together because we don't
+// want the inconsistency/expense of storing two pointers.
+// |thread_bucket| is [0..2] and is used to statically isolate samples in one
+// thread from others.
+#define TRACE_EVENT_SAMPLE_STATE(thread_bucket, category, name)                \
+  TRACE_EVENT_API_ATOMIC_STORE(                                                \
+      TRACE_EVENT_API_THREAD_BUCKET(thread_bucket),                            \
+      reinterpret_cast<TRACE_EVENT_API_ATOMIC_WORD>(category "\0" name));
+
 // Records a single BEGIN event called "name" immediately, with 0, 1 or 2
 // associated arguments. If the category is not enabled, then this
 // does nothing.
@@ -682,6 +693,7 @@
 #define TRACE_EVENT_PHASE_FLOW_END   ('f')
 #define TRACE_EVENT_PHASE_METADATA ('M')
 #define TRACE_EVENT_PHASE_COUNTER  ('C')
+#define TRACE_EVENT_PHASE_SAMPLE  ('P')
 
 // Flags for changing the behavior of TRACE_EVENT_API_ADD_TRACE_EVENT.
 #define TRACE_EVENT_FLAG_NONE        (static_cast<unsigned char>(0))

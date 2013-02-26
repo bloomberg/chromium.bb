@@ -69,6 +69,13 @@
 // Defines visibility for classes in trace_event_internal.h
 #define TRACE_EVENT_API_CLASS_EXPORT BASE_EXPORT
 
+// The thread buckets for the sampling profiler.
+TRACE_EVENT_API_CLASS_EXPORT extern TRACE_EVENT_API_ATOMIC_WORD g_trace_state0;
+TRACE_EVENT_API_CLASS_EXPORT extern TRACE_EVENT_API_ATOMIC_WORD g_trace_state1;
+TRACE_EVENT_API_CLASS_EXPORT extern TRACE_EVENT_API_ATOMIC_WORD g_trace_state2;
+#define TRACE_EVENT_API_THREAD_BUCKET(thread_bucket)                           \
+  g_trace_state##thread_bucket
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "base/debug/trace_event_internal.h"

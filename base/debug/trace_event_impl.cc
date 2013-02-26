@@ -18,6 +18,8 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/synchronization/cancellation_flag.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/sys_info.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/platform_thread.h"
@@ -37,6 +39,11 @@ class DeleteTraceLogForTesting {
               StaticMemorySingletonTraits<base::debug::TraceLog> >::OnExit(0);
   }
 };
+
+// The thread buckets for the sampling profiler.
+BASE_EXPORT TRACE_EVENT_API_ATOMIC_WORD g_trace_state0;
+BASE_EXPORT TRACE_EVENT_API_ATOMIC_WORD g_trace_state1;
+BASE_EXPORT TRACE_EVENT_API_ATOMIC_WORD g_trace_state2;
 
 namespace base {
 namespace debug {
@@ -320,6 +327,147 @@ void TraceResultBuffer::Finish() {
 
 ////////////////////////////////////////////////////////////////////////////////
 //
+// TraceSamplingThread
+//
+////////////////////////////////////////////////////////////////////////////////
+class TraceBucketData;
+typedef base::Callback<void(TraceBucketData*)> TraceSampleCallback;
+
+class TraceBucketData {
+ public:
+  TraceBucketData(base::subtle::AtomicWord* bucket,
+                  const char* name,
+                  TraceSampleCallback callback);
+  ~TraceBucketData();
+
+  TRACE_EVENT_API_ATOMIC_WORD* bucket;
+  const char* bucket_name;
+  TraceSampleCallback callback;
+};
+
+// This object must be created on the IO thread.
+class TraceSamplingThread : public PlatformThread::Delegate {
+ public:
+  TraceSamplingThread();
+  virtual ~TraceSamplingThread();
+
+  // Implementation of PlatformThread::Delegate:
+  virtual void ThreadMain() OVERRIDE;
+
+  static void DefaultSampleCallback(TraceBucketData* bucekt_data);
+
+  void Stop();
+  void InstallWaitableEventForSamplingTesting(WaitableEvent* waitable_event);
+
+ private:
+  friend class TraceLog;
+
+  void GetSamples();
+  // Not thread-safe. Once the ThreadMain has been called, this can no longer
+  // be called.
+  void RegisterSampleBucket(TRACE_EVENT_API_ATOMIC_WORD* bucket,
+                            const char* const name,
+                            TraceSampleCallback callback);
+  // Splits a combined "category\0name" into the two component parts.
+  static void ExtractCategoryAndName(const char* combined,
+                                     const char** category,
+                                     const char** name);
+  std::vector<TraceBucketData> sample_buckets_;
+  bool thread_running_;
+  scoped_ptr<CancellationFlag> cancellation_flag_;
+  scoped_ptr<WaitableEvent> waitable_event_for_testing_;
+};
+
+
+TraceSamplingThread::TraceSamplingThread()
+    : thread_running_(false) {
+  cancellation_flag_.reset(new CancellationFlag);
+}
+
+TraceSamplingThread::~TraceSamplingThread() {
+}
+
+void TraceSamplingThread::ThreadMain() {
+  PlatformThread::SetName("Sampling Thread");
+  thread_running_ = true;
+  const int kSamplingFrequencyMicroseconds = 1000;
+  while (!cancellation_flag_->IsSet()) {
+    PlatformThread::Sleep(
+        TimeDelta::FromMicroseconds(kSamplingFrequencyMicroseconds));
+    GetSamples();
+    if (waitable_event_for_testing_.get())
+      waitable_event_for_testing_->Signal();
+  }
+}
+
+// static
+void TraceSamplingThread::DefaultSampleCallback(TraceBucketData* bucket_data) {
+  TRACE_EVENT_API_ATOMIC_WORD category_and_name =
+      TRACE_EVENT_API_ATOMIC_LOAD(*bucket_data->bucket);
+  if (!category_and_name)
+    return;
+  const char* const combined =
+      reinterpret_cast<const char* const>(category_and_name);
+  const char* category;
+  const char* name;
+  ExtractCategoryAndName(combined, &category, &name);
+  TRACE_EVENT_API_ADD_TRACE_EVENT(TRACE_EVENT_PHASE_SAMPLE,
+                                  TraceLog::GetCategoryEnabled(category),
+                                  name,
+                                  0,
+                                  0,
+                                  NULL,
+                                  NULL,
+                                  NULL,
+                                  0);
+}
+
+void TraceSamplingThread::GetSamples() {
+  for (size_t i = 0; i < sample_buckets_.size(); ++i) {
+    TraceBucketData* bucket_data = &sample_buckets_[i];
+    bucket_data->callback.Run(bucket_data);
+  }
+}
+
+void TraceSamplingThread::RegisterSampleBucket(
+    TRACE_EVENT_API_ATOMIC_WORD* bucket,
+    const char* const name,
+    TraceSampleCallback callback) {
+  DCHECK(!thread_running_);
+  sample_buckets_.push_back(TraceBucketData(bucket, name, callback));
+}
+
+// static
+void TraceSamplingThread::ExtractCategoryAndName(const char* combined,
+                                                 const char** category,
+                                                 const char** name) {
+  *category = combined;
+  *name = &combined[strlen(combined) + 1];
+}
+
+void TraceSamplingThread::Stop() {
+  cancellation_flag_->Set();
+}
+
+void TraceSamplingThread::InstallWaitableEventForSamplingTesting(
+    WaitableEvent* waitable_event) {
+  waitable_event_for_testing_.reset(waitable_event);
+}
+
+
+TraceBucketData::TraceBucketData(base::subtle::AtomicWord* bucket,
+                                 const char* name,
+                                 TraceSampleCallback callback)
+    : bucket(bucket),
+      bucket_name(name),
+      callback(callback) {
+}
+
+TraceBucketData::~TraceBucketData() {
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
 // TraceLog
 //
 ////////////////////////////////////////////////////////////////////////////////
@@ -381,7 +529,8 @@ TraceLog::TraceLog()
     : enable_count_(0),
       dispatching_to_observer_list_(false),
       watch_category_(NULL),
-      trace_options_(RECORD_UNTIL_FULL) {
+      trace_options_(RECORD_UNTIL_FULL),
+      sampling_thread_handle_(0) {
   // Trace is enabled or disabled on one thread while other threads are
   // accessing the enabled flag. We don't care whether edge-case events are
   // traced or not, so we allow races on the enabled flag to keep the trace
@@ -555,6 +704,26 @@ void TraceLog::SetEnabled(const std::vector<std::string>& included_categories,
     EnableMatchingCategories(included_categories_, CATEGORY_ENABLED, 0);
   else
     EnableMatchingCategories(excluded_categories_, 0, CATEGORY_ENABLED);
+
+  if (options & ENABLE_SAMPLING) {
+    sampling_thread_.reset(new TraceSamplingThread);
+    sampling_thread_->RegisterSampleBucket(
+        &g_trace_state0,
+        "bucket0",
+        Bind(&TraceSamplingThread::DefaultSampleCallback));
+    sampling_thread_->RegisterSampleBucket(
+        &g_trace_state1,
+        "bucket1",
+        Bind(&TraceSamplingThread::DefaultSampleCallback));
+    sampling_thread_->RegisterSampleBucket(
+        &g_trace_state2,
+        "bucket2",
+        Bind(&TraceSamplingThread::DefaultSampleCallback));
+    if (!PlatformThread::Create(
+          0, sampling_thread_.get(), &sampling_thread_handle_)) {
+      DCHECK(false) << "failed to create thread";
+    }
+  }
 }
 
 void TraceLog::SetEnabled(const std::string& categories, Options options) {
@@ -600,8 +769,19 @@ void TraceLog::SetDisabled() {
     return;
   }
 
+  if (sampling_thread_.get()) {
+    // Stop the sampling thread.
+    sampling_thread_->Stop();
+    lock_.Release();
+    PlatformThread::Join(sampling_thread_handle_);
+    lock_.Acquire();
+    sampling_thread_handle_ = 0;
+    sampling_thread_.reset();
+  }
+
   dispatching_to_observer_list_ = true;
-  FOR_EACH_OBSERVER(EnabledStateChangedObserver, enabled_state_observer_list_,
+  FOR_EACH_OBSERVER(EnabledStateChangedObserver,
+                    enabled_state_observer_list_,
                     OnTraceLogWillDisable());
   dispatching_to_observer_list_ = false;
 
@@ -832,6 +1012,11 @@ void TraceLog::AddThreadNameMetadataEvents() {
                      TRACE_EVENT_FLAG_NONE));
     }
   }
+}
+
+void TraceLog::InstallWaitableEventForSamplingTesting(
+    WaitableEvent* waitable_event) {
+  sampling_thread_->InstallWaitableEventForSamplingTesting(waitable_event);
 }
 
 void TraceLog::DeleteForTesting() {

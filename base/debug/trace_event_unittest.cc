@@ -1494,5 +1494,29 @@ TEST_F(TraceEventTestFixture, TraceOptionsParsing) {
             TraceLog::TraceOptionsFromString("record-until-full"));
 }
 
+TEST_F(TraceEventTestFixture, TraceSampling) {
+  ManualTestSetUp();
+
+  event_watch_notification_ = 0;
+  TraceLog::GetInstance()->SetEnabled(
+      std::string("*"),
+      TraceLog::Options(TraceLog::RECORD_UNTIL_FULL |
+                        TraceLog::ENABLE_SAMPLING));
+
+  WaitableEvent* sampled = new WaitableEvent(false, false);
+  TraceLog::GetInstance()->InstallWaitableEventForSamplingTesting(sampled);
+
+  TRACE_EVENT_SAMPLE_STATE(1, "cc", "Stuff");
+  sampled->Wait();
+  TRACE_EVENT_SAMPLE_STATE(1, "cc", "Things");
+  sampled->Wait();
+
+  EndTraceAndFlush();
+
+  // Make sure we hit at least once.
+  EXPECT_TRUE(FindNamePhase("Stuff", "P"));
+  EXPECT_TRUE(FindNamePhase("Things", "P"));
+}
+
 }  // namespace debug
 }  // namespace base
