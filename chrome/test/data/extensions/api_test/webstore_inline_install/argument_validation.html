@@ -7,40 +7,11 @@
 <script>
   console.log('Page loaded');
 
-  function runTest(galleryUrl) {
-    console.log('In runTest');
-
+  function runTest(galleryUrl, index) {
     var storeUrl = galleryUrl + '/detail/ecglahbcnmdpdciemllbhojghbkagdje';
     // Link URL has to be generated dynamically in order to include the right
     // port number. The ID corresponds to the data in the "extension" directory.
     document.getElementsByTagName('link')[0].href = storeUrl;
-
-    function runTests(tests) {
-      var failed = false;
-      tests.forEach(function(test) {
-        console.log('Testing ' + test.func);
-        if (test.shouldPass) {
-          try {
-            test.func();
-          } catch (e) {
-            console.log('unexpected exception: ' + e);
-            failed = true;
-          }
-        } else {
-          try {
-            test.func();
-            console.log('unexpected pass: ' + func);
-            failed = true;
-          } catch (e) {
-            // Expected exception
-          }
-        }
-      });
-
-      console.log('Ran test, sending response');
-      window.domAutomationController.send(!failed);
-      console.log('Test complete');
-    }
 
     function shouldPass(func) {
       return {
@@ -60,7 +31,7 @@
     var callback = function() {
     };
 
-    runTests([
+    var testCases = [
       shouldPass(function() {cwi()}),
       shouldPass(function() {cwi(undefined)}),
       shouldPass(function() {cwi(undefined, undefined)}),
@@ -79,7 +50,37 @@
       shouldFail(function() {cwi(undefined, 123)}),
       shouldFail(function() {cwi(undefined, undefined, 123)}),
       shouldFail(function() {cwi(undefined, callback, 123)})
-    ]);
+    ];
+
+    var successResult = (index < testCases.length - 1 ? 'KEEPGOING' : 'DONE');
+    var failureResult = 'FAILED';
+
+    function runTestCase(test) {
+      var failed = false;
+      console.log('Testing ' + test.func);
+      if (test.shouldPass) {
+        try {
+          test.func();
+        } catch (e) {
+          console.log('unexpected exception: ' + e);
+          failed = true;
+        }
+      } else {
+        try {
+          test.func();
+          console.log('unexpected pass: ' + func);
+          failed = true;
+        } catch (e) {
+          // Expected exception
+        }
+      }
+
+      console.log('Ran test, sending response');
+      window.domAutomationController.send(failed ? failureResult : successResult);
+      console.log('Test complete');
+    }
+
+    runTestCase(testCases[index]);
   }
 </script>
 

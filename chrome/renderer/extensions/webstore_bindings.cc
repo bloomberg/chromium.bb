@@ -215,8 +215,8 @@ void WebstoreBindings::OnInlineWebstoreInstallResponse(
   argv[0] = v8::Integer::New(install_id);
   argv[1] = v8::Boolean::New(success);
   argv[2] = v8::String::New(error.c_str());
-  CHECK(context_->CallChromeHiddenMethod("webstore.onInstallResponse",
-                                         arraysize(argv), argv, NULL));
+  context_->CallChromeHiddenMethod("webstore.onInstallResponse",
+                                   arraysize(argv), argv, NULL);
 }
 
 }  // namespace extensions

@@ -91,6 +91,25 @@ class WebstoreStandaloneInstallTest : public InProcessBrowserTest {
     EXPECT_TRUE(result);
   }
 
+  // Passes |i| to |test_function_name|, and expects that function to
+  // return one of "FAILED", "KEEPGOING" or "DONE". KEEPGOING should be
+  // returned if more tests remain to be run and the current test succeeded,
+  // FAILED is returned when a test fails, and DONE is returned by the last
+  // test if it succeeds.
+  // This methods returns true iff there are more tests that need to be run.
+  bool RunIndexedTest(const std::string& test_function_name,
+                      int i) {
+    std::string result = "FAILED";
+    std::string script = StringPrintf("%s('%s', %d)",
+        test_function_name.c_str(), test_gallery_url_.c_str(), i);
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        script,
+        &result));
+    EXPECT_TRUE(result != "FAILED");
+    return result == "KEEPGOING";
+  }
+
   std::string test_gallery_url_;
 };
 
@@ -130,9 +149,27 @@ IN_PROC_BROWSER_TEST_F(WebstoreStandaloneInstallTest, FindLink) {
 IN_PROC_BROWSER_TEST_F(WebstoreStandaloneInstallTest, ArgumentValidation) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
-  ui_test_utils::NavigateToURL(
-      browser(), GenerateTestServerUrl(kAppDomain, "argument_validation.html"));
 
+  // Each of these tests has to run separately, since one page/tab can
+  // only have one in-progress install request. These tests don't all pass
+  // callbacks to install, so they have no way to wait for the installation
+  // to complete before starting the next test.
+  bool is_finished = false;
+  for (int i = 0; !is_finished; ++i) {
+    ui_test_utils::NavigateToURL(
+        browser(),
+        GenerateTestServerUrl(kAppDomain, "argument_validation.html"));
+    is_finished = !RunIndexedTest("runTest", i);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(WebstoreStandaloneInstallTest, MultipleInstallCalls) {
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GenerateTestServerUrl(kAppDomain, "multiple_install_calls.html"));
   RunTest("runTest");
 }
 
