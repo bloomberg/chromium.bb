@@ -64,16 +64,13 @@ NSAppleEventDescriptor* ValueToAppleEventDescriptor(const base::Value* value) {
       descriptor = [NSAppleEventDescriptor recordDescriptor];
       NSAppleEventDescriptor* userRecord = [NSAppleEventDescriptor
           listDescriptor];
-      for (DictionaryValue::key_iterator iter(dictionary_value->begin_keys());
-           iter != dictionary_value->end_keys(); ++iter) {
-        const base::Value* item;
-        if (dictionary_value->Get(*iter, &item)) {
-          [userRecord insertDescriptor:[NSAppleEventDescriptor
-              descriptorWithString:base::SysUTF8ToNSString(*iter)]
-                               atIndex:0];
-          [userRecord insertDescriptor:ValueToAppleEventDescriptor(item)
-                               atIndex:0];
-        }
+      for (DictionaryValue::Iterator iter(*dictionary_value); !iter.IsAtEnd();
+           iter.Advance()) {
+        [userRecord insertDescriptor:[NSAppleEventDescriptor
+            descriptorWithString:base::SysUTF8ToNSString(iter.key())]
+                             atIndex:0];
+        [userRecord insertDescriptor:ValueToAppleEventDescriptor(&iter.value())
+                             atIndex:0];
       }
       // Description of what keyASUserRecordFields does.
       // http://lists.apple.com/archives/cocoa-dev/2009/Jul/msg01216.html

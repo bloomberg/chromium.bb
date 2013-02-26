@@ -200,17 +200,21 @@ void TranslatePrefs::MigrateUserPrefs(PrefService* user_prefs) {
   DictionaryValue* dict = update.Get();
   if (!dict || dict->empty())
     return;
-  for (DictionaryValue::key_iterator iter(dict->begin_keys());
-       iter != dict->end_keys(); ++iter) {
-    ListValue* list = NULL;
-    if (!dict->GetList(*iter, &list) || !list)
+  DictionaryValue::Iterator iter(*dict);
+  while (!iter.IsAtEnd()) {
+    const ListValue* list = NULL;
+    if (!iter.value().GetAsList(&list) || !list)
       break;  // Dictionary has either been migrated or new format.
+    std::string key = iter.key();
+    // Advance the iterator before removing the current element.
+    iter.Advance();
     std::string target_lang;
     if (list->empty() || !list->GetString(list->GetSize() - 1, &target_lang) ||
-        target_lang.empty())
-      dict->Remove(*iter, NULL);
-     else
-      dict->SetString(*iter, target_lang);
+        target_lang.empty()) {
+      dict->Remove(key, NULL);
+    } else {
+      dict->SetString(key, target_lang);
+    }
   }
 }
 

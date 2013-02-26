@@ -227,9 +227,10 @@ void TranslateManager::SetSupportedLanguages(const std::string& language_list) {
   std::set<std::string>* supported_languages = supported_languages_.Pointer();
   supported_languages->clear();
   // ... and replace it with the values we just fetched from the server.
-  DictionaryValue::key_iterator iter = target_languages->begin_keys();
-  for (; iter != target_languages->end_keys(); ++iter)
-    supported_languages_.Pointer()->insert(*iter);
+  for (DictionaryValue::Iterator iter(*target_languages); !iter.IsAtEnd();
+       iter.Advance()) {
+    supported_languages_.Pointer()->insert(iter.key());
+  }
 }
 
 // static

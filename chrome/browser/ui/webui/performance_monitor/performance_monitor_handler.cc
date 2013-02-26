@@ -261,22 +261,21 @@ void DoGetEvents(ListValue* results,
          event != event_vector.end(); ++event) {
       DictionaryValue* localized_event = new DictionaryValue();
 
-      for (DictionaryValue::key_iterator key = (*event)->data()->begin_keys();
-           key != (*event)->data()->end_keys(); ++key) {
+      for (DictionaryValue::Iterator data(*(*event)->data()); !data.IsAtEnd();
+           data.Advance()) {
         std::string localized_key;
-
         Value* value = NULL;
 
         // The property 'eventType' is set in HandleGetEvents as part of the
         // entire result set, so we don't need to include this here in the
         // event.
-        if (*key == "eventType")
+        if (data.key() == "eventType")
           continue;
-        else if (*key == "time") {
+        else if (data.key() == "time") {
           // The property 'time' is also used computationally, but must be
           // converted to JS-style time.
           double time = 0.0;
-          if (!(*event)->data()->GetDouble(std::string("time"), &time)) {
+          if (!data.value().GetAsDouble(&time)) {
             LOG(ERROR) << "Failed to get 'time' field from event.";
             continue;
           }
@@ -287,16 +286,15 @@ void DoGetEvents(ListValue* results,
           // All other values are user-facing, so we create a new value for
           // localized display.
           DictionaryValue* localized_value = new DictionaryValue();
-          localized_value->SetString("label",
-                                     GetLocalizedStringFromEventProperty(*key));
-          Value* old_value = NULL;
-          (*event)->data()->Get(*key, &old_value);
+          localized_value->SetString(
+              "label",
+              GetLocalizedStringFromEventProperty(data.key()));
           localized_value->SetWithoutPathExpansion("value",
-                                                   old_value->DeepCopy());
+                                                   data.value().DeepCopy());
           value = localized_value;
         }
 
-        localized_event->SetWithoutPathExpansion(*key, value);
+        localized_event->SetWithoutPathExpansion(data.key(), value);
       }
       events->Append(localized_event);
     }

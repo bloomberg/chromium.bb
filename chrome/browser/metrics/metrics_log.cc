@@ -910,14 +910,12 @@ void MetricsLog::RecordProfilerData(
 void MetricsLog::WriteAllProfilesMetrics(
     const DictionaryValue& all_profiles_metrics) {
   const std::string profile_prefix(prefs::kProfilePrefix);
-  for (DictionaryValue::key_iterator i = all_profiles_metrics.begin_keys();
-       i != all_profiles_metrics.end_keys(); ++i) {
-    const std::string& key_name = *i;
-    if (key_name.compare(0, profile_prefix.size(), profile_prefix) == 0) {
+  for (DictionaryValue::Iterator i(all_profiles_metrics); !i.IsAtEnd();
+       i.Advance()) {
+    if (i.key().compare(0, profile_prefix.size(), profile_prefix) == 0) {
       const DictionaryValue* profile;
-      if (all_profiles_metrics.GetDictionaryWithoutPathExpansion(key_name,
-                                                                 &profile))
-        WriteProfileMetrics(key_name.substr(profile_prefix.size()), *profile);
+      if (i.value().GetAsDictionary(&profile))
+        WriteProfileMetrics(i.key().substr(profile_prefix.size()), *profile);
     }
   }
 }
@@ -926,46 +924,43 @@ void MetricsLog::WriteProfileMetrics(const std::string& profileidhash,
                                      const DictionaryValue& profile_metrics) {
   OPEN_ELEMENT_FOR_SCOPE("userprofile");
   WriteAttribute("profileidhash", profileidhash);
-  for (DictionaryValue::key_iterator i = profile_metrics.begin_keys();
-       i != profile_metrics.end_keys(); ++i) {
-    const Value* value;
-    if (profile_metrics.GetWithoutPathExpansion(*i, &value)) {
-      DCHECK_NE(*i, "id");
-      switch (value->GetType()) {
-        case Value::TYPE_STRING: {
-          std::string string_value;
-          if (value->GetAsString(&string_value)) {
-            OPEN_ELEMENT_FOR_SCOPE("profileparam");
-            WriteAttribute("name", *i);
-            WriteAttribute("value", string_value);
-          }
-          break;
+  for (DictionaryValue::Iterator i(profile_metrics); !i.IsAtEnd();
+       i.Advance()) {
+    DCHECK_NE(i.key(), "id");
+    switch (i.value().GetType()) {
+      case Value::TYPE_STRING: {
+        std::string string_value;
+        if (i.value().GetAsString(&string_value)) {
+          OPEN_ELEMENT_FOR_SCOPE("profileparam");
+          WriteAttribute("name", i.key());
+          WriteAttribute("value", string_value);
         }
-
-        case Value::TYPE_BOOLEAN: {
-          bool bool_value;
-          if (value->GetAsBoolean(&bool_value)) {
-            OPEN_ELEMENT_FOR_SCOPE("profileparam");
-            WriteAttribute("name", *i);
-            WriteIntAttribute("value", bool_value ? 1 : 0);
-          }
-          break;
-        }
-
-        case Value::TYPE_INTEGER: {
-          int int_value;
-          if (value->GetAsInteger(&int_value)) {
-            OPEN_ELEMENT_FOR_SCOPE("profileparam");
-            WriteAttribute("name", *i);
-            WriteIntAttribute("value", int_value);
-          }
-          break;
-        }
-
-        default:
-          NOTREACHED();
-          break;
+        break;
       }
+
+      case Value::TYPE_BOOLEAN: {
+        bool bool_value;
+        if (i.value().GetAsBoolean(&bool_value)) {
+          OPEN_ELEMENT_FOR_SCOPE("profileparam");
+          WriteAttribute("name", i.key());
+          WriteIntAttribute("value", bool_value ? 1 : 0);
+        }
+        break;
+      }
+
+      case Value::TYPE_INTEGER: {
+        int int_value;
+        if (i.value().GetAsInteger(&int_value)) {
+          OPEN_ELEMENT_FOR_SCOPE("profileparam");
+          WriteAttribute("name", i.key());
+          WriteIntAttribute("value", int_value);
+        }
+        break;
+      }
+
+      default:
+        NOTREACHED();
+        break;
     }
   }
 }

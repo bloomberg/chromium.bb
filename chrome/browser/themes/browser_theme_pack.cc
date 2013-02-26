@@ -752,17 +752,17 @@ void BrowserThemePack::BuildTintsFromJSON(DictionaryValue* tints_value) {
 
   // Parse the incoming data from |tints_value| into an intermediary structure.
   std::map<int, color_utils::HSL> temp_tints;
-  for (DictionaryValue::key_iterator iter(tints_value->begin_keys());
-       iter != tints_value->end_keys(); ++iter) {
-    ListValue* tint_list;
-    if (tints_value->GetList(*iter, &tint_list) &&
+  for (DictionaryValue::Iterator iter(*tints_value); !iter.IsAtEnd();
+       iter.Advance()) {
+    const ListValue* tint_list;
+    if (iter.value().GetAsList(&tint_list) &&
         (tint_list->GetSize() == 3)) {
       color_utils::HSL hsl = { -1, -1, -1 };
 
       if (tint_list->GetDouble(0, &hsl.h) &&
           tint_list->GetDouble(1, &hsl.s) &&
           tint_list->GetDouble(2, &hsl.l)) {
-        int id = GetIntForString(*iter, kTintTable, kTintTableLength);
+        int id = GetIntForString(iter.key(), kTintTable, kTintTableLength);
         if (id != -1) {
           temp_tints[id] = hsl;
         }
@@ -808,10 +808,10 @@ void BrowserThemePack::ReadColorsFromJSON(
     DictionaryValue* colors_value,
     std::map<int, SkColor>* temp_colors) {
   // Parse the incoming data from |colors_value| into an intermediary structure.
-  for (DictionaryValue::key_iterator iter(colors_value->begin_keys());
-       iter != colors_value->end_keys(); ++iter) {
-    ListValue* color_list;
-    if (colors_value->GetList(*iter, &color_list) &&
+  for (DictionaryValue::Iterator iter(*colors_value); !iter.IsAtEnd();
+       iter.Advance()) {
+    const ListValue* color_list;
+    if (iter.value().GetAsList(&color_list) &&
         ((color_list->GetSize() == 3) || (color_list->GetSize() == 4))) {
       SkColor color = SK_ColorWHITE;
       int r, g, b;
@@ -834,7 +834,7 @@ void BrowserThemePack::ReadColorsFromJSON(
           color = SkColorSetRGB(r, g, b);
         }
 
-        int id = GetIntForString(*iter, kColorTable, kColorTableLength);
+        int id = GetIntForString(iter.key(), kColorTable, kColorTableLength);
         if (id != -1) {
           (*temp_colors)[id] = color;
         }
@@ -911,15 +911,14 @@ void BrowserThemePack::BuildDisplayPropertiesFromJSON(
     return;
 
   std::map<int, int> temp_properties;
-  for (DictionaryValue::key_iterator iter(
-       display_properties_value->begin_keys());
-       iter != display_properties_value->end_keys(); ++iter) {
-    int property_id = GetIntForString(*iter, kDisplayProperties,
+  for (DictionaryValue::Iterator iter(*display_properties_value);
+       !iter.IsAtEnd(); iter.Advance()) {
+    int property_id = GetIntForString(iter.key(), kDisplayProperties,
                                       kDisplayPropertiesSize);
     switch (property_id) {
       case ThemeProperties::NTP_BACKGROUND_ALIGNMENT: {
         std::string val;
-        if (display_properties_value->GetString(*iter, &val)) {
+        if (iter.value().GetAsString(&val)) {
           temp_properties[ThemeProperties::NTP_BACKGROUND_ALIGNMENT] =
               ThemeProperties::StringToAlignment(val);
         }
@@ -927,7 +926,7 @@ void BrowserThemePack::BuildDisplayPropertiesFromJSON(
       }
       case ThemeProperties::NTP_BACKGROUND_TILING: {
         std::string val;
-        if (display_properties_value->GetString(*iter, &val)) {
+        if (iter.value().GetAsString(&val)) {
           temp_properties[ThemeProperties::NTP_BACKGROUND_TILING] =
               ThemeProperties::StringToTiling(val);
         }
@@ -935,7 +934,7 @@ void BrowserThemePack::BuildDisplayPropertiesFromJSON(
       }
       case ThemeProperties::NTP_LOGO_ALTERNATE: {
         int val = 0;
-        if (display_properties_value->GetInteger(*iter, &val))
+        if (iter.value().GetAsInteger(&val))
           temp_properties[ThemeProperties::NTP_LOGO_ALTERNATE] = val;
         break;
       }
@@ -959,11 +958,11 @@ void BrowserThemePack::ParseImageNamesFromJSON(
   if (!images_value)
     return;
 
-  for (DictionaryValue::key_iterator iter(images_value->begin_keys());
-       iter != images_value->end_keys(); ++iter) {
+  for (DictionaryValue::Iterator iter(*images_value); !iter.IsAtEnd();
+       iter.Advance()) {
     std::string val;
-    if (images_value->GetString(*iter, &val)) {
-      int id = GetPersistentIDByName(*iter);
+    if (iter.value().GetAsString(&val)) {
+      int id = GetPersistentIDByName(iter.key());
       if (id != -1)
         (*file_paths)[id] = images_path.AppendASCII(val);
     }

@@ -353,9 +353,9 @@ void DevToolsFileHelper::RequestFileSystems(
   const DictionaryValue* file_systems_paths_value =
       profile_->GetPrefs()->GetDictionary(prefs::kDevToolsFileSystemPaths);
   std::vector<base::FilePath> saved_paths;
-  DictionaryValue::key_iterator it = file_systems_paths_value->begin_keys();
-  for (; it != file_systems_paths_value->end_keys(); ++it) {
-    std::string file_system_path = *it;
+  for (DictionaryValue::Iterator it(*file_systems_paths_value); !it.IsAtEnd();
+       it.Advance()) {
+    std::string file_system_path = it.key();
     base::FilePath path = base::FilePath::FromUTF8Unsafe(file_system_path);
     saved_paths.push_back(path);
   }

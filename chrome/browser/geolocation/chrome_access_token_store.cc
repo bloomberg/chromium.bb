@@ -67,17 +67,16 @@ class TokenLoadingJob : public base::RefCountedThreadSafe<TokenLoadingJob> {
     std::vector<std::string> providers_to_remove;
     // The dictionary value could be NULL if the pref has never been set.
     if (token_dictionary != NULL) {
-      for (DictionaryValue::key_iterator it = token_dictionary->begin_keys();
-           it != token_dictionary->end_keys(); ++it) {
-        GURL url(*it);
+      for (DictionaryValue::Iterator it(*token_dictionary); !it.IsAtEnd();
+           it.Advance()) {
+        GURL url(it.key());
         if (!url.is_valid())
           continue;
         if (IsUnsupportedNetworkProviderUrl(url)) {
-          providers_to_remove.push_back(*it);
+          providers_to_remove.push_back(it.key());
           continue;
         }
-        token_dictionary->GetStringWithoutPathExpansion(
-            *it, &access_token_set_[url]);
+        it.value().GetAsString(&access_token_set_[url]);
       }
       for (size_t i = 0; i < providers_to_remove.size(); ++i) {
         token_dictionary->RemoveWithoutPathExpansion(
