@@ -13,4 +13,5 @@ install-header: CC_LIBRARY(src/libevdev.so.0)
 
 
 setup-header-in-place:
-	ln -sfn $(SRC)/include/libevdev /usr/include/libevdev
+	mkdir -p $(SRC)/in-place || true
+	ln -sfn $(SRC)/include/libevdev $(SRC)/in-place/libevdev

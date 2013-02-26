@@ -20,5 +20,6 @@ install-lib: CC_LIBRARY(src/libevdev.so.0) CC_LIBRARY(src/libevdev_hollow.so.0)
 	ln -f -s libevdev.so.0 $(DESTDIR)$(LIBDIR)/libevdev.so
 
 setup-lib-in-place:
-	ln -sf $(SRC)/src/libevdev_hollow.so.0 $(LIBDIR)/libevdev_hollow.so
-	ln -sf $(SRC)/src/libevdev_hollow.so.0 $(LIBDIR)/libevdev_hollow.so.0
+	mkdir -p $(SRC)/in-place || true
+	ln -sf $(SRC)/src/libevdev_hollow.so.0 $(SRC)/in-place/libevdev_hollow.so
+	ln -sf $(SRC)/src/libevdev_hollow.so.0 $(SRC)/in-place/libevdev_hollow.so.0
