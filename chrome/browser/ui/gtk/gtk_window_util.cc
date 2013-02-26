@@ -14,6 +14,9 @@ using content::WebContents;
 
 namespace gtk_window_util {
 
+const int kFrameBorderThickness = 4;
+const int kResizeAreaCornerSize = 16;
+
 // Keep track of the last click time and the last click position so we can
 // filter out extra GDK_BUTTON_PRESS events when a double click happens.
 static guint32 last_click_time;
@@ -250,6 +253,52 @@ void UpdateWindowPosition(BaseWindow* window,
   (*bounds).set_origin(gfx::Point(x, y));
   if (!window->IsFullscreen() && !window->IsMaximized())
     *restored_bounds = *bounds;
+}
+
+bool GetWindowEdge(const gfx::Size& window_size,
+                   int top_edge_inset,
+                   int x,
+                   int y,
+                   GdkWindowEdge* edge) {
+  gfx::Rect middle(window_size);
+  middle.Inset(kFrameBorderThickness,
+               kFrameBorderThickness - top_edge_inset,
+               kFrameBorderThickness,
+               kFrameBorderThickness);
+  if (middle.Contains(x, y))
+    return false;
+
+  gfx::Rect north(0, 0, window_size.width(),
+      kResizeAreaCornerSize - top_edge_inset);
+  gfx::Rect west(0, 0, kResizeAreaCornerSize, window_size.height());
+  gfx::Rect south(0, window_size.height() - kResizeAreaCornerSize,
+      window_size.width(), kResizeAreaCornerSize);
+  gfx::Rect east(window_size.width() - kResizeAreaCornerSize, 0,
+      kResizeAreaCornerSize, window_size.height());
+
+  if (north.Contains(x, y)) {
+    if (west.Contains(x, y))
+      *edge = GDK_WINDOW_EDGE_NORTH_WEST;
+    else if (east.Contains(x, y))
+      *edge = GDK_WINDOW_EDGE_NORTH_EAST;
+    else
+      *edge = GDK_WINDOW_EDGE_NORTH;
+  } else if (south.Contains(x, y)) {
+    if (west.Contains(x, y))
+      *edge = GDK_WINDOW_EDGE_SOUTH_WEST;
+    else if (east.Contains(x, y))
+      *edge = GDK_WINDOW_EDGE_SOUTH_EAST;
+    else
+      *edge = GDK_WINDOW_EDGE_SOUTH;
+  } else {
+    if (west.Contains(x, y))
+      *edge = GDK_WINDOW_EDGE_WEST;
+    else if (east.Contains(x, y))
+      *edge = GDK_WINDOW_EDGE_EAST;
+    else
+      return false;  // The cursor must be outside the window.
+  }
+  return true;
 }
 
 }  // namespace gtk_window_util

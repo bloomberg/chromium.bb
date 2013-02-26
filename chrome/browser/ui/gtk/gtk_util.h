@@ -16,7 +16,6 @@
 #include "ui/gfx/rect.h"
 
 typedef struct _cairo cairo_t;
-typedef struct _GdkColor GdkColor;
 typedef struct _GtkWidget GtkWidget;
 
 class BrowserWindow;

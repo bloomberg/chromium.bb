@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "ui/base/x/active_window_watcher_x.h"
+#include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 
@@ -34,7 +35,8 @@ NativeAppWindowGtk::NativeAppWindowGtk(ShellWindow* shell_window,
       state_(GDK_WINDOW_STATE_WITHDRAWN),
       is_active_(false),
       content_thinks_its_fullscreen_(false),
-      frameless_(params.frame == ShellWindow::FRAME_NONE) {
+      frameless_(params.frame == ShellWindow::FRAME_NONE),
+      frame_cursor_(NULL) {
   window_ = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
 
   gfx::NativeView native_view =
@@ -113,6 +115,8 @@ NativeAppWindowGtk::NativeAppWindowGtk(ShellWindow* shell_window,
   if (frameless_) {
     g_signal_connect(window_, "button-press-event",
                      G_CALLBACK(OnButtonPressThunk), this);
+    g_signal_connect(window_, "motion-notify-event",
+                     G_CALLBACK(OnMouseMoveEventThunk), this);
   }
 
   // Add the keybinding registry.
@@ -325,31 +329,95 @@ gboolean NativeAppWindowGtk::OnWindowState(GtkWidget* sender,
   return FALSE;
 }
 
+bool NativeAppWindowGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) {
+  if (!frameless_)
+    return false;
+
+  if (IsMaximized() || IsFullscreen())
+    return false;
+
+  return gtk_window_util::GetWindowEdge(bounds_.size(), 0, x, y, edge);
+}
+
+gboolean NativeAppWindowGtk::OnMouseMoveEvent(GtkWidget* widget,
+                                              GdkEventMotion* event) {
+  if (!frameless_) {
+    // Reset the cursor.
+    if (frame_cursor_) {
+      frame_cursor_ = NULL;
+      gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window_)), NULL);
+    }
+    return FALSE;
+  }
+
+  // Update the cursor if we're on the custom frame border.
+  GdkWindowEdge edge;
+  bool has_hit_edge = GetWindowEdge(static_cast<int>(event->x),
+                                    static_cast<int>(event->y), &edge);
+  GdkCursorType new_cursor = GDK_LAST_CURSOR;
+  if (has_hit_edge)
+    new_cursor = gtk_window_util::GdkWindowEdgeToGdkCursorType(edge);
+
+  GdkCursorType last_cursor = GDK_LAST_CURSOR;
+  if (frame_cursor_)
+    last_cursor = frame_cursor_->type;
+
+  if (last_cursor != new_cursor) {
+    frame_cursor_ = has_hit_edge ? gfx::GetCursor(new_cursor) : NULL;
+    gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window_)),
+                          frame_cursor_);
+  }
+  return FALSE;
+}
+
 gboolean NativeAppWindowGtk::OnButtonPress(GtkWidget* widget,
                                            GdkEventButton* event) {
-  if (draggable_region_ && draggable_region_->contains(event->x, event->y)) {
-    if (event->button == 1) {
-      if (GDK_BUTTON_PRESS == event->type) {
-        if (!suppress_window_raise_)
-          gdk_window_raise(GTK_WIDGET(widget)->window);
+  // Make the button press coordinate relative to the browser window.
+  int win_x, win_y;
+  GdkWindow* gdk_window = gtk_widget_get_window(GTK_WIDGET(window_));
+  gdk_window_get_origin(gdk_window, &win_x, &win_y);
 
+  GdkWindowEdge edge;
+  gfx::Point point(static_cast<int>(event->x_root - win_x),
+                   static_cast<int>(event->y_root - win_y));
+  bool has_hit_edge = GetWindowEdge(point.x(), point.y(), &edge);
+  bool has_hit_titlebar =
+      draggable_region_ && draggable_region_->contains(event->x, event->y);
+
+  if (event->button == 1) {
+    if (GDK_BUTTON_PRESS == event->type) {
+      // Raise the window after a click on either the titlebar or the border to
+      // match the behavior of most window managers, unless that behavior has
+      // been suppressed.
+      if ((has_hit_titlebar || has_hit_edge) && !suppress_window_raise_)
+        gdk_window_raise(GTK_WIDGET(widget)->window);
+
+      if (has_hit_edge) {
+        gtk_window_begin_resize_drag(window_, edge, event->button,
+                                     static_cast<gint>(event->x_root),
+                                     static_cast<gint>(event->y_root),
+                                     event->time);
+        return TRUE;
+      } else if (has_hit_titlebar) {
         return gtk_window_util::HandleTitleBarLeftMousePress(
-            GTK_WINDOW(widget), bounds_, event);
-      } else if (GDK_2BUTTON_PRESS == event->type) {
-        bool is_maximized = gdk_window_get_state(GTK_WIDGET(widget)->window) &
-                            GDK_WINDOW_STATE_MAXIMIZED;
-        if (is_maximized) {
+            window_, bounds_, event);
+      }
+    } else if (GDK_2BUTTON_PRESS == event->type) {
+      if (has_hit_titlebar) {
+        // Maximize/restore on double click.
+        if (IsMaximized()) {
           gtk_window_util::UnMaximize(GTK_WINDOW(widget),
               bounds_, restored_bounds_);
         } else {
-          gtk_window_maximize(GTK_WINDOW(widget));
+          gtk_window_maximize(window_);
         }
         return TRUE;
       }
-    } else if (event->button == 2) {
-      gdk_window_lower(GTK_WIDGET(widget)->window);
-      return TRUE;
     }
+  } else if (event->button == 2) {
+    if (has_hit_titlebar || has_hit_edge)
+      gdk_window_lower(gdk_window);
+    return TRUE;
   }
 
   return FALSE;

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_GTK_GTK_WINDOW_UTIL_H_
 
 #include <gtk/gtk.h>
+#include <gdk/gdk.h>
 #include "ui/gfx/rect.h"
 
 class BaseWindow;
@@ -15,6 +16,13 @@ class WebContents;
 }
 
 namespace gtk_window_util {
+
+// The frame border is only visible in restored mode and is hardcoded to 4 px
+// on each side regardless of the system window border size.
+extern const int kFrameBorderThickness;
+// In the window corners, the resize areas don't actually expand bigger, but
+// the 16 px at the end of each edge triggers diagonal resizing.
+extern const int kResizeAreaCornerSize;
 
 // Performs Cut/Copy/Paste operation on the |window|'s |web_contents|.
 void DoCut(GtkWindow* window, content::WebContents* web_contents);
@@ -56,6 +64,18 @@ void SetWindowSize(GtkWindow* window, const gfx::Size& size);
 void UpdateWindowPosition(BaseWindow* window,
                           gfx::Rect* bounds,
                           gfx::Rect* restored_bounds);
+
+// If the point (|x|, |y|) is within the resize border area of the window,
+// returns true and sets |edge| to the appropriate GdkWindowEdge value.
+// Otherwise, returns false.
+// |top_edge_inset| specifies how much smaller (in px) than the default edge
+// size the top edge should be, used by browser windows to make it easier to
+// move the window since a lot of title bar space is taken by the tabs.
+bool GetWindowEdge(const gfx::Size& window_size,
+                   int top_edge_inset,
+                   int x,
+                   int y,
+                   GdkWindowEdge* edge);
 
 }  // namespace gtk_window_util
 

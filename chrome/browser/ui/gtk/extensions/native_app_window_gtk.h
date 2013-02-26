@@ -76,12 +76,19 @@ class NativeAppWindowGtk : public NativeAppWindow,
 
   virtual ~NativeAppWindowGtk();
 
+  // If the point (|x|, |y|) is within the resize border area of the window,
+  // returns true and sets |edge| to the appropriate GdkWindowEdge value.
+  // Otherwise, returns false.
+  bool GetWindowEdge(int x, int y, GdkWindowEdge* edge);
+
   CHROMEGTK_CALLBACK_1(NativeAppWindowGtk, gboolean, OnMainWindowDeleteEvent,
                        GdkEvent*);
   CHROMEGTK_CALLBACK_1(NativeAppWindowGtk, gboolean, OnConfigure,
                        GdkEventConfigure*);
   CHROMEGTK_CALLBACK_1(NativeAppWindowGtk, gboolean, OnWindowState,
                        GdkEventWindowState*);
+  CHROMEGTK_CALLBACK_1(NativeAppWindowGtk, gboolean, OnMouseMoveEvent,
+                       GdkEventMotion*);
   CHROMEGTK_CALLBACK_1(NativeAppWindowGtk, gboolean, OnButtonPress,
                        GdkEventButton*);
 
@@ -117,6 +124,10 @@ class NativeAppWindowGtk : public NativeAppWindow,
 
   // True if the window shows without frame.
   bool frameless_;
+
+  // The current window cursor.  We set it to a resize cursor when over the
+  // custom frame border.  We set it to NULL if we want the default cursor.
+  GdkCursor* frame_cursor_;
 
   // The timer used to save the window position for session restore.
   base::OneShotTimer<NativeAppWindowGtk> window_configure_debounce_timer_;
