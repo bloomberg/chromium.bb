@@ -12,6 +12,7 @@ import itertools
 import multiprocessing
 import optparse
 import os
+import re
 import subprocess
 import tempfile
 
@@ -121,6 +122,11 @@ class WorkerState(object):
     self._num_instructions = 0
 
   def ReceiveInstruction(self, s):
+    # We do not disassemble x87 instructions prefixed with fwait as objdump
+    # does. To avoid such situations in enumeration test, we insert nop after
+    # fwait.
+    if re.match(r'(0x4[0-9a-f],)?0x9b$', s):
+      s += ',0x90'
     self._asm_file.write('  .byte ' + s + '\n')
     self.total_instructions += 1
     self._num_instructions += 1
