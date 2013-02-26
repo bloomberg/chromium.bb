@@ -78,6 +78,11 @@ private:
     int m_vertexOpacityLocation;
 };
 
+class VertexShaderPosTexTransformFlip : public VertexShaderPosTexTransform {
+public:
+    std::string getShaderString() const;
+};
+
 class VertexShaderQuad {
 public:
     VertexShaderQuad();
@@ -156,22 +161,12 @@ private:
     int m_samplerLocation;
 };
 
-class FragmentShaderRGBATexFlipVaryingAlpha : public FragmentTexOpaqueBinding {
-public:
-    std::string getShaderString() const;
-};
-
 class FragmentShaderRGBATexVaryingAlpha : public FragmentTexOpaqueBinding {
 public:
     std::string getShaderString() const;
 };
 
 class FragmentShaderRGBATexAlpha : public FragmentTexAlphaBinding {
-public:
-    std::string getShaderString() const;
-};
-
-class FragmentShaderRGBATexRectFlipVaryingAlpha : public FragmentTexAlphaBinding {
 public:
     std::string getShaderString() const;
 };

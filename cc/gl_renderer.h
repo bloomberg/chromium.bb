@@ -160,7 +160,7 @@ private:
 
     // Texture shaders.
     typedef ProgramBinding<VertexShaderPosTexTransform, FragmentShaderRGBATexVaryingAlpha> TextureProgram;
-    typedef ProgramBinding<VertexShaderPosTexTransform, FragmentShaderRGBATexFlipVaryingAlpha> TextureProgramFlip;
+    typedef ProgramBinding<VertexShaderPosTexTransformFlip, FragmentShaderRGBATexVaryingAlpha> TextureProgramFlip;
     typedef ProgramBinding<VertexShaderPosTexTransform, FragmentShaderRGBATexRectVaryingAlpha> TextureIOSurfaceProgram;
 
     // Video shaders.
