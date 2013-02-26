@@ -507,6 +507,7 @@ void CompleteInstallFunction::OnExtensionInstallSuccess(
   if (test_webstore_installer_delegate)
     test_webstore_installer_delegate->OnExtensionInstallSuccess(id);
 
+  LOG(INFO) << "Install success, sending response";
   SendResponse(true);
 
   // Matches the AddRef in RunImpl().
@@ -526,6 +527,7 @@ void CompleteInstallFunction::OnExtensionInstallFailure(
   }
 
   error_ = error;
+  LOG(INFO) << "Install failed, sending response";
   SendResponse(false);
 
   // Matches the AddRef in RunImpl().
