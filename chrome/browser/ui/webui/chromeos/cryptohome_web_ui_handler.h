@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
-#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/dbus_method_call_status.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {
