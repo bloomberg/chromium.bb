@@ -260,9 +260,11 @@ function WallpaperManager(dialogDom) {
       for (var key in self.manifest_.wallpaper_list) {
         var url = self.manifest_.wallpaper_list[key].base_url +
             HighResolutionSuffix;
-        if (url.indexOf(self.currentWallpaper_) != -1)
+        if (url.indexOf(self.currentWallpaper_) != -1 &&
+            self.manifest_.wallpaper_list[key].categories.length > 0) {
           presetCategory = self.manifest_.wallpaper_list[key].categories[0] +
               OnlineCategoriesOffset;
+        }
       }
       self.categoriesList_.selectionModel.selectedIndex = presetCategory;
     };
