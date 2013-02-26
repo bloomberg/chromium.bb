@@ -12,7 +12,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/notification_list.h"
-#include "ui/notifications/notification_types.h"
+#include "ui/message_center/notification_types.h"
 
 namespace base {
 class DictionaryValue;
@@ -106,7 +106,7 @@ class MESSAGE_CENTER_EXPORT MessageCenter : public NotificationList::Delegate {
   // from the extension. Otherwise if |display_source| is provided, a menu item
   // showing the source and allowing notifications from that source to be
   // disabled will be shown. All actual disabling is handled by the Delegate.
-  void AddNotification(ui::notifications::NotificationType type,
+  void AddNotification(NotificationType type,
                        const std::string& id,
                        const string16& title,
                        const string16& message,

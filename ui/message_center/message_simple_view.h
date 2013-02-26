@@ -10,7 +10,7 @@
 
 namespace message_center {
 
-struct Notification;
+class Notification;
 
 // A simple view for a notification entry (icon + message + buttons).
 class MessageSimpleView : public MessageView {
@@ -20,7 +20,6 @@ class MessageSimpleView : public MessageView {
   virtual ~MessageSimpleView();
 
   // Overridden from MessageView:
-  virtual void SetUpView() OVERRIDE;
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
@@ -32,6 +31,8 @@ class MessageSimpleView : public MessageView {
   MessageSimpleView();
 
  private:
+  void SetUpView(const Notification& notification);
+
   scoped_ptr<views::ImageButton> old_style_close_button_;
   scoped_ptr<views::View> content_view_;
 

@@ -116,31 +116,59 @@ NotificationApiFunction::NotificationApiFunction() {
 NotificationApiFunction::~NotificationApiFunction() {
 }
 
-ui::notifications::NotificationType
+message_center::NotificationType
 NotificationApiFunction::MapApiTemplateTypeToType(
     api::experimental_notification::TemplateType type) {
   switch (type) {
     case api::experimental_notification::TEMPLATE_TYPE_NONE:
     case api::experimental_notification::TEMPLATE_TYPE_SIMPLE:
-      return ui::notifications::NOTIFICATION_TYPE_SIMPLE;
+      return message_center::NOTIFICATION_TYPE_SIMPLE;
     case api::experimental_notification::TEMPLATE_TYPE_BASIC:
-      return ui::notifications::NOTIFICATION_TYPE_BASE_FORMAT;
+      return message_center::NOTIFICATION_TYPE_BASE_FORMAT;
     case api::experimental_notification::TEMPLATE_TYPE_IMAGE:
-      return ui::notifications::NOTIFICATION_TYPE_IMAGE;
+      return message_center::NOTIFICATION_TYPE_IMAGE;
     case api::experimental_notification::TEMPLATE_TYPE_LIST:
-      return ui::notifications::NOTIFICATION_TYPE_MULTIPLE;
+      return message_center::NOTIFICATION_TYPE_MULTIPLE;
     default:
       // Gracefully handle newer application code that is running on an older
       // runtime that doesn't recognize the requested template.
-      return ui::notifications::NOTIFICATION_TYPE_BASE_FORMAT;
+      return message_center::NOTIFICATION_TYPE_BASE_FORMAT;
   }
 }
 
+// If older notification runtime is used, MessageCenter is not built.
+// Use simpler bridge then, ignoring all options.
+#if !defined (ENABLE_MESSAGE_CENTER)
 void NotificationApiFunction::CreateNotification(
     const std::string& id,
     api::experimental_notification::NotificationOptions* options) {
-  ui::notifications::NotificationType type = MapApiTemplateTypeToType(
-      options->template_type);
+  message_center::NotificationType type =
+      MapApiTemplateTypeToType(options->template_type);
+  GURL icon_url(UTF8ToUTF16(options->icon_url));
+  string16 title(UTF8ToUTF16(options->title));
+  string16 message(UTF8ToUTF16(options->message));
+
+  // Ignore options if running on the old notification runtime.
+  scoped_ptr<DictionaryValue> optional_fields(new DictionaryValue());
+
+  NotificationApiDelegate* api_delegate(new NotificationApiDelegate(
+      this,
+      profile(),
+      extension_->id(),
+      id));  // ownership is passed to Notification
+  Notification notification(type, extension_->url(), icon_url, title, message,
+                            WebKit::WebTextDirectionDefault,
+                            string16(), UTF8ToUTF16(api_delegate->id()),
+                            optional_fields.get(), api_delegate);
+
+  g_browser_process->notification_ui_manager()->Add(notification, profile());
+}
+#else  // defined(ENABLE_MESSAGE_CENTER)
+void NotificationApiFunction::CreateNotification(
+    const std::string& id,
+    api::experimental_notification::NotificationOptions* options) {
+  message_center::NotificationType type =
+      MapApiTemplateTypeToType(options->template_type);
   GURL icon_url(UTF8ToUTF16(options->icon_url));
   string16 title(UTF8ToUTF16(options->title));
   string16 message(UTF8ToUTF16(options->message));
@@ -149,40 +177,40 @@ void NotificationApiFunction::CreateNotification(
 
   // For all notification types.
   if (options->priority.get())
-    optional_fields->SetInteger(ui::notifications::kPriorityKey,
+    optional_fields->SetInteger(message_center::kPriorityKey,
                                 *options->priority);
   if (options->event_time.get())
-    optional_fields->SetDouble(ui::notifications::kTimestampKey,
+    optional_fields->SetDouble(message_center::kTimestampKey,
                                *options->event_time);
   if (options->buttons.get()) {
     if (options->buttons->size() > 0) {
       linked_ptr<api::experimental_notification::NotificationButton> button =
           (*options->buttons)[0];
-      optional_fields->SetString(ui::notifications::kButtonOneTitleKey,
+      optional_fields->SetString(message_center::kButtonOneTitleKey,
                                  UTF8ToUTF16(button->title));
       if (button->icon_url.get())
-        optional_fields->SetString(ui::notifications::kButtonOneIconUrlKey,
+        optional_fields->SetString(message_center::kButtonOneIconUrlKey,
                                    UTF8ToUTF16(*button->icon_url));
     }
     if (options->buttons->size() > 1) {
       linked_ptr<api::experimental_notification::NotificationButton> button =
           (*options->buttons)[1];
-      optional_fields->SetString(ui::notifications::kButtonTwoTitleKey,
+      optional_fields->SetString(message_center::kButtonTwoTitleKey,
                                  UTF8ToUTF16(button->title));
       if (button->icon_url.get())
-        optional_fields->SetString(ui::notifications::kButtonTwoIconUrlKey,
+        optional_fields->SetString(message_center::kButtonTwoIconUrlKey,
                                    UTF8ToUTF16(*button->icon_url));
     }
   }
   if (options->expanded_message.get())
-    optional_fields->SetString(ui::notifications::kExpandedMessageKey,
+    optional_fields->SetString(message_center::kExpandedMessageKey,
                                UTF8ToUTF16(*options->expanded_message));
 
   // For image notifications (type == 'image').
   // TODO(dharcourt): Fail if (type == 'image' && !options->image_url.get())
   // TODO(dharcourt): Fail if (type != 'image' && options->image_url.get())
   if (options->image_url.get())
-    optional_fields->SetString(ui::notifications::kImageUrlKey,
+    optional_fields->SetString(message_center::kImageUrlKey,
                                UTF8ToUTF16(*options->image_url));
 
   // For list notifications (type == 'multiple').
@@ -195,13 +223,13 @@ void NotificationApiFunction::CreateNotification(
         api::experimental_notification::NotificationItem> >::iterator i;
     for (i = options->items->begin(); i != options->items->end(); ++i) {
       base::DictionaryValue* item = new base::DictionaryValue();
-      item->SetString(ui::notifications::kItemTitleKey,
+      item->SetString(message_center::kItemTitleKey,
                       UTF8ToUTF16(i->get()->title));
-      item->SetString(ui::notifications::kItemMessageKey,
+      item->SetString(message_center::kItemMessageKey,
                       UTF8ToUTF16(i->get()->message));
       items->Append(item);
     }
-    optional_fields->Set(ui::notifications::kItemsKey, items);
+    optional_fields->Set(message_center::kItemsKey, items);
   }
 
   NotificationApiDelegate* api_delegate(new NotificationApiDelegate(
@@ -216,6 +244,7 @@ void NotificationApiFunction::CreateNotification(
 
   g_browser_process->notification_ui_manager()->Add(notification, profile());
 }
+#endif  // !defined(ENABLE_MESSAGE_CENTER)
 
 bool NotificationApiFunction::IsNotificationApiEnabled() {
   DesktopNotificationService* service =

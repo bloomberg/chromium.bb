@@ -248,7 +248,7 @@ void MessageCenterNotificationManager::ImageDownloads::StartDownloads(
   // Notification image.
   StartDownloadByKey(
       notification,
-      ui::notifications::kImageUrlKey,
+      message_center::kImageUrlKey,
       message_center::kNotificationPreferredImageSize,
       base::Bind(&message_center::MessageCenter::SetNotificationImage,
                  base::Unretained(message_center_),
@@ -257,13 +257,13 @@ void MessageCenterNotificationManager::ImageDownloads::StartDownloads(
   // Notification button icons.
   StartDownloadByKey(
       notification,
-      ui::notifications::kButtonOneIconUrlKey,
+      message_center::kButtonOneIconUrlKey,
       message_center::kNotificationButtonIconSize,
       base::Bind(&message_center::MessageCenter::SetNotificationButtonIcon,
                  base::Unretained(message_center_),
                  notification.notification_id(), 0));
   StartDownloadByKey(
-      notification, ui::notifications::kButtonTwoIconUrlKey,
+      notification, message_center::kButtonTwoIconUrlKey,
       message_center::kNotificationButtonIconSize,
       base::Bind(&message_center::MessageCenter::SetNotificationButtonIcon,
                  base::Unretained(message_center_),

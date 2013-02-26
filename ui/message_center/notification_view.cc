@@ -14,6 +14,8 @@
 #include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/message_center_switches.h"
 #include "ui/message_center/message_simple_view.h"
+#include "ui/message_center/notification.h"
+#include "ui/message_center/notification_types.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
@@ -199,7 +201,7 @@ MessageView* NotificationView::ViewForNotification(
   // For the time being, use MessageSimpleView for simple notifications unless
   // one of the use-the-new-style flags are set. This preserves the appearance
   // of notifications created by existing code that uses webkitNotifications.
-  if (notification.type == ui::notifications::NOTIFICATION_TYPE_SIMPLE &&
+  if (notification.type() == NOTIFICATION_TYPE_SIMPLE &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           message_center::switches::kEnableRichNotifications) &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
@@ -207,11 +209,11 @@ MessageView* NotificationView::ViewForNotification(
     return new MessageSimpleView(list_delegate, notification);
   }
 
-  switch (notification.type) {
-    case ui::notifications::NOTIFICATION_TYPE_BASE_FORMAT:
-    case ui::notifications::NOTIFICATION_TYPE_IMAGE:
-    case ui::notifications::NOTIFICATION_TYPE_MULTIPLE:
-    case ui::notifications::NOTIFICATION_TYPE_SIMPLE:
+  switch (notification.type()) {
+    case NOTIFICATION_TYPE_BASE_FORMAT:
+    case NOTIFICATION_TYPE_IMAGE:
+    case NOTIFICATION_TYPE_MULTIPLE:
+    case NOTIFICATION_TYPE_SIMPLE:
       break;
     default:
       // If the caller asks for an unrecognized kind of view (entirely possible
@@ -220,7 +222,7 @@ MessageView* NotificationView::ViewForNotification(
       // back to a notification instance that will provide at least basic
       // functionality.
       LOG(WARNING) << "Unable to fulfill request for unrecognized "
-                   << "notification type " << notification.type << ". "
+                   << "notification type " << notification.type() << ". "
                    << "Falling back to simple notification type.";
   }
 
@@ -228,10 +230,17 @@ MessageView* NotificationView::ViewForNotification(
   return new NotificationView(list_delegate, notification);
 }
 
-NotificationView::NotificationView(
-    NotificationList::Delegate* list_delegate,
-    const Notification& notification)
+NotificationView::NotificationView(NotificationList::Delegate* list_delegate,
+                                   const Notification& notification)
     : MessageView(list_delegate, notification) {
+  // This view is composed of two layers: The first layer has the notification
+  // content (text, images, action buttons, ...). This is overlaid by a second
+  // layer that has the notification close button and will later also have the
+  // expand button. This allows the close and expand buttons to overlap the
+  // content as needed to provide a large enough click area
+  // (<http://crbug.com/168822> and touch area <http://crbug.com/168856>).
+  AddChildView(MakeContentView(notification));
+  AddChildView(close_button());
 }
 
 NotificationView::~NotificationView() {
@@ -260,29 +269,19 @@ gfx::Size NotificationView::GetPreferredSize() {
   return size;
 }
 
-void NotificationView::SetUpView() {
-  // This view is composed of two layers: The first layer has the notification
-  // content (text, images, action buttons, ...). This is overlaid by a second
-  // layer that has the notification close button and will later also have the
-  // expand button. This allows the close and expand buttons to overlap the
-  // content as needed to provide a large enough click area
-  // (<http://crbug.com/168822> and touch area <http://crbug.com/168856>).
-  AddChildView(MakeContentView());
-  AddChildView(close_button());
-}
-
 void NotificationView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
   for (size_t i = 0; i < action_buttons_.size(); ++i) {
     if (action_buttons_[i] == sender) {
-      list_delegate()->OnButtonClicked(notification().id, i);
+      list_delegate()->OnButtonClicked(notification_id(), i);
       return;
     }
   }
   MessageView::ButtonPressed(sender, event);
 }
 
-views::View* NotificationView::MakeContentView() {
+views::View* NotificationView::MakeContentView(
+    const Notification& notification) {
   content_view_ = new views::View();
   content_view_->set_background(
       views::Background::CreateSolidBackground(kBackgroundColor));
@@ -295,8 +294,8 @@ views::View* NotificationView::MakeContentView() {
   std::vector<views::View*> texts;
 
   // Title if it exists.
-  if (!notification().title.empty()) {
-    views::Label* title = new views::Label(notification().title);
+  if (!notification.title().empty()) {
+    views::Label* title = new views::Label(notification.title());
     title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     title->SetElideBehavior(views::Label::ELIDE_AT_END);
     title->SetFont(title->font().DeriveFont(4));
@@ -307,8 +306,9 @@ views::View* NotificationView::MakeContentView() {
   }
 
   // Message if appropriate.
-  if (notification().items.size() == 0 && !notification().message.empty()) {
-    views::Label* message = new views::Label(notification().message);
+  if (notification.items().size() == 0 &&
+      !notification.message().empty()) {
+    views::Label* message = new views::Label(notification.message());
     message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     message->SetMultiLine(true);
     message->SetEnabledColor(kMessageColor);
@@ -318,9 +318,10 @@ views::View* NotificationView::MakeContentView() {
   }
 
   // List notification items up to a maximum.
-  int items = std::min(notification().items.size(), kNotificationMaximumItems);
+  int items = std::min(notification.items().size(),
+                       kNotificationMaximumItems);
   for (int i = 0; i < items; ++i) {
-    ItemView* item = new ItemView(notification().items[i]);
+    ItemView* item = new ItemView(notification.items()[i]);
     item->set_border(MakePadding(0, 0, 4, kTextRightPadding));
     texts.push_back(item);
   }
@@ -347,7 +348,7 @@ views::View* NotificationView::MakeContentView() {
   views::ImageView* icon = new views::ImageView();
   icon->SetImageSize(gfx::Size(message_center::kNotificationIconSize,
                                message_center::kNotificationIconSize));
-  icon->SetImage(notification().primary_icon);
+  icon->SetImage(notification.primary_icon());
   icon->SetHorizontalAlignment(views::ImageView::LEADING);
   icon->SetVerticalAlignment(views::ImageView::LEADING);
   icon->set_border(MakePadding(0, 0, 0, kIconToTextPadding));
@@ -376,26 +377,27 @@ views::View* NotificationView::MakeContentView() {
   }
 
   // Add an image row if appropriate.
-  if (!notification().image.isNull()) {
+  if (!notification.image().isNull()) {
     layout->StartRow(0, 0);
     views::ImageView* image = new ProportionalImageView();
-    image->SetImageSize(notification().image.size());
-    image->SetImage(notification().image);
+    image->SetImageSize(notification.image().size());
+    image->SetImage(notification.image());
     image->SetHorizontalAlignment(views::ImageView::CENTER);
     image->SetVerticalAlignment(views::ImageView::LEADING);
     layout->AddView(image, 2, 1);
   }
 
   // Add action button rows.
-  for (size_t i = 0; i < notification().button_titles.size(); ++i) {
+  for (size_t i = 0; i < notification.buttons().size(); ++i) {
     views::View* separator = new views::View();
     separator->set_background(MakeBackground(kButtonSeparatorColor));
     layout->StartRow(0, 0);
     layout->AddView(separator, 2, 1,
                     views::GridLayout::FILL, views::GridLayout::FILL, 0, 1);
     NotificationButton* button = new NotificationButton(this);
-    button->SetTitle(notification().button_titles[i]);
-    button->SetIcon(notification().button_icons[i]);
+    ButtonInfo button_info = notification.buttons()[i];
+    button->SetTitle(button_info.title);
+    button->SetIcon(button_info.icon);
     action_buttons_.push_back(button);
     layout->StartRow(0, 0);
     layout->AddView(button, 2, 1,

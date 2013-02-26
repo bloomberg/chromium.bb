@@ -17,7 +17,7 @@
 #include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/message_popup_bubble.h"
 #include "ui/message_center/notification_list.h"
-#include "ui/notifications/notification_types.h"
+#include "ui/message_center/notification_types.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
@@ -58,7 +58,7 @@ class TestDelegate : public message_center::MessageCenter::Delegate {
   void AddNotification(const std::string& id) {
     notification_ids_.insert(id);
     message_center_->AddNotification(
-        ui::notifications::NOTIFICATION_TYPE_SIMPLE,
+        message_center::NOTIFICATION_TYPE_SIMPLE,
         id,
         ASCIIToUTF16("Test Web Notification"),
         ASCIIToUTF16("Notification message body."),

@@ -22,6 +22,7 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
+#include "ui/message_center/notification_types.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -342,7 +343,7 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
   } else if (sender == show_web_notification_) {
     ash::Shell::GetPrimaryRootWindowController()->status_area_widget()->
         web_notification_tray()->message_center()->AddNotification(
-            ui::notifications::NOTIFICATION_TYPE_SIMPLE,
+            message_center::NOTIFICATION_TYPE_SIMPLE,
             "id0",
             ASCIIToUTF16("Test Shell Web Notification"),
             ASCIIToUTF16("Notification message body."),

@@ -7,7 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/message_center.h"
-#include "ui/notifications/notification_types.h"
+#include "ui/message_center/notification_types.h"
 
 namespace message_center {
 namespace {
@@ -102,7 +102,7 @@ TEST_F(MessageCenterTrayTest, BasicPopup) {
   ASSERT_FALSE(message_center_tray_->message_center_visible());
 
   message_center_->AddNotification(
-      ui::notifications::NOTIFICATION_TYPE_SIMPLE,
+      message_center::NOTIFICATION_TYPE_SIMPLE,
       "BasicPopup",
       ASCIIToUTF16("Test Web Notification"),
       ASCIIToUTF16("Notification message body."),
@@ -124,7 +124,7 @@ TEST_F(MessageCenterTrayTest, MessageCenterClosesPopups) {
   ASSERT_FALSE(message_center_tray_->message_center_visible());
 
   message_center_->AddNotification(
-      ui::notifications::NOTIFICATION_TYPE_SIMPLE,
+      message_center::NOTIFICATION_TYPE_SIMPLE,
       "MessageCenterClosesPopups",
       ASCIIToUTF16("Test Web Notification"),
       ASCIIToUTF16("Notification message body."),
@@ -142,7 +142,7 @@ TEST_F(MessageCenterTrayTest, MessageCenterClosesPopups) {
   ASSERT_TRUE(message_center_tray_->message_center_visible());
 
   message_center_->AddNotification(
-      ui::notifications::NOTIFICATION_TYPE_SIMPLE,
+      message_center::NOTIFICATION_TYPE_SIMPLE,
       "MessageCenterClosesPopups2",
       ASCIIToUTF16("Test Web Notification"),
       ASCIIToUTF16("Notification message body."),
@@ -170,7 +170,7 @@ TEST_F(MessageCenterTrayTest, ShowBubbleFails) {
   ASSERT_FALSE(message_center_tray_->message_center_visible());
 
   message_center_->AddNotification(
-      ui::notifications::NOTIFICATION_TYPE_SIMPLE,
+      message_center::NOTIFICATION_TYPE_SIMPLE,
       "ShowBubbleFails",
       ASCIIToUTF16("Test Web Notification"),
       ASCIIToUTF16("Notification message body."),

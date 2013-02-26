@@ -31,6 +31,7 @@ MessageSimpleView::MessageSimpleView(
   close->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                            views::ImageButton::ALIGN_MIDDLE);
   old_style_close_button_.reset(close);
+  SetUpView(notification);
 }
 
 MessageSimpleView::~MessageSimpleView() {
@@ -59,20 +60,20 @@ gfx::Size MessageSimpleView::GetPreferredSize() {
   return size;
 }
 
-void MessageSimpleView::SetUpView() {
+void MessageSimpleView::SetUpView(const Notification& notification) {
   views::ImageView* icon = new views::ImageView;
   icon->SetImageSize(
       gfx::Size(kWebNotificationIconSize, kWebNotificationIconSize));
-  icon->SetImage(notification().primary_icon);
+  icon->SetImage(notification.primary_icon());
 
-  views::Label* title = new views::Label(notification().title);
+  views::Label* title = new views::Label(notification.title());
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title->SetFont(title->font().DeriveFont(0, gfx::Font::BOLD));
-  views::Label* message = new views::Label(notification().message);
+  views::Label* message = new views::Label(notification.message());
   message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message->SetMultiLine(true);
 
-  SkColor bg_color = notification().is_read ?
+  SkColor bg_color = notification.is_read() ?
       kNotificationReadColor : kNotificationColor;
   content_view_.reset(new views::View);
   content_view_->set_background(

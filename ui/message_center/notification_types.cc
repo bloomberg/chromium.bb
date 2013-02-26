@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/notifications/notification_types.h"
+#include "ui/message_center/notification_types.h"
 
-namespace ui {
-
-namespace notifications {
+namespace message_center {
 
 const char kMessageIntentKey[] = "message_intent";
 const char kPriorityKey[] = "priority";
@@ -22,6 +20,4 @@ const char kItemsKey[] = "items";
 const char kItemTitleKey[] = "title";
 const char kItemMessageKey[] = "message";
 
-}  // namespace notifications
-
-}  // namespace ui
+}  // namespace message_center

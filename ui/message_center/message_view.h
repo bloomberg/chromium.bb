@@ -34,10 +34,6 @@ class MessageView : public views::SlideOutView,
 
   virtual ~MessageView();
 
-  // Creates the elements that make up the view layout. Must be called
-  // immediately after construction.
-  virtual void SetUpView() = 0;
-
   void set_scroller(views::ScrollView* scroller) { scroller_ = scroller; }
 
   // Overridden from views::View.
@@ -60,13 +56,18 @@ class MessageView : public views::SlideOutView,
   virtual void OnSlideOut() OVERRIDE;
 
   NotificationList::Delegate* list_delegate() { return list_delegate_; }
-  Notification& notification() { return notification_; }
+  const std::string& notification_id() { return notification_id_; }
+  const string16& display_source() const { return display_source_; }
+  const std::string& extension_id() const { return extension_id_; }
   views::ImageButton* close_button() { return close_button_.get(); }
   views::ScrollView* scroller() { return scroller_; }
 
  private:
-  NotificationList::Delegate* list_delegate_;
-  Notification notification_;
+  NotificationList::Delegate* list_delegate_; // Weak, global (MessageCenter).
+  std::string notification_id_;
+  string16 display_source_;
+  std::string extension_id_;
+
   scoped_ptr<views::ImageButton> close_button_;
 
   views::ScrollView* scroller_;

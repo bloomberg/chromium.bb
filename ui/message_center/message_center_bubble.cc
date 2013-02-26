@@ -408,9 +408,8 @@ class MessageCenterContentsView : public views::View {
     for (NotificationList::Notifications::const_iterator iter =
              notifications.begin(); iter != notifications.end(); ++iter) {
       MessageView* view =
-          NotificationView::ViewForNotification(*iter, list_delegate_);
+          NotificationView::ViewForNotification(*(*iter), list_delegate_);
       view->set_scroller(scroller_);
-      view->SetUpView();
       if (IsRichNotificationEnabled())
         view->set_border(new MessageViewShadowBorder());
       scroll_content_->AddChildView(view);
@@ -508,8 +507,8 @@ void MessageCenterBubble::OnBubbleViewDestroyed() {
 void MessageCenterBubble::UpdateBubbleView() {
   if (!bubble_view())
     return;  // Could get called after view is closed
-  NotificationList::Notifications notifications;
-  list_delegate()->GetNotificationList()->GetNotifications(&notifications);
+  const NotificationList::Notifications& notifications =
+      list_delegate()->GetNotificationList()->GetNotifications();
   contents_view_->Update(notifications);
   bubble_view()->Show();
   bubble_view()->UpdateBubble();

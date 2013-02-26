@@ -15,7 +15,7 @@
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/notifications/notification_types.h"
+#include "ui/message_center/notification_types.h"
 
 // Representation of a notification to be shown to the user.
 // On non-Ash platforms these are rendered as HTML, sometimes described by a
@@ -43,7 +43,7 @@ class Notification {
 
   // Initializes a notification with a given type. Takes ownership of
   // optional_fields.
-  Notification(ui::notifications::NotificationType type,
+  Notification(message_center::NotificationType type,
                const GURL& origin_url,
                const GURL& icon_url,
                const string16& title,
@@ -72,7 +72,7 @@ class Notification {
   // If this is a HTML notification.
   bool is_html() const { return is_html_; }
 
-  ui::notifications::NotificationType type() const {
+  message_center::NotificationType type() const {
     return type_;
   }
 
@@ -118,7 +118,7 @@ class Notification {
   NotificationDelegate* delegate() const { return delegate_.get(); }
 
   // The type of notification we'd like displayed.
-  ui::notifications::NotificationType type_;
+  message_center::NotificationType type_;
 
   // The Origin of the page/worker which created this notification.
   GURL origin_url_;

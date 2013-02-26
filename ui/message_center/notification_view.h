@@ -32,12 +32,11 @@ class NotificationView : public MessageView {
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // Overridden from MessageView.
-  virtual void SetUpView() OVERRIDE;
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
  private:
-  views::View* MakeContentView();
+  views::View* MakeContentView(const Notification& notification);
 
   views::View* content_view_;
   std::vector<views::Button*> action_buttons_;

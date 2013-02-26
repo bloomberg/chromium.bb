@@ -7,6 +7,8 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
+#include "ui/message_center/notification.h"
+#include "ui/message_center/notification_list.h"
 
 namespace message_center {
 
@@ -52,7 +54,7 @@ bool MessageCenter::HasPopupNotifications() const {
 // Client code interface.
 
 void MessageCenter::AddNotification(
-    ui::notifications::NotificationType type,
+    NotificationType type,
     const std::string& id,
     const string16& title,
     const string16& message,
@@ -76,8 +78,7 @@ void MessageCenter::UpdateNotification(
 }
 
 void MessageCenter::RemoveNotification(const std::string& id) {
-  if (!notification_list_->RemoveNotification(id))
-    return;
+  notification_list_->RemoveNotification(id);
   NotifyMessageCenterChanged(false);
 }
 
@@ -111,13 +112,13 @@ void MessageCenter::SendRemoveNotification(const std::string& id) {
 
 void MessageCenter::SendRemoveAllNotifications() {
   if (delegate_) {
-    NotificationList::Notifications notifications;
-    notification_list_->GetNotifications(&notifications);
+    const NotificationList::Notifications& notifications =
+        notification_list_->GetNotifications();
     for (NotificationList::Notifications::const_iterator loopiter =
              notifications.begin();
          loopiter != notifications.end(); ) {
       NotificationList::Notifications::const_iterator curiter = loopiter++;
-      std::string notification_id = curiter->id;
+      std::string notification_id = (*curiter)->id();
       // May call RemoveNotification and erase curiter.
       delegate_->NotificationRemoved(notification_id);
     }

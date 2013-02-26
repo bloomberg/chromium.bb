@@ -23,6 +23,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_constants.h"
+#include "ui/message_center/notification_types.h"
 #include "webkit/glue/image_resource_fetcher.h"
 
 namespace {
@@ -195,9 +196,9 @@ void BalloonViewAsh::DownloadImages(const Notification& notification) {
   const base::DictionaryValue* optional_fields = notification.optional_fields();
   if (optional_fields) {
     // Start a download for the notification's image if appropriate.
-    if (optional_fields->HasKey(ui::notifications::kImageUrlKey)) {
+    if (optional_fields->HasKey(message_center::kImageUrlKey)) {
       string16 url;
-      optional_fields->GetString(ui::notifications::kImageUrlKey, &url);
+      optional_fields->GetString(message_center::kImageUrlKey, &url);
       if (!url.empty()) {
         downloads_.push_back(linked_ptr<ImageDownload>(new ImageDownload(
             notification,
@@ -210,8 +211,8 @@ void BalloonViewAsh::DownloadImages(const Notification& notification) {
     }
 
     // Start a download for the notification's button icons if appropriate.
-    const char* kButtonIconKeys[] = { ui::notifications::kButtonOneIconUrlKey,
-                                      ui::notifications::kButtonTwoIconUrlKey };
+    const char* kButtonIconKeys[] = { message_center::kButtonOneIconUrlKey,
+                                      message_center::kButtonTwoIconUrlKey };
     for (size_t i = 0; i < arraysize(kButtonIconKeys); ++i) {
       if (optional_fields->HasKey(kButtonIconKeys[i])) {
         string16 url;

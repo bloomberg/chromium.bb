@@ -144,20 +144,23 @@ class WebNotificationMenuModel : public ui::SimpleMenuModel,
                                  public ui::SimpleMenuModel::Delegate {
  public:
   WebNotificationMenuModel(NotificationList::Delegate* list_delegate,
-                           const Notification& notification)
+                           const std::string& notification_id,
+                           const string16& display_source,
+                           const std::string& extension_id)
       : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
         list_delegate_(list_delegate),
-        notification_(notification) {
+        notification_id_(notification_id),
+        display_source_(display_source) {
     // Add 'disable notifications' menu item.
-    if (!notification.extension_id.empty()) {
+    if (!extension_id.empty()) {
       AddItem(kToggleExtensionCommand,
               GetLabelForCommandId(kToggleExtensionCommand));
-    } else if (!notification.display_source.empty()) {
+    } else if (!display_source.empty()) {
       AddItem(kTogglePermissionCommand,
               GetLabelForCommandId(kTogglePermissionCommand));
     }
     // Add settings menu item.
-    if (!notification.display_source.empty()) {
+    if (!display_source.empty()) {
       AddItem(kShowSettingsCommand,
               GetLabelForCommandId(kShowSettingsCommand));
     }
@@ -173,7 +176,7 @@ class WebNotificationMenuModel : public ui::SimpleMenuModel,
         return l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_EXTENSIONS_DISABLE);
       case kTogglePermissionCommand:
         return l10n_util::GetStringFUTF16(IDS_MESSAGE_CENTER_SITE_DISABLE,
-                                          notification_.display_source);
+                                          display_source_);
       case kShowSettingsCommand:
         return l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_SETTINGS);
       default:
@@ -200,13 +203,13 @@ class WebNotificationMenuModel : public ui::SimpleMenuModel,
   virtual void ExecuteCommand(int command_id) OVERRIDE {
     switch (command_id) {
       case kToggleExtensionCommand:
-        list_delegate_->DisableNotificationByExtension(notification_.id);
+        list_delegate_->DisableNotificationByExtension(notification_id_);
         break;
       case kTogglePermissionCommand:
-        list_delegate_->DisableNotificationByUrl(notification_.id);
+        list_delegate_->DisableNotificationByUrl(notification_id_);
         break;
       case kShowSettingsCommand:
-        list_delegate_->ShowNotificationSettings(notification_.id);
+        list_delegate_->ShowNotificationSettings(notification_id_);
         break;
       default:
         NOTREACHED();
@@ -214,17 +217,19 @@ class WebNotificationMenuModel : public ui::SimpleMenuModel,
   }
 
  private:
-  NotificationList::Delegate* list_delegate_;
-  Notification notification_;
+  NotificationList::Delegate* list_delegate_; // Weak, global MessageCenter
+  std::string notification_id_;
+  string16 display_source_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNotificationMenuModel);
 };
 
-MessageView::MessageView(
-    NotificationList::Delegate* list_delegate,
-    const Notification& notification)
+MessageView::MessageView(NotificationList::Delegate* list_delegate,
+                         const Notification& notification)
     : list_delegate_(list_delegate),
-      notification_(notification),
+      notification_id_(notification.id()),
+      display_source_(notification.display_source()),
+      extension_id_(notification.extension_id()),
       scroller_(NULL) {
   ControlButton *close = new ControlButton(this);
   close->SetPadding(-kCloseIconRightPadding, kCloseIconTopPadding);
@@ -245,13 +250,13 @@ bool MessageView::OnMousePressed(const ui::MouseEvent& event) {
     ShowMenu(event.location());
     return true;
   }
-  list_delegate_->OnNotificationClicked(notification_.id);
+  list_delegate_->OnNotificationClicked(notification_id_);
   return true;
 }
 
 void MessageView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP) {
-    list_delegate_->OnNotificationClicked(notification_.id);
+    list_delegate_->OnNotificationClicked(notification_id_);
     event->SetHandled();
     return;
   }
@@ -278,11 +283,14 @@ void MessageView::OnGestureEvent(ui::GestureEvent* event) {
 void MessageView::ButtonPressed(views::Button* sender,
                                 const ui::Event& event) {
   if (sender == close_button())
-    list_delegate_->SendRemoveNotification(notification_.id);
+    list_delegate_->SendRemoveNotification(notification_id_);
 }
 
 void MessageView::ShowMenu(gfx::Point screen_location) {
-  WebNotificationMenuModel menu_model(list_delegate_, notification_);
+  WebNotificationMenuModel menu_model(list_delegate_,
+                                      notification_id_,
+                                      display_source_,
+                                      extension_id_);
   if (menu_model.GetItemCount() == 0)
     return;
 
@@ -299,7 +307,7 @@ void MessageView::ShowMenu(gfx::Point screen_location) {
 }
 
 void MessageView::OnSlideOut() {
-  list_delegate_->SendRemoveNotification(notification_.id);
+  list_delegate_->SendRemoveNotification(notification_id_);
 }
 
 }  // namespace message_center

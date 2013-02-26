@@ -517,8 +517,6 @@
         'gfx/vector3d_f.h',
         'gfx/video_decode_acceleration_support_mac.h',
         'gfx/video_decode_acceleration_support_mac.mm',
-        'notifications/notification_types.h',
-        'notifications/notification_types.cc',
         'webui/jstemplate_builder.cc',
         'webui/jstemplate_builder.h',
         'webui/web_ui_util.cc',
