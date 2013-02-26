@@ -35,7 +35,6 @@ An example usage (using git hashes):
 
 """
 
-import errno
 import imp
 import optparse
 import os
@@ -43,6 +42,8 @@ import re
 import shlex
 import subprocess
 import sys
+
+import bisect_utils
 
 
 # The additional repositories that might need to be bisected.
@@ -89,26 +90,6 @@ DEPOT_NAMES = DEPOT_DEPS_NAME.keys()
 
 FILE_DEPS_GIT = '.DEPS.git'
 
-GCLIENT_SPEC = """
-solutions = [
-  { "name"        : "src",
-    "url"         : "https://chromium.googlesource.com/chromium/src.git",
-    "deps_file"   : ".DEPS.git",
-    "managed"     : True,
-    "custom_deps" : {
-    },
-    "safesync_url": "",
-  },
-  { "name"        : "src-internal",
-    "url"         : "ssh://gerrit-int.chromium.org:29419/" +
-                    "chrome/src-internal.git",
-    "deps_file"   : ".DEPS.git",
-  },
-]
-"""
-GCLIENT_SPEC = ''.join([l for l in GCLIENT_SPEC.splitlines()])
-
-
 
 def IsStringFloat(string_to_check):
   """Checks whether or not the given string can be converted to a floating
@@ -143,24 +124,6 @@ def IsStringInt(string_to_check):
     return True
   except ValueError:
     return False
-
-
-def OutputAnnotationStepStart(name):
-  """Outputs appropriate annotation to signal the start of a step to
-  a trybot.
-
-  Args:
-    name: The name of the step.
-  """
-  print '@@@SEED_STEP %s@@@' % name
-  print '@@@STEP_CURSOR %s@@@' % name
-  print '@@@STEP_STARTED@@@'
-
-
-def OutputAnnotationStepClosed():
-  """Outputs appropriate annotation to signal the closing of a step to
-  a trybot."""
-  print '@@@STEP_CLOSED@@@'
 
 
 def RunProcess(command):
@@ -819,7 +782,7 @@ class BisectPerformanceMetrics(object):
     if self.opts.output_buildbot_annotations:
       step_name = 'Bisection Range: [%s - %s]' % (
           revision_list[len(revision_list)-1], revision_list[0])
-      OutputAnnotationStepStart(step_name)
+      bisect_utils.OutputAnnotationStepStart(step_name)
 
     print
     print 'Revisions to bisect on [%s]:' % depot
@@ -828,7 +791,7 @@ class BisectPerformanceMetrics(object):
     print
 
     if self.opts.output_buildbot_annotations:
-      OutputAnnotationStepClosed()
+      bisect_utils.OutputAnnotationStepClosed()
 
   def Run(self, command_to_run, bad_revision_in, good_revision_in, metric):
     """Given known good and bad revisions, run a binary search on all
@@ -892,7 +855,7 @@ class BisectPerformanceMetrics(object):
       return results
 
     if self.opts.output_buildbot_annotations:
-      OutputAnnotationStepStart('Gathering Revisions')
+      bisect_utils.OutputAnnotationStepStart('Gathering Revisions')
 
     print 'Gathering revision range for bisection.'
 
@@ -900,7 +863,7 @@ class BisectPerformanceMetrics(object):
     src_revision_list = self.GetRevisionList(bad_revision, good_revision)
 
     if self.opts.output_buildbot_annotations:
-      OutputAnnotationStepClosed()
+      bisect_utils.OutputAnnotationStepClosed()
 
     if src_revision_list:
       # revision_data will store information about a revision such as the
@@ -929,7 +892,7 @@ class BisectPerformanceMetrics(object):
       self.PrintRevisionsToBisectMessage(revision_list, 'src')
 
       if self.opts.output_buildbot_annotations:
-        OutputAnnotationStepStart('Gathering Reference Values')
+        bisect_utils.OutputAnnotationStepStart('Gathering Reference Values')
 
       print 'Gathering reference values for bisection.'
 
@@ -941,7 +904,7 @@ class BisectPerformanceMetrics(object):
                                                                metric)
 
       if self.opts.output_buildbot_annotations:
-        OutputAnnotationStepClosed()
+        bisect_utils.OutputAnnotationStepClosed()
 
       if bad_results[1]:
         results['error'] = bad_results[0]
@@ -1044,7 +1007,7 @@ class BisectPerformanceMetrics(object):
 
         if self.opts.output_buildbot_annotations:
           step_name = 'Working on [%s]' % next_revision_id
-          OutputAnnotationStepStart(step_name)
+          bisect_utils.OutputAnnotationStepStart(step_name)
 
         print 'Working on revision: [%s]' % next_revision_id
 
@@ -1054,7 +1017,7 @@ class BisectPerformanceMetrics(object):
                                                    metric)
 
         if self.opts.output_buildbot_annotations:
-          OutputAnnotationStepClosed()
+          bisect_utils.OutputAnnotationStepClosed()
 
         # If the build is successful, check whether or not the metric
         # had regressed.
@@ -1098,7 +1061,7 @@ class BisectPerformanceMetrics(object):
                                   key = lambda x: x[1]['sort'])
 
     if self.opts.output_buildbot_annotations:
-      OutputAnnotationStepStart('Results')
+      bisect_utils.OutputAnnotationStepStart('Results')
 
     print
     print 'Full results of bisection:'
@@ -1133,7 +1096,7 @@ class BisectPerformanceMetrics(object):
             revision_data[first_working_revision]['depot'])
 
     if self.opts.output_buildbot_annotations:
-      OutputAnnotationStepClosed()
+      bisect_utils.OutputAnnotationStepClosed()
 
 
 def DetermineAndCreateSourceControl():
@@ -1151,84 +1114,6 @@ def DetermineAndCreateSourceControl():
     return GitSourceControl()
 
   return None
-
-
-def CreateAndChangeToSourceDirectory(working_directory):
-  """Creates a directory 'bisect' as a subdirectory of 'working_directory'.  If
-  the function is successful, the current working directory will change to that
-  of the new 'bisect' directory.
-
-  Returns:
-    True if the directory was successfully created (or already existed).
-  """
-  cwd = os.getcwd()
-  os.chdir(working_directory)
-  try:
-    os.mkdir('bisect')
-  except OSError, e:
-    if e.errno != errno.EEXIST:
-      return False
-  os.chdir('bisect')
-  return True
-
-
-def RunGClient(params):
-  """Runs gclient with the specified parameters.
-
-  Args:
-    params: A list of parameters to pass to gclient.
-
-  Returns:
-    The return code of the call.
-  """
-  cmd = ['gclient'] + params
-  return subprocess.call(cmd)
-
-
-def RunGClientAndCreateConfig():
-  """Runs gclient and creates a config containing both src and src-internal.
-
-  Returns:
-    The return code of the call.
-  """
-  return_code = RunGClient(
-      ['config', '--spec=%s' % GCLIENT_SPEC, '--git-deps'])
-  return return_code
-
-
-def RunGClientAndSync():
-  """Runs gclient and does a normal sync.
-
-  Returns:
-    The return code of the call.
-  """
-  return RunGClient(['sync'])
-
-
-def SetupGitDepot(output_buildbot_annotations):
-  """Sets up the depot for the bisection. The depot will be located in a
-  subdirectory called 'bisect'.
-
-  Returns:
-    True if gclient successfully created the config file and did a sync, False
-    otherwise.
-  """
-  name = 'Setting up Bisection Depot'
-
-  if output_buildbot_annotations:
-    OutputAnnotationStepStart(name)
-
-  passed = False
-
-  if not RunGClientAndCreateConfig():
-    if not RunGClientAndSync():
-      passed = True
-
-  if output_buildbot_annotations:
-    print
-    OutputAnnotationStepClosed()
-
-  return passed
 
 
 def main():
@@ -1319,14 +1204,7 @@ def main():
     return 1
 
   if opts.working_directory:
-    if not CreateAndChangeToSourceDirectory(opts.working_directory):
-      print 'Error: Could not create bisect directory.'
-      print
-      return 1
-
-    if not SetupGitDepot(opts.output_buildbot_annotations):
-      print 'Error: Failed to grab source.'
-      print
+    if bisect_utils.CreateBisectDirectoryAndSetupDepot(opts):
       return 1
 
     os.chdir(os.path.join(os.getcwd(), 'src'))
