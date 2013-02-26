@@ -1275,20 +1275,26 @@ void HistoryBackend::QueryDownloads(std::vector<DownloadRow>* rows) {
 void HistoryBackend::CleanUpInProgressEntries() {
   // If some "in progress" entries were not updated when Chrome exited, they
   // need to be cleaned up.
-  if (db_.get())
-    db_->CleanUpInProgressEntries();
+  if (!db_.get())
+    return;
+  db_->CleanUpInProgressEntries();
+  ScheduleCommit();
 }
 
 // Update a particular download entry.
 void HistoryBackend::UpdateDownload(const history::DownloadRow& data) {
-  if (db_.get())
-    db_->UpdateDownload(data);
+  if (!db_.get())
+    return;
+  db_->UpdateDownload(data);
+  ScheduleCommit();
 }
 
 void HistoryBackend::CreateDownload(const history::DownloadRow& history_info,
                                     int64* db_handle) {
-  if (db_.get())
-    *db_handle = db_->CreateDownload(history_info);
+  if (!db_.get())
+    return;
+  *db_handle = db_->CreateDownload(history_info);
+  ScheduleCommit();
 }
 
 void HistoryBackend::RemoveDownloads(const std::set<int64>& handles) {
@@ -1320,6 +1326,7 @@ void HistoryBackend::RemoveDownloads(const std::set<int64>& handles) {
     UMA_HISTOGRAM_COUNTS("Download.DatabaseRemoveDownloadsCountNotRemoved",
                          num_downloads_not_deleted);
   }
+  ScheduleCommit();
 }
 
 void HistoryBackend::QueryHistory(scoped_refptr<QueryHistoryRequest> request,
