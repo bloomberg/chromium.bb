@@ -108,11 +108,15 @@ class Operand(object):
 
     if self.arg_type in [def_format.OperandType.MMX_REGISTER_IN_REG,
                          def_format.OperandType.MMX_REGISTER_IN_RM]:
-      assert self.size == 'q'
       return 'mmx'
 
+    if (self.arg_type == def_format.OperandType.AX and
+        self.size == 'pd'):
+      return 'xmm'
+
     if self.arg_type in [def_format.OperandType.XMM_REGISTER_IN_REG,
-                         def_format.OperandType.XMM_REGISTER_IN_RM]:
+                         def_format.OperandType.XMM_REGISTER_IN_RM,
+                         def_format.OperandType.XMM_REGISTER_IN_VVVV]:
       if self.size.endswith('-ymm'):
         return 'ymm'
       else:
@@ -135,6 +139,14 @@ class Operand(object):
 
     if self.size == 'p':
       return 'farptr'
+
+    if self.size == '7':
+      return 'x87'
+
+    if self.arg_type == def_format.OperandType.MEMORY:
+      # TODO(shcherabina): introduce proper 'memory' format and get rid of
+      # redundant formats.
+      return '8bit'
 
     # TODO(shcherbina): support other formats.
     raise NotImplementedError(self)
@@ -650,10 +662,12 @@ class InstructionPrinter(object):
     """
     # TODO(shcherbina): maybe inline it into PrintSignature?
     for operand in instruction.operands:
-      if operand.arg_type == def_format.OperandType.ACCUMULATOR:
+      if operand.arg_type == def_format.OperandType.AX:
         self._PrintOperandSource(operand, 'rax')
-      if operand.arg_type == def_format.OperandType.COUNTER:
+      if operand.arg_type == def_format.OperandType.CX:
         self._PrintOperandSource(operand, 'rcx')
+      if operand.arg_type == def_format.OperandType.DX:
+        self._PrintOperandSource(operand, 'rdx')
       elif operand.arg_type == def_format.OperandType.DS_SI:
         self._PrintOperandSource(operand, 'ds_rsi')
       elif operand.arg_type == def_format.OperandType.ES_DI:
@@ -666,6 +680,8 @@ class InstructionPrinter(object):
         self._PrintOperandSource(operand, 'from_vex')
       elif operand.arg_type == def_format.OperandType.REGISTER_IN_VVVV:
         self._PrintOperandSource(operand, 'from_vex')
+      elif operand.arg_type == def_format.OperandType.X87_ST:
+        self._PrintOperandSource(operand, 'st')
 
     # TODO(shcherbina): handle other implicit operands.
 

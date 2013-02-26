@@ -27,7 +27,7 @@
 #        three or more operands are assumed to read all operands except last one
 #        which is used to store the result of the execution.
 #      Possible argument types:
-#       a: Accumulator: %al/%ax/%eax/%rax (depending on size).
+#       a: Accumulator: %al/%ax/%eax/%rax/%xmm0 (depending on size).
 #       c: Counter register: %cl/%cx/%ecx/%rcx (depending on size).
 #       d: Data register: %dl/%dx/%edx/%rdx (depending on size).
 #       i: Second immediate value encoded in the instruction.
@@ -361,8 +361,9 @@ class OperandReadWriteMode(object):
 
 
 class OperandType(object):
-  ACCUMULATOR = 'a'
-  COUNTER = 'c'
+  AX = 'a'
+  CX = 'c'
+  DX = 'd'
 
   IMMEDIATE = 'I'
   SECOND_IMMEDIATE = 'i'
@@ -398,3 +399,5 @@ class OperandType(object):
   XMM_REGISTER_IN_VVVV = 'H'
 
   PORT_IN_DX = 'o'
+
+  X87_ST = 't'
