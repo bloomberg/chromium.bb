@@ -1160,6 +1160,8 @@
         'browser/extensions/api/processes/processes_apitest.cc',
         'browser/extensions/api/proxy/proxy_apitest.cc',
         'browser/extensions/api/push_messaging/push_messaging_apitest.cc',
+        'browser/extensions/api/push_messaging/push_messaging_canary_test.cc',
+        'browser/extensions/api/push_messaging/sync_setup_helper.cc',
         'browser/extensions/api/record/record_api_test.cc',
         'browser/extensions/api/rtc_private/rtc_private_apitest.cc',
         'browser/extensions/api/runtime/runtime_apitest.cc',
