@@ -12,6 +12,7 @@
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
 #include "android_webview/common/aw_hit_test_data.h"
 #include "android_webview/native/aw_browser_dependency_factory.h"
+#include "android_webview/native/aw_contents_client_bridge.h"
 #include "android_webview/native/aw_contents_io_thread_client_impl.h"
 #include "android_webview/native/aw_web_contents_delegate.h"
 #include "android_webview/native/java_browser_view_renderer_helper.h"
@@ -111,10 +112,13 @@ AwContents* AwContents::FromID(int render_process_id, int render_view_id) {
 
 AwContents::AwContents(JNIEnv* env,
                        jobject obj,
-                       jobject web_contents_delegate)
+                       jobject web_contents_delegate,
+                       jobject contents_client_bridge)
     : java_ref_(env, obj),
       web_contents_delegate_(
           new AwWebContentsDelegate(env, web_contents_delegate)),
+      contents_client_bridge_(
+          new AwContentsClientBridge(env, contents_client_bridge)),
       ALLOW_THIS_IN_INITIALIZER_LIST(browser_view_renderer_(
           BrowserViewRendererImpl::Create(this, &java_renderer_helper))) {
   android_webview::AwBrowserDependencyFactory* dependency_factory =
@@ -135,6 +139,8 @@ void AwContents::SetWebContents(content::WebContents* web_contents) {
   icon_helper_->SetListener(this);
   web_contents_->SetUserData(kAwContentsUserDataKey,
                              new AwContentsUserData(this));
+  AwContentsClientBridgeBase::Associate(web_contents_.get(),
+                                        contents_client_bridge_.get());
   web_contents_->SetDelegate(web_contents_delegate_.get());
   render_view_host_ext_.reset(new AwRenderViewHostExt(web_contents_.get()));
 }
@@ -284,15 +290,19 @@ void AwContents::PerformLongClick() {
   Java_AwContents_performLongClick(env, obj.obj());
 }
 
-void AwContents::OnReceivedHttpAuthRequest(const JavaRef<jobject>& handler,
+bool AwContents::OnReceivedHttpAuthRequest(const JavaRef<jobject>& handler,
                                            const std::string& host,
                                            const std::string& realm) {
   JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return false;
+
   ScopedJavaLocalRef<jstring> jhost = ConvertUTF8ToJavaString(env, host);
   ScopedJavaLocalRef<jstring> jrealm = ConvertUTF8ToJavaString(env, realm);
-  Java_AwContents_onReceivedHttpAuthRequest(env, java_ref_.get(env).obj(),
-                                            handler.obj(), jhost.obj(),
-                                            jrealm.obj());
+  Java_AwContents_onReceivedHttpAuthRequest(env, obj.obj(), handler.obj(),
+      jhost.obj(), jrealm.obj());
+  return true;
 }
 
 void AwContents::SetIoThreadClient(JNIEnv* env, jobject obj, jobject client) {
@@ -334,8 +344,10 @@ void AwContents::AddVisitedLinks(JNIEnv* env,
 
 static jint Init(JNIEnv* env,
                  jobject obj,
-                 jobject web_contents_delegate) {
-  AwContents* tab = new AwContents(env, obj, web_contents_delegate);
+                 jobject web_contents_delegate,
+                 jobject contents_client_bridge) {
+  AwContents* tab = new AwContents(env, obj, web_contents_delegate,
+      contents_client_bridge);
   return reinterpret_cast<jint>(tab);
 }
 

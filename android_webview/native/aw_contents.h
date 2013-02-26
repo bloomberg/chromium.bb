@@ -30,6 +30,7 @@ class WebContents;
 namespace android_webview {
 
 class AwContentsContainer;
+class AwContentsClientBridge;
 class AwWebContentsDelegate;
 
 // Native side of java-class of same name.
@@ -55,7 +56,8 @@ class AwContents : public FindHelper::Listener,
 
   AwContents(JNIEnv* env,
              jobject obj,
-             jobject web_contents_delegate);
+             jobject web_contents_delegate,
+             jobject contents_client_bridge);
   virtual ~AwContents();
 
   AwRenderViewHostExt* render_view_host_ext() {
@@ -78,13 +80,14 @@ class AwContents : public FindHelper::Listener,
 
   // |handler| is an instance of
   // org.chromium.android_webview.AwHttpAuthHandler.
-  void OnReceivedHttpAuthRequest(const base::android::JavaRef<jobject>& handler,
+  bool OnReceivedHttpAuthRequest(const base::android::JavaRef<jobject>& handler,
                                  const std::string& host,
                                  const std::string& realm);
 
   // Methods called from Java.
   jint GetWebContents(JNIEnv* env, jobject obj);
   void SetWebContents(JNIEnv* env, jobject obj, jint web_contents);
+  jint GetAwContentsClientBridge(JNIEnv* env, jobject obj);
 
   void DidInitializeContentViewCore(JNIEnv* env, jobject obj,
                                     jint content_view_core);
@@ -167,6 +170,7 @@ class AwContents : public FindHelper::Listener,
   JavaObjectWeakGlobalRef java_ref_;
   scoped_ptr<content::WebContents> web_contents_;
   scoped_ptr<AwWebContentsDelegate> web_contents_delegate_;
+  scoped_ptr<AwContentsClientBridge> contents_client_bridge_;
   scoped_ptr<AwRenderViewHostExt> render_view_host_ext_;
   scoped_ptr<FindHelper> find_helper_;
   scoped_ptr<IconHelper> icon_helper_;

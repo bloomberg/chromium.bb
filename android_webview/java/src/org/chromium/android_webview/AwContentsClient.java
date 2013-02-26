@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.Picture;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.net.http.SslError;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -16,6 +17,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.ConsoleMessage;
 import android.webkit.GeolocationPermissions;
+import android.webkit.SslErrorHandler;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 
@@ -229,6 +231,9 @@ public abstract class AwContentsClient extends ContentViewClient {
 
     public abstract void onReceivedHttpAuthRequest(AwHttpAuthHandler handler,
             String host, String realm);
+
+    // TODO(sgurun) make this abstract once the corresponding changes for the glue layer lands.
+    public void onReceivedSslError(ValueCallback<Boolean> callback, SslError error) { }
 
     public abstract void onReceivedLoginRequest(String realm, String account, String args);
 

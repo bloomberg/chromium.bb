@@ -56,12 +56,13 @@ void AwHttpAuthHandler::Cancel(JNIEnv* env, jobject obj) {
   }
 }
 
-void AwHttpAuthHandler::HandleOnUIThread(content::WebContents* web_contents) {
+bool AwHttpAuthHandler::HandleOnUIThread(content::WebContents* web_contents) {
   DCHECK(web_contents);
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   AwContents* aw_contents = AwContents::FromWebContents(web_contents);
 
-  aw_contents->OnReceivedHttpAuthRequest(http_auth_handler_, host_, realm_);
+  return aw_contents->OnReceivedHttpAuthRequest(http_auth_handler_, host_,
+                                                realm_);
 }
 
 // static

@@ -96,6 +96,8 @@
         'browser/aw_browser_context.h',
         'browser/aw_browser_main_parts.cc',
         'browser/aw_browser_main_parts.h',
+        'browser/aw_contents_client_bridge_base.cc',
+        'browser/aw_contents_client_bridge_base.h',
         'browser/aw_content_browser_client.cc',
         'browser/aw_content_browser_client.h',
         'browser/aw_contents_io_thread_client.h',

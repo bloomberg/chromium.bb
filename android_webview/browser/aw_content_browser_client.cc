@@ -6,6 +6,7 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_browser_main_parts.h"
+#include "android_webview/browser/aw_contents_client_bridge_base.h"
 #include "android_webview/browser/aw_cookie_access_policy.h"
 #include "android_webview/browser/aw_quota_permission_context.h"
 #include "android_webview/browser/jni_dependency_factory.h"
@@ -22,6 +23,7 @@
 #include "content/public/common/url_constants.h"
 #include "grit/ui_resources.h"
 #include "net/android/network_library.h"
+#include "net/base/ssl_info.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {
@@ -273,9 +275,15 @@ void AwContentBrowserClient::AllowCertificateError(
     bool strict_enforcement,
     const base::Callback<void(bool)>& callback,
     bool* cancel_request) {
-  // TODO(boliu): Implement this to power WebViewClient.onReceivedSslError.
-  NOTIMPLEMENTED();
-  *cancel_request = true;
+
+  AwContentsClientBridgeBase* client =
+      AwContentsClientBridgeBase::FromID(render_process_id, render_view_id);
+  if (client) {
+    client->AllowCertificateError(cert_error, ssl_info.cert, request_url,
+                                  callback, cancel_request);
+  } else {
+    *cancel_request = true;
+  }
 }
 
 WebKit::WebNotificationPresenter::Permission

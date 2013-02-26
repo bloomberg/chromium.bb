@@ -29,6 +29,8 @@
         'aw_browser_dependency_factory.h',
         'aw_contents.cc',
         'aw_contents.h',
+        'aw_contents_client_bridge.cc',
+        'aw_contents_client_bridge.h',
         'aw_contents_io_thread_client_impl.cc',
         'aw_contents_io_thread_client_impl.h',
         'aw_geolocation_permission_context.cc',
@@ -78,6 +80,7 @@
       'sources': [
           '../java/src/org/chromium/android_webview/AndroidProtocolHandler.java',
           '../java/src/org/chromium/android_webview/AwContents.java',
+          '../java/src/org/chromium/android_webview/AwContentsClientBridge.java',
           '../java/src/org/chromium/android_webview/AwContentsIoThreadClient.java',
           '../java/src/org/chromium/android_webview/AwCookieManager.java',
           '../java/src/org/chromium/android_webview/AwHttpAuthHandler.java',

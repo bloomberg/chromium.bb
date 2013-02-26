@@ -29,7 +29,7 @@ class AwHttpAuthHandlerBase {
 
   // Provides an 'escape-hatch' out to Java for the browser/ layer
   // AwLoginDelegate.
-  virtual void HandleOnUIThread(content::WebContents*) = 0;
+  virtual bool HandleOnUIThread(content::WebContents*) = 0;
 };
 
 }  // namespace android_webview

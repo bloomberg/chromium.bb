@@ -96,7 +96,10 @@ void AwLoginDelegate::HandleHttpAuthRequestOnUIThread(
 
   WebContents* web_contents = WebContents::FromRenderViewHost(
       render_view_host);
-  aw_http_auth_handler_->HandleOnUIThread(web_contents);
+  if (!aw_http_auth_handler_->HandleOnUIThread(web_contents)) {
+    Cancel();
+    return;
+  }
 }
 
 void AwLoginDelegate::CancelOnIOThread() {

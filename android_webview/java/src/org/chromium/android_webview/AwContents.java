@@ -36,17 +36,12 @@ import org.chromium.content.common.CleanupReference;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.net.GURLUtils;
-import org.chromium.net.X509Util;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 import org.chromium.ui.gfx.NativeWindow;
 
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 
 /**
  * Exposes the native AwContents class, and together these classes wrap the ContentViewCore
@@ -94,6 +89,7 @@ public class AwContents {
     private ViewGroup mContainerView;
     private ContentViewCore mContentViewCore;
     private AwContentsClient mContentsClient;
+    private AwContentsClientBridge mContentsClientBridge;
     private AwContentsIoThreadClient mIoThreadClient;
     private InterceptNavigationDelegateImpl mInterceptNavigationDelegate;
     private InternalAccessDelegate mInternalAccessAdapter;
@@ -241,7 +237,9 @@ public class AwContents {
         // setup performs process initialisation work needed by AwContents.
         mContentViewCore = new ContentViewCore(containerView.getContext(),
                 ContentViewCore.PERSONALITY_VIEW);
-        mNativeAwContents = nativeInit(contentsClient.getWebContentsDelegate());
+        mContentsClientBridge = new AwContentsClientBridge(contentsClient);
+        mNativeAwContents = nativeInit(contentsClient.getWebContentsDelegate(),
+                mContentsClientBridge);
         mContentsClient = contentsClient;
         mCleanupReference = new CleanupReference(this, new DestroyRunnable(mNativeAwContents));
 
@@ -608,29 +606,7 @@ public class AwContents {
      */
     public SslCertificate getCertificate() {
         if (mNativeAwContents == 0) return null;
-        byte[] derBytes = nativeGetCertificate(mNativeAwContents);
-        if (derBytes == null) {
-            return null;
-        }
-
-        try {
-            X509Certificate x509Certificate =
-                    X509Util.createCertificateFromBytes(derBytes);
-            return new SslCertificate(x509Certificate);
-        } catch (CertificateException e) {
-            // Intentional fall through
-            // A SSL related exception must have occured.  This shouldn't happen.
-            Log.w(TAG, "Could not read certificate: " + e);
-        } catch (KeyStoreException e) {
-            // Intentional fall through
-            // A SSL related exception must have occured.  This shouldn't happen.
-            Log.w(TAG, "Could not read certificate: " + e);
-        } catch (NoSuchAlgorithmException e) {
-            // Intentional fall through
-            // A SSL related exception must have occured.  This shouldn't happen.
-            Log.w(TAG, "Could not read certificate: " + e);
-        }
-        return null;
+        return SslUtil.getCertificateFromDerBytes(nativeGetCertificate(mNativeAwContents));
     }
 
     /**
@@ -1030,7 +1006,8 @@ public class AwContents {
     //  Native methods
     //--------------------------------------------------------------------------------------------
 
-    private native int nativeInit(AwWebContentsDelegate webViewWebContentsDelegate);
+    private native int nativeInit(AwWebContentsDelegate webViewWebContentsDelegate,
+            AwContentsClientBridge contentsClientBridge);
     private static native void nativeDestroy(int nativeAwContents);
     private static native void nativeSetAwDrawSWFunctionTable(int functionTablePointer);
     private static native int nativeGetAwDrawGLFunction();
