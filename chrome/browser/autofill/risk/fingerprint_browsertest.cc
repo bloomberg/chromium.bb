@@ -119,8 +119,14 @@ class AutofillRiskFingerprintTest : public InProcessBrowserTest {
   MessageLoop message_loop_;
 };
 
+// This test is flaky on Windows. See http://crbug.com/178356.
+#if defined(OS_WIN)
+#define MAYBE_GetFingerprint DISABLE_GetFingerprint
+#else
+#define MAYBE_GetFingerprint GetFingerprint
+#endif
 // Test that getting a fingerprint works on some basic level.
-IN_PROC_BROWSER_TEST_F(AutofillRiskFingerprintTest, GetFingerprint) {
+IN_PROC_BROWSER_TEST_F(AutofillRiskFingerprintTest, MAYBE_GetFingerprint) {
   TestingPrefServiceSimple prefs;
   prefs.registry()->RegisterStringPref(prefs::kDefaultCharset, kCharset);
   prefs.registry()->RegisterStringPref(prefs::kAcceptLanguages,
