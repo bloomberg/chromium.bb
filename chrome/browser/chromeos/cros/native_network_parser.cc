@@ -1328,17 +1328,13 @@ bool NativeVirtualNetworkParser::ParseValue(PropertyIndex index,
         return false;
 
       const DictionaryValue& dict = static_cast<const DictionaryValue&>(value);
-      for (DictionaryValue::key_iterator iter = dict.begin_keys();
-           iter != dict.end_keys(); ++iter) {
-        const std::string& key = *iter;
-        const base::Value* provider_value;
-        bool res = dict.GetWithoutPathExpansion(key, &provider_value);
-        DCHECK(res);
-        if (res) {
-          PropertyIndex index = mapper().Get(key);
-          if (!ParseProviderValue(index, *provider_value, virtual_network))
-            VLOG(1) << network->name() << ": Provider unhandled key: " << key
-                    << " Type: " << provider_value->GetType();
+      for (DictionaryValue::Iterator iter(dict);
+           !iter.IsAtEnd();
+           iter.Advance()) {
+        PropertyIndex index = mapper().Get(iter.key());
+        if (!ParseProviderValue(index, iter.value(), virtual_network)) {
+          VLOG(1) << network->name() << ": Provider unhandled key: "
+                  << iter.key() << " Type: " << iter.value().GetType();
         }
       }
       return true;

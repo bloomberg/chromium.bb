@@ -47,9 +47,10 @@ void KioskAppPrefsLocalState::GetApps(AppIds* app_ids) const {
 
   const base::DictionaryValue* apps_dict;
   if (dict->GetDictionary(KioskAppManager::kKeyApps, &apps_dict)) {
-    for (base::DictionaryValue::key_iterator key(apps_dict->begin_keys());
-         key != apps_dict->end_keys(); ++key) {
-      app_ids->push_back(*key);
+    for (base::DictionaryValue::Iterator it(*apps_dict);
+         !it.IsAtEnd();
+         it.Advance()) {
+      app_ids->push_back(it.key());
     }
   }
 }

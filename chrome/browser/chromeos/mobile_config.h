@@ -39,7 +39,7 @@ class MobileConfig : public CustomizationDocument  {
   // Carrier deal.
   class CarrierDeal {
    public:
-    explicit CarrierDeal(base::DictionaryValue* deal_dict);
+    explicit CarrierDeal(const base::DictionaryValue* deal_dict);
     ~CarrierDeal();
 
     // Returns string with the specified |locale| and |id|.
@@ -60,7 +60,7 @@ class MobileConfig : public CustomizationDocument  {
     std::string info_url_;
     int notification_count_;
     base::Time expire_date_;
-    base::DictionaryValue* localized_strings_;
+    const base::DictionaryValue* localized_strings_;
 
     DISALLOW_COPY_AND_ASSIGN(CarrierDeal);
   };
@@ -68,7 +68,7 @@ class MobileConfig : public CustomizationDocument  {
   // Carrier config.
   class Carrier {
    public:
-    Carrier(base::DictionaryValue* carrier_dict,
+    Carrier(const base::DictionaryValue* carrier_dict,
             const std::string& initial_locale);
     ~Carrier();
 
@@ -85,7 +85,7 @@ class MobileConfig : public CustomizationDocument  {
 
     // Initializes carrier from supplied dictionary.
     // Multiple calls supported (i.e. second call for local config).
-    void InitFromDictionary(base::DictionaryValue* carrier_dict,
+    void InitFromDictionary(const base::DictionaryValue* carrier_dict,
                             const std::string& initial_locale);
 
     // Removes all carrier deals. Might be executed when local config is loaded.

@@ -65,13 +65,13 @@ namespace chromeos {
 
 // MobileConfig::CarrierDeal implementation. -----------------------------------
 
-MobileConfig::CarrierDeal::CarrierDeal(DictionaryValue* deal_dict)
+MobileConfig::CarrierDeal::CarrierDeal(const DictionaryValue* deal_dict)
     : notification_count_(0),
       localized_strings_(NULL) {
   deal_dict->GetString(kDealIdAttr, &deal_id_);
 
   // Extract list of deal locales.
-  ListValue* locale_list = NULL;
+  const ListValue* locale_list = NULL;
   if (deal_dict->GetList(kDealLocalesAttr, &locale_list)) {
     for (size_t i = 0; i < locale_list->GetSize(); ++i) {
       std::string locale;
@@ -97,7 +97,7 @@ std::string MobileConfig::CarrierDeal::GetLocalizedString(
     const std::string& locale, const std::string& id) const {
   std::string result;
   if (localized_strings_) {
-    DictionaryValue* locale_dict = NULL;
+    const DictionaryValue* locale_dict = NULL;
     if (localized_strings_->GetDictionary(locale, &locale_dict) &&
         locale_dict->GetString(id, &result)) {
       return result;
@@ -111,7 +111,7 @@ std::string MobileConfig::CarrierDeal::GetLocalizedString(
 
 // MobileConfig::Carrier implementation. ---------------------------------------
 
-MobileConfig::Carrier::Carrier(DictionaryValue* carrier_dict,
+MobileConfig::Carrier::Carrier(const DictionaryValue* carrier_dict,
                                const std::string& initial_locale)
     : show_portal_button_(false) {
   InitFromDictionary(carrier_dict, initial_locale);
@@ -148,7 +148,8 @@ const MobileConfig::CarrierDeal* MobileConfig::Carrier::GetDeal(
 }
 
 void MobileConfig::Carrier::InitFromDictionary(
-    base::DictionaryValue* carrier_dict, const std::string& initial_locale) {
+    const base::DictionaryValue* carrier_dict,
+    const std::string& initial_locale) {
   carrier_dict->GetString(kTopUpURLAttr, &top_up_url_);
   carrier_dict->GetBoolean(kShowPortalButtonAttr, &show_portal_button_);
 
@@ -159,10 +160,10 @@ void MobileConfig::Carrier::InitFromDictionary(
   }
 
   // Extract list of external IDs for this carrier.
-  ListValue* id_list = NULL;
+  const ListValue* id_list = NULL;
   if (carrier_dict->GetList(kCarrierIdsAttr, &id_list)) {
     for (size_t i = 0; i < id_list->GetSize(); ++i) {
-      DictionaryValue* id_dict = NULL;
+      const DictionaryValue* id_dict = NULL;
       std::string external_id;
       if (id_list->GetDictionary(i, &id_dict) &&
           id_dict->GetString(kCarrierIdAttr, &external_id)) {
@@ -172,10 +173,10 @@ void MobileConfig::Carrier::InitFromDictionary(
   }
 
   // Extract list of deals for this carrier.
-  ListValue* deals_list = NULL;
+  const ListValue* deals_list = NULL;
   if (carrier_dict->GetList(kDealsAttr, &deals_list)) {
     for (size_t i = 0; i < deals_list->GetSize(); ++i) {
-      DictionaryValue* deal_dict = NULL;
+      const DictionaryValue* deal_dict = NULL;
       if (deals_list->GetDictionary(i, &deal_dict)) {
         scoped_ptr<CarrierDeal> deal(new CarrierDeal(deal_dict));
         // Filter out deals by initial_locale right away.
@@ -257,16 +258,16 @@ bool MobileConfig::LoadManifestFromString(const std::string& manifest) {
   // Other parts are optional and are the same among global/local config.
   DictionaryValue* carriers = NULL;
   if (root_.get() && root_->GetDictionary(kCarriersAttr, &carriers)) {
-    for (DictionaryValue::key_iterator iter = carriers->begin_keys();
-         iter != carriers->end_keys(); ++iter) {
-      DictionaryValue* carrier_dict = NULL;
-      if (carriers->GetDictionary(*iter, &carrier_dict)) {
-        const std::string& internal_id = *iter;
-        Carriers::iterator iter = carriers_.find(internal_id);
-        if (iter != carriers_.end()) {
+    for (DictionaryValue::Iterator iter(*carriers); !iter.IsAtEnd();
+         iter.Advance()) {
+      const DictionaryValue* carrier_dict = NULL;
+      if (iter.value().GetAsDictionary(&carrier_dict)) {
+        const std::string& internal_id = iter.key();
+        Carriers::iterator inner_iter = carriers_.find(internal_id);
+        if (inner_iter != carriers_.end()) {
           // Carrier already defined i.e. loading from the local config.
           // New ID mappings in local config is not supported.
-          iter->second->InitFromDictionary(carrier_dict, initial_locale_);
+          inner_iter->second->InitFromDictionary(carrier_dict, initial_locale_);
         } else {
           Carrier* carrier = new Carrier(carrier_dict, initial_locale_);
           if (!carrier->external_ids().empty()) {

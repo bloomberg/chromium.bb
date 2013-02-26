@@ -129,15 +129,13 @@ bool CellularConfigDocument::LoadFromFile(const base::FilePath& config_path) {
   DictionaryValue* errors = NULL;
   if (!root_dict->GetDictionary(kErrorsField, &errors))
     return false;
-  for (DictionaryValue::key_iterator keys = errors->begin_keys();
-       keys != errors->end_keys();
-       ++keys) {
+  for (DictionaryValue::Iterator it(*errors); !it.IsAtEnd(); it.Advance()) {
     std::string value;
-    if (!errors->GetString(*keys, &value)) {
+    if (!it.value().GetAsString(&value)) {
       LOG(WARNING) << "Bad cellular config error value";
       return false;
     }
-    error_map.insert(ErrorMap::value_type(*keys, value));
+    error_map.insert(ErrorMap::value_type(it.key(), value));
   }
   SetErrorMap(error_map);
   return true;

@@ -35,15 +35,9 @@ NetworkDevice* NetworkDeviceParser::CreateDeviceFromInfo(
 
 bool NetworkDeviceParser::UpdateDeviceFromInfo(const DictionaryValue& info,
                                                NetworkDevice* device) {
-  for (DictionaryValue::key_iterator iter = info.begin_keys();
-       iter != info.end_keys(); ++iter) {
-    const std::string& key = *iter;
-    const base::Value* value;
-    bool result = info.GetWithoutPathExpansion(key, &value);
-    DCHECK(result);
-    if (result)
-      UpdateStatus(key, *value, device, NULL);
-  }
+  for (DictionaryValue::Iterator iter(info); !iter.IsAtEnd(); iter.Advance())
+    UpdateStatus(iter.key(), iter.value(), device, NULL);
+
   if (VLOG_IS_ON(2)) {
     std::string json;
     base::JSONWriter::WriteWithOptions(&info,
@@ -109,15 +103,9 @@ Network* NetworkParser::CreateNetworkFromInfo(
 bool NetworkParser::UpdateNetworkFromInfo(const DictionaryValue& info,
                                           Network* network) {
   network->set_unique_id("");
-  for (DictionaryValue::key_iterator iter = info.begin_keys();
-       iter != info.end_keys(); ++iter) {
-    const std::string& key = *iter;
-    const base::Value* value;
-    bool res = info.GetWithoutPathExpansion(key, &value);
-    DCHECK(res);
-    if (res)  // Use network's parser to update status
-      network->UpdateStatus(key, *value, NULL);
-  }
+  for (DictionaryValue::Iterator iter(info); !iter.IsAtEnd(); iter.Advance())
+      network->UpdateStatus(iter.key(), iter.value(), NULL);
+
   if (network->unique_id().empty())
     network->CalculateUniqueId();
   VLOG(2) << "Updated network '" << network->name()

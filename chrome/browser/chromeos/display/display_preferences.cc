@@ -79,23 +79,18 @@ void NotifyDisplayLayoutChanged() {
 
   const base::DictionaryValue* layouts = local_state->GetDictionary(
       prefs::kSecondaryDisplays);
-  for (base::DictionaryValue::key_iterator it = layouts->begin_keys();
-       it != layouts->end_keys(); ++it) {
-    const base::Value* value = NULL;
-    if (!layouts->Get(*it, &value) || value == NULL) {
-      LOG(WARNING) << "Can't find dictionary value for " << *it;
-      continue;
-    }
-
+  for (DictionaryValue::Iterator it(*layouts); !it.IsAtEnd(); it.Advance()) {
     ash::DisplayLayout layout;
-    if (!ash::DisplayLayout::ConvertFromValue(*value, &layout)) {
-      LOG(WARNING) << "Invalid preference value for " << *it;
+    if (!ash::DisplayLayout::ConvertFromValue(it.value(), &layout)) {
+      LOG(WARNING) << "Invalid preference value for " << it.key();
       continue;
     }
 
     int64 id = gfx::Display::kInvalidDisplayID;
-    if (!base::StringToInt64(*it, &id) || id == gfx::Display::kInvalidDisplayID)
+    if (!base::StringToInt64(it.key(), &id) ||
+        id == gfx::Display::kInvalidDisplayID) {
       continue;
+    }
     display_controller->SetLayoutForDisplayId(id, layout);
   }
 }
@@ -107,23 +102,24 @@ void NotifyDisplayOverscans() {
 
   const base::DictionaryValue* overscans = local_state->GetDictionary(
       prefs::kDisplayOverscans);
-  for (base::DictionaryValue::key_iterator it = overscans->begin_keys();
-       it != overscans->end_keys(); ++it) {
+  for (DictionaryValue::Iterator it(*overscans);
+       !it.IsAtEnd();
+       it.Advance()) {
     int64 display_id = gfx::Display::kInvalidDisplayID;
-    if (!base::StringToInt64(*it, &display_id)) {
-      LOG(WARNING) << "Invalid key, cannot convert to display ID: " << *it;
+    if (!base::StringToInt64(it.key(), &display_id)) {
+      LOG(WARNING) << "Invalid key, cannot convert to display ID: " << it.key();
       continue;
     }
 
     const base::DictionaryValue* value = NULL;
-    if (!overscans->GetDictionary(*it, &value) || value == NULL) {
-      LOG(WARNING) << "Can't find dictionary value for " << *it;
+    if (!it.value().GetAsDictionary(&value)) {
+      LOG(WARNING) << "Can't find dictionary value for " << it.key();
       continue;
     }
 
     gfx::Insets insets;
     if (!ValueToInsets(*value, &insets)) {
-      LOG(WARNING) << "Can't convert the data into insets for " << *it;
+      LOG(WARNING) << "Can't convert the data into insets for " << it.key();
       continue;
     }
 
