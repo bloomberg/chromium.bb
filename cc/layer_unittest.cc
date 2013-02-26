@@ -689,13 +689,6 @@ public:
         return host.Pass();
     }
 
-    static scoped_ptr<FakeLayerImplTreeHost> create(LayerTreeSettings settings)
-    {
-        scoped_ptr<FakeLayerImplTreeHost> host(new FakeLayerImplTreeHost(settings));
-        host->initialize(scoped_ptr<Thread>(NULL));
-        return host.Pass();
-    }
-
 private:
     FakeLayerImplTreeHost(const LayerTreeSettings& settings)
         : LayerTreeHost(&m_client, settings)
@@ -890,30 +883,31 @@ static bool addTestAnimation(Layer* layer)
     return layer->addAnimation(animation.Pass());
 }
 
-TEST(LayerLayerTreeHostTest, shouldNotAddAnimationWithoutAnimationRegistrar)
+TEST(LayerLayerTreeHostTest, shouldNotAddAnimationWithoutLayerTreeHost)
 {
+    // Currently, WebCore assumes that animations will be started immediately / very soon
+    // if a composited layer's addAnimation() returns true. However, without a layerTreeHost,
+    // layers cannot actually animate yet. So, to prevent violating this WebCore assumption,
+    // the animation should not be accepted if the layer doesn't already have a layerTreeHost.
+
     scoped_refptr<Layer> layer = Layer::create();
 
-    // Case 1: without a LayerTreeHost and without an AnimationRegistrar, the
-    // animation should not be accepted.
-    EXPECT_FALSE(addTestAnimation(layer.get()));
-
-    scoped_ptr<AnimationRegistrar> registrar = AnimationRegistrar::create();
-    layer->layerAnimationController()->setAnimationRegistrar(registrar.get());
-
-    // Case 2: with an AnimationRegistrar, the animation should be accepted.
+    // Case 1: without a layerTreeHost, the animation should not be accepted.
+#if defined(OS_ANDROID)
+    // All animations are enabled on Android to avoid performance regressions.
+    // Other platforms will be enabled with http://crbug.com/129683
     EXPECT_TRUE(addTestAnimation(layer.get()));
+#else
+    EXPECT_FALSE(addTestAnimation(layer.get()));
+#endif
 
-    LayerTreeSettings settings;
-    settings.acceleratedAnimationEnabled = false;
-    scoped_ptr<FakeLayerImplTreeHost> layerTreeHost(FakeLayerImplTreeHost::create(settings));
+    scoped_ptr<FakeLayerImplTreeHost> layerTreeHost(FakeLayerImplTreeHost::create());
     layerTreeHost->setRootLayer(layer.get());
     layer->setLayerTreeHost(layerTreeHost.get());
     assertLayerTreeHostMatchesForSubtree(layer.get(), layerTreeHost.get());
 
-    // Case 3: with a LayerTreeHost where accelerated animation is disabled, the
-    // animation should be rejected.
-    EXPECT_FALSE(addTestAnimation(layer.get()));
+    // Case 2: with a layerTreeHost, the animation should be accepted.
+    EXPECT_TRUE(addTestAnimation(layer.get()));
 }
 
 }  // namespace

@@ -91,9 +91,8 @@ LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client, const LayerTreeSetting
     , m_backgroundColor(SK_ColorWHITE)
     , m_hasTransparentBackground(false)
     , m_partialTextureUpdateRequests(0)
+    , m_animationRegistrar(AnimationRegistrar::create())
 {
-    if (m_settings.acceleratedAnimationEnabled)
-        m_animationRegistrar = AnimationRegistrar::create();
     numLayerTreeInstances++;
 }
 

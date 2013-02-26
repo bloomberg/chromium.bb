@@ -336,12 +336,6 @@ void RenderWidgetCompositor::didStopFlinging() {
   layer_tree_host_->didStopFlinging();
 }
 
-void RenderWidgetCompositor::registerForAnimations(WebKit::WebLayer* layer) {
-  cc::Layer* cc_layer = static_cast<WebKit::WebLayerImpl*>(layer)->layer();
-  cc_layer->layerAnimationController()->setAnimationRegistrar(
-      layer_tree_host_->animationRegistrar());
-}
-
 bool RenderWidgetCompositor::compositeAndReadback(void *pixels,
                                                   const WebRect& rect) {
   return layer_tree_host_->compositeAndReadback(pixels, rect);
