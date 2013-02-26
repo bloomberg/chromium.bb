@@ -841,13 +841,6 @@ SequencedWorkerPool::Inner::GetWorkStatus SequencedWorkerPool::Inner::GetWork(
       continue;
     }
 
-    if (i->time_to_run > current_time) {
-      // The time to run has not come yet.
-      *wait_time = i->time_to_run - current_time;
-      status = GET_WORK_WAIT;
-      break;
-    }
-
     if (shutdown_called_ && i->shutdown_behavior != BLOCK_SHUTDOWN) {
       // We're shutting down and the task we just found isn't blocking
       // shutdown. Delete it and get more work.
@@ -866,17 +859,25 @@ SequencedWorkerPool::Inner::GetWorkStatus SequencedWorkerPool::Inner::GetWork(
       // happen.
       delete_these_outside_lock->push_back(i->task);
       pending_tasks_.erase(i++);
-    } else {
-      // Found a runnable task.
-      *task = *i;
-      pending_tasks_.erase(i);
-      if (task->shutdown_behavior == BLOCK_SHUTDOWN) {
-        blocking_shutdown_pending_task_count_--;
-      }
+      continue;
+    }
 
-      status = GET_WORK_FOUND;
+    if (i->time_to_run > current_time) {
+      // The time to run has not come yet.
+      *wait_time = i->time_to_run - current_time;
+      status = GET_WORK_WAIT;
       break;
     }
+
+    // Found a runnable task.
+    *task = *i;
+    pending_tasks_.erase(i);
+    if (task->shutdown_behavior == BLOCK_SHUTDOWN) {
+      blocking_shutdown_pending_task_count_--;
+    }
+
+    status = GET_WORK_FOUND;
+    break;
   }
 
   // Track the number of tasks we had to skip over to see if we should be

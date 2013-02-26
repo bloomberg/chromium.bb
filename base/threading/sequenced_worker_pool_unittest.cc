@@ -17,7 +17,9 @@
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/test/sequenced_task_runner_test_template.h"
 #include "base/test/task_runner_test_template.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
+#include "base/time.h"
 #include "base/tracked_objects.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -170,8 +172,8 @@ class TestTracker : public base::RefCountedThreadSafe<TestTracker> {
 class SequencedWorkerPoolTest : public testing::Test {
  public:
   SequencedWorkerPoolTest()
-      : pool_owner_(kNumWorkerThreads, "test"),
-        tracker_(new TestTracker) {
+      : tracker_(new TestTracker) {
+    ResetPool();
   }
 
   virtual ~SequencedWorkerPoolTest() {}
@@ -183,12 +185,18 @@ class SequencedWorkerPoolTest : public testing::Test {
   }
 
   const scoped_refptr<SequencedWorkerPool>& pool() {
-    return pool_owner_.pool();
+    return pool_owner_->pool();
   }
   TestTracker* tracker() { return tracker_.get(); }
 
+  // Destroys the SequencedWorkerPool instance, blocking until it is fully shut
+  // down, and creates a new instance.
+  void ResetPool() {
+    pool_owner_.reset(new SequencedWorkerPoolOwner(kNumWorkerThreads, "test"));
+  }
+
   void SetWillWaitForShutdownCallback(const Closure& callback) {
-    pool_owner_.SetWillWaitForShutdownCallback(callback);
+    pool_owner_->SetWillWaitForShutdownCallback(callback);
   }
 
   // Ensures that the given number of worker threads is created by adding
@@ -225,12 +233,12 @@ class SequencedWorkerPoolTest : public testing::Test {
   }
 
   int has_work_call_count() const {
-    return pool_owner_.has_work_call_count();
+    return pool_owner_->has_work_call_count();
   }
 
  private:
   MessageLoop message_loop_;
-  SequencedWorkerPoolOwner pool_owner_;
+  scoped_ptr<SequencedWorkerPoolOwner> pool_owner_;
   const scoped_refptr<TestTracker> tracker_;
 };
 
@@ -247,6 +255,61 @@ void EnsureTasksToCompleteCountAndUnblock(scoped_refptr<TestTracker> tracker,
       tracker->WaitUntilTasksComplete(expected_tasks_to_complete).size());
 
   blocker->Unblock(threads_to_awake);
+}
+
+class DeletionHelper : public base::RefCountedThreadSafe<DeletionHelper> {
+ public:
+  explicit DeletionHelper(
+      const scoped_refptr<base::RefCountedData<bool> >& deleted_flag)
+      : deleted_flag_(deleted_flag) {
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<DeletionHelper>;
+  virtual ~DeletionHelper() { deleted_flag_->data = true; }
+
+  const scoped_refptr<base::RefCountedData<bool> > deleted_flag_;
+  DISALLOW_COPY_AND_ASSIGN(DeletionHelper);
+};
+
+void HoldPoolReference(const scoped_refptr<base::SequencedWorkerPool>& pool,
+                       const scoped_refptr<DeletionHelper>& helper) {
+  ADD_FAILURE() << "Should never run";
+}
+
+// Tests that delayed tasks are deleted upon shutdown of the pool.
+TEST_F(SequencedWorkerPoolTest, DelayedTaskDuringShutdown) {
+  // Post something to verify the pool is started up.
+  EXPECT_TRUE(pool()->PostTask(
+      FROM_HERE, base::Bind(&TestTracker::FastTask, tracker(), 1)));
+
+  scoped_refptr<base::RefCountedData<bool> > deleted_flag(
+      new base::RefCountedData<bool>(false));
+
+  base::Time posted_at(base::Time::Now());
+  // Post something that shouldn't run.
+  EXPECT_TRUE(pool()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&HoldPoolReference,
+                 pool(),
+                 make_scoped_refptr(new DeletionHelper(deleted_flag))),
+      TestTimeouts::action_timeout()));
+
+  std::vector<int> completion_sequence = tracker()->WaitUntilTasksComplete(1);
+  ASSERT_EQ(1u, completion_sequence.size());
+  ASSERT_EQ(1, completion_sequence[0]);
+
+  pool()->Shutdown();
+  // Shutdown is asynchronous, so use ResetPool() to block until the pool is
+  // fully destroyed (and thus shut down).
+  ResetPool();
+
+  // Verify that we didn't block until the task was due.
+  ASSERT_LT(base::Time::Now() - posted_at, TestTimeouts::action_timeout());
+
+  // Verify that the deferred task has not only not run, but has also been
+  // destroyed.
+  ASSERT_TRUE(deleted_flag->data);
 }
 
 // Tests that same-named tokens have the same ID.
