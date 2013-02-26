@@ -2369,3 +2369,15 @@
    Memcheck:Uninitialized
    fun:_ZN3WTF20TCMalloc_ThreadCache10DeallocateENS_11HardenedSLLEm
 }
+{
+   bug_178424c
+   Memcheck:Param
+   write(buf)
+   fun:write$UNIX2003
+}
+{
+   bug_178424d
+   Memcheck:Param
+   read(buf)
+   fun:read$UNIX2003
+}
