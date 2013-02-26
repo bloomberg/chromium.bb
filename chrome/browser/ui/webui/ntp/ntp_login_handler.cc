@@ -180,7 +180,9 @@ void NTPLoginHandler::HandleLoginMessageSeen(const ListValue* args) {
   Profile::FromWebUI(web_ui())->GetPrefs()->SetBoolean(
       prefs::kSyncPromoShowNTPBubble, false);
   NewTabUI* ntp_ui = NewTabUI::FromWebUIController(web_ui()->GetController());
-  ntp_ui->set_showing_sync_bubble(true);
+  // When instant extended is enabled, there may not be a NewTabUI object.
+  if (ntp_ui)
+    ntp_ui->set_showing_sync_bubble(true);
 }
 
 void NTPLoginHandler::HandleShowAdvancedLoginUI(const ListValue* args) {
