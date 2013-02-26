@@ -96,12 +96,29 @@ class SurfaceStatsCollector(object):
     last_timestamp = 0
     first_timestamp = 0
     latencies = []
+    retries = 0
+    has_collected_data = False
 
     while not self._stop_event.is_set():
       self._get_data_event.wait(1)
       try:
         (t, last_timestamp) = self._GetSurfaceFlingerLatencyData(last_timestamp,
                                                                  latencies)
+        if (t, last_timestamp) == (None, None):
+          retries += 1
+          if retries < 3:
+            continue
+          if has_collected_data:
+            # Some data has already been collected, but either the app
+            # was closed or there's no new data. Signal the main thread and
+            # wait.
+            self._data_queue.put((None, None))
+            self._stop_event.wait()
+            break
+          raise Exception('Unable to get surface flinger latency data')
+
+        has_collected_data = True
+
         if not first_timestamp:
           first_timestamp = t
 
@@ -151,10 +168,8 @@ class SurfaceStatsCollector(object):
       A tuple containing:
       - The timestamp of the beginning of the first frame (ns),
       - The timestamp of the end of the last frame (ns).
-
-    Raises:
-      Exception if failed to run the SurfaceFlinger command or SurfaceFlinger
-          returned invalid result.
+      The tuple may be (None, None) if there was no data collected (for example,
+      if the app was closed before the collector thread has finished).
     """
     # adb shell dumpsys SurfaceFlinger --latency <window name>
     # prints some information about the last 128 frames displayed in
@@ -184,7 +199,8 @@ class SurfaceStatsCollector(object):
     results = self._adb.RunShellCommand(
         'dumpsys SurfaceFlinger --latency %s/%s' %
         (self._window_package, self._window_activity), log_result=True)
-    assert len(results)
+    if not len(results):
+      return (None, None)
 
     refresh_period = int(results[0])
     last_timestamp = previous_timestamp
