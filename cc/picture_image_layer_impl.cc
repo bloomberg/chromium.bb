@@ -37,8 +37,7 @@ void PictureImageLayerImpl::CalculateRasterContentsScale(
     float* low_res_raster_contents_scale) {
   // Don't scale images during rastering to ensure image quality, save memory
   // and avoid frequent re-rastering on change of scale.
-  *raster_contents_scale =
-      std::max(1.f, layerTreeImpl()->settings().minimumContentsScale);
+  *raster_contents_scale = std::max(1.f, MinimumContentsScale());
   // We don't need low res tiles.
   *low_res_raster_contents_scale = *raster_contents_scale;
 }

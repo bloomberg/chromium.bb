@@ -281,7 +281,7 @@ void PictureLayerImpl::calculateContentsScale(
     return;
   }
 
-  float min_contents_scale = layerTreeImpl()->settings().minimumContentsScale;
+  float min_contents_scale = MinimumContentsScale();
   float min_page_scale = layerTreeImpl()->min_page_scale_factor();
   float min_device_scale = 1.f;
   float min_source_scale =
@@ -430,8 +430,7 @@ void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
     }
   }
 
-
-  tilings_->CloneAll(*other->tilings_, invalidation_);
+  tilings_->CloneAll(*other->tilings_, invalidation_, MinimumContentsScale());
   DCHECK(bounds() == tilings_->LayerBounds());
 
   // It's a sad but unfortunate fact that PicturePile tiling edges do not line
@@ -453,7 +452,7 @@ void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
 void PictureLayerImpl::SyncTiling(
     const PictureLayerTiling* tiling,
     const Region& pending_layer_invalidation) {
-  if (!drawsContent())
+  if (!drawsContent() || tiling->contents_scale() < MinimumContentsScale())
     return;
   tilings_->Clone(tiling, pending_layer_invalidation);
 }
@@ -535,7 +534,7 @@ bool PictureLayerImpl::areVisibleResourcesReady() const {
 }
 
 PictureLayerTiling* PictureLayerImpl::AddTiling(float contents_scale) {
-  DCHECK(contents_scale >= layerTreeImpl()->settings().minimumContentsScale);
+  DCHECK(contents_scale >= MinimumContentsScale());
 
   PictureLayerTiling* tiling = tilings_->AddTiling(contents_scale);
 
@@ -690,7 +689,7 @@ void PictureLayerImpl::CalculateRasterContentsScale(
   float low_res_factor = layerTreeImpl()->settings().lowResContentsScaleFactor;
   *low_res_raster_contents_scale = std::max(
       *raster_contents_scale * low_res_factor,
-      layerTreeImpl()->settings().minimumContentsScale);
+      MinimumContentsScale());
 }
 
 void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
@@ -772,6 +771,20 @@ PictureLayerImpl* PictureLayerImpl::ActiveTwin() const {
   if (twin)
     DCHECK_EQ(id(), twin->id());
   return twin;
+}
+
+float PictureLayerImpl::MinimumContentsScale() const {
+  float setting_min = layerTreeImpl()->settings().minimumContentsScale;
+
+  // If the contents scale is less than 1 / width (also for height),
+  // then it will end up having less than one pixel of content in that
+  // dimension.  Bump the minimum contents scale up in this case to prevent
+  // this from happening.
+  int min_dimension = std::min(bounds().width(), bounds().height());
+  if (!min_dimension)
+    return setting_min;
+
+  return std::max(1.f / min_dimension, setting_min);
 }
 
 void PictureLayerImpl::getDebugBorderProperties(

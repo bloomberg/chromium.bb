@@ -34,11 +34,15 @@ void PictureLayerTilingSet::SetClient(PictureLayerTilingClient* client) {
 
 void PictureLayerTilingSet::CloneAll(
     const PictureLayerTilingSet& other,
-    const Region& invalidation) {
+    const Region& invalidation,
+    float minimum_contents_scale) {
   tilings_.clear();
   tilings_.reserve(other.tilings_.size());
-  for (size_t i = 0; i < other.tilings_.size(); ++i)
+  for (size_t i = 0; i < other.tilings_.size(); ++i) {
+    if (other.tilings_[i]->contents_scale() < minimum_contents_scale)
+      continue;
     Clone(other.tilings_[i], invalidation);
+  }
 }
 
 void PictureLayerTilingSet::Clone(

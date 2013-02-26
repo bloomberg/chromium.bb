@@ -84,6 +84,7 @@ protected:
       std::vector<PictureLayerTiling*> used_tilings);
   PictureLayerImpl* PendingTwin() const;
   PictureLayerImpl* ActiveTwin() const;
+  float MinimumContentsScale() const;
 
   virtual void getDebugBorderProperties(
       SkColor* color, float* width) const OVERRIDE;
