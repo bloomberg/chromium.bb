@@ -11,9 +11,10 @@ This is sub-optimal for android, where these steps can run independently on
 multiple connected devices.
 
 The buildbots will run this script multiple times per cycle:
-- First, without params: all steps will be executed in parallel using all
-connected devices. Step results will be pickled to disk (each step has a unique
-name).
+- First: all steps listed in -s in will be executed in parallel using all
+connected devices. Step results will be pickled to disk. Each step has a unique
+name. The result code will be ignored if the step name is listed in
+--flaky_steps.
 The buildbot will treat this step as a regular step, and will not process any
 graph data.
 
@@ -21,11 +22,18 @@ graph data.
 step results previously saved. The buildbot will then process the graph data
 accordingly.
 
-The JSON config contains is a file containing a dictionary in the format:
+The JSON steps file contains a dictionary in the format:
 {
-  'step_name_foo': 'script_to_execute foo',
-  'step_name_bar': 'script_to_execute bar'
+  "step_name_foo": "script_to_execute foo",
+  "step_name_bar": "script_to_execute bar"
 }
+
+The JSON flaky steps file contains a list with step names which results should
+be ignored:
+[
+  "step_name_foo",
+  "step_name_bar"
+]
 
 Note that script_to_execute necessarily have to take at least the following
 options:
@@ -71,12 +79,17 @@ def _RunStepsPerDevice(steps):
         step['cmd'], cwd=os.path.abspath(constants.CHROME_DIR),
         withexitstatus=True, logfile=sys.stdout, timeout=1800,
         env=os.environ)
+    exit_code = exit_code or 0
     end_time = datetime.datetime.now()
-    print 'Finished %s: %s %s at %s' % (step['name'], step['cmd'],
-                                        end_time, step['device'])
+    exit_msg = '%s %s' % (exit_code,
+                          '(ignored, flaky step)' if step['is_flaky'] else '')
+    print 'Finished %s: %s %s %s at %s' % (step['name'], exit_msg, step['cmd'],
+                                           end_time, step['device'])
+    if step['is_flaky']:
+      exit_code = 0
     result = {'name': step['name'],
               'output': output,
-              'exit_code': exit_code or 0,
+              'exit_code': exit_code,
               'total_time': (end_time - start_time).seconds,
               'device': step['device']}
     _SaveResult(result)
@@ -84,7 +97,7 @@ def _RunStepsPerDevice(steps):
   return results
 
 
-def _RunShardedSteps(steps, devices):
+def _RunShardedSteps(steps, flaky_steps, devices):
   assert steps
   assert devices, 'No devices connected?'
   if os.path.exists(_OUTPUT_DIR):
@@ -101,6 +114,7 @@ def _RunShardedSteps(steps, devices):
     for s in steps.keys()[i * shard_size:(i + 1) * shard_size]:
       steps_per_device += [{'name': s,
                             'device': device,
+                            'is_flaky': s in flaky_steps,
                             'cmd': steps[s] + ' --device ' + device +
                             ' --keep_test_server_ports'}]
     all_params += [steps_per_device]
@@ -157,6 +171,9 @@ def main(argv):
   parser.add_option('-s', '--steps',
                     help='A JSON file containing all the steps to be '
                          'sharded.')
+  parser.add_option('--flaky_steps',
+                    help='A JSON file containing steps that are flaky and '
+                         'will have its exit code ignored.')
   parser.add_option('-p', '--print_results',
                     help='Only prints the results for the previously '
                          'executed step, do not run it again.')
@@ -181,7 +198,11 @@ def main(argv):
 
   with file(options.steps, 'r') as f:
     steps = json.load(f)
-  return _RunShardedSteps(steps, devices)
+  flaky_steps = []
+  if options.flaky_steps:
+    with file(options.flaky_steps, 'r') as f:
+      flaky_steps = json.load(f)
+  return _RunShardedSteps(steps, flaky_steps, devices)
 
 
 if __name__ == '__main__':
