@@ -19,6 +19,7 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/bluetooth_socket.h"
 
 namespace extensions {
 
@@ -28,11 +29,13 @@ ExtensionBluetoothEventRouter::ExtensionBluetoothEventRouter(Profile* profile)
       profile_(profile),
       adapter_(NULL),
       num_event_listeners_(0),
+      next_socket_id_(1),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(profile_);
 }
 
 ExtensionBluetoothEventRouter::~ExtensionBluetoothEventRouter() {
+  CHECK(socket_map_.size() == 0);
   if (adapter_) {
     adapter_->RemoveObserver(this);
     adapter_ = NULL;
@@ -63,6 +66,35 @@ void ExtensionBluetoothEventRouter::OnListenerRemoved() {
   if (num_event_listeners_ > 0)
     num_event_listeners_--;
   MaybeReleaseAdapter();
+}
+
+int ExtensionBluetoothEventRouter::RegisterSocket(
+    scoped_refptr<device::BluetoothSocket> socket) {
+  // If there is a socket registered with the same fd, just return it's id
+  for (SocketMap::const_iterator i = socket_map_.begin();
+      i != socket_map_.end(); ++i) {
+    if (i->second.get() == socket.get())
+      return i->first;
+  }
+  int return_id = next_socket_id_++;
+  socket_map_[return_id] = socket;
+  return return_id;
+}
+
+bool ExtensionBluetoothEventRouter::ReleaseSocket(int id) {
+  SocketMap::iterator socket_entry = socket_map_.find(id);
+  if (socket_entry == socket_map_.end())
+    return false;
+  socket_map_.erase(socket_entry);
+  return true;
+}
+
+scoped_refptr<device::BluetoothSocket>
+ExtensionBluetoothEventRouter::GetSocket(int id) {
+  SocketMap::iterator socket_entry = socket_map_.find(id);
+  if (socket_entry == socket_map_.end())
+    return NULL;
+  return socket_entry->second;
 }
 
 void ExtensionBluetoothEventRouter::SetResponsibleForDiscovery(

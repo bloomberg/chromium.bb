@@ -10,9 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/api_function.h"
-#include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_extension_function.h"
-#include "chrome/browser/extensions/api/bluetooth/bluetooth_socket_resource.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -54,22 +52,6 @@ class BluetoothAPI : public ProfileKeyedService,
 
   // Created lazily on first access.
   scoped_ptr<ExtensionBluetoothEventRouter> bluetooth_event_router_;
-};
-
-class BluetoothSocketAsyncApiFunction : public AsyncApiFunction {
- public:
-  BluetoothSocketAsyncApiFunction();
-
- protected:
-  virtual ~BluetoothSocketAsyncApiFunction();
-
-  // AsyncApiFunction:
-  virtual bool PrePrepare() OVERRIDE;
-
-  BluetoothSocketResource* GetSocketResource(int api_resource_id);
-
- private:
-  ApiResourceManager<BluetoothSocketResource>* manager_;
 };
 
 namespace api {
@@ -153,7 +135,7 @@ class BluetoothDisconnectFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class BluetoothReadFunction : public BluetoothSocketAsyncApiFunction {
+class BluetoothReadFunction : public AsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetooth.read", BLUETOOTH_READ)
   BluetoothReadFunction();
@@ -161,7 +143,7 @@ class BluetoothReadFunction : public BluetoothSocketAsyncApiFunction {
  protected:
   virtual ~BluetoothReadFunction();
 
-  // BluetoothSocketAsyncApiFunction:
+  // AsyncApiFunction:
   virtual bool Prepare() OVERRIDE;
   virtual bool Respond() OVERRIDE;
   virtual void Work() OVERRIDE;
@@ -171,7 +153,7 @@ class BluetoothReadFunction : public BluetoothSocketAsyncApiFunction {
   scoped_refptr<device::BluetoothSocket> socket_;
 };
 
-class BluetoothWriteFunction : public BluetoothSocketAsyncApiFunction {
+class BluetoothWriteFunction : public AsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetooth.write", BLUETOOTH_WRITE)
   BluetoothWriteFunction();
@@ -179,7 +161,7 @@ class BluetoothWriteFunction : public BluetoothSocketAsyncApiFunction {
  protected:
   virtual ~BluetoothWriteFunction();
 
-  // BluetoothSocketAsyncApiFunction:
+  // AsyncApiFunction:
   virtual bool Prepare() OVERRIDE;
   virtual bool Respond() OVERRIDE;
   virtual void Work() OVERRIDE;

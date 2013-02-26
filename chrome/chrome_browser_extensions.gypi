@@ -98,8 +98,6 @@
         'browser/extensions/api/bluetooth/bluetooth_event_router.h',
         'browser/extensions/api/bluetooth/bluetooth_extension_function.cc',
         'browser/extensions/api/bluetooth/bluetooth_extension_function.h',
-        'browser/extensions/api/bluetooth/bluetooth_socket_resource.cc',
-        'browser/extensions/api/bluetooth/bluetooth_socket_resource.h',
         'browser/extensions/api/bookmark_manager_private/bookmark_manager_private_api.cc',
         'browser/extensions/api/bookmark_manager_private/bookmark_manager_private_api.h',
         'browser/extensions/api/bookmark_manager_private/bookmark_manager_private_api_constants.cc',

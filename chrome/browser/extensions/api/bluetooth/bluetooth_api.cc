@@ -7,11 +7,9 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api_factory.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api_utils.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_event_router.h"
-#include "chrome/browser/extensions/api/bluetooth/bluetooth_socket_resource.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -100,29 +98,6 @@ void BluetoothAPI::OnListenerAdded(const EventListenerInfo& details) {
 
 void BluetoothAPI::OnListenerRemoved(const EventListenerInfo& details) {
   bluetooth_event_router()->OnListenerRemoved();
-}
-
-BluetoothSocketAsyncApiFunction::BluetoothSocketAsyncApiFunction()
-    : manager_(NULL) {
-}
-
-BluetoothSocketAsyncApiFunction::~BluetoothSocketAsyncApiFunction() {
-}
-
-bool BluetoothSocketAsyncApiFunction::PrePrepare() {
-  manager_ =
-      ExtensionSystem::Get(profile())->bluetooth_socket_resource_manager();
-  if (!manager_) {
-    SetError(kPlatformNotSupported);
-    return false;
-  }
-
-  return true;
-}
-
-BluetoothSocketResource* BluetoothSocketAsyncApiFunction::GetSocketResource(
-    int api_resource_id) {
-  return manager_->Get(extension_->id(), api_resource_id);
 }
 
 namespace api {
@@ -282,11 +257,7 @@ void BluetoothConnectFunction::ConnectToServiceCallback(
     const std::string& service_uuid,
     scoped_refptr<BluetoothSocket> socket) {
   if (socket.get()) {
-    ApiResourceManager<BluetoothSocketResource>* manager =
-        ExtensionSystem::Get(profile())->bluetooth_socket_resource_manager();
-    BluetoothSocketResource* const resource = new BluetoothSocketResource(
-        extension_->id(), socket);
-    int socket_id = manager->Add(resource);
+    int socket_id = GetEventRouter(profile())->RegisterSocket(socket);
 
     bluetooth::Socket result_socket;
     bluetooth::BluetoothDeviceToApiDevice(*device, &result_socket.device);
@@ -342,16 +313,7 @@ bool BluetoothDisconnectFunction::RunImpl() {
   scoped_ptr<Disconnect::Params> params(Disconnect::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
   const bluetooth::DisconnectOptions& options = params->options;
-  ApiResourceManager<BluetoothSocketResource>* manager =
-      ExtensionSystem::Get(profile())->bluetooth_socket_resource_manager();
-
-  if (!manager) {
-    SetError(kPlatformNotSupported);
-    return false;
-  }
-
-  manager->Remove(extension_->id(), options.socket_id);
-  return true;
+  return GetEventRouter(profile())->ReleaseSocket(options.socket_id);
 }
 
 BluetoothReadFunction::BluetoothReadFunction() : success_(false) {}
@@ -362,12 +324,12 @@ bool BluetoothReadFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
   const bluetooth::ReadOptions& options = params->options;
 
-  BluetoothSocketResource* resource = GetSocketResource(options.socket_id);
-  if (!resource || !resource->socket().get()) {
+  socket_ = GetEventRouter(profile())->GetSocket(options.socket_id);
+  if (socket_.get() == NULL) {
     SetError(kSocketNotFoundError);
     return false;
   }
-  socket_ = resource->socket();
+
   success_ = false;
   return true;
 }
@@ -406,19 +368,18 @@ bool BluetoothWriteFunction::Prepare() {
   int socket_id;
   EXTENSION_FUNCTION_VALIDATE(options->GetInteger("socketId", &socket_id));
 
-  BluetoothSocketResource* resource = GetSocketResource(socket_id);
-  if (!resource || !resource->socket().get()) {
+  socket_ = GetEventRouter(profile())->GetSocket(socket_id);
+  if (socket_.get() == NULL) {
     SetError(kSocketNotFoundError);
     return false;
   }
-  socket_ = resource->socket();
 
   base::BinaryValue* tmp_data;
   EXTENSION_FUNCTION_VALIDATE(options->GetBinary("data", &tmp_data));
   data_to_write_ = tmp_data;
 
   success_ = false;
-  return true;
+  return socket_.get() != NULL;
 }
 
 void BluetoothWriteFunction::Work() {
