@@ -151,16 +151,7 @@ class AppListController : public ProfileInfoCacheObserver {
   // Hides the app list.
   virtual void DismissAppList();
 
-  virtual void OnBeginExtensionInstall(Profile* profile,
-                                       const std::string& extension_id,
-                                       const std::string& extension_name,
-                                       const gfx::ImageSkia& installing_icon);
-  virtual void OnDownloadProgress(Profile* profile,
-                                  const std::string& extension_id,
-                                  int percent_downloaded);
   virtual bool IsAppListVisible() const;
-  virtual void OnInstallFailure(Profile* profile,
-                                const std::string& extension_id);
 
   // Update the profile path stored in local prefs, load it (if not already
   // loaded), and show the app list.
@@ -510,42 +501,8 @@ void AppListController::DismissAppList() {
   }
 }
 
-void AppListController::OnBeginExtensionInstall(
-    Profile* profile,
-    const std::string& extension_id,
-    const std::string& extension_name,
-    const gfx::ImageSkia& installing_icon) {
-  ShowAppList(profile);
-  view_delegate_->OnBeginExtensionInstall(extension_id, extension_name,
-                                          installing_icon);
-}
-
-void AppListController::OnDownloadProgress(Profile* profile,
-                                           const std::string& extension_id,
-                                           int percent_downloaded) {
-  // We only have a model for the current profile, so ignore events about
-  // others.
-  // TODO(koz): We should keep a model for each profile so we can record
-  // information like this.
-  if (profile != profile_)
-    return;
-  view_delegate_->OnDownloadProgress(extension_id, percent_downloaded);
-}
-
 bool AppListController::IsAppListVisible() const {
   return app_list_is_showing_;
-}
-
-void AppListController::OnInstallFailure(Profile* profile,
-                                         const std::string& extension_id) {
-  // We only have a model for the current profile, so ignore events about
-  // others.
-  // TODO(koz): We should keep a model for each profile so we can record
-  // information like this.
-  if (profile != profile_)
-    return;
-
-  view_delegate_->OnInstallFailure(extension_id);
 }
 
 void AppListController::AppListClosing() {
@@ -834,24 +791,7 @@ class AppListControllerAsh : public AppListController {
   virtual void ShowAppList(Profile* profile) OVERRIDE;
 
   virtual void DismissAppList() OVERRIDE;
-
-  // The OnBeginExtensionInstall/OnDownloadProgress/OnInstallFalure overrides
-  // are not necessary for ASH as these are handled by the ash Shell.
-  virtual void OnBeginExtensionInstall(Profile* profile,
-                                       const std::string& extension_id,
-                                       const std::string& extension_name,
-                                       const gfx::ImageSkia& installing_icon)
-      OVERRIDE {}
-
-  virtual void OnDownloadProgress(Profile* profile,
-                                  const std::string& extension_id,
-                                  int percent_downloaded) OVERRIDE {}
-
   virtual bool IsAppListVisible() const OVERRIDE;
-
-  virtual void OnInstallFailure(
-      Profile* profile,
-      const std::string& extension_id) OVERRIDE {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppListControllerAsh);
@@ -939,31 +879,6 @@ Profile* GetCurrentAppListProfile() {
 
 bool IsAppListVisible() {
   return GetCurrentAppListController()->IsAppListVisible();
-}
-
-void NotifyAppListOfBeginExtensionInstall(
-    Profile* profile,
-    const std::string& extension_id,
-    const std::string& extension_name,
-    const gfx::ImageSkia& installing_icon) {
-  GetCurrentAppListController()->OnBeginExtensionInstall(profile,
-                                                         extension_id,
-                                                         extension_name,
-                                                         installing_icon);
-}
-
-void NotifyAppListOfDownloadProgress(
-    Profile* profile,
-    const std::string& extension_id,
-    int percent_downloaded) {
-  GetCurrentAppListController()->OnDownloadProgress(profile, extension_id,
-                                                    percent_downloaded);
-}
-
-void NotifyAppListOfExtensionInstallFailure(
-    Profile* profile,
-    const std::string& extension_id) {
-  GetCurrentAppListController()->OnInstallFailure(profile, extension_id);
 }
 
 }  // namespace chrome
