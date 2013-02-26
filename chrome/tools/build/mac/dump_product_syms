@@ -43,7 +43,6 @@ SRC_APP_NAME=$("${BRAND_SCRIPT}" "${BUILD_BRANDING}" PRODUCT_FULLNAME)
 
 BREAKPAD_DUMP_SYMS="${BUILT_PRODUCTS_DIR}/dump_syms"
 FULL_VERSION="${MAJOR}.${MINOR}.${BUILD}.${PATCH}"
-ARCH="i386"
 
 DSYM_TAR_PATH="${BUILT_PRODUCTS_DIR}/${SRC_APP_NAME}.dSYM.tar.bz2"
 
@@ -60,8 +59,9 @@ redump_syms_variant() {
   local original_stem="${2}"
   local variant_stem="${3}"
   local variant_name="${4}"
+  local arch="${5}"
 
-  local variant_sym_name="${variant_name}-${FULL_VERSION}-${ARCH}.breakpad"
+  local variant_sym_name="${variant_name}-${FULL_VERSION}-${arch}.breakpad"
   local variant_sym_path="${BUILT_PRODUCTS_DIR}/${variant_sym_name}"
 
   if [[ "${original_sym_path}" -nt "${variant_sym_path}" ]]; then
@@ -102,38 +102,49 @@ for SRC_NAME in "${SRC_NAMES[@]}"; do
   DSYM_NAME="${SRC_NAME}.dSYM"
   DSYM_PATH="${BUILT_PRODUCTS_DIR}/${DSYM_NAME}"
   DWARF_PATH="${DSYM_PATH}/Contents/Resources/DWARF/${SRC_STEM}"
-  BPAD_SYM_NAME="${SRC_NAME}-${FULL_VERSION}-${ARCH}.breakpad"
-  BPAD_SYM_PATH="${BUILT_PRODUCTS_DIR}/${BPAD_SYM_NAME}"
 
-  # Only run dump_syms if the file has changed since the last dump. Use -c to
-  # avoid dumping CFI, because the Breakpad stackwalk is incompatible with CFI
-  # produced by clang.
-  # http://code.google.com/p/google-breakpad/issues/detail?id=443
-  if [ "${DWARF_PATH}" -nt "${BPAD_SYM_PATH}" ] ; then
-    "${BREAKPAD_DUMP_SYMS}" -a "${ARCH}" -c "${DWARF_PATH}" > "${BPAD_SYM_PATH}"
+  ARCHS=$(file "${DWARF_PATH}" | sed -Ene 's/^.*(i386|x86_64)$/\1/p')
+  if [[ -z "${ARCHS}" ]]; then
+    echo "${0}: expected something dumpable in ${DWARF_PATH}" >& 2
+    exit 1
   fi
 
-  # Some executables will show up with variant names. The Breakpad symbol
-  # server looks up modules based on a combination of the module name and
-  # identifier (UUID). Produce symbol files for these variant names so that
-  # the Breakpad symbol server will have something to return for stacks that
-  # travel through these modules.
-  case "${SRC_NAME}" in
-    "${SRC_APP_NAME}.app")
-      # Google Chrome Canary is produced during packaging.
-      redump_syms_variant "${BPAD_SYM_PATH}" "${SRC_STEM}" \
-                          "${SRC_STEM} Canary" "${SRC_STEM} Canary.app"
-      ;;
+  for ARCH in ${ARCHS}; do
+    BPAD_SYM_NAME="${SRC_NAME}-${FULL_VERSION}-${ARCH}.breakpad"
+    BPAD_SYM_PATH="${BUILT_PRODUCTS_DIR}/${BPAD_SYM_NAME}"
 
-    "${SRC_APP_NAME} Helper.app")
-      # Google Chrome Helper EH and Google Chrome Helper NP are produced by
-      # build/mac/make_more_helpers.sh.
-      redump_syms_variant "${BPAD_SYM_PATH}" "${SRC_STEM}" \
-                          "${SRC_STEM} EH" "${SRC_STEM} EH.app"
-      redump_syms_variant "${BPAD_SYM_PATH}" "${SRC_STEM}" \
-                          "${SRC_STEM} NP" "${SRC_STEM} NP.app"
-      ;;
-  esac
+    # Only run dump_syms if the file has changed since the last dump. Use -c
+    # to avoid dumping CFI, because the Breakpad stackwalk is incompatible
+    # with CFI produced by clang.
+    # http://code.google.com/p/google-breakpad/issues/detail?id=443
+    if [ "${DWARF_PATH}" -nt "${BPAD_SYM_PATH}" ] ; then
+      "${BREAKPAD_DUMP_SYMS}" -a "${ARCH}" -c "${DWARF_PATH}" > \
+          "${BPAD_SYM_PATH}"
+    fi
+
+    # Some executables will show up with variant names. The Breakpad symbol
+    # server looks up modules based on a combination of the module name and
+    # identifier (UUID). Produce symbol files for these variant names so that
+    # the Breakpad symbol server will have something to return for stacks that
+    # travel through these modules.
+    case "${SRC_NAME}" in
+      "${SRC_APP_NAME}.app")
+        # Google Chrome Canary is produced during packaging.
+        redump_syms_variant "${BPAD_SYM_PATH}" "${SRC_STEM}" \
+                            "${SRC_STEM} Canary" "${SRC_STEM} Canary.app" \
+                            "${ARCH}"
+        ;;
+
+      "${SRC_APP_NAME} Helper.app")
+        # Google Chrome Helper EH and Google Chrome Helper NP are produced by
+        # build/mac/make_more_helpers.sh.
+        redump_syms_variant "${BPAD_SYM_PATH}" "${SRC_STEM}" \
+                            "${SRC_STEM} EH" "${SRC_STEM} EH.app" "${ARCH}"
+        redump_syms_variant "${BPAD_SYM_PATH}" "${SRC_STEM}" \
+                            "${SRC_STEM} NP" "${SRC_STEM} NP.app" "${ARCH}"
+        ;;
+    esac
+  done
 
   # Remove the .dSYM archive if the file has changed since the archive was
   # last generated.  This will cause a new .dSYM archive to be created.
