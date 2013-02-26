@@ -1,5 +1,6 @@
 /*
  * Copyright © 2008 Kristian Høgsberg
+ * Copyright © 2013 Jason Ekstrand
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -35,6 +36,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <time.h>
+#include <ffi.h>
 
 #include "wayland-util.h"
 #include "wayland-private.h"
@@ -57,14 +59,6 @@ struct wl_connection {
 	struct wl_buffer fds_in, fds_out;
 	int fd;
 	int want_flush;
-};
-
-union wl_value {
-	uint32_t uint32;
-	char *string;
-	struct wl_object *object;
-	uint32_t new_id;
-	struct wl_array *array;
 };
 
 static void
@@ -378,36 +372,17 @@ wl_connection_queue(struct wl_connection *connection,
 	return 0;
 }
 
-#define ALIGN(p, s) (void *) ( ((intptr_t) (p) + ((s) - 1)) & ~((s) - 1) )
-
 static int
-wl_message_size_extra(const struct wl_message *message)
+wl_message_count_arrays(const struct wl_message *message)
 {
-	char *extra;
-	int i;
+	int i, arrays;
 
-	for (i = 0, extra = NULL; message->signature[i]; i++) {
-		switch (message->signature[i]) {
-		case 's':
-		case 'o':
-		case 'n':
-			extra = ALIGN(extra, sizeof (void *));
-			extra += sizeof (void *);
-			break;
-		case 'a':
-			extra = ALIGN(extra, sizeof (void *));
-			extra += sizeof (void *) + sizeof (struct wl_array);
-			break;
-		case 'h':
-			extra = ALIGN(extra, sizeof (int));
-			extra += sizeof (int);
-			break;
-		default:
-			break;
-		}
+	for (i = 0, arrays = 0; message->signature[i]; i++) {
+		if (message->signature[i] == 'a')
+			++arrays;
 	}
 
-	return (intptr_t) extra;
+	return arrays;
 }
 
 static int
@@ -449,167 +424,111 @@ arg_count_for_signature(const char *signature)
 	return count;
 }
 
+void
+wl_argument_from_va_list(const char *signature, union wl_argument *args,
+			 int count, va_list ap)
+{
+	int i;
+	const char *sig_iter;
+	struct argument_details arg;
+
+	sig_iter = signature;
+	for (i = 0; i < count; i++) {
+		sig_iter = get_next_argument(sig_iter, &arg);
+
+		switch(arg.type) {
+		case 'i':
+			args[i].i = va_arg(ap, int32_t);
+			break;
+		case 'u':
+			args[i].u = va_arg(ap, uint32_t);
+			break;
+		case 'f':
+			args[i].f = va_arg(ap, wl_fixed_t);
+			break;
+		case 's':
+			args[i].s = va_arg(ap, const char *);
+			break;
+		case 'o':
+			args[i].o = va_arg(ap, struct wl_object *);
+			break;
+		case 'n':
+			args[i].o = va_arg(ap, struct wl_object *);
+			break;
+		case 'a':
+			args[i].a = va_arg(ap, struct wl_array *);
+			break;
+		case 'h':
+			args[i].h = va_arg(ap, int32_t);
+			break;
+		case '\0':
+			return;
+		}
+	}
+}
+
 struct wl_closure *
-wl_closure_vmarshal(struct wl_object *sender,
-		    uint32_t opcode, va_list ap,
-		    const struct wl_message *message)
+wl_closure_marshal(struct wl_object *sender, uint32_t opcode,
+		   union wl_argument *args,
+		   const struct wl_message *message)
 {
 	struct wl_closure *closure;
-	struct wl_object **objectp, *object;
-	uint32_t length, aligned, *p, *start, size, *end;
-	int dup_fd;
-	struct wl_array **arrayp, *array;
-	const char **sp, *s;
-	const char *signature = message->signature;
+	struct wl_object *object;
+	int i, count, fd, dup_fd;
+	const char *signature;
 	struct argument_details arg;
-	char *extra;
-	int i, count, fd, extra_size, *fd_ptr;
 
-	/* FIXME: Match old fixed allocation for now */
-	closure = malloc(sizeof *closure + 1024);
-	if (closure == NULL)
+	count = arg_count_for_signature(message->signature);
+	if (count > WL_CLOSURE_MAX_ARGS) {
+		printf("too many args (%d)\n", count);
+		errno = EINVAL;
 		return NULL;
+	}
 
-	extra_size = wl_message_size_extra(message);
-	count = arg_count_for_signature(signature) + 2;
-	extra = (char *) closure->buffer;
-	start = &closure->buffer[DIV_ROUNDUP(extra_size, sizeof *p)];
-	end = &closure->buffer[256];
-	p = &start[2];
+	closure = malloc(sizeof *closure);
+	if (closure == NULL) {
+		errno = ENOMEM;
+		return NULL;
+	}
 
-	closure->types[0] = &ffi_type_pointer;
-	closure->types[1] = &ffi_type_pointer;
+	memcpy(closure->args, args, count * sizeof *args);
 
-	for (i = 2; i < count; i++) {
+	signature = message->signature;
+	for (i = 0; i < count; i++) {
 		signature = get_next_argument(signature, &arg);
 
 		switch (arg.type) {
 		case 'f':
-			closure->types[i] = &ffi_type_sint32;
-			closure->args[i] = p;
-			if (end - p < 1)
-				goto err;
-			*p++ = va_arg(ap, wl_fixed_t);
-			break;
 		case 'u':
-			closure->types[i] = &ffi_type_uint32;
-			closure->args[i] = p;
-			if (end - p < 1)
-				goto err;
-			*p++ = va_arg(ap, uint32_t);
-			break;
 		case 'i':
-			closure->types[i] = &ffi_type_sint32;
-			closure->args[i] = p;
-			if (end - p < 1)
-				goto err;
-			*p++ = va_arg(ap, int32_t);
 			break;
 		case 's':
-			extra = ALIGN(extra, sizeof (void *));
-			closure->types[i] = &ffi_type_pointer;
-			closure->args[i] = extra;
-			sp = (const char **) extra;
-			extra += sizeof *sp;
-
-			s = va_arg(ap, const char *);
-
-			if (!arg.nullable && s == NULL)
+			if (! arg.nullable && args[i].s == NULL)
 				goto err_null;
-
-			length = s ? strlen(s) + 1: 0;
-			aligned = (length + 3) & ~3;
-			if (p + aligned / sizeof *p + 1 > end)
-				goto err;
-			*p++ = length;
-
-			if (length > 0) {
-				memcpy(p, s, length);
-				*sp = (const char *) p;
-			} else
-				*sp = NULL;
-
-			memset((char *) p + length, 0, aligned - length);
-			p += aligned / sizeof *p;
 			break;
 		case 'o':
-			extra = ALIGN(extra, sizeof (void *));
-			closure->types[i] = &ffi_type_pointer;
-			closure->args[i] = extra;
-			objectp = (struct wl_object **) extra;
-			extra += sizeof *objectp;
-
-			object = va_arg(ap, struct wl_object *);
-
-			if (!arg.nullable && object == NULL)
+			if (! arg.nullable && args[i].o == NULL)
 				goto err_null;
-
-			*objectp = object;
-			if (end - p < 1)
-				goto err;
-			*p++ = object ? object->id : 0;
 			break;
-
 		case 'n':
-			closure->types[i] = &ffi_type_uint32;
-			closure->args[i] = p;
-			object = va_arg(ap, struct wl_object *);
-			if (end - p < 1)
-				goto err;
-
+			object = args[i].o;
 			if (!arg.nullable && object == NULL)
 				goto err_null;
 
-			*p++ = object ? object->id : 0;
+			closure->args[i].n = object ? object->id : 0;
 			break;
-
 		case 'a':
-			extra = ALIGN(extra, sizeof (void *));
-			closure->types[i] = &ffi_type_pointer;
-			closure->args[i] = extra;
-			arrayp = (struct wl_array **) extra;
-			extra += sizeof *arrayp;
-
-			*arrayp = (struct wl_array *) extra;
-			extra += sizeof **arrayp;
-
-			array = va_arg(ap, struct wl_array *);
-
-			if (!arg.nullable && array == NULL)
+			if (! arg.nullable && args[i].a == NULL)
 				goto err_null;
-
-			if (array == NULL || array->size == 0) {
-				if (end - p < 1)
-					goto err;
-				*p++ = 0;
-				break;
-			}
-			if (p + DIV_ROUNDUP(array->size, sizeof *p) + 1 > end)
-				goto err;
-			*p++ = array->size;
-			memcpy(p, array->data, array->size);
-
-			(*arrayp)->size = array->size;
-			(*arrayp)->alloc = array->alloc;
-			(*arrayp)->data = p;
-
-			p += DIV_ROUNDUP(array->size, sizeof *p);
 			break;
-
 		case 'h':
-			extra = ALIGN(extra, sizeof (int));
-			closure->types[i] = &ffi_type_sint;
-			closure->args[i] = extra;
-			fd_ptr = (int *) extra;
-			extra += sizeof *fd_ptr;
-
-			fd = va_arg(ap, int);
+			fd = args[i].h;
 			dup_fd = wl_os_dupfd_cloexec(fd, 0);
 			if (dup_fd < 0) {
 				fprintf(stderr, "dup failed: %m");
 				abort();
 			}
-			*fd_ptr = dup_fd;
+			closure->args[i].h = dup_fd;
 			break;
 		default:
 			fprintf(stderr, "unhandled format code: '%c'\n",
@@ -619,35 +538,32 @@ wl_closure_vmarshal(struct wl_object *sender,
 		}
 	}
 
-	size = (p - start) * sizeof *p;
-	start[0] = sender->id;
-	start[1] = opcode | (size << 16);
-
-	closure->start = start;
+	closure->sender_id = sender->id;
+	closure->opcode = opcode;
 	closure->message = message;
 	closure->count = count;
 
-	ffi_prep_cif(&closure->cif, FFI_DEFAULT_ABI,
-		     closure->count, &ffi_type_void, closure->types);
-
 	return closure;
 
-err:
-	printf("request too big to marshal, maximum size is %zu\n",
-	       sizeof closure->buffer);
-	errno = ENOMEM;
-	free(closure);
-
-	return NULL;
-
 err_null:
-	free(closure);
-	wl_log("error marshalling arguments for %s:%i.%s (signature %s): "
-	       "null value passed for arg %i\n",
-	       sender->interface->name, sender->id, message->name,
+	wl_closure_destroy(closure);
+	wl_log("error marshalling arguments for %s (signature %s): "
+	       "null value passed for arg %i\n", message->name,
 	       message->signature, i);
 	errno = EINVAL;
 	return NULL;
+}
+
+struct wl_closure *
+wl_closure_vmarshal(struct wl_object *sender, uint32_t opcode, va_list ap,
+		    const struct wl_message *message)
+{
+	union wl_argument args[WL_CLOSURE_MAX_ARGS];
+
+	wl_argument_from_va_list(message->signature, args,
+				 WL_CLOSURE_MAX_ARGS, ap);
+
+	return wl_closure_marshal(sender, opcode, args, message);
 }
 
 struct wl_closure *
@@ -656,41 +572,44 @@ wl_connection_demarshal(struct wl_connection *connection,
 			struct wl_map *objects,
 			const struct wl_message *message)
 {
-	uint32_t *p, *next, *end, length, **id;
-	int *fd;
-	char *extra, **s;
-	unsigned int i, count, extra_space;
-	const char *signature = message->signature;
+	uint32_t *p, *next, *end, length, id;
+	int fd;
+	char *s;
+	unsigned int i, count, num_arrays;
+	const char *signature;
 	struct argument_details arg;
-	struct wl_array **array;
 	struct wl_closure *closure;
+	struct wl_array *array, *array_extra;
 
-	count = arg_count_for_signature(signature) + 2;
-	if (count > ARRAY_LENGTH(closure->types)) {
+	count = arg_count_for_signature(message->signature);
+	if (count > WL_CLOSURE_MAX_ARGS) {
 		printf("too many args (%d)\n", count);
 		errno = EINVAL;
 		wl_connection_consume(connection, size);
 		return NULL;
 	}
 
-	extra_space = wl_message_size_extra(message);
-	closure = malloc(sizeof *closure + 8 + size + extra_space);
-	if (closure == NULL)
+	num_arrays = wl_message_count_arrays(message);
+	closure = malloc(sizeof *closure + size + num_arrays * sizeof *array);
+	if (closure == NULL) {
+		errno = ENOMEM;
+		wl_connection_consume(connection, size);
 		return NULL;
+	}
 
-	closure->message = message;
-	closure->types[0] = &ffi_type_pointer;
-	closure->types[1] = &ffi_type_pointer;
-	closure->start = closure->buffer;
+	array_extra = closure->extra;
+	p = (uint32_t *)(closure->extra + num_arrays);
+	end = p + size / sizeof *p;
 
-	wl_connection_copy(connection, closure->buffer, size);
-	p = &closure->buffer[2];
-	end = (uint32_t *) ((char *) p + size);
-	extra = (char *) end;
-	for (i = 2; i < count; i++) {
+	wl_connection_copy(connection, p, size);
+	closure->sender_id = *p++;
+	closure->opcode = *p++ & 0x0000ffff;
+
+	signature = message->signature;
+	for (i = 0; i < count; i++) {
 		signature = get_next_argument(signature, &arg);
 
-		if (p + 1 > end) {
+		if (arg.type != 'h' && p + 1 > end) {
 			printf("message too short, "
 			       "object (%d), message %s(%s)\n",
 			       *p, message->name, message->signature);
@@ -700,77 +619,62 @@ wl_connection_demarshal(struct wl_connection *connection,
 
 		switch (arg.type) {
 		case 'u':
-			closure->types[i] = &ffi_type_uint32;
-			closure->args[i] = p++;
+			closure->args[i].u = *p++;
 			break;
 		case 'i':
-			closure->types[i] = &ffi_type_sint32;
-			closure->args[i] = p++;
+			closure->args[i].i = *p++;
 			break;
 		case 'f':
-			closure->types[i] = &ffi_type_sint32;
-			closure->args[i] = p++;
+			closure->args[i].f = *p++;
 			break;
 		case 's':
-			closure->types[i] = &ffi_type_pointer;
 			length = *p++;
+
+			if (length == 0) {
+				closure->args[i].s = NULL;
+				break;
+			}
 
 			next = p + DIV_ROUNDUP(length, sizeof *p);
 			if (next > end) {
 				printf("message too short, "
 				       "object (%d), message %s(%s)\n",
-				       *p, message->name, message->signature);
+				       closure->sender_id, message->name,
+				       message->signature);
 				errno = EINVAL;
 				goto err;
 			}
 
-			extra = ALIGN(extra, sizeof (void *));
-			s = (char **) extra;
-			extra += sizeof *s;
-			closure->args[i] = s;
+			s = (char *) p;
 
-			if (length == 0) {
-				*s = NULL;
-			} else {
-				*s = (char *) p;
-			}
-
-			if (length > 0 && (*s)[length - 1] != '\0') {
+			if (length > 0 && s[length - 1] != '\0') {
 				printf("string not nul-terminated, "
 				       "message %s(%s)\n",
 				       message->name, message->signature);
 				errno = EINVAL;
 				goto err;
 			}
+
+			closure->args[i].s = s;
 			p = next;
 			break;
 		case 'o':
-			closure->types[i] = &ffi_type_pointer;
-			extra = ALIGN(extra, sizeof (void *));
-			id = (uint32_t **) extra;
-			extra += sizeof *id;
-			closure->args[i] = id;
-			*id = p;
+			id = *p++;
+			closure->args[i].n = id;
 
-			if (**id == 0 && !arg.nullable) {
+			if (id == 0 && !arg.nullable) {
 				printf("NULL object received on non-nullable "
 				       "type, message %s(%s)\n", message->name,
 				       message->signature);
 				errno = EINVAL;
 				goto err;
 			}
-
-			p++;
 			break;
 		case 'n':
-			closure->types[i] = &ffi_type_pointer;
-			extra = ALIGN(extra, sizeof (void *));
-			id = (uint32_t **) extra;
-			extra += sizeof *id;
-			closure->args[i] = id;
-			*id = p;
+			id = *p++;
+			closure->args[i].n = id;
 
-			if (**id == 0 && !arg.nullable) {
+			if (id == 0 && !arg.nullable) {
 				printf("NULL new ID received on non-nullable "
 				       "type, message %s(%s)\n", message->name,
 				       message->signature);
@@ -778,52 +682,39 @@ wl_connection_demarshal(struct wl_connection *connection,
 				goto err;
 			}
 
-			if (wl_map_reserve_new(objects, *p) < 0) {
+			if (wl_map_reserve_new(objects, id) < 0) {
 				printf("not a valid new object id (%d), "
 				       "message %s(%s)\n",
-				       *p, message->name, message->signature);
+				       id, message->name, message->signature);
 				errno = EINVAL;
 				goto err;
 			}
 
-			p++;
 			break;
 		case 'a':
-			closure->types[i] = &ffi_type_pointer;
 			length = *p++;
 
 			next = p + DIV_ROUNDUP(length, sizeof *p);
 			if (next > end) {
 				printf("message too short, "
 				       "object (%d), message %s(%s)\n",
-				       *p, message->name, message->signature);
+				       closure->sender_id, message->name,
+				       message->signature);
 				errno = EINVAL;
 				goto err;
 			}
 
-			extra = ALIGN(extra, sizeof (void *));
-			array = (struct wl_array **) extra;
-			extra += sizeof *array;
-			closure->args[i] = array;
+			array_extra->size = length;
+			array_extra->alloc = 0;
+			array_extra->data = p;
 
-			*array = (struct wl_array *) extra;
-			extra += sizeof **array;
-
-			(*array)->size = length;
-			(*array)->alloc = 0;
-			(*array)->data = p;
+			closure->args[i].a = array_extra++;
 			p = next;
 			break;
 		case 'h':
-			closure->types[i] = &ffi_type_sint;
-
-			extra = ALIGN(extra, sizeof (int));
-			fd = (int *) extra;
-			extra += sizeof *fd;
-			closure->args[i] = fd;
-
-			wl_buffer_copy(&connection->fds_in, fd, sizeof *fd);
-			connection->fds_in.tail += sizeof *fd;
+			wl_buffer_copy(&connection->fds_in, &fd, sizeof fd);
+			connection->fds_in.tail += sizeof fd;
+			closure->args[i].h = fd;
 			break;
 		default:
 			printf("unknown type\n");
@@ -832,17 +723,14 @@ wl_connection_demarshal(struct wl_connection *connection,
 		}
 	}
 
-	closure->count = i;
-
-	ffi_prep_cif(&closure->cif, FFI_DEFAULT_ABI,
-		     closure->count, &ffi_type_void, closure->types);
+	closure->count = count;
+	closure->message = message;
 
 	wl_connection_consume(connection, size);
 
 	return closure;
 
  err:
-	closure->count = i;
 	wl_closure_destroy(closure);
 	wl_connection_consume(connection, size);
 
@@ -865,7 +753,7 @@ interface_equal(const struct wl_interface *a, const struct wl_interface *b)
 int
 wl_closure_lookup_objects(struct wl_closure *closure, struct wl_map *objects)
 {
-	struct wl_object **object;
+	struct wl_object *object;
 	const struct wl_message *message;
 	const char *signature;
 	struct argument_details arg;
@@ -874,52 +762,121 @@ wl_closure_lookup_objects(struct wl_closure *closure, struct wl_map *objects)
 
 	message = closure->message;
 	signature = message->signature;
-	count = arg_count_for_signature(signature) + 2;
-	for (i = 2; i < count; i++) {
+	count = arg_count_for_signature(signature);
+	for (i = 0; i < count; i++) {
 		signature = get_next_argument(signature, &arg);
 		switch (arg.type) {
 		case 'o':
-			id = **(uint32_t **) closure->args[i];
-			object = closure->args[i];
-			*object = wl_map_lookup(objects, id);
-			if (*object == WL_ZOMBIE_OBJECT) {
+			id = closure->args[i].n;
+			closure->args[i].o = NULL;
+
+			object = wl_map_lookup(objects, id);
+			if (object == WL_ZOMBIE_OBJECT) {
 				/* references object we've already
 				 * destroyed client side */
-				*object = NULL;
-			} else if (*object == NULL && id != 0) {
+				object = NULL;
+			} else if (object == NULL && id != 0) {
 				printf("unknown object (%u), message %s(%s)\n",
 				       id, message->name, message->signature);
-				*object = NULL;
+				object = NULL;
 				errno = EINVAL;
 				return -1;
 			}
 
-			if (*object != NULL && message->types[i-2] != NULL &&
-			    !interface_equal((*object)->interface,
-					     message->types[i-2])) {
+			if (object != NULL && message->types[i] != NULL &&
+			    !interface_equal((object)->interface,
+					     message->types[i])) {
 				printf("invalid object (%u), type (%s), "
 				       "message %s(%s)\n",
-				       id, (*object)->interface->name,
+				       id, (object)->interface->name,
 				       message->name, message->signature);
 				errno = EINVAL;
 				return -1;
 			}
+			closure->args[i].o = object;
 		}
 	}
 
 	return 0;
 }
 
+static void
+convert_arguments_to_ffi(const char *signature, union wl_argument *args,
+			 int count, ffi_type **ffi_types, void** ffi_args)
+{
+	int i;
+	const char *sig_iter;
+	struct argument_details arg;
+
+	sig_iter = signature;
+	for (i = 0; i < count; i++) {
+		sig_iter = get_next_argument(sig_iter, &arg);
+
+		switch(arg.type) {
+		case 'i':
+			ffi_types[i] = &ffi_type_sint32;
+			ffi_args[i] = &args[i].i;
+			break;
+		case 'u':
+			ffi_types[i] = &ffi_type_uint32;
+			ffi_args[i] = &args[i].u;
+			break;
+		case 'f':
+			ffi_types[i] = &ffi_type_sint32;
+			ffi_args[i] = &args[i].f;
+			break;
+		case 's':
+			ffi_types[i] = &ffi_type_pointer;
+			ffi_args[i] = &args[i].s;
+			break;
+		case 'o':
+			ffi_types[i] = &ffi_type_pointer;
+			ffi_args[i] = &args[i].o;
+			break;
+		case 'n':
+			ffi_types[i] = &ffi_type_uint32;
+			ffi_args[i] = &args[i].n;
+			break;
+		case 'a':
+			ffi_types[i] = &ffi_type_pointer;
+			ffi_args[i] = &args[i].a;
+			break;
+		case 'h':
+			ffi_types[i] = &ffi_type_sint32;
+			ffi_args[i] = &args[i].h;
+			break;
+		default:
+			printf("unknown type\n");
+			assert(0);
+			break;
+		}
+	}
+}
+
+
 void
 wl_closure_invoke(struct wl_closure *closure,
 		  struct wl_object *target, void (*func)(void), void *data)
 {
-	int result;
+	int count;
+	ffi_cif cif;
+	ffi_type *ffi_types[WL_CLOSURE_MAX_ARGS + 2];
+	void * ffi_args[WL_CLOSURE_MAX_ARGS + 2];
 
-	closure->args[0] = &data;
-	closure->args[1] = &target;
+	count = arg_count_for_signature(closure->message->signature);
 
-	ffi_call(&closure->cif, func, &result, closure->args);
+	ffi_types[0] = &ffi_type_pointer;
+	ffi_args[0] = &data;
+	ffi_types[1] = &ffi_type_pointer;
+	ffi_args[1] = &target;
+
+	convert_arguments_to_ffi(closure->message->signature, closure->args,
+				 count, ffi_types + 2, ffi_args + 2);
+
+	ffi_prep_cif(&cif, FFI_DEFAULT_ABI,
+		     count + 2, &ffi_type_void, ffi_types);
+
+	ffi_call(&cif, func, NULL, ffi_args);
 }
 
 static int
@@ -930,16 +887,16 @@ copy_fds_to_connection(struct wl_closure *closure,
 	uint32_t i, count;
 	struct argument_details arg;
 	const char *signature = message->signature;
-	int *fd;
+	int fd;
 
-	count = arg_count_for_signature(signature) + 2;
-	for (i = 2; i < count; i++) {
+	count = arg_count_for_signature(signature);
+	for (i = 0; i < count; i++) {
 		signature = get_next_argument(signature, &arg);
 		if (arg.type != 'h')
 			continue;
 
-		fd = closure->args[i];
-		if (wl_connection_put_fd(connection, *fd)) {
+		fd = closure->args[i].h;
+		if (wl_connection_put_fd(connection, fd)) {
 			fprintf(stderr, "request could not be marshaled: "
 				"can't send file descriptor");
 			return -1;
@@ -949,37 +906,131 @@ copy_fds_to_connection(struct wl_closure *closure,
 	return 0;
 }
 
+static int
+serialize_closure(struct wl_closure *closure, uint32_t *buffer,
+		  size_t buffer_count)
+{
+	const struct wl_message *message = closure->message;
+	unsigned int i, count, size;
+	uint32_t *p, *end;
+	struct argument_details arg;
+	const char *signature;
+
+	if (buffer_count < 2)
+		goto overflow;
+
+	p = buffer + 2;
+	end = buffer + buffer_count;
+
+	signature = message->signature;
+	count = arg_count_for_signature(signature);
+	for (i = 0; i < count; i++) {
+		signature = get_next_argument(signature, &arg);
+
+		if (arg.type == 'h')
+			continue;
+
+		if (p + 1 > end)
+			goto overflow;
+
+		switch (arg.type) {
+		case 'u':
+			*p++ = closure->args[i].u;
+			break;
+		case 'i':
+			*p++ = closure->args[i].i;
+			break;
+		case 'f':
+			*p++ = closure->args[i].f;
+			break;
+		case 'o':
+			*p++ = closure->args[i].o ? closure->args[i].o->id : 0;
+			break;
+		case 'n':
+			*p++ = closure->args[i].n;
+			break;
+		case 's':
+			if (closure->args[i].s == NULL) {
+				*p++ = 0;
+				break;
+			}
+
+			size = strlen(closure->args[i].s) + 1;
+			*p++ = size;
+
+			if (p + DIV_ROUNDUP(size, sizeof *p) > end)
+				goto overflow;
+
+			memcpy(p, closure->args[i].s, size);
+			p += DIV_ROUNDUP(size, sizeof *p);
+			break;
+		case 'a':
+			if (closure->args[i].a == NULL) {
+				*p++ = 0;
+				break;
+			}
+
+			size = closure->args[i].a->size;
+			*p++ = size;
+
+			if (p + DIV_ROUNDUP(size, sizeof *p) > end)
+				goto overflow;
+
+			memcpy(p, closure->args[i].a->data, size);
+			p += DIV_ROUNDUP(size, sizeof *p);
+			break;
+		default:
+			break;
+		}
+	}
+
+	size = (p - buffer) * sizeof *p;
+
+	buffer[0] = closure->sender_id;
+	buffer[1] = size << 16 | (closure->opcode & 0x0000ffff);
+
+	return size;
+
+overflow:
+	errno = ERANGE;
+	return -1;
+}
+
 int
 wl_closure_send(struct wl_closure *closure, struct wl_connection *connection)
 {
-	uint32_t size;
+	uint32_t buffer[256];
+	int size;
 
 	if (copy_fds_to_connection(closure, connection))
 		return -1;
 
-	size = closure->start[1] >> 16;
+	size = serialize_closure(closure, buffer, 256);
+	if (size < 0)
+		return -1;
 
-	return wl_connection_write(connection, closure->start, size);
+	return wl_connection_write(connection, buffer, size);
 }
 
 int
 wl_closure_queue(struct wl_closure *closure, struct wl_connection *connection)
 {
-	uint32_t size;
+	uint32_t buffer[256];
+	int size;
 
 	if (copy_fds_to_connection(closure, connection))
 		return -1;
 
-	size = closure->start[1] >> 16;
+	size = serialize_closure(closure, buffer, 256);
+	if (size < 0)
+		return -1;
 
-	return wl_connection_queue(connection, closure->start, size);
+	return wl_connection_queue(connection, buffer, size);
 }
 
 void
 wl_closure_print(struct wl_closure *closure, struct wl_object *target, int send)
 {
-	union wl_value *value;
-	int32_t si;
 	int i;
 	struct argument_details arg;
 	const char *signature = closure->message->signature;
@@ -995,44 +1046,40 @@ wl_closure_print(struct wl_closure *closure, struct wl_object *target, int send)
 		target->interface->name, target->id,
 		closure->message->name);
 
-	for (i = 2; i < closure->count; i++) {
+	for (i = 0; i < closure->count; i++) {
 		signature = get_next_argument(signature, &arg);
-		if (i > 2)
+		if (i > 0)
 			fprintf(stderr, ", ");
 
-		value = closure->args[i];
 		switch (arg.type) {
 		case 'u':
-			fprintf(stderr, "%u", value->uint32);
+			fprintf(stderr, "%u", closure->args[i].u);
 			break;
 		case 'i':
-			si = (int32_t) value->uint32;
-			fprintf(stderr, "%d", si);
+			fprintf(stderr, "%d", closure->args[i].i);
 			break;
 		case 'f':
-			si = (int32_t) value->uint32;
-			fprintf(stderr, "%f", wl_fixed_to_double(si));
+			fprintf(stderr, "%f",
+				wl_fixed_to_double(closure->args[i].f));
 			break;
 		case 's':
-			fprintf(stderr, "\"%s\"", value->string);
+			fprintf(stderr, "\"%s\"", closure->args[i].s);
 			break;
 		case 'o':
-			if (value->object)
+			if (closure->args[i].o)
 				fprintf(stderr, "%s@%u",
-					value->object->interface->name,
-					value->object->id);
+					closure->args[i].o->interface->name,
+					closure->args[i].o->id);
 			else
 				fprintf(stderr, "nil");
 			break;
 		case 'n':
 			fprintf(stderr, "new id %s@",
-				(closure->message->types[i - 2]) ?
-				 closure->message->types[i - 2]->name :
+				(closure->message->types[i]) ?
+				 closure->message->types[i]->name :
 				  "[unknown]");
-			if (send && value->new_id != 0)
-				fprintf(stderr, "%u", value->new_id);
-			else if (!send && value->object != NULL)
-				fprintf(stderr, "%u", value->object->id);
+			if (closure->args[i].n != 0)
+				fprintf(stderr, "%u", closure->args[i].n);
 			else
 				fprintf(stderr, "nil");
 			break;
@@ -1040,7 +1087,7 @@ wl_closure_print(struct wl_closure *closure, struct wl_object *target, int send)
 			fprintf(stderr, "array");
 			break;
 		case 'h':
-			fprintf(stderr, "fd %d", value->uint32);
+			fprintf(stderr, "fd %d", closure->args[i].h);
 			break;
 		}
 	}

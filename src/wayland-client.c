@@ -669,21 +669,21 @@ create_proxies(struct wl_proxy *sender, struct wl_closure *closure)
 	int count;
 
 	signature = closure->message->signature;
-	count = arg_count_for_signature(signature) + 2;
-	for (i = 2; i < count; i++) {
+	count = arg_count_for_signature(signature);
+	for (i = 0; i < count; i++) {
 		signature = get_next_argument(signature, &arg);
 		switch (arg.type) {
 		case 'n':
-			id = **(uint32_t **) closure->args[i];
+			id = closure->args[i].n;
 			if (id == 0) {
-				*(void **) closure->args[i] = NULL;
+				closure->args[i].o = NULL;
 				break;
 			}
 			proxy = wl_proxy_create_for_id(sender, id,
-						       closure->message->types[i - 2]);
+						       closure->message->types[i]);
 			if (proxy == NULL)
 				return -1;
-			*(void **) closure->args[i] = proxy;
+			closure->args[i].o = (struct wl_object *)proxy;
 			break;
 		default:
 			break;
@@ -702,13 +702,13 @@ increase_closure_args_refcount(struct wl_closure *closure)
 	struct wl_proxy *proxy;
 
 	signature = closure->message->signature;
-	count = arg_count_for_signature(signature) + 2;
-	for (i = 2; i < count; i++) {
+	count = arg_count_for_signature(signature);
+	for (i = 0; i < count; i++) {
 		signature = get_next_argument(signature, &arg);
 		switch (arg.type) {
 		case 'n':
 		case 'o':
-			proxy = *(struct wl_proxy **) closure->args[i];
+			proxy = (struct wl_proxy *) closure->args[i].o;
 			if (proxy)
 				proxy->refcount++;
 			break;
@@ -779,16 +779,16 @@ decrease_closure_args_refcount(struct wl_closure *closure)
 	struct wl_proxy *proxy;
 
 	signature = closure->message->signature;
-	count = arg_count_for_signature(signature) + 2;
-	for (i = 2; i < count; i++) {
+	count = arg_count_for_signature(signature);
+	for (i = 0; i < count; i++) {
 		signature = get_next_argument(signature, &arg);
 		switch (arg.type) {
 		case 'n':
 		case 'o':
-			proxy = *(struct wl_proxy **) closure->args[i];
+			proxy = (struct wl_proxy *) closure->args[i].o;
 			if (proxy) {
 				if (proxy->flags & WL_PROXY_FLAG_DESTROYED)
-					*(void **) closure->args[i] = NULL;
+					closure->args[i].o = NULL;
 
 				proxy->refcount--;
 				if (!proxy->refcount)
@@ -812,7 +812,7 @@ dispatch_event(struct wl_display *display, struct wl_event_queue *queue)
 	closure = container_of(queue->event_list.next,
 			       struct wl_closure, link);
 	wl_list_remove(&closure->link);
-	opcode = closure->buffer[1] & 0xffff;
+	opcode = closure->opcode;
 
 	/* Verify that the receiving object is still valid by checking if has
 	 * been destroyed by the application. */

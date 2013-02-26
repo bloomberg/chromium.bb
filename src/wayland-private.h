@@ -1,6 +1,7 @@
 /*
  * Copyright © 2008-2011 Kristian Høgsberg
  * Copyright © 2011 Intel Corporation
+ * Copyright © 2013 Jason Ekstrand
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -25,7 +26,6 @@
 #define WAYLAND_PRIVATE_H
 
 #include <stdarg.h>
-#include <ffi.h>
 #include "wayland-util.h"
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
@@ -39,6 +39,7 @@
 #define WL_MAP_SERVER_SIDE 0
 #define WL_MAP_CLIENT_SIDE 1
 #define WL_SERVER_ID_START 0xff000000
+#define WL_CLOSURE_MAX_ARGS 20
 
 struct wl_map {
 	struct wl_array client_entries;
@@ -73,16 +74,26 @@ int wl_connection_write(struct wl_connection *connection, const void *data, size
 int wl_connection_queue(struct wl_connection *connection,
 			const void *data, size_t count);
 
+union wl_argument {
+	int32_t i;
+	uint32_t u;
+	wl_fixed_t f;
+	const char *s;
+	struct wl_object *o;
+	uint32_t n;
+	struct wl_array *a;
+	int32_t h;
+};
+
 struct wl_closure {
 	int count;
 	const struct wl_message *message;
-	ffi_type *types[20];
-	ffi_cif cif;
-	void *args[20];
-	uint32_t *start;
+	uint32_t opcode;
+	uint32_t sender_id;
+	union wl_argument args[WL_CLOSURE_MAX_ARGS];
 	struct wl_list link;
 	struct wl_proxy *proxy;
-	uint32_t buffer[0];
+	struct wl_array extra[0];
 };
 
 struct argument_details {
@@ -96,6 +107,14 @@ get_next_argument(const char *signature, struct argument_details *details);
 int
 arg_count_for_signature(const char *signature);
 
+void
+wl_argument_from_va_list(const char *signature, union wl_argument *args,
+			 int count, va_list ap);
+
+struct wl_closure *
+wl_closure_marshal(struct wl_object *sender,
+		    uint32_t opcode, union wl_argument *args,
+		    const struct wl_message *message);
 struct wl_closure *
 wl_closure_vmarshal(struct wl_object *sender,
 		    uint32_t opcode, va_list ap,
