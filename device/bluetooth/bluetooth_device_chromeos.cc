@@ -620,8 +620,14 @@ void BluetoothDeviceChromeOS::DisconnectCallback(
     DVLOG(1) << "Disconnection successful: " << address_;
     callback.Run();
   } else {
-    LOG(WARNING) << "Disconnection failed: " << address_;
-    error_callback.Run();
+    if (connected_)  {
+      LOG(WARNING) << "Disconnection failed: " << address_;
+      error_callback.Run();
+    } else {
+      DVLOG(1) << "Disconnection failed on a already disconnected device: "
+               << address_;
+      callback.Run();
+    }
   }
 }
 
