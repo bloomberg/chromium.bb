@@ -429,7 +429,10 @@ class TGen(GeneratorByFile):
         thunk_type = '_'.join((node.GetName(), version))
         version_list.append((thunk_type, thunk_name))
 
-        out.Write('const %s %s = {\n' % (thunk_type, thunk_name))
+        declare_line = 'const %s %s = {' % (thunk_type, thunk_name)
+        if len(declare_line) > 80:
+          declare_line = 'const %s\n    %s = {' % (thunk_type, thunk_name)
+        out.Write('%s\n' % declare_line)
         generated_functions = []
         members = node.GetListOf('Member')
         for child in members:

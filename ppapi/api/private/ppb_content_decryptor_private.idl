@@ -8,6 +8,9 @@
  * interface. Note: This is a special interface, only to be used for Content
  * Decryption Modules, not normal plugins.
  */
+
+[generate_thunk]
+
 label Chrome {
   M24 = 0.6
 };
