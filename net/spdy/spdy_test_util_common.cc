@@ -69,7 +69,7 @@ bool GetSpdyPriority(int version,
   BufferedSpdyFramer framer(version, false);
   PriorityGetter priority_getter;
   framer.set_visitor(&priority_getter);
-  size_t frame_size = frame.length() + SpdyFrame::kHeaderSize;
+  size_t frame_size = frame.size();
   if (framer.ProcessInput(frame.data(), frame_size) != frame_size) {
     return false;
   }

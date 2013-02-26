@@ -4092,8 +4092,9 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, CorruptFrameSessionError) {
   // This is the length field that's too short.
   scoped_ptr<SpdyFrame> syn_reply_wrong_length(
       ConstructSpdyGetSynReply(NULL, 0, 1));
+  size_t wrong_size = syn_reply_wrong_length->size() - 4;
   test::SetFrameLength(syn_reply_wrong_length.get(),
-                       syn_reply_wrong_length->length() - 4,
+                       wrong_size - SpdyFrame::kHeaderSize,
                        kSpdyVersion3);
 
   struct SynReplyTests {
@@ -4112,7 +4113,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, CorruptFrameSessionError) {
 
     scoped_ptr<SpdyFrame> body(ConstructSpdyBodyFrame(1, true));
     MockRead reads[] = {
-      CreateMockRead(*test_cases[i].syn_reply),
+      MockRead(ASYNC, test_cases[i].syn_reply->data(), wrong_size),
       CreateMockRead(*body),
       MockRead(ASYNC, 0, 0)  // EOF
     };

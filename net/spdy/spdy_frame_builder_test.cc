@@ -51,15 +51,13 @@ TEST_P(SpdyFrameBuilderTest, RewriteLength) {
   SpdyFramer framer(spdy_version_);
   SettingsMap settings;
   scoped_ptr<SpdyFrame> expected(framer.CreateSettings(settings));
-  const size_t expected_size =
-      expected->length() + framer.GetControlFrameMinimumSize();
-  SpdyFrameBuilder builder(SETTINGS, 0, spdy_version_, expected_size + 1);
+  SpdyFrameBuilder builder(SETTINGS, 0, spdy_version_, expected->size() + 1);
   builder.WriteUInt32(0); // Write the number of settings.
   EXPECT_TRUE(builder.GetWritableBuffer(1) != NULL);
   builder.RewriteLength(framer);
   scoped_ptr<SpdyFrame> built(builder.take());
-  EXPECT_EQ(base::StringPiece(expected->data(), expected_size),
-            base::StringPiece(built->data(), expected_size));
+  EXPECT_EQ(base::StringPiece(expected->data(), expected->size()),
+            base::StringPiece(built->data(), expected->size()));
 }
 
 }  // namespace net

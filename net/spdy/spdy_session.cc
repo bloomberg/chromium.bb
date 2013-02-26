@@ -202,7 +202,7 @@ SpdyIOBuffer* SpdySession::SpdyIOBufferProducer::CreateIOBuffer(
     SpdyFrame* frame,
     RequestPriority priority,
     SpdyStream* stream) {
-  size_t size = frame->length() + SpdyFrame::kHeaderSize;
+  size_t size = frame->size();
   DCHECK_GT(size, 0u);
 
   // TODO(mbelshe): We have too much copying of data here.

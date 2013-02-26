@@ -847,10 +847,6 @@ class SpdyFrame {
   // Returns the actual size of the underlying buffer.
   size_t size() const { return size_; }
 
-  uint32 length() const {
-    return ntohl(frame_->flags_length_.length_) & kLengthMask;
-  }
-
   // The size of the SpdyFrameBlock structure.
   // Every SpdyFrame* class has a static size() method for accessing
   // the size of the data structure which will be sent over the wire.

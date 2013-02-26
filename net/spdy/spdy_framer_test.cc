@@ -784,7 +784,7 @@ TEST_P(SpdyFramerTest, ParseCredentialFrameData) {
     SpdyCredential credential;
     EXPECT_TRUE(SpdyFramer::ParseCredentialData(
         frame.data() + framer.GetControlFrameMinimumSize(),
-        frame.length(),
+        frame.size() - framer.GetControlFrameMinimumSize(),
         &credential));
     EXPECT_EQ(3u, credential.slot);
     EXPECT_EQ("proof", credential.proof);
@@ -2816,7 +2816,8 @@ TEST_P(SpdyFramerTest, ReadCredentialFrame) {
       reinterpret_cast<unsigned char*>(control_frame->data()),
       control_frame->size());
   EXPECT_EQ(0, visitor.error_count_);
-  EXPECT_EQ(control_frame->length(), visitor.credential_buffer_length_);
+  EXPECT_EQ(control_frame->size() - framer.GetControlFrameMinimumSize(),
+            visitor.credential_buffer_length_);
   EXPECT_EQ(credential.slot, visitor.credential_.slot);
   EXPECT_EQ(credential.proof, visitor.credential_.proof);
   EXPECT_EQ(credential.certs.size(), visitor.credential_.certs.size());
@@ -2846,7 +2847,8 @@ TEST_P(SpdyFramerTest, ReadCredentialFrameOneByteAtATime) {
     ASSERT_EQ(0, visitor.error_count_);
   }
   EXPECT_EQ(0, visitor.error_count_);
-  EXPECT_EQ(control_frame->length(), visitor.credential_buffer_length_);
+  EXPECT_EQ(control_frame->size() - framer.GetControlFrameMinimumSize(),
+            visitor.credential_buffer_length_);
   EXPECT_EQ(credential.slot, visitor.credential_.slot);
   EXPECT_EQ(credential.proof, visitor.credential_.proof);
   EXPECT_EQ(credential.certs.size(), visitor.credential_.certs.size());

@@ -194,7 +194,7 @@ TEST_F(BufferedSpdyFramerSpdy3Test, OnSetting) {
 
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame->data()),
-      control_frame->length() + framer.GetControlFrameMinimumSize());
+      control_frame->size());
   EXPECT_EQ(0, visitor.error_count_);
   EXPECT_EQ(2, visitor.setting_count_);
 }
@@ -217,7 +217,7 @@ TEST_F(BufferedSpdyFramerSpdy3Test, ReadSynStreamHeaderBlock) {
   TestBufferedSpdyVisitor visitor;
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame.get()->data()),
-      control_frame.get()->length() + framer.GetControlFrameMinimumSize());
+      control_frame.get()->size());
   EXPECT_EQ(0, visitor.error_count_);
   EXPECT_EQ(1, visitor.syn_frame_count_);
   EXPECT_EQ(0, visitor.syn_reply_frame_count_);
@@ -240,7 +240,7 @@ TEST_F(BufferedSpdyFramerSpdy3Test, ReadSynReplyHeaderBlock) {
   TestBufferedSpdyVisitor visitor;
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame.get()->data()),
-       control_frame.get()->length() + framer.GetControlFrameMinimumSize());
+      control_frame.get()->size());
   EXPECT_EQ(0, visitor.error_count_);
   EXPECT_EQ(0, visitor.syn_frame_count_);
   EXPECT_EQ(1, visitor.syn_reply_frame_count_);
@@ -263,7 +263,7 @@ TEST_F(BufferedSpdyFramerSpdy3Test, ReadHeadersHeaderBlock) {
   TestBufferedSpdyVisitor visitor;
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame.get()->data()),
-       control_frame.get()->length() + framer.GetControlFrameMinimumSize());
+      control_frame.get()->size());
   EXPECT_EQ(0, visitor.error_count_);
   EXPECT_EQ(0, visitor.syn_frame_count_);
   EXPECT_EQ(0, visitor.syn_reply_frame_count_);
