@@ -789,6 +789,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableDevToolsExperiments)
   },
   {
+    "silent-debugger-extension-api",
+    IDS_FLAGS_SILENT_DEBUGGER_EXTENSION_API_NAME,
+    IDS_FLAGS_SILENT_DEBUGGER_EXTENSION_API_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(switches::kSilentDebuggerExtensionAPI)
+  },
+  {
     "enable-suggestions-ntp",
     IDS_FLAGS_NTP_SUGGESTIONS_PAGE_NAME,
     IDS_FLAGS_NTP_SUGGESTIONS_PAGE_DESCRIPTION,

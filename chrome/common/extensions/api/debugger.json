@@ -9,9 +9,10 @@
       {
         "id": "Debuggee",
         "type": "object",
-        "description": "Debuggee identifier.",
+        "description": "Debuggee identifier. Either tabId or extensionId must be specified",
         "properties": {
-          "tabId": { "type": "integer", "description": "The id of the tab which you intend to debug." }
+          "tabId": { "type": "integer", "optional": true, "description": "The id of the tab which you intend to debug." },
+          "extensionId": { "type": "string", "optional": true, "description": "The id of the extension which you intend to debug. Attaching to an extension background page is only possible when 'enable-silent-debugging' flag is enabled on the target browser." }
         }
       }
     ],

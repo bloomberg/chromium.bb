@@ -16,9 +16,15 @@ extern const char kOnDetach[];
 // Errors.
 extern const char kAlreadyAttachedError[];
 extern const char kAttachToWebUIError[];
-extern const char kNoTabError[];
+extern const char kNoTargetError[];
+extern const char kInvalidTargetError[];
 extern const char kNotAttachedError[];
 extern const char kProtocolVersionNotSupportedError[];
+extern const char kSilentDebuggingRequired[];
+
+// Target types.
+extern const char kTabTargetType[];
+extern const char kExtensionTargetType[];
 
 }  // namespace debugger_api_constants
 

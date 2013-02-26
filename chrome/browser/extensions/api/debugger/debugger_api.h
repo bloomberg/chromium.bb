@@ -11,6 +11,9 @@
 #include <string>
 
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/common/extensions/api/debugger.h"
+
+using extensions::api::debugger::Debuggee;
 
 // Base debugger function.
 
@@ -30,11 +33,13 @@ class DebuggerFunction : public AsyncExtensionFunction {
   DebuggerFunction();
   virtual ~DebuggerFunction() {}
 
+  void FormatErrorMessage(const std::string& format);
+
   bool InitWebContents();
   bool InitClientHost();
 
   content::WebContents* contents_;
-  int tab_id_;
+  Debuggee debuggee_;
   ExtensionDevToolsClientHost* client_host_;
 };
 

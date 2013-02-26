@@ -303,6 +303,7 @@ extern const char kPurgeMemoryButton[];
 extern const char kRecordStats[];
 extern const char kRecordMode[];
 extern const char kRemoteDebuggingFrontend[];
+extern const char kSilentDebuggerExtensionAPI[];
 extern const char kRendererPrintPreview[];
 extern const char kResetLocalPassphrase[];
 extern const char kResetVariationState[];

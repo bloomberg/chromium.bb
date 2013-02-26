@@ -6938,6 +6938,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_DEVTOOLS_EXPERIMENTS_DESCRIPTION" desc="Description for the flag to enable experiments in Developer Tools.">
         Enable Developer Tools experiments. Use Settings panel in Developer Tools to toggle individual experiments.
       </message>
+      <message name="IDS_FLAGS_SILENT_DEBUGGER_EXTENSION_API_NAME" desc="Name for the flag to enable silent debugging via chrome.debugger extension API.">
+        Enable Silent Debugging.
+      </message>
+      <message name="IDS_FLAGS_SILENT_DEBUGGER_EXTENSION_API_DESCRIPTION" desc="Description for the flag to enable silent debugging via chrome.debugger extension API.">
+        Do not show the infobar when an extension attaches to a page via chrome.debugger API. This flag is required to debug extension background pages.
+      </message>
       <message name="IDS_FLAGS_SPELLCHECK_AUTOCORRECT" desc="Title for the flag to turn on text autocorrection.">
         Enable Automatic Spelling Correction
       </message>
