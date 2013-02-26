@@ -467,6 +467,11 @@ class DeviceLocalAccountTest : public InProcessBrowserTest {
     test_server_.UpdatePolicy(
         dm_protocol::kChromePublicAccountPolicyType, kAccountId2,
         device_local_account_policy.payload().SerializeAsString());
+
+    // Don't install policy for |kAccountId2| yet so initial download gets
+    // test coverage.
+    ASSERT_TRUE(session_manager_client_.device_local_account_policy(
+        kAccountId2).empty());
   }
 
   void CheckPublicSessionPresent(const std::string& id) {
@@ -513,19 +518,11 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DisplayName) {
       base::Bind(&DisplayNameMatches, kAccountId1, kDisplayName1)).Run();
 }
 
-#if defined(OS_CHROMEOS)
-// Fails on ChromeOS http://crbug.com/177880
-#define MAYBE_PolicyDownload DISABLED_PolicyDownload
-#else
-#define MAYBE_PolicyDownload PolicyDownload
-#endif
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MAYBE_PolicyDownload) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyDownload) {
   // Policy for kAccountId2 is not installed in session_manager_client, make
   // sure it gets fetched from the server. Note that the test setup doesn't set
   // up policy for kAccountId2, so the presence of the display name can be used
   // as signal to indicate successful policy download.
-  ASSERT_TRUE(session_manager_client_.device_local_account_policy(
-      kAccountId2).empty());
   NotificationWatcher(
       chrome::NOTIFICATION_USER_LIST_CHANGED,
       base::Bind(&DisplayNameMatches, kAccountId2, kDisplayName2)).Run();
