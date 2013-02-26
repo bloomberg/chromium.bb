@@ -661,9 +661,9 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
                      history::SOURCE_BROWSED, false);
   }
 
-  preview->GetController().PruneAllButActive();
-
-  if (type != INSTANT_COMMIT_PRESSED_ALT_ENTER) {
+  if (type == INSTANT_COMMIT_PRESSED_ALT_ENTER) {
+    preview->GetController().PruneAllButActive();
+  } else {
     content::WebContents* active_tab = browser_->GetActiveWebContents();
     AddSessionStorageHistogram(extended_enabled_, active_tab, preview.get());
     preview->GetController().CopyStateFromAndPrune(

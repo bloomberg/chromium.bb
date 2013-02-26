@@ -114,7 +114,6 @@ bool BrowserInstantController::MaybeSwapInInstantNTPContents(
     return false;
 
   *target_contents = instant_ntp.get();
-  instant_ntp->GetController().PruneAllButActive();
   if (source_contents) {
     instant_ntp->GetController().CopyStateFromAndPrune(
         &source_contents->GetController());
@@ -122,6 +121,7 @@ bool BrowserInstantController::MaybeSwapInInstantNTPContents(
         browser_->tab_strip_model()->GetIndexOfWebContents(source_contents),
         instant_ntp.Pass());
   } else {
+    instant_ntp->GetController().PruneAllButActive();
     // If |source_contents| is NULL, then the caller is responsible for
     // inserting instant_ntp into the tabstrip and will take ownership.
     ignore_result(instant_ntp.release());
