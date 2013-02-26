@@ -73,11 +73,11 @@ if [ "$(uname -s)" = "Darwin" ]; then
   install_name_tool -id @executable_path/${ASAN_DYLIB_NAME} "${ASAN_DYLIB}"
 else
   # Keep only
-  # Release+Asserts/lib/clang/3.2/lib/linux/libclang_rt.{asan,tsan}-x86_64.a
+  # Release+Asserts/lib/clang/3.2/lib/linux/libclang_rt.{a,t,m}san-x86_64.a
   # TODO(thakis): Make sure the 32bit version of ASan runtime is kept too once
-  # that's built. TSan runtime exists only for 64 bits.
+  # that's built. TSan and MSan runtimes exist only for 64 bits.
   find "${LLVM_LIB_DIR}/clang" -type f -path '*lib/linux*' | \
-       grep -v "asan\|tsan" | xargs rm
+       grep -v "asan\|tsan\|msan" | xargs rm
 fi
 
 cp -R "${LLVM_LIB_DIR}/clang" $PDIR/lib
