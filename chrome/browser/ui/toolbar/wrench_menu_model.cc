@@ -613,7 +613,12 @@ void WrenchMenuModel::Build(bool is_new_menu, bool supports_new_separators) {
                            tools_menu_model_.get());
   }
 
-  if (browser_defaults::kShowExitMenuItem) {
+  bool show_exit_menu = browser_defaults::kShowExitMenuItem;
+#if defined(OS_WIN) && defined(USE_AURA)
+  if (browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH)
+    show_exit_menu = false;
+#endif
+  if (show_exit_menu) {
     AddSeparator(ui::NORMAL_SEPARATOR);
     AddItemWithStringId(IDC_EXIT, IDS_EXIT);
   }
