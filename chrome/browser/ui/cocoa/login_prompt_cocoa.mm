@@ -82,7 +82,7 @@ class LoginHandlerMac : public LoginHandler,
   }
 
   virtual void CloseDialog() OVERRIDE {
-    // The hosting WebContentsModalDialog may have been freed.
+    // The hosting dialog may have been freed.
     if (constrained_window_)
       constrained_window_->CloseWebContentsModalDialog();
   }

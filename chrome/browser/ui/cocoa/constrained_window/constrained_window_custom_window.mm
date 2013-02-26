@@ -7,7 +7,6 @@
 #import "base/memory/scoped_nsobject.h"
 #import "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
-#import "chrome/browser/ui/web_contents_modal_dialog.h"
 #include "skia/ext/skia_utils_mac.h"
 
 @implementation ConstrainedWindowCustomWindow

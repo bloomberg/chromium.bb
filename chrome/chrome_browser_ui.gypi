@@ -1783,7 +1783,6 @@
         'browser/ui/views/wrench_menu.h',
         'browser/ui/web_applications/web_app_ui.cc',
         'browser/ui/web_applications/web_app_ui.h',
-        'browser/ui/web_contents_modal_dialog.h',
         'browser/ui/web_contents_modal_dialog_manager.cc',
         'browser/ui/web_contents_modal_dialog_manager.h',
         'browser/ui/web_contents_modal_dialog_manager_delegate.cc',

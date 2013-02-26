@@ -8,7 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/memory/scoped_nsobject.h"
-#include "chrome/browser/ui/web_contents_modal_dialog.h"
+#include "chrome/browser/ui/native_web_contents_modal_dialog.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -28,8 +28,7 @@ class ConstrainedWindowMacDelegate {
 // Constrained window implementation for Mac.
 // Normally an instance of this class is owned by the delegate. The delegate
 // should delete the instance when the window is closed.
-class ConstrainedWindowMac : public WebContentsModalDialog,
-                             public content::NotificationObserver {
+class ConstrainedWindowMac : public content::NotificationObserver {
  public:
   ConstrainedWindowMac(
       ConstrainedWindowMacDelegate* delegate,
@@ -37,13 +36,12 @@ class ConstrainedWindowMac : public WebContentsModalDialog,
       id<ConstrainedWindowSheet> sheet);
   virtual ~ConstrainedWindowMac();
 
-  // WebContentsModalDialog implementation.
-  virtual void ShowWebContentsModalDialog() OVERRIDE;
+  void ShowWebContentsModalDialog();
   // Closes the constrained window and deletes this instance.
-  virtual void CloseWebContentsModalDialog() OVERRIDE;
-  virtual void FocusWebContentsModalDialog() OVERRIDE;
-  virtual void PulseWebContentsModalDialog() OVERRIDE;
-  virtual NativeWebContentsModalDialog GetNativeDialog() OVERRIDE;
+  void CloseWebContentsModalDialog();
+  void FocusWebContentsModalDialog();
+  void PulseWebContentsModalDialog();
+  NativeWebContentsModalDialog GetNativeDialog();
 
   // content::NotificationObserver:
   virtual void Observe(int type,
@@ -56,7 +54,7 @@ class ConstrainedWindowMac : public WebContentsModalDialog,
 
   ConstrainedWindowMacDelegate* delegate_;  // weak, owns us.
 
-  // The WebContents that owns and constrains this WebContentsModalDialog. Weak.
+  // The WebContents that owns and constrains this ConstrainedWindowMac. Weak.
   content::WebContents* web_contents_;
 
   scoped_nsprotocol<id<ConstrainedWindowSheet>> sheet_;

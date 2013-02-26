@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 
-#include "chrome/browser/ui/web_contents_modal_dialog.h"
 #include "chrome/browser/ui/web_contents_modal_dialog_manager_delegate.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/navigation_details.h"

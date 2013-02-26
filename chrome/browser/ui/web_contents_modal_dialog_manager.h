@@ -13,7 +13,6 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/gfx/native_widget_types.h"
 
-class WebContentsModalDialog;
 class WebContentsModalDialogManagerDelegate;
 
 // Per-WebContents class to manage WebContents-modal dialogs.
@@ -47,6 +46,8 @@ class WebContentsModalDialogManager
   // Overriden from NativeWebContentsModalDialogManagerDelegate:
   // Called when a WebContentsModalDialogs we own is about to be closed.
   virtual void WillClose(NativeWebContentsModalDialog dialog) OVERRIDE;
+
+  // Overridden from WebContentsModalDialog:
 
   // For testing.
   class TestApi {

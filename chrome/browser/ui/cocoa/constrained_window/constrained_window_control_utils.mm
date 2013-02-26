@@ -5,7 +5,6 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_control_utils.h"
 
 #include "base/memory/scoped_nsobject.h"
-#include "chrome/browser/ui/web_contents_modal_dialog.h"
 #include "skia/ext/skia_utils_mac.h"
 
 namespace constrained_window {
