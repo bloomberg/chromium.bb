@@ -355,11 +355,6 @@ void BrowserWindowCocoa::UpdateFullscreenExitBubbleContent(
   [controller_ updateFullscreenExitBubbleURL:url bubbleType:bubble_type];
 }
 
-bool BrowserWindowCocoa::ShouldHideUIForFullscreen() const {
-  // On Mac, fullscreen mode has most normal things (in a slide-down panel).
-  return false;
-}
-
 bool BrowserWindowCocoa::IsFullscreen() const {
   if ([controller_ inPresentationMode])
     CHECK([controller_ isFullscreen]);  // Presentation mode must be fullscreen.

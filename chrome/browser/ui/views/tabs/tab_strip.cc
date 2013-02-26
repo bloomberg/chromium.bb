@@ -313,7 +313,7 @@ class NewTabButton : public views::ImageButton {
                                     ui::ScaleFactor scale_factor) const;
   gfx::ImageSkia GetImageForState(views::CustomButton::ButtonState state,
                                   ui::ScaleFactor scale_factor) const;
-  gfx::ImageSkia GetImageForScale(ui::ScaleFactor scale_factor) const;
+  gfx::ImageSkia GetImage(ui::ScaleFactor scale_factor) const;
 
   // Tab strip that contains this button.
   TabStrip* tab_strip_;
@@ -374,7 +374,7 @@ void NewTabButton::OnMouseReleased(const ui::MouseEvent& event) {
 #endif
 
 void NewTabButton::OnPaint(gfx::Canvas* canvas) {
-  gfx::ImageSkia image = GetImageForScale(canvas->scale_factor());
+  gfx::ImageSkia image = GetImage(canvas->scale_factor());
   canvas->DrawImageInt(image, 0, height() - image.height());
 }
 
@@ -497,8 +497,7 @@ gfx::ImageSkia NewTabButton::GetImageForState(
   return gfx::ImageSkia(canvas.ExtractImageRep());
 }
 
-gfx::ImageSkia NewTabButton::GetImageForScale(
-    ui::ScaleFactor scale_factor) const {
+gfx::ImageSkia NewTabButton::GetImage(ui::ScaleFactor scale_factor) const {
   if (!hover_animation_->is_animating())
     return GetImageForState(state(), scale_factor);
   return gfx::ImageSkiaOperations::CreateBlendedImage(

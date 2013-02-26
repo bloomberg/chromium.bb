@@ -72,7 +72,6 @@ class BrowserWindowCocoa :
   virtual void UpdateFullscreenExitBubbleContent(
       const GURL& url,
       FullscreenExitBubbleType bubble_type) OVERRIDE;
-  virtual bool ShouldHideUIForFullscreen() const OVERRIDE;
   virtual bool IsFullscreen() const OVERRIDE;
   virtual bool IsFullscreenBubbleVisible() const OVERRIDE;
   virtual LocationBar* GetLocationBar() const OVERRIDE;

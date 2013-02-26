@@ -287,7 +287,6 @@ class BrowserView : public BrowserWindow,
   virtual void UpdateFullscreenExitBubbleContent(
       const GURL& url,
       FullscreenExitBubbleType bubble_type) OVERRIDE;
-  virtual bool ShouldHideUIForFullscreen() const OVERRIDE;
   virtual bool IsFullscreen() const OVERRIDE;
 #if defined(OS_WIN)
   virtual void SetMetroSnapMode(bool enable) OVERRIDE;

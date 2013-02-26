@@ -858,10 +858,6 @@ void BrowserWindowGtk::ExitFullscreen() {
     gtk_window_maximize(window_);
 }
 
-bool BrowserWindowGtk::ShouldHideUIForFullscreen() const {
-  return IsFullscreen();
-}
-
 bool BrowserWindowGtk::IsFullscreen() const {
   return (state_ & GDK_WINDOW_STATE_FULLSCREEN);
 }

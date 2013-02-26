@@ -76,6 +76,9 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   // using frame painters across all root windows.
   static void UpdateSoloWindowHeader(aura::RootWindow* root_window);
 
+  // Adds an "immersive mode" button to the layout. Does not take ownership.
+  void AddImmersiveButton(views::ToggleImageButton* button);
+
   // Helpers for views::NonClientFrameView implementations.
   gfx::Rect GetBoundsForClientView(int top_height,
                                    const gfx::Rect& window_bounds) const;
@@ -141,6 +144,7 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FramePainterTest, Basics);
+  FRIEND_TEST_ALL_PREFIXES(FramePainterTest, ImmersiveButton);
   FRIEND_TEST_ALL_PREFIXES(FramePainterTest, CreateAndDeleteSingleWindow);
   FRIEND_TEST_ALL_PREFIXES(FramePainterTest, UseSoloWindowHeader);
   FRIEND_TEST_ALL_PREFIXES(FramePainterTest, UseSoloWindowHeaderMultiDisplay);
@@ -209,6 +213,7 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   views::View* window_icon_;  // May be NULL.
   views::ImageButton* size_button_;
   views::ImageButton* close_button_;
+  views::ToggleImageButton* immersive_button_;  // May be NULL.
   aura::Window* window_;
 
   // Window frame header/caption parts.
