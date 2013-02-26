@@ -29,7 +29,8 @@ namespace {
 // The first token is always GroupN for some integer N, followed by a
 // space-delimited list of key:value pairs which correspond to these flags:
 const char kEmbeddedPageVersionFlagName[] = "espv";
-const int kEmbeddedPageVersionDefault = 2;
+const uint64 kEmbeddedPageVersionDisabled = 0;
+const uint64 kEmbeddedPageVersionDefault = 2;
 
 const char kInstantExtendedActivationName[] = "instant";
 const chrome::search::InstantExtendedDefault kInstantExtendedActivationDefault =
@@ -108,6 +109,14 @@ const char kLocalOmniboxPopupURL[] =
     "chrome://local-omnibox-popup/local-omnibox-popup.html";
 
 InstantExtendedDefault GetInstantExtendedDefaultSetting() {
+  // Check the command-line/about:flags setting first, which should have
+  // precedence and allows the trial to not be reported (if it's never queried).
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableInstantExtendedAPI))
+    return chrome::search::INSTANT_DEFAULT_OFF;
+  if (command_line->HasSwitch(switches::kEnableInstantExtendedAPI))
+    return chrome::search::INSTANT_DEFAULT_ON;
+
   FieldTrialFlags flags;
   if (GetFieldTrialInfo(
           base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
@@ -123,14 +132,25 @@ InstantExtendedDefault GetInstantExtendedDefaultSetting() {
 }
 
 bool IsInstantExtendedAPIEnabled(const Profile* profile) {
-  return EmbeddedSearchPageVersion(profile) != 0;
+  return EmbeddedSearchPageVersion(profile) != kEmbeddedPageVersionDisabled;
 }
 
 // Determine what embedded search page version to request from the user's
 // default search provider. If 0, the embedded search UI should not be enabled.
 uint64 EmbeddedSearchPageVersion(const Profile* profile) {
   if (!profile || profile->IsOffTheRecord())
-    return 0;
+    return kEmbeddedPageVersionDisabled;
+
+  // Check the command-line/about:flags setting first, which should have
+  // precedence and allows the trial to not be reported (if it's never queried).
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableInstantExtendedAPI))
+    return kEmbeddedPageVersionDisabled;
+  if (command_line->HasSwitch(switches::kEnableInstantExtendedAPI)) {
+    // The user has set the about:flags switch to Enabled - give the default
+    // UI version.
+    return kEmbeddedPageVersionDefault;
+  }
 
   FieldTrialFlags flags;
   if (GetFieldTrialInfo(
@@ -141,14 +161,7 @@ uint64 EmbeddedSearchPageVersion(const Profile* profile) {
                                             flags);
   }
 
-  const CommandLine* cl = CommandLine::ForCurrentProcess();
-  if (cl->HasSwitch(switches::kEnableInstantExtendedAPI)) {
-    // The user has manually flipped the about:flags switch - give the default
-    // UI version.
-    return kEmbeddedPageVersionDefault;
-  }
-
-  return 0;
+  return kEmbeddedPageVersionDisabled;
 }
 
 bool IsQueryExtractionEnabled(const Profile* profile) {
