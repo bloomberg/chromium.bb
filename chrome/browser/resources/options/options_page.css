@@ -377,11 +377,8 @@ input[type='url'].favicon-cell {
   background-position-x: 4px;
 }
 
-/* TODO(jhawkins): Use something better than 99.3% when CSS3 background
- * positioning is available.
- */
 html[dir=rtl] input.favicon-cell {
-  background-position-x: 99.3%;
+  background-position-x: -webkit-calc(100% - 4px);
 }
 
 list .favicon-cell {

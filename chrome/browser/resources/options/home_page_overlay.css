@@ -8,3 +8,9 @@
   margin-left: 10px;
   position: relative;
 }
+
+/* -webkit-margin-start doesn't work as you'd hope on .weakrtl elements. */
+html[dir='rtl'] #homepage-url-field {
+  margin-left: 0;
+  margin-right: 10px;
+}
