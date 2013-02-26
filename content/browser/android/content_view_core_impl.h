@@ -207,6 +207,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   void SetSize(JNIEnv* env, jobject obj, jint width, jint height);
   jboolean IsRenderWidgetHostViewReady(JNIEnv* env, jobject obj);
   void ExitFullscreen(JNIEnv* env, jobject obj);
+  void EnableHidingTopControls(JNIEnv* env, jobject obj, bool enable);
 
   void ShowInterstitialPage(JNIEnv* env,
                             jobject obj,

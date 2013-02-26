@@ -1187,6 +1187,12 @@ void ContentViewCoreImpl::ExitFullscreen(JNIEnv* env, jobject obj) {
   host->ExitFullscreen();
 }
 
+void ContentViewCoreImpl::EnableHidingTopControls(JNIEnv* env, jobject obj,
+                                                  bool enable) {
+  RenderViewHost* host = web_contents_->GetRenderViewHost();
+  host->Send(new ViewMsg_EnableHidingTopControls(host->GetRoutingID(), enable));
+}
+
 void ContentViewCoreImpl::ScrollFocusedEditableNodeIntoView(JNIEnv* env,
                                                             jobject obj) {
   RenderViewHost* host = web_contents_->GetRenderViewHost();

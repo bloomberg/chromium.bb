@@ -1053,6 +1053,7 @@ class CONTENT_EXPORT RenderViewImpl
                          const WebKit::WebFindOptions& options,
                          IPC::Message* reply_msg);
   void OnUndoScrollFocusedEditableNodeIntoRect();
+  void OnEnableHidingTopControls(bool enable);
 #elif defined(OS_MACOSX)
   void OnCopyToFindPboard();
   void OnPluginImeCompositionCompleted(const string16& text, int plugin_id);

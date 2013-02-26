@@ -1353,6 +1353,10 @@ IPC_MESSAGE_ROUTED0(ViewMsg_UndoScrollFocusedEditableNodeIntoView)
 IPC_MESSAGE_ROUTED1(ViewMsg_ImeBatchStateChanged,
     bool /* is_begin */)
 
+// Notifies the renderer whether hiding the top controls is enabled.
+IPC_MESSAGE_ROUTED1(ViewMsg_EnableHidingTopControls,
+                    bool /* enable */)
+
 #elif defined(OS_MACOSX)
 // Let the RenderView know its window has changed visibility.
 IPC_MESSAGE_ROUTED1(ViewMsg_SetWindowVisibility,

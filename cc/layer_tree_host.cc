@@ -4,6 +4,7 @@
 
 #include "cc/layer_tree_host.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop.h"
@@ -372,7 +373,11 @@ scoped_ptr<InputHandler> LayerTreeHost::createInputHandler()
 
 scoped_ptr<LayerTreeHostImpl> LayerTreeHost::createLayerTreeHostImpl(LayerTreeHostImplClient* client)
 {
-    return LayerTreeHostImpl::create(m_settings, client, m_proxy.get());
+    DCHECK(m_proxy->isImplThread());
+    scoped_ptr<LayerTreeHostImpl> hostImpl(LayerTreeHostImpl::create(m_settings, client, m_proxy.get()));
+    if (m_settings.calculateTopControlsPosition && hostImpl->topControlsManager())
+        m_topControlsManagerWeakPtr = hostImpl->topControlsManager()->AsWeakPtr();
+    return hostImpl.Pass();
 }
 
 void LayerTreeHost::didLoseOutputSurface()
@@ -832,6 +837,16 @@ void LayerTreeHost::setDeviceScaleFactor(float deviceScaleFactor)
     m_deviceScaleFactor = deviceScaleFactor;
 
     setNeedsCommit();
+}
+
+void LayerTreeHost::enableHidingTopControls(bool enable)
+{
+    if (!m_settings.calculateTopControlsPosition)
+        return;
+
+    m_proxy->implThread()->postTask(
+        base::Bind(&TopControlsManager::enable_hiding_top_controls,
+                   m_topControlsManagerWeakPtr, enable));
 }
 
 bool LayerTreeHost::blocksPendingCommit() const

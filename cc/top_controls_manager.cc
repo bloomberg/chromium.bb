@@ -40,6 +40,7 @@ TopControlsManager::TopControlsManager(TopControlsManagerClient* client,
                                        float top_controls_hide_threshold)
     : client_(client),
       animation_direction_(NO_ANIMATION),
+      enable_hiding_(true),
       in_scroll_gesture_(false),
       top_controls_height_(top_controls_height),
       controls_top_offset_(0),
@@ -66,7 +67,7 @@ void TopControlsManager::ScrollBegin() {
 
 gfx::Vector2dF TopControlsManager::ScrollBy(
     const gfx::Vector2dF pending_delta) {
-  if (pending_delta.y() == 0)
+  if (pending_delta.y() == 0 || !enable_hiding_)
     return pending_delta;
 
   current_scroll_delta_ += pending_delta.y();

@@ -2440,6 +2440,15 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     }
 
     /**
+     * Changes whether hiding the top controls is enabled.
+     *
+     * @param enable Whether hiding the top controls should be enabled.
+     */
+    public void enableHidingTopControls(boolean enable) {
+        nativeEnableHidingTopControls(mNativeContentViewCore, enable);
+    }
+
+    /**
      * @See android.webkit.WebView#pageDown(boolean)
      */
     public boolean pageDown(boolean bottom) {
@@ -2668,4 +2677,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     private native boolean nativeIsRenderWidgetHostViewReady(int nativeContentViewCoreImpl);
 
     private native void nativeExitFullscreen(int nativeContentViewCoreImpl);
+    private native void nativeEnableHidingTopControls(
+            int nativeContentViewCoreImpl, boolean enable);
 }

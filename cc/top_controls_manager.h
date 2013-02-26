@@ -22,7 +22,8 @@ class LayerTreeImpl;
 class TopControlsManagerClient;
 
 // Manages the position of the top controls.
-class CC_EXPORT TopControlsManager {
+class CC_EXPORT TopControlsManager
+    : public base::SupportsWeakPtr<TopControlsManager> {
  public:
   enum AnimationDirection {
     NO_ANIMATION,
@@ -37,12 +38,18 @@ class CC_EXPORT TopControlsManager {
       float top_controls_hide_threshold);
   virtual ~TopControlsManager();
 
-  float controls_top_offset() { return controls_top_offset_; }
-  float content_top_offset() { return content_top_offset_; }
+  float controls_top_offset() {
+    return enable_hiding_ ? controls_top_offset_ : 0;
+  }
+  float content_top_offset() {
+    return enable_hiding_ ? content_top_offset_ : top_controls_height_;
+  }
   KeyframedFloatAnimationCurve* animation() {
     return top_controls_animation_.get();
   }
   AnimationDirection animation_direction() { return animation_direction_; }
+
+  void enable_hiding_top_controls(bool enable) { enable_hiding_ = enable; }
 
   void ScrollBegin();
   gfx::Vector2dF ScrollBy(const gfx::Vector2dF pending_delta);
@@ -69,6 +76,7 @@ class CC_EXPORT TopControlsManager {
 
   scoped_ptr<KeyframedFloatAnimationCurve> top_controls_animation_;
   AnimationDirection animation_direction_;
+  bool enable_hiding_;
   bool in_scroll_gesture_;
   float controls_top_offset_;
   float content_top_offset_;
