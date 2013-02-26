@@ -38,6 +38,12 @@ using device::BluetoothOutOfBandPairingData;
 using device::BluetoothServiceRecord;
 using device::BluetoothSocket;
 
+namespace {
+
+void DoNothingServiceRecordList(const BluetoothDevice::ServiceRecordList&) {}
+
+} // namespace
+
 namespace chromeos {
 
 BluetoothDeviceChromeOS::BluetoothDeviceChromeOS(
@@ -332,6 +338,13 @@ void BluetoothDeviceChromeOS::Update(
   }
 
   if (update_state) {
+    // When the device reconnects and we don't have any service records for it,
+    // try to update the cache or fail silently.
+    if (!service_records_loaded_ && !connected_ &&
+        properties->connected.value())
+      GetServiceRecords(base::Bind(&DoNothingServiceRecordList),
+                        base::Bind(&base::DoNothing));
+
     // BlueZ uses paired to mean link keys exchanged, whereas the Bluetooth
     // spec refers to this as bonded. Use the spec name for our interface.
     bonded_ = properties->paired.value();
