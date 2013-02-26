@@ -856,11 +856,9 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
 #endif //  OS_LINUX
 #endif //  !NDEBUG
 
-#if !defined(OS_WIN)
   // Exit
   EXPECT_TRUE(ProcessWithContext(
       ui::Accelerator(ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
-#endif
 
   // New tab
   EXPECT_TRUE(ProcessWithContext(
