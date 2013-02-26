@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/gtest_prod_util.h"
 #include "base/hash_tables.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -47,8 +46,6 @@ class ListValue;
 namespace gfx {
 class ImageSkia;
 }
-
-FORWARD_DECLARE_TEST(TabStripModelTest, Apps);
 
 namespace extensions {
 struct ActionInfo;
@@ -893,8 +890,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // The flags that were passed to InitFromValue.
   int creation_flags_;
-
-  FRIEND_TEST_ALL_PREFIXES(::TabStripModelTest, Apps);
 
   DISALLOW_COPY_AND_ASSIGN(Extension);
 };

@@ -1715,11 +1715,11 @@ TEST_F(TabStripModelTest, Apps) {
   DictionaryValue manifest;
   manifest.SetString("name", "hi!");
   manifest.SetString("version", "1");
+  manifest.SetString("app.launch.web_url", "http://www.google.com");
   std::string error;
   scoped_refptr<Extension> extension_app(
       Extension::Create(path, extensions::Manifest::INVALID_LOCATION,
                         manifest, Extension::NO_FLAGS, &error));
-  extension_app->launch_web_url_ = "http://www.google.com";
   WebContents* contents1 = CreateWebContents();
   extensions::TabHelper::CreateForWebContents(contents1);
   extensions::TabHelper::FromWebContents(contents1)->
