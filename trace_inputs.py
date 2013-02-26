@@ -198,6 +198,7 @@ if sys.platform == 'win32':
 
     On Windows, removes any leading '\\?\'.
     """
+    assert isinstance(p, unicode), repr(p)
     if not isabs(p):
       raise ValueError(
           'get_native_path_case(%r): Require an absolute path' % p, p)
@@ -308,11 +309,10 @@ elif sys.platform == 'darwin':
     Technically, it's only HFS+ on OSX that is case preserving and
     insensitive. It's the default setting on HFS+ but can be changed.
     """
-    assert isinstance(path, unicode), path
+    assert isinstance(path, unicode), repr(path)
     if not isabs(path):
       raise ValueError(
-          'Can\'t get native path case for a non-absolute path: %s' % path,
-          path)
+          'get_native_path_case(%r): Require an absolute path' % path, path)
     if path.startswith('/dev'):
       # /dev is not visible from Carbon, causing an exception.
       return path
@@ -359,10 +359,10 @@ else:  # OSes other than Windows and OSX.
 
     TODO(maruel): This is not strictly true. Implement if necessary.
     """
+    assert isinstance(path, unicode), repr(path)
     if not isabs(path):
       raise ValueError(
-          'Can\'t get native path case for a non-absolute path: %s' % path,
-          path)
+          'get_native_path_case(%r): Require an absolute path' % path, path)
     # Give up on cygwin, as GetLongPathName() can't be called.
     # Linux traces tends to not be normalized so use this occasion to normalize
     # it. This function implementation already normalizes the path on the other

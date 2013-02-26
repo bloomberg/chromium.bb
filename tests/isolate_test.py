@@ -11,7 +11,7 @@ import sys
 import tempfile
 import unittest
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT_DIR = unicode(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT_DIR)
 
 import isolate
@@ -1118,14 +1118,15 @@ class IsolateLoad(IsolateBase):
     isolate_file = os.path.join(
         ROOT_DIR, 'tests', 'isolate', 'touch_root.isolate')
     options = self._get_option(isolate_file)
-    options.variables['PRODUCT_DIR'] = os.path.join('tests', 'isolate')
+    options.variables['PRODUCT_DIR'] = os.path.join(u'tests', u'isolate')
+    native_cwd = isolate.trace_inputs.get_native_path_case(unicode(self.cwd))
     try:
       isolate.load_complete_state(options, self.cwd, None)
       self.fail()
     except isolate.ExecutionError, e:
       self.assertEquals(
           'PRODUCT_DIR=%s is not a directory' %
-            os.path.join(self.cwd, 'tests', 'isolate'),
+            os.path.join(native_cwd, 'tests', 'isolate'),
           e.args[0])
 
   def test_variable(self):
