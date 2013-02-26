@@ -411,15 +411,33 @@ void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
   raster_device_scale_ = other->raster_device_scale_;
   raster_source_scale_ = other->raster_source_scale_;
 
+  // Add synthetic invalidations for any recordings that were dropped.  As
+  // tiles are updated to point to this new pile, this will force the dropping
+  // of tiles that can no longer be rastered.  This is not ideal, but is a
+  // trade-off for memory (use the same pile as much as possible, by switching
+  // during DidBecomeActive) and for time (don't bother checking every tile
+  // during activation to see if the new pile can still raster it).
+  //
+  // TODO(enne): Clean up this double loop.
+  for (int x = 0; x < pile_->num_tiles_x(); ++x) {
+    for (int y = 0; y < pile_->num_tiles_y(); ++y) {
+      bool previously_had = other->pile_->HasRecordingAt(x, y);
+      bool now_has = pile_->HasRecordingAt(x, y);
+      if (now_has || !previously_had)
+        continue;
+      gfx::Rect layer_rect = pile_->tile_bounds(x, y);
+      invalidation_.Union(layer_rect);
+    }
+  }
+
+
   tilings_->CloneAll(*other->tilings_, invalidation_);
   DCHECK(bounds() == tilings_->LayerBounds());
 
   // It's a sad but unfortunate fact that PicturePile tiling edges do not line
   // up with PictureLayerTiling edges.  Tiles can only be added if they are
   // entirely covered by recordings (that may come from multiple PicturePile
-  // tiles).  This check happens in this class's CreateTile() call.  Tiles
-  // are not removed (even if they cannot be rerecorded) unless they are
-  // invalidated.
+  // tiles).  This check happens in this class's CreateTile() call.
   for (int x = 0; x < pile_->num_tiles_x(); ++x) {
     for (int y = 0; y < pile_->num_tiles_y(); ++y) {
       bool previously_had = other->pile_->HasRecordingAt(x, y);
