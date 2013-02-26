@@ -17,12 +17,23 @@ namespace content {
 
 static void SetCommandLineFlags(JNIEnv*env,
                                 jclass clazz,
-                                jint max_render_process_count) {
-  SetContentCommandLineFlags(max_render_process_count);
+                                jint max_render_process_count,
+                                jstring plugin_descriptor) {
+  std::string plugin_str = (plugin_descriptor == NULL ?
+      std::string() : ConvertJavaStringToUTF8(env, plugin_descriptor));
+  SetContentCommandLineFlags(max_render_process_count, plugin_str);
 }
 
 static jboolean IsOfficialBuild(JNIEnv* env, jclass clazz) {
 #if defined(OFFICIAL_BUILD)
+  return true;
+#else
+  return false;
+#endif
+}
+
+static jboolean IsPluginEnabled(JNIEnv* env, jclass clazz) {
+#if defined(ENABLE_PLUGINS)
   return true;
 #else
   return false;

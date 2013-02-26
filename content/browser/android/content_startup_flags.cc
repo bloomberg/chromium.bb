@@ -15,7 +15,8 @@
 
 namespace content {
 
-void SetContentCommandLineFlags(int max_render_process_count) {
+void SetContentCommandLineFlags(int max_render_process_count,
+                                const std::string& plugin_descriptor) {
   // May be called multiple times, to cover all possible program entry points.
   static bool already_initialized = false;
   if (already_initialized)
@@ -69,6 +70,11 @@ void SetContentCommandLineFlags(int max_render_process_count) {
 
   parsed_command_line->AppendSwitch(
       cc::switches::kEnableCompositorFrameMessage);
+
+  if (!plugin_descriptor.empty()) {
+    parsed_command_line->AppendSwitchNative(
+      switches::kRegisterPepperPlugins, plugin_descriptor);
+  }
 }
 
 }  // namespace content
