@@ -154,6 +154,15 @@ class BluetoothDeviceChromeOS
       const base::Closure& callback,
       const ConnectErrorCallback& error_callback);
 
+  // Called by Connect() when it succeeds. The |callback| is the value passed to
+  // the Connect() call.
+  void OnConnectCallbackCalled(const base::Closure& callback);
+
+  // Called by Connect() when it fails. The |error_callback| is the value passed
+  // to the Connect() call.
+  void OnConnectErrorCallbackCalled(const ConnectErrorCallback& error_callback,
+                                    enum ConnectErrorCode error_code);
+
   // Connect application-level protocols of the device to the system, called
   // on a successful connection or to reconnect to a device that is already
   // paired or previously connected. |error_callback| is called on failure.
@@ -388,6 +397,9 @@ class BluetoothDeviceChromeOS
 
   // Used to keep track of pending application connection requests.
   int connecting_applications_counter_;
+
+  // Used to keep track of ongoing calls to Connect().
+  int connecting_calls_;
 
   // A service records cache.
   ServiceRecordList service_records_;

@@ -187,6 +187,11 @@ class BluetoothDevice {
   // adapter. This value is undefined for unbonded devices.
   virtual bool IsConnectable() const;
 
+  // Indicates whether there is a call to Connect() ongoing. For this attribute,
+  // we consider a call is ongoing if none of the callbacks passed to Connect()
+  // were called after the corresponding call to Connect().
+  virtual bool IsConnecting() const;
+
   // Returns the services (as UUID strings) that this device provides.
   typedef std::vector<std::string> ServiceList;
   virtual const ServiceList& GetServices() const = 0;
@@ -340,6 +345,9 @@ class BluetoothDevice {
   // Indicates whether the device normally accepts connections initiated from
   // the adapter once paired.
   bool connectable_;
+
+  // Indicated whether the device is in a connecting status.
+  bool connecting_;
 
   // The services (identified by UUIDs) that this device provides.
   ServiceList service_uuids_;

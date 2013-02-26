@@ -23,7 +23,8 @@ BluetoothDevice::BluetoothDevice()
       visible_(false),
       bonded_(false),
       connected_(false),
-      connectable_(true) {
+      connectable_(true),
+      connecting_(false) {
 }
 
 BluetoothDevice::~BluetoothDevice() {
@@ -178,6 +179,10 @@ bool BluetoothDevice::IsConnected() const {
 
 bool BluetoothDevice::IsConnectable() const {
   return connectable_;
+}
+
+bool BluetoothDevice::IsConnecting() const {
+  return connecting_;
 }
 
 bool BluetoothDevice::ProvidesServiceWithUUID(

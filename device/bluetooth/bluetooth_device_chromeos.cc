@@ -52,6 +52,7 @@ BluetoothDeviceChromeOS::BluetoothDeviceChromeOS(
     adapter_(adapter),
     pairing_delegate_(NULL),
     connecting_applications_counter_(0),
+    connecting_calls_(0),
     service_records_loaded_(false),
     weak_ptr_factory_(this) {
 }
@@ -114,9 +115,23 @@ void BluetoothDeviceChromeOS::Connect(
     PairingDelegate* pairing_delegate,
     const base::Closure& callback,
     const ConnectErrorCallback& error_callback) {
+  // This is safe because Connect() and its callbacks are called in the same
+  // thread.
+  connecting_calls_++;
+  connecting_ = !!connecting_calls_;
+  // Set the decrement to be issued when either callback is called.
+  base::Closure wrapped_callback = base::Bind(
+      &BluetoothDeviceChromeOS::OnConnectCallbackCalled,
+      weak_ptr_factory_.GetWeakPtr(),
+      callback);
+  ConnectErrorCallback wrapped_error_callback = base::Bind(
+      &BluetoothDeviceChromeOS::OnConnectErrorCallbackCalled,
+      weak_ptr_factory_.GetWeakPtr(),
+      error_callback);
+
   if (IsPaired() || IsBonded() || IsConnected()) {
     // Connection to already paired or connected device.
-    ConnectApplications(callback, error_callback);
+    ConnectApplications(wrapped_callback, wrapped_error_callback);
 
   } else if (!pairing_delegate) {
     // No pairing delegate supplied, initiate low-security connection only.
@@ -125,11 +140,11 @@ void BluetoothDeviceChromeOS::Connect(
                      address_,
                      base::Bind(&BluetoothDeviceChromeOS::OnCreateDevice,
                                 weak_ptr_factory_.GetWeakPtr(),
-                                callback,
-                                error_callback),
+                                wrapped_callback,
+                                wrapped_error_callback),
                      base::Bind(&BluetoothDeviceChromeOS::OnCreateDeviceError,
                                 weak_ptr_factory_.GetWeakPtr(),
-                                error_callback));
+                                wrapped_error_callback));
   } else {
     // Initiate high-security connection with pairing.
     DCHECK(!pairing_delegate_);
@@ -163,11 +178,11 @@ void BluetoothDeviceChromeOS::Connect(
             bluetooth_agent::kDisplayYesNoCapability,
             base::Bind(&BluetoothDeviceChromeOS::OnCreateDevice,
                        weak_ptr_factory_.GetWeakPtr(),
-                       callback,
-                       error_callback),
+                       wrapped_callback,
+                       wrapped_error_callback),
             base::Bind(&BluetoothDeviceChromeOS::OnCreateDeviceError,
                        weak_ptr_factory_.GetWeakPtr(),
-                       error_callback));
+                       wrapped_error_callback));
   }
 }
 
@@ -501,6 +516,23 @@ void BluetoothDeviceChromeOS::OnGetServiceRecordsError(
   } else {
     error_callback.Run();
   }
+}
+
+void BluetoothDeviceChromeOS::OnConnectCallbackCalled(
+    const base::Closure& callback) {
+  // Update the connecting status.
+  connecting_calls_--;
+  connecting_ = !!connecting_calls_;
+  callback.Run();
+}
+
+void BluetoothDeviceChromeOS::OnConnectErrorCallbackCalled(
+    const ConnectErrorCallback& error_callback,
+    enum ConnectErrorCode error_code) {
+  // Update the connecting status.
+  connecting_calls_--;
+  connecting_ = !!connecting_calls_;
+  error_callback.Run(error_code);
 }
 
 void BluetoothDeviceChromeOS::ConnectApplications(
