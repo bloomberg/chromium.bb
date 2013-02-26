@@ -147,7 +147,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestDeclarative1) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestDeclarative2) {
+// This test times out on XP. See http://crbug.com/178296
+#if defined(OS_WIN)
+#define MAYBE_WebRequestDeclarative2 DISABLED_WebRequestDeclarative2
+#else
+#define MAYBE_WebRequestDeclarative2 WebRequestDeclarative2
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+                       MAYBE_WebRequestDeclarative2) {
   ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_declarative2.html"))
       << message_;
 }
