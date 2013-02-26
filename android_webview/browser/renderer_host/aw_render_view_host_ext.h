@@ -54,6 +54,8 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
   // Text Autosizing.
   void SetTextZoomLevel(double level);
 
+  void ResetScrollAndScaleState();
+
  private:
   // content::WebContentsObserver implementation.
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;

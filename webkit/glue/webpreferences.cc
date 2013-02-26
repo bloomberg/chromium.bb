@@ -144,6 +144,7 @@ WebPreferences::WebPreferences()
 #endif
       supports_multiple_windows(true),
       viewport_enabled(false),
+      initialize_at_minimum_page_scale(true),
       record_rendering_stats(false),
       cookie_enabled(true)
 #if defined(OS_ANDROID)
@@ -488,6 +489,7 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setSupportsMultipleWindows(supports_multiple_windows);
 
   settings->setViewportEnabled(viewport_enabled);
+  settings->setInitializeAtMinimumPageScale(initialize_at_minimum_page_scale);
 
 #if defined(OS_ANDROID)
   settings->setAllowCustomScrollbarInMainFrame(false);

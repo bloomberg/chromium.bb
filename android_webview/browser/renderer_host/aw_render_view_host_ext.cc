@@ -68,6 +68,11 @@ void AwRenderViewHostExt::SetTextZoomLevel(double level) {
   Send(new AwViewMsg_SetTextZoomLevel(web_contents()->GetRoutingID(), level));
 }
 
+void AwRenderViewHostExt::ResetScrollAndScaleState() {
+  DCHECK(CalledOnValidThread());
+  Send(new AwViewMsg_ResetScrollAndScaleState(web_contents()->GetRoutingID()));
+}
+
 void AwRenderViewHostExt::RenderViewGone(base::TerminationStatus status) {
   DCHECK(CalledOnValidThread());
   for (std::map<int, DocumentHasImagesResult>::iterator pending_req =

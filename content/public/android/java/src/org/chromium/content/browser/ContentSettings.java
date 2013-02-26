@@ -92,6 +92,7 @@ public class ContentSettings {
     private boolean mDomStorageEnabled = false;
     private boolean mDatabaseEnabled = false;
     private boolean mUseWideViewport = false;
+    private boolean mLoadWithOverviewMode = false;
 
     // Not accessed by the native side.
     private boolean mSupportZoom = true;
@@ -374,6 +375,22 @@ public class ContentSettings {
 
     boolean shouldDisplayZoomControls() {
         return supportsMultiTouchZoom() && mDisplayZoomControls;
+    }
+
+    public void setLoadWithOverviewMode(boolean overview) {
+        assert mCanModifySettings;
+        synchronized (mContentSettingsLock) {
+            if (mLoadWithOverviewMode != overview) {
+                mLoadWithOverviewMode = overview;
+                mEventHandler.syncSettingsLocked();
+            }
+        }
+    }
+
+    public boolean getLoadWithOverviewMode() {
+        synchronized (mContentSettingsLock) {
+            return mLoadWithOverviewMode;
+        }
     }
 
     /**
@@ -1191,6 +1208,7 @@ public class ContentSettings {
      */
     public void initFrom(ContentSettings settings) {
         setLayoutAlgorithm(settings.getLayoutAlgorithm());
+        setLoadWithOverviewMode(settings.getLoadWithOverviewMode());
         setTextZoom(settings.getTextZoom());
         setStandardFontFamily(settings.getStandardFontFamily());
         setFixedFontFamily(settings.getFixedFontFamily());

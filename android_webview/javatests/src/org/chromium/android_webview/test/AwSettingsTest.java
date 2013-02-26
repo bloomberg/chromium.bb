@@ -30,6 +30,7 @@ import org.chromium.content.browser.test.util.HistoryUtils;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 
+import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.ArrayList;
@@ -1199,6 +1200,73 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         }
     }
 
+    class AwSettingsLoadWithOverviewModeTestHelper extends AwSettingsTestHelper<Boolean> {
+        private static final float DEFAULT_PAGE_SCALE = 1.0f;
+
+        AwSettingsLoadWithOverviewModeTestHelper(
+                AwContents awContents,
+                TestAwContentsClient contentViewClient,
+                boolean withViewPortTag) throws Throwable {
+            super(awContents, contentViewClient, true);
+            mWithViewPortTag = withViewPortTag;
+            mContentSettings.setUseWideViewPort(true);
+        }
+
+        @Override
+        protected Boolean getAlteredValue() {
+            return ENABLED;
+        }
+
+        @Override
+        protected Boolean getInitialValue() {
+            return DISABLED;
+        }
+
+        @Override
+        protected Boolean getCurrentValue() {
+            return mContentSettings.getLoadWithOverviewMode();
+        }
+
+        @Override
+        protected void setCurrentValue(Boolean value) {
+            mExpectScaleChange = mContentSettings.getLoadWithOverviewMode() != value;
+            if (mExpectScaleChange) {
+                mOnScaleChangedCallCount =
+                        mContentViewClient.getOnScaleChangedHelper().getCallCount();
+            }
+            mContentSettings.setLoadWithOverviewMode(value);
+            mAwContents.resetScrollAndScaleState();
+        }
+
+        @Override
+        protected void doEnsureSettingHasValue(Boolean value) throws Throwable {
+            loadDataSync(getData());
+            if (mExpectScaleChange) {
+                mContentViewClient.getOnScaleChangedHelper().
+                        waitForCallback(mOnScaleChangedCallCount);
+                mExpectScaleChange = false;
+            }
+            float currentScale = AwSettingsTest.this.getScaleOnUiThread(mAwContents);
+            if (value) {
+                assertTrue("Expected: " + currentScale + " < " + DEFAULT_PAGE_SCALE,
+                        currentScale < DEFAULT_PAGE_SCALE);
+            } else {
+                assertEquals(DEFAULT_PAGE_SCALE, currentScale);
+            }
+        }
+
+        private String getData() {
+            return "<html><head>" +
+                    (mWithViewPortTag ? "<meta name='viewport' content='width=3000' />" : "") +
+                    "</head>" +
+                    "<body></body></html>";
+        }
+
+        private final boolean mWithViewPortTag;
+        private boolean mExpectScaleChange;
+        private int mOnScaleChangedCallCount;
+    }
+
     // The test verifies that JavaScript is disabled upon WebView
     // creation without accessing ContentSettings. If the test passes,
     // it means that WebView-specific web preferences configuration
@@ -2291,6 +2359,60 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         assertEquals(viewportTagSpecifiedWidth, getTitleOnUiThread(awContents));
     }
 
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
+    public void testLoadWithOverviewModeWithTwoViews() throws Throwable {
+        ViewPair views = createViews();
+        runPerViewSettingsTest(
+                new AwSettingsLoadWithOverviewModeTestHelper(
+                        views.getContents0(), views.getClient0(), false),
+                new AwSettingsLoadWithOverviewModeTestHelper(
+                        views.getContents1(), views.getClient1(), false));
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
+    public void testLoadWithOverviewModeViewportTagWithTwoViews() throws Throwable {
+        ViewPair views = createViews();
+        runPerViewSettingsTest(
+                new AwSettingsLoadWithOverviewModeTestHelper(
+                        views.getContents0(), views.getClient0(), true),
+                new AwSettingsLoadWithOverviewModeTestHelper(
+                        views.getContents1(), views.getClient1(), true));
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
+    // Verify that LoadViewOverviewMode doesn't affect pages with initial scale
+    // set in the viewport tag.
+    public void testLoadWithOverviewModeViewportScale() throws Throwable {
+        final TestAwContentsClient contentClient = new TestAwContentsClient();
+        final AwTestContainerView testContainerView =
+                createAwTestContainerViewOnMainSync(contentClient);
+        final AwContents awContents = testContainerView.getAwContents();
+        ContentSettings settings = getContentSettingsOnUiThread(awContents);
+        CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
+
+        final int pageScale = 2;
+        final String page = "<html><head>" +
+                "<meta name='viewport' content='width=3000, initial-scale=" + pageScale +
+                "' /></head>" +
+                "<body></body></html>";
+
+        assertFalse(settings.getUseWideViewPort());
+        assertFalse(settings.getLoadWithOverviewMode());
+        loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
+        assertEquals(1.0f, getScaleOnUiThread(awContents));
+
+        settings.setUseWideViewPort(true);
+        settings.setLoadWithOverviewMode(true);
+        awContents.resetScrollAndScaleState();
+        int onScaleChangedCallCount = contentClient.getOnScaleChangedHelper().getCallCount();
+        loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
+        contentClient.getOnScaleChangedHelper().waitForCallback(onScaleChangedCallCount);
+        assertEquals((float)pageScale, getScaleOnUiThread(awContents));
+    }
+
     static class ViewPair {
         private final AwContents contents0;
         private final TestAwContentsClient client0;
@@ -2414,5 +2536,14 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
      */
     private void resetResourceContext() {
         AndroidProtocolHandler.setResourceContextForTesting(null);
+    }
+
+    private float getScaleOnUiThread(final AwContents awContents) throws Throwable {
+        return runTestOnUiThreadAndGetResult(new Callable<Float>() {
+            @Override
+            public Float call() throws Exception {
+                return awContents.getContentViewCore().getScale();
+            }
+        });
     }
 }

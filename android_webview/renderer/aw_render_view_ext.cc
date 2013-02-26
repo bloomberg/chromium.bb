@@ -145,6 +145,8 @@ bool AwRenderViewExt::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AwViewMsg_DocumentHasImages, OnDocumentHasImagesRequest)
     IPC_MESSAGE_HANDLER(AwViewMsg_DoHitTest, OnDoHitTest)
     IPC_MESSAGE_HANDLER(AwViewMsg_SetTextZoomLevel, OnSetTextZoomLevel)
+    IPC_MESSAGE_HANDLER(AwViewMsg_ResetScrollAndScaleState,
+                        OnResetScrollAndScaleState)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -245,6 +247,12 @@ void AwRenderViewExt::OnSetTextZoomLevel(double zoom_level) {
   // Hide selection and autofill popups.
   render_view()->GetWebView()->hidePopups();
   render_view()->GetWebView()->setZoomLevel(true, zoom_level);
+}
+
+void AwRenderViewExt::OnResetScrollAndScaleState() {
+  if (!render_view() || !render_view()->GetWebView())
+    return;
+  render_view()->GetWebView()->resetScrollAndScaleState();
 }
 
 }  // namespace android_webview

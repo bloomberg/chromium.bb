@@ -18,26 +18,6 @@ import android.util.Log;
  * Tests for the WebViewClient.onScaleChanged.
  */
 public class AwContentsClientOnScaleChangedTest extends AndroidWebViewTestBase {
-    private static class OnScaleChangedHelper extends CallbackHelper {
-       private float mLastScaleRatio;
-
-       public void notifyCalled(float ratio) {
-           super.notifyCalled();
-           mLastScaleRatio = ratio;
-       }
-    }
-
-    private static class TestAwContentsClient
-            extends org.chromium.android_webview.test.TestAwContentsClient {
-         private OnScaleChangedHelper mOnScaleChangedHelper = new OnScaleChangedHelper();
-         @Override
-         public void onScaleChanged(float oldScale, float newScale) {
-             // We should not be getting any messages from scrolling.
-             assertTrue(oldScale != newScale);
-             mOnScaleChangedHelper.notifyCalled(newScale / oldScale);
-         }
-    }
-
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;
 
@@ -65,11 +45,12 @@ public class AwContentsClientOnScaleChangedTest extends AndroidWebViewTestBase {
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
              CommonResources.ABOUT_HTML, "text/html", false);
         ContentViewCore core = mAwContents.getContentViewCore();
-        int callCount = mContentsClient.mOnScaleChangedHelper.getCallCount();
+        int callCount = mContentsClient.getOnScaleChangedHelper().getCallCount();
         core.onSizeChanged(core.getWidth() / 2, core.getHeight() / 2,
              core.getWidth(), core.getHeight());
         // TODO: Investigate on using core.zoomIn();
-        mContentsClient.mOnScaleChangedHelper.waitForCallback(callCount);
-        assertTrue(mContentsClient.mOnScaleChangedHelper.mLastScaleRatio < 1);
+        mContentsClient.getOnScaleChangedHelper().waitForCallback(callCount);
+        assertTrue("Scale ratio:" + mContentsClient.getOnScaleChangedHelper().getLastScaleRatio(),
+                mContentsClient.getOnScaleChangedHelper().getLastScaleRatio() < 1);
     }
 }

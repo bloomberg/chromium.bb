@@ -19,6 +19,7 @@ class TestAwContentsClient extends NullContentsClient {
     private OnReceivedErrorHelper mOnReceivedErrorHelper;
     private OnEvaluateJavaScriptResultHelper mOnEvaluateJavaScriptResultHelper;
     private AddMessageToConsoleHelper mAddMessageToConsoleHelper;
+    private OnScaleChangedHelper mOnScaleChangedHelper;
 
     public TestAwContentsClient() {
         mOnPageStartedHelper = new OnPageStartedHelper();
@@ -26,6 +27,7 @@ class TestAwContentsClient extends NullContentsClient {
         mOnReceivedErrorHelper = new OnReceivedErrorHelper();
         mOnEvaluateJavaScriptResultHelper = new OnEvaluateJavaScriptResultHelper();
         mAddMessageToConsoleHelper = new AddMessageToConsoleHelper();
+        mOnScaleChangedHelper = new OnScaleChangedHelper();
     }
 
     public OnPageStartedHelper getOnPageStartedHelper() {
@@ -46,6 +48,24 @@ class TestAwContentsClient extends NullContentsClient {
 
     public AddMessageToConsoleHelper getAddMessageToConsoleHelper() {
         return mAddMessageToConsoleHelper;
+    }
+
+    public static class OnScaleChangedHelper extends CallbackHelper {
+        private float mPreviousScale;
+        private float mCurrentScale;
+        public void notifyCalled(float oldScale, float newScale) {
+            mPreviousScale = oldScale;
+            mCurrentScale = newScale;
+            super.notifyCalled();
+        }
+        public float getLastScaleRatio() {
+            assert getCallCount() > 0;
+            return mCurrentScale / mPreviousScale;
+        }
+    }
+
+    public OnScaleChangedHelper getOnScaleChangedHelper() {
+        return mOnScaleChangedHelper;
     }
 
     @Override
@@ -112,5 +132,10 @@ class TestAwContentsClient extends NullContentsClient {
             mSourceId = sourceId;
             notifyCalled();
         }
+    }
+
+    @Override
+    public void onScaleChanged(float oldScale, float newScale) {
+        mOnScaleChangedHelper.notifyCalled(oldScale, newScale);
     }
 }

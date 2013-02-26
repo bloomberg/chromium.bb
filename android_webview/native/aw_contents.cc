@@ -665,6 +665,10 @@ jint AwContents::ReleasePopupWebContents(JNIEnv* env, jobject obj) {
   return reinterpret_cast<jint>(pending_contents_.release());
 }
 
+void AwContents::ResetScrollAndScaleState(JNIEnv* env, jobject obj) {
+  render_view_host_ext_->ResetScrollAndScaleState();
+}
+
 ScopedJavaLocalRef<jobject> AwContents::CapturePicture(JNIEnv* env,
                                                        jobject obj) {
   return browser_view_renderer_->CapturePicture();

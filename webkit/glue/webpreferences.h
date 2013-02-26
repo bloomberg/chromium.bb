@@ -158,6 +158,7 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   EditingBehavior editing_behavior;
   bool supports_multiple_windows;
   bool viewport_enabled;
+  bool initialize_at_minimum_page_scale;
   bool record_rendering_stats;
 
   // This flags corresponds to a Page's Settings' setCookieEnabled state. It

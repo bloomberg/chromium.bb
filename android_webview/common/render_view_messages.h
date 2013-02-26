@@ -64,6 +64,11 @@ IPC_SYNC_MESSAGE_ROUTED0_0(AwViewMsg_CapturePictureSync)
 IPC_MESSAGE_ROUTED1(AwViewMsg_SetTextZoomLevel,
                     double /* zoom_level */)
 
+// Resets WebKit WebView scrolling and scale state. We need to send this
+// message whenever we want to guarantee that page's scale will be
+// recalculated by WebKit.
+IPC_MESSAGE_ROUTED0(AwViewMsg_ResetScrollAndScaleState)
+
 //-----------------------------------------------------------------------------
 // RenderView messages
 // These are messages sent from the renderer to the browser process.

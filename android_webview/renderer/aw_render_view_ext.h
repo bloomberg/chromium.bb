@@ -43,6 +43,8 @@ class AwRenderViewExt : public content::RenderViewObserver,
 
   void OnSetTextZoomLevel(double zoom_level);
 
+  void OnResetScrollAndScaleState();
+
   // WebKit::WebPermissionClient implementation.
   virtual bool allowImage(WebKit::WebFrame* frame,
                           bool enabledPerSettings,
