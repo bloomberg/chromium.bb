@@ -72,12 +72,16 @@ class PanelLayoutManagerTest : public test::AshTestBase {
         internal::kShellWindowId_PanelContainer);
   }
 
-  void GetCalloutWidget(views::Widget** widget) {
+  void GetCalloutWidgetForPanel(aura::Window* panel, views::Widget** widget) {
     PanelLayoutManager* manager =
         static_cast<PanelLayoutManager*>(GetPanelContainer()->layout_manager());
-    ASSERT_TRUE(manager);
-    ASSERT_TRUE(manager->callout_widget());
-    *widget = manager->callout_widget();
+    DCHECK(manager);
+    PanelLayoutManager::PanelList::iterator found = std::find(
+        manager->panel_windows_.begin(), manager->panel_windows_.end(),
+        panel);
+    DCHECK(found != manager->panel_windows_.end());
+    DCHECK(found->callout_widget);
+    *widget = found->callout_widget;
   }
 
   void PanelInScreen(aura::Window* panel) {
@@ -127,7 +131,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     // Flush the message loop, since callout updates use a delayed task.
     MessageLoop::current()->RunUntilIdle();
     views::Widget* widget = NULL;
-    GetCalloutWidget(&widget);
+    GetCalloutWidgetForPanel(panel, &widget);
 
     Launcher* launcher = Launcher::ForPrimaryDisplay();
     gfx::Rect icon_bounds = launcher->GetScreenBoundsOfItemIconForWindow(panel);
@@ -141,9 +145,9 @@ class PanelLayoutManagerTest : public test::AshTestBase {
                 1);
   }
 
-  bool IsCalloutVisible() {
+  bool IsPanelCalloutVisible(aura::Window* panel) {
     views::Widget* widget = NULL;
-    GetCalloutWidget(&widget);
+    GetCalloutWidgetForPanel(panel, &widget);
     return widget->IsVisible();
   }
 
@@ -238,7 +242,10 @@ TEST_F(PanelLayoutManagerTest, MultiplePanelCallout) {
   scoped_ptr<aura::Window> w2(CreatePanelWindow(bounds));
   scoped_ptr<aura::Window> w3(CreatePanelWindow(bounds));
   scoped_ptr<aura::Window> w4(CreateNormalWindow());
-  EXPECT_FALSE(IsCalloutVisible());
+  launcher_view_test()->RunMessageLoopUntilAnimationsDone();
+  EXPECT_TRUE(IsPanelCalloutVisible(w1.get()));
+  EXPECT_TRUE(IsPanelCalloutVisible(w2.get()));
+  EXPECT_TRUE(IsPanelCalloutVisible(w3.get()));
   wm::ActivateWindow(w1.get());
   EXPECT_NO_FATAL_FAILURE(IsCalloutAboveLauncherIcon(w1.get()));
   wm::ActivateWindow(w2.get());
@@ -246,14 +253,11 @@ TEST_F(PanelLayoutManagerTest, MultiplePanelCallout) {
   wm::ActivateWindow(w3.get());
   EXPECT_NO_FATAL_FAILURE(IsCalloutAboveLauncherIcon(w3.get()));
   wm::ActivateWindow(w4.get());
-  EXPECT_FALSE(IsCalloutVisible());
   wm::ActivateWindow(w3.get());
   EXPECT_NO_FATAL_FAILURE(IsCalloutAboveLauncherIcon(w3.get()));
   w3.reset();
   if (views::corewm::UseFocusController())
     EXPECT_NO_FATAL_FAILURE(IsCalloutAboveLauncherIcon(w2.get()));
-  else
-    EXPECT_FALSE(IsCalloutVisible());
 }
 
 // Tests removing panels.
@@ -359,20 +363,20 @@ TEST_F(PanelLayoutManagerTest, MinimizeRestorePanel) {
   // Activate the window, ensure callout is visible.
   wm::ActivateWindow(window.get());
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(IsCalloutVisible());
+  EXPECT_TRUE(IsPanelCalloutVisible(window.get()));
   // Minimize the panel, callout should be hidden.
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
   RunAllPendingInMessageLoop();
-  EXPECT_FALSE(IsCalloutVisible());
-  // Restore the pantel; panel should not be activated by default and callout
-  // should be hidden.
+  EXPECT_FALSE(IsPanelCalloutVisible(window.get()));
+  // Restore the pantel; panel should not be activated by default but callout
+  // should be visible.
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
   RunAllPendingInMessageLoop();
-  EXPECT_FALSE(IsCalloutVisible());
+  EXPECT_TRUE(IsPanelCalloutVisible(window.get()));
   // Activate the window, ensure callout is visible.
   wm::ActivateWindow(window.get());
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(IsCalloutVisible());
+  EXPECT_TRUE(IsPanelCalloutVisible(window.get()));
 }
 
 TEST_F(PanelLayoutManagerTest, PanelMoveBetweenMultipleDisplays) {

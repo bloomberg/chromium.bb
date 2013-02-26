@@ -134,16 +134,20 @@ void ReparentAllWindows(aura::RootWindow* src, aura::RootWindow* dst) {
 
     aura::Window* src_container = Shell::GetContainer(src, id);
     aura::Window* dst_container = Shell::GetContainer(dst, id);
-    aura::Window::Windows children = src_container->children();
-    for (aura::Window::Windows::iterator iter = children.begin();
-         iter != children.end(); ++iter) {
-      aura::Window* window = *iter;
-      // Don't move modal screen.
-      if (internal::SystemModalContainerLayoutManager::IsModalBackground(
-              window))
-        continue;
-
-      ReparentWindow(window, dst_container);
+    while (!src_container->children().empty()) {
+      // Restart iteration from the source container windows each time as they
+      // may change as a result of moving other windows.
+      aura::Window::Windows::const_iterator iter =
+          src_container->children().begin();
+      while (iter != src_container->children().end() &&
+             internal::SystemModalContainerLayoutManager::IsModalBackground(
+                *iter)) {
+        ++iter;
+      }
+      // If the entire window list is modal background windows then stop.
+      if (iter == src_container->children().end())
+        break;
+      ReparentWindow(*iter, dst_container);
     }
   }
 }
