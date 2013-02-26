@@ -25,7 +25,7 @@ class WebContents;
 // test version of WebContents.  This interface can be retrieved from any
 // WebContents that was retrieved via a call to
 // RenderViewHostTestHarness::GetWebContents() (directly or indirectly) or
-// constructed explicitly via one of the WebContentsTester::Create...  methods.
+// constructed explicitly via CreateTestWebContents.
 //
 // Tests within content/ can directly static_cast WebContents objects retrieved
 // or created as described above to TestWebContents.
@@ -59,21 +59,9 @@ class WebContentsTester {
       SiteInstance* instance);
 
   // Deprecated.  Creates a WebContents enabled for testing, that
-  // counts the number of times SetFocusToLocationBar is called.
-  static WebContents*
-      CreateTestWebContentsCountSetFocusToLocationBar(
-          BrowserContext* browser_context,
-          SiteInstance* instance);
-
   // Simulates the appropriate RenderView (pending if any, current otherwise)
   // sending a navigate notification for the NavigationController pending entry.
   virtual void CommitPendingNavigation() = 0;
-
-  // Only implementations retrieved via the deprecated
-  // CreateTestWebContentsFor... methods above will implement this
-  // method.  It retrieves the number of times the focus-related calls
-  // in question have been made.
-  virtual int GetNumberOfFocusCalls() = 0;
 
   virtual RenderViewHost* GetPendingRenderViewHost() const = 0;
 

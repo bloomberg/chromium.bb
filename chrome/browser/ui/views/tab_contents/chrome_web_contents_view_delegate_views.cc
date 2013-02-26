@@ -15,6 +15,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/focus/view_storage.h"
@@ -190,7 +191,8 @@ views::FocusManager*
 
 void ChromeWebContentsViewDelegateViews::SetInitialFocus() {
   if (web_contents_->FocusLocationBarByDefault()) {
-    web_contents_->SetFocusToLocationBar(false);
+    if (web_contents_->GetDelegate())
+      web_contents_->GetDelegate()->SetFocusToLocationBar(false);
   } else {
     web_contents_->GetView()->Focus();
   }

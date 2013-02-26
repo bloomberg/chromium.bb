@@ -411,9 +411,6 @@ class WebContents : public PageNavigator,
   // to see what it should do.
   virtual bool FocusLocationBarByDefault() = 0;
 
-  // Focuses the location bar.
-  virtual void SetFocusToLocationBar(bool select_all) = 0;
-
   // Does this have an opener associated with it?
   virtual bool HasOpener() const = 0;
 

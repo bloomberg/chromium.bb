@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
-#include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/referrer.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_renderer_host.h"
@@ -170,13 +169,31 @@ TEST_F(WebUITest, StandardToWebUI) {
   // Committing Web UI is tested above.
 }
 
+namespace {
+
+class TestDelegate : public content::WebContentsDelegate {
+ public:
+  TestDelegate() : focus_count_(0) {}
+
+  virtual void SetFocusToLocationBar(bool select_all) OVERRIDE {
+    focus_count_++;
+  }
+
+  int focus_count() const { return focus_count_; }
+
+ private:
+  int focus_count_;
+};
+
+}
+
 TEST_F(WebUITest, FocusOnNavigate) {
   // Setup.  |wc| will be used to track when we try to focus the location bar.
-  WebContents* wc =
-      WebContentsTester::CreateTestWebContentsCountSetFocusToLocationBar(
-          web_contents()->GetBrowserContext(),
-          SiteInstance::Create(web_contents()->GetBrowserContext()));
-  WebContentsTester* wct = WebContentsTester::For(wc);
+  WebContents* wc = WebContentsTester::CreateTestWebContents(
+      web_contents()->GetBrowserContext(),
+      SiteInstance::Create(web_contents()->GetBrowserContext()));
+  TestDelegate delegate;
+  wc->SetDelegate(&delegate);
   wc->GetController().CopyStateFrom(controller());
   SetContents(wc);
   int page_id = 200;
@@ -201,17 +218,17 @@ TEST_F(WebUITest, FocusOnNavigate) {
   RenderViewHostTester::For(old_rvh)->SimulateSwapOutACK();
 
   // Navigate back.  Should focus the location bar.
-  int focus_called = wct->GetNumberOfFocusCalls();
+  int focus_called = delegate.focus_count();
   ASSERT_TRUE(controller().CanGoBack());
   controller().GoBack();
   old_rvh = rvh();
   RenderViewHostTester::For(old_rvh)->SendShouldCloseACK(true);
   RenderViewHostTester::For(pending_rvh())->SendNavigate(page_id, new_tab_url);
   RenderViewHostTester::For(old_rvh)->SimulateSwapOutACK();
-  EXPECT_LT(focus_called, wct->GetNumberOfFocusCalls());
+  EXPECT_LT(focus_called, delegate.focus_count());
 
   // Navigate forward.  Shouldn't focus the location bar.
-  focus_called = wct->GetNumberOfFocusCalls();
+  focus_called = delegate.focus_count();
   ASSERT_TRUE(controller().CanGoForward());
   controller().GoForward();
   old_rvh = rvh();
@@ -219,5 +236,5 @@ TEST_F(WebUITest, FocusOnNavigate) {
   RenderViewHostTester::For(
       pending_rvh())->SendNavigate(next_page_id, next_url);
   RenderViewHostTester::For(old_rvh)->SimulateSwapOutACK();
-  EXPECT_EQ(focus_called, wct->GetNumberOfFocusCalls());
+  EXPECT_EQ(focus_called, delegate.focus_count());
 }

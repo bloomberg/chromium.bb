@@ -151,11 +151,6 @@ void TestWebContents::CommitPendingNavigation() {
     static_cast<RenderViewHostImpl*>(old_rvh)->OnSwapOutACK(false);
 }
 
-int TestWebContents::GetNumberOfFocusCalls() {
-  NOTREACHED();
-  return 0;
-}
-
 void TestWebContents::ProceedWithCrossSiteNavigation() {
   if (!GetPendingRenderViewHost())
     return;

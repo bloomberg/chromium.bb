@@ -29,7 +29,6 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
 
   // WebContentsTester implementation.
   virtual void CommitPendingNavigation() OVERRIDE;
-  virtual int GetNumberOfFocusCalls() OVERRIDE;
   virtual RenderViewHost* GetPendingRenderViewHost() const OVERRIDE;
   virtual void NavigateAndCommit(const GURL& url) OVERRIDE;
   virtual void TestSetIsLoading(bool value) OVERRIDE;
