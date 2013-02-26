@@ -16,17 +16,35 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/non_client_view.h"
 
-using views::Widget;
+using ui::ThemeProvider;
+using views::Button;
 using views::ImageButton;
+using views::NonClientFrameView;
 using views::ToggleImageButton;
+using views::Widget;
 
 namespace {
+
+bool ImagesMatch(ImageButton* button,
+                 int normal_image_id,
+                 int hovered_image_id,
+                 int pressed_image_id) {
+  ThemeProvider* theme = button->GetWidget()->GetThemeProvider();
+  gfx::ImageSkia* normal = theme->GetImageSkiaNamed(normal_image_id);
+  gfx::ImageSkia* hovered = theme->GetImageSkiaNamed(hovered_image_id);
+  gfx::ImageSkia* pressed = theme->GetImageSkiaNamed(pressed_image_id);
+  return button->GetImage(Button::STATE_NORMAL).BackedBySameObjectAs(*normal) &&
+      button->GetImage(Button::STATE_HOVERED).BackedBySameObjectAs(*hovered) &&
+      button->GetImage(Button::STATE_PRESSED).BackedBySameObjectAs(*pressed);
+}
 
 class ResizableWidgetDelegate : public views::WidgetDelegate {
  public:
@@ -132,37 +150,6 @@ TEST_F(FramePainterTest, Basics) {
   EXPECT_EQ(0u, FramePainter::instances_->size());
 }
 
-// Ensure that the immersive button is created and visible when it should be.
-TEST_F(FramePainterTest, ImmersiveButton) {
-  scoped_ptr<Widget> widget(CreateTestWidget());
-  views::NonClientFrameView* frame = widget->non_client_view()->frame_view();
-  FramePainter painter;
-  ImageButton size(NULL);
-  ImageButton close(NULL);
-  painter.Init(
-      widget.get(), NULL, &size, &close, FramePainter::SIZE_BUTTON_MAXIMIZES);
-
-  // No immersive button by default.
-  EXPECT_EQ(NULL, painter.immersive_button_);
-
-  // Add an immersive button.
-  ToggleImageButton immersive(NULL);
-  painter.AddImmersiveButton(&immersive);
-
-  // Immersive button starts invisible.
-  widget->Show();
-  EXPECT_FALSE(immersive.visible());
-
-  // Maximizing the window makes it visible.
-  widget->Maximize();
-  EXPECT_TRUE(immersive.visible());
-
-  // A point in the button is treated as client area, so button can be clicked.
-  painter.LayoutHeader(frame, false);
-  gfx::Point point = immersive.bounds().CenterPoint();
-  EXPECT_EQ(HTCLIENT, painter.NonClientHitTest(frame, point));
-}
-
 TEST_F(FramePainterTest, CreateAndDeleteSingleWindow) {
   // Ensure that creating/deleting a window works well and doesn't cause
   // crashes.  See crbug.com/155634
@@ -195,6 +182,69 @@ TEST_F(FramePainterTest, CreateAndDeleteSingleWindow) {
   EXPECT_TRUE(painter->UseSoloWindowHeader());
   EXPECT_EQ(painter.get(),
             root->GetProperty(internal::kSoloWindowFramePainterKey));
+}
+
+TEST_F(FramePainterTest, LayoutHeader) {
+  scoped_ptr<Widget> widget(CreateTestWidget());
+  ImageButton size_button(NULL);
+  ImageButton close_button(NULL);
+  NonClientFrameView* frame_view = widget->non_client_view()->frame_view();
+  frame_view->AddChildView(&size_button);
+  frame_view->AddChildView(&close_button);
+  scoped_ptr<FramePainter> painter(new FramePainter);
+  painter->Init(widget.get(),
+                NULL,
+                &size_button,
+                &close_button,
+                FramePainter::SIZE_BUTTON_MAXIMIZES);
+  widget->Show();
+
+  // Basic layout.
+  painter->LayoutHeader(frame_view, false);
+  EXPECT_TRUE(ImagesMatch(&close_button,
+                          IDR_AURA_WINDOW_CLOSE,
+                          IDR_AURA_WINDOW_CLOSE_H,
+                          IDR_AURA_WINDOW_CLOSE_P));
+  EXPECT_TRUE(ImagesMatch(&size_button,
+                          IDR_AURA_WINDOW_MAXIMIZE,
+                          IDR_AURA_WINDOW_MAXIMIZE_H,
+                          IDR_AURA_WINDOW_MAXIMIZE_P));
+
+  // Shorter layout.
+  painter->LayoutHeader(frame_view, true);
+  EXPECT_TRUE(ImagesMatch(&close_button,
+                          IDR_AURA_WINDOW_MAXIMIZED_CLOSE,
+                          IDR_AURA_WINDOW_MAXIMIZED_CLOSE_H,
+                          IDR_AURA_WINDOW_MAXIMIZED_CLOSE_P));
+  EXPECT_TRUE(ImagesMatch(&size_button,
+                          IDR_AURA_WINDOW_MAXIMIZED_RESTORE,
+                          IDR_AURA_WINDOW_MAXIMIZED_RESTORE_H,
+                          IDR_AURA_WINDOW_MAXIMIZED_RESTORE_P));
+
+  // Maximized shorter layout.
+  widget->Maximize();
+  painter->LayoutHeader(frame_view, true);
+  EXPECT_TRUE(ImagesMatch(&close_button,
+                          IDR_AURA_WINDOW_MAXIMIZED_CLOSE2,
+                          IDR_AURA_WINDOW_MAXIMIZED_CLOSE2_H,
+                          IDR_AURA_WINDOW_MAXIMIZED_CLOSE2_P));
+  EXPECT_TRUE(ImagesMatch(&size_button,
+                          IDR_AURA_WINDOW_MAXIMIZED_RESTORE2,
+                          IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_H,
+                          IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_P));
+
+  // Fullscreen can show the buttons during an immersive reveal, so it should
+  // use the same images as maximized.
+  widget->SetFullscreen(true);
+  painter->LayoutHeader(frame_view, true);
+  EXPECT_TRUE(ImagesMatch(&close_button,
+                          IDR_AURA_WINDOW_MAXIMIZED_CLOSE2,
+                          IDR_AURA_WINDOW_MAXIMIZED_CLOSE2_H,
+                          IDR_AURA_WINDOW_MAXIMIZED_CLOSE2_P));
+  EXPECT_TRUE(ImagesMatch(&size_button,
+                          IDR_AURA_WINDOW_MAXIMIZED_RESTORE2,
+                          IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_H,
+                          IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_P));
 }
 
 TEST_F(FramePainterTest, UseSoloWindowHeader) {

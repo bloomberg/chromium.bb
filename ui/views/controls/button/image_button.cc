@@ -32,6 +32,10 @@ ImageButton::ImageButton(ButtonListener* listener)
 ImageButton::~ImageButton() {
 }
 
+const gfx::ImageSkia& ImageButton::GetImage(ButtonState state) const {
+  return images_[state];
+}
+
 void ImageButton::SetImage(ButtonState state, const gfx::ImageSkia* image) {
   images_[state] = image ? *image : gfx::ImageSkia();
   PreferredSizeChanged();
@@ -174,6 +178,12 @@ void ToggleImageButton::SetToggledTooltipText(const string16& tooltip) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // ToggleImageButton, ImageButton overrides:
+
+const gfx::ImageSkia& ToggleImageButton::GetImage(ButtonState state) const {
+  if (toggled_)
+    return alternate_images_[state];
+  return images_[state];
+}
 
 void ToggleImageButton::SetImage(ButtonState state,
                                  const gfx::ImageSkia* image) {

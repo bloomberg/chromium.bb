@@ -66,9 +66,6 @@ const int kCloseButtonOffsetY = 0;
 // The size and close buttons are designed to slightly overlap in order
 // to do fancy hover highlighting.
 const int kSizeButtonOffsetX = -1;
-// Space between size and immersive buttons.
-// TODO(jamescook): Adjust for final art.
-const int kImmersiveButtonOffsetX = 2;
 // In the pre-Ash era the web content area had a frame along the left edge, so
 // user-generated theme images for the new tab page assume they are shifted
 // right relative to the header.  Now that we have removed the left edge frame
@@ -142,7 +139,6 @@ FramePainter::FramePainter()
       window_icon_(NULL),
       size_button_(NULL),
       close_button_(NULL),
-      immersive_button_(NULL),
       window_(NULL),
       button_separator_(NULL),
       top_left_corner_(NULL),
@@ -233,12 +229,6 @@ void FramePainter::UpdateSoloWindowHeader(RootWindow* root_window) {
   UpdateSoloWindowInRoot(root_window, NULL /* ignorable_window */);
 }
 
-void FramePainter::AddImmersiveButton(views::ToggleImageButton* button) {
-  DCHECK(button);
-  immersive_button_ = button;
-  immersive_button_->SetVisible(frame_->IsMaximized());
-}
-
 gfx::Rect FramePainter::GetBoundsForClientView(
     int top_height,
     const gfx::Rect& window_bounds) const {
@@ -303,10 +293,6 @@ int FramePainter::NonClientHitTest(views::NonClientFrameView* view,
   if (size_button_->visible() &&
       size_button_->GetMirroredBounds().Contains(point))
     return HTMAXBUTTON;
-  if (immersive_button_ &&
-      immersive_button_->visible() &&
-      immersive_button_->GetMirroredBounds().Contains(point))
-    return HTCLIENT;  // No special constant, but cannot be HTCAPTION.
 
   // Caption is a safe default.
   return HTCAPTION;
@@ -322,8 +308,6 @@ gfx::Size FramePainter::GetMinimumSize(views::NonClientFrameView* view) {
   int title_width = GetTitleOffsetX() +
       size_button_->width() + kSizeButtonOffsetX +
       close_button_->width() + kCloseButtonOffsetX;
-  if (immersive_button_ && immersive_button_->visible())
-    title_width += immersive_button_->width() + kImmersiveButtonOffsetX;
   if (title_width > min_size.width())
     min_size.set_width(title_width);
   return min_size;
@@ -338,10 +322,6 @@ int FramePainter::GetRightInset() const {
   gfx::Size size_button_size = size_button_->GetPreferredSize();
   int inset = close_size.width() + kCloseButtonOffsetX +
       size_button_size.width() + kSizeButtonOffsetX;
-  if (immersive_button_ && immersive_button_->visible()) {
-    gfx::Size immersive_size = immersive_button_->GetPreferredSize();
-    inset += immersive_size.width() + kImmersiveButtonOffsetX;
-  }
   return inset;
 }
 
@@ -520,8 +500,10 @@ void FramePainter::PaintTitleBar(views::NonClientFrameView* view,
 
 void FramePainter::LayoutHeader(views::NonClientFrameView* view,
                                 bool shorter_layout) {
-  // The new assets only make sense if the window is actually maximized.
-  if (shorter_layout && frame_->IsMaximized() &&
+  // The new assets only make sense if the window is actually maximized or
+  // fullscreen.
+  if (shorter_layout &&
+      (frame_->IsMaximized() || frame_->IsFullscreen()) &&
       GetTrackedByWorkspace(frame_->GetNativeWindow())) {
     SetButtonImages(close_button_,
                     IDR_AURA_WINDOW_MAXIMIZED_CLOSE2,
@@ -559,17 +541,6 @@ void FramePainter::LayoutHeader(views::NonClientFrameView* view,
                     IDR_AURA_WINDOW_MAXIMIZE_P);
   }
 
-  if (immersive_button_) {
-    SetButtonImages(immersive_button_,
-                    IDR_AURA_WINDOW_IMMERSIVE_ENTER,
-                    IDR_AURA_WINDOW_IMMERSIVE_ENTER_H,
-                    IDR_AURA_WINDOW_IMMERSIVE_ENTER_P);
-    SetToggledButtonImages(immersive_button_,
-                           IDR_AURA_WINDOW_IMMERSIVE_EXIT,
-                           IDR_AURA_WINDOW_IMMERSIVE_EXIT_H,
-                           IDR_AURA_WINDOW_IMMERSIVE_EXIT_P);
-  }
-
   gfx::Size close_size = close_button_->GetPreferredSize();
   close_button_->SetBounds(
       view->width() - close_size.width() - kCloseButtonOffsetX,
@@ -583,16 +554,6 @@ void FramePainter::LayoutHeader(views::NonClientFrameView* view,
       close_button_->y(),
       size_button_size.width(),
       size_button_size.height());
-
-  if (immersive_button_) {
-    gfx::Size immersive_size = immersive_button_->GetPreferredSize();
-    // TODO(jamescook): Fix layout when we have real art.
-    immersive_button_->SetBounds(
-        size_button_->x() - immersive_size.width() - kImmersiveButtonOffsetX,
-        size_button_->y(),
-        immersive_size.width(),
-        immersive_size.height());
-  }
 
   if (window_icon_) {
     window_icon_->SetBoundsRect(
@@ -633,10 +594,6 @@ void FramePainter::OnWindowPropertyChanged(aura::Window* window,
         gfx::Insets(kResizeInsideBoundsSize, kResizeInsideBoundsSize,
                     kResizeInsideBoundsSize, kResizeInsideBoundsSize));
   }
-
-  // Immersive button only shows in maximized windows.
-  if (immersive_button_)
-    immersive_button_->SetVisible(frame_->IsMaximized());
 }
 
 void FramePainter::OnWindowVisibilityChanged(aura::Window* window,

@@ -79,7 +79,10 @@ class BrowserNonClientFrameViewAsh
   // Layout the incognito icon.
   void LayoutAvatar();
 
-  void PaintTitleBar(gfx::Canvas* canvas);
+  // Returns true if there is anything to paint. Some fullscreen windows do not
+  // need their frames painted.
+  bool ShouldPaint() const;
+
   void PaintToolbarBackground(gfx::Canvas* canvas);
 
   // Windows without a toolbar need to draw their own line under the header,
@@ -95,9 +98,6 @@ class BrowserNonClientFrameViewAsh
   // minimized. The exact behavior is determined by |size_button_minimizes_|.
   views::ImageButton* size_button_;
   views::ImageButton* close_button_;
-
-  // Optional button to toggle immersive UI. May be NULL.
-  views::ToggleImageButton* immersive_button_;
 
   // For popups, the window icon.
   TabIconView* window_icon_;
