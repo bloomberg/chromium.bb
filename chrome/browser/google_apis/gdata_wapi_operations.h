@@ -422,77 +422,15 @@ class InitiateUploadExistingFileOperation
   DISALLOW_COPY_AND_ASSIGN(InitiateUploadExistingFileOperation);
 };
 
-//========================== UploadRangeOperationBase ==========================
-
-// Struct for response to ResumeUpload and GetUploadStatus.
-struct UploadRangeResponse {
-  UploadRangeResponse();
-  UploadRangeResponse(GDataErrorCode code,
-                      int64 start_position_received,
-                      int64 end_position_received);
-  ~UploadRangeResponse();
-
-  GDataErrorCode code;
-  // The values of "Range" header returned from the server. The values are
-  // used to continue uploading more data. These are set to -1 if an upload
-  // is complete.
-  int64 start_position_received;
-  int64 end_position_received;  // Exclusive. See below.
-};
+//============================= UploadRangeCallback ============================
 
 // Callback type for DocumentServiceInterface::ResumeUpload and
 // DocumentServiceInterface::GetUploadStatus.
+// TODO(hidehiko): The dependency to ResourceEntry in GData WAPI looks
+// twisted dependency. Should be cleaned up.
 typedef base::Callback<void(
     const UploadRangeResponse& response,
     scoped_ptr<ResourceEntry> new_entry)> UploadRangeCallback;
-
-// Base class for a URL fetch request expecting the response containing the
-// current uploading range. This class processes the response containing
-// "Range" header and invoke |callback|.
-class UploadRangeOperationBase : public UrlFetchOperationBase {
- protected:
-  // |callback| will be called on completion of the operation.
-  // |callback| must not be null.
-  //
-  // If there is more data to upload, |code| of the |callback| invocation is
-  // set to HTTP_RESUME_INCOMPLETE, and |new_entry| parameter is NULL.
-  //
-  // If upload is complete, |code| is set to HTTP_CREATED for a new file, or
-  // HTTP_SUCCESS for an existing file. |new_entry| contains the document
-  // entry of the newly uploaded file.
-  UploadRangeOperationBase(
-      OperationRegistry* registry,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const UploadRangeCallback& callback,
-      const UploadMode upload_mode,
-      const base::FilePath& drive_file_path,
-      const GURL& upload_url);
-  virtual ~UploadRangeOperationBase();
-
-  // UrlFetchOperationBase overrides.
-  virtual GURL GetURL() const OVERRIDE;
-  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
-  virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
-  virtual void NotifyStartToOperationRegistry() OVERRIDE;
-  virtual void NotifySuccessToOperationRegistry() OVERRIDE;
-  virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
-
- private:
-  // Called when ParseJson() is completed.
-  void OnDataParsed(GDataErrorCode code, scoped_ptr<base::Value> value);
-
-  const UploadRangeCallback callback_;
-  const UploadMode upload_mode_;
-  const base::FilePath drive_file_path_;
-  const GURL upload_url_;
-
-  bool last_chunk_completed_;
-
-  // Note: This should remain the last member so it'll be destroyed and
-  // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<UploadRangeOperationBase> weak_ptr_factory_;
-  DISALLOW_COPY_AND_ASSIGN(UploadRangeOperationBase);
-};
 
 //============================ ResumeUploadOperation ===========================
 
@@ -551,7 +489,14 @@ class ResumeUploadOperation : public UploadRangeOperationBase {
   virtual void OnURLFetchUploadProgress(const net::URLFetcher* source,
                                         int64 current, int64 total) OVERRIDE;
 
+  // UploadRangeOperationBase overrides.
+  virtual void OnRangeOperationComplete(
+      const UploadRangeResponse& response,
+      scoped_ptr<base::Value> value) OVERRIDE;
+
  private:
+  const UploadRangeCallback callback_;
+
   // The parameters for the request. See ResumeUploadParams for the details.
   const int64 start_position_;
   const int64 end_position_;

@@ -12,7 +12,9 @@
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_byte_range.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_util.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
@@ -33,6 +35,10 @@ const int kMaxReAuthenticateAttemptsPerOperation = 1;
 const char kUploadContentType[] = "X-Upload-Content-Type: ";
 const char kUploadContentLength[] = "X-Upload-Content-Length: ";
 const char kUploadResponseLocation[] = "location";
+
+// Template for upload data range of both GData WAPI and Drive API v2.
+const char kUploadContentRange[] = "Content-Range: bytes ";
+const char kUploadResponseRange[] = "range";
 
 // Parse JSON string to base::Value object.
 scoped_ptr<base::Value> ParseJsonOnBlockingPool(const std::string& json) {
@@ -431,6 +437,120 @@ InitiateUploadOperationBase::GetExtraRequestHeaders() const {
   headers.push_back(
       kUploadContentLength + base::Int64ToString(content_length_));
   return headers;
+}
+
+//========================== UploadRangeOperationBase ==========================
+
+UploadRangeOperationBase::UploadRangeOperationBase(
+    OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
+    const UploadMode upload_mode,
+    const base::FilePath& drive_file_path,
+    const GURL& upload_url)
+    : UrlFetchOperationBase(registry,
+                            url_request_context_getter,
+                            OPERATION_UPLOAD,
+                            drive_file_path),
+      upload_mode_(upload_mode),
+      drive_file_path_(drive_file_path),
+      upload_url_(upload_url),
+      last_chunk_completed_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+}
+
+UploadRangeOperationBase::~UploadRangeOperationBase() {}
+
+GURL UploadRangeOperationBase::GetURL() const {
+  // This is very tricky to get json from this operation. To do that, &alt=json
+  // has to be appended not here but in InitiateUploadOperation::GetURL().
+  return upload_url_;
+}
+
+URLFetcher::RequestType UploadRangeOperationBase::GetRequestType() const {
+  return URLFetcher::PUT;
+}
+
+void UploadRangeOperationBase::ProcessURLFetchResults(
+    const URLFetcher* source) {
+  GDataErrorCode code = GetErrorCode(source);
+  net::HttpResponseHeaders* hdrs = source->GetResponseHeaders();
+
+  if (code == HTTP_RESUME_INCOMPLETE) {
+    // Retrieve value of the first "Range" header.
+    int64 start_position_received = -1;
+    int64 end_position_received = -1;
+    std::string range_received;
+    hdrs->EnumerateHeader(NULL, kUploadResponseRange, &range_received);
+    if (!range_received.empty()) {  // Parse the range header.
+      std::vector<net::HttpByteRange> ranges;
+      if (net::HttpUtil::ParseRangeHeader(range_received, &ranges) &&
+          !ranges.empty() ) {
+        // We only care about the first start-end pair in the range.
+        //
+        // Range header represents the range inclusively, while we are treating
+        // ranges exclusively (i.e., end_position_received should be one passed
+        // the last valid index). So "+ 1" is added.
+        start_position_received = ranges[0].first_byte_position();
+        end_position_received = ranges[0].last_byte_position() + 1;
+      }
+    }
+    DVLOG(1) << "Got response for [" << drive_file_path_.value()
+             << "]: code=" << code
+             << ", range_hdr=[" << range_received
+             << "], range_parsed=" << start_position_received
+             << "," << end_position_received;
+
+    OnRangeOperationComplete(UploadRangeResponse(code,
+                                                 start_position_received,
+                                                 end_position_received),
+                             scoped_ptr<base::Value>());
+
+    OnProcessURLFetchResultsComplete(true);
+  } else {
+    // There might be explanation of unexpected error code in response.
+    std::string response_content;
+    source->GetResponseAsString(&response_content);
+    DVLOG(1) << "Got response for [" << drive_file_path_.value()
+             << "]: code=" << code
+             << ", content=[\n" << response_content << "\n]";
+
+    ParseJson(response_content,
+              base::Bind(&UploadRangeOperationBase::OnDataParsed,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         code));
+  }
+}
+
+void UploadRangeOperationBase::OnDataParsed(GDataErrorCode code,
+                                            scoped_ptr<base::Value> value) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // For a new file, HTTP_CREATED is returned.
+  // For an existing file, HTTP_SUCCESS is returned.
+  if ((upload_mode_ == UPLOAD_NEW_FILE && code == HTTP_CREATED) ||
+      (upload_mode_ == UPLOAD_EXISTING_FILE && code == HTTP_SUCCESS)) {
+    last_chunk_completed_ = true;
+  }
+
+  OnRangeOperationComplete(UploadRangeResponse(code, -1, -1), value.Pass());
+  OnProcessURLFetchResultsComplete(last_chunk_completed_);
+}
+
+void UploadRangeOperationBase::NotifyStartToOperationRegistry() {
+  NotifyResume();
+}
+
+void UploadRangeOperationBase::NotifySuccessToOperationRegistry() {
+  if (last_chunk_completed_)
+    NotifyFinish(OPERATION_COMPLETED);
+  else
+    NotifySuspend();
+}
+
+void UploadRangeOperationBase::RunCallbackOnPrematureFailure(
+    GDataErrorCode code) {
+  OnRangeOperationComplete(
+      UploadRangeResponse(code, 0, 0), scoped_ptr<base::Value>());
 }
 
 //============================ DownloadFileOperation ===========================

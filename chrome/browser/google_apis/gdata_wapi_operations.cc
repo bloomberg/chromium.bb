@@ -13,8 +13,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
 #include "net/base/url_util.h"
-#include "net/http/http_response_headers.h"
-#include "net/http/http_util.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
 
 using content::BrowserThread;
@@ -29,9 +27,6 @@ const char kIfMatchHeaderPrefix[] = "If-Match: ";
 const char kUploadContentRange[] = "Content-Range: bytes ";
 
 const char kFeedField[] = "feed";
-
-// Templates for file uploading.
-const char kUploadResponseRange[] = "range";
 
 // Returns If-Match header string for |etag|.
 // If |etag| is empty, the returned header should match any etag.
@@ -573,129 +568,6 @@ InitiateUploadExistingFileOperation::GetExtraRequestHeaders() const {
   return headers;
 }
 
-//========================== UploadRangeOperationBase ==========================
-
-UploadRangeOperationBase::UploadRangeOperationBase(
-    OperationRegistry* registry,
-    net::URLRequestContextGetter* url_request_context_getter,
-    const UploadRangeCallback& callback,
-    const UploadMode upload_mode,
-    const base::FilePath& drive_file_path,
-    const GURL& upload_url)
-    : UrlFetchOperationBase(registry,
-                            url_request_context_getter,
-                            OPERATION_UPLOAD,
-                            drive_file_path),
-      callback_(callback),
-      upload_mode_(upload_mode),
-      drive_file_path_(drive_file_path),
-      upload_url_(upload_url),
-      last_chunk_completed_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
-  DCHECK(!callback_.is_null());
-}
-
-UploadRangeOperationBase::~UploadRangeOperationBase() {}
-
-GURL UploadRangeOperationBase::GetURL() const {
-  // This is very tricky to get json from this operation. To do that, &alt=json
-  // has to be appended not here but in InitiateUploadOperation::GetURL().
-  return upload_url_;
-}
-
-URLFetcher::RequestType UploadRangeOperationBase::GetRequestType() const {
-  return URLFetcher::PUT;
-}
-
-void UploadRangeOperationBase::ProcessURLFetchResults(
-    const URLFetcher* source) {
-  GDataErrorCode code = GetErrorCode(source);
-  net::HttpResponseHeaders* hdrs = source->GetResponseHeaders();
-
-  if (code == HTTP_RESUME_INCOMPLETE) {
-    // Retrieve value of the first "Range" header.
-    int64 start_position_received = -1;
-    int64 end_position_received = -1;
-    std::string range_received;
-    hdrs->EnumerateHeader(NULL, kUploadResponseRange, &range_received);
-    if (!range_received.empty()) {  // Parse the range header.
-      std::vector<net::HttpByteRange> ranges;
-      if (net::HttpUtil::ParseRangeHeader(range_received, &ranges) &&
-          !ranges.empty() ) {
-        // We only care about the first start-end pair in the range.
-        //
-        // Range header represents the range inclusively, while we are treating
-        // ranges exclusively (i.e., end_position_received should be one passed
-        // the last valid index). So "+ 1" is added.
-        start_position_received = ranges[0].first_byte_position();
-        end_position_received = ranges[0].last_byte_position() + 1;
-      }
-    }
-    DVLOG(1) << "Got response for [" << drive_file_path_.value()
-             << "]: code=" << code
-             << ", range_hdr=[" << range_received
-             << "], range_parsed=" << start_position_received
-             << "," << end_position_received;
-
-    callback_.Run(UploadRangeResponse(code,
-                                      start_position_received,
-                                      end_position_received),
-                  scoped_ptr<ResourceEntry>());
-
-    OnProcessURLFetchResultsComplete(true);
-  } else {
-    // There might be explanation of unexpected error code in response.
-    std::string response_content;
-    source->GetResponseAsString(&response_content);
-    DVLOG(1) << "Got response for [" << drive_file_path_.value()
-             << "]: code=" << code
-             << ", content=[\n" << response_content << "\n]";
-
-    ParseJson(response_content,
-              base::Bind(&UploadRangeOperationBase::OnDataParsed,
-                         weak_ptr_factory_.GetWeakPtr(),
-                         code));
-  }
-}
-
-void UploadRangeOperationBase::OnDataParsed(GDataErrorCode code,
-                                            scoped_ptr<base::Value> value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // For a new file, HTTP_CREATED is returned.
-  // For an existing file, HTTP_SUCCESS is returned.
-  if ((upload_mode_ == UPLOAD_NEW_FILE && code == HTTP_CREATED) ||
-      (upload_mode_ == UPLOAD_EXISTING_FILE && code == HTTP_SUCCESS)) {
-    last_chunk_completed_ = true;
-  }
-
-  scoped_ptr<ResourceEntry> entry;
-  if (value.get())
-    entry = ResourceEntry::ExtractAndParse(*(value.get()));
-
-  if (!entry.get())
-    LOG(WARNING) << "Invalid entry received on upload.";
-
-  callback_.Run(UploadRangeResponse(code, -1, -1), entry.Pass());
-  OnProcessURLFetchResultsComplete(last_chunk_completed_);
-}
-
-void UploadRangeOperationBase::NotifyStartToOperationRegistry() {
-  NotifyResume();
-}
-
-void UploadRangeOperationBase::NotifySuccessToOperationRegistry() {
-  if (last_chunk_completed_)
-    NotifyFinish(OPERATION_COMPLETED);
-  else
-    NotifySuspend();
-}
-
-void UploadRangeOperationBase::RunCallbackOnPrematureFailure(
-    GDataErrorCode code) {
-  callback_.Run(UploadRangeResponse(code, 0, 0), scoped_ptr<ResourceEntry>());
-}
-
 //============================ ResumeUploadOperation ===========================
 
 ResumeUploadOperation::ResumeUploadOperation(
@@ -705,15 +577,16 @@ ResumeUploadOperation::ResumeUploadOperation(
     const ResumeUploadParams& params)
   : UploadRangeOperationBase(registry,
                              url_request_context_getter,
-                             callback,
                              params.upload_mode,
                              params.drive_file_path,
                              params.upload_location),
+    callback_(callback),
     start_position_(params.start_position),
     end_position_(params.end_position),
     content_length_(params.content_length),
     content_type_(params.content_type),
     buf_(params.buf) {
+  DCHECK(!callback_.is_null());
   DCHECK_LE(start_position_, end_position_);
 }
 
@@ -758,6 +631,21 @@ void ResumeUploadOperation::OnURLFetchUploadProgress(
     const URLFetcher* source, int64 current, int64 total) {
   // Adjust the progress values according to the range currently uploaded.
   NotifyProgress(start_position_ + current, content_length_);
+}
+
+void ResumeUploadOperation::OnRangeOperationComplete(
+    const UploadRangeResponse& response, scoped_ptr<base::Value> value) {
+  scoped_ptr<ResourceEntry> entry;
+  if (value.get()) {
+    entry = ResourceEntry::ExtractAndParse(*value);
+
+    // Note: |value| may be NULL, in particular if the callback is for a
+    // failure.
+    if (!entry.get())
+      LOG(WARNING) << "Invalid entry received on upload.";
+  }
+
+  callback_.Run(response, entry.Pass());
 }
 
 }  // namespace google_apis

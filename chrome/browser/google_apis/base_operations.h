@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/google_apis/drive_upload_mode.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/operation_registry.h"
 #include "googleurl/src/gurl.h"
@@ -302,6 +303,83 @@ class InitiateUploadOperationBase : public UrlFetchOperationBase {
   const int64 content_length_;
 
   DISALLOW_COPY_AND_ASSIGN(InitiateUploadOperationBase);
+};
+
+//========================== UploadRangeOperationBase ==========================
+
+// Struct for response to ResumeUpload and GetUploadStatus.
+struct UploadRangeResponse {
+  UploadRangeResponse();
+  UploadRangeResponse(GDataErrorCode code,
+                      int64 start_position_received,
+                      int64 end_position_received);
+  ~UploadRangeResponse();
+
+  GDataErrorCode code;
+  // The values of "Range" header returned from the server. The values are
+  // used to continue uploading more data. These are set to -1 if an upload
+  // is complete.
+  // |start_position_received| is inclusive and |end_position_received| is
+  // exclusive to follow the common C++ manner, although the response from
+  // the server has "Range" header in inclusive format at both sides.
+  int64 start_position_received;
+  int64 end_position_received;
+};
+
+// Base class for a URL fetch request expecting the response containing the
+// current uploading range. This class processes the response containing
+// "Range" header and invoke OnRangeOperationComplete.
+class UploadRangeOperationBase : public UrlFetchOperationBase {
+ protected:
+  UploadRangeOperationBase(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const UploadMode upload_mode,
+      const base::FilePath& drive_file_path,
+      const GURL& upload_url);
+  virtual ~UploadRangeOperationBase();
+
+  // UrlFetchOperationBase overrides.
+  virtual GURL GetURL() const OVERRIDE;
+  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+  virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
+  virtual void NotifyStartToOperationRegistry() OVERRIDE;
+  virtual void NotifySuccessToOperationRegistry() OVERRIDE;
+  virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
+
+  // This method will be called when the operation is done, regardless of
+  // whether it is succeeded or failed.
+  //
+  // 1) If there is more data to upload, |code| of |response| is set to
+  // HTTP_RESUME_INCOMPLETE, and positions are set appropriately. Also, |value|
+  // will be set to NULL.
+  // 2) If the upload is complete, |code| is set to HTTP_CREATED for a new file
+  // or HTTP_SUCCESS for an existing file. Positions are set to -1, and |value|
+  // is set to a parsed JSON value representing the uploaded file.
+  // 3) If a premature failure is found, |code| is set to a value representing
+  // the situation. Positions are set to 0, and |value| is set to NULL.
+  //
+  // See also the comments for UploadRangeResponse.
+  // Note: Subclasses should have responsibility to run some callback
+  // in this method to notify the finish status to its clients (or ignore it
+  // under its responsibility).
+  virtual void OnRangeOperationComplete(
+      const UploadRangeResponse& response, scoped_ptr<base::Value> value) = 0;
+
+ private:
+  // Called when ParseJson() is completed.
+  void OnDataParsed(GDataErrorCode code, scoped_ptr<base::Value> value);
+
+  const UploadMode upload_mode_;
+  const base::FilePath drive_file_path_;
+  const GURL upload_url_;
+
+  bool last_chunk_completed_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<UploadRangeOperationBase> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(UploadRangeOperationBase);
 };
 
 //============================ DownloadFileOperation ===========================
