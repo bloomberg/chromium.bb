@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/extensions/api/api_resource_manager.h"
+#include "chrome/browser/extensions/api/bluetooth/bluetooth_socket_resource.h"
 #include "chrome/browser/extensions/api/serial/serial_connection.h"
 #include "chrome/browser/extensions/api/socket/socket.h"
 #include "chrome/browser/extensions/api/usb/usb_device_resource.h"
@@ -111,6 +112,10 @@ class ExtensionSystem : public ProfileKeyedService {
   // The RulesRegistryService is created at startup.
   virtual RulesRegistryService* rules_registry_service() = 0;
 
+  // The BluetoothSocketResource ResourceManager is created at startup.
+  virtual ApiResourceManager<BluetoothSocketResource>*
+  bluetooth_socket_resource_manager() = 0;
+
   // The SerialConnection ResourceManager is created at startup.
   virtual ApiResourceManager<SerialConnection>*
   serial_connection_manager() = 0;
@@ -178,6 +183,8 @@ class ExtensionSystemImpl : public ExtensionSystem {
   virtual EventRouter* event_router() OVERRIDE;  // shared
   virtual RulesRegistryService* rules_registry_service()
       OVERRIDE;  // shared
+  virtual ApiResourceManager<BluetoothSocketResource>*
+      bluetooth_socket_resource_manager() OVERRIDE;
   virtual ApiResourceManager<SerialConnection>* serial_connection_manager()
       OVERRIDE;
   virtual ApiResourceManager<Socket>* socket_manager() OVERRIDE;
@@ -269,6 +276,8 @@ class ExtensionSystemImpl : public ExtensionSystem {
   // access to the ResourceContext owned by |io_data_|.
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
   scoped_ptr<AlarmManager> alarm_manager_;
+  scoped_ptr<ApiResourceManager<BluetoothSocketResource> >
+      bluetooth_socket_resource_manager_;
   scoped_ptr<ApiResourceManager<SerialConnection> > serial_connection_manager_;
   scoped_ptr<ApiResourceManager<Socket> > socket_manager_;
   scoped_ptr<ApiResourceManager<

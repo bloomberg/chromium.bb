@@ -13,7 +13,6 @@
 #include "chrome/common/extensions/api/bluetooth.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
-#include "device/bluetooth/bluetooth_socket.h"
 
 class Profile;
 
@@ -37,18 +36,6 @@ class ExtensionBluetoothEventRouter
 
   // Called when a bluetooth event listener is removed.
   void OnListenerRemoved();
-
-  // Register the BluetoothSocket |socket| for use by the extensions system.
-  // This class will hold onto the socket for its lifetime, or until
-  // ReleaseSocket is called for the socket.  Returns an id for the socket.
-  int RegisterSocket(scoped_refptr<device::BluetoothSocket> socket);
-
-  // Release the BluetoothSocket corresponding to |id|.  Returns true if
-  // the socket was found and released, false otherwise.
-  bool ReleaseSocket(int id);
-
-  // Get the BluetoothSocket corresponding to |id|.
-  scoped_refptr<device::BluetoothSocket> GetSocket(int id);
 
   // Sets whether this Profile is responsible for the discovering state of the
   // adapter.
@@ -90,14 +77,6 @@ class ExtensionBluetoothEventRouter
   scoped_refptr<device::BluetoothAdapter> adapter_;
 
   int num_event_listeners_;
-
-  // The next id to use for referring to a BluetoothSocket.  We avoid using
-  // the fd of the socket because we don't want to leak that information to
-  // the extension javascript.
-  int next_socket_id_;
-
-  typedef std::map<int, scoped_refptr<device::BluetoothSocket> > SocketMap;
-  SocketMap socket_map_;
 
   typedef ScopedVector<extensions::api::bluetooth::Device>
       DeviceList;

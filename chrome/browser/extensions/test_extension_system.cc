@@ -159,6 +159,11 @@ RulesRegistryService* TestExtensionSystem::rules_registry_service() {
   return NULL;
 }
 
+ApiResourceManager<BluetoothSocketResource>*
+TestExtensionSystem::bluetooth_socket_resource_manager() {
+  return NULL;
+}
+
 ApiResourceManager<SerialConnection>*
 TestExtensionSystem::serial_connection_manager() {
   return NULL;

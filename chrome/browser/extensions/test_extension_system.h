@@ -58,6 +58,8 @@ class TestExtensionSystem : public ExtensionSystem {
   virtual MessageService* message_service() OVERRIDE;
   virtual EventRouter* event_router() OVERRIDE;
   virtual RulesRegistryService* rules_registry_service() OVERRIDE;
+  virtual ApiResourceManager<BluetoothSocketResource>*
+      bluetooth_socket_resource_manager() OVERRIDE;
   virtual ApiResourceManager<SerialConnection>* serial_connection_manager()
       OVERRIDE;
   virtual ApiResourceManager<Socket>* socket_manager() OVERRIDE;

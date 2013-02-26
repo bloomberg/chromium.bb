@@ -7,6 +7,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_event_router.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -43,7 +44,8 @@ BluetoothExtensionFunction::~BluetoothExtensionFunction() {
 }
 
 bool BluetoothExtensionFunction::RunImpl() {
-  if (!IsBluetoothSupported(profile())) {
+  if (!IsBluetoothSupported(profile()) ||
+      !ExtensionSystem::Get(profile())->bluetooth_socket_resource_manager()) {
     SetError(kPlatformNotSupported);
     return false;
   }

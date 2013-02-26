@@ -332,6 +332,8 @@ void ExtensionSystemImpl::InitForRegularProfile(bool extensions_enabled) {
   extension_process_manager_.reset(ExtensionProcessManager::Create(profile_));
   alarm_manager_.reset(new AlarmManager(profile_, shared_->clock()));
 
+  bluetooth_socket_resource_manager_.reset(
+      new ApiResourceManager<BluetoothSocketResource>(BrowserThread::UI));
   serial_connection_manager_.reset(new ApiResourceManager<SerialConnection>(
       BrowserThread::FILE));
   socket_manager_.reset(new ApiResourceManager<Socket>(BrowserThread::IO));
@@ -409,6 +411,11 @@ EventRouter* ExtensionSystemImpl::event_router() {
 
 RulesRegistryService* ExtensionSystemImpl::rules_registry_service() {
   return rules_registry_service_.get();
+}
+
+ApiResourceManager<BluetoothSocketResource>*
+ExtensionSystemImpl::bluetooth_socket_resource_manager() {
+  return bluetooth_socket_resource_manager_.get();
 }
 
 ApiResourceManager<SerialConnection>*
