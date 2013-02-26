@@ -477,13 +477,13 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
   size_t original_len = len;
 
   // Update current frame buffer as needed.
-  if (current_frame_buffer_length_ < SpdyFrame::kHeaderSize) {
+  if (current_frame_buffer_length_ < GetControlFrameMinimumSize()) {
     size_t bytes_desired =
         GetControlFrameMinimumSize() - current_frame_buffer_length_;
     UpdateCurrentFrameBuffer(&data, &len, bytes_desired);
   }
 
-  if (current_frame_buffer_length_ < SpdyFrame::kHeaderSize) {
+  if (current_frame_buffer_length_ < GetControlFrameMinimumSize()) {
     // TODO(rch): remove this empty block
     // Do nothing.
   } else {
@@ -517,7 +517,7 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
     // This is just a sanity check for help debugging early frame errors.
     if (remaining_data_ > 1000000u) {
       // The strncmp for 5 is safe because we only hit this point if we
-      // have SpdyFrame::kHeaderSize (8) bytes
+      // have GetControlFrameMinimumSize() (8) bytes
       if (!syn_frame_processed_ &&
           strncmp(current_frame_buffer_.get(), "HTTP/", 5) == 0) {
         LOG(WARNING) << "Unexpected HTTP response to " << display_protocol_
@@ -563,7 +563,7 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
 
 void SpdyFramer::ProcessControlFrameHeader() {
   DCHECK_EQ(SPDY_NO_ERROR, error_code_);
-  DCHECK_LE(static_cast<size_t>(SpdyFrame::kHeaderSize),
+  DCHECK_LE(GetControlFrameMinimumSize(),
             current_frame_buffer_length_);
 
   if (current_frame_type_ < SYN_STREAM ||
@@ -621,7 +621,8 @@ void SpdyFramer::ProcessControlFrameHeader() {
       break;
     case GOAWAY:
       {
-        if (current_frame_length_ != GetGoAwaySize() - SpdyFrame::kHeaderSize) {
+        if (current_frame_length_ !=
+            GetGoAwaySize() - GetControlFrameMinimumSize()) {
           set_error(SPDY_INVALID_CONTROL_FRAME);
         } else if (current_frame_flags_ != 0) {
           set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
@@ -679,7 +680,7 @@ void SpdyFramer::ProcessControlFrameHeader() {
 
   remaining_control_payload_ = current_frame_length_;
   const size_t total_frame_size =
-      remaining_control_payload_ + SpdyFrame::kHeaderSize;
+      remaining_control_payload_ + GetControlFrameMinimumSize();
   if (total_frame_size > GetControlFrameBufferMaxSize()) {
     DLOG(WARNING) << "Received control frame with way too big of a payload: "
                   << total_frame_size;
@@ -733,7 +734,7 @@ void SpdyFramer::ProcessControlFrameHeader() {
               static_cast<int32>(current_frame_buffer_length_));
     remaining_control_header_ = frame_size_without_variable_data -
         current_frame_buffer_length_;
-    remaining_control_payload_ += SpdyFrame::kHeaderSize -
+    remaining_control_payload_ += GetControlFrameMinimumSize() -
         frame_size_without_variable_data;
     CHANGE_STATE(SPDY_CONTROL_FRAME_BEFORE_HEADER_BLOCK);
     return;
@@ -1906,13 +1907,6 @@ bool SpdyFramer::IncrementallyDeliverControlFrameHeaderData(
     }
   }
   return read_successfully;
-}
-
-SpdyFrame* SpdyFramer::DuplicateFrame(const SpdyFrame& frame) {
-  int size = SpdyFrame::kHeaderSize + frame.length();
-  SpdyFrame* new_frame = new SpdyFrame(size);
-  memcpy(new_frame->data(), frame.data(), size);
-  return new_frame;
 }
 
 void SpdyFramer::SerializeNameValueBlockWithoutCompression(

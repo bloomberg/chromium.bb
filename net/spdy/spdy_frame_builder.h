@@ -62,7 +62,7 @@ class NET_EXPORT_PRIVATE SpdyFrameBuilder {
 
   // Takes the buffer from the SpdyFrameBuilder.
   SpdyFrame* take() {
-    SpdyFrame* rv = new SpdyFrame(buffer_.release(), true);
+    SpdyFrame* rv = new SpdyFrame(buffer_.release(), length_, true);
     capacity_ = 0;
     length_ = 0;
     return rv;

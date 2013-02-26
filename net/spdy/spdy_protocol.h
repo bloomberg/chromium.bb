@@ -825,8 +825,9 @@ class SpdyFrame {
   // If |owns_buffer| is false, the caller retains ownership of the buffer and
   // is responsible for making sure the buffer outlives this frame.  In other
   // words, this class does NOT create a copy of the buffer.
-  SpdyFrame(char* data, bool owns_buffer)
+  SpdyFrame(char* data, size_t size, bool owns_buffer)
       : frame_(reinterpret_cast<struct SpdyFrameBlock*>(data)),
+        size_(size),
         owns_buffer_(owns_buffer) {
     DCHECK(frame_);
   }
@@ -843,6 +844,9 @@ class SpdyFrame {
   // the frame packed as expected for sending over the wire.
   char* data() const { return reinterpret_cast<char*>(frame_); }
 
+  // Returns the actual size of the underlying buffer.
+  size_t size() const { return size_; }
+
   uint32 length() const {
     return ntohl(frame_->flags_length_.length_) & kLengthMask;
   }
@@ -857,6 +861,7 @@ class SpdyFrame {
   SpdyFrameBlock* frame_;
 
  private:
+  size_t size_;
   bool owns_buffer_;
   DISALLOW_COPY_AND_ASSIGN(SpdyFrame);
 };

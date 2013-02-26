@@ -78,14 +78,14 @@ class SpdyFramerTestUtil {
       SpdyFramer* framer, const SpdyFrameType& frame) {
     DecompressionVisitor visitor(framer->protocol_version());
     framer->set_visitor(&visitor);
-    size_t input_size = frame.length() + SpdyFrame::kHeaderSize;
+    size_t input_size = frame.size();
     CHECK_EQ(input_size, framer->ProcessInput(frame.data(), input_size));
     CHECK_EQ(SpdyFramer::SPDY_RESET, framer->state());
     framer->set_visitor(NULL);
 
     char* buffer = visitor.ReleaseBuffer();
     CHECK(buffer != NULL);
-    SpdyFrame* decompressed_frame = new SpdyFrame(buffer, true);
+    SpdyFrame* decompressed_frame = new SpdyFrame(buffer, visitor.size(), true);
     SetFrameLength(decompressed_frame,
                    visitor.size() - SpdyFrame::kHeaderSize,
                    framer->protocol_version());
@@ -521,10 +521,8 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
 // Does not check that the given frame is a SYN_STREAM.
 base::StringPiece GetSerializedHeaders(const SpdyFrame* frame,
                                        const SpdyFramer& framer) {
-  return base::StringPiece(
-      frame->data() + framer.GetSynStreamMinimumSize(),
-      frame->length() + framer.GetControlFrameMinimumSize() -
-      framer.GetSynStreamMinimumSize());
+  return base::StringPiece(frame->data() + framer.GetSynStreamMinimumSize(),
+                           frame->size() - framer.GetSynStreamMinimumSize());
 }
 
 }  // namespace test
@@ -569,9 +567,19 @@ class SpdyFramerTest
                     const int expected_len) {
     const unsigned char* actual =
         reinterpret_cast<const unsigned char*>(actual_frame.data());
-    int actual_len = actual_frame.length() + SpdyFrame::kHeaderSize;
     CompareCharArraysWithHexError(
-        description, actual, actual_len, expected, expected_len);
+        description, actual, actual_frame.size(), expected, expected_len);
+  }
+
+  void CompareFrames(const string& description,
+                     const SpdyFrame& expected_frame,
+                     const SpdyFrame& actual_frame) {
+    CompareCharArraysWithHexError(
+        description,
+        reinterpret_cast<const unsigned char*>(expected_frame.data()),
+        expected_frame.size(),
+        reinterpret_cast<const unsigned char*>(actual_frame.data()),
+        actual_frame.size());
   }
 
   // Returns true if the two header blocks have equivalent content.
@@ -771,7 +779,8 @@ TEST_P(SpdyFramerTest, ParseCredentialFrameData) {
       'a',  'l',  ' ',  'c',
       'e',  'r',  't',
     };
-    SpdyFrame frame(reinterpret_cast<char*>(kFrameData), false);
+    SpdyFrame frame(
+        reinterpret_cast<char*>(kFrameData), arraysize(kFrameData), false);
     SpdyCredential credential;
     EXPECT_TRUE(SpdyFramer::ParseCredentialData(
         frame.data() + framer.GetControlFrameMinimumSize(),
@@ -904,7 +913,7 @@ TEST_P(SpdyFramerTest, BasicCompression) {
                              &headers));
 
   // Expect the second frame to be more compact than the first.
-  EXPECT_LE(frame2->length(), frame1->length());
+  EXPECT_LE(frame2->size(), frame1->size());
 
   // Decompress the first frame
   scoped_ptr<SpdyFrame> frame3(SpdyFramerTestUtil::DecompressFrame(
@@ -932,10 +941,7 @@ TEST_P(SpdyFramerTest, BasicCompression) {
   }
 
   // Expect frames 3 & 4 to be the same.
-  EXPECT_EQ(0,
-      memcmp(frame3->data(), frame4->data(),
-      SpdyFrame::kHeaderSize + frame3->length()));
-
+  CompareFrames("Uncompressed SYN_STREAM", *frame3, *frame4);
 
   // Expect frames 3 to be the same as a uncompressed frame created
   // from scratch.
@@ -948,10 +954,7 @@ TEST_P(SpdyFramerTest, BasicCompression) {
                              CONTROL_FLAG_NONE,
                              false,  // compress
                              &headers));
-  EXPECT_EQ(frame3->length(), uncompressed_frame->length());
-  EXPECT_EQ(0,
-      memcmp(frame3->data(), uncompressed_frame->data(),
-      SpdyFrame::kHeaderSize + uncompressed_frame->length()));
+  CompareFrames("Uncompressed SYN_STREAM", *frame3, *uncompressed_frame);
 }
 
 TEST_P(SpdyFramerTest, CompressEmptyHeaders) {
@@ -1347,9 +1350,9 @@ TEST_P(SpdyFramerTest, UnclosedStreamDataCompressors) {
   visitor.use_compression_ = true;
   const unsigned char* data;
   data = reinterpret_cast<const unsigned char*>(syn_frame->data());
-  visitor.SimulateInFramer(data, syn_frame->length() + SpdyFrame::kHeaderSize);
+  visitor.SimulateInFramer(data, syn_frame->size());
   data = reinterpret_cast<const unsigned char*>(send_frame->data());
-  visitor.SimulateInFramer(data, send_frame->length() + SpdyFrame::kHeaderSize);
+  visitor.SimulateInFramer(data, send_frame->size());
 
   EXPECT_EQ(0, visitor.error_count_);
   EXPECT_EQ(1, visitor.syn_frame_count_);
@@ -1400,16 +1403,12 @@ TEST_P(SpdyFramerTest, UnclosedStreamDataCompressorsOneByteAtATime) {
   visitor.use_compression_ = true;
   const unsigned char* data;
   data = reinterpret_cast<const unsigned char*>(syn_frame->data());
-  for (size_t idx = 0;
-       idx < syn_frame->length() + SpdyFrame::kHeaderSize;
-       ++idx) {
+  for (size_t idx = 0; idx < syn_frame->size(); ++idx) {
     visitor.SimulateInFramer(data + idx, 1);
     ASSERT_EQ(0, visitor.error_count_);
   }
   data = reinterpret_cast<const unsigned char*>(send_frame->data());
-  for (size_t idx = 0;
-       idx < send_frame->length() + SpdyFrame::kHeaderSize;
-       ++idx) {
+  for (size_t idx = 0; idx < send_frame->size(); ++idx) {
     visitor.SimulateInFramer(data + idx, 1);
     ASSERT_EQ(0, visitor.error_count_);
   }
@@ -1430,6 +1429,7 @@ TEST_P(SpdyFramerTest, WindowUpdateFrame) {
   scoped_ptr<SpdyFrame> window_update_frame(
       framer.CreateWindowUpdate(1, 0x12345678));
 
+  const char kDescription[] = "WINDOW_UPDATE frame, stream 1, delta 0x12345678";
   const unsigned char expected_data_frame[] = {
       0x80, spdy_version_, 0x00, 0x09,
       0x00, 0x00, 0x00, 0x08,
@@ -1437,13 +1437,8 @@ TEST_P(SpdyFramerTest, WindowUpdateFrame) {
       0x12, 0x34, 0x56, 0x78
   };
 
-  EXPECT_EQ(framer.GetWindowUpdateSize(), arraysize(expected_data_frame));
-  EXPECT_EQ(framer.GetWindowUpdateSize(),
-            window_update_frame->length() + SpdyFrame::kHeaderSize);
-  EXPECT_EQ(0,
-            memcmp(window_update_frame->data(),
-                   expected_data_frame,
-                   framer.GetWindowUpdateSize()));
+  CompareFrame(kDescription, *window_update_frame, expected_data_frame,
+               arraysize(expected_data_frame));
 }
 
 TEST_P(SpdyFramerTest, CreateDataFrame) {
@@ -2361,24 +2356,6 @@ TEST_P(SpdyFramerTest, CreateWindowUpdate) {
   }
 }
 
-TEST_P(SpdyFramerTest, DuplicateFrame) {
-  SpdyFramer framer(spdy_version_);
-
-  {
-    const char kDescription[] = "PING frame";
-    const unsigned char kFrameData[] = {
-        0x80, spdy_version_, 0x00, 0x06,
-        0x00, 0x00, 0x00, 0x04,
-        0x12, 0x34, 0x56, 0x78,
-    };
-    scoped_ptr<SpdyFrame> frame1(framer.CreatePingFrame(0x12345678u));
-    CompareFrame(kDescription, *frame1, kFrameData, arraysize(kFrameData));
-
-    scoped_ptr<SpdyFrame> frame2(framer.DuplicateFrame(*frame1));
-    CompareFrame(kDescription, *frame2, kFrameData, arraysize(kFrameData));
-  }
-}
-
 TEST_P(SpdyFramerTest, ReadCompressedSynStreamHeaderBlock) {
   SpdyHeaderBlock headers;
   headers["aa"] = "vv";
@@ -2397,7 +2374,7 @@ TEST_P(SpdyFramerTest, ReadCompressedSynStreamHeaderBlock) {
   visitor.use_compression_ = true;
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame->data()),
-      control_frame->length() + framer.GetControlFrameMinimumSize());
+      control_frame->size());
   EXPECT_EQ(1, visitor.syn_frame_count_);
   EXPECT_TRUE(CompareHeaderBlocks(&headers, &visitor.headers_));
 }
@@ -2417,7 +2394,7 @@ TEST_P(SpdyFramerTest, ReadCompressedSynReplyHeaderBlock) {
   visitor.use_compression_ = true;
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame->data()),
-      control_frame->length() + framer.GetControlFrameMinimumSize());
+      control_frame->size());
   EXPECT_EQ(1, visitor.syn_reply_frame_count_);
   EXPECT_TRUE(CompareHeaderBlocks(&headers, &visitor.headers_));
 }
@@ -2437,7 +2414,7 @@ TEST_P(SpdyFramerTest, ReadCompressedHeadersHeaderBlock) {
   visitor.use_compression_ = true;
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame->data()),
-      control_frame->length() + framer.GetControlFrameMinimumSize());
+      control_frame->size());
   EXPECT_EQ(1, visitor.headers_frame_count_);
   // control_frame_header_data_count_ depends on the random sequence
   // produced by rand(), so adding, removing or running single tests
@@ -2464,7 +2441,7 @@ TEST_P(SpdyFramerTest, ReadCompressedHeadersHeaderBlockWithHalfClose) {
   visitor.use_compression_ = true;
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame->data()),
-      control_frame->length() + framer.GetControlFrameMinimumSize());
+      control_frame->size());
   EXPECT_EQ(1, visitor.headers_frame_count_);
   // control_frame_header_data_count_ depends on the random sequence
   // produced by rand(), so adding, removing or running single tests
@@ -2507,7 +2484,7 @@ TEST_P(SpdyFramerTest, ControlFrameAtMaxSizeLimit) {
   EXPECT_TRUE(control_frame.get() != NULL);
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame->data()),
-      control_frame->length() + framer.GetControlFrameMinimumSize());
+      control_frame->size());
   EXPECT_TRUE(visitor.header_buffer_valid_);
   EXPECT_EQ(0, visitor.error_count_);
   EXPECT_EQ(1, visitor.syn_frame_count_);
@@ -2539,7 +2516,7 @@ TEST_P(SpdyFramerTest, ControlFrameTooLarge) {
   EXPECT_TRUE(control_frame.get() != NULL);
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame->data()),
-      control_frame->length() + framer.GetControlFrameMinimumSize());
+      control_frame->size());
   EXPECT_FALSE(visitor.header_buffer_valid_);
   EXPECT_EQ(1, visitor.error_count_);
   EXPECT_EQ(SpdyFramer::SPDY_CONTROL_PAYLOAD_TOO_LARGE,
@@ -2574,7 +2551,7 @@ TEST_P(SpdyFramerTest, ControlFrameMuchTooLarge) {
   visitor.use_compression_ = true;
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame->data()),
-      control_frame->length() + framer.GetControlFrameMinimumSize());
+      control_frame->size());
   EXPECT_FALSE(visitor.header_buffer_valid_);
   EXPECT_EQ(1, visitor.error_count_);
   EXPECT_EQ(SpdyFramer::SPDY_CONTROL_PAYLOAD_TOO_LARGE,
@@ -2615,7 +2592,7 @@ TEST_P(SpdyFramerTest, DecompressCorruptHeaderBlock) {
   visitor.use_compression_ = true;
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame->data()),
-      control_frame->length() + framer.GetControlFrameMinimumSize());
+      control_frame->size());
   EXPECT_EQ(1, visitor.error_count_);
   EXPECT_EQ(SpdyFramer::SPDY_DECOMPRESS_FAILURE, visitor.framer_.error_code());
   EXPECT_EQ(0u, visitor.header_buffer_length_);
@@ -2638,7 +2615,8 @@ TEST_P(SpdyFramerTest, ControlFrameSizesAreValidated) {
     0x00, 0x00, 0x00, 0x00,
   };
   SpdyFramer framer(spdy_version_);
-  const size_t pad_length = length + SpdyFrame::kHeaderSize -
+  const size_t pad_length =
+      length + framer.GetControlFrameMinimumSize() -
       (IsSpdy2() ? sizeof(kV2FrameData) : sizeof(kV3FrameData));
   string pad('A', pad_length);
   TestSpdyVisitor visitor(spdy_version_);
@@ -2667,7 +2645,7 @@ TEST_P(SpdyFramerTest, ReadZeroLenSettingsFrame) {
   visitor.use_compression_ = false;
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame->data()),
-      control_frame->length() + framer.GetControlFrameMinimumSize());
+      framer.GetControlFrameMinimumSize());
   // Should generate an error, since zero-len settings frames are unsupported.
   EXPECT_EQ(1, visitor.error_count_);
 }
@@ -2681,12 +2659,13 @@ TEST_P(SpdyFramerTest, ReadBogusLenSettingsFrame) {
   settings[SETTINGS_UPLOAD_BANDWIDTH] =
       SettingsFlagsAndValue(SETTINGS_FLAG_PLEASE_PERSIST, 0x00000002);
   scoped_ptr<SpdyFrame> control_frame(framer.CreateSettings(settings));
-  SetFrameLength(control_frame.get(), 5, spdy_version_);
+  const size_t kNewLength = 5;
+  SetFrameLength(control_frame.get(), kNewLength, spdy_version_);
   TestSpdyVisitor visitor(spdy_version_);
   visitor.use_compression_ = false;
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame->data()),
-      control_frame->length() + framer.GetControlFrameMinimumSize());
+      framer.GetControlFrameMinimumSize() + kNewLength);
   // Should generate an error, since zero-len settings frames are unsupported.
   EXPECT_EQ(1, visitor.error_count_);
 }
@@ -2703,21 +2682,20 @@ TEST_P(SpdyFramerTest, ReadLargeSettingsFrame) {
   settings[SETTINGS_ROUND_TRIP_TIME] = SettingsFlagsAndValue(flags, 0x00000004);
   scoped_ptr<SpdyFrame> control_frame(framer.CreateSettings(settings));
   EXPECT_LT(SpdyFramer::kControlFrameBufferSize,
-            control_frame->length() + framer.GetControlFrameMinimumSize());
+            control_frame->size());
   TestSpdyVisitor visitor(spdy_version_);
   visitor.use_compression_ = false;
 
   // Read all at once.
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame->data()),
-      control_frame->length() + framer.GetControlFrameMinimumSize());
+      control_frame->size());
   EXPECT_EQ(0, visitor.error_count_);
   EXPECT_EQ(settings.size(), static_cast<unsigned>(visitor.setting_count_));
 
   // Read data in small chunks.
   size_t framed_data = 0;
-  size_t unframed_data = control_frame->length() +
-                         framer.GetControlFrameMinimumSize();
+  size_t unframed_data = control_frame->size();
   size_t kReadChunkSize = 5;  // Read five bytes at a time.
   while (unframed_data > 0) {
     size_t to_read = min(kReadChunkSize, unframed_data);
@@ -2816,7 +2794,7 @@ TEST_P(SpdyFramerTest, ReadWindowUpdate) {
   TestSpdyVisitor visitor(spdy_version_);
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame->data()),
-      control_frame->length() + framer.GetControlFrameMinimumSize());
+      control_frame->size());
   EXPECT_EQ(1, visitor.last_window_update_stream_);
   EXPECT_EQ(2, visitor.last_window_update_delta_);
 }
@@ -2836,7 +2814,7 @@ TEST_P(SpdyFramerTest, ReadCredentialFrame) {
   visitor.use_compression_ = false;
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame->data()),
-      control_frame->length() + framer.GetControlFrameMinimumSize());
+      control_frame->size());
   EXPECT_EQ(0, visitor.error_count_);
   EXPECT_EQ(control_frame->length(), visitor.credential_buffer_length_);
   EXPECT_EQ(credential.slot, visitor.credential_.slot);
@@ -2863,9 +2841,7 @@ TEST_P(SpdyFramerTest, ReadCredentialFrameOneByteAtATime) {
   // Read one byte at a time to make sure we handle edge cases
   unsigned char* data =
       reinterpret_cast<unsigned char*>(control_frame->data());
-  for (size_t idx = 0;
-       idx < control_frame->length() + SpdyFrame::kHeaderSize;
-       ++idx) {
+  for (size_t idx = 0; idx < control_frame->size(); ++idx) {
     visitor.SimulateInFramer(data + idx, 1);
     ASSERT_EQ(0, visitor.error_count_);
   }
@@ -2917,7 +2893,7 @@ TEST_P(SpdyFramerTest, ReadCredentialFrameWithCorruptProof) {
   size_t offset = framer.GetControlFrameMinimumSize() + 4;
   data[offset] = 0xFF;  // Proof length is past the end of the frame
   visitor.SimulateInFramer(
-      data, control_frame->length() + framer.GetControlFrameMinimumSize());
+      data, control_frame->size());
   EXPECT_EQ(1, visitor.error_count_);
 }
 
@@ -2936,11 +2912,10 @@ TEST_P(SpdyFramerTest, ReadCredentialFrameWithCorruptCertificate) {
   visitor.use_compression_ = false;
   unsigned char* data =
       reinterpret_cast<unsigned char*>(control_frame->data());
-  size_t offset =
-      framer.GetControlFrameMinimumSize() + credential.proof.length();
-  data[offset] = 0xFF;  // Certificate length is past the end of the frame
+  size_t offset = framer.GetCredentialMinimumSize() + 1;
+  data[offset] = 0xFF;  // Proof length is past the end of the frame
   visitor.SimulateInFramer(
-      data, control_frame->length() + framer.GetControlFrameMinimumSize());
+      data, control_frame->size());
   EXPECT_EQ(1, visitor.error_count_);
 }
 
@@ -3140,8 +3115,7 @@ TEST_P(SpdyFramerTest, DataFrameFlags) {
       }
     }
 
-    size_t frame_size = frame->length() + SpdyFrame::kHeaderSize;
-    framer.ProcessInput(frame->data(), frame_size);
+    framer.ProcessInput(frame->data(), frame->size());
     if (flags & ~DATA_FLAG_FIN) {
       EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
       EXPECT_EQ(SpdyFramer::SPDY_INVALID_DATA_FRAME_FLAGS,
@@ -3181,8 +3155,7 @@ TEST_P(SpdyFramerTest, SynStreamFrameFlags) {
       }
     }
 
-    size_t frame_size = frame->length() + SpdyFrame::kHeaderSize;
-    framer.ProcessInput(frame->data(), frame_size);
+    framer.ProcessInput(frame->data(), frame->size());
     if (flags & ~(CONTROL_FLAG_FIN | CONTROL_FLAG_UNIDIRECTIONAL)) {
       EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
       EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS,
@@ -3219,8 +3192,7 @@ TEST_P(SpdyFramerTest, SynReplyFrameFlags) {
       }
     }
 
-    size_t frame_size = frame->length() + SpdyFrame::kHeaderSize;
-    framer.ProcessInput(frame->data(), frame_size);
+    framer.ProcessInput(frame->data(), frame->size());
     if (flags & ~CONTROL_FLAG_FIN) {
       EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
       EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS,
@@ -3249,8 +3221,7 @@ TEST_P(SpdyFramerTest, RstStreamFrameFlags) {
       EXPECT_CALL(visitor, OnRstStream(13, RST_STREAM_CANCEL));
     }
 
-    size_t frame_size = frame->length() + SpdyFrame::kHeaderSize;
-    framer.ProcessInput(frame->data(), frame_size);
+    framer.ProcessInput(frame->data(), frame->size());
     if (flags != 0) {
       EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
       EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS,
@@ -3283,8 +3254,7 @@ TEST_P(SpdyFramerTest, SettingsFrameFlags) {
                                      SETTINGS_FLAG_NONE, 54321));
     }
 
-    size_t frame_size = frame->length() + SpdyFrame::kHeaderSize;
-    framer.ProcessInput(frame->data(), frame_size);
+    framer.ProcessInput(frame->data(), frame->size());
     if (flags & ~SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS) {
       EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
       EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS,
@@ -3313,8 +3283,7 @@ TEST_P(SpdyFramerTest, GoawayFrameFlags) {
       EXPECT_CALL(visitor, OnGoAway(97, GOAWAY_OK));
     }
 
-    size_t frame_size = frame->length() + SpdyFrame::kHeaderSize;
-    framer.ProcessInput(frame->data(), frame_size);
+    framer.ProcessInput(frame->data(), frame->size());
     if (flags != 0) {
       EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
       EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS,
@@ -3351,8 +3320,7 @@ TEST_P(SpdyFramerTest, HeadersFrameFlags) {
       }
     }
 
-    size_t frame_size = frame->length() + SpdyFrame::kHeaderSize;
-    framer.ProcessInput(frame->data(), frame_size);
+    framer.ProcessInput(frame->data(), frame->size());
     if (flags & ~CONTROL_FLAG_FIN) {
       EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
       EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS,
@@ -3381,8 +3349,7 @@ TEST_P(SpdyFramerTest, PingFrameFlags) {
       EXPECT_CALL(visitor, OnPing(42));
     }
 
-    size_t frame_size = frame->length() + SpdyFrame::kHeaderSize;
-    framer.ProcessInput(frame->data(), frame_size);
+    framer.ProcessInput(frame->data(), frame->size());
     if (flags != 0) {
       EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
       EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS,
@@ -3411,8 +3378,7 @@ TEST_P(SpdyFramerTest, WindowUpdateFrameFlags) {
       EXPECT_CALL(visitor, OnWindowUpdate(4, 1024));
     }
 
-    size_t frame_size = frame->length() + SpdyFrame::kHeaderSize;
-    framer.ProcessInput(frame->data(), frame_size);
+    framer.ProcessInput(frame->data(), frame->size());
     if (flags != 0) {
       EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
       EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS,
@@ -3443,8 +3409,7 @@ TEST_P(SpdyFramerTest, CredentialFrameFlags) {
           .WillRepeatedly(testing::Return(true));
     }
 
-    size_t frame_size = frame->length() + SpdyFrame::kHeaderSize;
-    framer.ProcessInput(frame->data(), frame_size);
+    framer.ProcessInput(frame->data(), frame->size());
     if (flags != 0) {
       EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
       EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS,
@@ -3476,8 +3441,7 @@ TEST_P(SpdyFramerTest, EmptySynStream) {
   EXPECT_CALL(visitor, OnSynStream(1, 0, 1, 0, false, false));
   EXPECT_CALL(visitor, OnControlFrameHeaderData(1, NULL, 0));
 
-  size_t frame_size = frame->length() + SpdyFrame::kHeaderSize;
-  framer.ProcessInput(frame->data(), frame_size);
+  framer.ProcessInput(frame->data(), framer.GetSynStreamMinimumSize());
   EXPECT_EQ(SpdyFramer::SPDY_RESET, framer.state());
   EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code());
 }

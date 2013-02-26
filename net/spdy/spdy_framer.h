@@ -465,10 +465,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // On failure, returns NULL.
   SpdyFrame* CompressFrame(const SpdyFrame& frame);
 
-  // Create a copy of a frame.
-  // Returned frame must be freed with "delete".
-  SpdyFrame* DuplicateFrame(const SpdyFrame& frame);
-
   // For ease of testing and experimentation we can tweak compression on/off.
   void set_enable_compression(bool value) {
     enable_compression_ = value;
