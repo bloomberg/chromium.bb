@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "chrome/browser/chromeos/drive/search_metadata.h"
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
@@ -251,8 +252,7 @@ class SetDefaultTaskFileBrowserFunction : public SyncExtensionFunction {
 };
 
 // Parent class for the chromium extension APIs for the file dialog.
-class FileBrowserFunction
-    : public AsyncExtensionFunction {
+class FileBrowserFunction : public AsyncExtensionFunction {
  public:
   FileBrowserFunction();
 
@@ -260,27 +260,41 @@ class FileBrowserFunction
   typedef std::vector<GURL> UrlList;
   typedef std::vector<ui::SelectedFileInfo> SelectedFileInfoList;
   typedef base::Callback<void(const SelectedFileInfoList&)>
-      GetLocalPathsCallback;
+      GetSelectedFileInfoCallback;
 
   virtual ~FileBrowserFunction();
-
-  // Converts virtual paths to local paths by calling GetLocalPathsOnFileThread
-  // on the file thread and call |callback| on the UI thread with the result.
-  void GetLocalPathsOnFileThreadAndRunCallbackOnUIThread(
-      const UrlList& file_urls,
-      GetLocalPathsCallback callback);
 
   // Figure out the tab_id of the hosting tab.
   int32 GetTabId() const;
 
+  // Runs |callback| with SelectedFileInfoList created from |file_urls|.
+  void GetSelectedFileInfo(const UrlList& file_urls,
+                           GetSelectedFileInfoCallback callback);
+
  private:
-  // Converts virtual paths to local paths and call |callback| (on the UI
-  // thread) with the results.
-  // This method must be called from the file thread.
-  void GetLocalPathsOnFileThread(
-      scoped_refptr<fileapi::FileSystemContext> file_system_context,
-      const UrlList& file_urls,
-      GetLocalPathsCallback callback);
+  // Used to implement GetSelectedFileInfo().
+  void GetSelectedFileInfoInternal(
+      scoped_ptr<std::vector<base::FilePath> > file_paths,
+      scoped_ptr<SelectedFileInfoList> selected_files,
+      GetSelectedFileInfoCallback callback);
+
+  // Used to implement GetSelectedFileInfo().
+  void ContinueGetSelectedFileInfo(
+      scoped_ptr<std::vector<base::FilePath> > file_paths,
+      scoped_ptr<SelectedFileInfoList> selected_files,
+      GetSelectedFileInfoCallback callback,
+      drive::DriveFileError error,
+      const base::FilePath& cache_file_path);
+
+  // Returns the cache file path of a Drive file specified by |path|.
+  void GetCacheFileByPath(const base::FilePath& path,
+                          const drive::GetFileFromCacheCallback& callback);
+
+  // Used to implement GetCacheFileByPath().
+  void GetCacheFileByPathInternal(
+      const drive::GetFileFromCacheCallback& callback,
+      drive::DriveFileError error,
+      scoped_ptr<drive::DriveEntryProto> entry_proto);
 };
 
 // Select a single file.  Closes the dialog window.
@@ -298,9 +312,8 @@ class SelectFileFunction : public FileBrowserFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  // A callback method to handle the result of
-  // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
-  void GetLocalPathsResponseOnUIThread(const SelectedFileInfoList& files);
+  // A callback method to handle the result of GetSelectedFileInfo.
+  void GetSelectedFileInfoResponse(const SelectedFileInfoList& files);
 };
 
 // View multiple selected files.  Window stays open.
@@ -333,9 +346,8 @@ class SelectFilesFunction : public FileBrowserFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  // A callback method to handle the result of
-  // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
-  void GetLocalPathsResponseOnUIThread(const SelectedFileInfoList& files);
+  // A callback method to handle the result of GetSelectedFileInfo.
+  void GetSelectedFileInfoResponse(const SelectedFileInfoList& files);
 };
 
 // Cancel file selection Dialog.  Closes the dialog window.
@@ -368,10 +380,9 @@ class AddMountFunction : public FileBrowserFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  // A callback method to handle the result of
-  // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
-  void GetLocalPathsResponseOnUIThread(const std::string& mount_type,
-                                       const SelectedFileInfoList& files);
+  // A callback method to handle the result of GetSelectedFileInfo.
+  void GetSelectedFileInfoResponse(const std::string& mount_type,
+                                   const SelectedFileInfoList& files);
 
   // Calls DriveCache::MarkCacheAsMounted.
   void MarkCacheAsMounted(const std::string& mount_type,
@@ -401,9 +412,8 @@ class RemoveMountFunction : public FileBrowserFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  // A callback method to handle the result of
-  // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
-  void GetLocalPathsResponseOnUIThread(const SelectedFileInfoList& files);
+  // A callback method to handle the result of GetSelectedFileInfo.
+  void GetSelectedFileInfoResponse(const SelectedFileInfoList& files);
 };
 
 class GetMountPointsFunction : public AsyncExtensionFunction {
@@ -652,9 +662,8 @@ class GetDriveFilesFunction : public FileBrowserFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  // A callback method to handle the result of
-  // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
-  void GetLocalPathsResponseOnUIThread(const SelectedFileInfoList& files);
+  // A callback method to handle the result of GetSelectedFileInfo.
+  void GetSelectedFileInfoResponse(const SelectedFileInfoList& files);
 
   // Gets the file on the top of the |remaining_drive_paths_| or sends the
   // response if the queue is empty.
