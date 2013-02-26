@@ -1797,6 +1797,18 @@ def CMDset_commit(parser, args):
   return 0
 
 
+def CMDset_close(parser, args):
+  """close the issue"""
+  _, args = parser.parse_args(args)
+  if args:
+    parser.error('Unrecognized args: %s' % ' '.join(args))
+  cl = Changelist()
+  # Ensure there actually is an issue to close.
+  cl.GetDescription()
+  cl.CloseIssue()
+  return 0
+
+
 def Command(name):
   return getattr(sys.modules[__name__], 'CMD' + name, None)
 
