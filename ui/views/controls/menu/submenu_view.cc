@@ -307,6 +307,9 @@ void SubmenuView::ShowAt(Widget* parent,
     host_ = new MenuHost(this);
     // Force construction of the scroll view container.
     GetScrollViewContainer();
+    // Force a layout since our preferred size may not have changed but our
+    // content may have.
+    InvalidateLayout();
     host_->InitMenuHost(parent, bounds, scroll_view_container_, do_capture);
   }
 
