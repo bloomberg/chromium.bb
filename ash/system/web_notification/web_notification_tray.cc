@@ -60,7 +60,6 @@ class WebNotificationBubbleWrapper {
         tray->GetAnchorAlignment();
     views::TrayBubbleView::InitParams init_params =
         bubble->GetInitParams(anchor_alignment);
-    init_params.close_on_deactivate = false;
     views::View* anchor = tray->tray_container();
     if (anchor_alignment == views::TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM) {
       gfx::Point bounds(anchor->width() / 2, 0);
