@@ -98,6 +98,7 @@ namespace developerPrivate {
     PackStatus status;
   };
 
+  callback VoidCallback = void ();
   callback BooleanCallback = void (boolean result);
   callback ItemsInfoCallback = void (ItemInfo[] result);
   callback GetStringsCallback = void (object result);
@@ -138,6 +139,11 @@ namespace developerPrivate {
     static void enable(DOMString itemId,
                        boolean enable,
                        optional VoidCallback callback);
+
+    // Allow / Disallow item with |item_id| in incognito mode.
+    static void allowIncognito(DOMString item_id,
+                               boolean allow,
+                               VoidCallback callback);
 
     // Load a user selected unpacked item
     static void loadUnpacked(optional VoidCallback callback);

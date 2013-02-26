@@ -163,6 +163,18 @@ class DeveloperPrivateAllowFileAccessFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
+class DeveloperPrivateAllowIncognitoFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("developerPrivate.allowIncognito",
+                             DEVELOPERPRIVATE_ALLOWINCOGNITO);
+
+ protected:
+  virtual ~DeveloperPrivateAllowIncognitoFunction();
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
 class DeveloperPrivateReloadFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("developerPrivate.reload",

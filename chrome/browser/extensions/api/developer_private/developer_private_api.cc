@@ -408,6 +408,29 @@ bool DeveloperPrivateAllowFileAccessFunction::RunImpl() {
 DeveloperPrivateAllowFileAccessFunction::
     ~DeveloperPrivateAllowFileAccessFunction() {}
 
+bool DeveloperPrivateAllowIncognitoFunction::RunImpl() {
+  std::string extension_id;
+  bool allow = false;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &extension_id));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(1, &allow));
+
+  ExtensionService* service = profile()->GetExtensionService();
+  const Extension* extension = service->GetInstalledExtension(extension_id);
+  bool result = true;
+
+  if (!extension) {
+    result = false;
+  } else {
+    service->SetIsIncognitoEnabled(extension->id(), allow);
+  }
+
+  return result;
+}
+
+DeveloperPrivateAllowIncognitoFunction::
+    ~DeveloperPrivateAllowIncognitoFunction() {}
+
+
 bool DeveloperPrivateReloadFunction::RunImpl() {
   std::string extension_id;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &extension_id));

@@ -82,8 +82,13 @@ found in the LICENSE file.
             </div>
             <div class="optional-controls">
               <button class="show-button"
-                  i18n-content="extensionSettingsShowButton" hidden></button>
+                  i18n-content="extensionSettingsShowButton" hidden>
+              </button>
               <span class="optional-control-disableable">
+                <label class="incognito-control" hidden>
+                  <input type="checkbox">
+                  <span i18n-content="extensionSettingsEnableIncognito"></span>
+                </label>
                 <label class="file-access-control" hidden>
                   <input type="checkbox">
                     <span i18n-content="extensionSettingsAllowFileAccess">

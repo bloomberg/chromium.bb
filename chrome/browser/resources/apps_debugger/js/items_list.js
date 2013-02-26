@@ -146,6 +146,9 @@ cr.define('apps_dev_tool', function() {
       var description = node.querySelector('.extension-description span');
       description.textContent = item.description;
 
+      // The 'allow in incognito' checkbox.
+      this.setAllowIncognitoCheckbox_(item, node);
+
       // The 'allow file:// access' checkbox.
       if (item.wants_file_access)
         this.setAllowFileAccessCheckbox_(item, node);
@@ -312,6 +315,26 @@ cr.define('apps_dev_tool', function() {
       });
       fileAccess.querySelector('input').checked = item.allow_file_access;
       fileAccess.hidden = false;
+    },
+
+    /**
+     * Sets the handler for the allow_incognito checkbox.
+     * @param {!Object} item A dictionary of item metadata.
+     * @param {HTMLElement} el HTML element containing all items.
+     * @private
+     */
+    setAllowIncognitoCheckbox_: function(item, el) {
+      if (item.allow_incognito) {
+        var incognito = el.querySelector('.incognito-control');
+        incognito.addEventListener('change', function(e) {
+          chrome.developerPrivate.allowIncognito(
+              item.id, !!e.target.checked, function() {
+            ItemsList.loadItemsInfo();
+          });
+        });
+        incognito.querySelector('input').checked = item.incognito_enabled;
+        incognito.hidden = false;
+      }
     },
 
     /**
