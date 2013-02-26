@@ -600,11 +600,9 @@ void LayerTreeHost::updateLayers(Layer* rootLayer, ResourceUpdateQueue& queue)
     LayerList updateList;
 
     {
-        if (m_settings.pageScalePinchZoomEnabled) {
-            Layer* rootScroll = findFirstScrollableLayer(rootLayer);
-            if (rootScroll)
-                rootScroll->setImplTransform(m_implTransform);
-        }
+        Layer* rootScroll = findFirstScrollableLayer(rootLayer);
+        if (rootScroll)
+            rootScroll->setImplTransform(m_implTransform);
 
         TRACE_EVENT0("cc", "LayerTreeHost::updateLayers::calcDrawEtc");
         LayerTreeHostCommon::calculateDrawProperties(rootLayer, deviceViewportSize(), m_deviceScaleFactor, m_pageScaleFactor, rendererCapabilities().maxTextureSize, m_settings.canUseLCDText, updateList);

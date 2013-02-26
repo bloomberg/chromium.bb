@@ -27,7 +27,6 @@ class CC_EXPORT LayerTreeSettings {
   bool cacheRenderPassContents;
   bool rightAlignedSchedulingEnabled;
   bool acceleratedAnimationEnabled;
-  bool pageScalePinchZoomEnabled;
   bool backgroundColorInsteadOfCheckerboard;
   bool showOverdrawInTracing;
   bool canUseLCDText;

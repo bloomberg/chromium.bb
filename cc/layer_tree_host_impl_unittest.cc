@@ -24,6 +24,7 @@
 #include "cc/scrollbar_layer_impl.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/solid_color_draw_quad.h"
+#include "cc/solid_color_layer_impl.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_proxy.h"
@@ -55,9 +56,7 @@ using media::VideoFrame;
 namespace cc {
 namespace {
 
-// This test is parametrized to run all tests with the
-// m_settings.pageScalePinchZoomEnabled field enabled and disabled.
-class LayerTreeHostImplTest : public testing::TestWithParam<bool>,
+class LayerTreeHostImplTest : public testing::Test,
                               public LayerTreeHostImplClient {
 public:
     LayerTreeHostImplTest()
@@ -78,7 +77,6 @@ public:
     {
         LayerTreeSettings settings;
         settings.minimumOcclusionTrackingSize = gfx::Size();
-        settings.pageScalePinchZoomEnabled = GetParam();
 
         m_hostImpl = LayerTreeHostImpl::create(settings, this, &m_proxy);
         m_hostImpl->initializeRenderer(createOutputSurface());
@@ -238,7 +236,7 @@ public:
     virtual bool makeContextCurrent() { return false; }
 };
 
-TEST_P(LayerTreeHostImplTest, notifyIfCanDrawChanged)
+TEST_F(LayerTreeHostImplTest, notifyIfCanDrawChanged)
 {
     // Note: It is not possible to disable the renderer once it has been set,
     // so we do not need to test that disabling the renderer notifies us
@@ -296,7 +294,7 @@ TEST_P(LayerTreeHostImplTest, notifyIfCanDrawChanged)
     m_onCanDrawStateChangedCalled = false;
 }
 
-TEST_P(LayerTreeHostImplTest, scrollDeltaNoLayers)
+TEST_F(LayerTreeHostImplTest, scrollDeltaNoLayers)
 {
     ASSERT_FALSE(m_hostImpl->rootLayer());
 
@@ -304,7 +302,7 @@ TEST_P(LayerTreeHostImplTest, scrollDeltaNoLayers)
     ASSERT_EQ(scrollInfo->scrolls.size(), 0u);
 }
 
-TEST_P(LayerTreeHostImplTest, scrollDeltaTreeButNoChanges)
+TEST_F(LayerTreeHostImplTest, scrollDeltaTreeButNoChanges)
 {
     {
         scoped_ptr<LayerImpl> root = LayerImpl::create(m_hostImpl->activeTree(), 1);
@@ -330,7 +328,7 @@ TEST_P(LayerTreeHostImplTest, scrollDeltaTreeButNoChanges)
     expectClearedScrollDeltasRecursive(root);
 }
 
-TEST_P(LayerTreeHostImplTest, scrollDeltaRepeatedScrolls)
+TEST_F(LayerTreeHostImplTest, scrollDeltaRepeatedScrolls)
 {
     gfx::Vector2d scrollOffset(20, 30);
     gfx::Vector2d scrollDelta(11, -15);
@@ -363,7 +361,7 @@ TEST_P(LayerTreeHostImplTest, scrollDeltaRepeatedScrolls)
     EXPECT_EQ(root->sentScrollDelta(), scrollDelta + scrollDelta2);
 }
 
-TEST_P(LayerTreeHostImplTest, scrollRootCallsCommitAndRedraw)
+TEST_F(LayerTreeHostImplTest, scrollRootCallsCommitAndRedraw)
 {
     setupScrollAndContentsLayers(gfx::Size(100, 100));
     m_hostImpl->setViewportSize(gfx::Size(50, 50), gfx::Size(50, 50));
@@ -376,13 +374,13 @@ TEST_P(LayerTreeHostImplTest, scrollRootCallsCommitAndRedraw)
     EXPECT_TRUE(m_didRequestCommit);
 }
 
-TEST_P(LayerTreeHostImplTest, scrollWithoutRootLayer)
+TEST_F(LayerTreeHostImplTest, scrollWithoutRootLayer)
 {
     // We should not crash when trying to scroll an empty layer tree.
     EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Wheel), InputHandlerClient::ScrollIgnored);
 }
 
-TEST_P(LayerTreeHostImplTest, scrollWithoutRenderer)
+TEST_F(LayerTreeHostImplTest, scrollWithoutRenderer)
 {
     LayerTreeSettings settings;
     m_hostImpl = LayerTreeHostImpl::create(settings, this, &m_proxy);
@@ -397,7 +395,7 @@ TEST_P(LayerTreeHostImplTest, scrollWithoutRenderer)
     EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Wheel), InputHandlerClient::ScrollIgnored);
 }
 
-TEST_P(LayerTreeHostImplTest, replaceTreeWhileScrolling)
+TEST_F(LayerTreeHostImplTest, replaceTreeWhileScrolling)
 {
     const int scrollLayerId = 1;
 
@@ -419,7 +417,7 @@ TEST_P(LayerTreeHostImplTest, replaceTreeWhileScrolling)
     expectContains(*scrollInfo, scrollLayerId, scrollDelta);
 }
 
-TEST_P(LayerTreeHostImplTest, clearRootRenderSurfaceAndScroll)
+TEST_F(LayerTreeHostImplTest, clearRootRenderSurfaceAndScroll)
 {
     setupScrollAndContentsLayers(gfx::Size(100, 100));
     m_hostImpl->setViewportSize(gfx::Size(50, 50), gfx::Size(50, 50));
@@ -433,7 +431,7 @@ TEST_P(LayerTreeHostImplTest, clearRootRenderSurfaceAndScroll)
     EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
 }
 
-TEST_P(LayerTreeHostImplTest, wheelEventHandlers)
+TEST_F(LayerTreeHostImplTest, wheelEventHandlers)
 {
     setupScrollAndContentsLayers(gfx::Size(100, 100));
     m_hostImpl->setViewportSize(gfx::Size(50, 50), gfx::Size(50, 50));
@@ -449,7 +447,7 @@ TEST_P(LayerTreeHostImplTest, wheelEventHandlers)
     EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Gesture), InputHandlerClient::ScrollStarted);
 }
 
-TEST_P(LayerTreeHostImplTest, shouldScrollOnMainThread)
+TEST_F(LayerTreeHostImplTest, shouldScrollOnMainThread)
 {
     setupScrollAndContentsLayers(gfx::Size(100, 100));
     m_hostImpl->setViewportSize(gfx::Size(50, 50), gfx::Size(50, 50));
@@ -462,7 +460,7 @@ TEST_P(LayerTreeHostImplTest, shouldScrollOnMainThread)
     EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Gesture), InputHandlerClient::ScrollOnMainThread);
 }
 
-TEST_P(LayerTreeHostImplTest, nonFastScrollableRegionBasic)
+TEST_F(LayerTreeHostImplTest, nonFastScrollableRegionBasic)
 {
     setupScrollAndContentsLayers(gfx::Size(200, 200));
     m_hostImpl->setViewportSize(gfx::Size(100, 100), gfx::Size(100, 100));
@@ -486,7 +484,7 @@ TEST_P(LayerTreeHostImplTest, nonFastScrollableRegionBasic)
     m_hostImpl->scrollEnd();
 }
 
-TEST_P(LayerTreeHostImplTest, nonFastScrollableRegionWithOffset)
+TEST_F(LayerTreeHostImplTest, nonFastScrollableRegionWithOffset)
 {
     setupScrollAndContentsLayers(gfx::Size(200, 200));
     m_hostImpl->setViewportSize(gfx::Size(100, 100), gfx::Size(100, 100));
@@ -507,7 +505,7 @@ TEST_P(LayerTreeHostImplTest, nonFastScrollableRegionWithOffset)
     EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(10, 10), InputHandlerClient::Wheel), InputHandlerClient::ScrollOnMainThread);
 }
 
-TEST_P(LayerTreeHostImplTest, scrollByReturnsCorrectValue)
+TEST_F(LayerTreeHostImplTest, scrollByReturnsCorrectValue)
 {
     setupScrollAndContentsLayers(gfx::Size(200, 200));
     m_hostImpl->setViewportSize(gfx::Size(100, 100), gfx::Size(100, 100));
@@ -541,7 +539,7 @@ TEST_P(LayerTreeHostImplTest, scrollByReturnsCorrectValue)
     EXPECT_TRUE(m_hostImpl->scrollBy(gfx::Point(), gfx::Vector2d(5000, 5000)));
 }
 
-TEST_P(LayerTreeHostImplTest, clearRootRenderSurfaceAndHitTestTouchHandlerRegion)
+TEST_F(LayerTreeHostImplTest, clearRootRenderSurfaceAndHitTestTouchHandlerRegion)
 {
     setupScrollAndContentsLayers(gfx::Size(100, 100));
     m_hostImpl->setViewportSize(gfx::Size(50, 50), gfx::Size(50, 50));
@@ -555,12 +553,8 @@ TEST_P(LayerTreeHostImplTest, clearRootRenderSurfaceAndHitTestTouchHandlerRegion
     EXPECT_EQ(m_hostImpl->haveTouchEventHandlersAt(gfx::Point(0, 0)), false);
 }
 
-TEST_P(LayerTreeHostImplTest, implPinchZoom)
+TEST_F(LayerTreeHostImplTest, implPinchZoom)
 {
-    // This test is specific to the page-scale based pinch zoom.
-    if (!m_hostImpl->settings().pageScalePinchZoomEnabled)
-        return;
-
     setupScrollAndContentsLayers(gfx::Size(100, 100));
     m_hostImpl->setViewportSize(gfx::Size(50, 50), gfx::Size(50, 50));
     initializeRendererAndDrawFrame();
@@ -614,12 +608,8 @@ TEST_P(LayerTreeHostImplTest, implPinchZoom)
     }
 }
 
-TEST_P(LayerTreeHostImplTest, pinchGesture)
+TEST_F(LayerTreeHostImplTest, pinchGesture)
 {
-    // This test is specific to the page-scale based pinch zoom.
-    if (!m_hostImpl->settings().pageScalePinchZoomEnabled)
-        return;
-
     setupScrollAndContentsLayers(gfx::Size(100, 100));
     m_hostImpl->setViewportSize(gfx::Size(50, 50), gfx::Size(50, 50));
     initializeRendererAndDrawFrame();
@@ -627,7 +617,7 @@ TEST_P(LayerTreeHostImplTest, pinchGesture)
     LayerImpl* scrollLayer = m_hostImpl->rootScrollLayer();
     DCHECK(scrollLayer);
 
-    const float minPageScale = m_hostImpl->settings().pageScalePinchZoomEnabled ? 1 : 0.5;
+    const float minPageScale = 1;
     const float maxPageScale = 4;
     const gfx::Transform identityScaleTransform;
 
@@ -678,12 +668,7 @@ TEST_P(LayerTreeHostImplTest, pinchGesture)
         scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
         EXPECT_EQ(scrollInfo->pageScaleDelta, minPageScale);
 
-        if (!m_hostImpl->settings().pageScalePinchZoomEnabled) {
-            // Pushed to (0,0) via clamping against contents layer size.
-            expectContains(*scrollInfo, scrollLayer->id(), gfx::Vector2d(-50, -50));
-        } else {
-            EXPECT_TRUE(scrollInfo->scrolls.empty());
-        }
+        EXPECT_TRUE(scrollInfo->scrolls.empty());
     }
 
     // Two-finger panning should not happen based on pinch events only
@@ -726,7 +711,7 @@ TEST_P(LayerTreeHostImplTest, pinchGesture)
     }
 }
 
-TEST_P(LayerTreeHostImplTest, pageScaleAnimation)
+TEST_F(LayerTreeHostImplTest, pageScaleAnimation)
 {
     setupScrollAndContentsLayers(gfx::Size(100, 100));
     m_hostImpl->setViewportSize(gfx::Size(50, 50), gfx::Size(50, 50));
@@ -778,7 +763,7 @@ TEST_P(LayerTreeHostImplTest, pageScaleAnimation)
     }
 }
 
-TEST_P(LayerTreeHostImplTest, pageScaleAnimationNoOp)
+TEST_F(LayerTreeHostImplTest, pageScaleAnimationNoOp)
 {
     setupScrollAndContentsLayers(gfx::Size(100, 100));
     m_hostImpl->setViewportSize(gfx::Size(50, 50), gfx::Size(50, 50));
@@ -813,12 +798,8 @@ TEST_P(LayerTreeHostImplTest, pageScaleAnimationNoOp)
     }
 }
 
-TEST_P(LayerTreeHostImplTest, compositorFrameMetadata)
+TEST_F(LayerTreeHostImplTest, compositorFrameMetadata)
 {
-    // This test is specific to the page-scale based pinch zoom.
-    if (!m_hostImpl->settings().pageScalePinchZoomEnabled)
-        return;
-
     setupScrollAndContentsLayers(gfx::Size(100, 100));
     m_hostImpl->setViewportSize(gfx::Size(50, 50), gfx::Size(50, 50));
     m_hostImpl->activeTree()->SetPageScaleFactorAndLimits(1.0f, 0.5f, 4.0f);
@@ -924,7 +905,7 @@ private:
     bool m_willDrawCalled;
 };
 
-TEST_P(LayerTreeHostImplTest, didDrawNotCalledOnHiddenLayer)
+TEST_F(LayerTreeHostImplTest, didDrawNotCalledOnHiddenLayer)
 {
     // The root layer is always drawn, so run this test on a child layer that
     // will be masked out by the root layer's bounds.
@@ -969,7 +950,7 @@ TEST_P(LayerTreeHostImplTest, didDrawNotCalledOnHiddenLayer)
     EXPECT_FALSE(layer->visibleContentRect().IsEmpty());
 }
 
-TEST_P(LayerTreeHostImplTest, willDrawNotCalledOnOccludedLayer)
+TEST_F(LayerTreeHostImplTest, willDrawNotCalledOnOccludedLayer)
 {
     gfx::Size bigSize(1000, 1000);
     m_hostImpl->setViewportSize(bigSize, bigSize);
@@ -1004,7 +985,7 @@ TEST_P(LayerTreeHostImplTest, willDrawNotCalledOnOccludedLayer)
     EXPECT_TRUE(topLayer->didDrawCalled());
 }
 
-TEST_P(LayerTreeHostImplTest, didDrawCalledOnAllLayers)
+TEST_F(LayerTreeHostImplTest, didDrawCalledOnAllLayers)
 {
     m_hostImpl->activeTree()->SetRootLayer(DidDrawCheckLayer::create(m_hostImpl->activeTree(), 1));
     DidDrawCheckLayer* root = static_cast<DidDrawCheckLayer*>(m_hostImpl->rootLayer());
@@ -1060,7 +1041,7 @@ private:
     }
 };
 
-TEST_P(LayerTreeHostImplTest, prepareToDrawFailsWhenAnimationUsesCheckerboard)
+TEST_F(LayerTreeHostImplTest, prepareToDrawFailsWhenAnimationUsesCheckerboard)
 {
     // When the texture is not missing, we draw as usual.
     m_hostImpl->activeTree()->SetRootLayer(DidDrawCheckLayer::create(m_hostImpl->activeTree(), 1));
@@ -1101,7 +1082,7 @@ TEST_P(LayerTreeHostImplTest, prepareToDrawFailsWhenAnimationUsesCheckerboard)
     m_hostImpl->didDrawAllLayers(frame);
 }
 
-TEST_P(LayerTreeHostImplTest, scrollRootIgnored)
+TEST_F(LayerTreeHostImplTest, scrollRootIgnored)
 {
     scoped_ptr<LayerImpl> root = LayerImpl::create(m_hostImpl->activeTree(), 1);
     root->setScrollable(false);
@@ -1114,7 +1095,7 @@ TEST_P(LayerTreeHostImplTest, scrollRootIgnored)
     EXPECT_FALSE(m_didRequestCommit);
 }
 
-TEST_P(LayerTreeHostImplTest, scrollNonScrollableRootWithTopControls)
+TEST_F(LayerTreeHostImplTest, scrollNonScrollableRootWithTopControls)
 {
     LayerTreeSettings settings;
     settings.calculateTopControlsPosition = true;
@@ -1146,7 +1127,7 @@ TEST_P(LayerTreeHostImplTest, scrollNonScrollableRootWithTopControls)
     EXPECT_EQ(InputHandlerClient::ScrollStarted, m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Gesture));
 }
 
-TEST_P(LayerTreeHostImplTest, scrollNonCompositedRoot)
+TEST_F(LayerTreeHostImplTest, scrollNonCompositedRoot)
 {
     // Test the configuration where a non-composited root layer is embedded in a
     // scrollable outer layer.
@@ -1180,7 +1161,7 @@ TEST_P(LayerTreeHostImplTest, scrollNonCompositedRoot)
     EXPECT_TRUE(m_didRequestCommit);
 }
 
-TEST_P(LayerTreeHostImplTest, scrollChildCallsCommitAndRedraw)
+TEST_F(LayerTreeHostImplTest, scrollChildCallsCommitAndRedraw)
 {
     gfx::Size surfaceSize(10, 10);
     scoped_ptr<LayerImpl> root = LayerImpl::create(m_hostImpl->activeTree(), 1);
@@ -1198,7 +1179,7 @@ TEST_P(LayerTreeHostImplTest, scrollChildCallsCommitAndRedraw)
     EXPECT_TRUE(m_didRequestCommit);
 }
 
-TEST_P(LayerTreeHostImplTest, scrollMissesChild)
+TEST_F(LayerTreeHostImplTest, scrollMissesChild)
 {
     gfx::Size surfaceSize(10, 10);
     scoped_ptr<LayerImpl> root = LayerImpl::create(m_hostImpl->activeTree(), 1);
@@ -1213,7 +1194,7 @@ TEST_P(LayerTreeHostImplTest, scrollMissesChild)
     EXPECT_FALSE(m_didRequestCommit);
 }
 
-TEST_P(LayerTreeHostImplTest, scrollMissesBackfacingChild)
+TEST_F(LayerTreeHostImplTest, scrollMissesBackfacingChild)
 {
     gfx::Size surfaceSize(10, 10);
     scoped_ptr<LayerImpl> root = LayerImpl::create(m_hostImpl->activeTree(), 1);
@@ -1236,7 +1217,7 @@ TEST_P(LayerTreeHostImplTest, scrollMissesBackfacingChild)
     EXPECT_FALSE(m_didRequestCommit);
 }
 
-TEST_P(LayerTreeHostImplTest, scrollBlockedByContentLayer)
+TEST_F(LayerTreeHostImplTest, scrollBlockedByContentLayer)
 {
     gfx::Size surfaceSize(10, 10);
     scoped_ptr<LayerImpl> contentLayer = createScrollableLayer(1, surfaceSize);
@@ -1254,12 +1235,8 @@ TEST_P(LayerTreeHostImplTest, scrollBlockedByContentLayer)
     EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollOnMainThread);
 }
 
-TEST_P(LayerTreeHostImplTest, scrollRootAndChangePageScaleOnMainThread)
+TEST_F(LayerTreeHostImplTest, scrollRootAndChangePageScaleOnMainThread)
 {
-    // This test is specific to the page-scale based pinch zoom.
-    if (!m_hostImpl->settings().pageScalePinchZoomEnabled)
-        return;
-
     gfx::Size surfaceSize(10, 10);
     float pageScale = 2;
     scoped_ptr<LayerImpl> root = createScrollableLayer(1, surfaceSize);
@@ -1278,10 +1255,6 @@ TEST_P(LayerTreeHostImplTest, scrollRootAndChangePageScaleOnMainThread)
     // Set new page scale from main thread.
     m_hostImpl->activeTree()->SetPageScaleFactorAndLimits(pageScale, pageScale, pageScale);
 
-    if (!m_hostImpl->settings().pageScalePinchZoomEnabled) {
-        // The scale should apply to the scroll delta.
-        expectedScrollDelta = gfx::ToFlooredVector2d(gfx::ScaleVector2d(expectedScrollDelta, pageScale));
-    }
     scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
     expectContains(*scrollInfo.get(), m_hostImpl->rootLayer()->id(), expectedScrollDelta);
 
@@ -1311,7 +1284,7 @@ TEST_P(LayerTreeHostImplTest, scrollRootAndChangePageScaleOnMainThread)
     EXPECT_EQ(1.0, m_hostImpl->rootLayer()->implTransform().matrix().getDouble(3, 3));
 }
 
-TEST_P(LayerTreeHostImplTest, scrollRootAndChangePageScaleOnImplThread)
+TEST_F(LayerTreeHostImplTest, scrollRootAndChangePageScaleOnImplThread)
 {
     gfx::Size surfaceSize(10, 10);
     float pageScale = 2;
@@ -1348,7 +1321,7 @@ TEST_P(LayerTreeHostImplTest, scrollRootAndChangePageScaleOnImplThread)
     EXPECT_EQ(m_hostImpl->rootLayer()->implTransform(), expectedScale);
 }
 
-TEST_P(LayerTreeHostImplTest, pageScaleDeltaAppliedToRootScrollLayerOnly)
+TEST_F(LayerTreeHostImplTest, pageScaleDeltaAppliedToRootScrollLayerOnly)
 {
     gfx::Size surfaceSize(10, 10);
     float defaultPageScale = 1;
@@ -1393,12 +1366,8 @@ TEST_P(LayerTreeHostImplTest, pageScaleDeltaAppliedToRootScrollLayerOnly)
     EXPECT_EQ(grandChild->drawTransform().matrix().getDouble(1, 1), newPageScale);
 }
 
-TEST_P(LayerTreeHostImplTest, scrollChildAndChangePageScaleOnMainThread)
+TEST_F(LayerTreeHostImplTest, scrollChildAndChangePageScaleOnMainThread)
 {
-    // This test is specific to the page-scale based pinch zoom.
-    if (!m_hostImpl->settings().pageScalePinchZoomEnabled)
-        return;
-
     gfx::Size surfaceSize(10, 10);
     scoped_ptr<LayerImpl> root = LayerImpl::create(m_hostImpl->activeTree(), 1);
     root->setBounds(surfaceSize);
@@ -1426,10 +1395,6 @@ TEST_P(LayerTreeHostImplTest, scrollChildAndChangePageScaleOnMainThread)
 
     drawOneFrame();
 
-    if (!m_hostImpl->settings().pageScalePinchZoomEnabled) {
-        // The scale should apply to the scroll delta.
-        expectedScrollDelta = gfx::ToFlooredVector2d(gfx::ScaleVector2d(expectedScrollDelta, pageScale));
-    }
     scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
     expectContains(*scrollInfo.get(), scrollLayerId, expectedScrollDelta);
 
@@ -1441,7 +1406,7 @@ TEST_P(LayerTreeHostImplTest, scrollChildAndChangePageScaleOnMainThread)
     EXPECT_EQ(child->implTransform(), gfx::Transform());
 }
 
-TEST_P(LayerTreeHostImplTest, scrollChildBeyondLimit)
+TEST_F(LayerTreeHostImplTest, scrollChildBeyondLimit)
 {
     // Scroll a child layer beyond its maximum scroll range and make sure the
     // parent layer is scrolled on the axis on which the child was unable to
@@ -1479,11 +1444,8 @@ TEST_P(LayerTreeHostImplTest, scrollChildBeyondLimit)
     }
 }
 
-TEST_P(LayerTreeHostImplTest, scrollWithoutBubbling)
+TEST_F(LayerTreeHostImplTest, scrollWithoutBubbling)
 {
-    if (!m_hostImpl->settings().pageScalePinchZoomEnabled)
-        return;
-
     // Scroll a child layer beyond its maximum scroll range and make sure the
     // the scroll doesn't bubble up to the parent layer.
     gfx::Size surfaceSize(10, 10);
@@ -1571,7 +1533,7 @@ TEST_P(LayerTreeHostImplTest, scrollWithoutBubbling)
     }
 }
 
-TEST_P(LayerTreeHostImplTest, scrollEventBubbling)
+TEST_F(LayerTreeHostImplTest, scrollEventBubbling)
 {
     // When we try to scroll a non-scrollable child layer, the scroll delta
     // should be applied to one of its ancestors if possible.
@@ -1601,7 +1563,7 @@ TEST_P(LayerTreeHostImplTest, scrollEventBubbling)
     }
 }
 
-TEST_P(LayerTreeHostImplTest, scrollBeforeRedraw)
+TEST_F(LayerTreeHostImplTest, scrollBeforeRedraw)
 {
     gfx::Size surfaceSize(10, 10);
     m_hostImpl->activeTree()->SetRootLayer(createScrollableLayer(1, surfaceSize));
@@ -1618,7 +1580,7 @@ TEST_P(LayerTreeHostImplTest, scrollBeforeRedraw)
     EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
 }
 
-TEST_P(LayerTreeHostImplTest, scrollAxisAlignedRotatedLayer)
+TEST_F(LayerTreeHostImplTest, scrollAxisAlignedRotatedLayer)
 {
     setupScrollAndContentsLayers(gfx::Size(100, 100));
 
@@ -1653,7 +1615,7 @@ TEST_P(LayerTreeHostImplTest, scrollAxisAlignedRotatedLayer)
     expectContains(*scrollInfo.get(), m_hostImpl->rootLayer()->id(), wheelScrollDelta);
 }
 
-TEST_P(LayerTreeHostImplTest, scrollNonAxisAlignedRotatedLayer)
+TEST_F(LayerTreeHostImplTest, scrollNonAxisAlignedRotatedLayer)
 {
     setupScrollAndContentsLayers(gfx::Size(100, 100));
     int childLayerId = 3;
@@ -1714,7 +1676,7 @@ TEST_P(LayerTreeHostImplTest, scrollNonAxisAlignedRotatedLayer)
     }
 }
 
-TEST_P(LayerTreeHostImplTest, scrollScaledLayer)
+TEST_F(LayerTreeHostImplTest, scrollScaledLayer)
 {
     setupScrollAndContentsLayers(gfx::Size(100, 100));
 
@@ -1834,7 +1796,7 @@ private:
     ResourceProvider::ResourceId m_resourceId;
 };
 
-TEST_P(LayerTreeHostImplTest, blendingOffWhenDrawingOpaqueLayers)
+TEST_F(LayerTreeHostImplTest, blendingOffWhenDrawingOpaqueLayers)
 {
     {
         scoped_ptr<LayerImpl> root = LayerImpl::create(m_hostImpl->activeTree(), 1);
@@ -2026,7 +1988,7 @@ TEST_P(LayerTreeHostImplTest, blendingOffWhenDrawingOpaqueLayers)
 
 }
 
-TEST_P(LayerTreeHostImplTest, viewportCovered)
+TEST_F(LayerTreeHostImplTest, viewportCovered)
 {
     m_hostImpl->initializeRenderer(createOutputSurface());
     m_hostImpl->activeTree()->set_background_color(SK_ColorGRAY);
@@ -2137,7 +2099,7 @@ protected:
 // Only reshape when we know we are going to draw. Otherwise, the reshape
 // can leave the window at the wrong size if we never draw and the proper
 // viewport size is never set.
-TEST_P(LayerTreeHostImplTest, reshapeNotCalledUntilDraw)
+TEST_F(LayerTreeHostImplTest, reshapeNotCalledUntilDraw)
 {
     scoped_ptr<OutputSurface> outputSurface = FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new ReshapeTrackerContext)).PassAs<OutputSurface>();
     ReshapeTrackerContext* reshapeTracker = static_cast<ReshapeTrackerContext*>(outputSurface->context3d());
@@ -2180,7 +2142,7 @@ private:
 
 // Make sure damage tracking propagates all the way to the graphics context,
 // where it should request to swap only the subBuffer that is damaged.
-TEST_P(LayerTreeHostImplTest, partialSwapReceivesDamageRect)
+TEST_F(LayerTreeHostImplTest, partialSwapReceivesDamageRect)
 {
     scoped_ptr<OutputSurface> outputSurface = FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapTrackerContext)).PassAs<OutputSurface>();
     PartialSwapTrackerContext* partialSwapTracker = static_cast<PartialSwapTrackerContext*>(outputSurface->context3d());
@@ -2254,7 +2216,7 @@ TEST_P(LayerTreeHostImplTest, partialSwapReceivesDamageRect)
     EXPECT_EQ(expectedSwapRect.height(), actualSwapRect.height());
 }
 
-TEST_P(LayerTreeHostImplTest, rootLayerDoesntCreateExtraSurface)
+TEST_F(LayerTreeHostImplTest, rootLayerDoesntCreateExtraSurface)
 {
     scoped_ptr<LayerImpl> root = FakeDrawableLayerImpl::create(m_hostImpl->activeTree(), 1);
     scoped_ptr<LayerImpl> child = FakeDrawableLayerImpl::create(m_hostImpl->activeTree(), 2);
@@ -2390,7 +2352,7 @@ public:
     }
 };
 
-TEST_P(LayerTreeHostImplTest, noPartialSwap)
+TEST_F(LayerTreeHostImplTest, noPartialSwap)
 {
     scoped_ptr<OutputSurface> outputSurface = FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new MockContext)).PassAs<OutputSurface>();
     MockContext* mockContext = static_cast<MockContext*>(outputSurface->context3d());
@@ -2424,7 +2386,7 @@ TEST_P(LayerTreeHostImplTest, noPartialSwap)
     Mock::VerifyAndClearExpectations(&mockContext);
 }
 
-TEST_P(LayerTreeHostImplTest, partialSwap)
+TEST_F(LayerTreeHostImplTest, partialSwap)
 {
     scoped_ptr<OutputSurface> outputSurface = FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new MockContext)).PassAs<OutputSurface>();
     MockContext* mockContext = static_cast<MockContext*>(outputSurface->context3d());
@@ -2549,7 +2511,7 @@ static scoped_ptr<LayerTreeHostImpl> setupLayersForOpacity(bool partialSwap, Lay
     return myHostImpl.Pass();
 }
 
-TEST_P(LayerTreeHostImplTest, contributingLayerEmptyScissorPartialSwap)
+TEST_F(LayerTreeHostImplTest, contributingLayerEmptyScissorPartialSwap)
 {
     scoped_ptr<LayerTreeHostImpl> myHostImpl = setupLayersForOpacity(true, this, &m_proxy);
 
@@ -2569,7 +2531,7 @@ TEST_P(LayerTreeHostImplTest, contributingLayerEmptyScissorPartialSwap)
     }
 }
 
-TEST_P(LayerTreeHostImplTest, contributingLayerEmptyScissorNoPartialSwap)
+TEST_F(LayerTreeHostImplTest, contributingLayerEmptyScissorNoPartialSwap)
 {
     scoped_ptr<LayerTreeHostImpl> myHostImpl = setupLayersForOpacity(false, this, &m_proxy);
 
@@ -2644,7 +2606,7 @@ static unsigned createTextureId(ResourceProvider* resourceProvider)
         resourceProvider, createResourceId(resourceProvider)).textureId();
 }
 
-TEST_P(LayerTreeHostImplTest, layersFreeTextures)
+TEST_F(LayerTreeHostImplTest, layersFreeTextures)
 {
     scoped_ptr<TestWebGraphicsContext3D> context =
             TestWebGraphicsContext3D::Create();
@@ -2700,7 +2662,7 @@ public:
     MOCK_METHOD4(drawElements, void(WebKit::WGC3Denum mode, WebKit::WGC3Dsizei count, WebKit::WGC3Denum type, WebKit::WGC3Dintptr offset));
 };
 
-TEST_P(LayerTreeHostImplTest, hasTransparentBackground)
+TEST_F(LayerTreeHostImplTest, hasTransparentBackground)
 {
     scoped_ptr<OutputSurface> outputSurface = FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new MockDrawQuadsToFillScreenContext)).PassAs<OutputSurface>();
     MockDrawQuadsToFillScreenContext* mockContext = static_cast<MockDrawQuadsToFillScreenContext*>(outputSurface->context3d());
@@ -2781,7 +2743,7 @@ public:
     using GLRenderer::releaseRenderPassTextures;
 };
 
-TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusion)
+TEST_F(LayerTreeHostImplTest, textureCachingWithOcclusion)
 {
     LayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = gfx::Size();
@@ -2896,7 +2858,7 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusion)
 
 }
 
-TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusionEarlyOut)
+TEST_F(LayerTreeHostImplTest, textureCachingWithOcclusionEarlyOut)
 {
     LayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = gfx::Size();
@@ -3011,7 +2973,7 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusionEarlyOut)
     }
 }
 
-TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusionExternalOverInternal)
+TEST_F(LayerTreeHostImplTest, textureCachingWithOcclusionExternalOverInternal)
 {
     LayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = gfx::Size();
@@ -3099,7 +3061,7 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusionExternalOverInternal)
     }
 }
 
-TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusionExternalNotAligned)
+TEST_F(LayerTreeHostImplTest, textureCachingWithOcclusionExternalNotAligned)
 {
     LayerTreeSettings settings;
     settings.cacheRenderPassContents = true;
@@ -3172,7 +3134,7 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusionExternalNotAligned)
     }
 }
 
-TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusionPartialSwap)
+TEST_F(LayerTreeHostImplTest, textureCachingWithOcclusionPartialSwap)
 {
     LayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = gfx::Size();
@@ -3285,7 +3247,7 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithOcclusionPartialSwap)
     }
 }
 
-TEST_P(LayerTreeHostImplTest, textureCachingWithScissor)
+TEST_F(LayerTreeHostImplTest, textureCachingWithScissor)
 {
     LayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = gfx::Size();
@@ -3391,7 +3353,7 @@ TEST_P(LayerTreeHostImplTest, textureCachingWithScissor)
     EXPECT_TRUE(myHostImpl->renderer()->haveCachedResourcesForRenderPassId(childPassId));
 }
 
-TEST_P(LayerTreeHostImplTest, surfaceTextureCaching)
+TEST_F(LayerTreeHostImplTest, surfaceTextureCaching)
 {
     LayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = gfx::Size();
@@ -3551,7 +3513,7 @@ TEST_P(LayerTreeHostImplTest, surfaceTextureCaching)
     }
 }
 
-TEST_P(LayerTreeHostImplTest, surfaceTextureCachingNoPartialSwap)
+TEST_F(LayerTreeHostImplTest, surfaceTextureCachingNoPartialSwap)
 {
     LayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = gfx::Size();
@@ -3713,7 +3675,7 @@ TEST_P(LayerTreeHostImplTest, surfaceTextureCachingNoPartialSwap)
     }
 }
 
-TEST_P(LayerTreeHostImplTest, releaseContentsTextureShouldTriggerCommit)
+TEST_F(LayerTreeHostImplTest, releaseContentsTextureShouldTriggerCommit)
 {
     setReduceMemoryResult(false);
 
@@ -4061,7 +4023,7 @@ static void verifyRenderPassTestData(TestCase& testCase, RenderPassRemovalTestDa
     EXPECT_STREQ(testCase.expectedResult, actualResult) << "In test case: " << testCase.name;
 }
 
-TEST_P(LayerTreeHostImplTest, testRemoveRenderPasses)
+TEST_F(LayerTreeHostImplTest, testRemoveRenderPasses)
 {
     scoped_ptr<OutputSurface> outputSurface(createOutputSurface());
     ASSERT_TRUE(outputSurface->context3d());
@@ -4107,14 +4069,22 @@ protected:
     }
 };
 
-TEST_P(LayerTreeHostImplTestWithDelegatingRenderer, FrameIncludesDamageRect)
+TEST_F(LayerTreeHostImplTestWithDelegatingRenderer, FrameIncludesDamageRect)
 {
+    scoped_ptr<SolidColorLayerImpl> root = SolidColorLayerImpl::create(m_hostImpl->activeTree(), 1);
+    root->setAnchorPoint(gfx::PointF(0.f, 0.f));
+    root->setPosition(gfx::PointF(0.f, 0.f));
+    root->setBounds(gfx::Size(10, 10));
+    root->setContentBounds(gfx::Size(10, 10));
+    root->setDrawsContent(true);
+    m_hostImpl->activeTree()->SetRootLayer(root.PassAs<LayerImpl>());
+
     // Draw a frame. In the first frame, the entire viewport should be damaged.
     gfx::Rect fullFrameDamage = gfx::Rect(m_hostImpl->deviceViewportSize());
     drawFrameAndTestDamage(fullFrameDamage);
 
     // The second frame should have no damage, but the quads should still be generated.
-    gfx::Rect noDamage = gfx::Rect(m_hostImpl->deviceViewportSize());
+    gfx::Rect noDamage = gfx::Rect();
     drawFrameAndTestDamage(noDamage);
 }
 
@@ -4131,7 +4101,7 @@ private:
     FakeMaskLayerImpl(LayerTreeImpl* treeImpl, int id) : LayerImpl(treeImpl, id) { }
 };
 
-TEST_P(LayerTreeHostImplTest, maskLayerWithScaling)
+TEST_F(LayerTreeHostImplTest, maskLayerWithScaling)
 {
     // Root
     //  |
@@ -4251,7 +4221,7 @@ TEST_P(LayerTreeHostImplTest, maskLayerWithScaling)
     }
 }
 
-TEST_P(LayerTreeHostImplTest, maskLayerWithDifferentBounds)
+TEST_F(LayerTreeHostImplTest, maskLayerWithDifferentBounds)
 {
     // The mask layer has bounds 100x100 but is attached to a layer with bounds 50x50.
 
@@ -4375,10 +4345,6 @@ TEST_P(LayerTreeHostImplTest, maskLayerWithDifferentBounds)
         m_hostImpl->didDrawAllLayers(frame);
     }
 }
-
-INSTANTIATE_TEST_CASE_P(LayerTreeHostImplTests,
-                        LayerTreeHostImplTest,
-                        ::testing::Values(false, true));
 
 }  // namespace
 }  // namespace cc

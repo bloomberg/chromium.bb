@@ -91,7 +91,6 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   settings.perTilePaintingEnabled = web_settings.perTilePaintingEnabled;
   settings.acceleratedAnimationEnabled =
       web_settings.acceleratedAnimationEnabled;
-  settings.pageScalePinchZoomEnabled = web_settings.pageScalePinchZoomEnabled;
   settings.refreshRate = web_settings.refreshRate;
   settings.defaultTileSize = web_settings.defaultTileSize;
   settings.maxUntiledLayerSize = web_settings.maxUntiledLayerSize;

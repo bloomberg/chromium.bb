@@ -205,9 +205,7 @@ void LayerTreeImpl::UpdateMaxScrollOffset() {
 
 gfx::Transform LayerTreeImpl::ImplTransform() const {
   gfx::Transform transform;
-  transform.Scale(page_scale_delta_, page_scale_delta_);
-  if (settings().pageScalePinchZoomEnabled)
-      transform.Scale(page_scale_factor_, page_scale_factor_);
+  transform.Scale(total_page_scale_factor(), total_page_scale_factor());
   return transform;
 }
 

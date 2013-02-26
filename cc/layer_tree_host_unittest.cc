@@ -723,7 +723,8 @@ private:
     bool m_animationRequested;
 };
 
-TEST_F(LayerTreeHostTestStartPageScaleAnimation, runTest)
+// TODO(aelias): This test is currently broken: http://crbug.com/178295
+TEST_F(LayerTreeHostTestStartPageScaleAnimation, DISABLED_runTest)
 {
     runTest(true);
 }
