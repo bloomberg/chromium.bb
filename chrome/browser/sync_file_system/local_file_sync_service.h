@@ -55,7 +55,7 @@ class LocalFileSyncService
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
-  typedef base::Callback<void(fileapi::SyncStatusCode status,
+  typedef base::Callback<void(SyncStatusCode status,
                               bool has_pending_changes)>
       HasPendingLocalChangeCallback;
 
@@ -68,7 +68,7 @@ class LocalFileSyncService
       const GURL& app_origin,
       const std::string& service_name,
       fileapi::FileSystemContext* file_system_context,
-      const fileapi::SyncStatusCallback& callback);
+      const SyncStatusCallback& callback);
 
   void AddChangeObserver(Observer* observer);
 
@@ -85,7 +85,7 @@ class LocalFileSyncService
   // using |processor|.
   // |processor| must have same or longer lifetime than this service.
   void ProcessLocalChange(LocalChangeProcessor* processor,
-                          const fileapi::SyncFileCallback& callback);
+                          const SyncFileCallback& callback);
 
   // Returns true via |callback| if the given file |url| has local pending
   // changes.
@@ -100,7 +100,7 @@ class LocalFileSyncService
   // Returns the metadata of a remote file pointed by |url|.
   virtual void GetLocalFileMetadata(
       const fileapi::FileSystemURL& url,
-      const fileapi::SyncFileMetadataCallback& callback);
+      const SyncFileMetadataCallback& callback);
 
   // RemoteChangeProcessor overrides.
   virtual void PrepareForProcessRemoteChange(
@@ -111,14 +111,14 @@ class LocalFileSyncService
       const FileChange& change,
       const base::FilePath& local_path,
       const fileapi::FileSystemURL& url,
-      const fileapi::SyncStatusCallback& callback) OVERRIDE;
+      const SyncStatusCallback& callback) OVERRIDE;
   virtual void ClearLocalChanges(
       const fileapi::FileSystemURL& url,
       const base::Closure& completion_callback) OVERRIDE;
   virtual void RecordFakeLocalChange(
       const fileapi::FileSystemURL& url,
       const FileChange& change,
-      const fileapi::SyncStatusCallback& callback) OVERRIDE;
+      const SyncStatusCallback& callback) OVERRIDE;
 
   // LocalOriginChangeObserver override.
   virtual void OnChangesAvailableInOrigins(
@@ -163,31 +163,31 @@ class LocalFileSyncService
   void DidInitializeFileSystemContext(
       const GURL& app_origin,
       fileapi::FileSystemContext* file_system_context,
-      const fileapi::SyncStatusCallback& callback,
-      fileapi::SyncStatusCode status);
+      const SyncStatusCallback& callback,
+      SyncStatusCode status);
   void DidInitializeForRemoteSync(
       const fileapi::FileSystemURL& url,
       const std::string& service_name,
       fileapi::FileSystemContext* file_system_context,
       const PrepareChangeCallback& callback,
-      fileapi::SyncStatusCode status);
+      SyncStatusCode status);
 
   // Runs local_sync_callback_ and resets it.
   void RunLocalSyncCallback(
-      fileapi::SyncStatusCode status,
+      SyncStatusCode status,
       const fileapi::FileSystemURL& url);
 
   // Callbacks for ProcessLocalChange.
   void DidGetFileForLocalSync(
       LocalChangeProcessor* processor,
-      fileapi::SyncStatusCode status,
+      SyncStatusCode status,
       const LocalFileSyncInfo& sync_file_info);
   void ProcessNextChangeForURL(
       LocalChangeProcessor* processor,
       const LocalFileSyncInfo& sync_file_info,
       const FileChange& last_change,
       const FileChangeList& changes,
-      fileapi::SyncStatusCode status);
+      SyncStatusCode status);
 
   Profile* profile_;
 
@@ -206,7 +206,7 @@ class LocalFileSyncService
 
   // This callback is non-null while a local sync is running (i.e.
   // ProcessLocalChange has been called and has not been returned yet).
-  fileapi::SyncFileCallback local_sync_callback_;
+  SyncFileCallback local_sync_callback_;
 
   ObserverList<Observer> change_observers_;
 

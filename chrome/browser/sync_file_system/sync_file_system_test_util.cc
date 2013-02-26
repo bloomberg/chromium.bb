@@ -31,8 +31,8 @@ AssignAndQuitCallback(base::RunLoop* run_loop, R* result) {
 }
 
 // Instantiate versions we know callers will need.
-template base::Callback<void(fileapi::SyncStatusCode)>
-AssignAndQuitCallback(base::RunLoop*, fileapi::SyncStatusCode*);
+template base::Callback<void(SyncStatusCode)>
+AssignAndQuitCallback(base::RunLoop*, SyncStatusCode*);
 
 MultiThreadTestHelper::MultiThreadTestHelper()
     : file_thread_(new base::Thread("File_Thread")),

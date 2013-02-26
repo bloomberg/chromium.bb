@@ -38,7 +38,7 @@ class SyncableFileSystemTest : public testing::Test {
 
     sync_context_ = new LocalFileSyncContext(base::MessageLoopProxy::current(),
                                              base::MessageLoopProxy::current());
-    ASSERT_EQ(SYNC_STATUS_OK,
+    ASSERT_EQ(sync_file_system::SYNC_STATUS_OK,
               file_system_.MaybeInitializeFileSystemContext(sync_context_));
   }
 

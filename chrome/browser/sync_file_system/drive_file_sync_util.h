@@ -12,7 +12,7 @@
 namespace sync_file_system {
 
 // Translates GDataErrorCode to SyncStatusCode.
-fileapi::SyncStatusCode GDataErrorCodeToSyncStatusCode(
+SyncStatusCode GDataErrorCodeToSyncStatusCode(
     google_apis::GDataErrorCode error);
 
 // Translates DriveUploadError to GDataErrorCode.

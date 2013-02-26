@@ -44,7 +44,7 @@ class SyncFileSystemGetFileStatusFunction
 
  private:
   void DidGetFileStatus(
-      const fileapi::SyncStatusCode sync_service_status,
+      const sync_file_system::SyncStatusCode sync_service_status,
       const sync_file_system::SyncFileStatus sync_file_status);
 };
 
@@ -81,7 +81,7 @@ class SyncFileSystemRequestFileSystemFunction
   fileapi::FileSystemContext* GetFileSystemContext();
 
   void DidInitializeFileSystemContext(const std::string& service_name,
-                                      fileapi::SyncStatusCode status);
+                                      sync_file_system::SyncStatusCode status);
   void DidOpenFileSystem(base::PlatformFileError error,
                          const std::string& file_system_name,
                          const GURL& root_url);

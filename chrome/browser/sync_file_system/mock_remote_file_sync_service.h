@@ -34,24 +34,21 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
   MOCK_METHOD1(AddFileStatusObserver,
                void(FileStatusObserver* observer));
   MOCK_METHOD2(RegisterOriginForTrackingChanges,
-               void(const GURL& origin,
-                    const fileapi::SyncStatusCallback& callback));
+               void(const GURL& origin, const SyncStatusCallback& callback));
   MOCK_METHOD2(UnregisterOriginForTrackingChanges,
-               void(const GURL& origin,
-                    const fileapi::SyncStatusCallback& callback));
+               void(const GURL& origin, const SyncStatusCallback& callback));
   MOCK_METHOD2(ProcessRemoteChange,
                void(RemoteChangeProcessor* processor,
-                    const fileapi::SyncFileCallback& callback));
+                    const SyncFileCallback& callback));
   MOCK_METHOD0(GetLocalChangeProcessor, LocalChangeProcessor*());
   MOCK_METHOD1(IsConflicting, bool(const fileapi::FileSystemURL& url));
   MOCK_METHOD2(GetRemoteFileMetadata,
                void(const fileapi::FileSystemURL& url,
-                    const fileapi::SyncFileMetadataCallback& callback));
+                    const SyncFileMetadataCallback& callback));
   MOCK_CONST_METHOD0(GetCurrentState,
                      RemoteServiceState());
   MOCK_CONST_METHOD0(GetServiceName, const char*());
   MOCK_METHOD1(SetSyncEnabled, void(bool));
-
 
   // Send notifications to the observers.
   // Can be used in the mock implementation.
@@ -86,17 +83,14 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
   void AddServiceObserverStub(Observer* observer);
   void AddFileStatusObserverStub(FileStatusObserver* observer);
   void RegisterOriginForTrackingChangesStub(
-      const GURL& origin,
-      const fileapi::SyncStatusCallback& callback);
+      const GURL& origin, const SyncStatusCallback& callback);
   void UnregisterOriginForTrackingChangesStub(
-      const GURL& origin,
-      const fileapi::SyncStatusCallback& callback);
+      const GURL& origin, const SyncStatusCallback& callback);
   void ProcessRemoteChangeStub(
-      RemoteChangeProcessor* processor,
-      const fileapi::SyncFileCallback& callback);
+      RemoteChangeProcessor* processor, const SyncFileCallback& callback);
   void GetRemoteFileMetadataStub(
       const fileapi::FileSystemURL& url,
-      const fileapi::SyncFileMetadataCallback& callback);
+      const SyncFileMetadataCallback& callback);
 
   OriginToURLSetMap conflict_file_urls_;
   FileMetadataMap conflict_file_metadata_;

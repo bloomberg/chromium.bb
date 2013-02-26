@@ -51,11 +51,11 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
       public LocalFileSyncStatus::Observer {
  public:
   typedef base::Callback<void(
-      SyncStatusCode status,
+      sync_file_system::SyncStatusCode status,
       const sync_file_system::LocalFileSyncInfo& sync_file_info)>
           LocalFileSyncInfoCallback;
 
-  typedef base::Callback<void(fileapi::SyncStatusCode status,
+  typedef base::Callback<void(sync_file_system::SyncStatusCode status,
                               bool has_pending_changes)>
       HasPendingLocalChangeCallback;
 
@@ -66,10 +66,11 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
   // |service_name| and registers the it into the internal map.
   // Calling this multiple times for the same file_system_context is valid.
   // This method must be called on UI thread.
-  void MaybeInitializeFileSystemContext(const GURL& source_url,
-                                        const std::string& service_name,
-                                        FileSystemContext* file_system_context,
-                                        const SyncStatusCallback& callback);
+  void MaybeInitializeFileSystemContext(
+      const GURL& source_url,
+      const std::string& service_name,
+      FileSystemContext* file_system_context,
+      const sync_file_system::SyncStatusCallback& callback);
 
   // Called when the corresponding LocalFileSyncService exits.
   // This method must be called on UI thread.
@@ -122,20 +123,20 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
       const sync_file_system::FileChange& change,
       const base::FilePath& local_path,
       const FileSystemURL& url,
-      const SyncStatusCallback& callback);
+      const sync_file_system::SyncStatusCallback& callback);
 
   // Records a fake local change in the local change tracker.
   void RecordFakeLocalChange(
       FileSystemContext* file_system_context,
       const fileapi::FileSystemURL& url,
       const sync_file_system::FileChange& change,
-      const fileapi::SyncStatusCallback& callback);
+      const sync_file_system::SyncStatusCallback& callback);
 
   // This must be called on UI thread.
   void GetFileMetadata(
       FileSystemContext* file_system_context,
       const FileSystemURL& url,
-      const SyncFileMetadataCallback& callback);
+      const sync_file_system::SyncFileMetadataCallback& callback);
 
   // Returns true via |callback| if the given file |url| has local pending
   // changes.
@@ -166,7 +167,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
   virtual void OnWriteEnabled(const FileSystemURL& url) OVERRIDE;
 
  private:
-  typedef std::deque<SyncStatusCallback> StatusCallbackQueue;
+  typedef std::deque<sync_file_system::SyncStatusCallback> StatusCallbackQueue;
   friend class base::RefCountedThreadSafe<LocalFileSyncContext>;
   friend class CannedSyncableFileSystem;
 
@@ -190,7 +191,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
       const GURL& source_url,
       const std::string& service_name,
       FileSystemContext* file_system_context);
-  SyncStatusCode InitializeChangeTrackerOnFileThread(
+  sync_file_system::SyncStatusCode InitializeChangeTrackerOnFileThread(
       scoped_ptr<LocalFileChangeTracker>* tracker_ptr,
       FileSystemContext* file_system_context,
       std::set<GURL>* origins_with_changes);
@@ -200,11 +201,11 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
       const std::string& service_name,
       FileSystemContext* file_system_context,
       std::set<GURL>* origins_with_changes,
-      SyncStatusCode status);
+      sync_file_system::SyncStatusCode status);
   void DidInitialize(
       const GURL& source_url,
       FileSystemContext* file_system_context,
-      SyncStatusCode status);
+      sync_file_system::SyncStatusCode status);
 
   // Helper routines for GetFileForLocalSync.
   void GetNextURLsForSyncOnFileThread(
@@ -218,13 +219,13 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
       FileSystemContext* file_system_context,
       std::deque<FileSystemURL>* remaining_urls,
       const LocalFileSyncInfoCallback& callback,
-      SyncStatusCode status,
+      sync_file_system::SyncStatusCode status,
       const sync_file_system::LocalFileSyncInfo& sync_file_info);
 
   // Callback routine for PrepareForSync and GetFileForLocalSync.
   void DidGetWritingStatusForSync(
       FileSystemContext* file_system_context,
-      SyncStatusCode status,
+      sync_file_system::SyncStatusCode status,
       const FileSystemURL& url,
       const LocalFileSyncInfoCallback& callback);
 
@@ -234,11 +235,11 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
   // Callback routine for ApplyRemoteChange.
   void DidApplyRemoteChange(
       const FileSystemURL& url,
-      const SyncStatusCallback& callback_on_ui,
+      const sync_file_system::SyncStatusCallback& callback_on_ui,
       base::PlatformFileError file_error);
 
   void DidGetFileMetadata(
-      const SyncFileMetadataCallback& callback,
+      const sync_file_system::SyncFileMetadataCallback& callback,
       base::PlatformFileError file_error,
       const base::PlatformFileInfo& file_info,
       const base::FilePath& platform_path);

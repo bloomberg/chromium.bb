@@ -69,7 +69,7 @@ ACTION_P(NotifyOkStateAndCallback, mock_remote_service) {
   mock_remote_service->NotifyRemoteServiceStateUpdated(
       sync_file_system::REMOTE_SERVICE_OK, "Test event description.");
   base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(arg1, fileapi::SYNC_STATUS_OK));
+      FROM_HERE, base::Bind(arg1, sync_file_system::SYNC_STATUS_OK));
 }
 
 ACTION_P2(UpdateRemoteChangeQueue, origin, mock_remote_service) {
@@ -90,7 +90,7 @@ ACTION_P5(ReturnWithFakeFileAddedStatus,
   mock_remote_service->NotifyRemoteChangeQueueUpdated(0);
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE, base::Bind(arg1,
-                            fileapi::SYNC_STATUS_OK,
+                            sync_file_system::SYNC_STATUS_OK,
                             mock_url));
   mock_remote_service->NotifyFileStatusChanged(
       mock_url, sync_direction, sync_file_status, sync_action_taken);

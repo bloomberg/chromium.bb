@@ -28,7 +28,9 @@
 
 using content::BrowserContext;
 using content::BrowserThread;
+using sync_file_system::SyncFileStatus;
 using sync_file_system::SyncFileSystemServiceFactory;
+using sync_file_system::SyncStatusCode;
 
 namespace extensions {
 
@@ -43,7 +45,7 @@ const char kFileError[] = "File error %d.";
 const char kQuotaError[] = "Quota error %d.";
 
 api::sync_file_system::FileStatus FileSyncStatusEnumToExtensionEnum(
-    const sync_file_system::SyncFileStatus state) {
+    const SyncFileStatus state) {
   switch (state) {
     case sync_file_system::SYNC_FILE_STATUS_UNKNOWN:
       return api::sync_file_system::FILE_STATUS_NONE;
@@ -148,9 +150,9 @@ SyncFileSystemRequestFileSystemFunction::GetFileSystemContext() {
 
 void SyncFileSystemRequestFileSystemFunction::DidInitializeFileSystemContext(
     const std::string& service_name,
-    fileapi::SyncStatusCode status) {
-  if (status != fileapi::SYNC_STATUS_OK) {
-    error_ = fileapi::SyncStatusCodeToString(status);
+    SyncStatusCode status) {
+  if (status != sync_file_system::SYNC_STATUS_OK) {
+    error_ = sync_file_system::SyncStatusCodeToString(status);
     SendResponse(false);
     return;
   }
@@ -242,8 +244,8 @@ bool SyncFileSystemGetFileStatusFunction::RunImpl() {
 }
 
 void SyncFileSystemGetFileStatusFunction::DidGetFileStatus(
-    const fileapi::SyncStatusCode sync_service_status,
-    const sync_file_system::SyncFileStatus sync_file_status) {
+    const SyncStatusCode sync_service_status,
+    const SyncFileStatus sync_file_status) {
   // Repost to switch from IO thread to UI thread for SendResponse().
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -256,8 +258,8 @@ void SyncFileSystemGetFileStatusFunction::DidGetFileStatus(
   }
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (sync_service_status != fileapi::SYNC_STATUS_OK) {
-    error_ = fileapi::SyncStatusCodeToString(sync_service_status);
+  if (sync_service_status != sync_file_system::SYNC_STATUS_OK) {
+    error_ = sync_file_system::SyncStatusCodeToString(sync_service_status);
     SendResponse(false);
     return;
   }

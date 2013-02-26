@@ -82,42 +82,42 @@ void MockRemoteFileSyncService::AddFileStatusObserverStub(
 
 void MockRemoteFileSyncService::RegisterOriginForTrackingChangesStub(
     const GURL& origin,
-    const fileapi::SyncStatusCallback& callback) {
+    const SyncStatusCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, fileapi::SYNC_STATUS_OK));
+      base::Bind(callback, SYNC_STATUS_OK));
 }
 
 void MockRemoteFileSyncService::UnregisterOriginForTrackingChangesStub(
     const GURL& origin,
-    const fileapi::SyncStatusCallback& callback) {
+    const SyncStatusCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, fileapi::SYNC_STATUS_OK));
+      base::Bind(callback, SYNC_STATUS_OK));
 }
 
 void MockRemoteFileSyncService::ProcessRemoteChangeStub(
     RemoteChangeProcessor* processor,
-    const fileapi::SyncFileCallback& callback) {
+    const SyncFileCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, fileapi::SYNC_STATUS_NO_CHANGE_TO_SYNC,
+      base::Bind(callback, SYNC_STATUS_NO_CHANGE_TO_SYNC,
                  fileapi::FileSystemURL()));
 }
 
 void MockRemoteFileSyncService::GetRemoteFileMetadataStub(
     const fileapi::FileSystemURL& url,
-    const fileapi::SyncFileMetadataCallback& callback) {
+    const SyncFileMetadataCallback& callback) {
   FileMetadataMap::iterator iter = conflict_file_metadata_.find(url);
   if (iter == conflict_file_metadata_.end()) {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
-        base::Bind(callback, fileapi::SYNC_FILE_ERROR_NOT_FOUND,
+        base::Bind(callback, SYNC_FILE_ERROR_NOT_FOUND,
                    SyncFileMetadata()));
     return;
   }
   base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(callback, fileapi::SYNC_STATUS_OK, iter->second));
+      FROM_HERE, base::Bind(callback, SYNC_STATUS_OK, iter->second));
 }
 
 }  // namespace sync_file_system

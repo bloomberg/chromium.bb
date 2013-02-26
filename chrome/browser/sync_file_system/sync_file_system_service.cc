@@ -31,8 +31,7 @@
 
 using content::BrowserThread;
 using fileapi::FileSystemURL;
-using fileapi::SyncStatusCallback;
-using fileapi::SyncStatusCode;
+using fileapi::FileSystemURLSet;
 
 namespace sync_file_system {
 
@@ -47,7 +46,7 @@ class SharedCallbackRunner
   explicit SharedCallbackRunner(const SyncStatusCallback& join_callback)
       : join_callback_(join_callback),
         num_shared_callbacks_(0),
-        status_(fileapi::SYNC_STATUS_OK) {}
+        status_(SYNC_STATUS_OK) {}
 
   SyncStatusCallback CreateCallback() {
     ++num_shared_callbacks_;
@@ -76,8 +75,7 @@ class SharedCallbackRunner
   }
 
   void Done(SyncStatusCode status) {
-    if (status != fileapi::SYNC_STATUS_OK &&
-        status_ == fileapi::SYNC_STATUS_OK) {
+    if (status != SYNC_STATUS_OK && status_ == SYNC_STATUS_OK) {
       status_ = status;
     }
     if (--num_shared_callbacks_ > 0)
@@ -95,15 +93,15 @@ void VerifyFileSystemURLSetCallback(
     base::WeakPtr<SyncFileSystemService> service,
     const GURL& app_origin,
     const std::string& service_name,
-    const fileapi::SyncFileSetCallback& callback,
-    fileapi::SyncStatusCode status,
-    const fileapi::FileSystemURLSet& urls) {
+    const SyncFileSetCallback& callback,
+    SyncStatusCode status,
+    const FileSystemURLSet& urls) {
   if (!service.get())
     return;
 
 #ifndef NDEBUG
-  if (status == fileapi::SYNC_STATUS_OK) {
-    for (fileapi::FileSystemURLSet::const_iterator iter = urls.begin();
+  if (status == SYNC_STATUS_OK) {
+    for (FileSystemURLSet::const_iterator iter = urls.begin();
          iter != urls.end(); ++iter) {
       DCHECK(iter->origin() == app_origin);
       DCHECK(iter->filesystem_id() == service_name);
@@ -133,8 +131,8 @@ SyncEventObserver::SyncServiceState RemoteStateToSyncServiceState(
 void DidHandleOriginForExtensionEvent(
     int type,
     const GURL& origin,
-    fileapi::SyncStatusCode code) {
-  if (code != fileapi::SYNC_STATUS_OK) {
+    SyncStatusCode code) {
+  if (code != SYNC_STATUS_OK) {
     DCHECK(chrome::NOTIFICATION_EXTENSION_UNLOADED == type ||
            chrome::NOTIFICATION_EXTENSION_LOADED == type);
     const char* event =
@@ -185,8 +183,7 @@ void SyncFileSystemService::InitializeForApp(
 }
 
 void SyncFileSystemService::GetFileSyncStatus(
-    const fileapi::FileSystemURL& url,
-    const fileapi::SyncFileStatusCallback& callback) {
+    const FileSystemURL& url, const SyncFileStatusCallback& callback) {
   DCHECK(local_file_service_);
   DCHECK(remote_file_service_);
 
@@ -195,7 +192,7 @@ void SyncFileSystemService::GetFileSyncStatus(
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(callback,
-                   fileapi::SYNC_FILE_ERROR_INVALID_URL,
+                   SYNC_FILE_ERROR_INVALID_URL,
                    SYNC_FILE_STATUS_UNKNOWN));
     return;
   }
@@ -204,7 +201,7 @@ void SyncFileSystemService::GetFileSyncStatus(
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(callback,
-                   fileapi::SYNC_STATUS_OK,
+                   SYNC_STATUS_OK,
                    SYNC_FILE_STATUS_CONFLICTING));
     return;
   }
@@ -265,12 +262,12 @@ void SyncFileSystemService::Initialize(
 
 void SyncFileSystemService::DidInitializeFileSystem(
     const GURL& app_origin,
-    const fileapi::SyncStatusCallback& callback,
-    fileapi::SyncStatusCode status) {
+    const SyncStatusCallback& callback,
+    SyncStatusCode status) {
   DVLOG(1) << "DidInitializeFileSystem: "
            << app_origin.spec() << " " << status;
 
-  if (status != fileapi::SYNC_STATUS_OK) {
+  if (status != SYNC_STATUS_OK) {
     callback.Run(status);
     return;
   }
@@ -285,8 +282,8 @@ void SyncFileSystemService::DidInitializeFileSystem(
 
 void SyncFileSystemService::DidRegisterOrigin(
     const GURL& app_origin,
-    const fileapi::SyncStatusCallback& callback,
-    fileapi::SyncStatusCode status) {
+    const SyncStatusCallback& callback,
+    SyncStatusCode status) {
   DVLOG(1) << "DidRegisterOrigin: " << app_origin.spec() << " " << status;
 
   callback.Run(status);
@@ -347,7 +344,7 @@ void SyncFileSystemService::MaybeStartLocalSync() {
 }
 
 void SyncFileSystemService::DidProcessRemoteChange(
-    fileapi::SyncStatusCode status,
+    SyncStatusCode status,
     const FileSystemURL& url) {
   DVLOG(1) << "DidProcessRemoteChange: "
            << " status=" << status
@@ -356,18 +353,18 @@ void SyncFileSystemService::DidProcessRemoteChange(
   DCHECK(remote_sync_running_);
   remote_sync_running_ = false;
 
-  if (status != fileapi::SYNC_STATUS_NO_CHANGE_TO_SYNC &&
+  if (status != SYNC_STATUS_NO_CHANGE_TO_SYNC &&
       remote_file_service_->GetCurrentState() != REMOTE_SERVICE_DISABLED) {
     DCHECK(url.is_valid());
     local_file_service_->ClearSyncFlagForURL(url);
   }
 
-  if (status == fileapi::SYNC_STATUS_NO_CHANGE_TO_SYNC) {
+  if (status == SYNC_STATUS_NO_CHANGE_TO_SYNC) {
     // We seem to have no changes to work on for now.
     // TODO(kinuko): Might be better setting a timer to call MaybeStartSync.
     return;
   }
-  if (status == fileapi::SYNC_STATUS_FILE_BUSY) {
+  if (status == SYNC_STATUS_FILE_BUSY) {
     is_waiting_remote_sync_enabled_ = true;
     local_file_service_->RegisterURLForWaitingSync(
         url, base::Bind(&SyncFileSystemService::OnSyncEnabledForRemoteSync,
@@ -381,7 +378,7 @@ void SyncFileSystemService::DidProcessRemoteChange(
 }
 
 void SyncFileSystemService::DidProcessLocalChange(
-    fileapi::SyncStatusCode status, const FileSystemURL& url) {
+    SyncStatusCode status, const FileSystemURL& url) {
   DVLOG(1) << "DidProcessLocalChange:"
            << " status=" << status
            << " (" << SyncStatusCodeToString(status) << ")"
@@ -389,7 +386,7 @@ void SyncFileSystemService::DidProcessLocalChange(
   DCHECK(local_sync_running_);
   local_sync_running_ = false;
 
-  if (status == fileapi::SYNC_STATUS_NO_CHANGE_TO_SYNC) {
+  if (status == SYNC_STATUS_NO_CHANGE_TO_SYNC) {
     // We seem to have no changes to work on for now.
     return;
   }
@@ -403,8 +400,8 @@ void SyncFileSystemService::DidProcessLocalChange(
 }
 
 void SyncFileSystemService::DidGetLocalChangeStatus(
-    const fileapi::SyncFileStatusCallback& callback,
-    fileapi::SyncStatusCode status,
+    const SyncFileStatusCallback& callback,
+    SyncStatusCode status,
     bool has_pending_local_changes) {
   callback.Run(
       status,

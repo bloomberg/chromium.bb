@@ -51,12 +51,12 @@ class SyncFileSystemService
       fileapi::FileSystemContext* file_system_context,
       const std::string& service_name,
       const GURL& app_origin,
-      const fileapi::SyncStatusCallback& callback);
+      const SyncStatusCallback& callback);
 
   // Returns the file |url|'s sync status.
   void GetFileSyncStatus(
       const fileapi::FileSystemURL& url,
-      const fileapi::SyncFileStatusCallback& callback);
+      const SyncFileStatusCallback& callback);
 
   void AddSyncEventObserver(SyncEventObserver* observer);
   void RemoveSyncEventObserver(SyncEventObserver* observer);
@@ -74,11 +74,11 @@ class SyncFileSystemService
 
   // Callbacks for InitializeForApp.
   void DidInitializeFileSystem(const GURL& app_origin,
-                               const fileapi::SyncStatusCallback& callback,
-                               fileapi::SyncStatusCode status);
+                               const SyncStatusCallback& callback,
+                               SyncStatusCode status);
   void DidRegisterOrigin(const GURL& app_origin,
-                         const fileapi::SyncStatusCallback& callback,
-                         fileapi::SyncStatusCode status);
+                         const SyncStatusCallback& callback,
+                         SyncStatusCode status);
 
   // Overrides sync_enabled_ setting. This should be called only by tests.
   void SetSyncEnabledForTesting(bool enabled);
@@ -94,13 +94,13 @@ class SyncFileSystemService
   void MaybeStartLocalSync();
 
   // Callbacks for remote/local sync.
-  void DidProcessRemoteChange(fileapi::SyncStatusCode status,
+  void DidProcessRemoteChange(SyncStatusCode status,
                               const fileapi::FileSystemURL& url);
-  void DidProcessLocalChange(fileapi::SyncStatusCode status,
+  void DidProcessLocalChange(SyncStatusCode status,
                              const fileapi::FileSystemURL& url);
 
-  void DidGetLocalChangeStatus(const fileapi::SyncFileStatusCallback& callback,
-                               fileapi::SyncStatusCode status,
+  void DidGetLocalChangeStatus(const SyncFileStatusCallback& callback,
+                               SyncStatusCode status,
                                bool has_pending_local_changes);
 
   void OnSyncEnabledForRemoteSync();

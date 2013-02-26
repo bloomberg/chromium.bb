@@ -88,7 +88,7 @@ class RemoteFileSyncService {
   // |callback| was retriable ones.
   virtual void RegisterOriginForTrackingChanges(
       const GURL& origin,
-      const fileapi::SyncStatusCallback& callback) = 0;
+      const SyncStatusCallback& callback) = 0;
 
   // Unregisters |origin| to track remote side changes for the |origin|.
   // Upon completion, invokes |callback|.
@@ -97,14 +97,14 @@ class RemoteFileSyncService {
   // |callback| was retriable ones.
   virtual void UnregisterOriginForTrackingChanges(
       const GURL& origin,
-      const fileapi::SyncStatusCallback& callback) = 0;
+      const SyncStatusCallback& callback) = 0;
 
   // Called by the sync engine to process one remote change.
   // After a change is processed |callback| will be called (to return
   // the control to the sync engine).
   virtual void ProcessRemoteChange(
       RemoteChangeProcessor* processor,
-      const fileapi::SyncFileCallback& callback) = 0;
+      const SyncFileCallback& callback) = 0;
 
   // Returns a LocalChangeProcessor that applies a local change to the remote
   // storage backed by this service.
@@ -116,7 +116,7 @@ class RemoteFileSyncService {
   // Returns the metadata of a remote file pointed by |url|.
   virtual void GetRemoteFileMetadata(
       const fileapi::FileSystemURL& url,
-      const fileapi::SyncFileMetadataCallback& callback) = 0;
+      const SyncFileMetadataCallback& callback) = 0;
 
   // Returns the current remote service state (should equal to the value
   // returned by the last OnRemoteServiceStateUpdated notification.

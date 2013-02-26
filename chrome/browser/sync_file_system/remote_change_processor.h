@@ -35,7 +35,7 @@ class RemoteChangeProcessor {
   // set to SYNC_FILE_TYPE_UNKNOWN.
   // |changes| indicates a set of pending changes for the target URL.
   typedef base::Callback<void(
-      fileapi::SyncStatusCode status,
+      SyncStatusCode status,
       const SyncFileMetadata& metadata,
       const FileChangeList& changes)> PrepareChangeCallback;
 
@@ -64,7 +64,7 @@ class RemoteChangeProcessor {
       const FileChange& change,
       const base::FilePath& local_path,
       const fileapi::FileSystemURL& url,
-      const fileapi::SyncStatusCallback& callback) = 0;
+      const SyncStatusCallback& callback) = 0;
 
   // Clears all local changes. This should be called when the remote sync
   // service reconciled or processed the existing local changes while
@@ -81,7 +81,7 @@ class RemoteChangeProcessor {
   virtual void RecordFakeLocalChange(
       const fileapi::FileSystemURL& url,
       const FileChange& change,
-      const fileapi::SyncStatusCallback& callback) = 0;
+      const SyncStatusCallback& callback) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RemoteChangeProcessor);

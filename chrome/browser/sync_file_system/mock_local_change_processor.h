@@ -21,14 +21,14 @@ class MockLocalChangeProcessor : public LocalChangeProcessor {
                void(const FileChange& change,
                     const base::FilePath& local_file_path,
                     const fileapi::FileSystemURL& url,
-                    const fileapi::SyncStatusCallback& callback));
+                    const SyncStatusCallback& callback));
 
  private:
   void ApplyLocalChangeStub(
       const FileChange& change,
       const base::FilePath& local_file_path,
       const fileapi::FileSystemURL& url,
-      const fileapi::SyncStatusCallback& callback);
+      const SyncStatusCallback& callback);
 
   DISALLOW_COPY_AND_ASSIGN(MockLocalChangeProcessor);
 };

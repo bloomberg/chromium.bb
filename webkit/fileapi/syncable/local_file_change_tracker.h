@@ -73,7 +73,8 @@ class WEBKIT_STORAGE_EXPORT LocalFileChangeTracker
 
   // Called by FileSyncService at the startup time to restore last dirty changes
   // left after the last shutdown (if any).
-  SyncStatusCode Initialize(FileSystemContext* file_system_context);
+  sync_file_system::SyncStatusCode Initialize(
+      FileSystemContext* file_system_context);
 
   // This method is (exceptionally) thread-safe.
   int64 num_changes() const {
@@ -110,10 +111,12 @@ class WEBKIT_STORAGE_EXPORT LocalFileChangeTracker
   void DropAllChanges();
 
   // Database related methods.
-  SyncStatusCode MarkDirtyOnDatabase(const FileSystemURL& url);
-  SyncStatusCode ClearDirtyOnDatabase(const FileSystemURL& url);
+  sync_file_system::SyncStatusCode MarkDirtyOnDatabase(
+      const FileSystemURL& url);
+  sync_file_system::SyncStatusCode ClearDirtyOnDatabase(
+      const FileSystemURL& url);
 
-  SyncStatusCode CollectLastDirtyChanges(
+  sync_file_system::SyncStatusCode CollectLastDirtyChanges(
       FileSystemContext* file_system_context);
   void RecordChange(const FileSystemURL& url,
                     const sync_file_system::FileChange& change);

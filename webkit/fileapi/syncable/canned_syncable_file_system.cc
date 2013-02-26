@@ -27,6 +27,7 @@
 
 using base::PlatformFileError;
 using quota::QuotaManager;
+using sync_file_system::SyncStatusCode;
 using webkit_blob::MockBlobURLRequestContext;
 using webkit_blob::ScopedTextBlob;
 
@@ -176,7 +177,7 @@ CannedSyncableFileSystem::CannedSyncableFileSystem(
       origin_(origin),
       type_(kFileSystemTypeSyncable),
       result_(base::PLATFORM_FILE_OK),
-      sync_status_(SYNC_STATUS_OK),
+      sync_status_(sync_file_system::SYNC_STATUS_OK),
       io_task_runner_(io_task_runner),
       file_task_runner_(file_task_runner),
       is_filesystem_set_up_(false),
@@ -268,7 +269,7 @@ void CannedSyncableFileSystem::RemoveSyncStatusObserver(
 SyncStatusCode CannedSyncableFileSystem::MaybeInitializeFileSystemContext(
     LocalFileSyncContext* sync_context) {
   DCHECK(sync_context);
-  sync_status_ = SYNC_STATUS_UNKNOWN;
+  sync_status_ = sync_file_system::SYNC_STATUS_UNKNOWN;
   VerifySameTaskRunner(io_task_runner_, sync_context->io_task_runner_);
   sync_context->MaybeInitializeFileSystemContext(
       origin_, service_name_, file_system_context_,

@@ -35,14 +35,14 @@ class MockRemoteChangeProcessor : public RemoteChangeProcessor {
                void(const FileChange& change,
                     const base::FilePath& local_path,
                     const fileapi::FileSystemURL& url,
-                    const fileapi::SyncStatusCallback& callback));
+                    const SyncStatusCallback& callback));
   MOCK_METHOD2(ClearLocalChanges,
                void(const fileapi::FileSystemURL& url,
                     const base::Closure& completion_callback));
   MOCK_METHOD3(RecordFakeLocalChange,
                void(const fileapi::FileSystemURL& url,
                     const FileChange& change,
-                    const fileapi::SyncStatusCallback& callback));
+                    const SyncStatusCallback& callback));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockRemoteChangeProcessor);

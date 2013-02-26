@@ -27,7 +27,6 @@
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
 using fileapi::FileSystemURL;
-using fileapi::SyncStatusCode;
 
 namespace sync_file_system {
 
@@ -105,7 +104,7 @@ SyncStatusCode InitializeDBOnFileThread(DriveMetadataDB* db,
   contents->incremental_sync_origins.clear();
 
   SyncStatusCode status = db->Initialize();
-  if (status != fileapi::SYNC_STATUS_OK)
+  if (status != SYNC_STATUS_OK)
     return status;
   return db->ReadContents(contents);
 }
@@ -143,7 +142,7 @@ DriveMetadataStore::DriveMetadataStore(
     base::SequencedTaskRunner* file_task_runner)
     : file_task_runner_(file_task_runner),
       db_(new DriveMetadataDB(base_dir, file_task_runner)),
-      db_status_(fileapi::SYNC_STATUS_UNKNOWN),
+      db_status_(SYNC_STATUS_UNKNOWN),
       largest_changestamp_(0) {
   DCHECK(file_task_runner);
 }
@@ -171,7 +170,7 @@ void DriveMetadataStore::DidInitialize(const InitializationCallback& callback,
   DCHECK(contents);
 
   db_status_ = status;
-  if (status != fileapi::SYNC_STATUS_OK) {
+  if (status != SYNC_STATUS_OK) {
     callback.Run(status, false);
     return;
   }
@@ -186,7 +185,7 @@ void DriveMetadataStore::DidInitialize(const InitializationCallback& callback,
 }
 
 void DriveMetadataStore::RestoreSyncRootDirectory(
-    const fileapi::SyncStatusCallback& callback) {
+    const SyncStatusCallback& callback) {
   DCHECK(CalledOnValidThread());
   std::string* sync_root_directory_resource_id = new std::string;
   base::PostTaskAndReplyWithResult(
@@ -200,14 +199,14 @@ void DriveMetadataStore::RestoreSyncRootDirectory(
 }
 
 void DriveMetadataStore::DidRestoreSyncRootDirectory(
-    const fileapi::SyncStatusCallback& callback,
+    const SyncStatusCallback& callback,
     std::string* sync_root_directory_resource_id,
     SyncStatusCode status) {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_root_directory_resource_id);
 
   db_status_ = status;
-  if (status != fileapi::SYNC_STATUS_OK) {
+  if (status != SYNC_STATUS_OK) {
     callback.Run(status);
     return;
   }
@@ -217,7 +216,7 @@ void DriveMetadataStore::DidRestoreSyncRootDirectory(
 }
 
 void DriveMetadataStore::RestoreSyncOrigins(
-    const fileapi::SyncStatusCallback& callback) {
+    const SyncStatusCallback& callback) {
   DCHECK(CalledOnValidThread());
   ResourceIDMap* batch_sync_origins = new ResourceIDMap;
   ResourceIDMap* incremental_sync_origins = new ResourceIDMap;
@@ -234,7 +233,7 @@ void DriveMetadataStore::RestoreSyncOrigins(
 }
 
 void DriveMetadataStore::DidRestoreSyncOrigins(
-    const fileapi::SyncStatusCallback& callback,
+    const SyncStatusCallback& callback,
     ResourceIDMap* batch_sync_origins,
     ResourceIDMap* incremental_sync_origins,
     SyncStatusCode status) {
@@ -243,7 +242,7 @@ void DriveMetadataStore::DidRestoreSyncOrigins(
   DCHECK(incremental_sync_origins);
 
   db_status_ = status;
-  if (status != fileapi::SYNC_STATUS_OK) {
+  if (status != SYNC_STATUS_OK) {
     callback.Run(status);
     return;
   }
@@ -255,9 +254,9 @@ void DriveMetadataStore::DidRestoreSyncOrigins(
 
 void DriveMetadataStore::SetLargestChangeStamp(
     int64 largest_changestamp,
-    const fileapi::SyncStatusCallback& callback) {
+    const SyncStatusCallback& callback) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(fileapi::SYNC_STATUS_OK, db_status_);
+  DCHECK_EQ(SYNC_STATUS_OK, db_status_);
   largest_changestamp_ = largest_changestamp;
   base::PostTaskAndReplyWithResult(
       file_task_runner_, FROM_HERE,
@@ -269,16 +268,16 @@ void DriveMetadataStore::SetLargestChangeStamp(
 
 int64 DriveMetadataStore::GetLargestChangeStamp() const {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(fileapi::SYNC_STATUS_OK, db_status_);
+  DCHECK_EQ(SYNC_STATUS_OK, db_status_);
   return largest_changestamp_;
 }
 
 void DriveMetadataStore::UpdateEntry(
     const FileSystemURL& url,
     const DriveMetadata& metadata,
-    const fileapi::SyncStatusCallback& callback) {
+    const SyncStatusCallback& callback) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(fileapi::SYNC_STATUS_OK, db_status_);
+  DCHECK_EQ(SYNC_STATUS_OK, db_status_);
   DCHECK(!metadata.resource_id().empty());
   DCHECK(!metadata.conflicted() || !metadata.to_be_fetched());
 
@@ -297,13 +296,13 @@ void DriveMetadataStore::UpdateEntry(
 
 void DriveMetadataStore::DeleteEntry(
     const FileSystemURL& url,
-    const fileapi::SyncStatusCallback& callback) {
+    const SyncStatusCallback& callback) {
   DCHECK(CalledOnValidThread());
   MetadataMap::iterator found = metadata_map_.find(url.origin());
   if (found == metadata_map_.end()) {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
-        base::Bind(callback, fileapi::SYNC_DATABASE_ERROR_NOT_FOUND));
+        base::Bind(callback, SYNC_DATABASE_ERROR_NOT_FOUND));
     return;
   }
 
@@ -318,7 +317,7 @@ void DriveMetadataStore::DeleteEntry(
   }
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, fileapi::SYNC_DATABASE_ERROR_NOT_FOUND));
+      base::Bind(callback, SYNC_DATABASE_ERROR_NOT_FOUND));
 }
 
 SyncStatusCode DriveMetadataStore::ReadEntry(const FileSystemURL& url,
@@ -328,14 +327,14 @@ SyncStatusCode DriveMetadataStore::ReadEntry(const FileSystemURL& url,
 
   MetadataMap::const_iterator found_origin = metadata_map_.find(url.origin());
   if (found_origin == metadata_map_.end())
-    return fileapi::SYNC_DATABASE_ERROR_NOT_FOUND;
+    return SYNC_DATABASE_ERROR_NOT_FOUND;
 
   PathToMetadata::const_iterator found = found_origin->second.find(url.path());
   if (found == found_origin->second.end())
-    return fileapi::SYNC_DATABASE_ERROR_NOT_FOUND;
+    return SYNC_DATABASE_ERROR_NOT_FOUND;
 
   *metadata = found->second;
-  return fileapi::SYNC_STATUS_OK;
+  return SYNC_STATUS_OK;
 }
 
 void DriveMetadataStore::SetSyncRootDirectory(const std::string& resource_id) {
@@ -368,7 +367,7 @@ void DriveMetadataStore::AddBatchSyncOrigin(const GURL& origin,
   DCHECK(CalledOnValidThread());
   DCHECK(!IsBatchSyncOrigin(origin));
   DCHECK(!IsIncrementalSyncOrigin(origin));
-  DCHECK_EQ(fileapi::SYNC_STATUS_OK, db_status_);
+  DCHECK_EQ(SYNC_STATUS_OK, db_status_);
 
   batch_sync_origins_.insert(std::make_pair(origin, resource_id));
 
@@ -384,7 +383,7 @@ void DriveMetadataStore::MoveBatchSyncOriginToIncremental(const GURL& origin) {
   DCHECK(CalledOnValidThread());
   DCHECK(IsBatchSyncOrigin(origin));
   DCHECK(!IsIncrementalSyncOrigin(origin));
-  DCHECK_EQ(fileapi::SYNC_STATUS_OK, db_status_);
+  DCHECK_EQ(SYNC_STATUS_OK, db_status_);
 
   std::map<GURL, std::string>::iterator found =
       batch_sync_origins_.find(origin);
@@ -402,7 +401,7 @@ void DriveMetadataStore::MoveBatchSyncOriginToIncremental(const GURL& origin) {
 
 void DriveMetadataStore::RemoveOrigin(
     const GURL& origin,
-    const fileapi::SyncStatusCallback& callback) {
+    const SyncStatusCallback& callback) {
   DCHECK(CalledOnValidThread());
 
   metadata_map_.erase(origin);
@@ -417,26 +416,26 @@ void DriveMetadataStore::RemoveOrigin(
 }
 
 void DriveMetadataStore::DidRemoveOrigin(
-    const fileapi::SyncStatusCallback& callback,
-    fileapi::SyncStatusCode status) {
+    const SyncStatusCallback& callback,
+    SyncStatusCode status) {
   UpdateDBStatus(status);
   callback.Run(status);
 }
 
 void DriveMetadataStore::UpdateDBStatus(SyncStatusCode status) {
   DCHECK(CalledOnValidThread());
-  if (db_status_ != fileapi::SYNC_STATUS_OK &&
-      db_status_ != fileapi::SYNC_DATABASE_ERROR_NOT_FOUND) {
+  if (db_status_ != SYNC_STATUS_OK &&
+      db_status_ != SYNC_DATABASE_ERROR_NOT_FOUND) {
     // TODO(tzik): Handle database corruption. http://crbug.com/153709
     db_status_ = status;
     LOG(WARNING) << "DriveMetadataStore turned to wrong state: " << status;
     return;
   }
-  db_status_ = fileapi::SYNC_STATUS_OK;
+  db_status_ = SYNC_STATUS_OK;
 }
 
 void DriveMetadataStore::UpdateDBStatusAndInvokeCallback(
-    const fileapi::SyncStatusCallback& callback,
+    const SyncStatusCallback& callback,
     SyncStatusCode status) {
   UpdateDBStatus(status);
   callback.Run(status);
@@ -445,7 +444,7 @@ void DriveMetadataStore::UpdateDBStatusAndInvokeCallback(
 SyncStatusCode DriveMetadataStore::GetConflictURLs(
     fileapi::FileSystemURLSet* urls) const {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(fileapi::SYNC_STATUS_OK, db_status_);
+  DCHECK_EQ(SYNC_STATUS_OK, db_status_);
 
   urls->clear();
   for (MetadataMap::const_iterator origin_itr = metadata_map_.begin();
@@ -460,13 +459,13 @@ SyncStatusCode DriveMetadataStore::GetConflictURLs(
       }
     }
   }
-  return fileapi::SYNC_STATUS_OK;
+  return SYNC_STATUS_OK;
 }
 
 SyncStatusCode DriveMetadataStore::GetToBeFetchedFiles(
     URLAndResourceIdList* list) const {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(fileapi::SYNC_STATUS_OK, db_status_);
+  DCHECK_EQ(SYNC_STATUS_OK, db_status_);
 
   list->clear();
   for (MetadataMap::const_iterator origin_itr = metadata_map_.begin();
@@ -482,7 +481,7 @@ SyncStatusCode DriveMetadataStore::GetToBeFetchedFiles(
       }
     }
   }
-  return fileapi::SYNC_STATUS_OK;
+  return SYNC_STATUS_OK;
 }
 
 std::string DriveMetadataStore::GetResourceIdForOrigin(
@@ -531,9 +530,9 @@ SyncStatusCode DriveMetadataDB::Initialize() {
   leveldb::Status status = leveldb::DB::Open(options, db_path_, &db);
   // TODO(tzik): Handle database corruption. http://crbug.com/153709
   if (!status.ok())
-    return fileapi::LevelDBStatusToSyncStatusCode(status);
+    return LevelDBStatusToSyncStatusCode(status);
   db_.reset(db);
-  return fileapi::SYNC_STATUS_OK;
+  return SYNC_STATUS_OK;
 }
 
 SyncStatusCode DriveMetadataDB::ReadContents(
@@ -574,16 +573,16 @@ SyncStatusCode DriveMetadataDB::ReadContents(
 
   SyncStatusCode status = GetSyncOrigins(&contents->batch_sync_origins,
                                          &contents->incremental_sync_origins);
-  if (status != fileapi::SYNC_STATUS_OK &&
-      status != fileapi::SYNC_DATABASE_ERROR_NOT_FOUND)
+  if (status != SYNC_STATUS_OK &&
+      status != SYNC_DATABASE_ERROR_NOT_FOUND)
     return status;
 
   status = GetSyncRootDirectory(&contents->sync_root_directory_resource_id);
-  if (status != fileapi::SYNC_STATUS_OK &&
-      status != fileapi::SYNC_DATABASE_ERROR_NOT_FOUND)
+  if (status != SYNC_STATUS_OK &&
+      status != SYNC_DATABASE_ERROR_NOT_FOUND)
     return status;
 
-  return fileapi::SYNC_STATUS_OK;
+  return SYNC_STATUS_OK;
 }
 
 SyncStatusCode DriveMetadataDB::SetLargestChangestamp(
@@ -594,7 +593,7 @@ SyncStatusCode DriveMetadataDB::SetLargestChangestamp(
   leveldb::Status status = db_->Put(
       leveldb::WriteOptions(),
       kChangeStampKey, base::Int64ToString(largest_changestamp));
-  return fileapi::LevelDBStatusToSyncStatusCode(status);
+  return LevelDBStatusToSyncStatusCode(status);
 }
 
 SyncStatusCode DriveMetadataDB::SetSyncRootDirectory(
@@ -604,7 +603,7 @@ SyncStatusCode DriveMetadataDB::SetSyncRootDirectory(
 
   leveldb::Status status = db_->Put(
       leveldb::WriteOptions(), kSyncRootDirectoryKey, resource_id);
-  return fileapi::LevelDBStatusToSyncStatusCode(status);
+  return LevelDBStatusToSyncStatusCode(status);
 }
 
 SyncStatusCode DriveMetadataDB::GetSyncRootDirectory(std::string* resource_id) {
@@ -613,7 +612,7 @@ SyncStatusCode DriveMetadataDB::GetSyncRootDirectory(std::string* resource_id) {
 
   leveldb::Status status = db_->Get(
       leveldb::ReadOptions(), kSyncRootDirectoryKey, resource_id);
-  return fileapi::LevelDBStatusToSyncStatusCode(status);
+  return LevelDBStatusToSyncStatusCode(status);
 }
 
 SyncStatusCode DriveMetadataDB::UpdateEntry(const FileSystemURL& url,
@@ -633,7 +632,7 @@ SyncStatusCode DriveMetadataDB::UpdateEntry(const FileSystemURL& url,
       kDriveMetadataKeyPrefix + url_string,
       value);
 
-  return fileapi::LevelDBStatusToSyncStatusCode(status);
+  return LevelDBStatusToSyncStatusCode(status);
 }
 
 SyncStatusCode DriveMetadataDB::DeleteEntry(const FileSystemURL& url) {
@@ -647,7 +646,7 @@ SyncStatusCode DriveMetadataDB::DeleteEntry(const FileSystemURL& url) {
   leveldb::Status status = db_->Delete(
       leveldb::WriteOptions(),
       kDriveMetadataKeyPrefix + url_string);
-  return fileapi::LevelDBStatusToSyncStatusCode(status);
+  return LevelDBStatusToSyncStatusCode(status);
 }
 
 SyncStatusCode DriveMetadataDB::UpdateSyncOriginAsBatch(
@@ -659,7 +658,7 @@ SyncStatusCode DriveMetadataDB::UpdateSyncOriginAsBatch(
       leveldb::WriteOptions(),
       CreateKeyForBatchSyncOrigin(origin),
       resource_id);
-  return fileapi::LevelDBStatusToSyncStatusCode(status);
+  return LevelDBStatusToSyncStatusCode(status);
 }
 
 SyncStatusCode DriveMetadataDB::UpdateSyncOriginAsIncremental(
@@ -672,7 +671,7 @@ SyncStatusCode DriveMetadataDB::UpdateSyncOriginAsIncremental(
   batch.Put(CreateKeyForIncrementalSyncOrigin(origin), resource_id);
   leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch);
 
-  return fileapi::LevelDBStatusToSyncStatusCode(status);
+  return LevelDBStatusToSyncStatusCode(status);
 }
 
 SyncStatusCode DriveMetadataDB::RemoveOrigin(const GURL& origin) {
@@ -705,7 +704,7 @@ SyncStatusCode DriveMetadataDB::RemoveOrigin(const GURL& origin) {
   }
 
   leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch);
-  return fileapi::LevelDBStatusToSyncStatusCode(status);
+  return LevelDBStatusToSyncStatusCode(status);
 }
 
 SyncStatusCode DriveMetadataDB::GetSyncOrigins(
@@ -746,7 +745,7 @@ SyncStatusCode DriveMetadataDB::GetSyncOrigins(
     DCHECK(result);
   }
 
-  return fileapi::SYNC_STATUS_OK;
+  return SYNC_STATUS_OK;
 }
 
 }  // namespace sync_file_system

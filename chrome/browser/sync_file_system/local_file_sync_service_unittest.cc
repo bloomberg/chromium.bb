@@ -30,8 +30,6 @@
 using fileapi::FileSystemURL;
 using fileapi::LocalFileSyncStatus;
 using fileapi::MockSyncStatusObserver;
-using fileapi::SyncStatusCallback;
-using fileapi::SyncStatusCode;
 
 using ::testing::_;
 using ::testing::AtLeast;
@@ -120,7 +118,7 @@ class LocalFileSyncServiceTest
     file_system_->SetUp();
 
     base::RunLoop run_loop;
-    SyncStatusCode status = fileapi::SYNC_STATUS_UNKNOWN;
+    SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     local_service_->MaybeInitializeFileSystemContext(
         GURL(kOrigin), kServiceName, file_system_->file_system_context(),
         AssignAndQuitCallback(&run_loop, &status));
@@ -168,7 +166,7 @@ class LocalFileSyncServiceTest
                                    const base::FilePath& local_path,
                                    const FileSystemURL& url) {
     base::RunLoop run_loop;
-    SyncStatusCode sync_status = fileapi::SYNC_STATUS_UNKNOWN;
+    SyncStatusCode sync_status = SYNC_STATUS_UNKNOWN;
     local_service_->ApplyRemoteChange(
         change, local_path, url,
         AssignAndQuitCallback(&run_loop, &sync_status));
@@ -211,13 +209,13 @@ TEST_F(LocalFileSyncServiceTest, RemoteSyncStepsSimple) {
   expected_metadata.file_type = SYNC_FILE_TYPE_UNKNOWN;
   expected_metadata.size = 0;
   PrepareForProcessRemoteChange(kFile, FROM_HERE,
-                                fileapi::SYNC_STATUS_OK,
+                                SYNC_STATUS_OK,
                                 expected_metadata);
 
   // Run ApplyRemoteChange for kFile.
   FileChange change(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                     SYNC_FILE_TYPE_FILE);
-  EXPECT_EQ(fileapi::SYNC_STATUS_OK,
+  EXPECT_EQ(SYNC_STATUS_OK,
             ApplyRemoteChange(change, local_path, kFile));
 
   // Verify the file is synced.
@@ -226,13 +224,13 @@ TEST_F(LocalFileSyncServiceTest, RemoteSyncStepsSimple) {
 
   // Run PrepareForProcessRemoteChange for kDir.
   PrepareForProcessRemoteChange(kDir, FROM_HERE,
-                                fileapi::SYNC_STATUS_OK,
+                                SYNC_STATUS_OK,
                                 expected_metadata);
 
   // Run ApplyRemoteChange for kDir.
   change = FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                       SYNC_FILE_TYPE_DIRECTORY);
-  EXPECT_EQ(fileapi::SYNC_STATUS_OK,
+  EXPECT_EQ(SYNC_STATUS_OK,
             ApplyRemoteChange(change, base::FilePath(), kDir));
 
   // Verify the directory.
@@ -244,12 +242,11 @@ TEST_F(LocalFileSyncServiceTest, RemoteSyncStepsSimple) {
   expected_metadata.file_type = SYNC_FILE_TYPE_DIRECTORY;
   expected_metadata.size = 0;
   PrepareForProcessRemoteChange(kDir, FROM_HERE,
-                                fileapi::SYNC_STATUS_OK,
+                                SYNC_STATUS_OK,
                                 expected_metadata);
 
   change = FileChange(FileChange::FILE_CHANGE_DELETE, SYNC_FILE_TYPE_UNKNOWN);
-  EXPECT_EQ(fileapi::SYNC_STATUS_OK,
-            ApplyRemoteChange(change, base::FilePath(), kDir));
+  EXPECT_EQ(SYNC_STATUS_OK, ApplyRemoteChange(change, base::FilePath(), kDir));
 
   // Now the directory must have deleted.
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
@@ -291,7 +288,7 @@ TEST_F(LocalFileSyncServiceTest, MAYBE_LocalChangeObserverMultipleContexts) {
   file_system2.SetUp();
 
   base::RunLoop run_loop;
-  SyncStatusCode status = fileapi::SYNC_STATUS_UNKNOWN;
+  SyncStatusCode status = SYNC_STATUS_UNKNOWN;
   local_service_->MaybeInitializeFileSystemContext(
       GURL(kOrigin2), kServiceName, file_system2.file_system_context(),
       AssignAndQuitCallback(&run_loop, &status));
@@ -347,12 +344,12 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_CreateFile) {
                           SYNC_FILE_TYPE_FILE);
   EXPECT_CALL(local_change_processor,
               ApplyLocalChange(change, platform_path, kFile, _))
-      .WillOnce(MockStatusCallback(fileapi::SYNC_STATUS_OK));
+      .WillOnce(MockStatusCallback(SYNC_STATUS_OK));
 
   local_service_->ProcessLocalChange(
       &local_change_processor,
       base::Bind(&OnSyncCompleted, FROM_HERE, run_loop.QuitClosure(),
-                 fileapi::SYNC_STATUS_OK, kFile));
+                 SYNC_STATUS_OK, kFile));
 
   run_loop.Run();
 
@@ -383,13 +380,13 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_CreateAndRemoveFile) {
   StrictMock<MockLocalChangeProcessor> local_change_processor;
   const FileChange change(FileChange::FILE_CHANGE_DELETE, SYNC_FILE_TYPE_FILE);
   EXPECT_CALL(local_change_processor, ApplyLocalChange(change, _, kFile, _))
-      .WillOnce(MockStatusCallback(fileapi::SYNC_FILE_ERROR_NOT_FOUND));
+      .WillOnce(MockStatusCallback(SYNC_FILE_ERROR_NOT_FOUND));
 
   // The sync should succeed anyway.
   local_service_->ProcessLocalChange(
       &local_change_processor,
       base::Bind(&OnSyncCompleted, FROM_HERE, run_loop.QuitClosure(),
-                 fileapi::SYNC_STATUS_OK, kFile));
+                 SYNC_STATUS_OK, kFile));
 
   run_loop.Run();
 
@@ -418,7 +415,7 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_CreateAndRemoveDirectory) {
   local_service_->ProcessLocalChange(
       &local_change_processor,
       base::Bind(&OnSyncCompleted, FROM_HERE, run_loop.QuitClosure(),
-                 fileapi::SYNC_STATUS_NO_CHANGE_TO_SYNC, FileSystemURL()));
+                 SYNC_STATUS_NO_CHANGE_TO_SYNC, FileSystemURL()));
 
   run_loop.Run();
 
@@ -455,15 +452,12 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_MultipleChanges) {
   std::vector<FileChange> changes;
   EXPECT_CALL(local_change_processor, ApplyLocalChange(_, _, kPath, _))
       .Times(2)
-      .WillOnce(MockStatusCallbackAndRecordChange(fileapi::SYNC_STATUS_OK,
-                                                  &changes))
-      .WillOnce(MockStatusCallbackAndRecordChange(fileapi::SYNC_STATUS_OK,
-                                                  &changes));
-
+      .WillOnce(MockStatusCallbackAndRecordChange(SYNC_STATUS_OK, &changes))
+      .WillOnce(MockStatusCallbackAndRecordChange(SYNC_STATUS_OK, &changes));
   local_service_->ProcessLocalChange(
       &local_change_processor,
       base::Bind(&OnSyncCompleted, FROM_HERE, run_loop.QuitClosure(),
-                 fileapi::SYNC_STATUS_OK, kPath));
+                 SYNC_STATUS_OK, kPath));
 
   run_loop.Run();
 
@@ -493,7 +487,7 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_GetLocalMetadata) {
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             file_system_->TouchFile(kURL, base::Time(), kTime));
 
-  SyncStatusCode status = fileapi::SYNC_STATUS_UNKNOWN;
+  SyncStatusCode status = SYNC_STATUS_UNKNOWN;
   SyncFileMetadata metadata;
   local_service_->GetLocalFileMetadata(
       kURL,
@@ -502,7 +496,7 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_GetLocalMetadata) {
 
   run_loop.Run();
 
-  EXPECT_EQ(fileapi::SYNC_STATUS_OK, status);
+  EXPECT_EQ(SYNC_STATUS_OK, status);
   EXPECT_EQ(kTime, metadata.last_modified);
   EXPECT_EQ(kSize, metadata.size);
 }
@@ -526,11 +520,11 @@ TEST_F(LocalFileSyncServiceTest, RecordFakeChange) {
   // Call RecordFakeLocalChange to add an ADD_OR_UPDATE change.
   {
     base::RunLoop run_loop;
-    SyncStatusCode status = fileapi::SYNC_STATUS_UNKNOWN;
+    SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     local_service_->RecordFakeLocalChange(
         kURL, change, AssignAndQuitCallback(&run_loop, &status));
     run_loop.Run();
-    EXPECT_EQ(fileapi::SYNC_STATUS_OK, status);
+    EXPECT_EQ(SYNC_STATUS_OK, status);
   }
 
   EXPECT_EQ(1, GetNumChangesInTracker());
@@ -542,14 +536,13 @@ TEST_F(LocalFileSyncServiceTest, RecordFakeChange) {
   StrictMock<MockLocalChangeProcessor> local_change_processor;
   std::vector<FileChange> changes;
   EXPECT_CALL(local_change_processor, ApplyLocalChange(_, _, kURL, _))
-      .WillOnce(MockStatusCallbackAndRecordChange(fileapi::SYNC_STATUS_OK,
-                                                  &changes));
+      .WillOnce(MockStatusCallbackAndRecordChange(SYNC_STATUS_OK, &changes));
   {
     base::RunLoop run_loop;
     local_service_->ProcessLocalChange(
         &local_change_processor,
         base::Bind(&OnSyncCompleted, FROM_HERE, run_loop.QuitClosure(),
-                   fileapi::SYNC_STATUS_OK, kURL));
+                   SYNC_STATUS_OK, kURL));
     run_loop.Run();
   }
 

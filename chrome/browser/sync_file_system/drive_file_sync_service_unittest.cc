@@ -61,20 +61,20 @@ base::FilePath::StringType ASCIIToFilePathString(const std::string& path) {
   return base::FilePath().AppendASCII(path).value();
 }
 
-void DidInitialize(bool* done, fileapi::SyncStatusCode status, bool created) {
+void DidInitialize(bool* done, SyncStatusCode status, bool created) {
   EXPECT_FALSE(*done);
   *done = true;
-  EXPECT_EQ(fileapi::SYNC_STATUS_OK, status);
+  EXPECT_EQ(SYNC_STATUS_OK, status);
   EXPECT_TRUE(created);
 }
 
-void DidUpdateEntry(fileapi::SyncStatusCode status) {
-  EXPECT_EQ(fileapi::SYNC_STATUS_OK, status);
+void DidUpdateEntry(SyncStatusCode status) {
+  EXPECT_EQ(SYNC_STATUS_OK, status);
 }
 
 void ExpectEqStatus(bool* done,
-                    fileapi::SyncStatusCode expected,
-                    fileapi::SyncStatusCode actual) {
+                    SyncStatusCode expected,
+                    SyncStatusCode actual) {
   EXPECT_FALSE(*done);
   *done = true;
   EXPECT_EQ(expected, actual);
@@ -143,7 +143,7 @@ ACTION(PrepareForRemoteChange_Busy) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(arg2,
-                 fileapi::SYNC_STATUS_FILE_BUSY,
+                 SYNC_STATUS_FILE_BUSY,
                  SyncFileMetadata(),
                  FileChangeList()));
 }
@@ -152,7 +152,7 @@ ACTION(PrepareForRemoteChange_NotFound) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(arg2,
-                 fileapi::SYNC_STATUS_OK,
+                 SYNC_STATUS_OK,
                  SyncFileMetadata(SYNC_FILE_TYPE_UNKNOWN, 0, base::Time()),
                  FileChangeList()));
 }
@@ -161,7 +161,7 @@ ACTION(PrepareForRemoteChange_NotModified) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(arg2,
-                 fileapi::SYNC_STATUS_OK,
+                 SYNC_STATUS_OK,
                  SyncFileMetadata(SYNC_FILE_TYPE_FILE, 0, base::Time()),
                  FileChangeList()));
 }
@@ -173,7 +173,7 @@ ACTION(InvokeDidDownloadFile) {
 
 ACTION(InvokeDidApplyRemoteChange) {
   base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(arg3, fileapi::SYNC_STATUS_OK));
+      FROM_HERE, base::Bind(arg3, SYNC_STATUS_OK));
 }
 
 }  // namespace
@@ -386,12 +386,12 @@ class DriveFileSyncServiceTest : public testing::Test {
         origin, kServiceName, base::FilePath(path));
   }
 
-  void ProcessRemoteChange(fileapi::SyncStatusCode expected_status,
+  void ProcessRemoteChange(SyncStatusCode expected_status,
                            const fileapi::FileSystemURL& expected_url,
                            SyncFileStatus expected_sync_file_status,
                            SyncAction expected_sync_action,
                            SyncDirection expected_sync_direction) {
-    fileapi::SyncStatusCode actual_status = fileapi::SYNC_STATUS_UNKNOWN;
+    SyncStatusCode actual_status = SYNC_STATUS_UNKNOWN;
     fileapi::FileSystemURL actual_url;
 
     if (expected_sync_file_status != SYNC_FILE_STATUS_UNKNOWN) {
@@ -414,9 +414,9 @@ class DriveFileSyncServiceTest : public testing::Test {
     EXPECT_EQ(expected_url, actual_url);
   }
 
-  void DidProcessRemoteChange(fileapi::SyncStatusCode* status_out,
+  void DidProcessRemoteChange(SyncStatusCode* status_out,
                               fileapi::FileSystemURL* url_out,
-                              fileapi::SyncStatusCode status,
+                              SyncStatusCode status,
                               const fileapi::FileSystemURL& url) {
     *status_out = status;
     *url_out = url;
@@ -648,7 +648,7 @@ TEST_F(DriveFileSyncServiceTest, RegisterNewOrigin) {
   SetUpDriveSyncService(true);
   bool done = false;
   sync_service()->RegisterOriginForTrackingChanges(
-      kOrigin, base::Bind(&ExpectEqStatus, &done, fileapi::SYNC_STATUS_OK));
+      kOrigin, base::Bind(&ExpectEqStatus, &done, SYNC_STATUS_OK));
   message_loop()->RunUntilIdle();
   EXPECT_TRUE(done);
 
@@ -690,7 +690,7 @@ TEST_F(DriveFileSyncServiceTest, RegisterExistingOrigin) {
   SetUpDriveSyncService(true);
   bool done = false;
   sync_service()->RegisterOriginForTrackingChanges(
-      kOrigin, base::Bind(&ExpectEqStatus, &done, fileapi::SYNC_STATUS_OK));
+      kOrigin, base::Bind(&ExpectEqStatus, &done, SYNC_STATUS_OK));
   message_loop()->RunUntilIdle();
   EXPECT_TRUE(done);
 
@@ -739,7 +739,7 @@ TEST_F(DriveFileSyncServiceTest, UnregisterOrigin) {
 
   bool done = false;
   sync_service()->UnregisterOriginForTrackingChanges(
-      kOrigin1, base::Bind(&ExpectEqStatus, &done, fileapi::SYNC_STATUS_OK));
+      kOrigin1, base::Bind(&ExpectEqStatus, &done, SYNC_STATUS_OK));
   message_loop()->RunUntilIdle();
   EXPECT_TRUE(done);
 
@@ -839,7 +839,7 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_NoChange) {
 
   SetUpDriveSyncService(true);
 
-  ProcessRemoteChange(fileapi::SYNC_STATUS_NO_CHANGE_TO_SYNC,
+  ProcessRemoteChange(SYNC_STATUS_NO_CHANGE_TO_SYNC,
                       fileapi::FileSystemURL(),
                       SYNC_FILE_STATUS_UNKNOWN,
                       SYNC_ACTION_NONE,
@@ -879,7 +879,7 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_Busy) {
       *LoadJSONFile("gdata/file_entry.json")));
   AppendIncrementalRemoteChangeByEntry(kOrigin, *entry, 12345);
 
-  ProcessRemoteChange(fileapi::SYNC_STATUS_FILE_BUSY,
+  ProcessRemoteChange(SYNC_STATUS_FILE_BUSY,
                       CreateURL(kOrigin, kFileName),
                       SYNC_FILE_STATUS_UNKNOWN,
                       SYNC_ACTION_NONE,
@@ -923,7 +923,7 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_NewFile) {
       *LoadJSONFile("gdata/file_entry.json")));
   AppendIncrementalRemoteChangeByEntry(kOrigin, *entry, 12345);
 
-  ProcessRemoteChange(fileapi::SYNC_STATUS_OK,
+  ProcessRemoteChange(SYNC_STATUS_OK,
                       CreateURL(kOrigin, kFileName),
                       SYNC_FILE_STATUS_SYNCED,
                       SYNC_ACTION_ADDED,
@@ -966,7 +966,7 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_UpdateFile) {
   scoped_ptr<ResourceEntry> entry(ResourceEntry::ExtractAndParse(
       *LoadJSONFile("gdata/file_entry.json")));
   AppendIncrementalRemoteChangeByEntry(kOrigin, *entry, 12345);
-  ProcessRemoteChange(fileapi::SYNC_STATUS_OK,
+  ProcessRemoteChange(SYNC_STATUS_OK,
                       CreateURL(kOrigin, kFileName),
                       SYNC_FILE_STATUS_SYNCED,
                       SYNC_ACTION_UPDATED,
@@ -1000,7 +1000,7 @@ TEST_F(DriveFileSyncServiceTest, RegisterOriginWithSyncDisabled) {
   SetUpDriveSyncService(false);
   bool done = false;
   sync_service()->RegisterOriginForTrackingChanges(
-      kOrigin, base::Bind(&ExpectEqStatus, &done, fileapi::SYNC_STATUS_OK));
+      kOrigin, base::Bind(&ExpectEqStatus, &done, SYNC_STATUS_OK));
   message_loop()->RunUntilIdle();
   EXPECT_TRUE(done);
 

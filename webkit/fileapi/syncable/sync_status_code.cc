@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
-namespace fileapi {
+namespace sync_file_system {
 
 std::string SyncStatusCodeToString(SyncStatusCode status) {
   switch (status) {
@@ -142,4 +142,4 @@ SyncStatusCode PlatformFileErrorToSyncStatusCode(
   }
 }
 
-}  // namespace fileapi
+}  // namespace sync_file_system

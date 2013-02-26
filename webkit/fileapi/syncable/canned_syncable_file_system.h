@@ -66,7 +66,7 @@ class CannedSyncableFileSystem
 
   // Initialize this with given |sync_context| if it hasn't
   // been initialized.
-  SyncStatusCode MaybeInitializeFileSystemContext(
+  sync_file_system::SyncStatusCode MaybeInitializeFileSystemContext(
       LocalFileSyncContext* sync_context);
 
   // Opens a new syncable file system.
@@ -192,7 +192,7 @@ class CannedSyncableFileSystem
   void DidOpenFileSystem(base::PlatformFileError result,
                          const std::string& name,
                          const GURL& root);
-  void DidInitializeFileSystemContext(SyncStatusCode status);
+  void DidInitializeFileSystemContext(sync_file_system::SyncStatusCode status);
 
   void InitializeSyncStatusObserver();
 
@@ -205,7 +205,7 @@ class CannedSyncableFileSystem
   const FileSystemType type_;
   GURL root_url_;
   base::PlatformFileError result_;
-  SyncStatusCode sync_status_;
+  sync_file_system::SyncStatusCode sync_status_;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;

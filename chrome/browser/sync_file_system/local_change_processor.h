@@ -34,7 +34,7 @@ class LocalChangeProcessor {
       const FileChange& change,
       const base::FilePath& local_file_path,
       const fileapi::FileSystemURL& url,
-      const fileapi::SyncStatusCallback& callback) = 0;
+      const SyncStatusCallback& callback) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LocalChangeProcessor);

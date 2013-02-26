@@ -26,7 +26,7 @@ void FakeRemoteChangeProcessor::PrepareForProcessRemoteChange(
     const PrepareChangeCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, fileapi::SYNC_STATUS_OK,
+      base::Bind(callback, SYNC_STATUS_OK,
                  SyncFileMetadata(), FileChangeList()));
 }
 
@@ -34,10 +34,10 @@ void FakeRemoteChangeProcessor::ApplyRemoteChange(
     const FileChange& change,
     const base::FilePath& local_path,
     const fileapi::FileSystemURL& url,
-    const fileapi::SyncStatusCallback& callback) {
+    const SyncStatusCallback& callback) {
   applied_changes_[url].push_back(change);
   base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(callback, fileapi::SYNC_STATUS_OK));
+      FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
 }
 
 void FakeRemoteChangeProcessor::ClearLocalChanges(
@@ -49,9 +49,9 @@ void FakeRemoteChangeProcessor::ClearLocalChanges(
 void FakeRemoteChangeProcessor::RecordFakeLocalChange(
     const fileapi::FileSystemURL& url,
     const FileChange& change,
-    const fileapi::SyncStatusCallback& callback) {
+    const SyncStatusCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(callback, fileapi::SYNC_STATUS_OK));
+      FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
 }
 
 const FakeRemoteChangeProcessor::URLToFileChangesMap&

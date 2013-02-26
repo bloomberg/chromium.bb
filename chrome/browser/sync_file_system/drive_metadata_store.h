@@ -41,7 +41,7 @@ class DriveMetadataStore
   typedef std::map<GURL, PathToMetadata> MetadataMap;
   typedef std::vector<std::pair<fileapi::FileSystemURL, std::string> >
       URLAndResourceIdList;
-  typedef base::Callback<void(fileapi::SyncStatusCode status, bool created)>
+  typedef base::Callback<void(SyncStatusCode status, bool created)>
       InitializationCallback;
 
   DriveMetadataStore(const base::FilePath& base_dir,
@@ -53,20 +53,20 @@ class DriveMetadataStore
   void Initialize(const InitializationCallback& callback);
 
   void SetLargestChangeStamp(int64 largest_changestamp,
-                             const fileapi::SyncStatusCallback& callback);
+                             const SyncStatusCallback& callback);
   int64 GetLargestChangeStamp() const;
 
   // Updates database entry. Invokes |callback|, upon completion.
   void UpdateEntry(const fileapi::FileSystemURL& url,
                    const DriveMetadata& metadata,
-                   const fileapi::SyncStatusCallback& callback);
+                   const SyncStatusCallback& callback);
 
   // Deletes database entry for |url|. Invokes |callback|, upon completion.
   void DeleteEntry(const fileapi::FileSystemURL& url,
-                   const fileapi::SyncStatusCallback& callback);
+                   const SyncStatusCallback& callback);
 
   // Lookups and reads the database entry for |url|.
-  fileapi::SyncStatusCode ReadEntry(const fileapi::FileSystemURL& url,
+  SyncStatusCode ReadEntry(const fileapi::FileSystemURL& url,
                                     DriveMetadata* metadata) const;
 
   // Returns true if |origin| is a batch sync origin, i.e. the origin's entire
@@ -88,7 +88,7 @@ class DriveMetadataStore
   void MoveBatchSyncOriginToIncremental(const GURL& origin);
 
   void RemoveOrigin(const GURL& origin,
-                    const fileapi::SyncStatusCallback& callback);
+                    const SyncStatusCallback& callback);
 
   // Sets the directory identified by |resource_id| as the sync data directory.
   // All data for the Sync FileSystem should be store into the directory.
@@ -96,11 +96,11 @@ class DriveMetadataStore
   void SetSyncRootDirectory(const std::string& resource_id);
 
   // Returns a set of URLs for files in conflict.
-  fileapi::SyncStatusCode GetConflictURLs(
+  SyncStatusCode GetConflictURLs(
       fileapi::FileSystemURLSet* urls) const;
 
   // Returns a set of URLs and Resource IDs for files te be fetched.
-  fileapi::SyncStatusCode GetToBeFetchedFiles(URLAndResourceIdList* list) const;
+  SyncStatusCode GetToBeFetchedFiles(URLAndResourceIdList* list) const;
 
   // Returns resource id for |origin|. |origin| must be a batch sync origin or
   // an incremental sync origin.
@@ -128,30 +128,29 @@ class DriveMetadataStore
  private:
   friend class DriveMetadataStoreTest;
 
-  void UpdateDBStatus(fileapi::SyncStatusCode status);
-  void UpdateDBStatusAndInvokeCallback(
-      const fileapi::SyncStatusCallback& callback,
-      fileapi::SyncStatusCode status);
+  void UpdateDBStatus(SyncStatusCode status);
+  void UpdateDBStatusAndInvokeCallback(const SyncStatusCallback& callback,
+                                       SyncStatusCode status);
   void DidInitialize(const InitializationCallback& callback,
                      DriveMetadataDBContents* contents,
-                     fileapi::SyncStatusCode error);
-  void DidRemoveOrigin(const fileapi::SyncStatusCallback& callback,
-                       fileapi::SyncStatusCode status);
+                     SyncStatusCode error);
+  void DidRemoveOrigin(const SyncStatusCallback& callback,
+                       SyncStatusCode status);
 
   // These are only for testing.
-  void RestoreSyncRootDirectory(const fileapi::SyncStatusCallback& callback);
-  void DidRestoreSyncRootDirectory(const fileapi::SyncStatusCallback& callback,
+  void RestoreSyncRootDirectory(const SyncStatusCallback& callback);
+  void DidRestoreSyncRootDirectory(const SyncStatusCallback& callback,
                                    std::string* sync_root_directory_resource_id,
-                                   fileapi::SyncStatusCode status);
-  void RestoreSyncOrigins(const fileapi::SyncStatusCallback& callback);
-  void DidRestoreSyncOrigins(const fileapi::SyncStatusCallback& callback,
+                                   SyncStatusCode status);
+  void RestoreSyncOrigins(const SyncStatusCallback& callback);
+  void DidRestoreSyncOrigins(const SyncStatusCallback& callback,
                              ResourceIDMap* batch_sync_origins,
                              ResourceIDMap* incremental_sync_origins,
-                             fileapi::SyncStatusCode status);
+                             SyncStatusCode status);
 
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
   scoped_ptr<DriveMetadataDB> db_;
-  fileapi::SyncStatusCode db_status_;
+  SyncStatusCode db_status_;
 
   int64 largest_changestamp_;
   MetadataMap metadata_map_;

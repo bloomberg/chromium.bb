@@ -29,9 +29,9 @@ void MockLocalChangeProcessor::ApplyLocalChangeStub(
     const FileChange& change,
     const base::FilePath& local_file_path,
     const fileapi::FileSystemURL& url,
-    const fileapi::SyncStatusCallback& callback) {
+    const SyncStatusCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(callback, fileapi::SYNC_STATUS_OK));
+      FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
 }
 
 }  // namespace sync_file_system

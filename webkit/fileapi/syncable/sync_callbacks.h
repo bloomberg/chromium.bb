@@ -10,35 +10,33 @@
 #include "webkit/fileapi/syncable/sync_file_status.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 
-namespace sync_file_system {
-class SyncFileMetadata;
+namespace fileapi {
+class FileSystemURL;
 }
 
-// TODO(calvinlo): Move to sync_file_system namespace. http://crbug/174870.
-namespace fileapi {
+namespace sync_file_system {
 
-class FileSystemURL;
+class SyncFileMetadata;
 
 typedef base::Callback<void(SyncStatusCode status)>
     SyncStatusCallback;
 
 typedef base::Callback<void(SyncStatusCode status,
-                            const FileSystemURL& url)>
+                            const fileapi::FileSystemURL& url)>
     SyncFileCallback;
 
-typedef base::Callback<void(
-    SyncStatusCode status,
-    const sync_file_system::SyncFileMetadata& metadata)>
-        SyncFileMetadataCallback;
+typedef base::Callback<void(SyncStatusCode status,
+                            const SyncFileMetadata& metadata)>
+    SyncFileMetadataCallback;
 
-typedef base::Callback<void(fileapi::SyncStatusCode status,
+typedef base::Callback<void(SyncStatusCode status,
                             const fileapi::FileSystemURLSet& urls)>
     SyncFileSetCallback;
 
 typedef base::Callback<void(SyncStatusCode status,
-                            sync_file_system::SyncFileStatus sync_file_status)>
+                            SyncFileStatus sync_file_status)>
     SyncFileStatusCallback;
 
-}  // namespace fileapi
+}  // namespace sync_file_system
 
 #endif  // WEBKIT_FILEAPI_SYNCABLE_SYNC_CALLBACKS_H_
