@@ -31,6 +31,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/gfx/rect.h"
 
 // Singly-included section for enums and custom IPC traits.
@@ -678,10 +679,11 @@ IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_InstantSupportDetermined,
                     int /* page_id */,
                     bool /* result */)
 
-IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_SearchBoxNavigate,
+IPC_MESSAGE_ROUTED4(ChromeViewHostMsg_SearchBoxNavigate,
                     int /* page_id */,
                     GURL /* destination */,
-                    content::PageTransition /* transition */)
+                    content::PageTransition /* transition */,
+                    WindowOpenDisposition /* disposition */)
 
 // Sent by the Instant overlay asking to show itself with the given height.
 IPC_MESSAGE_ROUTED4(ChromeViewHostMsg_ShowInstantOverlay,

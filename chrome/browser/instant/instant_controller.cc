@@ -1106,14 +1106,18 @@ void InstantController::StopCapturingKeyStrokes(
 
 void InstantController::NavigateToURL(const content::WebContents* contents,
                                       const GURL& url,
-                                      content::PageTransition transition) {
+                                      content::PageTransition transition,
+                                      WindowOpenDisposition disposition) {
+  LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
+      "NavigateToURL: url='%s'", url.spec().c_str()));
+
   // TODO(samarth): handle case where contents are no longer "active" (e.g. user
   // has switched tabs).
   if (!extended_enabled_)
     return;
   if (overlay_)
     HideOverlay();
-  browser_->OpenURLInCurrentTab(url, transition);
+  browser_->OpenURL(url, transition, disposition);
 }
 
 void InstantController::OmniboxLostFocus(gfx::NativeView view_gaining_focus) {

@@ -9,8 +9,8 @@ if (!chrome.embeddedSearch) {
   chrome.embeddedSearch = new function() {
     native function NavigateContentWindow();
 
-    this.navigateContentWindow = function(destination) {
-      return NavigateContentWindow(destination);
+    this.navigateContentWindow = function(destination, disposition) {
+      return NavigateContentWindow(destination, disposition);
     };
   };
 

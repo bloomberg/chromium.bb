@@ -18,6 +18,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/window_open_disposition.h"
 #include "v8/include/v8.h"
 
 namespace {
@@ -707,9 +708,13 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::NavigateContentWindow(
   }
 
   // Navigate the main frame.
-  if (destination_url.is_valid())
-    SearchBox::Get(render_view)->NavigateToURL(destination_url, transition);
-
+  if (destination_url.is_valid()) {
+    WindowOpenDisposition disposition = CURRENT_TAB;
+    if (args[1]->Uint32Value() == 2)
+      disposition = NEW_BACKGROUND_TAB;
+    SearchBox::Get(render_view)->NavigateToURL(
+        destination_url, transition, disposition);
+  }
   return v8::Undefined();
 }
 

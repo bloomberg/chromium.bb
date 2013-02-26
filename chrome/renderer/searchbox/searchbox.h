@@ -14,6 +14,7 @@
 #include "content/public/common/page_transition_types.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/gfx/rect.h"
 
 namespace content {
@@ -41,7 +42,9 @@ class SearchBox : public content::RenderViewObserver,
   void StopCapturingKeyStrokes();
 
   // Sends ChromeViewHostMsg_SearchBoxNavigate to the browser.
-  void NavigateToURL(const GURL& url, content::PageTransition transition);
+  void NavigateToURL(const GURL& url,
+                     content::PageTransition transition,
+                     WindowOpenDisposition disposition);
 
   // Sends ChromeViewHostMsg_InstantDeleteMostVisitedItem to the browser.
   void DeleteMostVisitedItem(int restrict_id);

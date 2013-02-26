@@ -149,6 +149,46 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, InputShowsOverlay) {
   EXPECT_EQ(preview_tab, instant()->GetPreviewContents());
 }
 
+// Test that middle clicking on a suggestion opens the result in a new tab.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
+                       MiddleClickOnSuggestionOpensInNewTab) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
+  EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+
+  // Typing in the omnibox should show the overlay.
+  SetOmniboxTextAndWaitForInstantToShow("santa");
+  EXPECT_TRUE(instant()->IsPreviewingSearchResults());
+
+  // Create an event listener that opens the top suggestion in a new tab.
+  EXPECT_TRUE(ExecuteScript(
+      "var rid = getApiHandle().nativeSuggestions[0].rid;"
+      "document.body.addEventListener('click', function() {"
+        "chrome.embeddedSearch.navigateContentWindow(rid, 2);"
+      "});"
+      ));
+
+  content::WindowedNotificationObserver observer(
+        chrome::NOTIFICATION_TAB_ADDED,
+        content::NotificationService::AllSources());
+
+  // Click to trigger the event listener.
+  ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);
+
+  // Wait for the new tab to be added.
+  observer.Wait();
+
+  // Check that the new tab URL is as expected.
+  content::WebContents* new_tab_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(1);
+  EXPECT_EQ(new_tab_contents->GetURL().spec(), instant_url_.spec()+"q=santa");
+
+  // Check that there are now two tabs.
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+}
+
 // TODO(sreeram): Enable this test once @mathp's CL lands:
 //     https://codereview.chromium.org/12179025/
 //

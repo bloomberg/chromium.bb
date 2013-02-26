@@ -218,12 +218,13 @@ void BrowserInstantController::UpdateThemeInfo(bool parse_theme_info) {
     OnThemeChanged(NULL);
 }
 
-void BrowserInstantController::OpenURLInCurrentTab(
+void BrowserInstantController::OpenURL(
     const GURL& url,
-    content::PageTransition transition) {
+    content::PageTransition transition,
+    WindowOpenDisposition disposition) {
   browser_->OpenURL(content::OpenURLParams(url,
                                            content::Referrer(),
-                                           CURRENT_TAB,
+                                           disposition,
                                            transition,
                                            false));
 }

@@ -77,13 +77,14 @@ class InstantPage : public content::WebContentsObserver {
     // strokes.
     virtual void StopCapturingKeyStrokes(content::WebContents* contents) = 0;
 
-    // Called when the page wants to navigate to the specified URL. Usually
-    // used by the page to navigate to privileged destinations (e.g. chrome://
-    // URLs) or to navigate to URLs that are hidden from the page using
-    // Restricted IDs (rid in the API).
+    // Called when the page wants to navigate to |url|. Usually used by the
+    // page to navigate to privileged destinations (e.g. chrome:// URLs) or to
+    // navigate to URLs that are hidden from the page using Restricted IDs (rid
+    // in the API).
     virtual void NavigateToURL(const content::WebContents* contents,
                                const GURL& url,
-                               content::PageTransition transition) = 0;
+                               content::PageTransition transition,
+                               WindowOpenDisposition disposition) = 0;
 
     // Called when the SearchBox wants to delete a Most Visited item.
     virtual void DeleteMostVisitedItem(const GURL& url) = 0;
@@ -216,8 +217,10 @@ class InstantPage : public content::WebContentsObserver {
                             InstantSizeUnits units);
   void OnStartCapturingKeyStrokes(int page_id);
   void OnStopCapturingKeyStrokes(int page_id);
-  void OnSearchBoxNavigate(int page_id, const GURL& url,
-                           content::PageTransition transition);
+  void OnSearchBoxNavigate(int page_id,
+                           const GURL& url,
+                           content::PageTransition transition,
+                           WindowOpenDisposition disposition);
   void OnDeleteMostVisitedItem(const GURL& url);
   void OnUndoMostVisitedDeletion(const GURL& url);
   void OnUndoAllMostVisitedDeletions();

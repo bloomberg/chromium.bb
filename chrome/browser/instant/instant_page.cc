@@ -241,11 +241,12 @@ void InstantPage::OnStopCapturingKeyStrokes(int page_id) {
 
 void InstantPage::OnSearchBoxNavigate(int page_id,
                                       const GURL& url,
-                                      content::PageTransition transition) {
+                                      content::PageTransition transition,
+                                      WindowOpenDisposition disposition) {
   if (contents()->IsActiveEntry(page_id)) {
     OnInstantSupportDetermined(page_id, true);
     if (ShouldProcessNavigateToURL())
-      delegate_->NavigateToURL(contents(), url, transition);
+      delegate_->NavigateToURL(contents(), url, transition, disposition);
   }
 }
 
