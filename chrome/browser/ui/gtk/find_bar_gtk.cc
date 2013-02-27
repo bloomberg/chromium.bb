@@ -469,6 +469,13 @@ void FindBarGtk::RestoreSavedFocus() {
     find_bar_controller_->web_contents()->GetView()->Focus();
 }
 
+bool FindBarGtk::HasGlobalFindPasteboard() {
+  return false;
+}
+
+void FindBarGtk::UpdateFindBarForChangedWebContents() {
+}
+
 FindBarTesting* FindBarGtk::GetFindBarTesting() {
   return this;
 }

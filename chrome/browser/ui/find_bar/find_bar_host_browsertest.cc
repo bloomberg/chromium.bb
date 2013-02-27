@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -137,9 +138,11 @@ class FindInPageControllerTest : public InProcessBrowserTest {
                       bool forward,
                       bool case_sensitive,
                       int* ordinal) {
+    string16 search_str16(WideToUTF16(std::wstring(search_str)));
+    Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+    browser->GetFindBarController()->find_bar()->SetFindText(search_str16);
     return ui_test_utils::FindInPage(
-        web_contents, WideToUTF16(std::wstring(search_str)),
-        forward, case_sensitive, ordinal, NULL);
+        web_contents, search_str16, forward, case_sensitive, ordinal, NULL);
   }
 
   // Calls FindInPageWchar till the find box's x position != |start_x_position|.
@@ -731,17 +734,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPage_Issue5132) {
   EXPECT_EQ(3, ordinal);
 }
 
-// Mac doesn't implement GetFindBarText() and GetMatchCountText(), which are
-// needed for this test. See http://crbug.com/127381.
-#if defined(OS_MACOSX)
-#define MAYBE_NavigateClearsOrdinal DISABLED_NavigateClearsOrdinal
-#else
-#define MAYBE_NavigateClearsOrdinal NavigateClearsOrdinal
-#endif
-
 // This tests that the ordinal and match count is cleared after a navigation,
 // as reported in issue http://crbug.com/126468.
-IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_NavigateClearsOrdinal) {
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, NavigateClearsOrdinal) {
   // First we navigate to our test content.
   GURL url = GetURL(kSimple);
   ui_test_utils::NavigateToURL(browser(), url);
@@ -950,16 +945,18 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindStayVisibleOnAnchorLoad) {
   EXPECT_TRUE(fully_visible);
 }
 
-#if defined(OS_MACOSX)
 // FindDisappearOnNewTabAndHistory is flaky, at least on Mac.
 // See http://crbug.com/43072
-#define FindDisappearOnNewTabAndHistory DISABLED_FindDisappearOnNewTabAndHistory
+#if defined(OS_MACOSX)
+#define MAYBE_FindDisappearOnNewTabAndHistory DISABLED_FindDisappearOnNewTabAndHistory
+#else
+#define MAYBE_FindDisappearOnNewTabAndHistory FindDisappearOnNewTabAndHistory
 #endif
 
 // Make sure Find box disappears when History/Downloads page is opened, and
 // when a New Tab is opened.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
-                       FindDisappearOnNewTabAndHistory) {
+                       MAYBE_FindDisappearOnNewTabAndHistory) {
   // First we navigate to our special focus tracking page.
   GURL url = GetURL(kSimple);
   ui_test_utils::NavigateToURL(browser(), url);
@@ -1049,14 +1046,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindMovesWhenObscuring) {
   EXPECT_EQ(position.x(), start_position.x());
 }
 
-#if defined(OS_MACOSX)
-// FindNextInNewTabUsesPrepopulate times-out, at least on Mac.
+// FindNextInNewTabUsesPrepopulate times-out on Mac, Windows and Aura.
 // See http://crbug.com/43070
-#define MAYBE_FindNextInNewTabUsesPrepopulate \
-    DISABLED_FindNextInNewTabUsesPrepopulate
-#elif defined(OS_WIN) || defined(USE_AURA)
-// Occasionally times-out on Windows or aura, too.
-// See http://crbug.com/43070
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
 #define MAYBE_FindNextInNewTabUsesPrepopulate \
     DISABLED_FindNextInNewTabUsesPrepopulate
 #else
@@ -1155,6 +1147,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, RestartSearchFromF3) {
 
 // When re-opening the find bar with F3, the find bar should be re-populated
 // with the last search from the same tab rather than the last overall search.
+// The only exception is if there is a global pasteboard (for example on Mac).
 // http://crbug.com/30006
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PreferPreviousSearch) {
   // First we navigate to any page.
@@ -1189,18 +1182,19 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PreferPreviousSearch) {
   // Simulate F3.
   ui_test_utils::FindInPage(web_contents_1, string16(),
                             kFwd, kIgnoreCase, &ordinal, NULL);
-  EXPECT_EQ(FindTabHelper::FromWebContents(web_contents_1)->find_text(),
-            WideToUTF16(L"text"));
+  FindBar* find_bar = browser()->GetFindBarController()->find_bar();
+  if (find_bar->HasGlobalFindPasteboard()) {
+    EXPECT_EQ(FindTabHelper::FromWebContents(web_contents_1)->find_text(),
+              WideToUTF16(L"given"));
+  } else {
+    EXPECT_EQ(FindTabHelper::FromWebContents(web_contents_1)->find_text(),
+              WideToUTF16(L"text"));
+  }
 }
 
 // This tests that whenever you close and reopen the Find bar, it should show
 // the last search entered in that tab. http://crbug.com/40121.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulateSameTab) {
-#if defined(OS_MACOSX)
-  // FindInPage on Mac doesn't use prepopulated values. Search there is global.
-  return;
-#endif
-
   // First we navigate to any page.
   GURL url = GetURL(kSimple);
   ui_test_utils::NavigateToURL(browser(), url);
@@ -1236,11 +1230,6 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulateSameTab) {
 // with a previous search term (in any tab), if a search has not been issued in
 // this tab before.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulateInNewTab) {
-#if defined(OS_MACOSX)
-  // FindInPage on Mac doesn't use prepopulated values. Search there is global.
-  return;
-#endif
-
   // First we navigate to any page.
   GURL url = GetURL(kSimple);
   ui_test_utils::NavigateToURL(browser(), url);
@@ -1273,10 +1262,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulateInNewTab) {
 // when we come back to tabA we should still see A (because that was the last
 // search in that tab).
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulatePreserveLast) {
-#if defined(OS_MACOSX)
-  // FindInPage on Mac doesn't use prepopulated values. Search there is global.
-  return;
-#endif
+  FindBar* find_bar = browser()->GetFindBarController()->find_bar();
+  if (find_bar->HasGlobalFindPasteboard())
+    return;
 
   // First we navigate to any page.
   GURL url = GetURL(kSimple);
@@ -1347,10 +1335,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulatePreserveLast) {
 // This tests that search terms entered into an incognito find bar are not used
 // as prepopulate terms for non-incognito windows.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_NoIncognitoPrepopulate) {
-#if defined(OS_MACOSX)
-  // FindInPage on Mac doesn't use prepopulated values. Search there is global.
-  return;
-#endif
+  FindBar* find_bar = browser()->GetFindBarController()->find_bar();
+  if (find_bar->HasGlobalFindPasteboard())
+    return;
 
   // First we navigate to the "simple" test page.
   GURL url = GetURL(kSimple);
@@ -1511,4 +1498,39 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   chrome::CloseTab(browser());
   EXPECT_TRUE(GetFindBarWindowInfo(&position2, NULL));
   EXPECT_EQ(position, position2);
+}
+
+// Verify that if there's a global pasteboard (for example on Mac) then doing
+// a search on one tab will clear the matches label on the other tabs.
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
+                       GlobalPasteBoardClearMatches) {
+  FindBar* find_bar = browser()->GetFindBarController()->find_bar();
+  if (!find_bar->HasGlobalFindPasteboard())
+    return;
+
+  // First we navigate to any page.
+  GURL url = GetURL(kSimple);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Change the match count on the first tab to "1 of 1".
+  int ordinal = 0;
+  WebContents* web_contents_1 =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(1, FindInPageWchar(web_contents_1, L"page",
+                               kFwd, kIgnoreCase, &ordinal));
+  EnsureFindBoxOpen();
+  EXPECT_EQ(ASCIIToUTF16("1 of 1"), GetMatchCountText());
+
+  // Next, do a search in a second tab.
+  chrome::AddBlankTabAt(browser(), -1, true);
+  ui_test_utils::NavigateToURL(browser(), url);
+  WebContents* web_contents_2 =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  FindInPageWchar(web_contents_2, L"text", kFwd, kIgnoreCase, &ordinal);
+  EXPECT_EQ(ASCIIToUTF16("1 of 1"), GetMatchCountText());
+
+  // Go back to the first tab and verify that the match text is cleared.
+  // text to "text".
+  browser()->tab_strip_model()->ActivateTabAt(0, false);
+  EXPECT_EQ(ASCIIToUTF16(""), GetMatchCountText());
 }

@@ -63,6 +63,8 @@ class FindBarBridge : public FindBar,
   virtual void AudibleAlert() OVERRIDE;
   virtual bool IsFindBarVisible() OVERRIDE;
   virtual void RestoreSavedFocus() OVERRIDE;
+  virtual bool HasGlobalFindPasteboard() OVERRIDE;
+  virtual void UpdateFindBarForChangedWebContents() OVERRIDE;
   virtual void MoveWindowIfNecessary(const gfx::Rect& selection_rect,
                                      bool no_redraw) OVERRIDE;
 

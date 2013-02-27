@@ -83,6 +83,14 @@ void FindBarBridge::RestoreSavedFocus() {
   [cocoa_controller_ restoreSavedFocus];
 }
 
+bool FindBarBridge::HasGlobalFindPasteboard() {
+  return true;
+}
+
+void FindBarBridge::UpdateFindBarForChangedWebContents() {
+  [cocoa_controller_ updateFindBarForChangedWebContents];
+}
+
 bool FindBarBridge::GetFindBarWindowInfo(gfx::Point* position,
                                          bool* fully_visible) {
   NSWindow* window = [[cocoa_controller_ view] window];
@@ -102,30 +110,17 @@ bool FindBarBridge::GetFindBarWindowInfo(gfx::Point* position,
 }
 
 string16 FindBarBridge::GetFindText() {
-  // This function is currently only used in Windows and Linux specific browser
-  // tests (testing prepopulate values that Mac's don't rely on), but if we add
-  // more tests that are non-platform specific, we need to flesh out this
-  // function.
-  NOTIMPLEMENTED();
-  return string16();
+  return base::SysNSStringToUTF16([cocoa_controller_ findText]);
 }
 
 string16 FindBarBridge::GetFindSelectedText() {
-  // This function is currently only used in Windows and Linux specific browser
-  // tests (testing prepopulate values that Mac's don't rely on), but if we add
-  // more tests that are non-platform specific, we need to flesh out this
-  // function.
+  // This function is currently only used in Views.
   NOTIMPLEMENTED();
   return string16();
 }
 
 string16 FindBarBridge::GetMatchCountText() {
-  // This function is currently only used in Windows and Linux specific browser
-  // tests (testing prepopulate values that Mac's don't rely on), but if we add
-  // more tests that are non-platform specific, we need to flesh out this
-  // function.
-  NOTIMPLEMENTED();
-  return string16();
+  return base::SysNSStringToUTF16([cocoa_controller_ matchCountText]);
 }
 
 int FindBarBridge::GetWidth() {

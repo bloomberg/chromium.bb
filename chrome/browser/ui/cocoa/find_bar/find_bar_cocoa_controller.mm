@@ -4,10 +4,12 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/auto_reset.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "grit/ui_resources.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
@@ -55,9 +57,14 @@ const float kRightEdgeOffset = 25;
 // current find result.
 - (void)moveFindBarIfNecessary:(BOOL)animate;
 
-// Optionally stops the current search, puts |text| into the find bar, and
-// enables the buttons, but doesn't start a new search for |text|.
-- (void)prepopulateText:(NSString*)text stopSearch:(BOOL)stopSearch;
+// Puts |text| into the find bar and enables the buttons, but doesn't start a
+// new search for |text|.
+- (void)prepopulateText:(NSString*)text;
+
+// Clears the find results for all tabs in browser associated with this find
+// bar. If |suppressPboardUpdateActions_| is true then the current tab is not
+// cleared.
+- (void)clearFindResultsForCurrentBrowser;
 @end
 
 @implementation FindBarCocoaController
@@ -105,10 +112,7 @@ const float kRightEdgeOffset = 25;
   [findBarView_ setFrame:[self hiddenFindBarFrame]];
   defaultWidth_ = NSWidth([findBarView_ frame]);
 
-  // Stopping the search requires a findbar controller, which isn't valid yet
-  // during setup. Furthermore, there is no active search yet anyway.
-  [self prepopulateText:[[FindPasteboard sharedInstance] findText]
-             stopSearch:NO];
+  [self prepopulateText:[[FindPasteboard sharedInstance] findText]];
 }
 
 - (IBAction)close:(id)sender {
@@ -139,10 +143,9 @@ const float kRightEdgeOffset = 25;
 }
 
 - (void)findPboardUpdated:(NSNotification*)notification {
-  if (suppressPboardUpdateActions_)
-    return;
-  [self prepopulateText:[[FindPasteboard sharedInstance] findText]
-             stopSearch:YES];
+  if (!suppressPboardUpdateActions_)
+    [self prepopulateText:[[FindPasteboard sharedInstance] findText]];
+  [self clearFindResultsForCurrentBrowser];
 }
 
 - (void)positionFindBarViewAtMaxY:(CGFloat)maxY maxWidth:(CGFloat)maxWidth {
@@ -317,12 +320,39 @@ const float kRightEdgeOffset = 25;
   focusTracker_.reset(nil);
 }
 
+- (NSString*)findText {
+  return [findText_ stringValue];
+}
+
 - (void)setFindText:(NSString*)findText {
   [findText_ setStringValue:findText];
 
   // Make sure the text in the find bar always ends up in the find pasteboard
   // (and, via notifications, in the other find bars too).
+  base::AutoReset<BOOL> suppressReset(&suppressPboardUpdateActions_, YES);
   [[FindPasteboard sharedInstance] setFindText:findText];
+}
+
+- (NSString*)matchCountText {
+  return [[findText_ findBarTextFieldCell] resultsString];
+}
+
+- (void)updateFindBarForChangedWebContents {
+  content::WebContents* contents =
+      findBarBridge_->GetFindBarController()->web_contents();
+  if (!contents)
+    return;
+  FindTabHelper* findTabHelper = FindTabHelper::FromWebContents(contents);
+
+  // If the find UI is visible but the results are cleared then also clear
+  // the results label and update the buttons.
+  if (findTabHelper->find_ui_active() &&
+      findTabHelper->previous_find_text().empty()) {
+    BOOL buttonsEnabled = [[findText_ stringValue] length] > 0 ? YES : NO;
+    [previousButton_ setEnabled:buttonsEnabled];
+    [nextButton_ setEnabled:buttonsEnabled];
+    [[findText_ findBarTextFieldCell] clearResults];
+  }
 }
 
 - (void)clearResults:(const FindNotificationDetails&)results {
@@ -531,26 +561,36 @@ const float kRightEdgeOffset = 25;
   }
 }
 
-- (void)prepopulateText:(NSString*)text stopSearch:(BOOL)stopSearch{
+- (void)prepopulateText:(NSString*)text {
   [self setFindText:text];
-
-  // End the find session, hide the "x of y" text and disable the
-  // buttons, but do not close the find bar or raise the window here.
-  if (stopSearch && findBarBridge_) {
-    content::WebContents* contents =
-        findBarBridge_->GetFindBarController()->web_contents();
-    if (contents) {
-      FindTabHelper* findTabHelper =
-          FindTabHelper::FromWebContents(contents);
-      findTabHelper->StopFinding(FindBarController::kClearSelectionOnPage);
-      findBarBridge_->ClearResults(findTabHelper->find_result());
-    }
-  }
 
   // Has to happen after |ClearResults()| above.
   BOOL buttonsEnabled = [text length] > 0 ? YES : NO;
   [previousButton_ setEnabled:buttonsEnabled];
   [nextButton_ setEnabled:buttonsEnabled];
+}
+
+- (void)clearFindResultsForCurrentBrowser {
+  if (!findBarBridge_)
+    return;
+  content::WebContents* activeWebContents =
+      findBarBridge_->GetFindBarController()->web_contents();
+  if (!activeWebContents)
+    return;
+  Browser* browser = chrome::FindBrowserWithWebContents(activeWebContents);
+  if (!browser)
+    return;
+
+  TabStripModel* tabStripModel = browser->tab_strip_model();
+  for (int i = 0; i < tabStripModel->count(); ++i) {
+    content::WebContents* webContents = tabStripModel->GetWebContentsAt(i);
+    if (suppressPboardUpdateActions_ && activeWebContents == webContents)
+      continue;
+    FindTabHelper* findTabHelper =
+        FindTabHelper::FromWebContents(webContents);
+    findTabHelper->StopFinding(FindBarController::kClearSelectionOnPage);
+    findBarBridge_->ClearResults(findTabHelper->find_result());
+  }
 }
 
 @end

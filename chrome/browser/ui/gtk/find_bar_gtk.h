@@ -56,6 +56,8 @@ class FindBarGtk : public FindBar,
   virtual void AudibleAlert() OVERRIDE;
   virtual bool IsFindBarVisible() OVERRIDE;
   virtual void RestoreSavedFocus() OVERRIDE;
+  virtual bool HasGlobalFindPasteboard() OVERRIDE;
+  virtual void UpdateFindBarForChangedWebContents() OVERRIDE;
   virtual FindBarTesting* GetFindBarTesting() OVERRIDE;
 
   // Methods from FindBarTesting.

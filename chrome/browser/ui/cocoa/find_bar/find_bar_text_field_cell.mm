@@ -52,11 +52,6 @@ CGFloat WidthForResults(NSAttributedString* resultsString) {
   return rect_path_utils::RoundedCornerLeft;
 }
 
-// @synthesize doesn't seem to compile for this transition.
-- (NSAttributedString*)resultsString {
-  return resultsString_.get();
-}
-
 // Convenience for the attributes used in the right-justified info
 // cells.  Sets the background color to red if |foundMatches| is YES.
 - (NSDictionary*)resultsAttributes:(BOOL)foundMatches {
@@ -85,6 +80,10 @@ CGFloat WidthForResults(NSAttributedString* resultsString) {
 
 - (void)clearResults {
   resultsString_.reset(nil);
+}
+
+- (NSString*)resultsString {
+  return [resultsString_ string];
 }
 
 - (NSRect)textFrameForFrame:(NSRect)cellFrame {

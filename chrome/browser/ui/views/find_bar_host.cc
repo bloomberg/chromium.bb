@@ -165,6 +165,13 @@ void FindBarHost::RestoreSavedFocus() {
   }
 }
 
+bool FindBarHost::HasGlobalFindPasteboard() {
+  return false;
+}
+
+void FindBarHost::UpdateFindBarForChangedWebContents() {
+}
+
 FindBarTesting* FindBarHost::GetFindBarTesting() {
   return this;
 }

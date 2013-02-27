@@ -62,6 +62,8 @@ class FindBarHost : public DropdownBarHost,
   virtual void AudibleAlert() OVERRIDE;
   virtual bool IsFindBarVisible() OVERRIDE;
   virtual void RestoreSavedFocus() OVERRIDE;
+  virtual bool HasGlobalFindPasteboard() OVERRIDE;
+  virtual void UpdateFindBarForChangedWebContents() OVERRIDE;
   virtual FindBarTesting* GetFindBarTesting() OVERRIDE;
 
   // Overridden from ui::AcceleratorTarget in DropdownBarHost class:

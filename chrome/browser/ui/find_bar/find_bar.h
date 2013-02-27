@@ -69,6 +69,12 @@ class FindBar {
   // not FindBarView or any of its children.
   virtual void RestoreSavedFocus() = 0;
 
+  // Returns true if all tabs use a single find pasteboard.
+  virtual bool HasGlobalFindPasteboard() = 0;
+
+  // Called when the web contents associated with the find bar changes.
+  virtual void UpdateFindBarForChangedWebContents() = 0;
+
   // Returns a pointer to the testing interface to the FindBar, or NULL
   // if there is none.
   virtual FindBarTesting* GetFindBarTesting() = 0;
