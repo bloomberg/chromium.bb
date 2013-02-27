@@ -33,12 +33,6 @@ void ContentsScalingLayer::calculateContentsScale(
       ideal_contents_scale);
 }
 
-void ContentsScalingLayer::didUpdateBounds() {
-  drawProperties().content_bounds = computeContentBoundsForScale(
-      contentsScaleX(),
-      contentsScaleY());
-}
-
 void ContentsScalingLayer::update(
     ResourceUpdateQueue& queue,
     const OcclusionTracker* occlusion,

@@ -94,14 +94,25 @@ TEST(SolidColorLayerImplTest, verifyOpaqueRect)
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
 
-    scoped_refptr<SolidColorLayer> layer = SolidColorLayer::create();
     gfx::Size layerSize = gfx::Size(100, 100);
     gfx::Rect visibleContentRect = gfx::Rect(gfx::Point(), layerSize);
 
-    layer->drawProperties().visible_content_rect = visibleContentRect;
+    scoped_refptr<SolidColorLayer> layer = SolidColorLayer::create();
     layer->setBounds(layerSize);
-    layer->createRenderSurface();
-    layer->drawProperties().render_target = layer.get();
+    layer->setForceRenderSurface(true);
+
+    scoped_refptr<Layer> root = Layer::create();
+    root->addChild(layer);
+
+    std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
+    LayerTreeHostCommon::calculateDrawProperties(
+        root,
+        gfx::Size(500, 500),
+        1,
+        1,
+        1024,
+        false,
+        renderSurfaceLayerList);
 
     EXPECT_FALSE(layer->contentsOpaque());
     layer->setBackgroundColor(SkColorSetARGBInline(255, 10, 20, 30));

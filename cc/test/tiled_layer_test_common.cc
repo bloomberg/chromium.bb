@@ -167,9 +167,4 @@ void FakeTiledLayerWithScaledBounds::calculateContentsScale(
     *contentBounds = m_forcedContentBounds;
 }
 
-void FakeTiledLayerWithScaledBounds::didUpdateBounds()
-{
-    drawProperties().content_bounds = m_forcedContentBounds;
-}
-
 }  // namespace cc

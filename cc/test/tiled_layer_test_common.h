@@ -124,7 +124,6 @@ public:
         float* contentsScaleX,
         float* contentsScaleY,
         gfx::Size* contentBounds) OVERRIDE;
-    virtual void didUpdateBounds() OVERRIDE;
 
 protected:
     virtual ~FakeTiledLayerWithScaledBounds();

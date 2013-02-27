@@ -81,8 +81,6 @@ public:
     // A layer's bounds are in logical, non-page-scaled pixels (however, the
     // root layer's bounds are in physical pixels).
     void setBounds(const gfx::Size&);
-    // TODO(enne): remove this function: http://crbug.com/166023
-    virtual void didUpdateBounds();
     const gfx::Size& bounds() const { return m_bounds; }
 
     void setMasksToBounds(bool);

@@ -342,7 +342,10 @@ void LayerTreeHost::finishCommitOnImplThread(LayerTreeHostImpl* hostImpl)
 void LayerTreeHost::willCommit()
 {
     m_client->willCommit();
+}
 
+void LayerTreeHost::updateHudLayer()
+{
     if (m_debugState.showHudInfo()) {
         if (!m_hudLayer)
             m_hudLayer = HeadsUpDisplayLayer::create();
@@ -602,6 +605,8 @@ void LayerTreeHost::updateLayers(Layer* rootLayer, ResourceUpdateQueue& queue)
         Layer* rootScroll = findFirstScrollableLayer(rootLayer);
         if (rootScroll)
             rootScroll->setImplTransform(m_implTransform);
+
+        updateHudLayer();
 
         TRACE_EVENT0("cc", "LayerTreeHost::updateLayers::calcDrawEtc");
         LayerTreeHostCommon::calculateDrawProperties(rootLayer, deviceViewportSize(), m_deviceScaleFactor, m_pageScaleFactor, rendererCapabilities().maxTextureSize, m_settings.canUseLCDText, updateList);

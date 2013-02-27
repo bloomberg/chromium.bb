@@ -224,6 +224,7 @@ private:
     bool paintMasksForRenderSurface(Layer*, ResourceUpdateQueue&);
 
     void updateLayers(Layer*, ResourceUpdateQueue&);
+    void updateHudLayer();
     void triggerPrepaint();
 
     void prioritizeTextures(const LayerList&, OverdrawMetrics&); 

@@ -952,14 +952,9 @@ class LayerTreeHostContextTestDontUseLostResources :
     io_surface_->setIOSurfaceProperties(1, gfx::Size(10, 10));
     root_->addChild(io_surface_);
 
-    scoped_refptr<HeadsUpDisplayLayer> hud_ = HeadsUpDisplayLayer::create();
-    hud_->setBounds(gfx::Size(10, 10));
-    hud_->setAnchorPoint(gfx::PointF());
-    hud_->setIsDrawable(true);
-    root_->addChild(hud_);
     // Enable the hud.
     LayerTreeDebugState debug_state;
-    debug_state.showFPSCounter = true;
+    debug_state.showPropertyChangedRects = true;
     m_layerTreeHost->setDebugState(debug_state);
 
     bool paint_scrollbar = true;
@@ -1065,9 +1060,12 @@ class LayerTreeHostContextTestDontUseLostResources :
   }
 
   virtual void didCommitAndDrawFrame() OVERRIDE {
+    ASSERT_TRUE(m_layerTreeHost->hudLayer());
     // End the test once we know the 3nd frame drew.
     if (m_layerTreeHost->commitNumber() == 4)
       endTest();
+    else
+      m_layerTreeHost->setNeedsCommit();
   }
 
   virtual void afterTest() OVERRIDE {}
@@ -1085,7 +1083,6 @@ class LayerTreeHostContextTestDontUseLostResources :
   scoped_refptr<VideoLayer> video_hw_;
   scoped_refptr<VideoLayer> video_scaled_hw_;
   scoped_refptr<IOSurfaceLayer> io_surface_;
-  scoped_refptr<HeadsUpDisplayLayer> hud_;
   scoped_refptr<ScrollbarLayer> scrollbar_;
 
   scoped_refptr<VideoFrame> color_video_frame_;

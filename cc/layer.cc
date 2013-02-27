@@ -270,17 +270,10 @@ void Layer::setBounds(const gfx::Size& size)
 
     m_bounds = size;
 
-    didUpdateBounds();
-
     if (firstResize)
         setNeedsDisplay();
     else
         setNeedsCommit();
-}
-
-void Layer::didUpdateBounds()
-{
-    m_drawProperties.content_bounds = bounds();
 }
 
 Layer* Layer::rootLayer()

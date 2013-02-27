@@ -20,7 +20,6 @@ class CC_EXPORT ContentsScalingLayer : public Layer {
       float* contents_scale_x,
       float* contents_scale_y,
       gfx::Size* content_bounds) OVERRIDE;
-  virtual void didUpdateBounds() OVERRIDE;
 
   virtual void update(
     ResourceUpdateQueue& queue,
