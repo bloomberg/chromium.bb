@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 /*
-** Copyright (c) 2007-2012 The Khronos Group Inc.
+** Copyright (c) 2007-2013 The Khronos Group Inc.
 **
 ** Permission is hereby granted, free of charge, to any person obtaining a
 ** copy of this software and/or associated documentation files (the
@@ -34,8 +34,8 @@ extern "C" {
 
 /* Header file version number */
 /* Current version at http://www.khronos.org/registry/egl/ */
-/* $Revision: 19571 $ on $Date: 2012-10-31 10:10:33 -0700 (Wed, 31 Oct 2012) $ */
-#define EGL_EGLEXT_VERSION 14
+/* $Revision: 20690 $ on $Date: 2013-02-22 17:15:05 -0800 (Fri, 22 Feb 2013) $ */
+#define EGL_EGLEXT_VERSION 15
 
 #ifndef EGL_KHR_config_attribs
 #define EGL_KHR_config_attribs 1
@@ -250,7 +250,6 @@ struct EGLClientPixmapHI
 	EGLint		iHeight;
 	EGLint		iStride;
 };
-
 #ifdef EGL_EGLEXT_PROTOTYPES
 EGLAPI EGLSurface EGLAPIENTRY eglCreatePixmapSurfaceHI(EGLDisplay dpy, EGLConfig config, struct EGLClientPixmapHI* pixmap);
 #endif /* EGL_EGLEXT_PROTOTYPES */
@@ -316,9 +315,7 @@ typedef EGLBoolean (EGLAPIENTRYP PFNEGLQUERYSURFACEPOINTERANGLEPROC) (EGLDisplay
 #if KHRONOS_SUPPORT_INT64   /* EGLuint64NV requires 64-bit uint support */
 #ifndef EGL_NV_system_time
 #define EGL_NV_system_time 1
-
 typedef khronos_utime_nanoseconds_t EGLuint64NV;
-
 #ifdef EGL_EGLEXT_PROTOTYPES
 EGLAPI EGLuint64NV EGLAPIENTRY eglGetSystemTimeFrequencyNV(void);
 EGLAPI EGLuint64NV EGLAPIENTRY eglGetSystemTimeNV(void);
@@ -470,8 +467,99 @@ EGLAPI EGLint EGLAPIENTRY eglWaitSyncKHR(EGLDisplay dpy, EGLSyncKHR sync, EGLint
 typedef EGLint (EGLAPIENTRYP PFNEGLWAITSYNCKHRPROC)(EGLDisplay dpy, EGLSyncKHR sync, EGLint flags);
 #endif
 
+#ifndef EGL_NV_post_convert_rounding
+#define EGL_NV_post_convert_rounding 1
+/* No tokens or entry points, just relaxes behavior of SwapBuffers */
+#endif
+
+#ifndef EGL_NV_native_query
+#define EGL_NV_native_query 1
+#ifdef EGL_EGLEXT_PROTOTYPES
+EGLAPI EGLBoolean EGLAPIENTRY eglQueryNativeDisplayNV( EGLDisplay dpy, EGLNativeDisplayType* display_id);
+EGLAPI EGLBoolean EGLAPIENTRY eglQueryNativeWindowNV( EGLDisplay dpy, EGLSurface surf, EGLNativeWindowType* window);
+EGLAPI EGLBoolean EGLAPIENTRY eglQueryNativePixmapNV( EGLDisplay dpy, EGLSurface surf, EGLNativePixmapType* pixmap);
+#endif /* EGL_EGLEXT_PROTOTYPES */
+typedef EGLBoolean (EGLAPIENTRYP PFNEGLQUERYNATIVEDISPLAYNVPROC)(EGLDisplay dpy, EGLNativeDisplayType *display_id);
+typedef EGLBoolean (EGLAPIENTRYP PFNEGLQUERYNATIVEWINDOWNVPROC)(EGLDisplay dpy, EGLSurface surf, EGLNativeWindowType *window);
+typedef EGLBoolean (EGLAPIENTRYP PFNEGLQUERYNATIVEPIXMAPNVPROC)(EGLDisplay dpy, EGLSurface surf, EGLNativePixmapType *pixmap);
+#endif
+
+#ifndef EGL_NV_3dvision_surface
+#define EGL_NV_3dvision_surface 1
+#define EGL_AUTO_STEREO_NV			0x3136
+#endif
+
+#ifndef EGL_ANDROID_framebuffer_target
+#define EGL_ANDROID_framebuffer_target 1
+#define EGL_FRAMEBUFFER_TARGET_ANDROID		0x3147
+#endif
+
+#ifndef EGL_ANDROID_blob_cache
+#define EGL_ANDROID_blob_cache 1
+typedef khronos_ssize_t EGLsizeiANDROID;
+typedef void (*EGLSetBlobFuncANDROID) (const void *key, EGLsizeiANDROID keySize, const void *value, EGLsizeiANDROID valueSize);
+typedef EGLsizeiANDROID (*EGLGetBlobFuncANDROID) (const void *key, EGLsizeiANDROID keySize, void *value, EGLsizeiANDROID valueSize);
+#ifdef EGL_EGLEXT_PROTOTYPES
+EGLAPI void EGLAPIENTRY eglSetBlobCacheFuncsANDROID(EGLDisplay dpy, EGLSetBlobFuncANDROID set, EGLGetBlobFuncANDROID get);
+#endif /* EGL_EGLEXT_PROTOTYPES */
+typedef void (EGLAPIENTRYP PFNEGLSETBLOBCACHEFUNCSANDROIDPROC)(EGLDisplay dpy, EGLSetBlobFuncANDROID set, EGLGetBlobFuncANDROID get);
+#endif
+
+#ifndef EGL_ANDROID_image_native_buffer
+#define EGL_ANDROID_image_native_buffer 1
+#define EGL_NATIVE_BUFFER_ANDROID		0x3140
+#endif
+
+#ifndef EGL_ANDROID_native_fence_sync
+#define EGL_ANDROID_native_fence_sync 1
+#define EGL_SYNC_NATIVE_FENCE_ANDROID		0x3144
+#define EGL_SYNC_NATIVE_FENCE_FD_ANDROID	0x3145
+#define EGL_SYNC_NATIVE_FENCE_SIGNALED_ANDROID	0x3146
+#define EGL_NO_NATIVE_FENCE_FD_ANDROID		-1
+#ifdef EGL_EGLEXT_PROTOTYPES
+EGLAPI EGLint EGLAPIENTRY eglDupNativeFenceFDANDROID( EGLDisplay dpy, EGLSyncKHR);
+#endif /* EGL_EGLEXT_PROTOTYPES */
+typedef EGLint (EGLAPIENTRYP PFNEGLDUPNATIVEFENCEFDANDROIDPROC)(EGLDisplay dpy, EGLSyncKHR);
+#endif
+
+#ifndef EGL_ANDROID_recordable
+#define EGL_ANDROID_recordable 1
+#define EGL_RECORDABLE_ANDROID			0x3142
+#endif
+
+#ifndef EGL_EXT_buffer_age
+#define EGL_EXT_buffer_age 1
+#define EGL_BUFFER_AGE_EXT			0x313D
+#endif
+
+#ifndef EGL_EXT_image_dma_buf_import
+#define EGL_EXT_image_dma_buf_import 1
+#define EGL_LINUX_DMA_BUF_EXT			0x3270
+#define EGL_LINUX_DRM_FOURCC_EXT		0x3271
+#define EGL_DMA_BUF_PLANE0_FD_EXT		0x3272
+#define EGL_DMA_BUF_PLANE0_OFFSET_EXT		0x3273
+#define EGL_DMA_BUF_PLANE0_PITCH_EXT		0x3274
+#define EGL_DMA_BUF_PLANE1_FD_EXT		0x3275
+#define EGL_DMA_BUF_PLANE1_OFFSET_EXT		0x3276
+#define EGL_DMA_BUF_PLANE1_PITCH_EXT		0x3277
+#define EGL_DMA_BUF_PLANE2_FD_EXT		0x3278
+#define EGL_DMA_BUF_PLANE2_OFFSET_EXT		0x3279
+#define EGL_DMA_BUF_PLANE2_PITCH_EXT		0x327A
+#define EGL_YUV_COLOR_SPACE_HINT_EXT		0x327B
+#define EGL_SAMPLE_RANGE_HINT_EXT		0x327C
+#define EGL_YUV_CHROMA_HORIZONTAL_SITING_HINT_EXT 0x327D
+#define EGL_YUV_CHROMA_VERTICAL_SITING_HINT_EXT 0x327E
+#define EGL_ITU_REC601_EXT			0x327F
+#define EGL_ITU_REC709_EXT			0x3280
+#define EGL_ITU_REC2020_EXT			0x3281
+#define EGL_YUV_FULL_RANGE_EXT			0x3282
+#define EGL_YUV_NARROW_RANGE_EXT		0x3283
+#define EGL_YUV_CHROMA_SITING_0_EXT		0x3284
+#define EGL_YUV_CHROMA_SITING_0_5_EXT		0x3285
+#endif
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif
+#endif /* __eglext_h_ */
