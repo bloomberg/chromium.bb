@@ -96,8 +96,8 @@ bool MergeSessionThrottle::ShouldShowMergeSessionPage(const GURL& url) const {
   // If we are loading google properties while merge session is in progress,
   // we will show delayed loading page instead.
   return !net::NetworkChangeNotifier::IsOffline() &&
-         google_util::IsGoogleHostname(url.host(),
-                                       google_util::ALLOW_SUBDOMAIN) &&
          chromeos::UserManager::Get()->GetMergeSessionState() ==
-             chromeos::UserManager::MERGE_STATUS_IN_PROCESS;
+             chromeos::UserManager::MERGE_STATUS_IN_PROCESS &&
+         google_util::IsGoogleHostname(url.host(),
+                                       google_util::ALLOW_SUBDOMAIN);
 }

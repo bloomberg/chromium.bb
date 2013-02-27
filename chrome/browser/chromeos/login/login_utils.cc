@@ -785,10 +785,12 @@ void LoginUtilsImpl::PrewarmAuthentication() {
 }
 
 void LoginUtilsImpl::RestoreAuthenticationSession(Profile* user_profile) {
-  // We don't need to restore session for demo/guest users.
+  // We don't need to restore session for demo/guest/stub/public account users.
   if (!UserManager::Get()->IsUserLoggedIn() ||
       UserManager::Get()->IsLoggedInAsGuest() ||
-      UserManager::Get()->IsLoggedInAsDemoUser()) {
+      UserManager::Get()->IsLoggedInAsPublicAccount() ||
+      UserManager::Get()->IsLoggedInAsDemoUser() ||
+      UserManager::Get()->IsLoggedInAsStub()) {
     return;
   }
 
