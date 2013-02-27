@@ -352,35 +352,47 @@ def CopyAndAugmentManifest(build_dir, output_dir, manifest_name,
 # Copy the relevant CRT DLLs to |build_dir|. We copy DLLs from all versions
 # of VS installed to make sure we have the correct CRT version, unused DLLs
 # should not conflict with the others anyways.
-def CopyVisualStudioRuntimeDLLs(build_dir):
-  is_debug = os.path.basename(build_dir) == 'Debug'
-  if not is_debug and os.path.basename(build_dir) != 'Release':
+def CopyVisualStudioRuntimeDLLs(build_dir, target_arch):
+  is_debug = os.path.basename(build_dir).startswith('Debug')
+  if not is_debug and not os.path.basename(build_dir).startswith('Release'):
     print ("Warning: could not determine build configuration from "
            "output directory, assuming Release build.")
 
   crt_dlls = []
+  sys_dll_dir = None
   if is_debug:
     crt_dlls = glob.glob(
         "C:/Program Files (x86)/Microsoft Visual Studio */VC/redist/"
-        "Debug_NonRedist/x86/Microsoft.*.DebugCRT/*.dll")
+        "Debug_NonRedist/" + target_arch + "/Microsoft.*.DebugCRT/*.dll")
   else:
     crt_dlls = glob.glob(
-        "C:/Program Files (x86)/Microsoft Visual Studio */VC/redist/x86/"
-        "Microsoft.*.CRT/*.dll")
+        "C:/Program Files (x86)/Microsoft Visual Studio */VC/redist/" +
+        target_arch + "/Microsoft.*.CRT/*.dll")
 
   # Also handle the case where someone is building using only winsdk and
   # doesn't have Visual Studio installed.
   if not crt_dlls:
-    # On a 64-bit system, 32-bit dlls are in SysWOW64 (don't ask).
-    if os.access("C:/Windows/SysWOW64", os.F_OK):
-      sys_dll_dir = "C:/Windows/SysWOW64"
+    if target_arch == 'x64':
+      # check we are are on a 64bit system by existence of WOW64 dir
+      if os.access("C:/Windows/SysWOW64", os.F_OK):
+        sys_dll_dir = "C:/Windows/System32"
+      else:
+        # only support packaging of 64bit installer on 64bit system
+        # but this just as bad as not finding DLLs at all so we
+        # don't abort here to mirror behavior below
+        print ("Warning: could not find x64 CRT DLLs on x86 system.")
     else:
-      sys_dll_dir = "C:/Windows/System32"
+      # On a 64-bit system, 32-bit dlls are in SysWOW64 (don't ask).
+      if os.access("C:/Windows/SysWOW64", os.F_OK):
+        sys_dll_dir = "C:/Windows/SysWOW64"
+      else:
+        sys_dll_dir = "C:/Windows/System32"
 
-    if is_debug:
-      crt_dlls = glob.glob(os.path.join(sys_dll_dir, "msvc*0d.dll"))
-    else:
-      crt_dlls = glob.glob(os.path.join(sys_dll_dir, "msvc*0.dll"))
+    if sys_dll_dir is not None:
+      if is_debug:
+        crt_dlls = glob.glob(os.path.join(sys_dll_dir, "msvc*0d.dll"))
+      else:
+        crt_dlls = glob.glob(os.path.join(sys_dll_dir, "msvc*0.dll"))
 
   if not crt_dlls:
     print ("Warning: could not find CRT DLLs to copy to build dir - target "
@@ -395,7 +407,7 @@ def CopyVisualStudioRuntimeDLLs(build_dir):
 # run-time.
 # This is meant for developer builds only and should never be used to package
 # an official build.
-def DoComponentBuildTasks(staging_dir, build_dir, current_version):
+def DoComponentBuildTasks(staging_dir, build_dir, target_arch, current_version):
   # Get the required directories for the upcoming operations.
   chrome_dir = os.path.join(staging_dir, CHROME_DIR)
   version_dir = os.path.join(chrome_dir, current_version)
@@ -408,7 +420,7 @@ def DoComponentBuildTasks(staging_dir, build_dir, current_version):
   # Copy the VS CRT DLLs to |build_dir|. This must be done before the general
   # copy step below to ensure the CRT DLLs are added to the archive and marked
   # as a dependency in the exe manifests generated below.
-  CopyVisualStudioRuntimeDLLs(build_dir)
+  CopyVisualStudioRuntimeDLLs(build_dir, target_arch)
 
   # Copy all the DLLs in |build_dir| to the version directory. Simultaneously
   # build a list of their names to mark them as dependencies of chrome.exe and
@@ -514,7 +526,8 @@ def main(options):
                            options.enable_hidpi, options.enable_touch_ui)
 
   if options.component_build == '1':
-    DoComponentBuildTasks(staging_dir, options.build_dir, current_version)
+    DoComponentBuildTasks(staging_dir, options.build_dir,
+                          options.target_arch, current_version)
 
   version_numbers = current_version.split('.')
   current_build_number = version_numbers[2] + '.' + version_numbers[3]
@@ -575,6 +588,10 @@ def _ParseOptions():
       help='Whether this archive is packaging a component build. This will '
            'also turn off compression of chrome.7z into chrome.packed.7z and '
            'helpfully delete any old chrome.packed.7z in |output_dir|.')
+  parser.add_option('--target_arch', default='x86',
+      help='Specify the target architecture for installer - this is used '
+           'to determine which CRT runtime files to pull and package '
+           'with the installer archive {x86|x64}.')
 
   options, _ = parser.parse_args()
   if not options.build_dir:
