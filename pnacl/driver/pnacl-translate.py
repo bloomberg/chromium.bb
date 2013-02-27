@@ -268,7 +268,8 @@ def main(argv):
     Log.Fatal("Please specify output file with -o")
 
   # Find the bitcode file on the command line.
-  bcfiles = filter(driver_tools.IsBitcode, inputs)
+  bcfiles = [f for f in inputs
+             if driver_tools.IsBitcode(f) or driver_tools.FileType(f) == 'll']
   if len(bcfiles) > 1:
     Log.Fatal('Expecting at most 1 bitcode file')
   elif len(bcfiles) == 1:
@@ -524,6 +525,8 @@ def RunLLCSandboxed():
   infile = env.getone('input')
   outfile = env.getone('output')
   flags = env.get('LLC_FLAGS')
+  if not driver_tools.IsBitcode(infile):
+    Log.Fatal('Input to sandboxed translator must be bitcode')
   script = MakeSelUniversalScriptForLLC(infile, outfile, flags)
   command = ('${SEL_UNIVERSAL_PREFIX} ${SEL_UNIVERSAL} ${SEL_UNIVERSAL_FLAGS} '
     '-- ${LLC_SB}')
