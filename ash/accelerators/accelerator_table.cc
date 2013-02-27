@@ -86,7 +86,9 @@ const AcceleratorData kAcceleratorData[] = {
     DISABLE_GPU_WATCHDOG },
 #endif  // defined(OS_CHROMEOS)
   { true, ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, OPEN_FEEDBACK_PAGE },
+#if !defined(OS_WIN)
   { true, ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, EXIT },
+#endif
   { true, ui::VKEY_Z, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     TOGGLE_SPOKEN_FEEDBACK },
   { true, ui::VKEY_I, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
