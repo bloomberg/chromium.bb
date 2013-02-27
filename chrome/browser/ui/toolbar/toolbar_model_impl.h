@@ -18,7 +18,6 @@ class ToolbarModelDelegate;
 
 namespace content {
 class NavigationController;
-class WebContents;
 }
 
 namespace net {
@@ -32,9 +31,6 @@ class ToolbarModelImpl : public ToolbarModel {
  public:
   explicit ToolbarModelImpl(ToolbarModelDelegate* delegate);
   virtual ~ToolbarModelImpl();
-
-  static SecurityLevel GetSecurityLevelForWebContents(
-      content::WebContents* web_contents);
 
   // Overriden from ToolbarModel.
   virtual string16 GetText(
