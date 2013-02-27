@@ -69,6 +69,12 @@ IPC_MESSAGE_ROUTED1(AwViewMsg_SetTextZoomLevel,
 // recalculated by WebKit.
 IPC_MESSAGE_ROUTED0(AwViewMsg_ResetScrollAndScaleState)
 
+// Set whether fixed layout mode is enabled. Must be updated together
+// with WebSettings.viewport_enabled. Only WebView switches this mode
+// dynamically, thus there is no support for this in the common code.
+IPC_MESSAGE_ROUTED1(AwViewMsg_SetEnableFixedLayoutMode,
+                    bool /* enabled */)
+
 //-----------------------------------------------------------------------------
 // RenderView messages
 // These are messages sent from the renderer to the browser process.

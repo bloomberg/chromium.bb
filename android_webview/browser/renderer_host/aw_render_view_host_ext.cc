@@ -63,6 +63,12 @@ const AwHitTestData& AwRenderViewHostExt::GetLastHitTestData() const {
   return last_hit_test_data_;
 }
 
+void AwRenderViewHostExt::SetEnableFixedLayoutMode(bool enable) {
+  DCHECK(CalledOnValidThread());
+  Send(new AwViewMsg_SetEnableFixedLayoutMode(web_contents()->GetRoutingID(),
+                                              enable));
+}
+
 void AwRenderViewHostExt::SetTextZoomLevel(double level) {
   DCHECK(CalledOnValidThread());
   Send(new AwViewMsg_SetTextZoomLevel(web_contents()->GetRoutingID(), level));

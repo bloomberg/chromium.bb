@@ -896,6 +896,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             super(awContents, contentViewClient);
             // Font autosizing doesn't step in for narrow layout widths.
             mContentSettings.setUseWideViewPort(true);
+            mAwSettings.setEnableFixedLayoutMode(true);
         }
 
         @Override
@@ -1152,7 +1153,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     // "viewport" tag is ignored, and the layout width is set to device width in DIP pixels.
     // We specify a very high width value to make sure that it doesn't intersect with
     // device screen widths (in DIP pixels).
-    class AwSettingsUseWideViewportTestHelper extends AwSettingsTestHelper<Boolean> {
+    class AwSettingsUseWideViewportTestHelper extends AwSettingsWithSettingsTestHelper<Boolean> {
         static private final String VIEWPORT_TAG_LAYOUT_WIDTH = "3000";
 
         AwSettingsUseWideViewportTestHelper(
@@ -1179,6 +1180,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         @Override
         protected void setCurrentValue(Boolean value) {
             mContentSettings.setUseWideViewPort(value);
+            mAwSettings.setEnableFixedLayoutMode(value);
         }
 
         @Override
@@ -1210,6 +1212,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             super(awContents, contentViewClient, true);
             mWithViewPortTag = withViewPortTag;
             mContentSettings.setUseWideViewPort(true);
+            mAwContents.getSettings().setEnableFixedLayoutMode(true);
         }
 
         @Override
@@ -2284,13 +2287,8 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         }
     }
 
-    /*
-     * @SmallTest
-     * @Feature({"AndroidWebView", "Preferences"})
-     * This test is temporary disabled to prevent bot redness after WK patch lands
-     * BUG=177684
-     */
-    @DisabledTest
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
     public void testUseWideViewportWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
@@ -2344,6 +2342,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
                 Math.abs(displayWidth - actualWidth) <= 1);
 
         settings.setUseWideViewPort(true);
+        awContents.getSettings().setEnableFixedLayoutMode(true);
         // When UseWideViewPort is on, "meta viewport" tag is used.
         // If there is no viewport tag, or width isn't specified,
         // then layout width is set to max(980, <device-width-in-DIP-pixels>)
@@ -2405,6 +2404,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         assertEquals(1.0f, getScaleOnUiThread(awContents));
 
         settings.setUseWideViewPort(true);
+        awContents.getSettings().setEnableFixedLayoutMode(true);
         settings.setLoadWithOverviewMode(true);
         awContents.resetScrollAndScaleState();
         int onScaleChangedCallCount = contentClient.getOnScaleChangedHelper().getCallCount();
