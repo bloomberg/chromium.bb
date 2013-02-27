@@ -47,6 +47,7 @@
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -101,10 +102,6 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
-#endif
-
-#if defined(ENABLE_APP_LIST)
-#include "chrome/browser/ui/app_list/app_list_util.h"
 #endif
 
 using content::ChildProcessSecurityPolicy;
@@ -334,13 +331,11 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
   if (command_line_.HasSwitch(switches::kDumpHistogramsOnExit))
     base::StatisticsRecorder::set_dump_on_exit(true);
 
-#if defined(ENABLE_APP_LIST)
-  chrome::InitAppList(profile);
+  AppListService::InitAll(profile);
   if (command_line_.HasSwitch(switches::kShowAppList)) {
-    chrome::ShowAppList(profile);
+    AppListService::Get()->ShowAppList(profile);
     return true;
   }
-#endif
 
   // Open the required browser windows and tabs. First, see if
   // we're being run as an application window. If so, the user

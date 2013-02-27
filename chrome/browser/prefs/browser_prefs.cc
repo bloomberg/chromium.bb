@@ -70,7 +70,7 @@
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/ui/alternate_error_tab_observer.h"
-#include "chrome/browser/ui/app_list/app_list_util.h"
+#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller_impl.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_ui_prefs.h"
@@ -174,6 +174,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kMultipleProfilePrefMigration, 0);
 
   // Please keep this list alphabetized.
+  AppListService::RegisterPrefs(registry);
   apps::RegisterPrefs(registry);
   browser_shutdown::RegisterPrefs(registry);
   BrowserProcessImpl::RegisterPrefs(registry);
@@ -251,10 +252,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
 #if defined(OS_MACOSX)
   confirm_quit::RegisterLocalState(registry);
-#endif
-
-#if defined(ENABLE_SETTINGS_APP)
-  chrome::RegisterAppListPrefs(registry);
 #endif
 }
 

@@ -15,7 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/browser/ui/app_list/app_list_util.h"
+#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -108,9 +108,8 @@ void OnAppLauncherEnabledCompleted(const extensions::Extension* extension,
                                    SkBitmap* icon,
                                    bool use_bubble,
                                    bool use_launcher) {
-#if defined(ENABLE_APP_LIST)
   if (use_launcher) {
-    chrome::ShowAppList(browser->profile());
+    AppListService::Get()->ShowAppList(browser->profile());
 
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,
@@ -118,7 +117,6 @@ void OnAppLauncherEnabledCompleted(const extensions::Extension* extension,
         content::Details<const std::string>(&extension->id()));
     return;
   }
-#endif
 
   if (use_bubble) {
     chrome::ShowExtensionInstalledBubble(extension, browser, *icon);
@@ -228,7 +226,7 @@ ExtensionInstallUI* ExtensionInstallUI::Create(Profile* profile) {
 void ExtensionInstallUI::OpenAppInstalledUI(Browser* browser,
                                             const std::string& app_id) {
 #if defined(OS_CHROMEOS)
-  chrome::ShowAppList(browser->profile());
+  AppListService::Get()->ShowAppList(browser->profile());
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,

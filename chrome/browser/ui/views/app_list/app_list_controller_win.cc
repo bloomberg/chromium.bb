@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
+#include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
@@ -24,7 +25,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
-#include "chrome/browser/ui/app_list/app_list_util.h"
+#include "chrome/browser/ui/app_list/app_list_service.h"
+#include "chrome/browser/ui/app_list/app_list_service_win.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
@@ -131,10 +133,17 @@ class AppListControllerDelegateWin : public AppListControllerDelegate {
 
 // The AppListController class manages global resources needed for the app
 // list to operate, and controls when the app list is opened and closed.
-class AppListController : public ProfileInfoCacheObserver {
+// TODO(tapted): Rename this class to AppListServiceWin and move entire file to
+// chrome/browser/ui/app_list/app_list_service_win.cc after removing
+// chrome/browser/ui/views dependency.
+class AppListController : public AppListService {
  public:
-  AppListController();
   virtual ~AppListController();
+
+  static AppListController* GetInstance() {
+    return Singleton<AppListController,
+                     LeakySingletonTraits<AppListController> >::get();
+  }
 
   void set_can_close(bool can_close) { can_close_app_list_ = can_close; }
   bool can_close() { return can_close_app_list_; }
@@ -144,36 +153,40 @@ class AppListController : public ProfileInfoCacheObserver {
   // show it.  Does nothing if the view already exists.
   void InitView(Profile* profile);
 
+  void AppListClosing();
+  void AppListActivationChanged(bool active);
+
+  app_list::AppListView* GetView() { return current_view_; }
+
+  // AppListService overrides:
+  virtual void Init(Profile* initial_profile) OVERRIDE;
+
   // Activates the app list at the current mouse cursor location, creating the
   // app list if necessary.
-  virtual void ShowAppList(Profile* profile);
+  virtual void ShowAppList(Profile* profile) OVERRIDE;
 
   // Hides the app list.
-  virtual void DismissAppList();
-
-  virtual bool IsAppListVisible() const;
+  virtual void DismissAppList() OVERRIDE;
 
   // Update the profile path stored in local prefs, load it (if not already
   // loaded), and show the app list.
-  void SetProfilePath(const base::FilePath& profile_file_path);
+  virtual void SetAppListProfile(
+      const base::FilePath& profile_file_path) OVERRIDE;
 
-  void AppListClosing();
-  void AppListActivationChanged(bool active);
-  app_list::AppListView* GetView() { return current_view_; }
+  virtual Profile* GetCurrentAppListProfile() OVERRIDE;
 
-  // TODO(koz): Split the responsibility for tracking profiles into a
-  // platform-independent class.
-  // Overidden from ProfileInfoCacheObserver.
-  void OnProfileAdded(const base::FilePath& profilePath) OVERRIDE {}
+  virtual bool IsAppListVisible() const OVERRIDE;
+
+  // ProfileInfoCacheObserver override:
   // We need to watch for profile removal to keep kAppListProfile updated.
-  void OnProfileWillBeRemoved(const base::FilePath& profile_path) OVERRIDE;
-  void OnProfileWasRemoved(const base::FilePath& profile_path,
-                           const string16& profile_name) OVERRIDE {}
-  void OnProfileNameChanged(const base::FilePath& profile_path,
-                            const string16& profile_name) OVERRIDE {}
-  void OnProfileAvatarChanged(const base::FilePath& profile_path) OVERRIDE {}
+  virtual void OnProfileWillBeRemoved(
+      const base::FilePath& profile_path) OVERRIDE;
 
  private:
+  friend struct DefaultSingletonTraits<AppListController>;
+
+  AppListController();
+
   // Loads a profile asynchronously and calls OnProfileLoaded() when done.
   void LoadProfileAsync(const base::FilePath& profile_file_path);
 
@@ -244,27 +257,24 @@ class AppListController : public ProfileInfoCacheObserver {
   DISALLOW_COPY_AND_ASSIGN(AppListController);
 };
 
-base::LazyInstance<AppListController>::Leaky g_app_list_controller =
-    LAZY_INSTANCE_INITIALIZER;
-
 AppListControllerDelegateWin::AppListControllerDelegateWin() {}
 
 AppListControllerDelegateWin::~AppListControllerDelegateWin() {}
 
 void AppListControllerDelegateWin::DismissView() {
-  g_app_list_controller.Get().DismissAppList();
+  AppListController::GetInstance()->DismissAppList();
 }
 
 void AppListControllerDelegateWin::ViewActivationChanged(bool active) {
-  g_app_list_controller.Get().AppListActivationChanged(active);
+  AppListController::GetInstance()->AppListActivationChanged(active);
 }
 
 void AppListControllerDelegateWin::ViewClosing() {
-  g_app_list_controller.Get().AppListClosing();
+  AppListController::GetInstance()->AppListClosing();
 }
 
 gfx::NativeWindow AppListControllerDelegateWin::GetAppListWindow() {
-  app_list::AppListView* view = g_app_list_controller.Get().GetView();
+  app_list::AppListView* view = AppListController::GetInstance()->GetView();
   return view ? view->GetWidget()->GetNativeWindow() : NULL;
 }
 
@@ -279,11 +289,11 @@ bool AppListControllerDelegateWin::CanPin() {
 }
 
 void AppListControllerDelegateWin::OnShowExtensionPrompt() {
-  g_app_list_controller.Get().set_can_close(false);
+  AppListController::GetInstance()->set_can_close(false);
 }
 
 void AppListControllerDelegateWin::OnCloseExtensionPrompt() {
-  g_app_list_controller.Get().set_can_close(true);
+  AppListController::GetInstance()->set_can_close(true);
 }
 
 bool AppListControllerDelegateWin::CanShowCreateShortcutsDialog() {
@@ -299,7 +309,7 @@ void AppListControllerDelegateWin::ShowCreateShortcutsDialog(
       extension_id);
   DCHECK(extension);
 
-  app_list::AppListView* view = g_app_list_controller.Get().GetView();
+  app_list::AppListView* view = AppListController::GetInstance()->GetView();
   if (!view)
     return;
 
@@ -348,7 +358,7 @@ void AppListController::OnProfileWillBeRemoved(
   }
 }
 
-void AppListController::SetProfilePath(
+void AppListController::SetAppListProfile(
     const base::FilePath& profile_file_path) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   Profile* profile = profile_manager->GetProfileByPath(profile_file_path);
@@ -499,10 +509,6 @@ void AppListController::DismissAppList() {
     chrome::EndKeepAlive();
     app_list_is_showing_ = false;
   }
-}
-
-bool AppListController::IsAppListVisible() const {
-  return app_list_is_showing_;
 }
 
 void AppListController::AppListClosing() {
@@ -776,63 +782,10 @@ void CheckAppListTaskbarShortcutOnFileThread(
 }
 
 void InitView(Profile* profile) {
-  g_app_list_controller.Get().InitView(profile);
+  AppListController::GetInstance()->InitView(profile);
 }
 
-#if defined(USE_ASH)
-// The AppListControllerAsh class provides the functionality for
-// displaying/hiding the App list for Windows 8 Chrome ASH.
-class AppListControllerAsh : public AppListController {
- public:
-  AppListControllerAsh() {}
-  virtual ~AppListControllerAsh() {}
-
-  // AppListController overrides.
-  virtual void ShowAppList(Profile* profile) OVERRIDE;
-
-  virtual void DismissAppList() OVERRIDE;
-  virtual bool IsAppListVisible() const OVERRIDE;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AppListControllerAsh);
-};
-
-base::LazyInstance<AppListControllerAsh>::Leaky g_app_list_controller_ash =
-    LAZY_INSTANCE_INITIALIZER;
-
-void AppListControllerAsh::ShowAppList(Profile* profile) {
-  // This may not work correctly if the profile passed in is different from the
-  // one the ash Shell is currently using.
-  // TODO(ananta): Handle profile changes correctly.
-  if (!IsAppListVisible())
-    ash::Shell::GetInstance()->ToggleAppList(NULL);
-}
-
-void AppListControllerAsh::DismissAppList() {
-  if (AppListControllerAsh::IsAppListVisible())
-    ash::Shell::GetInstance()->ToggleAppList(NULL);
-}
-
-bool AppListControllerAsh::IsAppListVisible() const {
-  return ash::Shell::GetInstance()->GetAppListWindow() != NULL;
-}
-
-#endif
-
-// Returns the AppListController instance for the current environment.
-AppListController* GetCurrentAppListController() {
-#if defined(USE_ASH)
-  if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)
-    return &g_app_list_controller_ash.Get();
-#endif
-  return &g_app_list_controller.Get();
-}
-
-}  // namespace
-
-namespace chrome {
-
-void InitAppList(Profile* profile) {
+void AppListController::Init(Profile* initial_profile) {
   // Check that the app list shortcut matches the flag kShowAppListShortcut.
   // This will either create or delete a shortcut file in the user data
   // directory.
@@ -850,35 +803,31 @@ void InitAppList(Profile* profile) {
   }
 
   // Instantiate AppListController so it listens for profile deletions.
-  g_app_list_controller.Get();
+  AppListController::GetInstance();
 
   // Post a task to create the app list. This is posted to not impact startup
   // time.
   const int kInitWindowDelay = 5;
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&InitView, profile),
+      base::Bind(&::InitView, initial_profile),
       base::TimeDelta::FromSeconds(kInitWindowDelay));
 }
 
-void ShowAppList(Profile* profile) {
-  GetCurrentAppListController()->ShowAppList(profile);
+Profile* AppListController::GetCurrentAppListProfile() {
+  return profile();
 }
 
-void SetAppListProfile(const base::FilePath& profile_file_path) {
-  GetCurrentAppListController()->SetProfilePath(profile_file_path);
+bool AppListController::IsAppListVisible() const {
+  return app_list_is_showing_;
 }
 
-void DismissAppList() {
-  GetCurrentAppListController()->DismissAppList();
-}
+}  // namespace
 
-Profile* GetCurrentAppListProfile() {
-  return GetCurrentAppListController()->profile();
-}
+namespace chrome {
 
-bool IsAppListVisible() {
-  return GetCurrentAppListController()->IsAppListVisible();
+AppListService* GetAppListServiceWin() {
+  return AppListController::GetInstance();
 }
 
 }  // namespace chrome

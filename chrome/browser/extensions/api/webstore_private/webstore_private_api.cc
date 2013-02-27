@@ -29,7 +29,7 @@
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/ui/app_list/app_list_util.h"
+#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -482,10 +482,8 @@ void CompleteInstallFunction::OnGetAppLauncherEnabled(
                                                &name)) {
       NOTREACHED();
     }
-#if defined(ENABLE_APP_LIST)
     // Show the app list so it receives install progress notifications.
-    chrome::ShowAppList(profile());
-#endif
+    AppListService::Get()->ShowAppList(profile());
     // Tell the app list about the install that we just started.
     extensions::InstallTracker* tracker =
         extensions::InstallTrackerFactory::GetForProfile(profile());

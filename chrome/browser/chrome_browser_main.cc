@@ -94,7 +94,7 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/three_d_api_observer.h"
 #include "chrome/browser/translate/translate_manager.h"
-#include "chrome/browser/ui/app_list/app_list_util.h"
+#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/host_desktop.h"
@@ -341,12 +341,10 @@ base::FilePath GetStartupProfilePath(const base::FilePath& user_data_dir,
         command_line.GetSwitchValuePath(switches::kProfileDirectory));
   }
 
-#if defined(ENABLE_APP_LIST)
   // If we are showing the app list then chrome isn't shown so load the app
   // list's profile rather than chrome's.
   if (command_line.HasSwitch(switches::kShowAppList))
-    return chrome::GetAppListProfilePath(user_data_dir);
-#endif
+    return AppListService::Get()->GetAppListProfilePath(user_data_dir);
 
   return g_browser_process->profile_manager()->GetLastUsedProfileDir(
       user_data_dir);

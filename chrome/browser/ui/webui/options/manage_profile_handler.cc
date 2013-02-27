@@ -34,7 +34,7 @@
 #endif
 
 #if defined(ENABLE_SETTINGS_APP)
-#include "chrome/browser/ui/app_list/app_list_util.h"
+#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "content/public/browser/web_contents.h"
 #endif
 
@@ -330,7 +330,7 @@ void ManageProfileHandler::SwitchAppListProfile(const ListValue* args) {
       !base::GetValueAsFilePath(*file_path_value, &profile_file_path))
     return;
 
-  chrome::SetAppListProfile(profile_file_path);
+  AppListService::Get()->SetAppListProfile(profile_file_path);
   // Close the settings app, since it will now be for the wrong profile.
   web_ui()->GetWebContents()->Close();
 }

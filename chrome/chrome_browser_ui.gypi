@@ -102,8 +102,14 @@
         'browser/ui/android/window_android_helper.h',
         'browser/ui/app_list/app_list_controller_delegate.cc',
         'browser/ui/app_list/app_list_controller_delegate.h',
-        'browser/ui/app_list/app_list_util.cc',
-        'browser/ui/app_list/app_list_util.h',
+        'browser/ui/app_list/app_list_service.cc',
+        'browser/ui/app_list/app_list_service.h',
+        'browser/ui/app_list/app_list_service_ash.h',
+        'browser/ui/app_list/app_list_service_disabled.cc',
+        'browser/ui/app_list/app_list_service_disabled.h',
+        'browser/ui/app_list/app_list_service_mac.h',
+        'browser/ui/app_list/app_list_service_selector.cc',
+        'browser/ui/app_list/app_list_service_win.h',
         'browser/ui/app_list/app_list_view_delegate.cc',
         'browser/ui/app_list/app_list_view_delegate.h',
         'browser/ui/app_list/apps_model_builder.cc',
@@ -126,6 +132,7 @@
         'browser/ui/app_modal_dialogs/native_app_modal_dialog.h',
         'browser/ui/ash/app_list/app_list_controller_ash.h',
         'browser/ui/ash/app_list/app_list_controller_ash.cc',
+        'browser/ui/ash/app_list/app_list_service_ash.cc',
         'browser/ui/ash/app_list/app_sync_ui_state_watcher.cc',
         'browser/ui/ash/app_list/app_sync_ui_state_watcher.h',
         'browser/ui/ash/app_sync_ui_state.cc',
@@ -2817,11 +2824,19 @@
           'dependencies': [
             '../ui/app_list/app_list.gyp:app_list',
           ],
+          'sources!': [
+            'browser/ui/app_list/app_list_service_disabled.cc',
+          ],
         }, { # else: enable_app_list==0
           'sources/': [
             ['exclude', '^browser/ui/views/app_list/'],
             ['exclude', '^browser/ui/app_list/'],
-          ]
+            ['include', '^browser/ui/app_list/app_list_service.cc'],
+            ['include', '^browser/ui/app_list/app_list_service.h'],
+            ['include', '^browser/ui/app_list/app_list_service_disabled.cc'],
+            ['include', '^browser/ui/app_list/app_list_service_disabled.h'],
+            ['include', '^browser/ui/app_list/app_list_service_selector.cc'],
+          ],
         }],
         ['enable_message_center==1', {
           'dependencies': [

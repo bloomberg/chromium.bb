@@ -859,9 +859,7 @@ extern const char kRLZBrand[];
 extern const char kRLZDisabled[];
 #endif
 
-#if defined(ENABLE_APP_LIST)
 extern const char kAppListProfile[];
-#endif
 
 }  // namespace prefs
 

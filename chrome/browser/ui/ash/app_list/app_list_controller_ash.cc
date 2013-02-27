@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/ash/app_list/app_list_controller_ash.h"
 
 #include "ash/shell.h"
-#include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
 AppListControllerDelegateAsh::AppListControllerDelegateAsh() {}
@@ -68,27 +67,3 @@ void AppListControllerDelegateAsh::LaunchApp(
 bool AppListControllerDelegateAsh::ShouldShowUserIcon() {
   return false;
 }
-
-#if !defined(OS_WIN)
-namespace chrome {
-
-// In the win_aura build these are defined in app_list_controller_win.cc.
-void ShowAppList(Profile* default_profile) {
-  if (!ash::Shell::GetInstance()->GetAppListTargetVisibility())
-    ash::Shell::GetInstance()->ToggleAppList(NULL);
-}
-
-bool IsAppListVisible() {
-  return ash::Shell::GetInstance()->GetAppListWindow() != NULL;
-}
-
-void DismissAppList() {
-  if (IsAppListVisible())
-    ash::Shell::GetInstance()->ToggleAppList(NULL);
-}
-
-void SetAppListProfile(const base::FilePath& profile_file_path) {
-}
-
-}  // namespace chrome
-#endif

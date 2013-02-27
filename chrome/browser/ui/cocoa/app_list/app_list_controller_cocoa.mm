@@ -5,9 +5,11 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_nsobject.h"
+#include "base/memory/singleton.h"
 #include "base/message_loop.h"
+#include "chrome/browser/ui/app_list/app_list_service.h"
+#include "chrome/browser/ui/app_list/app_list_service_mac.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
-#include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #import "ui/app_list/cocoa/apps_grid_controller.h"
@@ -19,24 +21,35 @@ class ImageSkia;
 
 namespace {
 
-// The AppListController class manages global resources needed for the app
-// list to operate, and controls when the app list is opened and closed.
-class AppListController {
+// AppListControllerCocoa manages global resources needed for the app list to
+// operate, and controls when the app list is opened and closed.
+// TODO(tapted): rename this class to AppListServiceMac and move entire file to
+// chrome/browser/ui/app_list/app_list_service_mac.cc .
+class AppListControllerCocoa : public AppListService {
  public:
-  AppListController() {}
-  ~AppListController() {}
+  virtual ~AppListControllerCocoa() {}
+
+  static AppListControllerCocoa* GetInstance() {
+    return Singleton<AppListControllerCocoa,
+                     LeakySingletonTraits<AppListControllerCocoa> >::get();
+  }
 
   void CreateAppList(Profile* profile);
-  void ShowAppList(Profile* profile);
-  void DismissAppList();
-  bool IsAppListVisible() const;
-
   NSWindow* GetNativeWindow();
 
+  // AppListService overrides:
+  virtual void ShowAppList(Profile* profile) OVERRIDE;
+  virtual void DismissAppList() OVERRIDE;
+  virtual bool IsAppListVisible() const OVERRIDE;
+
  private:
+  friend struct DefaultSingletonTraits<AppListControllerCocoa>;
+
+  AppListControllerCocoa() {}
+
   scoped_nsobject<AppListWindowController> window_controller_;
 
-  DISALLOW_COPY_AND_ASSIGN(AppListController);
+  DISALLOW_COPY_AND_ASSIGN(AppListControllerCocoa);
 };
 
 class AppListControllerDelegateCocoa : public AppListControllerDelegate {
@@ -60,19 +73,16 @@ class AppListControllerDelegateCocoa : public AppListControllerDelegate {
   DISALLOW_COPY_AND_ASSIGN(AppListControllerDelegateCocoa);
 };
 
-base::LazyInstance<AppListController>::Leaky g_app_list_controller =
-    LAZY_INSTANCE_INITIALIZER;
-
 AppListControllerDelegateCocoa::AppListControllerDelegateCocoa() {}
 
 AppListControllerDelegateCocoa::~AppListControllerDelegateCocoa() {}
 
 void AppListControllerDelegateCocoa::DismissView() {
-  g_app_list_controller.Get().DismissAppList();
+  AppListControllerCocoa::GetInstance()->DismissAppList();
 }
 
 gfx::NativeWindow AppListControllerDelegateCocoa::GetAppListWindow() {
-  return g_app_list_controller.Get().GetNativeWindow();
+  return AppListControllerCocoa::GetInstance()->GetNativeWindow();
 }
 
 bool AppListControllerDelegateCocoa::CanPin() {
@@ -95,7 +105,7 @@ void AppListControllerDelegateCocoa::LaunchApp(
       profile, extension, NEW_FOREGROUND_TAB));
 }
 
-void AppListController::CreateAppList(Profile* profile) {
+void AppListControllerCocoa::CreateAppList(Profile* profile) {
   scoped_ptr<app_list::AppListViewDelegate> delegate(
       new AppListViewDelegate(new AppListControllerDelegateCocoa(), profile));
   scoped_nsobject<AppsGridController> content(
@@ -104,47 +114,34 @@ void AppListController::CreateAppList(Profile* profile) {
       [[AppListWindowController alloc] initWithGridController:content]);
 }
 
-void AppListController::ShowAppList(Profile* profile) {
+void AppListControllerCocoa::ShowAppList(Profile* profile) {
   if (!window_controller_)
     CreateAppList(profile);
 
   [[window_controller_ window] makeKeyAndOrderFront:nil];
 }
 
-void AppListController::DismissAppList() {
+void AppListControllerCocoa::DismissAppList() {
   if (!window_controller_)
     return;
 
   [[window_controller_ window] close];
 }
 
-bool AppListController::IsAppListVisible() const {
+bool AppListControllerCocoa::IsAppListVisible() const {
   return [[window_controller_ window] isVisible];
 }
 
-NSWindow* AppListController::GetNativeWindow() {
+NSWindow* AppListControllerCocoa::GetNativeWindow() {
   return [window_controller_ window];
 }
 
 }  // namespace
 
-
 namespace chrome {
 
-void InitAppList(Profile* profile) {
-  // TODO(tapted): AppList warmup code coes here.
-}
-
-void ShowAppList(Profile* profile) {
-  g_app_list_controller.Get().ShowAppList(profile);
-}
-
-void DismissAppList() {
-  g_app_list_controller.Get().DismissAppList();
-}
-
-bool IsAppListVisible() {
-  return g_app_list_controller.Get().IsAppListVisible();
+AppListService* GetAppListServiceMac() {
+  return AppListControllerCocoa::GetInstance();
 }
 
 }  // namespace chrome
