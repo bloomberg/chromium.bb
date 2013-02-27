@@ -1506,29 +1506,45 @@ int ImmediateInterpreter::EvaluateButtonType(
   const FingerState* finger1 = hwstate.GetFingerState(*pointing_.begin());
   const FingerState* finger2 = hwstate.GetFingerState(*(pointing_.begin() + 1));
 
-  if (!TwoFingersGesturing(*finger1, *finger2))
-    return GESTURES_BUTTON_LEFT;
-
-  // The way to tell if it is a right click:
-  // 1. two fingers come down and immediately click -> right click
-  // 2. one finger is on the pad for a long time/idle (many seconds), second
-  //    finger comes down and immediately clicks -> left click
-  // 3. one finger is on the pad for a long time/idle (many seconds), second
-  //    finger comes down, a while passes, button clicks down -> right click
-
+  // Determine difference in start time
   stime_t finger1_start_time = finger_origin_timestamp(finger1->tracking_id);
   stime_t finger2_start_time = finger_origin_timestamp(finger2->tracking_id);
   stime_t start_time_delta = finger1_start_time - finger2_start_time;
-  if (fabs(start_time_delta) < right_click_start_time_diff_.val_)
-    return GESTURES_BUTTON_RIGHT;
 
+  // Determine finger age
   stime_t finger_age;
   if (finger1_start_time > finger2_start_time)
     finger_age = hwstate.timestamp - finger1_start_time;
   else
     finger_age = hwstate.timestamp - finger2_start_time;
-  return (finger_age < right_click_second_finger_age_.val_) ?
-      GESTURES_BUTTON_LEFT : GESTURES_BUTTON_RIGHT;
+
+  // Check finger distance is close enough but not too close
+  const float kMin2fDistThreshSq = tapping_finger_min_separation_.val_ *
+      tapping_finger_min_separation_.val_;
+  float dist_sq = DistSq(*finger1, *finger2);
+
+  bool distance_ok =
+      finger_metrics_->FingersCloseEnoughToGesture(*finger1, *finger2) &&
+      ((dist_sq > kMin2fDistThreshSq) ||
+       finger1->flags & GESTURES_FINGER_MERGE);
+
+  // Good timing of two close fingers is always a right click.
+  if (fabs(start_time_delta) < right_click_start_time_diff_.val_ &&
+      finger_age < right_click_second_finger_age_.val_ && distance_ok) {
+    return GESTURES_BUTTON_RIGHT;
+  }
+
+  // For fingers that are cleary gesturing together we loosen the
+  // requirements and only require both fingers to be stationary
+  if (TwoFingersGesturing(*finger1, *finger2)) {
+    float dist1_sq = DistanceTravelledSq(*finger1);
+    float dist2_sq = DistanceTravelledSq(*finger2);
+    const float kTapMoveDistSq = tap_move_dist_.val_ * tap_move_dist_.val_;
+    if (dist1_sq < kTapMoveDistSq && dist2_sq < kTapMoveDistSq)
+      return GESTURES_BUTTON_RIGHT;
+  }
+
+  return GESTURES_BUTTON_LEFT;
 }
 
 bool ImmediateInterpreter::PressureChangingSignificantly(
