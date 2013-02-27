@@ -1127,8 +1127,22 @@ void InstantController::OmniboxLostFocus(gfx::NativeView view_gaining_focus) {
   if (model_.mode().is_ntp())
     return;
 
-  // If the preview is not showing at all, recreate it if it's stale.
   if (model_.mode().is_default()) {
+    // Correct search terms if the user clicked on the committed results page
+    // while showing an autocomplete suggestion
+    if (instant_tab_ && !last_suggestion_.text.empty() &&
+        last_suggestion_.behavior == INSTANT_COMPLETE_NEVER &&
+        IsViewInContents(GetViewGainingFocus(view_gaining_focus),
+                         instant_tab_->contents())) {
+      // Commit the omnibox's suggested grey text as if the user had typed it.
+      browser_->CommitSuggestedText(true);
+
+      // Update the state so that next query from hitting Enter from the
+      // omnibox is correct.
+      last_omnibox_text_ += last_suggestion_.text;
+      last_suggestion_ = InstantSuggestion();
+    }
+    // If the preview is not showing at all, recreate it if it's stale.
     ReloadOverlayIfStale();
     MaybeSwitchToRemoteOverlay();
     return;

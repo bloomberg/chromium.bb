@@ -188,6 +188,12 @@ void BrowserInstantController::SetInstantSuggestion(
   browser_->window()->GetLocationBar()->SetInstantSuggestion(suggestion);
 }
 
+void BrowserInstantController::CommitSuggestedText(
+    bool skip_inline_autocomplete) {
+  browser_->window()->GetLocationBar()->GetLocationEntry()->model()->
+      CommitSuggestedText(skip_inline_autocomplete);
+}
+
 gfx::Rect BrowserInstantController::GetInstantBounds() {
   return browser_->window()->GetInstantBounds();
 }

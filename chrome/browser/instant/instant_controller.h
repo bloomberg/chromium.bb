@@ -196,6 +196,8 @@ class InstantController : public InstantPage::Delegate,
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, MostVisited);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, OmniboxFocusLoadsInstant);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
+                           OmniboxTextUponFocusedCommittedSERP);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
                            MiddleClickOnSuggestionOpensInNewTab);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, NTPIsPreloaded);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, PreloadedNTPIsUsedInNewTab);

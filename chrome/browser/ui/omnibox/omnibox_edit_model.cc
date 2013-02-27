@@ -798,14 +798,14 @@ void OmniboxEditModel::SetCaretVisibility(bool visible) {
 }
 
 void OmniboxEditModel::OnWillKillFocus(gfx::NativeView view_gaining_focus) {
-  SetInstantSuggestion(InstantSuggestion());
-
   InstantController* instant = controller_->GetInstant();
   if (instant) {
     instant->OmniboxFocusChanged(OMNIBOX_FOCUS_NONE,
                                  OMNIBOX_FOCUS_CHANGE_EXPLICIT,
                                  view_gaining_focus);
   }
+
+  SetInstantSuggestion(InstantSuggestion());
 
   // TODO(jered): Rip this out along with StartZeroSuggest.
   autocomplete_controller_->StopZeroSuggest();

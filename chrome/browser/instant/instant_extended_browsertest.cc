@@ -10,6 +10,7 @@
 #include "chrome/browser/instant/instant_overlay.h"
 #include "chrome/browser/instant/instant_service.h"
 #include "chrome/browser/instant/instant_service_factory.h"
+#include "chrome/browser/instant/instant_tab.h"
 #include "chrome/browser/instant/instant_test_utils.h"
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -21,6 +22,8 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
+#include "content/public/test/browser_test_utils.h"
 
 class InstantExtendedTest : public InstantTestBase {
  public:
@@ -189,12 +192,9 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
 }
 
-// TODO(sreeram): Enable this test once @mathp's CL lands:
-//     https://codereview.chromium.org/12179025/
-//
 // Test that omnibox text is correctly set when overlay is committed with Enter.
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
-                       DISABLED_OmniboxTextUponEnterCommit) {
+                       OmniboxTextUponEnterCommit) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
@@ -218,13 +218,9 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   EXPECT_EQ(ASCIIToUTF16(""), omnibox()->GetInstantSuggestion());
 }
 
-// TODO(sreeram): Enable this test once @mathp's CL lands:
-//     https://codereview.chromium.org/12179025/
-//
-// Test that omnibox text is correctly set when overlay is committed with focus
-// lost.
+// Test that omnibox text is correctly set when committed with focus lost.
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
-                       DISABLED_OmniboxTextUponFocusLostCommit) {
+                       OmniboxTextUponFocusLostCommit) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
@@ -243,6 +239,35 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
 
   // Search term extraction should kick in with the autocompleted text.
   EXPECT_EQ(ASCIIToUTF16("johnny depp"), omnibox()->GetText());
+
+  // Suggestion should be cleared at this point.
+  EXPECT_EQ(ASCIIToUTF16(""), omnibox()->GetInstantSuggestion());
+}
+
+// Test that omnibox text is correctly set when clicking on committed SERP.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
+                       OmniboxTextUponFocusedCommittedSERP) {
+  // Setup Instant.
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
+
+  // Do a search and commit it.
+  SetOmniboxTextAndWaitForInstantToShow("hello k");
+  EXPECT_EQ(ASCIIToUTF16("hello k"), omnibox()->GetText());
+  browser()->window()->GetLocationBar()->AcceptInput();
+
+  // With a committed results page, do a search by unfocusing the omnibox and
+  // focusing the contents.
+  SetOmniboxText("hello");
+  // Calling handleOnChange manually to make sure it is called before the
+  // Focus() call below.
+  EXPECT_TRUE(content::ExecuteScript(instant()->instant_tab()->contents(),
+                                     "suggestion = 'hello kitty';"
+                                     "handleOnChange();"));
+  instant()->instant_tab()->contents()->GetView()->Focus();
+
+  // Search term extraction should kick in with the autocompleted text.
+  EXPECT_EQ(ASCIIToUTF16("hello kitty"), omnibox()->GetText());
 
   // Suggestion should be cleared at this point.
   EXPECT_EQ(ASCIIToUTF16(""), omnibox()->GetInstantSuggestion());
