@@ -1,4 +1,5 @@
 {
+    "AutoConnect": true,
     "GUID": "{a3860e83-f03d-4cb1-bafa-b22c9e746950}",
     "Type": "vpn",
     "Name": "my vpn",

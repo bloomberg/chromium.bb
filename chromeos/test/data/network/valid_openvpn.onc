@@ -3,6 +3,7 @@
     "Name": "my vpn",
     "Type": "VPN",
     "VPN": {
+        "AutoConnect": true,
         "Host": "vpn.my.domain.com",
         "Type": "OpenVPN",
         "OpenVPN": {
