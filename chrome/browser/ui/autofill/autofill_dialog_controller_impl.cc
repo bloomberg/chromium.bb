@@ -634,9 +634,14 @@ bool AutofillDialogControllerImpl::InputIsValid(AutofillFieldType type,
     case ADDRESS_HOME_CITY:
     case ADDRESS_HOME_STATE:
     case ADDRESS_HOME_ZIP:
+    case ADDRESS_HOME_COUNTRY:
       break;
 
     case NAME_FULL:  // Used for shipping.
+      break;
+
+    case PHONE_HOME_WHOLE_NUMBER:  // Used in billing section.
+      // TODO(dbeam): validate with libphonenumber.
       break;
 
     default:
