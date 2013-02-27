@@ -213,7 +213,6 @@ ExynosVideoDecodeAccelerator::ExynosVideoDecodeAccelerator(
       decoder_decode_buffer_tasks_scheduled_(0),
       decoder_frames_at_client_(0),
       decoder_flushing_(false),
-      decoder_partial_frame_pending_(false),
       mfc_fd_(-1),
       mfc_input_streamon_(false),
       mfc_input_buffer_queued_count_(0),
@@ -368,6 +367,13 @@ bool ExynosVideoDecodeAccelerator::Initialize(
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
   }
+
+  // Some random ioctls that Exynos requires.
+  struct v4l2_control control;
+  memset(&control, 0, sizeof(control));
+  control.id = V4L2_CID_MPEG_MFC51_VIDEO_DECODER_H264_DISPLAY_DELAY; // also VP8
+  control.value = 8; // Magic number from Samsung folks.
+  IOCTL_OR_ERROR_RETURN_FALSE(mfc_fd_, VIDIOC_S_CTRL, &control);
 
   if (!CreateMfcInputBuffers())
     return false;
@@ -645,9 +651,7 @@ void ExynosVideoDecodeAccelerator::DecodeBufferTask() {
     decoder_input_queue_.pop_front();
     DVLOG(3) << "DecodeBufferTask(): reading input_id="
              << decoder_current_bitstream_buffer_->input_id
-             << ", addr=" << (decoder_current_bitstream_buffer_->shm ?
-                              decoder_current_bitstream_buffer_->shm->memory() :
-                              NULL)
+             << ", addr=" << decoder_current_bitstream_buffer_->shm->memory()
              << ", size=" << decoder_current_bitstream_buffer_->size;
   }
   bool schedule_task = false;
@@ -672,7 +676,6 @@ void ExynosVideoDecodeAccelerator::DecodeBufferTask() {
 
       if (schedule_task && AppendToInputFrame(NULL, 0) && FlushInputFrame()) {
         DVLOG(2) << "DecodeBufferTask(): enqueued flush buffer";
-        decoder_partial_frame_pending_ = false;
         schedule_task = true;
       } else {
         // If we failed to enqueue the empty buffer (due to pipeline
@@ -691,12 +694,12 @@ void ExynosVideoDecodeAccelerator::DecodeBufferTask() {
     const size_t data_size =
         decoder_current_bitstream_buffer_->size -
         decoder_current_bitstream_buffer_->bytes_used;
-    if (!AdvanceFrameFragment(data, data_size, &decoded_size)) {
+    if (!FindFrameFragment(data, data_size, &decoded_size)) {
       NOTIFY_ERROR(UNREADABLE_INPUT);
       return;
     }
-    // AdvanceFrameFragment should not return a size larger than the buffer
-    // size, even on invalid data.
+    // FindFrameFragment should not return a size larger than the buffer size,
+    // even on invalid data.
     CHECK_LE(decoded_size, data_size);
 
     switch (decoder_state_) {
@@ -731,7 +734,7 @@ void ExynosVideoDecodeAccelerator::DecodeBufferTask() {
   }
 }
 
-bool ExynosVideoDecodeAccelerator::AdvanceFrameFragment(
+bool ExynosVideoDecodeAccelerator::FindFrameFragment(
     const uint8* data,
     size_t size,
     size_t* endpos) {
@@ -742,21 +745,25 @@ bool ExynosVideoDecodeAccelerator::AdvanceFrameFragment(
     decoder_h264_parser_->SetStream(data, size);
     content::H264NALU nalu;
     content::H264Parser::Result result;
-    *endpos = 0;
+
+    // Find the first NAL.
+    result = decoder_h264_parser_->AdvanceToNextNALU(&nalu);
+    if (result == content::H264Parser::kInvalidStream ||
+        result == content::H264Parser::kUnsupportedStream)
+      return false;
+    *endpos = (nalu.data + nalu.size) - data;
+    if (result == content::H264Parser::kEOStream)
+      return true;
 
     // Keep on peeking the next NALs while they don't indicate a frame
     // boundary.
     for (;;) {
-      bool end_of_frame = false;
       result = decoder_h264_parser_->AdvanceToNextNALU(&nalu);
       if (result == content::H264Parser::kInvalidStream ||
           result == content::H264Parser::kUnsupportedStream)
         return false;
-      if (result == content::H264Parser::kEOStream) {
-        // We've reached the end of the buffer before finding a frame boundary.
-        decoder_partial_frame_pending_ = true;
+      if (result == content::H264Parser::kEOStream)
         return true;
-      }
       switch (nalu.nal_unit_type) {
         case content::H264NALU::kNonIDRSlice:
         case content::H264NALU::kIDRSlice:
@@ -767,34 +774,18 @@ bool ExynosVideoDecodeAccelerator::AdvanceFrameFragment(
           // the eighth data bit of the NAL; a zero value is encoded with a
           // leading '1' bit in the byte, which we can detect as the byte being
           // (unsigned) greater than or equal to 0x80.
-          if (nalu.data[1] >= 0x80) {
-            end_of_frame = true;
-            break;
-          }
+          if (nalu.data[1] >= 0x80)
+            return true;
           break;
         case content::H264NALU::kSPS:
         case content::H264NALU::kPPS:
         case content::H264NALU::kEOSeq:
         case content::H264NALU::kEOStream:
           // These unconditionally signal a frame boundary.
-          end_of_frame = true;
-          break;
+          return true;
         default:
           // For all others, keep going.
           break;
-      }
-      if (end_of_frame) {
-        if (!decoder_partial_frame_pending_ && *endpos == 0) {
-          // The frame was previously restarted, and we haven't filled the
-          // current frame with any contents yet.  Start the new frame here and
-          // continue parsing NALs.
-        } else {
-          // The frame wasn't previously restarted and/or we have contents for
-          // the current frame; signal the start of a new frame here: we don't
-          // have a partial frame anymore.
-          decoder_partial_frame_pending_ = false;
-          return true;
-        }
       }
       *endpos = (nalu.data + nalu.size) - data;
     }
@@ -803,10 +794,8 @@ bool ExynosVideoDecodeAccelerator::AdvanceFrameFragment(
   } else {
     DCHECK_GE(video_profile_, media::VP8PROFILE_MIN);
     DCHECK_LE(video_profile_, media::VP8PROFILE_MAX);
-    // For VP8, we can just dump the entire buffer.  No fragmentation needed,
-    // and we never return a partial frame.
+    // For VP8, we can just dump the entire buffer.  No fragmentation needed.
     *endpos = size;
-    decoder_partial_frame_pending_ = false;
     return true;
   }
 }
@@ -837,14 +826,7 @@ bool ExynosVideoDecodeAccelerator::DecodeBufferInitial(
   // Get it, and start decoding.
 
   // Copy in and send to HW.
-  if (!AppendToInputFrame(data, size))
-    return false;
-
-  // If we only have a partial frame, don't flush and process yet.
-  if (decoder_partial_frame_pending_)
-    return true;
-
-  if (!FlushInputFrame())
+  if (!AppendToInputFrame(data, size) || !FlushInputFrame())
     return false;
 
   // Recycle buffers.
@@ -908,9 +890,7 @@ bool ExynosVideoDecodeAccelerator::DecodeBufferContinue(
   DCHECK_EQ(decoder_state_, kDecoding);
 
   // Both of these calls will set kError state if they fail.
-  // Only flush the frame if it's complete.
-  return (AppendToInputFrame(data, size) &&
-          (decoder_partial_frame_pending_ || FlushInputFrame()));
+  return (AppendToInputFrame(data, size) && FlushInputFrame());
 }
 
 bool ExynosVideoDecodeAccelerator::AppendToInputFrame(
@@ -955,7 +935,7 @@ bool ExynosVideoDecodeAccelerator::AppendToInputFrame(
     input_record.input_id = decoder_current_bitstream_buffer_->input_id;
   }
 
-  DCHECK(data != NULL || size == 0);
+  DCHECK_EQ(data == NULL, size == 0);
   if (size == 0) {
     // If we asked for an empty buffer, return now.  We return only after
     // getting the next input buffer, since we might actually want an empty
@@ -993,8 +973,8 @@ bool ExynosVideoDecodeAccelerator::FlushInputFrame() {
   MfcInputRecord& input_record =
       mfc_input_buffer_map_[decoder_current_input_buffer_];
   DCHECK_NE(input_record.input_id, -1);
-  DCHECK(input_record.input_id != kFlushBufferId ||
-         input_record.bytes_used == 0);
+  DCHECK_EQ(input_record.input_id == kFlushBufferId,
+            input_record.bytes_used == 0);
   // * if input_id >= 0, this input buffer was prompted by a bitstream buffer we
   //   got from the client.  We can skip it if it is empty.
   // * if input_id < 0 (should be kFlushBufferId in this case), this input
@@ -1362,8 +1342,6 @@ void ExynosVideoDecodeAccelerator::DequeueGsc() {
     output_record.at_device = false;
     output_record.at_client = true;
     gsc_output_buffer_queued_count_--;
-    DVLOG(3) << "DequeueGsc(): returning input_id=" << dqbuf.timestamp.tv_sec
-             << " as picture_id=" << output_record.picture_id;
     child_message_loop_proxy_->PostTask(FROM_HERE, base::Bind(
         &Client::PictureReady, client_, media::Picture(
             output_record.picture_id, dqbuf.timestamp.tv_sec)));
@@ -1556,7 +1534,6 @@ void ExynosVideoDecodeAccelerator::FlushTask() {
   // Flush outstanding buffers.
   if (decoder_state_ == kInitialized || decoder_state_ == kAfterReset) {
     // There's nothing in the pipe, so return done immediately.
-    DVLOG(3) << "FlushTask(): returning flush";
     child_message_loop_proxy_->PostTask(FROM_HERE, base::Bind(
       &Client::NotifyFlushDone, client_));
     return;
@@ -1596,13 +1573,12 @@ void ExynosVideoDecodeAccelerator::NotifyFlushDoneIfNeeded() {
   if (decoder_current_input_buffer_ != -1)
     return;
   if ((mfc_input_ready_queue_.size() +
-       mfc_input_buffer_queued_count_ + mfc_output_gsc_input_queue_.size() +
-       gsc_input_buffer_queued_count_ + gsc_output_buffer_queued_count_ ) != 0)
+      mfc_input_buffer_queued_count_ + mfc_output_gsc_input_queue_.size() +
+      gsc_input_buffer_queued_count_ + gsc_output_buffer_queued_count_ ) != 0)
     return;
 
   decoder_delay_bitstream_buffer_id_ = -1;
   decoder_flushing_ = false;
-  DVLOG(3) << "NotifyFlushDoneIfNeeded(): returning flush";
   child_message_loop_proxy_->PostTask(FROM_HERE, base::Bind(
     &Client::NotifyFlushDone, client_));
 
@@ -1659,7 +1635,6 @@ void ExynosVideoDecodeAccelerator::ResetDoneTask() {
   // Jobs drained, we're finished resetting.
   DCHECK_EQ(decoder_state_, kResetting);
   decoder_state_ = kAfterReset;
-  decoder_partial_frame_pending_ = false;
   decoder_delay_bitstream_buffer_id_ = -1;
   child_message_loop_proxy_->PostTask(FROM_HERE, base::Bind(
       &Client::NotifyResetDone, client_));
