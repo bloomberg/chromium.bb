@@ -29,6 +29,7 @@ class WebURLLoaderImpl : public WebKit::WebURLLoader {
       WebKit::WebURLLoaderClient* client);
   virtual void cancel();
   virtual void setDefersLoading(bool value);
+  virtual void didChangePriority(WebKit::WebURLRequest::Priority new_priority);
 
  private:
   class Context;

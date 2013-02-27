@@ -297,6 +297,7 @@
         'browser/loader/resource_buffer_unittest.cc',
         'browser/loader/resource_dispatcher_host_unittest.cc',
         'browser/loader/resource_loader_unittest.cc',
+        'browser/loader/resource_scheduler_unittest.cc',
         'browser/mach_broker_mac_unittest.cc',
         'browser/media/media_internals_unittest.cc',
         'browser/media/webrtc_internals_unittest.cc',
