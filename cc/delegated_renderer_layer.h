@@ -16,6 +16,7 @@ class CC_EXPORT DelegatedRendererLayer : public Layer {
 
   virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE;
+  virtual void pushPropertiesTo(LayerImpl* impl) OVERRIDE;
 
  protected:
   DelegatedRendererLayer();

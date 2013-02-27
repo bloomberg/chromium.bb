@@ -955,10 +955,10 @@ void LayerTreeHostImpl::checkForCompletedTileUploads()
         m_tileManager->CheckForCompletedTileUploads();
 }
 
-void LayerTreeHostImpl::activatePendingTreeIfNeeded()
+bool LayerTreeHostImpl::activatePendingTreeIfNeeded()
 {
     if (!pendingTree())
-        return;
+        return false;
 
     CHECK(m_tileManager);
 
@@ -983,11 +983,12 @@ void LayerTreeHostImpl::activatePendingTreeIfNeeded()
                                     "PendingTree",
                                     m_pendingTree.get(),
                                     "waiting");
-            return;
+            return false;
         }
     }
 
     activatePendingTree();
+    return true;
 }
 
 void LayerTreeHostImpl::activatePendingTree()

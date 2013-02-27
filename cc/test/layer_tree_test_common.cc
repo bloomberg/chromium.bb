@@ -78,6 +78,10 @@ void MockLayerTreeHostImpl::commitComplete()
 {
     LayerTreeHostImpl::commitComplete();
     m_testHooks->commitCompleteOnThread(this);
+
+    if (!settings().implSidePainting)
+        m_testHooks->treeActivatedOnThread(this);
+
 }
 
 bool MockLayerTreeHostImpl::prepareToDraw(FrameData& frame)
@@ -94,13 +98,25 @@ void MockLayerTreeHostImpl::drawLayers(FrameData& frame)
     m_testHooks->drawLayersOnThread(this);
 }
 
-void MockLayerTreeHostImpl::activatePendingTreeIfNeeded()
+bool MockLayerTreeHostImpl::activatePendingTreeIfNeeded()
 {
     if (!pendingTree())
-        return;
+        return false;
 
-    if (m_testHooks->canActivatePendingTree())
-        activatePendingTree();
+    if (!m_testHooks->canActivatePendingTree())
+        return false;
+
+    bool activated = LayerTreeHostImpl::activatePendingTreeIfNeeded();
+    if (activated)
+        m_testHooks->treeActivatedOnThread(this);
+    return activated;
+}
+
+bool MockLayerTreeHostImpl::initializeRenderer(scoped_ptr<OutputSurface> outputSurface)
+{
+    bool success = LayerTreeHostImpl::initializeRenderer(outputSurface.Pass());
+    m_testHooks->initializedRendererOnThread(this, success);
+    return success;
 }
 
 void MockLayerTreeHostImpl::animateLayers(base::TimeTicks monotonicTime, base::Time wallClockTime)

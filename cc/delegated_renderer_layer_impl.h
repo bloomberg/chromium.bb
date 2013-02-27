@@ -43,8 +43,15 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
 
   void AppendContributingRenderPasses(RenderPassSink* render_pass_sink);
 
+  // Creates an ID with the resource provider for the child renderer
+  // that will be sending quads to the layer.
+  void CreateChildIdIfNeeded();
+  int child_id() const { return child_id_; }
+
  private:
   DelegatedRendererLayerImpl(LayerTreeImpl* tree_impl, int id);
+
+  void ClearChildId();
 
   RenderPass::Id ConvertDelegatedRenderPassId(
       RenderPass::Id delegated_render_pass_id) const;
@@ -61,6 +68,7 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
   ScopedPtrVector<RenderPass> render_passes_in_draw_order_;
   base::hash_map<RenderPass::Id, int> render_passes_index_by_id_;
   gfx::Size display_size_;
+  int child_id_;
 };
 
 }

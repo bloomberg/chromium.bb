@@ -5,6 +5,7 @@
 #include "cc/delegated_renderer_layer_impl.h"
 
 #include "cc/append_quads_data.h"
+#include "cc/layer_tree_impl.h"
 #include "cc/math_util.h"
 #include "cc/quad_sink.h"
 #include "cc/render_pass_draw_quad.h"
@@ -14,11 +15,13 @@ namespace cc {
 
 DelegatedRendererLayerImpl::DelegatedRendererLayerImpl(
     LayerTreeImpl* tree_impl, int id)
-    : LayerImpl(tree_impl, id) {
+    : LayerImpl(tree_impl, id),
+      child_id_(0) {
 }
 
 DelegatedRendererLayerImpl::~DelegatedRendererLayerImpl() {
   ClearRenderPasses();
+  ClearChildId();
 }
 
 bool DelegatedRendererLayerImpl::hasDelegatedContent() const {
@@ -60,13 +63,14 @@ void DelegatedRendererLayerImpl::ClearRenderPasses() {
   render_passes_in_draw_order_.clear();
 }
 
-scoped_ptr<LayerImpl> DelegatedRendererLayerImpl::createLayerImpl(LayerTreeImpl* treeImpl)
-{
-    return DelegatedRendererLayerImpl::create(treeImpl, id()).PassAs<LayerImpl>();
+scoped_ptr<LayerImpl> DelegatedRendererLayerImpl::createLayerImpl(
+    LayerTreeImpl* treeImpl) {
+  return DelegatedRendererLayerImpl::create(treeImpl, id()).PassAs<LayerImpl>();
 }
 
 void DelegatedRendererLayerImpl::didLoseOutputSurface() {
   ClearRenderPasses();
+  ClearChildId();
 }
 
 static inline int IndexToId(int index) { return index + 1; }
@@ -226,6 +230,23 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
 
 const char* DelegatedRendererLayerImpl::layerTypeAsString() const {
   return "DelegatedRendererLayer";
+}
+
+void DelegatedRendererLayerImpl::CreateChildIdIfNeeded() {
+  if (child_id_)
+    return;
+
+  ResourceProvider* resource_provider = layerTreeImpl()->resource_provider();
+  child_id_ = resource_provider->createChild();
+}
+
+void DelegatedRendererLayerImpl::ClearChildId() {
+  if (!child_id_)
+    return;
+
+  ResourceProvider* resource_provider = layerTreeImpl()->resource_provider();
+  resource_provider->destroyChild(child_id_);
+  child_id_ = 0;
 }
 
 }  // namespace cc

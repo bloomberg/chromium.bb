@@ -156,7 +156,7 @@ public:
     void finishAllRendering();
     int sourceAnimationFrameNumber() const;
 
-    bool initializeRenderer(scoped_ptr<OutputSurface>);
+    virtual bool initializeRenderer(scoped_ptr<OutputSurface>);
     bool isContextLost();
     TileManager* tileManager() { return m_tileManager.get(); }
     Renderer* renderer() { return m_renderer.get(); }
@@ -173,7 +173,7 @@ public:
     const LayerTreeImpl* recycleTree() const { return m_recycleTree.get(); }
     void createPendingTree();
     void checkForCompletedTileUploads();
-    virtual void activatePendingTreeIfNeeded();
+    virtual bool activatePendingTreeIfNeeded();
 
     // Shortcuts to layers on the active tree.
     LayerImpl* rootLayer() const;

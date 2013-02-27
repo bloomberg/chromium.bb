@@ -14,7 +14,6 @@ scoped_refptr<DelegatedRendererLayer> DelegatedRendererLayer::Create() {
 
 DelegatedRendererLayer::DelegatedRendererLayer()
     : Layer() {
-  setIsDrawable(true);
 }
 
 DelegatedRendererLayer::~DelegatedRendererLayer() {}
@@ -23,6 +22,14 @@ scoped_ptr<LayerImpl> DelegatedRendererLayer::createLayerImpl(
     LayerTreeImpl* tree_impl) {
   return DelegatedRendererLayerImpl::Create(
       tree_impl, m_layerId).PassAs<LayerImpl>();
+}
+
+void DelegatedRendererLayer::pushPropertiesTo(LayerImpl* impl) {
+  Layer::pushPropertiesTo(impl);
+
+  DelegatedRendererLayerImpl* delegated_impl =
+      static_cast<DelegatedRendererLayerImpl*>(impl);
+  delegated_impl->CreateChildIdIfNeeded();
 }
 
 }  // namespace cc

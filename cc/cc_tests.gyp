@@ -31,6 +31,7 @@
       'layer_tree_host_unittest.cc',
       'layer_tree_host_unittest_animation.cc',
       'layer_tree_host_unittest_context.cc',
+      'layer_tree_host_unittest_delegated.cc',
       'layer_tree_host_unittest_occlusion.cc',
       'layer_tree_host_unittest_scroll.cc',
       'layer_unittest.cc',

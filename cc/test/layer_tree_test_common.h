@@ -32,6 +32,8 @@ public:
 
     virtual void beginCommitOnThread(LayerTreeHostImpl*) { }
     virtual void commitCompleteOnThread(LayerTreeHostImpl*) { }
+    virtual void treeActivatedOnThread(LayerTreeHostImpl*) { }
+    virtual void initializedRendererOnThread(LayerTreeHostImpl*, bool success) { }
     virtual bool prepareToDrawOnThread(
         LayerTreeHostImpl*, LayerTreeHostImpl::FrameData&, bool result);
     virtual void drawLayersOnThread(LayerTreeHostImpl*) { }
@@ -160,7 +162,8 @@ public:
     virtual void commitComplete() OVERRIDE;
     virtual bool prepareToDraw(FrameData&) OVERRIDE;
     virtual void drawLayers(FrameData&) OVERRIDE;
-    virtual void activatePendingTreeIfNeeded() OVERRIDE;
+    virtual bool activatePendingTreeIfNeeded() OVERRIDE;
+    virtual bool initializeRenderer(scoped_ptr<OutputSurface> outputSurface) OVERRIDE;
 
     // Make these public.
     typedef std::vector<LayerImpl*> LayerList;
