@@ -14,6 +14,10 @@
 #include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_switches.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 using ::base::SharedMemory;
 
 namespace gpu {
@@ -140,14 +144,16 @@ void GpuScheduler::SetScheduled(bool scheduled) {
       TRACE_EVENT_ASYNC_BEGIN1("gpu", "ProcessingSwap", this,
                                "GpuScheduler", this);
 #if defined(OS_WIN)
-      // When the scheduler transitions from scheduled to unscheduled, post a
-      // delayed task that it will force it back into a scheduled state after a
-      // timeout.
-      MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&GpuScheduler::RescheduleTimeOut,
-                     reschedule_task_factory_.GetWeakPtr()),
-          base::TimeDelta::FromMilliseconds(kRescheduleTimeOutDelay));
+      if (base::win::GetVersion() < base::win::VERSION_VISTA) {
+        // When the scheduler transitions from scheduled to unscheduled, post a
+        // delayed task that it will force it back into a scheduled state after
+        // a timeout. This should only be necessary on pre-Vista.
+        MessageLoop::current()->PostDelayedTask(
+            FROM_HERE,
+            base::Bind(&GpuScheduler::RescheduleTimeOut,
+                       reschedule_task_factory_.GetWeakPtr()),
+            base::TimeDelta::FromMilliseconds(kRescheduleTimeOutDelay));
+      }
 #endif
     }
 
