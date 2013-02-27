@@ -7,4 +7,5 @@ EXTRA_DIST = 				\
 	hu-hu-g1-hyph_harness.txt	\
 	iu-ca-g1_harness.txt		\
 	letterDefTest_harness.txt 	\
+	nocross_harness.txt		\
 	ta-ta-g1_harness.txt

@@ -20,4 +20,5 @@ EXTRA_DIST =					\
 	squash_space_with_context_2.utb		\
 	squash_space_with_correct.utb		\
 	squash_space_with_repeated.utb		\
-	uplow_with_unicode.ctb
+	uplow_with_unicode.ctb			\
+	nocross.ctb
