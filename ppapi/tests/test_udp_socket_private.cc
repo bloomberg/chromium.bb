@@ -22,11 +22,11 @@ const uint16_t kPortScanTo = 4096;
 
 const size_t kEnglishAlphabetSize = 'z' - 'a' + 1;
 
-// 4K datagrams for sendto/recvfrom benchmarks.
-const size_t kBenchmarkMessageSize = 1u << 12;
+// 1K datagrams for sendto/recvfrom benchmarks.
+const size_t kBenchmarkMessageSize = 1u << 10;
 
 // Maximum number of datagrams for sendto/recvfrom benchmarks.
-const size_t kBenchmarkMaxNumMessages = 1u << 12;
+const size_t kBenchmarkMaxNumMessages = 1u << 10;
 
 // Assuming that system buffer size for UDP sockets is at least 32K.
 const size_t kUDPBufferSize = 32768;
