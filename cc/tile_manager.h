@@ -151,7 +151,6 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
       bool use_cheapness_estimator;
       bool is_tile_in_pending_tree_now_bin;
       TileResolution tile_resolution;
-      int layer_id;
   };
 
   RasterTaskMetadata GetRasterTaskMetadata(const Tile& tile) const;

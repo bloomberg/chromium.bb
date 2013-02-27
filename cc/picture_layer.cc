@@ -4,7 +4,6 @@
 
 #include "cc/picture_layer.h"
 
-#include "cc/devtools_instrumentation.h"
 #include "cc/layer_tree_impl.h"
 #include "cc/picture_layer_impl.h"
 #include "ui/gfx/rect_conversions.h"
@@ -18,7 +17,6 @@ scoped_refptr<PictureLayer> PictureLayer::create(ContentLayerClient* client) {
 PictureLayer::PictureLayer(ContentLayerClient* client) :
   client_(client),
   pile_(make_scoped_refptr(new PicturePile())),
-  instrumentation_object_tracker_(id()),
   is_mask_(false) {
 }
 
@@ -76,7 +74,6 @@ void PictureLayer::update(ResourceUpdateQueue&, const OcclusionTracker*,
 
   gfx::Rect visible_layer_rect = gfx::ToEnclosingRect(
       gfx::ScaleRect(visibleContentRect(), 1.f / contentsScaleX()));
-  devtools_instrumentation::ScopedPaintLayer paint_layer(id());
   pile_->Update(client_, pile_invalidation_, visible_layer_rect, stats);
 }
 
