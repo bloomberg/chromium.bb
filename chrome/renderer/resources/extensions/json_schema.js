@@ -38,7 +38,9 @@
 //   additional properties will be validated.
 //==============================================================================
 
+// TODO(cduvall): Make this file not depend on chromeHidden.
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+var loadRefDependency = require('utils').loadRefDependency;
 
 function isInstanceOfClass(instance, className) {
   if (!instance)
@@ -240,6 +242,7 @@ chromeHidden.JSONSchemaValidator.prototype.validate =
   // If the schema has a $ref property, the instance must validate against
   // that schema too. It must be present in this.types to be referenced.
   if (schema["$ref"]) {
+    loadRefDependency(schema["$ref"]);
     if (!this.types[schema["$ref"]])
       this.addError(path, "unknownSchemaReference", [ schema["$ref"] ]);
     else

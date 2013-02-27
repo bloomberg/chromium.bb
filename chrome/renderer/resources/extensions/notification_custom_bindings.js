@@ -4,10 +4,12 @@
 
 // Custom bindings for the notification API.
 
-var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+var binding = require('binding').Binding.create('experimental.notification');
+
 var sendRequest = require('sendRequest').sendRequest;
 var imageUtil = require('imageUtil');
 var lastError = require('lastError');
+var json = require('json');
 
 function url_getter(context, key) {
   var f = function() {
@@ -99,8 +101,8 @@ function genHandle(failure_function) {
   return function(id, input_notification_details, callback) {
     // TODO(dewittj): Remove this hack. This is used as a way to deep
     // copy a complex JSON object.
-    var notification_details = JSON.parse(
-        JSON.stringify(input_notification_details));
+    var notification_details = json.parse(
+        json.stringify(input_notification_details));
     var that = this;
     replaceNotificationOptionURLs(notification_details, function(success) {
       if (success) {
@@ -124,5 +126,6 @@ var experimentalNotificationCustomHook = function(bindingsAPI, extensionId) {
   apiFunctions.setHandleRequest('update', handleCreate);
 };
 
-chromeHidden.registerCustomHook('experimental.notification',
-                                experimentalNotificationCustomHook);
+binding.registerCustomHook(experimentalNotificationCustomHook);
+
+exports.binding = binding.generate();

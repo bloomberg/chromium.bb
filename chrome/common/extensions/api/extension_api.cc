@@ -543,7 +543,7 @@ void RemoveDisallowedAPIs(const Extension& extension,
 
 }  // namespace
 
-scoped_ptr<std::set<std::string> > ExtensionAPI::GetAPIsForContext(
+std::set<std::string> ExtensionAPI::GetAPIsForContext(
     Feature::Context context, const Extension* extension, const GURL& url) {
   // We're forced to load all schemas now because we need to know the metadata
   // about every API -- and the metadata is stored in the schemas themselves.
@@ -601,17 +601,28 @@ scoped_ptr<std::set<std::string> > ExtensionAPI::GetAPIsForContext(
 
   // Filter out all non-API features and remove the feature type part of the
   // name.
-  scoped_ptr<std::set<std::string> > result(new std::set<std::string>());
+  std::set<std::string> result;
   for (std::set<std::string>::iterator iter = temp_result.begin();
        iter != temp_result.end(); ++iter) {
     std::string feature_type;
     std::string feature_name;
     SplitDependencyName(*iter, &feature_type, &feature_name);
     if (feature_type == "api")
-      result->insert(feature_name);
+      result.insert(feature_name);
   }
 
-  return result.Pass();
+  return result;
+}
+
+std::set<std::string> ExtensionAPI::GetAllAPINames() {
+  std::set<std::string> result;
+  for (SchemaMap::iterator i = schemas_.begin(); i != schemas_.end(); ++i)
+    result.insert(i->first);
+  for (UnloadedSchemaMap::iterator i = unloaded_schemas_.begin();
+       i != unloaded_schemas_.end(); ++i) {
+    result.insert(i->first);
+  }
+  return result;
 }
 
 Feature* ExtensionAPI::GetFeature(const std::string& full_name) {

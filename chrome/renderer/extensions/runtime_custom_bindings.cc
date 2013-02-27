@@ -18,8 +18,10 @@ using content::V8ValueConverter;
 
 namespace extensions {
 
-RuntimeCustomBindings::RuntimeCustomBindings(ChromeV8Context* context)
-    : ChromeV8Extension(NULL), context_(context) {
+RuntimeCustomBindings::RuntimeCustomBindings(Dispatcher* dispatcher,
+                                             ChromeV8Context* context)
+    : ChromeV8Extension(dispatcher, context->v8_context()),
+      context_(context) {
   RouteFunction("GetManifest",
       base::Bind(&RuntimeCustomBindings::GetManifest, base::Unretained(this)));
   RouteStaticFunction("OpenChannelToExtension", &OpenChannelToExtension);
@@ -33,7 +35,8 @@ v8::Handle<v8::Value> RuntimeCustomBindings::OpenChannelToExtension(
     const v8::Arguments& args) {
   // Get the current RenderView so that we can send a routed IPC message from
   // the correct source.
-  content::RenderView* renderview = GetCurrentRenderView();
+  RuntimeCustomBindings* self = GetFromArguments<RuntimeCustomBindings>(args);
+  content::RenderView* renderview = self->GetRenderView();
   if (!renderview)
     return v8::Undefined();
 
@@ -61,7 +64,8 @@ v8::Handle<v8::Value> RuntimeCustomBindings::OpenChannelToNativeApp(
     const v8::Arguments& args) {
   // Get the current RenderView so that we can send a routed IPC message from
   // the correct source.
-  content::RenderView* renderview = GetCurrentRenderView();
+  RuntimeCustomBindings* self = GetFromArguments<RuntimeCustomBindings>(args);
+  content::RenderView* renderview = self->GetRenderView();
   if (!renderview)
     return v8::Undefined();
 

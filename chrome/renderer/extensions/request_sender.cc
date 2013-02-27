@@ -7,7 +7,6 @@
 #include "base/values.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
-#include "chrome/renderer/extensions/chrome_v8_context_set.h"
 #include "chrome/renderer/extensions/dispatcher.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/v8_value_converter.h"
@@ -22,23 +21,18 @@ namespace extensions {
 // Contains info relevant to a pending API request.
 struct PendingRequest {
  public :
-  PendingRequest(v8::Persistent<v8::Context> context, const std::string& name,
-                 const std::string& extension_id)
-      : context(context), name(name), extension_id(extension_id) {
+  PendingRequest(ChromeV8Context* context,
+                 ChromeV8Context* caller_context,
+                 const std::string& name)
+      : name(name), context(context), caller_context(caller_context) {
   }
 
-  ~PendingRequest() {
-    context.Dispose(context->GetIsolate());
-  }
-
-  v8::Persistent<v8::Context> context;
   std::string name;
-  std::string extension_id;
+  ChromeV8Context* context;
+  ChromeV8Context* caller_context;
 };
 
-RequestSender::RequestSender(Dispatcher* dispatcher,
-                             ChromeV8ContextSet* context_set)
-    : dispatcher_(dispatcher), context_set_(context_set) {
+RequestSender::RequestSender(Dispatcher* dispatcher) : dispatcher_(dispatcher) {
 }
 
 RequestSender::~RequestSender() {
@@ -59,18 +53,15 @@ linked_ptr<PendingRequest> RequestSender::RemoveRequest(int request_id) {
   return result;
 }
 
-void RequestSender::StartRequest(const std::string& name,
+void RequestSender::StartRequest(ChromeV8Context* context,
+                                 const std::string& name,
                                  int request_id,
                                  bool has_callback,
                                  bool for_io_thread,
                                  base::ListValue* value_args) {
-  ChromeV8Context* current_context = context_set_->GetCurrent();
-  if (!current_context)
-    return;
-
   // Get the current RenderView so that we can send a routed IPC message from
   // the correct source.
-  content::RenderView* renderview = current_context->GetRenderView();
+  content::RenderView* renderview = context->GetRenderView();
   if (!renderview)
     return;
 
@@ -82,25 +73,25 @@ void RequestSender::StartRequest(const std::string& name,
   }
 
   // TODO(koz): See if we can make this a CHECK.
-  if (!dispatcher_->CheckCurrentContextAccessToExtensionAPI(name))
+  if (!dispatcher_->CheckContextAccessToExtensionAPI(name, context))
     return;
 
   GURL source_url;
   WebKit::WebSecurityOrigin source_origin;
-  WebKit::WebFrame* webframe = current_context->web_frame();
+  WebKit::WebFrame* webframe = context->web_frame();
   if (webframe) {
     source_url = webframe->document().url();
     source_origin = webframe->document().securityOrigin();
   }
 
-  v8::Local<v8::Context> ctx = v8::Context::GetCurrent();
-  v8::Persistent<v8::Context> v8_context =
-      v8::Persistent<v8::Context>::New(ctx->GetIsolate(), ctx);
-  DCHECK(!v8_context.IsEmpty());
-
-  std::string extension_id = current_context->GetExtensionID();
-  InsertRequest(request_id, new PendingRequest(
-      v8_context, name, extension_id));
+  std::string extension_id = context->GetExtensionID();
+  // Insert the current context into the PendingRequest because that's the
+  // context that we call back on.
+  InsertRequest(
+      request_id,
+      new PendingRequest(context,
+                         dispatcher_->v8_context_set().GetCurrent(),
+                         name));
 
   ExtensionHostMsg_Request_Params params;
   params.name = name;
@@ -128,15 +119,9 @@ void RequestSender::HandleResponse(int request_id,
   linked_ptr<PendingRequest> request = RemoveRequest(request_id);
 
   if (!request.get()) {
-    // This should not be able to happen since we only remove requests when
-    // they are handled.
-    LOG(ERROR) << "Could not find specified request id: " << request_id;
+    // This can happen if a context is destroyed while a request is in flight.
     return;
   }
-
-  ChromeV8Context* v8_context = context_set_->GetByV8Context(request->context);
-  if (!v8_context)
-    return;  // The frame went away.
 
   v8::HandleScope handle_scope;
 
@@ -145,15 +130,15 @@ void RequestSender::HandleResponse(int request_id,
     v8::Integer::New(request_id),
     v8::String::New(request->name.c_str()),
     v8::Boolean::New(success),
-    converter->ToV8Value(&responseList, v8_context->v8_context()),
+    converter->ToV8Value(&responseList, request->context->v8_context()),
     v8::String::New(error.c_str())
   };
 
   v8::Handle<v8::Value> retval;
-  CHECK(v8_context->CallChromeHiddenMethod("handleResponse",
-                                           arraysize(argv),
-                                           argv,
-                                           &retval));
+  CHECK(request->context->CallChromeHiddenMethod("handleResponse",
+                                                  arraysize(argv),
+                                                  argv,
+                                                  &retval));
   // In debug, the js will validate the callback parameters and return a
   // string if a validation error has occured.
   if (DCHECK_IS_ON()) {
@@ -161,6 +146,16 @@ void RequestSender::HandleResponse(int request_id,
       std::string error = *v8::String::AsciiValue(retval);
       DCHECK(false) << error;
     }
+  }
+}
+
+void RequestSender::InvalidateContext(ChromeV8Context* context) {
+  for (PendingRequestMap::iterator it = pending_requests_.begin();
+       it != pending_requests_.end();) {
+    if (it->second->context == context)
+      pending_requests_.erase(it++);
+    else
+      ++it;
   }
 }
 

@@ -2,32 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/native_handler.h"
+#include "chrome/renderer/extensions/object_backed_native_handler.h"
 
-#include "base/memory/linked_ptr.h"
 #include "base/logging.h"
+#include "base/memory/linked_ptr.h"
 #include "chrome/renderer/extensions/module_system.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
 
-NativeHandler::NativeHandler(v8::Isolate* isolate)
-    : isolate_(isolate),
+ObjectBackedNativeHandler::ObjectBackedNativeHandler(
+    v8::Handle<v8::Context> context)
+    : v8_context_(context),
       object_template_(
-          v8::Persistent<v8::ObjectTemplate>::New(isolate,
-                                                  v8::ObjectTemplate::New())) {
+          v8::Persistent<v8::ObjectTemplate>::New(context->GetIsolate(),
+                                                  v8::ObjectTemplate::New())),
+      is_valid_(true) {
 }
 
-NativeHandler::~NativeHandler() {
-  object_template_.Dispose(isolate_);
+ObjectBackedNativeHandler::~ObjectBackedNativeHandler() {
 }
 
-v8::Handle<v8::Object> NativeHandler::NewInstance() {
+v8::Handle<v8::Object> ObjectBackedNativeHandler::NewInstance() {
   return object_template_->NewInstance();
 }
 
 // static
-v8::Handle<v8::Value> NativeHandler::Router(const v8::Arguments& args) {
+v8::Handle<v8::Value> ObjectBackedNativeHandler::Router(
+    const v8::Arguments& args) {
   // It is possible for JS code to execute after ModuleSystem has been deleted
   // in which case the native handlers will also have been deleted, making
   // HandlerFunction below point to freed memory.
@@ -40,7 +42,7 @@ v8::Handle<v8::Value> NativeHandler::Router(const v8::Arguments& args) {
   return handler_function->Run(args);
 }
 
-void NativeHandler::RouteFunction(const std::string& name,
+void ObjectBackedNativeHandler::RouteFunction(const std::string& name,
     const HandlerFunction& handler_function) {
   linked_ptr<HandlerFunction> function(new HandlerFunction(handler_function));
   // TODO(koz): Investigate using v8's MakeWeak() function instead of holding
@@ -52,11 +54,21 @@ void NativeHandler::RouteFunction(const std::string& name,
   object_template_->Set(name.c_str(), function_template);
 }
 
-void NativeHandler::RouteStaticFunction(const std::string& name,
+void ObjectBackedNativeHandler::RouteStaticFunction(const std::string& name,
                                         const HandlerFunc handler_func) {
   v8::Handle<v8::FunctionTemplate> function_template =
       v8::FunctionTemplate::New(handler_func, v8::External::New(this));
   object_template_->Set(name.c_str(), function_template);
+}
+
+bool ObjectBackedNativeHandler::Invalidate() {
+  if (!is_valid_)
+    return false;
+
+  object_template_.Dispose(v8_context_->GetIsolate());
+
+  is_valid_ = false;
+  return true;
 }
 
 }   // extensions

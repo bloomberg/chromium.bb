@@ -3,16 +3,17 @@
 // found in the LICENSE file.
 
 requireNative('runtime');
+var GetAvailability = requireNative('v8_context').GetAvailability;
 
 function set(message) {
   var errorObject = { 'message': message };
-  if (chrome.extension)
+  if (GetAvailability('extension').is_available)
     chrome.extension.lastError = errorObject;
   chrome.runtime.lastError = errorObject;
 };
 
 function clear() {
-  if (chrome.extension)
+  if (GetAvailability('extension').is_available)
     delete chrome.extension.lastError;
   delete chrome.runtime.lastError;
 };

@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom bindings for the contentSettings API.
+// Custom binding for the contentSettings API.
 
-var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+var binding = require('binding').Binding.create('contentSettings');
+
 var sendRequest = require('sendRequest').sendRequest;
 var validate = require('schemaUtils').validate;
 
-chromeHidden.registerCustomType('contentSettings.ContentSetting', function() {
+binding.registerCustomType('contentSettings.ContentSetting', function() {
   function extendSchema(schema) {
     var extendedSchema = schema.slice();
     extendedSchema.unshift({'type': 'string'});
@@ -51,3 +52,5 @@ chromeHidden.registerCustomType('contentSettings.ContentSetting', function() {
 
   return ContentSetting;
 });
+
+exports.binding = binding.generate();
