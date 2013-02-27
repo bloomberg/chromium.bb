@@ -101,6 +101,14 @@ struct device {
 
 	struct resources *resources;
 	struct kms_driver *kms;
+
+	struct {
+		unsigned int width;
+		unsigned int height;
+
+		unsigned int fb_id;
+		struct kms_bo *bo;
+	} mode;
 };
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
@@ -840,7 +848,7 @@ static int set_plane(struct device *dev, struct plane_arg *p)
 	struct kms_bo *plane_bo;
 	uint32_t plane_flags = 0;
 	int crtc_x, crtc_y, crtc_w, crtc_h;
-	struct crtc *crtc;
+	struct crtc *crtc = NULL;
 	unsigned int pipe;
 	unsigned int i;
 
@@ -915,36 +923,37 @@ static int set_plane(struct device *dev, struct plane_arg *p)
 	return 0;
 }
 
-static void set_mode(struct device *dev, struct connector_arg *c, int count,
-		     struct plane_arg *p, int plane_count, int page_flip)
+static void set_mode(struct device *dev, struct connector_arg *c, unsigned int count)
 {
-	struct kms_bo *bo, *other_bo;
-	unsigned int fb_id, other_fb_id;
-	int i, j, ret, width, height, x;
 	uint32_t handles[4], pitches[4], offsets[4] = {0}; /* we only use [0] */
-	drmEventContext evctx;
+	unsigned int fb_id;
+	struct kms_bo *bo;
+	unsigned int i;
+	int ret, x;
 
-	width = 0;
-	height = 0;
+	dev->mode.width = 0;
+	dev->mode.height = 0;
+
 	for (i = 0; i < count; i++) {
 		connector_find_mode(dev, &c[i]);
 		if (c[i].mode == NULL)
 			continue;
-		width += c[i].mode->hdisplay;
-		if (height < c[i].mode->vdisplay)
-			height = c[i].mode->vdisplay;
+		dev->mode.width += c[i].mode->hdisplay;
+		if (dev->mode.height < c[i].mode->vdisplay)
+			dev->mode.height = c[i].mode->vdisplay;
 	}
 
-	bo = create_test_buffer(dev->kms, c->fourcc, width, height, handles,
-				pitches, offsets, PATTERN_SMPTE);
+	bo = create_test_buffer(dev->kms, c->fourcc,
+				dev->mode.width, dev->mode.height,
+				handles, pitches, offsets, PATTERN_SMPTE);
 	if (bo == NULL)
 		return;
 
-	ret = drmModeAddFB2(dev->fd, width, height, c->fourcc,
+	ret = drmModeAddFB2(dev->fd, dev->mode.width, dev->mode.height, c->fourcc,
 			    handles, pitches, offsets, &fb_id, 0);
 	if (ret) {
 		fprintf(stderr, "failed to add fb (%ux%u): %s\n",
-			width, height, strerror(errno));
+			dev->mode.width, dev->mode.height, strerror(errno));
 		return;
 	}
 
@@ -968,24 +977,39 @@ static void set_mode(struct device *dev, struct connector_arg *c, int count,
 			fprintf(stderr, "failed to set mode: %s\n", strerror(errno));
 			return;
 		}
-
-		/* if we have a plane/overlay to show, set that up now: */
-		for (j = 0; j < plane_count; j++)
-			if (p[j].crtc_id == c[i].crtc_id)
-				if (set_plane(dev, &p[j]))
-					return;
 	}
 
-	if (!page_flip)
-		return;
+	dev->mode.bo = bo;
+	dev->mode.fb_id = fb_id;
+}
 
-	other_bo = create_test_buffer(dev->kms, c->fourcc, width, height, handles,
-				      pitches, offsets, PATTERN_PLAIN);
+static void set_planes(struct device *dev, struct plane_arg *p, unsigned int count)
+{
+	unsigned int i;
+
+	/* set up planes/overlays */
+	for (i = 0; i < count; i++)
+		if (set_plane(dev, &p[i]))
+			return;
+}
+
+static void test_page_flip(struct device *dev, struct connector_arg *c, unsigned int count)
+{
+	uint32_t handles[4], pitches[4], offsets[4] = {0}; /* we only use [0] */
+	unsigned int other_fb_id;
+	struct kms_bo *other_bo;
+	drmEventContext evctx;
+	unsigned int i;
+	int ret;
+
+	other_bo = create_test_buffer(dev->kms, c->fourcc,
+				      dev->mode.width, dev->mode.height,
+				      handles, pitches, offsets, PATTERN_PLAIN);
 	if (other_bo == NULL)
 		return;
 
-	ret = drmModeAddFB2(dev->fd, width, height, c->fourcc, handles, pitches, offsets,
-			    &other_fb_id, 0);
+	ret = drmModeAddFB2(dev->fd, dev->mode.width, dev->mode.height, c->fourcc,
+			    handles, pitches, offsets, &other_fb_id, 0);
 	if (ret) {
 		fprintf(stderr, "failed to add fb: %s\n", strerror(errno));
 		return;
@@ -1003,7 +1027,7 @@ static void set_mode(struct device *dev, struct connector_arg *c, int count,
 		}
 		gettimeofday(&c[i].start, NULL);
 		c[i].swap_count = 0;
-		c[i].fb_id[0] = fb_id;
+		c[i].fb_id[0] = dev->mode.fb_id;
 		c[i].fb_id[1] = other_fb_id;
 		c[i].current_fb_id = other_fb_id;
 	}
@@ -1051,7 +1075,6 @@ static void set_mode(struct device *dev, struct connector_arg *c, int count,
 		drmHandleEvent(dev->fd, &evctx);
 	}
 
-	kms_bo_destroy(&bo);
 	kms_bo_destroy(&other_bo);
 }
 
@@ -1218,6 +1241,8 @@ int main(int argc, char **argv)
 	unsigned int args = 0;
 	int ret;
 
+	memset(&dev, 0, sizeof dev);
+
 	opterr = 0;
 	while ((c = getopt(argc, argv, optstr)) != -1) {
 		args++;
@@ -1324,6 +1349,11 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
+	if (test_vsync && !count) {
+		fprintf(stderr, "page flipping requires at least one -s option.\n");
+		return -1;
+	}
+
 	dev.resources = get_resources(&dev);
 	if (!dev.resources) {
 		drmClose(dev.fd);
@@ -1341,7 +1371,7 @@ int main(int argc, char **argv)
 	for (i = 0; i < prop_count; ++i)
 		set_property(&dev, &prop_args[i]);
 
-	if (count > 0) {
+	if (count || plane_count) {
 		ret = kms_create(dev.fd, &dev.kms);
 		if (ret) {
 			fprintf(stderr, "failed to create kms driver: %s\n",
@@ -1349,11 +1379,21 @@ int main(int argc, char **argv)
 			return 1;
 		}
 
-		set_mode(&dev, con_args, count, plane_args, plane_count, test_vsync);
+		if (count)
+			set_mode(&dev, con_args, count);
+
+		if (plane_count)
+			set_planes(&dev, plane_args, plane_count);
+
+		if (test_vsync)
+			test_page_flip(&dev, con_args, count);
+
 		if (drop_master)
 			drmDropMaster(dev.fd);
 
+		kms_bo_destroy(&dev.mode.bo);
 		kms_destroy(&dev.kms);
+
 		getchar();
 	}
 
