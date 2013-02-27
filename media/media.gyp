@@ -25,6 +25,12 @@
       }, {
         'screen_capture_supported%': 0,
       }],
+      # ALSA usage.
+      ['OS=="linux" or OS=="freebsd" or OS=="solaris"', {
+        'use_alsa%': 1,
+      }, {
+        'use_alsa%': 0,
+      }],
     ],
   },
   'targets': [
@@ -561,20 +567,15 @@
             'webm/chromeos/webm_encoder.h',
           ],
         }],
-        ['OS=="linux" or OS=="freebsd" or OS=="solaris"', {
+        ['use_alsa==1', {
           'link_settings': {
             'libraries': [
               '-lasound',
             ],
           },
-        }],
-        ['OS=="openbsd"', {
+        }, { # use_alsa==0
           'sources/': [ ['exclude', '/alsa_' ],
-                        ['exclude', '/audio_manager_linux' ] ],
-          'link_settings': {
-            'libraries': [
-            ],
-          },
+                      ['exclude', '/audio_manager_linux' ] ],
         }],
         ['OS!="openbsd"', {
           'sources!': [
@@ -1011,6 +1012,12 @@
                 'USE_CRAS',
               ],
             }],
+          ],
+        }],
+        ['use_alsa==0', {
+          'sources!': [
+            'audio/linux/alsa_output_unittest.cc',
+            'audio/audio_low_latency_input_output_unittest.cc',
           ],
         }],
         [ 'target_arch=="ia32" or target_arch=="x64"', {
