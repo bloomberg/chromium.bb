@@ -39,7 +39,7 @@ def main(args):
 
   url = "%s/%s/%s" % (URL_PREFIX, URL_DIR, URL_FILE)
 
-  stamp = os.path.join(dest_dir, ".stamp")
+  stamp = os.path.join(dest_dir, ".stamp02")
   if os.path.exists(stamp):
     with open(stamp) as s:
       if s.read() == url:
@@ -48,12 +48,14 @@ def main(args):
 
   if os.path.isdir(dest_dir):
     shutil.rmtree(dest_dir)
-  os.mkdir(dest_dir);
+  os.mkdir(dest_dir)
+  os.chmod(dest_dir, 0755)
 
   print "Installing Chrome OS fonts to %s." % dest_dir
   tarball = os.path.join(dest_dir, URL_FILE)
   subprocess.check_call(['curl', '-L', url, '-o', tarball])
-  subprocess.check_call(['tar', 'xf', tarball, '-C', dest_dir])
+  subprocess.check_call(['tar', '--no-same-owner', '--no-same-permissions',
+                         '-xf', tarball, '-C', dest_dir])
   os.remove(tarball)
 
   readme = os.path.join(dest_dir, "README")
@@ -64,6 +66,12 @@ def main(args):
 
   with open(stamp, 'w') as s:
     s.write(url)
+
+  for base, dirs, files in os.walk(dest_dir):
+    for dir in dirs:
+      os.chmod(os.path.join(base, dir), 0755)
+    for file in files:
+      os.chmod(os.path.join(base, file), 0644)
 
   return 0
 
