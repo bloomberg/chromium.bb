@@ -151,7 +151,7 @@ gfx::Rect SnapSizer::GetSnapBounds(const gfx::Rect& bounds) {
       }
     }
   }
-  return GetTargetBoundsForSize(current % (usable_width_.size() - 1));
+  return GetTargetBoundsForSize(current % usable_width_.size());
 }
 
 void SnapSizer::SelectDefaultSizeAndDisableResize() {
