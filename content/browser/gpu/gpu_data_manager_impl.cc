@@ -136,7 +136,7 @@ bool GpuDataManagerImpl::GpuAccessAllowed() const {
   if (software_rendering_)
     return true;
 
-  if (!gpu_info_.gpu_accessible)
+  if (!gpu_process_accessible_)
     return false;
 
   if (card_blacklisted_)
@@ -592,7 +592,8 @@ GpuDataManagerImpl::GpuDataManagerImpl()
       card_blacklisted_(false),
       update_histograms_(true),
       window_count_(0),
-      domain_blocking_enabled_(true) {
+      domain_blocking_enabled_(true),
+      gpu_process_accessible_(true) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableAcceleratedCompositing)) {
     command_line->AppendSwitch(switches::kDisableAccelerated2dCanvas);
@@ -801,6 +802,19 @@ void GpuDataManagerImpl::Notify3DAPIBlocked(const GURL& url,
                                             ThreeDAPIType requester) {
   observer_list_->Notify(&GpuDataManagerObserver::DidBlock3DAPIs,
                          url, render_process_id, render_view_id, requester);
+}
+
+void GpuDataManagerImpl::OnGpuProcessInitFailure() {
+  gpu_process_accessible_ = false;
+
+  GPUInfo gpu_info;
+  {
+    base::AutoLock auto_lock(gpu_info_lock_);
+    gpu_info = gpu_info_;
+  }
+  gpu_info.finalized = true;
+  // Need to call UpdateGpuInfo() - some observers might be waiting.
+  UpdateGpuInfo(gpu_info);
 }
 
 }  // namespace content

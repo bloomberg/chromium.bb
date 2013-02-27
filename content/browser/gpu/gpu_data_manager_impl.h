@@ -155,6 +155,9 @@ class CONTENT_EXPORT GpuDataManagerImpl
   // Disables domain blocking for 3D APIs. For use only in tests.
   void DisableDomainBlockingFor3DAPIsForTesting();
 
+  // Called when GPU process initialization failed.
+  void OnGpuProcessInitFailure();
+
  private:
   struct DomainBlockEntry {
     DomainGuilt last_guilt;
@@ -262,6 +265,8 @@ class CONTENT_EXPORT GpuDataManagerImpl
   DomainBlockMap blocked_domains_;
   mutable std::list<base::Time> timestamps_of_gpu_resets_;
   bool domain_blocking_enabled_;
+
+  bool gpu_process_accessible_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuDataManagerImpl);
 };

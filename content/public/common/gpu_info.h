@@ -100,9 +100,6 @@ struct CONTENT_EXPORT GPUInfo {
   // semantics are available.
   bool can_lose_context;
 
-  // Whether gpu or driver is accessible.
-  bool gpu_accessible;
-
   // By default all values are 0.
   GpuPerformanceStats performance_stats;
 
