@@ -20,11 +20,12 @@ size_t QuicUtils::StreamFramePacketOverhead(int num_frames) {
 // static
 uint128 QuicUtils::FNV1a_128_Hash(const char* data, int len) {
   // The following two constants are defined as part of the hash algorithm.
+  // see http://www.isthe.com/chongo/tech/comp/fnv/
   // 309485009821345068724781371
   const uint128 kPrime(16777216, 315);
-  // 14406626329776981559649562966706236762
-  const uint128 kOffset(GG_UINT64_C(780984778246553632),
-                        GG_UINT64_C(4400696054689967450));
+  // 144066263297769815596495629667062367629
+  const uint128 kOffset(GG_UINT64_C(7809847782465536322),
+                        GG_UINT64_C(7113472399480571277));
 
   const uint8* octets = reinterpret_cast<const uint8*>(data);
 
