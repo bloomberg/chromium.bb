@@ -2,9 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var mainWindow = null;
 chrome.app.runtime.onLaunched.addListener(function() {
-  chrome.app.window.create('main.html', {
-    'width': 600,
-    'height': 800
-  });
+  if (mainWindow && !mainWindow.contentWindow.closed) {
+    mainWindow.focus();
+  } else {
+    chrome.app.window.create('main.html', {
+      width: 768,
+      height: 1024,
+    }, function(win) {
+      mainWindow = win;
+    });
+  }
 });
