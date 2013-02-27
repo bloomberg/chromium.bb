@@ -325,6 +325,9 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
         const_cast<const ImmediateInterpreter*>(this)->PrevState(idx));
   }
 
+  // Fingers which are prohibited from ever tapping.
+  set<short, kMaxFingers> tap_dead_fingers_;
+
   set<short, kMaxGesturingFingers> prev_gs_fingers_;
   set<short, kMaxGesturingFingers> prev_tap_gs_fingers_;
   HardwareProperties hw_props_;

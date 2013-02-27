@@ -1134,6 +1134,9 @@ void ImmediateInterpreter::UpdateTapState(
 
   set<short, kMaxGesturingFingers> tap_gs_fingers;
 
+  if (hwstate)
+    RemoveMissingIdsFromSet(&tap_dead_fingers_, *hwstate);
+
   bool cancel_tapping = false;
   if (hwstate) {
     for (int i = 0; i < hwstate->finger_cnt; ++i) {
@@ -1165,6 +1168,12 @@ void ImmediateInterpreter::UpdateTapState(
   bool is_timeout = (now - tap_to_click_state_entered_ >
                      TimeoutForTtcState(tap_to_click_state_));
 
+  if (phys_button_down) {
+    // Don't allow any current fingers to tap ever
+    for (size_t i = 0; i < hwstate->finger_cnt; i++)
+      tap_dead_fingers_.insert(hwstate->fingers[i].tracking_id);
+  }
+
   if (hwstate && (!same_fingers || prev_tap_gs_fingers_ != tap_gs_fingers)) {
     // See if fingers were added
     for (set<short, kMaxGesturingFingers>::const_iterator it =
@@ -1173,7 +1182,8 @@ void ImmediateInterpreter::UpdateTapState(
         // Gesturing finger wasn't in prev state. It's new.
         const FingerState* fs = hwstate->GetFingerState(*it);
         if (FingerTooCloseToTap(*hwstate, *fs) ||
-            FingerTooCloseToTap(*PrevState(0), *fs))
+            FingerTooCloseToTap(*PrevState(0), *fs) ||
+            SetContainsValue(tap_dead_fingers_, fs->tracking_id))
           continue;
         added_fingers.insert(*it);
         Log("TTC: Added %d", *it);
