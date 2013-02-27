@@ -1326,3 +1326,30 @@ TEST_F(SpellCheckTest, SpellingEngine_CheckSpelling) {
   }
 }
 
+// Chrome should not suggest "Othello" for "hellllo" or "identically" for
+// "accidently".
+TEST_F(SpellCheckTest, LogicalSuggestions) {
+  static const struct {
+    const char* misspelled;
+    const char* suggestion;
+  } kTestCases[] = {
+    { "hellllo", "hello" },
+    { "accidently", "accidentally" }
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
+    int misspelling_start = 0;
+    int misspelling_length = 0;
+    std::vector<string16> suggestions;
+    EXPECT_FALSE(spell_check()->SpellCheckWord(
+        ASCIIToUTF16(kTestCases[i].misspelled).c_str(),
+        strlen(kTestCases[i].misspelled),
+        0,
+        &misspelling_start,
+        &misspelling_length,
+        &suggestions));
+    EXPECT_GE(suggestions.size(), static_cast<size_t>(1));
+    if (suggestions.size() > 0)
+      EXPECT_EQ(suggestions[0], ASCIIToUTF16(kTestCases[i].suggestion));
+  }
+}

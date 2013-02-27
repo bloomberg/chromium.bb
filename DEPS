@@ -85,7 +85,7 @@ deps = {
     "/trunk/deps/third_party/libexif/sources@146817",
 
   "src/third_party/hunspell":
-   "/trunk/deps/third_party/hunspell@177853",
+   "/trunk/deps/third_party/hunspell@184822",
 
   "src/third_party/hunspell_dictionaries":
     "/trunk/deps/third_party/hunspell_dictionaries@175986",
