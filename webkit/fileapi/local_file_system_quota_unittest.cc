@@ -17,6 +17,7 @@
 #include "base/string_number_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/async_file_test_helper.h"
+#include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/local_file_system_operation.h"
@@ -48,15 +49,37 @@ class LocalFileSystemQuotaTest
         usage_(-1),
         quota_(-1) {}
 
-  LocalFileSystemOperation* operation();
+  virtual void SetUp() OVERRIDE {
+    ASSERT_TRUE(work_dir_.CreateUniqueTempDir());
+    base::FilePath filesystem_dir_path =
+        work_dir_.path().AppendASCII("filesystem");
+    ASSERT_TRUE(file_util::CreateDirectory(filesystem_dir_path));
+
+    quota_manager_ = new quota::QuotaManager(
+        false /* is_incognito */,
+        filesystem_dir_path,
+        base::MessageLoopProxy::current(),
+        base::MessageLoopProxy::current(),
+        NULL);
+
+    test_helper_.SetUp(filesystem_dir_path,
+                       false /* unlimited quota */,
+                       quota_manager_->proxy());
+  }
+
+  virtual void TearDown() OVERRIDE {
+    quota_manager_ = NULL;
+    test_helper_.TearDown();
+  }
+
+  LocalFileSystemOperation* NewOperation() {
+    return test_helper_.NewOperation();
+  }
 
   int status() const { return status_; }
   quota::QuotaStatusCode quota_status() const { return quota_status_; }
   int64 usage() { return usage_; }
   int64 quota() { return quota_; }
-
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
 
  protected:
   FileSystemFileUtil* file_util() {
@@ -177,33 +200,8 @@ class LocalFileSystemQuotaTest
   DISALLOW_COPY_AND_ASSIGN(LocalFileSystemQuotaTest);
 };
 
-void LocalFileSystemQuotaTest::SetUp() {
-  ASSERT_TRUE(work_dir_.CreateUniqueTempDir());
-  base::FilePath filesystem_dir_path = work_dir_.path().AppendASCII("filesystem");
-  ASSERT_TRUE(file_util::CreateDirectory(filesystem_dir_path));
-
-  quota_manager_ = new quota::QuotaManager(
-      false /* is_incognito */,
-      filesystem_dir_path,
-      base::MessageLoopProxy::current(),
-      base::MessageLoopProxy::current(),
-      NULL);
-
-  test_helper_.SetUp(filesystem_dir_path,
-                     false /* unlimited quota */,
-                     quota_manager_->proxy());
-}
-
-void LocalFileSystemQuotaTest::TearDown() {
-  quota_manager_ = NULL;
-  test_helper_.TearDown();
-}
-
-LocalFileSystemOperation* LocalFileSystemQuotaTest::operation() {
-  return test_helper_.NewOperation();
-}
-
-void LocalFileSystemQuotaTest::PrepareFileSet(const base::FilePath& virtual_path) {
+void LocalFileSystemQuotaTest::PrepareFileSet(
+    const base::FilePath& virtual_path) {
   int64 usage = SizeByQuotaUtil();
   child_dir_path_ = CreateUniqueDirInDir(virtual_path);
   child_file1_path_ = CreateUniqueFileInDir(virtual_path);
@@ -225,14 +223,18 @@ TEST_F(LocalFileSystemQuotaTest, TestMoveSuccessSrcDirRecursive) {
   EXPECT_EQ(0, ActualFileSize());
   int total_path_cost = SizeByQuotaUtil();
 
-  operation()->Truncate(URLForPath(child_file1_path_), 5000,
-                        base::Bind(&AssertFileErrorEq, base::PLATFORM_FILE_OK));
-  operation()->Truncate(URLForPath(child_file2_path_), 400,
-                        base::Bind(&AssertFileErrorEq, base::PLATFORM_FILE_OK));
-  operation()->Truncate(URLForPath(grandchild_file1_path_), 30,
-                        base::Bind(&AssertFileErrorEq, base::PLATFORM_FILE_OK));
-  operation()->Truncate(URLForPath(grandchild_file2_path_), 2,
-                        base::Bind(&AssertFileErrorEq, base::PLATFORM_FILE_OK));
+  NewOperation()->Truncate(
+      URLForPath(child_file1_path_), 5000,
+      base::Bind(&AssertFileErrorEq, base::PLATFORM_FILE_OK));
+  NewOperation()->Truncate(
+      URLForPath(child_file2_path_), 400,
+      base::Bind(&AssertFileErrorEq, base::PLATFORM_FILE_OK));
+  NewOperation()->Truncate(
+      URLForPath(grandchild_file1_path_), 30,
+      base::Bind(&AssertFileErrorEq, base::PLATFORM_FILE_OK));
+  NewOperation()->Truncate(
+      URLForPath(grandchild_file2_path_), 2,
+      base::Bind(&AssertFileErrorEq, base::PLATFORM_FILE_OK));
   MessageLoop::current()->RunUntilIdle();
 
   const int64 all_file_size = 5000 + 400 + 30 + 2;
@@ -244,8 +246,9 @@ TEST_F(LocalFileSystemQuotaTest, TestMoveSuccessSrcDirRecursive) {
   EXPECT_EQ(all_file_size + total_path_cost, usage());
   ASSERT_LT(all_file_size + total_path_cost, quota());
 
-  operation()->Move(URLForPath(src_dir_path), URLForPath(dest_dir_path),
-                    RecordStatusCallback());
+  NewOperation()->Move(
+      URLForPath(src_dir_path), URLForPath(dest_dir_path),
+      RecordStatusCallback());
   MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
@@ -273,14 +276,18 @@ TEST_F(LocalFileSystemQuotaTest, TestCopySuccessSrcDirRecursive) {
   EXPECT_EQ(0, ActualFileSize());
   int total_path_cost = SizeByQuotaUtil();
 
-  operation()->Truncate(URLForPath(child_file1_path_), 8000,
-                        base::Bind(&AssertFileErrorEq, base::PLATFORM_FILE_OK));
-  operation()->Truncate(URLForPath(child_file2_path_), 700,
-                        base::Bind(&AssertFileErrorEq, base::PLATFORM_FILE_OK));
-  operation()->Truncate(URLForPath(grandchild_file1_path_), 60,
-                        base::Bind(&AssertFileErrorEq, base::PLATFORM_FILE_OK));
-  operation()->Truncate(URLForPath(grandchild_file2_path_), 5,
-                        base::Bind(&AssertFileErrorEq, base::PLATFORM_FILE_OK));
+  NewOperation()->Truncate(
+      URLForPath(child_file1_path_), 8000,
+      base::Bind(&AssertFileErrorEq, base::PLATFORM_FILE_OK));
+  NewOperation()->Truncate(
+      URLForPath(child_file2_path_), 700,
+      base::Bind(&AssertFileErrorEq, base::PLATFORM_FILE_OK));
+  NewOperation()->Truncate(
+      URLForPath(grandchild_file1_path_), 60,
+      base::Bind(&AssertFileErrorEq, base::PLATFORM_FILE_OK));
+  NewOperation()->Truncate(
+      URLForPath(grandchild_file2_path_), 5,
+      base::Bind(&AssertFileErrorEq, base::PLATFORM_FILE_OK));
   MessageLoop::current()->RunUntilIdle();
 
   const int64 child_file_size = 8000 + 700;
@@ -295,8 +302,9 @@ TEST_F(LocalFileSystemQuotaTest, TestCopySuccessSrcDirRecursive) {
   EXPECT_EQ(expected_usage, usage());
   ASSERT_LT(expected_usage, quota());
 
-  operation()->Copy(URLForPath(src_dir_path), URLForPath(dest_dir1_path),
-                    RecordStatusCallback());
+  NewOperation()->Copy(
+      URLForPath(src_dir_path), URLForPath(dest_dir1_path),
+      RecordStatusCallback());
   MessageLoop::current()->RunUntilIdle();
   expected_usage += all_file_size +
       child_path_cost_ + grandchild_path_cost_;
@@ -321,8 +329,9 @@ TEST_F(LocalFileSystemQuotaTest, TestCopySuccessSrcDirRecursive) {
   EXPECT_EQ(expected_usage, usage());
   ASSERT_LT(expected_usage, quota());
 
-  operation()->Copy(URLForPath(child_dir_path_), URLForPath(dest_dir2_path),
-                    RecordStatusCallback());
+  NewOperation()->Copy(
+      URLForPath(child_dir_path_), URLForPath(dest_dir2_path),
+      RecordStatusCallback());
   MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
