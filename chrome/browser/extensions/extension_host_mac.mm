@@ -20,7 +20,7 @@ ExtensionHostMac::~ExtensionHostMac() {
   if ([[popup window] isVisible] &&
       [popup extensionHost]->extension() == this->extension()) {
     InfoBubbleWindow* window = (InfoBubbleWindow*)[popup window];
-    [window setDelayOnClose:NO];
+    [window setAllowedAnimations:info_bubble::kAnimateNone];
     [popup close];
   }
 }

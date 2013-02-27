@@ -71,7 +71,8 @@ gfx::Rect BrowserActionTestUtil::GetPopupBounds() {
 bool BrowserActionTestUtil::HidePopup() {
   ExtensionPopupController* controller = [ExtensionPopupController popup];
   // The window must be gone or we'll fail a unit test with windows left open.
-  [static_cast<InfoBubbleWindow*>([controller window]) setDelayOnClose:NO];
+  [static_cast<InfoBubbleWindow*>([controller window])
+      setAllowedAnimations:info_bubble::kAnimateNone];
   [controller close];
   return !HasPopup();
 }

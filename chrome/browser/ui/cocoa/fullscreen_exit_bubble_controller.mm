@@ -183,7 +183,7 @@ const float kHideDuration = 0.7;
   [[infoBubble parentWindow] removeChildWindow:infoBubble];
   [hideAnimation_.get() stopAnimation];
   [hideTimer_ invalidate];
-  [infoBubble setDelayOnClose:NO];
+  [infoBubble setAllowedAnimations:info_bubble::kAnimateNone];
   [self close];
 }
 

@@ -265,7 +265,8 @@ TEST_F(ExtensionInstalledBubbleControllerTest, ParentClose) {
   [controller showWindow:nil];
   NSWindow* bubbleWindow = [controller window];
   ASSERT_TRUE([bubbleWindow isKindOfClass:[InfoBubbleWindow class]]);
-  [static_cast<InfoBubbleWindow*>(bubbleWindow) setDelayOnClose:NO];
+  [static_cast<InfoBubbleWindow*>(bubbleWindow)
+      setAllowedAnimations:info_bubble::kAnimateNone];
 
   // Observe whether the bubble window closes.
   NSString* notification = NSWindowWillCloseNotification;

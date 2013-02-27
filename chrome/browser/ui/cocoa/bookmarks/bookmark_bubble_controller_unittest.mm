@@ -86,7 +86,8 @@ class BookmarkBubbleControllerTest : public CocoaProfileTest {
                          alreadyBookmarked:YES];
     EXPECT_TRUE([controller_ window]);
     // The window must be gone or we'll fail a unit test with windows left open.
-    [static_cast<InfoBubbleWindow*>([controller_ window]) setDelayOnClose:NO];
+    [static_cast<InfoBubbleWindow*>([controller_ window])
+        setAllowedAnimations:info_bubble::kAnimateNone];
     [controller_ showWindow:nil];
     return controller_;
   }

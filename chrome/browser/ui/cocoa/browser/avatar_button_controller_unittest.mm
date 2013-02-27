@@ -67,7 +67,8 @@ TEST_F(AvatarButtonControllerTest, DoubleOpen) {
   EXPECT_EQ(menu, [controller() menuController]);
 
   // Do not animate out because that is hard to test around.
-  static_cast<InfoBubbleWindow*>(menu.window).delayOnClose = NO;
+  static_cast<InfoBubbleWindow*>(menu.window).allowedAnimations =
+      info_bubble::kAnimateNone;
   [menu close];
   EXPECT_FALSE([controller() menuController]);
 

@@ -27,7 +27,7 @@ TEST_F(ZoomBubbleControllerTest, CloseObserver) {
                                            closeObserver:observer];
   [controller showForWebContents:NULL anchoredAt:NSZeroPoint autoClose:NO];
   [base::mac::ObjCCastStrict<InfoBubbleWindow>([controller window])
-      setDelayOnClose:NO];
+      setAllowedAnimations:info_bubble::kAnimateNone];
 
   EXPECT_FALSE(didObserve);
 

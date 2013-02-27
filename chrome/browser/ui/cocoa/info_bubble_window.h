@@ -9,15 +9,26 @@
 
 class AppNotificationBridge;
 
+namespace info_bubble {
+
+enum AnimationMask {
+  kAnimateNone = 0,
+  kAnimateOrderIn = 1 << 1,
+  kAnimateOrderOut = 1 << 2,
+};
+typedef NSUInteger AllowedAnimations;
+
+}  // namespace info_bubble
+
 // A rounded window with an arrow used for example when you click on the STAR
 // button or that pops up within our first-run UI.
 @interface InfoBubbleWindow : ChromeEventProcessingWindow {
  @private
   // Is self in the process of closing.
   BOOL closing_;
-  // If NO the window will close immediately instead of fading out.
-  // Default YES.
-  BOOL delayOnClose_;
+  // Specifies if window order in and order out animations are allowed. By
+  // default both types of animations are allowed.
+  info_bubble::AllowedAnimations allowedAnimations_;
   // If NO the window will never become key.
   // Default YES.
   BOOL canBecomeKeyWindow_;
@@ -25,7 +36,7 @@ class AppNotificationBridge;
   scoped_ptr<AppNotificationBridge> notificationBridge_;
 }
 
-@property(nonatomic) BOOL delayOnClose;
+@property(nonatomic) info_bubble::AllowedAnimations allowedAnimations;
 @property(nonatomic) BOOL canBecomeKeyWindow;
 
 // Returns YES if the window is in the process of closing.
