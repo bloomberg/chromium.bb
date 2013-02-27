@@ -217,6 +217,7 @@ public:
 
         unsigned long long algo;
         unsigned char* settings;
+        long long settings_len;
     };
 
     // ContentEncAESSettings element names
@@ -252,6 +253,15 @@ public:
     // Returns number of ContentCompression elements in this ContentEncoding
     // element.
     unsigned long GetCompressionCount() const;
+
+    // Parses the ContentCompression element from |pReader|. |start| is the
+    // starting offset of the ContentCompression payload. |size| is the size in
+    // bytes of the ContentCompression payload. |compression| is where the parsed
+    // values will be stored.
+    long ParseCompressionEntry(long long start,
+                               long long size,
+                               IMkvReader* pReader,
+                               ContentCompression* compression);
 
     // Returns ContentEncryption represented by |idx|. Returns NULL if |idx|
     // is out of bounds.
