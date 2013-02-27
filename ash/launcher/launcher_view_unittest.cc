@@ -848,5 +848,16 @@ TEST_F(LauncherViewTest, ResizeDuringOverflowAddAnimation) {
   EXPECT_EQ(app_list_bounds, app_list_ideal_bounds);
 }
 
+// Check that the first item in the list follows Fitt's law by including the
+// first pixel and being therefore bigger then the others.
+TEST_F(LauncherViewTest, CheckFittsLaw) {
+  // All buttons should be visible.
+  ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
+            test_api_->GetButtonCount());
+  gfx::Rect ideal_bounds_0 = test_api_->GetIdealBoundsByIndex(0);
+  gfx::Rect ideal_bounds_1 = test_api_->GetIdealBoundsByIndex(1);
+  EXPECT_GT(ideal_bounds_0.width(), ideal_bounds_1.width());
+}
+
 }  // namespace test
 }  // namespace ash

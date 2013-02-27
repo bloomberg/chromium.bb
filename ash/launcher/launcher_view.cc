@@ -535,6 +535,16 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
     return;
   }
 
+  // To address Fitt's law, we make the first launcher button include the
+  // leading inset (if there is one).
+  if (view_model_->view_size() > 0) {
+    view_model_->set_ideal_bounds(0, gfx::Rect(gfx::Size(
+        shelf->PrimaryAxisValue(leading_inset() + kLauncherPreferredSize,
+                                width()),
+        shelf->PrimaryAxisValue(height(),
+                                leading_inset() + kLauncherPreferredSize))));
+  }
+
   // Right aligned icons.
   int end_position = available_size - kButtonSpacing;
   x = shelf->PrimaryAxisValue(end_position, leading_inset());
