@@ -21,16 +21,8 @@ namespace {
 // 3.9GB. It is less than 4GB because true device size ussually varies a little.
 const uint64 kMinDeviceSize = static_cast<uint64>(3.9 * 1000 * 1000 * 1000);
 
-// Returns true when |disk| is a device on which we can burn recovery image.
-bool IsBurnableDevice(const disks::DiskMountManager::Disk& disk) {
-  return disk.is_parent() && !disk.on_boot_device() && disk.has_media() &&
-         (disk.device_type() == DEVICE_TYPE_USB ||
-          disk.device_type() == DEVICE_TYPE_SD);
-}
-
 class BurnControllerImpl
     : public BurnController,
-      public disks::DiskMountManager::Observer,
       public NetworkLibrary::NetworkManagerObserver,
       public StateMachine::Observer,
       public BurnManager::Observer {
@@ -40,7 +32,6 @@ class BurnControllerImpl
         state_machine_(NULL),
         working_(false),
         delegate_(delegate) {
-    disks::DiskMountManager::GetInstance()->AddObserver(this);
     CrosLibrary::Get()->GetNetworkLibrary()->AddNetworkManagerObserver(this);
     burn_manager_ = BurnManager::GetInstance();
     burn_manager_->AddObserver(this);
@@ -53,37 +44,6 @@ class BurnControllerImpl
       state_machine_->RemoveObserver(this);
     burn_manager_->RemoveObserver(this);
     CrosLibrary::Get()->GetNetworkLibrary()->RemoveNetworkManagerObserver(this);
-    disks::DiskMountManager::GetInstance()->RemoveObserver(this);
-  }
-
-  // disks::DiskMountManager::Observer interface.
-  virtual void OnDiskEvent(disks::DiskMountManager::DiskEvent event,
-                           const disks::DiskMountManager::Disk* disk) OVERRIDE {
-    if (!IsBurnableDevice(*disk))
-      return;
-    if (event == disks::DiskMountManager::DISK_ADDED) {
-      delegate_->OnDeviceAdded(*disk);
-    } else if (event == disks::DiskMountManager::DISK_REMOVED) {
-      delegate_->OnDeviceRemoved(*disk);
-      if (burn_manager_->target_device_path().value() == disk->device_path())
-        burn_manager_->OnError(IDS_IMAGEBURN_DEVICE_NOT_FOUND_ERROR);
-    }
-  }
-
-  virtual void OnDeviceEvent(disks::DiskMountManager::DeviceEvent event,
-                             const std::string& device_path) OVERRIDE {
-  }
-
-  virtual void OnMountEvent(
-      disks::DiskMountManager::MountEvent event,
-      MountError error_code,
-      const disks::DiskMountManager::MountPointInfo& mount_info) OVERRIDE {
-  }
-
-  virtual void OnFormatEvent(
-      disks::DiskMountManager::FormatEvent event,
-      FormatError error_code,
-      const std::string& device_path) OVERRIDE {
   }
 
   // NetworkLibrary::NetworkManagerObserver interface.
@@ -94,6 +54,18 @@ class BurnControllerImpl
     if (state_machine_->state() == StateMachine::DOWNLOADING &&
         !CheckNetwork())
       burn_manager_->OnError(IDS_IMAGEBURN_NETWORK_ERROR);
+  }
+
+  // BurnManager::Observer override.
+  virtual void OnDeviceAdded(
+      const disks::DiskMountManager::Disk& disk) OVERRIDE {
+    delegate_->OnDeviceAdded(disk);
+  }
+
+  // BurnManager::Observer override.
+  virtual void OnDeviceRemoved(
+      const disks::DiskMountManager::Disk& disk) OVERRIDE {
+    delegate_->OnDeviceRemoved(disk);
   }
 
   // BurnManager::Observer override.
@@ -108,7 +80,7 @@ class BurnControllerImpl
     burn_manager_->FetchConfigFile();
   }
 
-  // Part of BurnManager::Delegate interface.
+  // BurnManager::Observer override.
   virtual void OnConfigFileFetched(bool success) OVERRIDE {
     if (!success) {
       DownloadCompleted(false);
@@ -201,17 +173,9 @@ class BurnControllerImpl
   // BurnController override.
   virtual std::vector<disks::DiskMountManager::Disk> GetBurnableDevices()
       OVERRIDE {
-    const disks::DiskMountManager::DiskMap& disks =
-        disks::DiskMountManager::GetInstance()->disks();
-    std::vector<disks::DiskMountManager::Disk> result;
-    for (disks::DiskMountManager::DiskMap::const_iterator iter = disks.begin();
-         iter != disks.end();
-         ++iter) {
-      const disks::DiskMountManager::Disk& disk = *iter->second;
-      if (IsBurnableDevice(disk))
-        result.push_back(disk);
-    }
-    return result;
+    // Now this is just a proxy to the BurnManager.
+    // TODO(hidehiko): Remove this method.
+    return burn_manager_->GetBurnableDevices();
   }
 
   // BurnController override.

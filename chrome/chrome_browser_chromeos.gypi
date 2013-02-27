@@ -301,6 +301,8 @@
         'browser/chromeos/external_protocol_dialog.h',
         'browser/chromeos/imageburner/burn_controller.cc',
         'browser/chromeos/imageburner/burn_controller.h',
+        'browser/chromeos/imageburner/burn_device_handler.cc',
+        'browser/chromeos/imageburner/burn_device_handler.h',
         'browser/chromeos/imageburner/burn_manager.cc',
         'browser/chromeos/imageburner/burn_manager.h',
         'browser/chromeos/input_method/browser_state_monitor.cc',

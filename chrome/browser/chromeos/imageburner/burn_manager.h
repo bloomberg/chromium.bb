@@ -16,6 +16,8 @@
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/cros/burn_library.h"
+#include "chrome/browser/chromeos/imageburner/burn_device_handler.h"
+#include "chromeos/disks/disk_mount_manager.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -185,6 +187,12 @@ class BurnManager : public net::URLFetcherDelegate,
   // tasks.
   class Observer {
    public:
+    // Triggered when a burnable device is added.
+    virtual void OnDeviceAdded(const disks::DiskMountManager::Disk& disk) = 0;
+
+    // Triggered when a burnable device is removed.
+    virtual void OnDeviceRemoved(const disks::DiskMountManager::Disk& disk) = 0;
+
     // Triggered when the creating a ImageDir is done.
     // The status of the creating the directory is passed to |success|.
     virtual void OnImageDirCreated(bool success) = 0;
@@ -226,6 +234,9 @@ class BurnManager : public net::URLFetcherDelegate,
 
   // Remove an observer.
   void RemoveObserver(Observer* observer);
+
+  // Returns devices on which we can burn recovery image.
+  std::vector<disks::DiskMountManager::Disk> GetBurnableDevices();
 
   // Error is usually detected by all existing Burn handlers, but only first
   // one that calls this method should actually process it.
@@ -299,7 +310,10 @@ class BurnManager : public net::URLFetcherDelegate,
   void OnImageDirCreated(bool success);
   void ConfigFileFetched(bool fetched, const std::string& content);
 
-  base::WeakPtrFactory<BurnManager> weak_ptr_factory_;
+  void NotifyDeviceAdded(const disks::DiskMountManager::Disk& disk);
+  void NotifyDeviceRemoved(const disks::DiskMountManager::Disk& disk);
+
+  BurnDeviceHandler device_handler_;
 
   base::FilePath image_dir_;
   base::FilePath zip_image_file_path_;
@@ -320,6 +334,10 @@ class BurnManager : public net::URLFetcherDelegate,
   int64 bytes_image_download_progress_last_reported_;
 
   ObserverList<Observer> observers_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<BurnManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BurnManager);
 };

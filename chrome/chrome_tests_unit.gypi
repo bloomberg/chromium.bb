@@ -611,6 +611,7 @@
         'browser/chromeos/extensions/file_browser_resource_throttle_unittest.cc',
         'browser/chromeos/extensions/wallpaper_private_api_unittest.cc',
         'browser/chromeos/external_metrics_unittest.cc',
+        'browser/chromeos/imageburner/burn_device_handler_unittest.cc',
         'browser/chromeos/imageburner/burn_manager_unittest.cc',
         'browser/chromeos/input_method/browser_state_monitor_unittest.cc',
         'browser/chromeos/input_method/candidate_window_controller_impl_unittest.cc',

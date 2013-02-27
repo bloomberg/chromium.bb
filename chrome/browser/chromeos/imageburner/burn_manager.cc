@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
+#include "grit/generated_resources.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
@@ -203,12 +204,17 @@ void StateMachine::OnCancelation() {
 ////////////////////////////////////////////////////////////////////////////////
 
 BurnManager::BurnManager()
-    : weak_ptr_factory_(this),
+    : device_handler_(disks::DiskMountManager::GetInstance()),
       config_file_url_(kConfigFileUrl),
       config_file_fetched_(false),
       state_machine_(new StateMachine()),
-      bytes_image_download_progress_last_reported_(0) {
+      bytes_image_download_progress_last_reported_(0),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   CrosLibrary::Get()->GetBurnLibrary()->AddObserver(this);
+  base::WeakPtr<BurnManager> weak_ptr(weak_ptr_factory_.GetWeakPtr());
+  device_handler_.SetCallbacks(
+      base::Bind(&BurnManager::NotifyDeviceAdded, weak_ptr),
+      base::Bind(&BurnManager::NotifyDeviceRemoved, weak_ptr));
 }
 
 BurnManager::~BurnManager() {
@@ -250,6 +256,10 @@ void BurnManager::AddObserver(Observer* observer) {
 
 void BurnManager::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+std::vector<disks::DiskMountManager::Disk> BurnManager::GetBurnableDevices() {
+  return device_handler_.GetBurnableDevices();
 }
 
 void BurnManager::OnError(int message_id) {
@@ -417,6 +427,25 @@ void BurnManager::ConfigFileFetched(bool fetched, const std::string& content) {
   }
 
   FOR_EACH_OBSERVER(Observer, observers_, OnConfigFileFetched(fetched));
+}
+
+void BurnManager::NotifyDeviceAdded(
+    const disks::DiskMountManager::Disk& disk) {
+  FOR_EACH_OBSERVER(Observer, observers_, OnDeviceAdded(disk));
+}
+
+void BurnManager::NotifyDeviceRemoved(
+    const disks::DiskMountManager::Disk& disk) {
+  FOR_EACH_OBSERVER(Observer, observers_, OnDeviceRemoved(disk));
+
+  if (target_device_path_.value() == disk.device_path()) {
+    // The device is removed during the burning process.
+    // Note: in theory, this is not a part of notification, but cancelling
+    // the running burning task. However, there is no good place to be in the
+    // current code.
+    // TODO(hidehiko): Clean this up after refactoring.
+    OnError(IDS_IMAGEBURN_DEVICE_NOT_FOUND_ERROR);
+  }
 }
 
 }  // namespace imageburner
