@@ -1369,6 +1369,8 @@
         'browser/policy/cloud_policy_validator.h',
         'browser/policy/component_cloud_policy_store.cc',
         'browser/policy/component_cloud_policy_store.h',
+        'browser/policy/component_cloud_policy_updater.cc',
+        'browser/policy/component_cloud_policy_updater.h',
         'browser/policy/config_dir_policy_loader.cc',
         'browser/policy/config_dir_policy_loader.h',
         'browser/policy/configuration_policy_handler.cc',
