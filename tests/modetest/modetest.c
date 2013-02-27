@@ -894,7 +894,7 @@ static int parse_plane(struct plane *p, const char *arg)
 
 static void usage(char *name)
 {
-	fprintf(stderr, "usage: %s [-cefMmPpsv]\n", name);
+	fprintf(stderr, "usage: %s [-cdefMmPpsv]\n", name);
 
 	fprintf(stderr, "\n Query options:\n\n");
 	fprintf(stderr, "\t-c\tlist connectors\n");
@@ -909,6 +909,7 @@ static void usage(char *name)
 	fprintf(stderr, "\t-v\ttest vsynced page flipping\n");
 
 	fprintf(stderr, "\n Generic options:\n\n");
+	fprintf(stderr, "\t-d\tdrop master after mode set\n");
 	fprintf(stderr, "\t-M module\tuse the given driver\n");
 
 	fprintf(stderr, "\n\tDefault is to dump all info.\n");
@@ -938,12 +939,13 @@ static int page_flipping_supported(void)
 #endif
 }
 
-static char optstr[] = "cefM:mP:ps:v";
+static char optstr[] = "cdefM:mP:ps:v";
 
 int main(int argc, char **argv)
 {
 	int c;
 	int encoders = 0, connectors = 0, crtcs = 0, planes = 0, framebuffers = 0;
+	int drop_master = 0;
 	int test_vsync = 0;
 	const char *modules[] = { "i915", "radeon", "nouveau", "vmwgfx", "omapdrm", "exynos", "tilcdc" };
 	char *module = NULL;
@@ -960,6 +962,9 @@ int main(int argc, char **argv)
 		switch (c) {
 		case 'c':
 			connectors = 1;
+			break;
+		case 'd':
+			drop_master = 1;
 			break;
 		case 'e':
 			encoders = 1;
@@ -1046,6 +1051,8 @@ int main(int argc, char **argv)
 
 	if (count > 0) {
 		set_mode(con_args, count, plane_args, plane_count, test_vsync);
+		if (drop_master)
+			drmDropMaster(fd);
 		getchar();
 	}
 
