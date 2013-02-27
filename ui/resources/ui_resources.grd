@@ -25,6 +25,7 @@
         <structure type="chrome_scaled_image" name="IDR_APP_LIST_ITEM_PROGRESS_LEFT" file="common/app_list_progress_bar_left.png" />
         <structure type="chrome_scaled_image" name="IDR_APP_LIST_ITEM_PROGRESS_CENTER" file="common/app_list_progress_bar_center.png" />
         <structure type="chrome_scaled_image" name="IDR_APP_LIST_ITEM_PROGRESS_RIGHT" file="common/app_list_progress_bar_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_LIST_USER_INDICATOR" file="common/app_list_user_indicator.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_APP_TOP_CENTER" file="app_top_center.png" />
       <if expr="pp_ifdef('toolkit_views')">

@@ -69,6 +69,10 @@ class AppListControllerDelegate {
   virtual void LaunchApp(Profile* profile,
                          const extensions::Extension* extension,
                          int event_flags) = 0;
+
+  // Whether or not the icon indicating which user is logged in should be
+  // visible.
+  virtual bool ShouldShowUserIcon();
 };
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_APP_LIST_CONTROLLER_DELEGATE_H_

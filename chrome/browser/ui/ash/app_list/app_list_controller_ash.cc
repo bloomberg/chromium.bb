@@ -65,6 +65,10 @@ void AppListControllerDelegateAsh::LaunchApp(
   DismissView();
 }
 
+bool AppListControllerDelegateAsh::ShouldShowUserIcon() {
+  return false;
+}
+
 #if !defined(OS_WIN)
 namespace chrome {
 

@@ -31,9 +31,11 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate)
     : delegate_(delegate),
       model_(NULL),
       icon_view_(new views::ImageView),
+      user_icon_view_(new views::ImageView),
       search_box_(new views::Textfield),
       contents_view_(NULL) {
   AddChildView(icon_view_);
+  AddChildView(user_icon_view_);
 
   search_box_->RemoveBorder();
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -59,7 +61,9 @@ void SearchBoxView::SetModel(SearchBoxModel* model) {
   if (model_) {
     model_->AddObserver(this);
     IconChanged();
+    UserIconChanged();
     HintTextChanged();
+    UserIconTooltipChanged();
   }
 }
 
@@ -77,9 +81,19 @@ void SearchBoxView::Layout() {
   icon_frame.set_width(icon_size.width() + 2 * kPadding);
   icon_view_->SetBoundsRect(icon_frame);
 
+  gfx::Rect user_icon_frame(rect);
+  user_icon_frame.set_width(icon_size.width() + 2 * kPadding);
+  user_icon_frame.set_x(rect.right() - user_icon_frame.width());
+  if (!model_->user_icon_enabled()) {
+    user_icon_frame.set_width(0);
+  }
+  user_icon_view_->SetVisible(model_->user_icon_enabled());
+  user_icon_view_->SetBoundsRect(user_icon_frame);
+
   gfx::Rect edit_frame(rect);
   edit_frame.set_x(icon_frame.right());
-  edit_frame.set_width(rect.width() - icon_frame.width() - kPadding);
+  edit_frame.set_width(
+      rect.width() - icon_frame.width() - kPadding - user_icon_frame.width());
   edit_frame.ClampToCenteredSize(gfx::Size(edit_frame.width(), kEditHeight));
   search_box_->SetBoundsRect(edit_frame);
 }
@@ -145,6 +159,18 @@ void SearchBoxView::SelectionModelChanged() {
 
 void SearchBoxView::TextChanged() {
   search_box_->SetText(model_->text());
+}
+
+void SearchBoxView::UserIconChanged() {
+  user_icon_view_->SetImage(model_->user_icon());
+}
+
+void SearchBoxView::UserIconTooltipChanged() {
+  user_icon_view_->SetTooltipText(model_->user_icon_tooltip());
+}
+
+void SearchBoxView::UserIconEnabledChanged() {
+  InvalidateLayout();
 }
 
 }  // namespace app_list

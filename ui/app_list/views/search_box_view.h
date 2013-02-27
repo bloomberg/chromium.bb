@@ -63,11 +63,15 @@ class SearchBoxView : public views::View,
   virtual void HintTextChanged() OVERRIDE;
   virtual void SelectionModelChanged() OVERRIDE;
   virtual void TextChanged() OVERRIDE;
+  virtual void UserIconChanged() OVERRIDE;
+  virtual void UserIconTooltipChanged() OVERRIDE;
+  virtual void UserIconEnabledChanged() OVERRIDE;
 
   SearchBoxViewDelegate* delegate_;  // Not owned.
   SearchBoxModel* model_;  // Owned by AppListModel.
 
   views::ImageView* icon_view_;  // Owned by views hierarchy.
+  views::ImageView* user_icon_view_;  // Owned by views hierarchy.
   views::Textfield* search_box_;  // Owned by views hierarchy.
   views::View* contents_view_;  // Owned by views hierarchy.
 

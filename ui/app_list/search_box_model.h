@@ -30,6 +30,19 @@ class APP_LIST_EXPORT SearchBoxModel {
   void SetIcon(const gfx::ImageSkia& icon);
   const gfx::ImageSkia& icon() const { return icon_; }
 
+  // Sets/gets the icon indicating which user is logged in.
+  void SetUserIcon(const gfx::ImageSkia& icon);
+  const gfx::ImageSkia& user_icon() const { return user_icon_; }
+
+  // Sets/gets the tooltip for the icon that indicates which user is logged in.
+  void SetUserIconTooltip(const string16& tooltip_text);
+  const string16& user_icon_tooltip() const { return user_icon_tooltip_; }
+
+  // Sets/gets whether or not we want to show an icon indicating which user is
+  // logged in.
+  void SetUserIconEnabled(bool user_icon_enabled);
+  bool user_icon_enabled() const { return user_icon_enabled_; }
+
   // Sets/gets the hint text to display when there is in input.
   void SetHintText(const string16& hint_text);
   const string16& hint_text() const { return hint_text_; }
@@ -52,6 +65,9 @@ class APP_LIST_EXPORT SearchBoxModel {
   string16 hint_text_;
   gfx::SelectionModel selection_model_;
   string16 text_;
+  gfx::ImageSkia user_icon_;
+  string16 user_icon_tooltip_;
+  bool user_icon_enabled_;
 
   ObserverList<SearchBoxModelObserver> observers_;
 

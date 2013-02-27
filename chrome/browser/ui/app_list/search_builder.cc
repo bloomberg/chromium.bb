@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
@@ -30,6 +31,7 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "grit/ui_resources.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/search_result.h"
@@ -309,6 +311,10 @@ SearchBuilder::SearchBuilder(
       l10n_util::GetStringUTF16(IDS_SEARCH_BOX_HINT));
   search_box_->SetIcon(*ui::ResourceBundle::GetSharedInstance().
       GetImageSkiaNamed(IDR_OMNIBOX_SEARCH));
+  search_box_->SetUserIconEnabled(list_controller->ShouldShowUserIcon());
+  search_box_->SetUserIcon(*ui::ResourceBundle::GetSharedInstance().
+      GetImageSkiaNamed(IDR_APP_LIST_USER_INDICATOR));
+  search_box_->SetUserIconTooltip(UTF8ToUTF16(profile_->GetProfileName()));
 
   int providers = AutocompleteProvider::TYPE_EXTENSION_APP;
   bool apps_only = true;
