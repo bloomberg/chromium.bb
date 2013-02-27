@@ -144,7 +144,7 @@ void IdleTest::SetUp() {
   idle_manager_ = IdleManagerFactory::GetForProfile(browser()->profile());
 
   extension_ = utils::CreateEmptyExtensionWithLocation(
-      extensions::Manifest::LOAD);
+      extensions::Manifest::UNPACKED);
 
   idle_provider_ = new TestIdleProvider();
   idle_manager_->SetIdleTimeProviderForTest(

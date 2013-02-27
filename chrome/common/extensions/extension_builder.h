@@ -29,7 +29,7 @@ class ExtensionBuilder {
   // Defaults to FilePath().
   ExtensionBuilder& SetPath(const base::FilePath& path);
 
-  // Defaults to Manifest::LOAD.
+  // Defaults to Manifest::UNPACKED.
   ExtensionBuilder& SetLocation(Manifest::Location location);
 
   ExtensionBuilder& SetManifest(scoped_ptr<base::DictionaryValue> manifest);

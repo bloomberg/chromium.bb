@@ -58,7 +58,7 @@ class ExtensionAlarmsTest : public BrowserWithTestWindowTest {
     alarm_manager_->set_delegate(alarm_delegate_);
 
     extension_ = utils::CreateEmptyExtensionWithLocation(
-        extensions::Manifest::LOAD);
+        extensions::Manifest::UNPACKED);
 
     // Make sure there's a RenderViewHost for alarms to warn into.
     AddTab(browser(), extension_->GetBackgroundURL());

@@ -95,7 +95,7 @@ scoped_refptr<Extension> LoadExtension(const std::string& filename,
   scoped_ptr<DictionaryValue> value(LoadManifestFile(path, error));
   if (!value.get())
     return NULL;
-  return Extension::Create(path.DirName(), Manifest::LOAD, *value,
+  return Extension::Create(path.DirName(), Manifest::UNPACKED, *value,
                            Extension::NO_FLAGS, error);
 }
 

@@ -635,7 +635,7 @@ void ExtensionReadyNotificationObserver::Observe(
       // Only track an internal or unpacked extension load.
       extensions::Manifest::Location location = loaded_extension->location();
       if (location != extensions::Manifest::INTERNAL &&
-          location != extensions::Manifest::LOAD)
+          !extensions::Manifest::IsUnpackedLocation(location))
         return;
       extension_ = loaded_extension;
       if (!DidExtensionViewsStopLoading(manager_))

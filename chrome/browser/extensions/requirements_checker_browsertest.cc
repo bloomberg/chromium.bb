@@ -47,7 +47,7 @@ class RequirementsCheckerBrowserTest : public ExtensionBrowserTest {
     extension_path = extension_path.AppendASCII("requirements_checker")
                                    .AppendASCII(extension_dir_name);
     scoped_refptr<const Extension> extension =
-        extension_file_util::LoadExtension(extension_path, Manifest::LOAD,
+        extension_file_util::LoadExtension(extension_path, Manifest::UNPACKED,
                                            0, &load_error);
     CHECK(load_error.length() == 0u);
     return extension;

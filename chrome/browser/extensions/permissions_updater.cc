@@ -136,7 +136,7 @@ void PermissionsUpdater::GrantActivePermissions(const Extension* extension,
 
   // We only maintain the granted permissions prefs for INTERNAL and LOAD
   // extensions.
-  if (extension->location() != Manifest::LOAD &&
+  if (!Manifest::IsUnpackedLocation(extension->location()) &&
       extension->location() != Manifest::INTERNAL)
     return;
 

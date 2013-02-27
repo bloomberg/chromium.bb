@@ -2656,7 +2656,7 @@ TEST_F(ExtensionServiceTest, LoadExtensionsCanDowngrade) {
 
   EXPECT_EQ(0u, GetErrors().size());
   ASSERT_EQ(1u, loaded_.size());
-  EXPECT_EQ(Manifest::LOAD, loaded_[0]->location());
+  EXPECT_EQ(Manifest::UNPACKED, loaded_[0]->location());
   EXPECT_EQ(1u, service_->extensions()->size());
   EXPECT_EQ("2.0", loaded_[0]->VersionString());
 
@@ -2670,7 +2670,7 @@ TEST_F(ExtensionServiceTest, LoadExtensionsCanDowngrade) {
 
   EXPECT_EQ(0u, GetErrors().size());
   ASSERT_EQ(1u, loaded_.size());
-  EXPECT_EQ(Manifest::LOAD, loaded_[0]->location());
+  EXPECT_EQ(Manifest::UNPACKED, loaded_[0]->location());
   EXPECT_EQ(1u, service_->extensions()->size());
   EXPECT_EQ("1.0", loaded_[0]->VersionString());
 }
@@ -3304,11 +3304,11 @@ TEST_F(ExtensionServiceTest, ManagementPolicyProhibitsLoadFromPrefs) {
   DictionaryValue manifest;
   manifest.SetString(keys::kName, "simple_extension");
   manifest.SetString(keys::kVersion, "1");
-  // LOAD is for extensions loaded from the command line. We use it here, even
+  // UNPACKED is for extensions loaded from a directory. We use it here, even
   // though we're testing loading from prefs, so that we don't need to provide
   // an extension key.
   extensions::ExtensionInfo extension_info(&manifest, "", path,
-                                           Manifest::LOAD);
+                                           Manifest::UNPACKED);
 
   // Ensure we can load it with no management policy in place.
   management_policy_->UnregisterAllProviders();
@@ -3995,7 +3995,7 @@ TEST_F(ExtensionServiceTest, LoadExtension) {
   loop_.RunUntilIdle();
   EXPECT_EQ(0u, GetErrors().size());
   ASSERT_EQ(1u, loaded_.size());
-  EXPECT_EQ(Manifest::LOAD, loaded_[0]->location());
+  EXPECT_EQ(Manifest::UNPACKED, loaded_[0]->location());
   EXPECT_EQ(1u, service_->extensions()->size());
 
   ValidatePrefKeyCount(1);
@@ -4032,7 +4032,7 @@ TEST_F(ExtensionServiceTest, GenerateID) {
   EXPECT_EQ(0u, GetErrors().size());
   ASSERT_EQ(1u, loaded_.size());
   ASSERT_TRUE(Extension::IdIsValid(loaded_[0]->id()));
-  EXPECT_EQ(loaded_[0]->location(), Manifest::LOAD);
+  EXPECT_EQ(loaded_[0]->location(), Manifest::UNPACKED);
 
   ValidatePrefKeyCount(1);
 

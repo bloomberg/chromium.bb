@@ -157,7 +157,7 @@ scoped_ptr<developer::ItemInfo>
     NOTREACHED();
   }
 
-  if (item.location() == Manifest::LOAD) {
+  if (extensions::Manifest::IsUnpackedLocation(item.location())) {
     info->path.reset(
         new std::string(UTF16ToUTF8(item.path().LossyDisplayName())));
   }
@@ -165,8 +165,9 @@ scoped_ptr<developer::ItemInfo>
   info->incognito_enabled = service->IsIncognitoEnabled(item.id());
   info->wants_file_access = item.wants_file_access();
   info->allow_file_access = service->AllowFileAccess(&item);
-  info->allow_reload = (item.location() == Manifest::LOAD);
-  info->is_unpacked = (item.location() == Manifest::LOAD);
+  info->allow_reload =
+      extensions::Manifest::IsUnpackedLocation(item.location());
+  info->is_unpacked = extensions::Manifest::IsUnpackedLocation(item.location());
   info->terminated = service->terminated_extensions()->Contains(item.id());
   info->allow_incognito = item.can_be_incognito_enabled();
 

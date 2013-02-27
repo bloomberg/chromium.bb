@@ -51,7 +51,7 @@ enum ManifestReloadReason {
 ManifestReloadReason ShouldReloadExtensionManifest(const ExtensionInfo& info) {
   // Always reload manifests of unpacked extensions, because they can change
   // on disk independent of the manifest in our prefs.
-  if (info.extension_location == Manifest::LOAD)
+  if (Manifest::IsUnpackedLocation(info.extension_location))
     return UNPACKED_DIR;
 
   // Reload the manifest if it needs to be relocalized.
@@ -106,7 +106,7 @@ void InstalledLoader::Load(const ExtensionInfo& info, bool write_to_prefs) {
   // updating the 'key' field in their manifest).
   // TODO(jstritar): migrate preferences when unpacked extensions change IDs.
   if (extension &&
-      extension->location() != Manifest::LOAD &&
+      !Manifest::IsUnpackedLocation(extension->location()) &&
       info.extension_id != extension->id()) {
     error = errors::kCannotChangeExtensionID;
     extension = NULL;
@@ -151,6 +151,11 @@ void InstalledLoader::LoadAllExtensions() {
 
   for (size_t i = 0; i < extensions_info->size(); ++i) {
     ExtensionInfo* info = extensions_info->at(i).get();
+
+    // Skip extensions that were loaded from the command-line because we don't
+    // want those to persist across browser restart.
+    if (info->extension_location == Manifest::COMMAND_LINE)
+      continue;
 
     scoped_ptr<ExtensionInfo> pending_update(
         extension_prefs_->GetDelayedInstallInfo(info->extension_id));
@@ -271,7 +276,7 @@ void InstalledLoader::LoadAllExtensions() {
 
     // Don't count unpacked extensions, since they're a developer-specific
     // feature.
-    if (location == Manifest::LOAD)
+    if (Manifest::IsUnpackedLocation(location))
       continue;
 
     // Using an enumeration shows us the total installed ratio across all users.
@@ -370,7 +375,7 @@ void InstalledLoader::LoadAllExtensions() {
 
 int InstalledLoader::GetCreationFlags(const ExtensionInfo* info) {
   int flags = extension_prefs_->GetCreationFlags(info->extension_id);
-  if (info->extension_location != Manifest::LOAD)
+  if (!Manifest::IsUnpackedLocation(info->extension_location))
     flags |= Extension::REQUIRE_KEY;
   if (extension_prefs_->AllowFileAccess(info->extension_id))
     flags |= Extension::ALLOW_FILE_ACCESS;

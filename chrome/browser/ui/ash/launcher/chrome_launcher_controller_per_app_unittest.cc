@@ -66,22 +66,26 @@ class ChromeLauncherControllerPerAppTest : public BrowserWithTestWindowTest {
         CommandLine::ForCurrentProcess(), base::FilePath(), false);
 
     std::string error;
-    extension1_ = Extension::Create(base::FilePath(), Manifest::LOAD, manifest,
+    extension1_ = Extension::Create(base::FilePath(), Manifest::UNPACKED,
+                                    manifest,
                                     Extension::NO_FLAGS,
                                     "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
                                     &error);
-    extension2_ = Extension::Create(base::FilePath(), Manifest::LOAD, manifest,
+    extension2_ = Extension::Create(base::FilePath(), Manifest::UNPACKED,
+                                    manifest,
                                     Extension::NO_FLAGS,
                                     "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
                                     &error);
     // Fake gmail extension.
-    extension3_ = Extension::Create(base::FilePath(), Manifest::LOAD, manifest,
+    extension3_ = Extension::Create(base::FilePath(), Manifest::UNPACKED
+                                    , manifest,
                                     Extension::NO_FLAGS,
                                     gmail_app_id,
                                     &error);
 
     // Fake search extension.
-    extension4_ = Extension::Create(base::FilePath(), Manifest::LOAD, manifest,
+    extension4_ = Extension::Create(base::FilePath(), Manifest::UNPACKED,
+                                    manifest,
                                     Extension::NO_FLAGS,
                                     "coobgpohoikkiipiblmjeljniedjpjpf",
                                     &error);

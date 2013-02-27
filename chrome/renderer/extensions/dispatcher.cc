@@ -783,7 +783,7 @@ void Dispatcher::DidCreateScriptContext(
 
   int manifest_version = extension ? extension->manifest_version() : 1;
   bool send_request_disabled =
-      (extension && extension->location() == Manifest::LOAD &&
+      (extension && Manifest::IsUnpackedLocation(extension->location()) &&
        extension->has_lazy_background_page());
   module_system->RegisterNativeHandler("process",
       scoped_ptr<NativeHandler>(new ProcessInfoNativeHandler(

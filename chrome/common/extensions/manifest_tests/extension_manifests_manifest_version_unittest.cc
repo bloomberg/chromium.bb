@@ -45,12 +45,12 @@ TEST_F(ExtensionManifestTest, ManifestVersionError) {
             Manifest(test_data[i].manifest,
                      test_data[i].test_name),
             errors::kInvalidManifestVersionOld,
-            extensions::Manifest::LOAD,
+            extensions::Manifest::UNPACKED,
             create_flags);
     } else {
       LoadAndExpectSuccess(Manifest(test_data[i].manifest,
                                     test_data[i].test_name),
-                           extensions::Manifest::LOAD,
+                           extensions::Manifest::UNPACKED,
                            create_flags);
     }
   }

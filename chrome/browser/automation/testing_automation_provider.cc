@@ -3691,7 +3691,7 @@ void TestingAutomationProvider::GetExtensionsInfo(DictionaryValue* args,
                                 location == Manifest::INTERNAL);
     extension_value->SetBoolean("is_user_installed",
         location == Manifest::INTERNAL ||
-        location == Manifest::LOAD);
+        Manifest::IsUnpackedLocation(location));
     extension_value->SetBoolean("is_enabled", service->IsExtensionEnabled(id));
     extension_value->SetBoolean("allowed_in_incognito",
                                 service->IsIncognitoEnabled(id));

@@ -189,7 +189,7 @@ TEST_F(ExtensionUITest, GenerateExtensionsJSONData) {
   CompareExpectedAndActualOutput(extension_path, pages, expected_output_path);
 }
 
-// Test that using Manifest::LOAD for the extension location triggers the
+// Test that using Manifest::UNPACKED for the extension location triggers the
 // correct values in the details, including location, order, and allow_reload.
 TEST_F(ExtensionUITest, LocationLoadPropagation) {
   base::FilePath data_test_dir_path, extension_path;
@@ -205,7 +205,7 @@ TEST_F(ExtensionUITest, LocationLoadPropagation) {
 
   scoped_ptr<DictionaryValue> extension_details(
       CreateExtensionDetailViewFromPath(
-          extension_path, pages, Manifest::LOAD));
+          extension_path, pages, Manifest::UNPACKED));
 
   bool ui_allow_reload = false;
   bool ui_is_unpacked = false;
@@ -221,7 +221,7 @@ TEST_F(ExtensionUITest, LocationLoadPropagation) {
 
 // Test that using Manifest::EXTERNAL_PREF for the extension location triggers
 // the correct values in the details, including location, order, and
-// allow_reload.  Contrast to Manifest::LOAD, which has somewhat different
+// allow_reload.  Contrast to Manifest::UNPACKED, which has somewhat different
 // values.
 TEST_F(ExtensionUITest, LocationExternalPrefPropagation) {
   base::FilePath data_test_dir_path, extension_path;
@@ -266,7 +266,7 @@ TEST_F(ExtensionUITest, PathPropagation) {
 
   scoped_ptr<DictionaryValue> extension_details(
       CreateExtensionDetailViewFromPath(
-          extension_path, pages, Manifest::LOAD));
+          extension_path, pages, Manifest::UNPACKED));
 
   base::FilePath::StringType ui_path;
 

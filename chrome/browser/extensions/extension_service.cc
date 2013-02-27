@@ -822,7 +822,7 @@ bool ExtensionService::UninstallExtension(
                                            external_uninstall);
 
   // Tell the backend to start deleting installed extensions on the file thread.
-  if (Manifest::LOAD != extension->location()) {
+  if (!Manifest::IsUnpackedLocation(extension->location())) {
     if (!GetFileTaskRunner()->PostTask(
             FROM_HERE,
             base::Bind(
@@ -2224,7 +2224,7 @@ void ExtensionService::InitializePermissions(const Extension* extension) {
   if (is_extension_upgrade) {
     // Other than for unpacked extensions, CrxInstaller should have guaranteed
     // that we aren't downgrading.
-    if (extension->location() != Manifest::LOAD)
+    if (!Manifest::IsUnpackedLocation(extension->location()))
       CHECK_GE(extension->version()->CompareTo(*(old->version())), 0);
 
     // Extensions get upgraded if the privileges are allowed to increase or

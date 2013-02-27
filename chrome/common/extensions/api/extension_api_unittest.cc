@@ -208,7 +208,8 @@ scoped_refptr<Extension> CreateExtensionWithPermissions(
 
   std::string error;
   scoped_refptr<Extension> extension(Extension::Create(
-      base::FilePath(), Manifest::LOAD, manifest, Extension::NO_FLAGS, &error));
+      base::FilePath(), Manifest::UNPACKED,
+      manifest, Extension::NO_FLAGS, &error));
   CHECK(extension.get());
   CHECK(error.empty());
 

@@ -30,7 +30,8 @@ class Manifest {
     EXTERNAL_PREF,      // A crx file from an external directory (via prefs).
     EXTERNAL_REGISTRY,  // A crx file from an external directory (via eg the
                         // registry on Windows).
-    LOAD,               // --load-extension.
+    UNPACKED,           // From loading an unpacked extension from the
+                        // extensions settings page.
     COMPONENT,          // An integral component of Chrome itself, which
                         // happens to be implemented as an extension. We don't
                         // show these in the management UI.
@@ -38,6 +39,7 @@ class Manifest {
                                // prefs), installed from an update URL.
     EXTERNAL_POLICY_DOWNLOAD,  // A crx file from an external directory (via
                                // admin policies), installed from an update URL.
+    COMMAND_LINE,       // --load-extension.
 
     NUM_LOCATIONS
   };
@@ -69,6 +71,11 @@ class Manifest {
            location == EXTERNAL_POLICY_DOWNLOAD;
   }
 
+  // Whether the |location| is unpacked (no CRX) or not.
+  static inline bool IsUnpackedLocation(Location location) {
+    return location == UNPACKED || location == COMMAND_LINE;
+  }
+
   // Whether extensions with |location| are auto-updatable or not.
   static inline bool IsAutoUpdateableLocation(Location location) {
     // Only internal and external extensions can be autoupdated.
@@ -79,7 +86,7 @@ class Manifest {
   // Unpacked extensions start off with file access since they are a developer
   // feature.
   static inline bool ShouldAlwaysAllowFileAccess(Location location) {
-    return location == LOAD;
+    return IsUnpackedLocation(location);
   }
 
   Manifest(Location location, scoped_ptr<DictionaryValue> value);

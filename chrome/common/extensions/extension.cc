@@ -1061,7 +1061,7 @@ bool Extension::ShouldDisplayInExtensionSettings() const {
   }
 
   // Always show unpacked extensions and apps.
-  if (location() == Manifest::LOAD)
+  if (Manifest::IsUnpackedLocation(location()))
     return true;
 
   // Unless they are unpacked, never show hosted apps. Note: We intentionally

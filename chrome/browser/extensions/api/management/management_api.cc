@@ -177,7 +177,8 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
     case Manifest::INTERNAL:
       info->install_type = management::ExtensionInfo::INSTALL_TYPE_NORMAL;
       break;
-    case Manifest::LOAD:
+    case Manifest::UNPACKED:
+    case Manifest::COMMAND_LINE:
       info->install_type = management::ExtensionInfo::INSTALL_TYPE_DEVELOPMENT;
       break;
     case Manifest::EXTERNAL_PREF:

@@ -71,7 +71,7 @@ class ExtensionDiscoveryTest : public BrowserWithTestWindowTest {
  public:
   virtual void SetUp() {
     BrowserWithTestWindowTest::SetUp();
-    extension_ = utils::CreateEmptyExtensionWithLocation(Manifest::LOAD);
+    extension_ = utils::CreateEmptyExtensionWithLocation(Manifest::UNPACKED);
   }
 
   // Runs a function and returns a pointer to a value, transferring ownership.

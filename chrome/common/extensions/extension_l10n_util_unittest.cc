@@ -561,7 +561,7 @@ TEST(ExtensionL10nUtil, LocalizeManifestWithNameDescriptionFileHandlerTitle) {
 
 // Try with NULL manifest.
 TEST(ExtensionL10nUtil, ShouldRelocalizeManifestWithNullManifest) {
-  ExtensionInfo info(NULL, "", base::FilePath(), Manifest::LOAD);
+  ExtensionInfo info(NULL, "", base::FilePath(), Manifest::UNPACKED);
 
   EXPECT_FALSE(extension_l10n_util::ShouldRelocalizeManifest(info));
 }
@@ -569,7 +569,7 @@ TEST(ExtensionL10nUtil, ShouldRelocalizeManifestWithNullManifest) {
 // Try with default and current locales missing.
 TEST(ExtensionL10nUtil, ShouldRelocalizeManifestEmptyManifest) {
   DictionaryValue manifest;
-  ExtensionInfo info(&manifest, "", base::FilePath(), Manifest::LOAD);
+  ExtensionInfo info(&manifest, "", base::FilePath(), Manifest::UNPACKED);
 
   EXPECT_FALSE(extension_l10n_util::ShouldRelocalizeManifest(info));
 }
@@ -579,7 +579,7 @@ TEST(ExtensionL10nUtil, ShouldRelocalizeManifestWithDefaultLocale) {
   DictionaryValue manifest;
   manifest.SetString(keys::kDefaultLocale, "en_US");
 
-  ExtensionInfo info(&manifest, "", base::FilePath(), Manifest::LOAD);
+  ExtensionInfo info(&manifest, "", base::FilePath(), Manifest::UNPACKED);
 
   EXPECT_TRUE(extension_l10n_util::ShouldRelocalizeManifest(info));
 }
@@ -590,7 +590,7 @@ TEST(ExtensionL10nUtil, ShouldRelocalizeManifestWithCurrentLocale) {
   manifest.SetString(keys::kCurrentLocale,
                      extension_l10n_util::CurrentLocaleOrDefault());
 
-  ExtensionInfo info(&manifest, "", base::FilePath(), Manifest::LOAD);
+  ExtensionInfo info(&manifest, "", base::FilePath(), Manifest::UNPACKED);
 
   EXPECT_FALSE(extension_l10n_util::ShouldRelocalizeManifest(info));
 }
@@ -602,7 +602,7 @@ TEST(ExtensionL10nUtil, ShouldRelocalizeManifestSameCurrentLocale) {
   manifest.SetString(keys::kCurrentLocale,
                      extension_l10n_util::CurrentLocaleOrDefault());
 
-  ExtensionInfo info(&manifest, "", base::FilePath(), Manifest::LOAD);
+  ExtensionInfo info(&manifest, "", base::FilePath(), Manifest::UNPACKED);
 
   EXPECT_FALSE(extension_l10n_util::ShouldRelocalizeManifest(info));
 }
@@ -613,7 +613,7 @@ TEST(ExtensionL10nUtil, ShouldRelocalizeManifestDifferentCurrentLocale) {
   manifest.SetString(keys::kDefaultLocale, "en_US");
   manifest.SetString(keys::kCurrentLocale, "sr");
 
-  ExtensionInfo info(&manifest, "", base::FilePath(), Manifest::LOAD);
+  ExtensionInfo info(&manifest, "", base::FilePath(), Manifest::UNPACKED);
 
   EXPECT_TRUE(extension_l10n_util::ShouldRelocalizeManifest(info));
 }

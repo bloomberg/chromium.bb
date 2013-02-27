@@ -538,7 +538,7 @@ void RenderViewContextMenu::AppendPlatformAppItems() {
                                         PrintableSelectionText(), &index);
 
   // Add dev tools for unpacked extensions.
-  if (platform_app->location() == extensions::Manifest::LOAD ||
+  if (extensions::Manifest::IsUnpackedLocation(platform_app->location()) ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDebugPackedApps)) {
     // Add a separator if there are any items already in the menu.

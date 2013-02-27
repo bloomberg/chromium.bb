@@ -545,7 +545,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
           // Allow built-in extensions and extensions under development.
           bool is_extension_unrestricted = extension &&
               (extension->location() == extensions::Manifest::COMPONENT ||
-               extension->location() == extensions::Manifest::LOAD);
+               extensions::Manifest::IsUnpackedLocation(extension->location()));
           GURL top_url = frame->top()->document().url();
           if (!IsNaClAllowed(manifest_url,
                              top_url,

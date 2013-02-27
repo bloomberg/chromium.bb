@@ -138,7 +138,7 @@ void UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in,
   std::string error;
   extension_ = extension_file_util::LoadExtension(
       extension_path_,
-      Manifest::LOAD,
+      Manifest::COMMAND_LINE,
       GetFlags(),
       &error);
 
@@ -174,7 +174,7 @@ void UnpackedInstaller::OnRequirementsChecked(
 int UnpackedInstaller::GetFlags() {
   std::string id = Extension::GenerateIdForPath(extension_path_);
   bool allow_file_access =
-      Manifest::ShouldAlwaysAllowFileAccess(Manifest::LOAD);
+      Manifest::ShouldAlwaysAllowFileAccess(Manifest::UNPACKED);
   if (service_weak_->extension_prefs()->HasAllowFileAccessSetting(id))
     allow_file_access = service_weak_->extension_prefs()->AllowFileAccess(id);
 
@@ -225,7 +225,7 @@ void UnpackedInstaller::LoadWithFileAccess(int flags) {
   std::string error;
   extension_ = extension_file_util::LoadExtension(
       extension_path_,
-      Manifest::LOAD,
+      Manifest::UNPACKED,
       flags,
       &error);
 

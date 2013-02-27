@@ -152,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(NaClExtensionTest, UnpackedExtension) {
 
   const Extension* extension = InstallExtension(INSTALL_TYPE_UNPACKED);
   ASSERT_TRUE(extension);
-  ASSERT_EQ(extension->location(), Manifest::LOAD);
+  ASSERT_EQ(extension->location(), Manifest::UNPACKED);
   CheckPluginsCreated(extension, true);
 }
 

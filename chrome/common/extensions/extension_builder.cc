@@ -9,7 +9,7 @@
 namespace extensions {
 
 ExtensionBuilder::ExtensionBuilder()
-    : location_(Manifest::LOAD),
+    : location_(Manifest::UNPACKED),
       flags_(Extension::NO_FLAGS) {
 }
 ExtensionBuilder::~ExtensionBuilder() {}

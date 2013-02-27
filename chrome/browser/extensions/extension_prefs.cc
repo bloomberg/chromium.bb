@@ -441,7 +441,8 @@ void ExtensionPrefs::MakePathsRelative() {
       continue;
     int location_value;
     if (extension_dict->GetInteger(kPrefLocation, &location_value) &&
-        location_value == Manifest::LOAD) {
+        Manifest::IsUnpackedLocation(
+            static_cast<Manifest::Location>(location_value))) {
       // Unpacked extensions can have absolute paths.
       continue;
     }
@@ -1590,7 +1591,7 @@ std::string ExtensionPrefs::GetVersionString(const std::string& extension_id) {
 }
 
 void ExtensionPrefs::UpdateManifest(const Extension* extension) {
-  if (extension->location() != Manifest::LOAD) {
+  if (!Manifest::IsUnpackedLocation(extension->location())) {
     const DictionaryValue* extension_dict = GetExtensionPref(extension->id());
     if (!extension_dict)
       return;
@@ -1680,25 +1681,24 @@ scoped_ptr<ExtensionInfo> ExtensionPrefs::GetInstalledExtensionInfo(
 
   // Make path absolute. Unpacked extensions will already have absolute paths,
   // otherwise make it so.
-  if (location_value != Manifest::LOAD) {
-    DCHECK(location_value == Manifest::COMPONENT ||
+  Manifest::Location location =
+      static_cast<Manifest::Location>(location_value);
+  if (!Manifest::IsUnpackedLocation(location)) {
+    DCHECK(location == Manifest::COMPONENT ||
            !base::FilePath(path).IsAbsolute());
     path = install_directory_.Append(path).value();
   }
 
-  // Only the following extension types can be installed permanently in the
-  // preferences.
-  Manifest::Location location =
-      static_cast<Manifest::Location>(location_value);
+  // Only the following extension types have data saved in the preferences.
   if (location != Manifest::INTERNAL &&
-      location != Manifest::LOAD &&
+      !Manifest::IsUnpackedLocation(location) &&
       !Manifest::IsExternalLocation(location)) {
     NOTREACHED();
     return scoped_ptr<ExtensionInfo>();
   }
 
   const DictionaryValue* manifest = NULL;
-  if (location != Manifest::LOAD &&
+  if (!Manifest::IsUnpackedLocation(location) &&
       !ext->GetDictionary(kPrefManifest, &manifest)) {
     LOG(WARNING) << "Missing manifest for extension " << extension_id;
     // Just a warning for now.
@@ -1813,25 +1813,24 @@ scoped_ptr<ExtensionInfo> ExtensionPrefs::GetDelayedInstallInfo(
 
   // Make path absolute. Unpacked extensions will already have absolute paths,
   // otherwise make it so.
-  if (location_value != Manifest::LOAD) {
-    DCHECK(location_value == Manifest::COMPONENT ||
+  Manifest::Location location =
+      static_cast<Manifest::Location>(location_value);
+  if (!Manifest::IsUnpackedLocation(location)) {
+    DCHECK(location == Manifest::COMPONENT ||
            !base::FilePath(path).IsAbsolute());
     path = install_directory_.Append(path).value();
   }
 
-  // Only the following extension types can be installed permanently in the
-  // preferences.
-  Manifest::Location location =
-      static_cast<Manifest::Location>(location_value);
+  // Only the following extension types have data saved in the preferences.
   if (location != Manifest::INTERNAL &&
-      location != Manifest::LOAD &&
+      !Manifest::IsUnpackedLocation(location) &&
       !Manifest::IsExternalLocation(location)) {
     NOTREACHED();
     return scoped_ptr<ExtensionInfo>();
   }
 
   const DictionaryValue* manifest = NULL;
-  if (location != Manifest::LOAD &&
+  if (!Manifest::IsUnpackedLocation(location) &&
       !ext->GetDictionary(kPrefManifest, &manifest)) {
     LOG(WARNING) << "Missing manifest for extension " << extension_id;
     // Just a warning for now.
@@ -2393,7 +2392,7 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
   extension_dict->Set(kPrefPath, Value::CreateStringValue(path));
   // We store prefs about LOAD extensions, but don't cache their manifest
   // since it may change on disk.
-  if (extension->location() != Manifest::LOAD) {
+  if (!Manifest::IsUnpackedLocation(extension->location())) {
     extension_dict->Set(kPrefManifest,
                         extension->manifest()->value()->DeepCopy());
   }
