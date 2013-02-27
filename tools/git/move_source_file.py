@@ -121,8 +121,8 @@ def UpdateIncludeGuard(old_path, new_path):
   """Updates the include guard in a file now residing at |new_path|,
   previously residing at |old_path|, with an up-to-date include guard.
 
-  Errors out if an include guard per Chromium style guide cannot be
-  found for the old path.
+  Prints a warning if the update could not be completed successfully (e.g.,
+  because the old include guard was not formatted correctly per Chromium style).
   """
   old_guard = MakeIncludeGuardName(old_path)
   new_guard = MakeIncludeGuardName(new_path)
@@ -131,9 +131,12 @@ def UpdateIncludeGuard(old_path, new_path):
     contents = f.read()
 
   new_contents = contents.replace(old_guard, new_guard)
-  if new_contents == contents:
-    raise Exception(
-      'Error updating include guard; perhaps old guard is not per style guide?')
+  # The file should now have three instances of the new guard: two at the top
+  # of the file plus one at the bottom for the comment on the #endif.
+  if new_contents.count(new_guard) != 3:
+    print ('WARNING: Could not not successfully update include guard; perhaps '
+           'old guard is not per style guide? You will have to update the '
+           'include guard manually.')
 
   with open(new_path, 'w') as f:
     f.write(new_contents)
