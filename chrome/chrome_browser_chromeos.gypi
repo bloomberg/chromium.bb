@@ -522,6 +522,8 @@
         'browser/chromeos/net/connectivity_state_helper.h',
         'browser/chromeos/net/cros_network_change_notifier_factory.cc',
         'browser/chromeos/net/cros_network_change_notifier_factory.h',
+        'browser/chromeos/net/managed_network_configuration_handler.cc',
+        'browser/chromeos/net/managed_network_configuration_handler.h',
         'browser/chromeos/net/network_change_notifier_network_library.cc',
         'browser/chromeos/net/network_change_notifier_network_library.h',
         'browser/chromeos/net/network_portal_detector.cc',

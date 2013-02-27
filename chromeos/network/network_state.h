@@ -25,14 +25,17 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
 
   // Accessors
   const std::string& security() const { return security_; }
-  const std::string& technology() const { return technology_; }
   const std::string& ip_address() const { return ip_address_; }
   const std::string& device_path() const { return device_path_; }
+  const std::string& guid() const { return guid_; }
   const std::string& connection_state() const { return connection_state_; }
   const std::string& error() const { return error_; }
+  // Wireless property accessors
+  int signal_strength() const { return signal_strength_; }
+  // Cellular property accessors
+  const std::string& technology() const { return technology_; }
   const std::string& activation_state() const { return activation_state_; }
   const std::string& roaming() const { return roaming_; }
-  int signal_strength() const { return signal_strength_; }
 
   bool IsConnectedState() const;
   bool IsConnectingState() const;
@@ -53,6 +56,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // Common Network Service properties
   std::string security_;
   std::string device_path_;
+  std::string guid_;
   std::string ip_address_;
   std::string connection_state_;
   std::string error_;

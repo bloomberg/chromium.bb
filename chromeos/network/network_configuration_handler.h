@@ -25,7 +25,8 @@ namespace chromeos {
 // most calls are asynchronous for that reason. No calls will block on DBus
 // calls.
 //
-// This is owned and it's lifetime managed by aura::Shell.
+// This is owned and it's lifetime managed by the Chrome startup code. It's
+// basically a singleton, but with explicit lifetime management.
 //
 // For accessing lists of remembered networks, and other state information, see
 // the class NetworkStateHandler.
@@ -93,9 +94,8 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler {
 
 
   // Creates a network with the given properties in the active Shill profile,
-  // and returns the properties to |callback| if successful, along with the new
-  // service_path. See note on |callback| and |error_callback|, in class
-  // description above.
+  // and returns the new service_path to |callback| if successful. See note on
+  // |callback| and |error_callback|, in class description above.
   void CreateConfiguration(
       const base::DictionaryValue& properties,
       const network_handler::StringResultCallback& callback,

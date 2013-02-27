@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "chromeos/chromeos_export.h"
 
 namespace base {
 class DictionaryValue;
@@ -31,9 +32,10 @@ typedef base::Callback<
   void(const std::string& service_path)> StringResultCallback;
 
 // Create a DictionaryValue for passing to ErrorCallback
-base::DictionaryValue* CreateErrorData(const std::string& service_path,
-                                       const std::string& error_name,
-                                       const std::string& error_message);
+CHROMEOS_EXPORT base::DictionaryValue* CreateErrorData(
+    const std::string& service_path,
+    const std::string& error_name,
+    const std::string& error_message);
 
 // Callback for Shill errors. |path| may be blank if not relevant.
 // Logs an error and calls |error_callback| if not null.

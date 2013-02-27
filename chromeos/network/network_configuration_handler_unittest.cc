@@ -88,12 +88,12 @@ class NetworkConfigurationHandlerTest : public testing::Test {
         mock_dbus_thread_manager->mock_shill_service_client();
 
     // Initialize DBusThreadManager with a stub implementation.
-    configuration_handler_.reset(new NetworkConfigurationHandler);
+    NetworkConfigurationHandler::Initialize();
     message_loop_.RunUntilIdle();
   }
 
   virtual void TearDown() OVERRIDE {
-    configuration_handler_.reset();
+    NetworkConfigurationHandler::Shutdown();
     DBusThreadManager::Shutdown();
   }
 
@@ -159,7 +159,6 @@ class NetworkConfigurationHandlerTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<NetworkConfigurationHandler> configuration_handler_;
   MockShillManagerClient* mock_manager_client_;
   MockShillServiceClient* mock_service_client_;
   MessageLoop message_loop_;
@@ -191,7 +190,7 @@ TEST_F(NetworkConfigurationHandlerTest, GetProperties) {
               GetProperties(_, _)).WillOnce(
                   Invoke(this,
                          &NetworkConfigurationHandlerTest::OnGetProperties));
-  configuration_handler_->GetProperties(
+  NetworkConfigurationHandler::Get()->GetProperties(
       service_path,
       base::Bind(&DictionaryValueCallback,
                  service_path,
@@ -214,7 +213,7 @@ TEST_F(NetworkConfigurationHandlerTest, SetProperties) {
               ConfigureService(_, _, _)).WillOnce(
                   Invoke(this,
                          &NetworkConfigurationHandlerTest::OnSetProperties));
-  configuration_handler_->SetProperties(
+  NetworkConfigurationHandler::Get()->SetProperties(
       service_path,
       value,
       base::Bind(&base::DoNothing),
@@ -237,7 +236,7 @@ TEST_F(NetworkConfigurationHandlerTest, ClearProperties) {
               ConfigureService(_, _, _)).WillOnce(
                   Invoke(this,
                          &NetworkConfigurationHandlerTest::OnSetProperties));
-  configuration_handler_->SetProperties(
+  NetworkConfigurationHandler::Get()->SetProperties(
       service_path,
       value,
       base::Bind(&base::DoNothing),
@@ -251,7 +250,7 @@ TEST_F(NetworkConfigurationHandlerTest, ClearProperties) {
               ClearProperties(_, _, _, _)).WillOnce(
                   Invoke(this,
                          &NetworkConfigurationHandlerTest::OnClearProperties));
-  configuration_handler_->ClearProperties(
+  NetworkConfigurationHandler::Get()->ClearProperties(
       service_path,
       values_to_clear,
       base::Bind(&base::DoNothing),
@@ -274,7 +273,7 @@ TEST_F(NetworkConfigurationHandlerTest, ClearPropertiesError) {
               ConfigureService(_, _, _)).WillOnce(
                   Invoke(this,
                          &NetworkConfigurationHandlerTest::OnSetProperties));
-  configuration_handler_->SetProperties(
+  NetworkConfigurationHandler::Get()->SetProperties(
       service_path,
       value,
       base::Bind(&base::DoNothing),
@@ -289,7 +288,7 @@ TEST_F(NetworkConfigurationHandlerTest, ClearPropertiesError) {
       ClearProperties(_, _, _, _)).WillOnce(
           Invoke(this,
                  &NetworkConfigurationHandlerTest::OnClearPropertiesError));
-  configuration_handler_->ClearProperties(
+  NetworkConfigurationHandler::Get()->ClearProperties(
       service_path,
       values_to_clear,
       base::Bind(&base::DoNothing),
@@ -304,7 +303,7 @@ TEST_F(NetworkConfigurationHandlerTest, Connect) {
               Connect(_, _, _)).WillOnce(
                   Invoke(this,
                          &NetworkConfigurationHandlerTest::OnConnect));
-  configuration_handler_->Connect(
+  NetworkConfigurationHandler::Get()->Connect(
       service_path,
       base::Bind(&base::DoNothing),
       base::Bind(&ErrorCallback, false, service_path));
@@ -318,7 +317,7 @@ TEST_F(NetworkConfigurationHandlerTest, Disconnect) {
               Disconnect(_, _, _)).WillOnce(
                   Invoke(this,
                          &NetworkConfigurationHandlerTest::OnDisconnect));
-  configuration_handler_->Disconnect(
+  NetworkConfigurationHandler::Get()->Disconnect(
       service_path,
       base::Bind(&base::DoNothing),
       base::Bind(&ErrorCallback, false, service_path));
@@ -339,7 +338,7 @@ TEST_F(NetworkConfigurationHandlerTest, CreateConfiguration) {
       GetService(_, _, _)).WillOnce(
           Invoke(this,
                  &NetworkConfigurationHandlerTest::OnGetService));
-  configuration_handler_->CreateConfiguration(
+  NetworkConfigurationHandler::Get()->CreateConfiguration(
       value,
       base::Bind(&StringResultCallback, std::string("/service/2")),
       base::Bind(&ErrorCallback, false, std::string("")));
@@ -354,7 +353,7 @@ TEST_F(NetworkConfigurationHandlerTest, RemoveConfiguration) {
       Remove(_, _, _)).WillOnce(
           Invoke(this,
                  &NetworkConfigurationHandlerTest::OnRemove));
-  configuration_handler_->RemoveConfiguration(
+  NetworkConfigurationHandler::Get()->RemoveConfiguration(
       service_path,
       base::Bind(&base::DoNothing),
       base::Bind(&ErrorCallback, false, service_path));

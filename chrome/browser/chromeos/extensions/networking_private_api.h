@@ -30,8 +30,18 @@ class NetworkingPrivateGetPropertiesFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  void ResultCallback(chromeos::DBusMethodCallStatus call_status,
+  // Callback if talking to ShillServiceClient directly.
+  // TODO(pneubeck): Remove once the ManagedNetworkConfigurationHandler is
+  // stable.
+  void ResultCallback(const std::string& service_path,
+                      chromeos::DBusMethodCallStatus call_status,
                       const base::DictionaryValue& result);
+
+  // Callbacks if talking to ManagedNetworkConfigurationHandler.
+  void GetPropertiesSuccess(const std::string& service_path,
+                            const base::DictionaryValue& result);
+  void GetPropertiesFailed(const std::string& error_name,
+                           scoped_ptr<base::DictionaryValue> error_data);
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetPropertiesFunction);
 };
 

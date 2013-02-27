@@ -24,6 +24,10 @@ const char kEnableNewNetworkChangeNotifier[] =
 // Enables screensaver extensions.
 const char kEnableScreensaverExtensions[] = "enable-screensaver-extensions";
 
+// Enables the new NetworkConfigurationHandler class.
+const char kEnableNewNetworkConfigurationHandlers[] =
+    "enable-new-network-configuration-handlers";
+
 // Sends test messages on first call to RequestUpdate (stub only).
 const char kSmsTestMessages[] = "sms-test-messages";
 

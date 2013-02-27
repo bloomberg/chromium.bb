@@ -49,6 +49,7 @@
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
 #include "chrome/browser/chromeos/net/connectivity_state_helper.h"
 #include "chrome/browser/chromeos/net/cros_network_change_notifier_factory.h"
+#include "chrome/browser/chromeos/net/managed_network_configuration_handler.h"
 #include "chrome/browser/chromeos/net/network_change_notifier_network_library.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/chromeos/power/brightness_observer.h"
@@ -260,7 +261,12 @@ class DBusServices {
     chromeos::network_event_log::Initialize();
     chromeos::GeolocationHandler::Initialize();
     chromeos::NetworkStateHandler::Initialize();
-    chromeos::NetworkConfigurationHandler::Initialize();
+
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            chromeos::switches::kEnableNewNetworkConfigurationHandlers)) {
+      chromeos::NetworkConfigurationHandler::Initialize();
+      chromeos::ManagedNetworkConfigurationHandler::Initialize();
+    }
 
     // Initialize the network change notifier for Chrome OS. The network
     // change notifier starts to monitor changes from the power manager and
@@ -298,9 +304,14 @@ class DBusServices {
     if (cros_initialized_ && CrosLibrary::Get())
       CrosLibrary::Shutdown();
 
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            chromeos::switches::kEnableNewNetworkConfigurationHandlers)) {
+      chromeos::ManagedNetworkConfigurationHandler::Shutdown();
+      chromeos::NetworkConfigurationHandler::Shutdown();
+    }
+
     chromeos::ConnectivityStateHelper::Shutdown();
     chromeos::NetworkStateHandler::Shutdown();
-    chromeos::NetworkConfigurationHandler::Shutdown();
     chromeos::GeolocationHandler::Shutdown();
     chromeos::network_event_log::Shutdown();
 

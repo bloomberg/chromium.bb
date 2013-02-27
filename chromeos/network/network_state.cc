@@ -37,6 +37,8 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return GetStringValue(key, value, &technology_);
   } else if (key == flimflam::kDeviceProperty) {
     return GetStringValue(key, value, &device_path_);
+  } else if (key == flimflam::kGuidProperty) {
+    return GetStringValue(key, value, &guid_);
   }
   return false;
 }
