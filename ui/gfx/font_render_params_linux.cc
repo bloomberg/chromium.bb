@@ -4,26 +4,32 @@
 
 #include "ui/gfx/font_render_params_linux.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
+#include "ui/gfx/switches.h"
 
 #if defined(TOOLKIT_GTK)
 #include <gtk/gtk.h>
 #else
 #include <fontconfig/fontconfig.h>
-#include "base/command_line.h"
-#include "ui/gfx/switches.h"
 #endif
 
 namespace gfx {
 
 namespace {
 
+bool SubpixelPositioningRequested(bool renderer) {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      renderer ?
+      switches::kEnableWebkitTextSubpixelPositioning :
+      switches::kEnableBrowserTextSubpixelPositioning);
+}
+
 // Initializes |params| with the system's default settings. |renderer| is true
 // when setting WebKit renderer defaults.
 void LoadDefaults(FontRenderParams* params, bool renderer) {
 #if defined(TOOLKIT_GTK)
   params->antialiasing = true;
-  params->subpixel_positioning = false;
   // TODO(wangxianzhu): autohinter is now true to keep original behavior
   // of WebKit, but it might not be the best value.
   params->autohinter = true;
@@ -105,19 +111,15 @@ void LoadDefaults(FontRenderParams* params, bool renderer) {
     default:
       params->subpixel_rendering = FontRenderParams::SUBPIXEL_RENDERING_NONE;
   }
+#endif
 
-  params->subpixel_positioning =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          renderer ?
-          switches::kEnableWebkitTextSubpixelPositioning :
-          switches::kEnableBrowserTextSubpixelPositioning);
+  params->subpixel_positioning = SubpixelPositioningRequested(renderer);
 
   // To enable subpixel positioning, we need to disable hinting.
   if (params->subpixel_positioning)
     params->hinting = FontRenderParams::HINTING_NONE;
   else
     params->hinting = FontRenderParams::HINTING_SLIGHT;
-#endif
 }
 
 }  // namespace
@@ -138,6 +140,10 @@ const FontRenderParams& GetDefaultWebKitFontRenderParams() {
     LoadDefaults(&default_params, /* renderer */ true);
   loaded_defaults = true;
   return default_params;
+}
+
+bool GetDefaultWebkitSubpixelPositioning() {
+  return SubpixelPositioningRequested(true);
 }
 
 }  // namespace gfx

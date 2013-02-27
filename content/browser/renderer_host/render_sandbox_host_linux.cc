@@ -69,17 +69,7 @@ class SandboxIPCProcess  {
     // FontConfig doesn't provide a standard property to control subpixel
     // positioning, so we pass the current setting through to WebKit.
     WebFontInfo::setSubpixelPositioning(
-#if defined(TOOLKIT_GTK)
-        // The GTK implementation of GetDefaultFontRenderParams() uses
-        // GtkSettings, which requires a connection to the X server (as it uses
-        // XSETTINGS).  When running tests, X may not be ready at this point,
-        // though.  GTK doesn't currently provide a way to enable subpixel
-        // positioning, so just pass false here to avoid the issue.
-        false
-#else
-        gfx::GetDefaultWebKitFontRenderParams().subpixel_positioning
-#endif
-        );
+        gfx::GetDefaultWebkitSubpixelPositioning());
   }
 
   ~SandboxIPCProcess();

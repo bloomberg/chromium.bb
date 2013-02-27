@@ -59,6 +59,12 @@ UI_EXPORT const FontRenderParams& GetDefaultFontRenderParams();
 // Returns the system's default parameters for WebKit font rendering.
 UI_EXPORT const FontRenderParams& GetDefaultWebKitFontRenderParams();
 
+// Returns the system's default parameters for WebKit subpixel positioning.
+// Subpixel positioning is special since neither GTK nor FontConfig currently
+// track it as a preference.
+// See https://bugs.freedesktop.org/show_bug.cgi?id=50736
+UI_EXPORT bool GetDefaultWebkitSubpixelPositioning();
+
 }  // namespace gfx
 
 #endif  // UI_GFX_FONT_RENDER_PARAMS_LINUX_H_
