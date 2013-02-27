@@ -187,6 +187,9 @@
         <message desc="The product name. Displayed in various Chrome pages, including the New Tab page, and displayed prominently on the app's main page." name="IDR_PRODUCT_NAME">
           Chrome Remote Desktop
         </message>
+	<message desc="Message displayed at the bottom of the client connect dialog if Chrome Remote Desktop is running in the wrong start-up mode." name="IDR_WARNING_NOT_WINDOWED">
+          NOTE: To ensure that all keyboard shortcuts are available, you can configure Chrome Remote Desktop to ‘Open as window’.
+	</message>
       </if>
 
       <if expr="not pp_ifdef('_google_chrome')">
@@ -241,6 +244,9 @@
         <message desc="The product name. Displayed in various Chrome pages, including the New Tab page, and displayed prominently on the app's main page." name="IDR_PRODUCT_NAME">
           Chromoting
         </message>
+	<message desc="Message displayed at the bottom of the client connect dialog if Chromoting is running in the wrong start-up mode." name="IDR_WARNING_NOT_WINDOWED">
+          NOTE: To ensure that all keyboard shortcuts are available, you can configure Chromoting to ‘Open as window’.
+	</message>
       </if>
 
       <message desc="Label for the access code entry box. This is where the client user enters the code that permits access to the host." name="IDR_ACCESS_CODE">
@@ -509,9 +515,6 @@
       </message>
       <message desc="Message displayed at the bottom of the host screen if local policy dictates that NAT traversal is disabled, meaning that connections outside the local network will not work." name="IDR_WARNING_NAT_DISABLED">
         NOTE: Policy settings permit connections only between computers within your network.
-      </message>
-      <message desc="Message displayed at the bottom of the client connect dialog if Chromoting is running in the wrong start-up mode." name="IDR_WARNING_NOT_WINDOWED">
-	NOTE: To ensure that all keyboard shortcuts are available, you can configure Chromoting to ‘Open as window’.
       </message>
       <message desc="Link to learn more detailed information on a topic." name="IDR_LEARN_HOW">
 	Learn how.
