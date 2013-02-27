@@ -121,7 +121,7 @@ class AutofillRiskFingerprintTest : public InProcessBrowserTest {
 
 // This test is flaky on Windows. See http://crbug.com/178356.
 #if defined(OS_WIN)
-#define MAYBE_GetFingerprint DISABLE_GetFingerprint
+#define MAYBE_GetFingerprint DISABLED_GetFingerprint
 #else
 #define MAYBE_GetFingerprint GetFingerprint
 #endif
