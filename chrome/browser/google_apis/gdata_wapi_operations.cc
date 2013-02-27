@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
+#include "chrome/browser/google_apis/operation_util.h"
 #include "chrome/browser/google_apis/time_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
@@ -22,19 +23,13 @@ namespace google_apis {
 
 namespace {
 
-// etag matching header.
-const char kIfMatchAllHeader[] = "If-Match: *";
-const char kIfMatchHeaderPrefix[] = "If-Match: ";
 
 const char kUploadContentRange[] = "Content-Range: bytes ";
 
 const char kFeedField[] = "feed";
 
-// Returns If-Match header string for |etag|.
-// If |etag| is empty, the returned header should match any etag.
-std::string GenerateIfMatchHeader(const std::string& etag) {
-  return etag.empty() ? kIfMatchAllHeader : (kIfMatchHeaderPrefix + etag);
-}
+// Templates for file uploading.
+const char kUploadResponseRange[] = "range";
 
 // Parses the |value| to ResourceEntry with error handling.
 // This is designed to be used for ResumeUploadOperation and
@@ -194,7 +189,7 @@ URLFetcher::RequestType DeleteResourceOperation::GetRequestType() const {
 std::vector<std::string>
 DeleteResourceOperation::GetExtraRequestHeaders() const {
   std::vector<std::string> headers;
-  headers.push_back(GenerateIfMatchHeader(etag_));
+  headers.push_back(util::GenerateIfMatchHeader(etag_));
   return headers;
 }
 
@@ -321,7 +316,7 @@ URLFetcher::RequestType RenameResourceOperation::GetRequestType() const {
 std::vector<std::string>
 RenameResourceOperation::GetExtraRequestHeaders() const {
   std::vector<std::string> headers;
-  headers.push_back(kIfMatchAllHeader);
+  headers.push_back(util::kIfMatchAllHeader);
   return headers;
 }
 
@@ -370,7 +365,7 @@ URLFetcher::RequestType AuthorizeAppOperation::GetRequestType() const {
 std::vector<std::string>
 AuthorizeAppOperation::GetExtraRequestHeaders() const {
   std::vector<std::string> headers;
-  headers.push_back(kIfMatchAllHeader);
+  headers.push_back(util::kIfMatchAllHeader);
   return headers;
 }
 
@@ -474,7 +469,7 @@ RemoveResourceFromDirectoryOperation::GetRequestType() const {
 std::vector<std::string>
 RemoveResourceFromDirectoryOperation::GetExtraRequestHeaders() const {
   std::vector<std::string> headers;
-  headers.push_back(kIfMatchAllHeader);
+  headers.push_back(util::kIfMatchAllHeader);
   return headers;
 }
 
@@ -581,7 +576,7 @@ std::vector<std::string>
 InitiateUploadExistingFileOperation::GetExtraRequestHeaders() const {
   std::vector<std::string> headers(
       InitiateUploadOperationBase::GetExtraRequestHeaders());
-  headers.push_back(GenerateIfMatchHeader(etag_));
+  headers.push_back(util::GenerateIfMatchHeader(etag_));
   return headers;
 }
 

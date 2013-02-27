@@ -714,6 +714,8 @@
         'browser/google_apis/operation_registry.h',
         'browser/google_apis/operation_runner.cc',
         'browser/google_apis/operation_runner.h',
+        'browser/google_apis/operation_util.cc',
+        'browser/google_apis/operation_util.h',
         'browser/google_apis/task_util.cc',
         'browser/google_apis/task_util.h',
         'browser/google_apis/time_util.cc',

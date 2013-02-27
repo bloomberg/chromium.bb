@@ -6,14 +6,13 @@
 
 #include "base/json/json_writer.h"
 #include "base/values.h"
+#include "chrome/browser/google_apis/operation_util.h"
 
 namespace google_apis {
 namespace {
 
 const char kContentTypeApplicationJson[] = "application/json";
 const char kDirectoryMimeType[] = "application/vnd.google-apps.folder";
-// etag matching header.
-const char kIfMatchAllHeader[] = "If-Match: *";
 
 }  // namespace
 
@@ -195,7 +194,7 @@ net::URLFetcher::RequestType RenameResourceOperation::GetRequestType() const {
 std::vector<std::string>
 RenameResourceOperation::GetExtraRequestHeaders() const {
   std::vector<std::string> headers;
-  headers.push_back(kIfMatchAllHeader);
+  headers.push_back(util::kIfMatchAllHeader);
   return headers;
 }
 
