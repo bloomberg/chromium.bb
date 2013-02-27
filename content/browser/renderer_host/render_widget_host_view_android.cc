@@ -120,7 +120,11 @@ void RenderWidgetHostViewAndroid::WasHidden() {
 
 void RenderWidgetHostViewAndroid::SetSize(const gfx::Size& size) {
   if (surface_texture_transport_.get()) {
-    // Temporary workaround: crbug.com/174405.
+    // This method should be called after size updates in ContentViewCore.
+    // However, because of desktop legacy reasons, it can also be called from
+    // WebContents using logical pixels instead of physical ones. Consequently,
+    // the size orgument should always be ignored in favor of the physical size
+    // returned by ContentViewCore.
     surface_texture_transport_->SetSize(
         content_view_core_ ? content_view_core_->GetPhysicalSize() : size);
   }
