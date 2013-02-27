@@ -1054,6 +1054,13 @@ void DriveFileSyncService::DidGetRemoteFileMetadata(
     const SyncFileMetadataCallback& callback,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceEntry> entry) {
+  if (error != google_apis::HTTP_SUCCESS) {
+    callback.Run(GDataErrorCodeToSyncStatusCodeWrapper(error),
+                 SyncFileMetadata());
+    return;
+  }
+
+  DCHECK(entry);
   SyncFileType file_type = SYNC_FILE_TYPE_UNKNOWN;
   if (entry->is_file())
     file_type = SYNC_FILE_TYPE_FILE;
