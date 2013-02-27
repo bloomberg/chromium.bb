@@ -3176,7 +3176,8 @@ TEST(ImmediateInterpreterTest, SemiMtNoPinchTest) {
   ii.SetHardwareProperties(hwprops);
   for (size_t idx = 0; idx < arraysize(hardware_states); ++idx)
     gesture = ii.SyncInterpret(&hardware_states[idx], NULL);
-  EXPECT_NE(gesture->type, kGestureTypePinch);
+  if (gesture)
+    EXPECT_NE(gesture->type, kGestureTypePinch);
 }
 
 TEST(ImmediateInterpreterTest, WarpedFingersTappingTest) {
