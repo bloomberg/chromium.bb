@@ -807,12 +807,7 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_CLOSE_TAB, true);
   command_updater_.UpdateCommandEnabled(IDC_DUPLICATE_TAB, true);
   command_updater_.UpdateCommandEnabled(IDC_RESTORE_TAB, false);
-#if defined(OS_WIN) && defined(USE_ASH)
-  if (browser_->host_desktop_type() != chrome::HOST_DESKTOP_TYPE_ASH)
-    command_updater_.UpdateCommandEnabled(IDC_EXIT, true);
-#else
   command_updater_.UpdateCommandEnabled(IDC_EXIT, true);
-#endif
   command_updater_.UpdateCommandEnabled(IDC_DEBUG_FRAME_TOGGLE, true);
 #if defined(OS_WIN) && defined(USE_ASH) && !defined(NDEBUG)
   if (base::win::GetVersion() < base::win::VERSION_WIN8 &&
