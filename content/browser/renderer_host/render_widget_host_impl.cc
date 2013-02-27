@@ -1527,11 +1527,13 @@ void RenderWidgetHostImpl::OnSwapCompositorFrame(
 #if defined(OS_ANDROID)
   if (view_) {
     view_->UpdateFrameInfo(
-        gfx::ToRoundedVector2d(frame.metadata.root_scroll_offset),
+        frame.metadata.root_scroll_offset,
         frame.metadata.page_scale_factor,
-        frame.metadata.min_page_scale_factor,
-        frame.metadata.max_page_scale_factor,
-        gfx::ToCeiledSize(frame.metadata.root_layer_size),
+        gfx::Vector2dF(
+            frame.metadata.min_page_scale_factor,
+            frame.metadata.max_page_scale_factor),
+        frame.metadata.root_layer_size,
+        frame.metadata.viewport_size,
         frame.metadata.location_bar_offset,
         frame.metadata.location_bar_content_translation);
   }

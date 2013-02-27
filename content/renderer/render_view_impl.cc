@@ -4173,10 +4173,6 @@ void RenderViewImpl::didChangeContentsSize(WebFrame* frame,
     cached_has_main_frame_horizontal_scrollbar_ = has_horizontal_scrollbar;
     cached_has_main_frame_vertical_scrollbar_ = has_vertical_scrollbar;
   }
-
-#if defined(OS_ANDROID)
-  ScheduleUpdateFrameInfo();
-#endif
 }
 
 void RenderViewImpl::UpdateScrollState(WebFrame* frame) {
@@ -4207,11 +4203,6 @@ void RenderViewImpl::didChangeScrollOffset(WebFrame* frame) {
 
   FOR_EACH_OBSERVER(
       RenderViewObserver, observers_, DidChangeScrollOffset(frame));
-
-#if defined(OS_ANDROID)
-  if (webview()->mainFrame() == frame)
-    ScheduleUpdateFrameInfo();
-#endif
 }
 
 void RenderViewImpl::willInsertBody(WebKit::WebFrame* frame) {

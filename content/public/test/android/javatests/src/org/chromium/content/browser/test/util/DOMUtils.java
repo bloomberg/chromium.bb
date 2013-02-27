@@ -73,15 +73,9 @@ public class DOMUtils {
     public static void clickNode(ActivityInstrumentationTestCase2 activityTestCase,
             final ContentView view, TestCallbackHelperContainer viewClient, String nodeId)
             throws InterruptedException, TimeoutException {
-        Rect bounds = getNodeBounds(view, viewClient, nodeId);
-        Assert.assertNotNull("Failed to get DOM element bounds of '" + nodeId + "'.'", bounds);
-
-        float scale = view.getScale();
-        int clickX = (int)(bounds.exactCenterX() * scale + 0.5);
-        int clickY = (int)(bounds.exactCenterY() * scale + 0.5);
-
+        int[] clickTarget = getClickTargetForNode(view, viewClient, nodeId);
         TouchCommon touchCommon = new TouchCommon(activityTestCase);
-        touchCommon.singleClickView(view, clickX, clickY);
+        touchCommon.singleClickView(view, clickTarget[0], clickTarget[1]);
     }
 
     /**
@@ -90,15 +84,9 @@ public class DOMUtils {
     public static void longPressNode(ActivityInstrumentationTestCase2 activityTestCase,
             final ContentView view, TestCallbackHelperContainer viewClient, String nodeId)
             throws InterruptedException, TimeoutException {
-        Rect bounds = getNodeBounds(view, viewClient, nodeId);
-        Assert.assertNotNull("Failed to get DOM element bounds of '" + nodeId + "'.'", bounds);
-
-        float scale = view.getScale();
-        int clickX = (int)(bounds.exactCenterX() * scale + 0.5);
-        int clickY = (int)(bounds.exactCenterY() * scale + 0.5);
-
+        int[] clickTarget = getClickTargetForNode(view, viewClient, nodeId);
         TouchCommon touchCommon = new TouchCommon(activityTestCase);
-        touchCommon.longPressView(view, clickX, clickY);
+        touchCommon.longPressView(view, clickTarget[0], clickTarget[1]);
     }
 
     /**
@@ -142,5 +130,19 @@ public class DOMUtils {
             Assert.fail("Failed to evaluate JavaScript: " + jsonText + "\n" + exception);
         }
         return contents;
+    }
+
+    /**
+     * Returns click targets for a given DOM node.
+     */
+    private static int[] getClickTargetForNode(final ContentView view,
+            TestCallbackHelperContainer viewClient, String nodeName)
+            throws InterruptedException, TimeoutException {
+        Rect bounds = getNodeBounds(view, viewClient, nodeName);
+        Assert.assertNotNull("Failed to get DOM element bounds of '" + nodeName + "'.", bounds);
+
+        int clickX = (int) view.getRenderCoordinates().fromLocalCssToPix(bounds.exactCenterX());
+        int clickY = (int) view.getRenderCoordinates().fromLocalCssToPix(bounds.exactCenterY());
+        return new int[] { clickX, clickY };
     }
 }

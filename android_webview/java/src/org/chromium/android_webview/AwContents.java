@@ -85,6 +85,17 @@ public class AwContents {
         void setMeasuredDimension(int measuredWidth, int measuredHeight);
     }
 
+    /**
+     * Listener for renderer state change notifications coming through ContentViewCore.
+     */
+    private class AwContentStateChangeListener
+            implements ContentViewCore.ContentSizeChangeListener {
+        @Override
+        public void onContentSizeChanged(int contentWidthPix, int contentHeightPix) {
+            mLayoutSizer.onContentSizeChanged(contentWidthPix, contentHeightPix);
+        }
+    }
+
     private int mNativeAwContents;
     private AwBrowserContext mBrowserContext;
     private ViewGroup mContainerView;
@@ -261,7 +272,7 @@ public class AwContents {
                 isAccessFromFileURLsGrantedByDefault);
         mContentViewCore.setContentViewClient(mContentsClient);
         mLayoutSizer = new AwLayoutSizer(new AwLayoutSizerDelegate());
-        mContentViewCore.setContentSizeChangeListener(mLayoutSizer);
+        mContentViewCore.setContentSizeChangeListener(new AwContentStateChangeListener());
         mContentsClient.installWebContentsObserver(mContentViewCore);
 
         mSettings = new AwSettings(mContentViewCore.getContext(), nativeWebContents);
@@ -348,11 +359,11 @@ public class AwContents {
     }
 
     public int getContentHeightCss() {
-        return getContentViewCore().getContentHeight();
+        return (int) Math.ceil(getContentViewCore().getContentHeightCss());
     }
 
     public int getContentWidthCss() {
-        return getContentViewCore().getContentWidth();
+        return (int) Math.ceil(getContentViewCore().getContentWidthCss());
     }
 
     public Picture capturePicture() {

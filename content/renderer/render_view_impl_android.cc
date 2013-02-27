@@ -7,44 +7,9 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "cc/layer_tree_host.h"
-#include "cc/switches.h"
-#include "content/common/view_messages.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 
 namespace content {
-
-void RenderViewImpl::ScheduleUpdateFrameInfo() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      cc::switches::kEnableCompositorFrameMessage))
-    return;
-
-  if (update_frame_info_scheduled_)
-    return;
-  update_frame_info_scheduled_ = true;
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&RenderViewImpl::SendUpdateFrameInfo, this));
-}
-
-void RenderViewImpl::SendUpdateFrameInfo() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      cc::switches::kEnableCompositorFrameMessage))
-    return;
-
-  update_frame_info_scheduled_ = false;
-
-  if (!webview() || !webview()->mainFrame())
-    return;
-
-  Send(new ViewHostMsg_UpdateFrameInfo(
-      routing_id_,
-      GetScrollOffset(),
-      webview()->pageScaleFactor(),
-      webview()->minimumPageScaleFactor(),
-      webview()->maximumPageScaleFactor(),
-      gfx::Size(webview()->mainFrame()->contentsSize())));
-}
 
 void RenderViewImpl::OnEnableHidingTopControls(bool enable) {
   DCHECK(compositor_ && compositor_->layer_tree_host());

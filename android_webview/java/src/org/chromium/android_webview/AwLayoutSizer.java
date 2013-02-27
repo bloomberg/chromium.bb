@@ -13,13 +13,13 @@ import org.chromium.content.browser.ContentViewCore;
 /**
  * Helper methods used to manage the layout of the View that contains AwContents.
  */
-public class AwLayoutSizer implements ContentViewCore.ContentSizeChangeListener {
+public class AwLayoutSizer {
     // These are used to prevent a re-layout if the content size changes within a dimension that is
     // fixed by the view system.
     private boolean mWidthMeasurementIsFixed;
     private boolean mHeightMeasurementIsFixed;
 
-    // Size of the rendered content, as reported by native.
+    // Size of the rendered content, as reported by native, in physical pixels.
     private int mContentHeight;
     private int mContentWidth;
 
@@ -39,8 +39,8 @@ public class AwLayoutSizer implements ContentViewCore.ContentSizeChangeListener 
      * Update the contents size.
      * This should be called whenever the content size changes (due to DOM manipulation or page
      * load, for example).
+     * The width and height should be in physical pixels.
      */
-    @Override
     public void onContentSizeChanged(int width, int height) {
         boolean layoutNeeded = (mContentWidth != width && !mWidthMeasurementIsFixed) ||
             (mContentHeight != height && !mHeightMeasurementIsFixed);

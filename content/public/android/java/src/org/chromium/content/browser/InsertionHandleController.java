@@ -80,15 +80,15 @@ abstract class InsertionHandleController implements CursorController {
 
     /**
      * Moves the handle so that it points at the given coordinates.
-     * @param x
-     * @param y
+     * @param x Handle x in physical pixels.
+     * @param y Handle y in physical pixels.
      */
     void setHandlePosition(int x, int y) {
         mHandle.positionAt(x, y);
     }
 
-    void setHandlePosition(PointF point) {
-        setHandlePosition((int)point.x, (int)point.y);
+    void setHandlePosition(float x, float y) {
+        setHandlePosition((int) x, (int) y);
     }
 
     /**

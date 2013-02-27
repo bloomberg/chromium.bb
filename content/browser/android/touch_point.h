@@ -12,7 +12,7 @@
 namespace content {
 
 // This class provides a helper method to convert a java object array of touch
-// events into a WebKit::WebTouchEvent.
+// events (in physical pixdels) into a WebKit::WebTouchEvent (in dip).
 class TouchPoint {
  public:
   static void BuildWebTouchEvent(JNIEnv* env,

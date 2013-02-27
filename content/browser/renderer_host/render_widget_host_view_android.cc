@@ -74,7 +74,6 @@ bool RenderWidgetHostViewAndroid::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostViewAndroid, message)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ImeBatchStateChanged_ACK,
                         OnProcessImeBatchStateAck)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFrameInfo, OnUpdateFrameInfo)
     IPC_MESSAGE_HANDLER(ViewHostMsg_StartContentIntent, OnStartContentIntent)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeBodyBackgroundColor,
                         OnDidChangeBodyBackgroundColor)
@@ -126,7 +125,7 @@ void RenderWidgetHostViewAndroid::SetSize(const gfx::Size& size) {
     // the size orgument should always be ignored in favor of the physical size
     // returned by ContentViewCore.
     surface_texture_transport_->SetSize(
-        content_view_core_ ? content_view_core_->GetPhysicalSize() : size);
+        content_view_core_ ? content_view_core_->GetViewportSizePix() : size);
   }
 
   host_->WasResized();
@@ -278,7 +277,7 @@ gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() const {
   if (!content_view_core_)
     return gfx::Rect();
 
-  return gfx::Rect(content_view_core_->GetDIPSize());
+  return gfx::Rect(content_view_core_->GetViewportSizeDip());
 }
 
 void RenderWidgetHostViewAndroid::UpdateCursor(const WebCursor& cursor) {
@@ -310,21 +309,6 @@ int RenderWidgetHostViewAndroid::GetNativeImeAdapter() {
 void RenderWidgetHostViewAndroid::OnProcessImeBatchStateAck(bool is_begin) {
   if (content_view_core_)
     content_view_core_->ProcessImeBatchStateAck(is_begin);
-}
-
-void RenderWidgetHostViewAndroid::OnUpdateFrameInfo(
-    const gfx::Vector2d& scroll_offset,
-    float page_scale_factor,
-    float min_page_scale_factor,
-    float max_page_scale_factor,
-    const gfx::Size& content_size) {
-  UpdateFrameInfo(scroll_offset,
-                  page_scale_factor,
-                  min_page_scale_factor,
-                  max_page_scale_factor,
-                  content_size,
-                  gfx::Vector2dF(),
-                  gfx::Vector2dF());
 }
 
 void RenderWidgetHostViewAndroid::OnDidChangeBodyBackgroundColor(
@@ -635,21 +619,21 @@ SkColor RenderWidgetHostViewAndroid::GetCachedBackgroundColor() const {
 }
 
 void RenderWidgetHostViewAndroid::UpdateFrameInfo(
-    const gfx::Vector2d& scroll_offset,
+    const gfx::Vector2dF& scroll_offset,
     float page_scale_factor,
-    float min_page_scale_factor,
-    float max_page_scale_factor,
-    const gfx::Size& content_size,
+    const gfx::Vector2dF& page_scale_factor_limits,
+    const gfx::SizeF& content_size,
+    const gfx::SizeF& viewport_size,
     const gfx::Vector2dF& controls_offset,
     const gfx::Vector2dF& content_offset) {
   if (content_view_core_) {
-    content_view_core_->UpdateContentSize(content_size.width(),
-                                          content_size.height());
-    content_view_core_->UpdatePageScaleLimits(min_page_scale_factor,
-                                              max_page_scale_factor);
-    content_view_core_->UpdateScrollOffsetAndPageScaleFactor(scroll_offset.x(),
-                                                             scroll_offset.y(),
-                                                             page_scale_factor);
+    // All offsets and sizes are in CSS pixels.
+    content_view_core_->UpdateFrameInfo(
+        scroll_offset.x(), scroll_offset.y(),
+        page_scale_factor,
+        page_scale_factor_limits.x(), page_scale_factor_limits.y(),
+        content_size.width(), content_size.height(),
+        viewport_size.width(), viewport_size.height());
     content_view_core_->UpdateOffsetsForFullscreen(controls_offset.y(),
                                                    content_offset.y());
   }
@@ -680,9 +664,8 @@ void RenderWidgetHostViewPort::GetDefaultScreenInfo(
   // TODO(husky): Remove any system controls from availableRect.
   results->availableRect = display.work_area();
   results->deviceScaleFactor = display.device_scale_factor();
-
   gfx::DeviceDisplayInfo info;
-  results->depth = info.GetBitsPerPixel();;
+  results->depth = info.GetBitsPerPixel();
   results->depthPerComponent = info.GetBitsPerComponent();
   results->isMonochrome = (results->depthPerComponent == 0);
 }

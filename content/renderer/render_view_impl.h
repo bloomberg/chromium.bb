@@ -1178,10 +1178,6 @@ class CONTENT_EXPORT RenderViewImpl
 #if defined(OS_ANDROID)
   // Launch an Android content intent with the given URL.
   void LaunchAndroidContentIntent(const GURL& intent_url, size_t request_id);
-
-  // Send ViewHostMsg_UpdateFrameInfo to report scale/scroll/size changes.
-  void ScheduleUpdateFrameInfo();
-  void SendUpdateFrameInfo();
 #endif
 
   // Sends a reply to the current find operation handling if it was a

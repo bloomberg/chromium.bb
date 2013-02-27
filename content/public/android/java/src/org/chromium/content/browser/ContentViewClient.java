@@ -43,10 +43,10 @@ public class ContentViewClient {
 
     /**
      * Notifies that the content size has changed.
-     * @param width The width of the content.
-     * @param height The height of the content.
+     * @param widthCss The width of the content in CSS pixels.
+     * @param heightCss The height of the content in CSS pixels.
      */
-    public void onContentSizeChanged(int width, int height) {
+    public void onContentSizeChanged(float widthCss, float heightCss) {
     }
 
     /**
@@ -58,10 +58,11 @@ public class ContentViewClient {
 
     /**
      * Notifies the client that the position of the top controls has changed.
-     * @param topControlsOffsetY The Y offset of the top controls.
-     * @param contentOffsetY The Y offset of the content.
+     * @param topControlsOffsetYPix The Y offset of the top controls in physical pixels.
+     * @param contentOffsetYPix The Y offset of the content in physical pixels.
      */
-    public void onOffsetsForFullscreenChanged(float topControlsOffsetY, float contentOffsetY) {
+    public void onOffsetsForFullscreenChanged(
+            float topControlsOffsetYPix, float contentOffsetYPix) {
     }
 
     public void onTabCrash() {
@@ -120,10 +121,10 @@ public class ContentViewClient {
     // computeHorizontalScrollOffset()/computeVerticalScrollOffset() public.
     /**
      * Gives the UI the chance to override each scroll event.
-     * @param dx The amount scrolled in the X direction.
-     * @param dy The amount scrolled in the Y direction.
-     * @param scrollX The current X scroll offset.
-     * @param scrollY The current Y scroll offset.
+     * @param dx The amount scrolled in the X direction (in physical pixels).
+     * @param dy The amount scrolled in the Y direction (in physical pixels).
+     * @param scrollX The current X scroll offset (in physical pixels).
+     * @param scrollY The current Y scroll offset (in physical pixels).
      * @return Whether or not the UI consumed and handled this event.
      */
     public boolean shouldOverrideScroll(float dx, float dy, float scrollX, float scrollY) {

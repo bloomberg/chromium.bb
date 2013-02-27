@@ -136,11 +136,11 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
   virtual void HasTouchEventHandlers(bool need_touch_events) OVERRIDE;
-  virtual void UpdateFrameInfo(const gfx::Vector2d& scroll_offset,
+  virtual void UpdateFrameInfo(const gfx::Vector2dF& scroll_offset,
                                float page_scale_factor,
-                               float min_page_scale_factor,
-                               float max_page_scale_factor,
-                               const gfx::Size& content_size,
+                               const gfx::Vector2dF& page_scale_factor_limits,
+                               const gfx::SizeF& content_size,
+                               const gfx::SizeF& viewport_size,
                                const gfx::Vector2dF& controls_offset,
                                const gfx::Vector2dF& content_offset) OVERRIDE;
   virtual void ShowDisambiguationPopup(const gfx::Rect& target_rect,
@@ -156,11 +156,6 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   void SendGestureEvent(const WebKit::WebGestureEvent& event);
 
   void OnProcessImeBatchStateAck(bool is_begin);
-  void OnUpdateFrameInfo(const gfx::Vector2d& scroll_offset,
-                         float page_scale_factor,
-                         float min_page_scale_factor,
-                         float max_page_scale_factor,
-                         const gfx::Size& content_size);
   void OnDidChangeBodyBackgroundColor(SkColor color);
   void OnStartContentIntent(const GURL& content_url);
 

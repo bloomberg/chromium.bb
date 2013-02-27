@@ -98,59 +98,45 @@ class ContentViewCoreImpl : public ContentViewCore,
   jboolean SendMouseMoveEvent(JNIEnv* env,
                               jobject obj,
                               jlong time_ms,
-                              jint x,
-                              jint y);
+                              jfloat x,
+                              jfloat y);
   jboolean SendMouseWheelEvent(JNIEnv* env,
                                jobject obj,
                                jlong time_ms,
-                               jint x,
-                               jint y,
+                               jfloat x,
+                               jfloat y,
                                jfloat vertical_axis);
-  void ScrollBegin(JNIEnv* env, jobject obj, jlong time_ms, jint x, jint y);
+  void ScrollBegin(JNIEnv* env, jobject obj, jlong time_ms, jfloat x, jfloat y);
   void ScrollEnd(JNIEnv* env, jobject obj, jlong time_ms);
-  void ScrollBy(JNIEnv* env, jobject obj, jlong time_ms, jint x, jint y,
-                jint dx, jint dy);
-  void FlingStart(JNIEnv* env,
-                  jobject obj,
-                  jlong time_ms,
-                  jint x,
-                  jint y,
-                  jint vx,
-                  jint vy);
+  void ScrollBy(JNIEnv* env, jobject obj, jlong time_ms,
+                jfloat x, jfloat y, jfloat dx, jfloat dy);
+  void FlingStart(JNIEnv* env, jobject obj, jlong time_ms,
+                  jfloat x, jfloat y, jfloat vx, jfloat vy);
   void FlingCancel(JNIEnv* env, jobject obj, jlong time_ms);
-  void SingleTap(JNIEnv* env,
-                 jobject obj,
-                 jlong time_ms,
-                 jint x,
-                 jint y,
+  void SingleTap(JNIEnv* env, jobject obj, jlong time_ms,
+                 jfloat x, jfloat y,
                  jboolean disambiguation_popup_tap);
-  void ShowPressState(JNIEnv* env, jobject obj, jlong time_ms, jint x, jint y);
-  void ShowPressCancel(JNIEnv* env, jobject obj, jlong time_ms, jint x, jint y);
-  void DoubleTap(JNIEnv* env, jobject obj, jlong time_ms, jint x, jint y) ;
-  void LongPress(JNIEnv* env,
-                 jobject obj,
-                 jlong time_ms,
-                 jint x,
-                 jint y,
+  void ShowPressState(JNIEnv* env, jobject obj, jlong time_ms,
+                      jfloat x, jfloat y);
+  void ShowPressCancel(JNIEnv* env, jobject obj, jlong time_ms,
+                       jfloat x, jfloat y);
+  void DoubleTap(JNIEnv* env, jobject obj, jlong time_ms,
+                 jfloat x, jfloat y) ;
+  void LongPress(JNIEnv* env, jobject obj, jlong time_ms,
+                 jfloat x, jfloat y,
                  jboolean disambiguation_popup_tap);
-  void LongTap(JNIEnv* env,
-               jobject obj,
-               jlong time_ms,
-               jint x,
-               jint y,
+  void LongTap(JNIEnv* env, jobject obj, jlong time_ms,
+               jfloat x, jfloat y,
                jboolean disambiguation_popup_tap);
-  void PinchBegin(JNIEnv* env, jobject obj, jlong time_ms, jint x, jint y);
+  void PinchBegin(JNIEnv* env, jobject obj, jlong time_ms, jfloat x, jfloat y);
   void PinchEnd(JNIEnv* env, jobject obj, jlong time_ms);
-  void PinchBy(JNIEnv* env,
-               jobject obj,
-               jlong time_ms,
-               jint x,
-               jint y,
+  void PinchBy(JNIEnv* env, jobject obj, jlong time_ms,
+               jfloat x, jfloat y,
                jfloat delta);
   void SelectBetweenCoordinates(JNIEnv* env, jobject obj,
-                                        jint x1, jint y1,
-                                        jint x2, jint y2);
-  void MoveCaret(JNIEnv* env, jobject obj, jint x, jint y);
+                                jfloat x1, jfloat y1,
+                                jfloat x2, jfloat y2);
+  void MoveCaret(JNIEnv* env, jobject obj, jfloat x, jfloat y);
 
   jboolean CanGoBack(JNIEnv* env, jobject obj);
   jboolean CanGoForward(JNIEnv* env, jobject obj);
@@ -204,7 +190,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   jboolean PopulateBitmapFromCompositor(JNIEnv* env,
                                         jobject obj,
                                         jobject jbitmap);
-  void SetSize(JNIEnv* env, jobject obj, jint width, jint height);
+  void SetSizePix(JNIEnv* env, jobject obj, jint width_pix, jint height_pix);
   jboolean IsRenderWidgetHostViewReady(JNIEnv* env, jobject obj);
   void ExitFullscreen(JNIEnv* env, jobject obj);
   void EnableHidingTopControls(JNIEnv* env, jobject obj, bool enable);
@@ -230,11 +216,18 @@ class ContentViewCoreImpl : public ContentViewCore,
                            bool multiple);
 
   void OnTabCrashed();
-  void UpdateContentSize(int width, int height);
-  void UpdateScrollOffsetAndPageScaleFactor(int x, int y, float scale);
-  void UpdatePageScaleLimits(float minimum_scale, float maximum_scale);
+
+  // All sizes and offsets are in CSS pixels as cached by the renderer.
+  void UpdateFrameInfo(
+      float scroll_offset_x, float scroll_offset_y,
+      float page_scale_factor,
+      float min_page_scale_factor, float max_page_scale_factor,
+      float content_width, float content_height,
+      float viewport_width, float viewport_height);
+
   void UpdateOffsetsForFullscreen(float controls_offset_y,
                                   float content_offset_y);
+
   void ImeUpdateAdapter(int native_ime_adapter, int text_input_type,
                         const std::string& text,
                         int selection_start, int selection_end,
@@ -263,8 +256,8 @@ class ContentViewCoreImpl : public ContentViewCore,
   // Methods called from native code
   // --------------------------------------------------------------------------
 
-  gfx::Size GetPhysicalSize() const;
-  gfx::Size GetDIPSize() const;
+  gfx::Size GetViewportSizePix() const;
+  gfx::Size GetViewportSizeDip() const;
 
   void AttachLayer(scoped_refptr<cc::Layer> layer);
   void RemoveLayer(scoped_refptr<cc::Layer> layer);
@@ -291,10 +284,12 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid();
 
-  int GetTouchPadding();
+  float GetTouchPaddingDip();
 
-  WebKit::WebGestureEvent MakeGestureEvent(WebKit::WebInputEvent::Type type,
-                                           long time_ms, int x, int y) const;
+  WebKit::WebGestureEvent MakeGestureEvent(
+      WebKit::WebInputEvent::Type type, long time_ms,
+      float xPix, float yPix) const;
+
   void UpdateVSyncFlagOnInputEvent(WebKit::WebInputEvent* event) const;
 
   void DeleteScaledSnapshotTexture();

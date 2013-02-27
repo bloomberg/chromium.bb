@@ -118,24 +118,38 @@ abstract class SelectionHandleController implements CursorController {
 
     /**
      * Moves the start handle so that it points at the given coordinates.
+     * @param x The start handle position X in physical pixels.
+     * @param y The start handle position Y in physical pixels.
      */
     void setStartHandlePosition(int x, int y) {
         mStartHandle.positionAt(x, y);
     }
 
-    void setStartHandlePosition(PointF point) {
-        setStartHandlePosition((int)point.x, (int)point.y);
+    /**
+     * Moves the start handle so that it points at the given coordinates.
+     * @param x The start handle position X in physical pixels.
+     * @param y The start handle position Y in physical pixels.
+     */
+    void setStartHandlePosition(float x, float y) {
+        setStartHandlePosition((int) x, (int) y);
     }
 
     /**
      * Moves the end handle so that it points at the given coordinates.
+     * @param x The end handle position X in physical pixels.
+     * @param y The end handle position Y in physical pixels.
      */
     void setEndHandlePosition(int x, int y) {
         mEndHandle.positionAt(x, y);
     }
 
-    void setEndHandlePosition(PointF point) {
-        setEndHandlePosition((int)point.x, (int)point.y);
+    /**
+     * Moves the end handle so that it points at the given coordinates.
+     * @param x The end handle position X in physical pixels.
+     * @param y The end handle position Y in physical pixels.
+     */
+    void setEndHandlePosition(float x, float y) {
+        setEndHandlePosition((int) x, (int) y);
     }
 
     /**

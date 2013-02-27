@@ -208,6 +208,7 @@ class HandleView extends View {
                 posY >= clip.top && posY <= clip.bottom;
     }
 
+    // x and y are in physical pixels.
     void moveTo(int x, int y) {
         mPositionX = x;
         mPositionY = y;
@@ -334,6 +335,7 @@ class HandleView extends View {
         mController.updatePosition(this, Math.round(newPosX), Math.round(newPosY));
     }
 
+    // x and y are in physical pixels.
     void positionAt(int x, int y) {
         moveTo((int)(x - mHotspotX), (int)(y - mHotspotY));
     }

@@ -44,11 +44,12 @@ public class AwContentsClientOnScaleChangedTest extends AndroidWebViewTestBase {
         getContentSettingsOnUiThread(mAwContents).setUseWideViewPort(true);
         mAwContents.getSettings().setEnableFixedLayoutMode(true);
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-             CommonResources.ABOUT_HTML, "text/html", false);
+                CommonResources.ABOUT_HTML, "text/html", false);
         ContentViewCore core = mAwContents.getContentViewCore();
         int callCount = mContentsClient.getOnScaleChangedHelper().getCallCount();
-        core.onSizeChanged(core.getWidth() / 2, core.getHeight() / 2,
-             core.getWidth(), core.getHeight());
+        core.onSizeChanged(
+                core.getViewportWidthPix() / 2, core.getViewportHeightPix() / 2,
+                core.getViewportWidthPix(), core.getViewportHeightPix());
         // TODO: Investigate on using core.zoomIn();
         mContentsClient.getOnScaleChangedHelper().waitForCallback(callCount);
         assertTrue("Scale ratio:" + mContentsClient.getOnScaleChangedHelper().getLastScaleRatio(),

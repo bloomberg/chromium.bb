@@ -120,6 +120,13 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
     }
 
     /**
+     * @return The cache of scales and positions used to convert coordinates from/to CSS.
+     */
+    public RenderCoordinates getRenderCoordinates() {
+        return mContentViewCore.getRenderCoordinates();
+    }
+
+    /**
      * Returns true if the given Activity has hardware acceleration enabled
      * in its manifest, or in its foreground window.
      *
