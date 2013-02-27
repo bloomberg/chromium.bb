@@ -22,6 +22,32 @@ void CallInt64ToInt(const net::CompletionCallback& callback, int64 result) {
 
 namespace net {
 
+FileStream::Context::IOResult::IOResult()
+    : result(OK),
+      os_error(0) {
+}
+
+FileStream::Context::IOResult::IOResult(int64 result, int os_error)
+    : result(result),
+      os_error(os_error) {
+}
+
+// static
+FileStream::Context::IOResult FileStream::Context::IOResult::FromOSError(
+    int64 os_error) {
+  return IOResult(MapSystemError(os_error), os_error);
+}
+
+FileStream::Context::OpenResult::OpenResult()
+    : file(base::kInvalidPlatformFileValue) {
+}
+
+FileStream::Context::OpenResult::OpenResult(base::PlatformFile file,
+                                            IOResult error_code)
+    : file(file),
+      error_code(error_code) {
+}
+
 void FileStream::Context::Orphan() {
   DCHECK(!orphaned_);
 
@@ -62,14 +88,14 @@ int FileStream::Context::OpenSync(const base::FilePath& path, int open_flags) {
   OpenResult result = OpenFileImpl(path, open_flags);
   file_ = result.file;
   if (file_ == base::kInvalidPlatformFileValue) {
-    result.error_code = ProcessOpenError(result.error_code);
+    ProcessOpenError(result.error_code);
   } else {
     // TODO(satorux): Remove this once all async clients are migrated to use
     // Open(). crbug.com/114783
     if (open_flags & base::PLATFORM_FILE_ASYNC)
       OnAsyncFileOpened();
   }
-  return result.error_code;
+  return result.error_code.result;
 }
 
 void FileStream::Context::CloseSync() {
@@ -99,9 +125,9 @@ void FileStream::Context::SeekAsync(Whence whence,
 }
 
 int64 FileStream::Context::SeekSync(Whence whence, int64 offset) {
-  int64 result = SeekFileImpl(whence, offset);
-  CheckForIOError(&result, FILE_ERROR_SOURCE_SEEK);
-  return result;
+  IOResult result = SeekFileImpl(whence, offset);
+  RecordError(result, FILE_ERROR_SOURCE_SEEK);
+  return result.result;
 }
 
 void FileStream::Context::FlushAsync(const CompletionCallback& callback) {
@@ -121,26 +147,32 @@ void FileStream::Context::FlushAsync(const CompletionCallback& callback) {
 }
 
 int FileStream::Context::FlushSync() {
-  int64 result = FlushFileImpl();
-  CheckForIOError(&result, FILE_ERROR_SOURCE_FLUSH);
-  return result;
+  IOResult result = FlushFileImpl();
+  RecordError(result, FILE_ERROR_SOURCE_FLUSH);
+  return result.result;
 }
 
-int FileStream::Context::RecordAndMapError(int error,
-                                           FileErrorSource source) const {
+void FileStream::Context::RecordError(const IOResult& result,
+                                      FileErrorSource source) const {
+  if (result.result >= 0) {
+    // |result| is not an error.
+    return;
+  }
+
   // The following check is against incorrect use or bug. File descriptor
   // shouldn't ever be closed outside of FileStream while it still tries to do
   // something with it.
-  DCHECK(error != ERROR_BAD_FILE);
-  Error net_error = MapSystemError(error);
+  DCHECK_NE(result.result, ERR_INVALID_HANDLE);
 
   if (!orphaned_) {
-    bound_net_log_.AddEvent(NetLog::TYPE_FILE_STREAM_ERROR,
-                            base::Bind(&NetLogFileStreamErrorCallback,
-                                       source, error, net_error));
+    bound_net_log_.AddEvent(
+        NetLog::TYPE_FILE_STREAM_ERROR,
+        base::Bind(&NetLogFileStreamErrorCallback,
+                   source, result.os_error,
+                   static_cast<net::Error>(result.result)));
   }
-  RecordFileError(error, source, record_uma_);
-  return net_error;
+
+  RecordFileError(result.os_error, source, record_uma_);
 }
 
 void FileStream::Context::BeginOpenEvent(const base::FilePath& path) {
@@ -156,28 +188,27 @@ FileStream::Context::OpenResult FileStream::Context::OpenFileImpl(
   // delete the file right after FileStream deletion. Thus we are always
   // adding SHARE_DELETE flag to accommodate such use case.
   open_flags |= base::PLATFORM_FILE_SHARE_DELETE;
-  OpenResult result;
-  result.error_code = OK;
-  result.file = base::CreatePlatformFile(path, open_flags, NULL, NULL);
-  if (result.file == base::kInvalidPlatformFileValue)
-    result.error_code = GetLastErrno();
+  base::PlatformFile file =
+      base::CreatePlatformFile(path, open_flags, NULL, NULL);
+  if (file == base::kInvalidPlatformFileValue)
+    return OpenResult(file, IOResult::FromOSError(GetLastErrno()));
 
-  return result;
+  return OpenResult(file, IOResult(OK, 0));
 }
 
-int FileStream::Context::ProcessOpenError(int error_code) {
+void FileStream::Context::ProcessOpenError(const IOResult& error_code) {
   bound_net_log_.EndEvent(NetLog::TYPE_FILE_STREAM_OPEN);
-  return RecordAndMapError(error_code, FILE_ERROR_SOURCE_OPEN);
+  RecordError(error_code, FILE_ERROR_SOURCE_OPEN);
 }
 
 void FileStream::Context::OnOpenCompleted(const CompletionCallback& callback,
-                                          OpenResult result) {
-  file_ = result.file;
+                                          OpenResult open_result) {
+  file_ = open_result.file;
   if (file_ == base::kInvalidPlatformFileValue)
-    result.error_code = ProcessOpenError(result.error_code);
+    ProcessOpenError(open_result.error_code);
   else if (!orphaned_)
     OnAsyncFileOpened();
-  OnAsyncCompleted(IntToInt64(callback), result.error_code);
+  OnAsyncCompleted(IntToInt64(callback), open_result.error_code.result);
 }
 
 void FileStream::Context::CloseAndDelete() {
@@ -205,18 +236,12 @@ Int64CompletionCallback FileStream::Context::IntToInt64(
   return base::Bind(&CallInt64ToInt, callback);
 }
 
-void FileStream::Context::CheckForIOError(int64* result,
-                                          FileErrorSource source) {
-  if (*result < 0)
-    *result = RecordAndMapError(static_cast<int>(*result), source);
-}
-
 void FileStream::Context::ProcessAsyncResult(
     const Int64CompletionCallback& callback,
     FileErrorSource source,
-    int64 result) {
-  CheckForIOError(&result, source);
-  OnAsyncCompleted(callback, result);
+    const IOResult& result) {
+  RecordError(result, source);
+  OnAsyncCompleted(callback, result.result);
 }
 
 void FileStream::Context::OnAsyncCompleted(
