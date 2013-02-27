@@ -444,8 +444,10 @@ class ThreadedOpacityTransition : public ThreadedLayerAnimationElement {
   virtual void OnAbort(LayerAnimationDelegate* delegate) OVERRIDE {
     if (delegate && Started()) {
       ThreadedLayerAnimationElement::OnAbort(delegate);
-      delegate->SetOpacityFromAnimation(
-          Tween::ValueBetween(last_progressed_fraction(), start_, target_));
+      delegate->SetOpacityFromAnimation(Tween::ValueBetween(
+            Tween::CalculateValue(tween_type(), last_progressed_fraction()),
+            start_,
+            target_));
     }
   }
 

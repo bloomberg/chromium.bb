@@ -283,6 +283,36 @@ TEST(LayerAnimationElementTest, PauseElement) {
                   copy.GetGrayscaleForAnimation());
 }
 
+// Check that a threaded element updates the delegate as expected when aborted.
+TEST(LayerAnimationElementTest, AbortOpacityElement) {
+  TestLayerAnimationDelegate delegate;
+  float start = 0.0;
+  float target = 1.0;
+  base::TimeTicks start_time;
+  base::TimeTicks effective_start_time;
+  base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
+  scoped_ptr<LayerAnimationElement> element(
+      LayerAnimationElement::CreateOpacityElement(target, delta));
+
+  // Choose a non-linear Tween type.
+  Tween::Type tween_type = Tween::EASE_IN;
+  element->set_tween_type(tween_type);
+
+  start_time += delta;
+  element->set_requested_start_time(start_time);
+  delegate.SetOpacityFromAnimation(start);
+  element->Start(&delegate, 1);
+  element->Progress(start_time, &delegate);
+  effective_start_time = start_time + delta;
+  element->set_effective_start_time(effective_start_time);
+  element->Progress(effective_start_time, &delegate);
+  element->Progress(effective_start_time + delta/2, &delegate);
+
+  element->Abort(&delegate);
+  EXPECT_FLOAT_EQ(Tween::CalculateValue(tween_type, 0.5),
+                  delegate.GetOpacityForAnimation());
+}
+
 } // namespace
 
 } // namespace ui
