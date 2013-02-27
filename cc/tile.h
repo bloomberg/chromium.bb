@@ -68,6 +68,7 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
   gfx::Rect content_rect() const { return content_rect_; }
 
   void set_picture_pile(scoped_refptr<PicturePileImpl> pile) {
+   DCHECK(pile->CanRaster(contents_scale_, content_rect_));
    picture_pile_ = pile;
   }
 

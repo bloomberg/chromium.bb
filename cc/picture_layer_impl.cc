@@ -323,11 +323,7 @@ skia::RefPtr<SkPicture> PictureLayerImpl::getPicture() {
 
 scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
                                                  gfx::Rect content_rect) {
-  // Ensure there is a recording for this tile.
-  gfx::Rect layer_rect = gfx::ToEnclosingRect(
-      gfx::ScaleRect(content_rect, 1.f / tiling->contents_scale()));
-  layer_rect.Intersect(gfx::Rect(bounds()));
-  if (!pile_->recorded_region().Contains(layer_rect))
+  if (!pile_->CanRaster(tiling->contents_scale(), content_rect))
     return scoped_refptr<Tile>();
 
   return make_scoped_refptr(new Tile(

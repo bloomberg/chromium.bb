@@ -35,6 +35,7 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
   int num_tiles_y() const { return tiling_.num_tiles_y(); }
   gfx::Rect tile_bounds(int x, int y) const { return tiling_.TileBounds(x, y); }
   bool HasRecordingAt(int x, int y);
+  bool CanRaster(float contents_scale, gfx::Rect content_rect);
 
  protected:
   virtual ~PicturePileBase();

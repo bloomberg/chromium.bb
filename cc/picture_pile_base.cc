@@ -5,6 +5,7 @@
 #include "cc/picture_pile_base.h"
 
 #include "base/logging.h"
+#include "ui/gfx/rect_conversions.h"
 
 namespace {
 // Dimensions of the tiles in this picture pile as well as the dimensions of
@@ -104,6 +105,15 @@ bool PicturePileBase::HasRecordingAt(int x, int y) {
     return false;
   DCHECK(!found->second.empty());
   return true;
+}
+
+bool PicturePileBase::CanRaster(float contents_scale, gfx::Rect content_rect) {
+  if (tiling_.total_size().IsEmpty())
+    return false;
+  gfx::Rect layer_rect = gfx::ToEnclosingRect(
+      gfx::ScaleRect(content_rect, 1.f / contents_scale));
+  layer_rect.Intersect(gfx::Rect(tiling_.total_size()));
+  return recorded_region_.Contains(layer_rect);
 }
 
 }  // namespace cc
