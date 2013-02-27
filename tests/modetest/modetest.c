@@ -838,13 +838,13 @@ set_plane(struct kms_driver *kms, struct connector_arg *c, struct plane_arg *p)
 			plane_id = ovr->plane_id;
 	}
 
-	fprintf(stderr, "testing %dx%d@%s overlay plane\n",
-			p->w, p->h, p->format_str);
-
 	if (!plane_id) {
-		fprintf(stderr, "failed to find plane!\n");
+		fprintf(stderr, "no unused plane available for CRTC %u\n", c->crtc);
 		return -1;
 	}
+
+	fprintf(stderr, "testing %dx%d@%s overlay plane %u\n",
+		p->w, p->h, p->format_str, plane_id);
 
 	plane_bo = create_test_buffer(kms, p->fourcc, p->w, p->h, handles,
 				      pitches, offsets, PATTERN_TILES);
