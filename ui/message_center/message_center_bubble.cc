@@ -12,10 +12,9 @@
 #include "ui/gfx/insets.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
-#include "ui/gfx/shadow_value.h"
 #include "ui/gfx/size.h"
-#include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_constants.h"
+#include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/message_center_util.h"
 #include "ui/message_center/message_view.h"
 #include "ui/message_center/notification_view.h"
@@ -35,14 +34,10 @@ namespace message_center {
 namespace {
 
 const int kMessageBubbleBaseMinHeight = 80;
-const int kMarginBetweenItems = 10;
-const int kItemShadowOffset = 1;
-const int kItemShadowBlur = 4;
 const int kFooterMargin = 16;
 const int kFooterHeight = 24;
 const SkColor kMessageCenterBackgroundColor = SkColorSetRGB(0xe5, 0xe5, 0xe5);
 const SkColor kBorderDarkColor = SkColorSetRGB(0xaa, 0xaa, 0xaa);
-const SkColor kMessageItemShadowColorBase = SkColorSetARGB(0.3 * 255, 0, 0, 0);
 const SkColor kTransparentColor = SkColorSetARGB(0, 0, 0, 0);
 const SkColor kFooterDelimiterColor = SkColorSetRGB(0xcc, 0xcc, 0xcc);
 const SkColor kFooterTextColor = SkColorSetRGB(0x80, 0x80, 0x80);
@@ -51,13 +46,6 @@ const SkColor kButtonTextHoverColor = SkColorSetRGB(0x32, 0x32, 0x32);
 // The focus color and focus-border logic is copied from ash tray.
 // TODO(mukai): unite those implementations.
 const SkColor kFocusBorderColor = SkColorSetRGB(0x40, 0x80, 0xfa);
-
-gfx::Insets GetItemShadowInsets() {
-  return gfx::Insets(kItemShadowBlur / 2 - kItemShadowOffset,
-                     kItemShadowBlur / 2,
-                     kItemShadowBlur / 2 + kItemShadowOffset,
-                     kItemShadowBlur / 2);
-}
 
 class WebNotificationButtonViewBase : public views::View {
  public:
@@ -300,7 +288,7 @@ class ScrollContentView : public views::View {
       // for top and bottom, but the bottom margin here should be smaller
       // because of the shadow of message view. Use an empty border instead
       // to provide this margin.
-      gfx::Insets shadow_insets = GetItemShadowInsets();
+      gfx::Insets shadow_insets = MessageView::GetShadowInsets();
       SetLayoutManager(
           new views::BoxLayout(views::BoxLayout::kVertical,
                                0,
@@ -335,35 +323,6 @@ class ScrollContentView : public views::View {
  private:
   gfx::Size preferred_size_;
   DISALLOW_COPY_AND_ASSIGN(ScrollContentView);
-};
-
-// A border to provide the shadow for each card.
-// Current shadow should look like css box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3)
-class MessageViewShadowBorder : public views::Border {
- public:
-  MessageViewShadowBorder() : views::Border() {}
-  virtual ~MessageViewShadowBorder() {}
-
- protected:
-  // views::Border overrides:
-  virtual void Paint(const views::View& view, gfx::Canvas* canvas) OVERRIDE {
-    SkPaint paint;
-    std::vector<gfx::ShadowValue> shadows;
-    shadows.push_back(gfx::ShadowValue(
-        gfx::Point(0, 0), kItemShadowBlur, kMessageItemShadowColorBase));
-    skia::RefPtr<SkDrawLooper> looper = gfx::CreateShadowDrawLooper(shadows);
-    paint.setLooper(looper.get());
-    paint.setColor(kTransparentColor);
-    paint.setStrokeJoin(SkPaint::kRound_Join);
-    gfx::Rect bounds(view.size());
-    bounds.Inset(gfx::Insets(kItemShadowBlur / 2, kItemShadowBlur / 2,
-                             kItemShadowBlur / 2, kItemShadowBlur / 2));
-    canvas->DrawRect(bounds, paint);
-  }
-
-  virtual gfx::Insets GetInsets() const OVERRIDE {
-    return GetItemShadowInsets();
-  }
 };
 
 }  // namespace
@@ -411,7 +370,7 @@ class MessageCenterContentsView : public views::View {
           NotificationView::ViewForNotification(*(*iter), list_delegate_);
       view->set_scroller(scroller_);
       if (IsRichNotificationEnabled())
-        view->set_border(new MessageViewShadowBorder());
+        view->SetUpShadow();
       scroll_content_->AddChildView(view);
       if (++num_children >=
           NotificationList::kMaxVisibleMessageCenterNotifications) {

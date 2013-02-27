@@ -44,6 +44,8 @@
         'message_center_util.h',
         'message_popup_bubble.cc',
         'message_popup_bubble.h',
+        'message_popup_collection.cc',
+        'message_popup_collection.h',
         'message_simple_view.cc',
         'message_simple_view.h',
         'message_view.cc',

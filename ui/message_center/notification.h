@@ -50,7 +50,7 @@ class MESSAGE_CENTER_EXPORT Notification {
   const std::string& extension_id() const { return extension_id_; }
 
   // Begin unpacked values from optional_fields.
-  int priority() { return priority_; }
+  int priority() const { return priority_; }
   base::Time timestamp() const { return timestamp_; }
   const string16& expanded_message() const { return expanded_message_; }
   const std::vector<NotificationItem>& items() const { return items_; }

@@ -5,6 +5,7 @@
 #ifndef UI_MESSAGE_CENTER_MESSAGE_VIEW_H_
 #define UI_MESSAGE_CENTER_MESSAGE_VIEW_H_
 
+#include "ui/gfx/insets.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_list.h"
 #include "ui/views/controls/button/button.h"
@@ -34,7 +35,13 @@ class MessageView : public views::SlideOutView,
 
   virtual ~MessageView();
 
+  // Returns the insets for the shadow it will have for rich notification.
+  static gfx::Insets GetShadowInsets();
+
   void set_scroller(views::ScrollView* scroller) { scroller_ = scroller; }
+
+  // Sets up the shadow border for rich notification items.
+  void SetUpShadow();
 
   // Overridden from views::View.
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;

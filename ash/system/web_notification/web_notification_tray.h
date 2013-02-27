@@ -33,6 +33,7 @@ class MessageBubbleBase;
 class MessageCenter;
 class MessageCenterBubble;
 class MessagePopupBubble;
+class MessagePopupCollection;
 }
 
 namespace ash {
@@ -147,6 +148,7 @@ class ASH_EXPORT WebNotificationTray
   scoped_ptr<message_center::MessageCenterTray> message_center_tray_;
   scoped_ptr<internal::WebNotificationBubbleWrapper> message_center_bubble_;
   scoped_ptr<internal::WebNotificationBubbleWrapper> popup_bubble_;
+  scoped_ptr<message_center::MessagePopupCollection> popup_collection_;
   scoped_ptr<message_center::QuietModeBubble> quiet_mode_bubble_;
   views::ImageButton* button_;
 

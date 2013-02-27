@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
+#include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/message_view.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_types.h"
@@ -16,12 +17,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace message_center {
-namespace {
-
-const int kAutocloseHighPriorityDelaySeconds = 25;
-const int kAutocloseDefaultDelaySeconds = 8;
-
-}  // namespace
 
 // Popup notifications contents.
 class PopupBubbleContentsView : public views::View {

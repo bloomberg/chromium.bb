@@ -11,6 +11,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/shadow_value.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -22,6 +24,11 @@ namespace {
 const int kCloseButtonSize = 29;
 const int kCloseIconTopPadding = 5;
 const int kCloseIconRightPadding = 5;
+const int kItemShadowOffset = 1;
+const int kItemShadowBlur = 4;
+
+const SkColor kMessageItemShadowColorBase = SkColorSetARGB(0.3 * 255, 0, 0, 0);
+const SkColor kTransparentColor = SkColorSetARGB(0, 0, 0, 0);
 
 // ControlButtons are ImageButtons whose image can be padded within the button.
 // This allows the creation of buttons like the notification close and expand
@@ -128,6 +135,41 @@ gfx::Point ControlButton::ComputePaddedImagePaintPosition(
     offset.set_y(bounds.height() - image.height());  // Bottom align.
 
   return bounds.origin() + offset;
+}
+
+// A border to provide the shadow for each card.
+// Current shadow should look like css box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3)
+class MessageViewShadowBorder : public views::Border {
+ public:
+  MessageViewShadowBorder() : views::Border() {}
+  virtual ~MessageViewShadowBorder() {}
+
+ protected:
+  // views::Border overrides:
+  virtual void Paint(const views::View& view, gfx::Canvas* canvas) OVERRIDE;
+  virtual gfx::Insets GetInsets() const OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(MessageViewShadowBorder);
+};
+
+void MessageViewShadowBorder::Paint(
+    const views::View& view, gfx::Canvas* canvas) {
+  SkPaint paint;
+  std::vector<gfx::ShadowValue> shadows;
+  shadows.push_back(gfx::ShadowValue(
+      gfx::Point(0, 0), kItemShadowBlur, kMessageItemShadowColorBase));
+  skia::RefPtr<SkDrawLooper> looper = gfx::CreateShadowDrawLooper(shadows);
+  paint.setLooper(looper.get());
+  paint.setColor(kTransparentColor);
+  paint.setStrokeJoin(SkPaint::kRound_Join);
+  gfx::Rect bounds(view.size());
+  bounds.Inset(gfx::Insets(kItemShadowBlur / 2, kItemShadowBlur / 2,
+                           kItemShadowBlur / 2, kItemShadowBlur / 2));
+  canvas->DrawRect(bounds, paint);
+}
+
+gfx::Insets MessageViewShadowBorder::GetInsets() const {
+  return message_center::MessageView::GetShadowInsets();
 }
 
 } // namespace
@@ -243,6 +285,18 @@ MessageView::MessageView() {
 }
 
 MessageView::~MessageView() {
+}
+
+void MessageView::SetUpShadow() {
+  set_border(new MessageViewShadowBorder());
+}
+
+// static
+gfx::Insets MessageView::GetShadowInsets() {
+  return gfx::Insets(kItemShadowBlur / 2 - kItemShadowOffset,
+                     kItemShadowBlur / 2,
+                     kItemShadowBlur / 2 + kItemShadowOffset,
+                     kItemShadowBlur / 2);
 }
 
 bool MessageView::OnMousePressed(const ui::MouseEvent& event) {
