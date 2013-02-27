@@ -123,7 +123,8 @@ ImageLoader.Client.prototype.load = function(
   var cacheKey = ImageLoader.Client.Cache.createKey(url, opt_options);
   if (opt_options.cache) {
     // Load from cache.
-    var cachedData = this.cache_.loadImage(cacheKey, opt_options.timestamp);
+    // TODO(mtomasz): Add cache invalidating if the file has changed.
+    var cachedData = this.cache_.loadImage(cacheKey);
     if (cachedData) {
       callback({ status: 'success', data: cachedData });
       return null;
@@ -139,7 +140,7 @@ ImageLoader.Client.prototype.load = function(
   var task = { isValid: opt_isValid, accept: function(result) {
     // Save to cache.
     if (result.status == 'success' && opt_options.cache)
-      this.cache_.saveImage(cacheKey, result.data, opt_options.timestamp);
+      this.cache_.saveImage(cacheKey, result.data);
     callback(result);
   }.bind(this) };
   this.tasks_[this.lastTaskId_] = task;
@@ -208,7 +209,7 @@ ImageLoader.Client.Cache.createKey = function(url, opt_options) {
 ImageLoader.Client.Cache.prototype.evictCache_ = function(size) {
   // Sort from the most recent to the oldest.
   this.images_.sort(function(a, b) {
-    return b.lastLoadTimestamp - a.lastLoadTimestamp;
+    return b.timestamp - a.timestamp;
   });
 
   while (this.images_.length > 0 &&
@@ -223,16 +224,11 @@ ImageLoader.Client.Cache.prototype.evictCache_ = function(size) {
  *
  * @param {string} key Cache key.
  * @param {string} data Image data.
- * @param {number=} opt_timestamp Last modification timestamp. Used to detect
- *     if the cache entry becomes out of date.
  */
-ImageLoader.Client.Cache.prototype.saveImage = function(
-    key, data, opt_timestamp) {
+ImageLoader.Client.Cache.prototype.saveImage = function(key, data) {
   this.evictCache_(data.length);
   if (ImageLoader.Client.Cache.MEMORY_LIMIT - this.size_ >= data.length) {
-    this.images_[key] = { lastLoadTimestamp: Date.now(),
-                          timestamp: opt_timestamp ? opt_timestamp : null,
-                          data: data };
+    this.images_[key] = { timestamp: Date.now(), data: data };
     this.size_ += data.length;
   }
 };
@@ -241,24 +237,14 @@ ImageLoader.Client.Cache.prototype.saveImage = function(
  * Loads an image from the cache (if available) or returns null.
  *
  * @param {string} key Cache key.
- * @param {number=} opt_timestamp Last modification timestamp. If different
- *     that the one in cache, then the entry will be invalidated.
  * @return {?string} Data of the loaded image or null.
  */
-ImageLoader.Client.Cache.prototype.loadImage = function(key, opt_timestamp) {
+ImageLoader.Client.Cache.prototype.loadImage = function(key) {
   if (!(key in this.images_))
     return null;
 
   var entry = this.images_[key];
-  entry.lastLoadTimestamp = Date.now();
-
-  // Check if the image in cache is up to date. If not, then remove it and
-  // return null.
-  if (entry.imageTimestamp === opt_timestamp) {
-    this.removeImage(key);
-    return null;
-  }
-
+  entry.timestamp = Date.now();
   return entry.data;
 };
 
