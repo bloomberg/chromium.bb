@@ -1872,7 +1872,9 @@ void ImmediateInterpreter::FillResultGesture(
       for (set<short, kMaxGesturingFingers>::const_iterator it =
                fingers.begin(), e = fingers.end(); it != e; ++it) {
         const FingerState* fs = hwstate.GetFingerState(*it);
-        if (!current || fs->position_y < current->position_y)
+        if (!current || fs->position_y < current->position_y ||
+            (current->flags & GESTURES_FINGER_POSSIBLE_PALM &&
+             !(fs->flags & GESTURES_FINGER_POSSIBLE_PALM)))
           current = fs;
       }
       // Find corresponding finger id in previous state
