@@ -522,17 +522,14 @@ void Tab::SetData(const TabRendererData& data) {
     ResetCrashedFavicon();
   }
 
-  // Don't clobber the recording or projecting animation for audio indicator.
-  if (data_.capture_state == TabRendererData::CAPTURE_STATE_NONE) {
-    if ((data_.audio_state == TabRendererData::AUDIO_STATE_NONE) &&
-        (old.audio_state != TabRendererData::AUDIO_STATE_NONE)) {
-      StopIconAnimation();
-    } else if ((data_.audio_state != TabRendererData::AUDIO_STATE_NONE) &&
-               (old.audio_state == TabRendererData::AUDIO_STATE_NONE)) {
-      StartAudioPlayingAnimation();
-    }
+  if ((data_.audio_state == TabRendererData::AUDIO_STATE_NONE) &&
+      (old.audio_state != TabRendererData::AUDIO_STATE_NONE)) {
+    StopIconAnimation();
+  } else if ((data_.audio_state != TabRendererData::AUDIO_STATE_NONE) &&
+             (old.audio_state == TabRendererData::AUDIO_STATE_NONE)) {
+    StartAudioPlayingAnimation();
   }
-
+  
   if (old.mini != data_.mini) {
     if (tab_animation_.get() && tab_animation_->is_animating()) {
       tab_animation_->Stop();
@@ -1613,6 +1610,8 @@ void Tab::StartCrashAnimation() {
 }
 
 void Tab::StartRecordingAnimation() {
+  // Recording animation resets (and trumps) audio animation.
+  data_.audio_state = TabRendererData::AUDIO_STATE_NONE;
   ui::ThrobAnimation* animation = new ui::ThrobAnimation(this);
   animation->SetTweenType(ui::Tween::EASE_IN_OUT);
   animation->SetThrobDuration(kRecordingDurationMs);
@@ -1621,6 +1620,11 @@ void Tab::StartRecordingAnimation() {
 }
 
 void Tab::StartAudioPlayingAnimation() {
+  // Don't start an audio animation if we are capturing.
+  if (data_.capture_state != TabRendererData::CAPTURE_STATE_NONE) {
+    data_.audio_state = TabRendererData::AUDIO_STATE_NONE;
+    return;
+  }
   ui::ThrobAnimation* animation = new ui::ThrobAnimation(this);
   animation->SetTweenType(ui::Tween::LINEAR);
   animation->SetThrobDuration(2000);
