@@ -100,6 +100,7 @@ IN_PROC_BROWSER_TEST_F(ProxyBrowserTest, MAYBE_BasicAuthWSConnect) {
       browser()->tab_strip_model()->GetActiveWebContents();
   content::NavigationController* controller = &tab->GetController();
   content::NotificationRegistrar registrar;
+
   // The proxy server will request basic authentication.
   // |observer| supplies the credential.
   LoginPromptObserver observer;
@@ -117,7 +118,6 @@ IN_PROC_BROWSER_TEST_F(ProxyBrowserTest, MAYBE_BasicAuthWSConnect) {
   ui_test_utils::NavigateToURL(
       browser(),
       ws_server.GetURL("connect_check.html").ReplaceComponents(replacements));
-
   const string16 result = watcher.WaitAndGetTitle();
   EXPECT_TRUE(EqualsASCII(result, "PASS"));
   EXPECT_TRUE(observer.auth_handled());
