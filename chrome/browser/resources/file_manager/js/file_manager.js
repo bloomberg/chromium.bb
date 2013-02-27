@@ -762,8 +762,53 @@ DialogType.isModal = function(type) {
 
     this.filePopup_ = null;
 
-    this.dialogDom_.querySelector('#search-box').addEventListener(
-        'input', this.onSearchBoxUpdate_.bind(this));
+    var searchBox = this.dialogDom_.querySelector('#search-box');
+    searchBox.addEventListener('input', this.onSearchBoxUpdate_.bind(this));
+
+    var autocompleteList = new cr.ui.AutocompleteList();
+    autocompleteList.id = 'autocomplete-list';
+    autocompleteList.autoExpands = true;
+    autocompleteList.requestSuggestions =
+        this.requestAutocompleteSuggestions_.bind(this);
+    // function(item) {}.bind(this) does not work here, as it's a constructor.
+    var self = this;
+    autocompleteList.itemConstructor = function(item) {
+      return self.createAutocompleteListItem_(item);
+    };
+
+    // Do nothing when a suggestion is selected.
+    autocompleteList.handleSelectedSuggestion = function(selectedItem) {};
+    // Instead, open the suggested item when Enter key is pressed or
+    // mouse-clicked.
+    autocompleteList.handleEnterKeydown =
+        this.openAutocompleteSuggestion_.bind(this);
+    autocompleteList.addEventListener('mousedown', function(event) {
+      this.openAutocompleteSuggestion_();
+    }.bind(this));
+    autocompleteList.addEventListener('mouseover', function(event) {
+      // Change the selection by a mouse over instead of just changing the
+      // color of moused over element with :hover in CSS. Here's why:
+      //
+      // 1) The user selects an item A with up/down keys (item A is highlighted)
+      // 2) Then the user moves the cursor to another item B
+      //
+      // If we just change the color of moused over element (item B), both
+      // the item A and B are highlighted. This is bad. We should change the
+      // selection so only the item B is highlighted.
+      if (event.target.itemInfo)
+        autocompleteList.selectedItem = event.target.itemInfo;
+    }.bind(this));
+
+    var container = this.document_.querySelector('.dialog-header');
+    container.appendChild(autocompleteList);
+    this.autocompleteList_ = autocompleteList;
+
+    searchBox.addEventListener('focus', function(event) {
+      this.autocompleteList_.attachToInput(searchBox);
+    }.bind(this));
+    searchBox.addEventListener('blur', function(event) {
+      this.autocompleteList_.detach();
+    }.bind(this));
 
     this.authFailedWarning_ = dom.querySelector('#drive-auth-failed-warning');
     var authFailedText = this.authFailedWarning_.querySelector('.drive-text');
@@ -2877,6 +2922,107 @@ DialogType.isModal = function(type) {
     this.directoryModel_.search(searchString,
                                 reportEmptySearchResults.bind(this),
                                 hideNoResultsDiv.bind(this));
+  };
+
+  /**
+   * Requests autocomplete suggestions for files on Drive.
+   * Once the suggestions are returned, the autocomplete popup will show up.
+   * @param {string} query The text to autocomplete from.
+   * @private
+   */
+  FileManager.prototype.requestAutocompleteSuggestions_ = function(query) {
+    if (!this.isOnDrive())
+      return;
+    this.lastQuery_ = query;
+
+    // The autocomplete list should be resized and repositioned here as the
+    // search box is resized when it's focused.
+    this.autocompleteList_.syncWidthAndPositionToInput();
+
+    chrome.fileBrowserPrivate.searchDriveMetadata(
+      query,
+      function(suggestions) {
+        // searchDriveMetadata() is asynchronous hence the result of an old
+        // query could be delivered at a later time.
+        if (query != this.lastQuery_)
+          return;
+        this.autocompleteList_.suggestions = suggestions;
+      }.bind(this));
+  };
+
+  /**
+   * Creates a ListItem element for autocomple.
+   * @param {Object} item An object representing a suggestion.
+   * @return {HTMLElement} Element containing the autocomplete suggestions.
+   * @private
+   */
+  FileManager.prototype.createAutocompleteListItem_ = function(item) {
+    var li = new cr.ui.ListItem();
+    li.itemInfo = item;
+    var iconType = FileType.getIcon(item.entry);
+    var icon = this.document_.createElement('div');
+    icon.className = 'detail-icon';
+    icon.setAttribute('file-type-icon', iconType);
+    var text = this.document_.createElement('div');
+    // highlightedBaseName is a piece of HTML with meta characters properly
+    // escaped. See the comment at fileBrowserPrivate.searchDriveMetadata().
+    text.innerHTML = item.highlightedBaseName;
+    li.appendChild(icon);
+    li.appendChild(text);
+    return li;
+  };
+
+  /**
+   * Opens the currently selected suggestion item.
+   * @private
+   */
+  FileManager.prototype.openAutocompleteSuggestion_ = function() {
+    var entry = this.autocompleteList_.selectedItem.entry;
+    // If the entry is a directory, just change the directory.
+    if (entry.isDirectory) {
+      this.onDirectoryAction(entry);
+      return;
+    }
+
+    var urls = [entry.toURL()];
+    var self = this;
+
+    // To open a file, first get the mime type.
+    this.metadataCache_.get(urls, 'drive', function(props) {
+      var mimeType = props[0].contentMimeType || '';
+      var mimeTypes = [mimeType];
+      var openIt = function() {
+        var tasks = new FileTasks(self);
+        tasks.init(urls, mimeTypes);
+        tasks.executeDefault();
+      }
+
+      // Change the current directory to the directory that contains the
+      // selected file. Note that this is necessary for an image or a video,
+      // which should be opened in the gallery mode, as the gallery mode
+      // requires the entry to be in the current directory model. For
+      // consistency, the current directory is always changed regardless of
+      // the file type.
+      entry.getParent(function(parent) {
+        var onDirectoryChanged = function(event) {
+          self.directoryModel_.removeEventListener('scan-completed',
+                                                   onDirectoryChanged);
+          self.directoryModel_.selectEntry(entry.name);
+          openIt();
+        }
+        // changeDirectory() returns immediately. We should wait until the
+        // directory scan is complete.
+        self.directoryModel_.addEventListener('scan-completed',
+                                              onDirectoryChanged);
+        self.directoryModel_.changeDirectory(
+          parent.fullPath,
+          function() {
+            // Remove the listner if the change directory failed.
+            self.directoryModel_.removeEventListener('scan-completed',
+                                                     onDirectoryChanged);
+          });
+      });
+    });
   };
 
   FileManager.prototype.decorateSplitter = function(splitterElement) {

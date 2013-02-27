@@ -1625,3 +1625,35 @@ button:focus {
   /* drive_welcome.css will override it once loaded. */
   display: none;
 }
+
+list.autocomplete-suggestions {
+  -webkit-border-radius: 2px;
+  background-color: white;
+  border: 1px solid #aaa;
+  box-sizing: border-box;  /* To match the width with the search box's. */
+  min-height: 0;
+  position: fixed;
+  z-index: 3;
+}
+
+list.autocomplete-suggestions > li {
+  -webkit-border-radius: 0;
+  -webkit-box-align: center;
+  display: -webkit-box;
+  margin: 0;  /* To prevent vertical overflow. */
+  padding: 3px 0;
+}
+
+list.autocomplete-suggestions > li:hover {
+  background-color: white;
+  border: 1px solid white;
+}
+
+list.autocomplete-suggestions[hasElementFocus] > [selected],
+list.autocomplete-suggestions[hasElementFocus] > [lead],
+list.autocomplete-suggestions:not([hasElementFocus]) > [selected],
+list.autocomplete-suggestions:not([hasElementFocus]) > [lead] {
+  background-color: rgb(238, 238, 238);
+  background-image: none;
+  border: 1px solid white;
+}

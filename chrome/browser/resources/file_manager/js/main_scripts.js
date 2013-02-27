@@ -42,6 +42,7 @@
 //<include src="../../../../../ui/webui/resources/js/cr/ui/list_single_selection_model.js"/>
 //<include src="../../../../../ui/webui/resources/js/cr/ui/list_selection_controller.js"/>
 //<include src="../../../../../ui/webui/resources/js/cr/ui/list.js"/>
+//<include src="../../../../../ui/webui/resources/js/cr/ui/autocomplete_list.js"/>
 //
 //<include src="../../../../../ui/webui/resources/js/cr/ui/splitter.js"/>
 //<include src="../../../../../ui/webui/resources/js/cr/ui/table/table_splitter.js"/>
