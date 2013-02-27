@@ -10,7 +10,6 @@
       'web_float_animation_curve_unittest.cc',
       'web_layer_impl_fixed_bounds_unittest.cc',
       'web_layer_unittest.cc',
-      'web_layer_tree_view_unittest.cc',
       'web_transform_animation_curve_unittest.cc',
       'web_transformation_matrix_unittest.cc',
       'test/web_layer_tree_view_test_common.h',
