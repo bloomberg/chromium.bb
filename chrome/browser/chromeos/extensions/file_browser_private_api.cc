@@ -311,19 +311,6 @@ base::FilePath GetVirtualPathFromURL(fileapi::FileSystemContext* context,
   return filesystem_url.virtual_path();
 }
 
-// Given a |url|, return the local FilePath associated with it. If the file
-// isn't of the type CrosMountPointProvider handles, return an empty FilePath.
-//
-// Local paths will look like "/home/chronos/user/Downloads/foo/bar.txt" or
-// "/special/drive/foo/bar.txt".
-base::FilePath GetLocalPathFromURL(fileapi::FileSystemContext* context,
-                                   const GURL& url) {
-  fileapi::FileSystemURL filesystem_url(context->CrackURL(url));
-  if (!chromeos::CrosMountPointProvider::CanHandleURL(filesystem_url))
-    return base::FilePath();
-  return filesystem_url.path();
-}
-
 // Make a set of unique filename suffixes out of the list of file URLs.
 std::set<std::string> GetUniqueSuffixes(base::ListValue* file_url_list,
                                         fileapi::FileSystemContext* context) {
@@ -1262,9 +1249,7 @@ int32 FileBrowserFunction::GetTabId() const {
   return ExtensionTabUtil::GetTabId(web_contents);
 }
 
-void FileBrowserFunction::GetSelectedFileInfo(
-    const UrlList& file_urls,
-    GetSelectedFileInfoCallback callback) {
+base::FilePath FileBrowserFunction::GetLocalPathFromURL(const GURL& url) {
   DCHECK(render_view_host());
 
   content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
@@ -1272,12 +1257,22 @@ void FileBrowserFunction::GetSelectedFileInfo(
       BrowserContext::GetStoragePartition(profile(), site_instance)->
           GetFileSystemContext();
 
+  const fileapi::FileSystemURL filesystem_url(
+      file_system_context->CrackURL(url));
+  base::FilePath path;
+  if (!chromeos::CrosMountPointProvider::CanHandleURL(filesystem_url))
+    return base::FilePath();
+  return filesystem_url.path();
+}
+
+void FileBrowserFunction::GetSelectedFileInfo(
+    const UrlList& file_urls,
+    GetSelectedFileInfoCallback callback) {
   scoped_ptr<std::vector<base::FilePath> > file_paths(
       new std::vector<base::FilePath>);
   for (size_t i = 0; i < file_urls.size(); ++i) {
     const GURL& file_url = file_urls[i];
-    const base::FilePath path =
-        GetLocalPathFromURL(file_system_context, file_url);
+    const base::FilePath path = GetLocalPathFromURL(file_url);
     if (!path.empty()) {
       DVLOG(1) << "Selected: file path: " << path.value();
       file_paths->push_back(path);
@@ -1427,17 +1422,11 @@ bool ViewFilesFunction::RunImpl() {
   std::string internal_task_id;
   args_->GetString(1, &internal_task_id);
 
-  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
-  scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      BrowserContext::GetStoragePartition(profile(), site_instance)->
-          GetFileSystemContext();
-
   std::vector<base::FilePath> files;
   for (size_t i = 0; i < path_list->GetSize(); ++i) {
     std::string url_as_string;
     path_list->GetString(i, &url_as_string);
-    base::FilePath path = GetLocalPathFromURL(file_system_context,
-                                        GURL(url_as_string));
+    base::FilePath path = GetLocalPathFromURL(GURL(url_as_string));
     if (path.empty())
       return false;
     files.push_back(path);
@@ -1733,12 +1722,7 @@ bool SetLastModifiedFunction::RunImpl() {
   if (!args_->GetString(1, &timestamp))
     return false;
 
-  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
-  scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      BrowserContext::GetStoragePartition(profile(), site_instance)->
-          GetFileSystemContext();
-  base::FilePath local_path = GetLocalPathFromURL(file_system_context,
-                                            GURL(file_url));
+  base::FilePath local_path = GetLocalPathFromURL(GURL(file_url));
 
   base::PostTaskAndReplyWithResult(
       BrowserThread::GetBlockingPool(),
@@ -1766,13 +1750,7 @@ bool GetSizeStatsFunction::RunImpl() {
   if (!args_->GetString(0, &mount_url))
     return false;
 
-  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
-  scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      BrowserContext::GetStoragePartition(profile(), site_instance)->
-          GetFileSystemContext();
-
-  base::FilePath file_path = GetLocalPathFromURL(file_system_context,
-                                                 GURL(mount_url));
+  base::FilePath file_path = GetLocalPathFromURL(GURL(mount_url));
   if (file_path.empty())
     return false;
 
@@ -1855,13 +1833,7 @@ bool FormatDeviceFunction::RunImpl() {
     return false;
   }
 
-  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
-  scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      BrowserContext::GetStoragePartition(profile(), site_instance)->
-          GetFileSystemContext();
-
-  base::FilePath file_path = GetLocalPathFromURL(file_system_context,
-                                           GURL(volume_file_url));
+  base::FilePath file_path = GetLocalPathFromURL(GURL(volume_file_url));
   if (file_path.empty())
     return false;
 
@@ -1888,13 +1860,7 @@ bool GetVolumeMetadataFunction::RunImpl() {
     return false;
   }
 
-  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
-  scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      BrowserContext::GetStoragePartition(profile(), site_instance)->
-          GetFileSystemContext();
-
-  base::FilePath file_path = GetLocalPathFromURL(file_system_context,
-                                           GURL(volume_mount_url));
+  base::FilePath file_path = GetLocalPathFromURL(GURL(volume_mount_url));
   if (file_path.empty()) {
     error_ = "Invalid mount path.";
     return false;
@@ -2752,18 +2718,12 @@ bool CancelFileTransfersFunction::RunImpl() {
   if (!system_service)
     return false;
 
-  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
-  scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      BrowserContext::GetStoragePartition(profile(), site_instance)->
-          GetFileSystemContext();
-
   scoped_ptr<ListValue> responses(new ListValue());
   for (size_t i = 0; i < url_list->GetSize(); ++i) {
     std::string url_as_string;
     url_list->GetString(i, &url_as_string);
 
-    base::FilePath file_path = GetLocalPathFromURL(file_system_context,
-                                             GURL(url_as_string));
+    base::FilePath file_path = GetLocalPathFromURL(GURL(url_as_string));
     if (file_path.empty())
       continue;
 
@@ -2805,15 +2765,9 @@ bool TransferFileFunction::RunImpl() {
   if (!system_service)
     return false;
 
-  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
-  scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      BrowserContext::GetStoragePartition(profile(), site_instance)->
-          GetFileSystemContext();
-
-  base::FilePath source_file = GetLocalPathFromURL(file_system_context,
-                                             GURL(source_file_url));
-  base::FilePath destination_file = GetLocalPathFromURL(file_system_context,
-                                                  GURL(destination_file_url));
+  base::FilePath source_file = GetLocalPathFromURL(GURL(source_file_url));
+  base::FilePath destination_file = GetLocalPathFromURL(
+      GURL(destination_file_url));
   if (source_file.empty() || destination_file.empty())
     return false;
 
@@ -3182,13 +3136,7 @@ bool ZipSelectionFunction::RunImpl() {
   if (!args_->GetString(0, &dir_url) || dir_url.empty())
     return false;
 
-  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
-  scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      BrowserContext::GetStoragePartition(profile(), site_instance)->
-          GetFileSystemContext();
-
-  base::FilePath src_dir = GetLocalPathFromURL(file_system_context,
-                                         GURL(dir_url));
+  base::FilePath src_dir = GetLocalPathFromURL(GURL(dir_url));
   if (src_dir.empty())
     return false;
 
@@ -3202,8 +3150,7 @@ bool ZipSelectionFunction::RunImpl() {
   for (size_t i = 0; i < selection_urls->GetSize(); ++i) {
     std::string file_url;
     selection_urls->GetString(i, &file_url);
-    base::FilePath path =
-        GetLocalPathFromURL(file_system_context, GURL(file_url));
+    base::FilePath path = GetLocalPathFromURL(GURL(file_url));
     if (path.empty())
       return false;
     files.push_back(path);
