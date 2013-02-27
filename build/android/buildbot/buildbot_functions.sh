@@ -166,6 +166,7 @@ function bb_zip_build {
   echo "@@@BUILD_STEP Zip build@@@"
   python ../../../../scripts/slave/zip_build.py \
     --src-dir "$SRC_ROOT" \
+    --build-dir "out" \
     --exclude-files "lib.target,gen,android_webview,jingle_unittests" \
     --factory-properties "$FACTORY_PROPERTIES" \
     --build-properties "$BUILD_PROPERTIES"
