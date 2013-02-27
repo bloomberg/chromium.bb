@@ -114,7 +114,7 @@ void ChromeToMobileBubbleView::WindowClosing() {
   service_->DeleteSnapshot(snapshot_path_);
 
   // Restore the resting state action box icon.
-  SetTextButtonIconToId(anchor_view(), IDR_ACTION_BOX_BUTTON);
+  SetTextButtonIconToId(anchor_view(), IDR_ACTION_BOX_BUTTON_NORMAL);
 }
 
 bool ChromeToMobileBubbleView::AcceleratorPressed(
