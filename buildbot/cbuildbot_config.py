@@ -1097,6 +1097,7 @@ _release.add_config('lumpy-pgo-release',
   boards=['lumpy'],
   useflags=official['useflags'] + [constants.USE_PGO_USE],
   push_image=False,
+  dev_installer_prebuilts=False,
 )
 
 _release.add_config('link-release',
