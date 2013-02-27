@@ -249,9 +249,10 @@ evdev_flush_motion(struct evdev_device *device, uint32_t time)
 {
 	struct weston_seat *master = device->seat;
 
-	if (!device->pending_events)
+	if (!(device->pending_events & EVDEV_SYN))
 		return;
 
+	device->pending_events &= ~EVDEV_SYN;
 	if (device->pending_events & EVDEV_RELATIVE_MOTION) {
 		notify_motion(master, time,
 			      master->seat.pointer->x + device->rel.dx,
@@ -307,6 +308,9 @@ fallback_process(struct evdev_dispatch *dispatch,
 		break;
 	case EV_KEY:
 		evdev_process_key(device, event, time);
+		break;
+	case EV_SYN:
+		device->pending_events |= EVDEV_SYN;
 		break;
 	}
 }
