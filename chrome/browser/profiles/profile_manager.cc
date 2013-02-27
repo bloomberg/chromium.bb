@@ -77,8 +77,6 @@ using content::UserMetricsAction;
 
 namespace {
 
-static bool did_perform_profile_import = false;
-
 // Profiles that should be deleted on shutdown.
 std::vector<base::FilePath>& ProfilesToDelete() {
   CR_DEFINE_STATIC_LOCAL(std::vector<base::FilePath>, profiles_to_delete, ());
@@ -661,18 +659,12 @@ bool ProfileManager::IsImportProcess(const CommandLine& command_line) {
           command_line.HasSwitch(switches::kImportFromFile));
 }
 
-// static
-bool ProfileManager::DidPerformProfileImport() {
-  return did_perform_profile_import;
-}
-
 void ProfileManager::SetWillImport() {
   will_import_ = true;
 }
 
 void ProfileManager::OnImportFinished(Profile* profile) {
   will_import_ = false;
-  did_perform_profile_import = true;
   DCHECK(profile);
 
 #if !defined(OS_CHROMEOS)

@@ -143,6 +143,11 @@ void AutoImport(Profile* profile,
 // if |make_chrome_default|. This can pop the first run consent dialog on linux.
 void DoPostImportTasks(Profile* profile, bool make_chrome_default);
 
+// Whether a first-run import was triggered before the browser mainloop began.
+// This is used in testing to verify import startup actions that occur before
+// an observer can be registered in the test.
+bool DidPerformProfileImport(bool* exited_successfully);
+
 // Imports bookmarks and/or browser items (depending on platform support)
 // in this process. This function is paired with first_run::ImportSettings().
 // This function might or might not show a visible UI depending on the

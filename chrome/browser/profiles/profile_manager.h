@@ -129,11 +129,6 @@ class ProfileManager : public base::NonThreadSafe,
   // profile import process.
   static bool IsImportProcess(const CommandLine& command_line);
 
-  // Whether a first-run import was triggered before the browser mainloop began.
-  // This is used in testing to verify import startup actions that occur before
-  // an observer can be registered in the test.
-  static bool DidPerformProfileImport();
-
   // Indicate that an import process will run for the next created Profile.
   void SetWillImport();
   bool will_import() { return will_import_; }
