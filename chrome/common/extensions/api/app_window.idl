@@ -103,7 +103,7 @@ namespace app.window {
     static void maximize();
 
     // Is the window maximized?
-    static bool isMaximized();
+    static boolean isMaximized();
 
     // Restore the window.
     static void restore();

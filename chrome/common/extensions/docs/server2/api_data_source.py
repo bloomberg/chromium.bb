@@ -17,7 +17,7 @@ import third_party.json_schema_compiler.idl_parser as idl_parser
 # the caches used by APIDataSource. This would include changes to model.py in
 # JSON schema compiler! This allows the cache to be invalidated without having
 # to flush memcache on the production server.
-_VERSION = 14
+_VERSION = 15
 
 def _RemoveNoDocs(item):
   if json_parse.IsDict(item):
@@ -173,6 +173,10 @@ class _JSCModel(object):
     return [self._GenerateProperty(v) for v in properties.values()]
 
   def _GenerateProperty(self, property_):
+    if not hasattr(property_, 'type_'):
+      for d in dir(property_):
+        if not d.startswith('_'):
+          print ('%s -> %s' % (d, getattr(property_, d)))
     type_ = property_.type_
 
     # Make sure we generate property info for arrays, too.
@@ -198,7 +202,7 @@ class _JSCModel(object):
       for param in function.params:
         property_dict['parameters'].append(self._GenerateProperty(param))
       if function.returns:
-        property_dict['returns'] = self._GenerateProperty(function.returns)
+        property_dict['returns'] = self._GenerateType(function.returns)
 
     if (property_.parent is not None and
         not isinstance(property_.parent, model.Namespace)):
