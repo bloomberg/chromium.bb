@@ -23,6 +23,7 @@
 
 #include "base/android/jni_helper.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/callback.h"
 #include "base/memory/singleton.h"
 #include "content/public/browser/android/download_controller_android.h"
 #include "content/public/browser/download_item.h"
@@ -83,30 +84,25 @@ class DownloadControllerAndroidImpl : public DownloadControllerAndroid,
   virtual void OnDownloadUpdated(DownloadItem* item) OVERRIDE;
   virtual void OnDownloadOpened(DownloadItem* item) OVERRIDE;
 
-
+  typedef base::Callback<void(const DownloadInfoAndroid&)>
+      GetDownloadInfoCB;
   void PrepareDownloadInfo(const GlobalRequestID& global_id,
-                           int render_process_id,
-                           int render_view_id);
-
+                           const GetDownloadInfoCB& callback);
   void CheckPolicyAndLoadCookies(const DownloadInfoAndroid& info,
-                                 int render_process_id,
-                                 int render_view_id,
+                                 const GetDownloadInfoCB& callback,
                                  const GlobalRequestID& global_id,
                                  const net::CookieList& cookie_list);
-
   void DoLoadCookies(const DownloadInfoAndroid& info,
-                     int render_process_id,
-                     int render_view_id,
+                     const GetDownloadInfoCB& callback,
                      const GlobalRequestID& global_id);
-
   void OnCookieResponse(DownloadInfoAndroid info,
-                        int render_process_id,
-                        int render_view_id,
+                        const GetDownloadInfoCB& callback,
                         const std::string& cookie);
-
-  void StartAndroidDownload(const DownloadInfoAndroid& info,
-                            int render_process_id,
-                            int render_view_id);
+  void StartDownloadOnUIThread(const GetDownloadInfoCB& callback,
+                               const DownloadInfoAndroid& info);
+  void StartAndroidDownload(int render_process_id,
+                            int render_view_id,
+                            const DownloadInfoAndroid& info);
 
   base::android::ScopedJavaLocalRef<jobject> GetContentViewCoreFromWebContents(
       WebContents* web_contents);
