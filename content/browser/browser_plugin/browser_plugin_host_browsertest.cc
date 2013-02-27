@@ -488,17 +488,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, EmbedderChangedAfterSwap) {
   EmbedderChangedAfterSwapTestHelper();
 }
 
-// TODO(lazyboy): Make this test pass on win aura trybots:
-// http://crbug.com/177222.
-#if defined(OS_WIN) && defined(USE_AURA)
-#define MAYBE_EmbedderChangedAfterSwap_UseGuestViews \
-        DISABLED_EmbedderChangedAfterSwap_UseGuestViews
-#else
-#define MAYBE_EmbedderChangedAfterSwap_UseGuestViews \
-        EmbedderChangedAfterSwap_UseGuestViews
-#endif
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest,
-                       MAYBE_EmbedderChangedAfterSwap_UseGuestViews) {
+                       EmbedderChangedAfterSwap_UseGuestViews) {
   // kEnableBrowserPluginGuestViews is turned on for this test.
   EmbedderChangedAfterSwapTestHelper();
 }
@@ -738,15 +729,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, ReloadEmbedder) {
   ReloadEmbedderTestHelper();
 }
 
-// TODO(lazyboy): Make this test pass on win aura trybots:
-// http://crbug.com/177222.
-#if defined(OS_WIN) && defined(USE_AURA)
-#define MAYBE_ReloadEmbedder_UseGuestViews DISABLED_ReloadEmbedder_UseGuestViews
-#else
-#define MAYBE_ReloadEmbedder_UseGuestViews ReloadEmbedder_UseGuestViews
-#endif
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest,
-                       MAYBE_ReloadEmbedder_UseGuestViews) {
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, ReloadEmbedder_UseGuestViews) {
   // kEnableBrowserPluginGuestViews is turned on for this test.
   ReloadEmbedderTestHelper();
 }

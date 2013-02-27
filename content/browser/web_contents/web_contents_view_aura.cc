@@ -24,6 +24,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/browser/web_drag_dest_delegate.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
@@ -778,10 +779,13 @@ class WebContentsViewAura::WindowObserver
 // Constrained windows are added as children of the WebContent's view which may
 // overlap with windowed NPAPI plugins. In that case, tell the RWHV so that it
 // can update the plugins' cutout rects accordingly.
-class WebContentsViewAura::ChildWindowObserver : public aura::WindowObserver {
+class WebContentsViewAura::ChildWindowObserver : public aura::WindowObserver,
+                                                 public WebContentsObserver {
  public:
   explicit ChildWindowObserver(WebContentsViewAura* view)
-      : view_(view) {
+      : WebContentsObserver(view->web_contents_),
+        view_(view),
+        web_contents_destroyed_(false) {
     view_->window_->AddObserver(this);
   }
 
@@ -822,10 +826,18 @@ class WebContentsViewAura::ChildWindowObserver : public aura::WindowObserver {
     }
   }
 
+  // Overridden from WebContentsObserver:
+  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE {
+    web_contents_destroyed_ = true;
+  }
+
  private:
   void UpdateConstrainedWindows(aura::Window* exclude) {
     if (RenderViewHostFactory::has_factory())
       return;  // Can't cast to RenderWidgetHostViewAura in unit tests.
+
+    if (web_contents_destroyed_)
+      return;
 
     RenderWidgetHostViewAura* view = static_cast<RenderWidgetHostViewAura*>(
         view_->web_contents_->GetRenderWidgetHostView());
@@ -843,6 +855,7 @@ class WebContentsViewAura::ChildWindowObserver : public aura::WindowObserver {
   }
 
   WebContentsViewAura* view_;
+  bool web_contents_destroyed_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildWindowObserver);
 };
