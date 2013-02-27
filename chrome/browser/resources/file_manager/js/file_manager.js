@@ -2570,16 +2570,6 @@ DialogType.isModal = function(type) {
       chrome.fileBrowserPrivate.getDriveFiles(
         fileUrls,
         function(localPaths) {
-          fileUrls = [].concat(fileUrls);  // Clone the array.
-          // localPath can be empty if the file is not present, which
-          // can happen if the user specifies a new file name to save a
-          // file on drive.
-          for (var i = 0; i != localPaths.length; i++) {
-            if (localPaths[i]) {
-              // Add "localPath" parameter to the drive file URL.
-              fileUrls[i] += '?localPath=' + encodeURIComponent(localPaths[i]);
-            }
-          }
           callback(fileUrls);
         });
     } else {
