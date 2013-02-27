@@ -224,14 +224,15 @@
     "channel": "stable",
     "extension_types": [ "platform_app" ]
   },
-  // TODO(thestig) Remove this as part of http:://crbug.com/144496
+  // TODO(thestig) Remove this as part of http://crbug.com/144496
   "mediaGalleriesPrivate": {
     "channel": "stable",
     "extension_types": [ "platform_app" ],
     "whitelist": [
-      "ebpbnabdhheoknfklmpddcdijjkmklkp",
-      "efjnaogkjbogokcnohkmnjdojkikgobo",
-      "ejegoaikibpmikoejfephaneibodccma"
+      "dhgjflpimlbndbpamnkoepaacagejgda",
+      "ebpbnabdhheoknfklmpddcdijjkmklkp",  // G+ Photos staging
+      "efjnaogkjbogokcnohkmnjdojkikgobo",  // G+ Photos prod
+      "ejegoaikibpmikoejfephaneibodccma"   // G+ Photos dev
     ]
   },
   "mediaPlayerPrivate": {
