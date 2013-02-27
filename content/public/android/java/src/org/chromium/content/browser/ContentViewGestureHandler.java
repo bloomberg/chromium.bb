@@ -14,6 +14,7 @@ import android.view.ViewConfiguration;
 import org.chromium.content.browser.third_party.GestureDetector;
 import org.chromium.content.browser.third_party.GestureDetector.OnGestureListener;
 import org.chromium.content.browser.LongPressDetector.LongPressDelegate;
+import org.chromium.content.browser.SnapScrollController;
 import org.chromium.content.common.TraceEvent;
 
 import java.util.ArrayDeque;
@@ -115,45 +116,13 @@ class ContentViewGestureHandler implements LongPressDelegate {
     // Cache of square of the scaled touch slop so we don't have to calculate it on every touch.
     private int mScaledTouchSlopSquare;
 
+    // Object that keeps trqack of and updates scroll snapping behavior.
+    private SnapScrollController mSnapScrollController;
+
     // Used to track the accumulated scroll error over time. This is used to remove the
     // rounding error we introduced by passing integers to webkit.
     private float mAccumulatedScrollErrorX = 0;
     private float mAccumulatedScrollErrorY = 0;
-
-    private static final int SNAP_NONE = 0;
-    private static final int SNAP_HORIZ = 1;
-    private static final int SNAP_VERT = 2;
-    private int mSnapScrollMode = SNAP_NONE;
-    private float mAverageAngle;
-    private boolean mSeenFirstScroll;
-
-    /*
-     * Here is the snap align logic:
-     * 1. If it starts nearly horizontally or vertically, snap align;
-     * 2. If there is a dramatic direction change, let it go;
-     *
-     * Adjustable parameters. Angle is the radians on a unit circle, limited
-     * to quadrant 1. Values range from 0f (horizontal) to PI/2 (vertical)
-     */
-    private static final float HSLOPE_TO_START_SNAP = .25f;
-    private static final float HSLOPE_TO_BREAK_SNAP = .6f;
-    private static final float VSLOPE_TO_START_SNAP = 1.25f;
-    private static final float VSLOPE_TO_BREAK_SNAP = .6f;
-
-    /*
-     * These values are used to influence the average angle when entering
-     * snap mode. If it is the first movement entering snap, we set the average
-     * to the appropriate ideal. If the user is entering into snap after the
-     * first movement, then we average the average angle with these values.
-     */
-    private static final float ANGLE_VERT = (float)(Math.PI / 2.0);
-    private static final float ANGLE_HORIZ = 0f;
-
-    /*
-     *  The modified moving average weight.
-     *  Formula: MAV[t]=MAV[t-1] + (P[t]-MAV[t-1])/n
-     */
-    private static final float MMA_WEIGHT_N = 5;
 
     static final int GESTURE_SHOW_PRESSED_STATE = 0;
     static final int GESTURE_DOUBLE_TAP = 1;
@@ -229,6 +198,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
         mLongPressDetector = new LongPressDetector(context, this);
         mMotionEventDelegate = delegate;
         mZoomManager = zoomManager;
+        mSnapScrollController = new SnapScrollController(mZoomManager);
         initGestureDetectors(context);
     }
 
@@ -258,9 +228,8 @@ class ContentViewGestureHandler implements LongPressDelegate {
                     public boolean onDown(MotionEvent e) {
                         mShowPressIsCalled = false;
                         mIgnoreSingleTap = false;
-                        mSeenFirstScroll = false;
                         mNativeScrolling = false;
-                        mSnapScrollMode = SNAP_NONE;
+                        mSnapScrollController.resetSnapScrollMode();
                         mLastRawX = e.getRawX();
                         mLastRawY = e.getRawY();
                         mAccumulatedScrollErrorX = 0;
@@ -272,50 +241,9 @@ class ContentViewGestureHandler implements LongPressDelegate {
                     @Override
                     public boolean onScroll(MotionEvent e1, MotionEvent e2,
                             float distanceX, float distanceY) {
-                        // Scroll snapping
-                        if (!mSeenFirstScroll) {
-                            mAverageAngle = calculateDragAngle(distanceX, distanceY);
-                            // Initial scroll event
-                            if (!mZoomManager.isScaleGestureDetectionInProgress()) {
-                                // if it starts nearly horizontal or vertical, enforce it
-                                if (mAverageAngle < HSLOPE_TO_START_SNAP) {
-                                    mSnapScrollMode = SNAP_HORIZ;
-                                    mAverageAngle = ANGLE_HORIZ;
-                                } else if (mAverageAngle > VSLOPE_TO_START_SNAP) {
-                                    mSnapScrollMode = SNAP_VERT;
-                                    mAverageAngle = ANGLE_VERT;
-                                }
-                            }
-                            mSeenFirstScroll = true;
-                            // Ignore the first scroll delta to avoid a visible jump.
-                            return true;
-                        } else {
-                            mAverageAngle +=
-                                (calculateDragAngle(distanceX, distanceY) - mAverageAngle)
-                                / MMA_WEIGHT_N;
-                            if (mSnapScrollMode != SNAP_NONE) {
-                                if ((mSnapScrollMode == SNAP_VERT
-                                        && mAverageAngle < VSLOPE_TO_BREAK_SNAP)
-                                        || (mSnapScrollMode == SNAP_HORIZ
-                                                && mAverageAngle > HSLOPE_TO_BREAK_SNAP)) {
-                                    // radical change means getting out of snap mode
-                                    mSnapScrollMode = SNAP_NONE;
-                                }
-                            } else {
-                                if (!mZoomManager.isScaleGestureDetectionInProgress()) {
-                                    if (mAverageAngle < HSLOPE_TO_START_SNAP) {
-                                        mSnapScrollMode = SNAP_HORIZ;
-                                        mAverageAngle = (mAverageAngle + ANGLE_HORIZ) / 2;
-                                    } else if (mAverageAngle > VSLOPE_TO_START_SNAP) {
-                                        mSnapScrollMode = SNAP_VERT;
-                                        mAverageAngle = (mAverageAngle + ANGLE_VERT) / 2;
-                                    }
-                                }
-                            }
-                        }
-
-                        if (mSnapScrollMode != SNAP_NONE) {
-                            if (mSnapScrollMode == SNAP_HORIZ) {
+                        mSnapScrollController.updateSnapScrollMode(distanceX, distanceY);
+                        if (mSnapScrollController.isSnappingScrolls()) {
+                            if (mSnapScrollController.isSnapHorizontal()) {
                                 distanceY = 0;
                             } else {
                                 distanceX = 0;
@@ -335,7 +263,6 @@ class ContentViewGestureHandler implements LongPressDelegate {
                                             (int) e1.getX(), (int) e1.getY(), null)) {
                                 mNativeScrolling = true;
                             }
-
                         }
                         // distanceX and distanceY is the scrolling offset since last onScroll.
                         // Because we are passing integers to webkit, this could introduce
@@ -364,22 +291,11 @@ class ContentViewGestureHandler implements LongPressDelegate {
                     @Override
                     public boolean onFling(MotionEvent e1, MotionEvent e2,
                             float velocityX, float velocityY) {
-                        if (mSnapScrollMode == SNAP_NONE) {
-                            float flingAngle = calculateDragAngle(velocityX, velocityY);
-                            if (flingAngle < HSLOPE_TO_START_SNAP) {
-                                mSnapScrollMode = SNAP_HORIZ;
-                                mAverageAngle = ANGLE_HORIZ;
-                            } else if (flingAngle > VSLOPE_TO_START_SNAP) {
-                                mSnapScrollMode = SNAP_VERT;
-                                mAverageAngle = ANGLE_VERT;
-                            }
-                        }
-
-                        if (mSnapScrollMode != SNAP_NONE) {
-                            if (mSnapScrollMode == SNAP_HORIZ) {
-                                velocityY = 0;
-                            } else {
+                        if (mSnapScrollController.isSnappingScrolls()) {
+                            if (mSnapScrollController.isSnapHorizontal()) {
                                 velocityX = 0;
+                            } else {
+                                velocityY = 0;
                             }
                         }
 
@@ -643,6 +559,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
         try {
             TraceEvent.begin("onTouchEvent");
             mLongPressDetector.cancelLongPressIfNeeded(event);
+            mSnapScrollController.setSnapScrollingMode(event);
             // Notify native that scrolling has stopped whenever a down action is processed prior to
             // passing the event to native as it will drop them as an optimization if scrolling is
             // enabled.  Ending the fling ensures scrolling has stopped as well as terminating the

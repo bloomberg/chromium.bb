@@ -521,13 +521,6 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
                 2, mockDelegate.mGestureTypeList.size());
 
         event = MotionEvent.obtain(
-                downTime, eventTime + 5, MotionEvent.ACTION_MOVE,
-                FAKE_COORD_X * 5, FAKE_COORD_Y * 5, 0);
-        assertTrue(mGestureHandler.onTouchEvent(event));
-        assertEquals("The first move should not do anything",
-                2, mockDelegate.mGestureTypeList.size());
-
-        event = MotionEvent.obtain(
                 downTime, eventTime + 10, MotionEvent.ACTION_MOVE,
                 FAKE_COORD_X * 10, FAKE_COORD_Y * 10, 0);
         assertTrue(mGestureHandler.onTouchEvent(event));
