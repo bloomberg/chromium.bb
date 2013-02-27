@@ -84,7 +84,6 @@ class BurnControllerImpl
 
     if (!state_machine_->download_started()) {
       burn_manager_->FetchImage();
-      state_machine_->OnDownloadStarted();
     }
   }
 
@@ -207,7 +206,6 @@ class BurnControllerImpl
  private:
   void DownloadCompleted(bool success) {
     if (success) {
-      state_machine_->OnDownloadFinished();
       BurnImage();
     } else {
       burn_manager_->OnError(IDS_IMAGEBURN_DOWNLOAD_ERROR);
@@ -217,12 +215,10 @@ class BurnControllerImpl
   void BurnImage() {
     if (state_machine_->state() == StateMachine::BURNING)
       return;
-    state_machine_->OnBurnStarted();
     burn_manager_->DoBurn();
   }
 
   void FinalizeBurn() {
-    state_machine_->OnSuccess();
     burn_manager_->ResetTargetPaths();
     delegate_->OnSuccess();
     working_ = false;

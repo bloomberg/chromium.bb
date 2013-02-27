@@ -348,6 +348,8 @@ void BurnManager::FetchImage() {
       zip_image_file_path_,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   image_fetcher_->Start();
+
+  state_machine_->OnDownloadStarted();
 }
 
 void BurnManager::CancelImageFetch() {
@@ -358,6 +360,7 @@ void BurnManager::DoBurn() {
   CrosLibrary::Get()->GetBurnLibrary()->DoBurn(
       zip_image_file_path_, image_file_name_,
       target_file_path(), target_device_path());
+  state_machine_->OnBurnStarted();
 }
 
 void BurnManager::CancelBurnImage() {
@@ -374,6 +377,7 @@ void BurnManager::OnURLFetchComplete(const net::URLFetcher* source) {
     config_fetcher_.reset();
     ConfigFileFetched(success, data);
   } else if (source == image_fetcher_.get()) {
+    state_machine_->OnDownloadFinished();
     FOR_EACH_OBSERVER(Observer, observers_, OnImageFileFetched(success));
   }
 }
@@ -401,11 +405,17 @@ void BurnManager::OnURLFetchDownloadProgress(const net::URLFetcher* source,
 }
 
 void BurnManager::BurnProgressUpdated(BurnLibrary* object,
-                                      BurnEvent evt,
+                                      BurnEvent event,
                                       const ImageBurnStatus& status) {
-  // At the moment, this is just a proxy of BurnLibrary callback to observers.
+  if (event == BURN_SUCCESS) {
+    // The burning task is successfully done.
+    // Update the state.
+    state_machine_->OnSuccess();
+  }
+
+  // Proxy the BurnLibrary callback to observers.
   FOR_EACH_OBSERVER(
-      Observer, observers_, OnBurnProgressUpdated(evt, status));
+      Observer, observers_, OnBurnProgressUpdated(event, status));
 }
 
 void BurnManager::OnNetworkManagerChanged(NetworkLibrary* obj) {
