@@ -12,7 +12,6 @@
 #include "media/video/capture/screen/screen_capture_data.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/constants.h"
-#include "remoting/base/util.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/desktop_environment.h"
@@ -30,11 +29,6 @@
 namespace remoting {
 
 namespace {
-
-// USB to XKB keycode map table.
-#define USB_KEYMAP(usb, xkb, win, mac) {usb, xkb}
-#include "ui/base/keycodes/usb_keycode_map.h"
-#undef USB_KEYMAP
 
 // Routes local clipboard events though the IPC channel to the network process.
 class DesktopSesssionClipboardStub : public protocol::ClipboardStub {
@@ -380,8 +374,7 @@ void DesktopSessionAgent::OnInvalidateRegion(
   SkRegion invalid_region;
   for (std::vector<SkIRect>::const_iterator i = invalid_rects.begin();
       i != invalid_rects.end(); ++i) {
-    // Validate each rectange and clip it to the frame bounds. If the rectangle
-    // is not valid it is ignored.
+    // Validate each rectange and clip it to the frame bounds.
     SkIRect rect;
     if (rect.intersect(*i, bounds)) {
       invalid_region.op(rect, SkRegion::kUnion_Op);
@@ -419,15 +412,8 @@ void DesktopSessionAgent::OnInjectClipboardEvent(
     return;
   }
 
-  // Currently we only handle UTF-8 text.
-  if (event.mime_type().compare(kMimeTypeTextUtf8) != 0)
-    return;
-
-  if (!StringIsUtf8(event.data().c_str(), event.data().length())) {
-    LOG(ERROR) << "ClipboardEvent: data is not UTF-8 encoded.";
-    return;
-  }
-
+  // InputStub implementations must verify events themselves, so we don't need
+  // verification here. This matches HostEventDispatcher.
   event_executor_->InjectClipboardEvent(event);
 }
 
@@ -441,12 +427,10 @@ void DesktopSessionAgent::OnInjectKeyEvent(
     return;
   }
 
-  // Ignore unknown keycodes.
-  if (event.has_usb_keycode() &&
-      (UsbKeycodeToNativeKeycode(event.usb_keycode()) ==
-           InvalidNativeKeycode())) {
-    LOG(ERROR) << "KeyEvent: unknown USB keycode: "
-               << std::hex << event.usb_keycode() << std::dec;
+  // InputStub implementations must verify events themselves, so we need only
+  // basic verification here. This matches HostEventDispatcher.
+  if (!event.has_usb_keycode() || !event.has_pressed()) {
+    LOG(ERROR) << "Received invalid key event.";
     return;
   }
 
@@ -463,20 +447,8 @@ void DesktopSessionAgent::OnInjectMouseEvent(
     return;
   }
 
-  // Validate the specified button index.
-  if (event.has_button() &&
-      !(protocol::MouseEvent::BUTTON_LEFT <= event.button() &&
-          event.button() < protocol::MouseEvent::BUTTON_MAX)) {
-    LOG(ERROR) << "MouseEvent: unknown button: " << event.button();
-    return;
-  }
-
-  // Do not allow negative coordinates.
-  if (event.has_x())
-    event.set_x(std::max(0, event.x()));
-  if (event.has_y())
-    event.set_y(std::max(0, event.y()));
-
+  // InputStub implementations must verify events themselves, so we don't need
+  // verification here. This matches HostEventDispatcher.
   remote_input_filter_->InjectMouseEvent(event);
 }
 

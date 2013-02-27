@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "remoting/base/constants.h"
+#include "remoting/base/util.h"
 
 namespace remoting {
 
@@ -90,12 +91,14 @@ void XServerClipboard::SetClipboard(const std::string& mime_type,
                                     const std::string& data) {
   DCHECK(display_);
 
-  if (clipboard_window_ == BadValue) {
+  if (clipboard_window_ == BadValue)
     return;
-  }
 
   // Currently only UTF-8 is supported.
-  if (mime_type != kMimeTypeTextUtf8) {
+  if (mime_type != kMimeTypeTextUtf8)
+    return;
+  if (!StringIsUtf8(data.c_str(), data.length())) {
+    LOG(ERROR) << "ClipboardEvent: data is not UTF-8 encoded.";
     return;
   }
 
@@ -151,15 +154,13 @@ void XServerClipboard::OnSetSelectionOwnerNotify(Atom selection,
     return;
   }
 
-  if (selection != clipboard_atom_ && selection != XA_PRIMARY) {
-    // Only process PRIMARY and CLIPBOARD selections.
+  // Only process PRIMARY and CLIPBOARD selections.
+  if (selection != clipboard_atom_ && selection != XA_PRIMARY)
     return;
-  }
 
   // If we own the selection, don't request details for it.
-  if (IsSelectionOwner(selection)) {
+  if (IsSelectionOwner(selection))
     return;
-  }
 
   get_selections_time_ = base::TimeTicks::Now();
 
@@ -185,9 +186,8 @@ void XServerClipboard::OnPropertyNotify(XEvent* event) {
       XFree(data);
 
       // If the property is zero-length then the large transfer is complete.
-      if (item_count == 0) {
+      if (item_count == 0)
         large_selection_property_ = None;
-      }
     }
   }
 }
@@ -227,9 +227,8 @@ void XServerClipboard::OnSelectionRequest(XEvent* event) {
   selection_event.selection = event->xselectionrequest.selection;
   selection_event.time = event->xselectionrequest.time;
   selection_event.target = event->xselectionrequest.target;
-  if (event->xselectionrequest.property == None) {
+  if (event->xselectionrequest.property == None)
     event->xselectionrequest.property = event->xselectionrequest.target;
-  }
   if (!IsSelectionOwner(selection_event.selection)) {
     selection_event.property = None;
   } else {
@@ -303,9 +302,8 @@ void XServerClipboard::HandleSelectionNotify(XSelectionEvent* event,
     finished = HandleSelectionStringEvent(event, format, item_count, data);
   }
 
-  if (finished) {
+  if (finished)
     get_selections_time_ = base::TimeTicks();
-  }
 }
 
 bool XServerClipboard::HandleSelectionTargetsEvent(XSelectionEvent* event,
@@ -337,15 +335,14 @@ bool XServerClipboard::HandleSelectionStringEvent(XSelectionEvent* event,
                                                   int format,
                                                   int item_count,
                                                   void* data) {
-  if (event->property != selection_string_atom_ || !data || format != 8) {
+  if (event->property != selection_string_atom_ || !data || format != 8)
     return true;
-  }
 
   std::string text(static_cast<char*>(data), item_count);
 
-  if (event->target == XA_STRING || event->target == utf8_string_atom_) {
+  if (event->target == XA_STRING || event->target == utf8_string_atom_)
     NotifyClipboardText(text);
-  }
+
   return true;
 }
 

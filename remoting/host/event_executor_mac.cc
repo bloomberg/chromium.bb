@@ -4,6 +4,7 @@
 
 #include "remoting/host/event_executor.h"
 
+#include <algorithm>
 #include <ApplicationServices/ApplicationServices.h>
 #include <Carbon/Carbon.h>
 
@@ -147,13 +148,14 @@ void EventExecutorMac::Core::InjectClipboardEvent(const ClipboardEvent& event) {
     return;
   }
 
+  // |clipboard_| will ignore unknown MIME-types, and verify the data's format.
   clipboard_->InjectClipboardEvent(event);
 }
 
 void EventExecutorMac::Core::InjectKeyEvent(const KeyEvent& event) {
   // HostEventDispatcher should filter events missing the pressed field.
-  DCHECK(event.has_pressed());
-  DCHECK(event.has_usb_keycode());
+  if (!event.has_pressed() || !event.has_usb_keycode())
+    return;
 
   int keycode = UsbKeycodeToNativeKeycode(event.usb_keycode());
 
@@ -170,9 +172,8 @@ void EventExecutorMac::Core::InjectKeyEvent(const KeyEvent& event) {
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
   CGError error = CGPostKeyboardEvent(0, keycode, event.pressed());
 #pragma clang diagnostic pop
-  if (error != kCGErrorSuccess) {
+  if (error != kCGErrorSuccess)
     LOG(WARNING) << "CGPostKeyboardEvent error " << error;
-  }
 }
 
 void EventExecutorMac::Core::InjectMouseEvent(const MouseEvent& event) {
@@ -181,8 +182,6 @@ void EventExecutorMac::Core::InjectMouseEvent(const MouseEvent& event) {
     // display, whereas our coordinate scheme places (0,0) at the top-left of
     // the bounding rectangle around all the displays, so we need to translate
     // accordingly.
-    // TODO(wez): Move display config tracking into a separate class used both
-    // here and in the Capturer.
 
     // Set the mouse position assuming single-monitor.
     mouse_pos_ = SkIPoint::Make(event.x(), event.y());
@@ -199,6 +198,13 @@ void EventExecutorMac::Core::InjectMouseEvent(const MouseEvent& event) {
     // Translate the mouse position into desktop coordinates.
     mouse_pos_ += SkIPoint::Make(desktop_config.pixel_bounds.left(),
                                  desktop_config.pixel_bounds.top());
+
+    // Constrain the mouse position to the desktop coordinates.
+    mouse_pos_ = SkIPoint::Make(
+       std::max(desktop_config.pixel_bounds.left(),
+           std::min(desktop_config.pixel_bounds.right(), mouse_pos_.x())),
+       std::max(desktop_config.pixel_bounds.top(),
+           std::min(desktop_config.pixel_bounds.bottom(), mouse_pos_.y())));
 
     // Convert from pixel to Density Independent Pixel coordinates.
     mouse_pos_ = SkIPoint::Make(
@@ -239,9 +245,8 @@ void EventExecutorMac::Core::InjectMouseEvent(const MouseEvent& event) {
                                    (mouse_button_state_ & RightBit) != 0,
                                    (mouse_button_state_ & MiddleBit) != 0);
 #pragma clang diagnostic pop
-  if (error != kCGErrorSuccess) {
+  if (error != kCGErrorSuccess)
     LOG(WARNING) << "CGPostMouseEvent error " << error;
-  }
 
   if (event.has_wheel_delta_x() && event.has_wheel_delta_y()) {
     int delta_x = static_cast<int>(event.wheel_delta_x());
@@ -249,9 +254,8 @@ void EventExecutorMac::Core::InjectMouseEvent(const MouseEvent& event) {
     base::mac::ScopedCFTypeRef<CGEventRef> event(
         CGEventCreateScrollWheelEvent(
             NULL, kCGScrollEventUnitPixel, 2, delta_y, delta_x));
-    if (event) {
+    if (event)
       CGEventPost(kCGSessionEventTap, event);
-    }
   }
 }
 

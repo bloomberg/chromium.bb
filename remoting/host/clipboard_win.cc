@@ -196,13 +196,17 @@ void ClipboardWin::Stop() {
 
 void ClipboardWin::InjectClipboardEvent(
     const protocol::ClipboardEvent& event) {
-  if (!hwnd_) {
+  if (!hwnd_)
     return;
-  }
+
   // Currently we only handle UTF-8 text.
-  if (event.mime_type().compare(kMimeTypeTextUtf8)) {
+  if (event.mime_type().compare(kMimeTypeTextUtf8) != 0)
+    return;
+  if (!StringIsUtf8(event.data().c_str(), event.data().length())) {
+    LOG(ERROR) << "ClipboardEvent: data is not UTF-8 encoded.";
     return;
   }
+
   string16 text = UTF8ToUTF16(ReplaceLfByCrLf(event.data()));
 
   ScopedClipboard clipboard;

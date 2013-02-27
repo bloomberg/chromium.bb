@@ -20,6 +20,8 @@ class ClipboardStub {
   ClipboardStub() {}
   virtual ~ClipboardStub() {}
 
+  // Implementations must not assume the presence of |event|'s fields, nor that
+  // |event.data| is correctly encoded according to the specified MIME-type.
   virtual void InjectClipboardEvent(const ClipboardEvent& event) = 0;
 
  private:
