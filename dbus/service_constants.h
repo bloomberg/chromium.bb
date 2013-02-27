@@ -245,6 +245,13 @@ const char kLibCrosServiceInterface[] = "org.chromium.LibCrosServiceInterface";
 // Methods
 const char kResolveNetworkProxy[] = "ResolveNetworkProxy";
 const char kCheckLiveness[] = "CheckLiveness";
+const char kSetDisplayPower[] = "SetDisplayPower";
+// Values
+enum DisplayPowerState {
+  DISPLAY_POWER_ALL_ON = 0,
+  DISPLAY_POWER_ALL_OFF = 1,
+  DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON = 2,
+};
 }  // namespace chromeos
 
 namespace flimflam {
