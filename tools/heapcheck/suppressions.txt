@@ -1764,11 +1764,6 @@
    fun:gfx::RenderTextTest_PangoAttributes_Test::TestBody
 }
 {
-   bug_174177
-   Heapcheck:Leak
-   fun:drive::SearchMetadataTest::SetUp
-}
-{
    bug_175100
    Heapcheck:Leak
    ...
