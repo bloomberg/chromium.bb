@@ -667,6 +667,58 @@ TEST_F(NavigationControllerTest, LoadURL_ExistingPending) {
   EXPECT_EQ(kNewURL, controller.GetActiveEntry()->GetURL());
 }
 
+// Tests navigating to a new URL when there is a pending back/forward
+// navigation to a cross-process, privileged URL. This will happen if the user
+// hits back, but before that commits, they navigate somewhere new.
+TEST_F(NavigationControllerTest, LoadURL_PrivilegedPending) {
+  NavigationControllerImpl& controller = controller_impl();
+  TestNotificationTracker notifications;
+  RegisterForAllNavNotifications(&notifications, &controller);
+
+  // First make some history, starting with a privileged URL.
+  const GURL kExistingURL1("http://privileged");
+  controller.LoadURL(
+      kExistingURL1, Referrer(), PAGE_TRANSITION_TYPED, std::string());
+  // Pretend it has bindings so we can tell if we incorrectly copy it.
+  test_rvh()->AllowBindings(2);
+  test_rvh()->SendNavigate(0, kExistingURL1);
+  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+
+  // Navigate cross-process to a second URL.
+  const GURL kExistingURL2("http://foo/eh");
+  controller.LoadURL(
+      kExistingURL2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
+  test_rvh()->SendShouldCloseACK(true);
+  TestRenderViewHost* foo_rvh = static_cast<TestRenderViewHost*>(
+      contents()->GetPendingRenderViewHost());
+  foo_rvh->SendNavigate(1, kExistingURL2);
+  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+
+  // Now make a pending back/forward navigation to a privileged entry.
+  // The zeroth entry should be pending.
+  controller.GoBack();
+  foo_rvh->SendShouldCloseACK(true);
+  EXPECT_EQ(0U, notifications.size());
+  EXPECT_EQ(0, controller.GetPendingEntryIndex());
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(2, NavigationEntryImpl::FromNavigationEntry(
+                controller.GetPendingEntry())->bindings());
+
+  // Before that commits, do a new navigation.
+  const GURL kNewURL("http://foo/bee");
+  LoadCommittedDetails details;
+  foo_rvh->SendNavigate(3, kNewURL);
+
+  // There should no longer be any pending entry, and the third navigation we
+  // just made should be committed.
+  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
+  EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(kNewURL, controller.GetActiveEntry()->GetURL());
+  EXPECT_EQ(0, NavigationEntryImpl::FromNavigationEntry(
+                controller.GetLastCommittedEntry())->bindings());
+}
+
 // Tests navigating to an existing URL when there is a pending new navigation.
 // This will happen if the user enters a URL, but before that commits, the
 // current page fires history.back().

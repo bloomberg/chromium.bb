@@ -1088,10 +1088,12 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
    const ViewHostMsg_FrameNavigate_Params& params, bool replace_entry) {
   NavigationEntryImpl* new_entry;
   bool update_virtual_url;
-  if (pending_entry_) {
-    // TODO(brettw) this assumes that the pending entry is appropriate for the
-    // new page that was just loaded. I don't think this is necessarily the
-    // case! We should have some more tracking to know for sure.
+  // Only make a copy of the pending entry if it is appropriate for the new page
+  // that was just loaded.  We verify this at a coarse grain by checking that
+  // the SiteInstance hasn't been assigned to something else.
+  if (pending_entry_ &&
+      (!pending_entry_->site_instance() ||
+       pending_entry_->site_instance() == web_contents_->GetSiteInstance())) {
     new_entry = new NavigationEntryImpl(*pending_entry_);
 
     // Don't use the page type from the pending entry. Some interstitial page
