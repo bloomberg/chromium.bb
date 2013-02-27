@@ -191,12 +191,6 @@ void StateMachine::OnSuccess() {
   OnStateChanged();
 }
 
-void StateMachine::OnCancelation() {
-  // We use state CANCELLED only to let observers know that they have to
-  // process cancelation. We don't actually change the state.
-  FOR_EACH_OBSERVER(Observer, observers_, OnBurnStateChanged(CANCELLED));
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 // BurnManager
@@ -266,6 +260,10 @@ std::vector<disks::DiskMountManager::Disk> BurnManager::GetBurnableDevices() {
 
 bool BurnManager::IsNetworkConnected() const {
   return CrosLibrary::Get()->GetNetworkLibrary()->Connected();
+}
+
+void BurnManager::Cancel() {
+  OnError(IDS_IMAGEBURN_USER_ERROR);
 }
 
 void BurnManager::OnError(int message_id) {

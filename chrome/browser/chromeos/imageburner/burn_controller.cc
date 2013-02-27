@@ -37,8 +37,7 @@ class BurnControllerImpl
   }
 
   virtual ~BurnControllerImpl() {
-    if (state_machine_)
-      state_machine_->RemoveObserver(this);
+    state_machine_->RemoveObserver(this);
     burn_manager_->RemoveObserver(this);
   }
 
@@ -137,9 +136,7 @@ class BurnControllerImpl
 
   // StateMachine::Observer interface.
   virtual void OnBurnStateChanged(StateMachine::State state) OVERRIDE {
-    if (state == StateMachine::CANCELLED) {
-      burn_manager_->OnError(IDS_IMAGEBURN_USER_ERROR);
-    } else if (state != StateMachine::INITIAL && !working_) {
+    if (state != StateMachine::INITIAL && !working_) {
       // User has started burn process, so let's start observing.
       StartBurnImage(base::FilePath(), base::FilePath());
     }
@@ -171,7 +168,7 @@ class BurnControllerImpl
 
   // BurnController override.
   virtual void CancelBurnImage() OVERRIDE {
-    state_machine_->OnCancelation();
+    burn_manager_->Cancel();
   }
 
   // BurnController override.

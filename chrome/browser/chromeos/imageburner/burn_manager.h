@@ -104,7 +104,6 @@ class StateMachine {
     INITIAL,
     DOWNLOADING,
     BURNING,
-    CANCELLED
   };
 
   State state() { return state_; }
@@ -137,7 +136,6 @@ class StateMachine {
 
   void OnSuccess();
   void OnError(int error_message_id);
-  void OnCancelation();
 
   void OnStateChanged() {
     FOR_EACH_OBSERVER(Observer, observers_, OnBurnStateChanged(state_));
@@ -246,6 +244,14 @@ class BurnManager : public net::URLFetcherDelegate,
   // Returns true if some network is connected.
   bool IsNetworkConnected() const;
 
+  // Cancels a currently running task of burning recovery image.
+  // Note: currently we only support Cancel method, which may look asymmetry
+  // because there is no method to start the task. It is just because that
+  // we are on the way of refactoring.
+  // TODO(hidehiko): Introduce Start method, which actually starts a whole
+  // image burning task, including config/image file fetching and unzipping.
+  void Cancel();
+
   // Error is usually detected by all existing Burn handlers, but only first
   // one that calls this method should actually process it.
   // The |message_id| is the id for human readable error message, although
@@ -266,9 +272,16 @@ class BurnManager : public net::URLFetcherDelegate,
 
   // Burns the image of |zip_image_file_path_| and |image_file_name|
   // to |target_device_path_| and |target_file_path_|.
+  // TODO(hidehiko): The name "Burn" sounds confusing because there are two
+  // meaning here.
+  // 1) In wider sense, Burn means a whole process, including config/image
+  //    file fetching, or file unzipping.
+  // 2) In narrower sense, Burn means just write the image onto a device.
+  // To avoid such a confusion, rename the method.
   void DoBurn();
 
   // Cancels the image burning.
+  // TODO(hidehiko): Rename this method along with the renaming of DoBurn.
   void CancelBurnImage();
 
   // Cancel fetching image.

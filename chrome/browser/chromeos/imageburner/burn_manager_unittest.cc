@@ -238,40 +238,6 @@ TEST(BurnManagerTest, StateMachineError) {
   EXPECT_TRUE(state_machine->new_burn_posible());
 }
 
-TEST(BurnManagerTest, StateaAchineCancelation) {
-  scoped_ptr<StateMachine> state_machine(new StateMachine());
-
-  MockStateMachineObserver observer;
-  EXPECT_CALL(observer, OnBurnStateChanged(StateMachine::INITIAL))
-      .Times(0);
-  EXPECT_CALL(observer, OnBurnStateChanged(StateMachine::BURNING))
-      .Times(1);
-  EXPECT_CALL(observer, OnBurnStateChanged(StateMachine::DOWNLOADING))
-      .Times(1);
-  EXPECT_CALL(observer, OnBurnStateChanged(StateMachine::CANCELLED))
-      .Times(3);
-  state_machine->AddObserver(&observer);
-
-  state_machine->OnCancelation();
-  EXPECT_EQ(StateMachine::INITIAL, state_machine->state());
-
-  // Let's change state to DOWNLOADING.
-  state_machine->OnDownloadStarted();
-  EXPECT_EQ(StateMachine::DOWNLOADING, state_machine->state());
-
-  state_machine->OnCancelation();
-
-  EXPECT_EQ(StateMachine::DOWNLOADING, state_machine->state());
-
-  // Let's change state to BURNING.
-  state_machine->OnBurnStarted();
-  EXPECT_EQ(StateMachine::BURNING, state_machine->state());
-
-  state_machine->OnCancelation();
-
-  EXPECT_EQ(StateMachine::BURNING, state_machine->state());
-}
-
 TEST(BurnManagerTest, StateMachineObservers) {
   scoped_ptr<StateMachine> state_machine(new StateMachine());
 
