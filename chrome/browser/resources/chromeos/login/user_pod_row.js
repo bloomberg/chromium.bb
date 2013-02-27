@@ -1080,6 +1080,14 @@ cr.define('login', function() {
     },
 
     /**
+     * Clears focused pod password field.
+     */
+    clearFocusedPod: function() {
+      if (!this.disabled && this.focusedPod_)
+        this.focusedPod_.reset(true);
+    },
+
+    /**
      * Shows signin UI.
      * @param {string} email Email for signin UI.
      */

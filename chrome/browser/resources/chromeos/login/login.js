@@ -279,6 +279,13 @@ cr.define('cr.ui', function() {
     oobe.TermsOfServiceScreen.setTermsOfService(termsOfService);
   };
 
+  /**
+   * Clears password field in user-pod.
+   */
+  Oobe.clearUserPodPassword = function() {
+    DisplayManager.clearUserPodPassword();
+  };
+
   // Export
   return {
     Oobe: Oobe

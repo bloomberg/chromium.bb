@@ -43,6 +43,7 @@ class User;
 class LoginDisplayWebUIHandler {
  public:
   virtual void ClearAndEnablePassword() = 0;
+  virtual void ClearUserPodPassword() = 0;
   virtual void OnLoginSuccess(const std::string& username) = 0;
   virtual void OnUserRemoved(const std::string& username) = 0;
   virtual void OnUserImageChanged(const User& user) = 0;
@@ -221,6 +222,7 @@ class SigninScreenHandler
 
   // BaseLoginUIHandler implementation:
   virtual void ClearAndEnablePassword() OVERRIDE;
+  virtual void ClearUserPodPassword() OVERRIDE;
   virtual void OnLoginSuccess(const std::string& username) OVERRIDE;
   virtual void OnUserRemoved(const std::string& username) OVERRIDE;
   virtual void OnUserImageChanged(const User& user) OVERRIDE;

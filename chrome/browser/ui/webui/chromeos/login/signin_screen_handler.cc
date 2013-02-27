@@ -849,6 +849,10 @@ void SigninScreenHandler::ClearAndEnablePassword() {
   web_ui()->CallJavascriptFunction("cr.ui.Oobe.resetSigninUI", force_online);
 }
 
+void SigninScreenHandler::ClearUserPodPassword() {
+  web_ui()->CallJavascriptFunction("cr.ui.Oobe.clearUserPodPassword");
+}
+
 void SigninScreenHandler::OnLoginSuccess(const std::string& username) {
   base::StringValue username_value(username);
   web_ui()->CallJavascriptFunction("cr.ui.Oobe.onLoginSuccess", username_value);
