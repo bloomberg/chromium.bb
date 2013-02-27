@@ -47,6 +47,42 @@ ToolbarModelImpl::ToolbarModelImpl(ToolbarModelDelegate* delegate)
 ToolbarModelImpl::~ToolbarModelImpl() {
 }
 
+ToolbarModel::SecurityLevel ToolbarModelImpl::GetSecurityLevelForWebContents(
+      content::WebContents* web_contents) {
+  if (!web_contents)
+    return NONE;
+
+  NavigationEntry* entry = web_contents->GetController().GetVisibleEntry();
+  if (!entry)
+    return NONE;
+
+  const SSLStatus& ssl = entry->GetSSL();
+  switch (ssl.security_style) {
+    case content::SECURITY_STYLE_UNKNOWN:
+    case content::SECURITY_STYLE_UNAUTHENTICATED:
+      return NONE;
+
+    case content::SECURITY_STYLE_AUTHENTICATION_BROKEN:
+      return SECURITY_ERROR;
+
+    case content::SECURITY_STYLE_AUTHENTICATED:
+      if (!!(ssl.content_status & SSLStatus::DISPLAYED_INSECURE_CONTENT))
+        return SECURITY_WARNING;
+      if (net::IsCertStatusError(ssl.cert_status)) {
+        DCHECK(net::IsCertStatusMinorError(ssl.cert_status));
+        return SECURITY_WARNING;
+      }
+      if ((ssl.cert_status & net::CERT_STATUS_IS_EV) &&
+          content::CertStore::GetInstance()->RetrieveCert(ssl.cert_id, NULL))
+        return EV_SECURE;
+      return SECURE;
+
+    default:
+      NOTREACHED();
+      return NONE;
+  }
+}
+
 // ToolbarModelImpl Implementation.
 string16 ToolbarModelImpl::GetText(
     bool display_search_urls_as_search_terms) const {
@@ -121,43 +157,11 @@ bool ToolbarModelImpl::ShouldDisplayURL() const {
   return true;
 }
 
-ToolbarModelImpl::SecurityLevel ToolbarModelImpl::GetSecurityLevel() const {
+ToolbarModel::SecurityLevel ToolbarModelImpl::GetSecurityLevel() const {
   if (input_in_progress_)  // When editing, assume no security style.
     return NONE;
 
-  NavigationController* navigation_controller = GetNavigationController();
-  if (!navigation_controller)  // We might not have a controller on init.
-    return NONE;
-
-  NavigationEntry* entry = navigation_controller->GetVisibleEntry();
-  if (!entry)
-    return NONE;
-
-  const SSLStatus& ssl = entry->GetSSL();
-  switch (ssl.security_style) {
-    case content::SECURITY_STYLE_UNKNOWN:
-    case content::SECURITY_STYLE_UNAUTHENTICATED:
-      return NONE;
-
-    case content::SECURITY_STYLE_AUTHENTICATION_BROKEN:
-      return SECURITY_ERROR;
-
-    case content::SECURITY_STYLE_AUTHENTICATED:
-      if (!!(ssl.content_status & SSLStatus::DISPLAYED_INSECURE_CONTENT))
-        return SECURITY_WARNING;
-      if (net::IsCertStatusError(ssl.cert_status)) {
-        DCHECK(net::IsCertStatusMinorError(ssl.cert_status));
-        return SECURITY_WARNING;
-      }
-      if ((ssl.cert_status & net::CERT_STATUS_IS_EV) &&
-          content::CertStore::GetInstance()->RetrieveCert(ssl.cert_id, NULL))
-        return EV_SECURE;
-      return SECURE;
-
-    default:
-      NOTREACHED();
-      return NONE;
-  }
+  return GetSecurityLevelForWebContents(delegate_->GetActiveWebContents());
 }
 
 int ToolbarModelImpl::GetIcon() const {
