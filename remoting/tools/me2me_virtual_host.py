@@ -103,9 +103,9 @@ class Config:
       os.umask(old_umask)
 
   def save_and_log_errors(self):
-    """Calls save(self), trapping and logging any errors."""
+    """Calls self.save(), trapping and logging any errors."""
     try:
-      save(self)
+      self.save()
     except (IOError, TypeError) as e:
       logging.error("Failed to save config: " + str(e))
 
@@ -540,20 +540,18 @@ def choose_x_session():
     "/etc/X11/Xsession" ]
   for session_wrapper in SESSION_WRAPPERS:
     if os.path.exists(session_wrapper):
-      break
-  else:
-    # No session wrapper found.
-    return None
-
-  # On Ubuntu 12.04, the default session relies on 3D-accelerated hardware.
-  # Trying to run this with a virtual X display produces weird results on some
-  # systems (for example, upside-down and corrupt displays).  So if the
-  # ubuntu-2d session is available, choose it explicitly.
-  if os.path.exists("/usr/bin/unity-2d-panel"):
-    return [session_wrapper, "/usr/bin/gnome-session --session=ubuntu-2d"]
-
-  # Use the session wrapper by itself, and let the system choose a session.
-  return session_wrapper
+      if os.path.exists("/usr/bin/unity-2d-panel"):
+        # On Ubuntu 12.04, the default session relies on 3D-accelerated
+        # hardware. Trying to run this with a virtual X display produces
+        # weird results on some systems (for example, upside-down and
+        # corrupt displays).  So if the ubuntu-2d session is available,
+        # choose it explicitly.
+        return [session_wrapper, "/usr/bin/gnome-session --session=ubuntu-2d"]
+      else:
+        # Use the session wrapper by itself, and let the system choose a
+        # session.
+        return session_wrapper
+  return None
 
 
 def locate_executable(exe_name):
@@ -607,10 +605,10 @@ def daemonize(log_filename):
       pass
     else:
       # Child process
-      os._exit(0)
+      os._exit(0)  # pylint: disable=W0212
   else:
     # Parent process
-    os._exit(0)
+    os._exit(0)  # pylint: disable=W0212
 
   logging.info("Daemon process running, logging to '%s'" % log_filename)
 
@@ -878,7 +876,7 @@ Web Store: https://chrome.google.com/remotedesktop"""
     default_sizes = DEFAULT_SIZES
     if os.environ.has_key(DEFAULT_SIZES_ENV_VAR):
       default_sizes = os.environ[DEFAULT_SIZES_ENV_VAR]
-    options.size = default_sizes.split(",");
+    options.size = default_sizes.split(",")
 
   sizes = []
   for size in options.size:
