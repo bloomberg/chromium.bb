@@ -634,11 +634,12 @@ error:
  */
 struct connector_arg {
 	uint32_t id;
+	uint32_t crtc_id;
 	char mode_str[64];
 	char format_str[5];
 	unsigned int fourcc;
 	drmModeModeInfo *mode;
-	int crtc;
+	struct crtc *crtc;
 	unsigned int fb_id[2], current_fb_id;
 	struct timeval start;
 
@@ -690,18 +691,33 @@ static void connector_find_mode(struct device *dev, struct connector_arg *c)
 		return;
 	}
 
-	/* Now get the encoder */
-	for (i = 0; i < dev->resources->res->count_encoders; i++) {
-		encoder = dev->resources->encoders[i].encoder;
-		if (!encoder)
-			continue;
+	/* If the CRTC ID was specified, get the corresponding CRTC. Otherwise
+	 * locate a CRTC that can be attached to the connector.
+	 */
+	if (c->crtc_id == (uint32_t)-1) {
+		for (i = 0; i < dev->resources->res->count_encoders; i++) {
+			encoder = dev->resources->encoders[i].encoder;
+			if (!encoder)
+				continue;
 
-		if (encoder->encoder_id  == connector->encoder_id)
-			break;
+			if (encoder->encoder_id  == connector->encoder_id) {
+				c->crtc_id = encoder->crtc_id;
+				break;
+			}
+		}
 	}
 
-	if (c->crtc == -1)
-		c->crtc = encoder->crtc_id;
+	if (c->crtc_id == (uint32_t)-1)
+		return;
+
+	for (i = 0; i < dev->resources->res->count_crtcs; i++) {
+		struct crtc *crtc = &dev->resources->crtcs[i];
+
+		if (c->crtc_id == crtc->crtc->crtc_id) {
+			c->crtc = crtc;
+			break;
+		}
+	}
 }
 
 /* -----------------------------------------------------------------------------
@@ -796,7 +812,7 @@ page_flip_handler(int fd, unsigned int frame,
 	else
 		new_fb_id = c->fb_id[0];
 
-	drmModePageFlip(fd, c->crtc, new_fb_id,
+	drmModePageFlip(fd, c->crtc_id, new_fb_id,
 			DRM_MODE_PAGE_FLIP_EVENT, c);
 	c->current_fb_id = new_fb_id;
 	c->swap_count++;
@@ -826,14 +842,14 @@ set_plane(struct device *dev, struct connector_arg *c, struct plane_arg *p)
 	 * CRTC index first, then iterate over available planes.
 	 */
 	for (i = 0; i < (unsigned int)dev->resources->res->count_crtcs; i++) {
-		if (c->crtc == (int)dev->resources->res->crtcs[i]) {
+		if (c->crtc_id == dev->resources->res->crtcs[i]) {
 			pipe = i;
 			break;
 		}
 	}
 
 	if (pipe == (unsigned int)dev->resources->res->count_crtcs) {
-		fprintf(stderr, "CRTC %u not found\n", c->crtc);
+		fprintf(stderr, "CRTC %u not found\n", c->crtc_id);
 		return -1;
 	}
 
@@ -847,7 +863,7 @@ set_plane(struct device *dev, struct connector_arg *c, struct plane_arg *p)
 	}
 
 	if (!plane_id) {
-		fprintf(stderr, "no unused plane available for CRTC %u\n", c->crtc);
+		fprintf(stderr, "no unused plane available for CRTC %u\n", c->crtc_id);
 		return -1;
 	}
 
@@ -878,7 +894,7 @@ set_plane(struct device *dev, struct connector_arg *c, struct plane_arg *p)
 	crtc_h = p->h;
 
 	/* note src coords (last 4 args) are in Q16 format */
-	if (drmModeSetPlane(dev->fd, plane_id, c->crtc, p->fb_id,
+	if (drmModeSetPlane(dev->fd, plane_id, c->crtc_id, p->fb_id,
 			    plane_flags, crtc_x, crtc_y, crtc_w, crtc_h,
 			    0, 0, p->w << 16, p->h << 16)) {
 		fprintf(stderr, "failed to enable plane: %s\n",
@@ -886,7 +902,7 @@ set_plane(struct device *dev, struct connector_arg *c, struct plane_arg *p)
 		return -1;
 	}
 
-	ovr->crtc_id = c->crtc;
+	ovr->crtc_id = c->crtc_id;
 
 	return 0;
 }
@@ -930,9 +946,9 @@ static void set_mode(struct device *dev, struct connector_arg *c, int count,
 			continue;
 
 		printf("setting mode %s@%s on connector %d, crtc %d\n",
-		       c[i].mode_str, c[i].format_str, c[i].id, c[i].crtc);
+		       c[i].mode_str, c[i].format_str, c[i].id, c[i].crtc_id);
 
-		ret = drmModeSetCrtc(dev->fd, c[i].crtc, fb_id, x, 0,
+		ret = drmModeSetCrtc(dev->fd, c[i].crtc_id, fb_id, x, 0,
 				     &c[i].id, 1, c[i].mode);
 
 		/* XXX: Actually check if this is needed */
@@ -971,7 +987,7 @@ static void set_mode(struct device *dev, struct connector_arg *c, int count,
 		if (c[i].mode == NULL)
 			continue;
 
-		ret = drmModePageFlip(dev->fd, c[i].crtc, other_fb_id,
+		ret = drmModePageFlip(dev->fd, c[i].crtc_id, other_fb_id,
 				      DRM_MODE_PAGE_FLIP_EVENT, &c[i]);
 		if (ret) {
 			fprintf(stderr, "failed to page flip: %s\n", strerror(errno));
@@ -1039,13 +1055,13 @@ static int parse_connector(struct connector_arg *c, const char *arg)
 	const char *p;
 	char *endp;
 
-	c->crtc = -1;
+	c->crtc_id = (uint32_t)-1;
 	strcpy(c->format_str, "XR24");
 
 	c->id = strtoul(arg, &endp, 10);
 	if (*endp == '@') {
 		arg = endp + 1;
-		c->crtc = strtoul(arg, &endp, 10);
+		c->crtc_id = strtoul(arg, &endp, 10);
 	}
 	if (*endp != ':')
 		return -1;
