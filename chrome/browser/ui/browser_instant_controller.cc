@@ -6,6 +6,7 @@
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -108,6 +109,12 @@ bool BrowserInstantController::MaybeSwapInInstantNTPContents(
     content::WebContents** target_contents) {
   if (url != GURL(chrome::kChromeUINewTabURL))
     return false;
+
+  GURL extension_url(url);
+  if (ExtensionWebUI::HandleChromeURLOverride(&extension_url, profile())) {
+    // If there is an extension overriding the NTP do not use the Instant NTP.
+    return false;
+  }
 
   scoped_ptr<content::WebContents> instant_ntp = instant_.ReleaseNTPContents();
   if (!instant_ntp)
