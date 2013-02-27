@@ -5,6 +5,7 @@
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 
 #include "base/bind.h"
+#include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/stacking_client.h"
 #include "ui/aura/focus_manager.h"
@@ -20,6 +21,8 @@
 #include "ui/views/corewm/compound_event_filter.h"
 #include "ui/views/corewm/corewm_switches.h"
 #include "ui/views/corewm/input_method_event_filter.h"
+#include "ui/views/corewm/shadow_controller.h"
+#include "ui/views/corewm/shadow_types.h"
 #include "ui/views/corewm/tooltip_controller.h"
 #include "ui/views/drag_utils.h"
 #include "ui/views/ime/input_method.h"
@@ -215,6 +218,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   window_->SetType(GetAuraWindowTypeForWidgetType(params.type));
   window_->SetTransparent(true);
   window_->Init(params.layer_type);
+  corewm::SetShadowType(window_, corewm::SHADOW_TYPE_NONE);
   window_->Show();
 
   desktop_root_window_host_ = params.desktop_root_window_host ?
@@ -237,6 +241,10 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   root_window_->AddPreTargetHandler(tooltip_controller_.get());
 
   aura::client::SetActivationDelegate(window_, this);
+
+  shadow_controller_.reset(
+      new corewm::ShadowController(
+          aura::client::GetActivationClient(root_window_.get())));
 }
 
 NonClientFrameView* DesktopNativeWidgetAura::CreateNonClientFrameView() {
@@ -613,6 +621,9 @@ void DesktopNativeWidgetAura::OnDeviceScaleFactorChanged(
 }
 
 void DesktopNativeWidgetAura::OnWindowDestroying() {
+  // DesktopRootWindowHost owns the ActivationController which ShadowController
+  // references. Make sure we destroy ShadowController early on.
+  shadow_controller_.reset();
   // The DesktopRootWindowHost implementation sends OnNativeWidgetDestroying().
   tooltip_manager_.reset();
   if (tooltip_controller_.get()) {

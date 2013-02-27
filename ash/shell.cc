@@ -560,7 +560,7 @@ void Shell::Init() {
   if (!command_line->HasSwitch(views::corewm::switches::kNoDropShadows)) {
     resize_shadow_controller_.reset(new internal::ResizeShadowController());
     shadow_controller_.reset(
-        new views::corewm::ShadowController(GetPrimaryRootWindow()));
+        new views::corewm::ShadowController(activation_client_));
   }
 
   // Create system_tray_notifier_ before the delegate.

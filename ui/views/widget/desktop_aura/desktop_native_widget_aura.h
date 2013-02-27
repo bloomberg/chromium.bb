@@ -26,6 +26,7 @@ namespace views {
 namespace corewm {
 class CompoundEventFilter;
 class InputMethodEventFilter;
+class ShadowController;
 class TooltipController;
 }
 
@@ -237,6 +238,8 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
 
   // See comments in OnLostActive().
   bool restore_focus_on_activate_;
+
+  scoped_ptr<corewm::ShadowController> shadow_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopNativeWidgetAura);
 };

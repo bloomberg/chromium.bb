@@ -26,7 +26,9 @@ class ShadowControllerTest : public aura::test::AuraTestBase {
 
   virtual void SetUp() OVERRIDE {
     AuraTestBase::SetUp();
-    shadow_controller_.reset(new ShadowController(root_window()));
+    aura::client::ActivationClient* activation_client =
+        aura::client::GetActivationClient(root_window());
+    shadow_controller_.reset(new ShadowController(activation_client));
   }
   virtual void TearDown() OVERRIDE {
     shadow_controller_.reset();
