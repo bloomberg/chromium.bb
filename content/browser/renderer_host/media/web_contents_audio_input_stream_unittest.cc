@@ -417,6 +417,7 @@ TEST_F(WebContentsAudioInputStreamTest, OpenedButNeverStarted) {
 TEST_F(WebContentsAudioInputStreamTest, MirroringNothing) {
   RUN_ON_AUDIO_THREAD(Open);
   RUN_ON_AUDIO_THREAD(Start);
+  WaitForData();
   RUN_ON_AUDIO_THREAD(Stop);
   RUN_ON_AUDIO_THREAD(Close);
 }

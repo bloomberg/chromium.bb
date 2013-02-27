@@ -4,13 +4,16 @@
 
 #include <list>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/message_loop.h"
 #include "base/rand_util.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread.h"
 #include "media/audio/audio_io.h"
-#include "media/audio/audio_manager.h"
 #include "media/audio/simple_sources.h"
 #include "media/audio/virtual_audio_input_stream.h"
+#include "media/audio/virtual_audio_output_stream.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,6 +25,9 @@ using ::testing::NotNull;
 namespace media {
 
 namespace {
+
+const AudioParameters kParams(
+    AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_STEREO, 8000, 8, 10);
 
 class MockInputCallback : public AudioInputStream::AudioInputCallback {
  public:
@@ -55,7 +61,8 @@ class MockInputCallback : public AudioInputStream::AudioInputCallback {
 class TestAudioSource : public SineWaveAudioSource {
  public:
   TestAudioSource()
-      : SineWaveAudioSource(CHANNEL_LAYOUT_STEREO, 200.0, 8000.0),
+      : SineWaveAudioSource(
+            kParams.channel_layout(), 200.0, kParams.sample_rate()),
         data_pulled_(false, false) {}
 
   virtual ~TestAudioSource() {}
@@ -90,32 +97,17 @@ class TestAudioSource : public SineWaveAudioSource {
 
 }  // namespace
 
-class VirtualAudioInputStreamTest
-    : public testing::Test,
-      public AudioManager::AudioDeviceListener {
+class VirtualAudioInputStreamTest : public testing::Test {
  public:
   VirtualAudioInputStreamTest()
-      : audio_manager_(AudioManager::Create()),
-        params_(AudioParameters::AUDIO_VIRTUAL, CHANNEL_LAYOUT_STEREO, 8000, 8,
-                10),
-        output_params_(AudioParameters::AUDIO_FAKE, CHANNEL_LAYOUT_STEREO, 8000,
-                       8, 10),
+      : audio_thread_(new base::Thread("AudioThread")),
         stream_(NULL),
         closed_stream_(false, false) {
-    audio_manager_->GetMessageLoop()->PostTask(
-        FROM_HERE,
-        base::Bind(&AudioManager::AddOutputDeviceChangeListener,
-                   base::Unretained(audio_manager_.get()),
-                   this));
+    audio_thread_->Start();
+    audio_message_loop_ = audio_thread_->message_loop_proxy();
   }
 
   virtual ~VirtualAudioInputStreamTest() {
-    audio_manager_->GetMessageLoop()->PostTask(
-        FROM_HERE,
-        base::Bind(&AudioManager::RemoveOutputDeviceChangeListener,
-                   base::Unretained(audio_manager_.get()),
-                   this));
-
     SyncWithAudioThread();
 
     DCHECK(output_streams_.empty());
@@ -123,9 +115,9 @@ class VirtualAudioInputStreamTest
   }
 
   void Create() {
-    stream_ = static_cast<VirtualAudioInputStream*>(
-        audio_manager_->MakeAudioInputStream(params_, "1"));
-    ASSERT_TRUE(!!stream_);
+    stream_ = new VirtualAudioInputStream(
+        kParams, audio_message_loop_,
+        base::Bind(&base::DeletePointer<VirtualAudioInputStream>));
     stream_->Open();
   }
 
@@ -139,9 +131,11 @@ class VirtualAudioInputStreamTest
   }
 
   void CreateAndStartOneOutputStream() {
+    ASSERT_TRUE(!!stream_);
     AudioOutputStream* const output_stream =
-        audio_manager_->MakeAudioOutputStreamProxy(output_params_);
-    ASSERT_TRUE(!!output_stream);
+        new VirtualAudioOutputStream(
+            kParams, audio_message_loop_, stream_,
+            base::Bind(&base::DeletePointer<VirtualAudioOutputStream>));
     output_streams_.push_back(output_stream);
 
     output_stream->Open();
@@ -160,7 +154,7 @@ class VirtualAudioInputStreamTest
     closed_stream_.Signal();
   }
 
-  void WaitForDataPulls() {
+  void WaitForDataToFlow() {
     // Wait until audio thread is idle before calling output_streams_.size().
     SyncWithAudioThread();
 
@@ -168,9 +162,7 @@ class VirtualAudioInputStreamTest
     for (int i = 0; i < count; ++i) {
       source_.WaitForDataPulls();
     }
-  }
 
-  void WaitForDataPushes() {
     input_callback_.WaitForDataPushes();
   }
 
@@ -198,7 +190,7 @@ class VirtualAudioInputStreamTest
   }
 
   void StopSomeOutputStreams() {
-    ASSERT_LE(1, static_cast<int>(output_streams_.size()));
+    ASSERT_LE(2, static_cast<int>(output_streams_.size()));
     for (int remaning = base::RandInt(1, output_streams_.size() - 1);
          remaning > 0; --remaning) {
       StopFirstOutputStream();
@@ -215,44 +207,21 @@ class VirtualAudioInputStreamTest
     stopped_output_streams_.clear();
   }
 
-  AudioManager* audio_manager() const { return audio_manager_.get(); }
-
- private:
-  virtual void OnDeviceChange() OVERRIDE {
-    audio_manager_->RemoveOutputDeviceChangeListener(this);
-
-    // Simulate each AudioOutputController closing and re-opening a stream, in
-    // turn.
-    for (int remaining = output_streams_.size(); remaining > 0; --remaining) {
-      StopAndCloseOneOutputStream();
-      CreateAndStartOneOutputStream();
-    }
-    for (int remaining = stopped_output_streams_.size(); remaining > 0;
-         --remaining) {
-      AudioOutputStream* stream = stopped_output_streams_.front();
-      stopped_output_streams_.pop_front();
-      stream->Close();
-
-      stream = audio_manager_->MakeAudioOutputStreamProxy(output_params_);
-      ASSERT_TRUE(!!stream);
-      stopped_output_streams_.push_back(stream);
-      stream->Open();
-    }
-
-    audio_manager_->AddOutputDeviceChangeListener(this);
+  const scoped_refptr<base::MessageLoopProxy>& audio_message_loop() const {
+    return audio_message_loop_;
   }
 
+ private:
   void SyncWithAudioThread() {
     base::WaitableEvent done(false, false);
-    audio_manager_->GetMessageLoop()->PostTask(
+    audio_message_loop_->PostTask(
         FROM_HERE,
         base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
     done.Wait();
   }
 
-  const scoped_ptr<AudioManager> audio_manager_;
-  const AudioParameters params_;
-  const AudioParameters output_params_;
+  scoped_ptr<base::Thread> audio_thread_;
+  scoped_refptr<base::MessageLoopProxy> audio_message_loop_;
 
   VirtualAudioInputStream* stream_;
   MockInputCallback input_callback_;
@@ -266,131 +235,103 @@ class VirtualAudioInputStreamTest
 };
 
 #define RUN_ON_AUDIO_THREAD(method)  \
-  audio_manager()->GetMessageLoop()->PostTask(  \
+  audio_message_loop()->PostTask(  \
       FROM_HERE, base::Bind(&VirtualAudioInputStreamTest::method,  \
                             base::Unretained(this)))
 
-// Creates and closes and VirtualAudioInputStream.
 TEST_F(VirtualAudioInputStreamTest, CreateAndClose) {
   RUN_ON_AUDIO_THREAD(Create);
   RUN_ON_AUDIO_THREAD(Close);
   WaitUntilClosed();
 }
 
-// Tests a session where one output is created and destroyed within.
-TEST_F(VirtualAudioInputStreamTest, SingleOutputWithinSession) {
+TEST_F(VirtualAudioInputStreamTest, NoOutputs) {
+  RUN_ON_AUDIO_THREAD(Create);
+  RUN_ON_AUDIO_THREAD(Start);
+  WaitForDataToFlow();
+  RUN_ON_AUDIO_THREAD(Stop);
+  RUN_ON_AUDIO_THREAD(Close);
+  WaitUntilClosed();
+}
+
+TEST_F(VirtualAudioInputStreamTest, SingleOutput) {
   RUN_ON_AUDIO_THREAD(Create);
   RUN_ON_AUDIO_THREAD(Start);
   RUN_ON_AUDIO_THREAD(CreateAndStartOneOutputStream);
-  WaitForDataPulls();  // Confirm data is being pulled (rendered).
-  WaitForDataPushes();  // Confirm mirrored data is being pushed.
+  WaitForDataToFlow();
   RUN_ON_AUDIO_THREAD(StopAndCloseOneOutputStream);
   RUN_ON_AUDIO_THREAD(Stop);
   RUN_ON_AUDIO_THREAD(Close);
   WaitUntilClosed();
 }
 
-// Tests a session where one output existed before and afterwards.
-TEST_F(VirtualAudioInputStreamTest, SingleLongLivedOutput) {
-  RUN_ON_AUDIO_THREAD(CreateAndStartOneOutputStream);
-  WaitForDataPulls();  // Confirm data is flowing out before the session.
-  RUN_ON_AUDIO_THREAD(Create);
-  RUN_ON_AUDIO_THREAD(Start);
-  WaitForDataPushes();
-  RUN_ON_AUDIO_THREAD(Stop);
-  RUN_ON_AUDIO_THREAD(Close);
-  WaitUntilClosed();
-  WaitForDataPulls();  // Confirm data is still flowing out.
-  RUN_ON_AUDIO_THREAD(StopAndCloseOneOutputStream);
-}
-
-TEST_F(VirtualAudioInputStreamTest, SingleOutputPausedWithinSession) {
+TEST_F(VirtualAudioInputStreamTest, SingleOutputPausedAndRestarted) {
   RUN_ON_AUDIO_THREAD(Create);
   RUN_ON_AUDIO_THREAD(Start);
   RUN_ON_AUDIO_THREAD(CreateAndStartOneOutputStream);
-  WaitForDataPulls();
-  WaitForDataPushes();
+  WaitForDataToFlow();
   RUN_ON_AUDIO_THREAD(StopFirstOutputStream);
   RUN_ON_AUDIO_THREAD(RestartAllStoppedOutputStreams);
-  WaitForDataPulls();
-  WaitForDataPushes();
+  WaitForDataToFlow();
   RUN_ON_AUDIO_THREAD(StopAndCloseOneOutputStream);
   RUN_ON_AUDIO_THREAD(Stop);
   RUN_ON_AUDIO_THREAD(Close);
   WaitUntilClosed();
 }
 
-TEST_F(VirtualAudioInputStreamTest, OutputStreamsReconnectToRealDevices) {
-  RUN_ON_AUDIO_THREAD(CreateAndStartOneOutputStream);
-  WaitForDataPulls();
+TEST_F(VirtualAudioInputStreamTest, MultipleOutputs) {
   RUN_ON_AUDIO_THREAD(Create);
   RUN_ON_AUDIO_THREAD(Start);
-  WaitForDataPushes();
   RUN_ON_AUDIO_THREAD(CreateAndStartOneOutputStream);
-  WaitForDataPulls();
-  WaitForDataPushes();
-  RUN_ON_AUDIO_THREAD(Stop);
-  RUN_ON_AUDIO_THREAD(Close);
-  WaitUntilClosed();
-  WaitForDataPulls();
-  RUN_ON_AUDIO_THREAD(StopAndCloseOneOutputStream);
-  RUN_ON_AUDIO_THREAD(StopAndCloseOneOutputStream);
-}
-
-TEST_F(VirtualAudioInputStreamTest, PausedOutputStreamReconnectsToRealDevice) {
+  WaitForDataToFlow();
   RUN_ON_AUDIO_THREAD(CreateAndStartOneOutputStream);
-  WaitForDataPulls();
-  RUN_ON_AUDIO_THREAD(Create);
-  RUN_ON_AUDIO_THREAD(Start);
-  WaitForDataPushes();
   RUN_ON_AUDIO_THREAD(CreateAndStartOneOutputStream);
-  WaitForDataPulls();
-  WaitForDataPushes();
+  WaitForDataToFlow();
   RUN_ON_AUDIO_THREAD(StopFirstOutputStream);
-  WaitForDataPulls();
-  WaitForDataPushes();
+  RUN_ON_AUDIO_THREAD(StopFirstOutputStream);
+  WaitForDataToFlow();
+  RUN_ON_AUDIO_THREAD(StopFirstOutputStream);
+  RUN_ON_AUDIO_THREAD(RestartAllStoppedOutputStreams);
+  WaitForDataToFlow();
+  RUN_ON_AUDIO_THREAD(StopAndCloseOneOutputStream);
+  RUN_ON_AUDIO_THREAD(StopAndCloseOneOutputStream);
   RUN_ON_AUDIO_THREAD(Stop);
+  RUN_ON_AUDIO_THREAD(StopAndCloseOneOutputStream);
   RUN_ON_AUDIO_THREAD(Close);
   WaitUntilClosed();
-  WaitForDataPulls();
-  RUN_ON_AUDIO_THREAD(RestartAllStoppedOutputStreams);
-  WaitForDataPulls();
-  RUN_ON_AUDIO_THREAD(StopAndCloseOneOutputStream);
-  RUN_ON_AUDIO_THREAD(StopAndCloseOneOutputStream);
 }
 
 // A combination of all of the above tests with many output streams.
 TEST_F(VirtualAudioInputStreamTest, ComprehensiveTest) {
   static const int kNumOutputs = 8;
+  static const int kHalfNumOutputs = kNumOutputs / 2;
   static const int kPauseIterations = 5;
 
-  for (int i = 0; i < kNumOutputs / 2; ++i) {
-    RUN_ON_AUDIO_THREAD(CreateAndStartOneOutputStream);
-  }
-  WaitForDataPulls();
   RUN_ON_AUDIO_THREAD(Create);
-  RUN_ON_AUDIO_THREAD(Start);
-  WaitForDataPushes();
-  for (int i = 0; i < kNumOutputs / 2; ++i) {
+  for (int i = 0; i < kHalfNumOutputs; ++i) {
     RUN_ON_AUDIO_THREAD(CreateAndStartOneOutputStream);
   }
-  WaitForDataPulls();
-  WaitForDataPushes();
+  RUN_ON_AUDIO_THREAD(Start);
+  WaitForDataToFlow();
+  for (int i = 0; i < kHalfNumOutputs; ++i) {
+    RUN_ON_AUDIO_THREAD(CreateAndStartOneOutputStream);
+  }
+  WaitForDataToFlow();
   for (int i = 0; i < kPauseIterations; ++i) {
     RUN_ON_AUDIO_THREAD(StopSomeOutputStreams);
-    WaitForDataPulls();
-    WaitForDataPushes();
+    WaitForDataToFlow();
     RUN_ON_AUDIO_THREAD(RestartAllStoppedOutputStreams);
-    WaitForDataPulls();
-    WaitForDataPushes();
+    WaitForDataToFlow();
   }
-  RUN_ON_AUDIO_THREAD(Stop);
-  RUN_ON_AUDIO_THREAD(Close);
-  WaitUntilClosed();
-  WaitForDataPulls();
-  for (int i = 0; i < kNumOutputs; ++i) {
+  for (int i = 0; i < kHalfNumOutputs; ++i) {
     RUN_ON_AUDIO_THREAD(StopAndCloseOneOutputStream);
   }
+  RUN_ON_AUDIO_THREAD(Stop);
+  for (int i = 0; i < kHalfNumOutputs; ++i) {
+    RUN_ON_AUDIO_THREAD(StopAndCloseOneOutputStream);
+  }
+  RUN_ON_AUDIO_THREAD(Close);
+  WaitUntilClosed();
 }
 
 }  // namespace media

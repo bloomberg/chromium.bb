@@ -16,7 +16,6 @@ class MessageLoopProxy;
 
 namespace media {
 
-class AudioManagerBase;
 class VirtualAudioInputStream;
 
 // VirtualAudioOutputStream attaches to a VirtualAudioInputStream when Start()
