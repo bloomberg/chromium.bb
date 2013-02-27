@@ -62,6 +62,7 @@ struct crtc {
 	drmModeCrtc *crtc;
 	drmModeObjectProperties *props;
 	drmModePropertyRes **props_info;
+	drmModeModeInfo *mode;
 };
 
 struct encoder {
@@ -524,6 +525,7 @@ static void free_resources(struct resources *res)
 static struct resources *get_resources(struct device *dev)
 {
 	struct resources *res;
+	int i;
 
 	res = malloc(sizeof *res);
 	if (res == 0)
@@ -597,6 +599,9 @@ static struct resources *get_resources(struct device *dev)
 
 	get_properties(res, res, crtc, CRTC);
 	get_properties(res, res, connector, CONNECTOR);
+
+	for (i = 0; i < res->res->count_crtcs; ++i)
+		res->crtcs[i].mode = &res->crtcs[i].crtc->mode;
 
 	res->plane_res = drmModeGetPlaneResources(dev->fd);
 	if (!res->plane_res) {
@@ -714,6 +719,7 @@ static void connector_find_mode(struct device *dev, struct connector_arg *c)
 		struct crtc *crtc = &dev->resources->crtcs[i];
 
 		if (c->crtc_id == crtc->crtc->crtc_id) {
+			crtc->mode = c->mode;
 			c->crtc = crtc;
 			break;
 		}
@@ -884,8 +890,8 @@ set_plane(struct device *dev, struct connector_arg *c, struct plane_arg *p)
 
 	if (!p->has_position) {
 		/* Default to the middle of the screen */
-		crtc_x = (c->mode->hdisplay - p->w) / 2;
-		crtc_y = (c->mode->vdisplay - p->h) / 2;
+		crtc_x = (c->crtc->mode->hdisplay - p->w) / 2;
+		crtc_y = (c->crtc->mode->vdisplay - p->h) / 2;
 	} else {
 		crtc_x = p->x;
 		crtc_y = p->y;
