@@ -140,7 +140,14 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiOpenCancelTest) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiOpenBackgroundTest) {
+#if defined(OS_LINUX)
+#define MAYBE_FileSystemApiOpenBackgroundTest DISABLED_FileSystemApiOpenBackgroundTest
+#else
+#define MAYBE_FileSystemApiOpenBackgroundTest FileSystemApiOpenBackgroundTest
+#endif
+
+IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
+    MAYBE_FileSystemApiOpenBackgroundTest) {
   ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_background"))
       << message_;
 }
@@ -189,7 +196,14 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiSaveCancelTest) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiSaveBackgroundTest) {
+#if defined(OS_LINUX)
+#define MAYBE_FileSystemApiSaveBackgroundTest DISABLED_FileSystemApiSaveBackgroundTest
+#else
+#define MAYBE_FileSystemApiSaveBackgroundTest FileSystemApiSaveBackgroundTest
+#endif
+
+IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
+    MAYBE_FileSystemApiSaveBackgroundTest) {
   ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/save_background"))
       << message_;
 }
