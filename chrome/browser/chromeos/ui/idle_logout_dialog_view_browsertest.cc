@@ -4,11 +4,9 @@
 
 #include "chrome/browser/chromeos/ui/idle_logout_dialog_view.h"
 
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/kiosk_mode/mock_kiosk_mode_settings.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 
@@ -37,15 +35,25 @@ private:
 
 class IdleLogoutDialogViewTest : public InProcessBrowserTest {
  public:
-  IdleLogoutDialogViewTest() {}
+  IdleLogoutDialogViewTest()
+      : mock_provider_(NULL),
+        mock_settings_(NULL) {}
 
   virtual ~IdleLogoutDialogViewTest() {}
 
-  virtual void SetUpOnMainThread() OVERRIDE {
-    mock_settings_.reset(new MockKioskModeSettings());
-    mock_provider_.reset(
-        new MockIdleLogoutSettingsProvider(mock_settings_.get()));
-    IdleLogoutDialogView::set_settings_provider(mock_provider_.get());
+  virtual void SetUp() OVERRIDE {
+    mock_settings_ = new MockKioskModeSettings();
+    mock_provider_ = new MockIdleLogoutSettingsProvider(mock_settings_);
+    IdleLogoutDialogView::set_settings_provider(mock_provider_);
+
+    InProcessBrowserTest::SetUp();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    delete mock_settings_;
+    delete mock_provider_;
+
+    InProcessBrowserTest::TearDown();
   }
 
   void ExpectOpenDialog() {
@@ -59,8 +67,8 @@ class IdleLogoutDialogViewTest : public InProcessBrowserTest {
   }
 
  private:
-  scoped_ptr<MockIdleLogoutSettingsProvider> mock_provider_;
-  scoped_ptr<MockKioskModeSettings> mock_settings_;
+  MockIdleLogoutSettingsProvider* mock_provider_;
+  MockKioskModeSettings* mock_settings_;
 
   DISALLOW_COPY_AND_ASSIGN(IdleLogoutDialogViewTest);
 };

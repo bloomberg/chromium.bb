@@ -40,12 +40,11 @@ void AsyncPolicyProvider::Init() {
       base::Bind(&AsyncPolicyProvider::LoaderUpdateCallback,
                  base::MessageLoopProxy::current(),
                  weak_factory_.GetWeakPtr());
-  bool post = BrowserThread::PostTask(
+  BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&AsyncPolicyLoader::Init,
                  base::Unretained(loader_),
                  callback));
-  DCHECK(post) << "AsyncPolicyProvider::Init() called with threads not running";
 }
 
 void AsyncPolicyProvider::Shutdown() {
