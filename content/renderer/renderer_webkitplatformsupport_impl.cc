@@ -83,7 +83,7 @@ using WebKit::WebFileSystem;
 using WebKit::WebFrame;
 using WebKit::WebGamepads;
 using WebKit::WebIDBFactory;
-using WebKit::WebKitPlatformSupport;
+using WebKit::Platform;
 using WebKit::WebMediaStreamCenter;
 using WebKit::WebMediaStreamCenterClient;
 using WebKit::WebRTCPeerConnectionHandler;
@@ -235,11 +235,11 @@ WebKit::WebCookieJar* RendererWebKitPlatformSupportImpl::cookieJar() {
 }
 
 bool RendererWebKitPlatformSupportImpl::sandboxEnabled() {
-  // As explained in WebKitPlatformSupport.h, this function is used to decide
+  // As explained in Platform.h, this function is used to decide
   // whether to allow file system operations to come out of WebKit or not.
   // Even if the sandbox is disabled, there's no reason why the code should
   // act any differently...unless we're in single process mode.  In which
-  // case, we have no other choice.  WebKitPlatformSupport.h discourages using
+  // case, we have no other choice.  Platform.h discourages using
   // this switch unless absolutely necessary, so hopefully we won't end up
   // with too many code paths being different in single-process mode.
   return !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
@@ -508,7 +508,7 @@ RendererWebKitPlatformSupportImpl::SandboxSupport::getRenderStyleForStrike(
 
 //------------------------------------------------------------------------------
 
-WebKitPlatformSupport::FileHandle
+Platform::FileHandle
 RendererWebKitPlatformSupportImpl::databaseOpenFile(
     const WebString& vfs_file_name, int desired_flags) {
   return DatabaseUtil::DatabaseOpenFile(vfs_file_name, desired_flags);

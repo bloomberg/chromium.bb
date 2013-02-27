@@ -10,12 +10,12 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/sqlite/sqlite3.h"
 
-using WebKit::WebKitPlatformSupport;
+using WebKit::Platform;
 using WebKit::WebString;
 
 namespace content {
 
-WebKitPlatformSupport::FileHandle DatabaseUtil::DatabaseOpenFile(
+Platform::FileHandle DatabaseUtil::DatabaseOpenFile(
     const WebString& vfs_file_name, int desired_flags) {
   IPC::PlatformFileForTransit file_handle =
       IPC::InvalidPlatformFileForTransit();

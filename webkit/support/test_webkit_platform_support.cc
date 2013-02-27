@@ -194,7 +194,7 @@ bool TestWebKitPlatformSupport::sandboxEnabled() {
   return true;
 }
 
-WebKit::WebKitPlatformSupport::FileHandle
+WebKit::Platform::FileHandle
 TestWebKitPlatformSupport::databaseOpenFile(
     const WebKit::WebString& vfs_file_name, int desired_flags) {
   return SimpleDatabaseSystem::GetInstance()->OpenFile(

@@ -182,7 +182,7 @@ class CONTENT_EXPORT ContentRendererClient {
                                         v8::Handle<v8::Context>,
                                         int world_id) {}
 
-  // See WebKit::WebKitPlatformSupport.
+  // See WebKit::Platform.
   virtual unsigned long long VisitedLinkHash(const char* canonical_url,
                                              size_t length);
   virtual bool IsLinkVisited(unsigned long long link_hash);

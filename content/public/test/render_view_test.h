@@ -16,11 +16,11 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/test/mock_render_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 
 namespace WebKit {
 class WebHistoryItem;
-class WebKitPlatformSupport;
 class WebWidget;
 }
 
@@ -41,7 +41,7 @@ class RenderViewTest : public testing::Test {
    public:
     RendererWebKitPlatformSupportImplNoSandbox();
     ~RendererWebKitPlatformSupportImplNoSandbox();
-    WebKit::WebKitPlatformSupport* Get();
+    WebKit::Platform* Get();
 
    private:
     scoped_ptr<RendererWebKitPlatformSupportImplNoSandboxImpl>

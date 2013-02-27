@@ -22,12 +22,12 @@ class FilePath;
 }
 
 namespace WebKit {
+class Platform;
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebFileSystemCallbacks;
 class WebFrame;
 class WebGamepads;
-class WebKitPlatformSupport;
 class WebLayerTreeView;
 class WebLayerTreeViewClient;
 class WebMediaPlayer;
@@ -79,10 +79,10 @@ void SetUpTestEnvironmentForUnitTests(
     WebKit::Platform* shadow_platform_delegate);
 void TearDownTestEnvironment();
 
-// Returns a pointer to a WebKitPlatformSupport implementation for
+// Returns a pointer to a Platform implementation for
 // DumpRenderTree.  Needs to call SetUpTestEnvironment() before this.
 // This returns a pointer to a static instance.  Don't delete it.
-WebKit::WebKitPlatformSupport* GetWebKitPlatformSupport();
+WebKit::Platform* GetWebKitPlatformSupport();
 
 // This is used by WebFrameClient::createPlugin().
 WebKit::WebPlugin* CreateWebPlugin(WebKit::WebFrame* frame,

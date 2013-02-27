@@ -395,7 +395,7 @@ void TearDownTestEnvironment() {
   logging::CloseLogFile();
 }
 
-WebKit::WebKitPlatformSupport* GetWebKitPlatformSupport() {
+WebKit::Platform* GetWebKitPlatformSupport() {
   DCHECK(test_environment);
   return test_environment->webkit_platform_support();
 }

@@ -16,7 +16,7 @@ namespace content {
 #if !defined(OS_IOS)
 // A stubbed out WebKit platform support impl.
 class UnitTestTestSuite::UnitTestWebKitPlatformSupport
-    : public WebKit::WebKitPlatformSupport {
+    : public WebKit::Platform {
  public:
   UnitTestWebKitPlatformSupport() {}
   virtual ~UnitTestWebKitPlatformSupport() {}

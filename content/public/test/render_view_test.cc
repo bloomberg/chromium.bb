@@ -62,7 +62,7 @@ RenderViewTest::RendererWebKitPlatformSupportImplNoSandbox::
     ~RendererWebKitPlatformSupportImplNoSandbox() {
 }
 
-WebKit::WebKitPlatformSupport*
+WebKit::Platform*
     RenderViewTest::RendererWebKitPlatformSupportImplNoSandbox::Get() {
   return webkit_platform_support_.get();
 }

@@ -42,7 +42,7 @@ class WebSocketStreamHandleDelegate;
 class WebSocketStreamHandleBridge;
 
 class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
-    NON_EXPORTED_BASE(public WebKit::WebKitPlatformSupport) {
+    NON_EXPORTED_BASE(public WebKit::Platform) {
  public:
   WebKitPlatformSupportImpl();
   virtual ~WebKitPlatformSupportImpl();
@@ -51,7 +51,7 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
     const std::vector<float>& new_touchpad,
     const std::vector<float>& new_touchscreen);
 
-  // WebKitPlatformSupport methods (partial implementation):
+  // Platform methods (partial implementation):
   virtual WebKit::WebThemeEngine* themeEngine();
 
   virtual base::PlatformFile databaseOpenFile(

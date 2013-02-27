@@ -12,7 +12,7 @@ namespace content {
 // WorkerWebKitPlatformSupportImpl to handle database file accesses.
 class DatabaseUtil {
  public:
-  static WebKit::WebKitPlatformSupport::FileHandle DatabaseOpenFile(
+  static WebKit::Platform::FileHandle DatabaseOpenFile(
       const WebKit::WebString& vfs_file_name, int desired_flags);
   static int DatabaseDeleteFile(
       const WebKit::WebString& vfs_file_name, bool sync_dir);

@@ -25,12 +25,12 @@
 #include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/glue/webkit_glue.h"
 
+using WebKit::Platform;
 using WebKit::WebBlobRegistry;
 using WebKit::WebClipboard;
 using WebKit::WebFileInfo;
 using WebKit::WebFileSystem;
 using WebKit::WebFileUtilities;
-using WebKit::WebKitPlatformSupport;
 using WebKit::WebMessagePortChannel;
 using WebKit::WebMimeRegistry;
 using WebKit::WebSandboxSupport;
@@ -170,7 +170,7 @@ void WorkerWebKitPlatformSupportImpl::dispatchStorageEvent(
   NOTREACHED();
 }
 
-WebKitPlatformSupport::FileHandle
+Platform::FileHandle
 WorkerWebKitPlatformSupportImpl::databaseOpenFile(
     const WebString& vfs_file_name, int desired_flags) {
   return DatabaseUtil::DatabaseOpenFile(vfs_file_name, desired_flags);

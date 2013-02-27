@@ -47,7 +47,7 @@ class TestWebKitPlatformSupport :
   virtual WebKit::WebFileSystem* fileSystem();
 
   virtual bool sandboxEnabled();
-  virtual WebKit::WebKitPlatformSupport::FileHandle databaseOpenFile(
+  virtual WebKit::Platform::FileHandle databaseOpenFile(
       const WebKit::WebString& vfs_file_name, int desired_flags);
   virtual int databaseDeleteFile(const WebKit::WebString& vfs_file_name,
                                  bool sync_dir);
