@@ -11,6 +11,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "cc/devtools_instrumentation.h"
 #include "cc/math_util.h"
 #include "cc/platform_color.h"
 #include "cc/raster_worker_pool.h"
@@ -820,6 +821,7 @@ TileManager::RasterTaskMetadata TileManager::GetRasterTaskMetadata(
   metadata.is_tile_in_pending_tree_now_bin =
       mts.tree_bin[PENDING_TREE] == NOW_BIN;
   metadata.tile_resolution = mts.resolution;
+  metadata.layer_id = tile.layer_id();
   return metadata;
 }
 
@@ -922,6 +924,7 @@ void TileManager::RunRasterTask(uint8* buffer,
       metadata.is_tile_in_pending_tree_now_bin,
       "is_low_res",
       metadata.tile_resolution == LOW_RESOLUTION);
+  devtools_instrumentation::ScopedRasterTask raster_task(metadata.layer_id);
 
   DCHECK(picture_pile);
   DCHECK(buffer);

@@ -28,7 +28,8 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
        GLenum format,
        gfx::Rect content_rect,
        gfx::Rect opaque_rect,
-       float contents_scale);
+       float contents_scale,
+       int layer_id);
 
   PicturePileImpl* picture_pile() {
     return picture_pile_.get();
@@ -67,6 +68,8 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
   float contents_scale() const { return contents_scale_; }
   gfx::Rect content_rect() const { return content_rect_; }
 
+  int layer_id() const { return layer_id_; }
+
   void set_picture_pile(scoped_refptr<PicturePileImpl> pile) {
    DCHECK(pile->CanRaster(contents_scale_, content_rect_));
    picture_pile_ = pile;
@@ -101,6 +104,7 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
 
   TilePriority priority_[NUM_BIN_PRIORITIES];
   ManagedTileState managed_state_;
+  int layer_id_;
 };
 
 }  // namespace cc
