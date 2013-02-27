@@ -75,6 +75,8 @@ FileTransferController.prototype = {
 
   /**
    * @this {FileTransferController}
+   * @param {HTMLElement} breadcrumbsContainer Element which contains target
+   *     breadcrumbs.
    */
   attachBreadcrumbsDropTarget: function(breadcrumbsController) {
     var container = breadcrumbsController.getContainer();
@@ -288,6 +290,8 @@ FileTransferController.prototype = {
 
   /**
    * @this {FileTransferController}
+   * @param {cr.ui.List} list Drop target list
+   * @param {Event} event A dragstart event of DOM.
    */
   onDragStart_: function(list, event) {
     // Nothing selected.
@@ -316,30 +320,24 @@ FileTransferController.prototype = {
 
   /**
    * @this {FileTransferController}
+   * @param {cr.ui.List} list Drop target list.
+   * @param {Event} event A dragend event of DOM.
    */
   onDragEnd_: function(list, event) {
     var container = this.document_.querySelector('#drag-container');
     container.textContent = '';
     this.setDropTarget_(null);
-    this.setScrollSpeed_(null, 0);
     delete window[DRAG_AND_DROP_GLOBAL_DATA];
   },
 
   /**
    * @this {FileTransferController}
+   * @param {boolean} onlyIntoDirectories True if the drag is only into
+   *     directoris.
+   * @param {cr.ui.List} list Drop target list.
+   * @param {Event} event A dragover event of DOM.
    */
   onDragOver_: function(onlyIntoDirectories, list, event) {
-    if (list) {
-      // Scroll the list if mouse close to the top or the bottom.
-      var rect = list.getBoundingClientRect();
-      if (event.clientY - rect.top < rect.bottom - event.clientY) {
-        this.setScrollSpeed_(list,
-            -this.calculateScrollSpeed_(event.clientY - rect.top));
-      } else {
-        this.setScrollSpeed_(list,
-            this.calculateScrollSpeed_(rect.bottom - event.clientY));
-      }
-    }
     event.preventDefault();
     var path = this.destinationPath_ ||
         (!onlyIntoDirectories && this.directoryModel_.getCurrentDirPath());
@@ -349,6 +347,8 @@ FileTransferController.prototype = {
 
   /**
    * @this {FileTransferController}
+   * @param {cr.ui.List} list Drop target list.
+   * @param {Event} event A dragenter event of DOM.
    */
   onDragEnterList_: function(list, event) {
     event.preventDefault();  // Required to prevent the cursor flicker.
@@ -369,6 +369,9 @@ FileTransferController.prototype = {
 
   /**
    * @this {FileTransferController}
+   * @param {HTMLElement} breadcrumbsContainer Element which contains target
+   *     breadcrumbs.
+   * @param {Event} event A dragenter event of DOM.
    */
   onDragEnterBreadcrumbs_: function(breadcrumbsContainer, event) {
     event.preventDefault();  // Required to prevent the cursor flicker.
@@ -382,6 +385,8 @@ FileTransferController.prototype = {
 
   /**
    * @this {FileTransferController}
+   * @param {cr.ui.List} list Drop target list.
+   * @param {Event} event A dragleave event of DOM.
    */
   onDragLeave_: function(list, event) {
     // If mouse moves from one element to another the 'dragenter'
@@ -394,12 +399,13 @@ FileTransferController.prototype = {
       this.setDropTarget_(null);
       this.lastEnteredTarget_ = null;
     }
-    if (event.target == list)
-      this.setScrollSpeed_(list, 0);
   },
 
   /**
    * @this {FileTransferController}
+   * @param {boolean} onlyIntoDirectories True if the drag is only into
+   *     directories.
+   * @param {Event} event A dragleave event of DOM.
    */
   onDrop_: function(onlyIntoDirectories, event) {
     if (onlyIntoDirectories && !this.dropTarget_)
@@ -412,7 +418,6 @@ FileTransferController.prototype = {
     this.paste(event.dataTransfer, destinationPath,
                this.selectDropEffect_(event, destinationPath));
     this.setDropTarget_(null);
-    this.setScrollSpeed_(null, 0);
   },
 
   /**
@@ -764,42 +769,4 @@ FileTransferController.prototype = {
     }
     return 'copy';
   },
-
-  /**
-   * @this {FileTransferController}
-   * @return {number} Returns an appropriate scroll speed to the distance.
-   */
-  calculateScrollSpeed_: function(distance) {
-    var SCROLL_AREA = 25;  // Pixels.
-    var MIN_SCROLL_SPEED = 50; // Pixels/sec.
-    var MAX_SCROLL_SPEED = 300;  // Pixels/sec.
-    if (distance < 0 || distance > SCROLL_AREA)
-      return 0;
-    return MAX_SCROLL_SPEED - (MAX_SCROLL_SPEED - MIN_SCROLL_SPEED) *
-        (distance / SCROLL_AREA);
-  },
-
-  /**
-   * @this {FileTransferController}
-   */
-  setScrollSpeed_: function(list, speed) {
-    var SCROLL_INTERVAL = 200;   // Milliseconds.
-    if (speed == 0 && this.scrollInterval_) {
-      clearInterval(this.scrollInterval_);
-      this.scrollInterval_ = null;
-    } else if (speed != 0 && !this.scrollInterval_) {
-      this.scrollInterval_ = setInterval(this.scroll_.bind(this),
-                                         SCROLL_INTERVAL);
-    }
-    this.scrollStep_ = speed * SCROLL_INTERVAL / 1000;
-    this.scrollList_ = list;
-  },
-
-  /**
-   * @this {FileTransferController}
-   */
-  scroll_: function() {
-    if (this.scrollList_)
-      this.scrollList_.scrollTop += this.scrollStep_;
-  }
 };
