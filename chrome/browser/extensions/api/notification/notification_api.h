@@ -70,21 +70,21 @@ class NotificationUpdateFunction : public NotificationApiFunction {
                              EXPERIMENTAL_NOTIFICATION_UPDATE)
 };
 
-class NotificationDeleteFunction : public NotificationApiFunction {
+class NotificationClearFunction : public NotificationApiFunction {
  public:
-  NotificationDeleteFunction();
+  NotificationClearFunction();
 
   // UIThreadExtensionFunction:
   virtual bool RunNotificationApi() OVERRIDE;
 
  protected:
-  virtual ~NotificationDeleteFunction();
+  virtual ~NotificationClearFunction();
 
  private:
-  scoped_ptr<api::experimental_notification::Delete::Params> params_;
+  scoped_ptr<api::experimental_notification::Clear::Params> params_;
 
-  DECLARE_EXTENSION_FUNCTION("experimental.notification.delete",
-                             EXPERIMENTAL_NOTIFICATION_DELETE)
+  DECLARE_EXTENSION_FUNCTION("experimental.notification.clear",
+                             EXPERIMENTAL_NOTIFICATION_CLEAR)
 };
 
 }  // namespace extensions

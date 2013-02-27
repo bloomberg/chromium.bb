@@ -110,11 +110,11 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestIdUsage) {
     ASSERT_FALSE(copy_bool_value);
   }
 
-  // Delete a nonexistent notification.
+  // Clear a nonexistent notification.
   {
-    scoped_refptr<extensions::NotificationDeleteFunction>
+    scoped_refptr<extensions::NotificationClearFunction>
         notification_function(
-            new extensions::NotificationDeleteFunction());
+            new extensions::NotificationClearFunction());
 
     notification_function->set_extension(empty_extension.get());
     notification_function->set_has_callback(true);
@@ -129,11 +129,11 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestIdUsage) {
     ASSERT_FALSE(copy_bool_value);
   }
 
-  // Delete the notification we created.
+  // Clear the notification we created.
   {
-    scoped_refptr<extensions::NotificationDeleteFunction>
+    scoped_refptr<extensions::NotificationClearFunction>
         notification_function(
-            new extensions::NotificationDeleteFunction());
+            new extensions::NotificationClearFunction());
 
     notification_function->set_extension(empty_extension.get());
     notification_function->set_has_callback(true);

@@ -71,13 +71,13 @@
 
   callback UpdateCallback = void (boolean wasUpdated);
 
-  callback DeleteCallback = void (boolean wasDeleted);
+  callback ClearCallback = void (boolean wasCleared);
 
   interface Functions {
     // Creates and displays a notification having the contents in |options|,
     // identified by the id |notificationId|. If |notificationId| is empty,
     // |create| generates an id. If |notificationId| matches an existing
-    // notification, |create| first deletes that notification before proceeding
+    // notification, |create| first clears that notification before proceeding
     // with the create operation. |callback| returns the notification id
     // (either supplied or generated) that represents the created notification.
     static void create(DOMString notificationId,
@@ -91,10 +91,10 @@
                        NotificationOptions options,
                        UpdateCallback callback);
 
-    // Given a |notificationId| returned by the |create| method, deletes the
+    // Given a |notificationId| returned by the |create| method, clears the
     // corresponding notification. |callback| indicates whether a matching
     // notification existed.
-    static void delete(DOMString notificationId, DeleteCallback callback);
+    static void clear(DOMString notificationId, ClearCallback callback);
   };
 
   interface Events {

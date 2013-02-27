@@ -320,14 +320,14 @@ bool NotificationUpdateFunction::RunNotificationApi() {
   return true;
 }
 
-NotificationDeleteFunction::NotificationDeleteFunction() {
+NotificationClearFunction::NotificationClearFunction() {
 }
 
-NotificationDeleteFunction::~NotificationDeleteFunction() {
+NotificationClearFunction::~NotificationClearFunction() {
 }
 
-bool NotificationDeleteFunction::RunNotificationApi() {
-  params_ = api::experimental_notification::Delete::Params::Create(*args_);
+bool NotificationClearFunction::RunNotificationApi() {
+  params_ = api::experimental_notification::Clear::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
   bool cancel_result = g_browser_process->notification_ui_manager()->
