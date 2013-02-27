@@ -550,14 +550,14 @@ movdqa Wdq Vdq, 0x66 0x0f 0x6f, CPUFeature_SSE2
 movdqa Vdq Wdq, 0x66 0x0f 0x7f, CPUFeature_SSE2
 vmovdqa Wdq Vdq, 0xc4 RXB.00001 x.1111.0.01 0x6f, CPUFeature_AVX
 vmovdqa Vdq Wdq, 0xc4 RXB.00001 x.1111.0.01 0x7f, CPUFeature_AVX
-vmovdqa Wfq Vfq, 0xc4 RXB.00001 x.1111.1.01 0x7f, CPUFeature_AVX
+vmovdqa Wfq Vfq, 0xc4 RXB.00001 x.1111.1.01 0x6f, CPUFeature_AVX
 vmovdqa Vfq Wfq, 0xc4 RXB.00001 x.1111.1.01 0x7f, CPUFeature_AVX
 ######## MOVDQU/VMOVDQU ########################################################
 movdqu Wdq Vdq, 0xf3 0x0f 0x6f, CPUFeature_SSE2
 movdqu Vdq Wdq, 0xf3 0x0f 0x7f, CPUFeature_SSE2
 vmovdqu Wdq Vdq, 0xc4 RXB.00001 x.1111.0.10 0x6f, CPUFeature_AVX
 vmovdqu Vdq Wdq, 0xc4 RXB.00001 x.1111.0.10 0x7f, CPUFeature_AVX
-vmovdqu Wfq Vfq, 0xc4 RXB.00001 x.1111.1.10 0x7f, CPUFeature_AVX
+vmovdqu Wfq Vfq, 0xc4 RXB.00001 x.1111.1.10 0x6f, CPUFeature_AVX
 vmovdqu Vfq Wfq, 0xc4 RXB.00001 x.1111.1.10 0x7f, CPUFeature_AVX
 ######## MOVHLPS/VMOVHLPS ######################################################
 movhlps Ups Vps, 0x0f 0x12 /r, CPUFeature_SSE

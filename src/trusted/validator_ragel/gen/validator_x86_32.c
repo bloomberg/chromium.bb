@@ -1819,21 +1819,13 @@ st29:
 case 29:
 	switch( (*( current_position)) ) {
 		case 4u: goto st2;
-		case 5u: goto st3;
 		case 12u: goto st2;
-		case 13u: goto st3;
 		case 20u: goto st2;
-		case 21u: goto st3;
 		case 28u: goto st2;
-		case 29u: goto st3;
 		case 36u: goto st2;
-		case 37u: goto st3;
 		case 44u: goto st2;
-		case 45u: goto st3;
 		case 52u: goto st2;
-		case 53u: goto st3;
 		case 60u: goto st2;
-		case 61u: goto st3;
 		case 68u: goto st8;
 		case 76u: goto st8;
 		case 84u: goto st8;
@@ -1851,15 +1843,39 @@ case 29:
 		case 180u: goto st9;
 		case 188u: goto st9;
 	}
-	if ( (*( current_position)) < 64u ) {
-		if ( (*( current_position)) <= 63u )
+	if ( (*( current_position)) < 38u ) {
+		if ( (*( current_position)) < 14u ) {
+			if ( (*( current_position)) > 3u ) {
+				if ( 6u <= (*( current_position)) && (*( current_position)) <= 11u )
+					goto tr0;
+			} else
+				goto tr0;
+		} else if ( (*( current_position)) > 19u ) {
+			if ( (*( current_position)) > 27u ) {
+				if ( 30u <= (*( current_position)) && (*( current_position)) <= 35u )
+					goto tr0;
+			} else if ( (*( current_position)) >= 22u )
+				goto tr0;
+		} else
 			goto tr0;
-	} else if ( (*( current_position)) > 127u ) {
-		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
-			goto st3;
+	} else if ( (*( current_position)) > 43u ) {
+		if ( (*( current_position)) < 62u ) {
+			if ( (*( current_position)) > 51u ) {
+				if ( 54u <= (*( current_position)) && (*( current_position)) <= 59u )
+					goto tr0;
+			} else if ( (*( current_position)) >= 46u )
+				goto tr0;
+		} else if ( (*( current_position)) > 63u ) {
+			if ( (*( current_position)) > 127u ) {
+				if ( 192u <= (*( current_position)) )
+					goto tr16;
+			} else if ( (*( current_position)) >= 64u )
+				goto st7;
+		} else
+			goto tr0;
 	} else
-		goto st7;
-	goto tr16;
+		goto tr0;
+	goto st3;
 st30:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof30;
@@ -5271,6 +5287,7 @@ case 169:
 		case 43u: goto tr298;
 		case 80u: goto tr309;
 		case 81u: goto tr297;
+		case 111u: goto tr297;
 		case 194u: goto tr299;
 		case 198u: goto tr299;
 		case 208u: goto tr297;
@@ -5316,6 +5333,7 @@ case 170:
 		case 18u: goto tr297;
 		case 22u: goto tr297;
 		case 91u: goto tr297;
+		case 111u: goto tr297;
 		case 127u: goto tr297;
 		case 230u: goto tr297;
 	}
