@@ -1557,5 +1557,54 @@ TEST_F(TraceEventTestFixture, TraceSampling) {
   EXPECT_TRUE(FindNamePhase("Things", "P"));
 }
 
+class TraceEventCallbackTest : public TraceEventTestFixture {
+ public:
+  virtual void SetUp() OVERRIDE {
+    TraceEventTestFixture::SetUp();
+    ManualTestSetUp();
+    ASSERT_EQ(NULL, s_instance);
+    s_instance = this;
+  }
+  virtual void TearDown() OVERRIDE {
+    while (TraceLog::GetInstance()->IsEnabled())
+      TraceLog::GetInstance()->SetDisabled();
+    ASSERT_TRUE(!!s_instance);
+    s_instance = NULL;
+    TraceEventTestFixture::TearDown();
+  }
+
+ protected:
+  std::vector<std::string> collected_events_;
+
+  static TraceEventCallbackTest* s_instance;
+  static void Callback(char phase,
+                       const unsigned char* category_enabled,
+                       const char* name,
+                       unsigned long long id,
+                       int num_args,
+                       const char* const arg_names[],
+                       const unsigned char arg_types[],
+                       const unsigned long long arg_values[],
+                       unsigned char flags) {
+    s_instance->collected_events_.push_back(name);
+  }
+};
+
+TraceEventCallbackTest* TraceEventCallbackTest::s_instance;
+
+TEST_F(TraceEventCallbackTest, TraceEventCallback) {
+  TRACE_EVENT_INSTANT0("all", "before enable");
+  TraceLog::GetInstance()->SetEnabled(true, TraceLog::RECORD_UNTIL_FULL);
+  TRACE_EVENT_INSTANT0("all", "before callback set");
+  TraceLog::GetInstance()->SetEventCallback(Callback);
+  TRACE_EVENT_INSTANT0("all", "event1");
+  TRACE_EVENT_INSTANT0("all", "event2");
+  TraceLog::GetInstance()->SetEventCallback(NULL);
+  TRACE_EVENT_INSTANT0("all", "after callback removed");
+  EXPECT_EQ(2u, collected_events_.size());
+  EXPECT_EQ("event1", collected_events_[0]);
+  EXPECT_EQ("event2", collected_events_[1]);
+}
+
 }  // namespace debug
 }  // namespace base

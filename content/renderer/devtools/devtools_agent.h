@@ -52,6 +52,7 @@ class DevToolsAgent : public RenderViewObserver,
   virtual void clearBrowserCache();
   virtual void clearBrowserCookies();
   virtual void visitAllocatedObjects(AllocatedObjectVisitor* visitor);
+  virtual void setTraceEventCallback(TraceEventCallback cb);
 
   void OnAttach();
   void OnReattach(const std::string& agent_state);

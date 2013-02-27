@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/process.h"
@@ -36,6 +37,8 @@ using WebKit::WebString;
 using WebKit::WebCString;
 using WebKit::WebVector;
 using WebKit::WebView;
+
+using base::debug::TraceLog;
 
 namespace content {
 
@@ -129,6 +132,12 @@ void DevToolsAgent::clearBrowserCookies() {
   Send(new DevToolsHostMsg_ClearBrowserCookies(routing_id()));
 }
 
+void DevToolsAgent::setTraceEventCallback(TraceEventCallback cb) {
+  TraceLog* trace_log = TraceLog::GetInstance();
+  trace_log->SetEventCallback(cb);
+  trace_log->SetEnabled(!!cb, TraceLog::RECORD_UNTIL_FULL);
+}
+
 #if defined(USE_TCMALLOC) && !defined(OS_WIN)
 static void AllocationVisitor(void* data, const void* ptr) {
     typedef WebKit::WebDevToolsAgentClient::AllocatedObjectVisitor Visitor;
@@ -196,7 +205,7 @@ void DevToolsAgent::OnAddMessageToConsole(ConsoleMessageLevel level,
   if (!web_view)
     return;
 
-  WebFrame* main_frame = web_view-> mainFrame();
+  WebFrame* main_frame = web_view->mainFrame();
   if (!main_frame)
     return;
 

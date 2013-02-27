@@ -820,6 +820,11 @@ void TraceLog::SetNotificationCallback(
   notification_callback_ = cb;
 }
 
+void TraceLog::SetEventCallback(EventCallback cb) {
+  AutoLock lock(lock_);
+  event_callback_ = cb;
+};
+
 void TraceLog::Flush(const TraceLog::OutputCallback& cb) {
   std::vector<TraceEvent> previous_logged_events;
   {
@@ -876,6 +881,8 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
 #endif
 
   TimeTicks now = timestamp - time_offset_;
+  EventCallback event_callback_copy;
+
   NotificationHelper notifier(this);
 
   {
@@ -929,9 +936,16 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
 
     if (watch_category_ == category_enabled && watch_event_name_ == name)
       notifier.AddNotificationWhileLocked(EVENT_WATCH_NOTIFICATION);
+
+    event_callback_copy = event_callback_;
   }  // release lock
 
   notifier.SendNotificationIfAny();
+  if (event_callback_copy != NULL) {
+    event_callback_copy(phase, category_enabled, name, id,
+        num_args, arg_names, arg_types, arg_values,
+        flags);
+  }
 }
 
 void TraceLog::AddTraceEventEtw(char phase,
