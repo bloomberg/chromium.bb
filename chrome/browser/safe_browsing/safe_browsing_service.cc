@@ -305,7 +305,12 @@ void SafeBrowsingService::InitURLRequestContextOnIOThread(
   DCHECK(!url_request_context_.get());
 
   scoped_refptr<net::CookieStore> cookie_store = new net::CookieMonster(
-      new SQLitePersistentCookieStore(CookieFilePath(), false, NULL),
+      new SQLitePersistentCookieStore(
+          CookieFilePath(),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+          false,
+          NULL),
       NULL);
 
   url_request_context_.reset(new net::URLRequestContext);

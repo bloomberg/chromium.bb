@@ -3,26 +3,24 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop.h"
 #include "base/perftimer.h"
+#include "base/sequenced_task_runner.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/thread_test_helper.h"
+#include "base/test/sequenced_worker_pool_owner.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/net/sqlite_persistent_cookie_store.h"
 #include "chrome/common/chrome_constants.h"
-#include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/cookies/canonical_cookie.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
-
 class SQLitePersistentCookieStorePerfTest : public testing::Test {
  public:
   SQLitePersistentCookieStorePerfTest()
-      : db_thread_(BrowserThread::DB),
-        io_thread_(BrowserThread::IO),
+      : pool_owner_(new base::SequencedWorkerPoolOwner(1, "Background Pool")),
         loaded_event_(false, false),
         key_loaded_event_(false, false) {
   }
@@ -43,12 +41,22 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
     loaded_event_.Wait();
   }
 
-  virtual void SetUp() {
-    db_thread_.Start();
-    io_thread_.Start();
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner() {
+    return pool_owner_->pool()->GetSequencedTaskRunner(
+        pool_owner_->pool()->GetNamedSequenceToken("background"));
+  }
+
+  scoped_refptr<base::SequencedTaskRunner> client_task_runner() {
+    return pool_owner_->pool()->GetSequencedTaskRunner(
+        pool_owner_->pool()->GetNamedSequenceToken("client"));
+  }
+
+  virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     store_ = new SQLitePersistentCookieStore(
         temp_dir_.path().Append(chrome::kCookieFilename),
+        client_task_runner(),
+        background_task_runner(),
         false, NULL);
     std::vector<net::CanonicalCookie*> cookies;
     Load();
@@ -70,19 +78,26 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
     // Replace the store effectively destroying the current one and forcing it
     // to write its data to disk.
     store_ = NULL;
-    scoped_refptr<base::ThreadTestHelper> helper(
-      new base::ThreadTestHelper(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));
-    // Make sure we wait until the destructor has run.
-    ASSERT_TRUE(helper->Run());
+
+    // Shut down the pool, causing deferred (no-op) commits to be discarded.
+    pool_owner_->pool()->Shutdown();
+    // ~SequencedWorkerPoolOwner blocks on pool shutdown.
+    pool_owner_.reset(new base::SequencedWorkerPoolOwner(1, "pool"));
 
     store_ = new SQLitePersistentCookieStore(
-      temp_dir_.path().Append(chrome::kCookieFilename), false, NULL);
+      temp_dir_.path().Append(chrome::kCookieFilename),
+      client_task_runner(),
+      background_task_runner(),
+      false, NULL);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    store_ = NULL;
+    pool_owner_->pool()->Shutdown();
   }
 
  protected:
-  content::TestBrowserThread db_thread_;
-  content::TestBrowserThread io_thread_;
+  scoped_ptr<base::SequencedWorkerPoolOwner> pool_owner_;
   base::WaitableEvent loaded_event_;
   base::WaitableEvent key_loaded_event_;
   std::vector<net::CanonicalCookie*> cookies_;
