@@ -1610,6 +1610,7 @@
         'renderer/safe_browsing/phishing_term_feature_extractor_unittest.cc',
         'renderer/safe_browsing/phishing_url_feature_extractor_unittest.cc',
         'renderer/safe_browsing/scorer_unittest.cc',
+        'renderer/spellchecker/custom_dictionary_engine_unittest.cc',
         'renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc',
         'renderer/spellchecker/spellcheck_provider_mac_unittest.cc',
         'renderer/spellchecker/spellcheck_provider_test.cc',

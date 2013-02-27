@@ -46,7 +46,14 @@ bool CustomDictionaryEngine::SpellCheckWord(
     int misspelling_start,
     int misspelling_len) {
   DCHECK(text);
+  string16 text16(text);
+
+  // The text to be checked is empty on OSX(async) right now.
+  // TODO(groby): Fix as part of async hook-up. (http://crbug.com/178241)
+  if (text16.empty())
+    return false;
+  DCHECK(text16.length() >= size_t(misspelling_start + misspelling_len));
   return misspelling_start >= 0 &&
       misspelling_len > 0 &&
-      dictionary_.count(string16(text, misspelling_start, misspelling_len)) > 0;
+      dictionary_.count(text16.substr(misspelling_start, misspelling_len)) > 0;
 }
