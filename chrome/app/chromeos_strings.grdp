@@ -3069,6 +3069,9 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_SELECT_WORD_AT_A_TIME" desc="The text in the keyboard overlay to explain the shortcut.">
     Select "word at a time"
   </message>
+  <message name="IDS_KEYBOARD_OVERLAY_SHOW_MESSAGE_CENTER" desc="The text in the keyboard overlay to explain the shortcut (Show the message center).">
+    Show message center
+  </message>
   <message name="IDS_KEYBOARD_OVERLAY_SHOW_STATUS_MENU" desc="The text in the keyboard overlay to explain the shortcut (show the status menu).">
     Show status menu
   </message>

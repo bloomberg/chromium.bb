@@ -15839,6 +15839,7 @@ var keyboardOverlayData = {
     'maximize<>ALT': 'keyboardOverlaySwapPrimaryMonitor',
     'maximize<>CTRL': 'keyboardOverlayMirrorMonitors',
     'maximize<>SHIFT': 'keyboardOverlayFullScreen',
+    'n<>ALT<>SHIFT': 'keyboardOverlayShowMessageCenter',
     'n<>CTRL': 'keyboardOverlayNewWindow',
     'n<>CTRL<>SHIFT': 'keyboardOverlayNewIncognitoWindow',
     'o<>CTRL': 'keyboardOverlayOpen',

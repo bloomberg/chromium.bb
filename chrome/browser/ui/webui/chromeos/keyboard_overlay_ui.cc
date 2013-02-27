@@ -202,6 +202,8 @@ struct I18nContentToMessage {
     IDS_KEYBOARD_OVERLAY_SELECT_PREVIOUS_INPUT_METHOD },
   { "keyboardOverlaySelectWordAtATime",
     IDS_KEYBOARD_OVERLAY_SELECT_WORD_AT_A_TIME },
+  { "keyboardOverlayShowMessageCenter",
+    IDS_KEYBOARD_OVERLAY_SHOW_MESSAGE_CENTER },
   { "keyboardOverlayShowStatusMenu", IDS_KEYBOARD_OVERLAY_SHOW_STATUS_MENU },
   { "keyboardOverlayShowWrenchMenu", IDS_KEYBOARD_OVERLAY_SHOW_WRENCH_MENU },
   { "keyboardOverlaySignOut", IDS_KEYBOARD_OVERLAY_SIGN_OUT },
