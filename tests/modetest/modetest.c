@@ -709,6 +709,80 @@ connector_find_mode(struct connector_arg *c)
 
 }
 
+/* -----------------------------------------------------------------------------
+ * Properties
+ */
+
+struct property_arg {
+	uint32_t obj_id;
+	uint32_t obj_type;
+	char name[DRM_PROP_NAME_LEN+1];
+	uint32_t prop_id;
+	uint64_t value;
+};
+
+static void set_property(struct property_arg *p)
+{
+	drmModeObjectProperties *props;
+	drmModePropertyRes **props_info;
+	const char *obj_type;
+	int ret;
+	int i;
+
+	p->obj_type = 0;
+	p->prop_id = 0;
+
+#define find_object(_res, __res, type, Type)					\
+	do {									\
+		for (i = 0; i < (int)(_res)->__res->count_##type##s; ++i) {	\
+			struct type *obj = &(_res)->type##s[i];			\
+			if (obj->type->type##_id != p->obj_id)			\
+				continue;					\
+			p->obj_type = DRM_MODE_OBJECT_##Type;			\
+			obj_type = #Type;					\
+			props = obj->props;					\
+			props_info = obj->props_info;				\
+		}								\
+	} while(0)								\
+
+	find_object(resources, res, crtc, CRTC);
+	if (p->obj_type == 0)
+		find_object(resources, res, connector, CONNECTOR);
+	if (p->obj_type == 0)
+		find_object(resources, plane_res, plane, PLANE);
+	if (p->obj_type == 0) {
+		fprintf(stderr, "Object %i not found, can't set property\n",
+			p->obj_id);
+			return;
+	}
+
+	if (!props) {
+		fprintf(stderr, "%s %i has no properties\n",
+			obj_type, p->obj_id);
+		return;
+	}
+
+	for (i = 0; i < (int)props->count_props; ++i) {
+		if (!props_info[i])
+			continue;
+		if (strcmp(props_info[i]->name, p->name) == 0)
+			break;
+	}
+
+	if (i == (int)props->count_props) {
+		fprintf(stderr, "%s %i has no %s property\n",
+			obj_type, p->obj_id, p->name);
+		return;
+	}
+
+	p->prop_id = props->props[i];
+
+	ret = drmModeObjectSetProperty(fd, p->obj_id, p->obj_type, p->prop_id, p->value);
+	if (ret < 0)
+		fprintf(stderr, "failed to set %s %i property %s to %" PRIu64 ": %s\n",
+			obj_type, p->obj_id, p->name, p->value, strerror(errno));
+}
+
 /* -------------------------------------------------------------------------- */
 
 static void
@@ -1008,9 +1082,20 @@ static int parse_plane(struct plane_arg *p, const char *arg)
 	return 0;
 }
 
+static int parse_property(struct property_arg *p, const char *arg)
+{
+	if (sscanf(arg, "%d:%32[^:]:%" SCNu64, &p->obj_id, p->name, &p->value) != 3)
+		return -1;
+
+	p->obj_type = 0;
+	p->name[DRM_PROP_NAME_LEN] = '\0';
+
+	return 0;
+}
+
 static void usage(char *name)
 {
-	fprintf(stderr, "usage: %s [-cdefMmPpsv]\n", name);
+	fprintf(stderr, "usage: %s [-cdefMmPpsvw]\n", name);
 
 	fprintf(stderr, "\n Query options:\n\n");
 	fprintf(stderr, "\t-c\tlist connectors\n");
@@ -1023,6 +1108,7 @@ static void usage(char *name)
 	fprintf(stderr, "\t-P <connector_id>:<w>x<h>[@<format>]\tset a plane\n");
 	fprintf(stderr, "\t-s <connector_id>[@<crtc_id>]:<mode>[@<format>]\tset a mode\n");
 	fprintf(stderr, "\t-v\ttest vsynced page flipping\n");
+	fprintf(stderr, "\t-w <obj_id>:<prop_name>:<value>\tset property\n");
 
 	fprintf(stderr, "\n Generic options:\n\n");
 	fprintf(stderr, "\t-d\tdrop master after mode set\n");
@@ -1055,7 +1141,7 @@ static int page_flipping_supported(void)
 #endif
 }
 
-static char optstr[] = "cdefM:mP:ps:v";
+static char optstr[] = "cdefM:mP:ps:vw:";
 
 int main(int argc, char **argv)
 {
@@ -1067,8 +1153,10 @@ int main(int argc, char **argv)
 	char *module = NULL;
 	unsigned int i;
 	int count = 0, plane_count = 0;
+	unsigned int prop_count = 0;
 	struct connector_arg *con_args = NULL;
 	struct plane_arg *plane_args = NULL;
+	struct property_arg *prop_args = NULL;
 	unsigned int args = 0;
 	
 	opterr = 0;
@@ -1129,6 +1217,19 @@ int main(int argc, char **argv)
 		case 'v':
 			test_vsync = 1;
 			break;
+		case 'w':
+			prop_args = realloc(prop_args,
+					   (prop_count + 1) * sizeof *prop_args);
+			if (prop_args == NULL) {
+				fprintf(stderr, "memory allocation failed\n");
+				return 1;
+			}
+
+			if (parse_property(&prop_args[prop_count], optarg) < 0)
+				usage(argv[0]);
+
+			prop_count++;
+			break;
 		default:
 			usage(argv[0]);
 			break;
@@ -1178,6 +1279,9 @@ int main(int argc, char **argv)
 	dump_resource(crtcs);
 	dump_resource(planes);
 	dump_resource(framebuffers);
+
+	for (i = 0; i < prop_count; ++i)
+		set_property(&prop_args[i]);
 
 	if (count > 0) {
 		set_mode(con_args, count, plane_args, plane_count, test_vsync);
