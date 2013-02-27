@@ -16,13 +16,15 @@ Tile::Tile(TileManager* tile_manager,
            GLenum format,
            gfx::Rect content_rect,
            gfx::Rect opaque_rect,
-           float contents_scale)
+           float contents_scale,
+           int layer_id)
   : tile_manager_(tile_manager),
     tile_size_(tile_size),
     format_(format),
     content_rect_(content_rect),
     opaque_rect_(opaque_rect),
-    contents_scale_(contents_scale) {
+    contents_scale_(contents_scale),
+    layer_id_(layer_id) {
   set_picture_pile(picture_pile);
   tile_manager_->RegisterTile(this);
 }

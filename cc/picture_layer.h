@@ -6,6 +6,7 @@
 #define CC_PICTURE_LAYER_H_
 
 #include "cc/contents_scaling_layer.h"
+#include "cc/devtools_instrumentation.h"
 #include "cc/layer.h"
 #include "cc/picture_pile.h"
 #include "cc/occlusion_tracker.h"
@@ -42,6 +43,8 @@ class CC_EXPORT PictureLayer : public ContentsScalingLayer {
  private:
   ContentLayerClient* client_;
   scoped_refptr<PicturePile> pile_;
+  devtools_instrumentation::
+      ScopedLayerObjectTracker instrumentation_object_tracker_;
   // Invalidation to use the next time update is called.
   Region pending_invalidation_;
   // Invalidation from the last time update was called.
