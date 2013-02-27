@@ -40,6 +40,7 @@
 #include "config.h"
 
 #include <assert.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -645,6 +646,8 @@ struct connector_arg {
 
 struct plane_arg {
 	uint32_t con_id;  /* the id of connector to bind to */
+	bool has_position;
+	int32_t x, y;
 	uint32_t w, h;
 	unsigned int fb_id;
 	char format_str[5]; /* need to leave room for terminating \0 */
@@ -855,11 +858,16 @@ set_plane(struct kms_driver *kms, struct connector_arg *c, struct plane_arg *p)
 		return -1;
 	}
 
-	/* ok, boring.. but for now put in middle of screen: */
-	crtc_x = c->mode->hdisplay / 3;
-	crtc_y = c->mode->vdisplay / 3;
-	crtc_w = crtc_x;
-	crtc_h = crtc_y;
+	if (!p->has_position) {
+		/* Default to the middle of the screen */
+		crtc_x = (c->mode->hdisplay - p->w) / 2;
+		crtc_y = (c->mode->vdisplay - p->h) / 2;
+	} else {
+		crtc_x = p->x;
+		crtc_y = p->y;
+	}
+	crtc_w = p->w;
+	crtc_h = p->h;
 
 	/* note src coords (last 4 args) are in Q16 format */
 	if (drmModeSetPlane(fd, plane_id, c->crtc, p->fb_id,
@@ -1065,18 +1073,47 @@ static int parse_connector(struct connector_arg *c, const char *arg)
 	return 0;
 }
 
-static int parse_plane(struct plane_arg *p, const char *arg)
+static int parse_plane(struct plane_arg *plane, const char *p)
 {
-	strcpy(p->format_str, "XR24");
+	char *end;
 
-	if (sscanf(arg, "%d:%dx%d@%4s", &p->con_id, &p->w, &p->h, p->format_str) != 4 &&
-	    sscanf(arg, "%d:%dx%d", &p->con_id, &p->w, &p->h) != 3)
-		return -1;
+	memset(plane, 0, sizeof *plane);
 
-	p->fourcc = format_fourcc(p->format_str);
-	if (p->fourcc == 0) {
-		fprintf(stderr, "unknown format %s\n", p->format_str);
-		return -1;
+	plane->con_id = strtoul(p, &end, 10);
+	if (*end != ':')
+		return -EINVAL;
+
+	p = end + 1;
+	plane->w = strtoul(p, &end, 10);
+	if (*end != 'x')
+		return -EINVAL;
+
+	p = end + 1;
+	plane->h = strtoul(p, &end, 10);
+
+	if (*end == '+' || *end == '-') {
+		plane->x = strtol(end, &end, 10);
+		if (*end != '+' && *end != '-')
+			return -EINVAL;
+		plane->y = strtol(end, &end, 10);
+
+		plane->has_position = true;
+	}
+
+	if (*end == '@') {
+		p = end + 1;
+		if (strlen(p) != 4)
+			return -EINVAL;
+
+		strcpy(plane->format_str, p);
+	} else {
+		strcpy(plane->format_str, "XR24");
+	}
+
+	plane->fourcc = format_fourcc(plane->format_str);
+	if (plane->fourcc == 0) {
+		fprintf(stderr, "unknown format %s\n", plane->format_str);
+		return -EINVAL;
 	}
 
 	return 0;
@@ -1105,7 +1142,7 @@ static void usage(char *name)
 	fprintf(stderr, "\t-p\tlist CRTCs and planes (pipes)\n");
 
 	fprintf(stderr, "\n Test options:\n\n");
-	fprintf(stderr, "\t-P <connector_id>:<w>x<h>[@<format>]\tset a plane\n");
+	fprintf(stderr, "\t-P <connector_id>:<w>x<h>[+<x>+<y>][@<format>]\tset a plane\n");
 	fprintf(stderr, "\t-s <connector_id>[@<crtc_id>]:<mode>[@<format>]\tset a mode\n");
 	fprintf(stderr, "\t-v\ttest vsynced page flipping\n");
 	fprintf(stderr, "\t-w <obj_id>:<prop_name>:<value>\tset property\n");
