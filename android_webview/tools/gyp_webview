@@ -18,6 +18,6 @@ export PYTHONDONTWRITEBYTECODE=1
 ( . build/android/envsetup.sh --target-arch=x86 --host-os=linux && \
   android_gyp --suffix .linux-x86 )
 ( . build/android/envsetup.sh --target-arch=arm --host-os=mac && \
-  android_gyp --suffix .mac-arm )
+  android_gyp --suffix .darwin-arm )
 ( . build/android/envsetup.sh --target-arch=x86 --host-os=mac && \
-  android_gyp --suffix .mac-x86 )
+  android_gyp --suffix .darwin-x86 )
