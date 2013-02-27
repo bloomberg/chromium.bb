@@ -145,7 +145,15 @@ void ContentsContainer::SetPreview(views::WebView* preview,
   preview_height_units_ = units;
   draw_drop_shadow_ = draw_drop_shadow;
 
-  // Add or remove shadow view as needed.
+  // Add shadow view if there's preview and drop shadow is needed.
+  // Remove shadow view if there's no preview.
+  // If there's preview and drop shadow is not needed, that means the partial-
+  // height preview is going to be full-height.  Don't remove the shadow view
+  // yet because its layered view will disappear before the non-layered preview
+  // is repainted at the full height, leaving no separator between the preview
+  // and active contents.  When the preview is repainted at the full height, the
+  // shadow view, which remains at the original position below the partial-
+  // height preview, will automatically be obscured the full-height preview.
   if (preview_ && draw_drop_shadow_) {
 #if !defined(OS_WIN)
     if (!shadow_view_.get())  // Shadow view has not been created.
@@ -153,7 +161,7 @@ void ContentsContainer::SetPreview(views::WebView* preview,
     if (!shadow_view_->parent())  // Shadow view has not been added.
       AddChildView(shadow_view_.get());
 #endif  // !defined(OS_WIN)
-  } else {
+  } else if (!preview_) {
     RemoveShadowView(true);
   }
 
@@ -205,10 +213,7 @@ void ContentsContainer::Layout() {
   active_->SetBounds(0, content_y, width(), content_height);
 
   if (preview_) {
-    // On NTP, preview starts where content starts vertically, in case there's
-    // a detached bookmark bar.
-    int y = search_mode_.is_ntp() ? content_y : 0;
-    preview_->SetBounds(0, y, width(),
+    preview_->SetBounds(0, 0, width(),
                         PreviewHeightInPixels(height(), preview_height_,
                                               preview_height_units_));
     if (draw_drop_shadow_) {
