@@ -11,7 +11,6 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shell_delegate.h"
-#include "ash/wm/cursor_manager.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"

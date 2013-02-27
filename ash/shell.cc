@@ -40,6 +40,7 @@
 #include "ash/wm/app_list_controller.h"
 #include "ash/wm/ash_activation_controller.h"
 #include "ash/wm/ash_focus_rules.h"
+#include "ash/wm/ash_native_cursor_manager.h"
 #include "ash/wm/base_layout_manager.h"
 #include "ash/wm/capture_controller.h"
 #include "ash/wm/coordinate_conversion.h"
@@ -198,6 +199,9 @@ Shell::Shell(ShellDelegate* delegate)
 #if defined(OS_CHROMEOS)
       output_configurator_(new chromeos::OutputConfigurator()),
 #endif  // defined(OS_CHROMEOS)
+      native_cursor_manager_(new AshNativeCursorManager),
+      cursor_manager_(scoped_ptr<views::corewm::NativeCursorManager>(
+          native_cursor_manager_)),
       browser_context_(NULL),
       simulate_modal_window_open_for_testing_(false) {
   DCHECK(delegate_.get());

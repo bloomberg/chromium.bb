@@ -4,13 +4,17 @@
 
 #include "ash/test/cursor_manager_test_api.h"
 
-#include "ash/wm/cursor_manager.h"
+#include "ash/shell.h"
+#include "ash/test/shell_test_api.h"
+#include "ash/wm/ash_native_cursor_manager.h"
 #include "ash/wm/image_cursors.h"
+#include "ui/views/corewm/cursor_manager.h"
 
 namespace ash {
 namespace test {
 
-CursorManagerTestApi::CursorManagerTestApi(CursorManager* cursor_manager)
+CursorManagerTestApi::CursorManagerTestApi(
+    views::corewm::CursorManager* cursor_manager)
     : cursor_manager_(cursor_manager) {
 }
 
@@ -18,11 +22,13 @@ CursorManagerTestApi::~CursorManagerTestApi() {
 }
 
 gfx::NativeCursor CursorManagerTestApi::GetCurrentCursor() const {
-  return cursor_manager_->GetCurrentCursor();
+  return static_cast<views::corewm::NativeCursorManagerDelegate*>(
+      cursor_manager_)->GetCurrentCursor();
 }
 
 float CursorManagerTestApi::GetDeviceScaleFactor() const {
-  return cursor_manager_->image_cursors_->GetDeviceScaleFactor();
+  return ShellTestApi(Shell::GetInstance()).ash_native_cursor_manager()->
+      image_cursors_->GetDeviceScaleFactor();
 }
 
 }  // namespace test

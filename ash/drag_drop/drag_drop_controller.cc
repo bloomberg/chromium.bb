@@ -8,7 +8,6 @@
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/shell.h"
 #include "ash/wm/coordinate_conversion.h"
-#include "ash/wm/cursor_manager.h"
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"

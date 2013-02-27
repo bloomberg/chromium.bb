@@ -8,7 +8,6 @@
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_activation_delegate.h"
 #include "ash/wm/activation_controller.h"
-#include "ash/wm/cursor_manager.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/activation_delegate.h"
@@ -643,7 +642,7 @@ TEST_F(WindowManagerTest, AdditionalFilters) {
 // requested.
 TEST_F(WindowManagerTest, UpdateCursorVisibility) {
   aura::test::EventGenerator& generator = GetEventGenerator();
-  ash::CursorManager* cursor_manager =
+  views::corewm::CursorManager* cursor_manager =
       ash::Shell::GetInstance()->cursor_manager();
 
   generator.MoveMouseTo(gfx::Point(0, 0));
@@ -695,7 +694,7 @@ TEST_F(WindowManagerTest, UpdateCursorVisibility) {
 
 TEST_F(WindowManagerTest, UpdateCursorVisibilityOnKeyEvent) {
   aura::test::EventGenerator& generator = GetEventGenerator();
-  ash::CursorManager* cursor_manager =
+  views::corewm::CursorManager* cursor_manager =
       ash::Shell::GetInstance()->cursor_manager();
 
   // Pressing a key hides the cursor but does not disable mouse events.

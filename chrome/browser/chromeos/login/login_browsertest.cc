@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "ash/shell.h"
-#include "ash/wm/cursor_manager.h"
 #include "base/command_line.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"

@@ -1,36 +1,36 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_CURSOR_MANAGER_H_
-#define ASH_WM_CURSOR_MANAGER_H_
+#ifndef UI_VIEWS_COREWM_CURSOR_MANAGER_H_
+#define UI_VIEWS_COREWM_CURSOR_MANAGER_H_
 
-#include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
+#include "ui/views/corewm/native_cursor_manager_delegate.h"
+#include "ui/views/views_export.h"
 
-namespace ash {
+namespace views {
+namespace corewm {
 
 namespace internal {
 class CursorState;
 }
 
-namespace test {
-class CursorManagerTestApi;
-}
+class NativeCursorManager;
 
-class ImageCursors;
-
-// This class controls the visibility and the type of the cursor.
-// The cursor type can be locked so that the type stays the same
-// until it's unlocked.
-class ASH_EXPORT CursorManager : public aura::client::CursorClient {
+// This class receives requests to change cursor properties, as well as
+// requests to queue any further changes until a later time. It sends changes
+// to the NativeCursorManager, which communicates back to us when these changes
+// were made through the NativeCursorManagerDelegate interface.
+class VIEWS_EXPORT CursorManager : public aura::client::CursorClient,
+                                   public NativeCursorManagerDelegate {
  public:
-  CursorManager();
+  CursorManager(scoped_ptr<NativeCursorManager> delegate);
   virtual ~CursorManager();
 
   bool is_cursor_locked() const { return cursor_lock_count_ > 0; }
@@ -48,21 +48,19 @@ class ASH_EXPORT CursorManager : public aura::client::CursorClient {
   virtual void UnlockCursor() OVERRIDE;
 
  private:
-  friend class test::CursorManagerTestApi;
+  // Overridden from NativeCursorManagerDelegate:
+  virtual gfx::NativeCursor GetCurrentCursor() const OVERRIDE;
+  virtual bool GetCurrentVisibility() const OVERRIDE;
+  virtual bool GetMouseEventsEnabled() const OVERRIDE;
+  virtual void CommitCursor(gfx::NativeCursor cursor) OVERRIDE;
+  virtual void CommitVisibility(bool visible) OVERRIDE;
+  virtual void CommitMouseEventsEnabled(bool enabled) OVERRIDE;
 
-  void SetCursorInternal(gfx::NativeCursor cursor);
-  void SetCursorVisibility(bool visible);
-  void SetMouseEventsEnabled(bool enabled);
-
-  // Returns the current cursor.
-  gfx::NativeCursor GetCurrentCursor() const;
+  scoped_ptr<NativeCursorManager> delegate_;
 
   // Number of times LockCursor() has been invoked without a corresponding
   // UnlockCursor().
   int cursor_lock_count_;
-
-  // The cursor location where the cursor was disabled.
-  gfx::Point disabled_cursor_location_;
 
   // The current state of the cursor.
   scoped_ptr<internal::CursorState> current_state_;
@@ -70,11 +68,10 @@ class ASH_EXPORT CursorManager : public aura::client::CursorClient {
   // The cursor state to restore when the cursor is unlocked.
   scoped_ptr<internal::CursorState> state_on_unlock_;
 
-  scoped_ptr<ImageCursors> image_cursors_;
-
   DISALLOW_COPY_AND_ASSIGN(CursorManager);
 };
 
-}  // namespace ash
+}  // namespace corewm
+}  // namespace views
 
-#endif  // UI_AURA_CURSOR_MANAGER_H_
+#endif  // UI_VIEWS_COREWM_CURSOR_MANAGER_H_

@@ -8,7 +8,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/wm/cursor_manager.h"
 #include "ash/wm/panel_layout_manager.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_properties.h"

@@ -25,6 +25,10 @@ class DesktopDispatcherClient;
 class DesktopDragDropClientWin;
 class HWNDMessageHandler;
 
+namespace corewm {
+class CursorManager;
+}
+
 class VIEWS_EXPORT DesktopRootWindowHostWin
     : public DesktopRootWindowHost,
       public aura::RootWindowHost,
@@ -226,8 +230,8 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   // do, we're responsible for the lifetime.
   scoped_ptr<aura::client::ScreenPositionClient> position_client_;
 
-  // A simple cursor client which just forwards events to the RootWindow.
-  scoped_ptr<DesktopCursorClient> cursor_client_;
+  // Controls visibility of the cursor.
+  scoped_ptr<views::corewm::CursorManager> cursor_client_;
 
   scoped_ptr<DesktopDragDropClientWin> drag_drop_client_;
 

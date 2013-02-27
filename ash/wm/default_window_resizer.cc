@@ -5,7 +5,6 @@
 #include "ash/wm/default_window_resizer.h"
 
 #include "ash/shell.h"
-#include "ash/wm/cursor_manager.h"
 #include "ash/wm/property_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"

@@ -11,7 +11,6 @@
 #include "base/message_pump_aurax11.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
-#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/user_action_client.h"
@@ -24,13 +23,14 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/corewm/compound_event_filter.h"
 #include "ui/views/corewm/corewm_switches.h"
+#include "ui/views/corewm/cursor_manager.h"
 #include "ui/views/corewm/focus_controller.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/widget/desktop_aura/desktop_activation_client.h"
-#include "ui/views/widget/desktop_aura/desktop_cursor_client.h"
 #include "ui/views/widget/desktop_aura/desktop_dispatcher_client.h"
 #include "ui/views/widget/desktop_aura/desktop_focus_rules.h"
 #include "ui/views/widget/desktop_aura/desktop_layout_manager.h"
+#include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/desktop_aura/desktop_screen_position_client.h"
 #include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
@@ -236,7 +236,10 @@ aura::RootWindow* DesktopRootWindowHostLinux::InitRootWindow(
   aura::client::SetDispatcherClient(root_window_,
                                     dispatcher_client_.get());
 
-  cursor_client_.reset(new DesktopCursorClient(root_window_));
+  cursor_client_.reset(
+      new views::corewm::CursorManager(
+          scoped_ptr<corewm::NativeCursorManager>(
+              new views::DesktopNativeCursorManager(root_window_))));
   aura::client::SetCursorClient(root_window_,
                                 cursor_client_.get());
 
@@ -801,7 +804,8 @@ void DesktopRootWindowHostLinux::UnConfineCursor() {
 }
 
 void DesktopRootWindowHostLinux::OnCursorVisibilityChanged(bool show) {
-  NOTIMPLEMENTED();
+  // TODO(erg): Conditional on us enabling touch on desktop linux builds, do
+  // the same tap-to-click disabling here that chromeos does.
 }
 
 void DesktopRootWindowHostLinux::MoveCursorTo(const gfx::Point& location) {

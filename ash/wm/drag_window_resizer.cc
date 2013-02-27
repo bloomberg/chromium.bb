@@ -8,7 +8,6 @@
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/wm/coordinate_conversion.h"
-#include "ash/wm/cursor_manager.h"
 #include "ash/wm/drag_window_controller.h"
 #include "ash/wm/property_util.h"
 #include "ui/aura/client/aura_constants.h"

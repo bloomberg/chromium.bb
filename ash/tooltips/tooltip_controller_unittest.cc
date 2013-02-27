@@ -5,7 +5,6 @@
 #include "ash/display/display_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/cursor_manager.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/client/tooltip_client.h"
 #include "ui/aura/env.h"

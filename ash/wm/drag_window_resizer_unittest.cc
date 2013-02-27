@@ -10,7 +10,6 @@
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
-#include "ash/wm/cursor_manager.h"
 #include "ash/wm/drag_window_controller.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "base/stringprintf.h"

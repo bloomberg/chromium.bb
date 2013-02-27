@@ -8,23 +8,26 @@
 #include "base/basictypes.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace ash {
-
+namespace views {
+namespace corewm {
 class CursorManager;
+}
+}
 
+namespace ash {
 namespace test {
 
 // Use the api in this class to test CursorManager.
 class CursorManagerTestApi {
  public:
-  explicit CursorManagerTestApi(CursorManager* cursor_manager);
+  explicit CursorManagerTestApi(views::corewm::CursorManager* cursor_manager);
   ~CursorManagerTestApi();
 
   gfx::NativeCursor GetCurrentCursor() const;
   float GetDeviceScaleFactor() const;
 
  private:
-  CursorManager* cursor_manager_;
+  views::corewm::CursorManager* cursor_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(CursorManagerTestApi);
 };
