@@ -372,6 +372,11 @@ void WebKitTestController::TimeoutHandler() {
 
 void WebKitTestController::OnTestFinished(bool did_timeout) {
   watchdog_.Cancel();
+  if (did_timeout) {
+    printer_->AddErrorMessage(
+        "FAIL: Timed out waiting for notifyDone to be called");
+    return;
+  }
   if (!printer_->output_finished())
     printer_->PrintImageFooter();
   MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
