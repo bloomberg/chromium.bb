@@ -364,7 +364,7 @@ syncer::StringOrdinal ExtensionSorting::GetNaturalAppPageOrdinal() const {
 
   for (PageOrdinalMap::const_iterator it = ntp_ordinal_map_.begin();
        it != ntp_ordinal_map_.end(); ++it) {
-    if (it->second.size() < kNaturalAppPageSize)
+    if (CountItemsVisibleOnNtp(it->second) < kNaturalAppPageSize)
       return it->first;
   }
 
@@ -443,6 +443,10 @@ syncer::StringOrdinal ExtensionSorting::PageIntegerAsStringOrdinal(
 
   CreateOrdinalsIfNecessary(page_index + 1);
   return ntp_ordinal_map_.rbegin()->first;
+}
+
+void ExtensionSorting::MarkExtensionAsHidden(const std::string& extension_id) {
+  ntp_hidden_extensions_.insert(extension_id);
 }
 
 syncer::StringOrdinal ExtensionSorting::GetMinOrMaxAppLaunchOrdinalsOnPage(
@@ -610,3 +614,14 @@ syncer::StringOrdinal ExtensionSorting::ResolveCollision(
   return app_launch_ordinal.CreateBetween(app_it->first);
 }
 
+size_t ExtensionSorting::CountItemsVisibleOnNtp(
+    const AppLaunchOrdinalMap& m) const {
+  size_t result = 0;
+  for (AppLaunchOrdinalMap::const_iterator it = m.begin(); it != m.end();
+       ++it) {
+    const std::string& id = it->second;
+    if (ntp_hidden_extensions_.count(id) == 0)
+      result++;
+  }
+  return result;
+}

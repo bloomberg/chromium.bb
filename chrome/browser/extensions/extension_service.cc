@@ -2104,6 +2104,10 @@ void ExtensionService::AddExtension(const Extension* extension) {
     // All apps that are displayed in the launcher are ordered by their ordinals
     // so we must ensure they have valid ordinals.
     if (extension->RequiresSortOrdinal()) {
+      if (!extension->ShouldDisplayInNewTabPage()) {
+        extension_prefs_->extension_sorting()->MarkExtensionAsHidden(
+            extension->id());
+      }
       extension_prefs_->extension_sorting()->EnsureValidOrdinals(
           extension->id(), syncer::StringOrdinal());
     }

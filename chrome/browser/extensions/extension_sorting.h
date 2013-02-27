@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_SORTING_H_
 
 #include <map>
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -101,7 +102,21 @@ class ExtensionSorting {
   // O(# of apps) worst-case.
   syncer::StringOrdinal PageIntegerAsStringOrdinal(size_t page_index);
 
+  // Hidden extensions don't appear in the new tab page.
+  void MarkExtensionAsHidden(const std::string& extension_id);
+
  private:
+  // The StringOrdinal is the app launch ordinal and the string is the extension
+  // id.
+  typedef std::multimap<
+      syncer::StringOrdinal, std::string,
+    syncer::StringOrdinal::LessThanFn> AppLaunchOrdinalMap;
+  // The StringOrdinal is the page ordinal and the AppLaunchOrdinalMap is the
+  // contents of that page.
+  typedef std::map<
+      syncer::StringOrdinal, AppLaunchOrdinalMap,
+    syncer::StringOrdinal::LessThanFn> PageOrdinalMap;
+
   // Unit tests.
   friend class ExtensionSortingDefaultOrdinalsBase;
   friend class ExtensionSortingGetMinOrMaxAppLaunchOrdinalsOnPage;
@@ -179,6 +194,9 @@ class ExtensionSorting {
       const syncer::StringOrdinal& page_ordinal,
       const syncer::StringOrdinal& app_launch_ordinal) const;
 
+  // Returns the number of items in |m| visible on the new tab page.
+  size_t CountItemsVisibleOnNtp(const AppLaunchOrdinalMap& m) const;
+
   ExtensionScopedPrefs* extension_scoped_prefs_;  // Weak, owns this instance.
   PrefService* pref_service_;  // Weak.
   ExtensionServiceInterface* extension_service_;  // Weak.
@@ -190,20 +208,13 @@ class ExtensionSorting {
   // ordinals). The possiblity of collisions means that a multimap must be used
   // (although the collisions must all be resolved once all the syncing is
   // done).
-  // The StringOrdinal is the app launch ordinal and the string is the extension
-  // id.
-  typedef std::multimap<
-      syncer::StringOrdinal, std::string,
-    syncer::StringOrdinal::LessThanFn> AppLaunchOrdinalMap;
-  // The StringOrdinal is the page ordinal and the AppLaunchOrdinalMap is the
-  // contents of that page.
-  typedef std::map<
-      syncer::StringOrdinal, AppLaunchOrdinalMap,
-    syncer::StringOrdinal::LessThanFn> PageOrdinalMap;
   PageOrdinalMap ntp_ordinal_map_;
 
   // Defines the default ordinals.
   AppOrdinalsMap default_ordinals_;
+
+  // The set of extensions that don't appear in the new tab page.
+  std::set<std::string> ntp_hidden_extensions_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSorting);
 };
