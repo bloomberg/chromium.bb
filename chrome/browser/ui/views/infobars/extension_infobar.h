@@ -12,6 +12,7 @@
 
 class Browser;
 namespace views {
+class ImageView;
 class MenuButton;
 }
 
@@ -51,8 +52,22 @@ class ExtensionInfoBar : public InfoBarView,
 
   Browser* browser_;
 
+  // The infobar icon used for the extension infobar. The icon can be either a
+  // plain image (in which case |icon_as_image_| is set) or a dropdown menu (in
+  // which case |icon_as_menu_| is set).
+  // The icon is a dropdown menu if the extension showing the infobar shows
+  // configure context menus.
+  views::View* infobar_icon_;
+
   // The dropdown menu for accessing the contextual extension actions.
-  views::MenuButton* menu_;
+  // It is non-NULL if the |infobar_icon_| is a menu button and in that case
+  // |icon_as_menu_ == infobar_icon_|.
+  views::MenuButton* icon_as_menu_;
+
+  // The image view for the icon.
+  // It is non-NULL if |infobar_icon_| is an image and in that case
+  // |icon_as_image_ == infobar_icon_|.
+  views::ImageView* icon_as_image_;
 
   base::WeakPtrFactory<ExtensionInfoBar> weak_ptr_factory_;
 

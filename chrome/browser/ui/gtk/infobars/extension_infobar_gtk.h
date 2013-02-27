@@ -67,10 +67,14 @@ class ExtensionInfoBarGtk : public InfoBarGtk,
 
   ExtensionViewGtk* view_;
 
-  // The button that activates the extension popup menu. Parent of |icon_|.
+  // The button that activates the extension popup menu. Non-NULL if the
+  // extension shows configure context menus and a dropdown menu should be used
+  // in place of the icon. If set, parents |icon_|.
   GtkWidget* button_;
 
-  // The GtkImage that is inside of |button_|, composed in OnImageLoaded().
+  // The GtkImage that shows the extension icon. If a dropdown menu should be
+  // used, it's put inside |button_|, otherwise it's put directly in the hbox
+  // containing the infobar element. Composed in OnImageLoaded().
   GtkWidget* icon_;
 
   // An alignment with one pixel of bottom padding. This is set so the |view_|
