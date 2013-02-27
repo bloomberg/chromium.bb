@@ -142,7 +142,7 @@ class Copier(object):
       if os.path.isdir(dest):
         dest = os.path.join(dest, os.path.basename(src))
       shutil.copytree(src, dest)
-    elif exe:
+    elif exe and os.path.getsize(src) > 0:
       if self.strip_bin:
         cros_build_lib.RunCommand([self.strip_bin, '--strip-unneeded',
                                    '-o', dest, src])
