@@ -488,7 +488,7 @@ bool DriveURLRequestJob::ReadRawData(net::IOBuffer* dest,
   // Keep track of the buffer.
   DCHECK(!read_buf_);
   read_buf_ = dest;
-  read_buf_remaining_.set(dest, dest_size);
+  read_buf_remaining_.set(dest->data(), dest_size);
 
   bool rc = false;
   if (streaming_download_)
@@ -784,7 +784,7 @@ void DriveURLRequestJob::OnReadFileStream(int bytes_read) {
            << ", file_remaining=" << remaining_bytes_;
 
   // If the read buffer is completely filled, we're done.
-  if (read_buf_remaining_.size() > 0) {
+  if (read_buf_remaining_.empty()) {
     int bytes_read = BytesReadCompleted();
     DVLOG(1) << "Completed read: bytes_read=" << bytes_read
              << ", file_remaining=" << remaining_bytes_;
