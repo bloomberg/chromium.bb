@@ -106,6 +106,11 @@ class Operand(object):
     if self.arg_type == def_format.OperandType.SEGMENT_REGISTER_IN_REG:
       return 'segreg'
 
+    if self.arg_type == def_format.OperandType.CONTROL_REGISTER:
+      return 'creg'
+    if self.arg_type == def_format.OperandType.DEBUG_REGISTER:
+      return 'dreg'
+
     if self.arg_type in [def_format.OperandType.MMX_REGISTER_IN_REG,
                          def_format.OperandType.MMX_REGISTER_IN_RM]:
       return 'mmx'
@@ -606,6 +611,13 @@ class InstructionPrinter(object):
         self._out.write('@not_repnz_prefix\n')
       if '0xf3' in instruction.required_prefixes:
         self._out.write('@not_repz_prefix\n')
+
+      if '0xf0' in instruction.required_prefixes:
+        operand = instruction.FindOperand(
+            def_format.OperandType.CONTROL_REGISTER)
+        if operand is not None:
+          assert self._NeedOperandInfo(operand)
+          self._out.write('@not_lock_prefix%d\n' % operand.index)
 
     # TODO(shcherbina): 'memory' format?
     for operand in instruction.operands:

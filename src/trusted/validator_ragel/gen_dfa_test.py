@@ -491,6 +491,32 @@ class TestInstructionPrinter(unittest.TestCase):
         @set_spurious_rex_r
         """.split())
 
+  def test_cr_and_lock(self):
+    printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 32)
+    instr = gen_dfa.Instruction.Parse(
+        'mov Rr Cr, 0xf0 0x0f 0x22, CPUFeature_ALTMOVCR8 nacl-forbidden')
+    instr.rex.w_matters = False
+    instr.CollectPrefixes()
+
+    printer.PrintInstructionWithModRMReg(instr)
+
+    self.assertEquals(
+        printer.GetContent().split(),
+        """
+        (0xf0)
+        0x0f
+        0x22
+        modrm_registers
+        @operand0_from_modrm_rm
+        @operand1_from_modrm_reg
+        @instruction_mov
+        @operands_count_is_2
+        @not_lock_prefix1
+        @operand0_regsize
+        @operand1_creg
+        @CPUFeature_ALTMOVCR8
+        """.split())
+
 
 class TestSplit(unittest.TestCase):
 
