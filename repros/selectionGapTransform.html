@@ -1,7 +1,7 @@
 <div style="-webkit-transform: translate(0px, 150px);">
 	<div id="editable" contenteditable="true">
 		<div>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</div>
-		<div id="selAchor">Sed tempus tincidunt euismod.</div>
+		<div id="selAnchor">Sed tempus tincidunt euismod.</div>
 		<div>Nullam nulla massa, mollis ac ultricies ac, adipiscing nec eros.</div>
 		<div id="selExtent4">Vestibulum porta ligula a risus blandit mattis.</div>
 		<div>Aliquam erat volutpat.</div>
@@ -22,7 +22,7 @@ var editable=document.getElementById("editable");
 editable.focus();
 
 var sel = window.getSelection();
-sel.collapse(document.getElementById("selAchor").firstChild, 4);
+sel.collapse(document.getElementById("selAnchor").firstChild, 4);
 sel.extend(document.getElementById("selExtent1").firstChild, 5);
 
 setTimeout(function() {
@@ -31,6 +31,9 @@ setTimeout(function() {
         sel.extend(document.getElementById("selExtent3").firstChild, 5);
         setTimeout(function() {
             sel.extend(document.getElementById("selExtent4").firstChild, 10);
+            setTimeout(function() {
+                sel.extend(document.getElementById("selAnchor").firstChild, 10);
+            }, 100);
         }, 100);
     }, 100);
 }, 100);
