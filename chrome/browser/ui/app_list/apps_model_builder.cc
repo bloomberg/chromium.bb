@@ -17,6 +17,8 @@
 #include "chrome/browser/ui/app_list/extension_app_item.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -34,6 +36,16 @@ bool AppPrecedes(const ExtensionAppItem* app1, const ExtensionAppItem* app2) {
     return app1->GetAppLaunchOrdinal().LessThan(app2->GetAppLaunchOrdinal());
 
   return false;
+}
+
+bool ShouldDisplayInAppLauncher(Profile* profile,
+                                scoped_refptr<const Extension> app) {
+  // If it's the web store, check the policy.
+  bool blocked_by_policy =
+      (app->id() == extension_misc::kWebStoreAppId ||
+       app->id() == extension_misc::kEnterpriseWebStoreAppId) &&
+      profile->GetPrefs()->GetBoolean(prefs::kHideWebStoreIcon);
+  return app->ShouldDisplayInAppLauncher() && !blocked_by_policy;
 }
 
 }  // namespace
@@ -117,7 +129,7 @@ void AppsModelBuilder::OnInstallFailure(const std::string& extension_id) {
 void AppsModelBuilder::AddApps(const ExtensionSet* extensions, Apps* apps) {
   for (ExtensionSet::const_iterator app = extensions->begin();
        app != extensions->end(); ++app) {
-    if ((*app)->ShouldDisplayInAppLauncher())
+    if (ShouldDisplayInAppLauncher(profile_, *app))
       apps->push_back(new ExtensionAppItem(profile_,
                                            (*app)->id(),
                                            controller_,
