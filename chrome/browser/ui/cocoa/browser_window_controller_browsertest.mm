@@ -271,7 +271,9 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ZOrderNormal) {
 
 // Verify that in non-instant presentation mode that the info bar is below the
 // content are and everything else is above it.
-IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ZOrderPresentationMode) {
+// DISABLED due to flaky failures on trybots. http://crbug.com/178778
+IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
+                       DISABLED_ZOrderPresentationMode) {
   chrome::ToggleFullscreenMode(browser());
   browser()->GetFindBarController();  // add find bar
 
