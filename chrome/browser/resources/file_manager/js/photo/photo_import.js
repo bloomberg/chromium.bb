@@ -112,6 +112,11 @@ PhotoImport.prototype.initDom_ = function() {
 
   this.importingDialog_ = new ImportingDialog(this.dom_, this.copyManager_,
       this.metadataCache_);
+
+  var dialogs = cr.ui.dialogs;
+  dialogs.BaseDialog.OK_LABEL = str('OK_LABEL');
+  dialogs.BaseDialog.CANCEL_LABEL = str('CANCEL_LABEL');
+  this.alert_ = new dialogs.AlertDialog(this.dom_);
 };
 
 /**
@@ -149,7 +154,7 @@ PhotoImport.prototype.initMyPhotos_ = function() {
  */
 PhotoImport.prototype.createDestination_ = function(onSuccess) {
   var onError = this.onError_.bind(
-      this, loadTimeData.getString('PHOTO_IMPORT_DRIVE_ERROR'));
+      this, loadTimeData.getString('PHOTO_IMPORT_DESTINATION_ERROR'));
 
   var dateFormatter = v8Intl.DateTimeFormat(
       [] /* default locale */,
@@ -365,8 +370,10 @@ PhotoImport.prototype.onSelectAllNone_ = function() {
  * @private
  */
 PhotoImport.prototype.onError_ = function(message) {
-  // TODO(mtomasz): Implement error handling. crbug.com/177164.
-  console.error(message);
+  this.alert_.show(message,
+                   function() {
+                     window.close();
+                   });
 };
 
 /**

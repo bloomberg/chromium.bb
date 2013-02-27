@@ -13148,7 +13148,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Cancel
       </message>
       <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_DRIVE_ERROR" desc="In the Photo import, error message when drive is unaccessible.">
-        Error accessing "My Photos".
+        Google Drive cannot be reached. Please try again.
+      </message>
+      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_DESTINATION_ERROR" desc="In the Photo import, error when it is impossible to create a destination directory.">
+        Unable to create the destination directory.
       </message>
       <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_SOURCE_ERROR" desc="In the Photo import, error message inidcating that photos cannot be read.">
         Cannot read the photos.
