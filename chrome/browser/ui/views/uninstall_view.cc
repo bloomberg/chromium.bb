@@ -129,11 +129,10 @@ bool UninstallView::Cancel() {
 }
 
 string16 UninstallView::GetDialogButtonLabel(ui::DialogButton button) const {
-  // We only want to give custom name to OK button - 'Uninstall'. Cancel
-  // button remains same.
+  // Label the OK button 'Uninstall'; Cancel remains the same.
   if (button == ui::DIALOG_BUTTON_OK)
     return l10n_util::GetStringUTF16(IDS_UNINSTALL_BUTTON_TEXT);
-  return string16();
+  return views::DialogDelegateView::GetDialogButtonLabel(button);
 }
 
 void UninstallView::ButtonPressed(views::Button* sender,
