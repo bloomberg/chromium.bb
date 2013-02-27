@@ -26,26 +26,4 @@ void GenerateTestAutofillPopup(
       query_id, autofill_item, autofill_item, autofill_item, autofill_id);
 }
 
-TestAutofillExternalDelegate::TestAutofillExternalDelegate(
-    content::WebContents* web_contents,
-    AutofillManager* autofill_manager)
-    : AutofillExternalDelegate(web_contents, autofill_manager) {
-  // Initialize Controller.
-  const gfx::RectF element_bounds;
-  AutofillExternalDelegate::EnsurePopupForElement(element_bounds);
-}
-
-TestAutofillExternalDelegate::~TestAutofillExternalDelegate() {}
-
-void TestAutofillExternalDelegate::ApplyAutofillSuggestions(
-    const std::vector<string16>& autofill_values,
-    const std::vector<string16>& autofill_labels,
-    const std::vector<string16>& autofill_icons,
-    const std::vector<int>& autofill_unique_ids) {}
-
-void TestAutofillExternalDelegate::HideAutofillPopup() {}
-
-void TestAutofillExternalDelegate::EnsurePopupForElement(
-    const gfx::RectF& element_bounds) {}
-
 }  // namespace autofill

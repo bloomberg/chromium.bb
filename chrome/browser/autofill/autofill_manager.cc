@@ -323,7 +323,7 @@ void AutofillManager::SetExternalDelegate(AutofillExternalDelegate* delegate) {
   autocomplete_history_manager_.SetExternalDelegate(delegate);
 }
 
-bool AutofillManager::HasExternalDelegate() {
+bool AutofillManager::IsNativeUiEnabled() {
   return external_delegate_ != NULL;
 }
 
@@ -729,8 +729,8 @@ void AutofillManager::OnDidShowAutofillSuggestions(bool is_new_popup) {
 }
 
 void AutofillManager::OnHideAutofillPopup() {
-  if (external_delegate_)
-    external_delegate_->HideAutofillPopup();
+  if (IsNativeUiEnabled())
+    manager_delegate_->HideAutofillPopup();
 }
 
 void AutofillManager::OnShowPasswordGenerationPopup(

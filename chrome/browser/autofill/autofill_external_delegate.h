@@ -21,7 +21,6 @@
 #include "ui/gfx/rect.h"
 
 class AutofillManager;
-class AutofillPopupControllerImpl;
 
 namespace gfx {
 class Rect;
@@ -102,30 +101,13 @@ class AutofillExternalDelegate
       const FormFieldData& form,
       const PasswordFormFillData& fill_data);
 
-  virtual void HideAutofillPopup();
-
  protected:
   friend class content::WebContentsUserData<AutofillExternalDelegate>;
   AutofillExternalDelegate(content::WebContents* web_contents,
                            AutofillManager* autofill_manager);
   virtual ~AutofillExternalDelegate();
 
-  // Displays the Autofill results to the user with an external Autofill popup
-  // that lives completely in the browser.  The suggestions have been correctly
-  // formatted by this point.
-  virtual void ApplyAutofillSuggestions(
-      const std::vector<string16>& autofill_values,
-      const std::vector<string16>& autofill_labels,
-      const std::vector<string16>& autofill_icons,
-      const std::vector<int>& autofill_unique_ids);
-
-  // Create the popup if it doesn't already exist. |element_bounds| is the
-  // bounding rect for the element it is popping up for.
-  virtual void EnsurePopupForElement(const gfx::RectF& element_bounds);
-
   content::WebContents* web_contents() { return web_contents_; }
-
-  AutofillPopupControllerImpl* controller() { return controller_; }
 
  private:
   // Fills the form with the Autofill data corresponding to |unique_id|.
@@ -163,7 +145,6 @@ class AutofillExternalDelegate
   // The web_contents associated with this delegate.
   content::WebContents* web_contents_;  // weak; owns me.
   AutofillManager* autofill_manager_;  // weak.
-  base::WeakPtr<AutofillPopupControllerImpl> controller_;
 
   // Password Autofill manager, handles all password-related Autofilling.
   PasswordAutofillManager password_autofill_manager_;
@@ -178,6 +159,9 @@ class AutofillExternalDelegate
   // The current form and field selected by Autofill.
   FormData autofill_query_form_;
   FormFieldData autofill_query_field_;
+
+  // The bounds of the form field that user is interacting with.
+  gfx::RectF element_bounds_;
 
   // Should we display a warning if Autofill is disabled?
   bool display_warning_if_disabled_;

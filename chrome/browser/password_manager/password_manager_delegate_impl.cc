@@ -166,7 +166,8 @@ void PasswordManagerDelegateImpl::FillPasswordForm(
     const PasswordFormFillData& form_data) {
   AutofillManager* autofill_manager =
       AutofillManager::FromWebContents(web_contents_);
-  bool disable_popup = autofill_manager->HasExternalDelegate();
+  // Browser process will own popup UI, so renderer should not show the popup.
+  bool disable_popup = autofill_manager->IsNativeUiEnabled();
 
   web_contents_->GetRenderViewHost()->Send(
       new AutofillMsg_FillPasswordForm(

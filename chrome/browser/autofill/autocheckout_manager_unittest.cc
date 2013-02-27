@@ -7,8 +7,8 @@
 #include "chrome/browser/autofill/autocheckout_manager.h"
 #include "chrome/browser/autofill/autofill_common_test.h"
 #include "chrome/browser/autofill/autofill_manager.h"
-#include "chrome/browser/autofill/autofill_manager_delegate.h"
 #include "chrome/browser/autofill/form_structure.h"
+#include "chrome/browser/autofill/test_autofill_manager_delegate.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/form_data.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -198,50 +198,19 @@ scoped_ptr<FormStructure> FakeUserSubmittedFormStructure() {
   return form_structure.Pass();
 }
 
-class TestAutofillManagerDelegate : public AutofillManagerDelegate {
+class MockAutofillManagerDelegate : public TestAutofillManagerDelegate {
  public:
-  TestAutofillManagerDelegate()
+  MockAutofillManagerDelegate()
       : request_autocomplete_dialog_open_(false),
-        autocheckout_bubble_shown_(false) {
-  }
+        autocheckout_bubble_shown_(false) {}
 
-  virtual ~TestAutofillManagerDelegate() {
-  }
-
-  virtual InfoBarService* GetInfoBarService() OVERRIDE {
-    return NULL;
-  }
-
-  virtual PersonalDataManager* GetPersonalDataManager() OVERRIDE {
-    return NULL;
-  }
-
-  virtual PrefService* GetPrefs() OVERRIDE {
-    return NULL;
-  }
-
-  virtual ProfileSyncServiceBase* GetProfileSyncService() OVERRIDE {
-    return NULL;
-  }
+  virtual ~MockAutofillManagerDelegate() {}
 
   virtual void HideRequestAutocompleteDialog() OVERRIDE {
     request_autocomplete_dialog_open_ = false;
   }
 
-  virtual bool IsSavingPasswordsEnabled() const OVERRIDE {
-    return false;
-  }
-
   MOCK_METHOD0(OnAutocheckoutError, void());
-
-  virtual void ShowAutofillSettings() OVERRIDE {
-  }
-
-  virtual void ShowPasswordGenerationBubble(
-      const gfx::Rect& bounds,
-      const content::PasswordForm& form,
-      PasswordGenerator* generator) OVERRIDE {
-  }
 
   virtual void ShowAutocheckoutBubble(
       const gfx::RectF& bounds,
@@ -260,9 +229,6 @@ class TestAutofillManagerDelegate : public AutofillManagerDelegate {
       const base::Callback<void(const FormStructure*)>& callback) OVERRIDE {
     request_autocomplete_dialog_open_ = true;
     callback.Run(user_supplied_data_.get());
-  }
-
-  virtual void RequestAutocompleteDialogClosed() OVERRIDE {
   }
 
   MOCK_METHOD1(UpdateProgressBar, void(double value));
@@ -374,12 +340,12 @@ class AutocheckoutManagerTest : public ChromeRenderViewHostTestHarness {
   content::TestBrowserThread ui_thread_;
   scoped_ptr<TestAutofillManager> autofill_manager_;
   scoped_ptr<TestAutocheckoutManager> autocheckout_manager_;
-  scoped_ptr<TestAutofillManagerDelegate> autofill_manager_delegate_;
+  scoped_ptr<MockAutofillManagerDelegate> autofill_manager_delegate_;
 
  private:
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
-    autofill_manager_delegate_.reset(new TestAutofillManagerDelegate());
+    autofill_manager_delegate_.reset(new MockAutofillManagerDelegate());
     autofill_manager_.reset(new TestAutofillManager(
         web_contents(),
         autofill_manager_delegate_.get()));

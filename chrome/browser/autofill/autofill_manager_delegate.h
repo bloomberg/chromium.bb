@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_AUTOFILL_AUTOFILL_MANAGER_DELEGATE_H_
 #define CHROME_BROWSER_AUTOFILL_AUTOFILL_MANAGER_DELEGATE_H_
 
+#include <vector>
+
 #include "base/callback_forward.h"
+#include "base/string16.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace autofill {
@@ -23,6 +26,7 @@ class RectF;
 }
 
 class AutofillMetrics;
+class AutofillPopupDelegate;
 class FormStructure;
 class GURL;
 class InfoBarService;
@@ -104,8 +108,22 @@ class AutofillManagerDelegate {
       DialogType dialog_type,
       const base::Callback<void(const FormStructure*)>& callback) = 0;
 
-  // Called when the dialog for request autocomplete closes.
+  // Called when the dialog for request autocomplete closes. (So UI code will
+  // free memory, etc.)
   virtual void RequestAutocompleteDialogClosed() = 0;
+
+  // Shows an Autofill popup with the given |values|, |labels|, |icons|, and
+  // |identifiers| for the element at |element_bounds|. |delegate| will be
+  // notified of popup events.
+  virtual void ShowAutofillPopup(const gfx::RectF& element_bounds,
+                                 const std::vector<string16>& values,
+                                 const std::vector<string16>& labels,
+                                 const std::vector<string16>& icons,
+                                 const std::vector<int>& identifiers,
+                                 AutofillPopupDelegate* delegate) = 0;
+
+  // Hide the Autofill popup if one is currently showing.
+  virtual void HideAutofillPopup() = 0;
 
   // Updates the Autocheckout progress bar. |value| must be in [0.0, 1.0].
   virtual void UpdateProgressBar(double value) = 0;

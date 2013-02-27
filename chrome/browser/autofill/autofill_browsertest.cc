@@ -203,15 +203,6 @@ class AutofillTest : public InProcessBrowserTest {
     autofill_manager->SetExternalDelegate(external_delegate_.get());
   }
 
-  virtual void CleanUpOnMainThread() OVERRIDE {
-    // Tear down the test external delegate while the UI is still up, as it
-    // might try to close the active popup if there still is one.
-    content::WebContents* web_contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
-    AutofillManager::FromWebContents(web_contents)->SetExternalDelegate(NULL);
-    external_delegate_.reset();
-  }
-
   PersonalDataManager* personal_data_manager() {
     return PersonalDataManagerFactory::GetForProfile(browser()->profile());
   }

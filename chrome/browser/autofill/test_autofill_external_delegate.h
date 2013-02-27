@@ -16,29 +16,6 @@ namespace autofill {
 void GenerateTestAutofillPopup(
     AutofillExternalDelegate* autofill_external_delegate);
 
-// This test class is meant to give tests a base AutofillExternalDelegate
-// class that requires no additional work to compile with (i.e. all the
-// pure virtual functions have been giving empty methods).
-class TestAutofillExternalDelegate : public AutofillExternalDelegate {
- public:
-  TestAutofillExternalDelegate(content::WebContents* web_contents,
-                               AutofillManager* autofill_manager);
-  virtual ~TestAutofillExternalDelegate();
-
-  virtual void ApplyAutofillSuggestions(
-      const std::vector<string16>& autofill_values,
-      const std::vector<string16>& autofill_labels,
-      const std::vector<string16>& autofill_icons,
-      const std::vector<int>& autofill_unique_ids) OVERRIDE;
-
-  virtual void HideAutofillPopup() OVERRIDE;
-
-  virtual void EnsurePopupForElement(const gfx::RectF& element_bounds) OVERRIDE;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestAutofillExternalDelegate);
-};
-
 }  // namespace autofill
 
 #endif  // CHROME_BROWSER_AUTOFILL_TEST_AUTOFILL_EXTERNAL_DELEGATE_H_

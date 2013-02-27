@@ -1,36 +1,21 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_AUTOFILL_TAB_AUTOFILL_MANAGER_DELEGATE_H_
-#define CHROME_BROWSER_UI_AUTOFILL_TAB_AUTOFILL_MANAGER_DELEGATE_H_
+#ifndef CHROME_BROWSER_AUTOFILL_TEST_AUTOFILL_MANAGER_DELEGATE_H_
+#define CHROME_BROWSER_AUTOFILL_TEST_AUTOFILL_MANAGER_DELEGATE_H_
 
 #include "base/compiler_specific.h"
-#include "base/memory/weak_ptr.h"
 #include "chrome/browser/autofill/autofill_manager_delegate.h"
-#include "chrome/browser/ui/autofill/autofill_dialog_types.h"
-#include "content/public/browser/web_contents_observer.h"
-#include "content/public/browser/web_contents_user_data.h"
-
-class AutofillPopupControllerImpl;
-
-namespace content {
-struct FrameNavigateParams;
-struct LoadCommittedDetails;
-class WebContents;
-}
 
 namespace autofill {
 
-class AutofillDialogControllerImpl;
-
-// Chrome implementation of AutofillManagerDelegate.
-class TabAutofillManagerDelegate
-    : public AutofillManagerDelegate,
-      public content::WebContentsUserData<TabAutofillManagerDelegate>,
-      public content::WebContentsObserver {
+// This class is only for easier writing of testings. All pure virtual functions
+// have been giving empty methods.
+class TestAutofillManagerDelegate : public AutofillManagerDelegate {
  public:
-  virtual ~TabAutofillManagerDelegate();
+  TestAutofillManagerDelegate();
+  virtual ~TestAutofillManagerDelegate();
 
   // AutofillManagerDelegate implementation.
   virtual InfoBarService* GetInfoBarService() OVERRIDE;
@@ -44,9 +29,9 @@ class TabAutofillManagerDelegate
   virtual void ShowPasswordGenerationBubble(
       const gfx::Rect& bounds,
       const content::PasswordForm& form,
-      PasswordGenerator* generator) OVERRIDE;
+      autofill::PasswordGenerator* generator) OVERRIDE;
   virtual void ShowAutocheckoutBubble(
-      const gfx::RectF& bounds,
+      const gfx::RectF& bounding_box,
       const gfx::NativeView& native_view,
       const base::Closure& callback) OVERRIDE;
   virtual void ShowRequestAutocompleteDialog(
@@ -66,22 +51,10 @@ class TabAutofillManagerDelegate
   virtual void HideAutofillPopup() OVERRIDE;
   virtual void UpdateProgressBar(double value) OVERRIDE;
 
-  // content::WebContentsObserver implementation.
-  virtual void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
-
  private:
-  explicit TabAutofillManagerDelegate(content::WebContents* web_contents);
-  friend class content::WebContentsUserData<TabAutofillManagerDelegate>;
-
-  content::WebContents* const web_contents_;
-  AutofillDialogControllerImpl* dialog_controller_;  // weak.
-  base::WeakPtr<AutofillPopupControllerImpl> popup_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabAutofillManagerDelegate);
+  DISALLOW_COPY_AND_ASSIGN(TestAutofillManagerDelegate);
 };
 
 }  // namespace autofill
 
-#endif  // CHROME_BROWSER_UI_AUTOFILL_TAB_AUTOFILL_MANAGER_DELEGATE_H_
+#endif  // CHROME_BROWSER_AUTOFILL_TEST_AUTOFILL_MANAGER_DELEGATE_H_

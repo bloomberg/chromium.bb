@@ -89,8 +89,8 @@ class AutofillManager : public content::WebContentsObserver,
   // Set an external delegate.
   void SetExternalDelegate(AutofillExternalDelegate* delegate);
 
-  // Used to say if this class has an external delegate that it is using.
-  bool HasExternalDelegate();
+  // Whether browser process will create and own the Autofill popup UI.
+  bool IsNativeUiEnabled();
 
   // Called from our external delegate so they cannot be private.
   virtual void OnFillAutofillFormData(int query_id,

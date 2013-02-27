@@ -9,9 +9,9 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autocomplete_history_manager.h"
+#include "chrome/browser/autofill/autofill_external_delegate.h"
 #include "chrome/browser/autofill/autofill_manager.h"
-#include "chrome/browser/autofill/autofill_manager_delegate.h"
-#include "chrome/browser/autofill/test_autofill_external_delegate.h"
+#include "chrome/browser/autofill/test_autofill_manager_delegate.h"
 #include "chrome/browser/webdata/autofill_web_data_service_impl.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
@@ -55,39 +55,12 @@ class MockWebDataService : public WebDataService {
 
 MockWebDataService* MockWebDataService::current_mock_web_data_service_ = NULL;
 
-class MockAutofillManagerDelegate : public autofill::AutofillManagerDelegate {
+class MockAutofillManagerDelegate
+    : public autofill::TestAutofillManagerDelegate {
  public:
   MockAutofillManagerDelegate() {}
   virtual ~MockAutofillManagerDelegate() {}
-
-  // AutofillManagerDelegate:
-  virtual PersonalDataManager* GetPersonalDataManager() OVERRIDE {
-    return NULL;
-  }
-  virtual InfoBarService* GetInfoBarService() { return NULL; }
   virtual PrefService* GetPrefs() { return &prefs_; }
-  virtual ProfileSyncServiceBase* GetProfileSyncService() { return NULL; }
-  virtual void HideRequestAutocompleteDialog() OVERRIDE {}
-  virtual bool IsSavingPasswordsEnabled() const { return false; }
-  virtual void OnAutocheckoutError() OVERRIDE {}
-  virtual void ShowAutofillSettings() {}
-  virtual void ShowPasswordGenerationBubble(
-      const gfx::Rect& bounds,
-      const content::PasswordForm& form,
-      autofill::PasswordGenerator* generator) {}
-  virtual void ShowAutocheckoutBubble(
-      const gfx::RectF& bounding_box,
-      const gfx::NativeView& native_view,
-      const base::Closure& callback) {}
-  virtual void ShowRequestAutocompleteDialog(
-      const FormData& form,
-      const GURL& source_url,
-      const content::SSLStatus& ssl_status,
-      const AutofillMetrics& metric_logger,
-      autofill::DialogType dialog_type,
-      const base::Callback<void(const FormStructure*)>& callback) {}
-  virtual void RequestAutocompleteDialogClosed() {}
-  virtual void UpdateProgressBar(double value) {}
 
  private:
   TestingPrefServiceSimple prefs_;
@@ -210,19 +183,12 @@ TEST_F(AutocompleteHistoryManagerTest, SearchField) {
 
 namespace {
 
-class MockAutofillExternalDelegate :
-      public autofill::TestAutofillExternalDelegate {
+class MockAutofillExternalDelegate : public AutofillExternalDelegate {
  public:
   explicit MockAutofillExternalDelegate(content::WebContents* web_contents)
-      : TestAutofillExternalDelegate(
+      : AutofillExternalDelegate(
             web_contents, AutofillManager::FromWebContents(web_contents)) {}
   virtual ~MockAutofillExternalDelegate() {}
-
-  virtual void ApplyAutofillSuggestions(
-      const std::vector<string16>& autofill_values,
-      const std::vector<string16>& autofill_labels,
-      const std::vector<string16>& autofill_icons,
-      const std::vector<int>& autofill_unique_ids) OVERRIDE {};
 
   MOCK_METHOD5(OnSuggestionsReturned,
                void(int query_id,

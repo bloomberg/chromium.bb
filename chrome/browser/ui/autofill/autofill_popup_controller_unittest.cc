@@ -6,9 +6,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autofill/autofill_external_delegate.h"
 #include "chrome/browser/autofill/autofill_manager.h"
-#include "chrome/browser/autofill/autofill_manager_delegate.h"
 #include "chrome/browser/autofill/test_autofill_external_delegate.h"
+#include "chrome/browser/autofill/test_autofill_manager_delegate.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -26,55 +27,26 @@ using WebKit::WebAutofillClient;
 
 namespace {
 
-class MockAutofillExternalDelegate :
-      public autofill::TestAutofillExternalDelegate {
+class MockAutofillExternalDelegate : public AutofillExternalDelegate {
  public:
   MockAutofillExternalDelegate(content::WebContents* web_contents,
                                AutofillManager* autofill_manager)
-      : TestAutofillExternalDelegate(web_contents, autofill_manager) {}
+      : AutofillExternalDelegate(web_contents, autofill_manager) {}
   virtual ~MockAutofillExternalDelegate() {}
 
   virtual void DidSelectSuggestion(int identifier) OVERRIDE {}
   virtual void RemoveSuggestion(const string16& value, int identifier) OVERRIDE
       {}
   virtual void ClearPreviewedForm() OVERRIDE {}
-
-  MOCK_METHOD0(ControllerDestroyed, void());
 };
 
-class MockAutofillManagerDelegate : public autofill::AutofillManagerDelegate {
+class MockAutofillManagerDelegate
+    : public autofill::TestAutofillManagerDelegate {
  public:
   MockAutofillManagerDelegate() {}
   virtual ~MockAutofillManagerDelegate() {}
 
-  // AutofillManagerDelegate:
-  virtual PersonalDataManager* GetPersonalDataManager() OVERRIDE {
-    return NULL;
-  }
-  virtual InfoBarService* GetInfoBarService() { return NULL; }
   virtual PrefService* GetPrefs() { return &prefs_; }
-  virtual ProfileSyncServiceBase* GetProfileSyncService() { return NULL; }
-  virtual void HideRequestAutocompleteDialog() OVERRIDE {}
-  virtual bool IsSavingPasswordsEnabled() const { return false; }
-  virtual void OnAutocheckoutError() OVERRIDE {}
-  virtual void ShowAutofillSettings() {}
-  virtual void ShowPasswordGenerationBubble(
-      const gfx::Rect& bounds,
-      const content::PasswordForm& form,
-      autofill::PasswordGenerator* generator) {}
-  virtual void ShowAutocheckoutBubble(
-      const gfx::RectF& bounding_box,
-      const gfx::NativeView& native_view,
-      const base::Closure& callback) {}
-  virtual void ShowRequestAutocompleteDialog(
-      const FormData& form,
-      const GURL& source_url,
-      const content::SSLStatus& ssl_status,
-      const AutofillMetrics& metric_logger,
-      autofill::DialogType dialog_type,
-      const base::Callback<void(const FormStructure*)>& callback) {}
-  virtual void RequestAutocompleteDialogClosed() {}
-  virtual void UpdateProgressBar(double value) {}
 
  private:
   TestingPrefServiceSimple prefs_;

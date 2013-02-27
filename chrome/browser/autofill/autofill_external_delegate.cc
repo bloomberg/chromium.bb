@@ -6,7 +6,6 @@
 #include "chrome/browser/autofill/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_external_delegate.h"
 #include "chrome/browser/autofill/autofill_manager.h"
-#include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/public/browser/navigation_controller.h"
@@ -15,7 +14,6 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
@@ -64,10 +62,7 @@ AutofillExternalDelegate::AutofillExternalDelegate(
           &(web_contents->GetController())));
 }
 
-AutofillExternalDelegate::~AutofillExternalDelegate() {
-  if (controller_)
-    controller_->Hide();
-}
+AutofillExternalDelegate::~AutofillExternalDelegate() {}
 
 void AutofillExternalDelegate::OnQuery(int query_id,
                                        const FormData& form,
@@ -78,8 +73,7 @@ void AutofillExternalDelegate::OnQuery(int query_id,
   autofill_query_field_ = field;
   display_warning_if_disabled_ = display_warning_if_disabled;
   autofill_query_id_ = query_id;
-
-  EnsurePopupForElement(element_bounds);
+  element_bounds_ = element_bounds;
 }
 
 void AutofillExternalDelegate::OnSuggestionsReturned(
@@ -88,7 +82,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
     const std::vector<string16>& autofill_labels,
     const std::vector<string16>& autofill_icons,
     const std::vector<int>& autofill_unique_ids) {
-  if (query_id != autofill_query_id_ || !controller_)
+  if (query_id != autofill_query_id_)
     return;
 
   std::vector<string16> values(autofill_values);
@@ -129,13 +123,15 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
 
   if (values.empty()) {
     // No suggestions, any popup currently showing is obsolete.
-    HideAutofillPopup();
+    autofill_manager_->delegate()->HideAutofillPopup();
     return;
   }
 
   // Send to display.
-  if (autofill_query_field_.is_focusable)
-    ApplyAutofillSuggestions(values, labels, icons, ids);
+  if (autofill_query_field_.is_focusable) {
+    autofill_manager_->delegate()->ShowAutofillPopup(
+        element_bounds_, values, labels, icons, ids, this);
+  }
 }
 
 void AutofillExternalDelegate::OnShowPasswordSuggestions(
@@ -143,44 +139,18 @@ void AutofillExternalDelegate::OnShowPasswordSuggestions(
     const FormFieldData& field,
     const gfx::RectF& element_bounds) {
   autofill_query_field_ = field;
-  EnsurePopupForElement(element_bounds);
+  element_bounds_ = element_bounds;
 
   if (suggestions.empty()) {
-    HideAutofillPopup();
+    autofill_manager_->delegate()->HideAutofillPopup();
     return;
   }
 
   std::vector<string16> empty(suggestions.size());
   std::vector<int> password_ids(suggestions.size(),
                                 WebAutofillClient::MenuItemIDPasswordEntry);
-  ApplyAutofillSuggestions(suggestions, empty, empty, password_ids);
-}
-
-void AutofillExternalDelegate::EnsurePopupForElement(
-    const gfx::RectF& element_bounds) {
-  // Convert element_bounds to be in screen space.
-  gfx::Rect client_area;
-  web_contents_->GetView()->GetContainerBounds(&client_area);
-  gfx::RectF element_bounds_in_screen_space =
-      element_bounds + client_area.OffsetFromOrigin();
-
-  // |controller_| owns itself.
-  controller_ = AutofillPopupControllerImpl::GetOrCreate(
-      controller_,
-      this,
-      web_contents()->GetView()->GetContentNativeView(),
-      element_bounds_in_screen_space);
-}
-
-void AutofillExternalDelegate::ApplyAutofillSuggestions(
-    const std::vector<string16>& autofill_values,
-    const std::vector<string16>& autofill_labels,
-    const std::vector<string16>& autofill_icons,
-    const std::vector<int>& autofill_unique_ids) {
-  controller_->Show(autofill_values,
-                    autofill_labels,
-                    autofill_icons,
-                    autofill_unique_ids);
+  autofill_manager_->delegate()->ShowAutofillPopup(
+      element_bounds_, suggestions, empty, empty, password_ids, this);
 }
 
 void AutofillExternalDelegate::SetCurrentDataListValues(
@@ -247,7 +217,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const string16& value,
     FillAutofillFormData(identifier, false);
   }
 
-  HideAutofillPopup();
+  autofill_manager_->delegate()->HideAutofillPopup();
 }
 
 void AutofillExternalDelegate::RemoveSuggestion(const string16& value,
@@ -261,7 +231,7 @@ void AutofillExternalDelegate::RemoveSuggestion(const string16& value,
 }
 
 void AutofillExternalDelegate::DidEndTextFieldEditing() {
-  HideAutofillPopup();
+  autofill_manager_->delegate()->HideAutofillPopup();
 
   has_shown_autofill_popup_for_current_edit_ = false;
 }
@@ -272,13 +242,8 @@ void AutofillExternalDelegate::ClearPreviewedForm() {
     host->Send(new AutofillMsg_ClearPreviewedForm(host->GetRoutingID()));
 }
 
-void AutofillExternalDelegate::HideAutofillPopup() {
-  if (controller_)
-    controller_->Hide();
-}
-
 void AutofillExternalDelegate::Reset() {
-  HideAutofillPopup();
+  autofill_manager_->delegate()->HideAutofillPopup();
 
   password_autofill_manager_.Reset();
 }
@@ -409,9 +374,9 @@ void AutofillExternalDelegate::Observe(
     const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED) {
     if (!*content::Details<bool>(details).ptr())
-      HideAutofillPopup();
+      autofill_manager_->delegate()->HideAutofillPopup();
   } else if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
-    HideAutofillPopup();
+    autofill_manager_->delegate()->HideAutofillPopup();
   } else {
     NOTREACHED();
   }

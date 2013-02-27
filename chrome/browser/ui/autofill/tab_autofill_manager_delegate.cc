@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/password_form.h"
 #include "ui/gfx/rect.h"
 
@@ -31,8 +32,12 @@ TabAutofillManagerDelegate::TabAutofillManagerDelegate(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       web_contents_(web_contents),
-      autofill_dialog_controller_(NULL) {
+      dialog_controller_(NULL) {
   DCHECK(web_contents);
+}
+
+TabAutofillManagerDelegate::~TabAutofillManagerDelegate() {
+  HideAutofillPopup();
 }
 
 InfoBarService* TabAutofillManagerDelegate::GetInfoBarService() {
@@ -61,8 +66,8 @@ bool TabAutofillManagerDelegate::IsSavingPasswordsEnabled() const {
 }
 
 void TabAutofillManagerDelegate::OnAutocheckoutError() {
-  // TODO(ahutter): Notify |autofill_dialog_controller_| of the error once it
-  // stays open for Autocheckout.
+  // TODO(ahutter): Notify |dialog_controller_| of the error once it stays open
+  // for Autocheckout.
 }
 
 void TabAutofillManagerDelegate::ShowAutofillSettings() {
@@ -103,7 +108,7 @@ void TabAutofillManagerDelegate::ShowRequestAutocompleteDialog(
     const base::Callback<void(const FormStructure*)>& callback) {
   HideRequestAutocompleteDialog();
 
-  autofill_dialog_controller_ =
+  dialog_controller_ =
       new autofill::AutofillDialogControllerImpl(web_contents_,
                                                  form,
                                                  source_url,
@@ -111,21 +116,49 @@ void TabAutofillManagerDelegate::ShowRequestAutocompleteDialog(
                                                  metric_logger,
                                                  dialog_type,
                                                  callback);
-  autofill_dialog_controller_->Show();
+  dialog_controller_->Show();
 }
 
 void TabAutofillManagerDelegate::RequestAutocompleteDialogClosed() {
-  autofill_dialog_controller_ = NULL;
+  dialog_controller_ = NULL;
+}
+
+void TabAutofillManagerDelegate::ShowAutofillPopup(
+    const gfx::RectF& element_bounds,
+    const std::vector<string16>& values,
+    const std::vector<string16>& labels,
+    const std::vector<string16>& icons,
+    const std::vector<int>& identifiers,
+    AutofillPopupDelegate* delegate) {
+  // Convert element_bounds to be in screen space.
+  gfx::Rect client_area;
+  web_contents_->GetView()->GetContainerBounds(&client_area);
+  gfx::RectF element_bounds_in_screen_space =
+      element_bounds + client_area.OffsetFromOrigin();
+
+  // Will delete or reuse the old |popup_controller_|.
+  popup_controller_ = AutofillPopupControllerImpl::GetOrCreate(
+      popup_controller_,
+      delegate,
+      web_contents()->GetView()->GetContentNativeView(),
+      element_bounds_in_screen_space);
+
+  popup_controller_->Show(values, labels, icons, identifiers);
+}
+
+void TabAutofillManagerDelegate::HideAutofillPopup() {
+  if (popup_controller_)
+    popup_controller_->Hide();
 }
 
 void TabAutofillManagerDelegate::UpdateProgressBar(double value) {
-  // TODO(ahutter): Notify |autofill_dialog_controller_| of the change once it
-  // stays open for Autocheckout.
+  // TODO(ahutter): Notify |dialog_controller_| of the change once it stays open
+  // for Autocheckout.
 }
 
 void TabAutofillManagerDelegate::HideRequestAutocompleteDialog() {
-  if (autofill_dialog_controller_) {
-    autofill_dialog_controller_->Hide();
+  if (dialog_controller_) {
+    dialog_controller_->Hide();
     RequestAutocompleteDialogClosed();
   }
 }
@@ -133,8 +166,8 @@ void TabAutofillManagerDelegate::HideRequestAutocompleteDialog() {
 void TabAutofillManagerDelegate::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  if (autofill_dialog_controller_ &&
-      autofill_dialog_controller_->dialog_type() ==
+  if (dialog_controller_ &&
+      dialog_controller_->dialog_type() ==
           autofill::DIALOG_TYPE_REQUEST_AUTOCOMPLETE) {
     HideRequestAutocompleteDialog();
   }
