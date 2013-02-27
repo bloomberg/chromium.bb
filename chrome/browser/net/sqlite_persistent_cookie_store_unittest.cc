@@ -11,14 +11,15 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
+#include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/thread_test_helper.h"
+#include "base/test/sequenced_worker_pool_owner.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
 #include "chrome/browser/net/clear_on_exit_policy.h"
 #include "chrome/browser/net/sqlite_persistent_cookie_store.h"
 #include "chrome/common/chrome_constants.h"
-#include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/cookies/canonical_cookie.h"
 #include "sql/connection.h"
@@ -26,16 +27,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/quota/mock_special_storage_policy.h"
 
-using content::BrowserThread;
-
 typedef std::vector<net::CanonicalCookie*> CanonicalCookieVector;
 
 class SQLitePersistentCookieStoreTest : public testing::Test {
  public:
   SQLitePersistentCookieStoreTest()
-      : ui_thread_(BrowserThread::UI),
-        db_thread_(BrowserThread::DB),
-        io_thread_(BrowserThread::IO),
+      : pool_owner_(new base::SequencedWorkerPoolOwner(3, "Background Pool")),
         loaded_event_(false, false),
         key_loaded_event_(false, false),
         db_thread_event_(false, false) {
@@ -52,26 +49,46 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
   }
 
   void Load(CanonicalCookieVector* cookies) {
+    EXPECT_FALSE(loaded_event_.IsSignaled());
     store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
                             base::Unretained(this)));
     loaded_event_.Wait();
     *cookies = cookies_;
   }
 
+  void Flush() {
+    base::WaitableEvent event(false, false);
+    store_->Flush(base::Bind(&base::WaitableEvent::Signal,
+                             base::Unretained(&event)));
+    event.Wait();
+  }
+
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner() {
+    return pool_owner_->pool()->GetSequencedTaskRunner(
+        pool_owner_->pool()->GetNamedSequenceToken("background"));
+  }
+
+  scoped_refptr<base::SequencedTaskRunner> client_task_runner() {
+    return pool_owner_->pool()->GetSequencedTaskRunner(
+        pool_owner_->pool()->GetNamedSequenceToken("client"));
+  }
+
   void DestroyStore() {
     store_ = NULL;
-    // Make sure we wait until the destructor has run by waiting for all pending
-    // tasks on the DB thread to run.
-    scoped_refptr<base::ThreadTestHelper> helper(
-        new base::ThreadTestHelper(
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));
-    ASSERT_TRUE(helper->Run());
+    // Make sure we wait until the destructor has run by shutting down the pool
+    // resetting the owner (whose destructor blocks on the pool completion).
+    pool_owner_->pool()->Shutdown();
+    // Create a new pool for the few tests that create multiple stores. In other
+    // cases this is wasted but harmless.
+    pool_owner_.reset(new base::SequencedWorkerPoolOwner(3, "Background Pool"));
   }
 
   void CreateAndLoad(bool restore_old_session_cookies,
                      CanonicalCookieVector* cookies) {
     store_ = new SQLitePersistentCookieStore(
         temp_dir_.path().Append(chrome::kCookieFilename),
+        client_task_runner(),
+        background_task_runner(),
         restore_old_session_cookies,
         NULL);
     Load(cookies);
@@ -80,7 +97,7 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
   void InitializeStore(bool restore_old_session_cookies) {
     CanonicalCookieVector cookies;
     CreateAndLoad(restore_old_session_cookies, &cookies);
-    ASSERT_EQ(0U, cookies.size());
+    EXPECT_EQ(0U, cookies.size());
   }
 
   // We have to create this method to wrap WaitableEvent::Wait, since we cannot
@@ -101,17 +118,18 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
                              false));
   }
 
-  virtual void SetUp() {
-    ui_thread_.Start();
-    db_thread_.Start();
-    io_thread_.Start();
+  virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
 
+  virtual void TearDown() OVERRIDE {
+    DestroyStore();
+    pool_owner_->pool()->Shutdown();
+  }
+
  protected:
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread db_thread_;
-  content::TestBrowserThread io_thread_;
+  MessageLoop main_loop_;
+  scoped_ptr<base::SequencedWorkerPoolOwner> pool_owner_;
   base::WaitableEvent loaded_event_;
   base::WaitableEvent key_loaded_event_;
   base::WaitableEvent db_thread_event_;
@@ -201,11 +219,14 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
   DestroyStore();
 
   store_ = new SQLitePersistentCookieStore(
-      temp_dir_.path().Append(chrome::kCookieFilename), false, NULL);
+      temp_dir_.path().Append(chrome::kCookieFilename),
+      client_task_runner(),
+      background_task_runner(),
+      false, NULL);
   // Posting a blocking task to db_thread_ makes sure that the DB thread waits
   // until both Load and LoadCookiesForKey have been posted to its task queue.
-  BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
+  background_task_runner()->PostTask(
+      FROM_HERE,
       base::Bind(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
                  base::Unretained(this)));
   store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
@@ -213,8 +234,8 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
   store_->LoadCookiesForKey("aaa.com",
     base::Bind(&SQLitePersistentCookieStoreTest::OnKeyLoaded,
                base::Unretained(this)));
-  BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
+  background_task_runner()->PostTask(
+      FROM_HERE,
       base::Bind(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
                  base::Unretained(this)));
 
@@ -273,57 +294,11 @@ TEST_F(SQLitePersistentCookieStoreTest, TestFlush) {
     AddCookie(name, value, "foo.bar", "/", t);
   }
 
-  // Call Flush() and wait until the DB thread is idle.
-  store_->Flush(base::Closure());
-  scoped_refptr<base::ThreadTestHelper> helper(
-      new base::ThreadTestHelper(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));
-  ASSERT_TRUE(helper->Run());
+  Flush();
 
   // We forced a write, so now the file will be bigger.
   ASSERT_TRUE(file_util::GetFileInfo(path, &info));
   ASSERT_GT(info.size, base_size);
-}
-
-// Counts the number of times Callback() has been run.
-class CallbackCounter : public base::RefCountedThreadSafe<CallbackCounter> {
- public:
-  CallbackCounter() : callback_count_(0) {}
-
-  void Callback() {
-    ++callback_count_;
-  }
-
-  int callback_count() {
-    return callback_count_;
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<CallbackCounter>;
-  ~CallbackCounter() {}
-
-  volatile int callback_count_;
-};
-
-// Test that we can get a completion callback after a Flush().
-TEST_F(SQLitePersistentCookieStoreTest, TestFlushCompletionCallback) {
-  InitializeStore(false);
-  // Put some data - any data - on disk, so that Flush is not a no-op.
-  AddCookie("A", "B", "foo.bar", "/", base::Time::Now());
-
-  scoped_refptr<CallbackCounter> counter(new CallbackCounter());
-
-  // Callback shouldn't be invoked until we call Flush().
-  ASSERT_EQ(0, counter->callback_count());
-
-  store_->Flush(base::Bind(&CallbackCounter::Callback, counter.get()));
-
-  scoped_refptr<base::ThreadTestHelper> helper(
-      new base::ThreadTestHelper(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));
-  ASSERT_TRUE(helper->Run());
-
-  ASSERT_EQ(1, counter->callback_count());
 }
 
 // Test loading old session cookies from the disk.

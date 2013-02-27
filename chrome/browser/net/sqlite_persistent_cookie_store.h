@@ -20,6 +20,7 @@ class Task;
 
 namespace base {
 class FilePath;
+class SequencedTaskRunner;
 }
 
 namespace net {
@@ -36,8 +37,13 @@ class SQLitePersistentCookieStore
  public:
   // If non-NULL, SQLitePersistentCookieStore will keep a scoped_refptr to the
   // |clear_on_exit_policy| throughout its lifetime.
+  // All blocking database accesses will be performed on
+  // |background_task_runner|, while |client_task_runner| is used to invoke
+  // callbacks.
   SQLitePersistentCookieStore(
       const base::FilePath& path,
+      const scoped_refptr<base::SequencedTaskRunner>& client_task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
       bool restore_old_session_cookies,
       ClearOnExitPolicy* clear_on_exit_policy);
 

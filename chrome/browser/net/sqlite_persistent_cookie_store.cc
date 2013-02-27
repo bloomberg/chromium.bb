@@ -14,17 +14,17 @@
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
+#include "base/sequenced_task_runner.h"
 #include "base/string_util.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/thread.h"
 #include "base/time.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 #include "chrome/browser/net/clear_on_exit_policy.h"
-#include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
@@ -35,36 +35,38 @@
 #include "third_party/sqlite/sqlite3.h"
 
 using base::Time;
-using content::BrowserThread;
 
-// This class is designed to be shared between any calling threads and the
-// database thread. It batches operations and commits them on a timer.
+// This class is designed to be shared between any client thread and the
+// background task runner. It batches operations and commits them on a timer.
 //
 // SQLitePersistentCookieStore::Load is called to load all cookies.  It
 // delegates to Backend::Load, which posts a Backend::LoadAndNotifyOnDBThread
-// task to the DB thread.  This task calls Backend::ChainLoadCookies(), which
-// repeatedly posts itself to the DB thread to load each eTLD+1's cookies in
-// separate tasks.  When this is complete, Backend::CompleteLoadOnIOThread is
-// posted to the IO thread, which notifies the caller of
+// task to the background runner.  This task calls Backend::ChainLoadCookies(),
+// which repeatedly posts itself to the BG runner to load each eTLD+1's cookies
+// in separate tasks.  When this is complete, Backend::CompleteLoadOnIOThread is
+// posted to the client runner, which notifies the caller of
 // SQLitePersistentCookieStore::Load that the load is complete.
 //
 // If a priority load request is invoked via SQLitePersistentCookieStore::
 // LoadCookiesForKey, it is delegated to Backend::LoadCookiesForKey, which posts
-// Backend::LoadKeyAndNotifyOnDBThread to the DB thread. That routine loads just
+// Backend::LoadKeyAndNotifyOnDBThread to the BG runner. That routine loads just
 // that single domain key (eTLD+1)'s cookies, and posts a Backend::
-// CompleteLoadForKeyOnIOThread to the IO thread to notify the caller of
+// CompleteLoadForKeyOnIOThread to the client runner to notify the caller of
 // SQLitePersistentCookieStore::LoadCookiesForKey that that load is complete.
 //
 // Subsequent to loading, mutations may be queued by any thread using
 // AddCookie, UpdateCookieAccessTime, and DeleteCookie. These are flushed to
-// disk on the DB thread every 30 seconds, 512 operations, or call to Flush(),
+// disk on the BG runner every 30 seconds, 512 operations, or call to Flush(),
 // whichever occurs first.
 class SQLitePersistentCookieStore::Backend
     : public base::RefCountedThreadSafe<SQLitePersistentCookieStore::Backend> {
  public:
-  Backend(const base::FilePath& path,
-          bool restore_old_session_cookies,
-          ClearOnExitPolicy* clear_on_exit_policy)
+  Backend(
+      const base::FilePath& path,
+      const scoped_refptr<base::SequencedTaskRunner>& client_task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
+      bool restore_old_session_cookies,
+      ClearOnExitPolicy* clear_on_exit_policy)
       : path_(path),
         db_(NULL),
         num_pending_(0),
@@ -74,6 +76,8 @@ class SQLitePersistentCookieStore::Backend
         restore_old_session_cookies_(restore_old_session_cookies),
         clear_on_exit_policy_(clear_on_exit_policy),
         num_cookies_read_(0),
+        client_task_runner_(client_task_runner),
+        background_task_runner_(background_task_runner),
         num_priority_waiting_(0),
         total_priority_requests_(0) {
   }
@@ -157,14 +161,14 @@ class SQLitePersistentCookieStore::Backend
   };
 
  private:
-  // Creates or loads the SQLite database on DB thread.
-  void LoadAndNotifyOnDBThread(const LoadedCallback& loaded_callback,
-                               const base::Time& posted_at);
+  // Creates or loads the SQLite database on background runner.
+  void LoadAndNotifyInBackground(const LoadedCallback& loaded_callback,
+                                 const base::Time& posted_at);
 
-  // Loads cookies for the domain key (eTLD+1) on DB thread.
-  void LoadKeyAndNotifyOnDBThread(const std::string& domains,
-                                  const LoadedCallback& loaded_callback,
-                                  const base::Time& posted_at);
+  // Loads cookies for the domain key (eTLD+1) on background runner.
+  void LoadKeyAndNotifyInBackground(const std::string& domains,
+                                    const LoadedCallback& loaded_callback,
+                                    const base::Time& posted_at);
 
   // Notifies the CookieMonster when loading completes for a specific domain key
   // or for all domain keys. Triggers the callback and passes it all cookies
@@ -174,28 +178,28 @@ class SQLitePersistentCookieStore::Backend
   // Sends notification when the entire store is loaded, and reports metrics
   // for the total time to load and aggregated results from any priority loads
   // that occurred.
-  void CompleteLoadOnIOThread(const LoadedCallback& loaded_callback,
-                              bool load_success);
+  void CompleteLoadInForeground(const LoadedCallback& loaded_callback,
+                                bool load_success);
 
   // Sends notification when a single priority load completes. Updates priority
   // load metric data. The data is sent only after the final load completes.
-  void CompleteLoadForKeyOnIOThread(const LoadedCallback& loaded_callback,
-                                    bool load_success);
+  void CompleteLoadForKeyInForeground(const LoadedCallback& loaded_callback,
+                                      bool load_success);
 
-  // Sends all metrics, including posting a ReportMetricsOnDBThread task.
+  // Sends all metrics, including posting a ReportMetricsInBackground task.
   // Called after all priority and regular loading is complete.
   void ReportMetrics();
 
-  // Sends DB-thread owned metrics (i.e., the combined duration of all DB-thread
-  // tasks).
-  void ReportMetricsOnDBThread();
+  // Sends background-runner owned metrics (i.e., the combined duration of all
+  // BG-runner tasks).
+  void ReportMetricsInBackground();
 
   // Initialize the data base.
   bool InitializeDatabase();
 
   // Loads cookies for the next domain key from the DB, then either reschedules
-  // itself or schedules the provided callback to run on the IO thread (if all
-  // domains are loaded).
+  // itself or schedules the provided callback to run on the client runner (if
+  // all domains are loaded).
   void ChainLoadCookies(const LoadedCallback& loaded_callback);
 
   // Load all cookies for a set of domains/hosts
@@ -206,7 +210,7 @@ class SQLitePersistentCookieStore::Backend
                       const net::CanonicalCookie& cc);
   // Commit our pending operations to the database.
   void Commit();
-  // Close() executed on the background thread.
+  // Close() executed on the background runner.
   void InternalBackgroundClose();
 
   void DeleteSessionCookiesOnStartup();
@@ -215,6 +219,11 @@ class SQLitePersistentCookieStore::Backend
 
   void KillDatabase();
   void ScheduleKillDatabase();
+
+  void PostBackgroundTask(const tracked_objects::Location& origin,
+                          const base::Closure& task);
+  void PostClientTask(const tracked_objects::Location& origin,
+                      const base::Closure& task);
 
   base::FilePath path_;
   scoped_ptr<sql::Connection> db_;
@@ -229,7 +238,7 @@ class SQLitePersistentCookieStore::Backend
   base::Lock lock_;
 
   // Temporary buffer for cookies loaded from DB. Accumulates cookies to reduce
-  // the number of messages sent to the IO thread. Sent back in response to
+  // the number of messages sent to the client runner. Sent back in response to
   // individual load requests for domain keys or when all loading completes.
   std::vector<net::CanonicalCookie*> cookies_;
 
@@ -254,13 +263,16 @@ class SQLitePersistentCookieStore::Backend
   // Policy defining what data is deleted on shutdown.
   scoped_refptr<ClearOnExitPolicy> clear_on_exit_policy_;
 
-  // The cumulative time spent loading the cookies on the DB thread. Incremented
-  // and reported from the DB thread.
+  // The cumulative time spent loading the cookies on the background runner.
+  // Incremented and reported from the background runner.
   base::TimeDelta cookie_load_duration_;
 
-  // The total number of cookies read. Incremented and reported on the DB
-  // thread.
+  // The total number of cookies read. Incremented and reported on the
+  // background runner.
   int num_cookies_read_;
+
+  scoped_refptr<base::SequencedTaskRunner> client_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
   // Guards the following metrics-related properties (only accessed when
   // starting/completing priority loads or completing the total load).
@@ -374,10 +386,9 @@ void SQLitePersistentCookieStore::Backend::Load(
     const LoadedCallback& loaded_callback) {
   // This function should be called only once per instance.
   DCHECK(!db_.get());
-  BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(&Backend::LoadAndNotifyOnDBThread, this, loaded_callback,
-                 base::Time::Now()));
+  PostBackgroundTask(FROM_HERE, base::Bind(
+      &Backend::LoadAndNotifyInBackground, this,
+      loaded_callback, base::Time::Now()));
 }
 
 void SQLitePersistentCookieStore::Backend::LoadCookiesForKey(
@@ -391,17 +402,14 @@ void SQLitePersistentCookieStore::Backend::LoadCookiesForKey(
     total_priority_requests_++;
   }
 
-  BrowserThread::PostTask(
-    BrowserThread::DB, FROM_HERE,
-    base::Bind(&Backend::LoadKeyAndNotifyOnDBThread, this,
-               key,
-               loaded_callback,
-               base::Time::Now()));
+  PostBackgroundTask(FROM_HERE, base::Bind(
+      &Backend::LoadKeyAndNotifyInBackground,
+      this, key, loaded_callback, base::Time::Now()));
 }
 
-void SQLitePersistentCookieStore::Backend::LoadAndNotifyOnDBThread(
+void SQLitePersistentCookieStore::Backend::LoadAndNotifyInBackground(
     const LoadedCallback& loaded_callback, const base::Time& posted_at) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
   IncrementTimeDelta increment(&cookie_load_duration_);
 
   UMA_HISTOGRAM_CUSTOM_TIMES(
@@ -411,20 +419,18 @@ void SQLitePersistentCookieStore::Backend::LoadAndNotifyOnDBThread(
       50);
 
   if (!InitializeDatabase()) {
-    BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&SQLitePersistentCookieStore::Backend::CompleteLoadOnIOThread,
-                 this, loaded_callback, false));
+    PostClientTask(FROM_HERE, base::Bind(
+        &Backend::CompleteLoadInForeground, this, loaded_callback, false));
   } else {
     ChainLoadCookies(loaded_callback);
   }
 }
 
-void SQLitePersistentCookieStore::Backend::LoadKeyAndNotifyOnDBThread(
+void SQLitePersistentCookieStore::Backend::LoadKeyAndNotifyInBackground(
     const std::string& key,
     const LoadedCallback& loaded_callback,
     const base::Time& posted_at) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
   IncrementTimeDelta increment(&cookie_load_duration_);
 
   UMA_HISTOGRAM_CUSTOM_TIMES(
@@ -445,16 +451,16 @@ void SQLitePersistentCookieStore::Backend::LoadKeyAndNotifyOnDBThread(
     }
   }
 
-  BrowserThread::PostTask(
-    BrowserThread::IO, FROM_HERE,
-    base::Bind(
-        &SQLitePersistentCookieStore::Backend::CompleteLoadForKeyOnIOThread,
-        this, loaded_callback, success));
+  PostClientTask(FROM_HERE, base::Bind(
+      &SQLitePersistentCookieStore::Backend::CompleteLoadForKeyInForeground,
+      this, loaded_callback, success));
 }
 
-void SQLitePersistentCookieStore::Backend::CompleteLoadForKeyOnIOThread(
+void SQLitePersistentCookieStore::Backend::CompleteLoadForKeyInForeground(
     const LoadedCallback& loaded_callback,
     bool load_success) {
+  DCHECK(client_task_runner_->RunsTasksOnCurrentThread());
+
   Notify(loaded_callback, load_success);
 
   {
@@ -468,7 +474,7 @@ void SQLitePersistentCookieStore::Backend::CompleteLoadForKeyOnIOThread(
 
 }
 
-void SQLitePersistentCookieStore::Backend::ReportMetricsOnDBThread() {
+void SQLitePersistentCookieStore::Backend::ReportMetricsInBackground() {
   UMA_HISTOGRAM_CUSTOM_TIMES(
       "Cookie.TimeLoad",
       cookie_load_duration_,
@@ -477,8 +483,8 @@ void SQLitePersistentCookieStore::Backend::ReportMetricsOnDBThread() {
 }
 
 void SQLitePersistentCookieStore::Backend::ReportMetrics() {
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE, base::Bind(
-      &SQLitePersistentCookieStore::Backend::ReportMetricsOnDBThread, this));
+  PostBackgroundTask(FROM_HERE, base::Bind(
+      &SQLitePersistentCookieStore::Backend::ReportMetricsInBackground, this));
 
   {
     base::AutoLock locked(metrics_lock_);
@@ -498,7 +504,7 @@ void SQLitePersistentCookieStore::Backend::ReportMetrics() {
   }
 }
 
-void SQLitePersistentCookieStore::Backend::CompleteLoadOnIOThread(
+void SQLitePersistentCookieStore::Backend::CompleteLoadInForeground(
     const LoadedCallback& loaded_callback, bool load_success) {
   Notify(loaded_callback, load_success);
 
@@ -509,7 +515,7 @@ void SQLitePersistentCookieStore::Backend::CompleteLoadOnIOThread(
 void SQLitePersistentCookieStore::Backend::Notify(
     const LoadedCallback& loaded_callback,
     bool load_success) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(client_task_runner_->RunsTasksOnCurrentThread());
 
   std::vector<net::CanonicalCookie*> cookies;
   {
@@ -521,7 +527,7 @@ void SQLitePersistentCookieStore::Backend::Notify(
 }
 
 bool SQLitePersistentCookieStore::Backend::InitializeDatabase() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
 
   if (initialized_ || corruption_detected_) {
     // Return false if we were previously initialized but the DB has since been
@@ -608,7 +614,7 @@ bool SQLitePersistentCookieStore::Backend::InitializeDatabase() {
 
 void SQLitePersistentCookieStore::Backend::ChainLoadCookies(
     const LoadedCallback& loaded_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
   IncrementTimeDelta increment(&cookie_load_duration_);
 
   bool load_success = true;
@@ -625,17 +631,15 @@ void SQLitePersistentCookieStore::Backend::ChainLoadCookies(
   }
 
   // If load is successful and there are more domain keys to be loaded,
-  // then post a DB task to continue chain-load;
-  // Otherwise notify on IO thread.
+  // then post a background task to continue chain-load;
+  // Otherwise notify on client runner.
   if (load_success && keys_to_load_.size() > 0) {
-    BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(&Backend::ChainLoadCookies, this, loaded_callback));
+    PostBackgroundTask(FROM_HERE, base::Bind(
+        &Backend::ChainLoadCookies, this, loaded_callback));
   } else {
-    BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&SQLitePersistentCookieStore::Backend::CompleteLoadOnIOThread,
-                 this, loaded_callback, load_success));
+    PostClientTask(FROM_HERE, base::Bind(
+        &Backend::CompleteLoadInForeground, this,
+        loaded_callback, load_success));
     if (load_success && !restore_old_session_cookies_)
       DeleteSessionCookiesOnStartup();
   }
@@ -643,7 +647,7 @@ void SQLitePersistentCookieStore::Backend::ChainLoadCookies(
 
 bool SQLitePersistentCookieStore::Backend::LoadCookiesForDomains(
   const std::set<std::string>& domains) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
 
   sql::Statement smt;
   if (restore_old_session_cookies_) {
@@ -830,7 +834,7 @@ void SQLitePersistentCookieStore::Backend::BatchOperation(
   static const int kCommitIntervalMs = 30 * 1000;
   // Commit right away if we have more than 512 outstanding operations.
   static const size_t kCommitAfterBatchSize = 512;
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(!background_task_runner_->RunsTasksOnCurrentThread());
 
   // We do a full copy of the cookie here, and hopefully just here.
   scoped_ptr<PendingOperation> po(new PendingOperation(op, cc));
@@ -844,20 +848,19 @@ void SQLitePersistentCookieStore::Backend::BatchOperation(
 
   if (num_pending == 1) {
     // We've gotten our first entry for this batch, fire off the timer.
-    BrowserThread::PostDelayedTask(
-        BrowserThread::DB, FROM_HERE,
-        base::Bind(&Backend::Commit, this),
-        base::TimeDelta::FromMilliseconds(kCommitIntervalMs));
+    if (!background_task_runner_->PostDelayedTask(
+            FROM_HERE, base::Bind(&Backend::Commit, this),
+            base::TimeDelta::FromMilliseconds(kCommitIntervalMs))) {
+      NOTREACHED() << "background_task_runner_ is not running.";
+    }
   } else if (num_pending == kCommitAfterBatchSize) {
     // We've reached a big enough batch, fire off a commit now.
-    BrowserThread::PostTask(
-        BrowserThread::DB, FROM_HERE,
-        base::Bind(&Backend::Commit, this));
+    PostBackgroundTask(FROM_HERE, base::Bind(&Backend::Commit, this));
   }
 }
 
 void SQLitePersistentCookieStore::Backend::Commit() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
 
   PendingOperationsList ops;
   {
@@ -947,33 +950,32 @@ void SQLitePersistentCookieStore::Backend::Commit() {
 
 void SQLitePersistentCookieStore::Backend::Flush(
     const base::Closure& callback) {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::DB));
-  BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE, base::Bind(&Backend::Commit, this));
+  DCHECK(!background_task_runner_->RunsTasksOnCurrentThread());
+  PostBackgroundTask(FROM_HERE, base::Bind(&Backend::Commit, this));
+
   if (!callback.is_null()) {
     // We want the completion task to run immediately after Commit() returns.
     // Posting it from here means there is less chance of another task getting
     // onto the message queue first, than if we posted it from Commit() itself.
-    BrowserThread::PostTask(BrowserThread::DB, FROM_HERE, callback);
+    PostBackgroundTask(FROM_HERE, callback);
   }
 }
 
-// Fire off a close message to the background thread.  We could still have a
+// Fire off a close message to the background runner.  We could still have a
 // pending commit timer or Load operations holding references on us, but if/when
 // this fires we will already have been cleaned up and it will be ignored.
 void SQLitePersistentCookieStore::Backend::Close() {
-  if (BrowserThread::CurrentlyOn(BrowserThread::DB)) {
+  if (background_task_runner_->RunsTasksOnCurrentThread()) {
     InternalBackgroundClose();
   } else {
-    // Must close the backend on the background thread.
-    BrowserThread::PostTask(
-        BrowserThread::DB, FROM_HERE,
-        base::Bind(&Backend::InternalBackgroundClose, this));
+    // Must close the backend on the background runner.
+    PostBackgroundTask(FROM_HERE,
+                       base::Bind(&Backend::InternalBackgroundClose, this));
   }
 }
 
 void SQLitePersistentCookieStore::Backend::InternalBackgroundClose() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
   // Commit any pending operations
   Commit();
 
@@ -987,7 +989,7 @@ void SQLitePersistentCookieStore::Backend::InternalBackgroundClose() {
 }
 
 void SQLitePersistentCookieStore::Backend::DeleteSessionCookiesOnShutdown() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
 
   if (!db_.get())
     return;
@@ -1028,18 +1030,17 @@ void SQLitePersistentCookieStore::Backend::DeleteSessionCookiesOnShutdown() {
 }
 
 void SQLitePersistentCookieStore::Backend::ScheduleKillDatabase() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
 
   corruption_detected_ = true;
 
   // Don't just do the close/delete here, as we are being called by |db| and
   // that seems dangerous.
-  MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&Backend::KillDatabase, this));
+  PostBackgroundTask(FROM_HERE, base::Bind(&Backend::KillDatabase, this));
 }
 
 void SQLitePersistentCookieStore::Backend::KillDatabase() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
 
   if (db_.get()) {
     // This Backend will now be in-memory only. In a future run we will recreate
@@ -1057,17 +1058,38 @@ void SQLitePersistentCookieStore::Backend::SetForceKeepSessionState() {
 }
 
 void SQLitePersistentCookieStore::Backend::DeleteSessionCookiesOnStartup() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
   if (!db_->Execute("DELETE FROM cookies WHERE persistent == 0"))
     LOG(WARNING) << "Unable to delete session cookies.";
 }
 
+void SQLitePersistentCookieStore::Backend::PostBackgroundTask(
+    const tracked_objects::Location& origin, const base::Closure& task) {
+  if (!background_task_runner_->PostTask(origin, task)) {
+    LOG(WARNING) << "Failed to post task from " << origin.ToString()
+                 << " to background_task_runner_.";
+  }
+}
+
+void SQLitePersistentCookieStore::Backend::PostClientTask(
+    const tracked_objects::Location& origin, const base::Closure& task) {
+  if (!client_task_runner_->PostTask(origin, task)) {
+    LOG(WARNING) << "Failed to post task from " << origin.ToString()
+                 << " to client_task_runner_.";
+  }
+}
+
 SQLitePersistentCookieStore::SQLitePersistentCookieStore(
     const base::FilePath& path,
+    const scoped_refptr<base::SequencedTaskRunner>& client_task_runner,
+    const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
     bool restore_old_session_cookies,
     ClearOnExitPolicy* clear_on_exit_policy)
-    : backend_(
-        new Backend(path, restore_old_session_cookies, clear_on_exit_policy)) {
+    : backend_(new Backend(path,
+                           client_task_runner,
+                           background_task_runner,
+                           restore_old_session_cookies,
+                           clear_on_exit_policy)) {
 }
 
 void SQLitePersistentCookieStore::Load(const LoadedCallback& loaded_callback) {
@@ -1104,5 +1126,5 @@ void SQLitePersistentCookieStore::Flush(const base::Closure& callback) {
 SQLitePersistentCookieStore::~SQLitePersistentCookieStore() {
   backend_->Close();
   // We release our reference to the Backend, though it will probably still have
-  // a reference if the background thread has not run Close() yet.
+  // a reference if the background runner has not run Close() yet.
 }
