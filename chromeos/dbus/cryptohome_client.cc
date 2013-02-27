@@ -18,12 +18,6 @@ namespace chromeos {
 
 namespace {
 
-// A convenient macro to initialize a dbus::MethodCall while checking the dbus
-// method name matches to the C++ method name.
-#define INITIALIZE_METHOD_CALL(method_call_name, method_name)         \
-  DCHECK_EQ(std::string(method_name), __FUNCTION__);                  \
-  dbus::MethodCall method_call_name(cryptohome::kCryptohomeInterface, \
-                                    method_name);
 // The CryptohomeClient implementation.
 class CryptohomeClientImpl : public CryptohomeClient {
  public:
@@ -65,13 +59,15 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
   // CryptohomeClient override.
   virtual void IsMounted(const BoolDBusMethodCallback& callback) OVERRIDE {
-    INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeIsMounted);
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomeIsMounted);
     CallBoolMethod(&method_call, callback);
   }
 
   // CryptohomeClient override.
   virtual bool Unmount(bool *success) OVERRIDE {
-    INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeUnmount);
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomeUnmount);
     return CallBoolMethodAndBlock(&method_call, success);
   }
 
@@ -79,7 +75,8 @@ class CryptohomeClientImpl : public CryptohomeClient {
   virtual void AsyncCheckKey(const std::string& username,
                              const std::string& key,
                              const AsyncMethodCallback& callback) OVERRIDE {
-    INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeAsyncCheckKey);
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomeAsyncCheckKey);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(username);
     writer.AppendString(key);
@@ -94,7 +91,8 @@ class CryptohomeClientImpl : public CryptohomeClient {
                                const std::string& from_key,
                                const std::string& to_key,
                                const AsyncMethodCallback& callback) OVERRIDE {
-    INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeAsyncMigrateKey);
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomeAsyncMigrateKey);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(username);
     writer.AppendString(from_key);
@@ -108,7 +106,8 @@ class CryptohomeClientImpl : public CryptohomeClient {
   // CryptohomeClient override.
   virtual void AsyncRemove(const std::string& username,
                            const AsyncMethodCallback& callback) OVERRIDE {
-    INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeAsyncRemove);
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomeAsyncRemove);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(username);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
@@ -119,7 +118,8 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
   // CryptohomeClient override.
   virtual bool GetSystemSalt(std::vector<uint8>* salt) OVERRIDE {
-    INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeGetSystemSalt);
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomeGetSystemSalt);
     scoped_ptr<dbus::Response> response(
         blocking_method_caller_.CallMethodAndBlock(&method_call));
     if (!response.get())
@@ -137,8 +137,8 @@ class CryptohomeClientImpl : public CryptohomeClient {
   virtual void GetSanitizedUsername(
       const std::string& username,
       const StringDBusMethodCallback& callback) OVERRIDE {
-    INITIALIZE_METHOD_CALL(method_call,
-                           cryptohome::kCryptohomeGetSanitizedUsername);
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomeGetSanitizedUsername);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(username);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
@@ -152,7 +152,8 @@ class CryptohomeClientImpl : public CryptohomeClient {
                           const std::string& key,
                           int flags,
                           const AsyncMethodCallback& callback) OVERRIDE {
-    INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeAsyncMount);
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomeAsyncMount);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(username);
     writer.AppendString(key);
@@ -168,7 +169,8 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
   // CryptohomeClient override.
   virtual void AsyncMountGuest(const AsyncMethodCallback& callback) OVERRIDE {
-    INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeAsyncMountGuest);
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomeAsyncMountGuest);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
                                   weak_ptr_factory_.GetWeakPtr(),
@@ -177,21 +179,21 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
   // CryptohomeClient override.
   virtual void TpmIsReady(const BoolDBusMethodCallback& callback) OVERRIDE {
-    INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeTpmIsReady);
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomeTpmIsReady);
     CallBoolMethod(&method_call, callback);
   }
 
   // CryptohomeClient override.
   virtual void TpmIsEnabled(const BoolDBusMethodCallback& callback) OVERRIDE {
-    INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeTpmIsEnabled);
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomeTpmIsEnabled);
     CallBoolMethod(&method_call, callback);
   }
 
   // CryptohomeClient override.
   // TODO(hashimoto): Remove this method. crbug.com/141006
   virtual bool CallTpmIsEnabledAndBlock(bool* enabled) OVERRIDE {
-    // We don't use INITIALIZE_METHOD_CALL here because the C++ method name is
-    // different from the D-Bus method name (TpmIsEnabled).
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeTpmIsEnabled);
     return CallBoolMethodAndBlock(&method_call, enabled);
@@ -200,7 +202,8 @@ class CryptohomeClientImpl : public CryptohomeClient {
   // CryptohomeClient override.
   virtual void TpmGetPassword(
       const StringDBusMethodCallback& callback) OVERRIDE {
-    INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeTpmGetPassword);
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomeTpmGetPassword);
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&CryptohomeClientImpl::OnStringMethod,
@@ -210,52 +213,56 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
   // CryptohomeClient override.
   virtual void TpmIsOwned(const BoolDBusMethodCallback& callback) OVERRIDE {
-    INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeTpmIsOwned);
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomeTpmIsOwned);
     CallBoolMethod(&method_call, callback);
   }
 
   // CryptohomeClient override.
   // TODO(hashimoto): Remove this method. crbug.com/141012
   virtual bool CallTpmIsOwnedAndBlock(bool* owned) OVERRIDE {
-    INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeTpmIsOwned);
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomeTpmIsOwned);
     return CallBoolMethodAndBlock(&method_call, owned);
   }
 
   // CryptohomeClient override.
   virtual void TpmIsBeingOwned(const BoolDBusMethodCallback& callback)
       OVERRIDE {
-    INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeTpmIsBeingOwned);
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomeTpmIsBeingOwned);
     CallBoolMethod(&method_call, callback);
   }
 
   // CryptohomeClient override.
   // TODO(hashimoto): Remove this method. crbug.com/141011
   virtual bool CallTpmIsBeingOwnedAndBlock(bool* owning) OVERRIDE {
-    INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeTpmIsBeingOwned);
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomeTpmIsBeingOwned);
     return CallBoolMethodAndBlock(&method_call, owning);
   }
 
   // CryptohomeClient override.
   virtual void TpmCanAttemptOwnership(
       const VoidDBusMethodCallback& callback) OVERRIDE {
-    INITIALIZE_METHOD_CALL(method_call,
-                           cryptohome::kCryptohomeTpmCanAttemptOwnership);
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomeTpmCanAttemptOwnership);
     CallVoidMethod(&method_call, callback);
   }
 
   // CryptohomeClient overrides.
   virtual void TpmClearStoredPassword(const VoidDBusMethodCallback& callback)
       OVERRIDE {
-    INITIALIZE_METHOD_CALL(method_call,
-                           cryptohome::kCryptohomeTpmClearStoredPassword);
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomeTpmClearStoredPassword);
     CallVoidMethod(&method_call, callback);
   }
 
   // CryptohomeClient override.
   // TODO(hashimoto): Remove this method. crbug.com/141010
   virtual bool CallTpmClearStoredPasswordAndBlock() OVERRIDE {
-    INITIALIZE_METHOD_CALL(method_call,
-                           cryptohome::kCryptohomeTpmClearStoredPassword);
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomeTpmClearStoredPassword);
     scoped_ptr<dbus::Response> response(
         blocking_method_caller_.CallMethodAndBlock(&method_call));
     return response.get() != NULL;
@@ -264,16 +271,16 @@ class CryptohomeClientImpl : public CryptohomeClient {
   // CryptohomeClient override.
   virtual void Pkcs11IsTpmTokenReady(const BoolDBusMethodCallback& callback)
       OVERRIDE {
-    INITIALIZE_METHOD_CALL(method_call,
-                           cryptohome::kCryptohomePkcs11IsTpmTokenReady);
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomePkcs11IsTpmTokenReady);
     CallBoolMethod(&method_call, callback);
   }
 
   // CryptohomeClient override.
   virtual void Pkcs11GetTpmTokenInfo(
       const Pkcs11GetTpmTokenInfoCallback& callback) OVERRIDE {
-    INITIALIZE_METHOD_CALL(method_call,
-                           cryptohome::kCryptohomePkcs11GetTpmTokenInfo);
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomePkcs11GetTpmTokenInfo);
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(
@@ -286,8 +293,8 @@ class CryptohomeClientImpl : public CryptohomeClient {
   virtual bool InstallAttributesGet(const std::string& name,
                                     std::vector<uint8>* value,
                                     bool* successful) OVERRIDE {
-    INITIALIZE_METHOD_CALL(method_call,
-                           cryptohome::kCryptohomeInstallAttributesGet);
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomeInstallAttributesGet);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(name);
     scoped_ptr<dbus::Response> response(
@@ -308,8 +315,8 @@ class CryptohomeClientImpl : public CryptohomeClient {
   virtual bool InstallAttributesSet(const std::string& name,
                                     const std::vector<uint8>& value,
                                     bool* successful) OVERRIDE {
-    INITIALIZE_METHOD_CALL(method_call,
-                           cryptohome::kCryptohomeInstallAttributesSet);
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomeInstallAttributesSet);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(name);
     writer.AppendArrayOfBytes(value.data(), value.size());
@@ -318,54 +325,60 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
   // CryptohomeClient override.
   virtual bool InstallAttributesFinalize(bool* successful) OVERRIDE {
-    INITIALIZE_METHOD_CALL(method_call,
-                           cryptohome::kCryptohomeInstallAttributesFinalize);
+    dbus::MethodCall method_call(
+        cryptohome::kCryptohomeInterface,
+        cryptohome::kCryptohomeInstallAttributesFinalize);
     return CallBoolMethodAndBlock(&method_call, successful);
   }
 
   // CryptohomeClient override.
   virtual bool InstallAttributesIsReady(bool* is_ready) OVERRIDE {
-    INITIALIZE_METHOD_CALL(method_call,
-                           cryptohome::kCryptohomeInstallAttributesIsReady);
+    dbus::MethodCall method_call(
+        cryptohome::kCryptohomeInterface,
+        cryptohome::kCryptohomeInstallAttributesIsReady);
     return CallBoolMethodAndBlock(&method_call, is_ready);
   }
 
   // CryptohomeClient override.
   virtual bool InstallAttributesIsInvalid(bool* is_invalid) OVERRIDE {
-    INITIALIZE_METHOD_CALL(method_call,
-                           cryptohome::kCryptohomeInstallAttributesIsInvalid);
+    dbus::MethodCall method_call(
+        cryptohome::kCryptohomeInterface,
+        cryptohome::kCryptohomeInstallAttributesIsInvalid);
     return CallBoolMethodAndBlock(&method_call, is_invalid);
   }
 
   // CryptohomeClient override.
   virtual bool InstallAttributesIsFirstInstall(
       bool* is_first_install) OVERRIDE {
-    INITIALIZE_METHOD_CALL(
-        method_call, cryptohome::kCryptohomeInstallAttributesIsFirstInstall);
+    dbus::MethodCall method_call(
+        cryptohome::kCryptohomeInterface,
+        cryptohome::kCryptohomeInstallAttributesIsFirstInstall);
     return CallBoolMethodAndBlock(&method_call, is_first_install);
   }
 
   // CryptohomeClient override.
   virtual void TpmAttestationIsPrepared(
         const BoolDBusMethodCallback& callback) OVERRIDE {
-    INITIALIZE_METHOD_CALL(method_call,
-                           cryptohome::kCryptohomeTpmIsAttestationPrepared);
+    dbus::MethodCall method_call(
+        cryptohome::kCryptohomeInterface,
+        cryptohome::kCryptohomeTpmIsAttestationPrepared);
     return CallBoolMethod(&method_call, callback);
   }
 
   // CryptohomeClient override.
   virtual void TpmAttestationIsEnrolled(
         const BoolDBusMethodCallback& callback) OVERRIDE {
-    INITIALIZE_METHOD_CALL(method_call,
-                           cryptohome::kCryptohomeTpmIsAttestationEnrolled);
+    dbus::MethodCall method_call(
+        cryptohome::kCryptohomeInterface,
+        cryptohome::kCryptohomeTpmIsAttestationEnrolled);
     return CallBoolMethod(&method_call, callback);
   }
 
   // CryptohomeClient override.
   virtual void AsyncTpmAttestationCreateEnrollRequest(
       const AsyncMethodCallback& callback) OVERRIDE {
-    INITIALIZE_METHOD_CALL(
-        method_call,
+    dbus::MethodCall method_call(
+        cryptohome::kCryptohomeInterface,
         cryptohome::kCryptohomeAsyncTpmAttestationCreateEnrollRequest);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
@@ -377,8 +390,9 @@ class CryptohomeClientImpl : public CryptohomeClient {
   virtual void AsyncTpmAttestationEnroll(
       const std::string& pca_response,
       const AsyncMethodCallback& callback) OVERRIDE {
-    INITIALIZE_METHOD_CALL(method_call,
-                           cryptohome::kCryptohomeAsyncTpmAttestationEnroll);
+    dbus::MethodCall method_call(
+        cryptohome::kCryptohomeInterface,
+        cryptohome::kCryptohomeAsyncTpmAttestationEnroll);
     dbus::MessageWriter writer(&method_call);
     writer.AppendArrayOfBytes(
         reinterpret_cast<const uint8*>(pca_response.data()),
@@ -393,8 +407,8 @@ class CryptohomeClientImpl : public CryptohomeClient {
   virtual void AsyncTpmAttestationCreateCertRequest(
       bool is_cert_for_owner,
       const AsyncMethodCallback& callback) OVERRIDE {
-    INITIALIZE_METHOD_CALL(
-        method_call,
+    dbus::MethodCall method_call(
+        cryptohome::kCryptohomeInterface,
         cryptohome::kCryptohomeAsyncTpmAttestationCreateCertRequest);
     dbus::MessageWriter writer(&method_call);
     writer.AppendBool(is_cert_for_owner);
@@ -408,8 +422,8 @@ class CryptohomeClientImpl : public CryptohomeClient {
   virtual void AsyncTpmAttestationFinishCertRequest(
       const std::string& pca_response,
       const AsyncMethodCallback& callback) OVERRIDE {
-    INITIALIZE_METHOD_CALL(
-        method_call,
+    dbus::MethodCall method_call(
+        cryptohome::kCryptohomeInterface,
         cryptohome::kCryptohomeAsyncTpmAttestationFinishCertRequest);
     dbus::MessageWriter writer(&method_call);
     writer.AppendArrayOfBytes(
