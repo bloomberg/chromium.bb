@@ -132,7 +132,6 @@ cr.define('ntp', function() {
     if (loadTimeData.getBoolean('isDiscoveryInNTPEnabled'))
       sectionsToWaitFor++;
     measureNavDots();
-    layoutFooter();
 
     // Load the current theme colors.
     themeChanged();
@@ -197,6 +196,10 @@ cr.define('ntp', function() {
       $('chrome-web-store-link').addEventListener('click',
           onChromeWebStoreButtonClick);
     }
+
+    // We need to wait for all the footer menu setup to be completed before
+    // we can compute its layout.
+    layoutFooter();
 
     if (loadTimeData.getString('login_status_message')) {
       loginBubble = new cr.ui.Bubble;
@@ -366,6 +369,8 @@ cr.define('ntp', function() {
     var logo = $('logo-img');
     if (menu.clientWidth > logo.clientWidth)
       logo.style.width = menu.clientWidth + 'px';
+    else
+      menu.style.width = logo.clientWidth + 'px';
   }
 
   function themeChanged(opt_hasAttribution) {
