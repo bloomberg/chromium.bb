@@ -13,8 +13,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "chrome/browser/storage_monitor/mock_removable_storage_observer.h"
-#include "chrome/browser/storage_monitor/removable_storage_notifications.h"
-#include "chrome/browser/storage_monitor/test_removable_storage_notifications.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
+#include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -72,12 +72,12 @@ class MediaTransferProtocolDeviceObserverLinuxTest
  protected:
   virtual void SetUp() OVERRIDE {
     mock_storage_observer_.reset(new MockRemovableStorageObserver);
-    notifications_.AddObserver(mock_storage_observer_.get());
-    SetNotifications(notifications_.receiver());
+    monitor_.AddObserver(mock_storage_observer_.get());
+    SetNotifications(monitor_.receiver());
   }
 
   virtual void TearDown() OVERRIDE {
-    notifications_.RemoveObserver(mock_storage_observer_.get());
+    monitor_.RemoveObserver(mock_storage_observer_.get());
   }
 
   // Returns the device changed observer object.
@@ -105,7 +105,7 @@ class MediaTransferProtocolDeviceObserverLinuxTest
   MessageLoop message_loop_;
   content::TestBrowserThread file_thread_;
 
-  chrome::test::TestRemovableStorageNotifications notifications_;
+  chrome::test::TestStorageMonitor monitor_;
   scoped_ptr<MockRemovableStorageObserver> mock_storage_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaTransferProtocolDeviceObserverLinuxTest);

@@ -20,7 +20,7 @@ chrome::ImageCaptureDeviceManager* g_image_capture_device_manager = NULL;
 // This class is the surface for the Mac ICDeviceBrowser ImageCaptureCore API.
 // Owned by the ChromeBrowserParts and has browser process lifetime. Upon
 // creation, it gets a list of attached media volumes (asynchronously) which
-// it will eventually forward to RemovableStorageNotifications. It will also
+// it will eventually forward to StorageMonitor. It will also
 // set up an ImageCaptureCore listener to be told when new devices/volumes
 // are discovered and existing ones are removed.
 @interface ImageCaptureDeviceManagerImpl
@@ -31,12 +31,11 @@ chrome::ImageCaptureDeviceManager* g_image_capture_device_manager = NULL;
 
   // Guaranteed to outlive this class.
   // TODO(gbillock): Update when ownership chains go up through
-  // a RemovableStorageNotifications subclass.
-  chrome::RemovableStorageNotifications::Receiver* notifications_;
+  // a StorageMonitor subclass.
+  chrome::StorageMonitor::Receiver* notifications_;
 }
 
-- (void)setNotifications:(chrome::RemovableStorageNotifications::Receiver*)
-                         notifications;
+- (void)setNotifications:(chrome::StorageMonitor::Receiver*)notifications;
 - (void)close;
 
 // The UUIDs passed here are available in the device attach notifications.
@@ -62,8 +61,7 @@ chrome::ImageCaptureDeviceManager* g_image_capture_device_manager = NULL;
   return self;
 }
 
-- (void)setNotifications:(chrome::RemovableStorageNotifications::Receiver*)
-                         notifications {
+- (void)setNotifications:(chrome::StorageMonitor::Receiver*)notifications {
   notifications_ = notifications;
 }
 
@@ -135,7 +133,7 @@ ImageCaptureDeviceManager::~ImageCaptureDeviceManager() {
 }
 
 void ImageCaptureDeviceManager::SetNotifications(
-    RemovableStorageNotifications::Receiver* notifications) {
+    StorageMonitor::Receiver* notifications) {
   [device_browser_ setNotifications:notifications];
 }
 

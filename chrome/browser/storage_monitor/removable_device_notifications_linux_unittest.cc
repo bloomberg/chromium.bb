@@ -21,7 +21,7 @@
 #include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "chrome/browser/storage_monitor/mock_removable_storage_observer.h"
 #include "chrome/browser/storage_monitor/removable_device_constants.h"
-#include "chrome/browser/storage_monitor/removable_storage_notifications.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -622,29 +622,29 @@ TEST_F(RemovableDeviceNotificationLinuxTest, DeviceLookUp) {
   EXPECT_EQ(2, observer().attach_calls());
   EXPECT_EQ(0, observer().detach_calls());
 
-  RemovableStorageNotifications::StorageInfo device_info;
-  EXPECT_TRUE(notifier()->GetDeviceInfoForPath(test_path_a, &device_info));
+  StorageMonitor::StorageInfo device_info;
+  EXPECT_TRUE(notifier()->GetStorageInfoForPath(test_path_a, &device_info));
   EXPECT_EQ(GetDeviceId(kDeviceDCIM1), device_info.device_id);
   EXPECT_EQ(test_path_a.value(), device_info.location);
   EXPECT_EQ(GetDeviceName(kDeviceDCIM1), device_info.name);
 
-  EXPECT_TRUE(notifier()->GetDeviceInfoForPath(test_path_b, &device_info));
+  EXPECT_TRUE(notifier()->GetStorageInfoForPath(test_path_b, &device_info));
   EXPECT_EQ(GetDeviceId(kDeviceNoDCIM), device_info.device_id);
   EXPECT_EQ(test_path_b.value(), device_info.location);
   EXPECT_EQ(GetDeviceName(kDeviceNoDCIM), device_info.name);
 
-  EXPECT_TRUE(notifier()->GetDeviceInfoForPath(test_path_c, &device_info));
+  EXPECT_TRUE(notifier()->GetStorageInfoForPath(test_path_c, &device_info));
   EXPECT_EQ(GetDeviceId(kDeviceFixed), device_info.device_id);
   EXPECT_EQ(test_path_c.value(), device_info.location);
   EXPECT_EQ(GetDeviceName(kDeviceFixed), device_info.name);
 
   // An invalid path.
   EXPECT_FALSE(
-      notifier()->GetDeviceInfoForPath(base::FilePath(kInvalidPath), NULL));
+      notifier()->GetStorageInfoForPath(base::FilePath(kInvalidPath), NULL));
 
   // Test filling in of the mount point.
   EXPECT_TRUE(
-      notifier()->GetDeviceInfoForPath(test_path_a.Append("some/other/path"),
+      notifier()->GetStorageInfoForPath(test_path_a.Append("some/other/path"),
       &device_info));
   EXPECT_EQ(GetDeviceId(kDeviceDCIM1), device_info.device_id);
   EXPECT_EQ(test_path_a.value(), device_info.location);
@@ -661,13 +661,13 @@ TEST_F(RemovableDeviceNotificationLinuxTest, DeviceLookUp) {
   };
   AppendToMtabAndRunLoop(test_data2, arraysize(test_data2));
 
-  EXPECT_TRUE(notifier()->GetDeviceInfoForPath(test_path_a, &device_info));
+  EXPECT_TRUE(notifier()->GetStorageInfoForPath(test_path_a, &device_info));
   EXPECT_EQ(GetDeviceId(kDeviceDCIM1), device_info.device_id);
 
-  EXPECT_TRUE(notifier()->GetDeviceInfoForPath(test_path_b, &device_info));
+  EXPECT_TRUE(notifier()->GetStorageInfoForPath(test_path_b, &device_info));
   EXPECT_EQ(GetDeviceId(kDeviceFixed), device_info.device_id);
 
-  EXPECT_TRUE(notifier()->GetDeviceInfoForPath(test_path_c, &device_info));
+  EXPECT_TRUE(notifier()->GetStorageInfoForPath(test_path_c, &device_info));
   EXPECT_EQ(GetDeviceId(kDeviceFixed), device_info.device_id);
 
   EXPECT_EQ(2, observer().attach_calls());

@@ -28,7 +28,7 @@
 #include "chrome/browser/media_gallery/scoped_mtp_device_map_entry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
-#include "chrome/browser/storage_monitor/removable_storage_notifications.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -401,9 +401,13 @@ class ExtensionGalleriesHost
   uint64 GetTransientIdForRemovableDeviceId(const std::string& device_id) {
     if (!MediaStorageUtil::IsRemovableDevice(device_id))
       return 0;
-    RemovableStorageNotifications* storage_notifications =
-        RemovableStorageNotifications::GetInstance();
-    return storage_notifications->GetTransientIdForDeviceId(device_id);
+
+    // StorageMonitor may be NULL in unit tests.
+    StorageMonitor* monitor = StorageMonitor::GetInstance();
+    if (!monitor)
+      return 0;
+
+    return monitor->GetTransientIdForDeviceId(device_id);
   }
 
   // This code is deprecated and should be removed. See http://crbug.com/170138
@@ -548,13 +552,12 @@ MediaGalleriesPreferences* MediaFileSystemRegistry::GetPreferences(
   // once per profile.
   extension_hosts_map_[profile] = ExtensionHostMap();
 
-  // RemovableStorageNotifications may be NULL in unit tests.
-  RemovableStorageNotifications* notifications =
-      RemovableStorageNotifications::GetInstance();
-  if (!notifications)
+  // StorageMonitor may be NULL in unit tests.
+  StorageMonitor* monitor = StorageMonitor::GetInstance();
+  if (!monitor)
     return preferences;
-  std::vector<RemovableStorageNotifications::StorageInfo>
-      existing_devices = notifications->GetAttachedStorage();
+  std::vector<StorageMonitor::StorageInfo> existing_devices =
+      monitor->GetAttachedStorage();
   for (size_t i = 0; i < existing_devices.size(); i++) {
     if (!MediaStorageUtil::IsMediaDevice(existing_devices[i].device_id))
       continue;
@@ -567,7 +570,7 @@ MediaGalleriesPreferences* MediaFileSystemRegistry::GetPreferences(
 }
 
 void MediaFileSystemRegistry::OnRemovableStorageAttached(
-    const RemovableStorageNotifications::StorageInfo& info) {
+    const StorageMonitor::StorageInfo& info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!MediaStorageUtil::IsMediaDevice(info.device_id))
@@ -585,7 +588,7 @@ void MediaFileSystemRegistry::OnRemovableStorageAttached(
 }
 
 void MediaFileSystemRegistry::OnRemovableStorageDetached(
-    const RemovableStorageNotifications::StorageInfo& info) {
+    const StorageMonitor::StorageInfo& info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Since revoking a gallery in the ExtensionGalleriesHost may cause it
@@ -708,19 +711,17 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
 
 MediaFileSystemRegistry::MediaFileSystemRegistry()
     : file_system_context_(new MediaFileSystemContextImpl(this)) {
-  // RemovableStorageNotifications may be NULL in unit tests.
-  RemovableStorageNotifications* notifications =
-      RemovableStorageNotifications::GetInstance();
-  if (notifications)
-    notifications->AddObserver(this);
+  // StorageMonitor may be NULL in unit tests.
+  StorageMonitor* monitor = StorageMonitor::GetInstance();
+  if (monitor)
+    monitor->AddObserver(this);
 }
 
 MediaFileSystemRegistry::~MediaFileSystemRegistry() {
-  // RemovableStorageNotifications may be NULL in unit tests.
-  RemovableStorageNotifications* notifications =
-      RemovableStorageNotifications::GetInstance();
-  if (notifications)
-    notifications->RemoveObserver(this);
+  // StorageMonitor may be NULL in unit tests.
+  StorageMonitor* monitor = StorageMonitor::GetInstance();
+  if (monitor)
+    monitor->RemoveObserver(this);
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   DCHECK(mtp_device_delegate_map_.empty());
 #endif

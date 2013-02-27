@@ -8,8 +8,8 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
-#include "chrome/browser/storage_monitor/removable_storage_notifications.h"
-#include "chrome/browser/storage_monitor/test_removable_storage_notifications.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
+#include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,11 +30,11 @@ class MediaStorageUtilTest : public testing::Test {
   void ProcessAttach(const std::string& id,
                      const string16& name,
                      const base::FilePath::StringType& location) {
-    notifications_.ProcessAttach(id, name, location);
+    monitor_.receiver()->ProcessAttach(id, name, location);
   }
 
  private:
-  chrome::test::TestRemovableStorageNotifications notifications_;
+  chrome::test::TestStorageMonitor monitor_;
 };
 
 // Test to verify |MediaStorageUtil::MakeDeviceId| functionality using a sample

@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/storage_monitor/removable_storage_notifications.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
 
 namespace base {
 class FilePath;
@@ -23,8 +23,7 @@ class TestRemovableDeviceNotificationsWindowWin;
 class PortableDeviceWatcherWin;
 class VolumeMountWatcherWin;
 
-class RemovableDeviceNotificationsWindowWin
-    : public RemovableStorageNotifications {
+class RemovableDeviceNotificationsWindowWin : public StorageMonitor {
  public:
   // Creates an instance of RemovableDeviceNotificationsWindowWin. Should only
   // be called by browser start up code. Use GetInstance() instead.
@@ -35,8 +34,8 @@ class RemovableDeviceNotificationsWindowWin
   // Must be called after the file thread is created.
   void Init();
 
-  // RemovableStorageNotifications:
-  virtual bool GetDeviceInfoForPath(
+  // StorageMonitor:
+  virtual bool GetStorageInfoForPath(
       const base::FilePath& path,
       StorageInfo* device_info) const OVERRIDE;
   virtual bool GetMTPStorageInfoFromDeviceId(

@@ -255,7 +255,7 @@ void RemovableDeviceNotificationsLinux::Init() {
       base::Bind(&RemovableDeviceNotificationsLinux::InitOnFileThread, this));
 }
 
-bool RemovableDeviceNotificationsLinux::GetDeviceInfoForPath(
+bool RemovableDeviceNotificationsLinux::GetStorageInfoForPath(
     const base::FilePath& path,
     StorageInfo* device_info) const {
   if (!path.IsAbsolute())

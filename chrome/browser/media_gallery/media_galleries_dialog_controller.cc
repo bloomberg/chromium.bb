@@ -11,7 +11,7 @@
 #include "chrome/browser/media_gallery/media_file_system_registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
-#include "chrome/browser/storage_monitor/removable_storage_notifications.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
@@ -30,8 +30,8 @@ bool IsAttachedDevice(const std::string& device_id) {
   if (!MediaStorageUtil::IsRemovableDevice(device_id))
     return false;
 
-  std::vector<RemovableStorageNotifications::StorageInfo> removable_storages =
-      RemovableStorageNotifications::GetInstance()->GetAttachedStorage();
+  std::vector<StorageMonitor::StorageInfo> removable_storages =
+      StorageMonitor::GetInstance()->GetAttachedStorage();
   for (size_t i = 0; i < removable_storages.size(); ++i) {
     if (removable_storages[i].device_id == device_id)
       return true;
@@ -56,10 +56,9 @@ MediaGalleriesDialogController::MediaGalleriesDialogController(
 
   dialog_.reset(MediaGalleriesDialog::Create(this));
 
-  RemovableStorageNotifications* notifications =
-      RemovableStorageNotifications::GetInstance();
-  if (notifications)
-    notifications->AddObserver(this);
+  StorageMonitor* monitor = StorageMonitor::GetInstance();
+  if (monitor)
+    monitor->AddObserver(this);
 
   preferences_->AddGalleryChangeObserver(this);
 }
@@ -70,10 +69,9 @@ MediaGalleriesDialogController::MediaGalleriesDialogController()
       preferences_(NULL) {}
 
 MediaGalleriesDialogController::~MediaGalleriesDialogController() {
-  RemovableStorageNotifications* notifications =
-      RemovableStorageNotifications::GetInstance();
-  if (notifications)
-    notifications->RemoveObserver(this);
+  StorageMonitor* monitor = StorageMonitor::GetInstance();
+  if (monitor)
+    monitor->RemoveObserver(this);
 
   if (select_folder_dialog_.get())
     select_folder_dialog_->ListenerDestroyed();
@@ -217,12 +215,12 @@ void MediaGalleriesDialogController::FileSelected(const base::FilePath& path,
 }
 
 void MediaGalleriesDialogController::OnRemovableStorageAttached(
-    const RemovableStorageNotifications::StorageInfo& info) {
+    const StorageMonitor::StorageInfo& info) {
   UpdateGalleriesOnDeviceEvent(info.device_id);
 }
 
 void MediaGalleriesDialogController::OnRemovableStorageDetached(
-    const RemovableStorageNotifications::StorageInfo& info) {
+    const StorageMonitor::StorageInfo& info) {
   UpdateGalleriesOnDeviceEvent(info.device_id);
 }
 

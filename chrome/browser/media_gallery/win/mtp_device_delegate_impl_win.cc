@@ -24,7 +24,7 @@
 #include "chrome/browser/media_gallery/win/mtp_device_operations_util.h"
 #include "chrome/browser/media_gallery/win/recursive_mtp_device_object_enumerator.h"
 #include "chrome/browser/storage_monitor/removable_device_notifications_window_win.h"
-#include "chrome/browser/storage_monitor/removable_storage_notifications.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chrome {
@@ -44,12 +44,12 @@ void GetStorageInfoAndMaybeCreateDelegate(
   string16 storage_device_id;
   RemoveChars(storage_path, L"\\\\", &storage_device_id);
   DCHECK(!storage_device_id.empty());
-  RemovableStorageNotifications* notifications =
-      RemovableStorageNotifications::GetInstance();
-  DCHECK(notifications);
+  // TODO(gbillock): Take the StorageMonitor as an argument.
+  StorageMonitor* monitor = StorageMonitor::GetInstance();
+  DCHECK(monitor);
   string16 pnp_device_id;
   string16 storage_object_id;
-  if ((!notifications->GetMTPStorageInfoFromDeviceId(
+  if ((!monitor->GetMTPStorageInfoFromDeviceId(
           UTF16ToUTF8(storage_device_id), &pnp_device_id,
           &storage_object_id)) ||
        pnp_device_id.empty() ||

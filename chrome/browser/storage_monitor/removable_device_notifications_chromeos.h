@@ -19,13 +19,13 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/storage_monitor/removable_storage_notifications.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chromeos/disks/disk_mount_manager.h"
 
 namespace chromeos {
 
 class RemovableDeviceNotificationsCros
-    : public chrome::RemovableStorageNotifications,
+    : public chrome::StorageMonitor,
       public base::RefCountedThreadSafe<RemovableDeviceNotificationsCros>,
       public disks::DiskMountManager::Observer {
  public:
@@ -46,7 +46,7 @@ class RemovableDeviceNotificationsCros
 
   // Finds the device that contains |path| and populates |device_info|.
   // Returns false if unable to find the device.
-  virtual bool GetDeviceInfoForPath(
+  virtual bool GetStorageInfoForPath(
       const base::FilePath& path,
       StorageInfo* device_info) const OVERRIDE;
 

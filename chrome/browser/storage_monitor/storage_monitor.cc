@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/storage_monitor/removable_storage_notifications.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
 
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
@@ -11,13 +11,12 @@
 
 namespace chrome {
 
-static RemovableStorageNotifications*
-    g_removable_storage_notifications = NULL;
+static StorageMonitor* g_storage_monitor = NULL;
 
-RemovableStorageNotifications::StorageInfo::StorageInfo() {
+StorageMonitor::StorageInfo::StorageInfo() {
 }
 
-RemovableStorageNotifications::StorageInfo::StorageInfo(
+StorageMonitor::StorageInfo::StorageInfo(
     const std::string& id,
     const string16& device_name,
     const base::FilePath::StringType& device_location)
@@ -26,13 +25,12 @@ RemovableStorageNotifications::StorageInfo::StorageInfo(
       location(device_location) {
 }
 
-RemovableStorageNotifications::Receiver::~Receiver() {
+StorageMonitor::Receiver::~Receiver() {
 }
 
-class RemovableStorageNotifications::ReceiverImpl
-    : public RemovableStorageNotifications::Receiver {
+class StorageMonitor::ReceiverImpl : public StorageMonitor::Receiver {
  public:
-  explicit ReceiverImpl(RemovableStorageNotifications* notifications)
+  explicit ReceiverImpl(StorageMonitor* notifications)
       : notifications_(notifications) {}
 
   virtual ~ReceiverImpl() {}
@@ -45,28 +43,28 @@ class RemovableStorageNotifications::ReceiverImpl
   virtual void ProcessDetach(const std::string& id) OVERRIDE;
 
  private:
-  RemovableStorageNotifications* notifications_;
+  StorageMonitor* notifications_;
 };
 
-void RemovableStorageNotifications::ReceiverImpl::ProcessAttach(
+void StorageMonitor::ReceiverImpl::ProcessAttach(
     const std::string& id,
     const string16& name,
     const base::FilePath::StringType& location) {
   notifications_->ProcessAttach(
-      RemovableStorageNotifications::StorageInfo(id, name, location));
+      StorageMonitor::StorageInfo(id, name, location));
 }
 
-void RemovableStorageNotifications::ReceiverImpl::ProcessDetach(
+void StorageMonitor::ReceiverImpl::ProcessDetach(
     const std::string& id) {
   notifications_->ProcessDetach(id);
 }
 
-RemovableStorageNotifications* RemovableStorageNotifications::GetInstance() {
-  return g_removable_storage_notifications;
+StorageMonitor* StorageMonitor::GetInstance() {
+  return g_storage_monitor;
 }
 
-std::vector<RemovableStorageNotifications::StorageInfo>
-RemovableStorageNotifications::GetAttachedStorage() const {
+std::vector<StorageMonitor::StorageInfo>
+StorageMonitor::GetAttachedStorage() const {
   std::vector<StorageInfo> results;
 
   base::AutoLock lock(storage_lock_);
@@ -78,26 +76,26 @@ RemovableStorageNotifications::GetAttachedStorage() const {
   return results;
 }
 
-void RemovableStorageNotifications::AddObserver(RemovableStorageObserver* obs) {
+void StorageMonitor::AddObserver(RemovableStorageObserver* obs) {
   observer_list_->AddObserver(obs);
 }
 
-void RemovableStorageNotifications::RemoveObserver(
+void StorageMonitor::RemoveObserver(
     RemovableStorageObserver* obs) {
   observer_list_->RemoveObserver(obs);
 }
 
-uint64 RemovableStorageNotifications::GetTransientIdForDeviceId(
+uint64 StorageMonitor::GetTransientIdForDeviceId(
     const std::string& device_id) {
   return transient_device_ids_->GetTransientIdForDeviceId(device_id);
 }
 
-std::string RemovableStorageNotifications::GetDeviceIdForTransientId(
+std::string StorageMonitor::GetDeviceIdForTransientId(
     uint64 transient_id) const {
   return transient_device_ids_->DeviceIdFromTransientId(transient_id);
 }
 
-void RemovableStorageNotifications::EjectDevice(
+void StorageMonitor::EjectDevice(
     const std::string& device_id,
     base::Callback<void(EjectStatus)> callback) {
   // Platform-specific implementations will override this method to
@@ -105,30 +103,29 @@ void RemovableStorageNotifications::EjectDevice(
   callback.Run(EJECT_FAILURE);
 }
 
-RemovableStorageNotifications::RemovableStorageNotifications()
+StorageMonitor::StorageMonitor()
     : observer_list_(new ObserverListThreadSafe<RemovableStorageObserver>()),
       transient_device_ids_(new TransientDeviceIds) {
   receiver_.reset(new ReceiverImpl(this));
 
-  DCHECK(!g_removable_storage_notifications);
-  g_removable_storage_notifications = this;
+  DCHECK(!g_storage_monitor);
+  g_storage_monitor = this;
 }
 
-RemovableStorageNotifications::~RemovableStorageNotifications() {
-  g_removable_storage_notifications = NULL;
+StorageMonitor::~StorageMonitor() {
+  g_storage_monitor = NULL;
 }
 
 // static
-void RemovableStorageNotifications::RemoveSingletonForTesting() {
-  g_removable_storage_notifications = NULL;
+void StorageMonitor::RemoveSingletonForTesting() {
+  g_storage_monitor = NULL;
 }
 
-RemovableStorageNotifications::Receiver*
-RemovableStorageNotifications::receiver() const {
+StorageMonitor::Receiver* StorageMonitor::receiver() const {
   return receiver_.get();
 }
 
-void RemovableStorageNotifications::ProcessAttach(
+void StorageMonitor::ProcessAttach(
     const StorageInfo& info) {
   {
     base::AutoLock lock(storage_lock_);
@@ -146,7 +143,7 @@ void RemovableStorageNotifications::ProcessAttach(
       &RemovableStorageObserver::OnRemovableStorageAttached, info);
 }
 
-void RemovableStorageNotifications::ProcessDetach(const std::string& id) {
+void StorageMonitor::ProcessDetach(const std::string& id) {
   StorageInfo info;
   {
     base::AutoLock lock(storage_lock_);

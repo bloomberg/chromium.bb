@@ -351,7 +351,7 @@ void VolumeMountWatcherWin::OnWindowMessage(UINT event_type, LPARAM data) {
 }
 
 void VolumeMountWatcherWin::SetNotifications(
-    RemovableStorageNotifications::Receiver* notifications) {
+    StorageMonitor::Receiver* notifications) {
   notifications_ = notifications;
 }
 

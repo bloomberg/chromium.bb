@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/string16.h"
-#include "chrome/browser/storage_monitor/removable_storage_notifications.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 
 namespace base {
@@ -26,7 +26,7 @@ typedef void (*GetStorageInfoFunc)(const std::string& storage_name,
                                    std::string* location);
 
 // Helper class to send MTP storage attachment and detachment events to
-// RemovableStorageNotifications.
+// StorageMonitor.
 class MediaTransferProtocolDeviceObserverLinux
     : public device::MediaTransferProtocolManager::Observer {
  public:
@@ -38,13 +38,12 @@ class MediaTransferProtocolDeviceObserverLinux
 
   // Finds the storage that contains |path| and populates |storage_info|.
   // Returns false if unable to find the storage.
-  bool GetStorageInfoForPath(
-      const base::FilePath& path,
-      RemovableStorageNotifications::StorageInfo* storage_info) const;
+  bool GetStorageInfoForPath(const base::FilePath& path,
+                             StorageMonitor::StorageInfo* storage_info) const;
 
   // Set the volume notifications object to be used when new
   // MTP devices are found.
-  void SetNotifications(RemovableStorageNotifications::Receiver* notifications);
+  void SetNotifications(StorageMonitor::Receiver* notifications);
 
  protected:
   // Only used in unit tests.
@@ -58,7 +57,7 @@ class MediaTransferProtocolDeviceObserverLinux
 
  private:
   // Mapping of storage location and mtp storage info object.
-  typedef std::map<std::string, RemovableStorageNotifications::StorageInfo>
+  typedef std::map<std::string, StorageMonitor::StorageInfo>
       StorageLocationToInfoMap;
 
   // Enumerate existing mtp storage devices.
@@ -74,8 +73,8 @@ class MediaTransferProtocolDeviceObserverLinux
   // The notifications object to use to signal newly attached devices.
   // Guaranteed to outlive this class.
   // TODO(gbillock): Edit this when this class is owned by a
-  // RemovableStorageNotifications subclass.
-  RemovableStorageNotifications::Receiver* notifications_;
+  // StorageMonitor subclass.
+  StorageMonitor::Receiver* notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaTransferProtocolDeviceObserverLinux);
 };

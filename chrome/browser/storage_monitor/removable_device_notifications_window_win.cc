@@ -78,7 +78,7 @@ void RemovableDeviceNotificationsWindowWin::Init() {
   portable_device_watcher_->Init(window_);
 }
 
-bool RemovableDeviceNotificationsWindowWin::GetDeviceInfoForPath(
+bool RemovableDeviceNotificationsWindowWin::GetStorageInfoForPath(
     const base::FilePath& path,
     StorageInfo* device_info) const {
   string16 location;

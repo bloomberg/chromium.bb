@@ -13,7 +13,7 @@
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/media_gallery/media_galleries_preferences.h"
-#include "chrome/browser/storage_monitor/removable_storage_notifications.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/common/extensions/api/media_galleries_private.h"
 
 class Profile;
@@ -142,8 +142,7 @@ class MediaGalleriesPrivateEjectDeviceFunction
 
  private:
   // Eject device request handler.
-  void HandleResponse(
-      chrome::RemovableStorageNotifications::EjectStatus status);
+  void HandleResponse(chrome::StorageMonitor::EjectStatus status);
 };
 
 }  // namespace extensions

@@ -308,16 +308,15 @@ bool MediaGalleriesPrivateEjectDeviceFunction::RunImpl() {
   scoped_ptr<EjectDevice::Params> params(EjectDevice::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  chrome::RemovableStorageNotifications* storage_notifications =
-      chrome::RemovableStorageNotifications::GetInstance();
+  chrome::StorageMonitor* monitor = chrome::StorageMonitor::GetInstance();
   std::string device_id_str =
-      storage_notifications->GetDeviceIdForTransientId(params->device_id);
+      monitor->GetDeviceIdForTransientId(params->device_id);
   if (device_id_str == "") {
-    HandleResponse(chrome::RemovableStorageNotifications::EJECT_NO_SUCH_DEVICE);
+    HandleResponse(chrome::StorageMonitor::EJECT_NO_SUCH_DEVICE);
     return true;
   }
 
-  storage_notifications->EjectDevice(
+  monitor->EjectDevice(
       device_id_str,
       base::Bind(&MediaGalleriesPrivateEjectDeviceFunction::HandleResponse,
                  base::Unretained(this)));
@@ -326,7 +325,7 @@ bool MediaGalleriesPrivateEjectDeviceFunction::RunImpl() {
 }
 
 void MediaGalleriesPrivateEjectDeviceFunction::HandleResponse(
-    chrome::RemovableStorageNotifications::EjectStatus status) {
+    chrome::StorageMonitor::EjectStatus status) {
 
   using extensions::api::media_galleries_private::
       EJECT_DEVICE_RESULT_CODE_FAILURE;
@@ -339,11 +338,11 @@ void MediaGalleriesPrivateEjectDeviceFunction::HandleResponse(
   using extensions::api::media_galleries_private::EjectDeviceResultCode;
 
   EjectDeviceResultCode result = EJECT_DEVICE_RESULT_CODE_FAILURE;
-  if (status == chrome::RemovableStorageNotifications::EJECT_OK)
+  if (status == chrome::StorageMonitor::EJECT_OK)
     result = EJECT_DEVICE_RESULT_CODE_SUCCESS;
-  if (status == chrome::RemovableStorageNotifications::EJECT_IN_USE)
+  if (status == chrome::StorageMonitor::EJECT_IN_USE)
     result = EJECT_DEVICE_RESULT_CODE_IN_USE;
-  if (status == chrome::RemovableStorageNotifications::EJECT_NO_SUCH_DEVICE)
+  if (status == chrome::StorageMonitor::EJECT_NO_SUCH_DEVICE)
     result = EJECT_DEVICE_RESULT_CODE_NO_SUCH_DEVICE;
 
   SetResult(base::StringValue::CreateStringValue(

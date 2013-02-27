@@ -89,9 +89,9 @@ class MediaFileSystemRegistry : public RemovableStorageObserver {
 
   // RemovableStorageObserver implementation.
   virtual void OnRemovableStorageAttached(
-      const RemovableStorageNotifications::StorageInfo& info) OVERRIDE;
+      const StorageMonitor::StorageInfo& info) OVERRIDE;
   virtual void OnRemovableStorageDetached(
-      const RemovableStorageNotifications::StorageInfo& info) OVERRIDE;
+      const StorageMonitor::StorageInfo& info) OVERRIDE;
 
   size_t GetExtensionGalleriesHostCountForTests() const;
 

@@ -12,7 +12,7 @@
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/storage_monitor/media_device_notifications_utils.h"
-#include "chrome/browser/storage_monitor/removable_storage_notifications.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_LINUX)  // Implies OS_CHROMEOS
@@ -59,12 +59,10 @@ void ValidatePathOnFileThread(
                           base::Bind(callback, file_util::PathExists(path)));
 }
 
-typedef std::vector<RemovableStorageNotifications::StorageInfo>
-    StorageInfoList;
+typedef std::vector<StorageMonitor::StorageInfo> StorageInfoList;
 
 bool IsRemovableStorageAttached(const std::string& id) {
-  StorageInfoList devices =
-      RemovableStorageNotifications::GetInstance()->GetAttachedStorage();
+  StorageInfoList devices = StorageMonitor::GetInstance()->GetAttachedStorage();
   for (StorageInfoList::const_iterator it = devices.begin();
        it != devices.end(); ++it) {
     if (it->device_id == id)
@@ -75,8 +73,7 @@ bool IsRemovableStorageAttached(const std::string& id) {
 
 base::FilePath::StringType FindRemovableStorageLocationById(
     const std::string& device_id) {
-  StorageInfoList devices =
-      RemovableStorageNotifications::GetInstance()->GetAttachedStorage();
+  StorageInfoList devices = StorageMonitor::GetInstance()->GetAttachedStorage();
   for (StorageInfoList::const_iterator it = devices.begin();
        it != devices.end(); ++it) {
     if (it->device_id == device_id)
@@ -273,16 +270,13 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const base::FilePath& path,
   }
 
   // TODO(gbillock): rationalize this sequence into call(s) to
-  // RemovableStorageNotifications and uniform use/loading of
-  // the display name into StorageInfo, or else delegate name
-  // construction as well.
+  // StorageMonitor and delegate name construction as well.
 
   bool found_device = false;
-  RemovableStorageNotifications::StorageInfo device_info;
+  StorageMonitor::StorageInfo device_info;
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
-  RemovableStorageNotifications* notifier =
-      RemovableStorageNotifications::GetInstance();
-  found_device = notifier->GetDeviceInfoForPath(path, &device_info);
+  StorageMonitor* monitor = StorageMonitor::GetInstance();
+  found_device = monitor->GetStorageInfoForPath(path, &device_info);
 #endif
 
 #if defined(OS_LINUX)
@@ -309,7 +303,7 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const base::FilePath& path,
 // OS_LINUX implies OS_CHROMEOS
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
       *device_name = GetDisplayNameForDevice(
-          notifier->GetStorageSize(device_info.location),
+          monitor->GetStorageSize(device_info.location),
           GetDisplayNameForSubFolder(device_info.name, sub_folder_path));
 #else
       *device_name = device_info.name;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_STORAGE_MONITOR_REMOVABLE_STORAGE_NOTIFICATIONS_H_
-#define CHROME_BROWSER_STORAGE_MONITOR_REMOVABLE_STORAGE_NOTIFICATIONS_H_
+#ifndef CHROME_BROWSER_STORAGE_MONITOR_STORAGE_MONITOR_H_
+#define CHROME_BROWSER_STORAGE_MONITOR_STORAGE_MONITOR_H_
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -24,7 +24,7 @@ class TransientDeviceIds;
 
 // Base class for platform-specific instances watching for removable storage
 // attachments/detachments.
-class RemovableStorageNotifications {
+class StorageMonitor {
  public:
   struct StorageInfo {
     StorageInfo();
@@ -63,20 +63,23 @@ class RemovableStorageNotifications {
 
   // Returns a pointer to an object owned by the BrowserMainParts, with lifetime
   // somewhat shorter than a process Singleton.
-  static RemovableStorageNotifications* GetInstance();
+  static StorageMonitor* GetInstance();
 
   // Finds the device that contains |path| and populates |device_info|.
   // Should be able to handle any path on the local system, not just removable
   // storage. Returns false if unable to find the device.
-  virtual bool GetDeviceInfoForPath(
+  virtual bool GetStorageInfoForPath(
       const base::FilePath& path,
       StorageInfo* device_info) const = 0;
 
   // Returns the storage size of the device present at |location|. If the
   // device information is unavailable, returns zero.
+  // TODO(gbillock): delete this in favor of GetStorageInfoForPath.
   virtual uint64 GetStorageSize(
       const base::FilePath::StringType& location) const = 0;
 
+// TODO(gbillock): make this either unnecessary (implementation-specific) or
+// platform-independent.
 #if defined(OS_WIN)
   // Gets the MTP device storage information specified by |storage_device_id|.
   // On success, returns true and fills in |device_location| with device
@@ -103,8 +106,8 @@ class RemovableStorageNotifications {
       base::Callback<void(EjectStatus)> callback);
 
  protected:
-  RemovableStorageNotifications();
-  virtual ~RemovableStorageNotifications();
+  StorageMonitor();
+  virtual ~StorageMonitor();
 
   // Removes the existing singleton for testing.
   // (So that a new one can be created.)
@@ -145,4 +148,4 @@ class RemovableStorageNotifications {
 
 } // namespace chrome
 
-#endif  // CHROME_BROWSER_STORAGE_MONITOR_REMOVABLE_STORAGE_NOTIFICATIONS_H_
+#endif  // CHROME_BROWSER_STORAGE_MONITOR_STORAGE_MONITOR_H_

@@ -22,7 +22,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path_watcher.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/storage_monitor/removable_storage_notifications.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace base {
@@ -40,7 +40,7 @@ typedef void (*GetDeviceInfoFunc)(const base::FilePath& device_path,
 namespace chrome {
 
 class RemovableDeviceNotificationsLinux
-    : public RemovableStorageNotifications,
+    : public StorageMonitor,
       public base::RefCountedThreadSafe<RemovableDeviceNotificationsLinux,
           content::BrowserThread::DeleteOnFileThread> {
  public:
@@ -52,7 +52,7 @@ class RemovableDeviceNotificationsLinux
 
   // Finds the device that contains |path| and populates |device_info|.
   // Returns false if unable to find the device.
-  virtual bool GetDeviceInfoForPath(
+  virtual bool GetStorageInfoForPath(
       const base::FilePath& path,
       StorageInfo* device_info) const OVERRIDE;
 

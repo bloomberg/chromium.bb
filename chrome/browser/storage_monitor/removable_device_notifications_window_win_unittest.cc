@@ -17,6 +17,7 @@
 #include "chrome/browser/storage_monitor/mock_removable_storage_observer.h"
 #include "chrome/browser/storage_monitor/portable_device_watcher_win.h"
 #include "chrome/browser/storage_monitor/removable_device_constants.h"
+#include "chrome/browser/storage_monitor/removable_device_notifications_window_win.h"
 #include "chrome/browser/storage_monitor/test_portable_device_watcher_win.h"
 #include "chrome/browser/storage_monitor/test_removable_device_notifications_window_win.h"
 #include "chrome/browser/storage_monitor/test_volume_mount_watcher_win.h"
@@ -281,16 +282,16 @@ TEST_F(RemovableDeviceNotificationsWindowWinTest, DevicesAttached) {
   EXPECT_EQ("\\\\?\\Volume{F0000000-0000-0000-0000-000000000000}\\", unique_id);
   EXPECT_EQ(ASCIIToUTF16("F:\\ Drive"), name);
 
-  RemovableStorageNotifications::StorageInfo info;
-  EXPECT_FALSE(window_->GetDeviceInfoForPath(
+  StorageMonitor::StorageInfo info;
+  EXPECT_FALSE(window_->GetStorageInfoForPath(
       base::FilePath(ASCIIToUTF16("G:\\")), &info));
-  EXPECT_TRUE(window_->GetDeviceInfoForPath(
+  EXPECT_TRUE(window_->GetStorageInfoForPath(
       base::FilePath(ASCIIToUTF16("F:\\")), &info));
-  RemovableStorageNotifications::StorageInfo info1;
-  EXPECT_TRUE(window_->GetDeviceInfoForPath(
+  StorageMonitor::StorageInfo info1;
+  EXPECT_TRUE(window_->GetStorageInfoForPath(
       base::FilePath(ASCIIToUTF16("F:\\subdir")), &info1));
-  RemovableStorageNotifications::StorageInfo info2;
-  EXPECT_TRUE(window_->GetDeviceInfoForPath(
+  StorageMonitor::StorageInfo info2;
+  EXPECT_TRUE(window_->GetStorageInfoForPath(
       base::FilePath(ASCIIToUTF16("F:\\subdir\\sub")), &info2));
   EXPECT_EQ(ASCIIToUTF16("F:\\ Drive"), info.name);
   EXPECT_EQ(ASCIIToUTF16("F:\\ Drive"), info1.name);
@@ -420,15 +421,16 @@ TEST_F(RemovableDeviceNotificationsWindowWinTest, DeviceInfoForPath) {
   PreAttachDevices();
 
   // An invalid path.
-  EXPECT_FALSE(window_->GetDeviceInfoForPath(base::FilePath(L"COM1:\\"), NULL));
+  EXPECT_FALSE(window_->GetStorageInfoForPath(base::FilePath(L"COM1:\\"),
+                                              NULL));
 
   // An unconnected removable device.
-  EXPECT_FALSE(window_->GetDeviceInfoForPath(base::FilePath(L"E:\\"), NULL));
+  EXPECT_FALSE(window_->GetStorageInfoForPath(base::FilePath(L"E:\\"), NULL));
 
   // A connected removable device.
   base::FilePath removable_device(L"F:\\");
-  RemovableStorageNotifications::StorageInfo device_info;
-  EXPECT_TRUE(window_->GetDeviceInfoForPath(removable_device, &device_info));
+  StorageMonitor::StorageInfo device_info;
+  EXPECT_TRUE(window_->GetStorageInfoForPath(removable_device, &device_info));
 
   std::string unique_id;
   string16 device_name;
@@ -448,7 +450,7 @@ TEST_F(RemovableDeviceNotificationsWindowWinTest, DeviceInfoForPath) {
 
   // A fixed device.
   base::FilePath fixed_device(L"N:\\");
-  EXPECT_TRUE(window_->GetDeviceInfoForPath(fixed_device, &device_info));
+  EXPECT_TRUE(window_->GetStorageInfoForPath(fixed_device, &device_info));
 
   ASSERT_TRUE(volume_mount_watcher_->GetDeviceInfo(
       fixed_device, &location, &unique_id, &device_name, &removable, NULL));

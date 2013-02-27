@@ -547,7 +547,7 @@ string16 PortableDeviceWatcherWin::GetStoragePathFromStorageId(
 }
 
 void PortableDeviceWatcherWin::SetNotifications(
-    RemovableStorageNotifications::Receiver* notifications) {
+    StorageMonitor::Receiver* notifications) {
   storage_notifications_ = notifications;
 }
 
@@ -615,7 +615,7 @@ void PortableDeviceWatcherWin::OnDidHandleDeviceAttachEvent(
     // partition identifier to the storage name. E.g.: "Nexus 7 (s10001)"
     string16 storage_name(name + L" (" + storage_iter->object_temporary_id +
         L')');
-    storage_map_[storage_id] = RemovableStorageNotifications::StorageInfo(
+    storage_map_[storage_id] = StorageMonitor::StorageInfo(
         storage_id, storage_name, location);
     if (storage_notifications_) {
       storage_notifications_->ProcessAttach(

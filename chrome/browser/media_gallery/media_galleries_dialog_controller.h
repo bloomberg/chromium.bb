@@ -109,9 +109,9 @@ class MediaGalleriesDialogController
   // RemovableStorageObserver implementation.
   // Used to keep dialog in sync with removable device status.
   virtual void OnRemovableStorageAttached(
-      const RemovableStorageNotifications::StorageInfo& info) OVERRIDE;
+      const StorageMonitor::StorageInfo& info) OVERRIDE;
   virtual void OnRemovableStorageDetached(
-      const RemovableStorageNotifications::StorageInfo& info) OVERRIDE;
+      const StorageMonitor::StorageInfo& info) OVERRIDE;
 
   // MediaGalleriesPreferences::GalleryChangeObserver implementation.
   // Used to keep the dialog in sync when the preferences change.

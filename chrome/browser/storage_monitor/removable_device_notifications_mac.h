@@ -11,14 +11,14 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/storage_monitor/disk_info_mac.h"
-#include "chrome/browser/storage_monitor/removable_storage_notifications.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
 
 namespace chrome {
 
 // This class posts notifications to listeners when a new disk
 // is attached, removed, or changed.
 class RemovableDeviceNotificationsMac
-    : public RemovableStorageNotifications,
+    : public StorageMonitor,
       public base::RefCountedThreadSafe<RemovableDeviceNotificationsMac> {
  public:
   enum UpdateType {
@@ -32,7 +32,7 @@ class RemovableDeviceNotificationsMac
 
   void UpdateDisk(const DiskInfoMac& info, UpdateType update_type);
 
-  virtual bool GetDeviceInfoForPath(
+  virtual bool GetStorageInfoForPath(
       const base::FilePath& path,
       StorageInfo* device_info) const OVERRIDE;
 

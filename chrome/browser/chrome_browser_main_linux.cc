@@ -157,7 +157,7 @@ void ChromeBrowserMainPartsLinux::PostProfileInit() {
     media_transfer_protocol_device_observer_.reset(
         new chrome::MediaTransferProtocolDeviceObserverLinux());
     media_transfer_protocol_device_observer_->SetNotifications(
-      chrome::RemovableStorageNotifications::GetInstance()->receiver());
+      chrome::StorageMonitor::GetInstance()->receiver());
   }
 
   ChromeBrowserMainPartsPosix::PostProfileInit();

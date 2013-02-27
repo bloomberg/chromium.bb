@@ -164,7 +164,7 @@ TEST_F(RemovableDeviceNotificationsMacTest, DCIM) {
             mock_storage_observer_->last_attached().location);
 }
 
-TEST_F(RemovableDeviceNotificationsMacTest, GetDeviceInfo) {
+TEST_F(RemovableDeviceNotificationsMacTest, GetStorageInfo) {
   notifications_->UpdateDisk(
       disk_info_, RemovableDeviceNotificationsMac::UPDATE_DEVICE_ADDED);
   message_loop_.RunUntilIdle();
@@ -176,14 +176,14 @@ TEST_F(RemovableDeviceNotificationsMacTest, GetDeviceInfo) {
   EXPECT_EQ(mount_point_.value(),
             mock_storage_observer_->last_attached().location);
 
-  RemovableStorageNotifications::StorageInfo info;
-  EXPECT_TRUE(notifications_->GetDeviceInfoForPath(
+  StorageMonitor::StorageInfo info;
+  EXPECT_TRUE(notifications_->GetStorageInfoForPath(
       mount_point_.AppendASCII("foo"), &info));
   EXPECT_EQ(info.device_id, device_id_);
   EXPECT_EQ(info.name, ASCIIToUTF16("Test Display Name"));
   EXPECT_EQ(info.location, mount_point_.value());
 
-  EXPECT_FALSE(notifications_->GetDeviceInfoForPath(
+  EXPECT_FALSE(notifications_->GetStorageInfoForPath(
       base::FilePath("/non/matching/path"), &info));
 }
 

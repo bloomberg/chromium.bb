@@ -169,7 +169,7 @@ void RemovableDeviceNotificationsCros::OnFormatEvent(
     const std::string& device_path) {
 }
 
-bool RemovableDeviceNotificationsCros::GetDeviceInfoForPath(
+bool RemovableDeviceNotificationsCros::GetStorageInfoForPath(
     const base::FilePath& path,
     StorageInfo* device_info) const {
   if (!path.IsAbsolute())

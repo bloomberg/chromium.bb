@@ -110,7 +110,7 @@ void RemovableDeviceNotificationsMac::UpdateDisk(
   }
 }
 
-bool RemovableDeviceNotificationsMac::GetDeviceInfoForPath(
+bool RemovableDeviceNotificationsMac::GetStorageInfoForPath(
     const base::FilePath& path,
     StorageInfo* device_info) const {
   if (!path.IsAbsolute())

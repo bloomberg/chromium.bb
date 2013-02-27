@@ -16,7 +16,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/media_gallery/mac/mtp_device_delegate_impl_mac.h"
 #include "chrome/browser/storage_monitor/image_capture_device_manager.h"
-#include "chrome/browser/storage_monitor/test_removable_storage_notifications.h"
+#include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -176,7 +176,7 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
     ui_thread_.reset(new content::TestBrowserThread(
         content::BrowserThread::UI, &message_loop_));
 
-    manager_.SetNotifications(notifications_.receiver());
+    manager_.SetNotifications(monitor_.receiver());
 
     camera_ = [MockMTPICCameraDevice alloc];
     id<ICDeviceBrowserDelegate> delegate = manager_.device_browser();
@@ -202,7 +202,7 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
  protected:
   MessageLoopForUI message_loop_;
   scoped_ptr<content::TestBrowserThread> ui_thread_;
-  chrome::test::TestRemovableStorageNotifications notifications_;
+  chrome::test::TestStorageMonitor monitor_;
   chrome::ImageCaptureDeviceManager manager_;
   ICCameraDevice* camera_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

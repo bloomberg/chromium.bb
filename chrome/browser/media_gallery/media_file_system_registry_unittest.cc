@@ -29,8 +29,8 @@
 #include "chrome/browser/media_gallery/media_galleries_test_util.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "chrome/browser/storage_monitor/removable_device_constants.h"
-#include "chrome/browser/storage_monitor/removable_storage_notifications.h"
-#include "chrome/browser/storage_monitor/test_removable_storage_notifications.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
+#include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -365,12 +365,12 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
   void ProcessAttach(const std::string& id,
                      const string16& name,
                      const base::FilePath::StringType& location) {
-    RemovableStorageNotifications::GetInstance()->receiver()->ProcessAttach(
+    StorageMonitor::GetInstance()->receiver()->ProcessAttach(
         id, name, location);
   }
 
   void ProcessDetach(const std::string& id) {
-    RemovableStorageNotifications::GetInstance()->receiver()->ProcessDetach(id);
+    StorageMonitor::GetInstance()->receiver()->ProcessDetach(id);
   }
 
   MediaFileSystemRegistry* GetMediaFileSystemRegistry() {
@@ -404,7 +404,7 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
 #if defined(OS_WIN)
   scoped_ptr<test::TestRemovableDeviceNotificationsWindowWin> window_;
 #else
-  chrome::test::TestRemovableStorageNotifications notifications_;
+  chrome::test::TestStorageMonitor monitor_;
 #endif
 
   MockProfileSharedRenderProcessHostFactory rph_factory_;

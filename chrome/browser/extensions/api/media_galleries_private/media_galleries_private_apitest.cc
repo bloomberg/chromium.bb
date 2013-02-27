@@ -10,7 +10,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
-#include "chrome/browser/storage_monitor/removable_storage_notifications.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -86,13 +86,13 @@ class MediaGalleriesPrivateApiTest : public ExtensionApiTest {
   }
 
   void Attach() {
-    chrome::RemovableStorageNotifications::GetInstance()->receiver()->
+    chrome::StorageMonitor::GetInstance()->receiver()->
         ProcessAttach(device_id_, ASCIIToUTF16(kDeviceName), kDevicePath);
     WaitForDeviceEvents();
   }
 
   void Detach() {
-    chrome::RemovableStorageNotifications::GetInstance()->receiver()->
+    chrome::StorageMonitor::GetInstance()->receiver()->
         ProcessDetach(device_id_);
     WaitForDeviceEvents();
   }

@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/memory/scoped_nsobject.h"
-#include "chrome/browser/storage_monitor/removable_storage_notifications.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
 
 @protocol ICDeviceBrowserDelegate;
 @class ImageCaptureDevice;
@@ -36,7 +36,7 @@ class ImageCaptureDeviceManager {
 
   // Sets the receiver for device attach/detach notifications.
   // TODO(gbillock): Move this to be a constructor argument.
-  void SetNotifications(RemovableStorageNotifications::Receiver* notifications);
+  void SetNotifications(StorageMonitor::Receiver* notifications);
 
  private:
   scoped_nsobject<ImageCaptureDeviceManagerImpl> device_browser_;

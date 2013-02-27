@@ -15,7 +15,7 @@
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/storage_monitor/removable_storage_notifications.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/common/extensions/api/media_galleries_private.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -24,10 +24,8 @@ namespace extensions {
 namespace {
 
 std::string GetTransientIdForDeviceId(const std::string& device_id) {
-  chrome::RemovableStorageNotifications* storage_notifications =
-      chrome::RemovableStorageNotifications::GetInstance();
-  return base::Uint64ToString(
-      storage_notifications->GetTransientIdForDeviceId(device_id));
+  chrome::StorageMonitor* monitor = chrome::StorageMonitor::GetInstance();
+  return base::Uint64ToString(monitor->GetTransientIdForDeviceId(device_id));
 }
 
 }  // namespace
@@ -41,18 +39,16 @@ MediaGalleriesPrivateEventRouter::MediaGalleriesPrivateEventRouter(
     : profile_(profile) {
   DCHECK(profile_);
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  chrome::RemovableStorageNotifications* notifications =
-      chrome::RemovableStorageNotifications::GetInstance();
-  if (notifications)
-    notifications->AddObserver(this);
+  chrome::StorageMonitor* monitor = chrome::StorageMonitor::GetInstance();
+  if (monitor)
+    monitor->AddObserver(this);
 }
 
 MediaGalleriesPrivateEventRouter::~MediaGalleriesPrivateEventRouter() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  chrome::RemovableStorageNotifications* notifications =
-      chrome::RemovableStorageNotifications::GetInstance();
-  if (notifications)
-    notifications->RemoveObserver(this);
+  chrome::StorageMonitor* monitor = chrome::StorageMonitor::GetInstance();
+  if (monitor)
+    monitor->RemoveObserver(this);
 }
 
 void MediaGalleriesPrivateEventRouter::OnGalleryChanged(
@@ -85,7 +81,7 @@ void MediaGalleriesPrivateEventRouter::OnGalleryChanged(
 }
 
 void MediaGalleriesPrivateEventRouter::OnRemovableStorageAttached(
-    const chrome::RemovableStorageNotifications::StorageInfo& info) {
+    const chrome::StorageMonitor::StorageInfo& info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   EventRouter* router =
       extensions::ExtensionSystem::Get(profile_)->event_router();
@@ -102,7 +98,7 @@ void MediaGalleriesPrivateEventRouter::OnRemovableStorageAttached(
 }
 
 void MediaGalleriesPrivateEventRouter::OnRemovableStorageDetached(
-    const chrome::RemovableStorageNotifications::StorageInfo& info) {
+    const chrome::StorageMonitor::StorageInfo& info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   EventRouter* router =
       extensions::ExtensionSystem::Get(profile_)->event_router();

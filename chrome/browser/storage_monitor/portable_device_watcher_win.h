@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
-#include "chrome/browser/storage_monitor/removable_storage_notifications.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -93,14 +93,14 @@ class PortableDeviceWatcherWin {
 
   // Set the volume notifications object to be used when new
   // devices are found.
-  void SetNotifications(RemovableStorageNotifications::Receiver* notifications);
+  void SetNotifications(StorageMonitor::Receiver* notifications);
 
  private:
   friend class test::TestPortableDeviceWatcherWin;
 
   // Key: MTP device storage unique id.
   // Value: Metadata for the given storage.
-  typedef std::map<std::string, RemovableStorageNotifications::StorageInfo>
+  typedef std::map<std::string, StorageMonitor::StorageInfo>
       MTPStorageMap;
 
   // Key: MTP device plug and play ID string.
@@ -137,7 +137,7 @@ class PortableDeviceWatcherWin {
   base::WeakPtrFactory<PortableDeviceWatcherWin> weak_ptr_factory_;
 
   // The notifications object to use to signal newly attached devices.
-  RemovableStorageNotifications::Receiver* storage_notifications_;
+  StorageMonitor::Receiver* storage_notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(PortableDeviceWatcherWin);
 };

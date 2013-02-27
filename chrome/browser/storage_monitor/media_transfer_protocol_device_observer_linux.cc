@@ -164,7 +164,7 @@ MediaTransferProtocolDeviceObserverLinux::GetInstance() {
 
 bool MediaTransferProtocolDeviceObserverLinux::GetStorageInfoForPath(
     const base::FilePath& path,
-    RemovableStorageNotifications::StorageInfo* storage_info) const {
+    StorageMonitor::StorageInfo* storage_info) const {
   if (!path.IsAbsolute())
     return false;
 
@@ -187,7 +187,7 @@ bool MediaTransferProtocolDeviceObserverLinux::GetStorageInfoForPath(
 }
 
 void MediaTransferProtocolDeviceObserverLinux::SetNotifications(
-    RemovableStorageNotifications::Receiver* notifications) {
+    StorageMonitor::Receiver* notifications) {
   notifications_ = notifications;
 }
 
@@ -212,7 +212,7 @@ void MediaTransferProtocolDeviceObserverLinux::StorageChanged(
 
     DCHECK(!ContainsKey(storage_map_, location));
 
-    RemovableStorageNotifications::StorageInfo storage_info(
+    StorageMonitor::StorageInfo storage_info(
         device_id, device_name, location);
     storage_map_[location] = storage_info;
     notifications_->ProcessAttach(device_id, device_name, location);
