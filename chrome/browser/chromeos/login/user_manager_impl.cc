@@ -895,7 +895,8 @@ void UserManagerImpl::RetrieveTrustedDevicePolicies() {
         it = users_.erase(it);
         changed = true;
       } else {
-        prefs_users_update->Append(new base::StringValue(user_email));
+        if ((*it)->GetType() != User::USER_TYPE_PUBLIC_ACCOUNT)
+          prefs_users_update->Append(new base::StringValue(user_email));
         ++it;
       }
     }
