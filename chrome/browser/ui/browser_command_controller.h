@@ -131,7 +131,7 @@ class BrowserCommandController : public CommandUpdaterDelegate,
   // not the single-tab one) is shown. Used for updating window command states
   // only. Consider using SupportsWindowFeature if you need the mentioned
   // functionality anywhere else.
-  bool IsShowingMainUI(bool is_fullscreen);
+  bool IsShowingMainUI();
 
   // Initialize state for all browser commands.
   void InitCommandState();

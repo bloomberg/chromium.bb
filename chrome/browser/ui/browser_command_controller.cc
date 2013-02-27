@@ -786,12 +786,9 @@ void BrowserCommandController::TabRestoreServiceDestroyed(
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserCommandController, private:
 
-bool BrowserCommandController::IsShowingMainUI(bool is_fullscreen) {
-#if !defined(OS_MACOSX)
-  return browser_->is_type_tabbed() && !is_fullscreen;
-#else
-  return browser_->is_type_tabbed();
-#endif
+bool BrowserCommandController::IsShowingMainUI() {
+  bool should_hide_ui = window() && window()->ShouldHideUIForFullscreen();
+  return browser_->is_type_tabbed() && !should_hide_ui;
 }
 
 void BrowserCommandController::InitCommandState() {
@@ -973,9 +970,7 @@ void BrowserCommandController::UpdateSharedCommandsForIncognitoAvailability(
 void BrowserCommandController::UpdateCommandsForIncognitoAvailability() {
   UpdateSharedCommandsForIncognitoAvailability(&command_updater_, profile());
 
-  const bool show_main_ui =
-      IsShowingMainUI(window() && window()->IsFullscreen());
-  if (!show_main_ui) {
+  if (!IsShowingMainUI()) {
     command_updater_.UpdateCommandEnabled(IDC_IMPORT_SETTINGS, false);
     command_updater_.UpdateCommandEnabled(IDC_OPTIONS, false);
   }
@@ -1072,12 +1067,10 @@ void BrowserCommandController::UpdateCommandsForBookmarkEditing() {
 }
 
 void BrowserCommandController::UpdateCommandsForBookmarkBar() {
-  const bool show_main_ui =
-      IsShowingMainUI(window() && window()->IsFullscreen());
   command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_BAR,
       browser_defaults::bookmarks_enabled &&
       !profile()->GetPrefs()->IsManagedPreference(prefs::kShowBookmarkBar) &&
-      show_main_ui);
+      IsShowingMainUI());
 }
 
 void BrowserCommandController::UpdateCommandsForFileSelectionDialogs() {
@@ -1087,8 +1080,7 @@ void BrowserCommandController::UpdateCommandsForFileSelectionDialogs() {
 
 void BrowserCommandController::UpdateCommandsForFullscreenMode(
     FullScreenMode fullscreen_mode) {
-  const bool show_main_ui =
-      IsShowingMainUI(fullscreen_mode != FULLSCREEN_DISABLED);
+  bool show_main_ui = IsShowingMainUI();
   bool main_not_fullscreen = show_main_ui &&
                              (fullscreen_mode == FULLSCREEN_DISABLED);
 
@@ -1155,8 +1147,7 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode(
 }
 
 void BrowserCommandController::UpdateCommandsForMultipleProfiles() {
-  bool show_main_ui = IsShowingMainUI(window() && window()->IsFullscreen());
-  bool enable = show_main_ui &&
+  bool enable = IsShowingMainUI() &&
       !profile()->IsOffTheRecord() &&
       profile_manager_ &&
       AvatarMenuModel::ShouldShowAvatarMenu();

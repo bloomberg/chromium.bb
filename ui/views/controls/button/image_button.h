@@ -35,6 +35,9 @@ class VIEWS_EXPORT ImageButton : public CustomButton {
   explicit ImageButton(ButtonListener* listener);
   virtual ~ImageButton();
 
+  // Returns the image for a given |state|.
+  virtual const gfx::ImageSkia& GetImage(ButtonState state) const;
+
   // Set the image the button should use for the provided state.
   virtual void SetImage(ButtonState state, const gfx::ImageSkia* image);
 
@@ -116,6 +119,7 @@ class VIEWS_EXPORT ToggleImageButton : public ImageButton {
   void SetToggledTooltipText(const string16& tooltip);
 
   // Overridden from ImageButton:
+  virtual const gfx::ImageSkia& GetImage(ButtonState state) const OVERRIDE;
   virtual void SetImage(ButtonState state,
                         const gfx::ImageSkia* image) OVERRIDE;
 

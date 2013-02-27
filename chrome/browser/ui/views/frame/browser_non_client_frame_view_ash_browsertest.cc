@@ -96,34 +96,42 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveMode) {
       static_cast<BrowserNonClientFrameViewAsh*>(
           widget->non_client_view()->frame_view());
 
-  // Normal window does not have immersive mode button.
-  EXPECT_FALSE(frame_view->immersive_button_->visible());
+  // Immersive mode starts disabled.
+  EXPECT_FALSE(browser_view->immersive_mode_controller()->enabled());
 
-  // Maximized window shows immersive mode button.
-  widget->Maximize();
-  EXPECT_TRUE(frame_view->immersive_button_->visible());
+  // Frame paints by default.
+  EXPECT_TRUE(frame_view->ShouldPaint());
 
-  // Entering immersive mode hides the caption buttons.
-  browser_view->immersive_mode_controller()->SetEnabled(true);
-  EXPECT_FALSE(frame_view->immersive_button_->visible());
+  // Going fullscreen enables immersive mode.
+  browser_view->EnterFullscreen(GURL(), FEB_TYPE_NONE);
+  EXPECT_TRUE(browser_view->immersive_mode_controller()->enabled());
+
+  // Entering immersive mode hides the caption buttons and the frame.
   EXPECT_FALSE(frame_view->size_button_->visible());
   EXPECT_FALSE(frame_view->close_button_->visible());
+  EXPECT_FALSE(frame_view->ShouldPaint());
 
-  // An immersive reveal shows the buttons.
+  // Frame abuts top of window.
+  EXPECT_EQ(0, frame_view->NonClientTopBorderHeight(false));
+
+  // An immersive reveal shows the buttons and the top of the frame.
   browser_view->immersive_mode_controller()->StartRevealForTest();
-  EXPECT_TRUE(frame_view->immersive_button_->visible());
   EXPECT_TRUE(frame_view->size_button_->visible());
   EXPECT_TRUE(frame_view->close_button_->visible());
+  EXPECT_TRUE(frame_view->ShouldPaint());
 
   // Ending reveal hides them again.
   browser_view->immersive_mode_controller()->CancelReveal();
-  EXPECT_FALSE(frame_view->immersive_button_->visible());
   EXPECT_FALSE(frame_view->size_button_->visible());
   EXPECT_FALSE(frame_view->close_button_->visible());
+  EXPECT_FALSE(frame_view->ShouldPaint());
 
-  // Exiting immersive mode makes them visible again.
-  browser_view->immersive_mode_controller()->SetEnabled(false);
-  EXPECT_TRUE(frame_view->immersive_button_->visible());
+  // Exiting fullscreen exits immersive mode.
+  browser_view->ExitFullscreen();
+  EXPECT_FALSE(browser_view->immersive_mode_controller()->enabled());
+
+  // Exiting immersive mode makes controls and frame visible again.
   EXPECT_TRUE(frame_view->size_button_->visible());
   EXPECT_TRUE(frame_view->close_button_->visible());
+  EXPECT_TRUE(frame_view->ShouldPaint());
 }

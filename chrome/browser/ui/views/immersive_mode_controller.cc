@@ -245,8 +245,8 @@ class ImmersiveModeController::WindowObserver : public aura::WindowObserver {
                                        intptr_t old) OVERRIDE {
     using aura::client::kShowStateKey;
     if (key == kShowStateKey) {
-      // Disable immersive mode when leaving the maximized state.
-      if (window->GetProperty(kShowStateKey) != ui::SHOW_STATE_MAXIMIZED)
+      // Disable immersive mode when leaving the fullscreen state.
+      if (window->GetProperty(kShowStateKey) != ui::SHOW_STATE_FULLSCREEN)
         controller_->SetEnabled(false);
       return;
     }

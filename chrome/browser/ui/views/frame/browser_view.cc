@@ -122,6 +122,7 @@
 #include "ui/views/window/dialog_delegate.h"
 
 #if defined(USE_ASH)
+#include "ash/ash_switches.h"
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/shell.h"
@@ -192,6 +193,19 @@ bool ShouldSaveOrRestoreWindowPos() {
     return false;
 #endif
   return true;
+}
+
+// Returns whether immersive mode should replace fullscreen, which should only
+// occur for "browser-fullscreen" and not for "tab-fullscreen" (which has a URL
+// for the tab entering fullscreen).
+bool UseImmersiveFullscreen(const GURL& url) {
+#if defined(USE_ASH)
+  bool is_browser_fullscreen = url.is_empty();
+  return is_browser_fullscreen &&
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kAshImmersiveMode);
+#endif
+  return false;
 }
 
 }  // namespace
@@ -759,7 +773,10 @@ void BrowserView::ExitFullscreen() {
 void BrowserView::UpdateFullscreenExitBubbleContent(
     const GURL& url,
     FullscreenExitBubbleType bubble_type) {
-  if (bubble_type == FEB_TYPE_NONE) {
+  // Immersive mode has no exit bubble because it has a visible strip at the
+  // top that gives the user a hover target.
+  // TODO(jamescook): Figure out what to do with mouse-lock.
+  if (bubble_type == FEB_TYPE_NONE || UseImmersiveFullscreen(url)) {
     fullscreen_bubble_.reset();
   } else if (fullscreen_bubble_.get()) {
     fullscreen_bubble_->UpdateContent(url, bubble_type);
@@ -767,6 +784,14 @@ void BrowserView::UpdateFullscreenExitBubbleContent(
     fullscreen_bubble_.reset(new FullscreenExitBubbleViews(
         GetWidget(), browser_.get(), url, bubble_type));
   }
+}
+
+bool BrowserView::ShouldHideUIForFullscreen() const {
+#if defined(USE_ASH)
+  // Immersive mode needs UI for the slide-down top panel.
+  return IsFullscreen() && !immersive_mode_controller_->enabled();
+#endif
+  return IsFullscreen();
 }
 
 bool BrowserView::IsFullscreen() const {
@@ -2272,10 +2297,16 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
     frame_->SetFullscreen(fullscreen);
   }
 
+  // Enable immersive before the browser refreshes its list of enabled commands.
+  if (UseImmersiveFullscreen(url))
+    immersive_mode_controller_->SetEnabled(fullscreen);
+
   browser_->WindowFullscreenStateChanged();
 
   if (fullscreen) {
-    if (!chrome::IsRunningInAppMode() && type != FOR_METRO) {
+    if (!chrome::IsRunningInAppMode() &&
+        type != FOR_METRO &&
+        !UseImmersiveFullscreen(url)) {
       fullscreen_bubble_.reset(new FullscreenExitBubbleViews(
           GetWidget(), browser_.get(), url, bubble_type));
     }

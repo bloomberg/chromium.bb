@@ -77,7 +77,6 @@ BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
     : BrowserNonClientFrameView(frame, browser_view),
       size_button_(NULL),
       close_button_(NULL),
-      immersive_button_(NULL),
       window_icon_(NULL),
       frame_painter_(new ash::FramePainter),
       size_button_minimizes_(false) {
@@ -120,19 +119,6 @@ void BrowserNonClientFrameViewAsh::Init() {
   // Frame painter handles layout of these buttons.
   frame_painter_->Init(frame(), window_icon_, size_button_, close_button_,
                        size_button_behavior);
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kAshImmersiveMode)) {
-    // Button to toggle immersive mode.
-    immersive_button_ = new views::ToggleImageButton(this);
-    immersive_button_->SetAccessibleName(
-        l10n_util::GetStringUTF16(IDS_ACCNAME_IMMERSIVE));
-    immersive_button_->SetTooltipText(
-        l10n_util::GetStringUTF16(IDS_TOOLTIP_IMMERSIVE));
-    immersive_button_->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
-                                         views::ImageButton::ALIGN_BOTTOM);
-    AddChildView(immersive_button_);
-    frame_painter_->AddImmersiveButton(immersive_button_);
-  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -211,12 +197,9 @@ void BrowserNonClientFrameViewAsh::ResetWindowControls() {
         browser_view()->immersive_mode_controller();
     if (controller->enabled()) {
       bool revealed = controller->IsRevealed();
-      immersive_button_->SetVisible(revealed);
       size_button_->SetVisible(revealed);
       close_button_->SetVisible(revealed);
     } else {
-      // Only show immersive button for maximized windows.
-      immersive_button_->SetVisible(frame()->IsMaximized());
       size_button_->SetVisible(true);
       close_button_->SetVisible(true);
     }
@@ -240,8 +223,8 @@ void BrowserNonClientFrameViewAsh::UpdateWindowTitle() {
 // views::View overrides:
 
 void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
-  if (frame()->IsFullscreen())
-    return;  // Nothing visible, don't paint.
+  if (!ShouldPaint())
+    return;
   // The primary header image changes based on window activation state and
   // theme, so we look it up for each paint.
   frame_painter_->PaintHeader(
@@ -320,6 +303,8 @@ void BrowserNonClientFrameViewAsh::ButtonPressed(views::Button* sender,
     ResetWindowControls();
     if (size_button_minimizes_)
       frame()->Minimize();
+    else if (frame()->IsFullscreen())  // Can be clicked in immersive mode.
+      frame()->SetFullscreen(false);
     else if (frame()->IsMaximized())
       frame()->Restore();
     else
@@ -327,14 +312,6 @@ void BrowserNonClientFrameViewAsh::ButtonPressed(views::Button* sender,
     // |this| may be deleted - some windows delete their frames on maximize.
   } else if (sender == close_button_) {
     frame()->Close();
-  } else if (CommandLine::ForCurrentProcess()->HasSwitch(kAshImmersiveMode) &&
-      sender == immersive_button_) {
-    // Toggle immersive mode.
-    ImmersiveModeController* controller =
-        browser_view()->immersive_mode_controller();
-    bool enable = !controller->enabled();
-    controller->SetEnabled(enable);
-    immersive_button_->SetToggled(enable);
   }
 
   if (event.IsShiftDown())
@@ -383,13 +360,14 @@ int BrowserNonClientFrameViewAsh::NonClientTopBorderHeight(
 bool BrowserNonClientFrameViewAsh::UseShortHeader() const {
   // Restored browser -> tall header
   // Maximized browser -> short header
+  // Fullscreen browser (header shows with immersive reveal) -> short header
   // Popup&App window -> tall header
   // Panel -> short header
   // Dialogs use short header and are handled via CustomFrameViewAsh.
   Browser* browser = browser_view()->browser();
   switch (browser->type()) {
     case Browser::TYPE_TABBED:
-      return frame()->IsMaximized();
+      return frame()->IsMaximized() || frame()->IsFullscreen();
     case Browser::TYPE_POPUP:
       return false;
     case Browser::TYPE_PANEL:
@@ -415,6 +393,12 @@ void BrowserNonClientFrameViewAsh::LayoutAvatar() {
                           incognito_icon.width(),
                           avatar_bottom - avatar_y);
   avatar_button()->SetBoundsRect(avatar_bounds);
+}
+
+bool BrowserNonClientFrameViewAsh::ShouldPaint() const {
+  // Immersive mode windows are fullscreen, but need to paint during a reveal.
+  return !frame()->IsFullscreen() ||
+      browser_view()->immersive_mode_controller()->IsRevealed();
 }
 
 void BrowserNonClientFrameViewAsh::PaintToolbarBackground(gfx::Canvas* canvas) {

@@ -120,6 +120,10 @@ class BrowserWindow : public BaseWindow {
       const GURL& url,
       FullscreenExitBubbleType bubble_type) = 0;
 
+  // Windows and GTK remove the top controls in fullscreen, but Mac and Ash
+  // keep the controls in a slide-down panel.
+  virtual bool ShouldHideUIForFullscreen() const = 0;
+
   // Returns true if the fullscreen bubble is visible.
   virtual bool IsFullscreenBubbleVisible() const = 0;
 

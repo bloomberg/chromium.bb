@@ -50,6 +50,10 @@ bool TestBrowserWindow::IsMinimized() const {
   return false;
 }
 
+bool TestBrowserWindow::ShouldHideUIForFullscreen() const {
+  return false;
+}
+
 bool TestBrowserWindow::IsFullscreen() const {
   return false;
 }

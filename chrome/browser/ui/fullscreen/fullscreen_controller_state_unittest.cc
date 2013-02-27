@@ -45,6 +45,7 @@ class FullscreenControllerTestWindow : public TestBrowserWindow {
                                FullscreenExitBubbleType type) OVERRIDE;
   virtual void EnterFullscreen();
   virtual void ExitFullscreen() OVERRIDE;
+  virtual bool ShouldHideUIForFullscreen() const OVERRIDE;
   virtual bool IsFullscreen() const OVERRIDE;
 #if defined(OS_WIN)
   virtual void SetMetroSnapMode(bool enable) OVERRIDE;
@@ -104,6 +105,10 @@ void FullscreenControllerTestWindow::ExitFullscreen() {
     mac_with_chrome_mode_ = false;
     ChangeWindowFullscreenStateIfReentrant();
   }
+}
+
+bool FullscreenControllerTestWindow::ShouldHideUIForFullscreen() const {
+  return IsFullscreen();
 }
 
 bool FullscreenControllerTestWindow::IsFullscreen() const {
