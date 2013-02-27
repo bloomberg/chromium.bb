@@ -834,7 +834,7 @@ bool OmniboxEditModel::OnEscapeKeyPressed() {
   // We do not clear the pending entry from the omnibox when a load is first
   // stopped.  If the user presses Escape while stopped, we clear it.
   content::WebContents* contents = controller_->GetWebContents();
-  if (!contents->IsLoading()) {
+  if (contents && !contents->IsLoading()) {
     contents->GetController().DiscardNonCommittedEntries();
     view_->Update(NULL);
   }
