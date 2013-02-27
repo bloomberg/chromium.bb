@@ -1194,6 +1194,10 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                                    arraysize(kSwitchNames));
   } else if (process_type == switches::kGpuProcess) {
+    base::FilePath user_data_dir =
+        browser_command_line.GetSwitchValuePath(switches::kUserDataDir);
+    if (!user_data_dir.empty())
+      command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
     // If --ignore-gpu-blacklist is passed in, don't send in crash reports
     // because GPU is expected to be unreliable.
     if (browser_command_line.HasSwitch(switches::kIgnoreGpuBlacklist) &&

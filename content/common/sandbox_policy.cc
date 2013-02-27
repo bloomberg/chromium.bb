@@ -360,7 +360,6 @@ bool AddGenericPolicy(sandbox::TargetPolicy* policy) {
   if (result != sandbox::SBOX_ALL_OK)
     return false;
 #endif  // NDEBUG
-
   return true;
 }
 
@@ -447,6 +446,17 @@ bool AddPolicyForGPU(CommandLine* cmd_line, sandbox::TargetPolicy* policy) {
 
   AddGenericDllEvictionPolicy(policy);
   AddGpuDllEvictionPolicy(policy);
+
+  if (cmd_line->HasSwitch(switches::kEnableLogging)) {
+    string16 log_file_path = logging::GetLogFileFullPath();
+    if (!log_file_path.empty()) {
+      result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
+                               sandbox::TargetPolicy::FILES_ALLOW_ANY,
+                               log_file_path.c_str());
+      if (result != sandbox::SBOX_ALL_OK)
+        return false;
+    }
+  }
 #endif
   return true;
 }

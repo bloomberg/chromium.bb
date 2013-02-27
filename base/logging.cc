@@ -854,6 +854,14 @@ void RawLog(int level, const char* message) {
 // This was defined at the beginning of this file.
 #undef write
 
+#if defined(OS_WIN)
+std::wstring GetLogFileFullPath() {
+  if (log_file_name)
+    return *log_file_name;
+  return std::wstring();
+}
+#endif
+
 }  // namespace logging
 
 std::ostream& operator<<(std::ostream& out, const wchar_t* wstr) {

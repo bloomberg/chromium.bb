@@ -926,6 +926,11 @@ BASE_EXPORT void RawLog(int level, const char* message);
       logging::RawLog(logging::LOG_FATAL, "Check failed: " #condition "\n");   \
   } while (0)
 
+#if defined(OS_WIN)
+// Returns the default log file path.
+BASE_EXPORT std::wstring GetLogFileFullPath();
+#endif
+
 }  // namespace logging
 
 // These functions are provided as a convenience for logging, which is where we
