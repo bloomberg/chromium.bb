@@ -52,6 +52,7 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -276,10 +277,11 @@ class LoginUtilsTest : public testing::Test,
     browser_process_->SetProfileManager(
         new ProfileManagerWithoutInit(scoped_temp_dir_.path()));
     connector_ = browser_process_->browser_policy_connector();
-    connector_->Init();
+    connector_->Init(local_state_.Get(),
+                     browser_process_->system_request_context());
 
     io_thread_state_.reset(new IOThread(local_state_.Get(),
-                                        g_browser_process->policy_service(),
+                                        browser_process_->policy_service(),
                                         NULL, NULL));
     browser_process_->SetIOThread(io_thread_state_.get());
 

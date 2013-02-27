@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
@@ -32,6 +33,7 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -61,7 +63,7 @@ static const char kHostedDomainResponse[] =
 class UserPolicySigninServiceTest : public testing::Test {
  public:
   UserPolicySigninServiceTest()
-      : loop_(MessageLoop::TYPE_UI),
+      : loop_(MessageLoop::TYPE_IO),
         ui_thread_(content::BrowserThread::UI, &loop_),
         file_thread_(content::BrowserThread::FILE, &loop_),
         io_thread_(content::BrowserThread::IO, &loop_),
@@ -88,12 +90,14 @@ class UserPolicySigninServiceTest : public testing::Test {
         SetDeviceManagementServiceForTesting(
             scoped_ptr<DeviceManagementService>(device_management_service_));
 
-    g_browser_process->browser_policy_connector()->Init();
-
     local_state_.reset(new TestingPrefServiceSimple);
     chrome::RegisterLocalState(local_state_->registry());
     TestingBrowserProcess::GetGlobal()->SetLocalState(
         local_state_.get());
+
+    scoped_refptr<net::URLRequestContextGetter> system_request_context;
+    g_browser_process->browser_policy_connector()->Init(
+        local_state_.get(), system_request_context);
 
     // Create a testing profile with cloud-policy-on-signin enabled, and bring
     // up a UserCloudPolicyManager with a MockUserCloudPolicyStore.
