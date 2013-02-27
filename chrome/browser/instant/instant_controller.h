@@ -204,8 +204,6 @@ class InstantController : public InstantPage::Delegate,
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, PreloadedNTPIsUsedInSameTab);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ProcessIsolation);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, UnrelatedSiteInstance);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
-      OmniboxCommitsWhenShownFullHeight);
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
