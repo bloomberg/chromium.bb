@@ -96,7 +96,7 @@ struct resources {
 };
 
 struct resources *resources;
-int fd, modes;
+int fd;
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 
@@ -1138,7 +1138,6 @@ static void usage(char *name)
 	fprintf(stderr, "\t-c\tlist connectors\n");
 	fprintf(stderr, "\t-e\tlist encoders\n");
 	fprintf(stderr, "\t-f\tlist framebuffers\n");
-	fprintf(stderr, "\t-m\tlist modes\n");
 	fprintf(stderr, "\t-p\tlist CRTCs and planes (pipes)\n");
 
 	fprintf(stderr, "\n Test options:\n\n");
@@ -1178,7 +1177,7 @@ static int page_flipping_supported(void)
 #endif
 }
 
-static char optstr[] = "cdefM:mP:ps:vw:";
+static char optstr[] = "cdefM:P:ps:vw:";
 
 int main(int argc, char **argv)
 {
@@ -1217,9 +1216,6 @@ int main(int argc, char **argv)
 			module = optarg;
 			/* Preserve the default behaviour of dumping all information. */
 			args--;
-			break;
-		case 'm':
-			modes = 1;
 			break;
 		case 'P':
 			plane_args = realloc(plane_args,
@@ -1274,7 +1270,7 @@ int main(int argc, char **argv)
 	}
 
 	if (!args)
-		encoders = connectors = crtcs = planes = modes = framebuffers = 1;
+		encoders = connectors = crtcs = planes = framebuffers = 1;
 
 	if (module) {
 		fd = drmOpen(module, NULL);
