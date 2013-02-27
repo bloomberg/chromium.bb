@@ -12,7 +12,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/admin_policy.h"
-#include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_sorting.h"
@@ -41,15 +40,6 @@ namespace extensions {
 namespace {
 
 // Additional preferences keys
-
-// The file entries that an extension had permission to access.
-const char kFileEntries[] = "file_entries";
-
-// The path to a file entry that an extension had permission to access.
-const char kFileEntryPath[] = "path";
-
-// Whether or not an extension had write access to a file entry.
-const char kFileEntryWritable[] = "writable";
 
 // Whether this extension was running when chrome last shutdown.
 const char kPrefRunning[] = "running";
@@ -1140,61 +1130,6 @@ bool ExtensionPrefs::IsExtensionRunning(const std::string& extension_id) {
   bool running = false;
   extension->GetBoolean(kPrefRunning, &running);
   return running;
-}
-
-void ExtensionPrefs::AddSavedFileEntry(
-    const std::string& extension_id,
-    const std::string& file_entry_id,
-    const base::FilePath& file_path,
-    bool writable) {
-  ScopedExtensionPrefUpdate update(prefs_, extension_id);
-  DictionaryValue* extension_dict = update.Get();
-  DictionaryValue* file_entries = NULL;
-  if (!extension_dict->GetDictionary(kFileEntries, &file_entries)) {
-    file_entries = new DictionaryValue();
-    extension_dict->SetWithoutPathExpansion(kFileEntries, file_entries);
-  }
-  // Once a file's permissions are set they can't be changed.
-  DictionaryValue* file_entry_dict = NULL;
-  if (file_entries->GetDictionary(file_entry_id, &file_entry_dict))
-    return;
-
-  file_entry_dict = new DictionaryValue();
-  file_entry_dict->SetString(kFileEntryPath, file_path.value());
-  file_entry_dict->SetBoolean(kFileEntryWritable, writable);
-  file_entries->SetWithoutPathExpansion(file_entry_id, file_entry_dict);
-}
-
-void ExtensionPrefs::ClearSavedFileEntries(
-    const std::string& extension_id) {
-  ScopedExtensionPrefUpdate update(prefs_, extension_id);
-  DictionaryValue* extension_dict = update.Get();
-  extension_dict->Remove(kFileEntries, NULL);
-}
-
-void ExtensionPrefs::GetSavedFileEntries(
-    const std::string& extension_id,
-    std::vector<app_file_handler_util::SavedFileEntry>* out) {
-  const DictionaryValue* prefs = GetExtensionPref(extension_id);
-  const DictionaryValue* file_entries = NULL;
-  if (!prefs->GetDictionary(kFileEntries, &file_entries))
-    return;
-  for (DictionaryValue::key_iterator it = file_entries->begin_keys();
-       it != file_entries->end_keys(); ++it) {
-    std::string id = *it;
-    const DictionaryValue* file_entry = NULL;
-    if (!file_entries->GetDictionaryWithoutPathExpansion(id, &file_entry))
-      continue;
-    base::FilePath::StringType path_string;
-    if (!file_entry->GetString(kFileEntryPath, &path_string))
-      continue;
-    bool writable = false;
-    if (!file_entry->GetBoolean(kFileEntryWritable, &writable))
-      continue;
-    base::FilePath file_path(path_string);
-    out->push_back(app_file_handler_util::SavedFileEntry(
-        id, file_path, writable));
-  }
 }
 
 ExtensionOmniboxSuggestion

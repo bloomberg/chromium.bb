@@ -4,13 +4,7 @@
 
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 
-#include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
-#include "content/public/browser/child_process_security_policy.h"
 #include "net/base/mime_util.h"
-#include "webkit/fileapi/file_system_types.h"
-#include "webkit/fileapi/isolated_context.h"
 
 namespace extensions {
 
@@ -86,42 +80,6 @@ bool FileHandlerCanHandleFileWithMimeType(
       return true;
   }
   return false;
-}
-
-GrantedFileEntry CreateFileEntry(
-    Profile* profile,
-    const std::string& extension_id,
-    int renderer_id,
-    const base::FilePath& path,
-    bool writable) {
-  GrantedFileEntry result;
-  fileapi::IsolatedContext* isolated_context =
-      fileapi::IsolatedContext::GetInstance();
-  DCHECK(isolated_context);
-
-  result.filesystem_id = isolated_context->RegisterFileSystemForPath(
-      fileapi::kFileSystemTypeNativeLocal, path, &result.registered_name);
-
-  content::ChildProcessSecurityPolicy* policy =
-      content::ChildProcessSecurityPolicy::GetInstance();
-  policy->GrantReadFileSystem(renderer_id, result.filesystem_id);
-  if (writable)
-    policy->GrantWriteFileSystem(renderer_id, result.filesystem_id);
-
-  result.id = result.filesystem_id + ":" + result.registered_name;
-
-  // We only need file level access for reading FileEntries. Saving FileEntries
-  // just needs the file system to have read/write access, which is granted
-  // above if required.
-  if (!policy->CanReadFile(renderer_id, path))
-    policy->GrantReadFile(renderer_id, path);
-
-  ExtensionPrefs* prefs = extensions::ExtensionSystem::Get(profile)->
-      extension_service()->extension_prefs();
-  // Save this file entry in the prefs.
-  prefs->AddSavedFileEntry(extension_id, result.id, path, writable);
-
-  return result;
 }
 
 }  // namespace app_file_handler_util

@@ -12,8 +12,6 @@
 #include "chrome/common/extensions/api/file_handlers/file_handlers_parser.h"
 #include "chrome/common/extensions/extension.h"
 
-class Profile;
-
 namespace extensions {
 
 // TODO(benwells): move this to platform_apps namespace.
@@ -35,38 +33,6 @@ FindFileHandlersForMimeTypes(const Extension& extension,
 
 bool FileHandlerCanHandleFileWithMimeType(const FileHandlerInfo& handler,
                                           const std::string& mime_type);
-
-// Represents a file entry that a user has given an extension permission to
-// access. Intended to be persisted to disk (in the Preferences file), so should
-// remain serializable.
-struct SavedFileEntry {
-  SavedFileEntry(const std::string& id,
-                 const base::FilePath& path,
-                 bool writable)
-      : id(id),
-        path(path),
-        writable(writable) {}
-
-  std::string id;
-  base::FilePath path;
-  bool writable;
-};
-
-// Refers to a file entry that a renderer has been given access to.
-struct GrantedFileEntry {
-  std::string id;
-  std::string filesystem_id;
-  std::string registered_name;
-};
-
-// Creates a new file entry and allows |renderer_id| to access |path|. This
-// registers a new file system for |path|.
-GrantedFileEntry CreateFileEntry(
-    Profile* profile,
-    const std::string& extension_id,
-    int renderer_id,
-    const base::FilePath& path,
-    bool writable);
 
 }  // namespace app_file_handler_util
 

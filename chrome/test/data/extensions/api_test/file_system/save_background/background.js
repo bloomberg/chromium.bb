@@ -5,7 +5,6 @@
 chrome.test.runTests([
   function openFile() {
     chrome.fileSystem.chooseEntry({type: 'saveFile'}, chrome.test.callbackFail(
-        "Invalid calling page. This function can't be called from a " +
-        "background page.", function(entry) {}));
+        'Invalid calling page', function(entry) {}));
   }
 ]);

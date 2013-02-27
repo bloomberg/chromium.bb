@@ -31,10 +31,6 @@ class ExtensionPrefsUninstallExtension;
 class URLPatternSet;
 struct ExtensionOmniboxSuggestion;
 
-namespace app_file_handler_util {
-struct SavedFileEntry;
-}
-
 // Class for managing global and per-extension preferences.
 //
 // This class distinguishes the following kinds of preferences:
@@ -325,15 +321,6 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // Returns whether or not this extension is marked as running. This is used to
   // restart apps across browser restarts.
   bool IsExtensionRunning(const std::string& extension_id);
-
-  void AddSavedFileEntry(const std::string& extension_id,
-                         const std::string& id,
-                         const base::FilePath& file_path,
-                         bool writable);
-  void ClearSavedFileEntries(const std::string& extension_id);
-  void GetSavedFileEntries(
-      const std::string& extension_id,
-      std::vector<app_file_handler_util::SavedFileEntry>* out);
 
   // Controls the omnibox default suggestion as set by the extension.
   ExtensionOmniboxSuggestion GetOmniboxDefaultSuggestion(

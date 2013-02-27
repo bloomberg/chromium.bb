@@ -11,18 +11,11 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-namespace extensions {
-class Extension;
-
-namespace app_file_handler_util {
-struct SavedFileEntry;
-}
-
-}
-
 class Profile;
 
-using extensions::app_file_handler_util::SavedFileEntry;
+namespace extensions {
+class Extension;
+}
 
 namespace apps {
 
@@ -44,9 +37,7 @@ class AppRestoreService : public ProfileKeyedService,
 
   void RecordAppStart(const std::string& extension_id);
   void RecordAppStop(const std::string& extension_id);
-  void RestoreApp(
-      const extensions::Extension* extension,
-      const std::vector<SavedFileEntry>& file_entries);
+  void RestoreApp(const extensions::Extension* extension);
 
   content::NotificationRegistrar registrar_;
   Profile* profile_;
