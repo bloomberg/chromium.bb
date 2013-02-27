@@ -1799,7 +1799,8 @@ var MainView = (function() {
       };
 
       var dumpText = JSON.stringify(dump, null, ' ');
-      var textBlob = new Blob([dumpText, 'native'], { type: 'octet/stream' });
+      var textBlob = new Blob([dumpText],
+                              { type: 'octet/stream', endings: 'native' });
       var blobUrl = window.webkitURL.createObjectURL(textBlob);
       $(DOWNLOAD_ANCHOR_ID).href = blobUrl;
       $(DOWNLOAD_ANCHOR_ID).click();
