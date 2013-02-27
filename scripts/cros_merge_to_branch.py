@@ -34,6 +34,7 @@ http://dev.chromium.org/chromium-os/how-tos-and-troubleshooting/working-on-a-br\
 anch
 """
 
+import errno
 import logging
 import os
 import re
@@ -144,6 +145,11 @@ def _SetupWorkDirectoryForPatch(work_dir, patch, branch, manifest, email):
   if manifest:
     reference = os.path.join(constants.SOURCE_ROOT,
                              manifest.GetProjectPath(patch.project))
+    if not os.path.isdir(reference):
+      logging.error('Unable to locate git checkout: %s', reference)
+      logging.error('Did you mean to use --nomirror?')
+      # This will do an "raise OSError" with the right values.
+      os.open(reference, os.O_DIRECTORY)
     # Use the email if email wasn't specified.
     if not email:
       email = git.GetProjectUserEmail(reference)
@@ -208,7 +214,15 @@ def main(argv):
   # both email addresses and for using your checkout as a git mirror.
   manifest = None
   if options.mirror:
-    manifest = git.ManifestCheckout.Cached(constants.SOURCE_ROOT)
+    try:
+      manifest = git.ManifestCheckout.Cached(constants.SOURCE_ROOT)
+    except OSError as e:
+      if e.errno == errno.ENOENT:
+        logging.error('Unable to locate ChromiumOS checkout: %s',
+                      constants.SOURCE_ROOT)
+        logging.error('Did you mean to use --nomirror?')
+        return 1
+      raise
     if not _ManifestContainsAllPatches(manifest, patches):
       return 1
   else:
@@ -241,7 +255,7 @@ def main(argv):
         logging.info('  URL: %s', url)
 
   except (cros_build_lib.RunCommandError, cros_patch.ApplyPatchException,
-          git.AmbiguousBranchName) as e:
+          git.AmbiguousBranchName, OSError) as e:
     # Tell the user how far we got.
     good_changes = changes[:index]
     bad_changes = changes[index:]
