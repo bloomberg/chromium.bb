@@ -57,7 +57,44 @@
 
 #include "buffers.h"
 
-drmModeRes *resources;
+struct crtc {
+	drmModeCrtc *crtc;
+	drmModeObjectProperties *props;
+	drmModePropertyRes **props_info;
+};
+
+struct encoder {
+	drmModeEncoder *encoder;
+};
+
+struct connector {
+	drmModeConnector *connector;
+	drmModeObjectProperties *props;
+	drmModePropertyRes **props_info;
+};
+
+struct fb {
+	drmModeFB *fb;
+};
+
+struct plane {
+	drmModePlane *plane;
+	drmModeObjectProperties *props;
+	drmModePropertyRes **props_info;
+};
+
+struct resources {
+	drmModeRes *res;
+	drmModePlaneRes *plane_res;
+
+	struct crtc *crtcs;
+	struct encoder *encoders;
+	struct connector *connectors;
+	struct fb *fbs;
+	struct plane *planes;
+};
+
+struct resources *resources;
 int fd, modes;
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
@@ -166,21 +203,17 @@ static void dump_encoders(void)
 
 	printf("Encoders:\n");
 	printf("id\tcrtc\ttype\tpossible crtcs\tpossible clones\t\n");
-	for (i = 0; i < resources->count_encoders; i++) {
-		encoder = drmModeGetEncoder(fd, resources->encoders[i]);
-
-		if (!encoder) {
-			fprintf(stderr, "could not get encoder %i: %s\n",
-				resources->encoders[i], strerror(errno));
+	for (i = 0; i < resources->res->count_encoders; i++) {
+		encoder = resources->encoders[i].encoder;
+		if (!encoder)
 			continue;
-		}
+
 		printf("%d\t%d\t%s\t0x%08x\t0x%08x\n",
 		       encoder->encoder_id,
 		       encoder->crtc_id,
 		       encoder_type_str(encoder->encoder_type),
 		       encoder->possible_crtcs,
 		       encoder->possible_clones);
-		drmModeFreeEncoder(encoder);
 	}
 	printf("\n");
 }
@@ -230,13 +263,9 @@ dump_blob(uint32_t blob_id)
 }
 
 static void
-dump_prop(uint32_t prop_id, uint64_t value)
+dump_prop(drmModePropertyPtr prop, uint32_t prop_id, uint64_t value)
 {
 	int i;
-	drmModePropertyPtr prop;
-
-	prop = drmModeGetProperty(fd, prop_id);
-
 	printf("\t%d", prop_id);
 	if (!prop) {
 		printf("\n");
@@ -297,25 +326,19 @@ dump_prop(uint32_t prop_id, uint64_t value)
 		dump_blob(value);
 	else
 		printf(" %"PRIu64"\n", value);
-
-	drmModeFreeProperty(prop);
 }
 
 static void dump_connectors(void)
 {
-	drmModeConnector *connector;
 	int i, j;
 
 	printf("Connectors:\n");
 	printf("id\tencoder\tstatus\t\ttype\tsize (mm)\tmodes\tencoders\n");
-	for (i = 0; i < resources->count_connectors; i++) {
-		connector = drmModeGetConnector(fd, resources->connectors[i]);
-
-		if (!connector) {
-			fprintf(stderr, "could not get connector %i: %s\n",
-				resources->connectors[i], strerror(errno));
+	for (i = 0; i < resources->res->count_connectors; i++) {
+		struct connector *_connector = &resources->connectors[i];
+		drmModeConnector *connector = _connector->connector;
+		if (!connector)
 			continue;
-		}
 
 		printf("%d\t%d\t%s\t%s\t%dx%d\t\t%d\t",
 		       connector->connector_id,
@@ -335,35 +358,32 @@ static void dump_connectors(void)
 			       "vss vse vtot)\n");
 			for (j = 0; j < connector->count_modes; j++)
 				dump_mode(&connector->modes[j]);
-
-			printf("  props:\n");
-			for (j = 0; j < connector->count_props; j++)
-				dump_prop(connector->props[j],
-					  connector->prop_values[j]);
 		}
 
-		drmModeFreeConnector(connector);
+		if (_connector->props) {
+			printf("  props:\n");
+			for (j = 0; j < (int)_connector->props->count_props; j++)
+				dump_prop(_connector->props_info[j],
+					  _connector->props->props[j],
+					  _connector->props->prop_values[j]);
+		}
 	}
 	printf("\n");
 }
 
 static void dump_crtcs(void)
 {
-	drmModeCrtc *crtc;
-	drmModeObjectPropertiesPtr props;
 	int i;
 	uint32_t j;
 
 	printf("CRTCs:\n");
 	printf("id\tfb\tpos\tsize\n");
-	for (i = 0; i < resources->count_crtcs; i++) {
-		crtc = drmModeGetCrtc(fd, resources->crtcs[i]);
-
-		if (!crtc) {
-			fprintf(stderr, "could not get crtc %i: %s\n",
-				resources->crtcs[i], strerror(errno));
+	for (i = 0; i < resources->res->count_crtcs; i++) {
+		struct crtc *_crtc = &resources->crtcs[i];
+		drmModeCrtc *crtc = _crtc->crtc;
+		if (!crtc)
 			continue;
-		}
+
 		printf("%d\t%d\t(%d,%d)\t(%dx%d)\n",
 		       crtc->crtc_id,
 		       crtc->buffer_id,
@@ -371,20 +391,15 @@ static void dump_crtcs(void)
 		       crtc->width, crtc->height);
 		dump_mode(&crtc->mode);
 
-		printf("  props:\n");
-		props = drmModeObjectGetProperties(fd, crtc->crtc_id,
-						   DRM_MODE_OBJECT_CRTC);
-		if (props) {
-			for (j = 0; j < props->count_props; j++)
-				dump_prop(props->props[j],
-					  props->prop_values[j]);
-			drmModeFreeObjectProperties(props);
+		if (_crtc->props) {
+			printf("  props:\n");
+			for (j = 0; j < _crtc->props->count_props; j++)
+				dump_prop(_crtc->props_info[j],
+					  _crtc->props->props[j],
+					  _crtc->props->prop_values[j]);
 		} else {
-			printf("\tcould not get crtc properties: %s\n",
-			       strerror(errno));
+			printf("  no properties found\n");
 		}
-
-		drmModeFreeCrtc(crtc);
 	}
 	printf("\n");
 }
@@ -396,47 +411,34 @@ static void dump_framebuffers(void)
 
 	printf("Frame buffers:\n");
 	printf("id\tsize\tpitch\n");
-	for (i = 0; i < resources->count_fbs; i++) {
-		fb = drmModeGetFB(fd, resources->fbs[i]);
-
-		if (!fb) {
-			fprintf(stderr, "could not get fb %i: %s\n",
-				resources->fbs[i], strerror(errno));
+	for (i = 0; i < resources->res->count_fbs; i++) {
+		fb = resources->fbs[i].fb;
+		if (!fb)
 			continue;
-		}
+
 		printf("%u\t(%ux%u)\t%u\n",
 		       fb->fb_id,
 		       fb->width, fb->height,
 		       fb->pitch);
-
-		drmModeFreeFB(fb);
 	}
 	printf("\n");
 }
 
 static void dump_planes(void)
 {
-	drmModeObjectPropertiesPtr props;
-	drmModePlaneRes *plane_resources;
-	drmModePlane *ovr;
 	unsigned int i, j;
-
-	plane_resources = drmModeGetPlaneResources(fd);
-	if (!plane_resources) {
-		fprintf(stderr, "drmModeGetPlaneResources failed: %s\n",
-			strerror(errno));
-		return;
-	}
 
 	printf("Planes:\n");
 	printf("id\tcrtc\tfb\tCRTC x,y\tx,y\tgamma size\tpossible crtcs\n");
-	for (i = 0; i < plane_resources->count_planes; i++) {
-		ovr = drmModeGetPlane(fd, plane_resources->planes[i]);
-		if (!ovr) {
-			fprintf(stderr, "drmModeGetPlane failed: %s\n",
-				strerror(errno));
+
+	if (!resources->plane_res)
+		return;
+
+	for (i = 0; i < resources->plane_res->count_planes; i++) {
+		struct plane *plane = &resources->planes[i];
+		drmModePlane *ovr = plane->plane;
+		if (!ovr)
 			continue;
-		}
 
 		printf("%d\t%d\t%d\t%d,%d\t\t%d,%d\t%-8d\t0x%08x\n",
 		       ovr->plane_id, ovr->crtc_id, ovr->fb_id,
@@ -451,25 +453,168 @@ static void dump_planes(void)
 			printf(" %4.4s", (char *)&ovr->formats[j]);
 		printf("\n");
 
-		printf("  props:\n");
-		props = drmModeObjectGetProperties(fd, ovr->plane_id,
-						   DRM_MODE_OBJECT_PLANE);
-		if (props) {
-			for (j = 0; j < props->count_props; j++)
-				dump_prop(props->props[j],
-					  props->prop_values[j]);
-			drmModeFreeObjectProperties(props);
+		if (plane->props) {
+			printf("  props:\n");
+			for (j = 0; j < plane->props->count_props; j++)
+				dump_prop(plane->props_info[j],
+					  plane->props->props[j],
+					  plane->props->prop_values[j]);
 		} else {
-			printf("\tcould not get plane properties: %s\n",
-			       strerror(errno));
+			printf("  no properties found\n");
 		}
-
-		drmModeFreePlane(ovr);
 	}
 	printf("\n");
 
-	drmModeFreePlaneResources(plane_resources);
 	return;
+}
+
+static void free_resources(struct resources *res)
+{
+	if (!res)
+		return;
+
+#define free_resource(_res, __res, type, Type)					\
+	do {									\
+		int i;								\
+		if (!(_res)->type##s)						\
+			break;							\
+		for (i = 0; i < (int)(_res)->__res->count_##type##s; ++i) {	\
+			if (!(_res)->type##s[i].type)				\
+				break;						\
+			drmModeFree##Type((_res)->type##s[i].type);		\
+		}								\
+		free((_res)->type##s);						\
+	} while (0)
+
+#define free_properties(_res, __res, type)					\
+	do {									\
+		int i;								\
+		for (i = 0; i < (int)(_res)->__res->count_##type##s; ++i) {	\
+			drmModeFreeObjectProperties(res->type##s[i].props);	\
+			free(res->type##s[i].props_info);			\
+		}								\
+	} while (0)
+
+	if (res->res) {
+		free_properties(res, res, crtc);
+
+		free_resource(res, res, crtc, Crtc);
+		free_resource(res, res, encoder, Encoder);
+		free_resource(res, res, connector, Connector);
+		free_resource(res, res, fb, FB);
+
+		drmModeFreeResources(res->res);
+	}
+
+	if (res->plane_res) {
+		free_properties(res, plane_res, plane);
+
+		free_resource(res, plane_res, plane, Plane);
+
+		drmModeFreePlaneResources(res->plane_res);
+	}
+
+	free(res);
+}
+
+static struct resources *get_resources(int fd)
+{
+	struct resources *res;
+
+	res = malloc(sizeof *res);
+	if (res == 0)
+		return NULL;
+
+	memset(res, 0, sizeof *res);
+
+	res->res = drmModeGetResources(fd);
+	if (!res->res) {
+		fprintf(stderr, "drmModeGetResources failed: %s\n",
+			strerror(errno));
+		goto error;
+	}
+
+	res->crtcs = malloc(res->res->count_crtcs * sizeof *res->crtcs);
+	res->encoders = malloc(res->res->count_encoders * sizeof *res->encoders);
+	res->connectors = malloc(res->res->count_connectors * sizeof *res->connectors);
+	res->fbs = malloc(res->res->count_fbs * sizeof *res->fbs);
+
+	if (!res->crtcs || !res->encoders || !res->connectors || !res->fbs)
+		goto error;
+
+	memset(res->crtcs , 0, res->res->count_crtcs * sizeof *res->crtcs);
+	memset(res->encoders, 0, res->res->count_encoders * sizeof *res->encoders);
+	memset(res->connectors, 0, res->res->count_connectors * sizeof *res->connectors);
+	memset(res->fbs, 0, res->res->count_fbs * sizeof *res->fbs);
+
+#define get_resource(_res, __res, type, Type)					\
+	do {									\
+		int i;								\
+		for (i = 0; i < (int)(_res)->__res->count_##type##s; ++i) {	\
+			(_res)->type##s[i].type =				\
+				drmModeGet##Type(fd, (_res)->__res->type##s[i]); \
+			if (!(_res)->type##s[i].type)				\
+				fprintf(stderr, "could not get %s %i: %s\n",	\
+					#type, (_res)->__res->type##s[i],	\
+					strerror(errno));			\
+		}								\
+	} while (0)
+
+	get_resource(res, res, crtc, Crtc);
+	get_resource(res, res, encoder, Encoder);
+	get_resource(res, res, connector, Connector);
+	get_resource(res, res, fb, FB);
+
+#define get_properties(_res, __res, type, Type)					\
+	do {									\
+		int i;								\
+		for (i = 0; i < (int)(_res)->__res->count_##type##s; ++i) {	\
+			struct type *obj = &res->type##s[i];			\
+			unsigned int j;						\
+			obj->props =						\
+				drmModeObjectGetProperties(fd, obj->type->type##_id, \
+							   DRM_MODE_OBJECT_##Type); \
+			if (!obj->props) {					\
+				fprintf(stderr,					\
+					"could not get %s %i properties: %s\n", \
+					#type, obj->type->type##_id,		\
+					strerror(errno));			\
+				continue;					\
+			}							\
+			obj->props_info = malloc(obj->props->count_props *	\
+						 sizeof *obj->props_info);	\
+			if (!obj->props_info)					\
+				continue;					\
+			for (j = 0; j < obj->props->count_props; ++j)		\
+				obj->props_info[j] =				\
+					drmModeGetProperty(fd, obj->props->props[j]); \
+		}								\
+	} while (0)
+
+	get_properties(res, res, crtc, CRTC);
+	get_properties(res, res, connector, CONNECTOR);
+
+	res->plane_res = drmModeGetPlaneResources(fd);
+	if (!res->plane_res) {
+		fprintf(stderr, "drmModeGetPlaneResources failed: %s\n",
+			strerror(errno));
+		return res;
+	}
+
+	res->planes = malloc(res->plane_res->count_planes * sizeof *res->planes);
+	if (!res->planes)
+		goto error;
+
+	memset(res->planes, 0, res->plane_res->count_planes * sizeof *res->planes);
+
+	get_resource(res, plane_res, plane, Plane);
+	get_properties(res, plane_res, plane, PLANE);
+
+	return res;
+
+error:
+	free_resources(res);
+	return NULL;
 }
 
 /* -----------------------------------------------------------------------------
@@ -483,7 +628,7 @@ static void dump_planes(void)
  * Then you need to find the encoder attached to that connector so you
  * can bind it with a free crtc.
  */
-struct connector {
+struct connector_arg {
 	uint32_t id;
 	char mode_str[64];
 	char format_str[5];
@@ -498,7 +643,7 @@ struct connector {
 	int swap_count;
 };
 
-struct plane {
+struct plane_arg {
 	uint32_t con_id;  /* the id of connector to bind to */
 	uint32_t w, h;
 	unsigned int fb_id;
@@ -507,32 +652,23 @@ struct plane {
 };
 
 static void
-connector_find_mode(struct connector *c)
+connector_find_mode(struct connector_arg *c)
 {
 	drmModeConnector *connector;
 	int i, j;
 
 	/* First, find the connector & mode */
 	c->mode = NULL;
-	for (i = 0; i < resources->count_connectors; i++) {
-		connector = drmModeGetConnector(fd, resources->connectors[i]);
-
-		if (!connector) {
-			fprintf(stderr, "could not get connector %i: %s\n",
-				resources->connectors[i], strerror(errno));
-			drmModeFreeConnector(connector);
+	for (i = 0; i < resources->res->count_connectors; i++) {
+		connector = resources->connectors[i].connector;
+		if (!connector)
 			continue;
-		}
 
-		if (!connector->count_modes) {
-			drmModeFreeConnector(connector);
+		if (!connector->count_modes)
 			continue;
-		}
 
-		if (connector->connector_id != c->id) {
-			drmModeFreeConnector(connector);
+		if (connector->connector_id != c->id)
 			continue;
-		}
 
 		for (j = 0; j < connector->count_modes; j++) {
 			c->mode = &connector->modes[j];
@@ -543,8 +679,6 @@ connector_find_mode(struct connector *c)
 		/* Found it, break out */
 		if (c->mode)
 			break;
-
-		drmModeFreeConnector(connector);
 	}
 
 	if (!c->mode) {
@@ -553,28 +687,21 @@ connector_find_mode(struct connector *c)
 	}
 
 	/* Now get the encoder */
-	for (i = 0; i < resources->count_encoders; i++) {
-		c->encoder = drmModeGetEncoder(fd, resources->encoders[i]);
-
-		if (!c->encoder) {
-			fprintf(stderr, "could not get encoder %i: %s\n",
-				resources->encoders[i], strerror(errno));
-			drmModeFreeEncoder(c->encoder);
+	for (i = 0; i < resources->res->count_encoders; i++) {
+		c->encoder = resources->encoders[i].encoder;
+		if (!c->encoder)
 			continue;
-		}
 
 		if (c->encoder->encoder_id  == connector->encoder_id)
 			break;
-
-		drmModeFreeEncoder(c->encoder);
 	}
 
 	if (c->crtc == -1)
 		c->crtc = c->encoder->crtc_id;
 
 	/* and figure out which crtc index it is: */
-	for (i = 0; i < resources->count_crtcs; i++) {
-		if (c->crtc == (int)resources->crtcs[i]) {
+	for (i = 0; i < resources->res->count_crtcs; i++) {
+		if (c->crtc == (int)resources->res->crtcs[i]) {
 			c->pipe = i;
 			break;
 		}
@@ -588,7 +715,7 @@ static void
 page_flip_handler(int fd, unsigned int frame,
 		  unsigned int sec, unsigned int usec, void *data)
 {
-	struct connector *c;
+	struct connector_arg *c;
 	unsigned int new_fb_id;
 	struct timeval end;
 	double t;
@@ -614,9 +741,8 @@ page_flip_handler(int fd, unsigned int frame,
 }
 
 static int
-set_plane(struct kms_driver *kms, struct connector *c, struct plane *p)
+set_plane(struct kms_driver *kms, struct connector_arg *c, struct plane_arg *p)
 {
-	drmModePlaneRes *plane_resources;
 	drmModePlane *ovr;
 	uint32_t handles[4], pitches[4], offsets[4] = {0}; /* we only use [0] */
 	uint32_t plane_id = 0;
@@ -626,25 +752,13 @@ set_plane(struct kms_driver *kms, struct connector *c, struct plane *p)
 	unsigned int i;
 
 	/* find an unused plane which can be connected to our crtc */
-	plane_resources = drmModeGetPlaneResources(fd);
-	if (!plane_resources) {
-		fprintf(stderr, "drmModeGetPlaneResources failed: %s\n",
-			strerror(errno));
-		return -1;
-	}
-
-	for (i = 0; i < plane_resources->count_planes && !plane_id; i++) {
-		ovr = drmModeGetPlane(fd, plane_resources->planes[i]);
-		if (!ovr) {
-			fprintf(stderr, "drmModeGetPlane failed: %s\n",
-				strerror(errno));
-			return -1;
-		}
+	for (i = 0; i < resources->plane_res->count_planes && !plane_id; i++) {
+		ovr = resources->planes[i].plane;
+		if (!ovr)
+			continue;
 
 		if ((ovr->possible_crtcs & (1 << c->pipe)) && !ovr->crtc_id)
 			plane_id = ovr->plane_id;
-
-		drmModeFreePlane(ovr);
 	}
 
 	fprintf(stderr, "testing %dx%d@%s overlay plane\n",
@@ -682,11 +796,13 @@ set_plane(struct kms_driver *kms, struct connector *c, struct plane *p)
 		return -1;
 	}
 
+	ovr->crtc_id = c->crtc;
+
 	return 0;
 }
 
 static void
-set_mode(struct connector *c, int count, struct plane *p, int plane_count,
+set_mode(struct connector_arg *c, int count, struct plane_arg *p, int plane_count,
 		int page_flip)
 {
 	struct kms_driver *kms;
@@ -837,7 +953,7 @@ set_mode(struct connector *c, int count, struct plane *p, int plane_count,
 
 #define min(a, b)	((a) < (b) ? (a) : (b))
 
-static int parse_connector(struct connector *c, const char *arg)
+static int parse_connector(struct connector_arg *c, const char *arg)
 {
 	unsigned int len;
 	const char *p;
@@ -875,7 +991,7 @@ static int parse_connector(struct connector *c, const char *arg)
 	return 0;
 }
 
-static int parse_plane(struct plane *p, const char *arg)
+static int parse_plane(struct plane_arg *p, const char *arg)
 {
 	strcpy(p->format_str, "XR24");
 
@@ -951,8 +1067,8 @@ int main(int argc, char **argv)
 	char *module = NULL;
 	unsigned int i;
 	int count = 0, plane_count = 0;
-	struct connector con_args[2];
-	struct plane plane_args[2] = { { 0, }, };
+	struct connector_arg con_args[2];
+	struct plane_arg plane_args[2] = { { 0, }, };
 	unsigned int args = 0;
 	
 	opterr = 0;
@@ -1035,10 +1151,8 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-	resources = drmModeGetResources(fd);
+	resources = get_resources(fd);
 	if (!resources) {
-		fprintf(stderr, "drmModeGetResources failed: %s\n",
-			strerror(errno));
 		drmClose(fd);
 		return 1;
 	}
@@ -1056,7 +1170,7 @@ int main(int argc, char **argv)
 		getchar();
 	}
 
-	drmModeFreeResources(resources);
+	free_resources(resources);
 
 	return 0;
 }
