@@ -247,8 +247,7 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
       NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
       return;
     }
-    gpu::gles2::TextureManager::TextureInfo* info =
-        texture_manager->GetTextureInfo(texture_ids[i]);
+    gpu::gles2::Texture* info = texture_manager->GetTexture(texture_ids[i]);
     if (!info) {
       DLOG(FATAL) << "Failed to find texture id " << texture_ids[i];
       NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);

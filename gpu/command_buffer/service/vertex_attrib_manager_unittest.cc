@@ -49,7 +49,7 @@ class VertexAttribManagerTest : public testing::Test {
 
   // Use StrictMock to make 100% sure we know how GL will be called.
   scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
-  VertexAttribManager::Ref manager_;
+  scoped_refptr<VertexAttribManager> manager_;
 };
 
 // GCC requires these declarations, but MSVC requires they not be present
@@ -58,7 +58,7 @@ const uint32 VertexAttribManagerTest::kNumVertexAttribs;
 #endif
 
 TEST_F(VertexAttribManagerTest, Basic) {
-  EXPECT_TRUE(manager_->GetVertexAttribInfo(kNumVertexAttribs) == NULL);
+  EXPECT_TRUE(manager_->GetVertexAttrib(kNumVertexAttribs) == NULL);
   EXPECT_FALSE(manager_->HaveFixedAttribs());
 
   const VertexAttribManager::VertexAttribInfoList& infos =
@@ -66,8 +66,8 @@ TEST_F(VertexAttribManagerTest, Basic) {
   EXPECT_EQ(0u, infos.size());
 
   for (uint32 ii = 0; ii < kNumVertexAttribs; ii += kNumVertexAttribs - 1) {
-    VertexAttribManager::VertexAttribInfo* info =
-        manager_->GetVertexAttribInfo(ii);
+    VertexAttrib* info =
+        manager_->GetVertexAttrib(ii);
     ASSERT_TRUE(info != NULL);
     EXPECT_EQ(ii, info->index());
     EXPECT_TRUE(info->buffer() == NULL);
@@ -86,10 +86,10 @@ TEST_F(VertexAttribManagerTest, Enable) {
   const VertexAttribManager::VertexAttribInfoList& infos =
       manager_->GetEnabledVertexAttribInfos();
 
-  VertexAttribManager::VertexAttribInfo* info1 =
-      manager_->GetVertexAttribInfo(1);
-  VertexAttribManager::VertexAttribInfo* info2 =
-      manager_->GetVertexAttribInfo(3);
+  VertexAttrib* info1 =
+      manager_->GetVertexAttrib(1);
+  VertexAttrib* info2 =
+      manager_->GetVertexAttrib(3);
 
   manager_->Enable(1, true);
   ASSERT_EQ(1u, infos.size());
@@ -109,12 +109,12 @@ TEST_F(VertexAttribManagerTest, Enable) {
 
 TEST_F(VertexAttribManagerTest, SetAttribInfo) {
   BufferManager buffer_manager(NULL);
-  buffer_manager.CreateBufferInfo(1, 2);
-  BufferManager::BufferInfo* buffer = buffer_manager.GetBufferInfo(1);
+  buffer_manager.CreateBuffer(1, 2);
+  BufferManager::Buffer* buffer = buffer_manager.GetBuffer(1);
   ASSERT_TRUE(buffer != NULL);
 
-  VertexAttribManager::VertexAttribInfo* info =
-      manager_->GetVertexAttribInfo(1);
+  VertexAttrib* info =
+      manager_->GetVertexAttrib(1);
 
   manager_->SetAttribInfo(1, buffer, 3, GL_SHORT, GL_TRUE, 32, 32, 4);
 
@@ -145,12 +145,12 @@ TEST_F(VertexAttribManagerTest, HaveFixedAttribs) {
 
 TEST_F(VertexAttribManagerTest, CanAccess) {
   BufferManager buffer_manager(NULL);
-  buffer_manager.CreateBufferInfo(1, 2);
-  BufferManager::BufferInfo* buffer = buffer_manager.GetBufferInfo(1);
+  buffer_manager.CreateBuffer(1, 2);
+  BufferManager::Buffer* buffer = buffer_manager.GetBuffer(1);
   ASSERT_TRUE(buffer != NULL);
 
-  VertexAttribManager::VertexAttribInfo* info =
-      manager_->GetVertexAttribInfo(1);
+  VertexAttrib* info =
+      manager_->GetVertexAttrib(1);
 
   EXPECT_TRUE(info->CanAccess(0));
   manager_->Enable(1, true);
@@ -187,17 +187,17 @@ TEST_F(VertexAttribManagerTest, CanAccess) {
 
 TEST_F(VertexAttribManagerTest, Unbind) {
   BufferManager buffer_manager(NULL);
-  buffer_manager.CreateBufferInfo(1, 2);
-  buffer_manager.CreateBufferInfo(3, 4);
-  BufferManager::BufferInfo* buffer1 = buffer_manager.GetBufferInfo(1);
-  BufferManager::BufferInfo* buffer2 = buffer_manager.GetBufferInfo(3);
+  buffer_manager.CreateBuffer(1, 2);
+  buffer_manager.CreateBuffer(3, 4);
+  BufferManager::Buffer* buffer1 = buffer_manager.GetBuffer(1);
+  BufferManager::Buffer* buffer2 = buffer_manager.GetBuffer(3);
   ASSERT_TRUE(buffer1 != NULL);
   ASSERT_TRUE(buffer2 != NULL);
 
-  VertexAttribManager::VertexAttribInfo* info1 =
-      manager_->GetVertexAttribInfo(1);
-  VertexAttribManager::VertexAttribInfo* info3 =
-      manager_->GetVertexAttribInfo(3);
+  VertexAttrib* info1 =
+      manager_->GetVertexAttrib(1);
+  VertexAttrib* info3 =
+      manager_->GetVertexAttrib(3);
 
   // Attach to 2 buffers.
   manager_->SetAttribInfo(1, buffer1, 3, GL_SHORT, GL_TRUE, 32, 32, 4);

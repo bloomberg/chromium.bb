@@ -34,21 +34,22 @@ struct GPU_EXPORT TextureUnit {
   GLenum bind_target;
 
   // texture currently bound to this unit's GL_TEXTURE_2D with glBindTexture
-  TextureManager::TextureInfo::Ref bound_texture_2d;
+  scoped_refptr<Texture> bound_texture_2d;
 
   // texture currently bound to this unit's GL_TEXTURE_CUBE_MAP with
   // glBindTexture
-  TextureManager::TextureInfo::Ref bound_texture_cube_map;
+  scoped_refptr<Texture> bound_texture_cube_map;
 
   // texture currently bound to this unit's GL_TEXTURE_EXTERNAL_OES with
   // glBindTexture
-  TextureManager::TextureInfo::Ref bound_texture_external_oes;
+  scoped_refptr<Texture> bound_texture_external_oes;
 
   // texture currently bound to this unit's GL_TEXTURE_RECTANGLE_ARB with
   // glBindTexture
-  TextureManager::TextureInfo::Ref bound_texture_rectangle_arb;
+  scoped_refptr<Texture> bound_texture_rectangle_arb;
 
-  TextureManager::TextureInfo::Ref GetInfoForSamplerType(GLenum type) {
+  scoped_refptr<Texture> GetInfoForSamplerType(
+      GLenum type) {
     DCHECK(type == GL_SAMPLER_2D || type == GL_SAMPLER_CUBE ||
            type == GL_SAMPLER_EXTERNAL_OES || type == GL_SAMPLER_2D_RECT_ARB);
     switch (type) {
@@ -66,7 +67,7 @@ struct GPU_EXPORT TextureUnit {
     return NULL;
   }
 
-  void Unbind(TextureManager::TextureInfo* texture) {
+  void Unbind(Texture* texture) {
     if (bound_texture_2d == texture) {
       bound_texture_2d = NULL;
     }
@@ -131,7 +132,7 @@ struct GPU_EXPORT ContextState {
 
   // The currently bound array buffer. If this is 0 it is illegal to call
   // glVertexAttribPointer.
-  BufferManager::BufferInfo::Ref bound_array_buffer;
+  scoped_refptr<BufferManager::Buffer> bound_array_buffer;
 
   // Which textures are bound to texture units through glActiveTexture.
   std::vector<TextureUnit> texture_units;
@@ -140,19 +141,19 @@ struct GPU_EXPORT ContextState {
   std::vector<Vec4> attrib_values;
 
   // Class that manages vertex attribs.
-  VertexAttribManager::Ref vertex_attrib_manager;
+  scoped_refptr<VertexAttribManager> vertex_attrib_manager;
 
   // The program in use by glUseProgram
-  ProgramManager::ProgramInfo::Ref current_program;
+  scoped_refptr<Program> current_program;
 
   // The currently bound framebuffers
-  FramebufferManager::FramebufferInfo::Ref bound_read_framebuffer;
-  FramebufferManager::FramebufferInfo::Ref bound_draw_framebuffer;
+  scoped_refptr<Framebuffer> bound_read_framebuffer;
+  scoped_refptr<Framebuffer> bound_draw_framebuffer;
 
   // The currently bound renderbuffer
-  RenderbufferManager::RenderbufferInfo::Ref bound_renderbuffer;
+  scoped_refptr<Renderbuffer> bound_renderbuffer;
 
-  QueryManager::Query::Ref current_query;
+  scoped_refptr<QueryManager::Query> current_query;
 
   GLenum hint_generate_mipmap;
   GLenum hint_fragment_shader_derivative;

@@ -47,8 +47,6 @@ class IdHandlerInterface {
 class GLES2_IMPL_EXPORT ShareGroup
     : public gpu::RefCountedThreadSafe<ShareGroup> {
  public:
-  typedef scoped_refptr<ShareGroup> Ref;
-
   ShareGroup(bool share_resources, bool bind_generates_resource);
 
   void SetGLES2ImplementationForDestruction(GLES2Implementation* gl_impl);

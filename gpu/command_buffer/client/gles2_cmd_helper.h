@@ -29,7 +29,8 @@ class GPU_EXPORT GLES2CmdHelper : public CommandBufferHelper {
   void GetAttribLocation(
       GLuint program, uint32 name_shm_id, uint32 name_shm_offset,
       uint32 location_shm_id, uint32 location_shm_offset, uint32 data_size) {
-    gles2::GetAttribLocation* c = GetCmdSpace<gles2::GetAttribLocation>();
+    gles2::cmds::GetAttribLocation* c =
+        GetCmdSpace<gles2::cmds::GetAttribLocation>();
     if (c) {
       c->Init(
           program, name_shm_id, name_shm_offset, location_shm_id,
@@ -40,9 +41,11 @@ class GPU_EXPORT GLES2CmdHelper : public CommandBufferHelper {
   void GetAttribLocationImmediate(
       GLuint program, const char* name,
       uint32 location_shm_id, uint32 location_shm_offset) {
-    const uint32 size = gles2::GetAttribLocationImmediate::ComputeSize(name);
-    gles2::GetAttribLocationImmediate* c =
-        GetImmediateCmdSpaceTotalSize<gles2::GetAttribLocationImmediate>(size);
+    const uint32 size = gles2::cmds::GetAttribLocationImmediate::ComputeSize(
+        name);
+    gles2::cmds::GetAttribLocationImmediate* c =
+        GetImmediateCmdSpaceTotalSize<gles2::cmds::GetAttribLocationImmediate>(
+            size);
     if (c) {
       c->Init(program, name, location_shm_id, location_shm_offset);
     }
@@ -51,8 +54,8 @@ class GPU_EXPORT GLES2CmdHelper : public CommandBufferHelper {
   void GetAttribLocationBucket(
       GLuint program, uint32 name_bucket_id,
       uint32 location_shm_id, uint32 location_shm_offset) {
-    gles2::GetAttribLocationBucket* c =
-        GetCmdSpace<gles2::GetAttribLocationBucket>();
+    gles2::cmds::GetAttribLocationBucket* c =
+        GetCmdSpace<gles2::cmds::GetAttribLocationBucket>();
     if (c) {
       c->Init(program, name_bucket_id, location_shm_id, location_shm_offset);
     }
@@ -61,7 +64,8 @@ class GPU_EXPORT GLES2CmdHelper : public CommandBufferHelper {
   void GetUniformLocation(
       GLuint program, uint32 name_shm_id, uint32 name_shm_offset,
       uint32 location_shm_id, uint32 location_shm_offset, uint32 data_size) {
-    gles2::GetUniformLocation* c = GetCmdSpace<gles2::GetUniformLocation>();
+    gles2::cmds::GetUniformLocation* c =
+        GetCmdSpace<gles2::cmds::GetUniformLocation>();
     if (c) {
       c->Init(
           program, name_shm_id, name_shm_offset, location_shm_id,
@@ -72,9 +76,11 @@ class GPU_EXPORT GLES2CmdHelper : public CommandBufferHelper {
   void GetUniformLocationImmediate(
       GLuint program, const char* name,
       uint32 location_shm_id, uint32 location_shm_offset) {
-    const uint32 size = gles2::GetUniformLocationImmediate::ComputeSize(name);
-    gles2::GetUniformLocationImmediate* c =
-        GetImmediateCmdSpaceTotalSize<gles2::GetUniformLocationImmediate>(size);
+    const uint32 size = gles2::cmds::GetUniformLocationImmediate::ComputeSize(
+        name);
+    gles2::cmds::GetUniformLocationImmediate* c =
+        GetImmediateCmdSpaceTotalSize<gles2::cmds::GetUniformLocationImmediate>(
+            size);
     if (c) {
       c->Init(program, name, location_shm_id, location_shm_offset);
     }
@@ -83,8 +89,8 @@ class GPU_EXPORT GLES2CmdHelper : public CommandBufferHelper {
   void GetUniformLocationBucket(
       GLuint program, uint32 name_bucket_id,
       uint32 location_shm_id, uint32 location_shm_offset) {
-    gles2::GetUniformLocationBucket* c =
-        GetCmdSpace<gles2::GetUniformLocationBucket>();
+    gles2::cmds::GetUniformLocationBucket* c =
+        GetCmdSpace<gles2::cmds::GetUniformLocationBucket>();
     if (c) {
       c->Init(program, name_bucket_id, location_shm_id, location_shm_offset);
     }

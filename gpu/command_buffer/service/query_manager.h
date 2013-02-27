@@ -29,8 +29,6 @@ class GPU_EXPORT QueryManager {
  public:
   class GPU_EXPORT Query : public base::RefCounted<Query> {
    public:
-    typedef scoped_refptr<Query> Ref;
-
     Query(
         QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset);
 
@@ -219,11 +217,11 @@ class GPU_EXPORT QueryManager {
   unsigned query_count_;
 
   // Info for each query in the system.
-  typedef base::hash_map<GLuint, Query::Ref> QueryMap;
+  typedef base::hash_map<GLuint, scoped_refptr<Query> > QueryMap;
   QueryMap queries_;
 
   // Queries waiting for completion.
-  typedef std::deque<Query::Ref> QueryQueue;
+  typedef std::deque<scoped_refptr<Query> > QueryQueue;
   QueryQueue pending_queries_;
 
   // Async pixel transfer queries waiting for completion.

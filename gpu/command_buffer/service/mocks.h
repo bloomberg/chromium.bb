@@ -99,14 +99,14 @@ class MockProgramCache : public ProgramCache {
 
   MOCK_CONST_METHOD4(LoadLinkedProgram, ProgramLoadResult(
       GLuint program,
-      ShaderManager::ShaderInfo* shader_a,
-      ShaderManager::ShaderInfo* shader_b,
+      Shader* shader_a,
+      Shader* shader_b,
       const LocationMap* bind_attrib_location_map));
 
   MOCK_METHOD4(SaveLinkedProgram, void(
       GLuint program,
-      const ShaderManager::ShaderInfo* shader_a,
-      const ShaderManager::ShaderInfo* shader_b,
+      const Shader* shader_a,
+      const Shader* shader_b,
       const LocationMap* bind_attrib_location_map));
  private:
   MOCK_METHOD0(ClearBackend, void());

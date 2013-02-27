@@ -57,7 +57,7 @@ class FeatureInfoTest : public testing::Test {
   }
 
   scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
-  FeatureInfo::Ref info_;
+  scoped_refptr<FeatureInfo> info_;
 };
 
 namespace {

@@ -26,11 +26,9 @@ namespace gles2 {
 class GPU_EXPORT BufferManager {
  public:
   // Info about Buffers currently in the system.
-  class GPU_EXPORT BufferInfo : public base::RefCounted<BufferInfo> {
+  class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
    public:
-    typedef scoped_refptr<BufferInfo> Ref;
-
-    BufferInfo(BufferManager* manager, GLuint service_id);
+    Buffer(BufferManager* manager, GLuint service_id);
 
     GLuint service_id() const {
       return service_id_;
@@ -70,7 +68,7 @@ class GPU_EXPORT BufferManager {
    private:
     friend class BufferManager;
     friend class BufferManagerTestBase;
-    friend class base::RefCounted<BufferInfo>;
+    friend class base::RefCounted<Buffer>;
 
     // Represents a range in a buffer.
     class Range {
@@ -100,7 +98,7 @@ class GPU_EXPORT BufferManager {
       GLenum type_;
     };
 
-    ~BufferInfo();
+    ~Buffer();
 
     GLenum target() const {
       return target_;
@@ -127,7 +125,7 @@ class GPU_EXPORT BufferManager {
     // Check if an offset, size range is valid for the current buffer.
     bool CheckRange(GLintptr offset, GLsizeiptr size) const;
 
-    // The manager that owns this BufferInfo.
+    // The manager that owns this Buffer.
     BufferManager* manager_;
 
     // True if deleted.
@@ -165,23 +163,23 @@ class GPU_EXPORT BufferManager {
   // Must call before destruction.
   void Destroy(bool have_context);
 
-  // Creates a BufferInfo for the given buffer.
-  void CreateBufferInfo(GLuint client_id, GLuint service_id);
+  // Creates a Buffer for the given buffer.
+  void CreateBuffer(GLuint client_id, GLuint service_id);
 
   // Gets the buffer info for the given buffer.
-  BufferInfo* GetBufferInfo(GLuint client_id);
+  Buffer* GetBuffer(GLuint client_id);
 
   // Removes a buffer info for the given buffer.
-  void RemoveBufferInfo(GLuint client_id);
+  void RemoveBuffer(GLuint client_id);
 
   // Gets a client id for a given service id.
   bool GetClientId(GLuint service_id, GLuint* client_id) const;
 
   // Sets the size and usage of a buffer.
-  void SetInfo(BufferInfo* info, GLsizeiptr size, GLenum usage);
+  void SetInfo(Buffer* info, GLsizeiptr size, GLenum usage);
 
   // Sets the target of a buffer. Returns false if the target can not be set.
-  bool SetTarget(BufferInfo* info, GLenum target);
+  bool SetTarget(Buffer* info, GLenum target);
 
   void set_allow_buffers_on_multiple_targets(bool allow) {
     allow_buffers_on_multiple_targets_ = allow;
@@ -192,20 +190,20 @@ class GPU_EXPORT BufferManager {
   }
 
  private:
-  void StartTracking(BufferInfo* info);
-  void StopTracking(BufferInfo* info);
+  void StartTracking(Buffer* info);
+  void StopTracking(Buffer* info);
 
   scoped_ptr<MemoryTypeTracker> memory_tracker_;
 
   // Info for each buffer in the system.
-  typedef base::hash_map<GLuint, BufferInfo::Ref> BufferInfoMap;
+  typedef base::hash_map<GLuint, scoped_refptr<Buffer> > BufferInfoMap;
   BufferInfoMap buffer_infos_;
 
   // Whether or not buffers can be bound to multiple targets.
   bool allow_buffers_on_multiple_targets_;
 
-  // Counts the number of BufferInfo allocated with 'this' as its manager.
-  // Allows to check no BufferInfo will outlive this.
+  // Counts the number of Buffer allocated with 'this' as its manager.
+  // Allows to check no Buffer will outlive this.
   unsigned int buffer_info_count_;
 
   bool have_context_;

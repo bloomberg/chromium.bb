@@ -42,8 +42,6 @@ struct DisallowedFeatures;
 // resources.
 class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
  public:
-  typedef scoped_refptr<ContextGroup> Ref;
-
   ContextGroup(
       MailboxManager* mailbox_manager,
       ImageManager* image_manager,
@@ -195,7 +193,7 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   linked_ptr<IdAllocatorInterface>
       id_namespaces_[id_namespaces::kNumIdNamespaces];
 
-  FeatureInfo::Ref feature_info_;
+  scoped_refptr<FeatureInfo> feature_info_;
 
   std::vector<base::WeakPtr<gles2::GLES2Decoder> > decoders_;
 

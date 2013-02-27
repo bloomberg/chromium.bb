@@ -47,8 +47,8 @@ void MemoryProgramCache::ClearBackend() {
 
 ProgramCache::ProgramLoadResult MemoryProgramCache::LoadLinkedProgram(
     GLuint program,
-    ShaderManager::ShaderInfo* shader_a,
-    ShaderManager::ShaderInfo* shader_b,
+    Shader* shader_a,
+    Shader* shader_b,
     const LocationMap* bind_attrib_location_map) const {
   char a_sha[kHashLength];
   char b_sha[kHashLength];
@@ -85,8 +85,8 @@ ProgramCache::ProgramLoadResult MemoryProgramCache::LoadLinkedProgram(
 
 void MemoryProgramCache::SaveLinkedProgram(
     GLuint program,
-    const ShaderManager::ShaderInfo* shader_a,
-    const ShaderManager::ShaderInfo* shader_b,
+    const Shader* shader_a,
+    const Shader* shader_b,
     const LocationMap* bind_attrib_location_map) {
   GLenum format;
   GLsizei length = 0;

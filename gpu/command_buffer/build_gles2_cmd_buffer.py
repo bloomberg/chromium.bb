@@ -2598,14 +2598,16 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
   def WriteFormatTest(self, func, file):
     """Writes a format test for a command."""
     file.Write("TEST_F(GLES2FormatTest, %s) {\n" % func.name)
-    file.Write("  %s& cmd = *GetBufferAs<%s>();\n" % (func.name, func.name))
+    file.Write("  cmds::%s& cmd = *GetBufferAs<cmds::%s>();\n" %
+               (func.name, func.name))
     file.Write("  void* next_cmd = cmd.Set(\n")
     file.Write("      &cmd")
     args = func.GetCmdArgs()
     for value, arg in enumerate(args):
       file.Write(",\n      static_cast<%s>(%d)" % (arg.type, value + 11))
     file.Write(");\n")
-    file.Write("  EXPECT_EQ(static_cast<uint32>(%s::kCmdId),\n" % func.name)
+    file.Write("  EXPECT_EQ(static_cast<uint32>(cmds::%s::kCmdId),\n" %
+               func.name)
     file.Write("            cmd.header.command);\n")
     func.type_handler.WriteCmdSizeTest(func, file)
     for value, arg in enumerate(args):
@@ -2648,7 +2650,8 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     file.Write(
         "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
     file.Write(
-        "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
+        "    uint32 immediate_data_size, const gles2::cmds::%s& c) {\n" %
+        func.name)
     self.WriteHandlerDeferReadWrite(func, file);
     if len(func.GetOriginalArgs()) > 0:
       last_arg = func.GetLastOriginalArg()
@@ -2668,7 +2671,8 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     file.Write(
         "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
     file.Write(
-        "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
+        "    uint32 immediate_data_size, const gles2::cmds::%s& c) {\n" %
+        func.name)
     self.WriteHandlerDeferReadWrite(func, file);
     last_arg = func.GetLastOriginalArg()
     all_but_last_arg = func.GetOriginalArgs()[:-1]
@@ -2687,7 +2691,8 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     file.Write(
         "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
     file.Write(
-        "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
+        "    uint32 immediate_data_size, const gles2::cmds::%s& c) {\n" %
+        func.name)
     self.WriteHandlerDeferReadWrite(func, file);
     last_arg = func.GetLastOriginalArg()
     all_but_last_arg = func.GetOriginalArgs()[:-1]
@@ -2780,8 +2785,8 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     valid_test = """
 TEST_F(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s));
-  SpecializedSetup<%(name)s, 0>(true);
-  %(name)s cmd;
+  SpecializedSetup<cmds::%(name)s, 0>(true);
+  cmds::%(name)s cmd;
   cmd.Init(%(args)s);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -2792,8 +2797,8 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
     invalid_test = """
 TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s)).Times(0);
-  SpecializedSetup<%(name)s, 0>(false);
-  %(name)s cmd;
+  SpecializedSetup<cmds::%(name)s, 0>(false);
+  cmds::%(name)s cmd;
   cmd.Init(%(args)s);
   EXPECT_EQ(error::%(parse_result)s, ExecuteCmd(cmd));%(gl_error_test)s
 }
@@ -2935,7 +2940,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
       code = """
 TEST_F(GLES2ImplementationTest, %(name)s) {
   struct Cmds {
-    %(name)s cmd;
+    cmds::%(name)s cmd;
   };
   Cmds expected;
   expected.cmd.Init(%(cmd_args)s);
@@ -2996,7 +3001,7 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
   def WriteCmdHelper(self, func, file):
     """Writes the cmd helper definition for a cmd."""
     code = """  void %(name)s(%(typed_args)s) {
-    gles2::%(name)s* c = GetCmdSpace<gles2::%(name)s>();
+    gles2::cmds::%(name)s* c = GetCmdSpace<gles2::cmds::%(name)s>();
     if (c) {
       c->Init(%(args)s);
     }
@@ -3013,8 +3018,8 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
     """Writes the cmd helper definition for the immediate version of a cmd."""
     code = """  void %(name)s(%(typed_args)s) {
     const uint32 s = 0;  // TODO(gman): compute correct size
-    gles2::%(name)s* c =
-        GetImmediateCmdSpaceTotalSize<gles2::%(name)s>(s);
+    gles2::cmds::%(name)s* c =
+        GetImmediateCmdSpaceTotalSize<gles2::cmds::%(name)s>(s);
     if (c) {
       c->Init(%(args)s);
     }
@@ -3076,8 +3081,8 @@ class StateSetHandler(TypeHandler):
         for check_ndx, range_check in enumerate(item['range_checks']):
           valid_test = """
 TEST_F(%(test_name)s, %(name)sInvalidValue%(ndx)d_%(check_ndx)d) {
-  SpecializedSetup<%(name)s, 0>(false);
-  %(name)s cmd;
+  SpecializedSetup<cmds::%(name)s, 0>(false);
+  cmds::%(name)s cmd;
   cmd.Init(%(args)s);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
@@ -3282,7 +3287,8 @@ class TodoHandler(CustomHandler):
     file.Write(
         "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
     file.Write(
-        "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
+        "    uint32 immediate_data_size, const gles2::cmds::%s& c) {\n" %
+        func.name)
     file.Write("  // TODO: for now this is a no-op\n")
     file.Write(
         "  SetGLError(GL_INVALID_OPERATION, \"gl%s\", \"not implemented\");\n" %
@@ -3548,8 +3554,8 @@ class BindHandler(TypeHandler):
       valid_test = """
 TEST_F(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s));
-  SpecializedSetup<%(name)s, 0>(true);
-  %(name)s cmd;
+  SpecializedSetup<cmds::%(name)s, 0>(true);
+  cmds::%(name)s cmd;
   cmd.Init(%(args)s);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -3559,12 +3565,12 @@ TEST_F(%(test_name)s, %(name)sValidArgsNewId) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(kNewServiceId));
   EXPECT_CALL(*gl_, %(gl_gen_func_name)s(1, _))
      .WillOnce(SetArgumentPointee<1>(kNewServiceId));
-  SpecializedSetup<%(name)s, 0>(true);
-  %(name)s cmd;
+  SpecializedSetup<cmds::%(name)s, 0>(true);
+  cmds::%(name)s cmd;
   cmd.Init(kNewClientId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_TRUE(Get%(resource_type)sInfo(kNewClientId) != NULL);
+  EXPECT_TRUE(Get%(resource_type)s(kNewClientId) != NULL);
 }
 """
       gen_func_names = {
@@ -3577,8 +3583,8 @@ TEST_F(%(test_name)s, %(name)sValidArgsNewId) {
       valid_test = """
 TEST_F(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s));
-  SpecializedSetup<%(name)s, 0>(true);
-  %(name)s cmd;
+  SpecializedSetup<cmds::%(name)s, 0>(true);
+  cmds::%(name)s cmd;
   cmd.Init(%(args)s);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -3588,12 +3594,12 @@ TEST_F(%(test_name)s, %(name)sValidArgsNewId) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(first_gl_arg)s, kNewServiceId));
   EXPECT_CALL(*gl_, %(gl_gen_func_name)s(1, _))
      .WillOnce(SetArgumentPointee<1>(kNewServiceId));
-  SpecializedSetup<%(name)s, 0>(true);
-  %(name)s cmd;
+  SpecializedSetup<cmds::%(name)s, 0>(true);
+  cmds::%(name)s cmd;
   cmd.Init(%(first_arg)s, kNewClientId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_TRUE(Get%(resource_type)sInfo(kNewClientId) != NULL);
+  EXPECT_TRUE(Get%(resource_type)s(kNewClientId) != NULL);
 }
 """
       gen_func_names = {
@@ -3608,8 +3614,8 @@ TEST_F(%(test_name)s, %(name)sValidArgsNewId) {
     invalid_test = """
 TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s)).Times(0);
-  SpecializedSetup<%(name)s, 0>(false);
-  %(name)s cmd;
+  SpecializedSetup<cmds::%(name)s, 0>(false);
+  cmds::%(name)s cmd;
   cmd.Init(%(args)s);
   EXPECT_EQ(error::%(parse_result)s, ExecuteCmd(cmd));%(gl_error_test)s
 }
@@ -3670,7 +3676,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     code = """
 TEST_F(GLES2ImplementationTest, %(name)s) {
   struct Cmds {
-    %(name)s cmd;
+    cmds::%(name)s cmd;
   };
   Cmds expected;
   expected.cmd.Init(%(cmd_args)s);
@@ -3771,7 +3777,7 @@ class GENnHandler(TypeHandler):
 TEST_F(GLES2ImplementationTest, %(name)s) {
   GLuint ids[2] = { 0, };
   struct Cmds {
-    %(name)sImmediate gen;
+    cmds::%(name)sImmediate gen;
     GLuint data[2];
   };
   Cmds expected;
@@ -3796,12 +3802,12 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(1, _))
       .WillOnce(SetArgumentPointee<1>(kNewServiceId));
   GetSharedMemoryAs<GLuint*>()[0] = kNewClientId;
-  SpecializedSetup<%(name)s, 0>(true);
-  %(name)s cmd;
+  SpecializedSetup<cmds::%(name)s, 0>(true);
+  cmds::%(name)s cmd;
   cmd.Init(%(args)s);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_TRUE(Get%(resource_name)sInfo(kNewClientId) != NULL);
+  EXPECT_TRUE(Get%(resource_name)s(kNewClientId) != NULL);
 }
 """
     self.WriteValidUnitTest(func, file, valid_test, {
@@ -3811,8 +3817,8 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
 TEST_F(%(test_name)s, %(name)sInvalidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(_, _)).Times(0);
   GetSharedMemoryAs<GLuint*>()[0] = client_%(resource_name)s_id_;
-  SpecializedSetup<%(name)s, 0>(false);
-  %(name)s cmd;
+  SpecializedSetup<cmds::%(name)s, 0>(false);
+  cmds::%(name)s cmd;
   cmd.Init(%(args)s);
   EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
 }
@@ -3827,14 +3833,14 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs) {
 TEST_F(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(1, _))
       .WillOnce(SetArgumentPointee<1>(kNewServiceId));
-  %(name)s* cmd = GetImmediateAs<%(name)s>();
+  cmds::%(name)s* cmd = GetImmediateAs<cmds::%(name)s>();
   GLuint temp = kNewClientId;
-  SpecializedSetup<%(name)s, 0>(true);
+  SpecializedSetup<cmds::%(name)s, 0>(true);
   cmd->Init(1, &temp);
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(*cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_TRUE(Get%(resource_name)sInfo(kNewClientId) != NULL);
+  EXPECT_TRUE(Get%(resource_name)s(kNewClientId) != NULL);
 }
 """
     self.WriteValidUnitTest(func, file, valid_test, {
@@ -3843,8 +3849,8 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
     invalid_test = """
 TEST_F(%(test_name)s, %(name)sInvalidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(_, _)).Times(0);
-  %(name)s* cmd = GetImmediateAs<%(name)s>();
-  SpecializedSetup<%(name)s, 0>(false);
+  cmds::%(name)s* cmd = GetImmediateAs<cmds::%(name)s>();
+  SpecializedSetup<cmds::%(name)s, 0>(false);
   cmd->Init(1, &client_%(resource_name)s_id_);
   EXPECT_EQ(error::kInvalidArguments,
             ExecuteImmediateCmd(*cmd, sizeof(&client_%(resource_name)s_id_)));
@@ -3907,9 +3913,9 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs) {
   def WriteImmediateCmdHelper(self, func, file):
     """Overrriden from TypeHandler."""
     code = """  void %(name)s(%(typed_args)s) {
-    const uint32 size = gles2::%(name)s::ComputeSize(n);
-    gles2::%(name)s* c =
-        GetImmediateCmdSpaceTotalSize<gles2::%(name)s>(size);
+    const uint32 size = gles2::cmds::%(name)s::ComputeSize(n);
+    gles2::cmds::%(name)s* c =
+        GetImmediateCmdSpaceTotalSize<gles2::cmds::%(name)s>(size);
     if (c) {
       c->Init(%(args)s);
     }
@@ -3926,10 +3932,12 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs) {
     """Overrriden from TypeHandler."""
     file.Write("TEST_F(GLES2FormatTest, %s) {\n" % func.name)
     file.Write("  static GLuint ids[] = { 12, 23, 34, };\n")
-    file.Write("  %s& cmd = *GetBufferAs<%s>();\n" % (func.name, func.name))
+    file.Write("  cmds::%s& cmd = *GetBufferAs<cmds::%s>();\n" %
+               (func.name, func.name))
     file.Write("  void* next_cmd = cmd.Set(\n")
     file.Write("      &cmd, static_cast<GLsizei>(arraysize(ids)), ids);\n")
-    file.Write("  EXPECT_EQ(static_cast<uint32>(%s::kCmdId),\n" % func.name)
+    file.Write("  EXPECT_EQ(static_cast<uint32>(cmds::%s::kCmdId),\n" %
+               func.name)
     file.Write("            cmd.header.command);\n")
     file.Write("  EXPECT_EQ(sizeof(cmd) +\n")
     file.Write("            RoundSizeToMultipleOfEntries(cmd.n * 4u),\n")
@@ -3959,12 +3967,12 @@ class CreateHandler(TypeHandler):
 TEST_F(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s))
       .WillOnce(Return(kNewServiceId));
-  SpecializedSetup<%(name)s, 0>(true);
-  %(name)s cmd;
+  SpecializedSetup<cmds::%(name)s, 0>(true);
+  cmds::%(name)s cmd;
   cmd.Init(%(args)s%(comma)skNewClientId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_TRUE(Get%(resource_type)sInfo(kNewClientId) != NULL);
+  EXPECT_TRUE(Get%(resource_type)s(kNewClientId) != NULL);
 }
 """
     comma = ""
@@ -3977,8 +3985,8 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
     invalid_test = """
 TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s)).Times(0);
-  SpecializedSetup<%(name)s, 0>(false);
-  %(name)s cmd;
+  SpecializedSetup<cmds::%(name)s, 0>(false);
+  cmds::%(name)s cmd;
   cmd.Init(%(args)s%(comma)skNewClientId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));%(gl_error_test)s
 }
@@ -4068,7 +4076,7 @@ class DELnHandler(TypeHandler):
 TEST_F(GLES2ImplementationTest, %(name)s) {
   GLuint ids[2] = { k%(types)sStartId, k%(types)sStartId + 1 };
   struct Cmds {
-    %(name)sImmediate del;
+    cmds::%(name)sImmediate del;
     GLuint data[2];
   };
   Cmds expected;
@@ -4093,13 +4101,13 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
       %(gl_func_name)s(1, Pointee(kService%(upper_resource_name)sId)))
       .Times(1);
   GetSharedMemoryAs<GLuint*>()[0] = client_%(resource_name)s_id_;
-  SpecializedSetup<%(name)s, 0>(true);
-  %(name)s cmd;
+  SpecializedSetup<cmds::%(name)s, 0>(true);
+  cmds::%(name)s cmd;
   cmd.Init(%(args)s);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
   EXPECT_TRUE(
-      Get%(upper_resource_name)sInfo(client_%(resource_name)s_id_) == NULL);
+      Get%(upper_resource_name)s(client_%(resource_name)s_id_) == NULL);
 }
 """
     self.WriteValidUnitTest(func, file, valid_test, {
@@ -4109,8 +4117,8 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
     invalid_test = """
 TEST_F(%(test_name)s, %(name)sInvalidArgs) {
   GetSharedMemoryAs<GLuint*>()[0] = kInvalidClientId;
-  SpecializedSetup<%(name)s, 0>(false);
-  %(name)s cmd;
+  SpecializedSetup<cmds::%(name)s, 0>(false);
+  cmds::%(name)s cmd;
   cmd.Init(%(args)s);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
@@ -4125,14 +4133,14 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
       *gl_,
       %(gl_func_name)s(1, Pointee(kService%(upper_resource_name)sId)))
       .Times(1);
-  %(name)s& cmd = *GetImmediateAs<%(name)s>();
-  SpecializedSetup<%(name)s, 0>(true);
+  cmds::%(name)s& cmd = *GetImmediateAs<cmds::%(name)s>();
+  SpecializedSetup<cmds::%(name)s, 0>(true);
   cmd.Init(1, &client_%(resource_name)s_id_);
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(client_%(resource_name)s_id_)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
   EXPECT_TRUE(
-      Get%(upper_resource_name)sInfo(client_%(resource_name)s_id_) == NULL);
+      Get%(upper_resource_name)s(client_%(resource_name)s_id_) == NULL);
 }
 """
     self.WriteValidUnitTest(func, file, valid_test, {
@@ -4141,8 +4149,8 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
         })
     invalid_test = """
 TEST_F(%(test_name)s, %(name)sInvalidArgs) {
-  %(name)s& cmd = *GetImmediateAs<%(name)s>();
-  SpecializedSetup<%(name)s, 0>(false);
+  cmds::%(name)s& cmd = *GetImmediateAs<cmds::%(name)s>();
+  SpecializedSetup<cmds::%(name)s, 0>(false);
   GLuint temp = kInvalidClientId;
   cmd.Init(1, &temp);
   EXPECT_EQ(error::kNoError,
@@ -4253,9 +4261,9 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs) {
   def WriteImmediateCmdHelper(self, func, file):
     """Overrriden from TypeHandler."""
     code = """  void %(name)s(%(typed_args)s) {
-    const uint32 size = gles2::%(name)s::ComputeSize(n);
-    gles2::%(name)s* c =
-        GetImmediateCmdSpaceTotalSize<gles2::%(name)s>(size);
+    const uint32 size = gles2::cmds::%(name)s::ComputeSize(n);
+    gles2::cmds::%(name)s* c =
+        GetImmediateCmdSpaceTotalSize<gles2::cmds::%(name)s>(size);
     if (c) {
       c->Init(%(args)s);
     }
@@ -4272,10 +4280,12 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs) {
     """Overrriden from TypeHandler."""
     file.Write("TEST_F(GLES2FormatTest, %s) {\n" % func.name)
     file.Write("  static GLuint ids[] = { 12, 23, 34, };\n")
-    file.Write("  %s& cmd = *GetBufferAs<%s>();\n" % (func.name, func.name))
+    file.Write("  cmds::%s& cmd = *GetBufferAs<cmds::%s>();\n" %
+               (func.name, func.name))
     file.Write("  void* next_cmd = cmd.Set(\n")
     file.Write("      &cmd, static_cast<GLsizei>(arraysize(ids)), ids);\n")
-    file.Write("  EXPECT_EQ(static_cast<uint32>(%s::kCmdId),\n" % func.name)
+    file.Write("  EXPECT_EQ(static_cast<uint32>(cmds::%s::kCmdId),\n" %
+               func.name)
     file.Write("            cmd.header.command);\n")
     file.Write("  EXPECT_EQ(sizeof(cmd) +\n")
     file.Write("            RoundSizeToMultipleOfEntries(cmd.n * 4u),\n")
@@ -4304,14 +4314,15 @@ class GETnHandler(TypeHandler):
     file.Write(
         "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
     file.Write(
-        "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
+        "    uint32 immediate_data_size, const gles2::cmds::%s& c) {\n" %
+        func.name)
     last_arg = func.GetLastOriginalArg()
 
     all_but_last_args = func.GetOriginalArgs()[:-1]
     for arg in all_but_last_args:
       arg.WriteGetCode(file)
 
-    code = """  typedef %(func_name)s::Result Result;
+    code = """  typedef cmds::%(func_name)s::Result Result;
   GLsizei num_values = 0;
   GetNumValuesReturnedForGLGet(pname, &num_values);
   Result* result = GetSharedMemoryAs<Result*>(
@@ -4364,7 +4375,7 @@ class GETnHandler(TypeHandler):
       code = """  if (%(func_name)sHelper(%(all_arg_string)s)) {
     return;
   }
-  typedef %(func_name)s::Result Result;
+  typedef cmds::%(func_name)s::Result Result;
   Result* result = GetResultAs<Result*>();
   if (!result) {
     return;
@@ -4393,9 +4404,9 @@ class GETnHandler(TypeHandler):
     code = """
 TEST_F(GLES2ImplementationTest, %(name)s) {
   struct Cmds {
-    %(name)s cmd;
+    cmds::%(name)s cmd;
   };
-  typedef %(name)s::Result Result;
+  typedef cmds::%(name)s::Result Result;
   Result::Type result = 0;
   Cmds expected;
   ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
@@ -4430,12 +4441,12 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
       .WillOnce(Return(GL_NO_ERROR))
       .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
-  SpecializedSetup<%(name)s, 0>(true);
-  typedef %(name)s::Result Result;
+  SpecializedSetup<cmds::%(name)s, 0>(true);
+  typedef cmds::%(name)s::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(local_gl_args)s));
   result->size = 0;
-  %(name)s cmd;
+  cmds::%(name)s cmd;
   cmd.Init(%(args)s);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(decoder_->GetGLES2Util()->GLGetNumValuesReturned(
@@ -4464,11 +4475,11 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
     invalid_test = """
 TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s)).Times(0);
-  SpecializedSetup<%(name)s, 0>(false);
-  %(name)s::Result* result =
-      static_cast<%(name)s::Result*>(shared_memory_address_);
+  SpecializedSetup<cmds::%(name)s, 0>(false);
+  cmds::%(name)s::Result* result =
+      static_cast<cmds::%(name)s::Result*>(shared_memory_address_);
   result->size = 0;
-  %(name)s cmd;
+  cmds::%(name)s cmd;
   cmd.Init(%(args)s);
   EXPECT_EQ(error::%(parse_result)s, ExecuteCmd(cmd));
   EXPECT_EQ(0u, result->size);%(gl_error_test)s
@@ -4488,8 +4499,8 @@ class PUTHandler(TypeHandler):
     valid_test = """
 TEST_F(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s));
-  SpecializedSetup<%(name)s, 0>(true);
-  %(name)s cmd;
+  SpecializedSetup<cmds::%(name)s, 0>(true);
+  cmds::%(name)s cmd;
   cmd.Init(%(args)s);
   GetSharedMemoryAs<%(data_type)s*>()[0] = %(data_value)s;
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -4505,8 +4516,8 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
     invalid_test = """
 TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s)).Times(0);
-  SpecializedSetup<%(name)s, 0>(false);
-  %(name)s cmd;
+  SpecializedSetup<cmds::%(name)s, 0>(false);
+  cmds::%(name)s cmd;
   cmd.Init(%(args)s);
   GetSharedMemoryAs<%(data_type)s*>()[0] = %(data_value)s;
   EXPECT_EQ(error::%(parse_result)s, ExecuteCmd(cmd));%(gl_error_test)s
@@ -4518,12 +4529,12 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     """Writes the service unit test for a command."""
     valid_test = """
 TEST_F(%(test_name)s, %(name)sValidArgs) {
-  %(name)s& cmd = *GetImmediateAs<%(name)s>();
+  cmds::%(name)s& cmd = *GetImmediateAs<cmds::%(name)s>();
   EXPECT_CALL(
       *gl_,
       %(gl_func_name)s(%(gl_args)s,
           reinterpret_cast<%(data_type)s*>(ImmediateDataAddress(&cmd))));
-  SpecializedSetup<%(name)s, 0>(true);
+  SpecializedSetup<cmds::%(name)s, 0>(true);
   %(data_type)s temp[%(data_count)s] = { %(data_value)s, };
   cmd.Init(%(gl_args)s, &temp[0]);
   EXPECT_EQ(error::kNoError,
@@ -4547,9 +4558,9 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
 
     invalid_test = """
 TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
-  %(name)s& cmd = *GetImmediateAs<%(name)s>();
+  cmds::%(name)s& cmd = *GetImmediateAs<cmds::%(name)s>();
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_any_args)s, _)).Times(0);
-  SpecializedSetup<%(name)s, 0>(false);
+  SpecializedSetup<cmds::%(name)s, 0>(false);
   %(data_type)s temp[%(data_count)s] = { %(data_value)s, };
   cmd.Init(%(all_but_last_args)s, &temp[0]);
   EXPECT_EQ(error::%(parse_result)s,
@@ -4596,7 +4607,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     code = """
 TEST_F(GLES2ImplementationTest, %(name)s) {
   struct Cmds {
-    %(name)sImmediate cmd;
+    cmds::%(name)sImmediate cmd;
     %(type)s data[%(count)d];
   };
 
@@ -4679,9 +4690,9 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
   def WriteImmediateCmdHelper(self, func, file):
     """Overrriden from TypeHandler."""
     code = """  void %(name)s(%(typed_args)s) {
-    const uint32 size = gles2::%(name)s::ComputeSize();
-    gles2::%(name)s* c =
-        GetImmediateCmdSpaceTotalSize<gles2::%(name)s>(size);
+    const uint32 size = gles2::cmds::%(name)s::ComputeSize();
+    gles2::cmds::%(name)s* c =
+        GetImmediateCmdSpaceTotalSize<gles2::cmds::%(name)s>(size);
     if (c) {
       c->Init(%(args)s);
     }
@@ -4703,7 +4714,8 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
       file.Write("    static_cast<%s>(kSomeBaseValueToTestWith + %d),\n" %
                  (func.info.data_type, v))
     file.Write("  };\n")
-    file.Write("  %s& cmd = *GetBufferAs<%s>();\n" % (func.name, func.name))
+    file.Write("  cmds::%s& cmd = *GetBufferAs<cmds::%s>();\n" %
+               (func.name, func.name))
     file.Write("  void* next_cmd = cmd.Set(\n")
     file.Write("      &cmd")
     args = func.GetCmdArgs()
@@ -4711,7 +4723,8 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
       file.Write(",\n      static_cast<%s>(%d)" % (arg.type, value + 11))
     file.Write(",\n      data);\n")
     args = func.GetCmdArgs()
-    file.Write("  EXPECT_EQ(static_cast<uint32>(%s::kCmdId),\n" % func.name)
+    file.Write("  EXPECT_EQ(static_cast<uint32>(cmds::%s::kCmdId),\n"
+               % func.name)
     file.Write("            cmd.header.command);\n")
     file.Write("  EXPECT_EQ(sizeof(cmd) +\n")
     file.Write("            RoundSizeToMultipleOfEntries(sizeof(data)),\n")
@@ -4740,8 +4753,8 @@ class PUTnHandler(TypeHandler):
     valid_test = """
 TEST_F(%(test_name)s, %(name)sValidArgsCountTooLarge) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s));
-  SpecializedSetup<%(name)s, 0>(true);
-  %(name)s cmd;
+  SpecializedSetup<cmds::%(name)s, 0>(true);
+  cmds::%(name)s cmd;
   cmd.Init(%(args)s);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -4774,12 +4787,12 @@ TEST_F(%(test_name)s, %(name)sValidArgsCountTooLarge) {
     """Overridden from TypeHandler."""
     valid_test = """
 TEST_F(%(test_name)s, %(name)sValidArgs) {
-  %(name)s& cmd = *GetImmediateAs<%(name)s>();
+  cmds::%(name)s& cmd = *GetImmediateAs<cmds::%(name)s>();
   EXPECT_CALL(
       *gl_,
       %(gl_func_name)s(%(gl_args)s,
           reinterpret_cast<%(data_type)s*>(ImmediateDataAddress(&cmd))));
-  SpecializedSetup<%(name)s, 0>(true);
+  SpecializedSetup<cmds::%(name)s, 0>(true);
   %(data_type)s temp[%(data_count)s * 2] = { 0, };
   cmd.Init(%(args)s, &temp[0]);
   EXPECT_EQ(error::kNoError,
@@ -4805,9 +4818,9 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
 
     invalid_test = """
 TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
-  %(name)s& cmd = *GetImmediateAs<%(name)s>();
+  cmds::%(name)s& cmd = *GetImmediateAs<cmds::%(name)s>();
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_any_args)s, _)).Times(0);
-  SpecializedSetup<%(name)s, 0>(false);
+  SpecializedSetup<cmds::%(name)s, 0>(false);
   %(data_type)s temp[%(data_count)s * 2] = { 0, };
   cmd.Init(%(all_but_last_args)s, &temp[0]);
   EXPECT_EQ(error::%(parse_result)s,
@@ -4860,7 +4873,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     code = """
 TEST_F(GLES2ImplementationTest, %(name)s) {
   struct Cmds {
-    %(name)sImmediate cmd;
+    cmds::%(name)sImmediate cmd;
     %(type)s data[2][%(count)d];
   };
 
@@ -4945,9 +4958,9 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
   def WriteImmediateCmdHelper(self, func, file):
     """Overrriden from TypeHandler."""
     code = """  void %(name)s(%(typed_args)s) {
-    const uint32 size = gles2::%(name)s::ComputeSize(count);
-    gles2::%(name)s* c =
-        GetImmediateCmdSpaceTotalSize<gles2::%(name)s>(size);
+    const uint32 size = gles2::cmds::%(name)s::ComputeSize(count);
+    gles2::cmds::%(name)s* c =
+        GetImmediateCmdSpaceTotalSize<gles2::cmds::%(name)s>(size);
     if (c) {
       c->Init(%(args)s);
     }
@@ -4969,7 +4982,8 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
       file.Write("    static_cast<%s>(kSomeBaseValueToTestWith + %d),\n" %
                  (func.info.data_type, v))
     file.Write("  };\n")
-    file.Write("  %s& cmd = *GetBufferAs<%s>();\n" % (func.name, func.name))
+    file.Write("  cmds::%s& cmd = *GetBufferAs<cmds::%s>();\n" %
+               (func.name, func.name))
     file.Write("  const GLsizei kNumElements = 2;\n")
     file.Write("  const size_t kExpectedCmdSize =\n")
     file.Write("      sizeof(cmd) + kNumElements * sizeof(%s) * %d;\n" %
@@ -4981,7 +4995,8 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
       file.Write(",\n      static_cast<%s>(%d)" % (arg.type, value + 1))
     file.Write(",\n      data);\n")
     args = func.GetCmdArgs()
-    file.Write("  EXPECT_EQ(static_cast<uint32>(%s::kCmdId),\n" % func.name)
+    file.Write("  EXPECT_EQ(static_cast<uint32>(cmds::%s::kCmdId),\n" %
+               func.name)
     file.Write("            cmd.header.command);\n")
     file.Write("  EXPECT_EQ(kExpectedCmdSize, cmd.header.size * 4u);\n")
     for value, arg in enumerate(args):
@@ -5026,8 +5041,8 @@ class PUTXnHandler(TypeHandler):
     valid_test = """
 TEST_F(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, %(name)sv(%(local_args)s));
-  SpecializedSetup<%(name)s, 0>(true);
-  %(name)s cmd;
+  SpecializedSetup<cmds::%(name)s, 0>(true);
+  cmds::%(name)s cmd;
   cmd.Init(%(args)s);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -5044,8 +5059,8 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
     invalid_test = """
 TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   EXPECT_CALL(*gl_, %(name)sv(_, _, _).Times(0);
-  SpecializedSetup<%(name)s, 0>(false);
-  %(name)s cmd;
+  SpecializedSetup<cmds::%(name)s, 0>(false);
+  cmds::%(name)s cmd;
   cmd.Init(%(args)s);
   EXPECT_EQ(error::%(parse_result)s, ExecuteCmd(cmd));%(gl_error_test)s
 }
@@ -5115,7 +5130,8 @@ class GLcharHandler(CustomHandler):
     """Overrriden from TypeHandler."""
     code = """  void %(name)s(%(typed_args)s) {
     const uint32 data_size = strlen(name);
-    gles2::%(name)s* c = GetImmediateCmdSpace<gles2::%(name)s>(data_size);
+    gles2::cmds::%(name)s* c =
+        GetImmediateCmdSpace<gles2::cmds::%(name)s>(data_size);
     if (c) {
       c->Init(%(args)s, data_size);
     }
@@ -5141,14 +5157,14 @@ class GLcharHandler(CustomHandler):
                         (arg.type, value + 11, arg.name))
     code = """
 TEST_F(GLES2FormatTest, %(func_name)s) {
-  %(func_name)s& cmd = *GetBufferAs<%(func_name)s>();
+  cmds::%(func_name)s& cmd = *GetBufferAs<cmds::%(func_name)s>();
   static const char* const test_str = \"test string\";
   void* next_cmd = cmd.Set(
       &cmd,
 %(init_code)s
       test_str,
       strlen(test_str));
-  EXPECT_EQ(static_cast<uint32>(%(func_name)s::kCmdId),
+  EXPECT_EQ(static_cast<uint32>(cmds::%(func_name)s::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd) +
             RoundSizeToMultipleOfEntries(strlen(test_str)),
@@ -5195,7 +5211,7 @@ class GLcharNHandler(CustomHandler):
   def WriteServiceImplementation(self, func, file):
     """Overrriden from TypeHandler."""
     file.Write("""error::Error GLES2DecoderImpl::Handle%(name)s(
-  uint32 immediate_data_size, const gles2::%(name)s& c) {
+  uint32 immediate_data_size, const gles2::cmds::%(name)s& c) {
   GLuint bucket_id = static_cast<GLuint>(c.%(bucket_id)s);
   Bucket* bucket = GetBucket(bucket_id);
   if (!bucket || bucket->size() == 0) {
@@ -5234,8 +5250,8 @@ class IsHandler(TypeHandler):
     valid_test = """
 TEST_F(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s));
-  SpecializedSetup<%(name)s, 0>(true);
-  %(name)s cmd;
+  SpecializedSetup<cmds::%(name)s, 0>(true);
+  cmds::%(name)s cmd;
   cmd.Init(%(args)s%(comma)sshared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -5251,8 +5267,8 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
     invalid_test = """
 TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s)).Times(0);
-  SpecializedSetup<%(name)s, 0>(false);
-  %(name)s cmd;
+  SpecializedSetup<cmds::%(name)s, 0>(false);
+  cmds::%(name)s cmd;
   cmd.Init(%(args)s%(comma)sshared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::%(parse_result)s, ExecuteCmd(cmd));%(gl_error_test)s
 }
@@ -5264,8 +5280,8 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     invalid_test = """
 TEST_F(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s)).Times(0);
-  SpecializedSetup<%(name)s, 0>(false);
-  %(name)s cmd;
+  SpecializedSetup<cmds::%(name)s, 0>(false);
+  cmds::%(name)s cmd;
   cmd.Init(%(args)s%(comma)skInvalidSharedMemoryId, shared_memory_offset_);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
   cmd.Init(%(args)s%(comma)sshared_memory_id_, kInvalidSharedMemoryOffset);
@@ -5281,12 +5297,13 @@ TEST_F(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
     file.Write(
         "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
     file.Write(
-        "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
+        "    uint32 immediate_data_size, const gles2::cmds::%s& c) {\n" %
+        func.name)
     args = func.GetOriginalArgs()
     for arg in args:
       arg.WriteGetCode(file)
 
-    code = """  typedef %(func_name)s::Result Result;
+    code = """  typedef cmds::%(func_name)s::Result Result;
   Result* result_dst = GetSharedMemoryAs<Result*>(
       c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
   if (!result_dst) {
@@ -5313,7 +5330,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
       self.WriteTraceEvent(func, file)
       func.WriteDestinationInitalizationValidation(file)
       self.WriteClientGLCallLog(func, file)
-      file.Write("  typedef %s::Result Result;\n" % func.name)
+      file.Write("  typedef cmds::%s::Result Result;\n" % func.name)
       file.Write("  Result* result = GetResultAs<Result*>();\n")
       file.Write("  if (!result) {\n")
       file.Write("    return %s;\n" % error_value)
@@ -5341,13 +5358,13 @@ TEST_F(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
       code = """
 TEST_F(GLES2ImplementationTest, %(name)s) {
   struct Cmds {
-    %(name)s cmd;
+    cmds::%(name)s cmd;
   };
 
-  typedef %(name)s::Result Result;
+  typedef cmds::%(name)s::Result Result;
   Cmds expected;
   ExpectedMemoryInfo result1 =
-      GetExpectedResultMemory(sizeof(%(name)s::Result));
+      GetExpectedResultMemory(sizeof(cmds::%(name)s::Result));
   expected.cmd.Init(1, result1.id, result1.offset);
 
   EXPECT_CALL(*command_buffer(), OnFlush())
@@ -5434,12 +5451,12 @@ class STRnHandler(TypeHandler):
 TEST_F(%(test_name)s, %(name)sValidArgs) {
   const char* kInfo = "hello";
   const uint32 kBucketId = 123;
-  SpecializedSetup<%(name)s, 0>(true);
+  SpecializedSetup<cmds::%(name)s, 0>(true);
 %(expect_len_code)s
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s))
       .WillOnce(DoAll(SetArgumentPointee<2>(strlen(kInfo)),
                       SetArrayArgument<3>(kInfo, kInfo + strlen(kInfo) + 1)));
-  %(name)s cmd;
+  cmds::%(name)s cmd;
   cmd.Init(%(args)s);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   CommonDecoder::Bucket* bucket = decoder_->GetBucket(kBucketId);
@@ -5475,7 +5492,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs) {
   const uint32 kBucketId = 123;
   EXPECT_CALL(*gl_, %(gl_func_name)s(_, _, _, _))
       .Times(0);
-  %(name)s cmd;
+  cmds::%(name)s cmd;
   cmd.Init(kInvalidClientId, kBucketId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());

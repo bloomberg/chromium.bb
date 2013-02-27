@@ -27,7 +27,7 @@ class BufferManagerTestBase : public testing::Test {
     gl_.reset();
   }
 
-  GLenum GetTarget(const BufferManager::BufferInfo* info) const {
+  GLenum GetTarget(const BufferManager::Buffer* info) const {
     return info->target();
   }
 
@@ -65,9 +65,9 @@ TEST_F(BufferManagerTest, Basic) {
   const GLsizeiptr kBuffer1Size = 123;
   const GLuint kClientBuffer2Id = 2;
   // Check we can create buffer.
-  manager_->CreateBufferInfo(kClientBuffer1Id, kServiceBuffer1Id);
+  manager_->CreateBuffer(kClientBuffer1Id, kServiceBuffer1Id);
   // Check buffer got created.
-  BufferManager::BufferInfo* info1 = manager_->GetBufferInfo(kClientBuffer1Id);
+  BufferManager::Buffer* info1 = manager_->GetBuffer(kClientBuffer1Id);
   ASSERT_TRUE(info1 != NULL);
   EXPECT_EQ(0u, GetTarget(info1));
   EXPECT_EQ(0, info1->size());
@@ -84,16 +84,16 @@ TEST_F(BufferManagerTest, Basic) {
   EXPECT_EQ(kBuffer1Size, info1->size());
   EXPECT_EQ(static_cast<GLenum>(GL_DYNAMIC_DRAW), info1->usage());
   // Check we get nothing for a non-existent buffer.
-  EXPECT_TRUE(manager_->GetBufferInfo(kClientBuffer2Id) == NULL);
+  EXPECT_TRUE(manager_->GetBuffer(kClientBuffer2Id) == NULL);
   // Check trying to a remove non-existent buffers does not crash.
-  manager_->RemoveBufferInfo(kClientBuffer2Id);
+  manager_->RemoveBuffer(kClientBuffer2Id);
   // Check that it gets deleted when the last reference is released.
   EXPECT_CALL(*gl_, DeleteBuffersARB(1, ::testing::Pointee(kServiceBuffer1Id)))
       .Times(1)
       .RetiresOnSaturation();
   // Check we can't get the buffer after we remove it.
-  manager_->RemoveBufferInfo(kClientBuffer1Id);
-  EXPECT_TRUE(manager_->GetBufferInfo(kClientBuffer1Id) == NULL);
+  manager_->RemoveBuffer(kClientBuffer1Id);
+  EXPECT_TRUE(manager_->GetBuffer(kClientBuffer1Id) == NULL);
 }
 
 TEST_F(BufferManagerMemoryTrackerTest, Basic) {
@@ -103,9 +103,9 @@ TEST_F(BufferManagerMemoryTrackerTest, Basic) {
   const GLsizeiptr kBuffer1Size2 = 456;
   // Check we can create buffer.
   EXPECT_MEMORY_ALLOCATION_CHANGE(0, 0, MemoryTracker::kManaged);
-  manager_->CreateBufferInfo(kClientBuffer1Id, kServiceBuffer1Id);
+  manager_->CreateBuffer(kClientBuffer1Id, kServiceBuffer1Id);
   // Check buffer got created.
-  BufferManager::BufferInfo* info1 = manager_->GetBufferInfo(kClientBuffer1Id);
+  BufferManager::Buffer* info1 = manager_->GetBuffer(kClientBuffer1Id);
   ASSERT_TRUE(info1 != NULL);
   manager_->SetTarget(info1, GL_ELEMENT_ARRAY_BUFFER);
   // Check we and set its size.
@@ -122,17 +122,17 @@ TEST_F(BufferManagerTest, Destroy) {
   const GLuint kClient1Id = 1;
   const GLuint kService1Id = 11;
   // Check we can create buffer.
-  manager_->CreateBufferInfo(kClient1Id, kService1Id);
+  manager_->CreateBuffer(kClient1Id, kService1Id);
   // Check buffer got created.
-  BufferManager::BufferInfo* info1 =
-      manager_->GetBufferInfo(kClient1Id);
+  BufferManager::Buffer* info1 =
+      manager_->GetBuffer(kClient1Id);
   ASSERT_TRUE(info1 != NULL);
   EXPECT_CALL(*gl_, DeleteBuffersARB(1, ::testing::Pointee(kService1Id)))
       .Times(1)
       .RetiresOnSaturation();
   manager_->Destroy(true);
   // Check the resources were released.
-  info1 = manager_->GetBufferInfo(kClient1Id);
+  info1 = manager_->GetBuffer(kClient1Id);
   ASSERT_TRUE(info1 == NULL);
 }
 
@@ -140,8 +140,8 @@ TEST_F(BufferManagerTest, SetRange) {
   const GLuint kClientBufferId = 1;
   const GLuint kServiceBufferId = 11;
   const uint8 data[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
-  manager_->CreateBufferInfo(kClientBufferId, kServiceBufferId);
-  BufferManager::BufferInfo* info = manager_->GetBufferInfo(kClientBufferId);
+  manager_->CreateBuffer(kClientBufferId, kServiceBufferId);
+  BufferManager::Buffer* info = manager_->GetBuffer(kClientBufferId);
   ASSERT_TRUE(info != NULL);
   manager_->SetTarget(info, GL_ELEMENT_ARRAY_BUFFER);
   manager_->SetInfo(info, sizeof(data), GL_STATIC_DRAW);
@@ -162,8 +162,8 @@ TEST_F(BufferManagerTest, GetRange) {
   const GLuint kClientBufferId = 1;
   const GLuint kServiceBufferId = 11;
   const uint8 data[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
-  manager_->CreateBufferInfo(kClientBufferId, kServiceBufferId);
-  BufferManager::BufferInfo* info = manager_->GetBufferInfo(kClientBufferId);
+  manager_->CreateBuffer(kClientBufferId, kServiceBufferId);
+  BufferManager::Buffer* info = manager_->GetBuffer(kClientBufferId);
   ASSERT_TRUE(info != NULL);
   manager_->SetTarget(info, GL_ELEMENT_ARRAY_BUFFER);
   manager_->SetInfo(info, sizeof(data), GL_STATIC_DRAW);
@@ -187,8 +187,8 @@ TEST_F(BufferManagerTest, GetMaxValueForRangeUint8) {
   const GLuint kServiceBufferId = 11;
   const uint8 data[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
   const uint8 new_data[] = {100, 120, 110};
-  manager_->CreateBufferInfo(kClientBufferId, kServiceBufferId);
-  BufferManager::BufferInfo* info = manager_->GetBufferInfo(kClientBufferId);
+  manager_->CreateBuffer(kClientBufferId, kServiceBufferId);
+  BufferManager::Buffer* info = manager_->GetBuffer(kClientBufferId);
   ASSERT_TRUE(info != NULL);
   manager_->SetTarget(info, GL_ELEMENT_ARRAY_BUFFER);
   manager_->SetInfo(info, sizeof(data), GL_STATIC_DRAW);
@@ -217,8 +217,8 @@ TEST_F(BufferManagerTest, GetMaxValueForRangeUint16) {
   const GLuint kServiceBufferId = 11;
   const uint16 data[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
   const uint16 new_data[] = {100, 120, 110};
-  manager_->CreateBufferInfo(kClientBufferId, kServiceBufferId);
-  BufferManager::BufferInfo* info = manager_->GetBufferInfo(kClientBufferId);
+  manager_->CreateBuffer(kClientBufferId, kServiceBufferId);
+  BufferManager::Buffer* info = manager_->GetBuffer(kClientBufferId);
   ASSERT_TRUE(info != NULL);
   manager_->SetTarget(info, GL_ELEMENT_ARRAY_BUFFER);
   manager_->SetInfo(info, sizeof(data), GL_STATIC_DRAW);
@@ -249,8 +249,8 @@ TEST_F(BufferManagerTest, GetMaxValueForRangeUint32) {
   const GLuint kServiceBufferId = 11;
   const uint32 data[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
   const uint32 new_data[] = {100, 120, 110};
-  manager_->CreateBufferInfo(kClientBufferId, kServiceBufferId);
-  BufferManager::BufferInfo* info = manager_->GetBufferInfo(kClientBufferId);
+  manager_->CreateBuffer(kClientBufferId, kServiceBufferId);
+  BufferManager::Buffer* info = manager_->GetBuffer(kClientBufferId);
   ASSERT_TRUE(info != NULL);
   manager_->SetTarget(info, GL_ELEMENT_ARRAY_BUFFER);
   manager_->SetInfo(info, sizeof(data), GL_STATIC_DRAW);
@@ -282,13 +282,13 @@ TEST_F(BufferManagerTest, UseDeletedBuffer) {
   const GLuint kClientBufferId = 1;
   const GLuint kServiceBufferId = 11;
   const uint32 data[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
-  manager_->CreateBufferInfo(kClientBufferId, kServiceBufferId);
-  BufferManager::BufferInfo::Ref info =
-      manager_->GetBufferInfo(kClientBufferId);
+  manager_->CreateBuffer(kClientBufferId, kServiceBufferId);
+  scoped_refptr<BufferManager::Buffer> info =
+      manager_->GetBuffer(kClientBufferId);
   ASSERT_TRUE(info != NULL);
   manager_->SetTarget(info, GL_ARRAY_BUFFER);
   // Remove buffer
-  manager_->RemoveBufferInfo(kClientBufferId);
+  manager_->RemoveBuffer(kClientBufferId);
   // Use it after removing
   manager_->SetInfo(info, sizeof(data), GL_STATIC_DRAW);
   // Check that it gets deleted when the last reference is released.

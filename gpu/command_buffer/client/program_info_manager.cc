@@ -142,7 +142,7 @@ class CachedProgramInfoManager : public ProgramInfoManager {
                                 char* name) OVERRIDE;
 
  private:
-  class ProgramInfo {
+  class Program {
    public:
     struct UniformInfo {
       UniformInfo(GLsizei _size, GLenum _type, const std::string& _name);
@@ -153,8 +153,8 @@ class CachedProgramInfoManager : public ProgramInfoManager {
       std::string name;
       std::vector<GLint> element_locations;
     };
-    struct VertexAttribInfo {
-      VertexAttribInfo(GLsizei _size, GLenum _type, const std::string& _name,
+    struct VertexAttrib {
+      VertexAttrib(GLsizei _size, GLenum _type, const std::string& _name,
                        GLint _location)
           : size(_size),
             type(_type),
@@ -168,15 +168,15 @@ class CachedProgramInfoManager : public ProgramInfoManager {
     };
 
     typedef std::vector<UniformInfo> UniformInfoVector;
-    typedef std::vector<VertexAttribInfo> AttribInfoVector;
+    typedef std::vector<VertexAttrib> AttribInfoVector;
 
-    ProgramInfo();
+    Program();
 
     const AttribInfoVector& GetAttribInfos() const {
       return attrib_infos_;
     }
 
-    const VertexAttribInfo* GetAttribInfo(GLint index) const {
+    const VertexAttrib* GetAttribInfo(GLint index) const {
       return (static_cast<size_t>(index) < attrib_infos_.size()) ?
          &attrib_infos_[index] : NULL;
     }
@@ -213,17 +213,17 @@ class CachedProgramInfoManager : public ProgramInfoManager {
     bool link_status_;
   };
 
-  ProgramInfo* GetProgramInfo(GLES2Implementation* gl, GLuint program);
+  Program* GetProgramInfo(GLES2Implementation* gl, GLuint program);
 
   // TODO(gman): Switch to a faster container.
-  typedef std::map<GLuint, ProgramInfo> ProgramInfoMap;
+  typedef std::map<GLuint, Program> ProgramInfoMap;
 
   ProgramInfoMap program_infos_;
 
   mutable Lock lock_;
 };
 
-CachedProgramInfoManager::ProgramInfo::UniformInfo::UniformInfo(
+CachedProgramInfoManager::Program::UniformInfo::UniformInfo(
     GLsizei _size, GLenum _type, const std::string& _name)
     : size(_size),
       type(_type),
@@ -232,7 +232,7 @@ CachedProgramInfoManager::ProgramInfo::UniformInfo::UniformInfo(
   GPU_DCHECK(!(size > 1 && !is_array));
 }
 
-CachedProgramInfoManager::ProgramInfo::ProgramInfo()
+CachedProgramInfoManager::Program::Program()
     : cached_(false),
       max_attrib_name_length_(0),
       max_uniform_name_length_(0),
@@ -240,10 +240,10 @@ CachedProgramInfoManager::ProgramInfo::ProgramInfo()
 }
 
 // TODO(gman): Add a faster lookup.
-GLint CachedProgramInfoManager::ProgramInfo::GetAttribLocation(
+GLint CachedProgramInfoManager::Program::GetAttribLocation(
     const std::string& name) const {
   for (GLuint ii = 0; ii < attrib_infos_.size(); ++ii) {
-    const VertexAttribInfo& info = attrib_infos_[ii];
+    const VertexAttrib& info = attrib_infos_[ii];
     if (info.name == name) {
       return info.location;
     }
@@ -251,7 +251,7 @@ GLint CachedProgramInfoManager::ProgramInfo::GetAttribLocation(
   return -1;
 }
 
-GLint CachedProgramInfoManager::ProgramInfo::GetUniformLocation(
+GLint CachedProgramInfoManager::Program::GetUniformLocation(
     const std::string& name) const {
   bool getting_array_location = false;
   size_t open_pos = std::string::npos;
@@ -280,7 +280,7 @@ GLint CachedProgramInfoManager::ProgramInfo::GetUniformLocation(
   return -1;
 }
 
-bool CachedProgramInfoManager::ProgramInfo::GetProgramiv(
+bool CachedProgramInfoManager::Program::GetProgramiv(
     GLenum pname, GLint* params) {
   switch (pname) {
     case GL_LINK_STATUS:
@@ -314,7 +314,7 @@ template<typename T> static T LocalGetAs(
   return static_cast<T>(static_cast<const void*>(p));
 }
 
-void CachedProgramInfoManager::ProgramInfo::Update(
+void CachedProgramInfoManager::Program::Update(
     GLES2Implementation* gl, GLuint program) {
   if (cached_) {
     return;
@@ -347,7 +347,7 @@ void CachedProgramInfoManager::ProgramInfo::Update(
         result, input->name_offset, input->name_length);
     std::string name(name_buf, input->name_length);
     attrib_infos_.push_back(
-        VertexAttribInfo(input->size, input->type, name, *location));
+        VertexAttrib(input->size, input->type, name, *location));
     max_attrib_name_length_ = std::max(
         static_cast<GLsizei>(name.size() + 1), max_attrib_name_length_);
     ++input;
@@ -379,14 +379,14 @@ CachedProgramInfoManager::~CachedProgramInfoManager() {
 
 }
 
-CachedProgramInfoManager::ProgramInfo*
+CachedProgramInfoManager::Program*
     CachedProgramInfoManager::GetProgramInfo(
         GLES2Implementation* gl, GLuint program) {
   ProgramInfoMap::iterator it = program_infos_.find(program);
   if (it == program_infos_.end()) {
     return NULL;
   }
-  ProgramInfo* info = &it->second;
+  Program* info = &it->second;
   info->Update(gl, program);
   return info;
 }
@@ -395,7 +395,7 @@ void CachedProgramInfoManager::CreateInfo(GLuint program) {
   AutoLock auto_lock(lock_);
   DeleteInfo(program);
   std::pair<ProgramInfoMap::iterator, bool> result =
-      program_infos_.insert(std::make_pair(program, ProgramInfo()));
+      program_infos_.insert(std::make_pair(program, Program()));
 
   GPU_DCHECK(result.second);
 }
@@ -407,7 +407,7 @@ void CachedProgramInfoManager::DeleteInfo(GLuint program) {
 bool CachedProgramInfoManager::GetProgramiv(
     GLES2Implementation* gl, GLuint program, GLenum pname, GLint* params) {
   AutoLock auto_lock(lock_);
-  ProgramInfo* info = GetProgramInfo(gl, program);
+  Program* info = GetProgramInfo(gl, program);
   if (!info) {
     return false;
   }
@@ -417,7 +417,7 @@ bool CachedProgramInfoManager::GetProgramiv(
 GLint CachedProgramInfoManager::GetAttribLocation(
     GLES2Implementation* gl, GLuint program, const char* name) {
   AutoLock auto_lock(lock_);
-  ProgramInfo* info = GetProgramInfo(gl, program);
+  Program* info = GetProgramInfo(gl, program);
   if (info) {
     return info->GetAttribLocation(name);
   }
@@ -427,7 +427,7 @@ GLint CachedProgramInfoManager::GetAttribLocation(
 GLint CachedProgramInfoManager::GetUniformLocation(
     GLES2Implementation* gl, GLuint program, const char* name) {
   AutoLock auto_lock(lock_);
-  ProgramInfo* info = GetProgramInfo(gl, program);
+  Program* info = GetProgramInfo(gl, program);
   if (info) {
     return info->GetUniformLocation(name);
   }
@@ -439,9 +439,9 @@ bool CachedProgramInfoManager::GetActiveAttrib(
     GLuint program, GLuint index, GLsizei bufsize, GLsizei* length,
     GLint* size, GLenum* type, char* name) {
   AutoLock auto_lock(lock_);
-  ProgramInfo* info = GetProgramInfo(gl, program);
+  Program* info = GetProgramInfo(gl, program);
   if (info) {
-    const ProgramInfo::VertexAttribInfo* attrib_info =
+    const Program::VertexAttrib* attrib_info =
         info->GetAttribInfo(index);
     if (attrib_info) {
       if (size) {
@@ -474,9 +474,9 @@ bool CachedProgramInfoManager::GetActiveUniform(
     GLuint program, GLuint index, GLsizei bufsize, GLsizei* length,
     GLint* size, GLenum* type, char* name) {
   AutoLock auto_lock(lock_);
-  ProgramInfo* info = GetProgramInfo(gl, program);
+  Program* info = GetProgramInfo(gl, program);
   if (info) {
-    const ProgramInfo::UniformInfo* uniform_info = info->GetUniformInfo(index);
+    const Program::UniformInfo* uniform_info = info->GetUniformInfo(index);
     if (uniform_info) {
       if (size) {
         *size = uniform_info->size;

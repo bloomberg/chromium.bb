@@ -27,6 +27,8 @@ using ::testing::StrEq;
 namespace gpu {
 namespace gles2 {
 
+using namespace cmds;
+
 class GLES2DecoderTest3 : public GLES2DecoderTestBase {
  public:
   GLES2DecoderTest3() { }

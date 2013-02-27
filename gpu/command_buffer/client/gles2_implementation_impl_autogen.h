@@ -115,7 +115,7 @@ GLenum GLES2Implementation::CheckFramebufferStatus(GLenum target) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   TRACE_EVENT0("gpu", "GLES2Implementation::CheckFramebufferStatus");
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glCheckFramebufferStatus(" << GLES2Util::GetStringFrameBufferTarget(target) << ")");  // NOLINT
-  typedef CheckFramebufferStatus::Result Result;
+  typedef cmds::CheckFramebufferStatus::Result Result;
   Result* result = GetResultAs<Result*>();
   if (!result) {
     return GL_FRAMEBUFFER_UNSUPPORTED;
@@ -492,7 +492,7 @@ void GLES2Implementation::GetBooleanv(GLenum pname, GLboolean* params) {
   if (GetBooleanvHelper(pname, params)) {
     return;
   }
-  typedef GetBooleanv::Result Result;
+  typedef cmds::GetBooleanv::Result Result;
   Result* result = GetResultAs<Result*>();
   if (!result) {
     return;
@@ -518,7 +518,7 @@ void GLES2Implementation::GetBufferParameteriv(
   if (GetBufferParameterivHelper(target, pname, params)) {
     return;
   }
-  typedef GetBufferParameteriv::Result Result;
+  typedef cmds::GetBufferParameteriv::Result Result;
   Result* result = GetResultAs<Result*>();
   if (!result) {
     return;
@@ -542,7 +542,7 @@ void GLES2Implementation::GetFloatv(GLenum pname, GLfloat* params) {
   if (GetFloatvHelper(pname, params)) {
     return;
   }
-  typedef GetFloatv::Result Result;
+  typedef cmds::GetFloatv::Result Result;
   Result* result = GetResultAs<Result*>();
   if (!result) {
     return;
@@ -569,7 +569,7 @@ void GLES2Implementation::GetFramebufferAttachmentParameteriv(
       target, attachment, pname, params)) {
     return;
   }
-  typedef GetFramebufferAttachmentParameteriv::Result Result;
+  typedef cmds::GetFramebufferAttachmentParameteriv::Result Result;
   Result* result = GetResultAs<Result*>();
   if (!result) {
     return;
@@ -594,7 +594,7 @@ void GLES2Implementation::GetIntegerv(GLenum pname, GLint* params) {
   if (GetIntegervHelper(pname, params)) {
     return;
   }
-  typedef GetIntegerv::Result Result;
+  typedef cmds::GetIntegerv::Result Result;
   Result* result = GetResultAs<Result*>();
   if (!result) {
     return;
@@ -620,7 +620,7 @@ void GLES2Implementation::GetProgramiv(
   if (GetProgramivHelper(program, pname, params)) {
     return;
   }
-  typedef GetProgramiv::Result Result;
+  typedef cmds::GetProgramiv::Result Result;
   Result* result = GetResultAs<Result*>();
   if (!result) {
     return;
@@ -674,7 +674,7 @@ void GLES2Implementation::GetRenderbufferParameteriv(
   if (GetRenderbufferParameterivHelper(target, pname, params)) {
     return;
   }
-  typedef GetRenderbufferParameteriv::Result Result;
+  typedef cmds::GetRenderbufferParameteriv::Result Result;
   Result* result = GetResultAs<Result*>();
   if (!result) {
     return;
@@ -700,7 +700,7 @@ void GLES2Implementation::GetShaderiv(
   if (GetShaderivHelper(shader, pname, params)) {
     return;
   }
-  typedef GetShaderiv::Result Result;
+  typedef cmds::GetShaderiv::Result Result;
   Result* result = GetResultAs<Result*>();
   if (!result) {
     return;
@@ -781,7 +781,7 @@ void GLES2Implementation::GetTexParameterfv(
   if (GetTexParameterfvHelper(target, pname, params)) {
     return;
   }
-  typedef GetTexParameterfv::Result Result;
+  typedef cmds::GetTexParameterfv::Result Result;
   Result* result = GetResultAs<Result*>();
   if (!result) {
     return;
@@ -807,7 +807,7 @@ void GLES2Implementation::GetTexParameteriv(
   if (GetTexParameterivHelper(target, pname, params)) {
     return;
   }
-  typedef GetTexParameteriv::Result Result;
+  typedef cmds::GetTexParameteriv::Result Result;
   Result* result = GetResultAs<Result*>();
   if (!result) {
     return;
@@ -835,7 +835,7 @@ GLboolean GLES2Implementation::IsBuffer(GLuint buffer) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   TRACE_EVENT0("gpu", "GLES2Implementation::IsBuffer");
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glIsBuffer(" << buffer << ")");
-  typedef IsBuffer::Result Result;
+  typedef cmds::IsBuffer::Result Result;
   Result* result = GetResultAs<Result*>();
   if (!result) {
     return GL_FALSE;
@@ -853,7 +853,7 @@ GLboolean GLES2Implementation::IsFramebuffer(GLuint framebuffer) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   TRACE_EVENT0("gpu", "GLES2Implementation::IsFramebuffer");
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glIsFramebuffer(" << framebuffer << ")");  // NOLINT
-  typedef IsFramebuffer::Result Result;
+  typedef cmds::IsFramebuffer::Result Result;
   Result* result = GetResultAs<Result*>();
   if (!result) {
     return GL_FALSE;
@@ -871,7 +871,7 @@ GLboolean GLES2Implementation::IsProgram(GLuint program) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   TRACE_EVENT0("gpu", "GLES2Implementation::IsProgram");
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glIsProgram(" << program << ")");
-  typedef IsProgram::Result Result;
+  typedef cmds::IsProgram::Result Result;
   Result* result = GetResultAs<Result*>();
   if (!result) {
     return GL_FALSE;
@@ -889,7 +889,7 @@ GLboolean GLES2Implementation::IsRenderbuffer(GLuint renderbuffer) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   TRACE_EVENT0("gpu", "GLES2Implementation::IsRenderbuffer");
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glIsRenderbuffer(" << renderbuffer << ")");  // NOLINT
-  typedef IsRenderbuffer::Result Result;
+  typedef cmds::IsRenderbuffer::Result Result;
   Result* result = GetResultAs<Result*>();
   if (!result) {
     return GL_FALSE;
@@ -908,7 +908,7 @@ GLboolean GLES2Implementation::IsShader(GLuint shader) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   TRACE_EVENT0("gpu", "GLES2Implementation::IsShader");
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glIsShader(" << shader << ")");
-  typedef IsShader::Result Result;
+  typedef cmds::IsShader::Result Result;
   Result* result = GetResultAs<Result*>();
   if (!result) {
     return GL_FALSE;
@@ -926,7 +926,7 @@ GLboolean GLES2Implementation::IsTexture(GLuint texture) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   TRACE_EVENT0("gpu", "GLES2Implementation::IsTexture");
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glIsTexture(" << texture << ")");
-  typedef IsTexture::Result Result;
+  typedef cmds::IsTexture::Result Result;
   Result* result = GetResultAs<Result*>();
   if (!result) {
     return GL_FALSE;
@@ -1553,7 +1553,7 @@ GLboolean GLES2Implementation::IsVertexArrayOES(GLuint array) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   TRACE_EVENT0("gpu", "GLES2Implementation::IsVertexArrayOES");
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glIsVertexArrayOES(" << array << ")");  // NOLINT
-  typedef IsVertexArrayOES::Result Result;
+  typedef cmds::IsVertexArrayOES::Result Result;
   Result* result = GetResultAs<Result*>();
   if (!result) {
     return GL_FALSE;

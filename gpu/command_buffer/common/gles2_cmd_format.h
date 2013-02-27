@@ -171,6 +171,8 @@ COMPILE_ASSERT(offsetof(ProgramInfoHeader, num_attribs) == 4,
 COMPILE_ASSERT(offsetof(ProgramInfoHeader, num_uniforms) == 8,
                OffsetOf_ProgramInfoHeader_num_uniforms_not_8);
 
+namespace cmds {
+
 #include "../common/gles2_cmd_format_autogen.h"
 
 // These are hand written commands.
@@ -540,6 +542,7 @@ COMPILE_ASSERT(offsetof(GetUniformLocationBucket, location_shm_offset) == 16,
 
 #pragma pack(pop)
 
+}  // namespace cmd
 }  // namespace gles2
 }  // namespace gpu
 

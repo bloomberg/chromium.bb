@@ -29,7 +29,7 @@ void VertexArrayManager::Destroy(bool have_context) {
 
 void VertexArrayManager::CreateVertexAttribManager(
     GLuint client_id, GLuint service_id, uint32 num_vertex_attribs) {
-  VertexAttribManager::Ref vertex_attrib_manager(
+  scoped_refptr<VertexAttribManager> vertex_attrib_manager(
     new VertexAttribManager(this, service_id, num_vertex_attribs));
   std::pair<VertexAttribManagerMap::iterator, bool> result =
       vertex_attrib_managers_.insert(

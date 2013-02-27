@@ -54,16 +54,16 @@ class GPU_EXPORT ProgramCache {
   // there was an error, PROGRAM_LOAD_FAILURE should be returned.
   virtual ProgramLoadResult LoadLinkedProgram(
       GLuint program,
-      ShaderManager::ShaderInfo* shader_a,
-      ShaderManager::ShaderInfo* shader_b,
+      Shader* shader_a,
+      Shader* shader_b,
       const LocationMap* bind_attrib_location_map) const = 0;
 
   // Saves the program into the cache.  If successful, the implementation should
   // call LinkedProgramCacheSuccess.
   virtual void SaveLinkedProgram(
       GLuint program,
-      const ShaderManager::ShaderInfo* shader_a,
-      const ShaderManager::ShaderInfo* shader_b,
+      const Shader* shader_a,
+      const Shader* shader_b,
       const LocationMap* bind_attrib_location_map) = 0;
 
   // clears the cache

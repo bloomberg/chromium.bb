@@ -58,7 +58,7 @@ class TextureManagerTest : public testing::Test {
 
   // Use StrictMock to make 100% sure we know how GL will be called.
   scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
-  FeatureInfo::Ref feature_info_;
+  scoped_refptr<FeatureInfo> feature_info_;
   scoped_ptr<TextureManager> manager_;
 };
 
@@ -80,34 +80,34 @@ TEST_F(TextureManagerTest, Basic) {
   EXPECT_FALSE(manager_->HaveUnsafeTextures());
   EXPECT_FALSE(manager_->HaveUnclearedMips());
   // Check we can create texture.
-  manager_->CreateTextureInfo(kClient1Id, kService1Id);
+  manager_->CreateTexture(kClient1Id, kService1Id);
   // Check texture got created.
-  TextureManager::TextureInfo* info1 = manager_->GetTextureInfo(kClient1Id);
+  Texture* info1 = manager_->GetTexture(kClient1Id);
   ASSERT_TRUE(info1 != NULL);
   EXPECT_EQ(kService1Id, info1->service_id());
   GLuint client_id = 0;
   EXPECT_TRUE(manager_->GetClientId(info1->service_id(), &client_id));
   EXPECT_EQ(kClient1Id, client_id);
   // Check we get nothing for a non-existent texture.
-  EXPECT_TRUE(manager_->GetTextureInfo(kClient2Id) == NULL);
+  EXPECT_TRUE(manager_->GetTexture(kClient2Id) == NULL);
   // Check trying to a remove non-existent textures does not crash.
-  manager_->RemoveTextureInfo(kClient2Id);
+  manager_->RemoveTexture(kClient2Id);
   // Check that it gets deleted when the last reference is released.
   EXPECT_CALL(*gl_, DeleteTextures(1, ::testing::Pointee(kService1Id)))
       .Times(1)
       .RetiresOnSaturation();
   // Check we can't get the texture after we remove it.
-  manager_->RemoveTextureInfo(kClient1Id);
-  EXPECT_TRUE(manager_->GetTextureInfo(kClient1Id) == NULL);
+  manager_->RemoveTexture(kClient1Id);
+  EXPECT_TRUE(manager_->GetTexture(kClient1Id) == NULL);
 }
 
 TEST_F(TextureManagerTest, SetParameter) {
   const GLuint kClient1Id = 1;
   const GLuint kService1Id = 11;
   // Check we can create texture.
-  manager_->CreateTextureInfo(kClient1Id, kService1Id);
+  manager_->CreateTexture(kClient1Id, kService1Id);
   // Check texture got created.
-  TextureManager::TextureInfo* info = manager_->GetTextureInfo(kClient1Id);
+  Texture* info = manager_->GetTexture(kClient1Id);
   ASSERT_TRUE(info != NULL);
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), manager_->SetParameter(
       info, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
@@ -150,9 +150,9 @@ TEST_F(TextureManagerTest, TextureUsageExt) {
   const GLuint kClient1Id = 1;
   const GLuint kService1Id = 11;
   // Check we can create texture.
-  manager.CreateTextureInfo(kClient1Id, kService1Id);
+  manager.CreateTexture(kClient1Id, kService1Id);
   // Check texture got created.
-  TextureManager::TextureInfo* info = manager.GetTextureInfo(kClient1Id);
+  Texture* info = manager.GetTexture(kClient1Id);
   ASSERT_TRUE(info != NULL);
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), manager.SetParameter(
       info, GL_TEXTURE_USAGE_ANGLE, GL_FRAMEBUFFER_ATTACHMENT_ANGLE));
@@ -169,9 +169,9 @@ TEST_F(TextureManagerTest, Destroy) {
       NULL, feature_info_.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
   manager.Initialize();
   // Check we can create texture.
-  manager.CreateTextureInfo(kClient1Id, kService1Id);
+  manager.CreateTexture(kClient1Id, kService1Id);
   // Check texture got created.
-  TextureManager::TextureInfo* info1 = manager.GetTextureInfo(kClient1Id);
+  Texture* info1 = manager.GetTexture(kClient1Id);
   ASSERT_TRUE(info1 != NULL);
   EXPECT_CALL(*gl_, DeleteTextures(1, ::testing::Pointee(kService1Id)))
       .Times(1)
@@ -179,7 +179,7 @@ TEST_F(TextureManagerTest, Destroy) {
   TestHelper::SetupTextureManagerDestructionExpectations(gl_.get(), "");
   manager.Destroy(true);
   // Check that resources got freed.
-  info1 = manager.GetTextureInfo(kClient1Id);
+  info1 = manager.GetTexture(kClient1Id);
   ASSERT_TRUE(info1 == NULL);
 }
 
@@ -191,18 +191,18 @@ TEST_F(TextureManagerTest, DestroyUnowned) {
       NULL, feature_info_.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
   manager.Initialize();
   // Check we can create texture.
-  TextureManager::TextureInfo* created_info =
-      manager.CreateTextureInfo(kClient1Id, kService1Id);
+  Texture* created_info =
+      manager.CreateTexture(kClient1Id, kService1Id);
   created_info->SetNotOwned();
 
   // Check texture got created.
-  TextureManager::TextureInfo* info1 = manager.GetTextureInfo(kClient1Id);
+  Texture* info1 = manager.GetTexture(kClient1Id);
   ASSERT_TRUE(info1 != NULL);
 
   // Check that it is not freed if it is not owned.
   TestHelper::SetupTextureManagerDestructionExpectations(gl_.get(), "");
   manager.Destroy(true);
-  info1 = manager.GetTextureInfo(kClient1Id);
+  info1 = manager.GetTexture(kClient1Id);
   ASSERT_TRUE(info1 == NULL);
 }
 
@@ -318,7 +318,7 @@ TEST_F(TextureManagerTest, ValidForTarget) {
 TEST_F(TextureManagerTest, ValidForTargetNPOT) {
   TestHelper::SetupFeatureInfoInitExpectations(
       gl_.get(), "GL_OES_texture_npot");
-  FeatureInfo::Ref feature_info(new FeatureInfo());
+  scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
   feature_info->Initialize(NULL);
   TextureManager manager(
      NULL, feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
@@ -356,8 +356,8 @@ class TextureInfoTestBase : public testing::Test {
     manager_.reset(new TextureManager(
         memory_tracker, feature_info_.get(),
         kMaxTextureSize, kMaxCubeMapTextureSize));
-    manager_->CreateTextureInfo(kClient1Id, kService1Id);
-    info_ = manager_->GetTextureInfo(kClient1Id);
+    manager_->CreateTexture(kClient1Id, kService1Id);
+    info_ = manager_->GetTexture(kClient1Id);
     ASSERT_TRUE(info_.get() != NULL);
   }
 
@@ -383,9 +383,9 @@ class TextureInfoTestBase : public testing::Test {
 
   // Use StrictMock to make 100% sure we know how GL will be called.
   scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
-  FeatureInfo::Ref feature_info_;
+  scoped_refptr<FeatureInfo> feature_info_;
   scoped_ptr<TextureManager> manager_;
-  TextureManager::TextureInfo::Ref info_;
+  scoped_refptr<Texture> info_;
 };
 
 class TextureInfoTest : public TextureInfoTestBase {
@@ -585,12 +585,12 @@ TEST_F(TextureInfoTest, NPOT2D) {
 TEST_F(TextureInfoTest, NPOT2DNPOTOK) {
   TestHelper::SetupFeatureInfoInitExpectations(
       gl_.get(), "GL_OES_texture_npot");
-  FeatureInfo::Ref feature_info(new FeatureInfo());
+  scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
   feature_info->Initialize(NULL);
   TextureManager manager(
       NULL, feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
-  manager.CreateTextureInfo(kClient1Id, kService1Id);
-  TextureManager::TextureInfo* info = manager.GetTextureInfo(kClient1Id);
+  manager.CreateTexture(kClient1Id, kService1Id);
+  Texture* info = manager.GetTexture(kClient1Id);
   ASSERT_TRUE(info_ != NULL);
 
   manager.SetInfoTarget(info, GL_TEXTURE_2D);
@@ -707,7 +707,7 @@ TEST_F(TextureInfoTest, GetLevelSize) {
   EXPECT_TRUE(info_->GetLevelSize(GL_TEXTURE_2D, 1, &width, &height));
   EXPECT_EQ(4, width);
   EXPECT_EQ(5, height);
-  manager_->RemoveTextureInfo(kClient1Id);
+  manager_->RemoveTexture(kClient1Id);
   EXPECT_TRUE(info_->GetLevelSize(GL_TEXTURE_2D, 1, &width, &height));
   EXPECT_EQ(4, width);
   EXPECT_EQ(5, height);
@@ -725,7 +725,7 @@ TEST_F(TextureInfoTest, GetLevelType) {
   EXPECT_TRUE(info_->GetLevelType(GL_TEXTURE_2D, 1, &type, &format));
   EXPECT_EQ(static_cast<GLenum>(GL_UNSIGNED_BYTE), type);
   EXPECT_EQ(static_cast<GLenum>(GL_RGBA), format);
-  manager_->RemoveTextureInfo(kClient1Id);
+  manager_->RemoveTexture(kClient1Id);
   EXPECT_TRUE(info_->GetLevelType(GL_TEXTURE_2D, 1, &type, &format));
   EXPECT_EQ(static_cast<GLenum>(GL_UNSIGNED_BYTE), type);
   EXPECT_EQ(static_cast<GLenum>(GL_RGBA), format);
@@ -772,7 +772,7 @@ TEST_F(TextureInfoTest, ValidForTexture) {
   // Check valid particial size.
   EXPECT_TRUE(info_->ValidForTexture(
       GL_TEXTURE_2D, 1, 1, 1, 2, 3, GL_RGBA, GL_UNSIGNED_BYTE));
-  manager_->RemoveTextureInfo(kClient1Id);
+  manager_->RemoveTexture(kClient1Id);
   EXPECT_TRUE(info_->ValidForTexture(
       GL_TEXTURE_2D, 1, 0, 0, 4, 5, GL_RGBA, GL_UNSIGNED_BYTE));
 }
@@ -780,12 +780,12 @@ TEST_F(TextureInfoTest, ValidForTexture) {
 TEST_F(TextureInfoTest, FloatNotLinear) {
   TestHelper::SetupFeatureInfoInitExpectations(
       gl_.get(), "GL_OES_texture_float");
-  FeatureInfo::Ref feature_info(new FeatureInfo());
+  scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
   feature_info->Initialize(NULL);
   TextureManager manager(
       NULL, feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
-  manager.CreateTextureInfo(kClient1Id, kService1Id);
-  TextureManager::TextureInfo* info = manager.GetTextureInfo(kClient1Id);
+  manager.CreateTexture(kClient1Id, kService1Id);
+  Texture* info = manager.GetTexture(kClient1Id);
   ASSERT_TRUE(info != NULL);
   manager.SetInfoTarget(info, GL_TEXTURE_2D);
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), info->target());
@@ -802,12 +802,12 @@ TEST_F(TextureInfoTest, FloatNotLinear) {
 TEST_F(TextureInfoTest, FloatLinear) {
   TestHelper::SetupFeatureInfoInitExpectations(
       gl_.get(), "GL_OES_texture_float GL_OES_texture_float_linear");
-  FeatureInfo::Ref feature_info(new FeatureInfo());
+  scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
   feature_info->Initialize(NULL);
   TextureManager manager(
       NULL, feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
-  manager.CreateTextureInfo(kClient1Id, kService1Id);
-  TextureManager::TextureInfo* info = manager.GetTextureInfo(kClient1Id);
+  manager.CreateTexture(kClient1Id, kService1Id);
+  Texture* info = manager.GetTexture(kClient1Id);
   ASSERT_TRUE(info != NULL);
   manager.SetInfoTarget(info, GL_TEXTURE_2D);
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), info->target());
@@ -820,12 +820,12 @@ TEST_F(TextureInfoTest, FloatLinear) {
 TEST_F(TextureInfoTest, HalfFloatNotLinear) {
   TestHelper::SetupFeatureInfoInitExpectations(
       gl_.get(), "GL_OES_texture_half_float");
-  FeatureInfo::Ref feature_info(new FeatureInfo());
+  scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
   feature_info->Initialize(NULL);
   TextureManager manager(
       NULL, feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
-  manager.CreateTextureInfo(kClient1Id, kService1Id);
-  TextureManager::TextureInfo* info = manager.GetTextureInfo(kClient1Id);
+  manager.CreateTexture(kClient1Id, kService1Id);
+  Texture* info = manager.GetTexture(kClient1Id);
   ASSERT_TRUE(info != NULL);
   manager.SetInfoTarget(info, GL_TEXTURE_2D);
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), info->target());
@@ -842,12 +842,12 @@ TEST_F(TextureInfoTest, HalfFloatNotLinear) {
 TEST_F(TextureInfoTest, HalfFloatLinear) {
   TestHelper::SetupFeatureInfoInitExpectations(
       gl_.get(), "GL_OES_texture_half_float GL_OES_texture_half_float_linear");
-  FeatureInfo::Ref feature_info(new FeatureInfo());
+  scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
   feature_info->Initialize(NULL);
   TextureManager manager(
       NULL, feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
-  manager.CreateTextureInfo(kClient1Id, kService1Id);
-  TextureManager::TextureInfo* info = manager.GetTextureInfo(kClient1Id);
+  manager.CreateTexture(kClient1Id, kService1Id);
+  Texture* info = manager.GetTexture(kClient1Id);
   ASSERT_TRUE(info != NULL);
   manager.SetInfoTarget(info, GL_TEXTURE_2D);
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), info->target());
@@ -860,12 +860,12 @@ TEST_F(TextureInfoTest, HalfFloatLinear) {
 TEST_F(TextureInfoTest, EGLImageExternal) {
   TestHelper::SetupFeatureInfoInitExpectations(
       gl_.get(), "GL_OES_EGL_image_external");
-  FeatureInfo::Ref feature_info(new FeatureInfo());
+  scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
   feature_info->Initialize(NULL);
   TextureManager manager(
       NULL, feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
-  manager.CreateTextureInfo(kClient1Id, kService1Id);
-  TextureManager::TextureInfo* info = manager.GetTextureInfo(kClient1Id);
+  manager.CreateTexture(kClient1Id, kService1Id);
+  Texture* info = manager.GetTexture(kClient1Id);
   ASSERT_TRUE(info != NULL);
   manager.SetInfoTarget(info, GL_TEXTURE_EXTERNAL_OES);
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_EXTERNAL_OES), info->target());
@@ -876,12 +876,12 @@ TEST_F(TextureInfoTest, EGLImageExternal) {
 TEST_F(TextureInfoTest, DepthTexture) {
   TestHelper::SetupFeatureInfoInitExpectations(
       gl_.get(), "GL_ANGLE_depth_texture");
-  FeatureInfo::Ref feature_info(new FeatureInfo());
+  scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
   feature_info->Initialize(NULL);
   TextureManager manager(
       NULL, feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
-  manager.CreateTextureInfo(kClient1Id, kService1Id);
-  TextureManager::TextureInfo* info = manager.GetTextureInfo(kClient1Id);
+  manager.CreateTexture(kClient1Id, kService1Id);
+  Texture* info = manager.GetTexture(kClient1Id);
   ASSERT_TRUE(info != NULL);
   manager.SetInfoTarget(info, GL_TEXTURE_2D);
   manager.SetLevelInfo(
@@ -951,8 +951,9 @@ TEST_F(TextureInfoTest, SafeUnsafe) {
   EXPECT_FALSE(manager_->HaveUnclearedMips());
   EXPECT_EQ(0, info_->num_uncleared_mips());
 
-  manager_->CreateTextureInfo(kClient2Id, kService2Id);
-  TextureManager::TextureInfo::Ref info2 = manager_->GetTextureInfo(kClient2Id);
+  manager_->CreateTexture(kClient2Id, kService2Id);
+  scoped_refptr<Texture> info2(
+      manager_->GetTexture(kClient2Id));
   ASSERT_TRUE(info2.get() != NULL);
   manager_->SetInfoTarget(info2, GL_TEXTURE_2D);
   EXPECT_FALSE(manager_->HaveUnsafeTextures());
@@ -969,8 +970,9 @@ TEST_F(TextureInfoTest, SafeUnsafe) {
   EXPECT_TRUE(manager_->HaveUnclearedMips());
   EXPECT_EQ(1, info2->num_uncleared_mips());
 
-  manager_->CreateTextureInfo(kClient3Id, kService3Id);
-  TextureManager::TextureInfo::Ref info3 = manager_->GetTextureInfo(kClient3Id);
+  manager_->CreateTexture(kClient3Id, kService3Id);
+  scoped_refptr<Texture> info3(
+      manager_->GetTexture(kClient3Id));
   ASSERT_TRUE(info3.get() != NULL);
   manager_->SetInfoTarget(info3, GL_TEXTURE_2D);
   manager_->SetLevelInfo(info3,
@@ -995,10 +997,10 @@ TEST_F(TextureInfoTest, SafeUnsafe) {
   EXPECT_TRUE(manager_->HaveUnclearedMips());
   EXPECT_EQ(1, info2->num_uncleared_mips());
   EXPECT_EQ(1, info3->num_uncleared_mips());
-  manager_->RemoveTextureInfo(kClient3Id);
+  manager_->RemoveTexture(kClient3Id);
   EXPECT_TRUE(manager_->HaveUnsafeTextures());
   EXPECT_TRUE(manager_->HaveUnclearedMips());
-  manager_->RemoveTextureInfo(kClient2Id);
+  manager_->RemoveTexture(kClient2Id);
   EXPECT_TRUE(manager_->HaveUnsafeTextures());
   EXPECT_TRUE(manager_->HaveUnclearedMips());
   EXPECT_CALL(*gl_, DeleteTextures(1, ::testing::Pointee(kService2Id)))
@@ -1062,13 +1064,14 @@ TEST_F(TextureInfoTest, UseDeletedTexture) {
       GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, false);
   EXPECT_FALSE(manager_->HaveUnrenderableTextures());
   // Make a new texture
-  manager_->CreateTextureInfo(kClient2Id, kService2Id);
-  TextureManager::TextureInfo::Ref info(manager_->GetTextureInfo(kClient2Id));
+  manager_->CreateTexture(kClient2Id, kService2Id);
+  scoped_refptr<Texture> info(
+      manager_->GetTexture(kClient2Id));
   manager_->SetInfoTarget(info, GL_TEXTURE_2D);
   EXPECT_FALSE(manager_->CanRender(info));
   EXPECT_TRUE(manager_->HaveUnrenderableTextures());
   // Remove it.
-  manager_->RemoveTextureInfo(kClient2Id);
+  manager_->RemoveTexture(kClient2Id);
   EXPECT_FALSE(manager_->CanRender(info));
   EXPECT_TRUE(manager_->HaveUnrenderableTextures());
   // Check that we can still manipulate it and it effects the manager.

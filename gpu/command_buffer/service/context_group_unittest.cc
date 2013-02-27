@@ -38,7 +38,8 @@ class ContextGroupTest : public testing::Test {
     gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
     ::gfx::GLInterface::SetGLInterface(gl_.get());
     decoder_.reset(new MockGLES2Decoder());
-    group_ = ContextGroup::Ref(new ContextGroup(NULL, NULL, NULL, true));
+    group_ = scoped_refptr<ContextGroup>(
+        new ContextGroup(NULL, NULL, NULL, true));
   }
 
   virtual void TearDown() {
@@ -48,7 +49,7 @@ class ContextGroupTest : public testing::Test {
 
   scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   scoped_ptr<MockGLES2Decoder> decoder_;
-  ContextGroup::Ref group_;
+  scoped_refptr<ContextGroup> group_;
 };
 
 TEST_F(ContextGroupTest, Basic) {

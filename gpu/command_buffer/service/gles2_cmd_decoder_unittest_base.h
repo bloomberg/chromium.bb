@@ -98,29 +98,29 @@ class GLES2DecoderTestBase : public testing::Test {
     return group_->GetIdAllocator(namespace_id);
   }
 
-  BufferManager::BufferInfo* GetBufferInfo(GLuint service_id) {
-    return group_->buffer_manager()->GetBufferInfo(service_id);
+  BufferManager::Buffer* GetBuffer(GLuint service_id) {
+    return group_->buffer_manager()->GetBuffer(service_id);
   }
 
-  FramebufferManager::FramebufferInfo* GetFramebufferInfo(GLuint service_id) {
-    return group_->framebuffer_manager()->GetFramebufferInfo(service_id);
+  Framebuffer* GetFramebuffer(GLuint service_id) {
+    return group_->framebuffer_manager()->GetFramebuffer(service_id);
   }
 
-  RenderbufferManager::RenderbufferInfo* GetRenderbufferInfo(
+  Renderbuffer* GetRenderbuffer(
       GLuint service_id) {
-    return group_->renderbuffer_manager()->GetRenderbufferInfo(service_id);
+    return group_->renderbuffer_manager()->GetRenderbuffer(service_id);
   }
 
-  TextureManager::TextureInfo* GetTextureInfo(GLuint client_id) {
-    return group_->texture_manager()->GetTextureInfo(client_id);
+  Texture* GetTexture(GLuint client_id) {
+    return group_->texture_manager()->GetTexture(client_id);
   }
 
-  ShaderManager::ShaderInfo* GetShaderInfo(GLuint client_id) {
-    return group_->shader_manager()->GetShaderInfo(client_id);
+  Shader* GetShader(GLuint client_id) {
+    return group_->shader_manager()->GetShader(client_id);
   }
 
-  ProgramManager::ProgramInfo* GetProgramInfo(GLuint client_id) {
-    return group_->program_manager()->GetProgramInfo(client_id);
+  Program* GetProgram(GLuint client_id) {
+    return group_->program_manager()->GetProgram(client_id);
   }
 
   QueryManager::Query* GetQueryInfo(GLuint client_id) {
@@ -527,7 +527,7 @@ class GLES2DecoderTestBase : public testing::Test {
   void AddExpectationsForVertexAttribManager();
 
   scoped_ptr< ::testing::StrictMock<MockCommandBufferEngine> > engine_;
-  ContextGroup::Ref group_;
+  scoped_refptr<ContextGroup> group_;
 };
 
 class GLES2DecoderWithShaderTestBase : public GLES2DecoderTestBase {

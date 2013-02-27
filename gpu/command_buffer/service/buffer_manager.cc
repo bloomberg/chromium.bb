@@ -32,38 +32,38 @@ void BufferManager::Destroy(bool have_context) {
   DCHECK_EQ(0u, memory_tracker_->GetMemRepresented());
 }
 
-void BufferManager::CreateBufferInfo(GLuint client_id, GLuint service_id) {
-  BufferInfo::Ref buffer(new BufferInfo(this, service_id));
+void BufferManager::CreateBuffer(GLuint client_id, GLuint service_id) {
+  scoped_refptr<Buffer> buffer(new Buffer(this, service_id));
   std::pair<BufferInfoMap::iterator, bool> result =
       buffer_infos_.insert(std::make_pair(client_id, buffer));
   DCHECK(result.second);
 }
 
-BufferManager::BufferInfo* BufferManager::GetBufferInfo(
+BufferManager::Buffer* BufferManager::GetBuffer(
     GLuint client_id) {
   BufferInfoMap::iterator it = buffer_infos_.find(client_id);
   return it != buffer_infos_.end() ? it->second : NULL;
 }
 
-void BufferManager::RemoveBufferInfo(GLuint client_id) {
+void BufferManager::RemoveBuffer(GLuint client_id) {
   BufferInfoMap::iterator it = buffer_infos_.find(client_id);
   if (it != buffer_infos_.end()) {
-    BufferInfo* buffer = it->second;
+    Buffer* buffer = it->second;
     buffer->MarkAsDeleted();
     buffer_infos_.erase(it);
   }
 }
 
-void BufferManager::StartTracking(BufferManager::BufferInfo* /* buffer */) {
+void BufferManager::StartTracking(BufferManager::Buffer* /* buffer */) {
   ++buffer_info_count_;
 }
 
-void BufferManager::StopTracking(BufferManager::BufferInfo* buffer) {
+void BufferManager::StopTracking(BufferManager::Buffer* buffer) {
   memory_tracker_->TrackMemFree(buffer->size());
   --buffer_info_count_;
 }
 
-BufferManager::BufferInfo::BufferInfo(BufferManager* manager, GLuint service_id)
+BufferManager::Buffer::Buffer(BufferManager* manager, GLuint service_id)
     : manager_(manager),
       deleted_(false),
       service_id_(service_id),
@@ -74,7 +74,7 @@ BufferManager::BufferInfo::BufferInfo(BufferManager* manager, GLuint service_id)
   manager_->StartTracking(this);
 }
 
-BufferManager::BufferInfo::~BufferInfo() {
+BufferManager::Buffer::~Buffer() {
   if (manager_) {
     if (manager_->have_context_) {
       GLuint id = service_id();
@@ -85,7 +85,7 @@ BufferManager::BufferInfo::~BufferInfo() {
   }
 }
 
-void BufferManager::BufferInfo::SetInfo(
+void BufferManager::Buffer::SetInfo(
     GLsizeiptr size, GLenum usage, bool shadow) {
   usage_ = usage;
   if (size != size_ || shadow != shadowed_) {
@@ -99,7 +99,7 @@ void BufferManager::BufferInfo::SetInfo(
   }
 }
 
-bool BufferManager::BufferInfo::CheckRange(
+bool BufferManager::Buffer::CheckRange(
     GLintptr offset, GLsizeiptr size) const {
   int32 end = 0;
   return offset >= 0 && size >= 0 &&
@@ -108,7 +108,7 @@ bool BufferManager::BufferInfo::CheckRange(
          SafeAddInt32(offset, size, &end) && end <= size_;
 }
 
-bool BufferManager::BufferInfo::SetRange(
+bool BufferManager::Buffer::SetRange(
     GLintptr offset, GLsizeiptr size, const GLvoid * data) {
   if (!CheckRange(offset, size)) {
     return false;
@@ -120,7 +120,7 @@ bool BufferManager::BufferInfo::SetRange(
   return true;
 }
 
-const void* BufferManager::BufferInfo::GetRange(
+const void* BufferManager::Buffer::GetRange(
     GLintptr offset, GLsizeiptr size) const {
   if (!shadowed_) {
     return NULL;
@@ -131,7 +131,7 @@ const void* BufferManager::BufferInfo::GetRange(
   return shadow_.get() + offset;
 }
 
-void BufferManager::BufferInfo::ClearCache() {
+void BufferManager::Buffer::ClearCache() {
   range_set_.clear();
 }
 
@@ -149,7 +149,7 @@ GLuint GetMaxValue(const void* data, GLuint offset, GLsizei count) {
   return max_value;
 }
 
-bool BufferManager::BufferInfo::GetMaxValueForRange(
+bool BufferManager::Buffer::GetMaxValueForRange(
     GLuint offset, GLsizei count, GLenum type, GLuint* max_value) {
   Range range(offset, count, type);
   RangeToMaxValueMap::iterator it = range_set_.find(range);
@@ -218,7 +218,7 @@ bool BufferManager::GetClientId(GLuint service_id, GLuint* client_id) const {
 }
 
 void BufferManager::SetInfo(
-    BufferManager::BufferInfo* info, GLsizeiptr size, GLenum usage) {
+    BufferManager::Buffer* info, GLsizeiptr size, GLenum usage) {
   DCHECK(info);
   memory_tracker_->TrackMemFree(info->size());
   info->SetInfo(size,
@@ -228,7 +228,7 @@ void BufferManager::SetInfo(
   memory_tracker_->TrackMemAlloc(info->size());
 }
 
-bool BufferManager::SetTarget(BufferManager::BufferInfo* info, GLenum target) {
+bool BufferManager::SetTarget(BufferManager::Buffer* info, GLenum target) {
   // Check that we are not trying to bind it to a different target.
   if (info->target() != 0 && info->target() != target &&
       !allow_buffers_on_multiple_targets_) {

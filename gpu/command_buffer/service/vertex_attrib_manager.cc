@@ -20,7 +20,7 @@
 namespace gpu {
 namespace gles2 {
 
-VertexAttribManager::VertexAttribInfo::VertexAttribInfo()
+VertexAttrib::VertexAttrib()
     : index_(0),
       enabled_(false),
       size_(4),
@@ -33,10 +33,10 @@ VertexAttribManager::VertexAttribInfo::VertexAttribInfo()
       list_(NULL) {
 }
 
-VertexAttribManager::VertexAttribInfo::~VertexAttribInfo() {
+VertexAttrib::~VertexAttrib() {
 }
 
-bool VertexAttribManager::VertexAttribInfo::CanAccess(GLuint index) const {
+bool VertexAttrib::CanAccess(GLuint index) const {
   if (!enabled_) {
     return true;
   }
@@ -108,7 +108,7 @@ bool VertexAttribManager::Enable(GLuint index, bool enable) {
   if (index >= vertex_attrib_infos_.size()) {
     return false;
   }
-  VertexAttribInfo& info = vertex_attrib_infos_[index];
+  VertexAttrib& info = vertex_attrib_infos_[index];
   if (info.enabled() != enable) {
     info.set_enabled(enable);
     info.SetList(enable ? &enabled_vertex_attribs_ : &disabled_vertex_attribs_);
@@ -116,7 +116,7 @@ bool VertexAttribManager::Enable(GLuint index, bool enable) {
   return true;
 }
 
-void VertexAttribManager::Unbind(BufferManager::BufferInfo* buffer) {
+void VertexAttribManager::Unbind(BufferManager::Buffer* buffer) {
   if (element_array_buffer_ == buffer) {
     element_array_buffer_ = NULL;
   }

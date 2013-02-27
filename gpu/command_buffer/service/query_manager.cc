@@ -332,7 +332,7 @@ void QueryManager::Destroy(bool have_context) {
 
 QueryManager::Query* QueryManager::CreateQuery(
     GLenum target, GLuint client_id, int32 shm_id, uint32 shm_offset) {
-  Query::Ref query;
+  scoped_refptr<Query> query;
   switch (target) {
     case GL_COMMANDS_ISSUED_CHROMIUM:
       query = new CommandsIssuedQuery(this, target, shm_id, shm_offset);

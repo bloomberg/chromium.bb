@@ -19,8 +19,6 @@ namespace gles2 {
 // FeatureInfo records the features that are available for a ContextGroup.
 class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
  public:
-  typedef scoped_refptr<FeatureInfo> Ref;
-
   struct FeatureFlags {
     FeatureFlags();
 

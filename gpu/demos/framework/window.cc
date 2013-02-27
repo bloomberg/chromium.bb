@@ -79,9 +79,8 @@ bool Window::CreateRenderContext(gfx::AcceleratedWidget hwnd) {
     return false;
   }
 
-  gpu::gles2::ContextGroup::Ref group(new gpu::gles2::ContextGroup(NULL,
-                                                                   NULL,
-                                                                   true));
+  scoped_refptr<gpu::gles2::ContextGroup> group(new gpu::gles2::ContextGroup(
+      NULL, NULL, true));
 
   decoder_.reset(gpu::gles2::GLES2Decoder::Create(group.get()));
   if (!decoder_.get())
