@@ -14,6 +14,12 @@ namespace net {
 
 namespace {
 
+// A special structure for the 8 bit flags and 24 bit length fields.
+union FlagsAndLength {
+  uint8 flags_[4];  // 8 bits
+  uint32 length_;   // 24 bits
+};
+
 // Creates a FlagsAndLength.
 FlagsAndLength CreateFlagsAndLength(uint8 flags, size_t length) {
   DCHECK_EQ(0u, length & ~static_cast<size_t>(kLengthMask));

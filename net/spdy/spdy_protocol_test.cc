@@ -40,7 +40,6 @@ INSTANTIATE_TEST_CASE_P(SpdyProtocolTests,
 
 // Test our protocol constants
 TEST_P(SpdyProtocolTest, ProtocolConstants) {
-  EXPECT_EQ(4u, sizeof(FlagsAndLength));
   EXPECT_EQ(1, SYN_STREAM);
   EXPECT_EQ(2, SYN_REPLY);
   EXPECT_EQ(3, RST_STREAM);

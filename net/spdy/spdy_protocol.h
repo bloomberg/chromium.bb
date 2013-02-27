@@ -459,36 +459,6 @@ typedef std::map<std::string, std::string> SpdyNameValueBlock;
 
 typedef uint32 SpdyPingId;
 
-// -------------------------------------------------------------------------
-// These structures mirror the protocol structure definitions.
-
-// For the control data structures, we pack so that sizes match the
-// protocol over-the-wire sizes.
-#pragma pack(push)
-#pragma pack(1)
-
-// A special structure for the 8 bit flags and 24 bit length fields.
-union FlagsAndLength {
-  uint8 flags_[4];  // 8 bits
-  uint32 length_;   // 24 bits
-};
-
-// The basic SPDY Frame structure.
-struct SpdyFrameBlock {
-  union {
-    struct {
-      uint16 version_;
-      uint16 type_;
-    } control_;
-    struct {
-      SpdyStreamId stream_id_;
-    } data_;
-  };
-  FlagsAndLength flags_length_;
-};
-
-#pragma pack(pop)
-
 class SpdyFrame;
 typedef SpdyFrame SpdySerializedFrame;
 
@@ -810,14 +780,6 @@ class SpdyCredentialIR : public SpdyFrameIR {
 // All Spdy Frame types derive from this SpdyFrame class.
 class SpdyFrame {
  public:
-  // Create a SpdyFrame for a given sized buffer.
-  explicit SpdyFrame(size_t size) : frame_(NULL), owns_buffer_(true) {
-    DCHECK_GE(size, sizeof(struct SpdyFrameBlock));
-    char* buffer = new char[size];
-    memset(buffer, 0, size);
-    frame_ = reinterpret_cast<struct SpdyFrameBlock*>(buffer);
-  }
-
   // Create a SpdyFrame using a pre-created buffer.
   // If |owns_buffer| is true, this class takes ownership of the buffer
   // and will delete it on cleanup.  The buffer must have been created using
@@ -826,7 +788,7 @@ class SpdyFrame {
   // is responsible for making sure the buffer outlives this frame.  In other
   // words, this class does NOT create a copy of the buffer.
   SpdyFrame(char* data, size_t size, bool owns_buffer)
-      : frame_(reinterpret_cast<struct SpdyFrameBlock*>(data)),
+      : frame_(data),
         size_(size),
         owns_buffer_(owns_buffer) {
     DCHECK(frame_);
@@ -834,21 +796,20 @@ class SpdyFrame {
 
   ~SpdyFrame() {
     if (owns_buffer_) {
-      char* buffer = reinterpret_cast<char*>(frame_);
-      delete [] buffer;
+      delete [] frame_;
     }
     frame_ = NULL;
   }
 
   // Provides access to the frame bytes, which is a buffer containing
   // the frame packed as expected for sending over the wire.
-  char* data() const { return reinterpret_cast<char*>(frame_); }
+  char* data() const { return frame_; }
 
   // Returns the actual size of the underlying buffer.
   size_t size() const { return size_; }
 
  protected:
-  SpdyFrameBlock* frame_;
+  char* frame_;
 
  private:
   size_t size_;
