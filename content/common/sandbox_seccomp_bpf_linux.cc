@@ -1408,7 +1408,11 @@ ErrorCode RendererOrWorkerProcessPolicy(Sandbox *sandbox, int sysno, void *) {
 
 ErrorCode FlashProcessPolicy(Sandbox *sandbox, int sysno, void *) {
   switch (sysno) {
+    case __NR_sched_get_priority_max:
+    case __NR_sched_get_priority_min:
     case __NR_sched_getaffinity:
+    case __NR_sched_getparam:
+    case __NR_sched_getscheduler:
     case __NR_sched_setscheduler:
     case __NR_times:
       return ErrorCode(ErrorCode::ERR_ALLOWED);
