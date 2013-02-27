@@ -86,6 +86,7 @@ public class AwContents {
     }
 
     private int mNativeAwContents;
+    private AwBrowserContext mBrowserContext;
     private ViewGroup mContainerView;
     private ContentViewCore mContentViewCore;
     private AwContentsClient mContentsClient;
@@ -223,14 +224,24 @@ public class AwContents {
         }
     }
 
+    // TODO(joth): Delete this when all callers pass browserContext
+    public AwContents(ViewGroup containerView, InternalAccessDelegate internalAccessAdapter,
+            AwContentsClient contentsClient, boolean isAccessFromFileURLsGrantedByDefault) {
+        this(AwBrowserProcess.getDefaultBrowserContext(), containerView, internalAccessAdapter,
+                contentsClient, isAccessFromFileURLsGrantedByDefault);
+    }
+
     /**
+     * @param browserContext the browsing context to associate this view contents with.
      * @param containerView the view-hierarchy item this object will be bound to.
      * @param internalAccessAdapter to access private methods on containerView.
      * @param contentsClient will receive API callbacks from this WebView Contents
      * @param isAccessFromFileURLsGrantedByDefault passed to ContentViewCore.initialize.
      */
-    public AwContents(ViewGroup containerView, InternalAccessDelegate internalAccessAdapter,
-            AwContentsClient contentsClient, boolean isAccessFromFileURLsGrantedByDefault) {
+    public AwContents(AwBrowserContext browserContext, ViewGroup containerView,
+            InternalAccessDelegate internalAccessAdapter, AwContentsClient contentsClient,
+            boolean isAccessFromFileURLsGrantedByDefault) {
+        mBrowserContext = browserContext;
         mContainerView = containerView;
         mInternalAccessAdapter = internalAccessAdapter;
         // Note that ContentViewCore must be set up before AwContents, as ContentViewCore
