@@ -640,7 +640,6 @@ struct connector_arg {
 	drmModeModeInfo *mode;
 	drmModeEncoder *encoder;
 	int crtc;
-	int pipe;
 	unsigned int fb_id[2], current_fb_id;
 	struct timeval start;
 
@@ -703,15 +702,6 @@ static void connector_find_mode(struct device *dev, struct connector_arg *c)
 
 	if (c->crtc == -1)
 		c->crtc = c->encoder->crtc_id;
-
-	/* and figure out which crtc index it is: */
-	for (i = 0; i < dev->resources->res->count_crtcs; i++) {
-		if (c->crtc == (int)dev->resources->res->crtcs[i]) {
-			c->pipe = i;
-			break;
-		}
-	}
-
 }
 
 /* -----------------------------------------------------------------------------
@@ -829,15 +819,30 @@ set_plane(struct device *dev, struct connector_arg *c, struct plane_arg *p)
 	struct kms_bo *plane_bo;
 	uint32_t plane_flags = 0;
 	int crtc_x, crtc_y, crtc_w, crtc_h;
+	unsigned int pipe;
 	unsigned int i;
 
-	/* find an unused plane which can be connected to our crtc */
+	/* Find an unused plane which can be connected to our CRTC. Find the
+	 * CRTC index first, then iterate over available planes.
+	 */
+	for (i = 0; i < (unsigned int)dev->resources->res->count_crtcs; i++) {
+		if (c->crtc == (int)dev->resources->res->crtcs[i]) {
+			pipe = i;
+			break;
+		}
+	}
+
+	if (pipe == (unsigned int)dev->resources->res->count_crtcs) {
+		fprintf(stderr, "CRTC %u not found\n", c->crtc);
+		return -1;
+	}
+
 	for (i = 0; i < dev->resources->plane_res->count_planes && !plane_id; i++) {
 		ovr = dev->resources->planes[i].plane;
 		if (!ovr)
 			continue;
 
-		if ((ovr->possible_crtcs & (1 << c->pipe)) && !ovr->crtc_id)
+		if ((ovr->possible_crtcs & (1 << pipe)) && !ovr->crtc_id)
 			plane_id = ovr->plane_id;
 	}
 
