@@ -471,6 +471,26 @@ class TestInstructionPrinter(unittest.TestCase):
          0xc5 b_X_XXXX_0_11 @vex_prefix_short)
         """.split())
 
+  def test_name_suffix(self):
+    printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 64)
+    instr = gen_dfa.Instruction.Parse(
+        'ret, 0xc3, rep amd64 att-show-name-suffix-q nacl-forbidden')
+
+    printer.PrintInstructionWithoutModRM(instr)
+
+    self.assertEquals(
+        printer.GetContent().split(),
+        """
+        REX_RXB?
+        0xc3
+        @instruction_ret
+        @att_show_name_suffix_q
+        @operands_count_is_0
+        @set_spurious_rex_b
+        @set_spurious_rex_x
+        @set_spurious_rex_r
+        """.split())
+
 
 class TestSplit(unittest.TestCase):
 
@@ -524,6 +544,14 @@ class TestSplit(unittest.TestCase):
          ('vaddpd =Wpd-ymm =Hpd-ymm !Vpd-ymm, '
           '0xc4 RXB.00001 x.src.1.01 0x58, '
           'CPUFeature_AVX')])
+
+  def test_name_suffix(self):
+    instr = gen_dfa.Instruction.Parse(
+        'movs X Y, 0xa4, rep nacl-amd64-forbidden')
+    self.assertEquals(
+        map(str, gen_dfa.SplitByteNonByte(instr)),
+        ['movs =Xb &Yb, 0xa4, rep nacl-amd64-forbidden att-show-name-suffix-b',
+         'movs =Xv &Yv, 0xa5, rep nacl-amd64-forbidden'])
 
 
 class TestParser(unittest.TestCase):

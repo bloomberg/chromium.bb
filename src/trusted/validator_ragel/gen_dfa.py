@@ -591,6 +591,10 @@ class InstructionPrinter(object):
     """
     if self._mode == DECODER:
       self._out.write('@instruction_%s\n' % instruction.GetNameAsIdentifier())
+      for attribute in instruction.attributes:
+        if attribute.startswith('att-show-name-suffix-'):
+          self._out.write('@%s\n' % attribute.replace('-', '_'))
+
       self._out.write('@operands_count_is_%d\n' % len(instruction.operands))
 
       # For some instructions legacy prefixes are actually part of opcode,
@@ -618,8 +622,6 @@ class InstructionPrinter(object):
     for attr in instruction.attributes:
       if attr.startswith('CPUFeature_'):
         self._out.write('@%s\n' % attr)
-
-    # TODO(shcherbina): att_show_name_suffix.
 
   def _NeedOperandInfo(self, operand):
     """Whether we need to print actions describing operand format and source."""
@@ -1024,6 +1026,16 @@ def SplitRM(instruction):
     return [instruction]
 
 
+def HasExplicitSize(operand):
+  """Whether size of operand follows from its notation."""
+  return operand.arg_type not in [
+      def_format.OperandType.IMMEDIATE,
+      def_format.OperandType.SECOND_IMMEDIATE,
+      def_format.OperandType.MEMORY,
+      def_format.OperandType.ES_DI,
+      def_format.OperandType.DS_SI]
+
+
 def SplitByteNonByte(instruction):
   """Split instruction into versions with byte-sized operands and larger ones.
 
@@ -1039,10 +1051,15 @@ def SplitByteNonByte(instruction):
   instr_byte = copy.deepcopy(instruction)
   instr_nonbyte = copy.deepcopy(instruction)
 
+  has_explicit_operand_size = False
+
   splitted = False
   for i, operand in enumerate(instruction.operands):
     if operand.size == '':
       splitted = True
+      if HasExplicitSize(operand):
+        has_explicit_operand_size = True
+
       instr_byte.operands[i].size = 'b'
       if operand.arg_type == def_format.OperandType.IMMEDIATE:
         instr_nonbyte.operands[i].size = 'z'  # word/dword
@@ -1066,7 +1083,8 @@ def SplitByteNonByte(instruction):
   assert last_byte % 2 == 0
   instr_nonbyte.opcodes[last_byte_index] = hex(last_byte | 1)
 
-  # TODO(shcherbina): att-show-name-suffix-b
+  if not has_explicit_operand_size:
+    instr_byte.attributes.append(Attribute('att-show-name-suffix-b'))
 
   return [instr_byte, instr_nonbyte]
 
@@ -1096,22 +1114,30 @@ def SplitVYZ(bitness, instruction):
   instr32 = copy.deepcopy(instruction)
   instr64 = copy.deepcopy(instruction)
 
+  has_explicit_operand_size = False
+
   z_present = False
   y_present = False
   v_present = False
 
   for i, operand in enumerate(instruction.operands):
     if operand.size == 'z':
+      if HasExplicitSize(operand):
+        has_explicit_operand_size = True
       instr16.operands[i].size = 'w'
       instr32.operands[i].size = 'd'
       instr64.operands[i].size = 'd'
       z_present = True
     elif operand.size == 'y':
+      if HasExplicitSize(operand):
+        has_explicit_operand_size = True
       instr16.operands[i].size = 'd'
       instr32.operands[i].size = 'd'
       instr64.operands[i].size = 'q'
       y_present = True
     elif operand.size == 'v':
+      if HasExplicitSize(operand):
+        has_explicit_operand_size = True
       instr16.operands[i].size = 'w'
       instr32.operands[i].size = 'd'
       instr64.operands[i].size = 'q'
@@ -1143,6 +1169,11 @@ def SplitVYZ(bitness, instruction):
   instr32.rex.w_set = False
   instr64.rex.w_set = True
 
+  if not has_explicit_operand_size:
+    instr16.attributes.append(Attribute('att-show-name-suffix-w'))
+    instr32.attributes.append(Attribute('att-show-name-suffix-l'))
+    instr64.attributes.append(Attribute('att-show-name-suffix-q'))
+
   result = []
   if z_present or v_present:
     result.append(instr16)
@@ -1152,8 +1183,6 @@ def SplitVYZ(bitness, instruction):
       Attribute('norexw') not in instruction.attributes):
     result.append(instr64)
   return result
-
-  # TODO(shcherbina): att-show-name-suffix-...
 
 
 def SplitL(instruction):
@@ -1180,10 +1209,15 @@ def SplitL(instruction):
       'pdwx': ('pdw', 'pdw-ymm'),
       'pqwx': ('pqw', 'pqw-ymm')}
 
+  has_explicit_operand_size = False
+
   splitted = False
   for i, operand in enumerate(instruction.operands):
     if operand.size in splits:
       splitted = True
+      if HasExplicitSize(operand):
+        has_explicit_operand_size = True
+
       (instr_xmm.operands[i].size,
        instr_ymm.operands[i].size) = splits[operand.size]
 
@@ -1197,9 +1231,11 @@ def SplitL(instruction):
   instr_xmm.opcodes[2] = third_vex_byte.replace('.L.', '.0.')
   instr_ymm.opcodes[2] = third_vex_byte.replace('.L.', '.1.')
 
-  return [instr_xmm, instr_ymm]
+  if not has_explicit_operand_size:
+    instr_xmm.attributes.append(Attribute('att-show-name-suffix-x'))
+    instr_ymm.attributes.append(Attribute('att-show-name-suffix-y'))
 
-  # TODO(shcherbina): att-show-name-suffix-...
+  return [instr_xmm, instr_ymm]
 
 
 def ParseDefFile(filename):
