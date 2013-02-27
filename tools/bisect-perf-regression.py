@@ -962,12 +962,12 @@ class BisectPerformanceMetrics(object):
             if not external_depot:
               break
 
-            rev_range = [min_revision_data['external'][current_depot],
-                         max_revision_data['external'][current_depot]]
+            earliest_revision = max_revision_data['external'][current_depot]
+            latest_revision = min_revision_data['external'][current_depot]
 
             new_revision_list = self.PrepareToBisectOnDepot(external_depot,
-                                                            rev_range[1],
-                                                            rev_range[0])
+                                                            latest_revision,
+                                                            earliest_revision)
 
             if not new_revision_list:
               results['error'] = 'An error occurred attempting to retrieve'\
