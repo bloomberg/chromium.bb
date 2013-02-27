@@ -48,7 +48,7 @@ class WebContentsDestroyedWatcher : public content::WebContentsObserver {
   base::Closure callback_;
 };
 
-#if defined(OS_MACOSX)  // TODO(jam): track down.
+#if defined(OS_MACOSX)  // http://crbug.com/178510 hangs on Mac.
 #define MAYBE_InitiatorTabGetsFocusOnPrintPreviewDialogClose \
     DISABLED_InitiatorTabGetsFocusOnPrintPreviewDialogClose
 #else
