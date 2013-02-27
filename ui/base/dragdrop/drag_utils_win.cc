@@ -46,7 +46,7 @@ static HBITMAP CreateHBITMAPFromSkBitmap(const SkBitmap& sk_bitmap) {
   HBITMAP bitmap =
       CreateDIBSection(screen_dc, reinterpret_cast<BITMAPINFO*>(&header),
                        DIB_RGB_COLORS, &bits, NULL, 0);
-  DCHECK(sk_bitmap.rowBytes() == sk_bitmap.width() * 4);
+  DCHECK_EQ(sk_bitmap.rowBytes(), static_cast<size_t>(sk_bitmap.width() * 4));
   SkAutoLockPixels lock(sk_bitmap);
   memcpy(
       bits, sk_bitmap.getPixels(), sk_bitmap.height() * sk_bitmap.rowBytes());

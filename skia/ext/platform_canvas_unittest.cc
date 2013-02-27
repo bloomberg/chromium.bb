@@ -413,7 +413,7 @@ TEST(PlatformBitmapTest, PlatformBitmap) {
   EXPECT_FALSE(platform_bitmap->GetBitmap().isNull());
   EXPECT_EQ(kWidth, platform_bitmap->GetBitmap().width());
   EXPECT_EQ(kHeight, platform_bitmap->GetBitmap().height());
-  EXPECT_LE(platform_bitmap->GetBitmap().width()*4,
+  EXPECT_LE(static_cast<size_t>(platform_bitmap->GetBitmap().width()*4),
             platform_bitmap->GetBitmap().rowBytes());
   EXPECT_EQ(SkBitmap::kARGB_8888_Config,  // Same for all platforms.
             platform_bitmap->GetBitmap().config());
