@@ -333,7 +333,12 @@ public:
         long long element_size,
         Track*&);
 
-    enum Type { kVideo = 1, kAudio = 2 };
+    enum Type {
+        kVideo = 1,
+        kAudio = 2,
+        kSubtitle = 0x11,
+        kMetadata = 0x21
+     };
 
     Segment* const m_pSegment;
     const long long m_element_start;
@@ -472,7 +477,6 @@ public:
     double GetSamplingRate() const;
     long long GetChannels() const;
     long long GetBitDepth() const;
-    long Seek(long long time_ns, const BlockEntry*&) const;
 
 private:
     double m_rate;
@@ -948,8 +952,8 @@ private:
 class Segment
 {
     friend class Cues;
+    friend class Track;
     friend class VideoTrack;
-    friend class AudioTrack;
 
     Segment(const Segment&);
     Segment& operator=(const Segment&);
