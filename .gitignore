@@ -21,6 +21,8 @@
 *.o
 *.lo
 *.la
+*.pyc
+*~
 
 # Eclipse
 .cproject
@@ -72,6 +74,7 @@
 /gnulib/Makefile
 /gnulib/.deps
 /gnulib/getopt.h
+/gnulib/stdlib.h
 /gnulib/unistd.h
 /gnulib/TAGS
 
@@ -140,6 +143,8 @@
 /tests/pass1Only
 /tests/outpos
 /tests/getTable
+/tests/typeform
+/tests/pass0_typebuf
 
 # /tests/doctests/
 /tests/doctests/Makefile
@@ -166,10 +171,11 @@
 /tools/Makefile.in
 /tools/.deps
 /tools/lou_allround
+/tools/lou_checkhyphens
 /tools/lou_checktable
 /tools/lou_debug
+/tools/lou_trace
 /tools/lou_translate
-/tools/lou_checkhyphens
 /tools/*.exe
 /tools/TAGS
 
