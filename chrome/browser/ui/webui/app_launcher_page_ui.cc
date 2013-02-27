@@ -37,7 +37,6 @@ AppLauncherPageUI::AppLauncherPageUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
   // Override some options on the Web UI.
   web_ui->HideFavicon();
-  web_ui->HideURL();
   web_ui->OverrideTitle(l10n_util::GetStringUTF16(IDS_APP_LAUNCHER_TAB_TITLE));
 
 #if !defined(OS_ANDROID)
