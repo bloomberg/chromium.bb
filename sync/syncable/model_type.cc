@@ -801,4 +801,8 @@ bool IsRealDataType(ModelType model_type) {
   return model_type >= FIRST_REAL_MODEL_TYPE && model_type < MODEL_TYPE_COUNT;
 }
 
+bool IsActOnceDataType(ModelType model_type) {
+  return model_type == HISTORY_DELETE_DIRECTIVES;
+}
+
 }  // namespace syncer

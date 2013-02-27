@@ -128,7 +128,7 @@ class FakeServerChange {
       EXPECT_FALSE(node.GetFirstChildId());
       node.GetMutableEntryForTest()->Put(syncer::syncable::SERVER_IS_DEL,
                                          true);
-      node.Remove();
+      node.Tombstone();
     }
     {
       // Verify the deletion.
@@ -981,7 +981,7 @@ TEST_F(ProfileSyncServiceBookmarkTest, UnrecoverableErrorSuspendsService) {
     syncer::WriteTransaction trans(FROM_HERE, test_user_share_.user_share());
     syncer::WriteNode sync_node(&trans);
     ASSERT_TRUE(InitSyncNodeFromChromeNode(node, &sync_node));
-    sync_node.Remove();
+    sync_node.Tombstone();
   }
   // The models don't match at this point, but the ProfileSyncService
   // doesn't know it yet.

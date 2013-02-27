@@ -476,12 +476,18 @@ syncable::MutableEntry* WriteNode::GetMutableEntryForTest() {
   return entry_;
 }
 
-void WriteNode::Remove() {
+void WriteNode::Tombstone() {
   // These lines must be in this order.  The call to Put(IS_DEL) might choose to
   // unset the IS_UNSYNCED bit if the item was not known to the server at the
   // time of deletion.  It's important that the bit not be reset in that case.
   MarkForSyncing();
   entry_->Put(syncable::IS_DEL, true);
+}
+
+void WriteNode::Drop() {
+  if (entry_->Get(syncable::ID).ServerKnows()) {
+    entry_->Put(syncable::IS_DEL, true);
+  }
 }
 
 bool WriteNode::PutPredecessor(const BaseNode* predecessor) {

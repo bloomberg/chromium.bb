@@ -370,7 +370,7 @@ TEST_F(SyncApiTest, TestDeleteBehavior) {
     EXPECT_FALSE(wnode.GetIsFolder());
     EXPECT_EQ(wnode.GetTitle(), test_title);
 
-    wnode.Remove();
+    wnode.Tombstone();
   }
 
   // Lookup of a node which was deleted should return failure,

@@ -150,7 +150,7 @@ void PasswordChangeProcessor::Observe(
             return;
           }
           model_associator_->Disassociate(sync_node.GetId());
-          sync_node.Remove();
+          sync_node.Tombstone();
         }
         break;
       }

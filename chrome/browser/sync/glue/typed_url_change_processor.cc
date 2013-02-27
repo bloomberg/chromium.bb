@@ -201,7 +201,7 @@ void TypedUrlChangeProcessor::HandleURLsDeleted(
       if (sync_node.InitByClientTagLookup(syncer::TYPED_URLS,
                                           row->url().spec()) ==
               syncer::BaseNode::INIT_OK) {
-        sync_node.Remove();
+        sync_node.Tombstone();
       }
     }
   }

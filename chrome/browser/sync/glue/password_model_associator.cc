@@ -190,7 +190,7 @@ bool PasswordModelAssociator::DeleteAllNodes(
       LOG(ERROR) << "Typed url node lookup failed.";
       return false;
     }
-    sync_node.Remove();
+    sync_node.Tombstone();
   }
 
   id_map_.clear();

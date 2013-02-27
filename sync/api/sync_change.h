@@ -26,7 +26,7 @@ class SYNC_EXPORT SyncChange {
     ACTION_INVALID,
     ACTION_ADD,
     ACTION_UPDATE,
-    ACTION_DELETE
+    ACTION_DELETE,
   };
 
   // Default constructor creates an invalid change.

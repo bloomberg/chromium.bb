@@ -263,6 +263,12 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
 // Returns true if |model_type| is a real datatype
 SYNC_EXPORT bool IsRealDataType(ModelType model_type);
 
+// Returns true if |model_type| is an act-once type. Act once types drop
+// entities after applying them. Drops are deletes that are not synced to other
+// clients.
+// TODO(haitaol): Make entries of act-once data types immutable.
+SYNC_EXPORT bool IsActOnceDataType(ModelType model_type);
+
 }  // namespace syncer
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_BASE_MODEL_TYPE_H_

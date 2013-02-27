@@ -381,7 +381,7 @@ syncer::SyncError TypedUrlModelAssociator::DoAssociateModels() {
               "Failed to fetch obsolete node.",
               model_type());
         }
-        sync_node.Remove();
+        sync_node.Tombstone();
       }
     }
   }
@@ -470,7 +470,7 @@ bool TypedUrlModelAssociator::DeleteAllNodes(
       return false;
     }
     sync_child_id = sync_child_node.GetSuccessorId();
-    sync_child_node.Remove();
+    sync_child_node.Tombstone();
   }
   return true;
 }

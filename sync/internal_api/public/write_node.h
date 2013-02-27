@@ -98,8 +98,13 @@ class SYNC_EXPORT WriteNode : public BaseNode {
   // be synced again.
   void SetExternalId(int64 external_id);
 
-  // Remove this node and its children.
-  void Remove();
+  // Remove this node and its children and sync deletion to server.
+  void Tombstone();
+
+  // If the node is known by server, remove it and its children but don't sync
+  // deletion to server. Do nothing if the node is not known by server so that
+  // server can have a record of the node.
+  void Drop();
 
   // Set a new parent and position.  Position is specified by |predecessor|; if
   // it is NULL, the node is moved to the first position.  |predecessor| must

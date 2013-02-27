@@ -248,7 +248,10 @@ syncer::SyncError AttemptDelete(
           type, error_handler);
     }
   }
-  node->Remove();
+  if (IsActOnceDataType(type))
+    node->Drop();
+  else
+    node->Tombstone();
   return syncer::SyncError();
 }
 

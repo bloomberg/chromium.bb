@@ -1157,7 +1157,7 @@ TEST_F(ProfileSyncServiceSessionTest, MissingLocalTabNode) {
     syncer::WriteNode tab_node(&trans);
     ASSERT_EQ(syncer::BaseNode::INIT_OK,
               tab_node.InitByClientTagLookup(syncer::SESSIONS, tab_tag));
-    tab_node.Remove();
+    tab_node.Tombstone();
   }
   error = model_associator_->AssociateModels(NULL, NULL);
   ASSERT_FALSE(error.IsSet());

@@ -108,7 +108,7 @@ void BookmarkChangeProcessor::RemoveOneSyncNode(
   DCHECK(!sync_node.HasChildren());
   // Remove association and delete the sync node.
   model_associator_->Disassociate(sync_node.GetId());
-  sync_node.Remove();
+  sync_node.Tombstone();
 }
 
 void BookmarkChangeProcessor::RemoveSyncNodeHierarchy(

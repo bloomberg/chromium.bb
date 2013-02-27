@@ -784,7 +784,7 @@ bool SessionModelAssociator::UpdateAssociationsFromSyncModel(
     if (specifics.session_tag().empty()) {
       // This is a corrupted node. Just delete it.
       LOG(WARNING) << "Found node with no session tag, deleting.";
-      sync_node.Remove();
+      sync_node.Tombstone();
     } else if (specifics.session_tag() != GetCurrentMachineTag()) {
       AssociateForeignSpecifics(specifics, modification_time);
     } else {
@@ -807,7 +807,7 @@ bool SessionModelAssociator::UpdateAssociationsFromSyncModel(
         // TODO(zea): fix this once we add support for reassociating
         // pre-existing tabs with pre-existing tab nodes. We'll need to load
         // the tab_node_id and ensure the tab_pool_ keeps track of them.
-        sync_node.Remove();
+        sync_node.Tombstone();
       }
     }
     id = next_id;
@@ -1183,7 +1183,7 @@ void SessionModelAssociator::DeleteForeignSession(const std::string& tag) {
     const sync_pb::SessionSpecifics& specifics =
         sync_node.GetSessionSpecifics();
     if (specifics.session_tag() == tag)
-      sync_node.Remove();
+      sync_node.Tombstone();
   }
 }
 
