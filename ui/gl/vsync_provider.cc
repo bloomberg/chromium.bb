@@ -4,7 +4,17 @@
 
 #include "ui/gl/vsync_provider.h"
 
+#include "base/logging.h"
 #include "base/time.h"
+
+namespace {
+
+// These constants define a reasonable range for a calculated refresh interval.
+// Calculating refreshes out of this range will be considered a fatal error.
+const int64 kMinVsyncIntervalUs = base::Time::kMicrosecondsPerSecond / 400;
+const int64 kMaxVsyncIntervalUs = base::Time::kMicrosecondsPerSecond / 10;
+
+}  // namespace
 
 namespace gfx {
 
@@ -92,6 +102,12 @@ void SyncControlVSyncProvider::GetVSyncParameters(
     if (counter_diff > 0 && timebase > last_timebase_)
       last_good_interval_ = timebase_diff / counter_diff;
   }
+  if (last_good_interval_.InMicroseconds() < kMinVsyncIntervalUs ||
+      last_good_interval_.InMicroseconds() > kMaxVsyncIntervalUs) {
+    LOG(FATAL) << "Calculated bogus refresh interval of "
+               << last_good_interval_.InMicroseconds() << " us.";
+  }
+
   last_timebase_ = timebase;
   last_media_stream_counter_ = media_stream_counter;
   callback.Run(timebase, last_good_interval_);
