@@ -20,7 +20,6 @@
   "!chrome/browser/history/history_service_factory.h",
   "!chrome/browser/history/history_types.h",
   "!chrome/browser/history/select_favicon_frames.h",
-  "!chrome/browser/prefs/pref_service.h",
   "!chrome/browser/profiles/profile.h",
   "!chrome/browser/profiles/profile_dependency_manager.h",
   "!chrome/browser/profiles/profile_keyed_service.h",

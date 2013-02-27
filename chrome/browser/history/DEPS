@@ -27,7 +27,6 @@ include_rules = [
   "!chrome/browser/diagnostics/sqlite_diagnostics.h",
   "!chrome/browser/favicon/favicon_service.h",
   "!chrome/browser/instant/instant_overlay.h",
-  "!chrome/browser/prefs/pref_service.h",
   "!chrome/browser/prefs/scoped_user_pref_update.h",
   "!chrome/browser/prerender/prerender_contents.h",
   "!chrome/browser/prerender/prerender_manager.h",
