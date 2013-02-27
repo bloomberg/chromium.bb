@@ -638,7 +638,6 @@ struct connector_arg {
 	char format_str[5];
 	unsigned int fourcc;
 	drmModeModeInfo *mode;
-	drmModeEncoder *encoder;
 	int crtc;
 	unsigned int fb_id[2], current_fb_id;
 	struct timeval start;
@@ -659,6 +658,7 @@ struct plane_arg {
 static void connector_find_mode(struct device *dev, struct connector_arg *c)
 {
 	drmModeConnector *connector;
+	drmModeEncoder *encoder;
 	int i, j;
 
 	/* First, find the connector & mode */
@@ -692,16 +692,16 @@ static void connector_find_mode(struct device *dev, struct connector_arg *c)
 
 	/* Now get the encoder */
 	for (i = 0; i < dev->resources->res->count_encoders; i++) {
-		c->encoder = dev->resources->encoders[i].encoder;
-		if (!c->encoder)
+		encoder = dev->resources->encoders[i].encoder;
+		if (!encoder)
 			continue;
 
-		if (c->encoder->encoder_id  == connector->encoder_id)
+		if (encoder->encoder_id  == connector->encoder_id)
 			break;
 	}
 
 	if (c->crtc == -1)
-		c->crtc = c->encoder->crtc_id;
+		c->crtc = encoder->crtc_id;
 }
 
 /* -----------------------------------------------------------------------------
