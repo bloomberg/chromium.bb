@@ -603,8 +603,7 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
 
   if (type == INSTANT_COMMIT_FOCUS_LOST)
     overlay_->Cancel(last_omnibox_text_);
-  else if (type != INSTANT_COMMIT_NAVIGATED &&
-           type != INSTANT_COMMIT_CLICKED_QUERY_SUGGESTION)
+  else if (type != INSTANT_COMMIT_NAVIGATED)
     overlay_->Submit(last_omnibox_text_);
 
   scoped_ptr<content::WebContents> preview = overlay_->ReleaseContents();
@@ -1158,10 +1157,10 @@ void InstantController::OmniboxLostFocus(gfx::NativeView view_gaining_focus) {
   if (!overlay_->is_pointer_down_from_activate())
     HideOverlay();
 #else
-  if (IsViewInContents(GetViewGainingFocus(view_gaining_focus),
-                       overlay_->contents()))
+  if (IsFullHeight(model_))
     CommitIfPossible(INSTANT_COMMIT_FOCUS_LOST);
-  else
+  else if (!IsViewInContents(GetViewGainingFocus(view_gaining_focus),
+                             overlay_->contents()))
     HideOverlay();
 #endif
 }
@@ -1285,8 +1284,7 @@ void InstantController::ShowOverlay(InstantShownReason reason,
     return;
 
   // Must have updated omnibox after the last HideOverlay() to show suggestions.
-  if ((reason == INSTANT_SHOWN_QUERY_SUGGESTIONS ||
-       reason == INSTANT_SHOWN_CLICKED_QUERY_SUGGESTION) &&
+  if (reason == INSTANT_SHOWN_QUERY_SUGGESTIONS &&
       !allow_preview_to_show_search_suggestions_)
     return;
 
@@ -1317,12 +1315,10 @@ void InstantController::ShowOverlay(InstantShownReason reason,
   else
     model_.SetPreviewState(search_mode_, 100, INSTANT_SIZE_PERCENT);
 
-  // If the user clicked on a query suggestion, also go ahead and commit the
-  // overlay. This is necessary because if the overlay was partially visible
-  // when the suggestion was clicked, the click itself would not commit the
-  // overlay (because we're not full height).
-  if (reason == INSTANT_SHOWN_CLICKED_QUERY_SUGGESTION)
-    CommitIfPossible(INSTANT_COMMIT_CLICKED_QUERY_SUGGESTION);
+  // If the overlay is being shown at full height and the omnibox is not
+  // focused, commit right away.
+  if (IsFullHeight(model_) && omnibox_focus_state_ == OMNIBOX_FOCUS_NONE)
+    CommitIfPossible(INSTANT_COMMIT_FOCUS_LOST);
 }
 
 void InstantController::SendPopupBoundsToPage() {

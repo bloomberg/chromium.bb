@@ -718,3 +718,77 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, MostVisited) {
   // Make sure we have the same number of items as before.
   EXPECT_EQ(most_visited_items_count_, old_most_visited_items_count);
 }
+
+// Commit does not happen on Mac: http://crbug.com/178520
+#if defined(OS_MACOSX)
+#define MAYBE_CommitWhenFocusLostInFullHeight \
+        DISABLED_CommitWhenFocusLostInFullHeight
+#else
+#define MAYBE_CommitWhenFocusLostInFullHeight CommitWhenFocusLostInFullHeight
+#endif
+// Test that the preview is committed when the omnibox loses focus when it is
+// shown at 100% height.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
+                       MAYBE_CommitWhenFocusLostInFullHeight) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+
+  // Focus omnibox and confirm overlay isn't shown.
+  FocusOmniboxAndWaitForInstantSupport();
+  content::WebContents* preview_tab = instant()->GetPreviewContents();
+  EXPECT_TRUE(preview_tab);
+  EXPECT_TRUE(instant()->model()->mode().is_default());
+  EXPECT_FALSE(instant()->IsPreviewingSearchResults());
+
+  // Typing in the omnibox should show the overlay.
+  SetOmniboxTextAndWaitForInstantToShow("query");
+  EXPECT_TRUE(instant()->IsPreviewingSearchResults());
+  EXPECT_EQ(preview_tab, instant()->GetPreviewContents());
+
+  // Explicitly unfocus the omnibox without triggering a click. Note that this
+  // doesn't actually change the focus state of the omnibox, only what the
+  // Instant controller sees it as.
+  omnibox()->model()->OnWillKillFocus(NULL);
+  omnibox()->model()->OnKillFocus();
+
+  // Confirm that the overlay has been committed.
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(preview_tab, active_tab);
+}
+
+// Test that the preview is committed when shown at 100% height without focus
+// in the omnibox.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
+                       CommitWhenShownInFullHeightWithoutFocus) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+
+  // Focus omnibox and confirm overlay isn't shown.
+  FocusOmniboxAndWaitForInstantSupport();
+  content::WebContents* preview_tab = instant()->GetPreviewContents();
+  EXPECT_TRUE(preview_tab);
+  EXPECT_TRUE(instant()->model()->mode().is_default());
+  EXPECT_FALSE(instant()->IsPreviewingSearchResults());
+
+  // Create an observer to wait for the commit.
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_INSTANT_COMMITTED,
+      content::NotificationService::AllSources());
+
+  // Typing in the omnibox should show the overlay. Don't wait for the overlay
+  // to show however.
+  SetOmniboxText("query");
+
+  // Explicitly unfocus the omnibox without triggering a click. Note that this
+  // doesn't actually change the focus state of the omnibox, only what the
+  // Instant controller sees it as.
+  omnibox()->model()->OnWillKillFocus(NULL);
+  omnibox()->model()->OnKillFocus();
+
+  // Wait for the overlay to show.
+  observer.Wait();
+
+  // Confirm that the overlay has been committed.
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(preview_tab, active_tab);
+}
