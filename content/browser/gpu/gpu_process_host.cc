@@ -654,8 +654,6 @@ void GpuProcessHost::DeleteImage(int client_id,
 
 void GpuProcessHost::OnInitialized(bool result) {
   UMA_HISTOGRAM_BOOLEAN("GPU.GPUProcessInitialized", result);
-  if (!result)
-    GpuDataManagerImpl::GetInstance()->OnGpuProcessInitFailure();
 }
 
 void GpuProcessHost::OnChannelEstablished(
