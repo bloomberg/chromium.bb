@@ -65,6 +65,10 @@ process_submodule () {
     fi
     git config "submodule.$1.update" $update_policy
   fi
+  ignore_policy=$(git config --get "submodule.$1.ignore")
+  if [ -z "$ignore_policy" ]; then
+    git config "submodule.$1.ignore" all
+  fi
   if [ "$update_policy" != "none" ]; then
     update_submodule_url "$1"
     echo "$solution/$1"
@@ -86,6 +90,13 @@ if [ "$solution" = "$1" ]; then
     exit 0
   fi
 
+  # Set default behavior to ignore diffs in submodule checkouts
+  diff_policy=$(git config --get "diff.ignoreSubmodules")
+  if [ -z "$diff_policy" ]; then
+    git config diff.ignoreSubmodules all
+  fi
+
+  # Don't "pull" if checkout is not on a named branch
   shift
   if test $# -ne 0; then
     update_toplevel "$@"
