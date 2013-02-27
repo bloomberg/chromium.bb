@@ -1141,7 +1141,8 @@ void ImmediateInterpreter::UpdateTapState(
   if (hwstate) {
     for (int i = 0; i < hwstate->finger_cnt; ++i) {
       Log("HWSTATE: %d", hwstate->fingers[i].tracking_id);
-      if (hwstate->fingers[i].flags & GESTURES_FINGER_NO_TAP)
+      if (hwstate->fingers[i].flags &
+          (GESTURES_FINGER_NO_TAP | GESTURES_FINGER_MERGE))
         cancel_tapping = true;
     }
     for (set<short, kMaxGesturingFingers>::const_iterator it =
