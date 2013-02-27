@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_protocol.h"
 
@@ -23,7 +24,7 @@ namespace test {
 
 class SimpleFramerVisitor;
 
-// Peer to make public a number of otherwise private QuicConnection methods.
+// Peer to make public a number of otherwise private QuicFramer methods.
 class SimpleQuicFramer {
  public:
   SimpleQuicFramer();
@@ -44,7 +45,7 @@ class SimpleQuicFramer {
 
  private:
   QuicFramer framer_;
-  SimpleFramerVisitor* visitor_;
+  scoped_ptr<SimpleFramerVisitor> visitor_;
   DISALLOW_COPY_AND_ASSIGN(SimpleQuicFramer);
 };
 

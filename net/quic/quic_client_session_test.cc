@@ -11,6 +11,8 @@
 #include "net/base/net_log_unittest.h"
 #include "net/base/test_completion_callback.h"
 #include "net/quic/crypto/crypto_protocol.h"
+#include "net/quic/crypto/quic_decrypter.h"
+#include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 
 using testing::_;

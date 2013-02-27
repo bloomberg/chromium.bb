@@ -4,6 +4,9 @@
 
 #include "net/quic/test_tools/simple_quic_framer.h"
 
+#include "net/quic/crypto/quic_decrypter.h"
+#include "net/quic/crypto/quic_encrypter.h"
+
 using base::StringPiece;
 using std::string;
 using std::vector;
@@ -110,25 +113,20 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
 };
 
 SimpleQuicFramer::SimpleQuicFramer()
-    : framer_(QuicDecrypter::Create(kNULL), QuicEncrypter::Create(kNULL)),
-      visitor_(NULL) {
+    : framer_(QuicDecrypter::Create(kNULL), QuicEncrypter::Create(kNULL)) {
 }
 
 SimpleQuicFramer::~SimpleQuicFramer() {
-  delete visitor_;
 }
 
 bool SimpleQuicFramer::ProcessPacket(const QuicPacket& packet) {
   scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPacket(0, packet));
-  LOG(INFO) << __FUNCTION__ << encrypted.get();
-  LOG(INFO) << __FUNCTION__ << encrypted->length();
   return ProcessPacket(*encrypted);
 }
 
 bool SimpleQuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
-  delete visitor_;
-  visitor_ = new SimpleFramerVisitor;
-  framer_.set_visitor(visitor_);
+  visitor_.reset(new SimpleFramerVisitor);
+  framer_.set_visitor(visitor_.get());
   return framer_.ProcessPacket(packet);
 }
 

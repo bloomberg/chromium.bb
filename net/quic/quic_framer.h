@@ -12,8 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_piece.h"
 #include "net/base/net_export.h"
-#include "net/quic/crypto/quic_decrypter.h"
-#include "net/quic/crypto/quic_encrypter.h"
+#include "net/quic/quic_protocol.h"
 
 namespace net {
 

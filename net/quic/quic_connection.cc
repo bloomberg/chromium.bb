@@ -9,6 +9,8 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "net/base/net_errors.h"
+#include "net/quic/crypto/quic_decrypter.h"
+#include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_utils.h"
 
 using base::hash_map;

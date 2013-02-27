@@ -12,6 +12,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/port.h"
 #include "base/stl_util.h"
+#include "net/quic/crypto/quic_decrypter.h"
+#include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_utils.h"
