@@ -31,19 +31,19 @@ chrome.app.runtime.onLaunched.addListener(function() {
   });
 </pre></code></pre>
 
-If your application requires, you can open more than one window.
+<p>If your application requires, you can open more than one window.</p>
 
 <h2 id="the_onrestarted_event">The onRestarted event</h2>
 
-The $ref:app.runtime.onRestarted event is not as essential as <code>onLaunched</code>, but it might be relevant to certain types of apps.
+<p>The $ref:app.runtime.onRestarted event is not as essential as <code>onLaunched</code>, but it might be relevant to certain types of apps.
 This event is executed when the app is restarted, for example, when Chrome quits, restarts, and the app is launched again.
-You can use this event to restore a transient state. 
+You can use this event to restore a transient state. </p>
 
-For example, if your app has a form with several fields, you won&#39;t always want to save the partial form while the user is typing.
+<p>For example, if your app has a form with several fields, you won&#39;t always want to save the partial form while the user is typing.
 If the user quits the app on purpose, she might not be interested keeping the partial data.
-If the Chrome runtime restarted for some reason other than by a user&#39;s intention, the user will want that data when the app is restarted.
+If the Chrome runtime restarted for some reason other than by a user&#39;s intention, the user will want that data when the app is restarted.</p>
 
-Let&#39;s change our code to save the Todo input field in $ref:storage as the user types, only restoring it if the <code>onRestarted</code> event is triggered.
+<p>Let&#39;s change our code to save the Todo input field in $ref:storage as the user types, only restoring it if the <code>onRestarted</code> event is triggered.</p>
 
 <p class="note"><b>Note:</b>  We learned about <code>chrome.storage.sync</code> before, but <a href="http://developer.chrome.com/trunk/apps/storage.html#using-sync">chrome.storage.local</a> wasn&#39;t mentioned until now. Both have exactly the same syntax, but the semantics of <code>chrome.storage.local</code> is, as the name says, completely local.
 There&#39;s no attempt to synchronize or to save the data in the cloud.</p>
@@ -112,7 +112,7 @@ window.addEventListener(&#39;load&#39;, function() {
 Any text entered in the input field (but not yet saved as a Todo item) will reappear when Chrome and the app are reopened.</p>
 
 <p class="note"><b>Note:</b>  If you get stuck and want to see the app in action, go to <code>chrome://extensions</code>,
-load the unpacked <a href="app_codelab6_lifecycle.html">lab6_lifecycle</a>, and launch the app from a new tab.</p>
+load the unpacked <a href="https://github.com/GoogleChrome/chrome-app-codelab/tree/master/lab6_lifecycle">lab6 app</a>, and launch the app from a new tab.</p>
 
 <h1 id="takeaways_">Takeaways:</h1>
 
