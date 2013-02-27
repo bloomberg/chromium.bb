@@ -129,7 +129,6 @@ LINK_FLAGS+=-lgcov
 else
 CXXFLAGS+=\
 	-DXLOGGING
-PC_DEPS += pixman-1
 endif
 
 PKG_CONFIG ?= pkg-config
