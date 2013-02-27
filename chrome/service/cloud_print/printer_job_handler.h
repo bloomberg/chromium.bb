@@ -220,6 +220,9 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   void Reset();
   void UpdateJobStatus(PrintJobStatus status, PrintJobError error);
 
+  // Run a job check as the result of a scheduled check
+  void RunScheduledJobCheck();
+
   // Sets the next response handler to the specifed JSON data handler.
   void SetNextJSONHandler(JSONDataHandler handler);
   // Sets the next response handler to the specifed data handler.

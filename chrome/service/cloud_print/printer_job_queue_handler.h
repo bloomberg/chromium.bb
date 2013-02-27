@@ -66,7 +66,8 @@ class PrinterJobQueueHandler {
   void GetJobsFromQueue(const base::DictionaryValue* json_data,
                         std::vector<JobDetails>* jobs);
 
-  void JobFetchFailed(const std::string& job_id);
+  // Marks a job fetch as failed. Returns "true" if the job will be retried.
+  bool JobFetchFailed(const std::string& job_id);
 
   void JobDone(const std::string& job_id);
 

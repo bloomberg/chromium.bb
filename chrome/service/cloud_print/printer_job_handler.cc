@@ -129,15 +129,20 @@ CloudPrintURLFetcher::ResponseAction PrinterJobHandler::HandleJSONData(
   return (this->*next_json_data_handler_)(source, url, json_data, succeeded);
 }
 
+// Mark the job fetch as failed and check if other jobs can be printed
 void PrinterJobHandler::OnRequestGiveUp() {
-  // The only time we call CloudPrintURLFetcher::StartGetRequest() with a
-  // specified number of retries, is when we are trying to fetch print job
-  // data. So, this function will be reached only if we failed to get job data.
-  // In that case, we should make job as error and should not try it later.
-  VLOG(1) << "CP_CONNECTOR: Job failed (giving up)";
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&PrinterJobHandler::JobFailed, this, JOB_DOWNLOAD_FAILED));
+  if (job_queue_handler_.JobFetchFailed(job_details_.job_id_)) {
+    VLOG(1) << "CP_CONNECTOR: Job failed to load (scheduling retry)";
+    CheckForJobs(kJobFetchReasonFailure);
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&PrinterJobHandler::Stop, this));
+  } else {
+    VLOG(1) << "CP_CONNECTOR: Job failed (giving up after " <<
+        kNumRetriesBeforeAbandonJob << " retries)";
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&PrinterJobHandler::JobFailed, this,
+                              JOB_DOWNLOAD_FAILED));
+  }
 }
 
 CloudPrintURLFetcher::ResponseAction PrinterJobHandler::OnRequestAuthError() {
@@ -156,6 +161,9 @@ std::string PrinterJobHandler::GetAuthHeader() {
 // JobStatusUpdater::Delegate implementation
 bool PrinterJobHandler::OnJobCompleted(JobStatusUpdater* updater) {
   bool ret = false;
+
+  job_queue_handler_.JobDone(job_details_.job_id_);
+
   for (JobStatusUpdaterList::iterator index = job_status_updater_list_.begin();
        index != job_status_updater_list_.end(); index++) {
     if (index->get() == updater) {
@@ -246,16 +254,24 @@ PrinterJobHandler::HandleJobMetadataResponse(
   if (succeeded) {
     std::vector<JobDetails> jobs;
     job_queue_handler_.GetJobsFromQueue(json_data, &jobs);
-    if (!jobs.empty() && jobs[0].time_remaining_ == base::TimeDelta()) {
-      job_available = true;
-      job_details_ = jobs[0];
+    if (!jobs.empty()) {
+      if (jobs[0].time_remaining_ == base::TimeDelta()) {
+        job_available = true;
+        job_details_ = jobs[0];
 
-      SetNextDataHandler(&PrinterJobHandler::HandlePrintTicketResponse);
-      request_ = CloudPrintURLFetcher::Create();
-      request_->StartGetRequest(GURL(job_details_.print_ticket_url_.c_str()),
-                                this,
-                                kCloudPrintAPIMaxRetryCount,
-                                std::string());
+        SetNextDataHandler(&PrinterJobHandler::HandlePrintTicketResponse);
+        request_ = CloudPrintURLFetcher::Create();
+        request_->StartGetRequest(GURL(job_details_.print_ticket_url_),
+                                  this,
+                                  kJobDataMaxRetryCount,
+                                  std::string());
+      } else {
+        job_available = false;
+        MessageLoop::current()->PostDelayedTask(
+            FROM_HERE,
+            base::Bind(&PrinterJobHandler::RunScheduledJobCheck, this),
+            jobs[0].time_remaining_);
+      }
     }
   }
 
@@ -281,7 +297,7 @@ PrinterJobHandler::HandlePrintTicketResponse(const net::URLFetcher* source,
     request_ = CloudPrintURLFetcher::Create();
     std::string accept_headers = "Accept: ";
     accept_headers += print_system_->GetSupportedMimeTypes();
-    request_->StartGetRequest(GURL(job_details_.print_data_url_.c_str()),
+    request_->StartGetRequest(GURL(job_details_.print_data_url_),
                               this,
                               kJobDataMaxRetryCount,
                               accept_headers);
@@ -482,6 +498,10 @@ void PrinterJobHandler::UpdateJobStatus(PrintJobStatus status,
       std::string());
 }
 
+void PrinterJobHandler::RunScheduledJobCheck() {
+  CheckForJobs(kJobFetchReasonRetry);
+}
+
 void PrinterJobHandler::SetNextJSONHandler(JSONDataHandler handler) {
   next_json_data_handler_ = handler;
   next_data_handler_ = NULL;
@@ -501,6 +521,7 @@ void PrinterJobHandler::JobFailed(PrintJobError error) {
     UpdateJobStatus(PRINT_JOB_STATUS_ERROR, error);
     // This job failed, but others may be pending.  Schedule a check.
     job_check_pending_ = true;
+    job_fetch_reason_ = kJobFetchReasonFailure;
   }
 }
 

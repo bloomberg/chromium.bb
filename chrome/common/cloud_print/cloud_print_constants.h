@@ -72,9 +72,13 @@ extern const char kJobFetchReasonPoll[];
 extern const char kJobFetchReasonNotified[];
 // Job fetch after a successful print to query for more jobs.
 extern const char kJobFetchReasonQueryMore[];
+// Job fetch after a job failure to query for more jobs.
+extern const char kJobFetchReasonFailure[];
+// Job fetch due to scheduled retry.
+extern const char kJobFetchReasonRetry[];
 
 // Max retry count for job data fetch requests.
-const int kJobDataMaxRetryCount = 5;
+const int kJobDataMaxRetryCount = 1;
 // Max retry count (infinity) for API fetch requests.
 const int kCloudPrintAPIMaxRetryCount = -1;
 // Max retry count (infinity) for Registration requests.
@@ -101,7 +105,7 @@ const int kMaxFailedXmppPings = 2;
 const int kTokenRefreshGracePeriodSecs = 5*60;  // 5 minutes in seconds
 
 // The number of retries before we abandon a print job in exponential backoff
-const int kNumRetriesBeforeAbandonJob = 10;
+const int kNumRetriesBeforeAbandonJob = 5;
 
 // The wait time for the second (first with wait time) retry for a job that
 // fails due to network errors
@@ -110,7 +114,6 @@ const int kJobFirstWaitTimeSecs = 1;
 // The multiplier for the wait time for retrying a job that fails due to
 // network errors
 const int kJobWaitTimeExponentialMultiplier = 2;
-
 
 }  // namespace cloud_print
 

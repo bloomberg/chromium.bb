@@ -137,7 +137,7 @@ void PrinterJobQueueHandler::JobDone(const std::string& job_id) {
   failed_job_map_.erase(job_id);
 }
 
-void PrinterJobQueueHandler::JobFetchFailed(const std::string& job_id) {
+bool PrinterJobQueueHandler::JobFetchFailed(const std::string& job_id) {
   FailedJobMetadata metadata;
   metadata.retries_ = 0;
   metadata.last_retry_ = time_provider_->GetNow();
@@ -145,11 +145,20 @@ void PrinterJobQueueHandler::JobFetchFailed(const std::string& job_id) {
   std::pair<FailedJobMap::iterator, bool> job_found =
       failed_job_map_.insert(FailedJobPair(job_id, metadata));
 
-  // If the job has already failed once, increment the number of retries
+  // If the job has already failed once, increment the number of retries.
+  // If it has failed too many times, remove it from the map and tell the caller
+  // to report a failure.
   if (!job_found.second) {
+    if (job_found.first->second.retries_ >= kNumRetriesBeforeAbandonJob) {
+      failed_job_map_.erase(job_found.first);
+      return false;
+    }
+
     job_found.first->second.retries_ += 1;
     job_found.first->second.last_retry_ = time_provider_->GetNow();
   }
+
+  return true;
 }
 
 }  // namespace cloud_print

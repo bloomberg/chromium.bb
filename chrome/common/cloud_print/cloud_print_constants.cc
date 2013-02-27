@@ -54,6 +54,8 @@ const char kJobFetchReasonStartup[] = "startup";
 const char kJobFetchReasonPoll[] = "poll";
 const char kJobFetchReasonNotified[] = "notified";
 const char kJobFetchReasonQueryMore[] = "querymore";
+const char kJobFetchReasonFailure[] = "failure";
+const char kJobFetchReasonRetry[] = "retry";
 
 }  // namespace cloud_print
 

@@ -36,65 +36,7 @@ using ::testing::InvokeWithoutArgs;
 
 namespace cloud_print {
 
-const char kExampleJobListResponse[] = "{"
-" \"success\": true,"
-" \"jobs\": ["
-"  {"
-"   \"tags\": ["
-"    \"^own\""
-"   ],"
-"   \"printerName\": \"Example Printer\","
-"   \"status\": \"QUEUED\","
-"   \"ownerId\": \"sampleuser@gmail.com\","
-"   \"ticketUrl\": \"https://www.google.com/cloudprint/ticket?exampleURI1\","
-"   \"printerid\": \"__example_printer_id\","
-"   \"printerType\": \"GOOGLE\","
-"   \"contentType\": \"text/html\","
-"   \"fileUrl\": \"https://www.google.com/cloudprint/download?exampleURI1\","
-"   \"id\": \"__example_job_id1\","
-"   \"message\": \"\","
-"   \"title\": \"Example Job 1\","
-"   \"errorCode\": \"\","
-"   \"numberOfPages\": 3"
-"  }"
-" ],"
-" \"xsrf_token\": \"AIp06DjUd3AV6BO0aujB9NvM2a9ZbogxOQ:1360021066932\","
-" \"request\": {"
-"  \"time\": \"0\","
-"  \"users\": ["
-"   \"sampleuser@gmail.com\""
-"  ],"
-"  \"params\": {"
-"   \"printerid\": ["
-"    \"__example_printer_id\""
-"   ]"
-"  },"
-"  \"user\": \"sampleuser@gmail.com\""
-" }"
-"}";
-
-const char kExampleJobListResponseEmpty[] = "{"
-" \"success\": true,"
-" \"jobs\": ["
-" ],"
-" \"xsrf_token\": \"AIp06DjUd3AV6BO0aujB9NvM2a9ZbogxOQ:1360021066932\","
-" \"request\": {"
-"  \"time\": \"0\","
-"  \"users\": ["
-"   \"sampleuser@gmail.com\""
-"  ],"
-"  \"params\": {"
-"   \"printerid\": ["
-"    \"__example_printer_id\""
-"   ]"
-"  },"
-"  \"user\": \"sampleuser@gmail.com\""
-" }"
-"}";
-
-
-
-const char kExampleJobID[] = "__example_job_id1";
+namespace {
 
 const char kExampleCloudPrintServerURL[] = "https://www.google.com/cloudprint/";
 
@@ -102,24 +44,86 @@ const char kExamplePrintTicket[] = "{\"MediaType\":\"plain\","
     "\"Resolution\":\"300x300dpi\",\"PageRegion\":\"Letter\","
     "\"InputSlot\":\"auto\",\"PageSize\":\"Letter\",\"EconoMode\":\"off\"}";
 
+
+// The fillowing constants will all be constructed with StringPrintf. The
+// following types of parameters are possible:
+// job number(int): ID # of job from given job list. All job IDs follow the
+// format __example_job_idN for some N.
+// fetch reason(string): Fetch reason used by the code. The job list URL
+// requested by PrinterJobHandler has an extra parameter that signifies when
+// the request was triggered.
+// status string(string): Status of print job, one of IN_PROGRESS, DONE or ERROR
+// job object list(string/JSON formatted): a comma-separated list of job objects
+
+// StringPrintf parameters: job number, job number, job number, job number
+const char kExampleJobObject[] = "{"
+"   \"tags\": ["
+"    \"^own\""
+"   ],"
+"   \"printerName\": \"Example Printer\","
+"   \"status\": \"QUEUED\","
+"   \"ownerId\": \"sampleuser@gmail.com\","
+"   \"ticketUrl\": \"https://www.google.com/cloudprint/ticket?exampleURI%d\","
+"   \"printerid\": \"__example_printer_id\","
+"   \"printerType\": \"GOOGLE\","
+"   \"contentType\": \"text/html\","
+"   \"fileUrl\": \"https://www.google.com/cloudprint/download?exampleURI%d\","
+"   \"id\": \"__example_job_id%d\","
+"   \"message\": \"\","
+"   \"title\": \"Example Job %d\","
+"   \"errorCode\": \"\","
+"   \"numberOfPages\": 3"
+"  }";
+
+// StringPrintf parameters: job object list
+const char kExampleJobListResponse[] = "{"
+" \"success\": true,"
+" \"jobs\": ["
+" %s"
+" ],"
+" \"xsrf_token\": \"AIp06DjUd3AV6BO0aujB9NvM2a9ZbogxOQ:1360021066932\","
+" \"request\": {"
+"  \"time\": \"0\","
+"  \"users\": ["
+"   \"sampleuser@gmail.com\""
+"  ],"
+"  \"params\": {"
+"   \"printerid\": ["
+"    \"__example_printer_id\""
+"   ]"
+"  },"
+"  \"user\": \"sampleuser@gmail.com\""
+" }"
+"}";
+
+
+// StringPrintf parameters: job number
+const char kExampleJobID[] = "__example_job_id%d";
+
+// StringPrintf parameters: job number
 const char kExamplePrintTicketURI[] =
-    "https://www.google.com/cloudprint/ticket?exampleURI1";
+    "https://www.google.com/cloudprint/ticket?exampleURI%d";
 
+// StringPrintf parameters: job number
 const char kExamplePrintDownloadURI[] =
-    "https://www.google.com/cloudprint/download?exampleURI1";
+    "https://www.google.com/cloudprint/download?exampleURI%d";
 
-// Use StringPrintf to construct
+// StringPrintf parameters: job number
+const char kExampleUpdateDoneURI[] =
+    "https://www.google.com/cloudprint/control?jobid=__example_job_id%d"
+    "&status=DONE&code=0&message=&numpages=0&pagesprinted=0";
+
+// StringPrintf parameters: job number
+const char kExampleUpdateErrorURI[] =
+    "https://www.google.com/cloudprint/control?jobid=__example_job_id%d"
+    "&status=ERROR";
+
+// StringPrintf parameters: fetch reason
 const char kExamplePrinterJobListURI[] =
     "https://www.google.com/cloudprint/fetch"
     "?printerid=__example_printer_id&deb=%s";
 
-// Use StringPrintf to construct
-const char kExamplePrinterJobControlURI[] =
-    "https://www.google.com/cloudprint/control"
-    "?jobid=__example_printer_id&status=%s";
-
-
-// Use StringPrintf to construct
+// StringPrintf parameters: status string, job number, status string (repeat)
 const char kExampleControlResponse[] = "{"
 " \"success\": true,"
 " \"message\": \"Print job updated successfully.\","
@@ -137,7 +141,7 @@ const char kExampleControlResponse[] = "{"
 "    \"%s\""
 "   ],"
 "   \"jobid\": ["
-"    \"__example_job_id1\""
+"    \"__example_job_id%d\""
 "   ]"
 "  },"
 "  \"user\": \"sampleuser@gmail.com\""
@@ -182,13 +186,60 @@ const char kExamplePrintData[] = "__EXAMPLE_PRINT_DATA";
 const char kExampleJobDownloadResponseHeaders[] =
     "Content-Type: Application/PDF\n";
 
-const char kExampleUpdateDoneURL[] =
-    "https://www.google.com/cloudprint/control?jobid=__example_job_id1"
-    "&status=DONE&code=0&message=&numpages=0&pagesprinted=0";
-
 const char kExamplePrinterName[] = "Example Printer";
 
 const char kExamplePrinterDescription[] = "Example Description";
+
+// These are functions used to construct the various sample strings.
+std::string JobListResponse(int num_jobs) {
+  std::string job_objects = "";
+  for (int i = 0; i < num_jobs; i++) {
+    job_objects = job_objects + StringPrintf(kExampleJobObject, i+1, i+1, i+1,
+                                             i+1);
+    if (i != num_jobs-1) job_objects = job_objects + ",";
+  }
+  return StringPrintf(kExampleJobListResponse, job_objects.c_str());
+}
+
+std::string JobListURI(const char* reason) {
+  return StringPrintf(kExamplePrinterJobListURI, reason);
+}
+
+std::string JobID(int job_num) {
+  return StringPrintf(kExampleJobID, job_num);
+}
+
+std::string DoneURI(int job_num) {
+  return StringPrintf(kExampleUpdateDoneURI, job_num);
+}
+
+std::string ErrorURI(int job_num) {
+  return StringPrintf(kExampleUpdateErrorURI, job_num);
+}
+
+std::string TicketURI(int job_num) {
+  return StringPrintf(kExamplePrintTicketURI, job_num);
+}
+
+std::string DownloadURI(int job_num) {
+  return StringPrintf(kExamplePrintDownloadURI, job_num);
+}
+
+// converts to string for consistency
+std::string InProgressURI(int job_num) {
+  return GetUrlForJobStatusUpdate(GURL(kExampleCloudPrintServerURL),
+                                  StringPrintf(kExampleJobID, job_num),
+                                  PRINT_JOB_STATUS_IN_PROGRESS).spec();
+}
+
+std::string StatusResponse(int job_num, const char* status_string) {
+  return StringPrintf(kExampleControlResponse,
+                      status_string,
+                      job_num,
+                      status_string);
+}
+
+}  // namespace
 
 class CloudPrintURLFetcherNoServiceProcess
     : public CloudPrintURLFetcher {
@@ -395,6 +446,9 @@ class PrinterJobHandlerTest : public ::testing::Test {
       const PrintSystem::PrinterCapsAndDefaultsCallback& callback);
   void AddMimeHeader(const GURL& url, net::FakeURLFetcher* fetcher);
   bool PostSpoolSuccess();
+  void SetUpJobSuccessTest(int job_num);
+  void BeginTest(int timeout_seconds);
+  void MakeJobFetchReturnNoJobs();
 
   static void MessageLoopQuitNowHelper(MessageLoop* message_loop);
   static void MessageLoopQuitSoonHelper(MessageLoop* message_loop);
@@ -441,6 +495,15 @@ void PrinterJobHandlerTest::SetUp() {
   CloudPrintURLFetcher::set_factory(&cloud_print_factory_);
 }
 
+void PrinterJobHandlerTest::MakeJobFetchReturnNoJobs() {
+  factory_.SetFakeResponse(JobListURI(kJobFetchReasonStartup),
+                           JobListResponse(0), true);
+  factory_.SetFakeResponse(JobListURI(kJobFetchReasonFailure),
+                           JobListResponse(0), true);
+  factory_.SetFakeResponse(JobListURI(kJobFetchReasonRetry),
+                           JobListResponse(0), true);
+}
+
 void PrinterJobHandlerTest::MessageLoopQuitNowHelper(
     MessageLoop* message_loop) {
   message_loop->QuitWhenIdle();
@@ -481,6 +544,58 @@ void PrinterJobHandlerTest::AddMimeHeader(const GURL& url,
 }
 
 
+void PrinterJobHandlerTest::SetUpJobSuccessTest(int job_num) {
+  factory_.SetFakeResponse(TicketURI(job_num),
+                           kExamplePrintTicket, true);
+  factory_.SetFakeResponse(DownloadURI(job_num),
+                           kExamplePrintData, true);
+
+  factory_.SetFakeResponse(DoneURI(job_num),
+                           StatusResponse(job_num, "DONE"),
+                           true);
+  factory_.SetFakeResponse(InProgressURI(job_num),
+                           StatusResponse(job_num, "IN_PROGRESS"),
+                           true);
+
+  // The times requirement is relaxed for the ticket URI
+  // in order to accommodate TicketDownloadFailureTest
+  EXPECT_CALL(url_callback_, OnRequestCreate(
+      GURL(TicketURI(job_num)), _))
+      .Times(AtLeast(1));
+
+  EXPECT_CALL(url_callback_, OnRequestCreate(GURL(DownloadURI(job_num)), _))
+      .Times(Exactly(1))
+      .WillOnce(Invoke(this, &PrinterJobHandlerTest::AddMimeHeader));
+
+  EXPECT_CALL(url_callback_, OnRequestCreate(GURL(InProgressURI(job_num)), _))
+      .Times(Exactly(1));
+
+  EXPECT_CALL(url_callback_, OnRequestCreate(GURL(DoneURI(job_num)), _))
+      .Times(Exactly(1));
+
+  EXPECT_CALL(print_system_->JobSpooler(),
+              Spool(kExamplePrintTicket, _, _, _, _, _, _))
+      .Times(Exactly(1))
+      .WillOnce(InvokeWithoutArgs(this,
+                                  &PrinterJobHandlerTest::PostSpoolSuccess));
+}
+
+void PrinterJobHandlerTest::BeginTest(int timeout_seconds) {
+  job_handler_ = new PrinterJobHandler(basic_info_, info_from_cloud_,
+                                       GURL(kExampleCloudPrintServerURL),
+                                       print_system_, &jobhandler_delegate_);
+
+  job_handler_->Initialize();
+
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&PrinterJobHandlerTest::MessageLoopQuitSoonHelper,
+                 MessageLoop::current()),
+      base::TimeDelta::FromSeconds(timeout_seconds));
+
+  MessageLoop::current()->Run();
+}
+
 void PrinterJobHandlerTest::SendCapsAndDefaults(
     const std::string& printer_name,
     const PrintSystem::PrinterCapsAndDefaultsCallback& callback) {
@@ -519,7 +634,6 @@ MockJobSpooler::MockJobSpooler() : delegate_(NULL) {
       .WillByDefault(DoAll(SaveArg<6>(&delegate_), Return(true)));
 }
 
-
 MockPrintSystem::MockPrintSystem()
     : job_spooler_(new NiceMock<MockJobSpooler>()),
       printer_watcher_(new NiceMock<MockPrinterWatcher>()),
@@ -543,75 +657,128 @@ MockPrintSystem::MockPrintSystem()
 // This test simulates an end-to-end printing of a document
 // but tests only non-failure cases.
 TEST_F(PrinterJobHandlerTest, HappyPathTest) {
-  GURL InProgressURL =
-      GetUrlForJobStatusUpdate(GURL(kExampleCloudPrintServerURL),
-                               kExampleJobID,
-                               PRINT_JOB_STATUS_IN_PROGRESS);
+  factory_.SetFakeResponse(JobListURI(kJobFetchReasonStartup),
+                           JobListResponse(1), true);
+  factory_.SetFakeResponse(JobListURI(kJobFetchReasonQueryMore),
+                           JobListResponse(0), true);
 
-  factory_.SetFakeResponse(kExamplePrintTicketURI, kExamplePrintTicket, true);
-  factory_.SetFakeResponse(kExamplePrintDownloadURI, kExamplePrintData, true);
-  factory_.SetFakeResponse(
-      StringPrintf(kExamplePrinterJobListURI, kJobFetchReasonStartup),
-      kExampleJobListResponse, true);
-
-
-  factory_.SetFakeResponse(
-      base::StringPrintf(kExamplePrinterJobListURI, kJobFetchReasonQueryMore),
-      kExampleJobListResponseEmpty, true);
-
-  factory_.SetFakeResponse(
-      kExampleUpdateDoneURL,
-      base::StringPrintf(kExampleControlResponse, "DONE", "DONE"), true);
-
-  factory_.SetFakeResponse(
-      InProgressURL.spec(),
-      base::StringPrintf(kExampleControlResponse,
-                         "IN_PROGRESS", "IN_PROGRESS"),
-      true);
-
-
-  job_handler_ = new PrinterJobHandler(basic_info_, info_from_cloud_,
-                                       GURL(kExampleCloudPrintServerURL),
-                                       print_system_, &jobhandler_delegate_);
-
-  EXPECT_CALL(url_callback_, OnRequestCreate(
-      GURL(base::StringPrintf(kExamplePrinterJobListURI, "startup")), _))
+  EXPECT_CALL(url_callback_,
+              OnRequestCreate(GURL(JobListURI(kJobFetchReasonStartup)), _))
+      .Times(Exactly(1));
+  EXPECT_CALL(url_callback_,
+              OnRequestCreate(GURL(JobListURI(kJobFetchReasonQueryMore)), _))
       .Times(Exactly(1));
 
-  EXPECT_CALL(url_callback_, OnRequestCreate(
-      GURL(base::StringPrintf(kExamplePrinterJobListURI, "querymore")), _))
-      .Times(Exactly(1));
+  SetUpJobSuccessTest(1);
+  BeginTest(1);
+}
 
-  EXPECT_CALL(url_callback_, OnRequestCreate(GURL(kExamplePrintTicketURI), _))
-      .Times(Exactly(1));
+TEST_F(PrinterJobHandlerTest, TicketDownloadFailureTest) {
+  factory_.SetFakeResponse(JobListURI(kJobFetchReasonStartup),
+                           JobListResponse(2), true);
+  factory_.SetFakeResponse(JobListURI(kJobFetchReasonFailure),
+                           JobListResponse(2), true);
+  factory_.SetFakeResponse(JobListURI(kJobFetchReasonQueryMore),
+                           JobListResponse(0), true);
+  factory_.SetFakeResponse(TicketURI(1), "", false);
 
-  EXPECT_CALL(url_callback_, OnRequestCreate(
-      GURL(kExamplePrintDownloadURI), _))
+  EXPECT_CALL(url_callback_, OnRequestCreate(GURL(TicketURI(1)), _))
+      .Times(AtLeast(1));
+
+  EXPECT_CALL(url_callback_,
+              OnRequestCreate(GURL(JobListURI(kJobFetchReasonStartup)), _))
+      .Times(AtLeast(1));
+
+  EXPECT_CALL(url_callback_,
+              OnRequestCreate(GURL(JobListURI(kJobFetchReasonQueryMore)), _))
+      .Times(AtLeast(1));
+
+  EXPECT_CALL(url_callback_,
+              OnRequestCreate(GURL(JobListURI(kJobFetchReasonFailure)), _))
+      .Times(AtLeast(1));
+
+  SetUpJobSuccessTest(2);
+  BeginTest(1);
+}
+
+// TODO(noamsml): Figure out how to make this test not take 1 second and
+// re-enable it
+TEST_F(PrinterJobHandlerTest, DISABLED_ManyFailureTest) {
+  factory_.SetFakeResponse(JobListURI(kJobFetchReasonStartup),
+                           JobListResponse(1), true);
+  factory_.SetFakeResponse(JobListURI(kJobFetchReasonFailure),
+                           JobListResponse(1), true);
+  factory_.SetFakeResponse(JobListURI(kJobFetchReasonRetry),
+                           JobListResponse(1), true);
+  factory_.SetFakeResponse(JobListURI(kJobFetchReasonQueryMore),
+                           JobListResponse(0), true);
+
+  EXPECT_CALL(url_callback_,
+              OnRequestCreate(GURL(JobListURI(kJobFetchReasonStartup)), _))
+      .Times(AtLeast(1));
+
+  EXPECT_CALL(url_callback_,
+              OnRequestCreate(GURL(JobListURI(kJobFetchReasonQueryMore)), _))
+      .Times(AtLeast(1));
+
+  EXPECT_CALL(url_callback_,
+              OnRequestCreate(GURL(JobListURI(kJobFetchReasonFailure)), _))
+      .Times(AtLeast(1));
+
+  EXPECT_CALL(url_callback_,
+              OnRequestCreate(GURL(JobListURI(kJobFetchReasonRetry)), _))
+      .Times(AtLeast(1));
+
+  SetUpJobSuccessTest(1);
+
+  factory_.SetFakeResponse(TicketURI(1), "", false);
+
+  loop_.PostDelayedTask(FROM_HERE,
+                        base::Bind(&net::FakeURLFetcherFactory::SetFakeResponse,
+                                   base::Unretained(&factory_),
+                                   TicketURI(1),
+                                   kExamplePrintTicket,
+                                   true),
+                        base::TimeDelta::FromSeconds(1));
+
+
+  BeginTest(5);
+}
+
+
+// TODO(noamsml): Figure out how to make this test not take ~64-~2048 (depending
+// constant values) seconds and re-enable it
+TEST_F(PrinterJobHandlerTest, DISABLED_CompleteFailureTest) {
+  factory_.SetFakeResponse(JobListURI(kJobFetchReasonStartup),
+                           JobListResponse(1), true);
+  factory_.SetFakeResponse(JobListURI(kJobFetchReasonFailure),
+                           JobListResponse(1), true);
+  factory_.SetFakeResponse(JobListURI(kJobFetchReasonRetry),
+                           JobListResponse(1), true);
+  factory_.SetFakeResponse(ErrorURI(1), StatusResponse(1, "ERROR"), true);
+  factory_.SetFakeResponse(TicketURI(1), "", false);
+
+  EXPECT_CALL(url_callback_,
+              OnRequestCreate(GURL(JobListURI(kJobFetchReasonStartup)), _))
+      .Times(AtLeast(1));
+
+  EXPECT_CALL(url_callback_,
+              OnRequestCreate(GURL(JobListURI(kJobFetchReasonFailure)), _))
+      .Times(AtLeast(1));
+
+  EXPECT_CALL(url_callback_,
+              OnRequestCreate(GURL(JobListURI(kJobFetchReasonRetry)), _))
+      .Times(AtLeast(1));
+
+  EXPECT_CALL(url_callback_, OnRequestCreate(GURL(ErrorURI(1)), _))
       .Times(Exactly(1))
-      .WillOnce(Invoke(this, &PrinterJobHandlerTest::AddMimeHeader));
+      .WillOnce(InvokeWithoutArgs(
+          this, &PrinterJobHandlerTest::MakeJobFetchReturnNoJobs));
 
-  EXPECT_CALL(url_callback_, OnRequestCreate(InProgressURL, _))
-      .Times(Exactly(1));
+  EXPECT_CALL(url_callback_, OnRequestCreate(GURL(TicketURI(1)), _))
+      .Times(AtLeast(kNumRetriesBeforeAbandonJob));
 
-  EXPECT_CALL(url_callback_, OnRequestCreate(GURL(kExampleUpdateDoneURL), _))
-      .Times(Exactly(1));
-
-  EXPECT_CALL(print_system_->JobSpooler(),
-              Spool(kExamplePrintTicket, _, _, _, _, _, _))
-      .Times(Exactly(1))
-      .WillOnce(InvokeWithoutArgs(this,
-                                  &PrinterJobHandlerTest::PostSpoolSuccess));
-
-
-  job_handler_->Initialize();
-
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&PrinterJobHandlerTest::MessageLoopQuitSoonHelper,
-                 MessageLoop::current()),
-      base::TimeDelta::FromSeconds(1));
-
-  MessageLoop::current()->Run();
+  BeginTest(70);
 }
 
 }  // namespace cloud_print
