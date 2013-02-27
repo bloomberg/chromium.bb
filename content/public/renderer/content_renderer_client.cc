@@ -63,6 +63,10 @@ WebKit::WebClipboard* ContentRendererClient::OverrideWebClipboard() {
   return NULL;
 }
 
+WebKit::WebMimeRegistry* ContentRendererClient::OverrideWebMimeRegistry() {
+  return NULL;
+}
+
 bool ContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
   return true;
 }

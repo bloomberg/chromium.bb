@@ -208,6 +208,10 @@ WebKit::WebClipboard* RendererWebKitPlatformSupportImpl::clipboard() {
 }
 
 WebKit::WebMimeRegistry* RendererWebKitPlatformSupportImpl::mimeRegistry() {
+  WebKit::WebMimeRegistry* mime_registry =
+      GetContentClient()->renderer()->OverrideWebMimeRegistry();
+  if (mime_registry)
+    return mime_registry;
   return mime_registry_.get();
 }
 

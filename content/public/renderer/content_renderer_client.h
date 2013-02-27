@@ -30,6 +30,7 @@ class WebFrame;
 class WebMediaPlayerClient;
 class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
+class WebMimeRegistry;
 class WebPlugin;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
@@ -138,6 +139,10 @@ class CONTENT_EXPORT ContentRendererClient {
   // Allows the embedder to override the WebKit::WebClipboard used. If it
   // returns NULL the content layer will handle clipboard interactions.
   virtual WebKit::WebClipboard* OverrideWebClipboard();
+
+  // Allows the embedder to override the WebKit::WebMimeRegistry used. If it
+  // returns NULL the content layer will provide its own mime registry.
+  virtual WebKit::WebMimeRegistry* OverrideWebMimeRegistry();
 
   // Returns true if the renderer process should schedule the idle handler when
   // all widgets are hidden.
