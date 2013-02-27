@@ -114,8 +114,17 @@ class OffTheRecordClipboardDestroyer : public base::SupportsUserData::Data {
   void ExamineClipboard(ui::Clipboard* clipboard,
                         ui::Clipboard::Buffer buffer) {
     ui::Clipboard::SourceTag source_tag = clipboard->ReadSourceTag(buffer);
-    if (source_tag == ui::Clipboard::SourceTag(this))
-      clipboard->Clear(buffer);
+    if (source_tag == ui::Clipboard::SourceTag(this)) {
+      if (buffer == ui::Clipboard::BUFFER_STANDARD) {
+        // We want to leave invalid SourceTag in the clipboard in order to
+        // collect statistics later.
+        clipboard->WriteObjects(buffer,
+                                ui::Clipboard::ObjectMap(),
+                                ui::Clipboard::kInvalidSourceTag);
+      } else {
+        clipboard->Clear(buffer);
+      }
+    }
   }
 };
 

@@ -463,6 +463,7 @@ void Clipboard::ReadAvailableTypes(Clipboard::Buffer buffer,
 
 void Clipboard::ReadText(Clipboard::Buffer buffer, string16* result) const {
   DCHECK(CalledOnValidThread());
+  ReportAction(buffer, READ_TEXT);
   GtkClipboard* clipboard = LookupBackingClipboard(buffer);
   if (clipboard == NULL)
     return;
@@ -481,6 +482,7 @@ void Clipboard::ReadText(Clipboard::Buffer buffer, string16* result) const {
 void Clipboard::ReadAsciiText(Clipboard::Buffer buffer,
                               std::string* result) const {
   DCHECK(CalledOnValidThread());
+  ReportAction(buffer, READ_TEXT);
   GtkClipboard* clipboard = LookupBackingClipboard(buffer);
   if (clipboard == NULL)
     return;
@@ -542,6 +544,7 @@ void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
 
 void Clipboard::ReadRTF(Buffer buffer, std::string* result) const {
   DCHECK(CalledOnValidThread());
+  ReportAction(buffer, READ_TEXT);
   ReadData(GetRtfFormatType(), result);
 }
 

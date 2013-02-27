@@ -437,6 +437,7 @@ void Clipboard::ReadAvailableTypes(Clipboard::Buffer buffer,
 
 void Clipboard::ReadText(Clipboard::Buffer buffer, string16* result) const {
   DCHECK_EQ(buffer, BUFFER_STANDARD);
+  ReportAction(buffer, READ_TEXT);
   if (!result) {
     NOTREACHED();
     return;
@@ -460,6 +461,7 @@ void Clipboard::ReadText(Clipboard::Buffer buffer, string16* result) const {
 void Clipboard::ReadAsciiText(Clipboard::Buffer buffer,
                               std::string* result) const {
   DCHECK_EQ(buffer, BUFFER_STANDARD);
+  ReportAction(buffer, READ_TEXT);
   if (!result) {
     NOTREACHED();
     return;
@@ -532,6 +534,7 @@ void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
 
 void Clipboard::ReadRTF(Buffer buffer, std::string* result) const {
   DCHECK_EQ(buffer, BUFFER_STANDARD);
+  ReportAction(buffer, READ_TEXT);
 
   ReadData(GetRtfFormatType(), result);
 }

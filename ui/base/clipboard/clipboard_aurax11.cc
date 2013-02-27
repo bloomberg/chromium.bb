@@ -961,6 +961,7 @@ void Clipboard::ReadAvailableTypes(Buffer buffer, std::vector<string16>* types,
 
 void Clipboard::ReadText(Buffer buffer, string16* result) const {
   DCHECK(CalledOnValidThread());
+  ReportAction(buffer, READ_TEXT);
 
   scoped_ptr<SelectionData> data(aurax11_details_->RequestAndWaitForTypes(
       buffer, aurax11_details_->GetTextAtoms()));
@@ -972,6 +973,7 @@ void Clipboard::ReadText(Buffer buffer, string16* result) const {
 
 void Clipboard::ReadAsciiText(Buffer buffer, std::string* result) const {
   DCHECK(CalledOnValidThread());
+  ReportAction(buffer, READ_TEXT);
 
   scoped_ptr<SelectionData> data(aurax11_details_->RequestAndWaitForTypes(
       buffer, aurax11_details_->GetTextAtoms()));
@@ -1020,6 +1022,7 @@ void Clipboard::ReadHTML(Buffer buffer,
 
 void Clipboard::ReadRTF(Buffer buffer, std::string* result) const {
   DCHECK(CalledOnValidThread());
+  ReportAction(buffer, READ_TEXT);
 
   scoped_ptr<SelectionData> data(aurax11_details_->RequestAndWaitForTypes(
       buffer, aurax11_details_->GetAtomsForFormat(GetRtfFormatType())));

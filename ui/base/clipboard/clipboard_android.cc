@@ -254,6 +254,7 @@ void Clipboard::ReadText(Clipboard::Buffer buffer, string16* result) const {
 void Clipboard::ReadAsciiText(Clipboard::Buffer buffer,
                               std::string* result) const {
   DCHECK_EQ(buffer, BUFFER_STANDARD);
+  ReportAction(buffer, READ_TEXT);
   *result = g_map.Get().Get(kPlainTextFormat);
 }
 

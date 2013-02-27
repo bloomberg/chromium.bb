@@ -543,11 +543,13 @@ void Clipboard::ReadAvailableTypes(Buffer buffer, std::vector<string16>* types,
 
 void Clipboard::ReadText(Buffer buffer, string16* result) const {
   DCHECK(CalledOnValidThread());
+  ReportAction(buffer, READ_TEXT);
   GetClipboard()->ReadText(result);
 }
 
 void Clipboard::ReadAsciiText(Buffer buffer, std::string* result) const {
   DCHECK(CalledOnValidThread());
+  ReportAction(buffer, READ_TEXT);
   GetClipboard()->ReadAsciiText(result);
 }
 
@@ -562,6 +564,7 @@ void Clipboard::ReadHTML(Buffer buffer,
 
 void Clipboard::ReadRTF(Buffer buffer, std::string* result) const {
   DCHECK(CalledOnValidThread());
+  ReportAction(buffer, READ_TEXT);
   GetClipboard()->ReadRTF(result);
 }
 
