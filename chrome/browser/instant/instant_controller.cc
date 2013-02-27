@@ -609,21 +609,6 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
 
   scoped_ptr<content::WebContents> preview = overlay_->ReleaseContents();
 
-  if (extended_enabled_) {
-    // Adjust the search terms shown in the omnibox for this query. Hitting
-    // ENTER searches for what the user typed, so use last_omnibox_text_.
-    // Clicking on the overlay commits what is currently showing, so add in the
-    // gray text in that case.
-    if (type == INSTANT_COMMIT_FOCUS_LOST &&
-        last_suggestion_.behavior == INSTANT_COMPLETE_NEVER) {
-      // Update |last_omnibox_text_| so that the controller commits the proper
-      // query if the user focuses the omnibox and presses Enter.
-      last_omnibox_text_ += last_suggestion_.text;
-    }
-
-    EnsureSearchTermsAreSet(preview.get(), last_omnibox_text_);
-  }
-
   // If the preview page has navigated since the last Update(), we need to add
   // the navigation to history ourselves. Else, the page will navigate after
   // commit, and it will be added to history in the usual manner.
@@ -668,6 +653,21 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
     AddSessionStorageHistogram(extended_enabled_, active_tab, preview.get());
     preview->GetController().CopyStateFromAndPrune(
         &active_tab->GetController());
+  }
+
+  if (extended_enabled_) {
+    // Adjust the search terms shown in the omnibox for this query. Hitting
+    // ENTER searches for what the user typed, so use last_omnibox_text_.
+    // Clicking on the overlay commits what is currently showing, so add in the
+    // gray text in that case.
+    if (type == INSTANT_COMMIT_FOCUS_LOST &&
+        last_suggestion_.behavior == INSTANT_COMPLETE_NEVER) {
+      // Update |last_omnibox_text_| so that the controller commits the proper
+      // query if the user focuses the omnibox and presses Enter.
+      last_omnibox_text_ += last_suggestion_.text;
+    }
+
+    EnsureSearchTermsAreSet(preview.get(), last_omnibox_text_);
   }
 
   // Save notification source before we release the preview.
