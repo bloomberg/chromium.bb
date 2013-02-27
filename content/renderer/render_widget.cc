@@ -625,13 +625,13 @@ void RenderWidget::OnHandleInputEvent(const WebKit::WebInputEvent* input_event,
       base::StringPrintf("Event.Latency.Renderer.%s",
                          GetEventName(input_event->type));
   base::HistogramBase* counter_for_type =
-      base::Histogram::FactoryTimeGet(
+      base::Histogram::FactoryGet(
           name_for_event,
-          base::TimeDelta::FromMilliseconds(0),
-          base::TimeDelta::FromMilliseconds(1000000),
+          0,
+          1000000,
           100,
           base::HistogramBase::kUmaTargetedHistogramFlag);
-  counter_for_type->AddTime(base::TimeDelta::FromMicroseconds(delta));
+  counter_for_type->Add(delta);
 
   bool prevent_default = false;
   if (WebInputEvent::isMouseEventType(input_event->type)) {
