@@ -15,7 +15,7 @@ class CC_EXPORT CompositorFrameAck {
   CompositorFrameAck();
   ~CompositorFrameAck();
 
-  TransferableResourceList resources;
+  TransferableResourceArray resources;
 };
 
 }  // namespace cc

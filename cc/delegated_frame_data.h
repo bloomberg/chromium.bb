@@ -18,7 +18,7 @@ class CC_EXPORT DelegatedFrameData {
   DelegatedFrameData();
   ~DelegatedFrameData();
 
-  TransferableResourceList resource_list;
+  TransferableResourceArray resource_list;
   ScopedPtrVector<RenderPass> render_pass_list;
 };
 

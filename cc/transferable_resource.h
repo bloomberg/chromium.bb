@@ -25,6 +25,7 @@ struct CC_EXPORT TransferableResource {
   ~TransferableResource();
 
   unsigned id;
+  unsigned sync_point;
   uint32 format;
   uint32 filter;
   gfx::Size size;
@@ -32,14 +33,6 @@ struct CC_EXPORT TransferableResource {
 };
 
 typedef std::vector<TransferableResource> TransferableResourceArray;
-
-struct CC_EXPORT TransferableResourceList {
-  TransferableResourceList();
-  ~TransferableResourceList();
-
-  TransferableResourceArray resources;
-  unsigned sync_point;
-};
 
 }  // namespace cc
 

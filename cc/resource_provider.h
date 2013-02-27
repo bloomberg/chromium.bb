@@ -123,27 +123,27 @@ public:
     // mailboxes and serializing meta-data into TransferableResources.
     // Resources are not removed from the ResourceProvider, but are marked as
     // "in use".
-    void prepareSendToParent(const ResourceIdArray&, TransferableResourceList*);
+    void prepareSendToParent(const ResourceIdArray& resources, TransferableResourceArray* transferableResources);
 
     // Prepares resources to be transfered back to the child, moving them to
     // mailboxes and serializing meta-data into TransferableResources.
     // Resources are removed from the ResourceProvider. Note: the resource IDs
     // passed are in the parent namespace and will be translated to the child
     // namespace when returned.
-    void prepareSendToChild(int child, const ResourceIdArray&, TransferableResourceList*);
+    void prepareSendToChild(int child, const ResourceIdArray& resources, TransferableResourceArray* transferableResources);
 
     // Receives resources from a child, moving them from mailboxes. Resource IDs
     // passed are in the child namespace, and will be translated to the parent
     // namespace, added to the child->parent map.
-    // NOTE: if the syncPoint filed in TransferableResourceList is set, this
-    // will wait on it.
-    void receiveFromChild(int child, const TransferableResourceList&);
+    // NOTE: if the sync_point is set on any TransferableResource, this will
+    // wait on it.
+    void receiveFromChild(int child, const TransferableResourceArray& transferableResources);
 
     // Receives resources from the parent, moving them from mailboxes. Resource IDs
     // passed are in the child namespace.
-    // NOTE: if the syncPoint filed in TransferableResourceList is set, this
-    // will wait on it.
-    void receiveFromParent(const TransferableResourceList&);
+    // NOTE: if the sync_point is set on any TransferableResource, this will
+    // wait on it.
+    void receiveFromParent(const TransferableResourceArray& transferableResources);
 
     // Bind the given GL resource to a texture target for sampling using the
     // specified filter for both minification and magnification. The resource

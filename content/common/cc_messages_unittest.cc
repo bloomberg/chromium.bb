@@ -178,6 +178,7 @@ class CCMessagesTest : public testing::Test {
 
   void Compare(const TransferableResource& a, const TransferableResource& b) {
     EXPECT_EQ(a.id, b.id);
+    EXPECT_EQ(a.sync_point, b.sync_point);
     EXPECT_EQ(a.format, b.format);
     EXPECT_EQ(a.size.ToString(), b.size.ToString());
     for (size_t i = 0; i < arraysize(a.mailbox.name); ++i)
@@ -490,7 +491,8 @@ TEST_F(CCMessagesTest, AllQuads) {
 TEST_F(CCMessagesTest, Resources) {
   IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
   gfx::Size arbitrary_size(757, 1281);
-  unsigned int arbitrary_uint = 71234838;
+  unsigned int arbitrary_uint1 = 71234838;
+  unsigned int arbitrary_uint2 = 53589793;
 
   GLbyte arbitrary_mailbox1[64] = {
     1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0,
@@ -508,20 +510,21 @@ TEST_F(CCMessagesTest, Resources) {
 
   TransferableResource arbitrary_resource1;
   arbitrary_resource1.id = 2178312;
+  arbitrary_resource1.sync_point = arbitrary_uint1;
   arbitrary_resource1.format = 7;
   arbitrary_resource1.size = gfx::Size(37189, 123123);
   arbitrary_resource1.mailbox.setName(arbitrary_mailbox1);
 
   TransferableResource arbitrary_resource2;
   arbitrary_resource2.id = 789132;
+  arbitrary_resource1.sync_point = arbitrary_uint2;
   arbitrary_resource2.format = 30;
   arbitrary_resource2.size = gfx::Size(89123, 23789);
   arbitrary_resource2.mailbox.setName(arbitrary_mailbox2);
 
   DelegatedFrameData frame_in;
-  frame_in.resource_list.sync_point = arbitrary_uint;
-  frame_in.resource_list.resources.push_back(arbitrary_resource1);
-  frame_in.resource_list.resources.push_back(arbitrary_resource2);
+  frame_in.resource_list.push_back(arbitrary_resource1);
+  frame_in.resource_list.push_back(arbitrary_resource2);
 
   IPC::ParamTraits<DelegatedFrameData>::Write(&msg, frame_in);
 
@@ -530,11 +533,9 @@ TEST_F(CCMessagesTest, Resources) {
   EXPECT_TRUE(IPC::ParamTraits<DelegatedFrameData>::Read(&msg,
       &iter, &frame_out));
 
-  EXPECT_EQ(arbitrary_uint, frame_out.resource_list.sync_point);
-
-  EXPECT_EQ(2u, frame_out.resource_list.resources.size());
-  Compare(arbitrary_resource1, frame_out.resource_list.resources[0]);
-  Compare(arbitrary_resource2, frame_out.resource_list.resources[1]);
+  ASSERT_EQ(2u, frame_out.resource_list.size());
+  Compare(arbitrary_resource1, frame_out.resource_list[0]);
+  Compare(arbitrary_resource2, frame_out.resource_list[1]);
 }
 
 }  // namespace

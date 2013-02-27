@@ -25,19 +25,13 @@ void Mailbox::setName(const int8* n) {
 }
 
 TransferableResource::TransferableResource()
-    : id(0)
-    , format(0)
-    , filter(0) {
+    : id(0),
+      sync_point(0),
+      format(0),
+      filter(0) {
 }
 
 TransferableResource::~TransferableResource() {
-}
-
-TransferableResourceList::TransferableResourceList()
-    : sync_point(0) {
-}
-
-TransferableResourceList::~TransferableResourceList() {
 }
 
 }  // namespace cc

@@ -480,7 +480,7 @@ TEST_F(TextureLayerImplWithMailboxTest, testCallbackOnInUseResource)
     // Transfer some resources to the parent.
     ResourceProvider::ResourceIdArray resourceIdsToTransfer;
     resourceIdsToTransfer.push_back(id);
-    TransferableResourceList list;
+    TransferableResourceArray list;
     provider->prepareSendToParent(resourceIdsToTransfer, &list);
     EXPECT_TRUE(provider->inUseByConsumer(id));
     EXPECT_CALL(m_testData.m_mockCallback, Release(_, _)).Times(0);

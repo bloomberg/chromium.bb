@@ -429,10 +429,11 @@ TEST_P(ResourceProviderTest, TransferResources)
         ResourceProvider::ResourceIdArray resourceIdsToTransfer;
         resourceIdsToTransfer.push_back(id1);
         resourceIdsToTransfer.push_back(id2);
-        TransferableResourceList list;
+        TransferableResourceArray list;
         childResourceProvider->prepareSendToParent(resourceIdsToTransfer, &list);
-        EXPECT_NE(0u, list.sync_point);
-        EXPECT_EQ(2u, list.resources.size());
+        ASSERT_EQ(2u, list.size());
+        EXPECT_NE(0u, list[0].sync_point);
+        EXPECT_NE(0u, list[1].sync_point);
         EXPECT_TRUE(childResourceProvider->inUseByConsumer(id1));
         EXPECT_TRUE(childResourceProvider->inUseByConsumer(id2));
         m_resourceProvider->receiveFromChild(childId, list);
@@ -459,10 +460,9 @@ TEST_P(ResourceProviderTest, TransferResources)
         // parent is a noop.
         ResourceProvider::ResourceIdArray resourceIdsToTransfer;
         resourceIdsToTransfer.push_back(id1);
-        TransferableResourceList list;
+        TransferableResourceArray list;
         childResourceProvider->prepareSendToParent(resourceIdsToTransfer, &list);
-        EXPECT_EQ(0u, list.sync_point);
-        EXPECT_EQ(0u, list.resources.size());
+        EXPECT_EQ(0u, list.size());
     }
 
     {
@@ -470,10 +470,11 @@ TEST_P(ResourceProviderTest, TransferResources)
         ResourceProvider::ResourceIdArray resourceIdsToTransfer;
         resourceIdsToTransfer.push_back(mappedId1);
         resourceIdsToTransfer.push_back(mappedId2);
-        TransferableResourceList list;
+        TransferableResourceArray list;
         m_resourceProvider->prepareSendToChild(childId, resourceIdsToTransfer, &list);
-        EXPECT_NE(0u, list.sync_point);
-        EXPECT_EQ(2u, list.resources.size());
+        ASSERT_EQ(2u, list.size());
+        EXPECT_NE(0u, list[0].sync_point);
+        EXPECT_NE(0u, list[1].sync_point);
         childResourceProvider->receiveFromParent(list);
     }
     EXPECT_FALSE(childResourceProvider->inUseByConsumer(id1));
@@ -500,10 +501,11 @@ TEST_P(ResourceProviderTest, TransferResources)
         ResourceProvider::ResourceIdArray resourceIdsToTransfer;
         resourceIdsToTransfer.push_back(id1);
         resourceIdsToTransfer.push_back(id2);
-        TransferableResourceList list;
+        TransferableResourceArray list;
         childResourceProvider->prepareSendToParent(resourceIdsToTransfer, &list);
-        EXPECT_NE(0u, list.sync_point);
-        EXPECT_EQ(2u, list.resources.size());
+        ASSERT_EQ(2u, list.size());
+        EXPECT_NE(0u, list[0].sync_point);
+        EXPECT_NE(0u, list[1].sync_point);
         EXPECT_TRUE(childResourceProvider->inUseByConsumer(id1));
         EXPECT_TRUE(childResourceProvider->inUseByConsumer(id2));
         m_resourceProvider->receiveFromChild(childId, list);
@@ -539,10 +541,10 @@ TEST_P(ResourceProviderTest, DeleteTransferredResources)
         // Transfer some resource to the parent.
         ResourceProvider::ResourceIdArray resourceIdsToTransfer;
         resourceIdsToTransfer.push_back(id);
-        TransferableResourceList list;
+        TransferableResourceArray list;
         childResourceProvider->prepareSendToParent(resourceIdsToTransfer, &list);
-        EXPECT_NE(0u, list.sync_point);
-        EXPECT_EQ(1u, list.resources.size());
+        ASSERT_EQ(1u, list.size());
+        EXPECT_NE(0u, list[0].sync_point);
         EXPECT_TRUE(childResourceProvider->inUseByConsumer(id));
         m_resourceProvider->receiveFromChild(childId, list);
     }
@@ -558,10 +560,10 @@ TEST_P(ResourceProviderTest, DeleteTransferredResources)
         EXPECT_NE(0u, mappedId);
         ResourceProvider::ResourceIdArray resourceIdsToTransfer;
         resourceIdsToTransfer.push_back(mappedId);
-        TransferableResourceList list;
+        TransferableResourceArray list;
         m_resourceProvider->prepareSendToChild(childId, resourceIdsToTransfer, &list);
-        EXPECT_NE(0u, list.sync_point);
-        EXPECT_EQ(1u, list.resources.size());
+        ASSERT_EQ(1u, list.size());
+        EXPECT_NE(0u, list[0].sync_point);
         childResourceProvider->receiveFromParent(list);
     }
     EXPECT_EQ(0u, childResourceProvider->numResources());
@@ -598,14 +600,14 @@ TEST_P(ResourceProviderTest, TransferMailboxResources)
         // Transfer the resource, expect the sync points to be consistent.
         ResourceProvider::ResourceIdArray resourceIdsToTransfer;
         resourceIdsToTransfer.push_back(resource);
-        TransferableResourceList list;
+        TransferableResourceArray list;
         m_resourceProvider->prepareSendToParent(resourceIdsToTransfer, &list);
-        EXPECT_LE(syncPoint, list.sync_point);
-        EXPECT_EQ(1u, list.resources.size());
-        EXPECT_EQ(0u, memcmp(mailbox.name, list.resources[0].mailbox.name, sizeof(mailbox.name)));
+        ASSERT_EQ(1u, list.size());
+        EXPECT_LE(syncPoint, list[0].sync_point);
+        EXPECT_EQ(0u, memcmp(mailbox.name, list[0].mailbox.name, sizeof(mailbox.name)));
         EXPECT_EQ(0u, releaseSyncPoint);
 
-        context()->waitSyncPoint(list.sync_point);
+        context()->waitSyncPoint(list[0].sync_point);
         unsigned otherTexture = context()->createTexture();
         context()->bindTexture(GL_TEXTURE_2D, otherTexture);
         context()->consumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
@@ -614,8 +616,8 @@ TEST_P(ResourceProviderTest, TransferMailboxResources)
         EXPECT_EQ(0u, memcmp(data, testData, sizeof(data)));
         context()->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
         context()->deleteTexture(otherTexture);
-        list.sync_point = context()->insertSyncPoint();
-        EXPECT_LT(0u, list.sync_point);
+        list[0].sync_point = context()->insertSyncPoint();
+        EXPECT_LT(0u, list[0].sync_point);
 
         // Receive the resource, then delete it, expect the sync points to be consistent.
         m_resourceProvider->receiveFromParent(list);
@@ -623,7 +625,7 @@ TEST_P(ResourceProviderTest, TransferMailboxResources)
         EXPECT_EQ(0u, releaseSyncPoint);
 
         m_resourceProvider->deleteResource(resource);
-        EXPECT_LE(list.sync_point, releaseSyncPoint);
+        EXPECT_LE(list[0].sync_point, releaseSyncPoint);
     }
 
 
@@ -640,14 +642,14 @@ TEST_P(ResourceProviderTest, TransferMailboxResources)
         // Transfer the resource, expect the sync points to be consistent.
         ResourceProvider::ResourceIdArray resourceIdsToTransfer;
         resourceIdsToTransfer.push_back(resource);
-        TransferableResourceList list;
+        TransferableResourceArray list;
         m_resourceProvider->prepareSendToParent(resourceIdsToTransfer, &list);
-        EXPECT_LE(syncPoint, list.sync_point);
-        EXPECT_EQ(1u, list.resources.size());
-        EXPECT_EQ(0u, memcmp(mailbox.name, list.resources[0].mailbox.name, sizeof(mailbox.name)));
+        ASSERT_EQ(1u, list.size());
+        EXPECT_LE(syncPoint, list[0].sync_point);
+        EXPECT_EQ(0u, memcmp(mailbox.name, list[0].mailbox.name, sizeof(mailbox.name)));
         EXPECT_EQ(0u, releaseSyncPoint);
 
-        context()->waitSyncPoint(list.sync_point);
+        context()->waitSyncPoint(list[0].sync_point);
         unsigned otherTexture = context()->createTexture();
         context()->bindTexture(GL_TEXTURE_2D, otherTexture);
         context()->consumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
@@ -656,8 +658,8 @@ TEST_P(ResourceProviderTest, TransferMailboxResources)
         EXPECT_EQ(0u, memcmp(data, testData, sizeof(data)));
         context()->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
         context()->deleteTexture(otherTexture);
-        list.sync_point = context()->insertSyncPoint();
-        EXPECT_LT(0u, list.sync_point);
+        list[0].sync_point = context()->insertSyncPoint();
+        EXPECT_LT(0u, list[0].sync_point);
 
         // Delete the resource, which shouldn't do anything.
         m_resourceProvider->deleteResource(resource);
@@ -666,7 +668,7 @@ TEST_P(ResourceProviderTest, TransferMailboxResources)
 
         // Then receive the resource which should release the mailbox, expect the sync points to be consistent.
         m_resourceProvider->receiveFromParent(list);
-        EXPECT_LE(list.sync_point, releaseSyncPoint);
+        EXPECT_LE(list[0].sync_point, releaseSyncPoint);
     }
 
     context()->waitSyncPoint(releaseSyncPoint);

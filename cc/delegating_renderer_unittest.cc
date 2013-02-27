@@ -70,7 +70,7 @@ class DelegatingRendererTestDraw : public DelegatingRendererTest {
     EXPECT_EQ(4.f, last_frame.metadata.max_page_scale_factor);
 
     EXPECT_EQ(
-        0u, last_frame.delegated_frame_data->resource_list.resources.size());
+        0u, last_frame.delegated_frame_data->resource_list.size());
     EXPECT_EQ(1u, last_frame.delegated_frame_data->render_pass_list.size());
 
     endTest();
@@ -125,7 +125,7 @@ class DelegatingRendererTestResources : public DelegatingRendererTest {
     // change if AppendOneOfEveryQuadType is updated, and the value here should
     // be updated accordingly.
     EXPECT_EQ(
-        15u, last_frame.delegated_frame_data->resource_list.resources.size());
+        15u, last_frame.delegated_frame_data->resource_list.size());
 
     endTest();
   }
