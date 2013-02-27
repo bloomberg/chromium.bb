@@ -39,7 +39,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/message_loop.h"
 #include "net/base/stream_listen_socket.h"
@@ -204,7 +204,7 @@ class ResponseForPath : public Response {
   }
 
  protected:
-   std::string request_path_;
+  std::string request_path_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ResponseForPath);

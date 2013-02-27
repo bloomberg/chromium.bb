@@ -4,7 +4,7 @@
 
 #include "base/files/memory_mapped_file.h"
 
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 
 namespace base {

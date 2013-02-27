@@ -5,7 +5,7 @@
 #include "chrome/browser/sync_file_system/fake_remote_change_processor.h"
 
 #include "base/bind.h"
-#include "base/file_path.h"
+#include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/message_loop_proxy.h"
 #include "webkit/fileapi/file_system_url.h"
