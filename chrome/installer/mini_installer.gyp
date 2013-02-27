@@ -57,7 +57,6 @@
             'RandomizedBaseAddress': '1',
             'DataExecutionPrevention': '0',
             'AdditionalLibraryDirectories': [
-              '<(DEPTH)/third_party/platformsdk_win7/files/Lib',
               '<(PRODUCT_DIR)/lib'
             ],
             'DelayLoadDLLs': [],
