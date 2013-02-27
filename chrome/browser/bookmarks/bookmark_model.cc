@@ -27,7 +27,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_collator.h"
@@ -744,12 +745,6 @@ void BookmarkModel::DoneLoading(BookmarkLoadDetails* details_delete_me) {
   // Notify our direct observers.
   FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
                     Loaded(this, details->ids_reassigned()));
-
-  // And generic notification.
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
-      content::Source<content::BrowserContext>(profile_),
-      content::NotificationService::NoDetails());
 }
 
 void BookmarkModel::RemoveAndDeleteNode(BookmarkNode* delete_me) {

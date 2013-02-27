@@ -355,12 +355,6 @@ enum NotificationType {
   // used.
   NOTIFICATION_TOP_SITES_CHANGED,
 
-  // Bookmarks ---------------------------------------------------------------
-
-  // Sent when the bookmark bar model finishes loading. This source is the
-  // Profile, and the details aren't used.
-  NOTIFICATION_BOOKMARK_MODEL_LOADED,
-
   // Task Manager ------------------------------------------------------------
 
   // Sent when WebUI TaskManager opens and is ready for showing tasks.
