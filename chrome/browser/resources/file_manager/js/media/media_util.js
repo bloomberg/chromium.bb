@@ -17,6 +17,7 @@
 function ThumbnailLoader(url, opt_loaderType, opt_metadata, opt_mediaType) {
   this.mediaType_ = opt_mediaType || FileType.getMediaType(url);
   this.loaderType_ = opt_loaderType || ThumbnailLoader.LoaderType.IMAGE;
+  this.metadata_ = opt_metadata;
 
   if (!opt_metadata) {
     this.thumbnailUrl_ = url;  // Use the URL directly.
@@ -150,12 +151,17 @@ ThumbnailLoader.prototype.load = function(box, fillMode, opt_optimizationMode,
 
   // TODO(mtomasz): Smarter calculation of the requested size.
   var wasAttached = box.ownerDocument.contains(box);
+  var modificationTime = this.metadata_ &&
+                         this.metadata_.filesystem &&
+                         this.metadata_.filesystem.modificationTime &&
+                         this.metadata_.filesystem.modificationTime.getTime();
   var taskId = util.loadImage(
       this.image_,
       this.thumbnailUrl_,
       { maxWidth: ThumbnailLoader.THUMBNAIL_MAX_WIDTH,
         maxHeight: ThumbnailLoader.THUMBNAIL_MAX_HEIGHT,
-        cache: true },
+        cache: true,
+        timestamp: modificationTime },
       function() {
         if (opt_optimizationMode ==
             ThumbnailLoader.OptimizationMode.DISCARD_DETACHED &&
@@ -217,12 +223,17 @@ ThumbnailLoader.prototype.loadDetachedImage = function(callback) {
   this.image_.onerror = callback.bind(null, false);
 
   // TODO(mtomasz): Smarter calculation of the requested size.
+  var modificationTime = this.metadata_ &&
+                         this.metadata_.filesystem &&
+                         this.metadata_.filesystem.modificationTime &&
+                         this.metadata_.filesystem.modificationTime.getTime();
   var taskId = util.loadImage(
       this.image_,
       this.thumbnailUrl_,
       { maxWidth: ThumbnailLoader.THUMBNAIL_MAX_WIDTH,
         maxHeight: ThumbnailLoader.THUMBNAIL_MAX_HEIGHT,
-        cache: true });
+        cache: true,
+        timestamp: modificationTime });
 
   if (!taskId)
     this.image_.classList.add('cached');
