@@ -1859,9 +1859,6 @@ void ImmediateInterpreter::ComputeFling(ScrollEvent* out) const {
 void ImmediateInterpreter::FillResultGesture(
     const HardwareState& hwstate,
     const set<short, kMaxGesturingFingers>& fingers) {
-  if (current_gesture_type_ == kGestureTypeMove ||
-      current_gesture_type_ == kGestureTypeScroll)
-    last_movement_timestamp_ = hwstate.timestamp;
   switch (current_gesture_type_) {
     case kGestureTypeMove: {
       if (fingers.empty())
@@ -1895,11 +1892,13 @@ void ImmediateInterpreter::FillResultGesture(
       float dy = current->position_y - prev->position_y;
       if (current->flags & GESTURES_FINGER_WARP_Y_MOVE)
         dy = 0.0;
-      result_ = Gesture(kGestureMove,
-                        PrevState(0)->timestamp,
-                        hwstate.timestamp,
-                        dx,
-                        dy);
+      if (dx != 0.0 || dy != 0.0) {
+        result_ = Gesture(kGestureMove,
+                          PrevState(0)->timestamp,
+                          hwstate.timestamp,
+                          dx,
+                          dy);
+      }
       break;
     }
     case kGestureTypeScroll: {
@@ -2049,6 +2048,9 @@ void ImmediateInterpreter::FillResultGesture(
   if (current_gesture_type_ != kGestureTypeScroll) {
     scroll_buffer_.Clear();
   }
+  if (result_.type == kGestureTypeMove ||
+      result_.type == kGestureTypeScroll)
+    last_movement_timestamp_ = hwstate.timestamp;
 }
 
 void ImmediateInterpreter::IntWasWritten(IntProperty* prop) {
