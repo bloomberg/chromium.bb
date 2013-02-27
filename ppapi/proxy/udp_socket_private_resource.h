@@ -5,6 +5,8 @@
 #ifndef PPAPI_PROXY_UDP_SOCKET_PRIVATE_RESOURCE_H_
 #define PPAPI_PROXY_UDP_SOCKET_PRIVATE_RESOURCE_H_
 
+#include <queue>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ppapi/proxy/plugin_resource.h"
@@ -51,6 +53,20 @@ class PPAPI_PROXY_EXPORT UDPSocketPrivateResource
   virtual void Close() OVERRIDE;
 
  private:
+  struct RecvFromRequest {
+    RecvFromRequest(scoped_refptr<TrackedCallback> callback,
+                    char* buffer,
+                    int32_t num_bytes)
+        : callback(callback),
+          buffer(buffer),
+          num_bytes(num_bytes) {
+    }
+
+    scoped_refptr<TrackedCallback> callback;
+    char* buffer;
+    int32_t num_bytes;
+  };
+
   void PostAbortIfNecessary(scoped_refptr<TrackedCallback>* callback);
 
   void SendBoolSocketFeature(int32_t name, bool value);
@@ -73,11 +89,9 @@ class PPAPI_PROXY_EXPORT UDPSocketPrivateResource
   bool closed_;
 
   scoped_refptr<TrackedCallback> bind_callback_;
-  scoped_refptr<TrackedCallback> recvfrom_callback_;
-  scoped_refptr<TrackedCallback> sendto_callback_;
 
-  char* read_buffer_;
-  int32_t bytes_to_read_;
+  std::queue<RecvFromRequest> recvfrom_requests_;
+  std::queue<scoped_refptr<TrackedCallback> > sendto_callbacks_;
 
   PP_NetAddress_Private recvfrom_addr_;
   PP_NetAddress_Private bound_addr_;

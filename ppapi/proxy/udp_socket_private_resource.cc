@@ -24,9 +24,7 @@ UDPSocketPrivateResource::UDPSocketPrivateResource(Connection connection,
                                                    PP_Instance instance)
     : PluginResource(connection, instance),
       bound_(false),
-      closed_(false),
-      read_buffer_(NULL),
-      bytes_to_read_(-1) {
+      closed_(false) {
   recvfrom_addr_.size = 0;
   memset(recvfrom_addr_.data, 0,
          arraysize(recvfrom_addr_.data) * sizeof(*recvfrom_addr_.data));
@@ -98,15 +96,13 @@ int32_t UDPSocketPrivateResource::RecvFrom(
     return PP_ERROR_BADARGUMENT;
   if (!bound_)
     return PP_ERROR_FAILED;
-  if (TrackedCallback::IsPending(recvfrom_callback_))
-    return PP_ERROR_INPROGRESS;
 
-  read_buffer_ = buffer;
-  bytes_to_read_ = std::min(num_bytes, kMaxReadSize);
-  recvfrom_callback_ = callback;
+  recvfrom_requests_.push(RecvFromRequest(callback,
+                                          buffer,
+                                          std::min(num_bytes, kMaxReadSize)));
 
   // Send the request, the browser will call us back via RecvFromReply.
-  SendRecvFrom(bytes_to_read_);
+  SendRecvFrom(num_bytes);
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -133,13 +129,11 @@ int32_t UDPSocketPrivateResource::SendTo(
     return PP_ERROR_BADARGUMENT;
   if (!bound_)
     return PP_ERROR_FAILED;
-  if (TrackedCallback::IsPending(sendto_callback_))
-    return PP_ERROR_INPROGRESS;
 
   if (num_bytes > kMaxWriteSize)
     num_bytes = kMaxWriteSize;
 
-  sendto_callback_ = callback;
+  sendto_callbacks_.push(callback);
 
   // Send the request, the browser will call us back via SendToReply.
   SendSendTo(std::string(buffer, num_bytes), *addr);
@@ -156,8 +150,15 @@ void UDPSocketPrivateResource::Close() {
   SendClose();
 
   PostAbortIfNecessary(&bind_callback_);
-  PostAbortIfNecessary(&recvfrom_callback_);
-  PostAbortIfNecessary(&sendto_callback_);
+  while (!recvfrom_requests_.empty()) {
+    RecvFromRequest& request = recvfrom_requests_.front();
+    PostAbortIfNecessary(&request.callback);
+    recvfrom_requests_.pop();
+  }
+  while (!sendto_callbacks_.empty()) {
+    PostAbortIfNecessary(&sendto_callbacks_.front());
+    sendto_callbacks_.pop();
+  }
 }
 
 void UDPSocketPrivateResource::SendBoolSocketFeature(int32_t name, bool value) {
@@ -215,37 +216,44 @@ void UDPSocketPrivateResource::OnPluginMsgRecvFromReply(
     const ResourceMessageReplyParams& params,
     const std::string& data,
     const PP_NetAddress_Private& addr) {
-  if (!TrackedCallback::IsPending(recvfrom_callback_) || !read_buffer_) {
+  if (recvfrom_requests_.empty())
+    return;
+  RecvFromRequest request = recvfrom_requests_.front();
+  recvfrom_requests_.pop();
+  if (!TrackedCallback::IsPending(request.callback) || !request.buffer) {
     NOTREACHED();
     return;
   }
   bool succeeded = (params.result() == PP_OK);
   if (succeeded) {
-    CHECK_LE(static_cast<int32_t>(data.size()), bytes_to_read_);
+    CHECK_LE(static_cast<int32_t>(data.size()), request.num_bytes);
     if (!data.empty())
-      memcpy(read_buffer_, data.c_str(), data.size());
+      memcpy(request.buffer, data.c_str(), data.size());
   }
-  read_buffer_ = NULL;
-  bytes_to_read_ = -1;
+
   recvfrom_addr_ = addr;
 
   if (succeeded)
-    recvfrom_callback_->Run(static_cast<int32_t>(data.size()));
+    request.callback->Run(static_cast<int32_t>(data.size()));
   else
-    recvfrom_callback_->Run(params.result());
+    request.callback->Run(params.result());
 }
 
 void UDPSocketPrivateResource::OnPluginMsgSendToReply(
     const ResourceMessageReplyParams& params,
     int32_t bytes_written) {
-  if (!TrackedCallback::IsPending(sendto_callback_)) {
+  if (sendto_callbacks_.empty())
+    return;
+  scoped_refptr<TrackedCallback> callback  = sendto_callbacks_.front();
+  sendto_callbacks_.pop();
+  if (!TrackedCallback::IsPending(callback)) {
     NOTREACHED();
     return;
   }
   if (params.result() == PP_OK)
-    sendto_callback_->Run(bytes_written);
+    callback->Run(bytes_written);
   else
-    sendto_callback_->Run(params.result());
+    callback->Run(params.result());
 }
 
 }  // namespace proxy

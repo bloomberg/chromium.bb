@@ -37,10 +37,17 @@ class TestUDPSocketPrivate : public TestCase {
                           PP_NetAddress_Private* address,
                           const std::string& message);
 
+  std::string BenchmarkQueuedRequests(size_t num_messages,
+                                      size_t message_size);
+  std::string BenchmarkSequentialRequests(size_t num_messages,
+                                          size_t message_size);
+
   std::string TestConnect();
   std::string TestConnectFailure();
   std::string TestBroadcast();
   std::string TestSetSocketFeatureErrors();
+  std::string TestQueuedRequests();
+  std::string TestSequentialRequests();
 
   std::string host_;
   uint16_t port_;
