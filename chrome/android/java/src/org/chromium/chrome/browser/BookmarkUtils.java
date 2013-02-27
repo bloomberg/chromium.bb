@@ -13,6 +13,8 @@ import android.graphics.Color;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
@@ -35,6 +37,7 @@ public class BookmarkUtils {
     private static final String TAG = "BookmarkUtils";
     public static final String REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB =
             "REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB";
+    private static final int INSET_DIMENSION_FOR_TOUCHICON = 1;
     private static final int SDK_VERSION_FOR_ACCESS_TO_METHODS = 15;
 
     /**
@@ -85,8 +88,8 @@ public class BookmarkUtils {
             int gValue, int bValue) {
         Bitmap bitmap = null;
         ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        int iconDimension = am.getLauncherLargeIconSize();
-        int iconDensity = am.getLauncherLargeIconDensity();
+        final int iconDimension = am.getLauncherLargeIconSize();
+        final int iconDensity = am.getLauncherLargeIconDensity();
         try {
             bitmap = Bitmap.createBitmap(iconDimension, iconDimension, Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(bitmap);
@@ -95,11 +98,16 @@ public class BookmarkUtils {
                 favicon = getBitmapFromResourceId(context, R.drawable.globe_favicon, iconDensity);
                 rValue = gValue = bValue = DEFAULT_RGB_VALUE;
             }
-            Bitmap icon = getIconBackground(context, iconDensity);
-            if (icon != null) {
-                canvas.drawBitmap(icon, null, iconBounds, new Paint(Paint.ANTI_ALIAS_FLAG));
+            final int smallestSide = iconDimension;
+            if (favicon.getWidth() >= smallestSide / 2 && favicon.getHeight() >= smallestSide / 2) {
+                drawTouchIconToCanvas(context, favicon, canvas, iconBounds);
+            } else {
+                Bitmap icon = getIconBackground(context, iconDensity);
+                if (icon != null) {
+                    canvas.drawBitmap(icon, null, iconBounds, new Paint(Paint.ANTI_ALIAS_FLAG));
+                }
+                drawFaviconToCanvas(context, favicon, canvas, iconBounds, rValue, gValue, bValue);
             }
-            drawFaviconToCanvas(context, favicon, canvas, iconBounds, rValue, gValue, bValue);
             canvas.setBitmap(null);
         } catch (OutOfMemoryError e) {
             Log.w(TAG, "OutOfMemoryError while trying to draw bitmap on canvas.");
@@ -129,6 +137,30 @@ public class BookmarkUtils {
         }
         assert false : "The drawable was not a bitmap drawable as expected";
         return null;
+    }
+
+    /**
+     * Use touch-icon or higher-resolution favicon and round the corners.
+     * @param context    Context used to get resources.
+     * @param touchIcon  Touch icon bitmap.
+     * @param canvas     Canvas that holds the touch icon.
+     * @param iconBounds Rectangle bounds needed for adding rounded corners of the touch icon.
+     */
+    private static void drawTouchIconToCanvas(
+            Context context, Bitmap touchIcon, Canvas canvas, Rect iconBounds) {
+        Rect src = new Rect(0, 0, touchIcon.getWidth(), touchIcon.getHeight());
+        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paint.setFilterBitmap(true);
+        canvas.drawBitmap(touchIcon, src, iconBounds, paint);
+        int borderRadii =
+                context.getResources().getDimensionPixelSize(R.dimen.touchicon_border_radii);
+        Path path = new Path();
+        path.setFillType(Path.FillType.INVERSE_WINDING);
+        RectF rect = new RectF(iconBounds);
+        rect.inset(INSET_DIMENSION_FOR_TOUCHICON, INSET_DIMENSION_FOR_TOUCHICON);
+        path.addRoundRect(rect, borderRadii, borderRadii, Path.Direction.CW);
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+        canvas.drawPath(path, paint);
     }
 
     /**

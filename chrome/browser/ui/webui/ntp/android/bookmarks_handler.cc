@@ -389,9 +389,10 @@ void BookmarksHandler::HandleCreateHomeScreenBookmarkShortcut(
       FaviconService::FaviconForURLParams(
           profile,
           node->url(),
-          history::FAVICON | history::TOUCH_ICON,
-          gfx::kFaviconSize),
-      ui::GetMaxScaleFactor(),
+          history::TOUCH_PRECOMPOSED_ICON | history::TOUCH_ICON |
+              history::FAVICON,
+          0),  // request the largest icon.
+      ui::SCALE_FACTOR_100P,  // density doesn't matter for the largest icon.
       base::Bind(&BookmarksHandler::OnShortcutFaviconDataAvailable,
                  base::Unretained(this),
                  node),
