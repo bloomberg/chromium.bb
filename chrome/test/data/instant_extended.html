@@ -3,6 +3,7 @@
     <script>
 
 var apiHandle;
+var newTabPageHandle;
 var savedUserText = null;
 var suggestionIndex = -1;
 var suggestions = ["result 1", "result 2", "result 3"];
@@ -17,6 +18,16 @@ function getApiHandle() {
     return window.navigator.searchBox;
   if (window.chrome && window.chrome.searchBox)
     return window.chrome.searchBox;
+  return null;
+}
+
+function getNewTabPageHandle() {
+  if (window.navigator && window.navigator.embeddedSearch &&
+      window.navigator.embeddedSearch.newTabPage)
+    return window.navigator.embeddedSearch.newTabPage;
+  if (window.chrome && window.chrome.embeddedSearch &&
+      window.chrome.embeddedSearch.newTabPage)
+    return window.chrome.embeddedSearch.newTabPage;
   return null;
 }
 
@@ -71,7 +82,7 @@ function handleKeyPress(event) {
 
 function handleMostVisitedChange() {
   onMostVisitedChangedCalls++;
-  var items = apiHandle.mostVisited;
+  var items = newTabPageHandle.mostVisited;
   if (items) {
     mostVisitedItemsCount = items.length;
     firstMostVisitedItemId = items[0] ? items[0].rid : 0;
@@ -80,16 +91,17 @@ function handleMostVisitedChange() {
 
 function setUp() {
   apiHandle = getApiHandle();
+  newTabPageHandle = getNewTabPageHandle();
   apiHandle.onnativesuggestions = handleNativeSuggestions;
   apiHandle.onsubmit = handleSubmit;
   apiHandle.onchange = handleOnChange;
   apiHandle.onkeypress = handleKeyPress;
-  apiHandle.onmostvisitedchange = handleMostVisitedChange;
+  newTabPageHandle.onmostvisitedchange = handleMostVisitedChange;
   if (apiHandle.value) {
     handleNativeSuggestions();
     handleOnChange();
   }
-  if (apiHandle.mostVisited && apiHandle.mostVisited.length) {
+  if (newTabPageHandle.mostVisited && newTabPageHandle.mostVisited.length) {
     handleMostVisitedChange();
   }
 }

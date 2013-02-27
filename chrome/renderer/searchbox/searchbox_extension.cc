@@ -204,10 +204,12 @@ static const char kDispatchMarginChangeEventScript[] =
 
 static const char kDispatchMostVisitedChangedScript[] =
     "if (window.chrome &&"
-    "    window.chrome.searchBox &&"
-    "    window.chrome.searchBox.onmostvisitedchange &&"
-    "    typeof window.chrome.searchBox.onmostvisitedchange == 'function') {"
-    "  window.chrome.searchBox.onmostvisitedchange();"
+    "    window.chrome.embeddedSearch &&"
+    "    window.chrome.embeddedSearch.newTabPage &&"
+    "    window.chrome.embeddedSearch.newTabPage.onmostvisitedchange &&"
+    "    typeof window.chrome.embeddedSearch.newTabPage.onmostvisitedchange =="
+    "         'function') {"
+    "  window.chrome.embeddedSearch.newTabPage.onmostvisitedchange();"
     "  true;"
     "}";
 

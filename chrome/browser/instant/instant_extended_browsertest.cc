@@ -608,7 +608,6 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, MostVisited) {
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_INSTANT_SENT_MOST_VISITED_ITEMS,
       content::NotificationService::AllSources());
-
   // Initialize Instant.
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
@@ -637,7 +636,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, MostVisited) {
   // Delete the fist Most Visited Item.
   int rid = first_most_visited_item_id_;
   std::ostringstream stream;
-  stream << "apiHandle.deleteMostVisitedItem(" << rid << ")";
+  stream << "newTabPageHandle.deleteMostVisitedItem(" << rid << ")";
   EXPECT_TRUE(ExecuteScript(stream.str()));
   observer.Wait();
 
@@ -649,7 +648,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, MostVisited) {
 
   // Undo the deletion of the fist Most Visited Item.
   stream.str(std::string());
-  stream << "apiHandle.undoMostVisitedDeletion(" << rid << ")";
+  stream << "newTabPageHandle.undoMostVisitedDeletion(" << rid << ")";
   EXPECT_TRUE(ExecuteScript(stream.str()));
   observer.Wait();
 
@@ -662,7 +661,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, MostVisited) {
   // Delete the fist Most Visited Item.
   rid = first_most_visited_item_id_;
   stream.str(std::string());
-  stream << "apiHandle.deleteMostVisitedItem(" << rid << ")";
+  stream << "newTabPageHandle.deleteMostVisitedItem(" << rid << ")";
   EXPECT_TRUE(ExecuteScript(stream.str()));
   observer.Wait();
 
@@ -672,7 +671,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, MostVisited) {
   // Delete the second Most Visited Item.
   rid = first_most_visited_item_id_;
   stream.str(std::string());
-  stream << "apiHandle.deleteMostVisitedItem(" << rid << ")";
+  stream << "newTabPageHandle.deleteMostVisitedItem(" << rid << ")";
   EXPECT_TRUE(ExecuteScript(stream.str()));
   observer.Wait();
 
@@ -684,7 +683,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, MostVisited) {
 
   // Delete the second Most Visited Item.
   stream.str(std::string());
-  stream << "apiHandle.undoAllMostVisitedDeletions()";
+  stream << "newTabPageHandle.undoAllMostVisitedDeletions()";
   EXPECT_TRUE(ExecuteScript(stream.str()));
   observer.Wait();
 
