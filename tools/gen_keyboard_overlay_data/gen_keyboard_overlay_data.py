@@ -227,9 +227,9 @@ def ToKeys(hotkey):
   """
   values = hotkey.split(' - ')
   modifiers = sorted(value.upper() for value in values
-                     if value in ['Shift', 'Ctrl', 'Alt'])
+                     if value in ['Shift', 'Ctrl', 'Alt', 'Search'])
   keycode = [value.lower() for value in values
-             if value not in ['Shift', 'Ctrl', 'Alt']]
+             if value not in ['Shift', 'Ctrl', 'Alt', 'Search']]
   # The keys which are highlighted even without modifier keys.
   base_keys = ['backspace', 'power']
   if not modifiers and (keycode and keycode[0] not in base_keys):
