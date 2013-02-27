@@ -5440,6 +5440,7 @@ long Track::Create(
 
 Track::Info::Info():
     nameAsUTF8(NULL),
+    language(NULL),
     codecId(NULL),
     codecNameAsUTF8(NULL),
     codecPrivate(NULL),
@@ -5456,6 +5457,9 @@ void Track::Info::Clear()
 {
     delete[] nameAsUTF8;
     nameAsUTF8 = NULL;
+
+    delete[] language;
+    language = NULL;
 
     delete[] codecId;
     codecId = NULL;
@@ -5516,6 +5520,9 @@ int Track::Info::Copy(Info& dst) const
     if (int status = CopyStr(&Info::nameAsUTF8, dst))
         return status;
 
+    if (int status = CopyStr(&Info::language, dst))
+        return status;
+
     if (int status = CopyStr(&Info::codecId, dst))
         return status;
 
@@ -5568,6 +5575,11 @@ unsigned long long Track::GetUid() const
 const char* Track::GetNameAsUTF8() const
 {
     return m_info.nameAsUTF8;
+}
+
+const char* Track::GetLanguage() const
+{
+    return m_info.language;
 }
 
 const char* Track::GetCodecNameAsUTF8() const
@@ -6603,6 +6615,17 @@ long Tracks::ParseTrackEntry(
                                     pos,
                                     size,
                                     info.nameAsUTF8);
+
+            if (status)
+                return status;
+        }
+        else if (id == 0x02B59C)  //Track Language
+        {
+            const long status = UnserializeString(
+                                    pReader,
+                                    pos,
+                                    size,
+                                    info.language);
 
             if (status)
                 return status;

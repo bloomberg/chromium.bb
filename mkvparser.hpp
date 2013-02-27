@@ -334,6 +334,7 @@ public:
     long GetNumber() const;
     unsigned long long GetUid() const;
     const char* GetNameAsUTF8() const;
+    const char* GetLanguage() const;
     const char* GetCodecNameAsUTF8() const;
     const char* GetCodecId() const;
     const unsigned char* GetCodecPrivate(size_t&) const;
@@ -362,6 +363,7 @@ public:
         long number;
         unsigned long long uid;
         char* nameAsUTF8;
+        char* language;
         char* codecId;
         char* codecNameAsUTF8;
         unsigned char* codecPrivate;
