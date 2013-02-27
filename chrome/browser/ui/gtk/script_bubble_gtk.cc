@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/url_constants.h"
@@ -114,8 +115,10 @@ void ScriptBubbleGtk::BuildBubble() {
     icon_controls_[extension->id()] = GTK_IMAGE(image);
     ImageLoader::Get(profile_)->LoadImageAsync(
         extension,
-        extension->GetIconResource(extension_misc::EXTENSION_ICON_BITTY,
-                                   ExtensionIconSet::MATCH_EXACTLY),
+        extensions::IconsInfo::GetIconResource(
+            extension,
+            extension_misc::EXTENSION_ICON_BITTY,
+            ExtensionIconSet::MATCH_EXACTLY),
         gfx::Size(extension_misc::EXTENSION_ICON_BITTY,
                   extension_misc::EXTENSION_ICON_BITTY),
         base::Bind(&ScriptBubbleGtk::OnIconLoaded,

@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/extensions/api/developer_private.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
@@ -350,7 +351,7 @@ bool DeveloperPrivateGetItemsInfoFunction::RunImpl() {
     items.InsertAll(*service->terminated_extensions());
   }
 
-  std::map<std::string, ExtensionResource> idToIcon;
+  std::map<std::string, ExtensionResource> id_to_icon;
   ItemInfoList item_list;
 
   for (ExtensionSet::const_iterator iter = items.begin();
@@ -358,8 +359,10 @@ bool DeveloperPrivateGetItemsInfoFunction::RunImpl() {
     const Extension& item = **iter;
 
     ExtensionResource item_resource =
-        item.GetIconResource(48, ExtensionIconSet::MATCH_BIGGER);
-    idToIcon[item.id()] = item_resource;
+        extensions::IconsInfo::GetIconResource(&item,
+                                               48,
+                                               ExtensionIconSet::MATCH_BIGGER);
+    id_to_icon[item.id()] = item_resource;
 
     if (item.location() == Manifest::COMPONENT)
       continue;  // Skip built-in extensions / apps;
@@ -371,7 +374,7 @@ bool DeveloperPrivateGetItemsInfoFunction::RunImpl() {
       base::Bind(&DeveloperPrivateGetItemsInfoFunction::GetIconsOnFileThread,
                  this,
                  item_list,
-                 idToIcon));
+                 id_to_icon));
   return true;
 }
 

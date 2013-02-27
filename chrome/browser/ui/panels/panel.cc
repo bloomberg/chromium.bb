@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/panels/stacked_panel_collection.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -856,8 +857,10 @@ void Panel::UpdateAppIcon() {
   extensions::ImageLoader* loader = extensions::ImageLoader::Get(profile());
   loader->LoadImageAsync(
       extension,
-      extension->GetIconResource(extension_misc::EXTENSION_ICON_SMALL,
-                                 ExtensionIconSet::MATCH_BIGGER),
+      extensions::IconsInfo::GetIconResource(
+          extension,
+          extension_misc::EXTENSION_ICON_SMALL,
+          ExtensionIconSet::MATCH_BIGGER),
       gfx::Size(extension_misc::EXTENSION_ICON_SMALL,
                 extension_misc::EXTENSION_ICON_SMALL),
       base::Bind(&Panel::OnImageLoaded,

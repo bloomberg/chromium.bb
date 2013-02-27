@@ -28,11 +28,11 @@
 // SystemIndicator have been moved out of Extension.
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/api/extension_action/page_action_handler.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/api/themes/theme_handler.h"
 #include "chrome/common/extensions/csp_handler.h"
 #include "chrome/common/extensions/csp_validator.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"
 #include "chrome/common/extensions/features/feature.h"
@@ -54,8 +54,6 @@
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "webkit/glue/image_decoder.h"
 
 #if defined(OS_WIN)
 #include "base/win/metro.h"
@@ -214,9 +212,6 @@ const char Extension::kExtensionRegistryPath[] =
 const size_t Extension::kIdSize = 16;
 
 const char Extension::kMimeType[] = "application/x-chrome-extension";
-
-const int Extension::kPageActionIconMaxSize = 19;
-const int Extension::kBrowserActionIconMaxSize = 19;
 
 const int Extension::kValidWebExtentSchemes =
     URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS;
@@ -487,65 +482,6 @@ bool Extension::FormatPEMForFileOutput(const std::string& input,
 }
 
 // static
-void Extension::DecodeIcon(const Extension* extension,
-                           int preferred_icon_size,
-                           ExtensionIconSet::MatchType match_type,
-                           scoped_ptr<SkBitmap>* result) {
-  std::string path = extension->icons().Get(preferred_icon_size, match_type);
-  int size = extension->icons().GetIconSizeFromPath(path);
-  ExtensionResource icon_resource = extension->GetResource(path);
-  DecodeIconFromPath(icon_resource.GetFilePath(), size, result);
-}
-
-// static
-void Extension::DecodeIcon(const Extension* extension,
-                           int icon_size,
-                           scoped_ptr<SkBitmap>* result) {
-  DecodeIcon(extension, icon_size, ExtensionIconSet::MATCH_EXACTLY, result);
-}
-
-// static
-void Extension::DecodeIconFromPath(const base::FilePath& icon_path,
-                                   int icon_size,
-                                   scoped_ptr<SkBitmap>* result) {
-  if (icon_path.empty())
-    return;
-
-  std::string file_contents;
-  if (!file_util::ReadFileToString(icon_path, &file_contents)) {
-    DLOG(ERROR) << "Could not read icon file: " << icon_path.LossyDisplayName();
-    return;
-  }
-
-  // Decode the image using WebKit's image decoder.
-  const unsigned char* data =
-    reinterpret_cast<const unsigned char*>(file_contents.data());
-  webkit_glue::ImageDecoder decoder;
-  scoped_ptr<SkBitmap> decoded(new SkBitmap());
-  *decoded = decoder.Decode(data, file_contents.length());
-  if (decoded->empty()) {
-    DLOG(ERROR) << "Could not decode icon file: "
-                << icon_path.LossyDisplayName();
-    return;
-  }
-
-  if (decoded->width() != icon_size || decoded->height() != icon_size) {
-    DLOG(ERROR) << "Icon file has unexpected size: "
-                << base::IntToString(decoded->width()) << "x"
-                << base::IntToString(decoded->height());
-    return;
-  }
-
-  result->swap(decoded);
-}
-
-// static
-const gfx::ImageSkia& Extension::GetDefaultIcon(bool is_app) {
-  int id = is_app ? IDR_APP_DEFAULT_ICON : IDR_EXTENSION_DEFAULT_ICON;
-  return *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id);
-}
-
-// static
 GURL Extension::GetBaseURLFromExtensionId(const std::string& extension_id) {
   return GURL(std::string(extensions::kExtensionScheme) +
               content::kStandardSchemeSeparator + extension_id + "/");
@@ -794,8 +730,9 @@ std::set<base::FilePath> Extension::GetBrowserImages() const {
   // indicate that we're doing something wrong.
 
   // Extension icons.
-  for (ExtensionIconSet::IconMap::const_iterator iter = icons().map().begin();
-       iter != icons().map().end(); ++iter) {
+  for (ExtensionIconSet::IconMap::const_iterator iter =
+           IconsInfo::GetIcons(this).map().begin();
+       iter != IconsInfo::GetIcons(this).map().end(); ++iter) {
     image_paths.insert(
         base::FilePath::FromWStringHack(UTF8ToWide(iter->second)));
   }
@@ -834,18 +771,6 @@ std::set<base::FilePath> Extension::GetBrowserImages() const {
   }
 
   return image_paths;
-}
-
-ExtensionResource Extension::GetIconResource(
-    int size, ExtensionIconSet::MatchType match_type) const {
-  std::string path = icons().Get(size, match_type);
-  return path.empty() ? ExtensionResource() : GetResource(path);
-}
-
-GURL Extension::GetIconURL(int size,
-                           ExtensionIconSet::MatchType match_type) const {
-  std::string path = icons().Get(size, match_type);
-  return path.empty() ? GURL() : GetResourceURL(path);
 }
 
 GURL Extension::GetFullLaunchURL() const {
@@ -1796,7 +1721,6 @@ bool Extension::LoadLaunchURL(string16* error) {
 
 bool Extension::LoadSharedFeatures(string16* error) {
   if (!LoadDescription(error) ||
-      !LoadIcons(error) ||
       !ManifestHandler::ParseExtension(this, error) ||
       !LoadPlugins(error) ||
       !LoadNaClModules(error) ||
@@ -1846,23 +1770,6 @@ bool Extension::LoadManifestVersion(string16* error) {
   }
 
   return true;
-}
-
-bool Extension::LoadIcons(string16* error) {
-  if (!manifest_->HasKey(keys::kIcons))
-    return true;
-  DictionaryValue* icons_value = NULL;
-  if (!manifest_->GetDictionary(keys::kIcons, &icons_value)) {
-    *error = ASCIIToUTF16(errors::kInvalidIcons);
-    return false;
-  }
-
-  return manifest_handler_helpers::LoadIconsFromDictionary(
-      icons_value,
-      extension_misc::kExtensionIconSizes,
-      extension_misc::kNumExtensionIconSizes,
-      &icons_,
-      error);
 }
 
 bool Extension::LoadPlugins(string16* error) {

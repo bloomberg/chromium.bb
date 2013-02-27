@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/toolbar/action_box_menu_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "grit/generated_resources.h"
@@ -64,7 +65,7 @@ ExtensionIcon::ExtensionIcon(Profile* profile, const Extension* extension)
                             extension,
                             page_launcher_info->default_icon,
                             extension_misc::EXTENSION_ICON_ACTION,
-                            Extension::GetDefaultIcon(true),
+                            extensions::IconsInfo::GetDefaultAppIcon(),
                             this));
   UpdateIcon();
 }

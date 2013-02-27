@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
@@ -52,7 +53,8 @@ bool ResourceRequestPolicy::CanRequestResource(
   std::string resource_root_relative_path =
       resource_url.path().empty() ? "" : resource_url.path().substr(1);
   if (extension->is_hosted_app() &&
-      !extension->icons().ContainsPath(resource_root_relative_path)) {
+      !IconsInfo::GetIcons(extension)
+          .ContainsPath(resource_root_relative_path)) {
     LOG(ERROR) << "Denying load of " << resource_url.spec() << " from "
                << "hosted app.";
     return false;

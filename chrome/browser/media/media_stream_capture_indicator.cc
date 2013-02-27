@@ -17,6 +17,7 @@
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/invalidate_type.h"
@@ -330,7 +331,8 @@ void MediaStreamCaptureIndicator::ShowBalloon(
   should_show_balloon_ = true;
   extensions::ImageLoader::Get(profile)->LoadImageAsync(
       extension,
-      extension->GetIconResource(32, ExtensionIconSet::MATCH_BIGGER),
+      extensions::IconsInfo::GetIconResource(
+          extension, 32, ExtensionIconSet::MATCH_BIGGER),
       gfx::Size(32, 32),
       base::Bind(&MediaStreamCaptureIndicator::OnImageLoaded,
                  this, message));

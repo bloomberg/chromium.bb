@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -413,8 +414,8 @@ void UpdateShortcutInfoAndIconForApp(
   std::vector<extensions::ImageLoader::ImageRepresentation> info_list;
   for (size_t i = 0; i < arraysize(kDesiredSizes); ++i) {
     int size = kDesiredSizes[i];
-    ExtensionResource resource = extension.GetIconResource(
-        size, ExtensionIconSet::MATCH_EXACTLY);
+    ExtensionResource resource = extensions::IconsInfo::GetIconResource(
+        &extension, size, ExtensionIconSet::MATCH_EXACTLY);
     if (!resource.empty()) {
       info_list.push_back(extensions::ImageLoader::ImageRepresentation(
           resource,
@@ -431,11 +432,11 @@ void UpdateShortcutInfoAndIconForApp(
     // If there is no icon at the desired sizes, we will resize what we can get.
     // Making a large icon smaller is preferred to making a small icon larger,
     // so look for a larger icon first:
-    ExtensionResource resource = extension.GetIconResource(
-        size, ExtensionIconSet::MATCH_BIGGER);
+    ExtensionResource resource = extensions::IconsInfo::GetIconResource(
+        &extension, size, ExtensionIconSet::MATCH_BIGGER);
     if (resource.empty()) {
-      resource = extension.GetIconResource(
-          size, ExtensionIconSet::MATCH_SMALLER);
+      resource = extensions::IconsInfo::GetIconResource(
+          &extension, size, ExtensionIconSet::MATCH_SMALLER);
     }
     info_list.push_back(extensions::ImageLoader::ImageRepresentation(
         resource,

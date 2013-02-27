@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest.h"
@@ -228,7 +229,10 @@ TEST_F(ExtensionIconImageTest, Basic) {
       GetTestBitmap(extension, "48.png", 32);
   ASSERT_FALSE(bitmap_48_resized_to_32.empty());
 
-  IconImage image(profile.get(), extension, extension->icons(), 16,
+  IconImage image(profile.get(),
+                  extension,
+                  extensions::IconsInfo::GetIcons(extension),
+                  16,
                   default_icon, this);
 
   // No representations in |image_| yet.
@@ -290,7 +294,10 @@ TEST_F(ExtensionIconImageTest, FallbackToSmallerWhenNoBigger) {
       GetTestBitmap(extension, "48.png", 48);
   ASSERT_FALSE(bitmap_48.empty());
 
-  IconImage image(profile.get(), extension, extension->icons(), 32,
+  IconImage image(profile.get(),
+                  extension,
+                  extensions::IconsInfo::GetIcons(extension),
+                  32,
                   default_icon, this);
 
   gfx::ImageSkiaRep representation =
@@ -327,7 +334,10 @@ TEST_F(ExtensionIconImageTest, FallbackToSmaller) {
       GetTestBitmap(extension, "16.png", 16);
   ASSERT_FALSE(bitmap_16.empty());
 
-  IconImage image(profile.get(), extension, extension->icons(), 17,
+  IconImage image(profile.get(),
+                  extension,
+                  extensions::IconsInfo::GetIcons(extension),
+                  17,
                   default_icon, this);
 
   gfx::ImageSkiaRep representation =
@@ -511,7 +521,10 @@ TEST_F(ExtensionIconImageTest, IconImageDestruction) {
   ASSERT_FALSE(bitmap_16.empty());
 
   scoped_ptr<IconImage> image(
-      new IconImage(profile.get(), extension, extension->icons(), 16,
+      new IconImage(profile.get(),
+                    extension,
+                    extensions::IconsInfo::GetIcons(extension),
+                    16,
                     default_icon, this));
 
   // Load an image representation.

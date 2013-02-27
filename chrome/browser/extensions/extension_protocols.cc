@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -316,7 +317,8 @@ bool AllowExtensionResourceLoad(net::URLRequest* request,
   std::string resource_root_relative_path =
       request->url().path().empty() ? "" : request->url().path().substr(1);
   if (extension->is_hosted_app() &&
-      !extension->icons().ContainsPath(resource_root_relative_path)) {
+      !extensions::IconsInfo::GetIcons(extension).ContainsPath(
+          resource_root_relative_path)) {
     LOG(ERROR) << "Denying load of " << request->url().spec() << " from "
                << "hosted app.";
     return false;
@@ -347,7 +349,7 @@ bool URLIsForExtensionIcon(const GURL& url, const Extension* extension) {
   DCHECK_EQ(url.host(), extension->id());
   DCHECK(path.length() > 0 && path[0] == '/');
   path = path.substr(1);
-  return extension->icons().ContainsPath(path);
+  return extensions::IconsInfo::GetIcons(extension).ContainsPath(path);
 }
 
 class ExtensionProtocolHandler

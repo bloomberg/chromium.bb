@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -34,8 +35,10 @@ int GetSizeForMaxScaleFactor(int size_in_dip) {
 // Returns bitmap for the default icon with size equal to the default icon's
 // pixel size under maximal supported scale factor.
 SkBitmap GetDefaultIconBitmapForMaxScaleFactor(bool is_app) {
-  return extensions::Extension::GetDefaultIcon(is_app).
-      GetRepresentation(ui::GetMaxScaleFactor()).sk_bitmap();
+  const gfx::ImageSkia& image = is_app ?
+      extensions::IconsInfo::GetDefaultAppIcon() :
+      extensions::IconsInfo::GetDefaultExtensionIcon();
+  return image.GetRepresentation(ui::GetMaxScaleFactor()).sk_bitmap();
 }
 
 }  // namespace
@@ -68,10 +71,10 @@ void ExtensionUninstallDialog::ConfirmUninstall(
   DCHECK(ui_loop_ == MessageLoop::current());
   extension_ = extension;
 
-  ExtensionResource image =
-      extension_->GetIconResource(extension_misc::EXTENSION_ICON_LARGE,
-                                  ExtensionIconSet::MATCH_BIGGER);
-
+  ExtensionResource image = extensions::IconsInfo::GetIconResource(
+      extension_,
+      extension_misc::EXTENSION_ICON_LARGE,
+      ExtensionIconSet::MATCH_BIGGER);
   // Load the icon whose pixel size is large enough to be displayed under
   // maximal supported scale factor. UI code will scale the icon down if needed.
   int pixel_size = GetSizeForMaxScaleFactor(kIconSize);

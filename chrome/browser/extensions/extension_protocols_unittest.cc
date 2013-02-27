@@ -8,6 +8,9 @@
 #include "base/message_loop.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_protocols.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/resource_request_info.h"
@@ -21,10 +24,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
-using extensions::Extension;
-using extensions::Manifest;
 
-namespace {
+namespace extensions {
 
 scoped_refptr<Extension> CreateTestExtension(const std::string& name,
                                              bool incognito_split_mode) {
@@ -74,6 +75,9 @@ class ExtensionProtocolTest : public testing::Test {
     net::URLRequestContext* request_context =
         resource_context_.GetRequestContext();
     old_factory_ = request_context->job_factory();
+
+    ManifestHandler::Register(extension_manifest_keys::kIcons,
+                              make_linked_ptr(new IconsHandler));
   }
 
   virtual void TearDown() {
@@ -86,7 +90,7 @@ class ExtensionProtocolTest : public testing::Test {
     net::URLRequestContext* request_context =
         resource_context_.GetRequestContext();
     job_factory_.SetProtocolHandler(
-        extensions::kExtensionScheme,
+        kExtensionScheme,
         CreateExtensionProtocolHandler(incognito, extension_info_map_));
     request_context->set_job_factory(&job_factory_);
   }
@@ -214,4 +218,4 @@ TEST_F(ExtensionProtocolTest, ComponentResourceRequest) {
   }
 }
 
-}  // namespace
+}  // namespace extensions

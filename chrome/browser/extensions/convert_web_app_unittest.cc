@@ -16,6 +16,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -137,13 +138,13 @@ TEST(ExtensionFromWebApp, Basic) {
   EXPECT_EQ("http://aaronboodman.com/gearpad/*",
             extension->web_extent().patterns().begin()->GetAsString());
 
-  EXPECT_EQ(web_app.icons.size(), extension->icons().map().size());
+  EXPECT_EQ(web_app.icons.size(), IconsInfo::GetIcons(extension).map().size());
   for (size_t i = 0; i < web_app.icons.size(); ++i) {
     EXPECT_EQ(StringPrintf("icons/%i.png", web_app.icons[i].width),
-              extension->icons().Get(web_app.icons[i].width,
-                                     ExtensionIconSet::MATCH_EXACTLY));
-    ExtensionResource resource = extension->GetIconResource(
-        web_app.icons[i].width, ExtensionIconSet::MATCH_EXACTLY);
+              IconsInfo::GetIcons(extension).Get(
+                  web_app.icons[i].width, ExtensionIconSet::MATCH_EXACTLY));
+    ExtensionResource resource = IconsInfo::GetIconResource(
+        extension, web_app.icons[i].width, ExtensionIconSet::MATCH_EXACTLY);
     ASSERT_TRUE(!resource.empty());
     EXPECT_TRUE(file_util::PathExists(resource.GetFilePath()));
   }
@@ -177,7 +178,7 @@ TEST(ExtensionFromWebApp, Minimal) {
   EXPECT_EQ(UTF16ToUTF8(web_app.title), extension->name());
   EXPECT_EQ("", extension->description());
   EXPECT_EQ(web_app.app_url, extension->GetFullLaunchURL());
-  EXPECT_EQ(0u, extension->icons().map().size());
+  EXPECT_EQ(0u, IconsInfo::GetIcons(extension).map().size());
   EXPECT_EQ(0u, extension->GetActivePermissions()->apis().size());
   ASSERT_EQ(1u, extension->web_extent().patterns().size());
   EXPECT_EQ("*://aaronboodman.com/*",

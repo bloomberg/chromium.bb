@@ -22,6 +22,7 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
+#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/extensions/permissions/permission_message.h"
@@ -34,7 +35,6 @@
 #include "ui/gfx/size.h"
 
 class ExtensionAction;
-class ExtensionResource;
 class SkBitmap;
 class Version;
 
@@ -194,10 +194,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
       const std::string& explicit_id,
       std::string* error);
 
-  // Max size (both dimensions) for browser and page actions.
-  static const int kPageActionIconMaxSize;
-  static const int kBrowserActionIconMaxSize;
-
   // Valid schemes for web extent URLPatterns.
   static const int kValidWebExtentSchemes;
 
@@ -291,35 +287,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                                      std::string* output,
                                      bool is_public);
 
-  // Given an extension, icon size, and match type, read a valid icon if present
-  // and decode it into result. In the browser process, this will DCHECK if not
-  // called on the file thread. To easily load extension images on the UI
-  // thread, see ImageLoader.
-  static void DecodeIcon(const Extension* extension,
-                         int icon_size,
-                         ExtensionIconSet::MatchType match_type,
-                         scoped_ptr<SkBitmap>* result);
-
-  // Given an extension and icon size, read it if present and decode it into
-  // result. In the browser process, this will DCHECK if not called on the
-  // file thread. To easily load extension images on the UI thread, see
-  // ImageLoader.
-  static void DecodeIcon(const Extension* extension,
-                         int icon_size,
-                         scoped_ptr<SkBitmap>* result);
-
-  // Given an icon_path and icon size, read it if present and decode it into
-  // result. In the browser process, this will DCHECK if not called on the
-  // file thread. To easily load extension images on the UI thread, see
-  // ImageLoader.
-  static void DecodeIconFromPath(const base::FilePath& icon_path,
-                                 int icon_size,
-                                 scoped_ptr<SkBitmap>* result);
-
-  // Returns the default extension/app icon (for extensions or apps that don't
-  // have one).
-  static const gfx::ImageSkia& GetDefaultIcon(bool is_app);
-
   // Returns the base extension url for a given |extension_id|.
   static GURL GetBaseURLFromExtensionId(const std::string& extension_id);
 
@@ -393,11 +360,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Returns a list of paths (relative to the extension dir) for images that
   // the browser might load (like themes and page action icons).
   std::set<base::FilePath> GetBrowserImages() const;
-
-  // Get an extension icon as a resource or URL.
-  ExtensionResource GetIconResource(
-      int size, ExtensionIconSet::MatchType match_type) const;
-  GURL GetIconURL(int size, ExtensionIconSet::MatchType match_type) const;
 
   // Gets the fully resolved absolute launch URL.
   GURL GetFullLaunchURL() const;
@@ -540,7 +502,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const std::vector<InstallWarning>& install_warnings() const {
     return install_warnings_;
   }
-  const ExtensionIconSet& icons() const { return icons_; }
   const extensions::Manifest* manifest() const {
     return manifest_.get();
   }
@@ -660,7 +621,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadSharedFeatures(string16* error);
   bool LoadDescription(string16* error);
   bool LoadManifestVersion(string16* error);
-  bool LoadIcons(string16* error);
   bool LoadPlugins(string16* error);
   bool LoadNaClModules(string16* error);
   bool LoadSandboxedPages(string16* error);
@@ -779,9 +739,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Any warnings that occurred when trying to create/parse the extension.
   std::vector<InstallWarning> install_warnings_;
-
-  // The icons for the extension.
-  ExtensionIconSet icons_;
 
   // The base extension url for the extension.
   GURL extension_url_;

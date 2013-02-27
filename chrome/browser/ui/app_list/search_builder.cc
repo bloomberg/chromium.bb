@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -179,7 +180,7 @@ class ExtensionAppResult : public SearchBuilderResult,
     icon_.reset(new extensions::IconImage(
         profile(),
         extension,
-        extension->icons(),
+        extensions::IconsInfo::GetIcons(extension),
         extension_misc::EXTENSION_ICON_SMALL,
         default_icon,
         this));

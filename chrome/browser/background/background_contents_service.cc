@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -123,8 +124,10 @@ void ShowBalloon(const Extension* extension, Profile* profile) {
       extension->is_app() ?  IDS_BACKGROUND_CRASHED_APP_BALLOON_MESSAGE :
       IDS_BACKGROUND_CRASHED_EXTENSION_BALLOON_MESSAGE,
       UTF8ToUTF16(extension->name()));
-  GURL icon_url(extension->GetIconURL(extension_misc::EXTENSION_ICON_SMALLISH,
-                                      ExtensionIconSet::MATCH_BIGGER));
+  GURL icon_url(extensions::IconsInfo::GetIconURL(
+      extension,
+      extension_misc::EXTENSION_ICON_SMALLISH,
+      ExtensionIconSet::MATCH_BIGGER));
   DesktopNotificationService::AddNotification(
       extension->url(), title, message, icon_url, string16(),
       new CrashNotificationDelegate(profile, extension), profile);

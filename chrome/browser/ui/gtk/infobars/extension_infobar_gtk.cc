@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_container_gtk.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -129,8 +130,10 @@ void ExtensionInfoBarGtk::BuildWidgets() {
   }
 
   // Start loading the image for the menu button.
-  ExtensionResource icon_resource = extension->GetIconResource(
-      extension_misc::EXTENSION_ICON_BITTY, ExtensionIconSet::MATCH_EXACTLY);
+  ExtensionResource icon_resource = extensions::IconsInfo::GetIconResource(
+      extension,
+      extension_misc::EXTENSION_ICON_BITTY,
+      ExtensionIconSet::MATCH_EXACTLY);
   // Load image asynchronously, calling back OnImageLoaded.
   extensions::ImageLoader* loader =
       extensions::ImageLoader::Get(delegate_->extension_host()->profile());

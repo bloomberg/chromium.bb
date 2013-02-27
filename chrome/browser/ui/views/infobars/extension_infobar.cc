@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -145,8 +146,8 @@ void ExtensionInfoBar::ViewHierarchyChanged(bool is_add,
   const extensions::Extension* extension = extension_host->extension();
   extension_misc::ExtensionIcons image_size =
       extension_misc::EXTENSION_ICON_BITTY;
-  ExtensionResource icon_resource = extension->GetIconResource(
-      image_size, ExtensionIconSet::MATCH_EXACTLY);
+  ExtensionResource icon_resource = extensions::IconsInfo::GetIconResource(
+      extension, image_size, ExtensionIconSet::MATCH_EXACTLY);
   extensions::ImageLoader* loader =
       extensions::ImageLoader::Get(extension_host->profile());
   loader->LoadImageAsync(

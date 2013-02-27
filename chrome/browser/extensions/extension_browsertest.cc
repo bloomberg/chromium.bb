@@ -36,7 +36,10 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -105,6 +108,13 @@ void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
                                   "TestUser@gmail.com");
   command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
 #endif
+}
+
+void ExtensionBrowserTest::SetUpOnMainThread() {
+  InProcessBrowserTest::SetUpOnMainThread();
+  extensions::ManifestHandler::Register(
+      extension_manifest_keys::kIcons,
+      make_linked_ptr(new extensions::IconsHandler));
 }
 
 const Extension* ExtensionBrowserTest::LoadExtensionWithFlags(

@@ -14,6 +14,7 @@
 #include "chrome/common/extensions/api/extension_action/browser_action_handler.h"
 #include "chrome/common/extensions/api/extension_action/page_action_handler.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest.h"
@@ -32,6 +33,9 @@ class ExtensionFileUtilTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     testing::Test::SetUp();
+    extensions::ManifestHandler::Register(
+        extension_manifest_keys::kIcons,
+        make_linked_ptr(new extensions::IconsHandler));
     extensions::ManifestHandler::Register(
         keys::kBrowserAction,
         make_linked_ptr(new extensions::BrowserActionHandler));

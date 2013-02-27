@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -152,8 +153,8 @@ void BackgroundApplicationListModel::Application::OnImageLoaded(
 
 void BackgroundApplicationListModel::Application::RequestIcon(
     extension_misc::ExtensionIcons size) {
-  ExtensionResource resource = extension_->GetIconResource(
-      size, ExtensionIconSet::MATCH_BIGGER);
+  ExtensionResource resource = extensions::IconsInfo::GetIconResource(
+      extension_, size, ExtensionIconSet::MATCH_BIGGER);
   extensions::ImageLoader::Get(model_->profile_)->LoadImageAsync(
       extension_, resource, gfx::Size(size, size),
       base::Bind(&Application::OnImageLoaded, AsWeakPtr()));

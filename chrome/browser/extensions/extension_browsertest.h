@@ -69,6 +69,7 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
 
   // InProcessBrowserTest
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+  virtual void SetUpOnMainThread() OVERRIDE;
 
   const extensions::Extension* LoadExtension(const base::FilePath& path);
 

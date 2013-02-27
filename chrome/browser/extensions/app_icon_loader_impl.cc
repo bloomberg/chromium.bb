@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "ui/gfx/color_utils.h"
@@ -56,9 +57,9 @@ void AppIconLoaderImpl::FetchImage(const std::string& id) {
   extensions::IconImage* image = new extensions::IconImage(
       profile_,
       extension,
-      extension->icons(),
+      extensions::IconsInfo::GetIcons(extension),
       icon_size_,
-      extensions::Extension::GetDefaultIcon(true),
+      extensions::IconsInfo::GetDefaultAppIcon(),
       this);
   // |map_| takes ownership of |image|.
   map_[image] = id;

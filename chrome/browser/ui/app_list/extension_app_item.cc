@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -311,9 +312,9 @@ void ExtensionAppItem::LoadImage(const Extension* extension) {
   icon_.reset(new extensions::IconImage(
       profile_,
       extension,
-      extension->icons(),
+      extensions::IconsInfo::GetIcons(extension),
       icon_size,
-      Extension::GetDefaultIcon(true),
+      extensions::IconsInfo::GetDefaultAppIcon(),
       this));
   UpdateIcon();
 }

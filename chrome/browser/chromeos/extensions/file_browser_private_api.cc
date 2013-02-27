@@ -55,6 +55,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -948,8 +949,8 @@ bool GetFileTasksFileBrowserFunction::FindAppTasks(
       task->SetString("title", (*i)->title);
       task->SetBoolean("isDefault", false);
 
-      GURL best_icon = extension->GetIconURL(kPreferredIconSize,
-                                             ExtensionIconSet::MATCH_BIGGER);
+      GURL best_icon = extensions::IconsInfo::GetIconURL(
+          extension, kPreferredIconSize, ExtensionIconSet::MATCH_BIGGER);
       if (!best_icon.is_empty())
         task->SetString("iconUrl", best_icon.spec());
       else

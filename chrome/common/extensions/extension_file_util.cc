@@ -22,6 +22,7 @@
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/api/extension_action/browser_action_handler.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/api/themes/theme_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
@@ -256,8 +257,8 @@ bool ValidateExtension(const Extension* extension,
                        std::vector<extensions::InstallWarning>* warnings) {
   // Validate icons exist.
   for (ExtensionIconSet::IconMap::const_iterator iter =
-           extension->icons().map().begin();
-       iter != extension->icons().map().end();
+           extensions::IconsInfo::GetIcons(extension).map().begin();
+       iter != extensions::IconsInfo::GetIcons(extension).map().end();
        ++iter) {
     const base::FilePath path =
         extension->GetResource(iter->second).GetFilePath();

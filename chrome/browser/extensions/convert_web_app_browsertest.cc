@@ -10,7 +10,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -82,13 +84,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionFromWebAppTest, Basic) {
   EXPECT_TRUE(installed_extension_->HasAPIPermission(
       APIPermission::kNotification));
 
-  ASSERT_EQ(3u, installed_extension_->icons().map().size());
-  EXPECT_EQ("icons/16.png", installed_extension_->icons().Get(
-      16, ExtensionIconSet::MATCH_EXACTLY));
-  EXPECT_EQ("icons/48.png", installed_extension_->icons().Get(
-      48, ExtensionIconSet::MATCH_EXACTLY));
-  EXPECT_EQ("icons/128.png", installed_extension_->icons().Get(
-      128, ExtensionIconSet::MATCH_EXACTLY));
+  const ExtensionIconSet& icons = IconsInfo::GetIcons(installed_extension_);
+  ASSERT_EQ(3u, icons.map().size());
+  EXPECT_EQ("icons/16.png", icons.Get(16, ExtensionIconSet::MATCH_EXACTLY));
+  EXPECT_EQ("icons/48.png", icons.Get(48, ExtensionIconSet::MATCH_EXACTLY));
+  EXPECT_EQ("icons/128.png", icons.Get(128, ExtensionIconSet::MATCH_EXACTLY));
 }
 
 }  // namespace extensions

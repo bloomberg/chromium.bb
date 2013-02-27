@@ -15,6 +15,7 @@
 #import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu.h"
 #include "chrome/browser/ui/cocoa/infobars/infobar.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -73,8 +74,10 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver {
     const extensions::Extension* extension = delegate_->extension_host()->
         extension();
     ExtensionResource icon_resource =
-        extension->GetIconResource(extension_misc::EXTENSION_ICON_BITTY,
-                                   ExtensionIconSet::MATCH_EXACTLY);
+        extensions::IconsInfo::GetIconResource(
+            extension,
+            extension_misc::EXTENSION_ICON_BITTY,
+            ExtensionIconSet::MATCH_EXACTLY);
     extensions::ImageLoader* loader =
         extensions::ImageLoader::Get(delegate_->extension_host()->profile());
     loader->LoadImageAsync(extension, icon_resource,

@@ -37,6 +37,7 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -106,7 +107,7 @@ CrxInstaller::CrxInstaller(
       did_handle_successfully_(true),
       record_oauth2_grant_(false),
       error_on_unsupported_requirements_(false),
-      requirements_checker_(new extensions::RequirementsChecker()),
+      requirements_checker_(new RequirementsChecker()),
       has_requirement_errors_(false),
       install_wait_for_idle_(true) {
   installer_task_runner_ = frontend_weak->GetFileTaskRunner();
@@ -385,7 +386,7 @@ void CrxInstaller::OnUnpackSuccess(const base::FilePath& temp_dir,
   }
 
   if (client_) {
-    Extension::DecodeIcon(extension_.get(),
+    IconsInfo::DecodeIcon(extension_.get(),
                           extension_misc::EXTENSION_ICON_LARGE,
                           ExtensionIconSet::MATCH_BIGGER,
                           &install_icon_);

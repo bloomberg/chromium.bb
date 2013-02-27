@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -422,8 +423,9 @@ void ExtensionWebUI::GetFaviconForURL(
     float scale = ui::GetScaleFactorScale(scale_factors[i]);
     int pixel_size = static_cast<int>(gfx::kFaviconSize * scale);
     ExtensionResource icon_resource =
-        extension->GetIconResource(pixel_size,
-                                   ExtensionIconSet::MATCH_BIGGER);
+        extensions::IconsInfo::GetIconResource(extension,
+                                               pixel_size,
+                                               ExtensionIconSet::MATCH_BIGGER);
 
     info_list.push_back(
         extensions::ImageLoader::ImageRepresentation(

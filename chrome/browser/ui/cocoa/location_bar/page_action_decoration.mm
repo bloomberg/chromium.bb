@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
 #include "chrome/browser/ui/webui/extensions/extension_info_ui.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
@@ -81,7 +82,7 @@ PageActionDecoration::~PageActionDecoration() {}
 // image centered.
 CGFloat PageActionDecoration::GetWidthForSpace(CGFloat width,
                                                CGFloat text_width) {
-  return Extension::kPageActionIconMaxSize;
+  return extensions::IconsInfo::kPageActionIconMaxSize;
 }
 
 void PageActionDecoration::DrawWithBackgroundInFrame(NSRect background_frame,
@@ -177,8 +178,9 @@ void PageActionDecoration::UpdateVisibility(WebContents* contents,
     if (!icon.IsEmpty()) {
       SetImage(icon.ToNSImage());
     } else if (!GetImage()) {
-      const NSSize default_size = NSMakeSize(Extension::kPageActionIconMaxSize,
-                                             Extension::kPageActionIconMaxSize);
+      const NSSize default_size = NSMakeSize(
+          extensions::IconsInfo::kPageActionIconMaxSize,
+          extensions::IconsInfo::kPageActionIconMaxSize);
       SetImage([[[NSImage alloc] initWithSize:default_size] autorelease]);
     }
   }
@@ -212,7 +214,7 @@ NSPoint PageActionDecoration::GetBubblePointInFrame(NSRect frame) {
   // easier (the middle of the centered image is the middle of the
   // frame).
   const CGFloat delta_height =
-      NSHeight(frame) - Extension::kPageActionIconMaxSize;
+      NSHeight(frame) - extensions::IconsInfo::kPageActionIconMaxSize;
   const CGFloat bottom_inset = std::ceil(delta_height / 2.0);
 
   // Return a point just below the bottom of the maximal drawing area.

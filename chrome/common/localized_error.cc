@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_set.h"
@@ -716,11 +717,15 @@ void LocalizedError::GetAppErrorStrings(
                                        failed_url.c_str()));
 
   error_strings->SetString("title", app->name());
-  error_strings->SetString("icon",
-      app->GetIconURL(extension_misc::EXTENSION_ICON_GIGANTOR,
-                      ExtensionIconSet::MATCH_SMALLER).spec());
+  error_strings->SetString(
+      "icon",
+      extensions::IconsInfo::GetIconURL(
+          app,
+          extension_misc::EXTENSION_ICON_GIGANTOR,
+          ExtensionIconSet::MATCH_SMALLER).spec());
   error_strings->SetString("name", app->name());
-  error_strings->SetString("msg",
+  error_strings->SetString(
+      "msg",
       l10n_util::GetStringUTF16(IDS_ERRORPAGES_APP_WARNING));
 
 #if defined(OS_CHROMEOS)

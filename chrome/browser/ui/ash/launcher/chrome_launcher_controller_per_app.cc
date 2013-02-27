@@ -48,6 +48,7 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/pref_names.h"
@@ -1390,7 +1391,7 @@ ash::LauncherID ChromeLauncherControllerPerApp::InsertAppLauncherItem(
   ash::LauncherItem item;
   item.type = launcher_item_type;
   item.is_incognito = false;
-  item.image = Extension::GetDefaultIcon(true);
+  item.image = extensions::IconsInfo::GetDefaultAppIcon();
 
   WebContents* active_tab = GetLastActiveWebContents(app_id);
   if (active_tab) {

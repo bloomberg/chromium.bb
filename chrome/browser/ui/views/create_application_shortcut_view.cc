@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/pref_names.h"
@@ -495,14 +496,16 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
   // we will resize whatever we can get.  Making a large icon smaller
   // is prefered to making a small icon larger, so look for a larger
   // icon first:
-  ExtensionResource icon_resource = app_->GetIconResource(
+  ExtensionResource icon_resource = extensions::IconsInfo::GetIconResource(
+      app_,
       kAppIconSize,
       ExtensionIconSet::MATCH_BIGGER);
 
   // If no icon exists that is the desired size or larger, get the
   // largest icon available:
   if (icon_resource.empty()) {
-    icon_resource = app_->GetIconResource(
+    icon_resource = extensions::IconsInfo::GetIconResource(
+        app_,
         kAppIconSize,
         ExtensionIconSet::MATCH_SMALLER);
   }

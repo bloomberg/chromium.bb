@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -77,8 +78,10 @@ GURL ExtensionIconSource::GetIconURL(const extensions::Extension* extension,
                                      bool* exists) {
   if (exists)
     *exists = true;
-  if (exists && extension->GetIconURL(icon_size, match) == GURL())
+  if (exists && extensions::IconsInfo::GetIconURL(
+          extension, icon_size, match) == GURL()) {
     *exists = false;
+  }
 
   GURL icon_url(base::StringPrintf("%s%s/%d/%d%s",
                                    chrome::kChromeUIExtensionIconURL,
@@ -129,8 +132,8 @@ void ExtensionIconSource::StartDataRequest(
   }
 
   ExtensionIconRequest* request = GetData(next_id);
-  ExtensionResource icon =
-      request->extension->GetIconResource(request->size, request->match);
+  ExtensionResource icon = extensions::IconsInfo::GetIconResource(
+      request->extension, request->size, request->match);
 
   if (icon.relative_path().empty()) {
     LoadIconFailed(next_id);
@@ -255,8 +258,8 @@ void ExtensionIconSource::OnImageLoaded(int request_id,
 
 void ExtensionIconSource::LoadIconFailed(int request_id) {
   ExtensionIconRequest* request = GetData(request_id);
-  ExtensionResource icon =
-      request->extension->GetIconResource(request->size, request->match);
+  ExtensionResource icon = extensions::IconsInfo::GetIconResource(
+      request->extension, request->size, request->match);
 
   if (request->size == extension_misc::EXTENSION_ICON_BITTY)
     LoadFaviconImage(request_id);

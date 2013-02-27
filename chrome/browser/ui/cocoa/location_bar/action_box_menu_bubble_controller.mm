@@ -15,6 +15,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/browser/ui/toolbar/action_box_menu_model.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "grit/generated_resources.h"
@@ -66,7 +67,7 @@ class ExtensionIconLoaderBridge : public extensions::IconImage::Observer {
         extension,
         page_launcher_info->default_icon,
         extension_misc::EXTENSION_ICON_ACTION,
-        extensions::Extension::GetDefaultIcon(true),
+        extensions::IconsInfo::GetDefaultAppIcon(),
         this));
     OnExtensionIconImageChanged(icon_loader_.get());
   }

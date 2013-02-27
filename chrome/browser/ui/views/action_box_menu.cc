@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/extension_icon_image.h"
 #include "chrome/browser/ui/toolbar/action_box_menu_model.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "ui/views/controls/button/menu_button.h"
@@ -28,7 +29,7 @@ class ExtensionImageView : public views::ImageView, public IconImage::Observer {
                               extension,
                               page_launcher_info->default_icon,
                               extension_misc::EXTENSION_ICON_ACTION,
-                              Extension::GetDefaultIcon(true),
+                              extensions::IconsInfo::GetDefaultAppIcon(),
                               this));
     SetImage(icon_->image_skia());
   }

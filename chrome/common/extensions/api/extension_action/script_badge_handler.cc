@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -20,9 +21,14 @@ namespace errors = extension_manifest_errors;
 namespace extensions {
 
 ScriptBadgeHandler::ScriptBadgeHandler() {
+  prerequisite_keys_.push_back(extension_manifest_keys::kIcons);
 }
 
 ScriptBadgeHandler::~ScriptBadgeHandler() {
+}
+
+const std::vector<std::string>& ScriptBadgeHandler::PrerequisiteKeys() {
+  return prerequisite_keys_;
 }
 
 bool ScriptBadgeHandler::Parse(Extension* extension, string16* error) {
@@ -89,7 +95,7 @@ void ScriptBadgeHandler::SetActionInfoDefaults(const Extension* extension,
   info->default_title = extension->name();
   info->default_icon.Clear();
   for (size_t i = 0; i < extension_misc::kNumScriptBadgeIconSizes; ++i) {
-    std::string path = extension->icons().Get(
+    std::string path = IconsInfo::GetIcons(extension).Get(
         extension_misc::kScriptBadgeIconSizes[i],
         ExtensionIconSet::MATCH_BIGGER);
     if (!path.empty()) {

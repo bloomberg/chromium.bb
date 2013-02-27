@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/api/identity/oauth2_manifest_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -131,8 +132,10 @@ int GetSizeForMaxScaleFactor(int size_in_dip) {
 // Returns bitmap for the default icon with size equal to the default icon's
 // pixel size under maximal supported scale factor.
 SkBitmap GetDefaultIconBitmapForMaxScaleFactor(bool is_app) {
-  return Extension::GetDefaultIcon(is_app).
-      GetRepresentation(ui::GetMaxScaleFactor()).sk_bitmap();
+  const gfx::ImageSkia& image = is_app ?
+      extensions::IconsInfo::GetDefaultAppIcon() :
+      extensions::IconsInfo::GetDefaultExtensionIcon();
+  return image.GetRepresentation(ui::GetMaxScaleFactor()).sk_bitmap();
 }
 
 // If auto confirm is enabled then posts a task to proceed with or cancel the
@@ -606,9 +609,10 @@ void ExtensionInstallPrompt::LoadImageIfNeeded() {
   }
 
   // Load the image asynchronously. For the response, check OnImageLoaded.
-  ExtensionResource image =
-      extension_->GetIconResource(extension_misc::EXTENSION_ICON_LARGE,
-                                  ExtensionIconSet::MATCH_BIGGER);
+  ExtensionResource image = extensions::IconsInfo::GetIconResource(
+      extension_,
+      extension_misc::EXTENSION_ICON_LARGE,
+      ExtensionIconSet::MATCH_BIGGER);
   // Load the icon whose pixel size is large enough to be displayed under
   // maximal supported scale factor. UI code will scale the icon down if needed.
   // TODO(tbarzic): We should use IconImage here and load the required bitmap

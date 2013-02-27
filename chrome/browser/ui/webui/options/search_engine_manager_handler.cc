@@ -14,6 +14,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/search_engines/template_url_table_model.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
@@ -173,7 +174,8 @@ base::DictionaryValue* SearchEngineManagerHandler::CreateDictionaryForExtension(
   dict->SetString("displayName", extension.name());
   dict->SetString("keyword",
                   extensions::OmniboxInfo::GetKeyword(&extension));
-  GURL icon = extension.GetIconURL(16, ExtensionIconSet::MATCH_BIGGER);
+  GURL icon = extensions::IconsInfo::GetIconURL(
+      &extension, 16, ExtensionIconSet::MATCH_BIGGER);
   dict->SetString("iconURL", icon.spec());
   dict->SetString("url", string16());
   return dict;

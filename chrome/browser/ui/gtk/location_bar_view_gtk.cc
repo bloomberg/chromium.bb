@@ -72,6 +72,7 @@
 #include "chrome/common/badge_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -1812,8 +1813,8 @@ LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
           this)) {
   event_box_.Own(gtk_event_box_new());
   gtk_widget_set_size_request(event_box_.get(),
-                              Extension::kPageActionIconMaxSize,
-                              Extension::kPageActionIconMaxSize);
+                              extensions::IconsInfo::kPageActionIconMaxSize,
+                              extensions::IconsInfo::kPageActionIconMaxSize);
 
   // Make the event box not visible so it does not paint a background.
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_.get()), FALSE);

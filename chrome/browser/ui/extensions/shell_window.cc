@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -409,8 +410,9 @@ void ShellWindow::UpdateExtensionAppIcon() {
   extensions::ImageLoader* loader = extensions::ImageLoader::Get(profile());
   loader->LoadImageAsync(
       extension(),
-      extension()->GetIconResource(kPreferredIconSize,
-                                   ExtensionIconSet::MATCH_BIGGER),
+      extensions::IconsInfo::GetIconResource(extension(),
+                                             kPreferredIconSize,
+                                             ExtensionIconSet::MATCH_BIGGER),
       gfx::Size(kPreferredIconSize, kPreferredIconSize),
       base::Bind(&ShellWindow::OnImageLoaded,
                  image_loader_ptr_factory_.GetWeakPtr()));

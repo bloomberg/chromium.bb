@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/location_bar/page_action_with_badge_view.h"
 
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 
@@ -23,8 +24,8 @@ void PageActionWithBadgeView::GetAccessibleState(
 }
 
 gfx::Size PageActionWithBadgeView::GetPreferredSize() {
-  return gfx::Size(extensions::Extension::kPageActionIconMaxSize,
-                   extensions::Extension::kPageActionIconMaxSize);
+  return gfx::Size(extensions::IconsInfo::kPageActionIconMaxSize,
+                   extensions::IconsInfo::kPageActionIconMaxSize);
 }
 
 int PageActionWithBadgeView::GetBuiltInHorizontalPadding() const {

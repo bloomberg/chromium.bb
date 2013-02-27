@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/image_loader.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -53,8 +54,10 @@ ExtensionIconManager::~ExtensionIconManager() {
 
 void ExtensionIconManager::LoadIcon(Profile* profile,
                                     const extensions::Extension* extension) {
-  ExtensionResource icon_resource = extension->GetIconResource(
-      extension_misc::EXTENSION_ICON_BITTY, ExtensionIconSet::MATCH_BIGGER);
+  ExtensionResource icon_resource = extensions::IconsInfo::GetIconResource(
+      extension,
+      extension_misc::EXTENSION_ICON_BITTY,
+      ExtensionIconSet::MATCH_BIGGER);
   if (!icon_resource.extension_root().empty()) {
     // Insert into pending_icons_ first because LoadImage can call us back
     // synchronously if the image is already cached.

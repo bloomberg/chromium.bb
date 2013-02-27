@@ -21,6 +21,7 @@
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -145,8 +146,10 @@ void OfflineLoadPage::GetAppOfflineStrings(
     DictionaryValue* strings) const {
   strings->SetString("title", app->name());
 
-  GURL icon_url = app->GetIconURL(extension_misc::EXTENSION_ICON_LARGE,
-                                  ExtensionIconSet::MATCH_BIGGER);
+  GURL icon_url = extensions::IconsInfo::GetIconURL(
+      app,
+      extension_misc::EXTENSION_ICON_LARGE,
+      ExtensionIconSet::MATCH_BIGGER);
   if (icon_url.is_empty()) {
     strings->SetString("display_icon", "none");
     strings->SetString("icon", string16());
