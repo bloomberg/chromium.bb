@@ -507,6 +507,7 @@
           'type': 'static_library',
 
           'sources': [
+            'src/common/scoped_ptr.h',
             'src/processor/basic_code_modules.cc',
             'src/processor/basic_code_modules.h',
             'src/processor/logging.cc',
@@ -514,7 +515,6 @@
             'src/processor/minidump.cc',
             'src/processor/pathname_stripper.cc',
             'src/processor/pathname_stripper.h',
-            'src/processor/scoped_ptr.h',
           ],
 
           'include_dirs': [
