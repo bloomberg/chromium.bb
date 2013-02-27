@@ -7396,10 +7396,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Pa&amp;ste and Search
         </message>
       </if>
-      <message name="IDS_OMNIBOX_KEYWORD_HINT" desc="Shown to the user when the url in the omnibox has a keyword associated with it. $1 is replaced with an image showing the tab key and is labelled with IDS_OMNIBOX_KEYWORD_HINT_KEY. $2 is replaced with the description of the keyword.">
+      <message name="IDS_OMNIBOX_KEYWORD_HINT" desc="Shown to the user when the url in the omnibox has a keyword associated with it. $1 is replaced with an image showing the tab key. $2 is replaced with the description of the keyword.">
         Press <ph name="SEARCH_KEY">$1<ex>Tab</ex></ph> to search <ph name="SITE_NAME">$2<ex>google.com</ex></ph>
       </message>
-      <message name="IDS_OMNIBOX_EXTENSION_KEYWORD_HINT" desc="Shown to the user when the word(s) in the omnibox has an extension keyword associated with it. $1 is replaced with an image showing the tab key and is labelled with IDS_OMNIBOX_KEYWORD_HINT_KEY. $2 is replaced with the description of the keyword.">
+      <message name="IDS_OMNIBOX_EXTENSION_KEYWORD_HINT" desc="Shown to the user when the word(s) in the omnibox has an extension keyword associated with it. $1 is replaced with an image showing the tab key. $2 is replaced with the description of the keyword.">
         Press <ph name="SEARCH_KEY">$1<ex>Tab</ex></ph> to send commands to <ph name="EXTENSION_NAME">$2<ex>Google Talk</ex></ph>
       </message>
       <message name="IDS_OMNIBOX_KEYWORD_TEXT" desc="Text shown in the search button at the front of the omnibox when the user has selected a keyword">
@@ -11993,9 +11993,6 @@ The following application will be launched if you accept this request:
         Pressing Tab on a webpage highlights links, as well as form fields
       </message>
 
-      <message name="IDS_OPTIONS_FONTSETTINGS_INFO" desc="Information text about font and language options for webpages">
-        Change the default font and language for webpages.
-      </message>
       <message name="IDS_OPTIONS_DEFAULT_ZOOM_LEVEL_LABEL" desc="The label of the 'Default Zoom Level' select menu">
         Page zoom:
       </message>
@@ -12081,9 +12078,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_NETWORK">
         Network
       </message>
-      <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_TRANSLATE">
-        Translate
-      </message>
       <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_LANGUAGES">
         Languages
       </message>
@@ -12129,9 +12123,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <message name="IDS_WALLPAPER_MANAGER_SHOW_CUSTOM_WALLPAPER_ON_START_WARNING" desc="The string displayed to user when set custom wallpaper">
         Your wallpaper will be shown on the login screens and your background.
-      </message>
-      <message name="IDS_WALLPAPER_MANAGER_NOT_SHOW_CUSTOM_WALLPAPER_ON_START_WARNING" desc="The string displayed to user when set custom wallpaper">
-        Your wallpaper will be displayed on your background only.
       </message>
       <message name="IDS_WALLPAPER_MANAGER_ACCESS_FAIL" desc="The string displayed to user when access wallpaper server failed.">
         Chrome cannot access wallpapers at this time.
@@ -13445,9 +13436,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
 
       <!-- Choose data types dialog strings -->
-      <message name="IDS_CUSTOMIZE_SYNC_DESCRIPTION" desc="The first line of the Customize Sync dialog, explaining what this box does.">
-        Sync the following items automatically:
-      </message>
       <message name="IDS_SYNC_CHOOSE_DATATYPES_INSTRUCTIONS" desc="Text explaining the 'Choose Datatypes' dialog.">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> securely syncs your data with your Google account. Keep everything synced or customize synced data types and encryption settings.
       </message>
@@ -13658,14 +13646,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <message name="IDS_SYNC_SERVICE_UNAVAILABLE" desc="Error message to display when the user domain entered by the user has sync disabled.">
         Sync service is not available for your domain.
-      </message>
-
-      <!-- Web Store login dialog strings -->
-      <message name="IDS_WEB_STORE_LOGIN_INTRODUCTION_1" desc="The first message to display in the Web Store login dialog.">
-        To use the Chrome Web Store, you must sign in with a Google Account.
-      </message>
-      <message name="IDS_WEB_STORE_LOGIN_INTRODUCTION_2" desc="The second message to display in the Web Store login dialog.">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will sync any apps you have, so you will be able to access them from any <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> browser you sign in to.
       </message>
 
       <!-- Sync app menu item strings -->
@@ -14273,9 +14253,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_HISTORY_MENU_LINUX" desc="The menu title of the Linux history menu.">
           Hi&amp;story
         </message>
-        <message name="IDS_BOOKMARKS_MENU_LINUX" desc="The menu title of the Linux bookmarks menu.">
-          &amp;Bookmarks
-        </message>
         <message name="IDS_TOOLS_MENU_LINUX" desc="The menu title of the Linux tools menu.">
           &amp;Tools
         </message>
@@ -14341,9 +14318,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_BOOKMARK_CURRENT_PAGE_LINUX" desc="The Linux menu item for bookmarking the current page in the bookmark menu.">
           Bookmark This Page...
         </message>
-        <message name="IDS_BOOKMARK_ALL_TABS_LINUX" desc="The Linux menu item for bookmarking all tabs in the current window.">
-          Bookmark All Tabs...
-        </message>
       </if>
 
     <!-- Color chooser dialog default titles (only used on Linux) -->
@@ -14399,9 +14373,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
     </message>
 
     <!-- MediaStream messages -->
-    <message name="IDS_MEDIASTREAM_BUBBLE_CLEAR_LINK" desc="Link on the mediastream bubble that resets the media content setting for the current site.">
-      Clear these settings for future visits
-    </message>
     <message name="IDS_MEDIASTREAM_BUBBLE_SECTION_ALLOWED" desc="Heading for a section in the geolocation bubble listing all sites which are currently tracking the user's location.">
       This site is accessing your camera and microphone.
     </message>
@@ -14499,14 +14470,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
     </if>
 
-    <!-- Status Area Strings (not ChromeOS specific) -->
-    <message name="IDS_STATUSBAR_CLOCK_OPEN_OPTIONS_DIALOG" desc="The menu item in the clock menu button for opening the options dialog">
-      Open date and time settings...
-    </message>
-    <message name="IDS_STATUSBAR_CLOCK_TOOLTIP" desc="Tooltip for the clock in the status bar.">
-      <ph name="DATE">$1<ex>Aug 16, 2010</ex></ph>
-    </message>
-
     <!-- ChromeOS-specific strings -->
     <if expr="pp_ifdef('chromeos')">
       <part file="chromeos_strings.grdp" />
@@ -14592,12 +14555,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
     </message>
     <message name="IDS_SPEECH_INPUT_MIC_SETTINGS" desc="Text displayed on a button or link to open the microphone settings window.">
       Microphone settings
-    </message>
-    <message name="IDS_SPEECH_INPUT_TRAY_TOOLTIP" desc="Tool tip for the audio capture notification icon shown by the speech recognition API">
-      "<ph name="EXTENSION_NAME">$1<ex>Speech Recognizer</ex></ph>" is currently capturing audio for speech recognition.
-    </message>
-    <message name="IDS_SPEECH_INPUT_TRAY_BALLOON_BODY" desc="Contents of the balloon shown by the tray notification icon the first time an extension or a website starts recognition">
-      "<ph name="EXTENSION_NAME">$1<ex>Speech Recognizer</ex></ph>" has started capturing audio for speech recognition. Look for the microphone notification icon to know when this happens again.
     </message>
 
     <message name="IDS_IMAGE_FILES" desc="The description of the image file extensions in the select file dialog.">
@@ -14792,65 +14749,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <message name="IDS_REGISTER_PROTOCOL_HANDLER_IGNORE" desc="Text to show for an ignore prompt for a register protocol handler registration request.">
       Ignore
     </message>
-    <message name="IDS_REGISTER_PROTOCOL_HANDLER_ALREADY_REGISTERED" desc="Text to show when the user tries to register a protocol handler that they have already registered.">
-      <ph name="HANDLER_TITLE">$1<ex>Google Search</ex></ph> is already being used to handle <ph name="PROTOCOL">$2<ex>search</ex></ph>: links.
-    </message>
-
-    <!-- Web Intents -->
-    <message name="IDS_REGISTER_INTENT_HANDLER_CONFIRM" desc="The message to display when asking the user to confirm registration of an intent handler.">
-      Allow <ph name="INTENT_HANDLE_TITLE">$1<ex>Google Search</ex></ph> (<ph name="INTENT_HANDLE_HOSTNAME">$2<ex>google.com</ex></ph>) to handle intents?
-    </message>
-    <message name="IDS_REGISTER_INTENT_HANDLER_ACCEPT" desc="Text to show for the accept button for the register intent handler request infobar.">
-      Use <ph name="INTENT_HANDLER_TITLE">$1<ex>Google Search</ex></ph>
-    </message>
-    <message name="IDS_REGISTER_INTENT_HANDLER_DENY" desc="Text to show for the deny button for the register intent handler request infobar.">
-      No
-    </message>
-    <message name="IDS_CHOOSE_INTENT_HANDLER_MESSAGE" desc="Text to display when user is choosing a intent handler to respond to a web intent.">
-      Complete action using:
-    </message>
-    <message name="IDS_FIND_MORE_INTENT_HANDLER_MESSAGE" desc="Text to show to inform the user that more intent services can be found in the web store.">
-      Find more apps in the Chrome Web Store
-    </message>
-    <message name="IDS_FIND_MORE_INTENT_HANDLER_TOOLTIP" desc="Tooltip text for the web store plus button on the intent picker dialog.">
-      Find apps in the Chrome Web Store
-    </message>
-    <message name="IDS_INTENT_PICKER_NO_SERVICES_REGISTERED" desc="Prompt indicating to the user that there are no services registered for the given Web Intents action.">
-      No apps are registered for this action.
-    </message>
-    <message name="IDS_INTENT_PICKER_CHOOSE_SERVICE" desc="Prompt to the user to select one of the given services to complete a Web Intents action.">
-      Choose an app&#8230;
-    </message>
-    <message name="IDS_INTENT_PICKER_CHOOSE_SERVICES_NONE_INSTALLED_TITLE" desc="Heading in the Web Intents picker box for a section containing suggested applications from the Chrome Web Store. Displayed only if there are no installed services.">
-      You have no apps installed.
-    </message>
-    <message name="IDS_INTENT_PICKER_CHOOSE_SERVICES_NONE_INSTALLED_MESSAGE" desc="Message body in the Web Intents picker box for a section containing suggested applications from the Chrome Web Store. Displayed only if there are no installed services.">
-      Here are some suggestions from the Chrome Web Store:
-    </message>
-    <message name="IDS_INTENT_PICKER_GET_MORE_SERVICES_NONE_INSTALLED" desc="Heading in the Web Intents picker box for a section containing suggested applications from the Chrome Web Store. Displayed only if there are no installed services.">
-      You have no apps installed. Here are some app suggestions from the Chrome Web Store:
-    </message>
-    <message name="IDS_INTENT_PICKER_GET_MORE_SERVICES" desc="Heading in the Web Intents picker box for a section containing suggested applications from the Chrome Web Store">
-      App suggestions from the Chrome Web Store:
-    </message>
-    <message name="IDS_INTENT_PICKER_NO_SERVICES_TITLE" desc="Heading for text explaining that there are neither installed nor suggested services available">
-      Uh oh.
-    </message>
-    <message name="IDS_INTENT_PICKER_NO_SERVICES" desc="Prompt indicating to the user that there are neither any matching services installed locally, nor does the Chrome Web Store offer any suggestions for this action either.">
-      No apps for this action are installed, and there are no app recommendations for this action in the Chrome Web Store either.
-    </message>
-    <message name="IDS_INTENT_PICKER_USE_ALTERNATE_SERVICE" desc="Link text that, when clicked, allows the user to choose an alternate intent service from the picker.">
-      Use another service
-    </message>
-    <message name="IDS_INTENT_PICKER_USE_ANOTHER_SERVICE" desc="Button text providing a way for the user to not use the web intents service they are on, and select a new one.">
-      Use another app
-    </message>
-    <message name="IDS_INTENT_PICKER_WAIT_FOR_CWS" desc="Prompt indicating to the user that Chrome is currently waiting for results from the Chrome Web Store">
-      Waiting for Chrome Web Store
-    </message>
-    <message name="IDS_INTENT_PICKER_SELECT_INTENT" desc="Button text that, when clicked, allows the user to select the associated intent">
-      Select
-    </message>
 
     <!-- PDF with unsupported feature bubble -->
     <message name="IDS_PDF_BUBBLE_MESSAGE" desc="Message for the bubble when a user views a PDF with an unsupported feature">
@@ -14870,9 +14768,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
     </message>
     <message name="IDS_PDF_INFOBAR_ALWAYS_USE_READER_BUTTON" desc="The label of the 'always' button on the infobar that asks the user if they want to set Adobe Reader as default.">
       Always
-    </message>
-    <message name="IDS_PDF_INFOBAR_NEVER_USE_READER_BUTTON" desc="The label of the 'never' button on the infobar that asks the user if they want to set Adobe Reader as default">
-      Never
     </message>
 
     <!-- Adobe Reader is out of date Blocking Page -->
@@ -14922,18 +14817,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
     </message>
     <message name="IDS_MEDIA_CAPTURE_DENY" desc="Label for a button that denies access to a web page, so they can use a camera and/or a microphone.">
       Deny
-    </message>
-    <message name="IDS_MEDIA_CAPTURE_ALWAYS_ALLOW_AUDIO_AND_VIDEO" desc="Label for the menu item to always allow a web page to access a camera and a microphone.">
-      Always allow this site to use this microphone and this camera
-    </message>
-    <message name="IDS_MEDIA_CAPTURE_ALWAYS_ALLOW_AUDIO_ONLY" desc="Label for the menu item to always allow a web page to access a microphone.">
-      Always allow this site to use this microphone
-    </message>
-    <message name="IDS_MEDIA_CAPTURE_ALWAYS_ALLOW_VIDEO_ONLY" desc="Label for the menu item to always allow a web page to access a camera.">
-      Always allow this site to use this camera
-    </message>
-    <message name="IDS_MEDIA_CAPTURE_DEVICES_MENU_TITLE" desc="Label for a drop-down menu button that will, when clicked, list the available and selected camera and/or microphone devices.">
-      Options
     </message>
 
     <!-- MediaStream capture status tray icon -->
@@ -15156,10 +15039,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <message name="IDS_METRO_NPAPI_PLUGIN_PROMPT"
              desc="Infobar message when an NPAPI plugin doesn't run in Metro mode.">
       <ph name="PLUGIN_NAME">$1<ex>Quicktime</ex></ph> only works on the desktop.
-    </message>
-    <message name="IDS_METRO_SWITCH_WHY_LINK"
-             desc="Infobar text for link to help center about metro mode issues">
-      Why am I seeing this?
     </message>
     <message name="IDS_METRO_DOWNLOAD_COMPLETE_NOTIFICATION"
             desc="Notification displayed when a download request is completed">
