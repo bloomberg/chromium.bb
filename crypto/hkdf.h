@@ -35,7 +35,7 @@ class CRYPTO_EXPORT HKDF {
        const base::StringPiece& info,
        size_t key_bytes_to_generate,
        size_t iv_bytes_to_generate);
-  virtual ~HKDF();
+  ~HKDF();
 
   base::StringPiece client_write_key() const {
     return client_write_key_;

@@ -49,7 +49,7 @@ HKDF::HKDF(const base::StringPiece& secret,
   output_.resize(n * kSHA256HashLength);
   base::StringPiece previous;
 
-  char* buf = new char[kSHA256HashLength + info.size() + 1];
+  scoped_ptr<char[]> buf(new char[kSHA256HashLength + info.size() + 1]);
   uint8 digest[kSHA256HashLength];
 
   HMAC hmac(HMAC::SHA256);
@@ -57,13 +57,13 @@ HKDF::HKDF(const base::StringPiece& secret,
   DCHECK(result);
 
   for (size_t i = 0; i < n; i++) {
-    memcpy(buf, previous.data(), previous.size());
+    memcpy(buf.get(), previous.data(), previous.size());
     size_t j = previous.size();
-    memcpy(buf + j, info.data(), info.size());
+    memcpy(buf.get() + j, info.data(), info.size());
     j += info.size();
-    buf[j++] = static_cast<char>((i + 1) & 0xFF);
+    buf[j++] = static_cast<char>(i + 1);
 
-    result = hmac.Sign(base::StringPiece(buf, j), digest, sizeof(digest));
+    result = hmac.Sign(base::StringPiece(buf.get(), j), digest, sizeof(digest));
     DCHECK(result);
 
     memcpy(&output_[i*sizeof(digest)], digest, sizeof(digest));
@@ -83,7 +83,6 @@ HKDF::HKDF(const base::StringPiece& secret,
   j += iv_bytes_to_generate;
   server_write_iv_ = base::StringPiece(reinterpret_cast<char*>(&output_[j]),
                                        iv_bytes_to_generate);
-  delete[] buf;
 }
 
 HKDF::~HKDF() {
