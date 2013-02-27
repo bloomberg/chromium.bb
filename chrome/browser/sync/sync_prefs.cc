@@ -43,8 +43,7 @@ SyncPrefs::~SyncPrefs() {
 }
 
 // static
-void SyncPrefs::RegisterUserPrefs(PrefService* prefs,
-                                  PrefRegistrySyncable* registry) {
+void SyncPrefs::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   // TODO(joi): Remove |prefs| parameter.
   registry->RegisterBooleanPref(prefs::kSyncHasSetupCompleted,
                                 false,
@@ -56,18 +55,11 @@ void SyncPrefs::RegisterUserPrefs(PrefService* prefs,
                               0,
                               PrefRegistrySyncable::UNSYNCABLE_PREF);
 
-  // If you've never synced before, or if you're using Chrome OS or Android,
-  // all datatypes are on by default.
-  // TODO(nick): Perhaps a better model would be to always default to false,
-  // and explicitly call SetDataTypes() when the user shows the wizard.
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-  bool enable_by_default = true;
-#else
-  bool enable_by_default = !prefs->HasPrefPath(prefs::kSyncHasSetupCompleted);
-#endif
-
+  // All datatypes are on by default, but this gets set explicitly
+  // when you configure sync (when turning it on), in
+  // ProfileSyncService::OnUserChoseDatatypes.
   registry->RegisterBooleanPref(prefs::kSyncKeepEverythingSynced,
-                                enable_by_default,
+                                true,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   syncer::ModelTypeSet user_types = syncer::UserTypes();
@@ -82,7 +74,7 @@ void SyncPrefs::RegisterUserPrefs(PrefService* prefs,
 
   for (syncer::ModelTypeSet::Iterator it = user_types.First();
        it.Good(); it.Inc()) {
-    RegisterDataTypePreferredPref(registry, it.Get(), enable_by_default);
+    RegisterDataTypePreferredPref(registry, it.Get(), true);
   }
 
   registry->RegisterBooleanPref(prefs::kSyncManaged,

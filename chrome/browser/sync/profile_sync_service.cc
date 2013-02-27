@@ -250,8 +250,6 @@ void ProfileSyncService::TrySyncDatatypePrefRecovery() {
   PrefService* const pref_service = profile_->GetPrefs();
   if (!pref_service)
     return;
-  if (sync_prefs_.HasKeepEverythingSynced())
-    return;
   const syncer::ModelTypeSet registered_types = GetRegisteredDataTypes();
   if (sync_prefs_.GetPreferredDataTypes(registered_types).Size() > 1)
     return;

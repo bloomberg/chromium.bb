@@ -556,7 +556,6 @@ void TestingProfile::CreateTestingPrefService() {
   DCHECK(!prefs_.get());
   testing_prefs_ = new TestingPrefServiceSyncable();
   prefs_.reset(testing_prefs_);
-  Profile::RegisterUserPrefs(testing_prefs_->registry());
   chrome::RegisterUserPrefs(testing_prefs_, testing_prefs_->registry());
 }
 

@@ -58,6 +58,7 @@
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -269,7 +270,7 @@ void RegisterUserPrefs(PrefService* user_prefs,
   BookmarkPromptPrefs::RegisterUserPrefs(registry);
   bookmark_utils::RegisterUserPrefs(registry);
   BrowserInstantController::RegisterUserPrefs(user_prefs, registry);
-  browser_sync::SyncPrefs::RegisterUserPrefs(user_prefs, registry);
+  browser_sync::SyncPrefs::RegisterUserPrefs(registry);
   ChromeContentBrowserClient::RegisterUserPrefs(registry);
   ChromeDownloadManagerDelegate::RegisterUserPrefs(registry);
   ChromeVersionService::RegisterUserPrefs(registry);
@@ -292,6 +293,7 @@ void RegisterUserPrefs(PrefService* user_prefs,
   PasswordManager::RegisterUserPrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterUserPrefs(registry);
   PrefsTabHelper::RegisterUserPrefs(registry);
+  Profile::RegisterUserPrefs(registry);
   ProfileImpl::RegisterUserPrefs(registry);
   PromoResourceService::RegisterUserPrefs(registry);
   ProtocolHandlerRegistry::RegisterUserPrefs(registry);

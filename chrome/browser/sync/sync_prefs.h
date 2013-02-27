@@ -54,8 +54,7 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
 
   virtual ~SyncPrefs();
 
-  static void RegisterUserPrefs(PrefService* prefs,
-                                PrefRegistrySyncable* registry);
+  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
   // Checks if sync is enabled for the profile that owns |io_data|. This must
   // be invoked on the IO thread, and can be used to check if sync is enabled

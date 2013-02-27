@@ -388,8 +388,6 @@ ProfileImpl::ProfileImpl(
          create_mode == CREATE_MODE_SYNCHRONOUS);
   bool async_prefs = create_mode == CREATE_MODE_ASYNCHRONOUS;
 
-  Profile::RegisterUserPrefs(pref_registry_);
-
   {
     // On startup, preference loading is always synchronous so a scoped timer
     // will work here.

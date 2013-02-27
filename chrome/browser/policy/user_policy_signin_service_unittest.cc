@@ -99,7 +99,6 @@ class UserPolicySigninServiceTest : public testing::Test {
     // up a UserCloudPolicyManager with a MockUserCloudPolicyStore.
     scoped_ptr<TestingPrefServiceSyncable> prefs(
         new TestingPrefServiceSyncable());
-    Profile::RegisterUserPrefs(prefs->registry());
     chrome::RegisterUserPrefs(prefs.get(), prefs->registry());
     TestingProfile::Builder builder;
     builder.SetPrefService(scoped_ptr<PrefServiceSyncable>(prefs.Pass()));
