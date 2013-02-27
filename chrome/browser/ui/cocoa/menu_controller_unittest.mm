@@ -320,10 +320,20 @@ TEST_F(MenuControllerTest, OpenClose) {
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
   delegate.menu_to_close_ = [menu menu];
 
+  EXPECT_FALSE([menu isMenuOpen]);
+
+  // In the event tracking run loop mode of the menu, verify that the controller
+  // resports the menu as open.
+  CFRunLoopPerformBlock(CFRunLoopGetCurrent(), NSEventTrackingRunLoopMode, ^{
+      EXPECT_TRUE([menu isMenuOpen]);
+  });
+
   // Pop open the menu, which will spin an event-tracking run loop.
   [NSMenu popUpContextMenu:[menu menu]
                  withEvent:nil
                    forView:[test_window() contentView]];
+
+  EXPECT_FALSE([menu isMenuOpen]);
 
   // When control returns back to here, the menu will have finished running its
   // loop and will have closed itself (see Delegate::MenuWillShow).

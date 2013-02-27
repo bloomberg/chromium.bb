@@ -215,6 +215,10 @@
   return menu_.get();
 }
 
+- (BOOL)isMenuOpen {
+  return isMenuOpen_;
+}
+
 - (void)menuWillOpen:(NSMenu*)menu {
   isMenuOpen_ = YES;
   model_->MenuWillShow();

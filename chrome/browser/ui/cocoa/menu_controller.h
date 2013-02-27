@@ -56,6 +56,9 @@ class MenuModel;
 // default initializer was used, then this will create the menu on first call.
 - (NSMenu*)menu;
 
+// Whether the menu is currently open.
+- (BOOL)isMenuOpen;
+
 // NSMenuDelegate methods this class implements. Subclasses should call super
 // if extending the behavior.
 - (void)menuWillOpen:(NSMenu*)menu;

@@ -448,7 +448,8 @@ class NotificationBridge
 }
 
 - (void)zoomChangedForActiveTab:(BOOL)canShowBubble {
-  locationBarView_->ZoomChangedForActiveTab(canShowBubble ? true : false);
+  locationBarView_->ZoomChangedForActiveTab(
+      canShowBubble && ![wrenchMenuController_ isMenuOpen]);
 }
 
 - (void)setIsLoading:(BOOL)isLoading force:(BOOL)force {
