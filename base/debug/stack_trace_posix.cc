@@ -4,7 +4,6 @@
 
 #include "base/debug/stack_trace.h"
 
-#include <dlfcn.h>
 #include <errno.h>
 #include <execinfo.h>
 #include <fcntl.h>
@@ -35,10 +34,6 @@
 
 #if defined(USE_SYMBOLIZE)
 #include "base/third_party/symbolize/symbolize.h"
-#endif
-
-#if defined(OS_MACOSX)
-#include "base/third_party/symbolize/demangle.h"
 #endif
 
 namespace base {
@@ -145,37 +140,6 @@ void ProcessBacktrace(void *const *trace,
       handler->HandleOutput(buf);
     else
       handler->HandleOutput("<unknown>");
-
-    handler->HandleOutput("\n");
-  }
-#elif defined(OS_MACOSX)
-  for (int i = 0; i < size; ++i) {
-    OutputPointer(trace[i], handler);
-    handler->HandleOutput(" ");
-
-    // TODO(phajdan.jr): dladdr is not async-signal-safe. Implement our own
-    // safe solution.
-    Dl_info dlinfo;
-    if (dladdr(trace[i], &dlinfo) == 0) {
-      handler->HandleOutput("<unknown>");
-    } else {
-      char* base_name = strrchr(dlinfo.dli_fname, '/');
-      handler->HandleOutput(base_name ? base_name + 1 : dlinfo.dli_fname);
-      handler->HandleOutput("\t");
-
-      char buf[1024] = { '\0' };
-
-      if (google::Demangle(dlinfo.dli_sname, buf, sizeof(buf)))
-        handler->HandleOutput(buf);
-      else
-        handler->HandleOutput(dlinfo.dli_sname);
-
-      internal::itoa_r(
-          static_cast<char*>(trace[i]) - static_cast<char*>(dlinfo.dli_saddr),
-          buf, sizeof(buf), 10, 0);
-      handler->HandleOutput("+");
-      handler->HandleOutput(buf);
-    }
 
     handler->HandleOutput("\n");
   }
