@@ -155,9 +155,6 @@ AudioOutputDeviceTest::AudioOutputDeviceTest()
       CHANNEL_LAYOUT_STEREO, input_channels_,
       48000, 16, 1024);
 
-  EXPECT_CALL(audio_output_ipc_, AddDelegate(_))
-      .WillOnce(Return(kStreamId));
-
   audio_device_ = new AudioOutputDevice(
       &audio_output_ipc_, io_loop_.message_loop_proxy());
 
@@ -168,14 +165,13 @@ AudioOutputDeviceTest::AudioOutputDeviceTest()
 }
 
 AudioOutputDeviceTest::~AudioOutputDeviceTest() {
-  EXPECT_CALL(audio_output_ipc_, RemoveDelegate(kStreamId));
-
   audio_device_ = NULL;
 }
 
 void AudioOutputDeviceTest::StartAudioDevice() {
   audio_device_->Start();
 
+  EXPECT_CALL(audio_output_ipc_, AddDelegate(_)).WillOnce(Return(kStreamId));
   EXPECT_CALL(audio_output_ipc_, CreateStream(kStreamId, _));
 
   io_loop_.RunUntilIdle();
@@ -247,6 +243,7 @@ void AudioOutputDeviceTest::StopAudioDevice() {
   audio_device_->Stop();
 
   EXPECT_CALL(audio_output_ipc_, CloseStream(kStreamId));
+  EXPECT_CALL(audio_output_ipc_, RemoveDelegate(kStreamId));
 
   io_loop_.RunUntilIdle();
 }
@@ -282,6 +279,7 @@ TEST_P(AudioOutputDeviceTest, StopBeforeRender) {
   // Expect us to shutdown IPC but not to render anything despite the stream
   // getting created.
   EXPECT_CALL(audio_output_ipc_, CloseStream(kStreamId));
+  EXPECT_CALL(audio_output_ipc_, RemoveDelegate(kStreamId));
   CreateStream();
 }
 

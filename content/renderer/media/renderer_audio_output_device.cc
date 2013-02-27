@@ -42,15 +42,18 @@ void RendererAudioOutputDevice::SetSourceRenderView(int render_view_id) {
 }
 
 void RendererAudioOutputDevice::OnStart() {
+  DCHECK(message_loop()->BelongsToCurrentThread());
   is_after_stream_created_ = true;
   OnSourceChange(source_render_view_id_);
 }
 
 void RendererAudioOutputDevice::OnStop() {
+  DCHECK(message_loop()->BelongsToCurrentThread());
   is_after_stream_created_ = false;
 }
 
 void RendererAudioOutputDevice::OnSourceChange(int render_view_id) {
+  DCHECK(message_loop()->BelongsToCurrentThread());
   source_render_view_id_ = render_view_id;
   if (is_after_stream_created_ && source_render_view_id_ != MSG_ROUTING_NONE) {
     AudioMessageFilter* const filter =

@@ -22,7 +22,6 @@ AudioMessageFilter* AudioMessageFilter::Get() {
 AudioMessageFilter::AudioMessageFilter(
     const scoped_refptr<base::MessageLoopProxy>& io_message_loop)
     : channel_(NULL),
-      next_stream_id_(1),
       audio_hardware_config_(NULL),
       io_message_loop_(io_message_loop) {
   DCHECK(!filter_);
@@ -30,15 +29,13 @@ AudioMessageFilter::AudioMessageFilter(
 }
 
 int AudioMessageFilter::AddDelegate(media::AudioOutputIPCDelegate* delegate) {
-  base::AutoLock auto_lock(lock_);
-  const int id = next_stream_id_++;
-  delegates_.insert(std::make_pair(id, delegate));
-  return id;
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  return delegates_.Add(delegate);
 }
 
 void AudioMessageFilter::RemoveDelegate(int id) {
-  base::AutoLock auto_lock(lock_);
-  delegates_.erase(id);
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  delegates_.Remove(id);
 }
 
 void AudioMessageFilter::CreateStream(int stream_id,
@@ -106,18 +103,19 @@ void AudioMessageFilter::OnChannelClosing() {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
   channel_ = NULL;
 
-  base::AutoLock auto_lock(lock_);
-  DLOG_IF(WARNING, !delegates_.empty())
+  DLOG_IF(WARNING, !delegates_.IsEmpty())
       << "Not all audio devices have been closed.";
 
-  for (DelegateMap::const_iterator it = delegates_.begin();
-       it != delegates_.end(); ++it) {
-    it->second->OnIPCClosed();
+  IDMap<media::AudioOutputIPCDelegate>::iterator it(&delegates_);
+  while (!it.IsAtEnd()) {
+    it.GetCurrentValue()->OnIPCClosed();
+    delegates_.Remove(it.GetCurrentKey());
+    it.Advance();
   }
 }
 
 AudioMessageFilter::~AudioMessageFilter() {
-  CHECK(delegates_.empty());
+  CHECK(delegates_.IsEmpty());
   DCHECK_EQ(filter_, this);
   filter_ = NULL;
 }
@@ -137,31 +135,27 @@ void AudioMessageFilter::OnStreamCreated(
   base::SyncSocket::Handle socket_handle = socket_descriptor.fd;
 #endif
 
-  {
-    base::AutoLock auto_lock(lock_);
-    DelegateMap::const_iterator it = delegates_.find(stream_id);
-    if (it != delegates_.end()) {
-      it->second->OnStreamCreated(handle, socket_handle, length);
-      return;
-    }
+  media::AudioOutputIPCDelegate* delegate = delegates_.Lookup(stream_id);
+  if (!delegate) {
+    DLOG(WARNING) << "Got OnStreamCreated() event for a non-existent or removed"
+                  << " audio renderer. (stream_id=" << stream_id << ").";
+    base::SharedMemory::CloseHandle(handle);
+    base::SyncSocket socket(socket_handle);
+    return;
   }
-
-  DLOG(WARNING) << "Got audio stream event for a non-existent or removed"
-                   " audio renderer. (stream_id=" << stream_id << ").";
-  base::SharedMemory::CloseHandle(handle);
-  base::SyncSocket socket(socket_handle);
+  delegate->OnStreamCreated(handle, socket_handle, length);
 }
 
 void AudioMessageFilter::OnStreamStateChanged(
     int stream_id, media::AudioOutputIPCDelegate::State state) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
-
-  base::AutoLock auto_lock(lock_);
-  DelegateMap::const_iterator it = delegates_.find(stream_id);
-  DLOG_IF(WARNING, it == delegates_.end())
-      << "No delegate found for state change. " << state;
-  if (it != delegates_.end())
-    it->second->OnStateChanged(state);
+  media::AudioOutputIPCDelegate* delegate = delegates_.Lookup(stream_id);
+  if (!delegate) {
+    DLOG(WARNING) << "Got OnStreamStateChanged() event for a non-existent or"
+                  << " removed audio renderer.  State: " << state;
+    return;
+  }
+  delegate->OnStateChanged(state);
 }
 
 void AudioMessageFilter::OnOutputDeviceChanged(int stream_id,

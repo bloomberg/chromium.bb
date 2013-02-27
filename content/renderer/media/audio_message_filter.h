@@ -6,8 +6,7 @@
 #define CONTENT_RENDERER_MEDIA_AUDIO_MESSAGE_FILTER_H_
 
 #include "base/gtest_prod_util.h"
-#include "base/hash_tables.h"
-#include "base/message_loop_proxy.h"
+#include "base/id_map.h"
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
 #include "base/synchronization/lock.h"
@@ -99,20 +98,16 @@ class CONTENT_EXPORT AudioMessageFilter
   // The singleton instance for this filter.
   static AudioMessageFilter* filter_;
 
-  // IPC channel for Send(), must only be accesed on |io_message_loop_|.
+  // IPC channel for Send(); must only be accesed on |io_message_loop_|.
   IPC::Channel* channel_;
 
-  // Unique ID to use for next added delegate.
-  int next_stream_id_;
-
-  // Guards all variables below which are accessed from multiple threads.
-  base::Lock lock_;
-
-  // A map of stream ids to delegates.
-  typedef base::hash_map<int, media::AudioOutputIPCDelegate*> DelegateMap;
-  DelegateMap delegates_;
+  // A map of stream ids to delegates; must only be accessed on
+  // |io_message_loop_|.
+  IDMap<media::AudioOutputIPCDelegate> delegates_;
 
   // Audio hardware configuration to update when OnOutputDeviceChanged() fires.
+  // Access is guarded by |lock_|.
+  base::Lock lock_;
   media::AudioHardwareConfig* audio_hardware_config_;
 
   // Message loop on which IPC calls are driven.
