@@ -5,15 +5,11 @@
 #import "ui/app_list/cocoa/apps_grid_controller.h"
 
 #include "base/mac/foundation_util.h"
-#include "base/strings/sys_string_conversions.h"
-#include "skia/ext/skia_utils_mac.h"
-#include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/app_list_item_model.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_model_observer.h"
 #include "ui/app_list/app_list_view_delegate.h"
+#include "ui/app_list/cocoa/apps_grid_view_item.h"
 #include "ui/base/models/list_model_observer.h"
-#include "ui/gfx/image/image_skia_util_mac.h"
 
 namespace {
 
@@ -35,6 +31,8 @@ const CGFloat kPreferredTileHeight = 98;
 
 - (void)loadAndSetView;
 
+- (AppsGridViewItem*)itemAtIndex:(size_t)itemIndex;
+
 // Update the model in full, and rebuild subviews.
 - (void)modelUpdated;
 
@@ -45,25 +43,6 @@ const CGFloat kPreferredTileHeight = 98;
 - (void)onItemClicked:(id)sender;
 
 - (NSButton*)selectedButton;
-
-@end
-
-@interface AppsGridViewItem : NSCollectionViewItem;
-@end
-
-@implementation AppsGridViewItem
-
-- (void)setSelected:(BOOL)flag {
-  if (flag) {
-    [[base::mac::ObjCCastStrict<NSButton>([self view]) cell]
-        setBackgroundColor:[NSColor lightGrayColor]];
-  } else {
-    [[base::mac::ObjCCastStrict<NSButton>([self view]) cell]
-        setBackgroundColor:gfx::SkColorToCalibratedNSColor(
-            app_list::kContentsBackgroundColor)];
-  }
-  [super setSelected:flag];
-}
 
 @end
 
@@ -109,9 +88,7 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
 }
 
 - (void)dealloc {
-  if (model_)
-    model_->apps()->RemoveObserver(bridge_.get());
-
+  [self setModel:scoped_ptr<app_list::AppListModel>()];
   [super dealloc];
 }
 
@@ -129,8 +106,15 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
 }
 
 - (void)setModel:(scoped_ptr<app_list::AppListModel>)model {
-  if (model_)
+  if (model_) {
     model_->apps()->RemoveObserver(bridge_.get());
+
+    // Since the model is about to be deleted, and the AppKit objects might be
+    // sitting in an NSAutoreleasePool, ensure there are no references to the
+    // model.
+    for (size_t i = 0; i < [items_ count]; ++i)
+      [[self itemAtIndex:i] setModel:NULL];
+  }
 
   model_.reset(model.release());
   if (model_)
@@ -181,10 +165,16 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
 }
 
 - (void)onItemClicked:(id)sender {
-  app_list::AppListItemModel* itemModel =
-      static_cast<app_list::AppListItemModel*>(
-          [[[sender cell] representedObject] pointerValue]);
-  delegate_->ActivateAppListItem(itemModel, 0);
+  for (size_t i = 0; i < [items_ count]; ++i) {
+    AppsGridViewItem* item = [self itemAtIndex:i];
+    if ([[item view] isEqual:sender])
+      delegate_->ActivateAppListItem([item model], 0);
+  }
+}
+
+- (AppsGridViewItem*)itemAtIndex:(size_t)itemIndex {
+  return base::mac::ObjCCastStrict<AppsGridViewItem>(
+      [[self collectionView] itemAtIndex:itemIndex]);
 }
 
 - (void)modelUpdated {
@@ -197,11 +187,9 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
 
 - (NSButton*)selectedButton {
   NSIndexSet* selection = [[self collectionView] selectionIndexes];
-  if ([selection count]) {
-    NSCollectionViewItem* item =
-        [[self collectionView] itemAtIndex:[selection firstIndex]];
-    return base::mac::ObjCCastStrict<NSButton>([item view]);
-  }
+  if ([selection count])
+    return [[self itemAtIndex:[selection firstIndex]] button];
+
   return nil;
 }
 
@@ -212,14 +200,8 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
 
   [[self collectionView] setContent:items_];
 
-  for (size_t i = start; i < start + count; ++i) {
-    app_list::AppListItemModel* submodel = model_->apps()->GetItemAt(i);
-    NSCollectionViewItem* item = [[self collectionView] itemAtIndex:i];
-    NSButton* button = base::mac::ObjCCastStrict<NSButton>([item view]);
-    [button setTitle:base::SysUTF8ToNSString(submodel->title().c_str())];
-    [button setImage:gfx::NSImageFromImageSkia(submodel->icon())];
-    [[button cell] setRepresentedObject:[NSValue valueWithPointer:submodel]];
-  }
+  for (size_t i = start; i < start + count; ++i)
+    [[self itemAtIndex:i] setModel:model_->apps()->GetItemAt(i)];
 }
 
 @end

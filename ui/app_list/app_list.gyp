@@ -39,6 +39,8 @@
         'cocoa/app_list_window_controller.mm',
         'cocoa/apps_grid_controller.h',
         'cocoa/apps_grid_controller.mm',
+        'cocoa/apps_grid_view_item.h',
+        'cocoa/apps_grid_view_item.mm',
         'pagination_model.cc',
         'pagination_model.h',
         'pagination_model_observer.h',

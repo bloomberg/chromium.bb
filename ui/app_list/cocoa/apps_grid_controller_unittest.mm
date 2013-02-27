@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/mac/foundation_util.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/message_loop.h"
 #import "testing/gtest_mac.h"
@@ -34,6 +35,11 @@ class AppsGridControllerTest : public ui::CocoaTest {
     [[test_window() contentView] addSubview:[apps_grid_controller_ view]];
     [test_window() makePretendKeyWindowAndSetFirstResponder:
         [apps_grid_controller_ collectionView]];
+  }
+
+  virtual void TearDown() OVERRIDE {
+    apps_grid_controller_.reset();
+    ui::CocoaTest::TearDown();
   }
 
  protected:
@@ -186,4 +192,34 @@ TEST_F(AppsGridControllerTest, DISABLED_FirstPageKeyboardNavigation) {
   EXPECT_EQ(GetSelectedView(), GetItemViewAt(2));
   EXPECT_EQ(1, delegate()->activate_count());
   EXPECT_EQ(std::string("Item 2"), delegate()->last_activated()->title());
+}
+
+// Test runtime updates: adding items, changing titles and icons.
+TEST_F(AppsGridControllerTest, ModelUpdates) {
+  model()->PopulateApps(2);
+  EXPECT_EQ(2u, [[[apps_grid_controller_ collectionView] content] count]);
+
+  // Add an item (PopulateApps will create a duplicate "Item 0").
+  model()->PopulateApps(1);
+  EXPECT_EQ(3u, [[[apps_grid_controller_ collectionView] content] count]);
+  NSButton* button = base::mac::ObjCCastStrict<NSButton>(GetItemViewAt(2));
+  EXPECT_NSEQ(@"Item 0", [button title]);
+
+  // Update the title via the ItemModelObserver.
+  app_list::AppListItemModel* item_model = model()->apps()->GetItemAt(2);
+  item_model->SetTitle("UpdatedItem");
+  EXPECT_NSEQ(@"UpdatedItem", [button title]);
+
+  // Update the icon, test by changing size.
+  NSSize icon_size = [[button image] size];
+  EXPECT_EQ(0, icon_size.width);
+  EXPECT_EQ(0, icon_size.height);
+
+  SkBitmap bitmap;
+  const int kTestImageSize = 10;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config, kTestImageSize, kTestImageSize);
+  item_model->SetIcon(gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
+  icon_size = [[button image] size];
+  EXPECT_EQ(kTestImageSize, icon_size.width);
+  EXPECT_EQ(kTestImageSize, icon_size.height);
 }
