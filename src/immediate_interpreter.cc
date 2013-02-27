@@ -1276,16 +1276,32 @@ void ImmediateInterpreter::UpdateTapState(
       break;
     case kTtcFirstTapBegan:
       if (is_timeout) {
-        SetTapToClickState(kTtcIdle, now);
-        break;
+        // Maybe one of the tapping fingers is really a palm, so clear
+        // palms and see if we have a valid tap.
+        set<short, kMaxFingers> palms;
+        for (set<short, kMaxGesturingFingers>::const_iterator it =
+                 tap_gs_fingers.begin(), e = tap_gs_fingers.end(); it != e;
+             ++it) {
+          const FingerState* fs = PrevState(0)->GetFingerState(*it);
+          if (fs->flags & GESTURES_FINGER_POSSIBLE_PALM ||
+              fs->flags & GESTURES_FINGER_PALM)
+            palms.insert(*it);
+        }
+        if (!palms.empty()) {
+          for (set<short, kMaxFingers>::const_iterator it = palms.begin(),
+                   e = palms.end(); it != e; ++it) {
+            tap_record_.Remove(*it);
+          }
+        }
+        if (!tap_record_.TapComplete()) {
+          SetTapToClickState(kTtcIdle, now);
+          break;
+        }
       }
-      if (!hwstate) {
-        Log("hwstate NULL but no timeout?!");
-        break;
-      }
-      tap_record_.Update(
-          *hwstate, *PrevState(0), added_fingers,
-          removed_fingers, dead_fingers);
+      if (hwstate)
+        tap_record_.Update(
+            *hwstate, *PrevState(0), added_fingers,
+            removed_fingers, dead_fingers);
       Log("Is tap? %d Is moving? %d",
           tap_record_.TapComplete(),
           tap_record_.Moving(*hwstate, tap_move_dist_.val_));
