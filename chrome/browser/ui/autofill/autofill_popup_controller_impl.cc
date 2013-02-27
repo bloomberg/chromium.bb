@@ -266,11 +266,12 @@ int AutofillPopupControllerImpl::GetIconResourceID(
 }
 
 bool AutofillPopupControllerImpl::CanDelete(size_t index) const {
-  // TODO(isherman): Disable the delete icon functionality for now, as there is
-  // some debate as to how exactly it should be implemented.
-  // TODO(isherman): When re-enabling, restore the TODO that AddressBook
-  // suggestions on Mac should not be drawn as deleteable.
-  return false;
+  // TODO(isherman): AddressBook suggestions on Mac should not be drawn as
+  // deleteable.
+  int id = identifiers_[index];
+  return id > 0 ||
+      id == WebAutofillClient::MenuItemIDAutocompleteEntry ||
+      id == WebAutofillClient::MenuItemIDPasswordEntry;
 }
 
 gfx::Rect AutofillPopupControllerImpl::GetRowBounds(size_t index) {

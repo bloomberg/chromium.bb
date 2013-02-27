@@ -1168,11 +1168,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kPerformanceMonitorGathering)
   },
   {
-    "disable-native-autofill-ui",
-    IDS_FLAGS_DISABLE_NATIVE_AUTOFILL_UI_NAME,
-    IDS_FLAGS_DISABLE_NATIVE_AUTOFILL_UI_DESCRIPTION,
+    "enable-new-autofill-ui",
+    IDS_FLAGS_ENABLE_NEW_AUTOFILL_UI_NAME,
+    IDS_FLAGS_ENABLE_NEW_AUTOFILL_UI_DESCRIPTION,
     kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kDisableNativeAutofillUi)
+    SINGLE_VALUE_TYPE(switches::kEnableNewAutofillUi)
   },
   {
     "show-app-list-shortcut",

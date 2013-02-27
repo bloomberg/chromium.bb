@@ -100,7 +100,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
 
   // Only include "Autofill Options" special menu item if we have Autofill
   // suggestions.
-  has_autofill_suggestion_ = false;
+  bool has_autofill_suggestion_ = false;
   for (size_t i = 0; i < ids.size(); ++i) {
     if (ids[i] > 0) {
       has_autofill_suggestion_ = true;

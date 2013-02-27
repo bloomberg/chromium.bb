@@ -17,8 +17,6 @@
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/autofill/autofill_common_test.h"
-#include "chrome/browser/autofill/autofill_external_delegate.h"
-#include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
@@ -153,37 +151,6 @@ class WindowedPersonalDataManagerObserver
   InfoBarService* infobar_service_;
 };
 
-class TestAutofillExternalDelegate : public AutofillExternalDelegate {
- public:
-  TestAutofillExternalDelegate(content::WebContents* web_contents,
-                               AutofillManager* autofill_manager)
-      : AutofillExternalDelegate(web_contents, autofill_manager),
-        keyboard_listener_(NULL) {
-  }
-  virtual ~TestAutofillExternalDelegate() {}
-
-  virtual void OnPopupShown(content::KeyboardListener* listener) OVERRIDE {
-    AutofillExternalDelegate::OnPopupShown(listener);
-    keyboard_listener_ = listener;
-  }
-
-  virtual void OnPopupHidden(content::KeyboardListener* listener) OVERRIDE {
-    keyboard_listener_ = NULL;
-    AutofillExternalDelegate::OnPopupHidden(listener);
-  }
-
-  content::KeyboardListener* keyboard_listener() {
-    return keyboard_listener_;
-  }
-
- private:
-  // The popup that is currently registered as a keyboard listener, or NULL if
-  // there is none.
-  content::KeyboardListener* keyboard_listener_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestAutofillExternalDelegate);
-};
-
 class AutofillTest : public InProcessBrowserTest {
  protected:
   AutofillTest() {}
@@ -191,16 +158,6 @@ class AutofillTest : public InProcessBrowserTest {
   virtual void SetUpOnMainThread() OVERRIDE {
     // Don't want Keychain coming up on Mac.
     autofill_test::DisableSystemServices(browser()->profile());
-
-    // Hook up a test external delegate, which allows us to forward keyboard
-    // events to the popup directly.
-    content::WebContents* web_contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
-    AutofillManager* autofill_manager =
-        AutofillManager::FromWebContents(web_contents);
-    external_delegate_.reset(
-        new TestAutofillExternalDelegate(web_contents, autofill_manager));
-    autofill_manager->SetExternalDelegate(external_delegate_.get());
   }
 
   PersonalDataManager* personal_data_manager() {
@@ -284,12 +241,12 @@ class AutofillTest : public InProcessBrowserTest {
     std::string js("document.getElementById('" + field_id + "').focus();");
     ASSERT_TRUE(content::ExecuteScript(render_view_host(), js));
 
-    SendKeyToPageAndWait(ui::VKEY_DOWN,
-                         chrome::NOTIFICATION_AUTOFILL_DID_SHOW_SUGGESTIONS);
-    SendKeyToPopupAndWait(ui::VKEY_DOWN,
-                          chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA);
-    SendKeyToPopupAndWait(ui::VKEY_RETURN,
-                          chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA);
+    SendKeyAndWait(ui::VKEY_DOWN,
+                   chrome::NOTIFICATION_AUTOFILL_DID_SHOW_SUGGESTIONS);
+    SendKeyAndWait(ui::VKEY_DOWN,
+                   chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA);
+    SendKeyAndWait(ui::VKEY_RETURN,
+                   chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA);
   }
 
   // Aggregate profiles from forms into Autofill preferences. Returns the number
@@ -419,21 +376,12 @@ class AutofillTest : public InProcessBrowserTest {
     ExpectFieldValue("phone", "5125551234");
   }
 
-  void SendKeyToPageAndWait(ui::KeyboardCode key, int notification_type) {
+  void SendKeyAndWait(ui::KeyboardCode key, int notification_type) {
     content::WindowedNotificationObserver observer(
         notification_type, content::Source<RenderViewHost>(render_view_host()));
     content::SimulateKeyPress(
         browser()->tab_strip_model()->GetActiveWebContents(),
         key, false, false, false, false);
-    observer.Wait();
-  }
-
-  void SendKeyToPopupAndWait(ui::KeyboardCode key, int notification_type) {
-    content::WindowedNotificationObserver observer(
-        notification_type, content::Source<RenderViewHost>(render_view_host()));
-    content::NativeWebKeyboardEvent event;
-    event.windowsKeyCode = key;
-    external_delegate_->keyboard_listener()->HandleKeyPressEvent(event);
     observer.Wait();
   }
 
@@ -443,13 +391,13 @@ class AutofillTest : public InProcessBrowserTest {
     // Start filling the first name field with "M" and wait for the popup to be
     // shown.
     LOG(WARNING) << "Typing 'M' to bring up the Autofill popup.";
-    SendKeyToPageAndWait(
+    SendKeyAndWait(
         ui::VKEY_M, chrome::NOTIFICATION_AUTOFILL_DID_SHOW_SUGGESTIONS);
 
     // Press the down arrow to select the suggestion and preview the autofilled
     // form.
     LOG(WARNING) << "Simulating down arrow press to initiate Autofill preview.";
-    SendKeyToPopupAndWait(
+    SendKeyAndWait(
         ui::VKEY_DOWN, chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA);
 
     // The previewed values should not be accessible to JavaScript.
@@ -467,20 +415,15 @@ class AutofillTest : public InProcessBrowserTest {
 
     // Press Enter to accept the autofill suggestions.
     LOG(WARNING) << "Simulating Return press to fill the form.";
-    SendKeyToPopupAndWait(
+    SendKeyAndWait(
         ui::VKEY_RETURN, chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA);
 
     // The form should be filled.
     ExpectFilledTestForm();
   }
 
-  TestAutofillExternalDelegate* external_delegate() {
-    return external_delegate_.get();
-  }
-
  private:
   net::TestURLFetcherFactory url_fetcher_factory_;
-  scoped_ptr<TestAutofillExternalDelegate> external_delegate_;
 };
 
 // http://crbug.com/150084
@@ -520,16 +463,16 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_AutofillViaDownArrow) {
 
   // Press the down arrow to initiate Autofill and wait for the popup to be
   // shown.
-  SendKeyToPageAndWait(
+  SendKeyAndWait(
       ui::VKEY_DOWN, chrome::NOTIFICATION_AUTOFILL_DID_SHOW_SUGGESTIONS);
 
   // Press the down arrow to select the suggestion and preview the autofilled
   // form.
-  SendKeyToPopupAndWait(
+  SendKeyAndWait(
       ui::VKEY_DOWN, chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA);
 
   // Press Enter to accept the autofill suggestions.
-  SendKeyToPopupAndWait(
+  SendKeyAndWait(
       ui::VKEY_RETURN, chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA);
 
   // The form should be filled.
@@ -576,16 +519,16 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_OnChangeAfterAutofill) {
 
   // Start filling the first name field with "M" and wait for the popup to be
   // shown.
-  SendKeyToPageAndWait(
+  SendKeyAndWait(
       ui::VKEY_M, chrome::NOTIFICATION_AUTOFILL_DID_SHOW_SUGGESTIONS);
 
   // Press the down arrow to select the suggestion and preview the autofilled
   // form.
-  SendKeyToPopupAndWait(
+  SendKeyAndWait(
       ui::VKEY_DOWN, chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA);
 
   // Press Enter to accept the autofill suggestions.
-  SendKeyToPopupAndWait(
+  SendKeyAndWait(
       ui::VKEY_RETURN, chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA);
 
   // The form should be filled.
@@ -1604,7 +1547,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_DisableAutocompleteWhileFilling) {
   // Invoke Autofill: Start filling the first name field with "M" and wait for
   // the popup to be shown.
   FocusFirstNameField();
-  SendKeyToPageAndWait(
+  SendKeyAndWait(
       ui::VKEY_M, chrome::NOTIFICATION_AUTOFILL_DID_SHOW_SUGGESTIONS);
 
   // Now that the popup with suggestions is showing, disable autocomplete for
@@ -1615,9 +1558,9 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_DisableAutocompleteWhileFilling) {
 
   // Press the down arrow to select the suggestion and attempt to preview the
   // autofilled form.
-  content::NativeWebKeyboardEvent event;
-  event.windowsKeyCode = ui::VKEY_DOWN;
-  external_delegate()->keyboard_listener()->HandleKeyPressEvent(event);
+  content::SimulateKeyPress(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      ui::VKEY_DOWN, false, false, false, false);
 
   // Wait for any IPCs to complete by performing an action that generates an
   // IPC that's easy to wait for.  Chrome shouldn't crash.
@@ -1629,8 +1572,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_DisableAutocompleteWhileFilling) {
       "city.focus()",
       &result));
   ASSERT_TRUE(result);
-
-  SendKeyToPageAndWait(
+  SendKeyAndWait(
       ui::VKEY_A, chrome::NOTIFICATION_AUTOFILL_DID_SHOW_SUGGESTIONS);
 }
 
