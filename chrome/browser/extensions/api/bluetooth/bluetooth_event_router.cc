@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/utf_string_conversions.h"
@@ -35,11 +36,13 @@ ExtensionBluetoothEventRouter::ExtensionBluetoothEventRouter(Profile* profile)
 }
 
 ExtensionBluetoothEventRouter::~ExtensionBluetoothEventRouter() {
-  CHECK(socket_map_.size() == 0);
   if (adapter_) {
     adapter_->RemoveObserver(this);
     adapter_ = NULL;
   }
+  DLOG_IF(WARNING, socket_map_.size() != 0)
+      << "Bluetooth sockets are still open.";
+  socket_map_.clear();
 }
 
 bool ExtensionBluetoothEventRouter::IsBluetoothSupported() const {
