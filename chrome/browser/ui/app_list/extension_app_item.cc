@@ -537,8 +537,6 @@ ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
           MENU_NEW_INCOGNITO_WINDOW,
           IDS_LAUNCHER_NEW_INCOGNITO_WINDOW);
     }
-#else
-    NOTREACHED();
 #endif
   } else {
     extension_menu_items_.reset(new extensions::ContextMenuMatcher(
