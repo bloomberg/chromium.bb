@@ -101,22 +101,4 @@ string16 YearComboboxModel::GetItemAt(int index) {
   return base::IntToString16(this_year_ + index);
 }
 
-// CountryComboboxModel --------------------------------------------------------
-
-CountryComboboxModel::CountryComboboxModel() {
-  AutofillCountry::GetAvailableCountries(&country_codes_);
-}
-
-CountryComboboxModel::~CountryComboboxModel() {}
-
-int CountryComboboxModel::GetItemCount() const {
-  return country_codes_.size();
-}
-
-string16 CountryComboboxModel::GetItemAt(int index) {
-  std::string app_locale = AutofillCountry::ApplicationLocale();
-  const AutofillCountry country(country_codes_[index], app_locale);
-  return country.name();
-}
-
 }  // autofill

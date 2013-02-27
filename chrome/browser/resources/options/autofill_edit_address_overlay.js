@@ -207,47 +207,17 @@ cr.define('options', function() {
      * @private
      */
     populateCountryList_: function() {
-      var countryData = loadTimeData.getValue('autofillCountryData');
-      var defaultCountryCode = loadTimeData.getString('defaultCountryCode');
-
-      // Build an array of the country names and their corresponding country
-      // codes, so that we can sort and insert them in order.
-      var countries = [];
-      for (var countryCode in countryData) {
-        var country = {
-          countryCode: countryCode,
-          name: countryData[countryCode].name
-        };
-        countries.push(country);
-      }
-
-      // Sort the countries in alphabetical order by name.
-      countries = countries.sort(function(a, b) {
-        return a.name < b.name ? -1 : 1;
-      });
-
-      // Insert the empty and default countries at the beginning of the array.
-      var emptyCountry = {
-        countryCode: '',
-        name: ''
-      };
-      var defaultCountry = {
-        countryCode: defaultCountryCode,
-        name: countryData[defaultCountryCode].name
-      };
-      var separator = {
-        countryCode: '',
-        name: '---',
-        disabled: true
-      };
-      countries.unshift(emptyCountry, defaultCountry, separator);
+      var countryList = loadTimeData.getValue('autofillCountrySelectList');
 
       // Add the countries to the country <select> list.
-      var countryList = $('country');
-      for (var i = 0; i < countries.length; i++) {
-        var country = new Option(countries[i].name, countries[i].countryCode);
-        country.disabled = countries[i].disabled;
-        countryList.appendChild(country);
+      var countrySelect = $('country');
+      // Add an empty option.
+      countrySelect.appendChild(new Option('', ''));
+      for (var i = 0; i < countryList.length; i++) {
+        var option = new Option(countryList[i].name,
+                                countryList[i].value);
+        option.disabled = countryList[i].value == 'separator';
+        countrySelect.appendChild(option);
       }
     },
 

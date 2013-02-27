@@ -219,6 +219,8 @@
         'browser/ui/autofill/autofill_popup_controller_impl.h',
         'browser/ui/autofill/autofill_popup_delegate.h',
         'browser/ui/autofill/autofill_popup_view.h',
+        'browser/ui/autofill/country_combobox_model.cc',
+        'browser/ui/autofill/country_combobox_model.h',
         'browser/ui/autofill/data_model_wrapper.cc',
         'browser/ui/autofill/data_model_wrapper.h',
         'browser/ui/autofill/tab_autofill_manager_delegate.cc',
