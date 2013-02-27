@@ -25,6 +25,18 @@ var activeVisit = null;
 /** @const */ var Menu = cr.ui.Menu;
 /** @const */ var MenuButton = cr.ui.MenuButton;
 
+/**
+ * Enum that shows whether a manual exception is set in managed mode for a
+ * host or URL.
+ * Must behave like the ManualBehavior enum from managed_user_service.h.
+ * @enum {number}
+ */
+ManagedModeManualBehavior = {
+  NONE: 0,
+  ALLOW: 1,
+  BLOCK: 2
+};
+
 MenuButton.createDropDownArrows();
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -64,6 +76,17 @@ function Visit(result, continued, model) {
   this.dateRelativeDay = result.dateRelativeDay || '';
   this.dateTimeOfDay = result.dateTimeOfDay || '';
   this.dateShort = result.dateShort || '';
+
+  // These values represent indicators shown to users in managed mode.
+  // |*manualBehavior| shows whether the user has manually added an exception
+  // for that URL or host while |*inContentPack| shows whether that URL or host
+  // is in a content pack or not.
+  this.urlManualBehavior = result.urlManualBehavior ||
+                           ManagedModeManualBehavior.NONE;
+  this.hostManualBehavior = result.hostManualBehavior ||
+                            ManagedModeManualBehavior.NONE;
+  this.urlInContentPack = result.urlInContentPack || false;
+  this.hostInContentPack = result.hostInContentPack || false;
 
   // Whether this is the continuation of a previous day.
   this.continued = continued;
@@ -148,6 +171,10 @@ Visit.prototype.getResultDOM = function(propertyBag) {
   }, true);
 
   node.appendChild(entryBox);
+  if (this.model_.isManagedProfile && this.model_.getGroupByDomain()) {
+    entryBox.appendChild(
+        getManagedStatusDOM(this.urlManualBehavior, this.urlInContentPack));
+  }
 
   if (isSearchResult) {
     time.appendChild(document.createTextNode(this.dateShort));
@@ -516,6 +543,9 @@ HistoryModel.prototype.clearModel_ = function() {
   // currently held in |this.visits_|.
   this.isQueryFinished_ = false;
 
+  // Whether this user is a managed user.
+  this.isManagedProfile = loadTimeData.getBoolean('isManagedProfile');
+
   if (this.view_)
     this.view_.clear_();
 };
@@ -625,6 +655,14 @@ function HistoryView(model) {
   $('clear-browsing-data').addEventListener('click', openClearBrowsingData);
   $('remove-selected').addEventListener('click', removeItems);
 
+  $('allow-selected').addEventListener('click', function(e) {
+    processManagedList(true);
+  });
+
+  $('block-selected').addEventListener('click', function(e) {
+    processManagedList(false);
+  });
+
   // Add handlers for the page navigation buttons at the bottom.
   $('newest-button').addEventListener('click', function() {
     self.setPage(0);
@@ -702,7 +740,7 @@ HistoryView.prototype.setGroupByDomain = function(groupedByDomain) {
  */
 HistoryView.prototype.reload = function() {
   this.model_.reload();
-  this.updateRemoveButton();
+  this.updateSelectionEditButtons();
 };
 
 /**
@@ -788,11 +826,50 @@ HistoryView.prototype.onModelReady = function(doneLoading) {
 };
 
 /**
- * Enables or disables the 'Remove selected items' button as appropriate.
+ * Enables or disables the buttons that control editing entries depending on
+ * whether there are any checked boxes.
  */
-HistoryView.prototype.updateRemoveButton = function() {
+HistoryView.prototype.updateSelectionEditButtons = function() {
   var anyChecked = document.querySelector('.entry input:checked') != null;
   $('remove-selected').disabled = !anyChecked;
+  $('allow-selected').disabled = !anyChecked;
+  $('block-selected').disabled = !anyChecked;
+};
+
+/**
+ * Callback triggered by the backend after the manual allow or block changes
+ * have been commited. Once the changes are commited the backend builds an
+ * updated set of data which contains the new managed mode status and passes
+ * it through this function to the client. The function takes that data and
+ * updates the individiual host/URL elements with their new managed mode status.
+ * @param {Array} entries List of two dictionaries which contain the updated
+ *     information for both the hosts and the URLs.
+ */
+HistoryView.prototype.updateManagedEntries = function(entries) {
+  // |hostEntries| and |urlEntries| are dictionaries which have hosts and URLs
+  // as keys and dictionaries with two values (|inContentPack| and
+  // |manualBehavior|) as values.
+  var hostEntries = entries[0];
+  var urlEntries = entries[1];
+  var hostElements = document.querySelectorAll('.site-domain');
+  for (var i = 0; i < hostElements.length; i++) {
+    var host = hostElements[i].firstChild.textContent;
+    var siteDomainWrapperDiv = hostElements[i].parentNode;
+    siteDomainWrapperDiv.querySelector('input[type=checkbox]').checked = false;
+    var filterStatusDiv = hostElements[i].nextSibling;
+    if (host in hostEntries)
+      updateHostStatus(filterStatusDiv, hostEntries[host]);
+  }
+
+  var urlElements = document.querySelectorAll('.entry-box .title');
+  for (var i = 0; i < urlElements.length; i++) {
+    var url = urlElements[i].querySelector('a').href;
+    var entry = findAncestorByClass(urlElements[i], 'entry');
+    var filterStatusDiv = entry.querySelector('.filter-status');
+    entry.querySelector('input[type=checkbox]').checked = false;
+    if (url in urlEntries)
+      updateHostStatus(filterStatusDiv, urlEntries[url]);
+  }
 };
 
 // HistoryView, private: ------------------------------------------------------
@@ -853,16 +930,25 @@ HistoryView.prototype.getGroupedVisitsDOM_ = function(
   siteDomainLink.addEventListener('click', function(e) { e.preventDefault(); });
   siteDomainLink.textContent = domain;
   var numberOfVisits = createElementWithClassName('span', 'number-visits');
+  var domainElement = document.createElement('span');
+
   numberOfVisits.textContent = loadTimeData.getStringF('numbervisits',
                                                        domainVisits.length);
   siteDomain.appendChild(numberOfVisits);
-  siteResults.appendChild(siteDomainWrapper);
-  var resultsList = siteResults.appendChild(
-      createElementWithClassName('ol', 'site-results'));
 
   domainVisits[0].addFaviconToElement_(siteDomain);
 
   siteDomainWrapper.addEventListener('click', toggleHandler);
+
+  if (this.model_.isManagedProfile) {
+    siteDomainWrapper.appendChild(getManagedStatusDOM(
+        domainVisits[0].hostManualBehavior, domainVisits[0].hostInContentPack));
+  }
+
+  siteResults.appendChild(siteDomainWrapper);
+  var resultsList = siteResults.appendChild(
+      createElementWithClassName('ol', 'site-results'));
+
   // Collapse until it gets toggled.
   resultsList.style.height = 0;
 
@@ -1259,8 +1345,13 @@ function load() {
   });
 
   // Only show the controls if the command line switch is activated.
-  if (loadTimeData.getBoolean('groupByDomain')) {
+  if (loadTimeData.getBoolean('groupByDomain') ||
+      loadTimeData.getBoolean('isManagedProfile')) {
     $('filter-controls').hidden = false;
+  }
+  if (loadTimeData.getBoolean('isManagedProfile')) {
+    $('allow-selected').hidden = false;
+    $('block-selected').hidden = false;
   }
 
   var title = loadTimeData.getString('title');
@@ -1294,6 +1385,73 @@ function setPage(page) {
   }
 }
 
+
+/**
+ * Adds manual rules for allowing or blocking the the selected items.
+ * @param {boolean} allow Whether to allow (for true) or block (for false) the
+ *    selected items.
+ */
+function processManagedList(allow) {
+  var hosts = $('results-display').querySelectorAll(
+      '.site-domain-wrapper input[type=checkbox]');
+  var urls = $('results-display').querySelectorAll(
+      '.site-results input[type=checkbox]');
+  // Get each domain and whether it is checked or not.
+  var hostsToSend = [];
+  for (var i = 0; i < hosts.length; i++) {
+    var hostParent = findAncestorByClass(hosts[i], 'site-domain-wrapper');
+    var host = hostParent.querySelector('button').textContent;
+    hostsToSend.push([hosts[i].checked, host]);
+  }
+  // Get each URL and whether it is checked or not.
+  var urlsToSend = [];
+  for (var i = 0; i < urls.length; i++) {
+    var urlParent = findAncestorByClass(urls[i], 'site-entry');
+    var urlChecked =
+        urlParent.querySelector('.site-domain-wrapper input').checked;
+    urlsToSend.push([urls[i].checked, urlChecked,
+        findAncestorByClass(urls[i], 'entry-box').querySelector('a').href]);
+  }
+  chrome.send('processManagedUrls', [allow, hostsToSend, urlsToSend]);
+}
+
+/**
+ * Updates the whitelist status labels of a host/URL entry to the current
+ * value.
+ * @param {Element} statusElement The div which contains the status labels.
+ * @param {Object} newStatus A dictionary with two entries:
+ *     - |inContentPack|: whether the current domain/URL is allowed by a
+ *     content pack.
+ *     - |manualBehavior|: The manual status of the current domain/URL.
+ */
+function updateHostStatus(statusElement, newStatus) {
+  var inContentPackDiv = statusElement.querySelector('.in-content-pack');
+  inContentPackDiv.className = 'in-content-pack';
+  if (newStatus['inContentPack']) {
+    if (newStatus['manualBehavior'] != ManagedModeManualBehavior.NONE)
+      inContentPackDiv.classList.add('in-content-pack-passive');
+    else
+      inContentPackDiv.classList.add('in-content-pack-active');
+  }
+
+  var manualBehaviorDiv = statusElement.querySelector('.manual-behavior');
+  manualBehaviorDiv.className = 'manual-behavior';
+  switch (newStatus['manualBehavior']) {
+  case ManagedModeManualBehavior.NONE:
+    manualBehaviorDiv.textContent = '';
+    break;
+  case ManagedModeManualBehavior.ALLOW:
+    manualBehaviorDiv.textContent = loadTimeData.getString('filterallowed');
+    manualBehaviorDiv.classList.add('filter-allowed');
+    break;
+  case ManagedModeManualBehavior.BLOCK:
+    manualBehaviorDiv.textContent = loadTimeData.getString('filterblocked');
+    manualBehaviorDiv.classList.add('filter-blocked');
+    break;
+  }
+}
+
+
 /**
  * Delete the next item in our deletion queue.
  */
@@ -1302,7 +1460,7 @@ function deleteNextInQueue() {
     // Call the native function to remove history entries.
     // First arg is a time (in ms since the epoch) identifying the day.
     // Remaining args are URLs of history entries from that day to delete.
-    chrome.send('removeURLsOnOneDay',
+    chrome.send('removeUrlsOnOneDay',
                 [deleteQueue[0].date.getTime()].concat(deleteQueue[0].urls));
   }
 }
@@ -1408,7 +1566,7 @@ function checkboxClicked(e) {
   }
   selectionAnchor = id;
 
-  historyView.updateRemoveButton();
+  historyView.updateSelectionEditButtons();
 }
 
 /**
@@ -1422,7 +1580,7 @@ function domainCheckboxClicked(e) {
       siteEntry.querySelectorAll('.site-results input[type=checkbox]');
   for (var i = 0; i < checkboxes.length; i++)
     checkboxes[i].checked = e.currentTarget.checked;
-  historyView.updateRemoveButton();
+  historyView.updateSelectionEditButtons();
   // Stop propagation as clicking the checkbox would otherwise trigger the
   // group to collapse/expand.
   e.stopPropagation();
@@ -1515,6 +1673,30 @@ function toggleHandler(e) {
   }
 }
 
+/**
+ * Builds the DOM elements to show the managed status of a domain/URL.
+ * @param {ManagedModeManualBehavior} manualBehavior The manual behavior for
+ *     this item.
+ * @param {boolean} inContentPack Whether this element is in a content pack or
+ *     not.
+ * @return {Element} Returns the DOM elements which show the status.
+ */
+function getManagedStatusDOM(manualBehavior, inContentPack) {
+  var filterStatusDiv = createElementWithClassName('div', 'filter-status');
+  var inContentPackDiv = createElementWithClassName('div', 'in-content-pack');
+  inContentPackDiv.textContent = loadTimeData.getString('incontentpack');
+  var manualBehaviorDiv = createElementWithClassName('div', 'manual-behavior');
+  filterStatusDiv.appendChild(inContentPackDiv);
+  filterStatusDiv.appendChild(manualBehaviorDiv);
+
+  updateHostStatus(filterStatusDiv, {
+    'inContentPack' : inContentPack,
+    'manualBehavior' : manualBehavior
+  });
+  return filterStatusDiv;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // Chrome callbacks:
 
@@ -1563,6 +1745,15 @@ function historyDeleted() {
   // TODO(dubroy): We should just reload the page & restore the checked items.
   if (!anyChecked)
     historyView.reload();
+}
+
+/**
+ * Called when the allow/block changes have been commited. This leads to the
+ * status of all the elements on the page being updated.
+ * @param {Object} entries The new updated results.
+ */
+function updateEntries(entries) {
+  historyView.updateManagedEntries(entries);
 }
 
 // Add handlers to HTML elements.

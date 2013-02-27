@@ -383,6 +383,12 @@ are declared in build/common.gypi.
       <message name="IDS_HISTORY_REMOVE_SELECTED_ITEMS" desc="Title of the button that allows the user to remove the selected history items">
         Remove selected items
       </message>
+      <message name="IDS_HISTORY_FILTER_ALLOW_ITEMS" desc="Title of the button that allows the user to allow the selected history items">
+        Allow items
+      </message>
+      <message name="IDS_HISTORY_FILTER_BLOCK_ITEMS" desc="Title of the button that allows the user to block the selected history items">
+        Block items
+      </message>
       <message name="IDS_HISTORY_OPEN_CLEAR_BROWSING_DATA_DIALOG" desc="Title of the button that will open the clear browsing data dialog.">
         Clear browsing data...
       </message>
@@ -467,6 +473,15 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </message>
       <message name="IDS_HISTORY_NUMBER_VISITS" desc="Format string for the number of visits of a site.">
         (<ph name="NUMBER_VISITS">$1<ex>3</ex></ph>)
+      </message>
+      <message name="IDS_HISTORY_FILTER_ALLOWED" desc="Text that shows that an entry is allowed.">
+        Allowed
+      </message>
+      <message name="IDS_HISTORY_FILTER_BLOCKED" desc="Text that shows that an entry is blocked.">
+        Blocked
+      </message>
+      <message name="IDS_HISTORY_IN_CONTENT_PACK" desc="Text that shows that an entry is in a content pack.">
+        In content pack
       </message>
 
       <!-- Generic terms -->

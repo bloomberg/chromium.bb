@@ -32,14 +32,19 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   // Handler for the "queryHistory" message.
   void HandleQueryHistory(const base::ListValue* args);
 
-  // Handler for the "removeURLsOnOneDay" message.
-  void HandleRemoveURLsOnOneDay(const base::ListValue* args);
+  // Handler for the "removeUrlsOnOneDay" message.
+  void HandleRemoveUrlsOnOneDay(const base::ListValue* args);
 
   // Handler for "clearBrowsingData" message.
   void HandleClearBrowsingData(const base::ListValue* args);
 
   // Handler for "removeBookmark" message.
   void HandleRemoveBookmark(const base::ListValue* args);
+
+#if !defined(OS_ANDROID)
+  // Handler for "processManagedUrls".
+  void HandleProcessManagedUrls(const ListValue* args);
+#endif
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

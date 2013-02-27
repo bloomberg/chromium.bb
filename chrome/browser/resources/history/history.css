@@ -114,15 +114,14 @@ html[dir=rtl] #range-next {
 }
 
 .entry {
-  overflow: auto; /* Make sure it's at least as large as its children. */
+  overflow: auto;
 }
 
 .entry-box,
 .site-domain-wrapper {
-  -webkit-box-orient: horizontal;
+  -webkit-align-items: center;
   cursor: default;
-  display: -webkit-box;
-  float: left;  /* Box will shrink to fit its content. */
+  display: -webkit-flex;
   /* An odd line-height ensures a consistent baseline on all platforms. */
   line-height: 1.75em;
   margin-bottom: 6px;
@@ -134,11 +133,7 @@ html[dir=rtl] #range-next {
 
 .site-domain-wrapper {
   cursor: pointer;
-}
-
-html[dir=rtl] .entry-box,
-html[dir=rtl] .site-domain-wrapper {
-  float: right; /* To make the box shrink to fit its content. */
+  width: 100%;
 }
 
 .day {
@@ -259,6 +254,50 @@ html[dir='rtl'] .site-domain {
 .entry-box input[type=checkbox]:focus {
   -webkit-transition: opacity 150ms;
 }
+
+.filter-status {
+  display: -webkit-flex;
+  -webkit-flex-grow: 1;
+  -webkit-justify-content: flex-end;
+}
+
+.filter-status > div {
+  -webkit-transition: background-color 500ms ease-in-out;
+  border-radius: 3px;
+  font-size: 11px;
+  height: 14px;
+  line-height: 12px;
+  visibility: hidden;
+  white-space: nowrap;
+}
+
+.filter-status > div.filter-allowed,
+.filter-status > div.filter-blocked,
+.filter-status > div.in-content-pack-active,
+.filter-status > div.in-content-pack-passive {
+  margin: 3px 3px 3px 0;
+  padding: 0 4px;
+  visibility: visible;
+}
+
+.filter-allowed,
+.in-content-pack-active {
+  background-color: rgb(141, 240, 127);
+  border: 1px solid rgb(33, 190, 33);
+  color: rgb(54, 54, 54);
+}
+
+.filter-blocked {
+  border: 1px solid rgb(211, 0, 0);
+  background-color: rgb(255, 147, 105);
+  color: rgb(54, 54, 54);
+}
+
+.in-content-pack-passive {
+  border: 1px solid rgb(155, 224, 163);
+  background-color: rgb(225, 255, 205);
+  color: rgb(148, 148, 148);
+}
 </if>
 
 #range-previous img {
@@ -276,7 +315,7 @@ html[dir='rtl'] .site-domain {
 }
 
 .entry .title {
-  -webkit-box-flex: 1;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -356,9 +395,8 @@ html[dir='rtl'] .site-domain-arrow.expand {
   opacity: 0;
 }
 
-.menu-button.drop-down {
-  position: relative;
-  top: 2px;
+button.menu-button.drop-down {
+  top: 0;
 }
 
 #action-menu > :not(hr) {

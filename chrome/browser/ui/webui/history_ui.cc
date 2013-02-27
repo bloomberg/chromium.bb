@@ -28,6 +28,9 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/web_history_service.h"
 #include "chrome/browser/history/web_history_service_factory.h"
+#include "chrome/browser/managed_mode/managed_mode_url_filter.h"
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -107,7 +110,7 @@ void SetURLAndTitle(DictionaryValue* result,
   result->SetString("title", title_to_set);
 }
 
-content::WebUIDataSource* CreateHistoryUIHTMLSource() {
+content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIHistoryFrameHost);
   source->AddLocalizedString("loading", IDS_HISTORY_LOADING);
@@ -146,6 +149,11 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource() {
   source->AddLocalizedString("rangenext", IDS_HISTORY_RANGE_NEXT);
   source->AddLocalizedString("rangeprevious", IDS_HISTORY_RANGE_PREVIOUS);
   source->AddLocalizedString("numbervisits", IDS_HISTORY_NUMBER_VISITS);
+  source->AddLocalizedString("filterallowed", IDS_HISTORY_FILTER_ALLOWED);
+  source->AddLocalizedString("filterblocked", IDS_HISTORY_FILTER_BLOCKED);
+  source->AddLocalizedString("incontentpack", IDS_HISTORY_IN_CONTENT_PACK);
+  source->AddLocalizedString("allowitems", IDS_HISTORY_FILTER_ALLOW_ITEMS);
+  source->AddLocalizedString("blockitems", IDS_HISTORY_FILTER_BLOCK_ITEMS);
   source->AddBoolean("groupByDomain",
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kHistoryEnableGroupByDomain));
@@ -154,6 +162,11 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource() {
   source->SetDefaultResource(IDR_HISTORY_HTML);
   source->SetUseJsonJSFormatV2();
   source->DisableDenyXFrameOptions();
+
+#if !defined(OS_ANDROID)
+  source->AddBoolean("isManagedProfile",
+      ManagedUserServiceFactory::GetForProfile(profile)->ProfileIsManaged());
+#endif
 
   return source;
 }
@@ -240,8 +253,8 @@ void BrowsingHistoryHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("queryHistory",
       base::Bind(&BrowsingHistoryHandler::HandleQueryHistory,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("removeURLsOnOneDay",
-      base::Bind(&BrowsingHistoryHandler::HandleRemoveURLsOnOneDay,
+  web_ui()->RegisterMessageCallback("removeUrlsOnOneDay",
+      base::Bind(&BrowsingHistoryHandler::HandleRemoveUrlsOnOneDay,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("clearBrowsingData",
       base::Bind(&BrowsingHistoryHandler::HandleClearBrowsingData,
@@ -249,6 +262,11 @@ void BrowsingHistoryHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("removeBookmark",
       base::Bind(&BrowsingHistoryHandler::HandleRemoveBookmark,
                  base::Unretained(this)));
+#if !defined(OS_ANDROID)
+  web_ui()->RegisterMessageCallback("processManagedUrls",
+      base::Bind(&BrowsingHistoryHandler::HandleProcessManagedUrls,
+                 base::Unretained(this)));
+#endif
 }
 
 bool BrowsingHistoryHandler::ExtractIntegerValueAtIndex(const ListValue* value,
@@ -350,7 +368,7 @@ void BrowsingHistoryHandler::HandleQueryHistory(const ListValue* args) {
   QueryHistory(search_text, options);
 }
 
-void BrowsingHistoryHandler::HandleRemoveURLsOnOneDay(const ListValue* args) {
+void BrowsingHistoryHandler::HandleRemoveUrlsOnOneDay(const ListValue* args) {
   if (delete_task_tracker_.HasTrackedTasks()) {
     web_ui()->CallJavascriptFunction("deleteFailed");
     return;
@@ -399,6 +417,119 @@ void BrowsingHistoryHandler::HandleRemoveURLsOnOneDay(const ListValue* args) {
                  base::Unretained(this)));
   }
 }
+
+#if !defined(OS_ANDROID)
+void BrowsingHistoryHandler::HandleProcessManagedUrls(const ListValue* args) {
+  bool allow = false;
+  if (!args->GetBoolean(0, &allow)) {
+    LOG(ERROR) << "Unable to extract boolean argument.";
+    web_ui()->CallJavascriptFunction("processingManagedFailed");
+    return;
+  }
+
+  // Since editing a host can have side effects on other hosts, update all of
+  // them but change the behavior only of the checked ones.
+  std::vector<std::string> hosts_to_be_changed;
+  std::vector<GURL> hosts_to_update;
+  // Get the host information. Currently the layout of this data is as follows:
+  // [[<is the host checked (boolean)>, <host (string)>], ...]
+  const ListValue* host_list;
+  if (!args->GetList(1, &host_list)) {
+    LOG(WARNING) << "Unable to extract list argument.";
+    return;
+  }
+  for (ListValue::const_iterator v = host_list->begin();
+       v != host_list->end(); ++v) {
+    ListValue* element;
+    bool is_checked;
+    std::string value;
+    if (!((*v)->GetAsList(&element) &&
+        element->GetBoolean(0, &is_checked) &&
+        element->GetString(1, &value))) {
+      continue;
+    }
+
+    hosts_to_update.push_back(GURL("http://" + value));
+    if (is_checked)
+      hosts_to_be_changed.push_back(value);
+  }
+
+  std::vector<GURL> urls_to_be_changed;
+  std::vector<GURL> urls_to_update;
+  const ListValue* url_list;
+  // The URL information is received as a list of lists as follows:
+  // [[<is the URL checked (boolean)>, <is the host checked (boolean)>,
+  //   <URL (string)>], ...].
+  if (!args->GetList(2, &url_list)) {
+    LOG(WARNING) << "Unable to extract list argument.";
+    return;
+  }
+  for (ListValue::const_iterator v = url_list->begin();
+       v != url_list->end(); ++v) {
+    ListValue* element;
+    bool url_checked;
+    bool host_checked;
+    string16 string16_value;
+    if (!((*v)->GetAsList(&element) &&
+        element->GetBoolean(0, &url_checked) &&
+        element->GetBoolean(1, &host_checked) &&
+        element->GetString(2, &string16_value))) {
+      continue;
+    }
+
+    urls_to_update.push_back(GURL(string16_value));
+    // Do not update individual entries if the whole domain is checked.
+    if (url_checked && !host_checked)
+      urls_to_be_changed.push_back(GURL(string16_value));
+  }
+
+  // Now that the lists are built apply the changes to those domains and URLs.
+  Profile *profile = Profile::FromWebUI(web_ui());
+  ManagedUserService *service =
+      ManagedUserServiceFactory::GetForProfile(profile);
+  service->SetManualBehaviorForHosts(hosts_to_be_changed,
+                                     allow ? ManagedUserService::MANUAL_ALLOW :
+                                             ManagedUserService::MANUAL_BLOCK);
+  service->SetManualBehaviorForURLs(urls_to_be_changed,
+                                    allow ? ManagedUserService::MANUAL_ALLOW :
+                                            ManagedUserService::MANUAL_BLOCK);
+
+  // Build the list of updated hosts after the changes have been applied.
+  ListValue results;
+  std::vector<GURL>::iterator it;
+  scoped_ptr<DictionaryValue> result_hosts(new DictionaryValue());
+  for (it = hosts_to_update.begin(); it != hosts_to_update.end(); ++it) {
+    std::vector<ManagedModeSiteList::Site*> sites;
+    service->GetURLFilterForUIThread()->GetSites(
+        it->GetWithEmptyPath(), &sites);
+    scoped_ptr<DictionaryValue> entry(new DictionaryValue());
+    entry->SetInteger("manualBehavior",
+                      service->GetManualBehaviorForHost(it->host()));
+    entry->SetInteger("inContentPack", !sites.empty());
+    result_hosts->SetWithoutPathExpansion(it->host(), entry.release());
+  }
+  results.Append(result_hosts.release());
+
+  // Do the same for URLs.
+  scoped_ptr<DictionaryValue> result_urls(new DictionaryValue());
+  for (it = urls_to_update.begin(); it != urls_to_update.end(); ++it) {
+    std::vector<ManagedModeSiteList::Site*> sites;
+    service->GetURLFilterForUIThread()->GetSites(*it, &sites);
+    scoped_ptr<DictionaryValue> entry(new DictionaryValue());
+    int manual_behavior = service->GetManualBehaviorForURL(*it);
+    if (manual_behavior == ManagedUserService::MANUAL_NONE)
+      manual_behavior = service->GetManualBehaviorForHost(it->host());
+    entry->SetInteger("manualBehavior", manual_behavior);
+    entry->SetInteger("inContentPack", !sites.empty());
+    result_urls->SetWithoutPathExpansion(it->spec(), entry.release());
+  }
+  results.Append(result_urls.release());
+
+  // Notify the Javascript side that the changes have been commited and that it
+  // should update the page.
+  web_ui()->CallJavascriptFunction("updateEntries", results);
+}
+#endif  // defined(OS_ANDROID)
 
 void BrowsingHistoryHandler::HandleClearBrowsingData(const ListValue* args) {
 #if defined(OS_ANDROID)
@@ -459,6 +590,27 @@ DictionaryValue* BrowsingHistoryHandler::CreateQueryResultValue(
   Profile* profile = Profile::FromWebUI(web_ui());
   result->SetBoolean("starred",
       BookmarkModelFactory::GetForProfile(profile)->IsBookmarked(url));
+
+#if !defined(OS_ANDROID)
+  ManagedUserService* service =
+      ManagedUserServiceFactory::GetForProfile(profile);
+  if (service->ProfileIsManaged()) {
+    // URL exceptions take precedence over host exceptions.
+    int manual_behavior = service->GetManualBehaviorForURL(url);
+    if (manual_behavior == ManagedUserService::MANUAL_NONE)
+      manual_behavior = service->GetManualBehaviorForHost(url.host());
+    result->SetInteger("urlManualBehavior", manual_behavior);
+    result->SetInteger("hostManualBehavior",
+                       service->GetManualBehaviorForHost(url.host()));
+    std::vector<ManagedModeSiteList::Site*> sites;
+    service->GetURLFilterForUIThread()->GetSites(url, &sites);
+    result->SetBoolean("urlInContentPack", !sites.empty());
+    sites.clear();
+    service->GetURLFilterForUIThread()->GetSites(
+        url.GetWithEmptyPath(), &sites);
+    result->SetBoolean("hostInContentPack", !sites.empty());
+  }
+#endif
 
   return result;
 }
@@ -703,8 +855,9 @@ HistoryUI::HistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(new BrowsingHistoryHandler());
 
   // Set up the chrome://history-frame/ source.
-  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui),
-                                CreateHistoryUIHTMLSource());
+  content::WebUIDataSource::Add(
+      Profile::FromWebUI(web_ui),
+      CreateHistoryUIHTMLSource(Profile::FromWebUI(web_ui)));
 }
 
 // static

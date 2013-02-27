@@ -133,7 +133,7 @@ HistoryWebUITest.prototype = {
     BaseHistoryWebUITest.prototype.preLoad.call(this);
 
     this.registerMockHandler_(
-        'removeURLsOnOneDay', this.removeURLsStub_.bind(this));
+        'removeUrlsOnOneDay', this.removeUrlsStub_.bind(this));
 
     // Prepare a list of fake history results. The entries will begin at
     // 1:00 AM on Sept 2, 2008, and will be spaced two minutes apart.
@@ -178,12 +178,12 @@ HistoryWebUITest.prototype = {
   },
 
   /**
-   * Stub for the 'removeURLsOnOneDay' message to the history backend.
+   * Stub for the 'removeUrlsOnOneDay' message to the history backend.
    * This will modify the fake history data in the test instance, so that
    * further 'queryHistory' messages will not contain the deleted entries.
-   * @param {Array} arguments The original arguments to removeURLsOnOneDay.
+   * @param {Array} arguments The original arguments to removeUrlsOnOneDay.
    */
-  removeURLsStub_: function(args) {
+  removeUrlsStub_: function(args) {
     var day = new Date(args[0]).toDateString();
     var urls = args.slice(1);
 
@@ -302,7 +302,7 @@ TEST_F('HistoryWebUITest', 'deletion', function() {
   window.confirm = function() { return true; };
 
   // The "remote" button should be initially selected.
-  var removeButton = $('remove-selected')
+  var removeButton = $('remove-selected');
   expectTrue(removeButton.disabled);
 
   checkboxes[0].click();
