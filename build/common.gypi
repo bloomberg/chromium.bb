@@ -174,7 +174,6 @@
       'enable_app_list%': '<(enable_app_list)',
       'enable_message_center%': '<(enable_message_center)',
       'use_default_render_theme%': '<(use_default_render_theme)',
-      'enable_web_intents%': 0,  # TODO(thakis): Remove, http://crbug.com/173194
       'buildtype%': '<(buildtype)',
 
       # Override branding to select the desired branding flavor.
@@ -757,7 +756,6 @@
     'enable_app_list%': '<(enable_app_list)',
     'enable_message_center%': '<(enable_message_center)',
     'use_default_render_theme%': '<(use_default_render_theme)',
-    'enable_web_intents%': '<(enable_web_intents)',
     'enable_settings_app%': '<(enable_settings_app)',
     'use_official_google_api_keys%': '<(use_official_google_api_keys)',
     'google_api_key%': '<(google_api_key)',
@@ -1982,11 +1980,6 @@
       ['enable_task_manager==1', {
         'defines': [
           'ENABLE_TASK_MANAGER=1',
-        ],
-      }],
-      ['enable_web_intents==1', {
-        'defines': [
-          'ENABLE_WEB_INTENTS=1',
         ],
       }],
       ['enable_extensions==1', {

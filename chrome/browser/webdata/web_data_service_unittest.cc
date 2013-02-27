@@ -19,12 +19,10 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
-#include "chrome/browser/intents/default_web_intent_service.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_data_service_test_util.h"
-#include "chrome/browser/webdata/web_intents_table.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/form_field_data.h"
@@ -44,7 +42,6 @@ using testing::DoDefault;
 using testing::ElementsAreArray;
 using testing::Pointee;
 using testing::Property;
-using webkit_glue::WebIntentServiceData;
 
 typedef std::vector<AutofillChange> AutofillChangeList;
 
@@ -150,59 +147,6 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
   const TimeDelta test_timeout_;
   scoped_refptr<AutofillDBThreadObserverHelper> observer_helper_;
   WaitableEvent done_event_;
-};
-
-// Run the current message loop. OnWebDataServiceRequestDone will invoke
-// MessageLoop::Quit on completion, so this call will finish at that point.
-static void WaitUntilCalled() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  MessageLoop::current()->Run();
-}
-
-// Simple consumer for WebIntents service data. Stores the result data and
-// quits UI message loop when callback is invoked.
-class WebIntentsConsumer : public WebDataServiceConsumer {
- public:
-  virtual void OnWebDataServiceRequestDone(
-      WebDataService::Handle h,
-      const WDTypedResult* result) OVERRIDE {
-    services_.clear();
-    if (result) {
-      DCHECK(result->GetType() == WEB_INTENTS_RESULT);
-      services_ = static_cast<
-          const WDResult<std::vector<WebIntentServiceData> >*>(result)->
-              GetValue();
-    }
-
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    MessageLoop::current()->Quit();
-  }
-
-  // Result data from completion callback.
-  std::vector<WebIntentServiceData> services_;
-};
-
-// Simple consumer for WebIntents defaults data. Stores the result data and
-// quits UI message loop when callback is invoked.
-class WebIntentsDefaultsConsumer : public WebDataServiceConsumer {
- public:
-  virtual void OnWebDataServiceRequestDone(
-      WebDataService::Handle h,
-      const WDTypedResult* result) OVERRIDE {
-    services_.clear();
-    if (result) {
-      DCHECK(result->GetType() == WEB_INTENTS_DEFAULTS_RESULT);
-      services_ = static_cast<
-          const WDResult<std::vector<DefaultWebIntentService> >*>(result)->
-              GetValue();
-    }
-
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    MessageLoop::current()->Quit();
-  }
-
-  // Result data from completion callback.
-  std::vector<DefaultWebIntentService> services_;
 };
 
 // Simple consumer for Keywords data. Stores the result data and quits UI
@@ -653,179 +597,4 @@ TEST_F(WebDataServiceAutofillTest, AutofillRemoveModifiedBetween) {
   MessageLoop::current()->Run();
   EXPECT_EQ(handle2, card_consumer2.handle());
   ASSERT_EQ(0U, card_consumer2.result().size());
-}
-
-TEST_F(WebDataServiceTest, WebIntents) {
-  WebIntentsConsumer consumer;
-
-  wds_->GetWebIntentServicesForAction(ASCIIToUTF16("share"), &consumer);
-  WaitUntilCalled();
-  EXPECT_EQ(0U, consumer.services_.size());
-
-  WebIntentServiceData service;
-  service.service_url = GURL("http://google.com");
-  service.action = ASCIIToUTF16("share1");
-  service.type = ASCIIToUTF16("image/*");
-  wds_->AddWebIntentService(service);
-
-  service.action = ASCIIToUTF16("share");
-  service.type = ASCIIToUTF16("image/*");
-  wds_->AddWebIntentService(service);
-
-  service.type = ASCIIToUTF16("video/*");
-  wds_->AddWebIntentService(service);
-
-  wds_->GetWebIntentServicesForAction(ASCIIToUTF16("share"), &consumer);
-  WaitUntilCalled();
-  ASSERT_EQ(2U, consumer.services_.size());
-
-  if (consumer.services_[0].type != ASCIIToUTF16("image/*"))
-    std::swap(consumer.services_[0], consumer.services_[1]);
-
-  EXPECT_EQ(service.service_url, consumer.services_[0].service_url);
-  EXPECT_EQ(service.action, consumer.services_[0].action);
-  EXPECT_EQ(ASCIIToUTF16("image/*"), consumer.services_[0].type);
-  EXPECT_EQ(service.service_url, consumer.services_[1].service_url);
-  EXPECT_EQ(service.action, consumer.services_[1].action);
-  EXPECT_EQ(service.type, consumer.services_[1].type);
-
-  service.type = ASCIIToUTF16("image/*");
-  wds_->RemoveWebIntentService(service);
-
-  wds_->GetWebIntentServicesForAction(ASCIIToUTF16("share"), &consumer);
-  WaitUntilCalled();
-  ASSERT_EQ(1U, consumer.services_.size());
-
-  service.type = ASCIIToUTF16("video/*");
-  EXPECT_EQ(service.service_url, consumer.services_[0].service_url);
-  EXPECT_EQ(service.action, consumer.services_[0].action);
-  EXPECT_EQ(service.type, consumer.services_[0].type);
-}
-
-TEST_F(WebDataServiceTest, WebIntentsForURL) {
-  WebIntentsConsumer consumer;
-
-  WebIntentServiceData service;
-  service.service_url = GURL("http://google.com");
-  service.action = ASCIIToUTF16("share1");
-  service.type = ASCIIToUTF16("image/*");
-  wds_->AddWebIntentService(service);
-
-  service.action = ASCIIToUTF16("share");
-  service.type = ASCIIToUTF16("image/*");
-  wds_->AddWebIntentService(service);
-
-  wds_->GetWebIntentServicesForURL(
-      UTF8ToUTF16(service.service_url.spec()),
-      &consumer);
-  WaitUntilCalled();
-  ASSERT_EQ(2U, consumer.services_.size());
-  EXPECT_EQ(service, consumer.services_[0]);
-  service.action = ASCIIToUTF16("share1");
-  EXPECT_EQ(service, consumer.services_[1]);
-}
-
-TEST_F(WebDataServiceTest, WebIntentsGetAll) {
-  WebIntentsConsumer consumer;
-
-  WebIntentServiceData service;
-  service.service_url = GURL("http://google.com");
-  service.action = ASCIIToUTF16("share");
-  service.type = ASCIIToUTF16("image/*");
-  wds_->AddWebIntentService(service);
-
-  service.action = ASCIIToUTF16("edit");
-  wds_->AddWebIntentService(service);
-
-  wds_->GetAllWebIntentServices(&consumer);
-  WaitUntilCalled();
-  ASSERT_EQ(2U, consumer.services_.size());
-
-  if (consumer.services_[0].action != ASCIIToUTF16("edit"))
-    std::swap(consumer.services_[0],consumer.services_[1]);
-
-  EXPECT_EQ(service, consumer.services_[0]);
-  service.action = ASCIIToUTF16("share");
-  EXPECT_EQ(service, consumer.services_[1]);
-}
-
-TEST_F(WebDataServiceTest, WebIntentsDefaultsTest) {
-  WebIntentsDefaultsConsumer consumer;
-
-  wds_->GetDefaultWebIntentServicesForAction(ASCIIToUTF16("share"), &consumer);
-  WaitUntilCalled();
-  EXPECT_EQ(0U, consumer.services_.size());
-
-  DefaultWebIntentService default_service;
-  default_service.action = ASCIIToUTF16("share");
-  default_service.type = ASCIIToUTF16("type");
-  default_service.user_date = 1;
-  default_service.suppression = 4;
-  default_service.service_url = "service_url";
-  wds_->AddDefaultWebIntentService(default_service);
-
-  default_service.action = ASCIIToUTF16("share2");
-  default_service.service_url = "service_url_2";
-  wds_->AddDefaultWebIntentService(default_service);
-
-  wds_->GetDefaultWebIntentServicesForAction(ASCIIToUTF16("share"), &consumer);
-  WaitUntilCalled();
-  ASSERT_EQ(1U, consumer.services_.size());
-  EXPECT_EQ("service_url", consumer.services_[0].service_url);
-
-  wds_->GetAllDefaultWebIntentServices(&consumer);
-  WaitUntilCalled();
-  EXPECT_EQ(2U, consumer.services_.size());
-
-  default_service.action = ASCIIToUTF16("share");
-  wds_->RemoveDefaultWebIntentService(default_service);
-
-  wds_->GetDefaultWebIntentServicesForAction(ASCIIToUTF16("share"), &consumer);
-  WaitUntilCalled();
-  EXPECT_EQ(0U, consumer.services_.size());
-
-  wds_->GetDefaultWebIntentServicesForAction(ASCIIToUTF16("share2"), &consumer);
-  WaitUntilCalled();
-  ASSERT_EQ(1U, consumer.services_.size());
-  EXPECT_EQ("service_url_2", consumer.services_[0].service_url);
-
-  wds_->GetAllDefaultWebIntentServices(&consumer);
-  WaitUntilCalled();
-  ASSERT_EQ(1U, consumer.services_.size());
-  EXPECT_EQ("service_url_2", consumer.services_[0].service_url);
-}
-
-TEST_F(WebDataServiceTest, WebIntentsRemoveDefaultByServiceURL) {
-  WebIntentsDefaultsConsumer consumer;
-
-  GURL service_url_0("http://pandawaddle.com/observe");
-  GURL service_url_1("http://kittysnicker.com/mock");
-
-  DefaultWebIntentService s0;
-  s0.action = ASCIIToUTF16("share");
-  s0.type = ASCIIToUTF16("type");
-  s0.user_date = 1;
-  s0.suppression = 4;
-  s0.service_url = service_url_0.spec();
-  wds_->AddDefaultWebIntentService(s0);
-
-  DefaultWebIntentService s1;
-  s1.action = ASCIIToUTF16("share2");
-  s1.type = ASCIIToUTF16("type");
-  s1.user_date = 1;
-  s1.suppression = 4;
-  s1.service_url = service_url_1.spec();
-  wds_->AddDefaultWebIntentService(s1);
-
-  wds_->GetAllDefaultWebIntentServices(&consumer);
-  WaitUntilCalled();
-  ASSERT_EQ(2U, consumer.services_.size());
-
-  wds_->RemoveWebIntentServiceDefaults(service_url_0);
-  MessageLoop::current()->RunUntilIdle();
-
-  wds_->GetAllDefaultWebIntentServices(&consumer);
-  WaitUntilCalled();
-  ASSERT_EQ(1U, consumer.services_.size());
-  EXPECT_EQ(service_url_1.spec(), consumer.services_[0].service_url);
 }

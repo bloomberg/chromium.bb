@@ -363,12 +363,6 @@
         'weburlrequest_extradata_impl.h',
         'weburlresponse_extradata_impl.cc',
         'weburlresponse_extradata_impl.h',
-        'web_intent_data.cc',
-        'web_intent_data.h',
-        'web_intent_reply_data.cc',
-        'web_intent_reply_data.h',
-        'web_intent_service_data.cc',
-        'web_intent_service_data.h',
         'web_io_operators.cc',
         'web_io_operators.h',
         'worker_task_runner.cc',
@@ -424,16 +418,6 @@
         ['use_aura==1 and OS=="win"', {
           'sources/': [
             ['exclude', '^\\.\\./plugins/npapi/webplugin_delegate_impl_aura'],
-          ],
-        }],
-        ['enable_web_intents==0', {
-          'sources!': [
-            'web_intent_data.cc',
-            'web_intent_data.h',
-            'web_intent_reply_data.cc',
-            'web_intent_reply_data.h',
-            'web_intent_service_data.cc',
-            'web_intent_service_data.h',
           ],
         }],
         ['OS!="mac"', {

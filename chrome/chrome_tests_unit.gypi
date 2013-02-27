@@ -1498,7 +1498,6 @@
         'browser/webdata/web_data_service_test_util.h',
         'browser/webdata/web_data_service_unittest.cc',
         'browser/webdata/web_database_migration_unittest.cc',
-        'browser/webdata/web_intents_table_unittest.cc',
         'common/bzip2_unittest.cc',
         'common/cancelable_task_tracker_unittest.cc',
         'common/child_process_logging_mac_unittest.mm',
@@ -1697,8 +1696,6 @@
         '../webkit/fileapi/syncable/canned_syncable_file_system.cc',
         '../webkit/fileapi/syncable/mock_sync_status_observer.cc',
         '../webkit/fileapi/syncable/mock_sync_status_observer.h',
-        '../webkit/glue/web_intent_reply_data_unittest.cc',
-        '../webkit/glue/web_intent_service_data_unittest.cc',
         '../webkit/quota/mock_storage_client.cc',
         '../webkit/quota/mock_storage_client.h',
       ],
@@ -2231,14 +2228,6 @@
             }],
           ],
         }],  # OS == android
-        ['enable_web_intents==0', {
-          'sources!': [
-            'browser/webdata/web_data_service_unittest.cc',
-            'browser/webdata/web_intents_table_unittest.cc',
-            '../webkit/glue/web_intent_reply_data_unittest.cc',
-            '../webkit/glue/web_intent_service_data_unittest.cc',
-          ],
-        }],
         ['enable_themes==0', {
           'sources!': [
             'browser/ui/webui/theme_source_unittest.cc',

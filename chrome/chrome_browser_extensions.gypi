@@ -822,12 +822,6 @@
             '../third_party/libusb/libusb.gyp:libusb'
           ],
         }],
-        ['enable_web_intents==0', {
-          'sources!': [
-            'browser/extensions/web_intents_parser.cc',
-            'browser/extensions/web_intents_parser.h',
-          ],
-        }],
         ['OS=="linux" and use_aura==1', {
           'dependencies': [
             '../build/linux/system.gyp:dbus',
