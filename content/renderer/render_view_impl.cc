@@ -1917,7 +1917,8 @@ WebView* RenderViewImpl::createView(
   params.user_gesture = creator->isProcessingUserGesture();
   params.window_container_type = WindowFeaturesToContainerType(features);
   params.session_storage_namespace_id = session_storage_namespace_id_;
-  params.frame_name = frame_name;
+  if (frame_name != "_blank")
+    params.frame_name = frame_name;
   params.opener_frame_id = creator->identifier();
   params.opener_url = creator->document().url();
   GURL security_url(creator->document().securityOrigin().toString().utf8());
@@ -1951,7 +1952,7 @@ WebView* RenderViewImpl::createView(
       routing_id,
       surface_id,
       cloned_session_storage_namespace_id,
-      frame_name,
+      string16(),  // WebCore will take care of setting the correct name.
       true,
       false,
       1,
