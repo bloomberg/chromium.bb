@@ -40,32 +40,6 @@ SafetyLevel Int2SafetyLevel(uint32_t i) {
   }
 }
 
-uint32_t ShiftTypeBits5To6Interface::ComputeDecodeImmShift(
-    uint32_t shift_type, uint32_t imm5_value) {
-  switch (shift_type) {
-    case 0:
-      return imm5_value;
-    case 1:
-    case 2:
-      return imm5_value == 0 ? 32 : imm5_value;
-    case 3:
-      return imm5_value == 0 ? 1 : imm5_value;
-    default:
-      assert(false);  // This should not happen, shift_type is two bits.
-      return imm5_value;
-  }
-}
-
-// This encoding is described in Section A5.2.4.
-uint32_t Imm12Bits0To11Interface::get_modified_immediate(Instruction i) {
-  int rotation = i.Bits(11, 8) * 2;
-  uint32_t value = i.Bits(7, 0);
-
-  if (rotation == 0) return value;
-
-  return (value >> rotation) | (value << (32 - rotation));
-}
-
 // ClassDecoder
 RegisterList ClassDecoder::defs(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
@@ -145,23 +119,6 @@ SafetyLevel UnsafeClassDecoder::safety(Instruction i) const {
 }
 
 RegisterList UnsafeClassDecoder::defs(Instruction i) const {
-  UNREFERENCED_PARAMETER(i);
-  return RegisterList();
-}
-
-// CoprocessorOp
-SafetyLevel CoprocessorOp::safety(const Instruction i) const {
-  if (defs(i).Contains(Register::Pc())) return FORBIDDEN_OPERANDS;
-  switch (coproc.value(i)) {
-    default: return FORBIDDEN;
-
-    case 10:
-    case 11:  // NEON/VFP
-      return MAY_BE_SAFE;
-  }
-}
-
-RegisterList CoprocessorOp::defs(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
   return RegisterList();
 }
