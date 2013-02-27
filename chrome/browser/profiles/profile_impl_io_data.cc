@@ -10,7 +10,9 @@
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/public/pref_member.h"
+#include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
@@ -389,7 +391,8 @@ void ProfileImplIOData::InitializeInternal(
         new SQLitePersistentCookieStore(
             lazy_params_->cookie_path,
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+            BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
+                BrowserThread::GetBlockingPool()->GetSequenceToken()),
             lazy_params_->restore_old_session_cookies,
             new ClearOnExitPolicy(lazy_params_->special_storage_policy));
     cookie_store =
@@ -499,7 +502,8 @@ void ProfileImplIOData::
           new SQLitePersistentCookieStore(
               lazy_params_->extensions_cookie_path,
               BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-              BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+              BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
+                  BrowserThread::GetBlockingPool()->GetSequenceToken()),
               lazy_params_->restore_old_session_cookies, NULL), NULL);
   // Enable cookies for devtools and extension URLs.
   const char* schemes[] = {chrome::kChromeDevToolsScheme,
@@ -599,7 +603,8 @@ ProfileImplIOData::InitializeAppRequestContext(
         new SQLitePersistentCookieStore(
             cookie_path,
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+            BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
+                BrowserThread::GetBlockingPool()->GetSequenceToken()),
             false,
             NULL);
     // TODO(creis): We should have a cookie delegate for notifying the cookie
