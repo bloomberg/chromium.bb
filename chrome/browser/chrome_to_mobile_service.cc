@@ -414,8 +414,7 @@ void ChromeToMobileService::Observe(
   TokenService::TokenAvailableDetails* token_details =
       content::Details<TokenService::TokenAvailableDetails>(details).ptr();
   // Invalidate the cloud print access token on Gaia login token updates.
-  if (token_details->service() == GaiaConstants::kGaiaOAuth2LoginRefreshToken ||
-      token_details->service() == GaiaConstants::kGaiaOAuth2LoginAccessToken)
+  if (token_details->service() == GaiaConstants::kGaiaOAuth2LoginRefreshToken)
     access_token_.clear();
 }
 

@@ -167,9 +167,7 @@ class TokenService : public GaiaAuthConsumer,
   // Typical use is to create an OAuth2 token for appropriate scope and then
   // use that token to call a Google API.
   virtual bool HasOAuthLoginToken() const;
-  virtual bool HasOAuthLoginAccessToken() const;
   virtual const std::string& GetOAuth2LoginRefreshToken() const;
-  const std::string& GetOAuth2LoginAccessToken() const;
 
   // For tests only. Doesn't save to the WebDB.
   void IssueAuthTokenForTest(const std::string& service,

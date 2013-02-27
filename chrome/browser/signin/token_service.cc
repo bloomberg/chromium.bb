@@ -258,16 +258,8 @@ bool TokenService::HasOAuthLoginToken() const {
   return HasTokenForService(GaiaConstants::kGaiaOAuth2LoginRefreshToken);
 }
 
-bool TokenService::HasOAuthLoginAccessToken() const {
-  return HasTokenForService(GaiaConstants::kGaiaOAuth2LoginAccessToken);
-}
-
 const std::string& TokenService::GetOAuth2LoginRefreshToken() const {
   return GetTokenForService(GaiaConstants::kGaiaOAuth2LoginRefreshToken);
-}
-
-const std::string& TokenService::GetOAuth2LoginAccessToken() const {
-  return GetTokenForService(GaiaConstants::kGaiaOAuth2LoginAccessToken);
 }
 
 // static
@@ -355,7 +347,6 @@ void TokenService::OnClientOAuthSuccess(const ClientOAuthResult& result) {
 void TokenService::SaveOAuth2Credentials(const ClientOAuthResult& result) {
   token_map_[GaiaConstants::kGaiaOAuth2LoginRefreshToken] =
       result.refresh_token;
-  // Save refresh token only since access token is transient anyway.
   SaveAuthTokenToDB(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
       result.refresh_token);
   // We don't save expiration information for now.
@@ -366,15 +357,6 @@ void TokenService::SaveOAuth2Credentials(const ClientOAuthResult& result) {
 
   FireTokenAvailableNotification(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
       result.refresh_token);
-
-  if (result.access_token.length()) {
-    token_map_[GaiaConstants::kGaiaOAuth2LoginAccessToken] =
-        result.access_token;
-
-    FOR_DIAGNOSTICS_OBSERVERS(
-        NotifyTokenReceivedSuccess(GaiaConstants::kGaiaOAuth2LoginAccessToken,
-                                   result.access_token, true));
-  }
 }
 
 void TokenService::OnClientOAuthFailure(
@@ -423,8 +405,6 @@ void TokenService::LoadTokensIntoMemory(
   }
   LoadSingleTokenIntoMemory(db_tokens, in_memory_tokens,
       GaiaConstants::kGaiaOAuth2LoginRefreshToken);
-  LoadSingleTokenIntoMemory(db_tokens, in_memory_tokens,
-      GaiaConstants::kGaiaOAuth2LoginAccessToken);
   // TODO(petewil): Remove next line when we refactor key-value
   // storage out of token_service - http://crbug.com/177125.
   LoadSingleTokenIntoMemory(db_tokens, in_memory_tokens,

@@ -321,8 +321,6 @@ TEST_F(TokenServiceTest, LoadTokensIntoMemoryBasic) {
   }
   std::string service = GaiaConstants::kGaiaOAuth2LoginRefreshToken;
   TestLoadSingleToken(&db_tokens, &memory_tokens, service);
-  service = GaiaConstants::kGaiaOAuth2LoginAccessToken;
-  TestLoadSingleToken(&db_tokens, &memory_tokens, service);
 }
 
 TEST_F(TokenServiceTest, LoadTokensIntoMemoryAdvanced) {

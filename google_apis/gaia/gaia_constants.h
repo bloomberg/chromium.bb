@@ -31,7 +31,6 @@ extern const char kGaiaOAuthToken[];
 extern const char kGaiaOAuthSecret[];
 extern const char kGaiaOAuthDuration[];
 extern const char kGaiaOAuth2LoginRefreshToken[];
-extern const char kGaiaOAuth2LoginAccessToken[];
 
 // Used to construct a channel ID for push messaging.
 extern const char kObfuscatedGaiaId[];

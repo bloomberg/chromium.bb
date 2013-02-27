@@ -43,7 +43,6 @@ const char kGaiaOAuthToken[] = "oauthToken";
 const char kGaiaOAuthSecret[] = "oauthSecret";
 const char kGaiaOAuthDuration[] = "3600";
 const char kGaiaOAuth2LoginRefreshToken[] = "oauth2LoginRefreshToken";
-const char kGaiaOAuth2LoginAccessToken[] = "oauth2LoginAccessToken";
 
 // Used to construct a channel ID for push messaging.
 const char kObfuscatedGaiaId[] = "obfuscatedGaiaId";

@@ -34,7 +34,6 @@ const char* kTokenPrefsArray[] = {
   GaiaConstants::kSyncService,
   GaiaConstants::kLSOService,
   GaiaConstants::kGaiaOAuth2LoginRefreshToken,
-  GaiaConstants::kGaiaOAuth2LoginAccessToken,
   kChromeToMobileToken,
   kAppNotifyChannelSetupToken,
   kOperationsBaseToken,
