@@ -225,7 +225,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
 }
 
 IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
-                       ReloadIndependentlyNavigatePage) {
+                       DISABLED_ReloadIndependentlyNavigatePage) {
   const size_t size_before = GetExtensionService()->extensions()->size();
   LoadTestExtension();
   CrashExtension(first_extension_id_);
