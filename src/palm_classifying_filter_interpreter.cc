@@ -147,7 +147,7 @@ bool PalmClassifyingFilterInterpreter::FingerInBottomArea(
 void PalmClassifyingFilterInterpreter::UpdatePalmState(
     const HardwareState& hwstate) {
   RemoveMissingIdsFromSet(&palm_, hwstate);
-  RemoveMissingIdsFromSet(&pointing_, hwstate);
+  RemoveMissingIdsFromMap(&pointing_, hwstate);
   RemoveMissingIdsFromSet(&non_stationary_palm_, hwstate);
   RemoveMissingIdsFromSet(&fingers_not_in_edge_, hwstate);
   RemoveMissingIdsFromSet(&was_near_other_fingers_, hwstate);
@@ -172,7 +172,7 @@ void PalmClassifyingFilterInterpreter::UpdatePalmState(
   for (short i = 0; i < hwstate.finger_cnt; i++) {
     const FingerState& fs = hwstate.fingers[i];
     bool prev_palm = SetContainsValue(palm_, fs.tracking_id);
-    bool prev_pointing = SetContainsValue(pointing_, fs.tracking_id);
+    bool prev_pointing = MapContainsKey(pointing_, fs.tracking_id);
 
     // Lock onto palm
     if (prev_palm)
@@ -186,30 +186,30 @@ void PalmClassifyingFilterInterpreter::UpdatePalmState(
       prev_pointing = false;
     }
     // If another finger is close by, let this be pointing
-    if (!prev_pointing && (FingerNearOtherFinger(hwstate, i) ||
-                           !(FingerInPalmEnvelope(fs) ||
-                             FingerInBottomArea(fs)))) {
-      pointing_.insert(fs.tracking_id);
+    bool near_finger = FingerNearOtherFinger(hwstate, i);
+    bool on_edge = FingerInPalmEnvelope(fs) || FingerInBottomArea(fs);
+    if (!prev_pointing && (near_finger || !on_edge)) {
+      unsigned reason = (near_finger ? kPointCloseToFinger : 0) |
+          ((!on_edge) ? kPointNotInEdge : 0);
+      pointing_[fs.tracking_id] = reason;
     }
 
     // Check if fingers that only move within palm envelope are pointing.
-    if(!prev_pointing &&
-       !SetContainsValue(fingers_not_in_edge_, fs.tracking_id)) {
-      int id = fs.tracking_id;
-      float min_dist = palm_pointing_min_dist_.val_;
-      float max_reverse_dist = palm_pointing_max_reverse_dist_.val_;
+    int id = fs.tracking_id;
+    float min_dist = palm_pointing_min_dist_.val_;
+    float max_reverse_dist = palm_pointing_max_reverse_dist_.val_;
 
-      // Ideally, we want to say that a finger is pointing if it moves only in
-      // one direction significantly without zig-zag. But due to touch sensor's
-      // inaccuratcy, we make the rule to be that a finger has to move in one
-      // direction significantly with little move in the opposite direction.
-      for (size_t i = 0; i < arraysize(distance_positive_); i++)
-        if ((distance_positive_[i][id] >= min_dist &&
-             distance_negative_[i][id] <= max_reverse_dist) ||
-            (distance_positive_[i][id] <= max_reverse_dist &&
-             distance_negative_[i][id] >= min_dist))
-          pointing_.insert(id);
-    }
+    // Ideally, we want to say that a finger is pointing if it moves only in
+    // one direction significantly without zig-zag. But due to touch sensor's
+    // inaccuratcy, we make the rule to be that a finger has to move in one
+    // direction significantly with little move in the opposite direction.
+    for (size_t j = 0; j < arraysize(distance_positive_); j++)
+      if ((distance_positive_[j][id] >= min_dist &&
+           distance_negative_[j][id] <= max_reverse_dist) ||
+          (distance_positive_[j][id] <= max_reverse_dist &&
+           distance_negative_[j][id] >= min_dist)) {
+        pointing_[id] |= kPointMoving;
+      }
 
     // However, if the contact has been stationary for a while since it
     // touched down, it is a palm. We track a potential palm closely for the
@@ -236,7 +236,6 @@ void PalmClassifyingFilterInterpreter::UpdatePalmState(
       // Enough time has passed. Make this stationary contact a palm.
       palm_.insert(fs.tracking_id);
       pointing_.erase(fs.tracking_id);
-
     }
   }
 }
@@ -246,16 +245,24 @@ void PalmClassifyingFilterInterpreter::UpdatePalmFlags(HardwareState* hwstate) {
     FingerState* fs = &hwstate->fingers[i];
     if (SetContainsValue(palm_, fs->tracking_id)) {
       fs->flags |= GESTURES_FINGER_PALM;
-    } else if (!SetContainsValue(pointing_, fs->tracking_id) &&
+    } else if (!MapContainsKey(pointing_, fs->tracking_id) &&
                !SetContainsValue(was_near_other_fingers_, fs->tracking_id)) {
       if (FingerInPalmEnvelope(*fs)) {
         fs->flags |= GESTURES_FINGER_PALM;
       } else if (FingerInBottomArea(*fs)) {
         fs->flags |= (GESTURES_FINGER_WARP_X | GESTURES_FINGER_WARP_Y);
       }
-    } else if (SetContainsValue(pointing_, fs->tracking_id) &&
+    } else if (MapContainsKey(pointing_, fs->tracking_id) &&
                FingerInPalmEnvelope(*fs)) {
       fs->flags |= GESTURES_FINGER_POSSIBLE_PALM;
+      if (pointing_[fs->tracking_id] == kPointCloseToFinger &&
+          !FingerNearOtherFinger(*hwstate, i)) {
+        // Finger was near another finger, but it's not anymore, and it was
+        // only this other finger that caused it to point. Mark it w/ warp
+        // until it moves sufficiently to have another reason to be
+        // pointing.
+        fs->flags |= (GESTURES_FINGER_WARP_X | GESTURES_FINGER_WARP_Y);
+      }
     }
   }
 }

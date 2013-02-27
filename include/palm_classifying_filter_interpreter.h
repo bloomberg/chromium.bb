@@ -95,8 +95,14 @@ class PalmClassifyingFilterInterpreter : public FilterInterpreter {
   // These contacts have moved significantly and shouldn't be considered
   // stationary palms:
   set<short, kMaxFingers> non_stationary_palm_;
-  // tracking ids of known fingers that are not palms.
-  set<short, kMaxFingers> pointing_;
+
+  static const unsigned kPointCloseToFinger = 1;
+  static const unsigned kPointNotInEdge = 2;
+  static const unsigned kPointMoving = 4;
+  // tracking ids of known fingers that are not palms, along with the reason(s)
+  map<short, unsigned, kMaxFingers> pointing_;
+
+
   // tracking ids that were ever close to other fingers.
   set<short, kMaxFingers> was_near_other_fingers_;
 
