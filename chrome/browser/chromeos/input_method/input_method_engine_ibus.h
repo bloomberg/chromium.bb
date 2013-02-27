@@ -69,6 +69,10 @@ class InputMethodEngineIBus : public InputMethodEngine,
   virtual bool IsActive() const OVERRIDE;
   virtual void KeyEventDone(input_method::KeyEventHandle* key_data,
                             bool handled) OVERRIDE;
+  virtual bool DeleteSurroundingText(int context_id,
+                                     int offset,
+                                     size_t number_of_chars,
+                                     std::string* error) OVERRIDE;
 
   // IBusEngineHandlerInterface overrides.
   virtual void FocusIn() OVERRIDE;
