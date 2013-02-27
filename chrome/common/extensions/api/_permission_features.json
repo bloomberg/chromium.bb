@@ -353,7 +353,7 @@
   },
   "tabCapture": [{
     "channel": "dev",
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "packaged_app", "platform_app"]
   }, {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"],
