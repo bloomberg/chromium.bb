@@ -10,8 +10,6 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -19,6 +17,7 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/policy/enterprise_metrics.h"
+#include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -34,6 +33,9 @@ void UMA(int sample) {
                             policy::kMetricEnrollmentSize);
 }
 
+// Does nothing.  Used as a VoidDBusMethodCallback.
+void EmptyVoidDBusMethodCallback(DBusMethodCallStatus result) {}
+
 }  // namespace
 
 EnterpriseEnrollmentScreen::EnterpriseEnrollmentScreen(
@@ -47,14 +49,8 @@ EnterpriseEnrollmentScreen::EnterpriseEnrollmentScreen(
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   // Init the TPM if it has not been done until now (in debug build we might
   // have not done that yet).
-  chromeos::CryptohomeLibrary* cryptohome =
-      chromeos::CrosLibrary::Get()->GetCryptohomeLibrary();
-  if (cryptohome &&
-      cryptohome->TpmIsEnabled() &&
-      !cryptohome->TpmIsBeingOwned() &&
-      !cryptohome->TpmIsOwned()) {
-    cryptohome->TpmCanAttemptOwnership();
-  }
+  DBusThreadManager::Get()->GetCryptohomeClient()->TpmCanAttemptOwnership(
+      base::Bind(&EmptyVoidDBusMethodCallback));
 }
 
 EnterpriseEnrollmentScreen::~EnterpriseEnrollmentScreen() {}
