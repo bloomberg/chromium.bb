@@ -91,14 +91,10 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MANUAL_CanSetupCallAndSendDtmf) {
       ExecuteJavascript("callAndSendDtmf('123,abc');"));
 }
 
+// This test is flaky on Win XP, Win7 and Linux Precise. Disabling on all just
+// in case.
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
-                       CanMakeEmptyCallThenAddStreamsAndRenegotiate) {
-#if defined(OS_WIN)
-  // This test is flaky on Win XP.
-  if (base::win::GetVersion() <= base::win::VERSION_XP)
-    return;
-#endif
-
+                       DISABLED_CanMakeEmptyCallThenAddStreamsAndRenegotiate) {
   GURL url(test_server()->GetURL("files/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
