@@ -51,12 +51,22 @@ boolean_t nacl_exc_server(
      EXC_MASK_ARITHMETIC | \
      EXC_MASK_BREAKPOINT)
 
+/*
+ * <mach/mach_types.defs> says that the arrays in MachExceptionParameters have
+ * room for 32 elements.  EXC_TYPES_COUNT, a smaller value, has grown over
+ * time in major SDK releases.  task_get_exception_ports expects there to be
+ * room for all 32 and is not bounded by EXC_TYPES_COUNT or by the initial
+ * value of its handler_count argument, contrary to its documentation.
+ * Provide a constant matching its limit to avoid potential buffer overflow.
+ */
+#define NACL_MAX_EXCEPTION_PORTS 32
+
 struct MachExceptionParameters {
   mach_msg_type_number_t count;
-  exception_mask_t masks[EXC_TYPES_COUNT];
-  mach_port_t ports[EXC_TYPES_COUNT];
-  exception_behavior_t behaviors[EXC_TYPES_COUNT];
-  thread_state_flavor_t flavors[EXC_TYPES_COUNT];
+  exception_mask_t masks[NACL_MAX_EXCEPTION_PORTS];
+  mach_port_t ports[NACL_MAX_EXCEPTION_PORTS];
+  exception_behavior_t behaviors[NACL_MAX_EXCEPTION_PORTS];
+  thread_state_flavor_t flavors[NACL_MAX_EXCEPTION_PORTS];
 };
 
 struct MachExceptionHandlerData {
@@ -92,25 +102,31 @@ static void FireDebugStubEvent(int pipe_fd) {
 #if NACL_BUILD_SUBARCH == 32
 
 #define NATIVE_x86_THREAD_STATE x86_THREAD_STATE32
-#define X86_REG_BP(regs)    ((regs).uts.ts32.__ebp)
-#define X86_REG_SP(regs)    ((regs).uts.ts32.__esp)
-#define X86_REG_IP(regs)    ((regs).uts.ts32.__eip)
-#define X86_REG_FLAGS(regs) ((regs).uts.ts32.__eflags)
+#define X86_REG_BP(regs)    ((regs)->uts.ts32.__ebp)
+#define X86_REG_SP(regs)    ((regs)->uts.ts32.__esp)
+#define X86_REG_IP(regs)    ((regs)->uts.ts32.__eip)
+#define X86_REG_FLAGS(regs) ((regs)->uts.ts32.__eflags)
 
 #elif NACL_BUILD_SUBARCH == 64
 
 #define NATIVE_x86_THREAD_STATE x86_THREAD_STATE64
-#define X86_REG_BP(regs)    ((regs).uts.ts64.__rbp)
-#define X86_REG_SP(regs)    ((regs).uts.ts64.__rsp)
-#define X86_REG_IP(regs)    ((regs).uts.ts64.__rip)
-#define X86_REG_FLAGS(regs) ((regs).uts.ts64.__rflags)
+#define X86_REG_BP(regs)    ((regs)->uts.ts64.__rbp)
+#define X86_REG_SP(regs)    ((regs)->uts.ts64.__rsp)
+#define X86_REG_IP(regs)    ((regs)->uts.ts64.__rip)
+#define X86_REG_FLAGS(regs) ((regs)->uts.ts64.__rflags)
 
 #endif  /* NACL_BUILD_SUBARCH */
 
-static int HandleException(mach_port_t thread_port,
-                           exception_type_t exception, int *is_untrusted) {
-  mach_msg_type_number_t size;
-  x86_thread_state_t regs;
+enum HandleExceptionResult {
+  kHandleExceptionUnhandled = 0,
+  kHandleExceptionHandled_SetState,
+  kHandleExceptionHandled_DontSetState
+};
+
+static enum HandleExceptionResult HandleException(mach_port_t thread_port,
+                                                  exception_type_t exception,
+                                                  int *is_untrusted,
+                                                  x86_thread_state_t *regs) {
   kern_return_t result;
   uint32_t nacl_thread_index;
   struct NaClApp *nap;
@@ -124,17 +140,10 @@ static int HandleException(mach_port_t thread_port,
   uint16_t trusted_ds = NaClGetGlobalDs();
 #endif
 
+  CHECK(regs->tsh.flavor == NATIVE_x86_THREAD_STATE);
+
   /* Assume untrusted crash until we know otherwise. */
   *is_untrusted = TRUE;
-
-  /* Capture the register state of the 'excepting' thread. */
-  size = x86_THREAD_STATE_COUNT;
-  result = thread_get_state(thread_port, x86_THREAD_STATE,
-                            (thread_state_t) &regs, &size);
-  if (result != KERN_SUCCESS) {
-    return 0;
-  }
-  CHECK(regs.tsh.flavor == NATIVE_x86_THREAD_STATE);
 
 #if NACL_BUILD_SUBARCH == 32
   /*
@@ -142,20 +151,20 @@ static int HandleException(mach_port_t thread_port,
    * from %gs >> 3.
    * TODO(bradnelson): Migrate that knowledge to a single shared location.
    */
-  nacl_thread_index = regs.uts.ts32.__gs >> 3;
+  nacl_thread_index = regs->uts.ts32.__gs >> 3;
 #elif NACL_BUILD_SUBARCH == 64
   nacl_thread_index = NaClGetThreadIndexForMachThread(thread_port);
 
   if (nacl_thread_index == NACL_TLS_INDEX_INVALID) {
     *is_untrusted = FALSE;
-    return 0;
+    return kHandleExceptionUnhandled;
   }
 #endif
 
   natp = NaClAppThreadGetFromIndex(nacl_thread_index);
   if (natp == NULL) {
     *is_untrusted = FALSE;
-    return 0;
+    return kHandleExceptionUnhandled;
   }
   nap = natp->nap;
 
@@ -164,7 +173,7 @@ static int HandleException(mach_port_t thread_port,
    *     that cs is the last thing to change when switching into untrusted
    *     code. We need tests to vet this.
    */
-  *is_untrusted = NaClMachThreadStateIsInUntrusted(&regs, nacl_thread_index);
+  *is_untrusted = NaClMachThreadStateIsInUntrusted(regs, nacl_thread_index);
 
   /*
    * If trusted code accidentally jumped to untrusted code, don't let the
@@ -173,7 +182,7 @@ static int HandleException(mach_port_t thread_port,
   if (*is_untrusted &&
       (natp->suspend_state & NACL_APP_THREAD_UNTRUSTED) == 0) {
     *is_untrusted = 0;
-    return 0;
+    return kHandleExceptionUnhandled;
   }
 
   if (!*is_untrusted) {
@@ -186,10 +195,10 @@ static int HandleException(mach_port_t thread_port,
         (X86_REG_FLAGS(regs) & NACL_X86_TRAP_FLAG) != 0 &&
         X86_REG_IP(regs) >= (uintptr_t) NaClSwitchRemainingRegsViaECX &&
         X86_REG_IP(regs) < (uintptr_t) NaClSwitchRemainingRegsAsmEnd) {
-      return 1;
+      return kHandleExceptionHandled_DontSetState;
     }
 #endif
-    return 0;
+    return kHandleExceptionUnhandled;
   }
 
   if (nap->enable_faulted_thread_queue) {
@@ -201,14 +210,14 @@ static int HandleException(mach_port_t thread_port,
         (X86_REG_FLAGS(regs) & NACL_X86_TRAP_FLAG) != 0) {
       if (X86_REG_IP(regs) >= nap->all_regs_springboard.start_addr &&
           X86_REG_IP(regs) < nap->all_regs_springboard.end_addr) {
-        return 1;
+        return kHandleExceptionHandled_DontSetState;
       }
       /*
        * Step through the instruction we have been asked to restore
        * control to.
        */
       if (X86_REG_IP(regs) == natp->user.gs_segment.new_prog_ctr) {
-        return 1;
+        return kHandleExceptionHandled_DontSetState;
       }
     }
 #endif
@@ -230,7 +239,7 @@ static int HandleException(mach_port_t thread_port,
     natp->fault_signal = ExceptionCodeToNaClSignalNumber(exception);
     AtomicIncrement(&nap->faulted_thread_count, 1);
     FireDebugStubEvent(nap->faulted_thread_fd_write);
-    return 1;
+    return kHandleExceptionHandled_DontSetState;
   }
 
   /*
@@ -241,17 +250,17 @@ static int HandleException(mach_port_t thread_port,
    *     EXC_BREAKPOINT
    */
   if (exception != EXC_BAD_ACCESS) {
-    return 0;
+    return kHandleExceptionUnhandled;
   }
 
   /* Don't handle if no exception handler is set. */
   if (nap->exception_handler == 0) {
-    return 0;
+    return kHandleExceptionUnhandled;
   }
 
   /* Don't handle it if the exception flag is set. */
   if (natp->exception_flag) {
-    return 0;
+    return kHandleExceptionUnhandled;
   }
   /* Set the flag. */
   natp->exception_flag = 1;
@@ -274,7 +283,7 @@ static int HandleException(mach_port_t thread_port,
   frame_addr_sys = NaClUserToSysAddrRange(
       nap, frame_addr_user, sizeof(struct NaClExceptionFrame));
   if (frame_addr_sys == kNaClBadAddress) {
-    return 0;
+    return kHandleExceptionUnhandled;
   }
 
   /* Set up the stack frame for the handler invocation. */
@@ -282,7 +291,7 @@ static int HandleException(mach_port_t thread_port,
   frame.context.prog_ctr = X86_REG_IP(regs);
   frame.context.stack_ptr = X86_REG_SP(regs);
   frame.context.frame_ptr = X86_REG_BP(regs);
-  NaClSignalContextFromMacThreadState(&tmp_context, &regs);
+  NaClSignalContextFromMacThreadState(&tmp_context, regs);
   NaClUserRegisterStateFromSignalContext(&frame.context.regs, &tmp_context);
 #if NACL_BUILD_SUBARCH == 32
   frame.context_ptr = frame_addr_user +
@@ -295,12 +304,13 @@ static int HandleException(mach_port_t thread_port,
    * destination location is not writable.  Faulting is OK for NaCl
    * syscalls, but here we do not want to trigger an exception while
    * in the exception handler.  The overhead of using a Mach system
-   * call to write to memory is acceptable here.
+   * call to write to memory, 2-3 microseconds on a 2.3GHz 4-core i7,
+   * is acceptable here.
    */
   result = mach_vm_write(mach_task_self(), frame_addr_sys,
                          (uintptr_t) &frame, sizeof(frame));
   if (result != KERN_SUCCESS) {
-    return 0;
+    return kHandleExceptionUnhandled;
   }
 
   /* Set up thread context to resume at handler. */
@@ -322,29 +332,24 @@ static int HandleException(mach_port_t thread_port,
   natp->user.new_prog_ctr = nap->exception_handler;
   natp->user.stack_ptr = frame_addr_user;
   X86_REG_IP(regs) = (uint32_t) &NaClSwitchNoSSEViaECX;
-  regs.uts.ts32.__cs = trusted_cs;
-  regs.uts.ts32.__ecx = (uint32_t) &natp->user;
-  regs.uts.ts32.__ds = trusted_ds;
-  regs.uts.ts32.__es = trusted_ds;  /* just for good measure */
-  regs.uts.ts32.__ss = trusted_ds;  /* just for good measure */
+  regs->uts.ts32.__cs = trusted_cs;
+  regs->uts.ts32.__ecx = (uint32_t) &natp->user;
+  regs->uts.ts32.__ds = trusted_ds;
+  regs->uts.ts32.__es = trusted_ds;  /* just for good measure */
+  regs->uts.ts32.__ss = trusted_ds;  /* just for good measure */
 #elif NACL_BUILD_SUBARCH == 64
   X86_REG_IP(regs) = NaClUserToSys(nap, nap->exception_handler);
   X86_REG_SP(regs) = frame_addr_sys;
   X86_REG_BP(regs) = nap->mem_start;
 
   /* Argument 1 */
-  regs.uts.ts64.__rdi = frame_addr_user +
-                        offsetof(struct NaClExceptionFrame, context);
+  regs->uts.ts64.__rdi = frame_addr_user +
+                         offsetof(struct NaClExceptionFrame, context);
 #endif
   X86_REG_FLAGS(regs) &= ~NACL_X86_DIRECTION_FLAG;
-  result = thread_set_state(thread_port, x86_THREAD_STATE,
-                            (thread_state_t) &regs, size);
-  if (result != KERN_SUCCESS) {
-    return 0;
-  }
 
   /* Return success, and resume the thread. */
-  return 1;
+  return kHandleExceptionHandled_SetState;
 }
 
 
@@ -358,6 +363,7 @@ static kern_return_t ForwardException(
   unsigned int i;
   mach_port_t target_port;
   exception_behavior_t target_behavior;
+  kern_return_t kr;
 
   /* Find a port with a mask matching this exception to pass it on to. */
   for (i = 0; i < data->old_ports.count; ++i) {
@@ -375,7 +381,7 @@ static kern_return_t ForwardException(
    * By default a null exception port is registered.
    * As it is unclear how to forward to this, we should just fail.
    */
-  if (target_port == 0) {
+  if (target_port == MACH_PORT_NULL) {
     return KERN_FAILURE;
   }
 
@@ -386,8 +392,22 @@ static kern_return_t ForwardException(
   CHECK(target_behavior == EXCEPTION_DEFAULT);
 
   /* Forward the exception. */
-  return exception_raise(target_port, thread, task, exception,
-                         code, code_count);
+  kr = exception_raise(target_port, thread, task, exception, code, code_count);
+
+  /*
+   * Don't set the thread state. See the comment in
+   * nacl_catch_exception_raise_state_identity. Transforming KERN_SUCCESS to
+   * MACH_RCV_PORT_DIED is necessary because the exception was delivered with
+   * behavior EXCEPTION_STATE_IDENTITY to
+   * nacl_catch_exception_raise_state_identity, but it was forwarded to a
+   * handler with behavior EXCEPTION_DEFAULT via exception_raise, and such
+   * handlers don't provide a new thread state. They can set a new thread
+   * state on their own by calling thread_set_state. Returning KERN_SUCCESS
+   * would allow the old state passed to
+   * nacl_catch_exception_raise_state_identity to overwrite any new state set
+   * by the handler that the exception was forwarded to via exception_raise.
+   */
+  return kr == KERN_SUCCESS ? MACH_RCV_PORT_DIED : kr;
 }
 
 
@@ -398,26 +418,16 @@ kern_return_t nacl_catch_exception_raise(
     exception_type_t exception,
     exception_data_t code,
     mach_msg_type_number_t code_count) {
-  int is_untrusted;
-
+  /* MIG generated code expects this, but should never be called. */
   UNREFERENCED_PARAMETER(exception_port);
-
-  /* Check if we want to handle this exception. */
-  if (HandleException(thread, exception, &is_untrusted)) {
-    return KERN_SUCCESS;
-  }
-
-  /*
-   * Don't forward if the crash is untrusted, but unhandled.
-   * (As we don't want things like Breakpad handling the crash.)
-   */
-  if (is_untrusted) {
-    return KERN_FAILURE;
-  }
-
-  /* Forward on the exception to the old set of ports. */
-  return ForwardException(
-      g_MachExceptionHandlerData, thread, task, exception, code, code_count);
+  UNREFERENCED_PARAMETER(thread);
+  UNREFERENCED_PARAMETER(task);
+  UNREFERENCED_PARAMETER(exception);
+  UNREFERENCED_PARAMETER(code);
+  UNREFERENCED_PARAMETER(code_count);
+  NaClLog(LOG_FATAL, "nacl_catch_exception_raise: "
+                     "Unrequested message received.\n");
+  return KERN_FAILURE;
 }
 
 kern_return_t nacl_catch_exception_raise_state(
@@ -457,38 +467,66 @@ kern_return_t nacl_catch_exception_raise_state_identity (
         mach_msg_type_number_t old_state_count,
         thread_state_t new_state,
         mach_msg_type_number_t *new_state_count) {
-  /* MIG generated code expects this, but should never be called. */
-  UNREFERENCED_PARAMETER(exception_port);
-  UNREFERENCED_PARAMETER(thread);
-  UNREFERENCED_PARAMETER(task);
-  UNREFERENCED_PARAMETER(exception);
-  UNREFERENCED_PARAMETER(code);
-  UNREFERENCED_PARAMETER(code_count);
-  UNREFERENCED_PARAMETER(flavor);
-  UNREFERENCED_PARAMETER(old_state);
-  UNREFERENCED_PARAMETER(old_state_count);
-  UNREFERENCED_PARAMETER(new_state);
-  UNREFERENCED_PARAMETER(new_state_count);
-  NaClLog(LOG_FATAL, "nacl_catch_exception_raise_state_identity: "
-                     "Unrequested message received.\n");
-  return KERN_FAILURE;
+  int rv;
+  int is_untrusted;
+
+  DCHECK(exception_port == g_MachExceptionHandlerData->exception_port);
+
+  CHECK(*flavor == x86_THREAD_STATE);
+  CHECK(old_state_count == x86_THREAD_STATE_COUNT);
+  CHECK(*new_state_count >= x86_THREAD_STATE_COUNT);
+  *new_state_count = x86_THREAD_STATE_COUNT;
+  memcpy(new_state, old_state, x86_THREAD_STATE_COUNT * sizeof(natural_t));
+
+  /* Check if we want to handle this exception. */
+  rv = HandleException(thread,
+                       exception,
+                       &is_untrusted,
+                       (x86_thread_state_t *) new_state);
+  if (rv == kHandleExceptionHandled_SetState) {
+    return KERN_SUCCESS;
+  } else if (rv == kHandleExceptionHandled_DontSetState) {
+    /*
+     * To avoid setting the thread state, return MACH_RCV_PORT_DIED. In
+     * exception_deliver, the kernel will only set the thread state if
+     * exception_raise_state returns MACH_MSG_SUCCESS (== KERN_SUCCESS), so
+     * another value is needed to avoid having it set the state. KERN_SUCCESS
+     * and MACH_RCV_PORT_DIED are the only two values that don't result in task
+     * termination in exception_triage. See 10.8.2
+     * xnu-2050.18.24/osfmk/kern/exception.c.
+     *
+     * This is done instead of letting the kernel set the new thread state to
+     * be the same as the old state because the kernel resets %cs to the
+     * default value when setting a thread's state. This behavior is explained
+     * in more detail in HandleException.
+     */
+    return MACH_RCV_PORT_DIED;
+  }
+
+  /*
+   * Don't forward if the crash is untrusted, but unhandled.
+   * (As we don't want things like Breakpad handling the crash.)
+   */
+  if (is_untrusted) {
+    return KERN_FAILURE;
+  }
+
+  /* Forward on the exception to the old set of ports. */
+  return ForwardException(
+      g_MachExceptionHandlerData, thread, task, exception, code, code_count);
 }
 
 static void *MachExceptionHandlerThread(void *arg) {
   struct MachExceptionHandlerData *data =
       (struct MachExceptionHandlerData *) arg;
   kern_return_t result;
-  /* Have space for a fairly large mach messages. */
-  struct {
+  union {
     mach_msg_header_t header;
-    mach_msg_body_t body;
-    char padding[1024];
+    union __RequestUnion__nacl_exc_subsystem nacl_exc_subsystem_request;
   } request;
-  struct {
+  union {
     mach_msg_header_t header;
-    mach_msg_body_t body;
-    mig_reply_error_t reply_error;
-    mach_msg_trailer_t trailer;
+    union __ReplyUnion__nacl_exc_subsystem nacl_exc_subsystem_reply;
   } reply;
 
   for (;;) {
@@ -521,7 +559,7 @@ static int InstallHandler(struct MachExceptionHandlerData *data) {
   unsigned int i;
 
   /* Capture old handler info. */
-  data->old_ports.count = EXC_TYPES_COUNT;
+  data->old_ports.count = NACL_MAX_EXCEPTION_PORTS;
   result = task_get_exception_ports(current_task, NACL_MACH_EXCEPTION_MASK,
                                     data->old_ports.masks,
                                     &data->old_ports.count,
@@ -548,14 +586,15 @@ static int InstallHandler(struct MachExceptionHandlerData *data) {
    */
   for (i = 0; i < data->old_ports.count; ++i) {
     CHECK(data->old_ports.behaviors[i] == EXCEPTION_DEFAULT ||
-          data->old_ports.ports[i] == 0);
+          data->old_ports.ports[i] == MACH_PORT_NULL);
   }
 
   /* TODO(bradnelson): decide if we should set the exception port per thread. */
   /* Direct all task exceptions to new exception port. */
   result = task_set_exception_ports(current_task, NACL_MACH_EXCEPTION_MASK,
-                                    data->exception_port, EXCEPTION_DEFAULT,
-                                    THREAD_STATE_NONE);
+                                    data->exception_port,
+                                    EXCEPTION_STATE_IDENTITY,
+                                    x86_THREAD_STATE);
   if (result != KERN_SUCCESS) {
     return result;
   }
