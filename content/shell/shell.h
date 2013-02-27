@@ -139,6 +139,8 @@ class Shell : public WebContentsDelegate,
                                    int32 line_no,
                                    const string16& source_id) OVERRIDE;
   virtual void RendererUnresponsive(WebContents* source) OVERRIDE;
+  virtual void ActivateContents(WebContents* contents) OVERRIDE;
+  virtual void DeactivateContents(WebContents* contents) OVERRIDE;
 
  private:
   enum UIControl {

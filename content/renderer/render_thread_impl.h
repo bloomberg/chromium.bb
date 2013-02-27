@@ -173,6 +173,14 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   void DoNotSuspendWebKitSharedTimer();
   void DoNotNotifyWebKitOfModalLoop();
 
+  // True if changing the focus of a RenderView requires a active user gesture.
+  bool require_user_gesture_for_focus() const {
+    return require_user_gesture_for_focus_;
+  }
+  void set_require_user_gesture_for_focus(bool require_gesture) {
+    require_user_gesture_for_focus_ = require_gesture;
+  }
+
   IPC::ForwardingMessageFilter* compositor_output_surface_filter() const {
     return compositor_output_surface_filter_.get();
   }
@@ -372,6 +380,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
 
   bool suspend_webkit_shared_timer_;
   bool notify_webkit_of_modal_loop_;
+
+  bool require_user_gesture_for_focus_;
 
   // Timer that periodically calls IdleHandler.
   base::RepeatingTimer<RenderThreadImpl> idle_timer_;

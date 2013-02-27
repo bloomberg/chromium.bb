@@ -2515,17 +2515,21 @@ void RenderViewImpl::didFocus() {
   // TODO(jcivelli): when https://bugs.webkit.org/show_bug.cgi?id=33389 is fixed
   //                 we won't have to test for user gesture anymore and we can
   //                 move that code back to render_widget.cc
-  if (webview() && webview()->mainFrame() &&
-      webview()->mainFrame()->isProcessingUserGesture()) {
-    Send(new ViewHostMsg_Focus(routing_id_));
+  if (webview() && webview()->mainFrame()) {
+    if (webview()->mainFrame()->isProcessingUserGesture() ||
+        !RenderThreadImpl::current()->require_user_gesture_for_focus()) {
+      Send(new ViewHostMsg_Focus(routing_id_));
+    }
   }
 }
 
 void RenderViewImpl::didBlur() {
   // TODO(jcivelli): see TODO above in didFocus().
-  if (webview() && webview()->mainFrame() &&
-      webview()->mainFrame()->isProcessingUserGesture()) {
-    Send(new ViewHostMsg_Blur(routing_id_));
+  if (webview() && webview()->mainFrame()) {
+    if (webview()->mainFrame()->isProcessingUserGesture() ||
+        !RenderThreadImpl::current()->require_user_gesture_for_focus()) {
+      Send(new ViewHostMsg_Blur(routing_id_));
+    }
   }
 }
 

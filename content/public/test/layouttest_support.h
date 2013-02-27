@@ -40,6 +40,9 @@ int GetLocalSessionHistoryLength(RenderView* render_view);
 
 void SetAllowOSMesaImageTransportForTesting();
 
+// Do not require a user gesture for focus change events.
+void DoNotRequireUserGestureForFocusChanges();
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_TEST_LAYOUTTEST_SUPPORT_H_

@@ -8,6 +8,7 @@
 #include "base/lazy_instance.h"
 #include "content/common/gpu/image_transport_surface.h"
 #include "content/renderer/devtools/devtools_client.h"
+#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
@@ -66,6 +67,10 @@ void SetAllowOSMesaImageTransportForTesting() {
 #if defined(OS_MACOSX)
   ImageTransportSurface::SetAllowOSMesaForTesting(true);
 #endif
+}
+
+void DoNotRequireUserGestureForFocusChanges() {
+  RenderThreadImpl::current()->set_require_user_gesture_for_focus(false);
 }
 
 }  // namespace content

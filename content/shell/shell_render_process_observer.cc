@@ -52,6 +52,7 @@ ShellRenderProcessObserver::ShellRenderProcessObserver()
   WebRuntimeFeatures::enableCanvasPath(true);
   DisableAppCacheLogging();
   EnableDevToolsFrontendTesting();
+  DoNotRequireUserGestureForFocusChanges();
 }
 
 ShellRenderProcessObserver::~ShellRenderProcessObserver() {

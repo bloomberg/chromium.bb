@@ -288,6 +288,14 @@ void Shell::RendererUnresponsive(WebContents* source) {
   WebKitTestController::Get()->RendererUnresponsive();
 }
 
+void Shell::ActivateContents(WebContents* contents) {
+  contents->GetRenderViewHost()->Focus();
+}
+
+void Shell::DeactivateContents(WebContents* contents) {
+  contents->GetRenderViewHost()->Blur();
+}
+
 void Shell::Observe(int type,
                     const NotificationSource& source,
                     const NotificationDetails& details) {
