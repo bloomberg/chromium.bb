@@ -398,10 +398,6 @@ uint32 CommandBufferProxyImpl::InsertSyncPoint() {
   return sync_point;
 }
 
-void CommandBufferProxyImpl::WaitSyncPoint(uint32 sync_point) {
-  Send(new GpuCommandBufferMsg_WaitSyncPoint(route_id_, sync_point));
-}
-
 bool CommandBufferProxyImpl::SignalSyncPoint(uint32 sync_point,
                                              const base::Closure& callback) {
   if (last_state_.error != gpu::error::kNoError) {

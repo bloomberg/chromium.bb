@@ -53,6 +53,7 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
  public:
   typedef error::Error Error;
   typedef base::Callback<void(int32 id, const std::string& msg)> MsgCallback;
+  typedef base::Callback<bool(uint32 id)> WaitSyncPointCallback;
 
   // Creates a decoder.
   static GLES2Decoder* Create(ContextGroup* group);
@@ -200,6 +201,11 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
 
   // A callback for messages from the decoder.
   virtual void SetMsgCallback(const MsgCallback& callback) = 0;
+
+  // Sets the callback for waiting on a sync point. The callback returns the
+  // scheduling status (i.e. true if the channel is still scheduled).
+  virtual void SetWaitSyncPointCallback(
+      const WaitSyncPointCallback& callback) = 0;
 
   virtual uint32 GetTextureUploadCount() = 0;
   virtual base::TimeDelta GetTotalTextureUploadTime() = 0;

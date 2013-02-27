@@ -1987,5 +1987,13 @@
     }
   }
 
+  void WaitSyncPointCHROMIUM(GLuint sync_point) {
+    gles2::WaitSyncPointCHROMIUM* c =
+        GetCmdSpace<gles2::WaitSyncPointCHROMIUM>();
+    if (c) {
+      c->Init(sync_point);
+    }
+  }
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_
 

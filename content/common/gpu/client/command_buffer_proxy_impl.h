@@ -97,11 +97,6 @@ class CommandBufferProxyImpl
   // global and can be used for cross-channel synchronization.
   uint32 InsertSyncPoint();
 
-  // Makes this command buffer wait on a sync point. This command buffer will be
-  // unscheduled until the command buffer that inserted that sync point reaches
-  // it, or gets destroyed.
-  void WaitSyncPoint(uint32);
-
   // Makes this command buffer invoke a task when a sync point is reached, or
   // the command buffer that inserted that sync point is destroyed.
   bool SignalSyncPoint(uint32 sync_point,

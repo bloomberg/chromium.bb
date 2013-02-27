@@ -171,7 +171,7 @@ class GpuCommandBufferStub
   void OnEnsureBackbuffer();
 
   void OnRetireSyncPoint(uint32 sync_point);
-  void OnWaitSyncPoint(uint32 sync_point);
+  bool OnWaitSyncPoint(uint32 sync_point);
   void OnSyncPointRetired();
   void OnSignalSyncPoint(uint32 sync_point, uint32 id);
   void OnSignalSyncPointAck(uint32 id);

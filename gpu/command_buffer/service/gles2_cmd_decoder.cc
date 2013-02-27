@@ -583,6 +583,8 @@ class GLES2DecoderImpl : public GLES2Decoder {
       const base::Callback<void(gfx::Size)>& callback) OVERRIDE;
 
   virtual void SetMsgCallback(const MsgCallback& callback) OVERRIDE;
+  virtual void SetWaitSyncPointCallback(
+      const WaitSyncPointCallback& callback) OVERRIDE;
 
   virtual void SetStreamTextureManager(StreamTextureManager* manager) OVERRIDE;
 
@@ -1660,6 +1662,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
   base::Callback<void(gfx::Size)> resize_callback_;
 
   MsgCallback msg_callback_;
+  WaitSyncPointCallback wait_sync_point_callback_;
 
   StreamTextureManager* stream_texture_manager_;
   scoped_ptr<gfx::AsyncPixelTransferDelegate> async_pixel_transfer_delegate_;
@@ -3005,6 +3008,11 @@ void GLES2DecoderImpl::SetResizeCallback(
 
 void GLES2DecoderImpl::SetMsgCallback(const MsgCallback& callback) {
   msg_callback_ = callback;
+}
+
+void GLES2DecoderImpl::SetWaitSyncPointCallback(
+    const WaitSyncPointCallback& callback) {
+  wait_sync_point_callback_ = callback;
 }
 
 void GLES2DecoderImpl::SetStreamTextureManager(StreamTextureManager* manager) {
@@ -9063,6 +9071,15 @@ error::Error GLES2DecoderImpl::HandleLoseContextCHROMIUM(
   reset_status_ = current;
   current_decoder_error_ = error::kLostContext;
   return error::kLostContext;
+}
+
+error::Error GLES2DecoderImpl::HandleWaitSyncPointCHROMIUM(
+    uint32 immediate_data_size, const gles2::WaitSyncPointCHROMIUM& c) {
+  if (wait_sync_point_callback_.is_null())
+    return error::kNoError;
+
+  return wait_sync_point_callback_.Run(c.sync_point) ?
+      error::kNoError : error::kDeferCommandUntilLater;
 }
 
 bool GLES2DecoderImpl::GenQueriesEXTHelper(

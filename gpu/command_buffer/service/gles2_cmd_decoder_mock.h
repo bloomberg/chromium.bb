@@ -89,6 +89,8 @@ class MockGLES2Decoder : public GLES2Decoder {
       bool is_texture_immutable));
   MOCK_METHOD0(GetGLError,  uint32());
   MOCK_METHOD1(SetMsgCallback, void(const MsgCallback& callback));
+  MOCK_METHOD1(SetWaitSyncPointCallback,
+               void(const WaitSyncPointCallback& callback));
   MOCK_METHOD0(GetTextureUploadCount, uint32());
   MOCK_METHOD0(GetTotalTextureUploadTime, base::TimeDelta());
   MOCK_METHOD0(GetTotalProcessingCommandsTime, base::TimeDelta());

@@ -424,12 +424,6 @@ unsigned int WebGraphicsContext3DCommandBufferImpl::insertSyncPoint() {
   return command_buffer_->InsertSyncPoint();
 }
 
-void WebGraphicsContext3DCommandBufferImpl::waitSyncPoint(
-    unsigned int sync_point) {
-  real_gl_->helper()->CommandBufferHelper::Flush();
-  command_buffer_->WaitSyncPoint(sync_point);
-}
-
 bool WebGraphicsContext3DCommandBufferImpl::SetParent(
     WebGraphicsContext3DCommandBufferImpl* new_parent) {
   if (parent_ == new_parent)
@@ -1616,6 +1610,8 @@ DELEGATE_TO_GL_3(bindUniformLocationCHROMIUM, BindUniformLocationCHROMIUM,
                  WebGLId, WGC3Dint, const WGC3Dchar*)
 
 DELEGATE_TO_GL(shallowFlushCHROMIUM,ShallowFlushCHROMIUM);
+
+DELEGATE_TO_GL_1(waitSyncPoint, WaitSyncPointCHROMIUM, GLuint)
 
 void WebGraphicsContext3DCommandBufferImpl::genMailboxCHROMIUM(
     WGC3Dbyte* name) {

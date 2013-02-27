@@ -334,5 +334,6 @@ virtual void AsyncTexImage2DCHROMIUM(
 virtual void DiscardFramebufferEXT(
     GLenum target, GLsizei count, const GLenum* attachments) OVERRIDE;
 virtual void LoseContextCHROMIUM(GLenum current, GLenum other) OVERRIDE;
+virtual void WaitSyncPointCHROMIUM(GLuint sync_point) OVERRIDE;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_AUTOGEN_H_
 

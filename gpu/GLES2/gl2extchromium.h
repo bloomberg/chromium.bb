@@ -443,6 +443,17 @@ typedef void (GL_APIENTRYP PFNGLGETPROGRAMINFOCHROMIUMPROC) (
 #define GL_CHROMIUM_front_buffer_cached 1
 #endif  /* GL_CHROMIUM_front_buffer_cached */
 
+/* GL_CHROMIUM_sync_point */
+#ifndef GL_CHROMIUM_sync_point
+#define GL_CHROMIUM_sync_point 1
+#ifdef GL_GLEXT_PROTOTYPES
+GL_APICALL GLuint GL_APIENTRY glInsertSyncPointCHROMIUM();
+GL_APICALL void GL_APIENTRY glWaitSyncPointCHROMIUM(GLuint sync_point);
+#endif
+typedef GLuint (GL_APIENTRYP PFNGLINSERTSYNCPOINTCHROMIUMPROC) ();
+typedef void (GL_APIENTRYP PFNGLWAITSYNCPOINTCHROMIUMPROC) (GLuint sync_point);
+#endif  /* GL_CHROMIUM_sync_point */
+
 #ifdef __cplusplus
 }
 #endif

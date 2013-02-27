@@ -248,6 +248,7 @@
   OP(DiscardFramebufferEXT)                                    /* 491 */ \
   OP(DiscardFramebufferEXTImmediate)                           /* 492 */ \
   OP(LoseContextCHROMIUM)                                      /* 493 */ \
+  OP(WaitSyncPointCHROMIUM)                                    /* 494 */ \
 
 enum CommandId {
   kStartPoint = cmd::kLastCommonId,  // All GLES2 commands start after this.

@@ -1164,5 +1164,10 @@ void GLES2TraceImplementation::LoseContextCHROMIUM(
   gl_->LoseContextCHROMIUM(current, other);
 }
 
+void GLES2TraceImplementation::WaitSyncPointCHROMIUM(GLuint sync_point) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::WaitSyncPointCHROMIUM");
+  gl_->WaitSyncPointCHROMIUM(sync_point);
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_TRACE_IMPLEMENTATION_IMPL_AUTOGEN_H_
 

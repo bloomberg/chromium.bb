@@ -630,5 +630,7 @@ void GLES2InterfaceStub::DiscardFramebufferEXT(
 void GLES2InterfaceStub::LoseContextCHROMIUM(
     GLenum /* current */, GLenum /* other */) {
 }
+void GLES2InterfaceStub::WaitSyncPointCHROMIUM(GLuint /* sync_point */) {
+}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_IMPL_AUTOGEN_H_
 

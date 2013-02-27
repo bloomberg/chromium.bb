@@ -582,11 +582,6 @@ IPC_SYNC_MESSAGE_ROUTED0_1(GpuCommandBufferMsg_InsertSyncPoint,
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_RetireSyncPoint,
                     uint32 /* sync_point */)
 
-// Makes this command buffer wait on a sync point. Command buffer message
-// execution will be delayed until the sync point has been reached.
-IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_WaitSyncPoint,
-                    uint32 /* sync_point */)
-
 // Makes this command buffer signal when a sync point is reached, by sending
 // back a GpuCommandBufferMsg_SignalSyncPointAck message with the same
 // signal_id.

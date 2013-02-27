@@ -4379,5 +4379,18 @@ TEST_F(GLES2FormatTest, LoseContextCHROMIUM) {
       next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, WaitSyncPointCHROMIUM) {
+  WaitSyncPointCHROMIUM& cmd = *GetBufferAs<WaitSyncPointCHROMIUM>();
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLuint>(11));
+  EXPECT_EQ(static_cast<uint32>(WaitSyncPointCHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.sync_point);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd));
+}
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_TEST_AUTOGEN_H_
 
