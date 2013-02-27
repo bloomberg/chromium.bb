@@ -391,7 +391,10 @@ void WorkerPool::RunCheapTasks() {
         pending_cheap_tasks_.take_front();
     PostTask(task.Pass(), false);
   }
+
   run_cheap_tasks_pending_ = false;
+  if (base::subtle::Acquire_Load(&pending_task_count_) == 0)
+    OnIdle();
 }
 
 }  // namespace cc
