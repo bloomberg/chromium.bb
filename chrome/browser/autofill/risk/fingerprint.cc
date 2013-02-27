@@ -193,9 +193,6 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
 
   // content::GpuDataManagerObserver:
   virtual void OnGpuInfoUpdate() OVERRIDE;
-  virtual void OnVideoMemoryUsageStatsUpdate(
-      const content::GPUVideoMemoryUsageStats& video_memory_usage_stats)
-      OVERRIDE;
 
   // Callbacks for asynchronously loaded data.
   void OnGotFonts(scoped_ptr<base::ListValue> fonts);
@@ -285,10 +282,6 @@ void FingerprintDataLoader::OnGpuInfoUpdate() {
 
   gpu_data_manager_->RemoveObserver(this);
   MaybeFillFingerprint();
-}
-
-void FingerprintDataLoader::OnVideoMemoryUsageStatsUpdate(
-    const content::GPUVideoMemoryUsageStats& video_memory_usage_stats) {
 }
 
 void FingerprintDataLoader::OnGotFonts(scoped_ptr<base::ListValue> fonts) {

@@ -165,9 +165,6 @@ class UpdateChecker : public content::GpuDataManagerObserver {
   explicit UpdateChecker(ComponentUpdateService* cus);
 
   virtual void OnGpuInfoUpdate() OVERRIDE;
-  virtual void OnVideoMemoryUsageStatsUpdate(
-      const content::GPUVideoMemoryUsageStats& video_memory_usage_stats)
-          OVERRIDE {}
 
  private:
   ComponentUpdateService* cus_;

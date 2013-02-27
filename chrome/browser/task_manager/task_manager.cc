@@ -140,8 +140,6 @@ class TaskManagerModelGpuDataManagerObserver
         video_memory_usage_stats);
   }
 
-  virtual void OnGpuInfoUpdate() OVERRIDE {}
-
   virtual void OnVideoMemoryUsageStatsUpdate(
       const content::GPUVideoMemoryUsageStats& video_memory_usage_stats)
           OVERRIDE {

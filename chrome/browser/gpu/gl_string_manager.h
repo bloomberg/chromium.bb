@@ -24,9 +24,6 @@ class GLStringManager : public content::GpuDataManagerObserver {
 
   // content::GpuDataManagerObserver
   virtual void OnGpuInfoUpdate() OVERRIDE;
-  virtual void OnVideoMemoryUsageStatsUpdate(
-      const content::GPUVideoMemoryUsageStats& video_memory_usage_stats)
-          OVERRIDE {}
 
  private:
   std::string gl_vendor_;

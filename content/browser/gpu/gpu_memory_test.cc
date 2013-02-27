@@ -19,7 +19,7 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "net/base/net_util.h"
 
-namespace {
+namespace content {
 
 // Run the tests with a memory limit of 256MB, and give
 // and extra 4MB of wiggle-room for over-allocation.
@@ -29,8 +29,7 @@ const size_t kSingleTabLimitMB = 128;
 const size_t kWiggleRoomMB = 4;
 
 // Observer to report GPU memory usage when requested.
-class GpuMemoryBytesAllocatedObserver
-    : public content::GpuDataManagerObserver {
+class GpuMemoryBytesAllocatedObserver : public GpuDataManagerObserver {
  public:
   GpuMemoryBytesAllocatedObserver()
       : bytes_allocated_(0) {
@@ -39,32 +38,28 @@ class GpuMemoryBytesAllocatedObserver
   virtual ~GpuMemoryBytesAllocatedObserver() {
   }
 
-  virtual void OnGpuInfoUpdate() OVERRIDE {}
-
   virtual void OnVideoMemoryUsageStatsUpdate(
-      const content::GPUVideoMemoryUsageStats& video_memory_usage_stats)
-          OVERRIDE {
+      const GPUVideoMemoryUsageStats& video_memory_usage_stats) OVERRIDE {
     bytes_allocated_ = video_memory_usage_stats.bytes_allocated;
     message_loop_runner_->Quit();
   }
 
   size_t GetBytesAllocated() {
-    message_loop_runner_ = new content::MessageLoopRunner;
-    content::GpuDataManager::GetInstance()->AddObserver(this);
-    content::GpuDataManager::GetInstance()->
-        RequestVideoMemoryUsageStatsUpdate();
+    message_loop_runner_ = new MessageLoopRunner;
+    GpuDataManager::GetInstance()->AddObserver(this);
+    GpuDataManager::GetInstance()->RequestVideoMemoryUsageStatsUpdate();
     message_loop_runner_->Run();
-    content::GpuDataManager::GetInstance()->RemoveObserver(this);
+    GpuDataManager::GetInstance()->RemoveObserver(this);
     message_loop_runner_ = NULL;
     return bytes_allocated_;
   }
 
  private:
   size_t bytes_allocated_;
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
 };
 
-class GpuMemoryTest : public content::ContentBrowserTest {
+class GpuMemoryTest : public ContentBrowserTest {
  public:
   GpuMemoryTest()
       : allow_tests_to_run_(false),
@@ -75,7 +70,7 @@ class GpuMemoryTest : public content::ContentBrowserTest {
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     base::FilePath test_dir;
-    ASSERT_TRUE(PathService::Get(content::DIR_TEST_DATA, &test_dir));
+    ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &test_dir));
     gpu_test_dir_ = test_dir.AppendASCII("gpu");
   }
 
@@ -102,7 +97,7 @@ class GpuMemoryTest : public content::ContentBrowserTest {
   };
 
   // Load a page and consume a specified amount of GPU memory.
-  void LoadPage(content::Shell* tab_to_load,
+  void LoadPage(Shell* tab_to_load,
                 PageType page_type,
                 size_t mb_to_use) {
     base::FilePath url;
@@ -115,14 +110,14 @@ class GpuMemoryTest : public content::ContentBrowserTest {
         break;
     }
 
-    content::NavigateToURL(tab_to_load, net::FilePathToFileURL(url));
+    NavigateToURL(tab_to_load, net::FilePathToFileURL(url));
     std::ostringstream js_call;
     js_call << "useGpuMemory(";
     js_call << mb_to_use;
     js_call << ");";
     std::string message;
     ASSERT_TRUE(
-        content::ExecuteScriptInFrameAndExtractString(
+        ExecuteScriptInFrameAndExtractString(
         tab_to_load->web_contents(),
         "",
         js_call.str(),
@@ -131,19 +126,18 @@ class GpuMemoryTest : public content::ContentBrowserTest {
   }
 
   // Create a new tab.
-  content::Shell* CreateNewTab() {
+  Shell* CreateNewTab() {
     // The ContentBrowserTest will create one shell by default, use that one
     // first so that we don't confuse the memory manager into thinking there
     // are more windows than there are.
-    content::Shell* new_tab =
-        has_used_first_shell_ ? CreateBrowser() : shell();
+    Shell* new_tab = has_used_first_shell_ ? CreateBrowser() : shell();
     has_used_first_shell_ = true;
     tabs_.insert(new_tab);
     visible_tabs_.insert(new_tab);
     return new_tab;
   }
 
-  void SetTabBackgrounded(content::Shell* tab_to_background) {
+  void SetTabBackgrounded(Shell* tab_to_background) {
     ASSERT_TRUE(
         visible_tabs_.find(tab_to_background) != visible_tabs_.end());
     visible_tabs_.erase(tab_to_background);
@@ -193,7 +187,7 @@ class GpuMemoryTest : public content::ContentBrowserTest {
     for (size_t pump_it = 0; pump_it < 8; ++pump_it) {
       // Wait for a RequestAnimationFrame to complete from all visible tabs
       // for stage 1 of the cycle.
-      for (std::set<content::Shell*>::iterator it = visible_tabs_.begin();
+      for (std::set<Shell*>::iterator it = visible_tabs_.begin();
            it != visible_tabs_.end();
            ++it) {
         std::string js_call(
@@ -203,7 +197,7 @@ class GpuMemoryTest : public content::ContentBrowserTest {
             "})");
         std::string message;
         ASSERT_TRUE(
-            content::ExecuteScriptInFrameAndExtractString(
+            ExecuteScriptInFrameAndExtractString(
             (*it)->web_contents(),
             "",
             js_call,
@@ -223,8 +217,8 @@ class GpuMemoryTest : public content::ContentBrowserTest {
   }
 
   bool allow_tests_to_run_;
-  std::set<content::Shell*> tabs_;
-  std::set<content::Shell*> visible_tabs_;
+  std::set<Shell*> tabs_;
+  std::set<Shell*> visible_tabs_;
   bool has_used_first_shell_;
   base::FilePath gpu_test_dir_;
 };
@@ -235,7 +229,7 @@ IN_PROC_BROWSER_TEST_F(GpuMemoryTest, SingleWindowDoesNotExceedLimit) {
   if (!AllowTestsToRun())
     return;
 
-  content::Shell* tab = CreateNewTab();
+  Shell* tab = CreateNewTab();
   LoadPage(tab, PAGE_CSS3D, kMemoryLimitMB);
   // Make sure that the CSS3D page maxes out a single tab's budget (otherwise
   // the test doesn't test anything) but still stays under the limit.
@@ -244,4 +238,4 @@ IN_PROC_BROWSER_TEST_F(GpuMemoryTest, SingleWindowDoesNotExceedLimit) {
      kMemoryLimitMB + kWiggleRoomMB));
 }
 
-}  // namespace
+}  // namespace content

@@ -94,9 +94,6 @@ class FlashDOMHandler : public WebUIMessageHandler,
 
   // GpuDataManager::Observer implementation.
   virtual void OnGpuInfoUpdate() OVERRIDE;
-  virtual void OnVideoMemoryUsageStatsUpdate(
-      const content::GPUVideoMemoryUsageStats& video_memory_usage_stats)
-          OVERRIDE {}
 
   // Callback for the "requestFlashInfo" message.
   void HandleRequestFlashInfo(const ListValue* args);

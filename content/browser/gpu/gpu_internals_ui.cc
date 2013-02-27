@@ -448,8 +448,6 @@ class GpuMessageHandler
 
   // GpuDataManagerObserver implementation.
   virtual void OnGpuInfoUpdate() OVERRIDE;
-  virtual void OnVideoMemoryUsageStatsUpdate(
-      const GPUVideoMemoryUsageStats& video_memory_usage_stats) OVERRIDE {}
 
   // Messages
   void OnBrowserBridgeInitialized(const base::ListValue* list);
