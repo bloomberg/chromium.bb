@@ -8,7 +8,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/imageburner/burn_manager.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
@@ -23,7 +22,6 @@ const uint64 kMinDeviceSize = static_cast<uint64>(3.9 * 1000 * 1000 * 1000);
 
 class BurnControllerImpl
     : public BurnController,
-      public NetworkLibrary::NetworkManagerObserver,
       public StateMachine::Observer,
       public BurnManager::Observer {
  public:
@@ -32,7 +30,6 @@ class BurnControllerImpl
         state_machine_(NULL),
         working_(false),
         delegate_(delegate) {
-    CrosLibrary::Get()->GetNetworkLibrary()->AddNetworkManagerObserver(this);
     burn_manager_ = BurnManager::GetInstance();
     burn_manager_->AddObserver(this);
     state_machine_ = burn_manager_->state_machine();
@@ -43,17 +40,6 @@ class BurnControllerImpl
     if (state_machine_)
       state_machine_->RemoveObserver(this);
     burn_manager_->RemoveObserver(this);
-    CrosLibrary::Get()->GetNetworkLibrary()->RemoveNetworkManagerObserver(this);
-  }
-
-  // NetworkLibrary::NetworkManagerObserver interface.
-  virtual void OnNetworkManagerChanged(NetworkLibrary* obj) OVERRIDE {
-    if (state_machine_->state() == StateMachine::INITIAL && CheckNetwork())
-      delegate_->OnNetworkDetected();
-
-    if (state_machine_->state() == StateMachine::DOWNLOADING &&
-        !CheckNetwork())
-      burn_manager_->OnError(IDS_IMAGEBURN_NETWORK_ERROR);
   }
 
   // BurnManager::Observer override.
@@ -66,6 +52,11 @@ class BurnControllerImpl
   virtual void OnDeviceRemoved(
       const disks::DiskMountManager::Disk& disk) OVERRIDE {
     delegate_->OnDeviceRemoved(disk);
+  }
+
+  // BurnManager::Observer override.
+  virtual void OnNetworkDetected() OVERRIDE {
+    delegate_->OnNetworkDetected();
   }
 
   // BurnManager::Observer override.
@@ -190,7 +181,7 @@ class BurnControllerImpl
                               const base::FilePath& target_file_path) OVERRIDE {
     if (!target_device_path.empty() && !target_file_path.empty() &&
         state_machine_->new_burn_posible()) {
-      if (!CheckNetwork()) {
+      if (!burn_manager_->IsNetworkConnected()) {
         delegate_->OnNoNetwork();
         return;
       }
@@ -246,10 +237,6 @@ class BurnControllerImpl
     const disks::DiskMountManager::Disk* disk =
         disk_mount_manager->FindDiskBySourcePath(device_path);
     return disk ? disk->total_size_in_bytes() : 0;
-  }
-
-  bool CheckNetwork() {
-    return CrosLibrary::Get()->GetNetworkLibrary()->Connected();
   }
 
   BurnManager* burn_manager_;

@@ -16,6 +16,7 @@
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/cros/burn_library.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/imageburner/burn_device_handler.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "googleurl/src/gurl.h"
@@ -180,7 +181,8 @@ class StateMachine {
 // TODO(hidehiko): Simplify the relationship among this class, BurnLibrary,
 // BurnController and helper classes defined above.
 class BurnManager : public net::URLFetcherDelegate,
-                    public BurnLibrary::Observer {
+                    public BurnLibrary::Observer,
+                    public NetworkLibrary::NetworkManagerObserver {
  public:
 
   // Interface for classes that need to observe events for the burning image
@@ -192,6 +194,9 @@ class BurnManager : public net::URLFetcherDelegate,
 
     // Triggered when a burnable device is removed.
     virtual void OnDeviceRemoved(const disks::DiskMountManager::Disk& disk) = 0;
+
+    // Triggered when a network is detected.
+    virtual void OnNetworkDetected() = 0;
 
     // Triggered when the creating a ImageDir is done.
     // The status of the creating the directory is passed to |success|.
@@ -238,6 +243,9 @@ class BurnManager : public net::URLFetcherDelegate,
   // Returns devices on which we can burn recovery image.
   std::vector<disks::DiskMountManager::Disk> GetBurnableDevices();
 
+  // Returns true if some network is connected.
+  bool IsNetworkConnected() const;
+
   // Error is usually detected by all existing Burn handlers, but only first
   // one that calls this method should actually process it.
   // The |message_id| is the id for human readable error message, although
@@ -277,6 +285,8 @@ class BurnManager : public net::URLFetcherDelegate,
                                    BurnEvent event,
                                    const ImageBurnStatus& status) OVERRIDE;
 
+  // NetworkLibrary::NetworkManagerObserver interface.
+  virtual void OnNetworkManagerChanged(NetworkLibrary* obj) OVERRIDE;
 
   // Creates directory image will be downloaded to.
   // Must be called from FILE thread.

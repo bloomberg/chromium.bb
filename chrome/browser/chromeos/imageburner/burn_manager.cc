@@ -210,6 +210,7 @@ BurnManager::BurnManager()
       state_machine_(new StateMachine()),
       bytes_image_download_progress_last_reported_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+  CrosLibrary::Get()->GetNetworkLibrary()->AddNetworkManagerObserver(this);
   CrosLibrary::Get()->GetBurnLibrary()->AddObserver(this);
   base::WeakPtr<BurnManager> weak_ptr(weak_ptr_factory_.GetWeakPtr());
   device_handler_.SetCallbacks(
@@ -222,6 +223,7 @@ BurnManager::~BurnManager() {
     file_util::Delete(image_dir_, true);
   }
   CrosLibrary::Get()->GetBurnLibrary()->RemoveObserver(this);
+  CrosLibrary::Get()->GetNetworkLibrary()->RemoveNetworkManagerObserver(this);
 }
 
 // static
@@ -260,6 +262,10 @@ void BurnManager::RemoveObserver(Observer* observer) {
 
 std::vector<disks::DiskMountManager::Disk> BurnManager::GetBurnableDevices() {
   return device_handler_.GetBurnableDevices();
+}
+
+bool BurnManager::IsNetworkConnected() const {
+  return CrosLibrary::Get()->GetNetworkLibrary()->Connected();
 }
 
 void BurnManager::OnError(int message_id) {
@@ -402,6 +408,16 @@ void BurnManager::BurnProgressUpdated(BurnLibrary* object,
   // At the moment, this is just a proxy of BurnLibrary callback to observers.
   FOR_EACH_OBSERVER(
       Observer, observers_, OnBurnProgressUpdated(evt, status));
+}
+
+void BurnManager::OnNetworkManagerChanged(NetworkLibrary* obj) {
+  // TODO(hidehiko): Split this into a class to write tests.
+  if (state_machine_->state() == StateMachine::INITIAL && IsNetworkConnected())
+    FOR_EACH_OBSERVER(Observer, observers_, OnNetworkDetected());
+
+  if (state_machine_->state() == StateMachine::DOWNLOADING &&
+      !IsNetworkConnected())
+    OnError(IDS_IMAGEBURN_NETWORK_ERROR);
 }
 
 void BurnManager::ConfigFileFetched(bool fetched, const std::string& content) {
