@@ -452,7 +452,13 @@ ScopedJavaLocalRef<jobject> BrowserViewRendererImpl::CapturePicture() {
   if (!picture || !g_sw_draw_functions)
     return ScopedJavaLocalRef<jobject>();
 
+  // Return empty Picture objects for empty SkPictures.
   JNIEnv* env = AttachCurrentThread();
+  if (picture->width() <= 0 || picture->height() <= 0) {
+    return java_helper_->RecordBitmapIntoPicture(
+        env, ScopedJavaLocalRef<jobject>());
+  }
+
   if (g_is_skia_version_compatible) {
     return ScopedJavaLocalRef<jobject>(env,
         g_sw_draw_functions->create_picture(env, picture->clone()));

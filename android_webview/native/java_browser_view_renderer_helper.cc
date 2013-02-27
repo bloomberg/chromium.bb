@@ -21,7 +21,8 @@ ScopedJavaLocalRef<jobject> JavaBrowserViewRendererHelper::CreateBitmap(
     JNIEnv* env,
     int width,
     int height) {
-  return Java_JavaBrowserViewRendererHelper_createBitmap(env, width, height);
+  return width <= 0 || height <= 0 ? ScopedJavaLocalRef<jobject>() :
+      Java_JavaBrowserViewRendererHelper_createBitmap(env, width, height);
 }
 
 void JavaBrowserViewRendererHelper::DrawBitmapIntoCanvas(
