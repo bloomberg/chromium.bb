@@ -92,30 +92,10 @@ void TranslateHelper::PageCaptured(const string16& contents) {
   // language of the intended audience (a distinction really only
   // relevant for things like langauge textbooks).  This distinction
   // shouldn't affect translation.
-  std::string language = document.contentLanguage().utf8();
-  CorrectLanguageCodeTypo(&language);
-
-  // Convert language code synonym firstly because sometime synonym code is in
-  // invalid format, e.g. 'fil'. After the conversion, make invalid code empty
-  // string.
-  ConvertLanguageCodeSynonym(&language);
-  ResetInvalidLanguageCode(&language);
-
-#if defined(ENABLE_LANGUAGE_DETECTION)
-  if (language.empty()) {
-    base::TimeTicks begin_time = base::TimeTicks::Now();
-    language = DetermineTextLanguage(contents);
-    UMA_HISTOGRAM_MEDIUM_TIMES("Renderer4.LanguageDetection",
-                               base::TimeTicks::Now() - begin_time);
-    // Apply synonym conversion here because CLD may return 'fil'.
-    ConvertLanguageCodeSynonym(&language);
-  } else {
-    VLOG(9) << "PageLanguageFromMetaTag: " << language;
-  }
-#else
+  std::string content_language = document.contentLanguage().utf8();
+  std::string language = DeterminePageLanguage(content_language, contents);
   if (language.empty())
     return;
-#endif  // defined(ENABLE_LANGUAGE_DETECTION)
 
   Send(new ChromeViewHostMsg_TranslateLanguageDetermined(
       routing_id(), language, IsPageTranslatable(&document)));
@@ -142,6 +122,9 @@ std::string TranslateHelper::DetermineTextLanguage(const string16& text) {
   // We don't trust the result if the CLD reports that the detection is not
   // reliable, or if the actual text used to detect the language was less than
   // 100 bytes (short texts can often lead to wrong results).
+  // TODO(toyoshim): CLD provides |is_reliable| flag. But, it just says that
+  // the determined language code is correct with 50% confidence. Chrome should
+  // handle the real confidence value to judge.
   if (is_reliable && text_bytes >= 100 && cld_language != NUM_LANGUAGES &&
       cld_language != UNKNOWN_LANGUAGE && cld_language != TG_UNKNOWN_LANGUAGE) {
     // We should not use LanguageCode_ISO_639_1 because it does not cover all
@@ -276,6 +259,49 @@ void TranslateHelper::ResetInvalidLanguageCode(std::string* code) {
     // Reset |language| to ignore the invalid code.
     *code = std::string();
   }
+}
+
+// static
+std::string TranslateHelper::DeterminePageLanguage(const std::string& code,
+                                                   const string16& contents) {
+#if defined(ENABLE_LANGUAGE_DETECTION)
+  base::TimeTicks begin_time = base::TimeTicks::Now();
+  std::string cld_language = DetermineTextLanguage(contents);
+  UMA_HISTOGRAM_MEDIUM_TIMES("Renderer4.LanguageDetection",
+                             base::TimeTicks::Now() - begin_time);
+  ConvertLanguageCodeSynonym(&cld_language);
+  VLOG(9) << "CLD determined language code: " << cld_language;
+
+  // If |code| is empty, just use CLD result even though it might be
+  // chrome::kUnknownLanguageCode.
+  if (code.empty())
+    return cld_language;
+#endif  // defined(ENABLE_LANGUAGE_DETECTION)
+
+  // Correct well-known format errors.
+  std::string language = code;
+  CorrectLanguageCodeTypo(&language);
+
+  // Convert language code synonym firstly because sometime synonym code is in
+  // invalid format, e.g. 'fil'. After validation, such a 3 characters language
+  // gets converted to an empty string.
+  ConvertLanguageCodeSynonym(&language);
+  ResetInvalidLanguageCode(&language);
+  VLOG(9) << "Content-Language based language code: " << language;
+
+#if defined(ENABLE_LANGUAGE_DETECTION)
+  if (cld_language != chrome::kUnknownLanguageCode &&
+      cld_language != language) {
+    // Content-Language value might be wrong because CLD says that this page
+    // is written in another language with confidence.
+    // In this case, Chrome doesn't rely on any of the language codes, and
+    // gives up suggesting a translation.
+    VLOG(9) << "CLD disagreed with the Content-Language value with confidence.";
+    return std::string(chrome::kUnknownLanguageCode);
+  }
+#endif  // defined(ENABLE_LANGUAGE_DETECTION)
+
+  return language;
 }
 
 // static

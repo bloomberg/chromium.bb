@@ -414,7 +414,6 @@ TEST_F(ChromeRenderViewTest, LanguageCommonMistakesAreCorrected) {
   render_thread_->sink().ClearMessages();
 }
 
-
 // Tests that a back navigation gets a translate language message.
 TEST_F(ChromeRenderViewTest, BackToTranslatablePage) {
   SendContentStateImmediately();

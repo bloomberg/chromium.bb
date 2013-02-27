@@ -69,6 +69,8 @@ class TranslateHelper : public content::RenderViewObserver {
   FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, LanguageCodeTypoCorrection);
   FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, LanguageCodeSynonyms);
   FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, ResetInvalidLanguageCode);
+  FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest,
+                           CLDDisagreeWithWrongLanguageCode);
 
   // Correct language code if it contains well-known mistakes.
   static void CorrectLanguageCodeTypo(std::string* code);
@@ -78,6 +80,10 @@ class TranslateHelper : public content::RenderViewObserver {
 
   // Reset language code if the specified string is apparently invalid.
   static void ResetInvalidLanguageCode(std::string* code);
+
+  // Determine content page language from Content-Language code and contents.
+  static std::string DeterminePageLanguage(const std::string& code,
+                                           const string16& contents);
 
   // Returns whether the page associated with |document| is a candidate for
   // translation.  Some pages can explictly specify (via a meta-tag) that they
