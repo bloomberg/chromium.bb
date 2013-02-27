@@ -505,11 +505,10 @@ FileTable.prototype.renderNameColumnHeader_ = function(name) {
   this.updateSelectAllCheckboxState_(input);
 
   input.addEventListener('click', function(event) {
-      if (input.checked)
+    if (input.checked)
       this.selectionModel.selectAll();
     else
       this.selectionModel.unselectAll();
-    event.preventDefault();
     event.stopPropagation();
   }.bind(this));
 
