@@ -18,23 +18,14 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 
-namespace extensions {
+namespace {
 
-FileSystemNatives::FileSystemNatives(v8::Handle<v8::Context> context)
-    : ObjectBackedNativeHandler(context) {
-  RouteFunction("GetFileEntry",
-      base::Bind(&FileSystemNatives::GetFileEntry, base::Unretained(this)));
-  RouteFunction("GetIsolatedFileSystem",
-      base::Bind(&FileSystemNatives::GetIsolatedFileSystem,
-                 base::Unretained(this)));
-}
-
-v8::Handle<v8::Value> FileSystemNatives::GetIsolatedFileSystem(
+static v8::Handle<v8::Value> GetIsolatedFileSystem(
     const v8::Arguments& args) {
   DCHECK(args.Length() == 1 || args.Length() == 2);
   DCHECK(args[0]->IsString());
   std::string file_system_id(*v8::String::Utf8Value(args[0]));
-  WebKit::WebFrame* webframe = WebKit::WebFrame::frameForContext(v8_context());
+  WebKit::WebFrame* webframe = WebKit::WebFrame::frameForCurrentContext();
   DCHECK(webframe);
 
   GURL context_url =
@@ -63,8 +54,7 @@ v8::Handle<v8::Value> FileSystemNatives::GetIsolatedFileSystem(
       WebKit::WebString::fromUTF8(root));
 }
 
-v8::Handle<v8::Value> FileSystemNatives::GetFileEntry(
-    const v8::Arguments& args) {
+static v8::Handle<v8::Value> GetFileEntry(const v8::Arguments& args) {
   DCHECK(args.Length() == 5);
   DCHECK(args[0]->IsString());
   std::string type_string = *v8::String::Utf8Value(args[0]->ToString());
@@ -87,7 +77,7 @@ v8::Handle<v8::Value> FileSystemNatives::GetFileEntry(
   DCHECK(args[4]->IsBoolean());
   bool is_directory = args[4]->BooleanValue();
 
-  WebKit::WebFrame* webframe = WebKit::WebFrame::frameForContext(v8_context());
+  WebKit::WebFrame* webframe = WebKit::WebFrame::frameForCurrentContext();
   DCHECK(webframe);
   return webframe->createFileEntry(
       type,
@@ -95,6 +85,16 @@ v8::Handle<v8::Value> FileSystemNatives::GetFileEntry(
       WebKit::WebString::fromUTF8(file_system_root_url),
       WebKit::WebString::fromUTF8(file_path_string),
       is_directory);
+}
+
+}  // namespace
+
+namespace extensions {
+
+FileSystemNatives::FileSystemNatives()
+    : ChromeV8Extension(NULL) {
+  RouteStaticFunction("GetFileEntry", &GetFileEntry);
+  RouteStaticFunction("GetIsolatedFileSystem", &GetIsolatedFileSystem);
 }
 
 }  // namespace extensions

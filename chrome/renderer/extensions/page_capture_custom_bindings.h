@@ -12,8 +12,7 @@ namespace extensions {
 // Implements custom bindings for the pageCapture API.
 class PageCaptureCustomBindings : public ChromeV8Extension {
  public:
-  PageCaptureCustomBindings(Dispatcher* dispatcher,
-                            v8::Handle<v8::Context> context);
+  PageCaptureCustomBindings();
 
  private:
   // Creates a Blob with the content of the specified file.

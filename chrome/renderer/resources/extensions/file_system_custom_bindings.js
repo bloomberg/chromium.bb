@@ -2,19 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom binding for the fileSystem API.
+// Custom bindings for the fileSystem API.
 
-var binding = require('binding').Binding.create('fileSystem');
-
+var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var fileSystemNatives = requireNative('file_system_natives');
 var GetIsolatedFileSystem = fileSystemNatives.GetIsolatedFileSystem;
 var lastError = require('lastError');
 var entryIdManager = require('entryIdManager');
 
-binding.registerCustomHook(function(bindingsAPI) {
+chromeHidden.registerCustomHook('fileSystem', function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
-  var fileSystem = bindingsAPI.compiledApi;
-
   function bindFileEntryFunction(functionName) {
     apiFunctions.setUpdateArgumentsPostValidate(
         functionName, function(fileEntry, callback) {
@@ -68,23 +65,21 @@ binding.registerCustomHook(function(bindingsAPI) {
   });
 
   // TODO(benwells): Remove these deprecated versions of the functions.
-  fileSystem.getWritableFileEntry = function() {
+  chrome.fileSystem.getWritableFileEntry = function() {
     console.log("chrome.fileSystem.getWritableFileEntry is deprecated");
     console.log("Please use chrome.fileSystem.getWritableEntry instead");
-    fileSystem.getWritableEntry.apply(this, arguments);
+    chrome.fileSystem.getWritableEntry.apply(this, arguments);
   };
 
-  fileSystem.isWritableFileEntry = function() {
+  chrome.fileSystem.isWritableFileEntry = function() {
     console.log("chrome.fileSystem.isWritableFileEntry is deprecated");
     console.log("Please use chrome.fileSystem.isWritableEntry instead");
-    fileSystem.isWritableEntry.apply(this, arguments);
+    chrome.fileSystem.isWritableEntry.apply(this, arguments);
   };
 
-  fileSystem.chooseFile = function() {
+  chrome.fileSystem.chooseFile = function() {
     console.log("chrome.fileSystem.chooseFile is deprecated");
     console.log("Please use chrome.fileSystem.chooseEntry instead");
-    fileSystem.chooseEntry.apply(this, arguments);
+    chrome.fileSystem.chooseEntry.apply(this, arguments);
   };
 });
-
-exports.binding = binding.generate();

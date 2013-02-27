@@ -234,29 +234,32 @@ TEST(ExtensionAPI, ExtensionWithUnprivilegedAPIs) {
   scoped_ptr<ExtensionAPI> extension_api(
       ExtensionAPI::CreateWithDefaultConfiguration());
 
-  std::set<std::string> privileged_apis = extension_api->GetAPIsForContext(
-      Feature::BLESSED_EXTENSION_CONTEXT, extension.get(), GURL());
+  scoped_ptr<std::set<std::string> > privileged_apis =
+      extension_api->GetAPIsForContext(
+          Feature::BLESSED_EXTENSION_CONTEXT, extension.get(), GURL());
 
-  std::set<std::string> unprivileged_apis = extension_api->GetAPIsForContext(
-      Feature::UNBLESSED_EXTENSION_CONTEXT, extension.get(), GURL());
+  scoped_ptr<std::set<std::string> > unprivileged_apis =
+      extension_api->GetAPIsForContext(
+          Feature::UNBLESSED_EXTENSION_CONTEXT, extension.get(), GURL());
 
-  std::set<std::string> content_script_apis = extension_api->GetAPIsForContext(
-      Feature::CONTENT_SCRIPT_CONTEXT, extension.get(), GURL());
+  scoped_ptr<std::set<std::string> > content_script_apis =
+      extension_api->GetAPIsForContext(
+          Feature::CONTENT_SCRIPT_CONTEXT, extension.get(), GURL());
 
   // "storage" is completely unprivileged.
-  EXPECT_EQ(1u, privileged_apis.count("storage"));
-  EXPECT_EQ(1u, unprivileged_apis.count("storage"));
-  EXPECT_EQ(1u, content_script_apis.count("storage"));
+  EXPECT_EQ(1u, privileged_apis->count("storage"));
+  EXPECT_EQ(1u, unprivileged_apis->count("storage"));
+  EXPECT_EQ(1u, content_script_apis->count("storage"));
 
   // "extension" is partially unprivileged.
-  EXPECT_EQ(1u, privileged_apis.count("extension"));
-  EXPECT_EQ(1u, unprivileged_apis.count("extension"));
-  EXPECT_EQ(1u, content_script_apis.count("extension"));
+  EXPECT_EQ(1u, privileged_apis->count("extension"));
+  EXPECT_EQ(1u, unprivileged_apis->count("extension"));
+  EXPECT_EQ(1u, content_script_apis->count("extension"));
 
   // "history" is entirely privileged.
-  EXPECT_EQ(1u, privileged_apis.count("history"));
-  EXPECT_EQ(0u, unprivileged_apis.count("history"));
-  EXPECT_EQ(0u, content_script_apis.count("history"));
+  EXPECT_EQ(1u, privileged_apis->count("history"));
+  EXPECT_EQ(0u, unprivileged_apis->count("history"));
+  EXPECT_EQ(0u, content_script_apis->count("history"));
 }
 
 TEST(ExtensionAPI, ExtensionWithDependencies) {
@@ -267,10 +270,10 @@ TEST(ExtensionAPI, ExtensionWithDependencies) {
         CreateExtensionWithPermission("ttsEngine");
     scoped_ptr<ExtensionAPI> api(
         ExtensionAPI::CreateWithDefaultConfiguration());
-    std::set<std::string> apis = api->GetAPIsForContext(
+    scoped_ptr<std::set<std::string> > apis = api->GetAPIsForContext(
         Feature::BLESSED_EXTENSION_CONTEXT, extension.get(), GURL());
-    EXPECT_EQ(1u, apis.count("ttsEngine"));
-    EXPECT_EQ(1u, apis.count("tts"));
+    EXPECT_EQ(1u, apis->count("ttsEngine"));
+    EXPECT_EQ(1u, apis->count("tts"));
   }
 
   // Conversely, extension with the "tts" permission but not the "ttsEngine"
@@ -280,18 +283,18 @@ TEST(ExtensionAPI, ExtensionWithDependencies) {
         CreateExtensionWithPermission("tts");
     scoped_ptr<ExtensionAPI> api(
         ExtensionAPI::CreateWithDefaultConfiguration());
-    std::set<std::string> apis = api->GetAPIsForContext(
+    scoped_ptr<std::set<std::string> > apis = api->GetAPIsForContext(
         Feature::BLESSED_EXTENSION_CONTEXT, extension.get(), GURL());
-    EXPECT_EQ(0u, apis.count("ttsEngine"));
-    EXPECT_EQ(1u, apis.count("tts"));
+    EXPECT_EQ(0u, apis->count("ttsEngine"));
+    EXPECT_EQ(1u, apis->count("tts"));
   }
 }
 
 bool MatchesURL(
     ExtensionAPI* api, const std::string& api_name, const std::string& url) {
-  std::set<std::string> apis =
+  scoped_ptr<std::set<std::string> > apis =
       api->GetAPIsForContext(Feature::WEB_PAGE_CONTEXT, NULL, GURL(url));
-  return apis.count(api_name);
+  return apis->count(api_name);
 }
 
 TEST(ExtensionAPI, URLMatching) {

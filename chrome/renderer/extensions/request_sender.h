@@ -16,7 +16,7 @@ class ListValue;
 }
 
 namespace extensions {
-class ChromeV8Context;
+class ChromeV8ContextSet;
 class Dispatcher;
 
 struct PendingRequest;
@@ -25,17 +25,15 @@ struct PendingRequest;
 // extension host and routing the responses back to the caller.
 class RequestSender {
  public:
-  explicit RequestSender(Dispatcher* dispatcher);
+  explicit RequestSender(Dispatcher* dispatcher,
+                         ChromeV8ContextSet* context_set);
   ~RequestSender();
 
   // Makes a call to the API function |name| that is to be handled by the
   // extension host. The response to this request will be received in
   // HandleResponse().
   // TODO(koz): Remove |request_id| and generate that internally.
-  //            There are multiple of these per render view though, so we'll
-  //            need to vend the IDs centrally.
-  void StartRequest(ChromeV8Context* target_context,
-                    const std::string& name,
+  void StartRequest(const std::string& name,
                     int request_id,
                     bool has_callback,
                     bool for_io_thread,
@@ -47,9 +45,6 @@ class RequestSender {
                       const base::ListValue& response,
                       const std::string& error);
 
-  // Notifies this that a context is no longer valid.
-  // TODO(kalman): Do this in a generic/safe way.
-  void InvalidateContext(ChromeV8Context* context);
 
  private:
   typedef std::map<int, linked_ptr<PendingRequest> > PendingRequestMap;
@@ -59,6 +54,7 @@ class RequestSender {
 
   Dispatcher* dispatcher_;
   PendingRequestMap pending_requests_;
+  ChromeV8ContextSet* context_set_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestSender);
 };

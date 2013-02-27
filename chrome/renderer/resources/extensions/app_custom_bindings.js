@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom binding for the app API.
+// Custom bindings for the app API.
 
 var appNatives = requireNative('app');
-var chrome = requireNative('chrome').GetChrome();
-var GetAvailability = requireNative('v8_context').GetAvailability;
 
 // This becomes chrome.app
 var app = {
@@ -45,7 +43,7 @@ var chromeHiddenApp = {
 
 // appNotification stuff.
 //
-// TODO(kalman): move this stuff to its own custom binding.
+// TODO(kalman): move this stuff to its own custom bindings.
 // It will be bit tricky since I'll need to look into why there are
 // permissions defined for app notifications, yet this always sets it up?
 var callbacks = {};
@@ -69,11 +67,8 @@ app.installState = function getInstallState(callback) {
   appNatives.GetInstallState(callbackId);
 };
 
-// These must match the names in InstallAppbinding() in
+// These must match the names in InstallAppBindings() in
 // chrome/renderer/extensions/dispatcher.cc.
-var availability = GetAvailability('app');
-if (availability.is_available) {
-  exports.chromeApp = app;
-  exports.chromeAppNotifications = appNotifications;
-  exports.chromeHiddenApp = chromeHiddenApp;
-}
+exports.chromeApp = app;
+exports.chromeAppNotifications = appNotifications;
+exports.chromeHiddenApp = chromeHiddenApp;

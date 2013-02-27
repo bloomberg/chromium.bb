@@ -12,7 +12,7 @@ namespace extensions {
 // Implements custom bindings for the tabs API.
 class TabsCustomBindings : public ChromeV8Extension {
  public:
-  TabsCustomBindings(Dispatcher* dispatcher, v8::Handle<v8::Context> context);
+  TabsCustomBindings();
 
  private:
   // Creates a new messaging channel to the tab with the given ID.

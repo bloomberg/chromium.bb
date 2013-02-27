@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom binding for the contextMenus API.
-
-var binding = require('binding').Binding.create('contextMenus');
+// Custom bindings for the contextMenus API.
 
 var contextMenus = requireNative('context_menus');
 var GetNextContextMenuId = contextMenus.GetNextContextMenuId;
@@ -12,7 +10,7 @@ var sendRequest = require('sendRequest').sendRequest;
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 
-binding.registerCustomHook(function(bindingsAPI) {
+chromeHidden.registerCustomHook('contextMenus', function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   chromeHidden.contextMenus = {};
@@ -100,5 +98,3 @@ binding.registerCustomHook(function(bindingsAPI) {
     chromeHidden.contextMenus.stringIdHandlers = {};
   });
 });
-
-exports.binding = binding.generate();

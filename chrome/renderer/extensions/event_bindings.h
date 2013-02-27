@@ -5,7 +5,9 @@
 #ifndef CHROME_RENDERER_EXTENSIONS_EVENT_BINDINGS_H_
 #define CHROME_RENDERER_EXTENSIONS_EVENT_BINDINGS_H_
 
-#include "v8/include/v8.h"
+namespace v8 {
+class Extension;
+}
 
 namespace extensions {
 class ChromeV8Extension;
@@ -15,8 +17,7 @@ class EventFilter;
 // This class deals with the javascript bindings related to Event objects.
 class EventBindings {
  public:
-  static ChromeV8Extension* Create(Dispatcher* dispatcher,
-                                   v8::Handle<v8::Context> context);
+  static ChromeV8Extension* Get(Dispatcher* dispatcher);
 };
 
 }  // namespace extensions

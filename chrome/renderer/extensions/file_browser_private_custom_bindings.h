@@ -13,9 +13,7 @@ namespace extensions {
 // Custom bindings for the fileBrowserPrivate API.
 class FileBrowserPrivateCustomBindings : public ChromeV8Extension {
  public:
-  explicit FileBrowserPrivateCustomBindings(v8::Handle<v8::Context> context);
-
-  v8::Handle<v8::Value> GetLocalFileSystem(const v8::Arguments& args);
+  FileBrowserPrivateCustomBindings();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FileBrowserPrivateCustomBindings);

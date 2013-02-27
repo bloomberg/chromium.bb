@@ -8,10 +8,10 @@
 // content scripts only.
 
   require('json_schema');
+  require('event_bindings');
   var json = require('json');
   var lastError = require('lastError');
   var miscNatives = requireNative('miscellaneous_bindings');
-  var chrome = requireNative('chrome').GetChrome();
   var CloseChannel = miscNatives.CloseChannel;
   var PortAddRef = miscNatives.PortAddRef;
   var PortRelease = miscNatives.PortRelease;

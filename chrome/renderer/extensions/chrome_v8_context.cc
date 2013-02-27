@@ -12,7 +12,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
-#include "chrome/renderer/extensions/module_system.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -24,10 +23,6 @@ namespace extensions {
 namespace {
 
 const char kChromeHidden[] = "chromeHidden";
-const char kUnavailableMessage[] = "You do not have permission to access this "
-                                   "API. Ensure that the required permission "
-                                   "or manifest property is included in your "
-                                   "manifest.json.";
 
 const char kValidateCallbacks[] = "validateCallbacks";
 const char kValidateAPI[] = "validateAPI";
@@ -42,8 +37,7 @@ ChromeV8Context::ChromeV8Context(v8::Handle<v8::Context> v8_context,
                                                    v8_context)),
       web_frame_(web_frame),
       extension_(extension),
-      context_type_(context_type),
-      available_extension_apis_initialized_(false) {
+      context_type_(context_type) {
   VLOG(1) << "Created context:\n"
           << "  extension id: " << GetExtensionID() << "\n"
           << "  frame:        " << web_frame_ << "\n"
@@ -54,12 +48,6 @@ ChromeV8Context::~ChromeV8Context() {
   VLOG(1) << "Destroyed context for extension\n"
           << "  extension id: " << GetExtensionID();
   v8_context_.Dispose(v8_context_->GetIsolate());
-}
-
-void ChromeV8Context::Invalidate() {
-  if (module_system_)
-    module_system_->Invalidate();
-  web_frame_ = NULL;
 }
 
 std::string ChromeV8Context::GetExtensionID() {
@@ -78,11 +66,11 @@ v8::Handle<v8::Value> ChromeV8Context::GetOrCreateChromeHidden(
     global->SetHiddenValue(v8::String::New(kChromeHidden), hidden);
 
     if (DCHECK_IS_ON()) {
-      // Tell bindings.js to validate callbacks and events against their schema
-      // definitions.
+      // Tell schema_generated_bindings.js to validate callbacks and events
+      // against their schema definitions.
       v8::Local<v8::Object>::Cast(hidden)->Set(
           v8::String::New(kValidateCallbacks), v8::True());
-      // Tell bindings.js to validate API for ambiguity.
+      // Tell schema_generated_bindings.js to validate API for ambiguity.
       v8::Local<v8::Object>::Cast(hidden)->Set(
           v8::String::New(kValidateAPI), v8::True());
     }
@@ -111,9 +99,9 @@ bool ChromeV8Context::CallChromeHiddenMethod(
     v8::Handle<v8::Value>* result) const {
   v8::Context::Scope context_scope(v8_context_);
 
-  // ChromeV8ContextSet calls Invalidate() and then schedules a task to delete
-  // this object. This check prevents a race from attempting to execute script
-  // on a NULL web_frame_.
+  // ChromeV8ContextSet calls clear_web_frame() and then schedules a task to
+  // delete this object. This check prevents a race from attempting to execute
+  // script on a NULL web_frame_.
   if (!web_frame_)
     return false;
 
@@ -153,28 +141,15 @@ bool ChromeV8Context::CallChromeHiddenMethod(
 }
 
 const std::set<std::string>& ChromeV8Context::GetAvailableExtensionAPIs() {
-  if (!available_extension_apis_initialized_) {
+  if (!available_extension_apis_.get()) {
     available_extension_apis_ =
         ExtensionAPI::GetSharedInstance()->GetAPIsForContext(
             context_type_,
             extension_,
-            UserScriptSlave::GetDataSourceURLForFrame(web_frame_));
-    available_extension_apis_initialized_ = true;
+            UserScriptSlave::GetDataSourceURLForFrame(
+                web_frame_)).Pass();
   }
-  return available_extension_apis_;
-}
-
-Feature::Availability ChromeV8Context::GetAvailability(
-    const std::string& api_name) {
-  const std::set<std::string>& available_apis = GetAvailableExtensionAPIs();
-
-  // TODO(cduvall/kalman): Switch to ExtensionAPI::IsAvailable() once Features
-  // are complete.
-  if (available_apis.find(api_name) != available_apis.end())
-    return Feature::CreateAvailability(Feature::IS_AVAILABLE, "");
-
-  return Feature::CreateAvailability(Feature::INVALID_CONTEXT,
-                                     kUnavailableMessage);
+  return *(available_extension_apis_.get());
 }
 
 void ChromeV8Context::DispatchOnLoadEvent(bool is_incognito_process,
