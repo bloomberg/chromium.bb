@@ -418,8 +418,12 @@ string ReadDebugLink(const char* debuglink,
   }
 
   if (!found) {
-    fprintf(stderr, "Failed to open debug ELF file '%s' for '%s': %s\n",
-            debuglink_path.c_str(), obj_file.c_str(), strerror(errno));
+    fprintf(stderr, "Failed to find debug ELF file for '%s' after trying:\n",
+            obj_file.c_str());
+    for (it = debug_dirs.begin(); it < debug_dirs.end(); ++it) {
+      const string debug_dir = *it;
+      fprintf(stderr, "  %s/%s\n", debug_dir.c_str(), debuglink);
+    }
     return "";
   }
 
