@@ -317,7 +317,7 @@ _settings = dict(
   hw_tests_num=constants.HWTEST_DEFAULT_NUM,
 
 # Should we file bugs if a test fails in a suite run.
-  hw_tests_file_bugs=False,
+  hw_tests_file_bugs=True,
 
 # upload_hw_test_artifacts -- If true, uploads artifacts for hw testing.
   upload_hw_test_artifacts=False,
