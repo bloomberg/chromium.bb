@@ -31,34 +31,34 @@ class RulesFunction : public AsyncExtensionFunction {
   scoped_refptr<RulesRegistry> rules_registry_;
 };
 
-class EventsAddRulesFunction : public RulesFunction {
+class EventsEventAddRulesFunction : public RulesFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("events.addRules", EVENTS_ADDRULES)
 
  protected:
-  virtual ~EventsAddRulesFunction() {}
+  virtual ~EventsEventAddRulesFunction() {}
 
   // RulesFunction:
   virtual bool RunImplOnCorrectThread() OVERRIDE;
 };
 
-class EventsRemoveRulesFunction : public RulesFunction {
+class EventsEventRemoveRulesFunction : public RulesFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("events.removeRules", EVENTS_REMOVERULES)
 
  protected:
-  virtual ~EventsRemoveRulesFunction() {}
+  virtual ~EventsEventRemoveRulesFunction() {}
 
   // RulesFunction:
   virtual bool RunImplOnCorrectThread() OVERRIDE;
 };
 
-class EventsGetRulesFunction : public RulesFunction {
+class EventsEventGetRulesFunction : public RulesFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("events.getRules", EVENTS_GETRULES)
 
  protected:
-  virtual ~EventsGetRulesFunction() {}
+  virtual ~EventsEventGetRulesFunction() {}
 
   // RulesFunction:
   virtual bool RunImplOnCorrectThread() OVERRIDE;

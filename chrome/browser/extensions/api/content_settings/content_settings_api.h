@@ -15,47 +15,48 @@ struct WebPluginInfo;
 
 namespace extensions {
 
-class ContentSettingsClearFunction : public SyncExtensionFunction {
+class ContentSettingsContentSettingClearFunction
+    : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("contentSettings.clear", CONTENTSETTINGS_CLEAR)
 
  protected:
-  virtual ~ContentSettingsClearFunction() {}
+  virtual ~ContentSettingsContentSettingClearFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class ContentSettingsGetFunction : public SyncExtensionFunction {
+class ContentSettingsContentSettingGetFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("contentSettings.get", CONTENTSETTINGS_GET)
 
  protected:
-  virtual ~ContentSettingsGetFunction() {}
+  virtual ~ContentSettingsContentSettingGetFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class ContentSettingsSetFunction : public SyncExtensionFunction {
+class ContentSettingsContentSettingSetFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("contentSettings.set", CONTENTSETTINGS_SET)
 
  protected:
-  virtual ~ContentSettingsSetFunction() {}
+  virtual ~ContentSettingsContentSettingSetFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class ContentSettingsGetResourceIdentifiersFunction
+class ContentSettingsContentSettingGetResourceIdentifiersFunction
     : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("contentSettings.getResourceIdentifiers",
                              CONTENTSETTINGS_GETRESOURCEIDENTIFIERS)
 
  protected:
-  virtual ~ContentSettingsGetResourceIdentifiersFunction() {}
+  virtual ~ContentSettingsContentSettingGetResourceIdentifiersFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;

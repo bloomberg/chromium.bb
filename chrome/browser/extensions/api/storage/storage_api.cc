@@ -162,7 +162,7 @@ void GetModificationQuotaLimitHeuristics(QuotaLimitHeuristics* heuristics) {
 
 }  // namespace
 
-bool StorageGetFunction::RunWithStorage(ValueStore* storage) {
+bool StorageStorageAreaGetFunction::RunWithStorage(ValueStore* storage) {
   Value* input = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &input));
 
@@ -201,7 +201,8 @@ bool StorageGetFunction::RunWithStorage(ValueStore* storage) {
   }
 }
 
-bool StorageGetBytesInUseFunction::RunWithStorage(ValueStore* storage) {
+bool StorageStorageAreaGetBytesInUseFunction::RunWithStorage(
+    ValueStore* storage) {
   Value* input = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &input));
 
@@ -235,18 +236,18 @@ bool StorageGetBytesInUseFunction::RunWithStorage(ValueStore* storage) {
   return true;
 }
 
-bool StorageSetFunction::RunWithStorage(ValueStore* storage) {
+bool StorageStorageAreaSetFunction::RunWithStorage(ValueStore* storage) {
   DictionaryValue* input = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &input));
   return UseWriteResult(storage->Set(ValueStore::DEFAULTS, *input));
 }
 
-void StorageSetFunction::GetQuotaLimitHeuristics(
+void StorageStorageAreaSetFunction::GetQuotaLimitHeuristics(
     QuotaLimitHeuristics* heuristics) const {
   GetModificationQuotaLimitHeuristics(heuristics);
 }
 
-bool StorageRemoveFunction::RunWithStorage(ValueStore* storage) {
+bool StorageStorageAreaRemoveFunction::RunWithStorage(ValueStore* storage) {
   Value* input = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &input));
 
@@ -269,16 +270,16 @@ bool StorageRemoveFunction::RunWithStorage(ValueStore* storage) {
   };
 }
 
-void StorageRemoveFunction::GetQuotaLimitHeuristics(
+void StorageStorageAreaRemoveFunction::GetQuotaLimitHeuristics(
     QuotaLimitHeuristics* heuristics) const {
   GetModificationQuotaLimitHeuristics(heuristics);
 }
 
-bool StorageClearFunction::RunWithStorage(ValueStore* storage) {
+bool StorageStorageAreaClearFunction::RunWithStorage(ValueStore* storage) {
   return UseWriteResult(storage->Clear());
 }
 
-void StorageClearFunction::GetQuotaLimitHeuristics(
+void StorageStorageAreaClearFunction::GetQuotaLimitHeuristics(
     QuotaLimitHeuristics* heuristics) const {
   GetModificationQuotaLimitHeuristics(heuristics);
 }

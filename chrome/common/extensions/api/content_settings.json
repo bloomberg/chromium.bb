@@ -5,9 +5,6 @@
 [
   {
     "namespace": "contentSettings",
-    "compiler_options": {
-      "generate_type_functions": true
-    },
     "types": [
       {
         "id": "ResourceIdentifier",

@@ -6,8 +6,7 @@
   {
     "namespace": "events",
     "compiler_options": {
-      "implemented_in": "chrome/browser/extensions/api/declarative/declarative_api.h",
-      "generate_type_functions": true
+      "implemented_in": "chrome/browser/extensions/api/declarative/declarative_api.h"
     },
     "internal": true,
     "unprivileged": true,

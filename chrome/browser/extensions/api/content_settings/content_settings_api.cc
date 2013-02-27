@@ -62,7 +62,7 @@ namespace extensions {
 namespace helpers = content_settings_helpers;
 namespace keys = content_settings_api_constants;
 
-bool ContentSettingsClearFunction::RunImpl() {
+bool ContentSettingsContentSettingClearFunction::RunImpl() {
   ContentSettingsType content_type;
   EXTENSION_FUNCTION_VALIDATE(RemoveContentType(args_.get(), &content_type));
 
@@ -96,7 +96,7 @@ bool ContentSettingsClearFunction::RunImpl() {
   return true;
 }
 
-bool ContentSettingsGetFunction::RunImpl() {
+bool ContentSettingsContentSettingGetFunction::RunImpl() {
   ContentSettingsType content_type;
   EXTENSION_FUNCTION_VALIDATE(RemoveContentType(args_.get(), &content_type));
 
@@ -169,7 +169,7 @@ bool ContentSettingsGetFunction::RunImpl() {
   return true;
 }
 
-bool ContentSettingsSetFunction::RunImpl() {
+bool ContentSettingsContentSettingSetFunction::RunImpl() {
   ContentSettingsType content_type;
   EXTENSION_FUNCTION_VALIDATE(RemoveContentType(args_.get(), &content_type));
 
@@ -250,7 +250,7 @@ bool ContentSettingsSetFunction::RunImpl() {
   return true;
 }
 
-bool ContentSettingsGetResourceIdentifiersFunction::RunImpl() {
+bool ContentSettingsContentSettingGetResourceIdentifiersFunction::RunImpl() {
   ContentSettingsType content_type;
   EXTENSION_FUNCTION_VALIDATE(RemoveContentType(args_.get(), &content_type));
 
@@ -261,7 +261,8 @@ bool ContentSettingsGetResourceIdentifiersFunction::RunImpl() {
 
   if (!g_testing_plugins_) {
     PluginService::GetInstance()->GetPlugins(
-        base::Bind(&ContentSettingsGetResourceIdentifiersFunction::OnGotPlugins,
+        base::Bind(&ContentSettingsContentSettingGetResourceIdentifiersFunction::
+                   OnGotPlugins,
                    this));
   } else {
     OnGotPlugins(*g_testing_plugins_);
@@ -269,7 +270,7 @@ bool ContentSettingsGetResourceIdentifiersFunction::RunImpl() {
   return true;
 }
 
-void ContentSettingsGetResourceIdentifiersFunction::OnGotPlugins(
+void ContentSettingsContentSettingGetResourceIdentifiersFunction::OnGotPlugins(
     const std::vector<webkit::WebPluginInfo>& plugins) {
   PluginFinder* finder = PluginFinder::GetInstance();
   std::set<std::string> group_identifiers;
@@ -290,14 +291,15 @@ void ContentSettingsGetResourceIdentifiersFunction::OnGotPlugins(
   SetResult(list);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE, base::Bind(
-          &ContentSettingsGetResourceIdentifiersFunction::SendResponse,
+          &ContentSettingsContentSettingGetResourceIdentifiersFunction::
+          SendResponse,
           this,
           true));
 }
 
 // static
-void ContentSettingsGetResourceIdentifiersFunction::SetPluginsForTesting(
-    const std::vector<webkit::WebPluginInfo>* plugins) {
+void ContentSettingsContentSettingGetResourceIdentifiersFunction::
+    SetPluginsForTesting(const std::vector<webkit::WebPluginInfo>* plugins) {
   g_testing_plugins_ = plugins;
 }
 

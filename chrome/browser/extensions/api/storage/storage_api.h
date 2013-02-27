@@ -52,23 +52,23 @@ class SettingsFunction : public AsyncExtensionFunction {
   scoped_refptr<SettingsObserverList> observers_;
 };
 
-class StorageGetFunction : public SettingsFunction {
+class StorageStorageAreaGetFunction : public SettingsFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("storage.get", STORAGE_GET)
 
  protected:
-  virtual ~StorageGetFunction() {}
+  virtual ~StorageStorageAreaGetFunction() {}
 
   // SettingsFunction:
   virtual bool RunWithStorage(ValueStore* storage) OVERRIDE;
 };
 
-class StorageSetFunction : public SettingsFunction {
+class StorageStorageAreaSetFunction : public SettingsFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("storage.set", STORAGE_SET)
 
  protected:
-  virtual ~StorageSetFunction() {}
+  virtual ~StorageStorageAreaSetFunction() {}
 
   // SettingsFunction:
   virtual bool RunWithStorage(ValueStore* storage) OVERRIDE;
@@ -78,12 +78,12 @@ class StorageSetFunction : public SettingsFunction {
       QuotaLimitHeuristics* heuristics) const OVERRIDE;
 };
 
-class StorageRemoveFunction : public SettingsFunction {
+class StorageStorageAreaRemoveFunction : public SettingsFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("storage.remove", STORAGE_REMOVE)
 
  protected:
-  virtual ~StorageRemoveFunction() {}
+  virtual ~StorageStorageAreaRemoveFunction() {}
 
   // SettingsFunction:
   virtual bool RunWithStorage(ValueStore* storage) OVERRIDE;
@@ -93,12 +93,12 @@ class StorageRemoveFunction : public SettingsFunction {
       QuotaLimitHeuristics* heuristics) const OVERRIDE;
 };
 
-class StorageClearFunction : public SettingsFunction {
+class StorageStorageAreaClearFunction : public SettingsFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("storage.clear", STORAGE_CLEAR)
 
  protected:
-  virtual ~StorageClearFunction() {}
+  virtual ~StorageStorageAreaClearFunction() {}
 
   // SettingsFunction:
   virtual bool RunWithStorage(ValueStore* storage) OVERRIDE;
@@ -108,12 +108,12 @@ class StorageClearFunction : public SettingsFunction {
       QuotaLimitHeuristics* heuristics) const OVERRIDE;
 };
 
-class StorageGetBytesInUseFunction : public SettingsFunction {
+class StorageStorageAreaGetBytesInUseFunction : public SettingsFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("storage.getBytesInUse", STORAGE_GETBYTESINUSE)
 
  protected:
-  virtual ~StorageGetBytesInUseFunction() {}
+  virtual ~StorageStorageAreaGetBytesInUseFunction() {}
 
   // SettingsFunction:
   virtual bool RunWithStorage(ValueStore* storage) OVERRIDE;

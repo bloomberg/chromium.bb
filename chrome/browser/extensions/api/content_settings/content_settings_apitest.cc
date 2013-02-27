@@ -122,12 +122,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
   std::vector<webkit::WebPluginInfo> plugins;
   plugin_list.GetPlugins(&plugins);
 
-  ContentSettingsGetResourceIdentifiersFunction::SetPluginsForTesting(&plugins);
+  ContentSettingsContentSettingGetResourceIdentifiersFunction::
+      SetPluginsForTesting(&plugins);
 
   EXPECT_TRUE(RunExtensionTest("content_settings/getresourceidentifiers"))
       << message_;
 
-  ContentSettingsGetResourceIdentifiersFunction::SetPluginsForTesting(NULL);
+  ContentSettingsContentSettingGetResourceIdentifiersFunction::
+      SetPluginsForTesting(NULL);
 }
 
 }  // namespace extensions

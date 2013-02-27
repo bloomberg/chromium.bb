@@ -82,12 +82,19 @@ class CppBundleGenerator(object):
         raise ValueError("Unsupported platform ifdef: %s" % platform.name)
     return ' and '.join(ifdefs)
 
-  def _GetNamespaceFunctions(self, namespace):
-    functions = list(namespace.functions.values())
-    if namespace.compiler_options.get("generate_type_functions", False):
-      for type_ in namespace.types.values():
-        functions += list(type_.functions.values())
-    return functions
+  def _GenerateRegisterFunctions(self, namespace_name, function):
+    c = code.Code()
+    function_ifdefs = self._GetPlatformIfdefs(function)
+    if function_ifdefs is not None:
+      c.Append("#if %s" % function_ifdefs, indent_level=0)
+
+    function_name = JsFunctionNameToClassName(namespace_name, function.name)
+    c.Append("registry->RegisterFunction<%sFunction>();" % (
+        function_name))
+
+    if function_ifdefs is not None:
+      c.Append("#endif  // %s" % function_ifdefs, indent_level=0)
+    return c
 
   def _GenerateFunctionRegistryRegisterAll(self):
     c = code.Code()
@@ -101,19 +108,19 @@ class CppBundleGenerator(object):
 
       namespace_name = CapitalizeFirstLetter(namespace.name.replace(
           "experimental.", ""))
-      for function in self._GetNamespaceFunctions(namespace):
+      for function in namespace.functions.values():
         if function.nocompile:
           continue
-        function_ifdefs = self._GetPlatformIfdefs(function)
-        if function_ifdefs is not None:
-          c.Append("#if %s" % function_ifdefs, indent_level=0)
+        c.Concat(self._GenerateRegisterFunctions(namespace.name, function))
 
-        function_name = JsFunctionNameToClassName(namespace.name, function.name)
-        c.Append("registry->RegisterFunction<%sFunction>();" % (
-            function_name))
-
-        if function_ifdefs is not None:
-          c.Append("#endif  // %s" % function_ifdefs, indent_level=0)
+      for type_ in namespace.types.values():
+        for function in type_.functions.values():
+          if function.nocompile:
+            continue
+          namespace_types_name = JsFunctionNameToClassName(
+                namespace.name, type_.name)
+          c.Concat(self._GenerateRegisterFunctions(namespace_types_name,
+                                                   function))
 
       if namespace_ifdefs is not None:
         c.Append("#endif  // %s" % namespace_ifdefs, indent_level=0)
