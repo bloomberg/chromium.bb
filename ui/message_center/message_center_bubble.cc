@@ -455,6 +455,10 @@ void MessageCenterBubble::InitializeContents(
   set_bubble_view(new_bubble_view);
   contents_view_ = new MessageCenterContentsView(this, list_delegate());
   bubble_view()->AddChildView(contents_view_);
+  // Resize the content of the bubble view to the given bubble size. This is
+  // necessary in case of the bubble border forcing a bigger size then the
+  // |new_bubble_view| actually wants. See crbug.com/169390.
+  bubble_view()->Layout();
   UpdateBubbleView();
   contents_view_->FocusContents();
 }
