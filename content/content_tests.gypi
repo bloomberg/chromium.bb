@@ -382,6 +382,7 @@
         'renderer/paint_aggregator_unittest.cc',
         'renderer/pepper/pepper_broker_impl_unittest.cc',
         'renderer/render_thread_impl_unittest.cc',
+        'renderer/render_view_impl_unittest.cc',
         'renderer/v8_value_converter_impl_unittest.cc',
         'test/gpu/gpu_test_config_unittest.cc',
         'test/gpu/gpu_test_expectations_parser_unittest.cc',

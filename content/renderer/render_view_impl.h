@@ -5,7 +5,11 @@
 #ifndef CONTENT_RENDERER_RENDER_VIEW_IMPL_H_
 #define CONTENT_RENDERER_RENDER_VIEW_IMPL_H_
 
+#include <deque>
+#include <map>
 #include <set>
+#include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
@@ -863,6 +867,8 @@ class CONTENT_EXPORT RenderViewImpl
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, SetHistoryLengthAndPrune);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, ZoomLimit);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, NavigateFrame);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
+                           ShouldUpdateSelectionTextFromContextMenuParams);
 
   typedef std::map<GURL, double> HostZoomLevels;
 
@@ -1186,6 +1192,14 @@ class CONTENT_EXPORT RenderViewImpl
                      const WebKit::WebRect& selection_rect,
                      bool final_status_update);
 
+  // Returns whether |params.selection_text| should be synchronized to the
+  // browser before bringing up the context menu. Static for testing.
+  static bool ShouldUpdateSelectionTextFromContextMenuParams(
+      const string16& selection_text,
+      size_t selection_text_offset,
+      const ui::Range& selection_range,
+      const ContextMenuParams& params);
+
   // Starts nav_state_sync_timer_ if it isn't already running.
   void StartNavStateSyncTimerIfNecessary();
 
@@ -1352,9 +1366,16 @@ class CONTENT_EXPORT RenderViewImpl
   // The next target URL we want to send to the browser.
   GURL pending_target_url_;
 
-  // The text selection the last time DidChangeSelection got called.
+  // The text selection the last time DidChangeSelection got called. May contain
+  // additional characters before and after the selected text, for IMEs. The
+  // portion of this string that is the actual selected text starts at index
+  // |selection_range_.GetMin() - selection_text_offset_| and has length
+  // |selection_range_.length()|.
   string16 selection_text_;
+  // The offset corresponding to the start of |selection_text_| in the document.
   size_t selection_text_offset_;
+  // Range over the document corresponding to the actual selected text (which
+  // could correspond to a substring of |selection_text_|; see above).
   ui::Range selection_range_;
 
   // External context menu requests we're waiting for. "Internal"

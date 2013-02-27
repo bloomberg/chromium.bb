@@ -185,7 +185,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWindowFeatures.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/default/WebRenderTheme.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/default/WebRenderTheme.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
@@ -2313,14 +2312,10 @@ void RenderViewImpl::showContextMenu(
   // selection. If that's the case, update the render view's state just prior
   // to showing the context menu.
   // TODO(asvitkine): http://crbug.com/152432
-  string16 selection_text;
-  if (!selection_text_.empty() && !selection_range_.is_empty()) {
-    const int start = selection_range_.GetMin() - selection_text_offset_;
-    const size_t length = selection_range_.length();
-    if (start >= 0 && start + length <= selection_text_.length())
-      selection_text = selection_text_.substr(start, length);
-  }
-  if (params.selection_text != selection_text) {
+  if (ShouldUpdateSelectionTextFromContextMenuParams(selection_text_,
+                                                     selection_text_offset_,
+                                                     selection_range_,
+                                                     params)) {
     selection_text_ = params.selection_text;
     // TODO(asvitkine): Text offset and range is not available in this case.
     selection_text_offset_ = 0;
@@ -4264,6 +4259,26 @@ void RenderViewImpl::SendFindReply(int request_id,
                                   selection_rect,
                                   ordinal,
                                   final_status_update));
+}
+
+// static
+bool RenderViewImpl::ShouldUpdateSelectionTextFromContextMenuParams(
+    const string16& selection_text,
+    size_t selection_text_offset,
+    const ui::Range& selection_range,
+    const ContextMenuParams& params) {
+  string16 trimmed_selection_text;
+  if (!selection_text.empty() && !selection_range.is_empty()) {
+    const int start = selection_range.GetMin() - selection_text_offset;
+    const size_t length = selection_range.length();
+    if (start >= 0 && start + length <= selection_text.length()) {
+      TrimWhitespace(selection_text.substr(start, length), TRIM_ALL,
+                     &trimmed_selection_text);
+    }
+  }
+  string16 trimmed_params_text;
+  TrimWhitespace(params.selection_text, TRIM_ALL, &trimmed_params_text);
+  return trimmed_params_text != trimmed_selection_text;
 }
 
 void RenderViewImpl::reportFindInPageMatchCount(int request_id,
