@@ -93,9 +93,11 @@ int tc_set_new_mode(int mode);
 
 namespace content {
 extern int GpuMain(const content::MainFunctionParams&);
+#if defined(ENABLE_PLUGINS)
 extern int PluginMain(const content::MainFunctionParams&);
 extern int PpapiPluginMain(const MainFunctionParams&);
 extern int PpapiBrokerMain(const MainFunctionParams&);
+#endif
 extern int RendererMain(const content::MainFunctionParams&);
 extern int UtilityMain(const MainFunctionParams&);
 extern int WorkerMain(const MainFunctionParams&);
@@ -354,7 +356,9 @@ int RunZygote(const MainFunctionParams& main_function_params,
   static const MainFunction kMainFunctions[] = {
     { switches::kRendererProcess,    RendererMain },
     { switches::kWorkerProcess,      WorkerMain },
+#if defined(ENABLE_PLUGINS)
     { switches::kPpapiPluginProcess, PpapiPluginMain },
+#endif
     { switches::kUtilityProcess,     UtilityMain },
   };
 

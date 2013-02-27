@@ -275,9 +275,10 @@ static void PreSandboxInit() {
   // pre-sandbox init, but more likely this is just a build configuration error.
   #error Which SSL library are you using?
 #endif
-
+#if defined(ENABLE_PLUGINS)
   // Ensure access to the Pepper plugins before the sandbox is turned on.
   PepperPluginRegistry::PreloadModules();
+#endif
 }
 
 #if !defined(CHROMIUM_SELINUX)
