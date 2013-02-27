@@ -25,16 +25,21 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/theme_resources.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/sys_color_change_listener.h"
 
+using content::UserMetricsAction;
+
 namespace {
+
 const char* GetInstantPrefName(Profile* profile) {
   return chrome::search::IsInstantExtendedAPIEnabled(profile) ?
       prefs::kInstantExtendedEnabled : prefs::kInstantEnabled;
 }
-}
+
+}  // namespace
 
 namespace chrome {
 
@@ -133,6 +138,7 @@ bool BrowserInstantController::MaybeSwapInInstantNTPContents(
     // inserting instant_ntp into the tabstrip and will take ownership.
     ignore_result(instant_ntp.release());
   }
+  content::RecordAction(UserMetricsAction("InstantExtended.ShowNTP"));
   return true;
 }
 
