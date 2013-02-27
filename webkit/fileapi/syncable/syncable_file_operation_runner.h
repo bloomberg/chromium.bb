@@ -18,8 +18,10 @@
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace fileapi {
-
 class FileSystemURL;
+}
+
+namespace sync_file_system {
 
 // This class must run only on IO thread.
 // Owned by LocalFileSyncContext.
@@ -40,7 +42,7 @@ class WEBKIT_STORAGE_EXPORT SyncableFileOperationRunner
 
    protected:
     // This is never called after Run() or Cancel() is called.
-    virtual const std::vector<FileSystemURL>& target_paths() const = 0;
+    virtual const std::vector<fileapi::FileSystemURL>& target_paths() const = 0;
 
    private:
     friend class SyncableFileOperationRunner;
@@ -56,8 +58,8 @@ class WEBKIT_STORAGE_EXPORT SyncableFileOperationRunner
   virtual ~SyncableFileOperationRunner();
 
   // LocalFileSyncStatus::Observer overrides.
-  virtual void OnSyncEnabled(const FileSystemURL& url) OVERRIDE;
-  virtual void OnWriteEnabled(const FileSystemURL& url) OVERRIDE;
+  virtual void OnSyncEnabled(const fileapi::FileSystemURL& url) OVERRIDE;
+  virtual void OnWriteEnabled(const fileapi::FileSystemURL& url) OVERRIDE;
 
   // Runs the given |task| if no sync operation is running on any of
   // its target_paths(). This also runs pending tasks that have become
@@ -72,7 +74,8 @@ class WEBKIT_STORAGE_EXPORT SyncableFileOperationRunner
 
   // Called when an operation is completed. This will make |target_paths|
   // writable and may start a next runnable task.
-  void OnOperationCompleted(const std::vector<FileSystemURL>& target_paths);
+  void OnOperationCompleted(
+      const std::vector<fileapi::FileSystemURL>& target_paths);
 
   LocalFileSyncStatus* sync_status() const { return sync_status_; }
 
@@ -97,6 +100,6 @@ class WEBKIT_STORAGE_EXPORT SyncableFileOperationRunner
   DISALLOW_COPY_AND_ASSIGN(SyncableFileOperationRunner);
 };
 
-}  // namespace fileapi
+}  // namespace sync_file_system
 
 #endif  // WEBKIT_FILEAPI_SYNCABLE_SYNCABLE_FILE_OPERATION_RUNNER_H_

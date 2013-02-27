@@ -4,7 +4,7 @@
 
 #include "webkit/fileapi/syncable/mock_sync_status_observer.h"
 
-namespace fileapi {
+namespace sync_file_system {
 
 MockSyncStatusObserver::MockSyncStatusObserver() {
 }
@@ -12,4 +12,4 @@ MockSyncStatusObserver::MockSyncStatusObserver() {
 MockSyncStatusObserver::~MockSyncStatusObserver() {
 }
 
-}  // namespace fileapi
+}  // namespace sync_file_system

@@ -13,7 +13,10 @@
 #include "webkit/fileapi/syncable/local_file_sync_context.h"
 #include "webkit/fileapi/syncable/syncable_file_operation_runner.h"
 
-namespace fileapi {
+using fileapi::FileSystemURL;
+using fileapi::LocalFileSystemOperation;
+
+namespace sync_file_system {
 
 namespace {
 
@@ -340,8 +343,8 @@ void SyncableFileSystemOperation::CreateSnapshotFile(
 }
 
 SyncableFileSystemOperation::SyncableFileSystemOperation(
-    FileSystemContext* file_system_context,
-    FileSystemOperation* file_system_operation) {
+    fileapi::FileSystemContext* file_system_context,
+    fileapi::FileSystemOperation* file_system_operation) {
   DCHECK(file_system_context);
   DCHECK(file_system_operation);
   file_system_operation_ = file_system_operation->AsLocalFileSystemOperation();
@@ -398,4 +401,4 @@ void SyncableFileSystemOperation::Destruct() {
   delete this;
 }
 
-}  // namespace fileapi
+}  // namespace sync_file_system

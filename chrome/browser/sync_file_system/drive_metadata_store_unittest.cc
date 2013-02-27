@@ -31,8 +31,7 @@ const char* const kServiceName = DriveFileSyncService::kServiceName;
 typedef DriveMetadataStore::ResourceIDMap ResourceIDMap;
 
 fileapi::FileSystemURL URL(const base::FilePath& path) {
-  return fileapi::CreateSyncableFileSystemURL(
-      GURL(kOrigin), kServiceName, path);
+  return CreateSyncableFileSystemURL(GURL(kOrigin), kServiceName, path);
 }
 
 std::string GetResourceID(const ResourceIDMap& sync_origins,
@@ -72,11 +71,11 @@ class DriveMetadataStoreTest : public testing::Test {
     file_task_runner_ = file_thread_->message_loop_proxy();
 
     ASSERT_TRUE(base_dir_.CreateUniqueTempDir());
-    ASSERT_TRUE(fileapi::RegisterSyncableFileSystem(kServiceName));
+    ASSERT_TRUE(RegisterSyncableFileSystem(kServiceName));
   }
 
   virtual void TearDown() OVERRIDE {
-    EXPECT_TRUE(fileapi::RevokeSyncableFileSystem(kServiceName));
+    EXPECT_TRUE(RevokeSyncableFileSystem(kServiceName));
 
     DropDatabase();
     file_thread_->Stop();
@@ -416,27 +415,27 @@ TEST_F(DriveMetadataStoreTest, RemoveOrigin) {
 
   EXPECT_EQ(SYNC_STATUS_OK,
             UpdateEntry(
-                fileapi::CreateSyncableFileSystemURL(
+                CreateSyncableFileSystemURL(
                     kOrigin1, kServiceName, base::FilePath(FPL("guf"))),
                 CreateMetadata("foo", "spam", false, false)));
   EXPECT_EQ(SYNC_STATUS_OK,
             UpdateEntry(
-                fileapi::CreateSyncableFileSystemURL(
+                CreateSyncableFileSystemURL(
                     kOrigin2, kServiceName, base::FilePath(FPL("mof"))),
                 CreateMetadata("bar", "ham", false, false)));
   EXPECT_EQ(SYNC_STATUS_OK,
             UpdateEntry(
-                fileapi::CreateSyncableFileSystemURL(
+                CreateSyncableFileSystemURL(
                     kOrigin3, kServiceName, base::FilePath(FPL("waf"))),
                 CreateMetadata("baz", "egg", false, false)));
   EXPECT_EQ(SYNC_STATUS_OK,
             UpdateEntry(
-                fileapi::CreateSyncableFileSystemURL(
+                CreateSyncableFileSystemURL(
                     kOrigin4, kServiceName, base::FilePath(FPL("cue"))),
                 CreateMetadata("lat", "fork", false, false)));
   EXPECT_EQ(SYNC_STATUS_OK,
             UpdateEntry(
-                fileapi::CreateSyncableFileSystemURL(
+                CreateSyncableFileSystemURL(
                     kOrigin1, kServiceName, base::FilePath(FPL("tic"))),
                 CreateMetadata("zav", "sause", false, false)));
 

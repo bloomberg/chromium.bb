@@ -19,11 +19,13 @@
 #include "webkit/fileapi/syncable/syncable_file_system_operation.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
+using fileapi::FileSystemOperation;
+using fileapi::FileSystemURL;
 using webkit_blob::MockBlobURLRequestContext;
 using webkit_blob::ScopedTextBlob;
 using base::PlatformFileError;
 
-namespace fileapi {
+namespace sync_file_system {
 
 namespace {
 const std::string kServiceName = "test";
@@ -56,7 +58,7 @@ class SyncableFileOperationRunnerTest : public testing::Test {
     file_system_.SetUp();
     sync_context_ = new LocalFileSyncContext(base::MessageLoopProxy::current(),
                                              base::MessageLoopProxy::current());
-    ASSERT_EQ(sync_file_system::SYNC_STATUS_OK,
+    ASSERT_EQ(SYNC_STATUS_OK,
               file_system_.MaybeInitializeFileSystemContext(sync_context_));
 
     ASSERT_EQ(base::PLATFORM_FILE_OK, file_system_.OpenFileSystem());
@@ -319,4 +321,4 @@ TEST_F(SyncableFileOperationRunnerTest, QueueAndCancel) {
   EXPECT_EQ(2, callback_count_);
 }
 
-}  // namespace fileapi
+}  // namespace sync_file_system

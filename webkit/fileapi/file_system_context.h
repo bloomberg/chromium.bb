@@ -28,6 +28,11 @@ class QuotaManagerProxy;
 class SpecialStoragePolicy;
 }
 
+namespace sync_file_system {
+class LocalFileChangeTracker;
+class LocalFileSyncContext;
+}
+
 namespace webkit_blob {
 class BlobURLRequestJobTest;
 class FileStreamReader;
@@ -46,8 +51,6 @@ class FileSystemQuotaUtil;
 class FileSystemTaskRunners;
 class FileSystemURL;
 class IsolatedMountPointProvider;
-class LocalFileChangeTracker;
-class LocalFileSyncContext;
 class MountPoints;
 class SandboxMountPointProvider;
 
@@ -182,11 +185,16 @@ class WEBKIT_STORAGE_EXPORT FileSystemContext
 
   FileSystemTaskRunners* task_runners() { return task_runners_.get(); }
 
-  LocalFileChangeTracker* change_tracker() { return change_tracker_.get(); }
-  void SetLocalFileChangeTracker(scoped_ptr<LocalFileChangeTracker> tracker);
+  sync_file_system::LocalFileChangeTracker* change_tracker() {
+    return change_tracker_.get();
+  }
+  void SetLocalFileChangeTracker(
+      scoped_ptr<sync_file_system::LocalFileChangeTracker> tracker);
 
-  LocalFileSyncContext* sync_context() { return sync_context_.get(); }
-  void set_sync_context(LocalFileSyncContext* sync_context);
+  sync_file_system::LocalFileSyncContext* sync_context() {
+    return sync_context_.get();
+  }
+  void set_sync_context(sync_file_system::LocalFileSyncContext* sync_context);
 
   const base::FilePath& partition_path() const { return partition_path_; }
 
@@ -203,8 +211,8 @@ class WEBKIT_STORAGE_EXPORT FileSystemContext
   // These classes know the target filesystem (i.e. sandbox filesystem)
   // supports synchronous FileUtil.
   friend class LocalFileSystemOperation;
-  friend class LocalFileChangeTracker;
-  friend class LocalFileSyncContext;
+  friend class sync_file_system::LocalFileChangeTracker;
+  friend class sync_file_system::LocalFileSyncContext;
 
   // Friended for GetFileUtil.
   // Test classes that rely on synchronous FileUtils.
@@ -262,8 +270,8 @@ class WEBKIT_STORAGE_EXPORT FileSystemContext
   const base::FilePath partition_path_;
 
   // For syncable file systems.
-  scoped_ptr<LocalFileChangeTracker> change_tracker_;
-  scoped_refptr<LocalFileSyncContext> sync_context_;
+  scoped_ptr<sync_file_system::LocalFileChangeTracker> change_tracker_;
+  scoped_refptr<sync_file_system::LocalFileSyncContext> sync_context_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(FileSystemContext);
 };

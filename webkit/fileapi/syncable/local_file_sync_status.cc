@@ -6,7 +6,10 @@
 
 #include "base/logging.h"
 
-namespace fileapi {
+using fileapi::FileSystemURL;
+using fileapi::FileSystemURLSet;
+
+namespace sync_file_system {
 
 LocalFileSyncStatus::LocalFileSyncStatus() {}
 
@@ -91,4 +94,4 @@ bool LocalFileSyncStatus::IsChildOrParentSyncing(
   return false;
 }
 
-}  // namespace fileapi
+}  // namespace sync_file_system

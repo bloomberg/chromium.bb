@@ -27,7 +27,6 @@
 
 using fileapi::FileSystemURL;
 using fileapi::FileSystemURLSet;
-using fileapi::MockSyncStatusObserver;
 using ::testing::AnyNumber;
 using ::testing::AtLeast;
 using ::testing::InSequence;
@@ -120,7 +119,7 @@ class SyncFileSystemServiceTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     thread_helper_.SetUp();
 
-    file_system_.reset(new fileapi::CannedSyncableFileSystem(
+    file_system_.reset(new CannedSyncableFileSystem(
         GURL(kOrigin), kServiceName,
         thread_helper_.io_task_runner(),
         thread_helper_.file_task_runner()));
@@ -149,7 +148,7 @@ class SyncFileSystemServiceTest : public testing::Test {
     sync_service_->Shutdown();
 
     file_system_->TearDown();
-    fileapi::RevokeSyncableFileSystem(kServiceName);
+    RevokeSyncableFileSystem(kServiceName);
     thread_helper_.TearDown();
   }
 
@@ -237,7 +236,7 @@ class SyncFileSystemServiceTest : public testing::Test {
 
   MultiThreadTestHelper thread_helper_;
   TestingProfile profile_;
-  scoped_ptr<fileapi::CannedSyncableFileSystem> file_system_;
+  scoped_ptr<CannedSyncableFileSystem> file_system_;
 
   // Their ownerships are transferred to SyncFileSystemService.
   LocalFileSyncService* local_service_;
@@ -399,7 +398,7 @@ TEST_F(SyncFileSystemServiceTest, SimpleSyncFlowWithFileBusy) {
   // Start a local operation on the same file (to make it BUSY).
   base::WaitableEvent event(false, false);
   thread_helper_.io_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&fileapi::CannedSyncableFileSystem::DoCreateFile,
+      FROM_HERE, base::Bind(&CannedSyncableFileSystem::DoCreateFile,
                             base::Unretained(file_system_.get()),
                             kFile, base::Bind(&VerifyFileError, &event)));
 

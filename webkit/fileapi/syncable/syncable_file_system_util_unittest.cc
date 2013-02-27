@@ -12,7 +12,11 @@
 #include "webkit/fileapi/syncable/canned_syncable_file_system.h"
 #include "webkit/fileapi/syncable/local_file_sync_context.h"
 
-namespace fileapi {
+using fileapi::ExternalMountPoints;
+using fileapi::FileSystemURL;
+using fileapi::ScopedExternalFileSystem;
+
+namespace sync_file_system {
 
 namespace {
 
@@ -45,7 +49,7 @@ TEST(SyncableFileSystemUtilTest, GetSyncableFileSystemRootURI) {
 
 TEST(SyncableFileSystemUtilTest, CreateSyncableFileSystemURL) {
   ScopedExternalFileSystem scoped_fs(
-      kServiceName, kFileSystemTypeSyncable, base::FilePath());
+      kServiceName, fileapi::kFileSystemTypeSyncable, base::FilePath());
 
   const base::FilePath path(kPath);
   const FileSystemURL expected_url =
@@ -60,13 +64,13 @@ TEST(SyncableFileSystemUtilTest, CreateSyncableFileSystemURL) {
 TEST(SyncableFileSystemUtilTest,
        SerializeAndDesirializeSyncableFileSystemURL) {
   ScopedExternalFileSystem scoped_fs(
-      kServiceName, kFileSystemTypeSyncable, base::FilePath());
+      kServiceName, fileapi::kFileSystemTypeSyncable, base::FilePath());
 
   const std::string expected_url_str = kSyncableFileSystemRootURI +
       CreateNormalizedFilePath(kPath).AsUTF8Unsafe();
   const FileSystemURL expected_url = CreateFileSystemURL(expected_url_str);
-  const FileSystemURL url =
-      CreateSyncableFileSystemURL(GURL(kOrigin), kServiceName, base::FilePath(kPath));
+  const FileSystemURL url = CreateSyncableFileSystemURL(
+      GURL(kOrigin), kServiceName, base::FilePath(kPath));
 
   std::string serialized;
   EXPECT_TRUE(SerializeSyncableFileSystemURL(url, &serialized));
@@ -81,7 +85,7 @@ TEST(SyncableFileSystemUtilTest,
 TEST(SyncableFileSystemUtilTest,
      FailInSerializingAndDeserializingSyncableFileSystemURL) {
   ScopedExternalFileSystem scoped_fs(
-      kServiceName, kFileSystemTypeSyncable, base::FilePath());
+      kServiceName, fileapi::kFileSystemTypeSyncable, base::FilePath());
 
   const base::FilePath normalized_path = CreateNormalizedFilePath(kPath);
   const std::string non_registered_url =
@@ -142,4 +146,4 @@ TEST(SyncableFileSystemUtilTest, SerializeBeforeOpenFileSystem) {
   MessageLoop::current()->RunUntilIdle();
 }
 
-}  // namespace fileapi
+}  // namespace sync_file_system

@@ -24,20 +24,20 @@ class Profile;
 
 namespace fileapi {
 class FileSystemContext;
-class LocalFileSyncContext;
 }
 
 namespace sync_file_system {
 
 class FileChange;
 class LocalChangeProcessor;
+class LocalFileSyncContext;
 struct LocalFileSyncInfo;
 
 // Maintains local file change tracker and sync status.
 // Owned by SyncFileSystemService (which is a per-profile object).
 class LocalFileSyncService
     : public RemoteChangeProcessor,
-      public fileapi::LocalOriginChangeObserver,
+      public LocalOriginChangeObserver,
       public base::SupportsWeakPtr<LocalFileSyncService> {
  public:
   class Observer {
@@ -191,7 +191,7 @@ class LocalFileSyncService
 
   Profile* profile_;
 
-  scoped_refptr<fileapi::LocalFileSyncContext> sync_context_;
+  scoped_refptr<LocalFileSyncContext> sync_context_;
 
   // Origin to context map. (Assuming that as far as we're in the same
   // profile single origin wouldn't belong to multiple FileSystemContexts.)

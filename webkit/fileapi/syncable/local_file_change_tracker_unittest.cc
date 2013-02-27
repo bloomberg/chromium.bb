@@ -23,12 +23,13 @@
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
 #include "webkit/quota/quota_manager.h"
 
-using sync_file_system::FileChange;
-using sync_file_system::FileChangeList;
+using fileapi::FileSystemContext;
+using fileapi::FileSystemURL;
+using fileapi::FileSystemURLSet;
 using webkit_blob::MockBlobURLRequestContext;
 using webkit_blob::ScopedTextBlob;
 
-namespace fileapi {
+namespace sync_file_system {
 
 class LocalFileChangeTrackerTest : public testing::Test {
  public:
@@ -536,4 +537,4 @@ TEST_F(LocalFileChangeTrackerTest, NextChangedURLsWithRecursiveRemove) {
               URL(kPath2) == urls_to_process[1]);
 }
 
-}  // namespace fileapi
+}  // namespace sync_file_system

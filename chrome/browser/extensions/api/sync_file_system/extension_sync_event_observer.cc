@@ -143,8 +143,8 @@ void ExtensionSyncEventObserver::OnFileSynced(
   std::string mount_type = fileapi::GetFileSystemTypeString(url.mount_type());
   std::string file_system_name = fileapi::GetFileSystemName(url.origin(),
                                                             url.type());
-  GURL root_url = fileapi::GetSyncableFileSystemRootURI(url.origin(),
-                                                        url.filesystem_id());
+  GURL root_url = sync_file_system::GetSyncableFileSystemRootURI(
+      url.origin(), url.filesystem_id());
   base::FilePath file_path = url.path();
 
   // Arguments must all be basic types.

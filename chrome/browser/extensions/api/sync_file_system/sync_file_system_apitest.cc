@@ -23,6 +23,7 @@
 
 using ::testing::_;
 using ::testing::Return;
+using fileapi::FileSystemURL;
 using sync_file_system::MockRemoteFileSyncService;
 using sync_file_system::RemoteFileSyncService;
 using sync_file_system::SyncFileSystemServiceFactory;
@@ -83,7 +84,7 @@ ACTION_P5(ReturnWithFakeFileAddedStatus,
           sync_direction,
           sync_file_status,
           sync_action_taken) {
-  fileapi::FileSystemURL mock_url = fileapi::CreateSyncableFileSystemURL(
+  FileSystemURL mock_url = sync_file_system::CreateSyncableFileSystemURL(
       *origin,
       "drive",
       base::FilePath(FILE_PATH_LITERAL("foo.txt")));

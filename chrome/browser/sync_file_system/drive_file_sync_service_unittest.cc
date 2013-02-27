@@ -225,7 +225,7 @@ class DriveFileSyncServiceTest : public testing::Test {
     AddTestExtension(extension_service, FPL("example1"));
     AddTestExtension(extension_service, FPL("example2"));
 
-    ASSERT_TRUE(fileapi::RegisterSyncableFileSystem(kServiceName));
+    ASSERT_TRUE(RegisterSyncableFileSystem(kServiceName));
 
     mock_drive_service_ = new StrictMock<google_apis::MockDriveService>;
 
@@ -270,7 +270,7 @@ class DriveFileSyncServiceTest : public testing::Test {
     sync_client_.reset();
     mock_drive_service_ = NULL;
 
-    EXPECT_TRUE(fileapi::RevokeSyncableFileSystem(kServiceName));
+    EXPECT_TRUE(RevokeSyncableFileSystem(kServiceName));
 
     profile_.reset();
     message_loop_.RunUntilIdle();
@@ -382,7 +382,7 @@ class DriveFileSyncServiceTest : public testing::Test {
 
   fileapi::FileSystemURL CreateURL(const GURL& origin,
                                    const base::FilePath::StringType& path) {
-    return fileapi::CreateSyncableFileSystemURL(
+    return CreateSyncableFileSystemURL(
         origin, kServiceName, base::FilePath(path));
   }
 
@@ -749,7 +749,7 @@ TEST_F(DriveFileSyncServiceTest, UnregisterOrigin) {
 }
 
 TEST_F(DriveFileSyncServiceTest, ResolveLocalSyncOperationType) {
-  const fileapi::FileSystemURL url = fileapi::CreateSyncableFileSystemURL(
+  const fileapi::FileSystemURL url = CreateSyncableFileSystemURL(
       GURL("chrome-extension://example/"),
       kServiceName,
       base::FilePath().AppendASCII("path/to/file"));

@@ -8,7 +8,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "webkit/fileapi/syncable/local_file_sync_status.h"
 
-namespace fileapi {
+namespace sync_file_system {
 
 class MockSyncStatusObserver : public LocalFileSyncStatus::Observer {
  public:
@@ -16,13 +16,13 @@ class MockSyncStatusObserver : public LocalFileSyncStatus::Observer {
   virtual ~MockSyncStatusObserver();
 
   // LocalFileSyncStatus::Observer overrides.
-  MOCK_METHOD1(OnSyncEnabled, void(const FileSystemURL& url));
-  MOCK_METHOD1(OnWriteEnabled, void(const FileSystemURL& url));
+  MOCK_METHOD1(OnSyncEnabled, void(const fileapi::FileSystemURL& url));
+  MOCK_METHOD1(OnWriteEnabled, void(const fileapi::FileSystemURL& url));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSyncStatusObserver);
 };
 
-}  // namespace fileapi
+}  // namespace sync_file_system
 
 #endif  // WEBKIT_FILEAPI_SYNCABLE_MOCK_SYNC_STATUS_OBSERVER_H_

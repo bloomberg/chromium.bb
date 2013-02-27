@@ -26,15 +26,18 @@ class SequencedTaskRunner;
 }
 
 namespace fileapi {
-
 class FileSystemContext;
+class FileSystemURL;
+}
+
+namespace sync_file_system {
 
 // Tracks local file changes for cloud-backed file systems.
 // All methods must be called on the file_task_runner given to the constructor.
 // Owned by FileSystemContext.
 class WEBKIT_STORAGE_EXPORT LocalFileChangeTracker
-    : public FileUpdateObserver,
-      public FileChangeObserver {
+    : public fileapi::FileUpdateObserver,
+      public fileapi::FileChangeObserver {
  public:
   // |file_task_runner| must be the one where the observee file operations run.
   // (So that we can make sure DB operations are done before actual update
@@ -44,37 +47,38 @@ class WEBKIT_STORAGE_EXPORT LocalFileChangeTracker
   virtual ~LocalFileChangeTracker();
 
   // FileUpdateObserver overrides.
-  virtual void OnStartUpdate(const FileSystemURL& url) OVERRIDE;
-  virtual void OnUpdate(const FileSystemURL& url, int64 delta) OVERRIDE {}
-  virtual void OnEndUpdate(const FileSystemURL& url) OVERRIDE;
+  virtual void OnStartUpdate(const fileapi::FileSystemURL& url) OVERRIDE;
+  virtual void OnUpdate(
+      const fileapi::FileSystemURL& url, int64 delta) OVERRIDE {}
+  virtual void OnEndUpdate(const fileapi::FileSystemURL& url) OVERRIDE;
 
   // FileChangeObserver overrides.
-  virtual void OnCreateFile(const FileSystemURL& url) OVERRIDE;
-  virtual void OnCreateFileFrom(const FileSystemURL& url,
-                                const FileSystemURL& src) OVERRIDE;
-  virtual void OnRemoveFile(const FileSystemURL& url) OVERRIDE;
-  virtual void OnModifyFile(const FileSystemURL& url) OVERRIDE;
-  virtual void OnCreateDirectory(const FileSystemURL& url) OVERRIDE;
-  virtual void OnRemoveDirectory(const FileSystemURL& url) OVERRIDE;
+  virtual void OnCreateFile(const fileapi::FileSystemURL& url) OVERRIDE;
+  virtual void OnCreateFileFrom(const fileapi::FileSystemURL& url,
+                                const fileapi::FileSystemURL& src) OVERRIDE;
+  virtual void OnRemoveFile(const fileapi::FileSystemURL& url) OVERRIDE;
+  virtual void OnModifyFile(const fileapi::FileSystemURL& url) OVERRIDE;
+  virtual void OnCreateDirectory(const fileapi::FileSystemURL& url) OVERRIDE;
+  virtual void OnRemoveDirectory(const fileapi::FileSystemURL& url) OVERRIDE;
 
   // Retrieves an array of |url| which have more than one pending changes.
   // If |max_urls| is non-zero (recommended in production code) this
   // returns URLs up to the number from the ones that have smallest
   // change_seq numbers (i.e. older changes).
-  void GetNextChangedURLs(std::deque<FileSystemURL>* urls, int max_urls);
+  void GetNextChangedURLs(std::deque<fileapi::FileSystemURL>* urls,
+                          int max_urls);
 
   // Returns all changes recorded for the given |url|.
   // This should be called after writing is disabled.
-  void GetChangesForURL(const FileSystemURL& url,
-                        sync_file_system::FileChangeList* changes);
+  void GetChangesForURL(const fileapi::FileSystemURL& url,
+                        FileChangeList* changes);
 
   // Clears the pending changes recorded in this tracker for |url|.
-  void ClearChangesForURL(const FileSystemURL& url);
+  void ClearChangesForURL(const fileapi::FileSystemURL& url);
 
   // Called by FileSyncService at the startup time to restore last dirty changes
   // left after the last shutdown (if any).
-  sync_file_system::SyncStatusCode Initialize(
-      FileSystemContext* file_system_context);
+  SyncStatusCode Initialize(fileapi::FileSystemContext* file_system_context);
 
   // This method is (exceptionally) thread-safe.
   int64 num_changes() const {
@@ -94,32 +98,31 @@ class WEBKIT_STORAGE_EXPORT LocalFileChangeTracker
   struct ChangeInfo {
     ChangeInfo();
     ~ChangeInfo();
-    sync_file_system::FileChangeList change_list;
+    FileChangeList change_list;
     int64 change_seq;
   };
 
-  typedef std::map<FileSystemURL, ChangeInfo, FileSystemURL::Comparator>
-      FileChangeMap;
-  typedef std::map<int64, FileSystemURL> ChangeSeqMap;
+  typedef std::map<fileapi::FileSystemURL, ChangeInfo,
+      fileapi::FileSystemURL::Comparator>
+          FileChangeMap;
+  typedef std::map<int64, fileapi::FileSystemURL> ChangeSeqMap;
 
   // This does mostly same as calling GetNextChangedURLs with max_url=0
   // except that it returns urls in set rather than in deque.
   // Used only in testings.
-  void GetAllChangedURLs(FileSystemURLSet* urls);
+  void GetAllChangedURLs(fileapi::FileSystemURLSet* urls);
 
   // Used only in testings.
   void DropAllChanges();
 
   // Database related methods.
-  sync_file_system::SyncStatusCode MarkDirtyOnDatabase(
-      const FileSystemURL& url);
-  sync_file_system::SyncStatusCode ClearDirtyOnDatabase(
-      const FileSystemURL& url);
+  SyncStatusCode MarkDirtyOnDatabase(const fileapi::FileSystemURL& url);
+  SyncStatusCode ClearDirtyOnDatabase(const fileapi::FileSystemURL& url);
 
-  sync_file_system::SyncStatusCode CollectLastDirtyChanges(
-      FileSystemContext* file_system_context);
-  void RecordChange(const FileSystemURL& url,
-                    const sync_file_system::FileChange& change);
+  SyncStatusCode CollectLastDirtyChanges(
+      fileapi::FileSystemContext* file_system_context);
+  void RecordChange(const fileapi::FileSystemURL& url,
+                    const FileChange& change);
 
   bool initialized_;
 
@@ -142,6 +145,6 @@ class WEBKIT_STORAGE_EXPORT LocalFileChangeTracker
   DISALLOW_COPY_AND_ASSIGN(LocalFileChangeTracker);
 };
 
-}  // namespace fileapi
+}  // namespace sync_file_system
 
 #endif  // WEBKIT_FILEAPI_SYNCABLE_LOCAL_FILE_CHANGE_TRACKER_H_

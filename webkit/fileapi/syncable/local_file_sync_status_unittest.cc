@@ -8,7 +8,9 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace fileapi {
+using fileapi::FileSystemURL;
+
+namespace sync_file_system {
 
 namespace {
 
@@ -84,4 +86,4 @@ TEST(LocalFileSyncStatusTest, SyncingSimple) {
   EXPECT_TRUE(status.IsWritable(URL(kChild)));
 }
 
-}  // namespace fileapi
+}  // namespace sync_file_system

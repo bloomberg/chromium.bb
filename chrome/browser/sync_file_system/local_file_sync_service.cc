@@ -23,7 +23,6 @@
 
 using content::BrowserThread;
 using fileapi::FileSystemURL;
-using fileapi::LocalFileSyncContext;
 
 namespace sync_file_system {
 

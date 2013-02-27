@@ -11,7 +11,9 @@
 #include "base/stl_util.h"
 #include "webkit/fileapi/syncable/local_file_sync_status.h"
 
-namespace fileapi {
+using fileapi::FileSystemURL;
+
+namespace sync_file_system {
 
 // SyncableFileOperationRunner::Task -------------------------------------------
 
@@ -102,4 +104,4 @@ bool SyncableFileOperationRunner::ShouldStartMoreTasks() const {
   return num_inflight_tasks_ < max_inflight_tasks_;
 }
 
-}  // namespace fileapi
+}  // namespace sync_file_system

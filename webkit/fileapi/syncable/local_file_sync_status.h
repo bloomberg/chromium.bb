@@ -15,6 +15,10 @@
 #include "webkit/fileapi/file_system_url.h"
 
 namespace fileapi {
+class FileSystemURL;
+}
+
+namespace sync_file_system {
 
 // Represents local file sync status.
 // This class is supposed to run only on IO thread.
@@ -31,8 +35,8 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncStatus : public base::NonThreadSafe {
    public:
     Observer() {}
     virtual ~Observer() {}
-    virtual void OnSyncEnabled(const FileSystemURL& url) = 0;
-    virtual void OnWriteEnabled(const FileSystemURL& url) = 0;
+    virtual void OnSyncEnabled(const fileapi::FileSystemURL& url) = 0;
+    virtual void OnWriteEnabled(const fileapi::FileSystemURL& url) = 0;
    private:
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
@@ -42,48 +46,49 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncStatus : public base::NonThreadSafe {
 
   // Increment writing counter for |url|.
   // This should not be called if the |url| is not writable.
-  void StartWriting(const FileSystemURL& url);
+  void StartWriting(const fileapi::FileSystemURL& url);
 
   // Decrement writing counter for |url|.
-  void EndWriting(const FileSystemURL& url);
+  void EndWriting(const fileapi::FileSystemURL& url);
 
   // Start syncing for |url| and disable writing.
   // This should not be called if |url| is in syncing or in writing.
-  void StartSyncing(const FileSystemURL& url);
+  void StartSyncing(const fileapi::FileSystemURL& url);
 
   // Clears the syncing flag for |url| and enable writing.
-  void EndSyncing(const FileSystemURL& url);
+  void EndSyncing(const fileapi::FileSystemURL& url);
 
   // Returns true if the |url| or its parent or child is in writing.
-  bool IsWriting(const FileSystemURL& url) const;
+  bool IsWriting(const fileapi::FileSystemURL& url) const;
 
   // Returns true if the |url| is enabled for writing (i.e. not in syncing).
-  bool IsWritable(const FileSystemURL& url) const;
+  bool IsWritable(const fileapi::FileSystemURL& url) const;
 
   // Returns true if the |url| is enabled for syncing (i.e. neither in
   // syncing nor writing).
-  bool IsSyncable(const FileSystemURL& url) const;
+  bool IsSyncable(const fileapi::FileSystemURL& url) const;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
  private:
-  typedef std::map<FileSystemURL, int64, FileSystemURL::Comparator> URLCountMap;
+  typedef std::map<fileapi::FileSystemURL,int64,
+                   fileapi::FileSystemURL::Comparator> URLCountMap;
 
-  bool IsChildOrParentWriting(const FileSystemURL& url) const;
-  bool IsChildOrParentSyncing(const FileSystemURL& url) const;
+  bool IsChildOrParentWriting(const fileapi::FileSystemURL& url) const;
+  bool IsChildOrParentSyncing(const fileapi::FileSystemURL& url) const;
 
   // If this count is non-zero positive there're ongoing write operations.
   URLCountMap writing_;
 
   // If this flag is set sync process is running on the file.
-  FileSystemURLSet syncing_;
+  fileapi::FileSystemURLSet syncing_;
 
   ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalFileSyncStatus);
 };
 
-}  // namespace fileapi
+}  // namespace sync_file_system
 
 #endif  // WEBKIT_FILEAPI_SYNCABLE_LOCAL_FILE_SYNC_STATUS_H_

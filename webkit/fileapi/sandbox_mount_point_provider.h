@@ -29,6 +29,11 @@ namespace quota {
 class QuotaManagerProxy;
 }
 
+namespace sync_file_system {
+class CannedSyncableFileSystem;
+class SyncableFileSystemOperation;
+}
+
 namespace fileapi {
 
 class AsyncFileUtilAdapter;
@@ -167,9 +172,9 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
   friend class SandboxMountPointProviderOriginEnumeratorTest;
 
   // Temporarily allowing them to access enable_sync_directory_operation_
-  friend class CannedSyncableFileSystem;
   friend class ObfuscatedFileUtil;
-  friend class SyncableFileSystemOperation;
+  friend class sync_file_system::CannedSyncableFileSystem;
+  friend class sync_file_system::SyncableFileSystemOperation;
 
   // Returns a path to the usage cache file.
   base::FilePath GetUsageCachePathForOriginAndType(

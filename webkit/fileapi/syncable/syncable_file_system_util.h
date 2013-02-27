@@ -12,9 +12,12 @@
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace fileapi {
-
 class FileSystemContext;
+class FileSystemURL;
 class LocalFileSystemOperation;
+}
+
+namespace sync_file_system {
 
 // Registers a syncable filesystem with the given |service_name|.
 WEBKIT_STORAGE_EXPORT bool RegisterSyncableFileSystem(
@@ -37,7 +40,7 @@ WEBKIT_STORAGE_EXPORT GURL GetSyncableFileSystemRootURI(
 //   service_name: 'service_name',
 //   path: '/foo/bar',
 // returns 'filesystem:http://www.example.com/external/service_name/foo/bar'
-WEBKIT_STORAGE_EXPORT FileSystemURL CreateSyncableFileSystemURL(
+WEBKIT_STORAGE_EXPORT fileapi::FileSystemURL CreateSyncableFileSystemURL(
     const GURL& origin, const std::string& service_name,
     const base::FilePath& path);
 
@@ -57,7 +60,7 @@ WEBKIT_STORAGE_EXPORT FileSystemURL CreateSyncableFileSystemURL(
 // (on others)
 //   'filesystem:http://www.example.com/external/service_name/foo/bar'
 WEBKIT_STORAGE_EXPORT bool SerializeSyncableFileSystemURL(
-    const FileSystemURL& url, std::string* serialized_url);
+    const fileapi::FileSystemURL& url, std::string* serialized_url);
 
 // Deserializes a serialized FileSystem URL string |serialized_url| and sets the
 // deserialized value to |url|. If the reconstructed object is invalid or does
@@ -70,7 +73,7 @@ WEBKIT_STORAGE_EXPORT bool SerializeSyncableFileSystemURL(
 //
 // See the comment of SerializeSyncableFileSystemURL() for more details.
 WEBKIT_STORAGE_EXPORT bool DeserializeSyncableFileSystemURL(
-    const std::string& serialized_url, FileSystemURL* url);
+    const std::string& serialized_url, fileapi::FileSystemURL* url);
 
 
 // Returns a new FileSystemOperation that can be used to apply changes
@@ -79,9 +82,10 @@ WEBKIT_STORAGE_EXPORT bool DeserializeSyncableFileSystemURL(
 // * notifies the regular sandboxed quota observer
 // therefore quota will be updated appropriately without bothering the
 // change tracker.
-WEBKIT_STORAGE_EXPORT LocalFileSystemOperation*
-CreateFileSystemOperationForSync(FileSystemContext* file_system_context);
+WEBKIT_STORAGE_EXPORT fileapi::LocalFileSystemOperation*
+    CreateFileSystemOperationForSync(
+        fileapi::FileSystemContext* file_system_context);
 
-}  // namespace fileapi
+}  // namespace sync_file_system
 
 #endif  // WEBKIT_FILEAPI_SYNCABLE_SYNCABLE_FILE_SYSTEM_UTIL_H_

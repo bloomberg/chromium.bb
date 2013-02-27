@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "googleurl/src/gurl.h"
 
-namespace fileapi {
+namespace sync_file_system {
 
 class LocalOriginChangeObserver {
  public:
@@ -23,6 +23,6 @@ class LocalOriginChangeObserver {
   DISALLOW_COPY_AND_ASSIGN(LocalOriginChangeObserver);
 };
 
-}  // namespace fileapi
+}  // namespace sync_file_system
 
 #endif  // WEBKIT_FILEAPI_SYNCABLE_LOCAL_ORIGIN_CHANGE_OBSERVER_H_

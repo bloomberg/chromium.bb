@@ -28,9 +28,6 @@
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
 using fileapi::FileSystemURL;
-using fileapi::LocalFileSyncStatus;
-using fileapi::MockSyncStatusObserver;
-
 using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::InvokeWithoutArgs;
@@ -108,7 +105,7 @@ class LocalFileSyncServiceTest
 
     thread_helper_.SetUp();
 
-    file_system_.reset(new fileapi::CannedSyncableFileSystem(
+    file_system_.reset(new CannedSyncableFileSystem(
         GURL(kOrigin), kServiceName,
         thread_helper_.io_task_runner(),
         thread_helper_.file_task_runner()));
@@ -135,7 +132,7 @@ class LocalFileSyncServiceTest
   virtual void TearDown() OVERRIDE {
     local_service_->Shutdown();
     file_system_->TearDown();
-    fileapi::RevokeSyncableFileSystem(kServiceName);
+    RevokeSyncableFileSystem(kServiceName);
 
     thread_helper_.TearDown();
   }
@@ -184,7 +181,7 @@ class LocalFileSyncServiceTest
 
   base::ScopedTempDir temp_dir_;
 
-  scoped_ptr<fileapi::CannedSyncableFileSystem> file_system_;
+  scoped_ptr<CannedSyncableFileSystem> file_system_;
   scoped_ptr<LocalFileSyncService> local_service_;
 
   int64 num_changes_;
@@ -281,10 +278,10 @@ TEST_F(LocalFileSyncServiceTest, LocalChangeObserver) {
 
 TEST_F(LocalFileSyncServiceTest, MAYBE_LocalChangeObserverMultipleContexts) {
   const char kOrigin2[] = "http://foo";
-  fileapi::CannedSyncableFileSystem file_system2(
-      GURL(kOrigin2), kServiceName,
-      thread_helper_.io_task_runner(),
-      thread_helper_.file_task_runner());
+  CannedSyncableFileSystem file_system2(GURL(kOrigin2),
+                                        kServiceName,
+                                        thread_helper_.io_task_runner(),
+                                        thread_helper_.file_task_runner());
   file_system2.SetUp();
 
   base::RunLoop run_loop;

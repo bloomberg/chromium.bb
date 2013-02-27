@@ -23,6 +23,10 @@ namespace chromeos {
 class CrosMountPointProvider;
 }
 
+namespace sync_file_system {
+class SyncableFileSystemOperation;
+}
+
 namespace fileapi {
 
 class AsyncFileUtil;
@@ -176,7 +180,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
 
   friend class RecursiveOperationDelegate;
   friend class CrossOperationDelegate;
-  friend class SyncableFileSystemOperation;
+  friend class sync_file_system::SyncableFileSystemOperation;
 
   LocalFileSystemOperation(
       FileSystemContext* file_system_context,

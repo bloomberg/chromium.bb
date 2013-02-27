@@ -139,14 +139,16 @@ TEST(FileSystemURLTest, CompareURLs) {
 }
 
 TEST(FileSystemURLTest, IsParent) {
-  ScopedExternalFileSystem scoped1("foo", kFileSystemTypeSyncable, base::FilePath());
-  ScopedExternalFileSystem scoped2("bar", kFileSystemTypeSyncable, base::FilePath());
+  ScopedExternalFileSystem scoped1("foo", kFileSystemTypeSyncable,
+                                   base::FilePath());
+  ScopedExternalFileSystem scoped2("bar", kFileSystemTypeSyncable,
+                                   base::FilePath());
 
   const std::string root1 = GetFileSystemRootURI(
       GURL("http://example.com"), kFileSystemTypeTemporary).spec();
-  const std::string root2 = GetSyncableFileSystemRootURI(
+  const std::string root2 = sync_file_system::GetSyncableFileSystemRootURI(
       GURL("http://example.com"), "foo").spec();
-  const std::string root3 = GetSyncableFileSystemRootURI(
+  const std::string root3 = sync_file_system::GetSyncableFileSystemRootURI(
       GURL("http://example.com"), "bar").spec();
   const std::string root4 = GetFileSystemRootURI(
       GURL("http://chromium.org"), kFileSystemTypeTemporary).spec();

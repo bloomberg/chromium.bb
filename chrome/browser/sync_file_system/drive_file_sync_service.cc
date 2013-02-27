@@ -1679,7 +1679,7 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
     const std::string& remote_file_md5,
     RemoteSyncType sync_type) {
   fileapi::FileSystemURL url(
-      fileapi::CreateSyncableFileSystemURL(origin, kServiceName, path));
+      CreateSyncableFileSystemURL(origin, kServiceName, path));
 
   std::string local_resource_id;
   std::string local_file_md5;

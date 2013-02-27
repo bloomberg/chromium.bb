@@ -224,7 +224,8 @@ void FileSystemContext::OpenSyncableFileSystem(
 
   DCHECK(type == kFileSystemTypeSyncable);
 
-  GURL root_url = GetSyncableFileSystemRootURI(origin_url, mount_name);
+  GURL root_url = sync_file_system::GetSyncableFileSystemRootURI(
+      origin_url, mount_name);
   std::string name = GetFileSystemName(origin_url, kFileSystemTypeSyncable);
 
   FileSystemMountPointProvider* mount_point_provider =
@@ -298,7 +299,7 @@ void FileSystemContext::RegisterMountPointProvider(
 }
 
 void FileSystemContext::SetLocalFileChangeTracker(
-    scoped_ptr<LocalFileChangeTracker> tracker) {
+    scoped_ptr<sync_file_system::LocalFileChangeTracker> tracker) {
   DCHECK(!change_tracker_.get());
   DCHECK(tracker.get());
   change_tracker_ = tracker.Pass();
@@ -311,7 +312,7 @@ void FileSystemContext::SetLocalFileChangeTracker(
 }
 
 void FileSystemContext::set_sync_context(
-    LocalFileSyncContext* sync_context) {
+    sync_file_system::LocalFileSyncContext* sync_context) {
   sync_context_ = sync_context;
 }
 

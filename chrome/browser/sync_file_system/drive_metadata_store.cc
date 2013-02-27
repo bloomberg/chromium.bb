@@ -454,7 +454,7 @@ SyncStatusCode DriveMetadataStore::GetConflictURLs(
          itr != origin_itr->second.end();
          ++itr) {
       if (itr->second.conflicted()) {
-        urls->insert(fileapi::CreateSyncableFileSystemURL(
+        urls->insert(CreateSyncableFileSystemURL(
             origin_itr->first, kServiceName, itr->first));
       }
     }
@@ -475,7 +475,7 @@ SyncStatusCode DriveMetadataStore::GetToBeFetchedFiles(
          itr != origin_itr->second.end();
          ++itr) {
       if (itr->second.to_be_fetched()) {
-        fileapi::FileSystemURL url = fileapi::CreateSyncableFileSystemURL(
+        FileSystemURL url = CreateSyncableFileSystemURL(
             origin_itr->first, kServiceName, itr->first);
         list->push_back(std::make_pair(url, itr->second.resource_id()));
       }
@@ -557,8 +557,7 @@ SyncStatusCode DriveMetadataDB::ReadContents(
       std::string url_string(
           key.begin() + kDriveMetadataKeyPrefixLength - 1, key.end());
       FileSystemURL url;
-      bool success = fileapi::DeserializeSyncableFileSystemURL(
-          url_string, &url);
+      bool success = DeserializeSyncableFileSystemURL(url_string, &url);
       DCHECK(success);
 
       DriveMetadata metadata;
@@ -621,7 +620,7 @@ SyncStatusCode DriveMetadataDB::UpdateEntry(const FileSystemURL& url,
   DCHECK(db_.get());
 
   std::string url_string;
-  bool success = fileapi::SerializeSyncableFileSystemURL(url, &url_string);
+  bool success = SerializeSyncableFileSystemURL(url, &url_string);
   DCHECK(success);
 
   std::string value;
@@ -640,7 +639,7 @@ SyncStatusCode DriveMetadataDB::DeleteEntry(const FileSystemURL& url) {
   DCHECK(db_.get());
 
   std::string url_string;
-  bool success = fileapi::SerializeSyncableFileSystemURL(url, &url_string);
+  bool success = SerializeSyncableFileSystemURL(url, &url_string);
   DCHECK(success);
 
   leveldb::Status status = db_->Delete(
@@ -683,8 +682,8 @@ SyncStatusCode DriveMetadataDB::RemoveOrigin(const GURL& origin) {
 
   scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
   std::string serialized_origin;
-  bool success = fileapi::SerializeSyncableFileSystemURL(
-      fileapi::CreateSyncableFileSystemURL(
+  bool success = SerializeSyncableFileSystemURL(
+      CreateSyncableFileSystemURL(
           origin, kServiceName, base::FilePath()), &serialized_origin);
   DCHECK(success);
   for (itr->Seek(kDriveMetadataKeyPrefix + serialized_origin);
@@ -695,8 +694,7 @@ SyncStatusCode DriveMetadataDB::RemoveOrigin(const GURL& origin) {
     std::string serialized_url(key.begin() + kDriveMetadataKeyPrefixLength - 1,
                                key.end());
     FileSystemURL url;
-    bool success = fileapi::DeserializeSyncableFileSystemURL(
-        serialized_url, &url);
+    bool success = DeserializeSyncableFileSystemURL(serialized_url, &url);
     DCHECK(success);
     if (url.origin() != origin)
       break;
