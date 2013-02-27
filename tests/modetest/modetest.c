@@ -652,7 +652,7 @@ struct connector_arg {
 };
 
 struct plane_arg {
-	uint32_t con_id;  /* the id of connector to bind to */
+	uint32_t crtc_id;  /* the id of CRTC to bind to */
 	bool has_position;
 	int32_t x, y;
 	uint32_t w, h;
@@ -832,8 +832,7 @@ page_flip_handler(int fd, unsigned int frame,
 	}
 }
 
-static int
-set_plane(struct device *dev, struct connector_arg *c, struct plane_arg *p)
+static int set_plane(struct device *dev, struct plane_arg *p)
 {
 	drmModePlane *ovr;
 	uint32_t handles[4], pitches[4], offsets[4] = {0}; /* we only use [0] */
@@ -841,6 +840,7 @@ set_plane(struct device *dev, struct connector_arg *c, struct plane_arg *p)
 	struct kms_bo *plane_bo;
 	uint32_t plane_flags = 0;
 	int crtc_x, crtc_y, crtc_w, crtc_h;
+	struct crtc *crtc;
 	unsigned int pipe;
 	unsigned int i;
 
@@ -848,14 +848,15 @@ set_plane(struct device *dev, struct connector_arg *c, struct plane_arg *p)
 	 * CRTC index first, then iterate over available planes.
 	 */
 	for (i = 0; i < (unsigned int)dev->resources->res->count_crtcs; i++) {
-		if (c->crtc_id == dev->resources->res->crtcs[i]) {
+		if (p->crtc_id == dev->resources->res->crtcs[i]) {
+			crtc = &dev->resources->crtcs[i];
 			pipe = i;
 			break;
 		}
 	}
 
-	if (pipe == (unsigned int)dev->resources->res->count_crtcs) {
-		fprintf(stderr, "CRTC %u not found\n", c->crtc_id);
+	if (!crtc) {
+		fprintf(stderr, "CRTC %u not found\n", p->crtc_id);
 		return -1;
 	}
 
@@ -869,7 +870,8 @@ set_plane(struct device *dev, struct connector_arg *c, struct plane_arg *p)
 	}
 
 	if (!plane_id) {
-		fprintf(stderr, "no unused plane available for CRTC %u\n", c->crtc_id);
+		fprintf(stderr, "no unused plane available for CRTC %u\n",
+			crtc->crtc->crtc_id);
 		return -1;
 	}
 
@@ -890,8 +892,8 @@ set_plane(struct device *dev, struct connector_arg *c, struct plane_arg *p)
 
 	if (!p->has_position) {
 		/* Default to the middle of the screen */
-		crtc_x = (c->crtc->mode->hdisplay - p->w) / 2;
-		crtc_y = (c->crtc->mode->vdisplay - p->h) / 2;
+		crtc_x = (crtc->mode->hdisplay - p->w) / 2;
+		crtc_y = (crtc->mode->vdisplay - p->h) / 2;
 	} else {
 		crtc_x = p->x;
 		crtc_y = p->y;
@@ -900,7 +902,7 @@ set_plane(struct device *dev, struct connector_arg *c, struct plane_arg *p)
 	crtc_h = p->h;
 
 	/* note src coords (last 4 args) are in Q16 format */
-	if (drmModeSetPlane(dev->fd, plane_id, c->crtc_id, p->fb_id,
+	if (drmModeSetPlane(dev->fd, plane_id, crtc->crtc->crtc_id, p->fb_id,
 			    plane_flags, crtc_x, crtc_y, crtc_w, crtc_h,
 			    0, 0, p->w << 16, p->h << 16)) {
 		fprintf(stderr, "failed to enable plane: %s\n",
@@ -908,7 +910,7 @@ set_plane(struct device *dev, struct connector_arg *c, struct plane_arg *p)
 		return -1;
 	}
 
-	ovr->crtc_id = c->crtc_id;
+	ovr->crtc_id = crtc->crtc->crtc_id;
 
 	return 0;
 }
@@ -969,8 +971,8 @@ static void set_mode(struct device *dev, struct connector_arg *c, int count,
 
 		/* if we have a plane/overlay to show, set that up now: */
 		for (j = 0; j < plane_count; j++)
-			if (p[j].con_id == c[i].id)
-				if (set_plane(dev, &c[i], &p[j]))
+			if (p[j].crtc_id == c[i].crtc_id)
+				if (set_plane(dev, &p[j]))
 					return;
 	}
 
@@ -1099,7 +1101,7 @@ static int parse_plane(struct plane_arg *plane, const char *p)
 
 	memset(plane, 0, sizeof *plane);
 
-	plane->con_id = strtoul(p, &end, 10);
+	plane->crtc_id = strtoul(p, &end, 10);
 	if (*end != ':')
 		return -EINVAL;
 
@@ -1161,7 +1163,7 @@ static void usage(char *name)
 	fprintf(stderr, "\t-p\tlist CRTCs and planes (pipes)\n");
 
 	fprintf(stderr, "\n Test options:\n\n");
-	fprintf(stderr, "\t-P <connector_id>:<w>x<h>[+<x>+<y>][@<format>]\tset a plane\n");
+	fprintf(stderr, "\t-P <crtc_id>:<w>x<h>[+<x>+<y>][@<format>]\tset a plane\n");
 	fprintf(stderr, "\t-s <connector_id>[@<crtc_id>]:<mode>[@<format>]\tset a mode\n");
 	fprintf(stderr, "\t-v\ttest vsynced page flipping\n");
 	fprintf(stderr, "\t-w <obj_id>:<prop_name>:<value>\tset property\n");
