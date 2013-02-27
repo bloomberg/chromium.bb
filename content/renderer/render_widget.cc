@@ -1354,6 +1354,11 @@ WebKit::WebLayerTreeView* RenderWidget::layerTreeView() {
   return compositor_.get();
 }
 
+void RenderWidget::suppressCompositorScheduling(bool enable) {
+  if (compositor_)
+    compositor_->SetSuppressScheduleComposite(enable);
+}
+
 void RenderWidget::willBeginCompositorFrame() {
   TRACE_EVENT0("gpu", "RenderWidget::willBeginCompositorFrame");
 

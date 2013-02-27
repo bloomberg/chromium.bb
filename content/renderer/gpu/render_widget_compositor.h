@@ -30,6 +30,8 @@ class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
 
   cc::LayerTreeHost* layer_tree_host() const { return layer_tree_host_.get(); }
 
+  void SetSuppressScheduleComposite(bool suppress);
+
   // WebLayerTreeView implementation.
   virtual void setSurfaceReady();
   virtual void setRootLayer(const WebKit::WebLayer& layer);
@@ -95,6 +97,7 @@ private:
   bool initialize(cc::LayerTreeSettings settings);
 
   bool threaded_;
+  bool suppress_schedule_composite_;
   RenderWidget* widget_;
   WebKit::WebLayerTreeViewClient* client_;
   scoped_ptr<cc::LayerTreeHost> layer_tree_host_;

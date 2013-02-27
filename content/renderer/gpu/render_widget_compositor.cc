@@ -214,11 +214,25 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
 
 RenderWidgetCompositor::RenderWidgetCompositor(
     RenderWidget* widget, WebKit::WebLayerTreeViewClient* client)
-  : widget_(widget),
+  : suppress_schedule_composite_(false),
+    widget_(widget),
     client_(client) {
 }
 
 RenderWidgetCompositor::~RenderWidgetCompositor() {}
+
+void RenderWidgetCompositor::SetSuppressScheduleComposite(bool suppress) {
+  if (suppress_schedule_composite_ == suppress)
+    return;
+
+  if (suppress)
+    TRACE_EVENT_ASYNC_BEGIN0("gpu",
+        "RenderWidgetCompositor::SetSuppressScheduleComposite", this);
+  else
+    TRACE_EVENT_ASYNC_END0("gpu",
+        "RenderWidgetCompositor::SetSuppressScheduleComposite", this);
+  suppress_schedule_composite_ = suppress;
+}
 
 bool RenderWidgetCompositor::initialize(cc::LayerTreeSettings settings) {
   scoped_ptr<cc::Thread> impl_thread;
@@ -434,10 +448,9 @@ void RenderWidgetCompositor::didCompleteSwapBuffers() {
   widget_->didCompleteSwapBuffers();
 }
 
-// TODO(jamesr): This goes through WebViewImpl just to do suppression, refactor
-// that piece out.
 void RenderWidgetCompositor::scheduleComposite() {
-  client_->scheduleComposite();
+  if (!suppress_schedule_composite_)
+    widget_->scheduleComposite();
 }
 
 class RenderWidgetCompositor::MainThreadContextProvider
