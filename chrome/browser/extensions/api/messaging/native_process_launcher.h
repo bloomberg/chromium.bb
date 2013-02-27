@@ -16,10 +16,10 @@ namespace extensions {
 
 class NativeProcessLauncher {
  public:
-  // Callback that's called after the process has been launched.
-  // |native_process_handle| is set to base::kNullProcessHandle in case of a
-  // failure.
-  typedef base::Callback<void (base::ProcessHandle native_process_handle,
+  // Callback that's called after the process has been launched. |result| is
+  // set to false in case of a failure. Handler must take ownership of the IO
+  // handles.
+  typedef base::Callback<void (bool result,
                                base::PlatformFile read_file,
                                base::PlatformFile write_file)> LaunchedCallback;
 
@@ -31,14 +31,13 @@ class NativeProcessLauncher {
   // Launches native host with the specified name asynchronously. |callback| is
   // called after the process has been started. If the launcher is destroyed
   // before the callback is called then the call is canceled and the process is
-  // killed if it has been started already.
+  // stopped if it has been started already (by closing IO pipes).
   virtual void Launch(const std::string& native_host_name,
                       LaunchedCallback callback) const = 0;
 
  protected:
   static bool LaunchNativeProcess(
       const base::FilePath& path,
-      base::ProcessHandle* native_process_handle,
       base::PlatformFile* read_file,
       base::PlatformFile* write_file);
 

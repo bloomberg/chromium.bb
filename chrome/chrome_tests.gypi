@@ -1153,7 +1153,7 @@
         'browser/extensions/api/media_galleries_private/media_galleries_eject_apitest.cc',
         'browser/extensions/api/media_galleries_private/media_galleries_private_apitest.cc',
         'browser/extensions/api/media_galleries_private/media_galleries_watch_apitest.cc',
-        'browser/extensions/api/messaging/native_messaging_apitest_posix.cc',
+        'browser/extensions/api/messaging/native_messaging_apitest.cc',
         'browser/extensions/api/metrics_private/metrics_apitest.cc',
         'browser/extensions/api/module/module_apitest.cc',
         'browser/extensions/api/notification/notification_apitest.cc',

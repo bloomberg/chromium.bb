@@ -2,23 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var appName = navigator.platform.match(/win/i) ? 'echo.bat' : 'echo.py';
+
 chrome.test.getConfig(function(config) {
     chrome.test.runTests([
 
       function sendMessageWithCallback() {
         var message = {"text": "Hi there!", "number": 3};
         chrome.runtime.sendNativeMessage(
-            'echo.py', message,
+            appName, message,
             chrome.test.callbackPass(function(nativeResponse) {
           var expectedResponse = {"id": 1, "echo": message};
           chrome.test.assertEq(expectedResponse, nativeResponse);
         }));
       },
 
-      // The goal of this test, is just not to crash.
+      // The goal of this test is just not to crash.
       function sendMessageWithoutCallback() {
         var message = {"text": "Hi there!", "number": 3};
-        chrome.runtime.sendNativeMessage('echo.py', message);
+        chrome.extension.sendNativeMessage(appName, message);
         chrome.test.succeed(); // Mission Complete
       },
 
@@ -31,7 +33,7 @@ chrome.test.getConfig(function(config) {
                                  {"id": 3, "echo": messagesToSend[2]}];
         var currentMessage = 0;
 
-        port = chrome.runtime.connectNative('echo.py');
+        port = chrome.extension.connectNative(appName);
         port.postMessage(messagesToSend[currentMessage]);
 
         port.onMessage.addListener(function(message) {

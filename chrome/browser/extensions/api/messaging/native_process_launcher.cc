@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/common/chrome_paths.h"
 
@@ -34,6 +35,7 @@ class NativeProcessLauncherImpl : public NativeProcessLauncher {
     void Launch(const std::string& native_host_name,
                 LaunchedCallback callback);
     void Detach();
+
    private:
     friend class base::RefCountedThreadSafe<Core>;
     virtual ~Core();
@@ -41,7 +43,7 @@ class NativeProcessLauncherImpl : public NativeProcessLauncher {
     void DoLaunchOnThreadPool(const std::string& native_host_name,
                               LaunchedCallback callback);
     void CallCallbackOnIOThread(LaunchedCallback callback,
-                                base::ProcessHandle native_process_handle,
+                                bool result,
                                 base::PlatformFile read_file,
                                 base::PlatformFile write_file);
 
@@ -95,46 +97,38 @@ void NativeProcessLauncherImpl::Core::DoLaunchOnThreadPool(
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
         base::Bind(&NativeProcessLauncherImpl::Core::CallCallbackOnIOThread,
-                   this, callback, base::kNullProcessHandle,
+                   this, callback, false,
                    base::kInvalidPlatformFileValue,
                    base::kInvalidPlatformFileValue));
     return;
   }
 
-  base::ProcessHandle native_process_handle;
   base::PlatformFile read_file;
   base::PlatformFile write_file;
-  if (!NativeProcessLauncher::LaunchNativeProcess(
-          native_host_program, &native_process_handle,
-          &read_file, &write_file)) {
-    native_process_handle = base::kNullProcessHandle;
-  }
+  bool result = NativeProcessLauncher::LaunchNativeProcess(
+      native_host_program, &read_file, &write_file);
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&NativeProcessLauncherImpl::Core::CallCallbackOnIOThread,
-                 this, callback, native_process_handle, read_file, write_file));
+                 this, callback, result, read_file, write_file));
 }
 
 void NativeProcessLauncherImpl::Core::CallCallbackOnIOThread(
     LaunchedCallback callback,
-    base::ProcessHandle native_process_handle,
+    bool result,
     base::PlatformFile read_file,
     base::PlatformFile write_file) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   if (detached_) {
-    // Kill the process if it's started already.
-    if (native_process_handle != base::kNullProcessHandle) {
-      content::BrowserThread::PostBlockingPoolTask(
-          FROM_HERE,
-          base::Bind(base::IgnoreResult(&base::KillProcess),
-                     native_process_handle, 0,
-                     false /* don't wait for exit */));
-    }
+    if (read_file != base::kInvalidPlatformFileValue)
+      base::ClosePlatformFile(read_file);
+    if (write_file != base::kInvalidPlatformFileValue)
+      base::ClosePlatformFile(write_file);
     return;
   }
 
-  callback.Run(native_process_handle, read_file, write_file);
+  callback.Run(result, read_file, write_file);
 }
 
 NativeProcessLauncherImpl::NativeProcessLauncherImpl()

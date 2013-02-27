@@ -15,7 +15,6 @@ namespace extensions {
 // static
 bool NativeProcessLauncher::LaunchNativeProcess(
     const base::FilePath& path,
-    base::ProcessHandle* native_process_handle,
     base::PlatformFile* read_file,
     base::PlatformFile* write_file) {
   base::FileHandleMappingVector fd_map;
@@ -41,7 +40,8 @@ bool NativeProcessLauncher::LaunchNativeProcess(
   CommandLine line(path);
   base::LaunchOptions options;
   options.fds_to_remap = &fd_map;
-  if (!base::LaunchProcess(line, options, native_process_handle)) {
+  int process_id;
+  if (!base::LaunchProcess(line, options, &process_id)) {
     LOG(ERROR) << "Error launching process";
     return false;
   }

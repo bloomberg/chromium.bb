@@ -14,7 +14,8 @@ function gotNativeMessage(message) {
 
 function sendNativeMessage() {
   if (!port) {
-    port = chrome.runtime.connectNative('echo.py');
+    app = navigator.platform.match(/win/i) ? 'echo.bat' : 'echo.py';
+    port = chrome.extension.connectNative(app);
     port.onMessage.addListener(gotNativeMessage);
     document.getElementById('input-text').style.display = 'block';
     document.getElementById('send-native-message').innerHTML = 'Send Message';

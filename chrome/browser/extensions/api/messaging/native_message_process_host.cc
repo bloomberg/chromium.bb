@@ -45,7 +45,6 @@ NativeMessageProcessHost::NativeMessageProcessHost(
       destination_port_(destination_port),
       launcher_(launcher.Pass()),
       closed_(false),
-      native_process_handle_(base::kNullProcessHandle),
       read_pending_(false),
       read_eof_(false),
       write_pending_(false) {
@@ -104,17 +103,15 @@ void NativeMessageProcessHost::LaunchHostProcess() {
 }
 
 void NativeMessageProcessHost::OnHostProcessLaunched(
-    base::ProcessHandle native_process_handle,
+    bool result,
     base::PlatformFile read_file,
     base::PlatformFile write_file) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
-  if (native_process_handle == base::kNullProcessHandle) {
+  if (!result) {
     OnError();
     return;
   }
-
-  native_process_handle_ = native_process_handle;
 
   read_file_ = read_file;
   read_stream_.reset(new net::FileStream(
@@ -311,17 +308,6 @@ void NativeMessageProcessHost::Close() {
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
       base::Bind(&Client::CloseChannel, weak_client_ui_,
           destination_port_, true));
-
-  if (native_process_handle_ != base::kNullProcessHandle) {
-    // Give the process some time to shutdown, then try and kill it.
-    content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(base::IgnoreResult(&base::KillProcess),
-                 native_process_handle_, 0,
-                 false /* don't wait for exit */),
-      base::TimeDelta::FromMilliseconds(kExitTimeoutMS));
-    native_process_handle_ = base::kNullProcessHandle;
-  }
 }
 
 }  // namespace extensions
