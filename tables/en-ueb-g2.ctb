@@ -917,6 +917,5 @@ context _$d["A"] @56-1
 # problems handled with multipass opcodes
 pass2 @36-36-36 @36-36
 pass2 @6-236-3456 @3-3456
-pass2 $s1-10 @0
 pass2 @6-56 @56-6
 
