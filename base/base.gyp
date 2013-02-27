@@ -183,6 +183,7 @@
             ],
           },
           'dependencies': [
+            'demangle',
             '../third_party/mach_override/mach_override.gyp:mach_override',
           ],
         }],
@@ -196,6 +197,9 @@
               '$(SDKROOT)/System/Library/Frameworks/UIKit.framework',
             ],
           },
+          'dependencies': [
+            'demangle',
+          ],
         }],
         ['OS != "win" and OS != "ios"', {
             'dependencies': ['../third_party/libevent/libevent.gyp:libevent'],
@@ -1149,6 +1153,29 @@
               'SubSystem': '2',         # Set /SUBSYSTEM:WINDOWS
             },
           },
+        },
+      ],
+    }],
+    ['OS == "mac" or OS == "ios"', {
+      'targets': [
+        {
+          'target_name': 'demangle',
+          'type': 'static_library',
+          'toolsets': ['host', 'target'],
+          'variables': {
+            'chromium_code': 0,
+          },
+          'cflags': [
+            '-Wno-sign-compare',
+          ],
+          'cflags!': [
+            '-Wextra',
+          ],
+          'sources': [
+            'third_party/symbolize/config.h',
+            'third_party/symbolize/demangle.cc',
+            'third_party/symbolize/demangle.h',
+          ],
         },
       ],
     }],
