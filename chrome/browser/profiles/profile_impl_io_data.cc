@@ -388,8 +388,6 @@ void ProfileImplIOData::InitializeInternal(
     scoped_refptr<SQLitePersistentCookieStore> cookie_db =
         new SQLitePersistentCookieStore(
             lazy_params_->cookie_path,
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
             lazy_params_->restore_old_session_cookies,
             new ClearOnExitPolicy(lazy_params_->special_storage_policy));
     cookie_store =
@@ -498,8 +496,6 @@ void ProfileImplIOData::
       new net::CookieMonster(
           new SQLitePersistentCookieStore(
               lazy_params_->extensions_cookie_path,
-              BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-              BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
               lazy_params_->restore_old_session_cookies, NULL), NULL);
   // Enable cookies for devtools and extension URLs.
   const char* schemes[] = {chrome::kChromeDevToolsScheme,
@@ -596,12 +592,7 @@ ProfileImplIOData::InitializeAppRequestContext(
     DCHECK(!cookie_path.empty());
 
     scoped_refptr<SQLitePersistentCookieStore> cookie_db =
-        new SQLitePersistentCookieStore(
-            cookie_path,
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
-            false,
-            NULL);
+        new SQLitePersistentCookieStore(cookie_path, false, NULL);
     // TODO(creis): We should have a cookie delegate for notifying the cookie
     // extensions API, but we need to update it to understand isolated apps
     // first.
