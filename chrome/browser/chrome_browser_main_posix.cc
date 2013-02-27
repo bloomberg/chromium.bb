@@ -40,6 +40,13 @@ namespace {
 void SIGCHLDHandler(int signal) {
 }
 
+// The OSX fork() implementation can crash in the child process before
+// fork() returns.  In that case, the shutdown pipe will still be
+// shared with the parent process.  To prevent child crashes from
+// causing parent shutdowns, |g_pipe_pid| is the pid for the process
+// which registered |g_shutdown_pipe_write_fd|.
+// See <http://crbug.com/175341>.
+pid_t g_pipe_pid = -1;
 int g_shutdown_pipe_write_fd = -1;
 int g_shutdown_pipe_read_fd = -1;
 
@@ -51,6 +58,7 @@ void GracefulShutdownHandler(int signal) {
   action.sa_handler = SIG_DFL;
   RAW_CHECK(sigaction(signal, &action, NULL) == 0);
 
+  RAW_CHECK(g_pipe_pid == getpid());
   RAW_CHECK(g_shutdown_pipe_write_fd != -1);
   RAW_CHECK(g_shutdown_pipe_read_fd != -1);
   size_t bytes_written = 0;
@@ -299,6 +307,7 @@ void ChromeBrowserMainPartsPosix::PostMainMessageLoopStart() {
   if (ret < 0) {
     PLOG(DFATAL) << "Failed to create pipe";
   } else {
+    g_pipe_pid = getpid();
     g_shutdown_pipe_read_fd = pipefd[0];
     g_shutdown_pipe_write_fd = pipefd[1];
 #if !defined(ADDRESS_SANITIZER) && !defined(KEEP_SHADOW_STACKS)
