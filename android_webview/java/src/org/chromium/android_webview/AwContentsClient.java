@@ -232,8 +232,7 @@ public abstract class AwContentsClient extends ContentViewClient {
     public abstract void onReceivedHttpAuthRequest(AwHttpAuthHandler handler,
             String host, String realm);
 
-    // TODO(sgurun) make this abstract once the corresponding changes for the glue layer lands.
-    public void onReceivedSslError(ValueCallback<Boolean> callback, SslError error) { }
+    public abstract void onReceivedSslError(ValueCallback<Boolean> callback, SslError error);
 
     public abstract void onReceivedLoginRequest(String realm, String account, String args);
 
