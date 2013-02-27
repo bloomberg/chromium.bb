@@ -280,6 +280,25 @@ void MediaGalleriesPreferences::RemoveGalleryChangeObserver(
   gallery_change_observers_.RemoveObserver(observer);
 }
 
+void MediaGalleriesPreferences::OnRemovableStorageAttached(
+    const StorageMonitor::StorageInfo& info) {
+  if (!MediaStorageUtil::IsMediaDevice(info.device_id))
+    return;
+
+  if (info.name.empty()) {
+    AddGallery(info.device_id, base::FilePath(info.location),
+               false /*not user added*/,
+               info.storage_label,
+               info.vendor_name,
+               info.model_name,
+               info.total_size_in_bytes,
+               base::Time::Now());
+  } else {
+    AddGalleryWithName(info.device_id, info.name,
+                       base::FilePath(info.location), false);
+  }
+}
+
 bool MediaGalleriesPreferences::LookUpGalleryByPath(
     const base::FilePath& path,
     MediaGalleryPrefInfo* gallery_info) const {
@@ -402,8 +421,9 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryInternal(
       return *it;
 
     PrefService* prefs = profile_->GetPrefs();
-    ListPrefUpdate update(prefs, prefs::kMediaGalleriesRememberedGalleries);
-    ListValue* list = update.Get();
+    scoped_ptr<ListPrefUpdate> update(
+        new ListPrefUpdate(prefs, prefs::kMediaGalleriesRememberedGalleries));
+    ListValue* list = update->Get();
 
     for (ListValue::const_iterator list_iter = list->begin();
          list_iter != list->end();
@@ -428,10 +448,15 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryInternal(
                           last_attach_time.ToInternalValue());
         }
         dict->SetInteger(kMediaGalleriesPrefsVersionKey, prefs_version);
-        InitFromPrefs(true /* notify observers */);
         break;
       }
     }
+
+    // Commits the prefs update.
+    update.reset();
+
+    if (update_gallery_name || update_gallery_metadata || update_gallery_type)
+      InitFromPrefs(true /* notify observers */);
     return *it;
   }
 
@@ -456,9 +481,11 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryInternal(
   gallery_info.volume_metadata_valid = volume_metadata_valid;
   gallery_info.prefs_version = prefs_version;
 
-  ListPrefUpdate update(prefs, prefs::kMediaGalleriesRememberedGalleries);
-  ListValue* list = update.Get();
-  list->Append(CreateGalleryPrefInfoDictionary(gallery_info));
+  {
+    ListPrefUpdate update(prefs, prefs::kMediaGalleriesRememberedGalleries);
+    ListValue* list = update.Get();
+    list->Append(CreateGalleryPrefInfoDictionary(gallery_info));
+  }
   InitFromPrefs(true /* notify observers */);
 
   return gallery_info.pref_id;

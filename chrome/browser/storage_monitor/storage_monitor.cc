@@ -13,7 +13,8 @@ namespace chrome {
 
 static StorageMonitor* g_storage_monitor = NULL;
 
-StorageMonitor::StorageInfo::StorageInfo() {
+StorageMonitor::StorageInfo::StorageInfo()
+    : total_size_in_bytes(0) {
 }
 
 StorageMonitor::StorageInfo::StorageInfo(
@@ -22,7 +23,11 @@ StorageMonitor::StorageInfo::StorageInfo(
     const base::FilePath::StringType& device_location)
     : device_id(id),
       name(device_name),
-      location(device_location) {
+      location(device_location),
+      total_size_in_bytes(0) {
+}
+
+StorageMonitor::StorageInfo::~StorageInfo() {
 }
 
 StorageMonitor::Receiver::~Receiver() {
@@ -36,9 +41,7 @@ class StorageMonitor::ReceiverImpl : public StorageMonitor::Receiver {
   virtual ~ReceiverImpl() {}
 
   virtual void ProcessAttach(
-      const std::string& id,
-      const string16& name,
-      const base::FilePath::StringType& location) OVERRIDE;
+      const StorageMonitor::StorageInfo& info) OVERRIDE;
 
   virtual void ProcessDetach(const std::string& id) OVERRIDE;
 
@@ -47,11 +50,8 @@ class StorageMonitor::ReceiverImpl : public StorageMonitor::Receiver {
 };
 
 void StorageMonitor::ReceiverImpl::ProcessAttach(
-    const std::string& id,
-    const string16& name,
-    const base::FilePath::StringType& location) {
-  notifications_->ProcessAttach(
-      StorageMonitor::StorageInfo(id, name, location));
+    const StorageMonitor::StorageInfo& info) {
+  notifications_->ProcessAttach(info);
 }
 
 void StorageMonitor::ReceiverImpl::ProcessDetach(

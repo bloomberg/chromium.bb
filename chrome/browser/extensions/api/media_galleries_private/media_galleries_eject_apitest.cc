@@ -84,7 +84,8 @@ class MediaGalleriesPrivateEjectApiTest : public ExtensionApiTest {
     std::string device_id = chrome::MediaStorageUtil::MakeDeviceId(
         chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM, kDeviceId);
     chrome::StorageMonitor::GetInstance()->receiver()->
-        ProcessAttach(device_id, ASCIIToUTF16(kDeviceName), kDevicePath);
+        ProcessAttach(chrome::StorageMonitor::StorageInfo(
+            device_id, ASCIIToUTF16(kDeviceName), kDevicePath));
     content::RunAllPendingInMessageLoop();
   }
 

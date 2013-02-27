@@ -366,7 +366,7 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
                      const string16& name,
                      const base::FilePath::StringType& location) {
     StorageMonitor::GetInstance()->receiver()->ProcessAttach(
-        id, name, location);
+        StorageMonitor::StorageInfo(id, name, location));
   }
 
   void ProcessDetach(const std::string& id) {

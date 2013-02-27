@@ -375,8 +375,8 @@ void VolumeMountWatcherWin::HandleDeviceAttachEventOnUIThread(
   if (notifications_) {
     string16 display_name =
         GetDisplayNameForDevice(info.total_size_in_bytes, info.name);
-    notifications_->ProcessAttach(info.device_id, display_name,
-                                  device_path.value());
+    notifications_->ProcessAttach(StorageMonitor::StorageInfo(
+        info.device_id, display_name, device_path.value()));
   }
 }
 

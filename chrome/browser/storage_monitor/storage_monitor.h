@@ -31,8 +31,12 @@ class StorageMonitor {
     StorageInfo(const std::string& id,
                 const string16& device_name,
                 const base::FilePath::StringType& device_location);
+    ~StorageInfo();
 
     // Unique device id - persists between device attachments.
+    // This is the string that should be used as the label for a particular
+    // storage device when interacting with the API. Clients should treat
+    // this as an opaque string.
     std::string device_id;
 
     // Human readable removable storage device name.
@@ -40,6 +44,22 @@ class StorageMonitor {
 
     // Current attached removable storage device location.
     base::FilePath::StringType location;
+
+    // Label given to this storage device by the user.
+    // May be empty if not found or the device is unlabeled.
+    string16 storage_label;
+
+    // Vendor name for the removable device. (Human readable)
+    // May be empty if not collected.
+    string16 vendor_name;
+
+    // Model name for the removable device. (Human readable)
+    // May be empty if not collected.
+    string16 model_name;
+
+    // Size of the removable device in bytes.
+    // Zero if not collected or unknown.
+    uint64 total_size_in_bytes;
   };
 
   // This interface is provided to generators of storage notifications.
@@ -47,9 +67,7 @@ class StorageMonitor {
    public:
     virtual ~Receiver();
 
-    virtual void ProcessAttach(const std::string& id,
-                               const string16& name,
-                               const base::FilePath::StringType& location) = 0;
+    virtual void ProcessAttach(const StorageInfo& info) = 0;
     virtual void ProcessDetach(const std::string& id) = 0;
   };
 

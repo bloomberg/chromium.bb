@@ -569,24 +569,6 @@ MediaGalleriesPreferences* MediaFileSystemRegistry::GetPreferences(
   return preferences;
 }
 
-void MediaFileSystemRegistry::OnRemovableStorageAttached(
-    const StorageMonitor::StorageInfo& info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!MediaStorageUtil::IsMediaDevice(info.device_id))
-    return;
-
-  for (ExtensionGalleriesHostMap::iterator profile_it =
-           extension_hosts_map_.begin();
-       profile_it != extension_hosts_map_.end();
-       ++profile_it) {
-    MediaGalleriesPreferences* preferences = GetPreferences(profile_it->first);
-    // TODO(gbillock): add volume metadata from StorageInfo
-    preferences->AddGalleryWithName(info.device_id, info.name, base::FilePath(),
-                                    false /*not user added*/);
-  }
-}
-
 void MediaFileSystemRegistry::OnRemovableStorageDetached(
     const StorageMonitor::StorageInfo& info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

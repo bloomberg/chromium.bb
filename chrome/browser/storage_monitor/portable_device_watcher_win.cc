@@ -618,9 +618,8 @@ void PortableDeviceWatcherWin::OnDidHandleDeviceAttachEvent(
     storage_map_[storage_id] = StorageMonitor::StorageInfo(
         storage_id, storage_name, location);
     if (storage_notifications_) {
-      storage_notifications_->ProcessAttach(
-          storage_id, storage_name,
-          GetStoragePathFromStorageId(storage_id));
+      storage_notifications_->ProcessAttach(StorageMonitor::StorageInfo(
+          storage_id, storage_name, GetStoragePathFromStorageId(storage_id)));
     }
   }
   device_map_[location] = storage_objects;

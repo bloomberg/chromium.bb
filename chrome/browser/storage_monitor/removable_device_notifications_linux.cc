@@ -389,8 +389,8 @@ void RemovableDeviceNotificationsLinux::UpdateMtab() {
     const MountPointInfo& mount_info =
         mount_info_map_.find(mount_point)->second;
     DCHECK(MediaStorageUtil::IsRemovableDevice(mount_info.device_id));
-    receiver()->ProcessAttach(
-        mount_info.device_id, mount_info.device_name, mount_point.value());
+    receiver()->ProcessAttach(StorageInfo(
+        mount_info.device_id, mount_info.device_name, mount_point.value()));
   }
 
   // Check new mtab entries against existing ones.
@@ -455,9 +455,9 @@ void RemovableDeviceNotificationsLinux::AddNewMount(
   mount_priority_map_[mount_device][mount_point] = removable;
 
   if (removable) {
-    receiver()->ProcessAttach(
+    receiver()->ProcessAttach(StorageInfo(
         device_id, GetDisplayNameForDevice(partition_size_in_bytes, name),
-        mount_point.value());
+        mount_point.value()));
   }
 }
 

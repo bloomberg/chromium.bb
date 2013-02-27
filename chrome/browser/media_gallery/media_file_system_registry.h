@@ -88,8 +88,6 @@ class MediaFileSystemRegistry : public RemovableStorageObserver {
   MediaGalleriesPreferences* GetPreferences(Profile* profile);
 
   // RemovableStorageObserver implementation.
-  virtual void OnRemovableStorageAttached(
-      const StorageMonitor::StorageInfo& info) OVERRIDE;
   virtual void OnRemovableStorageDetached(
       const StorageMonitor::StorageInfo& info) OVERRIDE;
 

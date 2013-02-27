@@ -96,10 +96,11 @@ chrome::ImageCaptureDeviceManager* g_image_capture_device_manager = NULL;
 
   // TODO(gbillock): use [cameraDevice mountPoint] here when possible.
   notifications_->ProcessAttach(
-      chrome::MediaStorageUtil::MakeDeviceId(
-          chrome::MediaStorageUtil::MAC_IMAGE_CAPTURE,
-          base::SysNSStringToUTF8([cameraDevice UUIDString])),
-      base::SysNSStringToUTF16([cameraDevice name]), "");
+      chrome::StorageMonitor::StorageInfo(
+          chrome::MediaStorageUtil::MakeDeviceId(
+              chrome::MediaStorageUtil::MAC_IMAGE_CAPTURE,
+              base::SysNSStringToUTF8([cameraDevice UUIDString])),
+          base::SysNSStringToUTF16([cameraDevice name]), ""));
 }
 
 - (void)deviceBrowser:(ICDeviceBrowser*)browser

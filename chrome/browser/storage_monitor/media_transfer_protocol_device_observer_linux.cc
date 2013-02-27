@@ -113,7 +113,6 @@ void GetStorageInfo(const std::string& storage_name,
   if (label)
     *label = GetDeviceLabelFromStorageInfo(*storage_info);
 
-
   if (location)
     *location = GetDeviceLocationFromStorageName(storage_name);
 }
@@ -215,7 +214,7 @@ void MediaTransferProtocolDeviceObserverLinux::StorageChanged(
     StorageMonitor::StorageInfo storage_info(
         device_id, device_name, location);
     storage_map_[location] = storage_info;
-    notifications_->ProcessAttach(device_id, device_name, location);
+    notifications_->ProcessAttach(storage_info);
   } else {
     // Existing storage is detached.
     StorageLocationToInfoMap::iterator it =

@@ -104,8 +104,8 @@ void RemovableDeviceNotificationsMac::UpdateDisk(
     if (ShouldPostNotificationForDisk(info)) {
       string16 display_name = GetDisplayNameForDevice(
           info.total_size_in_bytes(), info.device_name());
-      receiver()->ProcessAttach(
-          info.device_id(), display_name, info.mount_point().value());
+      receiver()->ProcessAttach(StorageInfo(
+          info.device_id(), display_name, info.mount_point().value()));
     }
   }
 }

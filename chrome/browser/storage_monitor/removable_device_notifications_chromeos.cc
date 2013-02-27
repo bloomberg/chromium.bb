@@ -246,10 +246,10 @@ void RemovableDeviceNotificationsCros::AddMountedPathOnUIThread(
       storage_size_in_bytes
   };
   mount_map_.insert(std::make_pair(mount_info.mount_path, object_info));
-  receiver()->ProcessAttach(
+  receiver()->ProcessAttach(StorageInfo(
       device_id,
       chrome::GetDisplayNameForDevice(storage_size_in_bytes, device_label),
-      mount_info.mount_path);
+      mount_info.mount_path));
 }
 
 }  // namespace chromeos

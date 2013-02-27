@@ -15,6 +15,7 @@
 #include "base/string16.h"
 #include "base/time.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
+#include "chrome/browser/storage_monitor/removable_storage_observer.h"
 
 class PrefRegistrySyncable;
 class Profile;
@@ -106,7 +107,8 @@ typedef std::set<MediaGalleryPrefId> MediaGalleryPrefIdSet;
 
 // A class to manage the media gallery preferences.  There is one instance per
 // user profile.
-class MediaGalleriesPreferences : public ProfileKeyedService {
+class MediaGalleriesPreferences : public ProfileKeyedService,
+                                  public RemovableStorageObserver {
  public:
   class GalleryChangeObserver {
     public:
@@ -125,9 +127,12 @@ class MediaGalleriesPreferences : public ProfileKeyedService {
   void AddGalleryChangeObserver(GalleryChangeObserver* observer);
   void RemoveGalleryChangeObserver(GalleryChangeObserver* observer);
 
-  // Lookup a media gallery and fill in information about it and return true.
-  // If the media gallery does not already exist, fill in as much of the
-  // MediaGalleryPrefInfo struct as we can and return false.
+  // RemovableStorageObserver implementation.
+  virtual void OnRemovableStorageAttached(
+      const StorageMonitor::StorageInfo& info) OVERRIDE;
+
+  // Lookup a media gallery and fill in information about it and return true if
+  // it exists. Return false if it does not, filling in default information.
   // TODO(vandebo) figure out if we want this to be async, in which case:
   // void LookUpGalleryByPath(base::FilePath& path,
   //                          callback(const MediaGalleryInfo&))
