@@ -48,9 +48,9 @@
 #       I: Immediate value encoded in the instruction.
 #       J: The instruction encoding includes a relative offset that is added to
 #          the rIP.
-#       L: YMM or XMM register specified using the most-significant 4 bits of an
-#          8-bit immediate value.  In legacy or compatibility mode the most
-#          significant bit is ignored.
+#       L: YMM or XMM register specified using the most-significant 4 bits of
+#          the last byte of the instruction.  In legacy or compatibility mode
+#          the most significant bit is ignored.
 #       M: A memory operand specified by the {mod, r/m} field of the ModRM byte.
 #          ModRM.mod != 11b.
 #       N: 64-bit MMX register specified by the ModRM.r/m field. The ModRM.mod
@@ -391,7 +391,7 @@ class OperandType(object):
   XMM_REGISTER_IN_REG = 'V'
   XMM_REGISTER_OR_MEMORY = 'W'  # in ModRM.mod and .r/m
 
-  XMM_REGISTER_IN_IMMEDIATE = 'L'  # most-significant 4 bits of 8-bit immediate
+  XMM_REGISTER_IN_LAST_BYTE = 'L'  # most-significant 4 bits
 
   DS_SI = 'X'
   ES_DI = 'Y'

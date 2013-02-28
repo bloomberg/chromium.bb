@@ -221,6 +221,24 @@ class TestInstructionPrinter(unittest.TestCase):
         @operand0_immediate
         """.split())
 
+  def test_2bit_immediate(self):
+    printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 32)
+    instr = gen_dfa.Instruction.Parse(
+        'vpermil2pd I2 Lpdx Wpdx Hpdx Vpdx, '
+        '0xc4 RXB.00011 0.src.L.01 0x49, '
+        'CPUFeature_XOP')
+
+    instr = printer._SetOperandIndices(instr)
+    printer._PrintImmediates(instr)
+
+    self.assertEquals(
+        printer.GetContent().split(),
+        """
+        @operand0_immediate
+        b_0xxx_00xx @imm2_operand
+        @operand1_from_is4
+        """.split())
+
   def test_no_modrm_with_rex(self):
     printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 64)
     instr = gen_dfa.Instruction.Parse(

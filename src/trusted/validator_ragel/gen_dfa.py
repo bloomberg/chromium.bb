@@ -122,7 +122,7 @@ class Operand(object):
     if self.arg_type in [def_format.OperandType.XMM_REGISTER_IN_REG,
                          def_format.OperandType.XMM_REGISTER_IN_RM,
                          def_format.OperandType.XMM_REGISTER_IN_VVVV,
-                         def_format.OperandType.XMM_REGISTER_IN_IMMEDIATE]:
+                         def_format.OperandType.XMM_REGISTER_IN_LAST_BYTE]:
       if self.size.endswith('-ymm') or self.size in ['fq', 'do']:
         return 'ymm'
       else:
@@ -148,6 +148,10 @@ class Operand(object):
 
     if self.size == '7':
       return 'x87'
+
+    if self.size == '2':
+      assert self.arg_type == def_format.OperandType.IMMEDIATE
+      return '2bit'
 
     if self.arg_type == def_format.OperandType.MEMORY:
       # TODO(shcherabina): introduce proper 'memory' format and get rid of
@@ -628,7 +632,6 @@ class InstructionPrinter(object):
 
     # TODO(shcherbina): print operand sources and extract implicit operands.
 
-    # TODO(shcherbina): print '@last_byte_is_not_immediate' when approptiate.
     # TODO(shcherbina): print '@modifiable_instruction' in validator64 if
     # attribute 'nacl-amd64-modifiable' is present.
 
@@ -719,11 +722,14 @@ class InstructionPrinter(object):
 
   def _PrintImmediates(self, instruction):
     """Print a machine that parses immediate operands (if present)."""
+
+    imm2 = None  # two-bit immediate if found
+
     operand = instruction.FindOperand(def_format.OperandType.IMMEDIATE)
     if operand is not None:
       format = operand.GetFormat()
       if format == '2bit':
-        assert False, 'not supported yet'
+        imm2 = operand  # handled below
       elif format == '8bit':
         self._out.write('imm8\n')
       elif format == '16bit':
@@ -748,16 +754,20 @@ class InstructionPrinter(object):
       self._PrintOperandSource(operand, 'second_immediate')
 
     operand = instruction.FindOperand(
-        def_format.OperandType.XMM_REGISTER_IN_IMMEDIATE)
+        def_format.OperandType.XMM_REGISTER_IN_LAST_BYTE)
     if operand is not None:
-      # TODO(shcherbina): 2-bit immediate support.
-      if self._bitness == 32:
-        self._out.write('b_0xxx_0000\n')
+      highest_bit = {32: '0', 64: 'x'}[self._bitness]
+      if imm2 is None:
+        self._out.write('b_%sxxx_0000\n' % highest_bit)
+        self._PrintOperandSource(operand, 'from_is4')
       else:
-        self._out.write('b_xxxx_0000\n')
+        self._out.write('b_%sxxx_00xx @imm2_operand\n' % highest_bit)
+        self._PrintOperandSource(operand, 'from_is4')
+
       if self._mode == VALIDATOR:
         self._out.write('@last_byte_is_not_immediate\n')
-      self._PrintOperandSource(operand, 'from_is4')
+    else:
+      assert imm2 is None
 
   def PrintInstructionWithoutModRM(self, instruction):
     assert not instruction.HasModRM()
@@ -882,6 +892,8 @@ class InstructionPrinter(object):
     if instruction.HasOpcodeInsteadOfImmediate():
       assert instruction.opcodes[-2] == '/'
       self._out.write('%s\n' % instruction.opcodes[-1])
+      if self._mode == VALIDATOR:
+        self._out.write('@last_byte_is_not_immediate\n')
 
     self._PrintSignature(instruction)
     self._PrintDetachedOperandSources(instruction)
@@ -961,6 +973,8 @@ class InstructionPrinter(object):
     if instruction.HasOpcodeInsteadOfImmediate():
       assert instruction.opcodes[-2] == '/'
       self._out.write('%s\n' % instruction.opcodes[-1])
+      if self._mode == VALIDATOR:
+        self._out.write('@last_byte_is_not_immediate\n')
       self._PrintSignature(instruction)
       self._PrintDetachedOperandSources(instruction)
 
