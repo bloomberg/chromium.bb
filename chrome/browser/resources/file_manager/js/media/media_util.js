@@ -12,9 +12,14 @@
  *     default: IMAGE.
  * @param {Object=} opt_metadata Metadata object.
  * @param {string=} opt_mediaType Media type.
+ * @param {ThumbnailLoader.UseEmbedded=} opt_useEmbedded If to use embedded
+ *     jpeg thumbnail if available. Default: USE_EMBEDDED.
  * @constructor
  */
-function ThumbnailLoader(url, opt_loaderType, opt_metadata, opt_mediaType) {
+function ThumbnailLoader(
+    url, opt_loaderType, opt_metadata, opt_mediaType, opt_useEmbedded) {
+  opt_useEmbedded = opt_useEmbedded || ThumbnailLoader.UseEmbedded.USE_EMBEDDED;
+
   this.mediaType_ = opt_mediaType || FileType.getMediaType(url);
   this.loaderType_ = opt_loaderType || ThumbnailLoader.LoaderType.IMAGE;
   this.metadata_ = opt_metadata;
@@ -36,7 +41,8 @@ function ThumbnailLoader(url, opt_loaderType, opt_metadata, opt_mediaType) {
     }
   }
 
-  if (opt_metadata.thumbnail && opt_metadata.thumbnail.url) {
+  if (opt_metadata.thumbnail && opt_metadata.thumbnail.url &&
+      opt_useEmbedded == ThumbnailLoader.UseEmbedded.USE_EMBEDDED) {
     this.thumbnailUrl_ = opt_metadata.thumbnail.url;
     this.transform_ = opt_metadata.thumbnail.transform;
   } else if (FileType.isImage(url)) {
@@ -59,7 +65,7 @@ ThumbnailLoader.AUTO_FILL_THRESHOLD = 0.3;
 
 /**
  * Type of displaying a thumbnail within a box.
- * @enum
+ * @enum {number}
  */
 ThumbnailLoader.FillMode = {
   FILL: 0,  // Fill whole box. Image may be cropped.
@@ -69,7 +75,7 @@ ThumbnailLoader.FillMode = {
 
 /**
  * Optimization mode for downloading thumbnails.
- * @enum
+ * @enum {number}
  */
 ThumbnailLoader.OptimizationMode = {
   NEVER_DISCARD: 0,    // Never discards downloading. No optimization.
@@ -78,11 +84,21 @@ ThumbnailLoader.OptimizationMode = {
 
 /**
  * Type of element to store the image.
- * @enum
+ * @enum {number}
  */
 ThumbnailLoader.LoaderType = {
   IMAGE: 0,
   CANVAS: 1
+};
+
+/**
+ * Whether to use the embedded thumbnail, or not. The embedded thumbnail may
+ * be small.
+ * @enum {number}
+ */
+ThumbnailLoader.UseEmbedded = {
+  USE_EMBEDDED: 0,
+  NO_EMBEDDED: 1
 };
 
 /**
@@ -123,6 +139,7 @@ ThumbnailLoader.prototype.load = function(box, fillMode, opt_optimizationMode,
     return;
   }
 
+  this.cancel();
   this.canvasUpToDate_ = false;
   this.image_ = new Image();
   this.image_.onload = function() {
@@ -155,7 +172,7 @@ ThumbnailLoader.prototype.load = function(box, fillMode, opt_optimizationMode,
                          this.metadata_.filesystem &&
                          this.metadata_.filesystem.modificationTime &&
                          this.metadata_.filesystem.modificationTime.getTime();
-  var taskId = util.loadImage(
+  this.taskId_ = util.loadImage(
       this.image_,
       this.thumbnailUrl_,
       { maxWidth: ThumbnailLoader.THUMBNAIL_MAX_WIDTH,
@@ -172,8 +189,19 @@ ThumbnailLoader.prototype.load = function(box, fillMode, opt_optimizationMode,
         return true;
       });
 
-  if (!taskId)
+  if (!this.taskId_)
     this.image_.classList.add('cached');
+};
+
+/**
+ * Cancels loading the current image.
+ */
+ThumbnailLoader.prototype.cancel = function() {
+  if (this.taskId_) {
+    this.image_.onload = function() {};
+    this.image_.onerror = function() {};
+    util.cancelLoadImage(this.taskId_);
+  }
 };
 
 /**
@@ -217,6 +245,7 @@ ThumbnailLoader.prototype.loadDetachedImage = function(callback) {
     return;
   }
 
+  this.cancel();
   this.canvasUpToDate_ = false;
   this.image_ = new Image();
   this.image_.onload = callback.bind(null, true);
@@ -227,7 +256,7 @@ ThumbnailLoader.prototype.loadDetachedImage = function(callback) {
                          this.metadata_.filesystem &&
                          this.metadata_.filesystem.modificationTime &&
                          this.metadata_.filesystem.modificationTime.getTime();
-  var taskId = util.loadImage(
+  this.taskId_ = util.loadImage(
       this.image_,
       this.thumbnailUrl_,
       { maxWidth: ThumbnailLoader.THUMBNAIL_MAX_WIDTH,
@@ -235,7 +264,7 @@ ThumbnailLoader.prototype.loadDetachedImage = function(callback) {
         cache: true,
         timestamp: modificationTime });
 
-  if (!taskId)
+  if (!this.taskId_)
     this.image_.classList.add('cached');
 };
 
@@ -274,7 +303,7 @@ ThumbnailLoader.prototype.attachImage = function(container, fillMode) {
   util.applyTransform(container, this.transform_);
   ThumbnailLoader.centerImage_(
       container, attachableMedia, fillMode, this.isRotated_());
-  if (this.image_.parentNode != container) {
+  if (attachableMedia.parentNode != container) {
     container.textContent = '';
     container.appendChild(attachableMedia);
   }

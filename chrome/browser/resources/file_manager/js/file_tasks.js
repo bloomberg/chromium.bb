@@ -458,7 +458,6 @@ FileTasks.prototype.openGallery = function(urls) {
       metadataCache: fm.metadataCache_,
       pageState: this.params_,
       onClose: onClose,
-      allowMosaic: fm.isOnDrive(),
       onThumbnailError: function(imageURL) {
         fm.metadataCache_.refreshFileMetadata(imageURL);
       },

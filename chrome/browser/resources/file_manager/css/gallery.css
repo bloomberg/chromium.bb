@@ -1228,9 +1228,20 @@ body {
   top: 0;
 }
 
-.mosaic-tile img {
-  -webkit-user-drag: none;
-  position: absolute;
+.mosaic-tile .img-wrapper[generic-thumbnail],
+.mosaic-tile .img-wrapper:not([generic-thumbnail]) canvas {
+  -webkit-animation: fadeIn ease-in 1;
+  -webkit-animation-duration: 500ms;
+  -webkit-animation-fill-mode: forwards;
+}
+
+@-webkit-keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* In order to do mode animated transitions smoothly we keep both mosaic and

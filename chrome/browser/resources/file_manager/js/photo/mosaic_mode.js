@@ -85,12 +85,16 @@ Mosaic.prototype.__proto__ = HTMLDivElement.prototype;
 
 /**
  * Default layout delay in ms.
+ * @const
+ * @type {number}
  */
 Mosaic.LAYOUT_DELAY = 200;
 
 /**
  * Smooth scroll animation duration when scrolling using keyboard or
  * clicking on a partly visible tile. In ms.
+ * @const
+ * @type {number}
  */
 Mosaic.ANIMATED_SCROLL_DURATION = 500;
 
@@ -137,7 +141,7 @@ Mosaic.prototype.init = function() {
     this.tiles_[index].select(true);
   }.bind(this));
 
-  this.loadTiles_(this.tiles_);
+  this.initTiles_(this.tiles_);
 
   // The listeners might be called while some tiles are still loading.
   this.initListeners_();
@@ -166,6 +170,7 @@ Mosaic.prototype.initListeners_ = function() {
   this.addEventListener('mousemove', mouseEventBound);
   this.addEventListener('mousedown', mouseEventBound);
   this.addEventListener('mouseup', mouseEventBound);
+  this.addEventListener('scroll', this.onScroll_.bind(this));
 
   this.selectionModel_.addEventListener('change', this.onSelection_.bind(this));
   this.selectionModel_.addEventListener('leadIndexChange',
@@ -261,13 +266,13 @@ Mosaic.prototype.scrollIntoView = function(index) {
 };
 
 /**
- * Load multiple tiles.
+ * Initializes multiple tiles.
  *
  * @param {Array.<Mosaic.Tile>} tiles Array of tiles.
- * @param {function=} opt_callback Completion callback.
+ * @param {function()=} opt_callback Completion callback.
  * @private
  */
-Mosaic.prototype.loadTiles_ = function(tiles, opt_callback) {
+Mosaic.prototype.initTiles_ = function(tiles, opt_callback) {
   // We do not want to use tile indices in asynchronous operations because they
   // do not survive data model splices. Copy tile references instead.
   tiles = tiles.slice();
@@ -283,7 +288,7 @@ Mosaic.prototype.loadTiles_ = function(tiles, opt_callback) {
     var chunkSize = Math.min(tiles.length, MAX_CHUNK_SIZE);
     var loaded = 0;
     for (var i = 0; i != chunkSize; i++) {
-      this.loadTile_(tiles.shift(), function() {
+      this.initTile_(tiles.shift(), function() {
         if (++loaded == chunkSize) {
           this.layout();
           loadChunk();
@@ -296,22 +301,19 @@ Mosaic.prototype.loadTiles_ = function(tiles, opt_callback) {
 };
 
 /**
- * Load a single tile.
+ * Initializes a single tile.
  *
  * @param {Mosaic.Tile} tile Tile.
- * @param {function} callback Completion callback.
+ * @param {function()} callback Completion callback.
  * @private
  */
-Mosaic.prototype.loadTile_ = function(tile, callback) {
+Mosaic.prototype.initTile_ = function(tile, callback) {
   var url = tile.getItem().getUrl();
-  var onImageLoaded = function(success) {
-    if (!success && this.onThumbnailError_) {
-      this.onThumbnailError_(url);
-    }
-    callback();
-  }.bind(this);
+  var onImageMeasured = callback;
   this.metadataCache_.get(url, Gallery.METADATA_TYPE,
-      function(metadata) { tile.load(metadata, onImageLoaded) });
+      function(metadata) {
+        tile.init(metadata, onImageMeasured);
+      });
 };
 
 /**
@@ -320,7 +322,7 @@ Mosaic.prototype.loadTile_ = function(tile, callback) {
 Mosaic.prototype.reload = function() {
   this.layoutModel_.reset_();
   this.tiles_.forEach(function(t) { t.markUnloaded() });
-  this.loadTiles_(this.tiles_);
+  this.initTiles_(this.tiles_);
 };
 
 /**
@@ -339,10 +341,11 @@ Mosaic.prototype.layout = function() {
     if (index == this.tiles_.length)
       break; // All tiles done.
     var tile = this.tiles_[index];
-    if (!tile.isLoaded())
+    if (!tile.isInitialized())
       break;  // Next layout will try to restart from here.
     this.layoutModel_.add(tile, index + 1 == this.tiles_.length);
   }
+  this.loadVisibleTiles_();
 };
 
 /**
@@ -397,6 +400,14 @@ Mosaic.prototype.onMouseEvent_ = function(event) {
 };
 
 /**
+ * Scroll handler.
+ * @private
+ */
+Mosaic.prototype.onScroll_ = function() {
+  this.loadVisibleTiles_();
+};
+
+/**
  * Selection change handler.
  *
  * @param {Event} event Event.
@@ -448,7 +459,7 @@ Mosaic.prototype.onSplice_ = function(event) {
       newTiles.push(new Mosaic.Tile(this, this.dataModel_.item(index + t)));
 
     this.tiles_.splice.apply(this.tiles_, [index, 0].concat(newTiles));
-    this.loadTiles_(newTiles);
+    this.initTiles_(newTiles);
   }
 
   if (this.tiles_.length != this.dataModel_.length)
@@ -473,8 +484,11 @@ Mosaic.prototype.onContentChange_ = function(event) {
     console.error('Content changed for unselected item');
 
   this.layoutModel_.invalidateFromTile_(index);
-  this.tiles_[index].load(
-      event.metadata, this.scheduleLayout.bind(this, Mosaic.LAYOUT_DELAY));
+  this.tiles_[index].init(event.metadata, function() {
+        this.tiles_[index].load(
+            this.scheduleLayout.bind(this, Mosaic.LAYOUT_DELAY),
+            this.onThumbnailError_);
+      }.bind(this));
 };
 
 /**
@@ -525,6 +539,29 @@ Mosaic.prototype.show = function() {
  */
 Mosaic.prototype.hide = function() {
   this.removeAttribute('visible');
+};
+
+/**
+ * Loads visible tiles. Ignores consecutive calls. Does not reload already
+ * loaded images.
+ * @private
+ */
+Mosaic.prototype.loadVisibleTiles_ = function() {
+  if (this.loadVisibleTilesTimer_) {
+    clearTimeout(this.loadVisibleTilesTimer_);
+    this.loadVisibleTilesTimer_ = null;
+  }
+  this.loadVisibleTilesTimer_ = setTimeout(function() {
+    var viewportRect = new Rect(0, 0, this.clientWidth, this.clientHeight);
+    for (var index = 0; index < this.tiles_.length; index++) {
+      var tile = this.tiles_[index];
+      var imageRect = tile.getImageRect();
+      if (!tile.isLoading() && !tile.isLoaded() && imageRect &&
+          imageRect.intersects(viewportRect)) {
+        tile.load(function() {}, this.onThumbnailError_);
+      }
+    }
+  }.bind(this), 100);
 };
 
 /**
@@ -1588,54 +1625,107 @@ Mosaic.Tile.prototype.getMaxContentHeight = function() {
 Mosaic.Tile.prototype.getAspectRatio = function() { return this.aspectRatio_ };
 
 /**
+ * @return {boolean} True if the tile is initialized.
+ */
+Mosaic.Tile.prototype.isInitialized = function() {
+  return !!this.maxContentHeight_;
+};
+
+/**
  * @return {boolean} True if the tile is loaded.
  */
-Mosaic.Tile.prototype.isLoaded = function() { return !!this.maxContentHeight_ };
+Mosaic.Tile.prototype.isLoaded = function() {
+  return this.imageLoaded_;
+};
+
+/**
+ * @return {boolean} True if the tile is being loaded.
+ */
+Mosaic.Tile.prototype.isLoading = function() {
+  return this.imageLoading_;
+};
 
 /**
  * Mark the tile as not loaded to prevent it from participating in the layout.
  */
 Mosaic.Tile.prototype.markUnloaded = function() {
   this.maxContentHeight_ = 0;
+  if (this.thumbnailLoader_) {
+    this.thumbnailLoader_.cancel();
+    this.imageLoaded_ = false;
+    this.imageLoading_ = false;
+  }
 };
 
 /**
- * Load the thumbnail image into the tile.
+ * Initializes the thumbnail in the tile. Does not load an image, but sets
+ * target dimensions using metadata.
  *
  * @param {Object} metadata Metadata object.
- * @param {function} callback Completion callback.
+ * @param {function()} onImageMeasured Image measured callback.
  */
-Mosaic.Tile.prototype.load = function(metadata, callback) {
+Mosaic.Tile.prototype.init = function(metadata, onImageMeasured) {
   this.markUnloaded();
   this.left_ = null;  // Mark as not laid out.
 
-  this.thumbnailLoader_ = new ThumbnailLoader(this.getItem().getUrl(),
-                                              ThumbnailLoader.LoaderType.CANVAS,
-                                              metadata);
+  this.thumbnailLoader_ = new ThumbnailLoader(
+      this.getItem().getUrl(),
+      ThumbnailLoader.LoaderType.CANVAS,
+      metadata,
+      undefined,  // Media type.
+      ThumbnailLoader.UseEmbedded.NO_EMBEDDED);
 
-  this.thumbnailLoader_.loadDetachedImage(function(success) {
-    if (this.thumbnailLoader_.hasValidImage()) {
-      var width = this.thumbnailLoader_.getWidth();
-      var height = this.thumbnailLoader_.getHeight();
-      if (width > height) {
-        if (width > Mosaic.Tile.MAX_CONTENT_SIZE) {
-          height = Math.round(height * Mosaic.Tile.MAX_CONTENT_SIZE / width);
-          width = Mosaic.Tile.MAX_CONTENT_SIZE;
-        }
-      } else {
-        if (height > Mosaic.Tile.MAX_CONTENT_SIZE) {
-          width = Math.round(width * Mosaic.Tile.MAX_CONTENT_SIZE / height);
-          height = Mosaic.Tile.MAX_CONTENT_SIZE;
-        }
+  var setDimensions = function(width, height) {
+    if (width > height) {
+      if (width > Mosaic.Tile.MAX_CONTENT_SIZE) {
+        height = Math.round(height * Mosaic.Tile.MAX_CONTENT_SIZE / width);
+        width = Mosaic.Tile.MAX_CONTENT_SIZE;
       }
-      this.maxContentHeight_ = Math.max(Mosaic.Tile.MIN_CONTENT_SIZE, height);
-      this.aspectRatio_ = width / height;
     } else {
-      this.maxContentHeight_ = Mosaic.Tile.GENERIC_ICON_SIZE;
-      this.aspectRatio_ = 1;
+      if (height > Mosaic.Tile.MAX_CONTENT_SIZE) {
+        width = Math.round(width * Mosaic.Tile.MAX_CONTENT_SIZE / height);
+        height = Mosaic.Tile.MAX_CONTENT_SIZE;
+      }
     }
+    this.maxContentHeight_ = Math.max(Mosaic.Tile.MIN_CONTENT_SIZE, height);
+    this.aspectRatio_ = width / height;
+    onImageMeasured();
+  }.bind(this);
 
-    callback(success);
+  // Dimensions are always acquired from the metadata. If it is not available,
+  // then the image will not be displayed.
+  if (metadata.media && metadata.media.width) {
+    setDimensions(metadata.media.width, metadata.media.height);
+  } else {
+    // No dimensions in metadata, then display the generic icon instead.
+    // TODO(mtomasz): Display a gneric icon instead of a black rectangle.
+    setDimensions(Mosaic.Tile.GENERIC_ICON_SIZE,
+                  Mosaic.Tile.GENERIC_ICON_SIZE);
+  }
+};
+
+/**
+ * Loads an image into the tile.
+ *
+ * @param {function(boolean)} onImageLoaded Callback when image is loaded.
+ *     The argument is true for success, false for failure.
+ * @param {function()=} opt_onThumbnailError Callback for image loading error.
+ */
+Mosaic.Tile.prototype.load = function(onImageLoaded, opt_onThumbnailError) {
+  this.imageLoaded_ = false;
+  this.imageLoading_ = true;
+  this.thumbnailLoader_.loadDetachedImage(function(success) {
+    if (!success) {
+      if (opt_onThumbnailError)
+        opt_onThumbnailError();
+    }
+    if (this.wrapper_) {
+      this.thumbnailLoader_.attachImage(this.wrapper_,
+                                        ThumbnailLoader.FillMode.FILL);
+    }
+    onImageLoaded(success);
+    this.imageLoaded_ = true;
+    this.imageLoading_ = false;
   }.bind(this));
 };
 
@@ -1678,8 +1768,10 @@ Mosaic.Tile.prototype.layout = function(left, top, width, height) {
   if (this.hasAttribute('selected'))
     this.scrollIntoView(false);
 
-  this.thumbnailLoader_.attachImage(this.wrapper_,
-                                    ThumbnailLoader.FillMode.FILL);
+  if (this.imageLoaded_) {
+    this.thumbnailLoader_.attachImage(this.wrapper_,
+                                      ThumbnailLoader.FillMode.FILL);
+  }
 };
 
 /**
