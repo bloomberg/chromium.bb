@@ -261,8 +261,6 @@
         'browser/extensions/api/messaging/native_process_launcher_win.cc',
         'browser/extensions/api/messaging/native_process_launcher.cc',
         'browser/extensions/api/messaging/native_process_launcher.h',
-        'browser/extensions/api/messaging/native_messaging_host_manifest.cc',
-        'browser/extensions/api/messaging/native_messaging_host_manifest.h',
         'browser/extensions/api/messaging/native_message_port.cc',
         'browser/extensions/api/messaging/native_message_port.h',
         'browser/extensions/api/metrics_private/metrics_private_api.cc',

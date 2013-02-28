@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var appName = 'com.google.chrome.test.echo';
+var appName = navigator.platform.match(/win/i) ? 'echo.bat' : 'echo.py';
 
 chrome.test.getConfig(function(config) {
     chrome.test.runTests([

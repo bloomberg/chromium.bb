@@ -40,7 +40,8 @@ class NativeMessageProcessHost
 #endif  // !defined(OS_POSIX)
  {
  public:
-  // Interface for the object that receives messages from the native process.
+  // Interface for classes that which to recieve messages from the native
+  // process.
   class Client {
    public:
     virtual ~Client() {}
@@ -54,14 +55,12 @@ class NativeMessageProcessHost
 
   static scoped_ptr<NativeMessageProcessHost> Create(
       base::WeakPtr<Client> weak_client_ui,
-      const std::string& source_extension_id,
       const std::string& native_host_name,
       int destination_port);
 
   // Create using specified |launcher|. Used in tests.
   static scoped_ptr<NativeMessageProcessHost> CreateWithLauncher(
       base::WeakPtr<Client> weak_client_ui,
-      const std::string& source_extension_id,
       const std::string& native_host_name,
       int destination_port,
       scoped_ptr<NativeProcessLauncher> launcher);
@@ -81,7 +80,6 @@ class NativeMessageProcessHost
 
  private:
   NativeMessageProcessHost(base::WeakPtr<Client> weak_client_ui,
-                           const std::string& source_extension_id,
                            const std::string& native_host_name,
                            int destination_port,
                            scoped_ptr<NativeProcessLauncher> launcher);
@@ -116,9 +114,6 @@ class NativeMessageProcessHost
   // The Client messages will be posted to. Should only be accessed from the
   // UI thread.
   base::WeakPtr<Client> weak_client_ui_;
-
-  // ID of the calling extension.
-  std::string source_extension_id_;
 
   // Name of the native messaging host.
   std::string native_host_name_;

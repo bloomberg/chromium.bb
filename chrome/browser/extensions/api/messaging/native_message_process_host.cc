@@ -11,13 +11,10 @@
 #include "base/platform_file.h"
 #include "base/process_util.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/messaging/native_messaging_host_manifest.h"
 #include "chrome/browser/extensions/api/messaging/native_process_launcher.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/features/feature.h"
-#include "extensions/common/constants.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -40,12 +37,10 @@ namespace extensions {
 
 NativeMessageProcessHost::NativeMessageProcessHost(
     base::WeakPtr<Client> weak_client_ui,
-    const std::string& source_extension_id,
     const std::string& native_host_name,
     int destination_port,
     scoped_ptr<NativeProcessLauncher> launcher)
     : weak_client_ui_(weak_client_ui),
-      source_extension_id_(source_extension_id),
       native_host_name_(native_host_name),
       destination_port_(destination_port),
       launcher_(launcher.Pass()),
@@ -70,11 +65,9 @@ NativeMessageProcessHost::~NativeMessageProcessHost() {
 // static
 scoped_ptr<NativeMessageProcessHost> NativeMessageProcessHost::Create(
     base::WeakPtr<Client> weak_client_ui,
-    const std::string& source_extension_id,
     const std::string& native_host_name,
     int destination_port) {
-  return CreateWithLauncher(weak_client_ui, source_extension_id,
-                            native_host_name, destination_port,
+  return CreateWithLauncher(weak_client_ui, native_host_name, destination_port,
                             NativeProcessLauncher::CreateDefault());
 }
 
@@ -82,7 +75,6 @@ scoped_ptr<NativeMessageProcessHost> NativeMessageProcessHost::Create(
 scoped_ptr<NativeMessageProcessHost>
 NativeMessageProcessHost::CreateWithLauncher(
     base::WeakPtr<Client> weak_client_ui,
-    const std::string& source_extension_id,
     const std::string& native_host_name,
     int destination_port,
     scoped_ptr<NativeProcessLauncher> launcher) {
@@ -96,8 +88,7 @@ NativeMessageProcessHost::CreateWithLauncher(
   }
 
   process.reset(new NativeMessageProcessHost(
-      weak_client_ui, source_extension_id, native_host_name,
-      destination_port, launcher.Pass()));
+      weak_client_ui, native_host_name, destination_port, launcher.Pass()));
 
   return process.Pass();
 }
@@ -105,10 +96,10 @@ NativeMessageProcessHost::CreateWithLauncher(
 void NativeMessageProcessHost::LaunchHostProcess() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
-  GURL origin(std::string(kExtensionScheme) + "://" + source_extension_id_);
-  launcher_->Launch(origin, native_host_name_,
-                    base::Bind(&NativeMessageProcessHost::OnHostProcessLaunched,
-                               base::Unretained(this)));
+  launcher_->Launch(
+      native_host_name_, base::Bind(
+          &NativeMessageProcessHost::OnHostProcessLaunched,
+          base::Unretained(this)));
 }
 
 void NativeMessageProcessHost::OnHostProcessLaunched(

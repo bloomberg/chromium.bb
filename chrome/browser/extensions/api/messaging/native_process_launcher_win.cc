@@ -9,58 +9,13 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/process_util.h"
-#include "base/string16.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "crypto/random.h"
-#include "chrome/browser/extensions/api/messaging/native_messaging_host_manifest.h"
 
 namespace extensions {
-
-const wchar_t kNativeMessagingRegistryKey[] =
-    L"SOFTWARE\\Google\\Chrome\\NativeMessagingHosts";
-
-// static
-scoped_ptr<NativeMessagingHostManifest>
-NativeProcessLauncher::FindAndLoadManifest(
-    const std::string& native_host_name,
-    std::string* error_message) {
-  base::win::RegKey key;
-
-  string16 manifest_path;
-  string16 native_host_name_wide = UTF8ToUTF16(native_host_name);
-
-  bool found = false;
-
-  // First check 32-bit registry and then try 64-bit.
-  if (key.Open(HKEY_LOCAL_MACHINE, kNativeMessagingRegistryKey,
-               KEY_QUERY_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS) {
-    if (key.ReadValue(native_host_name_wide.c_str(), &manifest_path) ==
-        ERROR_SUCCESS) {
-      found = true;
-    }
-  }
-
-  if (!found && key.Open(HKEY_LOCAL_MACHINE, kNativeMessagingRegistryKey,
-                         KEY_QUERY_VALUE | KEY_WOW64_64KEY) == ERROR_SUCCESS) {
-    if (key.ReadValue(native_host_name_wide.c_str(), &manifest_path) ==
-        ERROR_SUCCESS) {
-      found = true;
-    }
-  }
-
-  if (!found) {
-    *error_message = "Native messaging host " + native_host_name +
-        " is not registered";
-    return scoped_ptr<NativeMessagingHostManifest>();
-  }
-
-  return NativeMessagingHostManifest::Load(
-      base::FilePath(manifest_path), error_message);
-}
 
 // static
 bool NativeProcessLauncher::LaunchNativeProcess(
