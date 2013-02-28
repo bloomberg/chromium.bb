@@ -55,6 +55,7 @@
       <structure name="IDR_READER_OUT_OF_DATE_HTML" file="resources\reader_out_of_date.html" flattenhtml="true" type="chrome_html" />
       <structure name="IDR_SSL_ROAD_BLOCK_HTML" file="resources\ssl_roadblock.html" flattenhtml="true" type="chrome_html" />
       <structure name="IDR_SAFE_BROWSING_MALWARE_BLOCK_V2" file="resources\safe_browsing\malware_block_v2.html" flattenhtml="true" type="chrome_html" />
+      <structure name="IDR_MANAGED_USER_PASSPHRASE_DIALOG_HTML" file="resources\managed_user_passphrase_dialog.html" flattenhtml="true" type="chrome_html" />
     </structures>
     <includes>
       <if expr="is_win">
@@ -321,10 +322,7 @@
         <include name="IDR_SET_AS_DEFAULT_BROWSER_HTML" file="resources\set_as_default_browser.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       </if>
       <include name="IDR_MANAGED_MODE_BLOCK_INTERSTITIAL_HTML" file="resources\managed_mode_block_interstitial.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_MANAGED_USER_PASSPHRASE_DIALOG_HTML" file="resources\managed_user_passphrase_dialog.html" allowexternalscript="true" type="chrome_html" />
       <include name="IDR_MANAGED_USER_PASSPHRASE_DIALOG_JS" file="resources\managed_user_passphrase_dialog.js" type="BINDATA" />
-      <include name="IDR_MANAGED_USER_PASSPHRASE_DIALOG_CSS" file="resources\managed_user_passphrase_dialog.css" type="BINDATA" />
-      <include name="IDR_MANAGED_USER_PASSPHRASE_DIALOG_IMG" file="resources\options\managed_user.png" type="BINDATA" />
       <include name="IDR_PROFILE_SIGNIN_CONFIRMATION_HTML" file="resources\profile_signin_confirmation.html" type="BINDATA" />
       <include name="IDR_PROFILE_SIGNIN_CONFIRMATION_JS" file="resources\profile_signin_confirmation.js" type="BINDATA" />
     </includes>

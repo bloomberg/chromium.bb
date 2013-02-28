@@ -23,6 +23,7 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/size.h"
 
 namespace {
@@ -160,12 +161,12 @@ void ManagedUserPassphraseDialog::CreateDataSource(Profile* profile) const {
   content::WebUIDataSource* data_source = content::WebUIDataSource::Create(
       chrome::kChromeUIManagedUserPassphrasePageHost);
   data_source->SetDefaultResource(IDR_MANAGED_USER_PASSPHRASE_DIALOG_HTML);
+  // DCHECK to uncover if the passphrase dialog can actually load and display
+  // the html resource when running a browser test.
+  DCHECK(ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+      IDR_MANAGED_USER_PASSPHRASE_DIALOG_HTML));
   data_source->AddResourcePath("managed_user_passphrase_dialog.js",
                                IDR_MANAGED_USER_PASSPHRASE_DIALOG_JS);
-  data_source->AddResourcePath("managed_user_passphrase_dialog.css",
-                               IDR_MANAGED_USER_PASSPHRASE_DIALOG_CSS);
-  data_source->AddResourcePath("managed_user.png",
-                               IDR_MANAGED_USER_PASSPHRASE_DIALOG_IMG);
   data_source->AddLocalizedString("managedModePassphrasePage",
                                   IDS_PASSPHRASE_TITLE);
   data_source->AddLocalizedString("unlockPassphraseButton",
