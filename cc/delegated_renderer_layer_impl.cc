@@ -44,25 +44,14 @@ void DelegatedRendererLayerImpl::SetFrameData(
 
   // Display size is already set so we can compute what the damage rect
   // will be in layer space.
-  RenderPass* new_root_pass = frame_data->render_pass_list.empty() ?
-                              NULL : frame_data->render_pass_list.back();
-  bool new_frame_is_empty = !new_root_pass;
-
-  RenderPass* old_root_pass = render_passes_in_draw_order_.empty() ?
-                              NULL : render_passes_in_draw_order_.back();
-  bool old_frame_is_empty = !old_root_pass;
-
-  gfx::RectF damage_in_layer;
-  if (new_frame_is_empty) {
-    if (!old_frame_is_empty)
-      damage_in_layer = gfx::Rect(bounds());
-  } else {
+  if (!frame_data->render_pass_list.empty()) {
+    RenderPass* new_root_pass = frame_data->render_pass_list.back();
     DCHECK(!new_root_pass->output_rect.IsEmpty());
-    damage_in_layer = MathUtil::mapClippedRect(
+    gfx::RectF damage_in_layer = MathUtil::mapClippedRect(
         DelegatedFrameToLayerSpaceTransform(new_root_pass->output_rect.size()),
         damage_in_frame);
+    setUpdateRect(gfx::UnionRects(updateRect(), damage_in_layer));
   }
-  setUpdateRect(gfx::UnionRects(updateRect(), damage_in_layer));
 
   // TODO(danakj): Convert the resource ids the render passes and return data
   // for a frame ack.

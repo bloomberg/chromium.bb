@@ -25,6 +25,10 @@ scoped_ptr<LayerImpl> DelegatedRendererLayer::createLayerImpl(
       tree_impl, m_layerId).PassAs<LayerImpl>();
 }
 
+bool DelegatedRendererLayer::drawsContent() const {
+  return !frame_size_.IsEmpty();
+}
+
 void DelegatedRendererLayer::pushPropertiesTo(LayerImpl* impl) {
   Layer::pushPropertiesTo(impl);
 
@@ -33,10 +37,16 @@ void DelegatedRendererLayer::pushPropertiesTo(LayerImpl* impl) {
 
   delegated_impl->SetDisplaySize(display_size_);
 
-  if (frame_data_)
-    delegated_impl->SetFrameData(frame_data_.Pass(), damage_in_frame_);
-
-  damage_in_frame_ = gfx::RectF();
+  if (frame_data_) {
+    if (frame_size_.IsEmpty()) {
+      scoped_ptr<DelegatedFrameData> empty_frame(new DelegatedFrameData);
+      delegated_impl->SetFrameData(empty_frame.Pass(), gfx::Rect());
+    } else {
+      delegated_impl->SetFrameData(frame_data_.Pass(), damage_in_frame_);
+    }
+    frame_data_.reset();
+    damage_in_frame_ = gfx::RectF();
+  }
 }
 
 void DelegatedRendererLayer::SetDisplaySize(gfx::Size size) {
@@ -52,6 +62,9 @@ void DelegatedRendererLayer::SetFrameData(
   if (!frame_data_->render_pass_list.empty()) {
     RenderPass* root_pass = frame_data_->render_pass_list.back();
     damage_in_frame_.Union(root_pass->damage_rect);
+    frame_size_ = root_pass->output_rect.size();
+  } else {
+    frame_size_ = gfx::Size();
   }
   setNeedsCommit();
 }
