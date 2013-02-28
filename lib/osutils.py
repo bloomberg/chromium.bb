@@ -158,15 +158,18 @@ def RmDir(path, ignore_missing=False, sudo=False):
         raise
 
 
-def Which(binary):
+def Which(binary, path=None):
   """Return the absolute path to the specified binary.
 
   Arguments:
     binary: The binary to look for.
+    path: Search path. Defaults to os.environ['PATH'].
 
   Returns the specified binary if found. Otherwise returns None.
   """
-  for p in os.environ.get('PATH', '').split(':'):
+  if path is None:
+    path = os.environ.get('PATH', '')
+  for p in path.split(':'):
     p = os.path.join(p, binary)
     if os.access(p, os.X_OK):
       return p
@@ -358,7 +361,7 @@ def SetEnvironment(env):
   os.environ.update(env)
 
 
-def SourceEnvironment(script, whitelist):
+def SourceEnvironment(script, whitelist, env_passthrough=False):
   """Returns the environment exported by a shell script.
 
   Note that the script is actually executed (sourced), so do not use this on
@@ -368,6 +371,7 @@ def SourceEnvironment(script, whitelist):
   Arguments:
     script: The shell script to 'source'.
     whitelist: An iterable of environment variables to retrieve values for.
+    env_passthrough: Pass through the existing environment to the script.
 
   Returns:
     A dictionary containing the values of the whitelisted environment
@@ -379,8 +383,8 @@ def SourceEnvironment(script, whitelist):
         '[[ "${%(var)s+set}" == "set" ]] && echo %(var)s="${%(var)s}"'
         % {'var': var})
   dump_script.append('exit 0')
-
-  output = cros_build_lib.RunCommand(['bash'], env={}, redirect_stdout=True,
+  env = None if env_passthrough else {}
+  output = cros_build_lib.RunCommand(['bash'], env=env, redirect_stdout=True,
                                      print_cmd=False,
                                      input='\n'.join(dump_script)).output
   return cros_build_lib.LoadKeyValueFile(cStringIO.StringIO(output))

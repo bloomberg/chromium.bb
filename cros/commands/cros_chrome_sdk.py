@@ -310,6 +310,24 @@ class ChromeSDKCommand(cros.CrosCommand):
     env['GYP_GENERATOR_FLAGS'] = 'output_dir=%s' % out_dir
     return env
 
+  @staticmethod
+  def _VerifyGoma(user_rc):
+    """Verify that the user's goma installation is working.
+
+    Arguments:
+      user_rc: User-supplied rc file.
+    """
+    user_env = osutils.SourceEnvironment(user_rc, ['PATH'],
+                                         env_passthrough=True)
+    goma_ctl = osutils.Which('goma_ctl.sh', user_env.get('PATH'))
+    if goma_ctl is not None:
+      manifest = os.path.join(os.path.dirname(goma_ctl), 'MANIFEST')
+      platform_env = osutils.SourceEnvironment(manifest, ['PLATFORM'])
+      platform = platform_env.get('PLATFORM')
+      if platform is not None and platform != 'chromeos':
+        cros_build_lib.Warning('Found %s version of Goma in PATH.', platform)
+        cros_build_lib.Warning('Goma will not work')
+
   @contextlib.contextmanager
   def _GetRCFile(self, env, user_rc):
     """Returns path to dynamically created bashrc file.
@@ -321,9 +339,12 @@ class ChromeSDKCommand(cros.CrosCommand):
     Arguments:
       env: A dictionary of environment variables that will be set by the rc
         file.
+      user_rc: User-supplied rc file.
     """
     if not os.path.exists(user_rc):
       osutils.Touch(user_rc, makedirs=True)
+
+    self._VerifyGoma(user_rc)
 
     # We need a temporary rc file to 'wrap' the user configuration file,
     # because running with '--rcfile' causes bash to ignore bash special
