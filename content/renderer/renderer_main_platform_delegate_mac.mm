@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
+#import "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/sys_string_conversions.h"
 #include "content/common/sandbox_mac.h"
@@ -126,9 +127,8 @@ bool RendererMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {
 }
 
 bool RendererMainPlatformDelegate::EnableSandbox() {
+  // http://openradar.appspot.com/radar?id=1156410 is fixed on OS X 10.9+.
   // See http://crbug.com/31225 and http://crbug.com/152566
-  // TODO: Don't do this on newer OS X revisions that have a fix for
-  // http://openradar.appspot.com/radar?id=1156410
   // To check if this is broken:
   // 1. Enable Multi language input (simplified chinese)
   // 2. Ensure "Show/Hide Trackpad Handwriting" shortcut works.
@@ -140,32 +140,38 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   //    and then kill that pid to make it go away.)
   //
   // Chinese Handwriting was introduced in 10.6 and is confirmed broken on
-  // 10.6, 10.7, and 10.8.
-  mach_error_t err = mach_override_ptr(
-      (void*)&TISCreateInputSourceList,
-      (void*)&CrTISCreateInputSourceList,
-      NULL);
-  CHECK_EQ(err_none, err);
+  // 10.6, 10.7, and 10.8. It's reportedly fixed on 10.9.
+  bool needs_ime_hack = !base::mac::IsOSLaterThanMountainLion_DontCallThis();
 
-  // Override the private CFLog function so that the console is not spammed
-  // by TIS failing to connect to HIServices over XPC.
-  err = mach_override_ptr((void*)&CFLog, (void*)&CrRendererCFLog, NULL);
-  CHECK_EQ(err_none, err);
+  if (needs_ime_hack) {
+    mach_error_t err = mach_override_ptr(
+        (void*)&TISCreateInputSourceList,
+        (void*)&CrTISCreateInputSourceList,
+        NULL);
+    CHECK_EQ(err_none, err);
+
+    // Override the private CFLog function so that the console is not spammed
+    // by TIS failing to connect to HIServices over XPC.
+    err = mach_override_ptr((void*)&CFLog, (void*)&CrRendererCFLog, NULL);
+    CHECK_EQ(err_none, err);
+  }
 
   // Enable the sandbox.
   bool sandbox_initialized = InitializeSandbox();
 
-  // After the sandbox is initialized, call into TIS. Doing this before
-  // the sandbox is in place will open up renderer access to the
-  // pasteboard and an XPC connection to "com.apple.hiservices-xpcservice".
-  base::mac::ScopedCFTypeRef<TISInputSourceRef> layout_source(
-      TISCopyCurrentKeyboardLayoutInputSource());
-  base::mac::ScopedCFTypeRef<TISInputSourceRef> input_source(
-      TISCopyCurrentKeyboardInputSource());
+  if (needs_ime_hack) {
+    // After the sandbox is initialized, call into TIS. Doing this before
+    // the sandbox is in place will open up renderer access to the
+    // pasteboard and an XPC connection to "com.apple.hiservices-xpcservice".
+    base::mac::ScopedCFTypeRef<TISInputSourceRef> layout_source(
+        TISCopyCurrentKeyboardLayoutInputSource());
+    base::mac::ScopedCFTypeRef<TISInputSourceRef> input_source(
+        TISCopyCurrentKeyboardInputSource());
 
-  CFTypeRef source_list[] = { layout_source.get(), input_source.get() };
-  g_text_input_services_source_list_ = CFArrayCreate(kCFAllocatorDefault,
-      source_list, arraysize(source_list), &kCFTypeArrayCallBacks);
+    CFTypeRef source_list[] = { layout_source.get(), input_source.get() };
+    g_text_input_services_source_list_ = CFArrayCreate(kCFAllocatorDefault,
+        source_list, arraysize(source_list), &kCFTypeArrayCallBacks);
+  }
 
   return sandbox_initialized;
 }
