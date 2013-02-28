@@ -57,10 +57,6 @@ class AshTestBase : public testing::Test {
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
-  // Change the primary display's configuration to use |bounds|
-  // and |scale|.
-  void ChangeDisplayConfig(float scale, const gfx::Rect& bounds);
-
   // Update the display configuration as given in |display_specs|.
   // See ash::test::DisplayManagerTestApi::UpdateDisplay for more details.
   void UpdateDisplay(const std::string& display_specs);

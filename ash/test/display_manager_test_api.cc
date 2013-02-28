@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "base/string_split.h"
@@ -14,18 +15,27 @@
 
 namespace ash {
 namespace test {
+typedef std::vector<gfx::Display> DisplayList;
+typedef internal::DisplayInfo DisplayInfo;
+typedef std::vector<DisplayInfo> DisplayInfoList;
+
 namespace {
 
-std::vector<gfx::Display> CreateDisplaysFromString(
-    const std::string specs) {
-  std::vector<gfx::Display> displays;
+std::vector<DisplayInfo> CreateDisplayInfoListFromString(
+    const std::string specs,
+    internal::DisplayManager* display_manager) {
+  std::vector<DisplayInfo> display_info_list;
   std::vector<std::string> parts;
   base::SplitString(specs, ',', &parts);
+  int index = 0;
   for (std::vector<std::string>::const_iterator iter = parts.begin();
-       iter != parts.end(); ++iter) {
-    displays.push_back(internal::CreateDisplayFromSpec(*iter));
+       iter != parts.end(); ++iter, ++index) {
+    gfx::Display* display = display_manager->GetDisplayAt(index);
+    int64 id = display ? display->id() : gfx::Display::kInvalidDisplayID;
+    display_info_list.push_back(
+        DisplayInfo::CreateFromSpecWithID(*iter, id));
   }
-  return displays;
+  return display_info_list;
 }
 
 }  // namespace
@@ -39,10 +49,12 @@ DisplayManagerTestApi::~DisplayManagerTestApi() {}
 
 void DisplayManagerTestApi::UpdateDisplay(
     const std::string& display_specs) {
-  std::vector<gfx::Display> displays = CreateDisplaysFromString(display_specs);
+  std::vector<DisplayInfo> display_info_list =
+      CreateDisplayInfoListFromString(display_specs, display_manager_);
   bool is_host_origin_set = false;
-  for (size_t i = 0; i < displays.size(); ++i) {
-    if (displays[i].bounds_in_pixel().origin() != gfx::Point(0, 0)) {
+  for (size_t i = 0; i < display_info_list.size(); ++i) {
+    const DisplayInfo& display_info = display_info_list[i];
+    if (display_info.bounds_in_pixel().origin() != gfx::Point(0, 0)) {
       is_host_origin_set = true;
       break;
     }
@@ -56,18 +68,25 @@ void DisplayManagerTestApi::UpdateDisplay(
     // Sart from (1,1) so that windows won't overlap with native mouse cursor.
     // See |AshTestBase::SetUp()|.
     int next_y = 1;
-    for (std::vector<gfx::Display>::iterator iter = displays.begin();
-         iter != displays.end(); ++iter) {
-      gfx::Rect bounds(iter->GetSizeInPixel());
+    for (std::vector<DisplayInfo>::iterator iter = display_info_list.begin();
+         iter != display_info_list.end(); ++iter) {
+      gfx::Rect bounds(iter->bounds_in_pixel().size());
       bounds.set_x(1);
       bounds.set_y(next_y);
       next_y += bounds.height();
-      iter->SetScaleAndBounds(iter->device_scale_factor(), bounds);
+      iter->SetBounds(bounds);
     }
   }
 
-  display_manager_->SetDisplayIdsForTest(&displays);
-  display_manager_->OnNativeDisplaysChanged(displays);
+  display_manager_->OnNativeDisplaysChanged(display_info_list);
+}
+
+int64 DisplayManagerTestApi::SetFirstDisplayAsInternalDisplay() {
+  const gfx::Display& internal = display_manager_->displays_[0];
+  gfx::Display::SetInternalDisplayId(internal.id());
+  display_manager_->internal_display_info_.reset(new DisplayInfo(
+      display_manager_->GetDisplayInfo(internal)));
+  return gfx::Display::InternalDisplayId();
 }
 
 }  // namespace test
