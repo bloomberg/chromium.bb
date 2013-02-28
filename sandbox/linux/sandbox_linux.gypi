@@ -57,7 +57,6 @@
         }],
         # Similarly, compile seccomp BPF when we support it
         [ 'compile_seccomp_bpf==1', {
-          'type': 'static_library',
           'dependencies': [
             'seccomp_bpf',
           ],
