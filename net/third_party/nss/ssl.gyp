@@ -22,7 +22,8 @@
   'targets': [
     {
       'target_name': 'libssl',
-      'type': 'static_library',
+      'type': '<(component)',
+      'product_name': 'crssl',  # Don't conflict with OpenSSL's libssl
       'sources': [
         'ssl/authcert.c',
         'ssl/cmpcert.c',
@@ -88,6 +89,23 @@
       ],
       'msvs_disabled_warnings': [4018, 4244, 4267],
       'conditions': [
+        ['component == "shared_library"', {
+          'conditions': [
+            ['OS == "mac" or OS == "ios"', {
+              'xcode_settings': {
+                'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',
+              },
+            }],
+            ['OS == "win"', {
+              'sources': [
+                'ssl/exports_win.def',
+              ],
+            }],
+            ['os_posix == 1 and OS != "mac" and OS != "ios"', {
+              'cflags!': ['-fvisibility=hidden'],
+            }],
+          ],
+        }],
         [ 'clang == 1', {
           'cflags': [
             # See http://crbug.com/138571#c8. In short, sslsecur.c picks up the
@@ -101,6 +119,13 @@
             'DARWIN',
             'XP_MACOSX',
           ],
+        }],
+        [ 'OS == "mac"', {
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/Security.framework',
+            ],
+          },
         }],
         [ 'OS == "win"', {
             'sources!': [

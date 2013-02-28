@@ -35,22 +35,8 @@ class NSSSSLInitSingleton {
 
     NSS_SetDomesticPolicy();
 
-#if defined(USE_SYSTEM_SSL)
-    // Use late binding to avoid scary but benign warning
-    // "Symbol `SSL_ImplementedCiphers' has different size in shared object,
-    //  consider re-linking"
-    // TODO(wtc): Use the new SSL_GetImplementedCiphers and
-    // SSL_GetNumImplementedCiphers functions when we require NSS 3.12.6.
-    // See https://bugzilla.mozilla.org/show_bug.cgi?id=496993.
-    const PRUint16* pSSL_ImplementedCiphers = static_cast<const PRUint16*>(
-        dlsym(RTLD_DEFAULT, "SSL_ImplementedCiphers"));
-    if (pSSL_ImplementedCiphers == NULL) {
-      NOTREACHED() << "Can't get list of supported ciphers";
-      return;
-    }
-#else
-#define pSSL_ImplementedCiphers SSL_ImplementedCiphers
-#endif
+    const PRUint16* const ssl_ciphers = SSL_GetImplementedCiphers();
+    const PRUint16 num_ciphers = SSL_GetNumImplementedCiphers();
 
     // Disable ECDSA cipher suites on platforms that do not support ECDSA
     // signed certificates, as servers may use the presence of such
@@ -62,14 +48,14 @@ class NSSSSLInitSingleton {
 #endif
 
     // Explicitly enable exactly those ciphers with keys of at least 80 bits
-    for (int i = 0; i < SSL_NumImplementedCiphers; i++) {
+    for (int i = 0; i < num_ciphers; i++) {
       SSLCipherSuiteInfo info;
-      if (SSL_GetCipherSuiteInfo(pSSL_ImplementedCiphers[i], &info,
+      if (SSL_GetCipherSuiteInfo(ssl_ciphers[i], &info,
                                  sizeof(info)) == SECSuccess) {
-        SSL_CipherPrefSetDefault(pSSL_ImplementedCiphers[i],
+        SSL_CipherPrefSetDefault(ssl_ciphers[i],
                                  (info.effectiveKeyBits >= 80));
         if (info.authAlgorithm == ssl_auth_ecdsa && disableECDSA)
-          SSL_CipherPrefSetDefault(pSSL_ImplementedCiphers[i], PR_FALSE);
+          SSL_CipherPrefSetDefault(ssl_ciphers[i], PR_FALSE);
       }
     }
 
