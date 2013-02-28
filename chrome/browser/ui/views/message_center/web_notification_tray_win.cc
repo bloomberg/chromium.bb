@@ -4,11 +4,15 @@
 
 #include "chrome/browser/ui/views/message_center/web_notification_tray_win.h"
 
+#include "base/i18n/number_formatting.h"
+#include "base/string16.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/browser/ui/views/message_center/notification_bubble_wrapper_win.h"
 #include "chrome/browser/ui/views/status_icons/status_icon_win.h"
+#include "grit/chromium_strings.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -98,9 +102,8 @@ WebNotificationTrayWin::WebNotificationTrayWin()
   StatusTray* status_tray = g_browser_process->status_tray();
   status_icon_ = status_tray->CreateStatusIcon();
   status_icon_->AddObserver(this);
-  status_icon_->SetImage(
-      GetIcon(message_center()->UnreadNotificationCount() > 0));
 
+  UpdateStatusIcon();
   AddQuietModeMenu(status_icon_);
 }
 
@@ -182,9 +185,7 @@ void WebNotificationTrayWin::UpdatePopups() {
 };
 
 void WebNotificationTrayWin::OnMessageCenterTrayChanged() {
-  bool has_unread_notifications =
-      message_center()->UnreadNotificationCount() > 0;
-  status_icon_->SetImage(GetIcon(has_unread_notifications));
+  UpdateStatusIcon();
 }
 
 gfx::Rect WebNotificationTrayWin::GetMessageCenterAnchor() {
@@ -217,6 +218,21 @@ WebNotificationTrayWin::GetAnchorAlignment() {
 
 gfx::NativeView WebNotificationTrayWin::GetBubbleWindowContainer() {
   return NULL;
+}
+
+void WebNotificationTrayWin::UpdateStatusIcon() {
+  int unread_notifications = message_center()->UnreadNotificationCount();
+  status_icon_->SetImage(GetIcon(unread_notifications > 0));
+
+  string16 product_name(l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
+  if (unread_notifications > 0) {
+    string16 str_unread_count = base::FormatNumber(unread_notifications);
+    status_icon_->SetToolTip(l10n_util::GetStringFUTF16(
+        IDS_MESSAGE_CENTER_TOOLTIP_UNREAD, product_name, str_unread_count));
+  } else {
+    status_icon_->SetToolTip(l10n_util::GetStringFUTF16(
+        IDS_MESSAGE_CENTER_TOOLTIP, product_name));
+  }
 }
 
 void WebNotificationTrayWin::OnStatusIconClicked() {

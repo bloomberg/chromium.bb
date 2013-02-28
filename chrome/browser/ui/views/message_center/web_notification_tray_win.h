@@ -63,6 +63,8 @@ class WebNotificationTrayWin
   // StatusIconObserver implementation.
   virtual void OnStatusIconClicked() OVERRIDE;
 
+  // Changes the icon and hovertext based on number of unread notifications.
+  void UpdateStatusIcon();
   void HideBubbleWithView(const views::TrayBubbleView* bubble_view);
 
   // SimpleMenuModel::Delegate implementation.
