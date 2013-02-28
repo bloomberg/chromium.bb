@@ -558,6 +558,10 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
     return HistoryUI::GetFaviconResourceBytes(scale_factor);
 
 #if !defined(OS_ANDROID)
+  // The Apps launcher page is not available on android.
+  if (page_url.host() == chrome::kChromeUIAppLauncherPageHost)
+    return AppLauncherPageUI::GetFaviconResourceBytes(scale_factor);
+
   // Flash is not available on android.
   if (page_url.host() == chrome::kChromeUIFlashHost)
     return FlashUI::GetFaviconResourceBytes(scale_factor);

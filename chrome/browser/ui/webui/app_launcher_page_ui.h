@@ -7,14 +7,22 @@
 
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui_controller.h"
+#include "ui/base/layout.h"
 
 class Profile;
+
+namespace base {
+class RefCountedMemory;
+}
 
 // The WebUIController used for the app launcher page UI.
 class AppLauncherPageUI : public content::WebUIController {
  public:
   explicit AppLauncherPageUI(content::WebUI* web_ui);
   virtual ~AppLauncherPageUI();
+
+  static base::RefCountedMemory* GetFaviconResourceBytes(
+      ui::ScaleFactor scale_factor);
 
  private:
   class HTMLSource : public content::URLDataSource {

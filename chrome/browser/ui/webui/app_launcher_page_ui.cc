@@ -14,7 +14,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if defined(ENABLE_THEMES)
 #include "chrome/browser/ui/webui/theme_handler.h"
@@ -35,8 +37,6 @@ const char kUmaPaintTimesLabel[] = "AppLauncherPageUI load";
 
 AppLauncherPageUI::AppLauncherPageUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
-  // Override some options on the Web UI.
-  web_ui->HideFavicon();
   web_ui->OverrideTitle(l10n_util::GetStringUTF16(IDS_APP_LAUNCHER_TAB_TITLE));
 
 #if !defined(OS_ANDROID)
@@ -65,6 +65,13 @@ AppLauncherPageUI::AppLauncherPageUI(content::WebUI* web_ui)
 }
 
 AppLauncherPageUI::~AppLauncherPageUI() {
+}
+
+// static
+base::RefCountedMemory* AppLauncherPageUI::GetFaviconResourceBytes(
+    ui::ScaleFactor scale_factor) {
+  return ui::ResourceBundle::GetSharedInstance().
+      LoadDataResourceBytesForScale(IDR_WEBSTORE_ICON_16, scale_factor);
 }
 
 Profile* AppLauncherPageUI::GetProfile() const {
