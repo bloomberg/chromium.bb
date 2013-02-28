@@ -4817,7 +4817,7 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
         <ph name="EXTENSION_NAME">$1<ex>Adblock</ex></ph> requires new permissions
       </message>
       <message name="IDS_EXTENSION_IS_BLACKLISTED" desc="Text displayed in an infobar when an extension is blacklisted and prevented from being installed.">
-        Google has flagged <ph name="EXTENSION_NAME">$1<ex>Google Talk</ex></ph> as malicious and installation has been prevented.
+        Google has flagged "<ph name="EXTENSION_NAME">$1<ex>Google Talk</ex></ph>" as malicious and installation has been prevented.
       </message>
 
       <!-- Extension install prompt -->
@@ -14669,7 +14669,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       You have gone full screen.
     </message>
     <message name="IDS_FULLSCREEN_EXTENSION_TRIGGERED_FULLSCREEN" desc="Message for the user telling them that an extension triggered fullscreen mode.">
-      <ph name="EXTENSION_NAME">$1<ex>MyExtension</ex></ph> triggered full screen.
+      "<ph name="EXTENSION_NAME">$1<ex>MyExtension</ex></ph>" triggered full screen.
     </message>
     <message name="IDS_FULLSCREEN_UNKNOWN_EXTENSION_TRIGGERED_FULLSCREEN" desc="Message for the user telling them that an extension whose name is unknown triggered fullscreen mode.">
       An extension triggered full screen.
