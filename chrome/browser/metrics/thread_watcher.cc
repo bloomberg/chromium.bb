@@ -43,36 +43,44 @@ int* NullPointer() {
   return reinterpret_cast<int*>(NULL);
 }
 
+void NullPointerCrash(int line_number) {
+#ifndef NDEBUG
+  *NullPointer() = line_number;  // Crash.
+#else
+  logging::DumpWithoutCrashing();
+#endif
+}
+
 NOINLINE void ThreadUnresponsive_UI() {
-  *NullPointer() = __LINE__;
+  NullPointerCrash(__LINE__);
 }
 
 NOINLINE void ThreadUnresponsive_DB() {
-  *NullPointer() = __LINE__;
+  NullPointerCrash(__LINE__);
 }
 
 NOINLINE void ThreadUnresponsive_WEBKIT() {
-  *NullPointer() = __LINE__;
+  NullPointerCrash(__LINE__);
 }
 
 NOINLINE void ThreadUnresponsive_FILE() {
-  *NullPointer() = __LINE__;
+  NullPointerCrash(__LINE__);
 }
 
 NOINLINE void ThreadUnresponsive_FILE_USER_BLOCKING() {
-  *NullPointer() = __LINE__;
+  NullPointerCrash(__LINE__);
 }
 
 NOINLINE void ThreadUnresponsive_PROCESS_LAUNCHER() {
-  *NullPointer() = __LINE__;
+  NullPointerCrash(__LINE__);
 }
 
 NOINLINE void ThreadUnresponsive_CACHE() {
-  *NullPointer() = __LINE__;
+  NullPointerCrash(__LINE__);
 }
 
 NOINLINE void ThreadUnresponsive_IO() {
-  *NullPointer() = __LINE__;
+  NullPointerCrash(__LINE__);
 }
 
 MSVC_POP_WARNING()
@@ -558,20 +566,23 @@ void ThreadWatcherList::ParseCommandLine(
     return;
   }
 
-  // Set up a field trial for 10% of the users to crash if IO thread is not
-  // responsive.
-  CrashOnHangThreadMap::iterator it = crash_on_hang_threads->find("IO");
-  if (crash_on_hang_threads->end() == it)
-    return;
-
+  // Set up a field trial for 100% of the users to crash if either UI or IO
+  // thread is not responsive for 30 seconds (or 15 pings).
   scoped_refptr<base::FieldTrial> field_trial(
       base::FieldTrialList::FactoryGetFieldTrial(
           "ThreadWatcher", 100, "default_hung_threads",
           2013, 10, 30, NULL));
-  int io_hung_thread_group = field_trial->AppendGroup("io_hung_thread", 10);
-  if (field_trial->group() == io_hung_thread_group) {
-    // Crash anytime IO thread hangs.
-    it->second.live_threads_threshold = INT_MAX;
+  int hung_thread_group = field_trial->AppendGroup("hung_thread", 100);
+  if (field_trial->group() == hung_thread_group) {
+    for (CrashOnHangThreadMap::iterator it = crash_on_hang_threads->begin();
+         crash_on_hang_threads->end() != it;
+         ++it) {
+      if (it->first == "FILE")
+        continue;
+      DCHECK(it->first == "UI" || it->first == "IO");
+      it->second.live_threads_threshold = INT_MAX;
+      it->second.unresponsive_threshold = 15;
+    }
   }
 }
 
