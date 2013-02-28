@@ -149,6 +149,7 @@ bool AwRenderViewExt::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AwViewMsg_SetTextZoomLevel, OnSetTextZoomLevel)
     IPC_MESSAGE_HANDLER(AwViewMsg_ResetScrollAndScaleState,
                         OnResetScrollAndScaleState)
+    IPC_MESSAGE_HANDLER(AwViewMsg_SetInitialPageScale, OnSetInitialPageScale)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -261,6 +262,13 @@ void AwRenderViewExt::OnResetScrollAndScaleState() {
   if (!render_view() || !render_view()->GetWebView())
     return;
   render_view()->GetWebView()->resetScrollAndScaleState();
+}
+
+void AwRenderViewExt::OnSetInitialPageScale(double page_scale_factor) {
+  if (!render_view() || !render_view()->GetWebView())
+    return;
+  render_view()->GetWebView()->setInitialPageScaleOverride(
+      page_scale_factor);
 }
 
 }  // namespace android_webview

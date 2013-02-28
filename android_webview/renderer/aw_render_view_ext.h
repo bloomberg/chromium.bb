@@ -47,6 +47,8 @@ class AwRenderViewExt : public content::RenderViewObserver,
 
   void OnResetScrollAndScaleState();
 
+  void OnSetInitialPageScale(double page_scale_factor);
+
   // WebKit::WebPermissionClient implementation.
   virtual bool allowImage(WebKit::WebFrame* frame,
                           bool enabledPerSettings,

@@ -75,6 +75,11 @@ IPC_MESSAGE_ROUTED0(AwViewMsg_ResetScrollAndScaleState)
 IPC_MESSAGE_ROUTED1(AwViewMsg_SetEnableFixedLayoutMode,
                     bool /* enabled */)
 
+// Sets the initial page scale. This overrides initial scale set by
+// the meta viewport tag.
+IPC_MESSAGE_ROUTED1(AwViewMsg_SetInitialPageScale,
+                    double /* page_scale_factor */)
+
 //-----------------------------------------------------------------------------
 // RenderView messages
 // These are messages sent from the renderer to the browser process.

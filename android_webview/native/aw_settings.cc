@@ -14,6 +14,7 @@ namespace android_webview {
 AwSettings::AwSettings(JNIEnv* env, jobject obj)
     : java_ref_(env, obj),
       enable_fixed_layout_(false),
+      initial_page_scale_percent_(-1),
       text_zoom_percent_(100) {
 }
 
@@ -38,6 +39,13 @@ void AwSettings::SetEnableFixedLayoutMode(
   UpdateEnableFixedLayoutMode();
 }
 
+void AwSettings::SetInitialPageScale(
+    JNIEnv* env, jobject obj, jfloat page_scale_percent) {
+  if (initial_page_scale_percent_ == page_scale_percent) return;
+  initial_page_scale_percent_ = page_scale_percent;
+  UpdateInitialPageScale();
+}
+
 void AwSettings::SetTextZoom(JNIEnv* env, jobject obj, jint text_zoom_percent) {
   if (text_zoom_percent_ == text_zoom_percent) return;
   text_zoom_percent_ = text_zoom_percent;
@@ -48,10 +56,21 @@ void AwSettings::SetWebContents(JNIEnv* env, jobject obj, jint web_contents) {
   Observe(reinterpret_cast<content::WebContents*>(web_contents));
 }
 
+
 void AwSettings::UpdateEnableFixedLayoutMode() {
   AwRenderViewHostExt* rvhe = GetAwRenderViewHostExt();
   if (!rvhe) return;
   rvhe->SetEnableFixedLayoutMode(enable_fixed_layout_);
+}
+
+void AwSettings::UpdateInitialPageScale() {
+  AwRenderViewHostExt* rvhe = GetAwRenderViewHostExt();
+  if (!rvhe) return;
+  if (initial_page_scale_percent_ == -1) {
+    rvhe->SetInitialPageScale(-1);
+  } else {
+    rvhe->SetInitialPageScale(initial_page_scale_percent_ / 100.0f);
+  }
 }
 
 void AwSettings::UpdateTextZoom() {
@@ -68,6 +87,7 @@ void AwSettings::UpdateTextZoom() {
 
 void AwSettings::RenderViewCreated(content::RenderViewHost* render_view_host) {
   UpdateEnableFixedLayoutMode();
+  UpdateInitialPageScale();
   UpdateTextZoom();
 }
 

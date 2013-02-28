@@ -160,6 +160,22 @@ public class AwSettings {
     }
 
     /**
+     * Sets the initial scale for this WebView. The default value
+     * is -1. A non-default value overrides initial scale set by
+     * the meta viewport tag.
+     */
+    public void setInitialPageScale(final float scaleInPercent) {
+        // There is no need to lock, because the native code doesn't
+        // read anything from the Java side.
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                nativeSetInitialPageScale(mNativeAwSettings, scaleInPercent);
+            }
+        });
+    }
+
+    /**
      * Sets the text zoom of the page in percent. This kind of zooming is
      * only applicable when Text Autosizing is turned off. Passing -1 will
      * reset the zoom to the default value.
@@ -215,6 +231,8 @@ public class AwSettings {
     private native void nativeSetWebContents(int nativeAwSettings, int nativeWebContents);
 
     private native void nativeSetEnableFixedLayoutMode(int nativeAwSettings, boolean enable);
+
+    private native void nativeSetInitialPageScale(int nativeAwSettings, float scaleInPercent);
 
     private native void nativeSetTextZoom(int nativeAwSettings, int textZoom);
 }

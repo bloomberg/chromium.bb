@@ -62,6 +62,10 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
 
   void ResetScrollAndScaleState();
 
+  // Sets the initial page scale. This overrides initial scale set by
+  // the meta viewport tag.
+  void SetInitialPageScale(double page_scale_factor);
+
  private:
   // content::WebContentsObserver implementation.
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;

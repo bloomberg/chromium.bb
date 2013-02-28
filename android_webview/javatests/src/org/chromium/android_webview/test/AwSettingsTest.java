@@ -2413,6 +2413,43 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         assertEquals((float)pageScale, getScaleOnUiThread(awContents));
     }
 
+    public void testSetInitialScale() throws Throwable {
+        final TestAwContentsClient contentClient = new TestAwContentsClient();
+        final AwTestContainerView testContainerView =
+                createAwTestContainerViewOnMainSync(contentClient);
+        final AwContents awContents = testContainerView.getAwContents();
+        final ContentViewCore contentViewCore = awContents.getContentViewCore();
+        final AwSettings awSettings = getAwSettingsOnUiThread(awContents);
+        CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
+
+        final String page = "<html><body>" +
+                "<p style='height:1000px;width:1000px'>testSetInitialScale</p>" +
+                "</body></html>";
+        final float defaultScale = 1.0f;
+
+        assertEquals(defaultScale, getScaleOnUiThread(awContents));
+        loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
+        assertEquals(defaultScale, getScaleOnUiThread(awContents));
+
+        int onScaleChangedCallCount = contentClient.getOnScaleChangedHelper().getCallCount();
+        awSettings.setInitialPageScale(50);
+        loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
+        contentClient.getOnScaleChangedHelper().waitForCallback(onScaleChangedCallCount);
+        assertEquals(0.5f, getScaleOnUiThread(awContents));
+
+        onScaleChangedCallCount = contentClient.getOnScaleChangedHelper().getCallCount();
+        awSettings.setInitialPageScale(200);
+        loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
+        contentClient.getOnScaleChangedHelper().waitForCallback(onScaleChangedCallCount);
+        assertEquals(2.0f, getScaleOnUiThread(awContents));
+
+        onScaleChangedCallCount = contentClient.getOnScaleChangedHelper().getCallCount();
+        awSettings.setInitialPageScale(-1);
+        loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
+        contentClient.getOnScaleChangedHelper().waitForCallback(onScaleChangedCallCount);
+        assertEquals(defaultScale, getScaleOnUiThread(awContents));
+    }
+
     static class ViewPair {
         private final AwContents contents0;
         private final TestAwContentsClient client0;

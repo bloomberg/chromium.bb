@@ -79,6 +79,12 @@ void AwRenderViewHostExt::ResetScrollAndScaleState() {
   Send(new AwViewMsg_ResetScrollAndScaleState(web_contents()->GetRoutingID()));
 }
 
+void AwRenderViewHostExt::SetInitialPageScale(double page_scale_factor) {
+  DCHECK(CalledOnValidThread());
+  Send(new AwViewMsg_SetInitialPageScale(web_contents()->GetRoutingID(),
+                                         page_scale_factor));
+}
+
 void AwRenderViewHostExt::RenderViewGone(base::TerminationStatus status) {
   DCHECK(CalledOnValidThread());
   for (std::map<int, DocumentHasImagesResult>::iterator pending_req =
