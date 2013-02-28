@@ -91,16 +91,18 @@ chrome.fileBrowserPrivate = {
   /**
    * Select multiple files.
    */
-  selectFiles: function(selectedFiles) {
+  selectFiles: function(selectedFiles, callback) {
     console.log('selectFiles called: ' + selectedFiles.length +
                 ' files selected');
+    callback();
   },
 
   /**
    * Select a single file.
    */
-  selectFile: function(selectedFile, index) {
+  selectFile: function(selectedFile, index, callback) {
     console.log('selectFile called: ' + selectedFile + ', ' + index);
+    callback();
   },
 
   /**

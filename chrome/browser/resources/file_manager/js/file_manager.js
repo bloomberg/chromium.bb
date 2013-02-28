@@ -2583,14 +2583,17 @@ DialogType.isModal = function(type) {
    * @param {Object} selection Contains urls, filterIndex and multiple fields.
    */
   FileManager.prototype.callSelectFilesApiAndClose_ = function(selection) {
+    var self = this;
+    function callback() {
+      self.onUnload_();
+      window.close();
+    }
     if (selection.multiple) {
-      chrome.fileBrowserPrivate.selectFiles(selection.urls);
+      chrome.fileBrowserPrivate.selectFiles(selection.urls, callback);
     } else {
       chrome.fileBrowserPrivate.selectFile(
-          selection.urls[0], selection.filterIndex);
+          selection.urls[0], selection.filterIndex, callback);
     }
-    this.onUnload_();
-    window.close();
   };
 
   /**
