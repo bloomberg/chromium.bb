@@ -248,8 +248,8 @@ void BrowserInstantController::OpenURL(
                                            false));
 }
 
-void BrowserInstantController::SetMarginSize(int start, int end) {
-  instant_.SetMarginSize(start, end);
+void BrowserInstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
+  instant_.SetOmniboxBounds(bounds);
 }
 
 void BrowserInstantController::ResetInstant() {

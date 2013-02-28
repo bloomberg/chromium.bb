@@ -252,7 +252,8 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   // region of the search box that overlaps the window.
   static v8::Handle<v8::Value> GetY(const v8::Arguments& args);
 
-  // Gets the width of the region of the search box that overlaps the window.
+  // Gets the width of the region of the search box that overlaps the window,
+  // i.e., the width of the omnibox.
   static v8::Handle<v8::Value> GetWidth(const v8::Arguments& args);
 
   // Gets the height of the region of the search box that overlaps the window.
@@ -261,13 +262,8 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   // Gets Most Visited Items.
   static v8::Handle<v8::Value> GetMostVisitedItems(const v8::Arguments& args);
 
-  // Gets the width of the margin from the start-edge of the page to the start
-  // of the suggestions dropdown.
+  // Gets the start-edge margin to use with extended Instant.
   static v8::Handle<v8::Value> GetStartMargin(const v8::Arguments& args);
-
-  // Gets the width of the margin from the end-edge of the page to the end of
-  // the suggestions dropdown.
-  static v8::Handle<v8::Value> GetEndMargin(const v8::Arguments& args);
 
   // Returns true if the Searchbox itself is oriented right-to-left.
   static v8::Handle<v8::Value> GetRightToLeft(const v8::Arguments& args);
@@ -367,8 +363,6 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(GetMostVisitedItems);
   if (name->Equals(v8::String::New("GetStartMargin")))
     return v8::FunctionTemplate::New(GetStartMargin);
-  if (name->Equals(v8::String::New("GetEndMargin")))
-    return v8::FunctionTemplate::New(GetEndMargin);
   if (name->Equals(v8::String::New("GetRightToLeft")))
     return v8::FunctionTemplate::New(GetRightToLeft);
   if (name->Equals(v8::String::New("GetAutocompleteResults")))
@@ -482,7 +476,6 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetWidth(
     const v8::Arguments& args) {
   content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
-
   return v8::Int32::New(SearchBox::Get(render_view)->GetPopupBounds().width());
 }
 
@@ -501,14 +494,6 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetStartMargin(
   content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
   return v8::Int32::New(SearchBox::Get(render_view)->GetStartMargin());
-}
-
-// static
-v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetEndMargin(
-    const v8::Arguments& args) {
-  content::RenderView* render_view = GetRenderView();
-  if (!render_view) return v8::Undefined();
-  return v8::Int32::New(SearchBox::Get(render_view)->GetEndMargin());
 }
 
 // static

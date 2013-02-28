@@ -28,7 +28,6 @@ SearchBox::SearchBox(content::RenderView* render_view)
       selection_end_(0),
       results_base_(0),
       start_margin_(0),
-      end_margin_(0),
       last_results_base_(0),
       is_key_capture_enabled_(false),
       display_instant_results_(false),
@@ -97,10 +96,6 @@ void SearchBox::UndoAllMostVisitedDeletions() {
 
 int SearchBox::GetStartMargin() const {
   return static_cast<int>(start_margin_ / GetZoom());
-}
-
-int SearchBox::GetEndMargin() const {
-  return static_cast<int>(end_margin_ / GetZoom());
 }
 
 gfx::Rect SearchBox::GetPopupBounds() const {
@@ -216,9 +211,12 @@ void SearchBox::OnPopupResize(const gfx::Rect& bounds) {
   }
 }
 
-void SearchBox::OnMarginChange(int start, int end) {
-  start_margin_ = start;
-  end_margin_ = end;
+void SearchBox::OnMarginChange(int margin, int width) {
+  start_margin_ = margin;
+
+  // Override only the width parameter of the popup bounds.
+  popup_bounds_.set_width(width);
+
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
     extensions_v8::SearchBoxExtension::DispatchMarginChange(
         render_view()->GetWebView()->mainFrame());
@@ -312,7 +310,6 @@ void SearchBox::Reset() {
   results_base_ = 0;
   popup_bounds_ = gfx::Rect();
   start_margin_ = 0;
-  end_margin_ = 0;
   autocomplete_results_.clear();
   is_key_capture_enabled_ = false;
   theme_info_ = ThemeBackgroundInfo();

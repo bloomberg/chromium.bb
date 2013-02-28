@@ -36,8 +36,9 @@ void InstantPage::SetPopupBounds(const gfx::Rect& bounds) {
   Send(new ChromeViewMsg_SearchBoxPopupResize(routing_id(), bounds));
 }
 
-void InstantPage::SetMarginSize(const int start, const int end) {
-  Send(new ChromeViewMsg_SearchBoxMarginChange(routing_id(), start, end));
+void InstantPage::SetOmniboxBounds(const gfx::Rect& bounds) {
+  Send(new ChromeViewMsg_SearchBoxMarginChange(
+      routing_id(), bounds.x(), bounds.width()));
 }
 
 void InstantPage::InitializeFonts() {

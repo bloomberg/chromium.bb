@@ -1275,14 +1275,7 @@ bool LocationBarView::HasFocus() const {
 
 void LocationBarView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   if (browser_ && browser_->instant_controller() && parent()) {
-    // Pass the side margins of the location bar to the Instant Controller.
-    const gfx::Rect bounds = GetBoundsInScreen();
-    const gfx::Rect parent_bounds = parent()->GetBoundsInScreen();
-    int start = bounds.x() - parent_bounds.x();
-    int end = parent_bounds.right() - bounds.right();
-    if (base::i18n::IsRTL())
-      std::swap(start, end);
-    browser_->instant_controller()->SetMarginSize(start, end);
+    browser_->instant_controller()->SetOmniboxBounds(bounds());
   }
 }
 

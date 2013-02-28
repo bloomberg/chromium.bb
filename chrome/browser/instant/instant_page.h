@@ -131,10 +131,9 @@ class InstantPage : public content::WebContentsObserver {
   // by the omnibox dropdown.
   void SetPopupBounds(const gfx::Rect& bounds);
 
-  // Tells the page the start and end margins of the omnibox (in screen
-  // coordinates). This is used by the page to align text or assets properly
-  // with the omnibox.
-  void SetMarginSize(int start, int end);
+  // Tells the page the bounds of the omnibox (in screen coordinates). This is
+  // used by the page to align text or assets properly with the omnibox.
+  void SetOmniboxBounds(const gfx::Rect& bounds);
 
   // Tells the page about the font information.
   void InitializeFonts();

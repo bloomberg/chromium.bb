@@ -85,7 +85,6 @@ if (!chrome.embeddedSearch) {
       native function GetSelectionStart();
       native function GetSelectionEnd();
       native function GetStartMargin();
-      native function GetEndMargin();
       native function GetRightToLeft();
       native function GetAutocompleteResults();
       native function GetDisplayInstantResults();
@@ -223,7 +222,6 @@ if (!chrome.embeddedSearch) {
       this.__defineGetter__('selectionStart', GetSelectionStart);
       this.__defineGetter__('selectionEnd', GetSelectionEnd);
       this.__defineGetter__('startMargin', GetStartMargin);
-      this.__defineGetter__('endMargin', GetEndMargin);
       this.__defineGetter__('rtl', GetRightToLeft);
       this.__defineGetter__('nativeSuggestions', GetAutocompleteResultsWrapper);
       this.__defineGetter__('isKeyCaptureEnabled', IsKeyCaptureEnabled);

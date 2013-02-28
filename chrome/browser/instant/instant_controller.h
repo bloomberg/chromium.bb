@@ -101,8 +101,8 @@ class InstantController : public InstantPage::Delegate,
   // Sets the bounds of the omnibox popup, in screen coordinates.
   void SetPopupBounds(const gfx::Rect& bounds);
 
-  // Sets the start and end margins of the omnibox text area.
-  void SetMarginSize(int start, int end);
+  // Sets the stored start-edge margin and width of the omnibox.
+  void SetOmniboxBounds(const gfx::Rect& bounds);
 
   // Send autocomplete results from |providers| to the preview page.
   void HandleAutocompleteResults(
@@ -401,11 +401,9 @@ class InstantController : public InstantPage::Delegate,
   // Last popup bounds passed to the page.
   gfx::Rect last_popup_bounds_;
 
-  // Size of the start-edge omnibox text area margin.
-  int start_margin_;
-
-  // Size of the end-edge omnibox text area margin.
-  int end_margin_;
+  // The start-edge margin and width of the omnibox, used by the page to align
+  // its suggestions with the omnibox.
+  gfx::Rect omnibox_bounds_;
 
   // Timer used to update the bounds of the omnibox popup.
   base::OneShotTimer<InstantController> update_bounds_timer_;

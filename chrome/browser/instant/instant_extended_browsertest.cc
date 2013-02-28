@@ -4,6 +4,7 @@
 
 #include <sstream>
 
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/instant/instant_commit_type.h"
 #include "chrome/browser/instant/instant_ntp.h"
@@ -12,9 +13,11 @@
 #include "chrome/browser/instant/instant_service_factory.h"
 #include "chrome/browser/instant/instant_tab.h"
 #include "chrome/browser/instant/instant_test_utils.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -717,4 +720,39 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, MostVisited) {
 
   // Make sure we have the same number of items as before.
   EXPECT_EQ(most_visited_items_count_, old_most_visited_items_count);
+}
+
+// Only implemented in Views currently: http://crbug.com/164723
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#define MAYBE_HomeButtonAffectsMargin HomeButtonAffectsMargin
+#else
+#define MAYBE_HomeButtonAffectsMargin DISABLED_HomeButtonAffectsMargin
+#endif
+// Check that toggling the state of the home button changes the start-edge
+// margin and width.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, MAYBE_HomeButtonAffectsMargin) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+
+  // Get the current value of the start-edge margin and width.
+  int start_margin;
+  int width;
+  content::WebContents* preview_tab = instant()->GetPreviewContents();
+  EXPECT_TRUE(GetIntFromJS(preview_tab, "chrome.searchBox.startMargin",
+      &start_margin));
+  EXPECT_TRUE(GetIntFromJS(preview_tab, "chrome.searchBox.width", &width));
+
+  // Toggle the home button visibility pref.
+  PrefService* profile_prefs = browser()->profile()->GetPrefs();
+  bool show_home = profile_prefs->GetBoolean(prefs::kShowHomeButton);
+  profile_prefs->SetBoolean(prefs::kShowHomeButton, !show_home);
+
+  // Make sure the margin and width changed.
+  int new_start_margin;
+  int new_width;
+  EXPECT_TRUE(GetIntFromJS(preview_tab, "chrome.searchBox.startMargin",
+      &new_start_margin));
+  EXPECT_TRUE(GetIntFromJS(preview_tab, "chrome.searchBox.width", &new_width));
+  EXPECT_NE(start_margin, new_start_margin);
+  EXPECT_NE(width, new_width);
+  EXPECT_EQ(new_width - width, start_margin - new_start_margin);
 }

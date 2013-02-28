@@ -65,10 +65,9 @@ class SearchBox : public content::RenderViewObserver,
   const string16& omnibox_font() const { return omnibox_font_; }
   size_t omnibox_font_size() const { return omnibox_font_size_; }
 
-  // These functions return the start/end margins of the page text area,
-  // adjusted for the page zoom.
+  // In extended Instant, returns the start-edge margin of the location bar in
+  // screen pixels.
   int GetStartMargin() const;
-  int GetEndMargin() const;
 
   // Returns the bounds of the omnibox popup in screen coordinates.
   gfx::Rect GetPopupBounds() const;
@@ -100,7 +99,7 @@ class SearchBox : public content::RenderViewObserver,
   void OnSubmit(const string16& query);
   void OnCancel(const string16& query);
   void OnPopupResize(const gfx::Rect& bounds);
-  void OnMarginChange(int start, int end);
+  void OnMarginChange(int margin, int width);
   void OnDetermineIfPageSupportsInstant();
   void OnAutocompleteResults(
       const std::vector<InstantAutocompleteResult>& results);
@@ -126,7 +125,6 @@ class SearchBox : public content::RenderViewObserver,
   size_t selection_end_;
   size_t results_base_;
   int start_margin_;
-  int end_margin_;
   gfx::Rect popup_bounds_;
   std::vector<InstantAutocompleteResult> autocomplete_results_;
   size_t last_results_base_;

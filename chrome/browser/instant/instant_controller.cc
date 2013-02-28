@@ -203,8 +203,6 @@ InstantController::InstantController(chrome::BrowserInstantController* browser,
       last_transition_type_(content::PAGE_TRANSITION_LINK),
       last_match_was_search_(false),
       omnibox_focus_state_(OMNIBOX_FOCUS_NONE),
-      start_margin_(0),
-      end_margin_(0),
       allow_preview_to_show_search_suggestions_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
@@ -467,18 +465,17 @@ void InstantController::SetPopupBounds(const gfx::Rect& bounds) {
   }
 }
 
-void InstantController::SetMarginSize(int start, int end) {
-  if (!extended_enabled_ || (start_margin_ == start && end_margin_ == end))
+void InstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
+  if (!extended_enabled_ || omnibox_bounds_ == bounds)
     return;
 
-  start_margin_ = start;
-  end_margin_ = end;
+  omnibox_bounds_ = bounds;
   if (overlay_)
-    overlay_->SetMarginSize(start_margin_, end_margin_);
+    overlay_->SetOmniboxBounds(omnibox_bounds_);
   if (ntp_)
-    ntp_->SetMarginSize(start_margin_, end_margin_);
+    ntp_->SetOmniboxBounds(omnibox_bounds_);
   if (instant_tab_)
-    instant_tab_->SetMarginSize(start_margin_, end_margin_);
+    instant_tab_->SetOmniboxBounds(omnibox_bounds_);
 }
 
 void InstantController::HandleAutocompleteResults(
@@ -896,11 +893,11 @@ void InstantController::InstantPageRenderViewCreated(
     overlay_->SetDisplayInstantResults(instant_enabled_);
     overlay_->KeyCaptureChanged(
         omnibox_focus_state_ == OMNIBOX_FOCUS_INVISIBLE);
-    overlay_->SetMarginSize(start_margin_, end_margin_);
+    overlay_->SetOmniboxBounds(omnibox_bounds_);
     overlay_->InitializeFonts();
   } else if (IsContentsFrom(ntp(), contents)) {
     ntp_->SetDisplayInstantResults(instant_enabled_);
-    ntp_->SetMarginSize(start_margin_, end_margin_);
+    ntp_->SetOmniboxBounds(omnibox_bounds_);
     ntp_->InitializeFonts();
   } else {
     NOTREACHED();
@@ -1230,7 +1227,7 @@ void InstantController::ResetInstantTab() {
       // Update theme info for this tab.
       browser_->UpdateThemeInfo(false);
       instant_tab_->SetDisplayInstantResults(instant_enabled_);
-      instant_tab_->SetMarginSize(start_margin_, end_margin_);
+      instant_tab_->SetOmniboxBounds(omnibox_bounds_);
       instant_tab_->InitializeFonts();
       StartListeningToMostVisitedChanges();
       instant_tab_->KeyCaptureChanged(

@@ -109,8 +109,8 @@ class BrowserInstantController : public content::NotificationObserver,
                content::PageTransition transition,
                WindowOpenDisposition disposition);
 
-  // Sets the start and end margins of the omnibox text area.
-  void SetMarginSize(int start, int end);
+  // Sets the stored omnibox bounds.
+  void SetOmniboxBounds(const gfx::Rect& bounds);
 
  private:
   // Sets the value of |instant_| based on value from profile. Invoked
