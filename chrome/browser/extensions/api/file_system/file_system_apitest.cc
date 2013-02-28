@@ -143,7 +143,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiOpenCancelTest) {
 
 #if defined(OS_LINUX)
 // Disabled on linux due to crbug.com/178679.
-#define MAYBE_FileSystemApiSaveBackgroundTest \
+#define MAYBE_FileSystemApiOpenBackgroundTest \
     DISABLED_FileSystemApiOpenBackgroundTest
 #else
 #define MAYBE_FileSystemApiOpenBackgroundTest FileSystemApiOpenBackgroundTest
