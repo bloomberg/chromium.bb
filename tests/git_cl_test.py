@@ -120,10 +120,10 @@ class TestGitCl(TestCase):
     if find_copies:
       stat_call = ((['git', 'diff', '--no-ext-diff', '--stat',
                    '--find-copies-harder', '-l100000', '-C'+similarity,
-                   'fake_ancestor_sha'],), '+dat')
+                   'fake_ancestor_sha', 'HEAD'],), '+dat')
     else:
       stat_call = ((['git', 'diff', '--no-ext-diff', '--stat',
-                   '-M'+similarity, 'fake_ancestor_sha'],), '+dat')
+                   '-M'+similarity, 'fake_ancestor_sha', 'HEAD'],), '+dat')
 
     return [
       ((['git', 'config', 'rietveld.server'],), 'codereview.example.com'),
@@ -149,7 +149,7 @@ class TestGitCl(TestCase):
       ((['git', 'config', 'user.email'],), 'me@example.com'),
       stat_call,
       ((['git', 'config', 'gerrit.host'],), ''),
-      ((['git', 'log', '--pretty=format:%s\n\n%b', 'fake_ancestor_sha..'],),
+      ((['git', 'log', '--pretty=format:%s\n\n%b', 'fake_ancestor_sha..HEAD'],),
        'desc\n'),
     ]
 
@@ -287,7 +287,7 @@ class TestGitCl(TestCase):
         '--cc', 'joe@example.com',
         '--git_similarity', similarity or '50'
     ] + (['--git_no_find_copies'] if find_copies == False else []) + [
-        'fake_ancestor_sha'
+        'fake_ancestor_sha', 'HEAD'
     ]
 
   def _run_reviewer_test(
@@ -457,7 +457,7 @@ class TestGitCl(TestCase):
          'foo'),
         ((['git', 'config', 'user.email'],), 'me@example.com'),
         ((['git', 'diff', '--no-ext-diff', '--stat', '--find-copies-harder',
-           '-l100000', '-C50', 'fake_ancestor_sha'],),
+           '-l100000', '-C50', 'fake_ancestor_sha', 'HEAD'],),
          '+dat'),
         ]
 
@@ -465,16 +465,19 @@ class TestGitCl(TestCase):
   def _gerrit_upload_calls(description, reviewers):
     calls = [
         ((['git', 'config', 'gerrit.host'],), 'gerrit.example.com'),
-        ((['git', 'log', '--pretty=format:%s\n\n%b', 'fake_ancestor_sha..'],),
+        ((['git', 'log', '--pretty=format:%s\n\n%b',
+           'fake_ancestor_sha..HEAD'],),
          description)
         ]
     if git_cl.CHANGE_ID not in description:
       calls += [
-          ((['git', 'log', '--pretty=format:%s\n\n%b', 'fake_ancestor_sha..'],),
+          ((['git', 'log', '--pretty=format:%s\n\n%b',
+             'fake_ancestor_sha..HEAD'],),
            description),
           ((['git', 'commit', '--amend', '-m', description],),
            ''),
-          ((['git', 'log', '--pretty=format:%s\n\n%b', 'fake_ancestor_sha..'],),
+          ((['git', 'log', '--pretty=format:%s\n\n%b',
+             'fake_ancestor_sha..HEAD'],),
            description)
           ]
     calls += [

@@ -1272,7 +1272,7 @@ def CMDupload(parser, args):
   else:
     # Default to diffing against common ancestor of upstream branch
     base_branch = RunGit(['merge-base', cl.GetUpstreamBranch(), 'HEAD']).strip()
-    args = [base_branch]
+    args = [base_branch, 'HEAD']
 
   if not options.bypass_hooks:
     hook_results = cl.RunHook(committing=False, upstream_branch=base_branch,
