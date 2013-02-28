@@ -13,7 +13,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/url_constants.h"
+#include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 
