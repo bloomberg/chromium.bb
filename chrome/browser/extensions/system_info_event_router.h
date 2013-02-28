@@ -28,7 +28,7 @@ struct CpuUpdateInfo;
 // Event router for systemInfo API. It is a singleton instance shared by
 // multiple profiles.
 // TODO(hongbo): It should derive from SystemMonitor::DevicesChangedObserver.
-// Since the system_monitor will be refactored along with media_gallery, once
+// Since the system_monitor will be refactored along with media_galleries, once
 // http://crbug.com/145400 is fixed, we need to update SystemInfoEventRouter
 // accordingly.
 class SystemInfoEventRouter

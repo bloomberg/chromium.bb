@@ -8,7 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/gtest_prod_util.h"
-#include "chrome/browser/media_gallery/media_galleries_dialog_controller.h"
+#include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 
 @class ConstrainedWindowAlert;

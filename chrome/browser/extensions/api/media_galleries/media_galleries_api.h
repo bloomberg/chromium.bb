@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/browser/media_gallery/media_file_system_registry.h"
+#include "chrome/browser/media_galleries/media_file_system_registry.h"
 
 namespace extensions {
 

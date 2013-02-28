@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/cocoa/extensions/media_galleries_dialog_cocoa.h"
 
-#include "chrome/browser/media_gallery/media_galleries_dialog_controller_mock.h"
+#include "chrome/browser/media_galleries/media_galleries_dialog_controller_mock.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_alert.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"

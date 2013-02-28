@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/media_gallery/media_galleries_dialog_controller_mock.h"
+#include "chrome/browser/media_galleries/media_galleries_dialog_controller_mock.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "chrome/browser/ui/gtk/extensions/media_galleries_dialog_gtk.h"
 #include "testing/gtest/include/gtest/gtest.h"
