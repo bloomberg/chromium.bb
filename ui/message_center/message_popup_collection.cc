@@ -221,8 +221,6 @@ void MessagePopupCollection::CloseAllWidgets() {
   for (ToastContainer::iterator iter = toasts_.begin();
        iter != toasts_.end(); ++iter) {
     iter->second->SuspendTimer();
-    list_delegate_->GetNotificationList()->MarkSinglePopupAsShown(
-        iter->first, false);
     views::Widget* widget = iter->second->GetWidget();
     widget->RemoveObserver(this);
     widget->Close();
