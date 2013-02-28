@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -261,6 +262,10 @@ void TabScrubber::FinishScrub(bool activate) {
     if (activate && highlighted_tab_ != -1) {
       Tab* tab = tab_strip->tab_at(highlighted_tab_);
       tab->hover_controller()->HideImmediately();
+      int distance =
+          std::abs(
+              highlighted_tab_ - browser_->tab_strip_model()->active_index());
+      UMA_HISTOGRAM_CUSTOM_COUNTS("TabScrubber.Distance", distance, 0, 20, 20);
       browser_->tab_strip_model()->ActivateTabAt(highlighted_tab_, true);
     }
     tab_strip->RemoveObserver(this);
