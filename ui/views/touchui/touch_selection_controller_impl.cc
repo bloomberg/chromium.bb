@@ -297,6 +297,7 @@ void TouchSelectionControllerImpl::ExecuteCommand(int command_id) {
 
 void TouchSelectionControllerImpl::OpenContextMenu() {
   gfx::Point anchor = context_menu_->anchor_point();
+  anchor.Offset(0, kContextMenuVerticalOffset);
   HideContextMenu();
   client_view_->OpenContextMenu(anchor);
 }
@@ -325,19 +326,23 @@ void TouchSelectionControllerImpl::ContextMenuTimerFired() {
   client_view_->GetSelectionEndPoints(&r1, &r2);
 
   // if selection is completely inside the view, we display the context menu
-  // in the middle of the end points on the top. Else, we show the menu on the
-  // top border of the view in the center.
+  // in the middle of the end points on the top. Else, we show it above the
+  // visible handle. If no handle is visible, we do not show the menu.
   gfx::Point menu_pos;
   gfx::Rect client_bounds = client_view_->GetBounds();
   if (client_bounds.Contains(r1.origin()) &&
       client_bounds.Contains(r2.origin())) {
     menu_pos.set_x((r1.origin().x() + r2.origin().x()) / 2);
-    menu_pos.set_y(std::min(r1.y(), r2.y()) - kContextMenuVerticalOffset);
+    menu_pos.set_y(std::min(r1.y(), r2.y()));
+  } else if (client_bounds.Contains(r1.origin())) {
+    menu_pos = r1.origin();
+  } else if (client_bounds.Contains(r2.origin())) {
+    menu_pos = r2.origin();
   } else {
-    menu_pos.set_x(client_bounds.x() + client_bounds.width() / 2);
-    menu_pos.set_y(client_bounds.y());
+    return;
   }
 
+  menu_pos.Offset(0, -kContextMenuVerticalOffset);
   client_view_->ConvertPointToScreen(&menu_pos);
 
   DCHECK(!context_menu_);

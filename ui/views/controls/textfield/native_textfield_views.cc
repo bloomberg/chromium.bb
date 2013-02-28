@@ -722,7 +722,7 @@ bool NativeTextfieldViews::IsCommandIdEnabled(int command_id) const {
     case IDS_APP_DELETE:
       return editable && model_->HasSelection();
     case IDS_APP_SELECT_ALL:
-      return true;
+      return !model_->GetText().empty();
     default:
       return textfield_->GetController()->IsCommandIdEnabled(command_id);
   }
