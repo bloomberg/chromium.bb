@@ -198,12 +198,6 @@ TEST_F(LocalFileChangeTrackerTest, RestoreCreateAndModifyChanges) {
   const char kPath3[] = "dir a/file a";
   const char kPath4[] = "dir a/file b";
 
-  const char kPath0Copy[] = "file b";      // To be copied from kPath0
-  const char kPath1Copy[] = "dir b";       // To be copied from kPath1
-  const char kPath2Copy[] = "dir b/dir";   // To be copied from kPath2
-  const char kPath3Copy[] = "dir b/file a";  // To be copied from kPath3
-  const char kPath4Copy[] = "dir b/file b";  // To be copied from kPath4
-
   file_system_.GetChangedURLsInTracker(&urls);
   ASSERT_EQ(0U, urls.size());
 
@@ -212,7 +206,7 @@ TEST_F(LocalFileChangeTrackerTest, RestoreCreateAndModifyChanges) {
   MockBlobURLRequestContext url_request_context(file_system_context());
   ScopedTextBlob blob(url_request_context, blob_url, kData);
 
-  // Creates files and nested directories.
+  // Create files and nested directories.
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             file_system_.CreateFile(URL(kPath0)));       // Creates a file.
   EXPECT_EQ(base::PLATFORM_FILE_OK,
@@ -229,28 +223,22 @@ TEST_F(LocalFileChangeTrackerTest, RestoreCreateAndModifyChanges) {
             file_system_.Write(&url_request_context,
                                URL(kPath4), blob_url));  // Modifies the file.
 
-  // Copies the file and the parent directory.
-  EXPECT_EQ(base::PLATFORM_FILE_OK,
-            file_system_.Copy(URL(kPath0), URL(kPath0Copy)));  // Copy the file.
-  EXPECT_EQ(base::PLATFORM_FILE_OK,
-            file_system_.Copy(URL(kPath1), URL(kPath1Copy)));  // Copy the dir.
-
+  // Verify the changes.
   file_system_.GetChangedURLsInTracker(&urls);
-  EXPECT_EQ(10U, urls.size());
+  EXPECT_EQ(5U, urls.size());
 
+  // Reset the changes in in-memory tracker.
   DropChangesInTracker();
 
   // Make sure we have no in-memory changes in the tracker.
-  urls.clear();
   file_system_.GetChangedURLsInTracker(&urls);
   ASSERT_EQ(0U, urls.size());
 
   RestoreChangesFromTrackerDB();
 
   // Make sure the changes are restored from the DB.
-  urls.clear();
   file_system_.GetChangedURLsInTracker(&urls);
-  EXPECT_EQ(10U, urls.size());
+  EXPECT_EQ(5U, urls.size());
 
   VerifyAndClearChange(URL(kPath0),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
@@ -265,22 +253,6 @@ TEST_F(LocalFileChangeTrackerTest, RestoreCreateAndModifyChanges) {
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                                   sync_file_system::SYNC_FILE_TYPE_FILE));
   VerifyAndClearChange(URL(kPath4),
-                       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                                  sync_file_system::SYNC_FILE_TYPE_FILE));
-
-  VerifyAndClearChange(URL(kPath0Copy),
-                       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                                  sync_file_system::SYNC_FILE_TYPE_FILE));
-  VerifyAndClearChange(URL(kPath1Copy),
-                       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                                  sync_file_system::SYNC_FILE_TYPE_DIRECTORY));
-  VerifyAndClearChange(URL(kPath2Copy),
-                       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                                  sync_file_system::SYNC_FILE_TYPE_DIRECTORY));
-  VerifyAndClearChange(URL(kPath3Copy),
-                       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                                  sync_file_system::SYNC_FILE_TYPE_FILE));
-  VerifyAndClearChange(URL(kPath4Copy),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                                   sync_file_system::SYNC_FILE_TYPE_FILE));
 }
@@ -324,21 +296,18 @@ TEST_F(LocalFileChangeTrackerTest, RestoreRemoveChanges) {
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             file_system_.Remove(URL(kPath2), true /* recursive */));
 
-  urls.clear();
   file_system_.GetChangedURLsInTracker(&urls);
   EXPECT_EQ(3U, urls.size());
 
   DropChangesInTracker();
 
   // Make sure we have no in-memory changes in the tracker.
-  urls.clear();
   file_system_.GetChangedURLsInTracker(&urls);
   ASSERT_EQ(0U, urls.size());
 
   RestoreChangesFromTrackerDB();
 
   // Make sure the changes are restored from the DB.
-  urls.clear();
   file_system_.GetChangedURLsInTracker(&urls);
   // Since directories to have been reverted (kPath1, kPath2, kPath4) are
   // treated as FILE_CHANGE_DELETE, the number of changes should be 6.
@@ -364,6 +333,98 @@ TEST_F(LocalFileChangeTrackerTest, RestoreRemoveChanges) {
                                   sync_file_system::SYNC_FILE_TYPE_UNKNOWN));
 }
 
+TEST_F(LocalFileChangeTrackerTest, RestoreCopyChanges) {
+  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system_.OpenFileSystem());
+
+  FileSystemURLSet urls;
+
+  const char kPath0[] = "file a";
+  const char kPath1[] = "dir a";
+  const char kPath2[] = "dir a/dir";
+  const char kPath3[] = "dir a/file a";
+  const char kPath4[] = "dir a/file b";
+
+  const char kPath0Copy[] = "file b";      // To be copied from kPath0
+  const char kPath1Copy[] = "dir b";       // To be copied from kPath1
+  const char kPath2Copy[] = "dir b/dir";   // To be copied from kPath2
+  const char kPath3Copy[] = "dir b/file a";  // To be copied from kPath3
+  const char kPath4Copy[] = "dir b/file b";  // To be copied from kPath4
+
+  file_system_.GetChangedURLsInTracker(&urls);
+  ASSERT_EQ(0U, urls.size());
+
+  const GURL blob_url("blob:test");
+  const std::string kData("Lorem ipsum.");
+  MockBlobURLRequestContext url_request_context(file_system_context());
+  ScopedTextBlob blob(url_request_context, blob_url, kData);
+
+  // Create files and nested directories.
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            file_system_.CreateFile(URL(kPath0)));       // Creates a file.
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            file_system_.CreateDirectory(URL(kPath1)));  // Creates a dir.
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            file_system_.CreateDirectory(URL(kPath2)));  // Creates another dir.
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            file_system_.CreateFile(URL(kPath3)));       // Creates a file.
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            file_system_.TruncateFile(URL(kPath3), 1));  // Modifies the file.
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            file_system_.CreateFile(URL(kPath4)));    // Creates another file.
+  EXPECT_EQ(static_cast<int64>(kData.size()),
+            file_system_.Write(&url_request_context,
+                               URL(kPath4), blob_url));  // Modifies the file.
+
+  // Verify we have 5 changes for preparation.
+  file_system_.GetChangedURLsInTracker(&urls);
+  EXPECT_EQ(5U, urls.size());
+  change_tracker()->ClearChangesForURL(URL(kPath0));
+  change_tracker()->ClearChangesForURL(URL(kPath1));
+  change_tracker()->ClearChangesForURL(URL(kPath2));
+  change_tracker()->ClearChangesForURL(URL(kPath3));
+  change_tracker()->ClearChangesForURL(URL(kPath4));
+
+  // Make sure we have no changes.
+  file_system_.GetChangedURLsInTracker(&urls);
+  EXPECT_TRUE(urls.empty());
+
+  // Copy the file and the parent directory.
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            file_system_.Copy(URL(kPath0), URL(kPath0Copy)));  // Copy the file.
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            file_system_.Copy(URL(kPath1), URL(kPath1Copy)));  // Copy the dir.
+
+  file_system_.GetChangedURLsInTracker(&urls);
+  EXPECT_EQ(5U, urls.size());
+  DropChangesInTracker();
+
+  // Make sure we have no in-memory changes in the tracker.
+  file_system_.GetChangedURLsInTracker(&urls);
+  ASSERT_EQ(0U, urls.size());
+
+  RestoreChangesFromTrackerDB();
+
+  // Make sure the changes are restored from the DB.
+  file_system_.GetChangedURLsInTracker(&urls);
+  EXPECT_EQ(5U, urls.size());
+
+  VerifyAndClearChange(URL(kPath0Copy),
+                       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                                  sync_file_system::SYNC_FILE_TYPE_FILE));
+  VerifyAndClearChange(URL(kPath1Copy),
+                       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                                  sync_file_system::SYNC_FILE_TYPE_DIRECTORY));
+  VerifyAndClearChange(URL(kPath2Copy),
+                       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                                  sync_file_system::SYNC_FILE_TYPE_DIRECTORY));
+  VerifyAndClearChange(URL(kPath3Copy),
+                       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                                  sync_file_system::SYNC_FILE_TYPE_FILE));
+  VerifyAndClearChange(URL(kPath4Copy),
+                       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                                  sync_file_system::SYNC_FILE_TYPE_FILE));
+}
+
 TEST_F(LocalFileChangeTrackerTest, RestoreMoveChanges) {
   EXPECT_EQ(base::PLATFORM_FILE_OK, file_system_.OpenFileSystem());
 
@@ -384,13 +445,9 @@ TEST_F(LocalFileChangeTrackerTest, RestoreMoveChanges) {
   file_system_.GetChangedURLsInTracker(&urls);
   ASSERT_EQ(0U, urls.size());
 
-  // Creates and moves a same file.
+  // Create files and nested directories.
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             file_system_.CreateFile(URL(kPath0)));
-  EXPECT_EQ(base::PLATFORM_FILE_OK,
-            file_system_.Move(URL(kPath0), URL(kPath5)));
-
-  // Creates files and nested directories, then moves the parent directory.
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             file_system_.CreateDirectory(URL(kPath1)));
   EXPECT_EQ(base::PLATFORM_FILE_OK,
@@ -399,43 +456,47 @@ TEST_F(LocalFileChangeTrackerTest, RestoreMoveChanges) {
             file_system_.CreateDirectory(URL(kPath3)));
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             file_system_.CreateFile(URL(kPath4)));
+
+  // Verify we have 5 changes for preparation.
+  file_system_.GetChangedURLsInTracker(&urls);
+  EXPECT_EQ(5U, urls.size());
+  change_tracker()->ClearChangesForURL(URL(kPath0));
+  change_tracker()->ClearChangesForURL(URL(kPath1));
+  change_tracker()->ClearChangesForURL(URL(kPath2));
+  change_tracker()->ClearChangesForURL(URL(kPath3));
+  change_tracker()->ClearChangesForURL(URL(kPath4));
+
+  // Make sure we have no changes.
+  file_system_.GetChangedURLsInTracker(&urls);
+  EXPECT_TRUE(urls.empty());
+
+  // Move the file and the parent directory.
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            file_system_.Move(URL(kPath0), URL(kPath5)));
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             file_system_.Move(URL(kPath1), URL(kPath6)));
 
-  urls.clear();
   file_system_.GetChangedURLsInTracker(&urls);
-  // Since kPath1 and kPath3 were reverted, the number of changes should be 8.
-  EXPECT_EQ(8U, urls.size());
+  EXPECT_EQ(10U, urls.size());
 
   DropChangesInTracker();
 
   // Make sure we have no in-memory changes in the tracker.
-  urls.clear();
   file_system_.GetChangedURLsInTracker(&urls);
   ASSERT_EQ(0U, urls.size());
 
   RestoreChangesFromTrackerDB();
 
   // Make sure the changes are restored from the DB.
-  urls.clear();
   file_system_.GetChangedURLsInTracker(&urls);
-  // Since directories to have been reverted (kPath1 and kPath3) are treated as
-  // FILE_CHANGE_DELETE, the number of changes should be 10.
-  EXPECT_EQ(10U, urls.size());
+  // Deletion for children in the deleted directory cannot be restored,
+  // so we will only have 7 changes.
+  EXPECT_EQ(7U, urls.size());
 
   VerifyAndClearChange(URL(kPath0),
                        FileChange(FileChange::FILE_CHANGE_DELETE,
                                   sync_file_system::SYNC_FILE_TYPE_UNKNOWN));
   VerifyAndClearChange(URL(kPath1),
-                       FileChange(FileChange::FILE_CHANGE_DELETE,
-                                  sync_file_system::SYNC_FILE_TYPE_UNKNOWN));
-  VerifyAndClearChange(URL(kPath2),
-                       FileChange(FileChange::FILE_CHANGE_DELETE,
-                                  sync_file_system::SYNC_FILE_TYPE_UNKNOWN));
-  VerifyAndClearChange(URL(kPath3),
-                       FileChange(FileChange::FILE_CHANGE_DELETE,
-                                  sync_file_system::SYNC_FILE_TYPE_UNKNOWN));
-  VerifyAndClearChange(URL(kPath4),
                        FileChange(FileChange::FILE_CHANGE_DELETE,
                                   sync_file_system::SYNC_FILE_TYPE_UNKNOWN));
   VerifyAndClearChange(URL(kPath5),
