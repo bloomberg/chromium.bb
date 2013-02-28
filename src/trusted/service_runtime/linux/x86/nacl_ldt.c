@@ -17,6 +17,7 @@
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt_x86.h"
+#include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr_x86.h"
 
 #if NACL_ANDROID
 /* Android doesn't have standard modify_ldt() function. */
@@ -60,7 +61,15 @@ struct LdtEntry {
 static struct NaClMutex nacl_ldt_mutex;
 
 int NaClLdtInitPlatformSpecific(void) {
-  return NaClMutexCtor(&nacl_ldt_mutex);
+  if (!NaClMutexCtor(&nacl_ldt_mutex)) {
+    return 0;
+  }
+
+  /*
+   * Allocate the last LDT entry to force the LDT to grow to its maximum size.
+   */
+  return NaClLdtAllocateSelector(LDT_ENTRIES - 1, 0,
+                                 NACL_LDT_DESCRIPTOR_DATA, 0, 0, 0);
 }
 
 void NaClLdtFiniPlatformSpecific(void) {
@@ -95,7 +104,7 @@ static int NaClFindUnusedEntryNumber(void) {
  * Find and allocate an available selector, inserting an LDT entry with the
  * appropriate permissions.
  */
-uint16_t NaClLdtAllocateSelector(int32_t entry_number,
+uint16_t NaClLdtAllocateSelector(int entry_number,
                                  int size_is_in_pages,
                                  NaClLdtDescriptorType type,
                                  int read_exec_only,

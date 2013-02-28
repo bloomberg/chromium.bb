@@ -109,7 +109,15 @@ int NaClLdtInitPlatformSpecific(void) {
     return 0;
   }
 
-  return NaClMutexCtor(&nacl_ldt_mutex);
+  if (!NaClMutexCtor(&nacl_ldt_mutex)) {
+    return 0;
+  }
+
+  /*
+   * Allocate the last LDT entry to force the LDT to grow to its maximum size.
+   */
+  return NaClLdtAllocateSelector(LDT_ENTRIES - 1, 0,
+                                 NACL_LDT_DESCRIPTOR_DATA, 0, 0, 0);
 }
 
 void NaClLdtFiniPlatformSpecific(void) {

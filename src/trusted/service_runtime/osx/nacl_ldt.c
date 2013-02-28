@@ -6,15 +6,14 @@
 
 /*
  * Derived from Linux and Windows versions.
- * TODO(jrg): locking is nooped.  PrintSelector() #if 0'd.
+ * TODO(jrg): PrintSelector() #if 0'd.
  */
 
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include "native_client/src/include/portability.h"
-#include "native_client/src/shared/platform/nacl_sync.h"
-#include "native_client/src/shared/platform/nacl_sync_checked.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt_x86.h"
 /* for LDT_ENTRIES */
 #include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr_x86.h"
@@ -25,44 +24,12 @@
 #include <architecture/i386/sel.h>   /* sel_t */
 #include <i386/user_ldt.h>           /* i386_set_ldt() */
 
-/* Buffer used to store the current state of the LDT. */
-static ldt_entry_t entries[LDT_ENTRIES];
-
-/*
- * The module initializer and finalizer set up a mutex used to guard LDT
- * manipulation.
- */
-static struct NaClMutex nacl_ldt_mutex;
-
 
 int NaClLdtInitPlatformSpecific(void) {
-  return NaClMutexCtor(&nacl_ldt_mutex);
+  return 1;
 }
 
 void NaClLdtFiniPlatformSpecific(void) {
-  NaClMutexDtor(&nacl_ldt_mutex);
-}
-
-/*
- * Find a free selector.  Always invoked while holding nacl_ldt_mutex.
- */
-static int NaClFindUnusedEntryNumber(int start, int refresh_state) {
-  int i, retval = 0;
-
-  if (refresh_state) {
-    retval = i386_get_ldt(0, entries, LDT_ENTRIES);
-  }
-
-  if (-1 != retval) {
-    retval = -1;  /* In case we don't find any free entry */
-    for (i = start; i < LDT_ENTRIES; ++i) {
-      if (!entries[i].code.present) {
-        retval = i;
-        break;
-      }
-    }
-  }
-  return retval;
 }
 
 static uint16_t BuildSelector(int sel_index) {
@@ -85,7 +52,7 @@ static uint16_t BuildSelector(int sel_index) {
  * Find and allocate an available selector, inserting an LDT entry with the
  * appropriate permissions.
  */
-uint16_t NaClLdtAllocateSelector(int32_t entry_number,
+uint16_t NaClLdtAllocateSelector(int entry_number,
                                  int size_is_in_pages,
                                  NaClLdtDescriptorType type,
                                  int read_exec_only,
@@ -96,8 +63,6 @@ uint16_t NaClLdtAllocateSelector(int32_t entry_number,
 
   memset(&ldt, 0, sizeof(ldt));
 
-  NaClXMutexLock(&nacl_ldt_mutex);
-
   switch (type) {
     case NACL_LDT_DESCRIPTOR_DATA:
       ldt.data.type = (read_exec_only ? DESC_DATA_RONLY : DESC_DATA_WRITE);
@@ -106,7 +71,7 @@ uint16_t NaClLdtAllocateSelector(int32_t entry_number,
       ldt.code.type = (read_exec_only ? DESC_CODE_EXEC : DESC_CODE_READ);
       break;
     default:
-      goto alloc_error;
+      return 0;
   }
 
   /* Ideas from win/nacl_ldt.c */
@@ -121,7 +86,7 @@ uint16_t NaClLdtAllocateSelector(int32_t entry_number,
      * If size is in pages no more than 2**20 pages can be protected.
      * If size is in bytes no more than 2**20 bytes can be protected.
      */
-    goto alloc_error;
+    return 0;
   }
   ldt.code.base00 = ((unsigned long) base_addr) & 0xffff;
   ldt.code.base16 = (((unsigned long) base_addr) >> 16) & 0xff;
@@ -132,40 +97,17 @@ uint16_t NaClLdtAllocateSelector(int32_t entry_number,
   ldt.code.granular = (size_is_in_pages ? DESC_GRAN_PAGE : DESC_GRAN_BYTE);
 
   /*
-   * Install the LDT entry.
+   * Install the LDT entry. -1 means caller did not specify, so let the kernel
+   * allocate any available entry.
    */
-  if (-1 == entry_number) {
-    /* -1 means caller did not specify -- allocate the first available. */
-    entry_number = NaClFindUnusedEntryNumber(0, 1);
-    while ((-1 == sel_index) && (-1 != entry_number)) {
-      sel_index = i386_set_ldt(entry_number, &ldt, 1);
-      if (-1 == sel_index) {
-        /*
-         * For some reason we failed to allocate the LDT entry - try the next
-         * available one.
-         */
-        entry_number = NaClFindUnusedEntryNumber(entry_number + 1, 0);
-      }
-    }
-  } else {
-    /* The caller specified an entry number - try only this one. */
-    sel_index = i386_set_ldt(entry_number, &ldt, 1);
-  }
+  DCHECK(-1 == (int) LDT_AUTO_ALLOC);
+  sel_index = i386_set_ldt(entry_number, &ldt, 1);
 
   if (-1 == sel_index) {
-    goto alloc_error;
+    return 0;
   }
 
-  NaClXMutexUnlock(&nacl_ldt_mutex);
-
   return BuildSelector(sel_index);
-
-  /*
-   * All error returns go through this epilog.
-   */
- alloc_error:
-  NaClXMutexUnlock(&nacl_ldt_mutex);
-  return 0;
 }
 
 /*
@@ -277,10 +219,7 @@ void NaClLdtPrintSelector(uint16_t selector) {
  * Mark a selector as available for future reuse.
  */
 void NaClLdtDeleteSelector(uint16_t selector) {
-
-  NaClXMutexLock(&nacl_ldt_mutex);
   if (-1 == i386_set_ldt(selector >> 3, NULL, 1)) {
     perror("NaClLdtDeleteSelector: i386_set_ldt()");
   }
-  NaClXMutexUnlock(&nacl_ldt_mutex);
 }
