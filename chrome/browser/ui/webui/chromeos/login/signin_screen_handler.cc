@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/error_screen_actor.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
+#include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_flow.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
@@ -526,7 +527,7 @@ void SigninScreenHandler::UpdateUIState(UIState ui_state,
       break;
     case UI_STATE_LOCALLY_MANAGED_USER_CREATION:
       ui_state_ = UI_STATE_LOCALLY_MANAGED_USER_CREATION;
-      ShowScreen(OobeUI::kScreenManagedUserCreation, params);
+      ShowScreen(OobeUI::kScreenManagedUserCreationDialog, params);
       break;
     default:
       NOTREACHED();
@@ -837,6 +838,9 @@ void SigninScreenHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("tryCreateLocallyManagedUser",
       base::Bind(&SigninScreenHandler::HandleTryCreateLocallyManagedUser,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("runLocallyManagedUserCreationFlow",
+      base::Bind(&SigninScreenHandler::HandleRunLocallyManagedUserCreationFlow,
                  base::Unretained(this)));
 }
 
@@ -1656,6 +1660,53 @@ void SigninScreenHandler::HandleTryCreateLocallyManagedUser(
 
   if (delegate_)
     delegate_->CreateLocallyManagedUser(name, password);
+}
+
+void SigninScreenHandler::HandleRunLocallyManagedUserCreationFlow(
+    const base::ListValue* args) {
+  if (!delegate_)
+    return;
+  DCHECK(args && args->GetSize() == 4);
+
+  string16 new_user_name;
+  std::string new_user_password;
+  std::string custodian_username;
+  std::string custodian_password;
+  if (!args->GetString(0, &new_user_name) ||
+      !args->GetString(1, &new_user_password) ||
+      !args->GetString(2, &custodian_username) ||
+      !args->GetString(3, &custodian_password)) {
+    NOTREACHED();
+    return;
+  }
+
+  new_user_name = CollapseWhitespace(new_user_name, true);
+  if (NULL != UserManager::Get()->FindLocallyManagedUser(new_user_name)) {
+    web_ui()->CallJavascriptFunction(
+        "login.ManagedUserCreationScreen.managedUserNameError",
+        base::StringValue(new_user_name),
+        base::StringValue(l10n_util::GetStringFUTF16(
+            IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_USERNAME_ALREADY_EXISTS,
+            new_user_name)));
+    return;
+  }
+
+  // TODO(antrim): Any other password checks here?
+  if (new_user_password.length() == 0) {
+    web_ui()->CallJavascriptFunction(
+        "login.ManagedUserCreationScreen.showPasswordError",
+        base::StringValue(l10n_util::GetStringUTF16(
+            IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_TOO_SHORT)));
+    return;
+  }
+
+  custodian_username = gaia::SanitizeEmail(custodian_username);
+
+  UserFlow* flow =
+      new LocallyManagedUserCreationFlow(new_user_name, new_user_password);
+  UserManager::Get()->SetUserFlow(custodian_username, flow);
+
+  delegate_->Login(custodian_username, custodian_password);
 }
 
 void SigninScreenHandler::StartClearingDnsCache() {

@@ -19,6 +19,7 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
+#include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -66,6 +67,14 @@ const char kLocallyManagedUsersFirstRun[] = "LocallyManagedUsersFirstRun";
 // A pref of the next id for locally managed users generation.
 const char kLocallyManagedUsersNextId[] =
     "LocallyManagedUsersNextId";
+
+// A pref of the next id for locally managed users generation.
+const char kLocallyManagedUserCreationTransactionDisplayName[] =
+    "LocallyManagedUserCreationTransactionDisplayName";
+
+// A pref of the next id for locally managed users generation.
+const char kLocallyManagedUserCreationTransactionUserId[] =
+    "LocallyManagedUserCreationTransactionUserId";
 
 // A string pref that gets set when a public account is removed but a user is
 // currently logged into that account, requiring the account's data to be
@@ -165,6 +174,10 @@ void UserManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(kLocallyManagedUsersFirstRun);
   registry->RegisterIntegerPref(kLocallyManagedUsersNextId, 0);
   registry->RegisterStringPref(kPublicAccountPendingDataRemoval, "");
+  registry->RegisterStringPref(
+      kLocallyManagedUserCreationTransactionDisplayName, "");
+  registry->RegisterStringPref(
+      kLocallyManagedUserCreationTransactionUserId, "");
   registry->RegisterDictionaryPref(kUserOAuthTokenStatus);
   registry->RegisterDictionaryPref(kUserDisplayName);
   registry->RegisterDictionaryPref(kUserDisplayEmail);
@@ -385,15 +398,10 @@ void UserManagerImpl::SessionStarted() {
   }
 }
 
-const User* UserManagerImpl::CreateLocallyManagedUserRecord(
-      const string16& display_name) {
-  const User* user = FindLocallyManagedUser(display_name);
-  DCHECK(!user);
-  if (user)
-    return user;
-  std::string id;
+std::string UserManagerImpl::GenerateUniqueLocallyManagedUserId() {
   int counter = g_browser_process->local_state()->
       GetInteger(kLocallyManagedUsersNextId);
+  std::string id;
   bool user_exists;
   do {
     id = base::StringPrintf("%d@%s", counter, kLocallyManagedUserDomain);
@@ -408,15 +416,27 @@ const User* UserManagerImpl::CreateLocallyManagedUserRecord(
   g_browser_process->local_state()->
       SetInteger(kLocallyManagedUsersNextId, counter);
 
-  User* new_user = User::CreateLocallyManagedUser(id);
+  g_browser_process->local_state()->CommitPendingWrite();
+  return id;
+}
+
+const User* UserManagerImpl::CreateLocallyManagedUserRecord(
+      const std::string& e_mail,
+      const string16& display_name) {
+  const User* user = FindLocallyManagedUser(display_name);
+  DCHECK(!user);
+  if (user)
+    return user;
+
+  User* new_user = User::CreateLocallyManagedUser(e_mail);
   ListPrefUpdate prefs_users_update(g_browser_process->local_state(),
                                     kRegularUsers);
-  prefs_users_update->Insert(0, new base::StringValue(id));
+  prefs_users_update->Insert(0, new base::StringValue(e_mail));
   ListPrefUpdate prefs_new_users_update(g_browser_process->local_state(),
                                         kLocallyManagedUsersFirstRun);
-  prefs_new_users_update->Insert(0, new base::StringValue(id));
+  prefs_new_users_update->Insert(0, new base::StringValue(e_mail));
   users_.insert(users_.begin(), new_user);
-  SaveUserDisplayName(id, display_name);
+  SaveUserDisplayName(e_mail, display_name);
 
   g_browser_process->local_state()->CommitPendingWrite();
   return new_user;
@@ -1093,6 +1113,27 @@ void UserManagerImpl::UpdatePublicAccountDisplayName(
 
   // Set or clear the display name.
   SaveUserDisplayName(username, UTF8ToUTF16(display_name));
+}
+
+void UserManagerImpl::StartLocallyManagedUserCreationTransaction(
+      const string16& display_name) {
+  g_browser_process->local_state()->
+      SetString(kLocallyManagedUserCreationTransactionDisplayName,
+           UTF16ToASCII(display_name));
+}
+
+void UserManagerImpl::SetLocallyManagedUserCreationTransactionUserId(
+      const std::string& email) {
+  g_browser_process->local_state()->
+      SetString(kLocallyManagedUserCreationTransactionUserId,
+                email);
+}
+
+void UserManagerImpl::CommitLocallyManagedUserCreationTransaction() {
+  g_browser_process->local_state()->
+      ClearPref(kLocallyManagedUserCreationTransactionDisplayName);
+  g_browser_process->local_state()->
+      ClearPref(kLocallyManagedUserCreationTransactionUserId);
 }
 
 UserFlow* UserManagerImpl::GetCurrentUserFlow() const {

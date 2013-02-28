@@ -175,8 +175,8 @@ cr.define('login', function() {
       var gaiaIsActive = (this.signinUIState_ == SIGNIN_UI_STATE.GAIA_SIGNIN);
       var accountPickerIsActive =
           (this.signinUIState_ == SIGNIN_UI_STATE.ACCOUNT_PICKER);
-      var managedUserCreationIsActive =
-          (this.signinUIState_ == SIGNIN_UI_STATE.MANAGED_USER_CREATION);
+      var managedUserCreationDialogIsActive =
+          (this.signinUIState_ == SIGNIN_UI_STATE.MANAGED_USER_CREATION_DIALOG);
       var wrongHWIDWarningIsActive =
           (this.signinUIState_ == SIGNIN_UI_STATE.WRONG_HWID_WARNING);
 
@@ -185,7 +185,7 @@ cr.define('login', function() {
           !this.allowCancel_ ||
           wrongHWIDWarningIsActive;
       $('guest-user-header-bar-item').hidden = gaiaIsActive ||
-          managedUserCreationIsActive ||
+          managedUserCreationDialogIsActive ||
           !this.showGuest_ ||
           wrongHWIDWarningIsActive;
       $('add-user-header-bar-item').hidden =

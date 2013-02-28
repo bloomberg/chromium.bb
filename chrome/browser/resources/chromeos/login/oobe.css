@@ -101,7 +101,8 @@ button:not(.custom-appearance) {
 #oobe.reset #inner-container,
 #oobe.update #inner-container,
 #oobe.user-image #inner-container,
-#oobe.managed-user-creation #inner-container,
+#oobe.managed-user-creation-dialog #inner-container,
+#oobe.managed-user-creation-flow #inner-container,
 #oobe.tpm-error-message #inner-container,
 #oobe.password-changed #inner-container,
 #oobe.terms-of-service #inner-container,
@@ -654,7 +655,8 @@ html[dir=rtl] #flip-photo {
 #error-message-dot,
 #tpm-error-message-dot,
 #password-changed-dot,
-#managed-user-creation-dot,
+#managed-user-creation-flow-dot,
+#managed-user-creation-dialog-dot,
 #terms-of-service-dot,
 #wrong-hwid-dot {
   display: none;

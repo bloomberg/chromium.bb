@@ -23,6 +23,7 @@
 <include src="screen_error_message.js"></include>
 <include src="screen_tpm_error.js"></include>
 <include src="screen_password_changed.js"></include>
+<include src="screen_locally_managed_user_creation.js"></include>
 <include src="oobe_screen_terms_of_service.js"></include>
 <include src="user_pod_row.js"></include>
 
@@ -60,6 +61,7 @@ cr.define('cr.ui', function() {
     login.TPMErrorMessageScreen.register();
     login.PasswordChangedScreen.register();
     login.ManagedUserCreationScreen.register();
+    login.LocallyManagedUserCreationScreen.register();
     oobe.TermsOfServiceScreen.register();
 
     cr.ui.Bubble.decorate($('bubble'));

@@ -13,6 +13,7 @@
 <include src="display_manager.js"></include>
 <include src="header_bar.js"></include>
 <include src="managed_user_creation.js"></include>
+<include src="screen_locally_managed_user_creation.js"></include>
 <include src="network_dropdown.js"></include>
 <include src="oobe_screen_eula.js"></include>
 <include src="oobe_screen_network.js"></include>
@@ -99,6 +100,7 @@ cr.define('cr.ui', function() {
     login.TPMErrorMessageScreen.register();
     login.PasswordChangedScreen.register();
     login.ManagedUserCreationScreen.register();
+    login.LocallyManagedUserCreationScreen.register();
     oobe.TermsOfServiceScreen.register();
 
     cr.ui.Bubble.decorate($('bubble'));

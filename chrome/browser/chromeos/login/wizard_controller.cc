@@ -32,6 +32,7 @@
 #include "chrome/browser/chromeos/login/hwid_checker.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_screen.h"
 #include "chrome/browser/chromeos/login/network_screen.h"
 #include "chrome/browser/chromeos/login/oobe_display.h"
 #include "chrome/browser/chromeos/login/reset_screen.h"
@@ -119,6 +120,8 @@ const char WizardController::kEnterpriseEnrollmentScreenName[] = "enroll";
 const char WizardController::kResetScreenName[] = "reset";
 const char WizardController::kTermsOfServiceScreenName[] = "tos";
 const char WizardController::kWrongHWIDScreenName[] = "wrong-hwid";
+const char WizardController::kLocallyManagedUserCreationScreenName[] =
+  "locally-managed-user-creation-flow";
 
 // Passing this parameter as a "first screen" initiates full OOBE flow.
 const char WizardController::kOutOfBoxScreenName[] = "oobe";
@@ -254,6 +257,16 @@ chromeos::WrongHWIDScreen* WizardController::GetWrongHWIDScreen() {
   return wrong_hwid_screen_.get();
 }
 
+chromeos::LocallyManagedUserCreationScreen*
+    WizardController::GetLocallyManagedUserCreationScreen() {
+  if (!locally_managed_user_creation_screen_.get()) {
+    locally_managed_user_creation_screen_.reset(
+        new chromeos::LocallyManagedUserCreationScreen(
+            this, oobe_display_->GetLocallyManagedUserCreationScreenActor()));
+  }
+  return locally_managed_user_creation_screen_.get();
+}
+
 void WizardController::ShowNetworkScreen() {
   VLOG(1) << "Showing network screen.";
   SetStatusAreaVisible(false);
@@ -351,6 +364,24 @@ void WizardController::ShowWrongHWIDScreen() {
   VLOG(1) << "Showing wrong HWID screen.";
   SetStatusAreaVisible(false);
   SetCurrentScreen(GetWrongHWIDScreen());
+}
+
+void WizardController::ShowLocallyManagedUserCreationScreen() {
+  VLOG(1) << "Showing Locally managed user creation screen screen.";
+  SetStatusAreaVisible(false);
+  LocallyManagedUserCreationScreen* screen =
+      GetLocallyManagedUserCreationScreen();
+
+  string16 name;
+  std::string password;
+  DCHECK(screen_parameters_.get());
+
+  if (screen_parameters_.get()) {
+    screen_parameters_->GetString("user_display_name", &name);
+    screen_parameters_->GetString("password", &password);
+  }
+  screen->SetParameters(name, password);
+  SetCurrentScreen(screen);
 }
 
 void WizardController::SkipToLoginForTesting() {
@@ -626,6 +657,8 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
     ShowTermsOfServiceScreen();
   } else if (screen_name == kWrongHWIDScreenName) {
     ShowWrongHWIDScreen();
+  } else if (screen_name == kLocallyManagedUserCreationScreenName) {
+    ShowLocallyManagedUserCreationScreen();
   } else if (screen_name != kTestNoScreenName) {
     if (is_out_of_box_) {
       ShowNetworkScreen();

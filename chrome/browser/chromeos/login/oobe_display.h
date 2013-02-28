@@ -22,6 +22,7 @@ class UserImageScreenActor;
 class ViewScreenDelegate;
 class WizardScreen;
 class WrongHWIDScreenActor;
+class LocallyManagedUserCreationScreenHandler;
 
 // Interface which is used by WizardController to do actual OOBE screens
 // showing. Also it provides actors for the OOBE screens.
@@ -48,6 +49,8 @@ class OobeDisplay {
   // TODO(altimofeev): use real actors instead.
   virtual ViewScreenDelegate* GetRegistrationScreenActor() = 0;
   virtual WrongHWIDScreenActor* GetWrongHWIDScreenActor() = 0;
+  virtual LocallyManagedUserCreationScreenHandler*
+      GetLocallyManagedUserCreationScreenActor() = 0;
 };
 
 }  // namespace chromeos

@@ -302,6 +302,7 @@ class SigninScreenHandler
   void HandleShowLocallyManagedUserCreationScreen(const base::ListValue* args);
   void HandleCheckLocallyManagedUserName(const base::ListValue* args);
   void HandleTryCreateLocallyManagedUser(const base::ListValue* args);
+  void HandleRunLocallyManagedUserCreationFlow(const base::ListValue* args);
 
   // Fills |user_dict| with information about |user|.
   void FillUserDictionary(User* user,

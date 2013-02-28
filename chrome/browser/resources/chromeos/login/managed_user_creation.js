@@ -178,7 +178,7 @@ cr.define('login', function() {
    * Registers with Oobe.
    */
   ManagedUserCreationScreen.register = function() {
-    var screen = $('managed-user-creation');
+    var screen = $('managed-user-creation-dialog');
     ManagedUserCreationScreen.decorate(screen);
     Oobe.getInstance().registerScreen(screen);
   };
@@ -189,6 +189,7 @@ cr.define('login', function() {
     lastVerifiedName_: null,
     lastIncorrectUserName_: null,
     managerList_: null,
+    useManagerBasedCreationFlow_: false,
 
     /** @override */
     decorate: function() {
@@ -377,7 +378,21 @@ cr.define('login', function() {
             loadTimeData.getString('createManagedUserPasswordMismatchError'));
         return;
       }
-      chrome.send('tryCreateLocallyManagedUser', [userName, firstPassword]);
+      if (!this.useManagerBasedCreationFlow_) {
+        this.disabled = true;
+        chrome.send('tryCreateLocallyManagedUser', [userName, firstPassword]);
+      } else {
+        var selectedPod = this.managerList_.selectedPod_;
+        // TODO(antrim) : validation
+        if (null == selectedPod)
+          return;
+
+        var custodianId = selectedPod.user.emailAddress;
+        var custodianPassword = selectedPod.passwordElement.value;
+        this.disabled = true;
+        chrome.send('runLocallyManagedUserCreationFlow',
+            [userName, firstPassword, custodianId, custodianPassword]);
+      }
     },
 
     /**
@@ -407,7 +422,7 @@ cr.define('login', function() {
      */
     onBeforeShow: function(data) {
       $('login-header-bar').signinUIState =
-          SIGNIN_UI_STATE.MANAGED_USER_CREATION;
+          SIGNIN_UI_STATE.MANAGED_USER_CREATION_DIALOG;
     },
 
     /**
@@ -449,6 +464,7 @@ cr.define('login', function() {
      */
     loadManagers: function(userList) {
       $('managed-user-creation-managers-block').hidden = false;
+      this.useManagerBasedCreationFlow_ = true;
       this.managerList_.clearPods();
       for (var i = 0; i < userList.length; ++i)
         this.managerList_.addPod(userList[i]);
@@ -460,9 +476,9 @@ cr.define('login', function() {
    */
   ManagedUserCreationScreen.show = function() {
     Oobe.getInstance().headerHidden = false;
-    var screen = $('managed-user-creation');
+    var screen = $('managed-user-creation-dialog');
 
-    Oobe.showScreen({id: SCREEN_CREATE_MANAGED_USER});
+    Oobe.showScreen({id: SCREEN_CREATE_MANAGED_USER_DIALOG});
 
     // Clear all fields.
     $('managed-user-creation-password').value = '';
@@ -477,22 +493,22 @@ cr.define('login', function() {
   };
 
   ManagedUserCreationScreen.managedUserNameOk = function(name) {
-    var screen = $('managed-user-creation');
+    var screen = $('managed-user-creation-dialog');
     screen.managedUserNameOk(name);
   };
 
   ManagedUserCreationScreen.managedUserNameError = function(name, error) {
-    var screen = $('managed-user-creation');
+    var screen = $('managed-user-creation-dialog');
     screen.managedUserNameError(name, error);
   };
 
   ManagedUserCreationScreen.showPasswordError = function(error) {
-    var screen = $('managed-user-creation');
+    var screen = $('managed-user-creation-dialog');
     screen.showPasswordError(error);
   };
 
   ManagedUserCreationScreen.loadManagers = function(userList) {
-    var screen = $('managed-user-creation');
+    var screen = $('managed-user-creation-dialog');
     screen.loadManagers(userList);
   };
 

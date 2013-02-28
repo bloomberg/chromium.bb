@@ -17,11 +17,11 @@ class UserFlow {
   virtual bool ShouldLaunchBrowser() = 0;
   virtual bool ShouldSkipPostLoginScreens() = 0;
   virtual void LaunchExtraSteps() = 0;
-
 };
 
 // UserFlow implementation for regular login flow.
 class DefaultUserFlow : public UserFlow {
+ public:
   virtual ~DefaultUserFlow();
 
   virtual bool ShouldLaunchBrowser() OVERRIDE;

@@ -51,7 +51,8 @@ class OobeUI : public OobeDisplay,
     SCREEN_USER_IMAGE_PICKER,
     SCREEN_TPM_ERROR,
     SCREEN_PASSWORD_CHANGED,
-    SCREEN_CREATE_MANAGED_USER,
+    SCREEN_CREATE_MANAGED_USER_DIALOG,
+    SCREEN_CREATE_MANAGED_USER_FLOW,
     SCREEN_TERMS_OF_SERVICE,
     SCREEN_WRONG_HWID,
     SCREEN_UNKNOWN
@@ -68,7 +69,8 @@ class OobeUI : public OobeDisplay,
   static const char kScreenUserImagePicker[];
   static const char kScreenTpmError[];
   static const char kScreenPasswordChanged[];
-  static const char kScreenManagedUserCreation[];
+  static const char kScreenManagedUserCreationDialog[];
+  static const char kScreenManagedUserCreationFlow[];
   static const char kScreenTermsOfService[];
   static const char kScreenWrongHWID[];
 
@@ -89,6 +91,8 @@ class OobeUI : public OobeDisplay,
   virtual UserImageScreenActor* GetUserImageScreenActor() OVERRIDE;
   virtual ViewScreenDelegate* GetRegistrationScreenActor() OVERRIDE;
   virtual WrongHWIDScreenActor* GetWrongHWIDScreenActor() OVERRIDE;
+  virtual LocallyManagedUserCreationScreenHandler*
+      GetLocallyManagedUserCreationScreenActor() OVERRIDE;
 
   // Collects localized strings from the owned handlers.
   void GetLocalizedStrings(base::DictionaryValue* localized_strings);
@@ -138,6 +142,8 @@ class OobeUI : public OobeDisplay,
   EnterpriseEnrollmentScreenActor* enterprise_enrollment_screen_actor_;
   ResetScreenActor* reset_screen_actor_;
   WrongHWIDScreenActor* wrong_hwid_screen_actor_;
+  LocallyManagedUserCreationScreenHandler*
+      locally_managed_user_creation_screen_actor_;
 
   // Reference to ErrorScreenHandler that handles error screen
   // requests and forward calls from native code to JS side.

@@ -17,7 +17,10 @@
 /** @const */ var SCREEN_USER_IMAGE_PICKER = 'user-image';
 /** @const */ var SCREEN_TPM_ERROR = 'tpm-error-message';
 /** @const */ var SCREEN_PASSWORD_CHANGED = 'password-changed';
-/** @const */ var SCREEN_CREATE_MANAGED_USER = 'managed-user-creation';
+/** @const */ var SCREEN_CREATE_MANAGED_USER_DIALOG =
+    'managed-user-creation-dialog';
+/** @const */ var SCREEN_CREATE_MANAGED_USER_FLOW =
+    'managed-user-creation-flow';
 
 /* Accelerator identifiers. Must be kept in sync with webui_login_view.cc. */
 /** @const */ var ACCELERATOR_CANCEL = 'cancel';
@@ -33,8 +36,9 @@
   HIDDEN: 0,
   GAIA_SIGNIN: 1,
   ACCOUNT_PICKER: 2,
-  MANAGED_USER_CREATION: 3,
-  WRONG_HWID_WARNING: 4,
+  WRONG_HWID_WARNING: 3,
+  MANAGED_USER_CREATION_DIALOG: 4,
+  MANAGED_USER_CREATION_FLOW: 5,
 };
 
 cr.define('cr.ui.login', function() {
@@ -310,7 +314,7 @@ cr.define('cr.ui.login', function() {
       var screenId = screen.id;
 
       // As for now, support "back" only for create managed user screen.
-      if (screenId != SCREEN_CREATE_MANAGED_USER) {
+      if (screenId != SCREEN_CREATE_MANAGED_USER_DIALOG) {
         this.screenParametersHistory_ = [];
       }
 
@@ -535,9 +539,9 @@ cr.define('cr.ui.login', function() {
       $('login-header-bar').signinUIState = SIGNIN_UI_STATE.GAIA_SIGNIN;
     else if (currentScreenId == SCREEN_ACCOUNT_PICKER)
       $('login-header-bar').signinUIState = SIGNIN_UI_STATE.ACCOUNT_PICKER;
-    else if (currentScreenId == SCREEN_CREATE_MANAGED_USER)
+    else if (currentScreenId == SCREEN_CREATE_MANAGED_USER_DIALOG)
       $('login-header-bar').signinUIState =
-          SIGNIN_UI_STATE.MANAGED_USER_CREATION;
+          SIGNIN_UI_STATE.MANAGED_USER_CREATION_DIALOG;
     chrome.send('showAddUser', [opt_email]);
   };
 

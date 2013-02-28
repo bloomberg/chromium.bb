@@ -1,0 +1,12 @@
+/* Copyright (c) 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ *
+ * This is the stylesheet used by the Locally managed user creation flow screen.
+ */
+
+#managed-user-creation-flow {
+  height: 570px;
+  padding: 70px 17px 50px;
+  width: 485px;
+}

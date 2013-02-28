@@ -56,8 +56,6 @@ class UserManagerImpl
   virtual void RegularUserLoggedInAsEphemeral(
       const std::string& email) OVERRIDE;
   virtual void SessionStarted() OVERRIDE;
-  virtual const User* CreateLocallyManagedUserRecord(
-      const string16& display_name) OVERRIDE;
   virtual void RemoveUser(const std::string& email,
                           RemoveUserDelegate* delegate) OVERRIDE;
   virtual void RemoveUserFromList(const std::string& email) OVERRIDE;
@@ -98,6 +96,15 @@ class UserManagerImpl
   virtual void AddObserver(UserManager::Observer* obs) OVERRIDE;
   virtual void RemoveObserver(UserManager::Observer* obs) OVERRIDE;
   virtual void NotifyLocalStateChanged() OVERRIDE;
+  virtual const User* CreateLocallyManagedUserRecord(
+      const std::string& e_mail,
+      const string16& display_name) OVERRIDE;
+  virtual std::string GenerateUniqueLocallyManagedUserId() OVERRIDE;
+  virtual void StartLocallyManagedUserCreationTransaction(
+      const string16& display_name) OVERRIDE;
+  virtual void SetLocallyManagedUserCreationTransactionUserId(
+      const std::string& email) OVERRIDE;
+  virtual void CommitLocallyManagedUserCreationTransaction() OVERRIDE;
 
   virtual UserFlow* GetCurrentUserFlow() const OVERRIDE;
   virtual UserFlow* GetUserFlow(const std::string& email) const OVERRIDE;

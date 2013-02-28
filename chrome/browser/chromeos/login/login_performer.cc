@@ -271,8 +271,9 @@ void LoginPerformer::PerformLogin(const std::string& username,
 
 void LoginPerformer::CreateLocallyManagedUser(const string16& display_name,
                                               const std::string& password) {
+  std::string id = UserManager::Get()->GenerateUniqueLocallyManagedUserId();
   const User* user = UserManager::Get()->
-      CreateLocallyManagedUserRecord(display_name);
+      CreateLocallyManagedUserRecord(id, display_name);
   LoginAsLocallyManagedUser(user->email(), password);
 }
 
