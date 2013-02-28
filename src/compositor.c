@@ -603,7 +603,7 @@ weston_surface_update_transform_disable(struct weston_surface *surface)
 
 	surface->transform.matrix = surface->transform.position.matrix;
 
-	surface->transform.inverse.type  = WESTON_MATRIX_TRANSFORM_TRANSLATE;
+	surface->transform.inverse = surface->transform.position.matrix;
 	surface->transform.inverse.d[12] = -surface->geometry.x;
 	surface->transform.inverse.d[13] = -surface->geometry.y;
 
