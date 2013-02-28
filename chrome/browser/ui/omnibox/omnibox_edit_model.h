@@ -21,6 +21,7 @@
 class AutocompleteController;
 class AutocompleteResult;
 struct InstantSuggestion;
+class OmniboxCurrentPageDelegate;
 class OmniboxEditController;
 class OmniboxPopupModel;
 class OmniboxView;
@@ -411,15 +412,9 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
       const string16& new_text,
       size_t caret_position) const;
 
-  // Notifies the SearchTabHelper that autocomplete state has changed.
-  void NotifySearchTabHelper();
-
   // Tries to start an Instant preview for |match|. Returns true if Instant
   // processed the match.
   bool DoInstant(const AutocompleteMatch& match);
-
-  // Starts a prerender for the given |match|.
-  void DoPrerender(const AutocompleteMatch& match);
 
   // Starts a DNS prefetch for the given |match|.
   void DoPreconnect(const AutocompleteMatch& match);
@@ -454,6 +449,8 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
   OmniboxPopupModel* popup_;
 
   OmniboxEditController* controller_;
+
+  scoped_ptr<OmniboxCurrentPageDelegate> delegate_;
 
   OmniboxFocusState focus_state_;
 

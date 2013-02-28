@@ -41,6 +41,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/omnibox/omnibox_current_page_delegate_impl.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
@@ -54,8 +55,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "extensions/common/constants.h"
 #include "googleurl/src/url_util.h"
 #include "ui/gfx/image/image.h"
@@ -134,6 +133,7 @@ OmniboxEditModel::OmniboxEditModel(OmniboxView* view,
       chrome::search::IsInstantExtendedAPIEnabled(profile) ?
           AutocompleteClassifier::kInstantExtendedOmniboxProviders :
           AutocompleteClassifier::kDefaultOmniboxProviders));
+  delegate_.reset(new OmniboxCurrentPageDelegateImpl(controller, profile));
 }
 
 OmniboxEditModel::~OmniboxEditModel() {
@@ -311,7 +311,15 @@ void OmniboxEditModel::OnChanged() {
 
   switch (recommended_action) {
     case AutocompleteActionPredictor::ACTION_PRERENDER:
-      DoPrerender(current_match);
+      // It's possible that there is no current page, for instance if the tab
+      // has been closed or on return from a sleep state.
+      // (http://crbug.com/105689)
+      if (!delegate_->CurrentPageExists())
+        break;
+      // Ask for prerendering if the destination URL is different than the
+      // current URL.
+      if (current_match.destination_url != PermanentURL())
+        delegate_->DoPrerender(current_match);
       break;
     case AutocompleteActionPredictor::ACTION_PRECONNECT:
       DoPreconnect(current_match);
@@ -458,7 +466,7 @@ void OmniboxEditModel::SetInputInProgress(bool in_progress) {
   }
   controller_->OnInputInProgress(in_progress);
 
-  NotifySearchTabHelper();
+  delegate_->NotifySearchTabHelper(user_input_in_progress_, !in_revert_);
 }
 
 void OmniboxEditModel::Revert() {
@@ -598,7 +606,6 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
   // open).
   if (popup_->IsOpen()) {
     const base::TimeTicks& now(base::TimeTicks::Now());
-    const content::WebContents* web_contents = controller_->GetWebContents();
     // TODO(sreeram): Handle is_temporary_text_set_by_instant_ correctly.
     AutocompleteLog log(
         autocomplete_controller_->input().text(),
@@ -606,7 +613,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
         autocomplete_controller_->input().type(),
         popup_->selected_line(),
         -1,  // don't yet know tab ID; set later if appropriate
-        web_contents ? ClassifyPage(web_contents->GetURL()) :
+        delegate_->CurrentPageExists() ? ClassifyPage(delegate_->GetURL()) :
             metrics::OmniboxEventProto_PageClassification_OTHER,
         now - time_user_first_modified_omnibox_,
         string16::npos,  // completed_length; possibly set later
@@ -635,8 +642,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
       // If we know the destination is being opened in the current tab,
       // we can easily get the tab ID.  (If it's being opened in a new
       // tab, we don't know the tab ID yet.)
-      log.tab_id = SessionTabHelper::FromWebContents(
-          controller_->GetWebContents())->session_id().id();
+      log.tab_id = delegate_->GetSessionID().id();
     }
     autocomplete_controller_->AddProvidersInfo(&log.providers_info);
     content::NotificationService::current()->Notify(
@@ -652,22 +658,13 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
       // The user is using a non-substituting keyword or is explicitly in
       // keyword mode.
 
-      // Special case for extension keywords. Don't increment usage count for
-      // these.
-      if (template_url->IsExtensionKeyword()) {
-        AutocompleteMatch current_match;
-        GetInfoForCurrentText(&current_match, NULL);
+      AutocompleteMatch current_match;
+      GetInfoForCurrentText(&current_match, NULL);
+      const AutocompleteMatch& match = (index == OmniboxPopupModel::kNoMatch) ?
+          current_match : result().match_at(index);
 
-        const AutocompleteMatch& match =
-            (index == OmniboxPopupModel::kNoMatch) ?
-                current_match : result().match_at(index);
-
-        // Strip the keyword + leading space off the input.
-        size_t prefix_length = match.keyword.length() + 1;
-        extensions::ExtensionOmniboxEventRouter::OnInputEntered(
-            controller_->GetWebContents(),
-            template_url->GetExtensionId(),
-            UTF16ToUTF8(match.fill_into_edit.substr(prefix_length)));
+      // Don't increment usage count for extension keywords.
+      if (delegate_->ProcessExtensionKeyword(template_url, match)) {
         view_->RevertAll();
         return;
       }
@@ -775,18 +772,17 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
   SetFocusState(OMNIBOX_FOCUS_VISIBLE, OMNIBOX_FOCUS_CHANGE_EXPLICIT);
   control_key_state_ = control_down ? DOWN_WITHOUT_CHANGE : UP;
 
-  content::WebContents* web_contents = controller_->GetWebContents();
-  if (web_contents) {
+  if (delegate_->CurrentPageExists()) {
     // TODO(jered): We may want to merge this into Start() and just call that
     // here rather than having a special entry point for zero-suggest.  Note
     // that we avoid PermanentURL() here because it's not guaranteed to give us
     // the actual underlying current URL, e.g. if we're on the NTP and the
     // |permanent_text_| is empty.
-    autocomplete_controller_->StartZeroSuggest(web_contents->GetURL(),
+    autocomplete_controller_->StartZeroSuggest(delegate_->GetURL(),
                                                user_text_);
   }
 
-  NotifySearchTabHelper();
+  delegate_->NotifySearchTabHelper(user_input_in_progress_, !in_revert_);
 }
 
 void OmniboxEditModel::SetCaretVisibility(bool visible) {
@@ -809,7 +805,7 @@ void OmniboxEditModel::OnWillKillFocus(gfx::NativeView view_gaining_focus) {
 
   // TODO(jered): Rip this out along with StartZeroSuggest.
   autocomplete_controller_->StopZeroSuggest();
-  NotifySearchTabHelper();
+  delegate_->NotifySearchTabHelper(user_input_in_progress_, !in_revert_);
 }
 
 void OmniboxEditModel::OnKillFocus() {
@@ -833,9 +829,8 @@ bool OmniboxEditModel::OnEscapeKeyPressed() {
 
   // We do not clear the pending entry from the omnibox when a load is first
   // stopped.  If the user presses Escape while stopped, we clear it.
-  content::WebContents* contents = controller_->GetWebContents();
-  if (contents && !contents->IsLoading()) {
-    contents->GetController().DiscardNonCommittedEntries();
+  if (delegate_->CurrentPageExists() && !delegate_->IsLoading()) {
+    delegate_->GetNavigationController().DiscardNonCommittedEntries();
     view_->Update(NULL);
   }
 
@@ -1137,7 +1132,7 @@ void OmniboxEditModel::OnResultChanged(bool default_match_changed) {
     has_temporary_text_ = false;
     is_temporary_text_set_by_instant_ = false;
     OnPopupBoundsChanged(gfx::Rect());
-    NotifySearchTabHelper();
+    delegate_->NotifySearchTabHelper(user_input_in_progress_, !in_revert_);
   }
 
   InstantController* instant = controller_->GetInstant();
@@ -1286,14 +1281,6 @@ bool OmniboxEditModel::CreatedKeywordSearchByInsertingSpaceInMiddle(
           GetKeywordForText(keyword).empty();
 }
 
-void OmniboxEditModel::NotifySearchTabHelper() {
-  if (controller_->GetWebContents()) {
-    chrome::search::SearchTabHelper::FromWebContents(
-        controller_->GetWebContents())->
-            OmniboxEditModelChanged(user_input_in_progress_, !in_revert_);
-  }
-}
-
 bool OmniboxEditModel::DoInstant(const AutocompleteMatch& match) {
   InstantController* instant = controller_->GetInstant();
   if (!instant || in_revert_)
@@ -1322,24 +1309,6 @@ bool OmniboxEditModel::DoInstant(const AutocompleteMatch& match) {
   return instant->Update(match, user_text, full_text, start, end,
       UseVerbatimInstant(), user_input_in_progress_, popup_->IsOpen(),
       in_escape_handler_, KeywordIsSelected());
-}
-
-void OmniboxEditModel::DoPrerender(const AutocompleteMatch& match) {
-  // Do not prerender if the destination URL is the same as the current URL.
-  if (match.destination_url == PermanentURL())
-    return;
-  // It's possible the tab strip does not have an active tab contents, for
-  // instance if the tab has been closed or on return from a sleep state
-  // (http://crbug.com/105689)
-  content::WebContents* tab = controller_->GetWebContents();
-  if (!tab)
-    return;
-  gfx::Rect container_bounds;
-  tab->GetView()->GetContainerBounds(&container_bounds);
-  AutocompleteActionPredictorFactory::GetForProfile(profile_)->
-      StartPrerendering(match.destination_url,
-                        tab->GetController().GetSessionStorageNamespaceMap(),
-                        container_bounds.size());
 }
 
 void OmniboxEditModel::DoPreconnect(const AutocompleteMatch& match) {
