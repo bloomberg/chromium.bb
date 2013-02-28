@@ -1278,10 +1278,7 @@ ErrorCode GpuProcessPolicy(Sandbox *sandbox, int sysno,
                            void *broker_process) {
   switch(sysno) {
     case __NR_ioctl:
-#if defined(ADDRESS_SANITIZER)
-    // Allow to call sched_getaffinity under AddressSanitizer.
     case __NR_sched_getaffinity:
-#endif
       return ErrorCode(ErrorCode::ERR_ALLOWED);
     case __NR_open:
     case __NR_openat:
@@ -1374,10 +1371,7 @@ ErrorCode RendererOrWorkerProcessPolicy(Sandbox *sandbox, int sysno, void *) {
     case __NR_mremap:   // See crbug.com/149834.
     case __NR_pread64:
     case __NR_pwrite64:
-#if defined(ADDRESS_SANITIZER)
-    // Allow to call sched_getaffinity() under AddressSanitizer.
     case __NR_sched_getaffinity:
-#endif
     case __NR_sched_get_priority_max:
     case __NR_sched_get_priority_min:
     case __NR_sched_getparam:
