@@ -20,7 +20,7 @@ function CommandQueue(document, canvas, saveFunction) {
 
   this.baselineImage_ = canvas;
   this.currentImage_ = canvas;
-  this.previousImage_ = null;
+  this.previousImage_ = document.createElement('canvas');
 
   this.saveFunction_ = saveFunction;
 
@@ -120,7 +120,11 @@ CommandQueue.prototype.doExecute_ = function(command, uiContext, callback) {
     throw new Error('Cannot operate on null image');
 
   // Remember one previous image so that the first undo is as fast as possible.
-  this.previousImage_ = this.currentImage_;
+  this.previousImage_.width = this.currentImage_.width;
+  this.previousImage_.height = this.currentImage_.height;
+  var context = this.previousImage_.getContext('2d');
+  context.drawImage(this.currentImage_, 0, 0);
+
   command.execute(
       this.document_,
       this.currentImage_,
@@ -177,8 +181,15 @@ CommandQueue.prototype.undo = function() {
 
   if (this.previousImage_) {
     // First undo after an execute call.
-    this.currentImage_ = this.previousImage_;
-    this.previousImage_ = null;
+    this.currentImage_.width = this.previousImage_.width;
+    this.currentImage_.height = this.previousImage_.height;
+    var context = this.currentImage_.getContext('2d');
+    context.drawImage(this.previousImage_, 0, 0);
+
+    // Free memory.
+    this.previousImage_.width = 0;
+    this.previousImage_.height = 0;
+
     complete();
     // TODO(kaznacheev) Consider recalculating previousImage_ right here
     // by replaying the commands in the background.
@@ -212,6 +223,16 @@ CommandQueue.prototype.redo = function() {
     throw new Error('Cannot redo');
 
   this.execute(this.redo_.pop(), true);
+};
+
+/**
+ * Closes internal buffers. Call to ensure, that internal buffers are freed
+ * as soon as possible.
+ */
+CommandQueue.prototype.close = function() {
+  // Free memory used by the undo buffer.
+  this.previousImage_.width = 0;
+  this.previousImage_.height = 0;
 };
 
 /**

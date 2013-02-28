@@ -150,6 +150,7 @@ ImageEditor.prototype.closeSession = function(callback) {
   }
 
   this.executeWhenReady(callback);
+  this.commandQueue_.close();
   this.commandQueue_ = null;
 };
 
