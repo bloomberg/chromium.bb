@@ -164,7 +164,9 @@ class CONTENT_EXPORT InterstitialPageImpl
   // interstitial.
   void TakeActionOnResourceDispatcher(ResourceRequestAction action);
 
-  // The contents in which we are displayed.
+  // The contents in which we are displayed.  This is valid until Hide is
+  // called, at which point it will be set to NULL because the WebContents
+  // itself may be deleted.
   WebContentsImpl* web_contents_;
 
   // The URL that is shown when the interstitial is showing.
@@ -192,7 +194,9 @@ class CONTENT_EXPORT InterstitialPageImpl
   // Whether the Proceed or DontProceed methods have been called yet.
   ActionState action_taken_;
 
-  // The RenderViewHost displaying the interstitial contents.
+  // The RenderViewHost displaying the interstitial contents.  This is valid
+  // until Hide is called, at which point it will be set to NULL, signifying
+  // that shutdown has started.
   RenderViewHostImpl* render_view_host_;
 
   // The IDs for the Render[View|Process]Host hidden by this interstitial.

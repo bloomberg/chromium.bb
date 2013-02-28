@@ -164,6 +164,9 @@ InterstitialPageImpl::~InterstitialPageImpl() {
 }
 
 void InterstitialPageImpl::Show() {
+  if (!enabled())
+    return;
+
   // If an interstitial is already showing or about to be shown, close it before
   // showing the new one.
   // Be careful not to take an action on the old interstitial more than once.
@@ -235,6 +238,8 @@ void InterstitialPageImpl::Show() {
 
 void InterstitialPageImpl::Hide() {
   // We may have already been hidden, and are just waiting to be deleted.
+  // We can't check for enabled() here, because some callers have already
+  // called Disable.
   if (!render_view_host_)
     return;
 
@@ -287,6 +292,10 @@ void InterstitialPageImpl::Hide() {
   DCHECK(iter != g_web_contents_to_interstitial_page->end());
   if (iter != g_web_contents_to_interstitial_page->end())
     g_web_contents_to_interstitial_page->erase(iter);
+
+  // Clear the WebContents pointer, because it may now be deleted.
+  // This signifies that we are in the process of shutting down.
+  web_contents_ = NULL;
 }
 
 void InterstitialPageImpl::Observe(
@@ -358,8 +367,11 @@ void InterstitialPageImpl::RenderViewGone(RenderViewHost* render_view_host,
                                           base::TerminationStatus status,
                                           int error_code) {
   // Our renderer died. This should not happen in normal cases.
-  // Just dismiss the interstitial.
-  DontProceed();
+  // If we haven't already started shutdown, just dismiss the interstitial.
+  // We cannot check for enabled() here, because we may have called Disable
+  // without calling Hide.
+  if (render_view_host_)
+    DontProceed();
 }
 
 void InterstitialPageImpl::DidNavigate(
@@ -368,7 +380,7 @@ void InterstitialPageImpl::DidNavigate(
   // A fast user could have navigated away from the page that triggered the
   // interstitial while the interstitial was loading, that would have disabled
   // us. In that case we can dismiss ourselves.
-  if (!enabled_) {
+  if (!enabled()) {
     DontProceed();
     return;
   }
@@ -468,12 +480,15 @@ void InterstitialPageImpl::RenderWidgetDeleted(
 bool InterstitialPageImpl::PreHandleKeyboardEvent(
     const NativeWebKeyboardEvent& event,
     bool* is_keyboard_shortcut) {
+  if (!enabled())
+    return false;
   return web_contents_->PreHandleKeyboardEvent(event, is_keyboard_shortcut);
 }
 
 void InterstitialPageImpl::HandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) {
-  return web_contents_->HandleKeyboardEvent(event);
+  if (enabled())
+    web_contents_->HandleKeyboardEvent(event);
 }
 
 WebContents* InterstitialPageImpl::web_contents() const {
@@ -481,6 +496,9 @@ WebContents* InterstitialPageImpl::web_contents() const {
 }
 
 RenderViewHost* InterstitialPageImpl::CreateRenderViewHost() {
+  if (!enabled())
+    return NULL;
+
   // Interstitial pages don't want to share the session storage so we mint a
   // new one.
   BrowserContext* browser_context = web_contents()->GetBrowserContext();
@@ -523,6 +541,11 @@ WebContentsView* InterstitialPageImpl::CreateWebContentsView() {
 }
 
 void InterstitialPageImpl::Proceed() {
+  // Don't repeat this if we are already shutting down.  We cannot check for
+  // enabled() here, because we may have called Disable without calling Hide.
+  if (!render_view_host_)
+    return;
+
   if (action_taken_ != NO_ACTION) {
     NOTREACHED();
     return;
@@ -555,6 +578,10 @@ void InterstitialPageImpl::Proceed() {
 }
 
 void InterstitialPageImpl::DontProceed() {
+  // Don't repeat this if we are already shutting down.  We cannot check for
+  // enabled() here, because we may have called Disable without calling Hide.
+  if (!render_view_host_)
+    return;
   DCHECK(action_taken_ != DONT_PROCEED_ACTION);
 
   Disable();

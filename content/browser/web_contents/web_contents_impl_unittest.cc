@@ -85,7 +85,8 @@ class TestInterstitialPageDelegate : public InterstitialPageDelegate {
 class TestInterstitialPage : public InterstitialPageImpl {
  public:
   enum InterstitialState {
-    UNDECIDED = 0,  // No decision taken yet.
+    INVALID = 0,    // Hasn't yet been initialized.
+    UNDECIDED,      // Initialized, but no decision taken yet.
     OKED,           // Proceed was called.
     CANCELED        // DontProceed was called.
   };
@@ -1103,7 +1104,7 @@ TEST_F(WebContentsImplTest,
 
   // Show an interstitial.
   TestInterstitialPage::InterstitialState state =
-      TestInterstitialPage::UNDECIDED;
+      TestInterstitialPage::INVALID;
   bool deleted = false;
   GURL url2("http://interstitial");
   TestInterstitialPage* interstitial =
@@ -1150,7 +1151,7 @@ TEST_F(WebContentsImplTest,
   // Show an interstitial (no pending entry, the interstitial would have been
   // triggered by clicking on a link).
   TestInterstitialPage::InterstitialState state =
-      TestInterstitialPage::UNDECIDED;
+      TestInterstitialPage::INVALID;
   bool deleted = false;
   GURL url2("http://interstitial");
   TestInterstitialPage* interstitial =
@@ -1195,7 +1196,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialNoNewNavigationDontProceed) {
 
   // Show an interstitial.
   TestInterstitialPage::InterstitialState state =
-      TestInterstitialPage::UNDECIDED;
+      TestInterstitialPage::INVALID;
   bool deleted = false;
   GURL url2("http://interstitial");
   TestInterstitialPage* interstitial =
@@ -1246,7 +1247,7 @@ TEST_F(WebContentsImplTest,
 
   // Show an interstitial.
   TestInterstitialPage::InterstitialState state =
-      TestInterstitialPage::UNDECIDED;
+      TestInterstitialPage::INVALID;
   bool deleted = false;
   GURL url2("http://interstitial");
   TestInterstitialPage* interstitial =
@@ -1304,7 +1305,7 @@ TEST_F(WebContentsImplTest,
 
   // Show an interstitial.
   TestInterstitialPage::InterstitialState state =
-      TestInterstitialPage::UNDECIDED;
+      TestInterstitialPage::INVALID;
   bool deleted = false;
   GURL url2("http://interstitial");
   TestInterstitialPage* interstitial =
@@ -1361,7 +1362,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialNoNewNavigationProceed) {
 
   // Show an interstitial.
   TestInterstitialPage::InterstitialState state =
-      TestInterstitialPage::UNDECIDED;
+      TestInterstitialPage::INVALID;
   bool deleted = false;
   GURL url2("http://interstitial");
   TestInterstitialPage* interstitial =
@@ -1403,7 +1404,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialNoNewNavigationProceed) {
 TEST_F(WebContentsImplTest, ShowInterstitialThenNavigate) {
   // Show interstitial.
   TestInterstitialPage::InterstitialState state =
-      TestInterstitialPage::UNDECIDED;
+      TestInterstitialPage::INVALID;
   bool deleted = false;
   GURL url("http://interstitial");
   TestInterstitialPage* interstitial =
@@ -1431,7 +1432,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialThenGoBack) {
 
   // Show interstitial.
   TestInterstitialPage::InterstitialState state =
-      TestInterstitialPage::UNDECIDED;
+      TestInterstitialPage::INVALID;
   bool deleted = false;
   GURL interstitial_url("http://interstitial");
   TestInterstitialPage* interstitial =
@@ -1466,7 +1467,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialCrashRendererThenGoBack) {
 
   // Show interstitial.
   TestInterstitialPage::InterstitialState state =
-      TestInterstitialPage::UNDECIDED;
+      TestInterstitialPage::INVALID;
   bool deleted = false;
   GURL interstitial_url("http://interstitial");
   TestInterstitialPage* interstitial =
@@ -1506,7 +1507,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialCrashRendererThenNavigate) {
 
   // Show interstitial.
   TestInterstitialPage::InterstitialState state =
-      TestInterstitialPage::UNDECIDED;
+      TestInterstitialPage::INVALID;
   bool deleted = false;
   GURL interstitial_url("http://interstitial");
   TestInterstitialPage* interstitial =
@@ -1528,7 +1529,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialCrashRendererThenNavigate) {
 TEST_F(WebContentsImplTest, ShowInterstitialThenCloseTab) {
   // Show interstitial.
   TestInterstitialPage::InterstitialState state =
-      TestInterstitialPage::UNDECIDED;
+      TestInterstitialPage::INVALID;
   bool deleted = false;
   GURL url("http://interstitial");
   TestInterstitialPage* interstitial =
@@ -1545,6 +1546,36 @@ TEST_F(WebContentsImplTest, ShowInterstitialThenCloseTab) {
   EXPECT_TRUE(deleted);
 }
 
+// Test navigating to a page that shows an interstitial, then close the
+// contents.
+TEST_F(WebContentsImplTest, ShowInterstitialThenCloseAndShutdown) {
+  // Show interstitial.
+  TestInterstitialPage::InterstitialState state =
+      TestInterstitialPage::INVALID;
+  bool deleted = false;
+  GURL url("http://interstitial");
+  TestInterstitialPage* interstitial =
+      new TestInterstitialPage(contents(), true, url, &state, &deleted);
+  TestInterstitialPageStateGuard state_guard(interstitial);
+  interstitial->Show();
+  interstitial->TestDidNavigate(1, url);
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      interstitial->GetRenderViewHostForTesting());
+
+  // Now close the contents.
+  DeleteContents();
+  EXPECT_EQ(TestInterstitialPage::CANCELED, state);
+
+  // Before the interstitial has a chance to process its shutdown task,
+  // simulate quitting the browser.  This goes through all processes and
+  // tells them to destruct.
+  rvh->OnMessageReceived(
+        ViewHostMsg_RenderViewGone(0, 0, 0));
+
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(deleted);
+}
+
 // Test that after Proceed is called and an interstitial is still shown, no more
 // commands get executed.
 TEST_F(WebContentsImplTest, ShowInterstitialProceedMultipleCommands) {
@@ -1555,7 +1586,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialProceedMultipleCommands) {
 
   // Show an interstitial.
   TestInterstitialPage::InterstitialState state =
-      TestInterstitialPage::UNDECIDED;
+      TestInterstitialPage::INVALID;
   bool deleted = false;
   GURL url2("http://interstitial");
   TestInterstitialPage* interstitial =
@@ -1590,7 +1621,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialOnInterstitial) {
 
   // Show an interstitial.
   TestInterstitialPage::InterstitialState state1 =
-      TestInterstitialPage::UNDECIDED;
+      TestInterstitialPage::INVALID;
   bool deleted1 = false;
   GURL url1("http://interstitial1");
   TestInterstitialPage* interstitial1 =
@@ -1601,7 +1632,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialOnInterstitial) {
 
   // Now show another interstitial.
   TestInterstitialPage::InterstitialState state2 =
-      TestInterstitialPage::UNDECIDED;
+      TestInterstitialPage::INVALID;
   bool deleted2 = false;
   GURL url2("http://interstitial2");
   TestInterstitialPage* interstitial2 =
@@ -1643,7 +1674,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialProceedShowInterstitial) {
 
   // Show an interstitial.
   TestInterstitialPage::InterstitialState state1 =
-      TestInterstitialPage::UNDECIDED;
+      TestInterstitialPage::INVALID;
   bool deleted1 = false;
   GURL url1("http://interstitial1");
   TestInterstitialPage* interstitial1 =
@@ -1660,7 +1691,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialProceedShowInterstitial) {
   // Now show another interstitial (simulating the navigation causing another
   // interstitial).
   TestInterstitialPage::InterstitialState state2 =
-      TestInterstitialPage::UNDECIDED;
+      TestInterstitialPage::INVALID;
   bool deleted2 = false;
   GURL url2("http://interstitial2");
   TestInterstitialPage* interstitial2 =
@@ -1695,7 +1726,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialProceedShowInterstitial) {
 TEST_F(WebContentsImplTest, NavigateBeforeInterstitialShows) {
   // Show an interstitial.
   TestInterstitialPage::InterstitialState state =
-      TestInterstitialPage::UNDECIDED;
+      TestInterstitialPage::INVALID;
   bool deleted = false;
   GURL interstitial_url("http://interstitial");
   TestInterstitialPage* interstitial =
@@ -1729,7 +1760,7 @@ TEST_F(WebContentsImplTest, TwoQuickInterstitials) {
 
   // Show a first interstitial.
   TestInterstitialPage::InterstitialState state1 =
-      TestInterstitialPage::UNDECIDED;
+      TestInterstitialPage::INVALID;
   bool deleted1 = false;
   TestInterstitialPage* interstitial1 =
       new TestInterstitialPage(contents(), true, interstitial_url,
@@ -1740,7 +1771,7 @@ TEST_F(WebContentsImplTest, TwoQuickInterstitials) {
   // Show another interstitial on that same contents before the first one had
   // time to load.
   TestInterstitialPage::InterstitialState state2 =
-      TestInterstitialPage::UNDECIDED;
+      TestInterstitialPage::INVALID;
   bool deleted2 = false;
   TestInterstitialPage* interstitial2 =
       new TestInterstitialPage(contents(), true, interstitial_url,
@@ -1766,7 +1797,7 @@ TEST_F(WebContentsImplTest, TwoQuickInterstitials) {
 TEST_F(WebContentsImplTest, InterstitialCrasher) {
   // Show an interstitial.
   TestInterstitialPage::InterstitialState state =
-      TestInterstitialPage::UNDECIDED;
+      TestInterstitialPage::INVALID;
   bool deleted = false;
   GURL url("http://interstitial");
   TestInterstitialPage* interstitial =
@@ -1808,7 +1839,7 @@ TEST_F(WebContentsImplTest, NewInterstitialDoesNotCancelPendingEntry) {
 
   // Simulate that navigation triggering an interstitial.
   TestInterstitialPage::InterstitialState state =
-      TestInterstitialPage::UNDECIDED;
+      TestInterstitialPage::INVALID;
   bool deleted = false;
   TestInterstitialPage* interstitial =
       new TestInterstitialPage(contents(), true, kGURL, &state, &deleted);
@@ -1821,10 +1852,10 @@ TEST_F(WebContentsImplTest, NewInterstitialDoesNotCancelPendingEntry) {
   contents()->GetController().LoadURL(
       kGURL, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   TestInterstitialPage::InterstitialState state2 =
-      TestInterstitialPage::UNDECIDED;
+      TestInterstitialPage::INVALID;
   bool deleted2 = false;
   TestInterstitialPage* interstitial2 =
-      new TestInterstitialPage(contents(), true, kGURL, &state, &deleted);
+      new TestInterstitialPage(contents(), true, kGURL, &state2, &deleted2);
   TestInterstitialPageStateGuard state_guard2(interstitial2);
   interstitial2->Show();
   interstitial2->TestDidNavigate(1, kGURL);
@@ -1856,7 +1887,7 @@ TEST_F(WebContentsImplTest, NoJSMessageOnInterstitials) {
 
   // Simulate showing an interstitial while the page is showing.
   TestInterstitialPage::InterstitialState state =
-      TestInterstitialPage::UNDECIDED;
+      TestInterstitialPage::INVALID;
   bool deleted = false;
   TestInterstitialPage* interstitial =
       new TestInterstitialPage(contents(), true, kGURL, &state, &deleted);
@@ -1889,7 +1920,7 @@ TEST_F(WebContentsImplTest, CopyStateFromAndPruneSourceInterstitial) {
 
   // Show an interstitial.
   TestInterstitialPage::InterstitialState state =
-      TestInterstitialPage::UNDECIDED;
+      TestInterstitialPage::INVALID;
   bool deleted = false;
   GURL url2("http://interstitial");
   TestInterstitialPage* interstitial =
@@ -1940,7 +1971,7 @@ TEST_F(WebContentsImplTest, CopyStateFromAndPruneTargetInterstitial) {
 
   // Show an interstitial.
   TestInterstitialPage::InterstitialState state =
-      TestInterstitialPage::UNDECIDED;
+      TestInterstitialPage::INVALID;
   bool deleted = false;
   GURL url3("http://interstitial");
   TestInterstitialPage* interstitial =
