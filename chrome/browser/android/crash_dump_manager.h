@@ -11,6 +11,7 @@
 #include "base/platform_file.h"
 #include "base/process.h"
 #include "base/synchronization/lock.h"
+#include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -27,7 +28,8 @@ class RenderProcessHost;
 // a file descriptor where to write the minidump in the event of a crash.
 // This class creates these file descriptors and associates them with render
 // processes and take the appropriate action when the render process terminates.
-class CrashDumpManager : public content::NotificationObserver {
+class CrashDumpManager : public content::BrowserChildProcessObserver,
+                         public content::NotificationObserver {
  public:
   // This object is a singleton created and owned by the
   // ChromeBrowserMainPartsAndroid.
@@ -50,10 +52,19 @@ class CrashDumpManager : public content::NotificationObserver {
   static void ProcessMinidump(const base::FilePath& minidump_path,
                               base::ProcessHandle pid);
 
+  // content::BrowserChildProcessObserver implementation:
+  virtual void BrowserChildProcessHostDisconnected(
+      const content::ChildProcessData& data) OVERRIDE;
+  virtual void BrowserChildProcessCrashed(
+      const content::ChildProcessData& data) OVERRIDE;
+
   // NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // Called on child process exit (including crash).
+  void OnChildExit(int child_process_id, base::ProcessHandle pid);
 
   content::NotificationRegistrar notification_registrar_;
 

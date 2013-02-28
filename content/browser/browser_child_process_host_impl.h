@@ -16,7 +16,9 @@
 #include "content/public/common/child_process_host_delegate.h"
 
 namespace content {
+
 class BrowserChildProcessHostIterator;
+class BrowserChildProcessObserver;
 
 // Plugins/workers and other child processes that live on the IO thread use this
 // class. RenderProcessHostImpl is the main exception that doesn't use this
@@ -62,17 +64,20 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   // shutdown. Default is to always terminate.
   void SetTerminateChildOnShutdown(bool terminate_on_shutdown);
 
-  // Sends the given notification on the UI thread.
-  void Notify(int type);
+  // Called when an instance of a particular child is created in a page.
+  static void NotifyProcessInstanceCreated(const ChildProcessData& data);
 
-  BrowserChildProcessHostDelegate* delegate() const { return delegate_;
-  }
+  BrowserChildProcessHostDelegate* delegate() const { return delegate_; }
 
   typedef std::list<BrowserChildProcessHostImpl*> BrowserChildProcessList;
  private:
   friend class BrowserChildProcessHostIterator;
+  friend class BrowserChildProcessObserver;
 
   static BrowserChildProcessList* GetIterator();
+
+  static void AddObserver(BrowserChildProcessObserver* observer);
+  static void RemoveObserver(BrowserChildProcessObserver* observer);
 
   // ChildProcessHostDelegate implementation:
   virtual bool CanShutdown() OVERRIDE;

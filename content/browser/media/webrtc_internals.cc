@@ -35,11 +35,12 @@ static ListValue* EnsureLogList(DictionaryValue* dict) {
 WebRTCInternals::WebRTCInternals() {
   registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, NOTIFICATION_CHILD_PROCESS_CRASHED,
-                 NotificationService::AllBrowserContextsAndSources());
+
+  BrowserChildProcessObserver::Add(this);
 }
 
 WebRTCInternals::~WebRTCInternals() {
+  BrowserChildProcessObserver::Remove(this);
 }
 
 WebRTCInternals* WebRTCInternals::GetInstance() {
@@ -178,24 +179,21 @@ void WebRTCInternals::SendUpdate(const string& command, Value* value) {
                     OnUpdate(command, value));
 }
 
+void WebRTCInternals::BrowserChildProcessCrashed(
+    const ChildProcessData& data) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  OnRendererExit(data.id);
+}
+
 void WebRTCInternals::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  int render_process_id = -1;
+  DCHECK_EQ(type, NOTIFICATION_RENDERER_PROCESS_TERMINATED);
+  OnRendererExit(Source<RenderProcessHost>(source)->GetID());
+}
 
-  switch (type) {
-    case NOTIFICATION_RENDERER_PROCESS_TERMINATED:
-      render_process_id = Source<RenderProcessHost>(source)->GetID();
-      break;
-    case NOTIFICATION_CHILD_PROCESS_CRASHED:
-      render_process_id = Details<ChildProcessData>(details).ptr()->id;
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-
+void WebRTCInternals::OnRendererExit(int render_process_id) {
   // Iterates from the end of the list to remove the PeerConnections created
   // by the exitting renderer.
   for (int i = peer_connection_data_.GetSize() - 1; i >= 0; --i) {

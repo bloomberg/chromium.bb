@@ -172,6 +172,15 @@ mach_port_t MachBroker::TaskForPid(base::ProcessHandle pid) const {
   return it->second.mach_task_;
 }
 
+void MachBroker::BrowserChildProcessHostDisconnected(
+    const ChildProcessData& data) {
+  InvalidatePid(data.handle);
+}
+
+void MachBroker::BrowserChildProcessCrashed(const ChildProcessData& data) {
+  InvalidatePid(data.handle);
+}
+
 void MachBroker::Observe(int type,
                          const NotificationSource& source,
                          const NotificationDetails& details) {
@@ -186,10 +195,6 @@ void MachBroker::Observe(int type,
       break;
     case NOTIFICATION_RENDERER_PROCESS_TERMINATED:
       handle = Source<RenderProcessHost>(source)->GetHandle();
-      break;
-    case NOTIFICATION_CHILD_PROCESS_CRASHED:
-    case NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED:
-      handle = Details<ChildProcessData>(details)->handle;
       break;
     default:
       NOTREACHED() << "Unexpected notification";
@@ -218,10 +223,10 @@ void MachBroker::RegisterNotifications() {
                  NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, NOTIFICATION_CHILD_PROCESS_CRASHED,
-                 NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED,
-                 NotificationService::AllBrowserContextsAndSources());
+
+  // No corresponding StopObservingBrowserChildProcesses,
+  // we leak this singleton.
+  BrowserChildProcessObserver::Add(this);
 }
 
 }  // namespace content

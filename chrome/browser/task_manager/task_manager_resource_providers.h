@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/process_util.h"
 #include "chrome/browser/task_manager/task_manager.h"
+#include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -359,7 +360,7 @@ class TaskManagerChildProcessResource : public TaskManager::Resource {
 
 class TaskManagerChildProcessResourceProvider
     : public TaskManager::ResourceProvider,
-      public content::NotificationObserver {
+      public content::BrowserChildProcessObserver {
  public:
   explicit TaskManagerChildProcessResourceProvider(TaskManager* task_manager);
 
@@ -369,10 +370,11 @@ class TaskManagerChildProcessResourceProvider
   virtual void StartUpdating() OVERRIDE;
   virtual void StopUpdating() OVERRIDE;
 
-  // content::NotificationObserver method:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // content::BrowserChildProcessObserver methods:
+  virtual void BrowserChildProcessHostConnected(
+      const content::ChildProcessData& data) OVERRIDE;
+  virtual void BrowserChildProcessHostDisconnected(
+      const content::ChildProcessData& data) OVERRIDE;
 
  private:
   virtual ~TaskManagerChildProcessResourceProvider();
@@ -385,9 +387,6 @@ class TaskManagerChildProcessResourceProvider
   // retrieved.
   virtual void ChildProcessDataRetreived(
       const std::vector<content::ChildProcessData>& child_processes);
-
-  void Add(const content::ChildProcessData& child_process_data);
-  void Remove(const content::ChildProcessData& child_process_data);
 
   void AddToTaskManager(const content::ChildProcessData& child_process_data);
 

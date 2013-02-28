@@ -10,16 +10,15 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/task_manager/task_manager.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/worker_service_observer.h"
 
 class TaskManagerSharedWorkerResource;
 
 class TaskManagerWorkerResourceProvider
     : public TaskManager::ResourceProvider,
-      private content::WorkerServiceObserver,
-      private content::NotificationObserver {
+      public content::BrowserChildProcessObserver,
+      private content::WorkerServiceObserver {
  public:
   explicit TaskManagerWorkerResourceProvider(TaskManager* task_manager);
 
@@ -38,17 +37,18 @@ class TaskManagerWorkerResourceProvider
   virtual void StartUpdating() OVERRIDE;
   virtual void StopUpdating() OVERRIDE;
 
+  // content::BrowserChildProcessObserver implementation.
+  virtual void BrowserChildProcessHostConnected(
+      const content::ChildProcessData& data) OVERRIDE;
+  virtual void BrowserChildProcessHostDisconnected(
+      const content::ChildProcessData& data) OVERRIDE;
+
   // content::WorkerServiceObserver implementation.
   virtual void WorkerCreated(const GURL& url,
                              const string16& name,
                              int process_id,
                              int route_id) OVERRIDE;
   virtual void WorkerDestroyed(int process_id, int route_id) OVERRIDE;
-
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
 
   void NotifyWorkerCreated(WorkerResourceHolder* resource_holder);
   void NotifyWorkerDestroyed(int process_id, int routing_id);
@@ -68,7 +68,6 @@ class TaskManagerWorkerResourceProvider
   // have already received WorkerCreated event. We don't add such workers to
   // the task manager until the process is launched.
   ProcessIdToWorkerResources launching_workers_;
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerWorkerResourceProvider);
 };

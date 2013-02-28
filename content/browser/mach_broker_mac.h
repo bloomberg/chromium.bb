@@ -14,6 +14,7 @@
 #include "base/process.h"
 #include "base/process_util.h"
 #include "base/synchronization/lock.h"
+#include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -34,6 +35,7 @@ namespace content {
 // Since this data arrives over a separate channel, it is not available
 // immediately after a child process has been started.
 class CONTENT_EXPORT MachBroker : public base::ProcessMetrics::PortProvider,
+                                  public BrowserChildProcessObserver,
                                   public NotificationObserver {
  public:
   // Returns the global MachBroker.
@@ -81,6 +83,12 @@ class CONTENT_EXPORT MachBroker : public base::ProcessMetrics::PortProvider,
 
   // Implement |ProcessMetrics::PortProvider|.
   virtual mach_port_t TaskForPid(base::ProcessHandle process) const OVERRIDE;
+
+  // Implement |BrowserChildProcessObserver|.
+  virtual void BrowserChildProcessHostDisconnected(
+      const ChildProcessData& data) OVERRIDE;
+  virtual void BrowserChildProcessCrashed(
+      const ChildProcessData& data) OVERRIDE;
 
   // Implement |NotificationObserver|.
   virtual void Observe(int type,

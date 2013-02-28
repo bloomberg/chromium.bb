@@ -14,8 +14,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/worker_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -191,16 +189,13 @@ TaskManager::Resource* TaskManagerWorkerResourceProvider::GetResource(
 void TaskManagerWorkerResourceProvider::StartUpdating() {
   DCHECK(!updating_);
   updating_ = true;
-  // Register for notifications to get new child processes.
-  registrar_.Add(this, content::NOTIFICATION_CHILD_PROCESS_HOST_CONNECTED,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, content::NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED,
-                 content::NotificationService::AllBrowserContextsAndSources());
   // Get existing workers.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE, base::Bind(
           &TaskManagerWorkerResourceProvider::StartObservingWorkers,
           this));
+
+  BrowserChildProcessObserver::Add(this);
 }
 
 void TaskManagerWorkerResourceProvider::StopUpdating() {
@@ -208,16 +203,55 @@ void TaskManagerWorkerResourceProvider::StopUpdating() {
   updating_ = false;
   launching_workers_.clear();
   DeleteAllResources();
-  registrar_.Remove(
-      this, content::NOTIFICATION_CHILD_PROCESS_HOST_CONNECTED,
-      content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Remove(
-      this, content::NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED,
-      content::NotificationService::AllBrowserContextsAndSources());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE, base::Bind(
           &TaskManagerWorkerResourceProvider::StopObservingWorkers,
           this));
+
+  BrowserChildProcessObserver::Remove(this);
+}
+
+void TaskManagerWorkerResourceProvider::BrowserChildProcessHostConnected(
+    const content::ChildProcessData& data) {
+  DCHECK(updating_);
+
+  if (data.type != content::PROCESS_TYPE_WORKER)
+    return;
+
+  ProcessIdToWorkerResources::iterator it(launching_workers_.find(data.id));
+  if (it == launching_workers_.end())
+    return;
+  WorkerResourceList& resources = it->second;
+  for (WorkerResourceList::iterator r = resources.begin();
+       r != resources.end(); ++r) {
+    (*r)->UpdateProcessHandle(data.handle);
+    task_manager_->AddResource(*r);
+  }
+  launching_workers_.erase(it);
+}
+
+void TaskManagerWorkerResourceProvider::BrowserChildProcessHostDisconnected(
+    const content::ChildProcessData& data) {
+  DCHECK(updating_);
+
+  if (data.type != content::PROCESS_TYPE_WORKER)
+    return;
+
+  // Worker process may be destroyed before WorkerMsg_TerminateWorkerContex
+  // message is handled and WorkerDestroyed is fired. In this case we won't
+  // get WorkerDestroyed notification and have to clear resources for such
+  // workers here when the worker process has been destroyed.
+  for (WorkerResourceList::iterator it = resources_.begin();
+       it != resources_.end();) {
+    if ((*it)->process_id() == data.id) {
+      task_manager_->RemoveResource(*it);
+      delete *it;
+      it = resources_.erase(it);
+    } else {
+      ++it;
+    }
+  }
+  DCHECK(!ContainsKey(launching_workers_, data.id));
 }
 
 void TaskManagerWorkerResourceProvider::WorkerCreated(
@@ -240,46 +274,6 @@ void TaskManagerWorkerResourceProvider::WorkerDestroyed(int process_id,
       BrowserThread::UI, FROM_HERE, base::Bind(
           &TaskManagerWorkerResourceProvider::NotifyWorkerDestroyed,
           this, process_id, route_id));
-}
-
-void TaskManagerWorkerResourceProvider::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  content::ChildProcessData* process_data =
-      content::Details<content::ChildProcessData>(details).ptr();
-  if (process_data->type != content::PROCESS_TYPE_WORKER)
-    return;
-  if (type == content::NOTIFICATION_CHILD_PROCESS_HOST_CONNECTED) {
-    ProcessIdToWorkerResources::iterator it =
-        launching_workers_.find(process_data->id);
-    if (it == launching_workers_.end())
-      return;
-    WorkerResourceList& resources = it->second;
-    for (WorkerResourceList::iterator r = resources.begin();
-         r !=resources.end(); ++r) {
-      (*r)->UpdateProcessHandle(process_data->handle);
-      task_manager_->AddResource(*r);
-    }
-    launching_workers_.erase(it);
-  } else if (type == content::NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED) {
-    // Worker process may be destroyed before WorkerMsg_TerminateWorkerContex
-    // message is handled and WorkerDestroyed is fired. In this case we won't
-    // get WorkerDestroyed notification and have to clear resources for such
-    // workers here when the worker process has been destroyed.
-    for (WorkerResourceList::iterator it = resources_.begin();
-         it !=resources_.end();) {
-      if ((*it)->process_id() == process_data->id) {
-        task_manager_->RemoveResource(*it);
-        delete *it;
-        it = resources_.erase(it);
-      } else {
-        ++it;
-      }
-    }
-    DCHECK(launching_workers_.find(process_data->id) ==
-           launching_workers_.end());
-  }
 }
 
 void TaskManagerWorkerResourceProvider::NotifyWorkerCreated(

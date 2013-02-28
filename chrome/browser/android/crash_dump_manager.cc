@@ -45,16 +45,14 @@ CrashDumpManager::CrashDumpManager() {
   notification_registrar_.Add(this,
                               content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                               content::NotificationService::AllSources());
-  notification_registrar_.Add(this,
-      content::NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED,
-      content::NotificationService::AllSources());
-  notification_registrar_.Add(this,
-                              content::NOTIFICATION_CHILD_PROCESS_CRASHED,
-                              content::NotificationService::AllSources());
+
+  BrowserChildProcessObserver::Add(this);
 }
 
 CrashDumpManager::~CrashDumpManager() {
   instance_ = NULL;
+
+  BrowserChildProcessObserver::Remove(this);
 }
 
 int CrashDumpManager::CreateMinidumpFile(int child_process_id) {
@@ -124,11 +122,19 @@ void CrashDumpManager::ProcessMinidump(const base::FilePath& minidump_path,
       crash_dump_dir.Append(filename).value();
 }
 
+void CrashDumpManager::BrowserChildProcessHostDisconnected(
+    const content::ChildProcessData& data) {
+  OnChildExit(data.id, data.handle);
+}
+
+void CrashDumpManager::BrowserChildProcessCrashed(
+    const content::ChildProcessData& data) {
+  OnChildExit(data.id, data.handle);
+}
+
 void CrashDumpManager::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
-  int child_process_id;
-  base::ProcessHandle pid;
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED:
       // NOTIFICATION_RENDERER_PROCESS_TERMINATED is sent when the renderer
@@ -137,22 +143,17 @@ void CrashDumpManager::Observe(int type,
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
       content::RenderProcessHost* rph =
           content::Source<content::RenderProcessHost>(source).ptr();
-      child_process_id = rph->GetID();
-      pid = rph->GetHandle();
-      break;
-    }
-    case content::NOTIFICATION_CHILD_PROCESS_CRASHED:
-    case content::NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED: {
-      content::ChildProcessData* child_process_data =
-          content::Details<content::ChildProcessData>(details).ptr();
-      child_process_id = child_process_data->id;
-      pid = child_process_data->handle;
+      OnChildExit(rph->GetID(), rph->GetHandle());
       break;
     }
     default:
       NOTREACHED();
       return;
   }
+}
+
+void CrashDumpManager::OnChildExit(int child_process_id,
+                                   base::ProcessHandle pid) {
   base::FilePath minidump_path;
   {
     base::AutoLock auto_lock(child_process_id_to_minidump_path_lock_);

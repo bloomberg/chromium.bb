@@ -1211,83 +1211,53 @@ void TaskManagerChildProcessResourceProvider::StartUpdating() {
   DCHECK(!updating_);
   updating_ = true;
 
-  // Register for notifications to get new child processes.
-  registrar_.Add(this, content::NOTIFICATION_CHILD_PROCESS_HOST_CONNECTED,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, content::NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED,
-                 content::NotificationService::AllBrowserContextsAndSources());
-
   // Get the existing child processes.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(
           &TaskManagerChildProcessResourceProvider::RetrieveChildProcessData,
           this));
+
+  BrowserChildProcessObserver::Add(this);
 }
 
 void TaskManagerChildProcessResourceProvider::StopUpdating() {
   DCHECK(updating_);
   updating_ = false;
 
-  // Unregister for notifications to get new plugin processes.
-  registrar_.Remove(
-      this, content::NOTIFICATION_CHILD_PROCESS_HOST_CONNECTED,
-      content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Remove(
-      this,
-      content::NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED,
-      content::NotificationService::AllBrowserContextsAndSources());
-
   // Delete all the resources.
   STLDeleteContainerPairSecondPointers(resources_.begin(), resources_.end());
 
   resources_.clear();
   pid_to_resources_.clear();
+
+  BrowserChildProcessObserver::Remove(this);
 }
 
-void TaskManagerChildProcessResourceProvider::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  content::ChildProcessData data =
-      *content::Details<content::ChildProcessData>(details).ptr();
-  switch (type) {
-    case content::NOTIFICATION_CHILD_PROCESS_HOST_CONNECTED:
-      Add(data);
-      break;
-    case content::NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED:
-      Remove(data);
-      break;
-    default:
-      NOTREACHED() << "Unexpected notification.";
-      return;
-  }
-}
+void TaskManagerChildProcessResourceProvider::BrowserChildProcessHostConnected(
+    const content::ChildProcessData& data) {
+  DCHECK(updating_);
 
-void TaskManagerChildProcessResourceProvider::Add(
-    const content::ChildProcessData& child_process_data) {
-  if (!updating_)
-    return;
   // Workers are handled by TaskManagerWorkerResourceProvider.
-  if (child_process_data.type == content::PROCESS_TYPE_WORKER)
+  if (data.type == content::PROCESS_TYPE_WORKER)
     return;
-  if (resources_.count(child_process_data.handle)) {
+  if (resources_.count(data.handle)) {
     // The case may happen that we have added a child_process_info as part of
     // the iteration performed during StartUpdating() call but the notification
     // that it has connected was not fired yet. So when the notification
     // happens, we already know about this plugin and just ignore it.
     return;
   }
-  AddToTaskManager(child_process_data);
+  AddToTaskManager(data);
 }
 
-void TaskManagerChildProcessResourceProvider::Remove(
-    const content::ChildProcessData& child_process_data) {
-  if (!updating_)
+void TaskManagerChildProcessResourceProvider::
+BrowserChildProcessHostDisconnected(const content::ChildProcessData& data) {
+  DCHECK(updating_);
+
+  if (data.type == content::PROCESS_TYPE_WORKER)
     return;
-  if (child_process_data.type == content::PROCESS_TYPE_WORKER)
-    return;
-  ChildProcessMap::iterator iter = resources_.find(child_process_data.handle);
+  ChildProcessMap::iterator iter = resources_.find(data.handle);
   if (iter == resources_.end()) {
     // ChildProcessData disconnection notifications are asynchronous, so we
     // might be notified for a plugin we don't know anything about (if it was
@@ -1330,6 +1300,8 @@ void TaskManagerChildProcessResourceProvider::RetrieveChildProcessData() {
     // Only add processes which are already started, since we need their handle.
     if (iter.GetData().handle == base::kNullProcessHandle)
       continue;
+    if (iter.GetData().type == content::PROCESS_TYPE_WORKER)
+      continue;
     child_processes.push_back(iter.GetData());
   }
   // Now notify the UI thread that we have retrieved information about child
@@ -1345,7 +1317,7 @@ void TaskManagerChildProcessResourceProvider::RetrieveChildProcessData() {
 void TaskManagerChildProcessResourceProvider::ChildProcessDataRetreived(
     const std::vector<content::ChildProcessData>& child_processes) {
   for (size_t i = 0; i < child_processes.size(); ++i)
-    Add(child_processes[i]);
+    AddToTaskManager(child_processes[i]);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TASK_MANAGER_CHILD_PROCESSES_DATA_READY,

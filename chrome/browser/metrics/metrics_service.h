@@ -22,6 +22,7 @@
 #include "chrome/browser/metrics/tracking_synchronizer_observer.h"
 #include "chrome/common/metrics/metrics_service_base.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/user_metrics.h"
@@ -69,6 +70,7 @@ struct WebPluginInfo;
 
 class MetricsService
     : public chrome_browser_metrics::TrackingSynchronizerObserver,
+      public content::BrowserChildProcessObserver,
       public content::NotificationObserver,
       public net::URLFetcherDelegate,
       public MetricsServiceBase {
@@ -130,6 +132,14 @@ class MetricsService
   // such as precluding UMA uploads unless there was recent activity.
   static void SetUpNotifications(content::NotificationRegistrar* registrar,
                                  content::NotificationObserver* observer);
+
+  // Implementation of content::BrowserChildProcessObserver
+  virtual void BrowserChildProcessHostConnected(
+      const content::ChildProcessData& data) OVERRIDE;
+  virtual void BrowserChildProcessCrashed(
+      const content::ChildProcessData& data) OVERRIDE;
+  virtual void BrowserChildProcessInstanceCreated(
+      const content::ChildProcessData& data) OVERRIDE;
 
   // Implementation of content::NotificationObserver
   virtual void Observe(int type,
@@ -210,6 +220,8 @@ class MetricsService
     LAST_ENTROPY_LOW,
     LAST_ENTROPY_HIGH,
   };
+
+  struct ChildProcessStats;
 
   // First part of the init task. Called on the FILE thread to load hardware
   // class information.
@@ -362,12 +374,9 @@ class MetricsService
   // Records that the browser was shut down cleanly.
   void LogCleanShutdown();
 
-  // Records a child process related notification.  These are recorded to an
-  // in-object buffer because these notifications are sent on page load, and we
-  // don't want to slow that down.
-  void LogChildProcessChange(int type,
-                             const content::NotificationSource& source,
-                             const content::NotificationDetails& details);
+  // Returns reference to ChildProcessStats corresponding to |data|.
+  ChildProcessStats& GetChildProcessStats(
+      const content::ChildProcessData& data);
 
   // Logs the number of keywords.
   void LogKeywordCount(size_t keyword_count);
@@ -465,9 +474,7 @@ class MetricsService
   WindowMap window_map_;
   int next_window_id_;
 
-  // Buffer of child process notifications for quick access.  See
-  // ChildProcessStats documentation above for more details.
-  struct ChildProcessStats;
+  // Buffer of child process notifications for quick access.
   std::map<string16, ChildProcessStats> child_process_stats_buffer_;
 
   // Weak pointers factory used to post task on different threads. All weak
