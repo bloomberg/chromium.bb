@@ -410,14 +410,20 @@ def GrepForWebUIActions(path, actions):
     path: path to the file
     actions: set of actions to add to
   """
+  close_called = False
   try:
     parser = WebUIActionsParser(actions)
     parser.feed(open(path).read())
+    # An exception can be thrown by parser.close(), so do it in the try to
+    # ensure the path of the file being parsed gets printed if that happens.
+    close_called = True
+    parser.close()
   except Exception, e:
     print "Error encountered for path %s" % path
     raise e
   finally:
-    parser.close()
+    if not close_called:
+      parser.close()
 
 def WalkDirectory(root_path, actions, extensions, callback):
   for path, dirs, files in os.walk(root_path):
