@@ -186,6 +186,10 @@ class RemoteAccess(object):
     ssh_cmd = ' '.join(self._GetSSHCmd())
     rsync_cmd = ['rsync', '--recursive', '--links', '--perms',  '--verbose',
                  '--compress']
+    # In cases where the developer sets up a ssh daemon manually on a device
+    # with a dev image, the ssh login $PATH can be incorrect, and the target
+    # rsync will not be found.  So we try to provide the right $PATH here.
+    rsync_cmd += ['--rsync-path', 'PATH=/usr/local/bin:$PATH rsync']
     if inplace:
       rsync_cmd.append('--inplace')
     rsync_cmd += ['--progress', '--rsh', ssh_cmd, src,
@@ -193,4 +197,4 @@ class RemoteAccess(object):
     rc_func = cros_build_lib.RunCommand
     if sudo:
       rc_func = cros_build_lib.SudoRunCommand
-    return rc_func(rsync_cmd, debug_level=debug_level, print_cmd=False)
+    return rc_func(rsync_cmd, debug_level=debug_level)
