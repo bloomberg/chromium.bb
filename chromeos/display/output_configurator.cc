@@ -526,7 +526,9 @@ bool IsOutputAspectPreservingScaling(Display* display,
 }  // namespace
 
 OutputConfigurator::OutputConfigurator()
-    : is_running_on_chrome_os_(base::chromeos::IsRunningOnChromeOS()),
+    // If we aren't running on ChromeOS (like linux desktop),
+    // don't try to configure display.
+    : configure_display_(base::chromeos::IsRunningOnChromeOS()),
       is_panel_fitting_enabled_(false),
       connected_output_count_(0),
       xrandr_event_base_(0),
@@ -543,7 +545,7 @@ OutputConfigurator::~OutputConfigurator() {
 void OutputConfigurator::Init(bool is_panel_fitting_enabled,
                               uint32 background_color_argb) {
   TRACE_EVENT0("chromeos", "OutputConfigurator::Init");
-  if (!is_running_on_chrome_os_)
+  if (!configure_display_)
     return;
   is_panel_fitting_enabled_ = is_panel_fitting_enabled;
 
@@ -613,10 +615,14 @@ void OutputConfigurator::Init(bool is_panel_fitting_enabled,
       SetIsProjecting(is_projecting);
 }
 
+void OutputConfigurator::Stop() {
+  configure_display_ = false;
+}
+
 bool OutputConfigurator::CycleDisplayMode() {
   TRACE_EVENT0("chromeos", "OutputConfigurator::CycleDisplayMode");
   VLOG(1) << "CycleDisplayMode";
-  if (!is_running_on_chrome_os_)
+  if (!configure_display_)
     return false;
 
   bool did_change = false;
@@ -654,7 +660,7 @@ bool OutputConfigurator::ScreenPowerSet(bool power_on, bool all_displays) {
   TRACE_EVENT0("chromeos", "OutputConfigurator::ScreenPowerSet");
   VLOG(1) << "OutputConfigurator::SetScreensOn " << power_on
           << " all displays " << all_displays;
-  if (!is_running_on_chrome_os_)
+  if (!configure_display_)
     return false;
 
   bool success = false;
@@ -759,8 +765,9 @@ bool OutputConfigurator::Dispatch(const base::NativeEvent& event) {
   TRACE_EVENT0("chromeos", "OutputConfigurator::Dispatch");
   if (event->type - xrandr_event_base_ == RRScreenChangeNotify)
     XRRUpdateConfiguration(event);
-  // Ignore this event if the Xrandr extension isn't supported.
-  if (!is_running_on_chrome_os_ ||
+  // Ignore this event if the Xrandr extension isn't supported, or
+  // the device is being shutdown.
+  if (!configure_display_ ||
       (event->type - xrandr_event_base_ != RRNotify)) {
     return true;
   }

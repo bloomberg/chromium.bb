@@ -17,6 +17,10 @@
 #include "ui/aura/client/capture_client.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/display/output_configurator.h"
+#endif
+
 namespace chrome {
 
 void HandleAppExitingForPlatform() {
@@ -39,6 +43,10 @@ void HandleAppExitingForPlatform() {
   views::Widget::CloseAllSecondaryWidgets();
 
 #if defined(OS_CHROMEOS)
+  // Stop handling display configuration events once the shutdown
+  // process starts. crbug.com/177014.
+  ash::Shell::GetInstance()->output_configurator()->Stop();
+
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableZeroBrowsersOpenForTests) &&
       !chrome::IsRunningInAppMode()) {
