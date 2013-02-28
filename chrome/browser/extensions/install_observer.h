@@ -24,6 +24,9 @@ class InstallObserver {
 
   virtual void OnInstallFailure(const std::string& extension_id) = 0;
 
+  // Notifies observers that the observed object is going away.
+  virtual void OnShutdown() = 0;
+
  protected:
   virtual ~InstallObserver() {}
 };

@@ -32,6 +32,9 @@ class InstallTracker : public ProfileKeyedService {
                           int percent_downloaded);
   void OnInstallFailure(const std::string& extension_id);
 
+  // Overriddes for ProfileKeyedService:
+  void Shutdown();
+
  private:
   ObserverList<InstallObserver> observers_;
 

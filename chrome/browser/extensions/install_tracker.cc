@@ -44,4 +44,8 @@ void InstallTracker::OnInstallFailure(
                     OnInstallFailure(extension_id));
 }
 
+void InstallTracker::Shutdown() {
+  FOR_EACH_OBSERVER(InstallObserver, observers_, OnShutdown());
+}
+
 }  // namespace extensions
