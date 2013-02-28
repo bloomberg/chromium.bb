@@ -252,8 +252,12 @@ class SynchronizedConsumer {
 
   void OnFrameInfo(const media::VideoCaptureCapability& info);
   void OnError();
-  void OnIncomingCapturedFrame(const uint8* pixels, int size,
-                               const base::Time& timestamp);
+  void OnIncomingCapturedFrame(const uint8* pixels,
+                               int size,
+                               const base::Time& timestamp,
+                               int rotation,
+                               bool flip_vert,
+                               bool flip_horiz);
   void OnIncomingCapturedVideoFrame(
       const scoped_refptr<media::VideoFrame>& video_frame,
       const base::Time& timestamp);
@@ -524,10 +528,12 @@ void SynchronizedConsumer::OnError() {
 }
 
 void SynchronizedConsumer::OnIncomingCapturedFrame(
-    const uint8* pixels, int size, const base::Time& timestamp) {
+    const uint8* pixels, int size, const base::Time& timestamp,
+    int rotation, bool flip_vert, bool flip_horiz) {
   base::AutoLock guard(consumer_lock_);
   if (wrapped_consumer_) {
-    wrapped_consumer_->OnIncomingCapturedFrame(pixels, size, timestamp);
+    wrapped_consumer_->OnIncomingCapturedFrame(pixels, size, timestamp,
+                                               rotation, flip_vert, flip_horiz);
   }
 }
 
@@ -586,7 +592,7 @@ void VideoFrameDeliverer::DeliverOnDeliverThread(
   consumer_->OnIncomingCapturedFrame(
       static_cast<const uint8*>(frame_buffer.getPixels()),
       frame_buffer.getSize(),
-      frame_timestamp);
+      frame_timestamp, 0, false, false);
 
   ChronicleFrameDelivery(frame_number);
 

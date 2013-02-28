@@ -482,7 +482,8 @@ const VideoCaptureDevice::Name& VideoCaptureDeviceWin::device_name() {
 // Implements SinkFilterObserver::SinkFilterObserver.
 void VideoCaptureDeviceWin::FrameReceived(const uint8* buffer,
                                           int length) {
-  observer_->OnIncomingCapturedFrame(buffer, length, base::Time::Now());
+  observer_->OnIncomingCapturedFrame(buffer, length, base::Time::Now(),
+                                     0, false, false);
 }
 
 bool VideoCaptureDeviceWin::CreateCapabilityMap() {

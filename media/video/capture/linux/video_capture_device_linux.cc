@@ -414,7 +414,7 @@ void VideoCaptureDeviceLinux::OnCaptureTask() {
     if (ioctl(device_fd_, VIDIOC_DQBUF, &buffer) == 0) {
       observer_->OnIncomingCapturedFrame(
           static_cast<uint8*> (buffer_pool_[buffer.index].start),
-          buffer.bytesused, base::Time::Now());
+          buffer.bytesused, base::Time::Now(), 0, false, false);
 
       // Enqueue the buffer again.
       if (ioctl(device_fd_, VIDIOC_QBUF, &buffer) == -1) {

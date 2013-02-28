@@ -49,7 +49,10 @@ class MockFrameObserver : public media::VideoCaptureDevice::EventHandler {
       const media::VideoCaptureCapability& info) OVERRIDE {}
   virtual void OnIncomingCapturedFrame(const uint8* data,
                                        int length,
-                                       base::Time timestamp) OVERRIDE {}
+                                       base::Time timestamp,
+                                       int rotation,
+                                       bool flip_vert,
+                                       bool flip_horiz) OVERRIDE {}
   virtual void OnIncomingCapturedVideoFrame(media::VideoFrame* frame,
                                             base::Time timestamp) OVERRIDE {}
 };

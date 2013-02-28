@@ -86,7 +86,7 @@ void FillYUV(VideoFrame* frame, uint8 y, uint8 u, uint8 v) {
 }
 
 void RotatePlaneByPixels(
-    uint8* src,
+    const uint8* src,
     uint8* dest,
     int width,
     int height,
@@ -175,7 +175,7 @@ void RotatePlaneByPixels(
 
   // Copy pixels.
   for (int row = 0; row < num_rows; ++row) {
-    uint8* src_ptr = src;
+    const uint8* src_ptr = src;
     uint8* dest_ptr = dest;
     for (int col = 0; col < num_cols; ++col) {
       *dest_ptr = *src_ptr++;

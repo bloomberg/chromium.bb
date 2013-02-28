@@ -67,8 +67,6 @@ class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
 
   Name device_name_;
   VideoCaptureCapability current_settings_;
-  scoped_ptr<uint8[]> rotation_buffer_;
-  int rotation_;
 
   // Java VideoCaptureAndroid instance.
   base::android::ScopedJavaGlobalRef<jobject> j_capture_;

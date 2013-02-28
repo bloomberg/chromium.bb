@@ -193,7 +193,8 @@ void ScreenCaptureDevice::Core::OnCaptureCompleted(
     base::AutoLock auto_lock(event_handler_lock_);
     if (event_handler_) {
       event_handler_->OnIncomingCapturedFrame(
-          capture_data->data(), buffer_size, base::Time::Now());
+          capture_data->data(), buffer_size, base::Time::Now(),
+          0, false, false);
     }
     return;
   }
@@ -253,7 +254,7 @@ void ScreenCaptureDevice::Core::OnCaptureCompleted(
   if (event_handler_) {
     event_handler_->OnIncomingCapturedFrame(
         reinterpret_cast<uint8*>(resized_bitmap_.getPixels()), buffer_size,
-        base::Time::Now());
+        base::Time::Now(), 0, false, false);
   }
 }
 

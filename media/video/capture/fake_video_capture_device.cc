@@ -192,9 +192,8 @@ void FakeVideoCaptureDevice::OnCaptureTask() {
   frame_count_++;
 
   // Give the captured frame to the observer.
-  observer_->OnIncomingCapturedFrame(fake_frame_.get(),
-                                     frame_size_,
-                                     base::Time::Now());
+  observer_->OnIncomingCapturedFrame(
+      fake_frame_.get(), frame_size_, base::Time::Now(), 0, false, false);
   // Reschedule next CaptureTask.
   capture_thread_.message_loop()->PostDelayedTask(
         FROM_HERE,

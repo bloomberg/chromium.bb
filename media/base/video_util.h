@@ -49,7 +49,7 @@ MEDIA_EXPORT void FillYUV(VideoFrame* frame, uint8 y, uint8 u, uint8 v);
 // ignored for both |src| and |dest|.
 // The caller is responsible for blanking out the margin area.
 MEDIA_EXPORT void RotatePlaneByPixels(
-    uint8* src,
+    const uint8* src,
     uint8* dest,
     int width,
     int height,

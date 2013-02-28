@@ -150,8 +150,8 @@ void VideoCaptureDeviceMac::ReceiveFrame(
     const uint8* video_frame,
     int video_frame_length,
     const VideoCaptureCapability& frame_info) {
-  observer_->OnIncomingCapturedFrame(video_frame, video_frame_length,
-                                     base::Time::Now());
+  observer_->OnIncomingCapturedFrame(
+      video_frame, video_frame_length, base::Time::Now(), 0, false, false);
 }
 
 void VideoCaptureDeviceMac::SetErrorState(const std::string& reason) {

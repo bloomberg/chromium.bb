@@ -23,14 +23,6 @@ using base::android::ScopedJavaLocalRef;
 
 namespace {
 
-// TODO(wjia): add stride as part of buffer parameter.
-void ResetBufferI420(uint8* buffer, int width, int height) {
-  int y_size = width * height;
-  memset(buffer, 0, y_size);
-  buffer += y_size;
-  memset(buffer, 128, y_size / 2);
-}
-
 int GetIntField(JNIEnv* env,
                 const JavaRef<jclass>& clazz,
                 const JavaRef<jobject>& instance,
@@ -123,8 +115,7 @@ VideoCaptureDeviceAndroid::VideoCaptureDeviceAndroid(const Name& device_name)
     : state_(kIdle),
       observer_(NULL),
       device_name_(device_name),
-      current_settings_(),
-      rotation_(0) {
+      current_settings_() {
 }
 
 VideoCaptureDeviceAndroid::~VideoCaptureDeviceAndroid() {
@@ -193,12 +184,6 @@ void VideoCaptureDeviceAndroid::Allocate(
            << current_settings_.frame_rate;
   // Report the frame size to the observer.
   observer_->OnFrameInfo(current_settings_);
-
-  int y_size = current_settings_.width * current_settings_.height;
-  rotation_buffer_.reset(new uint8[y_size * 3 / 2]);
-  ResetBufferI420(rotation_buffer_.get(),
-                  current_settings_.width,
-                  current_settings_.height);
 }
 
 void VideoCaptureDeviceAndroid::Start() {
@@ -285,32 +270,9 @@ void VideoCaptureDeviceAndroid::OnFrameAvailable(
     return;
   }
 
-  // TODO(wjia): move rotation into VideoCaptureController to remove
-  // one buffer copying.
-  // Rotate the buffer when needed.
-  int width = current_settings_.width;
-  int height = current_settings_.height;
-  if (rotation_ != rotation) {
-    rotation_ = rotation;
-    ResetBufferI420(rotation_buffer_.get(), width, height);
-  }
-
-  uint8* src = reinterpret_cast<uint8*>(buffer);
-  uint8* dest = rotation_buffer_.get();
-
-  RotatePlaneByPixels(src, dest, width, height, rotation, flip_vert,
-                      flip_horiz);
-  int y_size = width * height;
-  src += y_size;
-  dest += y_size;
-  RotatePlaneByPixels(src, dest, width/2, height/2, rotation, flip_vert,
-                      flip_horiz);
-  src += y_size/4;
-  dest += y_size/4;
-  RotatePlaneByPixels(src, dest, width/2, height/2, rotation, flip_vert,
-                      flip_horiz);
-  observer_->OnIncomingCapturedFrame(rotation_buffer_.get(), length,
-                                     base::Time::Now());
+  observer_->OnIncomingCapturedFrame(
+      reinterpret_cast<uint8*>(buffer), length, base::Time::Now(),
+      rotation, flip_vert, flip_horiz);
 
   env->ReleaseByteArrayElements(data, buffer, JNI_ABORT);
 }

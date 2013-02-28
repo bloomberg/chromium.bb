@@ -67,7 +67,10 @@ class CONTENT_EXPORT VideoCaptureController
   // Implement media::VideoCaptureDevice::EventHandler.
   virtual void OnIncomingCapturedFrame(const uint8* data,
                                        int length,
-                                       base::Time timestamp) OVERRIDE;
+                                       base::Time timestamp,
+                                       int rotation,
+                                       bool flip_vert,
+                                       bool flip_horiz) OVERRIDE;
   virtual void OnIncomingCapturedVideoFrame(media::VideoFrame* frame,
                                             base::Time timestamp) OVERRIDE;
   virtual void OnError() OVERRIDE;
@@ -119,7 +122,8 @@ class CONTENT_EXPORT VideoCaptureController
   bool ReserveSharedMemory(int* buffer_id_out,
                            uint8** yplane,
                            uint8** uplane,
-                           uint8** vplane);
+                           uint8** vplane,
+                           int rotation);
 
   // Lock to protect free_dibs_ and owned_dibs_.
   base::Lock lock_;

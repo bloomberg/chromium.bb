@@ -74,8 +74,13 @@ class MockFrameObserver : public media::VideoCaptureDevice::EventHandler {
     OnFrameInfo(info.width, info.height, info.frame_rate, info.color);
   }
 
-  virtual void OnIncomingCapturedFrame(const uint8* data, int length,
-                                       base::Time timestamp) OVERRIDE {
+  virtual void OnIncomingCapturedFrame(
+      const uint8* data,
+      int length,
+      base::Time timestamp,
+      int rotation,
+      bool flip_vert,
+      bool flip_horiz) OVERRIDE {
     wait_event_->Signal();
   }
 

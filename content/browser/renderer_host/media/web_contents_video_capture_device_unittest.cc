@@ -296,8 +296,13 @@ class StubConsumer : public media::VideoCaptureDevice::EventHandler {
     }
   }
 
-  virtual void OnIncomingCapturedFrame(const uint8* data, int length,
-                                       base::Time timestamp) OVERRIDE {
+  virtual void OnIncomingCapturedFrame(
+      const uint8* data,
+      int length,
+      base::Time timestamp,
+      int rotation,
+      bool flip_vert,
+      bool flip_horiz) OVERRIDE {
     DCHECK(data);
     static const int kNumPixels = kTestWidth * kTestHeight;
     EXPECT_EQ(kNumPixels * kBytesPerPixel, length);

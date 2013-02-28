@@ -35,8 +35,12 @@ class MockFrameObserver : public VideoCaptureDevice::EventHandler {
  public:
   MOCK_METHOD0(OnError, void());
   MOCK_METHOD1(OnFrameInfo, void(const VideoCaptureCapability& info));
-  MOCK_METHOD3(OnIncomingCapturedFrame, void(const uint8* data, int length,
-                                             base::Time timestamp));
+  MOCK_METHOD6(OnIncomingCapturedFrame, void(const uint8* data,
+                                             int length,
+                                             base::Time timestamp,
+                                             int rotation,
+                                             bool flip_vert,
+                                             bool flip_horiz));
   MOCK_METHOD2(OnIncomingCapturedVideoFrame, void(media::VideoFrame* frame,
                                                   base::Time timestamp));
 };
@@ -105,7 +109,7 @@ TEST_F(ScreenCaptureDeviceTest, Capture) {
       .WillOnce(SaveArg<0>(&caps));
   EXPECT_CALL(frame_observer, OnError())
       .Times(0);
-  EXPECT_CALL(frame_observer, OnIncomingCapturedFrame(_, _, _))
+  EXPECT_CALL(frame_observer, OnIncomingCapturedFrame(_, _, _, _, _, _))
       .WillRepeatedly(DoAll(
           SaveArg<1>(&frame_size),
           InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
@@ -143,7 +147,7 @@ TEST_F(ScreenCaptureDeviceTest, ScreenResolutionChange) {
       .WillOnce(SaveArg<0>(&caps));
   EXPECT_CALL(frame_observer, OnError())
       .Times(0);
-  EXPECT_CALL(frame_observer, OnIncomingCapturedFrame(_, _, _))
+  EXPECT_CALL(frame_observer, OnIncomingCapturedFrame(_, _, _, _, _, _))
       .WillRepeatedly(DoAll(
           SaveArg<1>(&frame_size),
           InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));

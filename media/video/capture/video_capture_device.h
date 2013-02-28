@@ -42,7 +42,10 @@ class MEDIA_EXPORT VideoCaptureDevice {
     // color planes.
     virtual void OnIncomingCapturedFrame(const uint8* data,
                                          int length,
-                                         base::Time timestamp) = 0;
+                                         base::Time timestamp,
+                                         int rotation,  // Clockwise.
+                                         bool flip_vert,
+                                         bool flip_horiz) = 0;
     // Captured a new video frame, held in a VideoFrame container. |frame| must
     // be allocated as RGB32, YV12 or I420, and the size must match that
     // specified by an earlier call to OnFrameInfo().

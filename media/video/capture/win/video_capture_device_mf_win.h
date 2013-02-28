@@ -56,8 +56,13 @@ class VideoCaptureDeviceMFWin
   static void GetDeviceNames(Names* device_names);
 
   // Captured a new video frame.
-  void OnIncomingCapturedFrame(const uint8* data, int length,
-                               const base::Time& time_stamp);
+  void OnIncomingCapturedFrame(
+      const uint8* data,
+      int length,
+      const base::Time& time_stamp,
+      int rotation,
+      bool flip_vert,
+      bool flip_horiz);
 
  private:
   void OnError(HRESULT hr);
