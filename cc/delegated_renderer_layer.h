@@ -9,6 +9,7 @@
 #include "cc/layer.h"
 
 namespace cc {
+class DelegatedFrameData;
 
 class CC_EXPORT DelegatedRendererLayer : public Layer {
  public:
@@ -18,11 +19,22 @@ class CC_EXPORT DelegatedRendererLayer : public Layer {
       OVERRIDE;
   virtual void pushPropertiesTo(LayerImpl* impl) OVERRIDE;
 
+  // Set the size at which the frame should be displayed, with the origin at the
+  // layer's origin. This must always contain at least the layer's bounds. A
+  // value of (0, 0) implies that the frame should be displayed to fit exactly
+  // in the layer's bounds.
+  void SetDisplaySize(gfx::Size size);
+
+  void SetFrameData(scoped_ptr<DelegatedFrameData> frame_data);
+
  protected:
   DelegatedRendererLayer();
+  virtual ~DelegatedRendererLayer();
 
  private:
-  virtual ~DelegatedRendererLayer();
+  scoped_ptr<DelegatedFrameData> frame_data_;
+  gfx::RectF damage_in_frame_;
+  gfx::Size display_size_;
 };
 
 }

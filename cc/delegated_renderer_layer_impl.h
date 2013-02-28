@@ -11,6 +11,7 @@
 #include "cc/scoped_ptr_vector.h"
 
 namespace cc {
+class DelegatedFrameData;
 
 class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
  public:
@@ -31,30 +32,33 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
   virtual void appendQuads(
       QuadSink& quad_sink, AppendQuadsData& append_quads_data) OVERRIDE;
 
+  // TODO(danakj): Make private
   // This gives ownership of the RenderPasses to the layer.
   void SetRenderPasses(ScopedPtrVector<RenderPass>&);
   void ClearRenderPasses();
 
-  // Set the size at which the frame should be displayed, with the origin at the
-  // layer's origin. This must always contain at least the layer's bounds. A
-  // value of (0, 0) implies that the frame should be displayed to fit exactly
-  // in the layer's bounds.
-  void set_display_size(gfx::Size size) { display_size_ = size; }
-
   void AppendContributingRenderPasses(RenderPassSink* render_pass_sink);
 
-  // Creates an ID with the resource provider for the child renderer
-  // that will be sending quads to the layer.
-  void CreateChildIdIfNeeded();
+  void SetFrameData(scoped_ptr<DelegatedFrameData> frame_data,
+                    gfx::RectF damage_in_frame);
+
+  void SetDisplaySize(gfx::Size size);
+
   int child_id() const { return child_id_; }
 
  private:
   DelegatedRendererLayerImpl(LayerTreeImpl* tree_impl, int id);
 
+  // Creates an ID with the resource provider for the child renderer
+  // that will be sending quads to the layer.
+  void CreateChildIdIfNeeded();
   void ClearChildId();
 
   RenderPass::Id ConvertDelegatedRenderPassId(
       RenderPass::Id delegated_render_pass_id) const;
+
+  gfx::Transform DelegatedFrameToLayerSpaceTransform(gfx::Size frame_size)
+      const;
 
   void AppendRenderPassQuads(
       QuadSink* quad_sink,
@@ -67,6 +71,7 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
 
   ScopedPtrVector<RenderPass> render_passes_in_draw_order_;
   base::hash_map<RenderPass::Id, int> render_passes_index_by_id_;
+
   gfx::Size display_size_;
   int child_id_;
 };

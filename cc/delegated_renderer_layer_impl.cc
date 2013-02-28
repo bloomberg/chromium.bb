@@ -5,6 +5,7 @@
 #include "cc/delegated_renderer_layer_impl.h"
 
 #include "cc/append_quads_data.h"
+#include "cc/delegated_frame_data.h"
 #include "cc/layer_tree_impl.h"
 #include "cc/math_util.h"
 #include "cc/quad_sink.h"
@@ -33,6 +34,46 @@ bool DelegatedRendererLayerImpl::hasContributingDelegatedRenderPasses() const {
   // RenderPass in each frame. So we only have extra RenderPasses
   // to merge when we have a non-root RenderPass present.
   return render_passes_in_draw_order_.size() > 1;
+}
+
+void DelegatedRendererLayerImpl::SetFrameData(
+    scoped_ptr<DelegatedFrameData> frame_data,
+    gfx::RectF damage_in_frame) {
+  CreateChildIdIfNeeded();
+  DCHECK(child_id_);
+
+  // Display size is already set so we can compute what the damage rect
+  // will be in layer space.
+  RenderPass* new_root_pass = frame_data->render_pass_list.empty() ?
+                              NULL : frame_data->render_pass_list.back();
+  bool new_frame_is_empty = !new_root_pass;
+
+  RenderPass* old_root_pass = render_passes_in_draw_order_.empty() ?
+                              NULL : render_passes_in_draw_order_.back();
+  bool old_frame_is_empty = !old_root_pass;
+
+  gfx::RectF damage_in_layer;
+  if (new_frame_is_empty) {
+    if (!old_frame_is_empty)
+      damage_in_layer = gfx::Rect(bounds());
+  } else {
+    DCHECK(!new_root_pass->output_rect.IsEmpty());
+    damage_in_layer = MathUtil::mapClippedRect(
+        DelegatedFrameToLayerSpaceTransform(new_root_pass->output_rect.size()),
+        damage_in_frame);
+  }
+  setUpdateRect(gfx::UnionRects(updateRect(), damage_in_layer));
+
+  // TODO(danakj): Convert the resource ids the render passes and return data
+  // for a frame ack.
+  SetRenderPasses(frame_data->render_pass_list);
+}
+
+void DelegatedRendererLayerImpl::SetDisplaySize(gfx::Size size) {
+  if (display_size_ == size)
+    return;
+  display_size_ = size;
+  noteLayerPropertyChanged();
 }
 
 void DelegatedRendererLayerImpl::SetRenderPasses(
@@ -71,6 +112,17 @@ scoped_ptr<LayerImpl> DelegatedRendererLayerImpl::createLayerImpl(
 void DelegatedRendererLayerImpl::didLoseOutputSurface() {
   ClearRenderPasses();
   ClearChildId();
+}
+
+gfx::Transform DelegatedRendererLayerImpl::DelegatedFrameToLayerSpaceTransform(
+    gfx::Size frame_size) const {
+  gfx::Size display_size = display_size_.IsEmpty() ? bounds() : display_size_;
+
+  gfx::Transform delegated_frame_to_layer_space_transform;
+  delegated_frame_to_layer_space_transform.Scale(
+      static_cast<double>(display_size.width()) / frame_size.width(),
+      static_cast<double>(display_size.height()) / frame_size.height());
+  return delegated_frame_to_layer_space_transform;
 }
 
 static inline int IndexToId(int index) { return index + 1; }
@@ -171,16 +223,8 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
         // Don't allow areas inside the bounds that are empty.
         DCHECK(display_size_.IsEmpty() ||
                gfx::Rect(display_size_).Contains(gfx::Rect(bounds())));
-        gfx::Size display_size =
-            display_size_.IsEmpty() ? bounds() : display_size_;
-
-        gfx::Transform delegated_frame_to_layer_space_transform;
-        delegated_frame_to_layer_space_transform.Scale(
-            static_cast<double>(display_size.width()) / frame_size.width(),
-            static_cast<double>(display_size.height()) / frame_size.height());
-
         gfx::Transform delegated_frame_to_target_transform =
-            drawTransform() * delegated_frame_to_layer_space_transform;
+            drawTransform() * DelegatedFrameToLayerSpaceTransform(frame_size);
 
         output_shared_quad_state->content_to_target_transform.ConcatTransform(
             delegated_frame_to_target_transform);

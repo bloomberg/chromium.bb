@@ -4,6 +4,7 @@
 
 #include "cc/delegated_renderer_layer.h"
 
+#include "cc/delegated_frame_data.h"
 #include "cc/delegated_renderer_layer_impl.h"
 
 namespace cc {
@@ -29,7 +30,30 @@ void DelegatedRendererLayer::pushPropertiesTo(LayerImpl* impl) {
 
   DelegatedRendererLayerImpl* delegated_impl =
       static_cast<DelegatedRendererLayerImpl*>(impl);
-  delegated_impl->CreateChildIdIfNeeded();
+
+  delegated_impl->SetDisplaySize(display_size_);
+
+  if (frame_data_)
+    delegated_impl->SetFrameData(frame_data_.Pass(), damage_in_frame_);
+
+  damage_in_frame_ = gfx::RectF();
+}
+
+void DelegatedRendererLayer::SetDisplaySize(gfx::Size size) {
+  if (display_size_ == size)
+    return;
+  display_size_ = size;
+  setNeedsCommit();
+}
+
+void DelegatedRendererLayer::SetFrameData(
+    scoped_ptr<DelegatedFrameData> new_frame_data) {
+  frame_data_ = new_frame_data.Pass();
+  if (!frame_data_->render_pass_list.empty()) {
+    RenderPass* root_pass = frame_data_->render_pass_list.back();
+    damage_in_frame_.Union(root_pass->damage_rect);
+  }
+  setNeedsCommit();
 }
 
 }  // namespace cc

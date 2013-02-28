@@ -324,15 +324,15 @@ protected:
 
     void AsValueInto(base::DictionaryValue* dict) const;
 
-private:
-    void updateScrollbarPositions();
-
     void noteLayerSurfacePropertyChanged();
     void noteLayerPropertyChanged();
     void noteLayerPropertyChangedForSubtree();
 
     // Note carefully this does not affect the current layer.
     void noteLayerPropertyChangedForDescendants();
+
+private:
+    void updateScrollbarPositions();
 
     virtual const char* layerTypeAsString() const;
 

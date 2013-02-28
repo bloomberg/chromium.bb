@@ -289,6 +289,7 @@ ThreadedTest::ThreadedTest()
     , m_timedOut(false)
     , m_scheduled(false)
     , m_started(false)
+    , m_ended(false)
     , m_implThread(0)
     , m_weakFactory(ALLOW_THIS_IN_INITIALIZER_LIST(this))
 {
@@ -399,6 +400,8 @@ void ThreadedTest::scheduleComposite()
 
 void ThreadedTest::realEndTest()
 {
+    m_ended = true;
+
     if (m_layerTreeHost && proxy()->commitPendingForTesting()) {
         proxy()->mainThread()->postTask(base::Bind(&ThreadedTest::realEndTest, m_mainThreadWeakPtr));
         return;

@@ -131,12 +131,15 @@ protected:
     scoped_ptr<MockLayerImplTreeHostClient> m_client;
     scoped_ptr<LayerTreeHost> m_layerTreeHost;
 
+    bool testEnded() const { return m_ended; }
+
 private:
     bool m_beginning;
     bool m_endWhenBeginReturns;
     bool m_timedOut;
     bool m_scheduled;
     bool m_started;
+    bool m_ended;
 
     scoped_ptr<Thread> m_mainCCThread;
     scoped_ptr<base::Thread> m_implThread;
