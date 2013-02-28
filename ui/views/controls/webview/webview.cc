@@ -84,6 +84,7 @@ void WebView::OnWebContentsFocused(content::WebContents* web_contents) {
 
 void WebView::SetPreferredSize(const gfx::Size& preferred_size) {
   preferred_size_ = preferred_size;
+  PreferredSizeChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
