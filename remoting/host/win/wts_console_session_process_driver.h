@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/base/stoppable.h"
-#include "remoting/host/win/wts_console_observer.h"
+#include "remoting/host/win/wts_terminal_observer.h"
 #include "remoting/host/worker_process_ipc_delegate.h"
 
 namespace base {
@@ -21,14 +21,14 @@ namespace remoting {
 
 class SasInjector;
 class WorkerProcessLauncher;
-class WtsConsoleMonitor;
+class WtsTerminalMonitor;
 
 // Launches the host in the session attached to the console. When a new session
 // attaches to the console relaunches the host in it.
 class WtsConsoleSessionProcessDriver
     : public Stoppable,
       public WorkerProcessIpcDelegate,
-      public WtsConsoleObserver {
+      public WtsTerminalObserver {
  public:
   // Constructs a WtsConsoleSessionProcessDriver object. |stopped_callback| will
   // be invoked to notify the caller that the object is completely stopped. All
@@ -37,7 +37,7 @@ class WtsConsoleSessionProcessDriver
   // thread. |io_task_runner| must be an I/O message loop.
   WtsConsoleSessionProcessDriver(
       const base::Closure& stopped_callback,
-      WtsConsoleMonitor* monitor,
+      WtsTerminalMonitor* monitor,
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
 
@@ -48,7 +48,7 @@ class WtsConsoleSessionProcessDriver
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnPermanentError() OVERRIDE;
 
-  // WtsConsoleObserver implementation.
+  // WtsTerminalObserver implementation.
   virtual void OnSessionAttached(uint32 session_id) OVERRIDE;
   virtual void OnSessionDetached() OVERRIDE;
 
@@ -70,7 +70,7 @@ class WtsConsoleSessionProcessDriver
   scoped_ptr<WorkerProcessLauncher> launcher_;
 
   // Used to unsubscribe from session attach and detach events.
-  WtsConsoleMonitor* monitor_;
+  WtsTerminalMonitor* monitor_;
 
   scoped_ptr<SasInjector> sas_injector_;
 

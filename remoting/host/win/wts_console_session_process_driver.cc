@@ -16,8 +16,8 @@
 #include "remoting/host/ipc_constants.h"
 #include "remoting/host/sas_injector.h"
 #include "remoting/host/win/worker_process_launcher.h"
-#include "remoting/host/win/wts_console_monitor.h"
 #include "remoting/host/win/wts_session_process_delegate.h"
+#include "remoting/host/win/wts_terminal_monitor.h"
 
 // The security descriptor of the named pipe the process running in the console
 // session connects to. It gives full access to LocalSystem and denies access by
@@ -34,14 +34,14 @@ namespace remoting {
 
 WtsConsoleSessionProcessDriver::WtsConsoleSessionProcessDriver(
     const base::Closure& stopped_callback,
-    WtsConsoleMonitor* monitor,
+    WtsTerminalMonitor* monitor,
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
     : Stoppable(caller_task_runner, stopped_callback),
       caller_task_runner_(caller_task_runner),
       io_task_runner_(io_task_runner),
       monitor_(monitor) {
-  monitor_->AddWtsConsoleObserver(this);
+  monitor_->AddWtsTerminalObserver(net::IPEndPoint(), this);
 }
 
 WtsConsoleSessionProcessDriver::~WtsConsoleSessionProcessDriver() {
@@ -52,7 +52,7 @@ WtsConsoleSessionProcessDriver::~WtsConsoleSessionProcessDriver() {
   // predictably.
   CHECK_EQ(stoppable_state(), Stoppable::kStopped);
 
-  monitor_->RemoveWtsConsoleObserver(this);
+  monitor_->RemoveWtsTerminalObserver(this);
 
   CHECK(launcher_.get() == NULL);
 }

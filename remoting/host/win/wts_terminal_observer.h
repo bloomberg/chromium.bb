@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_WIN_WTS_CONSOLE_OBSERVER_H_
-#define REMOTING_HOST_WIN_WTS_CONSOLE_OBSERVER_H_
+#ifndef REMOTING_HOST_WIN_WTS_TERMINAL_OBSERVER_H_
+#define REMOTING_HOST_WIN_WTS_TERMINAL_OBSERVER_H_
 
 #include <windows.h>
 
@@ -12,9 +12,9 @@
 namespace remoting {
 
 // Provides callbacks for monitoring events on a WTS terminal.
-class WtsConsoleObserver {
+class WtsTerminalObserver {
  public:
-  virtual ~WtsConsoleObserver() {}
+  virtual ~WtsTerminalObserver() {}
 
   // Called when |session_id| attaches to the console.
   virtual void OnSessionAttached(uint32 session_id) = 0;
@@ -23,12 +23,12 @@ class WtsConsoleObserver {
   virtual void OnSessionDetached() = 0;
 
  protected:
-  WtsConsoleObserver() {}
+  WtsTerminalObserver() {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WtsConsoleObserver);
+  DISALLOW_COPY_AND_ASSIGN(WtsTerminalObserver);
 };
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_WIN_WTS_CONSOLE_OBSERVER_H_
+#endif  // REMOTING_HOST_WIN_WTS_TERMINAL_OBSERVER_H_

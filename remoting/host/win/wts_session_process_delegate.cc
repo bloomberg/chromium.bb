@@ -27,7 +27,7 @@
 #include "remoting/host/ipc_constants.h"
 #include "remoting/host/win/launch_process_with_token.h"
 #include "remoting/host/win/worker_process_launcher.h"
-#include "remoting/host/win/wts_console_monitor.h"
+#include "remoting/host/win/wts_terminal_monitor.h"
 #include "remoting/host/worker_process_ipc_delegate.h"
 
 using base::win::ScopedHandle;

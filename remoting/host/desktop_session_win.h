@@ -11,7 +11,7 @@
 #include "base/win/scoped_handle.h"
 #include "ipc/ipc_platform_file.h"
 #include "remoting/host/desktop_session.h"
-#include "remoting/host/win/wts_console_observer.h"
+#include "remoting/host/win/wts_terminal_observer.h"
 #include "remoting/host/worker_process_ipc_delegate.h"
 
 namespace tracked_objects {
@@ -24,18 +24,18 @@ class AutoThreadTaskRunner;
 class DaemonProcess;
 class SasInjector;
 class WorkerProcessLauncher;
-class WtsConsoleMonitor;
+class WtsTerminalMonitor;
 
 // DesktopSession implementation which attaches to the host's physical console.
 // Receives IPC messages from the desktop process, running in the console
 // session, via |WorkerProcessIpcDelegate|, and monitors console session
 // attach/detach events via |WtsConsoleObserer|.
-// TODO(alexeypa): replace |WtsConsoleObserver| with an interface capable of
+// TODO(alexeypa): replace |WtsTerminalObserver| with an interface capable of
 // monitoring both the console and RDP connections. See http://crbug.com/137696.
 class DesktopSessionWin
     : public DesktopSession,
       public WorkerProcessIpcDelegate,
-      public WtsConsoleObserver {
+      public WtsTerminalObserver {
  public:
   // Passes the owning |daemon_process|, a unique identifier of the desktop
   // session |id| and the interface for monitoring console session attach/detach
@@ -45,7 +45,7 @@ class DesktopSessionWin
     scoped_refptr<AutoThreadTaskRunner> io_task_runner,
     DaemonProcess* daemon_process,
     int id,
-    WtsConsoleMonitor* monitor);
+    WtsTerminalMonitor* monitor);
   virtual ~DesktopSessionWin();
 
   // WorkerProcessIpcDelegate implementation.
@@ -53,7 +53,7 @@ class DesktopSessionWin
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnPermanentError() OVERRIDE;
 
-  // WtsConsoleObserver implementation.
+  // WtsTerminalObserver implementation.
   virtual void OnSessionAttached(uint32 session_id) OVERRIDE;
   virtual void OnSessionDetached() OVERRIDE;
 
@@ -83,7 +83,7 @@ class DesktopSessionWin
   scoped_ptr<WorkerProcessLauncher> launcher_;
 
   // Pointer used to unsubscribe from session attach and detach events.
-  WtsConsoleMonitor* monitor_;
+  WtsTerminalMonitor* monitor_;
 
   scoped_ptr<SasInjector> sas_injector_;
 

@@ -15,8 +15,8 @@
 #include "remoting/host/ipc_constants.h"
 #include "remoting/host/sas_injector.h"
 #include "remoting/host/win/worker_process_launcher.h"
-#include "remoting/host/win/wts_console_monitor.h"
 #include "remoting/host/win/wts_session_process_delegate.h"
+#include "remoting/host/win/wts_terminal_monitor.h"
 
 using base::win::ScopedHandle;
 
@@ -39,21 +39,21 @@ DesktopSessionWin::DesktopSessionWin(
     scoped_refptr<AutoThreadTaskRunner> io_task_runner,
     DaemonProcess* daemon_process,
     int id,
-    WtsConsoleMonitor* monitor)
+    WtsTerminalMonitor* monitor)
     : DesktopSession(daemon_process, id),
       main_task_runner_(main_task_runner),
       io_task_runner_(io_task_runner),
       monitor_(monitor) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  monitor_->AddWtsConsoleObserver(this);
+  monitor_->AddWtsTerminalObserver(net::IPEndPoint(), this);
 }
 
 DesktopSessionWin::~DesktopSessionWin() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   launcher_.reset();
-  monitor_->RemoveWtsConsoleObserver(this);
+  monitor_->RemoveWtsTerminalObserver(this);
 }
 
 void DesktopSessionWin::OnChannelConnected(int32 peer_pid) {

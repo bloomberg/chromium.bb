@@ -34,7 +34,7 @@ using base::TimeDelta;
 
 namespace remoting {
 
-class WtsConsoleMonitor;
+class WtsTerminalMonitor;
 
 // The command line parameters that should be copied from the service's command
 // line to the host process.
