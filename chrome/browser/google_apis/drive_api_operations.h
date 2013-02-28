@@ -9,6 +9,7 @@
 
 #include "chrome/browser/google_apis/base_operations.h"
 #include "chrome/browser/google_apis/drive_api_url_generator.h"
+#include "chrome/browser/google_apis/drive_service_interface.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -24,7 +25,7 @@ class GetAboutOperation : public GetDataOperation {
   GetAboutOperation(OperationRegistry* registry,
                     net::URLRequestContextGetter* url_request_context_getter,
                     const DriveApiUrlGenerator& url_generator,
-                    const GetDataCallback& callback);
+                    const GetAboutResourceCallback& callback);
   virtual ~GetAboutOperation();
 
  protected:

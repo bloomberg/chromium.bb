@@ -4,15 +4,42 @@
 
 #include "chrome/browser/google_apis/drive_api_operations.h"
 
+#include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
+#include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/operation_util.h"
+#include "content/public/browser/browser_thread.h"
+
+using content::BrowserThread;
 
 namespace google_apis {
 namespace {
 
 const char kContentTypeApplicationJson[] = "application/json";
 const char kDirectoryMimeType[] = "application/vnd.google-apps.folder";
+
+// Parses the JSON value to AboutResource and runs |callback| on the UI
+// thread once parsing is done.
+void ParseAboutResourceAndRun(
+    const GetAboutResourceCallback& callback,
+    GDataErrorCode error,
+    scoped_ptr<base::Value> value) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  scoped_ptr<AboutResource> about_resource;
+  if (value.get()) {
+    about_resource = AboutResource::CreateFrom(*value);
+    if (!about_resource) {
+      // Failed to parse the JSON value (although the JSON value is available),
+      // so let callback know the parsing error.
+      error = GDATA_PARSE_ERROR;
+    }
+  }
+
+  callback.Run(error, about_resource.Pass());
+}
 
 }  // namespace
 
@@ -22,8 +49,9 @@ GetAboutOperation::GetAboutOperation(
     OperationRegistry* registry,
     net::URLRequestContextGetter* url_request_context_getter,
     const DriveApiUrlGenerator& url_generator,
-    const GetDataCallback& callback)
-    : GetDataOperation(registry, url_request_context_getter, callback),
+    const GetAboutResourceCallback& callback)
+    : GetDataOperation(registry, url_request_context_getter,
+                       base::Bind(&ParseAboutResourceAndRun, callback)),
       url_generator_(url_generator) {
   DCHECK(!callback.is_null());
 }

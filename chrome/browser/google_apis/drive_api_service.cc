@@ -118,12 +118,12 @@ void ParseResourceEntryAndRun(
   callback.Run(error, entry.Pass());
 }
 
-// Parses the JSON value to AccountMetadataFeed and runs |callback|
+// Parses the AboutResource value to AccountMetadataFeed and runs |callback|
 // on the UI thread once parsing is done.
-void ParseAccounetMetadataAndRun(
+void ParseAccountMetadataAndRun(
     const GetAccountMetadataCallback& callback,
     GDataErrorCode error,
-    scoped_ptr<base::Value> value) {
+    scoped_ptr<AboutResource> value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -131,9 +131,6 @@ void ParseAccounetMetadataAndRun(
     callback.Run(error, scoped_ptr<AccountMetadataFeed>());
     return;
   }
-
-  // Parsing AboutResource is cheap enough to do on UI thread.
-  scoped_ptr<AboutResource> about_resource = AboutResource::CreateFrom(*value);
 
   // TODO(satorux): Convert AboutResource to AccountMetadataFeed.
   // For now just returning an error. crbug.com/165621
@@ -319,7 +316,7 @@ void DriveAPIService::GetAccountMetadata(
           operation_registry(),
           url_request_context_getter_,
           url_generator_,
-          base::Bind(&ParseAccounetMetadataAndRun, callback)));
+          base::Bind(&ParseAccountMetadataAndRun, callback)));
 }
 
 void DriveAPIService::GetAboutResource(
@@ -327,8 +324,12 @@ void DriveAPIService::GetAboutResource(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Implement this.
-  NOTREACHED();
+  runner_->StartOperationWithRetry(
+      new GetAboutOperation(
+          operation_registry(),
+          url_request_context_getter_,
+          url_generator_,
+          callback));
 }
 
 void DriveAPIService::GetAppList(const GetAppListCallback& callback) {

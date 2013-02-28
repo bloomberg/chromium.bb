@@ -7,6 +7,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/values.h"
 #include "chrome/browser/google_apis/drive_api_operations.h"
+#include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_api_url_generator.h"
 #include "chrome/browser/google_apis/operation_registry.h"
 #include "chrome/browser/google_apis/test_server/http_request.h"
@@ -31,6 +32,16 @@ const char kTestChildrenResponse[] =
     "\"selfLink\": \"self_link\",\n"
     "\"childLink\": \"child_link\",\n"
     "}\n";
+
+void CopyResultsFromGetAboutResourceCallbackAndQuit(
+    GDataErrorCode* error_out,
+    scoped_ptr<AboutResource>* about_resource_out,
+    const GDataErrorCode error_in,
+    scoped_ptr<AboutResource> about_resource_in) {
+  *error_out = error_in;
+  *about_resource_out = about_resource_in.Pass();
+  MessageLoop::current()->Quit();
+}
 
 }  // namespace
 
@@ -163,13 +174,13 @@ TEST_F(DriveApiOperationsTest, GetAboutOperation_ValidFeed) {
   expected_data_file_path_ = test_util::GetTestFilePath("drive/about.json");
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  scoped_ptr<base::Value> feed_data;
+  scoped_ptr<AboutResource> feed_data;
 
   GetAboutOperation* operation = new GetAboutOperation(
       &operation_registry_,
       request_context_getter_.get(),
       *url_generator_,
-      base::Bind(&test_util::CopyResultsFromGetDataCallbackAndQuit,
+      base::Bind(&CopyResultsFromGetAboutResourceCallbackAndQuit,
                  &error, &feed_data));
   operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
@@ -178,8 +189,14 @@ TEST_F(DriveApiOperationsTest, GetAboutOperation_ValidFeed) {
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
   EXPECT_EQ("/drive/v2/about", http_request_.relative_url);
-  EXPECT_TRUE(test_util::VerifyJsonData(
-      test_util::GetTestFilePath("drive/about.json"), feed_data.get()));
+
+  scoped_ptr<AboutResource> expected(
+      AboutResource::CreateFrom(*test_util::LoadJSONFile("drive/about.json")));
+  ASSERT_TRUE(feed_data.get());
+  EXPECT_EQ(expected->largest_change_id(), feed_data->largest_change_id());
+  EXPECT_EQ(expected->quota_bytes_total(), feed_data->quota_bytes_total());
+  EXPECT_EQ(expected->quota_bytes_used(), feed_data->quota_bytes_used());
+  EXPECT_EQ(expected->root_folder_id(), feed_data->root_folder_id());
 }
 
 TEST_F(DriveApiOperationsTest, GetAboutOperation_InvalidFeed) {
@@ -187,13 +204,13 @@ TEST_F(DriveApiOperationsTest, GetAboutOperation_InvalidFeed) {
   expected_data_file_path_ = test_util::GetTestFilePath("gdata/testfile.txt");
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  scoped_ptr<base::Value> feed_data;
+  scoped_ptr<AboutResource> feed_data;
 
   GetAboutOperation* operation = new GetAboutOperation(
       &operation_registry_,
       request_context_getter_.get(),
       *url_generator_,
-      base::Bind(&test_util::CopyResultsFromGetDataCallbackAndQuit,
+      base::Bind(&CopyResultsFromGetAboutResourceCallbackAndQuit,
                  &error, &feed_data));
   operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
