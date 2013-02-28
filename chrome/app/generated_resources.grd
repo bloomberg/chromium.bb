@@ -5443,8 +5443,8 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <message name="IDS_EXTENSION_LOAD_FROM_DIRECTORY" desc="Title of directory browse dialog when user wants to load an extension from a directory.">
         Select the extension directory.
       </message>
-      <message name="IDS_EXTENSIONS_COMMANDS_CONFIGURE" desc="Text for the 'Configure commands' link to configure extension commands.">
-        Configure commands
+      <message name="IDS_EXTENSIONS_COMMANDS_CONFIGURE" desc="Text for the 'Keyboard shortcuts' link to configure extension keyboard shortcuts.">
+        Keyboard shortcuts
       </message>
       <message name="IDS_EXTENSION_COMMANDS_DIALOG_TITLE" desc="Title of extension commands dialog">
         Keyboard Shortcuts - Extensions and Apps
