@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_var_array_buffer.idl modified Mon Feb 25 10:24:29 2013. */
+/* From ppb_var_array_buffer.idl modified Thu Feb 28 09:24:06 2013. */
 
 #ifndef PPAPI_C_PPB_VAR_ARRAY_BUFFER_H_
 #define PPAPI_C_PPB_VAR_ARRAY_BUFFER_H_
@@ -71,7 +71,7 @@ struct PPB_VarArrayBuffer_1_0 {
    * and returns a pointer to the beginning of the buffer for the given
    * <code>ArrayBuffer PP_Var</code>. ArrayBuffers are copied when transmitted,
    * so changes to the underlying memory are not automatically available to
-   * other processes.
+   * the embedding page.
    *
    * Note that calling Map() can be a relatively expensive operation. Use care
    * when calling it in performance-critical code. For example, you should call

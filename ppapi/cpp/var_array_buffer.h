@@ -65,7 +65,9 @@ class VarArrayBuffer : public Var {
 
   /// Map() maps the <code>ArrayBuffer</code> in to the module's address space
   /// and returns a pointer to the beginning of the internal buffer for
-  /// this <code>ArrayBuffer</code>.
+  /// this <code>ArrayBuffer</code>. ArrayBuffers are copied when transmitted,
+  /// so changes to the underlying memory are not automatically available to
+  /// the embedding page.
   ///
   /// Note that calling Map() can be a relatively expensive operation. Use care
   /// when calling it in performance-critical code. For example, you should call

@@ -59,7 +59,7 @@ interface PPB_VarArrayBuffer {
    * and returns a pointer to the beginning of the buffer for the given
    * <code>ArrayBuffer PP_Var</code>. ArrayBuffers are copied when transmitted,
    * so changes to the underlying memory are not automatically available to
-   * other processes.
+   * the embedding page.
    *
    * Note that calling Map() can be a relatively expensive operation. Use care
    * when calling it in performance-critical code. For example, you should call
