@@ -682,6 +682,7 @@
         'focus/focus_traversal_unittest.cc',
         'layout/box_layout_unittest.cc',
         'layout/grid_layout_unittest.cc',
+        'touchui/touch_selection_controller_impl_unittest.cc',
         'view_model_unittest.cc',
         'view_model_utils_unittest.cc',
         'view_unittest.cc',
@@ -692,8 +693,8 @@
         'run_all_unittests.cc',
       ],
       'conditions': [
-        ['chromeos==1', {
-          'sources': [
+        ['chromeos==0', {
+          'sources!': [
             'touchui/touch_selection_controller_impl_unittest.cc',
           ],
         }],
@@ -717,15 +718,15 @@
           'dependencies': [
             '../aura/aura.gyp:aura_test_support',
           ],
-          'sources/': [
-            ['exclude', 'widget/native_widget_win_unittest.cc'],
+          'sources!': [
+            'widget/native_widget_win_unittest.cc',
           ],
-        }, {
+        }, {  # use_aura==0
+          'sources!': [
+            'widget/native_widget_aura_unittest.cc',
+          ],
           'sources/': [
-            ['exclude', '../aura/test/test_desktop_delegate.cc'],
-            ['exclude', '../aura/test/test_desktop_delegate.h'],
             ['exclude', 'corewm'],
-            ['exclude', 'widget/native_widget_aura_unittest.cc'],
           ],
         }],
       ],
