@@ -65,31 +65,23 @@ class BaseTestRunner(object):
                              '%d:%d' % (self.test_server_spawner_port,
                                         self.test_server_port))
 
-  def Run(self, test):
-    """Calls subclass functions to set up test, run it and tear it down.
+  def RunTest(self, test):
+    """Runs a test. Needs to be overridden.
 
     Args:
-      test: A Test to run.
+      test: A test to run.
 
     Returns:
-      Test results returned from RunTest(test).
+      Tuple containing: (test_result.TestResults, tests to rerun or None)
     """
-    self.SetUp()
-    try:
-      return self.RunTest(test)
-    finally:
-      self.TearDown()
-
-  def SetUp(self):
-    """Called before tests run."""
-    Forwarder.KillDevice(self.adb, self.tool)
-
-  def RunTest(self, test):
-    """Runs the tests. Needs to be overridden."""
     raise NotImplementedError
 
+  def SetUp(self):
+    """Run once before all tests are run."""
+    Forwarder.KillDevice(self.adb, self.tool)
+
   def TearDown(self):
-    """Called when tests finish running."""
+    """Run once after all tests are run."""
     self.ShutdownHelperToolsForTestSuite()
 
   def CopyTestData(self, test_data_paths, dest_dir):

@@ -73,6 +73,10 @@ class TestPackageApk(TestPackage):
     args += ['shell', 'cat', self._GetFifo()]
     return pexpect.spawn('adb', args, timeout=timeout, logfile=logfile)
 
+  def ClearApplicationState(self):
+    """Clear the application state."""
+    self.adb.ClearApplicationState(self._apk_package_name)
+
   def GetAllTests(self):
     """Returns a list of all tests available in the test suite."""
     self._CreateTestRunnerScript('--gtest_list_tests')

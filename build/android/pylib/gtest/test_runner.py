@@ -240,6 +240,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
           gtest_filter_base_path + '_emulator_additional_disabled'))
     return disabled_tests
 
+  #override
   def RunTest(self, test):
     """Runs a test on a single device.
 
@@ -254,6 +255,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
       return test_results, None
 
     try:
+      self.test_package.ClearApplicationState()
       self.test_package.CreateTestRunnerScript(test, self._test_arguments)
       test_results = self.test_package.RunTestsAndListResults()
     except errors.DeviceUnresponsiveError as e:
@@ -261,7 +263,6 @@ class TestRunner(base_test_runner.BaseTestRunner):
       logging.warning(e)
       if android_commands.IsDeviceAttached(self.device):
         raise
-      test_results.device_exception = device_exception
     # Calculate unknown test results.
     # TODO(frankf): Do not break TestResults encapsulation.
     all_tests = set(test.split(':'))
@@ -272,15 +273,16 @@ class TestRunner(base_test_runner.BaseTestRunner):
     retry = ':'.join([t.name for t in test_results.GetAllBroken()])
     return test_results, retry
 
+  #override
   def SetUp(self):
     """Sets up necessary test enviroment for the test suite."""
     super(TestRunner, self).SetUp()
-    self.adb.ClearApplicationState(constants.CHROME_PACKAGE)
     self.StripAndCopyFiles()
     if _TestSuiteRequiresMockTestServer(self.test_package.test_suite_basename):
       self.LaunchChromeTestServerSpawner()
     self.tool.SetupEnvironment()
 
+  #override
   def TearDown(self):
     """Cleans up the test enviroment for the test suite."""
     self.tool.CleanUpEnvironment()

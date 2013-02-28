@@ -44,6 +44,10 @@ class TestPackage(object):
       timeout = timeout * 2
     self.timeout = timeout * self.tool.GetTimeoutScale()
 
+  def ClearApplicationState(self):
+    """Clears the application state."""
+    raise NotImplementedError('Method must be overriden.')
+
   def GetDisabledPrefixes(self):
     return ['DISABLED_', 'FLAKY_', 'FAILS_']
 
