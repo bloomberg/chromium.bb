@@ -7,6 +7,7 @@ package org.chromium.android_webview.test;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.AwContents;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentViewCore;
@@ -26,8 +27,13 @@ public class ClearHistoryTest extends AndroidWebViewTestBase {
         }
     }
 
+    /*
     @SmallTest
     @Feature({"History", "Main"})
+    This test is only failing on JellyBean bots.
+    See crbug.com/178762.
+    */
+    @DisabledTest
     public void testClearHistory() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
