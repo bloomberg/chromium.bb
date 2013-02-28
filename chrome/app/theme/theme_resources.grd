@@ -28,10 +28,8 @@
            BECAUSE YOUR RESOURCES ARE FUNCTIONALLY RELATED OR FALL UNDER THE
            SAME CONDITIONALS. -->
       <structure type="chrome_scaled_image" name="IDR_ACCESSED_COOKIES" file="accessed_cookies.png" />
-      <structure type="chrome_scaled_image" name="IDR_ACTION_BOX_BUTTON" file="action_box_button.png" />
       <structure type="chrome_scaled_image" name="IDR_ACTION_BOX_BUTTON_HOVER" file="action_box_button_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_ACTION_BOX_BUTTON_NORMAL" file="action_box_button_normal.png" />
-      <structure type="chrome_scaled_image" name="IDR_ACTION_BOX_BUTTON_PRESSED" file="action_box_button_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_ACTION_BOX_BUTTON_PUSHED" file="action_box_button_pushed.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_FULLSCREEN" file="allowed_fullscreen.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_IMAGES" file="allowed_images.png" />

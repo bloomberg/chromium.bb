@@ -104,9 +104,9 @@ ActionBoxButtonGtk::ActionBoxButtonGtk(Browser* browser)
     : controller_(browser, this),
       browser_(browser) {
   button_.reset(new CustomDrawButton(
-      IDR_ACTION_BOX_BUTTON,
-      IDR_ACTION_BOX_BUTTON_PRESSED,
-      IDR_ACTION_BOX_BUTTON_PRESSED,  // TODO: hover
+      IDR_ACTION_BOX_BUTTON_NORMAL,
+      IDR_ACTION_BOX_BUTTON_PUSHED,
+      IDR_ACTION_BOX_BUTTON_HOVER,
       0));  // TODO: disabled?
   gtk_widget_set_tooltip_text(widget(),
       l10n_util::GetStringUTF8(IDS_TOOLTIP_ACTION_BOX_BUTTON).c_str());
@@ -118,6 +118,10 @@ ActionBoxButtonGtk::ActionBoxButtonGtk(Browser* browser)
 }
 
 ActionBoxButtonGtk::~ActionBoxButtonGtk() {
+}
+
+void ActionBoxButtonGtk:: StoppedShowing() {
+  button_->UnsetPaintOverride();
 }
 
 bool ActionBoxButtonGtk::AlwaysShowIconForCmd(int command_id) const {
@@ -139,6 +143,7 @@ GtkWidget* ActionBoxButtonGtk::widget() {
 }
 
 void ActionBoxButtonGtk::ShowMenu(scoped_ptr<ActionBoxMenuModel> model) {
+  button_->SetPaintOverride(GTK_STATE_ACTIVE);
   model_ = model.Pass();
   menu_.reset(new MenuGtk(this, model_.get()));
   menu_->PopupForWidget(

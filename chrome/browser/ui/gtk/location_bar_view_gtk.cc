@@ -486,13 +486,9 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
     // TODO(mpcomplete): should we hide this if ShouldOnlyShowLocation()==true?
     action_box_button_.reset(new ActionBoxButtonGtk(browser_));
 
-    // TODO(mpcomplete): Figure out why CustomDrawButton is offset 3 pixels.
-    // This offset corrects the strange offset of CustomDrawButton.
-    const int kMagicActionBoxYOffset = 3;
     GtkWidget* alignment = gtk_alignment_new(0, 0, 1, 1);
     gtk_alignment_set_padding(GTK_ALIGNMENT(alignment),
-                              0, kMagicActionBoxYOffset,
-                              0, InnerPadding());
+                              0, 0, 0, InnerPadding());
     gtk_container_add(GTK_CONTAINER(alignment), action_box_button_->widget());
 
     gtk_box_pack_end(GTK_BOX(hbox_.get()), alignment,

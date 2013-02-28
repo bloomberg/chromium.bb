@@ -26,6 +26,7 @@ class ActionBoxButtonGtk : public MenuGtk::Delegate,
   virtual ~ActionBoxButtonGtk();
 
   // MenuGtk::Delegate implementation.
+  virtual void StoppedShowing() OVERRIDE;
   virtual bool AlwaysShowIconForCmd(int command_id) const OVERRIDE;
   virtual GtkWidget* GetImageForCommandId(int command_id) const OVERRIDE;
 
