@@ -27,7 +27,8 @@ namespace content {
 // Calls to webrtc::VideoTrackInterface must occur on the main thread.
 class CONTENT_EXPORT RTCVideoRenderer
     : NON_EXPORTED_BASE(public webkit_media::VideoFrameProvider),
-      NON_EXPORTED_BASE(public webrtc::VideoRendererInterface) {
+      NON_EXPORTED_BASE(public webrtc::VideoRendererInterface),
+      NON_EXPORTED_BASE(public webrtc::ObserverInterface) {
  public:
   RTCVideoRenderer(
       webrtc::VideoTrackInterface* video_track,
@@ -45,6 +46,9 @@ class CONTENT_EXPORT RTCVideoRenderer
   virtual void SetSize(int width, int height) OVERRIDE;
   virtual void RenderFrame(const cricket::VideoFrame* frame) OVERRIDE;
 
+  // webrtc::ObserverInterface implementation.
+  virtual void OnChanged() OVERRIDE;
+
  protected:
   virtual ~RTCVideoRenderer();
 
@@ -55,6 +59,7 @@ class CONTENT_EXPORT RTCVideoRenderer
     kStopped,
   };
 
+  void MaybeRenderSignalingFrame();
   void DoRenderFrameOnMainThread(scoped_refptr<media::VideoFrame> video_frame);
 
   base::Closure error_cb_;
