@@ -16,10 +16,21 @@ class MissingRequiredBinaryException(Exception):
 class WebrtcTestBase(pyauto.PyUITest):
   """This base class provides helpers for WebRTC calls."""
 
+  DEFAULT_TEST_PAGE = 'webrtc_jsep01_test.html'
+
   def ExtraChromeFlags(self):
     """Adds flags to the Chrome command line."""
     extra_flags = ['--enable-data-channels', '--enable-dcheck']
     return pyauto.PyUITest.ExtraChromeFlags(self) + extra_flags
+
+  def LoadTestPageInTwoTabs(self, test_page=DEFAULT_TEST_PAGE):
+    url = self.GetFileURLForDataPath('webrtc', test_page)
+    self.NavigateToURL(url)
+    self.AppendTab(pyauto.GURL(url))
+
+  def LoadTestPageInOneTab(self, test_page=DEFAULT_TEST_PAGE):
+    url = self.GetFileURLForDataPath('webrtc', test_page)
+    self.NavigateToURL(url)
 
   def GetUserMedia(self, tab_index, action='accept',
                    request_video=True, request_audio=True):

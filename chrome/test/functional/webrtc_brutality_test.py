@@ -20,9 +20,7 @@ class WebrtcBrutalityTest(webrtc_test_base.WebrtcTestBase):
     The test will make repeated getUserMedia requests with refreshes between
     them. Sometimes it will click past the bar and then refresh.
     """
-    url = self.GetFileURLForDataPath('webrtc', 'webrtc_jsep01_test.html')
-    self.NavigateToURL(url)
-
+    self.LoadTestPageInOneTab()
     for i in range(1, 100):
       if i % 10 == 0:
         self.GetUserMedia(tab_index=0, action='accept')
@@ -35,9 +33,7 @@ class WebrtcBrutalityTest(webrtc_test_base.WebrtcTestBase):
 
     The test will alternate unanswered requests with requests that get answered.
     """
-    url = self.GetFileURLForDataPath('webrtc', 'webrtc_jsep01_test.html')
-    self.NavigateToURL(url)
-
+    self.LoadTestPageInOneTab()
     for i in range(1, 100):
       if i % 10 == 0:
         self.GetUserMedia(tab_index=0, action='accept')
@@ -46,25 +42,19 @@ class WebrtcBrutalityTest(webrtc_test_base.WebrtcTestBase):
 
   def testSuccessfulGetUserMediaAndThenReload(self):
     """Waits for WebRTC to respond, and immediately reloads the tab."""
-    url = self.GetFileURLForDataPath('webrtc', 'webrtc_jsep01_test.html')
-    self.NavigateToURL(url)
-
+    self.LoadTestPageInOneTab()
     self.GetUserMedia(tab_index=0, action='accept')
     self.ReloadTab(tab_index=0)
 
   def testClosingTabAfterGetUserMedia(self):
     """Tests closing the tab right after a getUserMedia call."""
-    url = self.GetFileURLForDataPath('webrtc', 'webrtc_jsep01_test.html')
-    self.NavigateToURL(url)
-
+    self.LoadTestPageInOneTab()
     self._GetUserMediaWithoutTakingAction(tab_index=0)
     self.CloseTab(tab_index=0)
 
   def testSuccessfulGetUserMediaAndThenClose(self):
     """Waits for WebRTC to respond, and closes the tab."""
-    url = self.GetFileURLForDataPath('webrtc', 'webrtc_jsep01_test.html')
-    self.NavigateToURL(url)
-
+    self.LoadTestPageInOneTab()
     self.GetUserMedia(tab_index=0, action='accept')
     self.CloseTab(tab_index=0)
 

@@ -139,8 +139,9 @@ class WebrtcVideoQualityTest(webrtc_test_base.WebrtcTestBase):
     to use the original input video as a reference video. We take the name of
     this file from an environment variable that the bots set.
     """
+    helper_page = webrtc_test_base.WebrtcTestBase.DEFAULT_TEST_PAGE
     self._StartVideoQualityTest(test_page='webrtc_video_quality_test.html',
-                                helper_page='webrtc_jsep01_test.html',
+                                helper_page=helper_page,
                                 reference_yuv=_REFERENCE_YUV_FILE, width=640,
                                 height=480, barcode_height=32)
 
