@@ -124,6 +124,10 @@ void PanelStackView::Minimize() {
   window_->Minimize();
 }
 
+void PanelStackView::DrawSystemAttention(bool draw_attention) {
+  window_->FlashFrame(draw_attention);
+}
+
 string16 PanelStackView::GetWindowTitle() const {
   Panel* panel = stacked_collection_->top_panel();
   if (!panel)

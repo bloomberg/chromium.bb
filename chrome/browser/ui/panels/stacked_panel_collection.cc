@@ -185,6 +185,8 @@ void StackedPanelCollection::CloseAll() {
 }
 
 void StackedPanelCollection::OnPanelAttentionStateChanged(Panel* panel) {
+  if ((panel->attention_mode() & Panel::USE_SYSTEM_ATTENTION) != 0)
+    native_stack_->DrawSystemAttention(panel->IsDrawingAttention());
 }
 
 void StackedPanelCollection::OnPanelTitlebarClicked(
