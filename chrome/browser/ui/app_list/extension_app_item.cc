@@ -207,7 +207,9 @@ bool ExtensionAppItem::HasOverlay() const {
   return false;
 #else
   const Extension* extension = GetExtension();
-  return extension && !extension->is_platform_app();
+  return extension &&
+         !extension->is_platform_app() &&
+         extension->id() != extension_misc::kChromeAppId;
 #endif
 }
 
