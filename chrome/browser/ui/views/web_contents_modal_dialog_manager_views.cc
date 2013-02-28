@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 
 #if defined(USE_AURA)
@@ -75,30 +76,37 @@ class NativeWebContentsModalDialogManagerViews
   }
 
   virtual void ShowDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
-    return GetConstrainedWindowViews(dialog)->ShowWebContentsModalDialog();
+    GetWidget(dialog)->Show();
+    FocusDialog(dialog);
   }
 
   virtual void CloseDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
+    GetWidget(dialog)->Close();
+  }
+
+  virtual void FocusDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
     views::Widget* widget = GetWidget(dialog);
+    if (widget->widget_delegate() &&
+        widget->widget_delegate()->GetInitiallyFocusedView())
+      widget->widget_delegate()->GetInitiallyFocusedView()->RequestFocus();
+#if defined(USE_ASH)
+    // We don't necessarily have a RootWindow yet.
+    if (widget->GetNativeView()->GetRootWindow())
+      widget->GetNativeView()->Focus();
+#endif
+  }
+
+  virtual void PulseDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
+  }
+
+  // views::WidgetObserver overrides
+  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE {
 #if defined(USE_ASH)
     gfx::NativeView view = platform_util::GetParent(widget->GetNativeView());
     // Allow the parent to animate again.
     if (view && view->parent())
       view->parent()->ClearProperty(aura::client::kAnimationsDisabledKey);
 #endif
-    widget->Close();
-  }
-
-  virtual void FocusDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
-    return GetConstrainedWindowViews(dialog)->FocusWebContentsModalDialog();
-  }
-
-  virtual void PulseDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
-    return GetConstrainedWindowViews(dialog)->PulseWebContentsModalDialog();
-  }
-
-  // views::WidgetObserver overrides
-  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE {
     native_delegate_->WillClose(widget->GetNativeView());
     observed_widgets_.erase(widget);
   }
@@ -108,11 +116,6 @@ class NativeWebContentsModalDialogManagerViews
     views::Widget* widget = views::Widget::GetWidgetForNativeWindow(dialog);
     DCHECK(widget);
     return widget;
-  }
-
-  static ConstrainedWindowViews* GetConstrainedWindowViews(
-      NativeWebContentsModalDialog dialog) {
-    return static_cast<ConstrainedWindowViews*>(GetWidget(dialog));
   }
 
   NativeWebContentsModalDialogManagerDelegate* native_delegate_;

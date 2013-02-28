@@ -30,10 +30,10 @@ class X509Certificate;
 namespace views {
 class TableView;
 class TextButton;
+class Widget;
 }
 
 class CertificateSelectorTableModel;
-class ConstrainedWindowViews;
 
 class SSLClientCertificateSelector : public SSLClientAuthObserver,
                                      public views::DialogDelegateView,
@@ -80,7 +80,7 @@ class SSLClientCertificateSelector : public SSLClientAuthObserver,
 
   content::WebContents* web_contents_;
 
-  ConstrainedWindowViews* window_;
+  views::Widget* window_;
   views::TableView* table_;
   views::TextButton* view_cert_button_;
 

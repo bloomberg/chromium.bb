@@ -50,7 +50,7 @@ void TabModalConfirmDialogViews::CancelTabModalDialog() {
 }
 
 void TabModalConfirmDialogViews::CloseDialog() {
-  dialog_->CloseWebContentsModalDialog();
+  dialog_->Close();
 }
 
 //////////////////////////////////////////////////////////////////////////////

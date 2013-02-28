@@ -12,11 +12,10 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/dialog_delegate.h"
 
-class ConstrainedWindowViews;
-
 namespace views {
 class Checkbox;
 class TextButton;
+class Widget;
 }
 
 namespace chrome {
@@ -65,8 +64,8 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
 
   MediaGalleriesDialogController* controller_;
 
-  // The constrained window (a weak pointer).
-  ConstrainedWindowViews* window_;
+  // The containing window (a weak pointer).
+  views::Widget* window_;
 
   // The contents of the dialog. Owned by |window_|'s RootView.
   views::View* contents_;

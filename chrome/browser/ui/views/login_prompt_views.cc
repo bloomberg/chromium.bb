@@ -73,7 +73,7 @@ class LoginHandlerViews : public LoginHandler,
   virtual void DeleteDelegate() OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-    // The constrained window is going to delete itself; clear our pointer.
+    // The widget is going to delete itself; clear our pointer.
     dialog_ = NULL;
     SetModel(NULL);
 
@@ -141,9 +141,9 @@ class LoginHandlerViews : public LoginHandler,
   }
 
   virtual void CloseDialog() OVERRIDE {
-    // The hosting ConstrainedWindowViews may have been freed.
+    // The hosting widget may have been freed.
     if (dialog_)
-      dialog_->CloseWebContentsModalDialog();
+      dialog_->Close();
   }
 
  private:
@@ -155,7 +155,7 @@ class LoginHandlerViews : public LoginHandler,
   // The LoginView that contains the user's login information
   LoginView* login_view_;
 
-  ConstrainedWindowViews* dialog_;
+  views::Widget* dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginHandlerViews);
 };

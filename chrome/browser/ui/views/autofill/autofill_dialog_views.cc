@@ -442,9 +442,8 @@ void AutofillDialogViews::Show() {
   UpdateAccountChooser();
   UpdateNotificationArea();
 
-  // Ownership of |contents_| is handed off by this call. The
-  // ConstrainedWindowViews will take care of deleting itself after calling
-  // DeleteDelegate().
+  // Ownership of |contents_| is handed off by this call. The widget will take
+  // care of deleting itself after calling DeleteDelegate().
   window_ = ConstrainedWindowViews::Create(controller_->web_contents(), this);
   focus_manager_ = window_->GetFocusManager();
   focus_manager_->AddFocusChangeListener(this);
@@ -452,7 +451,7 @@ void AutofillDialogViews::Show() {
 
 void AutofillDialogViews::Hide() {
   if (window_)
-    window_->CloseWebContentsModalDialog();
+    window_->Close();
 }
 
 void AutofillDialogViews::UpdateAccountChooser() {

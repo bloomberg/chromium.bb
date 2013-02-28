@@ -17,8 +17,6 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/window/dialog_delegate.h"
 
-class ConstrainedWindowViews;
-
 namespace content {
 class KeyboardListener;
 }
@@ -39,6 +37,7 @@ class MenuRunner;
 class TextButton;
 class Textfield;
 class WebView;
+class Widget;
 }
 
 namespace ui {
@@ -345,7 +344,7 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // The window that displays |contents_|. Weak pointer; may be NULL when the
   // dialog is closing.
-  ConstrainedWindowViews* window_;
+  views::Widget* window_;
 
   // The top-level View for the dialog. Owned by the constrained window.
   views::View* contents_;

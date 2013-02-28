@@ -37,16 +37,9 @@ class ConstrainedWindowViews : public views::Widget {
                          views::WidgetDelegate* widget_delegate);
   virtual ~ConstrainedWindowViews();
 
-  // TODO(wittman): Remove in favor of native equivalents.
-  void ShowWebContentsModalDialog();
-  void CloseWebContentsModalDialog();
-  void FocusWebContentsModalDialog();
-  void PulseWebContentsModalDialog();
-  NativeWebContentsModalDialog GetNativeDialog();
-
   // Factory function for the class (temporary).
-  static ConstrainedWindowViews* Create(content::WebContents* web_contents,
-                                        views::WidgetDelegate* widget_delegate);
+  static views::Widget* Create(content::WebContents* web_contents,
+                               views::WidgetDelegate* widget_delegate);
 
  private:
   // Overridden from views::Widget:
