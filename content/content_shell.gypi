@@ -9,6 +9,13 @@
     # something reasonably current; the "77.34.5" is a hint that this isn't a
     # standard Chrome.
     'content_shell_version': '19.77.34.5',
+    'conditions': [
+      ['OS=="linux"', {
+       'use_custom_freetype%': 1,
+      }, {
+       'use_custom_freetype%': 0,
+      }],
+    ],
   },
   'targets': [
     {
@@ -207,6 +214,11 @@
             '../chromeos/chromeos.gyp:chromeos',
            ],
         }], # chromeos==1
+        ['use_custom_freetype==1', {
+          'dependencies': [
+             '../third_party/freetype2/freetype2.gyp:freetype2',
+          ],
+        }],
       ],
     },
     {
