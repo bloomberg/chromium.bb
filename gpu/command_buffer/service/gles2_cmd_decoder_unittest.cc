@@ -4747,7 +4747,7 @@ TEST_F(GLES2DecoderTest, BufferDataGLError) {
   GLsizeiptr size = 4;
   DoBindBuffer(GL_ARRAY_BUFFER, client_buffer_id_, kServiceBufferId);
   BufferManager* manager = group().buffer_manager();
-  BufferManager::Buffer* info =
+  Buffer* info =
       manager->GetBuffer(client_buffer_id_);
   ASSERT_TRUE(info != NULL);
   EXPECT_EQ(0, info->size());

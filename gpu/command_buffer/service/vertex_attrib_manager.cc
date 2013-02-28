@@ -116,7 +116,7 @@ bool VertexAttribManager::Enable(GLuint index, bool enable) {
   return true;
 }
 
-void VertexAttribManager::Unbind(BufferManager::Buffer* buffer) {
+void VertexAttribManager::Unbind(Buffer* buffer) {
   if (element_array_buffer_ == buffer) {
     element_array_buffer_ = NULL;
   }

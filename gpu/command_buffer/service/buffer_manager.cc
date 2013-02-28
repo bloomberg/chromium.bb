@@ -39,7 +39,7 @@ void BufferManager::CreateBuffer(GLuint client_id, GLuint service_id) {
   DCHECK(result.second);
 }
 
-BufferManager::Buffer* BufferManager::GetBuffer(
+Buffer* BufferManager::GetBuffer(
     GLuint client_id) {
   BufferInfoMap::iterator it = buffer_infos_.find(client_id);
   return it != buffer_infos_.end() ? it->second : NULL;
@@ -54,16 +54,16 @@ void BufferManager::RemoveBuffer(GLuint client_id) {
   }
 }
 
-void BufferManager::StartTracking(BufferManager::Buffer* /* buffer */) {
+void BufferManager::StartTracking(Buffer* /* buffer */) {
   ++buffer_info_count_;
 }
 
-void BufferManager::StopTracking(BufferManager::Buffer* buffer) {
+void BufferManager::StopTracking(Buffer* buffer) {
   memory_tracker_->TrackMemFree(buffer->size());
   --buffer_info_count_;
 }
 
-BufferManager::Buffer::Buffer(BufferManager* manager, GLuint service_id)
+Buffer::Buffer(BufferManager* manager, GLuint service_id)
     : manager_(manager),
       deleted_(false),
       service_id_(service_id),
@@ -74,7 +74,7 @@ BufferManager::Buffer::Buffer(BufferManager* manager, GLuint service_id)
   manager_->StartTracking(this);
 }
 
-BufferManager::Buffer::~Buffer() {
+Buffer::~Buffer() {
   if (manager_) {
     if (manager_->have_context_) {
       GLuint id = service_id();
@@ -85,7 +85,7 @@ BufferManager::Buffer::~Buffer() {
   }
 }
 
-void BufferManager::Buffer::SetInfo(
+void Buffer::SetInfo(
     GLsizeiptr size, GLenum usage, bool shadow) {
   usage_ = usage;
   if (size != size_ || shadow != shadowed_) {
@@ -99,7 +99,7 @@ void BufferManager::Buffer::SetInfo(
   }
 }
 
-bool BufferManager::Buffer::CheckRange(
+bool Buffer::CheckRange(
     GLintptr offset, GLsizeiptr size) const {
   int32 end = 0;
   return offset >= 0 && size >= 0 &&
@@ -108,7 +108,7 @@ bool BufferManager::Buffer::CheckRange(
          SafeAddInt32(offset, size, &end) && end <= size_;
 }
 
-bool BufferManager::Buffer::SetRange(
+bool Buffer::SetRange(
     GLintptr offset, GLsizeiptr size, const GLvoid * data) {
   if (!CheckRange(offset, size)) {
     return false;
@@ -120,7 +120,7 @@ bool BufferManager::Buffer::SetRange(
   return true;
 }
 
-const void* BufferManager::Buffer::GetRange(
+const void* Buffer::GetRange(
     GLintptr offset, GLsizeiptr size) const {
   if (!shadowed_) {
     return NULL;
@@ -131,7 +131,7 @@ const void* BufferManager::Buffer::GetRange(
   return shadow_.get() + offset;
 }
 
-void BufferManager::Buffer::ClearCache() {
+void Buffer::ClearCache() {
   range_set_.clear();
 }
 
@@ -149,7 +149,7 @@ GLuint GetMaxValue(const void* data, GLuint offset, GLsizei count) {
   return max_value;
 }
 
-bool BufferManager::Buffer::GetMaxValueForRange(
+bool Buffer::GetMaxValueForRange(
     GLuint offset, GLsizei count, GLenum type, GLuint* max_value) {
   Range range(offset, count, type);
   RangeToMaxValueMap::iterator it = range_set_.find(range);
@@ -218,7 +218,7 @@ bool BufferManager::GetClientId(GLuint service_id, GLuint* client_id) const {
 }
 
 void BufferManager::SetInfo(
-    BufferManager::Buffer* info, GLsizeiptr size, GLenum usage) {
+    Buffer* info, GLsizeiptr size, GLenum usage) {
   DCHECK(info);
   memory_tracker_->TrackMemFree(info->size());
   info->SetInfo(size,
@@ -228,7 +228,7 @@ void BufferManager::SetInfo(
   memory_tracker_->TrackMemAlloc(info->size());
 }
 
-bool BufferManager::SetTarget(BufferManager::Buffer* info, GLenum target) {
+bool BufferManager::SetTarget(Buffer* info, GLenum target) {
   // Check that we are not trying to bind it to a different target.
   if (info->target() != 0 && info->target() != target &&
       !allow_buffers_on_multiple_targets_) {

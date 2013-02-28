@@ -98,7 +98,7 @@ class GLES2DecoderTestBase : public testing::Test {
     return group_->GetIdAllocator(namespace_id);
   }
 
-  BufferManager::Buffer* GetBuffer(GLuint service_id) {
+  Buffer* GetBuffer(GLuint service_id) {
     return group_->buffer_manager()->GetBuffer(service_id);
   }
 
@@ -502,7 +502,7 @@ class GLES2DecoderTestBase : public testing::Test {
 
     virtual ~MockCommandBufferEngine();
 
-    virtual Buffer GetSharedMemoryBuffer(int32 shm_id) OVERRIDE;
+    virtual gpu::Buffer GetSharedMemoryBuffer(int32 shm_id) OVERRIDE;
 
     void ClearSharedMemory() {
       memset(data_.get(), kInitialMemoryValue, kSharedBufferSize);
@@ -520,8 +520,8 @@ class GLES2DecoderTestBase : public testing::Test {
 
    private:
     scoped_array<int8> data_;
-    Buffer valid_buffer_;
-    Buffer invalid_buffer_;
+    gpu::Buffer valid_buffer_;
+    gpu::Buffer invalid_buffer_;
   };
 
   void AddExpectationsForVertexAttribManager();

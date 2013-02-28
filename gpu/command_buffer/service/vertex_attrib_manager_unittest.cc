@@ -110,7 +110,7 @@ TEST_F(VertexAttribManagerTest, Enable) {
 TEST_F(VertexAttribManagerTest, SetAttribInfo) {
   BufferManager buffer_manager(NULL);
   buffer_manager.CreateBuffer(1, 2);
-  BufferManager::Buffer* buffer = buffer_manager.GetBuffer(1);
+  Buffer* buffer = buffer_manager.GetBuffer(1);
   ASSERT_TRUE(buffer != NULL);
 
   VertexAttrib* info =
@@ -146,7 +146,7 @@ TEST_F(VertexAttribManagerTest, HaveFixedAttribs) {
 TEST_F(VertexAttribManagerTest, CanAccess) {
   BufferManager buffer_manager(NULL);
   buffer_manager.CreateBuffer(1, 2);
-  BufferManager::Buffer* buffer = buffer_manager.GetBuffer(1);
+  Buffer* buffer = buffer_manager.GetBuffer(1);
   ASSERT_TRUE(buffer != NULL);
 
   VertexAttrib* info =
@@ -189,8 +189,8 @@ TEST_F(VertexAttribManagerTest, Unbind) {
   BufferManager buffer_manager(NULL);
   buffer_manager.CreateBuffer(1, 2);
   buffer_manager.CreateBuffer(3, 4);
-  BufferManager::Buffer* buffer1 = buffer_manager.GetBuffer(1);
-  BufferManager::Buffer* buffer2 = buffer_manager.GetBuffer(3);
+  Buffer* buffer1 = buffer_manager.GetBuffer(1);
+  Buffer* buffer2 = buffer_manager.GetBuffer(3);
   ASSERT_TRUE(buffer1 != NULL);
   ASSERT_TRUE(buffer2 != NULL);
 

@@ -232,7 +232,7 @@ void GLES2DecoderTestBase::InitDecoder(
       .RetiresOnSaturation();
 
   engine_.reset(new StrictMock<MockCommandBufferEngine>());
-  Buffer buffer = engine_->GetSharedMemoryBuffer(kSharedMemoryId);
+  gpu::Buffer buffer = engine_->GetSharedMemoryBuffer(kSharedMemoryId);
   shared_memory_offset_ = kSharedMemoryOffset;
   shared_memory_address_ = reinterpret_cast<int8*>(buffer.ptr) +
       shared_memory_offset_;
@@ -1346,7 +1346,7 @@ MockCommandBufferEngine() {
 GLES2DecoderWithShaderTestBase::MockCommandBufferEngine::
 ~MockCommandBufferEngine() {}
 
-Buffer
+gpu::Buffer
 GLES2DecoderWithShaderTestBase::MockCommandBufferEngine::GetSharedMemoryBuffer(
     int32 shm_id) {
   return shm_id == kSharedMemoryId ? valid_buffer_ : invalid_buffer_;

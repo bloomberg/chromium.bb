@@ -970,8 +970,8 @@ class GLES2DecoderImpl : public GLES2Decoder {
   }
 
   // Gets the buffer info for the given buffer.
-  BufferManager::Buffer* GetBuffer(GLuint client_id) {
-    BufferManager::Buffer* info =
+  Buffer* GetBuffer(GLuint client_id) {
+    Buffer* info =
         buffer_manager()->GetBuffer(client_id);
     return info;
   }
@@ -1398,7 +1398,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
       int32 offset, GLsizei primcount);
 
   // Gets the buffer id for a given target.
-  BufferManager::Buffer* GetBufferInfoForTarget(GLenum target) {
+  Buffer* GetBufferInfoForTarget(GLenum target) {
     DCHECK(target == GL_ARRAY_BUFFER || target == GL_ELEMENT_ARRAY_BUFFER);
     if (target == GL_ARRAY_BUFFER) {
       return state_.bound_array_buffer;
@@ -2636,7 +2636,7 @@ bool GLES2DecoderImpl::GenTexturesHelper(GLsizei n, const GLuint* client_ids) {
 void GLES2DecoderImpl::DeleteBuffersHelper(
     GLsizei n, const GLuint* client_ids) {
   for (GLsizei ii = 0; ii < n; ++ii) {
-    BufferManager::Buffer* buffer = GetBuffer(client_ids[ii]);
+    Buffer* buffer = GetBuffer(client_ids[ii]);
     if (buffer && !buffer->IsDeleted()) {
       state_.vertex_attrib_manager->Unbind(buffer);
       if (state_.bound_array_buffer == buffer) {
@@ -3542,7 +3542,7 @@ void GLES2DecoderImpl::DoActiveTexture(GLenum texture_unit) {
 }
 
 void GLES2DecoderImpl::DoBindBuffer(GLenum target, GLuint client_id) {
-  BufferManager::Buffer* info = NULL;
+  Buffer* info = NULL;
   GLuint service_id = 0;
   if (client_id != 0) {
     info = GetBuffer(client_id);
@@ -5867,7 +5867,7 @@ void GLES2DecoderImpl::RestoreStateForAttrib(GLuint attrib) {
   const VertexAttrib* info =
       state_.vertex_attrib_manager->GetVertexAttrib(attrib);
   const void* ptr = reinterpret_cast<const void*>(info->offset());
-  BufferManager::Buffer* buffer_info = info->buffer();
+  Buffer* buffer_info = info->buffer();
   glBindBuffer(GL_ARRAY_BUFFER, buffer_info ? buffer_info->service_id() : 0);
   glVertexAttribPointer(
       attrib, info->size(), info->type(), info->normalized(), info->gl_stride(),
@@ -6225,7 +6225,7 @@ error::Error GLES2DecoderImpl::HandleDrawElementsInstancedANGLE(
 GLuint GLES2DecoderImpl::DoGetMaxValueInBufferCHROMIUM(
     GLuint buffer_id, GLsizei count, GLenum type, GLuint offset) {
   GLuint max_vertex_accessed = 0;
-  BufferManager::Buffer* info = GetBuffer(buffer_id);
+  Buffer* info = GetBuffer(buffer_id);
   if (!info) {
     // TODO(gman): Should this be a GL error or a command buffer error?
     SetGLError(GL_INVALID_VALUE,
@@ -6406,7 +6406,7 @@ bool GLES2DecoderImpl::DoIsEnabled(GLenum cap) {
 }
 
 bool GLES2DecoderImpl::DoIsBuffer(GLuint client_id) {
-  const BufferManager::Buffer* buffer = GetBuffer(client_id);
+  const Buffer* buffer = GetBuffer(client_id);
   return buffer && buffer->IsValid() && !buffer->IsDeleted();
 }
 
@@ -6501,7 +6501,7 @@ void GLES2DecoderImpl::DoGetVertexAttribfv(
   }
   switch (pname) {
     case GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING: {
-        BufferManager::Buffer* buffer = info->buffer();
+        Buffer* buffer = info->buffer();
         if (buffer && !buffer->IsDeleted()) {
           GLuint client_id;
           buffer_manager()->GetClientId(buffer->service_id(), &client_id);
@@ -6551,7 +6551,7 @@ void GLES2DecoderImpl::DoGetVertexAttribiv(
   }
   switch (pname) {
     case GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING: {
-        BufferManager::Buffer* buffer = info->buffer();
+        Buffer* buffer = info->buffer();
         if (buffer && !buffer->IsDeleted()) {
           GLuint client_id;
           buffer_manager()->GetClientId(buffer->service_id(), &client_id);
@@ -7197,7 +7197,7 @@ void GLES2DecoderImpl::DoBufferData(
     SetGLError(GL_INVALID_VALUE, "glBufferData", "size < 0");
     return;
   }
-  BufferManager::Buffer* info = GetBufferInfoForTarget(target);
+  Buffer* info = GetBufferInfoForTarget(target);
   if (!info) {
     SetGLError(GL_INVALID_VALUE, "glBufferData", "unknown buffer");
     return;
@@ -7261,7 +7261,7 @@ error::Error GLES2DecoderImpl::HandleBufferDataImmediate(
 
 void GLES2DecoderImpl::DoBufferSubData(
   GLenum target, GLintptr offset, GLsizeiptr size, const GLvoid * data) {
-  BufferManager::Buffer* info = GetBufferInfoForTarget(target);
+  Buffer* info = GetBufferInfoForTarget(target);
   if (!info) {
     SetGLError(GL_INVALID_VALUE, "glBufferSubData", "unknown buffer");
     return;
@@ -9296,7 +9296,7 @@ void GLES2DecoderImpl::EmulateVertexArrayState() {
   }
 
   // Setup the element buffer
-  BufferManager::Buffer* element_array_buffer =
+  Buffer* element_array_buffer =
       state_.vertex_attrib_manager->element_array_buffer();
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,
       element_array_buffer ? element_array_buffer->service_id() : 0);
@@ -10045,7 +10045,7 @@ error::Error GLES2DecoderImpl::HandleAsyncTexImage2DCHROMIUM(
 
   // We know the memory/size is safe, so get the real shared memory since
   // it might need to be duped to prevent use-after-free of the memory.
-  Buffer buffer = GetSharedMemoryBuffer(c.pixels_shm_id);
+  gpu::Buffer buffer = GetSharedMemoryBuffer(c.pixels_shm_id);
   base::SharedMemory* shared_memory = buffer.shared_memory;
   uint32 shm_size = buffer.size;
   uint32 shm_data_offset = c.pixels_shm_offset;
@@ -10131,7 +10131,7 @@ error::Error GLES2DecoderImpl::HandleAsyncTexSubImage2DCHROMIUM(
 
   // We know the memory/size is safe, so get the real shared memory since
   // it might need to be duped to prevent use-after-free of the memory.
-  Buffer buffer = GetSharedMemoryBuffer(c.data_shm_id);
+  gpu::Buffer buffer = GetSharedMemoryBuffer(c.data_shm_id);
   base::SharedMemory* shared_memory = buffer.shared_memory;
   uint32 shm_size = buffer.size;
   uint32 shm_data_offset = c.data_shm_offset;

@@ -70,7 +70,7 @@ void ContextState::RestoreTextureUnitBindings(GLuint unit) const {
 
 void ContextState::RestoreBufferBindings() const {
   if (vertex_attrib_manager) {
-    BufferManager::Buffer* element_array_buffer =
+    Buffer* element_array_buffer =
         vertex_attrib_manager->element_array_buffer();
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,
         element_array_buffer ? element_array_buffer->service_id() : 0);
@@ -99,7 +99,7 @@ void ContextState::RestoreAttribute(GLuint attrib) const {
   const VertexAttrib* info =
       vertex_attrib_manager->GetVertexAttrib(attrib);
   const void* ptr = reinterpret_cast<const void*>(info->offset());
-  BufferManager::Buffer* buffer_info = info->buffer();
+  Buffer* buffer_info = info->buffer();
   glBindBuffer(
       GL_ARRAY_BUFFER, buffer_info ? buffer_info->service_id() : 0);
   glVertexAttribPointer(

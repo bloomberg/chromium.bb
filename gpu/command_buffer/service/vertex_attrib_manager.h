@@ -32,7 +32,7 @@ class GPU_EXPORT VertexAttrib {
   // Returns true if this VertexAttrib can access index.
   bool CanAccess(GLuint index) const;
 
-  BufferManager::Buffer* buffer() const {
+  Buffer* buffer() const {
     return buffer_;
   }
 
@@ -98,7 +98,7 @@ class GPU_EXPORT VertexAttrib {
   }
 
   void SetInfo(
-      BufferManager::Buffer* buffer,
+      Buffer* buffer,
       GLint size,
       GLenum type,
       GLboolean normalized,
@@ -119,7 +119,7 @@ class GPU_EXPORT VertexAttrib {
     divisor_ = divisor;
   }
 
-  void Unbind(BufferManager::Buffer* buffer) {
+  void Unbind(Buffer* buffer) {
     if (buffer_ == buffer) {
       buffer_ = NULL;
     }
@@ -153,7 +153,7 @@ class GPU_EXPORT VertexAttrib {
   GLsizei divisor_;
 
   // The buffer bound to this attribute.
-  scoped_refptr<BufferManager::Buffer> buffer_;
+  scoped_refptr<Buffer> buffer_;
 
   // List this info is on.
   VertexAttribInfoList* list_;
@@ -193,7 +193,7 @@ class GPU_EXPORT VertexAttribManager :
 
   void SetAttribInfo(
       GLuint index,
-      BufferManager::Buffer* buffer,
+      Buffer* buffer,
       GLint size,
       GLenum type,
       GLboolean normalized,
@@ -220,11 +220,11 @@ class GPU_EXPORT VertexAttribManager :
     }
   }
 
-  void SetElementArrayBuffer(BufferManager::Buffer* buffer) {
+  void SetElementArrayBuffer(Buffer* buffer) {
     element_array_buffer_ = buffer;
   }
 
-  BufferManager::Buffer* element_array_buffer() const {
+  Buffer* element_array_buffer() const {
     return element_array_buffer_;
   }
 
@@ -232,7 +232,7 @@ class GPU_EXPORT VertexAttribManager :
     return service_id_;
   }
 
-  void Unbind(BufferManager::Buffer* buffer);
+  void Unbind(Buffer* buffer);
 
   bool IsDeleted() const {
     return deleted_;
@@ -270,7 +270,7 @@ class GPU_EXPORT VertexAttribManager :
 
   // The currently bound element array buffer. If this is 0 it is illegal
   // to call glDrawElements.
-  scoped_refptr<BufferManager::Buffer> element_array_buffer_;
+  scoped_refptr<Buffer> element_array_buffer_;
 
   // Lists for which vertex attribs are enabled, disabled.
   VertexAttribInfoList enabled_vertex_attribs_;

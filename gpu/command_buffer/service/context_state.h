@@ -132,7 +132,7 @@ struct GPU_EXPORT ContextState {
 
   // The currently bound array buffer. If this is 0 it is illegal to call
   // glVertexAttribPointer.
-  scoped_refptr<BufferManager::Buffer> bound_array_buffer;
+  scoped_refptr<Buffer> bound_array_buffer;
 
   // Which textures are bound to texture units through glActiveTexture.
   std::vector<TextureUnit> texture_units;
