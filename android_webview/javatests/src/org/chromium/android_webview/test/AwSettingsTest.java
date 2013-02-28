@@ -2418,7 +2418,6 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         final AwTestContainerView testContainerView =
                 createAwTestContainerViewOnMainSync(contentClient);
         final AwContents awContents = testContainerView.getAwContents();
-        final ContentViewCore contentViewCore = awContents.getContentViewCore();
         final AwSettings awSettings = getAwSettingsOnUiThread(awContents);
         CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
 
