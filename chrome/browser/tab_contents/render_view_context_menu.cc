@@ -229,6 +229,13 @@ bool ShouldShowTranslateItem(const GURL& page_url) {
 void DevToolsInspectElementAt(RenderViewHost* rvh, int x, int y) {
   DevToolsWindow::InspectElement(rvh, x, y);
 }
+
+// Helper function to escape "&" as "&&".
+void EscapeAmpersands(string16& text) {
+  const char16 ampersand[] = {'&', 0};
+  ReplaceChars(text, ampersand, ASCIIToUTF16("&&"), &text);
+}
+
 }  // namespace
 
 // static
@@ -388,11 +395,7 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
   for (i = sorted_ids.begin();
        i != sorted_ids.end(); ++i) {
     string16 printable_selection_text = PrintableSelectionText();
-    // Escape "&" as "&&".
-    for (size_t position = printable_selection_text.find('&');
-         position != string16::npos;
-         position = printable_selection_text.find('&', position + 2))
-      printable_selection_text.insert(position, 1, '&');
+    EscapeAmpersands(printable_selection_text);
 
     extension_items_.AppendExtensionItems(i->second, printable_selection_text,
                                           &index);
@@ -829,10 +832,7 @@ void RenderViewContextMenu::AppendSearchProvider() {
     return;
 
   string16 printable_selection_text = PrintableSelectionText();
-  // Escape "&" as "&&".
-  for (size_t i = printable_selection_text.find('&'); i != string16::npos;
-       i = printable_selection_text.find('&', i + 2))
-    printable_selection_text.insert(i, 1, '&');
+  EscapeAmpersands(printable_selection_text);
 
   if (AutocompleteMatch::IsSearchType(match.type)) {
     const TemplateURL* const default_provider =
