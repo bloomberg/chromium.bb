@@ -195,7 +195,7 @@ void NotificationButton::SetTitle(const string16& title) {
 namespace message_center {
 
 // static
-MessageView* NotificationView::ViewForNotification(
+MessageView* NotificationView::Create(
     const Notification& notification,
     NotificationList::Delegate* list_delegate) {
   // For the time being, use MessageSimpleView for simple notifications unless

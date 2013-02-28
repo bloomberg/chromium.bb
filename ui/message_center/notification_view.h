@@ -19,12 +19,9 @@ class NotificationView : public MessageView {
   // Creates appropriate MessageViews for notifications. Those currently are
   // always NotificationView instances but in the future may be instances of
   // other classes, with the class depending on the notification type.
-  static MessageView* ViewForNotification(
-      const Notification& notification,
-      NotificationList::Delegate* list_delegate);
+  static MessageView* Create(const Notification& notification,
+                             NotificationList::Delegate* list_delegate);
 
-  NotificationView(NotificationList::Delegate* list_delegate,
-                   const Notification& notification);
   virtual ~NotificationView();
 
   // Overridden from View.
@@ -36,6 +33,9 @@ class NotificationView : public MessageView {
                              const ui::Event& event) OVERRIDE;
 
  private:
+  NotificationView(NotificationList::Delegate* list_delegate,
+                   const Notification& notification);
+
   views::View* MakeContentView(const Notification& notification);
 
   views::View* content_view_;

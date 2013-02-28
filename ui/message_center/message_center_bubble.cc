@@ -366,8 +366,7 @@ class MessageCenterContentsView : public views::View {
     size_t num_children = 0;
     for (NotificationList::Notifications::const_iterator iter =
              notifications.begin(); iter != notifications.end(); ++iter) {
-      MessageView* view =
-          NotificationView::ViewForNotification(*(*iter), list_delegate_);
+      MessageView* view = NotificationView::Create(*(*iter), list_delegate_);
       view->set_scroller(scroller_);
       if (IsRichNotificationEnabled())
         view->SetUpShadow();

@@ -59,8 +59,7 @@ void PopupBubbleContentsView::Update(
   for (NotificationList::PopupNotifications::const_iterator iter =
            popup_notifications.begin();
        iter != popup_notifications.end(); ++iter) {
-    content_->AddChildView(
-        NotificationView::ViewForNotification(*(*iter), list_delegate_));
+    content_->AddChildView(NotificationView::Create(*(*iter), list_delegate_));
   }
   content_->SizeToPreferredSize();
   content_->InvalidateLayout();
