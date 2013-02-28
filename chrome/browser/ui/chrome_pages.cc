@@ -95,11 +95,19 @@ void ShowDownloads(Browser* browser) {
       GetSingletonTabNavigateParams(browser, GURL(kChromeUIDownloadsURL)));
 }
 
-void ShowExtensions(Browser* browser) {
+void ShowExtensions(Browser* browser,
+                    const std::string& extension_to_highlight) {
   content::RecordAction(UserMetricsAction("ShowExtensions"));
   NavigateParams params(
       GetSingletonTabNavigateParams(browser, GURL(kChromeUIExtensionsURL)));
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
+  if (!extension_to_highlight.empty()) {
+    GURL::Replacements replacements;
+    std::string query("id=");
+    query += extension_to_highlight;
+    replacements.SetQueryStr(query);
+    params.url = params.url.ReplaceComponents(replacements);
+  }
   ShowSingletonTabOverwritingNTP(browser, params);
 }
 

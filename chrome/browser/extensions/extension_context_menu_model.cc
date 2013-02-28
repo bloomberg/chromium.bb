@@ -130,7 +130,7 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id) {
       break;
     }
     case MANAGE: {
-      chrome::ShowExtensions(browser_);
+      chrome::ShowExtensions(browser_, extension->id());
       break;
     }
     case INSPECT_POPUP: {
@@ -177,7 +177,7 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension) {
   if (extension_action_manager->GetBrowserAction(*extension))
     AddItemWithStringId(HIDE, IDS_EXTENSIONS_HIDE_BUTTON);
   AddSeparator(ui::NORMAL_SEPARATOR);
-  AddItemWithStringId(MANAGE, IDS_MANAGE_EXTENSIONS);
+  AddItemWithStringId(MANAGE, IDS_MANAGE_EXTENSION);
 }
 
 const Extension* ExtensionContextMenuModel::GetExtension() const {

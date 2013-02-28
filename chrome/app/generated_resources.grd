@@ -5406,8 +5406,8 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
         <message name="IDS_EXTENSIONS_HIDE_BUTTON" desc="The text for the Hide context menu item (sentence case).">
           Hide button
         </message>
-        <message name="IDS_MANAGE_EXTENSIONS" desc="The 'Manage Extensions...' text in the context menu for when right-clicking on extension icons (sentence case).">
-          Manage extensions...
+        <message name="IDS_MANAGE_EXTENSION" desc="The 'Manage' text in the context menu for when right-clicking on extension icons (sentence case).">
+          Manage
         </message>
         <message name="IDS_EXTENSION_ACTION_INSPECT_POPUP" desc="The text for the right-click menu of page and browser actions which shows the popup and opens the developer tools (sentence case).">
           Inspect popup
@@ -5423,8 +5423,8 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
         <message name="IDS_EXTENSIONS_HIDE_BUTTON" desc="The text for the Hide context menu item (title case).">
           Hide Button
         </message>
-        <message name="IDS_MANAGE_EXTENSIONS" desc="The 'Manage Extensions...' text in the context menu for when right-clicking on extension icons (title case).">
-          Manage Extensions...
+        <message name="IDS_MANAGE_EXTENSION" desc="The 'Manage' text in the context menu for when right-clicking on extension icons (title case).">
+          Manage
         </message>
         <message name="IDS_EXTENSION_ACTION_INSPECT_POPUP" desc="The text for the right-click menu of page and browser actions which shows the popup and opens the developer tools (title case).">
           Inspect Popup

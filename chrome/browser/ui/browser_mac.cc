@@ -87,7 +87,7 @@ void OpenExtensionsWindow(Profile* profile) {
   Browser* browser =
       new Browser(Browser::CreateParams(profile,
                                         chrome::HOST_DESKTOP_TYPE_NATIVE));
-  ShowExtensions(browser);
+  ShowExtensions(browser, std::string());
   browser->window()->Show();
 }
 

@@ -147,7 +147,7 @@ enum {
         l10n_util::GetNSStringWithFixup(IDS_EXTENSIONS_UNINSTALL),
         l10n_util::GetNSStringWithFixup(IDS_EXTENSIONS_HIDE_BUTTON),
         [NSMenuItem separatorItem],
-        l10n_util::GetNSStringWithFixup(IDS_MANAGE_EXTENSIONS),
+        l10n_util::GetNSStringWithFixup(IDS_MANAGE_EXTENSION),
         l10n_util::GetNSStringWithFixup(IDS_EXTENSION_ACTION_INSPECT_POPUP),
         nil];
 
@@ -222,7 +222,7 @@ enum {
       break;
     }
     case kExtensionContextManage: {
-      chrome::ShowExtensions(browser_);
+      chrome::ShowExtensions(browser_, extension_->id());
       break;
     }
     case kExtensionContextInspect: {

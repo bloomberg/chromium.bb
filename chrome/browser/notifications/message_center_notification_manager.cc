@@ -204,7 +204,7 @@ void MessageCenterNotificationManager::ShowSettings(
   if (profile_notification->GetExtensionId().empty())
     chrome::ShowContentSettings(browser, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
   else
-    chrome::ShowExtensions(browser);
+    chrome::ShowExtensions(browser, std::string());
 }
 
 void MessageCenterNotificationManager::ShowSettingsDialog(

@@ -642,7 +642,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       ShowDownloads(browser_);
       break;
     case IDC_MANAGE_EXTENSIONS:
-      ShowExtensions(browser_);
+      ShowExtensions(browser_, std::string());
       break;
     case IDC_OPTIONS:
       ShowSettings(browser_);

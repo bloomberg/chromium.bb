@@ -914,7 +914,7 @@ void RecordLastRunAppBundlePath() {
       break;
     case IDC_MANAGE_EXTENSIONS:
       if (Browser* browser = ActivateBrowser(lastProfile))
-        chrome::ShowExtensions(browser);
+        chrome::ShowExtensions(browser, std::string());
       else
         chrome::OpenExtensionsWindow(lastProfile);
       break;
