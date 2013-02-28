@@ -22,6 +22,10 @@
 
 class TestShellWebBlobRegistryImpl;
 
+namespace cc {
+class ContextProvider;
+}
+
 namespace WebKit {
 class WebAudioDevice;
 class WebLayerTreeView;
@@ -84,6 +88,8 @@ class TestWebKitPlatformSupport :
 
   virtual WebKit::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
       const WebKit::WebGraphicsContext3D::Attributes&);
+  virtual WebKit::WebGraphicsContext3D* sharedOffscreenGraphicsContext3D();
+  virtual GrContext* sharedOffscreenGrContext();
   virtual bool canAccelerate2dCanvas();
 
   WebURLLoaderMockFactory* url_loader_factory() {
@@ -175,6 +181,8 @@ class TestWebKitPlatformSupport :
   WebKit::WebGamepads gamepad_data_;
   WebKit::Platform* shadow_platform_delegate_;
   HyphenDict* hyphen_dictionary_;
+
+  scoped_refptr<cc::ContextProvider> main_thread_contexts_;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   WebKit::WebThemeEngine* active_theme_engine_;

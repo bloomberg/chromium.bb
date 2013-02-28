@@ -96,11 +96,6 @@ class WebLayerTreeViewImplForTesting : public WebKit::WebLayerTreeView,
   webkit_support::DRTLayerTreeViewClient* drt_client_;
   WebKit::WebLayerTreeViewClient* client_;
   scoped_ptr<cc::LayerTreeHost> layer_tree_host_;
-
-  class MainThreadContextProvider;
-  scoped_refptr<MainThreadContextProvider> contexts_main_thread_;
-  class CompositorThreadContextProvider;
-  scoped_refptr<CompositorThreadContextProvider> contexts_compositor_thread_;
 };
 
 }  // namespace Web_kit

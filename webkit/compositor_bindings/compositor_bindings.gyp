@@ -83,6 +83,7 @@
         '../../media/media.gyp:media',
         '../../skia/skia.gyp:skia',
         '../../ui/ui.gyp:ui',
+        '../../webkit/gpu/webkit_gpu.gyp:webkit_gpu',
         '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'sources': [

@@ -172,6 +172,7 @@
             '<(webkit_src_dir)/Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:TestRunner',
             '../ui/surface/surface.gyp:surface',
             '../webkit/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
+            '../webkit/gpu/webkit_gpu.gyp:webkit_gpu',
             '../webkit/support/webkit_support.gyp:webkit_storage',
             '../webkit/support/webkit_support.gyp:webkit_support_common',
           ],

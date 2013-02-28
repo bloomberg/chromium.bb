@@ -5,6 +5,7 @@
 #ifndef WEBKIT_GPU_GRCONTEXT_FOR_WEBGRAPHICSCONTEXT3D_H_
 #define WEBKIT_GPU_GRCONTEXT_FOR_WEBGRAPHICSCONTEXT3D_H_
 
+#include "base/basictypes.h"
 #include "skia/ext/refptr.h"
 #include "webkit/gpu/webkit_gpu_export.h"
 
@@ -29,6 +30,8 @@ class WEBKIT_GPU_EXPORT GrContextForWebGraphicsContext3D {
 
  private:
   skia::RefPtr<class GrContext> gr_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(GrContextForWebGraphicsContext3D);
 };
 
 }  // namespace gpu

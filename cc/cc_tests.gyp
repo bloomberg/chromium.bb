@@ -145,7 +145,7 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../ui/ui.gyp:ui',
-        '../webkit/support/webkit_support.gyp:webkit_gpu',
+        '../webkit/gpu/webkit_gpu.gyp:webkit_gpu',
         'cc.gyp:cc',
         'cc_test_support',
         'cc_test_utils',

@@ -58,6 +58,7 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webkitplatformsupport_impl.h"
 #include "webkit/glue/weburlrequest_extradata_impl.h"
+#include "webkit/gpu/test_context_provider_factory.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 #if defined(OS_ANDROID)
@@ -491,6 +492,8 @@ void SetUpGLBindings(GLBindingPreferences bindingPref) {
     default:
       NOTREACHED();
   }
+  webkit::gpu::TestContextProviderFactory::SetUpFactoryForTesting(
+      g_graphics_context_3d_implementation);
 }
 
 void SetGraphicsContext3DImplementation(GraphicsContext3DImplementation impl) {

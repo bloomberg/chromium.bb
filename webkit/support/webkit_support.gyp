@@ -17,7 +17,6 @@
         '../base/webkit_base.gypi',
         '../database/webkit_database.gypi',
         '../glue/webkit_glue.gypi',
-        '../gpu/webkit_gpu.gypi',
         '../media/webkit_media.gypi',
         '../quota/webkit_quota.gypi',
         '../storage/webkit_storage.gypi',

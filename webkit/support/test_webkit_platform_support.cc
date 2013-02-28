@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "cc/context_provider.h"
 #include "cc/thread_impl.h"
 #include "media/base/media.h"
 #include "net/cookies/cookie_monster.h"
@@ -41,6 +42,7 @@
 #include "webkit/glue/webclipboard_impl.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webkitplatformsupport_impl.h"
+#include "webkit/gpu/test_context_provider_factory.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 #include "webkit/plugins/npapi/plugin_list.h"
@@ -376,6 +378,24 @@ TestWebKitPlatformSupport::createOffscreenGraphicsContext3D(
   }
   NOTREACHED();
   return NULL;
+}
+
+WebKit::WebGraphicsContext3D*
+TestWebKitPlatformSupport::sharedOffscreenGraphicsContext3D() {
+  main_thread_contexts_ =
+      webkit::gpu::TestContextProviderFactory::GetInstance()->
+          OffscreenContextProviderForMainThread();
+  if (!main_thread_contexts_->InitializeOnMainThread())
+    return NULL;
+  if (!main_thread_contexts_->BindToCurrentThread())
+    return NULL;
+  return main_thread_contexts_->Context3d();
+}
+
+GrContext* TestWebKitPlatformSupport::sharedOffscreenGrContext() {
+  if (!main_thread_contexts_)
+    return NULL;
+  return main_thread_contexts_->GrContext();
 }
 
 bool TestWebKitPlatformSupport::canAccelerate2dCanvas() {
