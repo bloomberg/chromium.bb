@@ -260,7 +260,7 @@ int CloseAllIEWindows() {
           HWND window = NULL;
           // Check the class of the browser window to make sure we only close
           // IE windows.
-          if (browser->get_HWND(reinterpret_cast<SHANDLE_PTR*>(window))) {
+          if (browser->get_HWND(reinterpret_cast<SHANDLE_PTR*>(&window))) {
             wchar_t class_name[MAX_PATH];
             if (::GetClassName(window, class_name, arraysize(class_name))) {
               is_ie = _wcsicmp(class_name, L"IEFrame") == 0;

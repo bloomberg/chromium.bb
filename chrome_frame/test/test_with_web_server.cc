@@ -1086,3 +1086,14 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestDownloadFromForm) {
   EXPECT_EQ(1, response->get_request_count());
   EXPECT_EQ(1, response->post_request_count());
 }
+
+// This test loads a large page and ensures that the full page contents are
+// actually loaded via a self-validating HTML page. This is done due to a bug
+// whereby the middle of the response stream would sometimes be truncated when
+// loading a CF document. See http://crbug.com/178421 for details.
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_LargePageLoad) {
+  const wchar_t kLargePageLoadPage[] =
+      L"chrome_frame_large_page.html";
+
+  SimpleBrowserTest(IE, kLargePageLoadPage);
+}
