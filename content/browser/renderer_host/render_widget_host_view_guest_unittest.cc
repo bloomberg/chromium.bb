@@ -36,7 +36,7 @@ class RenderWidgetHostViewGuestTest : public testing::Test {
     test_platform_view_.reset(new TestRenderWidgetHostView(widget_host_));
     view_ = static_cast<RenderWidgetHostViewGuest*>(
         new RenderWidgetHostViewGuest(
-            widget_host_, NULL, false, test_platform_view_.get()));
+            widget_host_, NULL, test_platform_view_.get()));
   }
 
   virtual void TearDown() {

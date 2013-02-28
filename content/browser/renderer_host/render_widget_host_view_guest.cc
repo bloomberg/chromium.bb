@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
@@ -11,6 +12,7 @@
 #include "content/common/browser_plugin_messages.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/content_switches.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "webkit/plugins/npapi/webplugin.h"
@@ -20,14 +22,15 @@ namespace content {
 RenderWidgetHostViewGuest::RenderWidgetHostViewGuest(
     RenderWidgetHost* widget_host,
     BrowserPluginGuest* guest,
-    bool enable_compositing,
     RenderWidgetHostView* platform_view)
     : host_(RenderWidgetHostImpl::From(widget_host)),
       guest_(guest),
-      enable_compositing_(enable_compositing),
       is_hidden_(false),
       platform_view_(static_cast<RenderWidgetHostViewPort*>(platform_view)) {
   host_->SetView(this);
+
+  enable_compositing_ = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableBrowserPluginCompositing);
 }
 
 RenderWidgetHostViewGuest::~RenderWidgetHostViewGuest() {

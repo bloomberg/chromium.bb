@@ -38,7 +38,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
  public:
   RenderWidgetHostViewGuest(RenderWidgetHost* widget,
                             BrowserPluginGuest* guest,
-                            bool enable_compositing,
                             RenderWidgetHostView* platform_view);
   virtual ~RenderWidgetHostViewGuest();
 

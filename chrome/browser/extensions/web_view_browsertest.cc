@@ -15,7 +15,6 @@
 #include "chrome/test/base/test_launcher_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/fake_speech_recognition_manager.h"
 #include "ui/compositor/compositor_setup.h"
@@ -33,11 +32,6 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
           command_line, gfx::kGLImplementationOSMesaName)) <<
           "kUseGL must not be set by test framework code!";
 #endif
-
-    const testing::TestInfo* const test_info =
-        testing::UnitTest::GetInstance()->current_test_info();
-    if (EndsWith(test_info->name(), "_UseGuestViews", true))
-        command_line->AppendSwitch(switches::kEnableBrowserPluginGuestViews);
   }
 
   virtual void SetUp() OVERRIDE {
@@ -243,28 +237,6 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     title_watcher.AlsoWaitForTitle(error_title);
     EXPECT_TRUE(content::ExecuteScript(web_contents, script));
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
-  }
-
-  // Following test helper function is used in two tests: |TearDownTest| and
-  // |TearDownTest_UseGuestViews|.
-  // This test ensures that the teardown path for an app with <webview> works
-  // correctly.
-  void TearDownTestHelper() {
-    ExtensionTestMessageListener first_loaded_listener("guest-loaded", false);
-    const extensions::Extension* extension =
-        LoadAndLaunchPlatformApp("web_view/teardown");
-    ASSERT_TRUE(first_loaded_listener.WaitUntilSatisfied());
-    ShellWindow* window = NULL;
-    if (!GetShellWindowCount())
-      window = CreateShellWindow(extension);
-    else
-      window = GetFirstShellWindow();
-    CloseShellWindow(window);
-
-    // Load the app again.
-    ExtensionTestMessageListener second_loaded_listener("guest-loaded", false);
-    LoadAndLaunchPlatformApp("web_view/teardown");
-    ASSERT_TRUE(second_loaded_listener.WaitUntilSatisfied());
   }
 
   scoped_ptr<content::FakeSpeechRecognitionManager>
@@ -749,10 +721,19 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, SpeechRecognition) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, TearDownTest) {
-  TearDownTestHelper();
-}
+  ExtensionTestMessageListener first_loaded_listener("guest-loaded", false);
+  const extensions::Extension* extension =
+      LoadAndLaunchPlatformApp("web_view/teardown");
+  ASSERT_TRUE(first_loaded_listener.WaitUntilSatisfied());
+  ShellWindow* window = NULL;
+  if (!GetShellWindowCount())
+    window = CreateShellWindow(extension);
+  else
+    window = GetFirstShellWindow();
+  CloseShellWindow(window);
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, TearDownTest_UseGuestViews) {
-  // switches::kEnableBrowserPluginGuestViews is on for this test.
-  TearDownTestHelper();
+  // Load the app again.
+  ExtensionTestMessageListener second_loaded_listener("guest-loaded", false);
+  LoadAndLaunchPlatformApp("web_view/teardown");
+  ASSERT_TRUE(second_loaded_listener.WaitUntilSatisfied());
 }

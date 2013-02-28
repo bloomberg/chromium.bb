@@ -30,7 +30,6 @@ class CONTENT_EXPORT WebContentsViewGuest
   // |platform_view|.
   WebContentsViewGuest(WebContentsImpl* web_contents,
                        BrowserPluginGuest* guest,
-                       bool enable_compositing,
                        WebContentsViewPort* platform_view);
   virtual ~WebContentsViewGuest();
 
@@ -94,7 +93,6 @@ class CONTENT_EXPORT WebContentsViewGuest
   // The WebContentsImpl whose contents we display.
   WebContentsImpl* web_contents_;
   BrowserPluginGuest* guest_;
-  bool enable_compositing_;
   // The platform dependent view backing this WebContentsView.
   // Calls to this WebContentsViewGuest are forwarded to |platform_view_|.
   WebContentsViewPort* platform_view_;

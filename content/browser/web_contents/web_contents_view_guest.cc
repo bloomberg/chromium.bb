@@ -26,11 +26,9 @@ namespace content {
 WebContentsViewGuest::WebContentsViewGuest(
     WebContentsImpl* web_contents,
     BrowserPluginGuest* guest,
-    bool enable_compositing,
     WebContentsViewPort* platform_view)
     : web_contents_(web_contents),
       guest_(guest),
-      enable_compositing_(enable_compositing),
       platform_view_(platform_view) {
 }
 
@@ -97,7 +95,6 @@ RenderWidgetHostView* WebContentsViewGuest::CreateViewForWidget(
   RenderWidgetHostView* view = new RenderWidgetHostViewGuest(
       render_widget_host,
       guest_,
-      enable_compositing_,
       platform_widget);
 
   return view;

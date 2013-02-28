@@ -1221,26 +1221,12 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
     WebContentsViewDelegate* delegate =
         GetContentClient()->browser()->GetWebContentsViewDelegate(this);
 
-    bool enable_browser_plugin_compositing = false;
-    bool enable_browser_plugin_guest_views = false;
     if (browser_plugin_guest_.get()) {
-      enable_browser_plugin_compositing =
-          CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableBrowserPluginCompositing);
-      enable_browser_plugin_guest_views = enable_browser_plugin_compositing ||
-          CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableBrowserPluginGuestViews);
-    }
-
-    if (enable_browser_plugin_guest_views) {
       WebContentsViewPort* platform_view = CreateWebContentsView(
           this, delegate, &render_view_host_delegate_view_);
 
       WebContentsViewGuest* rv = new WebContentsViewGuest(
-          this,
-          browser_plugin_guest_.get(),
-          enable_browser_plugin_compositing,
-          platform_view);
+          this, browser_plugin_guest_.get(), platform_view);
       render_view_host_delegate_view_ = rv;
       view_.reset(rv);
     } else {
