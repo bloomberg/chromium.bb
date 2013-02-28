@@ -156,15 +156,16 @@ void WebstoreDataFetcher::OnWebstoreResponseParseFailure(
 void WebstoreDataFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   CHECK_EQ(webstore_data_url_fetcher_.get(), source);
 
-  if (!webstore_data_url_fetcher_->GetStatus().is_success() ||
-      webstore_data_url_fetcher_->GetResponseCode() != 200) {
+  scoped_ptr<net::URLFetcher> fetcher(webstore_data_url_fetcher_.Pass());
+
+  if (!fetcher->GetStatus().is_success() ||
+      fetcher->GetResponseCode() != 200) {
     delegate_->OnWebstoreRequestFailure();
     return;
   }
 
   std::string webstore_json_data;
-  webstore_data_url_fetcher_->GetResponseAsString(&webstore_json_data);
-  webstore_data_url_fetcher_.reset();
+  fetcher->GetResponseAsString(&webstore_json_data);
 
   scoped_refptr<SafeWebstoreResponseParser> parser =
       new SafeWebstoreResponseParser(AsWeakPtr(), webstore_json_data);

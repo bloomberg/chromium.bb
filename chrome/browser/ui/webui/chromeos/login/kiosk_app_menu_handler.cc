@@ -7,7 +7,9 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_launcher.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
@@ -84,7 +86,21 @@ void KioskAppMenuHandler::HandleLaunchKioskApps(const base::ListValue* args) {
   KioskAppManager::App app_data;
   CHECK(KioskAppManager::Get()->GetApp(app_id, &app_data));
 
-  // TODO(xiyuan): Launch the app for real.
+  launcher_.reset(new KioskAppLauncher(
+     app_id,
+     base::Bind(&KioskAppMenuHandler::KioskAppLaunchCallback,
+                base::Unretained(this))));
+  launcher_->Start();
+
+  ExistingUserController::current_controller()->OnKioskAppLaunchStarted();
+}
+
+void KioskAppMenuHandler::KioskAppLaunchCallback(bool success) {
+  // If the launch succeeds, do nothing and wait for chrome restart.
+  if (success)
+    return;
+
+  ExistingUserController::current_controller()->OnKioskAppLaunchFailed();
 }
 
 void KioskAppMenuHandler::OnKioskAutoLaunchAppChanged() {

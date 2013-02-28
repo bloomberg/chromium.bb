@@ -212,6 +212,15 @@ void ExistingUserController::ResumeLogin() {
   resume_login_callback_.Run();
 }
 
+void ExistingUserController::OnKioskAppLaunchStarted() {
+  login_display_->SetUIEnabled(false);
+}
+
+void ExistingUserController::OnKioskAppLaunchFailed() {
+  login_display_->SetUIEnabled(true);
+  // TODO(xiyuan): Show some error message.
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ExistingUserController, content::NotificationObserver implementation:
 //

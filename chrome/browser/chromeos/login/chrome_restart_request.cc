@@ -269,6 +269,21 @@ std::string GetOffTheRecordCommandLine(
                            command_line);
 }
 
+std::string GetKioskAppCommandLine(const std::string& app_id) {
+  base::DictionaryValue app_switches;
+  app_switches.SetString(::switches::kForceAppMode, std::string());
+  app_switches.SetString(::switches::kInstallFromWebstore, app_id);
+  app_switches.SetString(::switches::kAppId, app_id);
+  app_switches.SetString(::switches::kLoginUser, std::string());
+
+  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  CommandLine new_command_line(browser_command_line.GetProgram());
+  return DeriveCommandLine(GURL(),
+                           browser_command_line,
+                           app_switches,
+                           &new_command_line);
+}
+
 void RestartChrome(const std::string& command_line) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

@@ -8,10 +8,13 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace chromeos {
+
+class KioskAppLauncher;
 
 // KioskAppMenuHandler supplies kiosk apps data to apps menu on sign-in
 // screen when app mode is enabled and handles "launchKioskApp" request
@@ -35,6 +38,9 @@ class KioskAppMenuHandler : public content::WebUIMessageHandler,
   void HandleGetKioskApps(const base::ListValue* args);
   void HandleLaunchKioskApps(const base::ListValue* args);
 
+  // App launch callback.
+  void KioskAppLaunchCallback(bool success);
+
   // KioskAppManagerObserver overrides:
   virtual void OnKioskAutoLaunchAppChanged() OVERRIDE;
   virtual void OnKioskAppsChanged() OVERRIDE;
@@ -42,6 +48,7 @@ class KioskAppMenuHandler : public content::WebUIMessageHandler,
   virtual void OnKioskAppDataLoadFailure(const std::string& app_id) OVERRIDE;
 
   bool initialized_;
+  scoped_ptr<KioskAppLauncher> launcher_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskAppMenuHandler);
 };

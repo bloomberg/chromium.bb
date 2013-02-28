@@ -4,8 +4,11 @@
 
 #include "chrome/browser/chromeos/ui/app_launch_view.h"
 
+#include <string>
+
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/shell_window_ids.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/common/url_constants.h"
@@ -113,8 +116,6 @@ void AppLaunchView::LoadSplashScreen() {
 void AppLaunchView::InitializeWindow() {
   DCHECK(!container_window_);
   aura::RootWindow* root_window = ash::Shell::GetPrimaryRootWindow();
-  gfx::Rect screen_rect =
-      ash::Shell::GetScreen()->GetDisplayNearestWindow(root_window).bounds();
 
   // We want to be the fullscreen topmost child of the root window.
   // There should be nothing ever really that should show up on top of us.
@@ -122,10 +123,11 @@ void AppLaunchView::InitializeWindow() {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.delegate = this;
-  params.parent = root_window;
-  params.bounds = screen_rect;
+  params.parent = ash::Shell::GetContainer(
+      root_window,
+      ash::internal::kShellWindowId_LockScreenContainer);
+  params.show_state = ui::SHOW_STATE_FULLSCREEN;
   container_window_->Init(params);
-  container_window_->StackAtTop();
 }
 
 void AppLaunchView::ShowWindow() {

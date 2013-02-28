@@ -61,6 +61,12 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Tells the controller to resume a pending login.
   void ResumeLogin();
 
+  // Invoked when a kiosk app launch is started.
+  void OnKioskAppLaunchStarted();
+
+  // Invoked when a kiosk app launch is failed.
+  void OnKioskAppLaunchFailed();
+
   // LoginDisplay::Delegate: implementation
   virtual void CancelPasswordChangedFlow() OVERRIDE;
   virtual void CreateAccount() OVERRIDE;
