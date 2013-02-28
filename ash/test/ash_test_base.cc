@@ -161,6 +161,16 @@ aura::test::EventGenerator& AshTestBase::GetEventGenerator() {
   return *event_generator_.get();
 }
 
+void AshTestBase::ChangeDisplayConfig(float scale,
+                                      const gfx::Rect& bounds_in_pixel) {
+  gfx::Display display =
+      gfx::Display(Shell::GetScreen()->GetPrimaryDisplay().id());
+  display.SetScaleAndBounds(scale, bounds_in_pixel);
+  std::vector<gfx::Display> displays;
+  displays.push_back(display);
+  Shell::GetInstance()->display_manager()->OnNativeDisplaysChanged(displays);
+}
+
 void AshTestBase::UpdateDisplay(const std::string& display_specs) {
   DisplayManagerTestApi display_manager_test_api(
       Shell::GetInstance()->display_manager());

@@ -296,8 +296,26 @@ bool DisplayController::HasPrimaryDisplay() {
 }
 
 void DisplayController::InitPrimaryDisplay() {
-  const gfx::Display* primary_candidate =
-      GetDisplayManager()->GetPrimaryDisplayCandidate();
+  const gfx::Display* primary_candidate = GetDisplayManager()->GetDisplayAt(0);
+#if defined(OS_CHROMEOS)
+  if (base::chromeos::IsRunningOnChromeOS()) {
+    internal::DisplayManager* display_manager = GetDisplayManager();
+    // On ChromeOS device, root windows are stacked vertically, and
+    // default primary is the one on top.
+    int count = display_manager->GetNumDisplays();
+    int y = primary_candidate->bounds_in_pixel().y();
+    for (int i = 1; i < count; ++i) {
+      const gfx::Display* display = display_manager->GetDisplayAt(i);
+      if (display->IsInternal()) {
+        primary_candidate = display;
+        break;
+      } else if (display->bounds_in_pixel().y() < y) {
+        primary_candidate = display;
+        y = display->bounds_in_pixel().y();
+      }
+    }
+  }
+#endif
   primary_display_id = primary_candidate->id();
   AddRootWindowForDisplay(*primary_candidate);
   UpdateDisplayBoundsForLayout();
@@ -385,10 +403,6 @@ gfx::Insets DisplayController::GetOverscanInsets(int64 display_id) const {
 void DisplayController::SetOverscanInsets(int64 display_id,
                                           const gfx::Insets& insets_in_dip) {
   GetDisplayManager()->SetOverscanInsets(display_id, insets_in_dip);
-}
-
-void DisplayController::ClearCustomOverscanInsets(int64 display_id) {
-  GetDisplayManager()->ClearCustomOverscanInsets(display_id);
 }
 
 std::vector<internal::RootWindowController*>
@@ -545,13 +559,11 @@ void DisplayController::SetPrimaryDisplay(
                         GetLayoutForDisplay(new_primary_display).Invert());
 
   // Update the dispay manager with new display info.
-  std::vector<internal::DisplayInfo> display_info_list;
-  display_info_list.push_back(display_manager->GetDisplayInfo(
-      display_manager->GetDisplayForId(primary_display_id)));
-  display_info_list.push_back(display_manager->GetDisplayInfo(
-      *GetSecondaryDisplay()));
+  std::vector<gfx::Display> displays;
+  displays.push_back(display_manager->GetDisplayForId(primary_display_id));
+  displays.push_back(*GetSecondaryDisplay());
   GetDisplayManager()->set_force_bounds_changed(true);
-  GetDisplayManager()->UpdateDisplays(display_info_list);
+  GetDisplayManager()->UpdateDisplays(displays);
   GetDisplayManager()->set_force_bounds_changed(false);
 }
 
@@ -565,15 +577,12 @@ gfx::Display* DisplayController::GetSecondaryDisplay() {
 void DisplayController::OnDisplayBoundsChanged(const gfx::Display& display) {
   if (limiter_.get())
     limiter_->SetThrottleTimeout(kAfterDisplayChangeThrottleTimeoutMs);
-  DCHECK(!GetDisplayManager()->GetDisplayInfo(display).
-         bounds_in_pixel().IsEmpty());
 
   NotifyDisplayConfigurationChanging();
   UpdateDisplayBoundsForLayout();
   aura::RootWindow* root = root_windows_[display.id()];
   SetDisplayPropertiesOnHostWindow(root, display);
-  root->SetHostBounds(
-      GetDisplayManager()->GetDisplayInfo(display).bounds_in_pixel());
+  root->SetHostBounds(display.bounds_in_pixel());
 }
 
 void DisplayController::OnDisplayAdded(const gfx::Display& display) {
@@ -589,8 +598,7 @@ void DisplayController::OnDisplayAdded(const gfx::Display& display) {
         internal::kDisplayIdKey, display.id());
     primary_root_window_for_replace_ = NULL;
     UpdateDisplayBoundsForLayout();
-    root_windows_[display.id()]->SetHostBounds(
-        GetDisplayManager()->GetDisplayInfo(display).bounds_in_pixel());
+    root_windows_[display.id()]->SetHostBounds(display.bounds_in_pixel());
   } else {
     DCHECK(!root_windows_.empty());
     aura::RootWindow* root = AddRootWindowForDisplay(display);

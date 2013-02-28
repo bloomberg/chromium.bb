@@ -196,7 +196,6 @@ gfx::Size RootWindow::GetHostSize() const {
 }
 
 void RootWindow::SetHostBounds(const gfx::Rect& bounds_in_pixel) {
-  DCHECK(!bounds_in_pixel.IsEmpty());
   DispatchHeldMouseMove();
   host_->SetBounds(bounds_in_pixel);
   synthesize_mouse_move_ = false;

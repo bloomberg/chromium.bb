@@ -27,10 +27,6 @@ class DisplayManagerTestApi {
   // the format of the display spec.
   void UpdateDisplay(const std::string& display_specs);
 
-  // Set the 1st display as an internal display and returns the display Id for
-  // the internal display.
-  int64 SetFirstDisplayAsInternalDisplay();
-
  private:
   internal::DisplayManager* display_manager_;  // not owned
 

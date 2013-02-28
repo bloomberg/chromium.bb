@@ -8,7 +8,6 @@
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/display_manager_test_api.h"
 #include "base/format_macros.h"
 #include "base/stringprintf.h"
 #include "ui/aura/env.h"
@@ -66,20 +65,8 @@ class DisplayManagerTest : public test::AshTestBase,
     return root_window_destroyed_;
   }
 
-  const DisplayInfo& GetDisplayInfo(const gfx::Display& display) {
-    return display_manager()->GetDisplayInfo(display);
-  }
-
-  const DisplayInfo& GetDisplayInfoAt(int index) {
-    return GetDisplayInfo(*display_manager()->GetDisplayAt(index));
-  }
-
   const gfx::Display& FindDisplayForId(int64 id) {
     return display_manager()->FindDisplayForId(id);
-  }
-
-  const DisplayInfo& FindDisplayInfoForId(int64 id) {
-    return GetDisplayInfo(display_manager()->FindDisplayForId(id));
   }
 
   // aura::DisplayObserver overrides:
@@ -123,8 +110,7 @@ TEST_F(DisplayManagerTest, NativeDisplayTest) {
   EXPECT_EQ("0,0 500x500", changed()[0].bounds().ToString());
   // Secondary display is on right.
   EXPECT_EQ("500,0 400x400", added()[0].bounds().ToString());
-  EXPECT_EQ("0,501 400x400",
-            GetDisplayInfo(added()[0]).bounds_in_pixel().ToString());
+  EXPECT_EQ("0,501 400x400", added()[0].bounds_in_pixel().ToString());
   reset();
 
   // Delete secondary.
@@ -146,8 +132,7 @@ TEST_F(DisplayManagerTest, NativeDisplayTest) {
   EXPECT_EQ(display_manager()->GetDisplayAt(1)->id(), added()[0].id());
   // Secondary display is on right.
   EXPECT_EQ("1000,0 600x400", added()[0].bounds().ToString());
-  EXPECT_EQ("1002,0 600x400",
-            GetDisplayInfo(added()[0]).bounds_in_pixel().ToString());
+  EXPECT_EQ("1002,0 600x400", added()[0].bounds_in_pixel().ToString());
   reset();
 
   // Secondary removed, primary changed.
@@ -159,7 +144,7 @@ TEST_F(DisplayManagerTest, NativeDisplayTest) {
   reset();
 
   // # of display can go to zero when screen is off.
-  const vector<DisplayInfo> empty;
+  const vector<gfx::Display> empty;
   display_manager()->OnNativeDisplaysChanged(empty);
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0 0 0", GetCountSummary());
@@ -175,8 +160,7 @@ TEST_F(DisplayManagerTest, NativeDisplayTest) {
   EXPECT_EQ("1 0 0", GetCountSummary());
   EXPECT_FALSE(root_window_destroyed());
   EXPECT_EQ("0,0 500x400", changed()[0].bounds().ToString());
-  EXPECT_EQ("100,100 500x400",
-            GetDisplayInfo(changed()[0]).bounds_in_pixel().ToString());
+  EXPECT_EQ("100,100 500x400", changed()[0].bounds_in_pixel().ToString());
   reset();
 
   // Go back to zero and wake up with multiple displays.
@@ -194,7 +178,7 @@ TEST_F(DisplayManagerTest, NativeDisplayTest) {
   EXPECT_EQ("1000,0 600x400",
             display_manager()->GetDisplayAt(1)->bounds().ToString());
   EXPECT_EQ("1000,1000 600x400",
-            GetDisplayInfoAt(1).bounds_in_pixel().ToString());
+            display_manager()->GetDisplayAt(1)->bounds_in_pixel().ToString());
   reset();
 }
 
@@ -223,75 +207,74 @@ TEST_F(DisplayManagerTest, OverscanInsetsTest) {
   UpdateDisplay("0+0-500x500,0+501-400x400");
   reset();
   ASSERT_EQ(2u, display_manager()->GetNumDisplays());
-  const DisplayInfo& display_info1 = GetDisplayInfoAt(0);
-  const DisplayInfo& display_info2 = GetDisplayInfoAt(1);
-  display_manager()->SetOverscanInsets(
-      display_info2.id(), gfx::Insets(13, 12, 11, 10));
+  gfx::Display display1(*display_manager()->GetDisplayAt(0));
+  gfx::Display display2(*display_manager()->GetDisplayAt(1));
 
+  display_manager()->SetOverscanInsets(
+      display2.id(), gfx::Insets(13, 12, 11, 10));
   std::vector<gfx::Display> changed_displays = changed();
   EXPECT_EQ(1u, changed_displays.size());
-  EXPECT_EQ(display_info2.id(), changed_displays[0].id());
+  EXPECT_EQ(display2.id(), changed_displays[0].id());
   EXPECT_EQ("0,0 500x500",
-            GetDisplayInfoAt(0).bounds_in_pixel().ToString());
+            display_manager()->GetDisplayAt(0)->bounds_in_pixel().ToString());
   EXPECT_EQ("12,514 378x376",
-            GetDisplayInfoAt(1).bounds_in_pixel().ToString());
+            display_manager()->GetDisplayAt(1)->bounds_in_pixel().ToString());
 
   // Make sure that SetOverscanInsets() is idempotent.
-  display_manager()->SetOverscanInsets(display_info1.id(), gfx::Insets());
+  display_manager()->SetOverscanInsets(display1.id(), gfx::Insets());
   display_manager()->SetOverscanInsets(
-      display_info2.id(), gfx::Insets(13, 12, 11, 10));
+      display2.id(), gfx::Insets(13, 12, 11, 10));
   EXPECT_EQ("0,0 500x500",
-            GetDisplayInfoAt(0).bounds_in_pixel().ToString());
+            display_manager()->GetDisplayAt(0)->bounds_in_pixel().ToString());
   EXPECT_EQ("12,514 378x376",
-            GetDisplayInfoAt(1).bounds_in_pixel().ToString());
+            display_manager()->GetDisplayAt(1)->bounds_in_pixel().ToString());
 
   display_manager()->SetOverscanInsets(
-      display_info2.id(), gfx::Insets(10, 11, 12, 13));
+      display2.id(), gfx::Insets(10, 11, 12, 13));
   EXPECT_EQ("0,0 500x500",
-            GetDisplayInfoAt(0).bounds_in_pixel().ToString());
+            display_manager()->GetDisplayAt(0)->bounds_in_pixel().ToString());
   EXPECT_EQ("11,511 376x378",
-            GetDisplayInfoAt(1).bounds_in_pixel().ToString());
+            display_manager()->GetDisplayAt(1)->bounds_in_pixel().ToString());
 
   // Recreate a new 2nd display. It won't apply the overscan inset because the
   // new display has a different ID.
   UpdateDisplay("0+0-500x500");
   UpdateDisplay("0+0-500x500,0+501-400x400");
   EXPECT_EQ("0,0 500x500",
-            GetDisplayInfoAt(0).bounds_in_pixel().ToString());
+            display_manager()->GetDisplayAt(0)->bounds_in_pixel().ToString());
   EXPECT_EQ("0,501 400x400",
-            GetDisplayInfoAt(1).bounds_in_pixel().ToString());
+            display_manager()->GetDisplayAt(1)->bounds_in_pixel().ToString());
 
   // Recreate the displays with the same ID.  It should apply the overscan
   // inset.
   UpdateDisplay("0+0-500x500");
-  std::vector<DisplayInfo> display_info_list;
-  display_info_list.push_back(display_info1);
-  display_info_list.push_back(display_info2);
-  display_manager()->OnNativeDisplaysChanged(display_info_list);
-  EXPECT_EQ("1,1 500x500",
-            GetDisplayInfoAt(0).bounds_in_pixel().ToString());
+  std::vector<gfx::Display> displays;
+  displays.push_back(display1);
+  displays.push_back(display2);
+  display_manager()->OnNativeDisplaysChanged(displays);
+  EXPECT_EQ("0,0 500x500",
+            display_manager()->GetDisplayAt(0)->bounds_in_pixel().ToString());
   EXPECT_EQ("11,511 376x378",
-            GetDisplayInfoAt(1).bounds_in_pixel().ToString());
+            display_manager()->GetDisplayAt(1)->bounds_in_pixel().ToString());
 
   // HiDPI but overscan display. The specified insets size should be doubled.
+  UpdateDisplay("0+0-500x500");
   UpdateDisplay("0+0-500x500,0+501-400x400*2");
   display_manager()->SetOverscanInsets(
       display_manager()->GetDisplayAt(1)->id(), gfx::Insets(4, 5, 6, 7));
   EXPECT_EQ("0,0 500x500",
-            GetDisplayInfoAt(0).bounds_in_pixel().ToString());
+            display_manager()->GetDisplayAt(0)->bounds_in_pixel().ToString());
   EXPECT_EQ("10,509 376x380",
-            GetDisplayInfoAt(1).bounds_in_pixel().ToString());
+            display_manager()->GetDisplayAt(1)->bounds_in_pixel().ToString());
   EXPECT_EQ("188x190", display_manager()->GetDisplayAt(1)->size().ToString());
 
   // Make sure switching primary display applies the overscan offset only once.
   ash::Shell::GetInstance()->display_controller()->SetPrimaryDisplay(
       ScreenAsh::GetSecondaryDisplay());
   EXPECT_EQ("0,0 500x500",
-            GetDisplayInfo(ScreenAsh::GetSecondaryDisplay()).
-            bounds_in_pixel().ToString());
-  EXPECT_EQ("10,509 376x380",
-            GetDisplayInfo(gfx::Screen::GetNativeScreen()->GetPrimaryDisplay()).
-            bounds_in_pixel().ToString());
+            ScreenAsh::GetSecondaryDisplay().bounds_in_pixel().ToString());
+  EXPECT_EQ("10,509 376x380", gfx::Screen::GetNativeScreen()->
+            GetPrimaryDisplay().bounds_in_pixel().ToString());
 }
 
 TEST_F(DisplayManagerTest, ZeroOverscanInsets) {
@@ -328,93 +311,84 @@ TEST_F(DisplayManagerTest, TestDeviceScaleOnlyChange) {
             Shell::GetPrimaryRootWindow()->bounds().size().ToString());
 }
 
-DisplayInfo CreateDisplayInfo(int64 id, const gfx::Rect& bounds) {
-  DisplayInfo info(id, std::string(), false);
-  info.SetBounds(bounds);
-  return info;
-}
-
 TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
   const int64 internal_display_id =
-      test::DisplayManagerTestApi(display_manager()).
-      SetFirstDisplayAsInternalDisplay();
-  const DisplayInfo native_display_info =
-      CreateDisplayInfo(internal_display_id, gfx::Rect(0, 0, 500, 500));
-  const DisplayInfo external_display_info =
-      CreateDisplayInfo(10, gfx::Rect(1, 1, 100, 100));
+      display_manager()->SetFirstDisplayAsInternalDisplayForTest();
+  const gfx::Display native_display(internal_display_id,
+                                    gfx::Rect(0, 0, 500, 500));
+  const gfx::Display external_display(10, gfx::Rect(1, 1, 100, 100));
 
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   std::string default_bounds =
       display_manager()->GetDisplayAt(0)->bounds().ToString();
 
-  std::vector<DisplayInfo> display_info_list;
+  std::vector<gfx::Display> displays;
   // Primary disconnected.
-  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  display_manager()->OnNativeDisplaysChanged(displays);
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   EXPECT_EQ(default_bounds,
             display_manager()->GetDisplayAt(0)->bounds().ToString());
 
   // External connected while primary was disconnected.
-  display_info_list.push_back(external_display_info);
-  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  displays.push_back(external_display);
+  display_manager()->OnNativeDisplaysChanged(displays);
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
-
   EXPECT_EQ(default_bounds,
             FindDisplayForId(internal_display_id).bounds().ToString());
   EXPECT_EQ("1,1 100x100",
-            FindDisplayInfoForId(10).bounds_in_pixel().ToString());
+            FindDisplayForId(10).bounds_in_pixel().ToString());
 
   // Primary connected, with different bounds.
-  display_info_list.clear();
-  display_info_list.push_back(native_display_info);
-  display_info_list.push_back(external_display_info);
-  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  displays.clear();
+  displays.push_back(native_display);
+  displays.push_back(external_display);
+  display_manager()->OnNativeDisplaysChanged(displays);
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0,0 500x500",
             FindDisplayForId(internal_display_id).bounds().ToString());
   EXPECT_EQ("1,1 100x100",
-            FindDisplayInfoForId(10).bounds_in_pixel().ToString());
+            FindDisplayForId(10).bounds_in_pixel().ToString());
 
   // Turn off primary.
-  display_info_list.clear();
-  display_info_list.push_back(external_display_info);
-  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  displays.clear();
+  displays.push_back(external_display);
+  display_manager()->OnNativeDisplaysChanged(displays);
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0,0 500x500",
             FindDisplayForId(internal_display_id).bounds().ToString());
   EXPECT_EQ("1,1 100x100",
-            FindDisplayInfoForId(10).bounds_in_pixel().ToString());
+            FindDisplayForId(10).bounds_in_pixel().ToString());
 
   // Emulate suspend.
-  display_info_list.clear();
-  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  displays.clear();
+  display_manager()->OnNativeDisplaysChanged(displays);
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0,0 500x500",
             FindDisplayForId(internal_display_id).bounds().ToString());
   EXPECT_EQ("1,1 100x100",
-            FindDisplayInfoForId(10).bounds_in_pixel().ToString());
+            FindDisplayForId(10).bounds_in_pixel().ToString());
 
   // External display has disconnected then resumed.
-  display_info_list.push_back(native_display_info);
-  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  displays.push_back(native_display);
+  display_manager()->OnNativeDisplaysChanged(displays);
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0,0 500x500",
             FindDisplayForId(internal_display_id).bounds().ToString());
 
   // External display was changed during suspend.
-  display_info_list.push_back(external_display_info);
-  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  displays.push_back(external_display);
+  display_manager()->OnNativeDisplaysChanged(displays);
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
 
   // suspend...
-  display_info_list.clear();
-  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  displays.clear();
+  display_manager()->OnNativeDisplaysChanged(displays);
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
 
   // and resume with different external display.
-  display_info_list.push_back(native_display_info);
-  display_info_list.push_back(CreateDisplayInfo(11, gfx::Rect(1, 1, 100, 100)));
-  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  displays.push_back(native_display);
+  displays.push_back(gfx::Display(11, gfx::Rect(1, 1, 100, 100)));
+  display_manager()->OnNativeDisplaysChanged(displays);
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
 }
 
@@ -432,18 +406,17 @@ TEST_F(DisplayManagerTest, MAYBE_TestNativeDisplaysChangedNoInternal) {
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
 
   // Don't change the display info if all displays are disconnected.
-  std::vector<DisplayInfo> display_info_list;
-  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  std::vector<gfx::Display> displays;
+  display_manager()->OnNativeDisplaysChanged(displays);
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
 
   // Connect another display which will become primary.
-  const DisplayInfo external_display_info =
-      CreateDisplayInfo(10, gfx::Rect(1, 1, 100, 100));
-  display_info_list.push_back(external_display_info);
-  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  const gfx::Display external_display(10, gfx::Rect(1, 1, 100, 100));
+  displays.push_back(external_display);
+  display_manager()->OnNativeDisplaysChanged(displays);
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   EXPECT_EQ("1,1 100x100",
-            FindDisplayInfoForId(10).bounds_in_pixel().ToString());
+            FindDisplayForId(10).bounds_in_pixel().ToString());
   EXPECT_EQ("100x100",
             ash::Shell::GetPrimaryRootWindow()->GetHostSize().ToString());
 }
@@ -523,31 +496,29 @@ TEST_F(DisplayManagerTest, EnsurePointerInDisplays_2ndOnLeft) {
 
 TEST_F(DisplayManagerTest, NativeDisplaysChangedAfterPrimaryChange) {
   const int64 internal_display_id =
-      test::DisplayManagerTestApi(display_manager()).
-      SetFirstDisplayAsInternalDisplay();
-  const DisplayInfo native_display_info =
-      CreateDisplayInfo(internal_display_id,  gfx::Rect(0, 0, 500, 500));
-  const DisplayInfo secondary_display_info =
-      CreateDisplayInfo(10, gfx::Rect(1, 1, 100, 100));
+      display_manager()->SetFirstDisplayAsInternalDisplayForTest();
+  const gfx::Display native_display(internal_display_id,
+                                    gfx::Rect(0, 0, 500, 500));
+  const gfx::Display secondary_display(10, gfx::Rect(1, 1, 100, 100));
 
-  std::vector<DisplayInfo> display_info_list;
-  display_info_list.push_back(native_display_info);
-  display_info_list.push_back(secondary_display_info);
-  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  std::vector<gfx::Display> displays;
+  displays.push_back(native_display);
+  displays.push_back(secondary_display);
+  display_manager()->OnNativeDisplaysChanged(displays);
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0,0 500x500",
             FindDisplayForId(internal_display_id).bounds().ToString());
   EXPECT_EQ("500,0 100x100", FindDisplayForId(10).bounds().ToString());
 
   ash::Shell::GetInstance()->display_controller()->SetPrimaryDisplay(
-      FindDisplayForId(secondary_display_info.id()));
+      secondary_display);
   EXPECT_EQ("-500,0 500x500",
             FindDisplayForId(internal_display_id).bounds().ToString());
   EXPECT_EQ("0,0 100x100", FindDisplayForId(10).bounds().ToString());
 
   // OnNativeDisplaysChanged may change the display bounds.  Here makes sure
   // nothing changed if the exactly same displays are specified.
-  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  display_manager()->OnNativeDisplaysChanged(displays);
   EXPECT_EQ("-500,0 500x500",
             FindDisplayForId(internal_display_id).bounds().ToString());
   EXPECT_EQ("0,0 100x100", FindDisplayForId(10).bounds().ToString());
@@ -556,35 +527,29 @@ TEST_F(DisplayManagerTest, NativeDisplaysChangedAfterPrimaryChange) {
 TEST_F(DisplayManagerTest, AutomaticOverscanInsets) {
   UpdateDisplay("200x200,400x400");
 
-  std::vector<DisplayInfo> display_info_list;
-  display_info_list.push_back(GetDisplayInfoAt(0));
-  display_info_list.push_back(GetDisplayInfoAt(1));
-  display_info_list[1].set_has_overscan_for_test(true);
-  int64 id = display_info_list[1].id();
-  // SetDefaultOverscanInsets(&display_info_list[1]);
-  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  std::vector<gfx::Display> displays;
+  displays.push_back(*display_manager()->GetDisplayAt(0));
+  displays.push_back(*display_manager()->GetDisplayAt(1));
+  int64 id = displays[1].id();
+  display_manager()->SetHasOverscanFlagForTest(id, true);
+
+  display_manager()->OnNativeDisplaysChanged(displays);
   // It has overscan insets, although SetOverscanInsets() isn't called.
   EXPECT_EQ("11,211 380x380",
-            GetDisplayInfoAt(1).bounds_in_pixel().ToString());
+            display_manager()->GetDisplayAt(1)->bounds_in_pixel().ToString());
 
   // If custom overscan insets is specified, the specified value is used.
   display_manager()->SetOverscanInsets(id, gfx::Insets(5, 6, 7, 8));
-  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  display_manager()->OnNativeDisplaysChanged(displays);
   EXPECT_EQ("7,206 386x388",
-            GetDisplayInfoAt(1).bounds_in_pixel().ToString());
+            display_manager()->GetDisplayAt(1)->bounds_in_pixel().ToString());
 
   // Do not overscan even though it has 'has_overscan' flag, if the custom
   // insets is empty.
   display_manager()->SetOverscanInsets(id, gfx::Insets());
-  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  display_manager()->OnNativeDisplaysChanged(displays);
   EXPECT_EQ("1,201 400x400",
-            GetDisplayInfoAt(1).bounds_in_pixel().ToString());
-
-  // Clearing the custom overscan should set the bounds to
-  // original.
-  display_manager()->ClearCustomOverscanInsets(id);
-  EXPECT_EQ("11,211 380x380",
-            GetDisplayInfoAt(1).bounds_in_pixel().ToString());
+            display_manager()->GetDisplayAt(1)->bounds_in_pixel().ToString());
 }
 
 }  // namespace internal
