@@ -498,6 +498,11 @@ void Tab::SetData(const TabRendererData& data) {
 
   if (data_.IsCrashed()) {
     if (!should_display_crashed_favicon_ && !IsPerformingCrashAnimation()) {
+      // Crash animation overrides the other icon animations.
+      old.audio_state = TabRendererData::AUDIO_STATE_NONE;
+      data_.audio_state = TabRendererData::AUDIO_STATE_NONE;
+      data_.capture_state = TabRendererData::CAPTURE_STATE_NONE;
+      old.capture_state = TabRendererData::CAPTURE_STATE_NONE;
 #if defined(OS_CHROMEOS)
       // On Chrome OS, we reload killed tabs automatically when the user
       // switches to them.  Don't display animations for these unless they're
@@ -515,21 +520,25 @@ void Tab::SetData(const TabRendererData& data) {
     StopIconAnimation();
   } else if ((data_.capture_state != TabRendererData::CAPTURE_STATE_NONE) &&
              (old.capture_state == TabRendererData::CAPTURE_STATE_NONE)) {
+    // Capture indicator overrides the audio indicator if presently shown.
+    old.audio_state = TabRendererData::AUDIO_STATE_NONE;
+    data_.audio_state = TabRendererData::AUDIO_STATE_NONE;
     StartRecordingAnimation();
+  } else if (data_.capture_state == TabRendererData::CAPTURE_STATE_NONE) {
+    // Start or stop the audio indicator only if not capturing.
+    if ((data_.audio_state == TabRendererData::AUDIO_STATE_NONE) &&
+        (old.audio_state != TabRendererData::AUDIO_STATE_NONE)) {
+      StopIconAnimation();
+    } else if ((data_.audio_state != TabRendererData::AUDIO_STATE_NONE) &&
+               (old.audio_state == TabRendererData::AUDIO_STATE_NONE)) {
+      StartAudioPlayingAnimation();
+    }
   } else {
     if (IsPerformingCrashAnimation())
       StopIconAnimation();
     ResetCrashedFavicon();
   }
 
-  if ((data_.audio_state == TabRendererData::AUDIO_STATE_NONE) &&
-      (old.audio_state != TabRendererData::AUDIO_STATE_NONE)) {
-    StopIconAnimation();
-  } else if ((data_.audio_state != TabRendererData::AUDIO_STATE_NONE) &&
-             (old.audio_state == TabRendererData::AUDIO_STATE_NONE)) {
-    StartAudioPlayingAnimation();
-  }
-  
   if (old.mini != data_.mini) {
     if (tab_animation_.get() && tab_animation_->is_animating()) {
       tab_animation_->Stop();
@@ -1610,8 +1619,6 @@ void Tab::StartCrashAnimation() {
 }
 
 void Tab::StartRecordingAnimation() {
-  // Recording animation resets (and trumps) audio animation.
-  data_.audio_state = TabRendererData::AUDIO_STATE_NONE;
   ui::ThrobAnimation* animation = new ui::ThrobAnimation(this);
   animation->SetTweenType(ui::Tween::EASE_IN_OUT);
   animation->SetThrobDuration(kRecordingDurationMs);
@@ -1620,11 +1627,6 @@ void Tab::StartRecordingAnimation() {
 }
 
 void Tab::StartAudioPlayingAnimation() {
-  // Don't start an audio animation if we are capturing.
-  if (data_.capture_state != TabRendererData::CAPTURE_STATE_NONE) {
-    data_.audio_state = TabRendererData::AUDIO_STATE_NONE;
-    return;
-  }
   ui::ThrobAnimation* animation = new ui::ThrobAnimation(this);
   animation->SetTweenType(ui::Tween::LINEAR);
   animation->SetThrobDuration(2000);
