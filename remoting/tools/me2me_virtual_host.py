@@ -54,12 +54,18 @@ HOME_DIR = os.environ["HOME"]
 X_LOCK_FILE_TEMPLATE = "/tmp/.X%d-lock"
 FIRST_X_DISPLAY_NUMBER = 20
 
-# Minimum amount of time to wait between relaunching processes.
-BACKOFF_TIME = 60
+# Amount of time to wait between relaunching processes.
+SHORT_BACKOFF_TIME = 5
+LONG_BACKOFF_TIME = 60
 
-# Maximum allowed consecutive times that a child process runs for less than
-# BACKOFF_TIME. This script exits if this limit is exceeded.
-MAX_LAUNCH_FAILURES = 10
+# How long a process must run in order not to be counted against the restart
+# thresholds.
+MINIMUM_PROCESS_LIFETIME = 60
+
+# Thresholds for switching from fast- to slow-restart and for giving up
+# trying to restart entirely.
+SHORT_BACKOFF_THRESHOLD = 5
+MAX_LAUNCH_FAILURES = SHORT_BACKOFF_THRESHOLD + 10
 
 # Globals needed by the atexit cleanup() handler.
 g_desktops = []
@@ -691,22 +697,24 @@ class RelaunchInhibitor:
     self.label = label
     self.running = False
     self.earliest_relaunch_time = 0
+    self.earliest_successful_termination = 0
     self.failures = 0
 
   def is_inhibited(self):
     return (not self.running) and (time.time() < self.earliest_relaunch_time)
 
-  def record_started(self, timeout):
+  def record_started(self, minimum_lifetime, relaunch_delay):
     """Record that the process was launched, and set the inhibit time to
     |timeout| seconds in the future."""
-    self.earliest_relaunch_time = time.time() + timeout
+    self.earliest_relaunch_time = time.time() + relaunch_delay
+    self.earliest_successful_termination = time.time() + minimum_lifetime
     self.running = True
 
   def record_stopped(self):
     """Record that the process was stopped, and adjust the failure count
     depending on whether the process ran long enough."""
     self.running = False
-    if time.time() < self.earliest_relaunch_time:
+    if time.time() < self.earliest_successful_termination:
       self.failures += 1
     else:
       self.failures = 0
@@ -964,12 +972,15 @@ Web Store: https://chrome.google.com/remotedesktop"""
   allow_relaunch_self = False
 
   while True:
-    # Exit if a process failed too many times.
+    # Set the backoff interval and exit if a process failed too many times.
+    backoff_time = SHORT_BACKOFF_TIME
     for inhibitor in all_inhibitors:
       if inhibitor.failures >= MAX_LAUNCH_FAILURES:
         logging.error("Too many launch failures of '%s', exiting."
                       % inhibitor.label)
         return 1
+      elif inhibitor.failures >= SHORT_BACKOFF_THRESHOLD:
+        backoff_time = LONG_BACKOFF_TIME
 
     relaunch_times = []
 
@@ -1000,7 +1011,8 @@ Web Store: https://chrome.google.com/remotedesktop"""
         else:
           logging.info("Launching X server and X session.")
           desktop.launch_session(args)
-          x_server_inhibitor.record_started(BACKOFF_TIME)
+          x_server_inhibitor.record_started(MINIMUM_PROCESS_LIFETIME,
+                                            backoff_time)
           allow_relaunch_self = True
 
     if desktop.host_proc is None:
@@ -1010,7 +1022,8 @@ Web Store: https://chrome.google.com/remotedesktop"""
       else:
         logging.info("Launching host process")
         desktop.launch_host(host_config)
-        host_inhibitor.record_started(BACKOFF_TIME)
+        host_inhibitor.record_started(MINIMUM_PROCESS_LIFETIME,
+                                      backoff_time)
 
     deadline = min(relaunch_times) if relaunch_times else 0
     pid, status = waitpid_handle_exceptions(-1, deadline)
