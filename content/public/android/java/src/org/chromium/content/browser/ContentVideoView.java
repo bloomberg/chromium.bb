@@ -330,10 +330,6 @@ public class ContentVideoView extends FrameLayout implements MediaPlayerControl,
         mVideoSurfaceView.setFocusable(true);
         mVideoSurfaceView.setFocusableInTouchMode(true);
         if (isInPlaybackState() && mMediaController != null) {
-            if (mMediaController.isShowing()) {
-                // ensure the controller will get repositioned later
-                mMediaController.hide();
-            }
             mMediaController.show();
         }
     }
