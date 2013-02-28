@@ -599,8 +599,7 @@ bool WindowsCreateFunction::RunImpl() {
       urls.push_back(GURL(chrome::kChromeUINewTabURL));
 
 #if defined(OS_CHROMEOS)
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePanels) &&
-        PanelManager::ShouldUsePanels(extension_id)) {
+    if (PanelManager::ShouldUsePanels(extension_id)) {
       ShellWindow::CreateParams create_params;
       create_params.window_type = ShellWindow::WINDOW_TYPE_V1_PANEL;
       create_params.bounds = window_bounds;
