@@ -51,7 +51,11 @@ remoting.MenuButton = function(container, opt_onShow) {
     that.button_.removeEventListener('click', that.onClick_, false);
     window.setTimeout(
         function() {
-          document.body.addEventListener('click', that.closeHandler_, true);
+          // Attach the click handler to the <html> node so that it includes
+          // the document area outside the plugin, which is not covered by
+          // the <body> node.
+          var htmlNode = document.body.parentNode;
+          htmlNode.addEventListener('click', that.closeHandler_, true);
         },
         100);
   };
