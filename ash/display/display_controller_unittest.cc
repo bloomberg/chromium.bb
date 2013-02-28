@@ -395,15 +395,14 @@ TEST_F(DisplayControllerTest, SwapPrimaryById) {
   EXPECT_FALSE(tracker.Contains(secondary_root));
   EXPECT_TRUE(primary_root->Contains(launcher_window));
 
-  internal::DisplayManager* display_manager =
-      Shell::GetInstance()->display_manager();
   // Adding 2nd display with the same ID.  The 2nd display should become primary
   // since secondary id is still stored as desirable_primary_id.
-  std::vector<internal::DisplayInfo> display_info_list;
-  display_info_list.push_back(display_manager->GetDisplayInfo(primary_display));
-  display_info_list.push_back(
-      display_manager->GetDisplayInfo(secondary_display));
-  display_manager->OnNativeDisplaysChanged(display_info_list);
+  std::vector<gfx::Display> displays;
+  displays.push_back(primary_display);
+  displays.push_back(secondary_display);
+  internal::DisplayManager* display_manager =
+      Shell::GetInstance()->display_manager();
+  display_manager->OnNativeDisplaysChanged(displays);
 
   EXPECT_EQ(2, Shell::GetScreen()->GetNumDisplays());
   EXPECT_EQ(secondary_display.id(),
@@ -420,27 +419,23 @@ TEST_F(DisplayControllerTest, SwapPrimaryById) {
   // Deleting 2nd display and adding 2nd display with a different ID.  The 2nd
   // display shouldn't become primary.
   UpdateDisplay("200x200");
-  internal::DisplayInfo third_display_info(
-      secondary_display.id() + 1, std::string(), false);
-  third_display_info.SetBounds(secondary_display.bounds());
-  ASSERT_NE(primary_display.id(), third_display_info.id());
-
-  const internal::DisplayInfo& primary_display_info =
-      display_manager->GetDisplayInfo(primary_display);
-  std::vector<internal::DisplayInfo> display_info_list2;
-  display_info_list2.push_back(primary_display_info);
-  display_info_list2.push_back(third_display_info);
-  display_manager->OnNativeDisplaysChanged(display_info_list2);
+  std::vector<gfx::Display> displays2;
+  gfx::Display third_display(
+      secondary_display.id() + 1, secondary_display.bounds());
+  ASSERT_NE(primary_display.id(), third_display.id());
+  displays2.push_back(primary_display);
+  displays2.push_back(third_display);
+  display_manager->OnNativeDisplaysChanged(displays2);
   EXPECT_EQ(2, Shell::GetScreen()->GetNumDisplays());
   EXPECT_EQ(primary_display.id(),
             Shell::GetScreen()->GetPrimaryDisplay().id());
-  EXPECT_EQ(third_display_info.id(), ScreenAsh::GetSecondaryDisplay().id());
+  EXPECT_EQ(third_display.id(), ScreenAsh::GetSecondaryDisplay().id());
   EXPECT_EQ(
       primary_root,
       display_controller->GetRootWindowForDisplayId(primary_display.id()));
   EXPECT_NE(
       primary_root,
-      display_controller->GetRootWindowForDisplayId(third_display_info.id()));
+      display_controller->GetRootWindowForDisplayId(third_display.id()));
   EXPECT_TRUE(primary_root->Contains(launcher_window));
 }
 

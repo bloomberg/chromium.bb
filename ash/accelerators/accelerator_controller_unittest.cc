@@ -14,7 +14,6 @@
 #include "ash/system/keyboard_brightness/keyboard_brightness_control_delegate.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/display_manager_test_api.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/volume_control_delegate.h"
 #include "ash/wm/window_util.h"
@@ -314,8 +313,8 @@ class AcceleratorControllerTest : public test::AshTestBase {
 
  protected:
   void EnableInternalDisplay() {
-    test::DisplayManagerTestApi(Shell::GetInstance()->display_manager()).
-        SetFirstDisplayAsInternalDisplay();
+    Shell::GetInstance()->display_manager()->
+        SetFirstDisplayAsInternalDisplayForTest();
   }
 
   static AcceleratorController* GetController();

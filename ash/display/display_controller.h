@@ -141,11 +141,10 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
   // mode, this return a RootWindowController for the primary root window only.
   std::vector<internal::RootWindowController*> GetAllRootWindowControllers();
 
-  // Gets/Sets/Clears the overscan insets for the specified |display_id|. See
+  // Gets/Sets the overscan insets for the specified |display_id|. See
   // display_manager.h for the details.
   gfx::Insets GetOverscanInsets(int64 display_id) const;
   void SetOverscanInsets(int64 display_id, const gfx::Insets& insets_in_dip);
-  void ClearCustomOverscanInsets(int64 display_id);
 
   const DisplayLayout& default_display_layout() const {
     return default_display_layout_;
