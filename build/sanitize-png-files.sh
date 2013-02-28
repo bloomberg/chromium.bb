@@ -376,7 +376,10 @@ done
 install_if_not_installed pngcrush
 if [ $OPTIMIZE_LEVEL != 2 ]; then
   install_if_not_installed optipng
+
+  install_if_not_installed advancecomp
   fail_if_not_installed advdef "http://advancemame.sourceforge.net/comp-download.html"
+
   fail_if_not_installed pngout "http://www.jonof.id.au/kenutils"
 fi
 
