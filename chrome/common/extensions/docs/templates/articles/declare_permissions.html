@@ -261,6 +261,14 @@ table.
   <td> Required if the extension or app uses the
        <a href="storage.html">chrome.storage</a> module. </td>
 </tr>
+{{?is_apps}}
+<tr>
+  <td id="syncFileSystem"> "syncFileSystem" </td>
+  <td> Required if the app uses the
+       <a href="syncFileSystem.html">syncFileSystem API</a>
+       to save and synchronize data on Google Drive.</td>
+</tr>
+{{/is_apps}}
 {{^is_apps}}
 <tr>
   <td> "tabs" </td>

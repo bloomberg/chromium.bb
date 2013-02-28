@@ -49,17 +49,28 @@ namespace syncFileSystem {
   };
 
   dictionary FileInfo {
-    // |fileEntry| will contain name and path information of synchronized file.
-    // On file deletion, fileEntry information will still be available but file
-    // will no longer exist.
+    // <code>fileEntry</code> for the target file whose status has changed.
+    // Contains name and path information of synchronized file.
+    // On file deletion,
+    // <code>fileEntry</code> information will still be available
+    // but file will no longer exist.
     [instanceOf=FileEntry] object fileEntry;
     
+    // Resulting file status after $ref:onFileStatusChanged event.
+    // The status value can be <code>'synced'</code>, 
+    // <code>'pending'</code> or <code>'conflicting'</code>.
     FileStatus status;
     
-    // Only applies if status is synced.
+    // Sync action taken to fire $ref:onFileStatusChanged event.
+    // The action value can be
+    // <code>'added'</code>, <code>'updated'</code> or <code>'deleted'</code>.
+    // Only applies if status is <code>'synced'</code>.
     SyncAction? action;
     
-    // Only applies if status is synced.
+    // Sync direction for the $ref:onFileStatusChanged event.
+    // Sync direction value can be
+    // <code>'local_to_remote'</code> or <code>'remote_to_local'</code>.
+    // Only applies if status is <code>'synced'</code>.
     SyncDirection? direction;
   };
 
@@ -73,28 +84,30 @@ namespace syncFileSystem {
     DOMString description;
   };
 
-  // [nodoc] A callback type for requestFileSystem.
+  // A callback type for requestFileSystem.
   callback GetFileSystemCallback =
       void ([instanceOf=DOMFileSystem] object fileSystem);
 
-  // [nodoc] A callback type for getUsageAndQuota.
+  // A callback type for getUsageAndQuota.
   callback QuotaAndUsageCallback = void (StorageInfo info);
 
   // Returns true if operation was successful.
   callback DeleteFileSystemCallback = void (boolean result);
 
-  // [nodoc] A callback type for getFileStatus.
+  // A callback type for getFileStatus.
   callback GetFileStatusCallback = void (FileStatus status);
 
   interface Functions {
     // Returns a syncable filesystem backed by Google Drive. 
-    // The returned DOMFileSystem instance can be operated on in the same way as
-    // the Temporary and Persistant file systems.
-    // (http://www.w3.org/TR/file-system-api/). Calling this multiple times from
+    // The returned <code>DOMFileSystem</code> instance can be operated on
+    // in the same way as the Temporary and Persistant file systems (see
+    // <a href="http://www.w3.org/TR/file-system-api/">http://www.w3.org/TR/file-system-api/</a>).
+    // Calling this multiple times from
     // the same app will return the same handle to the same file system. 
     static void requestFileSystem(GetFileSystemCallback callback);
 
-    // Get usage and quota in bytes for sync file system with |serviceName|.
+    // Returns the current usage and quota in bytes
+    // for the <code>'syncable'</code> file storage for the app.
     static void getUsageAndQuota([instanceOf=DOMFileSystem] object fileSystem,
                                  QuotaAndUsageCallback callback);
 
@@ -102,15 +115,17 @@ namespace syncFileSystem {
     static void deleteFileSystem([instanceOf=DOMFileSystem] object fileSystem,
                                  DeleteFileSystemCallback callback);
 
-    // Get the FileStatus for the given |fileEntry|.
+    // Returns the $ref:FileStatus for the given <code>fileEntry</code>.
+    // The status value can be <code>'synced'</code>,
+    // <code>'pending'</code> or <code>'conflicting'</code>.
     static void getFileStatus([instanceOf=FileEntry] object fileEntry,
                               GetFileStatusCallback callback);
   };
 
   interface Events {
     // Fired when an error or other status change has happened in the
-    // sync backend. (e.g. the sync is temporarily disabled due to
-    // network or authentication error etc).
+    // sync backend (for example, when the sync is temporarily disabled due to
+    // network or authentication error).
     static void onServiceStatusChanged(ServiceInfo detail);
 
     // Fired when a file has been updated by the background sync service.
