@@ -72,6 +72,8 @@ using WebKit::WebFormElement;
 
 namespace {
 
+const char* kAutofillManagerWebContentsUserDataKey = "web_contents_autofill";
+
 // We only send a fraction of the forms to upload server.
 // The rate for positive/negative matches potentially could be different.
 const double kAutofillPositiveUploadRateDefaultValue = 0.20;
@@ -172,12 +174,6 @@ void DeterminePossibleFieldTypesForUpload(
 
 }  // namespace
 
-namespace autofill {
-
-const char kAutofillManagerWebContentsUserDataKey[] = "web_contents_autofill";
-
-}  // namespace
-
 // static
 void AutofillManager::CreateForWebContentsAndDelegate(
     content::WebContents* contents,
@@ -185,7 +181,7 @@ void AutofillManager::CreateForWebContentsAndDelegate(
   if (FromWebContents(contents))
     return;
 
-  contents->SetUserData(autofill::kAutofillManagerWebContentsUserDataKey,
+  contents->SetUserData(kAutofillManagerWebContentsUserDataKey,
                         new AutofillManager(contents, delegate));
 }
 
@@ -193,7 +189,7 @@ void AutofillManager::CreateForWebContentsAndDelegate(
 AutofillManager* AutofillManager::FromWebContents(
     content::WebContents* contents) {
   return static_cast<AutofillManager*>(
-      contents->GetUserData(autofill::kAutofillManagerWebContentsUserDataKey));
+      contents->GetUserData(kAutofillManagerWebContentsUserDataKey));
 }
 
 AutofillManager::AutofillManager(content::WebContents* web_contents,

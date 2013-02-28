@@ -27,6 +27,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormControlElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -39,7 +40,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using WebKit::WebAutofillClient;
-using WebKit::WebDocument;
 using WebKit::WebFormControlElement;
 using WebKit::WebFormElement;
 using WebKit::WebFrame;
@@ -142,8 +142,7 @@ AutofillAgent::AutofillAgent(
       did_set_node_text_(false),
       autocheckout_click_in_progress_(false),
       ignore_text_changes_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(text_change_weak_ptr_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   render_view->GetWebView()->setAutofillClient(this);
 }
 
@@ -180,18 +179,22 @@ bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
 }
 
 void AutofillAgent::DidFinishDocumentLoad(WebFrame* frame) {
-  WebDocument document = frame->document();
-  if (document.isNull())
-    return;
+  // The document has now been fully loaded.  Scan for forms to be sent up to
+  // the browser.
+  std::vector<FormData> forms;
 
-  // Asynchronously extract forms from the loaded page.  The operation is
-  // asynchronous to avoid any performance impact on more critical tasks that
-  // might need to be run immediately on page load.
-  MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&AutofillAgent::ExtractForms,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   document));
+  if (!frame->parent()) {
+    topmost_frame_ = frame;
+    form_elements_.clear();
+    form_cache_.ExtractFormsAndFormElements(*frame, &forms, &form_elements_);
+  } else {
+    form_cache_.ExtractForms(*frame, &forms);
+  }
+
+  if (!forms.empty()) {
+    Send(new AutofillHostMsg_FormsSeen(routing_id(), forms,
+                                       base::TimeTicks::Now()));
+  }
 }
 
 void AutofillAgent::DidStartProvisionalLoad(WebFrame* frame) {
@@ -225,7 +228,7 @@ void AutofillAgent::DidCommitProvisionalLoad(WebFrame* frame,
 }
 
 void AutofillAgent::FrameDetached(WebFrame* frame) {
-  form_cache_.ResetCacheForDocument(frame->document());
+  form_cache_.ResetFrame(*frame);
   if (!frame->parent()) {
     // |frame| is about to be destroyed so we need to clear |top_most_frame_|.
     topmost_frame_ = NULL;
@@ -398,11 +401,11 @@ void AutofillAgent::textFieldDidChange(const WebInputElement& element) {
   // We post a task for doing the Autofill as the caret position is not set
   // properly at this point (http://bugs.webkit.org/show_bug.cgi?id=16976) and
   // it is needed to trigger autofill.
-  text_change_weak_ptr_factory_.InvalidateWeakPtrs();
+  weak_ptr_factory_.InvalidateWeakPtrs();
   MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&AutofillAgent::TextFieldDidChangeImpl,
-                   text_change_weak_ptr_factory_.GetWeakPtr(), element));
+                   weak_ptr_factory_.GetWeakPtr(), element));
 }
 
 void AutofillAgent::TextFieldDidChangeImpl(const WebInputElement& element) {
@@ -851,24 +854,6 @@ void AutofillAgent::HidePopups() {
 
 void AutofillAgent::HideHostPopups() {
   Send(new AutofillHostMsg_HideAutofillPopup(routing_id()));
-}
-
-void AutofillAgent::ExtractForms(WebDocument document) {
-  WebFrame* frame = document.frame();
-
-  std::vector<FormData> forms;
-  if (frame && !frame->parent()) {
-    topmost_frame_ = frame;
-    form_elements_.clear();
-    form_cache_.ExtractFormsAndFormElements(document, &forms, &form_elements_);
-  } else {
-    form_cache_.ExtractForms(document, &forms);
-  }
-
-  if (!forms.empty()) {
-    Send(new AutofillHostMsg_FormsSeen(routing_id(), forms,
-                                       base::TimeTicks::Now()));
-  }
 }
 
 }  // namespace autofill

@@ -17,6 +17,7 @@ struct FormDataPredictions;
 namespace WebKit {
 class WebDocument;
 class WebFormElement;
+class WebFrame;
 class WebInputElement;
 class WebSelectElement;
 }
@@ -31,19 +32,19 @@ class FormCache {
 
   // Scans the DOM in |frame| extracting and storing forms.
   // Returns a vector of the extracted forms.
-  void ExtractForms(const WebKit::WebDocument& document,
+  void ExtractForms(const WebKit::WebFrame& frame,
                     std::vector<FormData>* forms);
 
   // Scans the DOM in |frame| extracting and storing forms.
   // Returns a vector of the extracted forms and vector of associated web
   // form elements.
   void ExtractFormsAndFormElements(
-      const WebKit::WebDocument& document,
+      const WebKit::WebFrame& frame,
       std::vector<FormData>* forms,
       std::vector<WebKit::WebFormElement>* web_form_elements);
 
-  // Resets the cached forms and elements for the specified |document|.
-  void ResetCacheForDocument(const WebKit::WebDocument& document);
+  // Resets the forms for the specified |frame|.
+  void ResetFrame(const WebKit::WebFrame& frame);
 
   // Clears the values of all input elements in the form that contains
   // |element|.  Returns false if the form is not found.
