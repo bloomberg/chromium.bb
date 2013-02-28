@@ -355,7 +355,7 @@ MetadataCache.prototype.clearRecursively = function(item, type) {
   var keys = Object.keys(this.cache_);
   var url = this.itemToUrl_(item);
 
-  for (entryUrl in keys) {
+  for (var entryUrl in keys) {
     if (entryUrl.substring(0, url.length) === url) {
       if (type === '*') {
         this.cache_[entryUrl].properties = {};

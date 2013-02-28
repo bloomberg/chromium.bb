@@ -134,7 +134,7 @@ ImageLoader.Client.prototype.load = function(
   }
 
   // Not available in cache, performing a request to a remote extension.
-  request = opt_options;
+  var request = opt_options;
   this.lastTaskId_++;
   var task = { isValid: opt_isValid, accept: function(result) {
     // Save to cache.
