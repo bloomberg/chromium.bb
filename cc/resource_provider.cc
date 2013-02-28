@@ -771,6 +771,7 @@ void ResourceProvider::receiveFromParent(const TransferableResourceArray& resour
         Resource* resource = &mapIterator->second;
         DCHECK(resource->exported);
         resource->exported = false;
+        resource->filter = it->filter;
         DCHECK(resource->mailbox.Equals(it->mailbox));
         if (resource->glId) {
           if (it->sync_point)

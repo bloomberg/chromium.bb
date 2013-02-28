@@ -180,6 +180,7 @@ class CCMessagesTest : public testing::Test {
     EXPECT_EQ(a.id, b.id);
     EXPECT_EQ(a.sync_point, b.sync_point);
     EXPECT_EQ(a.format, b.format);
+    EXPECT_EQ(a.filter, b.filter);
     EXPECT_EQ(a.size.ToString(), b.size.ToString());
     for (size_t i = 0; i < arraysize(a.mailbox.name); ++i)
       EXPECT_EQ(a.mailbox.name[i], b.mailbox.name[i]);
@@ -512,6 +513,7 @@ TEST_F(CCMessagesTest, Resources) {
   arbitrary_resource1.id = 2178312;
   arbitrary_resource1.sync_point = arbitrary_uint1;
   arbitrary_resource1.format = 7;
+  arbitrary_resource1.filter = 53;
   arbitrary_resource1.size = gfx::Size(37189, 123123);
   arbitrary_resource1.mailbox.setName(arbitrary_mailbox1);
 
@@ -519,6 +521,7 @@ TEST_F(CCMessagesTest, Resources) {
   arbitrary_resource2.id = 789132;
   arbitrary_resource1.sync_point = arbitrary_uint2;
   arbitrary_resource2.format = 30;
+  arbitrary_resource1.filter = 47;
   arbitrary_resource2.size = gfx::Size(89123, 23789);
   arbitrary_resource2.mailbox.setName(arbitrary_mailbox2);
 
