@@ -13,7 +13,7 @@ IOBuffer::IOBuffer()
 }
 
 IOBuffer::IOBuffer(int buffer_size) {
-  CHECK_GT(buffer_size, 0);
+  CHECK_GE(buffer_size, 0);
   data_ = new char[buffer_size];
 }
 
