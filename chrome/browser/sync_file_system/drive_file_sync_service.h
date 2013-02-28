@@ -102,6 +102,7 @@ class DriveFileSyncService
 
  private:
   friend class DriveFileSyncServiceTest;
+  friend class DriveFileSyncServiceSyncTest;
   class TaskToken;
   struct ProcessRemoteChangeParam;
 

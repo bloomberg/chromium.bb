@@ -863,7 +863,8 @@ void DriveFileSyncService::DidInitializeMetadataStore(
 void DriveFileSyncService::UnregisterInactiveExtensionsIds() {
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
-  DCHECK(extension_service);
+  if (!extension_service)
+    return;
   std::vector<GURL> tracked_origins;
   metadata_store_->GetAllOrigins(&tracked_origins);
 
@@ -1687,6 +1688,7 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
     RemoteSyncType sync_type) {
   fileapi::FileSystemURL url(
       CreateSyncableFileSystemURL(origin, kServiceName, path));
+  DCHECK(url.is_valid());
 
   std::string local_resource_id;
   std::string local_file_md5;

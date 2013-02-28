@@ -37,6 +37,7 @@ void DidGetChangeList(google_apis::GDataErrorCode* error_out,
 TEST(FakeDriveFileSyncClientTest, ChangeSquashTest) {
   FakeDriveFileSyncClient sync_client;
   std::string kParentResourceId("parent resource id");
+  std::string kParentTitle("app-id");
   std::string kTitle1("title 1");
   std::string kTitle2("title 2");
   std::string kTitle3("title 3");
@@ -48,15 +49,20 @@ TEST(FakeDriveFileSyncClientTest, ChangeSquashTest) {
   base::FilePath kTempFilePath(FILE_PATH_LITERAL("tmp_file"));
 
   sync_client.PushRemoteChange(
-      kParentResourceId, kTitle1, kResourceId1, kMD5_1, false /* deleted */);
+      kParentResourceId, kParentTitle,
+      kTitle1, kResourceId1, kMD5_1, false /* deleted */);
   sync_client.PushRemoteChange(
-      kParentResourceId, kTitle1, kResourceId1, kMD5_1, false /* deleted */);
+      kParentResourceId, kParentTitle,
+      kTitle1, kResourceId1, kMD5_1, false /* deleted */);
   sync_client.PushRemoteChange(
-      kParentResourceId, kTitle1, kResourceId1, kMD5_1, true /* deleted */);
+      kParentResourceId, kParentTitle,
+      kTitle1, kResourceId1, kMD5_1, true /* deleted */);
   sync_client.PushRemoteChange(
-      kParentResourceId, kTitle2, kResourceId2, kMD5_2, false /* deleted */);
+      kParentResourceId, kParentTitle,
+      kTitle2, kResourceId2, kMD5_2, false /* deleted */);
   sync_client.PushRemoteChange(
-      kParentResourceId, kTitle3, kResourceId2, kMD5_3, false /* deleted */);
+      kParentResourceId, kParentTitle,
+      kTitle3, kResourceId2, kMD5_3, false /* deleted */);
 
   MessageLoop message_loop;
 

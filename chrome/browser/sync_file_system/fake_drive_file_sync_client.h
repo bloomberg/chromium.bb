@@ -25,6 +25,34 @@ namespace sync_file_system {
 class FakeDriveFileSyncClient
     : public DriveFileSyncClientInterface {
  public:
+  struct RemoteResource {
+    std::string parent_resource_id;
+    std::string parent_title;
+    std::string title;
+    std::string resource_id;
+    std::string md5_checksum;
+    bool deleted;
+    int64 changestamp;
+
+    RemoteResource();
+    RemoteResource(const std::string& parent_resource_id,
+                   const std::string& parent_title,
+                   const std::string& title,
+                   const std::string& resource_id,
+                   const std::string& md5_checksum,
+                   bool deleted,
+                   int64 changestamp);
+    ~RemoteResource();
+  };
+
+  struct RemoteResourceComparator {
+    // Returns lexicographical order referring all members.
+    bool operator()(const RemoteResource& left,
+                    const RemoteResource& right);
+  };
+
+  typedef std::map<std::string, RemoteResource> RemoteResourceByResourceId;
+
   FakeDriveFileSyncClient();
   virtual ~FakeDriveFileSyncClient();
 
@@ -75,34 +103,19 @@ class FakeDriveFileSyncClient
       const std::string& resource_id) const OVERRIDE;
 
   void PushRemoteChange(const std::string& parent_resource_id,
+                        const std::string& parent_title,
                         const std::string& title,
                         const std::string& resource_id,
                         const std::string& md5,
                         bool deleted);
 
+  const RemoteResourceByResourceId& remote_resources() const {
+    return remote_resources_;
+  }
+
  private:
   struct ChangeStampComparator;
-
-  struct RemoteResource {
-    std::string parent_resource_id;
-    std::string title;
-    std::string resource_id;
-    std::string md5_checksum;
-    bool deleted;
-    int64 changestamp;
-
-    RemoteResource();
-    RemoteResource(const std::string& parent_resource_id,
-                   const std::string& title,
-                   const std::string& resource_id,
-                   const std::string& md5_checksum,
-                   bool deleted,
-                   int64 changestamp);
-    ~RemoteResource();
-  };
-
-  typedef std::map<std::string, RemoteResource> RemoteResourceByResourceId;
-  RemoteResourceByResourceId remote_resource_;
+  RemoteResourceByResourceId remote_resources_;
 
   scoped_ptr<google_apis::ResourceEntry> CreateResourceEntry(
       const RemoteResource& resource_id) const;
