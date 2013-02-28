@@ -61,11 +61,11 @@ bool SpdyFrameBuilder::WriteControlFrameHeader(const SpdyFramer& framer,
                                                SpdyControlType type,
                                                uint8 flags) {
   FlagsAndLength flags_length = CreateFlagsAndLength(
-      flags, capacity_ - framer.GetControlFrameMinimumSize());
+      flags, capacity_ - framer.GetControlFrameHeaderSize());
   bool success = WriteUInt16(kControlFlagMask | framer.protocol_version());
   success &= WriteUInt16(type);
   success &= WriteBytes(&flags_length, sizeof(flags_length));
-  DCHECK_EQ(framer.GetControlFrameMinimumSize(), length());
+  DCHECK_EQ(framer.GetControlFrameHeaderSize(), length());
   return success;
 }
 
@@ -117,7 +117,7 @@ bool SpdyFrameBuilder::WriteBytes(const void* data, uint32 data_len) {
 }
 
 bool SpdyFrameBuilder::RewriteLength(const SpdyFramer& framer) {
-  return OverwriteLength(framer, length_ - framer.GetControlFrameMinimumSize());
+  return OverwriteLength(framer, length_ - framer.GetControlFrameHeaderSize());
 }
 
 bool SpdyFrameBuilder::OverwriteLength(const SpdyFramer& framer,

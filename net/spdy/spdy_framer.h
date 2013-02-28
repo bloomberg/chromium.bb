@@ -477,7 +477,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
 
   // Returns the (minimum) size of frames (sans variable-length portions).
   size_t GetDataFrameMinimumSize() const;
-  size_t GetControlFrameMinimumSize() const;
+  size_t GetControlFrameHeaderSize() const;
   size_t GetSynStreamMinimumSize() const;
   size_t GetSynReplyMinimumSize() const;
   size_t GetRstStreamSize() const;

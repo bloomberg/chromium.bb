@@ -87,7 +87,7 @@ class SpdyFramerTestUtil {
     CHECK(buffer != NULL);
     SpdyFrame* decompressed_frame = new SpdyFrame(buffer, visitor.size(), true);
     SetFrameLength(decompressed_frame,
-                   visitor.size() - framer->GetControlFrameMinimumSize(),
+                   visitor.size() - framer->GetControlFrameHeaderSize(),
                    framer->protocol_version());
     return decompressed_frame;
   }
@@ -773,8 +773,8 @@ TEST_P(SpdyFramerTest, ParseCredentialFrameData) {
         reinterpret_cast<char*>(kFrameData), arraysize(kFrameData), false);
     SpdyCredential credential;
     EXPECT_TRUE(SpdyFramer::ParseCredentialData(
-        frame.data() + framer.GetControlFrameMinimumSize(),
-        frame.size() - framer.GetControlFrameMinimumSize(),
+        frame.data() + framer.GetControlFrameHeaderSize(),
+        frame.size() - framer.GetControlFrameHeaderSize(),
         &credential));
     EXPECT_EQ(3u, credential.slot);
     EXPECT_EQ("proof", credential.proof);
@@ -2608,7 +2608,7 @@ TEST_P(SpdyFramerTest, ControlFrameSizesAreValidated) {
   };
   SpdyFramer framer(spdy_version_);
   const size_t pad_length =
-      length + framer.GetControlFrameMinimumSize() -
+      length + framer.GetControlFrameHeaderSize() -
       (IsSpdy2() ? sizeof(kV2FrameData) : sizeof(kV3FrameData));
   string pad('A', pad_length);
   TestSpdyVisitor visitor(spdy_version_);
@@ -2637,7 +2637,7 @@ TEST_P(SpdyFramerTest, ReadZeroLenSettingsFrame) {
   visitor.use_compression_ = false;
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame->data()),
-      framer.GetControlFrameMinimumSize());
+      framer.GetControlFrameHeaderSize());
   // Should generate an error, since zero-len settings frames are unsupported.
   EXPECT_EQ(1, visitor.error_count_);
 }
@@ -2657,7 +2657,7 @@ TEST_P(SpdyFramerTest, ReadBogusLenSettingsFrame) {
   visitor.use_compression_ = false;
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame->data()),
-      framer.GetControlFrameMinimumSize() + kNewLength);
+      framer.GetControlFrameHeaderSize() + kNewLength);
   // Should generate an error, since zero-len settings frames are unsupported.
   EXPECT_EQ(1, visitor.error_count_);
 }
@@ -2808,7 +2808,7 @@ TEST_P(SpdyFramerTest, ReadCredentialFrame) {
       reinterpret_cast<unsigned char*>(control_frame->data()),
       control_frame->size());
   EXPECT_EQ(0, visitor.error_count_);
-  EXPECT_EQ(control_frame->size() - framer.GetControlFrameMinimumSize(),
+  EXPECT_EQ(control_frame->size() - framer.GetControlFrameHeaderSize(),
             visitor.credential_buffer_length_);
   EXPECT_EQ(credential.slot, visitor.credential_.slot);
   EXPECT_EQ(credential.proof, visitor.credential_.proof);
@@ -2839,7 +2839,7 @@ TEST_P(SpdyFramerTest, ReadCredentialFrameOneByteAtATime) {
     ASSERT_EQ(0, visitor.error_count_);
   }
   EXPECT_EQ(0, visitor.error_count_);
-  EXPECT_EQ(control_frame->size() - framer.GetControlFrameMinimumSize(),
+  EXPECT_EQ(control_frame->size() - framer.GetControlFrameHeaderSize(),
             visitor.credential_buffer_length_);
   EXPECT_EQ(credential.slot, visitor.credential_.slot);
   EXPECT_EQ(credential.proof, visitor.credential_.proof);
@@ -2865,7 +2865,7 @@ TEST_P(SpdyFramerTest, ReadCredentialFrameWithNoPayload) {
   SetFrameLength(control_frame.get(), 0, spdy_version_);
   unsigned char* data =
       reinterpret_cast<unsigned char*>(control_frame->data());
-  visitor.SimulateInFramer(data, framer.GetControlFrameMinimumSize());
+  visitor.SimulateInFramer(data, framer.GetControlFrameHeaderSize());
   EXPECT_EQ(1, visitor.error_count_);
 }
 
@@ -2884,7 +2884,7 @@ TEST_P(SpdyFramerTest, ReadCredentialFrameWithCorruptProof) {
   visitor.use_compression_ = false;
   unsigned char* data =
       reinterpret_cast<unsigned char*>(control_frame->data());
-  size_t offset = framer.GetControlFrameMinimumSize() + 4;
+  size_t offset = framer.GetControlFrameHeaderSize() + 4;
   data[offset] = 0xFF;  // Proof length is past the end of the frame
   visitor.SimulateInFramer(
       data, control_frame->size());
@@ -2937,7 +2937,11 @@ TEST_P(SpdyFramerTest, ReadGarbageWithValidVersion) {
 
 TEST_P(SpdyFramerTest, SizesTest) {
   SpdyFramer framer(spdy_version_);
-  EXPECT_EQ(8u, framer.GetControlFrameMinimumSize());
+  EXPECT_EQ(8u, framer.GetControlFrameHeaderSize());
+  EXPECT_EQ(18u, framer.GetSynStreamMinimumSize());
+  EXPECT_EQ(IsSpdy2() ? 14u : 12u, framer.GetSynReplyMinimumSize());
+  EXPECT_EQ(16u, framer.GetRstStreamSize());
+  EXPECT_EQ(8u, framer.GetControlFrameHeaderSize());
   EXPECT_EQ(18u, framer.GetSynStreamMinimumSize());
   EXPECT_EQ(IsSpdy2() ? 14u : 12u, framer.GetSynReplyMinimumSize());
   EXPECT_EQ(16u, framer.GetRstStreamSize());
@@ -3429,7 +3433,7 @@ TEST_P(SpdyFramerTest, EmptySynStream) {
   // Adjust size to remove the name/value block.
   SetFrameLength(
       frame.get(),
-      framer.GetSynStreamMinimumSize() - framer.GetControlFrameMinimumSize(),
+      framer.GetSynStreamMinimumSize() - framer.GetControlFrameHeaderSize(),
       spdy_version_);
 
   EXPECT_CALL(visitor, OnSynStream(1, 0, 1, 0, false, false));
