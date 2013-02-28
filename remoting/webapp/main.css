@@ -344,6 +344,11 @@ section {
   color: #900;
 }
 
+.error-state.multi-line-error-state {
+  padding-top: 0;
+  min-height: 22px;
+}
+
 .expiring {
   color: #900 !important;
 }
@@ -428,6 +433,17 @@ td {
 .host-list-main-icon {
   margin-__MSG_@@bidi_end_edge__: 10px;
   vertical-align: middle;
+  position: relative;
+}
+
+.host-list-main-icon > span {
+  background-image: url('icon_warning.webp');
+  background-repeat: no-repeat;
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  bottom: -5px;
+  right: -10px;
 }
 
 .host-offline .host-list-label,

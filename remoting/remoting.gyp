@@ -179,6 +179,7 @@
       'webapp/error.js',
       'webapp/event_handlers.js',
       'webapp/format_iq.js',
+      'webapp/host.js',
       'webapp/host_controller.js',
       'webapp/host_list.js',
       'webapp/host_screen.js',

@@ -33,6 +33,7 @@ AllJsLoadTest.prototype = {
     'error.js',
     'event_handlers.js',
     //'format_iq.js',  // Already covered by format_iq.gtestjs
+    'host.js',
     'host_controller.js',
     'host_list.js',
     //'host_plugin_proto.js',  // Only used by jscompiler

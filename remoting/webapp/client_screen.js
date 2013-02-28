@@ -192,8 +192,8 @@ function updateStatistics_() {
 }
 
 /**
- * Shows PIN entry screen localized to include the host name, and registers
- * a host-specific one-shot event handler for the form submission.
+ * Entry-point for Me2Me connections, handling showing of the host-upgrade nag
+ * dialog if necessary.
  *
  * @param {string} hostId The unique id of the host.
  * @return {void} Nothing.
@@ -204,7 +204,43 @@ remoting.connectMe2Me = function(hostId) {
     showConnectError_(remoting.Error.HOST_IS_OFFLINE);
     return;
   }
+  var webappVersion = chrome.runtime.getManifest().version;
+  if (remoting.Host.needsUpdate(host, webappVersion)) {
+    var needsUpdateMessage =
+        document.getElementById('host-needs-update-message');
+    l10n.localizeElementFromTag(needsUpdateMessage,
+                                /*i18n-content*/'HOST_NEEDS_UPDATE_TITLE',
+                                host.hostName);
+    /** @type {Element} */
+    var connect = document.getElementById('host-needs-update-connect-button');
+    /** @type {Element} */
+    var cancel = document.getElementById('host-needs-update-cancel-button');
+    /** @param {Event} event */
+    var onClick = function(event) {
+      connect.removeEventListener('click', onClick, false);
+      cancel.removeEventListener('click', onClick, false);
+      if (event.target == connect) {
+        remoting.connectMe2MeHostVersionAcknowledged_(host);
+      } else {
+        window.location.replace(chrome.extension.getURL('main.html'));
+      }
+    }
+    connect.addEventListener('click', onClick, false);
+    cancel.addEventListener('click', onClick, false);
+    remoting.setMode(remoting.AppMode.CLIENT_HOST_NEEDS_UPGRADE);
+  } else {
+    remoting.connectMe2MeHostVersionAcknowledged_(host);
+  }
+};
 
+/**
+ * Shows PIN entry screen localized to include the host name, and registers
+ * a host-specific one-shot event handler for the form submission.
+ *
+ * @param {remoting.Host} host The Me2Me host to which to connect.
+ * @return {void} Nothing.
+ */
+remoting.connectMe2MeHostVersionAcknowledged_ = function(host) {
   remoting.connector = new remoting.SessionConnector(
       document.getElementById('session-mode'),
       remoting.onConnected,

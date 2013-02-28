@@ -36,6 +36,7 @@ remoting.AppMode = {
       CLIENT_CONNECT_FAILED_ME2ME: 'home.client.connect-failed.me2me',
       CLIENT_SESSION_FINISHED_IT2ME: 'home.client.session-finished.it2me',
       CLIENT_SESSION_FINISHED_ME2ME: 'home.client.session-finished.me2me',
+      CLIENT_HOST_NEEDS_UPGRADE: 'home.client.host-needs-upgrade',
     HISTORY: 'home.history',
     CONFIRM_HOST_DELETE: 'home.confirm-host-delete',
     HOST_SETUP: 'home.host-setup',

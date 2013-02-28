@@ -72,6 +72,11 @@ remoting.HostList = function(table, noHosts, errorMsg, errorButton) {
    * @private
    */
   this.localHostState_ = remoting.HostController.State.NOT_IMPLEMENTED;
+  /**
+   * @type {number}
+   * @private
+   */
+  this.webappMajorVersion_ = parseInt(chrome.runtime.getManifest().version, 10);
 
   this.errorButton_.addEventListener('click',
                                      this.onErrorClick_.bind(this),
@@ -227,10 +232,10 @@ remoting.HostList.prototype.display = function() {
     // never sent a heartbeat, then there will be no jabberId.
     if (host.hostName && host.hostId && host.status && host.publicKey &&
         (!this.localHost_ || host.hostId != this.localHost_.hostId)) {
-      var hostTableEntry = new remoting.HostTableEntry();
-      hostTableEntry.create(host,
-                            this.renameHost_.bind(this),
-                            this.deleteHost_.bind(this));
+      var hostTableEntry = new remoting.HostTableEntry(
+          host, this.webappMajorVersion_,
+          this.renameHost_.bind(this), this.deleteHost_.bind(this));
+      hostTableEntry.createDom();
       this.hostTableEntries_[i] = hostTableEntry;
       this.table_.appendChild(hostTableEntry.tableRow);
     }
@@ -381,13 +386,13 @@ remoting.HostList.prototype.setLocalHost_ = function(host) {
     };
     if (!this.localHostTableEntry_) {
       /** @type {remoting.HostTableEntry} @private */
-      this.localHostTableEntry_ = new remoting.HostTableEntry();
+      this.localHostTableEntry_ = new remoting.HostTableEntry(
+          host, this.webappMajorVersion_, renameHost);
       this.localHostTableEntry_.init(
-          host,
           document.getElementById('this-host-connect'),
+          document.getElementById('this-host-warning'),
           document.getElementById('this-host-name'),
-          document.getElementById('this-host-rename'),
-          renameHost);
+          document.getElementById('this-host-rename'));
     } else {
       // TODO(jamiewalch): This is hack to prevent multiple click handlers being
       // registered for the same DOM elements if this method is called more than

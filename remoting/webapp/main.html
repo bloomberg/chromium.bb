@@ -25,6 +25,7 @@ found in the LICENSE file.
     <script src="error.js"></script>
     <script src="event_handlers.js"></script>
     <script src="format_iq.js"></script>
+    <script src="host.js"></script>
     <script src="host_controller.js"></script>
     <script src="host_list.js"></script>
     <script src="host_screen.js"></script>
@@ -170,9 +171,11 @@ found in the LICENSE file.
             <div id="this-host-connect"
                  class="section-row clickable no-non-local-hosts"
                  data-daemon-state="enabled">
-              <img id="this-host-icon"
-                   src="icon_host.webp"
-                   class="host-list-main-icon">
+              <div class="host-list-main-icon">
+                <span id="this-host-warning"></span>
+                <img id="this-host-icon"
+                     src="icon_host.webp">
+              </div>
               <div id="this-host-name" class="box-spacer"></div>
               <span id="this-host-rename"
                     class="host-list-edit"
@@ -477,6 +480,29 @@ found in the LICENSE file.
           <div class="box-spacer"></div>
           <button id="cancel-connect-button" i18n-content="CANCEL"></button>
         </div> <!-- client.connecting -->
+
+        <div data-ui-mode="home.client.host-needs-upgrade">
+          <div id="host-needs-update-message"
+               class="message error-state multi-line-error-state">
+          </div>
+          <div class="message">
+            <span i18n-content="HOST_NEEDS_UPDATE_DETAIL"></span>
+            <a href="http://support.google.com/chrome/bin/answer.py?hl=en&answer=1649523"
+               i18n-content="LEARN_HOW"></a>
+          </div>
+          <div class="box">
+            <div class="box-spacer"></div>
+            <button id="host-needs-update-connect-button"
+                    type="button"
+                    i18n-content="CONNECT_ANYWAY"
+                    autofocus="autofocus">
+            </button>
+            <button id="host-needs-update-cancel-button"
+                    type="button"
+                    i18n-content="CANCEL">
+            </button>
+          </div>
+        </div> <!-- home.client.host-needs-upgrade -->
 
         <div data-ui-mode="home.client.pin-prompt" class="centered">
           <div id="pin-message"

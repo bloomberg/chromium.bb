@@ -190,6 +190,9 @@
 	<message desc="Message displayed at the bottom of the client connect dialog if Chrome Remote Desktop is running in the wrong start-up mode." name="IDR_WARNING_NOT_WINDOWED">
           NOTE: To ensure that all keyboard shortcuts are available, you can configure Chrome Remote Desktop to ‘Open as window’.
 	</message>
+	<message desc="Error message displayed if the user tries to connect to a computer running out-of-date Me2Me host software." name="IDR_HOST_NEEDS_UPDATE_TITLE">
+	  Chrome Remote Desktop on <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph> is out-of-date and needs to be updated.
+	</message>
       </if>
 
       <if expr="not pp_ifdef('_google_chrome')">
@@ -247,6 +250,9 @@
 	<message desc="Message displayed at the bottom of the client connect dialog if Chromoting is running in the wrong start-up mode." name="IDR_WARNING_NOT_WINDOWED">
           NOTE: To ensure that all keyboard shortcuts are available, you can configure Chromoting to ‘Open as window’.
 	</message>
+	<message desc="Error message displayed if the user tries to connect to a computer running out-of-date Me2Me host software." name="IDR_HOST_NEEDS_UPDATE_TITLE">
+	  Chromoting on <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph> is out-of-date and needs to be updated.
+	</message>
       </if>
 
       <message desc="Label for the access code entry box. This is where the client user enters the code that permits access to the host." name="IDR_ACCESS_CODE">
@@ -275,6 +281,9 @@
       </message>
       <message desc="Label for the connect button. Clicking this button will start the Chrome Remote Desktop session if the access code is correct." name="IDR_CONNECT_BUTTON">
         Connect
+      </message>
+      <message desc="Label for the connect button for hosts running an out-of-date version of the Me2Me host software. The user clicks this button to acknowledge the message but continue with the connection anyway." name="IDR_CONNECT_ANYWAY">
+        Connect anyway
       </message>
       <message desc="Confirmation prompt shown when a user attempts to delete a Me2Me host from their host list." name="IDR_CONFIRM_HOST_DELETE">
         Are you sure you want to disable remote connections to <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph>? If you change your mind, you'll need to visit that computer to re-enable connections.
@@ -452,6 +461,12 @@
       </message>
       <message desc="Modified version of the host name shown for hosts that are not currently accessible." name="IDR_OFFLINE">
         <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph> (offline)
+      </message>
+      <message desc="Modified version of the host name shown for hosts that are running an out-of-date version of the Me2Me host software." name="IDR_UPDATE_REQUIRED">
+        <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph> (out-of-date)
+      </message>
+      <message desc="Explanatory text displayed if the user tries to connect to a computer running out-of-date Me2Me host software." name="IDR_HOST_NEEDS_UPDATE_DETAIL">
+        Software updates usually happen automatically, but can fail in some rare cases. Updating the software should take no more than a few minutes and can be done while connected to your computer remotely.
       </message>
       <message desc="In the connection history dialog, clicking this button shows only recent connections from this computer." name="IDR_OUTGOING_CONNECTIONS">
         From this computer
