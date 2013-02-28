@@ -4,6 +4,8 @@
 
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 
+#include <set>
+
 #if defined(OS_MACOSX)
 #include <ApplicationServices/ApplicationServices.h>
 #endif  // OS_MACOSX
@@ -14,6 +16,7 @@
 #include "base/file_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/string16.h"
 #include "base/string_piece.h"
 #include "base/stringprintf.h"
 #include "base/sys_info.h"
@@ -36,6 +39,7 @@
 #include "webkit/plugins/plugin_switches.h"
 
 #if defined(OS_WIN)
+#include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #endif
 
@@ -83,6 +87,46 @@ enum BlockStatusHistogram {
   BLOCK_STATUS_MAX
 };
 
+#if defined(OS_WIN)
+bool GetInstalledProgramDisplayNames(std::set<string16>* display_names) {
+  base::win::RegKey key;
+
+  if (FAILED(key.Open(
+      HKEY_LOCAL_MACHINE, L"SOFTWARE", KEY_READ | KEY_WOW64_64KEY))) {
+    return false;
+  }
+
+  if (FAILED(key.OpenKey(L"Microsoft", KEY_READ | KEY_WOW64_64KEY)))
+    return false;
+
+  if (FAILED(key.OpenKey(L"Windows", KEY_READ | KEY_WOW64_64KEY)))
+    return false;
+
+  if (FAILED(key.OpenKey(L"CurrentVersion", KEY_READ | KEY_WOW64_64KEY)))
+    return false;
+
+  if (FAILED(key.OpenKey(L"Uninstall", KEY_READ | KEY_WOW64_64KEY)))
+    return false;
+
+  for (base::win::RegistryKeyIterator key_it(key.Handle(), NULL);
+       key_it.Valid();
+       ++key_it) {
+    base::win::RegKey sub_key;
+    if (FAILED(sub_key.Open(
+        key.Handle(), key_it.Name(), KEY_READ | KEY_WOW64_64KEY))) {
+      continue;
+    }
+
+    string16 display_name;
+    if (FAILED(sub_key.ReadValue(L"DisplayName", &display_name)))
+      continue;
+
+    display_names->insert(display_name);
+  }
+
+  return true;
+}
+#endif
 }  // namespace anonymous
 
 // static
@@ -435,6 +479,17 @@ void GpuDataManagerImpl::AppendGpuCommandLine(
   if (!swiftshader_path.empty())
     command_line->AppendSwitchPath(switches::kSwiftShaderPath,
                                    swiftshader_path);
+
+#if defined(OS_WIN)
+  // DisplayLink drivers cause a hang when running in the GPU process sandbox.
+  std::set<string16> installed_display_names;
+  if (GetInstalledProgramDisplayNames(&installed_display_names)) {
+    if (installed_display_names.find(L"DisplayLink Core Software") !=
+        installed_display_names.end()) {
+      command_line->AppendSwitch(switches::kReduceGpuSandbox);
+    }
+  }
+#endif
 
   {
     base::AutoLock auto_lock(gpu_info_lock_);
