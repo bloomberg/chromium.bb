@@ -692,10 +692,15 @@ bool CompositingIOSurfaceMac::SynchronousCopyTo(
   glTexParameterf(kSrcTextureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameterf(kSrcTextureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+  const gfx::Rect composited_src_pixel_subrect =
+      IntersectWithIOSurface(src_pixel_subrect);
+
   SurfaceQuad quad;
   quad.set_rect(0.0f, 0.0f, dst_pixel_size.width(), dst_pixel_size.height());
-  quad.set_texcoord_rect(src_pixel_subrect.x(), src_pixel_subrect.y(),
-                         src_pixel_subrect.right(), src_pixel_subrect.bottom());
+  quad.set_texcoord_rect(composited_src_pixel_subrect.x(),
+                         composited_src_pixel_subrect.y(),
+                         composited_src_pixel_subrect.right(),
+                         composited_src_pixel_subrect.bottom());
   DrawQuad(quad);
 
   glBindTexture(kSrcTextureTarget, 0); CHECK_GL_ERROR();
@@ -727,7 +732,7 @@ bool CompositingIOSurfaceMac::AsynchronousCopyTo(
   TRACE_EVENT0("browser", "CompositingIOSurfaceMac::AsynchronousCopyTo()");
 
   copy_context_.started = true;
-  copy_context_.src_rect = src_pixel_subrect;
+  copy_context_.src_rect = IntersectWithIOSurface(src_pixel_subrect);
   copy_context_.dest_size = dst_pixel_size;
   copy_context_.out_buf = out;
   copy_context_.callback = callback;
@@ -886,6 +891,11 @@ void CompositingIOSurfaceMac::CleanupResourcesForCopy() {
     glDeleteFencesAPPLE(1, &copy_context_.fence); CHECK_GL_ERROR();
   }
   copy_context_.Reset();
+}
+
+gfx::Rect CompositingIOSurfaceMac::IntersectWithIOSurface(
+    const gfx::Rect& rect) const {
+  return gfx::IntersectRects(rect, gfx::Rect(io_surface_size_));
 }
 
 }  // namespace content

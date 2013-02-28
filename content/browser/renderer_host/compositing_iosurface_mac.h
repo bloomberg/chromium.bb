@@ -220,6 +220,8 @@ class CompositingIOSurfaceMac {
   void StopDisplayLink();
 
   // Two implementations of CopyTo() in synchronous and asynchronous mode.
+  // These may copy regions smaller than the requested |src_pixel_subrect| if
+  // the iosurface is smaller than |src_pixel_subrect|.
   bool SynchronousCopyTo(const gfx::Rect& src_pixel_subrect,
                          const gfx::Size& dst_pixel_size,
                          const SkBitmap& out);
@@ -230,6 +232,8 @@ class CompositingIOSurfaceMac {
       const base::Callback<void(bool, const SkBitmap&)>& callback);
   void FinishCopy();
   void CleanupResourcesForCopy();
+
+  gfx::Rect IntersectWithIOSurface(const gfx::Rect& rect) const;
 
   // Cached pointer to IOSurfaceSupport Singleton.
   IOSurfaceSupport* io_surface_support_;

@@ -166,6 +166,8 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
   // contents, scaled to |dst_size|, and written to |output|.
   // |callback| is invoked with true on success, false otherwise. |output| can
   // be initialized even on failure.
+  // A smaller region than |src_subrect| may be copied if the underlying surface
+  // is smaller than |src_subrect|.
   // NOTE: |callback| is called asynchronously.
   virtual void CopyFromCompositingSurface(
       const gfx::Rect& src_subrect,
