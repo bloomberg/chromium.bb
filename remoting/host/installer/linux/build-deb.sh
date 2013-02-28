@@ -116,7 +116,16 @@ debchange --create \
   --distribution unstable \
   "New Debian package $revision_text"
 
+# TODO(mmoss): This is a workaround for a problem where dpkg-shlibdeps was
+# resolving deps using some of our build output shlibs (i.e.
+# out/Release/lib.target/libfreetype.so.6), and was then failing with:
+#   dpkg-shlibdeps: error: no dependency information found for ...
+# It's not clear if we ever want to look in LD_LIBRARY_PATH to resolve deps,
+# but it seems that we don't currently, so this is the most expediant fix.
+SAVE_LDLP=$LD_LIBRARY_PATH
+unset LD_LIBRARY_PATH
 dpkg-buildpackage -b -us -uc
+LD_LIBRARY_PATH=$SAVE_LDLP
 
 if [[ "$OUTPUT_PATH" ]]; then
   mv ../${PACKAGE_NAME}_*.deb "$OUTPUT_PATH"/
