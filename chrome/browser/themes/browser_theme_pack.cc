@@ -41,7 +41,7 @@ namespace {
 // Version number of the current theme pack. We just throw out and rebuild
 // theme packs that aren't int-equal to this. Increment this number if you
 // change default theme assets.
-const int kThemePackVersion = 29;
+const int kThemePackVersion = 28;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16. kHeaderID should always have the maximum value because we want the
@@ -160,55 +160,15 @@ PersistingImagesTable kPersistingImages[] = {
 };
 const size_t kPersistingImagesLength = arraysize(kPersistingImages);
 
-#if defined(OS_WIN) && defined(USE_AURA)
-// Persistent theme ids for Windows AURA.
-const int PRS_THEME_FRAME_WIN = 100;
-const int PRS_THEME_FRAME_INACTIVE_WIN = 101;
-const int PRS_THEME_FRAME_INCOGNITO_WIN = 102;
-const int PRS_THEME_FRAME_INCOGNITO_INACTIVE_WIN = 103;
-const int PRS_THEME_TOOLBAR_WIN = 104;
-const int PRS_THEME_TAB_BACKGROUND_WIN = 105;
-const int PRS_THEME_TAB_BACKGROUND_INCOGNITO_WIN = 106;
-
-// Persistent theme to resource id mapping for Windows AURA.
-PersistingImagesTable kPersistingImagesWinDesktopAura[] = {
-  { PRS_THEME_FRAME_WIN, IDR_THEME_FRAME_WIN,
-    "theme_frame" },
-  { PRS_THEME_FRAME_INACTIVE_WIN, IDR_THEME_FRAME_INACTIVE_WIN,
-    "theme_frame_inactive" },
-  { PRS_THEME_FRAME_INCOGNITO_WIN, IDR_THEME_FRAME_INCOGNITO_WIN,
-    "theme_frame_incognito" },
-  { PRS_THEME_FRAME_INCOGNITO_INACTIVE_WIN,
-    IDR_THEME_FRAME_INCOGNITO_INACTIVE_WIN,
-    "theme_frame_incognito_inactive" },
-  { PRS_THEME_TOOLBAR_WIN, IDR_THEME_TOOLBAR_WIN,
-    "theme_toolbar" },
-  { PRS_THEME_TAB_BACKGROUND_WIN, IDR_THEME_TAB_BACKGROUND_WIN,
-    "theme_tab_background" },
-  { PRS_THEME_TAB_BACKGROUND_INCOGNITO_WIN,
-    IDR_THEME_TAB_BACKGROUND_INCOGNITO_WIN,
-    "theme_tab_background_incognito" },
-};
-const size_t kPersistingImagesWinDesktopAuraLength =
-    arraysize(kPersistingImagesWinDesktopAura);
-#endif
-
-int GetPersistentIDByNameHelper(const std::string& key,
-                                const PersistingImagesTable* image_table,
-                                size_t image_table_size) {
-  for (size_t i = 0; i < image_table_size; ++i) {
-    if (image_table[i].key != NULL &&
-        base::strcasecmp(key.c_str(), image_table[i].key) == 0) {
-      return image_table[i].persistent_id;
+int GetPersistentIDByName(const std::string& key) {
+  for (size_t i = 0; i < kPersistingImagesLength; ++i) {
+    if (kPersistingImages[i].key != NULL &&
+        base::strcasecmp(key.c_str(), kPersistingImages[i].key) == 0) {
+      return kPersistingImages[i].persistent_id;
     }
   }
-  return -1;
-}
 
-int GetPersistentIDByName(const std::string& key) {
-  return GetPersistentIDByNameHelper(key,
-                                     kPersistingImages,
-                                     kPersistingImagesLength);
+  return -1;
 }
 
 int GetPersistentIDByIDR(int idr) {
@@ -219,13 +179,6 @@ int GetPersistentIDByIDR(int idr) {
       int prs_id = kPersistingImages[i].persistent_id;
       (*lookup_table)[idr] = prs_id;
     }
-#if defined(OS_WIN) && defined(USE_AURA)
-    for (size_t i = 0; i < kPersistingImagesWinDesktopAuraLength; ++i) {
-      int idr = kPersistingImagesWinDesktopAura[i].idr_id;
-      int prs_id = kPersistingImagesWinDesktopAura[i].persistent_id;
-      (*lookup_table)[idr] = prs_id;
-    }
-#endif
   }
   std::map<int,int>::iterator it = lookup_table->find(idr);
   return (it == lookup_table->end()) ? -1 : it->second;
@@ -338,27 +291,15 @@ IntToIntTable kFrameTintMap[] = {
     ThemeProperties::TINT_FRAME_INACTIVE },
   { PRS_THEME_FRAME_INCOGNITO, ThemeProperties::TINT_FRAME_INCOGNITO },
   { PRS_THEME_FRAME_INCOGNITO_INACTIVE,
-    ThemeProperties::TINT_FRAME_INCOGNITO_INACTIVE },
-#if defined(OS_WIN) && defined(USE_AURA)
-  { PRS_THEME_FRAME_WIN, ThemeProperties::TINT_FRAME },
-  { PRS_THEME_FRAME_INACTIVE_WIN, ThemeProperties::TINT_FRAME_INACTIVE },
-  { PRS_THEME_FRAME_INCOGNITO_WIN, ThemeProperties::TINT_FRAME_INCOGNITO },
-  { PRS_THEME_FRAME_INCOGNITO_INACTIVE_WIN,
-    ThemeProperties::TINT_FRAME_INCOGNITO_INACTIVE },
-#endif
+    ThemeProperties::TINT_FRAME_INCOGNITO_INACTIVE }
 };
 
 // Mapping used in GenerateTabBackgroundImages() to associate what frame image
 // goes with which tab background.
 IntToIntTable kTabBackgroundMap[] = {
   { PRS_THEME_TAB_BACKGROUND, PRS_THEME_FRAME },
-  { PRS_THEME_TAB_BACKGROUND_INCOGNITO, PRS_THEME_FRAME_INCOGNITO },
-#if defined(OS_WIN) && defined(USE_AURA)
-  { PRS_THEME_TAB_BACKGROUND_WIN, PRS_THEME_FRAME_WIN },
-  { PRS_THEME_TAB_BACKGROUND_INCOGNITO_WIN, PRS_THEME_FRAME_INCOGNITO_WIN },
-#endif
+  { PRS_THEME_TAB_BACKGROUND_INCOGNITO, PRS_THEME_FRAME_INCOGNITO }
 };
-
 
 // A list of images that don't need tinting or any other modification and can
 // be byte-copied directly into the finished DataPack. This should contain the
@@ -369,10 +310,7 @@ const int kPreloadIDs[] = {
   PRS_THEME_NTP_BACKGROUND,
   PRS_THEME_BUTTON_BACKGROUND,
   PRS_THEME_NTP_ATTRIBUTION,
-  PRS_THEME_WINDOW_CONTROL_BACKGROUND,
-#if defined(OS_WIN) && defined(USE_AURA)
-  PRS_THEME_TOOLBAR_WIN,
-#endif
+  PRS_THEME_WINDOW_CONTROL_BACKGROUND
 };
 
 // Returns a piece of memory with the contents of the file |path|.
@@ -753,11 +691,6 @@ void BrowserThemePack::GetThemeableImageIDRs(std::set<int>* result) {
   result->clear();
   for (size_t i = 0; i < kPersistingImagesLength; ++i)
     result->insert(kPersistingImages[i].idr_id);
-
-#if defined(OS_WIN) && defined(USE_AURA)
-  for (size_t i = 0; i < kPersistingImagesWinDesktopAuraLength; ++i)
-    result->insert(kPersistingImagesWinDesktopAura[i].idr_id);
-#endif
 }
 
 bool BrowserThemePack::HasCustomImage(int idr_id) const {
@@ -1032,13 +965,6 @@ void BrowserThemePack::ParseImageNamesFromJSON(
       int id = GetPersistentIDByName(iter.key());
       if (id != -1)
         (*file_paths)[id] = images_path.AppendASCII(val);
-#if defined(OS_WIN) && defined(USE_AURA)
-      id = GetPersistentIDByNameHelper(iter.key(),
-                                       kPersistingImagesWinDesktopAura,
-                                       kPersistingImagesWinDesktopAuraLength);
-      if (id != -1)
-        (*file_paths)[id] = images_path.AppendASCII(val);
-#endif
     }
   }
 }
@@ -1120,60 +1046,38 @@ void BrowserThemePack::CreateFrameImages(ImageCache* images) const {
     // If there's no frame image provided for the specified id, then load
     // the default provided frame. If that's not provided, skip this whole
     // thing and just use the default images.
-    int prs_base_id = 0;
+    int prs_base_id;
 
-#if defined(OS_WIN) && defined(USE_AURA)
-    if (prs_id == PRS_THEME_FRAME_INCOGNITO_INACTIVE_WIN) {
-      prs_base_id = images->count(PRS_THEME_FRAME_INCOGNITO_WIN) ?
-                    PRS_THEME_FRAME_INCOGNITO_WIN : PRS_THEME_FRAME_WIN;
-    } else if (prs_id == PRS_THEME_FRAME_INACTIVE_WIN) {
-      prs_base_id = PRS_THEME_FRAME_WIN;
-    } else if (prs_id == PRS_THEME_FRAME_INCOGNITO_WIN &&
-                !images->count(PRS_THEME_FRAME_INCOGNITO_WIN)) {
-      prs_base_id = PRS_THEME_FRAME_WIN;
+    if (prs_id == PRS_THEME_FRAME_INCOGNITO_INACTIVE) {
+      prs_base_id = images->count(PRS_THEME_FRAME_INCOGNITO) ?
+                    PRS_THEME_FRAME_INCOGNITO : PRS_THEME_FRAME;
+    } else if (prs_id == PRS_THEME_FRAME_OVERLAY_INACTIVE) {
+      prs_base_id = PRS_THEME_FRAME_OVERLAY;
+    } else if (prs_id == PRS_THEME_FRAME_INACTIVE) {
+      prs_base_id = PRS_THEME_FRAME;
+    } else if (prs_id == PRS_THEME_FRAME_INCOGNITO &&
+               !images->count(PRS_THEME_FRAME_INCOGNITO)) {
+      prs_base_id = PRS_THEME_FRAME;
+    } else {
+      prs_base_id = prs_id;
     }
-#endif
-    if (!prs_base_id) {
-      if (prs_id == PRS_THEME_FRAME_INCOGNITO_INACTIVE) {
-        prs_base_id = images->count(PRS_THEME_FRAME_INCOGNITO) ?
-                      PRS_THEME_FRAME_INCOGNITO : PRS_THEME_FRAME;
-      } else if (prs_id == PRS_THEME_FRAME_OVERLAY_INACTIVE) {
-        prs_base_id = PRS_THEME_FRAME_OVERLAY;
-      } else if (prs_id == PRS_THEME_FRAME_INACTIVE) {
-        prs_base_id = PRS_THEME_FRAME;
-      } else if (prs_id == PRS_THEME_FRAME_INCOGNITO &&
-                 !images->count(PRS_THEME_FRAME_INCOGNITO)) {
-        prs_base_id = PRS_THEME_FRAME;
-      } else {
-        prs_base_id = prs_id;
-      }
-    }
+
     if (images->count(prs_id)) {
       frame = (*images)[prs_id];
     } else if (prs_base_id != prs_id && images->count(prs_base_id)) {
       frame = (*images)[prs_base_id];
-    } else if (prs_base_id == PRS_THEME_FRAME_OVERLAY) {
-#if defined(OS_WIN) && defined(USE_AURA)
-      if (images->count(PRS_THEME_FRAME_WIN)) {
-#else
-      if (images->count(PRS_THEME_FRAME)) {
-#endif
-        // If there is no theme overlay, don't tint the default frame,
-        // because it will overwrite the custom frame image when we cache and
-        // reload from disk.
-        frame = NULL;
-      }
+    } else if (prs_base_id == PRS_THEME_FRAME_OVERLAY &&
+               images->count(PRS_THEME_FRAME)) {
+      // If there is no theme overlay, don't tint the default frame,
+      // because it will overwrite the custom frame image when we cache and
+      // reload from disk.
+      frame = NULL;
     } else {
       // If the theme doesn't specify an image, then apply the tint to
       // the default frame.
       frame = &rb.GetImageNamed(IDR_THEME_FRAME);
-#if defined(OS_WIN) && defined(USE_AURA)
-      if (prs_id >= PRS_THEME_FRAME_WIN &&
-          prs_id <= PRS_THEME_FRAME_INCOGNITO_INACTIVE_WIN) {
-        frame = &rb.GetImageNamed(IDR_THEME_FRAME_WIN);
-      }
-#endif
     }
+
     if (frame) {
       temp_output[prs_id] = CreateHSLShiftedImage(
           *frame, GetTintInternal(kFrameTintMap[i].value));
