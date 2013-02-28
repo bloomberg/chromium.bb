@@ -97,6 +97,11 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   bool accept_events() const { return accept_events_; }
   void set_accept_events(bool accept_events) { accept_events_ = accept_events; }
 
+  bool border_accepts_events() const { return border_accepts_events_; }
+  void set_border_accepts_events(bool accept) {
+    border_accepts_events_ = accept;
+  }
+
   bool adjust_if_offscreen() const { return adjust_if_offscreen_; }
   void set_adjust_if_offscreen(bool adjust) { adjust_if_offscreen_ = adjust; }
 
@@ -211,6 +216,10 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
 
   // Specifies whether the popup accepts events or lets them pass through.
   bool accept_events_;
+
+  // Specifies whether the bubble border accepts events or lets them pass
+  // through.
+  bool border_accepts_events_;
 
   // If true (defaults to true), the arrow may be mirrored and moved to fit the
   // bubble on screen better. It would be a no-op if the bubble has no arrow.

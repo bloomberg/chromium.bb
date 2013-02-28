@@ -59,7 +59,8 @@ void AppListView::InitAsBubble(
     PaginationModel* pagination_model,
     views::View* anchor,
     const gfx::Point& anchor_point,
-    views::BubbleBorder::ArrowLocation arrow_location) {
+    views::BubbleBorder::ArrowLocation arrow_location,
+    bool border_accepts_events) {
 
   app_list_main_view_ = new AppListMainView(delegate_.get(),
                                             model_.get(),
@@ -87,6 +88,7 @@ void AppListView::InitAsBubble(
   set_close_on_esc(false);
   set_anchor_insets(gfx::Insets(kArrowOffset, kArrowOffset,
                                 kArrowOffset, kArrowOffset));
+  set_border_accepts_events(border_accepts_events);
   set_shadow(views::BubbleBorder::BIG_SHADOW);
   views::BubbleDelegateView::CreateBubble(this);
   SetBubbleArrowLocation(arrow_location);

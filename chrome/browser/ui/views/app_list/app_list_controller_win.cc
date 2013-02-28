@@ -482,7 +482,8 @@ void AppListController::PopulateViewFromProfile(Profile* profile) {
                               &pagination_model_,
                               NULL,
                               cursor,
-                              views::BubbleBorder::BOTTOM_LEFT);
+                              views::BubbleBorder::FLOAT,
+                              false /* border_accepts_events */);
   HWND hwnd = GetAppListHWND();
 
   ui::win::SetAppIdForWindow(GetAppModelId(), hwnd);

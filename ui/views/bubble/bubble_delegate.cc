@@ -91,6 +91,7 @@ Widget* CreateBorderWidget(BubbleDelegateView* bubble) {
   border_params.transparent = true;
   border_params.parent = bubble->GetWidget()->GetNativeView();
   border_params.can_activate = false;
+  border_params.accept_events = bubble->border_accepts_events();
   border_widget->Init(border_params);
   border_widget->set_focus_on_creation(false);
   return border_widget;
@@ -113,6 +114,7 @@ BubbleDelegateView::BubbleDelegateView()
       border_widget_(NULL),
       use_focusless_(false),
       accept_events_(true),
+      border_accepts_events_(true),
       adjust_if_offscreen_(true),
       parent_window_(NULL) {
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
@@ -135,6 +137,7 @@ BubbleDelegateView::BubbleDelegateView(
       border_widget_(NULL),
       use_focusless_(false),
       accept_events_(true),
+      border_accepts_events_(true),
       adjust_if_offscreen_(true),
       parent_window_(NULL) {
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));

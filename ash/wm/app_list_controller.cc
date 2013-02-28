@@ -125,7 +125,8 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
         pagination_model_.get(),
         Launcher::ForWindow(container)->GetAppListButtonView(),
         gfx::Point(),
-        GetBubbleArrowLocation(container));
+        GetBubbleArrowLocation(container),
+        true /* border_accepts_events */);
     SetView(view);
   }
 }
