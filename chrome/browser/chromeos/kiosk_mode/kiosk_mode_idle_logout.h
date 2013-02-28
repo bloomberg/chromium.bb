@@ -8,19 +8,19 @@
 #include "ash/wm/user_activity_observer.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "base/timer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
 namespace chromeos {
 
 class KioskModeIdleLogout : public ash::UserActivityObserver,
-                            public PowerManagerClient::Observer,
                             public content::NotificationObserver {
  public:
   static void Initialize();
 
   KioskModeIdleLogout();
+  virtual ~KioskModeIdleLogout();
 
  private:
   friend class KioskModeIdleLogoutTest;
@@ -33,16 +33,18 @@ class KioskModeIdleLogout : public ash::UserActivityObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Overridden from PowerManagerClient::Observer:
-  virtual void IdleNotify(int64 threshold) OVERRIDE;
-
   // UserActivityObserver::Observer overrides:
   virtual void OnUserActivity() OVERRIDE;
 
-  void SetupIdleNotifications();
-  void RequestNextIdleNotification();
+  // Starts |timer_| and begins listening for user activity.
+  void StartTimer();
+
+  // Invoked by |timer_| to display the logout dialog.
+  void OnTimeout();
 
   content::NotificationRegistrar registrar_;
+
+  base::OneShotTimer<KioskModeIdleLogout> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskModeIdleLogout);
 };

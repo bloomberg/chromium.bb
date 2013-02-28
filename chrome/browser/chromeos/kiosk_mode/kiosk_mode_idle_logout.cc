@@ -14,8 +14,6 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/ui/idle_logout_dialog_view.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_manager_client.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -37,23 +35,25 @@ void KioskModeIdleLogout::Initialize() {
 }
 
 KioskModeIdleLogout::KioskModeIdleLogout() {
-  if (KioskModeSettings::Get()->is_initialized())
+  if (KioskModeSettings::Get()->is_initialized()) {
     Setup();
-  else
+  } else {
     KioskModeSettings::Get()->Initialize(base::Bind(&KioskModeIdleLogout::Setup,
                                                     base::Unretained(this)));
+  }
+}
+
+KioskModeIdleLogout::~KioskModeIdleLogout() {
+  if (ash::Shell::HasInstance() &&
+      ash::Shell::GetInstance()->user_activity_detector()->HasObserver(this))
+    ash::Shell::GetInstance()->user_activity_detector()->RemoveObserver(this);
 }
 
 void KioskModeIdleLogout::Setup() {
   if (UserManager::Get()->IsLoggedInAsDemoUser()) {
-    // This means that we're recovering from a crash; user is already
-    // logged in, go ahead and setup the notifications.
-    // We might get notified twice for the same idle event, in case the
-    // previous notification hasn't fired yet - but that's taken care of
-    // in the IdleLogout dialog; if you try to show another while one is
-    // still showing, it'll just be ignored.
-    SetupIdleNotifications();
-    RequestNextIdleNotification();
+    // This means that we're recovering from a crash.  The user is already
+    // logged in, so go ahead and start the timer.
+    StartTimer();
   } else {
     registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                    content::NotificationService::AllSources());
@@ -65,46 +65,26 @@ void KioskModeIdleLogout::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED) {
-    SetupIdleNotifications();
-    RequestNextIdleNotification();
+    StartTimer();
+    registrar_.RemoveAll();
   }
 }
 
-void KioskModeIdleLogout::IdleNotify(int64 threshold) {
-  IdleLogoutDialogView::ShowDialog();
+void KioskModeIdleLogout::OnUserActivity() {
+  IdleLogoutDialogView::CloseDialog();
+  timer_.Reset();
+}
 
-  // Register the user activity observer so we know when we go active again.
+void KioskModeIdleLogout::StartTimer() {
   if (!ash::Shell::GetInstance()->user_activity_detector()->HasObserver(this))
     ash::Shell::GetInstance()->user_activity_detector()->AddObserver(this);
+  timer_.Start(FROM_HERE, KioskModeSettings::Get()->GetIdleLogoutTimeout(),
+               base::Bind(&KioskModeIdleLogout::OnTimeout,
+                          base::Unretained(this)));
 }
 
-void KioskModeIdleLogout::OnUserActivity() {
-  // Before anything else, close the logout dialog to prevent restart
-  IdleLogoutDialogView::CloseDialog();
-
-  // User is active now, we don't care about getting continuous notifications
-  // for user activity till we go idle again.
-  if (ash::Shell::GetInstance()->user_activity_detector()->HasObserver(this))
-    ash::Shell::GetInstance()->user_activity_detector()->RemoveObserver(this);
-
-  RequestNextIdleNotification();
-}
-
-void KioskModeIdleLogout::SetupIdleNotifications() {
-  PowerManagerClient* power_manager =
-      DBusThreadManager::Get()->GetPowerManagerClient();
-  if (!power_manager->HasObserver(this))
-    power_manager->AddObserver(this);
-
-  // Add the power manager and user activity
-  // observers but remove the login observer.
-  registrar_.RemoveAll();
-}
-
-void KioskModeIdleLogout::RequestNextIdleNotification() {
-  DBusThreadManager::Get()->GetPowerManagerClient()->
-      RequestIdleNotification(KioskModeSettings::Get()->
-          GetIdleLogoutTimeout().InMilliseconds());
+void KioskModeIdleLogout::OnTimeout() {
+  IdleLogoutDialogView::ShowDialog();
 }
 
 }  // namespace chromeos
