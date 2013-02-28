@@ -6,13 +6,10 @@
 
 """Unit tests for portage_utilities.py."""
 
-import __builtin__
-import contextlib
 import fileinput
 import mox
 import os
 import re
-import StringIO
 import sys
 import tempfile
 
@@ -111,34 +108,26 @@ class EBuildTest(cros_test_lib.MoxTestCase):
     self.assertEquals(test_hash, fake_hash)
 
 
-class ProjectAndPathTest(cros_test_lib.MoxTestCase):
-  # Some globals.
-  FAKE_SRCROOT = '/there/is/no/srcroot'
-  FAKE_EBUILD_PATH = '/path/to/test_package/test_package-9999.ebuild'
+class ProjectAndPathTest(cros_test_lib.MoxTempDirTestCase):
 
   def _MockParseWorkonVariables(self, fake_projects, _fake_localname,
                                 _fake_subdir, fake_ebuild_contents):
     """Mock the necessary calls, start Replay mode, call GetSourcePath()."""
-    self.mox.StubOutWithMock(fileinput, 'input')
-    self.mox.StubOutWithMock(__builtin__, 'open')
     self.mox.StubOutWithMock(os.path, 'isdir')
     self.mox.StubOutWithMock(portage_utilities.EBuild, 'GetGitProjectName')
 
-    fileinput.input(self.FAKE_EBUILD_PATH).AndReturn('')
-    open(self.FAKE_EBUILD_PATH, 'r').AndReturn(
-        contextlib.closing(StringIO.StringIO(fake_ebuild_contents)))
+    # We need 'chromeos-base' here because it controls default _SUBDIR values.
+    ebuild_path = os.path.join(self.tempdir, 'chromeos-base', 'package',
+                               'package-9999.ebuild')
+    osutils.WriteFile(ebuild_path, fake_ebuild_contents, makedirs=True)
     for p in fake_projects:
       os.path.isdir(mox.IgnoreArg()).AndReturn(True)
       portage_utilities.EBuild.GetGitProjectName(
           mox.IgnoreArg()).AndReturn(p)
-
     self.mox.ReplayAll()
 
-    fake_ebuild = portage_utilities.EBuild(self.FAKE_EBUILD_PATH)
-    # This modifies how _SUBDIR is treated.
-    fake_ebuild._category = 'chromeos-base'
-
-    result = fake_ebuild.GetSourcePath(self.FAKE_SRCROOT)
+    ebuild = portage_utilities.EBuild(ebuild_path)
+    result = ebuild.GetSourcePath(self.tempdir)
     self.mox.VerifyAll()
     return result
 
@@ -156,7 +145,7 @@ CROS_WORKON_SUBDIR=%s
         [fake_project], [fake_localname], [fake_subdir], fake_ebuild_contents)
     self.assertEquals(project, [fake_project])
     self.assertEquals(subdir, [os.path.join(
-       self.FAKE_SRCROOT, 'platform', '%s/%s' % (fake_localname, fake_subdir))])
+        self.tempdir, 'platform', '%s/%s' % (fake_localname, fake_subdir))])
 
   def testParseArrayWorkonVariables(self):
     """Tests if ebuilds in an array format are correctly parsed."""
@@ -179,7 +168,7 @@ CROS_WORKON_SUBDIR=%s
     fake_path = ['%s/%s' % (fake_localname[i], fake_subdir[i])
                  for i in range(0, len(fake_projects))]
     fake_path = map(lambda x: os.path.realpath(
-        os.path.join(self.FAKE_SRCROOT, 'platform', x)), fake_path)
+        os.path.join(self.tempdir, 'platform', x)), fake_path)
     self.assertEquals(subdir, fake_path)
 
 

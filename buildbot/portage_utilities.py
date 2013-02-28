@@ -19,6 +19,7 @@ from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import gerrit
 from chromite.lib import git
+from chromite.lib import osutils
 
 _PRIVATE_PREFIX = '%(buildroot)s/src/private-overlays'
 _GLOBAL_OVERLAYS = [
@@ -342,27 +343,21 @@ class EBuild(object):
 
     The path is guaranteed to exist, be a directory, and be absolute.
     """
-    sep = ','
-    # Grab and evaluate CROS_WORKON variables from this ebuild.
-
-    cmd = ('eval $(grep "^CROS_WORKON") && '
-           '( IFS=%s; '
-           'echo "${CROS_WORKON_PROJECT[*]}" && '
-           'echo "${CROS_WORKON_LOCALNAME[*]}" && '
-           'echo "${CROS_WORKON_SUBDIR[*]}"'
-           ')'
-           % sep)
-
-    extra_env = dict(CROS_WORKON_LOCALNAME=self._pkgname,
-                     CROS_WORKON_PROJECT=self._pkgname)
-    with open(self._unstable_ebuild_path, 'r') as f:
-      projects_out, localnames_out, subdirs_out = self._RunCommand(
-          cmd, shell=True, input=f.read(),
-          extra_env=extra_env).splitlines()
-
-    projects = projects_out.split(sep)
-    localnames = localnames_out.split(sep)
-    subdirs = subdirs_out.split(sep)
+    workon_vars = (
+        'CROS_WORKON_LOCALNAME',
+        'CROS_WORKON_PROJECT',
+        'CROS_WORKON_SUBDIR',
+    )
+    env = {
+        'CROS_WORKON_LOCALNAME': self._pkgname,
+        'CROS_WORKON_PROJECT': self._pkgname,
+        'CROS_WORKON_SUBDIR': '',
+    }
+    settings = osutils.SourceEnvironment(self._unstable_ebuild_path,
+                                         workon_vars, env=env)
+    localnames = settings['CROS_WORKON_LOCALNAME'].split(',')
+    projects = settings['CROS_WORKON_PROJECT'].split(',')
+    subdirs = settings['CROS_WORKON_SUBDIR'].split(',')
 
     # Sanity checks and completion.
     # Each project specification has to have the same amount of items.

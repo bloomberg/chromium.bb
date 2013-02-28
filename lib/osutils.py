@@ -24,7 +24,7 @@ def ExpandPath(path):
   return os.path.realpath(os.path.expanduser(path))
 
 
-def WriteFile(path, content, mode='w', atomic=False):
+def WriteFile(path, content, mode='w', atomic=False, makedirs=False):
   """Write the given content to disk.
 
   Args:
@@ -33,11 +33,15 @@ def WriteFile(path, content, mode='w', atomic=False):
     mode: Optional; if binary mode is necessary, pass 'wb'.  If appending is
           desired, 'w+', etc.
     atomic: If the updating of the file should be done atomically.  Note this
-          option is incompatible w/ append mode.
+            option is incompatible w/ append mode.
+    makedirs: If True, create missing leading directories in the path.
   """
   write_path = path
   if atomic:
     write_path = path + '.tmp'
+
+  if makedirs:
+    SafeMakedirs(os.path.dirname(path))
 
   with open(write_path, mode) as f:
     f.writelines(cros_build_lib.iflatten_instance(content))
@@ -57,8 +61,7 @@ def Touch(path, makedirs=False):
 
   Arguments:
     path: a string, file name of the file to touch (creating if not present).
-    makedirs: a Boolean - if set to True - create the directories in the path.
-              if they do not exist.
+    makedirs: If True, create missing leading directories in the path.
   """
   if makedirs:
     SafeMakedirs(os.path.dirname(path))
@@ -392,6 +395,6 @@ def SourceEnvironment(script, whitelist, ifs=',', env=None):
   elif env is True:
     env = None
   output = cros_build_lib.RunCommand(['bash'], env=env, redirect_stdout=True,
-                                     print_cmd=False,
+                                     redirect_stderr=True, print_cmd=False,
                                      input='\n'.join(dump_script)).output
   return cros_build_lib.LoadKeyValueFile(cStringIO.StringIO(output))
