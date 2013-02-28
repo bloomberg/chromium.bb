@@ -838,6 +838,8 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
 
   content::WebContents* web_contents = tab_util::GetWebContentsByID(child_id,
                                                                     route_id);
+  if (!web_contents)
+    return;
 
   // TODO(mathp): The appearance of this infobar should be tested using a
   // browser_test.
