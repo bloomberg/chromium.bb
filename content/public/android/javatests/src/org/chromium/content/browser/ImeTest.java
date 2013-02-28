@@ -207,8 +207,11 @@ public class ImeTest extends ContentShellTestBase {
         assertEquals(13, mConnection.mSelectionEnd);
     }
 
+    /*
     @SmallTest
     @Feature({"TextInput"})
+    See crbug.com/179043
+    */
     @DisabledTest
     public void testImeSelectAndUnSelectAll() throws Exception {
         mImeAdapter.checkCompositionQueueAndCallNative("hello", 1, true);
