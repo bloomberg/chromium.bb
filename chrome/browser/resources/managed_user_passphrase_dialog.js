@@ -3,16 +3,37 @@
 // found in the LICENSE file.
 
 function load() {
-  $('unlock-passphrase-button').onclick = function(event) {
+  var checkPassphrase = function(event) {
     chrome.send('checkPassphrase', [$('passphrase-entry').value]);
   };
-  $('cancel-passphrase-button').onclick = function(event) {
+  var closeDialog = function(event) {
     // TODO(akuegel): Replace by closeDialog.
     chrome.send('DialogClose');
   };
+  // Directly set the focus on the input box so the user can start typing right
+  // away.
+  $('passphrase-entry').focus();
+  $('unlock-passphrase-button').onclick = checkPassphrase;
+  $('cancel-passphrase-button').onclick = closeDialog;
   $('passphrase-entry').oninput = function(event) {
     $('unlock-passphrase-button').disabled = $('passphrase-entry').value == '';
     $('incorrect-passphrase-warning').hidden = true;
+  };
+  $('passphrase-entry').onkeypress = function(event) {
+    if (!event)
+      return;
+    // Check if the user pressed enter.
+    if (event.keyCode == 13)
+      checkPassphrase(event);
+  };
+
+  // Pressing escape anywhere in the frame should work.
+  document.onkeyup = function(event) {
+    if (!event)
+      return;
+    // Check if the user pressed escape.
+    if (event.keyCode == 27)
+      closeDialog(event);
   };
 }
 
