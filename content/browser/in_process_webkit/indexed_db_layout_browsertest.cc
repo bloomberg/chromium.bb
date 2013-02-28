@@ -123,7 +123,9 @@ IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, ComplexTests) {
 }
 
 // TODO(dgrogan): times out flakily. http://crbug.com/153064
-IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, DISABLED_IndexTests) {
+// Marking FLAKY to diagnose if this is just a test duration
+// issue (and we need to split it up) or something else.
+IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, FLAKY_IndexTests) {
   RunLayoutTests(kIndexTests);
 }
 
