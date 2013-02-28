@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "content/common/socket_stream.h"
 #include "net/socket_stream/socket_stream_job.h"
+#include "net/url_request/url_request_context.h"
 
 namespace content {
 namespace {

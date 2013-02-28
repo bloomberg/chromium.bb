@@ -15,26 +15,27 @@
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
+#include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 #include "net/base/net_log.h"
-#include "net/base/net_errors.h"
 #include "net/base/ssl_config_service.h"
 #include "net/proxy/proxy_service.h"
-#include "net/socket/tcp_client_socket.h"
 #include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
 
 namespace net {
 
 class AuthChallengeInfo;
+class CertVerifier;
 class ClientSocketFactory;
 class CookieOptions;
 class HostResolver;
 class HttpAuthController;
-class SSLConfigService;
 class SSLInfo;
+class ServerBoundCertService;
 class SingleRequestHostResolver;
+class StreamSocket;
 class SocketStreamMetrics;
+class URLRequestContext;
 
 // SocketStream is used to implement Web Sockets.
 // It provides plain full-duplex stream with proxy and SSL support.

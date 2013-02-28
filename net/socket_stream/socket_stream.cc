@@ -25,6 +25,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/ssl_cert_request_info.h"
+#include "net/base/ssl_info.h"
 #include "net/http/http_auth_controller.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_headers.h"
@@ -40,6 +41,7 @@
 #include "net/socket/tcp_client_socket.h"
 #include "net/socket_stream/socket_stream_metrics.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 
 static const int kMaxPendingSendAllowed = 32768;  // 32 kilobytes.
 static const int kReadBufferSize = 4096;
