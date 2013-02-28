@@ -157,7 +157,6 @@ void VideoRendererBase::Preroll(base::TimeDelta time,
   state_ = kPrerolling;
   preroll_cb_ = cb;
   preroll_timestamp_ = time;
-  prerolling_delayed_frame_ = NULL;
   AttemptRead_Locked();
 }
 
@@ -424,15 +423,13 @@ void VideoRendererBase::FrameReady(VideoDecoder::Status status,
   // Discard frames until we reach our desired preroll timestamp.
   if (state_ == kPrerolling && !frame->IsEndOfStream() &&
       frame->GetTimestamp() <= preroll_timestamp_) {
-    prerolling_delayed_frame_ = frame;
+    // Maintain the latest frame decoded so the correct frame is displayed
+    // after prerolling has completed.
+    ready_frames_.clear();
+    AddReadyFrame_Locked(frame);
+
     AttemptRead_Locked();
     return;
-  }
-
-  if (prerolling_delayed_frame_) {
-    DCHECK_EQ(state_, kPrerolling);
-    AddReadyFrame_Locked(prerolling_delayed_frame_);
-    prerolling_delayed_frame_ = NULL;
   }
 
   AddReadyFrame_Locked(frame);
@@ -499,7 +496,9 @@ void VideoRendererBase::AddReadyFrame_Locked(
   DCHECK(max_clock_time != kNoTimestamp());
   max_time_cb_.Run(max_clock_time);
 
-  frame_available_.Signal();
+  // Avoid needlessly waking up |thread_| unless playing.
+  if (state_ == kPlaying)
+    frame_available_.Signal();
 }
 
 void VideoRendererBase::AttemptRead() {
@@ -554,7 +553,6 @@ void VideoRendererBase::AttemptFlush_Locked() {
   lock_.AssertAcquired();
   DCHECK_EQ(kFlushing, state_);
 
-  prerolling_delayed_frame_ = NULL;
   ready_frames_.clear();
 
   if (pending_read_)

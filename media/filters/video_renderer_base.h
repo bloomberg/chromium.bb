@@ -243,10 +243,6 @@ class MEDIA_EXPORT VideoRendererBase
 
   base::TimeDelta preroll_timestamp_;
 
-  // Delayed frame used during kPrerolling to determine whether
-  // |preroll_timestamp_| is between this frame and the next one.
-  scoped_refptr<VideoFrame> prerolling_delayed_frame_;
-
   // Embedder callback for notifying a new frame is available for painting.
   PaintCB paint_cb_;
 
