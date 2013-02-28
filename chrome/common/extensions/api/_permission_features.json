@@ -395,11 +395,11 @@
     ]
   },
   "usb": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["platform_app"]
   },
   "usbDevices": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["platform_app"]
   },
   "videoCapture": {
