@@ -918,6 +918,7 @@
       </if>
       <structure type="chrome_scaled_image" name="IDR_ZOOM_MINUS" file="zoom_minus.png" />
       <structure type="chrome_scaled_image" name="IDR_ZOOM_PLUS" file="zoom_plus.png" />
+      <structure type="chrome_scaled_image" name="IDR_ZOOM_NORMAL" file="zoom_reset.png" />
       <!-- Audio playing indicator. Favicon-sized with equalizer-like animation frames -->
       <structure type="chrome_scaled_image" name="IDR_AUDIO_ANIMATION" file="common/audio_animation.png" />
     </structures>
