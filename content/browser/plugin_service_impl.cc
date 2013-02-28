@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/synchronization/waitable_event.h"
@@ -31,6 +32,7 @@
 #include "content/public/common/process_type.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/plugin_utils.h"
+#include "webkit/plugins/plugin_constants.h"
 #include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_WIN)
@@ -47,6 +49,19 @@ using ::base::FilePathWatcher;
 
 namespace content {
 namespace {
+
+// This enum is used to collect Flash usage data.
+enum FlashUsage {
+  // Number of browser processes that have started at least one NPAPI Flash
+  // process during their lifetime.
+  START_NPAPI_FLASH_AT_LEAST_ONCE,
+  // Number of browser processes that have started at least one PPAPI Flash
+  // process during their lifetime.
+  START_PPAPI_FLASH_AT_LEAST_ONCE,
+  // Total number of browser processes.
+  TOTAL_BROWSER_PROCESSES,
+  FLASH_USAGE_ENUM_COUNT
+};
 
 bool LoadPluginListInProcess() {
 #if defined(OS_WIN)
@@ -121,6 +136,15 @@ PluginServiceImpl* PluginServiceImpl::GetInstance() {
 
 PluginServiceImpl::PluginServiceImpl()
     : plugin_list_(NULL), filter_(NULL) {
+  // Collect the total number of browser processes (which create
+  // PluginServiceImpl objects, to be precise). The number is used to normalize
+  // the number of processes which start at least one NPAPI/PPAPI Flash process.
+  static bool counted = false;
+  if (!counted) {
+    counted = true;
+    UMA_HISTOGRAM_ENUMERATION("Plugin.FlashUsage", TOTAL_BROWSER_PROCESSES,
+                              FLASH_USAGE_ENUM_COUNT);
+  }
 }
 
 PluginServiceImpl::~PluginServiceImpl() {
@@ -282,6 +306,15 @@ PluginProcessHost* PluginServiceImpl::FindOrStartNpapiPluginProcess(
     return NULL;
   }
 
+  // Record when NPAPI Flash process is started for the first time.
+  static bool counted = false;
+  if (!counted && UTF16ToUTF8(info.name) == kFlashPluginName) {
+    counted = true;
+    UMA_HISTOGRAM_ENUMERATION("Plugin.FlashUsage",
+                              START_NPAPI_FLASH_AT_LEAST_ONCE,
+                              FLASH_USAGE_ENUM_COUNT);
+  }
+
   // This plugin isn't loaded by any plugin process, so create a new process.
   scoped_ptr<PluginProcessHost> new_host(new PluginProcessHost());
   if (!new_host->Init(info)) {
@@ -310,6 +343,15 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
   PepperPluginInfo* info = GetRegisteredPpapiPluginInfo(plugin_path);
   if (!info)
     return NULL;
+
+  // Record when PPAPI Flash process is started for the first time.
+  static bool counted = false;
+  if (!counted && info->name == kFlashPluginName) {
+    counted = true;
+    UMA_HISTOGRAM_ENUMERATION("Plugin.FlashUsage",
+                              START_PPAPI_FLASH_AT_LEAST_ONCE,
+                              FLASH_USAGE_ENUM_COUNT);
+  }
 
   // This plugin isn't loaded by any plugin process, so create a new process.
   return PpapiPluginProcessHost::CreatePluginHost(
