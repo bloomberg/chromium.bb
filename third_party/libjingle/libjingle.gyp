@@ -646,6 +646,8 @@
             '<(libjingle_source)/talk/app/webrtc/peerconnectionfactory.cc',
             '<(libjingle_source)/talk/app/webrtc/peerconnectionfactory.h',
             '<(libjingle_source)/talk/app/webrtc/peerconnectioninterface.h',
+            '<(libjingle_source)/talk/app/webrtc/peerconnectionproxy.cc',
+            '<(libjingle_source)/talk/app/webrtc/peerconnectionproxy.h',
             '<(libjingle_source)/talk/app/webrtc/portallocatorfactory.cc',
             '<(libjingle_source)/talk/app/webrtc/portallocatorfactory.h',
             '<(libjingle_source)/talk/app/webrtc/statscollector.h',
