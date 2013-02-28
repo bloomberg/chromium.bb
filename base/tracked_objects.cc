@@ -74,7 +74,9 @@ DeathData::DeathData(int count) {
 void DeathData::RecordDeath(const int32 queue_duration,
                             const int32 run_duration,
                             int32 random_number) {
-  ++count_;
+  // We'll just clamp at INT_MAX, but we should note this in the UI as such.
+  if (count_ < INT_MAX)
+    ++count_;
   queue_duration_sum_ += queue_duration;
   run_duration_sum_ += run_duration;
 
@@ -89,11 +91,7 @@ void DeathData::RecordDeath(const int32 queue_duration,
   // don't clamp count_... but that should be inconsequentially likely).
   // We ignore the fact that we correlated our selection of a sample to the run
   // and queue times (i.e., we used them to generate random_number).
-  if (count_ <= 0) {  // Handle wrapping of count_, such as in bug 138961.
-    CHECK_GE(count_ - 1, 0);  // Detect memory corruption.
-    // We'll just clamp at INT_MAX, but we should note this in the UI as such.
-    count_ = INT_MAX;
-  }
+  CHECK_GT(count_, 0);
   if (0 == (random_number % count_)) {
     queue_duration_sample_ = queue_duration;
     run_duration_sample_ = run_duration;
