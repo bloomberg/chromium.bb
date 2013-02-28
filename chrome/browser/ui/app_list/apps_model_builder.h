@@ -21,10 +21,6 @@ class ExtensionAppItem;
 class ExtensionSet;
 class Profile;
 
-namespace extensions {
-class InstallTracker;
-}
-
 namespace gfx {
 class ImageSkia;
 }
@@ -54,7 +50,6 @@ class AppsModelBuilder : public content::NotificationObserver,
                                   int percent_downloaded) OVERRIDE;
 
   virtual void OnInstallFailure(const std::string& extension_id) OVERRIDE;
-  virtual void OnShutdown() OVERRIDE;
 
   // Adds apps in |extensions| to |apps|.
   void AddApps(const ExtensionSet* extensions, Apps* apps);
@@ -104,9 +99,6 @@ class AppsModelBuilder : public content::NotificationObserver,
 
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
-
-  // We listen to this to show app installing progress.
-  extensions::InstallTracker* tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsModelBuilder);
 };

@@ -56,9 +56,10 @@ AppsModelBuilder::AppsModelBuilder(Profile* profile,
     : profile_(profile),
       controller_(controller),
       model_(model),
-      ignore_changes_(false),
-      tracker_(extensions::InstallTrackerFactory::GetForProfile(profile_)) {
-  tracker_->AddObserver(this);
+      ignore_changes_(false) {
+  extensions::InstallTracker* tracker =
+      extensions::InstallTrackerFactory::GetForProfile(profile_);
+  tracker->AddObserver(this);
   extensions::ExtensionPrefs* extension_prefs =
       extensions::ExtensionSystem::Get(profile_)->extension_service()->
           extension_prefs();
@@ -81,7 +82,9 @@ AppsModelBuilder::AppsModelBuilder(Profile* profile,
 }
 
 AppsModelBuilder::~AppsModelBuilder() {
-  OnShutdown();
+  extensions::InstallTracker* tracker =
+      extensions::InstallTrackerFactory::GetForProfile(profile_);
+  tracker->RemoveObserver(this);
   model_->RemoveObserver(this);
 }
 
@@ -121,13 +124,6 @@ void AppsModelBuilder::OnInstallFailure(const std::string& extension_id) {
   if (i == -1)
     return;
   model_->DeleteAt(i);
-}
-
-void AppsModelBuilder::OnShutdown() {
-  if (tracker_) {
-    tracker_->RemoveObserver(this);
-    tracker_ = NULL;
-  }
 }
 
 void AppsModelBuilder::AddApps(const ExtensionSet* extensions, Apps* apps) {
