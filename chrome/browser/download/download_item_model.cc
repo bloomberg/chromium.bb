@@ -134,8 +134,10 @@ string16 InterruptReasonStatusMessage(int reason) {
       string_id = IDS_DOWNLOAD_STATUS_CANCELLED;
       break;
     case content::DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN:
-    case content::DOWNLOAD_INTERRUPT_REASON_CRASH:
       string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_SHUTDOWN;
+      break;
+    case content::DOWNLOAD_INTERRUPT_REASON_CRASH:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_CRASH;
       break;
     default:
       string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS;
@@ -199,8 +201,10 @@ string16 InterruptReasonMessage(int reason) {
       string_id = IDS_DOWNLOAD_STATUS_CANCELLED;
       break;
     case content::DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN:
-    case content::DOWNLOAD_INTERRUPT_REASON_CRASH:
       string_id = IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_SHUTDOWN;
+      break;
+    case content::DOWNLOAD_INTERRUPT_REASON_CRASH:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_CRASH;
       break;
     default:
       string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS;

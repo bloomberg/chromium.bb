@@ -2767,6 +2767,14 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
                desc="Download page message: Shutdown.">
         The browser was shut down before the download completed.
       </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_CRASH"
+               desc="Browser Crash.">
+        Crash
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_CRASH"
+               desc="Download page message: Browser Crash.">
+        The browser crashed before the download completed.
+      </message>
 
       <!-- Download Shelf Items -->
       <message name="IDS_DOWNLOAD_STATUS_STARTING"

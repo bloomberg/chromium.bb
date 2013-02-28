@@ -166,7 +166,7 @@ TEST_F(DownloadItemModelTest, InterruptedStatus) {
     { content::DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN,
       "Failed - Shutdown" },
     { content::DOWNLOAD_INTERRUPT_REASON_CRASH,
-      "Failed - Shutdown" },
+      "Failed - Crash" },
   };
   COMPILE_ASSERT(kInterruptReasonCount == ARRAYSIZE_UNSAFE(kTestCases),
                  interrupt_reason_mismatch);
@@ -236,7 +236,7 @@ TEST_F(DownloadItemModelTest, InterruptTooltip) {
     { content::DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN,
       "foo.bar\nShutdown" },
     { content::DOWNLOAD_INTERRUPT_REASON_CRASH,
-      "foo.bar\nShutdown" },
+      "foo.bar\nCrash" },
   };
   COMPILE_ASSERT(kInterruptReasonCount == ARRAYSIZE_UNSAFE(kTestCases),
                  interrupt_reason_mismatch);
