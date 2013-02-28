@@ -1161,10 +1161,44 @@
               ],
               'process_outputs_as_sources': 1,
               'message': 'Generating <@(_outputs)',
-              'msvs_cygwin_shell': 1,
+              'msvs_cygwin_shell': 0,
             },
           ],
         },  # end of target 'remoting_controller_idl'
+
+        # Regenerates 'elevated_controller.rc' (used to embed
+        # 'elevated_controller.tlb' into remoting_core.dll's resources) every
+        # time 'elevated_controller_idl.templ' changes. Making remoting_core
+        # depend on both this and 'remoting_controller_idl' targets ensures that
+        # the resorces are rebuilt every time the type library is updated. GYP
+        # alone is not smart enough to figure out this dependency on its own.
+        {
+          'target_name': 'remoting_controller_rc',
+          'type': 'none',
+          'sources': [
+            'host/win/elevated_controller_idl.templ',
+          ],
+          'hard_dependency': 1,
+          'direct_dependent_settings': {
+            'include_dirs': [
+              '<(SHARED_INTERMEDIATE_DIR)',
+            ],
+          },
+          'rules': [
+            {
+              'rule_name': 'generate_rc',
+              'extension': 'templ',
+              'outputs': [
+                '<(SHARED_INTERMEDIATE_DIR)/remoting/host/elevated_controller.rc',
+              ],
+              'action': [
+                'echo 1 typelib "remoting/host/elevated_controller.tlb" > <@(_outputs)',
+              ],
+              'message': 'Generating <@(_outputs)',
+              'msvs_cygwin_shell': 0,
+            },
+          ],
+        },  # end of target 'remoting_controller_rc'
         {
           'target_name': 'remoting_configurer',
           'type': 'executable',
@@ -1284,6 +1318,7 @@
             'remoting_base',
             'remoting_breakpad',
             'remoting_controller_idl',
+            'remoting_controller_rc',
             'remoting_host',
             'remoting_host_event_logger',
             'remoting_host_logging',
@@ -1292,6 +1327,7 @@
             'remoting_version_resources',
           ],
           'sources': [
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/host/elevated_controller.rc',
             '<(SHARED_INTERMEDIATE_DIR)/remoting/host/remoting_host_messages.rc',
             '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_core_version.rc',
             'base/scoped_sc_handle_win.h',
