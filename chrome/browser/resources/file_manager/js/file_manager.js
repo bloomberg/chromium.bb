@@ -2396,6 +2396,10 @@ DialogType.isModal = function(type) {
         event.preventDefault();
         return;
 
+      case 'Ctrl-83':  // Disable native Ctrl-S (save as).
+        event.preventDefault();
+        return;
+
       case '27':  // Escape => Cancel dialog.
         if (this.copyManager_ &&
             this.copyManager_.getStatus().totalFiles != 0) {
