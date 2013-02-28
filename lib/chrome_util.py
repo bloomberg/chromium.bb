@@ -144,8 +144,8 @@ class Copier(object):
       shutil.copytree(src, dest)
     elif exe and os.path.getsize(src) > 0:
       if self.strip_bin:
-        cros_build_lib.RunCommand([self.strip_bin, '--strip-unneeded',
-                                   '-o', dest, src])
+        cros_build_lib.DebugRunCommand([self.strip_bin, '--strip-unneeded',
+                                        '-o', dest, src])
       if self.exe_opts is not None:
         os.chmod(dest, self.exe_opts)
     else:
@@ -289,12 +289,12 @@ def _FixPermissions(dest_base):
   # Set the suid bit for the chrome sandbox.
   # TODO(rcui): Implement this through a permission mask attribute in the Path
   # class.
-  cros_build_lib.RunCommand(['chmod', '-R', 'a+r', dest_base])
-  cros_build_lib.RunCommand(['find', dest_base, '-perm', '/110', '-exec',
-                             'chmod', 'a+x', '{}', '+'])
+  cros_build_lib.DebugRunCommand(['chmod', '-R', 'a+r', dest_base])
+  cros_build_lib.DebugRunCommand(
+      ['find', dest_base, '-perm', '/110', '-exec', 'chmod', 'a+x', '{}', '+'])
   target = os.path.join(dest_base, _CHROME_SANDBOX_DEST)
   if os.path.exists(target):
-    cros_build_lib.RunCommand(['chmod', '4755', target])
+    cros_build_lib.DebugRunCommand(['chmod', '4755', target])
 
 
 class StagingError(Exception):
@@ -327,7 +327,7 @@ def StageChromeFromBuildDir(staging_dir, build_dir, strip_bin, strict=False,
 
   dest_base = os.path.join(staging_dir, _CHROME_DIR)
   osutils.SafeMakedirs(os.path.join(dest_base, 'plugins'))
-  cros_build_lib.RunCommand(['chmod', '-R', '0755', staging_dir])
+  cros_build_lib.DebugRunCommand(['chmod', '-R', '0755', staging_dir])
 
   if gyp_defines is None:
     gyp_defines = {}

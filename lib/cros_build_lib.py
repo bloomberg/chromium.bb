@@ -478,6 +478,10 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
   return cmd_result
 
 
+# Convenience RunCommand methods
+DebugRunCommand = functools.partial(RunCommand, debug_level=logging.DEBUG)
+
+
 class DieSystemExit(SystemExit):
   """Custom Exception used so we can intercept this if necessary."""
 

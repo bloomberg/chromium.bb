@@ -18,7 +18,6 @@ build directory) and rsyncs the contents of the staging directory onto your
 device's rootfs.
 """
 
-import functools
 import logging
 import os
 import optparse
@@ -44,10 +43,6 @@ KILL_PROC_MAX_WAIT = 10
 POST_KILL_WAIT = 2
 
 MOUNT_RW_COMMAND = 'mount -o remount,rw /'
-
-# Convenience RunCommand methods
-DebugRunCommand = functools.partial(
-    cros_build_lib.RunCommand, debug_level=logging.DEBUG)
 
 
 def _UrlBaseName(url):
@@ -126,7 +121,7 @@ class DeployChrome(object):
 
   def _KillProcsIfNeeded(self):
     if self._CheckUiJobStarted():
-      logging.info('Shutting down Chrome.')
+      logging.info('Shutting down Chrome...')
       self.host.RemoteSh('stop ui')
 
     # Developers sometimes run session_manager manually, in which case we'll
@@ -164,16 +159,17 @@ class DeployChrome(object):
     self._KillProcsIfNeeded()
 
   def _Deploy(self):
-    logging.info('Copying Chrome to device.')
+    logging.info('Copying Chrome to device...')
     # Show the output (status) for this command.
     self.host.Rsync('%s/' % os.path.abspath(self.staging_dir), '/',
                     inplace=True, debug_level=logging.INFO)
     if self.options.startui:
+      logging.info('Starting Chrome...')
       self.host.RemoteSh('start ui')
 
   def Perform(self):
     try:
-      logging.info('Testing connection to the device.')
+      logging.info('Testing connection to the device...')
       self.host.RemoteSh('true')
     except cros_build_lib.RunCommandError:
       logging.error('Error connecting to the test device.')
@@ -326,7 +322,7 @@ def _FetchChromePackage(cache_dir, tempdir, gs_path):
     logging.warning('Multiple chrome packages found.  Using %s', files[0])
 
   filename = _UrlBaseName(files[0])
-  logging.info('Fetching %s.', filename)
+  logging.info('Fetching %s...', filename)
   gs_ctx.Copy(files[0], tempdir, print_cmd=False)
   chrome_path = os.path.join(tempdir, filename)
   assert os.path.exists(chrome_path)
@@ -359,9 +355,9 @@ def _PrepareStagingDir(options, tempdir, staging_dir):
                                      options.gs_path)
 
     assert pkg_path
-    logging.info('Extracting %s.', pkg_path)
+    logging.info('Extracting %s...', pkg_path)
     osutils.SafeMakedirs(staging_dir)
-    DebugRunCommand(['tar', '-xpf', pkg_path], cwd=staging_dir)
+    cros_build_lib.DebugRunCommand(['tar', '-xpf', pkg_path], cwd=staging_dir)
 
 
 def main(argv):
@@ -372,7 +368,7 @@ def main(argv):
   if options.verbose:
     logging.getLogger().setLevel(logging.DEBUG)
   else:
-    logging.getLogger().setLevel(logging.WARNING)
+    logging.getLogger().setLevel(logging.INFO)
 
   with osutils.TempDirContextManager() as tempdir:
     staging_dir = options.staging_dir

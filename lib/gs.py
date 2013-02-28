@@ -117,9 +117,9 @@ class GSContext(object):
     # lock on the cached gsutil.
     ref = tar_cache.Lookup(key)
     if ref.Exists():
-      logging.info('Reusing cached gsutil.')
+      logging.debug('Reusing cached gsutil.')
     else:
-      logging.info('Fetching gsutil.')
+      logging.debug('Fetching gsutil.')
       with osutils.TempDirContextManager(
           base_dir=tar_cache.staging_dir) as tempdir:
         gsutil_tar = os.path.join(tempdir, cls.GSUTIL_TAR)

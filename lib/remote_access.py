@@ -159,7 +159,7 @@ class RemoteAccess(object):
 
   def RemoteReboot(self):
     """Reboot the remote device."""
-    logging.info('Rebooting %s', self.remote_host)
+    logging.info('Rebooting %s...', self.remote_host)
     self.RemoteSh('touch %s && reboot' % REBOOT_MARKER)
     time.sleep(CHECK_INTERVAL)
     try:
