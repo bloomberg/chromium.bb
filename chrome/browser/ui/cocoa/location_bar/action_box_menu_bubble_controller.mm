@@ -20,10 +20,12 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
+#include "ui/native_theme/native_theme.h"
 
 @interface ActionBoxMenuBubbleController (Private)
 - (id)highlightedItem;
@@ -32,6 +34,10 @@
 - (void)moveUp:(id)sender;
 - (void)highlightNextItemByDelta:(NSInteger)delta;
 - (void)highlightItem:(ActionBoxMenuItemController*)newItem;
+@end
+
+@interface ActionBoxMenuItemView (Private)
+- (NSColor*)highlightedMenuItemBackgroundColor;
 @end
 
 namespace {
@@ -99,6 +105,7 @@ class ExtensionIconLoaderBridge : public extensions::IconImage::Observer {
                                           styleMask:NSBorderlessWindowMask
                                             backing:NSBackingStoreBuffered
                                               defer:NO]);
+  [window setAllowedAnimations:info_bubble::kAnimateNone];
   if (self = [super initWithWindow:window
                       parentWindow:parent
                         anchoredAt:point]) {
@@ -107,9 +114,10 @@ class ExtensionIconLoaderBridge : public extensions::IconImage::Observer {
 
     [[self bubble] setAlignment:info_bubble::kAlignRightEdgeToAnchorEdge];
     [[self bubble] setArrowLocation:info_bubble::kNoArrow];
+    ui::NativeTheme* nativeTheme = ui::NativeTheme::instance();
     [[self bubble] setBackgroundColor:
-        [NSColor colorWithDeviceWhite:(251.0f/255.0f)
-                                alpha:1.0]];
+        gfx::SkColorToCalibratedNSColor(nativeTheme->GetSystemColor(
+            ui::NativeTheme::kColorId_DialogBackground))];
     [self performLayout];
   }
   return self;
@@ -159,14 +167,17 @@ class ExtensionIconLoaderBridge : public extensions::IconImage::Observer {
   CGFloat minX = NSMinX([contentView bounds]);
   for (int i = model_->GetItemCount() - 1; i >= 0; --i) {
     if (model_->GetTypeAt(i) == ui::MenuModel::TYPE_SEPARATOR) {
+      const CGFloat kSeparatorHeight = 1.0;
       // Only supports one separator.
       DCHECK(!separatorView);
-      yOffset += kVerticalPadding;
+      yOffset += kVerticalPadding + kSeparatorHeight;
       separatorView.reset([[NSBox alloc]
-          initWithFrame:NSMakeRect(0, yOffset, width, 1)]);
-      [separatorView setBorderType:NSNoBorder];
+          initWithFrame:NSMakeRect(0, yOffset, width, kSeparatorHeight)]);
       [separatorView setBoxType:NSBoxCustom];
-      [separatorView setFillColor:[NSColor grayColor]];
+      ui::NativeTheme* nativeTheme = ui::NativeTheme::instance();
+      [separatorView setBorderColor:
+          gfx::SkColorToCalibratedNSColor(nativeTheme->GetSystemColor(
+              ui::NativeTheme::kColorId_MenuSeparatorColor))];
       [contentView addSubview:separatorView];
       yOffset += kVerticalPadding;
     } else {
@@ -397,7 +408,10 @@ class ExtensionIconLoaderBridge : public extensions::IconImage::Observer {
 - (void)drawRect:(NSRect)dirtyRect {
   NSColor* backgroundColor = nil;
   if ([viewController_ isHighlighted]) {
-    backgroundColor = [NSColor colorWithDeviceWhite:0.0 alpha:kSelectionAlpha];
+    ui::NativeTheme* nativeTheme = ui::NativeTheme::instance();
+    backgroundColor = gfx::SkColorToCalibratedNSColor(
+        nativeTheme->GetSystemColor(
+            ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor));
   } else {
     backgroundColor = [NSColor clearColor];
   }
@@ -449,6 +463,12 @@ class ExtensionIconLoaderBridge : public extensions::IconImage::Observer {
   }
 
   [super accessibilityPerformAction:action];
+}
+
+- (NSColor*)highlightedMenuItemBackgroundColor {
+  ui::NativeTheme* nativeTheme = ui::NativeTheme::instance();
+  return gfx::SkColorToCalibratedNSColor(nativeTheme->GetSystemColor(
+      ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor));
 }
 
 @end

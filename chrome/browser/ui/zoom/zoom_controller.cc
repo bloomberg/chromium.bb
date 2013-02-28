@@ -54,7 +54,8 @@ bool ZoomController::IsAtDefaultZoom() const {
 }
 
 int ZoomController::GetResourceForZoomLevel() const {
-  DCHECK(!IsAtDefaultZoom());
+  if (IsAtDefaultZoom())
+    return IDR_ZOOM_NORMAL;
   double zoom = web_contents()->GetZoomLevel();
   return zoom > default_zoom_level_.GetValue() ? IDR_ZOOM_PLUS : IDR_ZOOM_MINUS;
 }

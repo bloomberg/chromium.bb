@@ -6,50 +6,10 @@
 
 #import "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#include "chrome/browser/ui/cocoa/location_bar/mock_toolbar_model.h"
 #import "chrome/browser/ui/cocoa/location_bar/search_token_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/separator_decoration.h"
 #include "chrome/test/base/in_process_browser_test.h"
-
-namespace {
-
-// Override the toolbar model to allow |GetInputInProgress| and
-// |WouldReplaceSearchURLWithSearchTerms| to be customized.
-class MockToolbarModel : public ToolbarModel {
- public:
-  MockToolbarModel() : ToolbarModel(),
-                       input_in_progress_(false),
-                       would_replace_search_url_with_search_terms_(false) {}
-  virtual ~MockToolbarModel() {}
-
-  virtual string16 GetText(
-      bool display_search_urls_as_search_terms) const OVERRIDE {
-    return string16();
-  }
-  virtual GURL GetURL() const OVERRIDE { return GURL(); }
-  virtual bool WouldReplaceSearchURLWithSearchTerms() const OVERRIDE {
-    return would_replace_search_url_with_search_terms_;
-  }
-  virtual SecurityLevel GetSecurityLevel() const OVERRIDE { return NONE; }
-  virtual int GetIcon() const OVERRIDE { return 0; }
-  virtual string16 GetEVCertName() const OVERRIDE { return string16(); }
-  virtual bool ShouldDisplayURL() const OVERRIDE { return false; }
-  virtual void SetInputInProgress(bool value) OVERRIDE {
-    input_in_progress_ = value;
-  }
-  virtual bool GetInputInProgress() const OVERRIDE {
-    return input_in_progress_;
-  }
-
-  void set_would_replace_search_url_with_search_terms(bool value) {
-    would_replace_search_url_with_search_terms_ = value;
-  }
-
- private:
-  bool input_in_progress_;
-  bool would_replace_search_url_with_search_terms_;
-};
-
-}  // namespace
 
 class LocationBarViewMacBrowserTest : public InProcessBrowserTest {
  public:
@@ -83,7 +43,7 @@ class LocationBarViewMacBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
-  MockToolbarModel mock_toolbar_model_;
+  chrome::testing::MockToolbarModel mock_toolbar_model_;
 
  private:
   ToolbarModel* old_toolbar_model_;

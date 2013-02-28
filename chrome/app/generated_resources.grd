@@ -7478,6 +7478,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Reset to Default
         </message>
       </if>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_ZOOM_SET_DEFAULT_SHORT" desc="The short text label of a button which, when clicked, returns the page to default zoom">
+          Reset
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_ZOOM_SET_DEFAULT_SHORT" desc="In Title Case: The short text label of a button which, when clicked, returns the page to default zoom">
+          Reset
+        </message>
+      </if>
 
       <!--Action Box menu-->
       <message name="IDS_BOOKMARK_STAR" desc="The text for bookmark menu item">

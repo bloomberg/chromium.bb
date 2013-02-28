@@ -38,6 +38,7 @@ class SeparatorDecoration;
 class StarDecoration;
 class ToolbarModel;
 class ZoomDecoration;
+class ZoomDecorationTest;
 
 // A C++ bridge class that represents the location bar UI element to
 // the portable code.  Wires up an OmniboxViewMac instance to
@@ -179,9 +180,11 @@ class LocationBarViewMac : public LocationBar,
                        const content::NotificationDetails& details) OVERRIDE;
 
   Browser* browser() const { return browser_; }
+  ToolbarModel* toolbar_model() const { return toolbar_model_; }
 
  private:
   friend LocationBarViewMacBrowserTest;
+  friend ZoomDecorationTest;
 
   // Posts |notification| to the default notification center.
   void PostNotification(NSString* notification);

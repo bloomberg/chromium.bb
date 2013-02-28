@@ -51,6 +51,12 @@ class WebContents;
 // Button action from the bubble that resets the zoom level to the default.
 - (void)resetToDefault:(id)sender;
 
+// Button action from the bubble that increases the zoom level.
+- (void)zoomIn:(id)sender;
+
+// Button action from the bubble that decreases the zoom level.
+- (void)zoomOut:(id)sender;
+
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_BROWSER_ZOOM_BUBBLE_CONTROLLER_H_
