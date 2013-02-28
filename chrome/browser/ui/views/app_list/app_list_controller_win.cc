@@ -208,9 +208,8 @@ class AppListController : public AppListService {
   void SaveProfilePathToLocalState(const base::FilePath& profile_file_path);
 
   // Utility methods for showing the app list.
-  void SnapArrowLocationToTaskbarEdge(
-      const gfx::Display& display,
-      gfx::Point* anchor);
+  gfx::Point FindAnchorPoint(const gfx::Display& display,
+                             const gfx::Point& cursor);
   void UpdateArrowPositionAndAnchorPoint(const gfx::Point& cursor);
   string16 GetAppListIconPath();
 
@@ -547,131 +546,79 @@ bool GetTaskbarRect(gfx::Rect* rect) {
   return true;
 }
 
-// Used to position the view relative to a point, which requires |anchor| to be
-// in the center of the desired view location. This helper function updates
-// |anchor| thus, using the location of the point in |point|, the distance
-// to move the view from |point| in |offset|, and the direction to move
-// represented in |direction|.
-// To position relative to a screen corner, the absolute values of |direction|.x
-// and |direction.y| should both be 1. To position relative to some point on the
-// taskbar, one of the absolute values of |direction.x| and |direction.y| should
-// be 1 and the other 0.
-void FloatFromPoint(const gfx::Point& point,
-                    const gfx::Size& offset,
-                    const gfx::Point& direction,
-                    gfx::Point* anchor) {
-  anchor->set_x(point.x() + direction.x() * offset.width());
-  anchor->set_y(point.y() + direction.y() * offset.height());
-}
-
-void AppListController::SnapArrowLocationToTaskbarEdge(
-    const gfx::Display& display,
-    gfx::Point* anchor) {
+gfx::Point FindReferencePoint(const gfx::Display& display,
+                              const gfx::Point& cursor) {
   const int kSnapDistance = 50;
-  const int kSnapOffset = 5;
-
-  gfx::Rect taskbar_rect;
-  gfx::Size float_offset = current_view_->GetPreferredSize();
-  float_offset.set_width(float_offset.width() / 2);
-  float_offset.set_height(float_offset.height() / 2);
-  float_offset.Enlarge(kSnapOffset, kSnapOffset);
 
   // If we can't find the taskbar, snap to the bottom left.
   // If the display size is the same as the work area, and does not contain the
   // taskbar, either the taskbar is hidden or on another monitor, so just snap
   // to the bottom left.
+  gfx::Rect taskbar_rect;
   if (!GetTaskbarRect(&taskbar_rect) ||
       (display.work_area() == display.bounds() &&
           !display.work_area().Contains(taskbar_rect))) {
-    FloatFromPoint(display.work_area().bottom_left(),
-                   float_offset,
-                   gfx::Point(1, -1),
-                   anchor);
-    return;
+    return display.work_area().bottom_left();
   }
-
-  const gfx::Rect& screen_rect = display.bounds();
 
   // Snap to the taskbar edge. If the cursor is greater than kSnapDistance away,
   // also move to the left (for horizontal taskbars) or top (for vertical).
-
+  const gfx::Rect& screen_rect = display.bounds();
   // First handle taskbar on bottom.
   if (taskbar_rect.width() == screen_rect.width()) {
     if (taskbar_rect.bottom() == screen_rect.bottom()) {
-      if (taskbar_rect.y() - anchor->y() > kSnapDistance) {
-        FloatFromPoint(gfx::Point(screen_rect.x(), taskbar_rect.y()),
-                       float_offset,
-                       gfx::Point(1, -1),
-                       anchor);
-        return;
-      }
+      if (taskbar_rect.y() - cursor.y() > kSnapDistance)
+        return gfx::Point(screen_rect.x(), taskbar_rect.y());
 
-      FloatFromPoint(gfx::Point(anchor->x(), taskbar_rect.y()),
-                     float_offset,
-                     gfx::Point(0, -1),
-                     anchor);
-      return;
+      return gfx::Point(cursor.x(), taskbar_rect.y());
     }
 
     // Now try on the top.
-    if (anchor->y() - taskbar_rect.bottom() > kSnapDistance) {
-      FloatFromPoint(gfx::Point(screen_rect.x(), taskbar_rect.bottom()),
-                     float_offset,
-                     gfx::Point(1, 1),
-                     anchor);
-      return;
-    }
+    if (cursor.y() - taskbar_rect.bottom() > kSnapDistance)
+      return gfx::Point(screen_rect.x(), taskbar_rect.bottom());
 
-    FloatFromPoint(gfx::Point(anchor->x(), taskbar_rect.bottom()),
-                   float_offset,
-                   gfx::Point(0, 1),
-                   anchor);
-    return;
+    return gfx::Point(cursor.x(), taskbar_rect.bottom());
   }
 
   // Now try the left.
   if (taskbar_rect.x() == screen_rect.x()) {
-    if (anchor->x() - taskbar_rect.right() > kSnapDistance) {
-      FloatFromPoint(gfx::Point(taskbar_rect.right(), screen_rect.y()),
-                     float_offset,
-                     gfx::Point(1, 1),
-                     anchor);
-      return;
-    }
+    if (cursor.x() - taskbar_rect.right() > kSnapDistance)
+      return gfx::Point(taskbar_rect.right(), screen_rect.y());
 
-    FloatFromPoint(gfx::Point(taskbar_rect.right(), anchor->y()),
-                   float_offset,
-                   gfx::Point(1, 0),
-                   anchor);
-    return;
+    return gfx::Point(taskbar_rect.right(), cursor.y());
   }
 
   // Finally, try the right.
-  if (taskbar_rect.x() - anchor->x() > kSnapDistance) {
-    FloatFromPoint(gfx::Point(taskbar_rect.x(), screen_rect.y()),
-                   float_offset,
-                   gfx::Point(-1, 1),
-                   anchor);
-    return;
-  }
+  if (taskbar_rect.x() - cursor.x() > kSnapDistance)
+    return gfx::Point(taskbar_rect.x(), screen_rect.y());
 
-  FloatFromPoint(gfx::Point(taskbar_rect.x(), anchor->y()),
-                 float_offset,
-                 gfx::Point(-1, 0),
-                 anchor);
+  return gfx::Point(taskbar_rect.x(), cursor.y());
+}
+
+gfx::Point AppListController::FindAnchorPoint(
+    const gfx::Display& display,
+    const gfx::Point& cursor) {
+  const int kSnapOffset = 3;
+
+  gfx::Rect bounds_rect(display.work_area());
+  gfx::Size view_size(current_view_->GetPreferredSize());
+  bounds_rect.Inset(view_size.width() / 2 + kSnapOffset,
+                    view_size.height() / 2 + kSnapOffset);
+
+  gfx::Point anchor = FindReferencePoint(display, cursor);
+  anchor.ClampToMin(bounds_rect.origin());
+  anchor.ClampToMax(bounds_rect.bottom_right());
+  return anchor;
 }
 
 void AppListController::UpdateArrowPositionAndAnchorPoint(
     const gfx::Point& cursor) {
-  gfx::Point anchor(cursor);
   gfx::Screen* screen =
       gfx::Screen::GetScreenFor(current_view_->GetWidget()->GetNativeView());
-  gfx::Display display = screen->GetDisplayNearestPoint(anchor);
-
-  SnapArrowLocationToTaskbarEdge(display, &anchor);
+  gfx::Display display = screen->GetDisplayNearestPoint(cursor);
 
   current_view_->SetBubbleArrowLocation(views::BubbleBorder::FLOAT);
-  current_view_->SetAnchorPoint(anchor);
+  current_view_->SetAnchorPoint(FindAnchorPoint(display, cursor));
 }
 
 string16 AppListController::GetAppListIconPath() {
