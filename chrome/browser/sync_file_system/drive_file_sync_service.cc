@@ -1977,19 +1977,30 @@ void DriveFileSyncService::UpdatePollingDelay(int64 new_delay_sec) {
     polling_timer_.Stop();
 }
 
+bool DriveFileSyncService::IsDriveNotificationSupported() {
+  // TODO(calvinlo): A invalidation ID can only be registered to one handler.
+  // Therefore ChromeOS and SyncFS cannot both use XMPP notifications until
+  // (http://crbug.com/173339) is completed.
+  // For now, disable XMPP notifications for SyncFC on ChromeOS to guarantee
+  // that ChromeOS's file manager can register itself to the invalidationID.
+#if defined(OS_CHROMEOS)
+  return false;
+#else
+  return true;
+#endif
+}
+
 // Register for Google Drive invalidation notifications through XMPP.
 void DriveFileSyncService::RegisterDriveNotifications() {
   // Push notification registration might have already occurred if called from
   // a different extension.
-  if (push_notification_registered_) {
+  if (!IsDriveNotificationSupported() || push_notification_registered_)
     return;
-  }
 
   ProfileSyncService* profile_sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
-  if (!profile_sync_service) {
+  if (!profile_sync_service)
     return;
-  }
 
   profile_sync_service->RegisterInvalidationHandler(this);
   syncer::ObjectIdSet ids;

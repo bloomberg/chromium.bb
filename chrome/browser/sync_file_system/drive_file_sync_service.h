@@ -368,6 +368,7 @@ class DriveFileSyncService
   void OnPollingTimerFired();
   void UpdatePollingDelay(int64 new_delay_sec);
   void RegisterDriveNotifications();
+  bool IsDriveNotificationSupported();
   void SetPushNotificationEnabled(syncer::InvalidatorState state);
   void NotifyObserversFileStatusChanged(const fileapi::FileSystemURL& url,
                                         SyncFileStatus sync_status,
