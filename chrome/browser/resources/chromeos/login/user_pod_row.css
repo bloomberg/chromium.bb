@@ -239,7 +239,7 @@ html[dir=rtl] .action-box-area {
 .action-box-menu-title {
   -webkit-box-orient: vertical;
   -webkit-box-pack: center;
-  color: lightgray;
+  color: #b4b4b4;
   display: -webkit-box;
   min-height: 46px;
   padding: 7px 20px;
