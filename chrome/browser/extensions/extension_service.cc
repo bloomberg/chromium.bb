@@ -86,6 +86,7 @@
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/startup_metric_utils.h"
@@ -2081,10 +2082,9 @@ void ExtensionService::AddExtension(const Extension* extension) {
   MaybeWipeout(extension);
 
   if (extension_prefs_->IsExtensionBlacklisted(extension->id())) {
-    // Don't check the Blacklist yet because it's asynchronous (we do it at
-    // the end). This pre-emptive check is because we will always store the
-    // blacklisted state of *installed* extensions in prefs, and it's important
-    // not to re-enable blacklisted extensions.
+    // Only prefs is checked for the blacklist. We rely on callers to check the
+    // blacklist before calling into here, e.g. CrxInstaller checks before
+    // installation, we check when loading installed extensions.
     blacklisted_extensions_.Insert(extension);
   } else if (extension_prefs_->IsExtensionDisabled(extension->id())) {
     disabled_extensions_.Insert(extension);
@@ -3112,6 +3112,8 @@ void ExtensionService::ManageBlacklist(
       continue;
     blacklisted_extensions_.Remove(*it);
     AddExtension(extension);
+    UMA_HISTOGRAM_ENUMERATION("ExtensionBlacklist.UnblacklistInstalled",
+                              extension->location(), Manifest::NUM_LOCATIONS);
   }
 
   for (std::set<std::string>::iterator it = not_yet_blacklisted.begin();
@@ -3122,6 +3124,8 @@ void ExtensionService::ManageBlacklist(
       continue;
     blacklisted_extensions_.Insert(extension);
     UnloadExtension(*it, extension_misc::UNLOAD_REASON_BLACKLIST);
+    UMA_HISTOGRAM_ENUMERATION("ExtensionBlacklist.BlacklistInstalled",
+                              extension->location(), Manifest::NUM_LOCATIONS);
   }
 
   IdentifyAlertableExtensions();

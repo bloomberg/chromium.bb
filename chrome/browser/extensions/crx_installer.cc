@@ -42,6 +42,7 @@
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/feature_switch.h"
+#include "chrome/common/extensions/manifest.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -658,6 +659,8 @@ void CrxInstaller::HandleIsBlacklistedResponse(
         extensions::CrxInstallerError(error));
     // Show error via reporter to make tests happy.
     ExtensionErrorReporter::GetInstance()->ReportError(error, false);  // quiet
+    UMA_HISTOGRAM_ENUMERATION("ExtensionBlacklist.BlockCRX",
+                              extension_->location(), Manifest::NUM_LOCATIONS);
   } else {
     on_success.Run();
   }
