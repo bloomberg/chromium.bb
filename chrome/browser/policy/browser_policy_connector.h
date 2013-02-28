@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/policy/cloud_policy_constants.h"
@@ -15,7 +16,12 @@
 #include "chrome/browser/policy/proxy_policy_provider.h"
 
 class PrefRegistrySimple;
+class PrefService;
 class Profile;
+
+namespace net {
+class URLRequestContextGetter;
+}
 
 namespace policy {
 
@@ -45,10 +51,10 @@ class BrowserPolicyConnector {
   // Invoke Shutdown() before deleting, see below.
   virtual ~BrowserPolicyConnector();
 
-  // Creates the policy providers and finalizes the initialization of the
-  // connector. This call can be skipped on tests that don't require the full
-  // policy system running.
-  void Init();
+  // Finalizes the initialization of the connector. This call can be skipped on
+  // tests that don't require the full policy system running.
+  void Init(PrefService* local_state,
+            scoped_refptr<net::URLRequestContextGetter> request_context);
 
   // Stops the policy providers and cleans up the connector before it can be
   // safely deleted. This must be invoked before the destructor and while the
@@ -151,10 +157,6 @@ class BrowserPolicyConnector {
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
  private:
-  // Complete initialization once the message loops are running and the
-  // local_state is initialized.
-  void CompleteInitialization();
-
   // Set the timezone as soon as the policies are available.
   void SetTimezoneIfPolicyAvailable();
 
@@ -169,6 +171,9 @@ class BrowserPolicyConnector {
 
   // Whether Init() but not Shutdown() has been invoked.
   bool is_initialized_;
+
+  PrefService* local_state_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_;
 
   // Used to convert policies to preferences. The providers declared below
   // may trigger policy updates during shutdown, which will result in

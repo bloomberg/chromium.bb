@@ -475,10 +475,8 @@ policy::BrowserPolicyConnector* BrowserProcessImpl::browser_policy_connector() {
   DCHECK(CalledOnValidThread());
 #if defined(ENABLE_CONFIGURATION_POLICY)
   if (!created_browser_policy_connector_) {
-    // Init() should not reenter this function. If it does this will DCHECK.
     DCHECK(!browser_policy_connector_);
     browser_policy_connector_.reset(new policy::BrowserPolicyConnector());
-    browser_policy_connector_->Init();
     created_browser_policy_connector_ = true;
   }
   return browser_policy_connector_.get();
@@ -844,6 +842,16 @@ void BrowserProcessImpl::PreCreateThreads() {
 }
 
 void BrowserProcessImpl::PreMainMessageLoopRun() {
+#if defined(ENABLE_CONFIGURATION_POLICY)
+  // browser_policy_connector() is created very early because local_state()
+  // needs policy to be initialized with the managed preference values.
+  // However, policy fetches from the network and loading of disk caches
+  // requires that threads are running; this Init() call lets the connector
+  // resume its initialization now that the loops are spinning and the
+  // system request context is available for the fetchers.
+  browser_policy_connector()->Init(local_state(), system_request_context());
+#endif
+
   if (local_state_->IsManagedPreference(prefs::kDefaultBrowserSettingEnabled))
     ApplyDefaultBrowserPolicy();
 
