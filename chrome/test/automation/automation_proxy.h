@@ -181,14 +181,6 @@ class AutomationProxy : public IPC::Listener, public AutomationMessageSender {
   // the tracker.
   virtual void InvalidateHandle(const IPC::Message& message);
 
-  // Creates a tab that can hosted in an external process. The function
-  // returns a TabProxy representing the tab as well as a window handle
-  // that can be reparented in another process.
-  scoped_refptr<TabProxy> CreateExternalTab(
-      const ExternalTabSettings& settings,
-      gfx::NativeWindow* external_tab_container,
-      gfx::NativeWindow* tab);
-
   base::TimeDelta action_timeout() const {
     return action_timeout_;
   }

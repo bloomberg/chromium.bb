@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/automation/chrome_frame_automation_provider.h"
+#include "chrome/browser/automation/chrome_frame_automation_provider_win.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -37,4 +37,3 @@ TEST_F(AutomationProviderTest, TestInvalidChromeFrameMessage) {
                                         -1))).Times(1);
   mock->OnMessageReceived(bad_msg);
 }
-

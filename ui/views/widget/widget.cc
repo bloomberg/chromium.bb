@@ -1026,6 +1026,8 @@ void Widget::OnNativeWidgetCreated() {
       widget_delegate_->GetAccessibleWindowState());
 
   native_widget_->InitModalType(widget_delegate_->GetModalType());
+
+  FOR_EACH_OBSERVER(WidgetObserver, observers_, OnWidgetCreated(this));
 }
 
 void Widget::OnNativeWidgetDestroying() {
@@ -1040,6 +1042,7 @@ void Widget::OnNativeWidgetDestroying() {
 }
 
 void Widget::OnNativeWidgetDestroyed() {
+  FOR_EACH_OBSERVER(WidgetObserver, observers_, OnWidgetDestroyed(this));
   widget_delegate_->DeleteDelegate();
   widget_delegate_ = NULL;
   native_widget_destroyed_ = true;

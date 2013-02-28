@@ -23,10 +23,18 @@ class VIEWS_EXPORT WidgetObserver {
   // CloseNow()).
   virtual void OnWidgetClosing(Widget* widget) {}
 
+  // Invoked after notification is received from the event loop that the native
+  // widget has been created.
+  virtual void OnWidgetCreated(Widget* widget) {}
+
   // The destroying event occurs immediately before the widget is destroyed.
   // This typically occurs asynchronously with respect the the close request, as
   // a result of a later invocation from the event loop.
   virtual void OnWidgetDestroying(Widget* widget) {}
+
+  // Invoked after notification is received from the event loop that the native
+  // widget has been destroyed.
+  virtual void OnWidgetDestroyed(Widget* widget) {}
 
   virtual void OnWidgetVisibilityChanged(Widget* widget, bool visible) {}
 

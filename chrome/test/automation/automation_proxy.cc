@@ -376,31 +376,6 @@ bool AutomationProxy::OpenNewBrowserWindow(Browser::Type type, bool show) {
                                                    show));
 }
 
-scoped_refptr<TabProxy> AutomationProxy::CreateExternalTab(
-    const ExternalTabSettings& settings,
-    gfx::NativeWindow* external_tab_container,
-    gfx::NativeWindow* tab) {
-  int handle = 0;
-  int session_id = 0;
-  bool succeeded =
-      Send(new AutomationMsg_CreateExternalTab(settings,
-                                               external_tab_container,
-                                               tab,
-                                               &handle,
-                                               &session_id));
-  if (!succeeded) {
-    return NULL;
-  }
-
-#if defined(OS_WIN) && !defined(USE_AURA)
-  DCHECK(IsWindow(*external_tab_container));
-#else  // defined(OS_WIN)
-  DCHECK(*external_tab_container);
-#endif  // defined(OS_WIN)
-  DCHECK(tracker_->GetResource(handle) == NULL);
-  return new TabProxy(this, tracker_.get(), handle);
-}
-
 template <class T> scoped_refptr<T> AutomationProxy::ProxyObjectFromHandle(
     int handle) {
   if (!handle)

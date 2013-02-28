@@ -508,8 +508,8 @@
         'browser/autofill/wallet/wallet_service_url_unittest.cc',
         'browser/autofill/wallet/wallet_test_util.cc',
         'browser/autofill/wallet/wallet_test_util.h',
-        'browser/automation/automation_provider_unittest.cc',
         'browser/automation/automation_tab_helper_unittest.cc',
+        'browser/automation/chrome_frame_automation_provider_win_unittest.cc',
         'browser/background/background_application_list_model_unittest.cc',
         'browser/background/background_contents_service_unittest.cc',
         'browser/background/background_mode_manager_unittest.cc',
@@ -1823,7 +1823,6 @@
             '../ui/aura/aura.gyp:aura_test_support',
           ],
           'sources/': [
-            ['exclude', '^browser/automation/automation_provider_unittest.cc'],
             ['exclude', '^browser/ui/views/extensions/browser_action_drag_data_unittest.cc'],
             ['exclude', '^browser/ui/views/bookmarks/bookmark_editor_view_unittest.cc'],
             ['exclude', '^browser/ui/panels/display_settings_provider_win_unittest.cc'],

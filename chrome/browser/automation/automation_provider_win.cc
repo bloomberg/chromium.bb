@@ -24,7 +24,6 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/page_zoom.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/views/focus/accelerator_handler.h"
@@ -36,8 +35,10 @@ using content::WebContents;
 
 void AutomationProvider::CreateExternalTab(
     const ExternalTabSettings& settings,
-    gfx::NativeWindow* tab_container_window, gfx::NativeWindow* tab_window,
-    int* tab_handle, int* session_id) {
+    HWND* tab_container_window,
+    HWND* tab_window,
+    int* tab_handle,
+    int* session_id) {
   TRACE_EVENT_BEGIN_ETW("AutomationProvider::CreateExternalTab", 0, "");
 
   *tab_handle = 0;
@@ -63,8 +64,8 @@ void AutomationProvider::CreateExternalTab(
     SessionTabHelper* session_tab_helper =
         SessionTabHelper::FromWebContents(web_contents);
     *tab_handle = external_tab_container->GetTabHandle();
-    *tab_container_window = external_tab_container->GetExternalTabNativeView();
-    *tab_window = web_contents->GetView()->GetNativeView();
+    *tab_container_window = external_tab_container->GetExternalTabHWND();
+    *tab_window = external_tab_container->GetContentHWND();
     *session_id = session_tab_helper->session_id().id();
   } else {
     external_tab_container->Uninitialize();
@@ -118,15 +119,14 @@ void AutomationProvider::PrintAsync(int tab_handle) {
 ExternalTabContainer* AutomationProvider::GetExternalTabForHandle(int handle) {
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
-    return ExternalTabContainer::GetContainerForTab(
-        tab->GetWebContents()->GetView()->GetNativeView());
+    return ExternalTabContainer::GetContainerForTab(tab->GetWebContents());
   }
 
   return NULL;
 }
 
-void AutomationProvider::OnTabReposition(
-    int tab_handle, const Reposition_Params& params) {
+void AutomationProvider::OnTabReposition(int tab_handle,
+                                         const Reposition_Params& params) {
   if (!tab_tracker_->ContainsHandle(tab_handle))
     return;
 
@@ -161,14 +161,13 @@ void AutomationProvider::OnForwardContextMenuCommandToChrome(int tab_handle,
     external_tab->ExecuteContextMenuCommand(command);
 }
 
-void AutomationProvider::ConnectExternalTab(
-    uint64 cookie,
-    bool allow,
-    gfx::NativeWindow parent_window,
-    gfx::NativeWindow* tab_container_window,
-    gfx::NativeWindow* tab_window,
-    int* tab_handle,
-    int* session_id) {
+void AutomationProvider::ConnectExternalTab(uint64 cookie,
+                                            bool allow,
+                                            HWND parent_window,
+                                            HWND* tab_container_window,
+                                            HWND* tab_window,
+                                            int* tab_handle,
+                                            int* session_id) {
   TRACE_EVENT_BEGIN_ETW("AutomationProvider::ConnectExternalTab", 0, "");
 
   *tab_handle = 0;
@@ -191,8 +190,8 @@ void AutomationProvider::ConnectExternalTab(
     SessionTabHelper* session_tab_helper =
         SessionTabHelper::FromWebContents(web_contents);
     *tab_handle = external_tab_container->GetTabHandle();
-    *tab_container_window = external_tab_container->GetExternalTabNativeView();
-    *tab_window = web_contents->GetView()->GetNativeView();
+    *tab_container_window = external_tab_container->GetExternalTabHWND();
+    *tab_window = external_tab_container->GetContentHWND();
     *session_id = session_tab_helper->session_id().id();
   } else {
     external_tab_container->Uninitialize();

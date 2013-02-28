@@ -46,7 +46,8 @@ const DWORD kCrashServicePipeDesiredAccess = FILE_READ_DATA |
 
 const DWORD kCrashServicePipeFlagsAndAttributes = SECURITY_IDENTIFICATION |
                                                   SECURITY_SQOS_PRESENT;
-const int kCrashServiceStartupTimeoutMs = 500;
+const int kCrashServiceDetectTimeoutMs = 500;
+const int kCrashServiceStartupTimeoutMs = 1000;
 
 const wchar_t kIEImageName[] = L"iexplore.exe";
 const wchar_t kIEBrokerImageName[] = L"ieuser.exe";
@@ -596,7 +597,7 @@ bool DetectRunningCrashService(int timeout_ms) {
 }
 
 base::ProcessHandle StartCrashService() {
-  if (DetectRunningCrashService(kCrashServiceStartupTimeoutMs)) {
+  if (DetectRunningCrashService(kCrashServiceDetectTimeoutMs)) {
     VLOG(1) << "crash_service.exe is already running. We will use the "
                "existing process and leave it running after tests complete.";
     return NULL;

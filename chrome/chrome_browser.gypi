@@ -311,8 +311,8 @@
         'browser/automation/automation_util.h',
         'browser/automation/automation_window_tracker.cc',
         'browser/automation/automation_window_tracker.h',
-        'browser/automation/chrome_frame_automation_provider.cc',
-        'browser/automation/chrome_frame_automation_provider.h',
+        'browser/automation/chrome_frame_automation_provider_win.cc',
+        'browser/automation/chrome_frame_automation_provider_win.h',
         'browser/automation/testing_automation_provider.cc',
         'browser/automation/testing_automation_provider.h',
         'browser/automation/testing_automation_provider_aura.cc',
@@ -2578,9 +2578,6 @@
         }],
         ['use_aura==1', {
           'sources/': [
-            ['exclude', '^browser/automation/automation_provider_win.cc'],
-            ['exclude', '^browser/automation/chrome_frame_automation_provider.cc'],
-            ['exclude', '^browser/automation/chrome_frame_automation_provider.h'],
             ['exclude', '^browser/automation/testing_automation_provider_win.cc'],
             ['exclude', '^browser/google/google_update_win.cc'],
             ['exclude', '^browser/google/google_update_win.h'],
@@ -2604,6 +2601,7 @@
           'conditions': [
             ['OS=="win"', {
               'sources/': [
+                ['exclude', '^browser/automation/automation_provider_aura.cc'],
                 ['exclude', '^browser/background/background_mode_manager_aura.cc'],
                 ['exclude', '^browser/fullscreen_ash.cc'],
                 ['exclude', '^browser/lifetime/application_lifetime_win.cc'],

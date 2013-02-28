@@ -8,8 +8,8 @@
 // The entire lifetime of this object should be contained within that of
 // the BrowserProcess
 
-#ifndef CHROME_BROWSER_AUTOMATION_CHROME_FRAME_AUTOMATION_PROVIDER_H_
-#define CHROME_BROWSER_AUTOMATION_CHROME_FRAME_AUTOMATION_PROVIDER_H_
+#ifndef CHROME_BROWSER_AUTOMATION_CHROME_FRAME_AUTOMATION_PROVIDER_WIN_H_
+#define CHROME_BROWSER_AUTOMATION_CHROME_FRAME_AUTOMATION_PROVIDER_WIN_H_
 
 #include "base/basictypes.h"
 #include "chrome/browser/automation/automation_provider.h"
@@ -41,5 +41,5 @@ class ChromeFrameAutomationProvider : public AutomationProvider {
   DISALLOW_COPY_AND_ASSIGN(ChromeFrameAutomationProvider);
 };
 
-#endif  // CHROME_BROWSER_AUTOMATION_CHROME_FRAME_AUTOMATION_PROVIDER_H_
+#endif  // CHROME_BROWSER_AUTOMATION_CHROME_FRAME_AUTOMATION_PROVIDER_WIN_H_
 

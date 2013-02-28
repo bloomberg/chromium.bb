@@ -28,6 +28,7 @@ class ScrollEvent;
 
 namespace views {
 class InputMethod;
+class Widget;
 
 namespace internal {
 

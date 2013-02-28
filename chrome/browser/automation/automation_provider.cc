@@ -428,7 +428,7 @@ bool AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_BeginTracing, BeginTracing)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_EndTracing, EndTracing)
     IPC_MESSAGE_HANDLER(AutomationMsg_GetTracingOutput, GetTracingOutput)
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
     // These are for use with external tabs.
     IPC_MESSAGE_HANDLER(AutomationMsg_CreateExternalTab, CreateExternalTab)
     IPC_MESSAGE_HANDLER(AutomationMsg_ProcessUnhandledAccelerator,

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/automation/chrome_frame_automation_provider.h"
+#include "chrome/browser/automation/chrome_frame_automation_provider_win.h"
 
 #include <algorithm>
 
@@ -83,14 +83,10 @@ bool ChromeFrameAutomationProvider::IsValidMessage(uint32 type) {
   switch (type) {
     case AutomationMsg_CreateExternalTab::ID:
     case AutomationMsg_ConnectExternalTab::ID:
-#if defined(OS_WIN)
     case AutomationMsg_BrowserMove::ID:
     case AutomationMsg_ProcessUnhandledAccelerator::ID:
     case AutomationMsg_ForwardContextMenuCommandToChrome::ID:
-#endif  // defined(OS_WIN)
-#if defined(OS_WIN)
     case AutomationMsg_TabReposition::ID:
-#endif
     case AutomationMsg_NavigateInExternalTab::ID:
     case AutomationMsg_NavigateExternalTabAtIndex::ID:
     case AutomationMsg_Find::ID:
@@ -128,8 +124,7 @@ bool ChromeFrameAutomationProvider::IsValidMessage(uint32 type) {
 // static
 void ChromeFrameAutomationProvider::ReleaseBrowserProcess() {
   if (g_browser_process) {
-    VLOG(1) << "ChromeFrameAutomationProvider: "
-               "Releasing browser process.";
+    VLOG(1) << "ChromeFrameAutomationProvider: Releasing browser process.";
     g_browser_process->ReleaseModule();
   }
 }

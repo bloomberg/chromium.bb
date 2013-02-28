@@ -475,6 +475,13 @@ struct SimilarTypeTraits<base::PlatformFileError> {
   typedef int Type;
 };
 
+#if defined(OS_WIN)
+template <>
+struct SimilarTypeTraits<HWND> {
+  typedef HANDLE Type;
+};
+#endif  // defined(OS_WIN)
+
 template <>
 struct IPC_EXPORT ParamTraits<base::Time> {
   typedef base::Time param_type;

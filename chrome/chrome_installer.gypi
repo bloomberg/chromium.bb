@@ -374,7 +374,7 @@
                  'branding_dir_100': 'app/theme/default_100_percent/chromium',
               },
             }],
-            ['use_aura==1 or target_arch=="x64"', {
+            ['target_arch=="x64"', {
               'dependencies!': [
                 '../chrome_frame/chrome_frame.gyp:chrome_tab_idl',
                 '../chrome_frame/chrome_frame.gyp:npchrome_frame',

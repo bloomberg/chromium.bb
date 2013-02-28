@@ -146,7 +146,7 @@ class AutomationProvider
     return reply_message;
   }
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   // Adds the external tab passed in to the tab tracker.
   bool AddExternalTab(ExternalTabContainer* external_tab);
 #endif
@@ -285,7 +285,7 @@ class AutomationProvider
   // Method called by the popup menu tracker when a popup menu is opened.
   void NotifyPopupMenuOpened();
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   // The functions in this block are for use with external tabs, so they are
   // Windows only.
 
@@ -304,16 +304,16 @@ class AutomationProvider
   void OnForwardContextMenuCommandToChrome(int tab_handle, int command);
 
   void CreateExternalTab(const ExternalTabSettings& settings,
-                         gfx::NativeWindow* tab_container_window,
-                         gfx::NativeWindow* tab_window,
+                         HWND* tab_container_window,
+                         HWND* tab_window,
                          int* tab_handle,
                          int* session_id);
 
   void ConnectExternalTab(uint64 cookie,
                           bool allow,
-                          gfx::NativeWindow parent_window,
-                          gfx::NativeWindow* tab_container_window,
-                          gfx::NativeWindow* tab_window,
+                          HWND parent_window,
+                          HWND* tab_container_window,
+                          HWND* tab_window,
                           int* tab_handle,
                           int* session_id);
 
@@ -335,7 +335,7 @@ class AutomationProvider
   void OnSetZoomLevel(int handle, int zoom_level);
 
   ExternalTabContainer* GetExternalTabForHandle(int handle);
-#endif  // defined(OS_WIN) && !defined(USE_AURA)
+#endif  // defined(OS_WIN)
 
   scoped_ptr<IPC::ChannelProxy> channel_;
   scoped_ptr<NewTabUILoadObserver> new_tab_ui_load_observer_;

@@ -34,14 +34,17 @@ class ExternalTabContainer : public base::RefCounted<ExternalTabContainer> {
       AutomationResourceMessageFilter* filter);
 
   // A helper method that retrieves the ExternalTabContainer object that
-  // hosts the given tab window.
-  static ExternalTabContainer* GetContainerForTab(HWND tab_window);
+  // hosts the given WebContents.
+  static ExternalTabContainer* GetContainerForTab(
+      content::WebContents* web_contents);
 
   // Returns the ExternalTabContainer instance associated with the cookie
   // passed in. It also erases the corresponding reference from the map.
   // Returns NULL if we fail to find the cookie in the map.
   static scoped_refptr<ExternalTabContainer> RemovePendingTab(uintptr_t cookie);
 
+  // Initializes the instance. This must be invoked before any other member
+  // functions.
   virtual bool Init(Profile* profile,
                     HWND parent,
                     const gfx::Rect& bounds,
@@ -66,7 +69,7 @@ class ExternalTabContainer : public base::RefCounted<ExternalTabContainer> {
   // instance is created by Chrome and attached to an automation client.
   virtual bool Reinitialize(AutomationProvider* automation_provider,
                             AutomationResourceMessageFilter* filter,
-                            gfx::NativeWindow parent_window) = 0;
+                            HWND parent_window) = 0;
 
   // This is invoked when the external host reflects back to us a keyboard
   // message it did not process.
@@ -79,9 +82,8 @@ class ExternalTabContainer : public base::RefCounted<ExternalTabContainer> {
   virtual void RunUnloadHandlers(IPC::Message* reply_message) = 0;
 
   virtual content::WebContents* GetWebContents() const = 0;
-
-  // This is a wrapper for GetNativeView from ExternalTabContainerWin.
-  virtual gfx::NativeView GetExternalTabNativeView() const = 0;
+  virtual HWND GetExternalTabHWND() const = 0;
+  virtual HWND GetContentHWND() const = 0;
 
   virtual void SetTabHandle(int handle) = 0;
   virtual int GetTabHandle() const = 0;

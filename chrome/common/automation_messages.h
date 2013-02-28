@@ -53,8 +53,10 @@ IPC_STRUCT_BEGIN(AutomationURLResponse)
   IPC_STRUCT_MEMBER(uint64, upload_size)
 IPC_STRUCT_END()
 
+#if defined(OS_WIN)
+
 IPC_STRUCT_BEGIN(ExternalTabSettings)
-  IPC_STRUCT_MEMBER(gfx::NativeWindow, parent)
+  IPC_STRUCT_MEMBER(HWND, parent)
   IPC_STRUCT_MEMBER(gfx::Rect, dimensions)
   IPC_STRUCT_MEMBER(unsigned int, style)
   IPC_STRUCT_MEMBER(bool, is_incognito)
@@ -65,6 +67,8 @@ IPC_STRUCT_BEGIN(ExternalTabSettings)
   IPC_STRUCT_MEMBER(bool, infobars_enabled)
   IPC_STRUCT_MEMBER(bool, route_all_top_level_navigations)
 IPC_STRUCT_END()
+
+#endif  // defined(OS_WIN)
 
 IPC_STRUCT_BEGIN(NavigationInfo)
   IPC_STRUCT_MEMBER(int, navigation_type)
@@ -120,7 +124,7 @@ IPC_STRUCT_BEGIN(AttachExternalTabParams)
   IPC_STRUCT_MEMBER(std::string, profile_name)
 IPC_STRUCT_END()
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
 
 IPC_STRUCT_BEGIN(Reposition_Params)
   IPC_STRUCT_MEMBER(HWND, window)

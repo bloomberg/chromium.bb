@@ -258,15 +258,14 @@
                  '../chrome_frame/chrome_frame.gyp:chrome_frame_tests',
                  '../chrome_frame/chrome_frame.gyp:chrome_frame_unittests',
                ]
-             }], # target_arch!="x64"
-             ['use_aura==1 or target_arch=="x64"', {
+             }, { # target_arch!="x64"
                'dependencies!': [
                  '../chrome_frame/chrome_frame.gyp:npchrome_frame',
                ],
                'defines': [
                  'OMIT_CHROME_FRAME',
                ],
-             }], # use_aura==1 or target_arch=="x64"
+             }], # target_arch=="x64"
            ],
         }],
         ['OS=="linux"', {
@@ -579,15 +578,14 @@
                  '../chrome_frame/chrome_frame.gyp:chrome_frame_tests',
                  '../chrome_frame/chrome_frame.gyp:chrome_frame_unittests',
                ]
-             }], # target_arch!="x64"
-              ['use_aura==1 or target_arch=="x64"', {
+             }, { # target_arch!="x64"
                'dependencies!': [
                  '../chrome_frame/chrome_frame.gyp:npchrome_frame',
                ],
                'defines': [
                  'OMIT_CHROME_FRAME',
                ],
-             }], # use_aura==1 or target_arch=="x64"
+             }], # target_arch=="x64"
           ],
         },
         {
@@ -706,14 +704,14 @@
                     '../remoting/remoting.gyp:remoting_host_installation',
                   ],
                 }], # component != "shared_library"
-                ['use_aura==1 or target_arch=="x64"', {
+                ['target_arch=="x64"', {
                   'dependencies!': [
                     '../chrome_frame/chrome_frame.gyp:npchrome_frame',
                   ],
                   'defines': [
                     'OMIT_CHROME_FRAME',
                   ],
-                }], # use_aura==1 or target_arch=="x64"
+                }], # target_arch=="x64"
               ]
             },
           ], # targets
