@@ -24,6 +24,7 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/button/button_dropdown.h"
 #include "ui/views/controls/button/checkbox.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -1618,8 +1619,8 @@ class TestDialog : public DialogDelegate, public ButtonListener {
   virtual View* GetContentsView() OVERRIDE {
     if (!contents_) {
       contents_ = new View;
-      button1_ = new NativeTextButton(this, ASCIIToUTF16("Button1"));
-      button2_ = new NativeTextButton(this, ASCIIToUTF16("Button2"));
+      button1_ = new LabelButton(this, ASCIIToUTF16("Button1"));
+      button2_ = new LabelButton(this, ASCIIToUTF16("Button2"));
       checkbox_ = new Checkbox(ASCIIToUTF16("My checkbox"));
       button_drop_ = new ButtonDropDown(this, mock_menu_model_);
       contents_->AddChildView(button1_);
@@ -1670,8 +1671,8 @@ class TestDialog : public DialogDelegate, public ButtonListener {
   }
 
   View* contents_;
-  NativeTextButton* button1_;
-  NativeTextButton* button2_;
+  LabelButton* button1_;
+  LabelButton* button2_;
   Checkbox* checkbox_;
   ButtonDropDown* button_drop_;
   Button* last_pressed_button_;
@@ -1758,8 +1759,8 @@ class DefaultButtonTest : public ViewTest {
   FocusManager* focus_manager_;
   TestDialog* test_dialog_;
   DialogClientView* client_view_;
-  TextButton* ok_button_;
-  TextButton* cancel_button_;
+  LabelButton* ok_button_;
+  LabelButton* cancel_button_;
 };
 
 TEST_F(DefaultButtonTest, DialogDefaultButtonTest) {

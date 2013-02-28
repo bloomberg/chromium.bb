@@ -33,7 +33,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
@@ -340,8 +340,9 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
   allowed_cookies_tree_->set_auto_expand_children(true);
   allowed_cookies_tree_->SetController(this);
 
-  block_allowed_button_ = new views::NativeTextButton(this,
+  block_allowed_button_ = new views::LabelButton(this,
       l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_BLOCK_BUTTON));
+  block_allowed_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
 
   // Create the view that holds all the controls together.  This will be the
   // pane added to the tabbed pane.
@@ -399,10 +400,12 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
   blocked_cookies_tree_->set_auto_expand_children(true);
   blocked_cookies_tree_->SetController(this);
 
-  allow_blocked_button_ = new views::NativeTextButton(this,
+  allow_blocked_button_ = new views::LabelButton(this,
       l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_ALLOW_BUTTON));
-  for_session_blocked_button_ = new views::NativeTextButton(this,
+  allow_blocked_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  for_session_blocked_button_ = new views::LabelButton(this,
       l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_SESSION_ONLY_BUTTON));
+  for_session_blocked_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
 
   // Create the view that holds all the controls together.  This will be the
   // pane added to the tabbed pane.

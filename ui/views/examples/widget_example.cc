@@ -5,7 +5,7 @@
 #include "ui/views/examples/widget_example.h"
 
 #include "base/utf_string_conversions.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
@@ -40,7 +40,9 @@ string16 DialogExample::GetWindowTitle() const {
 }
 
 View* DialogExample::CreateExtraView() {
-  return new NativeTextButton(NULL, ASCIIToUTF16("Extra button!"));
+  LabelButton* button = new LabelButton(NULL, ASCIIToUTF16("Extra button!"));
+  button->SetStyle(Button::STYLE_NATIVE_TEXTBUTTON);
+  return button;
 }
 
 View* DialogExample::CreateFootnoteView() {
@@ -68,7 +70,7 @@ void WidgetExample::CreateExampleView(View* container) {
 void WidgetExample::BuildButton(View* container,
                                 const std::string& label,
                                 int tag) {
-  TextButton* button = new TextButton(this, ASCIIToUTF16(label));
+  LabelButton* button = new LabelButton(this, ASCIIToUTF16(label));
   button->set_focusable(true);
   button->set_tag(tag);
   container->AddChildView(button);

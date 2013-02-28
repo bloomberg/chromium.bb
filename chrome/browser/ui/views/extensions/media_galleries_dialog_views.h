@@ -14,7 +14,7 @@
 
 namespace views {
 class Checkbox;
-class TextButton;
+class LabelButton;
 class Widget;
 }
 
@@ -74,7 +74,7 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
   CheckboxMap checkbox_map_;
 
   views::View* checkbox_container_;
-  views::TextButton* add_gallery_button_;
+  views::LabelButton* add_gallery_button_;
 
   // This tracks whether the confirm button can be clicked. It starts as false
   // if no checkboxes are ticked. After there is any interaction, or some

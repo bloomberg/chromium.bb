@@ -24,7 +24,7 @@ class WebContents;
 
 namespace views {
 class Label;
-class TextButton;
+class LabelButton;
 class TreeView;
 class Widget;
 }
@@ -101,9 +101,9 @@ class CollectedCookiesViews : public views::DialogDelegateView,
   views::TreeView* allowed_cookies_tree_;
   views::TreeView* blocked_cookies_tree_;
 
-  views::TextButton* block_allowed_button_;
-  views::TextButton* allow_blocked_button_;
-  views::TextButton* for_session_blocked_button_;
+  views::LabelButton* block_allowed_button_;
+  views::LabelButton* allow_blocked_button_;
+  views::LabelButton* for_session_blocked_button_;
 
   scoped_ptr<CookiesTreeModel> allowed_cookies_tree_model_;
   scoped_ptr<CookiesTreeModel> blocked_cookies_tree_model_;

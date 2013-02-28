@@ -19,7 +19,7 @@ class WebContents;
 }
 
 namespace views {
-class TextButton;
+class LabelButton;
 }
 
 // Provides functionality to display information about a hung renderer.
@@ -159,7 +159,7 @@ class HungRendererDialogView : public views::DialogDelegateView,
   views::TableView* hung_pages_table_;
 
   // The extra button inserted into the ClientView to kill the errant process.
-  views::TextButton* kill_button_;
+  views::LabelButton* kill_button_;
 
   // The model that provides the contents of the table that shows a list of
   // pages affected by the hang.

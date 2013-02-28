@@ -7,8 +7,7 @@
 #include <algorithm>
 
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "ui/views/controls/button/chrome_style.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -22,7 +21,7 @@ namespace {
 const int kButtonGroup = 6666;
 
 // Update |button|'s text and enabled state according to |delegate|'s state.
-void UpdateButton(TextButton* button,
+void UpdateButton(LabelButton* button,
                   DialogDelegate* dialog,
                   ui::DialogButton type) {
   button->SetText(dialog->GetDialogButtonLabel(type));
@@ -117,11 +116,10 @@ void DialogClientView::OnWillChangeFocus(View* focused_before,
 
   // Make the newly focused button default or restore the dialog's default.
   const int default_button = GetDialogDelegate()->GetDefaultDialogButton();
-  TextButton* new_default_button = NULL;
+  LabelButton* new_default_button = NULL;
   if (focused_now &&
-      (focused_now->GetClassName() == TextButton::kViewClassName ||
-       focused_now->GetClassName() == NativeTextButton::kViewClassName)) {
-    new_default_button = static_cast<TextButton*>(focused_now);
+      (focused_now->GetClassName() == LabelButton::kViewClassName)) {
+    new_default_button = static_cast<LabelButton*>(focused_now);
   } else if (default_button == ui::DIALOG_BUTTON_OK && ok_button_) {
     new_default_button = ok_button_;
   } else if (default_button == ui::DIALOG_BUTTON_CANCEL && cancel_button_) {
@@ -287,17 +285,13 @@ void DialogClientView::CreateDialogButtons() {
     AddAccelerator(escape);
 }
 
-TextButton* DialogClientView::CreateDialogButton(ui::DialogButton type) {
+LabelButton* DialogClientView::CreateDialogButton(ui::DialogButton type) {
   const string16 title = GetDialogDelegate()->GetDialogButtonLabel(type);
-  TextButton* button = NULL;
-  if (DialogDelegate::UseNewStyle()) {
-    button = new TextButton(this, title);
-    ApplyChromeStyle(button);
-  } else {
-    button = new NativeTextButton(this, title);
-  }
+  LabelButton* button = new LabelButton(this, title);
+  button->SetStyle(Button::STYLE_NATIVE_TEXTBUTTON);
+
   const int kDialogMinButtonWidth = 75;
-  button->set_min_width(kDialogMinButtonWidth);
+  button->set_min_size(gfx::Size(kDialogMinButtonWidth, 0));
   button->SetGroup(kButtonGroup);
   if (type == GetDialogDelegate()->GetDefaultDialogButton()) {
     default_button_ = button;

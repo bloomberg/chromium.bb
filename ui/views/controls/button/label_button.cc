@@ -122,6 +122,8 @@ void LabelButton::SetStyle(ButtonStyle style) {
   set_border(new LabelButtonBorder(style));
   // Inset the button focus rect from the actual border; roughly match Windows.
   set_focus_border(FocusBorder::CreateDashedFocusBorder(3, 3, 3, 3));
+  if (style_ == STYLE_NATIVE_TEXTBUTTON)
+    label_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   // Invalidate the layout to pickup the new insets from the border.
   InvalidateLayout();
   ResetColorsFromNativeTheme();

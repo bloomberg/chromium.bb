@@ -24,8 +24,8 @@
 
 namespace views {
 class Label;
+class LabelButton;
 class MenuRunner;
-class TextButton;
 class TreeView;
 }
 
@@ -227,7 +227,7 @@ class BookmarkEditorView : public BookmarkEditor,
   views::TreeView* tree_view_;
 
   // Used to create a new folder.
-  scoped_ptr<views::TextButton> new_folder_button_;
+  scoped_ptr<views::LabelButton> new_folder_button_;
 
   // The label for the url text field.
   views::Label* url_label_;

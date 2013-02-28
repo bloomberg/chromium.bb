@@ -13,7 +13,7 @@
 namespace views {
 
 class DialogDelegate;
-class TextButton;
+class LabelButton;
 class Widget;
 
 // DialogClientView provides adornments for a dialog's content view, including
@@ -39,8 +39,8 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   void CancelWindow();
 
   // Accessors in case the user wishes to adjust these buttons.
-  TextButton* ok_button() const { return ok_button_; }
-  TextButton* cancel_button() const { return cancel_button_; }
+  LabelButton* ok_button() const { return ok_button_; }
+  LabelButton* cancel_button() const { return cancel_button_; }
 
   // Update the dialog buttons to match the dialog's delegate.
   void UpdateDialogButtons();
@@ -76,7 +76,7 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   void CreateDialogButtons();
 
   // Create a dialog button of the appropriate type.
-  TextButton* CreateDialogButton(ui::DialogButton type);
+  LabelButton* CreateDialogButton(ui::DialogButton type);
 
   // Returns the height of the row containing the buttons and the extra view.
   int GetButtonsAndExtraViewRowHeight() const;
@@ -94,11 +94,11 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   void Close();
 
   // The dialog buttons.
-  TextButton* ok_button_;
-  TextButton* cancel_button_;
+  LabelButton* ok_button_;
+  LabelButton* cancel_button_;
 
   // The button that is currently default; may be NULL.
-  TextButton* default_button_;
+  LabelButton* default_button_;
 
   // Observe |focus_manager_| to update the default button with focus changes.
   FocusManager* focus_manager_;

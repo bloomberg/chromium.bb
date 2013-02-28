@@ -28,8 +28,8 @@ class X509Certificate;
 }
 
 namespace views {
+class LabelButton;
 class TableView;
-class TextButton;
 class Widget;
 }
 
@@ -82,7 +82,7 @@ class SSLClientCertificateSelector : public SSLClientAuthObserver,
 
   views::Widget* window_;
   views::TableView* table_;
-  views::TextButton* view_cert_button_;
+  views::LabelButton* view_cert_button_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLClientCertificateSelector);
 };

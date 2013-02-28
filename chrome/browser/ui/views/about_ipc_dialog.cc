@@ -34,7 +34,7 @@
 #include "content/public/browser/browser_ipc_logging.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
@@ -218,9 +218,9 @@ void AboutIPCDialog::SetupControls() {
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
-  track_toggle_ = new views::TextButton(this, kStartTrackingLabel);
-  clear_button_ = new views::TextButton(this, kClearLabel);
-  filter_button_ = new views::TextButton(this, kFilterLabel);
+  track_toggle_ = new views::LabelButton(this, kStartTrackingLabel);
+  clear_button_ = new views::LabelButton(this, kClearLabel);
+  filter_button_ = new views::LabelButton(this, kFilterLabel);
 
   table_ = new views::NativeViewHost;
 

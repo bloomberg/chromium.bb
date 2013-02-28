@@ -21,8 +21,8 @@
 template <typename T> struct DefaultSingletonTraits;
 
 namespace views {
+class LabelButton;
 class NativeViewHost;
-class TextButton;
 }
 
 class AboutIPCDialog : public views::DialogDelegateView,
@@ -61,9 +61,9 @@ class AboutIPCDialog : public views::DialogDelegateView,
 
   WTL::CListViewCtrl message_list_;
 
-  views::TextButton* track_toggle_;
-  views::TextButton* clear_button_;
-  views::TextButton* filter_button_;
+  views::LabelButton* track_toggle_;
+  views::LabelButton* clear_button_;
+  views::LabelButton* filter_button_;
   views::NativeViewHost* table_;
 
   // Set to true when we're tracking network status.

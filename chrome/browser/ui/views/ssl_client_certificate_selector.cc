@@ -20,7 +20,7 @@
 #include "ui/base/models/table_model.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/layout/grid_layout.h"
@@ -212,8 +212,9 @@ views::View* SSLClientCertificateSelector::GetInitiallyFocusedView() {
 
 views::View* SSLClientCertificateSelector::CreateExtraView() {
   DCHECK(!view_cert_button_);
-  view_cert_button_ = new views::NativeTextButton(this,
+  view_cert_button_ = new views::LabelButton(this,
       l10n_util::GetStringUTF16(IDS_PAGEINFO_CERT_INFO_BUTTON));
+  view_cert_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   return view_cert_button_;
 }
 

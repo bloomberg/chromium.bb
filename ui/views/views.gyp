@@ -88,8 +88,6 @@
         'controls/button/radio_button.h',
         'controls/button/text_button.cc',
         'controls/button/text_button.h',
-        'controls/button/chrome_style.cc',
-        'controls/button/chrome_style.h',
         'controls/combobox/combobox.cc',
         'controls/combobox/combobox.h',
         'controls/combobox/combobox_listener.h',

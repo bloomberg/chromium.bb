@@ -28,7 +28,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
@@ -100,9 +100,9 @@ NetworkConfigView::NetworkConfigView(ConnectionType type)
   SetActiveDialog(this);
   if (type == TYPE_WIFI) {
     child_config_view_ = new WifiConfigView(this, false /* show_8021x */);
-    advanced_button_ = new views::NativeTextButton(this,
-        l10n_util::GetStringUTF16(
-            IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ADVANCED_BUTTON));
+    advanced_button_ = new views::LabelButton(this, l10n_util::GetStringUTF16(
+        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ADVANCED_BUTTON));
+    advanced_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   } else if (type == TYPE_VPN) {
     child_config_view_ = new VPNConfigView(this);
   } else {

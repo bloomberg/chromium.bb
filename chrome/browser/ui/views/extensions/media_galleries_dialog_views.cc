@@ -10,7 +10,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/button/checkbox.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
@@ -188,8 +188,9 @@ ui::ModalType MediaGalleriesDialogViews::GetModalType() const {
 
 views::View* MediaGalleriesDialogViews::CreateExtraView() {
   DCHECK(!add_gallery_button_);
-  add_gallery_button_ = new views::NativeTextButton(this,
+  add_gallery_button_ = new views::LabelButton(this,
       l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY));
+  add_gallery_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   return add_gallery_button_;
 }
 

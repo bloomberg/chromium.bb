@@ -31,8 +31,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
 #include "ui/views/context_menu_controller.h"
-#include "ui/views/controls/button/chrome_style.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
@@ -266,8 +265,8 @@ class TaskManagerView : public views::ButtonListener,
   // Restores saved always on top state from a previous session.
   bool GetSavedAlwaysOnTopState(bool* always_on_top) const;
 
-  views::TextButton* purge_memory_button_;
-  views::TextButton* kill_button_;
+  views::LabelButton* purge_memory_button_;
+  views::LabelButton* kill_button_;
   views::Link* about_memory_link_;
   views::TableView* tab_table_;
   views::View* tab_table_parent_;
@@ -415,15 +414,13 @@ void TaskManagerView::Init() {
   // If we're running with --purge-memory-button, add a "Purge memory" button.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kPurgeMemoryButton)) {
-    purge_memory_button_ = new views::NativeTextButton(this,
+    purge_memory_button_ = new views::LabelButton(this,
         l10n_util::GetStringUTF16(IDS_TASK_MANAGER_PURGE_MEMORY));
-    if (DialogDelegate::UseNewStyle())
-      views::ApplyChromeStyle(purge_memory_button_);
+    purge_memory_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   }
-  kill_button_ = new views::NativeTextButton(this,
+  kill_button_ = new views::LabelButton(this,
       l10n_util::GetStringUTF16(IDS_TASK_MANAGER_KILL));
-  if (DialogDelegate::UseNewStyle())
-    views::ApplyChromeStyle(kill_button_);
+  kill_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   about_memory_link_ = new views::Link(
       l10n_util::GetStringUTF16(IDS_TASK_MANAGER_ABOUT_MEMORY_LINK));
   about_memory_link_->set_listener(this);

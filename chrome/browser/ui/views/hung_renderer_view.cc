@@ -30,7 +30,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
@@ -307,8 +307,9 @@ string16 HungRendererDialogView::GetDialogButtonLabel(
 
 views::View* HungRendererDialogView::CreateExtraView() {
   DCHECK(!kill_button_);
-  kill_button_ = new views::NativeTextButton(this,
+  kill_button_ = new views::LabelButton(this,
       l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_END));
+  kill_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   return kill_button_;
 }
 

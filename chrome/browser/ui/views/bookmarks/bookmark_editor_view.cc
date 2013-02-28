@@ -25,8 +25,7 @@
 #include "ui/base/events/event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/background.h"
-#include "ui/views/controls/button/chrome_style.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -283,10 +282,9 @@ void BookmarkEditorView::Init() {
     tree_view_->SetRootShown(false);
     tree_view_->set_context_menu_controller(this);
 
-    new_folder_button_.reset(new views::NativeTextButton(this,
+    new_folder_button_.reset(new views::LabelButton(this,
         l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NEW_FOLDER_BUTTON)));
-    if (DialogDelegate::UseNewStyle())
-      views::ApplyChromeStyle(new_folder_button_.get());
+    new_folder_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
     new_folder_button_->set_owned_by_client();
     new_folder_button_->SetEnabled(false);
   }
