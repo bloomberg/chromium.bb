@@ -73,7 +73,8 @@ bool WaitForTabsAndPopups(Browser* browser,
   const base::TimeDelta kWaitTime = base::TimeDelta::FromSeconds(10);
   base::TimeTicks end_time = base::TimeTicks::Now() + kWaitTime;
   while (base::TimeTicks::Now() < end_time) {
-    if (chrome::GetBrowserCount(browser->profile()) == num_browsers &&
+    if (chrome::GetBrowserCount(browser->profile(),
+                                browser->host_desktop_type()) == num_browsers &&
         browser->tab_strip_model()->count() == num_tabs &&
         GetPanelCount(browser) == num_panels)
       break;
@@ -81,7 +82,9 @@ bool WaitForTabsAndPopups(Browser* browser,
     content::RunAllPendingInMessageLoop();
   }
 
-  EXPECT_EQ(num_browsers, chrome::GetBrowserCount(browser->profile()));
+  EXPECT_EQ(num_browsers,
+            chrome::GetBrowserCount(browser->profile(),
+                                    browser->host_desktop_type()));
   EXPECT_EQ(num_tabs, browser->tab_strip_model()->count());
   EXPECT_EQ(num_panels, GetPanelCount(browser));
 
@@ -101,7 +104,9 @@ bool WaitForTabsAndPopups(Browser* browser,
   }
   EXPECT_EQ(num_popups, num_popups_seen);
 
-  return ((num_browsers == chrome::GetBrowserCount(browser->profile())) &&
+  return ((num_browsers ==
+               chrome::GetBrowserCount(browser->profile(),
+                                       browser->host_desktop_type())) &&
           (num_tabs == browser->tab_strip_model()->count()) &&
           (num_panels == GetPanelCount(browser)) &&
           (num_popups == num_popups_seen));

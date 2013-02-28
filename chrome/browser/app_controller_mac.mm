@@ -365,8 +365,10 @@ void RecordLastRunAppBundlePath() {
 }
 
 - (void)didEndMainMessageLoop {
-  DCHECK_EQ(0u, chrome::GetBrowserCount([self lastProfile]));
-  if (!chrome::GetBrowserCount([self lastProfile])) {
+  DCHECK_EQ(0u, chrome::GetBrowserCount([self lastProfile],
+                                        chrome::HOST_DESKTOP_TYPE_NATIVE));
+  if (!chrome::GetBrowserCount([self lastProfile],
+                               chrome::HOST_DESKTOP_TYPE_NATIVE)) {
     // As we're shutting down, we need to nuke the TabRestoreService, which
     // will start the shutdown of the NavigationControllers and allow for
     // proper shutdown. If we don't do this, Chrome won't shut down cleanly,

@@ -588,7 +588,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     // chrome to shut down.
     // TODO(jackhou): Do this properly once keep-alive is handled by the
     // background page of apps. Tracked at http://crbug.com/175381
-    if (chrome::GetBrowserCount(last_used_profile) != 0)
+    if (chrome::GetTotalBrowserCountForProfile(last_used_profile) != 0)
       return true;
   }
 

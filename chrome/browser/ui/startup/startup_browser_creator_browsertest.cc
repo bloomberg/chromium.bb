@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -72,7 +73,8 @@ class StartupBrowserCreatorTest : public ExtensionBrowserTest {
     ASSERT_TRUE(*out_app_extension);
 
     // Code that opens a new browser assumes we start with exactly one.
-    ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
+    ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile(),
+                                          browser()->host_desktop_type()));
   }
 
   void SetAppLaunchPref(const std::string& app_id,
@@ -85,7 +87,8 @@ class StartupBrowserCreatorTest : public ExtensionBrowserTest {
   // Check that there are two browsers.  Find the one that is not |browser()|.
   void FindOneOtherBrowser(Browser** out_other_browser) {
     // There should only be one other browser.
-    ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
+    ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile(),
+                                          browser()->host_desktop_type()));
 
     // Find the new browser.
     Browser* other_browser = NULL;
@@ -313,7 +316,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutTabPref) {
 
   // When an app shortcut is open and the pref indicates a tab should
   // open, the tab is open in a new browser window.  Expect a new window.
-  ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
+  ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile(),
+                                        browser()->host_desktop_type()));
 
   Browser* new_browser = NULL;
   ASSERT_NO_FATAL_FAILURE(FindOneOtherBrowser(&new_browser));
@@ -595,14 +599,16 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, StartupURLsForTwoProfiles) {
   Browser* new_browser = NULL;
   // |browser()| is still around at this point, even though we've closed its
   // window. Thus the browser count for default_profile is 2.
-  ASSERT_EQ(2u, chrome::GetBrowserCount(default_profile));
+  ASSERT_EQ(2u, chrome::GetBrowserCount(default_profile,
+                                        browser()->host_desktop_type()));
   new_browser = FindOneOtherBrowserForProfile(default_profile, browser());
   ASSERT_TRUE(new_browser);
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(1, tab_strip->count());
   EXPECT_EQ(urls1[0], tab_strip->GetWebContentsAt(0)->GetURL());
 
-  ASSERT_EQ(1u, chrome::GetBrowserCount(other_profile));
+  ASSERT_EQ(1u, chrome::GetBrowserCount(other_profile,
+                                        browser()->host_desktop_type()));
   new_browser = FindOneOtherBrowserForProfile(other_profile, NULL);
   ASSERT_TRUE(new_browser);
   tab_strip = new_browser->tab_strip_model();
@@ -667,7 +673,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, UpdateWithTwoProfiles) {
   EXPECT_TRUE(profile2->restored_last_session());
 
   Browser* new_browser = NULL;
-  ASSERT_EQ(1u, chrome::GetBrowserCount(profile1));
+  ASSERT_EQ(1u, chrome::GetBrowserCount(profile1,
+                                        browser()->host_desktop_type()));
   new_browser = FindOneOtherBrowserForProfile(profile1, NULL);
   ASSERT_TRUE(new_browser);
   TabStripModel* tab_strip = new_browser->tab_strip_model();
@@ -675,7 +682,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, UpdateWithTwoProfiles) {
   EXPECT_EQ(GURL(chrome::kAboutBlankURL),
             tab_strip->GetWebContentsAt(0)->GetURL());
 
-  ASSERT_EQ(1u, chrome::GetBrowserCount(profile2));
+  ASSERT_EQ(1u, chrome::GetBrowserCount(profile2,
+                                        browser()->host_desktop_type()));
   new_browser = FindOneOtherBrowserForProfile(profile2, NULL);
   ASSERT_TRUE(new_browser);
   tab_strip = new_browser->tab_strip_model();
@@ -728,6 +736,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   SessionStartupPref::SetStartupPref(profile_urls, pref_urls);
 
   // Close the browser.
+  chrome::HostDesktopType original_desktop_type =
+      browser()->host_desktop_type();
   browser()->window()->Close();
 
   // Do a simple non-process-startup browser launch.
@@ -753,7 +763,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   Browser* new_browser = NULL;
   // The last open profile (the profile_home1 in this case) will always be
   // launched, even if it will open just the home page.
-  ASSERT_EQ(1u, chrome::GetBrowserCount(profile_home1));
+  ASSERT_EQ(1u, chrome::GetBrowserCount(profile_home1, original_desktop_type));
   new_browser = FindOneOtherBrowserForProfile(profile_home1, NULL);
   ASSERT_TRUE(new_browser);
   TabStripModel* tab_strip = new_browser->tab_strip_model();
@@ -762,7 +772,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
             tab_strip->GetWebContentsAt(0)->GetURL());
 
   // profile_urls opened the urls.
-  ASSERT_EQ(1u, chrome::GetBrowserCount(profile_urls));
+  ASSERT_EQ(1u, chrome::GetBrowserCount(profile_urls, original_desktop_type));
   new_browser = FindOneOtherBrowserForProfile(profile_urls, NULL);
   ASSERT_TRUE(new_browser);
   tab_strip = new_browser->tab_strip_model();
@@ -770,7 +780,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   EXPECT_EQ(urls[0], tab_strip->GetWebContentsAt(0)->GetURL());
 
   // profile_last opened the last open pages.
-  ASSERT_EQ(1u, chrome::GetBrowserCount(profile_last));
+  ASSERT_EQ(1u, chrome::GetBrowserCount(profile_last, original_desktop_type));
   new_browser = FindOneOtherBrowserForProfile(profile_last, NULL);
   ASSERT_TRUE(new_browser);
   tab_strip = new_browser->tab_strip_model();
@@ -779,7 +789,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
             tab_strip->GetWebContentsAt(0)->GetURL());
 
   // profile_home2 was not launched since it would've only opened the home page.
-  ASSERT_EQ(0u, chrome::GetBrowserCount(profile_home2));
+  ASSERT_EQ(0u, chrome::GetBrowserCount(profile_home2, original_desktop_type));
 }
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
@@ -847,7 +857,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
 
   // The profile which normally opens the home page displays the new tab page.
   Browser* new_browser = NULL;
-  ASSERT_EQ(1u, chrome::GetBrowserCount(profile_home));
+  ASSERT_EQ(1u, chrome::GetBrowserCount(profile_home,
+                                        browser()->host_desktop_type()));
   new_browser = FindOneOtherBrowserForProfile(profile_home, NULL);
   ASSERT_TRUE(new_browser);
   TabStripModel* tab_strip = new_browser->tab_strip_model();
@@ -858,7 +869,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
             InfoBarService::FromWebContents(web_contents)->GetInfoBarCount());
 
   // The profile which normally opens last open pages displays the new tab page.
-  ASSERT_EQ(1u, chrome::GetBrowserCount(profile_last));
+  ASSERT_EQ(1u, chrome::GetBrowserCount(profile_last,
+                                        browser()->host_desktop_type()));
   new_browser = FindOneOtherBrowserForProfile(profile_last, NULL);
   ASSERT_TRUE(new_browser);
   tab_strip = new_browser->tab_strip_model();
@@ -869,7 +881,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
             InfoBarService::FromWebContents(web_contents)->GetInfoBarCount());
 
   // The profile which normally opens URLs displays the new tab page.
-  ASSERT_EQ(1u, chrome::GetBrowserCount(profile_urls));
+  ASSERT_EQ(1u, chrome::GetBrowserCount(profile_urls,
+                                        browser()->host_desktop_type()));
   new_browser = FindOneOtherBrowserForProfile(profile_urls, NULL);
   ASSERT_TRUE(new_browser);
   tab_strip = new_browser->tab_strip_model();
