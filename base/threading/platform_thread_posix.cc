@@ -50,7 +50,34 @@ namespace {
 struct ThreadParams {
   PlatformThread::Delegate* delegate;
   bool joinable;
+  ThreadPriority priority;
 };
+
+void SetCurrentThreadPriority(ThreadPriority priority) {
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  switch (priority) {
+    case kThreadPriority_Normal:
+      NOTREACHED() << "Don't reset priority as not all processes can.";
+      break;
+    case kThreadPriority_RealtimeAudio:
+#if defined(OS_LINUX)
+      const int kNiceSetting = -10;
+      // Linux isn't posix compliant with setpriority(2), it will set a thread
+      // priority if it is passed a tid, not affecting the rest of the threads
+      // in the process.  Setting this priority will only succeed if the user
+      // has been granted permission to adjust nice values on the system.
+      if (setpriority(PRIO_PROCESS, PlatformThread::CurrentId(), kNiceSetting))
+        DVLOG(1) << "Failed to set nice value of thread to " << kNiceSetting;
+#elif defined(OS_ANDROID)
+      JNIEnv* env = base::android::AttachCurrentThread();
+      Java_ThreadUtils_setThreadPriorityAudio(env, PlatformThread::CurrentId());
+#endif  // defined(OS_LINUX)
+      break;
+  }
+#else  // !defined(OS_LINUX) && !defined(OS_ANDROID)
+  PlatformThread::SetThreadPriority(pthread_self(), priority);
+#endif
+}
 
 void* ThreadFunc(void* params) {
 #if defined(OS_ANDROID)
@@ -64,6 +91,11 @@ void* ThreadFunc(void* params) {
   PlatformThread::Delegate* delegate = thread_params->delegate;
   if (!thread_params->joinable)
     base::ThreadRestrictions::SetSingletonAllowed(false);
+
+  // If there is a non-default priority for this thread, set it now.
+  if (thread_params->priority != kThreadPriority_Normal)
+    SetCurrentThreadPriority(thread_params->priority);
+
   delete thread_params;
   delegate->ThreadMain();
 #if defined(OS_ANDROID)
@@ -127,25 +159,9 @@ bool CreateThread(size_t stack_size, bool joinable,
   ThreadParams* params = new ThreadParams;
   params->delegate = delegate;
   params->joinable = joinable;
-  success = !pthread_create(thread_handle, &attributes, ThreadFunc, params);
+  params->priority = priority;
 
-  if (priority != kThreadPriority_Normal) {
-#if defined(OS_LINUX)
-    if (priority == kThreadPriority_RealtimeAudio) {
-      // Linux isn't posix compliant with setpriority(2), it will set a thread
-      // priority if it is passed a tid, not affecting the rest of the threads
-      // in the process.  Setting this priority will only succeed if the user
-      // has been granted permission to adjust nice values on the system.
-      const int kNiceSetting = -10;
-      if (setpriority(PRIO_PROCESS, PlatformThread::CurrentId(), kNiceSetting))
-        DVLOG(1) << "Failed to set nice value of thread to " << kNiceSetting;
-    } else {
-      NOTREACHED() << "Unknown thread priority.";
-    }
-#else
-    PlatformThread::SetThreadPriority(*thread_handle, priority);
-#endif
-  }
+  success = !pthread_create(thread_handle, &attributes, ThreadFunc, params);
 
   pthread_attr_destroy(&attributes);
   if (!success)
@@ -282,16 +298,6 @@ void PlatformThread::SetThreadPriority(PlatformThreadHandle, ThreadPriority) {
 #if defined(OS_ANDROID)
 bool RegisterThreadUtils(JNIEnv* env) {
   return RegisterNativesImpl(env);
-}
-
-void PlatformThread::SetThreadPriority(PlatformThreadHandle,
-                                       ThreadPriority priority) {
-  if (priority == kThreadPriority_RealtimeAudio) {
-    JNIEnv* env = base::android::AttachCurrentThread();
-    Java_ThreadUtils_setThreadPriorityAudio(env, PlatformThread::CurrentId());
-  } else {
-    NOTREACHED() << "Unknown thread priority.";
-  }
 }
 #endif  // defined(OS_ANDROID)
 
