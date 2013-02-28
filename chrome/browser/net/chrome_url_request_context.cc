@@ -133,11 +133,10 @@ class FactoryForIsolatedApp : public ChromeURLRequestContextFactory {
     // factory is actually destroyed. Thus it is safe to destructively pass
     // state onwards.
     return profile_io_data_->GetIsolatedAppRequestContext(
-        main_request_context_getter_->GetIOContext(), partition_descriptor_,
-        protocol_handler_interceptor_.Pass(), blob_protocol_handler_.Pass(),
-        file_system_protocol_handler_.Pass(),
-        developer_protocol_handler_.Pass(),
-        chrome_protocol_handler_.Pass(),
+        main_request_context_getter_->GetURLRequestContext(),
+        partition_descriptor_, protocol_handler_interceptor_.Pass(),
+        blob_protocol_handler_.Pass(), file_system_protocol_handler_.Pass(),
+        developer_protocol_handler_.Pass(), chrome_protocol_handler_.Pass(),
         chrome_devtools_protocol_handler_.Pass());
   }
 
@@ -180,7 +179,7 @@ class FactoryForIsolatedMedia : public ChromeURLRequestContextFactory {
     // |protocol_handler_interceptor|.  This is why the API
     // looks different from FactoryForIsolatedApp's.
     return profile_io_data_->GetIsolatedMediaRequestContext(
-        app_context_getter_->GetIOContext(), partition_descriptor_);
+        app_context_getter_->GetURLRequestContext(), partition_descriptor_);
   }
 
  private:
@@ -219,7 +218,8 @@ ChromeURLRequestContextGetter::ChromeURLRequestContextGetter(
 ChromeURLRequestContextGetter::~ChromeURLRequestContextGetter() {}
 
 // Lazily create a ChromeURLRequestContext using our factory.
-net::URLRequestContext* ChromeURLRequestContextGetter::GetURLRequestContext() {
+ChromeURLRequestContext*
+ChromeURLRequestContextGetter::GetURLRequestContext() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (!url_request_context_) {
@@ -232,7 +232,7 @@ net::URLRequestContext* ChromeURLRequestContextGetter::GetURLRequestContext() {
   // after the Profile has already been deleted.
   CHECK(url_request_context_.get());
 
-  return url_request_context_;
+  return url_request_context_.get();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
