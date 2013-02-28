@@ -71,6 +71,12 @@ namespace IPC {
 class Message;
 }
 
+namespace autofill {
+
+extern const char kAutofillManagerWebContentsUserDataKey[];
+
+}  // namespace autofill
+
 // Manages saving and restoring the user's personal information entered into web
 // forms.
 class AutofillManager : public content::WebContentsObserver,
@@ -201,6 +207,9 @@ class AutofillManager : public content::WebContentsObserver,
   bool OnFormSubmitted(const FormData& form,
                        const base::TimeTicks& timestamp);
 
+  virtual void OnFormsSeen(const std::vector<FormData>& forms,
+                           const base::TimeTicks& timestamp);
+
   // Tell the renderer the current interactive autocomplete finished.
   virtual void ReturnAutocompleteResult(
       WebKit::WebFormElement::AutocompleteResult result,
@@ -236,8 +245,6 @@ class AutofillManager : public content::WebContentsObserver,
   void UpdatePasswordGenerationState(content::RenderViewHost* host,
                                      bool new_renderer);
 
-  void OnFormsSeen(const std::vector<FormData>& forms,
-                   const base::TimeTicks& timestamp);
   void OnTextFieldDidChange(const FormData& form,
                             const FormFieldData& field,
                             const base::TimeTicks& timestamp);

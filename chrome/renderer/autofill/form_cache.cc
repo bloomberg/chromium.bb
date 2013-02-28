@@ -13,11 +13,11 @@
 #include "chrome/renderer/autofill/form_autofill_util.h"
 #include "grit/generated_resources.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormControlElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSelectElement.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -25,7 +25,6 @@
 using WebKit::WebDocument;
 using WebKit::WebFormControlElement;
 using WebKit::WebFormElement;
-using WebKit::WebFrame;
 using WebKit::WebInputElement;
 using WebKit::WebSelectElement;
 using WebKit::WebString;
@@ -43,13 +42,14 @@ const size_t kRequiredAutofillFields = 3;
 
 namespace autofill {
 
-// Helper function to discard state of various WebFormElements when they go out
-// of web frame's scope. This is done to release memory that we no longer need
-// to hold.
+// Helper function to discard the state of various WebFormElements when their
+// containing document goes out of scope. This is done to release memory that we
+// no longer need to hold.
 // K should inherit from WebFormControlElement as the function looks to extract
 // WebFormElement for K.form().
 template <class K, class V>
-void RemoveOldElements(const WebFrame& frame, std::map<const K, V>* states) {
+void RemoveOldElements(const WebDocument& document,
+                       std::map<const K, V>* states) {
   std::vector<K> to_remove;
   for (typename std::map<const K, V>::const_iterator it = states->begin();
        it != states->end(); ++it) {
@@ -57,8 +57,8 @@ void RemoveOldElements(const WebFrame& frame, std::map<const K, V>* states) {
     if (form_element.isNull()) {
       to_remove.push_back(it->first);
     } else {
-      const WebFrame* element_frame = form_element.document().frame();
-      if (!element_frame || element_frame == &frame)
+      const WebDocument element_document = form_element.document();
+      if (element_document.isNull() || element_document == document)
         to_remove.push_back(it->first);
     }
   }
@@ -75,21 +75,16 @@ FormCache::FormCache() {
 FormCache::~FormCache() {
 }
 
-void FormCache::ExtractForms(const WebFrame& frame,
+void FormCache::ExtractForms(const WebDocument& document,
                              std::vector<FormData>* forms) {
-  ExtractFormsAndFormElements(frame, forms, NULL);
+  ExtractFormsAndFormElements(document, forms, NULL);
 }
 
 void FormCache::ExtractFormsAndFormElements(
-    const WebFrame& frame,
+    const WebDocument& document,
     std::vector<FormData>* forms,
     std::vector<WebFormElement>* web_form_elements) {
-  // Reset the cache for this frame.
-  ResetFrame(frame);
-
-  WebDocument document = frame.document();
-  if (document.isNull())
-    return;
+  ResetCacheForDocument(document);
 
   web_documents_.insert(document);
 
@@ -149,12 +144,11 @@ void FormCache::ExtractFormsAndFormElements(
   }
 }
 
-void FormCache::ResetFrame(const WebFrame& frame) {
+void FormCache::ResetCacheForDocument(const WebDocument& document) {
   std::vector<WebDocument> documents_to_delete;
   for (std::set<WebDocument>::const_iterator it = web_documents_.begin();
        it != web_documents_.end(); ++it) {
-    const WebFrame* document_frame = it->frame();
-    if (!document_frame || document_frame == &frame)
+    if (it->isNull() || (*it == document))
       documents_to_delete.push_back(*it);
   }
 
@@ -164,8 +158,8 @@ void FormCache::ResetFrame(const WebFrame& frame) {
     web_documents_.erase(*it);
   }
 
-  RemoveOldElements(frame, &initial_select_values_);
-  RemoveOldElements(frame, &initial_checked_state_);
+  RemoveOldElements(document, &initial_select_values_);
+  RemoveOldElements(document, &initial_checked_state_);
 }
 
 bool FormCache::ClearFormWithElement(const WebInputElement& element) {

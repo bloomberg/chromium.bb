@@ -16,6 +16,7 @@
 #include "chrome/renderer/page_click_listener.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 
@@ -55,7 +56,7 @@ class AutofillAgent : public content::RenderViewObserver,
     AUTOFILL_PREVIEW,  // Preview the Autofill form data.
   };
 
-  // RenderView::Observer:
+  // RenderViewObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidFinishDocumentLoad(WebKit::WebFrame* frame) OVERRIDE;
   virtual void DidStartProvisionalLoad(WebKit::WebFrame* frame) OVERRIDE;
@@ -200,6 +201,13 @@ class AutofillAgent : public content::RenderViewObserver,
   // Hides any currently showing Autofill popups in the browser only.
   void HideHostPopups();
 
+  // Populates the |form_cache_| with forms extracted from the given |frame| and
+  // sends the list of forms up to the browser process.  Should only be called
+  // once the document has been fully loaded.  The document is intentionally
+  // passed by value so as to ensure that its reference count never dips down to
+  // zero.
+  void ExtractForms(WebKit::WebDocument document);
+
   FormCache form_cache_;
 
   PasswordAutofillManager* password_autofill_manager_;  // WEAK reference.
@@ -253,6 +261,7 @@ class AutofillAgent : public content::RenderViewObserver,
   bool ignore_text_changes_;
 
   base::WeakPtrFactory<AutofillAgent> weak_ptr_factory_;
+  base::WeakPtrFactory<AutofillAgent> text_change_weak_ptr_factory_;
 
   friend class PasswordAutofillManagerTest;
   FRIEND_TEST_ALL_PREFIXES(ChromeRenderViewTest, FillFormElement);

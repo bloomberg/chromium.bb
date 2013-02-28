@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_manager.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 
 namespace {
@@ -25,6 +27,35 @@ GURL HTMLToDataURI(const std::string& html) {
   return GURL(std::string("data:text/html;charset=utf-8,") + html);
 }
 
+// Enables tests to run a message loop to wait until forms are loaded.
+class TestAutofillManager : public AutofillManager {
+ public:
+  TestAutofillManager(content::WebContents* contents,
+                      autofill::AutofillManagerDelegate* delegate)
+      : AutofillManager(contents, delegate) {
+  }
+  virtual ~TestAutofillManager() {}
+
+  virtual void OnFormsSeen(const std::vector<FormData>& forms,
+                           const base::TimeTicks& timestamp) OVERRIDE {
+    AutofillManager::OnFormsSeen(forms, timestamp);
+    message_loop_runner_->Quit();
+  }
+
+  void WaitForFormsSeen() {
+    message_loop_runner_->Run();
+  }
+
+  void ResetMessageLoopRunner() {
+    message_loop_runner_ = new content::MessageLoopRunner();
+  }
+
+ private:
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestAutofillManager);
+};
+
 }  // namespace
 
 // A data-driven test for verifying Autofill heuristics. Each input is an HTML
@@ -35,6 +66,9 @@ class FormStructureBrowserTest : public InProcessBrowserTest,
  protected:
   FormStructureBrowserTest();
   virtual ~FormStructureBrowserTest();
+
+  // InProcessBrowserTest:
+  virtual void SetUpOnMainThread() OVERRIDE;
 
   // DataDrivenTest:
   virtual void GenerateResults(const std::string& input,
@@ -53,14 +87,29 @@ FormStructureBrowserTest::FormStructureBrowserTest() {
 FormStructureBrowserTest::~FormStructureBrowserTest() {
 }
 
+void FormStructureBrowserTest::SetUpOnMainThread() {
+  // Swap in a TestAutofillManager in place of the regular AutofillManager.
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  autofill::AutofillManagerDelegate* delegate =
+      AutofillManager::FromWebContents(contents)->delegate();
+  contents->SetUserData(
+      autofill::kAutofillManagerWebContentsUserDataKey,
+      new TestAutofillManager(contents, delegate));
+}
+
 void FormStructureBrowserTest::GenerateResults(const std::string& input,
                                                std::string* output) {
+  TestAutofillManager* autofill_manager =
+      static_cast<TestAutofillManager*>(AutofillManager::FromWebContents(
+          browser()->tab_strip_model()->GetActiveWebContents()));
+  ASSERT_NE(static_cast<AutofillManager*>(NULL), autofill_manager);
+  autofill_manager->ResetMessageLoopRunner();
+
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
                                                        HTMLToDataURI(input)));
 
-  AutofillManager* autofill_manager = AutofillManager::FromWebContents(
-      browser()->tab_strip_model()->GetActiveWebContents());
-  ASSERT_NE(static_cast<AutofillManager*>(NULL), autofill_manager);
+  autofill_manager->WaitForFormsSeen();
   std::vector<FormStructure*> forms = autofill_manager->form_structures_.get();
   *output = FormStructureBrowserTest::FormStructuresToString(forms);
 }
