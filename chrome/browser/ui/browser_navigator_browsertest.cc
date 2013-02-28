@@ -1182,6 +1182,31 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                 GetActiveWebContents()->GetURL()));
 }
 
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, CloseSingletonTab) {
+  for (int i = 0; i < 2; ++i) {
+    content::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
+    chrome::AddSelectedTabWithURL(browser(), GetGoogleURL(),
+                                  content::PAGE_TRANSITION_TYPED);
+    observer.Wait();
+  }
+
+  browser()->tab_strip_model()->ActivateTabAt(0, true);
+
+  {
+    content::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
+    chrome::ShowSettings(browser());
+    observer.Wait();
+  }
+
+  EXPECT_TRUE(browser()->tab_strip_model()->CloseWebContentsAt(
+      2, TabStripModel::CLOSE_USER_GESTURE));
+  EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
+}
+
 // TODO(csilv): Update this for uber page. http://crbug.com/111579.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        DISABLED_NavigateFromDefaultToHistoryInSameTab) {
