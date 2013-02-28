@@ -112,17 +112,7 @@ function updateMenuItemsTest() {
   }, chrome.test.callbackPass());
 }
 
-function deleteSurroundingText() {
-  chrome.input.ime.deleteSurroundingText({
-    "engineID": "test",
-    "contextID": 1,
-    "offset": -1,
-    "length": 1
-  }, chrome.test.callbackPass());
-}
-
 chrome.test.runTests([setCompositionTest, clearCompositionTest,
                       commitTextTest, setCandidateWindowPropertiesTest,
                       setCandidatesTest, setCursorPositionTest,
-                      setMenuItemsTest, updateMenuItemsTest,
-                      deleteSurroundingText]);
+                      setMenuItemsTest, updateMenuItemsTest]);

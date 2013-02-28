@@ -404,43 +404,6 @@
         ]
       },
       {
-        "name": "deleteSurroundingText",
-        "type": "function",
-        "description": "Deletes the text around the caret.",
-        "parameters": [
-          {
-            "name": "parameters",
-            "type": "object",
-            "properties": {
-              "engineID": {
-                "type": "string",
-                "description": "ID of the engine receiving the event."
-              },
-              "contextID": {
-                "type": "integer",
-                "description": "ID of the context where the surrounding text will be deleted."
-              },
-              "offset": {
-                "type": "integer",
-                "description": "The offset from the caret position where deletion will start. This value can be negative."
-              },
-              "length": {
-                "type": "integer",
-                "description": "The number of characters to be deleted",
-                "minimum": 0
-              }
-            }
-          },
-          {
-            "type": "function",
-            "name": "callback",
-            "optional": true,
-            "description": "Called when the operation completes.",
-            "parameters": []
-          }
-        ]
-      },
-      {
         "name": "keyEventHandled",
         "type": "function",
         "description": "Indicates that the key event received by onKeyEvent is handled.  This should only be called if the onKeyEvent listener is asynchronous.",
