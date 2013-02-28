@@ -12,10 +12,14 @@
 
 #if NACL_LINUX
 # include <sys/syscall.h>
+# include <time.h>
 #endif
 
 #include "native_client/src/include/nacl_assert.h"
+#if defined(__native_client__)
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
+#endif
+#include "native_client/tests/performance/perf_test_compat_osx.h"
 #include "native_client/tests/performance/perf_test_runner.h"
 
 
@@ -28,6 +32,7 @@ class TestNull : public PerfTest {
 };
 PERF_TEST_DECLARE(TestNull)
 
+#if defined(__native_client__)
 class TestNaClSyscall : public PerfTest {
  public:
   virtual void run() {
@@ -35,13 +40,19 @@ class TestNaClSyscall : public PerfTest {
   }
 };
 PERF_TEST_DECLARE(TestNaClSyscall)
+#endif
 
-#if NACL_LINUX
+#if NACL_LINUX || NACL_OSX
 class TestHostSyscall : public PerfTest {
  public:
   virtual void run() {
+#if NACL_LINUX
     // Don't use getpid() here, because glibc caches the pid in userland.
     int rc = syscall(__NR_getpid);
+#elif NACL_OSX
+    // Mac OS X's libsyscall caches the result of getpid, but not getppid.
+    int rc = getppid();
+#endif
     ASSERT_GT(rc, 0);
   }
 };
@@ -76,6 +87,7 @@ class TestClockGetTime : public PerfTest {
 };
 PERF_TEST_DECLARE(TestClockGetTime)
 
+#if !NACL_OSX
 // We declare this as "volatile" in an attempt to prevent the compiler
 // from optimizing accesses away.
 __thread volatile int g_tls_var = 123;
@@ -87,13 +99,14 @@ class TestTlsVariable : public PerfTest {
   }
 };
 PERF_TEST_DECLARE(TestTlsVariable)
+#endif
 
 class TestMmapAnonymous : public PerfTest {
  public:
   virtual void run() {
     size_t size = 0x10000;
     void *addr = mmap(NULL, size, PROT_READ | PROT_WRITE,
-                      MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+                      MAP_ANON | MAP_PRIVATE, -1, 0);
     ASSERT_NE(addr, MAP_FAILED);
     ASSERT_EQ(munmap(addr, size), 0);
   }

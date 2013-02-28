@@ -7,15 +7,22 @@ Import('env')
 
 # Run these tests natively to see how much overhead NaCl adds.  This
 # only works on Linux because the tests use pthreads (not available on
-# Windows) and clock_gettime() (not implemented by Mac OS X).
-if env.Bit('windows') or env.Bit('mac'):
+# Windows) and clock_gettime(). Although Mac OS X doesn't implement
+# clock_gettime, a compatibility implementation is provided in
+# perf_test_compat_osx.cc.
+if env.Bit('windows'):
   Return()
 
-exe = env.ComponentProgram(
-    'performance_test',
-    ['perf_test_runner.cc',
-     'perf_test_basics.cc',
-     'perf_test_threads.cc'])
+inputs = [
+    'perf_test_runner.cc',
+    'perf_test_basics.cc',
+    'perf_test_threads.cc',
+]
+
+if env.Bit('mac'):
+  inputs += ['perf_test_compat_osx.cc']
+
+exe = env.ComponentProgram('performance_test', inputs, EXTRA_LIBS=['platform'])
 
 description_list = ['trusted',
                     env['TARGET_PLATFORM'].lower(),

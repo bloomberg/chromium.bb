@@ -11,6 +11,7 @@
 
 #include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/tests/performance/perf_test_compat_osx.h"
 #include "native_client/tests/performance/perf_test_runner.h"
 
 
@@ -186,12 +187,14 @@ int main(int argc, char **argv) {
 #if defined(__native_client__)
   RUN_TEST(TestNaClSyscall);
 #endif
-#if NACL_LINUX
+#if NACL_LINUX || NACL_OSX
   RUN_TEST(TestHostSyscall);
 #endif
   RUN_TEST(TestSetjmpLongjmp);
   RUN_TEST(TestClockGetTime);
+#if !NACL_OSX
   RUN_TEST(TestTlsVariable);
+#endif
   RUN_TEST(TestMmapAnonymous);
   RUN_TEST(TestAtomicIncrement);
   RUN_TEST(TestUncontendedMutexLock);
