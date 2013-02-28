@@ -679,17 +679,6 @@ void ScrollEvent::Scale(const float factor) {
   y_offset_ordinal_ *= factor;
 }
 
-void ScrollEvent::UpdateForRootTransform(const gfx::Transform& root_transform) {
-  LocatedEvent::UpdateForRootTransform(root_transform);
-  gfx::DecomposedTransform decomp;
-  bool success = gfx::DecomposeTransform(&decomp, root_transform);
-  DCHECK(success);
-  if (decomp.scale[0])
-    x_offset_ordinal_ /= decomp.scale[0];
-  if (decomp.scale[1])
-    y_offset_ordinal_ /= decomp.scale[1];
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // GestureEvent
 
