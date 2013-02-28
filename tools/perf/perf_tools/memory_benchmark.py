@@ -38,6 +38,7 @@ class MemoryBenchmark(page_benchmark.PageBenchmark):
     # pages.
     options.AppendExtraBrowserArg('--disable-histogram-customizer')
     options.AppendExtraBrowserArg('--memory-metrics')
+    options.AppendExtraBrowserArg('--reduce-security-for-dom-automation-tests')
 
   def CanRunForPage(self, page):
     return hasattr(page, 'stress_memory')

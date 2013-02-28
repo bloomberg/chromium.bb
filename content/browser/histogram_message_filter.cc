@@ -47,10 +47,22 @@ void HistogramMessageFilter::OnGetBrowserHistogram(
     const std::string& name,
     std::string* histogram_json) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kMemoryMetrics))
+  // Security: Only allow access to browser histograms when running in the
+  // context of a test.
+  bool using_dom_controller =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDomAutomationController);
+  bool reduced_security =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kReduceSecurityForDomAutomationTests);
+
+  if (!using_dom_controller || !reduced_security) {
+    LOG(ERROR) << "Attempt at reading browser histogram without specifying "
+               << "--" << switches::kDomAutomationController << " and "
+               << "--" << switches::kReduceSecurityForDomAutomationTests
+               << " switches.";
     return;
-  if (name != "Memory.BrowserUsed")
-    return;
+  }
   base::Histogram* histogram = base::StatisticsRecorder::FindHistogram(name);
   if (!histogram) {
     *histogram_json = "{}";

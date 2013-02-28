@@ -245,6 +245,11 @@ const char kDisableXSSAuditor[]             = "disable-xss-auditor";
 // |DOMAutomationController| to the |AutomationRenderViewHelper|.
 const char kDomAutomationController[]       = "dom-automation";
 
+// Loosen security. Needed for tests using some of the functionality of
+// |DOMAutomationController|.
+const char kReduceSecurityForDomAutomationTests[] =
+    "reduce-security-for-dom-automation-tests";
+
 // Enable hardware accelerated page painting.
 const char kEnableAcceleratedPainting[]     = "enable-accelerated-painting";
 

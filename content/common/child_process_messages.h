@@ -110,7 +110,7 @@ IPC_MESSAGE_CONTROL2(ChildProcessHostMsg_ChildHistogramData,
 
 // Request a histogram from the browser. The browser will send the histogram
 // data only if it has been passed the command line flag
-// switches::kMemoryMetrics.
+// switches::kDomAutomationController.
 IPC_SYNC_MESSAGE_CONTROL1_1(ChildProcessHostMsg_GetBrowserHistogram,
                             std::string, /* histogram_name */
                             std::string /* histogram_json */)
