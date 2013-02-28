@@ -304,6 +304,7 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateScreenRects, OnUpdateScreenRects)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewMsg_ImeBatchStateChanged, OnImeBatchStateChanged)
+    IPC_MESSAGE_HANDLER(ViewMsg_ShowImeIfNeeded, OnShowImeIfNeeded)
 #endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -1777,6 +1778,10 @@ void RenderWidget::OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
 void RenderWidget::OnImeBatchStateChanged(bool is_begin) {
   Send(new ViewHostMsg_ImeBatchStateChanged_ACK(routing_id(), is_begin));
 }
+
+void RenderWidget::OnShowImeIfNeeded() {
+  UpdateTextInputState(SHOW_IME_IF_NEEDED);
+}
 #endif
 
 void RenderWidget::SetDeviceScaleFactor(float device_scale_factor) {
@@ -1876,7 +1881,6 @@ static bool IsDateTimeInput(ui::TextInputType type) {
       type == ui::TEXT_INPUT_TYPE_TIME ||
       type == ui::TEXT_INPUT_TYPE_WEEK;
 }
-
 
 void RenderWidget::UpdateTextInputState(ShowIme show_ime) {
   if (handling_ime_event_)

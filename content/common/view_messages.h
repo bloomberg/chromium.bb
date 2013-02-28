@@ -1357,6 +1357,8 @@ IPC_MESSAGE_ROUTED1(ViewMsg_ImeBatchStateChanged,
 IPC_MESSAGE_ROUTED1(ViewMsg_EnableHidingTopControls,
                     bool /* enable */)
 
+IPC_MESSAGE_ROUTED0(ViewMsg_ShowImeIfNeeded)
+
 #elif defined(OS_MACOSX)
 // Let the RenderView know its window has changed visibility.
 IPC_MESSAGE_ROUTED1(ViewMsg_SetWindowVisibility,

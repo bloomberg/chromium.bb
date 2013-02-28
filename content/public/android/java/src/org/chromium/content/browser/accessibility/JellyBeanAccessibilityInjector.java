@@ -75,7 +75,11 @@ class JellyBeanAccessibilityInjector extends AccessibilityInjector {
             return false;
         }
 
-        return sendActionToAndroidVox(action, arguments);
+        boolean actionSuccessful = sendActionToAndroidVox(action, arguments);
+
+        if (actionSuccessful) mContentViewCore.showImeIfNeeded();
+
+        return actionSuccessful;
     }
 
     @Override

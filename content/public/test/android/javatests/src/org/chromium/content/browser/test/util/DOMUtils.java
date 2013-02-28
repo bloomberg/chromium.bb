@@ -68,6 +68,21 @@ public class DOMUtils {
     }
 
     /**
+     * Focus a DOM node by its id.
+     */
+    public static void focusNode(ActivityInstrumentationTestCase2 activityTestCase,
+            final ContentView view, TestCallbackHelperContainer viewClient, String nodeId)
+            throws InterruptedException, TimeoutException {
+        StringBuilder sb = new StringBuilder();
+        sb.append("(function() {");
+        sb.append("  var node = document.getElementById('" + nodeId + "');");
+        sb.append("  if (node) node.focus();");
+        sb.append("})();");
+
+        JavaScriptUtils.executeJavaScriptAndWaitForResult(view, viewClient, sb.toString());
+    }
+
+    /**
      * Click a DOM node by its id.
      */
     public static void clickNode(ActivityInstrumentationTestCase2 activityTestCase,

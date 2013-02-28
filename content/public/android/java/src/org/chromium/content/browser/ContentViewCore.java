@@ -1871,6 +1871,13 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         mContainerView.postDelayed(mDeferredHandleFadeInRunnable, TEXT_HANDLE_FADE_IN_DELAY);
     }
 
+    /**
+     * Shows the IME if the focused widget could accept text input.
+     */
+    public void showImeIfNeeded() {
+        if (mNativeContentViewCore != 0) nativeShowImeIfNeeded(mNativeContentViewCore);
+    }
+
     @SuppressWarnings("unused")
     @CalledByNative
     private void updateFrameInfo(
@@ -2681,4 +2688,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     private native void nativeExitFullscreen(int nativeContentViewCoreImpl);
     private native void nativeEnableHidingTopControls(
             int nativeContentViewCoreImpl, boolean enable);
+
+    private native void nativeShowImeIfNeeded(int nativeContentViewCoreImpl);
 }

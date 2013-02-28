@@ -35,6 +35,7 @@ public class ImeTest extends ContentShellTestBase {
             "<html><body>" +
             "<form action=\"about:blank\">" +
             "<input id=\"input_text\" type=\"text\" />" +
+            "<input id=\"input_radio\" type=\"radio\" />" +
             "</form></body></html>");
 
     private TestAdapterInputConnection mConnection;
@@ -271,6 +272,31 @@ public class ImeTest extends ContentShellTestBase {
         assertTrue(mConnection.isIgnoringTextInputStateUpdates());
         mConnection.endBatchEdit();
         assertWaitForSetIgnoreUpdates(false, mConnection);
+    }
+
+    @SmallTest
+    @Feature({"TextInput", "Main"})
+    public void testShowImeIfNeeded() throws Throwable {
+        DOMUtils.focusNode(this, mContentView, mCallbackContainer, "input_radio");
+        assertWaitForKeyboardStatus(false);
+
+        performShowImeIfNeeded();
+        assertWaitForKeyboardStatus(false);
+
+        DOMUtils.focusNode(this, mContentView, mCallbackContainer, "input_text");
+        assertWaitForKeyboardStatus(false);
+
+        performShowImeIfNeeded();
+        assertWaitForKeyboardStatus(true);
+    }
+
+    private void performShowImeIfNeeded() {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mContentView.getContentViewCore().showImeIfNeeded();
+            }
+        });
     }
 
     private void performGo(final AdapterInputConnection inputConnection,

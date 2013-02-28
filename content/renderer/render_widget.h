@@ -312,6 +312,7 @@ class CONTENT_EXPORT RenderWidget
                            const gfx::Rect& window_screen_rect);
 #if defined(OS_ANDROID)
   void OnImeBatchStateChanged(bool is_begin);
+  void OnShowImeIfNeeded();
 #endif
 
   virtual void SetDeviceScaleFactor(float device_scale_factor);
