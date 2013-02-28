@@ -9581,7 +9581,7 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
   if (!copy_texture_CHROMIUM_.get()) {
     CopyRealGLErrorsToWrapper();
     copy_texture_CHROMIUM_.reset(new CopyTextureCHROMIUMResourceManager());
-    copy_texture_CHROMIUM_->Initialize();
+    copy_texture_CHROMIUM_->Initialize(this);
     RestoreCurrentFramebufferBindings();
     if (PeekGLError() != GL_NO_ERROR)
       return;
@@ -9625,31 +9625,13 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
     texture_manager()->SetLevelCleared(dest_info, GL_TEXTURE_2D, level, true);
   }
 
-  clear_state_dirty_ = true;
-  glViewport(0, 0, source_width, source_height);
-  copy_texture_CHROMIUM_->DoCopyTexture(target, source_info->service_id(),
+  copy_texture_CHROMIUM_->DoCopyTexture(this,
+                                        target, source_info->service_id(),
                                         dest_info->service_id(), level,
+                                        source_width, source_height,
                                         unpack_flip_y_,
                                         unpack_premultiply_alpha_,
                                         unpack_unpremultiply_alpha_);
-  glViewport(
-      state_.viewport_x, state_.viewport_y,
-      state_.viewport_width, state_.viewport_height);
-
-  // Restore all of the state touched by the extension.
-  if (state_.current_program)
-    glUseProgram(state_.current_program->service_id());
-  else
-    glUseProgram(0);
-
-  RestoreCurrentFramebufferBindings();
-  RestoreCurrentTexture2DBindings();
-  RestoreStateForAttrib(
-      CopyTextureCHROMIUMResourceManager::kVertexPositionAttrib);
-  RestoreStateForAttrib(
-      CopyTextureCHROMIUMResourceManager::kVertexTextureAttrib);
-
-  ApplyDirtyState();
 }
 
 static GLenum ExtractTypeFromStorageFormat(GLenum internalformat) {

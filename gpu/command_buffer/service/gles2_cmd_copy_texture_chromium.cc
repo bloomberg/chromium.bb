@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "gpu/command_buffer/common/types.h"
 #include "gpu/command_buffer/service/gl_utils.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 
 #define SHADER0(Src) \
     "#ifdef GL_ES\n"\
@@ -142,7 +143,10 @@ const char* GetShaderSource(ShaderId shader) {
 
 }  // namespace
 
-void CopyTextureCHROMIUMResourceManager::Initialize() {
+namespace gpu {
+
+void CopyTextureCHROMIUMResourceManager::Initialize(
+    const gles2::GLES2Decoder* decoder) {
   COMPILE_ASSERT(
       kVertexPositionAttrib == 0u || kVertexTextureAttrib == 0u,
       CopyTexture_One_of_these_attribs_must_be_0);
@@ -159,6 +163,7 @@ void CopyTextureCHROMIUMResourceManager::Initialize() {
 
   glGenFramebuffersEXT(1, &framebuffer_);
 
+  // TODO(gman): Init these on demand.
   GLuint shaders[kNumShaders];
   for (int shader = 0; shader < kNumShaders; ++shader) {
     shaders[shader] = glCreateShader(
@@ -174,6 +179,7 @@ void CopyTextureCHROMIUMResourceManager::Initialize() {
 #endif
   }
 
+  // TODO(gman): Init these on demand.
   for (int program = 0; program < kNumPrograms; ++program) {
     programs_[program] = glCreateProgram();
     glAttachShader(programs_[program], shaders[0]);
@@ -199,6 +205,8 @@ void CopyTextureCHROMIUMResourceManager::Initialize() {
   for (int shader = 0; shader < kNumShaders; ++shader)
     glDeleteShader(shaders[shader]);
 
+  decoder->RestoreBufferBindings();
+
   initialized_ = true;
 }
 
@@ -215,10 +223,13 @@ void CopyTextureCHROMIUMResourceManager::Destroy() {
 }
 
 void CopyTextureCHROMIUMResourceManager::DoCopyTexture(
+    const gles2::GLES2Decoder* decoder,
     GLenum target,
     GLuint source_id,
     GLuint dest_id,
     GLint level,
+    GLsizei width,
+    GLsizei height,
     bool flip_y,
     bool premultiply_alpha,
     bool unpremultiply_alpha) {
@@ -240,6 +251,14 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTexture(
   }
 #endif
 
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, dest_id);
+  // NVidia drivers require texture settings to be a certain way
+  // or they won't report FRAMEBUFFER_COMPLETE.
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebuffer_);
   glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target,
                             dest_id, level);
@@ -248,38 +267,51 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTexture(
   GLenum fb_status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
   if (GL_FRAMEBUFFER_COMPLETE != fb_status) {
     DLOG(ERROR) << "CopyTextureCHROMIUM: Incomplete framebuffer.";
-    return;
-  }
+  } else
 #endif
+  {
+    glEnableVertexAttribArray(kVertexPositionAttrib);
+    glEnableVertexAttribArray(kVertexTextureAttrib);
 
-  glEnableVertexAttribArray(kVertexPositionAttrib);
-  glEnableVertexAttribArray(kVertexTextureAttrib);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer_ids_[0]);
+    glVertexAttribPointer(kVertexPositionAttrib, 4, GL_FLOAT, GL_FALSE,
+                          4 * sizeof(GLfloat), 0);
 
-  glBindBuffer(GL_ARRAY_BUFFER, buffer_ids_[0]);
-  glVertexAttribPointer(kVertexPositionAttrib, 4, GL_FLOAT, GL_FALSE,
-                        4 * sizeof(GLfloat), 0);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer_ids_[1]);
+    glVertexAttribPointer(kVertexTextureAttrib,  2, GL_FLOAT, GL_FALSE,
+                          2 * sizeof(GLfloat), 0);
 
-  glBindBuffer(GL_ARRAY_BUFFER, buffer_ids_[1]);
-  glVertexAttribPointer(kVertexTextureAttrib,  2, GL_FLOAT, GL_FALSE,
-                        2 * sizeof(GLfloat), 0);
+    glUniform1i(sampler_locations_[program], 0);
 
-  glActiveTexture(GL_TEXTURE0);
-  glUniform1i(sampler_locations_[program], 0);
+    glBindTexture(GL_TEXTURE_2D, source_id);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-  glBindTexture(GL_TEXTURE_2D, source_id);
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_SCISSOR_TEST);
+    glDisable(GL_STENCIL_TEST);
+    glDisable(GL_CULL_FACE);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    glDepthMask(GL_FALSE);
+    glDisable(GL_BLEND);
 
-  glDisable(GL_DEPTH_TEST);
-  glDisable(GL_SCISSOR_TEST);
-  glDisable(GL_STENCIL_TEST);
-  glDisable(GL_CULL_FACE);
-  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-  glDepthMask(GL_FALSE);
-  glDisable(GL_BLEND);
+    glViewport(0, 0, width, height);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+  }
 
-  glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+  decoder->RestoreAttribute(kVertexTextureAttrib);
+  decoder->RestoreAttribute(kVertexPositionAttrib);
+  decoder->RestoreTextureUnitBindings(0);
+  decoder->RestoreTextureState(source_id);
+  decoder->RestoreTextureState(dest_id);
+  decoder->RestoreActiveTexture();
+  decoder->RestoreProgramBindings();
+  decoder->RestoreBufferBindings();
+  decoder->RestoreFramebufferBindings();
+  decoder->RestoreGlobalState();
 }
+
+}  // namespace
 
