@@ -74,14 +74,6 @@ class MockMediaStream : public webrtc::MediaStreamInterface {
     VideoTrackVector::iterator it = FindTrack(&video_track_vector_, track_id);
     return it == video_track_vector_.end() ? NULL : *it;
   }
-  virtual webrtc::AudioTracks* audio_tracks() OVERRIDE {
-    NOTIMPLEMENTED();
-    return NULL;
-  }
-  virtual webrtc::VideoTracks* video_tracks() OVERRIDE {
-    NOTIMPLEMENTED();
-    return NULL;
-  }
   virtual void RegisterObserver(ObserverInterface* observer) OVERRIDE {
     NOTIMPLEMENTED();
   }

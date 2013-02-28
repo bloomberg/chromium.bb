@@ -40,10 +40,6 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
 
   virtual bool GetStats(webrtc::StatsObserver* observer,
                         webrtc::MediaStreamTrackInterface* track) OVERRIDE;
-  virtual ReadyState ready_state() OVERRIDE {
-    NOTIMPLEMENTED();
-    return PeerConnectionInterface::kStable;
-  }
   virtual SignalingState signaling_state() OVERRIDE {
     NOTIMPLEMENTED();
     return PeerConnectionInterface::kStable;
@@ -59,6 +55,9 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
   virtual IceGatheringState ice_gathering_state() OVERRIDE {
     NOTIMPLEMENTED();
     return PeerConnectionInterface::kIceGatheringNew;
+  }
+  virtual void Close() OVERRIDE {
+    NOTIMPLEMENTED();
   }
 
   virtual const webrtc::SessionDescriptionInterface* local_description()
