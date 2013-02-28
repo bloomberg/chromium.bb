@@ -1028,8 +1028,9 @@ void NetworkMenu::ConnectToNetwork(Network* network) {
       CellularNetwork* cell = static_cast<CellularNetwork*>(network);
       if (cell->NeedsActivation()) {
         ActivateCellular(cell);
-      } else if (cell->connecting_or_connected()) {
-        // Cellular network is connecting or connected,
+      } else if (cell->connecting_or_connected() ||
+                 cell->activation_state() == ACTIVATION_STATE_ACTIVATING) {
+        // Cellular network is connecting, connected, or activating,
         // so we show the config settings for the cellular network.
         ShowTabbedNetworkSettings(cell);
       } else {

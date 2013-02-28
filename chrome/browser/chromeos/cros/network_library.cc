@@ -903,8 +903,8 @@ bool CellularNetwork::SupportsActivation() const {
 }
 
 bool CellularNetwork::NeedsActivation() const {
-  return (activation_state() != ACTIVATION_STATE_ACTIVATED &&
-          activation_state() != ACTIVATION_STATE_UNKNOWN);
+  return (activation_state() == ACTIVATION_STATE_NOT_ACTIVATED ||
+          activation_state() == ACTIVATION_STATE_PARTIALLY_ACTIVATED);
 }
 
 GURL CellularNetwork::GetAccountInfoUrl() const {
