@@ -89,9 +89,11 @@ class SimpleEntryImpl : public Entry {
 
   // Called after a SimpleSynchronousEntry has completed an asynchronous IO
   // operation, such as ReadData() or WriteData(). Calls |completion_callback|.
+  // If |entry| no longer exists, then it ensures |sync_entry| is closed.
   static void EntryOperationComplete(
       const CompletionCallback& completion_callback,
       base::WeakPtr<SimpleEntryImpl> entry,
+      SimpleSynchronousEntry* sync_entry,
       int result);
 
   // Called on construction and also after the completion of asynchronous IO to
@@ -114,7 +116,10 @@ class SimpleEntryImpl : public Entry {
   int32 data_size_[kSimpleEntryFileCount];
 
   // The |synchronous_entry_| is the worker thread object that performs IO on
-  // entries.
+  // entries. It's owned by this SimpleEntryImpl whenever
+  // |synchronous_entry_in_use_by_worker_| is false (i.e. when an operation
+  // is not pending on the worker pool). When an operation is pending on the
+  // worker pool, the |synchronous_entry_| is owned by itself.
   SimpleSynchronousEntry* synchronous_entry_;
 
   // Set to true when a worker operation is posted on the |synchronous_entry_|,

@@ -86,17 +86,12 @@ void SimpleEntryImpl::Doom() {
 }
 
 void SimpleEntryImpl::Close() {
-  if (synchronous_entry_in_use_by_worker_) {
-    NOTIMPLEMENTED();
-    delete this;
-    return;
+  if (!synchronous_entry_in_use_by_worker_) {
+    WorkerPool::PostTask(FROM_HERE,
+                         base::Bind(&SimpleSynchronousEntry::Close,
+                                    base::Unretained(synchronous_entry_)),
+                         true);
   }
-  DCHECK(synchronous_entry_);
-  WorkerPool::PostTask(FROM_HERE,
-                       base::Bind(&SimpleSynchronousEntry::Close,
-                                  base::Unretained(synchronous_entry_)),
-                       true);
-  synchronous_entry_ = NULL;
   // Entry::Close() is expected to release this entry. See disk_cache.h for
   // details.
   delete this;
@@ -125,7 +120,8 @@ int SimpleEntryImpl::ReadData(int index,
                               const CompletionCallback& callback) {
   // TODO(gavinp): Add support for overlapping reads. The net::HttpCache does
   // make overlapping read requests when multiple transactions access the same
-  // entry as read only.
+  // entry as read only. This might make calling SimpleSynchronousEntry::Close()
+  // correctly more tricky (see SimpleEntryImpl::EntryOperationComplete).
   if (synchronous_entry_in_use_by_worker_) {
     NOTIMPLEMENTED();
     CHECK(false);
@@ -133,7 +129,7 @@ int SimpleEntryImpl::ReadData(int index,
   synchronous_entry_in_use_by_worker_ = true;
   SynchronousOperationCallback sync_operation_callback =
       base::Bind(&SimpleEntryImpl::EntryOperationComplete,
-                 callback, weak_ptr_factory_.GetWeakPtr());
+                 callback, weak_ptr_factory_.GetWeakPtr(), synchronous_entry_);
   WorkerPool::PostTask(FROM_HERE,
                        base::Bind(&SimpleSynchronousEntry::ReadData,
                                   base::Unretained(synchronous_entry_),
@@ -156,7 +152,7 @@ int SimpleEntryImpl::WriteData(int index,
   synchronous_entry_in_use_by_worker_ = true;
   SynchronousOperationCallback sync_operation_callback =
       base::Bind(&SimpleEntryImpl::EntryOperationComplete,
-                 callback, weak_ptr_factory_.GetWeakPtr());
+                 callback, weak_ptr_factory_.GetWeakPtr(), synchronous_entry_);
   WorkerPool::PostTask(FROM_HERE,
                        base::Bind(&SimpleSynchronousEntry::WriteData,
                                   base::Unretained(synchronous_entry_),
@@ -221,7 +217,6 @@ SimpleEntryImpl::SimpleEntryImpl(
 }
 
 SimpleEntryImpl::~SimpleEntryImpl() {
-  DCHECK(!synchronous_entry_);
 }
 
 // static
@@ -241,11 +236,20 @@ void SimpleEntryImpl::CreationOperationComplete(
 void SimpleEntryImpl::EntryOperationComplete(
     const CompletionCallback& completion_callback,
     base::WeakPtr<SimpleEntryImpl> entry,
+    SimpleSynchronousEntry* sync_entry,
     int result) {
   if (entry) {
     DCHECK(entry->synchronous_entry_in_use_by_worker_);
     entry->synchronous_entry_in_use_by_worker_ = false;
     entry->SetSynchronousData();
+  } else {
+    // |entry| must have had Close() called while this operation was in flight.
+    // Since the simple cache now only supports one pending entry operation in
+    // flight at a time, it's safe to now call Close() on |sync_entry|.
+    WorkerPool::PostTask(FROM_HERE,
+                         base::Bind(&SimpleSynchronousEntry::Close,
+                                    base::Unretained(sync_entry)),
+                         true);
   }
   completion_callback.Run(result);
 }
