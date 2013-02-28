@@ -48,8 +48,10 @@ void PictureLayer::pushPropertiesTo(LayerImpl* base_layer) {
 
 void PictureLayer::setLayerTreeHost(LayerTreeHost* host) {
   Layer::setLayerTreeHost(host);
-  if (host)
-      pile_->SetMinContentsScale(host->settings().minimumContentsScale);
+  if (host) {
+    pile_->SetMinContentsScale(host->settings().minimumContentsScale);
+    pile_->SetTileGridSize(host->settings().defaultTileSize);
+  }
 }
 
 void PictureLayer::setNeedsDisplayRect(const gfx::RectF& layer_rect) {

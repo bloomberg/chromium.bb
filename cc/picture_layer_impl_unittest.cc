@@ -5,6 +5,7 @@
 #include "cc/picture_layer_impl.h"
 
 #include "cc/layer_tree_impl.h"
+#include "cc/picture_layer.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
@@ -51,6 +52,13 @@ class TestablePictureLayerImpl : public PictureLayerImpl {
   }
 };
 
+class ImplSidePaintingSettings : public LayerTreeSettings {
+ public:
+  ImplSidePaintingSettings() {
+    implSidePainting = true;
+  }
+};
+
 class TestablePicturePileImpl : public PicturePileImpl {
  public:
   static scoped_refptr<TestablePicturePileImpl> CreateFilledPile(
@@ -59,6 +67,7 @@ class TestablePicturePileImpl : public PicturePileImpl {
     scoped_refptr<TestablePicturePileImpl> pile(new TestablePicturePileImpl());
     pile->tiling().SetTotalSize(layer_bounds);
     pile->tiling().SetMaxTextureSize(tile_size);
+    pile->SetTileGridSize(ImplSidePaintingSettings().defaultTileSize);
     for (int x = 0; x < pile->tiling().num_tiles_x(); ++x) {
       for (int y = 0; y < pile->tiling().num_tiles_y(); ++y)
         pile->AddRecordingAt(x, y);
@@ -73,6 +82,7 @@ class TestablePicturePileImpl : public PicturePileImpl {
     scoped_refptr<TestablePicturePileImpl> pile(new TestablePicturePileImpl());
     pile->tiling().SetTotalSize(layer_bounds);
     pile->tiling().SetMaxTextureSize(tile_size);
+    pile->SetTileGridSize(ImplSidePaintingSettings().defaultTileSize);
     pile->UpdateRecordedRegion();
     return pile;
   }
@@ -89,8 +99,7 @@ class TestablePicturePileImpl : public PicturePileImpl {
       return;
     gfx::Rect bounds(tiling().TileBounds(x, y));
     scoped_refptr<Picture> picture(Picture::Create(bounds));
-    FakeContentLayerClient client;
-    picture->Record(&client, NULL);
+    picture->Record(&client_, NULL, tile_grid_info_);
     picture_list_map_[std::pair<int, int>(x, y)].push_back(picture);
     EXPECT_TRUE(HasRecordingAt(x, y));
 
@@ -111,16 +120,27 @@ class TestablePicturePileImpl : public PicturePileImpl {
     UpdateRecordedRegion();
   }
 
+  void addDrawRect(const gfx::Rect& rect) {
+    client_.addDrawRect(rect);
+  }
+
  protected:
   virtual ~TestablePicturePileImpl() {
   }
+
+  FakeContentLayerClient client_;
 };
 
-class ImplSidePaintingSettings : public LayerTreeSettings {
+class MockCanvas : public SkCanvas {
  public:
-  ImplSidePaintingSettings() {
-    implSidePainting = true;
+  explicit MockCanvas(SkDevice* device) : SkCanvas(device) { }
+
+  virtual void drawRect(const SkRect& rect, const SkPaint& paint) {
+    // Capture calls before SkCanvas quickReject kicks in
+    rects_.push_back(rect);
   }
+
+  std::vector<SkRect> rects_;
 };
 
 class PictureLayerImplTest : public testing::Test {
@@ -194,6 +214,65 @@ class PictureLayerImplTest : public testing::Test {
   }
 
  protected:
+  void TestTileGridAlignmentCommon() {
+    // Layer to span 4 raster tiles in x and in y
+    ImplSidePaintingSettings settings;
+    gfx::Size layer_size(
+        settings.defaultTileSize.width() * 7 / 2,
+        settings.defaultTileSize.height() * 7 / 2);
+
+    scoped_refptr<TestablePicturePileImpl> pending_pile =
+        TestablePicturePileImpl::CreateFilledPile(layer_size, layer_size);
+    scoped_refptr<TestablePicturePileImpl> active_pile =
+        TestablePicturePileImpl::CreateFilledPile(layer_size, layer_size);
+
+    SetupTrees(pending_pile, active_pile);
+
+    host_impl_.activeTree()->SetPageScaleFactorAndLimits(1.f, 1.f, 1.f);
+    float result_scale_x, result_scale_y;
+    gfx::Size result_bounds;
+    active_layer_->calculateContentsScale(
+        1.f, false, &result_scale_x, &result_scale_y, &result_bounds);
+
+    // Add 1x1 rects at the centers of each tile, then re-record pile contents
+    std::vector<Tile*> tiles =
+        active_layer_->tilings().tiling_at(0)->AllTilesForTesting();
+    EXPECT_EQ(16, tiles.size());
+    std::vector<SkRect> rects;
+    std::vector<Tile*>::const_iterator tile_iter;
+    for (tile_iter = tiles.begin(); tile_iter < tiles.end(); tile_iter++) {
+      gfx::Point tile_center = (*tile_iter)->content_rect().CenterPoint();
+      gfx::Rect rect(tile_center.x(), tile_center.y(), 1, 1);
+      active_pile->addDrawRect(rect);
+      rects.push_back(SkRect::MakeXYWH(rect.x(), rect.y(), 1, 1));
+    }
+    // Force re-record with newly injected content
+    active_pile->RemoveRecordingAt(0, 0);
+    active_pile->AddRecordingAt(0, 0);
+
+    SkBitmap store;
+    store.setConfig(SkBitmap::kNo_Config, 1000, 1000);
+    SkDevice device(store);
+    int64 pixelsRasterized;
+
+    std::vector<SkRect>::const_iterator rect_iter = rects.begin();
+    for (tile_iter = tiles.begin(); tile_iter < tiles.end(); tile_iter++) {
+      MockCanvas mock_canvas(&device);
+      active_pile->Raster(&mock_canvas, (*tile_iter)->content_rect(),
+          1.0f, &pixelsRasterized);
+
+      // This test verifies that when drawing the contents of a specific tile
+      // at content scale 1.0, the playback canvas never receives content from
+      // neighboring tiles which indicates that the tile grid embedded in
+      // SkPicture is perfectly aligned with the compositor's tiles.
+      // Note: There are two rects: the initial clear and the explicitly
+      // recorded rect. We only care about the second one.
+      EXPECT_EQ(2, mock_canvas.rects_.size());
+      EXPECT_EQ(*rect_iter, mock_canvas.rects_[1]);
+      rect_iter++;
+    }
+  }
+
   FakeImplProxy proxy_;
   FakeLayerTreeHostImpl host_impl_;
   int id_;
@@ -202,6 +281,16 @@ class PictureLayerImplTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(PictureLayerImplTest);
 };
+
+TEST_F(PictureLayerImplTest, tileGridAlignment) {
+  host_impl_.setDeviceScaleFactor(1.f);
+  TestTileGridAlignmentCommon();
+}
+
+TEST_F(PictureLayerImplTest, tileGridAlignmentHiDPI) {
+  host_impl_.setDeviceScaleFactor(2.f);
+  TestTileGridAlignmentCommon();
+}
 
 TEST_F(PictureLayerImplTest, cloneNoInvalidation) {
   gfx::Size tile_size(100, 100);

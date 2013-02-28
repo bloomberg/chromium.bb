@@ -91,7 +91,7 @@ void PicturePile::Update(
     for (PictureList::iterator pic = pic_list.begin();
          pic != pic_list.end(); ++pic) {
       if (!(*pic)->HasRecording())
-        (*pic)->Record(painter, stats);
+        (*pic)->Record(painter, stats, tile_grid_info_);
     }
   }
 

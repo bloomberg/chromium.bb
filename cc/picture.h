@@ -12,8 +12,8 @@
 #include "cc/cc_export.h"
 #include "skia/ext/lazy_pixel_ref.h"
 #include "skia/ext/refptr.h"
-#include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
+#include "third_party/skia/include/core/SkTileGridPicture.h"
 #include "ui/gfx/rect.h"
 
 namespace cc {
@@ -34,7 +34,8 @@ class CC_EXPORT Picture
 
   // Record a paint operation. To be able to safely use this SkPicture for
   // playback on a different thread this can only be called once.
-  void Record(ContentLayerClient*, RenderingStats*);
+  void Record(ContentLayerClient*, RenderingStats*,
+      const SkTileGridPicture::TileGridInfo& tileGridInfo);
 
   // Has Record() been called yet?
   bool HasRecording() const { return picture_.get() != NULL; }

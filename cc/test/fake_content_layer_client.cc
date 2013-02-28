@@ -4,19 +4,29 @@
 
 #include "cc/test/fake_content_layer_client.h"
 
-#include "ui/gfx/rect.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 
 namespace cc {
 
 FakeContentLayerClient::FakeContentLayerClient()
-    : m_paintAllOpaque(false)
-{
+    : paint_all_opaque_(false) {
 }
 
-void FakeContentLayerClient::paintContents(SkCanvas*, const gfx::Rect& rect, gfx::RectF& opaqueRect)
-{
-  if (m_paintAllOpaque)
-    opaqueRect = rect;
+FakeContentLayerClient::~FakeContentLayerClient() {
+}
+
+void FakeContentLayerClient::paintContents(SkCanvas* canvas,
+    const gfx::Rect& rect, gfx::RectF& opaque_rect) {
+  if (paint_all_opaque_)
+    opaque_rect = rect;
+
+  SkPaint paint;
+  for (RectVector::const_iterator rect_it = draw_rects_.begin();
+      rect_it < draw_rects_.end(); rect_it++) {
+    SkRect draw_rect = SkRect::MakeXYWH(rect_it->x(), rect_it->y(),
+        rect_it->width(), rect_it->height());
+    canvas->drawRect(draw_rect, paint);
+  }
 }
 
 }  // namespace cc

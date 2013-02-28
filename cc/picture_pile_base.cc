@@ -11,6 +11,7 @@ namespace {
 // Dimensions of the tiles in this picture pile as well as the dimensions of
 // the base picture in each tile.
 const int kBasePictureSize = 3000;
+const int kTileGridBorderPixels = 1;
 }
 
 namespace cc {
@@ -18,6 +19,9 @@ namespace cc {
 PicturePileBase::PicturePileBase()
     : min_contents_scale_(0) {
   tiling_.SetMaxTextureSize(gfx::Size(kBasePictureSize, kBasePictureSize));
+  tile_grid_info_.fTileInterval.setEmpty();
+  tile_grid_info_.fMargin.setEmpty();
+  tile_grid_info_.fOffset.setZero();
 }
 
 PicturePileBase::~PicturePileBase() {
@@ -68,6 +72,21 @@ void PicturePileBase::SetMinContentsScale(float min_contents_scale) {
   min_contents_scale_ = min_contents_scale;
 }
 
+void PicturePileBase::SetTileGridSize(const gfx::Size& tile_grid_size) {
+  tile_grid_info_.fTileInterval.set(
+      tile_grid_size.width() - 2 * kTileGridBorderPixels,
+      tile_grid_size.height() - 2 * kTileGridBorderPixels);
+  DCHECK_GT(tile_grid_info_.fTileInterval.width(), 0);
+  DCHECK_GT(tile_grid_info_.fTileInterval.height(), 0);
+  tile_grid_info_.fMargin.set(kTileGridBorderPixels,
+      kTileGridBorderPixels);
+  // Offset the tile grid coordinate space to take into account the fact
+  // that the top-most and left-most tiles do not have top and left borders
+  // respectively.
+  tile_grid_info_.fOffset.set(-kTileGridBorderPixels,
+      -kTileGridBorderPixels);
+}
+
 void PicturePileBase::SetBufferPixels(int new_buffer_pixels) {
   if (new_buffer_pixels == buffer_pixels())
     return;
@@ -85,6 +104,7 @@ void PicturePileBase::PushPropertiesTo(PicturePileBase* other) {
   other->tiling_ = tiling_;
   other->recorded_region_ = recorded_region_;
   other->min_contents_scale_ = min_contents_scale_;
+  other->tile_grid_info_ = tile_grid_info_;
 }
 
 void PicturePileBase::UpdateRecordedRegion() {
