@@ -2461,6 +2461,20 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderEvents) {
   EXPECT_FALSE(HadPrerenderEventErrors());
 }
 
+// Cancels the prerender of a page with its own prerender.  The second prerender
+// should never be started.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderCancelPrerenderWithPrerender) {
+  PrerenderTestURL("files/prerender/prerender_infinite_a.html",
+                   FINAL_STATUS_CANCELLED,
+                   1);
+  // Post a task to cancel all the prerenders.
+  MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&CancelAllPrerenders, GetPrerenderManager()));
+  content::RunMessageLoop();
+  EXPECT_TRUE(GetPrerenderContents() == NULL);
+}
+
 // PrerenderBrowserTest.PrerenderEventsNoLoad may pass flakily on regression,
 // so please be aggressive about filing bugs when this test is failing.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderEventsNoLoad) {
