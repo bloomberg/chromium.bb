@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_BROWSER_COMMAND_CONTROLLER_H_
 #define CHROME_BROWSER_UI_BROWSER_COMMAND_CONTROLLER_H_
 
+#include <vector>
+
 #include "base/prefs/public/pref_change_registrar.h"
 #include "chrome/browser/api/sync/profile_sync_service_observer.h"
 #include "chrome/browser/command_updater.h"
@@ -12,8 +14,6 @@
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "ui/base/window_open_disposition.h"
 
 class Browser;
@@ -28,7 +28,6 @@ struct NativeWebKeyboardEvent;
 namespace chrome {
 
 class BrowserCommandController : public CommandUpdaterDelegate,
-                                 public content::NotificationObserver,
                                  public ProfileInfoCacheObserver,
                                  public TabStripModelObserver,
                                  public TabRestoreServiceObserver {
@@ -78,6 +77,8 @@ class BrowserCommandController : public CommandUpdaterDelegate,
       Profile* profile);
 
  private:
+  class InterstitialObserver;
+
   enum FullScreenMode {
     // Not in fullscreen mode.
     FULLSCREEN_DISABLED,
@@ -94,11 +95,6 @@ class BrowserCommandController : public CommandUpdaterDelegate,
   virtual void ExecuteCommandWithDisposition(
       int id,
       WindowOpenDisposition disposition) OVERRIDE;
-
-  // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
 
   // Overridden from ProfileInfoCacheObserver:
   virtual void OnProfileAdded(const base::FilePath& profile_path) OVERRIDE;
@@ -204,7 +200,8 @@ class BrowserCommandController : public CommandUpdaterDelegate,
   // Stores the disposition type of the last blocked command.
   WindowOpenDisposition last_blocked_command_disposition_;
 
-  content::NotificationRegistrar registrar_;
+  std::vector<InterstitialObserver*> interstitial_observers_;
+
   PrefChangeRegistrar profile_pref_registrar_;
   PrefChangeRegistrar local_pref_registrar_;
 

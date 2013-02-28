@@ -32,10 +32,9 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_restriction.h"
 #include "content/public/common/url_constants.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -691,28 +690,6 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserCommandController, content::NotificationObserver implementation:
-
-void BrowserCommandController::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case content::NOTIFICATION_INTERSTITIAL_ATTACHED:
-      UpdateCommandsForTabState();
-      break;
-
-    case content::NOTIFICATION_INTERSTITIAL_DETACHED:
-      UpdateCommandsForTabState();
-      break;
-
-    default:
-      NOTREACHED() << "Got a notification we didn't register for.";
-  }
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
 // BrowserCommandController, ProfileInfoCacheObserver implementation:
 
 void BrowserCommandController::OnProfileAdded(
@@ -785,6 +762,31 @@ void BrowserCommandController::TabRestoreServiceDestroyed(
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserCommandController, private:
+
+class BrowserCommandController::InterstitialObserver
+    : public content::WebContentsObserver {
+ public:
+  InterstitialObserver(BrowserCommandController* controller,
+                       content::WebContents* web_contents)
+      : WebContentsObserver(web_contents),
+        controller_(controller) {
+  }
+
+  using content::WebContentsObserver::web_contents;
+
+  virtual void DidAttachInterstitialPage() OVERRIDE {
+    controller_->UpdateCommandsForTabState();
+  }
+
+  virtual void DidDetachInterstitialPage() OVERRIDE {
+    controller_->UpdateCommandsForTabState();
+  }
+
+ private:
+  BrowserCommandController* controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(InterstitialObserver);
+};
 
 bool BrowserCommandController::IsShowingMainUI() {
   bool should_hide_ui = window() && window()->ShouldHideUIForFullscreen();
@@ -1207,18 +1209,19 @@ void BrowserCommandController::UpdateCommandsForFind() {
 }
 
 void BrowserCommandController::AddInterstitialObservers(WebContents* contents) {
-  registrar_.Add(this, content::NOTIFICATION_INTERSTITIAL_ATTACHED,
-                 content::Source<WebContents>(contents));
-  registrar_.Add(this, content::NOTIFICATION_INTERSTITIAL_DETACHED,
-                 content::Source<WebContents>(contents));
+  interstitial_observers_.push_back(new InterstitialObserver(this, contents));
 }
 
 void BrowserCommandController::RemoveInterstitialObservers(
     WebContents* contents) {
-  registrar_.Remove(this, content::NOTIFICATION_INTERSTITIAL_ATTACHED,
-                    content::Source<WebContents>(contents));
-  registrar_.Remove(this, content::NOTIFICATION_INTERSTITIAL_DETACHED,
-                    content::Source<WebContents>(contents));
+  for (size_t i = 0; i < interstitial_observers_.size(); i++) {
+    if (interstitial_observers_[i]->web_contents() != contents)
+      continue;
+
+    delete interstitial_observers_[i];
+    interstitial_observers_.erase(interstitial_observers_.begin() + i);
+    return;
+  }
 }
 
 BrowserWindow* BrowserCommandController::window() {

@@ -154,6 +154,31 @@ class MockTabStripModelObserver : public TabStripModelObserver {
   DISALLOW_COPY_AND_ASSIGN(MockTabStripModelObserver);
 };
 
+class InterstitialObserver : public content::WebContentsObserver {
+ public:
+  InterstitialObserver(content::WebContents* web_contents,
+                       const base::Closure& attach_callback,
+                       const base::Closure& detach_callback)
+      : WebContentsObserver(web_contents),
+        attach_callback_(attach_callback),
+        detach_callback_(detach_callback) {
+  }
+
+  virtual void DidAttachInterstitialPage() OVERRIDE {
+    attach_callback_.Run();
+  }
+
+  virtual void DidDetachInterstitialPage() OVERRIDE {
+    detach_callback_.Run();
+  }
+
+ private:
+  base::Closure attach_callback_;
+  base::Closure detach_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(InterstitialObserver);
+};
+
 // Used by CloseWithAppMenuOpen. Invokes CloseWindow on the supplied browser.
 void CloseWindowCallback(Browser* browser) {
   chrome::CloseWindow(browser);
@@ -1427,12 +1452,17 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCommandDisable) {
 
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
 
-  content::WindowedNotificationObserver interstitial_observer(
-      content::NOTIFICATION_INTERSTITIAL_ATTACHED,
-      content::Source<WebContents>(contents));
-  TestInterstitialPage* interstitial = new TestInterstitialPage(
-      contents, false, GURL());
-  interstitial_observer.Wait();
+  TestInterstitialPage* interstitial = NULL;
+  {
+    scoped_refptr<content::MessageLoopRunner> loop_runner(
+        new content::MessageLoopRunner);
+
+    InterstitialObserver observer(contents,
+                                  loop_runner->QuitClosure(),
+                                  base::Closure());
+    interstitial = new TestInterstitialPage(contents, false, GURL());
+    loop_runner->Run();
+  }
 
   EXPECT_TRUE(contents->ShowingInterstitialPage());
 
@@ -1441,12 +1471,17 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCommandDisable) {
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SAVE_PAGE));
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_ENCODING_MENU));
 
-  content::WindowedNotificationObserver interstitial_detach_observer(
-      content::NOTIFICATION_INTERSTITIAL_DETACHED,
-      content::Source<WebContents>(contents));
-  interstitial->Proceed();
-  interstitial_detach_observer.Wait();
-  // interstitial is deleted now.
+  {
+    scoped_refptr<content::MessageLoopRunner> loop_runner(
+        new content::MessageLoopRunner);
+
+    InterstitialObserver observer(contents,
+                                  base::Closure(),
+                                  loop_runner->QuitClosure());
+    interstitial->Proceed();
+    loop_runner->Run();
+    // interstitial is deleted now.
+  }
 
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_VIEW_SOURCE));
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_PRINT));
@@ -1457,21 +1492,31 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCommandDisable) {
 IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCloseTab) {
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
 
-  content::WindowedNotificationObserver interstitial_observer(
-      content::NOTIFICATION_INTERSTITIAL_ATTACHED,
-      content::Source<WebContents>(contents));
-  // Interstitial will delete itself when we close the tab.
-  new TestInterstitialPage(contents, false, GURL());
-  interstitial_observer.Wait();
+  {
+    scoped_refptr<content::MessageLoopRunner> loop_runner(
+        new content::MessageLoopRunner);
+
+    InterstitialObserver observer(contents,
+                                  loop_runner->QuitClosure(),
+                                  base::Closure());
+    // Interstitial will delete itself when we close the tab.
+    new TestInterstitialPage(contents, false, GURL());
+    loop_runner->Run();
+  }
 
   EXPECT_TRUE(contents->ShowingInterstitialPage());
 
-  content::WindowedNotificationObserver interstitial_detach_observer(
-      content::NOTIFICATION_INTERSTITIAL_DETACHED,
-      content::Source<WebContents>(contents));
-  chrome::CloseTab(browser());
-  interstitial_detach_observer.Wait();
-  // interstitial is deleted now.
+  {
+    scoped_refptr<content::MessageLoopRunner> loop_runner(
+        new content::MessageLoopRunner);
+
+    InterstitialObserver observer(contents,
+                                  base::Closure(),
+                                  loop_runner->QuitClosure());
+    chrome::CloseTab(browser());
+    loop_runner->Run();
+    // interstitial is deleted now.
+  }
 }
 
 class MockWebContentsObserver : public WebContentsObserver {

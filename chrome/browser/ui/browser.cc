@@ -297,6 +297,32 @@ Browser::CreateParams Browser::CreateParams::CreateForDevTools(
   return params;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Browser, InterstitialObserver:
+
+class Browser::InterstitialObserver : public content::WebContentsObserver {
+ public:
+  InterstitialObserver(Browser* browser, content::WebContents* web_contents)
+      : WebContentsObserver(web_contents),
+        browser_(browser) {
+  }
+
+  using content::WebContentsObserver::web_contents;
+
+  virtual void DidAttachInterstitialPage() OVERRIDE {
+    browser_->UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
+  }
+
+  virtual void DidDetachInterstitialPage() OVERRIDE {
+    browser_->UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
+  }
+
+ private:
+  Browser* browser_;
+
+  DISALLOW_COPY_AND_ASSIGN(InterstitialObserver);
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, Constructors, Creation, Showing:
 
@@ -948,11 +974,8 @@ void Browser::TabInsertedAt(WebContents* contents,
   // won't start if the page is loading.
   LoadingStateChanged(contents);
 
-  registrar_.Add(this, content::NOTIFICATION_INTERSTITIAL_ATTACHED,
-                 content::Source<WebContents>(contents));
+  interstitial_observers_.push_back(new InterstitialObserver(this, contents));
 
-  registrar_.Add(this, content::NOTIFICATION_INTERSTITIAL_DETACHED,
-                 content::Source<WebContents>(contents));
   SessionService* session_service =
       SessionServiceFactory::GetForProfile(profile_);
   if (session_service)
@@ -1799,14 +1822,6 @@ void Browser::Observe(int type,
       break;
     }
 
-    case content::NOTIFICATION_INTERSTITIAL_ATTACHED:
-      UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
-      break;
-
-    case content::NOTIFICATION_INTERSTITIAL_DETACHED:
-      UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
-      break;
-
     default:
       NOTREACHED() << "Got a notification we didn't register for.";
   }
@@ -2086,10 +2101,14 @@ void Browser::TabDetachedAtImpl(content::WebContents* contents,
   // Stop observing search model changes for this tab.
   search_delegate_->OnTabDetached(contents);
 
-  registrar_.Remove(this, content::NOTIFICATION_INTERSTITIAL_ATTACHED,
-                    content::Source<WebContents>(contents));
-  registrar_.Remove(this, content::NOTIFICATION_INTERSTITIAL_DETACHED,
-                    content::Source<WebContents>(contents));
+  for (size_t i = 0; i < interstitial_observers_.size(); i++) {
+    if (interstitial_observers_[i]->web_contents() != contents)
+      continue;
+
+    delete interstitial_observers_[i];
+    interstitial_observers_.erase(interstitial_observers_.begin() + i);
+    return;
+  }
 }
 
 bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,

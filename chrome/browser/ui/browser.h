@@ -491,6 +491,8 @@ class Browser : public TabStripModelObserver,
                            OpenAppShortcutWindowPref);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest, OpenAppShortcutTabPref);
 
+  class InterstitialObserver;
+
   // Used to describe why a tab is being detached. This is used by
   // TabDetachedAtImpl.
   enum DetachType {
@@ -794,6 +796,8 @@ class Browser : public TabStripModelObserver,
                                      const GURL& target_url);
 
   // Data members /////////////////////////////////////////////////////////////
+
+  std::vector<InterstitialObserver*> interstitial_observers_;
 
   content::NotificationRegistrar registrar_;
 

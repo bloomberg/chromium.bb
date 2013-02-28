@@ -38,6 +38,26 @@ using content::NavigationController;
 using content::NavigationEntry;
 using content::WebContents;
 
+namespace {
+
+class InterstitialObserver : public content::WebContentsObserver {
+ public:
+  InterstitialObserver(content::WebContents* web_contents,
+                       const base::Closure& callback)
+      : WebContentsObserver(web_contents),
+        callback_(callback) {
+  }
+
+  virtual void DidDetachInterstitialPage() OVERRIDE {
+    callback_.Run();
+  }
+
+ private:
+  base::Closure callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(InterstitialObserver);
+};
+
 // TODO(sergiu): Make the webkit error message disappear when navigating to an
 // interstitial page. The message states: "Not allowed to load local resource:
 // chrome://resources/css/widgets.css" followed by the compiled page.
@@ -176,11 +196,11 @@ class ManagedModeBlockModeTest : public InProcessBrowserTest {
 
       infobar_removed.Wait();
     } else {
-      content::WindowedNotificationObserver observer(
-          content::NOTIFICATION_INTERSTITIAL_DETACHED,
-          content::Source<WebContents>(tab));
+      scoped_refptr<content::MessageLoopRunner> loop_runner(
+          new content::MessageLoopRunner);
+      InterstitialObserver observer(tab, loop_runner->QuitClosure());
       interstitial_page->DontProceed();
-      observer.Wait();
+      loop_runner->Run();
     }
     EXPECT_FALSE(IsPreviewInfobarPresent());
     EXPECT_FALSE(IsAlreadyAddedInfobarPresent());
@@ -592,3 +612,5 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
       WebContentsModalDialogManager::FromWebContents(tab);
   EXPECT_TRUE(web_contents_modal_dialog_manager->IsShowingDialog());
 }
+
+}  // namespace

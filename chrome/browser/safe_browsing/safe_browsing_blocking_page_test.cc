@@ -46,6 +46,31 @@ const char kEmptyPage[] = "files/empty.html";
 const char kMalwarePage[] = "files/safe_browsing/malware.html";
 const char kMalwareIframe[] = "files/safe_browsing/malware_iframe.html";
 
+class InterstitialObserver : public content::WebContentsObserver {
+ public:
+  InterstitialObserver(content::WebContents* web_contents,
+                       const base::Closure& attach_callback,
+                       const base::Closure& detach_callback)
+      : WebContentsObserver(web_contents),
+        attach_callback_(attach_callback),
+        detach_callback_(detach_callback) {
+  }
+
+  virtual void DidAttachInterstitialPage() OVERRIDE {
+    attach_callback_.Run();
+  }
+
+  virtual void DidDetachInterstitialPage() OVERRIDE {
+    detach_callback_.Run();
+  }
+
+ private:
+  base::Closure attach_callback_;
+  base::Closure detach_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(InterstitialObserver);
+};
+
 // A SafeBrowsingDatabaseManager class that allows us to inject the malicious
 // URLs.
 class FakeSafeBrowsingDatabaseManager :  public SafeBrowsingDatabaseManager {
@@ -427,11 +452,13 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest {
   void WaitForInterstitial() {
     WebContents* contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    content::WindowedNotificationObserver interstitial_observer(
-        content::NOTIFICATION_INTERSTITIAL_ATTACHED,
-        content::Source<WebContents>(contents));
+    scoped_refptr<content::MessageLoopRunner> loop_runner(
+        new content::MessageLoopRunner);
+    InterstitialObserver observer(contents,
+                                  loop_runner->QuitClosure(),
+                                  base::Closure());
     if (!InterstitialPage::GetInterstitialPage(contents))
-      interstitial_observer.Wait();
+      loop_runner->Run();
   }
 
   void AssertReportSent() {
@@ -541,13 +568,15 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest {
     // We wait for interstitial_detached rather than nav_entry_committed, as
     // going back from a main-frame malware interstitial page will not cause a
     // nav entry committed event.
-    content::WindowedNotificationObserver observer(
-        content::NOTIFICATION_INTERSTITIAL_DETACHED,
-        content::Source<WebContents>(
-            browser()->tab_strip_model()->GetActiveWebContents()));
+    scoped_refptr<content::MessageLoopRunner> loop_runner(
+        new content::MessageLoopRunner);
+    InterstitialObserver observer(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        base::Closure(),
+        loop_runner->QuitClosure());
     if (!Click(node_id))
       return false;
-    observer.Wait();
+    loop_runner->Run();
     return true;
   }
 

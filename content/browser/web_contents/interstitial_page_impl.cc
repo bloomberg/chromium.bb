@@ -273,19 +273,13 @@ void InterstitialPageImpl::Hide() {
                  weak_ptr_factory_.GetWeakPtr(),
                  render_view_host_));
   render_view_host_ = NULL;
-  if (web_contents_->GetInterstitialPage())
-    web_contents_->remove_interstitial_page();
+  web_contents_->DetachInterstitialPage();
   // Let's revert to the original title if necessary.
   NavigationEntry* entry = web_contents_->GetController().GetActiveEntry();
   if (!new_navigation_ && should_revert_web_contents_title_) {
     entry->SetTitle(original_web_contents_title_);
     web_contents_->NotifyNavigationStateChanged(INVALIDATE_TYPE_TITLE);
   }
-
-  NotificationService::current()->Notify(
-      NOTIFICATION_INTERSTITIAL_DETACHED,
-      Source<WebContents>(web_contents_),
-      NotificationService::NoDetails());
 
   InterstitialPageMap::iterator iter =
       g_web_contents_to_interstitial_page->find(web_contents_);
@@ -391,16 +385,7 @@ void InterstitialPageImpl::DidNavigate(
 
   // The RenderViewHost has loaded its contents, we can show it now.
   render_view_host_->GetView()->Show();
-  web_contents_->set_interstitial_page(this);
-
-  // This notification hides the bookmark bar. Note that this has to happen
-  // after the interstitial page was registered with |web_contents_|, since
-  // there will be a callback to |web_contents_| testing if an interstitial page
-  // is showing before hiding the bookmark bar.
-  NotificationService::current()->Notify(
-      NOTIFICATION_INTERSTITIAL_ATTACHED,
-      Source<WebContents>(web_contents_),
-      NotificationService::NoDetails());
+  web_contents_->AttachInterstitialPage(this);
 
   RenderWidgetHostView* rwh_view =
       web_contents_->GetRenderViewHost()->GetView();

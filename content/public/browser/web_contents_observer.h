@@ -245,6 +245,10 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // Invoked when visible SSL state (as defined by SSLStatus) changes.
   virtual void DidChangeVisibleSSLState() {}
 
+  // Invoked when an interstitial page is attached or detached.
+  virtual void DidAttachInterstitialPage() {}
+  virtual void DidDetachInterstitialPage() {}
+
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 

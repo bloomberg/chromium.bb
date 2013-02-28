@@ -1670,6 +1670,21 @@ void WebContentsImpl::RenderViewForInterstitialPageCreated(
                     RenderViewForInterstitialPageCreated(render_view_host));
 }
 
+void WebContentsImpl::AttachInterstitialPage(
+    InterstitialPageImpl* interstitial_page) {
+  DCHECK(interstitial_page);
+  render_manager_.set_interstitial_page(interstitial_page);
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    DidAttachInterstitialPage());
+}
+
+void WebContentsImpl::DetachInterstitialPage() {
+  if (GetInterstitialPage())
+    render_manager_.remove_interstitial_page();
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    DidDetachInterstitialPage());
+}
+
 bool WebContentsImpl::NavigateToEntry(
     const NavigationEntryImpl& entry,
     NavigationController::ReloadType reload_type) {
