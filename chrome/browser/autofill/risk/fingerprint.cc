@@ -9,7 +9,7 @@
 #include "base/cpu.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
-#include "base/string_split.h"
+#include "base/strings/string_split.h"
 #include "base/sys_info.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"

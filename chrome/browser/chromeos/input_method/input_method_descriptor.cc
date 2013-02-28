@@ -7,7 +7,7 @@
 #include <sstream>
 
 #include "base/logging.h"
-#include "base/string_split.h"
+#include "base/strings/string_split.h"
 
 namespace chromeos {
 namespace input_method {

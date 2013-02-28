@@ -16,7 +16,7 @@
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/string16.h"
-#include "base/string_split.h"
+#include "base/strings/string_split.h"
 #include "base/time.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"

@@ -81,7 +81,7 @@
 
 #if defined(USE_ASH)
 #include "ash/wm/frame_painter.h"
-#include "base/string_split.h"
+#include "base/strings/string_split.h"
 #endif
 
 using base::Time;

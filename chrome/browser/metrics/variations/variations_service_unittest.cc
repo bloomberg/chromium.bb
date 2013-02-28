@@ -6,7 +6,7 @@
 
 #include "base/base64.h"
 #include "base/prefs/testing_pref_service.h"
-#include "base/string_split.h"
+#include "base/strings/string_split.h"
 #include "chrome/browser/metrics/proto/study.pb.h"
 #include "chrome/browser/metrics/variations/resource_request_allowed_notifier_test_util.h"
 #include "chrome/browser/metrics/variations/variations_service.h"

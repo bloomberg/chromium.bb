@@ -9,7 +9,7 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
-#include "base/string_split.h"
+#include "base/strings/string_split.h"
 #include "base/sys_byteorder.h"
 #include "build/build_config.h"
 #include "chrome/browser/safe_browsing/protocol_parser.h"

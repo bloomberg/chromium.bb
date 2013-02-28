@@ -9,9 +9,9 @@
 #include "chrome/browser/safe_browsing/chunk_range.h"
 
 #include "base/logging.h"
-#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 
 ChunkRange::ChunkRange(int start) : start_(start), stop_(start) {
 }

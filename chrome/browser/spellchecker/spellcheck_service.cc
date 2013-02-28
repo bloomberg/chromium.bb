@@ -7,7 +7,7 @@
 #include "base/platform_file.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/public/pref_member.h"
-#include "base/string_split.h"
+#include "base/strings/string_split.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"

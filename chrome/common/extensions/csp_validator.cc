@@ -4,8 +4,8 @@
 
 #include "chrome/common/extensions/csp_validator.h"
 
-#include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 
 namespace extensions {

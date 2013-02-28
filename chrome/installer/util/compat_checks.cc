@@ -4,9 +4,9 @@
 
 #include "chrome/installer/util/compat_checks.h"
 
-#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/win/registry.h"
 
 namespace {

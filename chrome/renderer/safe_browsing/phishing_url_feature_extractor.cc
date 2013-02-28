@@ -9,10 +9,10 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/perftimer.h"
 #include "base/metrics/histogram.h"
-#include "base/string_split.h"
+#include "base/perftimer.h"
 #include "base/string_util.h"
+#include "base/strings/string_split.h"
 #include "chrome/renderer/safe_browsing/features.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"

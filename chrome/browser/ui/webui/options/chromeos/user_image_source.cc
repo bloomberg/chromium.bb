@@ -6,7 +6,7 @@
 
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop.h"
-#include "base/string_split.h"
+#include "base/strings/string_split.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/url_constants.h"

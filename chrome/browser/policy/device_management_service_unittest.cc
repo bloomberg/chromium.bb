@@ -7,7 +7,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
-#include "base/string_split.h"
+#include "base/strings/string_split.h"
 #include "chrome/browser/policy/cloud_policy_constants.h"
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/test/base/testing_browser_process.h"

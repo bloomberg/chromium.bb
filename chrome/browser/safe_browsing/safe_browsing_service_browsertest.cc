@@ -15,7 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
-#include "base/string_split.h"
+#include "base/strings/string_split.h"
 #include "base/test/thread_test_helper.h"
 #include "base/time.h"
 #include "chrome/browser/browser_process.h"

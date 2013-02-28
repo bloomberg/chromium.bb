@@ -9,7 +9,7 @@
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/pickle.h"
-#include "base/string_split.h"
+#include "base/strings/string_split.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"

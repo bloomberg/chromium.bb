@@ -9,8 +9,8 @@
 
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/string_search.h"
-#include "base/string_split.h"
 #include "base/string16.h"
+#include "base/strings/string_split.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/chromeos/contacts/contact.pb.h"

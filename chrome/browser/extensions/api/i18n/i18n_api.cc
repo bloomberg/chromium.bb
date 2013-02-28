@@ -11,7 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/prefs/pref_service.h"
 #include "base/string_piece.h"
-#include "base/string_split.h"
+#include "base/strings/string_split.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/i18n.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"

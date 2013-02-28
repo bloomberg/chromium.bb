@@ -5,8 +5,8 @@
 #include "chrome/browser/themes/theme_properties.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/strings/string_split.h"
 #include "chrome/browser/themes/browser_theme_pack.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"

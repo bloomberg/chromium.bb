@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/json/json_reader.h"
-#include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/strings/string_split.h"
 #include "base/values.h"
 #include "chrome/browser/net/gaia/gaia_oauth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"

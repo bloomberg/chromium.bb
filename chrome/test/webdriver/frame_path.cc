@@ -4,7 +4,7 @@
 
 #include "chrome/test/webdriver/frame_path.h"
 
-#include "base/string_split.h"
+#include "base/strings/string_split.h"
 
 namespace webdriver {
 
