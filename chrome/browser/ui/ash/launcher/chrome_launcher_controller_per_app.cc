@@ -1052,11 +1052,11 @@ ChromeLauncherAppMenuItems ChromeLauncherControllerPerApp::GetApplicationList(
 
   std::string app_id = id_to_item_controller_map_[item.id]->app_id();
   ash::LauncherID id = GetLauncherIDForAppID(app_id);
+  // If there is no launcher item (e.g. for panels), return an empty list.
+  if (!id)
+    return ChromeLauncherAppMenuItems().Pass();
 
-  // If there is no such an item pinned to the launcher, no menu gets created.
-  DCHECK(id);
   DCHECK(id_to_item_controller_map_[id]);
-
   return id_to_item_controller_map_[id]->GetApplicationList();
 }
 
