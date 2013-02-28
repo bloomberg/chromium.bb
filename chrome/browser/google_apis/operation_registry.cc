@@ -163,8 +163,8 @@ void OperationRegistry::CancelAll() {
        !iter.IsAtEnd();
        iter.Advance()) {
     Operation* operation = iter.GetCurrentValue();
-    operation->Cancel();
-    // Cancel() may immediately trigger OnOperationFinish and remove the
+    CancelOperation(operation);
+    // CancelOperation may immediately trigger OnOperationFinish and remove the
     // operation from the map, but IDMap is designed to be safe on such remove
     // while iteration.
   }
@@ -178,11 +178,24 @@ bool OperationRegistry::CancelForFilePath(const base::FilePath& file_path) {
        iter.Advance()) {
     Operation* operation = iter.GetCurrentValue();
     if (operation->progress_status().file_path == file_path) {
-      operation->Cancel();
+      CancelOperation(operation);
       return true;
     }
   }
   return false;
+}
+
+void OperationRegistry::CancelOperation(Operation* operation) {
+  if (operation->progress_status().transfer_state == OPERATION_SUSPENDED) {
+    // SUSPENDED operation already completed its job (like calling back to
+    // its client code). Invoking operation->Cancel() again on it is a kind of
+    // 'double deletion'. So here we directly call OnOperationFinish and just
+    // unregister the operation from the registry.
+    // TODO(kinaba): http://crbug.com/164098 Get rid of the hack.
+    OnOperationFinish(operation->progress_status().operation_id);
+  } else {
+    operation->Cancel();
+  }
 }
 
 void OperationRegistry::OnOperationStart(
@@ -239,7 +252,18 @@ void OperationRegistry::OnOperationResume(
       break;
     }
   }
-  DCHECK(suspended);
+
+  if (!suspended) {
+    // Preceding suspended operations was not found. Assume it was canceled.
+    //
+    // operation->Cancel() needs to be called to properly shut down the
+    // current operation, but operation->Cancel() tries to unregister itself
+    // from the registry. So, as a hack, temporarily assign it an ID.
+    // TODO(kinaba): http://crbug.com/164098 Get rid of it.
+    new_status->operation_id = in_flight_operations_.Add(operation);
+    CancelOperation(operation);
+    return;
+  }
 
   // Copy the progress status.
   const OperationProgressStatus& old_status = suspended->progress_status();

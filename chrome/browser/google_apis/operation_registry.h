@@ -159,6 +159,9 @@ class OperationRegistry {
   // not too high by ShouldNotifyStatusNow.
   void NotifyStatusToObservers();
 
+  // Cancels the specified operation.
+  void CancelOperation(Operation* operation);
+
   typedef IDMap<Operation, IDMapOwnPointer> OperationIDMap;
   OperationIDMap in_flight_operations_;
   ObserverList<OperationRegistryObserver> observer_list_;
