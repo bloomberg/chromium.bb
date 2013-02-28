@@ -391,6 +391,8 @@ class OperandType(object):
   XMM_REGISTER_IN_REG = 'V'
   XMM_REGISTER_OR_MEMORY = 'W'  # in ModRM.mod and .r/m
 
+  XMM_REGISTER_IN_IMMEDIATE = 'L'  # most-significant 4 bits of 8-bit immediate
+
   DS_SI = 'X'
   ES_DI = 'Y'
   DS_BX = 'x'

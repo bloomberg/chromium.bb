@@ -116,13 +116,14 @@ class Operand(object):
       return 'mmx'
 
     if (self.arg_type == def_format.OperandType.AX and
-        self.size == 'pd'):
+        self.size in ['pd', 'ps', 'pb']):
       return 'xmm'
 
     if self.arg_type in [def_format.OperandType.XMM_REGISTER_IN_REG,
                          def_format.OperandType.XMM_REGISTER_IN_RM,
-                         def_format.OperandType.XMM_REGISTER_IN_VVVV]:
-      if self.size.endswith('-ymm'):
+                         def_format.OperandType.XMM_REGISTER_IN_VVVV,
+                         def_format.OperandType.XMM_REGISTER_IN_IMMEDIATE]:
+      if self.size.endswith('-ymm') or self.size in ['fq', 'do']:
         return 'ymm'
       else:
         return 'xmm'
@@ -488,6 +489,10 @@ class InstructionPrinter(object):
     w, vvvv, L, pp = m.groups()
     assert L != 'L', 'L-bit should be splitted already'
 
+    if w == 'W':
+      assert instruction.rex.w_matters
+      w = '1' if instruction.rex.w_set else '0'
+
     has_short_form = (
         instruction.opcodes[0] == '0xc4' and
         map_select in ['01', '00001'] and
@@ -495,10 +500,6 @@ class InstructionPrinter(object):
 
     if vvvv in ['src', 'src1', 'dest', 'cntl']:
       vvvv = {32: '1XXX', 64: 'XXXX'}[self._bitness]
-
-    if w == 'W':
-      assert instruction.rex.w_matters
-      w = '1' if instruction.rex.w_set else '0'
 
     # Adjustment for objdump.
     w = w.replace('x', '0')
@@ -745,6 +746,18 @@ class InstructionPrinter(object):
       else:
         assert False, format
       self._PrintOperandSource(operand, 'second_immediate')
+
+    operand = instruction.FindOperand(
+        def_format.OperandType.XMM_REGISTER_IN_IMMEDIATE)
+    if operand is not None:
+      # TODO(shcherbina): 2-bit immediate support.
+      if self._bitness == 32:
+        self._out.write('b_0xxx_0000\n')
+      else:
+        self._out.write('b_xxxx_0000\n')
+      if self._mode == VALIDATOR:
+        self._out.write('@last_byte_is_not_immediate\n')
+      self._PrintOperandSource(operand, 'from_is4')
 
   def PrintInstructionWithoutModRM(self, instruction):
     assert not instruction.HasModRM()
