@@ -406,6 +406,42 @@ TEST_F(FakeDriveServiceTest, GetAccountMetadata_Offline) {
   EXPECT_FALSE(account_metadata);
 }
 
+TEST_F(FakeDriveServiceTest, GetAboutResource) {
+  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
+      "gdata/account_metadata.json"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<AboutResource> about_resource;
+  fake_service_.GetAboutResource(
+      base::Bind(&test_util::CopyResultsFromGetAboutResourceCallback,
+                 &error, &about_resource));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+
+  ASSERT_TRUE(about_resource);
+  // Do some sanity check.
+  EXPECT_EQ(fake_service_.GetRootResourceId(),
+            about_resource->root_folder_id());
+  EXPECT_EQ(1, fake_service_.about_resource_load_count());
+}
+
+TEST_F(FakeDriveServiceTest, GetAboutResource_Offline) {
+  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
+      "gdata/account_metadata.json"));
+  fake_service_.set_offline(true);
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<AboutResource> about_resource;
+  fake_service_.GetAboutResource(
+      base::Bind(&test_util::CopyResultsFromGetAboutResourceCallback,
+                 &error, &about_resource));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_FALSE(about_resource);
+}
+
 TEST_F(FakeDriveServiceTest, GetAppList) {
   ASSERT_TRUE(fake_service_.LoadAppListForDriveApi(
       "drive/applist.json"));

@@ -150,6 +150,15 @@ void CopyResultsFromGetAccountMetadataCallback(
   *error_out = error_in;
 }
 
+void CopyResultsFromGetAboutResourceCallback(
+    GDataErrorCode* error_out,
+    scoped_ptr<AboutResource>* about_resource_out,
+    GDataErrorCode error_in,
+    scoped_ptr<AboutResource> about_resource_in) {
+  *error_out = error_in;
+  *about_resource_out = about_resource_in.Pass();
+}
+
 void CopyResultsFromGetAppListCallback(
     GDataErrorCode* error_out,
     scoped_ptr<AppList>* app_list_out,

@@ -73,6 +73,7 @@ FakeDriveService::FakeDriveService()
       resource_id_count_(0),
       resource_list_load_count_(0),
       account_metadata_load_count_(0),
+      about_resource_load_count_(0),
       offline_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -374,8 +375,32 @@ void FakeDriveService::GetAboutResource(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Implement this.
-  NOTREACHED();
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (offline_) {
+    scoped_ptr<AboutResource> null;
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   GDATA_NO_CONNECTION, base::Passed(&null)));
+    return;
+  }
+
+  ++about_resource_load_count_;
+  scoped_ptr<AccountMetadataFeed> account_metadata =
+      AccountMetadataFeed::CreateFrom(*account_metadata_value_);
+  scoped_ptr<AboutResource> about_resource(new AboutResource);
+  about_resource->set_largest_change_id(
+      account_metadata->largest_changestamp());
+  about_resource->set_quota_bytes_total(account_metadata->quota_bytes_total());
+  about_resource->set_quota_bytes_used(account_metadata->quota_bytes_used());
+  about_resource->set_root_folder_id(GetRootResourceId());
+
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback,
+                 HTTP_SUCCESS, base::Passed(&about_resource)));
 }
 
 void FakeDriveService::GetAppList(const GetAppListCallback& callback) {

@@ -58,6 +58,12 @@ class FakeDriveService : public DriveServiceInterface {
     return account_metadata_load_count_;
   }
 
+  // Returns the number of times the about resource is successfully loaded
+  // by GetAboutResource().
+  int about_resource_load_count() const {
+    return about_resource_load_count_;
+  }
+
   // Returns the (fake) URL for the link.
   static GURL GetFakeLinkUrl(const std::string& resource_id);
 
@@ -176,6 +182,7 @@ class FakeDriveService : public DriveServiceInterface {
   int resource_id_count_;
   int resource_list_load_count_;
   int account_metadata_load_count_;
+  int about_resource_load_count_;
   bool offline_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDriveService);

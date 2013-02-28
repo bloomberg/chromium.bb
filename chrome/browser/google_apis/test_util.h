@@ -19,8 +19,9 @@ class Value;
 
 namespace google_apis {
 
-class AppList;
+class AboutResource;
 class AccountMetadataFeed;
+class AppList;
 class AuthenticatedOperationInterface;
 class ResourceEntry;
 class ResourceList;
@@ -100,6 +101,13 @@ void CopyResultsFromGetAccountMetadataCallback(
     scoped_ptr<AccountMetadataFeed>* account_metadata_out,
     GDataErrorCode error_in,
     scoped_ptr<AccountMetadataFeed> account_metadata_in);
+
+// Copies the results from GetAboutResourceCallback.
+void CopyResultsFromGetAboutResourceCallback(
+    GDataErrorCode* error_out,
+    scoped_ptr<AboutResource>* about_resource_out,
+    GDataErrorCode error_in,
+    scoped_ptr<AboutResource> about_resource_in);
 
 // Copies the results from GetAppListCallback.
 void CopyResultsFromGetAppListCallback(
