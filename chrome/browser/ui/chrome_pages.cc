@@ -200,6 +200,7 @@ void ShowBrowserSignin(Browser* browser, SyncPromoUI::Source source) {
   Profile* original_profile = browser->profile()->GetOriginalProfile();
   SigninManager* manager =
       SigninManagerFactory::GetForProfile(original_profile);
+  DCHECK(manager->IsSigninAllowed());
   // If we're signed in, just show settings.
   if (!manager->GetAuthenticatedUsername().empty()) {
     ShowSettings(browser);

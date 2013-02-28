@@ -1710,6 +1710,9 @@ const char kDevToolsVSplitLocation[] = "devtools.v_split_location";
 const char kSpdyProxyAuthEnabled[] = "spdy_proxy.enabled";
 #endif
 
+// Boolean which stores if the user is allowed to signin to chrome.
+const char kSigninAllowed[] = "signin.allowed";
+
 // 64-bit integer serialization of the base::Time when the last sync occurred.
 const char kSyncLastSyncedTime[] = "sync.last_synced_time";
 

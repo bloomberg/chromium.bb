@@ -77,6 +77,8 @@ class TestProfileIOData : public ProfileIOData {
 
     sync_disabled()->Init(prefs::kSyncManaged, pref_service);
 
+    signin_allowed()->Init(prefs::kSigninAllowed, pref_service);
+
     set_signin_names_for_testing(new SigninNamesOnIOThread());
     SetCookieSettingsForTesting(cookie_settings);
   }
@@ -582,6 +584,18 @@ TEST_F(OneClickSigninHelperTest, CanOfferDisabledByPolicy) {
       web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_ALL,
       "user@gmail.com", NULL));
 
+  // Simulate a policy disabling signin by writing kSigninAllowed directly.
+  profile_->GetTestingPrefService()->SetManagedPref(
+      prefs::kSigninAllowed, base::Value::CreateBooleanValue(false));
+
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_ALL,
+      "user@gmail.com", NULL));
+
+  // Reset the preference value to true.
+  profile_->GetTestingPrefService()->SetManagedPref(
+      prefs::kSigninAllowed, base::Value::CreateBooleanValue(true));
+
   // Simulate a policy disabling sync by writing kSyncManaged directly.
   profile_->GetTestingPrefService()->SetManagedPref(
       prefs::kSyncManaged, base::Value::CreateBooleanValue(true));
@@ -784,6 +798,18 @@ TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadDisabledByPolicy) {
   EXPECT_EQ(OneClickSigninHelper::CAN_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
                 valid_gaia_url_, "", &request_, io_data.get()));
+
+  // Simulate a policy disabling signin by writing kSigninAllowed directly.
+  // We should not offer to sign in the browser.
+  profile_->GetTestingPrefService()->SetManagedPref(
+      prefs::kSigninAllowed, base::Value::CreateBooleanValue(false));
+  EXPECT_EQ(OneClickSigninHelper::DONT_OFFER,
+            OneClickSigninHelper::CanOfferOnIOThreadImpl(
+                valid_gaia_url_, "", &request_, io_data.get()));
+
+  // Reset the preference.
+  profile_->GetTestingPrefService()->SetManagedPref(
+      prefs::kSigninAllowed, base::Value::CreateBooleanValue(true));
 
   // Simulate a policy disabling sync by writing kSyncManaged directly.
   // We should still offer to sign in the browser.

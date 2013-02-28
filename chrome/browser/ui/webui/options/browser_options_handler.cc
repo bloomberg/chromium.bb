@@ -604,6 +604,13 @@ void BrowserOptionsHandler::OnStateChanged() {
   SendProfilesInfo();
 }
 
+void BrowserOptionsHandler::OnSigninAllowedPrefChange() {
+  web_ui()->CallJavascriptFunction("BrowserOptions.updateSyncState",
+                                   *GetSyncStateDictionary());
+
+  SendProfilesInfo();
+}
+
 void BrowserOptionsHandler::PageLoadStarted() {
   page_initialized_ = false;
 }
@@ -674,11 +681,16 @@ void BrowserOptionsHandler::InitializeHandler() {
       prefs::kDefaultZoomLevel, prefs,
       base::Bind(&BrowserOptionsHandler::SetupPageZoomSelector,
                  base::Unretained(this)));
+  profile_pref_registrar_.Init(prefs);
+  profile_pref_registrar_.Add(
+      prefs::kSigninAllowed,
+      base::Bind(&BrowserOptionsHandler::OnSigninAllowedPrefChange,
+                 base::Unretained(this)));
 #if !defined(OS_CHROMEOS)
-  proxy_prefs_.Init(prefs);
-  proxy_prefs_.Add(prefs::kProxy,
-                   base::Bind(&BrowserOptionsHandler::SetupProxySettingsSection,
-                              base::Unretained(this)));
+  profile_pref_registrar_.Add(
+      prefs::kProxy,
+      base::Bind(&BrowserOptionsHandler::SetupProxySettingsSection,
+                 base::Unretained(this)));
 #endif  // !defined(OS_CHROMEOS)
 }
 
@@ -1103,18 +1115,20 @@ void BrowserOptionsHandler::UpdateAccountPicture() {
 scoped_ptr<DictionaryValue> BrowserOptionsHandler::GetSyncStateDictionary() {
   scoped_ptr<DictionaryValue> sync_status(new DictionaryValue);
   Profile* profile = Profile::FromWebUI(web_ui());
-  sync_status->SetBoolean("signinAllowed", !profile->IsGuestSession());
   if (profile->IsGuestSession()) {
     // Cannot display signin status when running in guest mode on chromeos
     // because there is no SigninManager.
+    sync_status->SetBoolean("signinAllowed", false);
     return sync_status.Pass();
   }
 
   // Signout is not allowed if the user has policy (crbug.com/172204).
   SigninManager* signin = SigninManagerFactory::GetForProfile(profile);
+  DCHECK(signin);
   sync_status->SetBoolean("signoutAllowed", !signin->IsSignoutProhibited());
   ProfileSyncService* service(
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile));
+  sync_status->SetBoolean("signinAllowed", signin->IsSigninAllowed());
   sync_status->SetBoolean("syncSystemEnabled", !!service);
   sync_status->SetBoolean("setupCompleted",
                           service && service->HasSyncSetupCompleted());
@@ -1457,7 +1471,7 @@ void BrowserOptionsHandler::SetupProxySettingsSection() {
   bool is_extension_controlled = (proxy_config &&
                                   proxy_config->IsExtensionControlled());
 
-  base::FundamentalValue disabled(proxy_prefs_.IsManaged() ||
+  base::FundamentalValue disabled(profile_pref_registrar_.IsManaged() ||
                                   is_extension_controlled);
   base::FundamentalValue extension_controlled(is_extension_controlled);
   web_ui()->CallJavascriptFunction("BrowserOptions.setupProxySettingsSection",

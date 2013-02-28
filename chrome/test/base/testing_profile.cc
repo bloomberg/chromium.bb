@@ -163,6 +163,7 @@ TestingProfile::TestingProfile()
     : start_time_(Time::Now()),
       testing_prefs_(NULL),
       incognito_(false),
+      original_profile_(NULL),
       last_session_exited_cleanly_(true),
       profile_dependency_manager_(ProfileDependencyManager::GetInstance()),
       delegate_(NULL) {
@@ -177,6 +178,7 @@ TestingProfile::TestingProfile(const base::FilePath& path)
     : start_time_(Time::Now()),
       testing_prefs_(NULL),
       incognito_(false),
+      original_profile_(NULL),
       last_session_exited_cleanly_(true),
       profile_path_(path),
       profile_dependency_manager_(ProfileDependencyManager::GetInstance()),
@@ -190,6 +192,7 @@ TestingProfile::TestingProfile(const base::FilePath& path,
     : start_time_(Time::Now()),
       testing_prefs_(NULL),
       incognito_(false),
+      original_profile_(NULL),
       last_session_exited_cleanly_(true),
       profile_path_(path),
       profile_dependency_manager_(ProfileDependencyManager::GetInstance()),
@@ -213,6 +216,7 @@ TestingProfile::TestingProfile(
       prefs_(prefs.release()),
       testing_prefs_(NULL),
       incognito_(false),
+      original_profile_(NULL),
       last_session_exited_cleanly_(true),
       extension_special_storage_policy_(extension_policy),
       profile_path_(path),
@@ -500,6 +504,10 @@ void TestingProfile::SetOffTheRecordProfile(Profile* profile) {
   incognito_profile_.reset(profile);
 }
 
+void TestingProfile::SetOriginalProfile(Profile* profile) {
+  original_profile_ = profile;
+}
+
 Profile* TestingProfile::GetOffTheRecordProfile() {
   return incognito_profile_.get();
 }
@@ -509,6 +517,8 @@ bool TestingProfile::HasOffTheRecordProfile() {
 }
 
 Profile* TestingProfile::GetOriginalProfile() {
+  if (original_profile_)
+    return original_profile_;
   return this;
 }
 

@@ -595,6 +595,7 @@ extern const char kDevToolsVSplitLocation[];
 // Used by Chrome Mobile.
 extern const char kSpdyProxyAuthEnabled[];
 #endif
+extern const char kSigninAllowed[];
 extern const char kSyncLastSyncedTime[];
 extern const char kSyncHasSetupCompleted[];
 extern const char kSyncKeepEverythingSynced[];

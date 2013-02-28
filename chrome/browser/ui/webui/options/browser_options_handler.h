@@ -56,6 +56,9 @@ class BrowserOptionsHandler
   // ProfileSyncServiceObserver implementation.
   virtual void OnStateChanged() OVERRIDE;
 
+  // Will be called when the kSigninAllowed pref has changed.
+  void OnSigninAllowedPrefChange();
+
   // ShellIntegration::DefaultWebClientObserver implementation.
   virtual void SetDefaultWebClientUIState(
       ShellIntegration::DefaultWebClientUIState state) OVERRIDE;
@@ -288,9 +291,7 @@ class BrowserOptionsHandler
   IntegerPrefMember default_font_size_;
   DoublePrefMember default_zoom_level_;
 
-#if !defined(OS_CHROMEOS)
-  PrefChangeRegistrar proxy_prefs_;
-#endif  // !defined(OS_CHROMEOS)
+  PrefChangeRegistrar profile_pref_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserOptionsHandler);
 };

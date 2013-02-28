@@ -210,6 +210,7 @@ class TestingProfile : public Profile {
   void set_incognito(bool incognito) { incognito_ = incognito; }
   // Assumes ownership.
   virtual void SetOffTheRecordProfile(Profile* profile);
+  virtual void SetOriginalProfile(Profile* profile);
   virtual Profile* GetOffTheRecordProfile() OVERRIDE;
   virtual void DestroyOffTheRecordProfile() OVERRIDE {}
   virtual bool HasOffTheRecordProfile() OVERRIDE;
@@ -340,6 +341,7 @@ class TestingProfile : public Profile {
 
   bool incognito_;
   scoped_ptr<Profile> incognito_profile_;
+  Profile* original_profile_;
 
   // Did the last session exit cleanly? Default is true.
   bool last_session_exited_cleanly_;

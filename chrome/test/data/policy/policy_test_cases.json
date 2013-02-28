@@ -360,6 +360,14 @@
     ]
   },
 
+  "SigninAllowed": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "SigninAllowed": true },
+    "pref_mappings": [
+      { "pref": "signin.allowed" }
+    ]
+  },
+  
   "UserDataDir": {
     "note": "TODO(joaodasilva): To test that this policy works correctly, it would need to be set before the browser is launched. PolicyPrefsTest should be refactored to support this and a test for this policy added."
   },

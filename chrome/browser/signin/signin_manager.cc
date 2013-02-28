@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/about_signin_internals.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
@@ -223,6 +224,9 @@ void SigninManager::Initialize(Profile* profile) {
         base::Bind(&SigninManager::OnGoogleServicesUsernamePatternChanged,
                    weak_pointer_factory_.GetWeakPtr()));
   }
+  signin_allowed_.Init(prefs::kSigninAllowed, profile_->GetPrefs(),
+                       base::Bind(&SigninManager::OnSigninAllowedPrefChanged,
+                                  base::Unretained(this)));
 
   // If the user is clearing the token service from the command line, then
   // clear their login info also (not valid to be logged in without any
@@ -249,7 +253,7 @@ void SigninManager::Initialize(Profile* profile) {
     }
 #endif
   }
-  if (!user.empty() && !IsAllowedUsername(user)) {
+  if ((!user.empty() && !IsAllowedUsername(user)) || !IsSigninAllowed()) {
     // User is signed in, but the username is invalid - the administrator must
     // have changed the policy since the last signin, so sign out the user.
     SignOut();
@@ -268,6 +272,16 @@ bool SigninManager::IsAllowedUsername(const std::string& username) const {
   std::string pattern = local_state->GetString(
       prefs::kGoogleServicesUsernamePattern);
   return IsAllowedUsername(username, pattern);
+}
+
+bool SigninManager::IsSigninAllowed() const {
+  return signin_allowed_.GetValue();
+}
+
+// static
+bool SigninManager::IsSigninAllowedOnIOThread(ProfileIOData* io_data) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  return io_data->signin_allowed()->GetValue();
 }
 
 void SigninManager::CleanupNotificationRegistration() {
@@ -914,6 +928,11 @@ void SigninManager::OnGoogleServicesUsernamePatternChanged() {
     // the user out.
     SignOut();
   }
+}
+
+void SigninManager::OnSigninAllowedPrefChanged() {
+  if (!IsSigninAllowed())
+    SignOut();
 }
 
 void SigninManager::AddSigninDiagnosticsObserver(

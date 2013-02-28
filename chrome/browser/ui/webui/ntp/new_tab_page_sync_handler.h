@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/prefs/public/pref_change_registrar.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -34,15 +35,21 @@ class NewTabPageSyncHandler : public content::WebUIMessageHandler,
   // ProfileSyncServiceObserver
   virtual void OnStateChanged() OVERRIDE;
 
+  void OnSigninAllowedPrefChange();
+
  private:
+  friend class MockNewTabPageSyncHandler;
+  FRIEND_TEST_ALL_PREFIXES(NewTabPageSyncHandlerBrowserTest,
+                           ChangeSigninAllowedToFalse);
+
   enum MessageType {
     HIDE,
     SYNC_ERROR,
     SYNC_PROMO
   };
   // Helper to invoke the |syncMessageChanged| JS function on the new tab page.
-  void SendSyncMessageToPage(MessageType type,
-                             std::string msg, std::string linktext);
+  virtual void SendSyncMessageToPage(MessageType type,
+                                     std::string msg, std::string linktext);
 
   // Helper to query the sync service and figure out what to send to
   // the page, and send it via SendSyncMessageToPage.
@@ -58,6 +65,8 @@ class NewTabPageSyncHandler : public content::WebUIMessageHandler,
 
   // Cached pointer to ProfileSyncService.
   ProfileSyncService* sync_service_;
+
+  PrefChangeRegistrar profile_pref_registrar_;
 
   // Used to make sure we don't register ourselves twice if the user refreshes
   // the new tab page.

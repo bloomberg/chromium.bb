@@ -35,6 +35,8 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -785,7 +787,10 @@ void RecordLastRunAppBundlePath() {
                 << "NULL lastProfile detected -- not doing anything";
             break;
           }
-          enable = ![self keyWindowIsModal];
+          SigninManager* signin = SigninManagerFactory::GetForProfile(
+              lastProfile->GetOriginalProfile());
+          enable = signin->IsSigninAllowed() &&
+              ![self keyWindowIsModal];
           [BrowserWindowController updateSigninItem:item
                                          shouldShow:enable
                                      currentProfile:lastProfile];

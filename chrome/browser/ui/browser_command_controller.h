@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/prefs/public/pref_change_registrar.h"
-#include "chrome/browser/api/sync/profile_sync_service_observer.h"
+#include "base/prefs/public/pref_member.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/command_updater_delegate.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
@@ -165,8 +165,14 @@ class BrowserCommandController : public CommandUpdaterDelegate,
   // Updates the printing command state.
   void UpdatePrintingState();
 
+  // Updates the SHOW_SYNC_SETUP menu entry.
+  void OnSigninAllowedPrefChange();
+
   // Updates the save-page-as command state.
   void UpdateSaveAsState();
+
+  // Updates the show-sync command state.
+  void UpdateShowSyncState(bool show_main_ui);
 
   // Ask the Reload/Stop button to change its icon, and update the Stop command
   // state.  |is_loading| is true if the current WebContents is loading.
@@ -204,6 +210,7 @@ class BrowserCommandController : public CommandUpdaterDelegate,
 
   PrefChangeRegistrar profile_pref_registrar_;
   PrefChangeRegistrar local_pref_registrar_;
+  BooleanPrefMember pref_signin_allowed_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserCommandController);
 };

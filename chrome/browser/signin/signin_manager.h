@@ -25,6 +25,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/prefs/public/pref_change_registrar.h"
+#include "base/prefs/public/pref_member.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/signin/signin_internals_util.h"
@@ -37,6 +38,7 @@
 
 class CookieSettings;
 class GaiaAuthFetcher;
+class ProfileIOData;
 class PrefService;
 class SigninGlobalError;
 
@@ -93,6 +95,14 @@ class SigninManager : public GaiaAuthConsumer,
   // Returns true if the passed username is allowed by policy. Virtual for
   // mocking in tests.
   virtual bool IsAllowedUsername(const std::string& username) const;
+
+  // Returns true if a signin to Chrome is allowed (by policy or pref).
+  bool IsSigninAllowed() const;
+
+  // Checks if signin is allowed for the profile that owns |io_data|. This must
+  // be invoked on the IO thread, and can be used to check if signin is enabled
+  // on that thread.
+  static bool IsSigninAllowedOnIOThread(ProfileIOData* io_data);
 
   // If a user has previously established a username and SignOut has not been
   // called, this will return the username.
@@ -287,6 +297,8 @@ class SigninManager : public GaiaAuthConsumer,
 
   void OnGoogleServicesUsernamePatternChanged();
 
+  void OnSigninAllowedPrefChanged();
+
   // Helper methods to notify all registered diagnostics observers with.
   void NotifyDiagnosticsObservers(
       const signin_internals_util::UntimedSigninStatusField& field,
@@ -311,6 +323,9 @@ class SigninManager : public GaiaAuthConsumer,
   // Helper object to listen for changes to signin preferences stored in non-
   // profile-specific local prefs (like kGoogleServicesUsernamePattern).
   PrefChangeRegistrar local_state_pref_registrar_;
+
+  // Helper object to listen for changes to the signin allowed preference.
+  BooleanPrefMember signin_allowed_;
 
   // Actual username after successful authentication.
   std::string authenticated_username_;

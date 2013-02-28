@@ -305,6 +305,9 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 
     sync_disabled_.Init(prefs::kSyncManaged, pref_service);
     sync_disabled_.MoveToThread(io_message_loop_proxy);
+
+    signin_allowed_.Init(prefs::kSigninAllowed, pref_service);
+    signin_allowed_.MoveToThread(io_message_loop_proxy);
   }
 
   // The URLBlacklistManager has to be created on the UI thread to register
@@ -791,6 +794,7 @@ void ProfileIOData::ShutdownOnUIThread() {
   safe_browsing_enabled_.Destroy();
   printing_enabled_.Destroy();
   sync_disabled_.Destroy();
+  signin_allowed_.Destroy();
   session_startup_pref_.Destroy();
 #if defined(ENABLE_CONFIGURATION_POLICY)
   if (url_blacklist_manager_.get())

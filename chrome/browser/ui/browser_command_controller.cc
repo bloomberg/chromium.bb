@@ -200,6 +200,11 @@ BrowserCommandController::BrowserCommandController(
       prefs::kPrintingEnabled,
       base::Bind(&BrowserCommandController::UpdatePrintingState,
                  base::Unretained(this)));
+  pref_signin_allowed_.Init(
+      prefs::kSigninAllowed,
+      profile()->GetOriginalProfile()->GetPrefs(),
+      base::Bind(&BrowserCommandController::OnSigninAllowedPrefChange,
+                 base::Unretained(this)));
 
   InitCommandState();
 
@@ -717,6 +722,15 @@ void BrowserCommandController::OnProfileAvatarChanged(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// BrowserCommandController, SigninPrefObserver implementation:
+
+void BrowserCommandController::OnSigninAllowedPrefChange() {
+  // For unit tests, we don't have a window.
+  if (!window())
+    return;
+  UpdateShowSyncState(IsShowingMainUI());
+}
+
 // BrowserCommandController, TabStripModelObserver implementation:
 
 void BrowserCommandController::TabInsertedAt(WebContents* contents,
@@ -880,7 +894,7 @@ void BrowserCommandController::InitCommandState() {
                                         !profile()->IsGuestSession() &&
                                         !profile()->IsOffTheRecord());
 
-  command_updater_.UpdateCommandEnabled(IDC_SHOW_SIGNIN, true);
+  UpdateShowSyncState(true);
 
   // Initialize other commands based on the window type.
   bool normal_window = browser_->is_type_tabbed();
@@ -1110,6 +1124,7 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode(
   // Show various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_DEVELOPER_MENU, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_FEEDBACK, show_main_ui);
+  UpdateShowSyncState(show_main_ui);
 
   // Settings page/subpages are forced to open in normal mode. We disable these
   // commands when incognito is forced.
@@ -1179,6 +1194,11 @@ void BrowserCommandController::UpdatePrintingState() {
 
 void BrowserCommandController::UpdateSaveAsState() {
   command_updater_.UpdateCommandEnabled(IDC_SAVE_PAGE, CanSavePage(browser_));
+}
+
+void BrowserCommandController::UpdateShowSyncState(bool show_main_ui) {
+  command_updater_.UpdateCommandEnabled(
+      IDC_SHOW_SYNC_SETUP, show_main_ui && pref_signin_allowed_.GetValue());
 }
 
 // static

@@ -69,6 +69,11 @@ void NewTabPageSyncHandler::RegisterMessages() {
       Profile::FromWebUI(web_ui()));
   if (sync_service_)
     sync_service_->AddObserver(this);
+  profile_pref_registrar_.Init(Profile::FromWebUI(web_ui())->GetPrefs());
+  profile_pref_registrar_.Add(
+      prefs::kSigninAllowed,
+      base::Bind(&NewTabPageSyncHandler::OnSigninAllowedPrefChange,
+                 base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback("GetSyncMessage",
       base::Bind(&NewTabPageSyncHandler::HandleGetSyncMessage,
@@ -89,9 +94,14 @@ void NewTabPageSyncHandler::HideSyncStatusSection() {
 
 void NewTabPageSyncHandler::BuildAndSendSyncStatus() {
   DCHECK(!waiting_for_initial_page_load_);
+  SigninManager* signin = SigninManagerFactory::GetForProfile(
+      Profile::FromWebUI(web_ui()));
 
   // Hide the sync status section if sync is managed or disabled entirely.
-  if (!sync_service_ || sync_service_->IsManaged()) {
+  if (!sync_service_ ||
+      sync_service_->IsManaged() ||
+      !signin ||
+      !signin->IsSigninAllowed()) {
     HideSyncStatusSection();
     return;
   }
@@ -109,8 +119,6 @@ void NewTabPageSyncHandler::BuildAndSendSyncStatus() {
   //               message).
   string16 status_msg;
   string16 link_text;
-  SigninManager* signin = SigninManagerFactory::GetForProfile(
-      Profile::FromWebUI(web_ui()));
 
   sync_ui_util::MessageType type =
       sync_ui_util::GetStatusLabelsForNewTabPage(sync_service_,
@@ -145,6 +153,13 @@ void NewTabPageSyncHandler::HandleSyncLinkClicked(const ListValue* args) {
 }
 
 void NewTabPageSyncHandler::OnStateChanged() {
+  // Don't do anything if the page has not yet loaded.
+  if (waiting_for_initial_page_load_)
+    return;
+  BuildAndSendSyncStatus();
+}
+
+void NewTabPageSyncHandler::OnSigninAllowedPrefChange() {
   // Don't do anything if the page has not yet loaded.
   if (waiting_for_initial_page_load_)
     return;

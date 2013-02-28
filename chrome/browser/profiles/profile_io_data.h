@@ -175,6 +175,10 @@ class ProfileIOData {
     return &sync_disabled_;
   }
 
+  BooleanPrefMember* signin_allowed() const {
+    return &signin_allowed_;
+  }
+
   net::TransportSecurityState* transport_security_state() const {
     return transport_security_state_.get();
   }
@@ -489,6 +493,7 @@ class ProfileIOData {
   mutable BooleanPrefMember safe_browsing_enabled_;
   mutable BooleanPrefMember printing_enabled_;
   mutable BooleanPrefMember sync_disabled_;
+  mutable BooleanPrefMember signin_allowed_;
   // TODO(marja): Remove session_startup_pref_ if no longer needed.
   mutable IntegerPrefMember session_startup_pref_;
 

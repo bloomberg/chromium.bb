@@ -6,10 +6,12 @@
 
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/command_updater.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window_state.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -317,4 +319,54 @@ TEST_F(BrowserCommandControllerFullscreenTest,
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_ABOUT));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_SHOW_APP_MENU));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FULLSCREEN));
+}
+
+TEST_F(BrowserCommandControllerTest,
+    IncognitoModeOnSigninAllowedPrefChange) {
+  TestingProfileManager testing_profile_manager(
+      TestingBrowserProcess::GetGlobal());
+  ASSERT_TRUE(testing_profile_manager.SetUp());
+
+  // Set up a profile with an off the record profile.
+  TestingProfile* profile2 = new TestingProfile();
+  profile2->set_incognito(true);
+  TestingProfile* profile1 =
+      testing_profile_manager.CreateTestingProfile("p1");
+  profile2->SetOriginalProfile(profile1);
+  EXPECT_EQ(profile2->GetOriginalProfile(), profile1);
+  profile1->SetOffTheRecordProfile(profile2);
+  // Create a new browser based on the off the record profile.
+  Browser::CreateParams profile_params(profile2,
+                                       chrome::HOST_DESKTOP_TYPE_NATIVE);
+  scoped_ptr<Browser> browser2(
+      chrome::CreateBrowserWithTestWindowForParams(&profile_params));
+
+  ProfileManager* profile_manager = testing_profile_manager.profile_manager();
+  chrome::BrowserCommandController* command_controller =
+      new chrome::BrowserCommandController(browser2.get(), profile_manager);
+  const CommandUpdater* command_updater = command_controller->command_updater();
+
+  // Check that the SYNC_SETUP command is updated on preference change.
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SHOW_SYNC_SETUP));
+  profile1->GetPrefs()->SetBoolean(prefs::kSigninAllowed, false);
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_SYNC_SETUP));
+  delete command_controller;
+  browser2.reset();
+  testing_profile_manager.DeleteTestingProfile("p1");
+}
+
+TEST_F(BrowserCommandControllerTest,
+    OnSigninAllowedPrefChange) {
+  TestingProfileManager testing_profile_manager(
+      TestingBrowserProcess::GetGlobal());
+  ASSERT_TRUE(testing_profile_manager.SetUp());
+  ProfileManager* profile_manager = testing_profile_manager.profile_manager();
+  chrome::BrowserCommandController command_controller(browser(),
+                                                      profile_manager);
+  const CommandUpdater* command_updater = command_controller.command_updater();
+
+  // Check that the SYNC_SETUP command is updated on preference change.
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SHOW_SYNC_SETUP));
+  profile()->GetPrefs()->SetBoolean(prefs::kSigninAllowed, false);
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_SYNC_SETUP));
 }

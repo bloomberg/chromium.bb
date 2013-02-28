@@ -540,6 +540,11 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
   if (!profile)
     return false;
 
+  SigninManager* manager =
+      SigninManagerFactory::GetForProfile(profile);
+  if (manager && !manager->IsSigninAllowed())
+    return false;
+
   if (can_offer_for == CAN_OFFER_FOR_INTERSTITAL_ONLY &&
       !profile->GetPrefs()->GetBoolean(prefs::kReverseAutologinEnabled))
     return false;
@@ -548,8 +553,6 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
     return false;
 
   if (!email.empty()) {
-    SigninManager* manager =
-        SigninManagerFactory::GetForProfile(profile);
     if (!manager)
       return false;
 
@@ -659,6 +662,9 @@ OneClickSigninHelper::Offer OneClickSigninHelper::CanOfferOnIOThreadImpl(
   // Check for incognito before other parts of the io_data, since those
   // members may not be initalized.
   if (io_data->is_incognito())
+    return DONT_OFFER;
+
+  if (!SigninManager::IsSigninAllowedOnIOThread(io_data))
     return DONT_OFFER;
 
   if (!io_data->reverse_autologin_enabled()->GetValue())

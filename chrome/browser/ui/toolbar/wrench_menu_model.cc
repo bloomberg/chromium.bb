@@ -18,6 +18,8 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -550,11 +552,15 @@ void WrenchMenuModel::Build(bool is_new_menu, bool supports_new_separators) {
 
 #if !defined(OS_CHROMEOS)
   // No "Sign in to Chromium..." menu item on ChromeOS.
-  const string16 short_product_name =
-      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
-  AddItem(IDC_SHOW_SYNC_SETUP, l10n_util::GetStringFUTF16(
-      IDS_SYNC_MENU_PRE_SYNCED_LABEL, short_product_name));
-  AddSeparator(ui::NORMAL_SEPARATOR);
+  SigninManager* signin = SigninManagerFactory::GetForProfile(
+      browser_->profile()->GetOriginalProfile());
+  if (signin && signin->IsSigninAllowed()) {
+    const string16 short_product_name =
+        l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
+    AddItem(IDC_SHOW_SYNC_SETUP, l10n_util::GetStringFUTF16(
+        IDS_SYNC_MENU_PRE_SYNCED_LABEL, short_product_name));
+    AddSeparator(ui::NORMAL_SEPARATOR);
+  }
 #endif
 
   AddItemWithStringId(IDC_OPTIONS, IDS_SETTINGS);
