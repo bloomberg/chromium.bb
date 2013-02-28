@@ -36,7 +36,12 @@ enum TextInputType {
   // Input caret is in a contenteditable node (not an INPUT field).
   TEXT_INPUT_TYPE_CONTENT_EDITABLE,
 
-  TEXT_INPUT_TYPE_MAX = TEXT_INPUT_TYPE_CONTENT_EDITABLE,
+  // The focused node is date time field. The date time field does not have
+  // input caret but it is necessary to distinguish from TEXT_INPUT_TYPE_NONE
+  // for on-screen keyboard.
+  TEXT_INPUT_TYPE_DATE_TIME_FIELD,
+
+  TEXT_INPUT_TYPE_MAX = TEXT_INPUT_TYPE_DATE_TIME_FIELD,
 };
 
 }  // namespace ui
