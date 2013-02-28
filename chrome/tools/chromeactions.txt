@@ -494,6 +494,7 @@
 0xb8890ced118a58f6	InsertText
 0x1342e1e52f335f69	InsertUnorderedList
 0xb7c371f7dd19c6fd	InstallSite
+0x3545f6127f5688ab	InstantExtended.ShowNTP
 0x1d874710ccdcd46b	Italic
 0x5569092107ae9fb0	JustifyCenter
 0xb2e54b8c7671e92e	JustifyLeft
@@ -1181,6 +1182,8 @@
 0xca6dd0b172e6df26	Options_Homepage_UseURL
 0x3462530e3c04ab92	Options_ImagesCheckbox_Disable
 0x3b55d5acba24ebad	Options_ImagesCheckbox_Enable
+0xe82fe68817c3bf54	Options_InstantEnabled_Disable
+0x6efe012fa2603811	Options_InstantEnabled_Enable
 0x9e2677a81e8d73a3	Options_Internet_DataRoaming_Disable
 0xce32dc47692c5927	Options_Internet_DataRoaming_Enable
 0x386291531b93301b	Options_JavaCheckbox_Disable
@@ -1259,6 +1262,8 @@
 0xcc2c490fe5fc55ef	OutdatedPluginInfobar.Shown.Shockwave
 0x0ef39278378fe05d	OutdatedPluginInfobar.Shown.Silverlight
 0x7e7073691a152241	OutdatedPluginInfobar.Update
+0x26da45ced13360f3	OutdatedUpgradeBubble.Later
+0xe55f92fea3aac9d0	OutdatedUpgradeBubble.Reinstall
 0x016839db155e0468	Outdent
 0x69fae31849862d21	OverrideEncoding
 0xdcb4676e49e95259	PDF.FitToHeightButton
@@ -1329,6 +1334,7 @@
 0xd432798852b5bdde	PrintView_ZoomPageFull
 0x05bdd1f2f9628b7a	PrintView_ZoomPageWidth
 0x89fa328f28747907	PrintView_ZoomPlus
+0xe23f821c3632547c	ProcessSwapBindingsMismatch_RVHM
 0x5afeaba074ef570d	Redo
 0x58d906ea1827983c	RegisterProtocolHandler.ContextMenu_Open
 0x2f25b38028a24b10	RegisterProtocolHandler.ContextMenu_Settings
@@ -1403,6 +1409,7 @@
 0x2d9491c68a4ec635	SelectTab5
 0x8fa9d8e88271c82d	SelectTab6
 0xdaa611aa645914e5	SelectTab7
+0x1da022468e27685c	ShowAppLauncherPage
 0x0d1d6961dd313b79	ShowAppMenu
 0x9be2b265107318b8	ShowApplications
 0x853927a304493ac7	ShowAsTab
