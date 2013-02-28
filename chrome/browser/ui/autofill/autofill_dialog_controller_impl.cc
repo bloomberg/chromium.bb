@@ -622,7 +622,6 @@ bool AutofillDialogControllerImpl::InputIsValid(AutofillFieldType type,
       break;
     case CREDIT_CARD_EXP_MONTH:
     case CREDIT_CARD_EXP_4_DIGIT_YEAR:
-      NOTREACHED();  // Validation is not called for <select>
       break;
     case CREDIT_CARD_VERIFICATION_CODE:
       return autofill::IsValidCreditCardSecurityCode(value);

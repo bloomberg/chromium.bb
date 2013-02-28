@@ -27,7 +27,8 @@ Combobox::Combobox(ui::ComboboxModel* model)
     : native_wrapper_(NULL),
       model_(model),
       listener_(NULL),
-      selected_index_(model_->GetDefaultIndex()) {
+      selected_index_(model_->GetDefaultIndex()),
+      invalid_(false) {
   set_focusable(true);
 }
 
@@ -65,6 +66,12 @@ void Combobox::SelectionChanged() {
 
 void Combobox::SetAccessibleName(const string16& name) {
   accessible_name_ = name;
+}
+
+void Combobox::SetInvalid(bool invalid) {
+  invalid_ = invalid;
+  if (native_wrapper_)
+    native_wrapper_->ValidityStateChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

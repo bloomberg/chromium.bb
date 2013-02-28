@@ -75,11 +75,15 @@ MonthComboboxModel::MonthComboboxModel() {}
 MonthComboboxModel::~MonthComboboxModel() {}
 
 int MonthComboboxModel::GetItemCount() const {
-  return 12;
+  // 12 months plus the empty entry.
+  return 13;
 }
 
 string16 MonthComboboxModel::GetItemAt(int index) {
-  return ASCIIToUTF16(StringPrintf("%2d", index + 1));
+  if (index == 0)
+    return string16();
+
+  return ASCIIToUTF16(StringPrintf("%2d", index));
 }
 
 // YearComboboxModel -----------------------------------------------------------
@@ -94,11 +98,15 @@ YearComboboxModel::YearComboboxModel() : this_year_(0) {
 YearComboboxModel::~YearComboboxModel() {}
 
 int YearComboboxModel::GetItemCount() const {
-  return 10;
+  // 10 years plus the empty entry.
+  return 11;
 }
 
 string16 YearComboboxModel::GetItemAt(int index) {
-  return base::IntToString16(this_year_ + index);
+  if (index == 0)
+    return string16();
+
+  return base::IntToString16(this_year_ + index - 1);
 }
 
 }  // autofill

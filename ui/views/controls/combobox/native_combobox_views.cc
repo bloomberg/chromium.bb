@@ -24,6 +24,8 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 
+namespace views {
+
 namespace {
 
 // Define the size of the insets.
@@ -49,13 +51,30 @@ const int kDisclosureArrowRightPadding = 7;
 // These are tentative, and should be derived from theme, system
 // settings and current settings.
 const SkColor kTextColor = SK_ColorBLACK;
+const SkColor kInvalidTextColor = SK_ColorWHITE;
 
 // Define the id of the first item in the menu (since it needs to be > 0)
 const int kFirstMenuItemId = 1000;
 
-}  // namespace
+// The background to use for invalid comboboxes.
+class InvalidBackground : public Background {
+ public:
+  InvalidBackground() {}
+  virtual ~InvalidBackground() {}
 
-namespace views {
+  // Overridden from Background:
+  virtual void Paint(gfx::Canvas* canvas, View* view) const OVERRIDE {
+    gfx::Rect bounds(view->GetLocalBounds());
+    // Inset by 2 to leave 1 empty pixel between background and border.
+    bounds.Inset(2, 2, 2, 2);
+    canvas->FillRect(bounds, SK_ColorRED);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InvalidBackground);
+};
+
+}  // namespace
 
 const char NativeComboboxViews::kViewClassName[] =
     "views/NativeComboboxViews";
@@ -237,6 +256,17 @@ void NativeComboboxViews::SetFocus() {
   text_border_->set_has_focus(true);
 }
 
+void NativeComboboxViews::ValidityStateChanged() {
+  if (combobox_->invalid()) {
+    text_border_->SetColor(SK_ColorRED);
+    set_background(new InvalidBackground());
+  } else {
+    text_border_->UseDefaultColor();
+    set_background(NULL);
+  }
+  SchedulePaint();
+}
+
 bool NativeComboboxViews::HandleKeyPressed(const ui::KeyEvent& e) {
   return OnKeyPressed(e);
 }
@@ -298,7 +328,7 @@ void NativeComboboxViews::PaintText(gfx::Canvas* canvas) {
   int x = insets.left();
   int y = insets.top();
   int text_height = height() - insets.height();
-  SkColor text_color = kTextColor;
+  SkColor text_color = combobox_->invalid() ? kInvalidTextColor : kTextColor;
 
   int index = GetSelectedIndex();
   if (index < 0 || index > combobox_->model()->GetItemCount())
@@ -322,7 +352,13 @@ void NativeComboboxViews::PaintText(gfx::Canvas* canvas) {
                          disclosure_arrow_->width(),
                          disclosure_arrow_->height());
   AdjustBoundsForRTLUI(&arrow_bounds);
-  canvas->DrawImageInt(*disclosure_arrow_, arrow_bounds.x(), arrow_bounds.y());
+
+  SkPaint paint;
+  // This makes the arrow subtractive.
+  if (combobox_->invalid())
+    paint.setXfermodeMode(SkXfermode::kDstOut_Mode);
+  canvas->DrawImageInt(*disclosure_arrow_, arrow_bounds.x(), arrow_bounds.y(),
+                       paint);
 
   canvas->Restore();
 }

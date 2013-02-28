@@ -721,6 +721,10 @@ void AutofillDialogViews::LinkClicked(views::Link* source, int event_flags) {
   }
 }
 
+void AutofillDialogViews::OnSelectedIndexChanged(views::Combobox* combobox) {
+  combobox->SetInvalid(false);
+}
+
 void AutofillDialogViews::InitChildViews() {
   button_strip_extra_view_ = new views::View();
   button_strip_extra_view_->SetLayoutManager(
@@ -935,6 +939,7 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
         controller_->ComboboxModelForAutofillType(input.type);
     if (input_model) {
       views::Combobox* combobox = new views::Combobox(input_model);
+      combobox->set_listener(this);
       comboboxes->insert(std::make_pair(&input, combobox));
       layout->AddView(combobox);
 
@@ -1026,6 +1031,18 @@ bool AutofillDialogViews::ValidateForm() {
           all_valid = false;
         }
       }
+
+      for (ComboboxMap::iterator iter = group->comboboxes.begin();
+           iter != group->comboboxes.end(); ++iter) {
+        const DetailInput* input = iter->first;
+        views::Combobox* combobox = iter->second;
+        string16 item =
+            combobox->model()->GetItemAt(combobox->selected_index());
+        if (!controller_->InputIsValid(input->type, item)) {
+          combobox->SetInvalid(true);
+          all_valid = false;
+        }
+      }
     } else if (group->section == SECTION_CC) {
       DecoratedTextfield* decorated_cvc =
           group->suggested_info->decorated_textfield();
@@ -1036,6 +1053,7 @@ bool AutofillDialogViews::ValidateForm() {
       }
     }
   }
+
   return all_valid;
 }
 

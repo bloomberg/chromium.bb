@@ -141,6 +141,10 @@ void NativeComboboxWin::SetFocus() {
   OnFocus();
 }
 
+void NativeComboboxWin::ValidityStateChanged() {
+  // TODO(estade): implement.
+}
+
 bool NativeComboboxWin::HandleKeyPressed(const ui::KeyEvent& event) {
   return false;
 }

@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
+#include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -56,7 +57,8 @@ class AutofillDialogViews : public AutofillDialogView,
                             public views::ButtonListener,
                             public views::TextfieldController,
                             public views::FocusChangeListener,
-                            public views::LinkListener {
+                            public views::LinkListener,
+                            public views::ComboboxListener {
  public:
   explicit AutofillDialogViews(AutofillDialogController* controller);
   virtual ~AutofillDialogViews();
@@ -114,6 +116,9 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // views::LinkListener implementation:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+
+  // views::ComboboxListener implementation:
+  virtual void OnSelectedIndexChanged(views::Combobox* combobox) OVERRIDE;
 
  private:
   // A class which holds a textfield and draws extra stuff on top, like

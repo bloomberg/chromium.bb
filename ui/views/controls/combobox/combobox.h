@@ -63,6 +63,14 @@ class VIEWS_EXPORT Combobox : public View {
     return native_wrapper_;
   }
 
+  // Visually marks the combobox as having an invalid value selected. The caller
+  // is responsible for flipping it back to valid if the selection changes.
+  void SetInvalid(bool invalid);
+
+  bool invalid() const {
+    return invalid_;
+  }
+
   // Overridden from View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
@@ -94,6 +102,9 @@ class VIEWS_EXPORT Combobox : public View {
 
   // The current selected index.
   int selected_index_;
+
+  // True when the selection is visually denoted as invalid.
+  bool invalid_;
 
   // The accessible name of this combobox.
   string16 accessible_name_;

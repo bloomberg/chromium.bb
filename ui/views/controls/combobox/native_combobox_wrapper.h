@@ -47,6 +47,10 @@ class VIEWS_EXPORT NativeComboboxWrapper {
   // Sets the focus to the button.
   virtual void SetFocus() = 0;
 
+  // Called when the combobox flipped validity. When invalid, it paints
+  // with white text on a red background.
+  virtual void ValidityStateChanged() = 0;
+
   // Invoked when a key is pressed/release on combobox. Subclasser should
   // return true if the event has been processed and false otherwise.
   // See also View::OnKeyPressed/OnKeyReleased.
