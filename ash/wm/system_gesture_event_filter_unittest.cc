@@ -13,6 +13,7 @@
 #include "ash/system/brightness/brightness_control_delegate.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/display_manager_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_launcher_delegate.h"
 #include "ash/volume_control_delegate.h"
@@ -216,8 +217,8 @@ class SystemGestureEventFilterTest : public AshTestBase {
         ::switches::kEnableBezelTouch);
     test::AshTestBase::SetUp();
     // Enable brightness key.
-    Shell::GetInstance()->display_manager()->
-        SetFirstDisplayAsInternalDisplayForTest();
+    test::DisplayManagerTestApi(Shell::GetInstance()->display_manager()).
+        SetFirstDisplayAsInternalDisplay();
   }
 
  private:

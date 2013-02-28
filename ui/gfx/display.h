@@ -88,13 +88,6 @@ class UI_EXPORT Display {
   // Returns the display's size in pixel coordinates.
   gfx::Size GetSizeInPixel() const;
 
-#if defined(USE_AURA)
-  // TODO(oshima|skuhne): Eliminate the use of bounds_in_pixel in events_x.cc
-  // and remove bounds_in_pixel from gfx::Display.
-  // Returns the display's bounds in pixel coordinates.
-  const Rect& bounds_in_pixel() const { return bounds_in_pixel_; }
-#endif
-
   // Returns a string representation of the display;
   std::string ToString() const;
 
@@ -114,9 +107,6 @@ class UI_EXPORT Display {
   int64 id_;
   Rect bounds_;
   Rect work_area_;
-#if defined(USE_AURA)
-  Rect bounds_in_pixel_;
-#endif
   float device_scale_factor_;
 };
 

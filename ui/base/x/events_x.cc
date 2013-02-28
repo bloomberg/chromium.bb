@@ -718,10 +718,10 @@ gfx::Point CalibrateTouchCoordinates(
       !top_border_touch_calibration && !bottom_border_touch_calibration)
     return gfx::Point(x, y);
 
-  gfx::Rect bounds =
-      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().bounds_in_pixel();
-  const int resolution_x = bounds.width();
-  const int resolution_y = bounds.height();
+  gfx::Display display = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
+  gfx::Rect bounds = display.bounds();
+  const int resolution_x = bounds.width() * display.device_scale_factor();
+  const int resolution_y = bounds.height() * display.device_scale_factor();
   // The "grace area" (10% in this case) is to make it easier for the user to
   // navigate to the corner.
   const double kGraceAreaFraction = 0.1;
