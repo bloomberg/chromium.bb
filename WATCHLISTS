@@ -254,7 +254,7 @@
       'filepath': 'chrome/installer/',
     },
     'instant': {
-      'filepath': 'instant|searchbox',
+      'filepath': 'instant|searchbox|/ui/search/',
     },
     'ipc': {
       'filepath': 'ipc/ipc',
