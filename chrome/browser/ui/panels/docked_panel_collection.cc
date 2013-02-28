@@ -244,10 +244,9 @@ panel::Resizability DockedPanelCollection::GetPanelResizability(
 }
 
 void DockedPanelCollection::OnPanelResizedByMouse(Panel* panel,
-                                             const gfx::Rect& new_bounds) {
+                                                  const gfx::Rect& new_bounds) {
   DCHECK_EQ(this, panel->collection());
   panel->set_full_size(new_bounds.size());
-  panel->SetPanelBoundsInstantly(new_bounds);
 }
 
 void DockedPanelCollection::OnPanelExpansionStateChanged(Panel* panel) {

@@ -404,8 +404,6 @@ panel::Resizability StackedPanelCollection::GetPanelResizability(
 
 void StackedPanelCollection::OnPanelResizedByMouse(
     Panel* resized_panel, const gfx::Rect& new_bounds) {
-  resized_panel->SetPanelBoundsInstantly(new_bounds);
-
   // The delta x and width can be computed from the difference between
   // the panel being resized and any other panel.
   Panel* other_panel = resized_panel == top_panel() ? bottom_panel()

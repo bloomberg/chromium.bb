@@ -204,12 +204,10 @@ panel::Resizability DetachedPanelCollection::GetPanelResizability(
   return panel::RESIZABLE_ALL;
 }
 
-void DetachedPanelCollection::OnPanelResizedByMouse(Panel* panel,
-                                               const gfx::Rect& new_bounds) {
+void DetachedPanelCollection::OnPanelResizedByMouse(
+    Panel* panel, const gfx::Rect& new_bounds) {
   DCHECK_EQ(this, panel->collection());
   panel->set_full_size(new_bounds.size());
-
-  panel->SetPanelBoundsInstantly(new_bounds);
 }
 
 bool DetachedPanelCollection::HasPanel(Panel* panel) const {
