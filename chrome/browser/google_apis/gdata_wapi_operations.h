@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "chrome/browser/google_apis/base_operations.h"
+#include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/google_apis/drive_upload_mode.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "net/base/io_buffer.h"
@@ -422,61 +423,36 @@ class InitiateUploadExistingFileOperation
   DISALLOW_COPY_AND_ASSIGN(InitiateUploadExistingFileOperation);
 };
 
-//============================= UploadRangeCallback ============================
-
-// Callback type for DocumentServiceInterface::ResumeUpload and
-// DocumentServiceInterface::GetUploadStatus.
-// TODO(hidehiko): The dependency to ResourceEntry in GData WAPI looks
-// twisted dependency. Should be cleaned up.
-typedef base::Callback<void(
-    const UploadRangeResponse& response,
-    scoped_ptr<ResourceEntry> new_entry)> UploadRangeCallback;
-
 //============================ ResumeUploadOperation ===========================
-
-// Struct for passing params needed for DriveServiceInterface::ResumeUpload()
-// calls.
-struct ResumeUploadParams {
-  ResumeUploadParams(UploadMode upload_mode,
-                     int64 start_position,
-                     int64 end_position,
-                     int64 content_length,
-                     const std::string& content_type,
-                     scoped_refptr<net::IOBuffer> buf,
-                     const GURL& upload_location,
-                     const base::FilePath& drive_file_path);
-  ~ResumeUploadParams();
-
-  const UploadMode upload_mode;  // Mode of the upload.
-  // Start of range of contents currently stored in |buf|.
-  const int64 start_position;
-  // End of range of contents currently stored in |buf|. This is exclusive.
-  // For instance, if you are to upload the first 500 bytes of data,
-  // |start_position| is 0 and |end_position| is 500.
-  const int64 end_position;
-  const int64 content_length;  // File content-Length.
-  const std::string content_type;   // Content-Type of file.
-  // Holds current content to be uploaded.
-  const scoped_refptr<net::IOBuffer> buf;
-  const GURL upload_location;   // Url of where to upload the file to.
-  // Drive file path of the file seen in the UI. Not necessary for
-  // resuming an upload, but used for adding an entry to OperationRegistry.
-  // TODO(satorux): Remove the drive file path hack. crbug.com/163296
-  const base::FilePath drive_file_path;
-};
 
 // This class performs the operation for resuming the upload of a file.
 // More specifically, this operation uploads a chunk of data carried in |buf|
 // of ResumeUploadResponse.
 class ResumeUploadOperation : public UploadRangeOperationBase {
  public:
+  // |start_position| is the start of range of contents currently stored in
+  // |buf|. |end_position| is the end of range of contents currently stared in
+  // |buf|. This is exclusive. For instance, if you are to upload the first
+  // 500 bytes of data, |start_position| is 0 and |end_position| is 500.
+  // |content_length| and |content_type| are the length and type of the
+  // file content to be uploaded respectively.
+  // |buf| holds current content to be uploaded.
+  // See also UploadRangeOperationBase's comment for remaining parameters
+  // meaining.
   // |callback| must not be null. See also UploadRangeOperationBase's
   // constructor for more details.
   ResumeUploadOperation(
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
       const UploadRangeCallback& callback,
-      const ResumeUploadParams& params);
+      UploadMode upload_mode,
+      const base::FilePath& drive_file_path,
+      const GURL& upload_location,
+      int64 start_position,
+      int64 end_position,
+      int64 content_length,
+      const std::string& content_type,
+      const scoped_refptr<net::IOBuffer>& buf);
   virtual ~ResumeUploadOperation();
 
  protected:

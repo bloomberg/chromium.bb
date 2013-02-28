@@ -9,11 +9,14 @@
 
 // TODO(kochi): Further split gdata_operations.h and include only necessary
 // headers. http://crbug.com/141469
-// DownloadActionCallback/InitiateUploadParams/ResulmeUploadParams
+// DownloadActionCallback
 #include "chrome/browser/google_apis/base_operations.h"
-#include "chrome/browser/google_apis/gdata_wapi_operations.h"
 
 class Profile;
+
+namespace net {
+class IOBuffer;
+}  // namespace net
 
 namespace google_apis {
 
@@ -21,6 +24,7 @@ class AboutResource;
 class AccountMetadataFeed;
 class AppList;
 class OperationRegistry;
+class ResourceEntry;
 class ResourceList;
 
 // Observer interface for DriveServiceInterface.
@@ -63,6 +67,11 @@ typedef base::Callback<void(GDataErrorCode error,
 typedef base::Callback<void(GDataErrorCode error,
                             scoped_ptr<AppList> app_list)>
     GetAppListCallback;
+
+// Callback used for ResumeUpload() and GetUploadStatus().
+typedef base::Callback<void(
+    const UploadRangeResponse& response,
+    scoped_ptr<ResourceEntry> new_entry)> UploadRangeCallback;
 
 // Callback used for AuthorizeApp(). |open_url| is used to open the target
 // file with the authorized app.
@@ -269,8 +278,16 @@ class DriveServiceInterface {
 
   // Resumes uploading of a document/file on the calling thread.
   // |callback| must not be null.
-  virtual void ResumeUpload(const ResumeUploadParams& params,
-                            const UploadRangeCallback& callback) = 0;
+  virtual void ResumeUpload(
+      UploadMode upload_mode,
+      const base::FilePath& drive_file_path,
+      const GURL& upload_url,
+      int64 start_position,
+      int64 end_position,
+      int64 content_length,
+      const std::string& content_type,
+      const scoped_refptr<net::IOBuffer>& buf,
+      const UploadRangeCallback& callback) = 0;
 
   // Gets the current status of the uploading to |upload_url| from the server.
   // |upload_mode|, |drive_file_path| and |content_length| should be set to

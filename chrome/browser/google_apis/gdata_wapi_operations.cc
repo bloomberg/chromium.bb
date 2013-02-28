@@ -13,6 +13,7 @@
 #include "chrome/browser/google_apis/time_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
+#include "net/base/io_buffer.h"
 #include "net/base/url_util.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
 
@@ -50,45 +51,6 @@ scoped_ptr<ResourceEntry> ParseResourceEntry(scoped_ptr<base::Value> value) {
 
 }  // namespace
 
-//============================ Structs ===========================
-
-UploadRangeResponse::UploadRangeResponse()
-    : code(HTTP_SUCCESS),
-      start_position_received(0),
-      end_position_received(0) {
-}
-
-UploadRangeResponse::UploadRangeResponse(GDataErrorCode code,
-                                         int64 start_position_received,
-                                         int64 end_position_received)
-    : code(code),
-      start_position_received(start_position_received),
-      end_position_received(end_position_received) {
-}
-
-UploadRangeResponse::~UploadRangeResponse() {
-}
-
-ResumeUploadParams::ResumeUploadParams(
-    UploadMode upload_mode,
-    int64 start_position,
-    int64 end_position,
-    int64 content_length,
-    const std::string& content_type,
-    scoped_refptr<net::IOBuffer> buf,
-    const GURL& upload_location,
-    const base::FilePath& drive_file_path) : upload_mode(upload_mode),
-                                    start_position(start_position),
-                                    end_position(end_position),
-                                    content_length(content_length),
-                                    content_type(content_type),
-                                    buf(buf),
-                                    upload_location(upload_location),
-                                    drive_file_path(drive_file_path) {
-}
-
-ResumeUploadParams::~ResumeUploadParams() {
-}
 
 //============================ GetResourceListOperation ========================
 
@@ -586,18 +548,25 @@ ResumeUploadOperation::ResumeUploadOperation(
     OperationRegistry* registry,
     net::URLRequestContextGetter* url_request_context_getter,
     const UploadRangeCallback& callback,
-    const ResumeUploadParams& params)
-  : UploadRangeOperationBase(registry,
-                             url_request_context_getter,
-                             params.upload_mode,
-                             params.drive_file_path,
-                             params.upload_location),
-    callback_(callback),
-    start_position_(params.start_position),
-    end_position_(params.end_position),
-    content_length_(params.content_length),
-    content_type_(params.content_type),
-    buf_(params.buf) {
+    UploadMode upload_mode,
+    const base::FilePath& drive_file_path,
+    const GURL& upload_location,
+    int64 start_position,
+    int64 end_position,
+    int64 content_length,
+    const std::string& content_type,
+    const scoped_refptr<net::IOBuffer>& buf)
+    : UploadRangeOperationBase(registry,
+                               url_request_context_getter,
+                               upload_mode,
+                               drive_file_path,
+                               upload_location),
+      callback_(callback),
+      start_position_(start_position),
+      end_position_(end_position),
+      content_length_(content_length),
+      content_type_(content_type),
+      buf_(buf) {
   DCHECK(!callback_.is_null());
   DCHECK_LE(start_position_, end_position_);
 }

@@ -840,15 +840,6 @@ TEST_F(GDataWapiOperationsTest, UploadNewFile) {
 
   // 2) Upload the content to the upload URL.
   scoped_refptr<net::IOBuffer> buffer = new net::StringIOBuffer(kUploadContent);
-  ResumeUploadParams resume_params(
-      UPLOAD_NEW_FILE,
-      0,  // start_position
-      kUploadContent.size(),  // end_position (exclusive)
-      kUploadContent.size(),  // content_length,
-      "text/plain",  // content_type
-      buffer,
-      upload_url,
-      base::FilePath::FromUTF8Unsafe("drive/newfile.txt"));
 
   UploadRangeResponse response;
   scoped_ptr<ResourceEntry> new_entry;
@@ -859,7 +850,14 @@ TEST_F(GDataWapiOperationsTest, UploadNewFile) {
       base::Bind(&CopyResultFromUploadRangeCallbackAndQuit,
                  &response,
                  &new_entry),
-      resume_params);
+      UPLOAD_NEW_FILE,
+      base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
+      upload_url,
+      0,  // start_position
+      kUploadContent.size(),  // end_position (exclusive)
+      kUploadContent.size(),  // content_length,
+      "text/plain",  // content_type
+      buffer);
 
   resume_operation->Start(
       kTestGDataAuthToken, kTestUserAgent,
@@ -996,15 +994,6 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
     const size_t end_position = start_position + payload.size();
 
     scoped_refptr<net::IOBuffer> buffer = new net::StringIOBuffer(payload);
-    ResumeUploadParams resume_params(
-        UPLOAD_NEW_FILE,
-        start_position,
-        end_position,
-        kUploadContent.size(),  // content_length,
-        "text/plain",  // content_type
-        buffer,
-        upload_url,
-        base::FilePath::FromUTF8Unsafe("drive/newfile.txt"));
 
     UploadRangeResponse response;
     scoped_ptr<ResourceEntry> new_entry;
@@ -1015,7 +1004,14 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
         base::Bind(&CopyResultFromUploadRangeCallbackAndQuit,
                    &response,
                    &new_entry),
-        resume_params);
+        UPLOAD_NEW_FILE,
+        base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
+        upload_url,
+        start_position,
+        end_position,
+        kUploadContent.size(),  // content_length,
+        "text/plain",  // content_type
+        buffer);
 
     resume_operation->Start(
         kTestGDataAuthToken, kTestUserAgent,
@@ -1142,15 +1138,6 @@ TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
 
   // 2) Upload the content to the upload URL.
   scoped_refptr<net::IOBuffer> buffer = new net::StringIOBuffer(kUploadContent);
-  ResumeUploadParams resume_params(
-      UPLOAD_NEW_FILE,
-      0,  // start_position
-      kUploadContent.size(),  // end_position (exclusive)
-      kUploadContent.size(),  // content_length,
-      "text/plain",  // content_type
-      buffer,
-      upload_url,
-      base::FilePath::FromUTF8Unsafe("drive/newfile.txt"));
 
   UploadRangeResponse response;
   scoped_ptr<ResourceEntry> new_entry;
@@ -1161,7 +1148,14 @@ TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
       base::Bind(&CopyResultFromUploadRangeCallbackAndQuit,
                  &response,
                  &new_entry),
-      resume_params);
+      UPLOAD_NEW_FILE,
+      base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
+      upload_url,
+      0,  // start_position
+      kUploadContent.size(),  // end_position (exclusive)
+      kUploadContent.size(),  // content_length,
+      "text/plain",  // content_type
+      buffer);
 
   resume_operation->Start(
       kTestGDataAuthToken, kTestUserAgent,
@@ -1235,15 +1229,6 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
 
   // 2) Upload the content to the upload URL.
   scoped_refptr<net::IOBuffer> buffer = new net::StringIOBuffer(kUploadContent);
-  ResumeUploadParams resume_params(
-      UPLOAD_EXISTING_FILE,
-      0,  // start_position
-      kUploadContent.size(),  // end_position (exclusive)
-      kUploadContent.size(),  // content_length,
-      "text/plain",  // content_type
-      buffer,
-      upload_url,
-      base::FilePath::FromUTF8Unsafe("drive/existingfile.txt"));
 
   UploadRangeResponse response;
   scoped_ptr<ResourceEntry> new_entry;
@@ -1254,7 +1239,14 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
       base::Bind(&CopyResultFromUploadRangeCallbackAndQuit,
                  &response,
                  &new_entry),
-      resume_params);
+      UPLOAD_EXISTING_FILE,
+      base::FilePath::FromUTF8Unsafe("drive/existingfile.txt"),
+      upload_url,
+      0,  // start_position
+      kUploadContent.size(),  // end_position (exclusive)
+      kUploadContent.size(),  // content_length,
+      "text/plain",  // content_type
+      buffer);
 
   resume_operation->Start(
       kTestGDataAuthToken, kTestUserAgent,
@@ -1330,15 +1322,6 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFileWithETag) {
 
   // 2) Upload the content to the upload URL.
   scoped_refptr<net::IOBuffer> buffer = new net::StringIOBuffer(kUploadContent);
-  ResumeUploadParams resume_params(
-      UPLOAD_EXISTING_FILE,
-      0,  // start_position
-      kUploadContent.size(),  // end_position (exclusive)
-      kUploadContent.size(),  // content_length,
-      "text/plain",  // content_type
-      buffer,
-      upload_url,
-      base::FilePath::FromUTF8Unsafe("drive/existingfile.txt"));
 
   UploadRangeResponse response;
   scoped_ptr<ResourceEntry> new_entry;
@@ -1349,7 +1332,14 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFileWithETag) {
       base::Bind(&CopyResultFromUploadRangeCallbackAndQuit,
                  &response,
                  &new_entry),
-      resume_params);
+      UPLOAD_EXISTING_FILE,
+      base::FilePath::FromUTF8Unsafe("drive/existingfile.txt"),
+      upload_url,
+      0,  // start_position
+      kUploadContent.size(),  // end_position (exclusive)
+      kUploadContent.size(),  // content_length,
+      "text/plain",  // content_type
+      buffer);
 
   resume_operation->Start(
       kTestGDataAuthToken, kTestUserAgent,

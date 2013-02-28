@@ -486,7 +486,14 @@ void DriveAPIService::InitiateUploadExistingFile(
 }
 
 void DriveAPIService::ResumeUpload(
-    const ResumeUploadParams& params,
+    UploadMode upload_mode,
+    const base::FilePath& drive_file_path,
+    const GURL& upload_url,
+    int64 start_position,
+    int64 end_position,
+    int64 content_length,
+    const std::string& content_type,
+    const scoped_refptr<net::IOBuffer>& buf,
     const UploadRangeCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());

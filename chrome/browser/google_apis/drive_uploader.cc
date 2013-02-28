@@ -16,6 +16,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/power_save_blocker.h"
 #include "net/base/file_stream.h"
+#include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 
 using content::BrowserThread;
@@ -349,14 +350,14 @@ void DriveUploader::ReadCompletionCallback(
 
   UploadFileInfo* info_ptr = upload_file_info.get();
   drive_service_->ResumeUpload(
-      ResumeUploadParams(info_ptr->upload_mode,
-                         start_position,
-                         end_position,
-                         info_ptr->content_length,
-                         info_ptr->content_type,
-                         info_ptr->buf,
-                         info_ptr->upload_location,
-                         info_ptr->drive_path),
+      info_ptr->upload_mode,
+      info_ptr->drive_path,
+      info_ptr->upload_location,
+      start_position,
+      end_position,
+      info_ptr->content_length,
+      info_ptr->content_type,
+      info_ptr->buf,
       base::Bind(&DriveUploader::OnUploadRangeResponseReceived,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(&upload_file_info)));

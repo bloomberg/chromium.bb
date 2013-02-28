@@ -439,6 +439,25 @@ InitiateUploadOperationBase::GetExtraRequestHeaders() const {
   return headers;
 }
 
+//============================ UploadRangeResponse =============================
+
+UploadRangeResponse::UploadRangeResponse()
+    : code(HTTP_SUCCESS),
+      start_position_received(0),
+      end_position_received(0) {
+}
+
+UploadRangeResponse::UploadRangeResponse(GDataErrorCode code,
+                                         int64 start_position_received,
+                                         int64 end_position_received)
+    : code(code),
+      start_position_received(start_position_received),
+      end_position_received(end_position_received) {
+}
+
+UploadRangeResponse::~UploadRangeResponse() {
+}
+
 //========================== UploadRangeOperationBase ==========================
 
 UploadRangeOperationBase::UploadRangeOperationBase(

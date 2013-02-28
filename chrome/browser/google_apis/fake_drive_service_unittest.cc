@@ -1257,12 +1257,11 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_Offline) {
   UploadRangeResponse response;
   scoped_ptr<ResourceEntry> entry;
   fake_service_.ResumeUpload(
-      ResumeUploadParams(UPLOAD_NEW_FILE,
-                         0, 13, 15, "test/foo",
-                         scoped_refptr<net::IOBuffer>(),
-                         upload_location,
-                         base::FilePath(FILE_PATH_LITERAL(
-                             "drive/Directory 1/new file.foo"))),
+      UPLOAD_NEW_FILE,
+      base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
+      upload_location,
+      0, 13, 15, "test/foo",
+      scoped_refptr<net::IOBuffer>(),
       base::Bind(&test_util::CopyResultsFromUploadRangeCallback,
                  &response, &entry));
   message_loop_.RunUntilIdle();
@@ -1292,12 +1291,11 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NotFound) {
   UploadRangeResponse response;
   scoped_ptr<ResourceEntry> entry;
   fake_service_.ResumeUpload(
-      ResumeUploadParams(UPLOAD_NEW_FILE,
-                         0, 13, 15, "test/foo",
-                         scoped_refptr<net::IOBuffer>(),
-                         GURL("https://foo.com/"),
-                         base::FilePath(FILE_PATH_LITERAL(
-                             "drive/Directory 1/new file.foo"))),
+      UPLOAD_NEW_FILE,
+      base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
+      GURL("https://foo.com/"),
+      0, 13, 15, "test/foo",
+      scoped_refptr<net::IOBuffer>(),
       base::Bind(&test_util::CopyResultsFromUploadRangeCallback,
                  &response, &entry));
   message_loop_.RunUntilIdle();
@@ -1327,12 +1325,11 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
   UploadRangeResponse response;
   scoped_ptr<ResourceEntry> entry;
   fake_service_.ResumeUpload(
-      ResumeUploadParams(UPLOAD_EXISTING_FILE,
-                         0, 13, 15, "text/plain",
-                         scoped_refptr<net::IOBuffer>(),
-                         upload_location,
-                         base::FilePath(FILE_PATH_LITERAL(
-                             "drive/File 1.txt"))),
+      UPLOAD_EXISTING_FILE,
+      base::FilePath(FILE_PATH_LITERAL("drive/File 1.txt")),
+      upload_location,
+      0, 13, 15, "text/plain",
+      scoped_refptr<net::IOBuffer>(),
       base::Bind(&test_util::CopyResultsFromUploadRangeCallback,
                  &response, &entry));
   message_loop_.RunUntilIdle();
@@ -1341,12 +1338,11 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
   EXPECT_FALSE(entry.get());
 
   fake_service_.ResumeUpload(
-      ResumeUploadParams(UPLOAD_EXISTING_FILE,
-                         14, 15, 15, "text/plain",
-                         scoped_refptr<net::IOBuffer>(),
-                         upload_location,
-                         base::FilePath(FILE_PATH_LITERAL(
-                             "drive/File 1.txt"))),
+      UPLOAD_EXISTING_FILE,
+      base::FilePath(FILE_PATH_LITERAL("drive/File 1.txt")),
+      upload_location,
+      14, 15, 15, "text/plain",
+      scoped_refptr<net::IOBuffer>(),
       base::Bind(&test_util::CopyResultsFromUploadRangeCallback,
                  &response, &entry));
   message_loop_.RunUntilIdle();
@@ -1381,12 +1377,11 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
   UploadRangeResponse response;
   scoped_ptr<ResourceEntry> entry;
   fake_service_.ResumeUpload(
-      ResumeUploadParams(UPLOAD_NEW_FILE,
-                         0, 13, 15, "test/foo",
-                         scoped_refptr<net::IOBuffer>(),
-                         upload_location,
-                         base::FilePath(FILE_PATH_LITERAL(
-                             "drive/Directory 1/new file.foo"))),
+      UPLOAD_NEW_FILE,
+      base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
+      upload_location,
+      0, 13, 15, "test/foo",
+      scoped_refptr<net::IOBuffer>(),
       base::Bind(&test_util::CopyResultsFromUploadRangeCallback,
                  &response, &entry));
   message_loop_.RunUntilIdle();
@@ -1395,12 +1390,11 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
   EXPECT_FALSE(entry.get());
 
   fake_service_.ResumeUpload(
-      ResumeUploadParams(UPLOAD_NEW_FILE,
-                         14, 15, 15, "test/foo",
-                         scoped_refptr<net::IOBuffer>(),
-                         upload_location,
-                         base::FilePath(FILE_PATH_LITERAL(
-                             "drive/Directory 1/new file.foo"))),
+      UPLOAD_NEW_FILE,
+      base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
+      upload_location,
+      14, 15, 15, "test/foo",
+      scoped_refptr<net::IOBuffer>(),
       base::Bind(&test_util::CopyResultsFromUploadRangeCallback,
                  &response, &entry));
   message_loop_.RunUntilIdle();

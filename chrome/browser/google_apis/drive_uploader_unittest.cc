@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "chrome/browser/google_apis/dummy_drive_service.h"
 #include "content/public/test/test_browser_thread.h"
+#include "net/base/io_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace google_apis {
@@ -111,51 +112,57 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
   }
 
   // Handles a request for uploading a chunk of bytes.
-  virtual void ResumeUpload(const ResumeUploadParams& params,
-                            const UploadRangeCallback& callback) OVERRIDE {
+  virtual void ResumeUpload(
+      UploadMode upload_mode,
+      const base::FilePath& drive_file_path,
+      const GURL& upload_url,
+      int64 start_position,
+      int64 end_position,
+      int64 content_length,
+      const std::string& content_type,
+      const scoped_refptr<net::IOBuffer>& buf,
+      const UploadRangeCallback& callback) OVERRIDE {
     const int64 expected_size = expected_upload_content_.size();
 
     // The upload range should start from the current first unreceived byte.
-    EXPECT_EQ(received_bytes_, params.start_position);
+    EXPECT_EQ(received_bytes_, start_position);
 
     // The upload data must be split into 512KB chunks.
     const int64 expected_chunk_end =
         std::min(received_bytes_ + kUploadChunkSize, expected_size);
-    EXPECT_EQ(expected_chunk_end, params.end_position);
+    EXPECT_EQ(expected_chunk_end, end_position);
 
     const int64 expected_chunk_size = expected_chunk_end - received_bytes_;
     const std::string expected_chunk_data(
         expected_upload_content_.substr(received_bytes_,
                                         expected_chunk_size));
-    std::string uploading_data(params.buf->data(),
-                               params.buf->data() + expected_chunk_size);
+    std::string uploading_data(buf->data(), buf->data() + expected_chunk_size);
     EXPECT_EQ(expected_chunk_data, uploading_data);
 
     // The upload URL returned by InitiateUpload() must be used.
-    EXPECT_EQ(GURL(kTestUploadURL), params.upload_location);
+    EXPECT_EQ(GURL(kTestUploadURL), upload_url);
 
     // Other parameters should be the exact values passed to DriveUploader.
-    EXPECT_EQ(expected_size, params.content_length);
-    EXPECT_EQ(kTestMimeType, params.content_type);
+    EXPECT_EQ(expected_size, content_length);
+    EXPECT_EQ(kTestMimeType, content_type);
 
     // Update the internal status of the current upload session.
     resume_upload_call_count_++;
-    received_bytes_ = params.end_position;
+    received_bytes_ = end_position;
 
     // Callback with response.
     UploadRangeResponse response;
     scoped_ptr<ResourceEntry> entry;
-    if (received_bytes_ == params.content_length) {
+    if (received_bytes_ == content_length) {
       response = UploadRangeResponse(
-          params.upload_mode == UPLOAD_NEW_FILE ? HTTP_CREATED : HTTP_SUCCESS,
+          upload_mode == UPLOAD_NEW_FILE ? HTTP_CREATED : HTTP_SUCCESS,
           -1, -1);
 
       base::DictionaryValue dict;
       dict.Set("id.$t", new base::StringValue(kTestDummyId));
       entry = ResourceEntry::CreateFrom(dict);
     } else {
-      response = UploadRangeResponse(HTTP_RESUME_INCOMPLETE, 0,
-                                      params.end_position);
+      response = UploadRangeResponse(HTTP_RESUME_INCOMPLETE, 0, end_position);
     }
     // ResumeUpload is an asynchronous function, so don't callback directly.
     MessageLoop::current()->PostTask(FROM_HERE,
@@ -193,8 +200,16 @@ class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
   }
 
   // Should not be used.
-  virtual void ResumeUpload(const ResumeUploadParams& params,
-                            const UploadRangeCallback& callback) OVERRIDE {
+  virtual void ResumeUpload(
+      UploadMode upload_mode,
+      const base::FilePath& drive_file_path,
+      const GURL& upload_url,
+      int64 start_position,
+      int64 end_position,
+      int64 content_length,
+      const std::string& content_type,
+      const scoped_refptr<net::IOBuffer>& buf,
+      const UploadRangeCallback& callback) OVERRIDE {
     NOTREACHED();
   }
 };
@@ -225,8 +240,16 @@ class MockDriveServiceNoConnectionAtResume : public DummyDriveService {
   }
 
   // Returns error.
-  virtual void ResumeUpload(const ResumeUploadParams& params,
-                            const UploadRangeCallback& callback) OVERRIDE {
+  virtual void ResumeUpload(
+      UploadMode upload_mode,
+      const base::FilePath& drive_file_path,
+      const GURL& upload_url,
+      int64 start_position,
+      int64 end_position,
+      int64 content_length,
+      const std::string& content_type,
+      const scoped_refptr<net::IOBuffer>& buf,
+      const UploadRangeCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback,
                    UploadRangeResponse(GDATA_NO_CONNECTION, -1, -1),

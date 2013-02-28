@@ -465,8 +465,16 @@ void GDataWapiService::InitiateUploadExistingFile(
                                               etag));
 }
 
-void GDataWapiService::ResumeUpload(const ResumeUploadParams& params,
-                                    const UploadRangeCallback& callback) {
+void GDataWapiService::ResumeUpload(
+    UploadMode upload_mode,
+    const base::FilePath& drive_file_path,
+    const GURL& upload_url,
+    int64 start_position,
+    int64 end_position,
+    int64 content_length,
+    const std::string& content_type,
+    const scoped_refptr<net::IOBuffer>& buf,
+    const UploadRangeCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -474,7 +482,14 @@ void GDataWapiService::ResumeUpload(const ResumeUploadParams& params,
       new ResumeUploadOperation(operation_registry(),
                                 url_request_context_getter_,
                                 callback,
-                                params));
+                                upload_mode,
+                                drive_file_path,
+                                upload_url,
+                                start_position,
+                                end_position,
+                                content_length,
+                                content_type,
+                                buf));
 }
 
 void GDataWapiService::GetUploadStatus(

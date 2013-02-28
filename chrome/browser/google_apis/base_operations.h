@@ -331,6 +331,10 @@ struct UploadRangeResponse {
 // "Range" header and invoke OnRangeOperationComplete.
 class UploadRangeOperationBase : public UrlFetchOperationBase {
  protected:
+  // |upload_location| is the URL of where to upload the file to.
+  // |drive_file_path| is the path to the file seen in the UI. Not necessary
+  // for resuming an upload, but used for adding an entry to OperationRegistry.
+  // TODO(satorux): Remove the drive file path hack. crbug.com/163296
   UploadRangeOperationBase(
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
