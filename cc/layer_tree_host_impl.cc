@@ -305,6 +305,7 @@ void LayerTreeHostImpl::startPageScaleAnimation(gfx::Vector2d targetOffset, bool
 
     m_client->setNeedsRedrawOnImplThread();
     m_client->setNeedsCommitOnImplThread();
+    m_client->renewTreePriority();
 }
 
 void LayerTreeHostImpl::scheduleAnimation()
@@ -1476,6 +1477,7 @@ void LayerTreeHostImpl::animatePageScale(base::TimeTicks time)
     if (m_pageScaleAnimation->isAnimationCompleteAtTime(monotonicTime)) {
         m_pageScaleAnimation.reset();
         m_client->setNeedsCommitOnImplThread();
+        m_client->renewTreePriority();
     }
 }
 

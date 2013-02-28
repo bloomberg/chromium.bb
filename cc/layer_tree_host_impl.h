@@ -263,6 +263,8 @@ public:
     scoped_ptr<base::Value> activationStateAsValue() const;
     scoped_ptr<base::Value> frameStateAsValue() const;
 
+    bool pageScaleAnimationActive() const { return !!m_pageScaleAnimation; }
+
 protected:
     LayerTreeHostImpl(const LayerTreeSettings&, LayerTreeHostImplClient*, Proxy*);
     void activatePendingTree();

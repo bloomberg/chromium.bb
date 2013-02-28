@@ -1176,7 +1176,8 @@ void ThreadProxy::renewTreePriority()
 {
     bool smoothnessTakesPriority =
         m_layerTreeHostImpl->pinchGestureActive() ||
-        m_layerTreeHostImpl->currentlyScrollingLayer();
+        m_layerTreeHostImpl->currentlyScrollingLayer() ||
+        m_layerTreeHostImpl->pageScaleAnimationActive();
 
     // Update expiration time if smoothness currently takes priority.
     if (smoothnessTakesPriority) {
