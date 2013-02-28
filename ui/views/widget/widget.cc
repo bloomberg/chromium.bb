@@ -355,7 +355,7 @@ void Widget::Init(const InitParams& in_params) {
   ownership_ = params.ownership;
   native_widget_ = CreateNativeWidget(params.native_widget, this)->
                    AsNativeWidgetPrivate();
-  root_view_.reset(CreateRootView());
+  GetRootView();
   default_theme_provider_.reset(new DefaultThemeProvider);
   if (params.type == InitParams::TYPE_MENU) {
     is_mouse_button_pressed_ =
@@ -677,6 +677,10 @@ void Widget::FlashFrame(bool flash) {
 }
 
 View* Widget::GetRootView() {
+  if (!root_view_.get()) {
+    // First time the root view is being asked for, create it now.
+    root_view_.reset(CreateRootView());
+  }
   return root_view_.get();
 }
 
@@ -1146,13 +1150,12 @@ void Widget::OnKeyEvent(ui::KeyEvent* event) {
 
 void Widget::OnMouseEvent(ui::MouseEvent* event) {
   ScopedEvent scoped(this, *event);
-  View* root_view = GetRootView();
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:
       last_mouse_event_was_move_ = false;
       // Make sure we're still visible before we attempt capture as the mouse
       // press processing may have made the window hide (as happens with menus).
-      if (root_view && root_view->OnMousePressed(*event) && IsVisible()) {
+      if (GetRootView()->OnMousePressed(*event) && IsVisible()) {
         is_mouse_button_pressed_ = true;
         if (!native_widget_->HasCapture())
           native_widget_->SetCapture();
@@ -1167,8 +1170,7 @@ void Widget::OnMouseEvent(ui::MouseEvent* event) {
           ShouldReleaseCaptureOnMouseReleased()) {
         native_widget_->ReleaseCapture();
       }
-      if (root_view)
-        root_view->OnMouseReleased(*event);
+      GetRootView()->OnMouseReleased(*event);
       if ((event->flags() & ui::EF_IS_NON_CLIENT) == 0)
         event->SetHandled();
       return;
@@ -1176,23 +1178,20 @@ void Widget::OnMouseEvent(ui::MouseEvent* event) {
     case ui::ET_MOUSE_DRAGGED:
       if (native_widget_->HasCapture() && is_mouse_button_pressed_) {
         last_mouse_event_was_move_ = false;
-        if (root_view)
-          root_view->OnMouseDragged(*event);
+        GetRootView()->OnMouseDragged(*event);
       } else if (!last_mouse_event_was_move_ ||
                  last_mouse_event_position_ != event->location()) {
         last_mouse_event_position_ = event->location();
         last_mouse_event_was_move_ = true;
-        if (root_view)
-          root_view->OnMouseMoved(*event);
+        GetRootView()->OnMouseMoved(*event);
       }
       return;
     case ui::ET_MOUSE_EXITED:
       last_mouse_event_was_move_ = false;
-      if (root_view)
-        root_view->OnMouseExited(*event);
+      GetRootView()->OnMouseExited(*event);
       return;
     case ui::ET_MOUSEWHEEL:
-      if (root_view && root_view->OnMouseWheel(
+      if (GetRootView()->OnMouseWheel(
           static_cast<const ui::MouseWheelEvent&>(*event)))
         event->SetHandled();
       return;
@@ -1203,11 +1202,8 @@ void Widget::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 void Widget::OnMouseCaptureLost() {
-  if (is_mouse_button_pressed_ || is_touch_down_) {
-    View* root_view = GetRootView();
-    if (root_view)
-      root_view->OnMouseCaptureLost();
-  }
+  if (is_mouse_button_pressed_ || is_touch_down_)
+    GetRootView()->OnMouseCaptureLost();
   is_touch_down_ = false;
   is_mouse_button_pressed_ = false;
 }
