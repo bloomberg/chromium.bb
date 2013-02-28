@@ -115,13 +115,15 @@ class Database(object):
     # (This is implicitly true for the root directory).
     self.stop_looking = set([''])
 
-  def reviewers_for(self, files):
+  def reviewers_for(self, files, author):
     """Returns a suggested set of reviewers that will cover the files.
 
-    files is a sequence of paths relative to (and under) self.root."""
+    files is a sequence of paths relative to (and under) self.root.
+    If author is nonempty, we ensure it is not included in the set returned
+    in order avoid suggesting the author as a reviewer for their own changes."""
     self._check_paths(files)
     self._load_data_needed_for(files)
-    suggested_owners = self._covering_set_of_owners_for(files)
+    suggested_owners = self._covering_set_of_owners_for(files, author)
     if EVERYONE in suggested_owners:
       if len(suggested_owners) > 1:
         suggested_owners.remove(EVERYONE)
@@ -236,9 +238,9 @@ class Database(object):
           ('%s is not a "set" directive, "*", '
            'or an email address: "%s"' % (line_type, directive)))
 
-  def _covering_set_of_owners_for(self, files):
+  def _covering_set_of_owners_for(self, files, author):
     dirs_remaining = set(self._enclosing_dir_with_owners(f) for f in files)
-    all_possible_owners = self._all_possible_owners(dirs_remaining)
+    all_possible_owners = self._all_possible_owners(dirs_remaining, author)
     suggested_owners = set()
     while dirs_remaining:
       owner = self.lowest_cost_owner(all_possible_owners, dirs_remaining)
@@ -247,7 +249,7 @@ class Database(object):
       dirs_remaining -= dirs_to_remove
     return suggested_owners
 
-  def _all_possible_owners(self, dirs):
+  def _all_possible_owners(self, dirs, author):
     """Returns a list of (potential owner, distance-from-dir) tuples; a
     distance of 1 is the lowest/closest possible distance (which makes the
     subsequent math easier)."""
@@ -257,6 +259,8 @@ class Database(object):
       distance = 1
       while True:
         for owner in self.owners_for.get(dirname, []):
+          if author and owner == author:
+            continue
           all_possible_owners.setdefault(owner, [])
           # If the same person is in multiple OWNERS files above a given
           # directory, only count the closest one.

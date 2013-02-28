@@ -769,7 +769,8 @@ def CheckBuildbotPendingBuilds(input_api, output_api, url, max_pendings,
   return []
 
 
-def CheckOwners(input_api, output_api, source_file_filter=None):
+def CheckOwners(input_api, output_api, source_file_filter=None,
+                author_counts_as_owner=True):
   if input_api.is_committing:
     if input_api.tbr:
       return [output_api.PresubmitNotifyResult(
@@ -792,25 +793,29 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
       owners_db.email_regexp,
       approval_needed=input_api.is_committing)
 
-  if owner_email:
-    message = ''
-    reviewers_plus_owner = reviewers.union(set([owner_email]))
+  if author_counts_as_owner:
+    if owner_email:
+      message = ''
+      reviewers_plus_owner = reviewers.union(set([owner_email]))
+    else:
+      message = ('\nUntil the issue is uploaded, this list will include '
+                 'files for which you are an OWNER.')
+      owner_email = ''
+      reviewers_plus_owner = set()
+    missing_files = owners_db.files_not_covered_by(affected_files,
+                                                   reviewers_plus_owner)
   else:
-    message = ('\nUntil the issue is uploaded, this list will include '
-               'files for which you are an OWNER.')
-    owner_email = ''
-    reviewers_plus_owner = set()
+    message = ''
+    missing_files = owners_db.files_not_covered_by(affected_files, reviewers)
 
-  missing_files = owners_db.files_not_covered_by(affected_files,
-                                                 reviewers_plus_owner)
   if missing_files:
     output_list = [
         output('Missing %s for these files:\n    %s%s' %
                (needed, '\n    '.join(missing_files), message))]
     if not input_api.is_committing:
-      suggested_owners = owners_db.reviewers_for(affected_files)
+      suggested_owners = owners_db.reviewers_for(affected_files, owner_email)
       output_list.append(output('Suggested OWNERS:\n    %s' %
-                                ('\n    '.join(suggested_owners))))
+                                ('\n    '.join(suggested_owners or []))))
     return output_list
 
   if input_api.is_committing and not reviewers:

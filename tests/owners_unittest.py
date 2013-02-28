@@ -214,7 +214,7 @@ class OwnersDatabaseTest(_BaseTestCase):
     self.files['/foo/OWNERS'] = owners_file_contents
     self.files['/foo/DEPS'] = ''
     try:
-      db.reviewers_for(['foo/DEPS'])
+      db.reviewers_for(['foo/DEPS'], None)
       self.fail()  # pragma: no cover
     except owners.SyntaxErrorInOwnersFile, e:
       self.assertTrue(str(e).startswith('/foo/OWNERS:1'))
@@ -230,44 +230,45 @@ class OwnersDatabaseTest(_BaseTestCase):
 
 
 class ReviewersForTest(_BaseTestCase):
-  def assert_reviewers_for(self, files, *potential_suggested_reviewers):
+  def assert_reviewers_for(self, files, potential_suggested_reviewers,
+                           author=None):
     db = self.db()
-    suggested_reviewers = db.reviewers_for(set(files))
+    suggested_reviewers = db.reviewers_for(set(files), author)
     self.assertTrue(suggested_reviewers in
         [set(suggestion) for suggestion in potential_suggested_reviewers])
 
   def test_reviewers_for__basic_functionality(self):
     self.assert_reviewers_for(['chrome/gpu/gpu_channel.h'],
-                              [ken])
+                              [[ken]])
 
   def test_reviewers_for__set_noparent_works(self):
     self.assert_reviewers_for(['content/content.gyp'],
-                              [john],
-                              [darin])
+                              [[john],
+                               [darin]])
 
   def test_reviewers_for__valid_inputs(self):
     db = self.db()
 
     # Check that we're passed in a sequence that isn't a string.
-    self.assertRaises(AssertionError, db.reviewers_for, 'foo')
+    self.assertRaises(AssertionError, db.reviewers_for, 'foo', None)
     if hasattr(owners.collections, 'Iterable'):
       self.assertRaises(AssertionError, db.reviewers_for,
-                        (f for f in ['x', 'y']))
+                        (f for f in ['x', 'y']), None)
 
     # Check that the files are under the root.
     db.root = '/checkout'
-    self.assertRaises(AssertionError, db.reviewers_for, ['/OWNERS'])
+    self.assertRaises(AssertionError, db.reviewers_for, ['/OWNERS'], None)
 
   def test_reviewers_for__wildcard_dir(self):
-    self.assert_reviewers_for(['DEPS'], ['<anyone>'])
-    self.assert_reviewers_for(['DEPS', 'chrome/gpu/gpu_channel.h'], [ken])
+    self.assert_reviewers_for(['DEPS'], [['<anyone>']])
+    self.assert_reviewers_for(['DEPS', 'chrome/gpu/gpu_channel.h'], [[ken]])
 
   def test_reviewers_for__one_owner(self):
     self.assert_reviewers_for([
         'chrome/gpu/gpu_channel.h',
         'content/baz/froboz.h',
         'chrome/renderer/gpu/gpu_channel_host.h'],
-        [brett])
+        [[brett]])
 
   def test_reviewers_for__two_owners(self):
     self.assert_reviewers_for([
@@ -275,7 +276,7 @@ class ReviewersForTest(_BaseTestCase):
         'content/content.gyp',
         'content/baz/froboz.h',
         'content/views/pie.h'],
-        [ken, john])
+        [[ken, john]])
 
   def test_reviewers_for__all_files(self):
     self.assert_reviewers_for([
@@ -286,25 +287,25 @@ class ReviewersForTest(_BaseTestCase):
         'content/bar/foo.cc',
         'content/baz/froboz.h',
         'content/views/pie.h'],
-        [peter, ken, john])
+        [[peter, ken, john]])
 
   def test_reviewers_for__per_file_owners_file(self):
     self.files['/content/baz/OWNERS'] = owners_file(lines=[
         'per-file ugly.*=tom@example.com'])
     self.assert_reviewers_for(['content/baz/OWNERS'],
-                              [john],
-                              [darin])
+                              [[john],
+                               [darin]])
 
   def test_reviewers_for__per_file(self):
     self.files['/content/baz/OWNERS'] = owners_file(lines=[
         'per-file ugly.*=tom@example.com'])
     self.assert_reviewers_for(['content/baz/ugly.cc'],
-                              [tom])
+                              [[tom]])
 
   def test_reviewers_for__two_nested_dirs(self):
     # The same owner is listed in two directories (one above the other)
     self.assert_reviewers_for(['chrome/browser/defaults.h'],
-                              [brett])
+                              [[brett]])
 
     # Here, although either ben or brett could review both files,
     # someone closer to the gpu_channel_host.h should also be suggested.
@@ -313,8 +314,13 @@ class ReviewersForTest(_BaseTestCase):
     self.files['/chrome/renderer/gpu/OWNERS'] = owners_file(ken)
     self.assert_reviewers_for(['chrome/OWNERS',
                                'chrome/renderer/gpu/gpu_channel_host.h'],
-                              [ben, ken],
-                              [brett, ken])
+                              [[ben, ken],
+                               [brett, ken]])
+
+  def test_reviewers_for__author_is_known(self):
+    # We should never suggest ken as a reviewer for his own changes.
+    self.assert_reviewers_for(['chrome/gpu/gpu_channel.h'],
+                              [[ben], [brett]], author=ken)
 
 
 class LowestCostOwnersTest(_BaseTestCase):
