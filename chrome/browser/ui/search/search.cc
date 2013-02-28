@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram.h"
 #include "base/string_split.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/instant/instant_service.h"
@@ -98,6 +99,26 @@ bool MatchesAnySearchURL(const GURL& url, TemplateURL* template_url) {
   return false;
 }
 
+enum OptInState {
+  // The user has not manually opted-in to or opted-out of InstantExtended.
+  NOT_SET,
+  // The user has opted-in to InstantExtended.
+  OPT_IN,
+  // The user has opted-out of InstantExtended.
+  OPT_OUT,
+  // Number of enum entries, used for UMA histogram reporting macros.
+  OPT_IN_STATE_ENUM_COUNT,
+};
+
+void RecordInstantExtendedOptInState(OptInState state) {
+  static bool recorded = false;
+  if (!recorded) {
+    UMA_HISTOGRAM_ENUMERATION("InstantExtended.OptInState", state,
+                              OPT_IN_STATE_ENUM_COUNT);
+    recorded = true;
+  }
+}
+
 }  // namespace
 
 namespace chrome {
@@ -144,14 +165,18 @@ uint64 EmbeddedSearchPageVersion(const Profile* profile) {
   // Check the command-line/about:flags setting first, which should have
   // precedence and allows the trial to not be reported (if it's never queried).
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableInstantExtendedAPI))
+  if (command_line->HasSwitch(switches::kDisableInstantExtendedAPI)) {
+    RecordInstantExtendedOptInState(OPT_OUT);
     return kEmbeddedPageVersionDisabled;
+  }
   if (command_line->HasSwitch(switches::kEnableInstantExtendedAPI)) {
     // The user has set the about:flags switch to Enabled - give the default
     // UI version.
+    RecordInstantExtendedOptInState(OPT_IN);
     return kEmbeddedPageVersionDefault;
   }
 
+  RecordInstantExtendedOptInState(NOT_SET);
   FieldTrialFlags flags;
   if (GetFieldTrialInfo(
           base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
