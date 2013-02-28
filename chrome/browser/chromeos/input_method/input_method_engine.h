@@ -134,6 +134,12 @@ class InputMethodEngine {
     // Called when a menu item for this IME is interacted with.
     virtual void OnMenuItemActivated(const std::string& engine_id,
                                      const std::string& menu_id) = 0;
+
+    // Called when a surrounding text is changed.
+    virtual void OnSurroundingTextChanged(const std::string& engine_id,
+                                          const std::string& text,
+                                          int cursor_pos,
+                                          int anchor_pos) = 0;
   };
 
   virtual ~InputMethodEngine() {}

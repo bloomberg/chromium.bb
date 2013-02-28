@@ -986,7 +986,7 @@ TEST_F(IBusEngineServiceTest, SetSurroundingTextTest) {
                                ibus::engine::kSetSurroundingTextMethod);
   method_call.SetSerial(kSerialNo);
   dbus::MessageWriter writer(&method_call);
-  writer.AppendString(kText);
+  AppendStringAsIBusText(kText, &writer);
   writer.AppendUint32(kCursorPos);
   writer.AppendUint32(kAnchorPos);
 

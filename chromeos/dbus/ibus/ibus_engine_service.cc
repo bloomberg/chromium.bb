@@ -424,7 +424,7 @@ class IBusEngineServiceImpl : public IBusEngineService {
       return;
     dbus::MessageReader reader(method_call);
     std::string text;
-    if (!reader.PopString(&text)) {
+    if (!PopStringFromIBusText(&reader, &text)) {
       LOG(WARNING) << "SetSurroundingText called with incorrect parameters: "
                    << method_call->ToString();
       return;

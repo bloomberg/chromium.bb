@@ -151,6 +151,7 @@ const char kOnInputContextUpdate[] = "input.ime.onInputContextUpdate";
 const char kOnKeyEvent[] = "input.ime.onKeyEvent";
 const char kOnCandidateClicked[] = "input.ime.onCandidateClicked";
 const char kOnMenuItemActivated[] = "input.ime.onMenuItemActivated";
+const char kOnSurroundingTextChanged[] = "input.ime.onSurroundingTextChanged";
 
 }  // namespace events
 
@@ -300,6 +301,25 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
 
     DispatchEventToExtension(profile_, extension_id_,
                              events::kOnMenuItemActivated, args.Pass());
+  }
+
+  virtual void OnSurroundingTextChanged(const std::string& engine_id,
+                                        const std::string& text,
+                                        int cursor_pos,
+                                        int anchor_pos) {
+    if (profile_ == NULL || extension_id_.empty())
+      return;
+    DictionaryValue* dict = new DictionaryValue();
+    dict->SetString("text", text);
+    dict->SetInteger("focus", cursor_pos);
+    dict->SetInteger("anchor", anchor_pos);
+
+    scoped_ptr<ListValue> args(new ListValue);
+    args->Append(Value::CreateStringValue(engine_id));
+    args->Append(dict);
+
+    DispatchEventToExtension(profile_, extension_id_,
+                             events::kOnSurroundingTextChanged, args.Pass());
   }
 
  private:

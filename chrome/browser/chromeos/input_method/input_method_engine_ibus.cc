@@ -418,6 +418,10 @@ void InputMethodEngineIBus::Enable() {
   active_ = true;
   observer_->OnActivate(engine_id_);
   FocusIn();
+
+  // Calls RequireSurroundingText once here to notify ibus-daemon to send
+  // surrounding text to this engine.
+  GetCurrentService()->RequireSurroundingText();
 }
 
 void InputMethodEngineIBus::Disable() {
@@ -496,10 +500,13 @@ void InputMethodEngineIBus::CandidateClicked(uint32 index,
       engine_id_, candidate_ids_.at(index), pressed_button);
 }
 
-void InputMethodEngineIBus::SetSurroundingText(
-    const std::string& text,
-    uint32 cursor_pos,
-    uint32 anchor_pos) {
+void InputMethodEngineIBus::SetSurroundingText(const std::string& text,
+                                               uint32 cursor_pos,
+                                               uint32 anchor_pos) {
+  observer_->OnSurroundingTextChanged(engine_id_,
+                                      text,
+                                      static_cast<int>(cursor_pos),
+                                      static_cast<int>(anchor_pos));
 }
 
 IBusEngineService* InputMethodEngineIBus::GetCurrentService() {

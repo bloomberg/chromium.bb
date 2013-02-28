@@ -553,6 +553,37 @@
             "description": "Name of the MenuItem which was activated"
           }
         ]
+      },
+      {
+        "name": "onSurroundingTextChanged",
+        "type": "function",
+        "description": "Called when the editable string around caret is changed or when the caret position is moved. The text length is limited to 100 characters for each back and forth direction.",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "engineID",
+            "description": "ID of the engine receiving the event"
+          },
+          {
+            "type": "object",
+            "name": "surroundingInfo",
+            "description": "The surrounding information.",
+            "properties": {
+              "text": {
+                "type": "string",
+                "description": "The text around cursor."
+              },
+              "focus": {
+                "type": "integer",
+                "description": "The ending position of the selection. This value indicates caret position if there is no selection."
+              },
+              "anchor": {
+                "type": "integer",
+                "description": "The beginning position of the selection. This value indicates caret position if is no selection."
+              }
+            }
+          }
+        ]
       }
     ]
   }
