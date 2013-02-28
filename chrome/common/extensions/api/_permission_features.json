@@ -31,7 +31,7 @@
     "channel": "stable",
     "extension_types": ["packaged_app", "hosted_app"]
   },
-    "autotestPrivate": {
+  "autotestPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"],
     "location": "component"
@@ -123,10 +123,18 @@
     "channel": "trunk",
     "extension_types": ["extension"]
   },
-  "declarativeWebRequest": {
-    "channel": "beta",
-    "extension_types": ["extension", "packaged_app"]
-  },
+  "declarativeWebRequest": [
+    {
+      "channel": "beta",
+      "extension_types": ["extension", "packaged_app"]
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["extension", "packaged_app"],
+      // Legacy Browser Support (remove once this API hits stable).
+      "whitelist": ["heildphpnddilhkemkielfhnkaagiabh"]
+    }
+  ],
   "downloads": {
     "channel": "dev",
     "extension_types": [
