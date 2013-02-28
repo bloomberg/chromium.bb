@@ -32,6 +32,12 @@ AwRenderViewHostExt* AwSettings::GetAwRenderViewHostExt() {
   return contents->render_view_host_ext();
 }
 
+void AwSettings::ResetScrollAndScaleState(JNIEnv* env, jobject obj) {
+  AwRenderViewHostExt* rvhe = GetAwRenderViewHostExt();
+  if (!rvhe) return;
+  rvhe->ResetScrollAndScaleState();
+}
+
 void AwSettings::SetEnableFixedLayoutMode(
     JNIEnv* env, jobject obj, jboolean enabled) {
   if (enable_fixed_layout_ == enabled) return;

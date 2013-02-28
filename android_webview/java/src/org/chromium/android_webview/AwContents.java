@@ -671,15 +671,6 @@ public class AwContents {
         msg.sendToTarget();
     }
 
-    public void resetScrollAndScaleState() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                nativeResetScrollAndScaleState(mNativeAwContents);
-            }
-        });
-    }
-
     //--------------------------------------------------------------------------------------------
     //  View and ViewGroup method implementations
     //--------------------------------------------------------------------------------------------
@@ -1076,8 +1067,6 @@ public class AwContents {
     private native int nativeReleasePopupWebContents(int nativeAwContents);
     private native void nativeSetWebContents(int nativeAwContents, int nativeNewWebContents);
     private native void nativeFocusFirstNode(int nativeAwContents);
-
-    private native void nativeResetScrollAndScaleState(int nativeAwContents);
 
     private native boolean nativeDrawSW(int nativeAwContents, Canvas canvas, int clipX, int clipY,
             int clipW, int clipH);

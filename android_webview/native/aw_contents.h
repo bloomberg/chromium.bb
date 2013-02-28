@@ -162,8 +162,6 @@ class AwContents : public FindHelper::Listener,
   void SetPendingWebContentsForPopup(scoped_ptr<content::WebContents> pending);
   jint ReleasePopupWebContents(JNIEnv* env, jobject obj);
 
-  void ResetScrollAndScaleState(JNIEnv* env, jobject obj);
-
  private:
   void SetWebContents(content::WebContents* web_contents);
 

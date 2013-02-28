@@ -191,6 +191,15 @@ public class AwSettings {
         });
     }
 
+    public void resetScrollAndScaleState() {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                nativeResetScrollAndScaleState(mNativeAwSettings);
+            }
+        });
+    }
+
     /**
      * See {@link android.webkit.WebSettings#setNeedInitialFocus}.
      */
@@ -227,6 +236,8 @@ public class AwSettings {
     private native int nativeInit(int webContentsPtr);
 
     private native void nativeDestroy(int nativeAwSettings);
+
+    private native void nativeResetScrollAndScaleState(int nativeAwSettings);
 
     private native void nativeSetWebContents(int nativeAwSettings, int nativeWebContents);
 

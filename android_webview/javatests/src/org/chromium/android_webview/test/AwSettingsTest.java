@@ -1238,7 +1238,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
                         mContentViewClient.getOnScaleChangedHelper().getCallCount();
             }
             mContentSettings.setLoadWithOverviewMode(value);
-            mAwContents.resetScrollAndScaleState();
+            mAwContents.getSettings().resetScrollAndScaleState();
         }
 
         @Override
@@ -2406,7 +2406,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         settings.setUseWideViewPort(true);
         awContents.getSettings().setEnableFixedLayoutMode(true);
         settings.setLoadWithOverviewMode(true);
-        awContents.resetScrollAndScaleState();
+        awContents.getSettings().resetScrollAndScaleState();
         int onScaleChangedCallCount = contentClient.getOnScaleChangedHelper().getCallCount();
         loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
         contentClient.getOnScaleChangedHelper().waitForCallback(onScaleChangedCallCount);
