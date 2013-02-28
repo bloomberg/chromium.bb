@@ -8,6 +8,8 @@
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/values.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -201,6 +203,9 @@ ShillDeviceClient::TestInterface* ShillDeviceClientStub::GetTestInterface(){
 void ShillDeviceClientStub::AddDevice(const std::string& device_path,
                                       const std::string& type,
                                       const std::string& object_path){
+  DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
+      AddDevice(device_path);
+
   base::DictionaryValue* properties = GetDeviceProperties(device_path);
   properties->SetWithoutPathExpansion(
       flimflam::kTypeProperty,
@@ -214,10 +219,16 @@ void ShillDeviceClientStub::AddDevice(const std::string& device_path,
 }
 
 void ShillDeviceClientStub::RemoveDevice(const std::string& device_path){
+  DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
+      RemoveDevice(device_path);
+
   stub_devices_.RemoveWithoutPathExpansion(device_path, NULL);
 }
 
 void ShillDeviceClientStub::ClearDevices(){
+  DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
+      ClearDevices();
+
   stub_devices_.Clear();
 }
 

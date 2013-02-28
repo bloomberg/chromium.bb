@@ -40,7 +40,7 @@ class CHROMEOS_EXPORT ShillManagerClient {
    public:
     virtual void AddDevice(const std::string& device_path) = 0;
     virtual void RemoveDevice(const std::string& device_path) = 0;
-    virtual void ResetDevices() = 0;
+    virtual void ClearDevices() = 0;
     virtual void AddService(const std::string& service_path,
                             bool add_to_watch_list) = 0;
     virtual void AddServiceAtIndex(const std::string& service_path,

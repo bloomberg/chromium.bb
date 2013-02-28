@@ -71,11 +71,14 @@ class ShillServiceClientStub : public ShillServiceClient,
   virtual void AddService(const std::string& service_path,
                           const std::string& name,
                           const std::string& type,
-                          const std::string& state) OVERRIDE;
+                          const std::string& state,
+                          bool add_to_watch_list) OVERRIDE;
   virtual void RemoveService(const std::string& service_path) OVERRIDE;
   virtual void SetServiceProperty(const std::string& service_path,
                                   const std::string& property,
                                   const base::Value& value) OVERRIDE;
+  virtual const base::DictionaryValue* GetServiceProperties(
+      const std::string& service_path) const OVERRIDE;
   virtual void ClearServices() OVERRIDE;
 
  private:
@@ -86,7 +89,8 @@ class ShillServiceClientStub : public ShillServiceClient,
                                  const DictionaryValueCallback& callback);
   void NotifyObserversPropertyChanged(const dbus::ObjectPath& service_path,
                                       const std::string& property);
-  base::DictionaryValue* GetServiceProperties(const std::string& service_path);
+  base::DictionaryValue* GetModifiableServiceProperties(
+      const std::string& service_path);
   PropertyObserverList& GetObserverList(const dbus::ObjectPath& device_path);
 
   base::DictionaryValue stub_services_;

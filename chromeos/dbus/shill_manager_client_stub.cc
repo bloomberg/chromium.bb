@@ -6,9 +6,13 @@
 
 #include "base/bind.h"
 #include "base/chromeos/chromeos_version.h"
+#include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/values.h"
+#include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
+#include "chromeos/dbus/shill_service_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -81,7 +85,7 @@ void ShillManagerClientStub::SetProperty(const std::string& name,
                                          const base::Value& value,
                                          const base::Closure& callback,
                                          const ErrorCallback& error_callback) {
-  stub_properties_.Set(name, value.DeepCopy());
+  stub_properties_.SetWithoutPathExpansion(name, value.DeepCopy());
   if (callback.is_null())
     return;
   MessageLoop::current()->PostTask(FROM_HERE, callback);
@@ -116,9 +120,11 @@ void ShillManagerClientStub::EnableTechnology(
   enabled_list->AppendIfNotPresent(new base::StringValue(type));
   CallNotifyObserversPropertyChanged(
       flimflam::kEnabledTechnologiesProperty, 0);
-  if (callback.is_null())
-    return;
-  MessageLoop::current()->PostTask(FROM_HERE, callback);
+  if (!callback.is_null())
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
+  // May affect available services
+  CallNotifyObserversPropertyChanged(flimflam::kServicesProperty, 0);
+  CallNotifyObserversPropertyChanged(flimflam::kServiceWatchListProperty, 0);
 }
 
 void ShillManagerClientStub::DisableTechnology(
@@ -139,10 +145,12 @@ void ShillManagerClientStub::DisableTechnology(
   enabled_list->Remove(type_value, NULL);
   CallNotifyObserversPropertyChanged(
       flimflam::kEnabledTechnologiesProperty, 0);
-  if (callback.is_null())
-    return;
-  MessageLoop::current()->PostTask(FROM_HERE, callback);
-}
+  if (!callback.is_null())
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
+  // May affect available services
+  CallNotifyObserversPropertyChanged(flimflam::kServicesProperty, 0);
+  CallNotifyObserversPropertyChanged(flimflam::kServiceWatchListProperty, 0);
+ }
 
 void ShillManagerClientStub::ConfigureService(
     const base::DictionaryValue& properties,
@@ -230,7 +238,7 @@ void ShillManagerClientStub::RemoveDevice(const std::string& device_path) {
   }
 }
 
-void ShillManagerClientStub::ResetDevices() {
+void ShillManagerClientStub::ClearDevices() {
   stub_properties_.Remove(flimflam::kDevicesProperty, NULL);
 }
 
@@ -315,7 +323,7 @@ void ShillManagerClientStub::AddGeoNetwork(
   if (!stub_geo_networks_.GetListWithoutPathExpansion(
       technology, &list_value)) {
     list_value = new base::ListValue;
-    stub_geo_networks_.Set(technology, list_value);
+    stub_geo_networks_.SetWithoutPathExpansion(technology, list_value);
   }
   list_value->Append(network.DeepCopy());
 }
@@ -331,25 +339,27 @@ void ShillManagerClientStub::AddServiceToWatchList(
 }
 
 void ShillManagerClientStub::SetDefaultProperties() {
-  // Stub Devices, Note: names match Device stub map.
-  AddDevice("stub_wifi_device1");
-  AddDevice("stub_cellular_device1");
-
-  // Stub Services, Note: names match Service stub map.
-  AddService("stub_ethernet", true);
-  AddService("stub_wifi1", true);
-  AddService("stub_wifi2", true);
-  AddService("stub_cellular1", true);
-
-  // Stub Technologies
-  AddTechnology(flimflam::kTypeEthernet, true);
+  // Stub Technologies.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableStubEthernet)) {
+    AddTechnology(flimflam::kTypeEthernet, true);
+  }
   AddTechnology(flimflam::kTypeWifi, true);
   AddTechnology(flimflam::kTypeCellular, true);
 }
 
 void ShillManagerClientStub::PassStubProperties(
     const DictionaryValueCallback& callback) const {
-  callback.Run(DBUS_METHOD_CALL_SUCCESS, stub_properties_);
+  scoped_ptr<base::DictionaryValue> stub_properties(
+      stub_properties_.DeepCopy());
+  // Remove disabled services from the list
+  stub_properties->SetWithoutPathExpansion(
+      flimflam::kServicesProperty,
+      GetEnabledServiceList(flimflam::kServicesProperty));
+  stub_properties->SetWithoutPathExpansion(
+      flimflam::kServiceWatchListProperty,
+      GetEnabledServiceList(flimflam::kServiceWatchListProperty));
+  callback.Run(DBUS_METHOD_CALL_SUCCESS, *stub_properties);
 }
 
 void ShillManagerClientStub::PassStubGeoNetworks(
@@ -374,6 +384,14 @@ void ShillManagerClientStub::CallNotifyObserversPropertyChanged(
 
 void ShillManagerClientStub::NotifyObserversPropertyChanged(
     const std::string& property) {
+  if (property == flimflam::kServicesProperty ||
+      property == flimflam::kServiceWatchListProperty) {
+    scoped_ptr<base::ListValue> services(GetEnabledServiceList(property));
+    FOR_EACH_OBSERVER(ShillPropertyChangedObserver,
+                      observer_list_,
+                      OnPropertyChanged(property, *(services.get())));
+    return;
+  }
   base::Value* value = NULL;
   if (!stub_properties_.GetWithoutPathExpansion(property, &value)) {
     LOG(ERROR) << "Notify for unknown property: " << property;
@@ -390,9 +408,46 @@ base::ListValue* ShillManagerClientStub::GetListProperty(
   if (!stub_properties_.GetListWithoutPathExpansion(
       property, &list_property)) {
     list_property = new base::ListValue;
-    stub_properties_.Set(property, list_property);
+    stub_properties_.SetWithoutPathExpansion(property, list_property);
   }
   return list_property;
+}
+
+bool ShillManagerClientStub::TechnologyEnabled(const std::string& type) const {
+  bool enabled = false;
+  const base::ListValue* technologies;
+  if (stub_properties_.GetListWithoutPathExpansion(
+          flimflam::kEnabledTechnologiesProperty, &technologies)) {
+    base::StringValue type_value(type);
+    if (technologies->Find(type_value) != technologies->end())
+      enabled = true;
+  }
+  return enabled;
+}
+
+base::ListValue* ShillManagerClientStub::GetEnabledServiceList(
+    const std::string& property) const {
+  base::ListValue* new_service_list = new base::ListValue;
+  const base::ListValue* service_list;
+  if (stub_properties_.GetListWithoutPathExpansion(property, &service_list)) {
+    ShillServiceClient::TestInterface* service_client =
+        DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
+    for (base::ListValue::const_iterator iter = service_list->begin();
+         iter != service_list->end(); ++iter) {
+      std::string service_path;
+      if (!(*iter)->GetAsString(&service_path))
+        continue;
+      const base::DictionaryValue* properties =
+          service_client->GetServiceProperties(service_path);
+      std::string name;
+      properties->GetString(flimflam::kNameProperty, &name);
+      std::string type;
+      properties->GetString(flimflam::kTypeProperty, &type);
+      if (TechnologyEnabled(type))
+        new_service_list->Append((*iter)->DeepCopy());
+    }
+  }
+  return new_service_list;
 }
 
 }  // namespace chromeos

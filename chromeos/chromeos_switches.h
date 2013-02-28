@@ -22,10 +22,12 @@ namespace switches {
 // Please keep alphabetized.
 CHROMEOS_EXPORT extern const char kChromeOSReleaseBoard[];
 CHROMEOS_EXPORT extern const char kDbusStub[];
+CHROMEOS_EXPORT extern const char kDisableStubEthernet[];
 CHROMEOS_EXPORT extern const char kEnableLocallyManagedUserUIExperiments[];
 CHROMEOS_EXPORT extern const char kEnableNewNetworkChangeNotifier[];
 CHROMEOS_EXPORT extern const char kEnableNewNetworkConfigurationHandlers[];
 CHROMEOS_EXPORT extern const char kEnableScreensaverExtensions[];
+CHROMEOS_EXPORT extern const char kEnableStubInteractive[];
 CHROMEOS_EXPORT extern const char kSmsTestMessages[];
 
 }  // namespace switches

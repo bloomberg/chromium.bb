@@ -167,12 +167,10 @@ class ShillPropertyHandlerTest : public testing::Test {
 
   void AddDevice(const std::string& type, const std::string& id) {
     ASSERT_TRUE(IsValidType(type));
-    manager_test_->AddDevice(id);
     device_test_->AddDevice(id, type, std::string("/device/" + id));
   }
 
   void RemoveDevice(const std::string& id) {
-    manager_test_->RemoveDevice(id);
     device_test_->RemoveDevice(id);
   }
 
@@ -181,12 +179,10 @@ class ShillPropertyHandlerTest : public testing::Test {
                   const std::string& state,
                   bool add_to_watch_list) {
     ASSERT_TRUE(IsValidType(type));
-    manager_test_->AddService(id, add_to_watch_list);
-    service_test_->AddService(id, id, type, state);
+    service_test_->AddService(id, id, type, state, add_to_watch_list);
   }
 
   void RemoveService(const std::string& id) {
-    manager_test_->RemoveService(id);
     service_test_->RemoveService(id);
   }
 

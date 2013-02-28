@@ -1464,14 +1464,8 @@ const char kDisableLoginAnimations[]        = "disable-login-animations";
 // Avoid doing animations upon oobe.
 const char kDisableOobeAnimation[]          = "disable-oobe-animation";
 
-// Disables fake ethernet network on the login screen.
-const char kDisableStubEthernet[]           = "disable-stub-ethernet";
-
 // Enable Kiosk app mode for ChromeOS.
 const char kEnableAppMode[]                 = "enable-app-mode";
-
-// Enable "interactive" mode for stub implemenations (e.g. NetworkLibrary)
-const char kEnableStubInteractive[]         = "enable-stub-interactive";
 
 // Enables component extension that initializes background pages of
 // certain hosted applications.

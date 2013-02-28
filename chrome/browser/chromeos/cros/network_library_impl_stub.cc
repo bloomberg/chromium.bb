@@ -8,7 +8,7 @@
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/cros/native_network_constants.h"
-#include "chrome/common/chrome_switches.h"
+#include "chromeos/chromeos_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -18,12 +18,12 @@ namespace {
 
 bool IsEthernetEnabled() {
   return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableStubEthernet);
+      chromeos::switches::kDisableStubEthernet);
 }
 
 bool IsInteractive() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableStubInteractive);
+      chromeos::switches::kEnableStubInteractive);
 }
 
 }  // namespace
@@ -330,7 +330,7 @@ void NetworkLibraryImplStub::CompleteCellularInit() {
   cellular2->set_name("Fake Cellular 2");
   cellular2->set_device_path(cellular->device_path());
   cellular2->set_strength(50);
-  cellular2->set_activation_state(ACTIVATION_STATE_NOT_ACTIVATED);
+  cellular2->set_activation_state(ACTIVATION_STATE_ACTIVATING);
   cellular2->set_network_technology(NETWORK_TECHNOLOGY_UMTS);
   cellular2->set_roaming_state(ROAMING_STATE_ROAMING);
   cellular2->set_payment_url(std::string("http://www.google.com"));

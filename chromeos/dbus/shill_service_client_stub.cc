@@ -5,9 +5,11 @@
 #include "chromeos/dbus/shill_service_client_stub.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/values.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
@@ -245,8 +247,13 @@ ShillServiceClient::TestInterface* ShillServiceClientStub::GetTestInterface() {
 void ShillServiceClientStub::AddService(const std::string& service_path,
                                         const std::string& name,
                                         const std::string& type,
-                                        const std::string& state) {
-  base::DictionaryValue* properties = GetServiceProperties(service_path);
+                                        const std::string& state,
+                                        bool add_to_watch_list) {
+  DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
+      AddService(service_path, add_to_watch_list);
+
+  base::DictionaryValue* properties =
+      GetModifiableServiceProperties(service_path);
   properties->SetWithoutPathExpansion(
       flimflam::kSSIDProperty,
       base::Value::CreateStringValue(service_path));
@@ -262,6 +269,9 @@ void ShillServiceClientStub::AddService(const std::string& service_path,
 }
 
 void ShillServiceClientStub::RemoveService(const std::string& service_path) {
+  DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
+      RemoveService(service_path);
+
   stub_services_.RemoveWithoutPathExpansion(service_path, NULL);
 }
 
@@ -273,23 +283,37 @@ void ShillServiceClientStub::SetServiceProperty(const std::string& service_path,
               base::Bind(&ErrorFunction));
 }
 
+const base::DictionaryValue* ShillServiceClientStub::GetServiceProperties(
+    const std::string& service_path) const {
+  const base::DictionaryValue* properties = NULL;
+  stub_services_.GetDictionaryWithoutPathExpansion(service_path, &properties);
+  return properties;
+}
+
 void ShillServiceClientStub::ClearServices() {
   stub_services_.Clear();
 }
 
 void ShillServiceClientStub::SetDefaultProperties() {
-  // Add stub services. Note: names match Manager stub impl.
-  AddService("stub_ethernet", "eth0",
-             flimflam::kTypeEthernet,
-             flimflam::kStateOnline);
+  const bool add_to_watchlist = true;
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableStubEthernet)) {
+    AddService("stub_ethernet", "eth0",
+               flimflam::kTypeEthernet,
+               flimflam::kStateOnline,
+               add_to_watchlist);
+  }
 
   AddService("stub_wifi1", "wifi1",
              flimflam::kTypeWifi,
-             flimflam::kStateOnline);
+             flimflam::kStateOnline,
+             add_to_watchlist);
 
   AddService("stub_wifi2", "wifi2_PSK",
              flimflam::kTypeWifi,
-             flimflam::kStateIdle);
+             flimflam::kStateIdle,
+             add_to_watchlist);
   base::StringValue psk_value(flimflam::kSecurityPsk);
   SetServiceProperty("stub_wifi2",
                      flimflam::kSecurityProperty,
@@ -301,11 +325,16 @@ void ShillServiceClientStub::SetDefaultProperties() {
 
   AddService("stub_cellular1", "cellular1",
              flimflam::kTypeCellular,
-             flimflam::kStateIdle);
+             flimflam::kStateIdle,
+             add_to_watchlist);
   base::StringValue technology_value(flimflam::kNetworkTechnologyGsm);
   SetServiceProperty("stub_cellular1",
                      flimflam::kNetworkTechnologyProperty,
                      technology_value);
+  base::StringValue activation_value(flimflam::kActivationStateActivated);
+  SetServiceProperty("stub_cellular1",
+                     flimflam::kActivationStateProperty,
+                     activation_value);
 }
 
 void ShillServiceClientStub::PassStubServiceProperties(
@@ -341,7 +370,7 @@ void ShillServiceClientStub::NotifyObserversPropertyChanged(
                     OnPropertyChanged(property, *value));
 }
 
-base::DictionaryValue* ShillServiceClientStub::GetServiceProperties(
+base::DictionaryValue* ShillServiceClientStub::GetModifiableServiceProperties(
     const std::string& service_path) {
   base::DictionaryValue* properties = NULL;
   if (!stub_services_.GetDictionaryWithoutPathExpansion(
