@@ -4,6 +4,7 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
 
@@ -140,7 +141,15 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiOpenCancelTest) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiOpenBackgroundTest) {
+#if defined(OS_LINUX)
+// Disabled on linux due to crbug.com/178679.
+#define MAYBE_FileSystemApiSaveBackgroundTest \
+    DISABLED_FileSystemApiOpenBackgroundTest
+#else
+#define MAYBE_FileSystemApiOpenBackgroundTest FileSystemApiOpenBackgroundTest
+#endif
+IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
+                       MAYBE_FileSystemApiOpenBackgroundTest) {
   ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_background"))
       << message_;
 }
@@ -189,7 +198,15 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiSaveCancelTest) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiSaveBackgroundTest) {
+#if defined(OS_LINUX)
+// Disabled on linux due to crbug.com/178679.
+#define MAYBE_FileSystemApiSaveBackgroundTest \
+    DISABLED_FileSystemApiSaveBackgroundTest
+#else
+#define MAYBE_FileSystemApiSaveBackgroundTest FileSystemApiSaveBackgroundTest
+#endif
+IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
+                       MAYBE_FileSystemApiSaveBackgroundTest) {
   ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/save_background"))
       << message_;
 }
