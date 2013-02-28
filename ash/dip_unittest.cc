@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "ash/display/display_manager.h"
 #include "ash/launcher/launcher.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -29,7 +30,7 @@ typedef ash::test::AshTestBase DIPTest;
 
 // Test if the WM sets correct work area under different density.
 TEST_F(DIPTest, WorkArea) {
-  ChangeDisplayConfig(1.0f, gfx::Rect(0, 0, 1000, 900));
+  UpdateDisplay("1000x900*1.0f");
 
   aura::RootWindow* root = Shell::GetPrimaryRootWindow();
   const gfx::Display display =
@@ -40,13 +41,16 @@ TEST_F(DIPTest, WorkArea) {
   EXPECT_EQ("0,0 1000x852", work_area.ToString());
   EXPECT_EQ("0,0,48,0", display.bounds().InsetsFrom(work_area).ToString());
 
-  ChangeDisplayConfig(2.0f, gfx::Rect(0, 0, 2000, 1800));
+  UpdateDisplay("2000x1800*2.0f");
+  gfx::Screen* screen = Shell::GetScreen();
 
-  const gfx::Display display_2x =
-      Shell::GetScreen()->GetDisplayNearestWindow(root);
+  const gfx::Display display_2x = screen->GetDisplayNearestWindow(root);
+  const internal::DisplayInfo display_info_2x =
+      Shell::GetInstance()->display_manager()->GetDisplayInfo(display_2x);
 
   // The |bounds_in_pixel()| should report bounds in pixel coordinate.
-  EXPECT_EQ("0,0 2000x1800", display_2x.bounds_in_pixel().ToString());
+  EXPECT_EQ("1,1 2000x1800",
+            display_info_2x.bounds_in_pixel().ToString());
 
   // Aura and views coordinates are in DIP, so they their bounds do not change.
   EXPECT_EQ("0,0 1000x900", display_2x.bounds().ToString());

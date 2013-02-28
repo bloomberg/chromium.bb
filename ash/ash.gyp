@@ -81,6 +81,8 @@
         'display/display_controller.h',
         'display/display_error_dialog.cc',
         'display/display_error_dialog.h',
+        'display/display_info.h',
+        'display/display_info.cc',
         'display/display_manager.cc',
         'display/display_manager.h',
         'display/event_transformation_handler.cc',

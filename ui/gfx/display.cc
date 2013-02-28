@@ -11,6 +11,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/win/dpi.h"
 #include "ui/gfx/insets.h"
+#include "ui/gfx/point_f.h"
 #include "ui/gfx/size_conversions.h"
 
 namespace gfx {
@@ -103,22 +104,19 @@ void Display::SetScaleAndBounds(
     device_scale_factor_ = device_scale_factor;
   }
   device_scale_factor_ = std::max(1.0f, device_scale_factor_);
-#if defined(USE_AURA)
-  bounds_in_pixel_ = bounds_in_pixel;
-#endif
   bounds_ = gfx::Rect(gfx::ToFlooredSize(
       gfx::ScaleSize(bounds_in_pixel.size(), 1.0f / device_scale_factor_)));
   UpdateWorkAreaFromInsets(insets);
 }
 
 void Display::SetSize(const gfx::Size& size_in_pixel) {
-  SetScaleAndBounds(
-      device_scale_factor_,
+  gfx::Point origin = bounds_.origin();
 #if defined(USE_AURA)
-      gfx::Rect(bounds_in_pixel_.origin(), size_in_pixel));
-#else
-      gfx::Rect(bounds_.origin(), size_in_pixel));
+  gfx::PointF origin_f = origin;
+  origin_f.Scale(device_scale_factor_);
+  origin.SetPoint(origin_f.x(), origin_f.y());
 #endif
+  SetScaleAndBounds(device_scale_factor_, gfx::Rect(origin, size_in_pixel));
 }
 
 void Display::UpdateWorkAreaFromInsets(const gfx::Insets& insets) {
