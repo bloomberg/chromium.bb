@@ -431,11 +431,11 @@ void VideoRendererBase::FrameReady(VideoDecoder::Status status,
 
   if (prerolling_delayed_frame_) {
     DCHECK_EQ(state_, kPrerolling);
-    AddReadyFrame(prerolling_delayed_frame_);
+    AddReadyFrame_Locked(prerolling_delayed_frame_);
     prerolling_delayed_frame_ = NULL;
   }
 
-  AddReadyFrame(frame);
+  AddReadyFrame_Locked(frame);
   PipelineStatistics statistics;
   statistics.video_frames_decoded = 1;
   statistics_cb_.Run(statistics);
@@ -444,7 +444,8 @@ void VideoRendererBase::FrameReady(VideoDecoder::Status status,
   // purposes:
   //   1) Prerolling while paused
   //   2) Keeps decoding going if video rendering thread starts falling behind
-  if (NumFrames_Locked() < limits::kMaxVideoFrames && !frame->IsEndOfStream()) {
+  if (ready_frames_.size() < static_cast<size_t>(limits::kMaxVideoFrames) &&
+      !frame->IsEndOfStream()) {
     AttemptRead_Locked();
     return;
   }
@@ -465,7 +466,10 @@ void VideoRendererBase::FrameReady(VideoDecoder::Status status,
   base::ResetAndReturn(&preroll_cb_).Run(PIPELINE_OK);
 }
 
-void VideoRendererBase::AddReadyFrame(const scoped_refptr<VideoFrame>& frame) {
+void VideoRendererBase::AddReadyFrame_Locked(
+    const scoped_refptr<VideoFrame>& frame) {
+  lock_.AssertAcquired();
+
   // Adjust the incoming frame if its rendering stop time is past the duration
   // of the video itself. This is typically the last frame of the video and
   // occurs if the container specifies a duration that isn't a multiple of the
@@ -488,7 +492,7 @@ void VideoRendererBase::AddReadyFrame(const scoped_refptr<VideoFrame>& frame) {
   }
 
   ready_frames_.push_back(frame);
-  DCHECK_LE(NumFrames_Locked(), limits::kMaxVideoFrames);
+  DCHECK_LE(ready_frames_.size(), static_cast<size_t>(limits::kMaxVideoFrames));
 
   base::TimeDelta max_clock_time =
       frame->IsEndOfStream() ? duration : frame->GetTimestamp();
@@ -508,7 +512,7 @@ void VideoRendererBase::AttemptRead_Locked() {
   lock_.AssertAcquired();
 
   if (pending_read_ ||
-      NumFrames_Locked() == limits::kMaxVideoFrames ||
+      ready_frames_.size() == static_cast<size_t>(limits::kMaxVideoFrames) ||
       (!ready_frames_.empty() && ready_frames_.back()->IsEndOfStream())) {
     return;
   }
@@ -578,11 +582,6 @@ void VideoRendererBase::DoStopOrError_Locked() {
   lock_.AssertAcquired();
   last_timestamp_ = kNoTimestamp();
   ready_frames_.clear();
-}
-
-int VideoRendererBase::NumFrames_Locked() const {
-  lock_.AssertAcquired();
-  return ready_frames_.size();
 }
 
 }  // namespace media

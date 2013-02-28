@@ -101,8 +101,8 @@ class MEDIA_EXPORT VideoRendererBase
   void FrameReady(VideoDecoder::Status status,
                   const scoped_refptr<VideoFrame>& frame);
 
-  // Helper method for adding a frame to |ready_frames_|
-  void AddReadyFrame(const scoped_refptr<VideoFrame>& frame);
+  // Helper method for adding a frame to |ready_frames_|.
+  void AddReadyFrame_Locked(const scoped_refptr<VideoFrame>& frame);
 
   // Helper method that schedules an asynchronous read from the decoder as long
   // as there isn't a pending read and we have capacity.
@@ -125,9 +125,6 @@ class MEDIA_EXPORT VideoRendererBase
 
   // Helper function that flushes the buffers when a Stop() or error occurs.
   void DoStopOrError_Locked();
-
-  // Return the number of frames currently held by this class.
-  int NumFrames_Locked() const;
 
   // Runs |paint_cb_| with the next frame from |ready_frames_|, updating
   // |last_natural_size_| and running |size_changed_cb_| if the natural size
