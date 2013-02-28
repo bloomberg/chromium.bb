@@ -38,8 +38,13 @@ string16 OmniboxView::GetClipboardText() {
     // TODO(shess): It may also make sense to ignore leading or
     // trailing whitespace when making this determination.
     for (size_t i = 0; i < text.size(); ++i) {
-      if (IsWhitespace(text[i]) && text[i] != '\n' && text[i] != '\r')
-        return StripJavascriptSchemas(CollapseWhitespace(text, false));
+      if (IsWhitespace(text[i]) && text[i] != '\n' && text[i] != '\r') {
+        const string16 collapsed = CollapseWhitespace(text, false);
+        // If the user is pasting all-whitespace, paste a single space
+        // rather than nothing, since pasting nothing feels broken.
+        return collapsed.empty() ?
+            ASCIIToUTF16(" ") : StripJavascriptSchemas(collapsed);
+      }
     }
 
     // Otherwise, the only whitespace in |text| is newlines.  Remove

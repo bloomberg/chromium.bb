@@ -1448,21 +1448,21 @@ void OmniboxViewGtk::HandleInsertText(GtkTextBuffer* buffer,
   if (len == 1 && (text[0] == '\n' || text[0] == '\r'))
     enter_was_inserted_ = true;
 
-  for (const gchar* p = text; *p && (p - text) < len;
-       p = g_utf8_next_char(p)) {
-    gunichar c = g_utf8_get_char(p);
+  if (model()->is_pasting()) {
+    filtered_text = GetClipboardText();
+  } else {
+    for (const gchar* p = text; *p && (p - text) < len;
+         p = g_utf8_next_char(p)) {
+      gunichar c = g_utf8_get_char(p);
 
-    // 0x200B is Zero Width Space, which is inserted just before the Instant
-    // anchor for working around the GtkTextView's misalignment bug.
-    // This character might be captured and inserted into the content by undo
-    // manager, so we need to filter it out here.
-    if (c != 0x200B)
-      base::WriteUnicodeCharacter(c, &filtered_text);
+      // 0x200B is Zero Width Space, which is inserted just before the Instant
+      // anchor for working around the GtkTextView's misalignment bug.
+      // This character might be captured and inserted into the content by undo
+      // manager, so we need to filter it out here.
+      if (c != 0x200B)
+        base::WriteUnicodeCharacter(c, &filtered_text);
+    }
   }
-
-  if (model()->is_pasting())
-    filtered_text = StripJavascriptSchemas(
-        CollapseWhitespace(filtered_text, true));
 
   if (!filtered_text.empty()) {
     // Avoid inserting the text after the Instant anchor.
