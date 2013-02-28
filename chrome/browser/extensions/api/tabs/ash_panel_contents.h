@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
+#include "chrome/browser/ui/ash/launcher/launcher_favicon_loader.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -31,6 +32,7 @@ struct DraggableRegion;
 // extensions API.
 class AshPanelContents : public ShellWindowContents,
                          public content::WebContentsObserver,
+                         public LauncherFaviconLoader::Delegate,
                          public ExtensionFunctionDispatcher::Delegate {
  public:
   explicit AshPanelContents(ShellWindow* host);
@@ -42,6 +44,9 @@ class AshPanelContents : public ShellWindowContents,
   virtual void NativeWindowChanged(NativeAppWindow* native_app_window) OVERRIDE;
   virtual void NativeWindowClosed() OVERRIDE;
   virtual content::WebContents* GetWebContents() const OVERRIDE;
+
+  // LauncherFaviconLoader::Delegate overrides:
+  virtual void FaviconUpdated() OVERRIDE;
 
   // ExtensionFunctionDispatcher::Delegate
   virtual extensions::WindowController* GetExtensionWindowController() const
@@ -59,6 +64,7 @@ class AshPanelContents : public ShellWindowContents,
   scoped_ptr<content::WebContents> web_contents_;
   scoped_ptr<ExtensionFunctionDispatcher> extension_function_dispatcher_;
   scoped_ptr<AshPanelWindowController> window_controller_;
+  scoped_ptr<LauncherFaviconLoader> launcher_favicon_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(AshPanelContents);
 };

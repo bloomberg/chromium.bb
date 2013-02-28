@@ -169,6 +169,10 @@ class ShellWindow : public content::NotificationObserver,
   void UpdateDraggableRegions(
       const std::vector<extensions::DraggableRegion>& regions);
 
+  // Updates the app image to |image|. Called internally from the image loader
+  // callback. Also called externally for v1 apps using Ash Panels.
+  void UpdateAppIcon(const gfx::Image& image);
+
  protected:
   virtual ~ShellWindow();
 
@@ -238,9 +242,6 @@ class ShellWindow : public content::NotificationObserver,
                           const GURL& image_url,
                           int requested_size,
                           const std::vector<SkBitmap>& bitmaps);
-
-  // Updates the app image to |image|, called from image loader callback.
-  void UpdateAppIcon(const gfx::Image& image);
 
   Profile* profile_;  // weak pointer - owned by ProfileManager.
   // weak pointer - owned by ExtensionService.

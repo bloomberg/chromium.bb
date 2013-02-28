@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/window_controller_list.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -18,6 +19,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/gfx/image/image.h"
 
 // AshPanelWindowController ----------------------------------------------------
 
@@ -172,6 +174,19 @@ void AshPanelContents::Initialize(Profile* profile, const GURL& url) {
       content::WebContents::CreateParams(
           profile, content::SiteInstance::CreateForURL(profile, url_))));
 
+  // Needed to give the web contents a Window ID. Extension APIs expect web
+  // contents to have a Window ID. Also required for FaviconTabHelper to
+  // correctly set the window icon and title.
+  SessionTabHelper::CreateForWebContents(web_contents_.get());
+  SessionTabHelper::FromWebContents(web_contents_.get())->SetWindowID(
+      host_->session_id());
+
+  // Responsible for loading favicons for the Launcher, which uses different
+  // logic than the FaviconTabHelper associated with web_contents_
+  // (instantiated in ShellWindow::Init())
+  launcher_favicon_loader_.reset(
+      new LauncherFaviconLoader(this, web_contents_.get()));
+
   content::WebContentsObserver::Observe(web_contents_.get());
 }
 
@@ -195,6 +210,12 @@ void AshPanelContents::NativeWindowClosed() {
 
 content::WebContents* AshPanelContents::GetWebContents() const {
   return web_contents_.get();
+}
+
+void AshPanelContents::FaviconUpdated() {
+  gfx::Image new_image = gfx::Image::CreateFrom1xBitmap(
+      launcher_favicon_loader_->GetFavicon());
+  host_->UpdateAppIcon(new_image);
 }
 
 bool AshPanelContents::OnMessageReceived(const IPC::Message& message) {

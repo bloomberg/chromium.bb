@@ -368,6 +368,14 @@ void ShellWindow::UpdateDraggableRegions(
   native_app_window_->UpdateDraggableRegions(regions);
 }
 
+void ShellWindow::UpdateAppIcon(const gfx::Image& image) {
+  if (image.IsEmpty())
+    return;
+  app_icon_ = image;
+  native_app_window_->UpdateWindowIcon();
+  extensions::ShellWindowRegistry::Get(profile_)->ShellWindowIconChanged(this);
+}
+
 //------------------------------------------------------------------------------
 // Private methods
 
@@ -392,14 +400,6 @@ void ShellWindow::DidDownloadFavicon(int id,
   }
   const SkBitmap& largest = bitmaps[largest_index];
   UpdateAppIcon(gfx::Image::CreateFrom1xBitmap(largest));
-}
-
-void ShellWindow::UpdateAppIcon(const gfx::Image& image) {
-  if (image.IsEmpty())
-    return;
-  app_icon_ = image;
-  native_app_window_->UpdateWindowIcon();
-  extensions::ShellWindowRegistry::Get(profile_)->ShellWindowIconChanged(this);
 }
 
 void ShellWindow::UpdateExtensionAppIcon() {
