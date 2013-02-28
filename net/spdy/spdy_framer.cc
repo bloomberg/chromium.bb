@@ -1231,7 +1231,7 @@ size_t SpdyFramer::ProcessControlFramePayload(const char* data, size_t len) {
             uint32 delta_window_size = 0;
             bool successful_read = reader.ReadUInt31(&current_frame_stream_id_);
             DCHECK(successful_read);
-            successful_read = reader.ReadUInt32(&delta_window_size);
+            successful_read = reader.ReadUInt31(&delta_window_size);
             DCHECK(successful_read);
             DCHECK(reader.IsDoneReading());
             visitor_->OnWindowUpdate(

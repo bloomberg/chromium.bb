@@ -60,7 +60,7 @@ class MockVisitor : public SpdyFramerVisitorInterface {
   MOCK_METHOD2(OnGoAway, void(SpdyStreamId last_accepted_stream_id,
                               SpdyGoAwayStatus status));
   MOCK_METHOD2(OnWindowUpdate, void(SpdyStreamId stream_id,
-                                    int delta_window_size));
+                                    uint32 delta_window_size));
   MOCK_METHOD2(OnSynStreamCompressed,
                void(size_t uncompressed_length,
                     size_t compressed_length));
@@ -225,7 +225,7 @@ class SpdyFramerTestUtil {
       LOG(FATAL);
     }
     virtual void OnWindowUpdate(SpdyStreamId stream_id,
-                                int delta_window_size) OVERRIDE {
+                                uint32 delta_window_size) OVERRIDE {
       LOG(FATAL);
     }
 
@@ -373,7 +373,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   }
 
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
-                              int delta_window_size) OVERRIDE {
+                              uint32 delta_window_size) OVERRIDE {
     last_window_update_stream_ = stream_id;
     last_window_update_delta_ = delta_window_size;
   }
@@ -489,8 +489,8 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   int headers_frame_count_;
   int goaway_count_;
   int setting_count_;
-  int last_window_update_stream_;
-  int last_window_update_delta_;
+  SpdyStreamId last_window_update_stream_;
+  uint32 last_window_update_delta_;
   int data_bytes_;
   int fin_frame_count_;  // The count of RST_STREAM type frames received.
   int fin_flag_count_;  // The count of frames with the FIN flag set.
@@ -2787,8 +2787,8 @@ TEST_P(SpdyFramerTest, ReadWindowUpdate) {
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame->data()),
       control_frame->size());
-  EXPECT_EQ(1, visitor.last_window_update_stream_);
-  EXPECT_EQ(2, visitor.last_window_update_delta_);
+  EXPECT_EQ(1u, visitor.last_window_update_stream_);
+  EXPECT_EQ(2u, visitor.last_window_update_delta_);
 }
 
 TEST_P(SpdyFramerTest, ReadCredentialFrame) {

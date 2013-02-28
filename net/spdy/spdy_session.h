@@ -268,7 +268,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
 
   // Send WINDOW_UPDATE frame, called by a stream whenever receive window
   // size is increased.
-  void SendWindowUpdate(SpdyStreamId stream_id, int32 delta_window_size);
+  void SendWindowUpdate(SpdyStreamId stream_id, uint32 delta_window_size);
 
   // If session is closed, no new streams/transactions should be created.
   bool IsClosed() const { return state_ == STATE_CLOSED; }
@@ -344,11 +344,6 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // Returns the current |stream_initial_recv_window_size_|.
   int32 stream_initial_recv_window_size() const {
     return stream_initial_recv_window_size_;
-  }
-
-  // Sets |stream_initial_recv_window_size_| used by unittests.
-  void set_initial_recv_window_size(int32 window_size) {
-    stream_initial_recv_window_size_ = window_size;
   }
 
   const BoundNetLog& net_log() const { return net_log_; }
@@ -557,7 +552,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   virtual void OnSetting(
       SpdySettingsIds id, uint8 flags, uint32 value) OVERRIDE;
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
-                              int delta_window_size) OVERRIDE;
+                              uint32 delta_window_size) OVERRIDE;
   virtual void OnSynStreamCompressed(
       size_t uncompressed_size,
       size_t compressed_size) OVERRIDE;

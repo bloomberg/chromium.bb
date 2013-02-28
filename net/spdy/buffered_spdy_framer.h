@@ -75,7 +75,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
 
   // Called when a WINDOW_UPDATE frame has been parsed.
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
-                              int delta_window_size) = 0;
+                              uint32 delta_window_size) = 0;
 
   // Called after a control frame has been compressed to allow the visitor
   // to record compression statistics.
@@ -130,7 +130,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
   virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,
                         SpdyGoAwayStatus status) OVERRIDE;
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
-                              int delta_window_size) OVERRIDE;
+                              uint32 delta_window_size) OVERRIDE;
   virtual void OnDataFrameHeader(SpdyStreamId stream_id,
                                  size_t length,
                                  bool fin) OVERRIDE;

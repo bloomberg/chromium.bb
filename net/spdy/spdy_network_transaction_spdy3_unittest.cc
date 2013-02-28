@@ -2112,9 +2112,13 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, WindowUpdateReceived) {
 // Test that received data frames and sent WINDOW_UPDATE frames change
 // the recv_window_size_ correctly.
 TEST_P(SpdyNetworkTransactionSpdy3Test, WindowUpdateSent) {
+  // Set the data in the body frame large enough to trigger sending a
+  // WINDOW_UPDATE by the stream.
+  const std::string body_data(kSpdyStreamInitialWindowSize / 2 + 1, 'x');
+
   scoped_ptr<SpdyFrame> req(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
   scoped_ptr<SpdyFrame> window_update(
-      ConstructSpdyWindowUpdate(1, kUploadDataSize));
+      ConstructSpdyWindowUpdate(1, body_data.size()));
 
   MockWrite writes[] = {
     CreateMockWrite(*req),
@@ -2124,7 +2128,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, WindowUpdateSent) {
   scoped_ptr<SpdyFrame> resp(
       ConstructSpdyGetSynReply(NULL, 0, 1));
   scoped_ptr<SpdyFrame> body_no_fin(
-      ConstructSpdyBodyFrame(1, false));
+      ConstructSpdyBodyFrame(1, body_data.data(), body_data.size(), false));
   scoped_ptr<SpdyFrame> body_fin(
       ConstructSpdyBodyFrame(1, NULL, 0, true));
   MockRead reads[] = {
@@ -2158,7 +2162,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, WindowUpdateSent) {
   ASSERT_TRUE(stream->stream() != NULL);
 
   EXPECT_EQ(
-      static_cast<int>(kSpdyStreamInitialWindowSize) - kUploadDataSize,
+      static_cast<int>(kSpdyStreamInitialWindowSize - body_data.size()),
       stream->stream()->recv_window_size());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
@@ -2167,17 +2171,13 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, WindowUpdateSent) {
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
 
-  // Force sending of WINDOW_UPDATE by setting initial_recv_window_size to a
-  // small value.
-  stream->stream()->set_initial_recv_window_size(kUploadDataSize / 2);
-
   // Issue a read which will cause a WINDOW_UPDATE to be sent and window
   // size increased to default.
-  scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(kUploadDataSize));
-  rv = trans->Read(buf, kUploadDataSize, CompletionCallback());
-  EXPECT_EQ(kUploadDataSize, rv);
-  std::string content(buf->data(), buf->data()+kUploadDataSize);
-  EXPECT_STREQ(kUploadData, content.c_str());
+  scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(body_data.size()));
+  rv = trans->Read(buf, body_data.size(), CompletionCallback());
+  EXPECT_EQ(static_cast<int>(body_data.size()), rv);
+  std::string content(buf->data(), buf->data() + body_data.size());
+  EXPECT_EQ(body_data, content);
 
   // Schedule the reading of empty data frame with FIN
   data.CompleteRead();

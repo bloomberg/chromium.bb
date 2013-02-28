@@ -127,7 +127,7 @@ base::Value* NetLogSpdySettingsCallback(const SettingsMap* settings,
 }
 
 base::Value* NetLogSpdyWindowUpdateCallback(SpdyStreamId stream_id,
-                                            int32 delta,
+                                            uint32 delta,
                                             NetLog::LogLevel /* log_level */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("stream_id", static_cast<int>(stream_id));
@@ -677,6 +677,11 @@ SpdyFrame* SpdySession::CreateDataFrame(SpdyStreamId stream_id,
   scoped_refptr<SpdyStream> stream = active_streams_[stream_id];
   CHECK_EQ(stream->stream_id(), stream_id);
 
+  if (len < 0) {
+    NOTREACHED();
+    return NULL;
+  }
+
   if (len > kMaxSpdyFrameChunkSize) {
     len = kMaxSpdyFrameChunkSize;
     flags = static_cast<SpdyDataFlags>(flags & ~DATA_FLAG_FIN);
@@ -702,7 +707,7 @@ SpdyFrame* SpdySession::CreateDataFrame(SpdyStreamId stream_id,
       len = new_len;
       flags = static_cast<SpdyDataFlags>(flags & ~DATA_FLAG_FIN);
     }
-    stream->DecreaseSendWindowSize(len);
+    stream->DecreaseSendWindowSize(static_cast<int32>(len));
   }
 
   if (net_log().IsLoggingAllEvents()) {
@@ -719,7 +724,7 @@ SpdyFrame* SpdySession::CreateDataFrame(SpdyStreamId stream_id,
   DCHECK(buffered_spdy_framer_.get());
   scoped_ptr<SpdyFrame> frame(
       buffered_spdy_framer_->CreateDataFrame(
-          stream_id, data->data(), len, flags));
+          stream_id, data->data(), static_cast<uint32>(len), flags));
 
   return frame.release();
 }
@@ -1303,10 +1308,9 @@ void SpdySession::OnStreamFrameData(SpdyStreamId stream_id,
         base::Bind(&NetLogSpdyDataCallback, stream_id, len, flags));
   }
 
-  if (!IsStreamActive(stream_id)) {
-    // NOTE:  it may just be that the stream was cancelled.
+  // By the time data comes in, the stream may already be inactive.
+  if (!IsStreamActive(stream_id))
     return;
-  }
 
   scoped_refptr<SpdyStream> stream = active_streams_[stream_id];
   stream->OnDataReceived(data, len);
@@ -1639,7 +1643,8 @@ void SpdySession::OnPing(uint32 unique_id) {
 }
 
 void SpdySession::OnWindowUpdate(SpdyStreamId stream_id,
-                                 int delta_window_size) {
+                                 uint32 delta_window_size) {
+  DCHECK_LE(delta_window_size, static_cast<uint32>(kint32max));
   net_log_.AddEvent(
       NetLog::TYPE_SPDY_SESSION_RECEIVED_WINDOW_UPDATE,
       base::Bind(&NetLogSpdyWindowUpdateCallback,
@@ -1650,11 +1655,11 @@ void SpdySession::OnWindowUpdate(SpdyStreamId stream_id,
     return;
   }
 
-  if (delta_window_size < 1) {
+  if (delta_window_size < 1u) {
     ResetStream(stream_id, RST_STREAM_FLOW_CONTROL_ERROR,
                 base::StringPrintf(
                     "Received WINDOW_UPDATE with an invalid "
-                    "delta_window_size %d", delta_window_size));
+                    "delta_window_size %ud", delta_window_size));
     return;
   }
 
@@ -1663,11 +1668,11 @@ void SpdySession::OnWindowUpdate(SpdyStreamId stream_id,
   CHECK(!stream->cancelled());
 
   if (flow_control_)
-    stream->IncreaseSendWindowSize(delta_window_size);
+    stream->IncreaseSendWindowSize(static_cast<int32>(delta_window_size));
 }
 
 void SpdySession::SendWindowUpdate(SpdyStreamId stream_id,
-                                   int32 delta_window_size) {
+                                   uint32 delta_window_size) {
   CHECK(IsStreamActive(stream_id));
   scoped_refptr<SpdyStream> stream = active_streams_[stream_id];
   CHECK_EQ(stream->stream_id(), stream_id);
@@ -1776,25 +1781,36 @@ void SpdySession::HandleSetting(uint32 id, uint32 value) {
                                          kMaxConcurrentStreamLimit);
       ProcessPendingCreateStreams();
       break;
-    case SETTINGS_INITIAL_WINDOW_SIZE:
+    case SETTINGS_INITIAL_WINDOW_SIZE: {
+      if (!flow_control_) {
+        LOG(WARNING) << "SETTINGS_INITIAL_WINDOW_SIZE setting received "
+                     << "when flow control is turned off";
+        // TODO(akalin): Figure out whether we should instead send a
+        // GOAWAY and close the connection here.
+        return;
+      }
+
       if (static_cast<int32>(value) < 0) {
         net_log().AddEvent(
             NetLog::TYPE_SPDY_SESSION_NEGATIVE_INITIAL_WINDOW_SIZE,
             NetLog::IntegerCallback("initial_window_size", value));
-      } else {
-        // SETTINGS_INITIAL_WINDOW_SIZE updates initial_send_window_size_ only.
-        int32 delta_window_size = value - stream_initial_send_window_size_;
-        stream_initial_send_window_size_ = value;
-        UpdateStreamsSendWindowSize(delta_window_size);
-        net_log().AddEvent(
-            NetLog::TYPE_SPDY_SESSION_UPDATE_STREAMS_SEND_WINDOW_SIZE,
-            NetLog::IntegerCallback("delta_window_size", delta_window_size));
+        return;
       }
+
+      // SETTINGS_INITIAL_WINDOW_SIZE updates initial_send_window_size_ only.
+      int32 delta_window_size = value - stream_initial_send_window_size_;
+      stream_initial_send_window_size_ = value;
+      UpdateStreamsSendWindowSize(delta_window_size);
+      net_log().AddEvent(
+          NetLog::TYPE_SPDY_SESSION_UPDATE_STREAMS_SEND_WINDOW_SIZE,
+          NetLog::IntegerCallback("delta_window_size", delta_window_size));
       break;
+    }
   }
 }
 
 void SpdySession::UpdateStreamsSendWindowSize(int32 delta_window_size) {
+  DCHECK(flow_control_);
   ActiveStreamMap::iterator it;
   for (it = active_streams_.begin(); it != active_streams_.end(); ++it) {
     const scoped_refptr<SpdyStream>& stream = it->second;

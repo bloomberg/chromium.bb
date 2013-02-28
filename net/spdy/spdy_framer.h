@@ -213,7 +213,7 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
 
   // Called when a WINDOW_UPDATE frame has been parsed.
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
-                              int delta_window_size) = 0;
+                              uint32 delta_window_size) = 0;
 
   // Called after a control frame has been compressed to allow the visitor
   // to record compression statistics.

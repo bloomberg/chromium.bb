@@ -236,11 +236,9 @@ void SpdyStream::set_spdy_headers(scoped_ptr<SpdyHeaderBlock> headers) {
   request_.reset(headers.release());
 }
 
-void SpdyStream::set_initial_recv_window_size(int32 window_size) {
-  session_->set_initial_recv_window_size(window_size);
-}
-
 void SpdyStream::PossiblyResumeIfStalled() {
+  DCHECK(!closed());
+
   if (send_window_size_ > 0 && stalled_by_flow_control_) {
     stalled_by_flow_control_ = false;
     io_state_ = STATE_SEND_BODY;
@@ -249,17 +247,30 @@ void SpdyStream::PossiblyResumeIfStalled() {
 }
 
 void SpdyStream::AdjustSendWindowSize(int32 delta_window_size) {
+  DCHECK(session_->is_flow_control_enabled());
+
+  if (closed())
+    return;
+
+  // Check for wraparound.
+  if (send_window_size_ > 0) {
+    DCHECK_LE(delta_window_size, kint32max - send_window_size_);
+  }
+  if (send_window_size_ < 0) {
+    DCHECK_GE(delta_window_size, kint32min - send_window_size_);
+  }
   send_window_size_ += delta_window_size;
   PossiblyResumeIfStalled();
 }
 
 void SpdyStream::IncreaseSendWindowSize(int32 delta_window_size) {
   DCHECK(session_->is_flow_control_enabled());
-  DCHECK_GE(delta_window_size, 1);
 
   // Ignore late WINDOW_UPDATEs.
   if (closed())
     return;
+
+  DCHECK_GE(delta_window_size, 1);
 
   if (send_window_size_ > 0) {
     // Check for overflow.
@@ -285,10 +296,14 @@ void SpdyStream::IncreaseSendWindowSize(int32 delta_window_size) {
 }
 
 void SpdyStream::DecreaseSendWindowSize(int32 delta_window_size) {
-  // we only call this method when sending a frame, therefore
-  // |delta_window_size| should be within the valid frame size range.
   DCHECK(session_->is_flow_control_enabled());
-  DCHECK_GE(delta_window_size, 1);
+
+  if (closed())
+    return;
+
+  // We only call this method when sending a frame. Therefore,
+  // |delta_window_size| should be within the valid frame size range.
+  DCHECK_GE(delta_window_size, 0);
   DCHECK_LE(delta_window_size, kMaxSpdyFrameChunkSize);
 
   // |send_window_size_| should have been at least |delta_window_size| for
@@ -304,17 +319,19 @@ void SpdyStream::DecreaseSendWindowSize(int32 delta_window_size) {
 }
 
 void SpdyStream::IncreaseRecvWindowSize(int32 delta_window_size) {
-  DCHECK_GE(delta_window_size, 1);
-  // By the time a read is issued, stream may become inactive.
-  if (!session_->IsStreamActive(stream_id_))
-    return;
-
   if (!session_->is_flow_control_enabled())
     return;
 
+  // By the time a read is processed by the delegate, this stream may
+  // already be inactive.
+  if (!session_->IsStreamActive(stream_id_))
+    return;
+
+  DCHECK_GE(unacked_recv_window_bytes_, 0);
+  DCHECK_GE(recv_window_size_, unacked_recv_window_bytes_);
+  DCHECK_GE(delta_window_size, 1);
   // Check for overflow.
-  if (recv_window_size_ > 0)
-    DCHECK_LE(delta_window_size, kint32max - recv_window_size_);
+  DCHECK_LE(delta_window_size, kint32max - recv_window_size_);
 
   recv_window_size_ += delta_window_size;
   net_log_.AddEvent(
@@ -325,30 +342,9 @@ void SpdyStream::IncreaseRecvWindowSize(int32 delta_window_size) {
   unacked_recv_window_bytes_ += delta_window_size;
   if (unacked_recv_window_bytes_ >
       session_->stream_initial_recv_window_size() / 2) {
-    session_->SendWindowUpdate(stream_id_, unacked_recv_window_bytes_);
+    session_->SendWindowUpdate(
+        stream_id_, static_cast<uint32>(unacked_recv_window_bytes_));
     unacked_recv_window_bytes_ = 0;
-  }
-}
-
-void SpdyStream::DecreaseRecvWindowSize(int32 delta_window_size) {
-  DCHECK_GE(delta_window_size, 1);
-
-  if (!session_->is_flow_control_enabled())
-    return;
-
-  recv_window_size_ -= delta_window_size;
-  net_log_.AddEvent(
-      NetLog::TYPE_SPDY_STREAM_UPDATE_RECV_WINDOW,
-      base::Bind(&NetLogSpdyStreamWindowUpdateCallback,
-                 stream_id_, -delta_window_size, recv_window_size_));
-
-  // Since we never decrease the initial window size, we should never hit
-  // a negative |recv_window_size_|, if we do, it's a client side bug, so we use
-  // PROTOCOL_ERROR for lack of a better error code.
-  if (recv_window_size_ < 0) {
-    session_->ResetStream(stream_id_, RST_STREAM_PROTOCOL_ERROR,
-                          "Negative recv window size");
-    NOTREACHED();
   }
 }
 
@@ -458,9 +454,9 @@ int SpdyStream::OnHeaders(const SpdyHeaderBlock& headers) {
   return rv;
 }
 
-void SpdyStream::OnDataReceived(const char* data, int length) {
-  DCHECK_GE(length, 0);
-
+void SpdyStream::OnDataReceived(const char* data, size_t length) {
+  DCHECK(session_->IsStreamActive(stream_id_));
+  DCHECK_LT(length, 1u << 24);
   // If we don't have a response, then the SYN_REPLY did not come through.
   // We cannot pass data up to the caller unless the reply headers have been
   // received.
@@ -489,28 +485,20 @@ void SpdyStream::OnDataReceived(const char* data, int length) {
   CHECK(!closed());
 
   // A zero-length read means that the stream is being closed.
-  if (!length) {
+  if (length == 0) {
     metrics_.StopStream();
     session_->CloseStream(stream_id_, net::OK);
     // Note: |this| may be deleted after calling CloseStream.
     return;
   }
 
-  DecreaseRecvWindowSize(length);
+  if (session_->is_flow_control_enabled())
+    DecreaseRecvWindowSize(static_cast<int32>(length));
 
   // Track our bandwidth.
   metrics_.RecordBytes(length);
   recv_bytes_ += length;
   recv_last_byte_time_ = base::TimeTicks::Now();
-
-  if (!delegate_) {
-    // It should be valid for this to happen in the server push case.
-    // We'll return received data when delegate gets attached to the stream.
-    IOBufferWithSize* buf = new IOBufferWithSize(length);
-    memcpy(buf->data(), data, length);
-    pending_buffers_.push_back(make_scoped_refptr(buf));
-    return;
-  }
 
   if (delegate_->OnDataReceived(data, length) != net::OK) {
     // |delegate_| rejected the data.
@@ -860,6 +848,30 @@ void SpdyStream::UpdateHistograms() {
 
   UMA_HISTOGRAM_COUNTS("Net.SpdySendBytes", send_bytes_);
   UMA_HISTOGRAM_COUNTS("Net.SpdyRecvBytes", recv_bytes_);
+}
+
+void SpdyStream::DecreaseRecvWindowSize(int32 delta_window_size) {
+  DCHECK(session_->IsStreamActive(stream_id_));
+  DCHECK(session_->is_flow_control_enabled());
+  DCHECK_GE(delta_window_size, 1);
+
+  // Since we never decrease the initial window size,
+  // |delta_window_size| should never cause |recv_window_size_| to go
+  // negative. If we do, it's a client-side bug, so we use
+  // PROTOCOL_ERROR for lack of a better error code.
+  if (delta_window_size > recv_window_size_) {
+    session_->ResetStream(
+        stream_id_, RST_STREAM_PROTOCOL_ERROR,
+        "Invalid delta_window_size for DecreaseRecvWindowSize");
+    NOTREACHED();
+    return;
+  }
+
+  recv_window_size_ -= delta_window_size;
+  net_log_.AddEvent(
+      NetLog::TYPE_SPDY_STREAM_UPDATE_RECV_WINDOW,
+      base::Bind(&NetLogSpdyStreamWindowUpdateCallback,
+                 stream_id_, -delta_window_size, recv_window_size_));
 }
 
 }  // namespace net

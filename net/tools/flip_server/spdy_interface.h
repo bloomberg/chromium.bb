@@ -109,7 +109,7 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface,
 
   // Called when a WINDOW_UPDATE frame has been parsed.
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
-                              int delta_window_size) OVERRIDE {}
+                              uint32 delta_window_size) OVERRIDE {}
 
   // Called after a control frame has been compressed to allow the visitor
   // to record compression statistics.

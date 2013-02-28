@@ -52,7 +52,7 @@ class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
   virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,
                         SpdyGoAwayStatus status) OVERRIDE {}
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
-                              int delta_window_size) OVERRIDE {}
+                              uint32 delta_window_size) OVERRIDE {}
   virtual void OnSynStreamCompressed(
       size_t uncompressed_size,
       size_t compressed_size) OVERRIDE {}
