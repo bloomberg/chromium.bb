@@ -256,7 +256,11 @@
   "networkingPrivate": {
     "channel": "dev",
     "extension_types": ["extension", "packaged_app"],
-    "location": "component"
+    "whitelist": [
+      "pkedcjkdefgpdelpbcmbmeomcjbeemfm",  // CV
+      "fmfcbgogabcbclcofgocippekhfcmgfj",  // CV Staging
+      "hfaagokkkhdbgiakmmlclaapfelnkoah"   // CV Canary
+    ]
   },
   "notifications": {
     "channel": "stable",
