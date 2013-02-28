@@ -129,9 +129,19 @@ def _UploadChangeToBranch(work_dir, patch, branch, draft, dryrun):
   local_patch = cros_patch.LocalPatch(
       work_dir, patch.project_url, constants.PATCH_BRANCH,
       patch.tracking_branch, patch.remote, new_sha1)
-  return local_patch.Upload(
-      patch.project_url, 'refs/%s/%s' % (upload_type, branch),
-      carbon_copy=False, dryrun=dryrun, reviewers=reviewers)
+  for reviewers in (reviewers, ()):
+    try:
+      ret = local_patch.Upload(
+          patch.project_url, 'refs/%s/%s' % (upload_type, branch),
+          carbon_copy=False, dryrun=dryrun, reviewers=reviewers)
+    except cros_build_lib.RunCommandError as e:
+      if (e.result.returncode == 128 and
+          re.search('fatal: user ".*?" not found', e.result.error)):
+        logging.warning('Some reviewers were not found (%s); '
+                        'dropping them & retrying upload', ' '.join(reviewers))
+        continue
+      raise
+  return ret
 
 
 def _SetupWorkDirectoryForPatch(work_dir, patch, branch, manifest, email):
