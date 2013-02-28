@@ -134,10 +134,22 @@ WebKit::WebGraphicsContext3D* CreateGraphicsContext3D(
     const WebKit::WebGraphicsContext3D::Attributes& attributes,
     WebKit::WebView* web_view);
 
+class DRTLayerTreeViewClient {
+ public:
+  virtual ~DRTLayerTreeViewClient() { }
+  virtual void Layout() = 0;
+  virtual void ScheduleComposite() = 0;
+};
+
 WebKit::WebLayerTreeView* CreateLayerTreeViewSoftware(
     WebKit::WebLayerTreeViewClient* client);
 WebKit::WebLayerTreeView* CreateLayerTreeView3d(
     WebKit::WebLayerTreeViewClient* client);
+
+WebKit::WebLayerTreeView* CreateLayerTreeViewSoftware(
+    DRTLayerTreeViewClient* client);
+WebKit::WebLayerTreeView* CreateLayerTreeView3d(
+    DRTLayerTreeViewClient* client);
 
 // ------- URL load mocking.
 // Registers the file at |file_path| to be served when |url| is requested.

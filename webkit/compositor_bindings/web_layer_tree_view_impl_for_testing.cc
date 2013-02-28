@@ -33,11 +33,19 @@
 #include "webkit/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
 namespace WebKit {
+WebLayerTreeViewImplForTesting::WebLayerTreeViewImplForTesting(
+    RenderingType type,
+    webkit_support::DRTLayerTreeViewClient* client)
+    : type_(type),
+      drt_client_(client),
+      client_(NULL) {}
 
 WebLayerTreeViewImplForTesting::WebLayerTreeViewImplForTesting(
     RenderingType type,
     WebKit::WebLayerTreeViewClient* client)
-    : type_(type), client_(client) {}
+    : type_(type),
+      drt_client_(NULL),
+      client_(client) {}
 
 WebLayerTreeViewImplForTesting::~WebLayerTreeViewImplForTesting() {}
 
@@ -163,11 +171,11 @@ void WebLayerTreeViewImplForTesting::didBeginFrame() {}
 
 void WebLayerTreeViewImplForTesting::animate(
     double monotonic_frame_begin_time) {
-  if (client_)
-    client_->updateAnimations(monotonic_frame_begin_time);
 }
 
 void WebLayerTreeViewImplForTesting::layout() {
+  if (drt_client_)
+    drt_client_->Layout();
   if (client_)
     client_->layout();
 }
@@ -221,6 +229,8 @@ void WebLayerTreeViewImplForTesting::didCommitAndDrawFrame() {}
 void WebLayerTreeViewImplForTesting::didCompleteSwapBuffers() {}
 
 void WebLayerTreeViewImplForTesting::scheduleComposite() {
+  if (drt_client_)
+    drt_client_->ScheduleComposite();
   if (client_)
     client_->scheduleComposite();
 }

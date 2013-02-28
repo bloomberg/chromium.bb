@@ -9,6 +9,7 @@
 #include "cc/layer_tree_host_client.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
 #include "webkit/compositor_bindings/webkit_compositor_bindings_export.h"
+#include "webkit/support/webkit_support.h"
 
 namespace cc {
 class LayerTreeHost;
@@ -28,6 +29,9 @@ class WebLayerTreeViewImplForTesting : public WebKit::WebLayerTreeView,
     SOFTWARE_CONTEXT,
     MESA_CONTEXT
   };
+  WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebLayerTreeViewImplForTesting(
+      RenderingType type,
+      webkit_support::DRTLayerTreeViewClient* client);
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebLayerTreeViewImplForTesting(
       RenderingType type,
       WebKit::WebLayerTreeViewClient* client);
@@ -89,6 +93,7 @@ class WebLayerTreeViewImplForTesting : public WebKit::WebLayerTreeView,
 
  private:
   RenderingType type_;
+  webkit_support::DRTLayerTreeViewClient* drt_client_;
   WebKit::WebLayerTreeViewClient* client_;
   scoped_ptr<cc::LayerTreeHost> layer_tree_host_;
 

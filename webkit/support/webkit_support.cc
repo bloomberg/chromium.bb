@@ -520,9 +520,10 @@ WebKit::WebGraphicsContext3D* CreateGraphicsContext3D(
   return NULL;
 }
 
+template <typename Client>
 static WebKit::WebLayerTreeView* CreateLayerTreeView(
     WebKit::WebLayerTreeViewImplForTesting::RenderingType type,
-    WebKit::WebLayerTreeViewClient* client) {
+    Client* client) {
   scoped_ptr<WebKit::WebLayerTreeViewImplForTesting> view(
       new WebKit::WebLayerTreeViewImplForTesting(type, client));
 
@@ -547,6 +548,18 @@ WebKit::WebLayerTreeView* CreateLayerTreeViewSoftware(
 
 WebKit::WebLayerTreeView* CreateLayerTreeView3d(
     WebKit::WebLayerTreeViewClient* client) {
+  return CreateLayerTreeView(
+      WebKit::WebLayerTreeViewImplForTesting::MESA_CONTEXT, client);
+}
+
+WebKit::WebLayerTreeView* CreateLayerTreeViewSoftware(
+    DRTLayerTreeViewClient* client) {
+  return CreateLayerTreeView(
+      WebKit::WebLayerTreeViewImplForTesting::SOFTWARE_CONTEXT, client);
+}
+
+WebKit::WebLayerTreeView* CreateLayerTreeView3d(
+    DRTLayerTreeViewClient* client) {
   return CreateLayerTreeView(
       WebKit::WebLayerTreeViewImplForTesting::MESA_CONTEXT, client);
 }
