@@ -33,8 +33,9 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTests) {
                                   "api_tests.html")) << message_;
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-// See http://crbug.com/174640
+// TODO(miu): Remove this disabling of Win dbg runs once we confirm the test
+// does not time-out on all other platforms.  See http://crbug.com/174640
+#if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_EndToEnd DISABLED_EndToEnd
 #else
 #define MAYBE_EndToEnd EndToEnd
