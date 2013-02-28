@@ -162,7 +162,7 @@ class ManagedModeBlockModeTest : public InProcessBrowserTest {
           break;
         case INFOBAR_CANCEL:
           confirm_info_bar_delegate->InfoBarDismissed();
-          ASSERT_TRUE(confirm_info_bar_delegate->Cancel());
+          ASSERT_FALSE(confirm_info_bar_delegate->Cancel());
           infobar_service->RemoveInfoBar(confirm_info_bar_delegate);
           break;
         case INFOBAR_ALREADY_ADDED:
@@ -183,6 +183,7 @@ class ManagedModeBlockModeTest : public InProcessBrowserTest {
       observer.Wait();
     }
     EXPECT_FALSE(IsPreviewInfobarPresent());
+    EXPECT_FALSE(IsAlreadyAddedInfobarPresent());
   }
 
  protected:
@@ -358,10 +359,11 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
             managed_user_service_->GetManualBehaviorForHost("www.example.com"));
 }
 
-// Tests whether going back after being shown an interstitial works. No
-// websites should be added to the whitelist.
+// Tests whether going back after being shown an interstitial works. The user
+// goes back by using the button on the interstitial. No websites should be
+// added to the whitelist.
 IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
-                       SimpleURLNotInAnyListsGoBack) {
+                       SimpleURLNotInAnyListsGoBackOnInterstitial) {
   GURL test_url("http://www.example.com/files/simple.html");
   ui_test_utils::NavigateToURL(browser(), test_url);
 
@@ -371,7 +373,27 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
   ActOnInterstitialAndInfobar(tab, INTERSTITIAL_DONTPROCEED,
                                    INFOBAR_NOT_USED);
 
-  EXPECT_EQ(tab->GetURL().spec(), "about:blank");
+  EXPECT_EQ("about:blank", tab->GetURL().spec());
+
+  EXPECT_EQ(ManagedUserService::MANUAL_NONE,
+            managed_user_service_->GetManualBehaviorForHost("www.example.com"));
+}
+
+// Tests whether going back after being shown an interstitial works. The user
+// previews the page and then goes back by using the button on the infobar. No
+// websites should be added to the whitelist.
+IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
+                       SimpleURLNotInAnyListsGoBackOnInfobar) {
+  GURL test_url("http://www.example.com/files/simple.html");
+  ui_test_utils::NavigateToURL(browser(), test_url);
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  CheckShownPageIsInterstitial(tab);
+  ActOnInterstitialAndInfobar(tab, INTERSTITIAL_PROCEED,
+                                   INFOBAR_CANCEL);
+
+  EXPECT_EQ("about:blank", tab->GetURL().spec());
 
   EXPECT_EQ(ManagedUserService::MANUAL_NONE,
             managed_user_service_->GetManualBehaviorForHost("www.example.com"));
@@ -424,7 +446,7 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
   // Expect that the page shows up and not an interstitial.
   CheckShownPageIsNotInterstitial(tab);
   EXPECT_FALSE(IsPreviewInfobarPresent());
-  EXPECT_EQ(tab->GetURL().spec(), test_url.spec());
+  EXPECT_EQ(test_url.spec(), tab->GetURL().spec());
 }
 
 // The test navigates to a page, the interstitial is shown and preview is

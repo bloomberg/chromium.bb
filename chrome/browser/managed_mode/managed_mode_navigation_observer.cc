@@ -224,10 +224,14 @@ bool ManagedModePreviewInfobarDelegate::Accept() {
 }
 
 bool ManagedModePreviewInfobarDelegate::Cancel() {
+  ManagedModeNavigationObserver* observer =
+      ManagedModeNavigationObserver::FromWebContents(
+          owner()->GetWebContents());
   UMA_HISTOGRAM_ENUMERATION("ManagedMode.PreviewInfobarCommand",
                             INFOBAR_CANCEL,
                             INFOBAR_HISTOGRAM_BOUNDING_VALUE);
   GoBackToSafety(owner()->GetWebContents());
+  observer->ClearObserverState();
   return false;
 }
 
