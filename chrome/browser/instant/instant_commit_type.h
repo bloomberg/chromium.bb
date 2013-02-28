@@ -20,9 +20,6 @@ enum InstantCommitType {
 
   // The commit is due to the Instant overlay navigating to a non-Instant URL.
   INSTANT_COMMIT_NAVIGATED,
-
-  // The commit is due to the user clicking on a query suggestion.
-  INSTANT_COMMIT_CLICKED_QUERY_SUGGESTION,
 };
 
 #endif  // CHROME_BROWSER_INSTANT_INSTANT_COMMIT_TYPE_H_
