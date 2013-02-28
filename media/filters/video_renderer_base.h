@@ -170,6 +170,9 @@ class MEDIA_EXPORT VideoRendererBase
   typedef std::deque<scoped_refptr<VideoFrame> > VideoFrameQueue;
   VideoFrameQueue ready_frames_;
 
+  // Keeps track of whether we received the end of stream buffer.
+  bool received_end_of_stream_;
+
   // Used to signal |thread_| as frames are added to |frames_|.  Rule of thumb:
   // always check |state_| to see if it was set to STOPPED after waking up!
   base::ConditionVariable frame_available_;
