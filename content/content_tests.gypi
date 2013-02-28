@@ -967,6 +967,13 @@
             'common/gpu/media/h264_bit_reader_unittest.cc',
             'common/gpu/media/h264_parser_unittest.cc',
           ],
+          'conditions': [
+            ['linux_use_tcmalloc==1', {
+              'dependencies': [
+                '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
+          ],
         }
       ],
     }],
