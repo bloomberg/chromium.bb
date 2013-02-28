@@ -100,6 +100,7 @@ class NetworkLibraryImplStub : public NetworkLibraryImplBase {
  private:
   void CompleteWifiInit();
   void CompleteCellularInit();
+  void CompleteCellularActivate();
   void AddStubNetwork(Network* network, NetworkProfileType profile_type);
   void AddStubRememberedNetwork(Network* network);
   void ConnectToNetwork(Network* network);

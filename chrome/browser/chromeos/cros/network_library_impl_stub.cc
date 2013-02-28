@@ -66,6 +66,7 @@ void NetworkLibraryImplStub::Init() {
   if (IsInteractive()) {
     const int kWifiInitDelaySeconds = 5;
     const int kCellularInitDelaySeconds = 10;
+    const int kCellularActivateDelaySeconds = 15;
     BrowserThread::PostDelayedTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&NetworkLibraryImplStub::CompleteWifiInit,
@@ -76,6 +77,11 @@ void NetworkLibraryImplStub::Init() {
         base::Bind(&NetworkLibraryImplStub::CompleteCellularInit,
                    weak_pointer_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(kCellularInitDelaySeconds));
+    BrowserThread::PostDelayedTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&NetworkLibraryImplStub::CompleteCellularActivate,
+                   weak_pointer_factory_.GetWeakPtr()),
+        base::TimeDelta::FromSeconds(kCellularActivateDelaySeconds));
   } else {
     CompleteWifiInit();
     CompleteCellularInit();
@@ -320,7 +326,7 @@ void NetworkLibraryImplStub::CompleteCellularInit() {
   cellular1->set_network_technology(NETWORK_TECHNOLOGY_EVDO);
   AddStubNetwork(cellular1, PROFILE_NONE);
 
-  CellularNetwork* cellular2 = new CellularNetwork("/cellular2");
+  CellularNetwork* cellular2 = new CellularNetwork("cellular2");
   cellular2->set_name("Fake Cellular 2");
   cellular2->set_device_path(cellular->device_path());
   cellular2->set_strength(50);
@@ -366,6 +372,13 @@ void NetworkLibraryImplStub::CompleteCellularInit() {
   wimax2->set_passphrase_required(false);
   AddStubNetwork(wimax2, PROFILE_NONE);
 
+  SignalNetworkManagerObservers();
+}
+
+void NetworkLibraryImplStub::CompleteCellularActivate() {
+  VLOG(1) << "CompleteCellularActivate()";
+  CellularNetwork* cellular2 = FindCellularNetworkByPath("cellular2");
+  cellular2->set_activation_state(ACTIVATION_STATE_ACTIVATED);
   SignalNetworkManagerObservers();
 }
 

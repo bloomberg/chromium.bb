@@ -1148,6 +1148,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     RefreshNetworkDeviceObserver(crosnet);
     data_promo_notification_->ShowOptionalMobileDataPromoNotification(
         crosnet, GetPrimarySystemTray(), this);
+    UpdateCellularActivation();
 
     NotifyRefreshNetwork();
   }
@@ -1155,7 +1156,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   // Overridden from NetworkLibrary::NetworkObserver.
   virtual void OnNetworkChanged(NetworkLibrary* crosnet,
       const Network* network) OVERRIDE {
-    UpdateCellularActivation(network);
     NotifyRefreshNetwork();
   }
 
@@ -1401,12 +1401,14 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     UpdateEnterpriseDomain();
   }
 
-  void UpdateCellularActivation(const Network* network) {
-    if (!network || network->type() != chromeos::TYPE_CELLULAR)
+  void UpdateCellularActivation() {
+    const CellularNetworkVector& cellular_networks =
+        CrosLibrary::Get()->GetNetworkLibrary()->cellular_networks();
+    if (cellular_networks.empty())
       return;
-
-    const CellularNetwork* cellular =
-        static_cast<const CellularNetwork*>(network);
+    // We only care about the first cellular network (in practice there will
+    // only ever be one)
+    const CellularNetwork* cellular = cellular_networks[0];
     if (cellular->activation_state() == ACTIVATION_STATE_ACTIVATING) {
       cellular_activating_ = true;
     } else if (cellular->activated() && cellular_activating_) {
