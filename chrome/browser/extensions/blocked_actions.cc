@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/extensions/blocked_actions.h"
@@ -13,9 +12,6 @@ using content::BrowserThread;
 namespace extensions {
 
 const char* BlockedAction::kTableName = "activitylog_blocked";
-const char* BlockedAction::kTableBasicFields =
-    "extension_id LONGVARCHAR NOT NULL, "
-    "time INTEGER NOT NULL";
 const char* BlockedAction::kTableContentFields[] =
     {"api_call", "args", "reason", "extra"};
 
@@ -25,12 +21,19 @@ BlockedAction::BlockedAction(const std::string& extension_id,
                              const std::string& args,
                              const std::string& reason,
                              const std::string& extra)
-    : extension_id_(extension_id),
-      time_(time),
+    : Action(extension_id, time),
       api_call_(api_call),
       args_(args),
       reason_(reason),
       extra_(extra) { }
+
+BlockedAction::BlockedAction(const sql::Statement& s)
+    : Action(s.ColumnString(0),
+          base::Time::FromInternalValue(s.ColumnInt64(1))),
+      api_call_(s.ColumnString(2)),
+      args_(s.ColumnString(3)),
+      reason_(s.ColumnString(4)),
+      extra_(s.ColumnString(5)) { }
 
 BlockedAction::~BlockedAction() {
 }
@@ -49,7 +52,6 @@ bool BlockedAction::InitializeTable(sql::Connection* db) {
   }
   return InitializeTableInternal(db,
                                  kTableName,
-                                 kTableBasicFields,
                                  kTableContentFields,
                                  arraysize(kTableContentFields));
 }
@@ -60,7 +62,7 @@ void BlockedAction::Record(sql::Connection* db) {
     "  VALUES (?,?,?,?,?,?)";
   sql::Statement statement(db->GetCachedStatement(
       sql::StatementID(SQL_FROM_HERE), sql_str.c_str()));
-  statement.BindString(0, extension_id_);
+  statement.BindString(0, extension_id());
   statement.BindInt64(1, time().ToInternalValue());
   statement.BindString(2, api_call_);
   statement.BindString(3, args_);
@@ -77,7 +79,7 @@ std::string BlockedAction::PrettyPrintFori18n() {
 
 std::string BlockedAction::PrettyPrintForDebug() {
   // TODO(felt): implement this for real when the UI is redesigned.
-  return "ID: " + extension_id_ + ", blocked action " + api_call_ +
+  return "ID: " + extension_id() + ", blocked action " + api_call_ +
       ", reason: " + reason_;
 }
 

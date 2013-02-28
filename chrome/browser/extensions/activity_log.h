@@ -10,10 +10,13 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
+#include "chrome/browser/extensions/activity_actions.h"
 #include "chrome/browser/extensions/activity_database.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -104,6 +107,16 @@ class ActivityLog : public ProfileKeyedService,
                     const std::string& api_call,          // api call
                     const ListValue* args,                // arguments
                     const std::string& extra);            // extra logging info
+
+  // Retrieves the list of actions for a given extension on a specific day.
+  // Today is 0, yesterday is 1, etc. Returns one day at a time.
+  // Response is sent to the method/function in the callback.
+  // Use base::Bind to create the callback.
+  void GetActions(const std::string& extension_id,
+                  const int day,
+                  const base::Callback
+                      <void(scoped_ptr<std::vector<scoped_refptr<Action> > >)>&
+                      callback);
 
   // An error has happened; we want to rollback and close the db.
   // Needs to be public so the error delegate can call it.

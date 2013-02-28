@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/activity_log.h"
 
 #include <set>
+#include <vector>
 #include "base/command_line.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
@@ -330,6 +331,22 @@ void ActivityLog::LogDOMAction(const Extension* extension,
                        args,
                        extra,
                        DOMAction::MODIFIED);
+}
+
+void ActivityLog::GetActions(
+    const std::string& extension_id,
+    const int day,
+    const base::Callback
+        <void(scoped_ptr<std::vector<scoped_refptr<Action> > >)>& callback) {
+  if (!db_.get()) return;
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::DB,
+      FROM_HERE,
+      base::Bind(&ActivityDatabase::GetActions,
+                 db_.get(),
+                 extension_id,
+                 day),
+      callback);
 }
 
 void ActivityLog::OnScriptsExecuted(

@@ -87,7 +87,19 @@ void ExtensionActivityUI::HandleRequestExtensionData(
   web_ui()->CallJavascriptFunction("extension_activity.handleExtensionData",
                                    result);
 
-  extensions::ActivityLog::GetInstance(profile_)->AddObserver(extension_, this);
+  extensions::ActivityLog* activity_log =
+      extensions::ActivityLog::GetInstance(profile_);
+  activity_log->GetActions(
+      extension_->id(),
+      0,  // today
+      base::Bind(&ExtensionActivityUI::FetchPreviousExtensionActivity,
+                 base::Unretained(this)));
+  activity_log->AddObserver(extension_, this);
+}
+
+void ExtensionActivityUI::FetchPreviousExtensionActivity(
+    scoped_ptr<std::vector<scoped_refptr<extensions::Action> > > actions) {
+  // TODO(felt): Implement this to display previous activity.
 }
 
 void ExtensionActivityUI::OnExtensionActivity(

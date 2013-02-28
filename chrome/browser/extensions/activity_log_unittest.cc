@@ -45,6 +45,11 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
     MessageLoop::current()->Run();
   }
 
+  static void RetrieveActions_LogAndFetchActions(
+      scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
+    ASSERT_EQ(2, static_cast<int>(i->size()));
+  }
+
  protected:
   ExtensionService* extension_service_;
   Profile* profile_;
@@ -59,9 +64,7 @@ TEST_F(ActivityLogTest, Enabled) {
   ASSERT_TRUE(ActivityLog::IsLogEnabled());
 }
 
-// Currently, this test basically just checks that nothing crashes.
-// Need to update it to verify the writes.
-TEST_F(ActivityLogTest, ConstructAndLog) {
+TEST_F(ActivityLogTest, Construct) {
   ActivityLog* activity_log = ActivityLog::GetInstance(profile_);
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
@@ -77,24 +80,36 @@ TEST_F(ActivityLogTest, ConstructAndLog) {
                              std::string("tabs.testMethod"),
                              args.get(),
                              "");
-  // Need to ensure the writes were completed.
-  // TODO(felt): Need to add an event in the ActivityLog/ActivityDb to check
-  // whether the writes have been completed.
-#if 0
-  base::FilePath db_file = profile_->GetPath().Append(
-      chrome::kExtensionActivityLogFilename);
-  sql::Connection db;
-  ASSERT_TRUE(db.Open(db_file));
-  std::string sql_str = "SELECT * FROM " +
-      std::string(APIAction::kTableName);
-  sql::Statement statement(db.GetUniqueStatement(sql_str.c_str()));
-  ASSERT_TRUE(statement.Succeeded());
-  ASSERT_TRUE(statement.Step());
-  ASSERT_EQ("CALL", statement.ColumnString(2));
-  ASSERT_EQ("UNKNOWN_VERB", statement.ColumnString(3));
-  ASSERT_EQ("TABS", statement.ColumnString(4));
-  ASSERT_EQ("tabs.testMethod()", statement.ColumnString(5));
-#endif
+}
+
+TEST_F(ActivityLogTest, LogAndFetchActions) {
+  ActivityLog* activity_log = ActivityLog::GetInstance(profile_);
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder()
+          .SetManifest(DictionaryBuilder()
+                       .Set("name", "Test extension")
+                       .Set("version", "1.0.0")
+                       .Set("manifest_version", 2))
+          .Build();
+  extension_service_->AddExtension(extension);
+  scoped_ptr<ListValue> args(new ListValue());
+  ASSERT_TRUE(ActivityLog::IsLogEnabled());
+
+  // Write some API calls
+  activity_log->LogAPIAction(extension,
+                             std::string("tabs.testMethod"),
+                             args.get(),
+                             "");
+  activity_log->LogDOMAction(extension,
+                             GURL("http://www.google.com"),
+                             string16(),
+                             std::string("document.write"),
+                             args.get(),
+                             std::string("extra"));
+  activity_log->GetActions(
+      extension->id(),
+      0,
+      base::Bind(ActivityLogTest::RetrieveActions_LogAndFetchActions));
 }
 
 }  // namespace extensions

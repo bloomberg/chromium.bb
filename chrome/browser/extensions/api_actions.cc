@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/extensions/api_actions.h"
@@ -13,9 +12,6 @@ using content::BrowserThread;
 namespace extensions {
 
 const char* APIAction::kTableName = "activitylog_apis";
-const char* APIAction::kTableBasicFields =
-    "extension_id LONGVARCHAR NOT NULL, "
-    "time INTEGER NOT NULL";
 const char* APIAction::kTableContentFields[] =
     {"api_type", "api_action_type", "target_type", "api_call", "args", "extra"};
 
@@ -27,14 +23,23 @@ APIAction::APIAction(const std::string& extension_id,
                      const std::string& api_call,
                      const std::string& args,
                      const std::string& extra)
-    : extension_id_(extension_id),
-      time_(time),
+    : Action(extension_id, time),
       type_(type),
       verb_(verb),
       target_(target),
       api_call_(api_call),
       args_(args),
       extra_(extra) { }
+
+APIAction::APIAction(const sql::Statement& s)
+    : Action(s.ColumnString(0),
+          base::Time::FromInternalValue(s.ColumnInt64(1))),
+      type_(StringAsType(s.ColumnString(2))),
+      verb_(StringAsVerb(s.ColumnString(3))),
+      target_(StringAsTarget(s.ColumnString(4))),
+      api_call_(s.ColumnString(5)),
+      args_(s.ColumnString(6)),
+      extra_(s.ColumnString(7)) { }
 
 APIAction::~APIAction() {
 }
@@ -43,7 +48,6 @@ APIAction::~APIAction() {
 bool APIAction::InitializeTable(sql::Connection* db) {
   return InitializeTableInternal(db,
                                  kTableName,
-                                 kTableBasicFields,
                                  kTableContentFields,
                                  arraysize(kTableContentFields));
 }
@@ -54,8 +58,8 @@ void APIAction::Record(sql::Connection* db) {
       " api_call, args, extra) VALUES (?,?,?,?,?,?,?,?)";
   sql::Statement statement(db->GetCachedStatement(
       sql::StatementID(SQL_FROM_HERE), sql_str.c_str()));
-  statement.BindString(0, extension_id_);
-  statement.BindInt64(1, time_.ToInternalValue());
+  statement.BindString(0, extension_id());
+  statement.BindInt64(1, time().ToInternalValue());
   statement.BindString(2, TypeAsString());
   statement.BindString(3, VerbAsString());
   statement.BindString(4, TargetAsString());
@@ -73,7 +77,7 @@ std::string APIAction::PrettyPrintFori18n() {
 
 std::string APIAction::PrettyPrintForDebug() {
   // TODO(felt): implement this for real when the UI is redesigned.
-  return "ID: " + extension_id_ + + ", CATEGORY: " + TypeAsString() +
+  return "ID: " + extension_id() + ", CATEGORY: " + TypeAsString() +
       ", VERB: " + VerbAsString() + ", TARGET: " + TargetAsString() +
       ", API: " + api_call_ + ", ARGS: " + args_;
 }

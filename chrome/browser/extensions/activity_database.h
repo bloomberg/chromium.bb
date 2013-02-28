@@ -5,12 +5,15 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_ACTIVITY_DATABASE_H_
 #define CHROME_BROWSER_EXTENSIONS_ACTIVITY_DATABASE_H_
 
+#include <string>
+#include <vector>
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/extensions/api_actions.h"
 #include "chrome/browser/extensions/blocked_actions.h"
 #include "chrome/browser/extensions/dom_actions.h"
+#include "chrome/common/extensions/extension.h"
 #include "sql/connection.h"
 #include "sql/init_status.h"
 
@@ -46,6 +49,12 @@ class ActivityDatabase : public base::RefCountedThreadSafe<ActivityDatabase> {
 
   // Record an Action in the database.
   void RecordAction(scoped_refptr<Action> action);
+
+  // Gets all actions for a given extension for the specified day. 0 = today,
+  // 1 = yesterday, etc. Only returns 1 day at a time. Actions are sorted from
+  // newest to oldest.
+  scoped_ptr<std::vector<scoped_refptr<Action> > > GetActions(
+      const std::string& extension_id, const int days_ago);
 
   // Break any outstanding transactions, raze the database, and close
   // it.  Future calls on the current database handle will fail, when

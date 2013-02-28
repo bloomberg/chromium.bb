@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_ACTIONS_H_
 #define CHROME_BROWSER_EXTENSIONS_API_ACTIONS_H_
 
-#include <string>
-#include "base/time.h"
 #include "chrome/browser/extensions/activity_actions.h"
 
 namespace extensions {
@@ -46,7 +44,6 @@ class APIAction : public Action {
   };
 
   static const char* kTableName;
-  static const char* kTableBasicFields;
   static const char* kTableContentFields[];
 
   // Create the database table for storing APIActions, or update the schema if
@@ -64,6 +61,9 @@ class APIAction : public Action {
             const std::string& args,      // the argument list
             const std::string& extra);    // any extra logging info
 
+  // Create a new APIAction from a database row.
+  explicit APIAction(const sql::Statement& s);
+
   // Record the action in the database.
   virtual void Record(sql::Connection* db) OVERRIDE;
 
@@ -74,8 +74,6 @@ class APIAction : public Action {
   virtual std::string PrettyPrintForDebug() OVERRIDE;
 
   // Helper methods for recording the values into the db.
-  const std::string& extension_id() const { return extension_id_; }
-  const base::Time& time() const { return time_; }
   const std::string& api_call() const { return api_call_; }
   const std::string& args() const { return args_; }
   std::string TypeAsString() const;
@@ -92,8 +90,6 @@ class APIAction : public Action {
   virtual ~APIAction();
 
  private:
-  std::string extension_id_;
-  base::Time time_;
   Type type_;
   Verb verb_;
   Target target_;

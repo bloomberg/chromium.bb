@@ -7,11 +7,13 @@
 
 #include <string>
 #include <vector>
+#include "chrome/browser/extensions/activity_actions.h"
 #include "chrome/browser/extensions/activity_log.h"
 #include "content/public/browser/web_ui_controller.h"
 
 namespace extensions {
 class Extension;
+class Action;
 }
 
 class ExtensionActivityUI : public content::WebUIController,
@@ -22,6 +24,10 @@ class ExtensionActivityUI : public content::WebUIController,
 
   // Callback for "requestExtensionData".
   void HandleRequestExtensionData(const base::ListValue* args);
+
+  // Callback for fetching and displaying prior extension history data.
+  void FetchPreviousExtensionActivity(
+    scoped_ptr<std::vector<scoped_refptr<extensions::Action> > > actions);
 
   // ActivityLog::Observer implementation.
   virtual void OnExtensionActivity(

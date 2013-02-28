@@ -5,9 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_DOM_ACTIONS_H_
 #define CHROME_BROWSER_EXTENSIONS_DOM_ACTIONS_H_
 
-#include <string>
 #include "base/string16.h"
-#include "base/time.h"
 #include "chrome/browser/extensions/activity_actions.h"
 #include "googleurl/src/gurl.h"
 
@@ -25,7 +23,6 @@ class DOMAction : public Action {
   };
 
   static const char* kTableName;
-  static const char* kTableBasicFields;
   static const char* kTableContentFields[];
 
   // Create a new database table for storing DOMActions, or update the schema if
@@ -46,6 +43,9 @@ class DOMAction : public Action {
             const std::string& args,            // the args
             const std::string& extra);          // any extra logging info
 
+  // Create a new DOMAction from a database row.
+  explicit DOMAction(const sql::Statement& s);
+
   // Record the action in the database.
   virtual void Record(sql::Connection* db) OVERRIDE;
 
@@ -56,8 +56,6 @@ class DOMAction : public Action {
   virtual std::string PrettyPrintForDebug() OVERRIDE;
 
   // Helper methods for retrieving the values.
-  const std::string& extension_id() const { return extension_id_; }
-  const base::Time& time() const { return time_; }
   std::string VerbAsString() const;
   const GURL& url() const { return url_; }
   const string16& url_title() const { return url_title_; }
@@ -72,8 +70,6 @@ class DOMAction : public Action {
   virtual ~DOMAction();
 
  private:
-  std::string extension_id_;
-  base::Time time_;
   DOMActionType verb_;
   GURL url_;
   string16 url_title_;
