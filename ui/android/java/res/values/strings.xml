@@ -5,11 +5,12 @@
      found in the LICENSE file.
 -->
 
-<resources xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <!-- Error shown when the browser is restarted due to low memory during a
-         file picker operation. [CHAR-LIMIT=NONE] -->
-    <string name="low_memory_error">Unable to complete previous operation due to low memory</string>
-    <!-- Toast when the browser is unable to open a file for upload. [CHAR-LIMIT=32] -->
-    <string name="opening_file_error">Failed to open selected file</string>
-</resources>
+<!-- DO NOT ADD STRINGS HERE.
+
+    Android ui strings now live in
+    ui/android/java/strings/android_ui_strings.grd
+
+    See http://www.chromium.org/developers/design-documents/ui-localization
+-->
+
+<resources/>

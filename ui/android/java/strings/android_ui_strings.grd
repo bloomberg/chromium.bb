@@ -61,6 +61,7 @@
     <output filename="values-da/strings.xml" lang="da" type="android" />
     <output filename="values-de/strings.xml" lang="de" type="android" />
     <output filename="values-el/strings.xml" lang="el" type="android" />
+    <output filename="values/strings.xml" lang="en" type="android" />
     <output filename="values-en-rGB/strings.xml" lang="en-GB" type="android" />
     <output filename="values-es/strings.xml" lang="es" type="android" />
     <output filename="values-es-rUS/strings.xml" lang="es-419" type="android" />

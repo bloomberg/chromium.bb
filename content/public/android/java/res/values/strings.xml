@@ -5,49 +5,12 @@
      found in the LICENSE file.
 -->
 
-<resources xmlns:android="http://schemas.android.com/apk/res/android" xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <!-- Contextual action bar item for sharing a block of text via email, or
-         other method. [CHAR-LIMIT=24] -->
-    <string name="actionbar_share">Share</string>
-    <!-- Contextual action bar item for using the selected text in a internet
-         search. [CHAR-LIMIT=24] -->
-    <string name="actionbar_web_search">Web search</string>
+<!-- DO NOT ADD STRINGS HERE.
 
-    <!-- Content description for the content view that holds the web contents [CHAR-LIMIT=32] -->
-    <string name="accessibility_content_view">Web View</string>
+    Android content strings now live in
+    content/public/android/java/strings/android_content_strings.grd
 
-    <!-- Date/time picker dialog strings -->
-    <!-- Label for 'set' button in date picker dialog, used to replace the contents of a field with the chosen date [CHAR-LIMIT=12] -->
-    <string name="date_picker_dialog_set">Set</string>
-    <!-- Label for 'clear' button in date picker dialog, used to replace the contents of a field with the empty string [CHAR-LIMIT=12] -->
-    <string name="date_picker_dialog_clear">Clear</string>
-    <!-- Title for the date picker dialog, which can be used to choose a date. [CHAR-LIMIT=32] -->
-    <string name="date_picker_dialog_title">Set date</string>
-    <!-- Title for the date/time picker dialog, which can be used to choose a date and time. [CHAR-LIMIT=32] -->
-    <string name="date_time_picker_dialog_title">Set date and time</string>
-    <!-- Title for the month picker dialog, which can be used to choose a month. [CHAR-LIMIT=32] -->
-    <string name="month_picker_dialog_title">Set month</string>
-    <!-- Content description for the date time picker date component. [CHAR-LIMIT=32] -->
-    <string name="accessibility_datetime_picker_date">Date</string>
-    <!-- Content description for the date time picker time component. [CHAR-LIMIT=32] -->
-    <string name="accessibility_datetime_picker_time">Time</string>
-    <!-- Content description for the date time picker month component. [CHAR-LIMIT=32] -->
-    <string name="accessibility_date_picker_month">Month</string>
-    <!-- Content description for the date time picker year component. [CHAR-LIMIT=32] -->
-    <string name="accessibility_date_picker_year">Year</string>
+    See http://www.chromium.org/developers/design-documents/ui-localization
+-->
 
-    <!-- Media player -->
-    <!-- NO DESCRIPTION [CHAR-LIMIT=32] -->
-    <string name="media_player_error_title">Cannot play video</string>
-    <!-- NO DESCRIPTION [CHAR-LIMIT=100] -->
-    <string name="media_player_error_text_invalid_progressive_playback">
-      Sorry, this video is not valid for streaming to this device.</string>
-    <!-- NO DESCRIPTION [CHAR-LIMIT=100] -->
-    <string name="media_player_error_text_unknown">
-      Sorry, this video cannot be played.</string>
-    <!-- NO DESCRIPTION [CHAR-LIMIT=16] -->
-    <string name="media_player_error_button">OK</string>
-    <!-- NO DESCRIPTION [CHAR-LIMIT=16] -->
-    <string name="media_player_loading_video">Loading video</string>
-    
-</resources>
+<resources/>

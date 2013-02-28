@@ -5,37 +5,12 @@
      found in the LICENSE file.
 -->
 
-<resources xmlns:android="http://schemas.android.com/apk/res/android" xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <!-- Popup button for user to confirm a beforeunload dialog box triggered by a page navigation,
-         i.e. they want to leave the current page [CHAR-LIMIT=20] -->
-    <string name="leave_this_page">Leave this Page</string>
-    <!-- Popup button for user to cancel a beforeunload dialog box triggerd by a page navigation,
-         i.e. they want to stay on the current page [CHAR-LIMIT=20] -->
-    <string name="stay_on_this_page">Stay on this Page</string>
-    <!-- Popup button for user to confirm a beforeunload dialog box triggered by a page reload
-         action, i.e. they want to reload the current page [CHAR-LIMIT=20] -->
-    <string name="reload_this_page">Reload this Page</string>
-    <!-- Popup button for user to cancel a beforeunload dialog box triggered by a page reload
-         action, i.e. they do not want to reload the current page [CHAR-LIMIT=20] -->
-    <string name="dont_reload_this_page">Don\'t reload</string>
+<!-- DO NOT ADD STRINGS HERE.
 
-    <!-- Label for the list item that opens the full navigation history.  [CHAR-LIMIT=32] -->
-    <string name="show_history_label">Show full history</string>
+    Android chrome strings now live in
+    chrome/android/java/strings/android_chrome_strings.grd
 
-    <!-- JS modal dialogs -->
-    <!-- Standard popup button for allowing user confirmation of some webpage
-         event. [CHAR-LIMIT=12] -->
-    <string name="js_modal_dialog_confirm">OK</string>
-    <!-- Standard popup button for allowing user to cancel some webpage event.
-         [CHAR-LIMIT=12] -->
-    <string name="js_modal_dialog_cancel">Cancel</string>
-    <!-- Checkbox allowing users to forgoe an additional prompts from a web
-         page. [CHAR-LIMIT=None] -->
-    <string name="suppress_js_modal_dialogs">Prevent this page from creating additional dialogs</string>
-    <!-- Content description for the input javascript modal dialog prompt. [CHAR-LIMIT=32] -->
-    <string name="accessibility_js_modal_dialog_prompt">Prompt</string>
+    See http://www.chromium.org/developers/design-documents/ui-localization
+-->
 
-    <!-- Certificate Viewer -->
-    <!-- Dialog box title for viewing security certificates. [CHAR-LIMIT=32] -->
-    <string name="certtitle">Certificate Viewer</string>
-</resources>
+<resources/>

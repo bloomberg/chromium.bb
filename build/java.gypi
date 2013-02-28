@@ -137,7 +137,7 @@
             '--R-package', '<(R_package)',
             '--R-dir', '<(R_dir)',
             '--res-dir', '<(res_dir)',
-            '--crunched-res-dir', '<(out_res_dir)',
+            '--out-res-dir', '<(out_res_dir)',
           ],
         },
       ],

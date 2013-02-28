@@ -17,6 +17,9 @@
       <message desc="Label for 'clear' button in date picker dialog, used to replace the contents of a field with the empty string [CHAR-LIMIT=12]" name="IDS_DATE_PICKER_DIALOG_CLEAR">
         Clear
       </message>
+      <message desc="Title for the date picker dialog, which can be used to choose a date. [CHAR-LIMIT=32]" name="IDS_DATE_PICKER_DIALOG_TITLE">
+        Set date
+      </message>
       <message desc="Title for the date/time picker dialog, which can be used to choose a date and time. [CHAR-LIMIT=32]" name="IDS_DATE_TIME_PICKER_DIALOG_TITLE">
         Set date and time
       </message>
@@ -103,6 +106,7 @@
     <output filename="values-da/strings.xml" lang="da" type="android" />
     <output filename="values-de/strings.xml" lang="de" type="android" />
     <output filename="values-el/strings.xml" lang="el" type="android" />
+    <output filename="values/strings.xml" lang="en" type="android" />
     <output filename="values-en-rGB/strings.xml" lang="en-GB" type="android" />
     <output filename="values-es/strings.xml" lang="es" type="android" />
     <output filename="values-es-rUS/strings.xml" lang="es-419" type="android" />
