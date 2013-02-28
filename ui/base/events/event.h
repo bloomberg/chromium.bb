@@ -655,6 +655,10 @@ class UI_EXPORT ScrollEvent : public MouseEvent {
   float y_offset_ordinal() const { return y_offset_ordinal_; }
   int finger_count() const { return finger_count_; }
 
+  // Overridden from LocatedEvent.
+  virtual void UpdateForRootTransform(
+      const gfx::Transform& root_transform) OVERRIDE;
+
  private:
   // Potential accelerated offsets.
   float x_offset_;
