@@ -104,26 +104,13 @@ class GPU_EXPORT VertexAttrib {
       GLboolean normalized,
       GLsizei gl_stride,
       GLsizei real_stride,
-      GLsizei offset) {
-    DCHECK_GT(real_stride, 0);
-    buffer_ = buffer;
-    size_ = size;
-    type_ = type;
-    normalized_ = normalized;
-    gl_stride_ = gl_stride;
-    real_stride_ = real_stride;
-    offset_ = offset;
-  }
+      GLsizei offset);
 
   void SetDivisor(GLsizei divisor) {
     divisor_ = divisor;
   }
 
-  void Unbind(Buffer* buffer) {
-    if (buffer_ == buffer) {
-      buffer_ = NULL;
-    }
-  }
+  void Unbind(Buffer* buffer);
 
   // The index of this attrib.
   GLuint index_;
@@ -220,9 +207,7 @@ class GPU_EXPORT VertexAttribManager :
     }
   }
 
-  void SetElementArrayBuffer(Buffer* buffer) {
-    element_array_buffer_ = buffer;
-  }
+  void SetElementArrayBuffer(Buffer* buffer);
 
   Buffer* element_array_buffer() const {
     return element_array_buffer_;

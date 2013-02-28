@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/service/common_decoder.h"
 #include "gpu/command_buffer/service/gl_utils.h"
-#include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/gpu_export.h"
 
 namespace gpu {
@@ -22,6 +21,9 @@ namespace gles2 {
 class FeatureInfo;
 class ProgramCache;
 class ProgramManager;
+class Shader;
+class ShaderManager;
+class ShaderTranslator;
 
 // This is used to track which attributes a particular program needs
 // so we can verify at glDrawXXX time that every attribute is either disabled

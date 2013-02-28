@@ -13,6 +13,7 @@
 #define GLES2_GPU_SERVICE 1
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
@@ -34,6 +35,30 @@ VertexAttrib::VertexAttrib()
 }
 
 VertexAttrib::~VertexAttrib() {
+}
+
+void VertexAttrib::SetInfo(
+    Buffer* buffer,
+    GLint size,
+    GLenum type,
+    GLboolean normalized,
+    GLsizei gl_stride,
+    GLsizei real_stride,
+    GLsizei offset) {
+  DCHECK_GT(real_stride, 0);
+  buffer_ = buffer;
+  size_ = size;
+  type_ = type;
+  normalized_ = normalized;
+  gl_stride_ = gl_stride;
+  real_stride_ = real_stride;
+  offset_ = offset;
+}
+
+void VertexAttrib::Unbind(Buffer* buffer) {
+  if (buffer_ == buffer) {
+    buffer_ = NULL;
+  }
 }
 
 bool VertexAttrib::CanAccess(GLuint index) const {
@@ -102,6 +127,10 @@ void VertexAttribManager::Initialize(
       glVertexAttrib4f(vv, 0.0f, 0.0f, 0.0f, 1.0f);
     }
   }
+}
+
+void VertexAttribManager::SetElementArrayBuffer(Buffer* buffer) {
+  element_array_buffer_ = buffer;
 }
 
 bool VertexAttribManager::Enable(GLuint index, bool enable) {

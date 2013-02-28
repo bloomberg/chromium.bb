@@ -5,6 +5,10 @@
 #include "gpu/command_buffer/service/context_state.h"
 
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/service/buffer_manager.h"
+#include "gpu/command_buffer/service/framebuffer_manager.h"
+#include "gpu/command_buffer/service/program_manager.h"
+#include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
 

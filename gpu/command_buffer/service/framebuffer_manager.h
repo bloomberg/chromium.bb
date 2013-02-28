@@ -10,14 +10,16 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/gl_utils.h"
-#include "gpu/command_buffer/service/renderbuffer_manager.h"
-#include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/gpu_export.h"
 
 namespace gpu {
 namespace gles2 {
 
 class FramebufferManager;
+class Renderbuffer;
+class RenderbufferManager;
+class Texture;
+class TextureManager;
 
 // Info about a particular Framebuffer.
 class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {

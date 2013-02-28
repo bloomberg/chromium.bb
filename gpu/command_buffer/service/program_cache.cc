@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/program_cache.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "gpu/command_buffer/service/shader_manager.h"
 
 namespace gpu {
 namespace gles2 {

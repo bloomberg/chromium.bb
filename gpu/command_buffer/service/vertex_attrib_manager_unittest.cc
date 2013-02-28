@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"

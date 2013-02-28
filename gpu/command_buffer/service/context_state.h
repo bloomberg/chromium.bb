@@ -10,11 +10,7 @@
 #include <vector>
 #include "base/logging.h"
 #include "gpu/command_buffer/service/gl_utils.h"
-#include "gpu/command_buffer/service/buffer_manager.h"
-#include "gpu/command_buffer/service/framebuffer_manager.h"
-#include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/query_manager.h"
-#include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
@@ -23,7 +19,11 @@
 namespace gpu {
 namespace gles2 {
 
+class Buffer;
 class FeatureInfo;
+class Framebuffer;
+class Program;
+class Renderbuffer;
 
 // State associated with each texture unit.
 struct GPU_EXPORT TextureUnit {

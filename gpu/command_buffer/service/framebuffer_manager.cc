@@ -6,6 +6,8 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/service/renderbuffer_manager.h"
+#include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace gpu {

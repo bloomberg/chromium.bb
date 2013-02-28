@@ -10,6 +10,7 @@
 #include "base/string_number_conversions.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/command_buffer/service/shader_manager.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace {

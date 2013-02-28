@@ -22,6 +22,8 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/program_cache.h"
+#include "gpu/command_buffer/service/shader_manager.h"
+#include "gpu/command_buffer/service/shader_translator.h"
 #include "third_party/re2/re2/re2.h"
 
 using base::TimeDelta;

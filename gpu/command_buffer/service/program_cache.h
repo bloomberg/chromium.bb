@@ -11,10 +11,11 @@
 #include "base/hash_tables.h"
 #include "base/sha1.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
-#include "gpu/command_buffer/service/shader_manager.h"
 
 namespace gpu {
 namespace gles2 {
+
+class Shader;
 
 // Program cache base class for caching linked gpu programs
 class GPU_EXPORT ProgramCache {
