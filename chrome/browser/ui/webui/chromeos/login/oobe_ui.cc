@@ -57,6 +57,7 @@ const char kEnterpriseEnrollmentGaiaLoginPath[] = "gaialogin";
 const char kStringsJSPath[] = "strings.js";
 const char kLoginJSPath[] = "login.js";
 const char kOobeJSPath[] = "oobe.js";
+const char kDemoUserLoginJSPath[] = "demo_user_login.js";
 
 // Filter handler of chrome://oobe data source.
 bool HandleRequestCallback(
@@ -82,9 +83,15 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   source->SetUseJsonJSFormatV2();
   source->AddLocalizedStrings(localized_strings);
   source->SetJsonPath(kStringsJSPath);
-  source->SetDefaultResource(
-      chromeos::KioskModeSettings::Get()->IsKioskModeEnabled() ?
-          IDR_DEMO_USER_LOGIN_HTML : IDR_OOBE_HTML);
+
+  if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled()) {
+    source->SetDefaultResource(IDR_DEMO_USER_LOGIN_HTML);
+    source->AddResourcePath(kDemoUserLoginJSPath,
+                            IDR_DEMO_USER_LOGIN_JS);
+    return source;
+  }
+
+  source->SetDefaultResource(IDR_OOBE_HTML);
   source->AddResourcePath(kOobeJSPath,
                           IDR_OOBE_JS);
   source->AddResourcePath(kLoginPath,
