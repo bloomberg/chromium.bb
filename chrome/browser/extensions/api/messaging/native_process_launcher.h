@@ -8,11 +8,15 @@
 #include "base/process.h"
 #include "chrome/browser/extensions/api/messaging/native_message_process_host.h"
 
+class GURL;
+
 namespace base {
 class FilePath;
 }
 
 namespace extensions {
+
+class NativeMessagingHostManifest;
 
 class NativeProcessLauncher {
  public:
@@ -28,14 +32,26 @@ class NativeProcessLauncher {
   NativeProcessLauncher() {}
   virtual ~NativeProcessLauncher() {}
 
-  // Launches native host with the specified name asynchronously. |callback| is
-  // called after the process has been started. If the launcher is destroyed
-  // before the callback is called then the call is canceled and the process is
-  // stopped if it has been started already (by closing IO pipes).
-  virtual void Launch(const std::string& native_host_name,
+  // Finds native messaging host with the specified name and launches it
+  // asynchronously. Also checks that the specified |origin| is permitted to
+  // access the host. |callback| is called after the process has been started.
+  // If the launcher is destroyed before the callback is called then the call is
+  // canceled and the process is stopped if it has been started already (by
+  // closing IO pipes).
+  virtual void Launch(const GURL& origin,
+                      const std::string& native_host_name,
                       LaunchedCallback callback) const = 0;
 
  protected:
+  // The following two methods are platform specific and are implemented in
+  // platform-specific .cc files.
+
+  // Loads manifest for the native messaging host |name|.
+  static scoped_ptr<NativeMessagingHostManifest> FindAndLoadManifest(
+      const std::string& native_host_name,
+      std::string* error_message);
+
+  // Launches native messaging process.
   static bool LaunchNativeProcess(
       const base::FilePath& path,
       base::PlatformFile* read_file,

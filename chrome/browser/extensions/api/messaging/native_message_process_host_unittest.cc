@@ -33,6 +33,7 @@ using content::BrowserThread;
 
 namespace {
 
+const char kTestHostId[] = "knldjmfmopnpolahpmmgbagdohdnhkik";
 const char kTestMessage[] = "{\"text\": \"Hello.\"}";
 
 base::FilePath GetTestDir() {
@@ -61,7 +62,8 @@ class FakeLauncher : public NativeProcessLauncher {
         NULL, NULL);
   }
 
-  virtual void Launch(const std::string& native_host_name,
+  virtual void Launch(const GURL& origin,
+                      const std::string& native_host_name,
                       LaunchedCallback callback) const OVERRIDE {
     callback.Run(base::GetCurrentProcessHandle(), read_file_, write_file_);
   }
@@ -151,7 +153,7 @@ TEST_F(NativeMessagingTest, SingleSendMessageRead) {
   scoped_ptr<NativeProcessLauncher> launcher(
       new FakeLauncher(temp_input_file, temp_output_file));
   native_message_process_host_ = NativeMessageProcessHost::CreateWithLauncher(
-      AsWeakPtr(), "empty_app.py", 0, launcher.Pass());
+      AsWeakPtr(), kTestHostId, "empty_app.py", 0, launcher.Pass());
   ASSERT_TRUE(native_message_process_host_.get());
   message_loop_.RunUntilIdle();
 
@@ -169,7 +171,7 @@ TEST_F(NativeMessagingTest, SingleSendMessageWrite) {
   scoped_ptr<NativeProcessLauncher> launcher(
       new FakeLauncher(temp_input_file, temp_output_file));
   native_message_process_host_ = NativeMessageProcessHost::CreateWithLauncher(
-      AsWeakPtr(), "empty_app.py", 0, launcher.Pass());
+      AsWeakPtr(), kTestHostId, "empty_app.py", 0, launcher.Pass());
   ASSERT_TRUE(native_message_process_host_.get());
   message_loop_.RunUntilIdle();
 
@@ -193,7 +195,7 @@ TEST_F(NativeMessagingTest, SingleSendMessageWrite) {
 // it recieved.
 TEST_F(NativeMessagingTest, DISABLED_EchoConnect) {
   native_message_process_host_ = NativeMessageProcessHost::Create(
-      AsWeakPtr(), "empty_app.py", 0);
+      AsWeakPtr(), kTestHostId, "empty_app.py", 0);
   ASSERT_TRUE(native_message_process_host_.get());
   message_loop_.RunUntilIdle();
 

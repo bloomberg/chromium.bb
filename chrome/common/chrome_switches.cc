@@ -884,6 +884,11 @@ const char kNaClGdbScript[]                 = "nacl-gdb-script";
 // command line. Useful values might be "valgrind" or "xterm -e gdb --args".
 const char kNaClLoaderCmdPrefix[]           = "nacl-loader-cmd-prefix";
 
+// List of native messaging hosts outside of the default location. Used for
+// tests. The value must be comma-separate lists of key-value pairs separated
+// equal sign. E.g. "host1=/path/to/host1/manifest.json,host2=/path/host2.json".
+const char kNativeMessagingHosts[] = "native-messaging-hosts";
+
 // Sets the base logging level for the net log. Log 0 logs the most data.
 // Intended primarily for use with --log-net-log.
 const char kNetLogLevel[]                   = "net-log-level";
