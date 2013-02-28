@@ -6,7 +6,6 @@ include_rules = [
   "+chrome/browser/api",
   "+chrome/browser/autofill",
   "+chrome/browser/common",
-  "+chrome/browser/ui/autofill",
 
   # Permanently-allowed DEPS beyond the standard Browser
   # Components-like DEPS above go here.
@@ -38,6 +37,7 @@ specific_include_rules = {
     "!chrome/browser/webdata/autofill_web_data_service_impl.h",
     "!chrome/browser/webdata/web_data_service.h",
     "!chrome/browser/webdata/web_data_service_factory.h",
+    "!chrome/browser/ui/autofill/tab_autofill_manager_delegate.h",
     "!chrome/browser/ui/browser.h",
     "!chrome/browser/ui/browser_tabstrip.h",
     "!chrome/browser/ui/browser_window.h",

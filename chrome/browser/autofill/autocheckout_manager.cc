@@ -14,7 +14,6 @@
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_structure.h"
-#include "chrome/browser/ui/autofill/autofill_dialog_controller_impl.h"
 #include "chrome/common/autofill/autocheckout_status.h"
 #include "chrome/common/autofill/web_element_descriptor.h"
 #include "chrome/common/autofill_messages.h"

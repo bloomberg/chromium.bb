@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/ui/autofill/autofill_popup_delegate.h"
+#include "chrome/browser/autofill/autofill_popup_delegate.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "grit/webkit_resources.h"
