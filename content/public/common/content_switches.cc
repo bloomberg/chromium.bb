@@ -297,8 +297,8 @@ const char kEnableDownloadResumption[]      = "enable-download-resumption";
 const char kEnableExperimentalWebKitFeatures[] =
     "enable-experimental-webkit-features";
 
-// Disables the threaded HTML parser in WebKit
-const char kDisableThreadedHTMLParser[]     = "disable-threaded-html-parser";
+// Enables the threaded HTML parser in WebKit
+const char kEnableThreadedHTMLParser[]      = "enable-threaded-html-parser";
 
 // Enables the fastback page cache.
 const char kEnableFastback[]                = "enable-fastback";
