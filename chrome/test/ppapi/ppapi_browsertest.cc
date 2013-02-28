@@ -109,6 +109,15 @@ using content::RenderViewHost;
 #endif
 
 
+// NaCl glibc tests are not included in ARM as there is no glibc support
+// on ARM today.
+#if defined(ARCH_CPU_ARM_FAMILY)
+#define MAYBE_GLIBC(test_name) DISABLED_##test_name
+#else
+#define MAYBE_GLIBC(test_name) test_name
+#endif
+
+
 //
 // Interface tests.
 //
@@ -500,41 +509,53 @@ TEST_PPAPI_OUT_OF_PROCESS(MAYBE_VarDeprecated)
 #ifdef PostMessage
 #undef PostMessage
 #endif
-TEST_PPAPI_IN_PROCESS(PostMessage_SendInInit)
-TEST_PPAPI_IN_PROCESS(PostMessage_SendingData)
-// TODO(danakj): http://crbug.com/115286
-TEST_PPAPI_IN_PROCESS(DISABLED_PostMessage_SendingArrayBuffer)
-TEST_PPAPI_IN_PROCESS(PostMessage_MessageEvent)
-TEST_PPAPI_IN_PROCESS(PostMessage_NoHandler)
-TEST_PPAPI_IN_PROCESS(PostMessage_ExtraParam)
-TEST_PPAPI_OUT_OF_PROCESS(PostMessage_SendInInit)
-TEST_PPAPI_OUT_OF_PROCESS(PostMessage_SendingData)
-TEST_PPAPI_OUT_OF_PROCESS(PostMessage_SendingArrayBuffer)
-TEST_PPAPI_OUT_OF_PROCESS(PostMessage_MessageEvent)
-TEST_PPAPI_OUT_OF_PROCESS(PostMessage_NoHandler)
-TEST_PPAPI_OUT_OF_PROCESS(PostMessage_ExtraParam)
-#if !defined(OS_WIN) && !(defined(OS_LINUX) && defined(ARCH_CPU_64_BITS))
-// Times out on Windows XP, Windows 7, and Linux x64: http://crbug.com/95557
-TEST_PPAPI_OUT_OF_PROCESS(PostMessage_NonMainThread)
-#endif
-TEST_PPAPI_NACL(PostMessage_SendInInit)
-TEST_PPAPI_NACL(PostMessage_SendingData)
-TEST_PPAPI_NACL(PostMessage_SendingArrayBuffer)
-TEST_PPAPI_NACL(PostMessage_MessageEvent)
-// http://crbug.com/167150
-TEST_PPAPI_NACL(DISABLED_PostMessage_NoHandler)
+// PostMessage tests.
+IN_PROC_BROWSER_TEST_F(PPAPITest, PostMessage) {
+  RunTestViaHTTP(
+      LIST_TEST(PostMessage_SendInInit)
+      LIST_TEST(PostMessage_SendingData)
+      LIST_TEST(PostMessage_SendingArrayBuffer)
+      LIST_TEST(PostMessage_MessageEvent)
+      LIST_TEST(PostMessage_NoHandler)
+      LIST_TEST(PostMessage_ExtraParam)
+  );
+}
 
-#if defined(OS_WIN)
-// Flaky: http://crbug.com/111209
-//
-// Note from sheriffs miket and syzm: we're not convinced that this test is
-// directly to blame for the flakiness. It's possible that it's a more general
-// problem that is exposing itself only with one of the later tests in this
-// series.
-TEST_PPAPI_NACL(DISABLED_PostMessage_ExtraParam)
-#else
-TEST_PPAPI_NACL(PostMessage_ExtraParam)
-#endif
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, PostMessage) {
+  RunTestViaHTTP(
+      LIST_TEST(PostMessage_SendInInit)
+      LIST_TEST(PostMessage_SendingData)
+      LIST_TEST(PostMessage_SendingArrayBuffer)
+      LIST_TEST(PostMessage_MessageEvent)
+      LIST_TEST(PostMessage_NoHandler)
+      LIST_TEST(PostMessage_ExtraParam)
+      LIST_TEST(PostMessage_NonMainThread)
+  );
+}
+
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, PostMessage) {
+  RunTestViaHTTP(
+      LIST_TEST(PostMessage_SendInInit)
+      LIST_TEST(PostMessage_SendingData)
+      LIST_TEST(PostMessage_SendingArrayBuffer)
+      LIST_TEST(PostMessage_MessageEvent)
+      LIST_TEST(PostMessage_NoHandler)
+      LIST_TEST(PostMessage_ExtraParam)
+      LIST_TEST(PostMessage_NonMainThread)
+  );
+}
+
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(PostMessage)) {
+  RunTestViaHTTP(
+      LIST_TEST(PostMessage_SendInInit)
+      LIST_TEST(PostMessage_SendingData)
+      LIST_TEST(PostMessage_SendingArrayBuffer)
+      LIST_TEST(PostMessage_MessageEvent)
+      LIST_TEST(PostMessage_NoHandler)
+      LIST_TEST(PostMessage_ExtraParam)
+      LIST_TEST(PostMessage_NonMainThread)
+  );
+}
 
 TEST_PPAPI_IN_PROCESS(Memory)
 TEST_PPAPI_OUT_OF_PROCESS(Memory)
@@ -780,14 +801,7 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, WebSocket) {
 }
 
 // NaClGLibc WebSocket tests
-// NaCl glibc tests are not included in ARM as there is no glibc support
-// on ARM today.
-#if defined(ARCH_CPU_ARM_FAMILY)
-#define MAYBE_GLIBC_WebSocket DISABLED_WebSocket
-#else
-#define MAYBE_GLIBC_WebSocket WebSocket
-#endif
-IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC_WebSocket) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(WebSocket)) {
   RunTestWithWebSocketServer(
       LIST_TEST(WebSocket_IsWebSocket)
       LIST_TEST(WebSocket_UninitializedPropertiesAccess)
@@ -844,14 +858,7 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, AudioConfig) {
 }
 
 // NaClGLibc AudioConfig tests
-// NaCl glibc tests are not included in ARM as there is no glibc support
-// on ARM today.
-#if defined(ARCH_CPU_ARM_FAMILY)
-#define MAYBE_GLIBC_AudioConfig DISABLED_AudioConfig
-#else
-#define MAYBE_GLIBC_AudioConfig AudioConfig
-#endif
-IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC_AudioConfig) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(AudioConfig)) {
   RunTestViaHTTP(
       LIST_TEST(AudioConfig_RecommendSampleRate)
       LIST_TEST(AudioConfig_ValidConfigs)
