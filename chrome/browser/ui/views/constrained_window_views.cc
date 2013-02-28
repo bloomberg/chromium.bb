@@ -625,7 +625,7 @@ ConstrainedWindowViews* ConstrainedWindowViews::Create(
       web_contents->GetView()->GetNativeView(),
       web_contents->GetBrowserContext()->IsOffTheRecord(),
       widget_delegate);
-  manager->AddDialog(dialog->GetNativeView());
+  manager->ShowDialog(dialog->GetNativeView());
   return dialog;
 }
 

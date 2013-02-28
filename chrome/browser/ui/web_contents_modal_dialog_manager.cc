@@ -20,7 +20,7 @@ WebContentsModalDialogManager::~WebContentsModalDialogManager() {
   DCHECK(child_dialogs_.empty());
 }
 
-void WebContentsModalDialogManager::AddDialog(
+void WebContentsModalDialogManager::ShowDialog(
     NativeWebContentsModalDialog dialog) {
   child_dialogs_.push_back(dialog);
 

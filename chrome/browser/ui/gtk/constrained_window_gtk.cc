@@ -80,7 +80,7 @@ ConstrainedWindowGtk::ConstrainedWindowGtk(
 
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents_);
-  web_contents_modal_dialog_manager->AddDialog(widget());
+  web_contents_modal_dialog_manager->ShowDialog(widget());
 }
 
 ConstrainedWindowGtk::~ConstrainedWindowGtk() {

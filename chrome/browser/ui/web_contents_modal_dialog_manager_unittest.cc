@@ -68,7 +68,7 @@ TEST_F(WebContentsModalDialogManagerTest, WebContentsModalDialogs) {
     // WebContentsModalDialogManager treats the NativeWebContentsModalDialog as
     // an opaque type, so creating fake NativeWebContentsModalDialogs using
     // reinterpret_cast is valid.
-    web_contents_modal_dialog_manager->AddDialog(
+    web_contents_modal_dialog_manager->ShowDialog(
         reinterpret_cast<NativeWebContentsModalDialog>(i));
   EXPECT_EQ(native_manager->close_count, 0);
 

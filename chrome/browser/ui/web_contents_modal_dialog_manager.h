@@ -29,9 +29,9 @@ class WebContentsModalDialogManager
   static NativeWebContentsModalDialogManager* CreateNativeManager(
       NativeWebContentsModalDialogManagerDelegate* native_delegate);
 
-  // Adds the given dialog to the list of child dialogs. The dialog will notify
-  // via WillClose() when it is being destroyed.
-  void AddDialog(NativeWebContentsModalDialog dialog);
+  // Shows the dialog as a web contents modal dialog. The dialog will notify via
+  // WillClose() when it is being destroyed.
+  void ShowDialog(NativeWebContentsModalDialog dialog);
 
   // Blocks/unblocks interaction with renderer process.
   void BlockWebContentsInteraction(bool blocked);
