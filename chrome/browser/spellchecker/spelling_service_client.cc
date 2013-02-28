@@ -70,8 +70,10 @@ bool SpellingServiceClient::RequestTextCheck(
     const string16& text,
     const TextCheckCompleteCallback& callback) {
   DCHECK(type == SUGGEST || type == SPELLCHECK);
-  if (!IsAvailable(profile, type))
+  if (!profile || !IsAvailable(profile, type)) {
+    callback.Run(false, text, std::vector<SpellCheckResult>());
     return false;
+  }
 
   std::string language_code;
   std::string country_code;

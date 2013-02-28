@@ -103,18 +103,9 @@ void SpellCheckMessageFilter::OnCallSpellingService(
     const string16& text) {
   DCHECK(!text.empty());
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  if (!CallSpellingService(route_id, identifier, document_tag, text)) {
-    std::vector<SpellCheckResult> results;
-    Send(new SpellCheckMsg_RespondSpellingService(route_id,
-                                                  identifier,
-                                                  document_tag,
-                                                  false,
-                                                  text,
-                                                  results));
-    return;
-  }
   route_id_ = route_id;
   identifier_ = identifier;
+  CallSpellingService(document_tag, text);
 }
 
 void SpellCheckMessageFilter::OnTextCheckComplete(
@@ -131,20 +122,18 @@ void SpellCheckMessageFilter::OnTextCheckComplete(
   client_.reset();
 }
 
-bool SpellCheckMessageFilter::CallSpellingService(
-    int route_id,
-    int identifier,
-    int document_tag,
-    const string16& text) {
+// CallSpellingService always executes the callback OnTextCheckComplete.
+// (Which, in turn, sends a SpellCheckMsg_RespondSpellingService)
+void SpellCheckMessageFilter::CallSpellingService(int document_tag,
+                                                  const string16& text) {
+  Profile* profile = NULL;
   content::RenderProcessHost* host =
       content::RenderProcessHost::FromID(render_process_id_);
-  if (!host)
-    return false;
-  Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
-  if (!profile->GetPrefs()->GetBoolean(prefs::kSpellCheckUseSpellingService))
-    return false;
+  if (host)
+    profile = Profile::FromBrowserContext(host->GetBrowserContext());
+
   client_.reset(new SpellingServiceClient);
-  return client_->RequestTextCheck(
+  client_->RequestTextCheck(
     profile, SpellingServiceClient::SPELLCHECK, text,
     base::Bind(&SpellCheckMessageFilter::OnTextCheckComplete,
                base::Unretained(this), document_tag));
