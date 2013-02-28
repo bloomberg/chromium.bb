@@ -56,7 +56,10 @@ void AsyncPolicyProvider::Shutdown() {
   // AsyncPolicyProvider is always safe, since a potential DeleteSoon() is only
   // posted from here. The |loader_| posts back to the AsyncPolicyProvider
   // through the |update_callback_|, which has a WeakPtr to |this|.
-  BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE, loader_);
+  if (!BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE, loader_)) {
+    // The FILE thread doesn't exist; this only happens on unit tests.
+    delete loader_;
+  }
   loader_ = NULL;
   ConfigurationPolicyProvider::Shutdown();
 }

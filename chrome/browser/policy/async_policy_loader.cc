@@ -30,9 +30,7 @@ const int kReloadIntervalSeconds = 15 * 60;
 AsyncPolicyLoader::AsyncPolicyLoader()
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
 
-AsyncPolicyLoader::~AsyncPolicyLoader() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-}
+AsyncPolicyLoader::~AsyncPolicyLoader() {}
 
 base::Time AsyncPolicyLoader::LastModificationTime() {
   return base::Time();
