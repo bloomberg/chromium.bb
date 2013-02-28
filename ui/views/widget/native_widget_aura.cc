@@ -1044,8 +1044,9 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
     // in this case is the stacking client of the current RootWindow. This
     // matches our previous behaviour; the global stacking client would almost
     // always reattach the window to the same RootWindow.
-    native_view->SetDefaultParentByRootWindow(native_view->GetRootWindow(),
-                                              gfx::Rect());
+    aura::RootWindow* root_window = native_view->GetRootWindow();
+    native_view->SetDefaultParentByRootWindow(
+        root_window, root_window->GetBoundsInScreen());
   }
 
   // And now, notify them that they have a brand new parent.
