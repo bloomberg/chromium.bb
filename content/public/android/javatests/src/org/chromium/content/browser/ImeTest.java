@@ -208,7 +208,7 @@ public class ImeTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
-    @DisableTest
+    @DisabledTest
     public void testImeSelectAndUnSelectAll() throws Exception {
         mImeAdapter.checkCompositionQueueAndCallNative("hello", 1, true);
         assertWaitForSetEditableCallback(2, mConnection);
