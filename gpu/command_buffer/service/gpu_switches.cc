@@ -20,8 +20,8 @@ const char kDisableGLSLTranslator[]         = "disable-glsl-translator";
 const char kDisableGpuDriverBugWorkarounds[] =
     "disable-gpu-driver-bug-workarounds";
 
-// Turn off user-defined name hashing in shaders.
-const char kDisableShaderNameHashing[]      = "disable-shader-name-hashing";
+// Turn on user-defined name hashing in shaders.
+const char kEnableShaderNameHashing[]      = "enable-shader-name-hashing";
 
 // Turn on Logging GPU commands.
 const char kEnableGPUCommandLogging[]       = "enable-gpu-command-logging";
@@ -63,7 +63,7 @@ const char* kGpuSwitches[] = {
   kDisableGLErrorLimit,
   kDisableGLSLTranslator,
   kDisableGpuDriverBugWorkarounds,
-  kDisableShaderNameHashing,
+  kEnableShaderNameHashing,
   kEnableGPUCommandLogging,
   kEnableGPUDebugging,
   kEnableGPUServiceLoggingGPU,

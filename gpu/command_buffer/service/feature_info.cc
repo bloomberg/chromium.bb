@@ -188,8 +188,8 @@ void FeatureInfo::AddFeatures() {
           switches::kDisableGpuDriverBugWorkarounds);
 
   feature_flags_.enable_shader_name_hashing =
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableShaderNameHashing);
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableShaderNameHashing);
 
 
   bool npot_ok = false;
