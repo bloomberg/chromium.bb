@@ -361,7 +361,7 @@ def SetEnvironment(env):
   os.environ.update(env)
 
 
-def SourceEnvironment(script, whitelist, env_passthrough=False):
+def SourceEnvironment(script, whitelist, ifs=',', env=None):
   """Returns the environment exported by a shell script.
 
   Note that the script is actually executed (sourced), so do not use this on
@@ -371,19 +371,26 @@ def SourceEnvironment(script, whitelist, env_passthrough=False):
   Arguments:
     script: The shell script to 'source'.
     whitelist: An iterable of environment variables to retrieve values for.
-    env_passthrough: Pass through the existing environment to the script.
+    ifs: When showing arrays, what separator to use.
+    env: A dict of the initial env to pass down.  You can also pass it None
+         (to clear the env) or True (to preserve the current env).
 
   Returns:
     A dictionary containing the values of the whitelisted environment
     variables that are set.
   """
-  dump_script = ['source "%s" >/dev/null' % script]
+  dump_script = ['source "%s" >/dev/null' % script,
+                 'IFS="%s"' % ifs]
   for var in whitelist:
     dump_script.append(
-        '[[ "${%(var)s+set}" == "set" ]] && echo %(var)s="${%(var)s}"'
+        '[[ "${%(var)s+set}" == "set" ]] && echo %(var)s="${%(var)s[*]}"'
         % {'var': var})
   dump_script.append('exit 0')
-  env = None if env_passthrough else {}
+
+  if env is None:
+    env = {}
+  elif env is True:
+    env = None
   output = cros_build_lib.RunCommand(['bash'], env=env, redirect_stdout=True,
                                      print_cmd=False,
                                      input='\n'.join(dump_script)).output

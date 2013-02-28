@@ -171,6 +171,7 @@ declare -x ENV2="bananas are yellow"
 declare -x ENV3="merci"
 declare -x ENV4="de rien"
 declare -x ENV6=''
+declare -x ENVA=('a b c' 'd' 'e 1234 %')
 """
 
   def setUp(self):
@@ -181,6 +182,13 @@ declare -x ENV6=''
     env_dict = osutils.SourceEnvironment(
         self.env_file, ('ENV1', 'ENV3', 'ENV5', 'ENV6'))
     self.assertEquals(env_dict, self.ENV_WHITELIST)
+
+  def testArrays(self):
+    env_dict = osutils.SourceEnvironment(self.env_file, ('ENVA',))
+    self.assertEquals(env_dict, {'ENVA': 'a b c,d,e 1234 %'})
+
+    env_dict = osutils.SourceEnvironment(self.env_file, ('ENVA',), ifs=' ')
+    self.assertEquals(env_dict, {'ENVA': 'a b c d e 1234 %'})
 
 
 if __name__ == '__main__':

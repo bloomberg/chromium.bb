@@ -317,8 +317,7 @@ class ChromeSDKCommand(cros.CrosCommand):
     Arguments:
       user_rc: User-supplied rc file.
     """
-    user_env = osutils.SourceEnvironment(user_rc, ['PATH'],
-                                         env_passthrough=True)
+    user_env = osutils.SourceEnvironment(user_rc, ['PATH'], env=True)
     goma_ctl = osutils.Which('goma_ctl.sh', user_env.get('PATH'))
     if goma_ctl is not None:
       manifest = os.path.join(os.path.dirname(goma_ctl), 'MANIFEST')
