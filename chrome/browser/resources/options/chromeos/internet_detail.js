@@ -138,7 +138,8 @@ cr.define('options.internet', function() {
       });
 
       $('view-account-details').addEventListener('click', function(event) {
-        chrome.send('showMorePlanInfo');
+        var data = $('connection-state').data;
+        chrome.send('showMorePlanInfo', [data.servicePath]);
         OptionsPage.closeOverlay();
       });
 

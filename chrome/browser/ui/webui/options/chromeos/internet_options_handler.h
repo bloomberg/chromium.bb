@@ -82,6 +82,7 @@ class InternetOptionsHandler
 
   void SetCellularButtonsVisibility(
       const chromeos::CellularNetwork* cellular,
+      const chromeos::NetworkDevice* device,
       base::DictionaryValue* dictionary,
       const std::string& carrier_id);
 
