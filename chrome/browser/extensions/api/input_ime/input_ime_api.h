@@ -167,6 +167,17 @@ class UpdateMenuItemsFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
+class DeleteSurroundingTextFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("input.ime.deleteSurroundingText",
+                             INPUT_IME_DELETESURROUNDINGTEXT)
+ protected:
+  virtual ~DeleteSurroundingTextFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
 class KeyEventHandled : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.keyEventHandled",
