@@ -73,7 +73,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
 
-// Used to self-trampoline invocation of methods to the approprate thread.  This
+// Used to self-trampoline invocation of methods to the appropriate thread. This
 // should be used sparingly, only when it's not clear which thread is invoking a
 // method.
 #define ENSURE_INVOKED_ON_THREAD(thread, ...) {  \
@@ -146,10 +146,6 @@ class BackingStoreCopier : public WebContentsObserver {
 
   virtual ~BackingStoreCopier();
 
-  // If non-NULL, use the given |override| to access the backing store.
-  // This is used for unit testing.
-  void SetRenderWidgetHostForTesting(RenderWidgetHost* override);
-
   // Starts the copy from the backing store. Must be run on the UI
   // BrowserThread. Resulting frame is conveyed back to |consumer|.
   void StartCopy(const scoped_refptr<CaptureMachine>& consumer,
@@ -204,10 +200,6 @@ class BackingStoreCopier : public WebContentsObserver {
 
   // Last known RenderView size.
   gfx::Size last_view_size_;
-
-  // If the following is NULL (normal behavior), the implementation should
-  // access RenderWidgetHost via web_contents().
-  RenderWidgetHost* rwh_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(BackingStoreCopier);
 };
@@ -319,8 +311,9 @@ class VideoFrameDeliverer {
 
 BackingStoreCopier::BackingStoreCopier(int render_process_id,
                                        int render_view_id)
-    : render_process_id_(render_process_id), render_view_id_(render_view_id),
-      fullscreen_widget_id_(MSG_ROUTING_NONE), rwh_for_testing_(NULL) {}
+    : render_process_id_(render_process_id),
+      render_view_id_(render_view_id),
+      fullscreen_widget_id_(MSG_ROUTING_NONE) {}
 
 BackingStoreCopier::~BackingStoreCopier() {
   DCHECK(!web_contents());
@@ -367,11 +360,6 @@ void BackingStoreCopier::LookUpAndObserveWebContents() {
   } else {
     DVLOG(1) << "WebContents::FromRenderViewHost(" << rvh << ") returned NULL.";
   }
-}
-
-void BackingStoreCopier::SetRenderWidgetHostForTesting(
-    RenderWidgetHost* override) {
-  rwh_for_testing_ = override;
 }
 
 VideoFrameRenderer::VideoFrameRenderer()
@@ -671,13 +659,11 @@ class CaptureMachine
     TRANSIENT_ERROR
   };
 
-  CaptureMachine(int render_process_id, int render_view_id);
-
-  // Sets the capture source to the given |override| for unit testing.
-  // Also, |destroy_cb| will be invoked after CaptureMachine is fully destroyed
-  // (to synchronize tear-down).
-  void InitializeForTesting(RenderWidgetHost* override,
-                            const base::Closure& destroy_cb);
+  // |destroy_cb| will be invoked after CaptureMachine is fully destroyed,
+  // to synchronize tear-down.
+  CaptureMachine(int render_process_id,
+                 int render_view_id,
+                 const base::Closure& destroy_cb);
 
   // Synchronously sets/unsets the consumer.  Pass |consumer| as NULL to remove
   // the reference to the consumer; then, once this method returns,
@@ -778,20 +764,17 @@ class CaptureMachine
   DISALLOW_COPY_AND_ASSIGN(CaptureMachine);
 };
 
-CaptureMachine::CaptureMachine(int render_process_id, int render_view_id)
+CaptureMachine::CaptureMachine(int render_process_id,
+                               int render_view_id,
+                               const base::Closure& destroy_cb)
     : manager_thread_("WebContentsVideo_ManagerThread"),
       state_(kIdle),
       is_snapshotting_(false),
       num_renders_pending_(0),
       copier_(render_process_id, render_view_id),
-      deliverer_(&consumer_) {
+      deliverer_(&consumer_),
+      destroy_cb_(destroy_cb) {
   manager_thread_.Start();
-}
-
-void CaptureMachine::InitializeForTesting(RenderWidgetHost* override,
-                                          const base::Closure& destroy_cb) {
-  copier_.SetRenderWidgetHostForTesting(override);
-  destroy_cb_ = destroy_cb;
 }
 
 void CaptureMachine::SetConsumer(
@@ -908,9 +891,8 @@ void CaptureMachine::DeleteFromOutsideThread(const CaptureMachine* x) {
   const base::Closure run_after_delete = x->destroy_cb_;
   // Note: Thread joins are about to happen here (in ~CaptureThread()).
   delete x;
-  if (!run_after_delete.is_null()) {
+  if (!run_after_delete.is_null())
     run_after_delete.Run();
-  }
 }
 
 void CaptureMachine::TransitionStateTo(State next_state) {
@@ -1101,31 +1083,27 @@ void BackingStoreCopier::StartCopy(
     int desired_height) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  RenderWidgetHost* rwh;
-  if (rwh_for_testing_) {
-    rwh = rwh_for_testing_;
-  } else {
-    if (!web_contents()) {  // No source yet.
-      LookUpAndObserveWebContents();
-      if (!web_contents()) {  // No source ever.
-        consumer->OnSnapshotFailed(CaptureMachine::NO_SOURCE, frame_number);
-        return;
-      }
-    }
-
-    if (fullscreen_widget_id_ != MSG_ROUTING_NONE) {
-      RenderProcessHost* process = web_contents()->GetRenderProcessHost();
-      rwh = process ? process->GetRenderWidgetHostByID(fullscreen_widget_id_)
-                    : NULL;
-    } else {
-      rwh = web_contents()->GetRenderViewHost();
-    }
-
-    if (!rwh) {
-      // Transient failure state (e.g., a RenderView is being replaced).
-      consumer->OnSnapshotFailed(CaptureMachine::TRANSIENT_ERROR, frame_number);
+  if (!web_contents()) {  // No source yet.
+    LookUpAndObserveWebContents();
+    if (!web_contents()) {  // No source ever.
+      consumer->OnSnapshotFailed(CaptureMachine::NO_SOURCE, frame_number);
       return;
     }
+  }
+
+  RenderWidgetHost* rwh;
+  if (fullscreen_widget_id_ != MSG_ROUTING_NONE) {
+    RenderProcessHost* process = web_contents()->GetRenderProcessHost();
+    rwh = process ? process->GetRenderWidgetHostByID(fullscreen_widget_id_)
+                  : NULL;
+  } else {
+    rwh = web_contents()->GetRenderViewHost();
+  }
+
+  if (!rwh) {
+    // Transient failure state (e.g., a RenderView is being replaced).
+    consumer->OnSnapshotFailed(CaptureMachine::TRANSIENT_ERROR, frame_number);
+    return;
   }
 
   RenderWidgetHostViewPort* view =
@@ -1228,17 +1206,12 @@ void BackingStoreCopier::DidCopyFromBackingStoreToVideoFrame(
 
 WebContentsVideoCaptureDevice::WebContentsVideoCaptureDevice(
     const media::VideoCaptureDevice::Name& name,
-    int render_process_id, int render_view_id)
+    int render_process_id,
+    int render_view_id,
+    const base::Closure& destroy_cb)
     : device_name_(name),
-      capturer_(new CaptureMachine(render_process_id, render_view_id)) {}
-
-WebContentsVideoCaptureDevice::WebContentsVideoCaptureDevice(
-    RenderWidgetHost* test_source, const base::Closure& destroy_cb)
-    : capturer_(new CaptureMachine(-1, -1)) {
-  device_name_.device_name = "WebContentsForTesting";
-  device_name_.unique_id = "-1:-1";
-  capturer_->InitializeForTesting(test_source, destroy_cb);
-}
+      capturer_(new CaptureMachine(render_process_id, render_view_id,
+                                   destroy_cb)) {}
 
 WebContentsVideoCaptureDevice::~WebContentsVideoCaptureDevice() {
   DVLOG(2) << "WebContentsVideoCaptureDevice@" << this << " destroying.";
@@ -1246,7 +1219,8 @@ WebContentsVideoCaptureDevice::~WebContentsVideoCaptureDevice() {
 
 // static
 media::VideoCaptureDevice* WebContentsVideoCaptureDevice::Create(
-    const std::string& device_id) {
+    const std::string& device_id,
+    const base::Closure& destroy_cb) {
   // Parse device_id into render_process_id and render_view_id.
   int render_process_id = -1;
   int render_view_id = -1;
@@ -1262,13 +1236,7 @@ media::VideoCaptureDevice* WebContentsVideoCaptureDevice::Create(
   name.unique_id = device_id;
 
   return new WebContentsVideoCaptureDevice(
-      name, render_process_id, render_view_id);
-}
-
-// static
-media::VideoCaptureDevice* WebContentsVideoCaptureDevice::CreateForTesting(
-    RenderWidgetHost* test_source, const base::Closure& destroy_cb) {
-  return new WebContentsVideoCaptureDevice(test_source, destroy_cb);
+      name, render_process_id, render_view_id, destroy_cb);
 }
 
 void WebContentsVideoCaptureDevice::Allocate(

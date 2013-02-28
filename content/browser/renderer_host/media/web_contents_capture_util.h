@@ -7,9 +7,11 @@
 
 #include <string>
 
+#include "content/common/content_export.h"
+
 namespace content {
 
-class WebContentsCaptureUtil {
+class CONTENT_EXPORT WebContentsCaptureUtil {
  public:
   // Returns a new id after appending the device id scheme for virtual streams.
   static std::string AppendWebContentsDeviceScheme(

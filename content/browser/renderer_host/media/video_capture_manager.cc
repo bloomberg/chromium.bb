@@ -174,7 +174,7 @@ void VideoCaptureManager::OnOpen(int capture_session_id,
       }
       case MEDIA_TAB_VIDEO_CAPTURE: {
         video_capture_device = WebContentsVideoCaptureDevice::Create(
-            vc_device_name.unique_id);
+            vc_device_name.unique_id, base::Closure());
         break;
       }
       case MEDIA_SCREEN_VIDEO_CAPTURE: {
