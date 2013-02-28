@@ -647,15 +647,30 @@ void AppListController::CheckTaskbarOrViewHasFocus() {
 
   HWND app_list_hwnd = GetAppListHWND();
 
-  // Get the focused window, and check if it is one of these windows. Keep
-  // checking it's parent until either we find one of these windows, or there
-  // is no parent left.
+  // Get the focused window. According to MSDN this will be NULL in some cases,
+  // "such as when a window is losing activation". In these cases we do not hide
+  // the launcher. In other cases, we will keep the launcher open if:
+  // - a jump list window has focus, or
+  // - the right mouse button is down and the taskbar has focus, or
+  // - the launcher has regained focus.
+  // This is enough to allow the launcher to be pinned via the right click menu.
   HWND focused_hwnd = GetForegroundWindow();
+  if (!focused_hwnd)
+    return;
+
   while (focused_hwnd) {
     if (focused_hwnd == jump_list_hwnd ||
-        focused_hwnd == taskbar_hwnd ||
         focused_hwnd == app_list_hwnd) {
       return;
+    }
+    if (focused_hwnd == taskbar_hwnd) {
+      int right_button =
+          GetSystemMetrics(SM_SWAPBUTTON) ? VK_LBUTTON : VK_RBUTTON;
+      bool right_button_down = GetAsyncKeyState(right_button) < 0;
+      if (right_button_down)
+        return;
+
+      break;
     }
     focused_hwnd = GetParent(focused_hwnd);
   }
