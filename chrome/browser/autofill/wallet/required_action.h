@@ -25,11 +25,13 @@ enum RequiredAction {
   INVALID_FORM_FIELD,
   VERIFY_CVV,
   PASSIVE_GAIA_AUTH,
+  REQUIRE_PHONE_NUMBER,
 };
 
-// Static helper functions to determine if an RequiredAction applies to either a
-// FullWallet or WalletItems.
+// Static helper functions to determine if an RequiredAction applies to a
+// FullWallet, WalletItems, or SaveToWallet response.
 bool ActionAppliesToFullWallet(RequiredAction action);
+bool ActionAppliesToSaveToWallet(RequiredAction action);
 bool ActionAppliesToWalletItems(RequiredAction action);
 
 // Turn a string value of the parsed JSON response into an RequiredAction.

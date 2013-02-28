@@ -22,26 +22,53 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 
+namespace autofill {
+namespace wallet {
+
 namespace {
 
 const char kJsonMimeType[] = "application/json";
 const size_t kOneTimePadLength = 6;
 
-std::string AutocheckoutStatusToString(autofill::AutocheckoutStatus status) {
+std::string AutocheckoutStatusToString(AutocheckoutStatus status) {
   switch (status) {
-    case autofill::MISSING_FIELDMAPPING:
+    case MISSING_FIELDMAPPING:
       return "MISSING_FIELDMAPPING";
-    case autofill::MISSING_ADVANCE:
+    case MISSING_ADVANCE:
       return "MISSING_ADVANCE";
-    case autofill::CANNOT_PROCEED:
+    case CANNOT_PROCEED:
       return "CANNOT_PROCEED";
-    case autofill::SUCCESS:
+    case SUCCESS:
       // SUCCESS cannot be sent to the server as it will result in a failure.
       NOTREACHED();
       return "ERROR";
   }
   NOTREACHED();
   return "NOT_POSSIBLE";
+}
+
+// Gets and parses required actions from a SaveToWallet response. Returns
+// false if any unknown required actions are seen and true otherwise.
+void GetRequiredActionsForSaveToWallet(
+    const base::DictionaryValue& dict,
+    std::vector<RequiredAction>* required_actions) {
+  const ListValue* required_action_list;
+  if (!dict.GetList("required_action", &required_action_list))
+    return;
+
+  for (size_t i = 0; i < required_action_list->GetSize(); ++i) {
+    std::string action_string;
+    if (required_action_list->GetString(i, &action_string)) {
+      RequiredAction action = ParseRequiredActionFromString(action_string);
+      if (!ActionAppliesToSaveToWallet(action)) {
+        DLOG(ERROR) << "Response from Google wallet with bad required action:"
+                       " \"" << action_string << "\"";
+        required_actions->clear();
+        return;
+      }
+      required_actions->push_back(action);
+    }
+  }
 }
 
 // Keys for JSON communication with the Online Wallet server.
@@ -69,8 +96,6 @@ const char kUpgradedInstrumentIdKey[] = "upgraded_instrument_id";
 
 }  // namespace
 
-namespace autofill {
-namespace wallet {
 
 WalletClient::WalletClient(net::URLRequestContextGetter* context_getter)
     : context_getter_(context_getter),
@@ -256,7 +281,7 @@ void WalletClient::SaveInstrumentAndAddress(
 }
 
 void WalletClient::SendAutocheckoutStatus(
-    autofill::AutocheckoutStatus status,
+    AutocheckoutStatus status,
     const GURL& source_url,
     const std::string& google_transaction_id,
     base::WeakPtr<WalletClientObserver> observer) {
@@ -265,7 +290,7 @@ void WalletClient::SendAutocheckoutStatus(
 
   base::DictionaryValue request_dict;
   request_dict.SetString(kApiKeyKey, google_apis::GetAPIKey());
-  bool success = status == autofill::SUCCESS;
+  bool success = status == SUCCESS;
   request_dict.SetBoolean(kSuccessKey, success);
   request_dict.SetString(kMerchantDomainKey,
                          source_url.GetWithEmptyPath().spec());
@@ -438,10 +463,13 @@ void WalletClient::OnURLFetchComplete(
 
     case SAVE_ADDRESS: {
       std::string shipping_address_id;
+      std::vector<RequiredAction> required_actions;
+      GetRequiredActionsForSaveToWallet(*response_dict, &required_actions);
       if (response_dict->GetString(kShippingAddressIdKey,
-                                   &shipping_address_id)) {
+                                   &shipping_address_id) ||
+          !required_actions.empty()) {
         if (observer_)
-          observer_->OnDidSaveAddress(shipping_address_id);
+          observer_->OnDidSaveAddress(shipping_address_id, required_actions);
       } else {
         HandleMalformedResponse(old_request.get());
       }
@@ -450,9 +478,12 @@ void WalletClient::OnURLFetchComplete(
 
     case SAVE_INSTRUMENT: {
       std::string instrument_id;
-      if (response_dict->GetString(kInstrumentIdKey, &instrument_id)) {
+      std::vector<RequiredAction> required_actions;
+      GetRequiredActionsForSaveToWallet(*response_dict, &required_actions);
+      if (response_dict->GetString(kInstrumentIdKey, &instrument_id) ||
+          !required_actions.empty()) {
         if (observer_)
-          observer_->OnDidSaveInstrument(instrument_id);
+          observer_->OnDidSaveInstrument(instrument_id, required_actions);
       } else {
         HandleMalformedResponse(old_request.get());
       }
@@ -465,10 +496,15 @@ void WalletClient::OnURLFetchComplete(
       std::string shipping_address_id;
       response_dict->GetString(kShippingAddressIdKey,
                                &shipping_address_id);
-      if (!instrument_id.empty() && !shipping_address_id.empty()) {
+      std::vector<RequiredAction> required_actions;
+      GetRequiredActionsForSaveToWallet(*response_dict, &required_actions);
+      if ((!instrument_id.empty() && !shipping_address_id.empty()) ||
+          !required_actions.empty()) {
         if (observer_) {
-          observer_->OnDidSaveInstrumentAndAddress(instrument_id,
-                                                   shipping_address_id);
+          observer_->OnDidSaveInstrumentAndAddress(
+              instrument_id,
+              shipping_address_id,
+              required_actions);
         }
       } else {
         HandleMalformedResponse(old_request.get());
@@ -478,10 +514,12 @@ void WalletClient::OnURLFetchComplete(
 
     case UPDATE_INSTRUMENT: {
       std::string instrument_id;
-      response_dict->GetString(kInstrumentIdKey, &instrument_id);
-      if (!instrument_id.empty()) {
+      std::vector<RequiredAction> required_actions;
+      GetRequiredActionsForSaveToWallet(*response_dict, &required_actions);
+      if (response_dict->GetString(kInstrumentIdKey, &instrument_id) ||
+          !required_actions.empty()) {
         if (observer_)
-          observer_->OnDidUpdateInstrument(instrument_id);
+          observer_->OnDidUpdateInstrument(instrument_id, required_actions);
       } else {
         HandleMalformedResponse(old_request.get());
       }

@@ -150,13 +150,20 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
       scoped_ptr<wallet::FullWallet> full_wallet) OVERRIDE;
   virtual void OnDidGetWalletItems(
       scoped_ptr<wallet::WalletItems> wallet_items) OVERRIDE;
-  virtual void OnDidSaveAddress(const std::string& address_id) OVERRIDE;
-  virtual void OnDidSaveInstrument(const std::string& instrument_id) OVERRIDE;
+  virtual void OnDidSaveAddress(
+      const std::string& address_id,
+      const std::vector<wallet::RequiredAction>& required_actions) OVERRIDE;
+  virtual void OnDidSaveInstrument(
+      const std::string& instrument_id,
+      const std::vector<wallet::RequiredAction>& required_actions) OVERRIDE;
   virtual void OnDidSaveInstrumentAndAddress(
       const std::string& instrument_id,
-      const std::string& address_id) OVERRIDE;
+      const std::string& address_id,
+      const std::vector<wallet::RequiredAction>& required_actions) OVERRIDE;
   virtual void OnDidSendAutocheckoutStatus() OVERRIDE;
-  virtual void OnDidUpdateInstrument(const std::string& instrument_id) OVERRIDE;
+  virtual void OnDidUpdateInstrument(
+      const std::string& instrument_id,
+      const std::vector<wallet::RequiredAction>& required_actions) OVERRIDE;
   virtual void OnWalletError() OVERRIDE;
   virtual void OnMalformedResponse() OVERRIDE;
   virtual void OnNetworkError(int response_code) OVERRIDE;

@@ -35,25 +35,37 @@ class WalletClientObserver {
   virtual void OnDidGetWalletItems(scoped_ptr<WalletItems> wallet_items) = 0;
 
   // Called when a SaveAddress request finishes successfully. |address_id| can
-  // be used in subsequent GetFullWallet calls.
-  virtual void OnDidSaveAddress(const std::string& address_id) = 0;
+  // be used in subsequent GetFullWallet calls. |required_actions| is populated
+  // if there was a validation error with the data being saved.
+  virtual void OnDidSaveAddress(
+      const std::string& address_id,
+      const std::vector<RequiredAction>& required_actions) = 0;
 
-  // Called when a SaveInstrument request finishes sucessfully.
-  // |instrument_id| can be used in subsequent GetFullWallet calls.
-  virtual void OnDidSaveInstrument(const std::string& instrument_id) = 0;
+  // Called when a SaveInstrument request finishes sucessfully. |instrument_id|
+  // can be used in subsequent GetFullWallet calls. |required_actions| is
+  // populated if there was a validation error with the data being saved.
+  virtual void OnDidSaveInstrument(
+      const std::string& instrument_id,
+      const std::vector<RequiredAction>& required_actions) = 0;
 
   // Called when a SaveInstrumentAndAddress request finishes succesfully.
   // |instrument_id| and |address_id| can be used in subsequent
-  // GetFullWallet calls.
+  // GetFullWallet calls. |required_actions| is populated if there was a
+  // validation error with the data being saved.
   virtual void OnDidSaveInstrumentAndAddress(
       const std::string& instrument_id,
-      const std::string& address_id) = 0;
+      const std::string& address_id,
+      const std::vector<RequiredAction>& required_actions) = 0;
 
   // Called when a SendAutocheckoutStatus request finishes successfully.
   virtual void OnDidSendAutocheckoutStatus() = 0;
 
   // Called when an UpdateInstrument request finishes successfully.
-  virtual void OnDidUpdateInstrument(const std::string& instrument_id) = 0;
+  // |required_actions| is populated if there was a validation error with the
+  // data being saved.
+  virtual void OnDidUpdateInstrument(
+      const std::string& instrument_id,
+      const std::vector<RequiredAction>& required_actions) = 0;
 
   // TODO(ahutter): This is going to need more arguments, probably an error
   // code and a message for the user.

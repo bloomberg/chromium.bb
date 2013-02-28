@@ -954,21 +954,28 @@ void AutofillDialogControllerImpl::OnDidGetWalletItems(
 }
 
 void AutofillDialogControllerImpl::OnDidSaveAddress(
-    const std::string& address_id) {
-  NOTIMPLEMENTED() << " address_id=" << address_id;
+    const std::string& address_id,
+    const std::vector<wallet::RequiredAction>& required_actions) {
+  NOTIMPLEMENTED() << " address_id=" << address_id
+                   << ", required_actions=" << !required_actions.empty();
   WalletRequestCompleted(true);
 }
 
 void AutofillDialogControllerImpl::OnDidSaveInstrument(
-    const std::string& instrument_id) {
-  NOTIMPLEMENTED() << " instrument_id=" << instrument_id;
+    const std::string& instrument_id,
+    const std::vector<wallet::RequiredAction>& required_actions) {
+  NOTIMPLEMENTED() << " instrument_id=" << instrument_id
+                   << ", required_actions=" << !required_actions.empty();
   WalletRequestCompleted(true);
 }
 
 void AutofillDialogControllerImpl::OnDidSaveInstrumentAndAddress(
-    const std::string& instrument_id, const std::string& address_id) {
+    const std::string& instrument_id,
+    const std::string& address_id,
+    const std::vector<wallet::RequiredAction>& required_actions) {
   NOTIMPLEMENTED() << " instrument_id=" << instrument_id
-                   << ", address_id=" << address_id;
+                   << ", address_id=" << address_id
+                   << ", required_actions=" << !required_actions.empty();
   WalletRequestCompleted(true);
 }
 
@@ -978,8 +985,10 @@ void AutofillDialogControllerImpl::OnDidSendAutocheckoutStatus() {
 }
 
 void AutofillDialogControllerImpl::OnDidUpdateInstrument(
-    const std::string& instrument_id) {
-  NOTIMPLEMENTED() << " instrument_id=" << instrument_id;
+    const std::string& instrument_id,
+    const std::vector<wallet::RequiredAction>& required_actions) {
+  NOTIMPLEMENTED() << " instrument_id=" << instrument_id
+                   << ", required_actions=" << !required_actions.empty();
 }
 
 void AutofillDialogControllerImpl::OnWalletError() {

@@ -354,8 +354,8 @@ class WalletItemsTest : public testing::Test {
  protected:
   void SetUpDictionary(const std::string& json) {
     scoped_ptr<Value> value(base::JSONReader::Read(json));
-    DCHECK(value.get());
-    DCHECK(value->IsType(Value::TYPE_DICTIONARY));
+    ASSERT_TRUE(value.get());
+    ASSERT_TRUE(value->IsType(Value::TYPE_DICTIONARY));
     dict.reset(static_cast<DictionaryValue*>(value.release()));
   }
   scoped_ptr<DictionaryValue> dict;
@@ -363,37 +363,37 @@ class WalletItemsTest : public testing::Test {
 
 TEST_F(WalletItemsTest, CreateMaskedInstrumentMissingStatus) {
   SetUpDictionary(kMaskedInstrumentMissingStatus);
-  ASSERT_EQ(NULL,
+  EXPECT_EQ(NULL,
             WalletItems::MaskedInstrument::CreateMaskedInstrument(*dict).get());
 }
 
 TEST_F(WalletItemsTest, CreateMaskedInstrumentMissingType) {
   SetUpDictionary(kMaskedInstrumentMissingType);
-  ASSERT_EQ(NULL,
+  EXPECT_EQ(NULL,
             WalletItems::MaskedInstrument::CreateMaskedInstrument(*dict).get());
 }
 
 TEST_F(WalletItemsTest, CreateMaskedInstrumentMissingLastFourDigits) {
   SetUpDictionary(kMaskedInstrumentMissingLastFourDigits);
-  ASSERT_EQ(NULL,
+  EXPECT_EQ(NULL,
             WalletItems::MaskedInstrument::CreateMaskedInstrument(*dict).get());
 }
 
 TEST_F(WalletItemsTest, CreateMaskedInstrumentMissingAddress) {
   SetUpDictionary(kMaskedInstrumentMissingAddress);
-  ASSERT_EQ(NULL,
+  EXPECT_EQ(NULL,
             WalletItems::MaskedInstrument::CreateMaskedInstrument(*dict).get());
 }
 
 TEST_F(WalletItemsTest, CreateMaskedInstrumentMalformedAddress) {
   SetUpDictionary(kMaskedInstrumentMalformedAddress);
-  ASSERT_EQ(NULL,
+  EXPECT_EQ(NULL,
             WalletItems::MaskedInstrument::CreateMaskedInstrument(*dict).get());
 }
 
 TEST_F(WalletItemsTest, CreateMaskedInstrumentMissingObjectId) {
   SetUpDictionary(kMaskedInstrumentMissingObjectId);
-  ASSERT_EQ(NULL,
+  EXPECT_EQ(NULL,
             WalletItems::MaskedInstrument::CreateMaskedInstrument(*dict).get());
 }
 
@@ -420,24 +420,24 @@ TEST_F(WalletItemsTest, CreateMaskedInstrument) {
       address.Pass(),
       WalletItems::MaskedInstrument::VALID,
       "object_id");
-  ASSERT_EQ(masked_instrument,
+  EXPECT_EQ(masked_instrument,
             *WalletItems::MaskedInstrument::CreateMaskedInstrument(*dict));
 }
 
 TEST_F(WalletItemsTest, CreateLegalDocumentMissingDocId) {
   SetUpDictionary(kLegalDocumentMissingDocumentId);
-  ASSERT_EQ(NULL, WalletItems::LegalDocument::CreateLegalDocument(*dict).get());
+  EXPECT_EQ(NULL, WalletItems::LegalDocument::CreateLegalDocument(*dict).get());
 }
 
 TEST_F(WalletItemsTest, CreateLegalDocumentMissingDisplayName) {
   SetUpDictionary(kLegalDocumentMissingDisplayName);
-  ASSERT_EQ(NULL, WalletItems::LegalDocument::CreateLegalDocument(*dict).get());
+  EXPECT_EQ(NULL, WalletItems::LegalDocument::CreateLegalDocument(*dict).get());
 }
 
 TEST_F(WalletItemsTest, CreateLegalDocument) {
   SetUpDictionary(kLegalDocument);
   WalletItems::LegalDocument expected("doc_id", "display_name");
-  ASSERT_EQ(expected,
+  EXPECT_EQ(expected,
             *WalletItems::LegalDocument::CreateLegalDocument(*dict));
 }
 
@@ -463,26 +463,26 @@ TEST_F(WalletItemsTest, CreateWalletItemsWithRequiredActions) {
                        std::string(),
                        std::string(),
                        std::string());
-  ASSERT_EQ(expected, *WalletItems::CreateWalletItems(*dict));
+  EXPECT_EQ(expected, *WalletItems::CreateWalletItems(*dict));
 
-  DCHECK(!required_actions.empty());
+  ASSERT_FALSE(required_actions.empty());
   required_actions.pop_back();
   WalletItems different_required_actions(required_actions,
                                          std::string(),
                                          std::string(),
                                          std::string(),
                                          std::string());
-  ASSERT_NE(expected, different_required_actions);
+  EXPECT_NE(expected, different_required_actions);
 }
 
 TEST_F(WalletItemsTest, CreateWalletItemsWithInvalidRequiredActions) {
   SetUpDictionary(kWalletItemsWithInvalidRequiredActions);
-  ASSERT_EQ(NULL, WalletItems::CreateWalletItems(*dict).get());
+  EXPECT_EQ(NULL, WalletItems::CreateWalletItems(*dict).get());
 }
 
 TEST_F(WalletItemsTest, CreateWalletItemsMissingGoogleTransactionId) {
   SetUpDictionary(kWalletItemsMissingGoogleTransactionId);
-  ASSERT_EQ(NULL, WalletItems::CreateWalletItems(*dict).get());
+  EXPECT_EQ(NULL, WalletItems::CreateWalletItems(*dict).get());
 }
 
 TEST_F(WalletItemsTest, CreateWalletItems) {
@@ -533,7 +533,7 @@ TEST_F(WalletItemsTest, CreateWalletItems) {
                                      "display_name"));
   expected.AddLegalDocument(legal_document.Pass());
 
-  ASSERT_EQ(expected, *WalletItems::CreateWalletItems(*dict));
+  EXPECT_EQ(expected, *WalletItems::CreateWalletItems(*dict));
 }
 
 }  // namespace wallet

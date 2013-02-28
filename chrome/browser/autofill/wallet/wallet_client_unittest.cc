@@ -132,6 +132,25 @@ const char kSaveAddressValidResponse[] =
     "  \"shipping_address_id\":\"shipping_address_id\""
     "}";
 
+const char kSaveAddressWithRequiredActionsValidResponse[] =
+    "{"
+    "  \"required_action\":"
+    "  ["
+    "    \"  \\treqUIRE_PhOnE_number   \\n\\r\","
+    "    \"INVALID_form_field\""
+    "  ]"
+    "}";
+
+const char kSaveWithInvalidRequiredActionsResponse[] =
+    "{"
+    "  \"required_action\":"
+    "  ["
+    "    \"  setup_wallet\","
+    "    \"  \\treqUIRE_PhOnE_number   \\n\\r\","
+    "    \"INVALID_form_field\""
+    "  ]"
+    "}";
+
 const char kSaveInvalidResponse[] =
     "{"
     "  \"garbage\":123"
@@ -142,10 +161,28 @@ const char kSaveInstrumentValidResponse[] =
     "  \"instrument_id\":\"instrument_id\""
     "}";
 
+const char kSaveInstrumentWithRequiredActionsValidResponse[] =
+    "{"
+    "  \"required_action\":"
+    "  ["
+    "    \"  \\treqUIRE_PhOnE_number   \\n\\r\","
+    "    \"INVALID_form_field\""
+    "  ]"
+    "}";
+
 const char kSaveInstrumentAndAddressValidResponse[] =
     "{"
     "  \"shipping_address_id\":\"shipping_address_id\","
     "  \"instrument_id\":\"instrument_id\""
+    "}";
+
+const char kSaveInstrumentAndAddressWithRequiredActionsValidResponse[] =
+    "{"
+    "  \"required_action\":"
+    "  ["
+    "    \"  \\treqUIRE_PhOnE_number   \\n\\r\","
+    "    \"INVALID_form_field\""
+    "  ]"
     "}";
 
 const char kSaveInstrumentAndAddressMissingAddressResponse[] =
@@ -161,6 +198,15 @@ const char kSaveInstrumentAndAddressMissingInstrumentResponse[] =
 const char kUpdateInstrumentValidResponse[] =
     "{"
     "  \"instrument_id\":\"instrument_id\""
+    "}";
+
+const char kUpdateInstrumentWithRequiredActionsValidResponse[] =
+    "{"
+    "  \"required_action\":"
+    "  ["
+    "    \"  \\treqUIRE_PhOnE_number   \\n\\r\","
+    "    \"INVALID_form_field\""
+    "  ]"
     "}";
 
 const char kUpdateInstrumentMalformedResponse[] =
@@ -425,13 +471,20 @@ class MockWalletClientObserver :
 
   MOCK_METHOD0(OnDidAcceptLegalDocuments, void());
   MOCK_METHOD1(OnDidAuthenticateInstrument, void(bool success));
-  MOCK_METHOD1(OnDidSaveAddress, void(const std::string& address_id));
-  MOCK_METHOD1(OnDidSaveInstrument, void(const std::string& instrument_id));
-  MOCK_METHOD2(OnDidSaveInstrumentAndAddress,
+  MOCK_METHOD2(OnDidSaveAddress,
+               void(const std::string& address_id,
+                    const std::vector<RequiredAction>& required_actions));
+  MOCK_METHOD2(OnDidSaveInstrument,
                void(const std::string& instrument_id,
-                    const std::string& shipping_address_id));
+                    const std::vector<RequiredAction>& required_actions));
+  MOCK_METHOD3(OnDidSaveInstrumentAndAddress,
+               void(const std::string& instrument_id,
+                    const std::string& shipping_address_id,
+                    const std::vector<RequiredAction>& required_actions));
   MOCK_METHOD0(OnDidSendAutocheckoutStatus, void());
-  MOCK_METHOD1(OnDidUpdateInstrument, void(const std::string& instrument_id));
+  MOCK_METHOD2(OnDidUpdateInstrument,
+               void(const std::string& instrument_id,
+                    const std::vector<RequiredAction>& required_actions));
   MOCK_METHOD0(OnWalletError, void());
   MOCK_METHOD0(OnMalformedResponse, void());
   MOCK_METHOD1(OnNetworkError, void(int response_code));
@@ -795,7 +848,9 @@ TEST_F(WalletClientTest, GetWalletItems) {
 
 TEST_F(WalletClientTest, SaveAddressSucceeded) {
   MockWalletClientObserver observer;
-  EXPECT_CALL(observer, OnDidSaveAddress("shipping_address_id")).Times(1);
+  EXPECT_CALL(observer,
+              OnDidSaveAddress("shipping_address_id",
+                               std::vector<RequiredAction>())).Times(1);
 
   net::TestURLFetcherFactory factory;
 
@@ -807,6 +862,45 @@ TEST_F(WalletClientTest, SaveAddressSucceeded) {
                          net::HTTP_OK,
                          kSaveAddressValidRequest,
                          kSaveAddressValidResponse);
+}
+
+TEST_F(WalletClientTest, SaveAddressWithRequiredActionsSucceeded) {
+  MockWalletClientObserver observer;
+
+  std::vector<RequiredAction> required_actions;
+  required_actions.push_back(REQUIRE_PHONE_NUMBER);
+  required_actions.push_back(INVALID_FORM_FIELD);
+
+  EXPECT_CALL(observer,
+              OnDidSaveAddress(std::string(),
+                               required_actions)).Times(1);
+
+  net::TestURLFetcherFactory factory;
+
+  scoped_ptr<Address> address = GetTestShippingAddress();
+
+  WalletClient wallet_client(profile_.GetRequestContext());
+  wallet_client.SaveAddress(*address, GURL(kMerchantUrl), observer.AsWeakPtr());
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_OK,
+                         kSaveAddressValidRequest,
+                         kSaveAddressWithRequiredActionsValidResponse);
+}
+
+TEST_F(WalletClientTest, SaveAddressFailedInvalidRequiredAction) {
+  MockWalletClientObserver observer;
+  EXPECT_CALL(observer, OnMalformedResponse()).Times(1);
+
+  net::TestURLFetcherFactory factory;
+
+  scoped_ptr<Address> address = GetTestShippingAddress();
+
+  WalletClient wallet_client(profile_.GetRequestContext());
+  wallet_client.SaveAddress(*address, GURL(kMerchantUrl), observer.AsWeakPtr());
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_OK,
+                         kSaveAddressValidRequest,
+                         kSaveWithInvalidRequiredActionsResponse);
 }
 
 TEST_F(WalletClientTest, SaveAddressFailedMalformedResponse) {
@@ -827,7 +921,9 @@ TEST_F(WalletClientTest, SaveAddressFailedMalformedResponse) {
 
 TEST_F(WalletClientTest, SaveInstrumentSucceeded) {
   MockWalletClientObserver observer;
-  EXPECT_CALL(observer, OnDidSaveInstrument("instrument_id")).Times(1);
+  EXPECT_CALL(observer,
+              OnDidSaveInstrument("instrument_id",
+                                  std::vector<RequiredAction>())).Times(1);
 
   net::TestURLFetcherFactory factory;
 
@@ -849,6 +945,66 @@ TEST_F(WalletClientTest, SaveInstrumentSucceeded) {
                          net::HTTP_OK,
                          kSaveInstrumentValidRequest,
                          kSaveInstrumentValidResponse);
+}
+
+TEST_F(WalletClientTest, SaveInstrumentWithRequiredActionsSucceeded) {
+  MockWalletClientObserver observer;
+
+  std::vector<RequiredAction> required_actions;
+  required_actions.push_back(REQUIRE_PHONE_NUMBER);
+  required_actions.push_back(INVALID_FORM_FIELD);
+
+  EXPECT_CALL(observer,
+              OnDidSaveInstrument(std::string(),
+                                  required_actions)).Times(1);
+
+  net::TestURLFetcherFactory factory;
+
+  scoped_ptr<Instrument> instrument = GetTestInstrument();
+
+  WalletClient wallet_client(profile_.GetRequestContext());
+  wallet_client.SaveInstrument(*instrument,
+                               "obfuscated_gaia_id",
+                               GURL(kMerchantUrl),
+                               observer.AsWeakPtr());
+
+  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  ASSERT_TRUE(encryption_fetcher);
+  encryption_fetcher->set_response_code(net::HTTP_OK);
+  encryption_fetcher->SetResponseString("escrow_handle");
+  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_OK,
+                         kSaveInstrumentValidRequest,
+                         kSaveInstrumentWithRequiredActionsValidResponse);
+}
+
+TEST_F(WalletClientTest, SaveInstrumentFailedInvalidRequiredActions) {
+  MockWalletClientObserver observer;
+
+  EXPECT_CALL(observer, OnMalformedResponse());
+
+  net::TestURLFetcherFactory factory;
+
+  scoped_ptr<Instrument> instrument = GetTestInstrument();
+
+  WalletClient wallet_client(profile_.GetRequestContext());
+  wallet_client.SaveInstrument(*instrument,
+                               "obfuscated_gaia_id",
+                               GURL(kMerchantUrl),
+                               observer.AsWeakPtr());
+
+  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  ASSERT_TRUE(encryption_fetcher);
+  encryption_fetcher->set_response_code(net::HTTP_OK);
+  encryption_fetcher->SetResponseString("escrow_handle");
+  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_OK,
+                         kSaveInstrumentValidRequest,
+                         kSaveWithInvalidRequiredActionsResponse);
 }
 
 TEST_F(WalletClientTest, SaveInstrumentEscrowDown) {
@@ -923,8 +1079,10 @@ TEST_F(WalletClientTest, SaveInstrumentFailedMalformedResponse) {
 TEST_F(WalletClientTest, SaveInstrumentAndAddressSucceeded) {
   MockWalletClientObserver observer;
   EXPECT_CALL(observer,
-              OnDidSaveInstrumentAndAddress("instrument_id",
-                                            "shipping_address_id")).Times(1);
+              OnDidSaveInstrumentAndAddress(
+                  "instrument_id",
+                  "shipping_address_id",
+                  std::vector<RequiredAction>())).Times(1);
 
   net::TestURLFetcherFactory factory;
 
@@ -948,6 +1106,73 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressSucceeded) {
                          net::HTTP_OK,
                          kSaveInstrumentAndAddressValidRequest,
                          kSaveInstrumentAndAddressValidResponse);
+}
+
+TEST_F(WalletClientTest, SaveInstrumentAndAddressWithRequiredActionsSucceeded) {
+  MockWalletClientObserver observer;
+
+  std::vector<RequiredAction> required_actions;
+  required_actions.push_back(REQUIRE_PHONE_NUMBER);
+  required_actions.push_back(INVALID_FORM_FIELD);
+
+  EXPECT_CALL(observer,
+              OnDidSaveInstrumentAndAddress(
+                  std::string(),
+                  std::string(),
+                  required_actions)).Times(1);
+
+  net::TestURLFetcherFactory factory;
+
+  scoped_ptr<Instrument> instrument = GetTestInstrument();
+
+  scoped_ptr<Address> address = GetTestShippingAddress();
+
+  WalletClient wallet_client(profile_.GetRequestContext());
+  wallet_client.SaveInstrumentAndAddress(*instrument,
+                                         *address,
+                                         "obfuscated_gaia_id",
+                                         GURL(kMerchantUrl),
+                                         observer.AsWeakPtr());
+
+  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  ASSERT_TRUE(encryption_fetcher);
+  encryption_fetcher->set_response_code(net::HTTP_OK);
+  encryption_fetcher->SetResponseString("escrow_handle");
+  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+  VerifyAndFinishRequest(
+      factory,
+      net::HTTP_OK,
+      kSaveInstrumentAndAddressValidRequest,
+      kSaveInstrumentAndAddressWithRequiredActionsValidResponse);
+}
+
+TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedInvalidRequiredAction) {
+  MockWalletClientObserver observer;
+  EXPECT_CALL(observer, OnMalformedResponse()).Times(1);
+
+  net::TestURLFetcherFactory factory;
+
+  scoped_ptr<Instrument> instrument = GetTestInstrument();
+
+  scoped_ptr<Address> address = GetTestShippingAddress();
+
+  WalletClient wallet_client(profile_.GetRequestContext());
+  wallet_client.SaveInstrumentAndAddress(*instrument,
+                                         *address,
+                                         "obfuscated_gaia_id",
+                                         GURL(kMerchantUrl),
+                                         observer.AsWeakPtr());
+
+  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  ASSERT_TRUE(encryption_fetcher);
+  encryption_fetcher->set_response_code(net::HTTP_OK);
+  encryption_fetcher->SetResponseString("escrow_handle");
+  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_OK,
+                         kSaveInstrumentAndAddressValidRequest,
+                         kSaveWithInvalidRequiredActionsResponse);
 }
 
 TEST_F(WalletClientTest, SaveInstrumentAndAddressEscrowDown) {
@@ -1059,7 +1284,9 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedInstrumentMissing) {
 
 TEST_F(WalletClientTest, UpdateInstrumentSucceeded) {
   MockWalletClientObserver observer;
-  EXPECT_CALL(observer, OnDidUpdateInstrument("instrument_id")).Times(1);
+  EXPECT_CALL(observer,
+              OnDidUpdateInstrument("instrument_id",
+                                    std::vector<RequiredAction>())).Times(1);
 
   net::TestURLFetcherFactory factory;
 
@@ -1074,6 +1301,51 @@ TEST_F(WalletClientTest, UpdateInstrumentSucceeded) {
                          net::HTTP_OK,
                          kUpdateInstrumentValidRequest,
                          kUpdateInstrumentValidResponse);
+}
+
+TEST_F(WalletClientTest, UpdateInstrumentWithRequiredActionsSucceeded) {
+  MockWalletClientObserver observer;
+
+  std::vector<RequiredAction> required_actions;
+  required_actions.push_back(REQUIRE_PHONE_NUMBER);
+  required_actions.push_back(INVALID_FORM_FIELD);
+
+  EXPECT_CALL(observer,
+              OnDidUpdateInstrument(std::string(),
+                                    required_actions)).Times(1);
+
+  net::TestURLFetcherFactory factory;
+
+  scoped_ptr<Address> address = GetTestAddress();
+
+  WalletClient wallet_client(profile_.GetRequestContext());
+  wallet_client.UpdateInstrument("instrument_id",
+                                 *address,
+                                 GURL(kMerchantUrl),
+                                 observer.AsWeakPtr());
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_OK,
+                         kUpdateInstrumentValidRequest,
+                         kUpdateInstrumentWithRequiredActionsValidResponse);
+}
+
+TEST_F(WalletClientTest, UpdateInstrumentFailedInvalidRequiredAction) {
+  MockWalletClientObserver observer;
+  EXPECT_CALL(observer, OnMalformedResponse()).Times(1);
+
+  net::TestURLFetcherFactory factory;
+
+  scoped_ptr<Address> address = GetTestAddress();
+
+  WalletClient wallet_client(profile_.GetRequestContext());
+  wallet_client.UpdateInstrument("instrument_id",
+                                 *address,
+                                 GURL(kMerchantUrl),
+                                 observer.AsWeakPtr());
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_OK,
+                         kUpdateInstrumentValidRequest,
+                         kSaveWithInvalidRequiredActionsResponse);
 }
 
 TEST_F(WalletClientTest, UpdateInstrumentMalformedResponse) {
