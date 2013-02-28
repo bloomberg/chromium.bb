@@ -222,7 +222,7 @@ v8::Handle<v8::Value> ModuleSystem::LazyFieldGetter(
   v8::Handle<v8::Object> global(v8::Context::GetCurrent()->Global());
   v8::Handle<v8::Value> module_system_value =
       global->GetHiddenValue(v8::String::New(kModuleSystem));
-  if (module_system_value->IsUndefined()) {
+  if (module_system_value.IsEmpty() || module_system_value->IsUndefined()) {
     // ModuleSystem has been deleted.
     return v8::Undefined();
   }
