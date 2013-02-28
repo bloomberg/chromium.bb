@@ -979,6 +979,12 @@ internal_paladin.add_config('alex-paladin',
   quick_unit=False,
 )
 
+internal_paladin.add_config('fox-wtm2-paladin',
+  boards=['fox_wtm2'],
+  paladin_builder_name='fox paladin',
+  important=False,
+)
+
 internal_paladin.add_config('stumpy-paladin',
   boards=['stumpy'],
   paladin_builder_name='stumpy paladin',
@@ -1129,6 +1135,11 @@ _release.add_config('butterfly-release',
   boards=['butterfly'],
   hw_tests=['bvt'],
   useflags=official['useflags'] + ['oem_wallpaper'],
+)
+
+_release.add_config('fox-wtm2-release',
+  boards=['fox_wtm2'],
+  hw_tests=[],
 )
 
 _arm_release = _release.derive(arm)
