@@ -113,9 +113,8 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
                  const std::string& path,
                  const base::Time& creation) {
     store_->AddCookie(
-        net::CanonicalCookie(GURL(), name, value, domain, path, std::string(),
-                             std::string(), creation, creation, creation, false,
-                             false));
+        net::CanonicalCookie(GURL(), name, value, domain, path, creation,
+                             creation, creation, false, false));
   }
 
   virtual void SetUp() OVERRIDE {
@@ -308,9 +307,8 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadOldSessionCookies) {
   // Add a session cookie.
   store_->AddCookie(
       net::CanonicalCookie(
-          GURL(), "C", "D", "sessioncookie.com", "/", std::string(),
-          std::string(), base::Time::Now(), base::Time(),
-          base::Time::Now(), false, false));
+          GURL(), "C", "D", "sessioncookie.com", "/", base::Time::Now(),
+          base::Time(), base::Time::Now(), false, false));
 
   // Force the store to write its data to the disk.
   DestroyStore();
@@ -335,9 +333,8 @@ TEST_F(SQLitePersistentCookieStoreTest, TestDontLoadOldSessionCookies) {
   // Add a session cookie.
   store_->AddCookie(
       net::CanonicalCookie(
-          GURL(), "C", "D", "sessioncookie.com", "/", std::string(),
-          std::string(), base::Time::Now(), base::Time(),
-          base::Time::Now(), false, false));
+          GURL(), "C", "D", "sessioncookie.com", "/", base::Time::Now(),
+          base::Time(), base::Time::Now(), false, false));
 
   // Force the store to write its data to the disk.
   DestroyStore();
@@ -367,14 +364,11 @@ TEST_F(SQLitePersistentCookieStoreTest, PersistIsPersistent) {
   store_->AddCookie(
       net::CanonicalCookie(
           GURL(), kSessionName, "val", "sessioncookie.com", "/",
-          std::string(), std::string(),
-          base::Time::Now(), base::Time(), base::Time::Now(),
-          false, false));
+          base::Time::Now(), base::Time(), base::Time::Now(), false, false));
   // Add a persistent cookie.
   store_->AddCookie(
       net::CanonicalCookie(
           GURL(), kPersistentName, "val", "sessioncookie.com", "/",
-          std::string(), std::string(),
           base::Time::Now() - base::TimeDelta::FromDays(1), base::Time::Now(),
           base::Time::Now(), false, false));
 

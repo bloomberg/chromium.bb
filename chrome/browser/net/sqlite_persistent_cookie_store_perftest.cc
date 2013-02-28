@@ -71,8 +71,7 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
         store_->AddCookie(
             net::CanonicalCookie(gurl,
                 base::StringPrintf("Cookie_%d", cookie_num), "1",
-                domain_name, "/", std::string(), std::string(),
-                t, t, t, false, false));
+                domain_name, "/", t, t, t, false, false));
       }
     }
     // Replace the store effectively destroying the current one and forcing it

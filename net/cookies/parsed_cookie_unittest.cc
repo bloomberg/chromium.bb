@@ -150,35 +150,6 @@ TEST(ParsedCookieTest, MultipleEquals) {
   EXPECT_EQ(4U, pc.NumberOfAttributes());
 }
 
-TEST(ParsedCookieTest, MACKey) {
-  ParsedCookie pc("foo=bar; MAC-Key=3900ac9anw9incvw9f");
-  EXPECT_TRUE(pc.IsValid());
-  EXPECT_EQ("foo", pc.Name());
-  EXPECT_EQ("bar", pc.Value());
-  EXPECT_EQ("3900ac9anw9incvw9f", pc.MACKey());
-  EXPECT_EQ(1U, pc.NumberOfAttributes());
-}
-
-TEST(ParsedCookieTest, MACAlgorithm) {
-  ParsedCookie pc("foo=bar; MAC-Algorithm=hmac-sha-1");
-  EXPECT_TRUE(pc.IsValid());
-  EXPECT_EQ("foo", pc.Name());
-  EXPECT_EQ("bar", pc.Value());
-  EXPECT_EQ("hmac-sha-1", pc.MACAlgorithm());
-  EXPECT_EQ(1U, pc.NumberOfAttributes());
-}
-
-TEST(ParsedCookieTest, MACKeyAndMACAlgorithm) {
-  ParsedCookie pc(
-        "foo=bar; MAC-Key=voiae-09fj0302nfqf; MAC-Algorithm=hmac-sha-256");
-  EXPECT_TRUE(pc.IsValid());
-  EXPECT_EQ("foo", pc.Name());
-  EXPECT_EQ("bar", pc.Value());
-  EXPECT_EQ("voiae-09fj0302nfqf", pc.MACKey());
-  EXPECT_EQ("hmac-sha-256", pc.MACAlgorithm());
-  EXPECT_EQ(2U, pc.NumberOfAttributes());
-}
-
 TEST(ParsedCookieTest, QuotedTrailingWhitespace) {
   ParsedCookie pc("ANCUUID=\"zohNumRKgI0oxyhSsV3Z7D\"  ; "
                       "expires=Sun, 18-Apr-2027 21:06:29 GMT ; "
@@ -356,37 +327,29 @@ TEST(ParsedCookieTest, SetAttributes) {
   // Set all other attributes and check that they are appended in order.
   EXPECT_TRUE(pc.SetDomain("domain.com"));
   EXPECT_TRUE(pc.SetPath("/"));
-  EXPECT_TRUE(pc.SetMACKey("mackey"));
-  EXPECT_TRUE(pc.SetMACAlgorithm("\"macalgorithm\""));
   EXPECT_TRUE(pc.SetExpires("Sun, 18-Apr-2027 21:06:29 GMT"));
   EXPECT_TRUE(pc.SetMaxAge("12345"));
   EXPECT_TRUE(pc.SetIsSecure(true));
   EXPECT_TRUE(pc.SetIsHttpOnly(true));
-  EXPECT_EQ("name=value; domain=domain.com; path=/; mac-key=mackey; "
-            "mac-algorithm=\"macalgorithm\"; "
+  EXPECT_EQ("name=value; domain=domain.com; path=/; "
             "expires=Sun, 18-Apr-2027 21:06:29 GMT; max-age=12345; secure; "
             "httponly",
             pc.ToCookieLine());
   EXPECT_TRUE(pc.HasDomain());
   EXPECT_TRUE(pc.HasPath());
-  EXPECT_TRUE(pc.HasMACKey());
-  EXPECT_TRUE(pc.HasMACAlgorithm());
   EXPECT_TRUE(pc.HasExpires());
   EXPECT_TRUE(pc.HasMaxAge());
   EXPECT_TRUE(pc.IsSecure());
   EXPECT_TRUE(pc.IsHttpOnly());
 
   // Clear one attribute from the middle.
-  EXPECT_TRUE(pc.SetMACAlgorithm(""));
+  EXPECT_TRUE(pc.SetPath("/foo"));
   EXPECT_TRUE(pc.HasDomain());
   EXPECT_TRUE(pc.HasPath());
-  EXPECT_TRUE(pc.HasMACKey());
-  EXPECT_FALSE(pc.HasMACAlgorithm());
   EXPECT_TRUE(pc.HasExpires());
-  EXPECT_TRUE(pc.HasMaxAge());
   EXPECT_TRUE(pc.IsSecure());
   EXPECT_TRUE(pc.IsHttpOnly());
-  EXPECT_EQ("name=value; domain=domain.com; path=/; mac-key=mackey; "
+  EXPECT_EQ("name=value; domain=domain.com; path=/foo; "
             "expires=Sun, 18-Apr-2027 21:06:29 GMT; max-age=12345; secure; "
             "httponly",
             pc.ToCookieLine());
@@ -394,8 +357,6 @@ TEST(ParsedCookieTest, SetAttributes) {
   // Clear the rest and change the name and value.
   EXPECT_TRUE(pc.SetDomain(""));
   EXPECT_TRUE(pc.SetPath(""));
-  EXPECT_TRUE(pc.SetMACKey(""));
-  EXPECT_TRUE(pc.SetMACAlgorithm(""));
   EXPECT_TRUE(pc.SetExpires(""));
   EXPECT_TRUE(pc.SetMaxAge(""));
   EXPECT_TRUE(pc.SetIsSecure(false));
@@ -404,8 +365,6 @@ TEST(ParsedCookieTest, SetAttributes) {
   EXPECT_TRUE(pc.SetValue("value2"));
   EXPECT_FALSE(pc.HasDomain());
   EXPECT_FALSE(pc.HasPath());
-  EXPECT_FALSE(pc.HasMACKey());
-  EXPECT_FALSE(pc.HasMACAlgorithm());
   EXPECT_FALSE(pc.HasExpires());
   EXPECT_FALSE(pc.HasMaxAge());
   EXPECT_FALSE(pc.IsSecure());

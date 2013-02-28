@@ -48,11 +48,6 @@ GetCookieStringCallback::GetCookieStringCallback() {}
 GetCookieStringCallback::GetCookieStringCallback(base::Thread* run_in_thread)
     : CookieCallback(run_in_thread) {}
 
-GetCookiesWithInfoCallback::GetCookiesWithInfoCallback() {}
-GetCookiesWithInfoCallback::GetCookiesWithInfoCallback(
-    base::Thread* run_in_thread) : CookieCallback(run_in_thread) {}
-GetCookiesWithInfoCallback::~GetCookiesWithInfoCallback() {}
-
 DeleteCallback::DeleteCallback() : num_deleted_(0) {}
 DeleteCallback::DeleteCallback(base::Thread* run_in_thread)
     : CookieCallback(run_in_thread),

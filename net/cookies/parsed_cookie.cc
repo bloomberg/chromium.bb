@@ -51,8 +51,6 @@ namespace {
 
 const char kPathTokenName[] = "path";
 const char kDomainTokenName[] = "domain";
-const char kMACKeyTokenName[] = "mac-key";
-const char kMACAlgorithmTokenName[] = "mac-algorithm";
 const char kExpiresTokenName[] = "expires";
 const char kMaxAgeTokenName[] = "max-age";
 const char kSecureTokenName[] = "secure";
@@ -154,8 +152,6 @@ namespace net {
 ParsedCookie::ParsedCookie(const std::string& cookie_line)
     : path_index_(0),
       domain_index_(0),
-      mac_key_index_(0),
-      mac_algorithm_index_(0),
       expires_index_(0),
       maxage_index_(0),
       secure_index_(0),
@@ -202,15 +198,6 @@ bool ParsedCookie::SetPath(const std::string& path) {
 
 bool ParsedCookie::SetDomain(const std::string& domain) {
   return SetString(&domain_index_, kDomainTokenName, domain);
-}
-
-bool ParsedCookie::SetMACKey(const std::string& mac_key) {
-  return SetString(&mac_key_index_, kMACKeyTokenName, mac_key);
-}
-
-bool ParsedCookie::SetMACAlgorithm(const std::string& mac_algorithm) {
-  return SetString(&mac_algorithm_index_, kMACAlgorithmTokenName,
-      mac_algorithm);
 }
 
 bool ParsedCookie::SetExpires(const std::string& expires) {
@@ -405,10 +392,6 @@ void ParsedCookie::SetupAttributes() {
       path_index_ = i;
     } else if (pairs_[i].first == kDomainTokenName) {
       domain_index_ = i;
-    } else if (pairs_[i].first == kMACKeyTokenName) {
-      mac_key_index_ = i;
-    } else if (pairs_[i].first == kMACAlgorithmTokenName) {
-      mac_algorithm_index_ = i;
     } else if (pairs_[i].first == kExpiresTokenName) {
       expires_index_ = i;
     } else if (pairs_[i].first == kMaxAgeTokenName) {
@@ -468,9 +451,8 @@ void ParsedCookie::ClearAttributePair(size_t index) {
   if (index == 0)
     return;
 
-  size_t* indexes[] = {&path_index_, &domain_index_, &mac_key_index_,
-      &mac_algorithm_index_, &expires_index_, &maxage_index_, &secure_index_,
-      &httponly_index_};
+  size_t* indexes[] = { &path_index_, &domain_index_, &expires_index_,
+                        &maxage_index_, &secure_index_, &httponly_index_ };
   for (size_t i = 0; i < arraysize(indexes); ++i) {
     if (*indexes[i] == index)
       *indexes[i] = 0;

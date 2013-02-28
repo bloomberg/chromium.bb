@@ -379,8 +379,6 @@ void SetCookieJSON(AutomationProvider* provider,
   std::string name, value;
   std::string domain;
   std::string path = "/";
-  std::string mac_key;
-  std::string mac_algorithm;
   bool secure = false;
   double expiry = 0;
   bool http_only = false;
@@ -402,11 +400,6 @@ void SetCookieJSON(AutomationProvider* provider,
     reply.SendError("optional 'path' invalid");
     return;
   }
-  // mac_key and mac_algorithm are optional.
-  if (cookie_dict->HasKey("mac_key"))
-    cookie_dict->GetString("mac_key", &mac_key);
-  if (cookie_dict->HasKey("mac_algorithm"))
-    cookie_dict->GetString("mac_algorithm", &mac_algorithm);
   if (cookie_dict->HasKey("secure") &&
       !cookie_dict->GetBoolean("secure", &secure)) {
     reply.SendError("optional 'secure' invalid");
@@ -426,8 +419,7 @@ void SetCookieJSON(AutomationProvider* provider,
 
   scoped_ptr<net::CanonicalCookie> cookie(
       net::CanonicalCookie::Create(
-          GURL(url), name, value, domain, path,
-          mac_key, mac_algorithm, base::Time(),
+          GURL(url), name, value, domain, path, base::Time(),
           base::Time::FromDoubleT(expiry), secure, http_only));
   if (!cookie.get()) {
     reply.SendError("given 'cookie' parameters are invalid");

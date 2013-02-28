@@ -225,11 +225,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
       const CookieOptions& options,
       const GetCookiesCallback& callback) OVERRIDE;
 
-  virtual void GetCookiesWithInfoAsync(
-      const GURL& url,
-      const CookieOptions& options,
-      const GetCookieInfoCallback& callback) OVERRIDE;
-
   // Deletes all cookies with that might apply to |url| that has |cookie_name|.
   virtual void DeleteCookieAsync(
       const GURL& url, const std::string& cookie_name,
@@ -278,7 +273,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   class GetAllCookiesForURLWithOptionsTask;
   class GetAllCookiesTask;
   class GetCookiesWithOptionsTask;
-  class GetCookiesWithInfoTask;
   class SetCookieWithDetailsTask;
   class SetCookieWithOptionsTask;
   class DeleteSessionCookiesTask;
@@ -401,11 +395,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   std::string GetCookiesWithOptions(const GURL& url,
                                     const CookieOptions& options);
-
-  void GetCookiesWithInfo(const GURL& url,
-                          const CookieOptions& options,
-                          std::string* cookie_line,
-                          std::vector<CookieInfo>* cookie_infos);
 
   void DeleteCookie(const GURL& url, const std::string& cookie_name);
 
@@ -714,7 +703,7 @@ class CookieMonster::PersistentCookieStore
   // already returned, plus all cookies that are chain-loaded and not yet
   // returned to CookieMonster.
   virtual void LoadCookiesForKey(const std::string& key,
-    const LoadedCallback& loaded_callback) = 0;
+                                 const LoadedCallback& loaded_callback) = 0;
 
   virtual void AddCookie(const CanonicalCookie& cc) = 0;
   virtual void UpdateCookieAccessTime(const CanonicalCookie& cc) = 0;

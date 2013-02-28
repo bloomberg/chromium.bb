@@ -81,30 +81,6 @@ class GetCookieStringCallback : public CookieCallback {
   std::string cookie_;
 };
 
-class GetCookiesWithInfoCallback : public CookieCallback {
- public:
-  GetCookiesWithInfoCallback();
-  explicit GetCookiesWithInfoCallback(base::Thread* run_in_thread);
-  ~GetCookiesWithInfoCallback();
-
-  void Run(
-      const std::string& cookie_line,
-      const std::vector<CookieStore::CookieInfo>& cookie_info) {
-    cookie_line_ = cookie_line;
-    cookie_info_ = cookie_info;
-    CallbackEpilogue();
-  }
-
-  const std::string& cookie_line() { return cookie_line_; }
-  const std::vector<CookieStore::CookieInfo>& cookie_info() {
-    return cookie_info_;
-  }
-
- private:
-  std::string cookie_line_;
-  std::vector<CookieStore::CookieInfo> cookie_info_;
-};
-
 class DeleteCallback : public CookieCallback {
  public:
   DeleteCallback();

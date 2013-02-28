@@ -30,13 +30,9 @@ class DelayedCookieMonster : public CookieStore {
       const CookieMonster::SetCookiesCallback& callback) OVERRIDE;
 
   virtual void GetCookiesWithOptionsAsync(
-      const GURL& url, const CookieOptions& options,
-      const CookieMonster::GetCookiesCallback& callback) OVERRIDE;
-
-  virtual void GetCookiesWithInfoAsync(
       const GURL& url,
       const CookieOptions& options,
-      const CookieMonster::GetCookieInfoCallback& callback) OVERRIDE;
+      const CookieMonster::GetCookiesCallback& callback) OVERRIDE;
 
   virtual bool SetCookieWithOptions(const GURL& url,
                                     const std::string& cookie_line,
@@ -44,11 +40,6 @@ class DelayedCookieMonster : public CookieStore {
 
   virtual std::string GetCookiesWithOptions(const GURL& url,
                                             const CookieOptions& options);
-
-  virtual void GetCookiesWithInfo(const GURL& url,
-                                  const CookieOptions& options,
-                                  std::string* cookie_line,
-                                  std::vector<CookieInfo>* cookie_infos);
 
   virtual void DeleteCookie(const GURL& url,
                             const std::string& cookie_name);
@@ -70,18 +61,11 @@ class DelayedCookieMonster : public CookieStore {
 
   // Be called immediately from CookieMonster.
 
-  void GetCookiesInternalCallback(
-      const std::string& cookie_line,
-      const std::vector<CookieStore::CookieInfo>& cookie_info);
-
   void SetCookiesInternalCallback(bool result);
 
   void GetCookiesWithOptionsInternalCallback(const std::string& cookie);
 
   // Invoke the original callbacks.
-
-  void InvokeGetCookiesCallback(
-      const CookieMonster::GetCookieInfoCallback& callback);
 
   void InvokeSetCookiesCallback(
       const CookieMonster::SetCookiesCallback& callback);
@@ -98,7 +82,6 @@ class DelayedCookieMonster : public CookieStore {
   bool result_;
   std::string cookie_;
   std::string cookie_line_;
-  std::vector<CookieStore::CookieInfo> cookie_info_;
 };
 
 }  // namespace net

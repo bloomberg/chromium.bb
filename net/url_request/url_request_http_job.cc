@@ -528,7 +528,7 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
 void URLRequestHttpJob::DoLoadCookies() {
   CookieOptions options;
   options.set_include_httponly();
-  request_->context()->cookie_store()->GetCookiesWithInfoAsync(
+  request_->context()->cookie_store()->GetCookiesWithOptionsAsync(
       request_->url(), options,
       base::Bind(&URLRequestHttpJob::OnCookiesLoaded,
                  weak_factory_.GetWeakPtr()));
@@ -542,9 +542,7 @@ void URLRequestHttpJob::CheckCookiePolicyAndLoad(
     DoStartTransaction();
 }
 
-void URLRequestHttpJob::OnCookiesLoaded(
-    const std::string& cookie_line,
-    const std::vector<net::CookieStore::CookieInfo>& cookie_infos) {
+void URLRequestHttpJob::OnCookiesLoaded(const std::string& cookie_line) {
   if (!cookie_line.empty()) {
     request_info_.extra_headers.SetHeader(
         HttpRequestHeaders::kCookie, cookie_line);

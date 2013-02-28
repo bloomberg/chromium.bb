@@ -154,11 +154,11 @@ bool LRUCookieSorter(const CookieMonster::CookieMap::iterator& it1,
 // name, and path.
 struct CookieSignature {
  public:
-  CookieSignature(const std::string& name, const std::string& domain,
+  CookieSignature(const std::string& name,
+                  const std::string& domain,
                   const std::string& path)
-      : name(name),
-        domain(domain),
-        path(path) {}
+      : name(name), domain(domain), path(path) {
+  }
 
   // To be a key for a map this class needs to be assignable, copyable,
   // and have an operator<.  The default assignment operator
@@ -274,22 +274,6 @@ std::string BuildCookieLine(const CanonicalCookieVector& cookies) {
   return cookie_line;
 }
 
-void BuildCookieInfoList(const CanonicalCookieVector& cookies,
-                         std::vector<CookieStore::CookieInfo>* cookie_infos) {
-  for (CanonicalCookieVector::const_iterator it = cookies.begin();
-       it != cookies.end(); ++it) {
-    const CanonicalCookie* cookie = *it;
-    CookieStore::CookieInfo cookie_info;
-
-    cookie_info.name = cookie->Name();
-    cookie_info.creation_date = cookie->CreationDate();
-    cookie_info.mac_key = cookie->MACKey();
-    cookie_info.mac_algorithm = cookie->MACAlgorithm();
-
-    cookie_infos->push_back(cookie_info);
-  }
-}
-
 }  // namespace
 
 // static
@@ -389,12 +373,16 @@ void CookieMonster::CookieMonsterTask::InvokeCallback(base::Closure callback) {
 class CookieMonster::SetCookieWithDetailsTask
     : public CookieMonster::CookieMonsterTask {
  public:
-  SetCookieWithDetailsTask(
-      CookieMonster* cookie_monster,
-      const GURL& url, const std::string& name, const std::string& value,
-      const std::string& domain, const std::string& path,
-      const base::Time& expiration_time, bool secure, bool http_only,
-      const CookieMonster::SetCookiesCallback& callback)
+  SetCookieWithDetailsTask(CookieMonster* cookie_monster,
+                           const GURL& url,
+                           const std::string& name,
+                           const std::string& value,
+                           const std::string& domain,
+                           const std::string& path,
+                           const base::Time& expiration_time,
+                           bool secure,
+                           bool http_only,
+                           const CookieMonster::SetCookiesCallback& callback)
       : CookieMonsterTask(cookie_monster),
         url_(url),
         name_(name),
@@ -538,11 +526,10 @@ void CookieMonster::DeleteAllTask::Run() {
 class CookieMonster::DeleteAllCreatedBetweenTask
     : public CookieMonster::CookieMonsterTask {
  public:
-  DeleteAllCreatedBetweenTask(
-      CookieMonster* cookie_monster,
-      const Time& delete_begin,
-      const Time& delete_end,
-      const CookieMonster::DeleteCallback& callback)
+  DeleteAllCreatedBetweenTask(CookieMonster* cookie_monster,
+                              const Time& delete_begin,
+                              const Time& delete_end,
+                              const CookieMonster::DeleteCallback& callback)
       : CookieMonsterTask(cookie_monster),
         delete_begin_(delete_begin),
         delete_end_(delete_end),
@@ -609,10 +596,9 @@ void CookieMonster::DeleteAllForHostTask::Run() {
 class CookieMonster::DeleteCanonicalCookieTask
     : public CookieMonster::CookieMonsterTask {
  public:
-  DeleteCanonicalCookieTask(
-      CookieMonster* cookie_monster,
-      const CanonicalCookie& cookie,
-      const CookieMonster::DeleteCookieCallback& callback)
+  DeleteCanonicalCookieTask(CookieMonster* cookie_monster,
+                            const CanonicalCookie& cookie,
+                            const CookieMonster::DeleteCookieCallback& callback)
       : CookieMonsterTask(cookie_monster),
         cookie_(cookie),
         callback_(callback) {
@@ -716,45 +702,6 @@ void CookieMonster::GetCookiesWithOptionsTask::Run() {
   }
 }
 
-// Task class for GetCookiesWithInfo call.
-class CookieMonster::GetCookiesWithInfoTask
-    : public CookieMonster::CookieMonsterTask {
- public:
-  GetCookiesWithInfoTask(CookieMonster* cookie_monster,
-                         const GURL& url,
-                         const CookieOptions& options,
-                         const CookieMonster::GetCookieInfoCallback& callback)
-      : CookieMonsterTask(cookie_monster),
-        url_(url),
-        options_(options),
-        callback_(callback) { }
-
-  // CookieMonster::CookieMonsterTask:
-  virtual void Run() OVERRIDE;
-
- protected:
-  virtual ~GetCookiesWithInfoTask() {}
-
- private:
-  GURL url_;
-  CookieOptions options_;
-  CookieMonster::GetCookieInfoCallback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(GetCookiesWithInfoTask);
-};
-
-void CookieMonster::GetCookiesWithInfoTask::Run() {
-  if (!callback_.is_null()) {
-    std::string cookie_line;
-    std::vector<CookieMonster::CookieInfo> cookie_infos;
-    this->cookie_monster()->
-        GetCookiesWithInfo(url_, options_, &cookie_line, &cookie_infos);
-    this->InvokeCallback(base::Bind(&CookieMonster::GetCookieInfoCallback::Run,
-                                    base::Unretained(&callback_),
-                                    cookie_line, cookie_infos));
-  }
-}
-
 // Task class for DeleteCookie call.
 class CookieMonster::DeleteCookieTask
     : public CookieMonster::CookieMonsterTask {
@@ -793,11 +740,9 @@ void CookieMonster::DeleteCookieTask::Run() {
 class CookieMonster::DeleteSessionCookiesTask
     : public CookieMonster::CookieMonsterTask {
  public:
-  DeleteSessionCookiesTask(
-      CookieMonster* cookie_monster,
-      const CookieMonster::DeleteCallback& callback)
-      : CookieMonsterTask(cookie_monster),
-        callback_(callback) {
+  DeleteSessionCookiesTask(CookieMonster* cookie_monster,
+                           const CookieMonster::DeleteCallback& callback)
+      : CookieMonsterTask(cookie_monster), callback_(callback) {
   }
 
   // CookieMonster::CookieMonsterTask:
@@ -823,9 +768,14 @@ void CookieMonster::DeleteSessionCookiesTask::Run() {
 // Asynchronous CookieMonster API
 
 void CookieMonster::SetCookieWithDetailsAsync(
-    const GURL& url, const std::string& name, const std::string& value,
-    const std::string& domain, const std::string& path,
-    const base::Time& expiration_time, bool secure, bool http_only,
+    const GURL& url,
+    const std::string& name,
+    const std::string& value,
+    const std::string& domain,
+    const std::string& path,
+    const base::Time& expiration_time,
+    bool secure,
+    bool http_only,
     const SetCookiesCallback& callback) {
   scoped_refptr<SetCookieWithDetailsTask> task =
       new SetCookieWithDetailsTask(this, url, name, value, domain, path,
@@ -918,16 +868,6 @@ void CookieMonster::GetCookiesWithOptionsAsync(
   DoCookieTaskForURL(task, url);
 }
 
-void CookieMonster::GetCookiesWithInfoAsync(
-    const GURL& url,
-    const CookieOptions& options,
-    const GetCookieInfoCallback& callback) {
-  scoped_refptr<GetCookiesWithInfoTask> task =
-      new GetCookiesWithInfoTask(this, url, options, callback);
-
-  DoCookieTaskForURL(task, url);
-}
-
 void CookieMonster::DeleteCookieAsync(const GURL& url,
                                       const std::string& cookie_name,
                                       const base::Closure& callback) {
@@ -988,10 +928,14 @@ void CookieMonster::DoCookieTaskForURL(
   task_item->Run();
 }
 
-bool CookieMonster::SetCookieWithDetails(
-    const GURL& url, const std::string& name, const std::string& value,
-    const std::string& domain, const std::string& path,
-    const base::Time& expiration_time, bool secure, bool http_only) {
+bool CookieMonster::SetCookieWithDetails(const GURL& url,
+                                         const std::string& name,
+                                         const std::string& value,
+                                         const std::string& domain,
+                                         const std::string& path,
+                                         const base::Time& expiration_time,
+                                         bool secure,
+                                         bool http_only) {
   base::AutoLock autolock(lock_);
 
   if (!HasCookieableScheme(url))
@@ -1000,14 +944,9 @@ bool CookieMonster::SetCookieWithDetails(
   Time creation_time = CurrentTime();
   last_time_seen_ = creation_time;
 
-  // TODO(abarth): Take these values as parameters.
-  std::string mac_key;
-  std::string mac_algorithm;
-
   scoped_ptr<CanonicalCookie> cc;
   cc.reset(CanonicalCookie::Create(
       url, name, value, domain, path,
-      mac_key, mac_algorithm,
       creation_time, expiration_time,
       secure, http_only));
 
@@ -1170,8 +1109,8 @@ bool CookieMonster::DeleteCanonicalCookie(const CanonicalCookie& cookie) {
   return false;
 }
 
-void CookieMonster::SetCookieableSchemes(
-    const char* schemes[], size_t num_schemes) {
+void CookieMonster::SetCookieableSchemes(const char* schemes[],
+                                         size_t num_schemes) {
   base::AutoLock autolock(lock_);
 
   // Cookieable Schemes must be set before first use of function.
@@ -1239,32 +1178,6 @@ std::string CookieMonster::GetCookiesWithOptions(const GURL& url,
   VLOG(kVlogGetCookies) << "GetCookies() result: " << cookie_line;
 
   return cookie_line;
-}
-
-void CookieMonster::GetCookiesWithInfo(const GURL& url,
-                                       const CookieOptions& options,
-                                       std::string* cookie_line,
-                                       std::vector<CookieInfo>* cookie_infos) {
-  DCHECK(cookie_line->empty());
-  DCHECK(cookie_infos->empty());
-
-  base::AutoLock autolock(lock_);
-
-  if (!HasCookieableScheme(url))
-    return;
-
-  TimeTicks start_time(TimeTicks::Now());
-
-  std::vector<CanonicalCookie*> cookies;
-  FindCookiesForHostAndDomain(url, options, true, &cookies);
-  std::sort(cookies.begin(), cookies.end(), CookieSorter);
-  *cookie_line = BuildCookieLine(cookies);
-
-  histogram_time_get_->AddTime(TimeTicks::Now() - start_time);
-
-  TimeTicks mac_start_time = TimeTicks::Now();
-  BuildCookieInfoList(cookies, cookie_infos);
-  histogram_time_mac_->AddTime(TimeTicks::Now() - mac_start_time);
 }
 
 void CookieMonster::DeleteCookie(const GURL& url,
@@ -1572,7 +1485,6 @@ void CookieMonster::SetDefaultCookieableSchemes() {
   SetCookieableSchemes(kDefaultCookieableSchemes, num_schemes);
 }
 
-
 void CookieMonster::FindCookiesForHostAndDomain(
     const GURL& url,
     const CookieOptions& options,
@@ -1593,13 +1505,12 @@ void CookieMonster::FindCookiesForHostAndDomain(
                     update_access_time, cookies);
 }
 
-void CookieMonster::FindCookiesForKey(
-    const std::string& key,
-    const GURL& url,
-    const CookieOptions& options,
-    const Time& current,
-    bool update_access_time,
-    std::vector<CanonicalCookie*>* cookies) {
+void CookieMonster::FindCookiesForKey(const std::string& key,
+                                      const GURL& url,
+                                      const CookieOptions& options,
+                                      const Time& current,
+                                      bool update_access_time,
+                                      std::vector<CanonicalCookie*>* cookies) {
   lock_.AssertAcquired();
 
   for (CookieMapItPair its = cookies_.equal_range(key);
@@ -2087,9 +1998,6 @@ void CookieMonster::InitializeHistograms() {
 
   // From UMA_HISTOGRAM_{CUSTOM_,}TIMES
   histogram_time_get_ = base::Histogram::FactoryTimeGet("Cookie.TimeGet",
-      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(1),
-      50, base::Histogram::kUmaTargetedHistogramFlag);
-  histogram_time_mac_ = base::Histogram::FactoryTimeGet("Cookie.TimeGetMac",
       base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(1),
       50, base::Histogram::kUmaTargetedHistogramFlag);
   histogram_time_blocked_on_load_ = base::Histogram::FactoryTimeGet(

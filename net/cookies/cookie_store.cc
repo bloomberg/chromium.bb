@@ -12,8 +12,4 @@ CookieStore::CookieStore() {}
 
 CookieStore::~CookieStore() {}
 
-CookieStore::CookieInfo::CookieInfo() {}
-
-CookieStore::CookieInfo::~CookieInfo() {}
-
 }  // namespace net

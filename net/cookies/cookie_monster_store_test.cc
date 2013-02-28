@@ -115,7 +115,6 @@ CanonicalCookie BuildCanonicalCookie(const std::string& key,
 
   return CanonicalCookie(
       GURL(), pc.Name(), pc.Value(), key, cookie_path,
-      pc.MACKey(), pc.MACAlgorithm(),
       creation_time, cookie_expires, creation_time,
       pc.IsSecure(), pc.IsHttpOnly());
 }
@@ -208,13 +207,9 @@ CookieMonster* CreateMonsterFromStoreForGC(
         (i < num_old_cookies) ? current - base::TimeDelta::FromDays(days_old) :
                                 current;
 
-    std::string mac_key;
-    std::string mac_algorithm;
-
     CanonicalCookie cc(
         GURL(), "a", "1", base::StringPrintf("h%05d.izzle", i), "/path",
-        mac_key, mac_algorithm, creation_time, expiration_time,
-        last_access_time, false, false);
+        creation_time, expiration_time, last_access_time, false, false);
     store->AddCookie(cc);
   }
 

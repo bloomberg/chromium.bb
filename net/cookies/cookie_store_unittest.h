@@ -45,9 +45,6 @@ const char kValidDomainCookieLine[] = "A=B; path=/; domain=google.izzle";
 //   // The cookie store supports cookies with the exclude_httponly() option.
 //   static const bool supports_http_only;
 //
-//   // The cookie store supports the GetCookiesWithInfoAsync() method.
-//   static const bool supports_cookies_with_info;
-//
 //   // The cookie store is able to make the difference between the ".com"
 //   // and the "com" domains.
 //   static const bool supports_non_dotted_domains;
@@ -113,24 +110,6 @@ class CookieStoreTest : public testing::Test {
     RunFor(kTimeout);
     EXPECT_TRUE(callback.did_run());
     return callback.cookie();
-  }
-
-  void GetCookiesWithInfo(CookieStore* cs,
-                          const GURL& url,
-                          const CookieOptions& options,
-                          std::string* cookie_line,
-                          std::vector<CookieStore::CookieInfo>* cookie_info) {
-    DCHECK(cs);
-    DCHECK(cookie_line);
-    DCHECK(cookie_info);
-    GetCookiesWithInfoCallback callback;
-    cs->GetCookiesWithInfoAsync(
-        url, options, base::Bind(&GetCookiesWithInfoCallback::Run,
-                                 base::Unretained(&callback)));
-    RunFor(kTimeout);
-    EXPECT_TRUE(callback.did_run());
-    *cookie_line = callback.cookie_line();
-    *cookie_info = callback.cookie_info();
   }
 
   bool SetCookieWithOptions(CookieStore* cs,
@@ -632,40 +611,6 @@ TYPED_TEST_P(CookieStoreTest, HttpOnlyTest) {
   this->MatchCookieLines("A=C", this->GetCookies(cs, this->url_google_));
 }
 
-TYPED_TEST_P(CookieStoreTest, TestGetCookiesWithInfo) {
-  if (!TypeParam::supports_cookies_with_info)
-    return;
-
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
-  CookieOptions options;
-
-  EXPECT_TRUE(this->SetCookieWithOptions(cs, this->url_google_, "A=B",
-                                         options));
-  EXPECT_TRUE(this->SetCookieWithOptions(cs, this->url_google_,
-    "C=D; Mac-Key=390jfn0awf3; Mac-Algorithm=hmac-sha-1", options));
-
-  this->MatchCookieLines("A=B; C=D",
-      this->GetCookiesWithOptions(cs, this->url_google_, options));
-
-  std::string cookie_line;
-  std::vector<CookieStore::CookieInfo> cookie_infos;
-
-  this->GetCookiesWithInfo(cs, this->url_google_, options, &cookie_line,
-                           &cookie_infos);
-
-  EXPECT_EQ("A=B; C=D", cookie_line);
-
-  EXPECT_EQ(2U, cookie_infos.size());
-
-  EXPECT_EQ("A", cookie_infos[0].name);
-  EXPECT_EQ("", cookie_infos[0].mac_key);
-  EXPECT_EQ("", cookie_infos[0].mac_algorithm);
-
-  EXPECT_EQ("C", cookie_infos[1].name);
-  EXPECT_EQ("390jfn0awf3", cookie_infos[1].mac_key);
-  EXPECT_EQ("hmac-sha-1", cookie_infos[1].mac_algorithm);
-}
-
 TYPED_TEST_P(CookieStoreTest, TestCookieDeletion) {
   scoped_refptr<CookieStore> cs(this->GetCookieStore());
 
@@ -904,12 +849,26 @@ TYPED_TEST_P(CookieStoreTest, CookieOrdering) {
 }
 
 REGISTER_TYPED_TEST_CASE_P(CookieStoreTest,
-    TypeTest, DomainTest, DomainWithTrailingDotTest, ValidSubdomainTest,
-    InvalidDomainTest, DomainWithoutLeadingDotTest, CaseInsensitiveDomainTest,
-    TestIpAddress, TestNonDottedAndTLD, TestHostEndsWithDot, InvalidScheme,
-    InvalidScheme_Read, PathTest, HttpOnlyTest, TestGetCookiesWithInfo,
-    TestCookieDeletion, TestDeleteAllCreatedBetween, TestSecure,
-    NetUtilCookieTest, OverwritePersistentCookie, CookieOrdering);
+                           TypeTest,
+                           DomainTest,
+                           DomainWithTrailingDotTest,
+                           ValidSubdomainTest,
+                           InvalidDomainTest,
+                           DomainWithoutLeadingDotTest,
+                           CaseInsensitiveDomainTest,
+                           TestIpAddress,
+                           TestNonDottedAndTLD,
+                           TestHostEndsWithDot,
+                           InvalidScheme,
+                           InvalidScheme_Read,
+                           PathTest,
+                           HttpOnlyTest,
+                           TestCookieDeletion,
+                           TestDeleteAllCreatedBetween,
+                           TestSecure,
+                           NetUtilCookieTest,
+                           OverwritePersistentCookie,
+                           CookieOrdering);
 
 template<class CookieStoreTestTraits>
 class MultiThreadedCookieStoreTest :
@@ -938,16 +897,6 @@ class MultiThreadedCookieStoreTest :
     cs->GetCookiesWithOptionsAsync(
         url, options,
         base::Bind(&GetCookieStringCallback::Run, base::Unretained(callback)));
-  }
-
-  void GetCookiesWithInfoTask(CookieStore* cs,
-                              const GURL& url,
-                              const CookieOptions& options,
-                              GetCookiesWithInfoCallback* callback) {
-    cs->GetCookiesWithInfoAsync(
-        url, options,
-        base::Bind(&GetCookiesWithInfoCallback::Run,
-                   base::Unretained(callback)));
   }
 
   void SetCookieWithOptionsTask(CookieStore* cs,
@@ -1022,34 +971,6 @@ TYPED_TEST_P(MultiThreadedCookieStoreTest, ThreadCheckGetCookiesWithOptions) {
   EXPECT_EQ("A=B", callback.cookie());
 }
 
-TYPED_TEST_P(MultiThreadedCookieStoreTest, ThreadCheckGetCookiesWithInfo) {
-  if (!TypeParam::supports_cookies_with_info)
-    return;
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
-  CookieOptions options;
-  std::string cookie_line;
-  std::vector<CookieStore::CookieInfo> cookie_infos;
-  EXPECT_TRUE(this->SetCookie(cs, this->url_google_, "A=B"));
-  this->GetCookiesWithInfo(cs, this->url_google_, options, &cookie_line,
-                           &cookie_infos);
-  this->MatchCookieLines("A=B", cookie_line);
-  EXPECT_EQ(1U, cookie_infos.size());
-  EXPECT_EQ("A", cookie_infos[0].name);
-  EXPECT_EQ("", cookie_infos[0].mac_key);
-  EXPECT_EQ("", cookie_infos[0].mac_algorithm);
-  GetCookiesWithInfoCallback callback(&this->other_thread_);
-  base::Closure task = base::Bind(
-      &net::MultiThreadedCookieStoreTest<TypeParam>::GetCookiesWithInfoTask,
-      base::Unretained(this), cs, this->url_google_, options, &callback);
-  this->RunOnOtherThread(task);
-  EXPECT_TRUE(callback.did_run());
-  this->MatchCookieLines("A=B", callback.cookie_line());
-  EXPECT_EQ(1U, callback.cookie_info().size());
-  EXPECT_EQ("A", callback.cookie_info()[0].name);
-  EXPECT_EQ("", callback.cookie_info()[0].mac_key);
-  EXPECT_EQ("", callback.cookie_info()[0].mac_algorithm);
-}
-
 TYPED_TEST_P(MultiThreadedCookieStoreTest, ThreadCheckSetCookieWithOptions) {
   scoped_refptr<CookieStore> cs(this->GetCookieStore());
   CookieOptions options;
@@ -1110,9 +1031,11 @@ TYPED_TEST_P(MultiThreadedCookieStoreTest, ThreadCheckDeleteSessionCookies) {
 }
 
 REGISTER_TYPED_TEST_CASE_P(MultiThreadedCookieStoreTest,
-    ThreadCheckGetCookies, ThreadCheckGetCookiesWithOptions,
-    ThreadCheckGetCookiesWithInfo, ThreadCheckSetCookieWithOptions,
-    ThreadCheckDeleteCookie, ThreadCheckDeleteSessionCookies);
+                           ThreadCheckGetCookies,
+                           ThreadCheckGetCookiesWithOptions,
+                           ThreadCheckSetCookieWithOptions,
+                           ThreadCheckDeleteCookie,
+                           ThreadCheckDeleteSessionCookies);
 
 }  // namespace net
 

@@ -93,27 +93,6 @@ class GetCookiesCallback : public BaseCallback {
   net::CookieOptions options_;
 };
 
-class GetCookiesWithInfoCallback : public BaseCallback {
- public:
-  const std::string& GetCookiesWithInfo(CookieMonster* cm, const GURL& gurl) {
-    cm->GetCookiesWithInfoAsync(gurl, options_, base::Bind(
-        &GetCookiesWithInfoCallback::Run,
-        base::Unretained(this)));
-    WaitForCallback();
-    return cookies_;
-  }
-
- private:
-  void Run(const std::string& cookie_line,
-           const std::vector<CookieStore::CookieInfo>& cookie_infos) {
-    cookies_ = cookie_line;
-    BaseCallback::Run();
-  }
-
-  std::string cookies_;
-  net::CookieOptions options_;
-};
-
 }  // namespace
 
 TEST(ParsedCookieTest, TestParseCookies) {
@@ -201,30 +180,6 @@ TEST_F(CookieMonsterTest, TestAddCookieOnManyHosts) {
   cm->DeleteAllAsync(CookieMonster::DeleteCallback());
   MessageLoop::current()->RunUntilIdle();
   timer3.Done();
-}
-
-TEST_F(CookieMonsterTest, TestGetCookiesWithInfo) {
-  scoped_refptr<CookieMonster> cm(new CookieMonster(NULL, NULL));
-
-  std::vector<GURL> gurls;
-  for (int i = 0; i < kNumCookies; ++i)
-    gurls.push_back(GURL(base::StringPrintf("https://a%04d.izzle", i)));
-
-  SetCookieCallback setCookieCallback;
-
-  for (std::vector<GURL>::const_iterator it = gurls.begin();
-       it != gurls.end(); ++it) {
-    setCookieCallback.SetCookie(cm, *it, kCookieLine);
-  }
-
-  GetCookiesWithInfoCallback getCookiesCallback;
-
-  PerfTimeLogger timer("Cookie_monster_get_cookie_info");
-  for (std::vector<GURL>::const_iterator it = gurls.begin();
-       it != gurls.end(); ++it) {
-    getCookiesCallback.GetCookiesWithInfo(cm, *it);
-  }
-  timer.Done();
 }
 
 TEST_F(CookieMonsterTest, TestDomainTree) {

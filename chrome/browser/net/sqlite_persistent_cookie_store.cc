@@ -683,8 +683,6 @@ bool SQLitePersistentCookieStore::Backend::LoadCookiesForDomains(
               smt.ColumnString(3),                            // value
               smt.ColumnString(1),                            // domain
               smt.ColumnString(4),                            // path
-              std::string(),  // TODO(abarth): Persist mac_key
-              std::string(),  // TODO(abarth): Persist mac_algorithm
               Time::FromInternalValue(smt.ColumnInt64(0)),    // creation_utc
               Time::FromInternalValue(smt.ColumnInt64(5)),    // expires_utc
               Time::FromInternalValue(smt.ColumnInt64(8)),    // last_access_utc

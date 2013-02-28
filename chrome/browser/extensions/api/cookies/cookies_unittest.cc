@@ -113,7 +113,6 @@ TEST_F(ExtensionCookiesTest, StoreIdProfileConversion) {
 TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
   net::CanonicalCookie canonical_cookie1(
       GURL(), "ABC", "DEF", "www.foobar.com", "/",
-      std::string(), std::string(),
       base::Time(), base::Time(), base::Time(),
       false, false);
   scoped_ptr<Cookie> cookie1(
@@ -131,9 +130,8 @@ TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
   EXPECT_EQ("some cookie store", cookie1->store_id);
 
   net::CanonicalCookie canonical_cookie2(
-      GURL(), "ABC", "DEF", ".foobar.com", "/", std::string(), std::string(),
-      base::Time(), base::Time::FromDoubleT(10000), base::Time(),
-      false, false);
+      GURL(), "ABC", "DEF", ".foobar.com", "/", base::Time(),
+      base::Time::FromDoubleT(10000), base::Time(), false, false);
   scoped_ptr<Cookie> cookie2(
       cookies_helpers::CreateCookie(
           canonical_cookie2, "some cookie store"));
@@ -153,19 +151,15 @@ TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
 
 TEST_F(ExtensionCookiesTest, GetURLFromCanonicalCookie) {
   net::CanonicalCookie cookie1(
-      GURL(), "ABC", "DEF", "www.foobar.com", "/",
-      std::string(), std::string(),
-      base::Time(), base::Time(), base::Time(),
-      false, false);
+      GURL(), "ABC", "DEF", "www.foobar.com", "/", base::Time(), base::Time(),
+      base::Time(), false, false);
   EXPECT_EQ("http://www.foobar.com/",
             cookies_helpers::GetURLFromCanonicalCookie(
                 cookie1).spec());
 
   net::CanonicalCookie cookie2(
-      GURL(), "ABC", "DEF", ".helloworld.com", "/",
-      std::string(), std::string(),
-      base::Time(), base::Time(), base::Time(),
-      true, false);
+      GURL(), "ABC", "DEF", ".helloworld.com", "/", base::Time(), base::Time(),
+      base::Time(), true, false);
   EXPECT_EQ("https://helloworld.com/",
             cookies_helpers::GetURLFromCanonicalCookie(
                 cookie2).spec());
@@ -201,17 +195,16 @@ TEST_F(ExtensionCookiesTest, DomainMatching) {
     scoped_ptr<GetAll::Params> params(GetAll::Params::Create(args));
 
     cookies_helpers::MatchFilter filter(&params->details);
-    net::CanonicalCookie cookie(GURL(), "", "", tests[i].domain,
-                                               "", "", "", base::Time(),
-                                               base::Time(), base::Time(),
-                                               false, false);
+    net::CanonicalCookie cookie(GURL(), "", "", tests[i].domain,"",
+                                base::Time(), base::Time(), base::Time(),
+                                false, false);
     EXPECT_EQ(tests[i].matches, filter.MatchesCookie(cookie));
   }
 }
 
 TEST_F(ExtensionCookiesTest, DecodeUTF8WithErrorHandling) {
   net::CanonicalCookie canonical_cookie(
-      GURL(), "", "011Q255bNX_1!yd\203e+", "test.com", "/path\203", "", "",
+      GURL(), "", "011Q255bNX_1!yd\203e+", "test.com", "/path\203",
       base::Time(), base::Time(), base::Time(), false, false);
   scoped_ptr<Cookie> cookie(
       cookies_helpers::CreateCookie(
