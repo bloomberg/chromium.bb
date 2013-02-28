@@ -33,6 +33,10 @@ namespace internal {
 
 namespace {
 
+// This specifies how much percent (2/3=66%) of a window must be visible when
+// the window is added to the workspace.
+const float kMinimumPercentOnScreenArea = 0.66f;
+
 typedef std::map<const aura::Window*, gfx::Rect> BoundsMap;
 
 // Adds an entry from |window| to its bounds and recursively invokes this for
@@ -93,7 +97,7 @@ WorkspaceLayoutManager::~WorkspaceLayoutManager() {
 
 void WorkspaceLayoutManager::OnWindowAddedToLayout(Window* child) {
   // Adjust window bounds in case that the new child is out of the workspace.
-  AdjustWindowSizeForScreenChange(child, ADJUST_WINDOW_DISPLAY_INSETS_CHANGED);
+  AdjustWindowSizeForScreenChange(child, ADJUST_WINDOW_WINDOW_ADDED);
 
   windows_.insert(child);
   child->AddObserver(this);
@@ -313,7 +317,15 @@ void WorkspaceLayoutManager::AdjustWindowSizeForScreenChange(
       window->SetBounds(bounds);
     } else if (reason == ADJUST_WINDOW_DISPLAY_INSETS_CHANGED) {
       gfx::Rect bounds = window->bounds();
-      ash::wm::AdjustBoundsToEnsureWindowVisibility(&bounds, work_area_);
+      ash::wm::AdjustBoundsToEnsureMinimumWindowVisibility(work_area_, &bounds);
+      if (window->bounds() != bounds)
+        window->SetBounds(bounds);
+    } else if (reason == ADJUST_WINDOW_WINDOW_ADDED) {
+      gfx::Rect bounds = window->bounds();
+      int min_width = bounds.width() * kMinimumPercentOnScreenArea;
+      int min_height = bounds.height() * kMinimumPercentOnScreenArea;
+      ash::wm::AdjustBoundsToEnsureWindowVisibility(
+          work_area_, min_width, min_height, &bounds);
       if (window->bounds() != bounds)
         window->SetBounds(bounds);
     }

@@ -83,7 +83,8 @@ class ASH_EXPORT WorkspaceLayoutManager
 
   enum AdjustWindowReason {
     ADJUST_WINDOW_SCREEN_SIZE_CHANGED,
-    ADJUST_WINDOW_DISPLAY_INSETS_CHANGED
+    ADJUST_WINDOW_DISPLAY_INSETS_CHANGED,
+    ADJUST_WINDOW_WINDOW_ADDED
   };
 
   // Adjusts the sizes of the windows during a screen change. If this is called

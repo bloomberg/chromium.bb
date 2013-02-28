@@ -110,10 +110,19 @@ ASH_EXPORT const gfx::Rect* GetPreAutoManageWindowBounds(
 ASH_EXPORT void SetPreAutoManageWindowBounds(aura::Window* window,
                                              const gfx::Rect& bounds);
 
-// Move the given bounds inside the given work area, including a safety margin.
+// Move the given bounds inside the given work area, including a safety margin
+// given by |kMinimumOnScreenArea|.
+ASH_EXPORT void AdjustBoundsToEnsureMinimumWindowVisibility(
+    const gfx::Rect& work_area,
+    gfx::Rect* bounds);
+
+// Move the given bounds inside the given work area, including a safety margin
+// given by |min_width| and |min_height|.
 ASH_EXPORT void AdjustBoundsToEnsureWindowVisibility(
-    gfx::Rect* bounds,
-    const gfx::Rect& work_area);
+    const gfx::Rect& work_area,
+    int min_width,
+    int min_height,
+    gfx::Rect* bounds);
 
 }  // namespace wm
 }  // namespace ash

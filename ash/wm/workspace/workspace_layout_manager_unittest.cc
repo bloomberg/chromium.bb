@@ -127,7 +127,11 @@ TEST_F(WorkspaceLayoutManagerTest, WindowShouldBeOnScreenWhenAdded) {
   scoped_ptr<aura::Window> out_window(
       CreateTestWindowInShellWithBounds(window_bounds));
   EXPECT_EQ(window_bounds.size(), out_window->bounds().size());
-  EXPECT_TRUE(out_window->bounds().Intersects(root_window_bounds));
+  gfx::Rect bounds = out_window->bounds();
+  bounds.Intersect(root_window_bounds);
+  // 2/3 of the window must be visible.
+  EXPECT_GT(bounds.width(), out_window->bounds().width() * 0.6);
+  EXPECT_GT(bounds.height(), out_window->bounds().height() * 0.6);
 }
 
 // Verifies the size of a window is enforced to be smaller than the work area.
