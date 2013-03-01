@@ -797,12 +797,14 @@ std::string AboutSandbox() {
 
   data.append("</table>");
 
-  // The setuid sandbox is required as our first-layer sandbox.  We do still
-  // consider ourselves adequately sandboxed without the second-layer
-  // seccomp-bpf sandbox at the moment.
-  bool good = status & content::kSandboxLinuxSUID &&
-              status & content::kSandboxLinuxPIDNS &&
-              status & content::kSandboxLinuxNetNS;
+  // The setuid sandbox is required as our first-layer sandbox.
+  bool good_layer1 = status & content::kSandboxLinuxSUID &&
+                     status & content::kSandboxLinuxPIDNS &&
+                     status & content::kSandboxLinuxNetNS;
+  // A second-layer sandbox is also required to be adequately sandboxed.
+  bool good_layer2 = status & content::kSandboxLinuxSeccompLegacy;
+  bool good = good_layer1 && good_layer2;
+
   if (good) {
     data.append("<p style=\"color: green\">");
     data.append(l10n_util::GetStringUTF8(IDS_ABOUT_SANDBOX_OK));
