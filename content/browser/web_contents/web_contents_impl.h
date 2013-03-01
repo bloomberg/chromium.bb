@@ -174,6 +174,9 @@ class CONTENT_EXPORT WebContentsImpl
   // Invoked when visible SSL state (as defined by SSLStatus) changes.
   void DidChangeVisibleSSLState();
 
+  // Invoked before a form repost warning is shown.
+  void NotifyBeforeFormRepostWarningShow();
+
   // WebContents ------------------------------------------------------
   virtual WebContentsDelegate* GetDelegate() OVERRIDE;
   virtual void SetDelegate(WebContentsDelegate* delegate) OVERRIDE;

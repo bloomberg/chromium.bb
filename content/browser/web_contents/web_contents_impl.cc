@@ -2505,6 +2505,11 @@ void WebContentsImpl::DidChangeVisibleSSLState() {
                     DidChangeVisibleSSLState());
 }
 
+void WebContentsImpl::NotifyBeforeFormRepostWarningShow() {
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    BeforeFormRepostWarningShow());
+}
+
 // Notifies the RenderWidgetHost instance about the fact that the page is
 // loading, or done loading and calls the base implementation.
 void WebContentsImpl::SetIsLoading(bool is_loading,

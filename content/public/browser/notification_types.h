@@ -242,12 +242,6 @@ enum NotificationType {
   // the RenderViewHost, and the details is a DomOperationNotificationDetails.
   NOTIFICATION_DOM_OPERATION_RESPONSE,
 
-  // Miscellaneous -------------------------------------------------------------
-
-  // Sent before the repost form warning is brought up.
-  // The source is a NavigationController.
-  NOTIFICATION_REPOST_WARNING_SHOWN,
-
   // Custom notifications used by the embedder should start from here.
   NOTIFICATION_CONTENT_END,
 };

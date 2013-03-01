@@ -8,25 +8,15 @@
 #include <gtk/gtk.h>
 #endif
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using content::NavigationController;
-using content::WebContents;
-
 RepostFormWarningController::RepostFormWarningController(
-    WebContents* web_contents)
+    content::WebContents* web_contents)
     : TabModalConfirmDialogDelegate(web_contents),
-      navigation_controller_(&web_contents->GetController()) {
-  registrar_.Add(this, content::NOTIFICATION_REPOST_WARNING_SHOWN,
-                 content::Source<NavigationController>(
-                    navigation_controller_));
+      content::WebContentsObserver(web_contents) {
 }
 
 RepostFormWarningController::~RepostFormWarningController() {
@@ -55,21 +45,15 @@ const char* RepostFormWarningController::GetCancelButtonIcon() {
 #endif  // defined(TOOLKIT_GTK)
 
 void RepostFormWarningController::OnAccepted() {
-  navigation_controller_->ContinuePendingReload();
+  web_contents()->GetController().ContinuePendingReload();
 }
 
 void RepostFormWarningController::OnCanceled() {
-  navigation_controller_->CancelPendingReload();
+  web_contents()->GetController().CancelPendingReload();
 }
 
-void RepostFormWarningController::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void RepostFormWarningController::BeforeFormRepostWarningShow() {
   // Close the dialog if we show an additional dialog, to avoid them
   // stacking up.
-  if (type == content::NOTIFICATION_REPOST_WARNING_SHOWN)
-    Cancel();
-  else
-    TabModalConfirmDialogDelegate::Observe(type, source, details);
+  Cancel();
 }

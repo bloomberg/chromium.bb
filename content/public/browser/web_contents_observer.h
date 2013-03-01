@@ -249,6 +249,9 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   virtual void DidAttachInterstitialPage() {}
   virtual void DidDetachInterstitialPage() {}
 
+  // Invoked before a form repost warning is shown.
+  virtual void BeforeFormRepostWarningShow() {}
+
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 

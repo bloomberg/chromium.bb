@@ -301,10 +301,7 @@ void NavigationControllerImpl::ReloadInternal(bool check_for_repost,
     // The user is asking to reload a page with POST data. Prompt to make sure
     // they really want to do this. If they do, the dialog will call us back
     // with check_for_repost = false.
-    NotificationService::current()->Notify(
-        NOTIFICATION_REPOST_WARNING_SHOWN,
-        Source<NavigationController>(this),
-        NotificationService::NoDetails());
+    web_contents_->NotifyBeforeFormRepostWarningShow();
 
     pending_reload_ = reload_type;
     web_contents_->Activate();
