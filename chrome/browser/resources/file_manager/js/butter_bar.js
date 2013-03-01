@@ -5,7 +5,7 @@
 /**
  * The amount of time, before a butter bar will hide after the last update.
  */
-var HIDE_DELAY_TIME_MS = 1000;
+var HIDE_DELAY_TIME_MS = 2000;
 
 /**
  * Butter bar is shown on top of the file list and is used to show the copy

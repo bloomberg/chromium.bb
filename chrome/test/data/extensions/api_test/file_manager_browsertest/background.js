@@ -58,6 +58,29 @@ function waitForFileListChange(lengthBefore, callback) {
   helper();
 }
 
+// Waits until a dialog with an OK button is shown and accepts it.
+function waitAndAcceptDialog(callback) {
+  var CHECK_DLG_VISIBLE_CODE =
+      '(function() {\n' +
+      '  var button = document.querySelector(".cr-dialog-ok");\n' +
+      '  if (button) {\n' +
+      '    button.click();\n' +
+      '    return true;\n' +
+      '  }\n' +
+      '  return false;\n' +
+      '})();';
+  function helper() {
+    chrome.tabs.executeScript(null,
+                              {code: CHECK_DLG_VISIBLE_CODE}, function(result) {
+      if (result[0])
+        callback();
+      else
+        window.setTimeout(helper, 50);
+    });
+  }
+  helper();
+}
+
 // Checks that the files initially added by the C++ side are displayed, and
 // that a subsequently added file shows up.
 function testFileDisplay() {
@@ -75,7 +98,22 @@ function testFileDisplay() {
 }
 
 // Injects the keyboard test code into the file manager tab and runs the
-// keyboard copy or keyboard delete test.
+// keyboard delete test.
+function doKeyboardTestWithConfirmation(code) {
+  chrome.tabs.executeScript(null, {file: 'fake_keypress.js'}, function(result) {
+    chrome.tabs.executeScript(null, {code: code}, function(result) {
+      chrome.test.assertFalse(!result[0]);
+      waitAndAcceptDialog(function() {
+        // Succeed here if anything happens; the C++ code checks what happened.
+        waitForFileListChange(EXPECTED_FILES_BEFORE.length,
+                              chrome.test.succeed);
+      });
+    });
+  });
+}
+
+// Injects the keyboard test code into the file manager tab and runs the
+// keyboard copy test.
 function doKeyboardTest(code) {
   chrome.tabs.executeScript(null, {file: 'fake_keypress.js'}, function(result) {
     chrome.tabs.executeScript(null, {code: code}, function(result) {
@@ -97,7 +135,7 @@ chrome.test.runTests([
       } else if (reply === 'keyboard copy') {
         doKeyboardTest('fakeFileCopy("world.mpeg");');
       } else if (reply === 'keyboard delete') {
-        doKeyboardTest('fakeFileDelete("world.mpeg");');
+        doKeyboardTestWithConfirmation('fakeFileDelete("world.mpeg");');
       } else {
         chrome.test.fail('Bogus test name passed to testRunner()');
       }
