@@ -14,6 +14,7 @@
 #include "cc/output_surface.h"
 #include "cc/picture_layer.h"
 #include "cc/prioritized_resource.h"
+#include "cc/prioritized_resource_manager.h"
 #include "cc/resource_update_queue.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/test/fake_content_layer.h"
@@ -2109,6 +2110,89 @@ TEST_F(LayerTreeHostTestMaxPendingFrames, GLRenderer)
     m_delegatingRenderer = false;
     runTest(true);
 }
+
+class LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted : public LayerTreeHostTest {
+public:
+    LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted()
+        : m_rootLayer(FakeContentLayer::Create(&m_client))
+        , m_childLayer1(FakeContentLayer::Create(&m_client))
+        , m_childLayer2(FakeContentLayer::Create(&m_client))
+        , m_numCommits(0)
+    {
+    }
+
+    virtual void beginTest() OVERRIDE
+    {
+        m_layerTreeHost->setViewportSize(gfx::Size(100, 100), gfx::Size(100, 100));
+        m_rootLayer->setBounds(gfx::Size(100, 100));
+        m_childLayer1->setBounds(gfx::Size(100, 100));
+        m_childLayer2->setBounds(gfx::Size(100, 100));
+        m_rootLayer->addChild(m_childLayer1);
+        m_rootLayer->addChild(m_childLayer2);
+        m_layerTreeHost->setRootLayer(m_rootLayer);
+        postSetNeedsCommitToMainThread();
+    }
+
+    virtual void didSetVisibleOnImplTree(LayerTreeHostImpl* hostImpl, bool visible) OVERRIDE
+    {
+        // One backing should remain unevicted.
+        EXPECT_EQ(
+            100 * 100 * 4 * 1, 
+            m_layerTreeHost->contentsTextureManager()->memoryUseBytes());
+        // Make sure that contents textures are marked as having been
+        // purged.
+        EXPECT_TRUE(hostImpl->activeTree()->ContentsTexturesPurged());
+        // End the test in this state.
+        endTest();
+    }
+
+    virtual void commitCompleteOnThread(LayerTreeHostImpl* hostImpl) OVERRIDE
+    {
+        ++m_numCommits;
+        switch(m_numCommits) {
+        case 1:
+            // All three backings should have memory.
+            EXPECT_EQ(
+                100 * 100 * 4 * 3, 
+                m_layerTreeHost->contentsTextureManager()->memoryUseBytes());
+            // Set a new policy that will kick out 1 of the 3 resources.
+            // Because a resource was evicted, a commit will be kicked off.
+            hostImpl->setManagedMemoryPolicy(ManagedMemoryPolicy(
+                100 * 100 * 4 * 2,
+                ManagedMemoryPolicy::CUTOFF_ALLOW_EVERYTHING,
+                100 * 100 * 4 * 1,
+                ManagedMemoryPolicy::CUTOFF_ALLOW_EVERYTHING));
+            break;
+        case 2:
+            // Only two backings should have memory.
+            EXPECT_EQ(
+                100 * 100 * 4 * 2, 
+                m_layerTreeHost->contentsTextureManager()->memoryUseBytes());
+            // Become backgrounded, which will cause 1 more resource to be
+            // evicted.
+            postSetVisibleToMainThread(false);
+            break;
+        default:
+            // No further commits should happen because this is not visible
+            // anymore.
+            NOTREACHED();
+            break;
+        }
+    }
+
+    virtual void afterTest() OVERRIDE
+    {
+    }
+
+private:
+    FakeContentLayerClient m_client;
+    scoped_refptr<FakeContentLayer> m_rootLayer;
+    scoped_refptr<FakeContentLayer> m_childLayer1;
+    scoped_refptr<FakeContentLayer> m_childLayer2;
+    int m_numCommits;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted)
 
 }  // namespace
 }  // namespace cc

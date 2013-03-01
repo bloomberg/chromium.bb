@@ -273,8 +273,7 @@ void SingleThreadProxy::stop()
         DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
         DebugScopedSetImplThread impl(this);
 
-        if (!m_layerTreeHostImpl->activeTree()->ContentsTexturesPurged())
-            m_layerTreeHost->deleteContentsTexturesOnImplThread(m_layerTreeHostImpl->resourceProvider());
+        m_layerTreeHost->deleteContentsTexturesOnImplThread(m_layerTreeHostImpl->resourceProvider());
         m_layerTreeHostImpl.reset();
     }
     m_layerTreeHost = 0;

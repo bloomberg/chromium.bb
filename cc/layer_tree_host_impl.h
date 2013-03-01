@@ -111,6 +111,7 @@ public:
     virtual void beginCommit();
     virtual void commitComplete();
     virtual void animate(base::TimeTicks monotonicTime, base::Time wallClockTime);
+    virtual void setVisible(bool);
 
     void manageTiles();
 
@@ -181,7 +182,6 @@ public:
     LayerImpl* currentlyScrollingLayer() const;
 
     bool visible() const { return m_visible; }
-    void setVisible(bool);
 
     size_t memoryAllocationLimitBytes() const { return m_managedMemoryPolicy.bytesLimitWhenVisible; }
 

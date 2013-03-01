@@ -119,6 +119,12 @@ bool MockLayerTreeHostImpl::initializeRenderer(scoped_ptr<OutputSurface> outputS
     return success;
 }
 
+void MockLayerTreeHostImpl::setVisible(bool visible)
+{
+    LayerTreeHostImpl::setVisible(visible);
+    m_testHooks->didSetVisibleOnImplTree(this, visible);
+}
+
 void MockLayerTreeHostImpl::animateLayers(base::TimeTicks monotonicTime, base::Time wallClockTime)
 {
     m_testHooks->willAnimateLayers(this, monotonicTime);
@@ -288,6 +294,7 @@ ThreadedTest::ThreadedTest()
     , m_endWhenBeginReturns(false)
     , m_timedOut(false)
     , m_scheduled(false)
+    , m_scheduleWhenSetVisibleTrue(false)
     , m_started(false)
     , m_ended(false)
     , m_implThread(0)
@@ -454,15 +461,33 @@ void ThreadedTest::dispatchSetVisible(bool visible)
 {
     DCHECK(!proxy() || proxy()->isMainThread());
 
-    if (m_layerTreeHost.get())
-        m_layerTreeHost->setVisible(visible);
+    if (!m_layerTreeHost)
+        return;
+
+    m_layerTreeHost->setVisible(visible);
+
+    // If the LTH is being made visible and a previous scheduleComposite() was
+    // deferred because the LTH was not visible, re-schedule the composite now.
+    if (m_layerTreeHost->visible() && m_scheduleWhenSetVisibleTrue)
+        scheduleComposite();
 }
 
 void ThreadedTest::dispatchComposite()
 {
     m_scheduled = false;
-    if (m_layerTreeHost.get())
-        m_layerTreeHost->composite();
+
+    if (!m_layerTreeHost)
+        return;
+
+    // If the LTH is not visible, defer the composite until the LTH is made
+    // visible.
+    if (!m_layerTreeHost->visible()) {
+        m_scheduleWhenSetVisibleTrue = true;
+        return;
+    }
+
+    m_scheduleWhenSetVisibleTrue = false;
+    m_layerTreeHost->composite();
 }
 
 void ThreadedTest::runTest(bool threaded)
