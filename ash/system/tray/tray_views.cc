@@ -147,16 +147,16 @@ void FixedSizedScrollView::OnPaintFocusBorder(gfx::Canvas* canvas) {
 
 TrayPopupLabelButtonBorder::TrayPopupLabelButtonBorder()
     : LabelButtonBorder(views::Button::STYLE_TEXTBUTTON) {
-  SetPainter(views::Button::STATE_NORMAL,
+  SetPainter(false, views::Button::STATE_NORMAL,
              views::Painter::CreateImageGridPainter(
                  kTrayPopupLabelButtonBorderImagesNormal));
-  SetPainter(views::Button::STATE_DISABLED,
+  SetPainter(false, views::Button::STATE_DISABLED,
              views::Painter::CreateImageGridPainter(
                  kTrayPopupLabelButtonBorderImagesNormal));
-  SetPainter(views::Button::STATE_HOVERED,
+  SetPainter(false, views::Button::STATE_HOVERED,
              views::Painter::CreateImageGridPainter(
                  kTrayPopupLabelButtonBorderImagesHovered));
-  SetPainter(views::Button::STATE_PRESSED,
+  SetPainter(false, views::Button::STATE_PRESSED,
              views::Painter::CreateImageGridPainter(
                  kTrayPopupLabelButtonBorderImagesHovered));
 }

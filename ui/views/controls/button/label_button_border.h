@@ -26,14 +26,14 @@ class VIEWS_EXPORT LabelButtonBorder : public Border {
   virtual void Paint(const View& view, gfx::Canvas* canvas) OVERRIDE;
   virtual gfx::Insets GetInsets() const OVERRIDE;
 
-  // Get or set the painter used for the specified button state.
+  // Get or set the painter used for the specified |focused| button |state|.
   // LabelButtonBorder takes and retains ownership of |painter|.
-  Painter* GetPainter(Button::ButtonState state);
-  void SetPainter(Button::ButtonState state, Painter* painter);
+  Painter* GetPainter(bool focused, Button::ButtonState state);
+  void SetPainter(bool focused, Button::ButtonState state, Painter* painter);
 
  private:
-  // The painters used for each button state.
-  scoped_ptr<Painter> painters_[Button::STATE_COUNT];
+  // The painters used for each unfocused or focused button state.
+  scoped_ptr<Painter> painters_[2][Button::STATE_COUNT];
 
   // The button style supplied in part by this border.
   Button::ButtonStyle style_;

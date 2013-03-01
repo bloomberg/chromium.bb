@@ -121,9 +121,17 @@ void LabelButton::SetStyle(ButtonStyle style) {
   style_ = style;
   set_border(new LabelButtonBorder(style));
   // Inset the button focus rect from the actual border; roughly match Windows.
-  set_focus_border(FocusBorder::CreateDashedFocusBorder(3, 3, 3, 3));
-  if (style_ == STYLE_NATIVE_TEXTBUTTON)
+  if (style == STYLE_TEXTBUTTON || style == STYLE_NATIVE_TEXTBUTTON)
+    set_focus_border(FocusBorder::CreateDashedFocusBorder(3, 3, 3, 3));
+  if (style == STYLE_BUTTON || style_ == STYLE_NATIVE_TEXTBUTTON)
     label_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  if (style == STYLE_BUTTON) {
+    set_min_size(gfx::Size(70, 31));
+    const SkColor color = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_WindowBackground);
+    label_->SetShadowColors(color, color);
+    label_->SetShadowOffset(0, 1);
+  }
   // Invalidate the layout to pickup the new insets from the border.
   InvalidateLayout();
   ResetColorsFromNativeTheme();
@@ -169,12 +177,16 @@ void LabelButton::ResetColorsFromNativeTheme() {
     theme->GetSystemColor(ui::NativeTheme::kColorId_TextButtonHoverColor),
     theme->GetSystemColor(ui::NativeTheme::kColorId_TextButtonDisabledColor),
   };
+
+  // Certain styles do not change text color when hovered or pressed.
+  bool constant_text_color = style() == STYLE_BUTTON;
 #if defined(OS_WIN)
-  // Native Windows buttons do not change color on hover or when pressed.
-  if (style() == STYLE_NATIVE_TEXTBUTTON &&
-      theme == ui::NativeThemeWin::instance())
-    colors[STATE_HOVERED] = colors[STATE_PRESSED] = colors[STATE_NORMAL];
+  constant_text_color |= (style() == STYLE_NATIVE_TEXTBUTTON &&
+                          theme == ui::NativeThemeWin::instance());
 #endif
+  if (constant_text_color)
+    colors[STATE_HOVERED] = colors[STATE_PRESSED] = colors[STATE_NORMAL];
+
   for (size_t state = STATE_NORMAL; state < STATE_COUNT; ++state) {
     if (!explicitly_set_colors_[state]) {
       SetTextColor(static_cast<ButtonState>(state), colors[state]);

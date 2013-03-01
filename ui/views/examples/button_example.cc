@@ -13,6 +13,15 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
 
+namespace {
+const char kLabelButton[] = "Label Button";
+const char kTextButton[] = "Text Button";
+const char kMultiLineText[] = "Multi-Line\nButton Text Is Here To Stay!\n123";
+const char kLongText[] = "Start of Really Really Really Really Really Really "
+                         "Really Really Really Really Really Really Really "
+                         "Really Really Really Really Really Long Button Text";
+}  // namespace
+
 namespace views {
 namespace examples {
 
@@ -33,16 +42,15 @@ ButtonExample::~ButtonExample() {
 }
 
 void ButtonExample::CreateExampleView(View* container) {
-  container->SetLayoutManager(new BoxLayout(BoxLayout::kVertical, 0, 0, 10));
+  container->set_background(Background::CreateSolidBackground(SK_ColorWHITE));
+  container->SetLayoutManager(new BoxLayout(BoxLayout::kVertical, 10, 10, 10));
 
-  text_button_ = new TextButton(this, ASCIIToUTF16("Text Button"));
+  text_button_ = new TextButton(this, ASCIIToUTF16(kTextButton));
   text_button_->set_focusable(true);
-  text_button_->SetHoverColor(SK_ColorRED);
   container->AddChildView(text_button_);
 
-  label_button_ = new LabelButton(this, ASCIIToUTF16("Label Button"));
+  label_button_ = new LabelButton(this, ASCIIToUTF16(kLabelButton));
   label_button_->set_focusable(true);
-  label_button_->SetTextColor(Button::STATE_HOVERED, SK_ColorRED);
   container->AddChildView(label_button_);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -65,13 +73,8 @@ void ButtonExample::TextButtonPressed(const ui::Event& event) {
     if (event.IsShiftDown()) {
       if (event.IsAltDown()) {
         text_button_->SetMultiLine(!text_button_->multi_line());
-        if (text_button_->multi_line()) {
-          text_button_->SetText(ASCIIToUTF16("Multi-line text\n") +
-                                ASCIIToUTF16("is here to stay all the way!\n") +
-                                ASCIIToUTF16("123"));
-        } else {
-          text_button_->SetText(ASCIIToUTF16("Text Button"));
-        }
+        text_button_->SetText(ASCIIToUTF16(
+            text_button_->multi_line() ? kMultiLineText : kTextButton));
       } else {
         switch (text_button_->icon_placement()) {
           case TextButton::ICON_ON_LEFT:
@@ -106,16 +109,8 @@ void ButtonExample::TextButtonPressed(const ui::Event& event) {
     }
   } else if (event.IsShiftDown()) {
     if (event.IsAltDown()) {
-      if (text_button_->text().length() < 20) {
-        text_button_->SetText(
-            ASCIIToUTF16("Startof") +
-            ASCIIToUTF16("ReallyReallyReallyReallyReallyReallyReally") +
-            ASCIIToUTF16("ReallyReallyReallyReallyReallyReallyReally") +
-            ASCIIToUTF16("ReallyReallyReallyReallyReallyReallyReally") +
-            ASCIIToUTF16("LongButtonText"));
-      } else {
-        text_button_->SetText(ASCIIToUTF16("Text Button"));
-      }
+      text_button_->SetText(ASCIIToUTF16(
+          text_button_->text().length() < 50 ? kLongText : kTextButton));
     } else {
       use_native_theme_border_ = !use_native_theme_border_;
       if (use_native_theme_border_)
@@ -137,12 +132,12 @@ void ButtonExample::LabelButtonPressed(const ui::Event& event) {
     if (event.IsShiftDown()) {
       if (event.IsAltDown()) {
         label_button_->SetTextMultiLine(!label_button_->GetTextMultiLine());
-        label_button_->SetText(ASCIIToUTF16(label_button_->GetTextMultiLine() ?
-            "Multi-line text\nis here to stay all the way!\n123" :
-            "Label Button"));
+        label_button_->SetText(ASCIIToUTF16(
+            label_button_->GetTextMultiLine() ? kMultiLineText : kLabelButton));
       } else {
-        label_button_->SetText(!label_button_->GetText().empty() ?
-            string16() : ASCIIToUTF16("Label Button"));
+        label_button_->SetText(ASCIIToUTF16(
+            label_button_->GetText().empty() ? kLongText :
+                label_button_->GetText().length() > 50 ? kLabelButton : ""));
       }
     } else if (event.IsAltDown()) {
       label_button_->SetImage(Button::STATE_NORMAL,
@@ -155,11 +150,7 @@ void ButtonExample::LabelButtonPressed(const ui::Event& event) {
     }
   } else if (event.IsShiftDown()) {
     if (event.IsAltDown()) {
-      label_button_->SetText(ASCIIToUTF16(
-          label_button_->GetText().length() > 20 ? "Label Button" :
-          "StartofReallyReallyReallyReallyReallyReallyReally"
-          "ReallyReallyReallyReallyReallyReallyReally"
-          "ReallyReallyReallyReallyReallyReallyReallyLongButtonText"));
+      label_button_->set_focusable(!label_button_->focusable());
     } else {
       label_button_->SetStyle(static_cast<Button::ButtonStyle>(
           (label_button_->style() + 1) % Button::STYLE_COUNT));

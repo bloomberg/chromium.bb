@@ -87,11 +87,11 @@ class LogoutButton : public views::View,
     button_->SetFont(button_->GetFont().DeriveFont(1));
     views::LabelButtonBorder* border =
         new views::LabelButtonBorder(views::Button::STYLE_TEXTBUTTON);
-    border->SetPainter(views::Button::STATE_NORMAL,
+    border->SetPainter(false, views::Button::STATE_NORMAL,
         views::Painter::CreateImageGridPainter(kLogoutButtonNormalImages));
-    border->SetPainter(views::Button::STATE_HOVERED,
+    border->SetPainter(false, views::Button::STATE_HOVERED,
         views::Painter::CreateImageGridPainter(kLogoutButtonHotImages));
-    border->SetPainter(views::Button::STATE_PRESSED,
+    border->SetPainter(false, views::Button::STATE_PRESSED,
         views::Painter::CreateImageGridPainter(kLogoutButtonPushedImages));
     button_->set_border(border);
     AddChildView(button_);

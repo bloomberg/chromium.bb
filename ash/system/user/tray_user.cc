@@ -487,13 +487,13 @@ void UserView::AddLogoutButton(ash::user::LoginStatus login) {
   if (login == ash::user::LOGGED_IN_PUBLIC) {
     TrayPopupLabelButtonBorder* border =
         static_cast<TrayPopupLabelButtonBorder*>(logout_button_->border());
-    border->SetPainter(views::Button::STATE_NORMAL,
+    border->SetPainter(false, views::Button::STATE_NORMAL,
                        views::Painter::CreateImageGridPainter(
                            kPublicAccountLogoutButtonBorderImagesNormal));
-    border->SetPainter(views::Button::STATE_HOVERED,
+    border->SetPainter(false, views::Button::STATE_HOVERED,
                        views::Painter::CreateImageGridPainter(
                            kPublicAccountLogoutButtonBorderImagesHovered));
-    border->SetPainter(views::Button::STATE_PRESSED,
+    border->SetPainter(false, views::Button::STATE_PRESSED,
                        views::Painter::CreateImageGridPainter(
                            kPublicAccountLogoutButtonBorderImagesHovered));
   }

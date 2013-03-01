@@ -71,6 +71,60 @@
       <structure type="chrome_scaled_image" name="IDR_BUBBLE_TL" file="bubble_top_left.png" />
       <structure type="chrome_scaled_image" name="IDR_BUBBLE_TR" file="bubble_top_right.png" />
       <structure type="chrome_scaled_image" name="IDR_BUBBLE_T_ARROW" file="bubble_pointer_top.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_HOVER_BOTTOM" file="common/button_focused_hover_bottom.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_HOVER_BOTTOM_LEFT" file="common/button_focused_hover_bottom_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_HOVER_BOTTOM_RIGHT" file="common/button_focused_hover_bottom_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_HOVER_CENTER" file="common/button_focused_hover_center.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_HOVER_LEFT" file="common/button_focused_hover_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_HOVER_RIGHT" file="common/button_focused_hover_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_HOVER_TOP" file="common/button_focused_hover_top.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_HOVER_TOP_LEFT" file="common/button_focused_hover_top_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_HOVER_TOP_RIGHT" file="common/button_focused_hover_top_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_NORMAL_BOTTOM" file="common/button_focused_bottom.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_NORMAL_BOTTOM_LEFT" file="common/button_focused_bottom_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_NORMAL_BOTTOM_RIGHT" file="common/button_focused_bottom_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_NORMAL_CENTER" file="common/button_focused_center.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_NORMAL_LEFT" file="common/button_focused_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_NORMAL_RIGHT" file="common/button_focused_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_NORMAL_TOP" file="common/button_focused_top.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_NORMAL_TOP_LEFT" file="common/button_focused_top_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_NORMAL_TOP_RIGHT" file="common/button_focused_top_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_PRESSED_BOTTOM" file="common/button_focused_pressed_bottom.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_PRESSED_BOTTOM_LEFT" file="common/button_focused_pressed_bottom_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_PRESSED_BOTTOM_RIGHT" file="common/button_focused_pressed_bottom_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_PRESSED_CENTER" file="common/button_focused_pressed_center.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_PRESSED_LEFT" file="common/button_focused_pressed_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_PRESSED_RIGHT" file="common/button_focused_pressed_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_PRESSED_TOP" file="common/button_focused_pressed_top.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_PRESSED_TOP_LEFT" file="common/button_focused_pressed_top_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_FOCUSED_PRESSED_TOP_RIGHT" file="common/button_focused_pressed_top_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_HOVER_BOTTOM" file="common/button_hover_bottom.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_HOVER_BOTTOM_LEFT" file="common/button_hover_bottom_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_HOVER_BOTTOM_RIGHT" file="common/button_hover_bottom_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_HOVER_CENTER" file="common/button_hover_center.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_HOVER_LEFT" file="common/button_hover_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_HOVER_RIGHT" file="common/button_hover_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_HOVER_TOP" file="common/button_hover_top.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_HOVER_TOP_LEFT" file="common/button_hover_top_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_HOVER_TOP_RIGHT" file="common/button_hover_top_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_NORMAL_BOTTOM" file="common/button_bottom.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_NORMAL_BOTTOM_LEFT" file="common/button_bottom_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_NORMAL_BOTTOM_RIGHT" file="common/button_bottom_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_NORMAL_CENTER" file="common/button_center.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_NORMAL_LEFT" file="common/button_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_NORMAL_RIGHT" file="common/button_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_NORMAL_TOP" file="common/button_top.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_NORMAL_TOP_LEFT" file="common/button_top_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_NORMAL_TOP_RIGHT" file="common/button_top_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_PRESSED_BOTTOM" file="common/button_pressed_bottom.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_PRESSED_BOTTOM_LEFT" file="common/button_pressed_bottom_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_PRESSED_BOTTOM_RIGHT" file="common/button_pressed_bottom_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_PRESSED_CENTER" file="common/button_pressed_center.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_PRESSED_LEFT" file="common/button_pressed_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_PRESSED_RIGHT" file="common/button_pressed_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_PRESSED_TOP" file="common/button_pressed_top.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_PRESSED_TOP_LEFT" file="common/button_pressed_top_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUTTON_PRESSED_TOP_RIGHT" file="common/button_pressed_top_right.png" />
       <if expr="is_posix and not is_macosx and not pp_ifdef('use_aura')">
         <structure type="chrome_scaled_image" name="IDR_CHECKBOX_DISABLED_INDETERMINATE" file="linux/linux-checkbox-disabled-indeterminate.png" />
         <structure type="chrome_scaled_image" name="IDR_CHECKBOX_DISABLED_OFF" file="linux/linux-checkbox-disabled-off.png" />
