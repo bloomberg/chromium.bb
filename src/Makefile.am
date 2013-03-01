@@ -51,7 +51,7 @@ weston_SOURCES +=				\
 endif
 
 git-version.h : .FORCE
-	$(AM_V_GEN)(echo "#define BUILD_ID \"$(shell git --work-tree=$(top_srcdir) describe --always --dirty) $(shell git --work-tree=$(top_srcdir) log -1 --format='%s (%ci)')\"" > $@-new; \
+	$(AM_V_GEN)(echo "#define BUILD_ID \"$(shell git --git-dir=$(top_srcdir)/.git describe --always --dirty) $(shell git --git-dir=$(top_srcdir)/.git log -1 --format='%s (%ci)')\"" > $@-new; \
 	cmp -s $@ $@-new || cp $@-new $@; \
 	rm $@-new)
 
