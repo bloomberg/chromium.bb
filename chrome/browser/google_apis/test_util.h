@@ -102,6 +102,14 @@ void CopyResultsFromGetAccountMetadataCallback(
     GDataErrorCode error_in,
     scoped_ptr<AccountMetadataFeed> account_metadata_in);
 
+// Copies the results from GetAccountMetadataCallback and quit the message
+// loop.
+void CopyResultsFromGetAccountMetadataCallbackAndQuit(
+    GDataErrorCode* error_out,
+    scoped_ptr<AccountMetadataFeed>* account_metadata_out,
+    GDataErrorCode error_in,
+    scoped_ptr<AccountMetadataFeed> account_metadata_in);
+
 // Copies the results from GetAboutResourceCallback.
 void CopyResultsFromGetAboutResourceCallback(
     GDataErrorCode* error_out,

@@ -477,15 +477,14 @@ TEST_F(GDataWapiOperationsTest, GetResourceEntryOperation_InvalidResourceId) {
 
 TEST_F(GDataWapiOperationsTest, GetAccountMetadataOperation) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
-  scoped_ptr<base::Value> result_data;
+  scoped_ptr<AccountMetadataFeed> result_data;
 
   GetAccountMetadataOperation* operation = new GetAccountMetadataOperation(
       &operation_registry_,
       request_context_getter_.get(),
       *url_generator_,
-      base::Bind(&test_util::CopyResultsFromGetDataCallbackAndQuit,
-                 &result_code,
-                 &result_data));
+      base::Bind(&test_util::CopyResultsFromGetAccountMetadataCallbackAndQuit,
+                 &result_code, &result_data));
   operation->Start(kTestGDataAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
@@ -494,9 +493,22 @@ TEST_F(GDataWapiOperationsTest, GetAccountMetadataOperation) {
   EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
   EXPECT_EQ("/feeds/metadata/default?v=3&alt=json&include-installed-apps=true",
             http_request_.relative_url);
-  EXPECT_TRUE(test_util::VerifyJsonData(
-      test_util::GetTestFilePath("gdata/account_metadata.json"),
-      result_data.get()));
+
+  scoped_ptr<AccountMetadataFeed> expected(
+      AccountMetadataFeed::CreateFrom(
+          *test_util::LoadJSONFile("gdata/account_metadata.json")));
+
+  ASSERT_TRUE(result_data.get());
+  EXPECT_EQ(expected->largest_changestamp(),
+            result_data->largest_changestamp());
+  EXPECT_EQ(expected->quota_bytes_total(),
+            result_data->quota_bytes_total());
+  EXPECT_EQ(expected->quota_bytes_used(),
+            result_data->quota_bytes_used());
+
+  // Sanity check for installed apps.
+  EXPECT_EQ(expected->installed_apps().size(),
+            result_data->installed_apps().size());
 }
 
 TEST_F(GDataWapiOperationsTest, DeleteResourceOperation) {

@@ -32,6 +32,30 @@ const char kFeedField[] = "feed";
 // Templates for file uploading.
 const char kUploadResponseRange[] = "range";
 
+// Parses the JSON value to AccountMetadataFeed and runs |callback| on the UI
+// thread once parsing is done.
+void ParseAccounetMetadataAndRun(const GetAccountMetadataCallback& callback,
+                                 GDataErrorCode error,
+                                 scoped_ptr<base::Value> value) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (!value) {
+    callback.Run(error, scoped_ptr<AccountMetadataFeed>());
+    return;
+  }
+
+  // Parsing AccountMetadataFeed is cheap enough to do on UI thread.
+  scoped_ptr<AccountMetadataFeed> entry =
+      google_apis::AccountMetadataFeed::CreateFrom(*value);
+  if (!entry) {
+    callback.Run(GDATA_PARSE_ERROR, scoped_ptr<AccountMetadataFeed>());
+    return;
+  }
+
+  callback.Run(error, entry.Pass());
+}
+
 // Parses the |value| to ResourceEntry with error handling.
 // This is designed to be used for ResumeUploadOperation and
 // GetUploadStatusOperation.
@@ -110,8 +134,9 @@ GetAccountMetadataOperation::GetAccountMetadataOperation(
     OperationRegistry* registry,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
-    const GetDataCallback& callback)
-    : GetDataOperation(registry, url_request_context_getter, callback),
+    const GetAccountMetadataCallback& callback)
+    : GetDataOperation(registry, url_request_context_getter,
+                       base::Bind(&ParseAccounetMetadataAndRun, callback)),
       url_generator_(url_generator) {
   DCHECK(!callback.is_null());
 }

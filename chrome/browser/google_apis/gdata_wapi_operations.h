@@ -113,7 +113,7 @@ class GetAccountMetadataOperation : public GetDataOperation {
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
-      const GetDataCallback& callback);
+      const GetAccountMetadataCallback& callback);
   virtual ~GetAccountMetadataOperation();
 
  protected:

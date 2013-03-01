@@ -94,30 +94,6 @@ void ParseResourceEntryAndRun(const GetResourceEntryCallback& callback,
   callback.Run(error, entry.Pass());
 }
 
-// Parses the JSON value to AccountMetadataFeed on the blocking pool and runs
-// |callback| on the UI thread once parsing is done.
-void ParseAccounetMetadataAndRun(const GetAccountMetadataCallback& callback,
-                                 GDataErrorCode error,
-                                 scoped_ptr<base::Value> value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (!value) {
-    callback.Run(error, scoped_ptr<AccountMetadataFeed>());
-    return;
-  }
-
-  // Parsing AccountMetadataFeed is cheap enough to do on UI thread.
-  scoped_ptr<AccountMetadataFeed> entry =
-      google_apis::AccountMetadataFeed::CreateFrom(*value);
-  if (!entry) {
-    callback.Run(GDATA_PARSE_ERROR, scoped_ptr<AccountMetadataFeed>());
-    return;
-  }
-
-  callback.Run(error, entry.Pass());
-}
-
 // Extracts the open link url from the JSON Feed. Used by AuthorizeApp().
 void ExtractOpenLinkAndRun(const std::string app_id,
                            const AuthorizeAppCallback& callback,
@@ -281,7 +257,7 @@ void GDataWapiService::GetAccountMetadata(
           operation_registry(),
           url_request_context_getter_,
           url_generator_,
-          base::Bind(&ParseAccounetMetadataAndRun, callback)));
+          callback));
 }
 
 void GDataWapiService::GetAboutResource(
