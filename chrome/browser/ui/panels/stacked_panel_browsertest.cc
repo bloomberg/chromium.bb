@@ -1005,4 +1005,29 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, ClosePanels) {
   panel_manager->CloseAll();
 }
 
+IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, FocusNextPanelOnPanelClose) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+
+  // Create 3 stacked panels.
+  StackedPanelCollection* stack = panel_manager->CreateStack();
+  Panel* panel1 = CreateStackedPanel("1", gfx::Rect(100, 250, 200, 200), stack);
+  Panel* panel2 = CreateStackedPanel("2", gfx::Rect(0, 0, 150, 100), stack);
+  Panel* panel3 = CreateStackedPanel("3", gfx::Rect(0, 0, 150, 120), stack);
+  ASSERT_EQ(3, stack->num_panels());
+  ASSERT_FALSE(panel1->IsActive());
+  ASSERT_FALSE(panel2->IsActive());
+  ASSERT_TRUE(panel3->IsActive());
+
+  // Close P3. Expect P2 should become active.
+  CloseWindowAndWait(panel3);
+  EXPECT_FALSE(panel1->IsActive());
+  EXPECT_TRUE(panel2->IsActive());
+
+  // Close P2. Expect P1 should become active.
+  CloseWindowAndWait(panel2);
+  EXPECT_TRUE(panel1->IsActive());
+
+  panel_manager->CloseAll();
+}
+
 #endif

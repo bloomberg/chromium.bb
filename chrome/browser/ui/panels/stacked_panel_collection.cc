@@ -168,6 +168,14 @@ void StackedPanelCollection::RemovePanel(Panel* panel, RemovalReason reason) {
     }
   }
 
+  // If an active panel is being closed, try to focus the next recently active
+  // panel in the stack.
+  if (reason == PanelCollection::PANEL_CLOSED &&
+      panel->IsActive() &&
+      !most_recently_active_panels_.empty()) {
+    most_recently_active_panels_.front()->Activate();
+  }
+
   RefreshLayout();
 
   native_stack_->OnPanelAddedOrRemoved(panel);
