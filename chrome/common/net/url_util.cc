@@ -15,7 +15,8 @@ namespace chrome_common_net {
 
 void WriteURLToClipboard(const GURL& url,
                          const std::string& languages,
-                         ui::Clipboard *clipboard) {
+                         ui::Clipboard *clipboard,
+                         ui::Clipboard::SourceTag source_tag) {
   if (url.is_empty() || !url.is_valid() || !clipboard)
     return;
 
@@ -26,7 +27,9 @@ void WriteURLToClipboard(const GURL& url,
       net::FormatUrl(url, languages, net::kFormatUrlOmitNothing,
                      net::UnescapeRule::NONE, NULL, NULL, NULL);
 
-  ui::ScopedClipboardWriter scw(clipboard, ui::Clipboard::BUFFER_STANDARD);
+  ui::ScopedClipboardWriter scw(clipboard,
+                                ui::Clipboard::BUFFER_STANDARD,
+                                source_tag);
   scw.WriteURL(text);
 }
 

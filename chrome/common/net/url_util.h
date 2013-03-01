@@ -7,18 +7,17 @@
 
 #include <string>
 
-class GURL;
+#include <ui/base/clipboard/clipboard.h>
 
-namespace ui {
-class Clipboard;
-}
+class GURL;
 
 namespace chrome_common_net {
 
 // Writes a string representation of |url| to the system clipboard.
 void WriteURLToClipboard(const GURL& url,
                          const std::string& languages,
-                         ui::Clipboard *clipboard);
+                         ui::Clipboard *clipboard,
+                         ui::Clipboard::SourceTag source_tag);
 
 }  // namespace chrome_common_net
 
