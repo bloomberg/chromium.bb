@@ -7,6 +7,7 @@
 
 import optparse
 import os
+import subprocess
 import sys
 import urllib2
 import zipfile
@@ -91,8 +92,9 @@ def MaybeRelease(revision):
     '--label', 'Release-Alpha',
     zip_path
   ]
-  if util.RunCommand(cmd):
-    print '@@@STEP_FAILURE@@@'
+  with open(os.devnull, 'wb') as no_output:
+    if subprocess.Popen(cmd, stdout=no_output, stderr=no_output).wait():
+      print '@@@STEP_FAILURE@@@'
 
 
 def main():
