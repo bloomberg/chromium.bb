@@ -264,6 +264,7 @@ void DeveloperPrivateGetItemsInfoFunction::
                              process->GetBrowserContext()->IsOffTheRecord()));
   }
 }
+
 linked_ptr<developer::ItemInspectView> DeveloperPrivateGetItemsInfoFunction::
     constructInspectView(
         const GURL& url,
@@ -804,6 +805,7 @@ bool DeveloperPrivateGetStringsFunction::RunImpl() {
   SET_STRING("extensionSettingsRestart", IDS_EXTENSIONS_RESTART);
   SET_STRING("extensionSettingsOptions", IDS_EXTENSIONS_OPTIONS_LINK);
   SET_STRING("extensionSettingsActivity", IDS_EXTENSIONS_ACTIVITY_LINK);
+  SET_STRING("extensionSettingsPermissions", IDS_EXTENSIONS_PERMISSIONS_LINK);
   SET_STRING("extensionSettingsVisitWebsite", IDS_EXTENSIONS_VISIT_WEBSITE);
   SET_STRING("extensionSettingsVisitWebStore", IDS_EXTENSIONS_VISIT_WEBSTORE);
   SET_STRING("extensionSettingsPolicyControlled",
@@ -823,6 +825,9 @@ bool DeveloperPrivateGetStringsFunction::RunImpl() {
   SET_STRING("extensionSettingsShowDetails", IDS_EXTENSIONS_SHOW_DETAILS);
   SET_STRING("extensionSettingsHideDetails", IDS_EXTENSIONS_HIDE_DETAILS);
   SET_STRING("extensionUninstall", IDS_EXTENSIONS_UNINSTALL);
+  SET_STRING("extensionsPermissionsHeading",
+             IDS_EXTENSIONS_PERMISSIONS_HEADING);
+  SET_STRING("extensionsPermissionsClose", IDS_EXTENSIONS_PERMISSIONS_CLOSE);
 
 // Pack Extension strings
   SET_STRING("packExtensionOverlay", IDS_EXTENSION_PACK_DIALOG_TITLE);

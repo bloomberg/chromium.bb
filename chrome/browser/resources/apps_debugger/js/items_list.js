@@ -18,6 +18,8 @@ cr.define('apps_dev_tool', function() {
   // The list of all apps.
   var appList = [];
 
+  /** const*/ var AppsDevTool = apps_dev_tool.AppsDevTool;
+
   /**
    * @param {string} a first string.
    * @param {string} b second string.
@@ -57,7 +59,7 @@ cr.define('apps_dev_tool', function() {
     var itemsDiv = $('items');
 
     // Empty the current content.
-    itemsDiv.innerHTML = '';
+    itemsDiv.textContent = '';
 
     ItemsList.prototype.data_ = appList;
     var itemsList = $('extension-settings-list');
@@ -160,6 +162,9 @@ cr.define('apps_dev_tool', function() {
         options.hidden = false;
       }
 
+      // The 'Permissions' link.
+      this.setPermissionsLink_(item, node);
+
       // The 'View in Web Store/View Web Site' link.
       if (item.homepage_url)
         this.setWebstoreLink_(item, node);
@@ -259,6 +264,35 @@ cr.define('apps_dev_tool', function() {
       terminatedReload.hidden = false;
       chrome.developerPrivate.reload(item.id, function() {
         ItemsList.loadItemsInfo();
+      });
+    },
+
+    /**
+     * Sets the permissions link handler.
+     * @param {!Object} item A dictionary of item metadata.
+     * @param {HTMLElement} el HTML element containing all items.
+     * @private
+     */
+    setPermissionsLink_: function(item, el) {
+      var permissions = el.querySelector('.permissions-link');
+      permissions.addEventListener('click', function(e) {
+        var permissionItem = $('permissions-item');
+        permissionItem.textContent = '';
+        chrome.management.getPermissionWarningsById(
+            item.id,
+            function(warnings) {
+              warnings.forEach(function(permission) {
+                var li = document.createElement('li');
+                li.textContent = permission;
+                permissionItem.appendChild(li);
+            });
+          AppsDevTool.showOverlay($('permissions-overlay'));
+        });
+
+        $('permissions-icon').style.backgroundImage =
+            'url(' + item.icon + ')';
+        $('permissions-title').textContent = item.name;
+        e.preventDefault();
       });
     },
 

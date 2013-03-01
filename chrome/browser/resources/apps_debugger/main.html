@@ -12,6 +12,7 @@ found in the LICENSE file.
     <link rel="stylesheet" href="css/items.css">
     <link rel="stylesheet" href="../../../../ui/webui/resources/css/chrome_shared.css">
     <link rel="stylesheet" href="css/pack_item_overlay.css">
+    <link rel="stylesheet" href="css/permissions_overlay.css">
     <link rel="stylesheet" href="../../../../ui/webui/resources/css/alert_overlay.css">
     <link rel="stylesheet" href="../../../../ui/webui/resources/css/overlay.css">
     <link rel="stylesheet" href="../../../../ui/webui/resources/css/trash.css">
@@ -22,6 +23,7 @@ found in the LICENSE file.
   <body>
     <div id="overlay" class="overlay" hidden>
       <include src="pack_item_overlay.html">
+      <include src="permissions_overlay.html">
       <include src="../../../../ui/webui/resources/html/alert_overlay.html">
     </div>
     <h1 i18n-content="extensionSettingsAppsDevtool"></h1>
@@ -56,6 +58,9 @@ found in the LICENSE file.
             </div>
             <p class="extension-description">
               <span></span>
+              <a class="permissions-link"
+                  i18n-content="extensionSettingsPermissions"
+                  href="#">
               <a class="site-link" target="_blank"></a>
             </p>
             <div class="item-id">

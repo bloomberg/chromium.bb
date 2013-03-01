@@ -12,7 +12,7 @@
 //<include src="../../../../../ui/webui/resources/js/load_time_data.js" />
 //<include src="../../../../../ui/webui/resources/js/util.js" />
 //<include src="../../uber/uber_utils.js" />
-//<include src="items_list.js"/>
 //<include src="items.js"/>
+//<include src="items_list.js"/>
 //<include src="pack_item_overlay.js"/>
 //<include src="main.js"/>
