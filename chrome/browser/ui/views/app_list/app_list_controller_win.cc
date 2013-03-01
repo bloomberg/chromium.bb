@@ -745,6 +745,8 @@ void CheckAppListTaskbarShortcutOnFileThread(
 }
 
 void InitView(Profile* profile) {
+  if (!g_browser_process || g_browser_process->IsShuttingDown())
+    return;
   AppListController::GetInstance()->InitView(profile);
 }
 
