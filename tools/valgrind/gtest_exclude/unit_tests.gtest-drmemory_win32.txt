@@ -52,6 +52,8 @@ ProfileInfoCacheTest.*
 
 # Failing on the bot. http://crbug.com/167014
 BrowserCommandControllerTest.AvatarMenuDisabledWhenOnlyOneProfile
+# Timeout on the bot. http://crbug.com/179391
+BrowserCommandControllerTest.IncognitoModeOnSigninAllowedPrefChange
 
 # Failing on the bot. http://crbug.com/168882
 UserCloudPolicyStoreTest.LoadWithInvalidFile
