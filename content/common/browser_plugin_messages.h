@@ -9,6 +9,8 @@
 #include "base/basictypes.h"
 #include "base/process.h"
 #include "base/shared_memory.h"
+#include "base/values.h"
+#include "content/common/browser_plugin_message_enums.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/public/common/common_param_traits.h"
@@ -28,6 +30,8 @@
 
 #define IPC_MESSAGE_START BrowserPluginMsgStart
 
+
+IPC_ENUM_TRAITS(BrowserPluginPermissionType)
 IPC_ENUM_TRAITS(WebKit::WebDragStatus)
 
 IPC_STRUCT_BEGIN(BrowserPluginHostMsg_AutoSize_Params)
@@ -236,6 +240,18 @@ IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_SetName,
                     int /* instance_id */,
                     std::string /* name */)
 
+// Tells the guest that its request for an API permission has been allowed or
+// denied.
+// Note that |allow| = true does not readily mean that the guest will be granted
+// permission, since a security check in the embedder might follow. For example
+// for media access permission, the guest will be granted permission only if its
+// embedder also has access.
+IPC_MESSAGE_ROUTED4(BrowserPluginHostMsg_RespondPermission,
+                    int /* instance_id */,
+                    BrowserPluginPermissionType /* permission_type */,
+                    int /* request_id */,
+                    bool /* allow */)
+
 // -----------------------------------------------------------------------------
 // These messages are from the guest renderer to the browser process
 
@@ -363,3 +379,11 @@ IPC_MESSAGE_CONTROL5(BrowserPluginMsg_BuffersSwapped,
                      std::string /* mailbox_name */,
                      int /* route_id */,
                      int /* gpu_host_id */)
+
+// When the guest requests permission, the browser process forwards this
+// request to the embeddder through this message.
+IPC_MESSAGE_CONTROL4(BrowserPluginMsg_RequestPermission,
+                     int /* instance_id */,
+                     BrowserPluginPermissionType /* permission_type */,
+                     int /* request_id */,
+                     DictionaryValue /* request_info */)

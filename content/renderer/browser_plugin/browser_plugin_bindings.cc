@@ -15,15 +15,15 @@
 #include "base/utf_string_conversions.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/browser_plugin/browser_plugin_constants.h"
-#include "third_party/npapi/bindings/npapi.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMMessageEvent.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
+#include "third_party/npapi/bindings/npapi.h"
 #include "v8/include/v8.h"
 
 using WebKit::WebBindings;
@@ -338,6 +338,28 @@ class BrowserPluginBindingGo : public BrowserPluginMethodBinding {
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingGo);
 };
 
+// Note: This is a method that is used internally by the <webview> shim only.
+// This should not be exposed to developers.
+class BrowserPluginBindingPersistRequestObject
+    : public BrowserPluginMethodBinding {
+ public:
+  BrowserPluginBindingPersistRequestObject()
+      : BrowserPluginMethodBinding(browser_plugin::kMethodInternalPersistObject,
+                                   3) {
+  }
+
+  virtual bool Invoke(BrowserPluginBindings* bindings,
+                      const NPVariant* args,
+                      NPVariant* result) OVERRIDE {
+    bindings->instance()->PersistRequestObject(
+        args, StringFromNPVariant(args[1]), Int32FromNPVariant(args[2]));
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingPersistRequestObject);
+};
+
 class BrowserPluginBindingReload : public BrowserPluginMethodBinding {
  public:
   BrowserPluginBindingReload()
@@ -370,6 +392,28 @@ class BrowserPluginBindingStop : public BrowserPluginMethodBinding {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingStop);
+};
+
+// Note: This is a method that is used internally by the <webview> shim only.
+// This should not be exposed to developers.
+class BrowserPluginBindingSetPermission : public BrowserPluginMethodBinding {
+ public:
+  BrowserPluginBindingSetPermission()
+      : BrowserPluginMethodBinding(
+          browser_plugin::kMethodInternalSetPermission, 2) {
+  }
+
+  virtual bool Invoke(BrowserPluginBindings* bindings,
+                      const NPVariant* args,
+                      NPVariant* result) OVERRIDE {
+    int request_id = Int32FromNPVariant(args[0]);
+    bool allow = NPVARIANT_TO_BOOLEAN(args[1]);
+    bindings->instance()->OnEmbedderDecidedPermission(request_id, allow);
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingSetPermission);
 };
 
 class BrowserPluginBindingTerminate : public BrowserPluginMethodBinding {
@@ -771,7 +815,9 @@ BrowserPluginBindings::BrowserPluginBindings(BrowserPlugin* instance)
   method_bindings_.push_back(new BrowserPluginBindingGetProcessID);
   method_bindings_.push_back(new BrowserPluginBindingGetRouteID);
   method_bindings_.push_back(new BrowserPluginBindingGo);
+  method_bindings_.push_back(new BrowserPluginBindingPersistRequestObject);
   method_bindings_.push_back(new BrowserPluginBindingReload);
+  method_bindings_.push_back(new BrowserPluginBindingSetPermission);
   method_bindings_.push_back(new BrowserPluginBindingStop);
   method_bindings_.push_back(new BrowserPluginBindingTerminate);
 

@@ -20,6 +20,10 @@ const char kMethodReload[] = "reload";
 const char kMethodStop[] = "stop";
 const char kMethodTerminate[] = "terminate";
 
+// Internal method bindings.
+const char kMethodInternalPersistObject[] = "-internal-persistObject";
+const char kMethodInternalSetPermission[] = "-internal-setPermission";
+
 // Attributes.
 const char kAttributeAutoSize[] = "autosize";
 const char kAttributeContentWindow[] = "contentWindow";
@@ -38,6 +42,7 @@ const char kEventLoadCommit[] = "loadcommit";
 const char kEventLoadRedirect[] = "loadredirect";
 const char kEventLoadStart[] = "loadstart";
 const char kEventLoadStop[] = "loadstop";
+const char kEventRequestPermission[] = "permissionrequest";
 const char kEventResponsive[] = "responsive";
 const char kEventSizeChanged[] = "sizechanged";
 const char kEventUnresponsive[] = "unresponsive";
@@ -50,9 +55,12 @@ const char kNewWidth[] = "newWidth";
 const char kOldURL[] = "oldUrl";
 const char kOldHeight[] = "oldHeight";
 const char kOldWidth[] = "oldWidth";
+const char kPermission[] = "permission";
+const char kPermissionTypeMedia[] = "media";
 const char kPersistPrefix[] = "persist:";
 const char kProcessId[] = "processId";
 const char kReason[] = "reason";
+const char kRequestId[] = "requestId";
 const char kURL[] = "url";
 
 // Error messages.

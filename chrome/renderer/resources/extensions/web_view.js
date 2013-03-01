@@ -129,6 +129,7 @@ function WebView(node) {
   for (var eventName in WEB_VIEW_EVENTS) {
     this.setupEvent_(eventName, WEB_VIEW_EVENTS[eventName]);
   }
+  this.maybeSetupPermissionEvent_();
 }
 
 /**
@@ -183,4 +184,12 @@ WebView.prototype.setupEvent_ = function(eventname, attribs) {
     });
     node.dispatchEvent(evt);
   });
-}
+};
+
+/**
+ * Implemented when experimental permission is available.
+ * @private
+ */
+WebView.prototype.maybeSetupPermissionEvent_ = function() {};
+
+exports.WebView = WebView;

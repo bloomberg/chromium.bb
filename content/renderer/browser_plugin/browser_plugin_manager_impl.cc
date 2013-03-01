@@ -131,6 +131,7 @@ bool BrowserPluginManagerImpl::ShouldForwardToBrowserPlugin(
     case BrowserPluginMsg_LoadRedirect::ID:
     case BrowserPluginMsg_LoadStart::ID:
     case BrowserPluginMsg_LoadStop::ID:
+    case BrowserPluginMsg_RequestPermission::ID:
     case BrowserPluginMsg_SetCursor::ID:
     case BrowserPluginMsg_ShouldAcceptTouchEvents::ID:
     case BrowserPluginMsg_UpdatedName::ID:

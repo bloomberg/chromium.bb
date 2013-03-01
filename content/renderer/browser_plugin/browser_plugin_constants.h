@@ -21,6 +21,10 @@ extern const char kMethodReload[];
 extern const char kMethodStop[];
 extern const char kMethodTerminate[];
 
+// Internal method bindings.
+extern const char kMethodInternalPersistObject[];
+extern const char kMethodInternalSetPermission[];
+
 // Attributes.
 extern const char kAttributeAutoSize[];
 extern const char kAttributeContentWindow[];
@@ -39,6 +43,7 @@ extern const char kEventLoadCommit[];
 extern const char kEventLoadRedirect[];
 extern const char kEventLoadStart[];
 extern const char kEventLoadStop[];
+extern const char kEventRequestPermission[];
 extern const char kEventResponsive[];
 extern const char kEventSizeChanged[];
 extern const char kEventUnresponsive[];
@@ -51,9 +56,12 @@ extern const char kNewWidth[];
 extern const char kOldURL[];
 extern const char kOldHeight[];
 extern const char kOldWidth[];
+extern const char kPermission[];
+extern const char kPermissionTypeMedia[];
 extern const char kPersistPrefix[];
 extern const char kProcessId[];
 extern const char kReason[];
+extern const char kRequestId[];
 extern const char kURL[];
 
 // Error messages.

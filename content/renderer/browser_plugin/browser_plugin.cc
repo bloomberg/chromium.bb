@@ -98,7 +98,9 @@ BrowserPlugin::BrowserPlugin(
       browser_plugin_manager_(render_view->browser_plugin_manager()),
       current_nav_entry_index_(0),
       nav_entry_count_(0),
-      compositing_enabled_(false) {
+      compositing_enabled_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          weak_ptr_factory_(this)) {
 }
 
 BrowserPlugin::~BrowserPlugin() {
@@ -128,6 +130,7 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadRedirect, OnLoadRedirect)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadStart, OnLoadStart)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadStop, OnLoadStop)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_RequestPermission, OnRequestPermission)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_ShouldAcceptTouchEvents,
                         OnShouldAcceptTouchEvents)
@@ -511,6 +514,15 @@ void BrowserPlugin::OnLoadStop(int instance_id) {
   TriggerEvent(browser_plugin::kEventLoadStop, NULL);
 }
 
+void BrowserPlugin::OnRequestPermission(
+    int instance_id,
+    BrowserPluginPermissionType permission_type,
+    int request_id,
+    const base::DictionaryValue& request_info) {
+  if (permission_type == BrowserPluginPermissionTypeMedia)
+    RequestMediaPermission(request_id, request_info);
+}
+
 void BrowserPlugin::OnSetCursor(int instance_id, const WebCursor& cursor) {
   cursor_ = cursor;
 }
@@ -525,6 +537,55 @@ void BrowserPlugin::OnShouldAcceptTouchEvents(int instance_id, bool accept) {
 
 void BrowserPlugin::OnUpdatedName(int instance_id, const std::string& name) {
   UpdateDOMAttribute(browser_plugin::kAttributeName, name);
+}
+
+void BrowserPlugin::RequestMediaPermission(
+    int request_id, const base::DictionaryValue& request_info) {
+  if (!HasEventListeners(browser_plugin::kEventRequestPermission)) {
+    // Automatically deny the request if there are no event listeners for
+    // permissionrequest.
+    RespondPermission(
+        BrowserPluginPermissionTypeMedia, request_id, false /* allow */);
+    return;
+  }
+  DCHECK(!pending_permission_requests_.count(request_id));
+  pending_permission_requests_.insert(
+      std::make_pair(request_id,
+                     std::make_pair(request_id,
+                                    BrowserPluginPermissionTypeMedia)));
+
+  std::map<std::string, base::Value*> props;
+  props[browser_plugin::kPermission] =
+      base::Value::CreateStringValue(browser_plugin::kPermissionTypeMedia);
+  props[browser_plugin::kRequestId] =
+      base::Value::CreateIntegerValue(request_id);
+
+  // Fill in the info provided by the browser.
+  for (DictionaryValue::Iterator iter(request_info); !iter.IsAtEnd();
+           iter.Advance()) {
+    props[iter.key()] = iter.value().DeepCopy();
+  }
+  TriggerEvent(browser_plugin::kEventRequestPermission, &props);
+}
+
+bool BrowserPlugin::HasEventListeners(const std::string& event_name) {
+  if (!container())
+    return false;
+
+  WebKit::WebNode node = container()->element();
+  // Escape the <webview> shim if this BrowserPlugin has one.
+  WebKit::WebElement shim = node.shadowHost();
+  if (!shim.isNull())
+    node = shim;
+
+  const WebKit::WebString& web_event_name =
+      WebKit::WebString::fromUTF8(event_name);
+  while (!node.isNull()) {
+    if (node.hasEventListeners(web_event_name))
+      return true;
+    node = node.parentNode();
+  }
+  return false;
 }
 
 void BrowserPlugin::OnUpdateRect(
@@ -774,6 +835,67 @@ void BrowserPlugin::TriggerEvent(const std::string& event_name,
   container()->element().dispatchEvent(event);
 }
 
+void BrowserPlugin::OnRequestObjectGarbageCollected(int request_id) {
+  // Remove from alive objects.
+  std::map<int, AliveV8PermissionRequestItem*>::iterator iter =
+      alive_v8_permission_request_objects_.find(request_id);
+  if (iter != alive_v8_permission_request_objects_.end())
+    alive_v8_permission_request_objects_.erase(iter);
+
+  // If a decision has not been made for this request yet, deny it.
+  RespondPermissionIfRequestIsPending(request_id, false /*allow*/);
+}
+
+void BrowserPlugin::PersistRequestObject(
+    const NPVariant* request, const std::string& type, int id) {
+  CHECK(alive_v8_permission_request_objects_.find(id) ==
+        alive_v8_permission_request_objects_.end());
+  if (pending_permission_requests_.find(id) ==
+      pending_permission_requests_.end()) {
+    return;
+  }
+
+  v8::Persistent<v8::Value> weak_request =
+      v8::Persistent<v8::Value>::New(WebKit::WebBindings::toV8Value(request));
+
+  AliveV8PermissionRequestItem* new_item =
+      new std::pair<int, base::WeakPtr<BrowserPlugin> >(
+          id, weak_ptr_factory_.GetWeakPtr());
+
+  std::pair<std::map<int, AliveV8PermissionRequestItem*>::iterator, bool>
+      result = alive_v8_permission_request_objects_.insert(
+          std::make_pair(id, new_item));
+  CHECK(result.second);  // Inserted in the map.
+  AliveV8PermissionRequestItem* request_item = result.first->second;
+  weak_request.MakeWeak(request_item, WeakCallbackForPersistObject);
+}
+
+// static
+void BrowserPlugin::WeakCallbackForPersistObject(
+    v8::Persistent<v8::Value> object, void* param) {
+  v8::Persistent<v8::Object> persistent_object =
+      v8::Persistent<v8::Object>::Cast(object);
+
+  AliveV8PermissionRequestItem* item_ptr =
+      static_cast<AliveV8PermissionRequestItem*>(param);
+  int request_id = item_ptr->first;
+  base::WeakPtr<BrowserPlugin> plugin = item_ptr->second;
+  delete item_ptr;
+
+  persistent_object.Dispose();
+  persistent_object.Clear();
+
+  if (plugin) {
+    // Asynchronously remove item from |alive_v8_permission_request_objects_|.
+    // Note that we are using weak pointer for the following PostTask, so we
+    // don't need to worry about BrowserPlugin going away.
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&BrowserPlugin::OnRequestObjectGarbageCollected,
+                   plugin, request_id));
+  }
+}
+
 void BrowserPlugin::Back() {
   if (!navigate_src_sent_)
     return;
@@ -842,6 +964,39 @@ bool BrowserPlugin::ShouldGuestBeFocused() const {
 
 WebKit::WebPluginContainer* BrowserPlugin::container() const {
   return container_;
+}
+
+void BrowserPlugin::RespondPermission(
+    BrowserPluginPermissionType permission_type, int request_id, bool allow) {
+  switch (permission_type) {
+    case BrowserPluginPermissionTypeMedia:
+      browser_plugin_manager()->Send(
+          new BrowserPluginHostMsg_RespondPermission(
+              render_view_->GetRoutingID(), instance_id_,
+              BrowserPluginPermissionTypeMedia, request_id, allow));
+      break;
+    case BrowserPluginPermissionTypeUnknown:
+    default:
+      // Not a valid permission type.
+      NOTREACHED();
+      break;
+  }
+}
+
+void BrowserPlugin::RespondPermissionIfRequestIsPending(
+    int request_id, bool allow) {
+  PendingPermissionRequests::iterator iter =
+      pending_permission_requests_.find(request_id);
+  if (iter == pending_permission_requests_.end())
+    return;
+
+  BrowserPluginPermissionType permission_type = iter->second.second;
+  pending_permission_requests_.erase(iter);
+  RespondPermission(permission_type, request_id, allow);
+}
+
+void BrowserPlugin::OnEmbedderDecidedPermission(int request_id, bool allow) {
+  RespondPermissionIfRequestIsPending(request_id, allow);
 }
 
 bool BrowserPlugin::initialize(WebPluginContainer* container) {

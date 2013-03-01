@@ -18,8 +18,8 @@
 #include "content/common/browser_plugin_messages.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/drag_messages.h"
-#include "content/common/view_messages.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/view_messages.h"
 #include "content/port/browser/render_view_host_delegate_view.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
@@ -29,6 +29,7 @@
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/public/common/media_stream_request.h"
 #include "content/public/common/result_codes.h"
 #include "content/browser/browser_plugin/browser_plugin_host_factory.h"
 #include "net/base/net_errors.h"
@@ -45,6 +46,10 @@ namespace content {
 
 // static
 BrowserPluginHostFactory* BrowserPluginGuest::factory_ = NULL;
+
+namespace {
+const size_t kNumMaxOutstandingMediaRequests = 1024;
+}
 
 BrowserPluginGuest::BrowserPluginGuest(
     int instance_id,
@@ -66,7 +71,8 @@ BrowserPluginGuest::BrowserPluginGuest(
       auto_size_enabled_(params.auto_size_params.enable),
       max_auto_size_(params.auto_size_params.max_size),
       min_auto_size_(params.auto_size_params.min_size),
-      destroy_called_(false) {
+      destroy_called_(false),
+      current_media_access_request_id_(0) {
   DCHECK(web_contents);
   web_contents->SetDelegate(this);
 
@@ -112,6 +118,8 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_PluginDestroyed, OnPluginDestroyed)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Reload, OnReload)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ResizeGuest, OnResizeGuest)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_RespondPermission,
+                        OnRespondPermission)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetAutoSize, OnSetSize)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetFocus, OnSetFocus)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetName, OnSetName)
@@ -648,6 +656,35 @@ void BrowserPluginGuest::AcknowledgeBufferPresent(
                                                  ack_params);
 }
 
+void BrowserPluginGuest::OnRespondPermission(
+    int /*instance_id*/,
+    BrowserPluginPermissionType permission_type,
+    int request_id,
+    bool should_allow) {
+  if (permission_type != BrowserPluginPermissionTypeMedia)
+    return;
+
+  MediaStreamRequestsMap::iterator media_request_iter =
+      media_requests_map_.find(request_id);
+  if (media_request_iter == media_requests_map_.end()) {
+    LOG(INFO) << "Not a valid request ID.";
+    return;
+  }
+  const content::MediaStreamRequest& request = media_request_iter->second.first;
+  const content::MediaResponseCallback& callback =
+      media_request_iter->second.second;
+
+  if (should_allow && embedder_web_contents_) {
+    // Re-route the request to the embedder's WebContents; the guest gets the
+    // permission this way.
+    embedder_web_contents_->RequestMediaAccessPermission(request, callback);
+  } else {
+    // Deny the request.
+    callback.Run(content::MediaStreamDevices());
+  }
+  media_requests_map_.erase(media_request_iter);
+}
+
 void BrowserPluginGuest::OnSwapBuffersACK(int instance_id,
                                           int route_id,
                                           int gpu_host_id,
@@ -762,6 +799,28 @@ void BrowserPluginGuest::OnUpdateFrameName(int frame_id,
 
   name_ = name;
   SendMessageToEmbedder(new BrowserPluginMsg_UpdatedName(instance_id_, name));
+}
+
+void BrowserPluginGuest::RequestMediaAccessPermission(
+    WebContents* web_contents,
+    const content::MediaStreamRequest& request,
+    const content::MediaResponseCallback& callback) {
+  if (media_requests_map_.size() >= kNumMaxOutstandingMediaRequests) {
+    // Deny the media request.
+    callback.Run(content::MediaStreamDevices());
+    return;
+  }
+  int request_id = current_media_access_request_id_++;
+  media_requests_map_.insert(
+      std::make_pair(request_id,
+                     std::make_pair(request, callback)));
+
+  base::DictionaryValue request_info;
+  request_info.Set(
+      "url", base::Value::CreateStringValue(request.security_origin.spec()));
+  SendMessageToEmbedder(new BrowserPluginMsg_RequestPermission(
+      instance_id(), BrowserPluginPermissionTypeMedia,
+      request_id, request_info));
 }
 
 void BrowserPluginGuest::OnUpdateRect(

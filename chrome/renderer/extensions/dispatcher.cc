@@ -700,6 +700,8 @@ void Dispatcher::PopulateSourceMap() {
   // Platform app sources that are not API-specific..
   source_map_.RegisterSource("tagWatcher", IDR_TAG_WATCHER_JS);
   source_map_.RegisterSource("webview", IDR_WEB_VIEW_JS);
+  source_map_.RegisterSource("webview.experimental",
+                             IDR_WEB_VIEW_EXPERIMENTAL_JS);
   source_map_.RegisterSource("denyWebview", IDR_WEB_VIEW_DENY_JS);
   source_map_.RegisterSource("platformApp", IDR_PLATFORM_APP_JS);
   source_map_.RegisterSource("injectAppTitlebar", IDR_INJECT_APP_TITLEBAR_JS);
@@ -834,6 +836,10 @@ void Dispatcher::DidCreateScriptContext(
   if (context_type == Feature::BLESSED_EXTENSION_CONTEXT) {
     bool has_permission = extension->HasAPIPermission(APIPermission::kWebView);
     module_system->Require(has_permission ? "webview" : "denyWebview");
+    if (has_permission &&
+        Feature::GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV) {
+      module_system->Require("webview.experimental");
+    }
   }
 
   context->set_module_system(module_system.Pass());

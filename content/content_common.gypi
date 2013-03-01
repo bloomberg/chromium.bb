@@ -128,6 +128,7 @@
     'common/appcache/appcache_dispatcher.cc',
     'common/appcache/appcache_dispatcher.h',
     'common/appcache_messages.h',
+    'common/browser_plugin_message_enums.h',
     'common/browser_plugin_messages.h',
     'common/cc_messages.cc',
     'common/cc_messages.h',

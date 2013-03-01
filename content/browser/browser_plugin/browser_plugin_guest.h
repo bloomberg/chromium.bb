@@ -27,6 +27,7 @@
 #include "base/id_map.h"
 #include "base/shared_memory.h"
 #include "base/time.h"
+#include "content/common/browser_plugin_message_enums.h"
 #include "content/port/common/input_event_ack_state.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -59,6 +60,7 @@ class BrowserPluginHostFactory;
 class BrowserPluginEmbedder;
 class RenderProcessHost;
 class RenderWidgetHostView;
+struct MediaStreamRequest;
 
 // A browser plugin guest provides functionality for WebContents to operate in
 // the guest role and implements guest specific overrides for ViewHostMsg_*
@@ -150,6 +152,10 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   virtual void RunFileChooser(WebContents* web_contents,
                               const FileChooserParams& params) OVERRIDE;
   virtual bool ShouldFocusPageAfterCrash() OVERRIDE;
+  virtual void RequestMediaAccessPermission(
+      WebContents* web_contents,
+      const content::MediaStreamRequest& request,
+      const content::MediaResponseCallback& callback) OVERRIDE;
 
   // Exposes the protected web_contents() from WebContentsObserver.
   WebContents* GetWebContents();
@@ -181,6 +187,11 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
                                        uint32 sync_point);
 
  private:
+  typedef std::pair<content::MediaStreamRequest, content::MediaResponseCallback>
+      MediaStreamRequestAndCallbackPair;
+  typedef std::map<int, MediaStreamRequestAndCallbackPair>
+      MediaStreamRequestsMap;
+
   friend class TestBrowserPluginGuest;
 
   BrowserPluginGuest(int instance_id,
@@ -213,6 +224,12 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
 
   // Message handlers for messsages from embedder.
 
+  // Allows or denies a permission request access, after the embedder has had a
+  // chance to decide.
+  void OnRespondPermission(int instance_id,
+                           BrowserPluginPermissionType permission_type,
+                           int request_id,
+                           bool should_allow);
   // Handles drag events from the embedder.
   // When dragging, the drag events go to the embedder first, and if the drag
   // happens on the browser plugin, then the plugin sends a corresponding
@@ -330,6 +347,15 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   gfx::Size max_auto_size_;
   gfx::Size min_auto_size_;
   bool destroy_called_;
+
+  // A counter to generate unique request id for a media access request.
+  // We only need the ids to be unique for a given BrowserPluginGuest.
+  int current_media_access_request_id_;
+  // A map to store WebContents's media request object and callback.
+  // We need to store these because we need a roundtrip to the embedder to know
+  // if we allow or disallow the request. The key of the map is unique only for
+  // a given BrowserPluginGuest.
+  MediaStreamRequestsMap media_requests_map_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginGuest);
 };
