@@ -280,6 +280,13 @@ gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() const {
   return gfx::Rect(content_view_core_->GetViewportSizeDip());
 }
 
+gfx::Size RenderWidgetHostViewAndroid::GetPhysicalBackingSize() const {
+  if (!content_view_core_)
+    return gfx::Size();
+
+  return content_view_core_->GetViewportSizePix();
+}
+
 void RenderWidgetHostViewAndroid::UpdateCursor(const WebCursor& cursor) {
   // There are no cursors on Android.
 }

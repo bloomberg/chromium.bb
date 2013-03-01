@@ -12,6 +12,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/size_conversions.h"
+#include "ui/gfx/size_f.h"
 
 #if defined(OS_WIN)
 #include "base/command_line.h"
@@ -365,6 +367,14 @@ const SkBitmap& RenderWidgetHostViewBase::GetBackground() {
   return background_;
 }
 
+gfx::Size RenderWidgetHostViewBase::GetPhysicalBackingSize() const {
+  gfx::Display display =
+      gfx::Screen::GetNativeScreen()->GetDisplayNearestPoint(
+          GetViewBounds().origin());
+  return gfx::ToCeiledSize(gfx::ScaleSize(GetViewBounds().size(),
+                                          display.device_scale_factor()));
+}
+
 void RenderWidgetHostViewBase::SelectionChanged(const string16& text,
                                                 size_t offset,
                                                 const ui::Range& range) {
@@ -432,11 +442,17 @@ void RenderWidgetHostViewBase::UpdateScreenInfo(gfx::NativeView view) {
   if (current_display_area_ == display.work_area() &&
       current_device_scale_factor_ == display.device_scale_factor())
     return;
+
+  bool device_scale_factor_changed =
+      current_device_scale_factor_ != display.device_scale_factor();
   current_display_area_ = display.work_area();
   current_device_scale_factor_ = display.device_scale_factor();
-  if (impl)
+  if (impl) {
+    if (device_scale_factor_changed)
+        impl->WasResized();
     impl->NotifyScreenInfoChanged();
   }
+}
 
 SmoothScrollGesture* RenderWidgetHostViewBase::CreateSmoothScrollGesture(
     bool scroll_down, int pixels_to_scroll, int mouse_event_x,

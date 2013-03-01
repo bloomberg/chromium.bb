@@ -797,8 +797,9 @@ IPC_MESSAGE_ROUTED0(ViewMsg_Close)
 // the view's current size.  The generated ViewHostMsg_PaintRect message will
 // have the IS_RESIZE_ACK flag set. It also receives the resizer rect so that
 // we don't have to fetch it every time WebKit asks for it.
-IPC_MESSAGE_ROUTED3(ViewMsg_Resize,
+IPC_MESSAGE_ROUTED4(ViewMsg_Resize,
                     gfx::Size /* new_size */,
+                    gfx::Size /* physical_backing_size */,
                     gfx::Rect /* resizer_rect */,
                     bool /* is_fullscreen */)
 
