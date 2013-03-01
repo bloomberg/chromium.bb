@@ -9,34 +9,6 @@
 // of this class, so we need to be extra careful about concurrent access of
 // methods and members.
 //
-// WebMediaPlayerImpl works with multiple objects, the most important ones are:
-//
-// media::Pipeline
-//   The media playback pipeline.
-//
-// VideoRendererBase
-//   Video renderer object.
-//
-// WebKit::WebMediaPlayerClient
-//   WebKit client of this media player object.
-//
-// The following diagram shows the relationship of these objects:
-//   (note: ref-counted reference is marked by a "r".)
-//
-// WebMediaPlayerClient (WebKit object)
-//    ^
-//    |
-// WebMediaPlayerImpl ---> Pipeline
-//    |        ^                  |
-//    |        |                  v r
-//    |        |        VideoRendererBase
-//    |        |          |       ^ r
-//    |   r    |          v r     |
-//    '---> WebMediaPlayerProxy --'
-//
-// Notice that WebMediaPlayerProxy and VideoRendererBase are referencing each
-// other. This interdependency has to be treated carefully.
-//
 // Other issues:
 // During tear down of the whole browser or a tab, the DOM tree may not be
 // destructed nicely, and there will be some dangling media threads trying to
@@ -58,6 +30,7 @@
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/decryptor.h"
 #include "media/base/pipeline.h"
+#include "media/filters/skcanvas_video_renderer.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAudioSourceProvider.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
@@ -82,11 +55,11 @@ class MediaLog;
 
 namespace webkit_media {
 
+class BufferedDataSource;
 class MediaStreamClient;
 class WebAudioSourceProviderImpl;
 class WebMediaPlayerDelegate;
 class WebMediaPlayerParams;
-class WebMediaPlayerProxy;
 
 class WebMediaPlayerImpl
     : public WebKit::WebMediaPlayer,
@@ -276,6 +249,10 @@ class WebMediaPlayerImpl
   // Notifies WebKit of the duration change.
   void OnDurationChange();
 
+  // Called by VideoRendererBase on its internal thread with the new frame to be
+  // painted.
+  void FrameReady(const scoped_refptr<media::VideoFrame>& frame);
+
   WebKit::WebFrame* frame_;
 
   // TODO(hclam): get rid of these members and read from the pipeline directly.
@@ -321,8 +298,6 @@ class WebMediaPlayerImpl
 
   WebKit::WebMediaPlayerClient* client_;
 
-  scoped_refptr<WebMediaPlayerProxy> proxy_;
-
   base::WeakPtr<WebMediaPlayerDelegate> delegate_;
 
   MediaStreamClient* media_stream_client_;
@@ -346,11 +321,25 @@ class WebMediaPlayerImpl
 
   bool starting_;
 
+  // These two are mutually exclusive:
+  //   |data_source_| is used for regular resource loads.
+  //   |chunk_demuxer_| is used for Media Source resource loads.
+  scoped_refptr<BufferedDataSource> data_source_;
   scoped_refptr<media::ChunkDemuxer> chunk_demuxer_;
 
   // Temporary for EME v0.1. In the future the init data type should be passed
   // through GenerateKeyRequest() directly from WebKit.
   std::string init_data_type_;
+
+  // Video frame rendering members.
+  //
+  // |lock_| protects |current_frame_| since new frames arrive on the video
+  // rendering thread, yet are accessed for rendering on either the main thread
+  // or compositing thread depending on whether accelerated compositing is used.
+  base::Lock lock_;
+  media::SkCanvasVideoRenderer skcanvas_video_renderer_;
+  scoped_refptr<media::VideoFrame> current_frame_;
+  bool pending_repaint_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };

@@ -37,7 +37,6 @@
 #include "webkit/media/webaudiosourceprovider_impl.h"
 #include "webkit/media/webmediaplayer_delegate.h"
 #include "webkit/media/webmediaplayer_params.h"
-#include "webkit/media/webmediaplayer_proxy.h"
 #include "webkit/media/webmediaplayer_util.h"
 #include "webkit/media/webvideoframe_impl.h"
 #include "webkit/plugins/ppapi/ppapi_webplugin_impl.h"
@@ -133,14 +132,14 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       pending_seek_(false),
       pending_seek_seconds_(0.0f),
       client_(client),
-      proxy_(new WebMediaPlayerProxy(main_loop_, this)),
       delegate_(delegate),
       media_log_(params.media_log()),
       accelerated_compositing_reported_(false),
       incremented_externally_allocated_memory_(false),
       is_local_source_(false),
       supports_save_(true),
-      starting_(false) {
+      starting_(false),
+      pending_repaint_(false) {
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_CREATED));
 
@@ -188,7 +187,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       new media::VideoRendererBase(
           media_thread_.message_loop_proxy(),
           set_decryptor_ready_cb,
-          base::Bind(&WebMediaPlayerProxy::FrameReady, proxy_),
+          base::Bind(&WebMediaPlayerImpl::FrameReady, base::Unretained(this)),
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::SetOpaque),
           true));
   filter_collection_->SetVideoRenderer(video_renderer.Pass());
@@ -284,11 +283,10 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url, CORSMode cors_mode) {
   }
 
   // Otherwise it's a regular request which requires resolving the URL first.
-  proxy_->set_data_source(
-      new BufferedDataSource(main_loop_, frame_, media_log_,
-                             base::Bind(&WebMediaPlayerImpl::NotifyDownloading,
-                                        AsWeakPtr())));
-  proxy_->data_source()->Initialize(
+  data_source_ = new BufferedDataSource(
+      main_loop_, frame_, media_log_, base::Bind(
+          &WebMediaPlayerImpl::NotifyDownloading, AsWeakPtr()));
+  data_source_->Initialize(
       url, static_cast<BufferedResourceLoader::CORSMode>(cors_mode),
       base::Bind(
           &WebMediaPlayerImpl::DataSourceInitialized,
@@ -296,7 +294,7 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url, CORSMode cors_mode) {
 
   is_local_source_ = !gurl.SchemeIs("http") && !gurl.SchemeIs("https");
 
-  BuildDefaultCollection(proxy_->data_source(),
+  BuildDefaultCollection(data_source_,
                          media_thread_.message_loop_proxy(),
                          filter_collection_.get());
 }
@@ -424,11 +422,8 @@ COMPILE_ASSERT_MATCHING_ENUM(PreloadAuto, AUTO);
 void WebMediaPlayerImpl::setPreload(WebMediaPlayer::Preload preload) {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
-  if (proxy_ && proxy_->data_source()) {
-    // XXX: Why do I need to use webkit_media:: prefix? clang complains!
-    proxy_->data_source()->SetPreload(
-        static_cast<webkit_media::Preload>(preload));
-  }
+  if (data_source_)
+    data_source_->SetPreload(static_cast<webkit_media::Preload>(preload));
 }
 
 bool WebMediaPlayerImpl::totalBytesKnown() {
@@ -542,7 +537,7 @@ float WebMediaPlayerImpl::maxTimeSeekable() const {
     return 0.0f;
 
   // We don't support seeking in streaming media.
-  if (proxy_ && proxy_->data_source() && proxy_->data_source()->IsStreaming())
+  if (data_source_ && data_source_->IsStreaming())
     return 0.0f;
   return duration();
 }
@@ -568,7 +563,6 @@ void WebMediaPlayerImpl::paint(WebCanvas* canvas,
                                const WebRect& rect,
                                uint8_t alpha) {
   DCHECK(main_loop_->BelongsToCurrentThread());
-  DCHECK(proxy_);
 
   if (!accelerated_compositing_reported_) {
     accelerated_compositing_reported_ = true;
@@ -580,24 +574,34 @@ void WebMediaPlayerImpl::paint(WebCanvas* canvas,
         frame_->view()->isAcceleratedCompositingActive());
   }
 
-  proxy_->Paint(canvas, rect, alpha);
+  // Avoid locking and potentially blocking the video rendering thread while
+  // painting in software.
+  scoped_refptr<media::VideoFrame> video_frame;
+  {
+    base::AutoLock auto_lock(lock_);
+    video_frame = current_frame_;
+  }
+  gfx::Rect gfx_rect(rect);
+  skcanvas_video_renderer_.Paint(video_frame, canvas, gfx_rect, alpha);
 }
 
 bool WebMediaPlayerImpl::hasSingleSecurityOrigin() const {
-  if (proxy_)
-    return proxy_->HasSingleOrigin();
+  if (data_source_)
+    return data_source_->HasSingleOrigin();
   return true;
 }
 
 bool WebMediaPlayerImpl::didPassCORSAccessCheck() const {
-  return proxy_ && proxy_->DidPassCORSAccessCheck();
+  if (data_source_)
+    return data_source_->DidPassCORSAccessCheck();
+  return false;
 }
 
 WebMediaPlayer::MovieLoadType WebMediaPlayerImpl::movieLoadType() const {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
   // Disable seeking while streaming.
-  if (proxy_ && proxy_->data_source() && proxy_->data_source()->IsStreaming())
+  if (data_source_ && data_source_->IsStreaming())
     return WebMediaPlayer::MovieLoadTypeLiveStream;
   return WebMediaPlayer::MovieLoadTypeUnknown;
 }
@@ -635,10 +639,9 @@ unsigned WebMediaPlayerImpl::videoDecodedByteCount() const {
 }
 
 WebKit::WebVideoFrame* WebMediaPlayerImpl::getCurrentFrame() {
-  scoped_refptr<media::VideoFrame> video_frame;
-  proxy_->GetCurrentFrame(&video_frame);
-  if (video_frame.get())
-    return new WebVideoFrameImpl(video_frame);
+  base::AutoLock auto_lock(lock_);
+  if (current_frame_)
+    return new WebVideoFrameImpl(current_frame_);
   return NULL;
 }
 
@@ -886,6 +889,9 @@ void WebMediaPlayerImpl::WillDestroyCurrentMessageLoop() {
 void WebMediaPlayerImpl::Repaint() {
   DCHECK(main_loop_->BelongsToCurrentThread());
   GetClient()->repaint();
+
+  base::AutoLock auto_lock(lock_);
+  pending_repaint_ = false;
 }
 
 void WebMediaPlayerImpl::OnPipelineSeek(PipelineStatus status) {
@@ -1153,15 +1159,11 @@ void WebMediaPlayerImpl::SetReadyState(WebMediaPlayer::ReadyState state) {
 void WebMediaPlayerImpl::Destroy() {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
-  // Tell the data source to abort any pending reads so that the pipeline is
-  // not blocked when issuing stop commands to the other filters.
-  if (proxy_) {
-    proxy_->AbortDataSource();
-    if (chunk_demuxer_) {
-      chunk_demuxer_->Shutdown();
-      chunk_demuxer_ = NULL;
-    }
-  }
+  // Abort any pending IO so stopping the pipeline doesn't get blocked.
+  if (data_source_)
+    data_source_->Abort();
+  if (chunk_demuxer_)
+    chunk_demuxer_->Shutdown();
 
   // Make sure to kill the pipeline so there's no more media threads running.
   // Note: stopping the pipeline might block for a long time.
@@ -1178,12 +1180,9 @@ void WebMediaPlayerImpl::Destroy() {
 
   media_thread_.Stop();
 
-  // And then detach the proxy, it may live on the render thread for a little
-  // longer until all the tasks are finished.
-  if (proxy_) {
-    proxy_->Detach();
-    proxy_ = NULL;
-  }
+  // Release any final references now that everything has stopped.
+  data_source_ = NULL;
+  chunk_demuxer_ = NULL;
 }
 
 WebKit::WebMediaPlayerClient* WebMediaPlayerImpl::GetClient() {
@@ -1218,6 +1217,19 @@ void WebMediaPlayerImpl::OnDurationChange() {
     return;
 
   GetClient()->durationChanged();
+}
+
+void WebMediaPlayerImpl::FrameReady(
+    const scoped_refptr<media::VideoFrame>& frame) {
+  base::AutoLock auto_lock(lock_);
+  current_frame_ = frame;
+
+  if (pending_repaint_)
+    return;
+
+  pending_repaint_ = true;
+  main_loop_->PostTask(FROM_HERE, base::Bind(
+      &WebMediaPlayerImpl::Repaint, AsWeakPtr()));
 }
 
 }  // namespace webkit_media
