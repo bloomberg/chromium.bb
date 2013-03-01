@@ -648,14 +648,16 @@ class InstructionPrinter(object):
       return False
 
     # In 64-bit validator we only care about general purpose registers we
-    # are writing to.
+    # are writing to. We need to look at the format in order to distinguish
+    # general-purpose registers from x87 ones.
     return (
         operand.Writable() and
         operand.arg_type in [
             def_format.OperandType.REGISTER_IN_OPCODE,
             def_format.OperandType.REGISTER_IN_VVVV,
             def_format.OperandType.REGISTER_IN_REG,
-            def_format.OperandType.REGISTER_IN_RM])
+            def_format.OperandType.REGISTER_IN_RM] and
+        operand.GetFormat() in ['8bit', '16bit', '32bit', '64bit'])
 
   def _PrintOperandSource(self, operand, source):
     """Print action specifying operand source."""
@@ -769,6 +771,30 @@ class InstructionPrinter(object):
     else:
       assert imm2 is None
 
+  def _PrintProcessOperandsActions(self, instruction):
+    if self._mode == DECODER or self._bitness == 32:
+      return
+
+    num_operands = 0
+    zero_extends = False
+    if Attribute('nacl-amd64-zero-extends') in instruction.attributes:
+      for operand in instruction.operands:
+        if not self._NeedOperandInfo(operand):
+          continue
+        num_operands += 1
+        if operand.GetFormat() == '32bit':
+          zero_extends = True
+
+    if num_operands == 1:
+      self._out.write('@process_1_operand')
+    else:
+      self._out.write('@process_%d_operands' % num_operands)
+
+    if zero_extends:
+      self._out.write('_zero_extends')
+
+    self._out.write('\n')
+
   def PrintInstructionWithoutModRM(self, instruction):
     assert not instruction.HasModRM()
 
@@ -819,6 +845,7 @@ class InstructionPrinter(object):
         assert False, format
       self._PrintOperandSource(operand, 'jmp_to')
 
+    self._PrintProcessOperandsActions(instruction)
     self._FinalCheck(instruction)
 
   def _PrintModRMOperandSources(self, instruction):
@@ -901,6 +928,7 @@ class InstructionPrinter(object):
     self._PrintSpuriousRexInfo(instruction)
 
     self._PrintImmediates(instruction)
+    self._PrintProcessOperandsActions(instruction)
     self._FinalCheck(instruction)
 
   def PrintInstructionWithModRMMemory(self, instruction, address_mode):
@@ -968,7 +996,11 @@ class InstructionPrinter(object):
     self._PrintModRMOperandSources(instruction)
 
     self._out.write('  any* &\n')
-    self._out.write('%s)\n' % address_mode.mode)
+    self._out.write(address_mode.mode)
+    if self._mode == VALIDATOR and self._bitness == 64:
+      if Attribute('no_memory_access') not in instruction.attributes:
+        self._out.write(' @check_access')
+    self._out.write(')\n')
 
     if instruction.HasOpcodeInsteadOfImmediate():
       assert instruction.opcodes[-2] == '/'
@@ -983,19 +1015,18 @@ class InstructionPrinter(object):
     # a little bit earlier? But it would require third intersectee, ew...
     self._PrintSpuriousRexInfo(instruction)
 
-    # TODO(shcherbina): @check_access when appropriate.
-
     self._PrintImmediates(instruction)
+    self._PrintProcessOperandsActions(instruction)
     self._FinalCheck(instruction)
 
   def _FinalCheck(self, instruction):
-    if self._mode == VALIDATOR:
-      # TODO(shcherbina): implement.
-      return
-    all_operands = set(operand.index for operand in instruction.operands)
-    assert self._printed_operand_sources == all_operands, (
+    expected_operands = filter(self._NeedOperandInfo, instruction.operands)
+    expected_indices = set(operand.index for operand in expected_operands)
+    assert self._printed_operand_sources == expected_indices, (
         str(instruction),
-        self._printed_operand_sources, all_operands)
+        self._printed_operand_sources,
+        expected_indices,
+        expected_operands)
 
 
 def InstructionToString(mode, bitness, instruction):

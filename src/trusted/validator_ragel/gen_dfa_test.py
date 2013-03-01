@@ -536,6 +536,27 @@ class TestInstructionPrinter(unittest.TestCase):
         @CPUFeature_ALTMOVCR8
         """.split())
 
+  def test_validator_actions(self):
+    printer = gen_dfa.InstructionPrinter(gen_dfa.VALIDATOR, 64)
+    instr = gen_dfa.Instruction.Parse(
+        'mov Md !Gd, 0x8a, nacl-amd64-modifiable nacl-amd64-zero-extends')
+
+    printer.PrintInstructionWithModRMMemory(
+        instr,
+        gen_dfa.AddressMode('single_register_memory',
+                            x_matters=False,
+                            b_matters=True))
+
+    self.assertEquals(
+        printer.GetContent().split(),
+        """
+        REX_RXB?
+        0x8a
+        (any @operand0_32bit @operand0_from_modrm_reg any* &
+         single_register_memory @check_access)
+        @process_1_operand_zero_extends
+        """.split())
+
 
 class TestSplit(unittest.TestCase):
 
