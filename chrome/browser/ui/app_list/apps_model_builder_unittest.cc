@@ -228,3 +228,33 @@ TEST_F(AppsModelBuilderTest, InvalidOrdinal) {
   // This should not assert or crash.
   builder.Build();
 }
+
+TEST_F(AppsModelBuilderTest, OrdinalConfilicts) {
+  // Creates conflict ordinals for app1 and app2.
+  syncer::StringOrdinal conflict_ordinal =
+      syncer::StringOrdinal::CreateInitialOrdinal();
+
+  ExtensionSorting* sorting = service_->extension_prefs()->extension_sorting();
+  sorting->SetPageOrdinal(kHostedAppId, conflict_ordinal);
+  sorting->SetAppLaunchOrdinal(kHostedAppId, conflict_ordinal);
+
+  sorting->SetPageOrdinal(kPackagedApp1Id, conflict_ordinal);
+  sorting->SetAppLaunchOrdinal(kPackagedApp1Id, conflict_ordinal);
+
+  sorting->SetPageOrdinal(kPackagedApp2Id, conflict_ordinal);
+  sorting->SetAppLaunchOrdinal(kPackagedApp2Id, conflict_ordinal);
+
+  scoped_ptr<app_list::AppListModel::Apps> model(
+      new app_list::AppListModel::Apps);
+  AppsModelBuilder builder(profile_.get(), model.get(), NULL);
+  builder.Build();
+
+  // By default, conflicted items are sorted by their app ids.
+  EXPECT_EQ(std::string("Hosted App,Packaged App 1,Packaged App 2"),
+            GetModelContent(model.get()));
+
+  // Move hosted app between app1 and app2 and it should not crash.
+  service_->OnExtensionMoved(kHostedAppId, kPackagedApp1Id, kPackagedApp2Id);
+  EXPECT_EQ(std::string("Packaged App 1,Hosted App,Packaged App 2"),
+            GetModelContent(model.get()));
+}

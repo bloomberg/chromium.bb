@@ -10,6 +10,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
@@ -59,6 +60,21 @@ AppsModelBuilder::AppsModelBuilder(Profile* profile,
       ignore_changes_(false),
       tracker_(extensions::InstallTrackerFactory::GetForProfile(profile_)) {
   tracker_->AddObserver(this);
+  model_->AddObserver(this);
+}
+
+AppsModelBuilder::~AppsModelBuilder() {
+  OnShutdown();
+  model_->RemoveObserver(this);
+}
+
+void AppsModelBuilder::Build() {
+  DCHECK(model_ && model_->item_count() == 0);
+
+  PopulateApps();
+  HighlightApp();
+
+  // Start observing after model is built.
   extensions::ExtensionPrefs* extension_prefs =
       extensions::ExtensionSystem::Get(profile_)->extension_service()->
           extension_prefs();
@@ -76,20 +92,6 @@ AppsModelBuilder::AppsModelBuilder(Profile* profile,
   pref_change_registrar_.Add(extensions::ExtensionPrefs::kExtensionsPref,
                              base::Bind(&AppsModelBuilder::ResortApps,
                                         base::Unretained(this)));
-
-  model_->AddObserver(this);
-}
-
-AppsModelBuilder::~AppsModelBuilder() {
-  OnShutdown();
-  model_->RemoveObserver(this);
-}
-
-void AppsModelBuilder::Build() {
-  DCHECK(model_ && model_->item_count() == 0);
-
-  PopulateApps();
-  HighlightApp();
 }
 
 void AppsModelBuilder::OnBeginExtensionInstall(
@@ -156,6 +158,7 @@ void AppsModelBuilder::PopulateApps() {
   if (apps.empty())
     return;
 
+  service->extension_prefs()->extension_sorting()->FixNTPOrdinalCollisions();
   std::sort(apps.begin(), apps.end(), &AppPrecedes);
 
   for (size_t i = 0; i < apps.size(); ++i)
