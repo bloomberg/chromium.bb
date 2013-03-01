@@ -1173,7 +1173,7 @@ void GLES2Implementation::VertexAttribDivisorANGLE(
 }
 
 void GLES2Implementation::ShaderSource(
-    GLuint shader, GLsizei count, const GLchar* const* source, const GLint* length) {
+    GLuint shader, GLsizei count, const char** source, const GLint* length) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glShaderSource("
       << shader << ", " << count << ", "

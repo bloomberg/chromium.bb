@@ -310,7 +310,7 @@ void GLES2InterfaceStub::ShaderBinary(
     const void* /* binary */, GLsizei /* length */) {
 }
 void GLES2InterfaceStub::ShaderSource(
-    GLuint /* shader */, GLsizei /* count */, const GLchar* const* /* str */,
+    GLuint /* shader */, GLsizei /* count */, const char** /* str */,
     const GLint* /* length */) {
 }
 void GLES2InterfaceStub::StencilFunc(

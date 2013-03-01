@@ -20,6 +20,7 @@ NOTE: Please add Chromium-specific declarations to files in gpu/{GL,EGL,GLES2}
 and not here.
 
 GLES2/gl2.h
+ - Added GL_CONTEXT_LOST constant.
  - Added include of gl2chromium.h
 GLES2/gl2ext.h
  - Added Chromium and Angle extensions.
