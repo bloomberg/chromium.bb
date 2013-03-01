@@ -21,6 +21,7 @@
 #include <CoreAudio/CoreAudio.h>
 
 #include "base/compiler_specific.h"
+#include "base/synchronization/lock.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_parameters.h"
 
@@ -80,6 +81,10 @@ class AUAudioOutputStream : public AudioOutputStream {
 
   // Pointer to the object that will provide the audio samples.
   AudioSourceCallback* source_;
+
+  // Protects |source_|.  Necessary since Render() calls seem to be in flight
+  // when |output_unit_| is supposedly stopped.  See http://crbug.com/178765.
+  base::Lock source_lock_;
 
   // Structure that holds the stream format details such as bitrate.
   AudioStreamBasicDescription format_;
