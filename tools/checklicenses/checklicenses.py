@@ -338,9 +338,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/ocmock/OCMock': [  # http://crbug.com/98454
         'UNKNOWN',
     ],
-    'third_party/opus/src': [  # http://crbug.com/156738
-        'UNKNOWN',
-    ],
     'third_party/ply/__init__.py': [
         'UNKNOWN',
     ],

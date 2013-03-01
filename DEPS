@@ -327,7 +327,7 @@ deps = {
     (Var("googlecode_url") % "pywebsocket") + "/trunk/src@662",
 
   "src/third_party/opus/src":
-    "/trunk/deps/third_party/opus@173498",
+    "/trunk/deps/third_party/opus@185324",
 
   "src/third_party/accessibility-developer-tools":
     Var("chromium_git") + "/external/accessibility-developer-tools.git@ad5df9a5341d38778658c90e4aa241c4ebe4e8aa",
