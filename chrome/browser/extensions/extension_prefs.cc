@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -1302,8 +1303,12 @@ extension_misc::LaunchContainer ExtensionPrefs::GetLaunchContainer(
       // window opening is the default), make the container a window.
       result = extension_misc::LAUNCH_WINDOW;
 #if defined(USE_ASH)
-    } else if (prefs_launch_type == ExtensionPrefs::LAUNCH_FULLSCREEN) {
+    } else if (prefs_launch_type == ExtensionPrefs::LAUNCH_FULLSCREEN &&
+               chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH) {
       // LAUNCH_FULLSCREEN launches in a maximized app window in ash.
+      // For desktop chrome AURA on all platforms we should open the
+      // application in full screen mode in the current tab, on the same
+      // lines as non AURA chrome.
       result = extension_misc::LAUNCH_WINDOW;
 #endif
     } else {
