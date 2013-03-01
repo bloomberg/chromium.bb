@@ -32,9 +32,8 @@ GURL GetDevToolsPathAsURL() {
   }
 #if defined(OS_MACOSX)
   // On Mac, the executable is in out/Release/Content
-  // Shell.app/Frameworks/Content Shell Helper.app/Contents/MacOS/Content. We
-  // need to go up 6 directories to get to out/Release.
-    Shell Helper
+  // Shell.app/Frameworks/Content Shell Helper.app/Contents/MacOS/Content Shell
+  // Helper. We need to go up 6 directories to get to out/Release.
   dir_exe = dir_exe.AppendASCII("../../../../../..");
 #endif
   base::FilePath dev_tools_path = dir_exe.AppendASCII(
