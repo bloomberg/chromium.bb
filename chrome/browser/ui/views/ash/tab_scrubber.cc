@@ -62,7 +62,6 @@ TabScrubber::TabScrubber()
       activate_timer_(true, false),
       activation_delay_(base::TimeDelta::FromMilliseconds(kActivationDelayMS)),
       should_cancel_immersive_reveal_(false),
-      cancel_immersive_reveal_timer_(true, false),
       weak_ptr_factory_(this) {
   ash::Shell::GetInstance()->AddPreTargetHandler(this);
   registrar_.Add(
@@ -127,7 +126,6 @@ void TabScrubber::OnScrollEvent(ui::ScrollEvent* event) {
     swipe_y_ = start_point.y();
     ImmersiveModeController* immersive_controller =
         browser_view->immersive_mode_controller();
-    CancelImmersiveReveal();
     if (immersive_controller->enabled() &&
         !immersive_controller->IsRevealed()) {
       immersive_controller->MaybeStartReveal();
@@ -269,14 +267,6 @@ void TabScrubber::FinishScrub(bool activate) {
       browser_->tab_strip_model()->ActivateTabAt(highlighted_tab_, true);
     }
     tab_strip->RemoveObserver(this);
-    if (!cancel_immersive_reveal_timer_.IsRunning() &&
-        should_cancel_immersive_reveal_) {
-      cancel_immersive_reveal_timer_.Start(
-          FROM_HERE,
-          base::TimeDelta::FromMilliseconds(kCancelImmersiveRevelDelayMS),
-          base:: Bind(&TabScrubber::CancelImmersiveReveal,
-                      weak_ptr_factory_.GetWeakPtr()));
-    }
   }
   swipe_x_ = -1;
   swipe_y_ = -1;
@@ -285,7 +275,6 @@ void TabScrubber::FinishScrub(bool activate) {
 }
 
 void TabScrubber::CancelImmersiveReveal() {
-  cancel_immersive_reveal_timer_.Stop();
   if (browser_ && should_cancel_immersive_reveal_) {
     BrowserView* browser_view =
         BrowserView::GetBrowserViewForNativeWindow(

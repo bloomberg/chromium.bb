@@ -89,8 +89,6 @@ class TabScrubber : public ui::EventHandler,
   // Indicates if we were in immersive mode and forced the tabs to be
   // revealed.
   bool should_cancel_immersive_reveal_;
-  // Timer to control the cancel of an immersive reveal.
-  base::Timer cancel_immersive_reveal_timer_;
 
   content::NotificationRegistrar registrar_;
   base::WeakPtrFactory<TabScrubber> weak_ptr_factory_;
