@@ -118,10 +118,6 @@ class StartupBrowserCreator {
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest, UpdateWithTwoProfiles);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest, LastUsedProfileActivated);
 
-  // Shows/hide app install splash screen.
-  static int64 ShowAppInstallUI();
-  static void HideAppInstallUI(int64 start_time);
-
   // Returns the list of URLs to open from the command line. The returned
   // vector is empty if the user didn't specify any URLs on the command line.
   static std::vector<GURL> GetURLsFromCommandLine(

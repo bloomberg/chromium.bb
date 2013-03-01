@@ -272,7 +272,6 @@ std::string GetOffTheRecordCommandLine(
 std::string GetKioskAppCommandLine(const std::string& app_id) {
   base::DictionaryValue app_switches;
   app_switches.SetString(::switches::kForceAppMode, std::string());
-  app_switches.SetString(::switches::kInstallFromWebstore, app_id);
   app_switches.SetString(::switches::kAppId, app_id);
   app_switches.SetString(::switches::kLoginUser, std::string());
 

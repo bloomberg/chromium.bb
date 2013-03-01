@@ -18,6 +18,7 @@ class ContactManager;
 namespace chromeos {
 
 class BrightnessObserver;
+class KioskAppLauncher;
 class MagnificationManager;
 class OutputObserver;
 class PowerButtonObserver;
@@ -68,6 +69,10 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   void SetupLowMemoryHeadroomFieldTrial();
   void SetupZramFieldTrial();
 
+  // Invoked when a kiosk app launch attempt has finished. |success| indicates
+  // whether the attempt succeeds or not.
+  void KioskAppLaunchCallback(bool success);
+
   scoped_ptr<contacts::ContactManager> contact_manager_;
   scoped_ptr<BrightnessObserver> brightness_observer_;
   scoped_ptr<default_app_order::ExternalLoader> app_order_loader_;
@@ -90,6 +95,8 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   VersionLoader cros_version_loader_;
   CancelableTaskTracker tracker_;
   bool use_new_network_change_notifier_;
+
+  scoped_ptr<KioskAppLauncher> kiosk_app_launcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };

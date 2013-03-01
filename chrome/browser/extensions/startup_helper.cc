@@ -173,9 +173,7 @@ bool StartupHelper::InstallFromWebstore(const CommandLine& cmd_line,
 
   AppInstallHelper helper;
   helper.BeginInstall(profile, id,
-      cmd_line.HasSwitch(switches::kForceAppMode) ?
-          WebstoreStandaloneInstaller::SKIP_PROMPT :
-          WebstoreStandaloneInstaller::STANDARD_PROMPT,
+      WebstoreStandaloneInstaller::STANDARD_PROMPT,
       MessageLoop::QuitWhenIdleClosure());
 
   MessageLoop::current()->Run();

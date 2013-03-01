@@ -23,6 +23,8 @@ class KioskAppPrefsLocalState : public KioskAppPrefs {
   // KioskAppPrefs overrides:
   virtual std::string GetAutoLaunchApp() const OVERRIDE;
   virtual void SetAutoLaunchApp(const std::string& app_id) OVERRIDE;
+  virtual bool GetSuppressAutoLaunch() const OVERRIDE;
+  virtual void SetSuppressAutoLaunch(bool suppress) OVERRIDE;
   virtual void GetApps(AppIds* app_ids) const OVERRIDE;
   virtual void AddApp(const std::string& app_id) OVERRIDE;
   virtual void RemoveApp(const std::string& app_id) OVERRIDE;

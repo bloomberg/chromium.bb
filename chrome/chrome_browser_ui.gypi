@@ -1292,7 +1292,6 @@
         'browser/ui/startup/session_crashed_prompt.h',
         'browser/ui/startup/startup_browser_creator.cc',
         'browser/ui/startup/startup_browser_creator.h',
-        'browser/ui/startup/startup_browser_creator_chromeos.cc',
         'browser/ui/startup/startup_browser_creator_impl.cc',
         'browser/ui/startup/startup_browser_creator_impl.h',
         'browser/ui/startup/startup_browser_creator_win.cc',

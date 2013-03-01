@@ -67,6 +67,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/app_mode/startup_app_launcher.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/profile_startup.h"
@@ -394,7 +395,7 @@ std::vector<GURL> StartupBrowserCreator::GetURLsFromCommandLine(
     }
     // Exclude dangerous schemes.
     if (url.is_valid()) {
-      ChildProcessSecurityPolicy *policy =
+      ChildProcessSecurityPolicy* policy =
           ChildProcessSecurityPolicy::GetInstance();
       if (policy->IsWebSafeScheme(url.scheme()) ||
           url.SchemeIs(chrome::kFileScheme) ||
@@ -534,21 +535,11 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
   }
 
   if (command_line.HasSwitch(switches::kInstallFromWebstore)) {
-    int64 start_time = ShowAppInstallUI();
     extensions::StartupHelper helper;
-    bool app_installed =
-        helper.InstallFromWebstore(command_line, last_used_profile);
-    // Nothing more needs to be done if we also don't want to run an app, so
-    // return false to stop launching and quit.
-    if (!chrome::IsRunningInAppMode())
-      return false;
-
-    HideAppInstallUI(start_time);
-    if (!app_installed) {
-      // TODO(zelidrag): Signal somehow to the session manager that app launch
-      // attempt had failed.
-      return false;
-    }
+    helper.InstallFromWebstore(command_line, last_used_profile);
+    // Nothing more needs to be done, so return false to stop launching and
+    // quit.
+    return false;
   }
 
   if (command_line.HasSwitch(switches::kLimitedInstallFromWebstore)) {
@@ -561,6 +552,17 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
   // The browser will be launched after the user logs in.
   if (command_line.HasSwitch(switches::kLoginManager) ||
       command_line.HasSwitch(switches::kLoginPassword)) {
+    silent_launch = true;
+  }
+
+  if (chrome::IsRunningInAppMode() &&
+      command_line.HasSwitch(switches::kAppId)) {
+    // StartupAppLauncher deletes itself when done.
+    (new chromeos::StartupAppLauncher(
+        last_used_profile,
+        command_line.GetSwitchValueASCII(switches::kAppId)))->Start();
+
+    // Skip browser launch since app mode launches its app window.
     silent_launch = true;
   }
 #endif
@@ -646,16 +648,6 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
   }
   return true;
 }
-
-#if !defined(OS_CHROMEOS)
-int64 StartupBrowserCreator::ShowAppInstallUI() {
-  return base::TimeTicks::Now().ToInternalValue();
-}
-
-void StartupBrowserCreator::HideAppInstallUI(
-    int64 start_time) {
-}
-#endif
 
 template <class AutomationProviderClass>
 bool StartupBrowserCreator::CreateAutomationProvider(
