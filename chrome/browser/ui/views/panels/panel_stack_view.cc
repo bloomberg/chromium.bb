@@ -18,9 +18,9 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/ui/views/hwnd_util.h"
 #include "chrome/browser/ui/views/panels/taskbar_window_thumbnailer_win.h"
 #include "ui/base/win/shell.h"
-#include "ui/views/win/hwnd_util.h"
 #endif
 
 // static
@@ -72,7 +72,7 @@ void PanelStackView::EnsureInitialized() {
   ui::win::SetAppIdForWindow(
       ShellIntegration::GetAppModelIdForProfile(UTF8ToWide(panel->app_name()),
                                                 panel->profile()->GetPath()),
-      views::HWNDForWidget(window_));
+      chrome::HWNDForWidget(window_));
 #endif
 }
 
@@ -101,7 +101,7 @@ void PanelStackView::Minimize() {
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return;
 
-  HWND native_window = views::HWNDForWidget(window_);
+  HWND native_window = chrome::HWNDForWidget(window_);
 
   if (!thumbnailer_.get()) {
     DCHECK(native_window);
@@ -115,7 +115,7 @@ void PanelStackView::Minimize() {
         iter != stacked_collection_->panels().end(); ++iter) {
     Panel* panel = *iter;
     native_panel_windows.push_back(
-        views::HWNDForWidget(
+        chrome::HWNDForWidget(
             static_cast<PanelView*>(panel->native_panel())->window()));
   }
   thumbnailer_->Start(native_panel_windows);
@@ -178,13 +178,13 @@ void PanelStackView::OnWidgetActivationChanged(views::Widget* widget,
 
 void PanelStackView::UpdateWindowOwnerForTaskbarIconAppearance(Panel* panel) {
 #if defined(OS_WIN)
-  HWND panel_window = views::HWNDForWidget(
+  HWND panel_window = chrome::HWNDForWidget(
       static_cast<PanelView*>(panel->native_panel())->window());
 
   HWND stack_window = NULL;
   StackedPanelCollection* stack = panel->stack();
   if (stack) {
-    stack_window = views::HWNDForWidget(
+    stack_window = chrome::HWNDForWidget(
         static_cast<PanelStackView*>(stack->native_stack())->window_);
   }
 

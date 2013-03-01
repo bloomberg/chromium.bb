@@ -15,11 +15,11 @@
 #include "base/win/windows_version.h"
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/views/hwnd_util.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/image/image.h"
-#include "ui/views/win/hwnd_util.h"
 
 namespace chrome {
 
@@ -78,7 +78,7 @@ void DrawTaskbarDecoration(gfx::NativeWindow window, const gfx::Image* image) {
       chrome::HOST_DESKTOP_TYPE_NATIVE)
     return;
 
-  HWND hwnd = views::HWNDForNativeWindow(window);
+  HWND hwnd = chrome::HWNDForNativeWindow(window);
 
   // SetOverlayIcon() does nothing if the window is not visible so testing here
   // avoids all the wasted effort of the image resizing.
