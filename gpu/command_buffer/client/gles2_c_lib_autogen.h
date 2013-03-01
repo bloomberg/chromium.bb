@@ -355,7 +355,8 @@ void GLES2ShaderBinary(
       n, shaders, binaryformat, binary, length);
 }
 void GLES2ShaderSource(
-    GLuint shader, GLsizei count, const char** str, const GLint* length) {
+    GLuint shader, GLsizei count, const GLchar* const* str,
+    const GLint* length) {
   gles2::GetGLContext()->ShaderSource(shader, count, str, length);
 }
 void GLES2StencilFunc(GLenum func, GLint ref, GLuint mask) {

@@ -365,7 +365,7 @@ GLvoid StubGLScissor(GLint x, GLint y, GLsizei width, GLsizei height) {
   glScissor(x, y, width, height);
 }
 
-GLvoid StubGLShaderSource(GLuint shader, GLsizei count, const char** str,
+GLvoid StubGLShaderSource(GLuint shader, GLsizei count, const char* const* str,
                           const GLint* length) {
   glShaderSource(shader, count, str, length);
 }
