@@ -38,6 +38,8 @@
           'android/build_info.cc',
           'android/build_info.h',
           'android/cpu_features.cc',
+          'android/important_file_writer_android.cc',
+          'android/important_file_writer_android.h',
           'android/scoped_java_ref.cc',
           'android/scoped_java_ref.h',
           'android/jni_android.cc',
