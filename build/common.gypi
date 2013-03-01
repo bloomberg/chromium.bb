@@ -563,7 +563,7 @@
 
         # linux_use_gold_binary: whether to use the binary checked into
         # third_party/gold.
-        ['OS=="linux"', {
+        ['OS=="linux" and target_arch=="x64"', {
           'linux_use_gold_binary%': 1,
         }, {
           'linux_use_gold_binary%': 0,
@@ -572,7 +572,7 @@
         # linux_use_gold_flags: whether to use build flags that rely on gold.
         # On by default for x64 Linux.  Temporarily off for ChromeOS as
         # it failed on a buildbot.
-        ['OS=="linux" and chromeos==0', {
+        ['OS=="linux" and target_arch=="x64" and chromeos==0', {
           'linux_use_gold_flags%': 1,
         }, {
           'linux_use_gold_flags%': 0,
@@ -624,7 +624,6 @@
           'armv7%': 1,
           'linux_breakpad%': 0,
           'linux_use_tcmalloc%': 0,
-          'linux_use_gold_flags%': 0,
           # sysroot needs to be an absolute path otherwise it generates
           # incorrect results when passed to pkg-config
           'sysroot%': '<!(cd <(DEPTH) && pwd -P)/arm-sysroot',
@@ -1063,8 +1062,6 @@
           ['target_arch=="mipsel"', {
             'werror%': '',
             'disable_nacl%': 1,
-            'linux_use_gold_binary%': 0,
-            'linux_use_gold_flags%': 0,
             'nacl_untrusted_build%': 0,
             'linux_use_tcmalloc%': 0,
             'linux_breakpad%': 0,
@@ -2977,8 +2974,8 @@
                 'target_conditions': [
                   ['_toolset=="target"', {
                     'ldflags': [
-                      # Workaround for linker OOM. http://crbug.com/160253.
-                      '-Wl,--no-keep-files-mapped',
+                      # Workaround for linker OOM.
+                      '-Wl,--no-keep-memory',
                     ],
                   }],
                 ],
