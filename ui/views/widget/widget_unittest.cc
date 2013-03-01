@@ -1304,6 +1304,7 @@ class DesktopAuraFullscreenChildWindowDestructionTest
  public:
   DesktopAuraFullscreenChildWindowDestructionTest()
       : full_screen_widget_(NULL),
+        child_window_(NULL),
         parent_destroyed_(false),
         child_destroyed_(false) {}
 
@@ -1311,6 +1312,7 @@ class DesktopAuraFullscreenChildWindowDestructionTest
     EXPECT_TRUE(parent_destroyed_);
     EXPECT_TRUE(child_destroyed_);
     full_screen_widget_ = NULL;
+    child_window_ = NULL;
   }
 
   // views::TestViewsDelegate overrides.
@@ -1330,7 +1332,7 @@ class DesktopAuraFullscreenChildWindowDestructionTest
 
     widget_.Init(init_params);
 
-    child_window_.reset(new aura::Window(&child_window_delegate_));
+    child_window_ = new aura::Window(&child_window_delegate_);
     child_window_->SetType(aura::client::WINDOW_TYPE_NORMAL);
     child_window_->Init(ui::LAYER_TEXTURED);
     child_window_->SetName("TestFullscreenChildWindow");
@@ -1350,8 +1352,8 @@ class DesktopAuraFullscreenChildWindowDestructionTest
   }
 
   void DestroyChildWindow() {
-    ASSERT_TRUE(child_window_.get() != NULL);
-    child_window_.reset();
+    ASSERT_TRUE(child_window_ != NULL);
+    delete child_window_;
   }
 
   void DestroyParentWindow() {
@@ -1363,19 +1365,19 @@ class DesktopAuraFullscreenChildWindowDestructionTest
     window->RemoveObserver(this);
     if (window == child_window_) {
       child_destroyed_ = true;
-      aura::Window* window = child_window_.release();
-      EXPECT_TRUE(window != NULL);
-    }
-    if (window == full_screen_widget_->GetNativeView())
+    } else if (window == full_screen_widget_->GetNativeView()) {
       parent_destroyed_ = true;
+    } else {
+      ADD_FAILURE() << "Unexpected window destroyed callback: " << window;
+    }
   }
 
  private:
   views::Widget widget_;
   views::Widget* full_screen_widget_;
+  aura::Window* child_window_;
   bool parent_destroyed_;
   bool child_destroyed_;
-  scoped_ptr<aura::Window> child_window_;
   aura::test::TestWindowDelegate child_window_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopAuraFullscreenChildWindowDestructionTest);
