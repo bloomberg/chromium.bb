@@ -6,6 +6,7 @@
 #define BASE_DEBUG_CRASH_LOGGING_H_
 
 #include <string>
+#include <vector>
 
 #include "base/base_export.h"
 #include "base/basictypes.h"
