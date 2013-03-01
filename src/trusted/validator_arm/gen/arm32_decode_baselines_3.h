@@ -8322,10 +8322,8 @@ class VZIP_111100111d11ss10dddd00011qm0mmmm_case_0
 // WFE_cccc0011001000001111000000000010_case_0:
 //
 //   {arch: v6K,
-//    cond: cond(31:28),
 //    constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    pattern: cccc0011001000001111000000000010,
 //    rule: WFE,
 //    safety: [true => FORBIDDEN],
@@ -8347,10 +8345,8 @@ class WFE_cccc0011001000001111000000000010_case_0
 // WFI_cccc0011001000001111000000000011_case_0:
 //
 //   {arch: v6K,
-//    cond: cond(31:28),
 //    constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    pattern: cccc0011001000001111000000000011,
 //    rule: WFI,
 //    safety: [true => FORBIDDEN],
@@ -8372,10 +8368,8 @@ class WFI_cccc0011001000001111000000000011_case_0
 // YIELD_cccc0011001000001111000000000001_case_0:
 //
 //   {arch: v6K,
-//    cond: cond(31:28),
 //    constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    pattern: cccc0011001000001111000000000001,
 //    rule: YIELD,
 //    uses: {}}
@@ -8394,10 +8388,8 @@ class YIELD_cccc0011001000001111000000000001_case_0
 
 // extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0:
 //
-//   {cond: cond(31:28),
-//    constraints: ,
+//   {constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    pattern: cccc0000xx1xxxxxxxxxxxxx1xx1xxxx,
 //    rule: extra_load_store_instructions_unpriviledged,
 //    safety: [true => FORBIDDEN],

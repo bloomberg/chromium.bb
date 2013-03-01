@@ -672,10 +672,8 @@ class STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0
 
 // STM_User_registers_cccc100pu100nnnnrrrrrrrrrrrrrrrr_case_0:
 //
-//   {cond: cond(31:28),
-//    constraints: ,
+//   {constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    pattern: cccc100pu100nnnnrrrrrrrrrrrrrrrr,
 //    rule: STM_User_registers,
 //    safety: [true => FORBIDDEN],
@@ -696,10 +694,8 @@ class STM_User_registers_cccc100pu100nnnnrrrrrrrrrrrrrrrr_case_0
 
 // STRBT_A1_cccc0100u110nnnnttttiiiiiiiiiiii_case_0:
 //
-//   {cond: cond(31:28),
-//    constraints: ,
+//   {constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    pattern: cccc0100u110nnnnttttiiiiiiiiiiii,
 //    rule: STRBT_A1,
 //    safety: [true => FORBIDDEN],
@@ -720,10 +716,8 @@ class STRBT_A1_cccc0100u110nnnnttttiiiiiiiiiiii_case_0
 
 // STRBT_A2_cccc0110u110nnnnttttiiiiitt0mmmm_case_0:
 //
-//   {cond: cond(31:28),
-//    constraints: ,
+//   {constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    pattern: cccc0110u110nnnnttttiiiiitt0mmmm,
 //    rule: STRBT_A2,
 //    safety: [true => FORBIDDEN],
@@ -1286,10 +1280,8 @@ class STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_0
 
 // STRT_A1_cccc0100u010nnnnttttiiiiiiiiiiii_case_0:
 //
-//   {cond: cond(31:28),
-//    constraints: ,
+//   {constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    pattern: cccc0100u010nnnnttttiiiiiiiiiiii,
 //    rule: STRT_A1,
 //    safety: [true => FORBIDDEN],
@@ -1310,10 +1302,8 @@ class STRT_A1_cccc0100u010nnnnttttiiiiiiiiiiii_case_0
 
 // STRT_A2_cccc0110u010nnnnttttiiiiitt0mmmm_case_0:
 //
-//   {cond: cond(31:28),
-//    constraints: ,
+//   {constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    pattern: cccc0110u010nnnnttttiiiiitt0mmmm,
 //    rule: STRT_A2,
 //    safety: [true => FORBIDDEN],
@@ -1596,10 +1586,8 @@ class SVC_cccc1111iiiiiiiiiiiiiiiiiiiiiiii_case_0
 
 // SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_0:
 //
-//   {cond: cond(31:28),
-//    constraints: ,
+//   {constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    pattern: cccc00010b00nnnntttt00001001tttt,
 //    rule: SWP_SWPB,
 //    safety: [true => DEPRECATED],
@@ -3242,10 +3230,8 @@ class Unnamed_1111011xxx11xxxxxxxxxxxxxxx0xxxx_case_0
 
 // Unnamed_case_0:
 //
-//   {cond: cond(31:28),
-//    constraints: ,
+//   {constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    safety: [true => FORBIDDEN],
 //    true: true,
 //    uses: {}}

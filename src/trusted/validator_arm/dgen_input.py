@@ -11,15 +11,11 @@ A simple recursive-descent parser for the table file format.
 The grammar implemented here is roughly (taking some liberties with whitespace
 and comment parsing):
 
-table_file ::= table+ eof ;
+table_file ::= decoder_actions? table+ eof ;
 
 action         ::= decoder_action | decoder_method | '"'
-action_actual  := 'actual' ':=' id
 action_arch    ::= 'arch' ':=' id | '(' id (',' id)* ')'
-action_baseline::= 'actual' ':=' id
-action_option  ::= (action_actual |
-                    action_baseline |
-                    action_rule |
+action_option  ::= (action_rule |
                     action_pattern |
                     action_safety |
                     action_arch |
@@ -52,6 +48,7 @@ call           ::= word '(' (bit_expr (',' bit_expr)*)? ')'
 citation       ::= '(' word+ ')'
 column         ::= id '(' int (':' int)? ')'
 decoder_action ::= '=" decoder_defn
+decoder_actions::= ('*' (int | id) decoder_defn)+
 decoder_defn   ::= fields? action_option*
                    | '*' (int | id) ('-' field_names)? fields? action_option*
 decoder_method ::= '->' id
@@ -71,7 +68,7 @@ pattern        ::= bitpattern | '-' | '"'
 row            ::= '|' (pat_row | default_row)
 safety_check   ::= bit_expr1 '=>' id
 table          ::= table_desc table_actions header row+ footer
-table_actions  ::= ( ('*' (int | id) decoder_defn)+ footer)?
+table_actions  ::= (decoder_actions footer)?
 table_desc     ::= '+' '-' '-' id citation?
 """
 
@@ -167,6 +164,9 @@ class Parser(object):
       return self._parse(decoder)
 
   def _parse(self, decoder):
+    # Read global decoder actions.
+    if self._next_token().kind == '*':
+      self._file_actions = self._decoder_actions()
     # Read tables while there are tables to read.
     while self._next_token().kind == '+':
       self._table(decoder)
@@ -187,14 +187,15 @@ class Parser(object):
     self._pushed_tokens = []     # Tokens pushed back onto the input stream.
     # Reserved words allowed. Must be ordered such that if p1 != p2 are in
     # the list, and p1.startswith(p2), then p1 must appear before p2.
-    self._reserved = ['class', 'else', 'pattern', 'safety', 'rule',
-                      'arch', 'other', 'mod', 'if', 'not', 'in', 'bitset',
-                      'actual', 'baseline', 'super.safety']
+    self._reserved = ['class', 'else', 'other', 'mod', 'if', 'not', 'in']
     # Punctuation allowed. Must be ordered such that if p1 != p2 are in
     # the list, and p1.startswith(p2), then p1 must appear before p2.
     self._punctuation = ['=>', '->', '-', '+', '(', ')', '==', ':=', '"',
                          '|', '~', '&', '{', '}', ',', ';', '!=',':',
                          '>>', '<<', '>=', '>', '<=', '<', '=', '*', '/']
+    # Holds global decoder actions, that can be used in tables if not defined
+    # locally.
+    self._file_actions = {}
 
   #-------- Recursive descent parse functions corresponding to grammar above.
 
@@ -210,17 +211,11 @@ class Parser(object):
     else:
       self._unexpected("Row doesn't define an action")
 
-  def _action_actual(self, context):
-    """action_actual  := 'actual' ':=' id"""
-    self._read_token('actual')
-    self._read_token(':=')
-    self._define('actual', self._id(), context)
-
   def _action_arch(self, context):
     """action_arch    ::= 'arch' ':=' id | '(' id (',' id)* ')'
 
        Adds architecture to context."""
-    self._read_token('arch')
+    self._read_keyword('arch')
     self._read_token(':=')
     if self._next_token().kind == '(':
       self._read_token('(')
@@ -233,29 +228,19 @@ class Parser(object):
     else:
       self._define('arch', self._id(), context)
 
-  def _action_baseline(self, context):
-    """action_baseline ::= 'actual' ':=' id"""
-    self._read_token('baseline')
-    self._read_token(':=')
-    self._define('baseline', self._id(), context)
-
   def _action_option(self, context):
     """action_option  ::= (action_rule | action_pattern |
                            action_safety | action_arch) ';'
 
        Returns the specified architecture, or None if other option.
        """
-    if self._next_token().kind == 'actual':
-      self._action_actual(context)
-    elif self._next_token().kind == 'baseline':
-      self._action_baseline(context)
-    elif self._next_token().kind == 'rule':
+    if self._is_keyword('rule'):
       self._action_rule(context)
-    elif self._next_token().kind == 'pattern':
+    elif self._is_keyword('pattern'):
       self._action_pattern(context)
-    elif self._next_token().kind == 'safety':
+    elif self._is_keyword('safety'):
       self._action_safety(context)
-    elif self._next_token().kind == 'arch':
+    elif self._is_keyword('arch'):
       self._action_arch(context)
     elif self._next_token().kind == 'word':
       self._action_other(context)
@@ -278,7 +263,7 @@ class Parser(object):
 
        Adds pattern/parse constraints to the context.
        """
-    self._read_token('pattern')
+    self._read_keyword('pattern')
     self._read_token(':=')
     if not context.define('pattern', self._bitpattern32(), False):
       raise Exception('pattern: multiple definitions.')
@@ -289,11 +274,11 @@ class Parser(object):
 
        Adds safety constraints to the context.
        """
-    self._read_token('safety')
+    self._read_keyword('safety')
     self._read_token(':=')
-    if self._next_token().kind == 'super.safety':
+    if self._is_keyword('super.safety'):
       # Treat as extending case of inherited safety.
-      self._read_token('super.safety')
+      self._read_keyword('super.safety')
       checks = context.find('safety', install_inheriting=False)
       if isinstance(checks, list):
         checks = list(checks)
@@ -312,7 +297,7 @@ class Parser(object):
 
        Adds rule name to the context.
        """
-    self._read_token('rule')
+    self._read_keyword('rule')
     self._read_token(':=')
     if not context.define('rule', self._id(), False):
       raise Exception('rule: multiple definitions')
@@ -379,8 +364,8 @@ class Parser(object):
     value = self._bit_expr4(context)
     if not self._next_token().kind == 'in': return value
     self._read_token('in')
-    if self._next_token().kind == 'bitset':
-      self._read_token('bitset')
+    if self._is_keyword('bitset'):
+      self._read_keyword('bitset')
       return dgen_core.InBitSet(value, self._pat_bit_set())
     else:
       return dgen_core.InUintSet(value, self._bit_set(context))
@@ -565,6 +550,22 @@ class Parser(object):
     self._check_action_is_well_defined(action)
     return self._decoder_defn_end(action)
 
+  def _decoder_actions(self):
+    """ decoder_actions::= ('*' (int | id) decoder_defn)+ """
+    starred_actions = {}
+    while self._next_token().kind == '*':
+      self._read_token('*')
+      if self._is_int():
+        index = self._int()
+      else:
+        index = self._id()
+
+      if starred_actions.get(index):
+        self._unexpected("Multple *actions defined for %s" % index)
+
+      starred_actions[index] = self._decoder_defn(starred_actions)
+    return starred_actions
+
   def _decoder_defn_end(self, action):
       """Called when at end of a decoder definition. Used to
          turn off type checking."""
@@ -601,7 +602,9 @@ class Parser(object):
       index = self._id()
     indexed_action = starred_actions.get(index)
     if not indexed_action:
-      self._unexpected("Can't find decoder action *%s" % index)
+      indexed_action = self._file_actions.get(index)
+      if not indexed_action:
+        self._unexpected("Can't find decoder action *%s" % index)
 
     # Create an initial copy, and define starred action as
     # inheriting definition.
@@ -826,6 +829,13 @@ class Parser(object):
     else:
       return self._pat_row(table, starred_actions, last_patterns, last_action)
 
+  def _read_keyword(self, keyword):
+    """Returns true if the next symbol matches the (identifier) keyword."""
+    token = self._read_token()
+    if not ((token.kind == keyword) or
+            (token.kind == 'word' and token.value == keyword)):
+      self._unexpected("Expected '%s' but found '%s'" % (keyword, token.value))
+
   def _safety_check(self, context):
     """safety_check   ::= bit_expr '=>' id
 
@@ -852,17 +862,7 @@ class Parser(object):
     """table_actions  ::= ( ('*' (int | id) decoder_defn)+ footer)?"""
     starred_actions = {}
     if self._next_token().kind != '*': return starred_actions
-    while self._next_token().kind == '*':
-      self._read_token('*')
-      if self._is_int():
-        index = self._int()
-      else:
-        index = self._id()
-
-      if starred_actions.get(index):
-        self._unexpected("Multple *actions defined for %s" % index)
-
-      starred_actions[index] = self._decoder_defn(starred_actions)
+    starred_actions = self._decoder_actions()
     self._footer()
     return starred_actions
 
@@ -955,6 +955,12 @@ class Parser(object):
     """Tests if an integer occurs next."""
     if self._next_token().kind != 'word': return None
     return _DECIMAL_PATTERN.match(self._next_token().value)
+
+  def _is_keyword(self, keyword):
+    """Returns true if the next token is the given keyword."""
+    token = self._next_token()
+    return (token.kind == keyword or
+            (token.kind == 'word' and token.value == keyword))
 
   def _is_nondecimal_int(self):
     if self._next_token().kind != 'word': return None

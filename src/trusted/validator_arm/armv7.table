@@ -98,7 +98,25 @@
 ##############################################################
 
 
+##############################################################
+# Special actions needed by the validator.
+##############################################################
 
+*Nop
+  defs := {};
+  uses := {};
+
+*Deprecated *Nop
+  safety := true => DEPRECATED;
+
+*Forbidden *Nop
+  safety := true => FORBIDDEN;
+
+*Undefined *Nop
+  safety := true => UNDEFINED;
+
+*Unpredictable *Nop
+  safety := true => UNPREDICTABLE;
 
 ##############################################################
 # The following define decoder tables.
@@ -124,11 +142,6 @@
   uses := {};
   dynamic_code_replace_immediates := {imm4, imm12};
   arch := v6T2;
-*Forbidden
-  { cond(31:28) }
-  safety := true => FORBIDDEN;
-  defs := {};
-  uses := {};
 +--
 | op(25) op1(24:20) op2(7:4)
 | 0      ~10xx0     xxx0     ->data_processing_register
@@ -480,10 +493,6 @@
              RdHi == RdLo => UNPREDICTABLE &
              (ArchVersion() < 6 & (RdHi == Rn | RdLo == Rn)) => UNPREDICTABLE;
    uses := {RdLo, RdHi, Rn, Rm};
-*Undefined
-  defs := {};
-  uses := {};
-  safety := true => UNDEFINED;
 +--
 | op(23:20)
 | 000x      = *MUL
@@ -793,15 +802,6 @@
   uses := {Rn, Rt, Rt2};
   safety := Pc in {Rd, Rn} | Rt(0)=1 | Rt == Lr  => UNPREDICTABLE &
             Rd in {Rn, Rt, Rt2} => UNPREDICTABLE;
-*Undefined
-  defs := {};
-  uses := {};
-  safety := true => UNDEFINED;
-*Deprecated
-  { cond(31:28) }
-  safety := true => DEPRECATED;
-  defs := {};
-  uses := {};
 +--
 | op(23:20)
             # SWP/SWPB are OPTIONAL+deprecated in v7 with the Virtualization
@@ -837,12 +837,6 @@
 +--
 
 +-- msr_immediate_and_hints (See Section A5.2.11)
-*Nop
-  { cond(31:28) }
-  defs := {};
-  uses := {};
-*Forbidden *Nop
-  safety := true => FORBIDDEN;
 *Msr
   { cond(31:28), mask(19:18), imm12(11:0) }
   imm32 := ARMExpandImm(imm12);
@@ -944,14 +938,6 @@
    safety := cond=~1110 => UNPREDICTABLE &
              not IsBreakPointAndConstantPoolHead(inst) => FORBIDDEN_OPERANDS;
    arch := v5T;
-*Undefined
-  defs := {};
-  uses := {};
-  safety := true => UNDEFINED;
-*Forbidden
-  defs := {};
-  uses := {};
-  safety := true => FORBIDDEN;
 +--
 | op2(6:4) B(9) op(22:21) op1(19:16)
 | 000      1    x0        xxxx       = *Forbidden
@@ -1008,11 +994,6 @@
 
 +-- load_store_word_and_unsigned_byte (See Section A5.3)
 # Instructions that use Rt and an immediate value.
-*Forbidden
-  { cond(31:28) }
-  safety := true => FORBIDDEN;
-  defs := {};
-  uses := {};
 *LdRtPcImm
   { cond(31:28), U(23), Rt(15:12), imm12(11:0) }
   imm32 := ZeroExtend(imm12, 32);
@@ -1193,10 +1174,6 @@
   defs := {};
   uses := {};
   safety := not IsUDFNaClSafe(inst) => FORBIDDEN_OPERANDS;
-*Undefined
-  defs := {};
-  uses := {};
-  safety := true => UNDEFINED;
 +--
 | op1(24:20) op2(7:5) Rd(15:12) Rn(3:0)
 | 000xx      -        -         -     ->parallel_addition_and_subtraction_signed
@@ -1247,10 +1224,6 @@
   uses := {Rn, Rm};
   safety := Pc in {Rd, Rn, Rm} => UNPREDICTABLE;
   arch := v6;
-*Undefined
-  defs := {};
-  uses := {};
-  safety := true => UNDEFINED;
 +--
 | op1(21:20) op2(7:5)
 | 01         000      = *RdRnRm
@@ -1320,10 +1293,6 @@
   uses := {Rn, Rm};
   safety := Pc in {Rd, Rn, Rm} => UNPREDICTABLE;
   arch := v6;
-*Undefined
-  defs := {};
-  uses := {};
-  safety := true => UNDEFINED;
 +--
 | op1(21:20) op2(7:5)
 | 01         000      = *RdRnRm
@@ -1431,10 +1400,6 @@
   shift := DecodeImmShift(sh:'0', imm5);
 *URdImmRnSh *RdImmRnSh
   saturate_to := sat_imm;
-*Undefined
-  defs := {};
-  uses := {};
-  safety := true => UNDEFINED;
 +--
 | op1(22:20) op2(7:5) A(19:16)
 | 000        xx0      -        = *RdRnRmImm
@@ -1527,10 +1492,6 @@
   safety := Pc in { RdHi, RdLo, Rn, Rm} => UNPREDICTABLE &
             RdHi == RdLo => UNPREDICTABLE;
   arch := v6;
-*Undefined
-  defs := {};
-  uses := {};
-  safety := true => UNDEFINED;
 +--
 | op1(22:20) op2(7:5) A(15:12)
                                  # Implements Smlad and Smladx, where
@@ -1628,11 +1589,6 @@
   safety := true => MAY_BE_SAFE;
 *BranchLink *Branch
   defs := {Pc, Lr};
-*Forbidden
-  { cond(31:28) }
-  safety := true => FORBIDDEN;
-  defs := {};
-  uses := {};
 +--
 | op(25:20) R(15) Rn(19:16)
 | 0000x0    -     -         = *StRnRegs
@@ -1701,14 +1657,6 @@
 +--
 
 +-- coprocessor_instructions_and_supervisor_call (See Section A5.6)
-*Nop
-  defs := {};
-  uses := {};
-*Undefined *Nop
-  safety := true => UNDEFINED;
-*Forbidden *Nop
-  safety := true => FORBIDDEN;
-+--
 # Note: We currently only allow floating point (and advanced SIMD)
 # coprocessor operations (coproc=101x).
 # Note: Column op1 is repeated so that the first three rows can define
@@ -2211,10 +2159,6 @@
   safety := sel in bitset {10x00, x0x10} => UNDEFINED &
             t == Pc => UNPREDICTABLE;
   # TODO(karl): Add vector defs/uses etc.
-*Undefined
-  defs := {};
-  uses := {};
-  safety := true => UNDEFINED;
 +--
 | L(20) C(8) A(23:21) B(6:5)
 | 0     0    000      -      =
@@ -2259,10 +2203,6 @@
   safety := Pc in {t, t2} => UNPREDICTABLE &
             to_arm_registers & t == t2 => UNPREDICTABLE;
   # TODO(karl): Add vector defs/uses etc.
-*Undefined
-  defs := {};
-  uses := {};
-  safety := true => UNDEFINED;
 +--
 | C(8) op(7:4)
 | 0    00x1    = *VmovSnRtRt2
@@ -2277,14 +2217,6 @@
 +--
 
 +-- unconditional_instructions (See Section A5.7)
-*Nop
-  defs := {};
-  uses := {};
-*Undefined *Nop
-  safety := true => UNDEFINED;
-*Forbidden *Nop
-  safety := true => FORBIDDEN;
-+--
 | op1(27:20) op(4) Rn(19:16) op1_repeated(27:20)
 | 0xxx_xxxx  -     -         - -> 
         memory_hints_advanced_simd_instructions_and_miscellaneous_instructions
@@ -2327,15 +2259,6 @@
 
 +-- memory_hints_advanced_simd_instructions_and_miscellaneous_instructions
     (See Section A5.7.1)
-*Nop
-  defs := {};
-  uses := {};
-*Forbidden *Nop
-  safety := true => FORBIDDEN;
-*Undefined *Nop
-  safety := true => UNDEFINED;
-*Unpredictable *Nop
-  safety := true => UNPREDICTABLE;
 *Barrier
   { option(3:0) }
   defs := {};
@@ -2516,10 +2439,6 @@
    regs := 1 if Q=0 else 2;
    safety := imm4=x000 => UNDEFINED &
              Q=1 & Vd(0)=1 => UNDEFINED;
-*Undefined
-  defs := {};
-  uses := {};
-  safety := true => UNDEFINED;
 +--
 | U(24) A(23:19) B(11:8) C(7:4)
 | -     0xxxx    -       -      -> simd_dp_3same
@@ -2593,10 +2512,6 @@
    unsigned := U=1;
    esize := 8  << size; elements := 64 / esize;
    safety := size=11 => UNDEFINED & Q=1 => UNDEFINED;
-*Undefined
-  defs := {};
-  uses := {};
-  safety := true => UNDEFINED;
 +--
 # To further separate instruction selection, we have duplicated
 # some rows, filling in possible values for rows U and B and C.
@@ -2814,10 +2729,6 @@
    safety := size=11 => DECODER_ERROR &
              U=1 | size=~00 => UNDEFINED &
              Vd(0)=1 => UNDEFINED;
-*Undefined
-  defs := {};
-  uses := {};
-  safety := true => UNDEFINED;
 +--
 | A(11:8) U(24)
 | 000x    -     = *V3RDL_I8_16_32
@@ -2898,10 +2809,6 @@
    safety := size=11 => DECODER_ERROR &
              (size=00 | size=01) => UNDEFINED &
              Q=1 & (Vd(0)=1 | Vn(0)=1) => UNDEFINED;
-*Undefined
-  defs := {};
-  uses := {};
-  safety := true => UNDEFINED;
 +--
 # Note: for and/sub operations defined by bit 10, we have duplicated
 # rows and back filled bit 10 into A.
@@ -3046,10 +2953,6 @@
    safety := imm6=000xxx => DECODER_ERROR &
              imm6=0xxxxx => UNDEFINED &
              Q=1 & (Vd(0)=1 | Vm(0)=1)  => UNDEFINED;
-*Undefined
-  defs := {};
-  uses := {};
-  safety := true => UNDEFINED;
 +--
 | A(11:8) U(24) B(6) L(7)
 | 0000    -     -    -    = *V2RSA_IR
@@ -3213,10 +3116,6 @@
    to_integer := op(1)=1; unsigned := op(0)=1;
    safety := Q=1 & (Vd(0)=1 | Vm(0)=1) => UNDEFINED &
              size=~10 => UNDEFINED;
-*Undefined
-  defs := {};
-  uses := {};
-  safety := true => UNDEFINED;
 +--
 | A(17:16) B(10:6)
 | 00       0000x   = *V2RM_RG
@@ -3353,10 +3252,6 @@
 *V1RI_MVN *V1RI
    safety := (cmode(0)=1 & cmode(3:2)=~11) | cmode(3:1)=111 => DECODER_ERROR &
              Q=1 & Vd(0)=1 => UNDEFINED;
-*Undefined
-  defs := {};
-  uses := {};
-  safety := true => UNDEFINED;
 +--
 | op(5) cmode(11:8)
 | 0     0xx0        = *V1RI_MOV
@@ -3543,10 +3438,6 @@
    d2 := d + inc; d3 := d2 + inc; d4 := d3 + inc;
    safety := size=11 & a=0 => UNDEFINED &
              n == Pc | d4 > 31 => UNPREDICTABLE;
-*Undefined
-  defs := {};
-  uses := {};
-  safety := true => UNDEFINED;
 +--
 | L(21) A(23) B(11:8)
 | 0 0     0010    = *VLSM1

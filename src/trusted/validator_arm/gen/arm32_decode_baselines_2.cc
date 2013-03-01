@@ -1225,10 +1225,8 @@ uses(Instruction inst) const {
 
 // STM_User_registers_cccc100pu100nnnnrrrrrrrrrrrrrrrr_case_0:
 //
-//   {cond: cond(31:28),
-//    constraints: ,
+//   {constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    pattern: cccc100pu100nnnnrrrrrrrrrrrrrrrr,
 //    rule: STM_User_registers,
 //    safety: [true => FORBIDDEN],
@@ -1262,10 +1260,8 @@ uses(Instruction inst) const {
 
 // STRBT_A1_cccc0100u110nnnnttttiiiiiiiiiiii_case_0:
 //
-//   {cond: cond(31:28),
-//    constraints: ,
+//   {constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    pattern: cccc0100u110nnnnttttiiiiiiiiiiii,
 //    rule: STRBT_A1,
 //    safety: [true => FORBIDDEN],
@@ -1299,10 +1295,8 @@ uses(Instruction inst) const {
 
 // STRBT_A2_cccc0110u110nnnnttttiiiiitt0mmmm_case_0:
 //
-//   {cond: cond(31:28),
-//    constraints: ,
+//   {constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    pattern: cccc0110u110nnnnttttiiiiitt0mmmm,
 //    rule: STRBT_A2,
 //    safety: [true => FORBIDDEN],
@@ -2493,10 +2487,8 @@ uses(Instruction inst) const {
 
 // STRT_A1_cccc0100u010nnnnttttiiiiiiiiiiii_case_0:
 //
-//   {cond: cond(31:28),
-//    constraints: ,
+//   {constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    pattern: cccc0100u010nnnnttttiiiiiiiiiiii,
 //    rule: STRT_A1,
 //    safety: [true => FORBIDDEN],
@@ -2530,10 +2522,8 @@ uses(Instruction inst) const {
 
 // STRT_A2_cccc0110u010nnnnttttiiiiitt0mmmm_case_0:
 //
-//   {cond: cond(31:28),
-//    constraints: ,
+//   {constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    pattern: cccc0110u010nnnnttttiiiiitt0mmmm,
 //    rule: STRT_A2,
 //    safety: [true => FORBIDDEN],
@@ -3074,10 +3064,8 @@ uses(Instruction inst) const {
 
 // SWP_SWPB_cccc00010b00nnnntttt00001001tttt_case_0:
 //
-//   {cond: cond(31:28),
-//    constraints: ,
+//   {constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    pattern: cccc00010b00nnnntttt00001001tttt,
 //    rule: SWP_SWPB,
 //    safety: [true => DEPRECATED],
@@ -5951,10 +5939,8 @@ uses(Instruction inst) const {
 
 // Unnamed_case_0:
 //
-//   {cond: cond(31:28),
-//    constraints: ,
+//   {constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    safety: [true => FORBIDDEN],
 //    true: true,
 //    uses: {}}

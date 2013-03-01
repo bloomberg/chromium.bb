@@ -1231,10 +1231,8 @@ class CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00
 // DBG_cccc001100100000111100001111iiii_case_0:
 //
 //   {arch: v7,
-//    cond: cond(31:28),
 //    constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    pattern: cccc001100100000111100001111iiii,
 //    rule: DBG,
 //    safety: [true => FORBIDDEN],
@@ -1754,10 +1752,8 @@ class LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0
 
 // LDM_User_registers_cccc100pu101nnnn0rrrrrrrrrrrrrrr_case_0:
 //
-//   {cond: cond(31:28),
-//    constraints: ,
+//   {constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    pattern: cccc100pu101nnnn0rrrrrrrrrrrrrrr,
 //    rule: LDM_User_registers,
 //    safety: [true => FORBIDDEN],
@@ -1778,10 +1774,8 @@ class LDM_User_registers_cccc100pu101nnnn0rrrrrrrrrrrrrrr_case_0
 
 // LDM_exception_return_cccc100pu1w1nnnn1rrrrrrrrrrrrrrr_case_0:
 //
-//   {cond: cond(31:28),
-//    constraints: ,
+//   {constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    pattern: cccc100pu1w1nnnn1rrrrrrrrrrrrrrr,
 //    rule: LDM_exception_return,
 //    safety: [true => FORBIDDEN],
@@ -1802,10 +1796,8 @@ class LDM_exception_return_cccc100pu1w1nnnn1rrrrrrrrrrrrrrr_case_0
 
 // LDRBT_A1_cccc0100u111nnnnttttiiiiiiiiiiii_case_0:
 //
-//   {cond: cond(31:28),
-//    constraints: ,
+//   {constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    pattern: cccc0100u111nnnnttttiiiiiiiiiiii,
 //    rule: LDRBT_A1,
 //    safety: [true => FORBIDDEN],
@@ -1826,10 +1818,8 @@ class LDRBT_A1_cccc0100u111nnnnttttiiiiiiiiiiii_case_0
 
 // LDRBT_A2_cccc0110u111nnnnttttiiiiitt0mmmm_case_0:
 //
-//   {cond: cond(31:28),
-//    constraints: ,
+//   {constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    pattern: cccc0110u111nnnnttttiiiiitt0mmmm,
 //    rule: LDRBT_A2,
 //    safety: [true => FORBIDDEN],
@@ -2809,10 +2799,8 @@ class LDRSH_register_cccc000pu0w1nnnntttt00001111mmmm_case_0
 
 // LDRT_A1_cccc0100u011nnnnttttiiiiiiiiiiii_case_0:
 //
-//   {cond: cond(31:28),
-//    constraints: ,
+//   {constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    pattern: cccc0100u011nnnnttttiiiiiiiiiiii,
 //    rule: LDRT_A1,
 //    safety: [true => FORBIDDEN],
@@ -2833,10 +2821,8 @@ class LDRT_A1_cccc0100u011nnnnttttiiiiiiiiiiii_case_0
 
 // LDRT_A2_cccc0110u011nnnnttttiiiiitt0mmmm_case_0:
 //
-//   {cond: cond(31:28),
-//    constraints: ,
+//   {constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    pattern: cccc0110u011nnnnttttiiiiitt0mmmm,
 //    rule: LDRT_A2,
 //    safety: [true => FORBIDDEN],
@@ -3723,10 +3709,8 @@ class MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_0
 
 // MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0:
 //
-//   {cond: cond(31:28),
-//    constraints: ,
+//   {constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    pattern: cccc00110r10mmmm1111iiiiiiiiiiii,
 //    rule: MSR_immediate,
 //    safety: [true => FORBIDDEN],
@@ -3957,10 +3941,8 @@ class MVN_register_shifted_register_cccc0001111s0000ddddssss0tt1mmmm_case_0
 // NOP_cccc0011001000001111000000000000_case_0:
 //
 //   {arch: ['v6K', 'v6T2'],
-//    cond: cond(31:28),
 //    constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    pattern: cccc0011001000001111000000000000,
 //    rule: NOP,
 //    uses: {}}
@@ -5467,10 +5449,8 @@ class SETEND_1111000100000001000000i000000000_case_0
 // SEV_cccc0011001000001111000000000100_case_0:
 //
 //   {arch: v6K,
-//    cond: cond(31:28),
 //    constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    pattern: cccc0011001000001111000000000100,
 //    rule: SEV,
 //    safety: [true => FORBIDDEN],

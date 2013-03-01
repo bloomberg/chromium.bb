@@ -13514,10 +13514,8 @@ uses(Instruction inst) const {
 // WFE_cccc0011001000001111000000000010_case_0:
 //
 //   {arch: v6K,
-//    cond: cond(31:28),
 //    constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    pattern: cccc0011001000001111000000000010,
 //    rule: WFE,
 //    safety: [true => FORBIDDEN],
@@ -13552,10 +13550,8 @@ uses(Instruction inst) const {
 // WFI_cccc0011001000001111000000000011_case_0:
 //
 //   {arch: v6K,
-//    cond: cond(31:28),
 //    constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    pattern: cccc0011001000001111000000000011,
 //    rule: WFI,
 //    safety: [true => FORBIDDEN],
@@ -13590,10 +13586,8 @@ uses(Instruction inst) const {
 // YIELD_cccc0011001000001111000000000001_case_0:
 //
 //   {arch: v6K,
-//    cond: cond(31:28),
 //    constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    pattern: cccc0011001000001111000000000001,
 //    rule: YIELD,
 //    uses: {}}
@@ -13621,10 +13615,8 @@ uses(Instruction inst) const {
 
 // extra_load_store_instructions_unpriviledged_cccc0000xx1xxxxxxxxxxxxx1xx1xxxx_case_0:
 //
-//   {cond: cond(31:28),
-//    constraints: ,
+//   {constraints: ,
 //    defs: {},
-//    fields: [cond(31:28)],
 //    pattern: cccc0000xx1xxxxxxxxxxxxx1xx1xxxx,
 //    rule: extra_load_store_instructions_unpriviledged,
 //    safety: [true => FORBIDDEN],
