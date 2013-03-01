@@ -512,6 +512,15 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, ResizeStackedPanels) {
   ASSERT_EQ(1, panel_manager->num_stacks());
   ASSERT_EQ(3, stack->num_panels());
 
+  gfx::Size panel1_expected_full_size = panel1_initial_bounds.size();
+  EXPECT_EQ(panel1_expected_full_size, panel1->full_size());
+  gfx::Size panel2_expected_full_size(panel1_initial_bounds.width(),
+                                      panel2_initial_bounds.height());
+  EXPECT_EQ(panel2_expected_full_size, panel2->full_size());
+  gfx::Size panel3_expected_full_size(panel1_initial_bounds.width(),
+                                      panel3_initial_bounds.height());
+  EXPECT_EQ(panel3_expected_full_size, panel3->full_size());
+
   gfx::Rect panel1_expected_bounds(panel1_initial_bounds);
   EXPECT_EQ(panel1_expected_bounds, panel1->GetBounds());
   gfx::Rect panel2_expected_bounds(panel1_expected_bounds.x(),
@@ -533,6 +542,14 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, ResizeStackedPanels) {
   ResizePanel(panel1,
               panel::RESIZE_TOP_LEFT,
               gfx::Vector2d(-top_resize_width, -top_resize_height));
+
+  panel1_expected_full_size.Enlarge(top_resize_width, top_resize_height);
+  EXPECT_EQ(panel1_expected_full_size, panel1->full_size());
+  panel2_expected_full_size.Enlarge(top_resize_width, 0);
+  EXPECT_EQ(panel2_expected_full_size, panel2->full_size());
+  panel3_expected_full_size.Enlarge(top_resize_width, 0);
+  EXPECT_EQ(panel3_expected_full_size, panel3->full_size());
+
   panel1_expected_bounds.SetRect(
       panel1_expected_bounds.x() - top_resize_width,
       panel1_expected_bounds.y() - top_resize_height,
@@ -556,6 +573,15 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, ResizeStackedPanels) {
   ResizePanel(panel3,
               panel::RESIZE_BOTTOM_RIGHT,
               gfx::Vector2d(-bottom_resize_width, -bottom_resize_height));
+
+  panel1_expected_full_size.Enlarge(-bottom_resize_width, 0);
+  EXPECT_EQ(panel1_expected_full_size, panel1->full_size());
+  panel2_expected_full_size.Enlarge(-bottom_resize_width, 0);
+  EXPECT_EQ(panel2_expected_full_size, panel2->full_size());
+  panel3_expected_full_size.Enlarge(-bottom_resize_width,
+                                    -bottom_resize_height);
+  EXPECT_EQ(panel3_expected_full_size, panel3->full_size());
+
   panel1_expected_bounds.set_width(
       panel1_expected_bounds.width() - bottom_resize_width);
   EXPECT_EQ(panel1_expected_bounds, panel1->GetBounds());
@@ -575,6 +601,13 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, ResizeStackedPanels) {
   ResizePanel(panel2,
               panel::RESIZE_BOTTOM,
               gfx::Vector2d(0, middle_resize_height));
+
+  EXPECT_EQ(panel1_expected_full_size, panel1->full_size());
+  panel2_expected_full_size.Enlarge(0, middle_resize_height);
+  EXPECT_EQ(panel2_expected_full_size, panel2->full_size());
+  panel3_expected_full_size.Enlarge(0, -middle_resize_height);
+  EXPECT_EQ(panel3_expected_full_size, panel3->full_size());
+
   EXPECT_EQ(panel1_expected_bounds, panel1->GetBounds());
   panel2_expected_bounds.set_height(
       panel2_expected_bounds.height() + middle_resize_height);
@@ -590,6 +623,10 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, ResizeStackedPanels) {
   WaitForBoundsAnimationFinished(panel2);
   EXPECT_TRUE(panel2->IsMinimized());
 
+  EXPECT_EQ(panel1_expected_full_size, panel1->full_size());
+  EXPECT_EQ(panel2_expected_full_size, panel2->full_size());
+  EXPECT_EQ(panel3_expected_full_size, panel3->full_size());
+
   EXPECT_EQ(panel1_expected_bounds, panel1->GetBounds());
   panel2_expected_bounds.set_height(panel2->TitleOnlyHeight());
   EXPECT_EQ(panel2_expected_bounds, panel2->GetBounds());
@@ -603,6 +640,12 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, ResizeStackedPanels) {
   ResizePanel(panel1,
               panel::RESIZE_BOTTOM,
               gfx::Vector2d(0, top_resize_height));
+
+  panel1_expected_full_size.Enlarge(0, top_resize_height);
+  EXPECT_EQ(panel1_expected_full_size, panel1->full_size());
+  EXPECT_EQ(panel2_expected_full_size, panel2->full_size());
+  EXPECT_EQ(panel3_expected_full_size, panel3->full_size());
+
   panel1_expected_bounds.set_height(
       panel1_expected_bounds.height() + top_resize_height);
   EXPECT_EQ(panel1_expected_bounds, panel1->GetBounds());
