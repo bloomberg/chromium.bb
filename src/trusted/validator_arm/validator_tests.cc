@@ -135,9 +135,19 @@ void ValidatorTests::validation_should_pass2(const arm_inst *pattern,
       _validator->bundle_for_address(base_addr).begin_addr() == base_addr)
       << "base_addr parameter must be bundle-aligned";
 
-  uint32_t last_addr = base_addr + (kBytesPerBundle - 4);
+  // Try error case where second instruction occurs as first instruction.
+  arm_inst second_as_program[] = {
+    pattern[1]
+  };
+  ostringstream bad_first_message;
+  bad_first_message << msg << ": without first instruction";
+  validation_should_fail(second_as_program,
+                         NACL_ARRAY_SIZE(second_as_program),
+                         base_addr,
+                         bad_first_message.str());
 
   // Try the legitimate (non-overlapping) variations:
+  uint32_t last_addr = base_addr + (kBytesPerBundle - 4);
   for (uint32_t addr = base_addr; addr < last_addr; addr += 4) {
     validation_should_pass(pattern, inst_count, addr, msg);
   }

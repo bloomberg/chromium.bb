@@ -1071,6 +1071,30 @@ TEST_F(ValidatorTests, AddConstToSpTest) {
                          "Add constant (12) to sp, then mask with bic");
 }
 
+TEST_F(ValidatorTests, BicSpFirstInstTest) {
+  // Show that if we bit clear SP as the first instruction, it is ok.
+  static const arm_inst bic_inst[] = {
+    0xe3cdd2ff,  // bic     sp, sp, #-268435441     ; 0xf000000f
+  };
+  validation_should_pass(bic_inst,
+                         NACL_ARRAY_SIZE(bic_inst),
+                         kDefaultBaseAddr,
+                         "Bit clear sp as first instruction.");
+}
+
+TEST_F(ValidatorTests, BicSpSecondInstTest) {
+  // Show that if we bit clear SP as the second instruction, and
+  // the first doesn't update SP, we are ok.
+  static const arm_inst bic_inst[] = {
+    kNop,
+    0xe3cdd2ff,  // bic     sp, sp, #-268435441     ; 0xf000000f
+  };
+  validation_should_pass(bic_inst,
+                         NACL_ARRAY_SIZE(bic_inst),
+                         kDefaultBaseAddr,
+                         "Bit clear sp as second instruction.");
+}
+
 TEST_F(ValidatorTests, AddConstToSpBicTestDoesFollows) {
   // Run test where we conditionally add a constant to a stack pointer,
   // followed by a mask.
