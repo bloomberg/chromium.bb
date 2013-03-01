@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <sstream>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/string_split.h"
 #include "crypto/rsa_private_key.h"
@@ -90,7 +91,9 @@ NegotiatingAuthenticator::rejection_reason() const {
   return rejection_reason_;
 }
 
-void NegotiatingAuthenticator::ProcessMessage(const buzz::XmlElement* message) {
+void NegotiatingAuthenticator::ProcessMessage(
+    const buzz::XmlElement* message,
+    const base::Closure& resume_callback) {
   DCHECK_EQ(state(), WAITING_MESSAGE);
 
   std::string method_attr = message->Attr(kMethodAttributeQName);
@@ -112,6 +115,7 @@ void NegotiatingAuthenticator::ProcessMessage(const buzz::XmlElement* message) {
       // Message contains neither method nor supported-methods attributes.
       state_ = REJECTED;
       rejection_reason_ = PROTOCOL_ERROR;
+      resume_callback.Run();
       return;
     }
 
@@ -136,6 +140,7 @@ void NegotiatingAuthenticator::ProcessMessage(const buzz::XmlElement* message) {
       // Failed to find a common auth method.
       state_ = REJECTED;
       rejection_reason_ = PROTOCOL_ERROR;
+      resume_callback.Run();
       return;
     }
 
@@ -151,13 +156,25 @@ void NegotiatingAuthenticator::ProcessMessage(const buzz::XmlElement* message) {
     current_method_ = method;
     CreateAuthenticator(state_);
   }
-
   if (state_ == WAITING_MESSAGE) {
-    current_authenticator_->ProcessMessage(message);
-    state_ = current_authenticator_->state();
-    if (state_ == REJECTED)
-      rejection_reason_ = current_authenticator_->rejection_reason();
+    // |current_authenticator_| is owned, so Unretained() is safe here.
+    current_authenticator_->ProcessMessage(message, base::Bind(
+        &NegotiatingAuthenticator::UpdateState,
+        base::Unretained(this), resume_callback));
+  } else {
+    UpdateState(resume_callback);
   }
+}
+
+void NegotiatingAuthenticator::UpdateState(
+    const base::Closure& resume_callback) {
+  // After the underlying authenticator finishes processing the message, the
+  // NegotiatingAuthenticator must update its own state before running the
+  // |resume_callback| to resume the session negotiation.
+  state_ = current_authenticator_->state();
+  if (state_ == REJECTED)
+    rejection_reason_ = current_authenticator_->rejection_reason();
+  resume_callback.Run();
 }
 
 scoped_ptr<buzz::XmlElement> NegotiatingAuthenticator::GetNextMessage() {

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace buzz {
@@ -38,6 +39,9 @@ class Authenticator {
   //    WAITING_MESSAGE -> MESSAGE_READY
   //    WAITING_MESSAGE -> ACCEPTED
   //    WAITING_MESSAGE -> REJECTED
+  //    WAITING_MESSAGE -> PROCESSING_MESSAGE
+  // After asynchronous message processing finishes:
+  ///   PROCESSING_MESSAGE -> MESSAGE_READY
   // When GetNextMessage() is called:
   //    MESSAGE_READY -> WAITING_MESSAGE
   //    MESSAGE_READY -> ACCEPTED
@@ -53,6 +57,9 @@ class Authenticator {
 
     // Session is rejected.
     REJECTED,
+
+    // Asynchronously processing the last message from the peer.
+    PROCESSING_MESSAGE,
   };
 
   enum RejectionReason {
@@ -81,9 +88,12 @@ class Authenticator {
   virtual RejectionReason rejection_reason() const = 0;
 
   // Called in response to incoming message received from the peer.
-  // Should only be called when in WAITING_MESSAGE state. Caller
-  // retains ownership of |message|.
-  virtual void ProcessMessage(const buzz::XmlElement* message) = 0;
+  // Should only be called when in WAITING_MESSAGE state. Caller retains
+  // ownership of |message|. |resume_callback| will be called when processing is
+  // finished. The implementation must guarantee that |resume_callback| is not
+  // called after the Authenticator is destroyed.
+  virtual void ProcessMessage(const buzz::XmlElement* message,
+                              const base::Closure& resume_callback) = 0;
 
   // Must be called when in MESSAGE_READY state. Returns next
   // authentication message that needs to be sent to the peer.

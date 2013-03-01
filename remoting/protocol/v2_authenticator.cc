@@ -80,7 +80,13 @@ Authenticator::RejectionReason V2Authenticator::rejection_reason() const {
   return rejection_reason_;
 }
 
-void V2Authenticator::ProcessMessage(const buzz::XmlElement* message) {
+void V2Authenticator::ProcessMessage(const buzz::XmlElement* message,
+                                     const base::Closure& resume_callback) {
+  ProcessMessageInternal(message);
+  resume_callback.Run();
+}
+
+void V2Authenticator::ProcessMessageInternal(const buzz::XmlElement* message) {
   DCHECK_EQ(state(), WAITING_MESSAGE);
 
   // Parse the certificate.

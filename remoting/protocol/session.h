@@ -29,10 +29,11 @@ class Session {
     // Created, but not connecting yet.
     INITIALIZING,
 
-    // Sent or received session-initiate, but haven't sent or received
-    // session-accept.
-    // TODO(sergeyu): Do we really need this state?
+    // Sent session-initiate, but haven't received session-accept.
     CONNECTING,
+
+    // Received session-initiate, but haven't sent session-accept.
+    ACCEPTING,
 
     // Session has been accepted and is pending authentication.
     CONNECTED,

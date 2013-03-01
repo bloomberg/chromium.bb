@@ -86,7 +86,7 @@ FakeAuthenticator::FakeAuthenticator(
 FakeAuthenticator::~FakeAuthenticator() {
 }
 
-Authenticator::State FakeAuthenticator::state() const{
+Authenticator::State FakeAuthenticator::state() const {
   EXPECT_LE(messages_, round_trips_ * 2);
   if (messages_ >= round_trips_ * 2) {
     if (action_ == REJECT) {
@@ -117,12 +117,14 @@ Authenticator::RejectionReason FakeAuthenticator::rejection_reason() const {
   return INVALID_CREDENTIALS;
 }
 
-void FakeAuthenticator::ProcessMessage(const buzz::XmlElement* message) {
+void FakeAuthenticator::ProcessMessage(const buzz::XmlElement* message,
+                                       const base::Closure& resume_callback) {
   EXPECT_EQ(WAITING_MESSAGE, state());
   std::string id =
       message->TextNamed(buzz::QName(kChromotingXmlNamespace, "id"));
   EXPECT_EQ(id, base::IntToString(messages_));
   ++messages_;
+  resume_callback.Run();
 }
 
 scoped_ptr<buzz::XmlElement> FakeAuthenticator::GetNextMessage() {

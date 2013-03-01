@@ -60,36 +60,27 @@ void AuthenticatorTestBase::SetUp() {
 }
 
 void AuthenticatorTestBase::RunAuthExchange() {
-  do {
-    scoped_ptr<buzz::XmlElement> message;
+  ContinueAuthExchangeWith(client_.get(), host_.get());
+}
 
-    // Pass message from client to host.
-    ASSERT_EQ(Authenticator::MESSAGE_READY, client_->state());
-    message = client_->GetNextMessage();
-    ASSERT_TRUE(message.get());
-    ASSERT_NE(Authenticator::MESSAGE_READY, client_->state());
+// static
+void AuthenticatorTestBase::ContinueAuthExchangeWith(Authenticator* sender,
+                                                     Authenticator* receiver) {
+  scoped_ptr<buzz::XmlElement> message;
+  ASSERT_NE(Authenticator::WAITING_MESSAGE, sender->state());
+  if (sender->state() == Authenticator::ACCEPTED ||
+      sender->state() == Authenticator::REJECTED)
+    return;
+  // Pass message from client to host.
+  ASSERT_EQ(Authenticator::MESSAGE_READY, sender->state());
+  message = sender->GetNextMessage();
+  ASSERT_TRUE(message.get());
+  ASSERT_NE(Authenticator::MESSAGE_READY, sender->state());
 
-    ASSERT_EQ(Authenticator::WAITING_MESSAGE, host_->state());
-    host_->ProcessMessage(message.get());
-    ASSERT_NE(Authenticator::WAITING_MESSAGE, host_->state());
-
-    // Are we done yet?
-    if (host_->state() == Authenticator::ACCEPTED ||
-        host_->state() == Authenticator::REJECTED) {
-      break;
-    }
-
-    // Pass message from host to client.
-    ASSERT_EQ(Authenticator::MESSAGE_READY, host_->state());
-    message = host_->GetNextMessage();
-    ASSERT_TRUE(message.get());
-    ASSERT_NE(Authenticator::MESSAGE_READY, host_->state());
-
-    ASSERT_EQ(Authenticator::WAITING_MESSAGE, client_->state());
-    client_->ProcessMessage(message.get());
-    ASSERT_NE(Authenticator::WAITING_MESSAGE, client_->state());
-  } while (client_->state() != Authenticator::ACCEPTED &&
-           client_->state() != Authenticator::REJECTED);
+  ASSERT_EQ(Authenticator::WAITING_MESSAGE, receiver->state());
+  receiver->ProcessMessage(message.get(), base::Bind(
+      &AuthenticatorTestBase::ContinueAuthExchangeWith,
+      base::Unretained(receiver), base::Unretained(sender)));
 }
 
 void AuthenticatorTestBase::RunChannelAuth(bool expected_fail) {

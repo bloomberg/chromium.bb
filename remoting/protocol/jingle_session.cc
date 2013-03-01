@@ -130,7 +130,7 @@ void JingleSession::InitializeIncomingConnection(
   session_id_ = initiate_message.sid;
   candidate_config_ = initiate_message.description->config()->Clone();
 
-  SetState(CONNECTING);
+  SetState(ACCEPTING);
 }
 
 void JingleSession::AcceptIncomingConnection(
@@ -147,7 +147,14 @@ void JingleSession::AcceptIncomingConnection(
   }
 
   DCHECK_EQ(authenticator_->state(), Authenticator::WAITING_MESSAGE);
-  authenticator_->ProcessMessage(first_auth_message);
+  // |authenticator_| is owned, so Unretained() is safe here.
+  authenticator_->ProcessMessage(first_auth_message, base::Bind(
+      &JingleSession::ContinueAcceptIncomingConnection,
+      base::Unretained(this)));
+}
+
+void JingleSession::ContinueAcceptIncomingConnection() {
+  DCHECK_NE(authenticator_->state(), Authenticator::PROCESSING_MESSAGE);
   if (authenticator_->state() == Authenticator::REJECTED) {
     CloseInternal(AuthRejectionReasonToErrorCode(
         authenticator_->rejection_reason()));
@@ -435,9 +442,6 @@ void JingleSession::OnAccept(const JingleMessage& message,
     return;
   }
 
-  DCHECK(authenticator_->state() == Authenticator::WAITING_MESSAGE);
-  authenticator_->ProcessMessage(auth_message);
-
   if (!InitializeConfigFromDescription(message.description.get())) {
     CloseInternal(INCOMPATIBLE_PROTOCOL);
     return;
@@ -448,12 +452,9 @@ void JingleSession::OnAccept(const JingleMessage& message,
 
   SetState(CONNECTED);
 
-  // Process authentication.
-  if (authenticator_->state() == Authenticator::ACCEPTED) {
-    SetState(AUTHENTICATED);
-  } else {
-    ProcessAuthenticationStep();
-  }
+  DCHECK(authenticator_->state() == Authenticator::WAITING_MESSAGE);
+  authenticator_->ProcessMessage(auth_message, base::Bind(
+      &JingleSession::ProcessAuthenticationStep,base::Unretained(this)));
 }
 
 void JingleSession::OnSessionInfo(const JingleMessage& message,
@@ -475,8 +476,8 @@ void JingleSession::OnSessionInfo(const JingleMessage& message,
 
   reply_callback.Run(JingleMessageReply::NONE);
 
-  authenticator_->ProcessMessage(message.info.get());
-  ProcessAuthenticationStep();
+  authenticator_->ProcessMessage(message.info.get(), base::Bind(
+      &JingleSession::ProcessAuthenticationStep, base::Unretained(this)));
 }
 
 void JingleSession::ProcessTransportInfo(const JingleMessage& message) {
@@ -494,7 +495,8 @@ void JingleSession::ProcessTransportInfo(const JingleMessage& message) {
 
 void JingleSession::OnTerminate(const JingleMessage& message,
                                 const ReplyCallback& reply_callback) {
-  if (state_ != CONNECTING && state_ != CONNECTED && state_ != AUTHENTICATED) {
+  if (state_ != CONNECTING && state_ != ACCEPTING && state_ != CONNECTED &&
+      state_ != AUTHENTICATED) {
     LOG(WARNING) << "Received unexpected session-terminate message.";
     reply_callback.Run(JingleMessageReply::UNEXPECTED_REQUEST);
     return;
@@ -550,7 +552,9 @@ bool JingleSession::InitializeConfigFromDescription(
 }
 
 void JingleSession::ProcessAuthenticationStep() {
+  DCHECK(CalledOnValidThread());
   DCHECK_EQ(state_, CONNECTED);
+  DCHECK_NE(authenticator_->state(), Authenticator::PROCESSING_MESSAGE);
 
   if (authenticator_->state() == Authenticator::MESSAGE_READY) {
     JingleMessage message(peer_jid_, JingleMessage::SESSION_INFO, session_id_);
@@ -571,7 +575,8 @@ void JingleSession::ProcessAuthenticationStep() {
 void JingleSession::CloseInternal(ErrorCode error) {
   DCHECK(CalledOnValidThread());
 
-  if (state_ == CONNECTING || state_ == CONNECTED || state_ == AUTHENTICATED) {
+  if (state_ == CONNECTING || state_ == ACCEPTING || state_ == CONNECTED ||
+      state_ == AUTHENTICATED) {
     // Send session-terminate message with the appropriate error code.
     JingleMessage::Reason reason;
     switch (error) {

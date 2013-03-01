@@ -40,7 +40,8 @@ class NegotiatingAuthenticator : public Authenticator {
   // Authenticator interface.
   virtual State state() const OVERRIDE;
   virtual RejectionReason rejection_reason() const OVERRIDE;
-  virtual void ProcessMessage(const buzz::XmlElement* message) OVERRIDE;
+  virtual void ProcessMessage(const buzz::XmlElement* message,
+                              const base::Closure& resume_callback) OVERRIDE;
   virtual scoped_ptr<buzz::XmlElement> GetNextMessage() OVERRIDE;
   virtual scoped_ptr<ChannelAuthenticator>
       CreateChannelAuthenticator() const OVERRIDE;
@@ -50,6 +51,8 @@ class NegotiatingAuthenticator : public Authenticator {
 
   void AddMethod(const AuthenticationMethod& method);
   void CreateAuthenticator(State initial_state);
+  void UpdateState(const base::Closure& resume_callback);
+
   bool is_host_side() const;
 
   // Used only for host authenticators.

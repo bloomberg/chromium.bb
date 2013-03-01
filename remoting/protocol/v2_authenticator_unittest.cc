@@ -85,7 +85,8 @@ TEST_F(V2AuthenticatorTest, InvalidSecret) {
   ASSERT_TRUE(message.get());
 
   ASSERT_EQ(Authenticator::WAITING_MESSAGE, client_->state());
-  host_->ProcessMessage(message.get());
+  host_->ProcessMessage(message.get(), base::Bind(&base::DoNothing));
+  // This assumes that V2Authenticator::ProcessMessage runs synchronously.
   ASSERT_EQ(Authenticator::REJECTED, host_->state());
 }
 

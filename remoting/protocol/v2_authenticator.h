@@ -40,7 +40,8 @@ class V2Authenticator : public Authenticator {
   // Authenticator interface.
   virtual State state() const OVERRIDE;
   virtual RejectionReason rejection_reason() const OVERRIDE;
-  virtual void ProcessMessage(const buzz::XmlElement* message) OVERRIDE;
+  virtual void ProcessMessage(const buzz::XmlElement* message,
+                              const base::Closure& resume_callback) OVERRIDE;
   virtual scoped_ptr<buzz::XmlElement> GetNextMessage() OVERRIDE;
   virtual scoped_ptr<ChannelAuthenticator>
       CreateChannelAuthenticator() const OVERRIDE;
@@ -51,6 +52,8 @@ class V2Authenticator : public Authenticator {
   V2Authenticator(crypto::P224EncryptedKeyExchange::PeerType type,
                   const std::string& shared_secret,
                   State initial_state);
+
+  virtual void ProcessMessageInternal(const buzz::XmlElement* message);
 
   bool is_host_side() const;
 

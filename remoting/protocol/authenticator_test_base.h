@@ -40,6 +40,8 @@ class AuthenticatorTestBase : public testing::Test {
     MOCK_METHOD1(OnDone, void(net::Error error));
   };
 
+  static void ContinueAuthExchangeWith(Authenticator* sender,
+                                       Authenticator* receiver);
   virtual void SetUp() OVERRIDE;
   void RunAuthExchange();
   void RunChannelAuth(bool expected_fail);

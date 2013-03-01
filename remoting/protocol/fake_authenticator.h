@@ -64,7 +64,8 @@ class FakeAuthenticator : public Authenticator {
   // Authenticator interface.
   virtual State state() const OVERRIDE;
   virtual RejectionReason rejection_reason() const OVERRIDE;
-  virtual void ProcessMessage(const buzz::XmlElement* message) OVERRIDE;
+  virtual void ProcessMessage(const buzz::XmlElement* message,
+                              const base::Closure& resume_callback) OVERRIDE;
   virtual scoped_ptr<buzz::XmlElement> GetNextMessage() OVERRIDE;
   virtual scoped_ptr<ChannelAuthenticator>
       CreateChannelAuthenticator() const OVERRIDE;

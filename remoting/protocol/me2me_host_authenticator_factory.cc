@@ -34,9 +34,11 @@ class RejectingAuthenticator : public Authenticator {
     return INVALID_CREDENTIALS;
   }
 
-  virtual void ProcessMessage(const buzz::XmlElement* message) OVERRIDE {
+  virtual void ProcessMessage(const buzz::XmlElement* message,
+                              const base::Closure& resume_callback) OVERRIDE {
     DCHECK_EQ(state_, WAITING_MESSAGE);
     state_ = REJECTED;
+    resume_callback.Run();
   }
 
   virtual scoped_ptr<buzz::XmlElement> GetNextMessage() OVERRIDE {

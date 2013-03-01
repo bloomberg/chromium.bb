@@ -126,6 +126,9 @@ class JingleSession : public Session,
   // Called from OnAccept() to initialize session config.
   bool InitializeConfigFromDescription(const ContentDescription* description);
 
+  // Called after the initial incoming authenticator message is processed.
+  void ContinueAcceptIncomingConnection();
+  // Called after subsequent authenticator messages are processed.
   void ProcessAuthenticationStep();
 
   // Terminates the session and sends session-terminate if it is

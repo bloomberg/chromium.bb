@@ -6,6 +6,8 @@
 
 #include <security/pam_appl.h>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/environment.h"
 #include "base/logging.h"
 #include "remoting/protocol/channel_authenticator.h"
@@ -22,7 +24,8 @@ class PamAuthorizer : public protocol::Authenticator {
   // protocol::Authenticator interface.
   virtual State state() const OVERRIDE;
   virtual RejectionReason rejection_reason() const OVERRIDE;
-  virtual void ProcessMessage(const buzz::XmlElement* message) OVERRIDE;
+  virtual void ProcessMessage(const buzz::XmlElement* message,
+                              const base::Closure& resume_callback) OVERRIDE;
   virtual scoped_ptr<buzz::XmlElement> GetNextMessage() OVERRIDE;
   virtual scoped_ptr<protocol::ChannelAuthenticator>
       CreateChannelAuthenticator() const OVERRIDE;
@@ -30,6 +33,7 @@ class PamAuthorizer : public protocol::Authenticator {
  private:
   void MaybeCheckLocalLogin();
   bool IsLocalLoginAllowed();
+  void OnMessageProcessed(const base::Closure& resume_callback);
 
   static int PamConversation(int num_messages,
                              const struct pam_message** messages,
@@ -66,13 +70,21 @@ PamAuthorizer::rejection_reason() const {
   }
 }
 
-void PamAuthorizer::ProcessMessage(const buzz::XmlElement* message) {
-  underlying_->ProcessMessage(message);
+void PamAuthorizer::ProcessMessage(const buzz::XmlElement* message,
+                                   const base::Closure& resume_callback) {
+  // |underlying_| is owned, so Unretained() is safe here.
+  underlying_->ProcessMessage(message, base::Bind(
+      &PamAuthorizer::OnMessageProcessed,
+      base::Unretained(this), resume_callback));
+}
+
+void PamAuthorizer::OnMessageProcessed(const base::Closure& resume_callback) {
   MaybeCheckLocalLogin();
+  resume_callback.Run();
 }
 
 scoped_ptr<buzz::XmlElement> PamAuthorizer::GetNextMessage() {
-  scoped_ptr<buzz::XmlElement> result (underlying_->GetNextMessage());
+  scoped_ptr<buzz::XmlElement> result(underlying_->GetNextMessage());
   MaybeCheckLocalLogin();
   return result.Pass();
 }

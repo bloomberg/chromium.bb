@@ -108,6 +108,7 @@ void ConnectionToClient::OnSessionStateChange(Session::State state) {
   switch(state) {
     case Session::INITIALIZING:
     case Session::CONNECTING:
+    case Session::ACCEPTING:
     case Session::CONNECTED:
       // Don't care about these events.
       break;
