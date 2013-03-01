@@ -48,12 +48,4 @@
 #
 # START OVERRIDES HERE
 
-
-crbug.com/170082 platform/chromium/virtual/gpu/fast/canvas/canvas-imageSmoothingEnabled-patterns.html [ ImageOnlyFailure ]
-
-# These images were fixed in r7653 (https://codereview.appspot.com/7310059) 
-# which fixed a gradient bug.
-crbug.com/175123 svg/dynamic-updates/SVGLinearGradientElement-dom-y1-attr.html [ ImageOnlyFailure ]
-crbug.com/175123 svg/dynamic-updates/SVGLinearGradientElement-svgdom-y1-prop.html [ ImageOnlyFailure ]
-
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
