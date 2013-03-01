@@ -719,6 +719,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   if (command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures)) {
     WebRuntimeFeatures::enableStyleScoped(true);
+    WebRuntimeFeatures::enableCustomDOMElements(true);
     WebRuntimeFeatures::enableCSSExclusions(true);
     WebRuntimeFeatures::enableExperimentalContentSecurityPolicyFeatures(true);
     WebRuntimeFeatures::enableCSSRegions(true);
