@@ -259,7 +259,7 @@ Panel* PanelManager::CreatePanel(const std::string& app_name,
   // Add the panel to the appropriate panel collection.
   PanelCollection::PositioningMask positioning_mask;
   PanelCollection* collection = GetCollectionForNewPanel(
-      bounds, mode, &positioning_mask);
+      panel, bounds, mode, &positioning_mask);
   collection->AddPanel(panel, positioning_mask);
   collection->UpdatePanelOnCollectionChange(panel);
 
@@ -267,6 +267,7 @@ Panel* PanelManager::CreatePanel(const std::string& app_name,
 }
 
 PanelCollection* PanelManager::GetCollectionForNewPanel(
+    Panel* new_panel,
     const gfx::Rect& bounds,
     CreateMode mode,
     PanelCollection::PositioningMask* positioning_mask) {
@@ -300,6 +301,14 @@ PanelCollection* PanelManager::GetCollectionForNewPanel(
     for (Stacks::const_iterator iter = stacks_.begin();
          iter != stacks_.end(); iter++) {
       StackedPanelCollection* stack = *iter;
+
+      // Do not add to other stack that is from differnt extension or profile.
+      // Note that the check is based on bottom panel.
+      Panel* panel = stack->bottom_panel();
+      if (panel->profile() != new_panel->profile() ||
+          panel->extension_id() != new_panel->extension_id())
+        continue;
+
       if (bounds.height() <= stack->GetMaximiumAvailableBottomSpace()) {
         *positioning_mask = static_cast<PanelCollection::PositioningMask>(
             *positioning_mask | PanelCollection::COLLAPSE_TO_FIT);
@@ -324,6 +333,13 @@ PanelCollection* PanelManager::GetCollectionForNewPanel(
              detached_collection_->panels().begin();
          iter != detached_collection_->panels().end(); ++iter) {
       Panel* panel = *iter;
+
+      // Do not stack with other panel that is from differnt extension or
+      // profile.
+      if (panel->profile() != new_panel->profile() ||
+          panel->extension_id() != new_panel->extension_id())
+        continue;
+
       int max_available_space =
           display_area_.bottom() - panel->GetBounds().y() -
           (panel->IsActive() ? panel->GetBounds().height()

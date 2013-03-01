@@ -66,6 +66,7 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
     bool wait_for_fully_created;
     ActiveState expected_active_state;
     PanelManager::CreateMode create_mode;
+    Profile* profile;
 
     CreatePanelParams(const std::string& name,
                       const gfx::Rect& bounds,

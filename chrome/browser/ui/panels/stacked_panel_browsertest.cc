@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/panels/base_panel_browser_test.h"
 #include "chrome/browser/ui/panels/detached_panel_collection.h"
 #include "chrome/browser/ui/panels/docked_panel_collection.h"
@@ -9,6 +10,8 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/stacked_panel_collection.h"
+#include "chrome/browser/web_applications/web_app.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_utils.h"
 
 class StackedPanelBrowserTest : public BasePanelBrowserTest {
@@ -945,6 +948,151 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
   EXPECT_EQ(1, panel_manager->num_stacks());
   EXPECT_EQ(2, stack->num_panels());
   EXPECT_TRUE(panel_manager->detached_collection()->HasPanel(new_panel));
+
+  panel_manager->CloseAll();
+}
+
+IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
+                       AddNewPanelFromDifferentExtension) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+
+  // Create 2 test extensions.
+  DictionaryValue empty_value;
+  scoped_refptr<extensions::Extension> extension1 =
+      CreateExtension(FILE_PATH_LITERAL("TestExtension1"),
+                      extensions::Manifest::INVALID_LOCATION, empty_value);
+  std::string extension1_app_name =
+      web_app::GenerateApplicationNameFromExtensionId(extension1->id());
+  scoped_refptr<extensions::Extension> extension2 =
+      CreateExtension(FILE_PATH_LITERAL("TestExtension2"),
+                      extensions::Manifest::INVALID_LOCATION, empty_value);
+  std::string extension2_app_name =
+      web_app::GenerateApplicationNameFromExtensionId(extension2->id());
+
+  // Create 2 panels from extension1. Expect that these 2 panels stack together.
+  CreatePanelParams params1(
+      extension1_app_name, gfx::Rect(50, 50, 100, 100), SHOW_AS_INACTIVE);
+  params1.create_mode = PanelManager::CREATE_AS_DETACHED;
+  Panel* panel1 = CreatePanelWithParams(params1);
+  CreatePanelParams params2(
+      extension1_app_name, gfx::Rect(100, 100, 200, 100), SHOW_AS_INACTIVE);
+  params2.create_mode = PanelManager::CREATE_AS_DETACHED;
+  Panel* panel2 = CreatePanelWithParams(params2);
+  EXPECT_EQ(2, panel_manager->num_panels());
+  EXPECT_EQ(1, panel_manager->num_stacks());
+  StackedPanelCollection* stack1 = panel_manager->stacks().back();
+  EXPECT_TRUE(stack1->HasPanel(panel1));
+  EXPECT_TRUE(stack1->HasPanel(panel2));
+
+  // Create 2 panels from extension2. Expect that these 2 panels form a separate
+  // stack.
+  CreatePanelParams params3(
+      extension2_app_name, gfx::Rect(350, 350, 100, 100), SHOW_AS_INACTIVE);
+  params3.create_mode = PanelManager::CREATE_AS_DETACHED;
+  Panel* panel3 = CreatePanelWithParams(params3);
+  CreatePanelParams params4(
+      extension2_app_name, gfx::Rect(100, 100, 200, 100), SHOW_AS_INACTIVE);
+  params4.create_mode = PanelManager::CREATE_AS_DETACHED;
+  Panel* panel4 = CreatePanelWithParams(params4);
+  EXPECT_EQ(4, panel_manager->num_panels());
+  EXPECT_EQ(2, panel_manager->num_stacks());
+  StackedPanelCollection* stack2 = panel_manager->stacks().back();
+  EXPECT_TRUE(stack2->HasPanel(panel3));
+  EXPECT_TRUE(stack2->HasPanel(panel4));
+
+  // Create one more panel from extension1. Expect that new panel should join
+  // with the stack of panel1 and panel2.
+  CreatePanelParams params5(
+      extension1_app_name, gfx::Rect(0, 0, 100, 100), SHOW_AS_INACTIVE);
+  params5.create_mode = PanelManager::CREATE_AS_DETACHED;
+  Panel* panel5 = CreatePanelWithParams(params5);
+  EXPECT_EQ(5, panel_manager->num_panels());
+  EXPECT_EQ(2, panel_manager->num_stacks());
+  EXPECT_TRUE(stack1->HasPanel(panel5));
+
+  // Create one more panel from extension2. Expect that new panel should join
+  // with the stack of panel3 and panel4.
+  CreatePanelParams params6(
+      extension2_app_name, gfx::Rect(0, 0, 100, 100), SHOW_AS_INACTIVE);
+  params6.create_mode = PanelManager::CREATE_AS_DETACHED;
+  Panel* panel6 = CreatePanelWithParams(params6);
+  EXPECT_EQ(6, panel_manager->num_panels());
+  EXPECT_EQ(2, panel_manager->num_stacks());
+  EXPECT_TRUE(stack2->HasPanel(panel6));
+
+  panel_manager->CloseAll();
+}
+
+IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
+                       AddNewPanelFromDifferentProfile) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+
+  // Create a new profile.
+  Profile* profile1 = browser()->profile();
+  scoped_ptr<TestingProfile> profile2(new TestingProfile());
+
+  // Create 2 panels from profile1. Expect that these 2 panels stack together.
+  CreatePanelParams params1(
+      "Panel", gfx::Rect(50, 50, 100, 100), SHOW_AS_INACTIVE);
+  params1.create_mode = PanelManager::CREATE_AS_DETACHED;
+  params1.profile = profile1;
+  Panel* panel1 = CreatePanelWithParams(params1);
+  CreatePanelParams params2(
+      "Panel", gfx::Rect(100, 100, 200, 100), SHOW_AS_INACTIVE);
+  params2.create_mode = PanelManager::CREATE_AS_DETACHED;
+  params2.profile = profile1;
+  Panel* panel2 = CreatePanelWithParams(params2);
+  EXPECT_EQ(2, panel_manager->num_panels());
+  EXPECT_EQ(1, panel_manager->num_stacks());
+  StackedPanelCollection* stack1 = panel_manager->stacks().back();
+  EXPECT_TRUE(stack1->HasPanel(panel1));
+  EXPECT_TRUE(stack1->HasPanel(panel2));
+
+  // Create 2 panels from profile2. Expect that these 2 panels form a separate
+  // stack.
+  CreatePanelParams params3(
+      "Panel", gfx::Rect(350, 350, 100, 100), SHOW_AS_INACTIVE);
+  params3.create_mode = PanelManager::CREATE_AS_DETACHED;
+  params3.profile = profile2.get();
+  Panel* panel3 = CreatePanelWithParams(params3);
+  CreatePanelParams params4(
+      "Panel", gfx::Rect(100, 100, 200, 100), SHOW_AS_INACTIVE);
+  params4.create_mode = PanelManager::CREATE_AS_DETACHED;
+  params4.profile = profile2.get();
+  Panel* panel4 = CreatePanelWithParams(params4);
+  EXPECT_EQ(4, panel_manager->num_panels());
+  EXPECT_EQ(2, panel_manager->num_stacks());
+  StackedPanelCollection* stack2 = panel_manager->stacks().back();
+  EXPECT_TRUE(stack2->HasPanel(panel3));
+  EXPECT_TRUE(stack2->HasPanel(panel4));
+
+  // Create one more panel from profile1. Expect that new panel should join
+  // with the stack of panel1 and panel2.
+  CreatePanelParams params5(
+      "Panel", gfx::Rect(0, 0, 100, 100), SHOW_AS_INACTIVE);
+  params5.create_mode = PanelManager::CREATE_AS_DETACHED;
+  params5.profile = profile1;
+  Panel* panel5 = CreatePanelWithParams(params5);
+  EXPECT_EQ(5, panel_manager->num_panels());
+  EXPECT_EQ(2, panel_manager->num_stacks());
+  EXPECT_TRUE(stack1->HasPanel(panel5));
+
+  // Create one more panel from profile2. Expect that new panel should join
+  // with the stack of panel3 and panel4.
+  CreatePanelParams params6(
+      "Panel", gfx::Rect(0, 0, 100, 100), SHOW_AS_INACTIVE);
+  params6.create_mode = PanelManager::CREATE_AS_DETACHED;
+  params6.profile = profile2.get();
+  Panel* panel6 = CreatePanelWithParams(params6);
+  EXPECT_EQ(6, panel_manager->num_panels());
+  EXPECT_EQ(2, panel_manager->num_stacks());
+  EXPECT_TRUE(stack2->HasPanel(panel6));
+
+  // Wait until all panels created from profile2 get fully closed since profile2
+  // is going out of scope at the exit of this function.
+  CloseWindowAndWait(panel3);
+  CloseWindowAndWait(panel4);
+  CloseWindowAndWait(panel6);
 
   panel_manager->CloseAll();
 }

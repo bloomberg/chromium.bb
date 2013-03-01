@@ -196,6 +196,7 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
   // the new panel. Upon return, |positioning_mask| contains the required mask
   // to be applied when the new panel is being added to the collection.
   PanelCollection* GetCollectionForNewPanel(
+      Panel* new_panel,
       const gfx::Rect& bounds,
       CreateMode mode,
       PanelCollection::PositioningMask* positioning_mask);

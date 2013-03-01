@@ -285,7 +285,8 @@ BasePanelBrowserTest::CreatePanelParams::CreatePanelParams(
       show_flag(show_flag),
       wait_for_fully_created(true),
       expected_active_state(show_flag),
-      create_mode(PanelManager::CREATE_AS_DOCKED) {
+      create_mode(PanelManager::CREATE_AS_DOCKED),
+      profile(NULL) {
 }
 
 Panel* BasePanelBrowserTest::CreatePanelWithParams(
@@ -305,9 +306,12 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
       content::NotificationService::AllSources());
 
   PanelManager* manager = PanelManager::GetInstance();
-  Panel* panel = manager->CreatePanel(params.name, browser()->profile(),
-                                      params.url, params.bounds,
-                                      params.create_mode);
+  Panel* panel = manager->CreatePanel(
+      params.name,
+      params.profile ? params.profile : browser()->profile(),
+      params.url,
+      params.bounds,
+      params.create_mode);
 
   if (!params.url.is_empty())
     observer.Wait();
