@@ -294,7 +294,7 @@ void RenderWidgetHostViewAndroid::TextInputStateChanged(
   if (!IsShowing())
     return;
 
-  content_view_core_->ImeUpdateAdapter(
+  content_view_core_->UpdateImeAdapter(
       GetNativeImeAdapter(),
       static_cast<int>(params.type),
       params.value, params.selection_start, params.selection_end,

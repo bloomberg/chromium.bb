@@ -229,7 +229,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   void UpdateOffsetsForFullscreen(float controls_offset_y,
                                   float content_offset_y);
 
-  void ImeUpdateAdapter(int native_ime_adapter, int text_input_type,
+  void UpdateImeAdapter(int native_ime_adapter, int text_input_type,
                         const std::string& text,
                         int selection_start, int selection_end,
                         int composition_start, int composition_end,

@@ -1327,7 +1327,7 @@ bool ContentViewCoreImpl::GetUseDesktopUserAgent(
   return entry && entry->GetIsOverridingUserAgent();
 }
 
-void ContentViewCoreImpl::ImeUpdateAdapter(int native_ime_adapter,
+void ContentViewCoreImpl::UpdateImeAdapter(int native_ime_adapter,
                                            int text_input_type,
                                            const std::string& text,
                                            int selection_start,
@@ -1341,7 +1341,7 @@ void ContentViewCoreImpl::ImeUpdateAdapter(int native_ime_adapter,
     return;
 
   ScopedJavaLocalRef<jstring> jstring_text = ConvertUTF8ToJavaString(env, text);
-  Java_ContentViewCore_imeUpdateAdapter(env, obj.obj(),
+  Java_ContentViewCore_updateImeAdapter(env, obj.obj(),
                                         native_ime_adapter, text_input_type,
                                         jstring_text.obj(),
                                         selection_start, selection_end,

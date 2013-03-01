@@ -1959,7 +1959,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private void imeUpdateAdapter(int nativeImeAdapterAndroid, int textInputType,
+    private void updateImeAdapter(int nativeImeAdapterAndroid, int textInputType,
             String text, int selectionStart, int selectionEnd,
             int compositionStart, int compositionEnd, boolean showImeIfNeeded) {
         TraceEvent.begin();
