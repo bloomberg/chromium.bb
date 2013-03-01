@@ -46,6 +46,19 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   void HandleProcessManagedUrls(const ListValue* args);
 #endif
 
+#if defined(ENABLE_MANAGED_USERS)
+  // Handler for the "setElevated" message.
+  void HandleSetElevated(const base::ListValue* args);
+
+  // Handler for the "managedUserGetElevated" message.
+  void HandleManagedUserGetElevated(const base::ListValue* args);
+
+  // Sets the managed user in elevated state if the authentication was
+  // successful.
+  void PassphraseDialogCallback(bool success);
+
+#endif
+
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -113,6 +126,11 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
 
   // Sets the query options for a monthly query, |offset| months ago.
   void SetQueryTimeInMonths(int offset, history::QueryOptions* options);
+
+#if defined(ENABLE_MANAGED_USERS)
+  // Updates the UI according to the elevation state of the managed user.
+  void ManagedUserSetElevated();
+#endif
 
   content::NotificationRegistrar registrar_;
 

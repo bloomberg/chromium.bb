@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
+#include "chrome/browser/ui/webui/managed_user_passphrase_dialog.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/time_format.h"
@@ -154,6 +155,8 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("incontentpack", IDS_HISTORY_IN_CONTENT_PACK);
   source->AddLocalizedString("allowitems", IDS_HISTORY_FILTER_ALLOW_ITEMS);
   source->AddLocalizedString("blockitems", IDS_HISTORY_FILTER_BLOCK_ITEMS);
+  source->AddLocalizedString("lockButton", IDS_HISTORY_LOCK_BUTTON);
+  source->AddLocalizedString("unlockButton", IDS_HISTORY_UNLOCK_BUTTON);
   source->AddBoolean("groupByDomain",
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kHistoryEnableGroupByDomain));
@@ -265,6 +268,14 @@ void BrowsingHistoryHandler::RegisterMessages() {
 #if !defined(OS_ANDROID)
   web_ui()->RegisterMessageCallback("processManagedUrls",
       base::Bind(&BrowsingHistoryHandler::HandleProcessManagedUrls,
+                 base::Unretained(this)));
+#endif
+#if defined(ENABLE_MANAGED_USERS)
+  web_ui()->RegisterMessageCallback("setManagedUserElevated",
+      base::Bind(&BrowsingHistoryHandler::HandleSetElevated,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("getManagedUserElevated",
+      base::Bind(&BrowsingHistoryHandler::HandleManagedUserGetElevated,
                  base::Unretained(this)));
 #endif
 }
@@ -427,6 +438,12 @@ void BrowsingHistoryHandler::HandleProcessManagedUrls(const ListValue* args) {
     return;
   }
 
+  // Check if the managed user is authenticated.
+  ManagedUserService* service = ManagedUserServiceFactory::GetForProfile(
+      Profile::FromWebUI(web_ui()));
+  if (!service->IsElevated())
+    return;
+
   // Since editing a host can have side effects on other hosts, update all of
   // them but change the behavior only of the checked ones.
   std::vector<std::string> hosts_to_be_changed;
@@ -484,9 +501,6 @@ void BrowsingHistoryHandler::HandleProcessManagedUrls(const ListValue* args) {
   }
 
   // Now that the lists are built apply the changes to those domains and URLs.
-  Profile *profile = Profile::FromWebUI(web_ui());
-  ManagedUserService *service =
-      ManagedUserServiceFactory::GetForProfile(profile);
   service->SetManualBehaviorForHosts(hosts_to_be_changed,
                                      allow ? ManagedUserService::MANUAL_ALLOW :
                                              ManagedUserService::MANUAL_BLOCK);
@@ -614,6 +628,46 @@ DictionaryValue* BrowsingHistoryHandler::CreateQueryResultValue(
 
   return result;
 }
+
+#if defined(ENABLE_MANAGED_USERS)
+void BrowsingHistoryHandler::HandleSetElevated(const ListValue* elevated_arg) {
+  bool elevated;
+  elevated_arg->GetBoolean(0, &elevated);
+  ManagedUserService* service = ManagedUserServiceFactory::GetForProfile(
+      Profile::FromWebUI(web_ui()));
+  if (elevated && !service->IsElevated()) {
+    // Will be deleted automatically when the dialog is closed.
+    new ManagedUserPassphraseDialog(
+        web_ui()->GetWebContents(),
+        base::Bind(&BrowsingHistoryHandler::PassphraseDialogCallback,
+                   base::Unretained(this)));
+  } else {
+    service->SetElevated(elevated);
+    ManagedUserSetElevated();
+  }
+}
+
+void BrowsingHistoryHandler::PassphraseDialogCallback(bool success) {
+  if (success) {
+    ManagedUserService* service = ManagedUserServiceFactory::GetForProfile(
+        Profile::FromWebUI(web_ui()));
+    service->SetElevated(true);
+    ManagedUserSetElevated();
+  }
+}
+
+void BrowsingHistoryHandler::ManagedUserSetElevated() {
+  ManagedUserService* service = ManagedUserServiceFactory::GetForProfile(
+      Profile::FromWebUI(web_ui()));
+  base::FundamentalValue is_elevated(service->IsElevated());
+  web_ui()->CallJavascriptFunction("managedUserElevated", is_elevated);
+}
+
+void BrowsingHistoryHandler::HandleManagedUserGetElevated(
+    const ListValue* args) {
+  ManagedUserSetElevated();
+}
+#endif
 
 void BrowsingHistoryHandler::RemoveDuplicateResults(ListValue* results) {
   ListValue new_results;

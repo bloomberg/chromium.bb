@@ -19,6 +19,20 @@ html[dir=rtl] body.uber-frame > .page {
 </if>
 }
 
+#lock-unlock-button:not(.profile-is-managed),
+.managed-user-locked #allow-selected,
+.managed-user-locked #block-selected {
+  display: none;
+}
+
+#lock-unlock-button {
+  float: right;
+}
+
+html[dir=rtl] #lock-unlock-button {
+  float: left;
+}
+
 #search-button {
   margin: 0;
 }

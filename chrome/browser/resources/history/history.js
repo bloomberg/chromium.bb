@@ -1352,6 +1352,14 @@ function load() {
   if (loadTimeData.getBoolean('isManagedProfile')) {
     $('allow-selected').hidden = false;
     $('block-selected').hidden = false;
+    $('lock-unlock-button').classList.add('profile-is-managed');
+
+    $('lock-unlock-button').addEventListener('click', function(e) {
+      var isLocked = document.body.classList.contains('managed-user-locked');
+      chrome.send('setManagedUserElevated', [isLocked]);
+    });
+
+    chrome.send('getManagedUserElevated');
   }
 
   var title = loadTimeData.getString('title');
@@ -1754,6 +1762,23 @@ function historyDeleted() {
  */
 function updateEntries(entries) {
   historyView.updateManagedEntries(entries);
+}
+
+/**
+ * Called when the page is initialized or when the authentication status
+ * of the managed user changes.
+ * @param {Object} isElevated Contains the information if the current profile is
+ * in elevated state.
+ */
+function managedUserElevated(isElevated) {
+  if (isElevated) {
+    document.body.classList.remove('managed-user-locked');
+    $('lock-unlock-button').textContent = loadTimeData.getString('lockButton');
+  } else {
+    document.body.classList.add('managed-user-locked');
+    $('lock-unlock-button').textContent =
+        loadTimeData.getString('unlockButton');
+  }
 }
 
 // Add handlers to HTML elements.

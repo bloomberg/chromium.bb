@@ -483,6 +483,12 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       <message name="IDS_HISTORY_IN_CONTENT_PACK" desc="Text that shows that an entry is in a content pack.">
         In content pack
       </message>
+      <message name="IDS_HISTORY_UNLOCK_BUTTON" desc="The text on the button that is used by a managed user to unlock the controls.">
+        Unlock
+      </message>
+      <message name="IDS_HISTORY_LOCK_BUTTON" desc="The text on the button that is used by a managed user to lock the controls.">
+        Lock
+      </message>
 
       <!-- Generic terms -->
       <message name="IDS_OK" desc="Used for OK on buttons">
