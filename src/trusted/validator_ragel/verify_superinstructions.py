@@ -15,6 +15,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import validator
 
 
 ObjdumpLine = collections.namedtuple('ObjdumpLine',
@@ -69,8 +70,8 @@ def RemoveRexFromAssemblerLine(line):
   return re.sub(rex_prefix, '', line, count=1)
 
 
-def ProcessSuperinstruction32(superinstruction):
-  """Process single superinstruction (32 bit one).
+def ValidateSuperinstructionWithRegex32(superinstruction):
+  """Validate superinstruction with ia32 set of regexps.
 
   If set of instructions includes something unknown (unknown functions
   or prefixes, wrong number of instructions, etc), then assert is triggered.
@@ -83,7 +84,7 @@ def ProcessSuperinstruction32(superinstruction):
   Args:
       superinstruction: list of "ObjdumpLine"s from the objdump output
   Returns:
-      True if superinstruction is valid, otherwise false
+      True if superinstruction is valid, otherwise False
   """
 
   # Pick only disassembler text from objdump output
@@ -113,8 +114,8 @@ def ProcessSuperinstruction32(superinstruction):
                  format(dangerous_instruction))
 
 
-def ProcessSuperinstruction64(superinstruction):
-  """Process single superinstruction (64 bit one).
+def ValidateSuperinstructionWithRegex64(superinstruction):
+  """Validate superinstruction with x86-64 set of regexps.
 
   If set of instructions includes something unknown (unknown functions
   or prefixes, wrong number of instructions, etc), then assert is triggered.
@@ -128,7 +129,7 @@ def ProcessSuperinstruction64(superinstruction):
   Args:
       superinstruction: list of "ObjdumpLine"s from the objdump output
   Returns:
-      True if superinstruction is valid, otherwise false
+      True if superinstruction is valid, otherwise False
   """
 
   # Pick only disassembler text from objdump output
@@ -208,8 +209,51 @@ def ProcessSuperinstruction64(superinstruction):
   assert False, ('Unknown "dangerous" instruction: {0}'.
                  format(dangerous_instruction))
 
+def ValidateSuperinstruction(superinstruction, bitness):
+  """Validate superinstruction using the actual validator.
 
-def ProcessSuperinstructionsFile(filename, bits, gas, objdump, out_file):
+  Args:
+    superinstruction: superinstruction byte sequence to validate
+    bitness: 32 or 64
+  Returns:
+    True if superinstruction is valid, otherwise False
+  """
+
+  bundle = bytes(superinstruction +
+                 ((-len(superinstruction)) % validator.BUNDLE_SIZE) *  b'\x90')
+  assert len(bundle) % validator.BUNDLE_SIZE == 0
+
+  result = validator.ValidateChunk(bundle, bitness=bitness)
+
+  # Superinstructions are accepted if restricted_register != REG_RSP or REG_RBP
+  if bitness == 64:
+    for register in validator.ALL_REGISTERS:
+      # restricted_register can not be ever equal to %r15
+      if register == validator.REG_R15:
+        continue
+      expected = result and register not in (validator.REG_RBP,
+                                             validator.REG_RSP)
+      assert validator.ValidateChunk(bundle,
+                                     restricted_register=register,
+                                     bitness=bitness) == expected
+
+  # All bytes in the superinstruction are invalid jump targets
+  #
+  # Note: valid boundaries are determined in a C code without looking on
+  # restricted_register variable.
+  # TODO(khim): collect all the assumptions about C code fragments in one
+  # document and move this note there.
+  for offset in range(0, len(superinstruction) + 1):
+    jmp_command = b'\xeb' + bytearray([0xfe - len(bundle) + offset])
+    jmp_check = bundle + bytes(jmp_command) + (validator.BUNDLE_SIZE -
+                                               len(jmp_command)) * b'\x90'
+    expected = (offset == 0 or offset == len(superinstruction)) and result
+    assert validator.ValidateChunk(jmp_check, bitness=bitness) == expected
+
+  return result
+
+
+def ProcessSuperinstructionsFile(filename, bitness, gas, objdump, out_file):
   """Process superinstructions file.
 
   Each line produces either "True" or "False" plus text of original command
@@ -223,7 +267,7 @@ def ProcessSuperinstructionsFile(filename, bits, gas, objdump, out_file):
 
   Args:
       filename: name of file to process
-      bits: bitness (32 or 64)
+      bitness: 32 or 64
       gas: path to the GAS executable
       objdump: path to the OBJDUMP executable
   Returns:
@@ -238,7 +282,7 @@ def ProcessSuperinstructionsFile(filename, bits, gas, objdump, out_file):
     object_file.close()
 
     subprocess.check_call([gas,
-                           '--{0}'.format(bits),
+                           '--{0}'.format(bitness),
                            filename,
                            '-o{0}'.format(object_file.name)])
 
@@ -263,6 +307,9 @@ def ProcessSuperinstructionsFile(filename, bits, gas, objdump, out_file):
         bytes_only = superinstruction_line[len(line_prefix):]
         superinstruction_bytes = [byte.strip(' \n')
                                   for byte in bytes_only.split(',')]
+        superinstruction_validated = ValidateSuperinstruction(
+            bytearray([int(byte, 16) for byte in superinstruction_bytes]),
+            bitness)
         # Pick disassembled form of the superinstruction from objdump output
         superinstruction = []
         objdump_bytes = []
@@ -273,13 +320,12 @@ def ProcessSuperinstructionsFile(filename, bits, gas, objdump, out_file):
           objdump_bytes += instruction.bytes
         # Bytes in objdump output in and source file should match
         assert ['0x' + b for b in objdump_bytes] == superinstruction_bytes
-        if bits == 32:
-          process_superinstruction = ProcessSuperinstruction32
+        if bitness == 32:
+          validate_superinstruction = ValidateSuperinstructionWithRegex32
         else:
-          process_superinstruction = ProcessSuperinstruction64
-        print('{0}: {1}'.format(process_superinstruction(superinstruction),
-                                superinstruction_line.strip()),
-              file=out_file)
+          validate_superinstruction = ValidateSuperinstructionWithRegex64
+        superinstruction_valid = validate_superinstruction(superinstruction)
+        assert superinstruction_validated == superinstruction_valid
   finally:
     os.remove(object_file.name)
 
@@ -287,33 +333,37 @@ def ProcessSuperinstructionsFile(filename, bits, gas, objdump, out_file):
 def main():
   parser = optparse.OptionParser(__doc__)
 
-  parser.add_option('-b', '--bits',
+  parser.add_option('-b', '--bitness',
                     type=int,
                     help='The subarchitecture: 32 or 64')
   parser.add_option('-a', '--gas',
                     help='Path to GNU AS executable')
   parser.add_option('-d', '--objdump',
                     help='Path to objdump executable')
+  parser.add_option('-v', '--validator_dll',
+                    help='Path to librdfa_validator_dll')
   parser.add_option('-o', '--out',
                     help='Output file name (instead of sys.stdout')
 
   (options, args) = parser.parse_args()
 
-  if options.bits not in [32, 64]:
+  if options.bitness not in [32, 64]:
     parser.error('specify -b 32 or -b 64')
 
-  if not (options.gas and options.objdump):
-    parser.error('specify path to gas and objdump')
+  if not (options.gas and options.objdump and options.validator_dll):
+    parser.error('specify path to gas, objdump, and validator_dll')
 
   if options.out is not None:
     out_file = open(options.out, "w")
   else:
     out_file = sys.stdout
 
+  validator.Init(options.validator_dll)
+
   try:
     for file in args:
       ProcessSuperinstructionsFile(file,
-                                   options.bits,
+                                   options.bitness,
                                    options.gas,
                                    options.objdump,
                                    out_file)

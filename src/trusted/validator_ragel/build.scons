@@ -306,16 +306,23 @@ if ragel_involved:
   env.AlwaysBuild(env.Alias('dfagen', automata))
   env.AlwaysBuild(env.Alias('dfacheckdecoder', check_decoders))
 
-  for bits, xml in [('32', validator32_xml), ('64', validator64_xml)]:
-    superinstruction = env.Command(
-        target='superinstructions_x86_%s.txt' % bits,
-        source=['verify_validators_dfa.py', xml],
-        action='${PYTHON} ${SOURCES[0]} ${SOURCES[1]} -o ${TARGETS[0]}')
+  if python_can_load_dll:
+    for bitness, xml in [('32', validator32_xml), ('64', validator64_xml)]:
+      superinstruction = env.AutoDepsCommand(
+          'superinstructions_x86_%s.txt' % bitness,
+          ['${PYTHON}',
+           env.File('verify_validators_dfa.py'),
+           xml,
+           '-o', '${TARGETS[0]}'])
 
-    superinstruction_verified = env.Command(
-        target='superinstructions_verified_by_regex_x86_%s.out' % bits,
-        source=['verify_superinstructions.py', superinstruction, gas, objdump],
-        action='${PYTHON} ${SOURCES[0]} -b %s -a ${SOURCES[2]} -d ${SOURCES[3]}'
-               ' -o ${TARGETS[0]} ${SOURCES[1]}' % bits)
+      superinstruction_verified = env.AutoDepsCommand(
+        'superinstructions_verified_x86_%s.out' % bitness,
+        ['${PYTHON}',
+         env.File('verify_superinstructions.py'),
+         '--bitness', bitness,
+         '--gas', gas,
+         '--objdump', objdump,
+         '--validator_dll', validator_dll,
+         superinstruction])
 
-    env.AlwaysBuild(env.Alias('dfacheckvalidator', superinstruction_verified))
+      env.AlwaysBuild(env.Alias('dfacheckvalidator', superinstruction_verified))

@@ -10,7 +10,33 @@ import sys
 VALIDATION_ERRORS_MASK = 0x01ffc000
 BAD_JUMP_TARGET = 0x40000000
 
+REG_RAX = 0
+REG_RCX = 1
+REG_RDX = 2
+REG_RBX = 3
+REG_RSP = 4
+REG_RBP = 5
+REG_RSI = 6
+REG_RDI = 7
+REG_R8 = 8
+REG_R9 = 9
+REG_R10 = 10
+REG_R11 = 11
+REG_R12 = 12
+REG_R13 = 13
+REG_R14 = 14
+REG_R15 = 15
+ALL_REGISTERS = range(REG_RAX, REG_R15 + 1)
+NO_REG = 0x19
+
+RESTRICTED_REGISTER_INITIAL_VALUE_MASK = 0x000000ff
 CALL_USER_CALLBACK_ON_EACH_INSTRUCTION = 0x00000100
+
+# Macroses from validator.h
+def PACK_RESTRICTED_REGISTER_INITIAL_VALUE(register):
+  return register ^ NO_REG
+
+BUNDLE_SIZE = 32
 
 
 def SubtractPointers_(p1, p2):
@@ -61,7 +87,7 @@ def Init(validator_dll):
   GetFullCPUIDFeatures.restype = ctypes.c_void_p
 
   ValidateChunkIA32_ = validator_dll.ValidateChunkIA32
-  ValidateChunkAMD64_ = validator_dll.ValidateChunkIA32
+  ValidateChunkAMD64_ = validator_dll.ValidateChunkAMD64
 
   ValidateChunkIA32_.argtypes = ValidateChunkAMD64_.argtypes = [
       ctypes.POINTER(ctypes.c_uint8),  # data
@@ -79,7 +105,8 @@ def ValidateChunk(
     data,
     bitness,
     callback=None,
-    on_each_instruction=False):
+    on_each_instruction=False,
+    restricted_register=None):
   """Validate chunk, calling the callback if there are errors.
 
   Validator interface must be initialized by calling Init first.
@@ -93,6 +120,8 @@ def ValidateChunk(
         instruction.
     on_each_instruction: whether to invoke callback on each instruction (not
        only on erroneous ones).
+    restricted_register: initial value for the restricted_register variable (see
+                         validator_internals.html for the details)
 
   Returns:
     True if the chunk is valid, False if invalid.
@@ -113,6 +142,9 @@ def ValidateChunk(
   options = 0
   if on_each_instruction:
     options |= CALL_USER_CALLBACK_ON_EACH_INSTRUCTION
+  if restricted_register is not None:
+    assert restricted_register in ALL_REGISTERS
+    options |= PACK_RESTRICTED_REGISTER_INITIAL_VALUE(restricted_register)
 
   data_ptr = ctypes.cast(data, ctypes.POINTER(ctypes.c_uint8))
 

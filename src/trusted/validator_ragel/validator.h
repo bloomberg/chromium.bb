@@ -129,7 +129,8 @@ enum ValidationOptions {
 };
 
 /* NO_REG is default value for restricted register */
-#define RESTRICTED_REGISTER_INITIAL_VALUE(option) \
+#define PACK_RESTRICTED_REGISTER_INITIAL_VALUE(register) ((register) ^ NO_REG)
+#define EXTRACT_RESTRICTED_REGISTER_INITIAL_VALUE(option) \
   (((option) & RESTRICTED_REGISTER_INITIAL_VALUE_MASK) ^ NO_REG)
 
 /*
