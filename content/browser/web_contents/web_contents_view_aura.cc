@@ -990,10 +990,12 @@ void WebContentsViewAura::PrepareOverscrollWindow() {
 }
 
 void WebContentsViewAura::PrepareContentWindowForOverscroll() {
-  aura::Window* content = content_container_;
-  if (!content)
+  if (!content_container_ || !GetContentNativeView() ||
+      GetContentNativeView()->parent() != content_container_) {
     return;
+  }
 
+  aura::Window* content = content_container_;
   ui::ScopedLayerAnimationSettings settings(content->layer()->GetAnimator());
   settings.SetPreemptionStrategy(ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
   content->SetTransform(gfx::Transform());
