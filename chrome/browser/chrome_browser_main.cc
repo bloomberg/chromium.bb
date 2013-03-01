@@ -1475,8 +1475,13 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // startup_watcher_ is deleted.
   startup_watcher_->Arm(base::TimeDelta::FromSeconds(300));
 
+  // On mobile, need for clean shutdown arises only when the application comes
+  // to foreground (i.e. MetricsService::OnAppEnterForeground is called).
+  // http://crbug.com/179143
+#if !defined(OS_ANDROID)
   // Start watching for a hang.
   MetricsService::LogNeedForCleanShutdown();
+#endif
 
 #if defined(OS_WIN)
   // We check this here because if the profile is OTR (chromeos possibility)

@@ -160,7 +160,10 @@ class MetricsService
 
   // Called when the application is coming out of background mode.
   void OnAppEnterForeground();
-#endif
+#else
+  // Set the dirty flag, which will require a later call to LogCleanShutdown().
+  static void LogNeedForCleanShutdown();
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
   // Saves in the preferences if the crash report registration was successful.
   // This count is eventually send via UMA logs.
@@ -191,9 +194,6 @@ class MetricsService
   // Redundant test to ensure that we are notified of a clean exit.
   // This value should be true when process has completed shutdown.
   static bool UmaMetricsProperlyShutdown();
-
-  // Set the dirty flag, which will require a later call to LogCleanShutdown().
-  static void LogNeedForCleanShutdown();
 
  private:
   // The MetricsService has a lifecycle that is stored as a state.

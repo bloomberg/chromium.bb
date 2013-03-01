@@ -370,6 +370,13 @@ std::vector<int> GetAllCrashExitCodes() {
   return codes;
 }
 
+void MarkAppCleanShutdownAndCommit() {
+  PrefService* pref = g_browser_process->local_state();
+  pref->SetBoolean(prefs::kStabilityExitedCleanly, true);
+  // Start writing right away (write happens on a different thread).
+  pref->CommitPendingWrite();
+}
+
 }  // namespace
 
 // static
@@ -806,8 +813,7 @@ void MetricsService::RecordCompletedSessionEnd() {
 void MetricsService::OnAppEnterBackground() {
   scheduler_->Stop();
 
-  PrefService* pref = g_browser_process->local_state();
-  pref->SetBoolean(prefs::kStabilityExitedCleanly, true);
+  MarkAppCleanShutdownAndCommit();
 
   // At this point, there's no way of knowing when the process will be
   // killed, so this has to be treated similar to a shutdown, closing and
@@ -820,9 +826,6 @@ void MetricsService::OnAppEnterBackground() {
     // process is killed.
     OpenNewLog();
   }
-
-  // Start writing right away (write happens on a different thread).
-  pref->CommitPendingWrite();
 }
 
 void MetricsService::OnAppEnterForeground() {
@@ -831,7 +834,14 @@ void MetricsService::OnAppEnterForeground() {
 
   StartSchedulerIfNecessary();
 }
-#endif
+#else
+void MetricsService::LogNeedForCleanShutdown() {
+  PrefService* pref = g_browser_process->local_state();
+  pref->SetBoolean(prefs::kStabilityExitedCleanly, false);
+  // Redundant setting to be sure we call for a clean shutdown.
+  clean_shutdown_status_ = NEED_TO_SHUTDOWN;
+}
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 void MetricsService::RecordBreakpadRegistration(bool success) {
   if (!success)
@@ -1715,13 +1725,6 @@ void MetricsService::LogRendererHang() {
   IncrementPrefValue(prefs::kStabilityRendererHangCount);
 }
 
-void MetricsService::LogNeedForCleanShutdown() {
-  PrefService* pref = g_browser_process->local_state();
-  pref->SetBoolean(prefs::kStabilityExitedCleanly, false);
-  // Redundant setting to be sure we call for a clean shutdown.
-  clean_shutdown_status_ = NEED_TO_SHUTDOWN;
-}
-
 bool MetricsService::UmaMetricsProperlyShutdown() {
   CHECK(clean_shutdown_status_ == CLEANLY_SHUTDOWN ||
         clean_shutdown_status_ == NEED_TO_SHUTDOWN);
@@ -1730,9 +1733,8 @@ bool MetricsService::UmaMetricsProperlyShutdown() {
 
 void MetricsService::LogCleanShutdown() {
   // Redundant hack to write pref ASAP.
-  PrefService* pref = g_browser_process->local_state();
-  pref->SetBoolean(prefs::kStabilityExitedCleanly, true);
-  pref->CommitPendingWrite();
+  MarkAppCleanShutdownAndCommit();
+
   // Redundant setting to assure that we always reset this value at shutdown
   // (and that we don't use some alternate path, and not call LogCleanShutdown).
   clean_shutdown_status_ = CLEANLY_SHUTDOWN;
