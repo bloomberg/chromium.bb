@@ -247,8 +247,13 @@ class CrxInstaller
   // Deletes temporary directory and crx file if needed.
   void CleanupTempFiles();
 
-  // Creates sequenced task runner for extension install file I/O operations.
-  scoped_refptr<base::SequencedTaskRunner> CreateSequencedTaskRunner();
+  // Checks whether the current installation is initiated by the user from
+  // the extension settings page to update an existing extension or app.
+  void CheckUpdateFromSettingsPage();
+
+  // Show re-enable prompt if the update is initiated from the settings page
+  // and needs additional permissions.
+  void ConfirmReEnable();
 
   // The file we're installing.
   base::FilePath source_file_;
@@ -392,6 +397,10 @@ class CrxInstaller
 
   // Used to show the install dialog.
   ExtensionInstallPrompt::ShowDialogCallback show_dialog_callback_;
+
+  // Whether the update is initiated by the user from the extension settings
+  // page.
+  bool update_from_settings_page_;
 
   DISALLOW_COPY_AND_ASSIGN(CrxInstaller);
 };
