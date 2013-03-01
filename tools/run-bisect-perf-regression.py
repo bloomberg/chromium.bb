@@ -42,7 +42,7 @@ def LoadConfigFile(path_to_file):
     return None
 
 
-def RunBisectionScript(config, working_directory, path_to_file):
+def RunBisectionScript(config, working_directory, path_to_file, path_to_goma):
   """Attempts to execute src/tools/bisect-perf-regression.py with the parameters
   passed in.
 
@@ -52,6 +52,7 @@ def RunBisectionScript(config, working_directory, path_to_file):
       bisect-perf-regression.py script, where it will store it's own copy of
       the depot.
     path_to_file: Path to the bisect-perf-regression.py script.
+    path_to_goma: Path to goma directory.
 
   Returns:
     0 on success, otherwise 1.
@@ -65,7 +66,30 @@ def RunBisectionScript(config, working_directory, path_to_file):
          '--working_directory', working_directory,
          '--output_buildbot_annotations']
 
+  goma_file = ''
+  if path_to_goma:
+    path_to_goma = os.path.abspath(path_to_goma)
+
+    if os.name == 'nt':
+      os.environ['CC'] = os.path.join(path_to_goma, 'gomacc.exe') + ' cl.exe'
+      os.environ['CXX'] = os.path.join(path_to_goma, 'gomacc.exe') + ' cl.exe'
+      goma_file = os.path.join(path_to_goma, 'goma_ctl.bat')
+    else:
+      os.environ['PATH'] = os.pathsep.join([path_to_goma, os.environ['PATH']])
+      goma_file = os.path.join(path_to_goma, 'goma_ctl.sh')
+
+    cmd.append('--use_goma')
+
+    return_code = subprocess.call([goma_file, 'start'])
+    if return_code:
+      print 'Error: goma failed to start.'
+      print
+      return return_code
+
   return_code = subprocess.call(cmd)
+
+  if path_to_goma:
+    subprocess.call([goma_file, 'stop'])
 
   if return_code:
     print 'Error: bisect-perf-regression.py returned with error %d' %\
@@ -87,6 +111,10 @@ def main():
                     help='A working directory to supply to the bisection '
                     'script, which will use it as the location to checkout '
                     'a copy of the chromium depot.')
+  parser.add_option('-p', '--path_to_goma',
+                    type='str',
+                    help='Path to goma directory. If this is supplied, goma '
+                    'builds will be enabled.')
   (opts, args) = parser.parse_args()
 
   if not opts.working_directory:
@@ -103,7 +131,8 @@ def main():
     print
     return 1
 
-  return RunBisectionScript(config, opts.working_directory, path_to_file)
+  return RunBisectionScript(config, opts.working_directory, path_to_file,
+                            opts.path_to_goma)
 
 
 if __name__ == '__main__':
