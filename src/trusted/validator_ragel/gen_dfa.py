@@ -419,11 +419,12 @@ VALIDATOR = object()
 
 class InstructionPrinter(object):
 
-  def __init__(self, mode, bitness):
+  def __init__(self, mode, bitness, reverse_operands=False):
     assert mode in [DECODER, VALIDATOR]
     assert bitness in [32, 64]
     self._mode = mode
     self._bitness = bitness
+    self._reverse_operands = reverse_operands
     self._out = StringIO.StringIO()
     self._printed_operand_sources = set()
 
@@ -433,7 +434,14 @@ class InstructionPrinter(object):
   def _SetOperandIndices(self, instruction):
     instruction = copy.deepcopy(instruction)
     index = 0
-    for operand in instruction.operands:
+
+    # TODO(shcherbina): Get rid of it when
+    # https://code.google.com/p/nativeclient/issues/detail?id=3299 is fixed.
+    operands = instruction.operands
+    if self._reverse_operands:
+      operands = reversed(operands)
+
+    for operand in operands:
       if self._NeedOperandInfo(operand):
         operand.index = index
         index += 1
@@ -1029,11 +1037,14 @@ class InstructionPrinter(object):
         expected_operands)
 
 
-def InstructionToString(mode, bitness, instruction):
+def InstructionToString(mode, bitness, instruction, reverse_operands=False):
   header = '# %s\n' % instruction
 
   if not instruction.HasModRM():
-    printer = InstructionPrinter(mode, bitness)
+    printer = InstructionPrinter(
+        mode,
+        bitness,
+        reverse_operands=reverse_operands)
     printer.PrintInstructionWithoutModRM(instruction)
     if instruction.name == 'xchg':
       # Exclude nop
@@ -1041,13 +1052,19 @@ def InstructionToString(mode, bitness, instruction):
     return header + printer.GetContent()
 
   if instruction.FindOperand(def_format.OperandType.MEMORY) is None:
-    printer = InstructionPrinter(mode, bitness)
+    printer = InstructionPrinter(
+        mode,
+        bitness,
+        reverse_operands=reverse_operands)
     printer.PrintInstructionWithModRMReg(instruction)
     return header + printer.GetContent()
   else:
     instrs = []
     for address_mode in ALL_ADDRESS_MODES:
-      printer = InstructionPrinter(mode, bitness)
+      printer = InstructionPrinter(
+          mode,
+          bitness,
+          reverse_operands=reverse_operands)
       printer.PrintInstructionWithModRMMemory(instruction, address_mode)
       instrs.append(printer.GetContent())
     return header + '(%s)\n' % '|\n'.join(instrs)
@@ -1440,7 +1457,10 @@ def main():
       instructions = sum(map(SplitL, instructions), [])
 
       header = '##### %s #####\n' % instruction
-      variants = [InstructionToString(mode, options.bitness, instr)
+      variants = [InstructionToString(
+                      mode, options.bitness,
+                      instr,
+                      reverse_operands=True)
                   for instr in instructions]
       printed_instrs.append(header + '|\n'.join(variants))
 
