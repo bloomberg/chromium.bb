@@ -256,7 +256,7 @@ _COPY_PATHS = (
        cond=C.StagingFlagSet(_CONTENT_SHELL_FLAG)),
   Path('extensions/',
        optional=True),
-  Path('lib.target/*.so',
+  Path('lib/*.so',
        exe=True,
        cond=C.GypSet('component', value='shared_library')),
   Path('libffmpegsumo.so',
