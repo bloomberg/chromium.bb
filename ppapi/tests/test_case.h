@@ -365,7 +365,7 @@ class TestCaseFactory {
           "reference leak check"); \
     PP_TimeTicks start_time(NowInTimeTicks()); \
     instance_->LogTest(#name, \
-                       error_message, \
+                       CheckResourcesAndVars(error_message), \
                        start_time); \
   }
 // TODO(dmichael): Add CheckResourcesAndVars above when Windows tests pass
