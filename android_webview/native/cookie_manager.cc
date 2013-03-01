@@ -21,7 +21,6 @@
 #include "jni/AwCookieManager_jni.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_options.h"
-#include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 
 using base::android::ConvertJavaStringToUTF8;
@@ -48,7 +47,7 @@ class CookieManager {
  public:
   static CookieManager* GetInstance();
 
-  void SetCookieMonster(net::URLRequestContext* request_context);
+  void SetCookieMonster(net::CookieMonster* cookie_monster);
 
   void SetAcceptCookie(bool accept);
   bool AcceptCookie();
@@ -134,9 +133,9 @@ void CookieManager::ExecCookieTask(const CookieTask& task,
   }
 }
 
-void CookieManager::SetCookieMonster(net::URLRequestContext* request_context) {
+void CookieManager::SetCookieMonster(net::CookieMonster* cookie_monster) {
   DCHECK(!cookie_monster_);
-  cookie_monster_ = request_context->cookie_store()->GetCookieMonster();
+  cookie_monster_ = cookie_monster;
 }
 
 void CookieManager::SetAcceptCookie(bool accept) {
@@ -348,8 +347,8 @@ static void SetAcceptFileSchemeCookies(JNIEnv* env, jobject obj,
   return CookieManager::GetInstance()->SetAcceptFileSchemeCookies(accept);
 }
 
-void SetCookieMonsterOnNetworkStackInit(net::URLRequestContext* context) {
-  CookieManager::GetInstance()->SetCookieMonster(context);
+void SetCookieMonsterOnNetworkStackInit(net::CookieMonster* cookie_monster) {
+  CookieManager::GetInstance()->SetCookieMonster(cookie_monster);
 }
 
 bool RegisterCookieManager(JNIEnv* env) {

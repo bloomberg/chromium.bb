@@ -8,13 +8,13 @@
 #include <jni.h>
 
 namespace net {
-class URLRequestContext;
+class CookieMonster;
 }  // namespace net
 
 namespace android_webview {
 class AwURLRequestJobFactory;
 
-void SetCookieMonsterOnNetworkStackInit(net::URLRequestContext* context);
+void SetCookieMonsterOnNetworkStackInit(net::CookieMonster* cookie_monster);
 
 bool RegisterCookieManager(JNIEnv* env);
 

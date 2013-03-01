@@ -13,6 +13,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
+#include "net/cookies/cookie_store.h"
 #include "net/http/http_cache.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/data_protocol_handler.h"
@@ -72,6 +73,12 @@ void AwURLRequestContextGetter::Init() {
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)));
   main_http_factory_.reset(main_cache);
   url_request_context_->set_http_transaction_factory(main_cache);
+
+  // The CookieMonster must be passed here so it happens synchronously to
+  // the main thread initialization (to avoid race condition in another
+  // thread trying to access the CookieManager API).
+  DidCreateCookieMonster(
+      url_request_context_->cookie_store()->GetCookieMonster());
 }
 
 void AwURLRequestContextGetter::PopulateNetworkSessionParams(
@@ -118,8 +125,7 @@ net::URLRequestContext* AwURLRequestContextGetter::GetURLRequestContext() {
     DCHECK(set_protocol);
     // Create a chain of URLRequestJobFactories.  Keep |job_factory_| pointed
     // at the beginning of the chain.
-    job_factory_ = CreateAndroidJobFactoryAndCookieMonster(
-        url_request_context_.get(), job_factory.Pass());
+    job_factory_ = CreateAndroidJobFactory(job_factory.Pass());
     job_factory_.reset(new net::ProtocolInterceptJobFactory(
         job_factory_.Pass(),
         scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(

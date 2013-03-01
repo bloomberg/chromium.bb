@@ -8,18 +8,20 @@
 #include "base/memory/scoped_ptr.h"
 
 namespace net {
-class URLRequestContext;
+class CookieMonster;
 class URLRequestJobFactory;
 }  // namespace net
 
 namespace android_webview {
 class AwURLRequestJobFactory;
 
-// This is called on the IO thread when the network URLRequestContext has been
-// initialized but not used. Note that the UI thread is blocked during this
-// call.
-scoped_ptr<net::URLRequestJobFactory> CreateAndroidJobFactoryAndCookieMonster(
-    net::URLRequestContext* context,
+// This is called on the IO thread when the CookieMonster has been created.
+// Note that the UI thread is blocked during this call.
+void DidCreateCookieMonster(net::CookieMonster* cookie_monster);
+
+// Called lazily when the job factory is being constructed; allows android
+// webview specific request factories to be added to the chain.
+scoped_ptr<net::URLRequestJobFactory> CreateAndroidJobFactory(
     scoped_ptr<AwURLRequestJobFactory> job_factory);
 
 }  // namespace android_webview
