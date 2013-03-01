@@ -1752,8 +1752,6 @@
         'browser/ui/views/tabs/tab_controller.h',
         'browser/ui/views/tabs/tab_drag_controller.cc',
         'browser/ui/views/tabs/tab_drag_controller.h',
-        'browser/ui/views/tabs/tab_renderer_data.cc',
-        'browser/ui/views/tabs/tab_renderer_data.h',
         'browser/ui/views/tabs/tab_strip.cc',
         'browser/ui/views/tabs/tab_strip.h',
         'browser/ui/views/tabs/tab_strip_controller.h',

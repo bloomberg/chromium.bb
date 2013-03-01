@@ -7,11 +7,12 @@
 
 #include "base/process_util.h"
 #include "base/string16.h"
+#include "chrome/browser/ui/views/chrome_views_export.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/image/image_skia.h"
 
 // Wraps the state needed by the renderers.
-struct TabRendererData {
+struct CHROME_VIEWS_EXPORT TabRendererData {
   // Different types of network activity for a tab. The NetworkState of a tab
   // may be used to alter the UI (e.g. show different kinds of loading
   // animations).

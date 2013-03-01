@@ -9,6 +9,8 @@
       'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
+        '../build/temp_gyp/googleurl.gyp:googleurl',
+        '../skia/skia.gyp:skia',
         '../ui/ui.gyp:ui',
       ],
       'conditions': [
@@ -29,6 +31,8 @@
         'browser/ui/views/event_utils.cc',
         'browser/ui/views/event_utils.h',
         'browser/ui/views/tab_icon_view_model.h',
+        'browser/ui/views/tabs/tab_renderer_data.cc',
+        'browser/ui/views/tabs/tab_renderer_data.h',
         'browser/ui/views/tabs/tab_strip_observer.cc',
         'browser/ui/views/tabs/tab_strip_observer.h',
         'browser/ui/views/tabs/tab_strip_types.h',
