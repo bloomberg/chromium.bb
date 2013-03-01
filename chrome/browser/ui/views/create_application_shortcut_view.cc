@@ -11,7 +11,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
-#include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/history/select_favicon_frames.h"
@@ -22,7 +21,6 @@
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/pref_names.h"
@@ -35,6 +33,7 @@
 #include "grit/theme_resources.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
+#include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkRect.h"
@@ -43,6 +42,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_rep.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -53,7 +54,7 @@
 
 namespace {
 
-const int kAppIconSize = 32;
+const int kIconPreviewSizePixels = 32;
 
 // AppInfoView shows the application icon and title.
 class AppInfoView : public views::View {
@@ -101,7 +102,8 @@ void AppInfoView::Init(const string16& title_text,
                        const SkBitmap& icon) {
   icon_ = new views::ImageView();
   icon_->SetImage(gfx::ImageSkia::CreateFrom1xBitmap(icon));
-  icon_->SetImageSize(gfx::Size(kAppIconSize, kAppIconSize));
+  icon_->SetImageSize(gfx::Size(kIconPreviewSizePixels,
+                                kIconPreviewSizePixels));
 
   title_ = new views::Label(title_text);
   title_->SetMultiLine(true);
@@ -109,15 +111,15 @@ void AppInfoView::Init(const string16& title_text,
   title_->SetFont(ui::ResourceBundle::GetSharedInstance().GetFont(
       ui::ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD));
 
-  if (!description_text.empty()) {
-    PrepareDescriptionLabel(description_text);
-  }
+  PrepareDescriptionLabel(description_text);
 
   SetupLayout();
 }
 
 void AppInfoView::PrepareDescriptionLabel(const string16& description) {
-  DCHECK(!description.empty());
+  // Do not make space for the description if it is empty.
+  if (description.empty())
+    return;
 
   const size_t kMaxLength = 200;
   const string16 kEllipsis(ASCIIToUTF16(" ... "));
@@ -145,7 +147,7 @@ void AppInfoView::SetupLayout() {
   views::ColumnSet* column_set = layout->AddColumnSet(kColumnSetId);
   column_set->AddColumn(views::GridLayout::CENTER, views::GridLayout::LEADING,
                         20.0f, views::GridLayout::FIXED,
-                        kAppIconSize, kAppIconSize);
+                        kIconPreviewSizePixels, kIconPreviewSizePixels);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
                         80.0f, views::GridLayout::USE_PREF, 0, 0);
 
@@ -169,8 +171,54 @@ void AppInfoView::UpdateText(const string16& title,
 }
 
 void AppInfoView::UpdateIcon(const gfx::Image& image) {
-  if (!image.IsEmpty())
-    icon_->SetImage(image.ToImageSkia());
+  if (image.IsEmpty())
+    return;
+
+  // image contains a single ImageSkia with all of the icons at different sizes.
+  // Create a new ImageSkia with just a single icon at the preferred size.
+  const gfx::ImageSkia& multires_image_skia = *(image.ToImageSkia());
+  std::vector<gfx::ImageSkiaRep> image_reps = multires_image_skia.image_reps();
+  // Find the smallest icon bigger or equal to the desired size. If it cannot be
+  // found, find the biggest icon smaller than the desired size. An icon's size
+  // is measured as the minimum of its width and height.
+  const gfx::ImageSkiaRep* smallest_larger = NULL;
+  const gfx::ImageSkiaRep* largest_smaller = NULL;
+  int smallest_larger_size = 0;
+  int largest_smaller_size = 0;
+  for (std::vector<gfx::ImageSkiaRep>::const_iterator it = image_reps.begin();
+       it != image_reps.end(); ++it) {
+    const gfx::ImageSkiaRep& image = *it;
+    int image_size = std::min(image.pixel_width(), image.pixel_height());
+    if (image_size >= kIconPreviewSizePixels) {
+      if (!smallest_larger || image_size < smallest_larger_size) {
+        smallest_larger = &image;
+        smallest_larger_size = image_size;
+      }
+    } else {
+      if (!largest_smaller || image_size > largest_smaller_size) {
+        largest_smaller = &image;
+        largest_smaller_size = image_size;
+      }
+    }
+  }
+  if (!smallest_larger && !largest_smaller) {
+    // Should never happen unless the image has no representations.
+    return;
+  }
+  const SkBitmap& bitmap = smallest_larger ?
+                           smallest_larger->sk_bitmap() :
+                           largest_smaller->sk_bitmap();
+  if (bitmap.width() == kIconPreviewSizePixels &&
+      bitmap.height() == kIconPreviewSizePixels) {
+    icon_->SetImage(gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
+  } else {
+    // Resize the image to the desired size.
+    SkBitmap resized_bitmap = skia::ImageOperations::Resize(
+        bitmap, skia::ImageOperations::RESIZE_LANCZOS3,
+        kIconPreviewSizePixels, kIconPreviewSizePixels);
+
+    icon_->SetImage(gfx::ImageSkia::CreateFrom1xBitmap(resized_bitmap));
+  }
 }
 
 void AppInfoView::OnPaint(gfx::Canvas* canvas) {
@@ -488,47 +536,25 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
       CreateApplicationShortcutView(profile),
       app_(app),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
-  web_app::UpdateShortcutInfoForApp(*app, profile, &shortcut_info_);
-  // The icon will be resized to |max_size|.
-  const gfx::Size max_size(kAppIconSize, kAppIconSize);
-
-  // Look for an icon.  If there is no icon at the ideal size,
-  // we will resize whatever we can get.  Making a large icon smaller
-  // is prefered to making a small icon larger, so look for a larger
-  // icon first:
-  ExtensionResource icon_resource = extensions::IconsInfo::GetIconResource(
-      app_,
-      kAppIconSize,
-      ExtensionIconSet::MATCH_BIGGER);
-
-  // If no icon exists that is the desired size or larger, get the
-  // largest icon available:
-  if (icon_resource.empty()) {
-    icon_resource = extensions::IconsInfo::GetIconResource(
-        app_,
-        kAppIconSize,
-        ExtensionIconSet::MATCH_SMALLER);
-  }
+  // Required by InitControls().
+  shortcut_info_.title = UTF8ToUTF16(app->name());
+  shortcut_info_.description = UTF8ToUTF16(app->description());
 
   InitControls();
 
-  extensions::ImageLoader* loader = extensions::ImageLoader::Get(profile);
-  loader->LoadImageAsync(app_, icon_resource, max_size,
-      base::Bind(&CreateChromeApplicationShortcutView::OnImageLoaded,
+  // Get shortcut information and icon now; they are needed for our UI.
+  web_app::UpdateShortcutInfoAndIconForApp(
+      *app, profile,
+      base::Bind(&CreateChromeApplicationShortcutView::OnShortcutInfoLoaded,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
 CreateChromeApplicationShortcutView::~CreateChromeApplicationShortcutView() {}
 
-// Called by ImageLoader when the app's icon is loaded.
-void CreateChromeApplicationShortcutView::OnImageLoaded(
-    const gfx::Image& image) {
-  if (image.IsEmpty()) {
-    shortcut_info_.favicon = ui::ResourceBundle::GetSharedInstance().
-        GetImageNamed(IDR_APP_DEFAULT_ICON);
-  } else {
-    shortcut_info_.favicon = image;
-  }
+// Called when the app's ShortcutInfo (with icon) is loaded.
+void CreateChromeApplicationShortcutView::OnShortcutInfoLoaded(
+    const ShellIntegration::ShortcutInfo& shortcut_info) {
+  shortcut_info_ = shortcut_info;
 
   CHECK(app_info_);
   static_cast<AppInfoView*>(app_info_)->UpdateIcon(shortcut_info_.favicon);

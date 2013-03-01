@@ -123,7 +123,8 @@ class CreateChromeApplicationShortcutView
   virtual ~CreateChromeApplicationShortcutView();
 
  private:
-  void OnImageLoaded(const gfx::Image& image);
+  void OnShortcutInfoLoaded(
+      const ShellIntegration::ShortcutInfo& shortcut_info);
 
   const extensions::Extension* app_;
 
