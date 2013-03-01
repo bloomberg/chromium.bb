@@ -226,10 +226,15 @@ void CreateFrameBuffer(Display* display,
                        CrtcConfig* config1,
                        CrtcConfig* config2) {
   TRACE_EVENT0("chromeos", "OutputConfigurator::CreateFrameBuffer");
-  VLOG(1) << "CreateFrameBuffer " << width << " by " << height;
+
+  int current_width = DisplayWidth(display, DefaultScreen(display));
+  int current_height = DisplayHeight(display, DefaultScreen(display));
+  VLOG(1) << "CreateFrameBuffer " << width << " x " << height
+          << " (current=" << current_width << " x " << current_height << ")";
+  if (width ==  current_width && height == current_height)
+    return;
 
   DestroyUnusedCrtcs(display, screen, window, config1, config2);
-
   int mm_width = width * kPixelsToMmScale;
   int mm_height = height * kPixelsToMmScale;
   XRRSetScreenSize(display, window, width, height, mm_width, mm_height);
