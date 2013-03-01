@@ -97,7 +97,10 @@ void TooltipManagerAura::HideKeyboardTooltip()  {
 }
 
 View* TooltipManagerAura::GetViewUnderPoint(const gfx::Point& point) {
-  return widget_->GetRootView()->GetEventHandlerForPoint(point);
+  View* root_view = widget_->GetRootView();
+  if (root_view)
+    return root_view->GetEventHandlerForPoint(point);
+  return NULL;
 }
 
 }  // namespace views.
