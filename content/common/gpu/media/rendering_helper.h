@@ -5,7 +5,10 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_RENDERING_HELPER_H_
 #define CONTENT_COMMON_GPU_MEDIA_RENDERING_HELPER_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
+#include "ui/gfx/size.h"
 
 namespace base {
 class WaitableEvent;
@@ -27,11 +30,10 @@ class RenderingHelper {
   RenderingHelper() {}
   virtual ~RenderingHelper() {}
 
-  // Create the window and render context.
+  // Create the render context and windows by the specified dimensions.
   virtual void Initialize(bool suppress_swap_to_display,
                           int num_windows,
-                          int width,
-                          int height,
+                          const std::vector<gfx::Size>& dimensions,
                           base::WaitableEvent* done) = 0;
 
   // Undo the effects of Initialize() and signal |*done|.

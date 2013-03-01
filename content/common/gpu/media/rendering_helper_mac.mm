@@ -87,8 +87,7 @@ class RenderingHelperMac : public RenderingHelper {
   // Implement RenderingHelper.
   virtual void Initialize(bool suppress_swap_to_display,
                           int num_windows,
-                          int width,
-                          int height,
+                          const std::vector<gfx::Size>& dimensions,
                           base::WaitableEvent* done) OVERRIDE;
   virtual void UnInitialize(base::WaitableEvent* done) OVERRIDE;
   virtual void CreateTexture(int window_id,
@@ -133,11 +132,11 @@ RenderingHelperMac::~RenderingHelperMac() {
   CHECK_EQ(width_, 0) << "Must call UnInitialize before dtor.";
 }
 
-void RenderingHelperMac::Initialize(bool suppress_swap_to_display,
-                                    int num_windows,
-                                    int width,
-                                    int height,
-                                    base::WaitableEvent* done) {
+void RenderingHelperMac::Initialize(
+    bool suppress_swap_to_display,
+    int num_windows,
+    const std::vector<gfx::Size>& dimensions,
+    base::WaitableEvent* done) {
   // Use width_ != 0 as a proxy for the class having already been
   // Initialize()'d, and UnInitialize() before continuing.
   if (width_) {
@@ -150,8 +149,10 @@ void RenderingHelperMac::Initialize(bool suppress_swap_to_display,
   // only supports a single instance only one window should be created.
   CHECK_EQ(num_windows, 1);
 
-  width_ = width;
-  height_ = height;
+  // There should be only one window dimension as only one window is created.
+  CHECK_EQ(dimensions.size(), 1U);
+  width_ = dimensions[0].width();
+  height_ = dimensions[0].height();
   suppress_swap_to_display_ = suppress_swap_to_display;
   message_loop_ = MessageLoop::current();
 

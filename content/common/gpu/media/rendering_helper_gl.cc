@@ -97,8 +97,7 @@ class RenderingHelperGL : public RenderingHelper {
   // Implement RenderingHelper.
   virtual void Initialize(bool suppress_swap_to_display,
                           int num_windows,
-                          int width,
-                          int height,
+                          const std::vector<gfx::Size>& dimensions,
                           base::WaitableEvent* done) OVERRIDE;
   virtual void UnInitialize(base::WaitableEvent* done) OVERRIDE;
   virtual void CreateTexture(int window_id,
@@ -121,8 +120,7 @@ class RenderingHelperGL : public RenderingHelper {
 
 
   MessageLoop* message_loop_;
-  int width_;
-  int height_;
+  std::vector<gfx::Size> dimensions_;
   bool suppress_swap_to_display_;
 
   NativeContextType gl_context_;
@@ -169,7 +167,7 @@ RenderingHelperGL::RenderingHelperGL() {
 }
 
 RenderingHelperGL::~RenderingHelperGL() {
-  CHECK_EQ(width_, 0) << "Must call UnInitialize before dtor.";
+  CHECK_EQ(dimensions_.size(), 0U) << "Must call UnInitialize before dtor.";
   Clear();
 }
 
@@ -193,14 +191,14 @@ void RenderingHelperGL::MakeCurrent(int window_id) {
 #endif
 }
 
-void RenderingHelperGL::Initialize(bool suppress_swap_to_display,
-                                    int num_windows,
-                                    int width,
-                                    int height,
-                                    base::WaitableEvent* done) {
-  // Use width_ != 0 as a proxy for the class having already been
+void RenderingHelperGL::Initialize(
+    bool suppress_swap_to_display,
+    int num_windows,
+    const std::vector<gfx::Size>& dimensions,
+    base::WaitableEvent* done) {
+  // Use dimensions_.size() != 0 as a proxy for the class having already been
   // Initialize()'d, and UnInitialize() before continuing.
-  if (width_) {
+  if (dimensions_.size()) {
     base::WaitableEvent done(false, false);
     UnInitialize(&done);
     done.Wait();
@@ -209,10 +207,9 @@ void RenderingHelperGL::Initialize(bool suppress_swap_to_display,
   scoped_refptr<GLContextStubWithExtensions> stub_context(
       new GLContextStubWithExtensions());
   suppress_swap_to_display_ = suppress_swap_to_display;
-  CHECK_GT(width, 0);
-  CHECK_GT(height, 0);
-  width_ = width;
-  height_ = height;
+
+  CHECK_GT(dimensions.size(), 0U);
+  dimensions_ = dimensions;
   message_loop_ = MessageLoop::current();
   CHECK_GT(num_windows, 0);
 
@@ -282,6 +279,11 @@ void RenderingHelperGL::Initialize(bool suppress_swap_to_display,
   // Per-window/surface X11 & EGL initialization.
   for (int i = 0; i < num_windows; ++i) {
     // Arrange X windows whimsically, with some padding.
+    int j = i % dimensions_.size();
+    int width = dimensions_[j].width();
+    int height = dimensions_[j].height();
+    CHECK_GT(width, 0);
+    CHECK_GT(height, 0);
     int top_left_x = (width + 20) * (i % 4);
     int top_left_y = (height + 12) * (i % 3);
 
@@ -289,7 +291,7 @@ void RenderingHelperGL::Initialize(bool suppress_swap_to_display,
     NativeWindowType window =
         CreateWindowEx(0, L"Static", L"VideoDecodeAcceleratorTest",
                        WS_OVERLAPPEDWINDOW | WS_VISIBLE, top_left_x,
-                       top_left_y, width_, height_, NULL, NULL, NULL,
+                       top_left_y, width, height, NULL, NULL, NULL,
                        NULL);
     CHECK(window != NULL);
     windows_.push_back(window);
@@ -307,7 +309,7 @@ void RenderingHelperGL::Initialize(bool suppress_swap_to_display,
 
     NativeWindowType window = XCreateWindow(
         x_display_, DefaultRootWindow(x_display_),
-        top_left_x, top_left_y, width_, height_,
+        top_left_x, top_left_y, width, height,
         0 /* border width */,
         depth, CopyFromParent /* class */, CopyFromParent /* visual */,
         (CWBackPixel | CWOverrideRedirect), &window_attributes);
@@ -412,9 +414,9 @@ void RenderingHelperGL::UnInitialize(base::WaitableEvent* done) {
 }
 
 void RenderingHelperGL::CreateTexture(int window_id,
-                                       uint32 texture_target,
-                                       uint32* texture_id,
-                                       base::WaitableEvent* done) {
+                                      uint32 texture_target,
+                                      uint32* texture_id,
+                                      base::WaitableEvent* done) {
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(
         FROM_HERE,
@@ -426,7 +428,9 @@ void RenderingHelperGL::CreateTexture(int window_id,
   MakeCurrent(window_id);
   glGenTextures(1, texture_id);
   glBindTexture(GL_TEXTURE_2D, *texture_id);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0, GL_RGBA,
+  int dimensions_id = window_id % dimensions_.size();
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dimensions_[dimensions_id].width(),
+               dimensions_[dimensions_id].height(), 0, GL_RGBA,
                GL_UNSIGNED_BYTE, NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -477,8 +481,7 @@ void* RenderingHelperGL::GetGLDisplay() {
 
 void RenderingHelperGL::Clear() {
   suppress_swap_to_display_ = false;
-  width_ = 0;
-  height_ = 0;
+  dimensions_.clear();
   texture_id_to_surface_index_.clear();
   message_loop_ = NULL;
   gl_context_ = NULL;
