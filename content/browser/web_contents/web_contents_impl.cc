@@ -536,7 +536,7 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
   prefs.record_rendering_stats =
       command_line.HasSwitch(switches::kEnableGpuBenchmarking);
   prefs.threaded_html_parser =
-      command_line.HasSwitch(switches::kEnableThreadedHTMLParser);
+      !command_line.HasSwitch(switches::kDisableThreadedHTMLParser);
 
   bool touch_device_present = false;
   touch_device_present = ui::IsTouchDevicePresent();

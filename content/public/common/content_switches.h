@@ -103,7 +103,7 @@ CONTENT_EXPORT extern const char kEnableCssShaders[];
 CONTENT_EXPORT extern const char kEnableDeviceMotion[];
 CONTENT_EXPORT extern const char kEnableDownloadResumption[];
 CONTENT_EXPORT extern const char kEnableExperimentalWebKitFeatures[];
-CONTENT_EXPORT extern const char kEnableThreadedHTMLParser[];
+CONTENT_EXPORT extern const char kDisableThreadedHTMLParser[];
 extern const char kEnableFastback[];
 CONTENT_EXPORT extern const char kEnableFixedLayout[];
 CONTENT_EXPORT extern const char kDisableFullScreen[];
