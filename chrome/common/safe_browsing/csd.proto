@@ -244,3 +244,32 @@ message ClientDownloadReport {
   // The original download response sent from the verdict server.
   optional ClientDownloadResponse download_response = 5;
 }
+
+message ClientMalwareRequest {
+  // URL that the client visited.  The CGI parameters are stripped by the
+  // client.
+  optional string url = 1;
+
+  message Feature {
+    // Feature name.  E.g., 'BadIpFetch='.
+    required string name = 1;
+
+    // Feature value is always in the range [0.0, 1.0].  Boolean features
+    // have value 1.0.
+    required double value = 2;
+
+    // Optional meta information about this feature
+    repeated string metainfo = 3;
+  }
+
+  // List of features that were extracted.
+  repeated Feature feature_map = 2;
+}
+
+message ClientMalwareResponse {
+    required bool blacklist = 1;
+    // The confirmed blacklisted bad IP, which will be shown in malware warning.
+    // This IP string could be either in IPv4 or IPv6 format, which is the same
+    // as the ones client sent to server.
+    optional string bad_ip = 2;
+}
