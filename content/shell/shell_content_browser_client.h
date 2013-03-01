@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/platform_file.h"
 #include "content/public/browser/content_browser_client.h"
 
 namespace content {
@@ -89,8 +88,6 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       resource_dispatcher_host_delegate_;
 
   base::FilePath webkit_source_dir_;
-
-  base::PlatformFile hyphen_dictionary_file_;
 
   ShellBrowserMainParts* shell_browser_main_parts_;
 };

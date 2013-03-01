@@ -8,7 +8,6 @@
 
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
-#include "ipc/ipc_platform_file.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #define IPC_MESSAGE_START ShellMsgStart
@@ -42,10 +41,6 @@ IPC_MESSAGE_CONTROL0(ShellViewMsg_ResetAll)
 // Sets the path to the WebKit checkout.
 IPC_MESSAGE_CONTROL1(ShellViewMsg_SetWebKitSourceDir,
                      base::FilePath /* webkit source dir */)
-
-// Loads the hyphen dictionary used for layout tests.
-IPC_MESSAGE_CONTROL1(ShellViewMsg_LoadHyphenDictionary,
-                     IPC::PlatformFileForTransit /* dict_file */)
 
 // Sets the initial configuration to use for layout tests.
 IPC_MESSAGE_ROUTED1(ShellViewMsg_SetTestConfiguration,

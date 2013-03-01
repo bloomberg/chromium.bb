@@ -10,7 +10,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_process_observer.h"
-#include "ipc/ipc_platform_file.h"
 
 namespace WebKit {
 class WebFrame;
@@ -54,7 +53,6 @@ class ShellRenderProcessObserver : public RenderProcessObserver {
   // Message handlers.
   void OnResetAll();
   void OnSetWebKitSourceDir(const base::FilePath& webkit_source_dir);
-  void OnLoadHyphenDictionary(const IPC::PlatformFileForTransit& dict_file);
 
   RenderView* main_render_view_;
   WebKitTestRunner* main_test_runner_;

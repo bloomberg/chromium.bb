@@ -7,7 +7,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/platform_file.h"
 #include "content/public/renderer/content_renderer_client.h"
 
 namespace WebKit {
@@ -18,10 +17,6 @@ struct WebPluginParams;
 
 namespace WebTestRunner {
 class WebTestProxyBase;
-}
-
-namespace webkit_glue {
-class MockWebHyphenator;
 }
 
 class MockWebClipboardImpl;
@@ -35,10 +30,6 @@ class ShellContentRendererClient : public ContentRendererClient {
  public:
   ShellContentRendererClient();
   virtual ~ShellContentRendererClient();
-
-  void LoadHyphenDictionary(base::PlatformFile dict_file);
-
-  // ContentRendererClient implementation.
   virtual void RenderThreadStarted() OVERRIDE;
   virtual void RenderViewCreated(RenderView* render_view) OVERRIDE;
   virtual bool OverrideCreatePlugin(
@@ -53,7 +44,6 @@ class ShellContentRendererClient : public ContentRendererClient {
       WebKit::WebRTCPeerConnectionHandlerClient* client) OVERRIDE;
   virtual WebKit::WebClipboard* OverrideWebClipboard() OVERRIDE;
   virtual WebKit::WebMimeRegistry* OverrideWebMimeRegistry() OVERRIDE;
-  virtual WebKit::WebHyphenator* OverrideWebHyphenator() OVERRIDE;
   virtual bool AllowBrowserPlugin(
       WebKit::WebPluginContainer* container) const OVERRIDE;
 
@@ -64,7 +54,6 @@ class ShellContentRendererClient : public ContentRendererClient {
   scoped_ptr<ShellRenderProcessObserver> shell_observer_;
   scoped_ptr<MockWebClipboardImpl> clipboard_;
   scoped_ptr<TestShellWebMimeRegistryImpl> mime_registry_;
-  scoped_ptr<webkit_glue::MockWebHyphenator> hyphenator_;
 };
 
 }  // namespace content
