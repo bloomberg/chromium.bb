@@ -6,7 +6,6 @@
 
 #include <ctype.h>
 #include <math.h>
-
 #include <algorithm>
 #include <string>
 
@@ -137,6 +136,7 @@ void UrlInfo::RemoveFromQueue() {
                                queue_duration_ - kBoundary);
     return;
   }
+
   // Make a custom linear histogram for the region from 0 to boundary.
   static const size_t kBucketCount = 52;
   static base::HistogramBase* histogram(NULL);
@@ -161,6 +161,7 @@ void UrlInfo::SetFoundState() {
     UMA_HISTOGRAM_CUSTOM_TIMES("DNS.PrefetchResolution", resolve_duration_,
         max_duration, TimeDelta::FromMinutes(15), 100);
   }
+
   sequence_number_ = sequence_counter++;
   DLogResultsStats("DNS PrefetchFound");
 }

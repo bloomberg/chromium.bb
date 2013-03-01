@@ -83,7 +83,6 @@ void ChromeNetLog::SetObserverLogLevel(
     net::NetLog::ThreadSafeObserver* observer,
     LogLevel log_level) {
   base::AutoLock lock(lock_);
-
   DCHECK(observers_.HasObserver(observer));
   OnSetObserverLogLevel(observer, log_level);
   UpdateLogLevel();
@@ -101,7 +100,6 @@ void ChromeNetLog::RemoveThreadSafeObserver(
 
 void ChromeNetLog::UpdateLogLevel() {
   lock_.AssertAcquired();
-
   // Look through all the observers and find the finest granularity
   // log level (higher values of the enum imply *lower* log levels).
   LogLevel new_effective_log_level = base_log_level_;
