@@ -45,7 +45,8 @@ bool StatisticsRecorder::IsActive() {
 }
 
 // static
-Histogram* StatisticsRecorder::RegisterOrDeleteDuplicate(Histogram* histogram) {
+HistogramBase* StatisticsRecorder::RegisterOrDeleteDuplicate(
+    HistogramBase* histogram) {
   // As per crbug.com/79322 the histograms are intentionally leaked, so we need
   // to annotate them. Because ANNOTATE_LEAKING_OBJECT_PTR may be used only once
   // for an object, the duplicates should not be annotated.
@@ -56,8 +57,8 @@ Histogram* StatisticsRecorder::RegisterOrDeleteDuplicate(Histogram* histogram) {
     return histogram;
   }
 
-  Histogram* histogram_to_delete = NULL;
-  Histogram* histogram_to_return = NULL;
+  HistogramBase* histogram_to_delete = NULL;
+  HistogramBase* histogram_to_return = NULL;
   {
     base::AutoLock auto_lock(*lock_);
     if (histograms_ == NULL) {
@@ -254,7 +255,7 @@ void StatisticsRecorder::GetBucketRanges(
 }
 
 // static
-Histogram* StatisticsRecorder::FindHistogram(const std::string& name) {
+HistogramBase* StatisticsRecorder::FindHistogram(const std::string& name) {
   if (lock_ == NULL)
     return NULL;
   base::AutoLock auto_lock(*lock_);

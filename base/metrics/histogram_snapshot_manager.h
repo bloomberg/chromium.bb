@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_base.h"
 
 namespace base {
 
@@ -31,11 +31,11 @@ class BASE_EXPORT HistogramSnapshotManager {
   // Snapshot all histograms, and ask |histogram_flattener_| to record the
   // delta. The arguments allow selecting only a subset of histograms for
   // recording, or to set a flag in each recorded histogram.
-  void PrepareDeltas(Histogram::Flags flags_to_set, bool record_only_uma);
+  void PrepareDeltas(HistogramBase::Flags flags_to_set, bool record_only_uma);
 
  private:
   // Snapshot this histogram, and record the delta.
-  void PrepareDelta(const Histogram& histogram);
+  void PrepareDelta(const HistogramBase& histogram);
 
   // Try to detect and fix count inconsistency of logged samples.
   void InspectLoggedSamplesInconsistency(

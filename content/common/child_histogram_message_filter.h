@@ -38,9 +38,9 @@ class ChildHistogramMessageFilter : public base::HistogramFlattener,
   virtual void RecordDelta(const base::HistogramBase& histogram,
                            const base::HistogramSamples& snapshot) OVERRIDE;
   virtual void InconsistencyDetected(
-      base::Histogram::Inconsistencies problem) OVERRIDE;
+      base::HistogramBase::Inconsistency problem) OVERRIDE;
   virtual void UniqueInconsistencyDetected(
-      base::Histogram::Inconsistencies problem) OVERRIDE;
+      base::HistogramBase::Inconsistency problem) OVERRIDE;
   virtual void InconsistencyDetectedInLoggedCount(int amount) OVERRIDE;
 
  private:

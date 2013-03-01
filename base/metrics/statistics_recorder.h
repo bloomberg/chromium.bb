@@ -23,12 +23,12 @@
 namespace base {
 
 class BucketRanges;
-class Histogram;
+class HistogramBase;
 class Lock;
 
 class BASE_EXPORT StatisticsRecorder {
  public:
-  typedef std::vector<Histogram*> Histograms;
+  typedef std::vector<HistogramBase*> Histograms;
 
   // Initializes the StatisticsRecorder system.
   static void Initialize();
@@ -40,7 +40,7 @@ class BASE_EXPORT StatisticsRecorder {
   // identically named histogram is already registered, then the argument
   // |histogram| will deleted.  The returned value is always the registered
   // histogram (either the argument, or the pre-existing registered histogram).
-  static Histogram* RegisterOrDeleteDuplicate(Histogram* histogram);
+  static HistogramBase* RegisterOrDeleteDuplicate(HistogramBase* histogram);
 
   // Register, or add a new BucketRanges. If an identically BucketRanges is
   // already registered, then the argument |ranges| will deleted. The returned
@@ -68,7 +68,7 @@ class BASE_EXPORT StatisticsRecorder {
 
   // Find a histogram by name. It matches the exact name. This method is thread
   // safe.  It returns NULL if a matching histogram is not found.
-  static Histogram* FindHistogram(const std::string& name);
+  static HistogramBase* FindHistogram(const std::string& name);
 
   static bool dump_on_exit() { return dump_on_exit_; }
 
@@ -82,7 +82,7 @@ class BASE_EXPORT StatisticsRecorder {
 
  private:
   // We keep all registered histograms in a map, from name to histogram.
-  typedef std::map<std::string, Histogram*> HistogramMap;
+  typedef std::map<std::string, HistogramBase*> HistogramMap;
 
   // We keep all |bucket_ranges_| in a map, from checksum to a list of
   // |bucket_ranges_|.  Checksum is calculated from the |ranges_| in

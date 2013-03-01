@@ -45,7 +45,7 @@ StatsHistogram* StatsHistogram::FactoryGet(const std::string& name,
   Sample minimum = 1;
   Sample maximum = disk_cache::Stats::kDataSizesLength - 1;
   size_t bucket_count = disk_cache::Stats::kDataSizesLength;
-  Histogram* histogram = StatisticsRecorder::FindHistogram(name);
+  HistogramBase* histogram = StatisticsRecorder::FindHistogram(name);
   if (!histogram) {
     DCHECK(stats);
 
@@ -83,9 +83,9 @@ scoped_ptr<HistogramSamples> StatsHistogram::SnapshotSamples() const {
   return samples.PassAs<HistogramSamples>();
 }
 
-Histogram::Inconsistencies StatsHistogram::FindCorruption(
-    const HistogramSamples& samples) const {
-  return NO_INCONSISTENCIES;  // This class won't monitor inconsistencies.
+int StatsHistogram::FindCorruption(const HistogramSamples& samples) const {
+  // This class won't monitor inconsistencies.
+  return HistogramBase::NO_INCONSISTENCIES;
 }
 
 }  // namespace disk_cache

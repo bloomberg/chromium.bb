@@ -19,9 +19,16 @@ typedef HistogramBase::Sample Sample;
 
 // static
 HistogramBase* SparseHistogram::FactoryGet(const string& name, int32 flags) {
-  // TODO(kaiwang): Register and get SparseHistogram with StatisticsRecorder.
-  HistogramBase* histogram = new SparseHistogram(name);
-  histogram->SetFlags(flags);
+  HistogramBase* histogram = StatisticsRecorder::FindHistogram(name);
+
+  if (!histogram) {
+    // To avoid racy destruction at shutdown, the following will be leaked.
+    HistogramBase* tentative_histogram = new SparseHistogram(name);
+    tentative_histogram->SetFlags(flags);
+    histogram =
+        StatisticsRecorder::RegisterOrDeleteDuplicate(tentative_histogram);
+  }
+  DCHECK_EQ(SPARSE_HISTOGRAM, histogram->GetHistogramType());
   return histogram;
 }
 

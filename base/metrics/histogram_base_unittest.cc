@@ -167,6 +167,25 @@ TEST_F(HistogramBaseTest, DeserializeCustomHistogram) {
   EXPECT_EQ(0, deserialized->flags());
 }
 
-// TODO(kaiwang): Add SparseHistogram test.
+TEST_F(HistogramBaseTest, DeserializeSparseHistogram) {
+  HistogramBase* histogram = SparseHistogram::FactoryGet(
+      "TestHistogram", HistogramBase::kIPCSerializationSourceFlag);
+
+  Pickle pickle;
+  ASSERT_TRUE(histogram->SerializeInfo(&pickle));
+
+  PickleIterator iter(pickle);
+  HistogramBase* deserialized = DeserializeHistogramInfo(&iter);
+  EXPECT_EQ(histogram, deserialized);
+
+  ResetStatisticsRecorder();
+
+  PickleIterator iter2(pickle);
+  deserialized = DeserializeHistogramInfo(&iter2);
+  EXPECT_TRUE(deserialized);
+  EXPECT_NE(histogram, deserialized);
+  EXPECT_EQ("TestHistogram", deserialized->histogram_name());
+  EXPECT_EQ(0, deserialized->flags());
+}
 
 }  // namespace base

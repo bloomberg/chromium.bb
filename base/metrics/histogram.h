@@ -369,16 +369,6 @@ class BASE_EXPORT Histogram : public HistogramBase {
 
   typedef std::vector<Count> Counts;
 
-  enum Inconsistencies {
-    NO_INCONSISTENCIES = 0x0,
-    RANGE_CHECKSUM_ERROR = 0x1,
-    BUCKET_ORDER_ERROR = 0x2,
-    COUNT_HIGH_ERROR = 0x4,
-    COUNT_LOW_ERROR = 0x8,
-
-    NEVER_EXCEEDED_VALUE = 0x10
-  };
-
   //----------------------------------------------------------------------------
   // For a valid histogram, input should follow these restrictions:
   // minimum > 0 (if a minimum below 1 is specified, it will implicitly be
@@ -423,7 +413,7 @@ class BASE_EXPORT Histogram : public HistogramBase {
   // produce a false-alarm if a race occurred in the reading of the data during
   // a SnapShot process, but should otherwise be false at all times (unless we
   // have memory over-writes, or DRAM failures).
-  virtual Inconsistencies FindCorruption(const HistogramSamples& samples) const;
+  virtual int FindCorruption(const HistogramSamples& samples) const OVERRIDE;
 
   //----------------------------------------------------------------------------
   // Accessors for factory constuction, serialization and testing.

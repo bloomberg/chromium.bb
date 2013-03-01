@@ -182,7 +182,7 @@ TEST_F(SignalSenderVerificationTest, TestSignalAccepted) {
 TEST_F(SignalSenderVerificationTest, TestSignalRejected) {
   // To make sure the histogram instance is created.
   UMA_HISTOGRAM_COUNTS("DBus.RejectedSignalCount", 0);
-  base::Histogram* reject_signal_histogram =
+  base::HistogramBase* reject_signal_histogram =
         base::StatisticsRecorder::FindHistogram("DBus.RejectedSignalCount");
   scoped_ptr<base::HistogramSamples> samples1(
       reject_signal_histogram->SnapshotSamples());

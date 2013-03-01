@@ -315,21 +315,21 @@ TEST_F(HistogramTest, CorruptSampleCounts) {
   histogram->Add(40);
 
   scoped_ptr<SampleVector> snapshot = histogram->SnapshotSampleVector();
-  EXPECT_EQ(Histogram::NO_INCONSISTENCIES,
+  EXPECT_EQ(HistogramBase::NO_INCONSISTENCIES,
             histogram->FindCorruption(*snapshot));
   EXPECT_EQ(2, snapshot->redundant_count());
   EXPECT_EQ(2, snapshot->TotalCount());
 
   snapshot->counts_[3] += 100;  // Sample count won't match redundant count.
-  EXPECT_EQ(Histogram::COUNT_LOW_ERROR,
+  EXPECT_EQ(HistogramBase::COUNT_LOW_ERROR,
             histogram->FindCorruption(*snapshot));
   snapshot->counts_[2] -= 200;
-  EXPECT_EQ(Histogram::COUNT_HIGH_ERROR,
+  EXPECT_EQ(HistogramBase::COUNT_HIGH_ERROR,
             histogram->FindCorruption(*snapshot));
 
   // But we can't spot a corruption if it is compensated for.
   snapshot->counts_[1] += 100;
-  EXPECT_EQ(Histogram::NO_INCONSISTENCIES,
+  EXPECT_EQ(HistogramBase::NO_INCONSISTENCIES,
             histogram->FindCorruption(*snapshot));
 }
 
@@ -338,7 +338,7 @@ TEST_F(HistogramTest, CorruptBucketBounds) {
       Histogram::FactoryGet("Histogram", 1, 64, 8, HistogramBase::kNoFlags));
 
   scoped_ptr<SampleVector> snapshot = histogram->SnapshotSampleVector();
-  EXPECT_EQ(Histogram::NO_INCONSISTENCIES,
+  EXPECT_EQ(HistogramBase::NO_INCONSISTENCIES,
             histogram->FindCorruption(*snapshot));
 
   BucketRanges* bucket_ranges =
@@ -346,8 +346,9 @@ TEST_F(HistogramTest, CorruptBucketBounds) {
   HistogramBase::Sample tmp = bucket_ranges->range(1);
   bucket_ranges->set_range(1, bucket_ranges->range(2));
   bucket_ranges->set_range(2, tmp);
-  EXPECT_EQ(Histogram::BUCKET_ORDER_ERROR | Histogram::RANGE_CHECKSUM_ERROR,
-            histogram->FindCorruption(*snapshot));
+  EXPECT_EQ(
+      HistogramBase::BUCKET_ORDER_ERROR | HistogramBase::RANGE_CHECKSUM_ERROR,
+      histogram->FindCorruption(*snapshot));
 
   bucket_ranges->set_range(2, bucket_ranges->range(1));
   bucket_ranges->set_range(1, tmp);
@@ -355,11 +356,11 @@ TEST_F(HistogramTest, CorruptBucketBounds) {
 
   // Show that two simple changes don't offset each other
   bucket_ranges->set_range(3, bucket_ranges->range(3) + 1);
-  EXPECT_EQ(Histogram::RANGE_CHECKSUM_ERROR,
+  EXPECT_EQ(HistogramBase::RANGE_CHECKSUM_ERROR,
             histogram->FindCorruption(*snapshot));
 
   bucket_ranges->set_range(4, bucket_ranges->range(4) - 1);
-  EXPECT_EQ(Histogram::RANGE_CHECKSUM_ERROR,
+  EXPECT_EQ(HistogramBase::RANGE_CHECKSUM_ERROR,
             histogram->FindCorruption(*snapshot));
 
   // Repair histogram so that destructor won't DCHECK().

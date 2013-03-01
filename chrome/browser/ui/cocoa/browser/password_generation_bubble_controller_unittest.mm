@@ -14,7 +14,7 @@
 #include "content/public/common/password_form.h"
 #include "testing/gtest_mac.h"
 
-using base::Histogram;
+using base::HistogramBase;
 using base::HistogramSamples;
 using base::StatisticsRecorder;
 
@@ -34,7 +34,8 @@ class PasswordGenerationBubbleControllerTest : public CocoaProfileTest {
 
     generator_.reset(new autofill::PasswordGenerator(20));
 
-    Histogram* histogram = StatisticsRecorder::FindHistogram(kHistogramName);
+    HistogramBase* histogram =
+        StatisticsRecorder::FindHistogram(kHistogramName);
     if (histogram)
       original_ = histogram->SnapshotSamples();
 
@@ -65,7 +66,7 @@ class PasswordGenerationBubbleControllerTest : public CocoaProfileTest {
   }
 
   HistogramSamples* GetHistogramSamples() {
-    Histogram* histogram =
+    HistogramBase* histogram =
         StatisticsRecorder::FindHistogram(kHistogramName);
     if (histogram) {
       current_ = histogram->SnapshotSamples();

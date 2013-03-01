@@ -113,7 +113,7 @@ void OnInitialPageLoadComplete() {
 
   // Set UMA flag for histograms outside chrome/ that can't use the
   // ScopedSlowStartupUMA class.
-  base::Histogram* histogram =
+  base::HistogramBase* histogram =
       base::StatisticsRecorder::FindHistogram("Startup.SlowStartupNSSInit");
   if (histogram)
     histogram->SetFlags(base::HistogramBase::kUmaTargetedHistogramFlag);

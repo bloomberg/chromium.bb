@@ -87,15 +87,15 @@ void ChildHistogramMessageFilter::RecordDelta(
 }
 
 void ChildHistogramMessageFilter::InconsistencyDetected(
-    base::Histogram::Inconsistencies problem) {
+    base::HistogramBase::Inconsistency problem) {
   UMA_HISTOGRAM_ENUMERATION("Histogram.InconsistenciesChildProcess",
-                            problem, base::Histogram::NEVER_EXCEEDED_VALUE);
+                            problem, base::HistogramBase::NEVER_EXCEEDED_VALUE);
 }
 
 void ChildHistogramMessageFilter::UniqueInconsistencyDetected(
-    base::Histogram::Inconsistencies problem) {
+    base::HistogramBase::Inconsistency problem) {
   UMA_HISTOGRAM_ENUMERATION("Histogram.InconsistenciesChildProcessUnique",
-                            problem, base::Histogram::NEVER_EXCEEDED_VALUE);
+                            problem, base::HistogramBase::NEVER_EXCEEDED_VALUE);
 }
 
 void ChildHistogramMessageFilter::InconsistencyDetectedInLoggedCount(

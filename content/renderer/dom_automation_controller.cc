@@ -183,7 +183,7 @@ void DomAutomationController::GetHistogram(const CppArgumentList& args,
     result->SetNull();
     return;
   }
-  base::Histogram* histogram =
+  base::HistogramBase* histogram =
       base::StatisticsRecorder::FindHistogram(args[0].ToString());
   std::string output;
   if (!histogram) {

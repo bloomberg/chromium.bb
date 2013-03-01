@@ -43,15 +43,15 @@ void MetricsServiceBase::RecordDelta(
 }
 
 void MetricsServiceBase::InconsistencyDetected(
-    Histogram::Inconsistencies problem) {
+    base::HistogramBase::Inconsistency problem) {
   UMA_HISTOGRAM_ENUMERATION("Histogram.InconsistenciesBrowser",
-                            problem, Histogram::NEVER_EXCEEDED_VALUE);
+                            problem, base::HistogramBase::NEVER_EXCEEDED_VALUE);
 }
 
 void MetricsServiceBase::UniqueInconsistencyDetected(
-    Histogram::Inconsistencies problem) {
+    base::HistogramBase::Inconsistency problem) {
   UMA_HISTOGRAM_ENUMERATION("Histogram.InconsistenciesBrowserUnique",
-                            problem, Histogram::NEVER_EXCEEDED_VALUE);
+                            problem, base::HistogramBase::NEVER_EXCEEDED_VALUE);
 }
 
 void MetricsServiceBase::InconsistencyDetectedInLoggedCount(int amount) {

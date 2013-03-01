@@ -43,7 +43,7 @@ class StatsHistogram : public base::Histogram {
                                     const Stats* stats);
 
   virtual scoped_ptr<base::HistogramSamples> SnapshotSamples() const OVERRIDE;
-  virtual Inconsistencies FindCorruption(
+  virtual int FindCorruption(
       const base::HistogramSamples& samples) const OVERRIDE;
 
  private:

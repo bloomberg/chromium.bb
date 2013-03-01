@@ -63,7 +63,8 @@ void HistogramMessageFilter::OnGetBrowserHistogram(
                << " switches.";
     return;
   }
-  base::Histogram* histogram = base::StatisticsRecorder::FindHistogram(name);
+  base::HistogramBase* histogram =
+      base::StatisticsRecorder::FindHistogram(name);
   if (!histogram) {
     *histogram_json = "{}";
   } else {

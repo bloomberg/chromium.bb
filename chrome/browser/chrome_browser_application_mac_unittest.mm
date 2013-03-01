@@ -12,7 +12,7 @@
 #import "chrome/browser/chrome_browser_application_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::Histogram;
+using base::HistogramBase;
 using base::HistogramSamples;
 using base::StatisticsRecorder;
 
@@ -76,7 +76,7 @@ TEST(ChromeApplicationMacTest, RecordException) {
   // We should have exactly the right number of exceptions.
   StatisticsRecorder::GetSnapshot("OSX.NSException", &histograms);
   EXPECT_EQ(1U, histograms.size());
-  EXPECT_EQ(Histogram::kUmaTargetedHistogramFlag, histograms[0]->flags());
+  EXPECT_EQ(HistogramBase::kUmaTargetedHistogramFlag, histograms[0]->flags());
 
   scoped_ptr<HistogramSamples> samples(histograms[0]->SnapshotSamples());
   EXPECT_EQ(4, samples->GetCount(0));
@@ -85,7 +85,9 @@ TEST(ChromeApplicationMacTest, RecordException) {
   EXPECT_EQ(2, samples->GetCount(3));
 
   // The unknown exceptions should end up in the overflow bucket.
-  EXPECT_EQ(kUnknownNSException + 1, histograms[0]->bucket_count());
+  EXPECT_TRUE(histograms[0]->HasConstructionArguments(1,
+                                                      kUnknownNSException,
+                                                      kUnknownNSException + 1));
   EXPECT_EQ(4, samples->GetCount(kUnknownNSException));
 }
 

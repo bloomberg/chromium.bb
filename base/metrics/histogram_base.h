@@ -70,6 +70,17 @@ class BASE_EXPORT HistogramBase {
     kHexRangePrintingFlag = 0x8000,
   };
 
+  // Histogram data inconsistency types.
+  enum Inconsistency {
+    NO_INCONSISTENCIES = 0x0,
+    RANGE_CHECKSUM_ERROR = 0x1,
+    BUCKET_ORDER_ERROR = 0x2,
+    COUNT_HIGH_ERROR = 0x4,
+    COUNT_LOW_ERROR = 0x8,
+
+    NEVER_EXCEEDED_VALUE = 0x10
+  };
+
   explicit HistogramBase(const std::string& name);
   virtual ~HistogramBase();
 
@@ -102,6 +113,10 @@ class BASE_EXPORT HistogramBase {
   // Note: This only serializes the construction arguments of the histogram, but
   // does not serialize the samples.
   bool SerializeInfo(Pickle* pickle) const;
+
+  // Try to find out data corruption from histogram and the samples.
+  // The returned value is a combination of Inconsistency enum.
+  virtual int FindCorruption(const HistogramSamples& samples) const;
 
   // Snapshot the current complete set of sample data.
   // Override with atomic/locked snapshot if needed.
