@@ -86,6 +86,9 @@ class DefaultTransportFactory
     return 0;
   }
 
+  void WaitSyncPoint(uint32 sync_point) OVERRIDE {
+  }
+
   // We don't generate lost context events, so we don't need to keep track of
   // observers
   virtual void AddObserver(ImageTransportFactoryObserver* observer) OVERRIDE {
@@ -463,6 +466,12 @@ class GpuProcessTransportFactory
     if (!shared_contexts_main_thread_)
       return 0;
     return shared_contexts_main_thread_->Context3d()->insertSyncPoint();
+  }
+
+  virtual void WaitSyncPoint(uint32 sync_point) OVERRIDE {
+    if (!shared_contexts_main_thread_)
+      return;
+    shared_contexts_main_thread_->Context3d()->waitSyncPoint(sync_point);
   }
 
   virtual void AddObserver(ImageTransportFactoryObserver* observer) OVERRIDE {

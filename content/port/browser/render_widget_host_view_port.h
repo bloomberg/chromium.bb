@@ -27,6 +27,10 @@ struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
 struct ViewHostMsg_TextInputState_Params;
 struct ViewHostMsg_SelectionBounds_Params;
 
+namespace cc {
+class CompositorFrame;
+}
+
 namespace media {
 class VideoFrame;
 }
@@ -220,6 +224,8 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
   // presented frame for the view. If |desired_size| is non-empty, true is
   // returned only if the accelerated surface size matches.
   virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) = 0;
+
+  virtual void OnSwapCompositorFrame(const cc::CompositorFrame& frame) = 0;
 
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) = 0;
 

@@ -11,6 +11,8 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
+#include "cc/compositor_frame.h"
+#include "cc/compositor_frame_ack.h"
 #include "content/browser/renderer_host/backing_store_aura.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
@@ -274,6 +276,59 @@ bool PointerEventActivates(const ui::Event& event) {
   return false;
 }
 
+// Swap ack for the renderer when kCompositeToMailbox is enabled.
+void SendCompositorFrameAck(
+    int32 route_id,
+    int renderer_host_id,
+    const cc::Mailbox& received_mailbox,
+    const gfx::Size& received_size,
+    bool skip_frame,
+    const scoped_refptr<ui::Texture>& texture_to_produce) {
+  cc::CompositorFrameAck ack;
+  ack.gl_frame_data.reset(new cc::GLFrameData());
+  DCHECK(!texture_to_produce || !skip_frame);
+  if (texture_to_produce) {
+    std::string mailbox_name = texture_to_produce->Produce();
+    std::copy(mailbox_name.data(),
+              mailbox_name.data() + mailbox_name.length(),
+              reinterpret_cast<char*>(ack.gl_frame_data->mailbox.name));
+    ack.gl_frame_data->size = texture_to_produce->size();
+    ack.gl_frame_data->sync_point =
+        content::ImageTransportFactory::GetInstance()->InsertSyncPoint();
+  } else if (skip_frame) {
+    // Skip the frame, i.e. tell the producer to reuse the same buffer that
+    // we just received.
+    ack.gl_frame_data->size = received_size;
+    ack.gl_frame_data->mailbox = received_mailbox;
+  }
+
+  RenderWidgetHostImpl::SendSwapCompositorFrameAck(
+      route_id, renderer_host_id, ack);
+}
+
+void AcknowledgeBufferForGpu(
+    int32 route_id,
+    int gpu_host_id,
+    const std::string& received_mailbox,
+    bool skip_frame,
+    const scoped_refptr<ui::Texture>& texture_to_produce) {
+  AcceleratedSurfaceMsg_BufferPresented_Params ack;
+  uint32 sync_point = 0;
+  DCHECK(!texture_to_produce || !skip_frame);
+  if (texture_to_produce) {
+    ack.mailbox_name = texture_to_produce->Produce();
+    sync_point =
+        content::ImageTransportFactory::GetInstance()->InsertSyncPoint();
+  } else if (skip_frame) {
+    ack.mailbox_name = received_mailbox;
+    ack.sync_point = 0;
+  }
+
+  ack.sync_point = sync_point;
+  RenderWidgetHostImpl::AcknowledgeBufferPresent(
+      route_id, gpu_host_id, ack);
+}
+
 }  // namespace
 
 // We need to watch for mouse events outside a Web Popup or its parent
@@ -521,16 +576,6 @@ class RenderWidgetHostViewAura::ResizeLock {
 
   DISALLOW_COPY_AND_ASSIGN(ResizeLock);
 };
-
-RenderWidgetHostViewAura::BufferPresentedParams::BufferPresentedParams(
-    int route_id,
-    int gpu_host_id)
-    : route_id(route_id),
-      gpu_host_id(gpu_host_id) {
-}
-
-RenderWidgetHostViewAura::BufferPresentedParams::~BufferPresentedParams() {
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, public:
@@ -1118,10 +1163,7 @@ bool RenderWidgetHostViewAura::SwapBuffersPrepare(
     const gfx::Rect& surface_rect,
     const gfx::Rect& damage_rect,
     const std::string& mailbox_name,
-    BufferPresentedParams* params) {
-  DCHECK(!mailbox_name.empty());
-  DCHECK(!params->texture_to_produce);
-
+    const BufferPresentedCallback& ack_callback) {
   if (last_swapped_surface_size_ != surface_rect.size()) {
     // The surface could have shrunk since we skipped an update, in which
     // case we can expect a full update.
@@ -1130,22 +1172,17 @@ bool RenderWidgetHostViewAura::SwapBuffersPrepare(
     last_swapped_surface_size_ = surface_rect.size();
   }
 
-  if (ShouldSkipFrame(surface_rect.size())) {
+  if (ShouldSkipFrame(surface_rect.size()) || mailbox_name.empty()) {
     skipped_damage_.op(RectToSkIRect(damage_rect), SkRegion::kUnion_Op);
-    AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
-    ack_params.mailbox_name = mailbox_name;
-    ack_params.sync_point = 0;
-    RenderWidgetHostImpl::AcknowledgeBufferPresent(
-        params->route_id, params->gpu_host_id, ack_params);
+    ack_callback.Run(true, scoped_refptr<ui::Texture>());
     return false;
   }
-
-  params->texture_to_produce = current_surface_;
 
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   current_surface_ = factory->CreateTransportClient(device_scale_factor_);
   if (!current_surface_) {
     LOG(ERROR) << "Failed to create ImageTransport texture";
+    ack_callback.Run(true, scoped_refptr<ui::Texture>());
     return false;
   }
 
@@ -1157,15 +1194,16 @@ bool RenderWidgetHostViewAura::SwapBuffersPrepare(
 }
 
 void RenderWidgetHostViewAura::SwapBuffersCompleted(
-    const BufferPresentedParams& params) {
+    const BufferPresentedCallback& ack_callback,
+    const scoped_refptr<ui::Texture>& texture_to_return) {
   ui::Compositor* compositor = GetCompositor();
   if (!compositor) {
-    InsertSyncPointAndACK(params);
+    ack_callback.Run(false, texture_to_return);
   } else {
     // Add sending an ACK to the list of things to do OnCompositingDidCommit
     can_lock_compositor_ = NO_PENDING_COMMIT;
     on_compositing_did_commit_callbacks_.push_back(
-        base::Bind(&RenderWidgetHostViewAura::InsertSyncPointAndACK, params));
+        base::Bind(ack_callback, false, texture_to_return));
     if (!compositor->HasObserver(this))
       compositor->AddObserver(this);
   }
@@ -1203,39 +1241,85 @@ void RenderWidgetHostViewAura::UpdateCutoutRects() {
 void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params_in_pixel,
     int gpu_host_id) {
-  const gfx::Rect surface_rect = gfx::Rect(gfx::Point(), params_in_pixel.size);
-  BufferPresentedParams ack_params(params_in_pixel.route_id, gpu_host_id);
-  if (!SwapBuffersPrepare(
-      surface_rect, surface_rect, params_in_pixel.mailbox_name, &ack_params))
+  BufferPresentedCallback ack_callback = base::Bind(
+      &AcknowledgeBufferForGpu,
+      params_in_pixel.route_id,
+      gpu_host_id,
+      params_in_pixel.mailbox_name);
+  BuffersSwapped(
+      params_in_pixel.size, params_in_pixel.mailbox_name, ack_callback);
+}
+
+void RenderWidgetHostViewAura::OnSwapCompositorFrame(
+    const cc::CompositorFrame& frame) {
+  if (!frame.gl_frame_data || frame.gl_frame_data->mailbox.isZero())
     return;
+
+  BufferPresentedCallback ack_callback = base::Bind(
+      &SendCompositorFrameAck,
+      host_->GetRoutingID(), host_->GetProcess()->GetID(),
+      frame.gl_frame_data->mailbox, frame.gl_frame_data->size);
+
+  if (!frame.gl_frame_data->sync_point) {
+    LOG(ERROR) << "CompositorFrame without sync point. Skipping frame...";
+    ack_callback.Run(true, scoped_refptr<ui::Texture>());
+    return;
+  }
+
+  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
+  factory->WaitSyncPoint(frame.gl_frame_data->sync_point);
+
+  std::string mailbox_name(
+      reinterpret_cast<const char*>(frame.gl_frame_data->mailbox.name),
+      sizeof(frame.gl_frame_data->mailbox.name));
+  BuffersSwapped(
+      frame.gl_frame_data->size, mailbox_name, ack_callback);
+}
+
+void RenderWidgetHostViewAura::BuffersSwapped(
+    const gfx::Size& size,
+    const std::string& mailbox_name,
+    const BufferPresentedCallback& ack_callback) {
+  scoped_refptr<ui::Texture> texture_to_return(current_surface_);
+  const gfx::Rect surface_rect = gfx::Rect(gfx::Point(), size);
+  if (!SwapBuffersPrepare(
+      surface_rect, surface_rect, mailbox_name, ack_callback)) {
+    return;
+  }
 
   previous_damage_.setRect(RectToSkIRect(surface_rect));
   skipped_damage_.setEmpty();
 
   ui::Compositor* compositor = GetCompositor();
   if (compositor) {
-    gfx::Size surface_size = ConvertSizeToDIP(this, params_in_pixel.size);
+    gfx::Size surface_size = ConvertSizeToDIP(this, size);
     window_->SchedulePaintInRect(gfx::Rect(surface_size));
   }
 
   if (paint_observer_)
     paint_observer_->OnUpdateCompositorContent();
-  SwapBuffersCompleted(ack_params);
+
+  SwapBuffersCompleted(ack_callback, texture_to_return);
 }
 
 void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
     const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params_in_pixel,
     int gpu_host_id) {
+  scoped_refptr<ui::Texture> previous_texture(current_surface_);
   const gfx::Rect surface_rect =
       gfx::Rect(gfx::Point(), params_in_pixel.surface_size);
   gfx::Rect damage_rect(params_in_pixel.x,
                         params_in_pixel.y,
                         params_in_pixel.width,
                         params_in_pixel.height);
-  BufferPresentedParams ack_params(params_in_pixel.route_id, gpu_host_id);
+  BufferPresentedCallback ack_callback = base::Bind(
+      &AcknowledgeBufferForGpu, params_in_pixel.route_id, gpu_host_id,
+      params_in_pixel.mailbox_name);
+
   if (!SwapBuffersPrepare(
-      surface_rect, damage_rect, params_in_pixel.mailbox_name, &ack_params))
+      surface_rect, damage_rect, params_in_pixel.mailbox_name, ack_callback)) {
     return;
+  }
 
   SkRegion damage(RectToSkIRect(damage_rect));
   if (!skipped_damage_.isEmpty()) {
@@ -1247,17 +1331,17 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
   ui::Texture* current_texture = current_surface_.get();
 
   const gfx::Size surface_size_in_pixel = params_in_pixel.surface_size;
-  DLOG_IF(ERROR, ack_params.texture_to_produce &&
-      ack_params.texture_to_produce->size() != current_texture->size() &&
+  DLOG_IF(ERROR, previous_texture &&
+      previous_texture->size() != current_texture->size() &&
       SkIRectToRect(damage.getBounds()) != surface_rect) <<
       "Expected full damage rect after size change";
-  if (ack_params.texture_to_produce && !previous_damage_.isEmpty() &&
-      ack_params.texture_to_produce->size() == current_texture->size()) {
+  if (previous_texture && !previous_damage_.isEmpty() &&
+      previous_texture->size() == current_texture->size()) {
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
     GLHelper* gl_helper = factory->GetGLHelper();
     gl_helper->CopySubBufferDamage(
         current_texture->PrepareTexture(),
-        ack_params.texture_to_produce->PrepareTexture(),
+        previous_texture->PrepareTexture(),
         damage,
         previous_damage_);
   }
@@ -1284,7 +1368,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
     window_->SchedulePaintInRect(rect_to_paint);
   }
 
-  SwapBuffersCompleted(ack_params);
+  SwapBuffersCompleted(ack_callback, previous_texture);
 }
 
 void RenderWidgetHostViewAura::AcceleratedSurfaceSuspend() {
@@ -2306,24 +2390,6 @@ void RenderWidgetHostViewAura::RunCompositingDidCommitCallbacks() {
     it->Run();
   }
   on_compositing_did_commit_callbacks_.clear();
-}
-
-// static
-void RenderWidgetHostViewAura::InsertSyncPointAndACK(
-    const BufferPresentedParams& params) {
-  uint32 sync_point = 0;
-  AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
-
-  // If we produced a texture, we have to synchronize with the consumer of
-  // that texture.
-  if (params.texture_to_produce) {
-    ack_params.mailbox_name = params.texture_to_produce->Produce();
-    sync_point = ImageTransportFactory::GetInstance()->InsertSyncPoint();
-  }
-
-  ack_params.sync_point = sync_point;
-  RenderWidgetHostImpl::AcknowledgeBufferPresent(
-      params.route_id, params.gpu_host_id, ack_params);
 }
 
 void RenderWidgetHostViewAura::AddedToRootWindow() {

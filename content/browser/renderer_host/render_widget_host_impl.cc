@@ -18,6 +18,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "cc/compositor_frame.h"
+#include "cc/compositor_frame_ack.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
@@ -1538,6 +1539,16 @@ void RenderWidgetHostImpl::OnSwapCompositorFrame(
         frame.metadata.location_bar_content_translation);
   }
 #endif
+  if (view_) {
+    view_->OnSwapCompositorFrame(frame);
+  } else if (frame.gl_frame_data) {
+    cc::CompositorFrameAck ack;
+    ack.gl_frame_data.reset(new cc::GLFrameData());
+    ack.gl_frame_data->mailbox = frame.gl_frame_data->mailbox;
+    ack.gl_frame_data->size = frame.gl_frame_data->size;
+    ack.gl_frame_data->sync_point = 0;
+    SendSwapCompositorFrameAck(routing_id_, process_->GetID(), ack);
+  }
 }
 
 void RenderWidgetHostImpl::OnUpdateRect(
@@ -2335,6 +2346,14 @@ void RenderWidgetHostImpl::AcknowledgeBufferPresent(
     ui_shim->Send(new AcceleratedSurfaceMsg_BufferPresented(route_id,
                                                             params));
   }
+}
+
+// static
+void RenderWidgetHostImpl::SendSwapCompositorFrameAck(
+    int32 route_id, int renderer_host_id, const cc::CompositorFrameAck& ack) {
+  RenderProcessHost* host = RenderProcessHost::FromID(renderer_host_id);
+  if (host)
+    host->Send(new ViewMsg_SwapCompositorFrameAck(route_id, ack));
 }
 
 void RenderWidgetHostImpl::AcknowledgeSwapBuffersToRenderer() {

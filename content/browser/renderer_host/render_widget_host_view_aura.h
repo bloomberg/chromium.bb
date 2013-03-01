@@ -176,6 +176,8 @@ class RenderWidgetHostViewAura
           params) OVERRIDE;
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
+  virtual void OnSwapCompositorFrame(
+      const cc::CompositorFrame& frame) OVERRIDE;
 
   // Overridden from ui::TextInputClient:
   virtual void SetCompositionText(
@@ -318,20 +320,6 @@ class RenderWidgetHostViewAura
   // Run the compositing callbacks.
   void RunCompositingDidCommitCallbacks();
 
-  struct BufferPresentedParams {
-    BufferPresentedParams(int route_id,
-                          int gpu_host_id);
-    ~BufferPresentedParams();
-
-    int32 route_id;
-    int gpu_host_id;
-    scoped_refptr<ui::Texture> texture_to_produce;
-  };
-
-  // Insert a sync point into the compositor's command stream and acknowledge
-  // that we have presented the accelerated surface buffer.
-  static void InsertSyncPointAndACK(const BufferPresentedParams& params);
-
   // Called after |window_| is parented to a RootWindow.
   void AddedToRootWindow();
 
@@ -361,12 +349,23 @@ class RenderWidgetHostViewAura
   // Converts |rect| from window coordinate to screen coordinate.
   gfx::Rect ConvertRectToScreen(const gfx::Rect& rect);
 
+  typedef base::Callback<void(bool, const scoped_refptr<ui::Texture>&)>
+      BufferPresentedCallback;
+
+  // The common entry point for full buffer updates from renderer
+  // and GPU process.
+  void BuffersSwapped(const gfx::Size& size,
+                      const std::string& mailbox_name,
+                      const BufferPresentedCallback& ack_callback);
+
   bool SwapBuffersPrepare(const gfx::Rect& surface_rect,
                           const gfx::Rect& damage_rect,
                           const std::string& mailbox_name,
-                          BufferPresentedParams* params);
+                          const BufferPresentedCallback& ack_callback);
 
-  void SwapBuffersCompleted(const BufferPresentedParams& params);
+  void SwapBuffersCompleted(
+      const BufferPresentedCallback& ack_callback,
+      const scoped_refptr<ui::Texture>& texture_to_return);
 
 #if defined(OS_WIN)
   // Sets the cutout rects from transient windows. These are rectangles that
