@@ -13,6 +13,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/message_center/message_center_util.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -24,11 +25,16 @@ namespace {
 const int kCloseButtonSize = 29;
 const int kCloseIconTopPadding = 5;
 const int kCloseIconRightPadding = 5;
-const int kItemShadowOffset = 1;
-const int kItemShadowBlur = 4;
+const int kShadowOffset = 1;
+const int kShadowBlur = 4;
 
-const SkColor kMessageItemShadowColorBase = SkColorSetARGB(0.3 * 255, 0, 0, 0);
+const SkColor kShadowColor = SkColorSetARGB(0.3 * 255, 0, 0, 0);
 const SkColor kTransparentColor = SkColorSetARGB(0, 0, 0, 0);
+
+// Menu constants
+const int kTogglePermissionCommand = 0;
+const int kToggleExtensionCommand = 1;
+const int kShowSettingsCommand = 2;
 
 // ControlButtons are ImageButtons whose image can be padded within the button.
 // This allows the creation of buttons like the notification close and expand
@@ -139,132 +145,126 @@ gfx::Point ControlButton::ComputePaddedImagePaintPosition(
 
 // A border to provide the shadow for each card.
 // Current shadow should look like css box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3)
-class MessageViewShadowBorder : public views::Border {
+class ShadowBorder : public views::Border {
  public:
-  MessageViewShadowBorder() : views::Border() {}
-  virtual ~MessageViewShadowBorder() {}
+  ShadowBorder() : views::Border() {}
+  virtual ~ShadowBorder() {}
 
  protected:
   // views::Border overrides:
   virtual void Paint(const views::View& view, gfx::Canvas* canvas) OVERRIDE;
   virtual gfx::Insets GetInsets() const OVERRIDE;
 
-  DISALLOW_COPY_AND_ASSIGN(MessageViewShadowBorder);
+  DISALLOW_COPY_AND_ASSIGN(ShadowBorder);
 };
 
-void MessageViewShadowBorder::Paint(
-    const views::View& view, gfx::Canvas* canvas) {
+void ShadowBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
   SkPaint paint;
   std::vector<gfx::ShadowValue> shadows;
-  shadows.push_back(gfx::ShadowValue(
-      gfx::Point(0, 0), kItemShadowBlur, kMessageItemShadowColorBase));
+  shadows.push_back(gfx::ShadowValue(gfx::Point(), kShadowBlur, kShadowColor));
   skia::RefPtr<SkDrawLooper> looper = gfx::CreateShadowDrawLooper(shadows);
   paint.setLooper(looper.get());
   paint.setColor(kTransparentColor);
   paint.setStrokeJoin(SkPaint::kRound_Join);
   gfx::Rect bounds(view.size());
-  bounds.Inset(gfx::Insets(kItemShadowBlur / 2, kItemShadowBlur / 2,
-                           kItemShadowBlur / 2, kItemShadowBlur / 2));
+  bounds.Inset(gfx::Insets(kShadowBlur / 2, kShadowBlur / 2,
+                           kShadowBlur / 2, kShadowBlur / 2));
   canvas->DrawRect(bounds, paint);
 }
 
-gfx::Insets MessageViewShadowBorder::GetInsets() const {
+gfx::Insets ShadowBorder::GetInsets() const {
   return message_center::MessageView::GetShadowInsets();
+}
+
+// A dropdown menu for notifications.
+class MenuModel : public ui::SimpleMenuModel,
+                  public ui::SimpleMenuModel::Delegate {
+ public:
+  MenuModel(message_center::NotificationList::Delegate* list_delegate,
+            const std::string& notification_id,
+            const string16& display_source,
+            const std::string& extension_id);
+  virtual ~MenuModel();
+
+  // Overridden from ui::SimpleMenuModel::Delegate:
+  virtual bool IsItemForCommandIdDynamic(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      ui::Accelerator* accelerator) OVERRIDE;
+  virtual void ExecuteCommand(int command_id) OVERRIDE;
+
+ private:
+  message_center::NotificationList::Delegate* list_delegate_;
+      // Weak, global MessageCenter
+  std::string notification_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(MenuModel);
+};
+
+MenuModel::MenuModel(message_center::NotificationList::Delegate* list_delegate,
+                     const std::string& notification_id,
+                     const string16& display_source,
+                     const std::string& extension_id)
+    : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
+      list_delegate_(list_delegate),
+      notification_id_(notification_id) {
+  // Add 'disable notifications' menu item.
+  if (!extension_id.empty()) {
+    AddItem(kToggleExtensionCommand,
+            l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_EXTENSIONS_DISABLE));
+  } else if (!display_source.empty()) {
+    AddItem(kTogglePermissionCommand,
+            l10n_util::GetStringFUTF16(IDS_MESSAGE_CENTER_SITE_DISABLE,
+                                       display_source));
+  }
+  // Add settings menu item.
+  if (!display_source.empty()) {
+    AddItem(kShowSettingsCommand,
+            l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_SETTINGS));
+  }
+}
+
+MenuModel::~MenuModel() {
+}
+
+bool MenuModel::IsItemForCommandIdDynamic(int command_id) const {
+  return false;
+}
+
+bool MenuModel::IsCommandIdChecked(int command_id) const {
+  return false;
+}
+
+bool MenuModel::IsCommandIdEnabled(int command_id) const {
+  return false;
+}
+
+bool MenuModel::GetAcceleratorForCommandId(int command_id,
+                                           ui::Accelerator* accelerator) {
+  return false;
+}
+
+void MenuModel::ExecuteCommand(int command_id) {
+  switch (command_id) {
+    case kToggleExtensionCommand:
+      list_delegate_->DisableNotificationByExtension(notification_id_);
+      break;
+    case kTogglePermissionCommand:
+      list_delegate_->DisableNotificationByUrl(notification_id_);
+      break;
+    case kShowSettingsCommand:
+      list_delegate_->ShowNotificationSettings(notification_id_);
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 } // namespace
 
 namespace message_center {
-
-// Menu constants
-const int kTogglePermissionCommand = 0;
-const int kToggleExtensionCommand = 1;
-const int kShowSettingsCommand = 2;
-
-// A dropdown menu for notifications.
-class WebNotificationMenuModel : public ui::SimpleMenuModel,
-                                 public ui::SimpleMenuModel::Delegate {
- public:
-  WebNotificationMenuModel(NotificationList::Delegate* list_delegate,
-                           const std::string& notification_id,
-                           const string16& display_source,
-                           const std::string& extension_id)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
-        list_delegate_(list_delegate),
-        notification_id_(notification_id),
-        display_source_(display_source) {
-    // Add 'disable notifications' menu item.
-    if (!extension_id.empty()) {
-      AddItem(kToggleExtensionCommand,
-              GetLabelForCommandId(kToggleExtensionCommand));
-    } else if (!display_source.empty()) {
-      AddItem(kTogglePermissionCommand,
-              GetLabelForCommandId(kTogglePermissionCommand));
-    }
-    // Add settings menu item.
-    if (!display_source.empty()) {
-      AddItem(kShowSettingsCommand,
-              GetLabelForCommandId(kShowSettingsCommand));
-    }
-  }
-
-  virtual ~WebNotificationMenuModel() {
-  }
-
-  // Overridden from ui::SimpleMenuModel:
-  virtual string16 GetLabelForCommandId(int command_id) const OVERRIDE {
-    switch (command_id) {
-      case kToggleExtensionCommand:
-        return l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_EXTENSIONS_DISABLE);
-      case kTogglePermissionCommand:
-        return l10n_util::GetStringFUTF16(IDS_MESSAGE_CENTER_SITE_DISABLE,
-                                          display_source_);
-      case kShowSettingsCommand:
-        return l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_SETTINGS);
-      default:
-        NOTREACHED();
-    }
-    return string16();
-  }
-
-  // Overridden from ui::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE {
-    return false;
-  }
-
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE {
-    return false;
-  }
-
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) OVERRIDE {
-    return false;
-  }
-
-  virtual void ExecuteCommand(int command_id) OVERRIDE {
-    switch (command_id) {
-      case kToggleExtensionCommand:
-        list_delegate_->DisableNotificationByExtension(notification_id_);
-        break;
-      case kTogglePermissionCommand:
-        list_delegate_->DisableNotificationByUrl(notification_id_);
-        break;
-      case kShowSettingsCommand:
-        list_delegate_->ShowNotificationSettings(notification_id_);
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
-
- private:
-  NotificationList::Delegate* list_delegate_; // Weak, global MessageCenter
-  std::string notification_id_;
-  string16 display_source_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebNotificationMenuModel);
-};
 
 MessageView::MessageView(NotificationList::Delegate* list_delegate,
                          const Notification& notification)
@@ -279,6 +279,8 @@ MessageView::MessageView(NotificationList::Delegate* list_delegate,
   close->SetHoveredImage(IDR_NOTIFICATION_CLOSE_HOVER);
   close->SetPressedImage(IDR_NOTIFICATION_CLOSE_PRESSED);
   close_button_.reset(close);
+  if (IsRichNotificationEnabled())
+    set_border(new ShadowBorder());
 }
 
 MessageView::MessageView() {
@@ -287,16 +289,12 @@ MessageView::MessageView() {
 MessageView::~MessageView() {
 }
 
-void MessageView::SetUpShadow() {
-  set_border(new MessageViewShadowBorder());
-}
-
 // static
 gfx::Insets MessageView::GetShadowInsets() {
-  return gfx::Insets(kItemShadowBlur / 2 - kItemShadowOffset,
-                     kItemShadowBlur / 2,
-                     kItemShadowBlur / 2 + kItemShadowOffset,
-                     kItemShadowBlur / 2);
+  return gfx::Insets(kShadowBlur / 2 - kShadowOffset,
+                     kShadowBlur / 2,
+                     kShadowBlur / 2 + kShadowOffset,
+                     kShadowBlur / 2);
 }
 
 bool MessageView::OnMousePressed(const ui::MouseEvent& event) {
@@ -341,10 +339,8 @@ void MessageView::ButtonPressed(views::Button* sender,
 }
 
 void MessageView::ShowMenu(gfx::Point screen_location) {
-  WebNotificationMenuModel menu_model(list_delegate_,
-                                      notification_id_,
-                                      display_source_,
-                                      extension_id_);
+  MenuModel menu_model(list_delegate_, notification_id_,
+                       display_source_, extension_id_);
   if (menu_model.GetItemCount() == 0)
     return;
 

@@ -154,7 +154,6 @@ void MessagePopupCollection::UpdatePopups() {
       old_toast_ids.erase((*iter)->id());
     } else {
       MessageView* view = NotificationView::Create(*(*iter), list_delegate_);
-      view->SetUpShadow();
       ToastContentsView* toast = new ToastContentsView(*iter, view, this);
       widget = toast->CreateWidget(context_);
       widget->AddObserver(this);

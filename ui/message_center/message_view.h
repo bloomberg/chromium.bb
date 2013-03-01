@@ -40,9 +40,6 @@ class MessageView : public views::SlideOutView,
 
   void set_scroller(views::ScrollView* scroller) { scroller_ = scroller; }
 
-  // Sets up the shadow border for rich notification items.
-  void SetUpShadow();
-
   // Overridden from views::View.
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
 

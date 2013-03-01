@@ -368,8 +368,6 @@ class MessageCenterContentsView : public views::View {
              notifications.begin(); iter != notifications.end(); ++iter) {
       MessageView* view = NotificationView::Create(*(*iter), list_delegate_);
       view->set_scroller(scroller_);
-      if (IsRichNotificationEnabled())
-        view->SetUpShadow();
       scroll_content_->AddChildView(view);
       if (++num_children >=
           NotificationList::kMaxVisibleMessageCenterNotifications) {
