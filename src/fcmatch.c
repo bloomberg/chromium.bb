@@ -911,6 +911,13 @@ FcFontSetSort (FcConfig	    *config FC_UNUSED,
 			}
 			patternLangSat[i] = FcTrue;
 			satisfies = FcTrue;
+			/* adjust score to ensure it's not more than 10000.0
+			 * which would means the lang didn't satisfy the requirements
+			 */
+			if (nodeps[f]->score[PRI_LANG_STRONG] > 10000.0)
+			    nodeps[f]->score[PRI_LANG_STRONG] = 10000.0;
+			if (nodeps[f]->score[PRI_LANG_WEAK] > 10000.0)
+			    nodeps[f]->score[PRI_LANG_WEAK] = 10000.0;
 			break;
 		    }
 		}
