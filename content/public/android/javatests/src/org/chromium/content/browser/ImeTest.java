@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
@@ -126,8 +127,12 @@ public class ImeTest extends ContentShellTestBase {
         assertEquals(-1, mConnection.mCompositionEnd);
     }
 
-    @SmallTest
-    @Feature({"TextInput"})
+    /**
+     * @SmallTest
+     * @Feature({"TextInput"})
+     * BUG=179455
+     */
+    @FlakyTest
     public void testImeCopy() throws Exception {
         mImeAdapter.checkCompositionQueueAndCallNative("hello", 1, true);
         assertWaitForSetEditableCallback(2, mConnection);
@@ -169,8 +174,12 @@ public class ImeTest extends ContentShellTestBase {
         assertClipboardContents(getActivity(), "narf");
     }
 
-    @SmallTest
-    @Feature({"TextInput"})
+    /**
+     * @SmallTest
+     * @Feature({"TextInput"})
+     * BUG=179455
+     */
+    @FlakyTest
     public void testImePaste() throws Exception {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -231,8 +240,12 @@ public class ImeTest extends ContentShellTestBase {
         assertWaitForKeyboardStatus(false);
     }
 
-    @SmallTest
-    @Feature({"TextInput", "Main"})
+    /**
+     * @SmallTest
+     * @Feature({"TextInput", "Main"})
+     * BUG=179455
+     */
+    @FlakyTest
     public void testUpdatesGetIgnoredDuringBatchEdits() throws Throwable {
         mConnection.beginBatchEdit();
         assertWaitForSetIgnoreUpdates(true, mConnection);
@@ -269,8 +282,12 @@ public class ImeTest extends ContentShellTestBase {
         assertWaitForSetIgnoreUpdates(false, mConnection);
     }
 
-    @SmallTest
-    @Feature({"TextInput", "Main"})
+    /**
+     * @SmallTest
+     * @Feature({"TextInput", "Main"})
+     * BUG=179455
+     */
+    @FlakyTest
     public void testShowImeIfNeeded() throws Throwable {
         DOMUtils.focusNode(this, mContentView, mCallbackContainer, "input_radio");
         assertWaitForKeyboardStatus(false);
