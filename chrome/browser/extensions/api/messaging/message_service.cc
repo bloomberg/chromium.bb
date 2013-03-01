@@ -213,7 +213,7 @@ void MessageService::OpenChannelToNativeApp(
       NativeMessageProcessHost::Create(
           base::WeakPtr<NativeMessageProcessHost::Client>(
               weak_factory_.GetWeakPtr()),
-          native_app_name, receiver_port_id);
+          source_extension_id, native_app_name, receiver_port_id);
 
   // Abandon the channel
   if (!native_process.get()) {
