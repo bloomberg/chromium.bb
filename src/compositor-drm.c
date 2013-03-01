@@ -672,9 +672,10 @@ drm_output_check_sprite_format(struct drm_sprite *s,
 	if (format == GBM_FORMAT_ARGB8888) {
 		pixman_region32_t r;
 
-		pixman_region32_init(&r);
-		pixman_region32_subtract(&r, &es->transform.boundingbox,
-					 &es->transform.opaque);
+		pixman_region32_init_rect(&r, 0, 0,
+					  es->geometry.width,
+					  es->geometry.height);
+		pixman_region32_subtract(&r, &r, &es->opaque);
 
 		if (!pixman_region32_not_empty(&r))
 			format = GBM_FORMAT_XRGB8888;
