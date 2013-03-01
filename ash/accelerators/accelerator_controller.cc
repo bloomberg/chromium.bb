@@ -144,7 +144,7 @@ bool HandleRotateActiveWindow() {
     // rotation and position. Use replace so we only enqueue one at a time.
     active_window->layer()->GetAnimator()->
         set_preemption_strategy(ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-    active_window->layer()->GetAnimator()->ScheduleAnimation(
+    active_window->layer()->GetAnimator()->StartAnimation(
         new ui::LayerAnimationSequence(
             new ash::ScreenRotation(360, active_window->layer())));
   }
