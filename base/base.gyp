@@ -1119,6 +1119,9 @@
         {
           'target_name': 'base_java',
           'type': 'none',
+          'dependencies': [
+            '../third_party/jsr-305/jsr-305.gyp:jsr_305_javalib',
+          ],
           'variables': {
             'java_in_dir': '../base/android/java',
           },
@@ -1132,6 +1135,18 @@
           ],
           'variables': {
             'java_in_dir': '../base/test/android/javatests',
+          },
+          'includes': [ '../build/java.gypi' ],
+        },
+        {
+          'target_name': 'base_javatests',
+          'type': 'none',
+          'dependencies': [
+            'base_java',
+            'base_java_test_support',
+          ],
+          'variables': {
+            'java_in_dir': '../base/android/javatests',
           },
           'includes': [ '../build/java.gypi' ],
         },

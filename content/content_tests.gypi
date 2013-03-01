@@ -1041,6 +1041,7 @@
             'content_java_test_support',
             'content_shell_apk_java',
             '../base/base.gyp:base_java',
+            '../base/base.gyp:base_javatests',
             '../base/base.gyp:base_java_test_support',
             '../media/media.gyp:media_java',
             '../media/media.gyp:media_test_support',
