@@ -1809,6 +1809,20 @@
    fun:FileSystemURLRequestJobTest
 }
 {
+   bug_179222_a
+   Heapcheck:Leak
+   ...
+   fun:sync_file_system::DriveMetadataDB::Initialize
+   fun:InitializeDBOnFileThread
+}
+{
+   bug_179222_b
+   Heapcheck:Leak
+   ...
+   fun:DriveMetadataStore
+   fun:sync_file_system::DriveFileSyncServiceSyncTest::SetUp
+}
+{
    bug_179231
    Heapcheck:Leak
    ...
