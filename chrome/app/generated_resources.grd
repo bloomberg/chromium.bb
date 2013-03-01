@@ -3115,9 +3115,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           Create Application Shortcuts
         </message>
       </if>
-      <message name="IDS_LAUNCHER_CHROME_BROWSER_NAME" desc="The name of the Chrome browser in the Launcher list.">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> browser
-      </message>
       <message name="IDS_CREATE_SHORTCUTS_LABEL" desc="Contents of the main label in the create application shortcuts dialog explaining the dialog.">
         Create application shortcuts in the following places:
       </message>

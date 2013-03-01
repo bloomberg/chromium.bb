@@ -1455,8 +1455,7 @@ ChromeLauncherControllerPerApp::GetBrowserApplicationList() {
   bool found_tabbed_browser = false;
   // Add the application name to the menu.
   items.push_back(new ChromeLauncherAppMenuItem(
-      l10n_util::GetStringFUTF16(IDS_LAUNCHER_CHROME_BROWSER_NAME,
-          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)), NULL));
+      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME), NULL));
   const BrowserList* ash_browser_list =
       BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
   int index = 1;
