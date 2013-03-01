@@ -40,7 +40,7 @@ const int kTrayPopupLabelButtonPaddingHorizontal = 16;
 const int kTrayPopupLabelButtonPaddingVertical = 8;
 
 // Time in ms per throbber frame.
-const int kThrobberFrameMs = 50;
+const int kThrobberFrameMs = 30;
 
 // Duration for showing/hiding animation in milliseconds.
 const int kThrobberAnimationDurationMs = 200;
@@ -381,6 +381,8 @@ bool SystemTrayThrobber::GetTooltipText(const gfx::Point& p,
 
 ThrobberView::ThrobberView() {
   throbber_ = new SystemTrayThrobber(kThrobberFrameMs);
+  throbber_->SetFrames(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+      IDR_AURA_CROS_DEFAULT_THROBBER).ToImageSkia());
   throbber_->set_stop_delay_ms(kThrobberAnimationDurationMs);
   AddChildView(throbber_);
 
