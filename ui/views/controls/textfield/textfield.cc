@@ -494,9 +494,7 @@ bool Textfield::SkipDefaultKeyEventProcessing(const ui::KeyEvent& e) {
   if (key == ui::VKEY_BACK)
     return true;  // We'll handle BackSpace ourselves.
 
-#if defined(USE_AURA)
-  NOTIMPLEMENTED();
-#elif defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // We don't translate accelerators for ALT + NumPad digit on Windows, they are
   // used for entering special characters.  We do translate alt-home.
   if (e.IsAltDown() && (key != ui::VKEY_HOME) &&

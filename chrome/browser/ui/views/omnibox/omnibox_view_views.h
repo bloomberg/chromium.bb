@@ -28,8 +28,7 @@ namespace ui {
 class OSExchangeData;
 }  // namespace ui
 
-// Views-implementation of OmniboxView. This is based on gtk implementation.
-// TODO(msw): Instant support for Win Aura (or --enable-views-textfield).
+// Views-implementation of OmniboxView, based on the gtk implementation.
 class OmniboxViewViews
     : public views::Textfield,
       public OmniboxView,
@@ -66,6 +65,8 @@ class OmniboxViewViews
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual bool OnKeyReleased(const ui::KeyEvent& event) OVERRIDE;
+  virtual bool SkipDefaultKeyEventProcessing(
+      const ui::KeyEvent& event) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
 

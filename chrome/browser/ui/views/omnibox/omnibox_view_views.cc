@@ -278,23 +278,18 @@ bool OmniboxViewViews::OnKeyPressed(const ui::KeyEvent& event) {
   } else if (!handled && event.key_code() == ui::VKEY_DOWN) {
     model()->OnUpOrDownKeyPressed(1);
     handled = true;
-  } else if (!handled &&
-             event.key_code() == ui::VKEY_TAB &&
-             !event.IsControlDown()) {
-    if (model()->is_keyword_hint() && !event.IsShiftDown()) {
-      handled = model()->AcceptKeyword();
-    } else if (model()->popup_model()->IsOpen()) {
-      if (event.IsShiftDown() &&
-          model()->popup_model()->selected_line_state() ==
-              OmniboxPopupModel::KEYWORD) {
-        model()->ClearKeyword(text());
-      } else {
-        model()->OnUpOrDownKeyPressed(event.IsShiftDown() ? -1 : 1);
-      }
-      handled = true;
-    }
+  } else if (!handled && event.key_code() == ui::VKEY_PRIOR) {
+    model()->OnUpOrDownKeyPressed(-1 * model()->result().size());
+    handled = true;
+  } else if (!handled && event.key_code() == ui::VKEY_NEXT) {
+    model()->OnUpOrDownKeyPressed(model()->result().size());
+    handled = true;
+  } else if (!handled) {
+#if !defined(OS_WIN) || defined(USE_AURA)
+    // TODO(msw): Avoid this complexity, consolidate cross-platform behavior.
+    handled = SkipDefaultKeyEventProcessing(event);
+#endif
   }
-  // TODO(msw): Handle Instant, tab through popup, tab to search, page up/down.
   return handled;
 }
 
@@ -309,6 +304,30 @@ bool OmniboxViewViews::OnKeyReleased(const ui::KeyEvent& event) {
     return true;
   }
   return false;
+}
+
+bool OmniboxViewViews::SkipDefaultKeyEventProcessing(
+    const ui::KeyEvent& event) {
+  // Handle keyword hint tab-to-search and tabbing through dropdown results.
+  // This must run before acclerator handling invokes a focus change on tab.
+  if (views::FocusManager::IsTabTraversalKeyEvent(event)) {
+    if (model()->is_keyword_hint() && !event.IsShiftDown()) {
+      model()->AcceptKeyword();
+      return true;
+    }
+    if (model()->popup_model()->IsOpen()) {
+      if (event.IsShiftDown() &&
+          model()->popup_model()->selected_line_state() ==
+              OmniboxPopupModel::KEYWORD) {
+        model()->ClearKeyword(text());
+      } else {
+        model()->OnUpOrDownKeyPressed(event.IsShiftDown() ? -1 : 1);
+      }
+      return true;
+    }
+  }
+
+  return Textfield::SkipDefaultKeyEventProcessing(event);
 }
 
 void OmniboxViewViews::OnFocus() {
