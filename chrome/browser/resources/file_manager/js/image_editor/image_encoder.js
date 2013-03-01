@@ -173,7 +173,7 @@ ImageEncoder.stringToArrayBuffer = function(string, from, to) {
  * @constructor
  */
 ImageEncoder.MetadataEncoder = function(original_metadata) {
-  this.metadata_ = ImageUtil.deepCopy(original_metadata) || {};
+  this.metadata_ = MetadataCache.cloneMetadata(original_metadata) || {};
   if (this.metadata_.mimeType != 'image/jpeg') {
     // Chrome can only encode JPEG and PNG. Force PNG mime type so that we
     // can save to file and generate a thumbnail.

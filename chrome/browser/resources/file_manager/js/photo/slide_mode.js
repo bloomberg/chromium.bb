@@ -616,7 +616,7 @@ SlideMode.prototype.selectLast = function() {
  */
 SlideMode.prototype.loadItem_ = function(
     url, metadata, effect, displayCallback, loadCallback) {
-  this.selectedImageMetadata_ = ImageUtil.deepCopy(metadata);
+  this.selectedImageMetadata_ = MetadataCache.cloneMetadata(metadata);
 
   this.showSpinner_(true);
 

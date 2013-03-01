@@ -369,14 +369,6 @@ ImageUtil.drawImageTransformed = function(dst, src, scaleX, scaleY, angle) {
 };
 
 /**
- * @param {*} value Structure.
- * @return {*} Clone of the value.
- */
-ImageUtil.deepCopy = function(value) {
-  return JSON.parse(JSON.stringify(value));
-};
-
-/**
  * Adds or removes an attribute to/from an HTML element.
  * @param {HTMLElement} element To be applied to.
  * @param {string} attribute Name of attribute.
