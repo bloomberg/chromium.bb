@@ -502,12 +502,17 @@ class BisectPerformanceMetrics(object):
       if not (len(values_list) % len(page_names)):
         values_dict = dict([(k, []) for k in page_names])
 
-        num = len(values_list) / len(page_names)
+        # In the case of times/t, values_list is an array of times in the
+        # order of page_names, repeated X number of times.
+        # ie.
+        # page_names = ['www.chromium.org', 'dev.chromium.org']
+        # values_list = [1, 2, 1, 2, 1, 2]
+        num_pages = len(page_names)
 
-        for j in xrange(num):
-          for i in xrange(len(page_names)):
-            k = num * j + i
-            values_dict[page_names[i]].append(values_list[k])
+        for i in xrange(len(values_list)):
+          page_index = i % num_pages
+
+          values_dict[page_names[page_index]].append(values_list[i])
 
     return values_dict
 
