@@ -2403,7 +2403,9 @@ DialogType.isModal = function(type) {
         event.preventDefault();
         return;
 
+      case 'Ctrl-79':  // Disable native Ctrl-O (open file).
       case 'Ctrl-83':  // Disable native Ctrl-S (save as).
+      case 'Ctrl-85':  // Disable native Ctrl-U (view source).
         event.preventDefault();
         return;
 
