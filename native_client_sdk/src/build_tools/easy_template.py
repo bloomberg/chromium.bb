@@ -65,6 +65,13 @@ def RunTemplateFile(srcfile, dstfile, template_dict, statement_re=None,
       RunTemplate(src, dst, template_dict, statement_re, expr_re)
 
 
+def RunTemplateString(src, template_dict, statement_re=None, expr_re=None):
+  srcf = cStringIO.StringIO(src)
+  dstf = cStringIO.StringIO()
+  RunTemplate(srcf, dstf, template_dict, statement_re, expr_re)
+  return dstf.getvalue()
+
+
 def main(args):
   parser = optparse.OptionParser()
   _, args = parser.parse_args(args)

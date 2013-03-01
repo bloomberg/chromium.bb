@@ -3,11 +3,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import buildbot_common
+import cStringIO
 import optparse
 import os
 import sys
 
+import buildbot_common
 from buildbot_common import ErrorExit
 import easy_template
 from generate_index import LandingPage
@@ -50,6 +51,21 @@ def GenerateSourceCopyList(desc):
     sources.append('common.js')
 
   return sources
+
+
+def RunTemplateFile(srcfile, dstfile, replace):
+  dst = cStringIO.StringIO()
+  with open(srcfile) as srcf:
+    easy_template.RunTemplate(srcf, dst, replace)
+
+  if os.path.exists(dstfile):
+    with open(dstfile) as dstf:
+      if dstf.read() == dst.getvalue():
+        Trace('Generated %s is the same. Skipping' % dstfile)
+        return
+
+  with open(dstfile, 'w') as dstf:
+    dstf.write(dst.getvalue())
 
 
 def GetSourcesDict(sources):
@@ -260,7 +276,7 @@ def ProcessHTML(srcroot, dstroot, desc, toolchains):
         'data-name="%s" data-tools="%s" data-configs="%s" data-path="%s"' % (
         name, ' '.join(tools), ' '.join(configs), path),
   }
-  easy_template.RunTemplateFile(srcfile, dstfile, replace)
+  RunTemplateFile(srcfile, dstfile, replace)
 
 
 def LoadProject(filename, toolchains):
@@ -371,7 +387,7 @@ def ProcessProject(srcroot, dstroot, desc, toolchains):
       'tools': tool_list,
       'targets': desc['TARGETS'],
     }
-    easy_template.RunTemplateFile(template, make_path, template_dict)
+    RunTemplateFile(template, make_path, template_dict)
 
   outdir = os.path.dirname(os.path.abspath(make_path))
   pepperdir = os.path.dirname(os.path.dirname(outdir))
@@ -383,7 +399,7 @@ def GenerateMasterMakefile(in_path, out_path, projects):
   """Generate a Master Makefile that builds all examples. """
   project_names = [project['NAME'] for project in projects]
   template_dict = { 'projects': project_names }
-  easy_template.RunTemplateFile(in_path, out_path, template_dict)
+  RunTemplateFile(in_path, out_path, template_dict)
 
   outdir = os.path.dirname(os.path.abspath(out_path))
   pepperdir = os.path.dirname(outdir)
