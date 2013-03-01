@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
@@ -278,6 +279,12 @@ void PrerenderContents::StartPrerendering(
 
   prerender_contents_.reset(CreateWebContents(session_storage_namespace));
   BrowserTabContents::AttachTabHelpers(prerender_contents_.get());
+#if defined(OS_ANDROID)
+  // Delay icon fetching until the contents are getting swapped in
+  // to conserve network usage in mobile devices.
+  FaviconTabHelper::FromWebContents(
+      prerender_contents_.get())->set_should_fetch_icons(false);
+#endif  // defined(OS_ANDROID)
   content::WebContentsObserver::Observe(prerender_contents_.get());
 
   web_contents_delegate_.reset(new WebContentsDelegateImpl(this));

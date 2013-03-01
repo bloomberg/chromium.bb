@@ -456,7 +456,17 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
   prerender_contents->CommitHistory(new_web_contents);
 
   GURL icon_url = prerender_contents->icon_url();
+
   if (!icon_url.is_empty()) {
+#if defined(OS_ANDROID)
+    // Do the delayed icon fetch since we didn't download
+    // the favicon during prerendering on mobile devices.
+    FaviconTabHelper * favicon_tap_helper =
+        FaviconTabHelper::FromWebContents(new_web_contents);
+    favicon_tap_helper->set_should_fetch_icons(true);
+    favicon_tap_helper->FetchFavicon(icon_url);
+#endif  // defined(OS_ANDROID)
+
     std::vector<content::FaviconURL> urls;
     urls.push_back(content::FaviconURL(icon_url, content::FaviconURL::FAVICON));
     FaviconTabHelper::FromWebContents(new_web_contents)->

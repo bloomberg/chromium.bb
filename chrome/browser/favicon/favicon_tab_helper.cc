@@ -37,7 +37,8 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(FaviconTabHelper);
 
 FaviconTabHelper::FaviconTabHelper(WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())) {
+      profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
+      should_fetch_icons_(true) {
   favicon_handler_.reset(new FaviconHandler(profile_, this,
                                             FaviconHandler::FAVICON));
   if (chrome::kEnableTouchIcon)
@@ -49,6 +50,9 @@ FaviconTabHelper::~FaviconTabHelper() {
 }
 
 void FaviconTabHelper::FetchFavicon(const GURL& url) {
+  if (!should_fetch_icons_)
+    return;
+
   favicon_handler_->FetchFavicon(url);
   if (touch_icon_handler_.get())
     touch_icon_handler_->FetchFavicon(url);
