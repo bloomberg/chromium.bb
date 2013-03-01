@@ -39,6 +39,7 @@ class AutofillDialogController {
 
   virtual string16 DialogTitle() const = 0;
   virtual string16 AccountChooserText() const = 0;
+  virtual string16 SignInLinkText() const = 0;
   virtual string16 EditSuggestionText() const = 0;
   virtual string16 UseBillingForShippingText() const = 0;
   virtual string16 CancelButtonText() const = 0;
@@ -59,6 +60,9 @@ class AutofillDialogController {
   // account chooser should not show a menu. In this case, clicking on the
   // account chooser should initiate sign-in.
   virtual ui::MenuModel* MenuModelForAccountChooser() = 0;
+
+  // Returns the icon that should be shown in the account chooser.
+  virtual gfx::Image AccountChooserImage() = 0;
 
   // Detail inputs -------------------------------------------------------------
 

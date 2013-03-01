@@ -15,6 +15,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
+#include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
@@ -41,6 +42,9 @@
 namespace autofill {
 
 namespace {
+
+// Horizontal padding between text and other elements (in pixels).
+const int kAroundTextPadding = 4;
 
 // Size of the triangular mark that indicates an invalid textfield.
 const size_t kDogEarSize = 10;
@@ -129,26 +133,46 @@ void AutofillDialogViews::DecoratedTextfield::OnPaint(gfx::Canvas* canvas) {
 
 AutofillDialogViews::AccountChooser::AccountChooser(
     AutofillDialogController* controller)
-    : label_(new views::Label()),
+    : image_(new views::ImageView()),
+      label_(new views::Label()),
+      arrow_(new views::ImageView()),
+      link_(new views::Link(controller->SignInLinkText())),
       controller_(controller) {
   SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
+      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
+                           kAroundTextPadding));
+  AddChildView(image_);
   AddChildView(label_);
-  // TODO(estade): a few more views and layout changes are necessary to bring
-  // this up to the mocks.
+
+  arrow_->SetImage(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+      IDR_MENU_DROPARROW).ToImageSkia());
+  AddChildView(arrow_);
+
+  link_->set_listener(this);
+  AddChildView(link_);
 }
 
 AutofillDialogViews::AccountChooser::~AccountChooser() {}
 
 void AutofillDialogViews::AccountChooser::Update() {
+  image_->SetImage(controller_->AccountChooserImage().AsImageSkia());
   label_->SetText(controller_->AccountChooserText());
+
+  bool show_link = !controller_->MenuModelForAccountChooser();
+  label_->SetVisible(!show_link);
+  arrow_->SetVisible(!show_link);
+  link_->SetVisible(show_link);
+
   menu_runner_.reset();
 }
 
 bool AutofillDialogViews::AccountChooser::OnMousePressed(
     const ui::MouseEvent& event) {
   // Return true so we get the release event.
-  return event.IsOnlyLeftMouseButton();
+  if (controller_->MenuModelForAccountChooser())
+    return event.IsOnlyLeftMouseButton();
+
+  return false;
 }
 
 void AutofillDialogViews::AccountChooser::OnMouseReleased(
@@ -157,18 +181,22 @@ void AutofillDialogViews::AccountChooser::OnMouseReleased(
     return;
 
   ui::MenuModel* model = controller_->MenuModelForAccountChooser();
-  if (model) {
-    views::MenuModelAdapter adapter(model);
-    menu_runner_.reset(new views::MenuRunner(adapter.CreateMenu()));
-    ignore_result(
-        menu_runner_->RunMenuAt(GetWidget(),
-                                NULL,
-                                GetBoundsInScreen(),
-                                views::MenuItemView::TOPRIGHT,
-                                0));
-  } else {
-    controller_->StartSignInFlow();
-  }
+  if (!model)
+    return;
+
+  views::MenuModelAdapter adapter(model);
+  menu_runner_.reset(new views::MenuRunner(adapter.CreateMenu()));
+  ignore_result(
+      menu_runner_->RunMenuAt(GetWidget(),
+                              NULL,
+                              GetBoundsInScreen(),
+                              views::MenuItemView::TOPRIGHT,
+                              0));
+}
+
+void AutofillDialogViews::AccountChooser::LinkClicked(views::Link* source,
+                                                      int event_flags) {
+  controller_->StartSignInFlow();
 }
 
 // AutofillDialogViews::NotificationArea ---------------------------------------
@@ -364,10 +392,9 @@ AutofillDialogViews::SuggestionView::SuggestionView(
       decorated_(
           new DecoratedTextfield(string16(), string16(), autofill_dialog)) {
   // Label and icon.
-  const int kHorizontalLabelPadding = 4;
   label_container_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
-                           kHorizontalLabelPadding));
+                           kAroundTextPadding));
   label_container_->AddChildView(icon_);
   label_container_->AddChildView(label_);
   label_container_->AddChildView(decorated_);
@@ -428,6 +455,7 @@ void AutofillDialogViews::SuggestionView::ShowTextfield(
 }
 
 // AutofilDialogViews::AutocheckoutProgressBar ---------------------------------
+
 AutofillDialogViews::AutocheckoutProgressBar::AutocheckoutProgressBar() {}
 
 gfx::Size AutofillDialogViews::AutocheckoutProgressBar::GetPreferredSize() {

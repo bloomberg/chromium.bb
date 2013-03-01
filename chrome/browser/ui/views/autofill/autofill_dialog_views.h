@@ -151,7 +151,8 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // A View which displays the currently selected account and lets the user
   // switch accounts.
-  class AccountChooser : public views::View {
+  class AccountChooser : public views::View,
+                         public views::LinkListener {
    public:
     explicit AccountChooser(AutofillDialogController* controller);
     virtual ~AccountChooser();
@@ -163,9 +164,21 @@ class AutofillDialogViews : public AutofillDialogView,
     virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
     virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
 
+    // views::LinkListener implementation.
+    virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+
    private:
+    // The icon for the currently in-use account.
+    views::ImageView* image_;
+
     // The label for the currently in-use account.
     views::Label* label_;
+
+    // The drop arrow.
+    views::ImageView* arrow_;
+
+    // The signin link.
+    views::Link* link_;
 
     // The controller |this| queries for logic and state.
     AutofillDialogController* controller_;

@@ -83,6 +83,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // AutofillDialogController implementation.
   virtual string16 DialogTitle() const OVERRIDE;
   virtual string16 AccountChooserText() const OVERRIDE;
+  virtual string16 SignInLinkText() const OVERRIDE;
   virtual string16 EditSuggestionText() const OVERRIDE;
   virtual string16 UseBillingForShippingText() const OVERRIDE;
   virtual string16 CancelButtonText() const OVERRIDE;
@@ -93,6 +94,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual DialogSignedInState SignedInState() const OVERRIDE;
   virtual bool ShouldOfferToSaveInChrome() const OVERRIDE;
   virtual ui::MenuModel* MenuModelForAccountChooser() OVERRIDE;
+  virtual gfx::Image AccountChooserImage() OVERRIDE;
   virtual bool SectionIsActive(DialogSection section) const OVERRIDE;
   virtual const DetailInputs& RequestedFieldsForSection(DialogSection section)
       const OVERRIDE;

@@ -13,7 +13,9 @@
 #include "chrome/browser/autofill/autofill_country.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace autofill {
 
@@ -95,8 +97,12 @@ AccountChooserModel::AccountChooserModel(
 
   // TODO(estade): proper strings and l10n.
   AddCheckItem(kWalletItemId, ASCIIToUTF16("Google Wallet"));
-  AddCheckItem(kAutofillItemId,
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PAY_WITHOUT_WALLET));
+  // TODO(estade): icons on check items are not yet supported in Views.
+  SetIcon(
+      kWalletItemId,
+      ui::ResourceBundle::GetSharedInstance().GetImageNamed(IDR_WALLET_ICON));
+  AddCheckItemWithStringId(kAutofillItemId,
+                           IDS_AUTOFILL_DIALOG_PAY_WITHOUT_WALLET);
   UpdateCheckmarkFromPref();
 }
 

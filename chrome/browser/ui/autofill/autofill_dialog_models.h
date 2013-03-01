@@ -110,6 +110,8 @@ class AccountChooserModel : public ui::SimpleMenuModel,
 
   bool WalletIsSelected() const;
 
+  int checked_item() const { return checked_item_; }
+
  private:
   void PrefChanged(const std::string& pref);
 

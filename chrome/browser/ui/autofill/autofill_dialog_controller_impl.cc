@@ -366,6 +366,12 @@ string16 AutofillDialogControllerImpl::AccountChooserText() const {
   if (SignedInState() == SIGNED_IN)
     return ASCIIToUTF16("user@example.com");
 
+  // In this case, the account chooser should be showing the signin link.
+  return string16();
+}
+
+string16 AutofillDialogControllerImpl::SignInLinkText() const {
+  // TODO(estade): real strings and l10n.
   return ASCIIToUTF16("Sign in to use Google Wallet");
 }
 
@@ -435,6 +441,18 @@ ui::MenuModel* AutofillDialogControllerImpl::MenuModelForAccountChooser() {
     return NULL;
 
   return &account_chooser_model_;
+}
+
+gfx::Image AutofillDialogControllerImpl::AccountChooserImage() {
+  if (!MenuModelForAccountChooser()) {
+    return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+        IDR_WALLET_ICON);
+  }
+
+  gfx::Image icon;
+  account_chooser_model_.GetIconAt(account_chooser_model_.checked_item(),
+                                   &icon);
+  return icon;
 }
 
 string16 AutofillDialogControllerImpl::LabelForSection(DialogSection section)
