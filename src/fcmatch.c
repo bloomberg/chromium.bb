@@ -269,7 +269,8 @@ FcObjectToMatcher (FcObject object,
 	    break;
 	}
     }
-    if (!_FcMatchers[object].compare ||
+    if (object > FC_MAX_BASE_OBJECT ||
+	!_FcMatchers[object].compare ||
 	_FcMatchers[object].strong == -1 ||
 	_FcMatchers[object].weak == -1)
 	return NULL;
