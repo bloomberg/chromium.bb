@@ -24,13 +24,14 @@
   <?define UpgradeCode = "2b21f767-e157-4fa6-963c-55834c1433a6" ?>
 
   <?define CoreBinary = "remoting_core.dll" ?>
+  <?define HostBinary = "remoting_host.exe" ?>
+
+  <?define ChromotingTypelib = "{b6396c45-b0cc-456b-9f49-f12964ee6df4}" ?>
 
   <?define ControllerAppid = "{4ff35d5e-d226-4550-9248-03e7779e67de}" ?>
-  <?define ControllerBinary = "remoting_host.exe" ?>
   <?define ControllerClass = "ElevatedController Class" ?>
   <?define ControllerProgid =
     "ChromotingElevatedController.ElevatedController" ?>
-  <?define ControllerTypelib = "{9d9a5a2c-576e-4acd-9c75-aabff74b205d}" ?>
 
   <!--
     The long hex value below is a security descriptor that allows SYSTEM,
@@ -45,6 +46,7 @@
   -->
   <?define ControllerSd = "010004805C0000006C00000000000000140000000200480003000000000014000300000001010000000000050400000000001400030000000101000000000005120000000000180003000000010200000000000520000000200200000102000000000005200000002002000001020000000000052000000020020000" ?>
 
+  <!-- Verify that all required parameters are defined. -->
   <?ifndef ControllerClsid ?>
     <?error ControllerClsid must be defined ?>
   <?endif?>
@@ -225,7 +227,7 @@
         </Component>
       <?endif?>
 
-      <Component Id="remoting_controller" Guid="*">
+      <Component Id="remoting_lib" Guid="*">
         <RegistryKey Root="HKLM"
                      Key="SOFTWARE\Classes">
           <RegistryKey Key="AppId">
@@ -235,12 +237,6 @@
               <RegistryValue Name="AccessPermission"
                              Type="binary"
                              Value="$(var.ControllerSd)"/>
-            </RegistryKey>
-
-            <RegistryKey Key="$(var.ControllerBinary)" Action="create">
-              <RegistryValue Type="string"
-                             Name="AppID"
-                             Value="$(var.ControllerAppid)"/>
             </RegistryKey>
           </RegistryKey>
 
@@ -285,7 +281,7 @@
 
               <RegistryKey Key="LocalServer32" Action="create">
                 <RegistryValue Type="string"
-                               Value="[binaries]$(var.ControllerBinary) --type=controller"/>
+                               Value="[binaries]$(var.HostBinary) --type=controller"/>
               </RegistryKey>
 
               <RegistryKey Key="ProgID" Action="create">
@@ -295,7 +291,7 @@
 
               <RegistryKey Key="TypeLib" Action="create">
                 <RegistryValue Type="string"
-                               Value="$(var.ControllerTypelib)"/>
+                               Value="$(var.ChromotingTypelib)"/>
               </RegistryKey>
 
               <RegistryKey Key="VersionIndependentProgID" Action="create">
@@ -324,7 +320,7 @@
 
               <RegistryKey Key="TypeLib" Action="create">
                 <RegistryValue Type="string"
-                               Value="$(var.ControllerTypelib)"/>
+                               Value="$(var.ChromotingTypelib)"/>
               </RegistryKey>
             </RegistryKey>
 
@@ -337,14 +333,16 @@
 
               <RegistryKey Key="TypeLib" Action="create">
                 <RegistryValue Type="string"
-                               Value="$(var.ControllerTypelib)"/>
+                               Value="$(var.ChromotingTypelib)"/>
               </RegistryKey>
             </RegistryKey>
           </RegistryKey>
 
           <RegistryKey Key="Typelib">
-            <RegistryKey Key="$(var.ControllerTypelib)" Action="create">
-              <RegistryKey Key="1.1" Action="create">
+            <RegistryKey Key="$(var.ChromotingTypelib)" Action="create">
+              <RegistryKey Key="1.0" Action="create">
+                <RegistryValue Type="string"
+                               Value="Chromoting 1.0 Type Library"/>
                 <RegistryKey Key="0" Action="create">
                   <RegistryKey Key="win32" Action="create">
                     <RegistryValue Type="string"
@@ -467,10 +465,10 @@
       <?if $(var.OfficialBuild) != 0 ?>
         <ComponentRef Id="omaha_registration"/>
       <?endif?>
-      <ComponentRef Id="remoting_controller"/>
       <ComponentRef Id="remoting_core"/>
       <ComponentRef Id="remoting_desktop"/>
       <ComponentRef Id="remoting_host"/>
+      <ComponentRef Id="remoting_lib"/>
       <ComponentRef Id="sas"/>
       <ComponentRef Id="sawbuck_provider"/>
     </Feature>

@@ -1,9 +1,9 @@
 {
   "defines": {
     "Branding": "@@BRANDING@@",
+    "ControllerClsid": "@@DAEMON_CONTROLLER_CLSID@@",
     "OfficialBuild": "@@OFFICIAL_BUILD@@",
     "RemotingMultiProcess" : "@@REMOTING_MULTI_PROCESS@@",
-    "ControllerClsid": "@@CONTROLLER_CLSID@@",
     "Version": "@@VERSION@@"
   },
   "extensions": [

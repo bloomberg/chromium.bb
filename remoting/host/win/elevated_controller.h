@@ -12,7 +12,7 @@
 #include "remoting/base/scoped_sc_handle_win.h"
 
 // MIDL-generated declarations.
-#include "remoting/host/elevated_controller.h"
+#include "remoting/host/chromoting_lib.h"
 
 namespace remoting {
 
@@ -21,7 +21,7 @@ class ATL_NO_VTABLE __declspec(uuid(DAEMON_CONTROLLER_CLSID)) ElevatedController
       public ATL::CComCoClass<ElevatedController,
                               &__uuidof(ElevatedController)>,
       public ATL::IDispatchImpl<IDaemonControl2, &IID_IDaemonControl2,
-                                &LIBID_ChromotingElevatedControllerLib, 1, 1> {
+                                &LIBID_ChromotingLib, 1, 0> {
  public:
   // Declare the class factory that does not lock the ATL module. This is the
   // same DECLARE_CLASSFACTORY() with the exception that ATL::CComObjectNoLock
@@ -68,8 +68,6 @@ class ATL_NO_VTABLE __declspec(uuid(DAEMON_CONTROLLER_CLSID)) ElevatedController
 
   DECLARE_PROTECT_FINAL_CONSTRUCT()
 };
-
-OBJECT_ENTRY_AUTO(__uuidof(ElevatedController), ElevatedController)
 
 } // namespace remoting
 

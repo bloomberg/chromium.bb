@@ -89,9 +89,9 @@
         'host_plugin_prefix': '',
       }],
       ['OS=="win"', {
-        # Use auto-generated CLSID for the daemon controller to make sure that
-        # the newly installed version of the controller will be used during
-        # upgrade even if there is an old instance running already.
+        # Use auto-generated CLSID to make sure that the newly installed COM
+        # classes will be used during/after upgrade even if there are old
+        # instances running already.
         'daemon_controller_clsid': '<!(python tools/uuidgen.py)',
       }],
     ],
@@ -590,7 +590,7 @@
             ['OS=="win"', {
               'dependencies': [
                 '../google_update/google_update.gyp:google_update',
-                'remoting_controller_idl',
+                'remoting_lib_idl',
               ],
               # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
               'msvs_disabled_warnings': [4267, ],
@@ -664,7 +664,7 @@
                 'ISOLATION_AWARE_ENABLED=1',
               ],
               'dependencies': [
-                'remoting_controller_idl',
+                'remoting_lib_idl',
                 'remoting_version_resources',
               ],
               'include_dirs': [
@@ -1125,16 +1125,16 @@
           ],
         },  # end of target 'remoting_breakpad_tester'
         {
-          'target_name': 'remoting_controller_idl',
+          'target_name': 'remoting_lib_idl',
           'type': 'static_library',
           'sources': [
-            'host/win/elevated_controller_idl.templ',
-            '<(SHARED_INTERMEDIATE_DIR)/remoting/host/elevated_controller.h',
-            '<(SHARED_INTERMEDIATE_DIR)/remoting/host/elevated_controller.idl',
-            '<(SHARED_INTERMEDIATE_DIR)/remoting/host/elevated_controller_i.c',
+            'host/win/chromoting_lib_idl.templ',
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/host/chromoting_lib.h',
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/host/chromoting_lib.idl',
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/host/chromoting_lib_i.c',
           ],
           # This target exports a hard dependency because dependent targets may
-          # include elevated_controller.h, a generated header.
+          # include chromoting_lib.h, a generated header.
           'hard_dependency': 1,
           'msvs_settings': {
             'VCMIDLTool': {
@@ -1151,7 +1151,7 @@
               'rule_name': 'generate_idl',
               'extension': 'templ',
               'outputs': [
-                '<(SHARED_INTERMEDIATE_DIR)/remoting/host/elevated_controller.idl',
+                '<(SHARED_INTERMEDIATE_DIR)/remoting/host/chromoting_lib.idl',
               ],
               'action': [
                 'python',
@@ -1165,19 +1165,19 @@
               'msvs_cygwin_shell': 0,
             },
           ],
-        },  # end of target 'remoting_controller_idl'
+        },  # end of target 'remoting_lib_idl'
 
-        # Regenerates 'elevated_controller.rc' (used to embed
-        # 'elevated_controller.tlb' into remoting_core.dll's resources) every
-        # time 'elevated_controller_idl.templ' changes. Making remoting_core
-        # depend on both this and 'remoting_controller_idl' targets ensures that
-        # the resorces are rebuilt every time the type library is updated. GYP
-        # alone is not smart enough to figure out this dependency on its own.
+        # Regenerates 'chromoting_lib.rc' (used to embed 'chromoting_lib.tlb'
+        # into remoting_core.dll's resources) every time
+        # 'chromoting_lib_idl.templ' changes. Making remoting_core depend on
+        # both this and 'remoting_lib_idl' targets ensures that the resorces
+        # are rebuilt every time the type library is updated. GYP alone is
+        # not smart enough to figure out this dependency on its own.
         {
-          'target_name': 'remoting_controller_rc',
+          'target_name': 'remoting_lib_rc',
           'type': 'none',
           'sources': [
-            'host/win/elevated_controller_idl.templ',
+            'host/win/chromoting_lib_idl.templ',
           ],
           'hard_dependency': 1,
           'direct_dependent_settings': {
@@ -1190,16 +1190,16 @@
               'rule_name': 'generate_rc',
               'extension': 'templ',
               'outputs': [
-                '<(SHARED_INTERMEDIATE_DIR)/remoting/host/elevated_controller.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/remoting/host/chromoting_lib.rc',
               ],
               'action': [
-                'echo 1 typelib "remoting/host/elevated_controller.tlb" > <@(_outputs)',
+                'echo 1 typelib "remoting/host/chromoting_lib.tlb" > <@(_outputs)',
               ],
               'message': 'Generating <@(_outputs)',
               'msvs_cygwin_shell': 0,
             },
           ],
-        },  # end of target 'remoting_controller_rc'
+        },  # end of target 'remoting_lib_rc'
         {
           'target_name': 'remoting_configurer',
           'type': 'executable',
@@ -1318,20 +1318,19 @@
             '../net/net.gyp:net',
             'remoting_base',
             'remoting_breakpad',
-            'remoting_controller_idl',
-            'remoting_controller_rc',
             'remoting_host',
             'remoting_host_event_logger',
             'remoting_host_logging',
+            'remoting_lib_idl',
+            'remoting_lib_rc',
             'remoting_me2me_host_static',
             'remoting_protocol',
             'remoting_version_resources',
           ],
           'sources': [
-            '<(SHARED_INTERMEDIATE_DIR)/remoting/host/elevated_controller.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/host/chromoting_lib.rc',
             '<(SHARED_INTERMEDIATE_DIR)/remoting/host/remoting_host_messages.rc',
             '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_core_version.rc',
-            'base/scoped_sc_handle_win.h',
             'host/chromoting_messages.cc',
             'host/chromoting_messages.h',
             'host/config_file_watcher.cc',
@@ -1361,12 +1360,13 @@
             'host/sas_injector_win.cc',
             'host/verify_config_window_win.cc',
             'host/verify_config_window_win.h',
+            'host/win/chromoting_module.cc',
+            'host/win/chromoting_module.h',
             'host/win/core.cc',
             'host/win/core.rc',
             'host/win/core_resource.h',
             'host/win/elevated_controller.cc',
             'host/win/elevated_controller.h',
-            'host/win/elevated_controller_module.cc',
             'host/win/host_service.cc',
             'host/win/host_service.h',
             'host/win/omaha.cc',
@@ -1722,7 +1722,7 @@
           ],
           'defs': [
             'BRANDING=<(branding)',
-            'CONTROLLER_CLSID={<(daemon_controller_clsid)}',
+            'DAEMON_CONTROLLER_CLSID={<(daemon_controller_clsid)}',
             'REMOTING_MULTI_PROCESS=<(remoting_multi_process)',
             'VERSION=<(version_full)',
           ],

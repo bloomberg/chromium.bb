@@ -131,12 +131,12 @@ v8.log
 /remoting/host/installer/linux/internal/
 /remoting/proto/chromotocol_proto_lib.xml
 /remoting/proto/trace_proto_lib.xml
-/remoting/remoting_controller_idl.xml
-/remoting/remoting_controller_rc.xml
 /remoting/remoting_elevated_controller.xml
 /remoting/remoting_host_event_logger.xml
 /remoting/remoting_host_installation.xml
 /remoting/remoting_host_installation_unittest.xml
+/remoting/remoting_lib_idl.xml
+/remoting/remoting_lib_rc.xml
 /remoting/remoting_me2me_host.xml
 /remoting/remoting_version_resources.xml
 /remoting/tools/internal/

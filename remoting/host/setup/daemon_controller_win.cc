@@ -26,11 +26,10 @@
 #include "base/win/windows_version.h"
 #include "remoting/base/scoped_sc_handle_win.h"
 #include "remoting/host/branding.h"
+// MIDL-generated declarations and definitions.
+#include "remoting/host/chromoting_lib.h"
 #include "remoting/host/setup/daemon_installer_win.h"
 #include "remoting/host/usage_stats_consent.h"
-
-// MIDL-generated declarations and definitions.
-#include "remoting/host/elevated_controller.h"
 
 using base::win::ScopedBstr;
 using base::win::ScopedComPtr;
