@@ -88,11 +88,11 @@ void ParseResourceListOnBlockingPoolAndRun(
                  callback, base::Owned(error)));
 }
 
-// Parses the JSON value to ResourceEntry runs |callback|.
+// Parses the FileResource value to ResourceEntry and runs |callback|.
 void ParseResourceEntryAndRun(
     const GetResourceEntryCallback& callback,
     GDataErrorCode error,
-    scoped_ptr<base::Value> value) {
+    scoped_ptr<FileResource> value) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!value) {
@@ -100,16 +100,9 @@ void ParseResourceEntryAndRun(
     return;
   }
 
-  // Parsing FileResource is cheap enough to do on UI thread.
-  scoped_ptr<FileResource> file_resource = FileResource::CreateFrom(*value);
-  if (!file_resource) {
-    callback.Run(GDATA_PARSE_ERROR, scoped_ptr<ResourceEntry>());
-    return;
-  }
-
   // Converting to ResourceEntry is cheap enough to do on UI thread.
   scoped_ptr<ResourceEntry> entry =
-      ResourceEntry::CreateFromFileResource(*file_resource);
+      ResourceEntry::CreateFromFileResource(*value);
   if (!entry) {
     callback.Run(GDATA_PARSE_ERROR, scoped_ptr<ResourceEntry>());
     return;

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback_forward.h"
 #include "chrome/browser/google_apis/base_operations.h"
 #include "chrome/browser/google_apis/drive_api_url_generator.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
@@ -16,6 +17,15 @@ class URLRequestContextGetter;
 }  // namespace net
 
 namespace google_apis {
+
+class FileResource;
+
+// Callback used for operations that the server returns FileResource data
+// formatted into JSON value.
+typedef base::Callback<void(GDataErrorCode error,
+                            scoped_ptr<FileResource> entry)>
+    FileResourceCallback;
+
 
 //============================== GetAboutOperation =============================
 
@@ -125,7 +135,7 @@ class GetFileOperation : public GetDataOperation {
                    net::URLRequestContextGetter* url_request_context_getter,
                    const DriveApiUrlGenerator& url_generator,
                    const std::string& file_id,
-                   const GetDataCallback& callback);
+                   const FileResourceCallback& callback);
   virtual ~GetFileOperation();
 
  protected:
@@ -157,7 +167,7 @@ class CreateDirectoryOperation : public GetDataOperation {
       const DriveApiUrlGenerator& url_generator,
       const std::string& parent_resource_id,
       const std::string& directory_name,
-      const GetDataCallback& callback);
+      const FileResourceCallback& callback);
   virtual ~CreateDirectoryOperation();
 
  protected:

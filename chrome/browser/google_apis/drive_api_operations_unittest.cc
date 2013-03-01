@@ -46,6 +46,16 @@ void CopyResultsFromGetAboutResourceCallbackAndQuit(
   MessageLoop::current()->Quit();
 }
 
+void CopyResultsFromFileResourceCallbackAndQuit(
+    GDataErrorCode* error_out,
+    scoped_ptr<FileResource>* file_resource_out,
+    const GDataErrorCode error_in,
+    scoped_ptr<FileResource> file_resource_in) {
+  *error_out = error_in;
+  *file_resource_out = file_resource_in.Pass();
+  MessageLoop::current()->Quit();
+}
+
 }  // namespace
 
 class DriveApiOperationsTest : public testing::Test {
@@ -268,7 +278,7 @@ TEST_F(DriveApiOperationsTest, CreateDirectoryOperation) {
       test_util::GetTestFilePath("drive/directory_entry.json");
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  scoped_ptr<base::Value> feed_data;
+  scoped_ptr<FileResource> feed_data;
 
   // Create "new directory" in the root directory.
   drive::CreateDirectoryOperation* operation =
@@ -278,7 +288,7 @@ TEST_F(DriveApiOperationsTest, CreateDirectoryOperation) {
           *url_generator_,
           "root",
           "new directory",
-          base::Bind(&test_util::CopyResultsFromGetDataCallbackAndQuit,
+          base::Bind(&CopyResultsFromFileResourceCallbackAndQuit,
                      &error, &feed_data));
   operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
@@ -291,10 +301,17 @@ TEST_F(DriveApiOperationsTest, CreateDirectoryOperation) {
 
   EXPECT_TRUE(http_request_.has_content);
 
-  EXPECT_EQ("{\"mimeType\":\"application/vnd.google-apps.folder\","
-            "\"parents\":[{\"id\":\"root\"}],"
-            "\"title\":\"new directory\"}",
-            http_request_.content);
+  scoped_ptr<FileResource> expected(
+      FileResource::CreateFrom(
+          *test_util::LoadJSONFile("drive/directory_entry.json")));
+
+  // Sanity check.
+  ASSERT_TRUE(feed_data.get());
+
+  EXPECT_EQ(expected->file_id(), feed_data->file_id());
+  EXPECT_EQ(expected->title(), feed_data->title());
+  EXPECT_EQ(expected->mime_type(), feed_data->mime_type());
+  EXPECT_EQ(expected->parents().size(), feed_data->parents().size());
 }
 
 TEST_F(DriveApiOperationsTest, RenameResourceOperation) {

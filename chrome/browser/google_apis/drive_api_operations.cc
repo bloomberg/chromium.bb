@@ -5,6 +5,7 @@
 #include "chrome/browser/google_apis/drive_api_operations.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
@@ -20,26 +21,27 @@ const char kContentTypeApplicationJson[] = "application/json";
 const char kDirectoryMimeType[] = "application/vnd.google-apps.folder";
 const char kParentLinkKind[] = "drive#fileLink";
 
-// Parses the JSON value to AboutResource and runs |callback| on the UI
+// Parses the JSON value to a resource typed |T| and runs |callback| on the UI
 // thread once parsing is done.
-void ParseAboutResourceAndRun(
-    const GetAboutResourceCallback& callback,
+template<typename T>
+void ParseJsonAndRun(
+    const base::Callback<void(GDataErrorCode, scoped_ptr<T>)>& callback,
     GDataErrorCode error,
     scoped_ptr<base::Value> value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  scoped_ptr<AboutResource> about_resource;
+  scoped_ptr<T> resource;
   if (value.get()) {
-    about_resource = AboutResource::CreateFrom(*value);
-    if (!about_resource) {
-      // Failed to parse the JSON value (although the JSON value is available),
-      // so let callback know the parsing error.
+    resource = T::CreateFrom(*value);
+    if (!resource) {
+      // Failed to parse the JSON value, although the JSON value is available,
+      // so let the callback know the parsing error.
       error = GDATA_PARSE_ERROR;
     }
   }
 
-  callback.Run(error, about_resource.Pass());
+  callback.Run(error, resource.Pass());
 }
 
 }  // namespace
@@ -52,7 +54,7 @@ GetAboutOperation::GetAboutOperation(
     const DriveApiUrlGenerator& url_generator,
     const GetAboutResourceCallback& callback)
     : GetDataOperation(registry, url_request_context_getter,
-                       base::Bind(&ParseAboutResourceAndRun, callback)),
+                       base::Bind(&ParseJsonAndRun<AboutResource>, callback)),
       url_generator_(url_generator) {
   DCHECK(!callback.is_null());
 }
@@ -132,8 +134,9 @@ GetFileOperation::GetFileOperation(
     net::URLRequestContextGetter* url_request_context_getter,
     const DriveApiUrlGenerator& url_generator,
     const std::string& file_id,
-    const GetDataCallback& callback)
-    : GetDataOperation(registry, url_request_context_getter, callback),
+    const FileResourceCallback& callback)
+    : GetDataOperation(registry, url_request_context_getter,
+                       base::Bind(&ParseJsonAndRun<FileResource>, callback)),
       url_generator_(url_generator),
       file_id_(file_id) {
   DCHECK(!callback.is_null());
@@ -155,8 +158,9 @@ CreateDirectoryOperation::CreateDirectoryOperation(
     const DriveApiUrlGenerator& url_generator,
     const std::string& parent_resource_id,
     const std::string& directory_name,
-    const GetDataCallback& callback)
-    : GetDataOperation(registry, url_request_context_getter, callback),
+    const FileResourceCallback& callback)
+    : GetDataOperation(registry, url_request_context_getter,
+                       base::Bind(&ParseJsonAndRun<FileResource>, callback)),
       url_generator_(url_generator),
       parent_resource_id_(parent_resource_id),
       directory_name_(directory_name) {
