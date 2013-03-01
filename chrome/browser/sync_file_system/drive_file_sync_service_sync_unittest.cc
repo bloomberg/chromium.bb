@@ -89,6 +89,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     RevokeSyncableFileSystem(DriveFileSyncService::kServiceName);
+    message_loop_.RunUntilIdle();
   }
 
  protected:

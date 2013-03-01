@@ -6679,19 +6679,3 @@
    obj:/lib*/libpthread-*.so
    fun:_ZN3net10FileStream7Context12ReadFileImplE13scoped_refptrINS_8IOBufferEEi
 }
-{
-   bug_179222_a
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN7leveldb2DB4OpenERKNS_7OptionsERKSsPPS0_
-   fun:_ZN16sync_file_system15DriveMetadataDB10InitializeEv
-   fun:_ZN16sync_file_system12_GLOBAL__N_124InitializeDBOnFileThreadEPNS_15DriveMetadataDBEPNS_23DriveMetadataDBContentsE
-}
-{
-   bug_179222_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN16sync_file_system18DriveMetadataStoreC1ERKN4base8FilePathEPNS1_19SequencedTaskRunnerE
-   fun:_ZN16sync_file_system28DriveFileSyncServiceSyncTest5SetUpEv
-}
