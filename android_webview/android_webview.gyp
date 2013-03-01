@@ -103,6 +103,8 @@
         'browser/aw_contents_io_thread_client.h',
         'browser/aw_cookie_access_policy.cc',
         'browser/aw_cookie_access_policy.h',
+        'browser/aw_devtools_delegate.cc',
+        'browser/aw_devtools_delegate.h',
         'browser/aw_download_manager_delegate.cc',
         'browser/aw_download_manager_delegate.h',
         'browser/aw_http_auth_handler_base.cc',

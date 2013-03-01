@@ -5,6 +5,7 @@
 #include "android_webview/browser/aw_browser_main_parts.h"
 
 #include "android_webview/browser/aw_browser_context.h"
+#include "android_webview/browser/aw_devtools_delegate.h"
 #include "android_webview/browser/aw_result_codes.h"
 #include "base/android/build_info.h"
 #include "base/files/file_path.h"
@@ -64,12 +65,18 @@ int AwBrowserMainParts::PreCreateThreads() {
 
 void AwBrowserMainParts::PreMainMessageLoopRun() {
   browser_context_->PreMainMessageLoopRun();
+  devtools_delegate_ = new AwDevToolsDelegate(browser_context_);
 }
 
 bool AwBrowserMainParts::MainMessageLoopRun(int* result_code) {
   // Android WebView does not use default MessageLoop. It has its own
   // Android specific MessageLoop.
   return true;
+}
+
+void AwBrowserMainParts::PostMainMessageLoopRun() {
+  if (devtools_delegate_)
+    devtools_delegate_->Stop();
 }
 
 }  // namespace android_webview
