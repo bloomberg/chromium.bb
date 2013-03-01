@@ -1035,14 +1035,16 @@ TEST_F(AutofillMetricsTest, StoredProfileCount) {
   personal_data_.LoadProfiles();
 }
 
-// Test that we correctly log whether Autofill is enabled.
+// Test that we correctly log when Autofill is enabled.
 TEST_F(AutofillMetricsTest, AutofillIsEnabledAtStartup) {
   personal_data_.set_autofill_enabled(true);
   EXPECT_CALL(*personal_data_.metric_logger(),
               LogIsAutofillEnabledAtStartup(true)).Times(1);
   personal_data_.Init(profile());
-  personal_data_.Shutdown();
+}
 
+// Test that we correctly log when Autofill is disabled.
+TEST_F(AutofillMetricsTest, AutofillIsDisabledAtStartup) {
   personal_data_.set_autofill_enabled(false);
   EXPECT_CALL(*personal_data_.metric_logger(),
               LogIsAutofillEnabledAtStartup(false)).Times(1);

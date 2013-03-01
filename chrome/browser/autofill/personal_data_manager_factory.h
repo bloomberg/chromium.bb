@@ -6,11 +6,20 @@
 #define CHROME_BROWSER_AUTOFILL_PERSONAL_DATA_MANAGER_FACTORY_H_
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
 template <typename T> struct DefaultSingletonTraits;
 class PersonalDataManager;
 class Profile;
+
+// A wrapper of PersonalDataManager so we can use it as a profiled keyed
+// service. This should only be subclassed in tests, e.g. to provide a mock
+// PersonalDataManager.
+class PersonalDataManagerService : public ProfileKeyedService {
+ public:
+  virtual PersonalDataManager* GetPersonalDataManager() = 0;
+};
 
 // Singleton that owns all PersonalDataManagers and associates them with
 // Profiles.

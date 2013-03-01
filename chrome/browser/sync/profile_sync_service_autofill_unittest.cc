@@ -343,17 +343,32 @@ class AutofillProfileFactory : public AbstractAutofillFactory {
   }
 };
 
-class PersonalDataManagerMock: public PersonalDataManager {
+class MockPersonalDataManager : public PersonalDataManager {
  public:
-  static ProfileKeyedService* Build(Profile* profile) {
-    return new PersonalDataManagerMock;
-  }
-
   MOCK_CONST_METHOD0(IsDataLoaded, bool());
   MOCK_METHOD0(LoadProfiles, void());
   MOCK_METHOD0(LoadCreditCards, void());
   MOCK_METHOD0(Refresh, void());
 };
+
+class MockPersonalDataManagerService : public PersonalDataManagerService {
+ public:
+  static ProfileKeyedService* Build(Profile* profile) {
+    return new MockPersonalDataManagerService();
+  }
+
+  MockPersonalDataManagerService() {}
+  virtual ~MockPersonalDataManagerService() {}
+
+  virtual MockPersonalDataManager* GetPersonalDataManager() OVERRIDE {
+    return &personal_data_manager_;
+  }
+
+ private:
+  MockPersonalDataManager personal_data_manager_;
+  DISALLOW_COPY_AND_ASSIGN(MockPersonalDataManagerService);
+};
+
 template <class T> class AddAutofillHelper;
 
 class ProfileSyncServiceAutofillTest
@@ -399,9 +414,14 @@ class ProfileSyncServiceAutofillTest
         WebDataServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(), WebDataServiceFake::Build).get());
     web_data_service_->SetDatabase(web_database_.get());
-    personal_data_manager_ = static_cast<PersonalDataManagerMock*>(
-        PersonalDataManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile_.get(), PersonalDataManagerMock::Build));
+
+    MockPersonalDataManagerService* personal_data_manager_service =
+        static_cast<MockPersonalDataManagerService*>(
+            PersonalDataManagerFactory::GetInstance()->SetTestingFactoryAndUse(
+                profile_.get(), MockPersonalDataManagerService::Build));
+    personal_data_manager_ =
+        personal_data_manager_service->GetPersonalDataManager();
+
     token_service_ = static_cast<TokenService*>(
         TokenServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(), BuildTokenService));
@@ -636,7 +656,7 @@ class ProfileSyncServiceAutofillTest
   AutofillTableMock autofill_table_;
   scoped_ptr<WebDatabaseFake> web_database_;
   scoped_refptr<WebDataServiceFake> web_data_service_;
-  PersonalDataManagerMock* personal_data_manager_;
+  MockPersonalDataManager* personal_data_manager_;
   syncer::DataTypeAssociationStats association_stats_;
   base::WeakPtrFactory<DataTypeDebugInfoListener> debug_ptr_factory_;
 };

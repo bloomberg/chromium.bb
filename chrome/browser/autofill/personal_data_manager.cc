@@ -109,6 +109,34 @@ bool IsValidFieldTypeAndValue(const std::set<AutofillFieldType>& types_seen,
 
 }  // namespace
 
+PersonalDataManager::PersonalDataManager()
+    : browser_context_(NULL),
+      is_data_loaded_(false),
+      pending_profiles_query_(0),
+      pending_creditcards_query_(0),
+      metric_logger_(new AutofillMetrics),
+      has_logged_profile_count_(false) {}
+
+void PersonalDataManager::Init(BrowserContext* browser_context) {
+  browser_context_ = browser_context;
+  metric_logger_->LogIsAutofillEnabledAtStartup(IsAutofillEnabled());
+
+  scoped_ptr<AutofillWebDataService> autofill_data(
+      AutofillWebDataService::FromBrowserContext(browser_context_));
+
+  // WebDataService may not be available in tests.
+  if (!autofill_data.get())
+    return;
+
+  LoadProfiles();
+  LoadCreditCards();
+
+  notification_registrar_.Add(
+      this,
+      chrome::NOTIFICATION_AUTOFILL_MULTIPLE_CHANGED,
+      autofill_data->GetNotificationSource());
+}
+
 PersonalDataManager::~PersonalDataManager() {
   CancelPendingQuery(&pending_profiles_query_);
   CancelPendingQuery(&pending_creditcards_query_);
@@ -187,12 +215,6 @@ void PersonalDataManager::OnStateChanged() {
     autofill_data->EmptyMigrationTrash(true);
     sync_service->RemoveObserver(this);
   }
-}
-
-void PersonalDataManager::Shutdown() {
-  CancelPendingQuery(&pending_profiles_query_);
-  CancelPendingQuery(&pending_creditcards_query_);
-  notification_registrar_.RemoveAll();
 }
 
 void PersonalDataManager::Observe(int type,
@@ -639,34 +661,6 @@ void PersonalDataManager::GetCreditCardSuggestions(
       guid_pairs->push_back(GUIDPair(credit_card->guid(), 0));
     }
   }
-}
-
-PersonalDataManager::PersonalDataManager()
-    : browser_context_(NULL),
-      is_data_loaded_(false),
-      pending_profiles_query_(0),
-      pending_creditcards_query_(0),
-      metric_logger_(new AutofillMetrics),
-      has_logged_profile_count_(false) {
-}
-
-void PersonalDataManager::Init(BrowserContext* browser_context) {
-  browser_context_ = browser_context;
-  metric_logger_->LogIsAutofillEnabledAtStartup(IsAutofillEnabled());
-
-  // WebDataService may not be available in tests.
-  scoped_ptr<AutofillWebDataService> autofill_data(
-      AutofillWebDataService::FromBrowserContext(browser_context_));
-  if (!autofill_data.get())
-    return;
-
-  LoadProfiles();
-  LoadCreditCards();
-
-  notification_registrar_.Add(
-      this,
-      chrome::NOTIFICATION_AUTOFILL_MULTIPLE_CHANGED,
-      autofill_data->GetNotificationSource());
 }
 
 bool PersonalDataManager::IsAutofillEnabled() const {
