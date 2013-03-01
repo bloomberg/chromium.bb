@@ -5,8 +5,8 @@
 // This is a stand-in for a generated file that is available when the
 // Widevine CDM is available.
 
-#ifndef WIDEVINE_CDM_VERSION_H_INCLUDED_
-#define WIDEVINE_CDM_VERSION_H_INCLUDED_
+#ifndef WIDEVINE_CDM_VERSION_H_
+#define WIDEVINE_CDM_VERSION_H_
 
 // If the Widevine CDM were available, we would include
 // third_party/widevine/cdm/widevine_cdm_common.h and define two things:
@@ -14,4 +14,4 @@
 //  - WIDEVINE_CDM_VERSION_STRING (with the version of the CDM that's available
 //    as a string, e.g., "1.0.123.456").
 
-#endif  // WIDEVINE_CDM_VERSION_H_INCLUDED_
+#endif  // WIDEVINE_CDM_VERSION_H_
