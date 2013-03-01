@@ -2,14 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/hwnd_util.h"
+#include "ui/views/win/hwnd_util.h"
 
 #include "ui/views/widget/widget.h"
 
-namespace chrome {
+namespace views {
+
+HWND HWNDForView(View* view) {
+  return view->GetWidget() ? HWNDForWidget(view->GetWidget()) : NULL;
+}
 
 // Returns the HWND associated with the specified widget.
-HWND HWNDForWidget(views::Widget* widget) {
+HWND HWNDForWidget(Widget* widget) {
   return widget->GetNativeView();
 }
 

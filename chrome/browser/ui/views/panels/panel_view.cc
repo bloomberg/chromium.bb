@@ -28,10 +28,10 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/browser/ui/views/hwnd_util.h"
 #include "chrome/browser/ui/views/panels/taskbar_window_thumbnailer_win.h"
 #include "ui/base/win/shell.h"
 #include "ui/gfx/icon_util.h"
+#include "ui/views/win/hwnd_util.h"
 #endif
 
 namespace {
@@ -149,7 +149,7 @@ bool NativePanelTestingWin::VerifyAppIcon() const {
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return true;
 
-  HWND native_window = chrome::HWNDForWidget(panel_view_->window());
+  HWND native_window = views::HWNDForWidget(panel_view_->window());
   HICON app_icon = reinterpret_cast<HICON>(
       ::SendMessage(native_window, WM_GETICON, ICON_BIG, 0L));
   if (!app_icon)
@@ -165,7 +165,7 @@ bool NativePanelTestingWin::VerifyAppIcon() const {
 
 bool NativePanelTestingWin::VerifySystemMinimizeState() const {
 #if defined(OS_WIN)
-  HWND native_window = chrome::HWNDForWidget(panel_view_->window());
+  HWND native_window = views::HWNDForWidget(panel_view_->window());
   WINDOWPLACEMENT placement;
   if (!::GetWindowPlacement(native_window, &placement))
     return false;
@@ -275,7 +275,7 @@ PanelView::PanelView(Panel* panel, const gfx::Rect& bounds)
   ui::win::SetAppIdForWindow(
       ShellIntegration::GetAppModelIdForProfile(UTF8ToWide(panel->app_name()),
                                                 panel->profile()->GetPath()),
-      chrome::HWNDForWidget(window_));
+      views::HWNDForWidget(window_));
 #endif
 }
 
@@ -570,7 +570,7 @@ void PanelView::PanelExpansionStateChanging(Panel::ExpansionState old_state,
   if (is_minimized == will_be_minimized)
     return;
 
-  HWND native_window = chrome::HWNDForWidget(window_);
+  HWND native_window = views::HWNDForWidget(window_);
 
   if (!thumbnailer_.get()) {
     DCHECK(native_window);
@@ -781,7 +781,7 @@ void PanelView::OnWidgetActivationChanged(views::Widget* widget, bool active) {
   // The panel window is in focus (actually accepting keystrokes) if it is
   // active and belongs to a foreground application.
   bool focused = active &&
-      chrome::HWNDForWidget(widget) == ::GetForegroundWindow();
+      views::HWNDForWidget(widget) == ::GetForegroundWindow();
 #else
   NOTIMPLEMENTED();
   bool focused = active;
@@ -915,7 +915,7 @@ void PanelView::UpdateWindowAttribute(int attribute_index,
                                       int attribute_value_to_set,
                                       int attribute_value_to_reset,
                                       bool update_frame) {
-  HWND native_window = chrome::HWNDForWidget(window_);
+  HWND native_window = views::HWNDForWidget(window_);
   int value = ::GetWindowLong(native_window, attribute_index);
   int expected_value = value;
   if (attribute_value_to_set)
