@@ -74,8 +74,6 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   // This method is responsible for deleting the request object.  Called on
   // the UI thread.
   void FeatureExtractionDone(bool success, ClientPhishingRequest* request);
-  // Function to be called when the browser malware feature extractor is done.
-  void MalwareFeatureExtractionDone(scoped_ptr<ClientMalwareRequest> request);
 
   // From NotificationObserver.  Called when a notification comes in.  This
   // method is called in the UI thread.
@@ -120,11 +118,6 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   std::string cur_host_;
   // Handles registering notifications with the NotificationService.
   content::NotificationRegistrar registrar_;
-
-  // Max number of ips we save for each browse
-  static const int kMaxIPsPerBrowse;
-  // Max number of hosts we report for each malware IP.
-  static const int kMaxHostsPerIP;
 
   base::WeakPtrFactory<ClientSideDetectionHost> weak_factory_;
 
