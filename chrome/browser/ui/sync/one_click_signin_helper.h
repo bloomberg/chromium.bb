@@ -195,12 +195,20 @@ class OneClickSigninHelper
   // ProfileSyncServiceObserver.
   virtual void OnStateChanged() OVERRIDE;
 
+  // Tracks if we are in the process of showing the signin or one click
+  // interstitial page. It's set to true the first time we load one of those
+  // pages and set to false when transient state is cleaned.
+  bool showing_signin_;
+
   // Information about the account that has just logged in.
   std::string session_index_;
   std::string email_;
   std::string password_;
   AutoAccept auto_accept_;
   SyncPromoUI::Source source_;
+  bool switched_to_advanced_;
+  // When switching to advanced settings, we want to track the original source.
+  SyncPromoUI::Source original_source_;
   GURL continue_url_;
   // Redirect URL after sync setup is complete.
   GURL redirect_url_;
