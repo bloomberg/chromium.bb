@@ -91,6 +91,14 @@ struct CONTENT_EXPORT ParamTraits<cc::CompositorFrame> {
 };
 
 template<>
+struct CONTENT_EXPORT ParamTraits<cc::CompositorFrameAck> {
+  typedef cc::CompositorFrameAck param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template<>
 struct CONTENT_EXPORT ParamTraits<cc::DelegatedFrameData> {
   typedef cc::DelegatedFrameData param_type;
   static void Write(Message* m, const param_type& p);
@@ -222,10 +230,6 @@ IPC_STRUCT_TRAITS_BEGIN(cc::TransferableResource)
   IPC_STRUCT_TRAITS_MEMBER(mailbox)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(cc::CompositorFrameAck)
-  IPC_STRUCT_TRAITS_MEMBER(resources)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(cc::CompositorFrameMetadata)
   IPC_STRUCT_TRAITS_MEMBER(root_scroll_offset)
   IPC_STRUCT_TRAITS_MEMBER(page_scale_factor)
@@ -240,4 +244,5 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(cc::GLFrameData)
   IPC_STRUCT_TRAITS_MEMBER(mailbox)
   IPC_STRUCT_TRAITS_MEMBER(sync_point)
+  IPC_STRUCT_TRAITS_MEMBER(size)
 IPC_STRUCT_TRAITS_END()

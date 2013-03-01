@@ -1384,6 +1384,10 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SelectPopupMenuItem,
                     int /* selected index, -1 means no selection */)
 #endif
 
+// Sent by the browser as a reply to ViewHostMsg_SwapCompositorFrame.
+IPC_MESSAGE_ROUTED1(ViewMsg_SwapCompositorFrameAck,
+                    cc::CompositorFrameAck /* ack */)
+
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 
@@ -2105,8 +2109,6 @@ IPC_MESSAGE_ROUTED5(ViewHostMsg_CompositorSurfaceBuffersSwapped,
 
 IPC_MESSAGE_ROUTED1(ViewHostMsg_SwapCompositorFrame,
                     cc::CompositorFrame /* frame */)
-IPC_MESSAGE_ROUTED1(ViewHostMsg_SwapCompositorFrameAck,
-                    cc::CompositorFrameAck /* ack */)
 
 // Opens a file asynchronously. The response returns a file descriptor
 // and an error code from base/platform_file.h.

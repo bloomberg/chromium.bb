@@ -5,7 +5,9 @@
 #ifndef CC_COMPOSITOR_FRAME_ACK_H_
 #define CC_COMPOSITOR_FRAME_ACK_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
+#include "cc/gl_frame_data.h"
 #include "cc/transferable_resource.h"
 
 namespace cc {
@@ -16,6 +18,7 @@ class CC_EXPORT CompositorFrameAck {
   ~CompositorFrameAck();
 
   TransferableResourceArray resources;
+  scoped_ptr<GLFrameData> gl_frame_data;
 };
 
 }  // namespace cc
