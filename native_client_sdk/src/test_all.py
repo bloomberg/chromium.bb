@@ -14,9 +14,7 @@ sys.path.append(os.path.join(SCRIPT_DIR, 'build_tools', 'tests'))
 
 TEST_MODULES = [
     'oshelpers_test',
-    # TODO(sbc): enable getos_test once mock lands in chromium repo
-    # https://codereview.chromium.org/12282013/
-    #'getos_test',
+    'getos_test',
     'create_nmf_test',
     'easy_template_test',
     'httpd_test',

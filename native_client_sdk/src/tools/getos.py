@@ -116,12 +116,16 @@ def GetChromePath():
   return os.path.realpath(chrome_path)
 
 
-def GetChromeArch(platform):
+def GetNaClArch(platform):
   if platform == 'win':
-    if UseWin64():
-      return 'x86_64'
+    # On windows the nacl arch always maches to system arch
+    return GetSystemArch(platform)
+  elif platform == 'mac':
+    # On Mac the nacl arch is currently always 32-bit.
     return 'x86_32'
 
+  # On linux the nacl arch matches to chrome arch, so we inspect the chome
+  # binary using objdump
   chrome_path = GetChromePath()
 
   # If CHROME_PATH is set to point to google-chrome or google-chrome
@@ -157,7 +161,7 @@ def GetChromeArch(platform):
 
 def GetLoaderPath(platform):
   sdk_path = GetSDKPath()
-  arch = GetChromeArch(platform)
+  arch = GetNaClArch(platform)
   sel_ldr = os.path.join(sdk_path, 'tools', 'sel_ldr_' + arch)
   if not os.path.exists(sel_ldr):
     raise Error("sel_ldr not found: %s" % sel_ldr)
@@ -168,7 +172,7 @@ def GetHelperPath(platform):
   sdk_path = GetSDKPath()
   if platform != 'linux':
     return ''
-  arch = GetChromeArch(platform)
+  arch = GetNaClArch(platform)
   helper = os.path.join(sdk_path, 'tools', 'nacl_helper_bootstrap_' + arch)
   if not os.path.exists(helper):
     raise Error("helper not found: %s" % helper)
@@ -177,7 +181,7 @@ def GetHelperPath(platform):
 
 def GetIrtBinPath(platform):
   sdk_path = GetSDKPath()
-  arch = GetChromeArch(platform)
+  arch = GetNaClArch(platform)
   irt =  os.path.join(sdk_path, 'tools', 'irt_core_%s.nexe' % arch)
   if not os.path.exists(irt):
     raise Error("irt not found: %s" % irt)
@@ -203,8 +207,8 @@ def main(args):
   parser.add_option('--chrome', action='store_true',
       help='Print the path chrome (by first looking in $CHROME_PATH and '
            'then $PATH).')
-  parser.add_option('--chrome-arch', action='store_true',
-      help='Print architecture of chrome executable.')
+  parser.add_option('--nacl-arch', action='store_true',
+      help='Print architecture used by NaCl on the current machine.')
   parser.add_option('--helper', action='store_true',
       help='Print chrome helper path.')
   parser.add_option('--irtbin', action='store_true',
@@ -232,8 +236,8 @@ def main(args):
 
   if options.arch:
     out = GetSystemArch(platform)
-  elif options.chrome_arch:
-    out = GetChromeArch(platform)
+  elif options.nacl_arch:
+    out = GetNaClArch(platform)
   elif options.chrome:
     out = GetChromePath()
   elif options.helper:

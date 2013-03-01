@@ -369,7 +369,7 @@ endif
 	    --register-pepper-plugins="$(PPAPI_DEBUG),$(PPAPI_RELEASE)"
 
 
-SYSARCH=$(shell python $(NACL_SDK_ROOT)/tools/getos.py --chrome-arch)
+SYSARCH=$(shell python $(NACL_SDK_ROOT)/tools/getos.py --nacl-arch)
 GDB_ARGS+=-D $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/$(SYSARCH)-nacl-gdb
 GDB_ARGS+=-D $(abspath $(OUTDIR))/$(TARGET)_$(SYSARCH).nexe
 

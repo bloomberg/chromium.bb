@@ -16,15 +16,17 @@ MOCK_DIR = os.path.join(CHROME_SRC, "third_party", "pymock")
 
 # For the mock library
 sys.path.append(MOCK_DIR)
-from mock import patch
+import mock
 
 # For getos, the module under test
 sys.path.append(TOOLS_DIR)
 import getos
+import oshelpers
 
 
 class TestCaseExtended(unittest.TestCase):
   """Monkey patch some 2.7-only TestCase features."""
+  # TODO(sbc): remove this once we switch to python2.7 everywhere
   def assertIn(self, expr1, expr2, msg=None):
     if hasattr(super(TestCaseExtended, self), 'assertIn'):
       return super(TestCaseExtended, self).assertIn(expr1, expr2, msg)
@@ -34,16 +36,20 @@ class TestCaseExtended(unittest.TestCase):
 
 class TestGetos(TestCaseExtended):
   def setUp(self):
-    self.sdkroot = os.environ.get('NACL_SDK_ROOT')
-    os.environ['NACL_SDK_ROOT'] = os.path.dirname(TOOLS_DIR)
+    self.patch1 = mock.patch.dict('os.environ',
+                                  {'NACL_SDK_ROOT': os.path.dirname(TOOLS_DIR)})
+    self.patch1.start()
+    self.patch2 = mock.patch.object(oshelpers, 'FindExeInPath',
+                                    return_value='/bin/ls')
+    self.patch2.start()
 
   def tearDown(self):
-    if self.sdkroot != None:
-      os.environ['NACL_SDK_ROOT'] = self.sdkroot
+    self.patch1.stop()
+    self.patch2.stop()
 
   def testGetSDKPath(self):
     """honors enironment variable."""
-    with patch.dict('os.environ', {'NACL_SDK_ROOT': 'dummy'}):
+    with mock.patch.dict('os.environ', {'NACL_SDK_ROOT': 'dummy'}):
       self.assertEqual(getos.GetSDKPath(), 'dummy')
 
   def testGetSDKPathDefault(self):
@@ -63,61 +69,76 @@ class TestGetos(TestCaseExtended):
 
   def testGetChromePathEnv(self):
     """honors CHROME_PATH environment."""
-    with patch.dict('os.environ', {'CHROME_PATH': '/dummy/file'}):
+    with mock.patch.dict('os.environ', {'CHROME_PATH': '/dummy/file'}):
       expect = "Invalid CHROME_PATH.*/dummy/file"
-      with self.assertRaisesRegexp(getos.Error, expect):
-        getos.GetChromePath()
+      if hasattr(self, 'assertRaisesRegexp'):
+        with self.assertRaisesRegexp(getos.Error, expect):
+          getos.GetChromePath()
+      else:
+        # TODO(sbc): remove this path once we switch to python2.7 everywhere
+        self.assertRaises(getos.Error, getos.GetChromePath)
 
   def testGetChromePathCheckExists(self):
-    """checks that chrome exists."""
-    with patch.dict('os.environ', {'CHROME_PATH': '/bin/ls'}):
-      with patch('os.path.exists') as mock_exists:
+    """checks that existence of explictly CHROME_PATH is checked."""
+    mock_location = '/bin/ls'
+    if getos.GetPlatform() == 'win':
+      mock_location = 'c:\\nowhere'
+    with mock.patch.dict('os.environ', {'CHROME_PATH': mock_location}):
+      with mock.patch('os.path.exists') as mock_exists:
         chrome = getos.GetChromePath()
+        self.assertEqual(chrome, mock_location)
         mock_exists.assert_called_with(chrome)
 
   def testGetHelperPath(self):
-    """checks that helper exists."""
+    """GetHelperPath checks that helper exists."""
     platform = getos.GetPlatform()
-    with patch('os.path.exists') as mock_exists:
+    # The helper is only needed on linux. On other platforms
+    # GetHelperPath() simply return empty string.
+    if platform == 'linux':
+      with mock.patch('os.path.exists') as mock_exists:
+        helper = getos.GetHelperPath(platform)
+        mock_exists.assert_called_with(helper)
+    else:
       helper = getos.GetHelperPath(platform)
-      mock_exists.assert_called_with(helper)
+      self.assertEqual(helper, '')
 
   def testGetIrtBinPath(self):
-    """checks that helper exists."""
+    """GetIrtBinPath checks that irtbin exists."""
     platform = getos.GetPlatform()
-    with patch('os.path.exists') as mock_exists:
+    with mock.patch('os.path.exists') as mock_exists:
       irt = getos.GetIrtBinPath(platform)
       mock_exists.assert_called_with(irt)
 
   def testGetLoaderPath(self):
     """checks that loader exists."""
     platform = getos.GetPlatform()
-    with patch('os.path.exists') as mock_exists:
-      irt = getos.GetIrtBinPath(platform)
-      mock_exists.assert_called_with(irt)
+    with mock.patch('os.path.exists') as mock_exists:
+      loader = getos.GetLoaderPath(platform)
+      mock_exists.assert_called_with(loader)
 
-  def testGetChromeArch(self):
+  def testGetNaClArch(self):
     """returns a valid architecuture."""
     platform = getos.GetPlatform()
-    # Since the unix implementation of GetChromeArch will run objdump on the
+    # Since the unix implementation of GetNaClArch will run objdump on the
     # chrome binary, and we want to be able to run this test without chrome
     # installed we mock the GetChromePath call to return a known system binary,
     # which objdump will work with.
-    with patch('getos.GetChromePath') as mock_chrome_path:
+    with mock.patch('getos.GetChromePath') as mock_chrome_path:
       mock_chrome_path.return_value = '/bin/ls'
-      arch = getos.GetChromeArch(platform)
+      arch = getos.GetNaClArch(platform)
       self.assertIn(arch, ('x86_64', 'x86_32', 'arm'))
 
 
-class TestGetosWithTempdir(TestGetos):
+class TestGetosWithTempdir(TestCaseExtended):
   def setUp(self):
-    self.old_sdkroot = os.environ.get('NACL_SDK_ROOT')
     self.tempdir = tempfile.mkdtemp("_sdktest")
-    os.environ['NACL_SDK_ROOT'] = self.tempdir
+    self.patch = mock.patch.dict('os.environ',
+                                  {'NACL_SDK_ROOT': self.tempdir})
+    self.patch.start()
 
   def tearDown(self):
     shutil.rmtree(self.tempdir)
-    os.environ['NACL_SDK_ROOT'] = self.old_sdkroot
+    self.patch.stop()
 
   def testGetSDKVersion(self):
     """correctly parses README to find SDK version."""
