@@ -106,6 +106,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/ash_constants.h"
 #include "ash/display/display_change_observer_x11.h"
+#include "ash/display/display_error_dialog.h"
 #include "ash/display/output_configurator_animation.h"
 #include "base/chromeos/chromeos_version.h"
 #include "base/message_pump_aurax11.h"
@@ -303,17 +304,19 @@ Shell::~Shell() {
   // because they might have registered ActivationChangeObserver.
   activation_controller_.reset();
 
-  DCHECK(instance_ == this);
-  instance_ = NULL;
-
 #if defined(OS_CHROMEOS)
   if (display_change_observer_.get())
     output_configurator_->RemoveObserver(display_change_observer_.get());
   if (output_configurator_animation_.get())
     output_configurator_->RemoveObserver(output_configurator_animation_.get());
+  if (display_error_observer_.get())
+    output_configurator_->RemoveObserver(display_error_observer_.get());
   base::MessagePumpAuraX11::Current()->RemoveDispatcherForRootWindow(
       output_configurator());
 #endif  // defined(OS_CHROMEOS)
+
+  DCHECK(instance_ == this);
+  instance_ = NULL;
 }
 
 // static
@@ -418,8 +421,10 @@ void Shell::Init() {
     // observer gets invoked after the root windows are configured.
     output_configurator_->AddObserver(display_change_observer_.get());
     output_configurator_animation_.reset(
-        new internal::OutputConfiguratorAnimation()),
+        new internal::OutputConfiguratorAnimation());
+    display_error_observer_.reset(new internal::DisplayErrorObserver());
     output_configurator_->AddObserver(output_configurator_animation_.get());
+    output_configurator_->AddObserver(display_error_observer_.get());
     display_change_observer_->OnDisplayModeChanged();
   }
 #endif

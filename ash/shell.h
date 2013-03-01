@@ -103,6 +103,7 @@ class ActivationController;
 class AppListController;
 class CaptureController;
 class DisplayChangeObserverX11;
+class DisplayErrorObserver;
 class DisplayManager;
 class DragDropController;
 class EventClientImpl;
@@ -434,6 +435,9 @@ class ASH_EXPORT Shell
   internal::OutputConfiguratorAnimation* output_configurator_animation() {
     return output_configurator_animation_.get();
   }
+  internal::DisplayErrorObserver* display_error_observer() {
+    return display_error_observer_.get();
+  }
 #endif  // defined(OS_CHROMEOS)
 
   RootWindowHostFactory* root_window_host_factory() {
@@ -579,6 +583,7 @@ class ASH_EXPORT Shell
   scoped_ptr<chromeos::OutputConfigurator> output_configurator_;
   scoped_ptr<internal::OutputConfiguratorAnimation>
       output_configurator_animation_;
+  scoped_ptr<internal::DisplayErrorObserver> display_error_observer_;
 
   // Receives output change events and udpates the display manager.
   scoped_ptr<internal::DisplayChangeObserverX11> display_change_observer_;

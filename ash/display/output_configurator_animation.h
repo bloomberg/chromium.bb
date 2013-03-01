@@ -43,7 +43,8 @@ class ASH_EXPORT OutputConfiguratorAnimation
  protected:
   // chromeos::OutputConfigurator::Observer overrides:
   virtual void OnDisplayModeChanged() OVERRIDE;
-  virtual void OnDisplayModeChangeFailed() OVERRIDE;
+  virtual void OnDisplayModeChangeFailed(
+      chromeos::OutputState failed_new_state) OVERRIDE;
 
  private:
   // Clears all hiding layers.  Note that in case that this method is called

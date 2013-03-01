@@ -654,10 +654,12 @@ bool OutputConfigurator::CycleDisplayMode() {
   XRRFreeScreenResources(screen);
   XUngrabServer(display);
 
-  if (did_change)
+  if (did_change) {
     NotifyOnDisplayChanged();
-  else
-    FOR_EACH_OBSERVER(Observer, observers_, OnDisplayModeChangeFailed());
+  } else {
+    FOR_EACH_OBSERVER(
+        Observer, observers_, OnDisplayModeChangeFailed(next_state));
+  }
   return did_change;
 }
 
@@ -759,10 +761,12 @@ bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
   XRRFreeScreenResources(screen);
   XUngrabServer(display);
 
-  if (output_state_ == new_state)
+  if (output_state_ == new_state) {
     NotifyOnDisplayChanged();
-  else
-    FOR_EACH_OBSERVER(Observer, observers_, OnDisplayModeChangeFailed());
+  } else {
+    FOR_EACH_OBSERVER(
+        Observer, observers_, OnDisplayModeChangeFailed(new_state));
+  }
   return true;
 }
 
@@ -833,6 +837,9 @@ void OutputConfigurator::ConfigureOutputs() {
   if (success) {
     output_state_ = new_state;
     NotifyOnDisplayChanged();
+  } else {
+    FOR_EACH_OBSERVER(
+        Observer, observers_, OnDisplayModeChangeFailed(new_state));
   }
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
       SetIsProjecting(is_projecting);
