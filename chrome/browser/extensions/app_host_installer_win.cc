@@ -70,17 +70,23 @@ QuickEnableDelegate::QuickEnableDelegate(
 QuickEnableDelegate::~QuickEnableDelegate() {}
 
 void QuickEnableDelegate::OnObjectSignaled(HANDLE object) {
+  // Reset callback_ to free up references. But do it now because it's possible
+  // that callback_.Run() will cause this object to be deleted.
+  OnAppHostInstallationCompleteCallback callback(callback_);
+  callback_.Reset();
+
   int exit_code = 0;
   base::TerminationStatus status(
       base::GetTerminationStatus(object, &exit_code));
   if (status == base::TERMINATION_STATUS_NORMAL_TERMINATION) {
-    callback_.Run(true);
+    callback.Run(true);
   } else {
     LOG(ERROR) << "App Launcher install failed, status = " << status
                << ", exit code = " << exit_code;
-    callback_.Run(false);
+    callback.Run(false);
   }
-  callback_.Reset();
+
+  // At this point 'this' may be deleted. Don't do anything else here.
 }
 
 // Reads the path to app_host.exe from the value "UninstallString" within the
