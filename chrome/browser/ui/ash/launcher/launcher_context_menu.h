@@ -71,7 +71,9 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
     MENU_NEW_WINDOW,
     MENU_NEW_INCOGNITO_WINDOW,
     MENU_ALIGNMENT_MENU,
+#if defined(OS_CHROMEOS) && defined(OFFICIAL_BUILD)
     MENU_CHANGE_WALLPAPER,
+#endif
   };
 
   // Does |item_| represent a valid item? See description of constructor for

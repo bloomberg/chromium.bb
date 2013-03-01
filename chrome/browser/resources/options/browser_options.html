@@ -30,7 +30,7 @@
   <section>
     <h3 i18n-content="sectionTitleAppearance"></h3>
     <div class="settings-row">
-<if expr="pp_ifdef('chromeos') and pp_ifdef('use_ash')">
+      <if expr="pp_ifdef('chromeos') and pp_ifdef('_google_chrome')">
       <button id="set-wallpaper" i18n-content="setWallpaper"
           guest-visibility="disabled"></button>
 </if>
