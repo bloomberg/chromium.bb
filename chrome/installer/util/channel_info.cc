@@ -15,7 +15,8 @@ namespace {
 
 const wchar_t kModChrome[] = L"-chrome";
 const wchar_t kModChromeFrame[] = L"-chromeframe";
-const wchar_t kModAppHost[] = L"-apphost";
+// TODO(huangs): Remove by M27.
+const wchar_t kModAppHostDeprecated[] = L"-apphost";
 const wchar_t kModAppLauncher[] = L"-applauncher";
 const wchar_t kModMultiInstall[] = L"-multi";
 const wchar_t kModReadyMode[] = L"-readymode";
@@ -33,7 +34,7 @@ const wchar_t* const kModifiers[] = {
   kModMultiInstall,
   kModChrome,
   kModChromeFrame,
-  kModAppHost,
+  kModAppHostDeprecated,  // TODO(huangs): Remove by M27.
   kModAppLauncher,
   kModReadyMode,
   kSfxMultiFail,
@@ -45,7 +46,7 @@ enum ModifierIndex {
   MOD_MULTI_INSTALL,
   MOD_CHROME,
   MOD_CHROME_FRAME,
-  MOD_APP_HOST,
+  MOD_APP_HOST_DEPRECATED,  // TODO(huangs): Remove by M27.
   MOD_APP_LAUNCHER,
   MOD_READY_MODE,
   SFX_MULTI_FAIL,
@@ -199,20 +200,15 @@ bool ChannelInfo::SetChromeFrame(bool value) {
   return SetModifier(MOD_CHROME_FRAME, value, &value_);
 }
 
-bool ChannelInfo::IsAppHost() const {
-  return HasModifier(MOD_APP_HOST, value_);
-}
-
-bool ChannelInfo::SetAppHost(bool value) {
-  return SetModifier(MOD_APP_HOST, value, &value_);
-}
-
 bool ChannelInfo::IsAppLauncher() const {
   return HasModifier(MOD_APP_LAUNCHER, value_);
 }
 
 bool ChannelInfo::SetAppLauncher(bool value) {
-  return SetModifier(MOD_APP_LAUNCHER, value, &value_);
+  // Unconditionally remove -apphost since it has been deprecated.
+  bool changed_app_host = SetModifier(MOD_APP_HOST_DEPRECATED, false, &value_);
+  bool changed_app_launcher = SetModifier(MOD_APP_LAUNCHER, value, &value_);
+  return changed_app_host || changed_app_launcher;
 }
 
 bool ChannelInfo::IsMultiInstall() const {

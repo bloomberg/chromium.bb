@@ -57,13 +57,6 @@ class ChannelInfo {
   // modified.
   bool SetChromeFrame(bool value);
 
-  // Returns true if the -apphost modifier is present in the value.
-  bool IsAppHost() const;
-
-  // Adds or removes the -apphost modifier, returning true if the value is
-  // modified.
-  bool SetAppHost(bool value);
-
   // Returns true if the -applauncher modifier is present in the value.
   bool IsAppLauncher() const;
 

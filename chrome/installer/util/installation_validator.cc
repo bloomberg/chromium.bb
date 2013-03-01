@@ -117,14 +117,9 @@ void InstallationValidator::ChromeAppHostRules::AddUninstallSwitchExpectations(
     SwitchExpectations* expectations) const {
   DCHECK(!ctx.system_install);
 
-  // Either --app-launcher or --app-host must be present.
-  if (ctx.state.channel().IsAppLauncher()) {
-    expectations->push_back(
-        std::make_pair(std::string(switches::kChromeAppLauncher), true));
-  } else {
-    expectations->push_back(
-        std::make_pair(std::string(switches::kChromeAppHost), true));
-  }
+  // --app-launcher must be present.
+  expectations->push_back(
+      std::make_pair(std::string(switches::kChromeAppLauncher), true));
 
   // --chrome must not be present.
   expectations->push_back(std::make_pair(std::string(switches::kChrome),
@@ -530,7 +525,7 @@ void InstallationValidator::ValidateBinaries(
                << "\"";
   }
 
-  // ap must have -apphost iff Chrome Frame is installed multi
+  // ap must have -applauncher iff Chrome App Launcher is installed multi
   const ProductState* app_host_state = machine_state.GetProductState(
       system_install, BrowserDistribution::CHROME_APP_HOST);
   if (app_host_state != NULL) {
@@ -538,17 +533,11 @@ void InstallationValidator::ValidateBinaries(
       *is_valid = false;
       LOG(ERROR) << "Chrome App Launcher is installed in non-multi mode.";
     }
-    if (!channel.IsAppHost() && !channel.IsAppLauncher()) {
+    if (!channel.IsAppLauncher()) {
       *is_valid = false;
-      LOG(ERROR) << "Chrome Binaries are missing \"-apphost\" and"
-                    " \"-applauncher\" in channel name: \""
-                 << channel.value() << "\"";
+      LOG(ERROR) << "Chrome Binaries are missing \"-applauncher\" in channel"
+                    " name: \"" << channel.value() << "\"";
     }
-  } else if (channel.IsAppHost()) {
-    *is_valid = false;
-    LOG(ERROR) << "Chrome Binaries have \"-apphost\" in channel name, yet "
-                  "Chrome App Host is not installed: \"" << channel.value()
-               << "\"";
   } else if (channel.IsAppLauncher()) {
     *is_valid = false;
     LOG(ERROR) << "Chrome Binaries have \"-applauncher\" in channel name, yet "

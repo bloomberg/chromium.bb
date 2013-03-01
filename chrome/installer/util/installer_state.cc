@@ -131,7 +131,7 @@ void InstallerState::Initialize(const CommandLine& command_line,
             << " distribution: " << p->distribution()->GetAppShortCutName();
   }
 
-  if (prefs.install_chrome_app_host() || prefs.install_chrome_app_launcher()) {
+  if (prefs.install_chrome_app_launcher()) {
     Product* p = AddProductFromPreferences(
         BrowserDistribution::CHROME_APP_HOST, prefs, machine_state);
     VLOG(1) << (is_uninstall ? "Uninstall" : "Install")
@@ -286,14 +286,12 @@ void InstallerState::Initialize(const CommandLine& command_line,
   if (operand == NULL) {
     BrowserDistribution::Type operand_distribution_type =
         BrowserDistribution::CHROME_BINARIES;
-    if (prefs.install_chrome()) {
+    if (prefs.install_chrome())
       operand_distribution_type = BrowserDistribution::CHROME_BROWSER;
-    } else if (prefs.install_chrome_frame()) {
+    else if (prefs.install_chrome_frame())
       operand_distribution_type = BrowserDistribution::CHROME_FRAME;
-    } else if (prefs.install_chrome_app_host() ||
-               prefs.install_chrome_app_launcher()) {
+    else if (prefs.install_chrome_app_launcher())
       operand_distribution_type = BrowserDistribution::CHROME_APP_HOST;
-    }
 
     operand = BrowserDistribution::GetSpecificDistribution(
         operand_distribution_type);

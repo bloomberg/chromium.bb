@@ -23,7 +23,7 @@ extern const char kAutoLaunchChrome[];
 // Boolean. This is to be a Chrome install. (When using MultiInstall)
 extern const char kChrome[];
 // Boolean. This is to be a Chrome App Host install.
-extern const char kChromeAppHost[];
+extern const char kChromeAppHostDeprecated[];  // TODO(huangs): Remove by M27.
 // Boolean. This is to be a Chrome App Launcher install.
 extern const char kChromeAppLauncher[];
 // Boolean. This is to be a Chrome Frame install.

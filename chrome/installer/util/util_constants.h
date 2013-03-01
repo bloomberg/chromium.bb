@@ -130,7 +130,7 @@ COMPILE_ASSERT(DEFERRING_TO_HIGHER_VERSION == 18,
 namespace switches {
 extern const char kAutoLaunchChrome[];
 extern const char kChrome[];
-extern const char kChromeAppHost[];
+extern const char kChromeAppHostDeprecated[];  // TODO(huangs): Remove by M27.
 extern const char kChromeAppLauncher[];
 extern const char kChromeFrame[];
 extern const char kChromeFrameQuickEnable[];
@@ -224,7 +224,6 @@ extern const wchar_t kInstallerSuccessLaunchCmdLine[];
 // Product options.
 extern const wchar_t kOptionMultiInstall[];
 extern const wchar_t kOptionReadyMode[];
-extern const wchar_t kOptionAppHostIsLauncher[];
 
 // Chrome channel display names.
 // NOTE: Canary is not strictly a 'channel', but rather a separate product

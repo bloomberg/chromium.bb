@@ -25,7 +25,7 @@ const wchar_t kGoogleRegClientsKey[] = L"Software\\Google\\Update\\Clients\\";
 
 // Copied from util_constants.cc.
 const char kMultiInstall[] = "multi-install";
-const char kChromeAppHost[] = "app-host";
+const char kChromeAppLauncher[] = "app-launcher";
 const char kVerboseLogging[] = "verbose-logging";
 
 // Copied from google_update_constants.cc.
@@ -75,7 +75,7 @@ bool LaunchAppHostUpdate() {
   }
   CommandLine cmd_line(setup_exe);
   cmd_line.AppendSwitch(kMultiInstall);
-  cmd_line.AppendSwitch(kChromeAppHost);
+  cmd_line.AppendSwitch(kChromeAppLauncher);
   cmd_line.AppendSwitch(kVerboseLogging);
   LOG(INFO) << "Launching: " << cmd_line.GetCommandLineString();
   return base::LaunchProcess(cmd_line, base::LaunchOptions(), NULL);

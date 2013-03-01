@@ -553,8 +553,7 @@ InstallStatus InstallOrUpdateProduct(
     const Product* app_launcher_product =
         installer_state.FindProduct(BrowserDistribution::CHROME_APP_HOST);
     // Creates shortcuts for App Launcher.
-    if (app_launcher_product &&
-        app_launcher_product->HasOption(kOptionAppHostIsLauncher)) {
+    if (app_launcher_product) {
       // TODO(huangs): Remove this check once we have system-level App Host.
       DCHECK(!installer_state.system_install());
       const base::FilePath app_host_exe(
