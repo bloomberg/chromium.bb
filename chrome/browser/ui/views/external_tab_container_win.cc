@@ -40,7 +40,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/media_stream_infobar_delegate.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
-#include "chrome/browser/ui/views/hwnd_util.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/tab_contents/render_view_context_menu_win.h"
 #include "chrome/common/automation_messages.h"
@@ -76,6 +75,7 @@
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/win/hwnd_util.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/root_window.h"
@@ -223,7 +223,7 @@ bool ExternalTabContainerWin::Init(Profile* profile,
   params.native_widget = new views::DesktopNativeWidgetAura(widget_);
 #endif
   widget_->Init(params);
-  HWND window = chrome::HWNDForWidget(widget_);
+  HWND window = views::HWNDForWidget(widget_);
 
   // TODO(jcampan): limit focus traversal to contents.
 
@@ -362,7 +362,7 @@ bool ExternalTabContainerWin::Reinitialize(
                             weak_factory_.GetWeakPtr()));
 
   if (parent_window)
-    SetParent(chrome::HWNDForWidget(widget_), parent_window);
+    SetParent(views::HWNDForWidget(widget_), parent_window);
   return true;
 }
 
@@ -371,11 +371,11 @@ WebContents* ExternalTabContainerWin::GetWebContents() const {
 }
 
 HWND ExternalTabContainerWin::GetExternalTabHWND() const {
-  return chrome::HWNDForWidget(widget_);
+  return views::HWNDForWidget(widget_);
 }
 
 HWND ExternalTabContainerWin::GetContentHWND() const {
-  return chrome::HWNDForNativeWindow(web_contents_->GetView()->GetNativeView());
+  return views::HWNDForNativeWindow(web_contents_->GetView()->GetNativeView());
 }
 
 void ExternalTabContainerWin::SetTabHandle(int handle) {
@@ -746,7 +746,7 @@ bool ExternalTabContainerWin::HandleContextMenu(
     ConvertMenuModel(&external_context_menu_->menu_model()));
 
   POINT screen_pt = { params.x, params.y };
-  MapWindowPoints(chrome::HWNDForWidget(widget_), HWND_DESKTOP, &screen_pt, 1);
+  MapWindowPoints(views::HWNDForWidget(widget_), HWND_DESKTOP, &screen_pt, 1);
 
   MiniContextMenuParams ipc_params;
   ipc_params.screen_x = screen_pt.x;
@@ -1258,7 +1258,7 @@ ExternalTabContainer* ExternalTabContainer::Create(
 // static
 ExternalTabContainer* ExternalTabContainer::GetContainerForTab(
     content::WebContents* web_contents) {
-  HWND parent_window = chrome::HWNDForNativeWindow(
+  HWND parent_window = views::HWNDForNativeWindow(
       web_contents->GetView()->GetTopLevelNativeWindow());
   if (!::IsWindow(parent_window))
     return NULL;

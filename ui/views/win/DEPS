@@ -1,5 +1,14 @@
-# This code here is intended to be distinct from the rest of views.
-# Use HWNDMessageHandlerDelegate instead of #including views types here.
+# hwnd_util is allowed to include ui/views because it has separate
+# implementations for win and aura.
+specific_include_rules = {
+  "hwnd_util.*": [
+    "+ui/views",
+  ],
+}
+
+# The rest of the code here is intended to be distinct from the rest of
+# views and not depend on the details of the win and aura implementations.
+# Use HWNDMessageHandlerDelegate instead of #including views types.
 include_rules = [
   "-ui/views",
 

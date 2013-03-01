@@ -10,11 +10,11 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/hwnd_util.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/win/hwnd_util.h"
 
 #if defined(USE_AURA)
 #include "ui/views/widget/desktop_aura/desktop_root_window_host_win.h"
@@ -220,7 +220,7 @@ class DockToWindowFinder : public BaseWindowFinder {
   static DockInfo GetDockInfoAtPoint(const gfx::Point& screen_loc,
                                      const std::set<HWND>& ignore) {
     DockToWindowFinder finder(screen_loc, ignore);
-    HWND hwnd = chrome::HWNDForNativeWindow(finder.result_.window());
+    HWND hwnd = views::HWNDForNativeWindow(finder.result_.window());
     if (!finder.result_.window() ||
         !TopMostFinder::IsTopMostWindowAtPoint(hwnd,
                                                finder.result_.hot_spot(),

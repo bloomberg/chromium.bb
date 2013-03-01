@@ -27,9 +27,9 @@
 
 #if defined(OS_WIN)
 #include "base/win/scoped_gdi_object.h"
-#include "chrome/browser/ui/views/hwnd_util.h"
 #include "ui/base/win/shell.h"
 #include "ui/gfx/path_win.h"
+#include "ui/views/win/hwnd_util.h"
 #endif
 
 #if defined(USE_AURA)
@@ -370,7 +370,7 @@ void PanelFrameView::SetWindowCornerStyle(panel::CornerStyle corner_style) {
 #if defined(OS_WIN)
   // Changing the window region is going to force a paint. Only change the
   // window region if the region really differs.
-  HWND native_window = chrome::HWNDForWidget(panel_view_->window());
+  HWND native_window = views::HWNDForWidget(panel_view_->window());
   base::win::ScopedRegion current_region(::CreateRectRgn(0, 0, 0, 0));
   int current_region_result = ::GetWindowRgn(native_window, current_region);
 
