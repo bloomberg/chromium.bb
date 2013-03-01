@@ -265,13 +265,6 @@ void GpuCommandBufferStub::OnEcho(const IPC::Message& message) {
   Send(new IPC::Message(message));
 }
 
-void GpuCommandBufferStub::OnReschedule() {
-  if (!IsScheduled())
-    return;
-
-  channel_->OnScheduled();
-}
-
 bool GpuCommandBufferStub::MakeCurrent() {
   if (decoder_->MakeCurrent())
     return true;
@@ -485,8 +478,9 @@ void GpuCommandBufferStub::OnInitialize(
                  base::Unretained(scheduler_.get())));
   command_buffer_->SetParseErrorCallback(
       base::Bind(&GpuCommandBufferStub::OnParseError, base::Unretained(this)));
-  scheduler_->SetScheduledCallback(
-      base::Bind(&GpuCommandBufferStub::OnReschedule, base::Unretained(this)));
+  scheduler_->SetSchedulingChangedCallback(
+      base::Bind(&GpuChannel::StubSchedulingChanged,
+                 base::Unretained(channel_)));
 
   if (watchdog_) {
     scheduler_->SetCommandProcessedCallback(

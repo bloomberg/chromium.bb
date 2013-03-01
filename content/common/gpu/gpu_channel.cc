@@ -157,7 +157,8 @@ class SyncPointMessageFilter : public IPC::ChannelProxy::MessageFilter {
         channel_(NULL),
         sync_point_manager_(sync_point_manager),
         message_loop_(message_loop),
-        messages_received_(0) {
+        messages_received_(0),
+        a_stub_is_descheduled_(false) {
   }
 
   virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE {
@@ -207,8 +208,16 @@ class SyncPointMessageFilter : public IPC::ChannelProxy::MessageFilter {
     UpdatePreemptionState();
   }
 
-  void SetPreemptingFlag(gpu::PreemptionFlag* preempting_flag) {
+  void SetPreemptingFlagAndSchedulingState(
+      gpu::PreemptionFlag* preempting_flag,
+      bool a_stub_is_descheduled) {
     preempting_flag_ = preempting_flag;
+    a_stub_is_descheduled_ = a_stub_is_descheduled;
+  }
+
+  void UpdateStubSchedulingState(bool a_stub_is_descheduled) {
+    a_stub_is_descheduled_ = a_stub_is_descheduled;
+    UpdatePreemptionState();
   }
 
  protected:
@@ -228,11 +237,17 @@ class SyncPointMessageFilter : public IPC::ChannelProxy::MessageFilter {
     // We can preempt whenever any IPC processing takes more than
     // kPreemptWaitTimeMs.
     CHECKING,
-    // We are currently preempting.
+    // We are currently preempting (i.e. no stub is descheduled).
     PREEMPTING,
+    // We would like to preempt, but some stub is descheduled.
+    WOULD_PREEMPT_DESCHEDULED,
   };
 
   PreemptionState preemption_state_;
+
+  // Maximum amount of time that we can spend in PREEMPTING.
+  // It is reset when we transition to IDLE.
+  base::TimeDelta max_preemption_time_;
 
   struct PendingMessage {
     uint64 message_number;
@@ -266,27 +281,50 @@ class SyncPointMessageFilter : public IPC::ChannelProxy::MessageFilter {
                     time_elapsed,
                 this, &SyncPointMessageFilter::UpdatePreemptionState);
           } else {
-            TransitionToPreempting();
+            if (a_stub_is_descheduled_)
+              TransitionToWouldPreemptDescheduled();
+            else
+              TransitionToPreempting();
           }
         }
         break;
       case PREEMPTING:
-        if (pending_messages_.empty()) {
-          TransitionToIdle();
-        } else {
-          base::TimeDelta time_elapsed =
-              base::TimeTicks::Now() - pending_messages_.front().time_received;
-          if (time_elapsed.InMilliseconds() < kStopPreemptThresholdMs)
-            TransitionToIdle();
-        }
+        // A TransitionToIdle() timer should always be running in this state.
+        DCHECK(timer_.IsRunning());
+        if (a_stub_is_descheduled_)
+          TransitionToWouldPreemptDescheduled();
+        else
+          TransitionToIdleIfCaughtUp();
+        break;
+      case WOULD_PREEMPT_DESCHEDULED:
+        // A TransitionToIdle() timer should never be running in this state.
+        DCHECK(!timer_.IsRunning());
+        if (!a_stub_is_descheduled_)
+          TransitionToPreempting();
+        else
+          TransitionToIdleIfCaughtUp();
         break;
       default:
         NOTREACHED();
     }
   }
 
+  void TransitionToIdleIfCaughtUp() {
+    DCHECK(preemption_state_ == PREEMPTING ||
+           preemption_state_ == WOULD_PREEMPT_DESCHEDULED);
+    if (pending_messages_.empty()) {
+      TransitionToIdle();
+    } else {
+      base::TimeDelta time_elapsed =
+          base::TimeTicks::Now() - pending_messages_.front().time_received;
+      if (time_elapsed.InMilliseconds() < kStopPreemptThresholdMs)
+        TransitionToIdle();
+    }
+  }
+
   void TransitionToIdle() {
-    DCHECK_EQ(preemption_state_, PREEMPTING);
+    DCHECK(preemption_state_ == PREEMPTING ||
+           preemption_state_ == WOULD_PREEMPT_DESCHEDULED);
     // Stop any outstanding timer set to force us from PREEMPTING to IDLE.
     timer_.Stop();
 
@@ -313,15 +351,19 @@ class SyncPointMessageFilter : public IPC::ChannelProxy::MessageFilter {
     DCHECK(!timer_.IsRunning());
 
     preemption_state_ = CHECKING;
+    max_preemption_time_ = base::TimeDelta::FromMilliseconds(kMaxPreemptTimeMs);
     UpdatePreemptionState();
   }
 
   void TransitionToPreempting() {
-    DCHECK_EQ(preemption_state_, CHECKING);
+    DCHECK(preemption_state_ == CHECKING ||
+           preemption_state_ == WOULD_PREEMPT_DESCHEDULED);
+    DCHECK(!a_stub_is_descheduled_);
 
     // Stop any pending state update checks that we may have queued
     // while CHECKING.
-    timer_.Stop();
+    if (preemption_state_ == CHECKING)
+      timer_.Stop();
 
     preemption_state_ = PREEMPTING;
     preempting_flag_->Set();
@@ -329,8 +371,35 @@ class SyncPointMessageFilter : public IPC::ChannelProxy::MessageFilter {
 
     timer_.Start(
        FROM_HERE,
-       base::TimeDelta::FromMilliseconds(kMaxPreemptTimeMs),
+       max_preemption_time_,
        this, &SyncPointMessageFilter::TransitionToIdle);
+
+    UpdatePreemptionState();
+  }
+
+  void TransitionToWouldPreemptDescheduled() {
+    DCHECK(preemption_state_ == CHECKING ||
+           preemption_state_ == PREEMPTING);
+    DCHECK(a_stub_is_descheduled_);
+
+    if (preemption_state_ == CHECKING) {
+      // Stop any pending state update checks that we may have queued
+      // while CHECKING.
+      timer_.Stop();
+    } else {
+      // Stop any TransitionToIdle() timers that we may have queued
+      // while PREEMPTING.
+      timer_.Stop();
+      max_preemption_time_ = timer_.desired_run_time() - base::TimeTicks::Now();
+      if (max_preemption_time_ < base::TimeDelta()) {
+        TransitionToIdle();
+        return;
+      }
+    }
+
+    preemption_state_ = WOULD_PREEMPT_DESCHEDULED;
+    preempting_flag_->Reset();
+    TRACE_COUNTER_ID1("gpu", "GpuChannel::Preempting", this, 0);
 
     UpdatePreemptionState();
   }
@@ -380,6 +449,8 @@ class SyncPointMessageFilter : public IPC::ChannelProxy::MessageFilter {
   uint64 messages_received_;
 
   base::OneShotTimer<SyncPointMessageFilter> timer_;
+
+  bool a_stub_is_descheduled_;
 };
 
 GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
@@ -399,7 +470,8 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
       handle_messages_scheduled_(false),
       processed_get_state_fast_(false),
       currently_processing_message_(NULL),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      num_stubs_descheduled_(0) {
   DCHECK(gpu_channel_manager);
   DCHECK(client_id);
 
@@ -545,6 +617,27 @@ void GpuChannel::OnScheduled() {
   handle_messages_scheduled_ = true;
 }
 
+void GpuChannel::StubSchedulingChanged(bool scheduled) {
+  bool a_stub_was_descheduled = num_stubs_descheduled_ > 0;
+  if (scheduled) {
+    num_stubs_descheduled_--;
+    OnScheduled();
+  } else {
+    num_stubs_descheduled_++;
+  }
+  DCHECK_LE(num_stubs_descheduled_, stubs_.size());
+  bool a_stub_is_descheduled = num_stubs_descheduled_ > 0;
+
+  if (a_stub_is_descheduled != a_stub_was_descheduled) {
+    if (preempting_flag_.get()) {
+      io_message_loop_->PostTask(
+          FROM_HERE,
+          base::Bind(&SyncPointMessageFilter::UpdateStubSchedulingState,
+                     filter_, a_stub_is_descheduled));
+    }
+  }
+}
+
 void GpuChannel::CreateViewCommandBuffer(
     const gfx::GLSurfaceHandle& window,
     int32 surface_id,
@@ -649,8 +742,8 @@ gpu::PreemptionFlag* GpuChannel::GetPreemptionFlag() {
     preempting_flag_ = new gpu::PreemptionFlag;
     io_message_loop_->PostTask(
         FROM_HERE,
-        base::Bind(&SyncPointMessageFilter::SetPreemptingFlag,
-                   filter_, preempting_flag_));
+        base::Bind(&SyncPointMessageFilter::SetPreemptingFlagAndSchedulingState,
+                   filter_, preempting_flag_, num_stubs_descheduled_ > 0));
   }
   return preempting_flag_.get();
 }
@@ -799,8 +892,11 @@ void GpuChannel::OnDestroyCommandBuffer(int32 route_id) {
     stubs_.Remove(route_id);
     // In case the renderer is currently blocked waiting for a sync reply from
     // the stub, we need to make sure to reschedule the GpuChannel here.
-    if (need_reschedule)
-      OnScheduled();
+    if (need_reschedule) {
+      // This stub won't get a chance to reschedule, so update the count
+      // now.
+      StubSchedulingChanged(true);
+    }
   }
 }
 

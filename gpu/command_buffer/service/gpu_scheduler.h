@@ -76,9 +76,11 @@ class GPU_EXPORT GpuScheduler
   // Returns whether the scheduler needs to be polled again in the future.
   bool HasMoreWork();
 
-  // Sets a callback that is invoked just before scheduler is rescheduled.
-  // Takes ownership of callback object.
-  void SetScheduledCallback(const base::Closure& scheduled_callback);
+  typedef base::Callback<void(bool /* scheduled */)> SchedulingChangedCallback;
+
+  // Sets a callback that is invoked just before scheduler is rescheduled
+  // or descheduled. Takes ownership of callback object.
+  void SetSchedulingChangedCallback(const SchedulingChangedCallback& callback);
 
   // Implementation of CommandBufferEngine.
   virtual Buffer GetSharedMemoryBuffer(int32 shm_id) OVERRIDE;
@@ -146,7 +148,8 @@ class GPU_EXPORT GpuScheduler
   };
   std::queue<linked_ptr<UnscheduleFence> > unschedule_fences_;
 
-  base::Closure scheduled_callback_;
+  SchedulingChangedCallback scheduling_changed_callback_;
+  base::Closure descheduled_callback_;
   base::Closure command_processed_callback_;
 
   // If non-NULL and |preemption_flag_->IsSet()|, exit PutChanged early.

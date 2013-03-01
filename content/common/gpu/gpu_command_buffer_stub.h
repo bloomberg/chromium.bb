@@ -179,8 +179,6 @@ class GpuCommandBufferStub
   void OnReceivedClientManagedMemoryStats(const GpuManagedMemoryStats& stats);
   void OnSetClientHasMemoryAllocationChangedCallback(bool has_callback);
 
-  void OnReschedule();
-
   void OnCommandProcessed();
   void OnParseError();
 

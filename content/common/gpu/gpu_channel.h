@@ -102,6 +102,11 @@ class GpuChannel : public IPC::Listener,
   // deferred IPC messaged are handled.
   void OnScheduled();
 
+  // This is called when a command buffer transitions between scheduled and
+  // descheduled states. When any stub is descheduled, we stop preempting
+  // other channels.
+  void StubSchedulingChanged(bool scheduled);
+
   void CreateViewCommandBuffer(
       const gfx::GLSurfaceHandle& window,
       int32 surface_id,
@@ -239,6 +244,8 @@ class GpuChannel : public IPC::Listener,
 
   scoped_refptr<SyncPointMessageFilter> filter_;
   scoped_refptr<base::MessageLoopProxy> io_message_loop_;
+
+  size_t num_stubs_descheduled_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannel);
 };
