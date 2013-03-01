@@ -1,0 +1,4 @@
+include_rules = [
+  # Avoid circular dependencies - media_galleries builds upon storage_monitor.
+  "-chrome/browser/media_galleries",
+]
