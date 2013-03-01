@@ -37,16 +37,22 @@ void DelegatedRendererLayer::pushPropertiesTo(LayerImpl* impl) {
 
   delegated_impl->SetDisplaySize(display_size_);
 
-  if (frame_data_) {
-    if (frame_size_.IsEmpty()) {
-      scoped_ptr<DelegatedFrameData> empty_frame(new DelegatedFrameData);
-      delegated_impl->SetFrameData(empty_frame.Pass(), gfx::Rect());
-    } else {
-      delegated_impl->SetFrameData(frame_data_.Pass(), damage_in_frame_);
-    }
-    frame_data_.reset();
-    damage_in_frame_ = gfx::RectF();
+  if (!frame_data_)
+    return;
+
+  // TODO(danakj): Save these resources somewhere where we can collect them for
+  // the frame ack.
+  TransferableResourceArray resources_for_ack;
+  if (frame_size_.IsEmpty()) {
+    scoped_ptr<DelegatedFrameData> empty_frame(new DelegatedFrameData);
+    delegated_impl->SetFrameData(
+        empty_frame.Pass(), gfx::Rect(), &resources_for_ack);
+  } else {
+    delegated_impl->SetFrameData(
+        frame_data_.Pass(), damage_in_frame_, &resources_for_ack);
   }
+  frame_data_.reset();
+  damage_in_frame_ = gfx::RectF();
 }
 
 void DelegatedRendererLayer::SetDisplaySize(gfx::Size size) {
@@ -58,6 +64,13 @@ void DelegatedRendererLayer::SetDisplaySize(gfx::Size size) {
 
 void DelegatedRendererLayer::SetFrameData(
     scoped_ptr<DelegatedFrameData> new_frame_data) {
+  if (frame_data_) {
+    // Copy the resources from the last provided frame into the new frame, as
+    // it may use resources that were transferred in the last frame.
+    new_frame_data->resource_list.insert(new_frame_data->resource_list.end(),
+                                         frame_data_->resource_list.begin(),
+                                         frame_data_->resource_list.end());
+  }
   frame_data_ = new_frame_data.Pass();
   if (!frame_data_->render_pass_list.empty()) {
     RenderPass* root_pass = frame_data_->render_pass_list.back();

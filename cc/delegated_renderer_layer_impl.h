@@ -33,22 +33,29 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
       QuadSink& quad_sink, AppendQuadsData& append_quads_data) OVERRIDE;
 
   // TODO(danakj): Make private
-  // This gives ownership of the RenderPasses to the layer.
   void SetRenderPasses(ScopedPtrVector<RenderPass>&);
   void ClearRenderPasses();
 
   void AppendContributingRenderPasses(RenderPassSink* render_pass_sink);
 
-  void SetFrameData(scoped_ptr<DelegatedFrameData> frame_data,
-                    gfx::RectF damage_in_frame);
+  virtual void SetFrameData(scoped_ptr<DelegatedFrameData> frame_data,
+                            gfx::RectF damage_in_frame,
+                            TransferableResourceArray* resources_for_ack);
 
   void SetDisplaySize(gfx::Size size);
 
-  int child_id() const { return child_id_; }
-
- private:
+ protected:
   DelegatedRendererLayerImpl(LayerTreeImpl* tree_impl, int id);
 
+  int ChildIdForTesting() const { return child_id_; }
+  const ScopedPtrVector<RenderPass>& RenderPassesInDrawOrderForTesting() const {
+    return render_passes_in_draw_order_;
+  }
+  const ResourceProvider::ResourceIdSet& ResourcesForTesting() const {
+    return resources_;
+  }
+
+ private:
   // Creates an ID with the resource provider for the child renderer
   // that will be sending quads to the layer.
   void CreateChildIdIfNeeded();
@@ -71,6 +78,7 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
 
   ScopedPtrVector<RenderPass> render_passes_in_draw_order_;
   base::hash_map<RenderPass::Id, int> render_passes_index_by_id_;
+  ResourceProvider::ResourceIdSet resources_;
 
   gfx::Size display_size_;
   int child_id_;

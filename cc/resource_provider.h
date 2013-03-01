@@ -6,6 +6,7 @@
 #define CC_RESOURCE_PROVIDER_H_
 
 #include <deque>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -44,6 +45,7 @@ class CC_EXPORT ResourceProvider {
 public:
     typedef unsigned ResourceId;
     typedef std::vector<ResourceId> ResourceIdArray;
+    typedef std::set<ResourceId> ResourceIdSet;
     typedef base::hash_map<ResourceId, ResourceId> ResourceIdMap;
     enum TextureUsageHint {
         TextureUsageAny,

@@ -8,7 +8,11 @@
 #include "cc/delegated_renderer_layer.h"
 #include "cc/delegated_renderer_layer_impl.h"
 #include "cc/layer_tree_impl.h"
+#include "cc/shared_quad_state.h"
+#include "cc/test/fake_delegated_renderer_layer.h"
+#include "cc/test/fake_delegated_renderer_layer_impl.h"
 #include "cc/test/layer_tree_test_common.h"
+#include "cc/texture_draw_quad.h"
 #include "gpu/GLES2/gl2extchromium.h"
 
 namespace cc {
@@ -30,6 +34,31 @@ class LayerTreeHostDelegatedTest : public ThreadedTest {
     return frame.Pass();
   }
 
+  void AddTransferableResource(DelegatedFrameData* frame,
+                               ResourceProvider::ResourceId resource_id) {
+    TransferableResource resource;
+    resource.id = resource_id;
+    frame->resource_list.push_back(resource);
+  }
+
+  void AddTextureQuad(DelegatedFrameData* frame,
+                      ResourceProvider::ResourceId resource_id) {
+    scoped_ptr<SharedQuadState> sqs = SharedQuadState::Create();
+    scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
+    float vertex_opacity[4] = { 1.f, 1.f, 1.f, 1.f };
+    quad->SetNew(sqs.get(),
+                 gfx::Rect(0, 0, 10, 10),
+                 gfx::Rect(0, 0, 10, 10),
+                 resource_id,
+                 false,
+                 gfx::PointF(0.f, 0.f),
+                 gfx::PointF(1.f, 1.f),
+                 vertex_opacity,
+                 false);
+    frame->render_pass_list[0]->shared_quad_state_list.push_back(sqs.Pass());
+    frame->render_pass_list[0]->quad_list.push_back(quad.PassAs<DrawQuad>());
+  }
+
   scoped_ptr<DelegatedFrameData> CreateEmptyFrameData() {
     scoped_ptr<DelegatedFrameData> frame(new DelegatedFrameData);
     return frame.Pass();
@@ -44,7 +73,7 @@ class LayerTreeHostDelegatedTestCaseSingleDelegatedLayer
     root_->setAnchorPoint(gfx::PointF());
     root_->setBounds(gfx::Size(10, 10));
 
-    delegated_ = DelegatedRendererLayer::Create();
+    delegated_ = FakeDelegatedRendererLayer::Create();
     delegated_->setAnchorPoint(gfx::PointF());
     delegated_->setBounds(gfx::Size(10, 10));
     delegated_->setIsDrawable(true);
@@ -82,20 +111,20 @@ class LayerTreeHostDelegatedTestCreateChildId
 
   virtual void treeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     LayerImpl* root_impl = host_impl->activeTree()->RootLayer();
-    DelegatedRendererLayerImpl* delegated_impl =
-        static_cast<DelegatedRendererLayerImpl*>(root_impl->children()[0]);
+    FakeDelegatedRendererLayerImpl* delegated_impl =
+        static_cast<FakeDelegatedRendererLayerImpl*>(root_impl->children()[0]);
 
     ++num_activates_;
     switch(num_activates_) {
       case 2:
-        EXPECT_TRUE(delegated_impl->child_id());
+        EXPECT_TRUE(delegated_impl->ChildId());
         EXPECT_FALSE(did_reset_child_id_);
 
         host_impl->resourceProvider()->graphicsContext3D()->loseContextCHROMIUM(
             GL_GUILTY_CONTEXT_RESET_ARB, GL_INNOCENT_CONTEXT_RESET_ARB);
         break;
       case 3:
-        EXPECT_TRUE(delegated_impl->child_id());
+        EXPECT_TRUE(delegated_impl->ChildId());
         EXPECT_TRUE(did_reset_child_id_);
         endTest();
         break;
@@ -110,11 +139,11 @@ class LayerTreeHostDelegatedTestCreateChildId
       return;
 
     LayerImpl* root_impl = host_impl->activeTree()->RootLayer();
-    DelegatedRendererLayerImpl* delegated_impl =
-        static_cast<DelegatedRendererLayerImpl*>(root_impl->children()[0]);
+    FakeDelegatedRendererLayerImpl* delegated_impl =
+        static_cast<FakeDelegatedRendererLayerImpl*>(root_impl->children()[0]);
 
     EXPECT_EQ(2, num_activates_);
-    EXPECT_FALSE(delegated_impl->child_id());
+    EXPECT_FALSE(delegated_impl->ChildId());
     did_reset_child_id_ = true;
   }
 
@@ -296,6 +325,108 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestLayerUsesFrameDamage)
+
+class LayerTreeHostDelegatedTestMergeResources
+    : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
+ public:
+  virtual void beginTest() OVERRIDE {
+    // Push two frames to the delegated renderer layer with no commit between.
+
+    // The first frame has resource 999.
+    scoped_ptr<DelegatedFrameData> frame1 =
+        CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
+    AddTextureQuad(frame1.get(), 999);
+    AddTransferableResource(frame1.get(), 999);
+    delegated_->SetFrameData(frame1.Pass());
+
+    // The second frame uses resource 999 still.
+    scoped_ptr<DelegatedFrameData> frame2 =
+        CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
+    AddTextureQuad(frame2.get(), 999);
+    AddTextureQuad(frame2.get(), 555);
+    AddTransferableResource(frame2.get(), 555);
+    delegated_->SetFrameData(frame2.Pass());
+
+    postSetNeedsCommitToMainThread();
+  }
+
+  virtual void treeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    LayerImpl* root_impl = host_impl->activeTree()->RootLayer();
+    FakeDelegatedRendererLayerImpl* delegated_impl =
+        static_cast<FakeDelegatedRendererLayerImpl*>(root_impl->children()[0]);
+
+    const ResourceProvider::ResourceIdMap& map =
+        host_impl->resourceProvider()->getChildToParentMap(
+            delegated_impl->ChildId());
+
+    // Both frames' resources should be in the parent's resource provider.
+    EXPECT_EQ(2u, map.size());
+    EXPECT_EQ(1u, map.count(999));
+    EXPECT_EQ(1u, map.count(555));
+
+    // Both frames' resources should be saved on the layer.
+    EXPECT_EQ(2u, delegated_impl->Resources().size());
+    EXPECT_EQ(1u, delegated_impl->Resources().count(map.find(999)->second));
+    EXPECT_EQ(1u, delegated_impl->Resources().count(map.find(555)->second));
+
+    endTest();
+  }
+
+  virtual void afterTest() OVERRIDE {}
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestMergeResources)
+
+class LayerTreeHostDelegatedTestRemapResourcesInQuads
+    : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
+ public:
+  virtual void beginTest() OVERRIDE {
+    // Generate a frame with a resource in it.
+    scoped_ptr<DelegatedFrameData> frame =
+        CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
+    AddTextureQuad(frame.get(), 999);
+    AddTransferableResource(frame.get(), 999);
+    AddTextureQuad(frame.get(), 555);
+    AddTransferableResource(frame.get(), 555);
+    delegated_->SetFrameData(frame.Pass());
+
+    postSetNeedsCommitToMainThread();
+  }
+
+  virtual void treeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    LayerImpl* root_impl = host_impl->activeTree()->RootLayer();
+    FakeDelegatedRendererLayerImpl* delegated_impl =
+        static_cast<FakeDelegatedRendererLayerImpl*>(root_impl->children()[0]);
+
+    const ResourceProvider::ResourceIdMap& map =
+        host_impl->resourceProvider()->getChildToParentMap(
+            delegated_impl->ChildId());
+
+    // The frame's resource should be in the parent's resource provider.
+    EXPECT_EQ(2u, map.size());
+    EXPECT_EQ(1u, map.count(999));
+    EXPECT_EQ(1u, map.count(555));
+
+    ResourceProvider::ResourceId parent_resource_id1 = map.find(999)->second;
+    EXPECT_NE(parent_resource_id1, 999);
+    ResourceProvider::ResourceId parent_resource_id2 = map.find(555)->second;
+    EXPECT_NE(parent_resource_id2, 555);
+
+    // The resources in the quads should be remapped to the parent's namespace.
+    const TextureDrawQuad* quad1 = TextureDrawQuad::MaterialCast(
+        delegated_impl->RenderPassesInDrawOrder()[0]->quad_list[0]);
+    EXPECT_EQ(parent_resource_id1, quad1->resource_id);
+    const TextureDrawQuad* quad2 = TextureDrawQuad::MaterialCast(
+        delegated_impl->RenderPassesInDrawOrder()[0]->quad_list[1]);
+    EXPECT_EQ(parent_resource_id2, quad2->resource_id);
+
+    endTest();
+  }
+
+  virtual void afterTest() OVERRIDE {}
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestRemapResourcesInQuads)
 
 }  // namespace
 }  // namespace cc
