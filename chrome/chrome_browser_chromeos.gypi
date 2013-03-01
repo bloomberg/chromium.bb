@@ -240,6 +240,8 @@
         'browser/chromeos/drive/drive_system_service.h',
         'browser/chromeos/drive/drive_task_executor.cc',
         'browser/chromeos/drive/drive_task_executor.h',
+        'browser/chromeos/drive/drive_url_request_job.cc',
+        'browser/chromeos/drive/drive_url_request_job.h',
         'browser/chromeos/drive/drive_webapps_registry.cc',
         'browser/chromeos/drive/drive_webapps_registry.h',
         'browser/chromeos/drive/event_logger.cc',
