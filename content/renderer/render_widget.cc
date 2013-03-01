@@ -1995,6 +1995,8 @@ COMPILE_ASSERT(int(WebKit::WebTextInputTypeTextArea) == \
                int(ui::TEXT_INPUT_TYPE_TEXT_AREA), mismatching_enums);
 COMPILE_ASSERT(int(WebKit::WebTextInputTypeContentEditable) == \
                int(ui::TEXT_INPUT_TYPE_CONTENT_EDITABLE), mismatching_enums);
+COMPILE_ASSERT(int(WebKit::WebTextInputTypeDateTimeField) == \
+               int(ui::TEXT_INPUT_TYPE_DATE_TIME_FIELD), mismatching_enums);
 
 ui::TextInputType RenderWidget::WebKitToUiTextInputType(
     WebKit::WebTextInputType type) {
