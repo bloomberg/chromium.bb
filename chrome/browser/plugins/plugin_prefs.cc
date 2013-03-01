@@ -43,6 +43,19 @@ namespace {
 // go to disk.
 const int64 kPluginUpdateDelayMs = 60 * 1000;
 
+bool IsComponentUpdatedPepperFlash(const base::FilePath& plugin) {
+  if (plugin.BaseName().value() == chrome::kPepperFlashPluginFilename) {
+    base::FilePath component_updated_pepper_flash_dir;
+    if (PathService::Get(chrome::DIR_COMPONENT_UPDATED_PEPPER_FLASH_PLUGIN,
+                         &component_updated_pepper_flash_dir) &&
+        component_updated_pepper_flash_dir.IsParent(plugin)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 }  // namespace
 
 PluginPrefs::PluginState::PluginState() {
@@ -69,16 +82,11 @@ void PluginPrefs::PluginState::Set(const base::FilePath& plugin, bool enabled) {
 base::FilePath PluginPrefs::PluginState::ConvertMapKey(
     const base::FilePath& plugin) const {
   // Keep the state of component-updated and bundled Pepper Flash in sync.
-  if (plugin.BaseName().value() == chrome::kPepperFlashPluginFilename) {
-    base::FilePath component_updated_pepper_flash_dir;
-    if (PathService::Get(chrome::DIR_COMPONENT_UPDATED_PEPPER_FLASH_PLUGIN,
-                         &component_updated_pepper_flash_dir) &&
-        component_updated_pepper_flash_dir.IsParent(plugin)) {
-      base::FilePath bundled_pepper_flash;
-      if (PathService::Get(chrome::FILE_PEPPER_FLASH_PLUGIN,
-                           &bundled_pepper_flash)) {
-        return bundled_pepper_flash;
-      }
+  if (IsComponentUpdatedPepperFlash(plugin)) {
+    base::FilePath bundled_pepper_flash;
+    if (PathService::Get(chrome::FILE_PEPPER_FLASH_PLUGIN,
+                         &bundled_pepper_flash)) {
+      return bundled_pepper_flash;
     }
   }
 
@@ -353,7 +361,7 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
 
   bool migrate_to_pepper_flash = false;
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  // If bundled NPAPI Flash is enabled while Peppper Flash is disabled, we
+  // If bundled NPAPI Flash is enabled while Pepper Flash is disabled, we
   // would like to turn Pepper Flash on. And we only want to do it once.
   // TODO(yzshen): Remove all |migrate_to_pepper_flash|-related code after it
   // has been run once by most users. (Maybe Chrome 24 or Chrome 25.)
@@ -363,6 +371,19 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
     migrate_to_pepper_flash = true;
   }
 #endif
+
+  bool remove_component_pepper_flash_settings = false;
+  // If component-updated Pepper Flash is disabled, we would like to remove that
+  // settings item. And we only want to do it once. (Please see the comments of
+  // kPluginsRemovedOldComponentPepperFlashSettings for why.)
+  // TODO(yzshen): Remove all |remove_component_pepper_flash_settings|-related
+  // code after it has been run once by most users.
+  if (!prefs_->GetBoolean(
+          prefs::kPluginsRemovedOldComponentPepperFlashSettings)) {
+    prefs_->SetBoolean(prefs::kPluginsRemovedOldComponentPepperFlashSettings,
+                       true);
+    remove_component_pepper_flash_settings = true;
+  }
 
   {  // Scoped update of prefs::kPluginsPluginsList.
     ListPrefUpdate update(prefs_, prefs::kPluginsPluginsList);
@@ -379,7 +400,11 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
         PathService::Get(chrome::FILE_PEPPER_FLASH_PLUGIN, &pepper_flash);
       }
 
-      for (ListValue::const_iterator it = saved_plugins_list->begin();
+      // Used when |remove_component_pepper_flash_settings| is set to true.
+      ListValue::iterator component_pepper_flash_node =
+          saved_plugins_list->end();
+
+      for (ListValue::iterator it = saved_plugins_list->begin();
            it != saved_plugins_list->end();
            ++it) {
         if (!(*it)->IsType(Value::TYPE_DICTIONARY)) {
@@ -461,6 +486,13 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
                          path, pepper_flash.value())) {
             if (!enabled)
               pepper_flash_node = plugin;
+          } else if (remove_component_pepper_flash_settings &&
+                     IsComponentUpdatedPepperFlash(plugin_path)) {
+            if (!enabled) {
+              component_pepper_flash_node = it;
+              // Skip setting |enabled| into |plugin_state_|.
+              continue;
+            }
           }
 
           plugin_state_.Set(plugin_path, enabled);
@@ -482,6 +514,11 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
         DCHECK(migrate_to_pepper_flash);
         pepper_flash_node->SetBoolean("enabled", true);
         plugin_state_.Set(pepper_flash, true);
+      }
+
+      if (component_pepper_flash_node != saved_plugins_list->end()) {
+        DCHECK(remove_component_pepper_flash_settings);
+        saved_plugins_list->Erase(component_pepper_flash_node, NULL);
       }
     } else {
       // If the saved plugin list is empty, then the call to UpdatePreferences()

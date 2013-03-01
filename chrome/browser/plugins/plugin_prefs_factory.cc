@@ -63,6 +63,10 @@ void PluginPrefsFactory::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kPluginsMigratedToPepperFlash,
                                 false,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kPluginsRemovedOldComponentPepperFlashSettings,
+      false,
+      PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterListPref(prefs::kPluginsPluginsList,
                              PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterListPref(prefs::kPluginsDisabledPlugins,

@@ -983,6 +983,15 @@ const char kPluginsEnabledNaCl[] = "plugins.enabled_nacl";
 // want to do so only once.
 const char kPluginsMigratedToPepperFlash[] = "plugins.migrated_to_pepper_flash";
 
+// In the early stage of component-updated PPAPI Flash, we did field trials in
+// which it was set to disabled by default. The corresponding settings item may
+// remain in some users' profiles. Currently it affects both the bundled and
+// component-updated PPAPI Flash (since the two share the same enable/disable
+// state). We want to remove this item to get those users to use PPAPI Flash.
+// We will want to do so only once.
+const char kPluginsRemovedOldComponentPepperFlashSettings[] =
+    "plugins.removed_old_component_pepper_flash_settings";
+
 #if !defined(OS_ANDROID)
 // Whether about:plugins is shown in the details mode or not.
 const char kPluginsShowDetails[] = "plugins.show_details";
