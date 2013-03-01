@@ -647,6 +647,10 @@ class InstructionPrinter(object):
       if attr.startswith('CPUFeature_'):
         self._out.write('@%s\n' % attr)
 
+    if self._mode == VALIDATOR and self._bitness == 64:
+      if Attribute('nacl-amd64-modifiable') in instruction.attributes:
+        self._out.write('@modifiable_instruction\n')
+
   def _NeedOperandInfo(self, operand):
     """Whether we need to print actions describing operand format and source."""
     if self._mode == DECODER:

@@ -552,7 +552,10 @@ class TestInstructionPrinter(unittest.TestCase):
         """
         REX_RXB?
         0x8a
-        (any @operand0_32bit @operand0_from_modrm_reg any* &
+        (any @operand0_32bit
+             @modifiable_instruction
+             @operand0_from_modrm_reg
+         any* &
          single_register_memory @check_access)
         @process_1_operand_zero_extends
         """.split())
