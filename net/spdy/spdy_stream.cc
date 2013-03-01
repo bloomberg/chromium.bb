@@ -247,7 +247,7 @@ void SpdyStream::PossiblyResumeIfStalled() {
 }
 
 void SpdyStream::AdjustSendWindowSize(int32 delta_window_size) {
-  DCHECK(session_->is_flow_control_enabled());
+  DCHECK_GE(session_->flow_control_state(), SpdySession::FLOW_CONTROL_STREAM);
 
   if (closed())
     return;
@@ -264,7 +264,7 @@ void SpdyStream::AdjustSendWindowSize(int32 delta_window_size) {
 }
 
 void SpdyStream::IncreaseSendWindowSize(int32 delta_window_size) {
-  DCHECK(session_->is_flow_control_enabled());
+  DCHECK_GE(session_->flow_control_state(), SpdySession::FLOW_CONTROL_STREAM);
 
   // Ignore late WINDOW_UPDATEs.
   if (closed())
@@ -296,7 +296,7 @@ void SpdyStream::IncreaseSendWindowSize(int32 delta_window_size) {
 }
 
 void SpdyStream::DecreaseSendWindowSize(int32 delta_window_size) {
-  DCHECK(session_->is_flow_control_enabled());
+  DCHECK_GE(session_->flow_control_state(), SpdySession::FLOW_CONTROL_STREAM);
 
   if (closed())
     return;
@@ -319,8 +319,13 @@ void SpdyStream::DecreaseSendWindowSize(int32 delta_window_size) {
 }
 
 void SpdyStream::IncreaseRecvWindowSize(int32 delta_window_size) {
-  if (!session_->is_flow_control_enabled())
+  if (session_->flow_control_state() < SpdySession::FLOW_CONTROL_STREAM)
     return;
+
+  // Call back into the session, since this is the only
+  // window-size-related function that is called by the delegate
+  // instead of by the session.
+  session_->IncreaseRecvWindowSize(delta_window_size);
 
   // By the time a read is processed by the delegate, this stream may
   // already be inactive.
@@ -342,7 +347,7 @@ void SpdyStream::IncreaseRecvWindowSize(int32 delta_window_size) {
   unacked_recv_window_bytes_ += delta_window_size;
   if (unacked_recv_window_bytes_ >
       session_->stream_initial_recv_window_size() / 2) {
-    session_->SendWindowUpdate(
+    session_->SendStreamWindowUpdate(
         stream_id_, static_cast<uint32>(unacked_recv_window_bytes_));
     unacked_recv_window_bytes_ = 0;
   }
@@ -492,7 +497,7 @@ void SpdyStream::OnDataReceived(const char* data, size_t length) {
     return;
   }
 
-  if (session_->is_flow_control_enabled())
+  if (session_->flow_control_state() >= SpdySession::FLOW_CONTROL_STREAM)
     DecreaseRecvWindowSize(static_cast<int32>(length));
 
   // Track our bandwidth.
@@ -852,7 +857,7 @@ void SpdyStream::UpdateHistograms() {
 
 void SpdyStream::DecreaseRecvWindowSize(int32 delta_window_size) {
   DCHECK(session_->IsStreamActive(stream_id_));
-  DCHECK(session_->is_flow_control_enabled());
+  DCHECK_GE(session_->flow_control_state(), SpdySession::FLOW_CONTROL_STREAM);
   DCHECK_GE(delta_window_size, 1);
 
   // Since we never decrease the initial window size,

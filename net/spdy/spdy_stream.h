@@ -155,35 +155,35 @@ class NET_EXPORT_PRIVATE SpdyStream
     stalled_by_flow_control_ = stalled;
   }
 
-  // If flow control is turned on, called by the session to adjust
-  // this stream's send window size by |delta_window_size|, which is
-  // the difference between the SETTINGS_INITIAL_WINDOW_SIZE in the
-  // most recent SETTINGS frame and the previous initial send window
-  // size, possibly unstalling this stream. Although
+  // If stream flow control is turned on, called by the session to
+  // adjust this stream's send window size by |delta_window_size|,
+  // which is the difference between the SETTINGS_INITIAL_WINDOW_SIZE
+  // in the most recent SETTINGS frame and the previous initial send
+  // window size, possibly unstalling this stream. Although
   // |delta_window_size| may cause this stream's send window size to
   // go negative, it must not cause it to wrap around in either
   // direction. Does nothing if the stream is already closed.
   //
-  // If flow control is turned off, this must not be called.
+  // If stream flow control is turned off, this must not be called.
   void AdjustSendWindowSize(int32 delta_window_size);
 
-  // If flow control is turned on, called by the session to increase
-  // this stream's send window size by |delta_window_size| from a
-  // WINDOW_UPDATE frome, which must be at least 1, possibly
+  // If stream flow control is turned on, called by the session to
+  // increase this stream's send window size by |delta_window_size|
+  // from a WINDOW_UPDATE frome, which must be at least 1, possibly
   // unstalling this stream. If |delta_window_size| would cause this
   // stream's send window size to overflow, calls into the session to
   // reset this stream. Does nothing if the stream is already closed.
   //
-  // If flow control is turned off, this must not be called.
+  // If stream flow control is turned off, this must not be called.
   void IncreaseSendWindowSize(int32 delta_window_size);
 
-  // If flow control is turned on, called by the session to decrease
-  // this stream's send window size by |delta_window_size|, which must
-  // be at least 0 and at most kMaxSpdyFrameChunkSize.
+  // If stream flow control is turned on, called by the session to
+  // decrease this stream's send window size by |delta_window_size|,
+  // which must be at least 0 and at most kMaxSpdyFrameChunkSize.
   // |delta_window_size| must not cause this stream's send window size
   // to go negative. Does nothing if the stream is already closed.
   //
-  // If flow control is turned off, this must not be called.
+  // If stream flow control is turned off, this must not be called.
   void DecreaseSendWindowSize(int32 delta_window_size);
 
   // Called by the delegate to increase this stream's receive window
@@ -191,9 +191,9 @@ class NET_EXPORT_PRIVATE SpdyStream
   // not cause this stream's receive window size to overflow, possibly
   // also sending a WINDOW_UPDATE frame.
   //
-  // Unlike the functions above, this may be called even when flow
-  // control is turned off, although this does nothing in that case
-  // (and also if the stream is inactive).
+  // Unlike the functions above, this may be called even when stream
+  // flow control is turned off, although this does nothing in that
+  // case (and also if the stream is inactive).
   void IncreaseRecvWindowSize(int32 delta_window_size);
 
   int GetPeerAddress(IPEndPoint* address) const;
@@ -353,9 +353,9 @@ class NET_EXPORT_PRIVATE SpdyStream
   // stream has become stalled on flow control.
   SpdyFrame* ProduceNextFrame();
 
-  // If the stream is active and flow control is turned on, called by
-  // OnDataReceived (which is in turn called by the session) to
-  // decrease this stream's receive window size by
+  // If the stream is active and stream flow control is turned on,
+  // called by OnDataReceived (which is in turn called by the session)
+  // to decrease this stream's receive window size by
   // |delta_window_size|, which must be at least 1 and must not cause
   // this stream's receive window size to go negative.
   void DecreaseRecvWindowSize(int32 delta_window_size);

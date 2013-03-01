@@ -1070,14 +1070,28 @@ EVENT_TYPE(SPDY_SESSION_GOAWAY)
 //     "stream_id": <The stream ID for the window update>,
 //     "delta"    : <The delta window size>,
 //   }
-EVENT_TYPE(SPDY_SESSION_RECEIVED_WINDOW_UPDATE)
+EVENT_TYPE(SPDY_SESSION_RECEIVED_WINDOW_UPDATE_FRAME)
 
 // Sending of a SPDY WINDOW_UPDATE frame (which controls the receive window).
 //   {
 //     "stream_id": <The stream ID for the window update>,
 //     "delta"    : <The delta window size>,
 //   }
-EVENT_TYPE(SPDY_SESSION_SENT_WINDOW_UPDATE)
+EVENT_TYPE(SPDY_SESSION_SENT_WINDOW_UPDATE_FRAME)
+
+// This event indicates that the send window has been updated for a session.
+//   {
+//     "delta":      <The window size delta>,
+//     "new_window": <The new window size>,
+//   }
+EVENT_TYPE(SPDY_SESSION_UPDATE_SEND_WINDOW)
+
+// This event indicates that the recv window has been updated for a session.
+//   {
+//     "delta":      <The window size delta>,
+//     "new_window": <The new window size>,
+//   }
+EVENT_TYPE(SPDY_SESSION_UPDATE_RECV_WINDOW)
 
 // Sending of a SPDY CREDENTIAL frame (which sends a certificate or
 // certificate chain to the server).
@@ -1103,8 +1117,11 @@ EVENT_TYPE(SPDY_SESSION_SEND_DATA)
 //   }
 EVENT_TYPE(SPDY_SESSION_RECV_DATA)
 
-// Logs that a stream is stalled on the send window being closed.
-EVENT_TYPE(SPDY_SESSION_STALLED_ON_SEND_WINDOW)
+// Logs that a stream is stalled on the session send window being closed.
+EVENT_TYPE(SPDY_SESSION_STREAM_STALLED_ON_SESSION_SEND_WINDOW)
+
+// Logs that a stream is stalled on its send window being closed.
+EVENT_TYPE(SPDY_SESSION_STREAM_STALLED_ON_STREAM_SEND_WINDOW)
 
 // Session is closing
 //   {
@@ -1174,7 +1191,7 @@ EVENT_TYPE(SPDY_STREAM)
 // Logs that a stream attached to a pushed stream.
 EVENT_TYPE(SPDY_STREAM_ADOPTED_PUSH_STREAM)
 
-// This event indicates that the send window has been updated
+// This event indicates that the send window has been updated for a stream.
 //   {
 //     "id":         <The stream id>,
 //     "delta":      <The window size delta>,
@@ -1182,7 +1199,7 @@ EVENT_TYPE(SPDY_STREAM_ADOPTED_PUSH_STREAM)
 //   }
 EVENT_TYPE(SPDY_STREAM_UPDATE_SEND_WINDOW)
 
-// This event indicates that the recv window has been updated
+// This event indicates that the recv window has been updated for a stream.
 //   {
 //     "id":         <The stream id>,
 //     "delta":      <The window size delta>,

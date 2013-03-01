@@ -101,7 +101,15 @@ COMPILE_ASSERT(PROTOCOL_ERROR_UNEXPECTED_PING ==
 class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
                                public BufferedSpdyFramerVisitorInterface {
  public:
+  // TODO(akalin): Use base::TickClock when it becomes available.
   typedef base::TimeTicks (*TimeFunc)(void);
+
+  // How we handle flow control (version-dependent).
+  enum FlowControlState {
+    FLOW_CONTROL_NONE,
+    FLOW_CONTROL_STREAM,
+    FLOW_CONTROL_STREAM_AND_SESSION
+  };
 
   // Defines an interface for producing SpdyIOBuffers.
   class NET_EXPORT_PRIVATE SpdyIOBufferProducer {
@@ -266,9 +274,17 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // if server bound certs are not supported in this session.
   ServerBoundCertService* GetServerBoundCertService() const;
 
-  // Send WINDOW_UPDATE frame, called by a stream whenever receive window
-  // size is increased.
-  void SendWindowUpdate(SpdyStreamId stream_id, uint32 delta_window_size);
+  // Send a WINDOW_UPDATE frame for a stream. Called by a stream
+  // whenever receive window size is increased.
+  void SendStreamWindowUpdate(SpdyStreamId stream_id,
+                              uint32 delta_window_size);
+
+  // Called by a stream to increase this session's receive window size
+  // by |delta_window_size|, which must be at least 1 and must not
+  // cause this session's receive window size to overflow, possibly
+  // also sending a WINDOW_UPDATE frame. Does nothing if session flow
+  // control is turned off.
+  void IncreaseRecvWindowSize(int32 delta_window_size);
 
   // If session is closed, no new streams/transactions should be created.
   bool IsClosed() const { return state_ == STATE_CLOSED; }
@@ -331,9 +347,9 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
     return pending_create_stream_queues_[priority].size();
   }
 
-  // Returns true if flow control is enabled for the session.
-  bool is_flow_control_enabled() const {
-    return flow_control_;
+  // Returns the (version-dependent) flow control state.
+  FlowControlState flow_control_state() const {
+    return flow_control_state_;
   }
 
   // Returns the current |stream_initial_send_window_size_|.
@@ -374,10 +390,17 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy2Test, FailedPing);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy2Test, GetActivePushStream);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy2Test, DeleteExpiredPushStreams);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy2Test, ProtocolNegotiation);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, ClientPing);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, FailedPing);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, GetActivePushStream);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, DeleteExpiredPushStreams);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, ProtocolNegotiation);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, ProtocolNegotiation31);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, IncreaseRecvWindowSize);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, AdjustRecvWindowSize31);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, AdjustSendWindowSize31);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, SessionFlowControlEndToEnd31);
 
   struct PendingCreateStream {
     PendingCreateStream(const GURL& url, RequestPriority priority,
@@ -479,6 +502,10 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // Send PING if there are no PINGs in flight and we haven't heard from server.
   void SendPrefacePing();
 
+  // Send a single WINDOW_UPDATE frame.
+  void SendWindowUpdateFrame(SpdyStreamId stream_id, uint32 delta_window_size,
+                             RequestPriority priority);
+
   // Send the PING frame.
   void WritePingFrame(uint32 unique_id);
 
@@ -571,6 +598,28 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
       SpdyStreamId stream_id,
       bool fin,
       const SpdyHeaderBlock& headers) OVERRIDE;
+
+  // If session flow control is turned on, called by OnWindowUpdate()
+  // (which is in turn called by the framer) to increase this
+  // session's send window size by |delta_window_size| from a
+  // WINDOW_UPDATE frome, which must be at least 1. If
+  // |delta_window_size| would cause this session's send window size
+  // to overflow, does nothing.
+  void IncreaseSendWindowSize(int32 delta_window_size);
+
+  // If session flow control is turned on, called by CreateDataFrame()
+  // (which is in turn called by a stream) to decrease this session's
+  // send window size by |delta_window_size|, which must be at least 1
+  // and at most kMaxSpdyFrameChunkSize.  |delta_window_size| must not
+  // cause this session's send window size to go negative.
+  void DecreaseSendWindowSize(int32 delta_window_size);
+
+  // If session flow control is turned on, called by OnStreamFrameData
+  // (which is in turn called by the framer) to decrease this
+  // session's receive window size by |delta_window_size|, which must
+  // be at least 1 and must not cause this session's receive window
+  // size to go negative.
+  void DecreaseRecvWindowSize(int32 delta_window_size);
 
   // --------------------------
   // Helper methods for testing
@@ -720,8 +769,8 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // status.
   bool check_ping_status_pending_;
 
-  // Indicate if flow control is enabled or not.
-  bool flow_control_;
+  // The (version-dependent) flow control state.
+  FlowControlState flow_control_state_;
 
   // Initial send window size for this session's streams. Can be
   // changed by an arriving SETTINGS frame. Newly created streams use
@@ -734,6 +783,12 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // created streams will use this value for the initial receive
   // window size.
   int32 stream_initial_recv_window_size_;
+
+  // Session flow control variables. All zero unless session flow
+  // control is turned on.
+  int32 session_send_window_size_;
+  int32 session_recv_window_size_;
+  int32 session_unacked_recv_window_bytes_;
 
   BoundNetLog net_log_;
 

@@ -897,6 +897,7 @@ SpdySessionDependencies::SpdySessionDependencies()
       enable_compression(false),
       enable_ping(false),
       enable_user_alternate_protocol_ports(false),
+      enable_spdy_31(false),
       stream_initial_recv_window_size(kSpdyStreamInitialWindowSize),
       time_func(&base::TimeTicks::Now),
       net_log(NULL) {
@@ -922,6 +923,7 @@ SpdySessionDependencies::SpdySessionDependencies(ProxyService* proxy_service)
       enable_compression(false),
       enable_ping(false),
       enable_user_alternate_protocol_ports(false),
+      enable_spdy_31(false),
       stream_initial_recv_window_size(kSpdyStreamInitialWindowSize),
       time_func(&base::TimeTicks::Now),
       net_log(NULL) {}
@@ -966,7 +968,8 @@ net::HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   params.enable_spdy_ping_based_connection_checking = session_deps->enable_ping;
   params.enable_user_alternate_protocol_ports =
       session_deps->enable_user_alternate_protocol_ports;
-  params.spdy_default_protocol = kProtoSPDY3;
+  params.spdy_default_protocol =
+      session_deps->enable_spdy_31 ? kProtoSPDY31 : kProtoSPDY3;
   params.spdy_stream_initial_recv_window_size =
       session_deps->stream_initial_recv_window_size;
   params.time_func = session_deps->time_func;

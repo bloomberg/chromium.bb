@@ -18,7 +18,8 @@ enum NextProto {
   kProtoSPDY2 = 3,
   kProtoSPDY21 = 4,
   kProtoSPDY3 = 5,
-  kProtoMaximumVersion = 6,
+  kProtoSPDY31 = 6,
+  kProtoMaximumVersion = 7,
 };
 
 }  // namespace net

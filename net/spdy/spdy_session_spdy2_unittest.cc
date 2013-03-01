@@ -143,13 +143,16 @@ class SpdySessionSpdy2Test : public PlatformTest {
   // Creates an initialized session to |pair_|.
   scoped_refptr<SpdySession> CreateInitializedSession() {
     scoped_refptr<SpdySession> session = GetSession(pair_);
-    InitializeSession(http_session_.get(), session.get(), test_host_port_pair_);
+    EXPECT_EQ(
+        OK,
+        InitializeSession(
+            http_session_.get(), session.get(), test_host_port_pair_));
     return session;
   }
 
-  void InitializeSession(HttpNetworkSession* http_session,
-                         SpdySession* session,
-                         const HostPortPair& host_port_pair) {
+  net::Error InitializeSession(HttpNetworkSession* http_session,
+                               SpdySession* session,
+                               const HostPortPair& host_port_pair) {
     transport_params_ = new TransportSocketParams(
         host_port_pair, MEDIUM, false, false, OnHostResolutionCallback());
 
@@ -160,8 +163,7 @@ class SpdySessionSpdy2Test : public PlatformTest {
                                    http_session->GetTransportSocketPool(
                                        HttpNetworkSession::NORMAL_SOCKET_POOL),
                                    BoundNetLog()));
-    EXPECT_EQ(OK,
-              session->InitializeWithSocket(connection.release(), false, OK));
+    return session->InitializeWithSocket(connection.release(), false, OK);
   }
 
   scoped_refptr<TransportSocketParams> transport_params_;
@@ -1999,6 +2001,38 @@ TEST_F(SpdySessionSpdy2Test, GoAwayWhileInDoLoop) {
   data.RunFor(2);
   EXPECT_TRUE(data.at_write_eof());
   EXPECT_TRUE(data.at_read_eof());
+}
+
+// Within this framework, a SpdySession should be initialized with
+// flow control disabled and with protocol version 2.
+TEST_F(SpdySessionSpdy2Test, ProtocolNegotiation) {
+  session_deps_.host_resolver->set_synchronous_mode(true);
+
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  MockRead reads[] = {
+    MockRead(SYNCHRONOUS, 0, 0)  // EOF
+  };
+  StaticSocketDataProvider data(reads, arraysize(reads), NULL, 0);
+  data.set_connect_data(connect_data);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  CreateNetworkSession();
+  scoped_refptr<SpdySession> session = GetSession(pair_);
+
+  EXPECT_EQ(SpdySession::FLOW_CONTROL_NONE, session->flow_control_state());
+  EXPECT_TRUE(session->buffered_spdy_framer_ == NULL);
+  EXPECT_EQ(0, session->session_send_window_size_);
+  EXPECT_EQ(0, session->session_recv_window_size_);
+  EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
+
+  InitializeSession(
+      http_session_.get(), session.get(), test_host_port_pair_);
+
+  EXPECT_EQ(SpdySession::FLOW_CONTROL_NONE, session->flow_control_state());
+  EXPECT_EQ(kSpdyVersion2, session->buffered_spdy_framer_->protocol_version());
+  EXPECT_EQ(0, session->session_send_window_size_);
+  EXPECT_EQ(0, session->session_recv_window_size_);
+  EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 }
 
 }  // namespace net

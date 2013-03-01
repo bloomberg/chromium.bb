@@ -152,11 +152,26 @@ namespace net {
 const int32 kSpdyVersion2 = 2;
 const int32 kSpdyVersion3 = 3;
 
+// A SPDY stream id is a 31 bit entity.
+typedef uint32 SpdyStreamId;
+
+// Specifies the stream ID used to denote the current session (for
+// flow control).
+const SpdyStreamId kSessionFlowControlStreamId = 0;
+
 // Initial window size for a Spdy stream
 const int32 kSpdyStreamInitialWindowSize = 64 * 1024;  // 64 KBytes
 
-// Maximum window size for a Spdy stream
-const int32 kSpdyStreamMaximumWindowSize = 0x7FFFFFFF;  // Max signed 32bit int
+// Initial window size for a Spdy session
+//
+// TODO(akalin): Update this once we settle on the correct session
+// initial window size.
+//
+// TODO(akalin): Upstream this.
+const int32 kSpdySessionInitialWindowSize = 64 * 1024;  // 64 KBytes
+
+// Maximum window size for a Spdy stream or session.
+const int32 kSpdyMaximumWindowSize = 0x7FFFFFFF;  // Max signed 32bit int
 
 // SPDY 2 dictionary.
 // This is just a hacked dictionary to use for shrinking HTTP-like headers.
@@ -445,9 +460,6 @@ enum SpdyGoAwayStatus {
   GOAWAY_NUM_STATUS_CODES = 3
 };
 
-// A SPDY stream id is a 31 bit entity.
-typedef uint32 SpdyStreamId;
-
 // A SPDY priority is a number between 0 and 7 (inclusive).
 // SPDY priority range is version-dependant. For SPDY 2 and below, priority is a
 // number between 0 and 3.
@@ -735,7 +747,7 @@ class SpdyWindowUpdateIR : public SpdyFrameWithStreamIdIR {
   int32 delta() const { return delta_; }
   void set_delta(int32 delta) {
     DCHECK_LT(0, delta);
-    DCHECK_LE(delta, kSpdyStreamMaximumWindowSize);
+    DCHECK_LE(delta, kSpdyMaximumWindowSize);
     delta_ = delta;
   }
 
