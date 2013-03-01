@@ -49,6 +49,9 @@
     $('profiles-create').hidden = true;
     $('profiles-delete').hidden = true;
     $('profiles-manage').hidden = true;
+
+    // Remove the 'X'es on profiles in the profile list.
+    $('profiles-list').canDeleteItems = false;
   });
 
   loadTimeData.overrideValues(loadTimeData.getValue('settingsApp'));
