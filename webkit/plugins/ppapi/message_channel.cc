@@ -400,6 +400,11 @@ void MessageChannel::QueueJavaScriptMessages() {
 }
 
 void MessageChannel::DrainEarlyMessageQueue() {
+  // Take a reference on the PluginInstance. This is because JavaScript code
+  // may delete the plugin, which would destroy the PluginInstance and its
+  // corresponding MessageChannel.
+  scoped_refptr<PluginInstance> instance_ref(instance_);
+
   if (early_message_queue_state_ == DRAIN_CANCELLED) {
     early_message_queue_state_ = QUEUE_MESSAGES;
     return;
