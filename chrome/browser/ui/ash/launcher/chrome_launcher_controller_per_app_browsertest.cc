@@ -803,8 +803,9 @@ IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTest, ActivationStateCheck) {
       NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
+  // There should never be two items active at the same time.
   EXPECT_EQ(ash::STATUS_ACTIVE, model_->ItemByID(shortcut_id)->status);
-  EXPECT_EQ(ash::STATUS_ACTIVE, model_->items()[browser_index].status);
+  EXPECT_EQ(ash::STATUS_RUNNING, model_->items()[browser_index].status);
 
   tab_strip->ActivateTabAt(0, false);
   EXPECT_EQ(ash::STATUS_RUNNING, model_->ItemByID(shortcut_id)->status);

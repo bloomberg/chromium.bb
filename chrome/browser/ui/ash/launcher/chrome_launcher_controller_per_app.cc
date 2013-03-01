@@ -817,6 +817,7 @@ void ChromeLauncherControllerPerApp::UpdateAppState(
           ash::STATUS_ACTIVE : ash::STATUS_RUNNING);
     }
   }
+  UpdateBrowserItemStatus();
 }
 
 void ChromeLauncherControllerPerApp::SetRefocusURLPatternForTest(
@@ -1155,20 +1156,41 @@ ChromeLauncherControllerPerApp::CreateAppShortcutLauncherItemWithType(
 
 void ChromeLauncherControllerPerApp::UpdateBrowserItemStatus() {
   // Determine the new browser's active state and change if necessary.
-  int browser_index = ash::launcher::GetBrowserItemIndex(*model_);
+  size_t browser_index = ash::launcher::GetBrowserItemIndex(*model_);
   DCHECK(browser_index >= 0);
   ash::LauncherItem browser_item = model_->items()[browser_index];
-  ash::LauncherItemStatus browser_status = browser_item.status;
-  // See if the active window is a browser.
+  ash::LauncherItemStatus browser_status = ash::STATUS_CLOSED;
+
   aura::Window* window = ash::wm::GetActiveWindow();
-  if (window && chrome::FindBrowserWithWindow(window)) {
-    browser_status = ash::STATUS_ACTIVE;
-  } else if (!BrowserList::GetInstance(
-                 chrome::HOST_DESKTOP_TYPE_ASH)->empty()) {
-    browser_status = ash::STATUS_RUNNING;
-  } else {
-    browser_status = ash::STATUS_CLOSED;
+  if (window) {
+    // Check if the active browser / tab is a browser which is not an app,
+    // a windowed app, a popup or any other item which is not a browser of
+    // interest.
+    Browser* browser = chrome::FindBrowserWithWindow(window);
+    if (IsBrowserRepresentedInBrowserList(browser)) {
+      browser_status = ash::STATUS_ACTIVE;
+      const ash::LauncherItems& items = model_->items();
+      // If another launcher item has claimed to be active, we don't.
+      for (size_t i = 0;
+           i < items.size() && browser_status == ash::STATUS_ACTIVE; ++i) {
+        if (i != browser_index && items[i].status == ash::STATUS_ACTIVE)
+          browser_status = ash::STATUS_RUNNING;
+      }
+    }
   }
+
+  if (browser_status == ash::STATUS_CLOSED) {
+    const BrowserList* ash_browser_list =
+        BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
+    for (BrowserList::const_reverse_iterator it =
+             ash_browser_list->begin_last_active();
+         it != ash_browser_list->end_last_active() &&
+         browser_status == ash::STATUS_CLOSED; ++it) {
+      if (IsBrowserRepresentedInBrowserList(*it))
+        browser_status = ash::STATUS_RUNNING;
+    }
+  }
+
   if (browser_status != browser_item.status) {
     browser_item.status = browser_status;
     model_->Set(browser_index, browser_item);
@@ -1444,10 +1466,7 @@ ChromeLauncherControllerPerApp::GetBrowserApplicationList() {
     Browser* browser = *it;
     if (browser->is_type_tabbed())
       found_tabbed_browser = true;
-    else if (browser->is_app() &&
-             browser->is_type_popup() &&
-             GetLauncherIDForAppID(web_app::GetExtensionIdFromApplicationName(
-                                       browser->app_name())) > 0)
+    else if (!IsBrowserRepresentedInBrowserList(browser))
       continue;
     TabStripModel* tab_strip = browser->tab_strip_model();
     WebContents* web_contents =
@@ -1463,4 +1482,14 @@ ChromeLauncherControllerPerApp::GetBrowserApplicationList() {
   if (!found_tabbed_browser)
     items.clear();
   return items.Pass();
+}
+
+bool ChromeLauncherControllerPerApp::IsBrowserRepresentedInBrowserList(
+    Browser* browser) {
+  return (browser &&
+          (browser->is_type_tabbed() ||
+           !browser->is_app() ||
+           !browser->is_type_popup() ||
+           GetLauncherIDForAppID(web_app::GetExtensionIdFromApplicationName(
+               browser->app_name())) <= 0));
 }

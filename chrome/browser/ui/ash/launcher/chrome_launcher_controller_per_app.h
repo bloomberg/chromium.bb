@@ -399,6 +399,10 @@ class ChromeLauncherControllerPerApp : public ash::LauncherModelObserver,
   // functionality moves to.
   ChromeLauncherAppMenuItems GetBrowserApplicationList();
 
+  // Returns true when the given |browser| is listed in the browser application
+  // list.
+  bool IsBrowserRepresentedInBrowserList(Browser* browser);
+
   ash::LauncherModel* model_;
 
   // Profile used for prefs and loading extensions. This is NOT necessarily the
