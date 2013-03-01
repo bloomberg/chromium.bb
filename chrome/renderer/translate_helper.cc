@@ -455,6 +455,7 @@ bool TranslateHelper::ExecuteScriptAndGetBoolResult(const std::string& script,
   if (!main_frame)
     return false;
 
+  v8::HandleScope handle_scope;
   v8::Handle<v8::Value> v = main_frame->executeScriptAndReturnValue(
       WebScriptSource(ASCIIToUTF16(script)));
   if (v.IsEmpty() || !v->IsBoolean())
@@ -471,6 +472,7 @@ bool TranslateHelper::ExecuteScriptAndGetStringResult(const std::string& script,
   if (!main_frame)
     return false;
 
+  v8::HandleScope handle_scope;
   v8::Handle<v8::Value> v = main_frame->executeScriptAndReturnValue(
       WebScriptSource(ASCIIToUTF16(script)));
   if (v.IsEmpty() || !v->IsString())
