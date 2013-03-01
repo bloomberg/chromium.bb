@@ -106,23 +106,25 @@ FileSelection.prototype.computeBytes = function(callback) {
     maybeDone();
   }.bind(this);
 
-  var onEntry = function(entry) {
-    if (entry) {
-      if (entry.isFile) {
-        this.showBytes |= !FileType.isHosted(entry);
-        pendingMetadataCount++;
-        this.fileManager_.metadataCache_.get(entry, 'filesystem', onProps);
-      }
-    } else {
-      countdown--;
-      maybeDone();
-    }
-    return !this.cancelled_;
-  }.bind(this);
-
   for (var index = 0; index < this.entries.length; index++) {
-    util.forEachEntryInTree(this.entries[index], onEntry);
+    if (this.cancelled_)
+      break;
+
+    var entry = this.entries[index];
+    if (entry.isFile) {
+      this.showBytes |= !FileType.isHosted(entry);
+      pendingMetadataCount++;
+      this.fileManager_.metadataCache_.get(entry, 'filesystem', onProps);
+    } else if (entry.isDirectory) {
+      // Don't compute the directory size as it's expensive.
+      // crbug.com/179073.
+      this.showBytes = false;
+      countdown = 0;
+      break;
+    }
+    countdown--;
   }
+  maybeDone();
 };
 
 /**
