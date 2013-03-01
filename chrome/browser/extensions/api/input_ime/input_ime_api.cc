@@ -844,6 +844,32 @@ bool UpdateMenuItemsFunction::RunImpl() {
   return true;
 }
 
+bool DeleteSurroundingTextFunction::RunImpl() {
+  DictionaryValue* args;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
+
+  std::string engine_id;
+  EXTENSION_FUNCTION_VALIDATE(args->GetString(keys::kEngineIdKey, &engine_id));
+
+  chromeos::InputMethodEngine* engine =
+      InputImeEventRouter::GetInstance()->GetEngine(extension_id(), engine_id);
+  if (!engine) {
+    error_ = kErrorEngineNotAvailable;
+    return false;
+  }
+
+  int context_id = 0;
+  int offset = 0;
+  int length = 0;
+  EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kContextIdKey,
+                                               &context_id));
+  EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kOffsetKey, &offset));
+  EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kLengthKey, &length));
+
+  engine->DeleteSurroundingText(context_id, offset, length, &error_);
+  return true;
+}
+
 bool KeyEventHandled::RunImpl() {
   std::string request_id_str;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &request_id_str));
@@ -877,6 +903,7 @@ InputImeAPI::InputImeAPI(Profile* profile)
   registry->RegisterFunction<SetCursorPositionFunction>();
   registry->RegisterFunction<SetMenuItemsFunction>();
   registry->RegisterFunction<UpdateMenuItemsFunction>();
+  registry->RegisterFunction<DeleteSurroundingTextFunction>();
   registry->RegisterFunction<KeyEventHandled>();
 }
 

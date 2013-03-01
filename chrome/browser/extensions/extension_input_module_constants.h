@@ -27,6 +27,8 @@ extern const char kIdKey[];
 extern const char kItemsKey[];
 extern const char kKeyKey[];
 extern const char kLabelKey[];
+extern const char kLengthKey[];
+extern const char kOffsetKey[];
 extern const char kPageSizeKey[];
 extern const char kParentIdKey[];
 extern const char kPropertiesKey[];
