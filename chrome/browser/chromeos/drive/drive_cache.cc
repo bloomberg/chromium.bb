@@ -845,6 +845,7 @@ scoped_ptr<DriveCache::GetFileResult> DriveCache::MarkAsMountedOnBlockingPool(
 DriveFileError DriveCache::MarkAsUnmountedOnBlockingPool(
     const base::FilePath& file_path) {
   AssertOnSequencedWorkerPool();
+  DCHECK(IsUnderDriveCacheDirectory(file_path));
 
   // Parse file path to obtain resource_id, md5 and extra_extension.
   std::string resource_id;
@@ -852,7 +853,7 @@ DriveFileError DriveCache::MarkAsUnmountedOnBlockingPool(
   std::string extra_extension;
   util::ParseCacheFilePath(file_path, &resource_id, &md5, &extra_extension);
   // The extra_extension shall be ".mounted" iff we're unmounting.
-  DCHECK(extra_extension == util::kMountedArchiveFileExtension);
+  DCHECK_EQ(util::kMountedArchiveFileExtension, extra_extension);
 
   // Get cache entry associated with the resource_id and md5
   DriveCacheEntry cache_entry;

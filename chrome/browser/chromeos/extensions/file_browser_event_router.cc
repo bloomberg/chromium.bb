@@ -474,7 +474,7 @@ void FileBrowserEventRouter::OnMountEvent(
           DriveSystemServiceFactory::GetForProfile(profile_);
       drive::DriveCache* cache =
           system_service ? system_service->cache() : NULL;
-      if (cache)
+      if (cache && cache->IsUnderDriveCacheDirectory(source_path))
         cache->MarkAsUnmounted(source_path, base::Bind(&OnMarkAsUnmounted));
     }
   }
