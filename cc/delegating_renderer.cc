@@ -177,7 +177,8 @@ void DelegatingRenderer::getFramebufferPixels(void *pixels,
 void DelegatingRenderer::receiveCompositorFrameAck(
     const CompositorFrameAck& ack) {
   resource_provider_->receiveFromParent(ack.resources);
-  m_client->onSwapBuffersComplete();
+  if (m_client->hasImplThread())
+    m_client->onSwapBuffersComplete();
 }
 
 
