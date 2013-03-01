@@ -68,15 +68,24 @@ void DetachableToolbarView::CalculateContentArea(
 }
 
 // static
-void DetachableToolbarView::PaintHorizontalBorder(gfx::Canvas* canvas,
-                                                  DetachableToolbarView* view) {
+void DetachableToolbarView::PaintHorizontalBorderForState(
+    gfx::Canvas* canvas,
+    DetachableToolbarView* view) {
   // Border can be at the top or at the bottom of the view depending on whether
   // the view (bar/shelf) is attached or detached.
+  PaintHorizontalBorder(canvas, view, view->IsDetached(),
+                        ThemeProperties::GetDefaultColor(
+                            ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
+}
+
+void DetachableToolbarView::PaintHorizontalBorder(
+    gfx::Canvas* canvas,
+    DetachableToolbarView* view,
+    bool at_top,
+    SkColor color) {
   int thickness = views::NonClientFrameView::kClientEdgeThickness;
-  int y = view->IsDetached() ? 0 : (view->height() - thickness);
-  canvas->FillRect(gfx::Rect(0, y, view->width(), thickness),
-      ThemeProperties::GetDefaultColor(
-          ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
+  int y = at_top ? 0 : (view->height() - thickness);
+  canvas->FillRect(gfx::Rect(0, y, view->width(), thickness), color);
 }
 
 // static

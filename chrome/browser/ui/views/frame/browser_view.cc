@@ -174,6 +174,57 @@ const int kWindowBorderWidth = 5;
 // How round the 'new tab' style bookmarks bar is.
 const int kNewtabBarRoundness = 5;
 
+// TODO(kuan): These functions are temporarily for the bookmark bar while its
+// detached state is at the top of the page;  it'll be moved to float on the
+// content page in the very near future, at which time, these local functions
+// will be removed.
+void PaintDetachedBookmarkBar(gfx::Canvas* canvas,
+                              DetachableToolbarView* view,
+                              ui::ThemeProvider* theme_provider) {
+  // Paint background for detached state; if animating, this is fade in/out.
+  bool themed = theme_provider->HasCustomImage(IDR_THEME_NTP_BACKGROUND);
+  SkColor themed_background_color =
+      theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR);
+  canvas->FillRect(view->GetLocalBounds(),
+                   themed ? themed_background_color :
+                            SkColorSetARGB(0xFF, 0xF1, 0xF1, 0xF1));
+  // Draw the separators above and below bookmark bar;
+  // if animating, these are fading in/out.
+  SkColor separator_color = themed ? SkColorSetARGB(128, 0, 0, 0) :
+      ThemeProperties::GetDefaultColor(
+          ThemeProperties::COLOR_TOOLBAR_SEPARATOR);
+  if (themed) {
+    // If theme is too dark to use 0.5 black for separator, use 0.5 readable
+    // color, which is usually 0.5 white.
+    SkColor readable_color = color_utils::GetReadableColor(
+        separator_color, themed_background_color);
+    if (readable_color != separator_color)
+      separator_color = SkColorSetA(readable_color, 128);
+  }
+  DetachableToolbarView::PaintHorizontalBorder(canvas, view, true,
+                                               separator_color);
+  DetachableToolbarView::PaintHorizontalBorder(canvas, view, false,
+                                               separator_color);
+}
+
+void PaintAttachedBookmarkBar(gfx::Canvas* canvas,
+                              DetachableToolbarView* view,
+                              BrowserView* browser_view,
+                              chrome::HostDesktopType host_desktop_type,
+                              int toolbar_overlap) {
+  // Paint background for attached state, this is fade in/out.
+  DetachableToolbarView::PaintBackgroundAttachedMode(canvas, view,
+      browser_view->OffsetPointForToolbarBackgroundImage(
+          gfx::Point(view->GetMirroredX(), view->y())),
+      host_desktop_type);
+  if (view->height() >= toolbar_overlap) {
+    // Draw the separator below bookmark bar; this is fading in/out.
+    DetachableToolbarView::PaintHorizontalBorder(canvas, view, false,
+        ThemeProperties::GetDefaultColor(
+            ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
+  }
+}
+
 }  // namespace
 
 // Returned from BrowserView::GetClassName.
@@ -251,6 +302,53 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
   if (toolbar_overlap)
     toolbar_overlap += views::NonClientFrameView::kClientEdgeThickness;
   if (host_view_->IsDetached()) {
+    // As 'hidden' according to the animation is the full in-tab state,
+    // we invert the value - when current_state is at '0', we expect the
+    // bar to be docked.
+    double current_state = 1 - host_view_->GetAnimationValue();
+
+    // In Search NTP, the detached bookmark bar is different from regular NTP:
+    // - there's no padding around the bar
+    // - there's a separator below the bar
+    // - if animating between pinned and unpinned states:
+    //   - cross-fade the bar backgrounds
+    //   - fade in/out the separator between toolbar and bookmark bar.
+    if (browser_->search_model()->mode().is_ntp()) {
+      if (current_state == 0.0 || current_state == 1.0) {
+        PaintDetachedBookmarkBar(canvas, host_view_, tp);
+        return;
+      }
+      // While animating, set opacity to cross-fade between attached and
+      // detached backgrounds including their respective separators.
+      int detached_alpha = static_cast<uint8>(current_state * 255);
+      int attached_alpha = 255 - detached_alpha;
+      if (browser_->bookmark_bar_state() == BookmarkBar::DETACHED) {
+        // To animate from attached to detached state:
+        // - fade out attached background
+        // - fade in detached background.
+        canvas->SaveLayerAlpha(attached_alpha);
+        PaintAttachedBookmarkBar(canvas, host_view_, browser_view_,
+                                 browser_->host_desktop_type(),
+                                 toolbar_overlap);
+        canvas->Restore();
+        canvas->SaveLayerAlpha(detached_alpha);
+        PaintDetachedBookmarkBar(canvas, host_view_, tp);
+      } else {
+        // To animate from detached to attached state:
+        // - fade out detached background
+        // - fade in attached background.
+        canvas->SaveLayerAlpha(detached_alpha);
+        PaintDetachedBookmarkBar(canvas, host_view_, tp);
+        canvas->Restore();
+        canvas->SaveLayerAlpha(attached_alpha);
+        PaintAttachedBookmarkBar(canvas, host_view_, browser_view_,
+                                 browser_->host_desktop_type(),
+                                 toolbar_overlap);
+      }
+      canvas->Restore();
+      return;
+    }
+
     // Draw the background to match the new tab page.
     int height = 0;
     WebContents* contents = browser_->tab_strip_model()->GetActiveWebContents();
@@ -262,10 +360,6 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
                   host_view_->height() - toolbar_overlap),
         height);
 
-    // As 'hidden' according to the animation is the full in-tab state,
-    // we invert the value - when current_state is at '0', we expect the
-    // bar to be docked.
-    double current_state = 1 - host_view_->GetAnimationValue();
     double h_padding =
         static_cast<double>(BookmarkBarView::kNewtabHorizontalPadding) *
         current_state;
@@ -281,14 +375,14 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
                                                       roundness);
     DetachableToolbarView::PaintContentAreaBorder(canvas, tp, rect, roundness);
     if (!toolbar_overlap)
-      DetachableToolbarView::PaintHorizontalBorder(canvas, host_view_);
+      DetachableToolbarView::PaintHorizontalBorderForState(canvas, host_view_);
   } else {
     DetachableToolbarView::PaintBackgroundAttachedMode(canvas, host_view_,
         browser_view_->OffsetPointForToolbarBackgroundImage(
             gfx::Point(host_view_->GetMirroredX(), host_view_->y())),
         browser_->host_desktop_type());
     if (host_view_->height() >= toolbar_overlap)
-      DetachableToolbarView::PaintHorizontalBorder(canvas, host_view_);
+      DetachableToolbarView::PaintHorizontalBorderForState(canvas, host_view_);
   }
 }
 
