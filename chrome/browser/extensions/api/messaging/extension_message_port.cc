@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/render_process_host.h"
 
@@ -51,7 +52,7 @@ void ExtensionMessagePort::IncrementLazyKeepaliveCount() {
   ExtensionProcessManager* pm =
       ExtensionSystem::Get(profile)->process_manager();
   ExtensionHost* host = pm->GetBackgroundHostForExtension(extension_id_);
-  if (host && host->extension()->has_lazy_background_page())
+  if (host && BackgroundInfo::HasLazyBackgroundPage(host->extension()))
     pm->IncrementLazyKeepaliveCount(host->extension());
 
   // Keep track of the background host, so when we decrement, we only do so if

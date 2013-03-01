@@ -67,4 +67,11 @@ bool PageActionHandler::Parse(Extension* extension, string16* error) {
   return true;
 }
 
+const std::vector<std::string> PageActionHandler::Keys() const {
+  std::vector<std::string> keys;
+  keys.push_back(keys::kPageAction);
+  keys.push_back(keys::kPageActions);
+  return keys;
+}
+
 }  // namespace extensions

@@ -458,9 +458,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     prefs_.reset(new TestExtensionPrefs(loop_.message_loop_proxy()));
-    extensions::ManifestHandler::Register(
-        extension_manifest_keys::kUpdateURL,
-        make_linked_ptr(new extensions::UpdateURLHandler));
+    (new extensions::UpdateURLHandler)->Register();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -469,6 +467,7 @@ class ExtensionUpdaterTest : public testing::Test {
     // those objects are released.
     RunUntilIdle();
     prefs_.reset();
+    ManifestHandler::ClearRegistryForTesting();
   }
 
   void RunUntilIdle() {

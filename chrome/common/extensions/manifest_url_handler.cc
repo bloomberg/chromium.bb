@@ -103,6 +103,10 @@ bool DevToolsPageHandler::Parse(Extension* extension, string16* error) {
   return true;
 }
 
+const std::vector<std::string> DevToolsPageHandler::Keys() const {
+  return SingleKey(keys::kDevToolsPage);
+}
+
 HomepageURLHandler::HomepageURLHandler() {
 }
 
@@ -128,6 +132,10 @@ bool HomepageURLHandler::Parse(Extension* extension, string16* error) {
   }
   extension->SetManifestData(keys::kHomepageURL, manifest_url.release());
   return true;
+}
+
+const std::vector<std::string> HomepageURLHandler::Keys() const {
+  return SingleKey(keys::kHomepageURL);
 }
 
 UpdateURLHandler::UpdateURLHandler() {
@@ -156,6 +164,10 @@ bool UpdateURLHandler::Parse(Extension* extension, string16* error) {
 
   extension->SetManifestData(keys::kUpdateURL, manifest_url.release());
   return true;
+}
+
+const std::vector<std::string> UpdateURLHandler::Keys() const {
+  return SingleKey(keys::kUpdateURL);
 }
 
 OptionsPageHandler::OptionsPageHandler() {
@@ -196,6 +208,10 @@ bool OptionsPageHandler::Parse(Extension* extension, string16* error) {
 
   extension->SetManifestData(keys::kOptionsPage, manifest_url.release());
   return true;
+}
+
+const std::vector<std::string> OptionsPageHandler::Keys() const {
+  return SingleKey(keys::kOptionsPage);
 }
 
 URLOverridesHandler::URLOverridesHandler() {
@@ -261,6 +277,10 @@ bool URLOverridesHandler::Parse(Extension* extension, string16* error) {
   extension->SetManifestData(keys::kChromeURLOverrides,
                              url_overrides.release());
   return true;
+}
+
+const std::vector<std::string> URLOverridesHandler::Keys() const {
+  return SingleKey(keys::kChromeURLOverrides);
 }
 
 }  // namespace extensions

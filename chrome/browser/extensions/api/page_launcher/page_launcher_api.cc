@@ -10,8 +10,6 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/common/extensions/api/page_launcher.h"
 #include "chrome/common/extensions/api/page_launcher/page_launcher_handler.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/manifest_handler.h"
 #include "googleurl/src/gurl.h"
 
 namespace extensions {
@@ -20,8 +18,7 @@ static base::LazyInstance<ProfileKeyedAPIFactory<PageLauncherAPI> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
 PageLauncherAPI::PageLauncherAPI(Profile* profile) {
-  ManifestHandler::Register(extension_manifest_keys::kPageLauncher,
-                            make_linked_ptr(new PageLauncherHandler));
+  (new PageLauncherHandler)->Register();
 }
 
 PageLauncherAPI::~PageLauncherAPI() {

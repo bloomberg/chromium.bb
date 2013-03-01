@@ -28,6 +28,7 @@
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/extensions/api/developer_private.h"
 #include "chrome/common/extensions/api/icons/icons_handler.h"
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
@@ -302,10 +303,11 @@ ItemInspectViewList DeveloperPrivateGetItemsInfoFunction::
   GetShellWindowPagesForExtensionProfile(extension, &result);
 
   // Include a link to start the lazy background page, if applicable.
-  if (extension->has_lazy_background_page() && extension_is_enabled &&
+  if (BackgroundInfo::HasLazyBackgroundPage(extension) &&
+      extension_is_enabled &&
       !process_manager->GetBackgroundHostForExtension(extension->id())) {
-    result.push_back(
-        constructInspectView(extension->GetBackgroundURL(), -1, -1, false));
+    result.push_back(constructInspectView(
+        BackgroundInfo::GetBackgroundURL(extension), -1, -1, false));
   }
 
   ExtensionService* service = profile()->GetExtensionService();
@@ -319,10 +321,11 @@ ItemInspectViewList DeveloperPrivateGetItemsInfoFunction::
         process_manager->GetRenderViewHostsForExtension(extension->id()),
         &result);
 
-    if (extension->has_lazy_background_page() && extension_is_enabled &&
+    if (BackgroundInfo::HasLazyBackgroundPage(extension) &&
+        extension_is_enabled &&
         !process_manager->GetBackgroundHostForExtension(extension->id())) {
-    result.push_back(
-        constructInspectView(extension->GetBackgroundURL(), -1, -1, false));
+    result.push_back(constructInspectView(
+        BackgroundInfo::GetBackgroundURL(extension), -1, -1, false));
     }
   }
 

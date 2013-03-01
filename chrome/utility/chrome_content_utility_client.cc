@@ -22,11 +22,10 @@
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/api/themes/theme_handler.h"
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest.h"
-#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/unpacker.h"
 #include "chrome/common/extensions/update_manifest.h"
 #include "chrome/common/safe_browsing/zip_analyzer.h"
@@ -55,24 +54,12 @@ namespace {
 
 // Explicitly register all ManifestHandlers needed in the utility process.
 void RegisterExtensionManifestHandlers() {
-  extensions::ManifestHandler::Register(
-      extension_manifest_keys::kBrowserAction,
-      make_linked_ptr(new extensions::BrowserActionHandler));
-  extensions::ManifestHandler::Register(
-      extension_manifest_keys::kDefaultLocale,
-      make_linked_ptr(new extensions::DefaultLocaleHandler));
-  extensions::ManifestHandler::Register(
-      extension_manifest_keys::kIcons,
-      make_linked_ptr(new extensions::IconsHandler));
-  linked_ptr<extensions::PageActionHandler> page_action_handler(
-      new extensions::PageActionHandler);
-  extensions::ManifestHandler::Register(
-      extension_manifest_keys::kPageAction, page_action_handler);
-  extensions::ManifestHandler::Register(
-      extension_manifest_keys::kPageActions, page_action_handler);
-  extensions::ManifestHandler::Register(
-      extension_manifest_keys::kTheme,
-      make_linked_ptr(new extensions::ThemeHandler));
+  (new extensions::BackgroundManifestHandler)->Register();
+  (new extensions::BrowserActionHandler)->Register();
+  (new extensions::DefaultLocaleHandler)->Register();
+  (new extensions::IconsHandler)->Register();
+  (new extensions::PageActionHandler)->Register();
+  (new extensions::ThemeHandler)->Register();
 }
 
 }  // namespace

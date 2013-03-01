@@ -16,8 +16,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/identity/oauth2_manifest_handler.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -144,12 +142,6 @@ class MockGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
 };
 
 class GetAuthTokenFunctionTest : public ExtensionBrowserTest {
- public:
-  virtual void SetUp() OVERRIDE {
-    ExtensionBrowserTest::SetUp();
-    ManifestHandler::Register(extension_manifest_keys::kOAuth2,
-                              make_linked_ptr(new OAuth2ManifestHandler));
-  }
  protected:
   enum OAuth2Fields {
     NONE = 0,

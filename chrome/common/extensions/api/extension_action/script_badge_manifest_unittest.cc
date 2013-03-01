@@ -10,7 +10,6 @@
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/feature_switch.h"
-#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "extensions/common/install_warning.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -35,11 +34,8 @@ std::vector<InstallWarning> StripMissingFlagWarning(
 class ScriptBadgeManifestTest : public ExtensionManifestTest {
  protected:
   virtual void SetUp() OVERRIDE {
-    ExtensionManifestTest::SetUp();
-    ManifestHandler::Register(extension_manifest_keys::kScriptBadge,
-                              make_linked_ptr(new ScriptBadgeHandler));
-    ManifestHandler::Register(extension_manifest_keys::kIcons,
-                              make_linked_ptr(new IconsHandler));
+    (new IconsHandler)->Register();
+    (new ScriptBadgeHandler)->Register();
   }
 };
 

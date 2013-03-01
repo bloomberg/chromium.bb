@@ -72,6 +72,8 @@ class IconsHandler : public ManifestHandler {
   virtual ~IconsHandler();
 
   virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
+ private:
+  virtual const std::vector<std::string> Keys() const OVERRIDE;
 };
 
 }  // namespace extensions

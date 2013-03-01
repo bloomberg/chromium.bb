@@ -13,10 +13,7 @@ namespace errors = extension_manifest_errors;
 class ContentSecurityPolicyManifestTest : public ExtensionManifestTest {
   virtual void SetUp() OVERRIDE {
     ExtensionManifestTest::SetUp();
-    extensions::ManifestHandler::Register(
-        extension_manifest_keys::kContentSecurityPolicy,
-        make_linked_ptr(new extensions::CSPHandler(false))); // not platform
-                                                             // app.
+    (new extensions::CSPHandler(false))->Register(); //  not platform app.
   }
 };
 
@@ -29,6 +26,5 @@ TEST_F(ContentSecurityPolicyManifestTest, InsecureContentSecurityPolicy) {
     Testcase("insecure_contentsecuritypolicy_3.json",
         errors::kInsecureContentSecurityPolicy),
   };
-  RunTestcases(testcases, arraysize(testcases),
-               EXPECT_TYPE_ERROR);
+  RunTestcases(testcases, arraysize(testcases), EXPECT_TYPE_ERROR);
 }

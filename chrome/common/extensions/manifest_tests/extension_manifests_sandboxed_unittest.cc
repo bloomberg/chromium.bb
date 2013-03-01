@@ -15,10 +15,7 @@ namespace errors = extension_manifest_errors;
 class SandboxedPagesManifestTest : public ExtensionManifestTest {
   virtual void SetUp() OVERRIDE {
     ExtensionManifestTest::SetUp();
-    extensions::ManifestHandler::Register(
-        extension_manifest_keys::kContentSecurityPolicy,
-        make_linked_ptr(new extensions::CSPHandler(false))); // not platform
-                                                             // app.
+    (new extensions::CSPHandler(false))->Register();  // Not platform app.
   }
 };
 
@@ -78,5 +75,3 @@ TEST_F(SandboxedPagesManifestTest, SandboxedPages) {
   RunTestcases(testcases, arraysize(testcases),
                EXPECT_TYPE_ERROR);
 }
-
-

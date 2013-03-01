@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -746,7 +747,7 @@ bool MenuManager::ItemUpdated(const MenuItem::Id& id) {
 }
 
 void MenuManager::WriteToStorage(const Extension* extension) {
-  if (!extension->has_lazy_background_page())
+  if (!BackgroundInfo::HasLazyBackgroundPage(extension))
     return;
   const MenuItem::List* top_items = MenuItems(extension->id());
   MenuItem::List all_items;
@@ -801,7 +802,7 @@ void MenuManager::Observe(int type,
     const Extension* extension =
         content::Details<const Extension>(details).ptr();
     StateStore* store = ExtensionSystem::Get(profile_)->state_store();
-    if (store && extension->has_lazy_background_page()) {
+    if (store && BackgroundInfo::HasLazyBackgroundPage(extension)) {
       store->GetExtensionValue(extension->id(), kContextMenusKey,
           base::Bind(&MenuManager::ReadFromStorage,
                      AsWeakPtr(), extension->id()));

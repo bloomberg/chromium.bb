@@ -59,7 +59,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -564,9 +563,7 @@ class RequestLocalFileSystemFunction::LocalFileSystemCallbackDispatcher {
 
 FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
     : event_router_(make_scoped_refptr(new FileBrowserEventRouter(profile))) {
-  extensions::ManifestHandler::Register(
-      extension_manifest_keys::kFileBrowserHandlers,
-      make_linked_ptr(new FileBrowserHandlerParser));
+  (new FileBrowserHandlerParser)->Register();
 
   ExtensionFunctionRegistry* registry =
       ExtensionFunctionRegistry::GetInstance();

@@ -22,6 +22,7 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/icons/icons_handler.h"
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -170,9 +171,11 @@ class GeneratedBackgroundPageJob : public net::URLRequestSimpleJob {
     *charset = "utf-8";
 
     *data = "<!DOCTYPE html>\n<body>\n";
-    for (size_t i = 0; i < extension_->background_scripts().size(); ++i) {
+    const std::vector<std::string>& background_scripts =
+        extensions::BackgroundInfo::GetBackgroundScripts(extension_);
+    for (size_t i = 0; i < background_scripts.size(); ++i) {
       *data += "<script src=\"";
-      *data += extension_->background_scripts()[i];
+      *data += background_scripts[i];
       *data += "\"></script>\n";
     }
 

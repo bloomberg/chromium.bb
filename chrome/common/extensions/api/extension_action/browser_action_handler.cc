@@ -41,4 +41,8 @@ bool BrowserActionHandler::Parse(Extension* extension,
   return true;
 }
 
+const std::vector<std::string> BrowserActionHandler::Keys() const {
+  return SingleKey(extension_manifest_keys::kBrowserAction);
+}
+
 }  // namespace extensions

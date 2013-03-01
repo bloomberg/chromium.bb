@@ -9,7 +9,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/value_builder.h"
 #include "content/public/browser/resource_controller.h"
@@ -66,10 +65,8 @@ class FileBrowserResourceThrottleTest : public testing::Test {
 
   virtual ~FileBrowserResourceThrottleTest() {}
 
-  virtual void SetUp() {
-    extensions::ManifestHandler::Register(
-        extension_manifest_keys::kFileBrowserHandlers,
-        make_linked_ptr(new FileBrowserHandlerParser));
+  virtual void SetUp() OVERRIDE {
+    (new FileBrowserHandlerParser)->Register();
     // Extension info map must be created before |CreateAndInstallTestExtension|
     // is called (the method will add created extension to the info map).
     extension_info_map_ = new ExtensionInfoMap();
@@ -77,8 +74,9 @@ class FileBrowserResourceThrottleTest : public testing::Test {
     InitResourceController();
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     FileBrowserHandler::set_extension_whitelisted_for_test(NULL);
+    extensions::ManifestHandler::ClearRegistryForTesting();
   }
 
  protected:

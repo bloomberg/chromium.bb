@@ -41,7 +41,7 @@ class CommandsHandler : public ManifestHandler {
   virtual ~CommandsHandler();
 
   virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
-  virtual bool AlwaysParseForType(Manifest::Type type) OVERRIDE;
+  virtual bool AlwaysParseForType(Manifest::Type type) const OVERRIDE;
 
  private:
   // If the extension defines a browser action, but no command for it, then
@@ -49,6 +49,10 @@ class CommandsHandler : public ManifestHandler {
   // No keyboard shortcut will be assigned to it, until the user selects one.
   void MaybeSetBrowserActionDefault(const Extension* extension,
                                     CommandsInfo* info);
+
+  virtual const std::vector<std::string> Keys() const OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(CommandsHandler);
 };
 
 }  // namespace extensions

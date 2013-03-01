@@ -65,6 +65,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -545,9 +546,8 @@ void ExtensionServiceTestBase::SetUpTestCase() {
 void ExtensionServiceTestBase::SetUp() {
   testing::Test::SetUp();
   ExtensionErrorReporter::GetInstance()->ClearErrors();
-  extensions::ManifestHandler::Register(
-      keys::kDefaultLocale,
-      make_linked_ptr(new extensions::DefaultLocaleHandler));
+  (new extensions::BackgroundManifestHandler)->Register();
+  (new extensions::DefaultLocaleHandler)->Register();
 }
 
 void ExtensionServiceTestBase::TearDown() {
@@ -1191,7 +1191,7 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   EXPECT_EQ(std::string("My extension 2"), loaded_[1]->name());
   EXPECT_EQ(std::string(""), loaded_[1]->description());
   EXPECT_EQ(loaded_[1]->GetResourceURL("background.html"),
-            loaded_[1]->GetBackgroundURL());
+            extensions::BackgroundInfo::GetBackgroundURL(loaded_[1]));
   EXPECT_EQ(0u, loaded_[1]->content_scripts().size());
   // We don't parse the plugins section on Chrome OS.
 #if defined(OS_CHROMEOS)

@@ -8,8 +8,6 @@
 #include "base/string_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/commands/commands_handler.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/manifest_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace errors = extension_manifest_errors;
@@ -19,8 +17,7 @@ namespace extensions {
 class CommandsManifestTest : public ExtensionManifestTest {
  protected:
   virtual void SetUp() OVERRIDE {
-    ManifestHandler::Register(extension_manifest_keys::kCommands,
-                              make_linked_ptr(new CommandsHandler));
+    (new CommandsHandler)->Register();
   }
 };
 

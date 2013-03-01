@@ -135,4 +135,8 @@ bool TtsEngineManifestHandler::Parse(Extension* extension, string16* error) {
   return true;
 }
 
+const std::vector<std::string> TtsEngineManifestHandler::Keys() const {
+  return SingleKey(keys::kTtsEngine);
+}
+
 }  // namespace extensions

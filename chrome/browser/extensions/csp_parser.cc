@@ -7,18 +7,12 @@
 #include "base/lazy_instance.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/csp_handler.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/manifest_handler.h"
 
 namespace extensions {
 
 CSPParser::CSPParser(Profile* profile) {
-  ManifestHandler::Register(
-      extension_manifest_keys::kContentSecurityPolicy,
-      make_linked_ptr(new CSPHandler(false))); // not platform app.
-  ManifestHandler::Register(
-      extension_manifest_keys::kPlatformAppContentSecurityPolicy,
-      make_linked_ptr(new CSPHandler(true))); // platform app.
+  (new CSPHandler(false))->Register();  // platform app.
+  (new CSPHandler(true))->Register();  // platform app.
 }
 
 CSPParser::~CSPParser() {

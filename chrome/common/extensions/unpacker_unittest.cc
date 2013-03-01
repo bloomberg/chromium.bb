@@ -35,12 +35,12 @@ public:
 
   virtual void SetUp() OVERRIDE {
     testing::Test::SetUp();
-    extensions::ManifestHandler::Register(
-        keys::kDefaultLocale,
-        make_linked_ptr(new extensions::DefaultLocaleHandler));
-    extensions::ManifestHandler::Register(
-        keys::kTheme,
-        make_linked_ptr(new extensions::ThemeHandler));
+    (new DefaultLocaleHandler)->Register();
+    (new ThemeHandler)->Register();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    ManifestHandler::ClearRegistryForTesting();
   }
 
   void SetupUnpacker(const std::string& crx_name) {

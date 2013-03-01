@@ -60,6 +60,11 @@ class DevToolsPageHandler : public ManifestHandler {
   virtual ~DevToolsPageHandler();
 
   virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
+
+ private:
+  virtual const std::vector<std::string> Keys() const OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(DevToolsPageHandler);
 };
 
 // Parses the "homepage_url" manifest key.
@@ -69,6 +74,11 @@ class HomepageURLHandler : public ManifestHandler {
   virtual ~HomepageURLHandler();
 
   virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
+
+ private:
+  virtual const std::vector<std::string> Keys() const OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(HomepageURLHandler);
 };
 
 // Parses the "update_url" manifest key.
@@ -78,6 +88,11 @@ class UpdateURLHandler : public ManifestHandler {
   virtual ~UpdateURLHandler();
 
   virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
+
+ private:
+  virtual const std::vector<std::string> Keys() const OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(UpdateURLHandler);
 };
 
 // Parses the "options_page" manifest key.
@@ -87,6 +102,11 @@ class OptionsPageHandler : public ManifestHandler {
   virtual ~OptionsPageHandler();
 
   virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
+
+ private:
+  virtual const std::vector<std::string> Keys() const OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(OptionsPageHandler);
 };
 
 // Parses the "chrome_url_overrides" manifest key.
@@ -96,6 +116,11 @@ class URLOverridesHandler : public ManifestHandler {
   virtual ~URLOverridesHandler();
 
   virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
+
+ private:
+  virtual const std::vector<std::string> Keys() const OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(URLOverridesHandler);
 };
 
 }  // namespace extensions

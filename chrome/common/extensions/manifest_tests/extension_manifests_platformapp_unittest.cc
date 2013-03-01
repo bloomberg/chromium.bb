@@ -6,6 +6,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/memory/linked_ptr.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/csp_handler.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
@@ -13,12 +14,12 @@
 
 namespace errors = extension_manifest_errors;
 
+namespace extensions {
+
 class PlatformAppsManifestTest : public ExtensionManifestTest {
   virtual void SetUp() OVERRIDE {
-    ExtensionManifestTest::SetUp();
-    extensions::ManifestHandler::Register(
-        extension_manifest_keys::kPlatformAppContentSecurityPolicy,
-        make_linked_ptr(new extensions::CSPHandler(true))); // platform app.
+    (new BackgroundManifestHandler)->Register();
+    (new CSPHandler(true))->Register();  // platform app.
   }
 };
 
@@ -141,3 +142,5 @@ TEST_F(PlatformAppsManifestTest, CertainApisRequirePlatformApps) {
     LoadAndExpectSuccess(Manifest(manifests[i].get(), ""));
   }
 }
+
+}  // namespace extensions

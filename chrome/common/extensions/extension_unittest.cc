@@ -14,6 +14,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/commands/commands_handler.h"
+#include "chrome/common/extensions/api/commands/commands_handler.h"
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/command.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -101,8 +103,12 @@ static scoped_refptr<Extension> LoadManifestStrict(
 class ExtensionTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
-    ManifestHandler::Register(extension_manifest_keys::kCommands,
-                              make_linked_ptr(new CommandsHandler));
+    (new BackgroundManifestHandler)->Register();
+    (new CommandsHandler)->Register();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    ManifestHandler::ClearRegistryForTesting();
   }
 };
 

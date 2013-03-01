@@ -169,4 +169,8 @@ bool ThemeHandler::Parse(Extension* extension, string16* error) {
   return true;
 }
 
+const std::vector<std::string> ThemeHandler::Keys() const {
+  return SingleKey(keys::kTheme);
+}
+
 }  // namespace extensions

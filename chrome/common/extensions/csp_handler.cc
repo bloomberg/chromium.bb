@@ -68,9 +68,7 @@ CSPHandler::~CSPHandler() {
 }
 
 bool CSPHandler::Parse(Extension* extension, string16* error) {
-  const std::string& key = is_platform_app_ ?
-      keys::kPlatformAppContentSecurityPolicy : keys::kContentSecurityPolicy;
-
+  const std::string key = Keys()[0];
   if (!extension->manifest()->HasPath(key)) {
     if (extension->manifest_version() >= 2) {
       // TODO(abarth): Should we continue to let extensions override the
@@ -108,12 +106,18 @@ bool CSPHandler::Parse(Extension* extension, string16* error) {
   return true;
 }
 
-bool CSPHandler::AlwaysParseForType(Manifest::Type type) {
+bool CSPHandler::AlwaysParseForType(Manifest::Type type) const {
   if (is_platform_app_)
     return type == Manifest::TYPE_PLATFORM_APP;
   else
     return type == Manifest::TYPE_EXTENSION ||
         type == Manifest::TYPE_LEGACY_PACKAGED_APP;
+}
+
+const std::vector<std::string> CSPHandler::Keys() const {
+  const std::string& key = is_platform_app_ ?
+      keys::kPlatformAppContentSecurityPolicy : keys::kContentSecurityPolicy;
+  return SingleKey(key);
 }
 
 }  // namespace extensions

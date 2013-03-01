@@ -30,6 +30,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/extension_api.h"
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/view_type.h"
@@ -557,7 +558,7 @@ void EventRouter::IncrementInFlightEvents(Profile* profile,
                                           const Extension* extension) {
   // Only increment in-flight events if the lazy background page is active,
   // because that's the only time we'll get an ACK.
-  if (extension->has_lazy_background_page()) {
+  if (BackgroundInfo::HasLazyBackgroundPage(extension)) {
     ExtensionProcessManager* pm =
         ExtensionSystem::Get(profile)->process_manager();
     ExtensionHost* host = pm->GetBackgroundHostForExtension(extension->id());
@@ -575,8 +576,9 @@ void EventRouter::OnEventAck(Profile* profile,
   // NULL.
   CHECK(host);
   // TODO(mpcomplete): We should never get this message unless
-  // has_lazy_background_page is true. Find out why we're getting it anyway.
-  if (host->extension() && host->extension()->has_lazy_background_page())
+  // HasLazyBackgroundPage is true. Find out why we're getting it anyway.
+  if (host->extension() &&
+      BackgroundInfo::HasLazyBackgroundPage(host->extension()))
     pm->DecrementLazyKeepaliveCount(host->extension());
 }
 
@@ -614,7 +616,7 @@ void EventRouter::Observe(int type,
       // to register the events the extension is interested in.
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
-      if (extension->has_lazy_background_page()) {
+      if (BackgroundInfo::HasLazyBackgroundPage(extension)) {
         LazyBackgroundTaskQueue* queue =
             ExtensionSystem::Get(profile_)->lazy_background_task_queue();
         queue->AddPendingTask(profile_, extension->id(),

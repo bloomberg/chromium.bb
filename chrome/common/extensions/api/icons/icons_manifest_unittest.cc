@@ -17,8 +17,7 @@ class IconsManifestTest : public ExtensionManifestTest {
  protected:
   virtual void SetUp() OVERRIDE {
     ExtensionManifestTest::SetUp();
-    ManifestHandler::Register(extension_manifest_keys::kIcons,
-                              make_linked_ptr(new IconsHandler));
+    (new IconsHandler)->Register();
   }
 };
 

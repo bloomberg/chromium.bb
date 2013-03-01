@@ -33,9 +33,11 @@ class CSPHandler : public ManifestHandler {
   virtual ~CSPHandler();
 
   virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
-  virtual bool AlwaysParseForType(Manifest::Type type) OVERRIDE;
+  virtual bool AlwaysParseForType(Manifest::Type type) const OVERRIDE;
 
  private:
+  virtual const std::vector<std::string> Keys() const OVERRIDE;
+
   bool is_platform_app_;
 
   DISALLOW_COPY_AND_ASSIGN(CSPHandler);

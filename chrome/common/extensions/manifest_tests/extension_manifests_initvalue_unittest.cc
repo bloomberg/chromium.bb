@@ -30,19 +30,10 @@ class InitValueManifestTest : public ExtensionManifestTest {
  protected:
   virtual void SetUp() OVERRIDE {
     ExtensionManifestTest::SetUp();
-    ManifestHandler::Register(extension_manifest_keys::kIcons,
-                              make_linked_ptr(new IconsHandler));
-    extensions::ManifestHandler::Register(
-        keys::kOptionsPage,
-        make_linked_ptr(new extensions::OptionsPageHandler));
-    extensions::ManifestHandler::Register(
-        keys::kDefaultLocale,
-        make_linked_ptr(new extensions::DefaultLocaleHandler));
-  linked_ptr<extensions::PageActionHandler> page_action_handler(
-      new extensions::PageActionHandler);
-  extensions::ManifestHandler::Register(keys::kPageAction, page_action_handler);
-  extensions::ManifestHandler::Register(
-      keys::kPageActions, page_action_handler);
+    (new extensions::DefaultLocaleHandler)->Register();
+    (new extensions::IconsHandler)->Register();
+    (new extensions::OptionsPageHandler)->Register();
+    (new extensions::PageActionHandler)->Register();
   }
 };
 

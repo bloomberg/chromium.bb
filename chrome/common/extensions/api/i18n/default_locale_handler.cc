@@ -41,4 +41,8 @@ bool DefaultLocaleHandler::Parse(Extension* extension, string16* error) {
   return true;
 }
 
+const std::vector<std::string> DefaultLocaleHandler::Keys() const {
+  return SingleKey(keys::kDefaultLocale);
+}
+
 }  // namespace extensions

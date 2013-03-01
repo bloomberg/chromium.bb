@@ -32,6 +32,7 @@
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -158,7 +159,7 @@ ExtensionHost::ExtensionHost(const Extension* extension,
 
 ExtensionHost::~ExtensionHost() {
   if (extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE &&
-      extension_ && extension_->has_lazy_background_page()) {
+      extension_ && BackgroundInfo::HasLazyBackgroundPage(extension_)) {
     UMA_HISTOGRAM_LONG_TIMES("Extensions.EventPageActiveTime",
                              since_created_.Elapsed());
   }
@@ -351,7 +352,7 @@ void ExtensionHost::DidStopLoading(content::RenderViewHost* render_view_host) {
   }
   if (notify) {
     if (extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
-      if (extension_ && extension_->has_lazy_background_page()) {
+      if (extension_ && BackgroundInfo::HasLazyBackgroundPage(extension_)) {
         UMA_HISTOGRAM_TIMES("Extensions.EventPageLoadTime",
                             since_created_.Elapsed());
       } else {

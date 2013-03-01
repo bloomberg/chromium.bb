@@ -20,8 +20,8 @@ class ScriptBadgeHandler : public ManifestHandler {
   virtual ~ScriptBadgeHandler();
 
   virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
-  virtual const std::vector<std::string>& PrerequisiteKeys() OVERRIDE;
-  virtual bool AlwaysParseForType(Manifest::Type type) OVERRIDE;
+  virtual const std::vector<std::string> PrerequisiteKeys() const OVERRIDE;
+  virtual bool AlwaysParseForType(Manifest::Type type) const OVERRIDE;
 
  private:
   // Sets the fields of ActionInfo to the default values, matching the parent
@@ -29,7 +29,7 @@ class ScriptBadgeHandler : public ManifestHandler {
   // is present in the manifest.
   void SetActionInfoDefaults(const Extension* extension, ActionInfo* info);
 
-  std::vector<std::string> prerequisite_keys_;
+  virtual const std::vector<std::string> Keys() const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ScriptBadgeHandler);
 };

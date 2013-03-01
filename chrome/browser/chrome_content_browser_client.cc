@@ -82,6 +82,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/common/extensions/extension_set.h"
@@ -751,7 +752,7 @@ bool ChromeContentBrowserClient::ShouldUseProcessPerSite(
   // responsiveness.
   if (extension->GetType() == Manifest::TYPE_HOSTED_APP) {
     if (!extension->HasAPIPermission(APIPermission::kBackground) ||
-        !extension->allow_background_js_access()) {
+        !extensions::BackgroundInfo::AllowJSAccess(extension)) {
       return false;
     }
   }
@@ -875,7 +876,7 @@ bool ChromeContentBrowserClient::ShouldTryToUseExistingProcessHost(
       service->extensions()->GetExtensionOrAppByURL(ExtensionURLInfo(url));
   if (!extension)
     return false;
-  if (!extension->has_background_page())
+  if (!extensions::BackgroundInfo::HasBackgroundPage(extension))
     return false;
 
   std::set<int> process_ids;
@@ -1644,7 +1645,7 @@ bool ChromeContentBrowserClient::CanCreateWindow(
     // just the origin.
     const Extension* extension = map->extensions().GetExtensionOrAppByURL(
         ExtensionURLInfo(opener_url));
-    if (extension && !extension->allow_background_js_access())
+    if (extension && !extensions::BackgroundInfo::AllowJSAccess(extension))
       *no_javascript_access = true;
   }
   return true;

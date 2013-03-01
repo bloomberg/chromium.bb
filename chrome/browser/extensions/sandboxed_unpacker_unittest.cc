@@ -13,7 +13,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/unpacker.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -67,9 +67,7 @@ class SandboxedUnpackerTest : public testing::Test {
     // It will delete itself.
     client_ = new MockSandboxedUnpackerClient;
     client_->DelegateToFake();
-    extensions::ManifestHandler::Register(
-        extension_manifest_keys::kDefaultLocale,
-        make_linked_ptr(new extensions::DefaultLocaleHandler));
+    (new extensions::DefaultLocaleHandler)->Register();
   }
 
   virtual void TearDown() {
@@ -77,6 +75,7 @@ class SandboxedUnpackerTest : public testing::Test {
     // it posts a task to it.
     sandboxed_unpacker_ = NULL;
     loop_.RunUntilIdle();
+    ManifestHandler::ClearRegistryForTesting();
   }
 
   void SetupUnpacker(const std::string& crx_name) {

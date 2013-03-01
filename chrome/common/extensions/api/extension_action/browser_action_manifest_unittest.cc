@@ -7,7 +7,6 @@
 #include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "chrome/common/extensions/value_builder.h"
 #include "extensions/common/error_utils.h"
@@ -22,8 +21,7 @@ class BrowserActionManifestTest : public ExtensionManifestTest {
  protected:
   virtual void SetUp() OVERRIDE {
     ExtensionManifestTest::SetUp();
-    ManifestHandler::Register(extension_manifest_keys::kBrowserAction,
-                              make_linked_ptr(new BrowserActionHandler));
+    (new BrowserActionHandler)->Register();
   }
 };
 

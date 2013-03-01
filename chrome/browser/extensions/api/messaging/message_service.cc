@@ -22,6 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/view_type.h"
@@ -448,7 +449,7 @@ bool MessageService::MaybeAddPendingOpenChannelTask(
   ExtensionService* service = profile->GetExtensionService();
   const std::string& extension_id = params->target_extension_id;
   const Extension* extension = service->extensions()->GetByID(extension_id);
-  if (extension && extension->has_lazy_background_page()) {
+  if (extension && BackgroundInfo::HasLazyBackgroundPage(extension)) {
     // If the extension uses spanning incognito mode, make sure we're always
     // using the original profile since that is what the extension process
     // will use.

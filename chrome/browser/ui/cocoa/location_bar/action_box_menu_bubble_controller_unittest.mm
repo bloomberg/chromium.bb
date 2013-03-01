@@ -11,8 +11,10 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/toolbar/action_box_menu_model.h"
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_builder.h"
+#include "chrome/common/extensions/manifest_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -57,11 +59,13 @@ class ActionBoxMenuBubbleControllerTest : public CocoaProfileTest {
         &command_line, base::FilePath(), false);
     EXPECT_TRUE(service_->extensions_enabled());
     service_->Init();
+    (new extensions::BackgroundManifestHandler)->Register();
   }
 
   virtual void TearDown() OVERRIDE {
     // Close our windows.
     [controller_ close];
+    extensions::ManifestHandler::ClearRegistryForTesting();
     CocoaProfileTest::TearDown();
   }
 

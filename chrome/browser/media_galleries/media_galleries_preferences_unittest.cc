@@ -18,7 +18,9 @@
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_test_util.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "sync/api/string_ordinal.h"
@@ -101,6 +103,7 @@ class MediaGalleriesPreferencesTest : public testing::Test {
             extensions::ExtensionSystem::Get(profile_.get())));
     extension_system->CreateExtensionService(
         CommandLine::ForCurrentProcess(), base::FilePath(), false);
+    (new extensions::BackgroundManifestHandler)->Register();
 
     gallery_prefs_.reset(new MediaGalleriesPreferences(profile_.get()));
 
@@ -134,6 +137,7 @@ class MediaGalleriesPreferencesTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     Verify();
+    extensions::ManifestHandler::ClearRegistryForTesting();
   }
 
   void Verify() {

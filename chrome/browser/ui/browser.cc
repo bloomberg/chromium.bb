@@ -142,6 +142,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -2231,7 +2232,7 @@ bool Browser::MaybeCreateBackgroundContents(int route_id,
   }
 
   // Only allow a single background contents per app.
-  bool allow_js_access = extension->allow_background_js_access();
+  bool allow_js_access = extensions::BackgroundInfo::AllowJSAccess(extension);
   BackgroundContents* existing =
       service->GetAppBackgroundContents(ASCIIToUTF16(extension->id()));
   if (existing) {

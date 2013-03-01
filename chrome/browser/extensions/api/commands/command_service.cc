@@ -17,7 +17,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/commands/commands_handler.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -47,8 +46,7 @@ void CommandService::RegisterUserPrefs(PrefRegistrySyncable* registry) {
 
 CommandService::CommandService(Profile* profile)
     : profile_(profile) {
-  ManifestHandler::Register(extension_manifest_keys::kCommands,
-                            make_linked_ptr(new CommandsHandler));
+  (new CommandsHandler)->Register();
 
   ExtensionFunctionRegistry::GetInstance()->
       RegisterFunction<GetAllCommandsFunction>();

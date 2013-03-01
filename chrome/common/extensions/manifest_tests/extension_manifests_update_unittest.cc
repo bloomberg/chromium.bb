@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -15,9 +14,7 @@ namespace errors = extension_manifest_errors;
 class UpdateURLManifestTest : public ExtensionManifestTest {
   virtual void SetUp() OVERRIDE {
     ExtensionManifestTest::SetUp();
-    extensions::ManifestHandler::Register(
-        extension_manifest_keys::kUpdateURL,
-        make_linked_ptr(new extensions::UpdateURLHandler));
+    (new extensions::UpdateURLHandler)->Register();
   }
 };
 

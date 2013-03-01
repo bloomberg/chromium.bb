@@ -76,14 +76,14 @@ class ExtensionProtocolTest : public testing::Test {
         resource_context_.GetRequestContext();
     old_factory_ = request_context->job_factory();
 
-    ManifestHandler::Register(extension_manifest_keys::kIcons,
-                              make_linked_ptr(new IconsHandler));
+    (new IconsHandler)->Register();
   }
 
   virtual void TearDown() {
     net::URLRequestContext* request_context =
         resource_context_.GetRequestContext();
     request_context->set_job_factory(old_factory_);
+    ManifestHandler::ClearRegistryForTesting();
   }
 
   void SetProtocolHandler(bool incognito) {

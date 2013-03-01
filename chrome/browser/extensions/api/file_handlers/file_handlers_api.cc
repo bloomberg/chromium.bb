@@ -6,13 +6,11 @@
 
 #include "base/lazy_instance.h"
 #include "chrome/common/extensions/api/file_handlers/file_handlers_parser.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 
 namespace extensions {
 
 FileHandlersAPI::FileHandlersAPI(Profile* profile) {
-  ManifestHandler::Register(extension_manifest_keys::kFileHandlers,
-                            make_linked_ptr(new FileHandlersParser));
+  (new FileHandlersParser)->Register();
 }
 
 FileHandlersAPI::~FileHandlersAPI() {

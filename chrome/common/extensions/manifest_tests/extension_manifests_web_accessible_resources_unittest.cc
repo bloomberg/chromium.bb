@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "chrome/common/extensions/web_accessible_resources_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,9 +13,7 @@ using extensions::WebAccessibleResourcesInfo;
 class WebAccessibleResourcesManifestTest : public ExtensionManifestTest {
   virtual void SetUp() OVERRIDE {
     ExtensionManifestTest::SetUp();
-    extensions::ManifestHandler::Register(
-        extension_manifest_keys::kWebAccessibleResources,
-        make_linked_ptr(new extensions::WebAccessibleResourcesHandler));
+    (new extensions::WebAccessibleResourcesHandler)->Register();
   }
 };
 

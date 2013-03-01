@@ -181,7 +181,7 @@ TEST_F(ManifestTest, RestrictedKeys) {
   MutateManifest(
       &manifest, keys::kPageAction, new base::DictionaryValue());
   AssertType(manifest.get(), Manifest::TYPE_EXTENSION);
-  base::Value* output = NULL;
+  const base::Value* output = NULL;
   EXPECT_TRUE(manifest->HasKey(keys::kPageAction));
   EXPECT_TRUE(manifest->Get(keys::kPageAction, &output));
 

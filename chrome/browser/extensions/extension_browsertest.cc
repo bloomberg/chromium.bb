@@ -36,7 +36,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/manifest_handler.h"
@@ -112,9 +111,6 @@ void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
 
 void ExtensionBrowserTest::SetUpOnMainThread() {
   InProcessBrowserTest::SetUpOnMainThread();
-  extensions::ManifestHandler::Register(
-      extension_manifest_keys::kIcons,
-      make_linked_ptr(new extensions::IconsHandler));
 }
 
 const Extension* ExtensionBrowserTest::LoadExtensionWithFlags(

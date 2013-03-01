@@ -6,7 +6,6 @@
 #include "chrome/browser/chromeos/extensions/file_browser_handler.h"
 #include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/value_builder.h"
@@ -25,12 +24,8 @@ namespace {
 class FileBrowserHandlerManifestTest : public ExtensionManifestTest {
   virtual void SetUp() OVERRIDE {
     ExtensionManifestTest::SetUp();
-    extensions::ManifestHandler::Register(
-        extension_manifest_keys::kFileBrowserHandlers,
-        make_linked_ptr(new FileBrowserHandlerParser));
-    extensions::ManifestHandler::Register(
-        extension_manifest_keys::kChromeURLOverrides,
-        make_linked_ptr(new extensions::URLOverridesHandler));
+    (new FileBrowserHandlerParser)->Register();
+    (new extensions::URLOverridesHandler)->Register();
   }
 };
 

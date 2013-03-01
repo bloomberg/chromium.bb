@@ -11,6 +11,8 @@
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "chrome/common/extensions/background_info.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/value_counter.h"
@@ -40,7 +42,6 @@ using WebKit::WebFrame;
 using WebKit::WebSecurityOrigin;
 using WebKit::WebURL;
 using content::RenderThread;
-using extensions::Extension;
 
 namespace extensions {
 
@@ -59,15 +60,14 @@ base::LazyInstance<std::map<std::string, EventListenerCounts> >
 // track of which filters are in effect for which events.
 // We notify the browser about filtered event listeners when we transition
 // between 0 and 1.
-typedef std::map<std::string, linked_ptr<extensions::ValueCounter> >
+typedef std::map<std::string, linked_ptr<ValueCounter> >
     FilteredEventListenerCounts;
 
 // A map of extension IDs to filtered listener counts for that extension.
 base::LazyInstance<std::map<std::string, FilteredEventListenerCounts> >
     g_filtered_listener_counts = LAZY_INSTANCE_INITIALIZER;
 
-base::LazyInstance<extensions::EventFilter> g_event_filter =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<EventFilter> g_event_filter = LAZY_INSTANCE_INITIALIZER;
 
 // TODO(koz): Merge this into EventBindings.
 class ExtensionImpl : public ChromeV8Extension {
@@ -198,7 +198,7 @@ class ExtensionImpl : public ChromeV8Extension {
     }
 
     filter.reset(filter_dict);
-    extensions::EventFilter& event_filter = g_event_filter.Get();
+    EventFilter& event_filter = g_event_filter.Get();
     int id = event_filter.AddEventMatcher(event_name, ParseEventMatcher(
         filter.get()));
 
@@ -222,7 +222,7 @@ class ExtensionImpl : public ChromeV8Extension {
         g_filtered_listener_counts.Get()[extension_id];
     FilteredEventListenerCounts::iterator it = counts.find(event_name);
     if (it == counts.end())
-      counts[event_name].reset(new extensions::ValueCounter);
+      counts[event_name].reset(new ValueCounter);
 
     int result = counts[event_name]->Add(*filter);
     return 1 == result;
@@ -262,8 +262,8 @@ class ExtensionImpl : public ChromeV8Extension {
       return v8::Undefined();
 
     int matcher_id = args[0]->Int32Value();
-    extensions::EventFilter& event_filter = g_event_filter.Get();
-    extensions::EventMatcher* event_matcher =
+    EventFilter& event_filter = g_event_filter.Get();
+    EventMatcher* event_matcher =
         event_filter.GetEventMatcher(matcher_id);
 
     const std::string& event_name = event_filter.GetEventName(matcher_id);
@@ -284,11 +284,11 @@ class ExtensionImpl : public ChromeV8Extension {
 
   static v8::Handle<v8::Value> MatchAgainstEventFilter(
       const v8::Arguments& args) {
-    typedef std::set<extensions::EventFilter::MatcherID> MatcherIDs;
+    typedef std::set<EventFilter::MatcherID> MatcherIDs;
 
-    extensions::EventFilter& event_filter = g_event_filter.Get();
+    EventFilter& event_filter = g_event_filter.Get();
     std::string event_name = *v8::String::AsciiValue(args[0]->ToString());
-    extensions::EventFilteringInfo info = ParseFromObject(args[1]->ToObject());
+    EventFilteringInfo info = ParseFromObject(args[1]->ToObject());
     MatcherIDs matched_event_filters = event_filter.MatchEvent(
         event_name, info);
     v8::Handle<v8::Array> array(v8::Array::New(matched_event_filters.size()));
@@ -300,9 +300,8 @@ class ExtensionImpl : public ChromeV8Extension {
     return array;
   }
 
-  static extensions::EventFilteringInfo ParseFromObject(
-      v8::Handle<v8::Object> object) {
-    extensions::EventFilteringInfo info;
+  static EventFilteringInfo ParseFromObject(v8::Handle<v8::Object> object) {
+    EventFilteringInfo info;
     v8::Handle<v8::String> url(v8::String::New("url"));
     if (object->Has(url)) {
       v8::Handle<v8::Value> url_value(object->Get(url));
@@ -318,13 +317,13 @@ class ExtensionImpl : public ChromeV8Extension {
       return false;
 
     ExtensionHelper* helper = ExtensionHelper::Get(render_view);
-    return (extension && extension->has_lazy_background_page() &&
+    return (extension && BackgroundInfo::HasLazyBackgroundPage(extension) &&
             helper->view_type() == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
   }
 
-  static scoped_ptr<extensions::EventMatcher> ParseEventMatcher(
+  static scoped_ptr<EventMatcher> ParseEventMatcher(
       base::DictionaryValue* filter_dict) {
-    return scoped_ptr<extensions::EventMatcher>(new extensions::EventMatcher(
+    return scoped_ptr<EventMatcher>(new EventMatcher(
         scoped_ptr<base::DictionaryValue>(filter_dict->DeepCopy())));
   }
 };

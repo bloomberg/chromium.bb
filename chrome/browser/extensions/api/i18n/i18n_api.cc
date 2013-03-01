@@ -15,8 +15,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/i18n.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/pref_names.h"
 
 namespace GetAcceptLanguages = extensions::api::i18n::GetAcceptLanguages;
@@ -63,8 +61,7 @@ bool I18nGetAcceptLanguagesFunction::RunImpl() {
 }
 
 I18nAPI::I18nAPI(Profile* profile) {
-  ManifestHandler::Register(extension_manifest_keys::kDefaultLocale,
-                            make_linked_ptr(new DefaultLocaleHandler));
+  (new DefaultLocaleHandler)->Register();
 }
 
 I18nAPI::~I18nAPI() {

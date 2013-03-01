@@ -6,7 +6,6 @@
 #include "chrome/common/extensions/api/extension_action/page_action_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "extensions/common/error_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,9 +19,7 @@ class PageActionManifestTest : public ExtensionManifestTest {
  protected:
   virtual void SetUp() OVERRIDE {
     ExtensionManifestTest::SetUp();
-    linked_ptr<PageActionHandler> page_action_handler(new PageActionHandler);
-  ManifestHandler::Register(keys::kPageAction, page_action_handler);
-  ManifestHandler::Register(keys::kPageActions, page_action_handler);
+    (new PageActionHandler)->Register();
   }
 
   virtual const char* test_data_dir() OVERRIDE {
@@ -67,7 +64,7 @@ TEST_F(PageActionManifestTest, LoadPageActionHelper) {
 
   // First try with an empty dictionary.
   action = LoadAction("page_action_empty.json");
-  ASSERT_TRUE(action != NULL);
+  ASSERT_TRUE(action);
 
   // Now setup some values to use in the action.
   const std::string id("MyExtensionActionId");
@@ -75,7 +72,7 @@ TEST_F(PageActionManifestTest, LoadPageActionHelper) {
   std::string img1("image1.png");
 
   action = LoadAction("page_action.json");
-  ASSERT_TRUE(NULL != action.get());
+  ASSERT_TRUE(action);
   ASSERT_EQ(id, action->id);
 
   // No title, so fall back to name.
@@ -86,20 +83,20 @@ TEST_F(PageActionManifestTest, LoadPageActionHelper) {
 
   // Same test with explicitly set type.
   action = LoadAction("page_action_type.json");
-  ASSERT_TRUE(NULL != action.get());
+  ASSERT_TRUE(action);
 
   // Try an action without id key.
   action = LoadAction("page_action_no_id.json");
-  ASSERT_TRUE(NULL != action.get());
+  ASSERT_TRUE(action);
 
   // Then try without the name key. It's optional, so no error.
   action = LoadAction("page_action_no_name.json");
-  ASSERT_TRUE(NULL != action.get());
+  ASSERT_TRUE(action);
   ASSERT_TRUE(action->default_title.empty());
 
   // Then try without the icon paths key.
   action = LoadAction("page_action_no_icon.json");
-  ASSERT_TRUE(NULL != action.get());
+  ASSERT_TRUE(action);
 
   // Now test that we can parse the new format for page actions.
   const std::string kTitle("MyExtensionActionTitle");
@@ -107,7 +104,7 @@ TEST_F(PageActionManifestTest, LoadPageActionHelper) {
   const std::string kPopupHtmlFile("a_popup.html");
 
   action = LoadAction("page_action_new_format.json");
-  ASSERT_TRUE(action.get());
+  ASSERT_TRUE(action);
   ASSERT_EQ(kTitle, action->default_title);
   ASSERT_FALSE(action->default_icon.empty());
 
@@ -117,7 +114,7 @@ TEST_F(PageActionManifestTest, LoadPageActionHelper) {
 
   // Invalid name should give an error only with no title.
   action = LoadAction("page_action_invalid_name.json");
-  ASSERT_TRUE(NULL != action.get());
+  ASSERT_TRUE(action);
   ASSERT_EQ(kTitle, action->default_title);
 
   LoadAndExpectError("page_action_invalid_name_no_title.json",
@@ -130,12 +127,11 @@ TEST_F(PageActionManifestTest, LoadPageActionHelper) {
   // Only use "popup", expect success.
   scoped_refptr<Extension> extension =
       LoadAndExpectSuccess("page_action_popup.json");
-  // TODO(yoz): this is dumb
-  action = LoadAction("page_action_popup.json");
-  ASSERT_TRUE(NULL != action.get());
+  const ActionInfo* extension_action = ActionInfo::GetPageActionInfo(extension);
+  ASSERT_TRUE(extension_action);
   ASSERT_STREQ(
       extension->url().Resolve(kPopupHtmlFile).spec().c_str(),
-      action->default_popup_url.spec().c_str());
+      extension_action->default_popup_url.spec().c_str());
 
   // Use both "popup" and "default_popup", expect failure.
   LoadAndExpectError("page_action_popup_and_default_popup.json",
@@ -146,15 +142,15 @@ TEST_F(PageActionManifestTest, LoadPageActionHelper) {
 
   // Use only "default_popup", expect success.
   extension = LoadAndExpectSuccess("page_action_popup.json");
-  action = LoadAction("page_action_default_popup.json");
-  ASSERT_TRUE(NULL != action.get());
+  extension_action = ActionInfo::GetPageActionInfo(extension);
+  ASSERT_TRUE(extension_action);
   ASSERT_STREQ(
       extension->url().Resolve(kPopupHtmlFile).spec().c_str(),
-      action->default_popup_url.spec().c_str());
+      extension_action->default_popup_url.spec().c_str());
 
   // Setting default_popup to "" is the same as having no popup.
   action = LoadAction("page_action_empty_default_popup.json");
-  ASSERT_TRUE(NULL != action.get());
+  ASSERT_TRUE(action);
   EXPECT_TRUE(action->default_popup_url.is_empty());
   ASSERT_STREQ(
       "",
@@ -163,7 +159,7 @@ TEST_F(PageActionManifestTest, LoadPageActionHelper) {
   // Setting popup to "" is the same as having no popup.
   action = LoadAction("page_action_empty_popup.json");
 
-  ASSERT_TRUE(NULL != action.get());
+  ASSERT_TRUE(action);
   EXPECT_TRUE(action->default_popup_url.is_empty());
   ASSERT_STREQ(
       "",

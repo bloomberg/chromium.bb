@@ -16,6 +16,14 @@
 
 namespace extensions {
 
+namespace {
+
+std::vector<std::string> SingleKey(const std::string& key) {
+  return std::vector<std::string>(1, key);
+}
+
+}  // namespace
+
 class ManifestHandlerTest : public testing::Test {
  public:
   class ParsingWatcher {
@@ -53,9 +61,10 @@ class ManifestHandlerTest : public testing::Test {
   class TestManifestHandler : public ManifestHandler {
    public:
     TestManifestHandler(const std::string& name,
+                        const std::vector<std::string>& keys,
                         const std::vector<std::string>& prereqs,
                         ParsingWatcher* watcher)
-        : name_(name), prereqs_(prereqs), watcher_(watcher) {
+        : name_(name), keys_(keys), prereqs_(prereqs), watcher_(watcher) {
     }
 
     virtual bool Parse(Extension* extension, string16* error) OVERRIDE {
@@ -63,22 +72,29 @@ class ManifestHandlerTest : public testing::Test {
       return true;
     }
 
-    virtual const std::vector<std::string>& PrerequisiteKeys() OVERRIDE {
+    virtual const std::vector<std::string> PrerequisiteKeys() const OVERRIDE {
       return prereqs_;
     }
 
    protected:
     std::string name_;
+    std::vector<std::string> keys_;
     std::vector<std::string> prereqs_;
     ParsingWatcher* watcher_;
+
+   private:
+    virtual const std::vector<std::string> Keys() const OVERRIDE {
+      return keys_;
+    }
   };
 
   class FailingTestManifestHandler : public TestManifestHandler {
    public:
     FailingTestManifestHandler(const std::string& name,
-                               const std::vector<std::string> prereqs,
+                               const std::vector<std::string>& keys,
+                               const std::vector<std::string>& prereqs,
                                ParsingWatcher* watcher)
-        : TestManifestHandler(name, prereqs, watcher) {
+        : TestManifestHandler(name, keys, prereqs, watcher) {
     }
     virtual bool Parse(Extension* extension, string16* error) OVERRIDE {
       *error = ASCIIToUTF16(name_);
@@ -89,12 +105,13 @@ class ManifestHandlerTest : public testing::Test {
   class AlwaysParseTestManifestHandler : public TestManifestHandler {
    public:
     AlwaysParseTestManifestHandler(const std::string& name,
-                                   const std::vector<std::string> prereqs,
+                                   const std::vector<std::string>& keys,
+                                   const std::vector<std::string>& prereqs,
                                    ParsingWatcher* watcher)
-        : TestManifestHandler(name, prereqs, watcher) {
+        : TestManifestHandler(name, keys, prereqs, watcher) {
     }
 
-    virtual bool AlwaysParseForType(Manifest::Type type) OVERRIDE {
+    virtual bool AlwaysParseForType(Manifest::Type type) const OVERRIDE {
       return true;
     }
   };
@@ -108,26 +125,21 @@ class ManifestHandlerTest : public testing::Test {
 TEST_F(ManifestHandlerTest, DependentHandlers) {
   ParsingWatcher watcher;
   std::vector<std::string> prereqs;
-  ManifestHandler::Register(
-      "a", make_linked_ptr(new TestManifestHandler("A", prereqs, &watcher)));
-  ManifestHandler::Register(
-      "b", make_linked_ptr(new TestManifestHandler("B", prereqs, &watcher)));
-  ManifestHandler::Register(
-      "j", make_linked_ptr(new TestManifestHandler("J", prereqs, &watcher)));
-  ManifestHandler::Register(
-      "k", make_linked_ptr(
-          new AlwaysParseTestManifestHandler("K", prereqs, &watcher)));
+  (new TestManifestHandler("A", SingleKey("a"), prereqs, &watcher))->Register();
+  (new TestManifestHandler("B", SingleKey("b"), prereqs, &watcher))->Register();
+  (new TestManifestHandler("J", SingleKey("j"), prereqs, &watcher))->Register();
+  (new AlwaysParseTestManifestHandler("K", SingleKey("k"), prereqs, &watcher))->
+      Register();
   prereqs.push_back("c.d");
-  linked_ptr<TestManifestHandler> handler_c2(
-      new TestManifestHandler("C.EZ", prereqs, &watcher));
-  ManifestHandler::Register("c.e", handler_c2);
-  ManifestHandler::Register("c.z", handler_c2);
+  std::vector<std::string> keys;
+  keys.push_back("c.e");
+  keys.push_back("c.z");
+  (new TestManifestHandler("C.EZ", keys, prereqs, &watcher))->Register();
   prereqs.clear();
   prereqs.push_back("b");
   prereqs.push_back("k");
-  ManifestHandler::Register(
-      "c.d", make_linked_ptr(new TestManifestHandler(
-          "C.D", prereqs, &watcher)));
+  (new TestManifestHandler("C.D", SingleKey("c.d"), prereqs, &watcher))->
+      Register();
 
   scoped_refptr<Extension> extension = ExtensionBuilder()
       .SetManifest(DictionaryBuilder()
@@ -173,9 +185,8 @@ TEST_F(ManifestHandlerTest, FailingHandlers) {
 
   // Register a handler for "a" that fails.
   ParsingWatcher watcher;
-  ManifestHandler::Register(
-      "a", make_linked_ptr(new FailingTestManifestHandler(
-          "A", std::vector<std::string>(), &watcher)));
+  (new FailingTestManifestHandler(
+      "A", SingleKey("a"), std::vector<std::string>(), &watcher))->Register();
 
   extension = Extension::Create(
       base::FilePath(),

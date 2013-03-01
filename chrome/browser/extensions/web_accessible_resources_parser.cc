@@ -6,15 +6,12 @@
 
 #include "base/lazy_instance.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/web_accessible_resources_handler.h"
 
 namespace extensions {
 
 WebAccessibleResourcesParser::WebAccessibleResourcesParser(Profile* profile) {
-  ManifestHandler::Register(extension_manifest_keys::kWebAccessibleResources,
-                            make_linked_ptr(new WebAccessibleResourcesHandler));
+  (new WebAccessibleResourcesHandler)->Register();
 }
 
 WebAccessibleResourcesParser::~WebAccessibleResourcesParser() {

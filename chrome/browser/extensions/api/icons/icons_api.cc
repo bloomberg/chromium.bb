@@ -21,8 +21,7 @@ ProfileKeyedAPIFactory<IconsAPI>* IconsAPI::GetFactoryInstance() {
 }
 
 IconsAPI::IconsAPI(Profile* profile) {
-  ManifestHandler::Register(extension_manifest_keys::kIcons,
-                            make_linked_ptr(new IconsHandler));
+  (new IconsHandler)->Register();
 }
 
 IconsAPI::~IconsAPI() {

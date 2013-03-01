@@ -15,7 +15,6 @@
 #include "chrome/browser/extensions/extension_input_module_constants.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 
 namespace keys = extension_input_module_constants;
 
@@ -861,8 +860,7 @@ bool KeyEventHandled::RunImpl() {
 
 InputImeAPI::InputImeAPI(Profile* profile)
     : profile_(profile) {
-  ManifestHandler::Register(extension_manifest_keys::kInputComponents,
-                            make_linked_ptr(new InputComponentsHandler));
+  (new InputComponentsHandler)->Register();
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile));

@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -820,7 +821,7 @@ bool ExtensionTaskExecutor::ExecuteAndNotify(
 
   int handler_pid = ExtractProcessFromExtensionId(profile(), handler->id());
   if (handler_pid <= 0) {
-    if (!handler->has_lazy_background_page())
+    if (!extensions::BackgroundInfo::HasLazyBackgroundPage(handler))
       return false;
   }
 

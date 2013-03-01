@@ -79,6 +79,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -2787,7 +2788,7 @@ ExtensionIdSet ExtensionService::GetAppIds() const {
 }
 
 bool ExtensionService::IsBackgroundPageReady(const Extension* extension) const {
-  if (!extension->has_persistent_background_page())
+  if (!extensions::BackgroundInfo::HasPersistentBackgroundPage(extension))
     return true;
   ExtensionRuntimeDataMap::const_iterator it =
       extension_runtime_data_.find(extension->id());
@@ -2796,7 +2797,7 @@ bool ExtensionService::IsBackgroundPageReady(const Extension* extension) const {
 }
 
 void ExtensionService::SetBackgroundPageReady(const Extension* extension) {
-  DCHECK(extension->has_background_page());
+  DCHECK(extensions::BackgroundInfo::HasBackgroundPage(extension));
   extension_runtime_data_[extension->id()].background_page_ready = true;
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
@@ -3028,7 +3029,7 @@ bool ExtensionService::ShouldDelayExtensionUpdate(
   if (!old)
     return false;
 
-  if (old->has_persistent_background_page()) {
+  if (extensions::BackgroundInfo::HasPersistentBackgroundPage(old)) {
     // Delay installation if the extension listens for the onUpdateAvailable
     // event.
     return system_->event_router()->ExtensionHasEventListener(

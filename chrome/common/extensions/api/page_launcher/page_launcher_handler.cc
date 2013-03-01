@@ -41,4 +41,8 @@ bool PageLauncherHandler::Parse(Extension* extension, string16* error) {
   return true;
 }
 
+const std::vector<std::string> PageLauncherHandler::Keys() const {
+  return SingleKey(keys::kPageLauncher);
+}
+
 }  // namespace extensions

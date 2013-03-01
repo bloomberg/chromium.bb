@@ -44,6 +44,7 @@
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -974,10 +975,12 @@ ExtensionSettingsHandler::GetInspectablePagesForExtension(
       extension_service_->profile(), &result);
 
   // Include a link to start the lazy background page, if applicable.
-  if (extension->has_lazy_background_page() && extension_is_enabled &&
+  if (extensions::BackgroundInfo::HasLazyBackgroundPage(extension) &&
+      extension_is_enabled &&
       !process_manager->GetBackgroundHostForExtension(extension->id())) {
     result.push_back(
-        ExtensionPage(extension->GetBackgroundURL(), -1, -1, false));
+        ExtensionPage(extensions::BackgroundInfo::GetBackgroundURL(extension),
+                      -1, -1, false));
   }
 
   // Repeat for the incognito process, if applicable. Don't try to get
@@ -991,10 +994,12 @@ ExtensionSettingsHandler::GetInspectablePagesForExtension(
         process_manager->GetRenderViewHostsForExtension(extension->id()),
         &result);
 
-    if (extension->has_lazy_background_page() && extension_is_enabled &&
+    if (extensions::BackgroundInfo::HasLazyBackgroundPage(extension)
+        && extension_is_enabled &&
         !process_manager->GetBackgroundHostForExtension(extension->id())) {
       result.push_back(
-          ExtensionPage(extension->GetBackgroundURL(), -1, -1, true));
+          ExtensionPage(extensions::BackgroundInfo::GetBackgroundURL(extension),
+                        -1, -1, true));
     }
   }
 

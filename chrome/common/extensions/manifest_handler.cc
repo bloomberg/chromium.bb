@@ -8,6 +8,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/linked_ptr.h"
 #include "base/stl_util.h"
 #include "chrome/common/extensions/manifest.h"
 
@@ -136,9 +137,6 @@ void ManifestHandlerRegistry::SortManifestHandlers() {
 static base::LazyInstance<ManifestHandlerRegistry> g_registry =
     LAZY_INSTANCE_INITIALIZER;
 
-static base::LazyInstance<std::vector<std::string> > g_empty_string_vector =
-    LAZY_INSTANCE_INITIALIZER;
-
 }  // namespace
 
 ManifestHandler::ManifestHandler() {
@@ -147,18 +145,24 @@ ManifestHandler::ManifestHandler() {
 ManifestHandler::~ManifestHandler() {
 }
 
-bool ManifestHandler::AlwaysParseForType(Manifest::Type type) {
+bool ManifestHandler::AlwaysParseForType(Manifest::Type type) const {
   return false;
 }
 
-const std::vector<std::string>& ManifestHandler::PrerequisiteKeys() {
-  return g_empty_string_vector.Get();
+const std::vector<std::string> ManifestHandler::PrerequisiteKeys() const {
+  return std::vector<std::string>();
+}
+
+void ManifestHandler::Register() {
+  linked_ptr<ManifestHandler> this_linked(this);
+  const std::vector<std::string> keys = Keys();
+  for (size_t i = 0; i < keys.size(); ++i)
+    g_registry.Get().RegisterManifestHandler(keys[i], this_linked);
 }
 
 // static
-void ManifestHandler::Register(const std::string& key,
-                               linked_ptr<ManifestHandler> handler) {
-  g_registry.Get().RegisterManifestHandler(key, handler);
+void ManifestHandler::ClearRegistryForTesting() {
+  g_registry.Get().ClearForTesting();
 }
 
 // static
@@ -167,8 +171,9 @@ bool ManifestHandler::ParseExtension(Extension* extension, string16* error) {
 }
 
 // static
-void ManifestHandler::ClearRegistryForTesting() {
-  g_registry.Get().ClearForTesting();
+const std::vector<std::string> ManifestHandler::SingleKey(
+    const std::string& key) {
+  return std::vector<std::string>(1, key);
 }
 
 }  // namespace extensions

@@ -117,6 +117,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
@@ -3676,8 +3677,9 @@ void TestingAutomationProvider::GetExtensionsInfo(DictionaryValue* args,
     extension_value->SetString("name", extension->name());
     extension_value->SetString("public_key", extension->public_key());
     extension_value->SetString("description", extension->description());
-    extension_value->SetString("background_url",
-                               extension->GetBackgroundURL().spec());
+    extension_value->SetString(
+        "background_url",
+        extensions::BackgroundInfo::GetBackgroundURL(extension).spec());
     extension_value->SetString("options_url",
         extensions::ManifestURL::GetOptionsPage(extension).spec());
     extension_value->Set("host_permissions",

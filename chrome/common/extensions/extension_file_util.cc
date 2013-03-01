@@ -24,6 +24,7 @@
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/api/themes/theme_handler.h"
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -357,13 +358,14 @@ bool ValidateExtension(const Extension* extension,
   }
 
   // Validate that background scripts exist.
-  for (size_t i = 0; i < extension->background_scripts().size(); ++i) {
+  const std::vector<std::string>& background_scripts =
+      extensions::BackgroundInfo::GetBackgroundScripts(extension);
+  for (size_t i = 0; i < background_scripts.size(); ++i) {
     if (!file_util::PathExists(
-            extension->GetResource(
-                extension->background_scripts()[i]).GetFilePath())) {
+            extension->GetResource(background_scripts[i]).GetFilePath())) {
       *error = l10n_util::GetStringFUTF8(
           IDS_EXTENSION_LOAD_BACKGROUND_SCRIPT_FAILED,
-          UTF8ToUTF16(extension->background_scripts()[i]));
+          UTF8ToUTF16(background_scripts[i]));
       return false;
     }
   }
@@ -371,11 +373,10 @@ bool ValidateExtension(const Extension* extension,
   // Validate background page location, except for hosted apps, which should use
   // an external URL. Background page for hosted apps are verified when the
   // extension is created (in Extension::InitFromValue)
-  if (extension->has_background_page() &&
-      !extension->is_hosted_app() &&
-      extension->background_scripts().empty()) {
+  if (extensions::BackgroundInfo::HasBackgroundPage(extension) &&
+      !extension->is_hosted_app() && background_scripts.empty()) {
     base::FilePath page_path = ExtensionURLToRelativeFilePath(
-        extension->GetBackgroundURL());
+        extensions::BackgroundInfo::GetBackgroundURL(extension));
     const base::FilePath path = extension->GetResource(page_path).GetFilePath();
     if (path.empty() || !file_util::PathExists(path)) {
       *error =

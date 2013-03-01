@@ -20,6 +20,11 @@ class BrowserActionHandler : public ManifestHandler {
   virtual ~BrowserActionHandler();
 
   virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
+
+ private:
+  virtual const std::vector<std::string> Keys() const OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserActionHandler);
 };
 
 }  // namespace extensions

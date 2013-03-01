@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/extensions/api/extension_action/page_action_handler.h"
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/csp_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -130,24 +131,12 @@ namespace {
 // Explicitly register all extension ManifestHandlers needed to parse
 // fields used in the renderer.
 void RegisterExtensionManifestHandlers() {
-  extensions::ManifestHandler::Register(
-      extension_manifest_keys::kDevToolsPage,
-      make_linked_ptr(new extensions::DevToolsPageHandler));
-  extensions::ManifestHandler::Register(
-      extension_manifest_keys::kWebAccessibleResources,
-      make_linked_ptr(new extensions::WebAccessibleResourcesHandler));
-  linked_ptr<extensions::PageActionHandler> page_action_handler(
-      new extensions::PageActionHandler);
-  extensions::ManifestHandler::Register(
-      extension_manifest_keys::kPageAction, page_action_handler);
-  extensions::ManifestHandler::Register(
-      extension_manifest_keys::kPageActions, page_action_handler);
-  extensions::ManifestHandler::Register(
-      extension_manifest_keys::kContentSecurityPolicy,
-      make_linked_ptr(new extensions::CSPHandler(false))); // not platform app.
-  extensions::ManifestHandler::Register(
-      extension_manifest_keys::kPlatformAppContentSecurityPolicy,
-      make_linked_ptr(new extensions::CSPHandler(true))); // platform app.
+  (new extensions::BackgroundManifestHandler)->Register();
+  (new extensions::DevToolsPageHandler)->Register();
+  (new extensions::WebAccessibleResourcesHandler)->Register();
+  (new extensions::PageActionHandler)->Register();
+  (new extensions::CSPHandler(false))->Register();  // not platform app.
+  (new extensions::CSPHandler(true))->Register();  // platform app.
 }
 
 static void AppendParams(const std::vector<string16>& additional_names,

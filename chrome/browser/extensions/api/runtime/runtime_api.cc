@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "googleurl/src/gurl.h"
 
@@ -60,7 +61,8 @@ static void DispatchOnStartupEventImpl(
   // If it fails to load the first time, don't bother trying again.
   const Extension* extension =
       system->extension_service()->extensions()->GetByID(extension_id);
-  if (extension && extension->has_persistent_background_page() && first_call &&
+  if (extension && BackgroundInfo::HasPersistentBackgroundPage(extension) &&
+      first_call &&
       system->lazy_background_task_queue()->
           ShouldEnqueueTask(profile, extension)) {
     system->lazy_background_task_queue()->AddPendingTask(

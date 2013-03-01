@@ -27,8 +27,6 @@
 #include "chrome/common/extensions/api/extension_action/browser_action_handler.h"
 #include "chrome/common/extensions/api/extension_action/page_action_handler.h"
 #include "chrome/common/extensions/api/extension_action/script_badge_handler.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -189,15 +187,9 @@ static base::LazyInstance<ProfileKeyedAPIFactory<ExtensionActionAPI> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
 ExtensionActionAPI::ExtensionActionAPI(Profile* profile) {
-  ManifestHandler::Register(extension_manifest_keys::kBrowserAction,
-                            make_linked_ptr(new BrowserActionHandler));
-  linked_ptr<PageActionHandler> page_action_handler(new PageActionHandler);
-  ManifestHandler::Register(
-      extension_manifest_keys::kPageAction, page_action_handler);
-  ManifestHandler::Register(
-      extension_manifest_keys::kPageActions, page_action_handler);
-  ManifestHandler::Register(extension_manifest_keys::kScriptBadge,
-                            make_linked_ptr(new ScriptBadgeHandler));
+  (new BrowserActionHandler)->Register();
+  (new PageActionHandler)->Register();
+  (new ScriptBadgeHandler)->Register();
 
   ExtensionFunctionRegistry* registry =
       ExtensionFunctionRegistry::GetInstance();

@@ -25,8 +25,10 @@
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -48,6 +50,8 @@ using content::Referrer;
 using content::RenderViewHost;
 using content::SiteInstance;
 using content::WebContents;
+using extensions::BackgroundInfo;
+using extensions::BackgroundManifestHandler;
 using extensions::Extension;
 using extensions::ExtensionHost;
 
@@ -92,8 +96,9 @@ class IncognitoExtensionProcessManager : public ExtensionProcessManager {
 
 static void CreateBackgroundHostForExtensionLoad(
     ExtensionProcessManager* manager, const Extension* extension) {
-  if (extension->has_persistent_background_page())
-    manager->CreateBackgroundHost(extension, extension->GetBackgroundURL());
+  if (BackgroundInfo::HasPersistentBackgroundPage(extension))
+    manager->CreateBackgroundHost(extension,
+                                  BackgroundInfo::GetBackgroundURL(extension));
 }
 
 static void CreateBackgroundHostsForProfileStartup(
@@ -185,6 +190,8 @@ ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
     event_page_suspending_time_ = base::TimeDelta::FromSeconds(
         suspending_time_sec);
   }
+
+  (new BackgroundManifestHandler())->Register();
 }
 
 ExtensionProcessManager::~ExtensionProcessManager() {
@@ -427,7 +434,7 @@ bool ExtensionProcessManager::IsBackgroundHostClosing(
 }
 
 int ExtensionProcessManager::GetLazyKeepaliveCount(const Extension* extension) {
-  if (!extension->has_lazy_background_page())
+  if (!BackgroundInfo::HasLazyBackgroundPage(extension))
     return 0;
 
   return background_page_data_[extension->id()].lazy_keepalive_count;
@@ -435,7 +442,7 @@ int ExtensionProcessManager::GetLazyKeepaliveCount(const Extension* extension) {
 
 int ExtensionProcessManager::IncrementLazyKeepaliveCount(
      const Extension* extension) {
-  if (!extension->has_lazy_background_page())
+  if (!BackgroundInfo::HasLazyBackgroundPage(extension))
     return 0;
 
   int& count = background_page_data_[extension->id()].lazy_keepalive_count;
@@ -447,7 +454,7 @@ int ExtensionProcessManager::IncrementLazyKeepaliveCount(
 
 int ExtensionProcessManager::DecrementLazyKeepaliveCount(
      const Extension* extension) {
-  if (!extension->has_lazy_background_page())
+  if (!BackgroundInfo::HasLazyBackgroundPage(extension))
     return 0;
 
   int& count = background_page_data_[extension->id()].lazy_keepalive_count;
@@ -720,7 +727,7 @@ void ExtensionProcessManager::OnExtensionHostCreated(ExtensionHost* host,
   if (is_background) {
     background_hosts_.insert(host);
 
-    if (host->extension()->has_lazy_background_page()) {
+    if (BackgroundInfo::HasLazyBackgroundPage(host->extension())) {
       linked_ptr<PerfTimer> since_suspended(
           background_page_data_[host->extension()->id()].
               since_suspended.release());

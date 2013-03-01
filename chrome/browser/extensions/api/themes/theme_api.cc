@@ -6,16 +6,11 @@
 
 #include "base/lazy_instance.h"
 #include "chrome/common/extensions/api/themes/theme_handler.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/manifest_handler.h"
 
 namespace extensions {
 
 ThemeAPI::ThemeAPI(Profile* profile) {
-  // Register the ManifestHandler for parsing 'theme' manifest key.
-  extensions::ManifestHandler::Register(
-      extension_manifest_keys::kTheme,
-      make_linked_ptr(new extensions::ThemeHandler));
+  (new extensions::ThemeHandler)->Register();
 }
 
 ThemeAPI::~ThemeAPI() {

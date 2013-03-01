@@ -13,7 +13,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handler.h"
@@ -100,12 +99,14 @@ class ImageLoaderTest : public testing::Test {
  private:
   virtual void SetUp() OVERRIDE {
     testing::Test::SetUp();
-    extensions::ManifestHandler::Register(
-        extension_manifest_keys::kIcons,
-        make_linked_ptr(new extensions::IconsHandler));
+    (new extensions::IconsHandler)->Register();
 
     file_thread_.Start();
     io_thread_.Start();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    extensions::ManifestHandler::ClearRegistryForTesting();
   }
 
   int image_loaded_count_;

@@ -7,8 +7,8 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
-#include "base/memory/linked_ptr.h"
 #include "base/string16.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest.h"
@@ -31,21 +31,22 @@ class ManifestHandler {
   // are present. This allows specifying a default parsed value for
   // extensions that don't declare our key in the manifest.
   // TODO(yoz): Use Feature availability instead.
-  virtual bool AlwaysParseForType(Manifest::Type type);
+  virtual bool AlwaysParseForType(Manifest::Type type) const;
 
   // The list of keys that, if present, should be parsed before calling our
   // Parse (typically, because our Parse needs to read those keys).
   // Defaults to empty.
-  virtual const std::vector<std::string>& PrerequisiteKeys();
+  virtual const std::vector<std::string> PrerequisiteKeys() const;
 
-  // Associate |handler| with |key| in the manifest. A handler can register
-  // for multiple keys. The global registry takes ownership of |handler|;
-  // if it has an existing handler for |key|, it replaces it with this one.
+  // Associate us with our keys() in the manifest. A handler can register
+  // for multiple keys. The global registry takes ownership of this;
+  // if it has an existing handler for |key|, it replaces it with this.
+  // Typical usage:
+  // (new MyManifestHandler)->Register();
   //
   // WARNING: Manifest handlers registered only in the browser process
   // are not available to renderers or utility processes.
-  static void Register(const std::string& key,
-                       linked_ptr<ManifestHandler> handler);
+  void Register();
 
   // Call Parse on all registered manifest handlers that should parse
   // this extension.
@@ -54,6 +55,15 @@ class ManifestHandler {
   // Reset the manifest handler registry to an empty state. Useful for
   // unit tests.
   static void ClearRegistryForTesting();
+
+ protected:
+  // A convenience method for handlers that only register for 1 key,
+  // so that they can define keys() { return SingleKey(kKey); }
+  static const std::vector<std::string> SingleKey(const std::string& key);
+
+ private:
+  // The keys to register us for (in Register).
+  virtual const std::vector<std::string> Keys() const = 0;
 };
 
 }  // namespace extensions

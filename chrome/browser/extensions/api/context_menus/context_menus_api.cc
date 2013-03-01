@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/context_menus.h"
+#include "chrome/common/extensions/background_info.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/url_pattern_set.h"
 
@@ -157,7 +158,7 @@ bool ContextMenusCreateFunction::RunImpl() {
   if (params->create_properties.id.get()) {
     id.string_uid = *params->create_properties.id;
   } else {
-    if (GetExtension()->has_lazy_background_page()) {
+    if (BackgroundInfo::HasLazyBackgroundPage(GetExtension())) {
       error_ = kIdRequiredError;
       return false;
     }
@@ -181,7 +182,7 @@ bool ContextMenusCreateFunction::RunImpl() {
     return false;
   }
 
-  if (GetExtension()->has_lazy_background_page() &&
+  if (BackgroundInfo::HasLazyBackgroundPage(GetExtension()) &&
       params->create_properties.onclick.get()) {
     error_ = kOnclickDisallowedError;
     return false;

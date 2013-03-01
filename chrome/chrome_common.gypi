@@ -184,6 +184,8 @@
         'common/extensions/api/speech/tts_engine_manifest_handler.h',
         'common/extensions/api/themes/theme_handler.cc',
         'common/extensions/api/themes/theme_handler.h',
+        'common/extensions/background_info.cc',
+        'common/extensions/background_info.h',
         'common/extensions/command.cc',
         'common/extensions/command.h',
         'common/extensions/csp_handler.cc',

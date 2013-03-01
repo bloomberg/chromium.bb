@@ -12,6 +12,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/api/extension_api.h"
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/manifest.h"
@@ -168,7 +169,7 @@ class LazyBackgroundPageNativeHandler : public ChromeV8Extension {
       return false;
 
     ExtensionHelper* helper = ExtensionHelper::Get(render_view);
-    return (extension && extension->has_lazy_background_page() &&
+    return (extension && BackgroundInfo::HasLazyBackgroundPage(extension) &&
             helper->view_type() == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
   }
 };
@@ -447,7 +448,7 @@ void Dispatcher::OnMessageInvoke(const std::string& extension_id,
   // Tell the browser process when an event has been dispatched with a lazy
   // background page active.
   const Extension* extension = extensions_.GetByID(extension_id);
-  if (extension && extension->has_lazy_background_page() &&
+  if (extension && BackgroundInfo::HasLazyBackgroundPage(extension) &&
       function_name == kEventDispatchFunction) {
     RenderView* background_view =
         ExtensionHelper::GetBackgroundPage(extension_id);
@@ -784,7 +785,7 @@ void Dispatcher::DidCreateScriptContext(
   int manifest_version = extension ? extension->manifest_version() : 1;
   bool send_request_disabled =
       (extension && Manifest::IsUnpackedLocation(extension->location()) &&
-       extension->has_lazy_background_page());
+       BackgroundInfo::HasLazyBackgroundPage(extension));
   module_system->RegisterNativeHandler("process",
       scoped_ptr<NativeHandler>(new ProcessInfoNativeHandler(
           this, context->GetExtensionID(),

@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/pref_names.h"
@@ -81,6 +82,8 @@ class ComponentLoaderTest : public testing::Test {
   }
 
   virtual void SetUp() {
+    (new BackgroundManifestHandler)->Register();
+
     extension_path_ =
         GetBasePath().AppendASCII("good")
                      .AppendASCII("Extensions")

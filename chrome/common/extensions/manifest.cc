@@ -100,7 +100,7 @@ Manifest::Location Manifest::GetHigherPriorityLocation(
   return (loc1_rank > loc2_rank ? loc1 : loc2 );
 }
 
-Manifest::Manifest(Location location, scoped_ptr<DictionaryValue> value)
+Manifest::Manifest(Location location, scoped_ptr<base::DictionaryValue> value)
     : location_(location),
       value_(value.Pass()),
       type_(TYPE_UNKNOWN) {
@@ -158,7 +158,7 @@ void Manifest::ValidateManifest(
   }
 
   // Also generate warnings for keys that are not features.
-  for (DictionaryValue::key_iterator key = value_->begin_keys();
+  for (base::DictionaryValue::key_iterator key = value_->begin_keys();
       key != value_->end_keys(); ++key) {
     if (!BaseFeatureProvider::GetManifestFeatures()->GetFeature(*key)) {
       warnings->push_back(InstallWarning(
@@ -174,12 +174,12 @@ bool Manifest::HasKey(const std::string& key) const {
 }
 
 bool Manifest::HasPath(const std::string& path) const {
-  Value* ignored = NULL;
+  base::Value* ignored = NULL;
   return CanAccessPath(path) && value_->Get(path, &ignored);
 }
 
 bool Manifest::Get(
-    const std::string& path, Value** out_value) const {
+    const std::string& path, const base::Value** out_value) const {
   return CanAccessPath(path) && value_->Get(path, out_value);
 }
 
@@ -204,28 +204,18 @@ bool Manifest::GetString(
 }
 
 bool Manifest::GetDictionary(
-    const std::string& path, const DictionaryValue** out_value) const {
-  return GetDictionary(path, const_cast<DictionaryValue**>(out_value));
-}
-
-bool Manifest::GetDictionary(
-    const std::string& path, DictionaryValue** out_value) const {
+    const std::string& path, const base::DictionaryValue** out_value) const {
   return CanAccessPath(path) && value_->GetDictionary(path, out_value);
 }
 
 bool Manifest::GetList(
-    const std::string& path, const ListValue** out_value) const {
-  return GetList(path, const_cast<ListValue**>(out_value));
-}
-
-bool Manifest::GetList(
-    const std::string& path, ListValue** out_value) const {
+    const std::string& path, const base::ListValue** out_value) const {
   return CanAccessPath(path) && value_->GetList(path, out_value);
 }
 
 Manifest* Manifest::DeepCopy() const {
   Manifest* manifest = new Manifest(
-      location_, scoped_ptr<DictionaryValue>(value_->DeepCopy()));
+      location_, scoped_ptr<base::DictionaryValue>(value_->DeepCopy()));
   manifest->set_extension_id(extension_id_);
   return manifest;
 }

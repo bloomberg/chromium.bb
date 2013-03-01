@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/web_contents.h"
@@ -61,7 +62,7 @@ class ExtensionAlarmsTest : public BrowserWithTestWindowTest {
         extensions::Manifest::UNPACKED);
 
     // Make sure there's a RenderViewHost for alarms to warn into.
-    AddTab(browser(), extension_->GetBackgroundURL());
+    AddTab(browser(), BackgroundInfo::GetBackgroundURL(extension_));
     contents_ = browser()->tab_strip_model()->GetActiveWebContents();
 
     test_clock_.SetNow(base::Time::FromDoubleT(10));

@@ -124,7 +124,7 @@ bool CommandsHandler::Parse(Extension* extension, string16* error) {
   return true;
 }
 
-bool CommandsHandler::AlwaysParseForType(Manifest::Type type) {
+bool CommandsHandler::AlwaysParseForType(Manifest::Type type) const {
   return type == Manifest::TYPE_EXTENSION ||
       type == Manifest::TYPE_LEGACY_PACKAGED_APP ||
       type == Manifest::TYPE_PLATFORM_APP;
@@ -137,6 +137,10 @@ void CommandsHandler::MaybeSetBrowserActionDefault(const Extension* extension,
     info->browser_action_command.reset(new Command(
         extension_manifest_values::kBrowserActionCommandEvent, string16(), ""));
   }
+}
+
+const std::vector<std::string> CommandsHandler::Keys() const {
+  return SingleKey(keys::kCommands);
 }
 
 }  // namespace extensions

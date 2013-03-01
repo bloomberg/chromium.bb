@@ -2,17 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
-
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using extensions::Extension;
 
 namespace errors = extension_manifest_errors;
 
-TEST_F(ExtensionManifestTest, OfflineEnabled) {
+namespace extensions {
+
+class ExtensionManifestOfflineEnabledTest : public ExtensionManifestTest {
+  virtual void SetUp() OVERRIDE {
+    ExtensionManifestTest::SetUp();
+    (new BackgroundManifestHandler)->Register();
+  }
+};
+
+TEST_F(ExtensionManifestOfflineEnabledTest, OfflineEnabled) {
   LoadAndExpectError("offline_enabled_invalid.json",
                      errors::kInvalidOfflineEnabled);
   scoped_refptr<Extension> extension_0(
@@ -34,3 +43,5 @@ TEST_F(ExtensionManifestTest, OfflineEnabled) {
       LoadAndExpectSuccess("offline_default_platform_app.json"));
   EXPECT_TRUE(extension_5->offline_enabled());
 }
+
+}  // namespace extensions

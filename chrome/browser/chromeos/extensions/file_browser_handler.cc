@@ -354,3 +354,7 @@ bool FileBrowserHandlerParser::Parse(extensions::Extension* extension,
   extension->SetManifestData(keys::kFileBrowserHandlers, info.release());
   return true;
 }
+
+const std::vector<std::string> FileBrowserHandlerParser::Keys() const {
+  return SingleKey(keys::kFileBrowserHandlers);
+}

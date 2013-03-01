@@ -30,6 +30,7 @@
 #include "chrome/common/extensions/api/extension_action/page_action_handler.h"
 #include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/api/themes/theme_handler.h"
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/csp_handler.h"
 #include "chrome/common/extensions/csp_validator.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -148,7 +149,7 @@ bool ReadLaunchDimension(const extensions::Manifest* manifest,
                          int* target,
                          bool is_valid_container,
                          string16* error) {
-  Value* temp = NULL;
+  const Value* temp = NULL;
   if (manifest->Get(key, &temp)) {
     if (!is_valid_container) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
@@ -509,7 +510,7 @@ bool Extension::ParsePermissions(const char* key,
                                  APIPermissionSet* api_permissions,
                                  URLPatternSet* host_permissions) {
   if (manifest_->HasKey(key)) {
-    ListValue* permissions = NULL;
+    const ListValue* permissions = NULL;
     if (!manifest_->GetList(key, &permissions)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidPermissions, "");
@@ -1103,12 +1104,6 @@ ExtensionResource Extension::GetContentPackSiteList() const {
   return GetResource(content_pack_site_list_);
 }
 
-GURL Extension::GetBackgroundURL() const {
-  if (background_scripts_.empty())
-    return background_url_;
-  return GetResourceURL(extension_filenames::kGeneratedBackgroundPageFilename);
-}
-
 Extension::RuntimeData::RuntimeData() {}
 Extension::RuntimeData::RuntimeData(const PermissionSet* active)
     : active_permissions_(active) {}
@@ -1211,7 +1206,7 @@ base::FilePath Extension::MaybeNormalizePath(const base::FilePath& path) {
 bool Extension::LoadManagedModeFeatures(string16* error) {
   if (!manifest_->HasKey(keys::kContentPack))
     return true;
-  DictionaryValue* content_pack_value = NULL;
+  const DictionaryValue* content_pack_value = NULL;
   if (!manifest_->GetDictionary(keys::kContentPack, &content_pack_value)) {
     *error = ASCIIToUTF16(errors::kInvalidContentPack);
     return false;
@@ -1261,8 +1256,6 @@ Extension::Extension(const base::FilePath& path,
       incognito_split_mode_(false),
       offline_enabled_(false),
       converted_from_user_script_(false),
-      background_page_is_persistent_(true),
-      allow_background_js_access_(true),
       manifest_(manifest.release()),
       finished_parsing_manifest_(false),
       is_storage_isolated_(false),
@@ -1401,16 +1394,16 @@ bool Extension::LoadAppIsolation(string16* error) {
       || !is_app())
     return true;
 
-  Value* tmp_isolation = NULL;
+  const Value* tmp_isolation = NULL;
   if (!manifest_->Get(keys::kIsolation, &tmp_isolation))
     return true;
 
-  if (tmp_isolation->GetType() != Value::TYPE_LIST) {
+  const ListValue* isolation_list = NULL;
+  if (!tmp_isolation->GetAsList(&isolation_list)) {
     *error = ASCIIToUTF16(errors::kInvalidIsolation);
     return false;
   }
 
-  ListValue* isolation_list = static_cast<ListValue*>(tmp_isolation);
   for (size_t i = 0; i < isolation_list->GetSize(); ++i) {
     std::string isolation_string;
     if (!isolation_list->GetString(i, &isolation_string)) {
@@ -1493,16 +1486,16 @@ bool Extension::LoadExtent(const char* key,
                            const char* list_error,
                            const char* value_error,
                            string16* error) {
-  Value* temp_pattern_value = NULL;
+  const Value* temp_pattern_value = NULL;
   if (!manifest_->Get(key, &temp_pattern_value))
     return true;
 
-  if (temp_pattern_value->GetType() != Value::TYPE_LIST) {
+  const ListValue* pattern_list = NULL;
+  if (!temp_pattern_value->GetAsList(&pattern_list)) {
     *error = ASCIIToUTF16(list_error);
     return false;
   }
 
-  ListValue* pattern_list = static_cast<ListValue*>(temp_pattern_value);
   for (size_t i = 0; i < pattern_list->GetSize(); ++i) {
     std::string pattern_string;
     if (!pattern_list->GetString(i, &pattern_string)) {
@@ -1563,7 +1556,7 @@ bool Extension::LoadExtent(const char* key,
 }
 
 bool Extension::LoadLaunchContainer(string16* error) {
-  Value* tmp_launcher_container = NULL;
+  const Value* tmp_launcher_container = NULL;
   if (!manifest_->Get(keys::kLaunchContainer, &tmp_launcher_container))
     return true;
 
@@ -1608,7 +1601,7 @@ bool Extension::LoadLaunchContainer(string16* error) {
 }
 
 bool Extension::LoadLaunchURL(string16* error) {
-  Value* temp = NULL;
+  const Value* temp = NULL;
 
   // launch URL can be either local (to chrome-extension:// root) or an absolute
   // web URL.
@@ -1726,12 +1719,7 @@ bool Extension::LoadSharedFeatures(string16* error) {
       !LoadNaClModules(error) ||
       !LoadSandboxedPages(error) ||
       !LoadRequirements(error) ||
-      !LoadOfflineEnabled(error) ||
-      // LoadBackgroundScripts() must be called before LoadBackgroundPage().
-      !LoadBackgroundScripts(error) ||
-      !LoadBackgroundPage(error) ||
-      !LoadBackgroundPersistent(error) ||
-      !LoadBackgroundAllowJSAccess(error))
+      !LoadOfflineEnabled(error))
     return false;
 
   return true;
@@ -1776,14 +1764,14 @@ bool Extension::LoadPlugins(string16* error) {
   if (!manifest_->HasKey(keys::kPlugins))
     return true;
 
-  ListValue* list_value = NULL;
+  const ListValue* list_value = NULL;
   if (!manifest_->GetList(keys::kPlugins, &list_value)) {
     *error = ASCIIToUTF16(errors::kInvalidPlugins);
     return false;
   }
 
   for (size_t i = 0; i < list_value->GetSize(); ++i) {
-    DictionaryValue* plugin_value = NULL;
+    const DictionaryValue* plugin_value = NULL;
     if (!list_value->GetDictionary(i, &plugin_value)) {
       *error = ASCIIToUTF16(errors::kInvalidPlugins);
       return false;
@@ -1828,14 +1816,14 @@ bool Extension::LoadPlugins(string16* error) {
 bool Extension::LoadNaClModules(string16* error) {
   if (!manifest_->HasKey(keys::kNaClModules))
     return true;
-  ListValue* list_value = NULL;
+  const ListValue* list_value = NULL;
   if (!manifest_->GetList(keys::kNaClModules, &list_value)) {
     *error = ASCIIToUTF16(errors::kInvalidNaClModules);
     return false;
   }
 
   for (size_t i = 0; i < list_value->GetSize(); ++i) {
-    DictionaryValue* module_value = NULL;
+    const DictionaryValue* module_value = NULL;
     if (!list_value->GetDictionary(i, &module_value)) {
       *error = ASCIIToUTF16(errors::kInvalidNaClModules);
       return false;
@@ -1869,7 +1857,7 @@ bool Extension::LoadSandboxedPages(string16* error) {
   if (!manifest_->HasPath(keys::kSandboxedPages))
     return true;
 
-  ListValue* list_value = NULL;
+  const ListValue* list_value = NULL;
   if (!manifest_->GetList(keys::kSandboxedPages, &list_value)) {
     *error = ASCIIToUTF16(errors::kInvalidSandboxedPagesList);
     return false;
@@ -1920,14 +1908,14 @@ bool Extension::LoadSandboxedPages(string16* error) {
 bool Extension::LoadRequirements(string16* error) {
   // Before parsing requirements from the manifest, automatically default the
   // NPAPI plugin requirement based on whether it includes NPAPI plugins.
-  ListValue* list_value = NULL;
+  const ListValue* list_value = NULL;
   requirements_.npapi =
     manifest_->GetList(keys::kPlugins, &list_value) && !list_value->empty();
 
   if (!manifest_->HasKey(keys::kRequirements))
     return true;
 
-  DictionaryValue* requirements_value = NULL;
+  const DictionaryValue* requirements_value = NULL;
   if (!manifest_->GetDictionary(keys::kRequirements, &requirements_value)) {
     *error = ASCIIToUTF16(errors::kInvalidRequirements);
     return false;
@@ -2006,134 +1994,6 @@ bool Extension::LoadOfflineEnabled(string16* error) {
   return true;
 }
 
-bool Extension::LoadBackgroundScripts(string16* error) {
-  const std::string& key = is_platform_app() ?
-      keys::kPlatformAppBackgroundScripts : keys::kBackgroundScripts;
-  return LoadBackgroundScripts(key, error);
-}
-
-bool Extension::LoadBackgroundScripts(const std::string& key, string16* error) {
-  Value* background_scripts_value = NULL;
-  if (!manifest_->Get(key, &background_scripts_value))
-    return true;
-
-  CHECK(background_scripts_value);
-  if (background_scripts_value->GetType() != Value::TYPE_LIST) {
-    *error = ASCIIToUTF16(errors::kInvalidBackgroundScripts);
-    return false;
-  }
-
-  ListValue* background_scripts =
-      static_cast<ListValue*>(background_scripts_value);
-  for (size_t i = 0; i < background_scripts->GetSize(); ++i) {
-    std::string script;
-    if (!background_scripts->GetString(i, &script)) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidBackgroundScript, base::IntToString(i));
-      return false;
-    }
-    background_scripts_.push_back(script);
-  }
-
-  return true;
-}
-
-bool Extension::LoadBackgroundPage(string16* error) {
-  if (is_platform_app()) {
-    return LoadBackgroundPage(keys::kPlatformAppBackgroundPage, error);
-  }
-
-  if (!LoadBackgroundPage(keys::kBackgroundPage, error))
-    return false;
-  if (background_url_.is_empty()) {
-    return LoadBackgroundPage(
-        keys::kBackgroundPageLegacy, error);
-  }
-  return true;
-}
-
-bool Extension::LoadBackgroundPage(const std::string& key, string16* error) {
-  base::Value* background_page_value = NULL;
-  if (!manifest_->Get(key, &background_page_value))
-    return true;
-
-  if (!background_scripts_.empty()) {
-    *error = ASCIIToUTF16(errors::kInvalidBackgroundCombination);
-    return false;
-  }
-
-
-  std::string background_str;
-  if (!background_page_value->GetAsString(&background_str)) {
-    *error = ASCIIToUTF16(errors::kInvalidBackground);
-    return false;
-  }
-
-  if (is_hosted_app()) {
-    background_url_ = GURL(background_str);
-
-    // Make sure "background" permission is set.
-    if (!initial_api_permissions()->count(APIPermission::kBackground)) {
-      *error = ASCIIToUTF16(errors::kBackgroundPermissionNeeded);
-      return false;
-    }
-    // Hosted apps require an absolute URL.
-    if (!background_url_.is_valid()) {
-      *error = ASCIIToUTF16(errors::kInvalidBackgroundInHostedApp);
-      return false;
-    }
-
-    if (!(background_url_.SchemeIs("https") ||
-          (CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kAllowHTTPBackgroundPage) &&
-           background_url_.SchemeIs("http")))) {
-      *error = ASCIIToUTF16(errors::kInvalidBackgroundInHostedApp);
-      return false;
-    }
-  } else {
-    background_url_ = GetResourceURL(background_str);
-  }
-
-  return true;
-}
-
-bool Extension::LoadBackgroundPersistent(string16* error) {
-  if (is_platform_app()) {
-    background_page_is_persistent_ = false;
-    return true;
-  }
-
-  Value* background_persistent = NULL;
-  if (!manifest_->Get(keys::kBackgroundPersistent, &background_persistent))
-    return true;
-
-  if (!background_persistent->GetAsBoolean(&background_page_is_persistent_)) {
-    *error = ASCIIToUTF16(errors::kInvalidBackgroundPersistent);
-    return false;
-  }
-
-  if (!has_background_page()) {
-    *error = ASCIIToUTF16(errors::kInvalidBackgroundPersistentNoPage);
-    return false;
-  }
-
-  return true;
-}
-
-bool Extension::LoadBackgroundAllowJSAccess(string16* error) {
-  Value* allow_js_access = NULL;
-  if (!manifest_->Get(keys::kBackgroundAllowJsAccess, &allow_js_access))
-    return true;
-
-  if (!allow_js_access->IsType(Value::TYPE_BOOLEAN) ||
-      !allow_js_access->GetAsBoolean(&allow_background_js_access_)) {
-    *error = ASCIIToUTF16(errors::kInvalidBackgroundAllowJsAccess);
-    return false;
-  }
-
-  return true;
-}
-
 bool Extension::LoadExtensionFeatures(string16* error) {
   if (manifest_->HasKey(keys::kConvertedFromUserScript))
     manifest_->GetBoolean(keys::kConvertedFromUserScript,
@@ -2150,14 +2010,14 @@ bool Extension::LoadExtensionFeatures(string16* error) {
 bool Extension::LoadContentScripts(string16* error) {
   if (!manifest_->HasKey(keys::kContentScripts))
     return true;
-  ListValue* list_value;
+  const ListValue* list_value;
   if (!manifest_->GetList(keys::kContentScripts, &list_value)) {
     *error = ASCIIToUTF16(errors::kInvalidContentScriptsList);
     return false;
   }
 
   for (size_t i = 0; i < list_value->GetSize(); ++i) {
-    DictionaryValue* content_script = NULL;
+    const DictionaryValue* content_script = NULL;
     if (!list_value->GetDictionary(i, &content_script)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidContentScript, base::IntToString(i));
@@ -2183,7 +2043,7 @@ bool Extension::LoadSystemIndicator(string16* error) {
     return true;
   }
 
-  DictionaryValue* system_indicator_value = NULL;
+  const DictionaryValue* system_indicator_value = NULL;
   if (!manifest_->GetDictionary(keys::kSystemIndicator,
                                 &system_indicator_value)) {
     *error = ASCIIToUTF16(errors::kInvalidSystemIndicator);
@@ -2594,7 +2454,7 @@ bool Extension::CheckPlatformAppFeatures(std::string* utf8_error) const {
   if (!is_platform_app())
     return true;
 
-  if (!has_background_page()) {
+  if (!BackgroundInfo::HasBackgroundPage(this)) {
     *utf8_error = errors::kBackgroundRequiredForPlatformApps;
     return false;
   }
@@ -2608,7 +2468,7 @@ bool Extension::CheckPlatformAppFeatures(std::string* utf8_error) const {
 }
 
 bool Extension::CheckConflictingFeatures(std::string* utf8_error) const {
-  if (has_lazy_background_page() &&
+  if (BackgroundInfo::HasLazyBackgroundPage(this) &&
       HasAPIPermission(APIPermission::kWebRequest)) {
     *utf8_error = errors::kWebRequestConflictsWithLazyBackground;
     return false;

@@ -144,4 +144,8 @@ bool IconsHandler::Parse(Extension* extension, string16* error) {
   return true;
 }
 
+const std::vector<std::string> IconsHandler::Keys() const {
+  return SingleKey(keys::kIcons);
+}
+
 }  // namespace extensions

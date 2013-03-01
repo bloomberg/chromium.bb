@@ -185,4 +185,8 @@ bool InputComponentsHandler::Parse(Extension* extension,
   return true;
 }
 
+const std::vector<std::string> InputComponentsHandler::Keys() const {
+  return SingleKey(keys::kInputComponents);
+}
+
 }  // namespace extensions

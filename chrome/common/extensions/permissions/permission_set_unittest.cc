@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/features/feature.h"
@@ -81,10 +82,13 @@ bool Contains(const std::vector<string16>& warnings,
 
 
 class PermissionsTest : public testing::Test {
+  virtual void SetUp() OVERRIDE {
+    (new BackgroundManifestHandler)->Register();
+  }
 };
 
 // Tests GetByID.
-TEST(PermissionsTest, GetByID) {
+TEST_F(PermissionsTest, GetByID) {
   PermissionsInfo* info = PermissionsInfo::GetInstance();
   APIPermissionSet apis = info->GetAll();
   for (APIPermissionSet::const_iterator i = apis.begin();
@@ -94,7 +98,7 @@ TEST(PermissionsTest, GetByID) {
 }
 
 // Tests that GetByName works with normal permission names and aliases.
-TEST(PermissionsTest, GetByName) {
+TEST_F(PermissionsTest, GetByName) {
   PermissionsInfo* info = PermissionsInfo::GetInstance();
   EXPECT_EQ(APIPermission::kTab, info->GetByName("tabs")->id());
   EXPECT_EQ(APIPermission::kManagement,
@@ -102,7 +106,7 @@ TEST(PermissionsTest, GetByName) {
   EXPECT_FALSE(info->GetByName("alsdkfjasldkfj"));
 }
 
-TEST(PermissionsTest, GetAll) {
+TEST_F(PermissionsTest, GetAll) {
   size_t count = 0;
   PermissionsInfo* info = PermissionsInfo::GetInstance();
   APIPermissionSet apis = info->GetAll();
@@ -116,7 +120,7 @@ TEST(PermissionsTest, GetAll) {
   EXPECT_EQ(count, info->get_permission_count());
 }
 
-TEST(PermissionsTest, GetAllByName) {
+TEST_F(PermissionsTest, GetAllByName) {
   std::set<std::string> names;
   names.insert("background");
   names.insert("management");
@@ -137,7 +141,7 @@ TEST(PermissionsTest, GetAllByName) {
 }
 
 // Tests that the aliases are properly mapped.
-TEST(PermissionsTest, Aliases) {
+TEST_F(PermissionsTest, Aliases) {
   PermissionsInfo* info = PermissionsInfo::GetInstance();
   // tabs: tabs, windows
   std::string tabs_name = "tabs";
@@ -155,7 +159,7 @@ TEST(PermissionsTest, Aliases) {
             info->GetByName("unlimited_storage")->id());
 }
 
-TEST(PermissionsTest, EffectiveHostPermissions) {
+TEST_F(PermissionsTest, EffectiveHostPermissions) {
   scoped_refptr<Extension> extension;
   scoped_refptr<const PermissionSet> permissions;
 
@@ -231,7 +235,7 @@ TEST(PermissionsTest, EffectiveHostPermissions) {
   EXPECT_TRUE(permissions->HasEffectiveAccessToAllHosts());
 }
 
-TEST(PermissionsTest, ExplicitAccessToOrigin) {
+TEST_F(PermissionsTest, ExplicitAccessToOrigin) {
   APIPermissionSet apis;
   URLPatternSet explicit_hosts;
   URLPatternSet scriptable_hosts;
@@ -254,7 +258,7 @@ TEST(PermissionsTest, ExplicitAccessToOrigin) {
       GURL("http://test.example.com")));
 }
 
-TEST(PermissionsTest, CreateUnion) {
+TEST_F(PermissionsTest, CreateUnion) {
   APIPermission* permission = NULL;
 
   APIPermissionSet apis1;
@@ -378,7 +382,7 @@ TEST(PermissionsTest, CreateUnion) {
   EXPECT_EQ(effective_hosts, union_set->effective_hosts());
 }
 
-TEST(PermissionsTest, CreateIntersection) {
+TEST_F(PermissionsTest, CreateIntersection) {
   APIPermission* permission = NULL;
 
   APIPermissionSet apis1;
@@ -492,7 +496,7 @@ TEST(PermissionsTest, CreateIntersection) {
   EXPECT_EQ(effective_hosts, new_set->effective_hosts());
 }
 
-TEST(PermissionsTest, CreateDifference) {
+TEST_F(PermissionsTest, CreateDifference) {
   APIPermission* permission = NULL;
 
   APIPermissionSet apis1;
@@ -593,7 +597,7 @@ TEST(PermissionsTest, CreateDifference) {
   EXPECT_TRUE(set1->IsEmpty());
 }
 
-TEST(PermissionsTest, HasLessPrivilegesThan) {
+TEST_F(PermissionsTest, HasLessPrivilegesThan) {
   const struct {
     const char* base_name;
     bool expect_increase;
@@ -644,7 +648,7 @@ TEST(PermissionsTest, HasLessPrivilegesThan) {
   }
 }
 
-TEST(PermissionsTest, PermissionMessages) {
+TEST_F(PermissionsTest, PermissionMessages) {
   // Ensure that all permissions that needs to show install UI actually have
   // strings associated with them.
   APIPermissionSet skip;
@@ -763,7 +767,7 @@ TEST(PermissionsTest, PermissionMessages) {
 }
 
 // Tests the default permissions (empty API permission set).
-TEST(PermissionsTest, DefaultFunctionAccess) {
+TEST_F(PermissionsTest, DefaultFunctionAccess) {
   const struct {
     const char* permission_name;
     bool expect_success;
@@ -802,7 +806,7 @@ TEST(PermissionsTest, DefaultFunctionAccess) {
 }
 
 // Tests the default permissions (empty API permission set).
-TEST(PermissionsTest, DefaultAnyAPIAccess) {
+TEST_F(PermissionsTest, DefaultAnyAPIAccess) {
   const struct {
     const char* api_name;
     bool expect_success;
@@ -833,7 +837,7 @@ TEST(PermissionsTest, DefaultAnyAPIAccess) {
   }
 }
 
-TEST(PermissionsTest, GetWarningMessages_ManyHosts) {
+TEST_F(PermissionsTest, GetWarningMessages_ManyHosts) {
   scoped_refptr<Extension> extension;
 
   extension = LoadManifest("permissions", "many-hosts.json");
@@ -843,7 +847,7 @@ TEST(PermissionsTest, GetWarningMessages_ManyHosts) {
             UTF16ToUTF8(warnings[0]));
 }
 
-TEST(PermissionsTest, GetWarningMessages_Plugins) {
+TEST_F(PermissionsTest, GetWarningMessages_Plugins) {
   scoped_refptr<Extension> extension;
   scoped_refptr<PermissionSet> permissions;
 
@@ -860,7 +864,7 @@ TEST(PermissionsTest, GetWarningMessages_Plugins) {
 #endif
 }
 
-TEST(PermissionsTest, GetWarningMessages_AudioVideo) {
+TEST_F(PermissionsTest, GetWarningMessages_AudioVideo) {
   // Both audio and video present.
   scoped_refptr<Extension> extension =
       LoadManifest("permissions", "audio-video.json");
@@ -893,7 +897,7 @@ TEST(PermissionsTest, GetWarningMessages_AudioVideo) {
   EXPECT_TRUE(Contains(warnings, "Use your camera"));
 }
 
-TEST(PermissionsTest, GetWarningMessages_Serial) {
+TEST_F(PermissionsTest, GetWarningMessages_Serial) {
   scoped_refptr<Extension> extension =
       LoadManifest("permissions", "serial.json");
 
@@ -905,7 +909,7 @@ TEST(PermissionsTest, GetWarningMessages_Serial) {
   ASSERT_EQ(1u, warnings.size());
 }
 
-TEST(PermissionsTest, GetWarningMessages_Socket_AnyHost) {
+TEST_F(PermissionsTest, GetWarningMessages_Socket_AnyHost) {
   extensions::Feature::ScopedCurrentChannel channel(
       chrome::VersionInfo::CHANNEL_DEV);
 
@@ -919,7 +923,7 @@ TEST(PermissionsTest, GetWarningMessages_Socket_AnyHost) {
                                  "on the local network or internet"));
 }
 
-TEST(PermissionsTest, GetWarningMessages_Socket_OneDomainTwoHostnames) {
+TEST_F(PermissionsTest, GetWarningMessages_Socket_OneDomainTwoHostnames) {
   extensions::Feature::ScopedCurrentChannel channel(
       chrome::VersionInfo::CHANNEL_DEV);
 
@@ -945,7 +949,7 @@ TEST(PermissionsTest, GetWarningMessages_Socket_OneDomainTwoHostnames) {
                           // "\xC3\xA5" = UTF-8 for lowercase A with ring above
 }
 
-TEST(PermissionsTest, GetWarningMessages_Socket_TwoDomainsOneHostname) {
+TEST_F(PermissionsTest, GetWarningMessages_Socket_TwoDomainsOneHostname) {
   extensions::Feature::ScopedCurrentChannel channel(
       chrome::VersionInfo::CHANNEL_DEV);
 
@@ -969,7 +973,7 @@ TEST(PermissionsTest, GetWarningMessages_Socket_TwoDomainsOneHostname) {
                            "bar.example.org"));
 }
 
-TEST(PermissionsTest, GetWarningMessages_PlatformApppHosts) {
+TEST_F(PermissionsTest, GetWarningMessages_PlatformApppHosts) {
   scoped_refptr<Extension> extension;
 
   extension = LoadManifest("permissions", "platform_app_hosts.json");
@@ -983,7 +987,7 @@ TEST(PermissionsTest, GetWarningMessages_PlatformApppHosts) {
   ASSERT_EQ(0u, warnings.size());
 }
 
-TEST(PermissionsTest, GetDistinctHostsForDisplay) {
+TEST_F(PermissionsTest, GetDistinctHostsForDisplay) {
   scoped_refptr<PermissionSet> perm_set;
   APIPermissionSet empty_perms;
   std::set<std::string> expected;
@@ -1139,7 +1143,7 @@ TEST(PermissionsTest, GetDistinctHostsForDisplay) {
   }
 }
 
-TEST(PermissionsTest, GetDistinctHostsForDisplay_ComIsBestRcd) {
+TEST_F(PermissionsTest, GetDistinctHostsForDisplay_ComIsBestRcd) {
   scoped_refptr<PermissionSet> perm_set;
   APIPermissionSet empty_perms;
   URLPatternSet explicit_hosts;
@@ -1164,7 +1168,7 @@ TEST(PermissionsTest, GetDistinctHostsForDisplay_ComIsBestRcd) {
   EXPECT_EQ(expected, perm_set->GetDistinctHostsForDisplay());
 }
 
-TEST(PermissionsTest, GetDistinctHostsForDisplay_NetIs2ndBestRcd) {
+TEST_F(PermissionsTest, GetDistinctHostsForDisplay_NetIs2ndBestRcd) {
   scoped_refptr<PermissionSet> perm_set;
   APIPermissionSet empty_perms;
   URLPatternSet explicit_hosts;
@@ -1188,7 +1192,7 @@ TEST(PermissionsTest, GetDistinctHostsForDisplay_NetIs2ndBestRcd) {
   EXPECT_EQ(expected, perm_set->GetDistinctHostsForDisplay());
 }
 
-TEST(PermissionsTest,
+TEST_F(PermissionsTest,
      GetDistinctHostsForDisplay_OrgIs3rdBestRcd) {
   scoped_refptr<PermissionSet> perm_set;
   APIPermissionSet empty_perms;
@@ -1212,7 +1216,7 @@ TEST(PermissionsTest,
   EXPECT_EQ(expected, perm_set->GetDistinctHostsForDisplay());
 }
 
-TEST(PermissionsTest,
+TEST_F(PermissionsTest,
      GetDistinctHostsForDisplay_FirstInListIs4thBestRcd) {
   scoped_refptr<PermissionSet> perm_set;
   APIPermissionSet empty_perms;
@@ -1235,7 +1239,7 @@ TEST(PermissionsTest,
   EXPECT_EQ(expected, perm_set->GetDistinctHostsForDisplay());
 }
 
-TEST(PermissionsTest, HasLessHostPrivilegesThan) {
+TEST_F(PermissionsTest, HasLessHostPrivilegesThan) {
   URLPatternSet elist1;
   URLPatternSet elist2;
   URLPatternSet slist1;
@@ -1304,7 +1308,7 @@ TEST(PermissionsTest, HasLessHostPrivilegesThan) {
   EXPECT_TRUE(set2->HasLessHostPrivilegesThan(set1.get()));
 }
 
-TEST(PermissionsTest, GetAPIsAsStrings) {
+TEST_F(PermissionsTest, GetAPIsAsStrings) {
   APIPermissionSet apis;
   URLPatternSet empty_set;
 
@@ -1324,7 +1328,7 @@ TEST(PermissionsTest, GetAPIsAsStrings) {
             PermissionsInfo::GetInstance()->GetAllByName(api_names));
 }
 
-TEST(PermissionsTest, IsEmpty) {
+TEST_F(PermissionsTest, IsEmpty) {
   APIPermissionSet empty_apis;
   URLPatternSet empty_extent;
 
@@ -1354,7 +1358,7 @@ TEST(PermissionsTest, IsEmpty) {
   EXPECT_FALSE(perm_set->IsEmpty());
 }
 
-TEST(PermissionsTest, ImpliedPermissions) {
+TEST_F(PermissionsTest, ImpliedPermissions) {
   URLPatternSet empty_extent;
   APIPermissionSet apis;
   apis.insert(APIPermission::kWebRequest);

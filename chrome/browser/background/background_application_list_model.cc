@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/icons/icons_handler.h"
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -287,7 +288,7 @@ bool BackgroundApplicationListModel::IsBackgroundApp(
     return true;
 
   // Hosted apps with manifest-provided background pages are background apps.
-  if (extension.has_background_page())
+  if (extensions::BackgroundInfo::HasBackgroundPage(&extension))
     return true;
 
   BackgroundContentsService* service =
