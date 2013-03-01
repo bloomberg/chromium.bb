@@ -28,27 +28,49 @@
 
   <?define ChromotingTypelib = "{b6396c45-b0cc-456b-9f49-f12964ee6df4}" ?>
 
+  <!-- AppIDs used by the COM components. -->
   <?define ControllerAppid = "{4ff35d5e-d226-4550-9248-03e7779e67de}" ?>
+  <?define RdpAppid = "{52e6fd1a-f16e-49c0-aacb-5436a915448b}" ?>
+
   <?define ControllerClass = "ElevatedController Class" ?>
   <?define ControllerProgid =
     "ChromotingElevatedController.ElevatedController" ?>
 
   <!--
-    The long hex value below is a security descriptor that allows SYSTEM,
-    built-in administrators and interactive users to call methods of a COM
-    object (COM_RIGHTS_EXECUTE and COM_RIGHTS_EXECUTE_LOCAL). The security
-    descriptor was generated from SDDL definition using the PowerShell script
-    below:
+    The long hex values below are security descriptors generated from SDDL
+    definition using the PowerShell script below:
 
-      $sddl = "O:BAG:BAD:(A;;0x3;;;IU)(A;;0x3;;;SY)(A;;0x3;;;BA)"
-      $i = ([wmiclass]"Win32_SecurityDescriptorHelper").SDDLToBinarySD($sddl).BinarySD
-      -join ($i | foreach {$_.ToString("X2")})
+    $sddl = "<SDDL definition goes here>"
+    $i = ([wmiclass]"Win32_SecurityDescriptorHelper").SDDLToBinarySD($sddl).BinarySD
+    -join ($i | foreach {$_.ToString("X2")})
+  -->
+
+  <!--
+    A security descriptor that allows SYSTEM, built-in administrators and
+    interactive users COM_RIGHTS_EXECUTE and COM_RIGHTS_EXECUTE_LOCAL rights.
+    The SDDL definition:
+
+    $sddl = "O:BAG:BAD:(A;;0x3;;;IU)(A;;0x3;;;SY)(A;;0x3;;;BA)"
   -->
   <?define ControllerSd = "010004805C0000006C00000000000000140000000200480003000000000014000300000001010000000000050400000000001400030000000101000000000005120000000000180003000000010200000000000520000000200200000102000000000005200000002002000001020000000000052000000020020000" ?>
+
+  <!--
+    A security descriptor that gives SYSTEM, built-in administrators and
+    LocalSystem accounts COM_RIGHTS_EXECUTE, COM_RIGHTS_EXECUTE_LOCAL, and
+    COM_RIGHTS_ACTIVATE_LOCAL rights. It specifies a mandatory label that
+    specifies "no execute up" policy for medium integrity level.
+
+    $sddl = "O:BAG:BAD:(A;;0xb;;;SY)(A;;0xb;;;BA)(A;;0xb;;;LS)S:(ML;;NX;;;ME)"
+  -->
+  <?define RdpSd = "010014807800000088000000140000003000000002001C000100000011001400040000000101000000000010002000000200480003000000000014000B000000010100000000000512000000000018000B00000001020000000000052000000020020000000014000B0000000101000000000005130000000102000000000005200000002002000001020000000000052000000020020000" ?>
 
   <!-- Verify that all required parameters are defined. -->
   <?ifndef ControllerClsid ?>
     <?error ControllerClsid must be defined ?>
+  <?endif?>
+
+  <?ifndef RdpDesktopSessionClsid ?>
+    <?error RdpDesktopSessionClsid must be defined ?>
   <?endif?>
 
   <?ifndef Version ?>
@@ -238,6 +260,21 @@
                              Type="binary"
                              Value="$(var.ControllerSd)"/>
             </RegistryKey>
+
+            <RegistryKey Key="$(var.RdpAppid)" Action="create">
+              <RegistryValue Type="string"
+                             Value="ChromotingRdpDesktopSession"/>
+              <RegistryValue Name="AccessPermission"
+                             Type="binary"
+                             Value="$(var.RdpSd)"/>
+              <RegistryValue Name="LaunchPermission"
+                             Type="binary"
+                             Value="$(var.RdpSd)"/>
+              <RegistryValue Name="RunAs"
+                             Type="string"
+                             Value="NT AUTHORITY\LocalService"/>
+            </RegistryKey>
+
           </RegistryKey>
 
           <RegistryKey Key="$(var.ControllerProgid)" Action="create">
@@ -308,9 +345,42 @@
                                Value="@[binaries]$(var.CoreBinary),-104"/>
               </RegistryKey>
             </RegistryKey>
+            <RegistryKey Key="$(var.RdpDesktopSessionClsid)" Action="create">
+              <RegistryValue Type="string"
+                             Value="RdpDesktopSession Class"/>
+
+              <RegistryValue Type="string"
+                             Name="AppID"
+                             Value="$(var.RdpAppid)"/>
+
+              <RegistryKey Key="LocalServer32" Action="create">
+                <RegistryValue Type="string"
+                               Value="[binaries]$(var.HostBinary) --type=rdp_desktop_session"/>
+              </RegistryKey>
+
+              <RegistryKey Key="TypeLib" Action="create">
+                <RegistryValue Type="string"
+                               Value="$(var.ChromotingTypelib)"/>
+              </RegistryKey>
+            </RegistryKey>
           </RegistryKey>
 
           <RegistryKey Key="Interface">
+            <!-- IRdpDesktopSession interface -->
+            <RegistryKey Key="{126c22bc-34ef-4cfb-83ef-9b8ada3391e8}"
+                         Action="create">
+              <RegistryKey Key="ProxyStubClsid32" Action="create">
+                <RegistryValue Type="string"
+                               Value="{00020424-0000-0000-C000-000000000046}"/>
+              </RegistryKey>
+
+              <RegistryKey Key="TypeLib" Action="create">
+                <RegistryValue Type="string"
+                               Value="$(var.ChromotingTypelib)"/>
+              </RegistryKey>
+            </RegistryKey>
+
+            <!-- IDaemonControl2 interface -->
             <RegistryKey Key="{655bd819-c08c-4b04-80c2-f160739ff6ef}"
                          Action="create">
               <RegistryKey Key="ProxyStubClsid32" Action="create">
@@ -324,6 +394,21 @@
               </RegistryKey>
             </RegistryKey>
 
+            <!-- IRdpDesktopSessionEventHandler interface -->
+            <RegistryKey Key="{987bca97-9d40-42fc-a00d-e6a701261af5}"
+                         Action="create">
+              <RegistryKey Key="ProxyStubClsid32" Action="create">
+                <RegistryValue Type="string"
+                               Value="{00020424-0000-0000-C000-000000000046}"/>
+              </RegistryKey>
+
+              <RegistryKey Key="TypeLib" Action="create">
+                <RegistryValue Type="string"
+                               Value="$(var.ChromotingTypelib)"/>
+              </RegistryKey>
+            </RegistryKey>
+
+            <!-- IDaemonControl interface -->
             <RegistryKey Key="{e051a481-6345-4ba1-bdb1-cf7929955268}"
                          Action="create">
               <RegistryKey Key="ProxyStubClsid32" Action="create">

@@ -8,9 +8,13 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
+#include "base/win/scoped_handle.h"
+#include "base/win/windows_version.h"
 #include "remoting/base/auto_thread_task_runner.h"
+#include "remoting/base/typed_buffer.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/win/elevated_controller.h"
+#include "remoting/host/win/rdp_desktop_session.h"
 
 namespace remoting {
 
@@ -19,6 +23,55 @@ namespace {
 // Holds a reference to the task runner used by the module.
 base::LazyInstance<scoped_refptr<AutoThreadTaskRunner> > g_module_task_runner =
     LAZY_INSTANCE_INITIALIZER;
+
+// Lowers the process integrity level such that it does not exceed |max_level|.
+// |max_level| is expected to be one of SECURITY_MANDATORY_XXX constants.
+bool LowerProcessIntegrityLevel(DWORD max_level) {
+  base::win::ScopedHandle token;
+  if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY | TOKEN_WRITE,
+                        token.Receive())) {
+    PLOG(ERROR) << "OpenProcessToken() failed";
+    return false;
+  }
+
+  TypedBuffer<TOKEN_MANDATORY_LABEL> mandatory_label;
+  DWORD length = 0;
+
+  // Get the size of the buffer needed to hold the mandatory label.
+  BOOL result = GetTokenInformation(token, TokenIntegrityLevel,
+                                    mandatory_label.get(), length, &length);
+  if (!result && GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
+    // Allocate a buffer that is large enough.
+    TypedBuffer<TOKEN_MANDATORY_LABEL> buffer(length);
+    mandatory_label.Swap(buffer);
+
+    // Get the the mandatory label.
+    result = GetTokenInformation(token, TokenIntegrityLevel,
+                                 mandatory_label.get(), length, &length);
+  }
+  if (!result) {
+    PLOG(ERROR) << "Failed to get the mandatory label";
+    return false;
+  }
+
+  // Read the current integrity level.
+  DWORD sub_authority_count =
+      *GetSidSubAuthorityCount(mandatory_label->Label.Sid);
+  DWORD* current_level = GetSidSubAuthority(mandatory_label->Label.Sid,
+                                            sub_authority_count - 1);
+
+  // Set the integrity level to |max_level| if needed.
+  if (*current_level > max_level) {
+    *current_level = max_level;
+    if (!SetTokenInformation(token, TokenIntegrityLevel, mandatory_label.get(),
+                             length)) {
+      PLOG(ERROR) << "Failed to set the mandatory label";
+      return false;
+    }
+  }
+
+  return true;
+}
 
 }  // namespace
 
@@ -134,6 +187,23 @@ int ElevatedControllerMain() {
 
   ChromotingModule module(elevated_controller_entry,
                           elevated_controller_entry + 1);
+  return module.Run() ? kSuccessExitCode : kInitializationFailed;
+}
+
+// RdpClient entry point.
+int RdpDesktopSessionMain() {
+  // Lower the integrity level to medium, which is the lowest level at which
+  // the RDP ActiveX control can run.
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+    if (!LowerProcessIntegrityLevel(SECURITY_MANDATORY_MEDIUM_RID))
+      return kInitializationFailed;
+  }
+
+  ATL::_ATL_OBJMAP_ENTRY rdp_client_entry[] = {
+    OBJECT_ENTRY(__uuidof(RdpDesktopSession), RdpDesktopSession)
+  };
+
+  ChromotingModule module(rdp_client_entry, rdp_client_entry + 1);
   return module.Run() ? kSuccessExitCode : kInitializationFailed;
 }
 

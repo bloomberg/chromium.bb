@@ -22,10 +22,6 @@ namespace remoting {
 
 namespace {
 
-// Default width and hight of the RDP client window.
-const long kDefaultWidth = 1024;
-const long kDefaultHeight = 768;
-
 // The range of addresses RdpClient may use to distinguish client connections:
 // 127.0.0.2 - 127.255.255.254. 127.0.0.1 is explicitly blocked by the RDP
 // ActiveX control.
@@ -49,7 +45,7 @@ class RdpClient::Core
       RdpClient::EventHandler* event_handler);
 
   // Initiates a loopback RDP connection.
-  void Connect();
+  void Connect(const SkISize& screen_size);
 
   // Initiates a graceful shutdown of the RDP connection.
   void Disconnect();
@@ -113,11 +109,12 @@ class RdpClient::Core
 RdpClient::RdpClient(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    const SkISize& screen_size,
     EventHandler* event_handler) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
 
   core_ = new Core(caller_task_runner, ui_task_runner, event_handler);
-  core_->Connect();
+  core_->Connect(screen_size);
 }
 
 RdpClient::~RdpClient() {
@@ -136,9 +133,10 @@ RdpClient::Core::Core(
       get_extended_tcp_table_(NULL) {
 }
 
-void RdpClient::Core::Connect() {
+void RdpClient::Core::Connect(const SkISize& screen_size) {
   if (!ui_task_runner_->BelongsToCurrentThread()) {
-    ui_task_runner_->PostTask(FROM_HERE, base::Bind(&Core::Connect, this));
+    ui_task_runner_->PostTask(FROM_HERE,
+                              base::Bind(&Core::Connect, this, screen_size));
     return;
   }
 
@@ -170,8 +168,7 @@ void RdpClient::Core::Connect() {
 
   // Create the ActiveX control window.
   rdp_client_window_.reset(new RdpClientWindow(server_endpoint_, this));
-  if (!rdp_client_window_->Connect(SkISize::Make(kDefaultWidth,
-                                                 kDefaultHeight))) {
+  if (!rdp_client_window_->Connect(screen_size)) {
     rdp_client_window_.reset();
 
     // Notify the caller that connection attempt failed.

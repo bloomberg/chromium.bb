@@ -3,6 +3,7 @@
     "Branding": "@@BRANDING@@",
     "ControllerClsid": "@@DAEMON_CONTROLLER_CLSID@@",
     "OfficialBuild": "@@OFFICIAL_BUILD@@",
+    "RdpDesktopSessionClsid": "@@RDP_DESKTOP_SESSION_CLSID@@",
     "RemotingMultiProcess" : "@@REMOTING_MULTI_PROCESS@@",
     "Version": "@@VERSION@@"
   },

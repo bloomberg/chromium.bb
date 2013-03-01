@@ -26,7 +26,7 @@
 #include "base/win/windows_version.h"
 #include "remoting/base/scoped_sc_handle_win.h"
 #include "remoting/host/branding.h"
-// MIDL-generated declarations and definitions.
+// chromoting_lib.h contains MIDL-generated declarations.
 #include "remoting/host/chromoting_lib.h"
 #include "remoting/host/setup/daemon_installer_win.h"
 #include "remoting/host/usage_stats_consent.h"

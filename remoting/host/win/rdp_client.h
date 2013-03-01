@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
+#include "third_party/skia/include/core/SkSize.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -38,6 +39,7 @@ class RdpClient : public base::NonThreadSafe {
   RdpClient(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      const SkISize& screen_size,
       EventHandler* event_handler);
   virtual ~RdpClient();
 

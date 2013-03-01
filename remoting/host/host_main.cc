@@ -42,6 +42,7 @@ int DesktopProcessMain();
 
 #if defined(OS_WIN)
 int ElevatedControllerMain();
+int RdpDesktopSessionMain();
 #endif  // defined(OS_WIN)
 
 const char kElevateSwitchName[] = "elevate";
@@ -56,6 +57,7 @@ const char kProcessTypeDesktop[] = "desktop";
 
 #if defined(OS_WIN)
 const char kProcessTypeController[] = "controller";
+const char kProcessTypeRdpDesktopSession[] = "rdp_desktop_session";
 #endif  // defined(OS_WIN)
 
 namespace {
@@ -146,6 +148,8 @@ MainRoutineFn SelectMainRoutine(const std::string& process_type) {
 #if defined(OS_WIN)
   if (process_type == kProcessTypeController) {
     main_routine = &ElevatedControllerMain;
+  } else if (process_type == kProcessTypeRdpDesktopSession) {
+    main_routine = &RdpDesktopSessionMain;
   }
 #endif  // defined(OS_WIN)
 

@@ -25,6 +25,7 @@ extern const char kProcessTypeDesktop[];
 
 #if defined(OS_WIN)
 extern const char kProcessTypeController[];
+extern const char kProcessTypeRdpDesktopSession[];
 #endif  // defined(OS_WIN)
 
 // The common entry point exported from remoting_core.dll. It uses

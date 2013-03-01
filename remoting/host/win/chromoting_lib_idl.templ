@@ -13,7 +13,7 @@ import "ocidl.idl";
   helpstring("IDaemonControl Interface"),
   pointer_default(unique)
 ]
-interface IDaemonControl: IDispatch {
+interface IDaemonControl : IDispatch {
   [ id(1), helpstring("Returns a filtered copy of the daemon's configuration. "
                       "Only 'host_id' and 'xmpp_login' values are returned, "
                       "because any other values may contain security-sensitive "
@@ -53,7 +53,7 @@ interface IDaemonControl: IDispatch {
   helpstring("IDaemonControl2 Interface"),
   pointer_default(unique)
 ]
-interface IDaemonControl2: IDaemonControl {
+interface IDaemonControl2 : IDaemonControl {
   [ id(8), helpstring("Retrieves the user's consent to collect crash dumps "
                       "and gather usage statistics.") ]
   HRESULT GetUsageStatsConsent([out] BOOL* allowed,
@@ -62,6 +62,51 @@ interface IDaemonControl2: IDaemonControl {
   [ id(9), helpstring("Records the user's consent to collect crash dumps "
                       "and gather usage statistics.") ]
   HRESULT SetUsageStatsConsent([in] BOOL allowed);
+};
+
+[
+  object,
+  uuid(987bca97-9d40-42fc-a00d-e6a701261af5),
+  dual,
+  nonextensible,
+  helpstring("IRdpDesktopSessionEventHandler Interface"),
+  pointer_default(unique)
+]
+interface IRdpDesktopSessionEventHandler : IDispatch {
+  [ id(1), helpstring("Notifies that an RDP connection has been established "
+                      "successfully. The client's address and port are "
+                      " returned in |client_endpoint| as |SOCKADDR_STORAGE| "
+                      "structure. When this method is called multiple times, "
+                      "the most recent |client_endpoint| supersedes all "
+                      "previous ones.") ]
+  HRESULT OnRdpConnected([in, size_is(length)] byte* client_endpoint,
+                         [in] long length);
+
+  [ id(2), helpstring("Notifies the delegate that the RDP connection has been "
+                      "closed.") ]
+  HRESULT OnRdpClosed();
+};
+
+[
+  object,
+  uuid(126c22bc-34ef-4cfb-83ef-9b8ada3391e8),
+  dual,
+  nonextensible,
+  helpstring("IRdpDesktopSession Interface"),
+  pointer_default(unique)
+]
+interface IRdpDesktopSession : IDispatch {
+  [ id(1), helpstring("Initiates a loopback RDP connection to spawn a new "
+                      "Windows session. |width| and |height| specify the "
+                      "initial screen resolution.") ]
+  HRESULT Connect([in] long width, [in] long height,
+                  [in] IRdpDesktopSessionEventHandler* event_handler);
+
+  [ id(2), helpstring("Shuts down the connection created by Connect().") ]
+  HRESULT Disconnect();
+
+  [ id(3), helpstring("Changes the screen resolution.") ]
+  HRESULT ChangeResolution([in] long width, [in] long height);
 };
 
 [
@@ -78,5 +123,13 @@ library ChromotingLib {
   ]
   coclass ElevatedController {
     [default] interface IDaemonControl2;
+  };
+
+  [
+    uuid(@RDP_DESKTOP_SESSION_CLSID@),
+    helpstring("RdpDesktopSession Class")
+  ]
+  coclass RdpDesktopSession {
+    [default] interface IRdpDesktopSession;
   };
 };

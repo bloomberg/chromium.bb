@@ -25,6 +25,10 @@ namespace remoting {
 
 namespace {
 
+// Default width and hight of the RDP client window.
+const long kDefaultWidth = 1024;
+const long kDefaultHeight = 768;
+
 class MockRdpClientEventHandler : public RdpClient::EventHandler {
  public:
   MockRdpClientEventHandler() {}
@@ -134,7 +138,8 @@ TEST_F(RdpClientTest, Basic) {
       .WillOnce(InvokeWithoutArgs(this, &RdpClientTest::CloseRdpClient));
 
   rdp_client_.reset(new RdpClient(task_runner_, task_runner_,
-                                   &event_handler_));
+                                  SkISize::Make(kDefaultWidth, kDefaultHeight),
+                                  &event_handler_));
   task_runner_ = NULL;
 
   run_loop_.Run();

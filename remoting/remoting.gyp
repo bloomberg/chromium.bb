@@ -89,10 +89,15 @@
         'host_plugin_prefix': '',
       }],
       ['OS=="win"', {
-        # Use auto-generated CLSID to make sure that the newly installed COM
+        # Use auto-generated CLSIDs to make sure that the newly installed COM
         # classes will be used during/after upgrade even if there are old
         # instances running already.
-        'daemon_controller_clsid': '<!(python tools/uuidgen.py)',
+        # The parameter passed to uuidgen.py is ignored, but needed to make sure
+        # that the script will be invoked separately for each CLSID. Otherwise
+        # GYP will reuse the value returned by the first invocation of
+        # the script.
+        'daemon_controller_clsid': '<!(python tools/uuidgen.py 1)',
+        'rdp_desktop_session_clsid': '<!(python tools/uuidgen.py 2)',
       }],
     ],
     'remoting_webapp_locale_files': [
@@ -1157,6 +1162,7 @@
                 'python',
                 '<(version_py_path)',
                 '-e', "DAEMON_CONTROLLER_CLSID='<(daemon_controller_clsid)'",
+                '-e', "RDP_DESKTOP_SESSION_CLSID='<(rdp_desktop_session_clsid)'",
                 '<(RULE_INPUT_PATH)',
                 '<@(_outputs)',
               ],
@@ -1304,6 +1310,7 @@
             '_ATL_NO_AUTOMATIC_NAMESPACE',
             '_ATL_NO_EXCEPTIONS',
             'DAEMON_CONTROLLER_CLSID="{<(daemon_controller_clsid)}"',
+            'RDP_DESKTOP_SESSION_CLSID="{<(rdp_desktop_session_clsid)}"',
             'HOST_IMPLEMENTATION',
             'ISOLATION_AWARE_ENABLED=1',
             'STRICT',
@@ -1371,6 +1378,8 @@
             'host/win/host_service.h',
             'host/win/omaha.cc',
             'host/win/omaha.h',
+            'host/win/rdp_desktop_session.cc',
+            'host/win/rdp_desktop_session.h',
             'host/win/unprivileged_process_delegate.cc',
             'host/win/unprivileged_process_delegate.h',
             'host/win/worker_process_launcher.cc',
@@ -1723,6 +1732,7 @@
           'defs': [
             'BRANDING=<(branding)',
             'DAEMON_CONTROLLER_CLSID={<(daemon_controller_clsid)}',
+            'RDP_DESKTOP_SESSION_CLSID={<(rdp_desktop_session_clsid)}',
             'REMOTING_MULTI_PROCESS=<(remoting_multi_process)',
             'VERSION=<(version_full)',
           ],
