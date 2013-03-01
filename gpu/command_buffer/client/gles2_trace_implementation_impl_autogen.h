@@ -570,8 +570,7 @@ void GLES2TraceImplementation::ShaderBinary(
 }
 
 void GLES2TraceImplementation::ShaderSource(
-    GLuint shader, GLsizei count, const GLchar* const* str,
-    const GLint* length) {
+    GLuint shader, GLsizei count, const char** str, const GLint* length) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::ShaderSource");
   gl_->ShaderSource(shader, count, str, length);
 }

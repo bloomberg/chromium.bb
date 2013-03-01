@@ -163,7 +163,7 @@ virtual void ShaderBinary(
     GLsizei n, const GLuint* shaders, GLenum binaryformat, const void* binary,
     GLsizei length) OVERRIDE;
 virtual void ShaderSource(
-    GLuint shader, GLsizei count, const GLchar* const* str,
+    GLuint shader, GLsizei count, const char** str,
     const GLint* length) OVERRIDE;
 virtual void StencilFunc(GLenum func, GLint ref, GLuint mask) OVERRIDE;
 virtual void StencilFuncSeparate(

@@ -1,7 +1,7 @@
 #ifndef __gl2_h_
 #define __gl2_h_
 
-/* $Revision: 20555 $ on $Date:: 2013-02-12 14:32:47 -0800 #$ */
+/* $Revision: 16803 $ on $Date:: 2012-02-02 09:49:18 -0800 #$ */
 
 #include <GLES2/gl2chromium.h>
 #include <GLES2/gl2platform.h>
@@ -160,6 +160,7 @@ typedef khronos_ssize_t  GLsizeiptr;
 #define GL_INVALID_VALUE                  0x0501
 #define GL_INVALID_OPERATION              0x0502
 #define GL_OUT_OF_MEMORY                  0x0505
+#define GL_CONTEXT_LOST                   0x300E  // TODO(gman): What value?
 
 /* FrontFaceDirection */
 #define GL_CW                             0x0900
@@ -528,7 +529,7 @@ GL_APICALL void         GL_APIENTRY glGenTextures (GLsizei n, GLuint* textures);
 GL_APICALL void         GL_APIENTRY glGetActiveAttrib (GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size, GLenum* type, GLchar* name);
 GL_APICALL void         GL_APIENTRY glGetActiveUniform (GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size, GLenum* type, GLchar* name);
 GL_APICALL void         GL_APIENTRY glGetAttachedShaders (GLuint program, GLsizei maxcount, GLsizei* count, GLuint* shaders);
-GL_APICALL GLint        GL_APIENTRY glGetAttribLocation (GLuint program, const GLchar* name);
+GL_APICALL int          GL_APIENTRY glGetAttribLocation (GLuint program, const GLchar* name);
 GL_APICALL void         GL_APIENTRY glGetBooleanv (GLenum pname, GLboolean* params);
 GL_APICALL void         GL_APIENTRY glGetBufferParameteriv (GLenum target, GLenum pname, GLint* params);
 GL_APICALL GLenum       GL_APIENTRY glGetError (void);
@@ -547,7 +548,7 @@ GL_APICALL void         GL_APIENTRY glGetTexParameterfv (GLenum target, GLenum p
 GL_APICALL void         GL_APIENTRY glGetTexParameteriv (GLenum target, GLenum pname, GLint* params);
 GL_APICALL void         GL_APIENTRY glGetUniformfv (GLuint program, GLint location, GLfloat* params);
 GL_APICALL void         GL_APIENTRY glGetUniformiv (GLuint program, GLint location, GLint* params);
-GL_APICALL GLint        GL_APIENTRY glGetUniformLocation (GLuint program, const GLchar* name);
+GL_APICALL int          GL_APIENTRY glGetUniformLocation (GLuint program, const GLchar* name);
 GL_APICALL void         GL_APIENTRY glGetVertexAttribfv (GLuint index, GLenum pname, GLfloat* params);
 GL_APICALL void         GL_APIENTRY glGetVertexAttribiv (GLuint index, GLenum pname, GLint* params);
 GL_APICALL void         GL_APIENTRY glGetVertexAttribPointerv (GLuint index, GLenum pname, GLvoid** pointer);
@@ -569,7 +570,7 @@ GL_APICALL void         GL_APIENTRY glRenderbufferStorage (GLenum target, GLenum
 GL_APICALL void         GL_APIENTRY glSampleCoverage (GLclampf value, GLboolean invert);
 GL_APICALL void         GL_APIENTRY glScissor (GLint x, GLint y, GLsizei width, GLsizei height);
 GL_APICALL void         GL_APIENTRY glShaderBinary (GLsizei n, const GLuint* shaders, GLenum binaryformat, const GLvoid* binary, GLsizei length);
-GL_APICALL void         GL_APIENTRY glShaderSource (GLuint shader, GLsizei count, const GLchar* const* string, const GLint* length);
+GL_APICALL void         GL_APIENTRY glShaderSource (GLuint shader, GLsizei count, const GLchar** string, const GLint* length);
 GL_APICALL void         GL_APIENTRY glStencilFunc (GLenum func, GLint ref, GLuint mask);
 GL_APICALL void         GL_APIENTRY glStencilFuncSeparate (GLenum face, GLenum func, GLint ref, GLuint mask);
 GL_APICALL void         GL_APIENTRY glStencilMask (GLuint mask);
