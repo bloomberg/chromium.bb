@@ -110,7 +110,6 @@ void RenderWidgetHostViewGuest::AcceleratedSurfaceBuffersSwapped(
   if (enable_compositing_) {
     guest_->SendMessageToEmbedder(
         new BrowserPluginMsg_BuffersSwapped(
-            guest_->embedder_routing_id(),
             guest_->instance_id(),
             params.size,
             params.mailbox_name,
@@ -126,7 +125,6 @@ void RenderWidgetHostViewGuest::AcceleratedSurfacePostSubBuffer(
   if (enable_compositing_) {
     guest_->SendMessageToEmbedder(
         new BrowserPluginMsg_BuffersSwapped(
-            guest_->embedder_routing_id(),
             guest_->instance_id(),
             params.surface_size,
             params.mailbox_name,

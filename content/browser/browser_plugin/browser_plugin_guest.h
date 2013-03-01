@@ -169,8 +169,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   // messages for testing.
   virtual void SendMessageToEmbedder(IPC::Message* msg);
 
-  // Returns the embedder's routing ID.
-  int embedder_routing_id() const;
   // Returns the identifier that uniquely identifies a browser plugin guest
   // within an embedder.
   int instance_id() const { return instance_id_; }
@@ -189,6 +187,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
                      WebContentsImpl* embedder_web_contents,
                      WebContentsImpl* web_contents,
                      const BrowserPluginHostMsg_CreateGuest_Params& params);
+
+  // Returns the embedder's routing ID.
+  int embedder_routing_id() const;
 
   // Schedules this BrowserPluginGuest for deletion if it hasn't already been
   // scheduled.

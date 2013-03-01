@@ -151,8 +151,9 @@ void BrowserPluginGuest::Initialize(
   int guest_routing_id =
       static_cast<WebContentsImpl*>(web_contents())->CreateSwappedOutRenderView(
           embedder_web_contents()->GetSiteInstance());
-  embedder_web_contents_->Send(new BrowserPluginMsg_GuestContentWindowReady(
-      embedder_web_contents_->GetRoutingID(), instance_id_, guest_routing_id));
+  SendMessageToEmbedder(
+      new BrowserPluginMsg_GuestContentWindowReady(instance_id_,
+                                                   guest_routing_id));
 
   if (!params.src.empty())
     OnNavigateGuest(instance_id_, params.src);
@@ -245,9 +246,7 @@ void BrowserPluginGuest::RendererUnresponsive(WebContents* source) {
   int process_id =
       web_contents()->GetRenderProcessHost()->GetID();
   SendMessageToEmbedder(
-      new BrowserPluginMsg_GuestUnresponsive(MSG_ROUTING_NONE,
-                                             instance_id(),
-                                             process_id));
+      new BrowserPluginMsg_GuestUnresponsive(instance_id(), process_id));
   RecordAction(UserMetricsAction("BrowserPlugin.Guest.Hung"));
 }
 
@@ -255,9 +254,7 @@ void BrowserPluginGuest::RendererResponsive(WebContents* source) {
   int process_id =
       web_contents()->GetRenderProcessHost()->GetID();
   SendMessageToEmbedder(
-      new BrowserPluginMsg_GuestResponsive(MSG_ROUTING_NONE,
-                                           instance_id(),
-                                           process_id));
+      new BrowserPluginMsg_GuestResponsive(instance_id(), process_id));
   RecordAction(UserMetricsAction("BrowserPlugin.Guest.Responsive"));
 }
 
@@ -332,8 +329,7 @@ void BrowserPluginGuest::DidStartProvisionalLoadForFrame(
     RenderViewHost* render_view_host) {
   // Inform the embedder of the loadStart.
   SendMessageToEmbedder(
-      new BrowserPluginMsg_LoadStart(MSG_ROUTING_NONE,
-                                     instance_id(),
+      new BrowserPluginMsg_LoadStart(instance_id(),
                                      validated_url,
                                      is_main_frame));
 }
@@ -350,8 +346,7 @@ void BrowserPluginGuest::DidFailProvisionalLoad(
   RemoveChars(net::ErrorToString(error_code), "net::", &error_type);
   // Inform the embedder of the loadAbort.
   SendMessageToEmbedder(
-      new BrowserPluginMsg_LoadAbort(MSG_ROUTING_NONE,
-                                     instance_id(),
+      new BrowserPluginMsg_LoadAbort(instance_id(),
                                      validated_url,
                                      is_main_frame,
                                      error_type));
@@ -369,8 +364,7 @@ void BrowserPluginGuest::LoadRedirect(
     const GURL& new_url,
     bool is_top_level) {
   SendMessageToEmbedder(
-      new BrowserPluginMsg_LoadRedirect(MSG_ROUTING_NONE,
-                                        instance_id(),
+      new BrowserPluginMsg_LoadRedirect(instance_id(),
                                         old_url,
                                         new_url,
                                         is_top_level));
@@ -393,9 +387,7 @@ void BrowserPluginGuest::DidCommitProvisionalLoadForFrame(
   params.entry_count =
       web_contents()->GetController().GetEntryCount();
   SendMessageToEmbedder(
-      new BrowserPluginMsg_LoadCommit(MSG_ROUTING_NONE,
-                                      instance_id(),
-                                      params));
+      new BrowserPluginMsg_LoadCommit(instance_id(), params));
   RecordAction(UserMetricsAction("BrowserPlugin.Guest.DidNavigate"));
 }
 
@@ -407,8 +399,7 @@ void BrowserPluginGuest::DidStopLoading(RenderViewHost* render_view_host) {
                         "});";
   render_view_host->ExecuteJavascriptInWebFrame(string16(),
                                                 ASCIIToUTF16(script));
-  SendMessageToEmbedder(new BrowserPluginMsg_LoadStop(MSG_ROUTING_NONE,
-                                                      instance_id()));
+  SendMessageToEmbedder(new BrowserPluginMsg_LoadStop(instance_id()));
 }
 
 void BrowserPluginGuest::RenderViewReady() {
@@ -427,10 +418,8 @@ void BrowserPluginGuest::RenderViewReady() {
 
 void BrowserPluginGuest::RenderViewGone(base::TerminationStatus status) {
   int process_id = web_contents()->GetRenderProcessHost()->GetID();
-  SendMessageToEmbedder(new BrowserPluginMsg_GuestGone(MSG_ROUTING_NONE,
-                                                       instance_id(),
-                                                       process_id,
-                                                       status));
+  SendMessageToEmbedder(
+      new BrowserPluginMsg_GuestGone(instance_id(), process_id, status));
   switch (status) {
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
       RecordAction(UserMetricsAction("BrowserPlugin.Guest.Killed"));
@@ -715,15 +704,11 @@ void BrowserPluginGuest::OnHandleInputEventAck(
 
 void BrowserPluginGuest::OnHasTouchEventHandlers(bool accept) {
   SendMessageToEmbedder(
-      new BrowserPluginMsg_ShouldAcceptTouchEvents(MSG_ROUTING_NONE,
-                                                   instance_id(),
-                                                   accept));
+      new BrowserPluginMsg_ShouldAcceptTouchEvents(instance_id(), accept));
 }
 
 void BrowserPluginGuest::OnSetCursor(const WebCursor& cursor) {
-  SendMessageToEmbedder(new BrowserPluginMsg_SetCursor(MSG_ROUTING_NONE,
-                                                       instance_id(),
-                                                       cursor));
+  SendMessageToEmbedder(new BrowserPluginMsg_SetCursor(instance_id(), cursor));
 }
 
 #if defined(OS_MACOSX)
@@ -754,9 +739,7 @@ void BrowserPluginGuest::OnShowWidget(int route_id,
 
 void BrowserPluginGuest::OnTakeFocus(bool reverse) {
   SendMessageToEmbedder(
-      new BrowserPluginMsg_AdvanceFocus(MSG_ROUTING_NONE,
-                                        instance_id(),
-                                        reverse));
+      new BrowserPluginMsg_AdvanceFocus(instance_id(), reverse));
 }
 
 void BrowserPluginGuest::OnUpdateDragCursor(
@@ -778,10 +761,7 @@ void BrowserPluginGuest::OnUpdateFrameName(int frame_id,
     return;
 
   name_ = name;
-  SendMessageToEmbedder(new BrowserPluginMsg_UpdatedName(
-      MSG_ROUTING_NONE,
-      instance_id_,
-      name));
+  SendMessageToEmbedder(new BrowserPluginMsg_UpdatedName(instance_id_, name));
 }
 
 void BrowserPluginGuest::OnUpdateRect(
@@ -797,11 +777,9 @@ void BrowserPluginGuest::OnUpdateRect(
   // HW accelerated case, acknowledge resize only
   if (!params.needs_ack || !damage_buffer_) {
     relay_params.damage_buffer_sequence_id = 0;
-    SendMessageToEmbedder(new BrowserPluginMsg_UpdateRect(
-        MSG_ROUTING_NONE,
-        instance_id(),
-        relay_params));
-     return;
+    SendMessageToEmbedder(
+        new BrowserPluginMsg_UpdateRect(instance_id(), relay_params));
+    return;
   }
 
   RenderViewHost* render_view_host = web_contents()->GetRenderViewHost();
@@ -839,9 +817,8 @@ void BrowserPluginGuest::OnUpdateRect(
   relay_params.scroll_rect = params.scroll_rect;
   relay_params.copy_rects = params.copy_rects;
 
-  SendMessageToEmbedder(new BrowserPluginMsg_UpdateRect(MSG_ROUTING_NONE,
-                                                        instance_id(),
-                                                        relay_params));
+  SendMessageToEmbedder(
+      new BrowserPluginMsg_UpdateRect(instance_id(), relay_params));
 }
 
 }  // namespace content

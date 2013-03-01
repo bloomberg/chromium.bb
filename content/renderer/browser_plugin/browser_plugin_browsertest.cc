@@ -189,7 +189,7 @@ TEST_F(BrowserPluginTest, InitialResize) {
   update_rect_params.scale_factor = 1.0f;
   update_rect_params.is_resize_ack = true;
   update_rect_params.needs_ack = true;
-  BrowserPluginMsg_UpdateRect msg(0, instance_id, update_rect_params);
+  BrowserPluginMsg_UpdateRect msg(instance_id, update_rect_params);
   browser_plugin->OnMessageReceived(msg);
   EXPECT_FALSE(browser_plugin->pending_damage_buffer_.get());
 }
@@ -307,7 +307,7 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
     // received and has begun to use the |pending_damage_buffer_|.
     update_rect_params.damage_buffer_sequence_id =
         browser_plugin->damage_buffer_sequence_id_;
-    BrowserPluginMsg_UpdateRect msg(0, instance_id, update_rect_params);
+    BrowserPluginMsg_UpdateRect msg(instance_id, update_rect_params);
     browser_plugin->OnMessageReceived(msg);
     EXPECT_EQ(NULL, browser_plugin->pending_damage_buffer_.get());
   }
@@ -347,7 +347,7 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
     update_rect_params.needs_ack = true;
     update_rect_params.damage_buffer_sequence_id =
         browser_plugin->damage_buffer_sequence_id_;
-    BrowserPluginMsg_UpdateRect msg(0, instance_id, update_rect_params);
+    BrowserPluginMsg_UpdateRect msg(instance_id, update_rect_params);
     browser_plugin->OnMessageReceived(msg);
     // This tells us that the BrowserPlugin is still expecting another
     // UpdateRect with the most recent size.
@@ -363,7 +363,7 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
     update_rect_params.needs_ack = true;
     update_rect_params.damage_buffer_sequence_id =
         browser_plugin->damage_buffer_sequence_id_;
-    BrowserPluginMsg_UpdateRect msg(0, instance_id, update_rect_params);
+    BrowserPluginMsg_UpdateRect msg(instance_id, update_rect_params);
     browser_plugin->OnMessageReceived(msg);
     // The BrowserPlugin has finally received an UpdateRect that satisifes
     // its current size, and so it is happy.
@@ -410,7 +410,7 @@ TEST_F(BrowserPluginTest, GuestCrash) {
   // Pretend that the guest has terminated normally.
   {
     BrowserPluginMsg_GuestGone msg(
-        0, 0, 0, base::TERMINATION_STATUS_NORMAL_TERMINATION);
+        0, 0, base::TERMINATION_STATUS_NORMAL_TERMINATION);
     browser_plugin->OnMessageReceived(msg);
   }
 
@@ -420,7 +420,7 @@ TEST_F(BrowserPluginTest, GuestCrash) {
   // Pretend that the guest has crashed.
   {
     BrowserPluginMsg_GuestGone msg(
-        0, 0, 0, base::TERMINATION_STATUS_PROCESS_CRASHED);
+        0, 0, base::TERMINATION_STATUS_PROCESS_CRASHED);
     browser_plugin->OnMessageReceived(msg);
   }
 
@@ -499,7 +499,7 @@ TEST_F(BrowserPluginTest, CustomEvents) {
     navigate_params.is_top_level = true;
     navigate_params.url = GURL(kGoogleURL);
     navigate_params.process_id = 1337;
-    BrowserPluginMsg_LoadCommit msg(0, instance_id, navigate_params);
+    BrowserPluginMsg_LoadCommit msg(instance_id, navigate_params);
     browser_plugin->OnMessageReceived(msg);
     EXPECT_EQ(kGoogleURL, ExecuteScriptAndReturnString("url"));
     EXPECT_EQ(kGoogleURL, ExecuteScriptAndReturnString(kGetSrc));
@@ -511,7 +511,7 @@ TEST_F(BrowserPluginTest, CustomEvents) {
     navigate_params.is_top_level = false;
     navigate_params.url = GURL(kGoogleNewsURL);
     navigate_params.process_id = 42;
-    BrowserPluginMsg_LoadCommit msg(0, instance_id, navigate_params);
+    BrowserPluginMsg_LoadCommit msg(instance_id, navigate_params);
     browser_plugin->OnMessageReceived(msg);
     // The URL variable should not change because we've removed the event
     // listener.
@@ -722,7 +722,7 @@ TEST_F(BrowserPluginTest, RemoveEventListenerInEventListener) {
     BrowserPluginMsg_LoadCommit_Params navigate_params;
     navigate_params.url = GURL(kGoogleURL);
     navigate_params.process_id = 1337;
-    BrowserPluginMsg_LoadCommit msg(0, instance_id, navigate_params);
+    BrowserPluginMsg_LoadCommit msg(instance_id, navigate_params);
     browser_plugin->OnMessageReceived(msg);
     EXPECT_EQ(kGoogleURL, ExecuteScriptAndReturnString("url"));
     EXPECT_EQ(1337, ExecuteScriptAndReturnInt(kGetProcessID));
@@ -731,7 +731,7 @@ TEST_F(BrowserPluginTest, RemoveEventListenerInEventListener) {
     BrowserPluginMsg_LoadCommit_Params navigate_params;
     navigate_params.url = GURL(kGoogleNewsURL);
     navigate_params.process_id = 42;
-    BrowserPluginMsg_LoadCommit msg(0, instance_id, navigate_params);
+    BrowserPluginMsg_LoadCommit msg(instance_id, navigate_params);
     browser_plugin->OnMessageReceived(msg);
     // The URL variable should not change because we've removed the event
     // listener.
@@ -779,7 +779,7 @@ TEST_F(BrowserPluginTest, MultipleEventListeners) {
     BrowserPluginMsg_LoadCommit_Params navigate_params;
     navigate_params.url = GURL(kGoogleURL);
     navigate_params.process_id = 1337;
-    BrowserPluginMsg_LoadCommit msg(0, instance_id, navigate_params);
+    BrowserPluginMsg_LoadCommit msg(instance_id, navigate_params);
     browser_plugin->OnMessageReceived(msg);
     EXPECT_EQ(2, ExecuteScriptAndReturnInt("count"));
     EXPECT_EQ(1337, ExecuteScriptAndReturnInt(kGetProcessID));
@@ -819,7 +819,7 @@ TEST_F(BrowserPluginTest, RemoveBrowserPluginOnExit) {
 
   // Pretend that the guest has crashed.
   BrowserPluginMsg_GuestGone msg(
-      0, instance_id, 0, base::TERMINATION_STATUS_PROCESS_WAS_KILLED);
+      instance_id, 0, base::TERMINATION_STATUS_PROCESS_WAS_KILLED);
   browser_plugin->OnMessageReceived(msg);
 
   ProcessPendingMessages();
@@ -890,7 +890,7 @@ TEST_F(BrowserPluginTest, AutoSizeAttributes) {
   update_rect_params.scale_factor = 1.0f;
   update_rect_params.is_resize_ack = true;
   update_rect_params.needs_ack = true;
-  BrowserPluginMsg_UpdateRect msg(0, instance_id, update_rect_params);
+  BrowserPluginMsg_UpdateRect msg(instance_id, update_rect_params);
   browser_plugin->OnMessageReceived(msg);
 
   // Verify that the autosize state has been updated.
