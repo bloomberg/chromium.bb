@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/time.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/base/animation/animation_delegate.h"
 
@@ -128,6 +129,9 @@ class APP_LIST_EXPORT PaginationModel : public ui::AnimationDelegate {
   scoped_ptr<ui::SlideAnimation> transition_animation_;
   int transition_duration_ms_;  // Transition duration in millisecond.
   int overscroll_transition_duration_ms_;
+
+  int last_overscroll_target_page_;
+  base::TimeTicks last_overscroll_animation_start_time_;
 
   ObserverList<PaginationModelObserver> observers_;
 

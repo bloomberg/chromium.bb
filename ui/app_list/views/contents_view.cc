@@ -231,6 +231,7 @@ void ContentsView::OnScrollEvent(ui::ScrollEvent* event) {
                                           true);
   }
   event->SetHandled();
+  event->StopPropagation();
 }
 
 }  // namespace app_list
