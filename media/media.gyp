@@ -864,6 +864,7 @@
         'audio/win/audio_output_win_unittest.cc',
         'audio/win/audio_unified_win_unittest.cc',
         'audio/win/core_audio_util_win_unittest.cc',
+        'base/android/media_codec_bridge_unittest.cc',
         'base/audio_bus_unittest.cc',
         'base/audio_converter_unittest.cc',
         'base/audio_fifo_unittest.cc',
@@ -993,6 +994,7 @@
             ['gtest_target_type == "shared_library"', {
               'dependencies': [
                 '../testing/android/native_test.gyp:native_test_native_code',
+                'player_android',
               ],
             }],
           ],
@@ -1430,9 +1432,31 @@
           'includes': [ '../build/jni_generator.gypi' ],
         },
         {
+          'target_name': 'media_codec_jni_headers',
+          'type': 'none',
+          'variables': {
+            'jni_gen_dir': 'media',
+            'input_java_class': 'android/media/MediaCodec.class',
+            'input_jar_file': '<(android_sdk)/android.jar',
+          },
+          'includes': [ '../build/jar_file_jni_generator.gypi' ],
+        },
+        {
+          'target_name': 'media_format_jni_headers',
+          'type': 'none',
+          'variables': {
+            'jni_gen_dir': 'media',
+            'input_java_class': 'android/media/MediaFormat.class',
+            'input_jar_file': '<(android_sdk)/android.jar',
+          },
+          'includes': [ '../build/jar_file_jni_generator.gypi' ],
+        },
+        {
           'target_name': 'player_android',
           'type': 'static_library',
           'sources': [
+            'base/android/media_codec_bridge.cc',
+            'base/android/media_codec_bridge.h',
             'base/android/media_jni_registrar.cc',
             'base/android/media_jni_registrar.h',
             'base/android/media_player_bridge.cc',
@@ -1442,6 +1466,8 @@
           ],
           'dependencies': [
             '../base/base.gyp:base',
+            'media_codec_jni_headers',
+            'media_format_jni_headers',
             'player_android_jni_headers',
           ],
           'include_dirs': [

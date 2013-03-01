@@ -9626,7 +9626,9 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
   }
 
   copy_texture_CHROMIUM_->DoCopyTexture(this,
-                                        target, source_info->service_id(),
+                                        source_info->target(),
+                                        dest_info->target(),
+                                        source_info->service_id(),
                                         dest_info->service_id(), level,
                                         source_width, source_height,
                                         unpack_flip_y_,

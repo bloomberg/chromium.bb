@@ -32,6 +32,8 @@
 #elif defined(OS_MACOSX)
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "content/common/gpu/media/mac_video_decode_accelerator.h"
+#elif defined(OS_ANDROID)
+#include "content/common/gpu/media/android_video_decode_accelerator.h"
 #endif
 
 #include "gpu/command_buffer/service/texture_manager.h"
@@ -205,6 +207,11 @@ void GpuVideoDecodeAccelerator::Initialize(
       static_cast<CGLContextObj>(
           stub_->decoder()->GetGLContext()->GetHandle()),
       this));
+#elif defined(OS_ANDROID)
+  video_decode_accelerator_.reset(new AndroidVideoDecodeAccelerator(
+      this,
+      stub_->decoder()->AsWeakPtr(),
+      make_context_current_));
 #else
   NOTIMPLEMENTED() << "HW video decode acceleration not available.";
   NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);

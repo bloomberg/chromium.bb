@@ -897,6 +897,8 @@
       ],
     }],
     ['chromeos==1 or OS=="win" or OS=="mac"', {
+      # TODO(felipeg): Make video_decode_accelerator_unittest work on Android.
+      # http://crbug.com/178647
       'targets': [
           {
             'target_name': 'video_decode_accelerator_unittest',

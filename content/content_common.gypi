@@ -487,6 +487,15 @@
         '../gpu/gpu.gyp:command_buffer_service',
       ],
     }],
+    ['OS=="android"', {
+      'dependencies': [
+        '../media/media.gyp:media',
+      ],
+      'sources': [
+        'common/gpu/media/android_video_decode_accelerator.cc',
+        'common/gpu/media/android_video_decode_accelerator.h',
+      ],
+    }],
     ['target_arch=="arm" and chromeos == 1', {
       'dependencies': [
         '../media/media.gyp:media',

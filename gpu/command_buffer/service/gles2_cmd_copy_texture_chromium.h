@@ -24,8 +24,8 @@ class CopyTextureCHROMIUMResourceManager {
   void Initialize(const gles2::GLES2Decoder* decoder);
   void Destroy();
 
-  void DoCopyTexture(const gles2::GLES2Decoder* decoder,
-                     GLenum target, GLuint source_id, GLuint dest_id,
+  void DoCopyTexture(const gles2::GLES2Decoder* decoder, GLenum source_target,
+                     GLenum dest_target, GLuint source_id, GLuint dest_id,
                      GLint level, GLsizei width, GLsizei height,
                      bool flip_y, bool premultiply_alpha,
                      bool unpremultiply_alpha);
@@ -37,7 +37,7 @@ class CopyTextureCHROMIUMResourceManager {
  private:
   bool initialized_;
 
-  static const int kNumPrograms = 6;
+  static const int kNumPrograms = 12;
   GLuint programs_[kNumPrograms];
   GLuint buffer_ids_[2];
   GLuint framebuffer_;

@@ -28,7 +28,7 @@ const GLfloat kTextureCoords[] = { 0.0f, 0.0f,
                                    1.0f, 1.0f,
                                    0.0f, 1.0f };
 
-const int kNumShaders = 7;
+const int kNumShaders = 13;
 enum ShaderId {
   VERTEX_SHADER_POS_TEX,
   FRAGMENT_SHADER_TEX,
@@ -36,7 +36,13 @@ enum ShaderId {
   FRAGMENT_SHADER_TEX_PREMULTIPLY_ALPHA,
   FRAGMENT_SHADER_TEX_UNPREMULTIPLY_ALPHA,
   FRAGMENT_SHADER_TEX_PREMULTIPLY_ALPHA_FLIP_Y,
-  FRAGMENT_SHADER_TEX_UNPREMULTIPLY_ALPHA_FLIP_Y
+  FRAGMENT_SHADER_TEX_UNPREMULTIPLY_ALPHA_FLIP_Y,
+  FRAGMENT_SHADER_TEX_OES,
+  FRAGMENT_SHADER_TEX_OES_FLIP_Y,
+  FRAGMENT_SHADER_TEX_OES_PREMULTIPLY_ALPHA,
+  FRAGMENT_SHADER_TEX_OES_UNPREMULTIPLY_ALPHA,
+  FRAGMENT_SHADER_TEX_OES_PREMULTIPLY_ALPHA_FLIP_Y,
+  FRAGMENT_SHADER_TEX_OES_UNPREMULTIPLY_ALPHA_FLIP_Y
 };
 
 enum ProgramId {
@@ -45,18 +51,43 @@ enum ProgramId {
   PROGRAM_COPY_TEXTURE_PREMULTIPLY_ALPHA,
   PROGRAM_COPY_TEXTURE_UNPREMULTIPLY_ALPHA,
   PROGRAM_COPY_TEXTURE_PREMULTIPLY_ALPHA_FLIPY,
-  PROGRAM_COPY_TEXTURE_UNPREMULTIPLY_ALPHA_FLIPY
+  PROGRAM_COPY_TEXTURE_UNPREMULTIPLY_ALPHA_FLIPY,
+  PROGRAM_COPY_TEXTURE_OES,
+  PROGRAM_COPY_TEXTURE_OES_FLIP_Y,
+  PROGRAM_COPY_TEXTURE_OES_PREMULTIPLY_ALPHA,
+  PROGRAM_COPY_TEXTURE_OES_UNPREMULTIPLY_ALPHA,
+  PROGRAM_COPY_TEXTURE_OES_PREMULTIPLY_ALPHA_FLIPY,
+  PROGRAM_COPY_TEXTURE_OES_UNPREMULTIPLY_ALPHA_FLIPY
 };
 
 // Returns the correct program to evaluate the copy operation for
 // the CHROMIUM_flipy and premultiply alpha pixel store settings.
 ProgramId GetProgram(bool flip_y, bool premultiply_alpha,
-                     bool unpremultiply_alpha) {
+                     bool unpremultiply_alpha, bool is_source_external_oes) {
   // If both pre-multiply and unpremultiply are requested, then perform no
   // alpha manipulation.
   if (premultiply_alpha && unpremultiply_alpha) {
     premultiply_alpha = false;
     unpremultiply_alpha = false;
+  }
+
+  if (is_source_external_oes) {
+    if (flip_y && premultiply_alpha)
+      return PROGRAM_COPY_TEXTURE_OES_PREMULTIPLY_ALPHA_FLIPY;
+
+    if (flip_y && unpremultiply_alpha)
+      return PROGRAM_COPY_TEXTURE_OES_UNPREMULTIPLY_ALPHA_FLIPY;
+
+    if (flip_y)
+      return PROGRAM_COPY_TEXTURE_OES_FLIP_Y;
+
+    if (premultiply_alpha)
+      return PROGRAM_COPY_TEXTURE_OES_PREMULTIPLY_ALPHA;
+
+    if (unpremultiply_alpha)
+      return PROGRAM_COPY_TEXTURE_OES_UNPREMULTIPLY_ALPHA;
+
+    return PROGRAM_COPY_TEXTURE_OES;
   }
 
   if (flip_y && premultiply_alpha)
@@ -136,6 +167,70 @@ const char* GetShaderSource(ShaderId shader) {
           if (gl_FragColor.a > 0.0)
             gl_FragColor.rgb /= gl_FragColor.a;
         });
+    case FRAGMENT_SHADER_TEX_OES:
+      // Cannot use the SHADER() macro because of the '#' char
+      return
+          "#extension GL_OES_EGL_image_external : require\n"
+          "precision mediump float;\n"
+          "uniform samplerExternalOES u_texSampler;\n"
+          "varying vec2 v_uv;\n"
+          "void main(void) {\n"
+          "  gl_FragColor = texture2D(u_texSampler, v_uv.st);\n"
+          "}\n";
+    case FRAGMENT_SHADER_TEX_OES_FLIP_Y:
+      return
+          "#extension GL_OES_EGL_image_external : require\n"
+          "precision mediump float;\n"
+          "uniform samplerExternalOES u_texSampler;\n"
+          "varying vec2 v_uv;\n"
+          "void main(void) {\n"
+          "  gl_FragColor =\n"
+          "      texture2D(u_texSampler, vec2(v_uv.s, 1.0 - v_uv.t));\n"
+          "}\n";
+    case FRAGMENT_SHADER_TEX_OES_PREMULTIPLY_ALPHA:
+      return
+          "#extension GL_OES_EGL_image_external : require\n"
+          "precision mediump float;\n"
+          "uniform samplerExternalOES u_texSampler;\n"
+          "varying vec2 v_uv;\n"
+          "void main(void) {\n"
+          "  gl_FragColor = texture2D(u_texSampler, v_uv.st);\n"
+          "  gl_FragColor.rgb *= gl_FragColor.a;\n"
+          "}\n";
+    case FRAGMENT_SHADER_TEX_OES_UNPREMULTIPLY_ALPHA:
+      return
+          "#extension GL_OES_EGL_image_external : require\n"
+          "precision mediump float;\n"
+          "uniform samplerExternalOES u_texSampler;\n"
+          "varying vec2 v_uv;\n"
+          "void main(void) {\n"
+          "  gl_FragColor = texture2D(u_texSampler, v_uv.st);\n"
+          "  if (gl_FragColor.a > 0.0)\n"
+          "    gl_FragColor.rgb /= gl_FragColor.a;\n"
+          "}\n";
+    case FRAGMENT_SHADER_TEX_OES_PREMULTIPLY_ALPHA_FLIP_Y:
+      return
+          "#extension GL_OES_EGL_image_external : require\n"
+          "precision mediump float;\n"
+          "uniform samplerExternalOES u_texSampler;\n"
+          "varying vec2 v_uv;\n"
+          "void main(void) {\n"
+          "  gl_FragColor =\n"
+          "      texture2D(u_texSampler, vec2(v_uv.s, 1.0 - v_uv.t));\n"
+          "  gl_FragColor.rgb *= gl_FragColor.a;\n"
+          "}\n";
+    case FRAGMENT_SHADER_TEX_OES_UNPREMULTIPLY_ALPHA_FLIP_Y:
+      return
+          "#extension GL_OES_EGL_image_external : require\n"
+          "precision mediump float;\n"
+          "uniform samplerExternalOES u_texSampler;\n"
+          "varying vec2 v_uv;\n"
+          "void main(void) {\n"
+          "  gl_FragColor =\n"
+          "      texture2D(u_texSampler, vec2(v_uv.s, 1.0 - v_uv.t));\n"
+          "  if (gl_FragColor.a > 0.0)\n"
+          "    gl_FragColor.rgb /= gl_FragColor.a;\n"
+          "}\n";
     default:
       return 0;
   }
@@ -224,7 +319,8 @@ void CopyTextureCHROMIUMResourceManager::Destroy() {
 
 void CopyTextureCHROMIUMResourceManager::DoCopyTexture(
     const gles2::GLES2Decoder* decoder,
-    GLenum target,
+    GLenum source_target,
+    GLenum dest_target,
     GLuint source_id,
     GLuint dest_id,
     GLint level,
@@ -233,12 +329,16 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTexture(
     bool flip_y,
     bool premultiply_alpha,
     bool unpremultiply_alpha) {
+  DCHECK(source_target == GL_TEXTURE_2D ||
+         source_target == GL_TEXTURE_EXTERNAL_OES);
   if (!initialized_) {
     DLOG(ERROR) << "CopyTextureCHROMIUM: Uninitialized manager.";
     return;
   }
 
-  GLuint program = GetProgram(flip_y, premultiply_alpha, unpremultiply_alpha);
+  GLuint program = GetProgram(
+      flip_y, premultiply_alpha, unpremultiply_alpha,
+      source_target == GL_TEXTURE_EXTERNAL_OES);
   glUseProgram(programs_[program]);
 
 #ifndef NDEBUG
@@ -260,7 +360,7 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTexture(
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebuffer_);
-  glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target,
+  glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, dest_target,
                             dest_id, level);
 
 #ifndef NDEBUG
@@ -283,11 +383,11 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTexture(
 
     glUniform1i(sampler_locations_[program], 0);
 
-    glBindTexture(GL_TEXTURE_2D, source_id);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glBindTexture(source_target, source_id);
+    glTexParameterf(source_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(source_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(source_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(source_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_SCISSOR_TEST);
