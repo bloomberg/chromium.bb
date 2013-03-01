@@ -287,3 +287,5 @@ v8.log
 /webpagereplay_logs/
 /x86-generic_out/
 /xcodebuild
+cscope.*
+Session.vim
