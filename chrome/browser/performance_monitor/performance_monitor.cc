@@ -43,7 +43,10 @@
 using content::BrowserThread;
 using extensions::Extension;
 
+namespace performance_monitor {
+
 namespace {
+
 const uint32 kAccessFlags = base::kProcessAccessDuplicateHandle |
                             base::kProcessAccessQueryInformation |
                             base::kProcessAccessTerminate |
@@ -81,9 +84,13 @@ bool MaybeGetURLFromRenderView(const content::RenderViewHost* view,
   return true;
 }
 
-}  // namespace
+// Takes ownership of and deletes |database| on the background thread, so as to
+// avoid destruction in the middle of an operation.
+void DeleteDatabaseOnBackgroundThread(Database* database) {
+  delete database;
+}
 
-namespace performance_monitor {
+}  // namespace
 
 bool PerformanceMonitor::initialized_ = false;
 
@@ -96,6 +103,10 @@ PerformanceMonitor::PerformanceMonitor() : database_(NULL),
 }
 
 PerformanceMonitor::~PerformanceMonitor() {
+  BrowserThread::PostBlockingPoolSequencedTask(
+      Database::kDatabaseSequenceToken,
+      FROM_HERE,
+      base::Bind(&DeleteDatabaseOnBackgroundThread, database_.release()));
 }
 
 bool PerformanceMonitor::SetDatabasePath(const base::FilePath& path) {
