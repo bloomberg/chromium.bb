@@ -56,6 +56,18 @@ base::FilePath GetWebKitRootDirFilePath() {
   return base_path;
 }
 
+base::FilePath GetChromiumRootDirFilePath() {
+  base::FilePath webkit_path = GetWebKitRootDirFilePath();
+  if (file_util::PathExists(webkit_path.Append(
+          FILE_PATH_LITERAL("Source/WebKit/chromium/webkit/support")))) {
+    // We're in a WebKit-only checkout.
+    return webkit_path.Append(FILE_PATH_LITERAL("Source/WebKit/chromium"));
+  } else {
+    // We're in a Chromium checkout, and WebKit is in third_party/WebKit.
+    return webkit_path.Append(FILE_PATH_LITERAL("../.."));
+  }
+}
+
 }  // namespace
 
 ShellContentBrowserClient::ShellContentBrowserClient()
@@ -63,6 +75,14 @@ ShellContentBrowserClient::ShellContentBrowserClient()
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     return;
   webkit_source_dir_ = GetWebKitRootDirFilePath();
+  base::FilePath dictionary_file_path = GetChromiumRootDirFilePath().Append(
+      FILE_PATH_LITERAL("third_party/hyphen/hyph_en_US.dic"));
+  file_util::AbsolutePath(&dictionary_file_path);
+  hyphen_dictionary_file_ = base::CreatePlatformFile(dictionary_file_path,
+                                                     base::PLATFORM_FILE_READ |
+                                                     base::PLATFORM_FILE_OPEN,
+                                                     NULL,
+                                                     NULL);
 }
 
 ShellContentBrowserClient::~ShellContentBrowserClient() {
@@ -85,6 +105,13 @@ void ShellContentBrowserClient::RenderProcessHostCreated(
       BrowserContext::GetDefaultStoragePartition(browser_context())
           ->GetQuotaManager()));
   host->Send(new ShellViewMsg_SetWebKitSourceDir(webkit_source_dir_));
+
+  IPC::PlatformFileForTransit file = IPC::InvalidPlatformFileForTransit();
+  if (hyphen_dictionary_file_ != base::kInvalidPlatformFileValue) {
+    file = IPC::GetFileHandleForProcess(
+        hyphen_dictionary_file_, host->GetHandle(), false);
+  }
+  host->Send(new ShellViewMsg_LoadHyphenDictionary(file));
 }
 
 net::URLRequestContextGetter* ShellContentBrowserClient::CreateRequestContext(

@@ -20,11 +20,13 @@
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestInterfaces.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestProxy.h"
 #include "v8/include/v8.h"
+#include "webkit/mocks/mock_webhyphenator.h"
 #include "webkit/tools/test_shell/mock_webclipboard_impl.h"
 #include "webkit/tools/test_shell/test_shell_webmimeregistry_impl.h"
 
 using WebKit::WebClipboard;
 using WebKit::WebFrame;
+using WebKit::WebHyphenator;
 using WebKit::WebMediaStreamCenter;
 using WebKit::WebMediaStreamCenterClient;
 using WebKit::WebMimeRegistry;
@@ -47,6 +49,14 @@ ShellContentRendererClient::ShellContentRendererClient() {
 }
 
 ShellContentRendererClient::~ShellContentRendererClient() {
+}
+
+void ShellContentRendererClient::LoadHyphenDictionary(
+    base::PlatformFile dict_file) {
+  if (!hyphenator_)
+    hyphenator_.reset(new webkit_glue::MockWebHyphenator);
+  base::SeekPlatformFile(dict_file, base::PLATFORM_FILE_FROM_BEGIN, 0);
+  hyphenator_->LoadDictionary(dict_file);
 }
 
 void ShellContentRendererClient::RenderThreadStarted() {
@@ -128,6 +138,15 @@ WebMimeRegistry* ShellContentRendererClient::OverrideWebMimeRegistry() {
   if (!mime_registry_)
     mime_registry_.reset(new TestShellWebMimeRegistryImpl);
   return mime_registry_.get();
+}
+
+WebHyphenator* ShellContentRendererClient::OverrideWebHyphenator() {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+    return NULL;
+  if (!hyphenator_)
+    hyphenator_.reset(new webkit_glue::MockWebHyphenator);
+  return hyphenator_.get();
+
 }
 
 void ShellContentRendererClient::WebTestProxyCreated(RenderView* render_view,

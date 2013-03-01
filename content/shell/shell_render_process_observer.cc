@@ -5,9 +5,11 @@
 #include "content/shell/shell_render_process_observer.h"
 
 #include "base/command_line.h"
+#include "content/public/common/content_client.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/test/layouttest_support.h"
+#include "content/shell/shell_content_renderer_client.h"
 #include "content/shell/shell_messages.h"
 #include "content/shell/shell_switches.h"
 #include "content/shell/webkit_test_runner.h"
@@ -95,6 +97,8 @@ bool ShellRenderProcessObserver::OnControlMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(ShellRenderProcessObserver, message)
     IPC_MESSAGE_HANDLER(ShellViewMsg_ResetAll, OnResetAll)
     IPC_MESSAGE_HANDLER(ShellViewMsg_SetWebKitSourceDir, OnSetWebKitSourceDir)
+    IPC_MESSAGE_HANDLER(ShellViewMsg_LoadHyphenDictionary,
+                        OnLoadHyphenDictionary)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -113,6 +117,15 @@ void ShellRenderProcessObserver::OnResetAll() {
 void ShellRenderProcessObserver::OnSetWebKitSourceDir(
     const base::FilePath& webkit_source_dir) {
   webkit_source_dir_ = webkit_source_dir;
+}
+
+void ShellRenderProcessObserver::OnLoadHyphenDictionary(
+    const IPC::PlatformFileForTransit& dict_file) {
+  ShellContentRendererClient* renderer_client =
+      static_cast<content::ShellContentRendererClient*>(
+          content::GetContentClient()->renderer());
+  renderer_client->LoadHyphenDictionary(
+      IPC::PlatformFileForTransitToPlatformFile(dict_file));
 }
 
 }  // namespace content
