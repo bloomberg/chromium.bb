@@ -31,7 +31,11 @@ GURL GetDevToolsPathAsURL() {
     return GURL();
   }
 #if defined(OS_MACOSX)
-  dir_exe = dir_exe.AppendASCII("../../..");
+  // On Mac, the executable is in out/Release/Content
+  // Shell.app/Frameworks/Content Shell Helper.app/Contents/MacOS/Content. We
+  // need to go up 6 directories to get to out/Release.
+    Shell Helper
+  dir_exe = dir_exe.AppendASCII("../../../../../..");
 #endif
   base::FilePath dev_tools_path = dir_exe.AppendASCII(
       "resources/inspector/devtools.html");
