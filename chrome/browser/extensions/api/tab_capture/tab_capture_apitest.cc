@@ -33,15 +33,10 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTests) {
                                   "api_tests.html")) << message_;
 }
 
-// TODO(miu): Remove this disabling of Win dbg runs once we confirm the test
-// does not time-out on all other platforms.  See http://crbug.com/174640
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_EndToEnd DISABLED_EndToEnd
-#else
-#define MAYBE_EndToEnd EndToEnd
-#endif
-
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_EndToEnd) {
+// TODO(miu): Disabled until the two most-likely sources of the "flaky timeouts"
+// are resolved: 1) http://crbug.com/177163 and 2) http://crbug.com/174519.
+// See http://crbug.com/174640.
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, DISABLED_EndToEnd) {
   extensions::FeatureSwitch::ScopedOverride tab_capture(
       extensions::FeatureSwitch::tab_capture(), true);
   ASSERT_TRUE(RunExtensionSubtest("tab_capture/experimental",
