@@ -164,7 +164,8 @@ function GestureConfig() {
     {
       key: 'semi_long_press_time_in_seconds',
       label: 'Semi Long Press Time',
-      units: 'seconds'
+      units: 'seconds',
+      step: 0.1
     },
     {
       key: 'max_seconds_between_double_click',

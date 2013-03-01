@@ -73,7 +73,7 @@ struct WorkspaceCyclerPref {
 
 const std::vector<WorkspaceCyclerPref>& GetWorkspaceCyclerPrefs() {
   CR_DEFINE_STATIC_LOCAL(std::vector<WorkspaceCyclerPref>, cycler_prefs, ());
-  if (cycler_prefs.empty() && WorkspaceCyclerConfiguration::IsCyclerEnabled()) {
+  if (cycler_prefs.empty()) {
     const WorkspaceCyclerPref kCyclerPrefs[] = {
       { prefs::kWorkspaceCyclerShallowerThanSelectedYOffsets,
         WorkspaceCyclerConfiguration::SHALLOWER_THAN_SELECTED_Y_OFFSETS },
