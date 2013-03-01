@@ -891,6 +891,7 @@
         <structure type="chrome_scaled_image" name="IDR_USER_IMAGE_NO_VIDEO" file="no_video.png" />
         <structure type="chrome_scaled_image" name="IDR_USER_IMAGE_RECYCLE" file="discard_wide.png" />
       </if>
+      <structure type="chrome_scaled_image" name="IDR_WALLET_ICON" file="wallet.png" />
       <structure type="chrome_scaled_image" name="IDR_WARNING" file="alert_small.png" />
       <structure type="chrome_scaled_image" name="IDR_WEB_INTENT_PROGRESS_BACKGROUND" file="common/web_intent_progress_background.png" />
       <structure type="chrome_scaled_image" name="IDR_WEB_INTENT_PROGRESS_FOREGROUND" file="common/web_intent_progress_foreground.png" />
