@@ -429,7 +429,7 @@ SyncSchedulerImpl::JobProcessDecision SyncSchedulerImpl::DecideOnJob(
     // Note that there may already be such an event if we're in a WaitInterval,
     // so we can retry it then.
     if (!requested_types.Empty() && throttled_types.HasAll(requested_types))
-      return SAVE;
+      return DROP;  // TODO(tim): Don't drop. http://crbug.com/177659
   }
 
   if (wait_interval_.get())
