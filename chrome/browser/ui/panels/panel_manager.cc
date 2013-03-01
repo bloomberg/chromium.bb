@@ -357,14 +357,18 @@ void PanelManager::OnPanelClosed(Panel* panel) {
   collection->RemovePanel(panel, PanelCollection::PANEL_CLOSED);
 
   // If only one panel is left in the stack, move it out of the stack.
+  // Also make sure that this detached panel will be expanded if not yet.
   if (collection->type() == PanelCollection::STACKED) {
     StackedPanelCollection* stack =
         static_cast<StackedPanelCollection*>(collection);
     DCHECK_GE(stack->num_panels(), 1);
     if (stack->num_panels() == 1) {
-      MovePanelToCollection(stack->top_panel(),
+      Panel* top_panel = stack->top_panel();
+      MovePanelToCollection(top_panel,
                             detached_collection(),
                             PanelCollection::DEFAULT_POSITION);
+      if (top_panel->expansion_state() != Panel::EXPANDED)
+        top_panel->SetExpansionState(Panel::EXPANDED);
       RemoveStack(stack);
     }
   }
