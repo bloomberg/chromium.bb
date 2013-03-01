@@ -9,6 +9,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_comptr.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
@@ -209,11 +210,14 @@ void AccessibilityWinBrowserTest::LoadInitialAccessibilityTreeFromHtml(
   // the renderer switches accessibility on, it will send a Layout Complete
   // accessibility notification containing the full accessibility tree, which
   // we can wait for.
-  WindowedNotificationObserver tree_updated_observer(
-      NOTIFICATION_ACCESSIBILITY_LAYOUT_COMPLETE,
-      NotificationService::AllSources());
+  scoped_refptr<MessageLoopRunner> loop_runner(new MessageLoopRunner);
+  WebContents* web_contents = shell()->web_contents();
+  RenderViewHostImpl* view_host = static_cast<RenderViewHostImpl*>(
+      web_contents->GetRenderViewHost());
+  view_host->SetAccessibilityLayoutCompleteCallbackForTesting(
+      loop_runner->QuitClosure());
   GetRendererAccessible();
-  tree_updated_observer.Wait();
+  loop_runner->Run();
 }
 
 // Retrieve the MSAA client accessibility object for the Render Widget Host View
@@ -483,11 +487,14 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 
   // Set focus to the radio group.
-  WindowedNotificationObserver tree_updated_observer(
-      NOTIFICATION_ACCESSIBILITY_OTHER,
-      NotificationService::AllSources());
+  scoped_refptr<MessageLoopRunner> loop_runner(new MessageLoopRunner);
+  WebContents* web_contents = shell()->web_contents();
+  RenderViewHostImpl* view_host = static_cast<RenderViewHostImpl*>(
+      web_contents->GetRenderViewHost());
+  view_host->SetAccessibilityOtherCallbackForTesting(
+      loop_runner->QuitClosure());
   ExecuteScript(L"document.body.children[0].focus()");
-  tree_updated_observer.Wait();
+  loop_runner->Run();
 
   // Check that the accessibility tree of the browser has been updated.
   radio_group_checker.SetExpectedState(
@@ -495,12 +502,12 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 
   // Set the active descendant of the radio group
-  WindowedNotificationObserver tree_updated_observer3(
-      NOTIFICATION_ACCESSIBILITY_OTHER,
-      NotificationService::AllSources());
+  loop_runner = new MessageLoopRunner;
+  view_host->SetAccessibilityOtherCallbackForTesting(
+      loop_runner->QuitClosure());
   ExecuteScript(
       L"document.body.children[0].setAttribute('aria-activedescendant', 'li')");
-  tree_updated_observer3.Wait();
+  loop_runner->Run();
 
   // Check that the accessibility tree of the browser has been updated.
   list_item_checker.SetExpectedState(
@@ -524,11 +531,14 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 
   // Check the checkbox.
-  WindowedNotificationObserver tree_updated_observer(
-      NOTIFICATION_ACCESSIBILITY_OTHER,
-      NotificationService::AllSources());
+  scoped_refptr<MessageLoopRunner> loop_runner(new MessageLoopRunner);
+  WebContents* web_contents = shell()->web_contents();
+  RenderViewHostImpl* view_host = static_cast<RenderViewHostImpl*>(
+      web_contents->GetRenderViewHost());
+  view_host->SetAccessibilityOtherCallbackForTesting(
+      loop_runner->QuitClosure());
   ExecuteScript(L"document.body.children[0].checked=true");
-  tree_updated_observer.Wait();
+  loop_runner->Run();
 
   // Check that the accessibility tree of the browser has been updated.
   checkbox_checker.SetExpectedState(
@@ -548,11 +558,14 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 
   // Change the children of the document body.
-  WindowedNotificationObserver tree_updated_observer(
-      NOTIFICATION_ACCESSIBILITY_OTHER,
-      NotificationService::AllSources());
+  scoped_refptr<MessageLoopRunner> loop_runner(new MessageLoopRunner);
+  WebContents* web_contents = shell()->web_contents();
+  RenderViewHostImpl* view_host = static_cast<RenderViewHostImpl*>(
+      web_contents->GetRenderViewHost());
+  view_host->SetAccessibilityOtherCallbackForTesting(
+      loop_runner->QuitClosure());
   ExecuteScript(L"document.body.innerHTML='<b>new text</b>'");
-  tree_updated_observer.Wait();
+  loop_runner->Run();
 
   // Check that the accessibility tree of the browser has been updated.
   AccessibleChecker text_checker(L"new text", ROLE_SYSTEM_TEXT, L"");
@@ -571,11 +584,14 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 
   // Change the children of the document body.
-  WindowedNotificationObserver tree_updated_observer2(
-      NOTIFICATION_ACCESSIBILITY_OTHER,
-      NotificationService::AllSources());
+  scoped_refptr<MessageLoopRunner> loop_runner(new MessageLoopRunner);
+  WebContents* web_contents = shell()->web_contents();
+  RenderViewHostImpl* view_host = static_cast<RenderViewHostImpl*>(
+      web_contents->GetRenderViewHost());
+  view_host->SetAccessibilityOtherCallbackForTesting(
+      loop_runner->QuitClosure());
   ExecuteScript(L"document.body.children[0].style.visibility='visible'");
-  tree_updated_observer2.Wait();
+  loop_runner->Run();
 
   // Check that the accessibility tree of the browser has been updated.
   AccessibleChecker static_text_checker(L"text", ROLE_SYSTEM_TEXT, L"");
@@ -600,11 +616,14 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 
   // Focus the div in the document
-  WindowedNotificationObserver tree_updated_observer(
-      NOTIFICATION_ACCESSIBILITY_OTHER,
-      NotificationService::AllSources());
+  scoped_refptr<MessageLoopRunner> loop_runner(new MessageLoopRunner);
+  WebContents* web_contents = shell()->web_contents();
+  RenderViewHostImpl* view_host = static_cast<RenderViewHostImpl*>(
+      web_contents->GetRenderViewHost());
+  view_host->SetAccessibilityOtherCallbackForTesting(
+      loop_runner->QuitClosure());
   ExecuteScript(L"document.body.children[0].focus()");
-  tree_updated_observer.Wait();
+  loop_runner->Run();
 
   // Check that the accessibility tree of the browser has been updated.
   SCOPED_TRACE("Check updated tree after focusing div");
@@ -613,16 +632,16 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 
   // Focus the document accessible. This will un-focus the current node.
-  WindowedNotificationObserver tree_updated_observer2(
-      NOTIFICATION_ACCESSIBILITY_OTHER,
-      NotificationService::AllSources());
+  loop_runner = new MessageLoopRunner;
+  view_host->SetAccessibilityOtherCallbackForTesting(
+      loop_runner->QuitClosure());
   base::win::ScopedComPtr<IAccessible> document_accessible(
       GetRendererAccessible());
   ASSERT_NE(document_accessible.get(), reinterpret_cast<IAccessible*>(NULL));
   HRESULT hr = document_accessible->accSelect(
     SELFLAG_TAKEFOCUS, CreateI4Variant(CHILDID_SELF));
   ASSERT_EQ(S_OK, hr);
-  tree_updated_observer2.Wait();
+  loop_runner->Run();
 
   // Check that the accessibility tree of the browser has been updated.
   SCOPED_TRACE("Check updated tree after focusing document again");
@@ -645,11 +664,14 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 
   // Set the value of the text control
-  WindowedNotificationObserver tree_updated_observer(
-      NOTIFICATION_ACCESSIBILITY_OTHER,
-      NotificationService::AllSources());
+  scoped_refptr<MessageLoopRunner> loop_runner(new MessageLoopRunner);
+  WebContents* web_contents = shell()->web_contents();
+  RenderViewHostImpl* view_host = static_cast<RenderViewHostImpl*>(
+      web_contents->GetRenderViewHost());
+  view_host->SetAccessibilityOtherCallbackForTesting(
+      loop_runner->QuitClosure());
   ExecuteScript(L"document.body.children[0].value='new value'");
-  tree_updated_observer.Wait();
+  loop_runner->Run();
 
   // Check that the accessibility tree of the browser has been updated.
   text_field_checker.SetExpectedValue(L"new value");

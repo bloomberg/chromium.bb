@@ -422,6 +422,14 @@ class CONTENT_EXPORT RenderViewHostImpl
     return accessibility_tree_;
   }
 
+  // Set accessibility callbacks.
+  void SetAccessibilityLayoutCompleteCallbackForTesting(
+      const base::Closure& callback);
+  void SetAccessibilityLoadCompleteCallbackForTesting(
+      const base::Closure& callback);
+  void SetAccessibilityOtherCallbackForTesting(
+      const base::Closure& callback);
+
   bool is_waiting_for_unload_ack_for_testing() {
     return is_waiting_for_unload_ack_;
   }
@@ -646,6 +654,11 @@ class CONTENT_EXPORT RenderViewHostImpl
   // ExecuteJavascriptInWebFrameCallbackResult and their corresponding
   // callbacks.
   std::map<int, JavascriptResultCallback> javascript_callbacks_;
+
+  // Accessibility callbacks.
+  base::Closure accessibility_layout_callback_;
+  base::Closure accessibility_load_callback_;
+  base::Closure accessibility_other_callback_;
 
   // True if the render view can be shut down suddenly.
   bool sudden_termination_allowed_;

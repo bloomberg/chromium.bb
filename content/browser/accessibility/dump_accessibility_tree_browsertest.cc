@@ -18,8 +18,6 @@
 #include "content/browser/accessibility/dump_accessibility_tree_helper.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/port/browser/render_widget_host_view_port.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/test_utils.h"
@@ -28,14 +26,16 @@
 #include "content/test/content_browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-  static const char kCommentToken = '#';
-  static const char* kMarkSkipFile = "#<skip";
-  static const char* kMarkEndOfFile = "<-- End-of-file -->";
-  static const char* kSignalDiff = "*";
-} // namespace
-
 namespace content {
+
+namespace {
+
+const char kCommentToken = '#';
+const char kMarkSkipFile[] = "#<skip";
+const char kMarkEndOfFile[] = "<-- End-of-file -->";
+const char kSignalDiff[] = "*";
+
+}  // namespace
 
 typedef DumpAccessibilityTreeHelper::Filter Filter;
 
@@ -166,17 +166,17 @@ void DumpAccessibilityTreeTest::RunTest(
   }
 
   // Load the page.
-  WindowedNotificationObserver tree_updated_observer(
-      NOTIFICATION_ACCESSIBILITY_LOAD_COMPLETE,
-      NotificationService::AllSources());
   string16 html_contents16;
   html_contents16 = UTF8ToUTF16(html_contents);
   GURL url = GetTestUrl("accessibility",
                         html_file.BaseName().MaybeAsASCII().c_str());
+  scoped_refptr<MessageLoopRunner> loop_runner(new MessageLoopRunner);
+  view_host->SetAccessibilityLoadCompleteCallbackForTesting(
+      loop_runner->QuitClosure());
   NavigateToURL(shell(), url);
 
   // Wait for the tree.
-  tree_updated_observer.Wait();
+  loop_runner->Run();
 
   // Perform a diff (or write the initial baseline).
   string16 actual_contents_utf16;

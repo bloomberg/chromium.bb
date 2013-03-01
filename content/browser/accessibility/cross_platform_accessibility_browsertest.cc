@@ -33,17 +33,17 @@ class CrossPlatformAccessibilityBrowserTest : public ContentBrowserTest {
   // notification that it's been received.
   const AccessibilityNodeData& GetAccessibilityNodeDataTree(
       AccessibilityMode accessibility_mode = AccessibilityModeComplete) {
-    WindowedNotificationObserver tree_updated_observer(
-        NOTIFICATION_ACCESSIBILITY_LAYOUT_COMPLETE,
-        NotificationService::AllSources());
+    scoped_refptr<MessageLoopRunner> loop_runner(new MessageLoopRunner);
     RenderWidgetHostView* host_view =
         shell()->web_contents()->GetRenderWidgetHostView();
     RenderWidgetHostImpl* host =
         RenderWidgetHostImpl::From(host_view->GetRenderWidgetHost());
     RenderViewHostImpl* view_host = static_cast<RenderViewHostImpl*>(host);
+    view_host->SetAccessibilityLayoutCompleteCallbackForTesting(
+        loop_runner->QuitClosure());
     view_host->set_save_accessibility_tree_for_testing(true);
     view_host->SetAccessibilityMode(accessibility_mode);
-    tree_updated_observer.Wait();
+    loop_runner->Run();
     return view_host->accessibility_tree_for_testing();
   }
 
