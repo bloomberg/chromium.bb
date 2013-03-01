@@ -17,17 +17,6 @@
       <structure type="chrome_scaled_image" name="IDR_INPUT_SPEECH" file="input_speech.png" />
       <structure type="chrome_scaled_image" name="IDR_INPUT_SPEECH_RECORDING" file="input_speech_recording.png" />
       <structure type="chrome_scaled_image" name="IDR_INPUT_SPEECH_WAITING" file="input_speech_waiting.png" />
-      <if expr="pp_ifdef('android')">
-        <structure type="chrome_scaled_image" name="IDR_MEDIA_FULLSCREEN_BUTTON" file="media_fullscreen.png" />
-      </if>
-      <structure type="chrome_scaled_image" name="IDR_MEDIA_PAUSE_BUTTON" file="media_pause.png" />
-      <structure type="chrome_scaled_image" name="IDR_MEDIA_PLAY_BUTTON" file="media_play.png" />
-      <structure type="chrome_scaled_image" name="IDR_MEDIA_PLAY_BUTTON_DISABLED" file="media_play_disabled.png" />
-      <structure type="chrome_scaled_image" name="IDR_MEDIA_SOUND_DISABLED" file="media_sound_disabled.png" />
-      <structure type="chrome_scaled_image" name="IDR_MEDIA_SOUND_FULL_BUTTON" file="media_sound_full.png" />
-      <structure type="chrome_scaled_image" name="IDR_MEDIA_SOUND_NONE_BUTTON" file="media_sound_none.png" />
-      <structure type="chrome_scaled_image" name="IDR_MEDIA_SLIDER_THUMB" file="media_slider_thumb.png" />
-      <structure type="chrome_scaled_image" name="IDR_MEDIA_VOLUME_SLIDER_THUMB" file="media_volume_slider_thumb.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_PAUSE_BUTTON" file="mediaplayer_pause.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_PAUSE_BUTTON_HOVER" file="mediaplayer_pause_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_PAUSE_BUTTON_DOWN" file="mediaplayer_pause_down.png" />
