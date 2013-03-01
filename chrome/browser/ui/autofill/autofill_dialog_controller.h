@@ -52,15 +52,13 @@ class AutofillDialogController {
   // Whether the user is known to be signed in.
   virtual DialogSignedInState SignedInState() const = 0;
 
-  // Whether or not Wallet can be used for this transaction. Returns false if
-  // any network/Wallet errors occur while running this dialog.
-  virtual bool CanPayWithWallet() const = 0;
-
-  // Whether the account chooser is enabled (clickable).
-  virtual bool AccountChooserEnabled() const = 0;
-
   // Whether to show the checkbox to save data locally (in Autofill).
   virtual bool ShouldOfferToSaveInChrome() const = 0;
+
+  // Returns the model for the account chooser. It will return NULL if the
+  // account chooser should not show a menu. In this case, clicking on the
+  // account chooser should initiate sign-in.
+  virtual ui::MenuModel* MenuModelForAccountChooser() = 0;
 
   // Detail inputs -------------------------------------------------------------
 

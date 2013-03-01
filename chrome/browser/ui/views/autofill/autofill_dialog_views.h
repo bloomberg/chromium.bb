@@ -149,6 +149,33 @@ class AutofillDialogViews : public AutofillDialogView,
     DISALLOW_COPY_AND_ASSIGN(DecoratedTextfield);
   };
 
+  // A View which displays the currently selected account and lets the user
+  // switch accounts.
+  class AccountChooser : public views::View {
+   public:
+    explicit AccountChooser(AutofillDialogController* controller);
+    virtual ~AccountChooser();
+
+    // Updates the view based on the state that |controller_| reports.
+    void Update();
+
+    // views::View implementation.
+    virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
+    virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
+
+   private:
+    // The label for the currently in-use account.
+    views::Label* label_;
+
+    // The controller |this| queries for logic and state.
+    AutofillDialogController* controller_;
+
+    // Runs the suggestion menu (triggered by each section's |suggested_button|.
+    scoped_ptr<views::MenuRunner> menu_runner_;
+
+    DISALLOW_COPY_AND_ASSIGN(AccountChooser);
+  };
+
   // An area for notifications. Some notifications point at the account chooser.
   class NotificationArea : public views::View {
    public:
@@ -367,8 +394,8 @@ class AutofillDialogViews : public AutofillDialogView,
   // Runs the suggestion menu (triggered by each section's |suggested_button|.
   scoped_ptr<views::MenuRunner> menu_runner_;
 
-  // A link to allow choosing different accounts to pay with.
-  views::Link* account_chooser_link_;
+  // The view that allows the user to toggle the data source.
+  AccountChooser* account_chooser_;
 
   // View to host the signin dialog and related controls.
   views::View* sign_in_container_;

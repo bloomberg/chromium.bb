@@ -125,6 +125,52 @@ void AutofillDialogViews::DecoratedTextfield::OnPaint(gfx::Canvas* canvas) {
   }
 }
 
+// AutofillDialogViews::AccountChooser -----------------------------------------
+
+AutofillDialogViews::AccountChooser::AccountChooser(
+    AutofillDialogController* controller)
+    : label_(new views::Label()),
+      controller_(controller) {
+  SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
+  AddChildView(label_);
+  // TODO(estade): a few more views and layout changes are necessary to bring
+  // this up to the mocks.
+}
+
+AutofillDialogViews::AccountChooser::~AccountChooser() {}
+
+void AutofillDialogViews::AccountChooser::Update() {
+  label_->SetText(controller_->AccountChooserText());
+  menu_runner_.reset();
+}
+
+bool AutofillDialogViews::AccountChooser::OnMousePressed(
+    const ui::MouseEvent& event) {
+  // Return true so we get the release event.
+  return event.IsOnlyLeftMouseButton();
+}
+
+void AutofillDialogViews::AccountChooser::OnMouseReleased(
+    const ui::MouseEvent& event) {
+  if (!HitTestPoint(event.location()))
+    return;
+
+  ui::MenuModel* model = controller_->MenuModelForAccountChooser();
+  if (model) {
+    views::MenuModelAdapter adapter(model);
+    menu_runner_.reset(new views::MenuRunner(adapter.CreateMenu()));
+    ignore_result(
+        menu_runner_->RunMenuAt(GetWidget(),
+                                NULL,
+                                GetBoundsInScreen(),
+                                views::MenuItemView::TOPRIGHT,
+                                0));
+  } else {
+    controller_->StartSignInFlow();
+  }
+}
+
 // AutofillDialogViews::NotificationArea ---------------------------------------
 
 AutofillDialogViews::NotificationArea::NotificationArea()
@@ -406,7 +452,7 @@ AutofillDialogViews::AutofillDialogViews(AutofillDialogController* controller)
       contents_(NULL),
       notification_area_(NULL),
       use_billing_for_shipping_(NULL),
-      account_chooser_link_(NULL),
+      account_chooser_(NULL),
       sign_in_container_(NULL),
       cancel_sign_in_(NULL),
       sign_in_webview_(NULL),
@@ -455,10 +501,7 @@ void AutofillDialogViews::Hide() {
 }
 
 void AutofillDialogViews::UpdateAccountChooser() {
-  // TODO(dbeam): show/hide account chooser combobox when it exists?
-  // TODO(dbeam): show/hide fancy Google Wallet logo when it exists.
-  account_chooser_link_->SetEnabled(controller_->AccountChooserEnabled());
-  account_chooser_link_->SetText(controller_->AccountChooserText());
+  account_chooser_->Update();
 }
 
 void AutofillDialogViews::UpdateNotificationArea() {
@@ -701,16 +744,6 @@ void AutofillDialogViews::OnDidChangeFocus(
     views::View* focused_now) {}
 
 void AutofillDialogViews::LinkClicked(views::Link* source, int event_flags) {
-  // Sign in link.
-  if (source == account_chooser_link_) {
-    if (controller_->SignedInState() != SIGNED_IN) {
-      DCHECK(controller_->CanPayWithWallet());
-      controller_->StartSignInFlow();
-    }
-    // TODO(dbeam): handle other clicks on the account chooser (i.e. combobox).
-    return;
-  }
-
   // Edit links.
   for (DetailGroupMap::iterator iter = detail_groups_.begin();
        iter != detail_groups_.end(); ++iter) {
@@ -786,15 +819,14 @@ views::View* AutofillDialogViews::CreateMainContainer() {
   layout->StartRow(0, single_column_set);
   // TODO(abodenha) Create a chooser control to allow account selection.
   // See http://crbug.com/169858
-  account_chooser_link_ = new views::Link();
-  account_chooser_link_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
-  account_chooser_link_->set_listener(this);
-  layout->AddView(account_chooser_link_);
+  account_chooser_ = new AccountChooser(controller_);
+  // TODO(estade): |account_chooser_| should be in the title bar.
+  layout->AddView(account_chooser_);
 
   layout->StartRowWithPadding(0, single_column_set,
                               0, views::kRelatedControlVerticalSpacing);
   notification_area_ = new NotificationArea();
-  notification_area_->set_arrow_centering_anchor(account_chooser_link_);
+  notification_area_->set_arrow_centering_anchor(account_chooser_);
   layout->AddView(notification_area_);
 
   layout->StartRowWithPadding(0, single_column_set,
