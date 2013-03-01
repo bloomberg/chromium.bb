@@ -44,6 +44,7 @@ typedef int64 DownloadID;   // Identifier for a download.
 typedef int64 FaviconID;  // For favicons.
 typedef int64 FaviconBitmapID; // Identifier for a bitmap in a favicon.
 typedef int64 SegmentID;  // URL segments for the most visited view.
+typedef int64 SegmentDurationID;  // Unique identifier for segment_duration.
 typedef int64 IconMappingID; // For page url and icon mapping.
 
 // URLRow ---------------------------------------------------------------------

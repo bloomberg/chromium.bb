@@ -12,6 +12,7 @@ class PageUsageData;
 
 namespace sql {
 class Connection;
+class Statement;
 }
 
 namespace history {
@@ -26,6 +27,10 @@ class VisitSegmentDatabase {
   // Compute a segment name given a URL. The segment name is currently the
   // source url spec less some information such as query strings.
   static std::string ComputeSegmentName(const GURL& url);
+
+  // The segment tables use the time as a key for visit count and duration. This
+  // returns the appropriate time.
+  static base::Time SegmentTime(base::Time time);
 
   // Returns the ID of the segment with the corresponding name, or 0 if there
   // is no segment with that name.
@@ -68,6 +73,28 @@ class VisitSegmentDatabase {
   // This will also delete any associated segment usage data.
   bool DeleteSegmentForURL(URLID url_id);
 
+  // Creates a new SegmentDurationID for the SegmentID and Time pair. The
+  // duration is set to |delta|.
+  SegmentDurationID CreateSegmentDuration(SegmentID segment_id,
+                                          base::Time time,
+                                          base::TimeDelta delta);
+
+  // Sets the duration of the |duration_id| to |time_delta|.
+  bool SetSegmentDuration(SegmentDurationID duration_id,
+                          base::TimeDelta time_delta);
+
+  // Gets the SegmentDurationID of the |segment_id| and |time| pair. Returns
+  // true on success and sets |duration_id| and |time_delta| appropriately.
+  bool GetSegmentDuration(SegmentID segment_id,
+                          base::Time time,
+                          SegmentDurationID* duration_id,
+                          base::TimeDelta* time_delta);
+
+  // Queries segments by duration.
+  void QuerySegmentDuration(base::Time from_time,
+                            int max_result_count,
+                            std::vector<PageUsageData*>* result);
+
  protected:
   // Returns the database for the functions in this interface.
   virtual sql::Connection& GetDB() = 0;
@@ -84,6 +111,21 @@ class VisitSegmentDatabase {
   bool MigratePresentationIndex();
 
  private:
+  enum QueryType {
+    QUERY_VISIT_COUNT,
+    QUERY_DURATION,
+  };
+
+  // Used by both QuerySegment fucntions.
+  void QuerySegmentsCommon(sql::Statement* statement,
+                           base::Time from_time,
+                           int max_result_count,
+                           QueryType query_type,
+                           std::vector<PageUsageData*>* result);
+
+  // Was the |segment_duration| table created?
+  const bool has_duration_table_;
+
   DISALLOW_COPY_AND_ASSIGN(VisitSegmentDatabase);
 };
 

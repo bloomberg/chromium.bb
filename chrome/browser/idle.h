@@ -23,7 +23,9 @@ void InitIdleMonitor();
 typedef base::Callback<void(IdleState)> IdleCallback;
 typedef base::Callback<void(int)> IdleTimeCallback;
 
-// Calculate the Idle state and notify the callback.
+// Calculate the Idle state and notify the callback. |idle_threshold| is the
+// amount of time (in seconds) before considered idle. |notify| is
+// asynchronously called on some platforms.
 void CalculateIdleState(int idle_threshold, IdleCallback notify);
 
 // Calculate Idle time in seconds and notify the callback

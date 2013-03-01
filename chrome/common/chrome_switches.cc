@@ -1347,6 +1347,9 @@ const char kTestType[]                      = "test-type";
 // channel with the given ID.
 const char kTestingChannelID[]              = "testing-channel";
 
+// Enables tracking the amount of non-idle time spent viewing pages.
+const char kTrackActiveVisitTime[]          = "track-active-visit-time";
+
 // Disables same-origin check on HTTP resources pushed via a SPDY proxy.
 // The value is the host:port of the trusted proxy.
 const char kTrustedSpdyProxy[] = "trusted-spdy-proxy";

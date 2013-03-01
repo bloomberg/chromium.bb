@@ -479,6 +479,17 @@ class HistoryService : public CancelableRequestProvider,
                                 int max_result_count,
                                 const SegmentQueryCallback& callback);
 
+  // Increases the amount of time the user actively viewed the url.
+  void IncreaseSegmentDuration(const GURL& url,
+                               base::Time time,
+                               base::TimeDelta delta);
+
+  // Queries segments based on active time viewed.
+  Handle QuerySegmentDurationSince(CancelableRequestConsumerBase* consumer,
+                                   base::Time from_time,
+                                   int max_result_count,
+                                   const SegmentQueryCallback& callback);
+
   // Keyword search terms -----------------------------------------------------
 
   // Sets the search terms for the specified url and keyword. url_id gives the

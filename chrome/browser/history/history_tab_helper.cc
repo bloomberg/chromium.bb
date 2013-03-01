@@ -192,6 +192,9 @@ HistoryService* HistoryTabHelper::GetHistoryService() {
 }
 
 void HistoryTabHelper::WebContentsDestroyed(WebContents* tab) {
+  // TODO(sky): nuke this since no one is using visit_duration (and this is all
+  // wrong).
+
   // We update the history for this URL.
   // The content returned from web_contents() has been destroyed by now.
   // We need to use tab value directly.

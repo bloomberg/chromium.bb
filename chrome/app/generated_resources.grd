@@ -6943,6 +6943,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_IMPL_SIDE_PAINTING_DESCRIPTION" desc="Description of about:flags option for impl-side painting.">
         If enabled, painting is done on a separate thread instead of the main thread.
       </message>
+      <message name="IDS_FLAGS_TRACK_ACTIVE_VISIT_TIME_NAME" desc="Name of about:flags option for tracking active time on a page.">
+        Track time spent on each each page
+      </message>
+      <message name="IDS_FLAGS_TRACK_ACTIVE_VISIT_TIME_DESCRIPTION" desc="Description of about:flags option for tracking active time on a page.">
+        Tracks the amount of time spent on each page for improved most visited scoring.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

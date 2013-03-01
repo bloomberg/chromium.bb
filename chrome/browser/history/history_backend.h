@@ -321,6 +321,14 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                          int max_result_count);
   void DeleteOldSegmentData();
 
+  void IncreaseSegmentDuration(const GURL& url,
+                               base::Time time,
+                               base::TimeDelta delta);
+
+  void QuerySegmentDuration(scoped_refptr<QuerySegmentUsageRequest> request,
+                            const base::Time from_time,
+                            int max_result_count);
+
   // Keyword search terms ------------------------------------------------------
 
   void SetKeywordSearchTermsForURL(const GURL& url,
