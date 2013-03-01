@@ -665,7 +665,7 @@ class InstructionPrinter(object):
             def_format.OperandType.REGISTER_IN_VVVV,
             def_format.OperandType.REGISTER_IN_REG,
             def_format.OperandType.REGISTER_IN_RM] and
-        operand.GetFormat() in ['8bit', '16bit', '32bit', '64bit'])
+        operand.GetFormat() in ['8bit', '16bit', '32bit', '64bit', 'regsize'])
 
   def _PrintOperandSource(self, operand, source):
     """Print action specifying operand source."""
@@ -785,13 +785,13 @@ class InstructionPrinter(object):
 
     num_operands = 0
     zero_extends = False
-    if Attribute('nacl-amd64-zero-extends') in instruction.attributes:
-      for operand in instruction.operands:
-        if not self._NeedOperandInfo(operand):
-          continue
-        num_operands += 1
-        if operand.GetFormat() == '32bit':
-          zero_extends = True
+    for operand in instruction.operands:
+      if not self._NeedOperandInfo(operand):
+        continue
+      num_operands += 1
+      if (operand.GetFormat() == '32bit' and
+          Attribute('nacl-amd64-zero-extends') in instruction.attributes):
+        zero_extends = True
 
     if num_operands == 1:
       self._out.write('@process_1_operand')
