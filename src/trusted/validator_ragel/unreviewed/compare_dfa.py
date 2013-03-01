@@ -17,9 +17,8 @@ def Traverse(state1, state2, path):
     return
 
   if state1.is_accepting != state2.is_accepting:
-    print map(hex, path)
-    print state1.is_accepting
-    print state2.is_accepting
+    print map(hex, path), state1.is_accepting
+    print map(hex, path), state2.is_accepting
     sys.exit(1)
 
   visited_pairs.add((state1, state2))
@@ -30,9 +29,20 @@ def Traverse(state1, state2, path):
     t1 = state1.forward_transitions.get(byte)
     t2 = state2.forward_transitions.get(byte)
     if (t1 is None) != (t2 is None):
-      print map(hex, new_path)
-      print t1 is not None
-      print t2 is not None
+      t = t1 or t2
+      s = t.to_state
+      path_to_accepting = new_path
+      while not s.is_accepting:
+        b = min(s.forward_transitions)
+        path_to_accepting.append(b)
+        s = s.forward_transitions[b].to_state
+
+      if t1 is not None:
+        print map(hex, path_to_accepting), True
+        print map(hex, path), '...', False
+      else:
+        print map(hex, path), '...', False
+        print map(hex, path_to_accepting), True
       sys.exit(1)
 
     if t1 is None:
