@@ -30,6 +30,7 @@ class ChromeImpl : public Chrome, public WebViewDelegate {
   virtual ~ChromeImpl();
 
   // Overridden from Chrome:
+  virtual std::string GetVersion() OVERRIDE;
   virtual Status GetWebViews(std::list<WebView*>* web_views) OVERRIDE;
   virtual Status IsJavaScriptDialogOpen(bool* is_open) OVERRIDE;
   virtual Status GetJavaScriptDialogMessage(std::string* message) OVERRIDE;
@@ -48,10 +49,13 @@ class ChromeImpl : public Chrome, public WebViewDelegate {
   typedef std::map<std::string, linked_ptr<WebViewImpl> > WebViewMap;
 
   Status GetDialogManagerForOpenDialog(JavaScriptDialogManager** manager);
+  Status ParseAndCheckVersion(const std::string& version);
 
   scoped_refptr<URLRequestContextGetter> context_getter_;
   int port_;
   SyncWebSocketFactory socket_factory_;
+  std::string version_;
+  int build_no_;
   WebViewMap web_view_map_;
 };
 
@@ -59,6 +63,8 @@ namespace internal {
 
 Status ParsePagesInfo(const std::string& data,
                       std::list<std::string>* page_ids);
+Status ParseVersionInfo(const std::string& data,
+                        std::string* version);
 
 }  // namespace internal
 

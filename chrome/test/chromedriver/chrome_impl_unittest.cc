@@ -81,3 +81,33 @@ TEST(ParsePagesInfo, NoDebuggerUrl) {
 TEST(ParsePagesInfo, InvalidDebuggerUrl) {
   AssertFails("[{\"webSocketDebuggerUrl\": 1}]");
 }
+
+namespace {
+
+void AssertVersionFails(const std::string& data) {
+  std::string version;
+  Status status = internal::ParseVersionInfo(data, &version);
+  ASSERT_TRUE(status.IsError());
+  ASSERT_TRUE(version.empty());
+}
+
+}  // namespace
+
+TEST(ParseVersionInfo, InvalidJSON) {
+  AssertVersionFails("[");
+}
+
+TEST(ParseVersionInfo, NonDict) {
+  AssertVersionFails("[]");
+}
+
+TEST(ParseVersionInfo, NoBrowserKey) {
+  AssertVersionFails("{}");
+}
+
+TEST(ParseVersionInfo, Valid) {
+  std::string version;
+  Status status = internal::ParseVersionInfo("{\"Browser\": \"1\"}", &version);
+  ASSERT_TRUE(status.IsOk());
+  ASSERT_EQ("1", version);
+}

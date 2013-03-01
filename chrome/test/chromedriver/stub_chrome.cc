@@ -10,6 +10,10 @@ StubChrome::StubChrome() {}
 
 StubChrome::~StubChrome() {}
 
+std::string StubChrome::GetVersion() {
+  return "";
+}
+
 Status StubChrome::GetWebViews(std::list<WebView*>* web_views) {
   return Status(kOk);
 }

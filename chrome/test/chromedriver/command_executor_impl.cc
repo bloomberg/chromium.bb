@@ -8,6 +8,8 @@
 #include "base/callback.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
+#include "base/stringprintf.h"
+#include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/command_names.h"
 #include "chrome/test/chromedriver/commands.h"
@@ -17,6 +19,7 @@
 #include "chrome/test/chromedriver/session_commands.h"
 #include "chrome/test/chromedriver/session_map.h"
 #include "chrome/test/chromedriver/status.h"
+#include "chrome/test/chromedriver/version.h"
 #include "chrome/test/chromedriver/window_commands.h"
 
 #if defined(OS_MACOSX)
@@ -174,6 +177,12 @@ void CommandExecutorImpl::ExecuteCommand(
   }
   *status_code = status.code();
   if (status.IsError()) {
+    status.AddDetails(base::StringPrintf(
+        "Driver info: chromedriver=%s,platform=%s %s %s",
+        kChromeDriverVersion,
+        base::SysInfo::OperatingSystemName().c_str(),
+        base::SysInfo::OperatingSystemVersion().c_str(),
+        base::SysInfo::OperatingSystemArchitecture().c_str()));
     scoped_ptr<base::DictionaryValue> error(new base::DictionaryValue());
     error->SetString("message", status.message());
     value->reset(error.release());

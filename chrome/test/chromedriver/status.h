@@ -38,6 +38,8 @@ class Status {
   Status(StatusCode code, const std::string& details, const Status& cause);
   ~Status();
 
+  void AddDetails(const std::string& details);
+
   bool IsOk() const;
   bool IsError() const;
 

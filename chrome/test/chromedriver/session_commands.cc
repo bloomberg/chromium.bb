@@ -53,7 +53,10 @@ Status ExecuteSessionCommand(
   if (!session)
     return Status(kNoSuchSession, session_id);
 
-  return command.Run(session, params, out_value);
+  Status status = command.Run(session, params, out_value);
+  if (status.IsError() && session->chrome)
+    status.AddDetails("Session info: chrome=" + session->chrome->GetVersion());
+  return status;
 }
 
 Status ExecuteQuit(

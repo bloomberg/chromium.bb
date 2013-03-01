@@ -19,6 +19,7 @@ class StubChrome : public Chrome {
   virtual ~StubChrome();
 
   // Overridden from Chrome:
+  virtual std::string GetVersion() OVERRIDE;
   virtual Status GetWebViews(std::list<WebView*>* web_views) OVERRIDE;
   virtual Status IsJavaScriptDialogOpen(bool* is_open) OVERRIDE;
   virtual Status GetJavaScriptDialogMessage(std::string* message) OVERRIDE;

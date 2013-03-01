@@ -5,11 +5,8 @@
 #include "chrome/test/chromedriver/commands.h"
 
 #include "base/callback.h"
-#include "base/environment.h"
 #include "base/file_util.h"
 #include "base/stringprintf.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome.h"
@@ -22,41 +19,6 @@
 #include "chrome/test/chromedriver/util.h"
 #include "chrome/test/chromedriver/version.h"
 #include "chrome/test/chromedriver/web_view.h"
-
-namespace {
-
-Status CheckChromeVersion(WebView* web_view, std::string* chrome_version) {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
-  scoped_ptr<base::Value> chrome_version_value;
-  std::string temp_chrome_version;
-  Status status = web_view->EvaluateScript(
-      "",
-      "navigator.appVersion.match(/Chrome\\/.* /)[0].split('/')[1].trim()",
-      &chrome_version_value);
-  if (status.IsError() ||
-      !chrome_version_value->GetAsString(&temp_chrome_version))
-    return Status(kUnknownError, "unable to detect Chrome version");
-
-  int build_no;
-  std::vector<std::string> chrome_version_parts;
-  base::SplitString(temp_chrome_version, '.', &chrome_version_parts);
-  if (chrome_version_parts.size() != 4 ||
-      !base::StringToInt(chrome_version_parts[2], &build_no)) {
-    return Status(kUnknownError, "unrecognized Chrome version: " +
-        temp_chrome_version);
-  }
-  // Allow the version check to be skipped for testing/development purposes.
-  if (!env->HasVar("IGNORE_CHROME_VERSION")) {
-    if (build_no < kMinimumSupportedChromeBuildNo) {
-      return Status(kUnknownError, "Chrome version must be >= " +
-          GetMinimumSupportedChromeVersion());
-    }
-  }
-  *chrome_version = temp_chrome_version;
-  return Status(kOk);
-}
-
-}  // namespace
 
 Status ExecuteGetStatus(
     const base::DictionaryValue& params,
@@ -86,7 +48,6 @@ Status ExecuteNewSession(
     const std::string& session_id,
     scoped_ptr<base::Value>* out_value,
     std::string* out_session_id) {
-
   scoped_ptr<Chrome> chrome;
   Status status(kOk);
   int port = 33081;
@@ -138,28 +99,18 @@ Status ExecuteNewSession(
   }
   WebView* default_web_view = web_views.front();
 
-  std::string chrome_version;
-  status = CheckChromeVersion(default_web_view, &chrome_version);
-  if (status.IsError()) {
-    chrome->Quit();
-    return status;
-  }
-
   std::string new_id = session_id;
   if (new_id.empty())
     new_id = GenerateId();
   scoped_ptr<Session> session(new Session(new_id, chrome.Pass()));
   session->window = default_web_view->GetId();
+  out_value->reset(session->capabilities->DeepCopy());
+  *out_session_id = new_id;
+
   scoped_refptr<SessionAccessor> accessor(
       new SessionAccessorImpl(session.Pass()));
   session_map->Set(new_id, accessor);
 
-  base::DictionaryValue* returned_value = new base::DictionaryValue();
-  returned_value->SetString("browserName", "chrome");
-  returned_value->SetString("version", chrome_version);
-  returned_value->SetString("driverVersion", kChromeDriverVersion);
-  out_value->reset(returned_value);
-  *out_session_id = new_id;
   return Status(kOk);
 }
 

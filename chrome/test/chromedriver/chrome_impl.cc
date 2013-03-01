@@ -9,7 +9,9 @@
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
+#include "base/string_split.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "base/values.h"
@@ -19,10 +21,22 @@
 #include "chrome/test/chromedriver/net/sync_websocket_impl.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "chrome/test/chromedriver/status.h"
+#include "chrome/test/chromedriver/version.h"
 #include "chrome/test/chromedriver/web_view_impl.h"
 #include "googleurl/src/gurl.h"
 
 namespace {
+
+Status FetchVersionInfo(URLRequestContextGetter* context_getter,
+                        int port,
+                        std::string* version) {
+  std::string url = base::StringPrintf(
+      "http://127.0.0.1:%d/json/version", port);
+  std::string data;
+  if (!FetchUrl(GURL(url), context_getter, &data))
+    return Status(kChromeNotReachable);
+  return internal::ParseVersionInfo(data, version);
+}
 
 Status FetchPagesInfo(URLRequestContextGetter* context_getter,
                       int port,
@@ -78,10 +92,16 @@ ChromeImpl::ChromeImpl(URLRequestContextGetter* context_getter,
                        const SyncWebSocketFactory& socket_factory)
     : context_getter_(context_getter),
       port_(port),
-      socket_factory_(socket_factory) {}
+      socket_factory_(socket_factory),
+      version_("unknown version"),
+      build_no_(0) {}
 
 ChromeImpl::~ChromeImpl() {
   web_view_map_.clear();
+}
+
+std::string ChromeImpl::GetVersion() {
+  return version_;
 }
 
 Status ChromeImpl::GetWebViews(std::list<WebView*>* web_views) {
@@ -149,6 +169,21 @@ void ChromeImpl::OnWebViewClose(WebView* web_view) {
 
 Status ChromeImpl::Init() {
   base::Time deadline = base::Time::Now() + base::TimeDelta::FromSeconds(20);
+  std::string version;
+  Status status(kOk);
+  while (base::Time::Now() < deadline) {
+    status = FetchVersionInfo(context_getter_, port_, &version);
+    if (status.IsOk())
+      break;
+    if (status.code() != kChromeNotReachable)
+      return status;
+  }
+  if (status.IsError())
+    return status;
+  status = ParseAndCheckVersion(version);
+  if (status.IsError())
+    return status;
+
   std::list<std::string> page_ids;
   while (base::Time::Now() < deadline) {
     FetchPagesInfo(context_getter_, port_, &page_ids);
@@ -185,6 +220,36 @@ Status ChromeImpl::GetDialogManagerForOpenDialog(
   return Status(kOk);
 }
 
+Status ChromeImpl::ParseAndCheckVersion(const std::string& version) {
+  if (version.empty()) {
+    // Content Shell has an empty product version and a fake user agent.
+    // There's no way to detect the actual version, so assume it is tip of tree.
+    version_ = "content shell";
+    build_no_ = 9999;
+    return Status(kOk);
+  }
+  std::string prefix = "Chrome/";
+  if (version.find(prefix) != 0u)
+    return Status(kUnknownError, "unrecognized Chrome version: " + version);
+
+  std::string stripped_version = version.substr(prefix.length());
+  int build_no;
+  std::vector<std::string> version_parts;
+  base::SplitString(stripped_version, '.', &version_parts);
+  if (version_parts.size() != 4 ||
+      !base::StringToInt(version_parts[2], &build_no)) {
+    return Status(kUnknownError, "unrecognized Chrome version: " + version);
+  }
+
+  if (build_no < kMinimumSupportedChromeBuildNo) {
+    return Status(kUnknownError, "Chrome version must be >= " +
+        GetMinimumSupportedChromeVersion());
+  }
+  version_ = stripped_version;
+  build_no_ = build_no;
+  return Status(kOk);
+}
+
 namespace internal {
 
 Status ParsePagesInfo(const std::string& data,
@@ -212,6 +277,22 @@ Status ParsePagesInfo(const std::string& data,
     ids.push_back(id);
   }
   page_ids->swap(ids);
+  return Status(kOk);
+}
+
+Status ParseVersionInfo(const std::string& data,
+                        std::string* version) {
+  scoped_ptr<base::Value> value(base::JSONReader::Read(data));
+  if (!value.get())
+    return Status(kUnknownError, "version info not in JSON");
+  base::DictionaryValue* dict;
+  if (!value->GetAsDictionary(&dict))
+    return Status(kUnknownError, "version info not a dictionary");
+  if (!dict->GetString("Browser", version)) {
+    return Status(
+        kUnknownError, "Chrome version must be >= 26",
+        Status(kUnknownError, "version info doesn't include string 'Browser'"));
+  }
   return Status(kOk);
 }
 

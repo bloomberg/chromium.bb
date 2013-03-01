@@ -13,6 +13,10 @@
 #include "base/synchronization/lock.h"
 #include "chrome/test/chromedriver/basic_types.h"
 
+namespace base {
+class DictionaryValue;
+}
+
 class Chrome;
 class Status;
 class WebView;
@@ -33,6 +37,10 @@ struct Session {
   int page_load_timeout;
   int script_timeout;
   std::string prompt_text;
+  const scoped_ptr<base::DictionaryValue> capabilities;
+
+ private:
+  scoped_ptr<base::DictionaryValue> CreateCapabilities();
 };
 
 class SessionAccessor : public base::RefCountedThreadSafe<SessionAccessor> {

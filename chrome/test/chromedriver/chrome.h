@@ -15,6 +15,8 @@ class Chrome {
  public:
   virtual ~Chrome() {}
 
+  virtual std::string GetVersion() = 0;
+
   // Return a list of opened WebViews.
   virtual Status GetWebViews(std::list<WebView*>* web_views) = 0;
 

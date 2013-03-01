@@ -25,7 +25,7 @@ TEST(CommandExecutorImplTest, UnknownCommand) {
   ASSERT_TRUE(value->GetAsDictionary(&error));
   std::string error_msg;
   ASSERT_TRUE(error->GetString("message", &error_msg));
-  ASSERT_STREQ("unknown command: noSuchCommand", error_msg.c_str());
+  ASSERT_NE(std::string::npos, error_msg.find("noSuchCommand"));
   ASSERT_STREQ("session", session_id.c_str());
 }
 
@@ -127,5 +127,5 @@ TEST(CommandExecutorImplTest, CommandThatReturnsError) {
   ASSERT_TRUE(value->GetAsDictionary(&error));
   std::string message;
   ASSERT_TRUE(error->GetString("message", &message));
-  ASSERT_STREQ(Status(kUnknownError).message().c_str(), message.c_str());
+  ASSERT_NE(std::string::npos, message.find("unknown error"));
 }

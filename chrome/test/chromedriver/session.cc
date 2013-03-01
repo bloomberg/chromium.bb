@@ -6,17 +6,30 @@
 
 #include <list>
 
+#include "base/sys_info.h"
+#include "base/values.h"
 #include "chrome/test/chromedriver/chrome.h"
 #include "chrome/test/chromedriver/status.h"
+#include "chrome/test/chromedriver/version.h"
 #include "chrome/test/chromedriver/web_view.h"
 
 Session::Session(const std::string& id)
-    : id(id), mouse_position(0, 0), implicit_wait(0), page_load_timeout(0),
-      script_timeout(0) {}
+    : id(id),
+      mouse_position(0, 0),
+      implicit_wait(0),
+      page_load_timeout(0),
+      script_timeout(0) {
+}
 
 Session::Session(const std::string& id, scoped_ptr<Chrome> chrome)
-    : id(id), chrome(chrome.Pass()), mouse_position(0, 0), implicit_wait(0),
-      page_load_timeout(0), script_timeout(0) {}
+    : id(id),
+      chrome(chrome.Pass()),
+      mouse_position(0, 0),
+      implicit_wait(0),
+      page_load_timeout(0),
+      script_timeout(0),
+      capabilities(CreateCapabilities()) {
+}
 
 Session::~Session() {}
 
@@ -37,6 +50,27 @@ Status Session::GetTargetWindow(WebView** web_view) {
     }
   }
   return Status(kNoSuchWindow, "target window already closed");
+}
+
+scoped_ptr<base::DictionaryValue> Session::CreateCapabilities() {
+  scoped_ptr<base::DictionaryValue> caps(new base::DictionaryValue());
+  caps->SetString("browserName", "chrome");
+  caps->SetString("version", chrome->GetVersion());
+  caps->SetString("driverVersion", kChromeDriverVersion);
+  caps->SetString("platform", base::SysInfo::OperatingSystemName());
+  caps->SetBoolean("javascriptEnabled", true);
+  caps->SetBoolean("takesScreenshot", true);
+  caps->SetBoolean("handlesAlerts", true);
+  caps->SetBoolean("databaseEnabled", true);
+  caps->SetBoolean("locationContextEnabled", true);
+  caps->SetBoolean("applicationCacheEnabled", false);
+  caps->SetBoolean("browserConnectionEnabled", false);
+  caps->SetBoolean("cssSelectorsEnabled", true);
+  caps->SetBoolean("webStorageEnabled", true);
+  caps->SetBoolean("rotatable", false);
+  caps->SetBoolean("acceptSslCerts", true);
+  caps->SetBoolean("nativeEvents", true);
+  return caps.Pass();
 }
 
 SessionAccessorImpl::SessionAccessorImpl(scoped_ptr<Session> session)

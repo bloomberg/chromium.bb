@@ -44,3 +44,9 @@ TEST(StatusTest, ErrorWithCause) {
       "from session not created exception",
       error.message().c_str());
 }
+
+TEST(StatusTest, AddDetails) {
+  Status error(kUnknownError);
+  error.AddDetails("details");
+  ASSERT_STREQ("unknown error\n  (details)", error.message().c_str());
+}
