@@ -405,20 +405,21 @@ bool CreateApplicationShortcutView::Accept() {
   if (!IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK))
     return false;
 
-  shortcut_info_.create_on_desktop = desktop_check_box_->checked();
-  shortcut_info_.create_in_applications_menu = menu_check_box_ == NULL ? false :
+  ShellIntegration::ShortcutLocations creation_locations;
+  creation_locations.on_desktop = desktop_check_box_->checked();
+  creation_locations.in_applications_menu = menu_check_box_ == NULL ? false :
       menu_check_box_->checked();
 
 #if defined(OS_WIN)
-  shortcut_info_.create_in_quick_launch_bar = quick_launch_check_box_ == NULL ?
+  creation_locations.in_quick_launch_bar = quick_launch_check_box_ == NULL ?
       NULL : quick_launch_check_box_->checked();
 #elif defined(OS_POSIX)
   // Create shortcut in Mac dock or as Linux (gnome/kde) application launcher
   // are not implemented yet.
-  shortcut_info_.create_in_quick_launch_bar = false;
+  creation_locations.in_quick_launch_bar = false;
 #endif
 
-  web_app::CreateShortcuts(shortcut_info_);
+  web_app::CreateShortcuts(shortcut_info_, creation_locations);
   return true;
 }
 

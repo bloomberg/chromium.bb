@@ -50,8 +50,10 @@ std::string GetDesktopFileContents(const std::string& template_contents,
 // shortcut template contained in |shortcut_template|.
 // For extensions, duplicate shortcuts are avoided, so if a requested shortcut
 // already exists it is deleted first.
-bool CreateDesktopShortcut(const ShellIntegration::ShortcutInfo& shortcut_info,
-                           const std::string& shortcut_template);
+bool CreateDesktopShortcut(
+    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const ShellIntegration::ShortcutLocations& creation_locations,
+    const std::string& shortcut_template);
 
 // Delete any desktop shortcuts on desktop or in the application menu that have
 // been added for the extension with |extension_id| in |profile_path|.

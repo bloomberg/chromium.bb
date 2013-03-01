@@ -211,20 +211,16 @@ void UpdateShortcutWorker::CheckExistingShortcuts() {
 
   // Locations to check to shortcut_paths.
   struct {
-    bool& use_this_location;
     int location_id;
     const wchar_t* sub_dir;
   } locations[] = {
     {
-      shortcut_info_.create_on_desktop,
       base::DIR_USER_DESKTOP,
       NULL
     }, {
-      shortcut_info_.create_in_applications_menu,
       base::DIR_START_MENU,
       NULL
     }, {
-      shortcut_info_.create_in_quick_launch_bar,
       // For Win7, create_in_quick_launch_bar means pinning to taskbar.
       base::DIR_APP_DATA,
       (base::win::GetVersion() >= base::win::VERSION_WIN7) ?
@@ -234,8 +230,6 @@ void UpdateShortcutWorker::CheckExistingShortcuts() {
   };
 
   for (int i = 0; i < arraysize(locations); ++i) {
-    locations[i].use_this_location = false;
-
     base::FilePath path;
     if (!PathService::Get(locations[i].location_id, &path)) {
       NOTREACHED();
@@ -248,7 +242,6 @@ void UpdateShortcutWorker::CheckExistingShortcuts() {
     base::FilePath shortcut_file = path.Append(file_name_).
         ReplaceExtension(FILE_PATH_LITERAL(".lnk"));
     if (file_util::PathExists(shortcut_file)) {
-      locations[i].use_this_location = true;
       shortcut_files_.push_back(shortcut_file);
     }
   }
@@ -354,9 +347,6 @@ ShellIntegration::ShortcutInfo ShortcutInfoForExtensionAndProfile(
     const extensions::Extension* extension, Profile* profile) {
   ShellIntegration::ShortcutInfo shortcut_info;
   web_app::UpdateShortcutInfoForApp(*extension, profile, &shortcut_info);
-  shortcut_info.create_in_applications_menu = true;
-  shortcut_info.create_in_quick_launch_bar = true;
-  shortcut_info.create_on_desktop = true;
   return shortcut_info;
 }
 

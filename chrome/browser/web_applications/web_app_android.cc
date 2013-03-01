@@ -9,7 +9,8 @@ namespace internals {
 
 bool CreatePlatformShortcuts(
     const base::FilePath& web_app_path,
-    const ShellIntegration::ShortcutInfo& shortcut_info) {
+    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const ShellIntegration::ShortcutLocations& creation_locations) {
   return true;
 }
 

@@ -279,7 +279,8 @@ base::FilePath GetAppBundleByExtensionId(std::string extension_id) {
 
 bool CreatePlatformShortcuts(
     const base::FilePath& web_app_path,
-    const ShellIntegration::ShortcutInfo& shortcut_info) {
+    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const ShellIntegration::ShortcutLocations& /*creation_locations*/) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   string16 bundle_id = UTF8ToUTF16(base::mac::BaseBundleID());
   WebAppShortcutCreator shortcut_creator(web_app_path, shortcut_info,

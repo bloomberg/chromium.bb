@@ -673,6 +673,7 @@ std::string GetDesktopFileContents(
 
 bool CreateDesktopShortcut(
     const ShellIntegration::ShortcutInfo& shortcut_info,
+    const ShellIntegration::ShortcutLocations& creation_locations,
     const std::string& shortcut_template) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
@@ -682,9 +683,9 @@ bool CreateDesktopShortcut(
         shortcut_info.profile_path, shortcut_info.extension_id);
     // For extensions we do not want duplicate shortcuts. So, delete any that
     // already exist and replace them.
-    if (shortcut_info.create_on_desktop)
+    if (creation_locations.on_desktop)
       DeleteShortcutOnDesktop(shortcut_filename);
-    if (shortcut_info.create_in_applications_menu)
+    if (creation_locations.in_applications_menu)
       DeleteShortcutInApplicationsMenu(shortcut_filename);
   } else {
     shortcut_filename = GetWebShortcutFilename(shortcut_info.url);
@@ -708,10 +709,10 @@ bool CreateDesktopShortcut(
 
   bool success = true;
 
-  if (shortcut_info.create_on_desktop)
+  if (creation_locations.on_desktop)
     success = CreateShortcutOnDesktop(shortcut_filename, contents);
 
-  if (shortcut_info.create_in_applications_menu)
+  if (creation_locations.in_applications_menu)
     success = CreateShortcutInApplicationsMenu(shortcut_filename, contents) &&
               success;
 

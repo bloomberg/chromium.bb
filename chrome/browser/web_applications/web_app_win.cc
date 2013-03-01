@@ -74,26 +74,26 @@ bool ShouldUpdateIcon(const base::FilePath& icon_file, const SkBitmap& image) {
 }
 
 std::vector<base::FilePath> GetShortcutPaths(
-    ShellIntegration::ShortcutInfo shortcut_info) {
+    const ShellIntegration::ShortcutLocations& creation_locations) {
   // Shortcut paths under which to create shortcuts.
   std::vector<base::FilePath> shortcut_paths;
 
   // Locations to add to shortcut_paths.
   struct {
-    const bool& use_this_location;
+    bool use_this_location;
     int location_id;
     const wchar_t* sub_dir;
   } locations[] = {
     {
-      shortcut_info.create_on_desktop,
+      creation_locations.on_desktop,
       base::DIR_USER_DESKTOP,
       NULL
     }, {
-      shortcut_info.create_in_applications_menu,
+      creation_locations.in_applications_menu,
       base::DIR_START_MENU,
       NULL
     }, {
-      shortcut_info.create_in_quick_launch_bar,
+      creation_locations.in_quick_launch_bar,
       // For Win7, create_in_quick_launch_bar means pinning to taskbar. Use
       // base::PATH_START as a flag for this case.
       (base::win::GetVersion() >= base::win::VERSION_WIN7) ?
@@ -202,13 +202,15 @@ base::FilePath GetShortcutExecutablePath(
 
 bool CreatePlatformShortcuts(
     const base::FilePath& web_app_path,
-    const ShellIntegration::ShortcutInfo& shortcut_info) {
+    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const ShellIntegration::ShortcutLocations& creation_locations) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
   // Shortcut paths under which to create shortcuts.
-  std::vector<base::FilePath> shortcut_paths = GetShortcutPaths(shortcut_info);
+  std::vector<base::FilePath> shortcut_paths =
+      GetShortcutPaths(creation_locations);
 
-  bool pin_to_taskbar = shortcut_info.create_in_quick_launch_bar &&
+  bool pin_to_taskbar = creation_locations.in_quick_launch_bar &&
                         (base::win::GetVersion() >= base::win::VERSION_WIN7);
 
   // For Win7's pinning support, any shortcut could be used. So we only create
@@ -334,18 +336,17 @@ void DeletePlatformShortcuts(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
   // Get all possible locations for shortcuts.
-  ShellIntegration::ShortcutInfo all_shortcuts_info = shortcut_info;
-  all_shortcuts_info.create_in_applications_menu = true;
-  all_shortcuts_info.create_in_quick_launch_bar = true;
-  all_shortcuts_info.create_on_desktop = true;
-  std::vector<base::FilePath> shortcut_locations = GetShortcutPaths(
-      all_shortcuts_info);
+  ShellIntegration::ShortcutLocations all_shortcut_locations;
+  all_shortcut_locations.in_applications_menu = true;
+  all_shortcut_locations.in_quick_launch_bar = true;
+  all_shortcut_locations.on_desktop = true;
+  std::vector<base::FilePath> shortcut_paths = GetShortcutPaths(
+      all_shortcut_locations);
   if (base::win::GetVersion() >= base::win::VERSION_WIN7)
-    shortcut_locations.push_back(web_app_path);
+    shortcut_paths.push_back(web_app_path);
 
-  for (std::vector<base::FilePath>::const_iterator i =
-           shortcut_locations.begin();
-       i != shortcut_locations.end(); ++i) {
+  for (std::vector<base::FilePath>::const_iterator i = shortcut_paths.begin();
+       i != shortcut_paths.end(); ++i) {
     std::vector<base::FilePath> shortcut_files =
         MatchingShortcutsForProfileAndExtension(*i, shortcut_info.profile_path,
             shortcut_info.title);

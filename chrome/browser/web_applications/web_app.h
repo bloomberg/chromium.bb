@@ -47,8 +47,11 @@ std::string GenerateApplicationNameFromExtensionId(const std::string& id);
 std::string GetExtensionIdFromApplicationName(const std::string& app_name);
 
 // Creates shortcuts for web application based on given shortcut data.
-// |shortcut_info| contains information about the shortcuts to create.
-void CreateShortcuts(const ShellIntegration::ShortcutInfo& shortcut_info);
+// |shortcut_info| contains information about the shortcuts to create, and
+// |creation_locations| contains information about where to create them.
+void CreateShortcuts(
+    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const ShellIntegration::ShortcutLocations& creation_locations);
 
 // Delete all the shortcuts that have been created for the given
 // |shortcut_data| in the profile with |profile_path|.
@@ -60,9 +63,11 @@ void UpdateAllShortcuts(const ShellIntegration::ShortcutInfo& shortcut_info);
 
 // Creates a shortcut. Must be called on the file thread. This is used to
 // implement CreateShortcuts() above, and can also be used directly from the
-// file thread. |shortcut_info| contains info about the shortcut to create.
+// file thread. |shortcut_info| contains info about the shortcut to create, and
+// |creation_locations| contains information about where to create them.
 bool CreateShortcutsOnFileThread(
-    const ShellIntegration::ShortcutInfo& shortcut_info);
+    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const ShellIntegration::ShortcutLocations& creation_locations);
 
 // Returns true if given url is a valid web app url.
 bool IsValidUrl(const GURL& url);
@@ -92,10 +97,12 @@ bool CheckAndSaveIcon(const base::FilePath& icon_file, const SkBitmap& image);
 // shortcuts. Used internally by CreateShortcutsOnFileThread.
 // |shortcut_data_path| is where to store any resources created for the
 // shortcut, and is also used as the UserDataDir for platform app shortcuts.
-// |shortcut_info| contains info about the shortcut to create.
+// |shortcut_info| contains info about the shortcut to create, and
+// |creation_locations| contains information about where to create them.
 bool CreatePlatformShortcuts(
     const base::FilePath& shortcut_data_path,
-    const ShellIntegration::ShortcutInfo& shortcut_info);
+    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const ShellIntegration::ShortcutLocations& creation_locations);
 
 // Delete all the shortcuts we have added for this extension. This is the
 // platform specific implementation of the DeleteAllShortcuts function, and

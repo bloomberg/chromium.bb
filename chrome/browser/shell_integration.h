@@ -103,15 +103,20 @@ class ShellIntegration {
     base::FilePath extension_path;
     gfx::Image favicon;
     base::FilePath profile_path;
+  };
 
-    bool create_on_desktop;
-    bool create_in_applications_menu;
+  // Info about which locations to create app shortcuts in.
+  struct ShortcutLocations {
+    ShortcutLocations();
+
+    bool on_desktop;
+    bool in_applications_menu;
 
     // For Windows, this refers to quick launch bar prior to Win7. In Win7,
     // this means "pin to taskbar". For Mac/Linux, this could be used for
     // Mac dock or the gnome/kde application launcher. However, those are not
     // implemented yet.
-    bool create_in_quick_launch_bar;
+    bool in_quick_launch_bar;
   };
 
   // Data that needs to be passed between the app launcher stub and Chrome.

@@ -234,14 +234,14 @@ void CreateApplicationShortcutsDialogGtk::OnCreateDialogResponse(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (response == GTK_RESPONSE_ACCEPT) {
-    shortcut_info_.create_on_desktop =
+    ShellIntegration::ShortcutLocations creation_locations;
+    creation_locations.on_desktop =
         gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(desktop_checkbox_));
-    shortcut_info_.create_in_applications_menu =
+    creation_locations.in_applications_menu =
         gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(menu_checkbox_));
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
         base::Bind(&CreateApplicationShortcutsDialogGtk::CreateDesktopShortcut,
-                   this,
-                   shortcut_info_));
+                   this, shortcut_info_, creation_locations));
 
     OnCreatedShortcut();
   } else {
@@ -255,7 +255,8 @@ void CreateApplicationShortcutsDialogGtk::OnErrorDialogResponse(
 }
 
 void CreateApplicationShortcutsDialogGtk::CreateDesktopShortcut(
-    const ShellIntegration::ShortcutInfo& shortcut_info) {
+    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const ShellIntegration::ShortcutLocations& creation_locations) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   scoped_ptr<base::Environment> env(base::Environment::Create());
@@ -264,6 +265,7 @@ void CreateApplicationShortcutsDialogGtk::CreateDesktopShortcut(
   if (ShellIntegrationLinux::GetDesktopShortcutTemplate(env.get(),
                                                         &shortcut_template)) {
     ShellIntegrationLinux::CreateDesktopShortcut(shortcut_info,
+                                                 creation_locations,
                                                  shortcut_template);
     Release();
   } else {
@@ -370,10 +372,11 @@ void CreateChromeApplicationShortcutsDialogGtk::OnShortcutInfoLoaded(
 }
 
 void CreateChromeApplicationShortcutsDialogGtk::CreateDesktopShortcut(
-    const ShellIntegration::ShortcutInfo& shortcut_info) {
+    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const ShellIntegration::ShortcutLocations& creation_locations) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  if (web_app::CreateShortcutsOnFileThread(shortcut_info)) {
+  if (web_app::CreateShortcutsOnFileThread(shortcut_info, creation_locations)) {
     Release();
   } else {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,

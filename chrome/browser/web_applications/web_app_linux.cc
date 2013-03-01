@@ -15,7 +15,8 @@ namespace internals {
 
 bool CreatePlatformShortcuts(
     const base::FilePath& web_app_path,
-    const ShellIntegration::ShortcutInfo& shortcut_info) {
+    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const ShellIntegration::ShortcutLocations& creation_locations) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
   scoped_ptr<base::Environment> env(base::Environment::Create());
@@ -26,7 +27,7 @@ bool CreatePlatformShortcuts(
     return false;
   }
   return ShellIntegrationLinux::CreateDesktopShortcut(
-      shortcut_info, shortcut_template);
+      shortcut_info, creation_locations, shortcut_template);
 }
 
 void DeletePlatformShortcuts(

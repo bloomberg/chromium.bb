@@ -103,6 +103,12 @@ NSPoint GetPointForBubble(content::WebContents* web_contents,
   return point;
 }
 
+void CreateShortcuts(const ShellIntegration::ShortcutInfo& shortcut_info) {
+  // creation_locations will be ignored by CreatePlatformShortcuts on Mac.
+  ShellIntegration::ShortcutLocations creation_locations;
+  web_app::CreateShortcuts(shortcut_info, creation_locations);
+}
+
 }  // namespace
 
 BrowserWindowCocoa::BrowserWindowCocoa(Browser* browser,
@@ -582,7 +588,7 @@ void BrowserWindowCocoa::ShowCreateChromeAppShortcutsDialog(
   // Normally we would show a dialog, but since we always create the app
   // shortcut in /Applications there are no options for the user to choose.
   web_app::UpdateShortcutInfoAndIconForApp(*app, profile,
-      base::Bind(&web_app::CreateShortcuts));
+                                           base::Bind(&CreateShortcuts));
 }
 
 void BrowserWindowCocoa::Cut() {

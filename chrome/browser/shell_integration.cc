@@ -27,13 +27,16 @@ ShellIntegration::DefaultWebClientSetPermission
 }
 
 ShellIntegration::ShortcutInfo::ShortcutInfo()
-    : is_platform_app(false),
-      create_on_desktop(false),
-      create_in_applications_menu(false),
-      create_in_quick_launch_bar(false) {
+    : is_platform_app(false) {
 }
 
 ShellIntegration::ShortcutInfo::~ShortcutInfo() {}
+
+ShellIntegration::ShortcutLocations::ShortcutLocations()
+    : on_desktop(false),
+      in_applications_menu(false),
+      in_quick_launch_bar(false) {
+}
 
 static const struct ShellIntegration::AppModeInfo* gAppModeInfo = NULL;
 

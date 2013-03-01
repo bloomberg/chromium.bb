@@ -58,7 +58,8 @@ class CreateApplicationShortcutsDialogGtk
   virtual void OnCreatedShortcut(void) {}
 
   virtual void CreateDesktopShortcut(
-      const ShellIntegration::ShortcutInfo& shortcut_info);
+      const ShellIntegration::ShortcutInfo& shortcut_info,
+      const ShellIntegration::ShortcutLocations& creation_locations);
   virtual void ShowErrorDialog();
 
   GtkWindow* parent_;
@@ -123,7 +124,8 @@ class CreateChromeApplicationShortcutsDialogGtk
   virtual ~CreateChromeApplicationShortcutsDialogGtk() {}
 
   virtual void CreateDesktopShortcut(
-      const ShellIntegration::ShortcutInfo& shortcut_info) OVERRIDE;
+      const ShellIntegration::ShortcutInfo& shortcut_info,
+      const ShellIntegration::ShortcutLocations& creation_locations) OVERRIDE;
 
  private:
   void OnShortcutInfoLoaded(
