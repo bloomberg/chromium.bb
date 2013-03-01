@@ -85,6 +85,19 @@ std::string GetDisplayName(XID output_id) {
   return display_name;
 }
 
+int64 GetDisplayId(XID output_id, int output_index) {
+  uint16 manufacturer_id = 0;
+  uint16 product_code = 0;
+  if (ui::GetOutputDeviceData(
+          output_id, &manufacturer_id, &product_code, NULL) &&
+      manufacturer_id != 0) {
+    // An ID based on display's index will be assigned later if this call
+    // fails.
+    return gfx::Display::GetID(manufacturer_id, product_code, output_index);
+  }
+  return gfx::Display::kInvalidDisplayID;
+}
+
 }  // namespace
 
 DisplayChangeObserverX11::DisplayChangeObserverX11()
@@ -93,6 +106,26 @@ DisplayChangeObserverX11::DisplayChangeObserverX11()
       xrandr_event_base_(0) {
   int error_base_ignored;
   XRRQueryExtension(xdisplay_, &xrandr_event_base_, &error_base_ignored);
+
+  // Find internal display.
+  XRRScreenResources* screen_resources =
+      XRRGetScreenResources(xdisplay_, x_root_window_);
+  for (int output_index = 0; output_index < screen_resources->noutput;
+       output_index++) {
+    XID output = screen_resources->outputs[output_index];
+    XRROutputInfo *output_info =
+        XRRGetOutputInfo(xdisplay_, screen_resources, output);
+    bool is_internal = chromeos::OutputConfigurator::IsInternalOutputName(
+        std::string(output_info->name));
+    XRRFreeOutputInfo(output_info);
+    if (is_internal) {
+      // No need to check the return value of |GetDisplayID()| as
+      // the default value is |gfx::Display::kInvalidDisplayID| anyway.
+      gfx::Display::SetInternalDisplayId(GetDisplayId(output, output_index));
+      break;
+    }
+  }
+  XRRFreeScreenResources(screen_resources);
 }
 
 DisplayChangeObserverX11::~DisplayChangeObserverX11() {
@@ -160,21 +193,10 @@ void DisplayChangeObserverX11::OnDisplayModeChanged() {
     bool has_overscan = false;
     ui::GetOutputOverscanFlag(output, &has_overscan);
 
-    uint16 manufacturer_id = 0;
-    uint16 product_code = 0;
-    int64 id = gfx::Display::kInvalidDisplayID;
+    int64 id = GetDisplayId(output, output_index);
 
-    if (ui::GetOutputDeviceData(
-            output, &manufacturer_id, &product_code, NULL) &&
-        manufacturer_id != 0) {
-      // An ID based on display's index will be assigned later if this call
-      // fails.
-      int64 new_id = gfx::Display::GetID(
-          manufacturer_id, product_code, output_index);
-      if (ids.find(new_id) == ids.end())
-        id = new_id;
-    }
-    if (id == gfx::Display::kInvalidDisplayID)
+    // If ID is invalid or there is an duplicate, just use output index.
+    if (id == gfx::Display::kInvalidDisplayID || ids.find(id) != ids.end())
       id = output_index;
     ids.insert(id);
 

@@ -77,27 +77,6 @@ gfx::Display& GetInvalidDisplay() {
   return *invalid_display;
 }
 
-#if defined(OS_CHROMEOS)
-
-int64 FindInternalDisplayID() {
-  std::vector<XID> outputs;
-  ui::GetOutputDeviceHandles(&outputs);
-  std::vector<std::string> output_names = ui::GetOutputNames(outputs);
-  for (size_t i = 0; i < output_names.size(); ++i) {
-    if (chromeos::OutputConfigurator::IsInternalOutputName(
-            output_names[i])) {
-      uint16 manufacturer_id = 0;
-      uint16 product_code = 0;
-      ui::GetOutputDeviceData(
-          outputs[i], &manufacturer_id, &product_code, NULL);
-      return gfx::Display::GetID(manufacturer_id, product_code, i);
-    }
-  }
-  return gfx::Display::kInvalidDisplayID;
-}
-
-#endif
-
 }  // namespace
 
 using aura::RootWindow;
@@ -477,11 +456,6 @@ void DisplayManager::OnRootWindowResized(const aura::RootWindow* root,
 }
 
 void DisplayManager::Init() {
-#if defined(OS_CHROMEOS)
-  if (base::chromeos::IsRunningOnChromeOS())
-    gfx::Display::SetInternalDisplayId(FindInternalDisplayID());
-#endif
-
   // TODO(oshima): Move this logic to DisplayChangeObserver.
   const string size_str = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
       switches::kAshHostWindowBounds);
