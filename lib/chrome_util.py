@@ -99,8 +99,12 @@ class MultipleMatchError(AssertionError):
   """A glob pattern matches multiple files but a non-dir dest was specified."""
 
 
-class MissingPathError(Exception):
+class MissingPathError(SystemExit):
   """An expected path is non-existant."""
+
+
+class MustNotBeDirError(SystemExit):
+  """The specified path should not be a directory, but is."""
 
 
 class Copier(object):
@@ -208,6 +212,9 @@ class Path(object):
           'Glob pattern %r has multiple matches, but dest %s '
           'is not a directory.' % (self.src, self.dest))
 
+    if not src.endswith('/') and os.path.isdir(src):
+      raise MustNotBeDirError('%s must not be a directory' % (src,))
+
     for p in paths:
       dest = os.path.join(
           dest_base,
@@ -247,7 +254,7 @@ _COPY_PATHS = (
        cond=C.StagingFlagSet(_CONTENT_SHELL_FLAG)),
   Path('content_shell.pak',
        cond=C.StagingFlagSet(_CONTENT_SHELL_FLAG)),
-  Path('extensions',
+  Path('extensions/',
        optional=True),
   Path('lib.target/*.so',
        exe=True,
@@ -268,7 +275,7 @@ _COPY_PATHS = (
   Path('libwidevinecdm.so',
        exe=True,
        cond=C.StagingFlagSet(_WIDEVINE_FLAG)),
-  Path('locales'),
+  Path('locales/'),
   Path('nacl_helper_bootstrap',
        cond=C.GypNotSet(_DISABLE_NACL)),
   Path('nacl_irt_*.nexe',
@@ -277,7 +284,7 @@ _COPY_PATHS = (
   Path('nacl_helper',
        exe=True, optional=True,
        cond=C.GypNotSet(_DISABLE_NACL)),
-  Path('resources'),
+  Path('resources/'),
   Path('resources.pak'),
   Path('xdg-settings'),
   Path('*.png'),

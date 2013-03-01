@@ -145,6 +145,14 @@ class FileCopyTest(CopyTest):
     self._CopyAndVerify(
         path, src_struct, None, error=chrome_util.MissingPathError)
 
+  def testNonDirError(self):
+    """Test case where a file pattern matches a directory."""
+    src_struct = ['file1/']
+    dest_struct = [self.ELEMENT_SRC]
+    path = chrome_util.Path('file1')
+    self._CopyAndVerify(path, src_struct, dest_struct,
+                        error=chrome_util.MustNotBeDirError)
+
   def testElementOptional(self):
     """A path cannot be found but is optional."""
     src_struct = self.BAD_ELEMENTS
@@ -164,7 +172,7 @@ class DirCopyTest(FileCopyTest):
   """Testing directory copying/globbing/renaming functionality of Path class."""
 
   FILES = ['file1', 'file2', 'file3']
-  ELEMENT_SRC_NAME = 'monkey1'
+  ELEMENT_SRC_NAME = 'monkey1/'
   ELEMENT_SRC = Dir(ELEMENT_SRC_NAME, FILES)
   ELEMENTS_SRC = [
       Dir('monkey1', FILES) , Dir('monkey2', FILES), Dir('monkey3', FILES),
