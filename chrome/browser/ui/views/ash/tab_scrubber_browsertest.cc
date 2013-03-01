@@ -44,8 +44,7 @@ class TabScrubberTest : public InProcessBrowserTest,
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    TabScrubber::GetInstance()->set_activation_delay(
-        base::TimeDelta::FromMilliseconds(0));
+    TabScrubber::GetInstance()->set_activation_delay(0);
 
     // Disable external monitor scaling of coordinates.
     ash::Shell* shell = ash::Shell::GetInstance();

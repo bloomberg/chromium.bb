@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -149,6 +149,7 @@ const char* kPrefsToObserve[] = {
   prefs::kFlingAccelerationCurveCoefficient3,
   prefs::kFlingMaxCancelToDownTimeInMs,
   prefs::kFlingMaxTapGapTimeInMs,
+  prefs::kTabScrubActivationDelayInMS,
   prefs::kFlingVelocityCap,
   prefs::kLongPressTimeInSeconds,
   prefs::kMaxDistanceForTwoFingerTapInPixels,
@@ -213,6 +214,7 @@ GesturePrefsObserver::GesturePrefsObserver(PrefService* prefs)
   for (size_t i = 0; i < cycler_prefs.size(); ++i)
     registrar_.Add(cycler_prefs[i].pref_name, callback);
 #endif  // USE_ASH
+  Update();
 }
 
 GesturePrefsObserver::~GesturePrefsObserver() {}
@@ -234,6 +236,8 @@ void GesturePrefsObserver::Update() {
       prefs_->GetInteger(prefs::kFlingMaxCancelToDownTimeInMs));
   GestureConfiguration::set_fling_max_tap_gap_time_in_ms(
       prefs_->GetInteger(prefs::kFlingMaxTapGapTimeInMs));
+  GestureConfiguration::set_tab_scrub_activation_delay_in_ms(
+      prefs_->GetInteger(prefs::kTabScrubActivationDelayInMS));
   GestureConfiguration::set_fling_velocity_cap(
       prefs_->GetDouble(prefs::kFlingVelocityCap));
   GestureConfiguration::set_long_press_time_in_seconds(
@@ -427,6 +431,10 @@ void GesturePrefsObserverFactoryAura::RegisterUserPrefs(
   registry->RegisterIntegerPref(
       prefs::kFlingMaxTapGapTimeInMs,
       GestureConfiguration::fling_max_tap_gap_time_in_ms(),
+      PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kTabScrubActivationDelayInMS,
+      GestureConfiguration::tab_scrub_activation_delay_in_ms(),
       PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDoublePref(
       prefs::kFlingVelocityCap,

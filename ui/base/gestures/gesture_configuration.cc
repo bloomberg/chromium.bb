@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@ int GestureConfiguration::default_radius_ = 15;
 int GestureConfiguration::fling_max_cancel_to_down_time_in_ms_ = 400;
 int GestureConfiguration::fling_max_tap_gap_time_in_ms_ = 200;
 float GestureConfiguration::fling_velocity_cap_ = 17000.0f;
+int GestureConfiguration::tab_scrub_activation_delay_in_ms_ = 200;
 double GestureConfiguration::long_press_time_in_seconds_ = 1.0;
 double GestureConfiguration::semi_long_press_time_in_seconds_ = 0.4;
 double GestureConfiguration::max_distance_for_two_finger_tap_in_pixels_ = 300;

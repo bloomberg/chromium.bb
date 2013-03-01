@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -179,6 +179,12 @@ class UI_EXPORT GestureConfiguration {
   static void set_fling_velocity_cap(float val) {
     fling_velocity_cap_ = val;
   }
+  static int tab_scrub_activation_delay_in_ms() {
+    return tab_scrub_activation_delay_in_ms_;
+  }
+  static void set_tab_scrub_activation_delay_in_ms(int val) {
+    tab_scrub_activation_delay_in_ms_ = val;
+  }
 
  private:
   // These are listed in alphabetical order ignoring underscores, to
@@ -229,6 +235,7 @@ class UI_EXPORT GestureConfiguration {
   static double rail_start_proportion_;
   static float fling_acceleration_curve_coefficients_[NumAccelParams];
   static float fling_velocity_cap_;
+  static int tab_scrub_activation_delay_in_ms_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureConfiguration);
 };

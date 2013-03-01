@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -275,6 +275,11 @@ function GestureConfig() {
       key: 'fling_velocity_cap',
       label: 'Touchscreen Fling Velocity Cap',
       units: 'pixels / second'
+    },
+    {
+      key: 'tab_scrub_activation_delay_in_ms',
+      label: 'Tab scrub auto activation delay, (-1 for never)',
+      units: 'milliseconds'
     }
   ];
 

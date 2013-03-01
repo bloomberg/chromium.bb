@@ -2282,6 +2282,8 @@ const char kRailStartProportion[] =
     "gesture.rail_start_proportion";
 const char kSemiLongPressTimeInSeconds[] =
     "gesture.semi_long_press_time_in_seconds";
+const char kTabScrubActivationDelayInMS[] =
+    "gesture.tab_scrub_activation_delay_in_ms";
 const char kFlingAccelerationCurveCoefficient0[] =
     "gesture.fling_acceleration_curve_coefficient_0";
 const char kFlingAccelerationCurveCoefficient1[] =

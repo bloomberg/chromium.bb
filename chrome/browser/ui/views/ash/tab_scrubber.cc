@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,11 +15,13 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "ui/aura/window.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_utils.h"
+#include "ui/base/gestures/gesture_configuration.h"
 #include "ui/views/controls/glow_hover_controller.h"
 
 namespace {
@@ -60,7 +62,8 @@ TabScrubber::TabScrubber()
       swipe_direction_(LEFT),
       highlighted_tab_(-1),
       activate_timer_(true, false),
-      activation_delay_(base::TimeDelta::FromMilliseconds(kActivationDelayMS)),
+      activation_delay_(kActivationDelayMS),
+      use_default_activation_delay_(true),
       should_cancel_immersive_reveal_(false),
       weak_ptr_factory_(this) {
   ash::Shell::GetInstance()->AddPreTargetHandler(this);
@@ -163,15 +166,24 @@ void TabScrubber::OnScrollEvent(ui::ScrollEvent* event) {
     return;
 
   int new_index = tab_strip->GetModelIndexOfTab(new_tab);
+  if (highlighted_tab_ == -1 &&
+      new_index == browser->tab_strip_model()->active_index())
+    return;
+
   if (new_index != highlighted_tab_) {
     if (activate_timer_.IsRunning()) {
       activate_timer_.Reset();
     } else {
-      activate_timer_.Start(FROM_HERE,
-                            activation_delay_,
-                            base::Bind(&TabScrubber::FinishScrub,
-                                       weak_ptr_factory_.GetWeakPtr(),
-                                       true));
+      int delay = use_default_activation_delay_ ?
+          ui::GestureConfiguration::tab_scrub_activation_delay_in_ms() :
+          activation_delay_;
+      if (delay >= 0) {
+        activate_timer_.Start(FROM_HERE,
+                              base::TimeDelta::FromMilliseconds(delay),
+                              base::Bind(&TabScrubber::FinishScrub,
+                                         weak_ptr_factory_.GetWeakPtr(),
+                                         true));
+      }
     }
     if (highlighted_tab_ != -1) {
       Tab* tab = tab_strip->tab_at(highlighted_tab_);
