@@ -153,15 +153,13 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
                      const StatusCallback& callback);
 
   // Synchronously gets the platform path for the given |url|.
-  void SyncGetPlatformPath(const FileSystemURL& url, base::FilePath* platform_path);
+  void SyncGetPlatformPath(const FileSystemURL& url,
+                           base::FilePath* platform_path);
 
  private:
-  class ScopedUpdateNotifier;
-
-  enum SetUpMode {
-    SETUP_FOR_READ,
-    SETUP_FOR_WRITE,
-    SETUP_FOR_CREATE,
+  enum OperationMode {
+    OPERATION_MODE_READ,
+    OPERATION_MODE_WRITE,
   };
 
   // Only MountPointProviders or testing class can create a
@@ -301,7 +299,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
   // Checks the validity of a given |url| and populates |file_util| for |mode|.
   base::PlatformFileError SetUp(
       const FileSystemURL& url,
-      SetUpMode mode);
+      OperationMode mode);
 
   // Used only for internal assertions.
   // Returns false if there's another inflight pending operation.
@@ -333,10 +331,6 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
   // A callback that is called when this instance goes away.
   base::Closure termination_callback_;
 
-  // This is set before any write operations to dispatch
-  // FileUpdateObserver::StartUpdate and FileUpdateObserver::EndUpdate.
-  ScopedVector<ScopedUpdateNotifier> scoped_update_notifiers_;
-
   // These are all used only by Write().
   friend class FileWriterDelegate;
   scoped_ptr<FileWriterDelegate> file_writer_delegate_;
@@ -356,6 +350,10 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
 
   // A flag to make sure we call operation only once per instance.
   OperationType pending_operation_;
+
+  // We keep track of the file to be modified by this operation so that
+  // we can notify observers when we're done.
+  FileSystemURL write_target_url_;
 
   // LocalFileSystemOperation instance is usually deleted upon completion but
   // could be deleted while it has inflight callbacks when Cancel is called.

@@ -8,6 +8,7 @@
 #include <stack>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "webkit/fileapi/recursive_operation_delegate.h"
 
 namespace webkit_blob {
@@ -26,11 +27,13 @@ class CrossOperationDelegate
     OPERATION_MOVE
   };
 
-  CrossOperationDelegate(LocalFileSystemOperation* original_operation,
-                         const FileSystemURL& src_root,
-                         const FileSystemURL& dest_root,
-                         OperationType operation_type,
-                         const StatusCallback& callback);
+  CrossOperationDelegate(
+      LocalFileSystemOperation* src_root_operation,
+      LocalFileSystemOperation* dest_root_operation,
+      const FileSystemURL& src_root,
+      const FileSystemURL& dest_root,
+      OperationType operation_type,
+      const StatusCallback& callback);
   virtual ~CrossOperationDelegate();
 
   // RecursiveOperationDelegate overrides:
@@ -71,17 +74,14 @@ class CrossOperationDelegate
   // When the creation fails it fires callback_ with the
   // error code and returns NULL.
   //
-  // - NewDestOperation is basically a thin wrapper of
+  // - NewSourceOperation is basically a thin wrapper of
   //   RecursiveOperationDelegate::NewOperation().
-  //   (Since the original_operation must have been created for the destination
-  //   URL. TODO(kinuko): we should have some assertion for this assumption)
-  //
-  // - NewSourceOperation also redirects the request to
+  // - NewDestOperation also redirects the request to
   //   RecursiveOperationDelegate::NewOperation() **iff** same_file_system_
   //   is true.
   //   Otherwise it's for cross-filesystem operation and it needs a
   //   separate FileSystemOperationContext, so it creates a new operation
-  //   which inherits context from src_root_operation_.
+  //   which inherits context from dest_root_operation_.
   //
   LocalFileSystemOperation* NewSourceOperation(const FileSystemURL& url);
   LocalFileSystemOperation* NewDestOperation(const FileSystemURL& url);
@@ -92,7 +92,7 @@ class CrossOperationDelegate
   OperationType operation_type_;
   StatusCallback callback_;
 
-  LocalFileSystemOperation* src_root_operation_;
+  scoped_ptr<LocalFileSystemOperation> dest_root_operation_;
 
   scoped_refptr<webkit_blob::ShareableFileReference> current_file_ref_;
 

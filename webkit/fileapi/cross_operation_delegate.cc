@@ -14,23 +14,22 @@
 namespace fileapi {
 
 CrossOperationDelegate::CrossOperationDelegate(
-    LocalFileSystemOperation* original_operation,
+    LocalFileSystemOperation* src_root_operation,
+    LocalFileSystemOperation* dest_root_operation,
     const FileSystemURL& src_root,
     const FileSystemURL& dest_root,
     OperationType operation_type,
     const StatusCallback& callback)
-    : RecursiveOperationDelegate(original_operation),
+    : RecursiveOperationDelegate(src_root_operation),
       src_root_(src_root),
       dest_root_(dest_root),
       operation_type_(operation_type),
       callback_(callback),
-      src_root_operation_(NULL) {
+      dest_root_operation_(dest_root_operation) {
   same_file_system_ = AreSameFileSystem(src_root_, dest_root_);
 }
 
 CrossOperationDelegate::~CrossOperationDelegate() {
-  if (src_root_operation_)
-    delete src_root_operation_;
 }
 
 void CrossOperationDelegate::Run() {
@@ -51,21 +50,6 @@ void CrossOperationDelegate::RunRecursively() {
   if (same_file_system_ && src_root_.path() == dest_root_.path()) {
     callback_.Run(base::PLATFORM_FILE_ERROR_EXISTS);
     return;
-  }
-
-  // Initialize the src_root_operation_ for the src root URL.
-  DCHECK(!src_root_operation_);
-  if (!same_file_system_) {
-    base::PlatformFileError error = base::PLATFORM_FILE_OK;
-    FileSystemOperation* operation = file_system_context()->
-        CreateFileSystemOperation(src_root_, &error);
-    if (error != base::PLATFORM_FILE_OK) {
-      DCHECK(!operation);
-      callback_.Run(error);
-      return;
-    }
-    src_root_operation_ = operation->AsLocalFileSystemOperation();
-    DCHECK(src_root_operation_);
   }
 
   // First try to copy/move it as a file.
@@ -230,7 +214,7 @@ FileSystemURL CrossOperationDelegate::CreateDestURL(
       relative);
 }
 
-LocalFileSystemOperation* CrossOperationDelegate::NewDestOperation(
+LocalFileSystemOperation* CrossOperationDelegate::NewSourceOperation(
     const FileSystemURL& url) {
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   LocalFileSystemOperation* operation =
@@ -243,10 +227,10 @@ LocalFileSystemOperation* CrossOperationDelegate::NewDestOperation(
   return operation;
 }
 
-LocalFileSystemOperation* CrossOperationDelegate::NewSourceOperation(
+LocalFileSystemOperation* CrossOperationDelegate::NewDestOperation(
     const FileSystemURL& url) {
   if (same_file_system_)
-    return NewDestOperation(url);
+    return NewSourceOperation(url);
 
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   FileSystemOperation* operation = file_system_context()->
@@ -259,11 +243,10 @@ LocalFileSystemOperation* CrossOperationDelegate::NewSourceOperation(
   LocalFileSystemOperation* local_operation =
       operation->AsLocalFileSystemOperation();
   DCHECK(local_operation);
-  DCHECK(src_root_operation_);
 
   // Let the new operation inherit from the root operation.
   local_operation->set_overriding_operation_context(
-      src_root_operation_->operation_context());
+      dest_root_operation_->operation_context());
   return local_operation;
 }
 
