@@ -32,6 +32,7 @@ SyncStatusCode GDataErrorCodeToSyncStatusCode(
       return SYNC_STATUS_NETWORK_ERROR;
 
     case google_apis::HTTP_INTERNAL_SERVER_ERROR:
+    case google_apis::HTTP_BAD_GATEWAY:
     case google_apis::HTTP_SERVICE_UNAVAILABLE:
     case google_apis::GDATA_CANCELLED:
     case google_apis::GDATA_NOT_READY:
