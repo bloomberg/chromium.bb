@@ -184,34 +184,10 @@ def upload_find_auth(file_path, project_name, summary, labels=None,
       if password is None:
         password = authenticators[2]
 
-  while tries > 0:
-    if user_name is None:
-      # Read username if not specified or loaded from svn config, or on
-      # subsequent tries.
-      sys.stdout.write('Please enter your googlecode.com username: ')
-      sys.stdout.flush()
-      user_name = sys.stdin.readline().rstrip()
-    if password is None:
-      # Read password if not loaded from svn config, or on subsequent tries.
-      print 'Please enter your googlecode.com password.'
-      print '** Note that this is NOT your Gmail account password! **'
-      print 'It is the password you use to access Subversion repositories,'
-      print 'and can be found here: http://code.google.com/hosting/settings'
-      password = getpass.getpass()
+  if user_name is None or password is None:
+    raise RuntimeError('Missing user credentials for upload')
 
-    status, reason, url = upload(file_path, project_name, user_name, password,
-                                 summary, labels)
-    # Returns 403 Forbidden instead of 401 Unauthorized for bad
-    # credentials as of 2007-07-17.
-    if status in [httplib.FORBIDDEN, httplib.UNAUTHORIZED]:
-      # Rest for another try.
-      user_name = password = None
-      tries = tries - 1
-    else:
-      # We're done.
-      break
-
-  return status, reason, url
+  return upload(file_path, project_name, user_name, password, summary, labels)
 
 
 def main():
