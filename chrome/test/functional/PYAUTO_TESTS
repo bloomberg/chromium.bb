@@ -98,6 +98,12 @@
       # Mysteriously broken?
       # crbug.com/138857
       '-multiprofile.MultiprofileTest.testMakeSearchEngineDefaultInMultiprofile',
+      # crbug.com/179268
+      '-ntp.NTPTest.testCannotUninstallWebStore',
+      '-ntp.NTPTest.testGetAppsInNewProfile',
+      '-ntp.NTPTest.testGetAppsWhenInstallApp',
+      '-ntp.NTPTest.testGetAppsWhenInstallNonApps',
+      '-ntp.NTPTest.testUninstallApp',
       # crbug.com/143308
       '-omnibox.OmniboxLiveTest.testGoogleSearch',
       # crbug.com/71715
