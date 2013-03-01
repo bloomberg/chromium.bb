@@ -435,14 +435,7 @@ void TestingProfile::BlockUntilBookmarkModelLoaded() {
   BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForProfileIfExists(this);
   DCHECK(bookmark_model);
-  if (bookmark_model->IsLoaded())
-    return;
-  base::RunLoop run_loop;
-  BookmarkLoadObserver observer(content::GetQuitTaskForRunLoop(&run_loop));
-  bookmark_model->AddObserver(&observer);
-  run_loop.Run();
-  bookmark_model->RemoveObserver(&observer);
-  DCHECK(bookmark_model->IsLoaded());
+  ui_test_utils::WaitForBookmarkModelToLoad(bookmark_model);
 }
 
 void TestingProfile::BlockUntilHistoryIndexIsRefreshed() {
