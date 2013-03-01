@@ -5,26 +5,18 @@
 #include "chrome/browser/chromeos/dbus/liveness_service_provider.h"
 
 #include "base/bind.h"
-#include "content/public/browser/browser_thread.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-using content::BrowserThread;
-
 namespace chromeos {
 
-LivenessServiceProvider::LivenessServiceProvider() : weak_ptr_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-}
+LivenessServiceProvider::LivenessServiceProvider() : weak_ptr_factory_(this) {}
 
-LivenessServiceProvider::~LivenessServiceProvider() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-}
+LivenessServiceProvider::~LivenessServiceProvider() {}
 
 void LivenessServiceProvider::Start(
     scoped_refptr<dbus::ExportedObject> exported_object) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   exported_object->ExportMethod(
       kLibCrosServiceInterface,
       kCheckLiveness,
@@ -46,7 +38,6 @@ void LivenessServiceProvider::OnExported(const std::string& interface_name,
 void LivenessServiceProvider::CheckLiveness(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   response_sender.Run(dbus::Response::FromMethodCall(method_call));
 }
 
