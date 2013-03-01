@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "media/base/media_log.h"
 #include "net/base/net_errors.h"
 
@@ -78,7 +78,7 @@ void BufferedDataSource::ReadOperation::Run(
 }
 
 BufferedDataSource::BufferedDataSource(
-    MessageLoop* render_loop,
+    const scoped_refptr<base::MessageLoopProxy>& render_loop,
     WebFrame* frame,
     media::MediaLog* media_log,
     const DownloadingCB& downloading_cb)
@@ -107,7 +107,7 @@ BufferedDataSource::~BufferedDataSource() {}
 // for testing purpose.
 BufferedResourceLoader* BufferedDataSource::CreateResourceLoader(
     int64 first_byte_position, int64 last_byte_position) {
-  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(render_loop_->BelongsToCurrentThread());
 
   BufferedResourceLoader::DeferStrategy strategy = preload_ == METADATA ?
       BufferedResourceLoader::kReadThenDefer :
@@ -136,7 +136,7 @@ void BufferedDataSource::Initialize(
     const GURL& url,
     BufferedResourceLoader::CORSMode cors_mode,
     const InitializeCB& init_cb) {
-  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(render_loop_->BelongsToCurrentThread());
   DCHECK(!init_cb.is_null());
   DCHECK(!loader_.get());
   url_ = url;
@@ -165,12 +165,12 @@ void BufferedDataSource::Initialize(
 }
 
 void BufferedDataSource::SetPreload(Preload preload) {
-  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(render_loop_->BelongsToCurrentThread());
   preload_ = preload;
 }
 
 bool BufferedDataSource::HasSingleOrigin() {
-  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(render_loop_->BelongsToCurrentThread());
   DCHECK(init_cb_.is_null() && loader_.get())
       << "Initialize() must complete before calling HasSingleOrigin()";
   return loader_->HasSingleOrigin();
@@ -181,7 +181,7 @@ bool BufferedDataSource::DidPassCORSAccessCheck() const {
 }
 
 void BufferedDataSource::Abort() {
-  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(render_loop_->BelongsToCurrentThread());
   {
     base::AutoLock auto_lock(lock_);
     StopInternal_Locked();
@@ -251,7 +251,7 @@ bool BufferedDataSource::IsStreaming() {
 /////////////////////////////////////////////////////////////////////////////
 // Render thread tasks.
 void BufferedDataSource::ReadTask() {
-  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(render_loop_->BelongsToCurrentThread());
   ReadInternal();
 }
 
@@ -271,14 +271,14 @@ void BufferedDataSource::StopInternal_Locked() {
 }
 
 void BufferedDataSource::StopLoader() {
-  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(render_loop_->BelongsToCurrentThread());
 
   if (loader_.get())
     loader_->Stop();
 }
 
 void BufferedDataSource::SetPlaybackRateTask(float playback_rate) {
-  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(render_loop_->BelongsToCurrentThread());
   DCHECK(loader_.get());
 
   if (playback_rate != 0)
@@ -307,7 +307,7 @@ void BufferedDataSource::SetPlaybackRateTask(float playback_rate) {
 }
 
 void BufferedDataSource::SetBitrateTask(int bitrate) {
-  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(render_loop_->BelongsToCurrentThread());
   DCHECK(loader_.get());
 
   bitrate_ = bitrate;
@@ -317,7 +317,7 @@ void BufferedDataSource::SetBitrateTask(int bitrate) {
 // This method is the place where actual read happens, |loader_| must be valid
 // prior to make this method call.
 void BufferedDataSource::ReadInternal() {
-  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(render_loop_->BelongsToCurrentThread());
   int64 position = 0;
   int size = 0;
   {
@@ -346,7 +346,7 @@ void BufferedDataSource::ReadInternal() {
 // BufferedResourceLoader callback methods.
 void BufferedDataSource::StartCallback(
     BufferedResourceLoader::Status status) {
-  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(render_loop_->BelongsToCurrentThread());
   DCHECK(loader_.get());
 
   bool init_cb_is_null = false;
@@ -390,7 +390,7 @@ void BufferedDataSource::StartCallback(
 
 void BufferedDataSource::PartialReadStartCallback(
     BufferedResourceLoader::Status status) {
-  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(render_loop_->BelongsToCurrentThread());
   DCHECK(loader_.get());
 
   if (status == BufferedResourceLoader::kOk) {
@@ -414,7 +414,7 @@ void BufferedDataSource::PartialReadStartCallback(
 void BufferedDataSource::ReadCallback(
     BufferedResourceLoader::Status status,
     int bytes_read) {
-  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(render_loop_->BelongsToCurrentThread());
 
   // TODO(scherkus): we shouldn't have to lock to signal host(), see
   // http://crbug.com/113712 for details.
@@ -465,7 +465,7 @@ void BufferedDataSource::ReadCallback(
 
 void BufferedDataSource::LoadingStateChangedCallback(
     BufferedResourceLoader::LoadingState state) {
-  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(render_loop_->BelongsToCurrentThread());
 
   if (assume_fully_buffered_)
     return;
@@ -493,7 +493,7 @@ void BufferedDataSource::LoadingStateChangedCallback(
 }
 
 void BufferedDataSource::ProgressCallback(int64 position) {
-  DCHECK(MessageLoop::current() == render_loop_);
+  DCHECK(render_loop_->BelongsToCurrentThread());
 
   if (assume_fully_buffered_)
     return;

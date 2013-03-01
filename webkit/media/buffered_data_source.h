@@ -16,7 +16,9 @@
 #include "webkit/media/buffered_resource_loader.h"
 #include "webkit/media/preload.h"
 
-class MessageLoop;
+namespace base {
+class MessageLoopProxy;
+}
 
 namespace media {
 class MediaLog;
@@ -35,7 +37,7 @@ class BufferedDataSource : public media::DataSource {
 
   // |downloading_cb| will be called whenever the downloading/paused state of
   // the source changes.
-  BufferedDataSource(MessageLoop* render_loop,
+  BufferedDataSource(const scoped_refptr<base::MessageLoopProxy>& render_loop,
                      WebKit::WebFrame* frame,
                      media::MediaLog* media_log,
                      const DownloadingCB& downloading_cb);
@@ -179,7 +181,7 @@ class BufferedDataSource : public media::DataSource {
   int intermediate_read_buffer_size_;
 
   // The message loop of the render thread.
-  MessageLoop* render_loop_;
+  const scoped_refptr<base::MessageLoopProxy> render_loop_;
 
   // Protects |stop_signal_received_| and |read_op_|.
   base::Lock lock_;

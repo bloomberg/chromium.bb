@@ -53,7 +53,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop.h"
 #include "base/threading/thread.h"
 #include "googleurl/src/gurl.h"
 #include "media/base/audio_renderer_sink.h"
@@ -70,6 +69,10 @@ class RenderAudioSourceProvider;
 
 namespace WebKit {
 class WebFrame;
+}
+
+namespace base {
+class MessageLoopProxy;
 }
 
 namespace media {
@@ -282,9 +285,9 @@ class WebMediaPlayerImpl
   // Keep a list of buffered time ranges.
   WebKit::WebTimeRanges buffered_;
 
-  // Message loops for posting tasks between Chrome's main thread. Also used
+  // Message loops for posting tasks on Chrome's main thread. Also used
   // for DCHECKs so methods calls won't execute in the wrong thread.
-  MessageLoop* main_loop_;
+  const scoped_refptr<base::MessageLoopProxy> main_loop_;
 
   scoped_ptr<media::FilterCollection> filter_collection_;
   scoped_refptr<media::Pipeline> pipeline_;

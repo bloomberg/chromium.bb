@@ -37,7 +37,9 @@ namespace webkit_media {
 // Also keeps track of whether said MockWebURLLoader is actively loading.
 class MockBufferedDataSource : public BufferedDataSource {
  public:
-  MockBufferedDataSource(MessageLoop* message_loop, WebFrame* frame)
+  MockBufferedDataSource(
+      const scoped_refptr<base::MessageLoopProxy>& message_loop,
+      WebFrame* frame)
       : BufferedDataSource(message_loop, frame, new media::MediaLog(),
                            base::Bind(&MockBufferedDataSource::set_downloading,
                                       base::Unretained(this))),
@@ -96,8 +98,8 @@ class BufferedDataSourceTest : public testing::Test {
       : view_(WebView::create(NULL)) {
     view_->initializeMainFrame(&client_);
 
-    data_source_ = new MockBufferedDataSource(&message_loop_,
-                                              view_->mainFrame());
+    data_source_ = new MockBufferedDataSource(
+        message_loop_.message_loop_proxy(), view_->mainFrame());
     data_source_->set_host(&host_);
   }
 
