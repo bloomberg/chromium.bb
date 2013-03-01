@@ -396,9 +396,8 @@ void RenderWidgetCompositor::didBeginFrame() {
   widget_->InstrumentDidBeginFrame();
 }
 
-// TODO(jamesr): This should go through WebWidget
 void RenderWidgetCompositor::animate(double monotonic_frame_begin_time) {
-  client_->updateAnimations(monotonic_frame_begin_time);
+  widget_->webwidget()->animate(monotonic_frame_begin_time);
 }
 
 // Can delete from WebLayerTreeViewClient
