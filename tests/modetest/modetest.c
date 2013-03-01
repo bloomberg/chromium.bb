@@ -1067,8 +1067,8 @@ int main(int argc, char **argv)
 	char *module = NULL;
 	unsigned int i;
 	int count = 0, plane_count = 0;
-	struct connector_arg con_args[2];
-	struct plane_arg plane_args[2] = { { 0, }, };
+	struct connector_arg *con_args = NULL;
+	struct plane_arg *plane_args = NULL;
 	unsigned int args = 0;
 	
 	opterr = 0;
@@ -1097,8 +1097,16 @@ int main(int argc, char **argv)
 			modes = 1;
 			break;
 		case 'P':
+			plane_args = realloc(plane_args,
+					     (plane_count + 1) * sizeof *plane_args);
+			if (plane_args == NULL) {
+				fprintf(stderr, "memory allocation failed\n");
+				return 1;
+			}
+
 			if (parse_plane(&plane_args[plane_count], optarg) < 0)
 				usage(argv[0]);
+
 			plane_count++;
 			break;
 		case 'p':
@@ -1106,8 +1114,16 @@ int main(int argc, char **argv)
 			planes = 1;
 			break;
 		case 's':
+			con_args = realloc(con_args,
+					   (count + 1) * sizeof *con_args);
+			if (con_args == NULL) {
+				fprintf(stderr, "memory allocation failed\n");
+				return 1;
+			}
+
 			if (parse_connector(&con_args[count], optarg) < 0)
 				usage(argv[0]);
+
 			count++;				      
 			break;
 		case 'v':
