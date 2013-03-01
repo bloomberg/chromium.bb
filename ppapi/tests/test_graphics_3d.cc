@@ -15,6 +15,7 @@
 #include "ppapi/cpp/graphics_3d.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/lib/gl/gles2/gl2ext_ppapi.h"
+#include "ppapi/tests/test_case.h"
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
 
@@ -30,9 +31,9 @@ bool TestGraphics3D::Init() {
 }
 
 void TestGraphics3D::RunTests(const std::string& filter) {
-  RUN_TEST(FramePPAPI, filter);
-  RUN_TEST(FrameGL, filter);
-  RUN_TEST(ExtensionsGL, filter);
+  RUN_CALLBACK_TEST(TestGraphics3D, FramePPAPI, filter);
+  RUN_CALLBACK_TEST(TestGraphics3D, FrameGL, filter);
+  RUN_CALLBACK_TEST(TestGraphics3D, ExtensionsGL, filter);
 }
 
 std::string TestGraphics3D::TestFramePPAPI() {
@@ -135,7 +136,7 @@ std::string TestGraphics3D::TestExtensionsGL() {
 }
 
 int32_t TestGraphics3D::SwapBuffersSync(pp::Graphics3D* context) {
-  TestCompletionCallback callback(instance_->pp_instance(), true);
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
   int32_t rv = context->SwapBuffers(callback);
   if (rv != PP_OK_COMPLETIONPENDING)
     return rv;
