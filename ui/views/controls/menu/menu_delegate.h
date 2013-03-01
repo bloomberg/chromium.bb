@@ -216,6 +216,9 @@ class VIEWS_EXPORT MenuDelegate {
                                         int icon_size,
                                         int* left_margin,
                                         int* right_margin) const;
+  // Returns true if the labels should reserve additional spacing for e.g.
+  // submenu indicators at the end of the line.
+  virtual bool ShouldReserveSpaceForSubmenuIndicator() const;
 };
 
 }  // namespace views

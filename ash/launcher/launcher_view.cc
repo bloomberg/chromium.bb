@@ -77,6 +77,9 @@ const SkColor kActiveListItemBackgroundColor = SkColorSetRGB(203 , 219, 241);
 const SkColor kFocusedActiveListItemBackgroundColor =
     SkColorSetRGB(193, 211, 236);
 
+// The maximum allowable length of a menu line of an application menu in pixels.
+const int kMaximumAppMenuItemLength = 250;
+
 namespace {
 
 // An object which turns slow animations on during its lifetime.
@@ -109,6 +112,9 @@ class LauncherMenuModelAdapter
   virtual bool GetBackgroundColor(int command_id,
                                   bool is_hovered,
                                   SkColor* override_color) const OVERRIDE;
+  virtual int GetMaxWidthForMenu(views::MenuItemView* menu) OVERRIDE;
+  virtual bool ShouldReserveSpaceForSubmenuIndicator() const OVERRIDE;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(LauncherMenuModelAdapter);
 };
@@ -146,6 +152,14 @@ void LauncherMenuModelAdapter::GetHorizontalIconMargins(
   *left_margin = kHorizontalIconSpacing;
   *right_margin = (command_id != kCommandIdOfMenuName) ?
       kHorizontalIconSpacing : -icon_size;
+}
+
+int LauncherMenuModelAdapter::GetMaxWidthForMenu(views::MenuItemView* menu) {
+  return kMaximumAppMenuItemLength;
+}
+
+bool LauncherMenuModelAdapter::ShouldReserveSpaceForSubmenuIndicator() const {
+  return false;
 }
 
 // Custom FocusSearch used to navigate the launcher in the order items are in

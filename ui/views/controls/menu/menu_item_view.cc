@@ -601,7 +601,8 @@ MenuItemView::MenuItemView(MenuItemView* parent,
       left_icon_margin_(0),
       right_icon_margin_(0),
       requested_menu_position_(POSITION_BEST_FIT),
-      actual_menu_position_(requested_menu_position_) {
+      actual_menu_position_(requested_menu_position_),
+      use_right_margin_(true) {
   Init(parent, command, type, NULL);
 }
 
@@ -830,7 +831,10 @@ void MenuItemView::PaintButtonCommon(gfx::Canvas* canvas,
   const gfx::Font& font = GetFont();
   int accel_width = parent_menu_item_->GetSubmenu()->max_accelerator_width();
   int label_start = label_start_ + left_icon_margin_ + right_icon_margin_;
-  int width = this->width() - item_right_margin_ - label_start - accel_width;
+  int width = this->width() - label_start - accel_width -
+      (!GetDelegate() ||
+       GetDelegate()->ShouldReserveSpaceForSubmenuIndicator() ?
+          item_right_margin_ : config.arrow_to_edge_padding);
   gfx::Rect text_bounds(label_start, top_margin, width, available_height);
   text_bounds.set_x(GetMirroredXForRect(text_bounds));
   int flags = GetDrawStringFlags();

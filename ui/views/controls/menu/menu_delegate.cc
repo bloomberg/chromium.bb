@@ -146,4 +146,8 @@ void MenuDelegate::GetHorizontalIconMargins(int command_id,
   *right_margin = 0;
 }
 
+bool MenuDelegate::ShouldReserveSpaceForSubmenuIndicator() const {
+  return true;
+}
+
 }  // namespace views
