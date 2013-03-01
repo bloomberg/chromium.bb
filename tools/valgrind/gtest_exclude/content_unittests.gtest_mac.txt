@@ -19,3 +19,7 @@ MacSandboxTest.ClipboardAccess
 
 # mach_override assertion, see http://crbug.com/162728
 BlobURLRequestJobTest.*
+
+# Fail, see http://crbug.com/159234
+WebContentsVideoCaptureDeviceTest.GoesThroughAllTheMotions
+WebContentsVideoCaptureDeviceTest.BadFramesGoodFrames
