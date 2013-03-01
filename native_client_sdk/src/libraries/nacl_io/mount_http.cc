@@ -23,8 +23,10 @@
 #endif
 
 
+namespace {
+
 typedef std::vector<char *> StringList_t;
-static size_t SplitString(char *str, const char *delim, StringList_t* list) {
+size_t SplitString(char *str, const char *delim, StringList_t* list) {
   char *item = strtok(str, delim);
 
   list->clear();
@@ -40,9 +42,9 @@ static size_t SplitString(char *str, const char *delim, StringList_t* list) {
 // If we're attempting to read a partial request, but the server returns a full
 // request, we need to read all of the data up to the start of our partial
 // request into a dummy buffer. This is the maximum size of that buffer.
-static const size_t MAX_READ_BUFFER_SIZE = 64 * 1024;
-static const int32_t STATUSCODE_OK = 200;
-static const int32_t STATUSCODE_PARTIAL_CONTENT = 206;
+const size_t MAX_READ_BUFFER_SIZE = 64 * 1024;
+const int32_t STATUSCODE_OK = 200;
+const int32_t STATUSCODE_PARTIAL_CONTENT = 206;
 
 std::string NormalizeHeaderKey(const std::string& s) {
   // Capitalize the first letter and any letter following a hyphen:
@@ -149,6 +151,9 @@ bool ParseContentRange(const StringMap_t& headers, size_t* read_start,
   return false;
 }
 
+}  // namespace
+
+
 class MountNodeHttp : public MountNode {
  public:
   virtual int FSync();
@@ -160,7 +165,7 @@ class MountNodeHttp : public MountNode {
   virtual size_t GetSize();
 
  protected:
-  MountNodeHttp(Mount* mount, const std::string& url);
+  MountNodeHttp(Mount* mount, const std::string& url, bool cache_content);
 
  private:
   bool OpenUrl(const char* method,
@@ -171,8 +176,16 @@ class MountNodeHttp : public MountNode {
                int32_t* out_statuscode,
                StringMap_t* out_response_headers);
 
+  int DownloadToCache();
+  int ReadPartialFromCache(size_t offs, void* buf, size_t count);
+  int DownloadPartial(size_t offs, void* buf, size_t count);
+  int DownloadToBuffer(PP_Resource loader, void* buf, size_t count);
+
   std::string url_;
   std::vector<char> buffer_;
+
+  bool cache_content_;
+  std::vector<char> cached_data_;
   friend class ::MountHttp;
 };
 
@@ -192,7 +205,7 @@ int MountNodeHttp::GetStat(struct stat* stat) {
   // Assume we need to 'HEAD' if we do not know the size, otherwise, assume
   // that the information is constant.  We can add a timeout if needed.
   MountHttp* mount = static_cast<MountHttp*>(mount_);
-  if (stat_.st_size == 0 || !mount->allow_stat_cache_) {
+  if (stat_.st_size == 0 || !mount->cache_stat_) {
     StringMap_t headers;
     PP_Resource loader;
     PP_Resource request;
@@ -230,116 +243,16 @@ int MountNodeHttp::GetStat(struct stat* stat) {
 
 int MountNodeHttp::Read(size_t offs, void* buf, size_t count) {
   AutoLock lock(&lock_);
-  StringMap_t headers;
+  if (cache_content_) {
+    if (cached_data_.empty()) {
+      if (DownloadToCache() < 0)
+        return -1;
+    }
 
-  char buffer[100];
-  // Range request is inclusive: 0-99 returns 100 bytes.
-  snprintf(&buffer[0], sizeof(buffer), "bytes=%"PRIuS"-%"PRIuS,
-           offs, offs + count - 1);
-  headers["Range"] = buffer;
-
-  PP_Resource loader;
-  PP_Resource request;
-  PP_Resource response;
-  int32_t statuscode;
-  StringMap_t response_headers;
-  if (!OpenUrl("GET", &headers, &loader, &request, &response, &statuscode,
-               &response_headers)) {
-    // errno is already set by OpenUrl.
-    return 0;
+    return ReadPartialFromCache(offs, buf, count);
   }
 
-  PepperInterface* ppapi = mount_->ppapi();
-  ScopedResource scoped_loader(ppapi, loader);
-  ScopedResource scoped_request(ppapi, request);
-  ScopedResource scoped_response(ppapi, response);
-
-  size_t read_start = 0;
-  if (statuscode == STATUSCODE_OK) {
-    // No partial result, read everything starting from the part we care about.
-    size_t content_length;
-    if (ParseContentLength(response_headers, &content_length)) {
-      if (offs >= content_length) {
-        errno = EINVAL;
-        return 0;
-      }
-
-      // Clamp count, if trying to read past the end of the file.
-      if (offs + count > content_length) {
-        count = content_length - offs;
-      }
-    }
-  } else if (statuscode == STATUSCODE_PARTIAL_CONTENT) {
-    // Determine from the headers where we are reading.
-    size_t read_end;
-    size_t entity_length;
-    if (ParseContentRange(response_headers, &read_start, &read_end,
-                          &entity_length)) {
-      if (read_start > offs || read_start > read_end) {
-        // Shouldn't happen.
-        errno = EINVAL;
-        return 0;
-      }
-
-      // Clamp count, if trying to read past the end of the file.
-      count = std::min(read_end - read_start, count);
-    } else {
-      // Partial Content without Content-Range. Assume that the server gave us
-      // exactly what we asked for. This can happen even when the server
-      // returns 200 -- the cache may return 206 in this case, but not modify
-      // the headers.
-      read_start = offs;
-    }
-  }
-
-  URLLoaderInterface* loader_interface = ppapi->GetURLLoaderInterface();
-
-  size_t bytes_to_read;
-  int32_t bytes_read;
-  while (read_start < offs) {
-    if (!buffer_.size()) {
-      buffer_.resize(std::min(offs - read_start, MAX_READ_BUFFER_SIZE));
-    }
-
-    // We aren't yet at the location where we want to start reading. Read into
-    // our dummy buffer until then.
-    bytes_to_read = std::min(offs - read_start, buffer_.size());
-    bytes_read = loader_interface->ReadResponseBody(
-        loader, buffer_.data(), bytes_to_read, PP_BlockUntilComplete());
-
-    if (bytes_read < 0) {
-      errno = PPErrorToErrno(bytes_read);
-      return 0;
-    }
-
-    assert(bytes_read <= bytes_to_read);
-    read_start += bytes_read;
-  }
-
-  // At the read start, now we can read into the correct buffer.
-  char* out_buffer = static_cast<char*>(buf);
-  bytes_to_read = count;
-  while (bytes_to_read > 0) {
-    bytes_read = loader_interface->ReadResponseBody(
-        loader, out_buffer, bytes_to_read, PP_BlockUntilComplete());
-
-    if (bytes_read == 0) {
-      // This is not an error -- it may just be that we were trying to read
-      // more data than exists.
-      return count - bytes_to_read;
-    }
-
-    if (bytes_read < 0) {
-      errno = PPErrorToErrno(bytes_read);
-      return count - bytes_to_read;
-    }
-
-    assert(bytes_read <= bytes_to_read);
-    bytes_to_read -= bytes_read;
-    out_buffer += bytes_read;
-  }
-
-  return count;
+  return DownloadPartial(offs, buf, count);
 }
 
 int MountNodeHttp::Truncate(size_t size) {
@@ -359,9 +272,11 @@ size_t MountNodeHttp::GetSize() {
   return stat_.st_size;
 }
 
-MountNodeHttp::MountNodeHttp(Mount* mount, const std::string& url)
+MountNodeHttp::MountNodeHttp(Mount* mount, const std::string& url,
+                             bool cache_content)
     : MountNode(mount),
-      url_(url) {
+      url_(url),
+      cache_content_(cache_content) {
 }
 
 bool MountNodeHttp::OpenUrl(const char* method,
@@ -448,6 +363,184 @@ bool MountNodeHttp::OpenUrl(const char* method,
   return true;
 }
 
+int MountNodeHttp::DownloadToCache() {
+  StringMap_t headers;
+  PP_Resource loader;
+  PP_Resource request;
+  PP_Resource response;
+  int32_t statuscode;
+  StringMap_t response_headers;
+  if (!OpenUrl("GET", &headers, &loader, &request, &response, &statuscode,
+               &response_headers)) {
+    // errno is already set by OpenUrl.
+    return -1;
+  }
+
+  PepperInterface* ppapi = mount_->ppapi();
+  ScopedResource scoped_loader(ppapi, loader);
+  ScopedResource scoped_request(ppapi, request);
+  ScopedResource scoped_response(ppapi, response);
+
+  size_t content_length = 0;
+  if (ParseContentLength(response_headers, &content_length)) {
+    cached_data_.resize(content_length);
+    int real_size = DownloadToBuffer(loader, cached_data_.data(),
+                                     content_length);
+    if (real_size < 0)
+      return -1;
+
+    stat_.st_size = real_size;
+    cached_data_.resize(real_size);
+    return real_size;
+  }
+
+  // We don't know how big the file is. Read in chunks.
+  cached_data_.resize(MAX_READ_BUFFER_SIZE);
+  char* buf = cached_data_.data();
+  size_t total_bytes_read = 0;
+  size_t bytes_to_read = MAX_READ_BUFFER_SIZE;
+  while (true) {
+    int bytes_read = DownloadToBuffer(loader, buf, bytes_to_read);
+    if (bytes_read < 0)
+      return -1;
+
+    total_bytes_read += bytes_read;
+
+    if (bytes_read < bytes_to_read) {
+      stat_.st_size = total_bytes_read;
+      cached_data_.resize(total_bytes_read);
+      return total_bytes_read;
+    }
+
+    buf += bytes_read;
+    cached_data_.resize(total_bytes_read + bytes_to_read);
+  }
+}
+
+int MountNodeHttp::ReadPartialFromCache(size_t offs, void* buf, size_t count) {
+  if (offs >= cached_data_.size()) {
+    errno = EINVAL;
+    return -1;
+  }
+
+  count = std::min(count, cached_data_.size() - offs);
+  memcpy(buf, &cached_data_.data()[offs], count);
+  return count;
+}
+
+int MountNodeHttp::DownloadPartial(size_t offs, void* buf, size_t count) {
+  StringMap_t headers;
+
+  char buffer[100];
+  // Range request is inclusive: 0-99 returns 100 bytes.
+  snprintf(&buffer[0], sizeof(buffer), "bytes=%"PRIuS"-%"PRIuS,
+           offs, offs + count - 1);
+  headers["Range"] = buffer;
+
+  PP_Resource loader;
+  PP_Resource request;
+  PP_Resource response;
+  int32_t statuscode;
+  StringMap_t response_headers;
+  if (!OpenUrl("GET", &headers, &loader, &request, &response, &statuscode,
+               &response_headers)) {
+    // errno is already set by OpenUrl.
+    return -1;
+  }
+
+  PepperInterface* ppapi = mount_->ppapi();
+  ScopedResource scoped_loader(ppapi, loader);
+  ScopedResource scoped_request(ppapi, request);
+  ScopedResource scoped_response(ppapi, response);
+
+  size_t read_start = 0;
+  if (statuscode == STATUSCODE_OK) {
+    // No partial result, read everything starting from the part we care about.
+    size_t content_length;
+    if (ParseContentLength(response_headers, &content_length)) {
+      if (offs >= content_length) {
+        errno = EINVAL;
+        return 0;
+      }
+
+      // Clamp count, if trying to read past the end of the file.
+      if (offs + count > content_length) {
+        count = content_length - offs;
+      }
+    }
+  } else if (statuscode == STATUSCODE_PARTIAL_CONTENT) {
+    // Determine from the headers where we are reading.
+    size_t read_end;
+    size_t entity_length;
+    if (ParseContentRange(response_headers, &read_start, &read_end,
+                          &entity_length)) {
+      if (read_start > offs || read_start > read_end) {
+        // If this error occurs, the server is returning bogus values.
+        errno = EINVAL;
+        return -1;
+      }
+
+      // Clamp count, if trying to read past the end of the file.
+      count = std::min(read_end - read_start, count);
+    } else {
+      // Partial Content without Content-Range. Assume that the server gave us
+      // exactly what we asked for. This can happen even when the server
+      // returns 200 -- the cache may return 206 in this case, but not modify
+      // the headers.
+      read_start = offs;
+    }
+  }
+
+  if (read_start < offs) {
+    // We aren't yet at the location where we want to start reading. Read into
+    // our dummy buffer until then.
+    size_t bytes_to_read = offs - read_start;
+    if (buffer_.size() < bytes_to_read)
+      buffer_.resize(std::min(bytes_to_read, MAX_READ_BUFFER_SIZE));
+
+    while (bytes_to_read > 0) {
+      int32_t bytes_read = DownloadToBuffer(loader, buffer_.data(),
+                                            buffer_.size());
+      if (bytes_read < 0)
+        return -1;
+
+      bytes_to_read -= bytes_read;
+    }
+  }
+
+  return DownloadToBuffer(loader, buf, count);
+}
+
+int MountNodeHttp::DownloadToBuffer(PP_Resource loader, void* buf,
+                                    size_t count) {
+  PepperInterface* ppapi = mount_->ppapi();
+  URLLoaderInterface* loader_interface = ppapi->GetURLLoaderInterface();
+
+  char* out_buffer = static_cast<char*>(buf);
+  size_t bytes_to_read = count;
+  while (bytes_to_read > 0) {
+    int32_t bytes_read = loader_interface->ReadResponseBody(
+        loader, out_buffer, bytes_to_read, PP_BlockUntilComplete());
+
+    if (bytes_read == 0) {
+      // This is not an error -- it may just be that we were trying to read
+      // more data than exists.
+      return count - bytes_to_read;
+    }
+
+    if (bytes_read < 0) {
+      errno = PPErrorToErrno(bytes_read);
+      return -1;
+    }
+
+    assert(bytes_read <= bytes_to_read);
+    bytes_to_read -= bytes_read;
+    out_buffer += bytes_read;
+  }
+
+  return count;
+}
+
 MountNode *MountHttp::Open(const Path& path, int mode) {
   assert(url_root_.empty() || url_root_[url_root_.length() - 1] == '/');
 
@@ -461,7 +554,7 @@ MountNode *MountHttp::Open(const Path& path, int mode) {
       path.Range(1, path.Size()) :
       path.Join());
 
-  MountNodeHttp* node = new MountNodeHttp(this, url);
+  MountNodeHttp* node = new MountNodeHttp(this, url, cache_content_);
   if (!node->Init(mode) || (0 != node->GetStat(NULL))) {
     node->Release();
     return NULL;
@@ -542,7 +635,8 @@ PP_Resource MountHttp::MakeUrlRequestInfo(
 MountHttp::MountHttp()
     : allow_cors_(false),
       allow_credentials_(false),
-      allow_stat_cache_(true) {
+      cache_stat_(true),
+      cache_content_(true) {
 }
 
 bool MountHttp::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
@@ -568,8 +662,10 @@ bool MountHttp::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
       allow_cors_ = iter->second == "true";
     } else if (iter->first == "allow_credentials") {
       allow_credentials_ = iter->second == "true";
-    } else if (iter->first == "allow_stat_cache") {
-      allow_stat_cache_ = iter->second == "true";
+    } else if (iter->first == "cache_stat") {
+      cache_stat_ = iter->second == "true";
+    } else if (iter->first == "cache_content") {
+      cache_content_ = iter->second == "true";
     } else {
       // Assume it is a header to pass to an HTTP request.
       headers_[NormalizeHeaderKey(iter->first)] = iter->second;
@@ -652,7 +748,7 @@ bool MountHttp::ParseManifest(char *text) {
           path.Range(1, path.Size()) :
           path.Join());
 
-      MountNode* node = new MountNodeHttp(this, url);
+      MountNode* node = new MountNodeHttp(this, url, cache_content_);
       node->Init(mode);
       node->stat_.st_size = atoi(lenstr);
 

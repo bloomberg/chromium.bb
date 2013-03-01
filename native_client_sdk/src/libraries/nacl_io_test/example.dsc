@@ -14,6 +14,7 @@
         'kernel_proxy_mock.h',
         'kernel_proxy_test.cc',
         'kernel_wrap_test.cc',
+        'mock_util.h',
         'module.cc',
         'mount_node_test.cc',
         'mount_html5fs_test.cc',

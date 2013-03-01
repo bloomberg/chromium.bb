@@ -11,5 +11,14 @@ function moduleDidLoad() {
 
 function handleMessage(event) {
   var logEl = document.getElementById('log');
-  logEl.innerHTML += event.data + '<br>';
+  var msg = event.data;
+
+  // Perform some basic escaping.
+  msg = msg.replace(/&/g, '&amp;')
+           .replace(/</g, '&lt;')
+           .replace(/>/g, '&gt;')
+           .replace(/"/g, '&quot;')
+           .replace(/'/g, '&apos;');
+
+  logEl.innerHTML += msg + '\n';
 }

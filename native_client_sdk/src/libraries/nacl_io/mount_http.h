@@ -44,7 +44,8 @@ class MountHttp : public Mount {
   NodeMap_t node_cache_;
   bool allow_cors_;
   bool allow_credentials_;
-  bool allow_stat_cache_;
+  bool cache_stat_;
+  bool cache_content_;
 
   friend class Mount;
   friend class MountNodeHttp;

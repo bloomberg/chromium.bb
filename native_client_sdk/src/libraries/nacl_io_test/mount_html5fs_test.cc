@@ -9,6 +9,7 @@
 #include <ppapi/c/pp_errors.h>
 #include <ppapi/c/pp_instance.h>
 
+#include "mock_util.h"
 #include "nacl_io/mount_html5fs.h"
 #include "nacl_io/osdirent.h"
 #include "pepper_interface_mock.h"
@@ -21,54 +22,9 @@ using ::testing::StrEq;
 
 namespace {
 
-ACTION_TEMPLATE(CallCallback,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_1_VALUE_PARAMS(result)) {
-  PP_CompletionCallback callback = std::tr1::get<k>(args);
-  if (callback.func) {
-    (*callback.func)(callback.user_data, result);
-  }
-
-  // Dummy return value.
-  return 0;
-}
-
-MATCHER_P(IsEqualToVar, var, "") {
-  if (arg.type != var.type)
-    return false;
-
-  switch (arg.type) {
-    case PP_VARTYPE_BOOL:
-      return arg.value.as_bool == var.value.as_bool;
-
-    case PP_VARTYPE_INT32:
-      return arg.value.as_int == var.value.as_int;
-
-    case PP_VARTYPE_DOUBLE:
-      return arg.value.as_double == var.value.as_double;
-
-    case PP_VARTYPE_STRING:
-      return arg.value.as_id == var.value.as_id;
-
-    case PP_VARTYPE_UNDEFINED:
-    case PP_VARTYPE_NULL:
-      return true;
-
-    case PP_VARTYPE_ARRAY:
-    case PP_VARTYPE_ARRAY_BUFFER:
-    case PP_VARTYPE_DICTIONARY:
-    case PP_VARTYPE_OBJECT:
-    default:
-      // Not supported.
-      return false;
-  }
-}
-
-
 class MountHtml5FsMock : public MountHtml5Fs {
  public:
-  explicit MountHtml5FsMock(StringMap_t map, PepperInterfaceMock* ppapi)
-      : MountHtml5Fs() {
+  MountHtml5FsMock(StringMap_t map, PepperInterfaceMock* ppapi) {
     Init(1, map, ppapi);
   }
 
