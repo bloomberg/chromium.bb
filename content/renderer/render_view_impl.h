@@ -394,6 +394,10 @@ class CONTENT_EXPORT RenderViewImpl
 
   void GetWindowSnapshot(const WindowSnapshotCallback& callback);
 
+  // Dispatches the current navigation state to the browser. Called on a
+  // periodic timer so we don't send too many messages.
+  void SyncNavigationState();
+
   // Returns the length of the session history of this RenderView. Note that
   // this only coincides with the actual length of the session history if this
   // RenderView is the currently active RenderView of a WebContents.
@@ -1201,10 +1205,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   // Stops the current find-in-page search.
   void StopFinding(StopFindAction action);
-
-  // Dispatches the current navigation state to the browser. Called on a
-  // periodic timer so we don't send too many messages.
-  void SyncNavigationState();
 
   // Dispatches the current state of selection on the webpage to the browser if
   // it has changed.

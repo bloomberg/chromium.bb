@@ -43,6 +43,9 @@ void SetAllowOSMesaImageTransportForTesting();
 // Do not require a user gesture for focus change events.
 void DoNotRequireUserGestureForFocusChanges();
 
+// Sync the current session history to the browser process.
+void SyncNavigationState(RenderView* render_view);
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_TEST_LAYOUTTEST_SUPPORT_H_

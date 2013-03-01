@@ -19,6 +19,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "content/public/renderer/render_view.h"
+#include "content/public/renderer/render_view_visitor.h"
 #include "content/public/test/layouttest_support.h"
 #include "content/shell/shell_messages.h"
 #include "content/shell/shell_render_process_observer.h"
@@ -109,6 +110,19 @@ void CopyCanvasToBitmap(SkCanvas* canvas,  SkBitmap* snapshot) {
 #endif
 
 }
+
+class SyncNavigationStateVisitor : public RenderViewVisitor {
+ public:
+  SyncNavigationStateVisitor() {}
+  virtual ~SyncNavigationStateVisitor() {}
+
+  virtual bool Visit(RenderView* render_view) OVERRIDE {
+    SyncNavigationState(render_view);
+    return true;
+  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SyncNavigationStateVisitor);
+};
 
 }  // namespace
 
@@ -333,6 +347,8 @@ void WebKitTestRunner::testFinished() {
       ShellRenderProcessObserver::GetInstance()->test_interfaces();
   interfaces->setTestIsRunning(false);
   if (interfaces->testRunner()->shouldDumpBackForwardList()) {
+    SyncNavigationStateVisitor visitor;
+    RenderView::ForEach(&visitor);
     Send(new ShellViewHostMsg_CaptureSessionHistory(routing_id()));
   } else {
     CaptureDump();

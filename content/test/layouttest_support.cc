@@ -73,4 +73,8 @@ void DoNotRequireUserGestureForFocusChanges() {
   RenderThreadImpl::current()->set_require_user_gesture_for_focus(false);
 }
 
+void SyncNavigationState(RenderView* render_view) {
+  static_cast<RenderViewImpl*>(render_view)->SyncNavigationState();
+}
+
 }  // namespace content
