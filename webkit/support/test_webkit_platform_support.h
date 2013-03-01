@@ -11,6 +11,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebUnitTestSupport.h"
 #include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/glue/webkitplatformsupport_impl.h"
+#include "webkit/mocks/mock_webhyphenator.h"
 #include "webkit/support/simple_database_system.h"
 #include "webkit/support/weburl_loader_mock_factory.h"
 #include "webkit/tools/test_shell/mock_webclipboard_impl.h"
@@ -31,8 +32,6 @@ class WebAudioDevice;
 class WebLayerTreeView;
 }
 
-typedef struct _HyphenDict HyphenDict;
-
 // An implementation of WebKitPlatformSupport for tests.
 class TestWebKitPlatformSupport :
     public WebKit::WebUnitTestSupport,
@@ -49,6 +48,7 @@ class TestWebKitPlatformSupport :
   virtual WebKit::WebCookieJar* cookieJar();
   virtual WebKit::WebBlobRegistry* blobRegistry();
   virtual WebKit::WebFileSystem* fileSystem();
+  virtual WebKit::WebHyphenator* hyphenator();
 
   virtual bool sandboxEnabled();
   virtual WebKit::Platform::FileHandle databaseOpenFile(
@@ -176,11 +176,11 @@ class TestWebKitPlatformSupport :
   scoped_refptr<TestShellWebBlobRegistryImpl> blob_registry_;
   SimpleFileSystem file_system_;
   base::ScopedTempDir file_system_root_;
+  webkit_glue::MockWebHyphenator hyphenator_;
   WebURLLoaderMockFactory url_loader_factory_;
   bool unit_test_mode_;
   WebKit::WebGamepads gamepad_data_;
   WebKit::Platform* shadow_platform_delegate_;
-  HyphenDict* hyphen_dictionary_;
 
   scoped_refptr<cc::ContextProvider> main_thread_contexts_;
 

@@ -7,10 +7,8 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_handle.h"
 #include "base/metrics/stats_counters.h"
 #include "base/path_service.h"
-#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "cc/context_provider.h"
 #include "cc/thread_impl.h"
@@ -32,7 +30,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageEventDispatcher.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageNamespace.h"
-#include "third_party/hyphen/hyphen.h"
 #include "v8/include/v8.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/compositor_bindings/web_compositor_support_impl.h"
@@ -75,8 +72,7 @@ using WebKit::WebScriptController;
 TestWebKitPlatformSupport::TestWebKitPlatformSupport(bool unit_test_mode,
     WebKit::Platform* shadow_platform_delegate)
     : unit_test_mode_(unit_test_mode),
-      shadow_platform_delegate_(shadow_platform_delegate),
-      hyphen_dictionary_(NULL) {
+      shadow_platform_delegate_(shadow_platform_delegate) {
   v8::V8::SetCounterFunction(base::StatsTable::FindLocation);
 
   WebKit::initialize(this);
@@ -139,6 +135,17 @@ TestWebKitPlatformSupport::TestWebKitPlatformSupport(bool unit_test_mode,
     DCHECK(file_system_root_.path().empty());
   }
 
+  {
+    // Initialize the hyphen library with a sample dictionary.
+    base::FilePath path = webkit_support::GetChromiumRootDirFilePath();
+    path = path.Append(FILE_PATH_LITERAL("third_party/hyphen/hyph_en_US.dic"));
+    base::PlatformFile dict_file = base::CreatePlatformFile(
+        path,
+        base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
+        NULL, NULL);
+    hyphenator_.LoadDictionary(dict_file);
+  }
+
 #if defined(OS_WIN)
   // Ensure we pick up the default theme engine.
   SetThemeEngine(NULL);
@@ -158,8 +165,6 @@ TestWebKitPlatformSupport::TestWebKitPlatformSupport(bool unit_test_mode,
 }
 
 TestWebKitPlatformSupport::~TestWebKitPlatformSupport() {
-  if (hyphen_dictionary_)
-    hnj_hyphen_free(hyphen_dictionary_);
 }
 
 WebKit::WebMimeRegistry* TestWebKitPlatformSupport::mimeRegistry() {
@@ -190,6 +195,10 @@ WebKit::WebBlobRegistry* TestWebKitPlatformSupport::blobRegistry() {
 
 WebKit::WebFileSystem* TestWebKitPlatformSupport::fileSystem() {
   return &file_system_;
+}
+
+WebKit::WebHyphenator* TestWebKitPlatformSupport::hyphenator() {
+  return &hyphenator_;
 }
 
 bool TestWebKitPlatformSupport::sandboxEnabled() {
@@ -500,8 +509,7 @@ TestWebKitPlatformSupport::createRTCPeerConnectionHandler(
 }
 
 bool TestWebKitPlatformSupport::canHyphenate(const WebKit::WebString& locale) {
-  return locale.isEmpty()  || locale.equals("en") || locale.equals("en_US")  ||
-      locale.equals("en_GB");
+  return hyphenator()->canHyphenate(locale);
 }
 
 size_t TestWebKitPlatformSupport::computeLastHyphenLocation(
@@ -509,73 +517,8 @@ size_t TestWebKitPlatformSupport::computeLastHyphenLocation(
     size_t length,
     size_t before_index,
     const WebKit::WebString& locale) {
-  DCHECK(locale.isEmpty()  || locale.equals("en") || locale.equals("en_US")  ||
-         locale.equals("en_GB"));
-  if (!hyphen_dictionary_) {
-    // Initialize the hyphen library with a sample dictionary. To avoid test
-    // flakiness, this code synchronously loads the dictionary.
-    base::FilePath path = webkit_support::GetChromiumRootDirFilePath();
-    path = path.Append(FILE_PATH_LITERAL("third_party/hyphen/hyph_en_US.dic"));
-    base::PlatformFile dict_file = base::CreatePlatformFile(
-        path,
-        base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
-        NULL, NULL);
-    if (dict_file == base::kInvalidPlatformFileValue)
-      return 0;
-    ScopedStdioHandle dict_handle(base::FdopenPlatformFile(dict_file, "r"));
-    if (!dict_handle.get()) {
-      base::ClosePlatformFile(dict_file);
-      return 0;
-    }
-    hyphen_dictionary_ = hnj_hyphen_load_file(dict_handle.get());
-    if (!hyphen_dictionary_)
-      return 0;
-  }
-  // Retrieve the positions where we can insert hyphens. This function assumes
-  // the input word is an English word so it can use the position returned by
-  // the hyphen library without conversion.
-  string16 word_utf16(characters, length);
-  if (!IsStringASCII(word_utf16))
-    return 0;
-  std::string word = StringToLowerASCII(UTF16ToASCII(word_utf16));
-  scoped_array<char> hyphens(new char[word.length() + 5]);
-  char** rep = NULL;
-  int* pos = NULL;
-  int* cut = NULL;
-  int error = hnj_hyphen_hyphenate2(hyphen_dictionary_,
-                                    word.data(),
-                                    static_cast<int>(word.length()),
-                                    hyphens.get(),
-                                    NULL,
-                                    &rep,
-                                    &pos,
-                                    &cut);
-  if (error)
-    return 0;
-
-  // Release all resources allocated by the hyphen library now because they are
-  // not used when hyphenating English words.
-  if (rep) {
-    for (size_t i = 0; i < word.length(); ++i) {
-      if (rep[i])
-        free(rep[i]);
-    }
-    free(rep);
-  }
-  if (pos)
-    free(pos);
-  if (cut)
-    free(cut);
-
-  // Retrieve the last position where we can insert a hyphen before the given
-  // index.
-  if (before_index >= 2) {
-    for (size_t index = before_index - 2; index > 0; --index) {
-      if (hyphens[index] & 1)
-        return index + 1;
-    }
-  }
-  return 0;
+  return hyphenator()->computeLastHyphenLocation(
+      characters, length, before_index, locale);
 }
 
 WebKit::WebGestureCurve* TestWebKitPlatformSupport::createFlingAnimationCurve(

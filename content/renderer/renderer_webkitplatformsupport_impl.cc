@@ -39,6 +39,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebBlobRegistry.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFileInfo.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGamepads.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebHyphenator.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamCenter.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamCenterClient.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
@@ -118,6 +119,24 @@ class RendererWebKitPlatformSupportImpl::FileUtilities
                                       int mode);
 };
 
+class RendererWebKitPlatformSupportImpl::Hyphenator
+    : public WebKit::WebHyphenator {
+ public:
+  Hyphenator();
+  virtual ~Hyphenator();
+
+  virtual bool canHyphenate(const WebKit::WebString& locale) OVERRIDE;
+  virtual size_t computeLastHyphenLocation(
+      const char16* characters,
+      size_t length,
+      size_t before_index,
+      const WebKit::WebString& locale) OVERRIDE;
+ private:
+  scoped_ptr<content::Hyphenator> hyphenator_;
+
+  DISALLOW_COPY_AND_ASSIGN(Hyphenator);
+};
+
 #if defined(OS_ANDROID)
 // WebKit doesn't use WebSandboxSupport on android so we don't need to
 // implement anything here.
@@ -162,6 +181,7 @@ RendererWebKitPlatformSupportImpl::RendererWebKitPlatformSupportImpl()
     : clipboard_client_(new RendererClipboardClient),
       clipboard_(new webkit_glue::WebClipboardImpl(clipboard_client_.get())),
       mime_registry_(new RendererWebKitPlatformSupportImpl::MimeRegistry),
+      hyphenator_(new RendererWebKitPlatformSupportImpl::Hyphenator),
       sudden_termination_disables_(0),
       plugin_refresh_allowed_(true),
       shared_worker_repository_(new WebSharedWorkerRepositoryImpl) {
@@ -425,6 +445,42 @@ base::PlatformFile RendererWebKitPlatformSupportImpl::FileUtilities::openFile(
   SendSyncMessageFromAnyThread(new FileUtilitiesMsg_OpenFile(
       webkit_base::WebStringToFilePath(path), mode, &handle));
   return IPC::PlatformFileForTransitToPlatformFile(handle);
+}
+
+//------------------------------------------------------------------------------
+
+RendererWebKitPlatformSupportImpl::Hyphenator::Hyphenator() {}
+
+RendererWebKitPlatformSupportImpl::Hyphenator::~Hyphenator() {}
+
+bool RendererWebKitPlatformSupportImpl::Hyphenator::canHyphenate(
+    const WebKit::WebString& locale) {
+  // Return false unless WebKit asks for US English dictionaries because WebKit
+  // can currently hyphenate only English words.
+  if (!locale.isEmpty() && !locale.equals("en-US"))
+    return false;
+
+  // Create a hyphenator object and attach it to the render thread so it can
+  // receive a dictionary file opened by a browser.
+  if (!hyphenator_.get()) {
+    hyphenator_.reset(new content::Hyphenator(base::kInvalidPlatformFileValue));
+    if (!hyphenator_.get())
+      return false;
+    return hyphenator_->Attach(RenderThreadImpl::current(), locale);
+  }
+  return hyphenator_->CanHyphenate(locale);
+}
+
+size_t RendererWebKitPlatformSupportImpl::Hyphenator::computeLastHyphenLocation(
+    const char16* characters,
+    size_t length,
+    size_t before_index,
+    const WebKit::WebString& locale) {
+  // Crash if WebKit calls this function when canHyphenate returns false.
+  DCHECK(locale.isEmpty() || locale.equals("en-US"));
+  DCHECK(hyphenator_.get());
+  return hyphenator_->ComputeLastHyphenLocation(string16(characters, length),
+                                                before_index);
 }
 
 //------------------------------------------------------------------------------
@@ -778,22 +834,17 @@ RendererWebKitPlatformSupportImpl::GetGpuChannelHostFactory() {
 
 //------------------------------------------------------------------------------
 
+WebKit::WebHyphenator* RendererWebKitPlatformSupportImpl::hyphenator() {
+  WebKit::WebHyphenator* hyphenator =
+      GetContentClient()->renderer()->OverrideWebHyphenator();
+  if (hyphenator)
+    return hyphenator;
+  return hyphenator_.get();
+}
+
 bool RendererWebKitPlatformSupportImpl::canHyphenate(
     const WebKit::WebString& locale) {
-  // Return false unless WebKit asks for US English dictionaries because WebKit
-  // can currently hyphenate only English words.
-  if (!locale.isEmpty() && !locale.equals("en-US"))
-    return false;
-
-  // Create a hyphenator object and attach it to the render thread so it can
-  // receive a dictionary file opened by a browser.
-  if (!hyphenator_.get()) {
-    hyphenator_.reset(new Hyphenator(base::kInvalidPlatformFileValue));
-    if (!hyphenator_.get())
-      return false;
-    return hyphenator_->Attach(RenderThreadImpl::current(), locale);
-  }
-  return hyphenator_->CanHyphenate(locale);
+  return hyphenator()->canHyphenate(locale);
 }
 
 size_t RendererWebKitPlatformSupportImpl::computeLastHyphenLocation(
@@ -801,11 +852,8 @@ size_t RendererWebKitPlatformSupportImpl::computeLastHyphenLocation(
     size_t length,
     size_t before_index,
     const WebKit::WebString& locale) {
-  // Crash if WebKit calls this function when canHyphenate returns false.
-  DCHECK(locale.isEmpty() || locale.equals("en-US"));
-  DCHECK(hyphenator_.get());
-  return hyphenator_->ComputeLastHyphenLocation(string16(characters, length),
-                                                before_index);
+  return hyphenator()->computeLastHyphenLocation(
+      characters, length, before_index, locale);
 }
 
 //------------------------------------------------------------------------------

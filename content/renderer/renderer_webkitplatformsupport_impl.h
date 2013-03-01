@@ -20,7 +20,6 @@ class WebClipboardImpl;
 
 namespace content {
 class GamepadSharedMemoryReader;
-class Hyphenator;
 class RendererClipboardClient;
 class WebFileSystemImpl;
 class WebSharedWorkerRepositoryImpl;
@@ -40,6 +39,7 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual WebKit::WebFileUtilities* fileUtilities();
   virtual WebKit::WebSandboxSupport* sandboxSupport();
   virtual WebKit::WebCookieJar* cookieJar();
+  virtual WebKit::WebHyphenator* hyphenator();
   virtual bool sandboxEnabled();
   virtual unsigned long long visitedLinkHash(
       const char* canonicalURL, size_t length);
@@ -135,6 +135,9 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   class SandboxSupport;
   scoped_ptr<SandboxSupport> sandbox_support_;
 
+  class Hyphenator;
+  scoped_ptr<Hyphenator> hyphenator_;
+
   // This counter keeps track of the number of times sudden termination is
   // enabled or disabled. It starts at 0 (enabled) and for every disable
   // increments by 1, for every enable decrements by 1. When it reaches 0,
@@ -155,8 +158,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   scoped_ptr<WebKit::WebBlobRegistry> blob_registry_;
 
   scoped_ptr<GamepadSharedMemoryReader> gamepad_shared_memory_reader_;
-
-  scoped_ptr<content::Hyphenator> hyphenator_;
 };
 
 }  // namespace content

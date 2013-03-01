@@ -27,6 +27,7 @@ class FilePath;
 namespace WebKit {
 class WebClipboard;
 class WebFrame;
+class WebHyphenator;
 class WebMediaPlayerClient;
 class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
@@ -144,6 +145,10 @@ class CONTENT_EXPORT ContentRendererClient {
   // Allows the embedder to override the WebKit::WebMimeRegistry used. If it
   // returns NULL the content layer will provide its own mime registry.
   virtual WebKit::WebMimeRegistry* OverrideWebMimeRegistry();
+
+  // Allows the embedder to override the WebKit::WebHyphenator used. If it
+  // returns NULL the content layer will handle hyphenation.
+  virtual WebKit::WebHyphenator* OverrideWebHyphenator();
 
   // Returns true if the renderer process should schedule the idle handler when
   // all widgets are hidden.

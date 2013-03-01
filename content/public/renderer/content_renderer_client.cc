@@ -67,6 +67,10 @@ WebKit::WebMimeRegistry* ContentRendererClient::OverrideWebMimeRegistry() {
   return NULL;
 }
 
+WebKit::WebHyphenator* ContentRendererClient::OverrideWebHyphenator() {
+  return NULL;
+}
+
 bool ContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
   return true;
 }
