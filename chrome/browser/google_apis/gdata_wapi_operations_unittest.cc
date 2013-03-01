@@ -35,17 +35,6 @@ const char kTestGDataAuthToken[] = "testtoken";
 const char kTestUserAgent[] = "test-user-agent";
 const char kTestETag[] = "test_etag";
 
-// Copies the result from InitiateUploadCallback and quit the message loop.
-void CopyResultFromInitiateUploadCallbackAndQuit(
-    GDataErrorCode* out_result_code,
-    GURL* out_upload_url,
-    GDataErrorCode result_code,
-    const GURL& upload_url) {
-  *out_result_code = result_code;
-  *out_upload_url = upload_url;
-  MessageLoop::current()->Quit();
-}
-
 // Copies the result from ResumeUploadCallback and quit the message loop.
 void CopyResultFromUploadRangeCallbackAndQuit(
     UploadRangeResponse* out_response,
@@ -803,7 +792,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewFile) {
           &operation_registry_,
           request_context_getter_.get(),
           *url_generator_,
-          base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
+          base::Bind(&test_util::CopyResultsFromInitiateUploadCallbackAndQuit,
                      &result_code,
                      &upload_url),
           base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
@@ -904,7 +893,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
           &operation_registry_,
           request_context_getter_.get(),
           *url_generator_,
-          base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
+          base::Bind(&test_util::CopyResultsFromInitiateUploadCallbackAndQuit,
                      &result_code,
                      &upload_url),
           base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
@@ -1101,7 +1090,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
           &operation_registry_,
           request_context_getter_.get(),
           *url_generator_,
-          base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
+          base::Bind(&test_util::CopyResultsFromInitiateUploadCallbackAndQuit,
                      &result_code,
                      &upload_url),
           base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
@@ -1193,7 +1182,7 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
           &operation_registry_,
           request_context_getter_.get(),
           *url_generator_,
-          base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
+          base::Bind(&test_util::CopyResultsFromInitiateUploadCallbackAndQuit,
                      &result_code,
                      &upload_url),
           base::FilePath::FromUTF8Unsafe("drive/existingfile.txt"),
@@ -1286,7 +1275,7 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFileWithETag) {
           &operation_registry_,
           request_context_getter_.get(),
           *url_generator_,
-          base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
+          base::Bind(&test_util::CopyResultsFromInitiateUploadCallbackAndQuit,
                      &result_code,
                      &upload_url),
           base::FilePath::FromUTF8Unsafe("drive/existingfile.txt"),
@@ -1379,7 +1368,7 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFileWithETagConflict) {
           &operation_registry_,
           request_context_getter_.get(),
           *url_generator_,
-          base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
+          base::Bind(&test_util::CopyResultsFromInitiateUploadCallbackAndQuit,
                      &result_code,
                      &upload_url),
           base::FilePath::FromUTF8Unsafe("drive/existingfile.txt"),

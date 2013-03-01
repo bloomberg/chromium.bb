@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/message_loop_proxy.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/google_apis/drive_api_operations.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
@@ -32,6 +33,8 @@ const char kTestChildrenResponse[] =
     "\"selfLink\": \"self_link\",\n"
     "\"childLink\": \"child_link\",\n"
     "}\n";
+
+const char kTestUploadUrl[] = "https://server/upload/path";
 
 void CopyResultsFromGetAboutResourceCallbackAndQuit(
     GDataErrorCode* error_out,
@@ -69,6 +72,9 @@ class DriveApiOperationsTest : public testing::Test {
         base::Bind(&DriveApiOperationsTest::HandleDataFileRequest,
                    base::Unretained(this)));
     test_server_.RegisterRequestHandler(
+        base::Bind(&DriveApiOperationsTest::HandleInitiateUploadRequest,
+                   base::Unretained(this)));
+    test_server_.RegisterRequestHandler(
         base::Bind(&DriveApiOperationsTest::HandleContentResponse,
                    base::Unretained(this)));
 
@@ -76,13 +82,13 @@ class DriveApiOperationsTest : public testing::Test {
         test_util::GetBaseUrlForTesting(test_server_.port())));
 
     // Reset the server's expected behavior just in case.
-    expected_data_file_path_.clear();
+    ResetExpectedResponse();
   }
 
   virtual void TearDown() OVERRIDE {
     test_server_.ShutdownAndWaitUntilComplete();
     request_context_getter_ = NULL;
-    expected_data_file_path_.clear();
+    ResetExpectedResponse();
   }
 
   MessageLoopForUI message_loop_;
@@ -98,6 +104,10 @@ class DriveApiOperationsTest : public testing::Test {
   // the server. See also HandleDataFileRequest below.
   base::FilePath expected_data_file_path_;
 
+  // This is a url string in the expected response header from the server
+  // for initiating file uploading.
+  std::string expected_upload_url_;
+
   // These are content and its type in the expected response from the server.
   // See also HandleContentResponse below.
   std::string expected_content_type_;
@@ -109,18 +119,25 @@ class DriveApiOperationsTest : public testing::Test {
   test_server::HttpRequest http_request_;
 
  private:
+  void ResetExpectedResponse() {
+    expected_data_file_path_.clear();
+    expected_upload_url_.clear();
+    expected_content_type_.clear();
+    expected_content_.clear();
+  }
+
   // For "Children: delete" request, the server will return "204 No Content"
   // response meaning "success".
   scoped_ptr<test_server::HttpResponse> HandleChildrenDeleteRequest(
       const test_server::HttpRequest& request) {
-    http_request_ = request;
-
     if (request.method != test_server::METHOD_DELETE ||
         request.relative_url.find("/children/") == string::npos) {
       // The request is not the "Children: delete" operation. Delegate the
       // processing to the next handler.
       return scoped_ptr<test_server::HttpResponse>();
     }
+
+    http_request_ = request;
 
     // Return the response with just "204 No Content" status code.
     scoped_ptr<test_server::HttpResponse> http_response(
@@ -135,16 +152,38 @@ class DriveApiOperationsTest : public testing::Test {
   // to the appropriate file path before sending the request to the server.
   scoped_ptr<test_server::HttpResponse> HandleDataFileRequest(
       const test_server::HttpRequest& request) {
-    http_request_ = request;
-
     if (expected_data_file_path_.empty()) {
       // The file is not specified. Delegate the processing to the next
       // handler.
       return scoped_ptr<test_server::HttpResponse>();
     }
 
+    http_request_ = request;
+
     // Return the response from the data file.
     return test_util::CreateHttpResponseFromFile(expected_data_file_path_);
+  }
+
+  // Returns the response based on set expected upload url.
+  // The response contains the url in its "Location: " header. Also, it doesn't
+  // have any content.
+  // To use this method, it is necessary to set |expected_upload_url_|
+  // to the string representation of the url to be returned.
+  scoped_ptr<test_server::HttpResponse> HandleInitiateUploadRequest(
+      const test_server::HttpRequest& request) {
+    if (expected_upload_url_.empty()) {
+      // Expected upload url is not set. Delegate the processing to the next
+      // handler.
+      return scoped_ptr<test_server::HttpResponse>();
+    }
+
+    http_request_ = request;
+
+    scoped_ptr<test_server::HttpResponse> response(
+        new test_server::HttpResponse);
+    response->set_code(test_server::SUCCESS);
+    response->AddCustomHeader("Location", expected_upload_url_);
+    return response.Pass();
   }
 
   // Returns the response based on set expected content and its type.
@@ -152,13 +191,13 @@ class DriveApiOperationsTest : public testing::Test {
   // must be set in advance.
   scoped_ptr<test_server::HttpResponse> HandleContentResponse(
       const test_server::HttpRequest& request) {
-    http_request_ = request;
-
     if (expected_content_type_.empty() || expected_content_.empty()) {
       // Expected content is not set. Delegate the processing to the next
       // handler.
       return scoped_ptr<test_server::HttpResponse>();
     }
+
+    http_request_ = request;
 
     scoped_ptr<test_server::HttpResponse> response(
         new test_server::HttpResponse);
@@ -372,6 +411,55 @@ TEST_F(DriveApiOperationsTest, DeleteResourceOperation) {
   EXPECT_EQ("/drive/v2/files/parent_resource_id/children/resource_id",
             http_request_.relative_url);
   EXPECT_FALSE(http_request_.has_content);
+}
+
+TEST_F(DriveApiOperationsTest, InitiateUploadNewFileOperation) {
+  // Set an expected url for uploading.
+  expected_upload_url_ = kTestUploadUrl;
+
+  const char kTestContentType[] = "text/plain";
+  const int64 kTestContentLength = 100;
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  GURL url;
+
+  // Initiate uploading a new file to the directory with "parent_resource_id".
+  drive::InitiateUploadNewFileOperation* operation =
+      new drive::InitiateUploadNewFileOperation(
+          &operation_registry_,
+          request_context_getter_.get(),
+          *url_generator_,
+          base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
+          kTestContentType,
+          kTestContentLength,
+          "parent_resource_id",  // The resource id of the parent directory.
+          "new file title",  // The title of the file being uploaded.
+          base::Bind(&test_util::CopyResultsFromInitiateUploadCallbackAndQuit,
+                     &error, &url));
+  operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
+                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_EQ(kTestUploadUrl, url.spec());
+  EXPECT_EQ(kTestContentType, http_request_.headers["X-Upload-Content-Type"]);
+  EXPECT_EQ(base::Int64ToString(kTestContentLength),
+            http_request_.headers["X-Upload-Content-Length"]);
+
+  EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
+  EXPECT_EQ("/upload/drive/v2/files?uploadType=resumable",
+            http_request_.relative_url);
+  EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
+  EXPECT_TRUE(http_request_.has_content);
+  EXPECT_EQ("{\"parents\":[{"
+                "\"id\":\"parent_resource_id\","
+                "\"kind\":\"drive#fileLink\""
+            "}],"
+            "\"title\":\"new file title\"}",
+            http_request_.content);
+
+  // Clean the operation remaining in |operation_registry_|.
+  operation_registry_.CancelAll();
 }
 
 }  // namespace google_apis

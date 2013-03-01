@@ -130,6 +130,13 @@ void CopyResultsFromInitiateUploadCallback(
     GDataErrorCode error_in,
     const GURL& url_in);
 
+// Copies the results from InitiateUploadCallback and quit the message loop.
+void CopyResultsFromInitiateUploadCallbackAndQuit(
+    GDataErrorCode* error_out,
+    GURL* url_out,
+    GDataErrorCode error_in,
+    const GURL& url_in);
+
 // Copies the results from ResumeUploadCallback.
 void CopyResultsFromUploadRangeCallback(
     UploadRangeResponse* response_out,

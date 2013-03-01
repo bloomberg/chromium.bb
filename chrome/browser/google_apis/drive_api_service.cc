@@ -467,8 +467,17 @@ void DriveAPIService::InitiateUploadNewFile(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Implement this.
-  NOTREACHED();
+  runner_->StartOperationWithRetry(
+      new drive::InitiateUploadNewFileOperation(
+          operation_registry(),
+          url_request_context_getter_,
+          url_generator_,
+          drive_file_path,
+          content_type,
+          content_length,
+          parent_resource_id,
+          title,
+          callback));
 }
 
 void DriveAPIService::InitiateUploadExistingFile(

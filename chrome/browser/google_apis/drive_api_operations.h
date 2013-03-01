@@ -308,6 +308,42 @@ class DeleteResourceOperation : public EntryActionOperation {
   DISALLOW_COPY_AND_ASSIGN(DeleteResourceOperation);
 };
 
+//======================= InitiateUploadNewFileOperation =======================
+
+// This class performs the operation for initiating the upload of a new file.
+class InitiateUploadNewFileOperation : public InitiateUploadOperationBase {
+ public:
+  // |parent_resource_id| should be the resource id of the parent directory.
+  // |title| should be set.
+  // See also the comments of InitiateUploadOperationBase for more details
+  // about the other parameters.
+  InitiateUploadNewFileOperation(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const DriveApiUrlGenerator& url_generator,
+      const base::FilePath& drive_file_path,
+      const std::string& content_type,
+      int64 content_length,
+      const std::string& parent_resource_id,
+      const std::string& title,
+      const InitiateUploadCallback& callback);
+  virtual ~InitiateUploadNewFileOperation();
+
+ protected:
+  // UrlFetchOperationBase overrides.
+  virtual GURL GetURL() const OVERRIDE;
+  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+  virtual bool GetContentData(std::string* upload_content_type,
+                              std::string* upload_content) OVERRIDE;
+
+ private:
+  const DriveApiUrlGenerator url_generator_;
+  const std::string parent_resource_id_;
+  const std::string title_;
+
+  DISALLOW_COPY_AND_ASSIGN(InitiateUploadNewFileOperation);
+};
+
 }  // namespace drive
 }  // namespace google_apis
 

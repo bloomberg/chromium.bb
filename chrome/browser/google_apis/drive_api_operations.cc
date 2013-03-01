@@ -18,6 +18,7 @@ namespace {
 
 const char kContentTypeApplicationJson[] = "application/json";
 const char kDirectoryMimeType[] = "application/vnd.google-apps.folder";
+const char kParentLinkKind[] = "drive#fileLink";
 
 // Parses the JSON value to AboutResource and runs |callback| on the UI
 // thread once parsing is done.
@@ -331,6 +332,67 @@ GURL DeleteResourceOperation::GetURL() const {
 
 net::URLFetcher::RequestType DeleteResourceOperation::GetRequestType() const {
   return net::URLFetcher::DELETE_REQUEST;
+}
+
+//======================= InitiateUploadNewFileOperation =======================
+
+InitiateUploadNewFileOperation::InitiateUploadNewFileOperation(
+    OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
+    const DriveApiUrlGenerator& url_generator,
+    const base::FilePath& drive_file_path,
+    const std::string& content_type,
+    int64 content_length,
+    const std::string& parent_resource_id,
+    const std::string& title,
+    const InitiateUploadCallback& callback)
+    : InitiateUploadOperationBase(registry,
+                                  url_request_context_getter,
+                                  callback,
+                                  drive_file_path,
+                                  content_type,
+                                  content_length),
+      url_generator_(url_generator),
+      parent_resource_id_(parent_resource_id),
+      title_(title) {
+}
+
+InitiateUploadNewFileOperation::~InitiateUploadNewFileOperation() {}
+
+GURL InitiateUploadNewFileOperation::GetURL() const {
+  return url_generator_.GetInitiateUploadNewFileUrl();
+}
+
+net::URLFetcher::RequestType
+InitiateUploadNewFileOperation::GetRequestType() const {
+  return net::URLFetcher::POST;
+}
+
+bool InitiateUploadNewFileOperation::GetContentData(
+    std::string* upload_content_type,
+    std::string* upload_content) {
+  *upload_content_type = kContentTypeApplicationJson;
+
+  base::DictionaryValue root;
+  root.SetString("title", title_);
+
+  // Fill parent link.
+  {
+    scoped_ptr<base::DictionaryValue> parent(new base::DictionaryValue);
+    parent->SetString("kind", kParentLinkKind);
+    parent->SetString("id", parent_resource_id_);
+
+    scoped_ptr<base::ListValue> parents(new base::ListValue);
+    parents->Append(parent.release());
+
+    root.Set("parents", parents.release());
+  }
+
+  base::JSONWriter::Write(&root, upload_content);
+
+  DVLOG(1) << "InitiateUploadNewFile data: " << *upload_content_type << ", ["
+           << *upload_content << "]";
+  return true;
 }
 
 }  // namespace drive
