@@ -462,13 +462,8 @@ Browser::Browser(const CreateParams& params)
 
 Browser::~Browser() {
   // The tab strip should not have any tabs at this point.
-  if (!browser_shutdown::ShuttingDownWithoutClosingBrowsers()) {
-    // This CHECKs rather than DCHECKs in an attempt to catch
-    // http://crbug.com/144879 . In any case, if there are WebContents in this
-    // Browser, if we proceed further then they will almost certainly call
-    // through their delegate pointers to this deallocated Browser and crash.
-    CHECK(tab_strip_model_->empty());
-  }
+  if (!browser_shutdown::ShuttingDownWithoutClosingBrowsers())
+    DCHECK(tab_strip_model_->empty());
 
   search_model_->RemoveObserver(this);
   tab_strip_model_->RemoveObserver(this);
