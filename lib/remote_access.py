@@ -187,7 +187,7 @@ class RemoteAccess(object):
 
     ssh_cmd = ' '.join(self._GetSSHCmd())
     rsync_cmd = ['rsync', '--checksum', '--recursive', '--links', '--perms',
-                 '--verbose', '--compress']
+                 '--verbose', '--compress', '--exclude', '.svn']
     # In cases where the developer sets up a ssh daemon manually on a device
     # with a dev image, the ssh login $PATH can be incorrect, and the target
     # rsync will not be found.  So we try to provide the right $PATH here.
