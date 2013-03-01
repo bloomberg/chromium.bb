@@ -47,8 +47,8 @@ void IOSurfaceDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   this->orientation = orientation;
 }
 
-void IOSurfaceDrawQuad::AppendResources(
-    ResourceProvider::ResourceIdArray* resources) {
+void IOSurfaceDrawQuad::IterateResources(
+    const ResourceIteratorCallback& callback) {
   // TODO(danakj): Convert to TextureDrawQuad?
   NOTIMPLEMENTED();
 }

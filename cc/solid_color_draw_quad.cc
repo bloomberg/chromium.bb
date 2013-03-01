@@ -36,6 +36,9 @@ void SolidColorDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   this->color = color;
 }
 
+void SolidColorDrawQuad::IterateResources(
+    const ResourceIteratorCallback& callback) {}
+
 const SolidColorDrawQuad* SolidColorDrawQuad::MaterialCast(
     const DrawQuad* quad) {
   DCHECK(quad->material == DrawQuad::SOLID_COLOR);

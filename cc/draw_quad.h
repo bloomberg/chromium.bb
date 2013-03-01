@@ -5,6 +5,7 @@
 #ifndef CC_DRAW_QUAD_H_
 #define CC_DRAW_QUAD_H_
 
+#include "base/callback.h"
 #include "cc/cc_export.h"
 #include "cc/resource_provider.h"
 #include "cc/shared_quad_state.h"
@@ -71,7 +72,9 @@ class CC_EXPORT DrawQuad {
         !opaque_rect.Contains(visible_rect);
   }
 
-  virtual void AppendResources(ResourceProvider::ResourceIdArray* resources);
+  typedef base::Callback<ResourceProvider::ResourceId(
+      ResourceProvider::ResourceId)> ResourceIteratorCallback;
+  virtual void IterateResources(const ResourceIteratorCallback& callback) = 0;
 
  protected:
   DrawQuad();

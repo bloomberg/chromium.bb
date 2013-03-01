@@ -29,6 +29,9 @@ class CC_EXPORT SolidColorDrawQuad : public DrawQuad {
 
   SkColor color;
 
+  virtual void IterateResources(const ResourceIteratorCallback& callback)
+      OVERRIDE;
+
   static const SolidColorDrawQuad* MaterialCast(const DrawQuad*);
  private:
   SolidColorDrawQuad();

@@ -75,9 +75,9 @@ void TileDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   this->bottom_edge_aa = bottom_edge_aa;
 }
 
-void TileDrawQuad::AppendResources(
-    ResourceProvider::ResourceIdArray* resources) {
-  resources->push_back(resource_id);
+void TileDrawQuad::IterateResources(
+    const ResourceIteratorCallback& callback) {
+  resource_id = callback.Run(resource_id);
 }
 
 const TileDrawQuad* TileDrawQuad::MaterialCast(

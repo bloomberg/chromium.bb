@@ -131,6 +131,13 @@ const RendererCapabilities& DelegatingRenderer::capabilities() const {
   return capabilities_;
 }
 
+static ResourceProvider::ResourceId AppendToArray(
+    ResourceProvider::ResourceIdArray* array,
+    ResourceProvider::ResourceId id) {
+  array->push_back(id);
+  return id;
+}
+
 void DelegatingRenderer::drawFrame(
     RenderPassList& render_passes_in_draw_order) {
   TRACE_EVENT0("cc", "DelegatingRenderer::drawFrame");
@@ -139,15 +146,20 @@ void DelegatingRenderer::drawFrame(
   out_frame.metadata = m_client->makeCompositorFrameMetadata();
 
   out_frame.delegated_frame_data = make_scoped_ptr(new DelegatedFrameData);
-  DelegatedFrameData& out_data = *out_frame.delegated_frame_data;
 
-  out_data.render_pass_list.swap(render_passes_in_draw_order);
-
+  // Collect all resource ids in the render passes into a ResourceIdArray.
   ResourceProvider::ResourceIdArray resources;
-  for (size_t i = 0; i < out_data.render_pass_list.size(); ++i) {
-    for (size_t j = 0; j < out_data.render_pass_list[i]->quad_list.size(); ++j)
-      out_data.render_pass_list[i]->quad_list[j]->AppendResources(&resources);
+  DrawQuad::ResourceIteratorCallback append_to_array =
+      base::Bind(&AppendToArray, &resources);
+  for (size_t i = 0; i < render_passes_in_draw_order.size(); ++i) {
+    RenderPass* render_pass = render_passes_in_draw_order[i];
+    for (size_t j = 0; j < render_pass->quad_list.size(); ++j)
+      render_pass->quad_list[j]->IterateResources(append_to_array);
   }
+
+  // Move the render passes and resources into the |out_frame|.
+  DelegatedFrameData& out_data = *out_frame.delegated_frame_data;
+  out_data.render_pass_list.swap(render_passes_in_draw_order);
   resource_provider_->prepareSendToParent(resources, &out_data.resource_list);
 
   output_surface_->SendFrameToParentCompositor(&out_frame);

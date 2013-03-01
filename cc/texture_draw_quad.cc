@@ -65,9 +65,9 @@ void TextureDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   this->flipped = flipped;
 }
 
-void TextureDrawQuad::AppendResources(
-    ResourceProvider::ResourceIdArray* resources) {
-  resources->push_back(resource_id);
+void TextureDrawQuad::IterateResources(
+    const ResourceIteratorCallback& callback) {
+  resource_id = callback.Run(resource_id);
 }
 
 const TextureDrawQuad* TextureDrawQuad::MaterialCast(const DrawQuad* quad) {

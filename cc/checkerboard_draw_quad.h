@@ -29,6 +29,9 @@ class CC_EXPORT CheckerboardDrawQuad : public DrawQuad {
 
   SkColor color;
 
+  virtual void IterateResources(const ResourceIteratorCallback& callback)
+    OVERRIDE;
+
   static const CheckerboardDrawQuad* MaterialCast(const DrawQuad*);
  private:
   CheckerboardDrawQuad();

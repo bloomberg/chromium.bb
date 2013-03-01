@@ -60,7 +60,7 @@ class CC_EXPORT TileDrawQuad : public DrawQuad {
     return left_edge_aa || top_edge_aa || right_edge_aa || bottom_edge_aa;
   }
 
-  virtual void AppendResources(ResourceProvider::ResourceIdArray* resources)
+  virtual void IterateResources(const ResourceIteratorCallback& callback)
       OVERRIDE;
 
   static const TileDrawQuad* MaterialCast(const DrawQuad*);

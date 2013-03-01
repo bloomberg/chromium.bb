@@ -40,8 +40,8 @@ void StreamVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   this->matrix = matrix;
 }
 
-void StreamVideoDrawQuad::AppendResources(
-    ResourceProvider::ResourceIdArray* resources) {
+void StreamVideoDrawQuad::IterateResources(
+    const ResourceIteratorCallback& callback) {
   // TODO(danakj): Convert to TextureDrawQuad?
   NOTIMPLEMENTED();
 }

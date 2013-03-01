@@ -32,6 +32,9 @@ class CC_EXPORT DebugBorderDrawQuad : public DrawQuad {
   SkColor color;
   int width;
 
+  virtual void IterateResources(const ResourceIteratorCallback& callback)
+      OVERRIDE;
+
   static const DebugBorderDrawQuad* MaterialCast(const DrawQuad*);
  private:
   DebugBorderDrawQuad();
