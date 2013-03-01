@@ -18,8 +18,9 @@ AppListItemModel::AppListItemModel()
 AppListItemModel::~AppListItemModel() {
 }
 
-void AppListItemModel::SetIcon(const gfx::ImageSkia& icon) {
+void AppListItemModel::SetIcon(const gfx::ImageSkia& icon, bool has_shadow) {
   icon_ = icon;
+  has_shadow_ = has_shadow;
   FOR_EACH_OBSERVER(AppListItemModelObserver, observers_, ItemIconChanged());
 }
 

@@ -218,7 +218,7 @@ TEST_F(AppsGridControllerTest, ModelUpdates) {
   SkBitmap bitmap;
   const int kTestImageSize = 10;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, kTestImageSize, kTestImageSize);
-  item_model->SetIcon(gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
+  item_model->SetIcon(gfx::ImageSkia::CreateFrom1xBitmap(bitmap), false);
   icon_size = [[button image] size];
   EXPECT_EQ(kTestImageSize, icon_size.width);
   EXPECT_EQ(kTestImageSize, icon_size.height);

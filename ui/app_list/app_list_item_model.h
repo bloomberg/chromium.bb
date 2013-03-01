@@ -27,8 +27,9 @@ class APP_LIST_EXPORT AppListItemModel {
   AppListItemModel();
   virtual ~AppListItemModel();
 
-  void SetIcon(const gfx::ImageSkia& icon);
+  void SetIcon(const gfx::ImageSkia& icon, bool has_shadow);
   const gfx::ImageSkia& icon() const { return icon_; }
+  bool has_shadow() const { return has_shadow_; }
 
   void SetTitle(const std::string& title);
   const std::string& title() const { return title_; }
@@ -51,6 +52,7 @@ class APP_LIST_EXPORT AppListItemModel {
 
  private:
   gfx::ImageSkia icon_;
+  bool has_shadow_;
   std::string title_;
   bool highlighted_;
   bool is_installing_;

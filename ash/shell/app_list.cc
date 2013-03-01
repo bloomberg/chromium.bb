@@ -43,7 +43,7 @@ class WindowTypeLauncherItem : public app_list::AppListItemModel {
   };
 
   explicit WindowTypeLauncherItem(Type type) : type_(type) {
-    SetIcon(GetIcon(type));
+    SetIcon(GetIcon(type), false);
     SetTitle(GetTitle(type));
   }
 

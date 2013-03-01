@@ -277,7 +277,7 @@ void ExtensionAppItem::Move(const ExtensionAppItem* prev,
 
 void ExtensionAppItem::UpdateIcon() {
   if (!GetExtension()) {
-    SetIcon(installing_icon_);
+    SetIcon(installing_icon_, false);
     return;
   }
   gfx::ImageSkia icon = icon_->image_skia();
@@ -296,7 +296,7 @@ void ExtensionAppItem::UpdateIcon() {
     icon = gfx::ImageSkia(new TabOverlayImageSource(icon, size), size);
   }
 
-  SetIcon(icon);
+  SetIcon(icon, !HasOverlay());
 }
 
 const Extension* ExtensionAppItem::GetExtension() const {
