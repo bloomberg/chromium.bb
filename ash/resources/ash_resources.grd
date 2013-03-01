@@ -256,6 +256,9 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_H" file="common/window_size_short_black_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_P" file="common/window_size_short_black_pressed.png" />
 
+      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MINIMIZE_SHORT" file="common/window_minimize_short_normal.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MINIMIZE_SHORT_H" file="common/window_minimize_short_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MINIMIZE_SHORT_P" file="common/window_minimize_short_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_LEFT" file="common/window_position_left_normal.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_LEFT_H" file="common/window_position_left_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_LEFT_P" file="common/window_position_left_pressed.png" />
