@@ -223,14 +223,29 @@ class StagingTest(cros_test_lib.MockTempDirTestCase):
         osutils, 'SourceEnvironment', autospec=True,
         return_value={'STRIP': 'x86_64-cros-linux-gnu-strip'})
 
-  def testEmptyDeploySuccess(self):
-    """User-mode staging - stage whatever we can find."""
+  def testSingleFileDeployFailure(self):
+    """Default staging enforces that mandatory files are copied"""
     options, _ = _ParseCommandLine(self.common_flags)
-    deploy_chrome._PrepareStagingDir(
+    osutils.Touch(os.path.join(self.build_dir, 'chrome'), makedirs=True)
+    self.assertRaises(
+        chrome_util.MissingPathError, deploy_chrome._PrepareStagingDir,
         options, self.tempdir, self.staging_dir)
 
+  def testSloppyDeployFailure(self):
+    """Sloppy staging enforces that at least one file is copied."""
+    options, _ = _ParseCommandLine(self.common_flags + ['--sloppy'])
+    self.assertRaises(
+        chrome_util.MissingPathError, deploy_chrome._PrepareStagingDir,
+        options, self.tempdir, self.staging_dir)
+
+  def testSloppyDeploySuccess(self):
+    """Sloppy staging - stage one file."""
+    options, _ = _ParseCommandLine(self.common_flags + ['--sloppy'])
+    osutils.Touch(os.path.join(self.build_dir, 'chrome'), makedirs=True)
+    deploy_chrome._PrepareStagingDir(options, self.tempdir, self.staging_dir)
+
   def testEmptyDeployStrict(self):
-    """ebuild-mode staging - stage only things we want."""
+    """Strict staging fails when there are no files."""
     options, _ = _ParseCommandLine(
         self.common_flags + ['--gyp-defines', 'chromeos=1', '--strict'])
     chrome_util.MissingPathError(deploy_chrome._PrepareStagingDir,

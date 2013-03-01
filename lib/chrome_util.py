@@ -172,7 +172,8 @@ class Path(object):
            directory or contains directories, the content of the directory will
            not be stripped.
       cond: A condition (see Conditions class) to test for in deciding whether
-            to process this artifact.
+            to process this artifact. If supplied, the artifact will be treated
+            as optional unless --strict is supplied.
       dest: Name to give to the target file/directory.  Defaults to keeping the
             same name as the source.
       optional: Whether to enforce the existence of the artifact.  If unset, the
@@ -181,7 +182,7 @@ class Path(object):
     self.src = src
     self.exe = exe
     self.cond = cond
-    self.optional = optional
+    self.optional = optional or cond
     self.dest = dest
 
   def ShouldProcess(self, gyp_defines, staging_flags):
@@ -190,36 +191,49 @@ class Path(object):
       return self.cond(gyp_defines, staging_flags)
     return True
 
-  def Copy(self, src_base, dest_base, copier, ignore_missing=False):
+  def Copy(self, src_base, dest_base, copier, strict, sloppy):
     """Copy artifact(s) from source directory to destination.
 
     Arguments:
       src_base: The directory to apply the src glob pattern match in.
       dest_base: The directory to copy matched files to.  |Path.dest|.
       copier: A Copier instance that performs the actual file/directory copying.
+      strict: If set, enforce that all optional files are copied.
+      sloppy: If set, ignore when mandatory artifacts are missing.
+
+    Returns:
+      A list of the artifacts copied.
     """
+    assert not (strict and sloppy), 'strict and sloppy are not compatible.'
     src = os.path.join(src_base, self.src)
     paths = glob.glob(src)
     if not paths:
-      if self.optional or ignore_missing:
-        logging.info('%s does not exist.  Skipping.', src)
-        return
+      if strict or (not self.optional and not sloppy):
+        msg = ('%s does not exist and is required.\n'
+               'You can bypass this error with --sloppy.\n'
+               'Aborting copy...' % src)
+        raise MissingPathError(msg)
+      elif self.optional:
+        logging.debug('%s does not exist and is optional.  Skipping.', src)
       else:
-        raise MissingPathError('%s does not exist and is required.' % src)
-
-    if len(paths) > 1 and self.dest and not self.dest.endswith('/'):
+        logging.warn('%s does not exist and is required. Skipping anyway.',
+                     src)
+    elif len(paths) > 1 and self.dest and not self.dest.endswith('/'):
       raise MultipleMatchError(
           'Glob pattern %r has multiple matches, but dest %s '
-          'is not a directory.' % (self.src, self.dest))
+          'is not a directory.\n'
+          'Aborting copy...' % (self.src, self.dest))
+    elif not src.endswith('/') and os.path.isdir(src):
+      raise MustNotBeDirError('%s must not be a directory\n'
+                              'Aborting copy...' % (src,))
+    else:
+      for p in paths:
+        dest = os.path.join(
+            dest_base,
+            os.path.relpath(p, src_base) if self.dest is None else self.dest)
+        copier.Copy(p, dest, self.exe)
 
-    if not src.endswith('/') and os.path.isdir(src):
-      raise MustNotBeDirError('%s must not be a directory' % (src,))
-
-    for p in paths:
-      dest = os.path.join(
-          dest_base,
-          os.path.relpath(p, src_base) if self.dest is None else self.dest)
-      copier.Copy(p, dest, self.exe)
+    return paths
 
 
 _DISABLE_NACL = 'disable_nacl'
@@ -251,6 +265,7 @@ _COPY_PATHS = (
   Path('chrome_200_percent.pak',
        cond=C.StagingFlagSet(_HIGHDPI_FLAG)),
   Path('content_shell',
+       exe=True,
        cond=C.StagingFlagSet(_CONTENT_SHELL_FLAG)),
   Path('content_shell.pak',
        cond=C.StagingFlagSet(_CONTENT_SHELL_FLAG)),
@@ -268,7 +283,7 @@ _COPY_PATHS = (
        exe=True,
        cond=C.GypNotSet(_DISABLE_NACL)),
   Path('libosmesa.so',
-       exe=True),
+       exe=True, optional=True),
   Path('libwidevinecdmadapter.so',
        exe=True,
        cond=C.StagingFlagSet(_WIDEVINE_FLAG)),
@@ -310,7 +325,7 @@ class StagingError(Exception):
 
 
 def StageChromeFromBuildDir(staging_dir, build_dir, strip_bin, strict=False,
-                            gyp_defines=None, staging_flags=None):
+                            sloppy=False, gyp_defines=None, staging_flags=None):
   """Populates a staging directory with necessary build artifacts.
 
   If |strict| is set, then we decide what to stage based on the |gyp_defines|
@@ -322,8 +337,10 @@ def StageChromeFromBuildDir(staging_dir, build_dir, strip_bin, strict=False,
     build_dir: Path to location of Chrome build artifacts.
     strip_bin: Path to executable used for stripping binaries.
     strict: If set, decide what to stage based on the |gyp_defines| and
-      |staging_flags| passed in.  Otherwise, we stage everything that we know
-      about, that we can find.
+            |staging_flags| passed in, and enforce that all optional files
+            are copied.  Otherwise, we stage optional files if they are
+            there, but we don't complain if they're not.
+    sloppy: Ignore when mandatory artifacts are missing.
     gyp_defines: A dictionary (i.e., one returned by ProcessGypDefines)
       containing GYP_DEFINES Chrome was built with.
     staging_flags: A list of extra staging flags.  Valid flags are specified in
@@ -342,8 +359,14 @@ def StageChromeFromBuildDir(staging_dir, build_dir, strip_bin, strict=False,
     staging_flags = []
 
   copier = Copier(strip_bin=strip_bin, exe_opts=0755)
+  copied_paths = []
   for p in _COPY_PATHS:
     if not strict or p.ShouldProcess(gyp_defines, staging_flags):
-      p.Copy(build_dir, dest_base, copier, ignore_missing=(not strict))
+      copied_paths += p.Copy(build_dir, dest_base, copier, strict, sloppy)
+
+  if not copied_paths:
+    raise MissingPathError('Couldn\'t find anything to copy!\n'
+                           'Are you looking in the right directory?\n'
+                           'Aborting copy...')
 
   _FixPermissions(dest_base)

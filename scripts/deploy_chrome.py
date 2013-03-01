@@ -162,7 +162,8 @@ class DeployChrome(object):
     logging.info('Copying Chrome to device...')
     # Show the output (status) for this command.
     self.host.Rsync('%s/' % os.path.abspath(self.staging_dir), '/',
-                    inplace=True, debug_level=logging.INFO)
+                    inplace=True, debug_level=logging.INFO,
+                    verbose=self.options.verbose)
     if self.options.startui:
       logging.info('Starting Chrome...')
       self.host.RemoteSh('start ui')
@@ -227,12 +228,14 @@ def _CreateParser():
   group = optparse.OptionGroup(parser, 'Advanced Options')
   group.add_option('-l', '--local-pkg-path', type='path',
                    help='Path to local chrome prebuilt package to deploy.')
+  group.add_option('--sloppy', action='store_true', default=False,
+                   help='Ignore when mandatory artifacts are missing.')
   group.add_option('--strict', action='store_true', default=False,
                    help='Stage artifacts based on the GYP_DEFINES environment '
-                        'variable and --staging-flags, if set.')
+                        'variable and --staging-flags, if set. Enforce that '
+                        'all optional artifacts are deployed.')
   group.add_option('--staging-flags', default=None, type='gyp_defines',
-                   help='Requires --strict to be set.  Extra flags to '
-                        'control staging.  Valid flags are - %s'
+                   help='Extra flags to control staging.  Valid flags are - %s'
                         % ', '.join(chrome_util.STAGING_FLAGS))
 
   parser.add_option_group(group)
@@ -274,7 +277,9 @@ def _ParseCommandLine(argv):
     parser.error('--strict and --staging-flags require --build-dir to be '
                  'set.')
   if options.staging_flags and not options.strict:
-    parser.error('--strict requires --staging-flags to be set.')
+    parser.error('--staging-flags requires --strict to be set.')
+  if options.sloppy and options.strict:
+    parser.error('Cannot specify both --strict and --sloppy.')
   return options, args
 
 
@@ -347,7 +352,8 @@ def _PrepareStagingDir(options, tempdir, staging_dir):
                                'bin', os.path.basename(strip_bin))
       chrome_util.StageChromeFromBuildDir(
           staging_dir, options.build_dir, strip_bin, strict=options.strict,
-          gyp_defines=options.gyp_defines, staging_flags=options.staging_flags)
+          sloppy=options.sloppy, gyp_defines=options.gyp_defines,
+          staging_flags=options.staging_flags)
   else:
     pkg_path = options.local_pkg_path
     if options.gs_path:

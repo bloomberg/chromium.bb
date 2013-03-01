@@ -169,7 +169,8 @@ class RemoteAccess(object):
       cros_build_lib.Die('Reboot has not completed after %s seconds; giving up.'
                          % (REBOOT_MAX_WAIT,))
 
-  def Rsync(self, src, dest, inplace=False, debug_level=None, sudo=False):
+  def Rsync(self, src, dest, inplace=False, verbose=False, debug_level=None,
+            sudo=False):
     """Rsync a directory to the remote device.
 
     Arguments:
@@ -177,6 +178,7 @@ class RemoteAccess(object):
       dest: The remote dest directory.
       inplace: If set, cause rsync to overwrite the dest files in place.  This
                conserves space, but has some side effects - see rsync man page.
+      verbose: If set, print more verbose output during rsync file transfer.
       debug_level: See cros_build_lib.RunCommand documentation.
       sudo: If set, invoke the command via sudo.
     """
@@ -184,17 +186,19 @@ class RemoteAccess(object):
       debug_level = self.debug_level
 
     ssh_cmd = ' '.join(self._GetSSHCmd())
-    rsync_cmd = ['rsync', '--recursive', '--links', '--perms',  '--verbose',
-                 '--compress']
+    rsync_cmd = ['rsync', '--checksum', '--recursive', '--links', '--perms',
+                 '--verbose', '--compress']
     # In cases where the developer sets up a ssh daemon manually on a device
     # with a dev image, the ssh login $PATH can be incorrect, and the target
     # rsync will not be found.  So we try to provide the right $PATH here.
     rsync_cmd += ['--rsync-path', 'PATH=/usr/local/bin:$PATH rsync']
+    if verbose:
+      rsync_cmd.append('--progress')
     if inplace:
       rsync_cmd.append('--inplace')
-    rsync_cmd += ['--progress', '--rsh', ssh_cmd, src,
+    rsync_cmd += ['--rsh', ssh_cmd, src,
                   '%s:%s' % (self.target_ssh_url, dest)]
     rc_func = cros_build_lib.RunCommand
     if sudo:
       rc_func = cros_build_lib.SudoRunCommand
-    return rc_func(rsync_cmd, debug_level=debug_level)
+    return rc_func(rsync_cmd, debug_level=debug_level, print_cmd=verbose)

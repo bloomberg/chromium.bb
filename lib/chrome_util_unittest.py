@@ -25,13 +25,15 @@ class CopyTest(cros_test_lib.TempDirTestCase):
     os.mkdir(self.dest_base)
     self.copier = chrome_util.Copier()
 
-  def _CopyAndVerify(self, path, src_struct, dest_struct, error=None):
+  def _CopyAndVerify(self, path, src_struct, dest_struct, error=None,
+                     strict=False, sloppy=False):
     cros_test_lib.CreateOnDiskHierarchy(self.src_base, src_struct)
     if error:
-      self.assertRaises(error, path.Copy, self.src_base, self.dest_base, None)
+      self.assertRaises(error, path.Copy, self.src_base, self.dest_base, None,
+                        strict, sloppy)
       return
 
-    path.Copy(self.src_base, self.dest_base, self.copier)
+    path.Copy(self.src_base, self.dest_base, self.copier, strict, sloppy)
     cros_test_lib.VerifyOnDiskHierarchy(self.dest_base, dest_struct)
 
 
@@ -58,6 +60,14 @@ class FileCopyTest(CopyTest):
     dest_struct = [self.ELEMENT_SRC]
     path = chrome_util.Path(self.ELEMENT_SRC_NAME)
     self._CopyAndVerify(path, src_struct, dest_struct)
+
+  def testStrictAndSloppy(self):
+    """Test that strict and sloppy copies fail with an AssertionError."""
+    src_struct = self.ELEMENTS_SRC
+    dest_struct = [self.ELEMENT_SRC]
+    path = chrome_util.Path(self.ELEMENT_SRC_NAME)
+    self._CopyAndVerify(path, src_struct, dest_struct, error=AssertionError,
+                        sloppy=True, strict=True)
 
   def testSurfaceRename(self):
     """"Renaming of an element from the root."""
@@ -136,19 +146,19 @@ class FileCopyTest(CopyTest):
     src_struct = self.BAD_ELEMENTS
     path = chrome_util.Path(self.ELEMENT_SRC_NAME)
     self._CopyAndVerify(
-        path, src_struct, None, error=chrome_util.MissingPathError)
+        path, src_struct, [], error=chrome_util.MissingPathError)
 
   def testNoGlobError(self):
     """A glob that is not optional matches nothing."""
     src_struct = self.ELEMENTS_SRC
     path = chrome_util.Path(self.MATCH_NOTHING_GLOB)
     self._CopyAndVerify(
-        path, src_struct, None, error=chrome_util.MissingPathError)
+        path, src_struct, [], error=chrome_util.MissingPathError)
 
   def testNonDirError(self):
     """Test case where a file pattern matches a directory."""
     src_struct = ['file1/']
-    dest_struct = [self.ELEMENT_SRC]
+    dest_struct = []
     path = chrome_util.Path('file1')
     self._CopyAndVerify(path, src_struct, dest_struct,
                         error=chrome_util.MustNotBeDirError)
@@ -168,6 +178,17 @@ class FileCopyTest(CopyTest):
     self._CopyAndVerify(path, src_struct, dest_struct)
 
 
+class SloppyFileCopyTest(FileCopyTest):
+  """Test file copies with sloppy=True"""
+
+  def _CopyAndVerify(self, path, src_struct, dest_struct, error=None,
+                     strict=False, sloppy=True):
+    if error is chrome_util.MissingPathError:
+      error = None
+    CopyTest._CopyAndVerify(self, path, src_struct, dest_struct, error=error,
+                            strict=strict, sloppy=sloppy)
+
+
 class DirCopyTest(FileCopyTest):
   """Testing directory copying/globbing/renaming functionality of Path class."""
 
@@ -185,6 +206,10 @@ class DirCopyTest(FileCopyTest):
   ELEMENTS_DEST = [
       Dir('monkey1', FILES) , Dir('monkey2', FILES), Dir('monkey3', FILES)]
   DIR_DEST_NAME = 'dir_dest'
+
+
+class SloppyDirCopyTest(SloppyFileCopyTest, DirCopyTest):
+  """Test directory copies with sloppy=True"""
 
 
 if __name__ == '__main__':
