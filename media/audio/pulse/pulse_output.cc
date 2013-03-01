@@ -153,22 +153,27 @@ bool PulseAudioOutputStream::Open() {
   // stream request after setup.  FulfillWriteRequest() must fulfill the write.
   pa_stream_set_write_callback(pa_stream_, &StreamRequestCallback, this);
 
-  // Tell pulse audio we only want callbacks of a certain size.
+  // Pulse is very finicky with the small buffer sizes used by Chrome.  The
+  // settings below are mostly found through trial and error.  Essentially we
+  // want Pulse to auto size its internal buffers, but call us back nearly every
+  // |minreq| bytes.  |tlength| should be a multiple of |minreq|; too low and
+  // Pulse will issue callbacks way too fast, too high and we don't get
+  // callbacks frequently enough.
   pa_buffer_attr pa_buffer_attributes;
-  pa_buffer_attributes.maxlength = params_.GetBytesPerBuffer();
+  pa_buffer_attributes.maxlength = static_cast<uint32_t>(-1);
   pa_buffer_attributes.minreq = params_.GetBytesPerBuffer();
-  pa_buffer_attributes.prebuf = params_.GetBytesPerBuffer();
-  pa_buffer_attributes.tlength = params_.GetBytesPerBuffer();
+  pa_buffer_attributes.prebuf = static_cast<uint32_t>(-1);
+  pa_buffer_attributes.tlength = params_.GetBytesPerBuffer() * 3;
   pa_buffer_attributes.fragsize = static_cast<uint32_t>(-1);
 
-  // Connect playback stream.
-  // TODO(dalecurtis): Pulse tends to want really large buffer sizes if we are
-  // not using the native sample rate.  We should always open the stream with
-  // PA_STREAM_FIX_RATE and ensure this is true.
+  // Connect playback stream.  Like pa_buffer_attr, the pa_stream_flags have a
+  // huge impact on the performance of the stream and were chosen through trial
+  // and error.
   RETURN_ON_FAILURE(
       pa_stream_connect_playback(
           pa_stream_, NULL, &pa_buffer_attributes,
           static_cast<pa_stream_flags_t>(
+              PA_STREAM_FIX_RATE | PA_STREAM_INTERPOLATE_TIMING |
               PA_STREAM_ADJUST_LATENCY | PA_STREAM_AUTO_TIMING_UPDATE |
               PA_STREAM_NOT_MONOTONIC | PA_STREAM_START_CORKED),
           NULL, NULL) == 0,
@@ -238,43 +243,33 @@ void PulseAudioOutputStream::Close() {
 }
 
 void PulseAudioOutputStream::FulfillWriteRequest(size_t requested_bytes) {
-  CHECK_EQ(requested_bytes, static_cast<size_t>(params_.GetBytesPerBuffer()));
-
-  int frames_filled = 0;
-  if (source_callback_) {
-    uint32 hardware_delay = pulse::GetHardwareLatencyInBytes(
-        pa_stream_, params_.sample_rate(),
-        params_.GetBytesPerFrame());
-    frames_filled = source_callback_->OnMoreData(
-        audio_bus_.get(), AudioBuffersState(0, hardware_delay));
-  }
-
-  // Zero any unfilled data so it plays back as silence.
-  if (frames_filled < audio_bus_->frames()) {
-    audio_bus_->ZeroFramesPartial(
-        frames_filled, audio_bus_->frames() - frames_filled);
-  }
-
-  // PulseAudio won't always be able to provide a buffer large enough, so we may
-  // need to request multiple buffers and fill them individually.
-  int current_frame = 0;
-  size_t bytes_remaining = requested_bytes;
+  int bytes_remaining = requested_bytes;
   while (bytes_remaining > 0) {
     void* buffer = NULL;
-    size_t bytes_to_fill = bytes_remaining;
+    size_t bytes_to_fill = params_.GetBytesPerBuffer();
     CHECK_GE(pa_stream_begin_write(pa_stream_, &buffer, &bytes_to_fill), 0);
+    CHECK_EQ(bytes_to_fill, static_cast<size_t>(params_.GetBytesPerBuffer()));
 
-    // In case PulseAudio gives us a bigger buffer than we want, cap our size.
-    bytes_to_fill = std::min(
-        std::min(bytes_remaining, bytes_to_fill),
-        static_cast<size_t>(params_.GetBytesPerBuffer()));
+    int frames_filled = 0;
+    if (source_callback_) {
+      uint32 hardware_delay = pulse::GetHardwareLatencyInBytes(
+          pa_stream_, params_.sample_rate(),
+          params_.GetBytesPerFrame());
+      source_callback_->WaitTillDataReady();
+      frames_filled = source_callback_->OnMoreData(
+          audio_bus_.get(), AudioBuffersState(0, hardware_delay));
+    }
 
-    int frames_to_fill = bytes_to_fill / params_.GetBytesPerFrame();;
+    // Zero any unfilled data so it plays back as silence.
+    if (frames_filled < audio_bus_->frames()) {
+      audio_bus_->ZeroFramesPartial(
+          frames_filled, audio_bus_->frames() - frames_filled);
+    }
 
     // Note: If this ever changes to output raw float the data must be clipped
     // and sanitized since it may come from an untrusted source such as NaCl.
-    audio_bus_->ToInterleavedPartial(
-        current_frame, frames_to_fill, params_.bits_per_sample() / 8, buffer);
+    audio_bus_->ToInterleaved(
+        audio_bus_->frames(), params_.bits_per_sample() / 8, buffer);
     media::AdjustVolume(buffer, bytes_to_fill, params_.channels(),
                         params_.bits_per_sample() / 8, volume_);
 
@@ -286,7 +281,6 @@ void PulseAudioOutputStream::FulfillWriteRequest(size_t requested_bytes) {
     }
 
     bytes_remaining -= bytes_to_fill;
-    current_frame = frames_to_fill;
   }
 }
 
@@ -319,6 +313,10 @@ void PulseAudioOutputStream::Stop() {
   // outstanding callbacks have completed.
   AutoPulseLock auto_lock(pa_mainloop_);
 
+  // Set |source_callback_| to NULL so all FulfillWriteRequest() calls which may
+  // occur while waiting on the flush and cork exit immediately.
+  source_callback_ = NULL;
+
   // Flush the stream prior to cork, doing so after will cause hangs.  Write
   // callbacks are suspended while inside pa_threaded_mainloop_lock() so this
   // is all thread safe.
@@ -329,8 +327,6 @@ void PulseAudioOutputStream::Stop() {
   operation = pa_stream_cork(pa_stream_, 1, &pulse::StreamSuccessCallback,
                              pa_mainloop_);
   WaitForOperationCompletion(pa_mainloop_, operation);
-
-  source_callback_ = NULL;
 }
 
 void PulseAudioOutputStream::SetVolume(double volume) {
