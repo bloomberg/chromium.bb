@@ -37,8 +37,9 @@ NSString* const kBrowserActionButtonDraggingNotification =
 NSString* const kBrowserActionButtonDragEndNotification =
     @"BrowserActionButtonDragEndNotification";
 
-const CGFloat kBrowserActionBadgeOriginYOffset = 5;
-const CGFloat kAnimationDuration = 0.2;
+static const CGFloat kBrowserActionBadgeOriginYOffset = 5;
+static const CGFloat kAnimationDuration = 0.2;
+static const CGFloat kMinimumDragDistance = 5;
 
 // A helper class to bridge the asynchronous Skia bitmap loading mechanism to
 // the extension's button.
@@ -177,6 +178,7 @@ class ExtensionActionIconFactoryBridge
 - (void)mouseDown:(NSEvent*)theEvent {
   [[self cell] setHighlighted:YES];
   dragCouldStart_ = YES;
+  dragStartPoint_ = [theEvent locationInWindow];
 }
 
 - (void)mouseDragged:(NSEvent*)theEvent {
@@ -184,6 +186,13 @@ class ExtensionActionIconFactoryBridge
     return;
 
   if (!isBeingDragged_) {
+    // Don't initiate a drag until it moves at least kMinimumDragDistance.
+    NSPoint currentPoint = [theEvent locationInWindow];
+    CGFloat dx = currentPoint.x - dragStartPoint_.x;
+    CGFloat dy = currentPoint.y - dragStartPoint_.y;
+    if (dx*dx + dy*dy < kMinimumDragDistance*kMinimumDragDistance)
+      return;
+
     // The start of a drag. Position the button above all others.
     [[self superview] addSubview:self positioned:NSWindowAbove relativeTo:nil];
   }
