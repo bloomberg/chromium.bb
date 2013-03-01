@@ -13,7 +13,6 @@
 #include "chrome/browser/google_apis/time_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
-#include "net/base/io_buffer.h"
 #include "net/base/url_util.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
 
@@ -581,61 +580,21 @@ ResumeUploadOperation::ResumeUploadOperation(
     int64 content_length,
     const std::string& content_type,
     const scoped_refptr<net::IOBuffer>& buf)
-    : UploadRangeOperationBase(registry,
-                               url_request_context_getter,
-                               upload_mode,
-                               drive_file_path,
-                               upload_location),
-      callback_(callback),
-      start_position_(start_position),
-      end_position_(end_position),
-      content_length_(content_length),
-      content_type_(content_type),
-      buf_(buf) {
+    : ResumeUploadOperationBase(registry,
+                                url_request_context_getter,
+                                upload_mode,
+                                drive_file_path,
+                                upload_location,
+                                start_position,
+                                end_position,
+                                content_length,
+                                content_type,
+                                buf),
+      callback_(callback) {
   DCHECK(!callback_.is_null());
-  DCHECK_LE(start_position_, end_position_);
 }
 
 ResumeUploadOperation::~ResumeUploadOperation() {}
-
-std::vector<std::string> ResumeUploadOperation::GetExtraRequestHeaders() const {
-  if (content_length_ == 0) {
-    // For uploading an empty document, just PUT an empty content.
-    DCHECK_EQ(start_position_, 0);
-    DCHECK_EQ(end_position_, 0);
-    return std::vector<std::string>();
-  }
-
-  // The header looks like
-  // Content-Range: bytes <start_position>-<end_position>/<content_length>
-  // for example:
-  // Content-Range: bytes 7864320-8388607/13851821
-  // The header takes inclusive range, so we adjust by "end_position - 1".
-  DCHECK_GE(start_position_, 0);
-  DCHECK_GT(end_position_, 0);
-  DCHECK_GE(content_length_, 0);
-
-  std::vector<std::string> headers;
-  headers.push_back(
-      std::string(kUploadContentRange) +
-      base::Int64ToString(start_position_) + "-" +
-      base::Int64ToString(end_position_ - 1) + "/" +
-      base::Int64ToString(content_length_));
-  return headers;
-}
-
-bool ResumeUploadOperation::GetContentData(std::string* upload_content_type,
-                                           std::string* upload_content) {
-  *upload_content_type = content_type_;
-  *upload_content = std::string(buf_->data(), end_position_ - start_position_);
-  return true;
-}
-
-void ResumeUploadOperation::OnURLFetchUploadProgress(
-    const URLFetcher* source, int64 current, int64 total) {
-  // Adjust the progress values according to the range currently uploaded.
-  NotifyProgress(start_position_ + current, content_length_);
-}
 
 void ResumeUploadOperation::OnRangeOperationComplete(
     const UploadRangeResponse& response, scoped_ptr<base::Value> value) {

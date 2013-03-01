@@ -24,6 +24,7 @@ class Value;
 }  // namespace base
 
 namespace net {
+class IOBuffer;
 class URLRequestContextGetter;
 }  // namespace net
 
@@ -384,6 +385,59 @@ class UploadRangeOperationBase : public UrlFetchOperationBase {
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<UploadRangeOperationBase> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(UploadRangeOperationBase);
+};
+
+//========================== ResumeUploadOperationBase =========================
+
+// This class performs the operation for resuming the upload of a file.
+// More specifically, this operation uploads a chunk of data carried in |buf|
+// of ResumeUploadResponseBase. This class is designed to share the
+// implementation of upload resuming between GData WAPI and Drive API v2.
+// The subclasses should implement OnRangeOperationComplete inherited by
+// UploadRangeOperationBase, because the type of the response should be
+// different (although the format in the server response is JSON).
+class ResumeUploadOperationBase : public UploadRangeOperationBase {
+ protected:
+  // |start_position| is the start of range of contents currently stored in
+  // |buf|. |end_position| is the end of range of contents currently stared in
+  // |buf|. This is exclusive. For instance, if you are to upload the first
+  // 500 bytes of data, |start_position| is 0 and |end_position| is 500.
+  // |content_length| and |content_type| are the length and type of the
+  // file content to be uploaded respectively.
+  // |buf| holds current content to be uploaded.
+  // See also UploadRangeOperationBase's comment for remaining parameters
+  // meaining.
+  ResumeUploadOperationBase(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      UploadMode upload_mode,
+      const base::FilePath& drive_file_path,
+      const GURL& upload_location,
+      int64 start_position,
+      int64 end_position,
+      int64 content_length,
+      const std::string& content_type,
+      const scoped_refptr<net::IOBuffer>& buf);
+  virtual ~ResumeUploadOperationBase();
+
+  // UrlFetchOperationBase overrides.
+  virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
+  virtual bool GetContentData(std::string* upload_content_type,
+                              std::string* upload_content) OVERRIDE;
+
+  // content::UrlFetcherDelegate overrides.
+  virtual void OnURLFetchUploadProgress(const net::URLFetcher* source,
+                                        int64 current, int64 total) OVERRIDE;
+
+ private:
+  // The parameters for the request. See ResumeUploadParams for the details.
+  const int64 start_position_;
+  const int64 end_position_;
+  const int64 content_length_;
+  const std::string content_type_;
+  const scoped_refptr<net::IOBuffer> buf_;
+
+  DISALLOW_COPY_AND_ASSIGN(ResumeUploadOperationBase);
 };
 
 //============================ DownloadFileOperation ===========================

@@ -425,22 +425,11 @@ class InitiateUploadExistingFileOperation
 
 //============================ ResumeUploadOperation ===========================
 
-// This class performs the operation for resuming the upload of a file.
-// More specifically, this operation uploads a chunk of data carried in |buf|
-// of ResumeUploadResponse.
-class ResumeUploadOperation : public UploadRangeOperationBase {
+// Performs the operation for resuming the upload of a file.
+class ResumeUploadOperation : public ResumeUploadOperationBase {
  public:
-  // |start_position| is the start of range of contents currently stored in
-  // |buf|. |end_position| is the end of range of contents currently stared in
-  // |buf|. This is exclusive. For instance, if you are to upload the first
-  // 500 bytes of data, |start_position| is 0 and |end_position| is 500.
-  // |content_length| and |content_type| are the length and type of the
-  // file content to be uploaded respectively.
-  // |buf| holds current content to be uploaded.
-  // See also UploadRangeOperationBase's comment for remaining parameters
-  // meaining.
-  // |callback| must not be null. See also UploadRangeOperationBase's
-  // constructor for more details.
+  // See also ResumeUploadOperationBase's comment for parameters meaining.
+  // |callback| must not be null.
   ResumeUploadOperation(
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
@@ -456,15 +445,6 @@ class ResumeUploadOperation : public UploadRangeOperationBase {
   virtual ~ResumeUploadOperation();
 
  protected:
-  // UrlFetchOperationBase overrides.
-  virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
-  virtual bool GetContentData(std::string* upload_content_type,
-                              std::string* upload_content) OVERRIDE;
-
-  // content::UrlFetcherDelegate overrides.
-  virtual void OnURLFetchUploadProgress(const net::URLFetcher* source,
-                                        int64 current, int64 total) OVERRIDE;
-
   // UploadRangeOperationBase overrides.
   virtual void OnRangeOperationComplete(
       const UploadRangeResponse& response,
@@ -472,13 +452,6 @@ class ResumeUploadOperation : public UploadRangeOperationBase {
 
  private:
   const UploadRangeCallback callback_;
-
-  // The parameters for the request. See ResumeUploadParams for the details.
-  const int64 start_position_;
-  const int64 end_position_;
-  const int64 content_length_;
-  const std::string content_type_;
-  const scoped_refptr<net::IOBuffer> buf_;
 
   DISALLOW_COPY_AND_ASSIGN(ResumeUploadOperation);
 };
