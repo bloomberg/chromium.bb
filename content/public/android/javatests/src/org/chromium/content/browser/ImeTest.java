@@ -15,7 +15,6 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ImeAdapter.AdapterInputConnection;
@@ -208,12 +207,8 @@ public class ImeTest extends ContentShellTestBase {
         assertEquals(13, mConnection.mSelectionEnd);
     }
 
-    /*
     @SmallTest
     @Feature({"TextInput"})
-    See crbug.com/179043
-    */
-    @DisabledTest
     public void testImeSelectAndUnSelectAll() throws Exception {
         mImeAdapter.checkCompositionQueueAndCallNative("hello", 1, true);
         assertWaitForSetEditableCallback(2, mConnection);
