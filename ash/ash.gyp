@@ -487,6 +487,8 @@
         }, { # else: chromeos!=1
           'sources/': [
             ['exclude', '/chromeos/'],
+            ['exclude', 'display/display_error_dialog.cc'],
+            ['exclude', 'display/display_error_dialog.h'],
             ['exclude', 'display/output_configurator_animation.cc'],
             ['exclude', 'display/output_configurator_animation.h'],
           ],
@@ -686,6 +688,11 @@
           # Special linker instructions that avoids stripping Obj-C classes that
           # are not referenced in code, but are referenced in nibs.
           'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
+        }],
+        ['chromeos!=1', {
+          'sources/': [
+            ['exclude', 'display/display_error_dialog_unittest.cc'],
+          ],
         }],
       ],
     },
