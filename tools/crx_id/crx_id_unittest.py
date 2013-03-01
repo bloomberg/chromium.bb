@@ -14,10 +14,8 @@ import sys
 import unittest
 import tempfile
 
-CRX_ID_DIR = os.path.dirname(sys.argv[0])
-
 class CrxIdUnittest(unittest.TestCase):
-
+  CRX_ID_DIR = os.path.abspath(os.path.dirname(sys.argv[0]))
   PACKED_CRX = os.path.join(CRX_ID_DIR,
                             'jebgalgnebhfojomionfpkfelancnnkf.crx')
 
@@ -35,12 +33,6 @@ class CrxIdUnittest(unittest.TestCase):
     self.assertEqual(crx_id.GetCRXHash(self.PACKED_CRX),
                      self.PACKED_HASH_BYTES)
 
-
-  # ../../chrome/test/data/extensions/unpacked/manifest_with_key.json
-  BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(sys.argv[0])))
-  UNPACKED_TEST_DIR = os.path.join(
-      BASE_DIR,
-      'chrome', 'test', 'data', 'extensions', 'unpacked')
   UNPACKED_APP_ID = 'cbcdidchbppangcjoddlpdjlenngjldk'
   UNPACKED_HASH_BYTES = \
       '{0x21, 0x23, 0x83, 0x27, 0x1f, 0xf0, 0xd6, 0x29,' \
@@ -50,29 +42,35 @@ class CrxIdUnittest(unittest.TestCase):
 
   def testUnpackedHashAppId(self):
     """ Test the output generated for a canned, unpacked extension. """
+    # Copy ../../chrome/test/data/extensions/unpacked/manifest_with_key.json
+    # to a temporary location.
+    unpacked_test_manifest_path = os.path.join(
+        self.CRX_ID_DIR,
+        '..', '..', 'chrome', 'test', 'data', 'extensions', 'unpacked',
+        'manifest_with_key.json')
     temp_unpacked_crx = tempfile.mkdtemp()
-    shutil.copy2(os.path.join(self.UNPACKED_TEST_DIR,
-                              'manifest_with_key.json'),
-                 os.path.join(temp_unpacked_crx,
-                              'manifest.json'))
+    shutil.copy2(unpacked_test_manifest_path,
+                 os.path.join(temp_unpacked_crx, 'manifest.json'))
     self.assertEqual(crx_id.GetCRXAppID(temp_unpacked_crx),
                      self.UNPACKED_APP_ID)
     self.assertEqual(crx_id.GetCRXHash(temp_unpacked_crx),
                      self.UNPACKED_HASH_BYTES)
-    # This uses the path to compute the AppID.
+    self.assertTrue(crx_id.HasPublicKey(temp_unpacked_crx))
+    shutil.rmtree(temp_unpacked_crx)
+
+  def testFromFilePath(self):
+    """ Test calculation of extension id from file paths. """
     self.assertEqual(crx_id.GetCRXAppID('/tmp/temp_extension',
-                                        from_test_path=True),
+                                        from_file_path=True),
                      'ajbbicncdkdlchpjplgjaglppbcbmaji')
     # Test drive letter normalization.
     kWinPathId = 'popnagglbbhjlobnnbcjnckakjoegnjp'
     self.assertEqual(crx_id.GetCRXAppID('c:\temp_extension',
-                                        from_test_path=True),
+                                        from_file_path=True),
                      kWinPathId)
     self.assertEqual(crx_id.GetCRXAppID('C:\temp_extension',
-                                        from_test_path=True),
+                                        from_file_path=True),
                      kWinPathId)
-    shutil.rmtree(temp_unpacked_crx)
-
 
 if __name__ == '__main__':
   unittest.main()

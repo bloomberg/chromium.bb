@@ -95,8 +95,15 @@ def GetPublicKeyUnpacked(f, filepath):
   else:
     return base64.standard_b64decode(manifest['key'])
 
-def GetPublicKey(filename, from_test_path):
-  if from_test_path:
+def HasPublicKey(filename):
+  if os.path.isdir(filename):
+    with open(os.path.join(filename, 'manifest.json'), 'rb') as f:
+      manifest = json.load(f)
+      return 'key' in manifest
+  return False
+
+def GetPublicKey(filename, from_file_path):
+  if from_file_path:
     return GetPublicKeyFromPath(filename)
 
   pub_key = ''
@@ -112,13 +119,13 @@ def GetPublicKey(filename, from_test_path):
     f.close()
   return pub_key
 
-def GetCRXHash(filename, from_test_path=False):
-  pub_key = GetPublicKey(filename, from_test_path)
+def GetCRXHash(filename, from_file_path=False):
+  pub_key = GetPublicKey(filename, from_file_path)
   pub_key_hash = hashlib.sha256(pub_key).digest()
   return HexTo256(pub_key_hash)
 
-def GetCRXAppID(filename, from_test_path=False):
-  pub_key = GetPublicKey(filename, from_test_path)
+def GetCRXAppID(filename, from_file_path=False):
+  pub_key = GetPublicKey(filename, from_file_path)
   pub_key_hash = hashlib.sha256(pub_key).digest()
   # AppID is the MPDecimal of only the first 128 bits of the hash.
   return HexToMPDecimal(pub_key_hash[:128/8])
