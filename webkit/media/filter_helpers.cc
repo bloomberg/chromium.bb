@@ -9,14 +9,12 @@
 #include "media/base/filter_collection.h"
 #include "media/base/media_switches.h"
 #include "media/filters/chunk_demuxer.h"
-#include "media/filters/dummy_demuxer.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/opus_audio_decoder.h"
 #include "media/filters/vpx_video_decoder.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
-#include "webkit/media/media_stream_client.h"
 
 namespace webkit_media {
 
@@ -54,30 +52,6 @@ static void AddDefaultDecodersToCollection(
     filter_collection->GetVideoDecoders()->push_back(vpx_video_decoder);
   }
 #endif  // defined(MEDIA_USE_LIBVPX)
-}
-
-bool BuildMediaStreamCollection(
-    const WebKit::WebURL& url,
-    MediaStreamClient* client,
-    const scoped_refptr<base::MessageLoopProxy>& message_loop,
-    media::FilterCollection* filter_collection) {
-  if (!client)
-    return false;
-
-  scoped_refptr<media::VideoDecoder> video_decoder = client->GetVideoDecoder(
-      url, message_loop);
-  if (!video_decoder)
-    return false;
-
-  // Remove all other decoders and just use the MediaStream one.
-  // NOTE: http://crbug.com/110800 is about replacing this ad-hockery with
-  // something more designed.
-  filter_collection->GetVideoDecoders()->clear();
-  filter_collection->GetVideoDecoders()->push_back(video_decoder);
-
-  filter_collection->SetDemuxer(new media::DummyDemuxer(true, false));
-
-  return true;
 }
 
 void BuildMediaSourceCollection(

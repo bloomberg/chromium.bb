@@ -2703,10 +2703,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
 
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 #if defined(ENABLE_WEBRTC)
-  // TODO(wjia): when all patches related to WebMediaPlayerMS have been
-  // landed, remove the switch. Refer to crbug.com/142988.
-  if (!cmd_line->HasSwitch(switches::kDisableWebMediaPlayerMS) &&
-      MediaStreamImpl::CheckMediaStream(url)) {
+  if (MediaStreamImpl::CheckMediaStream(url)) {
     EnsureMediaStreamImpl();
     return new webkit_media::WebMediaPlayerMS(
         frame, client, AsWeakPtr(), media_stream_impl_, new RenderMediaLog());
@@ -2789,7 +2786,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
   }
 
   webkit_media::WebMediaPlayerParams params(
-      sink, gpu_factories, media_stream_impl_, new RenderMediaLog());
+      sink, gpu_factories, new RenderMediaLog());
   WebMediaPlayer* media_player =
       GetContentClient()->renderer()->OverrideCreateWebMediaPlayer(
           this, frame, client, AsWeakPtr(), params);

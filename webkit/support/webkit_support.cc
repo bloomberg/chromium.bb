@@ -443,7 +443,7 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(
       true);
 #else
   webkit_media::WebMediaPlayerParams params(
-      NULL, NULL, NULL, new media::MediaLog());
+      NULL, NULL, new media::MediaLog());
   return new webkit_media::WebMediaPlayerImpl(
       frame,
       client,

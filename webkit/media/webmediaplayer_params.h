@@ -15,8 +15,6 @@ class MediaLog;
 
 namespace webkit_media {
 
-class MediaStreamClient;
-
 // Holds parameters for constructing WebMediaPlayerImpl without having
 // to plumb arguments through various abstraction layers.
 class WebMediaPlayerParams {
@@ -25,7 +23,6 @@ class WebMediaPlayerParams {
   WebMediaPlayerParams(
       const scoped_refptr<media::AudioRendererSink>& audio_renderer_sink,
       const scoped_refptr<media::GpuVideoDecoder::Factories>& gpu_factories,
-      MediaStreamClient* media_stream_client,
       const scoped_refptr<media::MediaLog>& media_log);
   ~WebMediaPlayerParams();
 
@@ -38,10 +35,6 @@ class WebMediaPlayerParams {
     return gpu_factories_;
   }
 
-  MediaStreamClient* media_stream_client() const {
-    return media_stream_client_;
-  }
-
   const scoped_refptr<media::MediaLog>& media_log() const {
     return media_log_;
   }
@@ -49,7 +42,6 @@ class WebMediaPlayerParams {
  private:
   scoped_refptr<media::AudioRendererSink> audio_renderer_sink_;
   scoped_refptr<media::GpuVideoDecoder::Factories> gpu_factories_;
-  MediaStreamClient* media_stream_client_;
   scoped_refptr<media::MediaLog> media_log_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebMediaPlayerParams);

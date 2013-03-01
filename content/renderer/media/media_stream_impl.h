@@ -24,10 +24,6 @@
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 #include "webkit/media/media_stream_client.h"
 
-namespace base{
-class MessageLoopProxy;
-}
-
 namespace webkit_media {
 class MediaStreamAudioRenderer;
 }
@@ -81,9 +77,6 @@ class CONTENT_EXPORT MediaStreamImpl
       const GURL& url,
       const base::Closure& error_cb,
       const webkit_media::VideoFrameProvider::RepaintCB& repaint_cb) OVERRIDE;
-  virtual scoped_refptr<media::VideoDecoder> GetVideoDecoder(
-      const GURL& url,
-      const scoped_refptr<base::MessageLoopProxy>& message_loop) OVERRIDE;
   virtual scoped_refptr<webkit_media::MediaStreamAudioRenderer>
       GetAudioRenderer(const GURL& url) OVERRIDE;
 
@@ -169,9 +162,6 @@ class CONTENT_EXPORT MediaStreamImpl
       webrtc::MediaStreamInterface* stream,
       const base::Closure& error_cb,
       const webkit_media::VideoFrameProvider::RepaintCB& repaint_cb);
-  scoped_refptr<media::VideoDecoder> CreateVideoDecoder(
-      webrtc::MediaStreamInterface* stream,
-      const scoped_refptr<base::MessageLoopProxy>& message_loop);
   scoped_refptr<WebRtcAudioRenderer> CreateRemoteAudioRenderer(
       webrtc::MediaStreamInterface* stream);
   scoped_refptr<WebRtcLocalAudioRenderer> CreateLocalAudioRenderer(

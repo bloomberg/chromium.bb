@@ -12,11 +12,9 @@ namespace webkit_media {
 WebMediaPlayerParams::WebMediaPlayerParams(
     const scoped_refptr<media::AudioRendererSink>& audio_renderer_sink,
     const scoped_refptr<media::GpuVideoDecoder::Factories>& gpu_factories,
-    MediaStreamClient* media_stream_client,
     const scoped_refptr<media::MediaLog>& media_log)
     : audio_renderer_sink_(audio_renderer_sink),
       gpu_factories_(gpu_factories),
-      media_stream_client_(media_stream_client),
       media_log_(media_log) {
   DCHECK(media_log_);
 }

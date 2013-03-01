@@ -559,7 +559,6 @@
             'renderer/media/media_stream_dispatcher_unittest.cc',
             'renderer/media/media_stream_impl_unittest.cc',
             'renderer/media/rtc_peer_connection_handler_unittest.cc',
-            'renderer/media/rtc_video_decoder_unittest.cc',
             'renderer/media/webrtc_audio_device_unittest.cc',
           ],
           'dependencies': [

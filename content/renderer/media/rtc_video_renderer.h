@@ -25,6 +25,9 @@ namespace content {
 // RTCVideoRenderer register itself to the Video Track when the
 // VideoFrameProvider is started and deregisters itself when it is stopped.
 // Calls to webrtc::VideoTrackInterface must occur on the main thread.
+// TODO(wuchengli): Add unit test. See the link below for reference.
+// http://src.chromium.org/viewvc/chrome/trunk/src/content/renderer/media/rtc_vi
+// deo_decoder_unittest.cc?revision=180591&view=markup
 class CONTENT_EXPORT RTCVideoRenderer
     : NON_EXPORTED_BASE(public webkit_media::VideoFrameProvider),
       NON_EXPORTED_BASE(public webrtc::VideoRendererInterface),

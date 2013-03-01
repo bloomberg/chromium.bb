@@ -114,7 +114,6 @@ extern const char kEnableGpuClientTracing[];
 extern const char kEnableMemoryBenchmarking[];
 CONTENT_EXPORT extern const char kEnableLogging[];
 extern const char kDisableMediaSource[];
-extern const char kDisableWebMediaPlayerMS[];
 CONTENT_EXPORT extern const char kUseFakeDeviceForMediaStream[];
 extern const char kEnableMonitorProfile[];
 extern const char kEnableUserMediaScreenCapturing[];

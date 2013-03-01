@@ -782,7 +782,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableMemoryBenchmarking,
     switches::kEnableLogging,
     switches::kDisableMediaSource,
-    switches::kDisableWebMediaPlayerMS,
     switches::kDisableRendererSideMixing,
     switches::kEnableStrictSiteIsolation,
     switches::kDisableFullScreen,

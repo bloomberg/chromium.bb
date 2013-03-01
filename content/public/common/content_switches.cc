@@ -334,10 +334,6 @@ const char kEnableLogging[]                 = "enable-logging";
 // Disable Media Source API on <audio>/<video> elements.
 const char kDisableMediaSource[]             = "disable-media-source";
 
-// Disables using WebMediaPlayerMS for src of <audio>/<video> derived from
-// media stream.
-const char kDisableWebMediaPlayerMS[]       = "disable-web-media-player-ms";
-
 // Use fake device for MediaStream to replace actual camera and microphone.
 const char kUseFakeDeviceForMediaStream[] = "use-fake-device-for-media-stream";
 

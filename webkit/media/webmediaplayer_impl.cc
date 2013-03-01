@@ -135,7 +135,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       client_(client),
       proxy_(new WebMediaPlayerProxy(main_loop_, this)),
       delegate_(delegate),
-      media_stream_client_(params.media_stream_client()),
       media_log_(params.media_log()),
       accelerated_compositing_reported_(false),
       incremented_externally_allocated_memory_(false),
@@ -268,15 +267,6 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url, CORSMode cors_mode) {
   SetNetworkState(WebMediaPlayer::NetworkStateLoading);
   SetReadyState(WebMediaPlayer::ReadyStateHaveNothing);
   media_log_->AddEvent(media_log_->CreateLoadEvent(url.spec()));
-
-  // Media streams pipelines can start immediately.
-  if (BuildMediaStreamCollection(url, media_stream_client_,
-                                 media_thread_.message_loop_proxy(),
-                                 filter_collection_.get())) {
-    supports_save_ = false;
-    StartPipeline();
-    return;
-  }
 
   // Media source pipelines can start immediately.
   if (!url.isEmpty() && url == GetClient()->sourceURL()) {

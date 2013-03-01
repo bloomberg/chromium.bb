@@ -14,7 +14,6 @@
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/media_stream_extra_data.h"
 #include "content/renderer/media/media_stream_source_extra_data.h"
-#include "content/renderer/media/rtc_video_decoder.h"
 #include "content/renderer/media/rtc_video_renderer.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
@@ -241,25 +240,6 @@ MediaStreamImpl::GetVideoFrameProvider(
   webrtc::MediaStreamInterface* stream = GetNativeMediaStream(descriptor);
   if (stream)
     return CreateVideoFrameProvider(stream, error_cb, repaint_cb);
-  NOTREACHED();
-  return NULL;
-}
-
-scoped_refptr<media::VideoDecoder> MediaStreamImpl::GetVideoDecoder(
-    const GURL& url,
-    const scoped_refptr<base::MessageLoopProxy>& message_loop) {
-  DCHECK(CalledOnValidThread());
-  WebKit::WebMediaStream descriptor(GetMediaStream(url));
-
-  if (descriptor.isNull() || !descriptor.extraData())
-    return NULL;  // This is not a valid stream.
-
-  DVLOG(1) << "MediaStreamImpl::GetVideoDecoder stream:"
-           << UTF16ToUTF8(descriptor.label());
-
-  webrtc::MediaStreamInterface* stream = GetNativeMediaStream(descriptor);
-  if (stream)
-    return CreateVideoDecoder(stream, message_loop);
   NOTREACHED();
   return NULL;
 }
@@ -532,22 +512,6 @@ MediaStreamImpl::CreateVideoFrameProvider(
       stream->GetVideoTracks()[0],
       error_cb,
       repaint_cb);
-}
-
-scoped_refptr<media::VideoDecoder> MediaStreamImpl::CreateVideoDecoder(
-    webrtc::MediaStreamInterface* stream,
-    const scoped_refptr<base::MessageLoopProxy>& message_loop) {
-  if (stream->GetVideoTracks().empty())
-    return NULL;
-
-
-  DVLOG(1) << "MediaStreamImpl::CreateRemoteVideoDecoder label:"
-           << stream->label();
-
-  return new RTCVideoDecoder(
-      message_loop,
-      base::MessageLoopProxy::current(),
-      stream->GetVideoTracks()[0].get());
 }
 
 scoped_refptr<WebRtcAudioRenderer> MediaStreamImpl::CreateRemoteAudioRenderer(

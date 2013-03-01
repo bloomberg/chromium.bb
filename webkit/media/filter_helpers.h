@@ -19,23 +19,7 @@ class FFmpegVideoDecoder;
 class FilterCollection;
 }
 
-namespace WebKit {
-class WebURL;
-}
-
 namespace webkit_media {
-
-class MediaStreamClient;
-
-// Builds the required filters for handling media stream URLs and adds them to
-// |filter_collection| returning true if successful.
-//
-// |filter_collection| is not modified if this method returns false.
-bool BuildMediaStreamCollection(
-    const WebKit::WebURL& url,
-    MediaStreamClient* client,
-    const scoped_refptr<base::MessageLoopProxy>& message_loop,
-    media::FilterCollection* filter_collection);
 
 // Builds the required filters for handling media source URLs, adds them to
 // |filter_collection|.
