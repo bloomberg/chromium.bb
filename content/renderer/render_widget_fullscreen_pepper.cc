@@ -519,18 +519,15 @@ RenderWidgetFullscreenPepper::GetBitmapForOptimizedPluginPaint(
 }
 
 void RenderWidgetFullscreenPepper::OnResize(const gfx::Size& size,
-    const gfx::Size& physical_backing_size,
-    const gfx::Rect& resizer_rect,
-    bool is_fullscreen) {
+                                            const gfx::Rect& resizer_rect,
+                                            bool is_fullscreen) {
   if (context_) {
-    context_->reshape(physical_backing_size.width(),
-                      physical_backing_size.height());
-    context_->viewport(0, 0,
-                       physical_backing_size.width(),
-                       physical_backing_size.height());
+    gfx::Size pixel_size = gfx::ToFlooredSize(
+        gfx::ScaleSize(size, deviceScaleFactor()));
+    context_->reshape(pixel_size.width(), pixel_size.height());
+    context_->viewport(0, 0, pixel_size.width(), pixel_size.height());
   }
-  RenderWidget::OnResize(size, physical_backing_size, resizer_rect,
-                         is_fullscreen);
+  RenderWidget::OnResize(size, resizer_rect, is_fullscreen);
 }
 
 WebWidget* RenderWidgetFullscreenPepper::CreateWebWidget() {

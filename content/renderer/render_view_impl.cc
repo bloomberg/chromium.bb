@@ -5431,8 +5431,7 @@ void RenderViewImpl::OnDisableAutoResize(const gfx::Size& new_size) {
     return;
   webview()->disableAutoResizeMode();
 
-  Resize(new_size, physical_backing_size_, resizer_rect_, is_fullscreen_,
-         NO_RESIZE_ACK);
+  Resize(new_size, resizer_rect_, is_fullscreen_, NO_RESIZE_ACK);
 }
 
 void RenderViewImpl::OnEnablePreferredSizeChangedMode() {
@@ -5727,7 +5726,6 @@ void RenderViewImpl::OnMoveOrResizeStarted() {
 }
 
 void RenderViewImpl::OnResize(const gfx::Size& new_size,
-                              const gfx::Size& physical_backing_size,
                               const gfx::Rect& resizer_rect,
                               bool is_fullscreen) {
   if (webview()) {
@@ -5739,8 +5737,7 @@ void RenderViewImpl::OnResize(const gfx::Size& new_size,
     UpdateScrollState(webview()->mainFrame());
   }
 
-  RenderWidget::OnResize(new_size, physical_backing_size, resizer_rect,
-                         is_fullscreen);
+  RenderWidget::OnResize(new_size, resizer_rect, is_fullscreen);
 }
 
 void RenderViewImpl::WillInitiatePaint() {

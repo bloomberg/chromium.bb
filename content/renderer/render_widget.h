@@ -269,7 +269,6 @@ class CONTENT_EXPORT RenderWidget
 
   // Resizes the render widget.
   void Resize(const gfx::Size& new_size,
-              const gfx::Size& physical_backing_size,
               const gfx::Rect& resizer_rect,
               bool is_fullscreen,
               ResizeAck resize_ack);
@@ -278,7 +277,6 @@ class CONTENT_EXPORT RenderWidget
   void OnClose();
   void OnCreatingNewAck();
   virtual void OnResize(const gfx::Size& new_size,
-                        const gfx::Size& physical_backing_size,
                         const gfx::Rect& resizer_rect,
                         bool is_fullscreen);
   void OnChangeResizeRect(const gfx::Rect& resizer_rect);
@@ -502,9 +500,6 @@ class CONTENT_EXPORT RenderWidget
   TransportDIB* current_paint_buf_;
 
   PaintAggregator paint_aggregator_;
-
-  // The size of the view's backing surface in non-DPI-adjusted pixels.
-  gfx::Size physical_backing_size_;
 
   // The area that must be reserved for drawing the resize corner.
   gfx::Rect resizer_rect_;

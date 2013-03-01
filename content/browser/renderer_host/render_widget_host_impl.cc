@@ -481,30 +481,26 @@ void RenderWidgetHostImpl::WasResized() {
   gfx::Rect view_bounds = view_->GetViewBounds();
   gfx::Size new_size(view_bounds.size());
 
-  gfx::Size old_physical_backing_size = physical_backing_size_;
-  physical_backing_size_ = view_->GetPhysicalBackingSize();
   bool was_fullscreen = is_fullscreen_;
   is_fullscreen_ = IsFullscreen();
-
+  bool fullscreen_changed = was_fullscreen != is_fullscreen_;
   bool size_changed = new_size != current_size_;
-  bool side_payload_changed =
-      old_physical_backing_size != physical_backing_size_ ||
-      was_fullscreen != is_fullscreen_;
 
-  if (!size_changed && !side_payload_changed)
+  // Avoid asking the RenderWidget to resize to its current size, since it
+  // won't send us a PaintRect message in that case.
+  if (!size_changed && !fullscreen_changed)
     return;
 
   if (in_flight_size_ != gfx::Size() && new_size == in_flight_size_ &&
-      !side_payload_changed)
+      !fullscreen_changed)
     return;
 
-  // We don't expect to receive an ACK when the requested size is empty or when
-  // the main viewport size didn't change.
+  // We don't expect to receive an ACK when the requested size is empty.
   if (!new_size.IsEmpty() && size_changed)
     resize_ack_pending_ = true;
 
-  if (!Send(new ViewMsg_Resize(routing_id_, new_size, physical_backing_size_,
-                               GetRootWindowResizerRect(), is_fullscreen_))) {
+  if (!Send(new ViewMsg_Resize(routing_id_, new_size,
+          GetRootWindowResizerRect(), is_fullscreen_))) {
     resize_ack_pending_ = false;
   } else {
     in_flight_size_ = new_size;

@@ -329,7 +329,6 @@ bool RenderWidget::Send(IPC::Message* message) {
 }
 
 void RenderWidget::Resize(const gfx::Size& new_size,
-                          const gfx::Size& physical_backing_size,
                           const gfx::Rect& resizer_rect,
                           bool is_fullscreen,
                           ResizeAck resize_ack) {
@@ -341,10 +340,7 @@ void RenderWidget::Resize(const gfx::Size& new_size,
   if (!webwidget_)
     return;
 
-  if (compositor_)
-    compositor_->setViewportSize(new_size, physical_backing_size);
-
-  physical_backing_size_ = physical_backing_size_;
+  // Remember the rect where the resize corner will be drawn.
   resizer_rect_ = resizer_rect;
 
   // NOTE: We may have entered fullscreen mode without changing our size.
@@ -418,11 +414,9 @@ void RenderWidget::OnCreatingNewAck() {
 }
 
 void RenderWidget::OnResize(const gfx::Size& new_size,
-                            const gfx::Size& physical_backing_size,
                             const gfx::Rect& resizer_rect,
                             bool is_fullscreen) {
-  Resize(new_size, physical_backing_size, resizer_rect, is_fullscreen,
-         SEND_RESIZE_ACK);
+  Resize(new_size, resizer_rect, is_fullscreen, SEND_RESIZE_ACK);
 }
 
 void RenderWidget::OnChangeResizeRect(const gfx::Rect& resizer_rect) {
@@ -1353,7 +1347,6 @@ void RenderWidget::initializeLayerTreeView(
     return;
 
   compositor_->setRootLayer(root_layer);
-  compositor_->setViewportSize(size_, physical_backing_size_);
   if (init_complete_)
     compositor_->setSurfaceReady();
 }
