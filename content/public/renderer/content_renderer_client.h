@@ -32,6 +32,7 @@ class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
 class WebMimeRegistry;
 class WebPlugin;
+class WebPluginContainer;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
 class WebURLRequest;
@@ -212,6 +213,9 @@ class CONTENT_EXPORT ContentRendererClient {
 
   virtual void RegisterPPAPIInterfaceFactories(
       webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager) {}
+
+  // Returns whether BrowserPlugin should be allowed within the |container|.
+  virtual bool AllowBrowserPlugin(WebKit::WebPluginContainer* container) const;
 };
 
 }  // namespace content

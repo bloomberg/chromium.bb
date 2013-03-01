@@ -55,6 +55,19 @@ std::string GetHTMLForBrowserPluginObject() {
 
 namespace content {
 
+class TestContentRendererClient : public ContentRendererClient {
+ public:
+  TestContentRendererClient() : ContentRendererClient() {
+  }
+  virtual ~TestContentRendererClient() {
+  }
+  virtual bool AllowBrowserPlugin(WebKit::WebPluginContainer* container) const
+      OVERRIDE {
+    // Allow BrowserPlugin for tests.
+    return true;
+  }
+};
+
 // Test factory for creating test instances of BrowserPluginManager.
 class TestBrowserPluginManagerFactory : public BrowserPluginManagerFactory {
  public:
@@ -84,17 +97,19 @@ BrowserPluginTest::BrowserPluginTest() {}
 BrowserPluginTest::~BrowserPluginTest() {}
 
 void BrowserPluginTest::SetUp() {
-  GetContentClient()->set_renderer_for_testing(&content_renderer_client_);
+  test_content_renderer_client_.reset(new TestContentRendererClient);
+  GetContentClient()->set_renderer_for_testing(
+      test_content_renderer_client_.get());
   BrowserPluginManager::set_factory_for_testing(
       TestBrowserPluginManagerFactory::GetInstance());
   content::RenderViewTest::SetUp();
-
 }
 
 void BrowserPluginTest::TearDown() {
   BrowserPluginManager::set_factory_for_testing(
       TestBrowserPluginManagerFactory::GetInstance());
   content::RenderViewTest::TearDown();
+  test_content_renderer_client_.reset();
 }
 
 std::string BrowserPluginTest::ExecuteScriptAndReturnString(

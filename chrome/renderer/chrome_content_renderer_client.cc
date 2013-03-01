@@ -87,7 +87,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
@@ -127,6 +129,8 @@ using WebKit::WebURLResponse;
 using WebKit::WebVector;
 
 namespace {
+
+const char kWebViewTagName[] = "WEBVIEW";
 
 // Explicitly register all extension ManifestHandlers needed to parse
 // fields used in the renderer.
@@ -1072,6 +1076,32 @@ void ChromeContentRendererClient::RegisterPPAPIInterfaceFactories(
 #if defined(ENABLE_PLUGINS)
   factory_manager->RegisterFactory(ChromePPAPIInterfaceFactory);
 #endif
+}
+
+bool ChromeContentRendererClient::AllowBrowserPlugin(
+    WebKit::WebPluginContainer* container) const {
+  // If this |BrowserPlugin| <object> in the |container| is not inside a
+  // <webview> shadowHost, we disable instantiating this plugin. This is to
+  // discourage and prevent developers from accidentally attaching <object>
+  // directly in apps.
+  //
+  // Note that this check below does *not* ensure any security, it is still
+  // possible to bypass this check.
+  // TODO(lazyboy): http://crbug.com/178663, Ensure we properly disallow
+  // instantiating BrowserPlugin outside of the <webview> shim.
+  if (container->element().isNull())
+    return false;
+
+  if (container->element().shadowHost().isNull())
+    return false;
+
+  if (container->element().shadowHost().tagName().equals(
+          WebKit::WebString::fromUTF8(kWebViewTagName))) {
+    return true;
+  } else {
+    return CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableBrowserPluginForAllViewTypes);
+  }
 }
 
 }  // namespace chrome

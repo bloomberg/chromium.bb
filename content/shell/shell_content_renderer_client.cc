@@ -142,4 +142,15 @@ void ShellContentRendererClient::WebTestProxyCreated(RenderView* render_view,
       ShellRenderProcessObserver::GetInstance()->test_delegate());
 }
 
+bool ShellContentRendererClient::AllowBrowserPlugin(
+    WebKit::WebPluginContainer* container) const {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserPluginForAllViewTypes)) {
+    // Allow BrowserPlugin if forced by command line flag. This is generally
+    // true for tests.
+    return true;
+  }
+  return ContentRendererClient::AllowBrowserPlugin(container);
+}
+
 }  // namespace content

@@ -136,4 +136,9 @@ bool ContentRendererClient::HandleSetCookieRequest(
   return false;
 }
 
+bool ContentRendererClient::AllowBrowserPlugin(
+    WebKit::WebPluginContainer* container) const {
+  return false;
+}
+
 }  // namespace content

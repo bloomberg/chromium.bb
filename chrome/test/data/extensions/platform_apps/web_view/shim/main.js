@@ -295,6 +295,22 @@ onload = function() {
       });
       webview.setAttribute('src', dataUrl);
       document.body.appendChild(webview);
+    },
+
+    function browserPluginObjectInstantiationIsNotAllowed() {
+      var container = document.getElementById('object-container');
+      if (!container) {
+        chrome.test.fail('Container for object not found.');
+        return;
+      }
+      container.innerHTML = '<object type="application/browser-plugin"' +
+          ' id="object-plugin"' +
+          ' src="data:text/html,<body>You should not see this</body>">' +
+          '</object>';
+      var objectElement = document.getElementById('object-plugin');
+      // Check that bindings are not registered.
+      chrome.test.assertTrue(objectElement.canGoBack === undefined);
+      chrome.test.succeed();
     }
   ]);
 };

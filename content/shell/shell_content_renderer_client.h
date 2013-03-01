@@ -44,6 +44,8 @@ class ShellContentRendererClient : public ContentRendererClient {
       WebKit::WebRTCPeerConnectionHandlerClient* client) OVERRIDE;
   virtual WebKit::WebClipboard* OverrideWebClipboard() OVERRIDE;
   virtual WebKit::WebMimeRegistry* OverrideWebMimeRegistry() OVERRIDE;
+  virtual bool AllowBrowserPlugin(
+      WebKit::WebPluginContainer* container) const OVERRIDE;
 
  private:
    void WebTestProxyCreated(RenderView* render_view,

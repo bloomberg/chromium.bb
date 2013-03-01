@@ -115,6 +115,8 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                                       const GURL& url,
                                       const GURL& first_party_for_cookies,
                                       const std::string& value) OVERRIDE;
+  virtual bool AllowBrowserPlugin(WebKit::WebPluginContainer* container) const
+      OVERRIDE;
 
   // TODO(mpcomplete): remove after we collect histogram data.
   // http://crbug.com/100411

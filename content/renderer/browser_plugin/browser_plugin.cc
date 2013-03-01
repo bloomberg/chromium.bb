@@ -99,7 +99,6 @@ BrowserPlugin::BrowserPlugin(
       current_nav_entry_index_(0),
       nav_entry_count_(0),
       compositing_enabled_(false) {
-  bindings_.reset(new BrowserPluginBindings(this));
 }
 
 BrowserPlugin::~BrowserPlugin() {
@@ -846,6 +845,13 @@ WebKit::WebPluginContainer* BrowserPlugin::container() const {
 }
 
 bool BrowserPlugin::initialize(WebPluginContainer* container) {
+  if (!container)
+    return false;
+
+  if (!GetContentClient()->renderer()->AllowBrowserPlugin(container))
+    return false;
+
+  bindings_.reset(new BrowserPluginBindings(this));
   container_ = container;
   container_->setWantsWheelEvents(true);
   ParseAttributes();
@@ -896,6 +902,9 @@ void BrowserPlugin::destroy() {
 }
 
 NPObject* BrowserPlugin::scriptableObject() {
+  if (!bindings_.get())
+    return NULL;
+
   NPObject* browser_plugin_np_object(bindings_->np_object());
   // The object is expected to be retained before it is returned.
   WebKit::WebBindings::retainObject(browser_plugin_np_object);
