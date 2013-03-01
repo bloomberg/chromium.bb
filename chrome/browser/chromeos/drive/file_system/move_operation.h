@@ -45,101 +45,85 @@ class MoveOperation {
                     const base::FilePath& dest_file_path,
                     const FileOperationCallback& callback);
  private:
-  // Part of Move(). Called after GetEntryInfoPairByPaths() is
-  // complete. |callback| must not be null.
-  void MoveAfterGetEntryInfoPair(
-    const base::FilePath& dest_file_path,
-    const FileOperationCallback& callback,
-    scoped_ptr<EntryInfoPairResult> result);
+  // Step 1 of Move(), called after the entry info of the source resource and
+  // the destination directory is obtained. It renames the resource in the
+  // source directory, before moving between directories.
+  void MoveAfterGetEntryInfoPair(const base::FilePath& dest_file_path,
+                                 const FileOperationCallback& callback,
+                                 scoped_ptr<EntryInfoPairResult> src_dest_info);
 
-  // A pass-through callback used for bridging from
-  // FileMoveCallback to FileOperationCallback.
-  void OnFilePathUpdated(const FileOperationCallback& cllback,
-                         DriveFileError error,
-                         const base::FilePath& file_path);
+  // Step 2 of Move(), called after renaming is completed. It adds the resource
+  // to the destination directory.
+  void MoveAfterRename(const FileOperationCallback& callback,
+                       scoped_ptr<EntryInfoPairResult> src_dest_info,
+                       DriveFileError error,
+                       const base::FilePath& src_path);
 
-  // Renames a file or directory at |file_path| to |new_name| in the same
+  // Step 3 of Move(), called after the resource is added to the new directory.
+  // It removes the resource from the old directory in the remote server. While
+  // our local metadata assumes tree structure, on the server side a resource
+  // can belong to multiple collections (directories). At this point the
+  // resource is contained in both the new and the old directories.
+  void MoveAfterAddToDirectory(const FileOperationCallback& callback,
+                               scoped_ptr<EntryInfoPairResult> src_dest_info,
+                               DriveFileError error,
+                               const base::FilePath& src_path);
+
+  // Step 4 of Move(), called after the resource is removed from the old
+  // directory. It calls back to the caller of Move().
+  void MoveAfterRemoveFromDirectory(
+      const FileOperationCallback& callback,
+      scoped_ptr<EntryInfoPairResult> src_dest_info,
+      google_apis::GDataErrorCode status);
+
+  // Renames a resource |src_id| at |src_path| to |new_name| in the same
   // directory. |callback| will receive the new file path if the operation is
   // successful. If the new name already exists in the same directory, the file
   // name is uniquified by adding a parenthesized serial number like
-  // "foo (2).txt"
-  //
-  // Can be called from UI thread. |callback| is run on the calling thread.
-  // |callback| must not be null.
-  void Rename(const base::FilePath& file_path,
-              const base::FilePath::StringType& new_name,
+  // "foo (2).txt".
+  void Rename(const std::string& src_id,
+              const base::FilePath& src_path,
+              const base::FilePath& new_name,
+              bool new_name_has_hosted_extension,
               const FileMoveCallback& callback);
 
-  // Part of Rename(). Called after GetEntryInfoByPath() is complete.
-  // |callback| must not be null.
-  void RenameAfterGetEntryInfo(const base::FilePath& file_path,
-                               const base::FilePath::StringType& new_name,
-                               const FileMoveCallback& callback,
-                               DriveFileError error,
-                               scoped_ptr<DriveEntryProto> entry_proto);
+  // Called in Rename() to reflect the rename on the local metadata.
+  void RenameLocally(const base::FilePath& src_path,
+                     const base::FilePath& new_name,
+                     const FileMoveCallback& callback,
+                     google_apis::GDataErrorCode status);
 
-  // Callback for handling resource rename attempt. Renames a file or
-  // directory at |file_path| on the client side.
-  // |callback| must not be null.
-  void RenameEntryLocally(const base::FilePath& file_path,
-                          const base::FilePath::StringType& new_name,
-                          const FileMoveCallback& callback,
-                          google_apis::GDataErrorCode status);
 
-  // Removes a file or directory at |file_path| from the current directory.
-  // It moves the entry to a dangle, no-parent state on the server side.
-  //
-  // Can be called from UI thread. |callback| is run on the calling thread.
-  // |callback| must not be null.
-  void RemoveEntryFromDirectory(const FileMoveCallback& callback,
-                                DriveFileError error,
-                                const base::FilePath& file_path);
+  // Moves a resource |src_id| at |src_path| to another directory |dest_dir_id|
+  // at |dest_dir_path|. |callback| will receive the new file path if the
+  // operation is successful.
+  void AddToDirectory(const std::string& src_id,
+                      const std::string& dest_dir_id,
+                      const base::FilePath& src_path,
+                      const base::FilePath& dest_dir_path,
+                      const FileMoveCallback& callback);
 
-  // Part of RemoveEntryFromDirectory(). Called after
-  // GetEntryInfoPairByPaths() is complete. |callback| must not be null.
-  void RemoveEntryFromDirectoryAfterEntryInfoPair(
-    const FileMoveCallback& callback,
-    scoped_ptr<EntryInfoPairResult> result);
+  // Called in AddToDirectory() to reflect the move on the local metadata.
+  void AddToDirectoryLocally(const base::FilePath& src_path,
+                             const base::FilePath& dest_dir_path,
+                             const FileMoveCallback& callback,
+                             google_apis::GDataErrorCode status);
 
-  // Moves a file or directory at |file_path| to another directory at
-  // |dir_path|.
-  //
-  // Can be called from UI thread. |callback| is run on the calling thread.
-  // |callback| must not be null.
-  void AddEntryToDirectory(const base::FilePath& directory_path,
-                           const FileOperationCallback& callback,
-                           DriveFileError error,
-                           const base::FilePath& file_path);
+  // Removes a resource |resource_id| from |dir_path|.
+  void RemoveFromDirectory(const std::string& resource_id,
+                           const base::FilePath& dir_path,
+                           const FileOperationCallback& callback);
 
-  // Part of AddEntryToDirectory(). Called after
-  // GetEntryInfoPairByPaths() is complete. |callback| must not be null.
-  void AddEntryToDirectoryAfterGetEntryInfoPair(
-    const FileOperationCallback& callback,
-    scoped_ptr<EntryInfoPairResult> result);
-
-  // Moves entry specified by |file_path| to the directory specified by
-  // |dir_path| and calls |callback| asynchronously.
-  // |callback| must not be null.
-  void MoveEntryToDirectory(const base::FilePath& file_path,
-                            const base::FilePath& directory_path,
-                            const FileMoveCallback& callback,
-                            google_apis::GDataErrorCode status);
-
-  // Callback when an entry is moved to another directory on the client side.
-  // Notifies the directory change and runs |callback|.
-  // |callback| must not be null.
-  void NotifyAndRunFileOperationCallback(
+  // Called in RemoveFromDirectory().
+  void RemoveFromDirectoryAfterGetEntryInfo(
+      const std::string& resource_id,
       const FileOperationCallback& callback,
       DriveFileError error,
-      const base::FilePath& moved_file_path);
+      scoped_ptr<DriveEntryProto> entry_proto);
 
-  // Callback when an entry is moved to another directory on the client side.
-  // Notifies the directory change and runs |callback|.
-  // |callback| must not be null.
-  void NotifyAndRunFileMoveCallback(
-      const FileMoveCallback& callback,
-      DriveFileError error,
-      const base::FilePath& moved_file_path);
+  // Called in RemoveFromDirectory().
+  void RemoveFromDirectoryCompleted(const FileOperationCallback& callback,
+                                    google_apis::GDataErrorCode status);
 
   DriveScheduler* drive_scheduler_;
   DriveResourceMetadata* metadata_;
@@ -149,7 +133,6 @@ class MoveOperation {
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
   base::WeakPtrFactory<MoveOperation> weak_ptr_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(MoveOperation);
 };
 
