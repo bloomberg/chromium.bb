@@ -62,9 +62,6 @@ def install_actuals_and_baselines(decoder, cl_args):
     decoder = dgen_actuals.AddAutoActualsToDecoder(
         decoder, decoder.table_names())
 
-    decoder = dgen_baselines.InstallGeneratedBaselinesIntoTables(
-      decoder, decoder.table_names())
-
     print "Installed generated actuals and baselines."
 
     return decoder

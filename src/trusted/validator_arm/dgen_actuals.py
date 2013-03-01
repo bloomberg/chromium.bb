@@ -89,6 +89,15 @@ def GetActualDecoders(decoder):
     _BuildActualMaps(decoder)
   return ACTUAL_DECODERS
 
+def _RebuildActualDecodersIfAlreadyDefined(decoder):
+  """Rebuilds the actual decoders map if already defined. Should be called
+     whenever decoder actions are changed."""
+  if decoder.get_value(_ACTUAL_DECODERS):
+    _BuildActualMaps(decoder)
+
+dgen_decoder.REBUILD_DECODER_CACHE_FUNCTIONS.add(
+    _RebuildActualDecodersIfAlreadyDefined)
+
 def _BuildActualMaps(decoder):
   """Takes the given decoder table, and builds the corresponding
      internal maps, so that we can consistently name actual classes.
@@ -162,7 +171,7 @@ def _DefineActualNames(actuals):
 
 def ActualName(actual):
   """Returns the name to use for the actual."""
-  return ACTUAL_TO_NAME_MAP[actual]
+  return ACTUAL_TO_NAME_MAP[dgen_decoder.BaselineToActual(actual)]
 
 def AddAutoActualsToDecoder(decoder, tables):
   """Adds the automatically generated class decoders (in files
@@ -171,9 +180,21 @@ def AddAutoActualsToDecoder(decoder, tables):
      """
   if not tables: return decoder
   GetActualDecoders(decoder)
-  return decoder.table_filter(
+
+  # Update actions in tables.
+  decoder = decoder.table_filter(
       lambda tbl: _AddActualToTable(tbl) if tbl.name in tables
                   else tbl.copy())
+
+  # Update other defined actions associated with the decoder.
+  for key in decoder.value_keys():
+    action = decoder.get_value(key)
+    if isinstance(action, dgen_core.DecoderAction):
+      decoder.define_value(key, _AddActualToAction(action))
+
+  dgen_decoder.RebuildDecoderCaches(decoder)
+
+  return decoder
 
 def _AddActualToTable(table):
   """Generates a copy of the given table, where the 'actual' field is
@@ -186,14 +207,19 @@ def _AddActualToRow(r):
      'actual' field is defined by the corresponding (actual) class
      decoder described in the table."""
   patterns = list(r.patterns)
-  action = r.action.copy()
+  return dgen_core.Row(patterns, _AddActualToAction(r.action))
+
+def _AddActualToAction(a):
+  """Creates a copy of the action, replacing the 'actual' field with
+     the corresponding (actual) class decoder."""
+  action = a.copy()
   if (isinstance(action, dgen_core.DecoderAction) and
       dgen_decoder.ActionDefinesDecoder(action)):
     actual = dgen_decoder.BaselineToActual(action)
     action.remove('actual')  # In case it is already defined.
     action.define('actual', ActualName(actual))
     action.freeze()
-  return dgen_core.Row(patterns, action)
+  return action
 
 ACTUAL_BASE_H_HEADER="""%(FILE_HEADER)s
 #ifndef %(IFDEF_NAME)s

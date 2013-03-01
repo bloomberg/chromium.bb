@@ -12,6 +12,15 @@ General routines to help generate actual/baseline decoders.
 import dgen_core
 import dgen_output
 
+# The list of rebuild decoder functions that will rebuild constructs
+# whenever a decoder changes. Format is 'lambda decoder:'.
+REBUILD_DECODER_CACHE_FUNCTIONS = set()
+
+def RebuildDecoderCaches(decoder):
+  """Rebuild caches defined for the decoder."""
+  for fn in REBUILD_DECODER_CACHE_FUNCTIONS:
+    fn(decoder)
+
 def commented_decoder_repr(decoder):
   """Returns a C++ comment describing the neutral representation of the
      given decoder."""

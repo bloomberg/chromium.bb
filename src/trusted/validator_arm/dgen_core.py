@@ -2266,6 +2266,9 @@ class Decoder(object):
     self._class_defs = {}
     self._value_map = {}
 
+  def value_keys(self):
+    return self._value_map.keys()
+
   def define_value(self, name, value):
       """Associate value with name, for the given decoder."""
       self._value_map[name] = value
@@ -2355,7 +2358,7 @@ class Decoder(object):
                         self.primary.name)
     decoder._tables = sorted(tables, key=lambda(tbl): tbl.name)
     decoder._class_defs = self._class_defs.copy()
-    decoder._value_map = decoder._value_map.copy()
+    decoder._value_map = self._value_map.copy()
     return decoder
 
   def action_filter(self, names):

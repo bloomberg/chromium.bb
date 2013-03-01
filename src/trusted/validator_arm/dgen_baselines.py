@@ -64,8 +64,7 @@ _BASELINE_DECODERS = 'baseline-decoders'
 """Defines the decoder action fields that hold names of instruction decoders.
    Such fields must be removed from baselines, so that the baselines remain
    neutral for other instruction decoder naming conventions."""
-_DECODER_ACTION_DECODER_FIELD_NAMES = [
-    'actual', 'baseline', 'generated_baseline']
+_DECODER_ACTION_DECODER_FIELD_NAMES = ['actual', 'baseline']
 
 def RemoveDecoderActionDecoderFieldNames(action):
   """Returns a copy of the given decoder action, with fields that name
@@ -91,6 +90,15 @@ def GetBaselineDecoders(decoder):
     _BuildBaselineMaps(decoder)
   return BASELINE_DECODERS
 
+def _RebuildBaslineDecodersIfAlreadyDefined(decoder):
+  """Rebuilds the baseline decoders map if already defined.  Should
+     be called whenever decoder actions are changed."""
+  if decoder.get_value(_BASELINE_DECODERS):
+    _BuildBaselineMaps
+
+dgen_decoder.REBUILD_DECODER_CACHE_FUNCTIONS.add(
+    _RebuildBaslineDecodersIfAlreadyDefined)
+
 def _BuildBaselineMaps(decoder):
   """Takes the given decoder table, and builds the corresponding
      internal maps, so that we can consistently name baseline classees.
@@ -110,7 +118,7 @@ def _BuildBaselineMaps(decoder):
 
     simp_baseline = RemoveDecoderActionDecoderFieldNames(baseline)
 
-    baselines.add(simp_baseline)
+    baselines.add(baseline)
     _AddBaselineToBaselineNameToBaselinesMap(simp_baseline)
 
   _FixBaselineNameToBaselinesMap()
@@ -344,51 +352,39 @@ def AddBaselinesToDecoder(decoder, tables=None):
   elif tables == []:
     return decoder
   GetBaselineDecoders(decoder)
-  return decoder.table_filter(
+
+  # Update actions in tables.
+  decoder = decoder.table_filter(
       lambda tbl: _AddBaselineToTable(tbl) if tbl.name in tables
-                  else tbl.copy())
+      else tbl.copy())
+
+  # Update other defined actions associated with the decoder.
+  for key in decoder.value_keys():
+    action = decoder.get_value(key)
+    if isinstance(action, dgen_core.DecoderAction):
+      decoder.define_value(key, _AddBaselineToAction(action))
+
+  dgen_decoder.RebuildDecoderCaches(decoder)
+
+  return decoder
 
 def _AddBaselineToTable(table):
-  """Generates a copy of the given table, where the 'generated_baseline'
+  """Generates a copy of the given table, where the 'baseline'
      field is defined by the corresponding automatically generated
      baseline decoder (described in the table)."""
   return table.row_filter(_AddBaselineToRow)
 
 def _AddBaselineToRow(row):
   """Generates a copy of the given row, where (if applicable),
-     the field 'generated_baseline' is defined by the corresponding
+     the field 'baseline' is defined by the corresponding
      (baseline) instruction decoder described by the action
      of the row."""
   action = row.action.copy()
+  return dgen_core.Row(list(row.patterns), _AddBaselineToAction(action))
+
+def _AddBaselineToAction(action):
+  action = action.copy()
   if (isinstance(action, dgen_core.DecoderAction) and
       dgen_decoder.ActionDefinesDecoder(action)):
-    action.define('generated_baseline', BaselineName(action))
-  return dgen_core.Row(list(row.patterns), action)
-
-def InstallGeneratedBaselinesIntoTables(decoder, tables):
-  """Generates a copy of the given decoder, where for the given
-     tables, the decoder actions are updated by replacing the
-     'baseline' entry with the corresponding generated base name."""
-  return decoder.table_filter(
-    lambda tbl: InstallGeneratedBaselinesIntoTable(tbl)
-                if tbl.name in tables else tbl.copy())
-
-def InstallGeneratedBaselinesIntoTable(table):
-  """Generates a copy of the given table, where decoder actions are
-     updated by replacing the 'baseline' entry with the corresponding
-     generated base name."""
-  return table.row_filter(_InstallGeneratedBaselinesIntoRow)
-
-def _InstallGeneratedBaselinesIntoRow(r):
-  """Generates a copy of the given row, where (if applicable), the
-     'baseline' field is defined by the value of the corresponding
-     'generated_baseline' field."""
-  patterns = list(r.patterns)
-  action = r.action.copy()
-  if (isinstance(action, dgen_core.DecoderAction) and
-      action.find('generated_baseline')):
-    action.remove('baseline')  # Incase it is already defined.
-    action.define('baseline', action.find('generated_baseline'))
-    action.remove('generated_baseline')
-    action.freeze()
-  return dgen_core.Row(patterns, action)
+    action.define('baseline', BaselineName(action))
+  return action
