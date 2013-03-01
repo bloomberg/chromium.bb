@@ -301,7 +301,15 @@ IN_PROC_BROWSER_TEST_F(PanelAndDesktopNotificationTest, ResizePanel) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelAndDesktopNotificationTest, ResizePanelByMouse) {
+// There are intermittent/flaky failures on windows try bots
+// (http://crbug.com/179065).
+#if defined(OS_WIN)
+#define MAYBE_ResizePanelByMouse DISABLED_ResizePanelByMouse
+#else
+#define MAYBE_ResizePanelByMouse ResizePanelByMouse
+#endif
+IN_PROC_BROWSER_TEST_F(PanelAndDesktopNotificationTest,
+                       MAYBE_ResizePanelByMouse) {
   Balloon* balloon = CreateBalloon();
 
   // Create a docked panel. Expect that the notification balloon moves up to be

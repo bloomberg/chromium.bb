@@ -19,7 +19,9 @@ namespace utils = extension_function_test_utils;
 
 typedef InProcessBrowserTest ExtensionTabsTest;
 
-#if defined(OS_WIN) && defined(USE_AURA)  // http://crbug.com/154081
+// http://crbug.com/154081 for Aura specific
+// http://crbug.com/179063 for other general failures on try bots.
+#if defined(OS_WIN)
 #define MAYBE_GetLastFocusedWindow DISABLED_GetLastFocusedWindow
 #else
 #define MAYBE_GetLastFocusedWindow GetLastFocusedWindow

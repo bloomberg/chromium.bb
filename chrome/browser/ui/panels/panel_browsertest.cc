@@ -502,8 +502,10 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ResizePanel) {
   panel->Close();
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_WIN)
 // There is no animations on Linux, by design (http://crbug.com/144074).
+// And there are intermittent/flaky failures on windows try bots
+// (http://crbug.com/179069).
 #define MAYBE_AnimateBounds DISABLED_AnimateBounds
 #else
 #define MAYBE_AnimateBounds AnimateBounds
