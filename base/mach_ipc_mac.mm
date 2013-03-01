@@ -111,7 +111,7 @@ int MachMessage::CalculateSize() {
 }
 
 //==============================================================================
-MachMessage::MessageDataPacket *MachMessage::GetDataPacket() {
+MachMessage::MessageDataPacket *MachMessage::GetDataPacket() const {
   int desc_size = sizeof(MachMsgPortDescriptor)*GetDescriptorCount();
   MessageDataPacket *packet =
     reinterpret_cast<MessageDataPacket*>(storage_->padding + desc_size);
@@ -163,7 +163,7 @@ void MachMessage::SetDescriptorCount(int n) {
 }
 
 //==============================================================================
-MachMsgPortDescriptor *MachMessage::GetDescriptor(int n) {
+MachMsgPortDescriptor *MachMessage::GetDescriptor(int n) const {
   if (n < GetDescriptorCount()) {
     MachMsgPortDescriptor *desc =
         reinterpret_cast<MachMsgPortDescriptor*>(storage_->padding);
@@ -174,7 +174,7 @@ MachMsgPortDescriptor *MachMessage::GetDescriptor(int n) {
 }
 
 //==============================================================================
-mach_port_t MachMessage::GetTranslatedPort(int n) {
+mach_port_t MachMessage::GetTranslatedPort(int n) const {
   if (n < GetDescriptorCount()) {
     return GetDescriptor(n)->GetMachPort();
   }
@@ -300,7 +300,7 @@ MachPortSender::MachPortSender(mach_port_t send_port)
 }
 
 //==============================================================================
-kern_return_t MachPortSender::SendMessage(MachSendMessage &message,
+kern_return_t MachPortSender::SendMessage(const MachSendMessage& message,
                                           mach_msg_timeout_t timeout) {
   if (message.Head()->msgh_size == 0) {
     NOTREACHED();

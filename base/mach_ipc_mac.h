@@ -145,11 +145,11 @@ class BASE_EXPORT MachMessage {
   virtual ~MachMessage();
 
   // The receiver of the message can retrieve the raw data this way
-  u_int8_t *GetData() {
+  u_int8_t *GetData() const {
     return GetDataLength() > 0 ? GetDataPacket()->data : NULL;
   }
 
-  u_int32_t GetDataLength() {
+  u_int32_t GetDataLength() const {
     return EndianU32_LtoN(GetDataPacket()->data_length);
   }
 
@@ -158,7 +158,7 @@ class BASE_EXPORT MachMessage {
     GetDataPacket()->id = EndianU32_NtoL(message_id);
   }
 
-  int32_t GetMessageID() { return EndianU32_LtoN(GetDataPacket()->id); }
+  int32_t GetMessageID() const { return EndianU32_LtoN(GetDataPacket()->id); }
 
   // Adds a descriptor (typically a Mach port) to be translated
   // returns true if successful, otherwise not enough space
@@ -168,10 +168,10 @@ class BASE_EXPORT MachMessage {
     return storage_->body.msgh_descriptor_count;
   }
 
-  MachMsgPortDescriptor *GetDescriptor(int n);
+  MachMsgPortDescriptor *GetDescriptor(int n) const;
 
   // Convenience method which gets the Mach port described by the descriptor
-  mach_port_t GetTranslatedPort(int n);
+  mach_port_t GetTranslatedPort(int n) const;
 
   // A simple message is one with no descriptors
   bool IsSimpleMessage() const { return GetDescriptorCount() == 0; }
@@ -198,7 +198,7 @@ class BASE_EXPORT MachMessage {
     u_int8_t data[1];     // actual size limited by storage_length_bytes_
   };
 
-  MessageDataPacket* GetDataPacket();
+  MessageDataPacket* GetDataPacket() const;
 
   void SetDescriptorCount(int n);
   void SetDescriptor(int n, const MachMsgPortDescriptor &desc);
@@ -210,7 +210,7 @@ class BASE_EXPORT MachMessage {
   // of the Mach header.
   size_t MaxSize() const { return storage_length_bytes_; }
 
-  mach_msg_header_t *Head() { return &(storage_->head); }
+  mach_msg_header_t *Head() const { return &(storage_->head); }
 
  private:
   struct MachMessageData {
@@ -298,8 +298,10 @@ class BASE_EXPORT MachPortSender {
   // |send_port|.
   explicit MachPortSender(mach_port_t send_port);
 
-  kern_return_t SendMessage(MachSendMessage &message,
+  kern_return_t SendMessage(const MachSendMessage& message,
                             mach_msg_timeout_t timeout);
+
+  mach_port_t GetPort() const { return send_port_; }
 
  private:
   mach_port_t   send_port_;
