@@ -443,12 +443,24 @@ void DriveFileSyncClient::DeleteFile(
   DCHECK(CalledOnValidThread());
   DVLOG(2) << "Deleting file: " << resource_id;
 
-  drive_service_->GetResourceEntry(
+  // Load actual remote_file_md5 to check for conflict before deletion.
+  if (!remote_file_md5.empty()) {
+    drive_service_->GetResourceEntry(
+        resource_id,
+        base::Bind(&DriveFileSyncClient::DidGetResourceEntry,
+                   AsWeakPtr(),
+                   base::Bind(&DriveFileSyncClient::DeleteFileInternal,
+                              AsWeakPtr(), remote_file_md5, callback)));
+    return;
+  }
+
+  // Expected remote_file_md5 is empty so do a force delete.
+  drive_service_->DeleteResource(
       resource_id,
-      base::Bind(&DriveFileSyncClient::DidGetResourceEntry,
-                 AsWeakPtr(),
-                 base::Bind(&DriveFileSyncClient::DeleteFileInternal,
-                            AsWeakPtr(), remote_file_md5, callback)));
+      std::string(),
+      base::Bind(&DriveFileSyncClient::DidDeleteFile,
+                 AsWeakPtr(), callback));
+  return;
 }
 
 GURL DriveFileSyncClient::ResourceIdToResourceLink(
@@ -718,7 +730,7 @@ void DriveFileSyncClient::DeleteFileInternal(
 
   // If remote file's hash value is different from the expected one, conflict
   // might have occurred.
-  if (remote_file_md5 != entry->file_md5()) {
+  if (!remote_file_md5.empty() && remote_file_md5 != entry->file_md5()) {
     DVLOG(2) << "Conflict detected before deleting file";
     callback.Run(google_apis::HTTP_CONFLICT);
     return;

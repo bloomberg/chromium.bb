@@ -151,14 +151,18 @@ class DriveFileSyncClientInterface {
   virtual bool IsAuthenticated() const = 0;
 
   // Deletes the file identified by |resource_id|.
+  // A directory is considered a file and will cause a recursive delete if
+  // given as the |resource_id|.
+  //
   // |remote_file_md5| represents the expected hash value of the file to be
-  // deleted from Drive. If |remote_file_md5| is different from the actual
-  // value, cancels the deletion and invokes |callback| with
-  // GDataErrorCode::HTTP_CONFLICT immediately.
+  // deleted from Drive. If |remote_file_md5| is empty, then it's implied that
+  // the file should be deleted on the remote side regardless. If
+  // |remote_file_md5| is not empty and is different from the actual value,
+  // the deletion operation is canceled and the |callback| with
+  // GDataErrorCode::HTTP_CONFLICT is invoked immediately.
   virtual void DeleteFile(const std::string& resource_id,
                           const std::string& remote_file_md5,
                           const GDataErrorCallback& callback) = 0;
-
   // Converts |resource_id| to corresponing resource link.
   virtual GURL ResourceIdToResourceLink(
       const std::string& resource_id) const = 0;
