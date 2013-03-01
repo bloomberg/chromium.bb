@@ -72,7 +72,8 @@ void BalloonCollectionImplAsh::DisableNotificationsFromSource(
 }
 
 void BalloonCollectionImplAsh::NotificationRemoved(
-    const std::string& notification_id) {
+    const std::string& notification_id,
+    bool by_user) {
   RemoveById(notification_id);
 }
 

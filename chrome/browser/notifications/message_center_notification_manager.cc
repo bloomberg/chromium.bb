@@ -61,7 +61,7 @@ bool MessageCenterNotificationManager::CancelById(const std::string& id) {
   if (iter == profile_notifications_.end())
     return false;
 
-  RemoveProfileNotification((*iter).second);
+  RemoveProfileNotification((*iter).second, false);
   return true;
 }
 
@@ -75,7 +75,9 @@ bool MessageCenterNotificationManager::CancelAllBySourceOrigin(
        loopiter != profile_notifications_.end(); ) {
     NotificationMap::iterator curiter = loopiter++;
     if ((*curiter).second->notification().origin_url() == source) {
-      RemoveProfileNotification((*curiter).second);
+      // This action occurs when extension is unloaded. Closing notifications
+      // is not by user, so |false|.
+      RemoveProfileNotification((*curiter).second, false);
       removed = true;
     }
   }
@@ -90,7 +92,9 @@ bool MessageCenterNotificationManager::CancelAllByProfile(Profile* profile) {
        loopiter != profile_notifications_.end(); ) {
     NotificationMap::iterator curiter = loopiter++;
     if ((*curiter).second->profile()->IsSameProfile(profile)) {
-      RemoveProfileNotification((*curiter).second);
+      // This action occurs when profile is unloaded. Closing notifications is
+      // not by user, so |false|.
+      RemoveProfileNotification((*curiter).second, false);
       removed = true;
     }
   }
@@ -102,7 +106,9 @@ void MessageCenterNotificationManager::CancelAll() {
 
   for (NotificationMap::iterator loopiter = profile_notifications_.begin();
        loopiter != profile_notifications_.end(); ) {
-    RemoveProfileNotification((*loopiter++).second);
+    // This action occurs when Chrome is terminating. Closing notifications is
+    // not by user, so |false|.
+    RemoveProfileNotification((*loopiter++).second, false);
   }
 }
 
@@ -184,8 +190,9 @@ void MessageCenterNotificationManager::DisableNotificationsFromSource(
 }
 
 void MessageCenterNotificationManager::NotificationRemoved(
-    const std::string& notification_id) {
-  RemoveProfileNotification(FindProfileNotification(notification_id));
+    const std::string& notification_id,
+    bool by_user) {
+  RemoveProfileNotification(FindProfileNotification(notification_id), by_user);
 }
 
 void MessageCenterNotificationManager::ShowSettings(
@@ -385,8 +392,9 @@ void MessageCenterNotificationManager::AddProfileNotification(
 }
 
 void MessageCenterNotificationManager::RemoveProfileNotification(
-    ProfileNotification* profile_notification) {
-  profile_notification->notification().Close(false); // Not by user.
+    ProfileNotification* profile_notification,
+    bool by_user) {
+  profile_notification->notification().Close(by_user);
   std::string id = profile_notification->notification().notification_id();
   message_center_->RemoveNotification(id);
   profile_notifications_.erase(id);

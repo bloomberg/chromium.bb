@@ -51,7 +51,8 @@ class TestDelegate : public message_center::MessageCenter::Delegate {
   }
 
   // WebNotificationTray::Delegate overrides.
-  virtual void NotificationRemoved(const std::string& notifcation_id) OVERRIDE {
+  virtual void NotificationRemoved(const std::string& notifcation_id,
+                                   bool by_user) OVERRIDE {
     notification_ids_.erase(notifcation_id);
   }
 

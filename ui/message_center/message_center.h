@@ -44,7 +44,8 @@ class MESSAGE_CENTER_EXPORT MessageCenter : public NotificationList::Delegate {
    public:
     // Called when the notification associated with |notification_id| is
     // removed (i.e. closed by the user).
-    virtual void NotificationRemoved(const std::string& notification_id) = 0;
+    virtual void NotificationRemoved(const std::string& notification_id,
+                                     bool by_user) = 0;
 
     // Request to disable the extension associated with |notification_id|.
     virtual void DisableExtension(const std::string& notification_id) = 0;
@@ -139,8 +140,9 @@ class MESSAGE_CENTER_EXPORT MessageCenter : public NotificationList::Delegate {
   bool quiet_mode() const { return notification_list_->quiet_mode(); }
 
   // Overridden from NotificationList::Delegate.
-  virtual void SendRemoveNotification(const std::string& id) OVERRIDE;
-  virtual void SendRemoveAllNotifications() OVERRIDE;
+  virtual void SendRemoveNotification(const std::string& id,
+                                      bool by_user) OVERRIDE;
+  virtual void SendRemoveAllNotifications(bool by_user) OVERRIDE;
   virtual void DisableNotificationByExtension(const std::string& id) OVERRIDE;
   virtual void DisableNotificationByUrl(const std::string& id) OVERRIDE;
   virtual void ShowNotificationSettings(const std::string& id) OVERRIDE;

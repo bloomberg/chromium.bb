@@ -130,7 +130,9 @@ void NotificationList::SendRemoveNotificationsBySource(
        loopiter != notifications_.end(); ) {
     Notifications::iterator curiter = loopiter++;
     if ((*curiter)->display_source() == display_source)
-      delegate_->SendRemoveNotification((*curiter)->id());
+      // This method is only called when the user is manipulating the admin
+      // UI, so technically the removal is indirect.
+      delegate_->SendRemoveNotification((*curiter)->id(), false);
   }
 }
 
@@ -144,7 +146,9 @@ void NotificationList::SendRemoveNotificationsByExtension(
        loopiter != notifications_.end(); ) {
     Notifications::iterator curiter = loopiter++;
     if ((*curiter)->extension_id() == extension_id)
-      delegate_->SendRemoveNotification((*curiter)->id());
+      // This method is only called when the user is manipulating the admin
+      // UI, so technically the removal is indirect.
+      delegate_->SendRemoveNotification((*curiter)->id(), false);
   }
 }
 

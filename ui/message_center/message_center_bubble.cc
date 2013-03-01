@@ -115,7 +115,7 @@ class WebNotificationButtonView : public WebNotificationButtonViewBase,
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE {
     if (sender == close_all_button())
-      list_delegate()->SendRemoveAllNotifications();
+      list_delegate()->SendRemoveAllNotifications(true);  // Action by user.
   }
 
  private:
@@ -210,7 +210,7 @@ class WebNotificationButtonView2 : public WebNotificationButtonViewBase,
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE {
     if (sender == close_all_button())
-      list_delegate()->SendRemoveAllNotifications();
+      list_delegate()->SendRemoveAllNotifications(true);  // Action by user.
     else if (sender == settings_button_)
       list_delegate()->ShowNotificationSettingsDialog(
           GetWidget()->GetNativeView());

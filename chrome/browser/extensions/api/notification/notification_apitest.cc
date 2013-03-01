@@ -2,10 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/notification/notification_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/test/test_utils.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/message_center_util.h"
 
 using extensions::Extension;
 
@@ -18,6 +24,19 @@ class NotificationApiTest : public ExtensionApiTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
+  }
+
+  const extensions::Extension* LoadExtensionAndWait(
+      const std::string& test_name) {
+    base::FilePath extdir = test_data_dir_.AppendASCII(test_name);
+    content::WindowedNotificationObserver page_created(
+        chrome::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
+        content::NotificationService::AllSources());
+    const extensions::Extension* extension = LoadExtension(extdir);
+    if (extension) {
+      page_created.Wait();
+    }
+    return extension;
   }
 };
 
@@ -236,3 +255,46 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestEvents) {
 IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestCSP) {
     ASSERT_TRUE(RunExtensionTest("notification/api/csp")) << message_;
 }
+
+#ifdef ENABLE_MESSAGE_CENTER
+#if !defined(OS_WIN) || !defined(USE_ASH)
+
+IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestByUser) {
+  if (!message_center::IsRichNotificationEnabled())
+    return;
+
+  const extensions::Extension* extension =
+      LoadExtensionAndWait("notification/api/by_user");
+  ASSERT_TRUE(extension) << message_;
+
+  {
+    ResultCatcher catcher;
+    g_browser_process->message_center()->SendRemoveNotification(
+        extension->id() + "-FOO",
+        false);
+    EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  }
+
+  {
+    ResultCatcher catcher;
+    g_browser_process->message_center()->SendRemoveNotification(
+        extension->id() + "-BAR",
+        true);
+    EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  }
+
+  {
+    ResultCatcher catcher;
+    g_browser_process->message_center()->SendRemoveAllNotifications(false);
+    EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  }
+
+  {
+    ResultCatcher catcher;
+    g_browser_process->message_center()->SendRemoveAllNotifications(true);
+    EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  }
+}
+
+#endif
+#endif

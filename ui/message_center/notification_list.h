@@ -49,8 +49,9 @@ class MESSAGE_CENTER_EXPORT NotificationList {
     virtual ~Delegate() {}
 
     // Removes notifications
-    virtual void SendRemoveNotification(const std::string& id) = 0;
-    virtual void SendRemoveAllNotifications() = 0;
+    virtual void SendRemoveNotification(const std::string& id,
+                                        bool by_user) = 0;
+    virtual void SendRemoveAllNotifications(bool by_user) = 0;
 
     // Disables notifications
     virtual void DisableNotificationByExtension(const std::string& id) = 0;

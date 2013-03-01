@@ -337,7 +337,7 @@ void MessageView::OnGestureEvent(ui::GestureEvent* event) {
 void MessageView::ButtonPressed(views::Button* sender,
                                 const ui::Event& event) {
   if (sender == close_button())
-    list_delegate_->SendRemoveNotification(notification_id_);
+    list_delegate_->SendRemoveNotification(notification_id_, true);  // By user.
 }
 
 void MessageView::ShowMenu(gfx::Point screen_location) {
@@ -361,7 +361,7 @@ void MessageView::ShowMenu(gfx::Point screen_location) {
 }
 
 void MessageView::OnSlideOut() {
-  list_delegate_->SendRemoveNotification(notification_id_);
+  list_delegate_->SendRemoveNotification(notification_id_, true);  // By user.
 }
 
 }  // namespace message_center

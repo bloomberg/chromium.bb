@@ -105,12 +105,13 @@ void MessageCenter::SetNotificationButtonIcon(
 //------------------------------------------------------------------------------
 // Overridden from NotificationList::Delegate.
 
-void MessageCenter::SendRemoveNotification(const std::string& id) {
+void MessageCenter::SendRemoveNotification(const std::string& id,
+                                           bool by_user) {
   if (delegate_)
-    delegate_->NotificationRemoved(id);
+    delegate_->NotificationRemoved(id, by_user);
 }
 
-void MessageCenter::SendRemoveAllNotifications() {
+void MessageCenter::SendRemoveAllNotifications(bool by_user) {
   if (delegate_) {
     const NotificationList::Notifications& notifications =
         notification_list_->GetNotifications();
@@ -120,7 +121,7 @@ void MessageCenter::SendRemoveAllNotifications() {
       NotificationList::Notifications::const_iterator curiter = loopiter++;
       std::string notification_id = (*curiter)->id();
       // May call RemoveNotification and erase curiter.
-      delegate_->NotificationRemoved(notification_id);
+      delegate_->NotificationRemoved(notification_id, by_user);
     }
   }
 }

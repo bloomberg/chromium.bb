@@ -28,7 +28,8 @@ class BalloonCollectionImplAsh
   virtual bool HasSpace() const OVERRIDE;
 
   // Overridden from message_center::MessageCenter::Delegate.
-  virtual void NotificationRemoved(const std::string& notification_id) OVERRIDE;
+  virtual void NotificationRemoved(const std::string& notification_id,
+                                   bool by_user) OVERRIDE;
   virtual void DisableExtension(const std::string& notification_id) OVERRIDE;
   virtual void DisableNotificationsFromSource(
       const std::string& notification_id) OVERRIDE;

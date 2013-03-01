@@ -43,7 +43,8 @@ class MessageCenterNotificationManager
                                   Profile* profile) OVERRIDE;
 
   // MessageCenter::Delegate
-  virtual void NotificationRemoved(const std::string& notification_id) OVERRIDE;
+  virtual void NotificationRemoved(const std::string& notification_id,
+                                   bool by_user) OVERRIDE;
   virtual void DisableExtension(const std::string& notification_id) OVERRIDE;
   virtual void DisableNotificationsFromSource(
       const std::string& notification_id) OVERRIDE;
@@ -133,7 +134,8 @@ class MessageCenterNotificationManager
   // Helpers that add/remove the notification from local map and MessageCenter.
   // They take ownership of profile_notification object.
   void AddProfileNotification(ProfileNotification* profile_notification);
-  void RemoveProfileNotification(ProfileNotification* profile_notification);
+  void RemoveProfileNotification(ProfileNotification* profile_notification,
+                                 bool by_user);
 
   ProfileNotification* FindProfileNotification(const std::string& id) const;
 
