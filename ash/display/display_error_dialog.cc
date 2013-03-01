@@ -27,20 +27,28 @@ const int kDialogMessageWidthPixel = 300;
 // The margin width from the error message to the edge of the dialog.
 const int kDialogMessageMarginWidthPixel = 5;
 
+DisplayErrorDialog* g_instance = NULL;
+
 }  // namespace
 
 // static
-DisplayErrorDialog* DisplayErrorDialog::ShowDialog(
-    chromeos::OutputState new_state) {
+void  DisplayErrorDialog::ShowDialog() {
+  if (g_instance) {
+    DCHECK(g_instance->GetWidget());
+    g_instance->GetWidget()->StackAtTop();
+    g_instance->GetWidget()->Activate();
+    return;
+  }
+
   gfx::Screen* screen = Shell::GetScreen();
   const gfx::Display& target_display =
       (screen->GetNumDisplays() > 1) ?
       ScreenAsh::GetSecondaryDisplay() : screen->GetPrimaryDisplay();
 
-  DisplayErrorDialog* dialog = new DisplayErrorDialog(new_state);
+  g_instance = new DisplayErrorDialog();
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
-  params.delegate = dialog;
+  params.delegate = g_instance;
   // Makes |widget| belong to the target display.  Size and location are
   // fixed by CenterWindow() below.
   params.bounds = target_display.bounds();
@@ -54,37 +62,12 @@ DisplayErrorDialog* DisplayErrorDialog::ShowDialog(
   widget->GetNativeView()->SetName("DisplayErrorDialog");
   widget->CenterWindow(widget->GetRootView()->GetPreferredSize());
   widget->Show();
-  return dialog;
 }
 
-void DisplayErrorDialog::UpdateMessageForState(
-    chromeos::OutputState new_state) {
-  int message_id = -1;
-  switch (new_state) {
-    case chromeos::STATE_DUAL_MIRROR:
-      message_id = IDS_ASH_DISPLAY_FAILURE_ON_MIRRORING;
-      break;
-    case chromeos::STATE_DUAL_EXTENDED:
-      message_id = IDS_ASH_DISPLAY_FAILURE_ON_EXTENDED;
-      break;
-    default:
-      // The error dialog would appear only for mirroring or extended.
-      // It's quite unlikely to happen with other status (single-display /
-      // invalid / unknown status), but set an unknown error message
-      // instead of NOTREACHED() just in case for safety.
-      LOG(ERROR) << "Unexpected failure for new state: " << new_state;
-      message_id = IDS_ASH_DISPLAY_FAILURE_UNKNOWN;
-      break;
-  }
-  label_->SetText(l10n_util::GetStringUTF16(message_id));
-  label_->SizeToFit(kDialogMessageWidthPixel);
-  Layout();
-  SchedulePaint();
-}
-
-DisplayErrorDialog::DisplayErrorDialog(chromeos::OutputState new_state) {
+DisplayErrorDialog::DisplayErrorDialog() {
   Shell::GetInstance()->display_controller()->AddObserver(this);
-  label_ = new views::Label();
+  label_ = new views::Label(
+      l10n_util::GetStringUTF16(IDS_ASH_DISPLAY_FAILURE_ON_MIRRORING));
   AddChildView(label_);
 
   label_->SetMultiLine(true);
@@ -94,12 +77,12 @@ DisplayErrorDialog::DisplayErrorDialog(chromeos::OutputState new_state) {
       kDialogMessageMarginWidthPixel,
       kDialogMessageMarginWidthPixel,
       kDialogMessageMarginWidthPixel));
-
-  UpdateMessageForState(new_state);
+  label_->SizeToFit(kDialogMessageWidthPixel);
 }
 
 DisplayErrorDialog::~DisplayErrorDialog() {
   Shell::GetInstance()->display_controller()->RemoveObserver(this);
+  g_instance = NULL;
 }
 
 int DisplayErrorDialog::GetDialogButtons() const {
@@ -118,32 +101,9 @@ void DisplayErrorDialog::OnDisplayConfigurationChanging() {
   GetWidget()->Close();
 }
 
-DisplayErrorObserver::DisplayErrorObserver()
-    : dialog_(NULL) {
-}
-
-DisplayErrorObserver::~DisplayErrorObserver() {
-  DCHECK(!dialog_);
-}
-
-void DisplayErrorObserver::OnDisplayModeChangeFailed(
-    chromeos::OutputState new_state) {
-  if (dialog_) {
-    DCHECK(dialog_->GetWidget());
-    dialog_->UpdateMessageForState(new_state);
-    dialog_->GetWidget()->StackAtTop();
-    dialog_->GetWidget()->Activate();
-  } else {
-    dialog_ = DisplayErrorDialog::ShowDialog(new_state);
-    dialog_->GetWidget()->AddObserver(this);
-  }
-}
-
-void DisplayErrorObserver::OnWidgetClosing(views::Widget* widget) {
-  DCHECK(dialog_);
-  DCHECK_EQ(dialog_->GetWidget(), widget);
-  widget->RemoveObserver(this);
-  dialog_ = NULL;
+// static
+DisplayErrorDialog* DisplayErrorDialog::GetInstanceForTest() {
+  return g_instance;
 }
 
 }  // namespace internal

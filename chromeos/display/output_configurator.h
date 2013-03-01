@@ -57,8 +57,7 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
     virtual void OnDisplayModeChanged() {}
 
     // Called when the change of the display mode is issued but failed.
-    // |failed_new_state| is the new state which the system failed to enter.
-    virtual void OnDisplayModeChangeFailed(OutputState failed_new_state) {}
+    virtual void OnDisplayModeChangeFailed() {}
   };
 
   OutputConfigurator();

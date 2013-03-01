@@ -209,10 +209,10 @@ void OutputConfiguratorAnimation::OnDisplayModeChanged() {
     StartFadeInAnimation();
 }
 
-void OutputConfiguratorAnimation::OnDisplayModeChangeFailed(
-    chromeos::OutputState failed_new_state) {
+void OutputConfiguratorAnimation::OnDisplayModeChangeFailed() {
   if (!hiding_layers_.empty())
     StartFadeInAnimation();
+  DisplayErrorDialog::ShowDialog();
 }
 
 void OutputConfiguratorAnimation::ClearHidingLayers() {
