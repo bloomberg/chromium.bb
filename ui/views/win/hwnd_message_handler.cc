@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
-#include "base/system_monitor/system_monitor.h"
 #include "base/win/windows_version.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_utils.h"
@@ -1886,14 +1885,6 @@ void HWNDMessageHandler::OnPaint(HDC dc) {
     // Some scenarios otherwise fail to validate minimized app/popup windows.
     ValidateRect(hwnd(), NULL);
   }
-}
-
-LRESULT HWNDMessageHandler::OnPowerBroadcast(DWORD power_event, DWORD data) {
-  base::SystemMonitor* monitor = base::SystemMonitor::Get();
-  if (monitor)
-    monitor->ProcessWmPowerBroadcastMessage(power_event);
-  SetMsgHandled(FALSE);
-  return 0;
 }
 
 LRESULT HWNDMessageHandler::OnReflectedMessage(UINT message,

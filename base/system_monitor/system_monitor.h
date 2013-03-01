@@ -134,13 +134,6 @@ class BASE_EXPORT SystemMonitor {
   // be copied. Any significant addition to this class is blocked on
   // refactoring to improve the state of affairs. See http://crbug.com/149059
 
-#if defined(OS_WIN)
-  // Windows-specific handling of a WM_POWERBROADCAST message.
-  // Embedders of this API should hook their top-level window
-  // message loop and forward WM_POWERBROADCAST through this call.
-  void ProcessWmPowerBroadcastMessage(int event_id);
-#endif
-
   // Cross-platform handling of a power event.
   void ProcessPowerMessage(PowerEvent event_id);
 
@@ -148,6 +141,29 @@ class BASE_EXPORT SystemMonitor {
   void ProcessDevicesChanged(DeviceType device_type);
 
  private:
+#if defined(OS_WIN)
+  // Represents a message-only window for power message handling on Windows.
+  // Only allow SystemMonitor to create it.
+  class PowerMessageWindow {
+   public:
+    PowerMessageWindow();
+    ~PowerMessageWindow();
+
+   private:
+    void ProcessWmPowerBroadcastMessage(int event_id);
+    LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
+                             WPARAM wparam, LPARAM lparam);
+    static LRESULT CALLBACK WndProcThunk(HWND hwnd,
+                                         UINT message,
+                                         WPARAM wparam,
+                                         LPARAM lparam);
+    // Instance of the module containing the window procedure.
+    HMODULE instance_;
+    // A hidden message-only window.
+    HWND message_hwnd_;
+  };
+#endif
+
 #if defined(OS_MACOSX)
   void PlatformInit();
   void PlatformDestroy();
@@ -181,6 +197,10 @@ class BASE_EXPORT SystemMonitor {
 #if defined(OS_IOS)
   // Holds pointers to system event notification observers.
   std::vector<id> notification_observers_;
+#endif
+
+#if defined(OS_WIN)
+  PowerMessageWindow power_message_window_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(SystemMonitor);

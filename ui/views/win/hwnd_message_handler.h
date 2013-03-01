@@ -296,7 +296,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public ui::WindowImpl,
     MSG_WM_NCPAINT(OnNCPaint)
     MSG_WM_NOTIFY(OnNotify)
     MSG_WM_PAINT(OnPaint)
-    MSG_WM_POWERBROADCAST(OnPowerBroadcast)
     MSG_WM_SETFOCUS(OnSetFocus)
     MSG_WM_SETICON(OnSetIcon)
     MSG_WM_SETTEXT(OnSetText)
@@ -346,7 +345,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public ui::WindowImpl,
   LRESULT OnNCUAHDrawFrame(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnNotify(int w_param, NMHDR* l_param);
   void OnPaint(HDC dc);
-  LRESULT OnPowerBroadcast(DWORD power_event, DWORD data);
   LRESULT OnReflectedMessage(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnSetCursor(UINT message, WPARAM w_param, LPARAM l_param);
   void OnSetFocus(HWND last_focused_window);
