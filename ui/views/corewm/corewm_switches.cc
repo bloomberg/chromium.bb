@@ -27,12 +27,8 @@ const char kWindowAnimationsDisabled[] =
 }  // namespace switches
 
 bool UseFocusController() {
-#if defined(OS_CHROMEOS)
-  return false;
-#else
   return !CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableFocusController);
-#endif
 }
 
 bool UseFocusControllerOnDesktop() {
