@@ -479,4 +479,48 @@ TEST_F(DriveApiOperationsTest, InitiateUploadNewFileOperation) {
   operation_registry_.CancelAll();
 }
 
+TEST_F(DriveApiOperationsTest, InitiateUploadExistingFileOperation) {
+  // Set an expected url for uploading.
+  expected_upload_url_ = kTestUploadUrl;
+
+  const char kTestContentType[] = "text/plain";
+  const int64 kTestContentLength = 100;
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  GURL url;
+
+  // Initiate uploading a new file to the directory with "parent_resource_id".
+  drive::InitiateUploadExistingFileOperation* operation =
+      new drive::InitiateUploadExistingFileOperation(
+          &operation_registry_,
+          request_context_getter_.get(),
+          *url_generator_,
+          base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
+          kTestContentType,
+          kTestContentLength,
+          "resource_id",  // The resource id of the file to be overwritten.
+          "dummy-etag",
+          base::Bind(&test_util::CopyResultsFromInitiateUploadCallbackAndQuit,
+                     &error, &url));
+  operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
+                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_EQ(kTestUploadUrl, url.spec());
+  EXPECT_EQ(kTestContentType, http_request_.headers["X-Upload-Content-Type"]);
+  EXPECT_EQ(base::Int64ToString(kTestContentLength),
+            http_request_.headers["X-Upload-Content-Length"]);
+  EXPECT_EQ("dummy-etag", http_request_.headers["If-Match"]);
+
+  EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
+  EXPECT_EQ("/upload/drive/v2/files/resource_id?uploadType=resumable",
+            http_request_.relative_url);
+  EXPECT_TRUE(http_request_.has_content);
+  EXPECT_TRUE(http_request_.content.empty());
+
+  // Clean the operation remaining in |operation_registry_|.
+  operation_registry_.CancelAll();
+}
+
 }  // namespace google_apis

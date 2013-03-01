@@ -399,5 +399,47 @@ bool InitiateUploadNewFileOperation::GetContentData(
   return true;
 }
 
+//===================== InitiateUploadExistingFileOperation ====================
+
+InitiateUploadExistingFileOperation::InitiateUploadExistingFileOperation(
+    OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
+    const DriveApiUrlGenerator& url_generator,
+    const base::FilePath& drive_file_path,
+    const std::string& content_type,
+    int64 content_length,
+    const std::string& resource_id,
+    const std::string& etag,
+    const InitiateUploadCallback& callback)
+    : InitiateUploadOperationBase(registry,
+                                  url_request_context_getter,
+                                  callback,
+                                  drive_file_path,
+                                  content_type,
+                                  content_length),
+      url_generator_(url_generator),
+      resource_id_(resource_id),
+      etag_(etag) {
+}
+
+InitiateUploadExistingFileOperation::~InitiateUploadExistingFileOperation() {}
+
+GURL InitiateUploadExistingFileOperation::GetURL() const {
+  return url_generator_.GetInitiateUploadExistingFileUrl(resource_id_);
+}
+
+net::URLFetcher::RequestType
+InitiateUploadExistingFileOperation::GetRequestType() const {
+  return net::URLFetcher::PUT;
+}
+
+std::vector<std::string>
+InitiateUploadExistingFileOperation::GetExtraRequestHeaders() const {
+  std::vector<std::string> headers(
+      InitiateUploadOperationBase::GetExtraRequestHeaders());
+  headers.push_back(util::GenerateIfMatchHeader(etag_));
+  return headers;
+}
+
 }  // namespace drive
 }  // namespace google_apis

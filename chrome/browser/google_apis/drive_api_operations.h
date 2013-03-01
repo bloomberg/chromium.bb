@@ -354,6 +354,44 @@ class InitiateUploadNewFileOperation : public InitiateUploadOperationBase {
   DISALLOW_COPY_AND_ASSIGN(InitiateUploadNewFileOperation);
 };
 
+//==================== InitiateUploadExistingFileOperation =====================
+
+// This class performs the operation for initiating the upload of an existing
+// file.
+class InitiateUploadExistingFileOperation
+    : public InitiateUploadOperationBase {
+ public:
+  // |upload_url| should be the upload_url() of the file
+  //    (resumable-create-media URL)
+  // |etag| should be set if it is available to detect the upload confliction.
+  // See also the comments of InitiateUploadOperationBase for more details
+  // about the other parameters.
+  InitiateUploadExistingFileOperation(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const DriveApiUrlGenerator& url_generator,
+      const base::FilePath& drive_file_path,
+      const std::string& content_type,
+      int64 content_length,
+      const std::string& resource_id,
+      const std::string& etag,
+      const InitiateUploadCallback& callback);
+  virtual ~InitiateUploadExistingFileOperation();
+
+ protected:
+  // UrlFetchOperationBase overrides.
+  virtual GURL GetURL() const OVERRIDE;
+  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+  virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
+
+ private:
+  const DriveApiUrlGenerator url_generator_;
+  const std::string resource_id_;
+  const std::string etag_;
+
+  DISALLOW_COPY_AND_ASSIGN(InitiateUploadExistingFileOperation);
+};
+
 }  // namespace drive
 }  // namespace google_apis
 
