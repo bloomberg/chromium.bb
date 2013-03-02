@@ -17,9 +17,10 @@
 #include "third_party/leveldatabase/src/include/leveldb/options.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
-#define SESSION_STORAGE_UMA_NAME "SessionStorageDatabase.Open"
 
 namespace {
+
+const char session_storage_uma_name[] = "SessionStorageDatabase.Open";
 
 enum SessionStorageUMA {
   SESSION_STORAGE_UMA_SUCCESS,
@@ -300,18 +301,18 @@ bool SessionStorageDatabase::LazyOpen(bool create_if_needed) {
     if (!s.ok()) {
       LOG(WARNING) << "Failed to open leveldb in " << file_path_.value()
                    << ", error: " << s.ToString();
-      UMA_HISTOGRAM_ENUMERATION(SESSION_STORAGE_UMA_NAME,
+      UMA_HISTOGRAM_ENUMERATION(session_storage_uma_name,
                                 SESSION_STORAGE_UMA_FAIL,
                                 SESSION_STORAGE_UMA_MAX);
       DCHECK(db == NULL);
       db_error_ = true;
       return false;
     }
-    UMA_HISTOGRAM_ENUMERATION(SESSION_STORAGE_UMA_NAME,
+    UMA_HISTOGRAM_ENUMERATION(session_storage_uma_name,
                               SESSION_STORAGE_UMA_RECREATED,
                               SESSION_STORAGE_UMA_MAX);
   } else {
-    UMA_HISTOGRAM_ENUMERATION(SESSION_STORAGE_UMA_NAME,
+    UMA_HISTOGRAM_ENUMERATION(session_storage_uma_name,
                               SESSION_STORAGE_UMA_SUCCESS,
                               SESSION_STORAGE_UMA_MAX);
   }
