@@ -8,6 +8,7 @@
 #include "base/mac/scoped_block.h"
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/base_bubble_controller.h"
+#import "chrome/browser/ui/cocoa/tracking_area.h"
 
 namespace content {
 class WebContents;
@@ -31,6 +32,12 @@ class WebContents;
 
   // The text field that displays the current zoom percentage.
   scoped_nsobject<NSTextField> zoomPercent_;
+
+  // Whether or not the mouse is over the bubble.
+  BOOL isMouseInside_;
+
+  // Used to prevent the bubble from auto-closing while the mouse is inside it.
+  ScopedCrTrackingArea trackingArea_;
 }
 
 // Creates the bubble for a parent window but does not show it.
@@ -58,5 +65,11 @@ class WebContents;
 - (void)zoomOut:(id)sender;
 
 @end
+
+namespace chrome {
+
+void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval);
+
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_COCOA_BROWSER_ZOOM_BUBBLE_CONTROLLER_H_

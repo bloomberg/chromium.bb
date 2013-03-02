@@ -40,7 +40,7 @@ namespace {
 // The amount of time to wait before the bubble automatically closes.
 // Should keep in sync with kBubbleCloseDelay in
 // src/chrome/browser/ui/views/location_bar/zoom_bubble_view.cc.
-const NSTimeInterval kAutoCloseDelay = 1.5;
+NSTimeInterval gAutoCloseDelay = 1.5;
 
 // The height of the window.
 const CGFloat kWindowHeight = 29.0;
@@ -61,6 +61,14 @@ const CGFloat kTextFontSize = 12.0;
 const CGFloat kZoomInOutButtonFontSize = 16.0;
 
 }  // namespace
+
+namespace chrome {
+
+void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval) {
+  gAutoCloseDelay = time_interval;
+}
+
+}  // namespace chrome
 
 @implementation ZoomBubbleController
 
@@ -84,6 +92,16 @@ const CGFloat kZoomInOutButtonFontSize = 16.0;
             ui::NativeTheme::kColorId_DialogBackground))];
 
     [self performLayout];
+
+    trackingArea_.reset([[CrTrackingArea alloc]
+        initWithRect:NSZeroRect
+             options:NSTrackingMouseEnteredAndExited |
+                     NSTrackingActiveInKeyWindow |
+                     NSTrackingInVisibleRect
+               owner:self
+            userInfo:nil]);
+    [trackingArea_.get() clearOwnerWhenWindowWillClose:[self window]];
+    [[[self window] contentView] addTrackingArea:trackingArea_.get()];
   }
   return self;
 }
@@ -140,6 +158,16 @@ const CGFloat kZoomInOutButtonFontSize = 16.0;
                                            selector:@selector(autoCloseBubble)
                                              object:nil];
   [super windowWillClose:notification];
+}
+
+- (void)mouseEntered:(NSEvent*)theEvent {
+  isMouseInside_ = YES;
+  [self updateAutoCloseTimer];
+}
+
+- (void)mouseExited:(NSEvent*)theEvent {
+  isMouseInside_ = NO;
+  [self updateAutoCloseTimer];
 }
 
 // Private /////////////////////////////////////////////////////////////////////
@@ -251,10 +279,10 @@ const CGFloat kZoomInOutButtonFontSize = 16.0;
   [NSObject cancelPreviousPerformRequestsWithTarget:self
                                            selector:@selector(autoCloseBubble)
                                              object:nil];
-  if (autoClose_) {
+  if (autoClose_ && !isMouseInside_) {
     [self performSelector:@selector(autoCloseBubble)
                withObject:nil
-               afterDelay:kAutoCloseDelay];
+               afterDelay:gAutoCloseDelay];
   }
 }
 
