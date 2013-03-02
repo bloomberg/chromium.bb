@@ -14,6 +14,7 @@
 #include "ash/wm/property_util.h"
 #include "base/command_line.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -107,8 +108,12 @@ void OpenAsh() {
 }
 
 void CloseAsh() {
-  if (ash::Shell::HasInstance())
+  // If shutdown is initiated by |BrowserX11IOErrorHandler|, don't
+  // try to cleanup resources.
+  if (!browser_shutdown::ShuttingDownWithoutClosingBrowsers() &&
+      ash::Shell::HasInstance()) {
     ash::Shell::DeleteInstance();
+  }
 }
 
 }  // namespace chrome
