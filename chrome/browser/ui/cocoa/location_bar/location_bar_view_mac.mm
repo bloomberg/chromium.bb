@@ -299,6 +299,11 @@ void LocationBarViewMac::OnChanged() {
   location_icon_decoration_->SetImage(image);
   ev_bubble_decoration_->SetImage(image);
   Layout();
+
+  if (browser_->instant_controller()) {
+    browser_->instant_controller()->SetOmniboxBounds(
+        gfx::Rect(NSRectToCGRect([field_ frame])));
+  }
 }
 
 void LocationBarViewMac::OnSelectionBoundsChanged() {

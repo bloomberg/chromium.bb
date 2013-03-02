@@ -722,8 +722,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, MostVisited) {
   EXPECT_EQ(most_visited_items_count_, old_most_visited_items_count);
 }
 
-// Only implemented in Views currently: http://crbug.com/164723
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+// Only implemented in Views and Mac currently: http://crbug.com/164723
+#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_MACOSX)
 #define MAYBE_HomeButtonAffectsMargin HomeButtonAffectsMargin
 #else
 #define MAYBE_HomeButtonAffectsMargin DISABLED_HomeButtonAffectsMargin
