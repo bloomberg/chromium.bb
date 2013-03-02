@@ -30,8 +30,6 @@ const int kClientBottomPadding = 20; // Padding below the client view.
 const int kCloseButtonPadding = 7; // Padding around the close button.
 const int kBorderRadius = 2; // Border radius for dialog corners.
 const int kRowPadding = 20; // Padding between rows of text.
-const int kCheckboxIndent = 10; // Indent of checkboxes relative to related
-                                // text.
 
 // Font style for dialog text.
 const ui::ResourceBundle::FontStyle kTextFontStyle =

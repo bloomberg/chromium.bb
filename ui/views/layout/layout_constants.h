@@ -65,6 +65,9 @@ const int kButtonHEdgeMargin = 13;
 // Horizontal spacing between buttons that are logically related.
 const int kRelatedButtonHSpacing = 6;
 
+// Indent of checkboxes relative to related text.
+const int kCheckboxIndent = 10;
+
 }  // namespace views
 
 #endif  // UI_VIEWS_LAYOUT_LAYOUT_CONSTANTS_H_

@@ -15,7 +15,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
-#include "chrome/browser/ui/chrome_style.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_media_menu_model.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
@@ -256,8 +255,7 @@ void ContentSettingBubbleContents::Init() {
   // Insert a column set with greater indent.
   views::ColumnSet* indented_single_column_set =
       layout->AddColumnSet(indented_kSingleColumnSetId);
-  indented_single_column_set->AddPaddingColumn(
-      0, chrome_style::kCheckboxIndent);
+  indented_single_column_set->AddPaddingColumn(0, views::kCheckboxIndent);
   indented_single_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL,
                                         1, GridLayout::USE_PREF, 0, 0);
 
@@ -289,8 +287,7 @@ void ContentSettingBubbleContents::Init() {
     const int kMediaMenuColumnSetId = 2;
     views::ColumnSet* menu_column_set =
         layout->AddColumnSet(kMediaMenuColumnSetId);
-    menu_column_set->AddPaddingColumn(
-        0, chrome_style::kCheckboxIndent);
+    menu_column_set->AddPaddingColumn(0, views::kCheckboxIndent);
     menu_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0,
                                GridLayout::USE_PREF, 0, 0);
     menu_column_set->AddPaddingColumn(
