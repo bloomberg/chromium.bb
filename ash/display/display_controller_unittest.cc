@@ -239,9 +239,8 @@ TEST_F(DisplayControllerTest, SwapPrimary) {
   gfx::Display primary_display = Shell::GetScreen()->GetPrimaryDisplay();
   gfx::Display secondary_display = ScreenAsh::GetSecondaryDisplay();
 
-  DisplayLayout secondary_layout(DisplayLayout::RIGHT, 50);
-  display_controller->SetLayoutForDisplayId(
-      secondary_display.id(), secondary_layout);
+  DisplayLayout display_layout(DisplayLayout::RIGHT, 50);
+  display_controller->SetLayoutForCurrentDisplays(display_layout);
 
   EXPECT_NE(primary_display.id(), secondary_display.id());
   aura::RootWindow* primary_root =
@@ -266,9 +265,15 @@ TEST_F(DisplayControllerTest, SwapPrimary) {
     EXPECT_EQ("200,0 300x252", secondary_display.work_area().ToString());
   else
     EXPECT_EQ("200,0 300x300", secondary_display.work_area().ToString());
+  EXPECT_EQ("right, 50",
+            display_controller->GetCurrentDisplayLayout().ToString());
 
   // Switch primary and secondary
   display_controller->SetPrimaryDisplay(secondary_display);
+  const DisplayLayout& inverted_layout =
+      display_controller->GetCurrentDisplayLayout();
+  EXPECT_EQ("left, -50", inverted_layout.ToString());
+
   EXPECT_EQ(secondary_display.id(),
       Shell::GetScreen()->GetPrimaryDisplay().id());
   EXPECT_EQ(primary_display.id(), ScreenAsh::GetSecondaryDisplay().id());
@@ -299,11 +304,6 @@ TEST_F(DisplayControllerTest, SwapPrimary) {
   else
     EXPECT_EQ("-200,-50 200x200", swapped_secondary.work_area().ToString());
 
-  const DisplayLayout& inverted_layout =
-      display_controller->GetLayoutForDisplay(primary_display);
-
-  EXPECT_EQ("left, -50", inverted_layout.ToString());
-
   aura::WindowTracker tracker;
   tracker.Add(primary_root);
   tracker.Add(secondary_root);
@@ -331,9 +331,8 @@ TEST_F(DisplayControllerTest, SwapPrimaryById) {
   gfx::Display primary_display = Shell::GetScreen()->GetPrimaryDisplay();
   gfx::Display secondary_display = ScreenAsh::GetSecondaryDisplay();
 
-  DisplayLayout secondary_layout(DisplayLayout::RIGHT, 50);
-  display_controller->SetLayoutForDisplayId(
-      secondary_display.id(), secondary_layout);
+  DisplayLayout display_layout(DisplayLayout::RIGHT, 50);
+  display_controller->SetLayoutForCurrentDisplays(display_layout);
 
   EXPECT_NE(primary_display.id(), secondary_display.id());
   aura::RootWindow* primary_root =
@@ -369,7 +368,7 @@ TEST_F(DisplayControllerTest, SwapPrimaryById) {
   EXPECT_FALSE(secondary_root->Contains(launcher_window));
 
   const DisplayLayout& inverted_layout =
-      display_controller->GetLayoutForDisplay(primary_display);
+      display_controller->GetCurrentDisplayLayout();
 
   EXPECT_EQ("left, -50", inverted_layout.ToString());
 

@@ -526,7 +526,7 @@ TEST_F(DisplayManagerTest, NativeDisplaysChangedAfterPrimaryChange) {
       test::DisplayManagerTestApi(display_manager()).
       SetFirstDisplayAsInternalDisplay();
   const DisplayInfo native_display_info =
-      CreateDisplayInfo(internal_display_id,  gfx::Rect(0, 0, 500, 500));
+      CreateDisplayInfo(internal_display_id, gfx::Rect(0, 0, 500, 500));
   const DisplayInfo secondary_display_info =
       CreateDisplayInfo(10, gfx::Rect(1, 1, 100, 100));
 

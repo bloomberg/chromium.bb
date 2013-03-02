@@ -52,6 +52,9 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
     force_bounds_changed_ = force_bounds_changed;
   }
 
+  // Returns the display id of the first display in the outupt list.
+  int64 first_display_id() const { return first_display_id_; }
+
   // True if the given |display| is currently connected.
   bool IsActiveDisplay(const gfx::Display& display) const;
 
@@ -165,6 +168,8 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
 
   // Creates a display object from the DisplayInfo for |display_id|.
   gfx::Display CreateDisplayFromDisplayInfoById(int64 display_id);
+
+  int64 first_display_id_;
 
   DisplayList displays_;
 

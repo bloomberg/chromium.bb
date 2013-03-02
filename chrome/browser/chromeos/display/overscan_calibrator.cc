@@ -94,7 +94,7 @@ OverscanCalibrator::~OverscanCalibrator() {
 }
 
 void OverscanCalibrator::Commit() {
-  SetDisplayOverscan(display_, insets_);
+  SetAndStoreDisplayOverscan(display_, insets_);
   committed_ = true;
 }
 

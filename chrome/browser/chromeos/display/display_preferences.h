@@ -20,23 +20,24 @@ namespace chromeos {
 // into Local State.
 void RegisterDisplayLocalStatePrefs(PrefRegistrySimple* registry);
 
-// Sets or updates the display layout data to the specified |display| and
-// |pref_service|.
-void SetDisplayLayoutPref(const gfx::Display& display,
-                          int layout,
-                          int offset);
+// Stores the current displays prefereces (both primary display id and
+// dispay layout).
+void StoreDisplayPrefs();
 
-// Stores the specified ID as the primary display ID to Local State.  Clears
-// the data if the internal display's ID is specified.
-void StorePrimaryDisplayIDPref(int64 display_id);
+// Sets the display layout for the current displays and store them.
+void SetAndStoreDisplayLayoutPref(int layout, int offset);
 
-// Sets or updates the primary display device by its ID, and notifies the update
-// to the system.
-void SetPrimaryDisplayIDPref(int64 display_id);
+// Stores the display layout for given display pairs.
+void StoreDisplayLayoutPref(int64 id1, int64 id2, int layout, int offset);
 
-// Sets or updates the overscan preference for the specified |display| to Local
+// Sets and stores the primary display device by its ID, and notifies
+// the update to the system.
+void SetAndStorePrimaryDisplayIDPref(int64 display_id);
+
+// Sets and saves the overscan preference for the specified |display| to Local
 // State.
-void SetDisplayOverscan(const gfx::Display& display, const gfx::Insets& insets);
+void SetAndStoreDisplayOverscan(const gfx::Display& display,
+                                const gfx::Insets& insets);
 
 // Checks the current display settings in Local State and notifies them to the
 // system.

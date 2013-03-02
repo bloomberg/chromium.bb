@@ -60,13 +60,12 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
 
   // Do not use the implementation of display_preferences.cc directly to avoid
   // notifying the update to the system.
-  void SetupDisplayLayoutPref(int64 id,
-                              ash::DisplayLayout::Position layout,
-                              int offset) {
+  void StoreDisplayLayoutPrefForName(const std::string& name,
+                                     ash::DisplayLayout::Position layout,
+                                     int offset) {
     DictionaryPrefUpdate update(&local_state_, prefs::kSecondaryDisplays);
     ash::DisplayLayout display_layout(layout, offset);
 
-    std::string name = base::Int64ToString(id);
     DCHECK(!name.empty());
 
     base::DictionaryValue* pref_data = update.Get();
@@ -80,18 +79,33 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
       pref_data->Set(name, layout_value.release());
   }
 
-  void SetupDefaultLayoutPref(ash::DisplayLayout::Position layout,
+  void StoreDisplayLayoutPrefForPair(int64 id1,
+                                     int64 id2,
+                                     ash::DisplayLayout::Position layout,
+                                     int offset) {
+    StoreDisplayLayoutPrefForName(
+        base::Int64ToString(id1) + "," + base::Int64ToString(id2),
+        layout, offset);
+  }
+
+  void StoreDisplayLayoutPrefForSecondary(int64 id,
+                                          ash::DisplayLayout::Position layout,
+                                          int offset) {
+    StoreDisplayLayoutPrefForName(base::Int64ToString(id), layout, offset);
+  }
+
+  void StoreDefaultLayoutPref(ash::DisplayLayout::Position layout,
                               int offset) {
     local_state_.SetInteger(
         prefs::kSecondaryDisplayLayout, static_cast<int>(layout));
     local_state_.SetInteger(prefs::kSecondaryDisplayOffset, offset);
   }
 
-  void SetupPrimaryDisplayId(int64 display_id) {
+  void StorePrimaryDisplayId(int64 display_id) {
     local_state_.SetInt64(prefs::kPrimaryDisplayID, display_id);
   }
 
-  void SetupDisplayOverscan(int64 id, const gfx::Insets& insets) {
+  void StoreDisplayOverscan(int64 id, const gfx::Insets& insets) {
     DictionaryPrefUpdate update(&local_state_, prefs::kDisplayOverscans);
     const std::string name = base::Int64ToString(id);
 
@@ -104,6 +118,14 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
     pref_data->Set(name, insets_value);
   }
 
+  std::string GetRegisteredDisplayLayoutStr(int64 id1, int64 id2) {
+    ash::DisplayIdPair pair;
+    pair.first = id1;
+    pair.second = id2;
+    return ash::Shell::GetInstance()->display_controller()->
+        GetRegisteredDisplayLayout(pair).ToString();
+  }
+
   const PrefService* local_state() const { return &local_state_; }
 
  private:
@@ -113,20 +135,19 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(DisplayPreferencesTest);
 };
 
-TEST_F(DisplayPreferencesTest, Initialization) {
+TEST_F(DisplayPreferencesTest, OldInitialization) {
   UpdateDisplay("100x100,200x200");
   int64 id1 = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
   int64 id2 = ash::ScreenAsh::GetSecondaryDisplay().id();
   int64 dummy_id = id2 + 1;
   ASSERT_NE(id1, dummy_id);
 
-  SetupDisplayLayoutPref(id1, ash::DisplayLayout::BOTTOM, 20);
-  SetupDisplayLayoutPref(id2, ash::DisplayLayout::TOP, -10);
-  SetupDisplayLayoutPref(dummy_id, ash::DisplayLayout::RIGHT, -30);
-  SetupDefaultLayoutPref(ash::DisplayLayout::LEFT, 50);
-  SetupPrimaryDisplayId(id2);
-  SetupDisplayOverscan(id1, gfx::Insets(10, 10, 10, 10));
-  SetupDisplayOverscan(id2, gfx::Insets(20, 20, 20, 20));
+  StoreDisplayLayoutPrefForSecondary(id2, ash::DisplayLayout::BOTTOM, 20);
+  StoreDisplayLayoutPrefForSecondary(dummy_id, ash::DisplayLayout::TOP, -10);
+  StoreDefaultLayoutPref(ash::DisplayLayout::LEFT, 50);
+  StorePrimaryDisplayId(id2);
+  StoreDisplayOverscan(id1, gfx::Insets(10, 10, 10, 10));
+  StoreDisplayOverscan(id2, gfx::Insets(20, 20, 20, 20));
 
   NotifyDisplayLocalStatePrefChanged();
   // Check if the layout settings are notified to the system properly.
@@ -134,15 +155,44 @@ TEST_F(DisplayPreferencesTest, Initialization) {
       ash::Shell::GetInstance()->display_controller();
   gfx::Screen* screen = gfx::Screen::GetNativeScreen();
   EXPECT_EQ(id2, screen->GetPrimaryDisplay().id());
-  EXPECT_EQ(ash::DisplayLayout::BOTTOM,
-            display_controller->GetCurrentDisplayLayout().position);
-  EXPECT_EQ(20, display_controller->GetCurrentDisplayLayout().offset);
+  // Display was swapped, so the layout was inverted.
+  EXPECT_EQ("top, -20",
+            display_controller->GetCurrentDisplayLayout().ToString());
+
+  EXPECT_EQ("bottom, 20", GetRegisteredDisplayLayoutStr(id1, id2));
+  EXPECT_EQ("top, -10", GetRegisteredDisplayLayoutStr(id1, dummy_id));
+  EXPECT_EQ("left, 50",
+            display_controller->default_display_layout().ToString());
   EXPECT_EQ("160x160", screen->GetPrimaryDisplay().bounds().size().ToString());
   EXPECT_EQ("80x80",
             ash::ScreenAsh::GetSecondaryDisplay().bounds().size().ToString());
 }
 
-TEST_F(DisplayPreferencesTest, BasicSaves) {
+TEST_F(DisplayPreferencesTest, PairedLayoutOverrides) {
+  UpdateDisplay("100x100,200x200");
+  int64 id1 = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
+  int64 id2 = ash::ScreenAsh::GetSecondaryDisplay().id();
+  int64 dummy_id = id2 + 1;
+  ASSERT_NE(id1, dummy_id);
+
+  StoreDisplayLayoutPrefForPair(id1, id2, ash::DisplayLayout::TOP, 20);
+  StoreDisplayLayoutPrefForPair(id1, dummy_id, ash::DisplayLayout::LEFT, 30);
+  StoreDefaultLayoutPref(ash::DisplayLayout::LEFT, 50);
+
+  NotifyDisplayLocalStatePrefChanged();
+  // Check if the layout settings are notified to the system properly.
+  // The paired layout overrides old layout.
+  ash::DisplayController* display_controller =
+      ash::Shell::GetInstance()->display_controller();
+  // Inverted one of for specified pair (id1, id2).  Not used for the pair
+  // (id1, dummy_id) since dummy_id is not connected right now.
+  EXPECT_EQ("top, 20",
+            display_controller->GetCurrentDisplayLayout().ToString());
+  EXPECT_EQ("top, 20", GetRegisteredDisplayLayoutStr(id1, id2));
+  EXPECT_EQ("left, 30", GetRegisteredDisplayLayoutStr(id1, dummy_id));
+}
+
+TEST_F(DisplayPreferencesTest, BasicStores) {
   UpdateDisplay("100x100,200x200");
   int64 id1 = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
   int64 id2 = ash::ScreenAsh::GetSecondaryDisplay().id();
@@ -151,13 +201,13 @@ TEST_F(DisplayPreferencesTest, BasicSaves) {
 
   LoggedInAsUser();
   ash::DisplayLayout layout(ash::DisplayLayout::TOP, 10);
-  SetDisplayLayoutPref(ash::ScreenAsh::GetSecondaryDisplay(),
-                       static_cast<int>(layout.position), layout.offset);
-  SetDisplayLayoutPref(gfx::Screen::GetNativeScreen()->GetPrimaryDisplay(),
-                       ash::DisplayLayout::LEFT, 20);
-  SetPrimaryDisplayIDPref(dummy_id);
-  SetDisplayOverscan(ash::ScreenAsh::GetNativeScreen()->GetPrimaryDisplay(),
-                     gfx::Insets(10, 11, 12, 13));
+  SetAndStoreDisplayLayoutPref(static_cast<int>(layout.position),
+                               layout.offset);
+  StoreDisplayLayoutPref(id1, dummy_id, ash::DisplayLayout::LEFT, 20);
+  SetAndStorePrimaryDisplayIDPref(dummy_id);
+  SetAndStoreDisplayOverscan(
+      ash::ScreenAsh::GetNativeScreen()->GetPrimaryDisplay(),
+      gfx::Insets(10, 11, 12, 13));
 
   scoped_ptr<base::DictionaryValue> serialized_value(
       new base::DictionaryValue());
@@ -167,11 +217,12 @@ TEST_F(DisplayPreferencesTest, BasicSaves) {
   const base::DictionaryValue* displays =
       local_state()->GetDictionary(prefs::kSecondaryDisplays);
   const base::DictionaryValue* display_layout = NULL;
-  EXPECT_TRUE(
-      displays->GetDictionary(base::Int64ToString(id2), &display_layout));
+  std::string key = base::Int64ToString(id1) + "," + base::Int64ToString(id2);
+  EXPECT_TRUE(displays->GetDictionary(key, &display_layout));
   EXPECT_TRUE(serialized_value->Equals(display_layout));
 
-  // The default value is set for the last call of SetDisplayLayoutPref()
+  // The default value is set for the last call of
+  // StoreDisplayLayoutPref()
   EXPECT_EQ(ash::DisplayLayout::LEFT,
             local_state()->GetInteger(prefs::kSecondaryDisplayLayout));
   EXPECT_EQ(20, local_state()->GetInteger(prefs::kSecondaryDisplayOffset));
@@ -192,17 +243,49 @@ TEST_F(DisplayPreferencesTest, BasicSaves) {
   EXPECT_EQ(dummy_id, local_state()->GetInt64(prefs::kPrimaryDisplayID));
 }
 
-TEST_F(DisplayPreferencesTest, DontSaveInGuestMode) {
+TEST_F(DisplayPreferencesTest, StoreForSwappedDisplay) {
+  UpdateDisplay("100x100,200x200");
+  int64 id1 = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
+  int64 id2 = ash::ScreenAsh::GetSecondaryDisplay().id();
+
+  ash::DisplayController* display_controller =
+      ash::Shell::GetInstance()->display_controller();
+  display_controller->SwapPrimaryDisplay();
+  ASSERT_EQ(id1, ash::ScreenAsh::GetSecondaryDisplay().id());
+
+  LoggedInAsUser();
+  ash::DisplayLayout layout(ash::DisplayLayout::TOP, 10);
+  SetAndStoreDisplayLayoutPref(static_cast<int>(layout.position),
+                               layout.offset);
+
+  scoped_ptr<base::DictionaryValue> layout_value(
+      new base::DictionaryValue());
+  ASSERT_TRUE(ash::DisplayLayout::ConvertToValue(layout, layout_value.get()));
+
+  const base::DictionaryValue* displays =
+      local_state()->GetDictionary(prefs::kSecondaryDisplays);
+  const base::DictionaryValue* new_value = NULL;
+  std::string key = base::Int64ToString(id1) + "," + base::Int64ToString(id2);
+  EXPECT_TRUE(displays->GetDictionary(key, &new_value));
+  EXPECT_TRUE(layout_value->Equals(new_value));
+
+  display_controller->SwapPrimaryDisplay();
+  EXPECT_TRUE(displays->GetDictionary(key, &new_value));
+  EXPECT_TRUE(layout_value->Equals(new_value));
+}
+
+TEST_F(DisplayPreferencesTest, DontStoreInGuestMode) {
   UpdateDisplay("100x100,200x200");
 
   LoggedInAsGuest();
   int64 id2 = ash::ScreenAsh::GetSecondaryDisplay().id();
   ash::DisplayLayout layout(ash::DisplayLayout::TOP, 10);
-  SetDisplayLayoutPref(ash::ScreenAsh::GetSecondaryDisplay(),
-                       static_cast<int>(layout.position), layout.offset);
-  SetPrimaryDisplayIDPref(id2);
-  SetDisplayOverscan(ash::ScreenAsh::GetNativeScreen()->GetPrimaryDisplay(),
-                     gfx::Insets(10, 11, 12, 13));
+  SetAndStoreDisplayLayoutPref(static_cast<int>(layout.position),
+                               layout.offset);
+  SetAndStorePrimaryDisplayIDPref(id2);
+  SetAndStoreDisplayOverscan(
+      ash::ScreenAsh::GetNativeScreen()->GetPrimaryDisplay(),
+      gfx::Insets(10, 11, 12, 13));
 
   // Does not store the preferences locally.
   EXPECT_FALSE(local_state()->FindPreference(

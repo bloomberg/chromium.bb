@@ -33,6 +33,8 @@ namespace internal {
 class RootWindowController;
 }
 
+typedef std::pair<int64, int64> DisplayIdPair;
+
 struct ASH_EXPORT DisplayLayout {
   // Layout options where the secondary display should be positioned.
   enum Position {
@@ -152,13 +154,24 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
   }
   void SetDefaultDisplayLayout(const DisplayLayout& layout);
 
-  // Sets/gets the display layout for the specified display.  Getter returns the
-  // default value in case it doesn't have its own layout yet.
-  void SetLayoutForDisplayId(int64 id, const DisplayLayout& layout);
-  const DisplayLayout& GetLayoutForDisplay(const gfx::Display& display) const;
+  // Registeres the display layout info for the specified display(s).
+  void RegisterLayoutForDisplayIdPair(int64 id1,
+                                      int64 id2,
+                                      const DisplayLayout& layout);
+  void RegisterLayoutForDisplayId(int64 id, const DisplayLayout& layout);
 
-  // Returns the display layout used for current secondary display.
-  const DisplayLayout& GetCurrentDisplayLayout() const;
+  // Sets the layout for the current display pair. The |layout| specifies
+  // the locaion of the secondary display relative to the primary.
+  void SetLayoutForCurrentDisplays(const DisplayLayout& layout);
+
+  // Returns the display layout used for current displays.
+  DisplayLayout GetCurrentDisplayLayout() const;
+
+  // Returns the current display pair.
+  DisplayIdPair GetCurrentDisplayIdPair() const;
+
+  // Returns the display layout registered for the given display id |pair|.
+  DisplayLayout GetRegisteredDisplayLayout(const DisplayIdPair& pair) const;
 
   // aura::DisplayObserver overrides:
   virtual void OnDisplayBoundsChanged(
@@ -174,6 +187,15 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
   void UpdateDisplayBoundsForLayout();
 
   void NotifyDisplayConfigurationChanging();
+
+  void SetLayoutForDisplayIdPair(const DisplayIdPair& display_pair,
+                                 const DisplayLayout& layout);
+
+  void RegisterLayoutForDisplayIdPairInternal(
+      int64 id1,
+      int64 id2,
+      const DisplayLayout& layout,
+      bool override);
 
   class DisplayChangeLimiter {
    public:
@@ -201,8 +223,8 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
   // The default display layout.
   DisplayLayout default_display_layout_;
 
-  // Per-device display layout.
-  std::map<int64, DisplayLayout> secondary_layouts_;
+  // Display layout per pair of devices.
+  std::map<DisplayIdPair, DisplayLayout> paired_layouts_;
 
   // The ID of the display which should be primary when connected.
   // kInvalidDisplayID if no such preference is specified.

@@ -81,8 +81,9 @@ using std::vector;
 DEFINE_WINDOW_PROPERTY_KEY(int64, kDisplayIdKey,
                            gfx::Display::kInvalidDisplayID);
 
-DisplayManager::DisplayManager() :
-    force_bounds_changed_(false) {
+DisplayManager::DisplayManager()
+    : first_display_id_(gfx::Display::kInvalidDisplayID),
+      force_bounds_changed_(false) {
   Init();
 }
 
@@ -184,6 +185,7 @@ void DisplayManager::OnNativeDisplaysChanged(
     // display list will be updated correctly.
     return;
   }
+  first_display_id_ = updated_displays[0].id();
 
   bool internal_display_connected = false;
   for (DisplayInfoList::const_iterator iter = updated_displays.begin();
@@ -461,6 +463,7 @@ void DisplayManager::Init() {
   }
   if (displays_.empty())
     AddDisplayFromSpec(std::string() /* default */);
+  first_display_id_ = displays_[0].id();
 }
 
 void DisplayManager::CycleDisplayImpl() {

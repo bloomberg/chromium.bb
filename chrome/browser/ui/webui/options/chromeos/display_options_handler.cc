@@ -166,10 +166,8 @@ void DisplayOptionsHandler::SendDisplayInfo(
   scoped_ptr<base::Value> layout_value(base::Value::CreateNullValue());
   scoped_ptr<base::Value> offset_value(base::Value::CreateNullValue());
   if (display_manager->GetNumDisplays() > 1) {
-    const gfx::Display secondary_display =
-        ash::ScreenAsh::GetSecondaryDisplay();
-    const ash::DisplayLayout& layout =
-        display_controller->GetLayoutForDisplay(secondary_display);
+    const ash::DisplayLayout layout =
+        display_controller->GetCurrentDisplayLayout();
     layout_value.reset(new base::FundamentalValue(layout.position));
     offset_value.reset(new base::FundamentalValue(layout.offset));
   }
@@ -189,10 +187,7 @@ void DisplayOptionsHandler::OnFadeOutForMirroringFinished(bool is_mirroring) {
 
 void DisplayOptionsHandler::OnFadeOutForDisplayLayoutFinished(
     int layout, int offset) {
-  const gfx::Display& secondary_display = ash::ScreenAsh::GetSecondaryDisplay();
-  if (secondary_display.is_valid())
-    SetDisplayLayoutPref(secondary_display, layout, offset);
-
+  SetAndStoreDisplayLayoutPref(layout, offset);
   SendAllDisplayInfo();
   ash::Shell::GetInstance()->output_configurator_animation()->
       StartFadeInAnimation();
@@ -230,7 +225,7 @@ void DisplayOptionsHandler::HandleSetPrimary(const base::ListValue* args) {
     return;
   }
 
-  SetPrimaryDisplayIDPref(display_id);
+  SetAndStorePrimaryDisplayIDPref(display_id);
   SendAllDisplayInfo();
 }
 

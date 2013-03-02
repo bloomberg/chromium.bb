@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/root_window_observer.h"
+#include "ui/aura/window_observer.h"
 
 namespace aura {
 class RootWindow;
@@ -21,15 +22,18 @@ namespace chromeos {
 
 // PrimaryDisplaySwitchObserver observes the change of the primary/secondary
 // displays and store the current primary display ID into the local preference.
-class PrimaryDisplaySwitchObserver : public aura::RootWindowObserver {
+class PrimaryDisplaySwitchObserver : public aura::RootWindowObserver,
+                                     public aura::WindowObserver {
  public:
   PrimaryDisplaySwitchObserver();
   virtual ~PrimaryDisplaySwitchObserver();
 
  protected:
-  // aura::RootWindow::Observer overrides:
+  // aura::RootWindowObserver overrides:
   virtual void OnRootWindowMoved(const aura::RootWindow* root_window,
                                  const gfx::Point& new_origin) OVERRIDE;
+  // aura::WindowObserver overrides:
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
   aura::RootWindow* primary_root_;
 
