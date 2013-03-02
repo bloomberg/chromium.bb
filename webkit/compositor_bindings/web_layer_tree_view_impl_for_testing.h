@@ -18,8 +18,6 @@ class Thread;
 
 namespace WebKit {
 class WebLayer;
-class WebLayerTreeViewClient;
-class WebLayerTreeViewClientAdapter;
 
 class WebLayerTreeViewImplForTesting : public WebKit::WebLayerTreeView,
                                        public cc::LayerTreeHostClient {
@@ -32,9 +30,6 @@ class WebLayerTreeViewImplForTesting : public WebKit::WebLayerTreeView,
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebLayerTreeViewImplForTesting(
       RenderingType type,
       webkit_support::DRTLayerTreeViewClient* client);
-  WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebLayerTreeViewImplForTesting(
-      RenderingType type,
-      WebKit::WebLayerTreeViewClient* client);
   virtual ~WebLayerTreeViewImplForTesting();
 
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT bool initialize(
@@ -93,8 +88,7 @@ class WebLayerTreeViewImplForTesting : public WebKit::WebLayerTreeView,
 
  private:
   RenderingType type_;
-  webkit_support::DRTLayerTreeViewClient* drt_client_;
-  WebKit::WebLayerTreeViewClient* client_;
+  webkit_support::DRTLayerTreeViewClient* client_;
   scoped_ptr<cc::LayerTreeHost> layer_tree_host_;
 };
 

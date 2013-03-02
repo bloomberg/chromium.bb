@@ -29,7 +29,6 @@ class WebFileSystemCallbacks;
 class WebFrame;
 class WebGamepads;
 class WebLayerTreeView;
-class WebLayerTreeViewClient;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebPlugin;
@@ -140,11 +139,6 @@ class DRTLayerTreeViewClient {
   virtual void Layout() = 0;
   virtual void ScheduleComposite() = 0;
 };
-
-WebKit::WebLayerTreeView* CreateLayerTreeViewSoftware(
-    WebKit::WebLayerTreeViewClient* client);
-WebKit::WebLayerTreeView* CreateLayerTreeView3d(
-    WebKit::WebLayerTreeViewClient* client);
 
 WebKit::WebLayerTreeView* CreateLayerTreeViewSoftware(
     DRTLayerTreeViewClient* client);

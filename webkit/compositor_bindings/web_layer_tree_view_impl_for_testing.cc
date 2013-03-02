@@ -21,7 +21,6 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebInputHandler.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeViewClient.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRenderingStats.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "webkit/compositor_bindings/web_compositor_support_impl.h"
@@ -37,14 +36,6 @@ WebLayerTreeViewImplForTesting::WebLayerTreeViewImplForTesting(
     RenderingType type,
     webkit_support::DRTLayerTreeViewClient* client)
     : type_(type),
-      drt_client_(client),
-      client_(NULL) {}
-
-WebLayerTreeViewImplForTesting::WebLayerTreeViewImplForTesting(
-    RenderingType type,
-    WebKit::WebLayerTreeViewClient* client)
-    : type_(type),
-      drt_client_(NULL),
       client_(client) {}
 
 WebLayerTreeViewImplForTesting::~WebLayerTreeViewImplForTesting() {}
@@ -174,10 +165,8 @@ void WebLayerTreeViewImplForTesting::animate(
 }
 
 void WebLayerTreeViewImplForTesting::layout() {
-  if (drt_client_)
-    drt_client_->Layout();
   if (client_)
-    client_->layout();
+    client_->Layout();
 }
 
 void WebLayerTreeViewImplForTesting::applyScrollAndScale(
@@ -229,10 +218,8 @@ void WebLayerTreeViewImplForTesting::didCommitAndDrawFrame() {}
 void WebLayerTreeViewImplForTesting::didCompleteSwapBuffers() {}
 
 void WebLayerTreeViewImplForTesting::scheduleComposite() {
-  if (drt_client_)
-    drt_client_->ScheduleComposite();
   if (client_)
-    client_->scheduleComposite();
+    client_->ScheduleComposite();
 }
 
 scoped_refptr<cc::ContextProvider>
