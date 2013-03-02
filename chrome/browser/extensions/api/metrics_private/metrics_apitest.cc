@@ -89,8 +89,6 @@ void UserActionObserver::OnUserAction(const std::string& action) {
 
 void UserActionObserver::ValidateUserActions(const RecordedUserAction* recorded,
                                              int count) {
-  EXPECT_EQ(count, num_metrics());
-
   for (int i = 0; i < count; ++i) {
     const RecordedUserAction& ua = recorded[i];
     EXPECT_EQ(ua.count, GetMetricCount(ua.name));
