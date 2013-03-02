@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "base/stl_util.h"
+#include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
@@ -164,10 +165,11 @@ void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
     file_system_names.insert(filesystems[i].name);
     file_system_dict_value->SetStringWithoutPathExpansion(
         MediaFileSystemRegistry::kNameKey, filesystems[i].name);
-    file_system_dict_value->SetIntegerWithoutPathExpansion(
-        MediaFileSystemRegistry::kGalleryIdKey, filesystems[i].pref_id);
-    if (filesystems[i].transient_device_id) {
-      file_system_dict_value->SetIntegerWithoutPathExpansion(
+    file_system_dict_value->SetStringWithoutPathExpansion(
+        MediaFileSystemRegistry::kGalleryIdKey,
+        base::Uint64ToString(filesystems[i].pref_id));
+    if (!filesystems[i].transient_device_id.empty()) {
+      file_system_dict_value->SetStringWithoutPathExpansion(
           MediaFileSystemRegistry::kDeviceIdKey,
           filesystems[i].transient_device_id);
     }

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 var galleries;
-var invalidGalleryId = 11000;
+var invalidGalleryId = '11000';
 
 // chrome.mediaGalleries.getMediaFileSystems callback.
 var mediaFileSystemsListCallback = function (results) {
@@ -53,7 +53,7 @@ function addGalleryChangedListener() {
 
 function setupWatchOnValidGalleries() {
   for (var i = 0; i < galleries.length; ++i) {
-    var info = JSON.parse(galleries[i].name);
+    var info = chrome.mediaGalleries.getMediaFileSystemMetadata(galleries[i]);
     chrome.mediaGalleriesPrivate.addGalleryWatch(info.galleryId,
                                                  onAddWatchRequestCallback);
   }
@@ -73,7 +73,7 @@ function getMediaFileSystems() {
 
 function removeGalleryWatch() {
   for (var i = 0; i < galleries.length; ++i) {
-    var info = JSON.parse(galleries[i].name);
+    var info = chrome.mediaGalleries.getMediaFileSystemMetadata(galleries[i]);
     chrome.mediaGalleriesPrivate.removeGalleryWatch(info.galleryId);
   }
   chrome.test.sendMessage('remove_gallery_watch_ok');

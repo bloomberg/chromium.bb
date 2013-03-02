@@ -31,11 +31,11 @@ namespace mediaGalleries {
     DOMString name;
 
     // A unique and persistent id for the media gallery.
-    long galleryId;
+    DOMString galleryId;
 
     // If the media gallery is on a removable device, a unique id for the
     // device.
-    long? deviceId;
+    DOMString? deviceId;
 
     // True if the media gallery is on a removable device.
     boolean isRemovable;

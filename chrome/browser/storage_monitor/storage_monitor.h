@@ -116,8 +116,8 @@ class StorageMonitor {
   void AddObserver(RemovableStorageObserver* obs);
   void RemoveObserver(RemovableStorageObserver* obs);
 
-  uint64 GetTransientIdForDeviceId(const std::string& device_id);
-  std::string GetDeviceIdForTransientId(uint64 transient_id) const;
+  std::string GetTransientIdForDeviceId(const std::string& device_id);
+  std::string GetDeviceIdForTransientId(const std::string& transient_id) const;
 
   virtual void EjectDevice(
       const std::string& device_id,

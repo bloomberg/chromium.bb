@@ -51,16 +51,17 @@ struct MediaFileSystemInfo {
                       const base::FilePath& fs_path,
                       const std::string& filesystem_id,
                       MediaGalleryPrefId pref_id,
-                      uint64 transient_device_id,
+                      const std::string& transient_device_id,
                       bool removable,
                       bool media_device);
   MediaFileSystemInfo();
+  ~MediaFileSystemInfo();
 
   std::string name;  // JSON string, must not contain slashes.
   base::FilePath path;
   std::string fsid;
   MediaGalleryPrefId pref_id;
-  uint64 transient_device_id;
+  std::string transient_device_id;
   bool removable;
   bool media_device;
 };

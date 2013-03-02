@@ -47,14 +47,14 @@ void HandleProfileShutdownOnFileThread(void* profile_id) {
 // Gets the |gallery_file_path| and |gallery_pref_id| of the gallery specified
 // by the |gallery_id|. Returns true and set |gallery_file_path| and
 // |gallery_pref_id| if the |gallery_id| is valid and returns false otherwise.
-bool GetGalleryFilePathAndId(int gallery_id,
+bool GetGalleryFilePathAndId(const std::string& gallery_id,
                              Profile* profile,
                              const Extension* extension,
                              base::FilePath* gallery_file_path,
                              chrome::MediaGalleryPrefId* gallery_pref_id) {
-  if (gallery_id < 0)
+  chrome::MediaGalleryPrefId pref_id;
+  if (!base::StringToUint64(gallery_id, &pref_id))
     return false;
-  chrome::MediaGalleryPrefId pref_id = static_cast<uint64>(gallery_id);
   chrome::MediaFileSystemRegistry* registry =
       g_browser_process->media_file_system_registry();
    base::FilePath file_path(
@@ -189,7 +189,7 @@ void MediaGalleriesPrivateAddGalleryWatchFunction::HandleResponse(
     bool success) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   extensions::api::media_galleries_private::AddGalleryWatchResult result;
-  result.gallery_id = gallery_id;
+  result.gallery_id = base::Uint64ToString(gallery_id);
   result.success = success;
   SetResult(result.ToValue().release());
   if (success) {
@@ -256,7 +256,7 @@ bool MediaGalleriesPrivateGetAllGalleryWatchFunction::RunImpl() {
   if (!render_view_host() || !render_view_host()->GetProcess())
     return false;
 
-  std::vector<int> result;
+  std::vector<std::string> result;
 #if defined(OS_WIN)
   GalleryWatchStateTracker* state_tracker =
       MediaGalleriesPrivateAPI::Get(profile_)->GetGalleryWatchStateTracker();
@@ -265,8 +265,7 @@ bool MediaGalleriesPrivateGetAllGalleryWatchFunction::RunImpl() {
   for (chrome::MediaGalleryPrefIdSet::const_iterator iter =
            gallery_ids.begin();
        iter != gallery_ids.end(); ++iter) {
-    if (*iter < kint32max)
-      result.push_back(*iter);
+    result.push_back(base::Uint64ToString(*iter));
   }
 #endif
   results_ = GetAllGalleryWatch::Results::Create(result);

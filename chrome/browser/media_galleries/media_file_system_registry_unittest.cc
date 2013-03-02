@@ -227,9 +227,9 @@ void CheckGalleryInfo(const MediaFileSystemInfo& info,
   EXPECT_NE(0UL, info.pref_id);
 
   if (removable)
-    EXPECT_NE(0UL, info.transient_device_id);
+    EXPECT_NE(0UL, info.transient_device_id.size());
   else
-    EXPECT_EQ(0UL, info.transient_device_id);
+    EXPECT_EQ(0UL, info.transient_device_id.size());
 
   base::FilePath fsid_path = fs_context->GetPathForId(info.fsid);
   EXPECT_EQ(path, fsid_path);
@@ -764,7 +764,7 @@ MediaFileSystemRegistryTest::GetAutoAddedGalleries(
     if (it->second.type == MediaGalleryPrefInfo::kAutoDetected) {
       base::FilePath path = it->second.AbsolutePath();
       MediaFileSystemInfo info(path.AsUTF8Unsafe(), path, std::string(),
-                               0, 0, false, false);
+                               0, std::string(), false, false);
       result.push_back(info);
     }
   }
@@ -846,7 +846,7 @@ TEST_F(MediaFileSystemRegistryTest, UserAddedGallery) {
                        device_id,
                        true /*has access*/);
   MediaFileSystemInfo added_info(empty_dir().AsUTF8Unsafe(), empty_dir(),
-                                 std::string(), 0, 0, false, false);
+                                 std::string(), 0, std::string(), false, false);
   added_galleries.push_back(added_info);
   profile_state->CheckGalleries("user added regular", added_galleries,
                                 auto_galleries);

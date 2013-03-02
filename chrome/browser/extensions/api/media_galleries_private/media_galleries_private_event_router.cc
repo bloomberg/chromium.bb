@@ -8,7 +8,6 @@
 
 #include <map>
 
-#include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/event_names.h"
@@ -25,7 +24,7 @@ namespace {
 
 std::string GetTransientIdForDeviceId(const std::string& device_id) {
   chrome::StorageMonitor* monitor = chrome::StorageMonitor::GetInstance();
-  return base::Uint64ToString(monitor->GetTransientIdForDeviceId(device_id));
+  return monitor->GetTransientIdForDeviceId(device_id);
 }
 
 }  // namespace

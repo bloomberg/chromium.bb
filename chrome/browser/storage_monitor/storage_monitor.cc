@@ -85,13 +85,13 @@ void StorageMonitor::RemoveObserver(
   observer_list_->RemoveObserver(obs);
 }
 
-uint64 StorageMonitor::GetTransientIdForDeviceId(
+std::string StorageMonitor::GetTransientIdForDeviceId(
     const std::string& device_id) {
   return transient_device_ids_->GetTransientIdForDeviceId(device_id);
 }
 
 std::string StorageMonitor::GetDeviceIdForTransientId(
-    uint64 transient_id) const {
+    const std::string& transient_id) const {
   return transient_device_ids_->DeviceIdFromTransientId(transient_id);
 }
 

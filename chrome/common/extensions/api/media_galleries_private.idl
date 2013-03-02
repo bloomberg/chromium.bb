@@ -24,7 +24,7 @@ namespace mediaGalleriesPrivate {
   // A dictionary that describes the modified gallery.
   [inline_doc] dictionary GalleryChangeDetails {
     // Gallery identifier.
-    long galleryId;
+    DOMString galleryId;
   };
 
   interface Events {
@@ -40,12 +40,12 @@ namespace mediaGalleriesPrivate {
 
   // A dictionary that describes the add gallery watch request results.
   dictionary AddGalleryWatchResult {
-    long galleryId;
+    DOMString galleryId;
     boolean success;
   };
 
   callback AddGalleryWatchCallback = void (AddGalleryWatchResult result);
-  callback GetAllGalleryWatchCallback = void (long[] galleryIds);
+  callback GetAllGalleryWatchCallback = void (DOMString[] galleryIds);
 
   [inline_doc] enum EjectDeviceResultCode {
     // The ejection command is successful -- the application can prompt the user
@@ -64,11 +64,11 @@ namespace mediaGalleriesPrivate {
   callback EjectDeviceCallback = void (EjectDeviceResultCode result);
 
   interface Functions {
-    static void addGalleryWatch(long galleryId,
+    static void addGalleryWatch(DOMString galleryId,
                                 AddGalleryWatchCallback callback);
-    static void removeGalleryWatch(long galleryId);
+    static void removeGalleryWatch(DOMString galleryId);
     static void getAllGalleryWatch(GetAllGalleryWatchCallback callback);
     static void removeAllGalleryWatch();
-    static void ejectDevice(long deviceId, EjectDeviceCallback callback);
+    static void ejectDevice(DOMString deviceId, EjectDeviceCallback callback);
   };
 };

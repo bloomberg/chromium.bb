@@ -22,8 +22,7 @@ function ejectCallback(result) {
 };
 
 function ejectTest() {
-  chrome.mediaGalleriesPrivate.ejectDevice(parseInt(attachedDeviceId),
-                                           ejectCallback);
+  chrome.mediaGalleriesPrivate.ejectDevice(attachedDeviceId, ejectCallback);
 };
 
 function addAttachListener() {
@@ -37,5 +36,5 @@ function removeAttachListener() {
 };
 
 function ejectFailTest() {
-  chrome.mediaGalleriesPrivate.ejectDevice(-1, ejectCallback);
+  chrome.mediaGalleriesPrivate.ejectDevice('-1', ejectCallback);
 };
