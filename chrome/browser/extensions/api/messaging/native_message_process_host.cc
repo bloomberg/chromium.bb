@@ -92,6 +92,8 @@ NativeMessageProcessHost::CreateWithLauncher(
   if (Feature::GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV ||
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableNativeMessaging)) {
+    content::BrowserThread::DeleteSoon(
+        content::BrowserThread::IO, FROM_HERE, launcher.release());
     return process.Pass();
   }
 
