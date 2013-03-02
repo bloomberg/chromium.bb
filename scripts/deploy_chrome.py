@@ -44,6 +44,8 @@ POST_KILL_WAIT = 2
 
 MOUNT_RW_COMMAND = 'mount -o remount,rw /'
 
+_CHROME_DIR = '/opt/google/chrome'
+
 
 def _UrlBaseName(url):
   """Return the last component of the URL."""
@@ -161,7 +163,7 @@ class DeployChrome(object):
   def _Deploy(self):
     logging.info('Copying Chrome to device...')
     # Show the output (status) for this command.
-    self.host.Rsync('%s/' % os.path.abspath(self.staging_dir), '/',
+    self.host.Rsync('%s/' % os.path.abspath(self.staging_dir), _CHROME_DIR,
                     inplace=True, debug_level=logging.INFO,
                     verbose=self.options.verbose)
     if self.options.startui:

@@ -150,10 +150,11 @@ class Copier(object):
       if self.strip_bin:
         cros_build_lib.DebugRunCommand([self.strip_bin, '--strip-unneeded',
                                         '-o', dest, src])
+        shutil.copystat(src, dest)
       if self.exe_opts is not None:
         os.chmod(dest, self.exe_opts)
     else:
-      shutil.copy(src, dest)
+      shutil.copy2(src, dest)
 
 
 class Path(object):
@@ -245,7 +246,6 @@ _CONTENT_SHELL_FLAG = 'content_shell'
 _WIDEVINE_FLAG = 'widevine'
 STAGING_FLAGS = (_HIGHDPI_FLAG, _CONTENT_SHELL_FLAG, _WIDEVINE_FLAG)
 
-_CHROME_DIR = 'opt/google/chrome'
 _CHROME_SANDBOX_DEST = 'chrome-sandbox'
 C = Conditions
 
@@ -349,8 +349,7 @@ def StageChromeFromBuildDir(staging_dir, build_dir, strip_bin, strict=False,
   if os.path.exists(staging_dir) and os.listdir(staging_dir):
     raise StagingError('Staging directory %s must be empty.' % staging_dir)
 
-  dest_base = os.path.join(staging_dir, _CHROME_DIR)
-  osutils.SafeMakedirs(os.path.join(dest_base, 'plugins'))
+  osutils.SafeMakedirs(os.path.join(staging_dir, 'plugins'))
   cros_build_lib.DebugRunCommand(['chmod', '-R', '0755', staging_dir])
 
   if gyp_defines is None:
@@ -362,11 +361,11 @@ def StageChromeFromBuildDir(staging_dir, build_dir, strip_bin, strict=False,
   copied_paths = []
   for p in _COPY_PATHS:
     if not strict or p.ShouldProcess(gyp_defines, staging_flags):
-      copied_paths += p.Copy(build_dir, dest_base, copier, strict, sloppy)
+      copied_paths += p.Copy(build_dir, staging_dir, copier, strict, sloppy)
 
   if not copied_paths:
     raise MissingPathError('Couldn\'t find anything to copy!\n'
                            'Are you looking in the right directory?\n'
                            'Aborting copy...')
 
-  _FixPermissions(dest_base)
+  _FixPermissions(staging_dir)
