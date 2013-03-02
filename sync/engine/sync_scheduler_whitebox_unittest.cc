@@ -106,7 +106,7 @@ class SyncSchedulerWhiteboxTest : public testing::Test {
       SyncSessionJob::Purpose purpose) {
     scoped_ptr<SyncSession> s(scheduler_->CreateSyncSession(SyncSourceInfo()));
     SyncSessionJob job(purpose, TimeTicks::Now(), s.Pass(),
-        ConfigurationParams(), FROM_HERE);
+        ConfigurationParams());
     return DecideOnJob(job);
   }
 
@@ -157,8 +157,7 @@ TEST_F(SyncSchedulerWhiteboxTest, SaveNudgeWhileTypeThrottled) {
   SyncSessionJob job(SyncSessionJob::NUDGE,
                      TimeTicks::Now(),
                      s.Pass(),
-                     ConfigurationParams(),
-                     FROM_HERE);
+                     ConfigurationParams());
   SyncSchedulerImpl::JobProcessDecision decision = DecideOnJob(job);
   // TODO(tim): This shouldn't drop. Bug 177659.
   EXPECT_EQ(decision, SyncSchedulerImpl::DROP);
@@ -256,7 +255,7 @@ TEST_F(SyncSchedulerWhiteboxTest, ContinueCanaryJobConfig) {
 
   SyncSessionJob job(SyncSessionJob::CONFIGURATION,
                      TimeTicks::Now(), scoped_ptr<SyncSession>(),
-                     ConfigurationParams(), FROM_HERE);
+                     ConfigurationParams());
 
   job.GrantCanaryPrivilege();
   SyncSchedulerImpl::JobProcessDecision decision = DecideOnJob(job);

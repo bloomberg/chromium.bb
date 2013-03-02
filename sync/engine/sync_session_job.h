@@ -8,7 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
-#include "base/tracked_objects.h"
 #include "sync/base/sync_export.h"
 #include "sync/engine/sync_scheduler.h"
 #include "sync/engine/syncer.h"
@@ -42,8 +41,7 @@ class SYNC_EXPORT_PRIVATE SyncSessionJob {
   SyncSessionJob(Purpose purpose,
                  base::TimeTicks start,
                  scoped_ptr<sessions::SyncSession> session,
-                 const ConfigurationParams& config_params,
-                 const tracked_objects::Location& nudge_location);
+                 const ConfigurationParams& config_params);
   ~SyncSessionJob();
 
   // Returns a new clone of the job, with a cloned SyncSession ready to be
@@ -52,8 +50,6 @@ class SYNC_EXPORT_PRIVATE SyncSessionJob {
   // to prevent bugs where multiple jobs are scheduled with the same session.
   // Use CloneAndAbandon if you want to clone before finishing.
   scoped_ptr<SyncSessionJob> Clone() const;
-  scoped_ptr<SyncSessionJob> CloneFromLocation(
-      const tracked_objects::Location& from_here) const;
 
   // Same as Clone() above, but also ejects the SyncSession from this job,
   // preventing it from ever being used for a sync cycle.
@@ -89,7 +85,6 @@ class SYNC_EXPORT_PRIVATE SyncSessionJob {
   void set_scheduled_start(base::TimeTicks start);
   const sessions::SyncSession* session() const;
   sessions::SyncSession* mutable_session();
-  const tracked_objects::Location& from_location() const;
   SyncerStep start_step() const;
   SyncerStep end_step() const;
   ConfigurationParams config_params() const;
@@ -121,11 +116,6 @@ class SYNC_EXPORT_PRIVATE SyncSessionJob {
   // a SyncShare operation took place with |session_| and it cycled through
   // all requisite steps given |purpose_| without being preempted.
   FinishedState finished_;
-
-  // This is the location the job came from.  Used for debugging.
-  // In case of multiple nudges getting coalesced this stores the
-  // first location that came in.
-  tracked_objects::Location from_location_;
 
   base::WeakPtr<DestructionObserver> destruction_observer_;
 

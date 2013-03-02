@@ -168,7 +168,8 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl :
                        base::TimeDelta delay);
 
   // Helper to assemble a job and post a delayed task to sync.
-  void ScheduleSyncSessionJob(scoped_ptr<SyncSessionJob> job);
+  void ScheduleSyncSessionJob(const tracked_objects::Location& loc,
+                              scoped_ptr<SyncSessionJob> job);
 
   // Invoke the Syncer to perform a sync.
   bool DoSyncSessionJob(scoped_ptr<SyncSessionJob> job);

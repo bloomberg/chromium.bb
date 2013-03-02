@@ -347,8 +347,7 @@ bool SyncSchedulerImpl::ScheduleConfiguration(
         SyncSessionJob::CONFIGURATION,
         TimeTicks::Now(),
         session.Pass(),
-        params,
-        FROM_HERE));
+        params));
     job->set_destruction_observer(weak_ptr_factory_.GetWeakPtr());
     bool succeeded = DoSyncSessionJob(job.Pass());
 
@@ -619,8 +618,7 @@ void SyncSchedulerImpl::ScheduleNudgeImpl(
       SyncSessionJob::NUDGE,
       TimeTicks::Now() + delay,
       CreateSyncSession(info).Pass(),
-      ConfigurationParams(),
-      nudge_location));
+      ConfigurationParams()));
   job->set_destruction_observer(weak_ptr_factory_.GetWeakPtr());
   JobProcessDecision decision = DecideOnJob(*job);
   SDVLOG(2) << "Should run "
@@ -662,7 +660,7 @@ void SyncSchedulerImpl::ScheduleNudgeImpl(
 
   // TODO(zea): Consider adding separate throttling/backoff for datatype
   // refresh requests.
-  ScheduleSyncSessionJob(job.Pass());
+  ScheduleSyncSessionJob(nudge_location, job.Pass());
 }
 
 const char* SyncSchedulerImpl::GetModeString(SyncScheduler::Mode mode) {
@@ -709,6 +707,7 @@ void SyncSchedulerImpl::PostDelayedTask(
 }
 
 void SyncSchedulerImpl::ScheduleSyncSessionJob(
+    const tracked_objects::Location& loc,
     scoped_ptr<SyncSessionJob> job) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   if (no_scheduling_allowed_) {
@@ -717,7 +716,6 @@ void SyncSchedulerImpl::ScheduleSyncSessionJob(
   }
 
   TimeDelta delay = job->scheduled_start() - TimeTicks::Now();
-  tracked_objects::Location loc(job->from_location());
   if (delay < TimeDelta::FromMilliseconds(0))
     delay = TimeDelta::FromMilliseconds(0);
   SDVLOG_LOC(loc, 2)
@@ -967,7 +965,7 @@ void SyncSchedulerImpl::HandleContinuationError(
   wait_interval_.reset(new WaitInterval(WaitInterval::EXPONENTIAL_BACKOFF,
                                         length));
   NotifyRetryTime(base::Time::Now() + length);
-  scoped_ptr<SyncSessionJob> new_job(old_job->CloneFromLocation(FROM_HERE));
+  scoped_ptr<SyncSessionJob> new_job(old_job->Clone());
   new_job->set_scheduled_start(TimeTicks::Now() + length);
   if (old_job->purpose() == SyncSessionJob::CONFIGURATION) {
     SDVLOG(2) << "Configuration did not succeed, scheduling retry.";
@@ -1079,10 +1077,9 @@ void SyncSchedulerImpl::PollTimerCallback() {
   scoped_ptr<SyncSessionJob> job(new SyncSessionJob(SyncSessionJob::POLL,
                                                     TimeTicks::Now(),
                                                     s.Pass(),
-                                                    ConfigurationParams(),
-                                                    FROM_HERE));
+                                                    ConfigurationParams()));
   job->set_destruction_observer(weak_ptr_factory_.GetWeakPtr());
-  ScheduleSyncSessionJob(job.Pass());
+  ScheduleSyncSessionJob(FROM_HERE, job.Pass());
 }
 
 void SyncSchedulerImpl::Unthrottle(scoped_ptr<SyncSessionJob> to_be_canary) {
