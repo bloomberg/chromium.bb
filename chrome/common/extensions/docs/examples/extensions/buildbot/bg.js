@@ -11,19 +11,20 @@ var statusURL = "http://chromium-status.appspot.com/current?format=raw";
 var statusHistoryURL =
   "http://chromium-status.appspot.com/allstatus?limit=20&format=json";
 var pollFrequencyInMs = 30000;
+var tryPollFrequencyInMs = 30000;
 
-function getUseNotifications(callback) {
-  chrome.storage.sync.get(
-    // Default to notifications being off.
-    {prefs: {use_notifications: false}},
-    function(storage) { callback(storage.prefs.use_notifications); });
+var prefs = new Prefs;
+
+function updateBadgeOnErrorStatus() {
+  chrome.browserAction.setBadgeText({text:"?"});
+  chrome.browserAction.setBadgeBackgroundColor({color:[0,0,255,255]});
 }
 
 var lastNotification = null;
 function notifyStatusChange(treeState, status) {
-  if (lastNotification) {
+  if (lastNotification)
     lastNotification.cancel();
-  }
+
   var notification = webkitNotifications.createNotification(
     chrome.extension.getURL("icon.png"), "Tree is " + treeState, status);
   lastNotification = notification;
@@ -32,7 +33,7 @@ function notifyStatusChange(treeState, status) {
 
 // The type parameter should be "open", "closed", or "throttled".
 function getLastStatusTime(callback, type) {
-  requestURL(statusHistoryURL, function(text) {
+  requestURL(statusHistoryURL, "text", function(text) {
     var entries = JSON.parse(text);
 
     for (var i = 0; i < entries.length; i++) {
@@ -41,7 +42,7 @@ function getLastStatusTime(callback, type) {
         return;
       }
     }
-  }, "text");
+  }, updateBadgeOnErrorStatus);
 }
 
 function updateTimeBadge(timeDeltaInMs) {
@@ -85,10 +86,9 @@ function updateStatus(status) {
       (/throttled/i).exec(status) ? "throttled" : "closed";
 
   if (lastState && lastState != treeState) {
-    getUseNotifications(function(useNotifications) {
-      if (useNotifications) {
+    prefs.getUseNotifications(function(useNotifications) {
+      if (useNotifications)
         notifyStatusChange(treeState, status);
-      }
     });
   }
 
@@ -115,36 +115,97 @@ function updateStatus(status) {
 }
 
 function requestStatus() {
-  requestURL(statusURL, updateStatus, "text");
+  requestURL(statusURL, "text", updateStatus, updateBadgeOnErrorStatus);
   setTimeout(requestStatus, pollFrequencyInMs);
 }
 
-function requestURL(url, callback, opt_responseType) {
-  var xhr = new XMLHttpRequest();
-  xhr.responseType = opt_responseType || "document";
+var activeIssues = {};
+// Record of the last defunct build number we're aware of on each builder.  If
+// the build number is less than or equal to this number, the buildbot
+// information is not available and a request will return a 404.
+var lastDefunctTryJob = {};
 
-  xhr.onreadystatechange = function(state) {
-    if (xhr.readyState == 4) {
-      if (xhr.status == 200) {
-        callback(xhr.responseType == "document" ?
-                 xhr.responseXML : xhr.responseText);
-      } else {
-        chrome.browserAction.setBadgeText({text:"?"});
-        chrome.browserAction.setBadgeBackgroundColor({color:[0,0,255,255]});
-      }
+function fetchTryJobResults(fullPatchset, builder, buildnumber) {
+  var tryJobURL =
+    "http://build.chromium.org/p/tryserver.chromium/json/builders/" +
+        builder + "/builds/" + buildnumber;
+
+  if (lastDefunctTryJob.hasOwnProperty(builder) &&
+      buildnumber <= lastDefunctTryJob[builder])
+    return;
+
+  var onStatusError = function(status) {
+    if (status == 404)
+      lastDefunctTryJob[builder] = buildnumber;
+  };
+
+  requestURL(tryJobURL, "json", function(tryJobResult) {
+    if (!fullPatchset.full_try_job_results)
+      fullPatchset.full_try_job_results = {};
+
+    var key = builder + "-" + buildnumber;
+    fullPatchset.full_try_job_results[key] = tryJobResult;
+  }, onStatusError);
+}
+
+function fetchPatches(issue, completed) {
+  var patchsetsRetrieved = 0;
+  issue.patchsets.forEach(function(patchset) {
+    var patchURL = "https://codereview.chromium.org/api/" + issue.issue +
+        "/" + patchset;
+
+    requestURL(patchURL, "json", function(patch) {
+      if (!issue.full_patchsets)
+        issue.full_patchsets = {};
+
+      issue.full_patchsets[patch.patchset] = patch;
+
+      patch.try_job_results.forEach(function(results) {
+        if (results.buildnumber)
+          fetchTryJobResults(patch, results.builder, results.buildnumber);
+      });
+
+      if (++patchsetsRetrieved == issue.patchsets.length)
+        completed(issue);
+    });
+  });
+}
+
+function updateTryStatus(status) {
+  var seen = {};
+  status.results.forEach(function(result) {
+    var issueURL = "https://codereview.chromium.org/api/" + result.issue;
+
+    requestURL(issueURL, "json", function(issue) {
+      fetchPatches(issue, function() {activeIssues[issue.issue] = issue;});
+    });
+
+    seen[result.issue] = true;
+  });
+
+  for (var issue in activeIssues)
+    if (!seen[issue])
+      delete activeIssues[issue];
+}
+
+function requestTryStatus() {
+  prefs.getTryJobUsername(function(username) {
+    if (username) {
+      var url = "https://codereview.chromium.org/search" +
+          // commit=2 is CLs with commit bit set, commit=3 is CLs with commit
+          // bit cleared, commit=1 is either.
+          "?closed=3&commit=1&limit=100&order=-modified&format=json&owner=" +
+              username;
+      requestURL(url, "json", updateTryStatus);
     }
-  };
 
-  xhr.onerror = function(error) {
-    console.log("xhr error:", error);
-  };
-
-  xhr.open("GET", url, true);
-  xhr.send();
+    setTimeout(requestTryStatus, tryPollFrequencyInMs);
+  });
 }
 
 function main() {
   requestStatus();
+  requestTryStatus();
 }
 
 main();
