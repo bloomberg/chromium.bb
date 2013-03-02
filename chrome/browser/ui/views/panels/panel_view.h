@@ -45,7 +45,6 @@ class PanelView : public NativePanel,
   virtual gfx::NativeWindow GetNativePanelWindow() OVERRIDE;
   virtual void UpdatePanelTitleBar() OVERRIDE;
   virtual void UpdatePanelLoadingAnimations(bool should_animate) OVERRIDE;
-  virtual void NotifyPanelOnUserChangedTheme() OVERRIDE;
   virtual void PanelWebContentsFocused(content::WebContents* contents) OVERRIDE;
   virtual void PanelCut() OVERRIDE;
   virtual void PanelCopy() OVERRIDE;

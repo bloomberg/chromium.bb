@@ -15,8 +15,6 @@
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
 #include "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/themes/theme_service.h"
-#include "chrome/browser/themes/theme_service_factory.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #import "chrome/browser/ui/cocoa/event_utils.h"
@@ -388,23 +386,6 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
         [[TabContentsController alloc] initWithContents:nil]);
   }
   return self;
-}
-
-- (ui::ThemeProvider*)themeProvider {
-  return ThemeServiceFactory::GetForProfile(
-      windowShim_->panel()->profile());
-}
-
-- (ThemedWindowStyle)themedWindowStyle {
-  ThemedWindowStyle style = THEMED_POPUP;
-  if (windowShim_->panel()->profile()->IsOffTheRecord())
-    style |= THEMED_INCOGNITO;
-  return style;
-}
-
-- (NSPoint)themePatternPhase {
-  NSView* windowView = [[[self window] contentView] superview];
-  return [BrowserWindowUtils themePatternPhaseFor:windowView withTabStrip:nil];
 }
 
 - (void)awakeFromNib {

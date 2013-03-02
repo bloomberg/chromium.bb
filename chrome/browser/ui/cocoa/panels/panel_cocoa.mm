@@ -158,10 +158,6 @@ void PanelCocoa::UpdatePanelLoadingAnimations(bool should_animate) {
   [controller_ updateThrobber:should_animate];
 }
 
-void PanelCocoa::NotifyPanelOnUserChangedTheme() {
-  NOTIMPLEMENTED();
-}
-
 void PanelCocoa::PanelWebContentsFocused(content::WebContents* contents) {
   // Nothing to do.
 }

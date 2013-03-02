@@ -470,10 +470,6 @@ void PanelView::UpdatePanelLoadingAnimations(bool should_animate) {
   GetFrameView()->UpdateThrobber();
 }
 
-void PanelView::NotifyPanelOnUserChangedTheme() {
-  GetFrameView()->SchedulePaint();
-}
-
 void PanelView::PanelWebContentsFocused(content::WebContents* contents) {
   web_view_->OnWebContentsFocused(contents);
 }

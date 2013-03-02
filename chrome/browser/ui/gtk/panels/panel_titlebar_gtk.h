@@ -15,7 +15,6 @@
 #include "ui/gfx/skia_util.h"
 
 class CustomDrawButton;
-class GtkThemeService;
 class PanelGtk;
 
 namespace content {
@@ -90,7 +89,6 @@ class PanelTitlebarGtk {
   scoped_ptr<CustomDrawButton> restore_button_;
 
   TitlebarThrobAnimation throbber_;
-  GtkThemeService* theme_service_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelTitlebarGtk);
 };

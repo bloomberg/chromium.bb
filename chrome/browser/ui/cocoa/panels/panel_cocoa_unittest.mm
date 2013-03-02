@@ -365,17 +365,6 @@ TEST_F(PanelCocoaTest, KeyEvent) {
   ClosePanelAndWait(panel);
 }
 
-// Verify that the theme provider is properly plumbed through.
-TEST_F(PanelCocoaTest, ThemeProvider) {
-  Panel* panel = CreateTestPanel("Test Panel");
-  ASSERT_TRUE(panel);
-
-  PanelCocoa* native_window = static_cast<PanelCocoa*>(panel->native_panel());
-  ASSERT_TRUE(native_window);
-  EXPECT_TRUE(NULL != [[native_window->controller_ window] themeProvider]);
-  ClosePanelAndWait(panel);
-}
-
 TEST_F(PanelCocoaTest, SetTitle) {
   NSString *appName = @"Test Panel";
   Panel* panel = CreateTestPanel(base::SysNSStringToUTF8(appName));

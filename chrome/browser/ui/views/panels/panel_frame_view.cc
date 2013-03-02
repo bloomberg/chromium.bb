@@ -4,9 +4,6 @@
 
 #include "chrome/browser/ui/views/panels/panel_frame_view.h"
 
-#include "chrome/browser/themes/theme_properties.h"
-#include "chrome/browser/themes/theme_service.h"
-#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_constants.h"
 #include "chrome/browser/ui/views/panels/panel_view.h"
@@ -68,7 +65,7 @@ const int kMinimizeButtonAndCloseButtonSpacing = 5;
 const SkColor kActiveBackgroundDefaultColor = SkColorSetRGB(0x3a, 0x3d, 0x3d);
 const SkColor kInactiveBackgroundDefaultColor = SkColorSetRGB(0x7a, 0x7c, 0x7c);
 const SkColor kAttentionBackgroundDefaultColor =
-    SkColorSetRGB(0xff, 0xab, 0x57);
+    SkColorSetRGB(0x53, 0xa9, 0x3f);
 
 // Color used to draw the minimized panel.
 const SkColor kMinimizeBackgroundDefaultColor = SkColorSetRGB(0xf5, 0xf4, 0xf0);
@@ -533,10 +530,6 @@ gfx::Size PanelFrameView::GetMaximumSize() {
   return gfx::Size();
 }
 
-ui::ThemeProvider* PanelFrameView::GetThemeProvider() const {
-  return ThemeServiceFactory::GetForProfile(panel_view_->panel()->profile());
-}
-
 void PanelFrameView::Layout() {
   is_frameless_ = ShouldRenderAsFrameless();
 
@@ -680,42 +673,11 @@ PanelFrameView::PaintState PanelFrameView::GetPaintState() const {
   return PAINT_AS_INACTIVE;
 }
 
-bool PanelFrameView::UsingDefaultTheme(PaintState paint_state) const {
-  // No theme is provided for attention painting.
-  if (paint_state == PAINT_FOR_ATTENTION)
-    return true;
-
-  ThemeService* theme_service = ThemeServiceFactory::GetForProfile(
-      panel_view_->panel()->profile());
-  return theme_service->UsingDefaultTheme();
-}
-
 SkColor PanelFrameView::GetTitleColor(PaintState paint_state) const {
-  return UsingDefaultTheme(paint_state) ?
-      GetDefaultTitleColor(paint_state) :
-      GetThemedTitleColor(paint_state);
-}
-
-SkColor PanelFrameView::GetDefaultTitleColor(
-    PaintState paint_state) const {
   return kTitleTextDefaultColor;
 }
 
-SkColor PanelFrameView::GetThemedTitleColor(
-    PaintState paint_state) const {
-  return GetThemeProvider()->GetColor(paint_state == PAINT_AS_ACTIVE ?
-      ThemeProperties::COLOR_TAB_TEXT :
-      ThemeProperties::COLOR_BACKGROUND_TAB_TEXT);
-}
-
 const gfx::ImageSkia* PanelFrameView::GetFrameBackground(
-    PaintState paint_state) const {
-  return UsingDefaultTheme(paint_state) ?
-      GetDefaultFrameBackground(paint_state) :
-      GetThemedFrameBackground(paint_state);
-}
-
-const gfx::ImageSkia* PanelFrameView::GetDefaultFrameBackground(
     PaintState paint_state) const {
   switch (paint_state) {
     case PAINT_AS_INACTIVE:
@@ -730,12 +692,6 @@ const gfx::ImageSkia* PanelFrameView::GetDefaultFrameBackground(
       NOTREACHED();
       return GetInactiveBackgroundDefaultImage();
   }
-}
-
-const gfx::ImageSkia* PanelFrameView::GetThemedFrameBackground(
-    PaintState paint_state) const {
-  return GetThemeProvider()->GetImageSkiaNamed(paint_state == PAINT_AS_ACTIVE ?
-      IDR_THEME_TOOLBAR : IDR_THEME_TAB_BACKGROUND);
 }
 
 void PanelFrameView::UpdateControlStyles(PaintState paint_state) {
@@ -753,30 +709,17 @@ void PanelFrameView::PaintFrameBackground(gfx::Canvas* canvas) {
   if (is_frameless_)
     return;
 
-  // For all the non-client area below titlebar, we paint it by using the last
-  // line from the theme image, instead of using the frame color provided
-  // in the theme because the frame color in some themes is very different from
-  // the tab colors we use to render the titlebar and it can produce abrupt
-  // transition which looks bad.
-
   // Left border, below title-bar.
-  canvas->DrawImageInt(
-      *image, 0, titlebar_height - 1, kNonAeroBorderThickness, 1,
-      0, titlebar_height, kNonAeroBorderThickness, height() - titlebar_height,
-      false);
+  canvas->TileImageInt(*image, 0, titlebar_height, kNonAeroBorderThickness,
+      height() - titlebar_height);
 
   // Right border, below title-bar.
-  canvas->DrawImageInt(
-      *image, (width() % image->width()) - kNonAeroBorderThickness,
-      titlebar_height - 1, kNonAeroBorderThickness, 1,
-      width() - kNonAeroBorderThickness, titlebar_height,
-      kNonAeroBorderThickness, height() - titlebar_height, false);
+  canvas->TileImageInt(*image, width() - kNonAeroBorderThickness,
+      titlebar_height, kNonAeroBorderThickness, height() - titlebar_height);
 
   // Bottom border.
-  canvas->DrawImageInt(
-      *image, 0, titlebar_height - 1, image->width(), 1,
-      0, height() - kNonAeroBorderThickness, width(), kNonAeroBorderThickness,
-      false);
+  canvas->TileImageInt(*image, 0, height() - kNonAeroBorderThickness, width(),
+      kNonAeroBorderThickness);
 }
 
 void PanelFrameView::PaintFrameEdge(gfx::Canvas* canvas) {

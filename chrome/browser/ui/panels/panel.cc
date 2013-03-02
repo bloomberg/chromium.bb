@@ -426,9 +426,6 @@ void Panel::Observe(int type,
     case chrome::NOTIFICATION_APP_TERMINATING:
       Close();
       break;
-    case chrome::NOTIFICATION_BROWSER_THEME_CHANGED:
-      native_panel_->NotifyPanelOnUserChangedTheme();
-      break;
     default:
       NOTREACHED() << "Received unexpected notification " << type;
   }

@@ -16,7 +16,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
-#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/gtk_window_util.h"
 #include "chrome/browser/ui/gtk/panels/panel_titlebar_gtk.h"
@@ -30,7 +29,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "ui/base/accelerators/platform_accelerator_gtk.h"
 #include "ui/base/gtk/gtk_compat.h"
@@ -68,7 +66,7 @@ const int kResizeAreaCornerSize = 16;
 const SkColor kActiveBackgroundDefaultColor = SkColorSetRGB(0x3a, 0x3d, 0x3d);
 const SkColor kInactiveBackgroundDefaultColor = SkColorSetRGB(0x7a, 0x7c, 0x7c);
 const SkColor kAttentionBackgroundDefaultColor =
-    SkColorSetRGB(0xff, 0xab, 0x57);
+    SkColorSetRGB(0x53, 0xa9, 0x3f);
 const SkColor kMinimizeBackgroundDefaultColor = SkColorSetRGB(0xf5, 0xf4, 0xf0);
 const SkColor kMinimizeBorderDefaultColor = SkColorSetRGB(0xc9, 0xc9, 0xc9);
 
@@ -445,16 +443,6 @@ gboolean PanelGtk::OnKeyPress(GtkWidget* widget, GdkEventKey* event) {
   return TRUE;
 }
 
-bool PanelGtk::UsingDefaultTheme() const {
-  // No theme is provided for attention painting.
-  if (paint_state_ == PAINT_FOR_ATTENTION)
-    return true;
-
-  GtkThemeService* theme_provider = GtkThemeService::GetFrom(panel_->profile());
-  return theme_provider->UsingDefaultTheme() ||
-      theme_provider->UsingNativeTheme();
-}
-
 bool PanelGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) const {
   // Only detect the window edge when panels can be resized by the user.
   // This method is used by the base class to detect when the cursor has
@@ -510,11 +498,6 @@ bool PanelGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) const {
 }
 
 gfx::Image PanelGtk::GetFrameBackground() const {
-  return UsingDefaultTheme() ?
-      GetDefaultFrameBackground() : GetThemedFrameBackground();
-}
-
-gfx::Image PanelGtk::GetDefaultFrameBackground() const {
   switch (paint_state_) {
     case PAINT_AS_INACTIVE:
       return GetInactiveBackgroundDefaultImage();
@@ -528,12 +511,6 @@ gfx::Image PanelGtk::GetDefaultFrameBackground() const {
       NOTREACHED();
       return GetInactiveBackgroundDefaultImage();
   }
-}
-
-gfx::Image PanelGtk::GetThemedFrameBackground() const {
-  GtkThemeService* theme_provider = GtkThemeService::GetFrom(panel_->profile());
-  return theme_provider->GetImageNamed(paint_state_ == PAINT_AS_ACTIVE ?
-      IDR_THEME_TOOLBAR : IDR_THEME_TAB_BACKGROUND);
 }
 
 gboolean PanelGtk::OnCustomFrameExpose(GtkWidget* widget,
@@ -879,11 +856,6 @@ void PanelGtk::UpdatePanelLoadingAnimations(bool should_animate) {
 
 void PanelGtk::LoadingAnimationCallback() {
   titlebar_->UpdateThrobber(panel_->GetWebContents());
-}
-
-void PanelGtk::NotifyPanelOnUserChangedTheme() {
-  titlebar_->UpdateTextColor();
-  InvalidateWindow();
 }
 
 void PanelGtk::PanelWebContentsFocused(content::WebContents* contents) {

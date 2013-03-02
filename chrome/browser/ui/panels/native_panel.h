@@ -45,7 +45,6 @@ class NativePanel {
   virtual gfx::NativeWindow GetNativePanelWindow() = 0;
   virtual void UpdatePanelTitleBar() = 0;
   virtual void UpdatePanelLoadingAnimations(bool should_animate) = 0;
-  virtual void NotifyPanelOnUserChangedTheme() = 0;
   virtual void PanelWebContentsFocused(content::WebContents* contents) = 0;
   virtual void PanelCut() = 0;
   virtual void PanelCopy() = 0;

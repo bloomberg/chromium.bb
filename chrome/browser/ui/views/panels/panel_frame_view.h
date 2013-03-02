@@ -71,7 +71,6 @@ class PanelFrameView : public views::NonClientFrameView,
   virtual std::string GetClassName() const OVERRIDE;
   virtual gfx::Size GetMinimumSize() OVERRIDE;
   virtual gfx::Size GetMaximumSize() OVERRIDE;
-  virtual ui::ThemeProvider* GetThemeProvider() const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
@@ -89,10 +88,7 @@ class PanelFrameView : public views::NonClientFrameView,
 
   int TitlebarHeight() const;
 
-  bool UsingDefaultTheme(PaintState paint_state) const;
   const gfx::ImageSkia* GetFrameBackground(PaintState paint_state) const;
-  const gfx::ImageSkia* GetDefaultFrameBackground(PaintState paint_state) const;
-  const gfx::ImageSkia* GetThemedFrameBackground(PaintState paint_state) const;
 
   // Update control styles to indicate if the titlebar is active or not.
   void UpdateControlStyles(PaintState paint_state);
@@ -103,8 +99,6 @@ class PanelFrameView : public views::NonClientFrameView,
 
   // Retrieves the drawing metrics based on the current painting state.
   SkColor GetTitleColor(PaintState paint_state) const;
-  SkColor GetDefaultTitleColor(PaintState paint_state) const;
-  SkColor GetThemedTitleColor(PaintState paint_state) const;
 
   static const char kViewClassName[];
 

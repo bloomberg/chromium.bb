@@ -8,12 +8,9 @@
 
 #include "base/logging.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "chrome/browser/themes/theme_properties.h"
-#include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/hover_image_button.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/panels/panel_window_controller_cocoa.h"
-#import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/tracking_area.h"
 #import "chrome/browser/ui/panels/panel_constants.h"
 #include "grit/generated_resources.h"
@@ -145,25 +142,13 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 }
 
 - (void)drawRect:(NSRect)rect {
-  ThemeService* theme =
-      static_cast<ThemeService*>([[self window] themeProvider]);
-
-  NSColor* titleColor = nil;
-
   if (isDrawingAttention_) {
-    // Use system highlight color for DrawAttention state.
-    NSColor* attentionColor = [NSColor selectedTextBackgroundColor];
+    NSColor* attentionColor = [NSColor colorWithCalibratedRed:0x53/255.0
+                                                        green:0xa9/255.0
+                                                         blue:0x3f/255.0
+                                                        alpha:1.0];
     [attentionColor set];
     NSRectFillUsingOperation([self bounds], NSCompositeSourceOver);
-    // Cover it with semitransparent gradient for better look.
-    NSColor* startColor = [NSColor colorWithCalibratedWhite:1.0 alpha:0.2];
-    NSColor* endColor = [NSColor colorWithCalibratedWhite:0.0 alpha:0.2];
-    scoped_nsobject<NSGradient> gradient(
-      [[NSGradient alloc] initWithStartingColor:startColor
-                                    endingColor:endColor]);
-    [gradient drawInRect:[self bounds] angle:270.0];
-
-    titleColor = [attentionColor gtm_legibleTextColor];
 
     if ([glintAnimation_ isAnimating]) {
       scoped_nsobject<NSGradient> glint([NSGradient alloc]);
@@ -188,39 +173,7 @@ static NSEvent* MakeMouseEvent(NSEventType type,
                      radius:gradientRadius
                     options:NSGradientDrawsBeforeStartingLocation];
     }
-  } else if (theme && !theme->UsingDefaultTheme()) {
-    NSColor* backgroundColor = nil;
-    if ([[self window] isMainWindow]) {
-      backgroundColor = theme->GetNSImageColorNamed(IDR_THEME_TOOLBAR, true);
-    } else {
-      // Based on -[TabView drawRect:], we need to check if the theme has an
-      // IDR_THEME_TAB_BACKGROUND or IDR_THEME_FRAME resource; otherwise,
-      // we'll potentially end up with a bizarre looking blue background for
-      // inactive tabs, which looks really out of place on a Mac.
-      if (theme->HasCustomImage(IDR_THEME_TAB_BACKGROUND) ||
-          theme->HasCustomImage(IDR_THEME_FRAME)) {
-        backgroundColor =
-            theme->GetNSImageColorNamed(IDR_THEME_TAB_BACKGROUND, true);
-      } else {
-        backgroundColor = [[self window] backgroundColor];  // Fallback.
-      }
-    }
-    // Fill with white to avoid bleeding the system titlebar through
-    // semitransparent theme images.
-    [[NSColor whiteColor] set];
-    NSRectFill([self bounds]);
-
-    NSPoint phase = [[self window] themePatternPhase];
-    [[NSGraphicsContext currentContext] setPatternPhase:phase];
-    DCHECK(backgroundColor);
-    [backgroundColor set];
-    NSRectFillUsingOperation([self bounds], NSCompositeSourceOver);
-
-    titleColor = [[self window] isMainWindow]
-        ? theme->GetNSColor(ThemeProperties::COLOR_TAB_TEXT, true)
-        : theme->GetNSColor(ThemeProperties::COLOR_BACKGROUND_TAB_TEXT, true);
   } else {
-    // Default theme or no theme.
     BOOL isActive = [[self window] isMainWindow];
 
     // If titlebar is close to minimized state or is at minimized state and only
@@ -257,14 +210,12 @@ static NSEvent* MakeMouseEvent(NSEventType type,
       [backgroundColor set];
       NSRectFill([self bounds]);
     }
-
-    titleColor = [NSColor colorWithCalibratedRed:0xf9/255.0
-                                           green:0xf9/255.0
-                                            blue:0xf9/255.0
-                                           alpha:1.0];
   }
 
-  DCHECK(titleColor);
+  NSColor* titleColor = [NSColor colorWithCalibratedRed:0xf9/255.0
+                                                  green:0xf9/255.0
+                                                   blue:0xf9/255.0
+                                                  alpha:1.0];
   [title_ setTextColor:titleColor];
 }
 
@@ -331,11 +282,6 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   // Set autoresizing behavior: glued to edges on left, top and right.
   [self setAutoresizingMask:(NSViewMinYMargin | NSViewWidthSizable)];
 
-  [[NSNotificationCenter defaultCenter]
-      addObserver:self
-         selector:@selector(didChangeTheme:)
-             name:kBrowserThemeDidChangeNotification
-           object:nil];
   [[NSNotificationCenter defaultCenter]
       addObserver:self
          selector:@selector(didChangeFrame:)
@@ -458,10 +404,6 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   // Update buttons first because title layout depends on buttons layout.
   [self updateCustomButtonsLayout];
   [self updateIconAndTitleLayout];
-}
-
-- (void)didChangeTheme:(NSNotification*)notification {
-  [self setNeedsDisplay:YES];
 }
 
 - (void)didChangeMainWindow:(NSNotification*)notification {

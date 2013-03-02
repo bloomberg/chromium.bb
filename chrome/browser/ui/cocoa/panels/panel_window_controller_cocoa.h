@@ -15,7 +15,6 @@
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/chrome_browser_window.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
-#import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/tracking_area.h"
 #include "chrome/browser/ui/panels/panel.h"
 
@@ -51,10 +50,6 @@ class PanelCocoa;
 
 // Load the window nib and do any Cocoa-specific initialization.
 - (id)initWithPanel:(PanelCocoa*)window;
-
-- (ui::ThemeProvider*)themeProvider;
-- (ThemedWindowStyle)themedWindowStyle;
-- (NSPoint)themePatternPhase;
 
 - (void)webContentsInserted:(content::WebContents*)contents;
 - (void)webContentsDetached:(content::WebContents*)contents;
