@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/tabs/tab.h"
-
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
+
+#include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/views/test/views_test_base.h"
@@ -68,6 +69,19 @@ class TabTest : public views::ViewsTestBase {
 
   static SkColor GetIconDominantColor(const Tab& tab) {
     return tab.icon_dominant_color_;
+  }
+
+  static bool IconAnimationInvariant(const Tab& tab) {
+    if ((tab.data().audio_state != TabRendererData::AUDIO_STATE_NONE) ||
+        (tab.data().capture_state != TabRendererData::CAPTURE_STATE_NONE))
+      return HasIconAnimation(tab);
+    else
+      return !HasIconAnimation(tab);
+  }
+
+ private:
+  static bool HasIconAnimation(const Tab& tab) {
+    return (tab.icon_animation_.get() != NULL);
   }
 };
 
@@ -146,4 +160,91 @@ TEST_F(TabTest, IconDominantColor) {
   // Icon updates automatically since we're in immersive mode and the image
   // changed.
   EXPECT_EQ(SK_ColorGREEN, GetIconDominantColor(tab));
+}
+
+TEST_F(TabTest, ActivityIndicators) {
+  FakeTabController controller;
+  Tab tab(&controller);
+
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
+  bitmap.allocPixels();
+
+  TabRendererData data;
+  data.favicon = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+  tab.SetData(data);
+
+  // Audio starts and stops.
+  data.audio_state = TabRendererData::AUDIO_STATE_PLAYING;
+  tab.SetData(data);
+  EXPECT_TRUE(IconAnimationInvariant(tab));
+  EXPECT_EQ(TabRendererData::AUDIO_STATE_PLAYING, tab.data().audio_state);
+  EXPECT_EQ(TabRendererData::CAPTURE_STATE_NONE, tab.data().capture_state);
+  data.audio_state = TabRendererData::AUDIO_STATE_NONE;
+  tab.SetData(data);
+  EXPECT_TRUE(IconAnimationInvariant(tab));
+  EXPECT_EQ(TabRendererData::AUDIO_STATE_NONE, tab.data().audio_state);
+  EXPECT_EQ(TabRendererData::CAPTURE_STATE_NONE, tab.data().capture_state);
+  EXPECT_TRUE(IconAnimationInvariant(tab));
+
+  // Capture starts and stops.
+  data.capture_state = TabRendererData::CAPTURE_STATE_RECORDING;
+  tab.SetData(data);
+  EXPECT_TRUE(IconAnimationInvariant(tab));
+  EXPECT_EQ(TabRendererData::AUDIO_STATE_NONE, tab.data().audio_state);
+  EXPECT_EQ(TabRendererData::CAPTURE_STATE_RECORDING, tab.data().capture_state);
+  data.capture_state = TabRendererData::CAPTURE_STATE_NONE;
+  tab.SetData(data);
+  EXPECT_TRUE(IconAnimationInvariant(tab));
+  EXPECT_EQ(TabRendererData::AUDIO_STATE_NONE, tab.data().audio_state);
+  EXPECT_EQ(TabRendererData::CAPTURE_STATE_NONE, tab.data().capture_state);
+  EXPECT_TRUE(IconAnimationInvariant(tab));
+
+  // Audio starts then capture starts, then audio stops then capture stops.
+  data.audio_state = TabRendererData::AUDIO_STATE_PLAYING;
+  tab.SetData(data);
+  data.capture_state = TabRendererData::CAPTURE_STATE_RECORDING;
+  tab.SetData(data);
+  EXPECT_TRUE(IconAnimationInvariant(tab));
+  EXPECT_EQ(TabRendererData::AUDIO_STATE_NONE, tab.data().audio_state);
+  EXPECT_EQ(TabRendererData::CAPTURE_STATE_RECORDING, tab.data().capture_state);
+
+  data.title = ASCIIToUTF16("test X");
+  tab.SetData(data);
+  EXPECT_TRUE(IconAnimationInvariant(tab));
+
+  data.audio_state = TabRendererData::AUDIO_STATE_NONE;
+  tab.SetData(data);
+  EXPECT_TRUE(IconAnimationInvariant(tab));
+  EXPECT_EQ(TabRendererData::CAPTURE_STATE_RECORDING, tab.data().capture_state);
+  data.capture_state = TabRendererData::CAPTURE_STATE_NONE;
+  tab.SetData(data);
+  EXPECT_TRUE(IconAnimationInvariant(tab));
+  EXPECT_EQ(TabRendererData::AUDIO_STATE_NONE, tab.data().audio_state);
+  EXPECT_EQ(TabRendererData::CAPTURE_STATE_NONE, tab.data().capture_state);
+
+  // Audio starts then capture starts, then capture stops then audio stops.
+  data.audio_state = TabRendererData::AUDIO_STATE_PLAYING;
+  tab.SetData(data);
+  data.capture_state = TabRendererData::CAPTURE_STATE_RECORDING;
+  tab.SetData(data);
+  EXPECT_TRUE(IconAnimationInvariant(tab));
+  EXPECT_EQ(TabRendererData::AUDIO_STATE_NONE, tab.data().audio_state);
+  EXPECT_EQ(TabRendererData::CAPTURE_STATE_RECORDING, tab.data().capture_state);
+
+  data.title = ASCIIToUTF16("test Y");
+  tab.SetData(data);
+  EXPECT_TRUE(IconAnimationInvariant(tab));
+
+  data.capture_state = TabRendererData::CAPTURE_STATE_NONE;
+  tab.SetData(data);
+  EXPECT_TRUE(IconAnimationInvariant(tab));
+  EXPECT_EQ(TabRendererData::CAPTURE_STATE_NONE, tab.data().capture_state);
+
+  data.audio_state = TabRendererData::AUDIO_STATE_NONE;
+  tab.SetData(data);
+  EXPECT_TRUE(IconAnimationInvariant(tab));
+  EXPECT_EQ(TabRendererData::AUDIO_STATE_NONE, tab.data().audio_state);
+  EXPECT_EQ(TabRendererData::CAPTURE_STATE_NONE, tab.data().capture_state);
+  EXPECT_TRUE(IconAnimationInvariant(tab));
 }

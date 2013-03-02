@@ -515,22 +515,20 @@ void Tab::SetData(const TabRendererData& data) {
       StartCrashAnimation();
 #endif
     }
-  } else if ((data_.capture_state == TabRendererData::CAPTURE_STATE_NONE) &&
-             (old.capture_state != TabRendererData::CAPTURE_STATE_NONE)) {
+  } else if (!data_.CaptureActive() && old.CaptureActive()) {
     StopIconAnimation();
-  } else if ((data_.capture_state != TabRendererData::CAPTURE_STATE_NONE) &&
-             (old.capture_state == TabRendererData::CAPTURE_STATE_NONE)) {
+    if (data_.AudioActive())
+      StartAudioPlayingAnimation();
+  } else if (data_.CaptureActive() && !old.CaptureActive()) {
     // Capture indicator overrides the audio indicator if presently shown.
     old.audio_state = TabRendererData::AUDIO_STATE_NONE;
     data_.audio_state = TabRendererData::AUDIO_STATE_NONE;
     StartRecordingAnimation();
-  } else if (data_.capture_state == TabRendererData::CAPTURE_STATE_NONE) {
+  } else if (!data_.CaptureActive()) {
     // Start or stop the audio indicator only if not capturing.
-    if ((data_.audio_state == TabRendererData::AUDIO_STATE_NONE) &&
-        (old.audio_state != TabRendererData::AUDIO_STATE_NONE)) {
+    if (!data_.AudioActive() && old.AudioActive()) {
       StopIconAnimation();
-    } else if ((data_.audio_state != TabRendererData::AUDIO_STATE_NONE) &&
-               (old.audio_state == TabRendererData::AUDIO_STATE_NONE)) {
+    } else if (data_.AudioActive() && !old.AudioActive()) {
       StartAudioPlayingAnimation();
     }
   } else {

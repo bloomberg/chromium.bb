@@ -49,6 +49,14 @@ struct CHROME_VIEWS_EXPORT TabRendererData {
             crashed_status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION);
   }
 
+  bool AudioActive() const {
+    return audio_state != AUDIO_STATE_NONE;
+  }
+
+  bool CaptureActive() const {
+    return capture_state != CAPTURE_STATE_NONE;
+  }
+
   // Returns true if the TabRendererData is same as given |data|.
   bool Equals(const TabRendererData& data);
 
