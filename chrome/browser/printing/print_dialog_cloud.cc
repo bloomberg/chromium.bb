@@ -335,38 +335,51 @@ void CloudPrintFlowHandler::RegisterMessages() {
   }
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                  content::Source<NavigationController>(controller));
+  registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+                 content::Source<NavigationController>(controller));
 }
 
 void CloudPrintFlowHandler::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == content::NOTIFICATION_LOAD_STOP) {
-    // Take the opportunity to set some (minimal) additional
-    // script permissions required for the web UI.
-    GURL url = web_ui()->GetWebContents()->GetURL();
-    GURL dialog_url = CloudPrintURL(
-        Profile::FromWebUI(web_ui())).GetCloudPrintServiceDialogURL();
-    if (url.host() == dialog_url.host() &&
-        url.path() == dialog_url.path() &&
-        url.scheme() == dialog_url.scheme()) {
-      RenderViewHost* rvh = web_ui()->GetWebContents()->GetRenderViewHost();
-      if (rvh) {
-        webkit_glue::WebPreferences webkit_prefs = rvh->GetWebkitPreferences();
-        webkit_prefs.allow_scripts_to_close_windows = true;
-        rvh->UpdateWebkitPreferences(webkit_prefs);
-      } else {
-        NOTREACHED();
-      }
+  switch (type) {
+    case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
+      NavigationEntry* entry =
+          web_ui()->GetWebContents()->GetController().GetActiveEntry();
+      if (entry)
+        NavigationToURLDidCloseDialog(entry->GetURL());
+      break;
     }
+    case content::NOTIFICATION_LOAD_STOP: {
+      // Take the opportunity to set some (minimal) additional
+      // script permissions required for the web UI.
+      GURL url = web_ui()->GetWebContents()->GetURL();
+      GURL dialog_url = CloudPrintURL(
+          Profile::FromWebUI(web_ui())).GetCloudPrintServiceDialogURL();
+      if (url.host() == dialog_url.host() &&
+          url.path() == dialog_url.path() &&
+          url.scheme() == dialog_url.scheme()) {
+        RenderViewHost* rvh = web_ui()->GetWebContents()->GetRenderViewHost();
+        if (rvh) {
+          webkit_glue::WebPreferences webkit_prefs =
+              rvh->GetWebkitPreferences();
+          webkit_prefs.allow_scripts_to_close_windows = true;
+          rvh->UpdateWebkitPreferences(webkit_prefs);
+        } else {
+          NOTREACHED();
+        }
+      }
 
-    // Choose one or the other.  If you need to debug, bring up the
-    // debugger.  You can then use the various chrome.send()
-    // registrations above to kick of the various function calls,
-    // including chrome.send("SendPrintData") in the javaScript
-    // console and watch things happen with:
-    // HandleShowDebugger(NULL);
-    HandleSendPrintData(NULL);
+      // Choose one or the other.  If you need to debug, bring up the
+      // debugger.  You can then use the various chrome.send()
+      // registrations above to kick of the various function calls,
+      // including chrome.send("SendPrintData") in the javaScript
+      // console and watch things happen with:
+      // HandleShowDebugger(NULL);
+      HandleSendPrintData(NULL);
+      break;
+    }
   }
 }
 
