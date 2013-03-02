@@ -27,7 +27,7 @@ class WorkerPoolTaskImpl : public internal::WorkerPoolTask {
       : internal::WorkerPoolTask(reply),
         task_(task) {}
 
-  virtual void WillRunOnThread(base::Thread* thread) OVERRIDE {}
+  virtual void WillRunOnThread(unsigned thread_index) OVERRIDE {}
 
   virtual void Run(RenderingStats* rendering_stats) OVERRIDE {
     task_.Run(rendering_stats);
@@ -76,11 +76,13 @@ void WorkerPoolTask::DidComplete() {
 
 }  // namespace internal
 
-WorkerPool::Worker::Worker(WorkerPool* worker_pool, const std::string name)
+WorkerPool::Worker::Worker(
+    WorkerPool* worker_pool, const std::string name, unsigned index)
     : base::Thread(name.c_str()),
       worker_pool_(worker_pool),
       rendering_stats_(make_scoped_ptr(new RenderingStats)),
-      record_rendering_stats_(false) {
+      record_rendering_stats_(false),
+      index_(index) {
   Start();
   DCHECK(IsRunning());
 }
@@ -103,6 +105,8 @@ void WorkerPool::Worker::StopAfterCompletingAllPendingTasks() {
 void WorkerPool::Worker::PostTask(scoped_ptr<internal::WorkerPoolTask> task) {
   RenderingStats* stats =
       record_rendering_stats_ ? rendering_stats_.get() : NULL;
+
+  task->WillRunOnThread(index_);
 
   message_loop_proxy()->PostTask(
       FROM_HERE,
@@ -166,10 +170,12 @@ WorkerPool::WorkerPool(WorkerPoolClient* client, size_t num_threads)
       run_cheap_tasks_pending_(false) {
   const std::string thread_name_prefix = kWorkerThreadNamePrefix;
   while (workers_.size() < num_threads) {
-    int thread_number = workers_.size() + 1;
-    workers_.push_back(new Worker(
-        this,
-        thread_name_prefix + StringPrintf("Worker%d", thread_number).c_str()));
+    unsigned thread_index = workers_.size();
+    workers_.push_back(
+        new Worker(this,
+                   thread_name_prefix +
+                   StringPrintf("Worker%d", thread_index + 1).c_str(),
+                   thread_index));
   }
   base::subtle::Acquire_Store(&pending_task_count_, 0);
 }
@@ -344,7 +350,6 @@ void WorkerPool::PostTask(
     workers_need_sorting_ = true;
 
     Worker* worker = GetWorkerForNextTask();
-    task->WillRunOnThread(worker);
     worker->PostTask(task.Pass());
   }
   ScheduleCheckForCompletedTasks();

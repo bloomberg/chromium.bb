@@ -23,7 +23,7 @@ const int kPixelDistanceToRecord = 8000;
 
 namespace cc {
 
-PicturePile::PicturePile() {
+PicturePile::PicturePile() : num_raster_threads_(0) {
 }
 
 PicturePile::~PicturePile() {
@@ -100,8 +100,10 @@ void PicturePile::Update(
 
     for (PictureList::iterator pic = pic_list.begin();
          pic != pic_list.end(); ++pic) {
-      if (!(*pic)->HasRecording())
+      if (!(*pic)->HasRecording()) {
         (*pic)->Record(painter, stats, tile_grid_info_);
+        (*pic)->CloneForDrawing(num_raster_threads_);
+      }
     }
   }
 
@@ -155,10 +157,10 @@ void PicturePile::InvalidateRect(
 
 
 void PicturePile::PushPropertiesTo(PicturePileImpl* other) {
-  // TODO(enne): Don't clear clones or push anything if nothing has changed
+  // TODO(enne): Don't create clones or push anything if nothing has changed
   // on this layer this frame.
   PicturePileBase::PushPropertiesTo(other);
-  other->clones_.clear();
+  other->CloneForDrawing(num_raster_threads_);
 }
 
 }  // namespace cc

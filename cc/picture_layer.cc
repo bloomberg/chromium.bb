@@ -51,6 +51,7 @@ void PictureLayer::setLayerTreeHost(LayerTreeHost* host) {
   if (host) {
     pile_->SetMinContentsScale(host->settings().minimumContentsScale);
     pile_->SetTileGridSize(host->settings().defaultTileSize);
+    pile_->set_num_raster_threads(host->settings().numRasterThreads);
   }
 }
 

@@ -29,8 +29,12 @@ class CC_EXPORT Picture
   const gfx::Rect& LayerRect() const { return layer_rect_; }
   const gfx::Rect& OpaqueRect() const { return opaque_rect_; }
 
-  // Make a thread-safe clone for rasterizing with.
-  scoped_refptr<Picture> Clone() const;
+  // Get thread-safe clone for rasterizing with on a specific thread.
+  scoped_refptr<Picture> GetCloneForDrawingOnThread(
+      unsigned thread_index) const;
+
+  // Make thread-safe clones for rasterizing with.
+  void CloneForDrawing(int num_threads);
 
   // Record a paint operation. To be able to safely use this SkPicture for
   // playback on a different thread this can only be called once.
@@ -64,6 +68,9 @@ class CC_EXPORT Picture
   gfx::Rect layer_rect_;
   gfx::Rect opaque_rect_;
   skia::RefPtr<SkPicture> picture_;
+
+  typedef std::vector<scoped_refptr<Picture> > PictureVector;
+  PictureVector clones_;
 
   friend class base::RefCountedThreadSafe<Picture>;
   DISALLOW_COPY_AND_ASSIGN(Picture);

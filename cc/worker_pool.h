@@ -25,7 +25,7 @@ class WorkerPoolTask {
 
   // Called when the task is scheduled to run on a thread that isn't the
   // origin thread. Called on the origin thread.
-  virtual void WillRunOnThread(base::Thread* thread) = 0;
+  virtual void WillRunOnThread(unsigned thread_index) = 0;
 
   virtual void Run(RenderingStats* rendering_stats) = 0;
 
@@ -85,7 +85,7 @@ class WorkerPool {
  protected:
   class Worker : public base::Thread {
    public:
-    Worker(WorkerPool* worker_pool, const std::string name);
+    Worker(WorkerPool* worker_pool, const std::string name, unsigned index);
     virtual ~Worker();
 
     // This must be called before the destructor.
@@ -120,6 +120,7 @@ class WorkerPool {
     ScopedPtrDeque<internal::WorkerPoolTask> pending_tasks_;
     scoped_ptr<RenderingStats> rendering_stats_;
     bool record_rendering_stats_;
+    unsigned index_;
   };
 
   WorkerPool(WorkerPoolClient* client, size_t num_threads);

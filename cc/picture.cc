@@ -39,12 +39,29 @@ Picture::Picture(const skia::RefPtr<SkPicture>& picture,
 Picture::~Picture() {
 }
 
-scoped_refptr<Picture> Picture::Clone() const {
-  // SkPicture is not thread-safe to rasterize with, so return a thread-safe
-  // clone of it.
+scoped_refptr<Picture> Picture::GetCloneForDrawingOnThread(
+    unsigned thread_index) const {
+  // SkPicture is not thread-safe to rasterize with, this returns a clone
+  // to rasterize with on a specific thread.
+  CHECK_GT(clones_.size(), thread_index);
+  return clones_[thread_index];
+}
+
+void Picture::CloneForDrawing(int num_threads) {
+  TRACE_EVENT1("cc", "Picture::CloneForDrawing", "num_threads", num_threads);
+
   DCHECK(picture_);
-  skia::RefPtr<SkPicture> clone = skia::AdoptRef(picture_->clone());
-  return make_scoped_refptr(new Picture(clone, layer_rect_, opaque_rect_));
+  scoped_array<SkPicture> clones(new SkPicture[num_threads]);
+  picture_->clone(&clones[0], num_threads);
+
+  clones_.clear();
+  for (int i = 0; i < num_threads; i++) {
+    scoped_refptr<Picture> clone = make_scoped_refptr(
+        new Picture(skia::AdoptRef(new SkPicture(clones[i])),
+                    layer_rect_,
+                    opaque_rect_));
+    clones_.push_back(clone);
+  }
 }
 
 void Picture::Record(ContentLayerClient* painter,

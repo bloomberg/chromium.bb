@@ -27,36 +27,31 @@ PicturePileImpl::~PicturePileImpl() {
 }
 
 PicturePileImpl* PicturePileImpl::GetCloneForDrawingOnThread(
-    base::Thread* thread) {
-  // Do we have a clone for this thread yet?
-  CloneMap::iterator it = clones_.find(thread->thread_id());
-  if (it != clones_.end())
-    return it->second;
-
-  // Create clone for this thread.
-  scoped_refptr<PicturePileImpl> clone = CloneForDrawing();
-  clones_[thread->thread_id()] = clone;
-  return clone;
+    unsigned thread_index) const {
+  CHECK_GT(clones_.size(), thread_index);
+  return clones_[thread_index];
 }
 
-scoped_refptr<PicturePileImpl> PicturePileImpl::CloneForDrawing() const {
-  TRACE_EVENT0("cc", "PicturePileImpl::CloneForDrawing");
-  scoped_refptr<PicturePileImpl> clone = Create();
-  clone->tiling_ = tiling_;
-  for (PictureListMap::const_iterator map_iter = picture_list_map_.begin();
-       map_iter != picture_list_map_.end(); ++map_iter) {
-    const PictureList& this_pic_list = map_iter->second;
-    PictureList& clone_pic_list = clone->picture_list_map_[map_iter->first];
-    for (PictureList::const_iterator pic_iter = this_pic_list.begin();
-         pic_iter != this_pic_list.end(); ++pic_iter) {
-      clone_pic_list.push_back((*pic_iter)->Clone());
+void PicturePileImpl::CloneForDrawing(int num_threads) {
+  clones_.clear();
+  for (int i = 0; i < num_threads; i++) {
+    scoped_refptr<PicturePileImpl> clone = Create();
+    clone->tiling_ = tiling_;
+    for (PictureListMap::const_iterator map_iter = picture_list_map_.begin();
+         map_iter != picture_list_map_.end(); ++map_iter) {
+      const PictureList& this_pic_list = map_iter->second;
+      PictureList& clone_pic_list = clone->picture_list_map_[map_iter->first];
+      for (PictureList::const_iterator pic_iter = this_pic_list.begin();
+           pic_iter != this_pic_list.end(); ++pic_iter) {
+        clone_pic_list.push_back((*pic_iter)->GetCloneForDrawingOnThread(i));
+      }
     }
-  }
-  clone->min_contents_scale_ = min_contents_scale_;
-  clone->set_slow_down_raster_scale_factor(
-      slow_down_raster_scale_factor_for_debug_);
+    clone->min_contents_scale_ = min_contents_scale_;
+    clone->set_slow_down_raster_scale_factor(
+        slow_down_raster_scale_factor_for_debug_);
 
-  return clone;
+    clones_.push_back(clone);
+  }
 }
 
 void PicturePileImpl::Raster(

@@ -8,7 +8,6 @@
 #include <list>
 #include <map>
 
-#include "base/threading/thread.h"
 #include "cc/cc_export.h"
 #include "cc/picture_pile_base.h"
 #include "skia/ext/refptr.h"
@@ -22,10 +21,10 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
   static scoped_refptr<PicturePileImpl> Create();
 
   // Get paint-safe version of this picture for a specific thread.
-  PicturePileImpl* GetCloneForDrawingOnThread(base::Thread*);
+  PicturePileImpl* GetCloneForDrawingOnThread(unsigned thread_index) const;
 
-  // Clone a paint-safe version of this picture.
-  scoped_refptr<PicturePileImpl> CloneForDrawing() const;
+  // Make paint-safe versions of this picture pile.
+  void CloneForDrawing(int num_threads);
 
   // Raster a subrect of this PicturePileImpl into the given canvas.
   // It's only safe to call paint on a cloned version.
@@ -57,9 +56,8 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
   PicturePileImpl();
   virtual ~PicturePileImpl();
 
-  typedef std::map<base::PlatformThreadId, scoped_refptr<PicturePileImpl> >
-      CloneMap;
-  CloneMap clones_;
+  typedef std::vector<scoped_refptr<PicturePileImpl> > PicturePileVector;
+  PicturePileVector clones_;
 
   int slow_down_raster_scale_factor_for_debug_;
 

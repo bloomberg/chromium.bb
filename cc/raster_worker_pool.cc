@@ -21,8 +21,8 @@ class RasterWorkerPoolTaskImpl : public internal::WorkerPoolTask {
     DCHECK(picture_pile_);
   }
 
-  virtual void WillRunOnThread(base::Thread* thread) OVERRIDE {
-    picture_pile_ = picture_pile_->GetCloneForDrawingOnThread(thread);
+  virtual void WillRunOnThread(unsigned thread_index) OVERRIDE {
+    picture_pile_ = picture_pile_->GetCloneForDrawingOnThread(thread_index);
   }
 
   virtual void Run(RenderingStats* rendering_stats) OVERRIDE {
