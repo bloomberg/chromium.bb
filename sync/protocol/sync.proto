@@ -569,6 +569,11 @@ message ClientToServerMessage {
   // The client should set this on every message sent to the server, though its
   // member fields may often be unset.
   optional ClientStatus client_status = 13;
+
+  // The ID that our invalidation client used to identify itself to the server.
+  // Sending the ID here allows the server to not send notifications of our own
+  // changes to our invalidator.
+  optional string invalidator_client_id = 14;
 };
 
 message CommitResponse {

@@ -128,7 +128,8 @@ class SyncSchedulerTest : public testing::Test {
             connection_.get(), directory(), workers,
             &extensions_activity_monitor_, throttled_data_type_tracker_.get(),
             std::vector<SyncEngineEventListener*>(), NULL, NULL,
-            true  /* enable keystore encryption */));
+            true,  // enable keystore encryption
+            "fake_invalidator_client_id"));
     context_->set_routing_info(routing_info_);
     context_->set_notifications_enabled(true);
     context_->set_account_name("Test");

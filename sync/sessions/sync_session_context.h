@@ -56,7 +56,8 @@ class SYNC_EXPORT_PRIVATE SyncSessionContext {
                      const std::vector<SyncEngineEventListener*>& listeners,
                      DebugInfoGetter* debug_info_getter,
                      TrafficRecorder* traffic_recorder,
-                     bool keystore_encryption_enabled);
+                     bool keystore_encryption_enabled,
+                     const std::string& invalidator_client_id);
 
   ~SyncSessionContext();
 
@@ -130,6 +131,10 @@ class SYNC_EXPORT_PRIVATE SyncSessionContext {
     return client_status_;
   }
 
+  const std::string& invalidator_client_id() const {
+    return invalidator_client_id_;
+  }
+
  private:
   // Rather than force clients to set and null-out various context members, we
   // extend our encapsulation boundary to scoped helpers that take care of this
@@ -177,6 +182,12 @@ class SYNC_EXPORT_PRIVATE SyncSessionContext {
   // we should attempt performing keystore encryption related work, false if
   // the experiment is not enabled.
   bool keystore_encryption_enabled_;
+
+  // This is a copy of the identifier the that the invalidations client used to
+  // register itself with the invalidations server during startup.  We need to
+  // provide this to the sync server when we make changes to enable it to
+  // prevent us from receiving notifications of changes we make ourselves.
+  const std::string invalidator_client_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSessionContext);
 };

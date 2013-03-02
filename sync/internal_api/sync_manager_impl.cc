@@ -415,11 +415,17 @@ void SyncManagerImpl::Init(
   connection_manager_->set_client_id(directory()->cache_guid());
   connection_manager_->AddListener(this);
 
-  // Retrieve and set the sync notifier id.
-  std::string unique_id = directory()->cache_guid();
-  DVLOG(1) << "Read notification unique ID: " << unique_id;
-  allstatus_.SetUniqueId(unique_id);
-  invalidator_->SetUniqueId(unique_id);
+  std::string sync_id = directory()->cache_guid();
+
+  // TODO(rlarocque): The invalidator client ID should be independent from the
+  // sync client ID.  See crbug.com/124142.
+  const std::string invalidator_client_id = sync_id;
+
+  allstatus_.SetSyncId(sync_id);
+  allstatus_.SetInvalidatorClientId(invalidator_client_id);
+
+  DVLOG(1) << "Setting sync client ID: " << sync_id;
+  DVLOG(1) << "Setting invalidator client ID: " << invalidator_client_id;
 
   // Build a SyncSessionContext and store the worker in it.
   DVLOG(1) << "Sync is bringing up SyncSessionContext.";
@@ -434,7 +440,8 @@ void SyncManagerImpl::Init(
       &throttled_data_type_tracker_,
       listeners,
       &debug_info_event_listener_,
-      &traffic_recorder_).Pass();
+      &traffic_recorder_,
+      invalidator_client_id).Pass();
   session_context_->set_account_name(credentials.email);
   scheduler_ = internal_components_factory->BuildScheduler(
       name_, session_context_.get()).Pass();

@@ -57,7 +57,8 @@ class SyncSessionJobTest : public testing::Test {
         std::vector<SyncEngineEventListener*>(),
         NULL,  // |debug_info_getter|
         NULL,  // |traffic_recorder|
-        true   /* |enable keystore encryption| */));
+        true,  // |enable keystore encryption|
+        "fake_invalidator_client_id"));
     context_->set_routing_info(routes_);
   }
 

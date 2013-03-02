@@ -58,7 +58,8 @@ class AllStatus : public SyncEngineEventListener {
   void SetHasKeystoreKey(bool has_keystore_key);
   void SetKeystoreMigrationTime(const base::Time& migration_time);
 
-  void SetUniqueId(const std::string& guid);
+  void SetSyncId(const std::string& sync_id);
+  void SetInvalidatorClientId(const std::string& invalidator_client_id);
 
   void IncrementNudgeCounter(NudgeSource source);
 

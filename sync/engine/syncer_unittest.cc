@@ -226,7 +226,8 @@ class SyncerTest : public testing::Test,
             mock_server_.get(), directory(), workers,
             &extensions_activity_monitor_, throttled_data_type_tracker_.get(),
             listeners, NULL, &traffic_recorder_,
-            true  /* enable keystore encryption */));
+            true,  // enable keystore encryption
+            "fake_invalidator_client_id"));
     context_->set_routing_info(routing_info);
     syncer_ = new Syncer();
     session_.reset(MakeSession());

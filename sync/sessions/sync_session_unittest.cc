@@ -64,7 +64,8 @@ class SyncSessionTest : public testing::Test,
             std::vector<SyncEngineEventListener*>(),
             NULL,
             NULL,
-            true  /* enable keystore encryption */));
+            true,  // enable keystore encryption
+            "fake_invalidator_client_id"));
     context_->set_routing_info(routes_);
 
     session_.reset(MakeSession());

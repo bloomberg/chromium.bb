@@ -179,7 +179,8 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
   StringSyncStat server_url(section_version, "Server URL");
 
   ListValue* section_credentials = AddSection(stats_list, kCredentialsTitle);
-  StringSyncStat client_id(section_credentials, "Client ID");
+  StringSyncStat sync_id(section_credentials, "Sync Client ID");
+  StringSyncStat invalidator_id(section_credentials, "Invalidator Client ID");
   StringSyncStat username(section_credentials, "Username");
   BoolSyncStat is_token_available(section_credentials, "Sync Token Available");
 
@@ -289,8 +290,10 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
 
   server_url.SetValue(service->sync_service_url().spec());
 
-  if (is_status_valid && !full_status.unique_id.empty())
-    client_id.SetValue(full_status.unique_id);
+  if (is_status_valid && !full_status.sync_id.empty())
+    sync_id.SetValue(full_status.sync_id);
+  if (is_status_valid && !full_status.invalidator_client_id.empty())
+    invalidator_id.SetValue(full_status.invalidator_client_id);
   if (service->signin())
     username.SetValue(service->signin()->GetAuthenticatedUsername());
   is_token_available.SetValue(service->IsSyncTokenAvailable());

@@ -363,6 +363,7 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
   AddBagOfChips(session->context()->directory(), msg);
   msg->set_api_key(google_apis::GetAPIKey());
   msg->mutable_client_status()->CopyFrom(session->context()->client_status());
+  msg->set_invalidator_client_id(session->context()->invalidator_client_id());
 
   syncable::Directory* dir = session->context()->directory();
 

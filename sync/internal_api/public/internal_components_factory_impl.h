@@ -31,7 +31,8 @@ class SYNC_EXPORT InternalComponentsFactoryImpl
       ThrottledDataTypeTracker* throttled_data_type_tracker,
       const std::vector<SyncEngineEventListener*>& listeners,
       sessions::DebugInfoGetter* debug_info_getter,
-      TrafficRecorder* traffic_recorder) OVERRIDE;
+      TrafficRecorder* traffic_recorder,
+      const std::string& invalidator_client_id) OVERRIDE;
 
   virtual scoped_ptr<syncable::DirectoryBackingStore>
   BuildDirectoryBackingStore(
