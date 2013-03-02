@@ -32,14 +32,13 @@ class CopyTextureCHROMIUMResourceManager {
 
   // The attributes used during invocation of the extension.
   static const GLuint kVertexPositionAttrib = 0;
-  static const GLuint kVertexTextureAttrib = 1;
 
  private:
   bool initialized_;
 
   static const int kNumPrograms = 12;
   GLuint programs_[kNumPrograms];
-  GLuint buffer_ids_[2];
+  GLuint buffer_id_;
   GLuint framebuffer_;
   GLuint sampler_locations_[kNumPrograms];
 
