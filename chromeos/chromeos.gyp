@@ -301,6 +301,8 @@
         'dbus/ibus/mock_ibus_engine_service.h',
         'dbus/ibus/mock_ibus_panel_service.cc',
         'dbus/ibus/mock_ibus_panel_service.h',
+        'ime/mock_ibus_daemon_controller.cc',
+        'ime/mock_ibus_daemon_controller.h',
       ],
       'include_dirs': [
         '..',
