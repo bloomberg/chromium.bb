@@ -203,10 +203,16 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   TestOverscrollNavigation(true);
 }
 
-// Disabled because the test always fails the first time it runs on the bots,
-// and usually but not always passes second-try (See crbug.com/179532).
+// Disabled because the test always fails the first time it runs on the Win Aura
+// bots, and usually but not always passes second-try (See crbug.com/179532).
+#if defined(OS_WIN)
+#define MAYBE_QuickOverscrollDirectionChange \
+        DISABLED_QuickOverscrollDirectionChange
+#else
+#define MAYBE_QuickOverscrollDirectionChange QuickOverscrollDirectionChange
+#endif
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
-                       DISABLED_QuickOverscrollDirectionChange) {
+                       MAYBE_QuickOverscrollDirectionChange) {
   ASSERT_NO_FATAL_FAILURE(
       StartTestWithPage("files/overscroll_navigation.html"));
   WebContentsImpl* web_contents =
