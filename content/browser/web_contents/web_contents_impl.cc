@@ -537,6 +537,10 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       command_line.HasSwitch(switches::kEnableGpuBenchmarking);
   prefs.threaded_html_parser =
       !command_line.HasSwitch(switches::kDisableThreadedHTMLParser);
+#if defined(OS_ANDROID)
+  prefs.user_gesture_required_for_media_playback = !command_line.HasSwitch(
+      switches::kDisableGestureRequirementForMediaPlayback);
+#endif
 
   bool touch_device_present = false;
   touch_device_present = ui::IsTouchDevicePresent();

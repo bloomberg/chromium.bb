@@ -6594,6 +6594,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_WEBAUDIO_INPUT_DESCRIPTION" desc="Title for the flag to enable the webaudio input feature.">
         Enables live audio input using getUserMedia() and the Web Audio API.
       </message>
+      <message name="IDS_FLAGS_DISABLE_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK_NAME" desc="Title for the flag to disable gesture requiment for media playback">
+        Disable gesture requirement for media playback.
+      </message>
+      <message name="IDS_FLAGS_DISABLE_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK_DESCRIPTION" desc="Description for the flag to disable gesture requiment for media playback">
+        Disable user gesture requirement for playing media elements. Activating this will allow autoplay to work.
+      </message>
 
       <message name="IDS_FLAGS_ENABLE_ADVANCED_GESTURES_NAME" desc="Title for the flag to enable advanced gestures.">
         Enable advanced gestures

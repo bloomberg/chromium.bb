@@ -743,6 +743,10 @@ const char kUseMobileUserAgent[] = "use-mobile-user-agent";
 // Disable history logging for media elements.
 const char kDisableMediaHistoryLogging[]    = "disable-media-history";
 
+// Disable user gesture requirement for media playback.
+const char kDisableGestureRequirementForMediaPlayback[] =
+    "disable-gesture-requirement-for-media-playback";
+
 // Whether to run media elements in the renderer process.
 const char kMediaPlayerInRenderProcess[]    = "media-player-in-render-process";
 

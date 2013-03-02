@@ -1262,6 +1262,15 @@ const Experiment kExperiments[] = {
     kOsWin,
     SINGLE_VALUE_TYPE(switches::kTrackActiveVisitTime)
   },
+#if defined(OS_ANDROID)
+  {
+    "disable-gesture-requirement-for-media-playback",
+    IDS_FLAGS_DISABLE_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK_NAME,
+    IDS_FLAGS_DISABLE_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK_DESCRIPTION,
+    kOsAndroid,
+    SINGLE_VALUE_TYPE(switches::kDisableGestureRequirementForMediaPlayback)
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;
