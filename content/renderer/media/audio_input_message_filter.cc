@@ -22,7 +22,6 @@ AudioInputMessageFilter::AudioInputMessageFilter(
 }
 
 AudioInputMessageFilter::~AudioInputMessageFilter() {
-  CHECK(delegates_.IsEmpty());
   DCHECK_EQ(filter_, this);
   filter_ = NULL;
 }
@@ -66,7 +65,10 @@ void AudioInputMessageFilter::OnFilterAdded(IPC::Channel* channel) {
 
 void AudioInputMessageFilter::OnFilterRemoved() {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
-  channel_ = NULL;
+
+  // Once removed, a filter will not be used again.  At this time all
+  // delegates must be notified so they release their reference.
+  OnChannelClosing();
 }
 
 void AudioInputMessageFilter::OnChannelClosing() {
