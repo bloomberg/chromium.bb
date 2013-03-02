@@ -80,8 +80,20 @@ base::Time GetTestTime(int year, int month, int day, int hour, int minute,
 
 }  // namespace
 
+class ExtensionFromWebApp : public ::testing::Test {
+ public:
+  virtual void SetUp() OVERRIDE {
+    testing::Test::SetUp();
+    (new IconsHandler)->Register();
+  }
 
-TEST(ExtensionFromWebApp, GenerateVersion) {
+  virtual void TearDown() OVERRIDE {
+    ManifestHandler::ClearRegistryForTesting();
+    testing::Test::TearDown();
+  }
+};
+
+TEST_F(ExtensionFromWebApp, GenerateVersion) {
   EXPECT_EQ("2010.1.1.0",
             ConvertTimeToExtensionVersion(
                 GetTestTime(2010, 1, 1, 0, 0, 0, 0)));
@@ -93,7 +105,7 @@ TEST(ExtensionFromWebApp, GenerateVersion) {
                 GetTestTime(2010, 10, 1, 23, 59, 59, 999)));
 }
 
-TEST(ExtensionFromWebApp, Basic) {
+TEST_F(ExtensionFromWebApp, Basic) {
   base::ScopedTempDir extensions_dir;
   ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
 
@@ -150,7 +162,7 @@ TEST(ExtensionFromWebApp, Basic) {
   }
 }
 
-TEST(ExtensionFromWebApp, Minimal) {
+TEST_F(ExtensionFromWebApp, Minimal) {
   base::ScopedTempDir extensions_dir;
   ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
 
