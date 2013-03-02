@@ -125,6 +125,18 @@ class EBuildTest(cros_test_lib.MoxTestCase):
       self.assertEquals(fake_ebuild.is_stable, stable)
       self.mox.UnsetStubs()
 
+  def testEBuildBlacklisted(self):
+    """Test blacklisted ebuild"""
+    fake_ebuild_path = '/path/to/test_package/test_package-9999.ebuild'
+
+    fake_ebuild = self._makeFakeEbuild(fake_ebuild_path)
+    self.assertEquals(fake_ebuild.is_blacklisted, False)
+    self.mox.UnsetStubs()
+
+    fake_ebuild = self._makeFakeEbuild(
+        fake_ebuild_path, fake_ebuild_content=['CROS_WORKON_BLACKLIST="1"\n'])
+    self.assertEquals(fake_ebuild.is_blacklisted, True)
+
 
 class ProjectAndPathTest(cros_test_lib.MoxTempDirTestCase):
 

@@ -312,6 +312,7 @@ class EBuild(object):
 
     self.is_workon = False
     self.is_stable = False
+    self.is_blacklisted = False
     self._ReadEBuild(path)
 
   def _ReadEBuild(self, path):
@@ -331,6 +332,8 @@ class EBuild(object):
         for keyword in line.split('=', 1)[1].strip("\"'").split():
           if not keyword.startswith('~') and keyword != '-*':
             self.is_stable = True
+      elif line.startswith('CROS_WORKON_BLACKLIST='):
+        self.is_blacklisted = True
     fileinput.close()
 
   def GetGitProjectName(self, path):
@@ -640,7 +643,9 @@ def _FindUprevCandidates(files, blacklist):
     if not path.endswith('.ebuild') or os.path.islink(path):
       continue
     ebuild = EBuild(path)
-    if not ebuild.is_workon or blacklist.IsPackageBlackListed(path):
+    if (not ebuild.is_workon or
+        ebuild.is_blacklisted or
+        blacklist.IsPackageBlackListed(path)):
       continue
     if ebuild.is_stable:
       if ebuild.version == '9999':
