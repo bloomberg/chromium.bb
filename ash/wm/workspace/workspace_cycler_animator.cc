@@ -419,6 +419,10 @@ void WorkspaceCyclerAnimator::AnimateStartingCycler() {
   animation_type_ = CYCLER_START;
   AnimateToUpdatedState(start_cycler_animation_duration);
 
+  // Dim the desktop workspace and the desktop background.
+  AnimateTo(0, false, start_cycler_animation_duration, gfx::Transform(),
+      Config::GetDouble(Config::DESKTOP_WORKSPACE_BRIGHTNESS), true);
+
   aura::Window* background = GetDesktopBackground();
   if (background) {
     ui::Layer* layer = background->layer();
@@ -460,6 +464,9 @@ void WorkspaceCyclerAnimator::AnimateStoppingCycler() {
 
   animation_type_ = CYCLER_END;
   AnimateToUpdatedState(stop_cycler_animation_duration);
+
+  AnimateTo(0, false, stop_cycler_animation_duration, gfx::Transform(),
+      0.0f, true);
 
   aura::Window* background = GetDesktopBackground();
   if (background) {
@@ -585,8 +592,7 @@ void WorkspaceCyclerAnimator::AnimateToUpdatedState(int animation_duration) {
 }
 
 void WorkspaceCyclerAnimator::CyclerStopped(size_t visible_workspace_index) {
-  // Start at index 1 as the animator does not animate the desktop workspace.
-  for(size_t i = 1; i < workspaces_.size(); ++i) {
+  for(size_t i = 0; i < workspaces_.size(); ++i) {
     aura::Window* window = workspaces_[i]->window();
     ui::Layer* layer = window->layer();
     layer->SetLayerBrightness(0.0f);

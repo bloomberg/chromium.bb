@@ -364,6 +364,11 @@ function WorkspaceCyclerConfig() {
       units: '%'
     },
     {
+      key: 'desktop_workspace_brightness',
+      label: 'Desktop workspace brightness when cycling through workspaces',
+      units: '%'
+    },
+    {
       key: 'distance_to_initiate_cycling',
       label: 'Vertical distance to scroll to initiate cycling',
       units: 'pixels'

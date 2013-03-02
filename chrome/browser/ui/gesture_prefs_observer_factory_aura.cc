@@ -91,6 +91,8 @@ const std::vector<WorkspaceCyclerPref>& GetWorkspaceCyclerPrefs() {
         WorkspaceCyclerConfiguration::MIN_BRIGHTNESS },
       { prefs::kWorkspaceCyclerBackgroundOpacity,
         WorkspaceCyclerConfiguration::BACKGROUND_OPACITY },
+      { prefs::kWorkspaceCyclerDesktopWorkspaceBrightness,
+        WorkspaceCyclerConfiguration::DESKTOP_WORKSPACE_BRIGHTNESS },
       { prefs::kWorkspaceCyclerDistanceToInitiateCycling,
         WorkspaceCyclerConfiguration::DISTANCE_TO_INITIATE_CYCLING },
       { prefs::kWorkspaceCyclerScrollDistanceToCycleToNextWorkspace,

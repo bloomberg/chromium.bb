@@ -44,6 +44,9 @@ class ASH_EXPORT WorkspaceCyclerConfiguration {
     // The background opacity while the user is cycling through workspaces.
     BACKGROUND_OPACITY,
 
+    // The brightness of the desktop workspace.
+    DESKTOP_WORKSPACE_BRIGHTNESS,
+
     // The vertical scroll distance in pixels to initiate workspace cycling.
     DISTANCE_TO_INITIATE_CYCLING,
 

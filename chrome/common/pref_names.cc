@@ -2229,6 +2229,8 @@ const char kWorkspaceCyclerMinBrightness[] =
     "workspace_cycler.min_brightness";
 const char kWorkspaceCyclerBackgroundOpacity[] =
     "workspace_cycler.background_opacity";
+const char kWorkspaceCyclerDesktopWorkspaceBrightness[] =
+    "workspace_cycler.desktop_workspace_brightness";
 const char kWorkspaceCyclerDistanceToInitiateCycling[] =
     "workspace_cycler.distance_to_initiate_cycling";
 const char kWorkspaceCyclerScrollDistanceToCycleToNextWorkspace[] =

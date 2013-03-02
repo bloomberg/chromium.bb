@@ -19,6 +19,7 @@ double g_min_scale = 0.9;
 double g_max_scale = 1.0;
 double g_min_brightness = -0.4;
 double g_background_opacity = 0.8;
+double g_desktop_workspace_brightness = -0.4;
 double g_distance_to_initiate_cycling = 10;
 double g_scroll_amount_to_cycle_to_next_workspace = 10;
 double g_cycler_step_animation_duration_ratio = 10;
@@ -75,6 +76,9 @@ void WorkspaceCyclerConfiguration::SetDouble(Property property, double value) {
       break;
     case BACKGROUND_OPACITY:
       g_background_opacity = value;
+      break;
+    case DESKTOP_WORKSPACE_BRIGHTNESS:
+      g_desktop_workspace_brightness = value;
       break;
     case DISTANCE_TO_INITIATE_CYCLING:
       g_distance_to_initiate_cycling = value;
@@ -142,6 +146,8 @@ double WorkspaceCyclerConfiguration::GetDouble(Property property) {
       return g_min_brightness;
     case BACKGROUND_OPACITY:
       return g_background_opacity;
+    case DESKTOP_WORKSPACE_BRIGHTNESS:
+      return g_desktop_workspace_brightness;
     case DISTANCE_TO_INITIATE_CYCLING:
       return g_distance_to_initiate_cycling;
     case SCROLL_DISTANCE_TO_CYCLE_TO_NEXT_WORKSPACE:

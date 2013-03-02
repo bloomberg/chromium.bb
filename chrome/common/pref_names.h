@@ -802,6 +802,7 @@ extern const char kWorkspaceCyclerMinScale[];
 extern const char kWorkspaceCyclerMaxScale[];
 extern const char kWorkspaceCyclerMinBrightness[];
 extern const char kWorkspaceCyclerBackgroundOpacity[];
+extern const char kWorkspaceCyclerDesktopWorkspaceBrightness[];
 extern const char kWorkspaceCyclerDistanceToInitiateCycling[];
 extern const char kWorkspaceCyclerScrollDistanceToCycleToNextWorkspace[];
 extern const char kWorkspaceCyclerCyclerStepAnimationDurationRatio[];
