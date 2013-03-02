@@ -713,7 +713,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Crash) {
       test_server()->host_port_pair().port()));
   ui_test_utils::NavigateToURL(browser(), url);
 
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUICrashURL));
+  ui_test_utils::NavigateToURL(browser(), GURL(content::kChromeUICrashURL));
 
   url = GURL(base::StringPrintf(
       "http://www.a.com:%d/"

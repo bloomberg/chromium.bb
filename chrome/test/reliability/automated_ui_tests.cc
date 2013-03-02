@@ -662,7 +662,7 @@ bool AutomatedUITest::FuzzyTestDialog(int num_actions) {
 
 bool AutomatedUITest::ForceCrash() {
   scoped_refptr<TabProxy> tab(GetActiveTab());
-  GURL test_url(chrome::kChromeUICrashURL);
+  GURL test_url(content::kChromeUICrashURL);
   AutomationMsg_NavigationResponseValues result = tab->NavigateToURL(test_url);
   if (result != AUTOMATION_MSG_NAVIGATION_SUCCESS) {
     AddErrorAttribute("navigation_failed");

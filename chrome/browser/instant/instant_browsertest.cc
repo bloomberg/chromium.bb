@@ -403,15 +403,15 @@ IN_PROC_BROWSER_TEST_F(InstantTest, RejectsURLs) {
   // Note that we are not actually navigating to these URLs yet. We are just
   // typing them into the omnibox (without pressing Enter) and checking that
   // Instant doesn't try to process them.
-  SetOmniboxText(chrome::kChromeUICrashURL);
+  SetOmniboxText(content::kChromeUICrashURL);
   EXPECT_FALSE(instant()->IsPreviewingSearchResults());
   EXPECT_TRUE(instant()->model()->mode().is_default());
 
-  SetOmniboxText(chrome::kChromeUIHangURL);
+  SetOmniboxText(content::kChromeUIHangURL);
   EXPECT_FALSE(instant()->IsPreviewingSearchResults());
   EXPECT_TRUE(instant()->model()->mode().is_default());
 
-  SetOmniboxText(chrome::kChromeUIKillURL);
+  SetOmniboxText(content::kChromeUIKillURL);
   EXPECT_FALSE(instant()->IsPreviewingSearchResults());
   EXPECT_TRUE(instant()->model()->mode().is_default());
 

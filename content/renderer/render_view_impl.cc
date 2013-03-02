@@ -444,11 +444,11 @@ NOINLINE static void CrashIntentionally() {
 static void MaybeHandleDebugURL(const GURL& url) {
   if (!url.SchemeIs(chrome::kChromeUIScheme))
     return;
-  if (url == GURL(chrome::kChromeUICrashURL)) {
+  if (url == GURL(kChromeUICrashURL)) {
     CrashIntentionally();
-  } else if (url == GURL(chrome::kChromeUIKillURL)) {
+  } else if (url == GURL(kChromeUIKillURL)) {
     base::KillProcess(base::GetCurrentProcessHandle(), 1, false);
-  } else if (url == GURL(chrome::kChromeUIHangURL)) {
+  } else if (url == GURL(kChromeUIHangURL)) {
     for (;;) {
       base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
     }

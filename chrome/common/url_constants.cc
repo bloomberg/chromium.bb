@@ -502,15 +502,15 @@ const char kLearnMoreEnterpriseURL[] =
 #endif
 
 const char* const kChromeDebugURLs[] = {
-  kChromeUICrashURL,
-  kChromeUIKillURL,
-  kChromeUIHangURL,
+  content::kChromeUICrashURL,
+  content::kChromeUIKillURL,
+  content::kChromeUIHangURL,
   content::kChromeUIShorthangURL,
-  kChromeUIGpuCleanURL,
-  kChromeUIGpuCrashURL,
-  kChromeUIGpuHangURL,
-  kChromeUIPpapiFlashCrashURL,
-  kChromeUIPpapiFlashHangURL
+  content::kChromeUIGpuCleanURL,
+  content::kChromeUIGpuCrashURL,
+  content::kChromeUIGpuHangURL,
+  content::kChromeUIPpapiFlashCrashURL,
+  content::kChromeUIPpapiFlashHangURL
 };
 const int kNumberOfChromeDebugURLs =
     static_cast<int>(arraysize(kChromeDebugURLs));

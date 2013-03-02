@@ -274,7 +274,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, CrossSiteAfterCrash) {
   WindowedNotificationObserver crash_observer(
       NOTIFICATION_RENDERER_PROCESS_CLOSED,
       NotificationService::AllSources());
-  NavigateToURL(shell(), GURL(chrome::kChromeUICrashURL));
+  NavigateToURL(shell(), GURL(kChromeUICrashURL));
   // Wait for browser to notice the renderer crash.
   crash_observer.Wait();
 

@@ -62,9 +62,9 @@ static bool ReverseViewSource(GURL* url, BrowserContext* browser_context) {
 
 static bool HandleDebugUrl(GURL* url, BrowserContext* browser_context) {
   // Circumvent processing URLs that the renderer process will handle.
-  return *url == GURL(chrome::kChromeUICrashURL) ||
-         *url == GURL(chrome::kChromeUIHangURL) ||
-         *url == GURL(chrome::kChromeUIKillURL) ||
+  return *url == GURL(kChromeUICrashURL) ||
+         *url == GURL(kChromeUIHangURL) ||
+         *url == GURL(kChromeUIKillURL) ||
          *url == GURL(kChromeUIShorthangURL);
 }
 

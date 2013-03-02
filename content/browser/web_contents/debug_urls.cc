@@ -21,7 +21,7 @@ namespace {
 
 void HandlePpapiFlashDebugURL(const GURL& url) {
 #if defined(ENABLE_PLUGINS)
-  bool crash = url == GURL(chrome::kChromeUIPpapiFlashCrashURL);
+  bool crash = url == GURL(kChromeUIPpapiFlashCrashURL);
 
   std::vector<PpapiPluginProcessHost*> hosts;
   PpapiPluginProcessHost::FindByName(UTF8ToUTF16(kFlashPluginName), &hosts);
@@ -48,29 +48,29 @@ bool HandleDebugURL(const GURL& url, PageTransition transition) {
     return true;
   }
 
-  if (url == GURL(chrome::kChromeUIGpuCleanURL)) {
+  if (url == GURL(kChromeUIGpuCleanURL)) {
     GpuProcessHostUIShim* shim = GpuProcessHostUIShim::GetOneInstance();
     if (shim)
       shim->SimulateRemoveAllContext();
     return true;
   }
 
-  if (url == GURL(chrome::kChromeUIGpuCrashURL)) {
+  if (url == GURL(kChromeUIGpuCrashURL)) {
     GpuProcessHostUIShim* shim = GpuProcessHostUIShim::GetOneInstance();
     if (shim)
       shim->SimulateCrash();
     return true;
   }
 
-  if (url == GURL(chrome::kChromeUIGpuHangURL)) {
+  if (url == GURL(kChromeUIGpuHangURL)) {
     GpuProcessHostUIShim* shim = GpuProcessHostUIShim::GetOneInstance();
     if (shim)
       shim->SimulateHang();
     return true;
   }
 
-  if (url == GURL(chrome::kChromeUIPpapiFlashCrashURL) ||
-      url == GURL(chrome::kChromeUIPpapiFlashHangURL)) {
+  if (url == GURL(kChromeUIPpapiFlashCrashURL) ||
+      url == GURL(kChromeUIPpapiFlashHangURL)) {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                             base::Bind(&HandlePpapiFlashDebugURL, url));
     return true;

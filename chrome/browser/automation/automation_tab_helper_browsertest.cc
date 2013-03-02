@@ -211,5 +211,5 @@ IN_PROC_BROWSER_TEST_F(AutomationTabHelperBrowserTest,
   EXPECT_CALL(mock_tab_observer, OnFirstPendingLoad(_));
   EXPECT_CALL(mock_tab_observer, OnNoMorePendingLoads(_));
 
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUICrashURL));
+  ui_test_utils::NavigateToURL(browser(), GURL(content::kChromeUICrashURL));
 }

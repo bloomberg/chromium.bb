@@ -87,10 +87,10 @@ bool WebUIControllerFactoryRegistry::IsURLAcceptableForWebUI(
       // See http://crbug.com/42547
       url.spec() == chrome::kAboutBlankURL ||
       // Chrome URLs crash, kill, hang, and shorthang are allowed.
-      url == GURL(chrome::kChromeUICrashURL) ||
-      url == GURL(chrome::kChromeUIKillURL) ||
-      url == GURL(chrome::kChromeUIHangURL) ||
-      url == GURL(content::kChromeUIShorthangURL) ||
+      url == GURL(kChromeUICrashURL) ||
+      url == GURL(kChromeUIKillURL) ||
+      url == GURL(kChromeUIHangURL) ||
+      url == GURL(kChromeUIShorthangURL) ||
       // Data URLs are usually not allowed in WebUI for security reasons.
       // BalloonHosts are one exception needed by ChromeOS, and are safe because
       // they cannot be scripted by other pages.

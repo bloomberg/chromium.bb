@@ -38,7 +38,7 @@ void SimulateGPUCrash(Browser* browser) {
   // constraints, so we use chrome::Navigate directly.
   chrome::NavigateParams params(
       browser,
-      GURL(chrome::kChromeUIGpuCrashURL),
+      GURL(content::kChromeUIGpuCrashURL),
       static_cast<content::PageTransition>(
           content::PAGE_TRANSITION_TYPED |
           content::PAGE_TRANSITION_FROM_ADDRESS_BAR));

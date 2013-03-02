@@ -26,7 +26,7 @@ void SimulateRendererCrash(Browser* browser) {
       content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
       content::NotificationService::AllSources());
   browser->OpenURL(OpenURLParams(
-      GURL(chrome::kChromeUICrashURL), Referrer(), CURRENT_TAB,
+      GURL(content::kChromeUICrashURL), Referrer(), CURRENT_TAB,
       content::PAGE_TRANSITION_TYPED, false));
   observer.Wait();
 }

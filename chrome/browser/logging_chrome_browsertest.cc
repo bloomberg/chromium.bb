@@ -94,7 +94,7 @@ IN_PROC_BROWSER_TEST_F(RendererCrashTest, DISABLED_Crash) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                  content::NotificationService::AllSources());
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(chrome::kChromeUICrashURL), CURRENT_TAB, 0);
+      browser(), GURL(content::kChromeUICrashURL), CURRENT_TAB, 0);
   content::RunMessageLoop();
   ASSERT_TRUE(saw_crash_);
 }

@@ -39,7 +39,7 @@ class ExtensionManagementApiBrowserTest : public ExtensionBrowserTest {
     if (!background_host)
       return false;
     background_host->host_contents()->GetController().LoadURL(
-        GURL(chrome::kChromeUICrashURL), content::Referrer(),
+        GURL(content::kChromeUICrashURL), content::Referrer(),
         content::PAGE_TRANSITION_LINK, std::string());
     extension_crash_observer.Wait();
     return true;
