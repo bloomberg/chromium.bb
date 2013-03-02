@@ -119,16 +119,25 @@ bool LocalPolicyTestServer::UpdatePolicy(const std::string& type,
                                          const std::string& policy) {
   CHECK(server_data_dir_.IsValid());
 
-  std::string selector = type;
-  if (!entity_id.empty())
-    selector = base::StringPrintf("%s/%s", type.c_str(), entity_id.c_str());
-  std::replace_if(selector.begin(), selector.end(), IsUnsafeCharacter, '_');
-
+  std::string selector = GetSelector(type, entity_id);
   base::FilePath policy_file = server_data_dir_.path().AppendASCII(
       base::StringPrintf("policy_%s.bin", selector.c_str()));
 
   return file_util::WriteFile(policy_file, policy.c_str(), policy.size()) ==
       static_cast<int>(policy.size());
+}
+
+bool LocalPolicyTestServer::UpdatePolicyData(const std::string& type,
+                                             const std::string& entity_id,
+                                             const std::string& data) {
+  CHECK(server_data_dir_.IsValid());
+
+  std::string selector = GetSelector(type, entity_id);
+  base::FilePath data_file = server_data_dir_.path().AppendASCII(
+      base::StringPrintf("policy_%s.data", selector.c_str()));
+
+  return file_util::WriteFile(data_file, data.c_str(), data.size()) ==
+      static_cast<int>(data.size());
 }
 
 GURL LocalPolicyTestServer::GetServiceURL() const {
@@ -214,6 +223,15 @@ bool LocalPolicyTestServer::GenerateAdditionalArguments(
   }
 
   return true;
+}
+
+std::string LocalPolicyTestServer::GetSelector(const std::string& type,
+                                               const std::string& entity_id) {
+  std::string selector = type;
+  if (!entity_id.empty())
+    selector = base::StringPrintf("%s/%s", type.c_str(), entity_id.c_str());
+  std::replace_if(selector.begin(), selector.end(), IsUnsafeCharacter, '_');
+  return selector;
 }
 
 }  // namespace policy;

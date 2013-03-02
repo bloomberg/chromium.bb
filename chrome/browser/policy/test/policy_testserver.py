@@ -81,6 +81,7 @@ import testserver_base
 import device_management_backend_pb2 as dm
 import cloud_policy_pb2 as cp
 import chrome_device_policy_pb2 as dp
+import chrome_extension_policy_pb2 as ep
 
 # ASN.1 object identifier for PKCS#1/RSA.
 PKCS1_RSA_OID = '\x2a\x86\x48\x86\xf7\x0d\x01\x01\x01'
@@ -90,11 +91,11 @@ SHA256_0 = hashlib.sha256('0').digest()
 
 # List of bad machine identifiers that trigger the |valid_serial_number_missing|
 # flag to be set set in the policy fetch response.
-BAD_MACHINE_IDS = [ '123490EN400015' ];
+BAD_MACHINE_IDS = [ '123490EN400015' ]
 
 # List of machines that trigger the server to send kiosk enrollment response
 # for the register request.
-KIOSK_MACHINE_IDS = [ 'KIOSK' ];
+KIOSK_MACHINE_IDS = [ 'KIOSK' ]
 
 
 class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -131,15 +132,40 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     param_list = self._params.get(name, [])
     if len(param_list) == 1:
       return param_list[0]
-    return None;
+    return None
+
+  def do_GET(self):
+    """Handles GET requests.
+
+    Currently this is only used to serve external policy data."""
+    sep = self.path.find('?')
+    path = self.path if sep == -1 else self.path[:sep]
+    if path == '/externalpolicydata':
+      http_response, raw_reply = self.HandleExternalPolicyDataRequest()
+    else:
+      http_response = 404
+      raw_reply = 'Invalid path'
+    self.send_response(http_response)
+    self.end_headers()
+    self.wfile.write(raw_reply)
 
   def do_POST(self):
-    http_response, raw_reply = self.HandleRequest();
+    http_response, raw_reply = self.HandleRequest()
     self.send_response(http_response)
     if (http_response == 200):
       self.send_header('Content-Type', 'application/x-protobuffer')
     self.end_headers()
     self.wfile.write(raw_reply)
+
+  def HandleExternalPolicyDataRequest(self):
+    """Handles a request to download policy data for a component."""
+    policy_key = self.GetUniqueParam('key')
+    if not policy_key:
+      return (400, 'Missing key parameter')
+    data = self.server.ReadPolicyDataFromDataDir(policy_key)
+    if data is None:
+      return (404, 'Policy not found for ' + policy_key)
+    return (200, data)
 
   def HandleRequest(self):
     """Handles a request.
@@ -179,6 +205,29 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       return self.ProcessAutoEnrollment(rmsg.auto_enrollment_request)
     else:
       return (400, 'Invalid request parameter')
+
+  def CreatePolicyForExternalPolicyData(self, policy_key):
+    """Returns an ExternalPolicyData protobuf for policy_key.
+
+    If there is policy data for policy_key then the download url will be
+    set so that it points to that data, and the appropriate hash is also set.
+    Otherwise, the protobuf will be empty.
+
+    Args:
+      policy_key: the policy type and settings entity id, joined by '/'.
+
+    Returns:
+      A serialized ExternalPolicyData.
+    """
+    settings = ep.ExternalPolicyData()
+    data = self.server.ReadPolicyDataFromDataDir(policy_key)
+    if data:
+      settings.download_url = ('http://%s:%s/externalpolicydata?key=%s' %
+                                  (self.server.server_name,
+                                   self.server.server_port,
+                                   policy_key) )
+      settings.secure_hash = hashlib.sha1(data).digest()
+    return settings.SerializeToString()
 
   def CheckGoogleLogin(self):
     """Extracts the auth token from the request and returns it. The token may
@@ -251,12 +300,12 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       A tuple of HTTP status code and response data to send to the client.
     """
     # Check the management token.
-    token, response = self.CheckToken();
+    token, response = self.CheckToken()
     if not token:
       return response
 
     # Unregister the device.
-    self.server.UnregisterDevice(token['device_token']);
+    self.server.UnregisterDevice(token['device_token'])
 
     # Prepare and send the response.
     response = dm.DeviceManagementResponse()
@@ -278,18 +327,29 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     Returns:
       A tuple of HTTP status code and response data to send to the client.
     """
+    token_info, error = self.CheckToken()
+    if not token_info:
+      return error
+
+    response = dm.DeviceManagementResponse()
     for request in msg.request:
+      fetch_response = response.policy_response.response.add()
       if (request.policy_type in
              ('google/chrome/user',
               'google/chromeos/user',
               'google/chromeos/device',
-              'google/chromeos/publicaccount')):
+              'google/chromeos/publicaccount',
+              'google/chrome/extension')):
         if request_type != 'policy':
-          return (400, 'Invalid request type')
+          fetch_response.error_code = 400
+          fetch_response.error_message = 'Invalid request type'
         else:
-          return self.ProcessCloudPolicy(request)
+          self.ProcessCloudPolicy(request, token_info, fetch_response)
       else:
-        return (400, 'Invalid policy_type')
+        fetch_response.error_code = 400
+        fetch_response.error_message = 'Invalid policy_type'
+
+    return (200, response.SerializeToString())
 
   def ProcessAutoEnrollment(self, msg):
     """Handles an auto-enrollment check request.
@@ -429,22 +489,18 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       self.SetProtobufMessageField(policy_message, field_descriptor, value)
       settings.__getattribute__(field.name).CopyFrom(policy_message)
 
-  def ProcessCloudPolicy(self, msg):
+  def ProcessCloudPolicy(self, msg, token_info, response):
     """Handles a cloud policy request. (New protocol for policy requests.)
 
-    Checks for authorization, encodes the policy into protobuf representation,
-    signs it and constructs the repsonse.
+    Encodes the policy into protobuf representation, signs it and constructs
+    the response.
 
     Args:
       msg: The CloudPolicyRequest message received from the client.
-
-    Returns:
-      A tuple of HTTP status code and response data to send to the client.
+      token_info: the token extracted from the request.
+      response: A PolicyFetchResponse message that should be filled with the
+                response data.
     """
-
-    token_info, error = self.CheckToken()
-    if not token_info:
-      return error
 
     if msg.machine_id:
       self.server.UpdateMachineId(token_info['device_token'], msg.machine_id)
@@ -472,6 +528,19 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         if payload is None:
           self.GatherDevicePolicySettings(settings, policy.get(policy_key, {}))
           payload = settings.SerializeToString()
+      elif msg.policy_type == 'google/chrome/extension':
+        settings = ep.ExternalPolicyData()
+        payload = self.server.ReadPolicyFromDataDir(policy_key, settings)
+        if payload is None:
+          payload = self.CreatePolicyForExternalPolicyData(policy_key)
+      else:
+        response.error_code = 400
+        response.error_message = 'Invalid policy type'
+        return
+    else:
+      response.error_code = 400
+      response.error_message = 'Request not allowed for the token used'
+      return
 
     # Sign with 'current_key_index', defaulting to key 0.
     signing_key = None
@@ -509,17 +578,15 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     policy_data.device_id = token_info['device_id']
     signed_data = policy_data.SerializeToString()
 
-    response = dm.DeviceManagementResponse()
-    fetch_response = response.policy_response.response.add()
-    fetch_response.policy_data = signed_data
+    response.policy_data = signed_data
     if signing_key:
-      fetch_response.policy_data_signature = (
+      response.policy_data_signature = (
           signing_key['private_key'].hashAndSign(signed_data).tostring())
       if msg.public_key_version != current_key_index + 1:
-        fetch_response.new_public_key = signing_key['public_key']
+        response.new_public_key = signing_key['public_key']
         if req_key:
-          fetch_response.new_public_key_signature = (
-              req_key.hashAndSign(fetch_response.new_public_key).tostring())
+          response.new_public_key_signature = (
+              req_key.hashAndSign(response.new_public_key).tostring())
 
     self.DumpMessage('Response', response)
 
@@ -620,7 +687,7 @@ class PolicyTestServer(testserver_base.ClientRestrictingServerMixIn,
       rsa_pubkey = asn1der.Sequence([ asn1der.Integer(key.n),
                                       asn1der.Integer(key.e) ])
       pubkey = asn1der.Sequence([ algorithm, asn1der.Bitstring(rsa_pubkey) ])
-      entry['public_key'] = pubkey;
+      entry['public_key'] = pubkey
 
     # Load client state.
     if self.client_state_file is not None:
@@ -659,7 +726,10 @@ class PolicyTestServer(testserver_base.ClientRestrictingServerMixIn,
     dmtoken = ''.join(dmtoken_chars)
     allowed_policy_types = {
       dm.DeviceRegisterRequest.BROWSER: ['google/chrome/user'],
-      dm.DeviceRegisterRequest.USER: ['google/chromeos/user'],
+      dm.DeviceRegisterRequest.USER: [
+          'google/chromeos/user',
+          'google/chrome/extension'
+      ],
       dm.DeviceRegisterRequest.DEVICE: [
           'google/chromeos/device',
           'google/chromeos/publicaccount'
@@ -721,6 +791,20 @@ class PolicyTestServer(testserver_base.ClientRestrictingServerMixIn,
       json_data = json.dumps(self._registered_tokens)
       open(self.client_state_file, 'w').write(json_data)
 
+  def GetBaseFilename(self, policy_selector):
+    """Returns the base filename for the given policy_selector.
+
+    Args:
+      policy_selector: the policy type and settings entity id, joined by '/'.
+
+    Returns:
+      The filename corresponding to the policy_selector, without a file
+      extension.
+    """
+    sanitized_policy_selector = re.sub('[^A-Za-z0-9.@-]', '_', policy_selector)
+    return os.path.join(self.data_dir or '',
+                        'policy_%s' % sanitized_policy_selector)
+
   def ReadPolicyFromDataDir(self, policy_selector, proto_message):
     """Tries to read policy payload from a file in the data directory.
 
@@ -731,16 +815,14 @@ class PolicyTestServer(testserver_base.ClientRestrictingServerMixIn,
     protobuf using proto_message. If that fails as well, returns None.
 
     Args:
-      policy_selector: Selects with policy to read. This will be
+      policy_selector: Selects which policy to read.
       proto_message: Optional protobuf message object used for decoding the
           proto text format.
 
     Returns:
       The binary payload message, or None if not found.
     """
-    sanitized_policy_selector = re.sub('[^A-Za-z0-9.@-]', '_', policy_selector)
-    base_filename = os.path.join(self.data_dir or '',
-                                 'policy_%s' % sanitized_policy_selector)
+    base_filename = self.GetBaseFilename(policy_selector)
 
     # Try the binary payload file first.
     try:
@@ -759,6 +841,21 @@ class PolicyTestServer(testserver_base.ClientRestrictingServerMixIn,
     except IOError:
       return None
     except google.protobuf.text_format.ParseError:
+      return None
+
+  def ReadPolicyDataFromDataDir(self, policy_selector):
+    """Returns the external policy data for |policy_selector| if found.
+
+    Args:
+      policy_selector: Selects which policy to read.
+
+    Returns:
+      The data for the corresponding policy type and entity id, if found.
+    """
+    base_filename = self.GetBaseFilename(policy_selector)
+    try:
+      return open(base_filename + '.data').read()
+    except IOError:
       return None
 
 
@@ -813,7 +910,7 @@ class PolicyServerRunner(testserver_base.TestServerRunner):
     if (self.options.log_file):
       logger.addHandler(logging.FileHandler(self.options.log_file))
 
-    testserver_base.TestServerRunner.run_server(self);
+    testserver_base.TestServerRunner.run_server(self)
 
 
 if __name__ == '__main__':

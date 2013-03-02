@@ -61,6 +61,20 @@ class LocalPolicyTestServer : public net::LocalTestServer {
                     const std::string& entity_id,
                     const std::string& policy);
 
+  // Updates the external policy data served by the server for a given
+  // (type, entity_id) pair, at the /externalpolicydata path. Requests to that
+  // URL must include a 'key' parameter, whose value is the |type| and
+  // |entity_id| values joined by a '/'.
+  //
+  // If this data is set but no policy is set for the (type, entity_id) pair,
+  // then an ExternalPolicyData protobuf is automatically served that points to
+  // this data.
+  //
+  // This only works when the server serves from a temporary directory.
+  bool UpdatePolicyData(const std::string& type,
+                        const std::string& entity_id,
+                        const std::string& data);
+
   // Gets the service URL.
   GURL GetServiceURL() const;
 
@@ -72,6 +86,9 @@ class LocalPolicyTestServer : public net::LocalTestServer {
       base::DictionaryValue* arguments) const OVERRIDE;
 
  private:
+  std::string GetSelector(const std::string& type,
+                          const std::string& entity_id);
+
   base::FilePath config_file_;
   base::FilePath policy_key_;
   base::DictionaryValue clients_;
