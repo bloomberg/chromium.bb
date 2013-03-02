@@ -33,11 +33,11 @@
       'variables': {
         'conditions': [
           # For x86, turn off SSE2 for non-CrOS *nix Chrome builds.
-          # Disable MMX on x64 for MSVC prior to 2012 (eg. 2012e is enabled).
+          # TODO(jschuh): Get MMX enabled on Win64. crbug.com/179657
           ['disable_sse2==1 or \
             (branding=="Chrome" and target_arch=="ia32" and \
              os_posix==1 and OS!="mac" and chromeos==0) or \
-            (OS=="win" and target_arch=="x64" and MSVS_VERSION<"2012")', {
+            (OS=="win" and target_arch=="x64")', {
             'qcms_use_sse': 0,
           }, {
             'qcms_use_sse': 1,
