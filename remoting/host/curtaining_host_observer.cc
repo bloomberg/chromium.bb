@@ -6,18 +6,19 @@
 
 #include "base/logging.h"
 #include "remoting/host/curtain_mode.h"
-#include "remoting/host/chromoting_host.h"
+#include "remoting/host/host_status_monitor.h"
 
 namespace remoting {
 
 CurtainingHostObserver::CurtainingHostObserver(
-    CurtainMode *curtain, scoped_refptr<ChromotingHost> host)
-    : curtain_(curtain), host_(host) {
-  host_->AddStatusObserver(this);
+    CurtainMode *curtain, base::WeakPtr<HostStatusMonitor> monitor)
+    : curtain_(curtain), monitor_(monitor) {
+  monitor_->AddStatusObserver(this);
 }
 
 CurtainingHostObserver::~CurtainingHostObserver() {
-  host_->RemoveStatusObserver(this);
+  if (monitor_)
+    monitor_->RemoveStatusObserver(this);
   curtain_->SetActivated(false);
 }
 

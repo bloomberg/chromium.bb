@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
 #include "remoting/base/constants.h"
-#include "remoting/host/chromoting_host.h"
+#include "remoting/host/host_status_monitor.h"
 #include "remoting/host/server_log_entry.h"
 #include "remoting/jingle_glue/iq_sender.h"
 #include "remoting/jingle_glue/signal_strategy.h"
@@ -20,25 +20,22 @@ using buzz::XmlElement;
 
 namespace remoting {
 
-LogToServer::LogToServer(ChromotingHost* host,
+LogToServer::LogToServer(base::WeakPtr<HostStatusMonitor> monitor,
                          ServerLogEntry::Mode mode,
                          SignalStrategy* signal_strategy,
                          const std::string& directory_bot_jid)
-    : host_(host),
+    : monitor_(monitor),
       mode_(mode),
       signal_strategy_(signal_strategy),
       directory_bot_jid_(directory_bot_jid) {
+  monitor_->AddStatusObserver(this);
   signal_strategy_->AddListener(this);
-
-  // |host| may be NULL in tests.
-  if (host_)
-    host_->AddStatusObserver(this);
 }
 
 LogToServer::~LogToServer() {
   signal_strategy_->RemoveListener(this);
-  if (host_)
-    host_->RemoveStatusObserver(this);
+  if (monitor_)
+    monitor_->RemoveStatusObserver(this);
 }
 
 void LogToServer::LogSessionStateChange(const std::string& jid,

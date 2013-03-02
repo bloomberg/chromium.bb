@@ -388,8 +388,8 @@ void HostNPScriptObject::It2MeImpl::FinishConnect(
       host_context_->ui_task_runner());
   host_->AddStatusObserver(this);
   log_to_server_.reset(
-      new LogToServer(host_, ServerLogEntry::IT2ME, signal_strategy_.get(),
-                      directory_bot_jid_));
+      new LogToServer(host_->AsWeakPtr(), ServerLogEntry::IT2ME,
+                      signal_strategy_.get(), directory_bot_jid_));
 
   // Disable audio by default.
   // TODO(sergeyu): Add UI to enable it.
@@ -403,7 +403,8 @@ void HostNPScriptObject::It2MeImpl::FinishConnect(
                                     base::Bind(&It2MeImpl::Disconnect, this));
 
   // Create event logger.
-  host_event_logger_ = HostEventLogger::Create(host_, kApplicationName);
+  host_event_logger_ =
+      HostEventLogger::Create(host_->AsWeakPtr(), kApplicationName);
 
   // Connect signaling and start the host.
   signal_strategy_->Connect();

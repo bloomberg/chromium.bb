@@ -4,10 +4,11 @@
 
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
-#include "remoting/jingle_glue/mock_objects.h"
+#include "remoting/host/host_status_monitor_fake.h"
 #include "remoting/host/log_to_server.h"
-#include "testing/gmock_mutant.h"
+#include "remoting/jingle_glue/mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
@@ -126,7 +127,9 @@ class LogToServerTest : public testing::Test {
     message_loop_proxy_ = base::MessageLoopProxy::current();
     EXPECT_CALL(signal_strategy_, AddListener(_));
     log_to_server_.reset(
-        new LogToServer(NULL, ServerLogEntry::ME2ME, &signal_strategy_,
+        new LogToServer(host_status_monitor_.AsWeakPtr(),
+                        ServerLogEntry::ME2ME,
+                        &signal_strategy_,
                         kTestBotJid));
     EXPECT_CALL(signal_strategy_, RemoveListener(_));
   }
@@ -136,6 +139,7 @@ class LogToServerTest : public testing::Test {
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   MockSignalStrategy signal_strategy_;
   scoped_ptr<LogToServer> log_to_server_;
+  HostStatusMonitorFake host_status_monitor_;
 };
 
 TEST_F(LogToServerTest, SendNow) {

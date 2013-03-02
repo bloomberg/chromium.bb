@@ -10,10 +10,11 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 
 namespace remoting {
 
-class ChromotingHost;
+class HostStatusMonitor;
 
 class HostEventLogger {
  public:
@@ -22,7 +23,8 @@ class HostEventLogger {
   // Creates an event-logger that monitors host status changes and logs
   // corresponding events to the OS-specific log (syslog/EventLog).
   static scoped_ptr<HostEventLogger> Create(
-      ChromotingHost* host, const std::string& application_name);
+      base::WeakPtr<HostStatusMonitor> monitor,
+      const std::string& application_name);
 
  protected:
   HostEventLogger() {}

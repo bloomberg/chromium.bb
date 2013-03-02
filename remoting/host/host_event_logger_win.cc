@@ -8,12 +8,12 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/ip_endpoint.h"
-#include "remoting/host/chromoting_host.h"
+#include "remoting/host/host_status_monitor.h"
 #include "remoting/host/host_status_observer.h"
 #include "remoting/protocol/transport.h"
 
@@ -25,7 +25,8 @@ namespace {
 
 class HostEventLoggerWin : public HostEventLogger, public HostStatusObserver {
  public:
-  HostEventLoggerWin(ChromotingHost* host, const std::string& application_name);
+  HostEventLoggerWin(base::WeakPtr<HostStatusMonitor> monitor,
+                     const std::string& application_name);
 
   virtual ~HostEventLoggerWin();
 
@@ -45,7 +46,7 @@ class HostEventLoggerWin : public HostEventLogger, public HostStatusObserver {
   void LogString(WORD type, DWORD event_id, const std::string& string);
   void Log(WORD type, DWORD event_id, const std::vector<std::string>& strings);
 
-  scoped_refptr<ChromotingHost> host_;
+  base::WeakPtr<HostStatusMonitor> monitor_;
 
   // The handle of the application event log.
   HANDLE event_log_;
@@ -55,14 +56,14 @@ class HostEventLoggerWin : public HostEventLogger, public HostStatusObserver {
 
 } //namespace
 
-HostEventLoggerWin::HostEventLoggerWin(ChromotingHost* host,
+HostEventLoggerWin::HostEventLoggerWin(base::WeakPtr<HostStatusMonitor> monitor,
                                        const std::string& application_name)
-    : host_(host),
+    : monitor_(monitor),
       event_log_(NULL) {
   event_log_ = RegisterEventSourceW(NULL,
                                     UTF8ToUTF16(application_name).c_str());
   if (event_log_ != NULL) {
-    host_->AddStatusObserver(this);
+    monitor_->AddStatusObserver(this);
   } else {
     LOG_GETLASTERROR(ERROR) << "Failed to register the event source: "
                             << application_name;
@@ -71,7 +72,8 @@ HostEventLoggerWin::HostEventLoggerWin(ChromotingHost* host,
 
 HostEventLoggerWin::~HostEventLoggerWin() {
   if (event_log_ != NULL) {
-    host_->RemoveStatusObserver(this);
+    if (monitor_)
+      monitor_->RemoveStatusObserver(this);
     DeregisterEventSource(event_log_);
   }
 }
@@ -147,9 +149,10 @@ void HostEventLoggerWin::LogString(WORD type,
 
 // static
 scoped_ptr<HostEventLogger> HostEventLogger::Create(
-    ChromotingHost* host, const std::string& application_name) {
+    base::WeakPtr<HostStatusMonitor> monitor,
+    const std::string& application_name) {
   return scoped_ptr<HostEventLogger>(
-      new HostEventLoggerWin(host, application_name));
+      new HostEventLoggerWin(monitor, application_name));
 }
 
 }  // namespace remoting

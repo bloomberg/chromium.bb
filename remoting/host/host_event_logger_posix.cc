@@ -4,11 +4,11 @@
 
 #include "remoting/host/host_event_logger.h"
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/stringprintf.h"
 #include "net/base/ip_endpoint.h"
-#include "remoting/host/chromoting_host.h"
+#include "remoting/host/host_status_monitor.h"
 #include "remoting/host/host_status_observer.h"
 #include "remoting/protocol/transport.h"
 
@@ -23,7 +23,7 @@ namespace {
 
 class HostEventLoggerPosix : public HostEventLogger, public HostStatusObserver {
  public:
-  HostEventLoggerPosix(ChromotingHost* host,
+  HostEventLoggerPosix(base::WeakPtr<HostStatusMonitor> monitor,
                        const std::string& application_name);
 
   virtual ~HostEventLoggerPosix();
@@ -43,7 +43,7 @@ class HostEventLoggerPosix : public HostEventLogger, public HostStatusObserver {
  private:
   void Log(const std::string& message);
 
-  scoped_refptr<ChromotingHost> host_;
+  base::WeakPtr<HostStatusMonitor> monitor_;
   std::string application_name_;
 
   DISALLOW_COPY_AND_ASSIGN(HostEventLoggerPosix);
@@ -51,16 +51,18 @@ class HostEventLoggerPosix : public HostEventLogger, public HostStatusObserver {
 
 } //namespace
 
-HostEventLoggerPosix::HostEventLoggerPosix(ChromotingHost* host,
-                                           const std::string& application_name)
-    : host_(host),
+HostEventLoggerPosix::HostEventLoggerPosix(
+    base::WeakPtr<HostStatusMonitor> monitor,
+    const std::string& application_name)
+    : monitor_(monitor),
       application_name_(application_name) {
   openlog(application_name_.c_str(), 0, LOG_USER);
-  host_->AddStatusObserver(this);
+  monitor_->AddStatusObserver(this);
 }
 
 HostEventLoggerPosix::~HostEventLoggerPosix() {
-  host_->RemoveStatusObserver(this);
+  if (monitor_)
+    monitor_->RemoveStatusObserver(this);
   closelog();
 }
 
@@ -102,9 +104,10 @@ void HostEventLoggerPosix::Log(const std::string& message) {
 
 // static
 scoped_ptr<HostEventLogger> HostEventLogger::Create(
-    ChromotingHost* host, const std::string& application_name) {
+    base::WeakPtr<HostStatusMonitor> monitor,
+    const std::string& application_name) {
   return scoped_ptr<HostEventLogger>(
-      new HostEventLoggerPosix(host, application_name));
+      new HostEventLoggerPosix(monitor, application_name));
 }
 
 }  // namespace remoting

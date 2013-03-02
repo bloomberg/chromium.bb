@@ -935,17 +935,18 @@ void HostProcess::StartHost() {
       this, host_id_, signal_strategy_.get(), directory_bot_jid_));
 
   log_to_server_.reset(
-      new LogToServer(host_, ServerLogEntry::ME2ME, signal_strategy_.get(),
-                      directory_bot_jid_));
-  host_event_logger_ = HostEventLogger::Create(host_, kApplicationName);
+      new LogToServer(host_->AsWeakPtr(), ServerLogEntry::ME2ME,
+                      signal_strategy_.get(), directory_bot_jid_));
+  host_event_logger_ =
+      HostEventLogger::Create(host_->AsWeakPtr(), kApplicationName);
 
   resizing_host_observer_.reset(
-      new ResizingHostObserver(desktop_resizer_.get(), host_));
+      new ResizingHostObserver(desktop_resizer_.get(), host_->AsWeakPtr()));
 
   // Create a host observer to enable/disable curtain mode as clients connect
   // and disconnect.
   curtaining_host_observer_.reset(new CurtainingHostObserver(
-                                  curtain_.get(), host_));
+                                  curtain_.get(), host_->AsWeakPtr()));
   curtaining_host_observer_->SetEnableCurtaining(curtain_required_);
 
   if (host_user_interface_.get()) {

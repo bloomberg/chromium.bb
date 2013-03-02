@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/resizing_host_observer.h"
-#include "remoting/host/desktop_resizer.h"
-
 #include <list>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "remoting/host/desktop_resizer.h"
+#include "remoting/host/host_status_monitor_fake.h"
+#include "remoting/host/resizing_host_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkSize.h"
 
@@ -67,8 +67,9 @@ class ResizingHostObserverTest : public testing::Test {
  public:
   void SetDesktopResizer(FakeDesktopResizer* desktop_resizer) {
     CHECK(!desktop_resizer_.get()) << "Call SetDeskopResizer once per test";
-    resizing_host_observer_.reset(new ResizingHostObserver(desktop_resizer,
-                                                           NULL));
+    resizing_host_observer_.reset(
+        new ResizingHostObserver(desktop_resizer,
+                                 host_status_monitor_.AsWeakPtr()));
     desktop_resizer_.reset(desktop_resizer);
     resizing_host_observer_->OnClientAuthenticated("");
   }
@@ -103,6 +104,7 @@ class ResizingHostObserverTest : public testing::Test {
  private:
   scoped_ptr<ResizingHostObserver> resizing_host_observer_;
   scoped_ptr<FakeDesktopResizer> desktop_resizer_;
+  HostStatusMonitorFake host_status_monitor_;
 };
 
 // Check that the host is not resized if GetSupportedSizes returns an empty

@@ -3,28 +3,27 @@
 // found in the LICENSE file.
 
 #include "remoting/host/resizing_host_observer.h"
-#include "remoting/host/desktop_resizer.h"
 
 #include <set>
 
 #include "base/logging.h"
+#include "remoting/host/desktop_resizer.h"
+#include "remoting/host/host_status_monitor.h"
 
 namespace remoting {
 
 ResizingHostObserver::ResizingHostObserver(
-    DesktopResizer* desktop_resizer, ChromotingHost* host)
+    DesktopResizer* desktop_resizer,
+    base::WeakPtr<HostStatusMonitor> monitor)
     : desktop_resizer_(desktop_resizer),
-      host_(host),
+      monitor_(monitor),
       original_size_(SkISize::Make(0, 0)) {
-  if (host_ != NULL) {
-    host_->AddStatusObserver(this);
-  }
+  monitor_->AddStatusObserver(this);
 }
 
 ResizingHostObserver::~ResizingHostObserver() {
-  if (host_ != NULL) {
-    host_->RemoveStatusObserver(this);
-  }
+  if (monitor_)
+    monitor_->RemoveStatusObserver(this);
 }
 
 void ResizingHostObserver::OnClientAuthenticated(const std::string& jid) {
