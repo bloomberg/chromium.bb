@@ -224,6 +224,7 @@ struct window {
 
 	int resizing;
 	int fullscreen_method;
+	int configure_requests;
 
 	window_key_handler_t key_handler;
 	window_keyboard_focus_handler_t keyboard_focus_handler;
@@ -3376,6 +3377,8 @@ void
 window_schedule_redraw(struct window *window)
 {
 	window->redraw_needed = 1;
+	if (window->configure_requests)
+		return;
 	if (!window->redraw_scheduled) {
 		window->redraw_task.run = idle_redraw;
 		display_defer(window->display, &window->redraw_task);
@@ -3387,6 +3390,41 @@ int
 window_is_fullscreen(struct window *window)
 {
 	return window->type == TYPE_FULLSCREEN;
+}
+
+static void
+configure_request_completed(void *data, struct wl_callback *callback, uint32_t  time)
+{
+	struct window *window = data;
+
+	wl_callback_destroy(callback);
+	window->configure_requests--;
+
+	if (!window->configure_requests)
+		window_schedule_redraw(window);
+}
+
+static struct wl_callback_listener configure_request_listener = {
+	configure_request_completed,
+};
+
+static void
+window_defer_redraw_until_configure(struct window* window)
+{
+	struct wl_callback *callback;
+
+	if (window->redraw_scheduled) {
+		wl_list_remove(&window->redraw_task.link);
+		window->redraw_scheduled = 0;
+	}
+	if (window->frame_cb) {
+		wl_callback_destroy(window->frame_cb);
+		window->frame_cb = 0;
+	}
+
+	callback = wl_display_sync(window->display->display);
+	wl_callback_add_listener(callback, &configure_request_listener, window);
+	window->configure_requests++;
 }
 
 void
@@ -3407,6 +3445,7 @@ window_set_fullscreen(struct window *window, int fullscreen)
 		wl_shell_surface_set_fullscreen(window->shell_surface,
 						window->fullscreen_method,
 						0, NULL);
+		window_defer_redraw_until_configure (window);
 	} else {
 		if (window->saved_type == TYPE_MAXIMIZED) {
 			window_set_maximized(window, 1);
@@ -3447,9 +3486,11 @@ window_set_maximized(struct window *window, int maximized)
 		window->saved_allocation = window->main_surface->allocation;
 		wl_shell_surface_set_maximized(window->shell_surface, NULL);
 		window->type = TYPE_MAXIMIZED;
+		window_defer_redraw_until_configure(window);
 	} else if (window->type == TYPE_FULLSCREEN) {
 		wl_shell_surface_set_maximized(window->shell_surface, NULL);
 		window->type = TYPE_MAXIMIZED;
+		window_defer_redraw_until_configure(window);
 	} else {
 		wl_shell_surface_set_toplevel(window->shell_surface);
 		window->type = TYPE_TOPLEVEL;
@@ -3658,6 +3699,7 @@ window_create_internal(struct display *display,
 
 	window->type = type;
 	window->fullscreen_method = WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT;
+	window->configure_requests = 0;
 
 	if (display->argb_device)
 #ifdef HAVE_CAIRO_EGL
