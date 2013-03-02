@@ -87,8 +87,8 @@ void MockDriveService::GetResourceListStub(
 
 void MockDriveService::GetAccountMetadataStub(
     const GetAccountMetadataCallback& callback) {
-  scoped_ptr<AccountMetadataFeed> account_metadata =
-      AccountMetadataFeed::CreateFrom(*account_metadata_data_);
+  scoped_ptr<AccountMetadata> account_metadata =
+      AccountMetadata::CreateFrom(*account_metadata_data_);
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, HTTP_SUCCESS,

@@ -6,8 +6,8 @@
 
 #include "base/message_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
-#include "chrome/browser/chromeos/drive/drive_feed_loader.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
 #include "chrome/browser/chromeos/drive/drive_scheduler.h"
 #include "chrome/browser/chromeos/drive/drive_test_util.h"
@@ -59,12 +59,12 @@ class CreateDirectoryOperationTest
         blocking_task_runner_,
         fake_free_disk_space_getter_.get());
 
-    drive_feed_loader_.reset(new DriveFeedLoader(
+    change_list_loader_.reset(new ChangeListLoader(
         metadata_.get(), scheduler_.get(), drive_web_apps_registry_.get(),
         cache_, blocking_task_runner_));
 
     DriveFileError error = DRIVE_FILE_OK;
-    drive_feed_loader_->ReloadFromServerIfNeeded(
+    change_list_loader_->ReloadFromServerIfNeeded(
         base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
                    &error));
     cache_->RequestInitializeForTesting();
@@ -76,7 +76,7 @@ class CreateDirectoryOperationTest
 
   virtual void TearDown() OVERRIDE {
     operation_.reset();
-    drive_feed_loader_.reset();
+    change_list_loader_.reset();
 
     cache_->Destroy();
     // The cache destruction requires to post a task to the blocking pool.
@@ -109,7 +109,7 @@ class CreateDirectoryOperationTest
 
   bool LoadRootFeedDocument(const std::string& filename) {
     return test_util::LoadChangeFeed(filename,
-                                     drive_feed_loader_.get(),
+                                     change_list_loader_.get(),
                                      false,  // is_delta_feed
                                      0);
   }
@@ -136,7 +136,7 @@ class CreateDirectoryOperationTest
   // The way to delete the DriveCache instance is a bit tricky, so here we use
   // a raw point. See TearDown method for how to delete it.
   DriveCache* cache_;
-  scoped_ptr<DriveFeedLoader> drive_feed_loader_;
+  scoped_ptr<ChangeListLoader> change_list_loader_;
 
   scoped_ptr<CreateDirectoryOperation> operation_;
 };

@@ -132,7 +132,7 @@ class DriveFileSyncClient
   void DidGetAccountMetadata(
       const ChangeStampCallback& callback,
       google_apis::GDataErrorCode error,
-      scoped_ptr<google_apis::AccountMetadataFeed> metadata);
+      scoped_ptr<google_apis::AccountMetadata> metadata);
 
   void DidGetResourceList(
       const ResourceListCallback& callback,

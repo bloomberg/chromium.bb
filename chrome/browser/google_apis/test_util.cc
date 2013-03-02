@@ -143,18 +143,18 @@ void CopyResultsFromGetResourceListCallback(
 
 void CopyResultsFromGetAccountMetadataCallback(
     GDataErrorCode* error_out,
-    scoped_ptr<AccountMetadataFeed>* account_metadata_out,
+    scoped_ptr<AccountMetadata>* account_metadata_out,
     GDataErrorCode error_in,
-    scoped_ptr<AccountMetadataFeed> account_metadata_in) {
+    scoped_ptr<AccountMetadata> account_metadata_in) {
   account_metadata_out->swap(account_metadata_in);
   *error_out = error_in;
 }
 
 void CopyResultsFromGetAccountMetadataCallbackAndQuit(
     GDataErrorCode* error_out,
-    scoped_ptr<AccountMetadataFeed>* account_metadata_out,
+    scoped_ptr<AccountMetadata>* account_metadata_out,
     GDataErrorCode error_in,
-    scoped_ptr<AccountMetadataFeed> account_metadata_in) {
+    scoped_ptr<AccountMetadata> account_metadata_in) {
   CopyResultsFromGetAccountMetadataCallback(
       error_out, account_metadata_out, error_in, account_metadata_in.Pass());
   MessageLoop::current()->Quit();

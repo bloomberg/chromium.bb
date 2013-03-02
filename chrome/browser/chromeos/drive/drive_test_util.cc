@@ -10,8 +10,8 @@
 #include "base/bind_helpers.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/message_loop.h"
+#include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_feed_loader.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 
 namespace drive {
@@ -199,7 +199,7 @@ void CopyResultsFromCloseFileCallbackAndQuit(DriveFileError* out_error,
 }
 
 bool LoadChangeFeed(const std::string& relative_path,
-                    DriveFeedLoader* feed_loader,
+                    ChangeListLoader* change_list_loader,
                     bool is_delta_feed,
                     int64 root_feed_changestamp) {
   scoped_ptr<Value> document =
@@ -217,12 +217,12 @@ bool LoadChangeFeed(const std::string& relative_path,
   ScopedVector<google_apis::ResourceList> feed_list;
   feed_list.push_back(document_feed.release());
 
-  feed_loader->UpdateFromFeed(
+  change_list_loader->UpdateFromFeed(
       feed_list,
       is_delta_feed,
       root_feed_changestamp,
       base::Bind(&base::DoNothing));
-  // DriveFeedLoader::UpdateFromFeed is asynchronous, so wait for it to finish.
+  // ChangeListLoader::UpdateFromFeed is asynchronous, so wait for it to finish.
   google_apis::test_util::RunBlockingPoolTask();
 
   return true;

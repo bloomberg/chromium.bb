@@ -91,10 +91,10 @@ TEST(GDataWAPIParserTest, ResourceListJsonParser) {
   EXPECT_EQ("application/atom+xml;type=feed",
             folder_entry->content_mime_type());
 
-  ASSERT_EQ(1U, folder_entry->feed_links().size());
-  const FeedLink* feed_link = folder_entry->feed_links()[0];
+  ASSERT_EQ(1U, folder_entry->resource_links().size());
+  const ResourceLink* feed_link = folder_entry->resource_links()[0];
   ASSERT_TRUE(feed_link);
-  ASSERT_EQ(FeedLink::FEED_LINK_ACL, feed_link->type());
+  ASSERT_EQ(ResourceLink::FEED_LINK_ACL, feed_link->type());
 
   const Link* entry1_alternate_link =
       folder_entry->GetLinkByType(Link::LINK_ALTERNATE);
@@ -188,10 +188,10 @@ TEST(GDataWAPIParserTest, ResourceEntryJsonParser) {
             entry->content_mime_type());
 
   // Check feed links.
-  ASSERT_EQ(1U, entry->feed_links().size());
-  const FeedLink* feed_link_1 = entry->feed_links()[0];
+  ASSERT_EQ(1U, entry->resource_links().size());
+  const ResourceLink* feed_link_1 = entry->resource_links()[0];
   ASSERT_TRUE(feed_link_1);
-  EXPECT_EQ(FeedLink::FEED_LINK_REVISIONS, feed_link_1->type());
+  EXPECT_EQ(ResourceLink::FEED_LINK_REVISIONS, feed_link_1->type());
 
   // Check links.
   ASSERT_EQ(8U, entry->links().size());
@@ -238,7 +238,7 @@ TEST(GDataWAPIParserTest, ResourceEntryJsonParser) {
   EXPECT_EQ(892721, entry->file_size());
 }
 
-TEST(GDataWAPIParserTest, AccountMetadataFeedParser) {
+TEST(GDataWAPIParserTest, AccountMetadataParser) {
   scoped_ptr<Value> document =
       test_util::LoadJSONFile("gdata/account_metadata.json");
   ASSERT_TRUE(document.get());
@@ -248,15 +248,15 @@ TEST(GDataWAPIParserTest, AccountMetadataFeedParser) {
       std::string("entry"), &entry_value));
   ASSERT_TRUE(entry_value);
 
-  scoped_ptr<AccountMetadataFeed> feed(
-      AccountMetadataFeed::CreateFrom(*document));
-  ASSERT_TRUE(feed.get());
-  EXPECT_EQ(GG_LONGLONG(6789012345), feed->quota_bytes_used());
-  EXPECT_EQ(GG_LONGLONG(9876543210), feed->quota_bytes_total());
-  EXPECT_EQ(654321, feed->largest_changestamp());
-  EXPECT_EQ(2U, feed->installed_apps().size());
-  const InstalledApp* first_app = feed->installed_apps()[0];
-  const InstalledApp* second_app = feed->installed_apps()[1];
+  scoped_ptr<AccountMetadata> metadata(
+      AccountMetadata::CreateFrom(*document));
+  ASSERT_TRUE(metadata.get());
+  EXPECT_EQ(GG_LONGLONG(6789012345), metadata->quota_bytes_used());
+  EXPECT_EQ(GG_LONGLONG(9876543210), metadata->quota_bytes_total());
+  EXPECT_EQ(654321, metadata->largest_changestamp());
+  EXPECT_EQ(2U, metadata->installed_apps().size());
+  const InstalledApp* first_app = metadata->installed_apps()[0];
+  const InstalledApp* second_app = metadata->installed_apps()[1];
 
   ASSERT_TRUE(first_app);
   EXPECT_EQ("Drive App 1", first_app->app_name());

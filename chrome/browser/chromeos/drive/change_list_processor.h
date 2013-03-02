@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FEED_PROCESSOR_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FEED_PROCESSOR_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_CHANGE_LIST_PROCESSOR_H_
+#define CHROME_BROWSER_CHROMEOS_DRIVE_CHANGE_LIST_PROCESSOR_H_
 
 #include <map>
 #include <set>
@@ -26,18 +26,18 @@ namespace drive {
 class DriveEntryProto;
 class DriveResourceMetadata;
 
-// DriveFeedProcessor is used to process feeds from WAPI (codename for
+// ChangeListProcessor is used to process feeds from WAPI (codename for
 // Documents List API).
-class DriveFeedProcessor {
+class ChangeListProcessor {
  public:
   typedef std::map<std::string /* resource_id */, DriveEntryProto>
       DriveEntryProtoMap;
 
   // Class used to record UMA stats with FeedToEntryProtoMap().
-  class FeedToEntryProtoMapUMAStats;
+  class ChangeListToEntryProtoMapUMAStats;
 
-  explicit DriveFeedProcessor(DriveResourceMetadata* resource_metadata);
-  ~DriveFeedProcessor();
+  explicit ChangeListProcessor(DriveResourceMetadata* resource_metadata);
+  ~ChangeListProcessor();
 
   // Applies the documents feeds to the file system using |resource_metadata_|.
   //
@@ -46,7 +46,7 @@ class DriveFeedProcessor {
   //
   // In the case of processing the root feeds |root_feed_changestamp| is used
   // as its initial changestamp value. The value comes from
-  // google_apis::AccountMetadataFeed.
+  // google_apis::AccountMetadata.
   // |on_complete_callback| is run after the feed is applied.
   // |on_complete_callback| must not be null.
   // TODO(achuith): Change the type of on_complete_callback to
@@ -63,7 +63,7 @@ class DriveFeedProcessor {
   void FeedToEntryProtoMap(
       const ScopedVector<google_apis::ResourceList>& feed_list,
       int64* feed_changestamp,
-      FeedToEntryProtoMapUMAStats* uma_stats);
+      ChangeListToEntryProtoMapUMAStats* uma_stats);
 
   // A map of DriveEntryProto's representing a feed.
   const DriveEntryProtoMap& entry_proto_map() const { return entry_proto_map_; }
@@ -166,10 +166,10 @@ class DriveFeedProcessor {
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<DriveFeedProcessor> weak_ptr_factory_;
-  DISALLOW_COPY_AND_ASSIGN(DriveFeedProcessor);
+  base::WeakPtrFactory<ChangeListProcessor> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(ChangeListProcessor);
 };
 
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FEED_PROCESSOR_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_CHANGE_LIST_PROCESSOR_H_

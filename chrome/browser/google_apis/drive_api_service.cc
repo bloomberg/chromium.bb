@@ -111,7 +111,7 @@ void ParseResourceEntryAndRun(
   callback.Run(error, entry.Pass());
 }
 
-// Parses the AboutResource value to AccountMetadataFeed and runs |callback|
+// Parses the AboutResource value to AccountMetadata and runs |callback|
 // on the UI thread once parsing is done.
 void ParseAccountMetadataAndRun(
     const GetAccountMetadataCallback& callback,
@@ -121,13 +121,13 @@ void ParseAccountMetadataAndRun(
   DCHECK(!callback.is_null());
 
   if (!value) {
-    callback.Run(error, scoped_ptr<AccountMetadataFeed>());
+    callback.Run(error, scoped_ptr<AccountMetadata>());
     return;
   }
 
-  // TODO(satorux): Convert AboutResource to AccountMetadataFeed.
+  // TODO(satorux): Convert AboutResource to AccountMetadata.
   // For now just returning an error. crbug.com/165621
-  callback.Run(GDATA_PARSE_ERROR, scoped_ptr<AccountMetadataFeed>());
+  callback.Run(GDATA_PARSE_ERROR, scoped_ptr<AccountMetadata>());
 }
 
 // Parses the JSON value to AppList runs |callback| on the UI thread

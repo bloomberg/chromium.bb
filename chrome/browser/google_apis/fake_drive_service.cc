@@ -107,8 +107,8 @@ bool FakeDriveService::LoadAccountMetadataForWapi(
   account_metadata_value_ = test_util::LoadJSONFile(relative_path);
 
   // Update the largest_changestamp_.
-  scoped_ptr<AccountMetadataFeed> account_metadata =
-      AccountMetadataFeed::CreateFrom(*account_metadata_value_);
+  scoped_ptr<AccountMetadata> account_metadata =
+      AccountMetadata::CreateFrom(*account_metadata_value_);
   largest_changestamp_ = account_metadata->largest_changestamp();
 
   // Add the largest changestamp to the existing entries.
@@ -351,7 +351,7 @@ void FakeDriveService::GetAccountMetadata(
   DCHECK(!callback.is_null());
 
   if (offline_) {
-    scoped_ptr<AccountMetadataFeed> null;
+    scoped_ptr<AccountMetadata> null;
     MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(callback,
@@ -361,8 +361,8 @@ void FakeDriveService::GetAccountMetadata(
   }
 
   ++account_metadata_load_count_;
-  scoped_ptr<AccountMetadataFeed> account_metadata =
-      AccountMetadataFeed::CreateFrom(*account_metadata_value_);
+  scoped_ptr<AccountMetadata> account_metadata =
+      AccountMetadata::CreateFrom(*account_metadata_value_);
   MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(callback,
@@ -388,8 +388,8 @@ void FakeDriveService::GetAboutResource(
   }
 
   ++about_resource_load_count_;
-  scoped_ptr<AccountMetadataFeed> account_metadata =
-      AccountMetadataFeed::CreateFrom(*account_metadata_value_);
+  scoped_ptr<AccountMetadata> account_metadata =
+      AccountMetadata::CreateFrom(*account_metadata_value_);
   scoped_ptr<AboutResource> about_resource(new AboutResource);
   about_resource->set_largest_change_id(
       account_metadata->largest_changestamp());

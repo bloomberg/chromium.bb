@@ -15,10 +15,10 @@
 #include "base/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/drive/change_list_loader.h"
+#include "chrome/browser/chromeos/drive/change_list_processor.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
-#include "chrome/browser/chromeos/drive/drive_feed_loader.h"
-#include "chrome/browser/chromeos/drive/drive_feed_processor.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_observer.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_scheduler.h"
@@ -266,7 +266,7 @@ DriveFileSystem::DriveFileSystem(
 void DriveFileSystem::Reload() {
   ResetResourceMetadata();
 
-  feed_loader_->ReloadFromServerIfNeeded(
+  change_list_loader_->ReloadFromServerIfNeeded(
       base::Bind(&DriveFileSystem::NotifyInitialLoadFinishedAndRun,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Bind(&DriveFileSystem::OnUpdateChecked,
@@ -289,12 +289,12 @@ void DriveFileSystem::Initialize() {
 void DriveFileSystem::ResetResourceMetadata() {
   resource_metadata_.reset(
       new DriveResourceMetadata(drive_service_->GetRootResourceId()));
-  feed_loader_.reset(new DriveFeedLoader(resource_metadata_.get(),
+  change_list_loader_.reset(new ChangeListLoader(resource_metadata_.get(),
                                          scheduler_.get(),
                                          webapps_registry_,
                                          cache_,
                                          blocking_task_runner_));
-  feed_loader_->AddObserver(this);
+  change_list_loader_->AddObserver(this);
 
   // Allocate the drive operation handlers.
   drive_operations_.Init(scheduler_.get(),
@@ -310,8 +310,8 @@ void DriveFileSystem::CheckForUpdates() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DVLOG(1) << "CheckForUpdates";
 
-  if (resource_metadata_->loaded() && !feed_loader_->refreshing()) {
-    feed_loader_->ReloadFromServerIfNeeded(
+  if (resource_metadata_->loaded() && !change_list_loader_->refreshing()) {
+    change_list_loader_->ReloadFromServerIfNeeded(
         base::Bind(&DriveFileSystem::OnUpdateChecked,
                    weak_ptr_factory_.GetWeakPtr()));
   }
@@ -328,7 +328,7 @@ DriveFileSystem::~DriveFileSystem() {
   // This should be called from UI thread, from DriveSystemService shutdown.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  feed_loader_->RemoveObserver(this);
+  change_list_loader_->RemoveObserver(this);
 
   // Cancel all the in-flight operations.
   // This asynchronously cancels the URL fetch operations.
@@ -436,7 +436,7 @@ void DriveFileSystem::LoadFeedIfNeeded(const FileOperationCallback& callback) {
     return;
   }
 
-  if (feed_loader_->refreshing()) {
+  if (change_list_loader_->refreshing()) {
     // If root feed is not loaded but the initialization process has
     // already started, add an observer to execute the remaining task after
     // the end of the initialization.
@@ -446,9 +446,10 @@ void DriveFileSystem::LoadFeedIfNeeded(const FileOperationCallback& callback) {
   }
 
   // Load root feed from the disk cache.
-  feed_loader_->LoadFromCache(base::Bind(&DriveFileSystem::OnFeedCacheLoaded,
-                                         weak_ptr_factory_.GetWeakPtr(),
-                                         callback));
+  change_list_loader_->LoadFromCache(
+      base::Bind(&DriveFileSystem::OnFeedCacheLoaded,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback));
 }
 
 void DriveFileSystem::TransferFileFromRemoteToLocal(
@@ -965,7 +966,7 @@ void DriveFileSystem::RequestDirectoryRefreshAfterGetEntryInfo(
     return;
   }
 
-  feed_loader_->LoadDirectoryFromServer(
+  change_list_loader_->LoadDirectoryFromServer(
       entry_proto->resource_id(),
       base::Bind(&DriveFileSystem::OnRequestDirectoryRefresh,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -986,11 +987,11 @@ void DriveFileSystem::OnRequestDirectoryRefresh(
     return;
   }
 
-  DriveFeedProcessor feed_processor(resource_metadata_.get());
-  feed_processor.FeedToEntryProtoMap(feed_list, NULL, NULL);
+  ChangeListProcessor change_list_processor(resource_metadata_.get());
+  change_list_processor.FeedToEntryProtoMap(feed_list, NULL, NULL);
   resource_metadata_->RefreshDirectory(
       directory_resource_id,
-      feed_processor.entry_proto_map(),
+      change_list_processor.entry_proto_map(),
       base::Bind(&DriveFileSystem::OnDirectoryChangeFileMoveCallback,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -1019,7 +1020,7 @@ void DriveFileSystem::GetAvailableSpace(
 void DriveFileSystem::OnGetAccountMetadata(
     const GetAvailableSpaceCallback& callback,
     google_apis::GDataErrorCode status,
-    scoped_ptr<google_apis::AccountMetadataFeed> account_metadata) {
+    scoped_ptr<google_apis::AccountMetadata> account_metadata) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -1137,7 +1138,7 @@ void DriveFileSystem::Search(const std::string& search_query,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  feed_loader_->SearchFromServer(
+  change_list_loader_->SearchFromServer(
       search_query,
       shared_with_me,
       next_feed,
@@ -1177,7 +1178,7 @@ void DriveFileSystem::LoadRootFeedFromCacheForTesting(
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  feed_loader_->LoadFromCache(callback);
+  change_list_loader_->LoadFromCache(callback);
 }
 
 void DriveFileSystem::OnFileDownloaded(
@@ -1299,7 +1300,7 @@ void DriveFileSystem::OnFeedCacheLoaded(const FileOperationCallback& callback,
 
   if (error != DRIVE_FILE_OK) {
     // If cache cannot be loaded, try to load from server directly.
-    feed_loader_->ReloadFromServerIfNeeded(
+    change_list_loader_->ReloadFromServerIfNeeded(
         base::Bind(&DriveFileSystem::NotifyInitialLoadFinishedAndRun,
                    weak_ptr_factory_.GetWeakPtr(),
                    callback));
@@ -1380,7 +1381,7 @@ void DriveFileSystem::GetMetadata(
 
   DriveFileSystemMetadata metadata;
   metadata.loaded = resource_metadata_->loaded();
-  metadata.refreshing = feed_loader_->refreshing();
+  metadata.refreshing = change_list_loader_->refreshing();
 
   // Metadata related to delta update.
   metadata.push_notification_enabled = push_notification_enabled_;

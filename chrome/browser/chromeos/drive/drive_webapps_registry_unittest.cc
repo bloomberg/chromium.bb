@@ -84,11 +84,11 @@ TEST_F(DriveWebAppsRegistryTest, LoadAndFindWebApps) {
   ASSERT_TRUE(entry_value);
 
   // Load feed.
-  scoped_ptr<google_apis::AccountMetadataFeed> feed(
-      google_apis::AccountMetadataFeed::CreateFrom(*document));
-  ASSERT_TRUE(feed.get());
+  scoped_ptr<google_apis::AccountMetadata> metadata(
+      google_apis::AccountMetadata::CreateFrom(*document));
+  ASSERT_TRUE(metadata.get());
   scoped_ptr<DriveWebAppsRegistry> web_apps(new DriveWebAppsRegistry);
-  web_apps->UpdateFromFeed(*feed.get());
+  web_apps->UpdateFromFeed(*metadata.get());
 
   // Find by extension 'ext_1'.
   ScopedVector<DriveWebAppInfo> ext_1_results;

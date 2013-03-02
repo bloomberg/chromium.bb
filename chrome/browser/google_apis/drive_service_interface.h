@@ -21,7 +21,7 @@ class IOBuffer;
 namespace google_apis {
 
 class AboutResource;
-class AccountMetadataFeed;
+class AccountMetadata;
 class AppList;
 class OperationRegistry;
 class ResourceEntry;
@@ -55,7 +55,7 @@ typedef base::Callback<void(GDataErrorCode error,
 
 // Callback used for GetAccountMetadata().
 typedef base::Callback<void(GDataErrorCode error,
-                            scoped_ptr<AccountMetadataFeed> account_metadata)>
+                            scoped_ptr<AccountMetadata> account_metadata)>
     GetAccountMetadataCallback;
 
 // Callback used for GetAboutResource().

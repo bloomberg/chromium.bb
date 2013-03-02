@@ -374,7 +374,7 @@ TEST_F(FakeDriveServiceTest, GetAccountMetadata) {
       "gdata/account_metadata.json"));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  scoped_ptr<AccountMetadataFeed> account_metadata;
+  scoped_ptr<AccountMetadata> account_metadata;
   fake_service_.GetAccountMetadata(
       base::Bind(&test_util::CopyResultsFromGetAccountMetadataCallback,
                  &error,
@@ -395,7 +395,7 @@ TEST_F(FakeDriveServiceTest, GetAccountMetadata_Offline) {
   fake_service_.set_offline(true);
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  scoped_ptr<AccountMetadataFeed> account_metadata;
+  scoped_ptr<AccountMetadata> account_metadata;
   fake_service_.GetAccountMetadata(
       base::Bind(&test_util::CopyResultsFromGetAccountMetadataCallback,
                  &error,

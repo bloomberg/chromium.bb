@@ -301,7 +301,7 @@ void DriveFileSyncClient::GetResourceEntry(
 void DriveFileSyncClient::DidGetAccountMetadata(
     const ChangeStampCallback& callback,
     google_apis::GDataErrorCode error,
-    scoped_ptr<google_apis::AccountMetadataFeed> metadata) {
+    scoped_ptr<google_apis::AccountMetadata> metadata) {
   DCHECK(CalledOnValidThread());
 
   int64 largest_changestamp = 0;

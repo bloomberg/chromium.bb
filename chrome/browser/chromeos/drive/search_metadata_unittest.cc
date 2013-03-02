@@ -45,7 +45,7 @@ class SearchMetadataTest : public testing::Test {
                                            blocking_task_runner_));
     file_system_->Initialize();
     ASSERT_TRUE(test_util::LoadChangeFeed("gdata/root_feed.json",
-                                          file_system_->feed_loader(),
+                                          file_system_->change_list_loader(),
                                           false,
                                           1));
   }

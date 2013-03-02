@@ -123,41 +123,41 @@ class Link {
 
 // Feed links define links (URLs) to special list of entries (i.e. list of
 // previous document revisions).
-class FeedLink {
+class ResourceLink {
  public:
-  enum FeedLinkType {
+  enum ResourceLinkType {
     FEED_LINK_UNKNOWN,
     FEED_LINK_ACL,
     FEED_LINK_REVISIONS,
   };
-  FeedLink();
+  ResourceLink();
 
   // Registers the mapping between JSON field names and the members in
   // this class.
   static void RegisterJSONConverter(
-      base::JSONValueConverter<FeedLink>* converter);
+      base::JSONValueConverter<ResourceLink>* converter);
 
   // MIME type of the feed.
-  FeedLinkType type() const { return type_; }
+  ResourceLinkType type() const { return type_; }
 
   // URL of the feed.
   const GURL& href() const { return href_; }
 
-  void set_type(FeedLinkType type) { type_ = type; }
+  void set_type(ResourceLinkType type) { type_ = type; }
   void set_href(const GURL& href) { href_ = href; }
 
  private:
   friend class ResourceEntry;
-  // Converts value of gd$feedLink.rel into FeedLinkType enum.
+  // Converts value of gd$feedLink.rel into ResourceLinkType enum.
   // Outputs to |result| and returns true when |rel| has a valid
   // value.  Otherwise does nothing and returns false.
   static bool GetFeedLinkType(
-      const base::StringPiece& rel, FeedLinkType* result);
+      const base::StringPiece& rel, ResourceLinkType* result);
 
-  FeedLinkType type_;
+  ResourceLinkType type_;
   GURL href_;
 
-  DISALLOW_COPY_AND_ASSIGN(FeedLink);
+  DISALLOW_COPY_AND_ASSIGN(ResourceLink);
 };
 
 // Author represents an author of an entity.
@@ -315,10 +315,10 @@ class AppIcon {
 
 // Base class for feed entries. This class defines fields commonly used by
 // various feeds.
-class FeedEntry {
+class CommonMetadata {
  public:
-  FeedEntry();
-  virtual ~FeedEntry();
+  CommonMetadata();
+  virtual ~CommonMetadata();
 
   // Returns a link of a given |type| for this entry. If not found, it returns
   // NULL.
@@ -357,9 +357,9 @@ class FeedEntry {
  protected:
   // Registers the mapping between JSON field names and the members in
   // this class.
-  template<typename FeedEntryDescendant>
+  template<typename CommonMetadataDescendant>
   static void RegisterJSONConverter(
-      base::JSONValueConverter<FeedEntryDescendant>* converter);
+      base::JSONValueConverter<CommonMetadataDescendant>* converter);
 
   std::string etag_;
   ScopedVector<Author> authors_;
@@ -367,12 +367,12 @@ class FeedEntry {
   ScopedVector<Category> categories_;
   base::Time updated_time_;
 
-  DISALLOW_COPY_AND_ASSIGN(FeedEntry);
+  DISALLOW_COPY_AND_ASSIGN(CommonMetadata);
 };
 
 // This class represents a resource entry. A resource is a generic term which
 // refers to a file and a directory.
-class ResourceEntry : public FeedEntry {
+class ResourceEntry : public CommonMetadata {
  public:
   ResourceEntry();
   virtual ~ResourceEntry();
@@ -447,10 +447,12 @@ class ResourceEntry : public FeedEntry {
 
   const std::string& content_mime_type() const { return content_.mime_type(); }
 
-  // The feed links contain extra links for revisions and access control,
+  // The resource links contain extra links for revisions and access control,
   // etc.  Note that links() contain more basic links like edit URL,
   // alternative URL, etc.
-  const ScopedVector<FeedLink>& feed_links() const { return feed_links_; }
+  const ScopedVector<ResourceLink>& resource_links() const {
+    return resource_links_;
+  }
 
   // File name (exists only for kinds FILE and PDF).
   const std::string& filename() const { return filename_; }
@@ -540,8 +542,8 @@ class ResourceEntry : public FeedEntry {
   void set_content(const Content& content) {
     content_ = content;
   }
-  void set_feed_links(ScopedVector<FeedLink>* feed_links) {
-    feed_links_.swap(*feed_links);
+  void set_resource_links(ScopedVector<ResourceLink>* resource_links) {
+    resource_links_.swap(*resource_links);
   }
   void set_filename(const std::string& filename) { filename_ = filename; }
   void set_suggested_filename(const std::string& suggested_filename) {
@@ -575,7 +577,7 @@ class ResourceEntry : public FeedEntry {
   base::Time last_viewed_time_;
   std::vector<std::string> labels_;
   Content content_;
-  ScopedVector<FeedLink> feed_links_;
+  ScopedVector<ResourceLink> resource_links_;
   // Optional fields for files only.
   std::string filename_;
   std::string suggested_filename_;
@@ -592,7 +594,7 @@ class ResourceEntry : public FeedEntry {
 // such as the root upload URL. The feed is paginated and the rest of the
 // feed can be fetched by retrieving the remaining parts of the feed from
 // URLs provided by GetNextFeedURL() method.
-class ResourceList : public FeedEntry {
+class ResourceList : public CommonMetadata {
  public:
   ResourceList();
   virtual ~ResourceList();
@@ -795,17 +797,17 @@ class InstalledApp {
 
 // Account metadata feed represents the metadata object attached to the user's
 // account.
-class AccountMetadataFeed {
+class AccountMetadata {
  public:
-  AccountMetadataFeed();
-  virtual ~AccountMetadataFeed();
+  AccountMetadata();
+  virtual ~AccountMetadata();
 
   // Creates feed from parsed JSON Value.  You should call this
   // instead of instantiating JSONValueConverter by yourself because
   // this method does some post-process for some fields.  See
   // FillRemainingFields comment and implementation in ResourceEntry
   // class for the details.
-  static scoped_ptr<AccountMetadataFeed> CreateFrom(const base::Value& value);
+  static scoped_ptr<AccountMetadata> CreateFrom(const base::Value& value);
 
   int64 quota_bytes_total() const {
     return quota_bytes_total_;
@@ -839,7 +841,7 @@ class AccountMetadataFeed {
   // Registers the mapping between JSON field names and the members in
   // this class.
   static void RegisterJSONConverter(
-      base::JSONValueConverter<AccountMetadataFeed>* converter);
+      base::JSONValueConverter<AccountMetadata>* converter);
 
  private:
   // Parses and initializes data members from content of |value|.
@@ -851,7 +853,7 @@ class AccountMetadataFeed {
   int64 largest_changestamp_;
   ScopedVector<InstalledApp> installed_apps_;
 
-  DISALLOW_COPY_AND_ASSIGN(AccountMetadataFeed);
+  DISALLOW_COPY_AND_ASSIGN(AccountMetadata);
 };
 
 

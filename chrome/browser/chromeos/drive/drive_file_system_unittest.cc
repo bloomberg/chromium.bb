@@ -265,7 +265,7 @@ class DriveFileSystemTest : public testing::Test {
 
   bool LoadFeed(const std::string& filename, bool is_delta_feed) {
     if (!test_util::LoadChangeFeed(filename,
-                                   file_system_->feed_loader(),
+                                   file_system_->change_list_loader(),
                                    is_delta_feed,
                                    root_feed_changestamp_)) {
       return false;
@@ -2090,7 +2090,7 @@ TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
 }
 
 // TODO(satorux): Testing if WebAppsRegistry is loaded here is awkward. We
-// should move this to drive_feed_loader_unittest.cc. crbug.com/161703
+// should move this to change_list_loader_unittest.cc. crbug.com/161703
 TEST_F(DriveFileSystemTest, WebAppsRegistryIsLoaded) {
   SaveTestFileSystem(USE_SERVER_TIMESTAMP);
 

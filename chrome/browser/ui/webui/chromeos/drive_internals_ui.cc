@@ -233,7 +233,7 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   // Called when GetAccountMetadata() call to DriveService is complete.
   void OnGetAccountMetadata(
       google_apis::GDataErrorCode status,
-      scoped_ptr<google_apis::AccountMetadataFeed> account_metadata);
+      scoped_ptr<google_apis::AccountMetadata> account_metadata);
 
   // Callback for DriveFilesystem::GetMetadata for local update.
   void OnGetFilesystemMetadataForLocal(
@@ -260,7 +260,7 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
 
 void DriveInternalsWebUIHandler::OnGetAccountMetadata(
     google_apis::GDataErrorCode status,
-    scoped_ptr<google_apis::AccountMetadataFeed> parsed_metadata) {
+    scoped_ptr<google_apis::AccountMetadata> parsed_metadata) {
   if (status != google_apis::HTTP_SUCCESS) {
     LOG(ERROR) << "Failed to get account metadata";
     return;

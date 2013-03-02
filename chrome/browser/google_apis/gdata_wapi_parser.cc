@@ -210,15 +210,15 @@ const LinkTypeMap kLinkTypeMap[] = {
       "http://schemas.google.com/docs/2007#share"},
 };
 
-struct FeedLinkTypeMap {
-  FeedLink::FeedLinkType type;
+struct ResourceLinkTypeMap {
+  ResourceLink::ResourceLinkType type;
   const char* rel;
 };
 
-const FeedLinkTypeMap kFeedLinkTypeMap[] = {
-    { FeedLink::FEED_LINK_ACL,
+const ResourceLinkTypeMap kFeedLinkTypeMap[] = {
+    { ResourceLink::FEED_LINK_ACL,
       "http://schemas.google.com/acl/2007#accessControlList" },
-    { FeedLink::FEED_LINK_REVISIONS,
+    { ResourceLink::FEED_LINK_REVISIONS,
       "http://schemas.google.com/docs/2007/revisions" },
 };
 
@@ -347,14 +347,14 @@ void Link::RegisterJSONConverter(base::JSONValueConverter<Link>* converter) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// FeedLink implementation
+// ResourceLink implementation
 
-FeedLink::FeedLink() : type_(FeedLink::FEED_LINK_UNKNOWN) {
+ResourceLink::ResourceLink() : type_(ResourceLink::FEED_LINK_UNKNOWN) {
 }
 
 // static.
-bool FeedLink::GetFeedLinkType(
-    const base::StringPiece& rel, FeedLink::FeedLinkType* result) {
+bool ResourceLink::GetFeedLinkType(
+    const base::StringPiece& rel, ResourceLink::ResourceLinkType* result) {
   for (size_t i = 0; i < arraysize(kFeedLinkTypeMap); i++) {
     if (rel == kFeedLinkTypeMap[i].rel) {
       *result = kFeedLinkTypeMap[i].type;
@@ -366,12 +366,12 @@ bool FeedLink::GetFeedLinkType(
 }
 
 // static
-void FeedLink::RegisterJSONConverter(
-    base::JSONValueConverter<FeedLink>* converter) {
-  converter->RegisterCustomField<FeedLink::FeedLinkType>(
-      kRelField, &FeedLink::type_, &FeedLink::GetFeedLinkType);
+void ResourceLink::RegisterJSONConverter(
+    base::JSONValueConverter<ResourceLink>* converter) {
+  converter->RegisterCustomField<ResourceLink::ResourceLinkType>(
+      kRelField, &ResourceLink::type_, &ResourceLink::GetFeedLinkType);
   converter->RegisterCustomField(
-      kHrefField, &FeedLink::href_, &GetGURLFromString);
+      kHrefField, &ResourceLink::href_, &GetGURLFromString);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -402,7 +402,7 @@ void Category::RegisterJSONConverter(
   converter->RegisterStringField(kTermField, &Category::term_);
 }
 
-const Link* FeedEntry::GetLinkByType(Link::LinkType type) const {
+const Link* CommonMetadata::GetLinkByType(Link::LinkType type) const {
   for (size_t i = 0; i < links_.size(); ++i) {
     if (links_[i]->type() == type)
       return links_[i];
@@ -467,27 +467,27 @@ bool AppIcon::GetIconCategory(const base::StringPiece& category,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// FeedEntry implementation
+// CommonMetadata implementation
 
-FeedEntry::FeedEntry() {
+CommonMetadata::CommonMetadata() {
 }
 
-FeedEntry::~FeedEntry() {
+CommonMetadata::~CommonMetadata() {
 }
 
 // static
-template<typename FeedEntryDescendant>
-void FeedEntry::RegisterJSONConverter(
-    base::JSONValueConverter<FeedEntryDescendant>* converter) {
-  converter->RegisterStringField(kETagField, &FeedEntry::etag_);
+template<typename CommonMetadataDescendant>
+void CommonMetadata::RegisterJSONConverter(
+    base::JSONValueConverter<CommonMetadataDescendant>* converter) {
+  converter->RegisterStringField(kETagField, &CommonMetadata::etag_);
   converter->template RegisterRepeatedMessage<Author>(
-      kAuthorField, &FeedEntry::authors_);
+      kAuthorField, &CommonMetadata::authors_);
   converter->template RegisterRepeatedMessage<Link>(
-      kLinkField, &FeedEntry::links_);
+      kLinkField, &CommonMetadata::links_);
   converter->template RegisterRepeatedMessage<Category>(
-      kCategoryField, &FeedEntry::categories_);
+      kCategoryField, &CommonMetadata::categories_);
   converter->template RegisterCustomField<base::Time>(
-      kUpdatedField, &FeedEntry::updated_time_, &util::GetTimeFromString);
+      kUpdatedField, &CommonMetadata::updated_time_, &util::GetTimeFromString);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -530,7 +530,7 @@ bool ResourceEntry::ParseChangestamp(const base::Value* value,
 void ResourceEntry::RegisterJSONConverter(
     base::JSONValueConverter<ResourceEntry>* converter) {
   // Inherit the parent registrations.
-  FeedEntry::RegisterJSONConverter(converter);
+  CommonMetadata::RegisterJSONConverter(converter);
   converter->RegisterStringField(
       kResourceIdField, &ResourceEntry::resource_id_);
   converter->RegisterStringField(kIDField, &ResourceEntry::id_);
@@ -542,7 +542,7 @@ void ResourceEntry::RegisterJSONConverter(
       kLastViewedField, &ResourceEntry::last_viewed_time_,
       &util::GetTimeFromString);
   converter->RegisterRepeatedMessage(
-      kFeedLinkField, &ResourceEntry::feed_links_);
+      kFeedLinkField, &ResourceEntry::resource_links_);
   converter->RegisterNestedField(kContentField, &ResourceEntry::content_);
 
   // File properties.  If the resource type is not a normal file, then
@@ -708,7 +708,7 @@ scoped_ptr<ResourceEntry> ResourceEntry::CreateFromFileResource(
   // This should be the url to download the file.
   entry->content_.url_ = file.download_url();
   entry->content_.mime_type_ = file.mime_type();
-  // TODO(kochi): entry->feed_links_
+  // TODO(kochi): entry->resource_links_
 
   // For file entries
   entry->filename_ = file.title();
@@ -721,7 +721,7 @@ scoped_ptr<ResourceEntry> ResourceEntry::CreateFromFileResource(
   // file entry still exists but with its "trashed" label true.
   entry->deleted_ = file.labels().is_trashed();
 
-  // FeedEntry
+  // CommonMetadata
   entry->etag_ = file.etag();
   // entry->authors_
   // entry->links_.
@@ -796,7 +796,7 @@ ResourceList::~ResourceList() {
 void ResourceList::RegisterJSONConverter(
     base::JSONValueConverter<ResourceList>* converter) {
   // inheritance
-  FeedEntry::RegisterJSONConverter(converter);
+  CommonMetadata::RegisterJSONConverter(converter);
   // TODO(zelidrag): Once we figure out where these will be used, we should
   // check for valid start_index_ and items_per_page_ values.
   converter->RegisterCustomField<int>(
@@ -965,54 +965,54 @@ void InstalledApp::RegisterJSONConverter(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AccountMetadataFeed implementation
+// AccountMetadata implementation
 
-AccountMetadataFeed::AccountMetadataFeed()
+AccountMetadata::AccountMetadata()
     : quota_bytes_total_(0),
       quota_bytes_used_(0),
       largest_changestamp_(0) {
 }
 
-AccountMetadataFeed::~AccountMetadataFeed() {
+AccountMetadata::~AccountMetadata() {
 }
 
 // static
-void AccountMetadataFeed::RegisterJSONConverter(
-    base::JSONValueConverter<AccountMetadataFeed>* converter) {
+void AccountMetadata::RegisterJSONConverter(
+    base::JSONValueConverter<AccountMetadata>* converter) {
   converter->RegisterCustomField<int64>(
       kQuotaBytesTotalField,
-      &AccountMetadataFeed::quota_bytes_total_,
+      &AccountMetadata::quota_bytes_total_,
       &base::StringToInt64);
   converter->RegisterCustomField<int64>(
       kQuotaBytesUsedField,
-      &AccountMetadataFeed::quota_bytes_used_,
+      &AccountMetadata::quota_bytes_used_,
       &base::StringToInt64);
   converter->RegisterCustomField<int64>(
       kLargestChangestampField,
-      &AccountMetadataFeed::largest_changestamp_,
+      &AccountMetadata::largest_changestamp_,
       &base::StringToInt64);
   converter->RegisterRepeatedMessage(kInstalledAppField,
-                                     &AccountMetadataFeed::installed_apps_);
+                                     &AccountMetadata::installed_apps_);
 }
 
 // static
-scoped_ptr<AccountMetadataFeed> AccountMetadataFeed::CreateFrom(
+scoped_ptr<AccountMetadata> AccountMetadata::CreateFrom(
     const base::Value& value) {
-  scoped_ptr<AccountMetadataFeed> feed(new AccountMetadataFeed());
+  scoped_ptr<AccountMetadata> metadata(new AccountMetadata());
   const base::DictionaryValue* dictionary = NULL;
   const base::Value* entry = NULL;
   if (!value.GetAsDictionary(&dictionary) ||
       !dictionary->Get(kEntryField, &entry) ||
-      !feed->Parse(*entry)) {
+      !metadata->Parse(*entry)) {
     LOG(ERROR) << "Unable to create: Invalid account metadata feed!";
-    return scoped_ptr<AccountMetadataFeed>(NULL);
+    return scoped_ptr<AccountMetadata>(NULL);
   }
 
-  return feed.Pass();
+  return metadata.Pass();
 }
 
-bool AccountMetadataFeed::Parse(const base::Value& value) {
-  base::JSONValueConverter<AccountMetadataFeed> converter;
+bool AccountMetadata::Parse(const base::Value& value) {
+  base::JSONValueConverter<AccountMetadata> converter;
   if (!converter.Convert(value, this)) {
     LOG(ERROR) << "Unable to parse: Invalid account metadata feed!";
     return false;

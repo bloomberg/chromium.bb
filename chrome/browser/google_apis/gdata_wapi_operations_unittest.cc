@@ -477,7 +477,7 @@ TEST_F(GDataWapiOperationsTest, GetResourceEntryOperation_InvalidResourceId) {
 
 TEST_F(GDataWapiOperationsTest, GetAccountMetadataOperation) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
-  scoped_ptr<AccountMetadataFeed> result_data;
+  scoped_ptr<AccountMetadata> result_data;
 
   GetAccountMetadataOperation* operation = new GetAccountMetadataOperation(
       &operation_registry_,
@@ -494,8 +494,8 @@ TEST_F(GDataWapiOperationsTest, GetAccountMetadataOperation) {
   EXPECT_EQ("/feeds/metadata/default?v=3&alt=json&include-installed-apps=true",
             http_request_.relative_url);
 
-  scoped_ptr<AccountMetadataFeed> expected(
-      AccountMetadataFeed::CreateFrom(
+  scoped_ptr<AccountMetadata> expected(
+      AccountMetadata::CreateFrom(
           *test_util::LoadJSONFile("gdata/account_metadata.json")));
 
   ASSERT_TRUE(result_data.get());

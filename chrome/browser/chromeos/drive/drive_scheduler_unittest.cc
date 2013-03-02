@@ -169,7 +169,7 @@ TEST_F(DriveSchedulerTest, GetAccountMetadata) {
   ConnectToWifi();
 
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-  scoped_ptr<google_apis::AccountMetadataFeed> account_metadata;
+  scoped_ptr<google_apis::AccountMetadata> account_metadata;
 
   scheduler_->GetAccountMetadata(
       base::Bind(
@@ -418,7 +418,7 @@ TEST_F(DriveSchedulerTest, DownloadFileCellularDisabled) {
       google_apis::GetContentCallback());
   // Metadata should still work
   google_apis::GDataErrorCode metadata_error = google_apis::GDATA_OTHER_ERROR;
-  scoped_ptr<google_apis::AccountMetadataFeed> account_metadata;
+  scoped_ptr<google_apis::AccountMetadata> account_metadata;
 
   // Try to get the metadata
   scheduler_->GetAccountMetadata(
@@ -476,7 +476,7 @@ TEST_F(DriveSchedulerTest, DownloadFileWimaxDisabled) {
       google_apis::GetContentCallback());
   // Metadata should still work
   google_apis::GDataErrorCode metadata_error = google_apis::GDATA_OTHER_ERROR;
-  scoped_ptr<google_apis::AccountMetadataFeed> account_metadata;
+  scoped_ptr<google_apis::AccountMetadata> account_metadata;
 
   // Try to get the metadata
   scheduler_->GetAccountMetadata(
@@ -534,7 +534,7 @@ TEST_F(DriveSchedulerTest, DownloadFileCellularEnabled) {
       google_apis::GetContentCallback());
   // Metadata should still work
   google_apis::GDataErrorCode metadata_error = google_apis::GDATA_OTHER_ERROR;
-  scoped_ptr<google_apis::AccountMetadataFeed> account_metadata;
+  scoped_ptr<google_apis::AccountMetadata> account_metadata;
 
   // Try to get the metadata
   scheduler_->GetAccountMetadata(
@@ -584,7 +584,7 @@ TEST_F(DriveSchedulerTest, DownloadFileWimaxEnabled) {
       google_apis::GetContentCallback());
   // Metadata should still work
   google_apis::GDataErrorCode metadata_error = google_apis::GDATA_OTHER_ERROR;
-  scoped_ptr<google_apis::AccountMetadataFeed> account_metadata;
+  scoped_ptr<google_apis::AccountMetadata> account_metadata;
 
   // Try to get the metadata
   scheduler_->GetAccountMetadata(

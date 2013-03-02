@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FEED_LOADER_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FEED_LOADER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_CHANGE_LIST_LOADER_H_
+#define CHROME_BROWSER_CHROMEOS_DRIVE_CHANGE_LIST_LOADER_H_
 
 #include <string>
 
@@ -20,15 +20,15 @@ class Value;
 
 namespace google_apis {
 class AppList;
-class AccountMetadataFeed;
+class AccountMetadata;
 class ResourceList;
 }
 
 namespace drive {
 
 class DriveCache;
-class DriveFeedLoaderObserver;
-class DriveFeedProcessor;
+class ChangeListLoaderObserver;
+class ChangeListProcessor;
 class DriveScheduler;
 class DriveWebAppsRegistry;
 
@@ -37,21 +37,21 @@ typedef base::Callback<
     void(const ScopedVector<google_apis::ResourceList>& feed_list,
          DriveFileError error)> LoadFeedListCallback;
 
-// DriveFeedLoader is used to load feeds from WAPI (codename for
+// ChangeListLoader is used to load feeds from WAPI (codename for
 // Documents List API) and load the cached proto file.
-class DriveFeedLoader {
+class ChangeListLoader {
  public:
-  DriveFeedLoader(
+  ChangeListLoader(
       DriveResourceMetadata* resource_metadata,
       DriveScheduler* scheduler,
       DriveWebAppsRegistry* webapps_registry,
       DriveCache* cache,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
-  ~DriveFeedLoader();
+  ~ChangeListLoader();
 
   // Adds and removes the observer.
-  void AddObserver(DriveFeedLoaderObserver* observer);
-  void RemoveObserver(DriveFeedLoaderObserver* observer);
+  void AddObserver(ChangeListLoaderObserver* observer);
+  void RemoveObserver(ChangeListLoaderObserver* observer);
 
   // Starts root feed load from the cache, and runs |callback| to tell the
   // result to the caller.
@@ -84,7 +84,7 @@ class DriveFeedLoader {
   // Updates whole directory structure feeds collected in |feed_list|.
   // Record file statistics as UMA histograms.
   //
-  // See comments at DriveFeedProcessor::ApplyFeeds() for
+  // See comments at ChangeListProcessor::ApplyFeeds() for
   // |is_delta_feed| and |root_feed_changestamp|.
   // |update_finished_callback| must not be null.
   void UpdateFromFeed(const ScopedVector<google_apis::ResourceList>& feed_list,
@@ -118,7 +118,7 @@ class DriveFeedLoader {
   void OnGetAccountMetadata(
       const FileOperationCallback& callback,
       google_apis::GDataErrorCode status,
-      scoped_ptr<google_apis::AccountMetadataFeed> account_metadata);
+      scoped_ptr<google_apis::AccountMetadata> account_metadata);
 
   // Callback for DriveResourceMetadata::GetLargestChangestamp.
   // Compares |remote_changestamp| and |local_changestamp| and triggers
@@ -159,7 +159,7 @@ class DriveFeedLoader {
   void OnNotifyResourceListFetched(
       base::WeakPtr<GetResourceListUiState> ui_state);
 
-  // Callback for DriveFeedProcessor::ApplyFeeds.
+  // Callback for ChangeListProcessor::ApplyFeeds.
   void NotifyDirectoryChanged(bool should_notify,
                               const base::Closure& update_finished_callback);
 
@@ -171,18 +171,18 @@ class DriveFeedLoader {
   DriveWebAppsRegistry* webapps_registry_;  // Not owned.
   DriveCache* cache_;  // Not owned.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  ObserverList<DriveFeedLoaderObserver> observers_;
-  scoped_ptr<DriveFeedProcessor> feed_processor_;
+  ObserverList<ChangeListLoaderObserver> observers_;
+  scoped_ptr<ChangeListProcessor> change_list_processor_;
 
   // Indicates whether there is a feed refreshing server request is in flight.
   bool refreshing_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<DriveFeedLoader> weak_ptr_factory_;
-  DISALLOW_COPY_AND_ASSIGN(DriveFeedLoader);
+  base::WeakPtrFactory<ChangeListLoader> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(ChangeListLoader);
 };
 
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FEED_LOADER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_CHANGE_LIST_LOADER_H_

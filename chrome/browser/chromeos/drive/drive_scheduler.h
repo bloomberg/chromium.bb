@@ -319,7 +319,7 @@ class DriveScheduler
   void OnGetAccountMetadataJobDone(
       scoped_ptr<QueueEntry> queue_entry,
       google_apis::GDataErrorCode error,
-      scoped_ptr<google_apis::AccountMetadataFeed> account_metadata);
+      scoped_ptr<google_apis::AccountMetadata> account_metadata);
 
   // Callback for job finishing with a GetAppListCallback.
   void OnGetAppListJobDone(

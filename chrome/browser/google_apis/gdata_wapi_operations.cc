@@ -31,7 +31,7 @@ const char kFeedField[] = "feed";
 // Templates for file uploading.
 const char kUploadResponseRange[] = "range";
 
-// Parses the JSON value to AccountMetadataFeed and runs |callback| on the UI
+// Parses the JSON value to AccountMetadata and runs |callback| on the UI
 // thread once parsing is done.
 void ParseAccounetMetadataAndRun(const GetAccountMetadataCallback& callback,
                                  GDataErrorCode error,
@@ -40,15 +40,15 @@ void ParseAccounetMetadataAndRun(const GetAccountMetadataCallback& callback,
   DCHECK(!callback.is_null());
 
   if (!value) {
-    callback.Run(error, scoped_ptr<AccountMetadataFeed>());
+    callback.Run(error, scoped_ptr<AccountMetadata>());
     return;
   }
 
-  // Parsing AccountMetadataFeed is cheap enough to do on UI thread.
-  scoped_ptr<AccountMetadataFeed> entry =
-      google_apis::AccountMetadataFeed::CreateFrom(*value);
+  // Parsing AccountMetadata is cheap enough to do on UI thread.
+  scoped_ptr<AccountMetadata> entry =
+      google_apis::AccountMetadata::CreateFrom(*value);
   if (!entry) {
-    callback.Run(GDATA_PARSE_ERROR, scoped_ptr<AccountMetadataFeed>());
+    callback.Run(GDATA_PARSE_ERROR, scoped_ptr<AccountMetadata>());
     return;
   }
 

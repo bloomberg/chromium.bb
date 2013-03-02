@@ -109,7 +109,7 @@ ACTION(InvokeCompletionCallback) {
 
 // Invokes |arg0| as a GetDataCallback.
 ACTION_P2(InvokeGetAccountMetadataCallback0, error, result) {
-  scoped_ptr<google_apis::AccountMetadataFeed> account_metadata(result.Pass());
+  scoped_ptr<google_apis::AccountMetadata> account_metadata(result.Pass());
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(arg0, error, base::Passed(&account_metadata)));
@@ -471,8 +471,8 @@ class DriveFileSyncServiceTest : public testing::Test {
   void SetUpDriveServiceExpectCallsForGetAccountMetadata() {
     scoped_ptr<Value> account_metadata_value(LoadJSONFile(
         "gdata/account_metadata.json"));
-    scoped_ptr<google_apis::AccountMetadataFeed> account_metadata(
-        google_apis::AccountMetadataFeed::CreateFrom(*account_metadata_value));
+    scoped_ptr<google_apis::AccountMetadata> account_metadata(
+        google_apis::AccountMetadata::CreateFrom(*account_metadata_value));
     EXPECT_CALL(*mock_drive_service(),
                 GetAccountMetadata(_))
         .WillOnce(InvokeGetAccountMetadataCallback0(

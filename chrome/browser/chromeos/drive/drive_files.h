@@ -207,7 +207,7 @@ class DriveDirectory : public DriveEntry {
   // TODO(satorux): Remove the friend statements. crbug.com/139649
   friend class DriveResourceMetadata;
   friend class DriveResourceMetadataTest;
-  friend class DriveFeedProcessor;
+  friend class ChangeListProcessor;
 
   explicit DriveDirectory(DriveResourceMetadata* resource_metadata);
   virtual DriveDirectory* AsDriveDirectory() OVERRIDE;

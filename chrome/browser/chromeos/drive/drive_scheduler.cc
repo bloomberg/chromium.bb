@@ -619,7 +619,7 @@ void DriveScheduler::OnGetResourceEntryJobDone(
 void DriveScheduler::OnGetAccountMetadataJobDone(
     scoped_ptr<QueueEntry> queue_entry,
     google_apis::GDataErrorCode error,
-    scoped_ptr<google_apis::AccountMetadataFeed> account_metadata) {
+    scoped_ptr<google_apis::AccountMetadata> account_metadata) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DriveFileError drive_error(util::GDataToDriveFileError(error));

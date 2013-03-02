@@ -146,7 +146,7 @@ std::set<std::string> DriveWebAppsRegistry::GetExtensionsForWebStoreApp(
 }
 
 void DriveWebAppsRegistry::UpdateFromFeed(
-    const google_apis::AccountMetadataFeed& metadata) {
+    const google_apis::AccountMetadata& metadata) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   url_to_name_map_.clear();

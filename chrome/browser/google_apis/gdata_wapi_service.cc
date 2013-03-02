@@ -107,12 +107,12 @@ void ExtractOpenLinkAndRun(const std::string app_id,
     return;
   }
 
-  const ScopedVector<google_apis::Link>& feed_links = entry->links();
+  const ScopedVector<google_apis::Link>& resource_links = entry->links();
   GURL open_link;
-  for (size_t i = 0; i < feed_links.size(); ++i) {
-    if (feed_links[i]->type() == google_apis::Link::LINK_OPEN_WITH &&
-        feed_links[i]->app_id() == app_id) {
-        open_link = feed_links[i]->href();
+  for (size_t i = 0; i < resource_links.size(); ++i) {
+    if (resource_links[i]->type() == google_apis::Link::LINK_OPEN_WITH &&
+        resource_links[i]->app_id() == app_id) {
+        open_link = resource_links[i]->href();
         break;
     }
   }

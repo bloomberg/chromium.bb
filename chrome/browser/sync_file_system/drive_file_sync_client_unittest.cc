@@ -157,7 +157,7 @@ class DriveFileSyncClientTest : public testing::Test {
 
 // Invokes |arg0| as a GetAccountMetadataCallback.
 ACTION_P2(InvokeGetAccountMetadataCallback0, error, result) {
-  scoped_ptr<google_apis::AccountMetadataFeed> account_metadata(result.Pass());
+  scoped_ptr<google_apis::AccountMetadata> account_metadata(result.Pass());
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(arg0, error, base::Passed(&account_metadata)));
@@ -571,8 +571,8 @@ TEST_F(DriveFileSyncClientTest, CreateOriginDirectory_Conflict) {
 TEST_F(DriveFileSyncClientTest, GetLargestChangeStamp) {
   scoped_ptr<base::Value> result(
       LoadJSONFile("sync_file_system/account_metadata.json").Pass());
-  scoped_ptr<google_apis::AccountMetadataFeed> account_metadata(
-      google_apis::AccountMetadataFeed::CreateFrom(*result));
+  scoped_ptr<google_apis::AccountMetadata> account_metadata(
+      google_apis::AccountMetadata::CreateFrom(*result));
 
   // Expect to call GetAccountMetadata from GetLargestChangeStamp.
   EXPECT_CALL(*mock_drive_service(), GetAccountMetadata(_))

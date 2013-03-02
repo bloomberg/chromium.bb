@@ -65,7 +65,7 @@ class DriveWebAppsRegistry {
   virtual std::set<std::string> GetExtensionsForWebStoreApp(
       const std::string& web_store_id);
   virtual void UpdateFromFeed(
-      const google_apis::AccountMetadataFeed& metadata);
+      const google_apis::AccountMetadata& metadata);
   virtual void UpdateFromAppList(const google_apis::AppList& applist);
 
  private:
