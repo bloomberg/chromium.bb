@@ -242,18 +242,6 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
     delegate->AddNavigationHeaders(params->url, &params->extra_headers);
 }
 
-int GetSwitchValueAsInt(
-    const CommandLine& command_line,
-    const std::string& switch_string,
-    int min_value) {
-  std::string string_value = command_line.GetSwitchValueASCII(switch_string);
-  int int_value;
-  if (base::StringToInt(string_value, &int_value))
-    return std::max(min_value, int_value);
-  else
-    return min_value;
-}
-
 }  // namespace
 
 WebContents* WebContents::Create(const WebContents::CreateParams& params) {
@@ -476,12 +464,6 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       !command_line.HasSwitch(switches::kDisableSiteSpecificQuirks);
   prefs.allow_file_access_from_file_urls =
       command_line.HasSwitch(switches::kAllowFileAccessFromFiles);
-  prefs.show_composited_layer_borders =
-      command_line.HasSwitch(switches::kShowCompositedLayerBorders);
-  prefs.show_composited_layer_tree =
-      command_line.HasSwitch(switches::kShowCompositedLayerTree);
-  prefs.show_fps_counter =
-      command_line.HasSwitch(switches::kShowFPSCounter);
 
   prefs.accelerated_compositing_for_overflow_scroll_enabled = false;
   if (command_line.HasSwitch(switches::kEnableAcceleratedOverflowScroll))
@@ -495,8 +477,6 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       command_line.HasSwitch(switches::kEnableCompositedScrollingForFrames);
   prefs.show_paint_rects =
       command_line.HasSwitch(switches::kShowPaintRects);
-  prefs.render_vsync_enabled =
-      !command_line.HasSwitch(switches::kDisableGpuVsync);
   prefs.accelerated_compositing_enabled =
       GpuProcessHost::gpu_enabled() &&
       !command_line.HasSwitch(switches::kDisableAcceleratedCompositing);
@@ -510,9 +490,6 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       !command_line.HasSwitch(switches::kDisableDeferred2dCanvas);
   prefs.antialiased_2d_canvas_disabled =
       command_line.HasSwitch(switches::kDisable2dCanvasAntialiasing);
-  prefs.accelerated_painting_enabled =
-      GpuProcessHost::gpu_enabled() &&
-      command_line.HasSwitch(switches::kEnableAcceleratedPainting);
   prefs.accelerated_filters_enabled =
       GpuProcessHost::gpu_enabled() &&
       command_line.HasSwitch(switches::kEnableAcceleratedFilters);
@@ -533,8 +510,6 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures);
   prefs.css_grid_layout_enabled =
       command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures);
-  prefs.record_rendering_stats =
-      command_line.HasSwitch(switches::kEnableGpuBenchmarking);
   prefs.threaded_html_parser =
       !command_line.HasSwitch(switches::kDisableThreadedHTMLParser);
 #if defined(OS_ANDROID)
@@ -635,29 +610,8 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
     prefs.accelerated_2d_canvas_enabled = false;
   }
 
-  if (url.SchemeIs(chrome::kChromeDevToolsScheme))
-    prefs.show_fps_counter = false;
-
-  if (command_line.HasSwitch(switches::kDefaultTileWidth))
-    prefs.default_tile_width =
-        GetSwitchValueAsInt(command_line, switches::kDefaultTileWidth, 1);
-  if (command_line.HasSwitch(switches::kDefaultTileHeight))
-    prefs.default_tile_height =
-        GetSwitchValueAsInt(command_line, switches::kDefaultTileHeight, 1);
-  if (command_line.HasSwitch(switches::kMaxUntiledLayerWidth))
-    prefs.max_untiled_layer_width =
-        GetSwitchValueAsInt(command_line, switches::kMaxUntiledLayerWidth, 1);
-  if (command_line.HasSwitch(switches::kMaxUntiledLayerHeight))
-    prefs.max_untiled_layer_height =
-        GetSwitchValueAsInt(command_line, switches::kMaxUntiledLayerHeight, 1);
-
   prefs.apply_default_device_scale_factor_in_compositor = true;
   prefs.apply_page_scale_factor_in_compositor = true;
-
-  prefs.per_tile_painting_enabled =
-      command_line.HasSwitch(cc::switches::kEnablePerTilePainting);
-  prefs.accelerated_animation_enabled =
-      !command_line.HasSwitch(cc::switches::kDisableThreadedAnimation);
 
   prefs.fixed_position_creates_stacking_context = !command_line.HasSwitch(
       switches::kDisableFixedPositionCreatesStackingContext);

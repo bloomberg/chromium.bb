@@ -4,6 +4,8 @@
 
 #include "content/renderer/gpu/render_widget_compositor.h"
 
+#include <limits>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
@@ -15,11 +17,13 @@
 #include "cc/layer_tree_host.h"
 #include "cc/switches.h"
 #include "cc/thread_impl.h"
+#include "content/public/common/content_switches.h"
 #include "content/renderer/gpu/compositor_thread.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeViewClient.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSharedGraphicsContext3D.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
+#include "ui/gl/gl_switches.h"
 #include "webkit/compositor_bindings/web_layer_impl.h"
 #include "webkit/compositor_bindings/web_to_ccinput_handler_adapter.h"
 
@@ -86,14 +90,41 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   CommandLine* cmd = CommandLine::ForCurrentProcess();
 
   cc::LayerTreeSettings settings;
-  settings.acceleratePainting = web_settings.acceleratePainting;
-  settings.renderVSyncEnabled = web_settings.renderVSyncEnabled;
-  settings.perTilePaintingEnabled = web_settings.perTilePaintingEnabled;
+  settings.acceleratePainting =
+      cmd->HasSwitch(switches::kEnableAcceleratedPainting);
+  settings.renderVSyncEnabled = !cmd->HasSwitch(switches::kDisableGpuVsync);
+  settings.perTilePaintingEnabled =
+      cmd->HasSwitch(cc::switches::kEnablePerTilePainting);
   settings.acceleratedAnimationEnabled =
-      web_settings.acceleratedAnimationEnabled;
-  settings.refreshRate = web_settings.refreshRate;
-  settings.defaultTileSize = web_settings.defaultTileSize;
-  settings.maxUntiledLayerSize = web_settings.maxUntiledLayerSize;
+      !cmd->HasSwitch(cc::switches::kDisableThreadedAnimation);
+
+  int default_tile_width = settings.defaultTileSize.width();
+  if (cmd->HasSwitch(switches::kDefaultTileWidth)) {
+    GetSwitchValueAsInt(*cmd, switches::kDefaultTileWidth, 1,
+                        std::numeric_limits<int>::max(), &default_tile_width);
+  }
+  int default_tile_height = settings.defaultTileSize.height();
+  if (cmd->HasSwitch(switches::kDefaultTileHeight)) {
+    GetSwitchValueAsInt(*cmd, switches::kDefaultTileHeight, 1,
+                        std::numeric_limits<int>::max(), &default_tile_height);
+  }
+  settings.defaultTileSize = gfx::Size(default_tile_width, default_tile_height);
+
+  int max_untiled_layer_width = settings.maxUntiledLayerSize.width();
+  if (cmd->HasSwitch(switches::kMaxUntiledLayerWidth)) {
+    GetSwitchValueAsInt(*cmd, switches::kMaxUntiledLayerWidth, 1,
+                        std::numeric_limits<int>::max(),
+                        &max_untiled_layer_width);
+  }
+  int max_untiled_layer_height = settings.maxUntiledLayerSize.height();
+  if (cmd->HasSwitch(switches::kMaxUntiledLayerHeight)) {
+    GetSwitchValueAsInt(*cmd, switches::kMaxUntiledLayerHeight, 1,
+                        std::numeric_limits<int>::max(),
+                        &max_untiled_layer_height);
+  }
+
+  settings.maxUntiledLayerSize = gfx::Size(max_untiled_layer_width,
+                                           max_untiled_layer_height);
 
   settings.rightAlignedSchedulingEnabled =
       cmd->HasSwitch(cc::switches::kEnableRightAlignedScheduling);
@@ -147,11 +178,15 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   settings.showOverdrawInTracing =
       cmd->HasSwitch(cc::switches::kTraceOverdraw);
 
-  settings.initialDebugState.showFPSCounter = web_settings.showFPSCounter;
-  settings.initialDebugState.showPaintRects = web_settings.showPaintRects;
+  settings.initialDebugState.showFPSCounter =
+      cmd->HasSwitch(switches::kShowFPSCounter);
+  settings.initialDebugState.showPaintRects =
+      cmd->HasSwitch(switches::kShowPaintRects);
+  settings.initialDebugState.showDebugBorders =
+      cmd->HasSwitch(switches::kShowCompositedLayerBorders);
   settings.initialDebugState.showPlatformLayerTree =
-      web_settings.showPlatformLayerTree;
-  settings.initialDebugState.showDebugBorders = web_settings.showDebugBorders;
+      cmd->HasSwitch(switches::kShowCompositedLayerTree);
+
   settings.initialDebugState.showPropertyChangedRects =
       cmd->HasSwitch(cc::switches::kShowPropertyChangedRects);
   settings.initialDebugState.showSurfaceDamageRects =
@@ -165,7 +200,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   settings.initialDebugState.showNonOccludingRects =
       cmd->HasSwitch(cc::switches::kShowNonOccludingRects);
   settings.initialDebugState.setRecordRenderingStats(
-      web_settings.recordRenderingStats);
+      cmd->HasSwitch(switches::kEnableGpuBenchmarking));
   settings.initialDebugState.traceAllRenderedFrames =
       cmd->HasSwitch(cc::switches::kTraceAllRenderedFrames);
 

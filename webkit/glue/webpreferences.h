@@ -56,8 +56,6 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   std::string default_encoding;
   bool apply_default_device_scale_factor_in_compositor;
   bool apply_page_scale_factor_in_compositor;
-  bool per_tile_painting_enabled;
-  bool accelerated_animation_enabled;
   bool javascript_enabled;
   bool web_security_enabled;
   bool javascript_can_open_windows_automatically;
@@ -105,16 +103,12 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool gl_multisampling_enabled;
   bool privileged_webgl_extensions_enabled;
   bool webgl_errors_to_console_enabled;
-  bool show_composited_layer_borders;
-  bool show_composited_layer_tree;
-  bool show_fps_counter;
   bool accelerated_compositing_for_overflow_scroll_enabled;
   bool accelerated_compositing_for_scrollable_frames_enabled;
   bool composited_scrolling_for_frames_enabled;
   bool mock_scrollbars_enabled;
   bool threaded_html_parser;
   bool show_paint_rects;
-  bool render_vsync_enabled;
   bool asynchronous_spell_checking_enabled;
   bool unified_textchecker_enabled;
   bool accelerated_compositing_enabled;
@@ -125,7 +119,6 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool accelerated_2d_canvas_enabled;
   bool deferred_2d_canvas_enabled;
   bool antialiased_2d_canvas_disabled;
-  bool accelerated_painting_enabled;
   bool accelerated_filters_enabled;
   bool gesture_tap_highlight_enabled;
   bool accelerated_compositing_for_plugins_enabled;
@@ -146,10 +139,6 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool device_supports_mouse;
   bool touch_adjustment_enabled;
   bool touch_drag_drop_enabled;
-  int default_tile_width;
-  int default_tile_height;
-  int max_untiled_layer_width;
-  int max_untiled_layer_height;
   bool fixed_position_creates_stacking_context;
   bool sync_xhr_in_documents_enabled;
   bool deferred_image_decoding_enabled;
@@ -159,7 +148,6 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool supports_multiple_windows;
   bool viewport_enabled;
   bool initialize_at_minimum_page_scale;
-  bool record_rendering_stats;
 
   // This flags corresponds to a Page's Settings' setCookieEnabled state. It
   // only controls whether or not the "document.cookie" field is properly
