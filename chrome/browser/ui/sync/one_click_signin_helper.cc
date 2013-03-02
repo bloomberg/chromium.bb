@@ -1027,6 +1027,8 @@ void OneClickSigninHelper::DidStopLoading(
   // TODO(rogerta): might need to allow some youtube URLs.
   content::WebContents* contents = web_contents();
   const GURL url = contents->GetURL();
+  Profile* profile =
+      Profile::FromBrowserContext(contents->GetBrowserContext());
   VLOG(1) << "OneClickSigninHelper::DidStopLoading: url=" << url.spec();
 
   // If an error has already occured during the sign in flow, make sure to
@@ -1065,8 +1067,10 @@ void OneClickSigninHelper::DidStopLoading(
     if (continue_url_match_accept)
       RedirectToSignin();
     std::string unused_value;
-    if (net::GetValueForKeyInQuery(url, "ntp", &unused_value))
+    if (net::GetValueForKeyInQuery(url, "ntp", &unused_value)) {
+      SyncPromoUI::SetUserSkippedSyncPromo(profile);
       RedirectToNTP(false);
+    }
     return;
   }
 
@@ -1124,8 +1128,6 @@ void OneClickSigninHelper::DidStopLoading(
   }
 
   Browser* browser = chrome::FindBrowserWithWebContents(contents);
-  Profile* profile =
-      Profile::FromBrowserContext(contents->GetBrowserContext());
 
   VLOG(1) << "OneClickSigninHelper::DidStopLoading: signin is go."
           << " auto_accept=" << auto_accept_
