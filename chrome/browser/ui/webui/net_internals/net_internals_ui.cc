@@ -1271,14 +1271,16 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSAdd(
   if (!transport_security_state)
     return;
 
-  net::TransportSecurityState::DomainState state;
-  state.upgrade_expiry = state.created + base::TimeDelta::FromDays(1000);
-  state.include_subdomains = include_subdomains;
+  base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1000);
+  net::HashValueVector hashes;
   if (!hashes_str.empty()) {
-    if (!Base64StringToHashes(hashes_str, &state.dynamic_spki_hashes))
+    if (!Base64StringToHashes(hashes_str, &hashes))
       return;
   }
-  transport_security_state->EnableHost(domain, state);
+
+  transport_security_state->AddHSTS(domain, expiry, include_subdomains);
+  transport_security_state->AddHPKP(domain, expiry, include_subdomains,
+                                    hashes);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnHSTSDelete(
@@ -1295,7 +1297,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSDelete(
   if (!transport_security_state)
     return;
 
-  transport_security_state->DeleteHost(domain);
+  transport_security_state->DeleteDynamicDataForHost(domain);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetHttpCacheInfo(

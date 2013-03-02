@@ -760,7 +760,8 @@ void ProfileImplIOData::ClearNetworkingHistorySinceOnIOThread(
   DCHECK(initialized());
 
   DCHECK(transport_security_state());
-  transport_security_state()->DeleteSince(time);  // Completes synchronously.
+  // Completes synchronously.
+  transport_security_state()->DeleteAllDynamicDataSince(time);
   DCHECK(http_server_properties_manager_);
   http_server_properties_manager_->Clear(completion);
 }

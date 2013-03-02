@@ -126,14 +126,14 @@ void TransportSecurityState::EnableHost(const std::string& host,
   DirtyNotify();
 }
 
-bool TransportSecurityState::DeleteHost(const std::string& host) {
+bool TransportSecurityState::DeleteDynamicDataForHost(const std::string& host) {
   DCHECK(CalledOnValidThread());
 
   const std::string canonicalized_host = CanonicalizeHost(host);
   if (canonicalized_host.empty())
     return false;
 
-  std::map<std::string, DomainState>::iterator i = enabled_hosts_.find(
+  DomainStateMap::iterator i = enabled_hosts_.find(
       HashHost(canonicalized_host));
   if (i != enabled_hosts_.end()) {
     enabled_hosts_.erase(i);
@@ -168,7 +168,7 @@ bool TransportSecurityState::GetDomainState(const std::string& host,
       return true;
     }
 
-    std::map<std::string, DomainState>::iterator j =
+    DomainStateMap::iterator j =
         enabled_hosts_.find(HashHost(host_sub_chunk));
     if (j == enabled_hosts_.end())
       continue;
@@ -196,12 +196,16 @@ bool TransportSecurityState::GetDomainState(const std::string& host,
   return false;
 }
 
-void TransportSecurityState::DeleteSince(const base::Time& time) {
+void TransportSecurityState::ClearDynamicData() {
+  enabled_hosts_.clear();
+}
+
+void TransportSecurityState::DeleteAllDynamicDataSince(const base::Time& time) {
   DCHECK(CalledOnValidThread());
 
   bool dirtied = false;
 
-  std::map<std::string, DomainState>::iterator i = enabled_hosts_.begin();
+  DomainStateMap::iterator i = enabled_hosts_.begin();
   while (i != enabled_hosts_.end()) {
     if (i->second.created >= time) {
       dirtied = true;
@@ -639,6 +643,47 @@ bool TransportSecurityState::AddHPKPHeader(const std::string& host,
     return true;
   }
   return false;
+}
+
+bool TransportSecurityState::AddHSTS(const std::string& host,
+                                     const base::Time& expiry,
+                                     bool include_subdomains) {
+  // Copy-and-modify the existing DomainState for this host (if any).
+  TransportSecurityState::DomainState domain_state;
+  const std::string canonicalized_host = CanonicalizeHost(host);
+  const std::string hashed_host = HashHost(canonicalized_host);
+  DomainStateMap::const_iterator i = enabled_hosts_.find(
+      hashed_host);
+  if (i != enabled_hosts_.end())
+    domain_state = i->second;
+
+  domain_state.created = base::Time::Now();
+  domain_state.include_subdomains = include_subdomains;
+  domain_state.upgrade_expiry = expiry;
+  domain_state.upgrade_mode = DomainState::MODE_FORCE_HTTPS;
+  EnableHost(host, domain_state);
+  return true;
+}
+
+bool TransportSecurityState::AddHPKP(const std::string& host,
+                                     const base::Time& expiry,
+                                     bool include_subdomains,
+                                     const HashValueVector& hashes) {
+  // Copy-and-modify the existing DomainState for this host (if any).
+  TransportSecurityState::DomainState domain_state;
+  const std::string canonicalized_host = CanonicalizeHost(host);
+  const std::string hashed_host = HashHost(canonicalized_host);
+  DomainStateMap::const_iterator i = enabled_hosts_.find(
+      hashed_host);
+  if (i != enabled_hosts_.end())
+    domain_state = i->second;
+
+  domain_state.created = base::Time::Now();
+  domain_state.include_subdomains = include_subdomains;
+  domain_state.dynamic_spki_hashes_expiry = expiry;
+  domain_state.dynamic_spki_hashes = hashes;
+  EnableHost(host, domain_state);
+  return true;
 }
 
 // static

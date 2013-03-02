@@ -4393,10 +4393,10 @@ TEST_F(HTTPSRequestTest, HSTSPreservesPosts) {
 
   // Force https for www.somewhere.com.
   TransportSecurityState transport_security_state;
-  net::TransportSecurityState::DomainState domain_state;
-  domain_state.upgrade_expiry =
-      domain_state.created + base::TimeDelta::FromDays(1000);
-  transport_security_state.EnableHost("www.somewhere.com", domain_state);
+  base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1000);
+  bool include_subdomains = false;
+  transport_security_state.AddHSTS("www.somewhere.com", expiry,
+                                   include_subdomains);
 
   TestNetworkDelegate network_delegate;  // Must outlive URLRequest.
 

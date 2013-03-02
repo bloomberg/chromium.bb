@@ -778,11 +778,9 @@ void AddHstsHost(net::URLRequestContextGetter* context_getter,
     return;
   }
 
-  net::TransportSecurityState::DomainState state;
-  state.upgrade_expiry = state.created + base::TimeDelta::FromDays(1000);
-  state.include_subdomains = false;
-
-  transport_security_state->EnableHost(host, state);
+  base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1000);
+  bool include_subdomains = false;
+  transport_security_state->AddHSTS(host, expiry, include_subdomains);
 }
 
 }  // namespace

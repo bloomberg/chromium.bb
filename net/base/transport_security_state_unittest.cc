@@ -44,6 +44,24 @@ class TransportSecurityStateTest : public testing::Test {
     crypto::EnsureNSSInit();
 #endif
   }
+
+ protected:
+  std::string CanonicalizeHost(const std::string& host) {
+    return TransportSecurityState::CanonicalizeHost(host);
+  }
+
+  bool GetStaticDomainState(TransportSecurityState* state,
+                            const std::string& host,
+                            bool sni_enabled,
+                            TransportSecurityState::DomainState* result) {
+    return state->GetStaticDomainState(host, sni_enabled, result);
+  }
+
+  void EnableHost(TransportSecurityState* state,
+                  const std::string& host,
+                  const TransportSecurityState::DomainState& domain_state) {
+    return state->EnableHost(host, domain_state);
+  }
 };
 
 TEST_F(TransportSecurityStateTest, SimpleMatches) {
@@ -53,8 +71,8 @@ TEST_F(TransportSecurityStateTest, SimpleMatches) {
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
 
   EXPECT_FALSE(state.GetDomainState("yahoo.com", true, &domain_state));
-  domain_state.upgrade_expiry = expiry;
-  state.EnableHost("yahoo.com", domain_state);
+  bool include_subdomains = false;
+  state.AddHSTS("yahoo.com", expiry, include_subdomains);
   EXPECT_TRUE(state.GetDomainState("yahoo.com", true, &domain_state));
 }
 
@@ -65,8 +83,8 @@ TEST_F(TransportSecurityStateTest, MatchesCase1) {
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
 
   EXPECT_FALSE(state.GetDomainState("yahoo.com", true, &domain_state));
-  domain_state.upgrade_expiry = expiry;
-  state.EnableHost("YAhoo.coM", domain_state);
+  bool include_subdomains = false;
+  state.AddHSTS("YAhoo.coM", expiry, include_subdomains);
   EXPECT_TRUE(state.GetDomainState("yahoo.com", true, &domain_state));
 }
 
@@ -77,8 +95,8 @@ TEST_F(TransportSecurityStateTest, MatchesCase2) {
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
 
   EXPECT_FALSE(state.GetDomainState("YAhoo.coM", true, &domain_state));
-  domain_state.upgrade_expiry = expiry;
-  state.EnableHost("yahoo.com", domain_state);
+  bool include_subdomains = false;
+  state.AddHSTS("yahoo.com", expiry, include_subdomains);
   EXPECT_TRUE(state.GetDomainState("YAhoo.coM", true, &domain_state));
 }
 
@@ -89,9 +107,8 @@ TEST_F(TransportSecurityStateTest, SubdomainMatches) {
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
 
   EXPECT_FALSE(state.GetDomainState("yahoo.com", true, &domain_state));
-  domain_state.upgrade_expiry = expiry;
-  domain_state.include_subdomains = true;
-  state.EnableHost("yahoo.com", domain_state);
+  bool include_subdomains = true;
+  state.AddHSTS("yahoo.com", expiry, include_subdomains);
   EXPECT_TRUE(state.GetDomainState("yahoo.com", true, &domain_state));
   EXPECT_TRUE(state.GetDomainState("foo.yahoo.com", true, &domain_state));
   EXPECT_TRUE(state.GetDomainState("foo.bar.yahoo.com", true, &domain_state));
@@ -100,7 +117,7 @@ TEST_F(TransportSecurityStateTest, SubdomainMatches) {
   EXPECT_FALSE(state.GetDomainState("com", true, &domain_state));
 }
 
-TEST_F(TransportSecurityStateTest, DeleteSince) {
+TEST_F(TransportSecurityStateTest, DeleteAllDynamicDataSince) {
   TransportSecurityState state;
   TransportSecurityState::DomainState domain_state;
   const base::Time current_time(base::Time::Now());
@@ -108,57 +125,53 @@ TEST_F(TransportSecurityStateTest, DeleteSince) {
   const base::Time older = current_time - base::TimeDelta::FromSeconds(1000);
 
   EXPECT_FALSE(state.GetDomainState("yahoo.com", true, &domain_state));
-  domain_state.upgrade_mode =
-      TransportSecurityState::DomainState::MODE_FORCE_HTTPS;
-  domain_state.upgrade_expiry = expiry;
-  state.EnableHost("yahoo.com", domain_state);
+  bool include_subdomains = false;
+  state.AddHSTS("yahoo.com", expiry, include_subdomains);
 
-  state.DeleteSince(expiry);
+  state.DeleteAllDynamicDataSince(expiry);
   EXPECT_TRUE(state.GetDomainState("yahoo.com", true, &domain_state));
-  state.DeleteSince(older);
+  state.DeleteAllDynamicDataSince(older);
   EXPECT_FALSE(state.GetDomainState("yahoo.com", true, &domain_state));
 }
 
-TEST_F(TransportSecurityStateTest, DeleteHost) {
+TEST_F(TransportSecurityStateTest, DeleteDynamicDataForHost) {
   TransportSecurityState state;
   TransportSecurityState::DomainState domain_state;
   const base::Time current_time(base::Time::Now());
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
-  domain_state.upgrade_mode =
-      TransportSecurityState::DomainState::MODE_FORCE_HTTPS;
-  domain_state.upgrade_expiry = expiry;
-  state.EnableHost("yahoo.com", domain_state);
+  bool include_subdomains = false;
+  state.AddHSTS("yahoo.com", expiry, include_subdomains);
 
   EXPECT_TRUE(state.GetDomainState("yahoo.com", true, &domain_state));
   EXPECT_FALSE(state.GetDomainState("example.com", true, &domain_state));
-  EXPECT_TRUE(state.DeleteHost("yahoo.com"));
+  EXPECT_TRUE(state.DeleteDynamicDataForHost("yahoo.com"));
   EXPECT_FALSE(state.GetDomainState("yahoo.com", true, &domain_state));
 }
 
 TEST_F(TransportSecurityStateTest, IsPreloaded) {
   const std::string paypal =
-      TransportSecurityState::CanonicalizeHost("paypal.com");
+      CanonicalizeHost("paypal.com");
   const std::string www_paypal =
-      TransportSecurityState::CanonicalizeHost("www.paypal.com");
+      CanonicalizeHost("www.paypal.com");
   const std::string a_www_paypal =
-      TransportSecurityState::CanonicalizeHost("a.www.paypal.com");
+      CanonicalizeHost("a.www.paypal.com");
   const std::string abc_paypal =
-      TransportSecurityState::CanonicalizeHost("a.b.c.paypal.com");
+      CanonicalizeHost("a.b.c.paypal.com");
   const std::string example =
-      TransportSecurityState::CanonicalizeHost("example.com");
+      CanonicalizeHost("example.com");
   const std::string aypal =
-      TransportSecurityState::CanonicalizeHost("aypal.com");
+      CanonicalizeHost("aypal.com");
 
   TransportSecurityState state;
   TransportSecurityState::DomainState domain_state;
 
-  EXPECT_FALSE(state.GetStaticDomainState(paypal, true, &domain_state));
-  EXPECT_TRUE(state.GetStaticDomainState(www_paypal, true, &domain_state));
+  EXPECT_FALSE(GetStaticDomainState(&state, paypal, true, &domain_state));
+  EXPECT_TRUE(GetStaticDomainState(&state, www_paypal, true, &domain_state));
   EXPECT_FALSE(domain_state.include_subdomains);
-  EXPECT_FALSE(state.GetStaticDomainState(a_www_paypal, true, &domain_state));
-  EXPECT_FALSE(state.GetStaticDomainState(abc_paypal, true, &domain_state));
-  EXPECT_FALSE(state.GetStaticDomainState(example, true, &domain_state));
-  EXPECT_FALSE(state.GetStaticDomainState(aypal, true, &domain_state));
+  EXPECT_FALSE(GetStaticDomainState(&state, a_www_paypal, true, &domain_state));
+  EXPECT_FALSE(GetStaticDomainState(&state, abc_paypal, true, &domain_state));
+  EXPECT_FALSE(GetStaticDomainState(&state, example, true, &domain_state));
+  EXPECT_FALSE(GetStaticDomainState(&state, aypal, true, &domain_state));
 }
 
 TEST_F(TransportSecurityStateTest, PreloadedDomainSet) {
@@ -733,7 +746,7 @@ TEST_F(TransportSecurityStateTest, OverrideBuiltins) {
   const base::Time current_time(base::Time::Now());
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
   domain_state.upgrade_expiry = expiry;
-  state.EnableHost("www.google.com", domain_state);
+  EnableHost(&state, "www.google.com", domain_state);
 
   EXPECT_TRUE(state.GetDomainState("www.google.com", true, &domain_state));
 }
