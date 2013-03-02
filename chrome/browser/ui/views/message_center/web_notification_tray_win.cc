@@ -37,7 +37,6 @@ const int kEnableQuietModeDay = 2;
 
 // Tray constants
 const int kScreenEdgePadding = 2;
-const int kArrowHeight = 7;  // This is the appropriate size for NO_SHADOW.
 
 gfx::Rect GetCornerAnchorRect() {
   // TODO(dewittj): Use the preference to determine which corner to anchor from.
@@ -150,7 +149,6 @@ bool WebNotificationTrayWin::ShowMessageCenter() {
   // height.
   if (alignment == views::TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM ||
       alignment == views::TrayBubbleView::ANCHOR_ALIGNMENT_TOP) {
-    max_height -= kArrowHeight;
     max_height -= 2*kScreenEdgePadding;
 
     // If the work area contains the click point, then we know that the icon is
