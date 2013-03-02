@@ -92,6 +92,7 @@
         'window.cc',
         'window.h',
         'window_delegate.h',
+        'window_observer.cc',
         'window_observer.h',
         'window_tracker.cc',
         'window_tracker.h',

@@ -108,6 +108,7 @@ Window::~Window() {
   DCHECK(transient_children_.empty());
 
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowDestroyed(this));
+  FOR_EACH_OBSERVER(WindowObserver, observers_, OnUnobservingWindow(this));
 
   // Clear properties.
   for (std::map<const void*, Value>::const_iterator iter = prop_map_.begin();
@@ -477,10 +478,12 @@ void Window::SetEventFilter(ui::EventHandler* event_filter) {
 }
 
 void Window::AddObserver(WindowObserver* observer) {
+  observer->OnObservingWindow(this);
   observers_.AddObserver(observer);
 }
 
 void Window::RemoveObserver(WindowObserver* observer) {
+  observer->OnUnobservingWindow(this);
   observers_.RemoveObserver(observer);
 }
 
