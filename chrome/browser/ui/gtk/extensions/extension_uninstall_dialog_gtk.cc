@@ -49,6 +49,10 @@ ExtensionUninstallDialogGtk::ExtensionUninstallDialogGtk(
       dialog_(NULL) {}
 
 void ExtensionUninstallDialogGtk::Show() {
+  if (!browser_) {
+    delegate_->ExtensionUninstallCanceled();
+    return;
+  }
   BrowserWindow* browser_window = browser_->window();
   if (!browser_window) {
     delegate_->ExtensionUninstallCanceled();
