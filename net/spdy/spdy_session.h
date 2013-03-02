@@ -5,10 +5,10 @@
 #ifndef NET_SPDY_SPDY_SESSION_H_
 #define NET_SPDY_SPDY_SESSION_H_
 
-#include <algorithm>
+#include <deque>
 #include <list>
 #include <map>
-#include <queue>
+#include <set>
 #include <string>
 
 #include "base/gtest_prod_util.h"
@@ -98,6 +98,66 @@ COMPILE_ASSERT(PROTOCOL_ERROR_UNEXPECTED_PING ==
                    RST_STREAM_NUM_STATUS_CODES + STATUS_CODE_INVALID),
                SpdyProtocolErrorDetails_SpdyErrors_mismatch);
 
+// A helper class used to manage a request to create a stream.
+class NET_EXPORT_PRIVATE SpdyStreamRequest {
+ public:
+  SpdyStreamRequest();
+  // Calls CancelRequest().
+  ~SpdyStreamRequest();
+
+  // Starts the request to create a stream. If OK is returned, then
+  // ReleaseStream() may be called. If ERR_IO_PENDING is returned,
+  // then when the stream is created, |callback| will be called, at
+  // which point ReleaseStream() may be called. Otherwise, the stream
+  // is not created, an error is returned, and ReleaseStream() may not
+  // be called.
+  //
+  // If OK is returned, must not be called again without
+  // ReleaseStream() being called first. If ERR_IO_PENDING is
+  // returned, must not be called again without CancelRequest() or
+  // ReleaseStream() being called first. Otherwise, in case of an
+  // immediate error, this may be called again.
+  int StartRequest(const scoped_refptr<SpdySession>& session,
+                   const GURL& url,
+                   RequestPriority priority,
+                   const BoundNetLog& net_log,
+                   const CompletionCallback& callback);
+
+  // Cancels any pending stream creation request. May be called
+  // repeatedly.
+  void CancelRequest();
+
+  // Transfers the created stream (guaranteed to not be NULL) to the
+  // caller. Must be called at most once after StartRequest() returns
+  // OK or |callback| is called with OK.
+  scoped_refptr<SpdyStream> ReleaseStream();
+
+ private:
+  friend class SpdySession;
+
+  // Called by |session_| when the stream attempt is
+  // finished. |stream| is non-NULL exactly when |rv| is OK. Also
+  // called with a NULL stream and ERR_ABORTED if |session_| is
+  // destroyed while the stream attempt is still pending.
+  void OnRequestComplete(const scoped_refptr<SpdyStream>& stream, int rv);
+
+  // Accessors called by |session_|.
+  const GURL& url() const { return url_; }
+  RequestPriority priority() const { return priority_; }
+  const BoundNetLog& net_log() const { return net_log_; }
+
+  void Reset();
+
+  scoped_refptr<SpdySession> session_;
+  scoped_refptr<SpdyStream> stream_;
+  GURL url_;
+  RequestPriority priority_;
+  BoundNetLog net_log_;
+  CompletionCallback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(SpdyStreamRequest);
+};
+
 class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
                                public BufferedSpdyFramerVisitorInterface {
  public:
@@ -176,18 +236,6 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
       const GURL& url,
       scoped_refptr<SpdyStream>* spdy_stream,
       const BoundNetLog& stream_net_log);
-
-  // Create a new stream for a given |url|.  Writes it out to |spdy_stream|.
-  // Returns a net error code, possibly ERR_IO_PENDING.
-  int CreateStream(
-      const GURL& url,
-      RequestPriority priority,
-      scoped_refptr<SpdyStream>* spdy_stream,
-      const BoundNetLog& stream_net_log,
-      const CompletionCallback& callback);
-
-  // Remove PendingCreateStream objects on transaction deletion
-  void CancelPendingCreateStreams(const scoped_refptr<SpdyStream>* spdy_stream);
 
   // Used by SpdySessionPool to initialize with a pre-existing SSL socket. For
   // testing, setting is_secure to false allows initialization with a
@@ -384,6 +432,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
 
  private:
   friend class base::RefCounted<SpdySession>;
+  friend class SpdyStreamRequest;
 
   // Allow tests to access our innards for testing purposes.
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy2Test, ClientPing);
@@ -402,22 +451,9 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, AdjustSendWindowSize31);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, SessionFlowControlEndToEnd31);
 
-  struct PendingCreateStream {
-    PendingCreateStream(const GURL& url, RequestPriority priority,
-                        scoped_refptr<SpdyStream>* spdy_stream,
-                        const BoundNetLog& stream_net_log,
-                        const CompletionCallback& callback);
+  typedef std::deque<SpdyStreamRequest*> PendingStreamRequestQueue;
+  typedef std::set<SpdyStreamRequest*> PendingStreamRequestCompletionSet;
 
-    ~PendingCreateStream();
-
-    const GURL* url;
-    RequestPriority priority;
-    scoped_refptr<SpdyStream>* spdy_stream;
-    const BoundNetLog* stream_net_log;
-    CompletionCallback callback;
-  };
-  typedef std::queue<PendingCreateStream, std::list<PendingCreateStream> >
-      PendingCreateStreamQueue;
   typedef std::map<int, scoped_refptr<SpdyStream> > ActiveStreamMap;
   typedef std::map<std::string,
       std::pair<scoped_refptr<SpdyStream>, base::TimeTicks> > PushedStreamMap;
@@ -425,6 +461,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
 
   typedef std::set<scoped_refptr<SpdyStream> > CreatedStreamSet;
   typedef std::map<SpdyIOBufferProducer*, SpdyStream*> StreamProducerMap;
+
   class SpdyIOBufferProducerCompare {
    public:
     bool operator() (const SpdyIOBufferProducer* lhs,
@@ -432,20 +469,10 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
       return lhs->GetPriority() < rhs->GetPriority();
     }
   };
+
   typedef std::priority_queue<SpdyIOBufferProducer*,
                               std::vector<SpdyIOBufferProducer*>,
                               SpdyIOBufferProducerCompare> WriteQueue;
-
-  struct CallbackResultPair {
-    CallbackResultPair(const CompletionCallback& callback_in, int result_in);
-    ~CallbackResultPair();
-
-    CompletionCallback callback;
-    int result;
-  };
-
-  typedef std::map<const scoped_refptr<SpdyStream>*, CallbackResultPair>
-      PendingCallbackMap;
 
   enum State {
     STATE_IDLE,
@@ -457,12 +484,28 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
 
   virtual ~SpdySession();
 
-  void ProcessPendingCreateStreams();
-  int CreateStreamImpl(
-      const GURL& url,
-      RequestPriority priority,
-      scoped_refptr<SpdyStream>* spdy_stream,
-      const BoundNetLog& stream_net_log);
+  // Called by SpdyStreamRequest to start a request to create a
+  // stream. If OK is returned, then |stream| will be filled in with a
+  // valid stream. If ERR_IO_PENDING is returned, then
+  // |request->OnRequestComplete()| will be called when the stream is
+  // created (unless it is cancelled). Otherwise, no stream is created
+  // and the error is returned.
+  int TryCreateStream(SpdyStreamRequest* request,
+                      scoped_refptr<SpdyStream>* stream);
+
+  // Actually create a stream into |stream|. Returns OK if successful;
+  // otherwise, returns an error and |stream| is not filled.
+  int CreateStream(const SpdyStreamRequest& request,
+                   scoped_refptr<SpdyStream>* stream);
+
+  // Called by SpdyStreamRequest to remove |request| from the stream
+  // creation queue.
+  void CancelStreamRequest(SpdyStreamRequest* request);
+
+  // Called when there is room to create more streams (e.g., a stream
+  // was closed). Processes as many pending stream requests as
+  // possible.
+  void ProcessPendingStreamRequests();
 
   // Start the DoLoop to read data from socket.
   void StartRead();
@@ -493,7 +536,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // SETTINGS control frame, update our SpdySession accordingly.
   void HandleSetting(uint32 id, uint32 value);
 
-  // Adjust the send window size of all ActiveStreams and PendingCreateStreams.
+  // Adjust the send window size of all ActiveStreams and PendingStreamRequests.
   void UpdateStreamsSendWindowSize(int32 delta_window_size);
 
   // Send the PING (preface-PING) frame.
@@ -558,7 +601,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
 
   // Invokes a user callback for stream creation.  We provide this method so it
   // can be deferred to the MessageLoop, so we avoid re-entrancy problems.
-  void InvokeUserStreamCreationCallback(scoped_refptr<SpdyStream>* stream);
+  void CompleteStreamRequest(SpdyStreamRequest* pending_request);
 
   // Remove old unclaimed pushed streams.
   void DeleteExpiredPushedStreams();
@@ -651,11 +694,6 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // method.
   base::WeakPtrFactory<SpdySession> weak_factory_;
 
-  // Map of the SpdyStreams for which we have a pending Task to invoke a
-  // callback.  This is necessary since, before we invoke said callback, it's
-  // possible that the request is cancelled.
-  PendingCallbackMap pending_callback_map_;
-
   // The domain this session is connected to.
   const HostPortProxyPair host_port_proxy_pair_;
 
@@ -676,9 +714,15 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
 
   int stream_hi_water_mark_;  // The next stream id to use.
 
-  // Queue, for each priority, of pending Create Streams that have not
-  // yet been satisfied
-  PendingCreateStreamQueue pending_create_stream_queues_[NUM_PRIORITIES];
+  // Queue, for each priority, of pending stream requests that have
+  // not yet been satisfied.
+  PendingStreamRequestQueue pending_create_stream_queues_[NUM_PRIORITIES];
+
+  // A set of requests that are waiting to be completed (i.e., for the
+  // stream to actually be created). This is necessary since we kick
+  // off the stream creation asynchronously, and so the request may be
+  // cancelled before the asynchronous task to create the stream runs.
+  PendingStreamRequestCompletionSet pending_stream_request_completions_;
 
   // Map from stream id to all active streams.  Streams are active in the sense
   // that they have a consumer (typically SpdyNetworkTransaction and regardless

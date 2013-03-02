@@ -14,6 +14,7 @@
 #include "net/base/request_priority.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_header_block.h"
+#include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_stream.h"
 
 namespace net {
@@ -91,6 +92,7 @@ class NET_EXPORT_PRIVATE SpdyWebSocketStream
 
   void OnSpdyStreamCreated(int status);
 
+  SpdyStreamRequest stream_request_;
   scoped_refptr<SpdyStream> stream_;
   scoped_refptr<SpdySession> spdy_session_;
   Delegate* delegate_;

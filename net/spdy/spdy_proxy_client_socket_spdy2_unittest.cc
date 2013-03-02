@@ -23,6 +23,7 @@
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/spdy/spdy_session_pool.h"
+#include "net/spdy/spdy_test_util_common.h"
 #include "net/spdy/spdy_test_util_spdy2.h"
 #include "testing/platform_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -199,10 +200,9 @@ void SpdyProxyClientSocketSpdy2Test::Initialize(MockRead* reads,
   spdy_session_->InitializeWithSocket(connection.release(), false, OK);
 
   // Create the SPDY Stream.
-  ASSERT_EQ(
-      OK,
-      spdy_session_->CreateStream(url_, LOWEST, &spdy_stream_, net_log_.bound(),
-                                  CompletionCallback()));
+  spdy_stream_ =
+      CreateStreamSynchronously(spdy_session_, url_, LOWEST, net_log_.bound());
+  ASSERT_TRUE(spdy_stream_.get() != NULL);
 
   // Create the SpdyProxyClientSocket.
   sock_.reset(

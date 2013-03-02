@@ -17,6 +17,7 @@
 #include "net/spdy/spdy_session_pool.h"
 #include "net/spdy/spdy_session_test_util.h"
 #include "net/spdy/spdy_stream.h"
+#include "net/spdy/spdy_test_util_common.h"
 #include "net/spdy/spdy_test_util_spdy2.h"
 #include "testing/platform_test.h"
 
@@ -272,11 +273,10 @@ TEST_F(SpdySessionSpdy2Test, ClientPing) {
 
   scoped_refptr<SpdySession> session = CreateInitializedSession();
 
-  scoped_refptr<SpdyStream> spdy_stream1;
+  scoped_refptr<SpdyStream> spdy_stream1 =
+      CreateStreamSynchronously(session, test_url_, MEDIUM, BoundNetLog());
+  ASSERT_TRUE(spdy_stream1.get() != NULL);
   TestCompletionCallback callback1;
-  EXPECT_EQ(OK, session->CreateStream(test_url_, MEDIUM, &spdy_stream1,
-                                      BoundNetLog(), callback1.callback()));
-
   scoped_ptr<TestSpdyStreamDelegate> delegate(
       new TestSpdyStreamDelegate(callback1.callback()));
   spdy_stream1->SetDelegate(delegate.get());
@@ -328,10 +328,10 @@ TEST_F(SpdySessionSpdy2Test, ServerPing) {
 
   scoped_refptr<SpdySession> session = CreateInitializedSession();
 
-  scoped_refptr<SpdyStream> spdy_stream1;
+  scoped_refptr<SpdyStream> spdy_stream1 =
+      CreateStreamSynchronously(session, test_url_, MEDIUM, BoundNetLog());
+  ASSERT_TRUE(spdy_stream1.get() != NULL);
   TestCompletionCallback callback1;
-  EXPECT_EQ(OK, session->CreateStream(test_url_, MEDIUM, &spdy_stream1,
-                                      BoundNetLog(), callback1.callback()));
   scoped_ptr<TestSpdyStreamDelegate> delegate(
       new TestSpdyStreamDelegate(callback1.callback()));
   spdy_stream1->SetDelegate(delegate.get());
@@ -420,10 +420,10 @@ TEST_F(SpdySessionSpdy2Test, FailedPing) {
 
   scoped_refptr<SpdySession> session = CreateInitializedSession();
 
-  scoped_refptr<SpdyStream> spdy_stream1;
+  scoped_refptr<SpdyStream> spdy_stream1 =
+      CreateStreamSynchronously(session, test_url_, MEDIUM, BoundNetLog());
+  ASSERT_TRUE(spdy_stream1.get() != NULL);
   TestCompletionCallback callback1;
-  EXPECT_EQ(OK, session->CreateStream(test_url_, MEDIUM, &spdy_stream1,
-                                      BoundNetLog(), callback1.callback()));
   scoped_ptr<TestSpdyStreamDelegate> delegate(
       new TestSpdyStreamDelegate(callback1.callback()));
   spdy_stream1->SetDelegate(delegate.get());
@@ -457,40 +457,6 @@ TEST_F(SpdySessionSpdy2Test, FailedPing) {
   session = NULL;
 }
 
-class StreamReleaserCallback : public TestCompletionCallbackBase {
- public:
-  StreamReleaserCallback(SpdySession* session,
-                         SpdyStream* first_stream)
-      : session_(session),
-        first_stream_(first_stream),
-        ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
-            base::Bind(&StreamReleaserCallback::OnComplete,
-                       base::Unretained(this)))) {
-  }
-
-  virtual ~StreamReleaserCallback() {}
-
-  scoped_refptr<SpdyStream>* stream() { return &stream_; }
-
-  const CompletionCallback& callback() const { return callback_; }
-
- private:
-  void OnComplete(int result) {
-    session_->CloseSessionOnError(ERR_FAILED, false, "On complete.");
-    session_ = NULL;
-    first_stream_->Cancel();
-    first_stream_ = NULL;
-    stream_->Cancel();
-    stream_ = NULL;
-    SetResult(result);
-  }
-
-  scoped_refptr<SpdySession> session_;
-  scoped_refptr<SpdyStream> first_stream_;
-  scoped_refptr<SpdyStream> stream_;
-  CompletionCallback callback_;
-};
-
 // TODO(kristianm): Could also test with more sessions where some are idle,
 // and more than one session to a HostPortPair.
 TEST_F(SpdySessionSpdy2Test, CloseIdleSessions) {
@@ -501,33 +467,30 @@ TEST_F(SpdySessionSpdy2Test, CloseIdleSessions) {
   HostPortPair test_host_port_pair1(kTestHost1, 80);
   HostPortProxyPair pair1(test_host_port_pair1, ProxyServer::Direct());
   scoped_refptr<SpdySession> session1 = GetSession(pair1);
-  scoped_refptr<SpdyStream> spdy_stream1;
-  TestCompletionCallback callback1;
   GURL url1(kTestHost1);
-  EXPECT_EQ(OK, session1->CreateStream(url1, MEDIUM, &spdy_stream1,
-                                       BoundNetLog(), callback1.callback()));
+  scoped_refptr<SpdyStream> spdy_stream1 =
+      CreateStreamSynchronously(session1, url1, MEDIUM, BoundNetLog());
+  ASSERT_TRUE(spdy_stream1.get() != NULL);
 
   // Set up session 2
   const std::string kTestHost2("http://www.b.com");
   HostPortPair test_host_port_pair2(kTestHost2, 80);
   HostPortProxyPair pair2(test_host_port_pair2, ProxyServer::Direct());
   scoped_refptr<SpdySession> session2 = GetSession(pair2);
-  scoped_refptr<SpdyStream> spdy_stream2;
-  TestCompletionCallback callback2;
   GURL url2(kTestHost2);
-  EXPECT_EQ(OK, session2->CreateStream(url2, MEDIUM, &spdy_stream2,
-                                       BoundNetLog(), callback2.callback()));
+  scoped_refptr<SpdyStream> spdy_stream2 =
+      CreateStreamSynchronously(session2, url2, MEDIUM, BoundNetLog());
+  ASSERT_TRUE(spdy_stream2.get() != NULL);
 
   // Set up session 3
   const std::string kTestHost3("http://www.c.com");
   HostPortPair test_host_port_pair3(kTestHost3, 80);
   HostPortProxyPair pair3(test_host_port_pair3, ProxyServer::Direct());
   scoped_refptr<SpdySession> session3 = GetSession(pair3);
-  scoped_refptr<SpdyStream> spdy_stream3;
-  TestCompletionCallback callback3;
   GURL url3(kTestHost3);
-  EXPECT_EQ(OK, session3->CreateStream(url3, MEDIUM, &spdy_stream3,
-                                       BoundNetLog(), callback3.callback()));
+  scoped_refptr<SpdyStream> spdy_stream3 =
+      CreateStreamSynchronously(session3, url3, MEDIUM, BoundNetLog());
+  ASSERT_TRUE(spdy_stream3.get() != NULL);
 
   // All sessions are active and not closed
   EXPECT_TRUE(session1->is_active());
@@ -624,17 +587,17 @@ TEST_F(SpdySessionSpdy2Test, OnSettings) {
   scoped_refptr<SpdySession> session = CreateInitializedSession();
 
   // Create 2 streams.  First will succeed.  Second will be pending.
-  scoped_refptr<SpdyStream> spdy_stream1;
-  TestCompletionCallback callback1;
-  EXPECT_EQ(OK,
-            session->CreateStream(test_url_, MEDIUM, &spdy_stream1,
-                                  BoundNetLog(), callback1.callback()));
+  scoped_refptr<SpdyStream> spdy_stream1 =
+      CreateStreamSynchronously(session, test_url_, MEDIUM, BoundNetLog());
+  ASSERT_TRUE(spdy_stream1.get() != NULL);
 
   StreamReleaserCallback stream_releaser(session, spdy_stream1);
 
+  SpdyStreamRequest request;
   ASSERT_EQ(ERR_IO_PENDING,
-            session->CreateStream(test_url_, MEDIUM, stream_releaser.stream(),
-                                  BoundNetLog(), stream_releaser.callback()));
+            request.StartRequest(session, test_url_, MEDIUM,
+                                 BoundNetLog(),
+                                 stream_releaser.MakeCallback(&request)));
 
   // Make sure |stream_releaser| holds the last refs.
   session = NULL;
@@ -674,25 +637,26 @@ TEST_F(SpdySessionSpdy2Test, CancelPendingCreateStream) {
 
   scoped_refptr<SpdySession> session = CreateInitializedSession();
 
+  // Create 2 streams.  First will succeed.  Second will be pending.
+  scoped_refptr<SpdyStream> spdy_stream1 =
+      CreateStreamSynchronously(session, test_url_, MEDIUM, BoundNetLog());
+  ASSERT_TRUE(spdy_stream1.get() != NULL);
+
   // Use scoped_ptr to let us invalidate the memory when we want to, to trigger
   // a valgrind error if the callback is invoked when it's not supposed to be.
   scoped_ptr<TestCompletionCallback> callback(new TestCompletionCallback);
 
-  // Create 2 streams.  First will succeed.  Second will be pending.
-  scoped_refptr<SpdyStream> spdy_stream1;
-  ASSERT_EQ(OK, session->CreateStream(test_url_, MEDIUM, &spdy_stream1,
-                                      BoundNetLog(), callback->callback()));
-
-  scoped_refptr<SpdyStream> spdy_stream2;
+  SpdyStreamRequest request;
   ASSERT_EQ(ERR_IO_PENDING,
-            session->CreateStream(test_url_, MEDIUM, &spdy_stream2,
-                                  BoundNetLog(), callback->callback()));
+            request.StartRequest(session, test_url_, MEDIUM,
+                                 BoundNetLog(),
+                                 callback->callback()));
 
   // Release the first one, this will allow the second to be created.
   spdy_stream1->Cancel();
   spdy_stream1 = NULL;
 
-  session->CancelPendingCreateStreams(&spdy_stream2);
+  request.CancelRequest();
   callback.reset();
 
   // Should not crash when running the pending callback.
@@ -1028,17 +992,16 @@ TEST_F(SpdySessionSpdy2Test, OutOfOrderSynStreams) {
 
   scoped_refptr<SpdySession> session = CreateInitializedSession();
 
-  scoped_refptr<SpdyStream> spdy_stream1;
-  TestCompletionCallback callback1;
   GURL url("http://www.google.com");
-  EXPECT_EQ(OK, session->CreateStream(url, LOWEST, &spdy_stream1,
-                                      BoundNetLog(), callback1.callback()));
+
+  scoped_refptr<SpdyStream> spdy_stream1 =
+      CreateStreamSynchronously(session, url, LOWEST, BoundNetLog());
+  ASSERT_TRUE(spdy_stream1.get() != NULL);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
 
-  scoped_refptr<SpdyStream> spdy_stream2;
-  TestCompletionCallback callback2;
-  EXPECT_EQ(OK, session->CreateStream(url, HIGHEST, &spdy_stream2,
-                                      BoundNetLog(), callback2.callback()));
+  scoped_refptr<SpdyStream> spdy_stream2 =
+      CreateStreamSynchronously(session, url, HIGHEST, BoundNetLog());
+  ASSERT_TRUE(spdy_stream2.get() != NULL);
   EXPECT_EQ(0u, spdy_stream2->stream_id());
 
   scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock);
@@ -1101,18 +1064,16 @@ TEST_F(SpdySessionSpdy2Test, CancelStream) {
 
   scoped_refptr<SpdySession> session = CreateInitializedSession();
 
-  scoped_refptr<SpdyStream> spdy_stream1;
-  TestCompletionCallback callback1;
   GURL url1("http://www.google.com");
-  EXPECT_EQ(OK, session->CreateStream(url1, HIGHEST, &spdy_stream1,
-                                      BoundNetLog(), callback1.callback()));
+  scoped_refptr<SpdyStream> spdy_stream1 =
+      CreateStreamSynchronously(session, url1, HIGHEST, BoundNetLog());
+  ASSERT_TRUE(spdy_stream1.get() != NULL);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
 
-  scoped_refptr<SpdyStream> spdy_stream2;
-  TestCompletionCallback callback2;
   GURL url2("http://www.google.com");
-  EXPECT_EQ(OK, session->CreateStream(url2, LOWEST, &spdy_stream2,
-                                      BoundNetLog(), callback2.callback()));
+  scoped_refptr<SpdyStream> spdy_stream2 =
+      CreateStreamSynchronously(session, url2, LOWEST, BoundNetLog());
+  ASSERT_TRUE(spdy_stream2.get() != NULL);
   EXPECT_EQ(0u, spdy_stream2->stream_id());
 
   scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock);
@@ -1176,18 +1137,16 @@ TEST_F(SpdySessionSpdy2Test, CloseSessionWithTwoCreatedStreams) {
 
   scoped_refptr<SpdySession> session = CreateInitializedSession();
 
-  scoped_refptr<SpdyStream> spdy_stream1;
-  TestCompletionCallback callback1;
   GURL url1("http://www.google.com");
-  EXPECT_EQ(OK, session->CreateStream(url1, HIGHEST, &spdy_stream1,
-                                      BoundNetLog(), callback1.callback()));
+  scoped_refptr<SpdyStream> spdy_stream1 =
+      CreateStreamSynchronously(session, url1, HIGHEST, BoundNetLog());
+  ASSERT_TRUE(spdy_stream1.get() != NULL);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
 
-  scoped_refptr<SpdyStream> spdy_stream2;
-  TestCompletionCallback callback2;
   GURL url2("http://www.google.com");
-  EXPECT_EQ(OK, session->CreateStream(url2, LOWEST, &spdy_stream2,
-                                      BoundNetLog(), callback2.callback()));
+  scoped_refptr<SpdyStream> spdy_stream2 =
+      CreateStreamSynchronously(session, url2, LOWEST, BoundNetLog());
+  ASSERT_TRUE(spdy_stream2.get() != NULL);
   EXPECT_EQ(0u, spdy_stream2->stream_id());
 
   scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock);
@@ -1422,27 +1381,27 @@ TEST_F(SpdySessionSpdy2Test, CloseTwoStalledCreateStream) {
   // Read the settings frame.
   data.RunFor(1);
 
-  scoped_refptr<SpdyStream> spdy_stream1;
-  TestCompletionCallback callback1;
   GURL url1("http://www.google.com");
-  EXPECT_EQ(OK, session->CreateStream(url1, LOWEST, &spdy_stream1,
-                                      BoundNetLog(), callback1.callback()));
-
+  scoped_refptr<SpdyStream> spdy_stream1 =
+      CreateStreamSynchronously(session, url1, LOWEST, BoundNetLog());
+  ASSERT_TRUE(spdy_stream1.get() != NULL);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
 
-  scoped_refptr<SpdyStream> spdy_stream2;
   TestCompletionCallback callback2;
   GURL url2("http://www.google.com");
-  EXPECT_EQ(ERR_IO_PENDING,
-            session->CreateStream(url2, LOWEST, &spdy_stream2,
-                                  BoundNetLog(), callback2.callback()));
+  SpdyStreamRequest request2;
+  ASSERT_EQ(ERR_IO_PENDING,
+            request2.StartRequest(session, url2, LOWEST,
+                                  BoundNetLog(),
+                                  callback2.callback()));
 
-  scoped_refptr<SpdyStream> spdy_stream3;
   TestCompletionCallback callback3;
   GURL url3("http://www.google.com");
-  EXPECT_EQ(ERR_IO_PENDING,
-            session->CreateStream(url3, LOWEST, &spdy_stream3,
-                                  BoundNetLog(), callback3.callback()));
+  SpdyStreamRequest request3;
+  ASSERT_EQ(ERR_IO_PENDING,
+            request3.StartRequest(session, url3, LOWEST,
+                                  BoundNetLog(),
+                                  callback3.callback()));
 
   EXPECT_EQ(1u, session->num_active_streams() + session->num_created_streams());
   EXPECT_EQ(2u, session->pending_create_stream_queues(LOWEST));
@@ -1462,33 +1421,34 @@ TEST_F(SpdySessionSpdy2Test, CloseTwoStalledCreateStream) {
   EXPECT_TRUE(spdy_stream1->HasUrl());
   spdy_stream1->SendRequest(false);
 
-  // Run until 1st stream is closed.
+  // Run until 1st stream is closed and 2nd one is opened.
   EXPECT_EQ(0u, spdy_stream1->stream_id());
   data.RunFor(3);
   EXPECT_EQ(1u, spdy_stream1->stream_id());
-  EXPECT_EQ(1u, session->num_active_streams() + session->num_created_streams());
-  EXPECT_EQ(1u, session->pending_create_stream_queues(LOWEST));
+  EXPECT_EQ(2u, session->num_active_streams() + session->num_created_streams());
+  EXPECT_EQ(0u, session->pending_create_stream_queues(LOWEST));
 
-  EXPECT_TRUE(spdy_stream2.get() != NULL);
-  spdy_stream2->set_spdy_headers(headers2.Pass());
-  EXPECT_TRUE(spdy_stream2->HasUrl());
-  spdy_stream2->SendRequest(false);
+  scoped_refptr<SpdyStream> stream2 = request2.ReleaseStream();
+  stream2->set_spdy_headers(headers2.Pass());
+  EXPECT_TRUE(stream2->HasUrl());
+  stream2->SendRequest(false);
 
   // Run until 2nd stream is closed.
-  EXPECT_EQ(0u, spdy_stream2->stream_id());
+  EXPECT_EQ(0u, stream2->stream_id());
   data.RunFor(3);
-  EXPECT_EQ(3u, spdy_stream2->stream_id());
+  EXPECT_EQ(3u, stream2->stream_id());
   EXPECT_EQ(1u, session->num_active_streams() + session->num_created_streams());
   EXPECT_EQ(0u, session->pending_create_stream_queues(LOWEST));
 
-  EXPECT_TRUE(spdy_stream3.get() != NULL);
-  spdy_stream3->set_spdy_headers(headers3.Pass());
-  EXPECT_TRUE(spdy_stream3->HasUrl());
-  spdy_stream3->SendRequest(false);
+  scoped_refptr<SpdyStream> stream3 = request3.ReleaseStream();
+  ASSERT_TRUE(stream3.get() != NULL);
+  stream3->set_spdy_headers(headers3.Pass());
+  EXPECT_TRUE(stream3->HasUrl());
+  stream3->SendRequest(false);
 
-  EXPECT_EQ(0u, spdy_stream3->stream_id());
+  EXPECT_EQ(0u, stream3->stream_id());
   data.RunFor(4);
-  EXPECT_EQ(5u, spdy_stream3->stream_id());
+  EXPECT_EQ(5u, stream3->stream_id());
   EXPECT_EQ(0u, session->num_active_streams() + session->num_created_streams());
   EXPECT_EQ(0u, session->pending_create_stream_queues(LOWEST));
 }
@@ -1520,27 +1480,27 @@ TEST_F(SpdySessionSpdy2Test, CancelTwoStalledCreateStream) {
 
   scoped_refptr<SpdySession> session = CreateInitializedSession();
 
-  scoped_refptr<SpdyStream> spdy_stream1;
-  TestCompletionCallback callback1;
   GURL url1("http://www.google.com");
-  ASSERT_EQ(OK,
-            session->CreateStream(url1, LOWEST, &spdy_stream1,
-                                  BoundNetLog(), callback1.callback()));
+  scoped_refptr<SpdyStream> spdy_stream1 =
+      CreateStreamSynchronously(session, url1, LOWEST, BoundNetLog());
+  ASSERT_TRUE(spdy_stream1.get() != NULL);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
 
-  scoped_refptr<SpdyStream> spdy_stream2;
   TestCompletionCallback callback2;
   GURL url2("http://www.google.com");
+  SpdyStreamRequest request2;
   ASSERT_EQ(ERR_IO_PENDING,
-            session->CreateStream(url2, LOWEST, &spdy_stream2,
-                                  BoundNetLog(), callback2.callback()));
+            request2.StartRequest(session, url2, LOWEST,
+                                  BoundNetLog(),
+                                  callback2.callback()));
 
-  scoped_refptr<SpdyStream> spdy_stream3;
   TestCompletionCallback callback3;
   GURL url3("http://www.google.com");
+  SpdyStreamRequest request3;
   ASSERT_EQ(ERR_IO_PENDING,
-            session->CreateStream(url3, LOWEST, &spdy_stream3,
-                                  BoundNetLog(), callback3.callback()));
+            request3.StartRequest(session, url3, LOWEST,
+                                  BoundNetLog(),
+                                  callback3.callback()));
 
   EXPECT_EQ(1u, session->num_active_streams() + session->num_created_streams());
   EXPECT_EQ(2u, session->pending_create_stream_queues(LOWEST));
@@ -1549,23 +1509,18 @@ TEST_F(SpdySessionSpdy2Test, CancelTwoStalledCreateStream) {
   EXPECT_TRUE(spdy_stream1.get() != NULL);
   spdy_stream1->Cancel();
   spdy_stream1 = NULL;
-  session->CancelPendingCreateStreams(&spdy_stream1);
-  EXPECT_EQ(1u, session->num_active_streams() + session->num_created_streams());
-  EXPECT_EQ(1u, session->pending_create_stream_queues(LOWEST));
+
+  callback2.WaitForResult();
+  EXPECT_EQ(2u, session->num_active_streams() + session->num_created_streams());
+  EXPECT_EQ(0u, session->pending_create_stream_queues(LOWEST));
 
   // Cancel the second stream, this will allow the third stream to be created.
-  EXPECT_TRUE(spdy_stream2.get() != NULL);
-  spdy_stream2->Cancel();
-  spdy_stream2 = NULL;
-  session->CancelPendingCreateStreams(&spdy_stream2);
+  request2.ReleaseStream()->Cancel();
   EXPECT_EQ(1u, session->num_active_streams() + session->num_created_streams());
   EXPECT_EQ(0u, session->pending_create_stream_queues(LOWEST));
 
   // Cancel the third stream.
-  EXPECT_TRUE(spdy_stream3.get() != NULL);
-  spdy_stream3->Cancel();
-  spdy_stream3 = NULL;
-  session->CancelPendingCreateStreams(&spdy_stream3);
+  request3.ReleaseStream()->Cancel();
   EXPECT_EQ(0u, session->num_active_streams() + session->num_created_streams());
   EXPECT_EQ(0u, session->pending_create_stream_queues(LOWEST));
 }
@@ -1682,11 +1637,10 @@ TEST_F(SpdySessionSpdy2Test, ReadDataWithoutYielding) {
 
   scoped_refptr<SpdySession> session = CreateInitializedSession();
 
-  scoped_refptr<SpdyStream> spdy_stream1;
-  TestCompletionCallback callback1;
   GURL url1("http://www.google.com");
-  EXPECT_EQ(OK, session->CreateStream(url1, MEDIUM, &spdy_stream1,
-                                      BoundNetLog(), callback1.callback()));
+  scoped_refptr<SpdyStream> spdy_stream1 =
+      CreateStreamSynchronously(session, url1, MEDIUM, BoundNetLog());
+  ASSERT_TRUE(spdy_stream1.get() != NULL);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
 
   scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock);
@@ -1773,11 +1727,10 @@ TEST_F(SpdySessionSpdy2Test, TestYieldingDuringReadData) {
 
   scoped_refptr<SpdySession> session = CreateInitializedSession();
 
-  scoped_refptr<SpdyStream> spdy_stream1;
-  TestCompletionCallback callback1;
   GURL url1("http://www.google.com");
-  EXPECT_EQ(OK, session->CreateStream(url1, MEDIUM, &spdy_stream1,
-                                      BoundNetLog(), callback1.callback()));
+  scoped_refptr<SpdyStream> spdy_stream1 =
+      CreateStreamSynchronously(session, url1, MEDIUM, BoundNetLog());
+  ASSERT_TRUE(spdy_stream1.get() != NULL);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
 
   scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock);
@@ -1887,11 +1840,10 @@ TEST_F(SpdySessionSpdy2Test, TestYieldingDuringAsyncReadData) {
 
   scoped_refptr<SpdySession> session = CreateInitializedSession();
 
-  scoped_refptr<SpdyStream> spdy_stream1;
-  TestCompletionCallback callback1;
   GURL url1("http://www.google.com");
-  EXPECT_EQ(OK, session->CreateStream(url1, MEDIUM, &spdy_stream1,
-                                      BoundNetLog(), callback1.callback()));
+  scoped_refptr<SpdyStream> spdy_stream1 =
+      CreateStreamSynchronously(session, url1, MEDIUM, BoundNetLog());
+  ASSERT_TRUE(spdy_stream1.get() != NULL);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
 
   scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock);
@@ -1963,11 +1915,10 @@ TEST_F(SpdySessionSpdy2Test, GoAwayWhileInDoLoop) {
 
   scoped_refptr<SpdySession> session = CreateInitializedSession();
 
-  scoped_refptr<SpdyStream> spdy_stream1;
-  TestCompletionCallback callback1;
   GURL url1("http://www.google.com");
-  EXPECT_EQ(OK, session->CreateStream(url1, MEDIUM, &spdy_stream1,
-                                      BoundNetLog(), callback1.callback()));
+  scoped_refptr<SpdyStream> spdy_stream1 =
+      CreateStreamSynchronously(session, url1, MEDIUM, BoundNetLog());
+  ASSERT_TRUE(spdy_stream1.get() != NULL);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
 
   scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock);

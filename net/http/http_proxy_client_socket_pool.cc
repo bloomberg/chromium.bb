@@ -319,9 +319,9 @@ int HttpProxyConnectJob::DoSpdyProxyCreateStream() {
   }
 
   next_state_ = STATE_SPDY_PROXY_CREATE_STREAM_COMPLETE;
-  return spdy_session->CreateStream(
-      params_->request_url(), params_->destination().priority(),
-      &spdy_stream_, spdy_session->net_log(), callback_);
+  return spdy_stream_request_.StartRequest(
+      spdy_session, params_->request_url(), params_->destination().priority(),
+      spdy_session->net_log(), callback_);
 }
 
 int HttpProxyConnectJob::DoSpdyProxyCreateStreamComplete(int result) {
@@ -329,8 +329,10 @@ int HttpProxyConnectJob::DoSpdyProxyCreateStreamComplete(int result) {
     return result;
 
   next_state_ = STATE_HTTP_PROXY_CONNECT_COMPLETE;
+  scoped_refptr<SpdyStream> stream = spdy_stream_request_.ReleaseStream();
+  DCHECK(stream);
   transport_socket_.reset(
-      new SpdyProxyClientSocket(spdy_stream_,
+      new SpdyProxyClientSocket(stream,
                                 params_->user_agent(),
                                 params_->endpoint(),
                                 params_->request_url(),

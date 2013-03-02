@@ -8,6 +8,8 @@
 
 #include "base/compiler_specific.h"
 #include "net/spdy/buffered_spdy_framer.h"
+#include "net/spdy/spdy_session.h"
+#include "net/spdy/spdy_stream.h"
 
 namespace net {
 
@@ -77,4 +79,40 @@ bool GetSpdyPriority(int version,
   return true;
 }
 
-} // namespace net
+scoped_refptr<SpdyStream> CreateStreamSynchronously(
+    const scoped_refptr<SpdySession>& session,
+    const GURL& url,
+    RequestPriority priority,
+    const BoundNetLog& net_log) {
+  SpdyStreamRequest stream_request;
+  int rv = stream_request.StartRequest(session, url, priority, net_log,
+                                       CompletionCallback());
+  return (rv == OK) ? stream_request.ReleaseStream() : NULL;
+}
+
+StreamReleaserCallback::StreamReleaserCallback(
+    SpdySession* session,
+    SpdyStream* first_stream)
+    : session_(session),
+      first_stream_(first_stream) {}
+
+StreamReleaserCallback::~StreamReleaserCallback() {}
+
+CompletionCallback StreamReleaserCallback::MakeCallback(
+    SpdyStreamRequest* request) {
+  return base::Bind(&StreamReleaserCallback::OnComplete,
+                    base::Unretained(this),
+                    request);
+}
+
+void StreamReleaserCallback::OnComplete(
+    SpdyStreamRequest* request, int result) {
+  session_->CloseSessionOnError(ERR_FAILED, false, "On complete.");
+  session_ = NULL;
+  first_stream_->Cancel();
+  first_stream_ = NULL;
+  request->ReleaseStream()->Cancel();
+  SetResult(result);
+}
+
+}  // namespace net

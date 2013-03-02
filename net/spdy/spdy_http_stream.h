@@ -82,6 +82,8 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   virtual void OnClose(int status) OVERRIDE;
 
  private:
+  void OnStreamCreated(const CompletionCallback& callback, int rv);
+
   // Reads the data (whether chunked or not) from the request body stream and
   // sends the data by calling WriteStreamData on the underlying SpdyStream.
   int SendData();
@@ -98,6 +100,7 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   bool ShouldWaitForMoreBufferedData() const;
 
   base::WeakPtrFactory<SpdyHttpStream> weak_factory_;
+  SpdyStreamRequest stream_request_;
   scoped_refptr<SpdyStream> stream_;
   scoped_refptr<SpdySession> spdy_session_;
 

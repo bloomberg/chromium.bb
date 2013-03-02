@@ -10,6 +10,7 @@
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_stream_test_util.h"
+#include "net/spdy/spdy_test_util_common.h"
 #include "net/spdy/spdy_test_util_spdy2.h"
 #include "net/spdy/spdy_websocket_test_util_spdy2.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -129,11 +130,9 @@ TEST_F(SpdyStreamSpdy2Test, SendDataAfterOpen) {
                                  BoundNetLog()));
   session->InitializeWithSocket(connection.release(), false, OK);
 
-  scoped_refptr<SpdyStream> stream;
-  ASSERT_EQ(
-      OK,
-      session->CreateStream(url, LOWEST, &stream, BoundNetLog(),
-                            CompletionCallback()));
+  scoped_refptr<SpdyStream> stream =
+      CreateStreamSynchronously(session, url, LOWEST, BoundNetLog());
+  ASSERT_TRUE(stream.get() != NULL);
   scoped_refptr<IOBufferWithSize> buf(new IOBufferWithSize(8));
   memcpy(buf->data(), "\0hello!\xff", 8);
   TestCompletionCallback callback;
@@ -223,11 +222,9 @@ TEST_F(SpdyStreamSpdy2Test, SendHeaderAndDataAfterOpen) {
                                  BoundNetLog()));
   session->InitializeWithSocket(connection.release(), false, OK);
 
-  scoped_refptr<SpdyStream> stream;
-  ASSERT_EQ(
-      OK,
-      session->CreateStream(url, HIGHEST, &stream, BoundNetLog(),
-                            CompletionCallback()));
+  scoped_refptr<SpdyStream> stream =
+      CreateStreamSynchronously(session, url, HIGHEST, BoundNetLog());
+  ASSERT_TRUE(stream.get() != NULL);
   scoped_refptr<IOBufferWithSize> buf(new IOBufferWithSize(6));
   memcpy(buf->data(), "hello!", 6);
   TestCompletionCallback callback;
@@ -402,11 +399,9 @@ TEST_F(SpdyStreamSpdy2Test, StreamError) {
                                  log.bound()));
   session->InitializeWithSocket(connection.release(), false, OK);
 
-  scoped_refptr<SpdyStream> stream;
-  ASSERT_EQ(
-      OK,
-      session->CreateStream(url, LOWEST, &stream, log.bound(),
-                            CompletionCallback()));
+  scoped_refptr<SpdyStream> stream =
+      CreateStreamSynchronously(session, url, LOWEST, log.bound());
+  ASSERT_TRUE(stream.get() != NULL);
   scoped_refptr<IOBufferWithSize> buf(new IOBufferWithSize(8));
   memcpy(buf->data(), "\0hello!\xff", 8);
   TestCompletionCallback callback;

@@ -20,6 +20,7 @@
 #include "net/socket/client_socket_pool_histograms.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/spdy/spdy_session.h"
 
 namespace net {
 
@@ -164,7 +165,7 @@ class HttpProxyConnectJob : public ConnectJob {
 
   HttpResponseInfo error_response_info_;
 
-  scoped_refptr<SpdyStream> spdy_stream_;
+  SpdyStreamRequest spdy_stream_request_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpProxyConnectJob);
 };
