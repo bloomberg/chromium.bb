@@ -347,7 +347,7 @@
               "url": {
                 "type": "string",
                 "optional": true,
-                "description": "Match tabs against a URL pattern."
+                "description": "Match tabs against a <a href='match_patterns.html'>URL pattern</a>. Note that fragment identifiers are not matched."
               },
               "windowId": {
                 "type": "integer",
