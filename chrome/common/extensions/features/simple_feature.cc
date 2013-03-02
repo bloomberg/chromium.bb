@@ -9,8 +9,10 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/sha1.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/common/chrome_switches.h"
 
 using chrome::VersionInfo;
@@ -219,7 +221,7 @@ Feature::Availability SimpleFeature::IsAvailableToManifest(
     return CreateAvailability(IS_AVAILABLE, type);
 
   if (!whitelist_.empty()) {
-    if (whitelist_.find(extension_id) == whitelist_.end()) {
+    if (!IsIdInWhitelist(extension_id)) {
       // TODO(aa): This is gross. There should be a better way to test the
       // whitelist.
       CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -362,6 +364,38 @@ Feature::Availability SimpleFeature::CreateAvailability(
 
 std::set<Feature::Context>* SimpleFeature::GetContexts() {
   return &contexts_;
+}
+
+bool SimpleFeature::IsIdInWhitelist(const std::string& extension_id) const {
+  // An empty whitelist means the absence of a whitelist, rather than a
+  // whitelist that allows no ID through. This could be surprising behavior, so
+  // we force the caller to handle it explicitly. A DCHECK should be sufficient
+  // here because all whitelists today are hardcoded, meaning that errors
+  // should be caught during development, but if that assumption changes in the
+  // future (e.g., a whitelist that lives in the user's profile and is managed
+  // by runtime behavior), better to die via CHECK than to let an edge case
+  // open up access to a whitelisted API with a whitelist that has shrunk to
+  // size zero.
+  CHECK(!whitelist_.empty());
+
+  // Belt-and-suspenders philosophy here. We should be pretty confident by this
+  // point that we've validated the extension ID format, but in case something
+  // slips through, we avoid a class of attack where creative ID manipulation
+  // leads to hash collisions.
+  if (extension_id.length() != 32)  // 128 bits / 4 = 32 mpdecimal characters
+    return false;
+
+  if (whitelist_.find(extension_id) != whitelist_.end())
+    return true;
+
+  const std::string id_hash = base::SHA1HashString(extension_id);
+  DCHECK(id_hash.length() == base::kSHA1Length);
+  const std::string hexencoded_id_hash = base::HexEncode(id_hash.c_str(),
+      id_hash.length());
+  if (whitelist_.find(hexencoded_id_hash) != whitelist_.end())
+    return true;
+
+  return false;
 }
 
 }  // namespace extensions

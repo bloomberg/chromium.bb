@@ -77,6 +77,7 @@ class SimpleFeature : public Feature {
   Availability CreateAvailability(AvailabilityResult result) const;
   Availability CreateAvailability(AvailabilityResult result,
                                   Manifest::Type type) const;
+  bool IsIdInWhitelist(const std::string& extension_id) const;
 
  private:
   // For clarity and consistency, we handle the default value of each of these
