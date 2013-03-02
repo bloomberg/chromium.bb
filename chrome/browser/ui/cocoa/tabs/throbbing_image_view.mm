@@ -34,6 +34,10 @@ class ThrobbingImageViewAnimationDelegate : public ui::AnimationDelegate {
   return self;
 }
 
+- (void)setTweenType:(ui::Tween::Type)type {
+  throbAnimation_->SetTweenType(type);
+}
+
 - (void)dealloc {
   throbAnimation_->Stop();
   [super dealloc];

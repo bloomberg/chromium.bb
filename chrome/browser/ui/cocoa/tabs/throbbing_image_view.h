@@ -27,6 +27,9 @@ class ThrobbingImageViewAnimationDelegate;
     backgroundImage:(NSImage*)backgroundImage
          throbImage:(NSImage*)throbImage
          durationMS:(int)durationMS;
+
+- (void)setTweenType:(ui::Tween::Type)type;
+
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_TABS_THROBBING_IMAGE_VIEW_H_
