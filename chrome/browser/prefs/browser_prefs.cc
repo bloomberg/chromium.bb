@@ -255,18 +255,14 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #endif
 }
 
-void RegisterUserPrefs(PrefService* user_prefs,
-                       PrefRegistrySyncable* registry) {
-  // TODO(joi): Get rid of the need for the PrefService parameter, and
-  // do registration prior to PrefService creation.
-
+void RegisterUserPrefs(PrefRegistrySyncable* registry) {
   // User prefs. Please keep this list alphabetized.
   AlternateErrorPageTabObserver::RegisterUserPrefs(registry);
   autofill::AutofillDialogControllerImpl::RegisterUserPrefs(registry);
   AutofillManager::RegisterUserPrefs(registry);
   BookmarkPromptPrefs::RegisterUserPrefs(registry);
   bookmark_utils::RegisterUserPrefs(registry);
-  BrowserInstantController::RegisterUserPrefs(user_prefs, registry);
+  BrowserInstantController::RegisterUserPrefs(registry);
   browser_sync::SyncPrefs::RegisterUserPrefs(registry);
   ChromeContentBrowserClient::RegisterUserPrefs(registry);
   ChromeDownloadManagerDelegate::RegisterUserPrefs(registry);

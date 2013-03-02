@@ -391,6 +391,8 @@ ProfileImpl::ProfileImpl(
          create_mode == CREATE_MODE_SYNCHRONOUS);
   bool async_prefs = create_mode == CREATE_MODE_ASYNCHRONOUS;
 
+  chrome::RegisterUserPrefs(pref_registry_);
+
   {
     // On startup, preference loading is always synchronous so a scoped timer
     // will work here.
@@ -709,10 +711,6 @@ void ProfileImpl::OnPrefsLoaded(bool success) {
       delegate_->OnProfileCreated(this, false, false);
     return;
   }
-
-  // TODO(joi): Registration can move to the constructor once it
-  // doesn't need the PrefService parameter.
-  chrome::RegisterUserPrefs(prefs_.get(), pref_registry_);
 
   // TODO(mirandac): remove migration code after 6 months (crbug.com/69995).
   if (g_browser_process->local_state())

@@ -40,6 +40,11 @@ class BASE_PREFS_EXPORT PrefRegistry : public base::RefCounted<PrefRegistry> {
   const_iterator begin() const;
   const_iterator end() const;
 
+  // Changes the default value for a preference. Takes ownership of |value|.
+  //
+  // |pref_name| must be a previously registered preference.
+  void SetDefaultPrefValue(const char* pref_name, base::Value* value);
+
   // Exactly one callback can be set for registration. The callback
   // will be invoked each time registration has been performed on this
   // object.

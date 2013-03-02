@@ -273,6 +273,12 @@ const base::Value* PrefService::GetUserPrefValue(const char* path) const {
   return value;
 }
 
+void PrefService::SetDefaultPrefValue(const char* path,
+                                      base::Value* value) {
+  DCHECK(CalledOnValidThread());
+  pref_registry_->SetDefaultPrefValue(path, value);
+}
+
 const base::Value* PrefService::GetDefaultPrefValue(const char* path) const {
   DCHECK(CalledOnValidThread());
   // Lookup the preference in the default store.

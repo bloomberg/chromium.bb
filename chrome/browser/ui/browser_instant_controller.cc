@@ -52,7 +52,40 @@ BrowserInstantController::BrowserInstantController(Browser* browser)
                chrome::search::IsInstantExtendedAPIEnabled(profile())),
       instant_unload_handler_(browser),
       initialized_theme_info_(false) {
-  profile_pref_registrar_.Init(profile()->GetPrefs());
+  PrefService* prefs = profile()->GetPrefs();
+
+  // The kInstantExtendedEnabled and kInstantEnabled preferences are
+  // separate, as the way opt-in is done is a bit different, and
+  // because the experiment that controls the behavior of
+  // kInstantExtendedEnabled (value retrieved via
+  // search::GetInstantExtendedDefaultSetting) may take different
+  // settings on different Chrome set-ups for the same user.
+  //
+  // In one mode of the experiment, however, the
+  // kInstantExtendedEnabled preference's default value is set to the
+  // existing value of kInstantEnabled.
+  //
+  // Because this requires reading the value of the kInstantEnabled
+  // value, we reset the default for kInstantExtendedEnabled here,
+  // instead of fully determining the default in RegisterUserPrefs,
+  // below.
+  bool instant_extended_default = true;
+  switch (search::GetInstantExtendedDefaultSetting()) {
+    case search::INSTANT_DEFAULT_ON:
+      instant_extended_default = true;
+      break;
+    case search::INSTANT_USE_EXISTING:
+      instant_extended_default = prefs->GetBoolean(prefs::kInstantEnabled);
+    case search::INSTANT_DEFAULT_OFF:
+      instant_extended_default = false;
+      break;
+  }
+
+  prefs->SetDefaultPrefValue(
+      prefs::kInstantExtendedEnabled,
+      Value::CreateBooleanValue(instant_extended_default));
+
+  profile_pref_registrar_.Init(prefs);
   profile_pref_registrar_.Add(
       GetInstantPrefName(profile()),
       base::Bind(&BrowserInstantController::ResetInstant,
@@ -82,29 +115,16 @@ bool BrowserInstantController::IsInstantEnabled(Profile* profile) {
 }
 
 void BrowserInstantController::RegisterUserPrefs(
-    PrefService* prefs,
     PrefRegistrySyncable* registry) {
-  // TODO(joi): Get rid of the need for PrefService param above.
   registry->RegisterBooleanPref(prefs::kInstantConfirmDialogShown, false,
                                 PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(prefs::kInstantEnabled, false,
                                 PrefRegistrySyncable::SYNCABLE_PREF);
 
-  bool instant_extended_default = true;
-  switch (search::GetInstantExtendedDefaultSetting()) {
-    case search::INSTANT_DEFAULT_ON:
-      instant_extended_default = true;
-      break;
-    case search::INSTANT_USE_EXISTING:
-      instant_extended_default = prefs->GetBoolean(prefs::kInstantEnabled);
-      break;
-    case search::INSTANT_DEFAULT_OFF:
-      instant_extended_default = false;
-      break;
-  }
-
+  // Note that the default for this pref gets reset in the
+  // BrowserInstantController constructor.
   registry->RegisterBooleanPref(prefs::kInstantExtendedEnabled,
-                                instant_extended_default,
+                                false,
                                 PrefRegistrySyncable::SYNCABLE_PREF);
 }
 

@@ -101,7 +101,7 @@ class ProxyPolicyTest : public testing::Test {
       builder.WithManagedPolicies(policy_service_.get());
     scoped_refptr<PrefRegistrySyncable> registry(new PrefRegistrySyncable);
     PrefServiceSyncable* prefs = builder.CreateSyncable(registry);
-    chrome::RegisterUserPrefs(prefs, registry);
+    chrome::RegisterUserPrefs(registry);
     return prefs;
   }
 
