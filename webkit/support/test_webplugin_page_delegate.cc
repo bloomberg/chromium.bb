@@ -13,7 +13,13 @@ webkit::npapi::WebPluginDelegate*
 TestWebPluginPageDelegate::CreatePluginDelegate(
     const base::FilePath& file_path,
     const std::string& mime_type) {
-  return webkit::npapi::WebPluginDelegateImpl::Create(file_path, mime_type);
+  webkit::npapi::WebPluginDelegateImpl* delegate =
+      webkit::npapi::WebPluginDelegateImpl::Create(file_path, mime_type);
+#if defined(OS_MACOSX) && !defined(USE_AURA)
+  if (delegate)
+    delegate->SetContainerVisibility(true);
+#endif
+  return delegate;
 }
 
 WebKit::WebPlugin* TestWebPluginPageDelegate::CreatePluginReplacement(
