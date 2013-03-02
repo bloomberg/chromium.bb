@@ -11,6 +11,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/cocoa/location_bar/mock_toolbar_model.h"
 #import "chrome/browser/ui/cocoa/location_bar/zoom_decoration.h"
+#include "chrome/browser/ui/cocoa/run_loop_testing.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -49,6 +50,13 @@ class ZoomDecorationTest : public InProcessBrowserTest {
 
   ZoomDecoration* GetZoomDecoration() const {
     return GetLocationBar()->zoom_decoration_.get();
+  }
+
+  ZoomDecoration* GetZoomDecorationForBrowser(Browser* browser) const {
+    BrowserWindowController* controller =
+        [BrowserWindowController browserWindowControllerForWindow:
+            browser->window()->GetNativeWindow()];
+    return [controller locationBarBridge]->zoom_decoration_.get();
   }
 
   ZoomBubbleController* GetBubble() const {
@@ -113,4 +121,17 @@ IN_PROC_BROWSER_TEST_F(ZoomDecorationTest, HideOnInputProgress) {
   mock_toolbar_model_.SetInputInProgress(true);
   GetLocationBar()->ZoomChangedForActiveTab(false);
   EXPECT_FALSE(zoom_decoration->IsVisible());
+}
+
+IN_PROC_BROWSER_TEST_F(ZoomDecorationTest, CloseBrowserWithOpenBubble) {
+  chrome::SetZoomBubbleAutoCloseDelayForTesting(0);
+
+  // Create a new browser so that it can be closed properly.
+  Browser* browser2 = CreateBrowser(browser()->profile());
+  ZoomDecoration* zoom_decoration = GetZoomDecorationForBrowser(browser2);
+  zoom_decoration->ToggleBubble(true);
+
+  // Test shouldn't crash.
+  browser2->window()->Close();
+  content::RunAllPendingInMessageLoop();
 }

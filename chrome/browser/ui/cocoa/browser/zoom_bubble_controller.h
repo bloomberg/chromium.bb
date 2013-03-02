@@ -64,6 +64,9 @@ class WebContents;
 // Button action from the bubble that decreases the zoom level.
 - (void)zoomOut:(id)sender;
 
+// Closes the bubble synchronously, bypassing any animations.
+- (void)closeWithoutAnimation;
+
 @end
 
 namespace chrome {

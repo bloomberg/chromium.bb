@@ -22,6 +22,7 @@ ZoomDecoration::ZoomDecoration(LocationBarViewMac* owner)
 }
 
 ZoomDecoration::~ZoomDecoration() {
+  [bubble_ closeWithoutAnimation];
 }
 
 void ZoomDecoration::Update(ZoomController* zoom_controller) {

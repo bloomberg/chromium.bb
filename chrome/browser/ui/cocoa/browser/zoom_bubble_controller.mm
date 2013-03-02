@@ -151,6 +151,13 @@ void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval) {
   chrome_page_zoom::Zoom(contents_, content::PAGE_ZOOM_OUT);
 }
 
+- (void)closeWithoutAnimation {
+  InfoBubbleWindow* window =
+      base::mac::ObjCCastStrict<InfoBubbleWindow>([self window]);
+  [window setAllowedAnimations:info_bubble::kAnimateNone];
+  [self close];
+}
+
 - (void)windowWillClose:(NSNotification*)notification {
   contents_ = NULL;
   closeObserver_.get()(self);
