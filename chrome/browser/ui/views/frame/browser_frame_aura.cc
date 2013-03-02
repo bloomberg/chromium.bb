@@ -184,8 +184,8 @@ NativeBrowserFrame* NativeBrowserFrame::CreateNativeBrowserFrame(
 #if defined(USE_ASH)
       !chrome::ShouldOpenAshOnStartup() &&
 #endif
-      chrome::GetHostDesktopTypeForBrowser(browser_view->browser()) ==
-          chrome::HOST_DESKTOP_TYPE_NATIVE)
+      browser_view->browser()->
+          host_desktop_type() == chrome::HOST_DESKTOP_TYPE_NATIVE)
     return new DesktopBrowserFrameAura(browser_frame, browser_view);
 #endif
   return new BrowserFrameAura(browser_frame, browser_view);

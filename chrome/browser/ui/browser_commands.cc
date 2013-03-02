@@ -293,10 +293,6 @@ void NewEmptyWindow(Profile* profile, HostDesktopType desktop_type) {
 }
 
 Browser* OpenEmptyWindow(Profile* profile, HostDesktopType desktop_type) {
-  // TODO(scottmg): http://crbug.com/128578
-  // This is necessary because WebContentsViewAura doesn't have enough context
-  // to get the right StackingClient (and therefore parent window) otherwise.
-  ScopedForceDesktopType force_desktop_type(desktop_type);
   Browser* browser = new Browser(
       Browser::CreateParams(Browser::TYPE_TABBED, profile, desktop_type));
   AddBlankTabAt(browser, -1, true);

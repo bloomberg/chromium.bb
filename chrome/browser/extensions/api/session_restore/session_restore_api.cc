@@ -168,8 +168,7 @@ bool SessionRestoreRestoreFunction::RunImpl() {
       TabRestoreServiceDelegate::FindDelegateForWebContents(
           browser->tab_strip_model()->GetActiveWebContents());
   DCHECK(delegate);
-  chrome::HostDesktopType host_desktop_type =
-      chrome::GetHostDesktopTypeForBrowser(browser);
+  chrome::HostDesktopType host_desktop_type = browser->host_desktop_type();
   TabRestoreService::Entries entries = tab_restore_service->entries();
 
   if (entries.empty()) {
