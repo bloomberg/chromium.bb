@@ -39,25 +39,6 @@ class SignatureUtil;
 // client download is malicious or not.
 class DownloadProtectionService {
  public:
-  // TODO(noelutz): we're missing some fields here: server IPs,
-  // tab URL redirect chain, ...
-  struct DownloadInfo {
-    base::FilePath local_file;  // Where the download is currently stored.
-    base::FilePath target_file;  // Where it will eventually be stored.
-    std::vector<GURL> download_url_chain;
-    GURL referrer_url;
-    std::string sha256_hash;
-    int64 total_bytes;
-    bool user_initiated;
-    std::string remote_address;
-    bool zipped_executable;
-    DownloadInfo();
-    ~DownloadInfo();
-    std::string DebugString() const;
-    // Creates a DownloadInfo from a DownloadItem object.
-    static DownloadInfo FromDownloadItem(const content::DownloadItem& item);
-  };
-
   enum DownloadCheckResult {
     SAFE,
     DANGEROUS,
@@ -82,7 +63,7 @@ class DownloadProtectionService {
   // method must be called on the UI thread, and the callback will also be
   // invoked on the UI thread.  This method must be called once the download
   // is finished and written to disk.
-  virtual void CheckClientDownload(const DownloadInfo& info,
+  virtual void CheckClientDownload(content::DownloadItem* item,
                                    const CheckDownloadCallback& callback);
 
   // Checks whether any of the URLs in the redirect chain of the
@@ -90,17 +71,18 @@ class DownloadProtectionService {
   // delivered asynchronously via the given callback.  This method must be
   // called on the UI thread, and the callback will also be invoked on the UI
   // thread.  Pre-condition: !info.download_url_chain.empty().
-  virtual void CheckDownloadUrl(const DownloadInfo& info,
+  virtual void CheckDownloadUrl(const content::DownloadItem& item,
                                 const CheckDownloadCallback& callback);
 
   // Returns true iff the download specified by |info| should be scanned by
   // CheckClientDownload() for malicious content.
-  virtual bool IsSupportedDownload(const DownloadInfo& info) const;
+  virtual bool IsSupportedDownload(const content::DownloadItem& item,
+                                   const base::FilePath& target_path) const;
 
   // Display more information to the user regarding the download specified by
   // |info|. This method is invoked when the user requests more information
   // about a download that was marked as malicious.
-  void ShowDetailsForDownload(const DownloadInfo& info,
+  void ShowDetailsForDownload(const content::DownloadItem& item,
                               content::PageNavigator* navigator);
 
   // Enables or disables the service.  This is usually called by the

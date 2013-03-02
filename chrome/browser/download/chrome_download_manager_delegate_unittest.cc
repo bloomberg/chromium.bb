@@ -32,6 +32,7 @@
 
 using ::testing::AtMost;
 using ::testing::Invoke;
+using ::testing::Ref;
 using ::testing::Return;
 using ::testing::ReturnPointee;
 using ::testing::ReturnRef;
@@ -63,14 +64,6 @@ class MockWebContentsDelegate : public content::WebContentsDelegate {
 //     .WillOnce(ScheduleCallback(false));
 ACTION_P(ScheduleCallback, result) {
   MessageLoop::current()->PostTask(FROM_HERE, base::Bind(arg0, result));
-}
-
-// Matches a safe_browsing::DownloadProtectionService::DownloadInfo that has
-// |url| as the first URL in the |download_url_chain|.
-// Example:
-//   EXPECT_CALL(Foo(InfoMatchinURL(url)))
-MATCHER_P(InfoMatchingURL, url, "DownloadInfo matching URL " + url.spec()) {
-  return url == arg.download_url_chain.front();
 }
 
 // Used with DownloadTestCase. Indicates the type of test case. The expectations
@@ -145,13 +138,14 @@ class TestDownloadProtectionService
   TestDownloadProtectionService()
       : safe_browsing::DownloadProtectionService(NULL, NULL) {}
   MOCK_METHOD2(CheckClientDownload,
-               void(const DownloadProtectionService::DownloadInfo&,
+               void(content::DownloadItem*,
                     const DownloadProtectionService::CheckDownloadCallback&));
   MOCK_METHOD2(CheckDownloadUrl,
-               void(const DownloadProtectionService::DownloadInfo&,
+               void(const content::DownloadItem&,
                     const DownloadProtectionService::CheckDownloadCallback&));
-  MOCK_CONST_METHOD1(IsSupportedDownload,
-                     bool(const DownloadProtectionService::DownloadInfo&));
+  MOCK_CONST_METHOD2(IsSupportedDownload,
+                     bool(const content::DownloadItem&,
+                          const base::FilePath&));
 };
 #endif
 
@@ -404,7 +398,7 @@ void ChromeDownloadManagerDelegateTest::RunTestCaseWithDownloadItem(
           DownloadProtectionService::DANGEROUS :
           DownloadProtectionService::SAFE;
   EXPECT_CALL(*delegate_->test_download_protection_service(),
-              CheckDownloadUrl(InfoMatchingURL(download_url), _))
+              CheckDownloadUrl(Ref(*item), _))
       .WillOnce(WithArg<1>(ScheduleCallback(url_check_result)));
 
   // Downloads that are flagged as DANGEROUS_URL aren't checked for dangerous
@@ -414,7 +408,7 @@ void ChromeDownloadManagerDelegateTest::RunTestCaseWithDownloadItem(
         (test_case.danger_type ==
          content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT);
     EXPECT_CALL(*delegate_->test_download_protection_service(),
-                IsSupportedDownload(InfoMatchingURL(download_url)))
+                IsSupportedDownload(Ref(*item), _))
         .WillOnce(Return(maybe_dangerous));
   }
 #else // FULL_SAFE_BROWSING

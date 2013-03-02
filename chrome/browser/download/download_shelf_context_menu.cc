@@ -150,10 +150,7 @@ void DownloadShelfContextMenu::ExecuteCommand(int command_id) {
       DownloadProtectionService* protection_service =
           (sb_service ? sb_service->download_protection_service() : NULL);
       if (protection_service) {
-        protection_service->ShowDetailsForDownload(
-            DownloadProtectionService::DownloadInfo::FromDownloadItem(
-                *download_item_),
-            navigator_);
+        protection_service->ShowDetailsForDownload(*download_item_, navigator_);
       }
 #else
       // Should only be getting invoked if we are using safe browsing.

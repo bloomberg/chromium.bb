@@ -238,7 +238,7 @@ bool ChromeDownloadManagerDelegate::DetermineDownloadTarget(
     VLOG(2) << __FUNCTION__ << "() Start SB URL check for download = "
             << download->DebugString(false);
     service->CheckDownloadUrl(
-        DownloadProtectionService::DownloadInfo::FromDownloadItem(*download),
+        *download,
         base::Bind(
             &ChromeDownloadManagerDelegate::CheckDownloadUrlDone,
             this,
@@ -327,7 +327,7 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
       state->set_callback(internal_complete_callback);
       item->SetUserData(&safe_browsing_id, state);
       service->CheckClientDownload(
-          DownloadProtectionService::DownloadInfo::FromDownloadItem(*item),
+          item,
           base::Bind(
               &ChromeDownloadManagerDelegate::CheckClientDownloadDone,
               this,
@@ -701,13 +701,10 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
     // protection, mark it as potentially dangerous content until we are done
     // with scanning it.
     if (service && service->enabled()) {
-      DownloadProtectionService::DownloadInfo info =
-          DownloadProtectionService::DownloadInfo::FromDownloadItem(*download);
-      info.target_file = suggested_path;
       // TODO(noelutz): if the user changes the extension name in the UI to
       // something like .exe SafeBrowsing will currently *not* check if the
       // download is malicious.
-      if (service->IsSupportedDownload(info))
+      if (service->IsSupportedDownload(*download, suggested_path))
         danger_type = content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT;
     }
 #endif
