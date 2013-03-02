@@ -20,8 +20,12 @@ base::FilePath GetTestCertsDirectory() {
   return src_root.Append(kCertificateRelativePath);
 }
 
-base::FilePath GetTestCertsDirectoryRelative() {
+base::FilePath GetTestClientCertsDirectory() {
+#if defined(OS_ANDROID)
   return base::FilePath(kCertificateRelativePath);
+#else
+  return GetTestCertsDirectory();
+#endif
 }
 
 base::FilePath GetWebSocketTestDataDirectory() {

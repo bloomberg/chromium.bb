@@ -4,28 +4,30 @@
 
 // Defines an in-memory private key store, primarily used for testing.
 
-#include <openssl/evp.h>
-
 #include "net/base/openssl_private_key_store.h"
+
+#include <openssl/evp.h>
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
-#include "net/base/x509_certificate.h"
 
 namespace net {
 
 namespace {
 
-class OpenSSLMemoryKeyStore : public OpenSSLPrivateKeyStore {
+// A small in-memory store for public/private key pairs held in
+// a single EVP_PKEY object. This is intentionally distinct from
+// net::SSLClientKeyStore.
+class MemoryKeyPairStore {
  public:
-  OpenSSLMemoryKeyStore() {}
+  MemoryKeyPairStore() {}
 
-  static OpenSSLMemoryKeyStore* GetInstance() {
-    return Singleton<OpenSSLMemoryKeyStore>::get();
+  static MemoryKeyPairStore* GetInstance() {
+    return Singleton<MemoryKeyPairStore>::get();
   }
 
-  virtual ~OpenSSLMemoryKeyStore() {
+  ~MemoryKeyPairStore() {
     base::AutoLock lock(lock_);
     for (std::vector<EVP_PKEY*>::iterator it = keys_.begin();
          it != keys_.end(); ++it) {
@@ -33,35 +35,39 @@ class OpenSSLMemoryKeyStore : public OpenSSLPrivateKeyStore {
     }
   }
 
-  virtual bool StorePrivateKey(const GURL& url, EVP_PKEY* pkey) {
+  bool StoreKeyPair(EVP_PKEY* pkey) {
     CRYPTO_add(&pkey->references, 1, CRYPTO_LOCK_EVP_PKEY);
     base::AutoLock lock(lock_);
     keys_.push_back(pkey);
     return true;
   }
 
-  virtual EVP_PKEY* FetchPrivateKey(EVP_PKEY* pkey) {
+  bool HasPrivateKey(EVP_PKEY* pkey) {
     base::AutoLock lock(lock_);
     for (std::vector<EVP_PKEY*>::iterator it = keys_.begin();
          it != keys_.end(); ++it) {
       if (EVP_PKEY_cmp(*it, pkey) == 1)
-        return *it;
+        return true;
     }
-    return NULL;
+    return false;
   }
 
  private:
   std::vector<EVP_PKEY*> keys_;
   base::Lock lock_;
 
-  DISALLOW_COPY_AND_ASSIGN(OpenSSLMemoryKeyStore);
+  DISALLOW_COPY_AND_ASSIGN(MemoryKeyPairStore);
 };
 
 }  // namespace
 
-// static
-OpenSSLPrivateKeyStore* OpenSSLPrivateKeyStore::GetInstance() {
-  return OpenSSLMemoryKeyStore::GetInstance();
+bool OpenSSLPrivateKeyStore::StoreKeyPair(const GURL& url,
+                                          EVP_PKEY* pkey) {
+  return MemoryKeyPairStore::GetInstance()->StoreKeyPair(pkey);
+}
+
+bool OpenSSLPrivateKeyStore::HasPrivateKey(EVP_PKEY* pub_key) {
+  return MemoryKeyPairStore::GetInstance()->HasPrivateKey(pub_key);
 }
 
 } // namespace net

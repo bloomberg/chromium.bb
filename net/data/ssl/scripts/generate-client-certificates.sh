@@ -41,6 +41,7 @@ do
     -req -days 3650 \
     -in out/root_$id.csr \
     -signkey out/root_$id.key \
+    -text \
     -out out/root_$id.pem
     -config client_authentication.cnf
 
@@ -75,5 +76,5 @@ do
     -in out/client_$id.pem \
     -out out/client_$id.p12 \
     -export \
-    -passout pass:
+    -passout pass:chrome
 done

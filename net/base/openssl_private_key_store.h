@@ -5,44 +5,46 @@
 #ifndef NET_BASE_OPENSSL_PRIVATE_KEY_STORE_H_
 #define NET_BASE_OPENSSL_PRIVATE_KEY_STORE_H_
 
-#include "base/basictypes.h"
+#include <vector>
 
-// Avoid including <openssl/evp.h> here.
+// Avoid including <openssl/evp.h>
 typedef struct evp_pkey_st EVP_PKEY;
+
+#include "base/basictypes.h"
+#include "net/base/net_export.h"
 
 class GURL;
 
 namespace net {
 
-// Defines an abstract store for private keys; the OpenSSL library does not
-// provide this service so it is left to individual platforms to provide it.
-//
-// The contract is that the private key will be stored in an appropriate secure
-// system location, and be available to the SSLClientSocketOpenSSL when using a
-// client certificate created against the associated public key for client
-// authentication.
-class OpenSSLPrivateKeyStore {
+class X509Certificate;
+
+// OpenSSLPrivateKeyStore provides an interface for storing
+// public/private key pairs to system storage on platforms where
+// OpenSSL is used.
+// This class shall only be used from the network thread.
+class NET_EXPORT OpenSSLPrivateKeyStore {
  public:
-  // Platforms must define this factory function as appropriate.
-  static OpenSSLPrivateKeyStore* GetInstance();
-
-  virtual ~OpenSSLPrivateKeyStore() {}
-
-  // Called to store a private key generated via <keygen> while visiting |url|.
-  // Does not takes ownership of |pkey|, the caller reamins responsible to
-  // EVP_PKEY_free it. (Internally, a copy maybe made or the reference count
-  // incremented).
+  // Called to permanently store a private/public key pair, generated
+  // via <keygen> while visiting |url|, to an appropriate system
+  // location. Increments |pkey|'s reference count, so the caller is still
+  // responsible for calling EVP_PKEY_free on it.
+  // |url| is the corresponding server URL.
+  // |pkey| is the key pair handle.
   // Returns false if an error occurred whilst attempting to store the key.
-  virtual bool StorePrivateKey(const GURL& url, EVP_PKEY* pkey) = 0;
+  static bool StoreKeyPair(const GURL& url, EVP_PKEY* pkey);
 
-  // Given a |public_key| part returns the corresponding private key, or NULL
-  // if no key found. Does NOT return ownership.
-  virtual EVP_PKEY* FetchPrivateKey(EVP_PKEY* public_key) = 0;
-
- protected:
-  OpenSSLPrivateKeyStore() {}
+  // Checks that the private key for a given public key is installed.
+  // |pub_key| a public key.
+  // Returns true if there is a private key that was previously
+  // recorded through StoreKeyPair().
+  // NOTE: Intentionally not implemented on Android because there is no
+  // platform API that can perform this operation silently.
+  static bool HasPrivateKey(EVP_PKEY* pub_key);
 
  private:
+  OpenSSLPrivateKeyStore();  // not implemented.
+  ~OpenSSLPrivateKeyStore();  // not implemented.
   DISALLOW_COPY_AND_ASSIGN(OpenSSLPrivateKeyStore);
 };
 

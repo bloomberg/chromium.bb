@@ -1230,18 +1230,6 @@ class SSLClientSocketCertRequestInfoTest : public SSLClientSocketTest {
 
     return request_info;
   }
-
-  // The following is needed to construct paths to certificates passed as
-  // |client_authorities| in server SSLOptions. Current implementation of
-  // RemoteTestServer (used on Android) expects relative paths, as opposed to
-  // LocalTestServer, which expects absolute paths (what to fix?).
-  base::FilePath CertDirectory() {
-#ifdef OS_ANDROID
-    return net::GetTestCertsDirectoryRelative();
-#else
-    return net::GetTestCertsDirectory();
-#endif
-  }
 };
 
 TEST_F(SSLClientSocketCertRequestInfoTest, NoAuthorities) {
@@ -1284,9 +1272,10 @@ TEST_F(SSLClientSocketCertRequestInfoTest, TwoAuthorities) {
 
   net::TestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
-  ssl_options.client_authorities.push_back(CertDirectory().Append(kThawteFile));
   ssl_options.client_authorities.push_back(
-      CertDirectory().Append(kDiginotarFile));
+      net::GetTestClientCertsDirectory().Append(kThawteFile));
+  ssl_options.client_authorities.push_back(
+      net::GetTestClientCertsDirectory().Append(kDiginotarFile));
   scoped_refptr<net::SSLCertRequestInfo> request_info =
       GetCertRequest(ssl_options);
   ASSERT_TRUE(request_info);
