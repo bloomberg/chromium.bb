@@ -130,9 +130,11 @@ void FocusController::FocusWindow(aura::Window* window) {
   if (!updating_activation_)
     SetActiveWindow(activatable);
 
+  // If the window's ActivationChangeObserver shifted focus to a valid window,
+  // we don't want to focus the window we thought would be focused by default.
   bool activation_changed_focus = last_focused_window != focused_window_;
-  if (!updating_focus_ && !activation_changed_focus) {
-    if (active_window_)
+  if (!updating_focus_ && (!activation_changed_focus || !focused_window_)) {
+    if (active_window_ && focusable)
       DCHECK(active_window_->Contains(focusable));
     SetFocusedWindow(focusable);
   }

@@ -95,6 +95,37 @@ class ScopedTargetFocusNotificationObserver : public FocusNotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(ScopedTargetFocusNotificationObserver);
 };
 
+class FocusShiftingActivationObserver
+    : public aura::client::ActivationChangeObserver {
+ public:
+  explicit FocusShiftingActivationObserver(aura::Window* activated_window)
+      : activated_window_(activated_window),
+        shift_focus_to_(NULL) {}
+  virtual ~FocusShiftingActivationObserver() {}
+
+  void set_shift_focus_to(aura::Window* shift_focus_to) {
+    shift_focus_to_ = shift_focus_to;
+  }
+
+ private:
+  // Overridden from aura::client::ActivationChangeObserver:
+  virtual void OnWindowActivated(aura::Window* gained_active,
+                                 aura::Window* lost_active) OVERRIDE {
+    // Shift focus to a child. This should prevent the default focusing from
+    // occurring in FocusController::FocusWindow().
+    if (gained_active == activated_window_) {
+      aura::client::FocusClient* client =
+          aura::client::GetFocusClient(gained_active);
+      client->FocusWindow(shift_focus_to_);
+    }
+  }
+
+  aura::Window* activated_window_;
+  aura::Window* shift_focus_to_;
+
+  DISALLOW_COPY_AND_ASSIGN(FocusShiftingActivationObserver);
+};
+
 // BaseFocusRules subclass that allows basic overrides of focus/activation to
 // be tested. This is intended more as a test that the override system works at
 // all, rather than as an exhaustive set of use cases, those should be covered
@@ -430,6 +461,43 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     // When a window is activated, by default that window is also focused.
     // An ActivationChangeObserver may shift focus to another window within the
     // same activatable window.
+    ActivateWindowById(2);
+    EXPECT_EQ(2, GetFocusedWindowId());
+    ActivateWindowById(1);
+    EXPECT_EQ(1, GetFocusedWindowId());
+
+    ActivateWindowById(2);
+
+    aura::Window* target = root_window()->GetChildById(1);
+    aura::client::ActivationClient* client =
+        aura::client::GetActivationClient(root_window());
+
+    scoped_ptr<FocusShiftingActivationObserver> observer(
+        new FocusShiftingActivationObserver(target));
+    observer->set_shift_focus_to(target->GetChildById(11));
+    client->AddObserver(observer.get());
+
+    ActivateWindowById(1);
+
+    // w1's ActivationChangeObserver shifted focus to this child, pre-empting
+    // FocusController's default setting.
+    EXPECT_EQ(11, GetFocusedWindowId());
+
+    ActivateWindowById(2);
+    EXPECT_EQ(2, GetFocusedWindowId());
+
+    // Simulate a focus reset by the ActivationChangeObserver. This should
+    // trigger the default setting in FocusController.
+    observer->set_shift_focus_to(NULL);
+    ActivateWindowById(1);
+    EXPECT_EQ(1, GetFocusedWindowId());
+
+    client->RemoveObserver(observer.get());
+
+    ActivateWindowById(2);
+    EXPECT_EQ(2, GetFocusedWindowId());
+    ActivateWindowById(1);
+    EXPECT_EQ(1, GetFocusedWindowId());
   }
   virtual void NoShiftActiveOnActivation() OVERRIDE {
     // When a window is activated, we need to prevent any change to activation
