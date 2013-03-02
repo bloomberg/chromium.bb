@@ -216,7 +216,7 @@ bool ForeignSessionHandler::IsTabSyncEnabled() {
   Profile* profile = Profile::FromWebUI(web_ui());
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  return service && service->GetPreferredDataTypes().Has(syncer::SESSIONS);
+  return service && service->GetPreferredDataTypes().Has(syncer::PROXY_TABS);
 }
 
 string16 ForeignSessionHandler::FormatSessionTime(const base::Time& time) {

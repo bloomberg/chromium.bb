@@ -1326,7 +1326,7 @@ void ProfileSyncService::UpdateSelectedTypesHistogram(
   // Only log the data types that are shown in the sync settings ui.
   // Note: the order of these types must match the ordering of
   // the respective types in ModelType
-  const browser_sync::user_selectable_type::UserSelectableSyncType
+const browser_sync::user_selectable_type::UserSelectableSyncType
       user_selectable_types[] = {
     browser_sync::user_selectable_type::BOOKMARKS,
     browser_sync::user_selectable_type::PREFERENCES,
@@ -1335,11 +1335,11 @@ void ProfileSyncService::UpdateSelectedTypesHistogram(
     browser_sync::user_selectable_type::THEMES,
     browser_sync::user_selectable_type::TYPED_URLS,
     browser_sync::user_selectable_type::EXTENSIONS,
-    browser_sync::user_selectable_type::SESSIONS,
-    browser_sync::user_selectable_type::APPS
+    browser_sync::user_selectable_type::APPS,
+    browser_sync::user_selectable_type::PROXY_TABS
   };
 
-  COMPILE_ASSERT(25 == syncer::MODEL_TYPE_COUNT, UpdateCustomConfigHistogram);
+  COMPILE_ASSERT(26 == syncer::MODEL_TYPE_COUNT, UpdateCustomConfigHistogram);
 
   if (!sync_everything) {
     const syncer::ModelTypeSet current_types = GetPreferredDataTypes();
@@ -1381,7 +1381,8 @@ void ProfileSyncService::RefreshSpareBootstrapToken(
 }
 #endif
 
-void ProfileSyncService::OnUserChoseDatatypes(bool sync_everything,
+void ProfileSyncService::OnUserChoseDatatypes(
+    bool sync_everything,
     syncer::ModelTypeSet chosen_types) {
   if (!backend_.get() && !HasUnrecoverableError()) {
     NOTREACHED();

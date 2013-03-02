@@ -6444,6 +6444,22 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SYNC_KEYSTORE_ENCRYPTION_DESCRIPTION" desc="Description for the flag to enable sync's keystore encryption options">
         Switch to sync's new server supported encryption schema. Warning: this will modify your sync data, possibly making it unreadable to other clients.
       </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_FLAGS_SYNC_TYPED_URLS_NAME" desc="Mobile: Title for the flag to enable syncing the TypedUrl datatype">
+          Enable syncing typed URLs
+        </message>
+        <message name="IDS_FLAGS_SYNC_TYPED_URLS_DESCRIPTION" desc="Mobile: Description for the flag to enable syncing the TypedURL datatype">
+          Enable typed URLs in the sync settings. This allows syncing your typed URL history to other clients to assist in omnibox auto-completion.
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_FLAGS_SYNC_TYPED_URLS_NAME" desc="Title for the flag to enable syncing the TypedUrl datatype">
+          Enable syncing History
+        </message>
+        <message name="IDS_FLAGS_SYNC_TYPED_URLS_DESCRIPTION" desc="Description for the flag to enable syncing the TypedURL datatype">
+          Enable History in the sync settings. This allows syncing your typed URL history and navigation history to other clients to assist in omnibox auto-completion and the history UI.
+        </message>
+      </if>
       <message name="IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_NEW_SCORING_NAME" desc="Title for the flag for omnibox to use new scoring function in HistoryQuickProvider when ranking suggestions">
         Use new scoring in HistoryQuickProvider
       </message>
@@ -13505,8 +13521,8 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_DATATYPE_PASSWORDS" desc="Saved passwords, one of the data types that we allow syncing.">
         Passwords
       </message>
-      <message name="IDS_SYNC_DATATYPE_TYPED_URLS" desc="Typed URLs, one of the data types that we allow syncing.">
-        Omnibox History
+      <message name="IDS_SYNC_DATATYPE_TYPED_URLS" desc="History, one of the data types that we allow syncing.">
+        History
       </message>
       <message name="IDS_SYNC_DATATYPE_APPS" desc="Apps, one of the data types that we allow syncing.">
         Apps

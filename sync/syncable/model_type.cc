@@ -329,15 +329,17 @@ ModelTypeSet UserTypes() {
 
 ModelTypeSet UserSelectableTypes() {
   ModelTypeSet set;
-  set.Put(APPS);
-  set.Put(AUTOFILL);
+  // Although the order doesn't technically matter here, it's clearer to keep
+  // these in the same order as their definition in the ModelType enum.
   set.Put(BOOKMARKS);
-  set.Put(EXTENSIONS);
+  set.Put(PREFERENCES);;
   set.Put(PASSWORDS);
-  set.Put(PREFERENCES);
-  set.Put(SESSIONS);
+  set.Put(AUTOFILL);
   set.Put(THEMES);
   set.Put(TYPED_URLS);
+  set.Put(EXTENSIONS);
+  set.Put(APPS);
+  set.Put(PROXY_TABS);
   return set;
 }
 
@@ -375,7 +377,7 @@ ModelTypeSet ControlTypes() {
 
 ModelTypeSet ProxyTypes() {
   ModelTypeSet set;
-  // TODO(zea): add a TABS type here.
+  set.Put(PROXY_TABS);
   return set;
 }
 
@@ -438,6 +440,8 @@ const char* ModelTypeToString(ModelType model_type) {
       return "Favicon Images";
     case FAVICON_TRACKING:
       return "Favicon Tracking";
+    case PROXY_TABS:
+      return "Tabs";
     default:
       break;
   }
@@ -519,6 +523,8 @@ ModelType ModelTypeFromString(const std::string& model_type_string) {
     return FAVICON_IMAGES;
   else if (model_type_string == "Favicon Tracking")
     return FAVICON_TRACKING;
+  else if (model_type_string == "Tabs")
+    return PROXY_TABS;
   else
     NOTREACHED() << "No known model type corresponding to "
                  << model_type_string << ".";
@@ -605,6 +611,8 @@ std::string ModelTypeToRootTag(ModelType type) {
       return "google_chrome_favicon_images";
     case FAVICON_TRACKING:
       return "google_chrome_favicon_tracking";
+    case PROXY_TABS:
+      return std::string();
     default:
       break;
   }

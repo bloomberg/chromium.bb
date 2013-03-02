@@ -29,7 +29,7 @@ enum UserSelectableSyncType {
   THEMES = 4,
   TYPED_URLS = 5,
   EXTENSIONS = 6,
-  SESSIONS = 7,
+  PROXY_TABS = 7,
   APPS = 8,
   SYNCED_NOTIFICATIONS = 9,
 
@@ -46,6 +46,8 @@ enum UserSelectableSyncType {
   // DEVICE_INFO,
   // EXPERIMENTS,
   // PRIORITY_PREFERENCES,
+  // SESSIONS,
+  // HISTORY_DELETE_DIRECTIVES,
   // FAVICON_IMAGES,
   // FAVICON_TRACKING,
 

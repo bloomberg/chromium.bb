@@ -52,7 +52,7 @@ TEST_F(ProtoValueConversionsTest, ProtoChangeCheck) {
   // If this number changes, that means we added or removed a data
   // type.  Don't forget to add a unit test for {New
   // type}SpecificsToValue below.
-  EXPECT_EQ(25, MODEL_TYPE_COUNT);
+  EXPECT_EQ(26, MODEL_TYPE_COUNT);
 
   // We'd also like to check if we changed any field in our messages.
   // However, that's hard to do: sizeof could work, but it's
@@ -244,7 +244,8 @@ TEST_F(ProtoValueConversionsTest, EntitySpecificsToValue) {
 #undef SET_FIELD
 
   scoped_ptr<DictionaryValue> value(EntitySpecificsToValue(specifics));
-  EXPECT_EQ(MODEL_TYPE_COUNT - FIRST_REAL_MODEL_TYPE,
+  EXPECT_EQ(MODEL_TYPE_COUNT - FIRST_REAL_MODEL_TYPE -
+            (LAST_PROXY_TYPE - FIRST_PROXY_TYPE + 1),
             static_cast<int>(value->size()));
 }
 

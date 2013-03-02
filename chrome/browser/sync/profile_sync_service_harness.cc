@@ -962,6 +962,7 @@ bool ProfileSyncServiceHarness::DisableSyncForDatatype(
     return true;
   }
 
+  synced_datatypes.RetainAll(syncer::UserSelectableTypes());
   synced_datatypes.Remove(datatype);
   service()->OnUserChoseDatatypes(false, synced_datatypes);
   if (AwaitFullSyncCompletion("Datatype reconfiguration.")) {

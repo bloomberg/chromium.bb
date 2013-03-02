@@ -370,8 +370,13 @@ message ChromiumExtensionsActivity {
 
 // Client specific configuration information.
 message ClientConfigParams {
-  // The set of data types this client has enabled.
+  // The set of data types this client has enabled. Note that this does not
+  // include proxy types, as they do not have protocol field numbers and are
+  // placeholder types that implicitly enable protocol types.
  repeated int32 enabled_type_ids = 1;
+
+ // Whether the PROXY_TABS proxy datatype is enabled on this client.
+ optional bool tabs_datatype_enabled = 2;
 };
 
 message CommitMessage {

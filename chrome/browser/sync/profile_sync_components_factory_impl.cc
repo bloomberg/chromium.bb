@@ -39,6 +39,7 @@
 #include "chrome/browser/sync/glue/password_change_processor.h"
 #include "chrome/browser/sync/glue/password_data_type_controller.h"
 #include "chrome/browser/sync/glue/password_model_associator.h"
+#include "chrome/browser/sync/glue/proxy_data_type_controller.h"
 #include "chrome/browser/sync/glue/search_engine_data_type_controller.h"
 #include "chrome/browser/sync/glue/session_change_processor.h"
 #include "chrome/browser/sync/glue/session_data_type_controller.h"
@@ -71,6 +72,7 @@ using browser_sync::BookmarkChangeProcessor;
 using browser_sync::BookmarkDataTypeController;
 using browser_sync::BookmarkModelAssociator;
 using browser_sync::DataTypeController;
+using browser_sync::DataTypeErrorHandler;
 using browser_sync::DataTypeManager;
 using browser_sync::DataTypeManagerImpl;
 using browser_sync::DataTypeManagerObserver;
@@ -80,6 +82,7 @@ using browser_sync::GenericChangeProcessor;
 using browser_sync::PasswordChangeProcessor;
 using browser_sync::PasswordDataTypeController;
 using browser_sync::PasswordModelAssociator;
+using browser_sync::ProxyDataTypeController;
 using browser_sync::SearchEngineDataTypeController;
 using browser_sync::SessionChangeProcessor;
 using browser_sync::SessionDataTypeController;
@@ -91,7 +94,6 @@ using browser_sync::TypedUrlChangeProcessor;
 using browser_sync::TypedUrlDataTypeController;
 using browser_sync::TypedUrlModelAssociator;
 using browser_sync::UIDataTypeController;
-using browser_sync::DataTypeErrorHandler;
 using content::BrowserThread;
 
 ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
@@ -148,6 +150,8 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
 
   // Session sync is enabled by default.  Register unless explicitly disabled.
   if (!command_line_->HasSwitch(switches::kDisableSyncTabs)) {
+    pss->RegisterDataTypeController(
+        new ProxyDataTypeController(syncer::PROXY_TABS));
     pss->RegisterDataTypeController(
         new SessionDataTypeController(this, profile_, pss));
   }
