@@ -17,7 +17,6 @@ import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.ExtractedText;
 import android.view.inputmethod.ExtractedTextRequest;
-import android.view.inputmethod.InputMethodManager;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -113,6 +112,7 @@ class ImeAdapter {
     private int mTextInputType;
 
     private Context mContext;
+    private InputMethodManagerWrapper mInputMethodManagerWrapper;
     private SelectionHandleController mSelectionHandleController;
     private InsertionHandleController mInsertionHandleController;
     private AdapterInputConnection mInputConnection;
@@ -148,6 +148,7 @@ class ImeAdapter {
     ImeAdapter(Context context, SelectionHandleController selectionHandleController,
             InsertionHandleController insertionHandleController, ViewEmbedder embedder) {
         mContext = context;
+        mInputMethodManagerWrapper = new InputMethodManagerWrapper(context);
         mSelectionHandleController = selectionHandleController;
         mInsertionHandleController = insertionHandleController;
         mViewEmbedder = embedder;
@@ -157,6 +158,15 @@ class ImeAdapter {
     boolean isFor(int nativeImeAdapter, int textInputType) {
         return mNativeImeAdapterAndroid == nativeImeAdapter &&
                mTextInputType == textInputType;
+    }
+
+    @VisibleForTesting
+    protected void setInputMethodManagerWrapper(InputMethodManagerWrapper immw) {
+        mInputMethodManagerWrapper = immw;
+    }
+
+    private InputMethodManagerWrapper getInputMethodManagerWrapper() {
+        return mInputMethodManagerWrapper;
     }
 
     void attachAndShowIfNeeded(int nativeImeAdapter, int textInputType,
@@ -181,10 +191,7 @@ class ImeAdapter {
             int previousType = mTextInputType;
             attach(nativeImeAdapter, textInputType);
 
-            InputMethodManager manager = (InputMethodManager)
-                    mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
-
-            manager.restartInput(mViewEmbedder.getAttachedView());
+            mInputMethodManagerWrapper.restartInput(mViewEmbedder.getAttachedView());
             if (showIfNeeded) {
                 showKeyboard();
             }
@@ -221,9 +228,7 @@ class ImeAdapter {
 
     private void showKeyboard() {
         mIsShowWithoutHideOutstanding = true;
-        InputMethodManager manager = (InputMethodManager)
-                mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
-        manager.showSoftInput(mViewEmbedder.getAttachedView(), 0,
+        mInputMethodManagerWrapper.showSoftInput(mViewEmbedder.getAttachedView(), 0,
                 mViewEmbedder.getNewShowKeyboardReceiver());
     }
 
@@ -234,11 +239,9 @@ class ImeAdapter {
 
     private void hideKeyboard(boolean unzoomIfNeeded) {
         mIsShowWithoutHideOutstanding  = false;
-        InputMethodManager manager = (InputMethodManager)
-                mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
         View view = mViewEmbedder.getAttachedView();
-        if (manager.isActive(view)) {
-            manager.hideSoftInputFromWindow(view.getWindowToken(), 0,
+        if (mInputMethodManagerWrapper.isActive(view)) {
+            mInputMethodManagerWrapper.hideSoftInputFromWindow(view.getWindowToken(), 0,
                     unzoomIfNeeded ? mViewEmbedder.getNewShowKeyboardReceiver() : null);
         }
     }
@@ -532,7 +535,7 @@ class ImeAdapter {
             // updateSelection should
             // be called every time the selection or composition changes if it happens not
             // within a batch edit, or at the end of each top level batch edit.
-            getInputMethodManager().updateSelection(mInternalView,
+            getInputMethodManagerWrapper().updateSelection(mInternalView,
                     selectionStart, selectionEnd, compositionStart, compositionEnd);
         }
 
@@ -674,7 +677,7 @@ class ImeAdapter {
          * state is no longer what the IME has and that it needs to be updated.
          */
         void restartInput() {
-            getInputMethodManager().restartInput(mInternalView);
+            getInputMethodManagerWrapper().restartInput(mInternalView);
             mIgnoreTextInputStateUpdates = false;
             mNumNestedBatchEdits = 0;
         }
@@ -688,7 +691,7 @@ class ImeAdapter {
         }
 
         boolean isActive() {
-            return getInputMethodManager().isActive();
+            return getInputMethodManagerWrapper().isActive(mInternalView);
         }
 
         void setIgnoreTextInputStateUpdates(boolean shouldIgnore) {
@@ -707,9 +710,8 @@ class ImeAdapter {
             return mIgnoreTextInputStateUpdates;
         }
 
-        private InputMethodManager getInputMethodManager() {
-            return (InputMethodManager) mInternalView.getContext()
-                    .getSystemService(Context.INPUT_METHOD_SERVICE);
+        private InputMethodManagerWrapper getInputMethodManagerWrapper() {
+            return mImeAdapter.getInputMethodManagerWrapper();
         }
 
         @VisibleForTesting

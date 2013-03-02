@@ -8,12 +8,14 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.test.FlakyTest;
+import android.os.IBinder;
+import android.os.ResultReceiver;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
@@ -32,8 +34,9 @@ public class ImeTest extends ContentShellTestBase {
     private static final int INVALID_SELECTION = -2;
     private static final int INVALID_COMPOSITION = -2;
     private static final String DATA_URL = UrlUtils.encodeHtmlDataUri(
-            "<html><body>" +
-            "<form action=\"about:blank\">" +
+            "<html><head><meta name=\"viewport\"" +
+            "content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0\" /></head>" +
+            "<body><form action=\"about:blank\">" +
             "<input id=\"input_text\" type=\"text\" />" +
             "<input id=\"input_radio\" type=\"radio\" />" +
             "</form></body></html>");
@@ -50,11 +53,15 @@ public class ImeTest extends ContentShellTestBase {
         launchContentShellWithUrl(DATA_URL);
         assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
 
+        getImeAdapter().setInputMethodManagerWrapper(
+                new TestInputMethodManagerWrapper(getContentViewCore()));
         getContentViewCore().setAdapterInputConnectionFactory(
                 new TestAdapterInputConnectionFactory());
 
         mContentView = getActivity().getActiveContentView();
         mCallbackContainer = new TestCallbackHelperContainer(mContentView);
+        // TODO(aurimas) remove this wait once crbug.com/179511 is fixed.
+        assertWaitForPageScaleFactor(1);
         DOMUtils.clickNode(this, mContentView, mCallbackContainer, "input_text");
         assertWaitForKeyboardStatus(true);
 
@@ -127,12 +134,8 @@ public class ImeTest extends ContentShellTestBase {
         assertEquals(-1, mConnection.mCompositionEnd);
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"TextInput"})
-     * BUG=179455
-     */
-    @FlakyTest
+    @SmallTest
+    @Feature({"TextInput"})
     public void testImeCopy() throws Exception {
         mImeAdapter.checkCompositionQueueAndCallNative("hello", 1, true);
         assertWaitForSetEditableCallback(2, mConnection);
@@ -174,12 +177,8 @@ public class ImeTest extends ContentShellTestBase {
         assertClipboardContents(getActivity(), "narf");
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"TextInput"})
-     * BUG=179455
-     */
-    @FlakyTest
+    @SmallTest
+    @Feature({"TextInput"})
     public void testImePaste() throws Exception {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -240,12 +239,8 @@ public class ImeTest extends ContentShellTestBase {
         assertWaitForKeyboardStatus(false);
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"TextInput", "Main"})
-     * BUG=179455
-     */
-    @FlakyTest
+    @SmallTest
+    @Feature({"TextInput", "Main"})
     public void testUpdatesGetIgnoredDuringBatchEdits() throws Throwable {
         mConnection.beginBatchEdit();
         assertWaitForSetIgnoreUpdates(true, mConnection);
@@ -282,12 +277,8 @@ public class ImeTest extends ContentShellTestBase {
         assertWaitForSetIgnoreUpdates(false, mConnection);
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"TextInput", "Main"})
-     * BUG=179455
-     */
-    @FlakyTest
+    @SmallTest
+    @Feature({"TextInput", "Main"})
     public void testShowImeIfNeeded() throws Throwable {
         DOMUtils.focusNode(this, mContentView, mCallbackContainer, "input_radio");
         assertWaitForKeyboardStatus(false);
@@ -321,6 +312,17 @@ public class ImeTest extends ContentShellTestBase {
                         inputConnection.performEditorAction(EditorInfo.IME_ACTION_GO);
                     }
                 });
+    }
+
+
+
+    private void assertWaitForPageScaleFactor(final float scale) throws InterruptedException {
+        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return getContentViewCore().getScale() == scale;
+            }
+        }));
     }
 
     private void assertWaitForKeyboardStatus(final boolean show) throws InterruptedException {
@@ -421,6 +423,46 @@ public class ImeTest extends ContentShellTestBase {
                 int selectionStart, int selectionEnd,
                 int compositionStart, int compositionEnd) {
             mUpdateSelectionCounter++;
+        }
+    }
+
+    private static class TestInputMethodManagerWrapper extends InputMethodManagerWrapper {
+        private ContentViewCore mContentViewCore;
+        private InputConnection mInputConnection;
+
+        public TestInputMethodManagerWrapper(ContentViewCore contentViewCore) {
+            super(null);
+            mContentViewCore = contentViewCore;
+        }
+
+        @Override
+        public void restartInput(View view) {
+            mInputConnection = mContentViewCore.onCreateInputConnection(new EditorInfo());
+        }
+
+        @Override
+        public void showSoftInput(View view, int flags, ResultReceiver resultReceiver) {
+            if (mInputConnection != null) return;
+            mInputConnection = mContentViewCore.onCreateInputConnection(new EditorInfo());
+        }
+
+        @Override
+        public boolean isActive(View view) {
+            if (mInputConnection == null) return false;
+            return true;
+        }
+
+        @Override
+        public boolean hideSoftInputFromWindow(IBinder windowToken, int flags,
+                ResultReceiver resultReceiver) {
+            boolean retVal = mInputConnection == null;
+            mInputConnection = null;
+            return retVal;
+        }
+
+        @Override
+        public void updateSelection(View view, int selStart, int selEnd,
+                int candidatesStart, int candidatesEnd) {
         }
     }
 }
