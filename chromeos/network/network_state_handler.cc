@@ -19,7 +19,7 @@
 
 namespace {
 
-const char kLogModule[] = "NetworkPropertyHandler";
+const char kLogModule[] = "NetworkStateHandler";
 
 // Returns true if |network->type()| == |match_type|, or it matches one of the
 // following special match types:

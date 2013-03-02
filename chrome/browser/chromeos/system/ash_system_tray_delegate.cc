@@ -78,6 +78,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -743,7 +744,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
     Network* network = crosnet->FindNetworkByPath(network_id);
     if (CommandLine::ForCurrentProcess()->HasSwitch(
-            ash::switches::kAshEnableNewNetworkStatusArea)) {
+            ash::switches::kAshEnableNewNetworkStatusArea) &&
+        CommandLine::ForCurrentProcess()->HasSwitch(
+            chromeos::switches::kEnableNewNetworkConfigurationHandlers)) {
       // If the new network handlers are enabled, this should always trigger
       // displaying the network settings UI.
       if (network)

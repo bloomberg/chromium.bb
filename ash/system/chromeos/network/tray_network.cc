@@ -20,6 +20,7 @@
 #include "ash/system/tray/tray_notification_view.h"
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -548,7 +549,9 @@ void TrayNetwork::ConnectToNetwork(const std::string& service_path) {
       NetworkStateHandler::Get()->GetNetworkState(service_path);
   if (!network)
     return;
-  if (!network->IsConnectedState()) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableNewNetworkConfigurationHandlers) &&
+      !network->IsConnectedState()) {
     chromeos::NetworkConfigurationHandler::Get()->Connect(
         service_path,
         base::Bind(&base::DoNothing),

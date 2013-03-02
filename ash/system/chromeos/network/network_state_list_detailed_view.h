@@ -70,20 +70,20 @@ class NetworkStateListDetailedView : public NetworkDetailedView,
   // Create UI components.
   void CreateHeaderEntry();
   void CreateHeaderButtons();
-  void CreateNetworkEntries();
+  void CreateMobileAccount();
   void CreateNetworkExtra();
 
   // Update UI components.
   void UpdateHeaderButtons();
+
   void UpdateNetworks(const NetworkStateList& networks);
-  void UpdateNetworkState();
-  void RefreshNetworkList();
+  void UpdateNetworkListEntries();
   bool CreateOrUpdateInfoLabel(
       int index, const string16& text, views::Label** label);
   bool UpdateNetworkChild(int index, const NetworkInfo* info);
   bool OrderChild(views::View* view, int index);
   bool UpdateNetworkListEntries(std::set<std::string>* new_service_paths);
-  void UpdateNetworkEntries();
+  void UpdateMobileAccount();
   void UpdateNetworkExtra();
 
   // Adds a settings entry when logged in, and an entry for changing proxy

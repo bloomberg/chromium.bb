@@ -146,8 +146,9 @@ NetworkStateListDetailedView::~NetworkStateListDetailedView() {
 }
 
 void NetworkStateListDetailedView::ManagerChanged() {
+  UpdateNetworkListEntries();
   UpdateHeaderButtons();
-  UpdateNetworkEntries();
+  UpdateMobileAccount();
   UpdateNetworkExtra();
   Layout();
 }
@@ -156,26 +157,28 @@ void NetworkStateListDetailedView::NetworkListChanged() {
   NetworkStateList network_list;
   NetworkStateHandler::Get()->GetNetworkList(&network_list);
   UpdateNetworks(network_list);
+  UpdateNetworkListEntries();
+  UpdateHeaderButtons();
+  UpdateMobileAccount();
+  UpdateNetworkExtra();
   Layout();
 }
 
 void NetworkStateListDetailedView::NetworkServiceChanged(
     const chromeos::NetworkState* network) {
-  UpdateNetworkState();
-  RefreshNetworkList();
+  UpdateNetworkListEntries();
   Layout();
 }
 
 void NetworkStateListDetailedView::NetworkIconChanged() {
-  UpdateNetworkState();
-  RefreshNetworkList();
+  UpdateNetworkListEntries();
   Layout();
 }
 
 // Overridden from NetworkDetailedView:
 
 void NetworkStateListDetailedView::Init() {
-  CreateNetworkEntries();
+  CreateMobileAccount();
   CreateNetworkExtra();
   CreateHeaderEntry();
   CreateHeaderButtons();
@@ -184,6 +187,10 @@ void NetworkStateListDetailedView::Init() {
   handler->RequestScan();
   handler->GetNetworkList(&network_list);
   UpdateNetworks(network_list);
+  UpdateNetworkListEntries();
+  UpdateHeaderButtons();
+  UpdateMobileAccount();
+  UpdateNetworkExtra();
 }
 
 NetworkDetailedView::DetailedViewType
@@ -306,7 +313,7 @@ void NetworkStateListDetailedView::CreateHeaderButtons() {
   footer()->AddButton(info_icon_);
 }
 
-void NetworkStateListDetailedView::CreateNetworkEntries() {
+void NetworkStateListDetailedView::CreateMobileAccount() {
   CreateScrollableList();
 
   HoverHighlightView* container = new HoverHighlightView(this);
@@ -379,16 +386,12 @@ void NetworkStateListDetailedView::UpdateNetworks(
     NetworkInfo* info = new NetworkInfo(network->path());
     network_list_.push_back(info);
   }
-  UpdateNetworkState();
-  RefreshNetworkList();
-
-  UpdateHeaderButtons();
-  UpdateNetworkEntries();
-  UpdateNetworkExtra();
 }
 
-void NetworkStateListDetailedView::UpdateNetworkState() {
+void NetworkStateListDetailedView::UpdateNetworkListEntries() {
   NetworkStateHandler* handler = NetworkStateHandler::Get();
+
+  // First, update state for all networks
   for (size_t i = 0; i < network_list_.size(); ++i) {
     NetworkInfo* info = network_list_[i];
     const chromeos::NetworkState* network =
@@ -402,9 +405,8 @@ void NetworkStateListDetailedView::UpdateNetworkState() {
     info->highlight =
         network->IsConnectedState() || network->IsConnectingState();
   }
-}
 
-void NetworkStateListDetailedView::RefreshNetworkList() {
+  // Get the updated list entries
   network_map_.clear();
   std::set<std::string> new_service_paths;
   bool needs_relayout = UpdateNetworkListEntries(&new_service_paths);
@@ -566,7 +568,7 @@ bool NetworkStateListDetailedView::UpdateNetworkListEntries(
   return needs_relayout;
 }
 
-void NetworkStateListDetailedView::UpdateNetworkEntries() {
+void NetworkStateListDetailedView::UpdateMobileAccount() {
   view_mobile_account_->SetVisible(false);
   setup_mobile_account_->SetVisible(false);
 
