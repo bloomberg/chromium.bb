@@ -50,12 +50,15 @@ class _BackgroundSteps(multiprocessing.Process):
     output = tempfile.NamedTemporaryFile(delete=False, bufsize=0)
     self._steps.append((step, output))
 
-  def WaitForStep(self):
+  def WaitForStep(self, silent=False):
     """Wait for the next step to complete.
 
     Output from the step is printed as the step runs.
 
     If an exception occurs, return a string containing the traceback.
+
+    Arguments:
+      silent: If True, squelch all output from the step.
     """
     assert not self.Empty()
     _step, output = self._steps.popleft()
@@ -83,7 +86,8 @@ class _BackgroundSteps(multiprocessing.Process):
         output.seek(pos)
         buf = output.read(_BUFSIZE)
         while len(buf) > 0:
-          sys.stdout.write(buf)
+          if not silent:
+            sys.stdout.write(buf)
           pos += len(buf)
           if len(buf) < _BUFSIZE:
             break
@@ -159,7 +163,7 @@ class _BackgroundSteps(multiprocessing.Process):
 
 
 @contextlib.contextmanager
-def _ParallelSteps(steps, max_parallel=None):
+def _ParallelSteps(steps, max_parallel=None, hide_output_after_errors=False):
   """Run a list of functions in parallel.
 
   This function launches the provided functions in the background, yields,
@@ -176,6 +180,8 @@ def _ParallelSteps(steps, max_parallel=None):
     steps: A list of functions to run.
     max_parallel: The maximum number of simultaneous tasks to run in parallel.
       By default, run all tasks in parallel.
+    hide_output_after_errors: After the first exception occurs, squelch any
+      further output, including any exceptions that might occur.
   """
 
   semaphore = None
@@ -197,8 +203,9 @@ def _ParallelSteps(steps, max_parallel=None):
     tracebacks = []
     for bg in bg_steps:
       while not bg.Empty():
-        error = bg.WaitForStep()
-        if error is not None:
+        silent = tracebacks and hide_output_after_errors
+        error = bg.WaitForStep(silent=silent)
+        if not silent and error is not None:
           tracebacks.append(error)
       bg.join()
 
@@ -207,7 +214,7 @@ def _ParallelSteps(steps, max_parallel=None):
       raise BackgroundFailure('\n' + ''.join(tracebacks))
 
 
-def RunParallelSteps(steps, max_parallel=None):
+def RunParallelSteps(steps, max_parallel=None, hide_output_after_errors=False):
   """Run a list of functions in parallel.
 
   This function blocks until all steps are completed.
@@ -223,6 +230,8 @@ def RunParallelSteps(steps, max_parallel=None):
     steps: A list of functions to run.
     max_parallel: The maximum number of simultaneous tasks to run in parallel.
       By default, run all tasks in parallel.
+    hide_output_after_errors: After the first exception occurs, squelch any
+      further output, including any exceptions that might occur.
 
   Example:
     # This snippet will execute in parallel:
@@ -233,7 +242,8 @@ def RunParallelSteps(steps, max_parallel=None):
     RunParallelSteps(steps)
     # Blocks until all calls have completed.
   """
-  with _ParallelSteps(steps, max_parallel=max_parallel):
+  with _ParallelSteps(steps, max_parallel=max_parallel,
+                      hide_output_after_errors=hide_output_after_errors):
     pass
 
 

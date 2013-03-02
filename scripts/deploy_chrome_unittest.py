@@ -6,6 +6,7 @@
 
 import os
 import sys
+import time
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
@@ -85,36 +86,29 @@ class InterfaceTest(cros_test_lib.OutputTestCase):
 class DeployChromeMock(partial_mock.PartialMock):
 
   TARGET = 'chromite.scripts.deploy_chrome.DeployChrome'
-  ATTRS = ('_CheckRootfsWriteable', '_DisableRootfsVerification',
-           '_KillProcsIfNeeded')
+  ATTRS = ('_KillProcsIfNeeded', '_DisableRootfsVerification')
 
-  def __init__(self, disable_ok=True):
+  def __init__(self):
     partial_mock.PartialMock.__init__(self)
-    self.disable_ok = disable_ok
-    self.rootfs_writeable = False
     # Target starts off as having rootfs verification enabled.
     self.rsh_mock = remote_access_unittest.RemoteShMock()
+    self.rsh_mock.SetDefaultCmdResult(0)
     self.MockMountCmd(1)
+    self.rsh_mock.AddCmdResult(deploy_chrome.LSOF_COMMAND, 1)
 
   def MockMountCmd(self, returnvalue):
-    def hook(_inst, *_args, **_kwargs):
-      self.rootfs_writeable = True
-
     self.rsh_mock.AddCmdResult(deploy_chrome.MOUNT_RW_COMMAND,
-                               returnvalue,
-                               side_effect=None if returnvalue else hook)
+                               returnvalue)
+
+  def _DisableRootfsVerification(self, inst):
+    with mock.patch.object(time, 'sleep'):
+      self.backup['_DisableRootfsVerification'](inst)
 
   def PreStart(self):
     self.rsh_mock.start()
 
   def PreStop(self):
     self.rsh_mock.stop()
-
-  def _CheckRootfsWriteable(self, _inst):
-    return self.rootfs_writeable
-
-  def _DisableRootfsVerification(self, _inst):
-    self.MockMountCmd(int(not self.disable_ok))
 
   def _KillProcsIfNeeded(self, _inst):
     # Fully stub out for now.
@@ -130,61 +124,46 @@ class DeployTest(cros_test_lib.MockTempDirTestCase):
   def setUp(self):
     self.deploy_mock = self.StartPatcher(DeployChromeMock())
     self.deploy = self._GetDeployChrome(
-        list(_REGULAR_TO) + ['--gs-path', _GS_PATH])
+        list(_REGULAR_TO) + ['--gs-path', _GS_PATH, '--force'])
 
 
-class TestPrepareTarget(DeployTest):
+class TestDisableRootfsVerification(DeployTest):
   """Testing disabling of rootfs verification and RO mode."""
 
-  def testSuccess(self):
-    """Test the working case."""
-    self.deploy._PrepareTarget()
+  def testDisableRootfsVerificationSuccess(self):
+    """Test the working case, disabling rootfs verification."""
+    self.deploy_mock.MockMountCmd(0)
+    self.deploy._DisableRootfsVerification()
+    self.assertFalse(self.deploy._rootfs_is_still_readonly.is_set())
 
   def testDisableRootfsVerificationFailure(self):
     """Test failure to disable rootfs verification."""
-    self.deploy_mock.disable_ok = False
     self.assertRaises(cros_build_lib.RunCommandError,
-                      self.deploy._PrepareTarget)
+                      self.deploy._DisableRootfsVerification)
+    self.assertFalse(self.deploy._rootfs_is_still_readonly.is_set())
+
+
+class TestMount(DeployTest):
+  """Testing mount success and failure."""
+
+  def testSuccess(self):
+    """Test case where we are able to mount as writable."""
+    self.assertFalse(self.deploy._rootfs_is_still_readonly.is_set())
+    self.deploy_mock.MockMountCmd(0)
+    self.deploy._MountRootfsAsWritable()
+    self.assertFalse(self.deploy._rootfs_is_still_readonly.is_set())
+
+  def testMountError(self):
+    """Test that mount failure doesn't raise an exception by default."""
+    self.assertFalse(self.deploy._rootfs_is_still_readonly.is_set())
+    self.deploy._MountRootfsAsWritable()
+    self.assertTrue(self.deploy._rootfs_is_still_readonly.is_set())
 
   def testMountRwFailure(self):
-    """The mount command returncode was 0 but rootfs is still readonly."""
-    with mock.patch.object(deploy_chrome.DeployChrome, '_CheckRootfsWriteable',
-                           auto_spec=True) as m:
-      m.return_value = False
-      self.assertRaises(SystemExit, self.deploy._PrepareTarget)
-
-  def testMountRwSuccessFirstTime(self):
-    """We were able to mount as RW the first time."""
-    self.deploy_mock.MockMountCmd(0)
-    self.deploy._PrepareTarget()
-
-
-PROC_MOUNTS = """\
-rootfs / rootfs rw 0 0
-/dev/root / ext2 %s,relatime,user_xattr,acl 0 0
-devtmpfs /dev devtmpfs rw,relatime,size=970032k,nr_inodes=242508,mode=755 0 0
-none /proc proc rw,nosuid,nodev,noexec,relatime 0 0
-"""
-
-
-class TestCheckRootfs(DeployTest):
-  """Test Rootfs RW check functionality."""
-
-  def setUp(self):
-    self.deploy_mock.UnMockAttr('_CheckRootfsWriteable')
-
-  def MockProcMountsCmd(self, output):
-    self.deploy_mock.rsh_mock.AddCmdResult('cat /proc/mounts', output=output)
-
-  def testCheckRootfsWriteableFalse(self):
-    """Correct results with RO."""
-    self.MockProcMountsCmd(PROC_MOUNTS % 'ro')
-    self.assertFalse(self.deploy._CheckRootfsWriteable())
-
-  def testCheckRootfsWriteableTrue(self):
-    """Correct results with RW."""
-    self.MockProcMountsCmd(PROC_MOUNTS % 'rw')
-    self.assertTrue(self.deploy._CheckRootfsWriteable())
+    """Test that mount failure raises an exception if error_code_ok=False."""
+    self.assertRaises(cros_build_lib.RunCommandError,
+                      self.deploy._MountRootfsAsWritable, error_code_ok=False)
+    self.assertFalse(self.deploy._rootfs_is_still_readonly.is_set())
 
 
 class TestUiJobStarted(DeployTest):

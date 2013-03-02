@@ -19,18 +19,21 @@ device's rootfs.
 """
 
 import logging
+import multiprocessing
 import os
 import optparse
 import time
 
 
 from chromite.buildbot import constants
+from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.cros.commands import cros_chrome_sdk
 from chromite.lib import chrome_util
 from chromite.lib import cros_build_lib
 from chromite.lib import commandline
 from chromite.lib import gs
 from chromite.lib import osutils
+from chromite.lib import parallel
 from chromite.lib import remote_access as remote
 
 
@@ -43,6 +46,7 @@ KILL_PROC_MAX_WAIT = 10
 POST_KILL_WAIT = 2
 
 MOUNT_RW_COMMAND = 'mount -o remount,rw /'
+LSOF_COMMAND = 'lsof /opt/google/chrome/chrome'
 
 _CHROME_DIR = '/opt/google/chrome'
 
@@ -50,6 +54,10 @@ _CHROME_DIR = '/opt/google/chrome'
 def _UrlBaseName(url):
   """Return the last component of the URL."""
   return url.rstrip('/').rpartition('/')[-1]
+
+
+class DeployFailure(results_lib.StepFailure):
+  """Raised whenever the deploy fails."""
 
 
 class DeployChrome(object):
@@ -66,10 +74,10 @@ class DeployChrome(object):
     self.options = options
     self.staging_dir = staging_dir
     self.host = remote.RemoteAccess(options.to, tempdir, port=options.port)
+    self._rootfs_is_still_readonly = multiprocessing.Event()
 
   def _ChromeFileInUse(self):
-    result = self.host.RemoteSh('lsof /opt/google/chrome/chrome',
-                                error_code_ok=True)
+    result = self.host.RemoteSh(LSOF_COMMAND, error_code_ok=True)
     return result.returncode == 0
 
   def _DisableRootfsVerification(self):
@@ -80,8 +88,12 @@ class DeployChrome(object):
       logging.info('Make sure the device is in developer mode!')
       logging.info('Skip this prompt by specifying --force.')
       if not cros_build_lib.BooleanPrompt('Remove roots verification?', False):
-        cros_build_lib.Die('Need rootfs verification to be disabled. '
-                           'Aborting.')
+        # Since we stopped Chrome earlier, it's good form to start it up again.
+        if self.options.startui:
+          logging.info('Starting Chrome...')
+          self.host.RemoteSh('start ui')
+        raise DeployFailure('Need rootfs verification to be disabled. '
+                            'Aborting.')
 
     logging.info('Removing rootfs verification from %s', self.options.to)
     # Running in VM's cause make_dev_ssd's firmware sanity checks to fail.
@@ -96,16 +108,11 @@ class DeployChrome(object):
     logging.info('Please remember to press Ctrl-U if you are booting from USB.')
     self.host.RemoteReboot()
 
-  def _CheckRootfsWriteable(self):
-    # /proc/mounts is in the format:
-    # <device> <dir> <type> <options>
-    result = self.host.RemoteSh('cat /proc/mounts')
-    for line in result.output.splitlines():
-      components = line.split()
-      if components[0] == '/dev/root' and components[1] == '/':
-        return 'rw' in components[3].split(',')
-    else:
-      raise Exception('Internal error - rootfs mount not found!')
+    # Now that the machine has been rebooted, we need to kill Chrome again.
+    self._KillProcsIfNeeded()
+
+    # Make sure the rootfs is writable now.
+    self._MountRootfsAsWritable(error_code_ok=False)
 
   def _CheckUiJobStarted(self):
     # status output is in the format:
@@ -140,25 +147,22 @@ class DeployChrome(object):
           time.sleep(POST_KILL_WAIT)
           logging.info('Rechecking the chrome binary...')
     except cros_build_lib.TimeoutError:
-      cros_build_lib.Die('Could not kill processes after %s seconds.  Please '
-                         'exit any running chrome processes and try again.')
+      msg = ('Could not kill processes after %s seconds.  Please exit any '
+             'running chrome processes and try again.' % KILL_PROC_MAX_WAIT)
+      raise DeployFailure(msg)
 
-  def _PrepareTarget(self):
-    # Mount root partition as read/write
-    if not self._CheckRootfsWriteable():
-      logging.info('Mounting rootfs as writeable...')
-      result = self.host.RemoteSh(MOUNT_RW_COMMAND, error_code_ok=True)
-      if result.returncode:
-        self._DisableRootfsVerification()
-        logging.info('Trying again to mount rootfs as writeable...')
-        self.host.RemoteSh(MOUNT_RW_COMMAND)
+  def _MountRootfsAsWritable(self, error_code_ok=True):
+    """Mount the rootfs as writable.
 
-      if not self._CheckRootfsWriteable():
-        cros_build_lib.Die('Root partition still read-only')
+    If the command fails, and error_code_ok is True, then this function sets
+    self._rootfs_is_still_readonly.
 
-    # This is needed because we're doing an 'rsync --inplace' of Chrome, but
-    # makes sense to have even when going the sshfs route.
-    self._KillProcsIfNeeded()
+    Arguments:
+      error_code_ok: See remote.RemoteAccess.RemoteSh for details.
+    """
+    result = self.host.RemoteSh(MOUNT_RW_COMMAND, error_code_ok=error_code_ok)
+    if result.returncode:
+      self._rootfs_is_still_readonly.set()
 
   def _Deploy(self):
     logging.info('Copying Chrome to device...')
@@ -170,15 +174,36 @@ class DeployChrome(object):
       logging.info('Starting Chrome...')
       self.host.RemoteSh('start ui')
 
-  def Perform(self):
+  def _CheckConnection(self):
     try:
       logging.info('Testing connection to the device...')
       self.host.RemoteSh('true')
-    except cros_build_lib.RunCommandError:
+    except cros_build_lib.RunCommandError as ex:
       logging.error('Error connecting to the test device.')
-      raise
+      raise DeployFailure(ex)
 
-    self._PrepareTarget()
+  def _PrepareStagingDir(self):
+    _PrepareStagingDir(self.options, self.tempdir, self.staging_dir)
+
+  def Perform(self):
+    # If requested, just do the staging step.
+    if self.options.staging_only:
+      self._PrepareStagingDir()
+      return 0
+
+    # Run setup steps in parallel. If any step fails, RunParallelSteps will
+    # print the error message and squelch any further output, making the
+    # output look nice (though hiding some information).
+    steps = [self._PrepareStagingDir, self._CheckConnection,
+             self._KillProcsIfNeeded, self._MountRootfsAsWritable]
+    parallel.RunParallelSteps(steps, hide_output_after_errors=True)
+
+    # If we failed to mark the rootfs as writable, try disabling rootfs
+    # verification.
+    if self._rootfs_is_still_readonly.is_set():
+      self._DisableRootfsVerification()
+
+    # Actually deploy Chrome to the device.
     self._Deploy()
 
 
@@ -382,10 +407,9 @@ def main(argv):
     staging_dir = options.staging_dir
     if not staging_dir:
       staging_dir = os.path.join(tempdir, 'chrome')
-    _PrepareStagingDir(options, tempdir, staging_dir)
-
-    if options.staging_only:
-      return 0
 
     deploy = DeployChrome(options, tempdir, staging_dir)
-    deploy.Perform()
+    try:
+      deploy.Perform()
+    except results_lib.StepFailure as ex:
+      raise SystemExit(str(ex).strip())

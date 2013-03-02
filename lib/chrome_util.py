@@ -16,6 +16,7 @@ import os
 import shlex
 import shutil
 
+from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 
@@ -95,15 +96,15 @@ class Conditions(object):
     return functools.partial(cls._StagingFlagSet, flag)
 
 
-class MultipleMatchError(AssertionError):
+class MultipleMatchError(results_lib.StepFailure):
   """A glob pattern matches multiple files but a non-dir dest was specified."""
 
 
-class MissingPathError(SystemExit):
+class MissingPathError(results_lib.StepFailure):
   """An expected path is non-existant."""
 
 
-class MustNotBeDirError(SystemExit):
+class MustNotBeDirError(results_lib.StepFailure):
   """The specified path should not be a directory, but is."""
 
 
@@ -319,9 +320,8 @@ def _FixPermissions(dest_base):
     cros_build_lib.DebugRunCommand(['chmod', '4755', target])
 
 
-class StagingError(Exception):
-  """Raised by StageChromeFromBuildDir."""
-  pass
+class StagingError(results_lib.StepFailure):
+  """An error occurred during StageChromeFromBuildDir."""
 
 
 def StageChromeFromBuildDir(staging_dir, build_dir, strip_bin, strict=False,
