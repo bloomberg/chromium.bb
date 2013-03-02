@@ -27,8 +27,8 @@ DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
   // Default bounds for a display.
   const int kDefaultHostWindowX = 200;
   const int kDefaultHostWindowY = 200;
-  const int kDefaultHostWindowWidth = 1280;
-  const int kDefaultHostWindowHeight = 1024;
+  const int kDefaultHostWindowWidth = 1366;
+  const int kDefaultHostWindowHeight = 768;
 
   static int64 synthesized_display_id = 1000;
 
