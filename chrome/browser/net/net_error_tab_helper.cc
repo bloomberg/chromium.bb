@@ -78,14 +78,17 @@ void OnDnsProbeFinishedOnIOThread(
       base::Bind(callback, result));
 }
 
+// We can only access g_browser_process->io_thread() from the browser thread,
+// so we have to pass it in to the callback instead of dereferencing it here.
 void StartDnsProbeOnIOThread(
-    const base::Callback<void(DnsProbeResult)>& callback) {
+    const base::Callback<void(DnsProbeResult)>& callback,
+    IOThread* io_thread) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   DVLOG(1) << "Starting DNS probe";
 
   DnsProbeService* probe_service =
-      g_browser_process->io_thread()->globals()->dns_probe_service.get();
+      io_thread->globals()->dns_probe_service.get();
 
   probe_service->ProbeDns(base::Bind(&OnDnsProbeFinishedOnIOThread, callback));
 }
@@ -181,7 +184,8 @@ void NetErrorTabHelper::MaybePostStartDnsProbeTask() {
         FROM_HERE,
         base::Bind(&StartDnsProbeOnIOThread,
                    base::Bind(&NetErrorTabHelper::OnDnsProbeFinished,
-                              weak_factory_.GetWeakPtr())));
+                              weak_factory_.GetWeakPtr()),
+                   g_browser_process->io_thread()));
     dns_probe_state_ = DNS_PROBE_STARTED;
   }
 }
