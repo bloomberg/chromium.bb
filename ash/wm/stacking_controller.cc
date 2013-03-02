@@ -44,9 +44,9 @@ bool IsSystemModal(aura::Window* window) {
   return window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_SYSTEM;
 }
 
-bool IsWindowModal(aura::Window* window) {
+bool HasTransientParentWindow(aura::Window* window) {
   return window->transient_parent() &&
-      window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_WINDOW;
+      window->transient_parent()->type() != aura::client::WINDOW_TYPE_UNKNOWN;
 }
 
 bool IsPanelAttached(aura::Window* window) {
@@ -83,7 +83,7 @@ aura::Window* StackingController::GetDefaultParent(aura::Window* context,
     case aura::client::WINDOW_TYPE_POPUP:
       if (IsSystemModal(window))
         return GetSystemModalContainer(target_root, window);
-      else if (IsWindowModal(window))
+      else if (HasTransientParentWindow(window))
         return GetContainerForWindow(window->transient_parent());
       return GetAlwaysOnTopController(target_root)->GetContainer(window);
     case aura::client::WINDOW_TYPE_CONTROL:

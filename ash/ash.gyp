@@ -637,6 +637,7 @@
         'wm/screen_dimmer_unittest.cc',
         'wm/session_state_controller_impl2_unittest.cc',
         'wm/shelf_layout_manager_unittest.cc',
+        'wm/stacking_controller_unittest.cc',
         'wm/system_gesture_event_filter_unittest.cc',
         'wm/system_modal_container_layout_manager_unittest.cc',
         'wm/toplevel_window_event_handler_unittest.cc',
