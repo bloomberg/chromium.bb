@@ -663,10 +663,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool CheckMinimumChromeVersion(string16* error) const;
 
   // Check that platform app features are valid. Called after InitFromValue.
-  bool CheckPlatformAppFeatures(std::string* utf8_error) const;
+  bool CheckPlatformAppFeatures(string16* error) const;
 
   // Check that features don't conflict. Called after InitFromValue.
-  bool CheckConflictingFeatures(std::string* utf8_error) const;
+  bool CheckConflictingFeatures(string16* error) const;
 
   // The extension's human-readable name. Name is used for display purpose. It
   // might be wrapped with unicode bidi control characters so that it is

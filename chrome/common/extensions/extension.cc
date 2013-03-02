@@ -246,6 +246,8 @@ scoped_refptr<Extension> Extension::Create(const base::FilePath& path,
                            utf8_error);
 }
 
+// TODO(sungguk): Continue removing std::string errors and replacing
+// with string16. See http://crbug.com/71980.
 scoped_refptr<Extension> Extension::Create(const base::FilePath& path,
                                            Manifest::Location location,
                                            const DictionaryValue& value,
@@ -264,9 +266,9 @@ scoped_refptr<Extension> Extension::Create(const base::FilePath& path,
   }
 
   std::vector<InstallWarning> install_warnings;
-  manifest->ValidateManifest(utf8_error, &install_warnings);
-  if (!utf8_error->empty())
+  if (!manifest->ValidateManifest(utf8_error, &install_warnings)) {
     return NULL;
+  }
 
   scoped_refptr<Extension> extension = new Extension(path, manifest.Pass());
   extension->install_warnings_.swap(install_warnings);
@@ -276,8 +278,9 @@ scoped_refptr<Extension> Extension::Create(const base::FilePath& path,
     return NULL;
   }
 
-  if (!extension->CheckPlatformAppFeatures(utf8_error) ||
-      !extension->CheckConflictingFeatures(utf8_error)) {
+  if (!extension->CheckPlatformAppFeatures(&error) ||
+      !extension->CheckConflictingFeatures(&error)) {
+    *utf8_error = UTF16ToUTF8(error);
     return NULL;
   }
 
@@ -835,7 +838,7 @@ bool Extension::CanExecuteScriptOnPage(const GURL& document_url,
 
   if (error) {
     *error = ErrorUtils::FormatErrorMessage(errors::kCannotAccessPage,
-                                                     document_url.spec());
+                                            document_url.spec());
   }
 
   return false;
@@ -874,7 +877,7 @@ bool Extension::CanCaptureVisiblePage(const GURL& page_url,
 
   if (error) {
     *error = ErrorUtils::FormatErrorMessage(errors::kCannotAccessPage,
-                                                     page_url.spec());
+                                            page_url.spec());
   }
   return false;
 }
@@ -2450,27 +2453,27 @@ bool Extension::CheckMinimumChromeVersion(string16* error) const {
   return true;
 }
 
-bool Extension::CheckPlatformAppFeatures(std::string* utf8_error) const {
+bool Extension::CheckPlatformAppFeatures(string16* error) const {
   if (!is_platform_app())
     return true;
 
   if (!BackgroundInfo::HasBackgroundPage(this)) {
-    *utf8_error = errors::kBackgroundRequiredForPlatformApps;
+    *error = ASCIIToUTF16(errors::kBackgroundRequiredForPlatformApps);
     return false;
   }
 
   if (!incognito_split_mode_) {
-    *utf8_error = errors::kInvalidIncognitoModeForPlatformApp;
+    *error = ASCIIToUTF16(errors::kInvalidIncognitoModeForPlatformApp);
     return false;
   }
 
   return true;
 }
 
-bool Extension::CheckConflictingFeatures(std::string* utf8_error) const {
+bool Extension::CheckConflictingFeatures(string16* error) const {
   if (BackgroundInfo::HasLazyBackgroundPage(this) &&
       HasAPIPermission(APIPermission::kWebRequest)) {
-    *utf8_error = errors::kWebRequestConflictsWithLazyBackground;
+    *error = ASCIIToUTF16(errors::kWebRequestConflictsWithLazyBackground);
     return false;
   }
 

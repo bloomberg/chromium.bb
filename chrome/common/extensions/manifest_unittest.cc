@@ -69,7 +69,7 @@ TEST_F(ManifestTest, Extension) {
       new Manifest(Manifest::INTERNAL, manifest_value.Pass()));
   std::string error;
   std::vector<InstallWarning> warnings;
-  manifest->ValidateManifest(&error, &warnings);
+  EXPECT_TRUE(manifest->ValidateManifest(&error, &warnings));
   EXPECT_TRUE(error.empty());
   ASSERT_EQ(1u, warnings.size());
   AssertType(manifest.get(), Manifest::TYPE_EXTENSION);
@@ -93,7 +93,7 @@ TEST_F(ManifestTest, Extension) {
 
   // Validate should also give a warning.
   warnings.clear();
-  manifest->ValidateManifest(&error, &warnings);
+  EXPECT_TRUE(manifest->ValidateManifest(&error, &warnings));
   EXPECT_TRUE(error.empty());
   ASSERT_EQ(2u, warnings.size());
   {
@@ -124,7 +124,7 @@ TEST_F(ManifestTest, ExtensionTypes) {
       new Manifest(Manifest::INTERNAL, value.Pass()));
   std::string error;
   std::vector<InstallWarning> warnings;
-  manifest->ValidateManifest(&error, &warnings);
+  EXPECT_TRUE(manifest->ValidateManifest(&error, &warnings));
   EXPECT_TRUE(error.empty());
   EXPECT_TRUE(warnings.empty());
 
@@ -173,7 +173,7 @@ TEST_F(ManifestTest, RestrictedKeys) {
       new Manifest(Manifest::INTERNAL, value.Pass()));
   std::string error;
   std::vector<InstallWarning> warnings;
-  manifest->ValidateManifest(&error, &warnings);
+  EXPECT_TRUE(manifest->ValidateManifest(&error, &warnings));
   EXPECT_TRUE(error.empty());
   EXPECT_TRUE(warnings.empty());
 

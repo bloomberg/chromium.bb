@@ -124,13 +124,13 @@ Manifest::Manifest(Location location, scoped_ptr<base::DictionaryValue> value)
 Manifest::~Manifest() {
 }
 
-void Manifest::ValidateManifest(
+bool Manifest::ValidateManifest(
     std::string* error,
     std::vector<InstallWarning>* warnings) const {
   *error = "";
   if (type_ == Manifest::TYPE_PLATFORM_APP && GetManifestVersion() < 2) {
     *error = errors::kPlatformAppNeedsManifestVersion2;
-    return;
+    return false;
   }
 
   // Check every feature to see if its in the manifest. Note that this means
@@ -167,6 +167,7 @@ void Manifest::ValidateManifest(
                              (*key).c_str())));
     }
   }
+  return true;
 }
 
 bool Manifest::HasKey(const std::string& key) const {

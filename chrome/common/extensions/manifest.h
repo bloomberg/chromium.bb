@@ -97,10 +97,10 @@ class Manifest {
 
   Location location() const { return location_; }
 
-  // |error| will be non-empty if the manifest is malformed. |warnings| will
-  // be populated if there are keys in the manifest that cannot be specified by
-  // the extension type.
-  void ValidateManifest(std::string* error,
+  // Returns false and |error| will be non-empty if the manifest is malformed.
+  // |warnings| will be populated if there are keys in the manifest that cannot
+  // be specified by the extension type.
+  bool ValidateManifest(std::string* error,
                         std::vector<InstallWarning>* warnings) const;
 
   // The version of this extension's manifest. We increase the manifest
