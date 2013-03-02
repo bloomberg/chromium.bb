@@ -8,6 +8,7 @@
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "chrome/browser/ui/panels/detached_panel_collection.h"
+#include "chrome/browser/ui/panels/display_settings_provider.h"
 #include "chrome/browser/ui/panels/native_panel_stack.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_constants.h"
@@ -26,8 +27,48 @@ StackedPanelCollection::~StackedPanelCollection() {
   DCHECK(most_recently_active_panels_.empty());
 }
 
-void StackedPanelCollection::OnDisplayAreaChanged(
-    const gfx::Rect& old_display_area) {
+void StackedPanelCollection::OnDisplayChanged() {
+  if (panels_.empty())
+    return;
+
+  gfx::Rect enclosing_bounds = GetEnclosingBounds();
+  gfx::Rect work_area = panel_manager_->display_settings_provider()->
+      GetWorkAreaMatching(enclosing_bounds);
+
+  // If the height of the whole stack is bigger than the height of the new work
+  // area, try to reduce the stack height by collapsing panels. In rare case,
+  // all panels are collapsed and there is still not enough space. We simply
+  // let the stack go beyond the work area limit.
+  if (enclosing_bounds.height() > work_area.height()) {
+    int needed_space = enclosing_bounds.height() - work_area.height();
+    MinimizePanelsForSpace(needed_space);
+  }
+
+  gfx::Rect top_bounds = top_panel()->GetBounds();
+  int common_width = top_bounds.width();
+  if (common_width > work_area.width())
+    common_width = work_area.width();
+
+  int common_x = top_bounds.x();
+  if (common_x + common_width > work_area.right())
+    common_x = work_area.right() - common_width;
+  if (common_x < work_area.x())
+    common_x = work_area.x();
+
+  int total_height = bottom_panel()->GetBounds().bottom() - top_bounds.y();
+  int start_y = top_bounds.y();
+  if (start_y + total_height > work_area.bottom())
+    start_y = work_area.bottom() - total_height;
+  if (start_y < work_area.y())
+    start_y = work_area.y();
+  for (Panels::const_iterator iter = panels_.begin();
+       iter != panels_.end(); iter++) {
+    Panel* panel = *iter;
+    gfx::Rect bounds = panel->GetBounds();
+    bounds.SetRect(common_x, start_y, common_x, bounds.height());
+    panel->SetPanelBoundsInstantly(bounds);
+    start_y += bounds.height();
+  }
 }
 
 void StackedPanelCollection::RefreshLayout() {
@@ -69,21 +110,24 @@ void StackedPanelCollection::RefreshLayout() {
   UpdateNativeStackBounds();
 }
 
-void StackedPanelCollection::UpdateNativeStackBounds() {
-  // Compute and apply the enclosing bounds.
+gfx::Rect StackedPanelCollection::GetEnclosingBounds() const {
   gfx::Rect enclosing_bounds = top_panel()->GetBounds();
   enclosing_bounds.set_height(
       bottom_panel()->GetBounds().bottom() - enclosing_bounds.y());
-  native_stack_->SetBounds(enclosing_bounds);
+  return enclosing_bounds;
+}
+
+void StackedPanelCollection::UpdateNativeStackBounds() {
+  native_stack_->SetBounds(GetEnclosingBounds());
 }
 
 int StackedPanelCollection::MinimizePanelsForSpace(int needed_space) {
   int available_space = GetCurrentAvailableBottomSpace();
   for (Panels::const_reverse_iterator iter =
-            most_recently_active_panels_.rbegin();
-        iter != most_recently_active_panels_.rend() &&
-            available_space < needed_space;
-        ++iter) {
+           most_recently_active_panels_.rbegin();
+       iter != most_recently_active_panels_.rend() &&
+           available_space < needed_space;
+       ++iter) {
     Panel* current_panel = *iter;
     if (!current_panel->IsActive() && !IsPanelMinimized(current_panel)) {
       available_space +=
@@ -554,22 +598,30 @@ void StackedPanelCollection::UpdatePanelCornerStyle(Panel* panel) {
   panel->SetWindowCornerStyle(corner_style);
 }
 
-int StackedPanelCollection::GetCurrentAvailableTopSpace() const {
+gfx::Rect StackedPanelCollection::GetWorkArea() const {
   if (panels_.empty())
-    return panel_manager_->display_area().height();
+    return panel_manager_->display_settings_provider()->GetPrimaryWorkArea();
+  return panel_manager_->display_settings_provider()->GetWorkAreaMatching(
+      GetEnclosingBounds());
+}
 
-  int available_space = top_panel()->GetBounds().y() -
-      panel_manager_->display_area().y();
+int StackedPanelCollection::GetCurrentAvailableTopSpace() const {
+  gfx::Rect work_area = GetWorkArea();
+  if (panels_.empty())
+    return work_area.height();
+
+  int available_space = top_panel()->GetBounds().y() - work_area.y();
   if (available_space < 0)
     available_space = 0;
   return available_space;
 }
 
 int StackedPanelCollection::GetCurrentAvailableBottomSpace() const {
+  gfx::Rect work_area = GetWorkArea();
   if (panels_.empty())
-    return panel_manager_->display_area().height();
+    return work_area.height();
 
-  int available_space = panel_manager_->display_area().bottom() -
+  int available_space = work_area.bottom() -
       bottom_panel()->GetBounds().bottom();
   if (available_space < 0)
     available_space = 0;
@@ -577,8 +629,9 @@ int StackedPanelCollection::GetCurrentAvailableBottomSpace() const {
 }
 
 int StackedPanelCollection::GetMaximiumAvailableBottomSpace() const {
+  gfx::Rect work_area = GetWorkArea();
   if (panels_.empty())
-    return panel_manager_->display_area().height();
+    return work_area.height();
 
   int bottom = top_panel()->GetBounds().y();
   for (Panels::const_iterator iter = panels_.begin();
@@ -589,7 +642,7 @@ int StackedPanelCollection::GetMaximiumAvailableBottomSpace() const {
     else
       bottom += panel::kTitlebarHeight;
   }
-  int available_space = panel_manager_->display_area().bottom() - bottom;
+  int available_space = work_area.bottom() - bottom;
   if (available_space < 0)
     available_space = 0;
   return available_space;

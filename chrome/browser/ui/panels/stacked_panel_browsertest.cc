@@ -336,7 +336,8 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, CallMinimizeAndRestoreApi) {
 
 IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, ExpandToFitWithinScreen) {
   PanelManager* panel_manager = PanelManager::GetInstance();
-  gfx::Rect display_area = panel_manager->display_area();
+  gfx::Rect work_area =
+      panel_manager->display_settings_provider()->GetPrimaryWorkArea();
 
   // Create 3 stacked panels.
   StackedPanelCollection* stack = panel_manager->CreateStack();
@@ -366,7 +367,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, ExpandToFitWithinScreen) {
   ASSERT_TRUE(panel1->IsMinimized());
   ASSERT_FALSE(panel2->IsMinimized());
   ASSERT_FALSE(panel3->IsMinimized());
-  EXPECT_LE(panel3->GetBounds().bottom(), display_area.bottom());
+  EXPECT_LE(panel3->GetBounds().bottom(), work_area.bottom());
 
   // Grow P1's restored height.
   gfx::Size panel1_full_size = panel1->full_size();
@@ -382,8 +383,8 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, ExpandToFitWithinScreen) {
   ASSERT_FALSE(panel1->IsMinimized());
   ASSERT_TRUE(panel2->IsMinimized());
   ASSERT_TRUE(panel3->IsMinimized());
-  EXPECT_GE(panel1->GetBounds().y(), display_area.y());
-  EXPECT_LE(panel3->GetBounds().bottom(), display_area.bottom());
+  EXPECT_GE(panel1->GetBounds().y(), work_area.y());
+  EXPECT_LE(panel3->GetBounds().bottom(), work_area.bottom());
   EXPECT_EQ(panel1->GetBounds().height(), panel1_full_size.height());
 
   // Expand P3. Expect that P1 get collapsed in order to make space for P3.
@@ -394,8 +395,8 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, ExpandToFitWithinScreen) {
   ASSERT_TRUE(panel1->IsMinimized());
   ASSERT_TRUE(panel2->IsMinimized());
   ASSERT_FALSE(panel3->IsMinimized());
-  EXPECT_GE(panel1->GetBounds().y(), display_area.y());
-  EXPECT_LE(panel3->GetBounds().bottom(), display_area.bottom());
+  EXPECT_GE(panel1->GetBounds().y(), work_area.y());
+  EXPECT_LE(panel3->GetBounds().bottom(), work_area.bottom());
 
   // Grow P2's restored height by a very large value such that the stack with
   // P2 in full height will not fit within the screen.
@@ -414,8 +415,8 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, ExpandToFitWithinScreen) {
   EXPECT_TRUE(panel1->IsMinimized());
   EXPECT_FALSE(panel2->IsMinimized());
   EXPECT_TRUE(panel3->IsMinimized());
-  EXPECT_EQ(panel1->GetBounds().y(), display_area.y());
-  EXPECT_EQ(panel3->GetBounds().bottom(), display_area.bottom());
+  EXPECT_EQ(panel1->GetBounds().y(), work_area.y());
+  EXPECT_EQ(panel3->GetBounds().bottom(), work_area.bottom());
   EXPECT_LT(panel2->GetBounds().height(), panel2_full_size.height());
 
   panel_manager->CloseAll();
@@ -423,7 +424,8 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, ExpandToFitWithinScreen) {
 
 IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, ExpandAllToFitWithinScreen) {
   PanelManager* panel_manager = PanelManager::GetInstance();
-  gfx::Rect display_area = panel_manager->display_area();
+  gfx::Rect work_area =
+      panel_manager->display_settings_provider()->GetPrimaryWorkArea();
 
   // Create 3 stacked panels.
   StackedPanelCollection* stack = panel_manager->CreateStack();
@@ -470,8 +472,8 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, ExpandAllToFitWithinScreen) {
   EXPECT_TRUE(panel1->IsMinimized());
   EXPECT_FALSE(panel2->IsMinimized());
   EXPECT_TRUE(panel3->IsMinimized());
-  EXPECT_EQ(panel1->GetBounds().y(), display_area.y());
-  EXPECT_EQ(panel3->GetBounds().bottom(), display_area.bottom());
+  EXPECT_EQ(panel1->GetBounds().y(), work_area.y());
+  EXPECT_EQ(panel3->GetBounds().bottom(), work_area.bottom());
 
   panel_manager->CloseAll();
 }
@@ -1207,6 +1209,64 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
   EXPECT_EQ(PanelCollection::DETACHED, panel1->collection()->type());
   EXPECT_FALSE(panel1->IsMinimized());
   EXPECT_EQ(Panel::EXPANDED, panel1->expansion_state());
+
+  panel_manager->CloseAll();
+}
+
+IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
+                       UpdateStackedPanelsOnPrimaryDisplayChange) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+
+  // Create one stack with 5 panels.
+  StackedPanelCollection* stack = panel_manager->CreateStack();
+  Panel* panel1 = CreateStackedPanel("1", gfx::Rect(50, 50, 700, 100), stack);
+  Panel* panel2 = CreateStackedPanel("2", gfx::Rect(0, 0, 100, 100), stack);
+  Panel* panel3 = CreateStackedPanel("3", gfx::Rect(0, 0, 100, 100), stack);
+  Panel* panel4 = CreateStackedPanel("4", gfx::Rect(0, 0, 100, 100), stack);
+  Panel* panel5 = CreateStackedPanel("5", gfx::Rect(0, 0, 100, 100), stack);
+  ASSERT_EQ(5, panel_manager->num_panels());
+  ASSERT_EQ(1, panel_manager->num_stacks());
+  ASSERT_EQ(5, stack->num_panels());
+
+  // Make the primary display smaller.
+  // Expect that all panels except P5 should be collapsed and their bounds
+  // should be updated.
+  gfx::Rect primary_display_area(0, 0, 500, 300);
+  gfx::Rect primary_work_area(0, 0, 500, 280);
+  mock_display_settings_provider()->SetPrimaryDisplay(
+      primary_display_area, primary_work_area);
+
+  EXPECT_TRUE(panel1->IsMinimized());
+  EXPECT_TRUE(panel2->IsMinimized());
+  EXPECT_TRUE(panel3->IsMinimized());
+  EXPECT_TRUE(panel4->IsMinimized());
+  EXPECT_FALSE(panel5->IsMinimized());
+
+  gfx::Rect bounds1 = panel1->GetBounds();
+  EXPECT_LE(primary_work_area.x(), bounds1.x());
+  EXPECT_LE(bounds1.x(), primary_work_area.right());
+  EXPECT_LE(primary_work_area.y(), bounds1.y());
+
+  gfx::Rect bounds2 = panel2->GetBounds();
+  EXPECT_EQ(bounds1.x(), bounds2.x());
+  EXPECT_EQ(bounds1.width(), bounds2.width());
+  EXPECT_EQ(bounds1.bottom(), bounds2.y());
+
+  gfx::Rect bounds3 = panel3->GetBounds();
+  EXPECT_EQ(bounds2.x(), bounds3.x());
+  EXPECT_EQ(bounds2.width(), bounds3.width());
+  EXPECT_EQ(bounds2.bottom(), bounds3.y());
+
+  gfx::Rect bounds4 = panel4->GetBounds();
+  EXPECT_EQ(bounds3.x(), bounds4.x());
+  EXPECT_EQ(bounds3.width(), bounds4.width());
+  EXPECT_EQ(bounds3.bottom(), bounds4.y());
+
+  gfx::Rect bounds5 = panel5->GetBounds();
+  EXPECT_EQ(bounds4.x(), bounds5.x());
+  EXPECT_EQ(bounds4.width(), bounds5.width());
+  EXPECT_EQ(bounds4.bottom(), bounds5.y());
+  EXPECT_LE(bounds5.bottom(), primary_work_area.bottom());
 
   panel_manager->CloseAll();
 }

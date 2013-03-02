@@ -52,6 +52,10 @@ const double kPanelDefaultWidthToHeightRatio = 1.62;  // golden ratio
 // and subjective.
 const int kDetachedPanelStartingYPositionOnStackingEnabled = 20;
 
+// The test code could call PanelManager::SetDisplaySettingsProviderForTesting
+// to set this for testing purpose.
+DisplaySettingsProvider* display_settings_provider_for_testing;
+
 // The following comparers are used by std::list<>::sort to determine which
 // stack or panel we want to seacrh first for adding new panel.
 bool ComparePanelsByPosition(Panel* panel1, Panel* panel2) {
@@ -96,6 +100,12 @@ bool PanelManager::shorten_time_intervals_ = false;
 PanelManager* PanelManager::GetInstance() {
   static base::LazyInstance<PanelManager> instance = LAZY_INSTANCE_INITIALIZER;
   return instance.Pointer();
+}
+
+// static
+void PanelManager::SetDisplaySettingsProviderForTesting(
+    DisplaySettingsProvider* provider) {
+  display_settings_provider_for_testing = provider;
 }
 
 // static
@@ -152,8 +162,11 @@ PanelManager::PanelManager()
       auto_sizing_enabled_(true) {
   // DisplaySettingsProvider should be created before the creation of
   // collections since some collection might depend on it.
-  display_settings_provider_.reset(DisplaySettingsProvider::Create());
-  display_settings_provider_->AddDisplayAreaObserver(this);
+  if (display_settings_provider_for_testing)
+    display_settings_provider_.reset(display_settings_provider_for_testing);
+  else
+    display_settings_provider_.reset(DisplaySettingsProvider::Create());
+  display_settings_provider_->AddDisplayObserver(this);
 
   detached_collection_.reset(new DetachedPanelCollection(this));
   docked_collection_.reset(new DockedPanelCollection(this));
@@ -162,7 +175,7 @@ PanelManager::PanelManager()
 }
 
 PanelManager::~PanelManager() {
-  display_settings_provider_->RemoveDisplayAreaObserver(this);
+  display_settings_provider_->RemoveDisplayObserver(this);
 
   // Docked collection should be disposed explicitly before
   // DisplaySettingsProvider is gone since docked collection needs to remove
@@ -174,29 +187,24 @@ gfx::Point PanelManager::GetDefaultDetachedPanelOrigin() {
   return detached_collection_->GetDefaultPanelOrigin();
 }
 
-void PanelManager::OnDisplayAreaChanged(const gfx::Rect& display_area) {
-  if (display_area == display_area_)
-    return;
-  gfx::Rect old_display_area = display_area_;
-  display_area_ = display_area;
-
-  docked_collection_->OnDisplayAreaChanged(old_display_area);
-  detached_collection_->OnDisplayAreaChanged(old_display_area);
+void PanelManager::OnDisplayChanged() {
+  docked_collection_->OnDisplayChanged();
+  detached_collection_->OnDisplayChanged();
   for (Stacks::const_iterator iter = stacks_.begin();
        iter != stacks_.end(); iter++)
-    (*iter)->OnDisplayAreaChanged(old_display_area);
+    (*iter)->OnDisplayChanged();
 }
 
 void PanelManager::OnFullScreenModeChanged(bool is_full_screen) {
   docked_collection_->OnFullScreenModeChanged(is_full_screen);
 }
 
-int PanelManager::GetMaxPanelWidth() const {
-  return static_cast<int>(display_area_.width() * kPanelMaxWidthFactor);
+int PanelManager::GetMaxPanelWidth(const gfx::Rect& work_area) const {
+  return static_cast<int>(work_area.width() * kPanelMaxWidthFactor);
 }
 
-int PanelManager::GetMaxPanelHeight() const {
-  return display_area_.height() * kPanelMaxHeightFactor;
+int PanelManager::GetMaxPanelHeight(const gfx::Rect& work_area) const {
+  return static_cast<int>(work_area.height() * kPanelMaxHeightFactor);
 }
 
 Panel* PanelManager::CreatePanel(const std::string& app_name,
@@ -222,8 +230,10 @@ Panel* PanelManager::CreatePanel(const std::string& app_name,
   else if (height == 0)
     height = width / kPanelDefaultWidthToHeightRatio;
 
+  gfx::Rect work_area =
+      display_settings_provider_->GetWorkAreaMatching(requested_bounds);
   gfx::Size min_size(panel::kPanelMinWidth, panel::kPanelMinHeight);
-  gfx::Size max_size(GetMaxPanelWidth(), GetMaxPanelHeight());
+  gfx::Size max_size(GetMaxPanelWidth(work_area), GetMaxPanelHeight(work_area));
   if (width < min_size.width())
     width = min_size.width();
   else if (width > max_size.width())
@@ -241,9 +251,9 @@ Panel* PanelManager::CreatePanel(const std::string& app_name,
   } else {
     bounds.set_x(requested_bounds.x());
     bounds.set_y(IsPanelStackingEnabled() ?
-        display_area_.y() + kDetachedPanelStartingYPositionOnStackingEnabled :
+        work_area.y() + kDetachedPanelStartingYPositionOnStackingEnabled :
         requested_bounds.y());
-    bounds.AdjustToFit(display_settings_provider_->GetDisplayArea());
+    bounds.AdjustToFit(work_area);
   }
 
   // Create the panel.
@@ -340,8 +350,10 @@ PanelCollection* PanelManager::GetCollectionForNewPanel(
           panel->extension_id() != new_panel->extension_id())
         continue;
 
+      gfx::Rect work_area =
+          display_settings_provider_->GetWorkAreaMatching(panel->GetBounds());
       int max_available_space =
-          display_area_.bottom() - panel->GetBounds().y() -
+          work_area.bottom() - panel->GetBounds().y() -
           (panel->IsActive() ? panel->GetBounds().height()
                              : panel::kTitlebarHeight);
       if (bounds.height() <= max_available_space) {

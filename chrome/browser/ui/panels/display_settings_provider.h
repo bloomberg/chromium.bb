@@ -30,15 +30,17 @@ class DisplaySettingsProvider {
     DESKTOP_BAR_HIDDEN
   };
 
-  class DisplayAreaObserver {
+  class DisplayObserver {
    public:
-    virtual void OnDisplayAreaChanged(const gfx::Rect& display_area) = 0;
+    virtual void OnDisplayChanged() = 0;
   };
 
   class DesktopBarObserver {
    public:
     virtual void OnAutoHidingDesktopBarVisibilityChanged(
         DesktopBarAlignment alignment, DesktopBarVisibility visibility) = 0;
+    virtual void OnAutoHidingDesktopBarThicknessChanged(
+        DesktopBarAlignment alignment, int thickness) = 0;
   };
 
   class FullScreenObserver {
@@ -51,8 +53,8 @@ class DisplaySettingsProvider {
   virtual ~DisplaySettingsProvider();
 
   // Subscribes/unsubscribes from the display settings change notification.
-  void AddDisplayAreaObserver(DisplayAreaObserver* observer);
-  void RemoveDisplayAreaObserver(DisplayAreaObserver* observer);
+  void AddDisplayObserver(DisplayObserver* observer);
+  void RemoveDisplayObserver(DisplayObserver* observer);
 
   void AddDesktopBarObserver(DesktopBarObserver* observer);
   void RemoveDesktopBarObserver(DesktopBarObserver* observer);
@@ -61,24 +63,28 @@ class DisplaySettingsProvider {
   void RemoveFullScreenObserver(FullScreenObserver* observer);
 
   //
-  // Primary Screen Area:
-  //   This is the screen area of the primary monitor.
+  // Display Area:
+  //   This is the area of a display (monitor). There could be multiple display
+  //   areas.
   // Work Area:
   //   This is the standard work area returned by the system. It is usually
-  //   computed by the system as the part of primary screen area that excludes
+  //   computed by the system as the part of display area that excludes
   //   top-most system menu or bars aligned to the screen edges.
-  // Display Area:
-  //   This is the area further trimmed down for the purpose of showing panels.
-  //   On Windows, we also exclude auto-hiding taskbars. For all other
-  //   platforms, it is same as work area.
   //
 
-  // Returns the bounds of the display area.
-  gfx::Rect GetDisplayArea();
+  // Returns the bounds of primary display.
+  virtual gfx::Rect GetPrimaryDisplayArea() const;
 
-  // Returns the bounds of the primary screen area. This can be overridden by
-  // the testing code.
-  virtual gfx::Rect GetPrimaryScreenArea() const;
+  // Returns the bounds of the work area of primary display.
+  virtual gfx::Rect GetPrimaryWorkArea() const;
+
+  // Returns the bounds of the display area that most closely intersects the
+  // provided bounds.
+  virtual gfx::Rect GetDisplayAreaMatching(const gfx::Rect& bounds) const;
+
+  // Returns the bounds of the work area that most closely intersects the
+  // provided bounds.
+  virtual gfx::Rect GetWorkAreaMatching(const gfx::Rect& bounds) const;
 
   // Invoked when the display settings has changed, due to any of the following:
   // 1) screen resolution changes
@@ -101,8 +107,8 @@ class DisplaySettingsProvider {
   virtual DesktopBarVisibility GetDesktopBarVisibility(
       DesktopBarAlignment alignment) const;
 
-  ObserverList<DisplayAreaObserver>& display_area_observers() {
-    return display_area_observers_;
+  ObserverList<DisplayObserver>& display_observers() {
+    return display_observers_;
   }
 
   ObserverList<DesktopBarObserver>& desktop_bar_observers() {
@@ -113,16 +119,10 @@ class DisplaySettingsProvider {
     return full_screen_observers_;
   }
 
-  gfx::Rect work_area() const { return work_area_; }
   bool is_full_screen() const { return is_full_screen_; }
 
  protected:
   DisplaySettingsProvider();
-
-  // Returns the bounds of the work area that has not been adjusted to take
-  // auto-hiding desktop bars into account. This can be overridden by the
-  // testing code.
-  virtual gfx::Rect GetWorkArea() const;
 
   // Returns true if we need to perform fullscreen check periodically.
   virtual bool NeedsPeriodicFullScreenCheck() const;
@@ -133,26 +133,11 @@ class DisplaySettingsProvider {
   // Callback to perform periodic check for full screen mode changes.
   void CheckFullScreenMode();
 
-  void OnAutoHidingDesktopBarChanged();
-
  private:
-  // Adjusts the work area to exclude the influence of auto-hiding desktop bars.
-  void AdjustWorkAreaForAutoHidingDesktopBars();
-
   // Observers that listen to various display settings changes.
-  ObserverList<DisplayAreaObserver> display_area_observers_;
+  ObserverList<DisplayObserver> display_observers_;
   ObserverList<DesktopBarObserver> desktop_bar_observers_;
   ObserverList<FullScreenObserver> full_screen_observers_;
-
-  // The maximum work area avaialble. This area does not include the area taken
-  // by the always-visible (non-auto-hiding) desktop bars.
-  gfx::Rect work_area_;
-
-  // The useable work area for computing the panel bounds. This area excludes
-  // the potential area that could be taken by the auto-hiding desktop
-  // bars (we only consider those bars that are aligned to bottom, left, and
-  // right of the screen edges) when they become fully visible.
-  gfx::Rect adjusted_work_area_;
 
   // True if full screen mode or presentation mode is entered.
   bool is_full_screen_;

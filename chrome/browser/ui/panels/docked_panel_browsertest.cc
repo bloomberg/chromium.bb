@@ -17,12 +17,12 @@ class DockedPanelBrowserTest : public BasePanelBrowserTest {
   virtual void SetUpOnMainThread() OVERRIDE {
     BasePanelBrowserTest::SetUpOnMainThread();
 
-    // All the tests here assume using mocked 800x600 screen area for the
+    // All the tests here assume using mocked 800x600 display area for the
     // primary monitor. Do the check now.
-    gfx::Rect primary_screen_area = PanelManager::GetInstance()->
-        display_settings_provider()->GetPrimaryScreenArea();
-    DCHECK(primary_screen_area.width() == 800);
-    DCHECK(primary_screen_area.height() == 600);
+    gfx::Rect primary_display_area = PanelManager::GetInstance()->
+        display_settings_provider()->GetPrimaryDisplayArea();
+    DCHECK(primary_display_area.width() == 800);
+    DCHECK(primary_display_area.height() == 600);
   }
 };
 
@@ -59,7 +59,7 @@ IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, MAYBE_SqueezePanelsInDock) {
 
   // The active panel should be at full width.
   EXPECT_EQ(panel7->GetBounds().width(), panel7->GetRestoredBounds().width());
-  EXPECT_GT(panel7->GetBounds().x(), docked_collection->display_area().x());
+  EXPECT_GT(panel7->GetBounds().x(), docked_collection->work_area().x());
 
   // The rest of them should be at reduced width.
   EXPECT_LT(panel1->GetBounds().width(), panel1->GetRestoredBounds().width());

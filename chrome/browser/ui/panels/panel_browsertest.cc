@@ -342,7 +342,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreatePanel) {
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateBigPanel) {
   gfx::Rect work_area = PanelManager::GetInstance()->
-      display_settings_provider()->GetDisplayArea();
+      display_settings_provider()->GetPrimaryWorkArea();
   Panel* panel = CreatePanelWithBounds("BigPanel", work_area);
   gfx::Rect bounds = panel->GetBounds();
   EXPECT_EQ(panel->max_size().width(), bounds.width());
@@ -409,7 +409,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_AutoResize) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   panel_manager->enable_auto_sizing(true);
   // Bigger space is needed by this test.
-  SetTestingAreas(gfx::Rect(0, 0, 1200, 900), gfx::Rect());
+  mock_display_settings_provider()->SetPrimaryDisplay(
+      gfx::Rect(0, 0, 1200, 900), gfx::Rect(0, 0, 1200, 900));
 
   // Create a test panel with web contents loaded.
   CreatePanelParams params("PanelTest1", gfx::Rect(), SHOW_AS_ACTIVE);
@@ -835,7 +836,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
                        MinimizeRestoreOnAutoHidingDesktopBar) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelCollection* docked_collection = panel_manager->docked_collection();
-  int expected_bottom_on_expanded = docked_collection->display_area().bottom();
+  int expected_bottom_on_expanded = docked_collection->work_area().bottom();
   int expected_bottom_on_title_only = expected_bottom_on_expanded;
   int expected_bottom_on_minimized = expected_bottom_on_expanded;
 
@@ -890,15 +891,14 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ChangeAutoHideTaskBarThickness) {
       DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_RIGHT,
       true,
       right_bar_thickness);
-  EXPECT_EQ(initial_starting_right_position -
-                docked_collection->StartingRightPosition(),
-            right_bar_thickness);
+  EXPECT_EQ(initial_starting_right_position,
+            docked_collection->StartingRightPosition());
 
   Panel* panel = CreatePanel("PanelTest");
   panel->SetExpansionState(Panel::TITLE_ONLY);
   WaitForBoundsAnimationFinished(panel);
 
-  EXPECT_EQ(docked_collection->display_area().bottom() - bottom_bar_thickness,
+  EXPECT_EQ(docked_collection->work_area().bottom() - bottom_bar_thickness,
             panel->GetBounds().bottom());
   EXPECT_EQ(docked_collection->StartingRightPosition(),
             panel->GetBounds().right());
@@ -915,10 +915,9 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ChangeAutoHideTaskBarThickness) {
       DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_RIGHT,
       right_bar_thickness);
   MessageLoopForUI::current()->RunUntilIdle();
-  EXPECT_EQ(initial_starting_right_position -
-                docked_collection->StartingRightPosition(),
-            right_bar_thickness_delta);
-  EXPECT_EQ(docked_collection->display_area().bottom() - bottom_bar_thickness,
+  EXPECT_EQ(initial_starting_right_position,
+            docked_collection->StartingRightPosition());
+  EXPECT_EQ(docked_collection->work_area().bottom() - bottom_bar_thickness,
             panel->GetBounds().bottom());
   EXPECT_EQ(docked_collection->StartingRightPosition(),
             panel->GetBounds().right());
@@ -935,10 +934,9 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ChangeAutoHideTaskBarThickness) {
       DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_RIGHT,
       right_bar_thickness);
   MessageLoopForUI::current()->RunUntilIdle();
-  EXPECT_EQ(docked_collection->StartingRightPosition() -
-                initial_starting_right_position,
-            right_bar_thickness_delta);
-  EXPECT_EQ(docked_collection->display_area().bottom() - bottom_bar_thickness,
+  EXPECT_EQ(docked_collection->StartingRightPosition(),
+            initial_starting_right_position);
+  EXPECT_EQ(docked_collection->work_area().bottom() - bottom_bar_thickness,
             panel->GetBounds().bottom());
   EXPECT_EQ(docked_collection->StartingRightPosition(),
             panel->GetBounds().right());
@@ -1625,13 +1623,13 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   gfx::Size old_full_size = panel->full_size();
 
   // Shrink the work area. Expect max size and full size become smaller.
-  gfx::Size smaller_work_area_size = gfx::Size(500, 300);
-  SetTestingAreas(gfx::Rect(gfx::Point(0, 0), smaller_work_area_size),
-                  gfx::Rect());
+  gfx::Rect smaller_work_area(0, 0, 500, 300);
+  mock_display_settings_provider()->SetPrimaryDisplay(
+      smaller_work_area, smaller_work_area);
   EXPECT_GT(old_max_size.width(), panel->max_size().width());
   EXPECT_GT(old_max_size.height(), panel->max_size().height());
-  EXPECT_GT(smaller_work_area_size.width(), panel->max_size().width());
-  EXPECT_GT(smaller_work_area_size.height(), panel->max_size().height());
+  EXPECT_GT(smaller_work_area.width(), panel->max_size().width());
+  EXPECT_GT(smaller_work_area.height(), panel->max_size().height());
   EXPECT_GT(old_full_size.width(), panel->full_size().width());
   EXPECT_GT(old_full_size.height(), panel->full_size().height());
   EXPECT_GE(panel->max_size().width(), panel->full_size().width());
@@ -1670,18 +1668,18 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   EXPECT_EQ(bigger_size, old_full_size);
 
   // Shrink the work area. Expect max size and full size become smaller.
-  gfx::Size smaller_work_area_size = gfx::Size(500, 300);
-  SetTestingAreas(gfx::Rect(gfx::Point(0, 0), smaller_work_area_size),
-                  gfx::Rect());
+  gfx::Rect smaller_work_area(0, 0, 500, 300);
+  mock_display_settings_provider()->SetPrimaryDisplay(
+      smaller_work_area, smaller_work_area);
   EXPECT_GT(old_max_size.width(), panel->max_size().width());
   EXPECT_GT(old_max_size.height(), panel->max_size().height());
-  EXPECT_GE(smaller_work_area_size.width(), panel->max_size().width());
-  EXPECT_EQ(smaller_work_area_size.height(), panel->max_size().height());
+  EXPECT_GE(smaller_work_area.width(), panel->max_size().width());
+  EXPECT_EQ(smaller_work_area.height(), panel->max_size().height());
   EXPECT_GT(old_full_size.width(), panel->full_size().width());
   EXPECT_GT(old_full_size.height(), panel->full_size().height());
   EXPECT_GE(panel->max_size().width(), panel->full_size().width());
   EXPECT_GE(panel->max_size().height(), panel->full_size().height());
-  EXPECT_EQ(smaller_work_area_size.height(), panel->full_size().height());
+  EXPECT_EQ(smaller_work_area.height(), panel->full_size().height());
 
   panel->Close();
 }

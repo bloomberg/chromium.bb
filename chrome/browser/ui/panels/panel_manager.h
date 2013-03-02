@@ -25,7 +25,7 @@ class PanelMouseWatcher;
 class StackedPanelCollection;
 
 // This class manages a set of panels.
-class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
+class PanelManager : public DisplaySettingsProvider::DisplayObserver,
                      public DisplaySettingsProvider::FullScreenObserver {
  public:
   typedef std::list<StackedPanelCollection*> Stacks;
@@ -37,6 +37,11 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
 
   // Returns a single instance.
   static PanelManager* GetInstance();
+
+  // Tells PanelManager to use |provider| for testing purpose. This has to be
+  // called before GetInstance.
+  static void SetDisplaySettingsProviderForTesting(
+      DisplaySettingsProvider* provider);
 
   // Returns true if panels should be used for the extension.
   static bool ShouldUsePanels(const std::string& extension_id);
@@ -75,8 +80,8 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
 
   // Returns the maximum size that panel can be auto-resized or resized by the
   // API.
-  int GetMaxPanelWidth() const;
-  int GetMaxPanelHeight() const;
+  int GetMaxPanelWidth(const gfx::Rect& work_area) const;
+  int GetMaxPanelHeight(const gfx::Rect& work_area) const;
 
   // Drags the given panel.
   // |mouse_location| is in screen coordinate system.
@@ -127,8 +132,6 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
   DisplaySettingsProvider* display_settings_provider() const {
     return display_settings_provider_.get();
   }
-
-  gfx::Rect display_area() const { return display_area_; }
 
   PanelMouseWatcher* mouse_watcher() const {
     return panel_mouse_watcher_.get();
@@ -184,8 +187,10 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
   PanelManager();
   virtual ~PanelManager();
 
-  // Overridden from DisplaySettingsProvider::DisplayAreaObserver:
-  virtual void OnDisplayAreaChanged(const gfx::Rect& display_area) OVERRIDE;
+  void Initialize(DisplaySettingsProvider* provider);
+
+  // Overridden from DisplaySettingsProvider::DisplayObserver:
+  virtual void OnDisplayChanged() OVERRIDE;
 
   // Overridden from DisplaySettingsProvider::FullScreenObserver:
   virtual void OnFullScreenModeChanged(bool is_full_screen) OVERRIDE;
@@ -220,8 +225,6 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
   scoped_ptr<PanelMouseWatcher> panel_mouse_watcher_;
 
   scoped_ptr<DisplaySettingsProvider> display_settings_provider_;
-
-  gfx::Rect display_area_;
 
   // Whether or not bounds will be updated when the preferred content size is
   // changed. The testing code could set this flag to false so that other tests

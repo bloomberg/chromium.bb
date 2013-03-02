@@ -279,16 +279,17 @@ gfx::Point PanelDragController::GetPanelPositionForMouseLocation(
   // should follow the mouse movement.
   gfx::Point target_position =
       mouse_location - offset_from_mouse_location_on_drag_start_;
+  gfx::Rect target_bounds(target_position, dragging_panel_->GetBounds().size());
 
-  // If the mouse is within the main screen area, make sure that the top
-  // border of panel cannot go outside the work area. This is to prevent
-  // panel's titlebar from being moved under the taskbar or OSX menu bar
-  // that is aligned to top screen edge.
-  int display_area_top_position = panel_manager_->display_area().y();
-  if (panel_manager_->display_settings_provider()->
-          GetPrimaryScreenArea().Contains(mouse_location) &&
-      target_position.y() < display_area_top_position) {
-    target_position.set_y(display_area_top_position);
+  // Make sure that the panel's titlebar cannot be moved under the taskbar or
+  // OSX menu bar that is aligned to top screen edge.
+  gfx::Rect display_area = panel_manager_->display_settings_provider()->
+      GetDisplayAreaMatching(target_bounds);
+  gfx::Rect work_area = panel_manager_->display_settings_provider()->
+      GetWorkAreaMatching(target_bounds);
+  if (display_area.Contains(mouse_location) &&
+      target_position.y() < work_area.y()) {
+    target_position.set_y(work_area.y());
   }
 
   return target_position;
@@ -304,13 +305,18 @@ void PanelDragController::TryDetach(const gfx::Point& target_position) {
     return;
 
   // Panels in the detached collection are always at their full size.
-  gfx::Rect target_bounds(target_position,
-                                dragging_panel_->full_size());
+  gfx::Rect target_bounds(target_position, dragging_panel_->full_size());
 
-  // The panel should be dragged up high enough to pass certain threshold.
-  if (panel_manager_->docked_collection()->display_area().bottom() -
-          target_bounds.bottom() < kDetachDockedPanelThreshold)
+  // To become detached, the panel should be dragged either out of the main
+  // work area or up high enough to pass certain threshold.
+  gfx::Rect target_work_area = panel_manager_->display_settings_provider()->
+      GetWorkAreaMatching(target_bounds);
+  gfx::Rect dock_work_area = panel_manager_->docked_collection()->work_area();
+  if (target_work_area.Contains(dock_work_area) &&
+      dock_work_area.bottom() - target_bounds.bottom() <
+          kDetachDockedPanelThreshold) {
     return;
+  }
 
   // Apply new panel bounds.
   dragging_panel_->SetPanelBoundsInstantly(target_bounds);
@@ -326,22 +332,19 @@ void PanelDragController::TryDock(const gfx::Point& target_position) {
   if (dragging_panel_->collection()->type() != PanelCollection::DETACHED)
     return;
 
-  gfx::Rect target_bounds(target_position,
-                                dragging_panel_->GetBounds().size());
+  gfx::Rect target_bounds(target_position, dragging_panel_->GetBounds().size());
 
-  // If the target panel bounds is outside the main display area where the
-  // docked collection resides, as in the multi-monitor scenario, we want it to
-  // be still free-floating.
-  gfx::Rect display_area = panel_manager_->display_settings_provider()->
-      GetDisplayArea();
-  if (!display_area.Intersects(target_bounds))
+  // To become docked, the panel should fall within the main work area and
+  // its bottom should come very close to or fall below the bottom of the main
+  // work area.
+  gfx::Rect target_work_area = panel_manager_->display_settings_provider()->
+      GetWorkAreaMatching(target_bounds);
+  gfx::Rect dock_work_area = panel_manager_->docked_collection()->work_area();
+  if (!target_work_area.Contains(dock_work_area) ||
+      dock_work_area.bottom() - target_bounds.bottom() >
+          kDockDetachedPanelThreshold) {
     return;
-
-  // The bottom of the panel should come very close to or fall below the bottom
-  // of the docked area.
-  if (panel_manager_->docked_collection()->display_area().bottom() -
-         target_bounds.bottom() > kDockDetachedPanelThreshold)
-    return;
+  }
 
   // Apply new panel bounds.
   dragging_panel_->SetPanelBoundsInstantly(target_bounds);
@@ -613,22 +616,25 @@ void PanelDragController::TrySnap(gfx::Point* target_position) {
     return;
   }
 
-  // Check if the panel can snap to the left/right edge of the working area.
-  gfx::Rect display_area = panel_manager_->display_area();
-  if (abs(target_position->x() - display_area.x()) <
+  // Check if the panel can snap to the left/right edge of the work area.
+  target_bounds.set_origin(*target_position);
+  target_bounds.set_size(dragging_panel_->GetBounds().size());
+  gfx::Rect work_area = panel_manager_->display_settings_provider()->
+      GetWorkAreaMatching(target_bounds);
+  if (abs(target_position->x() - work_area.x()) <
       kSnapPanelToScreenEdgeThreshold) {
-    target_position->set_x(display_area.x());
+    target_position->set_x(work_area.x());
   } else {
     int width = dragging_panel_->GetBounds().width();
-    if (abs(display_area.right() - target_position->x() - width) <
+    if (abs(work_area.right() - target_position->x() - width) <
         kSnapPanelToScreenEdgeThreshold)
-      target_position->set_x(display_area.right() - width);
+      target_position->set_x(work_area.right() - width);
   }
 
-  // Check if the panel can snap to the top/bottom edge of the working area.
-  if (abs(target_position->y() - display_area.y()) <
+  // Check if the panel can snap to the top/bottom edge of the work area.
+  if (abs(target_position->y() - work_area.y()) <
       kSnapPanelToScreenEdgeThreshold) {
-    target_position->set_y(display_area.y());
+    target_position->set_y(work_area.y());
   } else {
     // If the panel is in a stack, the height is from the top edge of this panel
     // to the bottom edge of the last panel in the stack.
@@ -640,9 +646,9 @@ void PanelDragController::TrySnap(gfx::Point* target_position) {
     } else {
       height = dragging_panel_->GetBounds().height();
     }
-    if (abs(display_area.bottom() - target_position->y() - height) <
+    if (abs(work_area.bottom() - target_position->y() - height) <
         kSnapPanelToScreenEdgeThreshold)
-      target_position->set_y(display_area.bottom() - height);
+      target_position->set_y(work_area.bottom() - height);
   }
 }
 

@@ -59,6 +59,7 @@ DockedPanelCollection::DockedPanelCollection(PanelManager* panel_manager)
       titlebar_action_factory_(this),
       refresh_action_factory_(this) {
   panel_manager_->display_settings_provider()->AddDesktopBarObserver(this);
+  OnDisplayChanged();
 }
 
 DockedPanelCollection::~DockedPanelCollection() {
@@ -67,11 +68,11 @@ DockedPanelCollection::~DockedPanelCollection() {
   panel_manager_->display_settings_provider()->RemoveDesktopBarObserver(this);
 }
 
-void DockedPanelCollection::OnDisplayAreaChanged(
-    const gfx::Rect& old_display_area) {
-  display_area_ = panel_manager_->display_area();
-  display_area_.set_x(display_area_.x() + kPanelCollectionLeftMargin);
-  display_area_.set_width(display_area_.width() -
+void DockedPanelCollection::OnDisplayChanged() {
+  work_area_ =
+      panel_manager_->display_settings_provider()->GetPrimaryWorkArea();
+  work_area_.set_x(work_area_.x() + kPanelCollectionLeftMargin);
+  work_area_.set_width(work_area_.width() -
       kPanelCollectionLeftMargin - kPanelCollectionRightMargin);
 
   if (panels_.empty())
@@ -79,7 +80,7 @@ void DockedPanelCollection::OnDisplayAreaChanged(
 
   for (Panels::const_iterator iter = panels_.begin();
        iter != panels_.end(); ++iter) {
-    (*iter)->LimitSizeToDisplayArea(display_area_);
+    (*iter)->LimitSizeToWorkArea(work_area_);
   }
 
   RefreshLayout();
@@ -124,27 +125,27 @@ gfx::Point DockedPanelCollection::GetDefaultPositionForPanel(
     const gfx::Size& full_size) const {
   int x = 0;
   if (!panels_.empty() &&
-      panels_.back()->GetBounds().x() < display_area_.x()) {
+      panels_.back()->GetBounds().x() < work_area_.x()) {
     // Panels go off screen. Make sure the default position will place
     // the panel in view.
     Panels::const_reverse_iterator iter = panels_.rbegin();
     for (; iter != panels_.rend(); ++iter) {
-      if ((*iter)->GetBounds().x() >= display_area_.x()) {
+      if ((*iter)->GetBounds().x() >= work_area_.x()) {
         x = (*iter)->GetBounds().x();
         break;
       }
     }
     // At least one panel should fit on the screen.
-    DCHECK(x > display_area_.x());
+    DCHECK(x > work_area_.x());
   } else {
     x = std::max(GetRightMostAvailablePosition() - full_size.width(),
-                 display_area_.x());
+                 work_area_.x());
   }
-  return gfx::Point(x, display_area_.bottom() - full_size.height());
+  return gfx::Point(x, work_area_.bottom() - full_size.height());
 }
 
 int DockedPanelCollection::StartingRightPosition() const {
-  return display_area_.right();
+  return work_area_.right();
 }
 
 int DockedPanelCollection::GetRightMostAvailablePosition() const {
@@ -464,9 +465,13 @@ bool DockedPanelCollection::ShouldBringUpTitlebars(int mouse_x,
           DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_BOTTOM) &&
       provider->GetDesktopBarVisibility(
           DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_BOTTOM) ==
-              DisplaySettingsProvider::DESKTOP_BAR_VISIBLE &&
-      mouse_y >= display_area_.bottom())
-    return true;
+              DisplaySettingsProvider::DESKTOP_BAR_VISIBLE) {
+    int bottom_bar_bottom = work_area_.bottom();
+    int bottom_bar_y = bottom_bar_bottom - provider->GetDesktopBarThickness(
+        DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_BOTTOM);
+    if (bottom_bar_y <= mouse_y && mouse_y <= bottom_bar_bottom)
+      return true;
+  }
 
   // Bring up titlebars if any panel needs the titlebar up.
   Panel* dragging_panel = panel_manager_->drag_controller()->dragging_panel();
@@ -596,7 +601,7 @@ void DockedPanelCollection::DoBringUpOrDownTitlebars(bool bring_up) {
 
 int DockedPanelCollection::GetBottomPositionForExpansionState(
     Panel::ExpansionState expansion_state) const {
-  int bottom = display_area_.bottom();
+  int bottom = work_area_.bottom();
   // If there is an auto-hiding desktop bar aligned to the bottom edge, we need
   // to move the title-only panel above the auto-hiding desktop bar.
   DisplaySettingsProvider* provider =
@@ -634,6 +639,11 @@ void DockedPanelCollection::OnAutoHidingDesktopBarVisibilityChanged(
   delayed_titlebar_action_ = NO_ACTION;
 }
 
+void DockedPanelCollection::OnAutoHidingDesktopBarThicknessChanged(
+    DisplaySettingsProvider::DesktopBarAlignment alignment, int thickness) {
+  RefreshLayout();
+}
+
 void DockedPanelCollection::OnFullScreenModeChanged(bool is_full_screen) {
   for (Panels::const_iterator iter = panels_.begin();
        iter != panels_.end(); ++iter) {
@@ -655,7 +665,7 @@ void DockedPanelCollection::RefreshLayout() {
   }
 
   double display_width_for_inactive_panels =
-      display_area_.width() - total_active_width -
+      work_area_.width() - total_active_width -
           kPanelsHorizontalSpacing * panels_.size();
   double overflow_squeeze_factor = (total_inactive_width > 0) ?
       std::min(display_width_for_inactive_panels / total_inactive_width, 1.0) :

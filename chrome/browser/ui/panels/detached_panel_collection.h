@@ -24,7 +24,7 @@ class DetachedPanelCollection : public PanelCollection {
   virtual ~DetachedPanelCollection();
 
   // PanelCollection OVERRIDES:
-  virtual void OnDisplayAreaChanged(const gfx::Rect& old_display_area) OVERRIDE;
+  virtual void OnDisplayChanged() OVERRIDE;
   virtual void RefreshLayout() OVERRIDE;
   virtual void AddPanel(Panel* panel,
                         PositioningMask positioning_mask) OVERRIDE;

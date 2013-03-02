@@ -53,7 +53,7 @@ class PanelCollection {
   Type type() const { return type_; }
 
   // Called when the display area is changed.
-  virtual void OnDisplayAreaChanged(const gfx::Rect& old_display_area) = 0;
+  virtual void OnDisplayChanged() = 0;
 
   // Updates the positioning of all panels in the collection, usually as
   // a result of removing or resizing a panel in collection.

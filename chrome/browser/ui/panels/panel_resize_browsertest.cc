@@ -20,12 +20,12 @@ class PanelResizeBrowserTest : public BasePanelBrowserTest {
   virtual void SetUpOnMainThread() OVERRIDE {
     BasePanelBrowserTest::SetUpOnMainThread();
 
-    // All the tests here assume using mocked 800x600 screen area for the
+    // All the tests here assume using mocked 800x600 display area for the
     // primary monitor. Do the check now.
-    gfx::Rect primary_screen_area = PanelManager::GetInstance()->
-        display_settings_provider()->GetPrimaryScreenArea();
-    DCHECK(primary_screen_area.width() == 800);
-    DCHECK(primary_screen_area.height() == 600);
+    gfx::Rect primary_display_area = PanelManager::GetInstance()->
+        display_settings_provider()->GetPrimaryDisplayArea();
+    DCHECK(primary_display_area.width() == 800);
+    DCHECK(primary_display_area.height() == 600);
   }
 
   void ResizePanel(Panel* panel,
@@ -451,9 +451,10 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, MAYBE_ResizeAndCancel) {
 #endif
 IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, MAYBE_ResizeDetachedPanelToTop) {
   // Setup the test areas to have top-aligned bar excluded from work area.
-  const gfx::Rect primary_scren_area(0, 0, 800, 600);
-  const gfx::Rect work_area(0, 10, 800, 590);
-  SetTestingAreas(primary_scren_area, work_area);
+  const gfx::Rect primary_display_area(0, 0, 800, 600);
+  const gfx::Rect primary_work_area(0, 10, 800, 590);
+  mock_display_settings_provider()->SetPrimaryDisplay(
+      primary_display_area, primary_work_area);
 
   PanelManager* panel_manager = PanelManager::GetInstance();
   Panel* panel = CreateDetachedPanel("1", gfx::Rect(300, 200, 250, 200));
@@ -471,9 +472,9 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, MAYBE_ResizeDetachedPanelToTop) {
   panel_manager->ResizeByMouse(mouse_location);
 
   bounds.set_width(bounds.width() + bounds.x() - mouse_location.x());
-  bounds.set_height(bounds.height() + bounds.y() - work_area.y());
+  bounds.set_height(bounds.height() + bounds.y() - primary_work_area.y());
   bounds.set_x(mouse_location.x());
-  bounds.set_y(work_area.y());
+  bounds.set_y(primary_work_area.y());
   EXPECT_EQ(bounds, panel->GetBounds());
 
   // Try moving the mouse inside the work area. Expect that the panel can be

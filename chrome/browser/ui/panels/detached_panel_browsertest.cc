@@ -189,3 +189,64 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, MAYBE_ClickTitlebar) {
 
   panel_manager->CloseAll();
 }
+
+IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest,
+                       UpdateDetachedPanelOnPrimaryDisplayChange) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+
+  // Create a big detached panel on the primary display.
+  gfx::Rect initial_bounds(50, 50, 700, 500);
+  Panel* panel = CreateDetachedPanel("1", initial_bounds);
+  EXPECT_EQ(initial_bounds, panel->GetBounds());
+
+  // Make the primary display smaller.
+  // Expect that the panel should be resized to fit within the display.
+  gfx::Rect primary_display_area(0, 0, 500, 300);
+  gfx::Rect primary_work_area(0, 0, 500, 280);
+  mock_display_settings_provider()->SetPrimaryDisplay(
+      primary_display_area, primary_work_area);
+
+  gfx::Rect bounds = panel->GetBounds();
+  EXPECT_LE(primary_work_area.x(), bounds.x());
+  EXPECT_LE(bounds.x(), primary_work_area.right());
+  EXPECT_LE(primary_work_area.y(), bounds.y());
+  EXPECT_LE(bounds.y(), primary_work_area.bottom());
+
+  panel_manager->CloseAll();
+}
+
+IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest,
+                       UpdateDetachedPanelOnSecondaryDisplayChange) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+
+  // Setup 2 displays with secondary display on the right side of primary
+  // display.
+  gfx::Rect primary_display_area(0, 0, 400, 600);
+  gfx::Rect primary_work_area(0, 0, 400, 560);
+  mock_display_settings_provider()->SetPrimaryDisplay(
+      primary_display_area, primary_work_area);
+  gfx::Rect secondary_display_area(400, 0, 400, 500);
+  gfx::Rect secondary_work_area(400, 0, 400, 460);
+  mock_display_settings_provider()->SetSecondaryDisplay(
+      secondary_display_area, secondary_work_area);
+
+  // Create a big detached panel on the seconday display.
+  gfx::Rect initial_bounds(450, 50, 350, 400);
+  Panel* panel = CreateDetachedPanel("1", initial_bounds);
+  EXPECT_EQ(initial_bounds, panel->GetBounds());
+
+  // Move down the secondary display and make it smaller.
+  // Expect that the panel should be resized to fit within the display.
+  secondary_display_area.SetRect(400, 100, 300, 400);
+  secondary_work_area.SetRect(400, 100, 300, 360);
+  mock_display_settings_provider()->SetSecondaryDisplay(
+      secondary_display_area, secondary_work_area);
+
+  gfx::Rect bounds = panel->GetBounds();
+  EXPECT_LE(secondary_work_area.x(), bounds.x());
+  EXPECT_LE(bounds.x(), secondary_work_area.right());
+  EXPECT_LE(secondary_work_area.y(), bounds.y());
+  EXPECT_LE(bounds.y(), secondary_work_area.bottom());
+
+  panel_manager->CloseAll();
+}

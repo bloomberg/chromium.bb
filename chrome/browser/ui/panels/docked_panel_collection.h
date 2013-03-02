@@ -30,7 +30,7 @@ class DockedPanelCollection :
   virtual ~DockedPanelCollection();
 
   // PanelCollection OVERRIDES:
-  virtual void OnDisplayAreaChanged(const gfx::Rect& old_display_area) OVERRIDE;
+  virtual void OnDisplayChanged() OVERRIDE;
 
   // Rearranges the positions of the panels in the collection
   // and reduces their width when there is not enough room.
@@ -102,7 +102,7 @@ class DockedPanelCollection :
   const Panels& panels() const { return panels_; }
   Panel* last_panel() const { return panels_.empty() ? NULL : panels_.back(); }
 
-  gfx::Rect display_area() const { return display_area_; }
+  gfx::Rect work_area() const { return work_area_; }
 
   int StartingRightPosition() const;
 
@@ -137,6 +137,9 @@ class DockedPanelCollection :
   virtual void OnAutoHidingDesktopBarVisibilityChanged(
       DisplaySettingsProvider::DesktopBarAlignment alignment,
       DisplaySettingsProvider::DesktopBarVisibility visibility) OVERRIDE;
+  virtual void OnAutoHidingDesktopBarThicknessChanged(
+      DisplaySettingsProvider::DesktopBarAlignment alignment,
+      int thickness) OVERRIDE;
 
   // Schedules a layout refresh with a short delay to avoid too much flicker.
   void ScheduleLayoutRefresh();
@@ -165,7 +168,7 @@ class DockedPanelCollection :
   PanelManager* panel_manager_;  // Weak, owns us.
 
   // All panels in the collection must fit within this area.
-  gfx::Rect display_area_;
+  gfx::Rect work_area_;
 
   Panels panels_;
 

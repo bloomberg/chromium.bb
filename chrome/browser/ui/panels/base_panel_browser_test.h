@@ -25,8 +25,10 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
     MockDisplaySettingsProvider() { }
     virtual ~MockDisplaySettingsProvider() { }
 
-    virtual void SetPrimaryScreenArea(const gfx::Rect& primary_screen_area) = 0;
-    virtual void SetWorkArea(const gfx::Rect& work_area) = 0;
+    virtual void SetPrimaryDisplay(
+        const gfx::Rect& display_area, const gfx::Rect& work_area) = 0;
+    virtual void SetSecondaryDisplay(
+        const gfx::Rect& display_area, const gfx::Rect& work_area) = 0;
     virtual void EnableAutoHidingDesktopBar(DesktopBarAlignment alignment,
                                             bool enabled,
                                             int thickness) = 0;
@@ -100,11 +102,6 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
   static void MoveMouse(const gfx::Point& position);
   void CloseWindowAndWait(Panel* panel);
   static std::string MakePanelName(int index);
-
-  // |primary_screen_area| must contain |work_area|. If empty rect is passed
-  // to |work_area|, it will be set to same as |primary_screen_area|.
-  void SetTestingAreas(const gfx::Rect& primary_screen_area,
-                       const gfx::Rect& work_area);
 
   MockDisplaySettingsProvider* mock_display_settings_provider() const {
     return mock_display_settings_provider_;

@@ -17,7 +17,7 @@ class DisplaySettingsProviderWinTest : public testing::Test {
       OnDisplaySettingsChanged();
     }
     virtual ~MockDisplaySettingsProviderWin() { }
-    virtual gfx::Rect GetWorkArea() const {
+    virtual gfx::Rect GetPrimaryWorkArea() const {
       return gfx::Rect(0, 0, 800, 600);
     }
 

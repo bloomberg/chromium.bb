@@ -526,19 +526,19 @@ void Panel::SetPanelBoundsInstantly(const gfx::Rect& bounds) {
   native_panel_->SetPanelBoundsInstantly(bounds);
 }
 
-void Panel::LimitSizeToDisplayArea(const gfx::Rect& display_area) {
-  int max_width = manager()->GetMaxPanelWidth();
-  int max_height = manager()->GetMaxPanelHeight();
+void Panel::LimitSizeToWorkArea(const gfx::Rect& work_area) {
+  int max_width = manager()->GetMaxPanelWidth(work_area);
+  int max_height = manager()->GetMaxPanelHeight(work_area);
 
   // If the custom max size is used, ensure that it does not exceed the display
   // area.
   if (max_size_policy_ == CUSTOM_MAX_SIZE) {
     int current_max_width = max_size_.width();
     if (current_max_width > max_width)
-      max_width = std::min(current_max_width, display_area.width());
+      max_width = std::min(current_max_width, work_area.width());
     int current_max_height = max_size_.height();
     if (current_max_height > max_height)
-      max_height = std::min(current_max_height, display_area.height());
+      max_height = std::min(current_max_height, work_area.height());
   }
 
   SetSizeRange(min_size_, gfx::Size(max_width, max_height));
