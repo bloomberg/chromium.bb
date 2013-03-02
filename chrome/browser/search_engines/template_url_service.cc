@@ -828,7 +828,8 @@ void TemplateURLService::OnWebDataServiceRequestDone(
     }
     UMA_HISTOGRAM_ENUMERATION(
         kDSPHistogramName,
-        default_search_provider_->prepopulate_id(),
+        default_search_provider_ ?
+            default_search_provider_->prepopulate_id() : 0,
         TemplateURLPrepopulateData::kMaxPrepopulatedEngineID);
   }
 
