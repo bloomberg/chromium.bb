@@ -25,13 +25,27 @@ class CHROMEOS_EXPORT IBusDaemonController {
     virtual void OnDisconnected() = 0;
   };
 
-  virtual ~IBusDaemonController();
-
   // Initializes IBusDaemonController. ibus-daemon related file handling is
-  // posted to |file_task_runner|.
-  virtual void Initialize(
+  // posted to |file_task_runner|. This function must be called before any
+  // GetInstance() function call.
+  static void Initialize(
       const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
-      const scoped_refptr<base::SequencedTaskRunner>& file_task_runner) = 0;
+      const scoped_refptr<base::SequencedTaskRunner>& file_task_runner);
+
+  // Similar to Initialize(), but can inject alternative IBusDaemonController
+  // such as MockIBusDaemonController for testing. The injected object object
+  // will be owned by the internal pointer and deleted by Shutdown().
+  static void InitializeForTesting(IBusDaemonController* controller_);
+
+  // Destroys the global instance.
+  static void Shutdown();
+
+  // Returns actual implementation of IBusDaemonController. If the browser is
+  // not running on the Chrome OS device, this function returns stub
+  // implementation.
+  static CHROMEOS_EXPORT IBusDaemonController* GetInstance();
+
+  virtual ~IBusDaemonController();
 
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
@@ -41,11 +55,6 @@ class CHROMEOS_EXPORT IBusDaemonController {
 
   // Stops ibus-daemon.
   virtual bool Stop() = 0;
-
-  // Returns actual implementation of IBusDaemonController. If the browser is
-  // not running on the Chrome OS device, this function returns stub
-  // implementation.
-  static CHROMEOS_EXPORT IBusDaemonController* GetInstance();
 
  protected:
   // IBusDaemonController is managed as singleton. USe GetInstance instead.
