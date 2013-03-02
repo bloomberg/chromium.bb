@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/views/panels/panel_stack_view.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/panels/panel.h"
@@ -38,6 +40,9 @@ PanelStackView::PanelStackView(
     scoped_ptr<StackedPanelCollection> stacked_collection)
     : stacked_collection_(stacked_collection.Pass()),
       delay_initialized_(false),
+#if defined(OS_WIN)
+      weak_factory_(this),
+#endif
       window_(NULL) {
   window_ = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
@@ -171,10 +176,30 @@ void PanelStackView::OnWidgetDestroying(views::Widget* widget) {
 void PanelStackView::OnWidgetActivationChanged(views::Widget* widget,
                                                bool active) {
 #if defined(OS_WIN)
-  if (active && thumbnailer_)
+  if (!active)
+    return;
+
+  if (thumbnailer_)
     thumbnailer_->Stop();
+
+  // The stack window could get activated when the user selects it via ALT-TAB
+  // or WIN-TAB. When this occurs, the most recently active panel should be
+  // focused. Note that we cannot do this while processing the activation
+  // message for the stack window.
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&PanelStackView::ActivateMostRecentlyActivePanel,
+                 weak_factory_.GetWeakPtr()));
 #endif
 }
+
+#if defined(OS_WIN)
+void PanelStackView::ActivateMostRecentlyActivePanel() {
+  Panel* panel_to_focus = stacked_collection_->most_recently_active_panel();
+  if (panel_to_focus)
+    panel_to_focus->Activate();
+}
+#endif
 
 void PanelStackView::UpdateWindowOwnerForTaskbarIconAppearance(Panel* panel) {
 #if defined(OS_WIN)

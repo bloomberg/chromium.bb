@@ -77,6 +77,10 @@ class StackedPanelCollection : public PanelCollection {
   Panel* bottom_panel() const {
     return panels_.empty() ? NULL : panels_.back();
   }
+  Panel* most_recently_active_panel() const {
+    return most_recently_active_panels_.empty() ?
+        NULL : most_recently_active_panels_.front();
+  }
 
  private:
   struct PanelPlacement {

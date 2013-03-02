@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/panels/native_panel_stack.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_observer.h"
@@ -53,9 +54,18 @@ class PanelStackView : public NativePanelStack,
   // launcher.
   void UpdateWindowOwnerForTaskbarIconAppearance(Panel* panel);
 
+#if defined(OS_WIN)
+  void ActivateMostRecentlyActivePanel();
+#endif
+
   scoped_ptr<StackedPanelCollection> stacked_collection_;
 
   bool delay_initialized_;
+
+#if defined(OS_WIN)
+  // Owned by MessageLoop after posting.
+  base::WeakPtrFactory<PanelStackView> weak_factory_;
+#endif
 
   views::Widget* window_;
 
