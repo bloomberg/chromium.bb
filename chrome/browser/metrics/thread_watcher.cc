@@ -577,9 +577,8 @@ void ThreadWatcherList::ParseCommandLine(
     for (CrashOnHangThreadMap::iterator it = crash_on_hang_threads->begin();
          crash_on_hang_threads->end() != it;
          ++it) {
-      if (it->first == "FILE")
+      if (it->first != "IO")
         continue;
-      DCHECK(it->first == "UI" || it->first == "IO");
       it->second.live_threads_threshold = INT_MAX;
       it->second.unresponsive_threshold = 15;
     }
