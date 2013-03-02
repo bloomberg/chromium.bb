@@ -55,6 +55,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/native_theme/native_theme.h"
 
 #if defined(OS_WIN)
 #include "base/win/metro.h"
@@ -457,7 +458,7 @@ WrenchMenuModel::WrenchMenuModel()
 
 void WrenchMenuModel::Build(bool is_new_menu, bool supports_new_separators) {
 #if defined(USE_AURA)
-  if (is_new_menu)
+  if (is_new_menu && !ui::NativeTheme::IsNewMenuStyleEnabled())
     AddSeparator(ui::SPACING_SEPARATOR);
 #endif
 
@@ -624,8 +625,10 @@ void WrenchMenuModel::Build(bool is_new_menu, bool supports_new_separators) {
     AddItemWithStringId(IDC_EXIT, IDS_EXIT);
   }
 
-  if (is_new_menu && supports_new_separators)
+  if (is_new_menu && supports_new_separators &&
+      !ui::NativeTheme::IsNewMenuStyleEnabled()) {
     AddSeparator(ui::SPACING_SEPARATOR);
+  }
 }
 
 void WrenchMenuModel::AddGlobalErrorMenuItems() {

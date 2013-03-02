@@ -61,13 +61,15 @@ MenuConfig::~MenuConfig() {}
 
 void MenuConfig::AdjustForCommonTheme() {
   render_gutter = false;
+  item_left_margin = 10;
   item_top_margin = 7;
   item_bottom_margin = 6;
   item_no_icon_top_margin = 7;
   item_no_icon_bottom_margin = 7;
+  icon_to_label_padding = 10;
   separator_height = 15;
-  menu_horizontal_border_size = 2;
-  menu_vertical_border_size = 8;
+  menu_horizontal_border_size = 0;
+  menu_vertical_border_size = 7;
 }
 
 }  // namespace views

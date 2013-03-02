@@ -41,8 +41,6 @@ void MenuConfig::InitAura() {
   arrow_width =
       rb.GetImageNamed(IDR_MENU_HIERARCHY_ARROW).ToImageSkia()->width();
   const gfx::ImageSkia* check = GetMenuCheckImage();
-  // Add 4 to force some padding between check and label.
-  check_width = check->width() + 4;
   check_height = check->height();
   item_left_margin = 4;
   item_min_height = 29;
@@ -57,6 +55,8 @@ void MenuConfig::InitAura() {
   align_arrow_and_shortcut = true;
   offset_context_menus = true;
   corner_radius = kMenuCornerRadiusForAura;
+  if (ui::NativeTheme::IsNewMenuStyleEnabled())
+    AdjustForCommonTheme();
 }
 
 #if !defined(OS_WIN)
