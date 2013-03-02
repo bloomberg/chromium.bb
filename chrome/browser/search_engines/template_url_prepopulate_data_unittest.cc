@@ -234,11 +234,11 @@ TEST_F(TemplateURLPrepopulateDataTest, GetEngineTypeAdvanced) {
   const char* kGoogleURLs[] = {
     // Original with google:baseURL:
     "{google:baseURL}search?q={searchTerms}&{google:RLZ}"
-    "{google:acceptedSuggestion}{google:originalQueryForSuggestion}"
-    "{google:searchFieldtrialParameter}sourceid=chrome&ie={inputEncoding}",
-    // Custom with google.com and reordered query params:
-    "http://google.com/search?{google:RLZ}{google:acceptedSuggestion}"
     "{google:originalQueryForSuggestion}{google:searchFieldtrialParameter}"
+    "sourceid=chrome&ie={inputEncoding}",
+    // Custom with google.com and reordered query params:
+    "http://google.com/search?{google:RLZ}{google:originalQueryForSuggestion}"
+    "{google:searchFieldtrialParameter}"
     "sourceid=chrome&ie={inputEncoding}&q={searchTerms}",
     // Custom with a country TLD and almost no query params:
     "http://www.google.ru/search?q={searchTerms}"

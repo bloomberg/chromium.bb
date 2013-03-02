@@ -157,7 +157,6 @@ class TemplateURLRef {
   // Enumeration of the known types.
   enum ReplacementType {
     ENCODING,
-    GOOGLE_ACCEPTED_SUGGESTION,
     GOOGLE_ASSISTED_QUERY_STATS,
     GOOGLE_BASE_URL,
     GOOGLE_BASE_SUGGEST_URL,

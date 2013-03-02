@@ -26,7 +26,7 @@
 
     // Increment this if you change the data in ways that mean users with
     // existing data should get a new version.
-    "kCurrentDataVersion": 51
+    "kCurrentDataVersion": 52
   },
 
   // The following engines are included in country lists and are added to the
@@ -847,7 +847,7 @@
       "name": "Google",
       "keyword": "google.com",
       "favicon_url": "http://www.google.com/favicon.ico",
-      "search_url": "{google:baseURL}search?q={searchTerms}&{google:RLZ}{google:acceptedSuggestion}{google:originalQueryForSuggestion}{google:assistedQueryStats}{google:searchFieldtrialParameter}{google:searchClient}{google:sourceId}{google:instantExtendedEnabledParameter}ie={inputEncoding}",
+      "search_url": "{google:baseURL}search?q={searchTerms}&{google:RLZ}{google:originalQueryForSuggestion}{google:assistedQueryStats}{google:searchFieldtrialParameter}{google:searchClient}{google:sourceId}{google:instantExtendedEnabledParameter}ie={inputEncoding}",
       "suggest_url": "{google:baseSuggestURL}search?{google:searchFieldtrialParameter}client=chrome&q={searchTerms}&{google:cursorPosition}sugkey={google:suggestAPIKeyParameter}",
       "instant_url": "{google:baseURL}webhp?sourceid=chrome-instant&{google:RLZ}{google:instantEnabledParameter}{google:instantExtendedEnabledParameter}ie={inputEncoding}",
       "alternate_urls": [

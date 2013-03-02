@@ -478,19 +478,19 @@ TEST_F(TemplateURLTest, Suggestions) {
     const std::string expected_result;
   } test_data[] = {
     { TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16(),
-      "http://bar/foo?aq=f&q=foobar" },
+      "http://bar/foo?q=foobar" },
     { TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, ASCIIToUTF16("foo"),
-      "http://bar/foo?aq=f&q=foobar" },
+      "http://bar/foo?q=foobar" },
     { TemplateURLRef::NO_SUGGESTION_CHOSEN, string16(),
-      "http://bar/foo?aq=f&q=foobar" },
+      "http://bar/foo?q=foobar" },
     { TemplateURLRef::NO_SUGGESTION_CHOSEN, ASCIIToUTF16("foo"),
-      "http://bar/foo?aq=f&q=foobar" },
-    { 0, string16(), "http://bar/foo?aq=0&oq=&q=foobar" },
-    { 1, ASCIIToUTF16("foo"), "http://bar/foo?aq=1&oq=foo&q=foobar" },
+      "http://bar/foo?q=foobar" },
+    { 0, string16(), "http://bar/foo?oq=&q=foobar" },
+    { 1, ASCIIToUTF16("foo"), "http://bar/foo?oq=foo&q=foobar" },
   };
   TemplateURLData data;
-  data.SetURL("http://bar/foo?{google:acceptedSuggestion}"
-              "{google:originalQueryForSuggestion}q={searchTerms}");
+  data.SetURL("http://bar/foo?{google:originalQueryForSuggestion}"
+              "q={searchTerms}");
   data.input_encodings.push_back("UTF-8");
   TemplateURL url(NULL, data);
   EXPECT_TRUE(url.url_ref().IsValid());

@@ -44,7 +44,6 @@ const char kLanguageParameter[] = "language";
 const char kInputEncodingParameter[] = "inputEncoding";
 const char kOutputEncodingParameter[] = "outputEncoding";
 
-const char kGoogleAcceptedSuggestionParameter[] = "google:acceptedSuggestion";
 const char kGoogleAssistedQueryStatsParameter[] = "google:assistedQueryStats";
 
 // Host/Domain Google searches are relative to.
@@ -285,14 +284,6 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
           }
         }
         break;
-
-      case GOOGLE_ACCEPTED_SUGGESTION: {
-        std::string value("f");
-        if (search_terms_args.accepted_suggestion >= 0)
-          value = base::IntToString(search_terms_args.accepted_suggestion);
-        url.insert(i->index, "aq=" + value + "&");
-        break;
-      }
 
       case GOOGLE_BASE_URL:
         url.insert(i->index, search_terms_data.GoogleBaseURLValue());
@@ -560,8 +551,6 @@ bool TemplateURLRef::ParseParameter(size_t start,
   } else if (parameter == kOutputEncodingParameter) {
     if (!optional)
       url->insert(start, kOutputEncodingType);
-  } else if (parameter == kGoogleAcceptedSuggestionParameter) {
-    replacements->push_back(Replacement(GOOGLE_ACCEPTED_SUGGESTION, start));
   } else if (parameter == kGoogleAssistedQueryStatsParameter) {
     replacements->push_back(Replacement(GOOGLE_ASSISTED_QUERY_STATS, start));
   } else if (parameter == kGoogleBaseURLParameter) {
