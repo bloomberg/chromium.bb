@@ -7,10 +7,12 @@
 #include "chrome/common/nacl_helper_linux.h"
 
 #include <errno.h>
+#include <fcntl.h>
 #include <link.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 
 #include <string>
@@ -115,6 +117,16 @@ void HandleForkRequest(const std::vector<int>& child_fds,
       != sizeof(childpid)) {
     LOG(ERROR) << "*** send() to zygote failed";
   }
+}
+
+// This is a poor man's check on whether we are sandboxed.
+bool IsSandboxed() {
+  int proc_fd = open("/proc/self/exe", O_RDONLY);
+  if (proc_fd >= 0) {
+    HANDLE_EINTR(close(proc_fd));
+    return false;
+  }
+  return true;
 }
 
 }  // namespace
@@ -227,6 +239,9 @@ int main(int argc, char* argv[]) {
 
   CheckRDebug(argv[0]);
 
+  // Check that IsSandboxed() works. We should not be sandboxed at this point.
+  CHECK(!IsSandboxed()) << "Unexpectedly sandboxed!";
+
   // Send the zygote a message to let it know we are ready to help
   if (!UnixDomainSocket::SendMsg(kNaClZygoteDescriptor,
                                  kNaClHelperStartupAck,
@@ -241,6 +256,13 @@ int main(int argc, char* argv[]) {
     char buf[kMaxMessageLength];
     const ssize_t msglen = UnixDomainSocket::RecvMsg(kNaClZygoteDescriptor,
                                                      &buf, sizeof(buf), &fds);
+    // If the Zygote has started handling requests, we should be sandboxed via
+    // the setuid sandbox.
+    if (!IsSandboxed()) {
+      LOG(ERROR) << "NaCl helper process running without a sandbox!\n"
+                 << "Most likely you need to configure your SUID sandbox "
+                 << "correctly";
+    }
     if (msglen == 0 || (msglen == -1 && errno == ECONNRESET)) {
       // EOF from the browser. Goodbye!
       _exit(0);
