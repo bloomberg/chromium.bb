@@ -568,7 +568,7 @@ class Updater(object):
       else:
         bundle.stability = channel
       # We always recommend the stable version.
-      if channel == 'stable':
+      if bundle.stability == 'stable':
         bundle.recommended = 'yes'
       else:
         bundle.recommended = 'no'

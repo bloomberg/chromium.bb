@@ -559,8 +559,10 @@ mac,canary,21.0.1156.0,2012-05-30 12:14:21.305090"""
     self._ReadUploadedManifest()
     p18_bundle = self.uploaded_manifest.GetBundle(B18_R1_NONE.name)
     self.assertEqual(p18_bundle.stability, POST_STABLE)
+    self.assertEqual(p18_bundle.recommended, 'no')
     p19_bundle = self.uploaded_manifest.GetBundle(B19_R1_NONE.name)
     self.assertEqual(p19_bundle.stability, STABLE)
+    self.assertEqual(p19_bundle.recommended, 'yes')
 
   def testDontPushIfNoChange(self):
     # Make an online manifest that already has this bundle.
