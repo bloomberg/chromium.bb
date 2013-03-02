@@ -560,7 +560,7 @@ void VideoCaptureController::DoIncomingCapturedFrameOnIOThread(
   int count = 0;
   if (state_ == VIDEO_CAPTURE_STATE_STARTED) {
     for (ControllerClients::iterator client_it = controller_clients_.begin();
-         client_it != controller_clients_.end(); client_it++) {
+         client_it != controller_clients_.end(); ++client_it) {
       if ((*client_it)->session_closed)
         continue;
 
@@ -607,7 +607,7 @@ void VideoCaptureController::DoFrameInfoOnIOThread() {
   if (!frames_created) {
     state_ = VIDEO_CAPTURE_STATE_ERROR;
     for (ControllerClients::iterator client_it = controller_clients_.begin();
-         client_it != controller_clients_.end(); client_it++) {
+         client_it != controller_clients_.end(); ++client_it) {
       (*client_it)->event_handler->OnError((*client_it)->controller_id);
     }
     return;
@@ -615,7 +615,7 @@ void VideoCaptureController::DoFrameInfoOnIOThread() {
   frame_info_available_ = true;
 
   for (ControllerClients::iterator client_it = controller_clients_.begin();
-       client_it != controller_clients_.end(); client_it++) {
+       client_it != controller_clients_.end(); ++client_it) {
     SendFrameInfoAndBuffers((*client_it), static_cast<int>(needed_size));
   }
 }
@@ -625,11 +625,11 @@ void VideoCaptureController::DoErrorOnIOThread() {
   state_ = VIDEO_CAPTURE_STATE_ERROR;
   ControllerClients::iterator client_it;
   for (client_it = controller_clients_.begin();
-       client_it != controller_clients_.end(); client_it++) {
+       client_it != controller_clients_.end(); ++client_it) {
     (*client_it)->event_handler->OnError((*client_it)->controller_id);
   }
   for (client_it = pending_clients_.begin();
-       client_it != pending_clients_.end(); client_it++) {
+       client_it != pending_clients_.end(); ++client_it) {
     (*client_it)->event_handler->OnError((*client_it)->controller_id);
   }
 }
@@ -669,7 +669,7 @@ VideoCaptureController::FindClient(
     VideoCaptureControllerEventHandler* handler,
     const ControllerClients& clients) {
   for (ControllerClients::const_iterator client_it = clients.begin();
-       client_it != clients.end(); client_it++) {
+       client_it != clients.end(); ++client_it) {
     if ((*client_it)->controller_id == id &&
         (*client_it)->event_handler == handler) {
       return *client_it;
@@ -683,7 +683,7 @@ VideoCaptureController::FindClient(
     int session_id,
     const ControllerClients& clients) {
   for (ControllerClients::const_iterator client_it = clients.begin();
-       client_it != clients.end(); client_it++) {
+       client_it != clients.end(); ++client_it) {
     if ((*client_it)->parameters.session_id == session_id) {
       return *client_it;
     }
@@ -719,7 +719,7 @@ void VideoCaptureController::PostStopping() {
   current_params_.height = 0;
   ControllerClients::iterator client_it;
   for (client_it = controller_clients_.begin();
-       client_it != controller_clients_.end(); client_it++) {
+       client_it != controller_clients_.end(); ++client_it) {
     if (current_params_.width < (*client_it)->parameters.width)
       current_params_.width = (*client_it)->parameters.width;
     if (current_params_.height < (*client_it)->parameters.height)
