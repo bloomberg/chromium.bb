@@ -13,8 +13,6 @@ from pylib.base import shard
 from pylib.gtest import dispatch as gtest_dispatch
 from pylib.gtest import test_runner
 
-CONTENT_BROWSERTEST_SUITENAME = 'content_browsertests'
-
 
 def Dispatch(options):
   attached_devices = []
@@ -36,7 +34,7 @@ def Dispatch(options):
                                 options.build_type)
   options.test_suite = os.path.join(test_suite_dir,
                                     'apks',
-                                    CONTENT_BROWSERTEST_SUITENAME + '.apk')
+                                    constants.BROWSERTEST_SUITE_NAME + '.apk')
 
   options.test_arguments = '--single_process %s' % options.test_arguments
 
@@ -67,7 +65,7 @@ def Dispatch(options):
                                         all_tests, options.build_type)
   test_results.LogFull(
       test_type='Unit test',
-      test_package=CONTENT_BROWSERTEST_SUITENAME,
+      test_package=constants.BROWSERTEST_SUITE_NAME,
       build_type=options.build_type,
       flakiness_server=options.flakiness_dashboard_server)
   test_results.PrintAnnotation()

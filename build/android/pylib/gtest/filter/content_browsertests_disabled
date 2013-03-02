@@ -12,6 +12,8 @@ MessagePortTest.Tests
 EncryptedMediaTest.InvalidKeySystem
 IndexedDBBrowserTest.NullKeyPathPersistence
 IndexedDBBrowserTest.VersionChangeCrashResilience
+IndexedDBBrowserTest.ValueSizeTest
+IndexedDBBrowserTest.ConnectionsClosedOnTabClose
 CrossPlatformAccessibilityBrowserTest.*
 GpuCrashTest.MANUAL_WebkitLoseContext
 DatabaseTest.*

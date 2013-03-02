@@ -35,6 +35,7 @@ GTEST_TEST_PACKAGE_NAME = 'org.chromium.native_test'
 GTEST_TEST_ACTIVITY_NAME = 'org.chromium.native_test.ChromeNativeTestActivity'
 GTEST_COMMAND_LINE_FILE = 'chrome-native-tests-command-line'
 
+BROWSERTEST_SUITE_NAME = 'content_browsertests'
 BROWSERTEST_TEST_PACKAGE_NAME = 'org.chromium.content_browsertests_apk'
 BROWSERTEST_TEST_ACTIVITY_NAME = (
     'org.chromium.content_browsertests_apk.ContentBrowserTestsActivity')

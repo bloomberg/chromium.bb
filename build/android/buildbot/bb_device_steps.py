@@ -137,6 +137,19 @@ def RunTestSuites(options, suites):
     buildbot_report.PrintNamedStep(suite)
     RunCmd(['build/android/run_tests.py', '-s', suite] + args)
 
+def RunBrowserTestSuite(options):
+  """Manages an invocation of run_browser_tests.py.
+
+  Args:
+    options: options object.
+  """
+  args = ['--verbose']
+  if options.target == 'Release':
+    args.append('--release')
+  if options.asan:
+    args.append('--tool=asan')
+  buildbot_report.PrintNamedStep(constants.BROWSERTEST_SUITE_NAME)
+  RunCmd(['build/android/run_browser_tests.py'] + args)
 
 def InstallApk(options, test, print_step=False):
   """Install an apk to all phones.
@@ -258,6 +271,7 @@ def MainTestWrapper(options):
 
   if options.experimental:
     RunTestSuites(options, gtest_config.EXPERIMENTAL_TEST_SUITES)
+    RunBrowserTestSuite(options)
 
   # Print logcat, kill logcat monitor
   buildbot_report.PrintNamedStep('logcat_dump')
