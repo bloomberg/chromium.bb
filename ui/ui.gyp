@@ -609,12 +609,6 @@
             ['exclude', '^base/gestures/*'],
           ]
         }],
-        ['use_aura==1 and use_ash==0 and OS=="linux"', {
-          'sources': [
-            'base/linux_ui.cc',
-            'base/linux_ui.h',
-          ]
-        }],
         ['use_glib == 1', {
           'dependencies': [
             # font_gtk.cc uses fontconfig.

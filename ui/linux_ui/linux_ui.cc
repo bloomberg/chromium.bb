@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/linux_ui.h"
+#include "ui/linux_ui/linux_ui.h"
+
+#include "ui/shell_dialogs/linux_shell_dialog.h"
 
 namespace {
 
@@ -15,6 +17,8 @@ namespace ui {
 void LinuxUI::SetInstance(LinuxUI* instance) {
   delete g_linux_ui;
   g_linux_ui = instance;
+
+  LinuxShellDialog::SetInstance(instance);
 }
 
 const LinuxUI* LinuxUI::instance() {

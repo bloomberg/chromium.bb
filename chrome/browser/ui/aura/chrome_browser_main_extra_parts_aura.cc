@@ -14,7 +14,7 @@
 
 #if defined(OS_LINUX)
 #include "chrome/browser/ui/libgtk2ui/gtk2_ui.h"
-#include "ui/base/linux_ui.h"
+#include "ui/linux_ui/linux_ui.h"
 #else
 #endif
 

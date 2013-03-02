@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/libgtk2ui/libgtk2ui_export.h"
 #include "chrome/browser/ui/libgtk2ui/owned_widget_gtk2.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/shell_dialogs/linux_ui_shell_dialog.h"
+#include "ui/linux_ui/linux_ui.h"
 
 typedef struct _GdkColor GdkColor;
 typedef struct _GtkStyle GtkStyle;
@@ -28,20 +28,21 @@ namespace libgtk2ui {
 
 // Interface to GTK2 desktop features.
 //
-class Gtk2UI : public ui::LinuxUIShellDialog {
+class Gtk2UI : public ui::LinuxUI {
  public:
   Gtk2UI();
   virtual ~Gtk2UI();
+
+  // ui::LinuxShellDialog:
+  virtual ui::SelectFileDialog* CreateSelectFileDialog(
+      ui::SelectFileDialog::Listener* listener,
+      ui::SelectFilePolicy* policy) const OVERRIDE;
 
   // ui::LinuxUI:
   virtual bool UseNativeTheme() const OVERRIDE;
   virtual gfx::Image* GetThemeImageNamed(int id) const OVERRIDE;
   virtual bool GetColor(int id, SkColor* color) const OVERRIDE;
-
-  // ui::LinuxUIShellDialog:
-  virtual ui::SelectFileDialog* CreateSelectFileDialog(
-      ui::SelectFileDialog::Listener* listener,
-      ui::SelectFilePolicy* policy) const OVERRIDE;
+  virtual ui::NativeTheme* GetNativeTheme() const OVERRIDE;
 
  private:
   typedef std::map<int, SkColor> ColorMap;

@@ -20,6 +20,7 @@
 #include "ui/base/events/event_utils.h"
 #include "ui/base/touch/touch_factory.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/linux_ui/linux_ui.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/corewm/compound_event_filter.h"
 #include "ui/views/corewm/corewm_switches.h"
@@ -102,6 +103,13 @@ DesktopRootWindowHostLinux::~DesktopRootWindowHostLinux() {
 
 // static
 ui::NativeTheme* DesktopRootWindowHost::GetNativeTheme(aura::Window* window) {
+  const ui::LinuxUI* linux_ui = ui::LinuxUI::instance();
+  if (linux_ui) {
+    ui::NativeTheme* native_theme = linux_ui->GetNativeTheme();
+    if (native_theme)
+      return native_theme;
+  }
+
   return ui::NativeTheme::instance();
 }
 

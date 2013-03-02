@@ -23,7 +23,7 @@
 #elif defined(OS_ANDROID)
 #include "ui/shell_dialogs/select_file_dialog_android.h"
 #elif defined(USE_AURA) && !defined(USE_ASH) && defined(OS_LINUX)
-#include "ui/shell_dialogs/linux_ui_shell_dialog.h"
+#include "ui/shell_dialogs/linux_shell_dialog.h"
 #endif
 
 namespace {
@@ -79,10 +79,9 @@ scoped_refptr<SelectFileDialog> SelectFileDialog::Create(
   }
 
 #if defined(USE_AURA) && !defined(USE_ASH) && defined(OS_LINUX)
-  const ui::LinuxUIShellDialog* linux_ui =
-      static_cast<const ui::LinuxUIShellDialog*>(ui::LinuxUI::instance());
-  if (linux_ui)
-    return linux_ui->CreateSelectFileDialog(listener, policy);
+  const ui::LinuxShellDialog* shell_dialogs = ui::LinuxShellDialog::instance();
+  if (shell_dialogs)
+    return shell_dialogs->CreateSelectFileDialog(listener, policy);
 #endif
 
 #if defined(OS_WIN)

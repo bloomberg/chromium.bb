@@ -334,6 +334,10 @@ bool Gtk2UI::GetColor(int id, SkColor* color) const {
   return false;
 }
 
+ui::NativeTheme* Gtk2UI::GetNativeTheme() const {
+  return NULL;
+}
+
 ui::SelectFileDialog* Gtk2UI::CreateSelectFileDialog(
     ui::SelectFileDialog::Listener* listener,
     ui::SelectFilePolicy* policy) const {

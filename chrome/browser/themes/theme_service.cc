@@ -32,7 +32,7 @@
 #endif
 
 #if defined(USE_AURA) && !defined(USE_ASH) && defined(OS_LINUX)
-#include "ui/base/linux_ui.h"
+#include "ui/linux_ui/linux_ui.h"
 #endif
 
 using content::BrowserThread;

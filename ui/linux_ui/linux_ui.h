@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_LINUX_UI_H_
-#define UI_BASE_LINUX_UI_H_
+#ifndef UI_LINUX_UI_LINUX_UI_H_
+#define UI_LINUX_UI_LINUX_UI_H_
 
-#include "ui/base/ui_export.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/linux_ui/linux_ui_export.h"
+#include "ui/shell_dialogs/linux_shell_dialog.h"
 
 // The main entrypoint into Linux toolkit specific code. GTK code should only
 // be executed behind this interface.
@@ -16,7 +17,7 @@ class Image;
 }
 
 namespace ui {
-class SelectFilePolicy;
+class NativeTheme;
 
 // Adapter class with targets to render like different toolkits. Set by any
 // project that wants to do linux desktop native rendering.
@@ -25,7 +26,10 @@ class SelectFilePolicy;
 // minimum) GTK2 and GTK3. LinuxUI::instance() should actually be a very
 // complex method that pokes around with dlopen against a libuigtk2.so, a
 // liuigtk3.so, etc.
-class UI_EXPORT LinuxUI {
+//
+// TODO(erg): This class should be folded into ui/views/ instead of living in
+// its own component once we've deleted out the GTK+ port.
+class LINUX_UI_EXPORT LinuxUI : public LinuxShellDialog {
  public:
   virtual ~LinuxUI() {}
 
@@ -43,8 +47,12 @@ class UI_EXPORT LinuxUI {
   virtual bool UseNativeTheme() const = 0;
   virtual gfx::Image* GetThemeImageNamed(int id) const = 0;
   virtual bool GetColor(int id, SkColor* color) const = 0;
+
+  // Returns a NativeTheme that will provide system colors and draw system
+  // style widgets.
+  virtual NativeTheme* GetNativeTheme() const = 0;
 };
 
 }  // namespace ui
 
-#endif  // UI_BASE_LINUX_UI_H_
+#endif  // UI_LINUX_UI_LINUX_UI_H_

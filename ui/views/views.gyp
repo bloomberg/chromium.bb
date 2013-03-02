@@ -501,6 +501,11 @@
             ['include', 'controls/menu/menu_separator_win.cc'],
           ],
         }],
+        ['use_aura==1 and OS=="linux" and chromeos==0', {
+          'dependencies': [
+            '../linux_ui/linux_ui.gyp:linux_ui',
+          ],
+        }],
         ['OS=="win"', {
           'dependencies': [
             # For accessibility
