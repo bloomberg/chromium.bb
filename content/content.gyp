@@ -337,7 +337,7 @@
             'public/android/java/src/org/chromium/content/browser/PageTransitionTypes.template',
           ],
           'variables': {
-            'package_name': 'org.chromium.content.browser',
+            'package_name': 'org/chromium/content/browser',
             'template_deps': ['public/common/page_transition_types_list.h'],
           },
           'includes': [ '../build/android/java_cpp_template.gypi' ],

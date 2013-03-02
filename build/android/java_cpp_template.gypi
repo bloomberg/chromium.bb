@@ -17,7 +17,7 @@
 #      'net/android/NetError.template',
 #    ],
 #    'variables': {
-#      'package_name': 'org.chromium.net',
+#      'package_name': 'org/chromium/net',
 #      'template_deps': ['net/base/certificate_mime_type_list.h'],
 #    },
 #    'includes': [ '../build/android/java_constants.gypi' ],

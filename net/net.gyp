@@ -2458,7 +2458,7 @@
             'android/java/NetError.template',
           ],
           'variables': {
-            'package_name': 'org.chromium.net',
+            'package_name': 'org/chromium/net',
             'template_deps': ['base/net_error_list.h'],
           },
           'includes': [ '../build/android/java_cpp_template.gypi' ],
@@ -2470,7 +2470,7 @@
             'android/java/CertificateMimeType.template',
           ],
           'variables': {
-            'package_name': 'org.chromium.net',
+            'package_name': 'org/chromium/net',
             'template_deps': ['base/mime_util_certificate_type_list.h'],
           },
           'includes': [ '../build/android/java_cpp_template.gypi' ],
@@ -2482,7 +2482,7 @@
             'android/java/CertVerifyResultAndroid.template',
           ],
           'variables': {
-            'package_name': 'org.chromium.net',
+            'package_name': 'org/chromium/net',
             'template_deps': ['android/cert_verify_result_android_list.h'],
           },
           'includes': [ '../build/android/java_cpp_template.gypi' ],
@@ -2494,7 +2494,7 @@
             'android/java/PrivateKeyType.template',
           ],
           'variables': {
-            'package_name': 'org.chromium.net',
+            'package_name': 'org/chromium/net',
             'template_deps': ['android/private_key_type_list.h'],
           },
           'includes': [ '../build/android/java_cpp_template.gypi' ],
