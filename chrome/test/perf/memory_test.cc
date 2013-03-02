@@ -23,6 +23,7 @@
 #include "chrome/test/perf/perf_test.h"
 #include "chrome/test/ui/ui_perf_test.h"
 #include "googleurl/src/gurl.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -56,6 +57,15 @@ class MemoryTest : public UIPerfTest {
     launch_arguments_.AppendSwitch(switches::kDisablePlugins);
 
     launch_arguments_.AppendSwitch(switches::kEnableLogging);
+
+#if defined (OS_MACOSX)
+    // On Mac the OpenGL driver will leave around active pages for GPU
+    // memory, resulting in a massive reported memory regression. Limit
+    // the impact of this by minimizing the amount of GPU memory used.
+    // http://crbug.com/178531
+    launch_arguments_.AppendSwitchASCII(switches::kForceGpuMemAvailableMb,
+                                        "1");
+#endif
 
     // In order to record a dataset to cache for future playback,
     // set the |playback| to false and run the test. The source user data dir
