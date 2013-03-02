@@ -516,6 +516,8 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest, ReadLargeSettingsFrame);
   FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest,
                            ReadLargeSettingsFrameInSmallChunks);
+  FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest, ControlFrameAtMaxSizeLimit);
+  FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest, ControlFrameTooLarge);
   friend class net::HttpNetworkLayer;  // This is temporary for the server.
   friend class net::HttpNetworkTransactionTest;
   friend class net::HttpProxyClientSocketPoolTest;
@@ -597,7 +599,18 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // layer. We chose the framing layer, but this can be changed (or removed)
   // if necessary later down the line.
   size_t GetControlFrameBufferMaxSize() const {
-     return (spdy_version_ == 2) ? 64 * 1024 : 16 * 1024 * 1024;
+    // The theoretical maximum for SPDY3 and earlier is (2^24 - 1) +
+    // 8, since the length field does not count the size of the
+    // header.
+    if (spdy_version_ == kSpdyVersion2) {
+      return 64 * 1024;
+    }
+    if (spdy_version_ == kSpdyVersion3) {
+      return 16 * 1024 * 1024;
+    }
+    // The theoretical maximum for SPDY4 is 2^16 - 1, as the length
+    // field does count the size of the header.
+    return 16 * 1024;
   }
 
   // The size of the control frame buffer.
@@ -609,11 +622,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   SpdyState state_;
   SpdyState previous_state_;
   SpdyError error_code_;
-  size_t remaining_data_;
-
-  // The number of bytes remaining to read from the current control frame's
-  // payload.
-  size_t remaining_control_payload_;
+  size_t remaining_data_length_;
 
   // The number of bytes remaining to read from the current control frame's
   // headers. Note that header data blocks (for control types that have them)
@@ -631,7 +640,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // The flags field of the frame currently being read.
   uint8 current_frame_flags_;
 
-  // The length field of the frame currently being read.
+  // The total length of the frame currently being read, including frame header.
   uint32 current_frame_length_;
 
   // The stream ID field of the frame currently being read, if applicable.

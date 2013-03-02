@@ -60,11 +60,19 @@ bool SpdyFrameBuilder::Seek(size_t length) {
 bool SpdyFrameBuilder::WriteControlFrameHeader(const SpdyFramer& framer,
                                                SpdyControlType type,
                                                uint8 flags) {
-  FlagsAndLength flags_length = CreateFlagsAndLength(
-      flags, capacity_ - framer.GetControlFrameHeaderSize());
-  bool success = WriteUInt16(kControlFlagMask | framer.protocol_version());
-  success &= WriteUInt16(type);
-  success &= WriteBytes(&flags_length, sizeof(flags_length));
+  bool success = true;
+  if (framer.protocol_version() < 4) {
+    FlagsAndLength flags_length = CreateFlagsAndLength(
+        flags, capacity_ - framer.GetControlFrameHeaderSize());
+    success &= WriteUInt16(kControlFlagMask | framer.protocol_version());
+    success &= WriteUInt16(type);
+    success &= WriteBytes(&flags_length, sizeof(flags_length));
+  } else {
+    DCHECK_GT(1u<<16, capacity_);  // Make sure length fits in 2B.
+    success &= WriteUInt16(capacity_);
+    success &= WriteUInt8(type);
+    success &= WriteUInt8(flags);
+  }
   DCHECK_EQ(framer.GetControlFrameHeaderSize(), length());
   return success;
 }
@@ -73,14 +81,23 @@ bool SpdyFrameBuilder::WriteDataFrameHeader(const SpdyFramer& framer,
                                             SpdyStreamId stream_id,
                                             SpdyDataFlags flags) {
   DCHECK_EQ(0u, stream_id & ~kStreamIdMask);
-  bool success = WriteUInt32(stream_id);
-  size_t length_field = capacity_ - framer.GetDataFrameMinimumSize();
-  DCHECK_EQ(0u, length_field & ~static_cast<size_t>(kLengthMask));
-  FlagsAndLength flags_length;
-  flags_length.length_ = htonl(length_field);
-  DCHECK_EQ(0, flags & ~kDataFlagsMask);
-  flags_length.flags_[0] = flags;
-  success &= WriteBytes(&flags_length, sizeof(flags_length));
+  bool success = true;
+  if (framer.protocol_version() < 4) {
+    success &= WriteUInt32(stream_id);
+    size_t length_field = capacity_ - framer.GetDataFrameMinimumSize();
+    DCHECK_EQ(0u, length_field & ~static_cast<size_t>(kLengthMask));
+    FlagsAndLength flags_length;
+    flags_length.length_ = htonl(length_field);
+    DCHECK_EQ(0, flags & ~kDataFlagsMask);
+    flags_length.flags_[0] = flags;
+    success &= WriteBytes(&flags_length, sizeof(flags_length));
+  } else {
+    DCHECK_GT(1u<<16, capacity_);  // Make sure length fits in 2B.
+    success &= WriteUInt16(capacity_);
+    success &= WriteUInt8(0);
+    success &= WriteUInt8(flags);
+    success &= WriteUInt32(stream_id);
+  }
   DCHECK_EQ(framer.GetDataFrameMinimumSize(), length());
   return success;
 }
@@ -117,20 +134,33 @@ bool SpdyFrameBuilder::WriteBytes(const void* data, uint32 data_len) {
 }
 
 bool SpdyFrameBuilder::RewriteLength(const SpdyFramer& framer) {
-  return OverwriteLength(framer, length_ - framer.GetControlFrameHeaderSize());
+  if (framer.protocol_version() < 4) {
+    return OverwriteLength(framer,
+                           length_ - framer.GetControlFrameHeaderSize());
+  } else {
+    return OverwriteLength(framer, length_);
+  }
 }
 
 bool SpdyFrameBuilder::OverwriteLength(const SpdyFramer& framer,
                                        size_t length) {
-  FlagsAndLength flags_length = CreateFlagsAndLength(
-      0,  // We're not writing over the flags value anyway.
-      length);
-
-  // Write into the correct location by temporarily faking the offset.
+  bool success = false;
   const size_t old_length = length_;
-  length_ = 5;  // Offset at which the length field occurs.
-  bool success = WriteBytes(reinterpret_cast<char*>(&flags_length) + 1,
-                            sizeof(flags_length) - 1);
+
+  if (framer.protocol_version() < 4) {
+    FlagsAndLength flags_length = CreateFlagsAndLength(
+        0,  // We're not writing over the flags value anyway.
+        length);
+
+    // Write into the correct location by temporarily faking the offset.
+    length_ = 5;  // Offset at which the length field occurs.
+    success = WriteBytes(reinterpret_cast<char*>(&flags_length) + 1,
+                         sizeof(flags_length) - 1);
+  } else {
+    length_ = 0;
+    success = WriteUInt16(length);
+  }
+
   length_ = old_length;
   return success;
 }

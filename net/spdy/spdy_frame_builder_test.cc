@@ -26,6 +26,7 @@ TEST(SpdyFrameBuilderTestVersionAgnostic, GetWritableBuffer) {
 enum SpdyFrameBuilderTestTypes {
   SPDY2 = 2,
   SPDY3 = 3,
+  SPDY4 = 4,
 };
 
 class SpdyFrameBuilderTest
@@ -42,7 +43,7 @@ class SpdyFrameBuilderTest
 // All tests are run with two different SPDY versions: SPDY/2 and SPDY/3.
 INSTANTIATE_TEST_CASE_P(SpdyFrameBuilderTests,
                         SpdyFrameBuilderTest,
-                        ::testing::Values(SPDY2, SPDY3));
+                        ::testing::Values(SPDY2, SPDY3, SPDY4));
 
 TEST_P(SpdyFrameBuilderTest, RewriteLength) {
   // Create an empty SETTINGS frame both via framer and manually via builder.

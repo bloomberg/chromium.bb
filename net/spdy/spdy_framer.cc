@@ -52,7 +52,7 @@ const uint8 kNoFlags = 0;
 }  // namespace
 
 const int SpdyFramer::kMinSpdyVersion = 2;
-const int SpdyFramer::kMaxSpdyVersion = 3;
+const int SpdyFramer::kMaxSpdyVersion = 4;
 const SpdyStreamId SpdyFramer::kInvalidStream = -1;
 const size_t SpdyFramer::kHeaderDataChunkMaxSize = 1024;
 // The size of the control frame buffer. Must be >= the minimum size of the
@@ -143,8 +143,7 @@ void SpdyFramer::Reset() {
   state_ = SPDY_RESET;
   previous_state_ = SPDY_RESET;
   error_code_ = SPDY_NO_ERROR;
-  remaining_data_ = 0;
-  remaining_control_payload_ = 0;
+  remaining_data_length_ = 0;
   remaining_control_header_ = 0;
   current_frame_buffer_length_ = 0;
   current_frame_type_ = NUM_CONTROL_FRAME_TYPES;
@@ -161,11 +160,17 @@ size_t SpdyFramer::GetDataFrameMinimumSize() const {
   return 8;
 }
 
+// Size, in bytes, of the control frame header.
 size_t SpdyFramer::GetControlFrameHeaderSize() const {
-  // Size, in bytes, of the control frame header. Future versions of SPDY
-  // will likely vary this, so we allow for the flexibility of a function call
-  // for this value as opposed to a constant.
-  return 8;
+  switch (protocol_version()) {
+    case 2:
+    case 3:
+      return 8;
+    case 4:
+      return 4;
+  }
+  LOG(DFATAL) << "Unhandled SPDY version.";
+  return 0;
 }
 
 size_t SpdyFramer::GetSynStreamMinimumSize() const {
@@ -459,8 +464,7 @@ size_t SpdyFramer::ProcessInput(const char* data, size_t len) {
  bottom:
   DCHECK(len == 0 || state_ == SPDY_ERROR);
   if (current_frame_buffer_length_ == 0 &&
-      remaining_data_ == 0 &&
-      remaining_control_payload_ == 0 &&
+      remaining_data_length_ == 0 &&
       remaining_control_header_ == 0) {
     DCHECK(state_ == SPDY_RESET || state_ == SPDY_ERROR)
         << "State: " << StateToString(state_);
@@ -484,80 +488,133 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
   }
 
   if (current_frame_buffer_length_ < GetControlFrameHeaderSize()) {
-    // TODO(rch): remove this empty block
-    // Do nothing.
-  } else {
-    SpdyFrameReader reader(current_frame_buffer_.get(),
-                           current_frame_buffer_length_);
+    // Not enough information to do anything meaningful.
+    return original_len - len;
+  }
 
-    uint16 version = 0;
-    bool successful_read = reader.ReadUInt16(&version);
+  // Using a scoped_ptr here since we may need to create a new SpdyFrameReader
+  // when processing DATA frames below.
+  scoped_ptr<SpdyFrameReader> reader(
+      new SpdyFrameReader(current_frame_buffer_.get(),
+                          current_frame_buffer_length_));
+
+  uint16 version = 0;
+  bool is_control_frame = false;
+
+  if (protocol_version() < 4) {
+    bool successful_read = reader->ReadUInt16(&version);
     DCHECK(successful_read);
-    bool control_bit = (version & kControlFlagMask) != 0;
+    is_control_frame = (version & kControlFlagMask) != 0;
     version &= ~kControlFlagMask;  // Only valid for control frames.
 
-    if (control_bit) {
+    if (is_control_frame) {
       uint16 frame_type_field;
-      successful_read = reader.ReadUInt16(&frame_type_field);
+      successful_read = reader->ReadUInt16(&frame_type_field);
       // We check for validity below in ProcessControlFrameHeader().
       current_frame_type_ = static_cast<SpdyControlType>(frame_type_field);
     } else {
-      reader.Rewind();
-      successful_read = reader.ReadUInt31(&current_frame_stream_id_);
+      reader->Rewind();
+      successful_read = reader->ReadUInt31(&current_frame_stream_id_);
     }
     DCHECK(successful_read);
 
-    successful_read = reader.ReadUInt8(&current_frame_flags_);
+    successful_read = reader->ReadUInt8(&current_frame_flags_);
     DCHECK(successful_read);
 
-    successful_read = reader.ReadUInt24(&current_frame_length_);
+    uint32 length_field = 0;
+    successful_read = reader->ReadUInt24(&length_field);
     DCHECK(successful_read);
-    remaining_data_ = current_frame_length_;
+    remaining_data_length_ = length_field;
+    current_frame_length_ = remaining_data_length_ + reader->GetBytesConsumed();
+  } else {
+    // TODO(hkhalil): Avoid re-reading fields as possible for DATA frames?
+    version = protocol_version();
+    uint16 length_field = 0;
+    bool successful_read = reader->ReadUInt16(&length_field);
+    DCHECK(successful_read);
+    current_frame_length_ = length_field;
 
-    // This is just a sanity check for help debugging early frame errors.
-    if (remaining_data_ > 1000000u) {
-      // The strncmp for 5 is safe because we only hit this point if we
-      // have GetControlFrameHeaderSize() (8) bytes
-      if (!syn_frame_processed_ &&
-          strncmp(current_frame_buffer_.get(), "HTTP/", 5) == 0) {
-        LOG(WARNING) << "Unexpected HTTP response to " << display_protocol_
-                     << " request";
-        probable_http_response_ = true;
-      } else {
-        LOG(WARNING) << "Unexpectedly large frame.  " << display_protocol_
-                     << " session is likely corrupt.";
-      }
+    uint8 frame_type_field = 0;
+    successful_read = reader->ReadUInt8(&frame_type_field);
+    DCHECK(successful_read);
+    if (frame_type_field != 0) {
+      is_control_frame = true;
+      // We check for validity below in ProcessControlFrameHeader().
+      current_frame_type_ = static_cast<SpdyControlType>(frame_type_field);
     }
 
-    // if we're here, then we have the common header all received.
-    if (!control_bit) {
-      if (current_frame_flags_ & ~DATA_FLAG_FIN) {
-        set_error(SPDY_INVALID_DATA_FRAME_FLAGS);
-      } else {
-        visitor_->OnDataFrameHeader(current_frame_stream_id_,
-                                    current_frame_length_,
-                                    current_frame_flags_ & DATA_FLAG_FIN);
-        if (current_frame_length_ > 0) {
-          CHANGE_STATE(SPDY_FORWARD_STREAM_FRAME);
-        } else {
-          // Empty data frame.
-          if (current_frame_flags_ & DATA_FLAG_FIN) {
-            visitor_->OnStreamFrameData(current_frame_stream_id_,
-                                        NULL, 0, DATA_FLAG_FIN);
-          }
-          CHANGE_STATE(SPDY_AUTO_RESET);
+    successful_read = reader->ReadUInt8(&current_frame_flags_);
+    DCHECK(successful_read);
+
+    if (!is_control_frame) {
+      // We may not have the entirety of the DATA frame header.
+      if (current_frame_buffer_length_ < GetDataFrameMinimumSize()) {
+        size_t bytes_desired =
+            GetDataFrameMinimumSize() - current_frame_buffer_length_;
+        UpdateCurrentFrameBuffer(&data, &len, bytes_desired);
+        if (current_frame_buffer_length_ < GetDataFrameMinimumSize()) {
+          return original_len - len;
         }
       }
-    } else if (version != spdy_version_) {
-      // We check version before we check validity: version can never be
-      // 'invalid', it can only be unsupported.
-      DLOG(INFO) << "Unsupported SPDY version " << version
-                 << " (expected " << spdy_version_ << ")";
-      set_error(SPDY_UNSUPPORTED_VERSION);
+      // Construct a new SpdyFrameReader aware of the new frame length.
+      reader.reset(new SpdyFrameReader(current_frame_buffer_.get(),
+                                       current_frame_buffer_length_));
+      reader->Seek(GetControlFrameHeaderSize());
+      successful_read = reader->ReadUInt31(&current_frame_stream_id_);
+      DCHECK(successful_read);
+    }
+    remaining_data_length_ = current_frame_length_ - reader->GetBytesConsumed();
+  }
+  DCHECK_EQ(is_control_frame ? GetControlFrameHeaderSize()
+                             : GetDataFrameMinimumSize(),
+            reader->GetBytesConsumed());
+  DCHECK_EQ(current_frame_length_,
+            remaining_data_length_ + reader->GetBytesConsumed());
+
+  // This is just a sanity check for help debugging early frame errors.
+  if (remaining_data_length_ > 1000000u) {
+    // The strncmp for 5 is safe because we only hit this point if we
+    // have kMinCommonHeader (8) bytes
+    if (!syn_frame_processed_ &&
+        strncmp(current_frame_buffer_.get(), "HTTP/", 5) == 0) {
+      LOG(WARNING) << "Unexpected HTTP response to " << display_protocol_
+                   << " request";
+      probable_http_response_ = true;
     } else {
-      ProcessControlFrameHeader();
+      LOG(WARNING) << "Unexpectedly large frame.  " << display_protocol_
+                   << " session is likely corrupt.";
     }
   }
+
+  // if we're here, then we have the common header all received.
+  if (!is_control_frame) {
+    if (current_frame_flags_ & ~DATA_FLAG_FIN) {
+      set_error(SPDY_INVALID_DATA_FRAME_FLAGS);
+    } else {
+      visitor_->OnDataFrameHeader(current_frame_stream_id_,
+                                  remaining_data_length_,
+                                  current_frame_flags_ & DATA_FLAG_FIN);
+      if (remaining_data_length_ > 0) {
+        CHANGE_STATE(SPDY_FORWARD_STREAM_FRAME);
+      } else {
+        // Empty data frame.
+        if (current_frame_flags_ & DATA_FLAG_FIN) {
+          visitor_->OnStreamFrameData(current_frame_stream_id_,
+                                      NULL, 0, DATA_FLAG_FIN);
+        }
+        CHANGE_STATE(SPDY_AUTO_RESET);
+      }
+    }
+  } else if (version != spdy_version_) {
+    // We check version before we check validity: version can never be
+    // 'invalid', it can only be unsupported.
+    DLOG(INFO) << "Unsupported SPDY version " << version
+               << " (expected " << spdy_version_ << ")";
+    set_error(SPDY_UNSUPPORTED_VERSION);
+  } else {
+    ProcessControlFrameHeader();
+  }
+
   return original_len - len;
 }
 
@@ -581,8 +638,7 @@ void SpdyFramer::ProcessControlFrameHeader() {
   // Do some sanity checking on the control frame sizes and flags.
   switch (current_frame_type_) {
     case SYN_STREAM:
-      if (current_frame_length_ <
-          GetSynStreamMinimumSize() - GetControlFrameHeaderSize()) {
+      if (current_frame_length_ < GetSynStreamMinimumSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
       } else if (current_frame_flags_ &
                  ~(CONTROL_FLAG_FIN | CONTROL_FLAG_UNIDIRECTIONAL)) {
@@ -590,16 +646,14 @@ void SpdyFramer::ProcessControlFrameHeader() {
       }
       break;
     case SYN_REPLY:
-      if (current_frame_length_ <
-          GetSynReplyMinimumSize() - GetControlFrameHeaderSize()) {
+      if (current_frame_length_ < GetSynReplyMinimumSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
       } else if (current_frame_flags_ & ~CONTROL_FLAG_FIN) {
         set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
       }
       break;
     case RST_STREAM:
-      if (current_frame_length_ !=
-          GetRstStreamSize() - GetControlFrameHeaderSize()) {
+      if (current_frame_length_ != GetRstStreamSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
       } else if (current_frame_flags_ != 0) {
         set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
@@ -608,9 +662,8 @@ void SpdyFramer::ProcessControlFrameHeader() {
     case SETTINGS:
       // Make sure that we have an integral number of 8-byte key/value pairs,
       // plus a 4-byte length field.
-      if (current_frame_length_ <
-          GetSettingsMinimumSize() - GetControlFrameHeaderSize() ||
-          current_frame_length_ % 8 != 4) {
+      if (current_frame_length_ < GetSettingsMinimumSize() ||
+          (current_frame_length_ - GetControlFrameHeaderSize()) % 8 != 4) {
         DLOG(WARNING) << "Invalid length for SETTINGS frame: "
                       << current_frame_length_;
         set_error(SPDY_INVALID_CONTROL_FRAME);
@@ -621,8 +674,7 @@ void SpdyFramer::ProcessControlFrameHeader() {
       break;
     case GOAWAY:
       {
-        if (current_frame_length_ !=
-            GetGoAwaySize() - GetControlFrameHeaderSize()) {
+        if (current_frame_length_ != GetGoAwaySize()) {
           set_error(SPDY_INVALID_CONTROL_FRAME);
         } else if (current_frame_flags_ != 0) {
           set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
@@ -630,32 +682,28 @@ void SpdyFramer::ProcessControlFrameHeader() {
         break;
       }
     case HEADERS:
-      if (current_frame_length_ <
-          GetHeadersMinimumSize() - GetControlFrameHeaderSize()) {
+      if (current_frame_length_ < GetHeadersMinimumSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
       } else if (current_frame_flags_ & ~CONTROL_FLAG_FIN) {
         set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
       }
       break;
     case WINDOW_UPDATE:
-      if (current_frame_length_ !=
-          GetWindowUpdateSize() - GetControlFrameHeaderSize()) {
+      if (current_frame_length_ != GetWindowUpdateSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
       } else if (current_frame_flags_ != 0) {
         set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
       }
       break;
     case PING:
-      if (current_frame_length_ !=
-          GetPingSize() - GetControlFrameHeaderSize()) {
+      if (current_frame_length_ != GetPingSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
       } else if (current_frame_flags_ != 0) {
         set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
       }
       break;
     case CREDENTIAL:
-      if (current_frame_length_ <
-          GetCredentialMinimumSize() - GetControlFrameHeaderSize()) {
+      if (current_frame_length_ < GetCredentialMinimumSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
       } else if (current_frame_flags_ != 0) {
         set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
@@ -678,12 +726,9 @@ void SpdyFramer::ProcessControlFrameHeader() {
     return;
   }
 
-  remaining_control_payload_ = current_frame_length_;
-  const size_t total_frame_size =
-      remaining_control_payload_ + GetControlFrameHeaderSize();
-  if (total_frame_size > GetControlFrameBufferMaxSize()) {
+  if (current_frame_length_ > GetControlFrameBufferMaxSize()) {
     DLOG(WARNING) << "Received control frame with way too big of a payload: "
-                  << total_frame_size;
+                  << current_frame_length_;
     set_error(SPDY_CONTROL_PAYLOAD_TOO_LARGE);
     return;
   }
@@ -716,7 +761,7 @@ void SpdyFramer::ProcessControlFrameHeader() {
   }
 
   if ((frame_size_without_variable_data == -1) &&
-      (total_frame_size > kControlFrameBufferSize)) {
+      (current_frame_length_ > kControlFrameBufferSize)) {
     // We should already be in an error state. Double-check.
     DCHECK_EQ(SPDY_ERROR, state_);
     if (state_ != SPDY_ERROR) {
@@ -726,6 +771,7 @@ void SpdyFramer::ProcessControlFrameHeader() {
     }
     return;
   }
+
   if (frame_size_without_variable_data > 0) {
     // We have a control frame with a header block. We need to parse the
     // remainder of the control frame's header before we can parse the header
@@ -734,8 +780,6 @@ void SpdyFramer::ProcessControlFrameHeader() {
               static_cast<int32>(current_frame_buffer_length_));
     remaining_control_header_ = frame_size_without_variable_data -
         current_frame_buffer_length_;
-    remaining_control_payload_ += GetControlFrameHeaderSize() -
-        frame_size_without_variable_data;
     CHANGE_STATE(SPDY_CONTROL_FRAME_BEFORE_HEADER_BLOCK);
     return;
   }
@@ -972,6 +1016,7 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
     size_t bytes_read = UpdateCurrentFrameBuffer(&data, &len,
                                                  remaining_control_header_);
     remaining_control_header_ -= bytes_read;
+    remaining_data_length_ -= bytes_read;
   }
 
   if (remaining_control_header_ == 0) {
@@ -1065,7 +1110,7 @@ size_t SpdyFramer::ProcessControlFrameHeaderBlock(const char* data,
       current_frame_type_ != HEADERS) {
     LOG(DFATAL) << "Unhandled frame type in ProcessControlFrameHeaderBlock.";
   }
-  size_t process_bytes = std::min(data_len, remaining_control_payload_);
+  size_t process_bytes = std::min(data_len, remaining_data_length_);
   if (process_bytes > 0) {
     if (enable_compression_) {
       processed_successfully = IncrementallyDecompressControlFrameHeaderData(
@@ -1075,12 +1120,11 @@ size_t SpdyFramer::ProcessControlFrameHeaderBlock(const char* data,
           current_frame_stream_id_, data, process_bytes);
     }
 
-    remaining_control_payload_ -= process_bytes;
-    remaining_data_ -= process_bytes;
+    remaining_data_length_ -= process_bytes;
   }
 
   // Handle the case that there is no futher data in this frame.
-  if (remaining_control_payload_ == 0 && processed_successfully) {
+  if (remaining_data_length_ == 0 && processed_successfully) {
     // The complete header block has been delivered. We send a zero-length
     // OnControlFrameHeaderData() to indicate this.
     visitor_->OnControlFrameHeaderData(current_frame_stream_id_, NULL, 0);
@@ -1107,7 +1151,7 @@ size_t SpdyFramer::ProcessSettingsFramePayload(const char* data,
                                                size_t data_len) {
   DCHECK_EQ(SPDY_SETTINGS_FRAME_PAYLOAD, state_);
   DCHECK_EQ(SETTINGS, current_frame_type_);
-  size_t unprocessed_bytes = std::min(data_len, remaining_control_payload_);
+  size_t unprocessed_bytes = std::min(data_len, remaining_data_length_);
   size_t processed_bytes = 0;
 
   // Loop over our incoming data.
@@ -1148,8 +1192,8 @@ size_t SpdyFramer::ProcessSettingsFramePayload(const char* data,
   }
 
   // Check if we're done handling this SETTINGS frame.
-  remaining_control_payload_ -= processed_bytes;
-  if (remaining_control_payload_ == 0) {
+  remaining_data_length_ -= processed_bytes;
+  if (remaining_data_length_ == 0) {
     CHANGE_STATE(SPDY_AUTO_RESET);
   }
 
@@ -1207,12 +1251,11 @@ bool SpdyFramer::ProcessSetting(const char* data) {
 
 size_t SpdyFramer::ProcessControlFramePayload(const char* data, size_t len) {
   size_t original_len = len;
-  if (remaining_control_payload_) {
-    size_t bytes_read = UpdateCurrentFrameBuffer(&data, &len,
-                                                 remaining_control_payload_);
-    remaining_control_payload_ -= bytes_read;
-    remaining_data_ -= bytes_read;
-    if (remaining_control_payload_ == 0) {
+  if (remaining_data_length_) {
+    size_t bytes_read =
+        UpdateCurrentFrameBuffer(&data, &len, remaining_data_length_);
+    remaining_data_length_ -= bytes_read;
+    if (remaining_data_length_ == 0) {
       SpdyFrameReader reader(current_frame_buffer_.get(),
                              current_frame_buffer_length_);
       reader.Seek(GetControlFrameHeaderSize());  // Skip frame header.
@@ -1234,8 +1277,8 @@ size_t SpdyFramer::ProcessControlFramePayload(const char* data, size_t len) {
             successful_read = reader.ReadUInt31(&delta_window_size);
             DCHECK(successful_read);
             DCHECK(reader.IsDoneReading());
-            visitor_->OnWindowUpdate(
-                current_frame_stream_id_, delta_window_size);
+            visitor_->OnWindowUpdate(current_frame_stream_id_,
+                                     delta_window_size);
           }
           break;
         case RST_STREAM: {
@@ -1291,14 +1334,11 @@ size_t SpdyFramer::ProcessControlFramePayload(const char* data, size_t len) {
 
 size_t SpdyFramer::ProcessCredentialFramePayload(const char* data, size_t len) {
   if (len > 0) {
-    // Process only up to the end of this CREDENTIAL frame.
-    len = std::min(len, remaining_control_payload_);
     bool processed_succesfully = visitor_->OnCredentialFrameData(data, len);
-    remaining_control_payload_ -= len;
-    remaining_data_ -= len;
+    remaining_data_length_ -= len;
     if (!processed_succesfully) {
       set_error(SPDY_CREDENTIAL_FRAME_CORRUPT);
-    } else if (remaining_control_payload_ == 0) {
+    } else if (remaining_data_length_ == 0) {
       visitor_->OnCredentialFrameData(NULL, 0);
       CHANGE_STATE(SPDY_AUTO_RESET);
     }
@@ -1309,8 +1349,8 @@ size_t SpdyFramer::ProcessCredentialFramePayload(const char* data, size_t len) {
 size_t SpdyFramer::ProcessDataFramePayload(const char* data, size_t len) {
   size_t original_len = len;
 
-  if (remaining_data_ > 0) {
-    size_t amount_to_forward = std::min(remaining_data_, len);
+  if (remaining_data_length_ > 0) {
+    size_t amount_to_forward = std::min(remaining_data_length_, len);
     if (amount_to_forward && state_ != SPDY_IGNORE_REMAINING_PAYLOAD) {
       // Only inform the visitor if there is data.
       if (amount_to_forward) {
@@ -1320,17 +1360,17 @@ size_t SpdyFramer::ProcessDataFramePayload(const char* data, size_t len) {
     }
     data += amount_to_forward;
     len -= amount_to_forward;
-    remaining_data_ -= amount_to_forward;
+    remaining_data_length_ -= amount_to_forward;
 
     // If the FIN flag is set, and there is no more data in this data
     // frame, inform the visitor of EOF via a 0-length data frame.
-    if (!remaining_data_ && current_frame_flags_ & DATA_FLAG_FIN) {
+    if (!remaining_data_length_ && current_frame_flags_ & DATA_FLAG_FIN) {
       visitor_->OnStreamFrameData(
           current_frame_stream_id_, NULL, 0, DATA_FLAG_FIN);
     }
   }
 
-  if (remaining_data_ == 0) {
+  if (remaining_data_length_ == 0) {
     CHANGE_STATE(SPDY_AUTO_RESET);
   }
   return original_len - len;
@@ -1746,7 +1786,11 @@ SpdySerializedFrame* SpdyFramer::SerializeDataFrameHeader(
 
   SpdyFrameBuilder builder(kSize);
   builder.WriteDataFrameHeader(*this, data.stream_id(), flags);
-  builder.OverwriteLength(*this, data.data().length());
+  if (protocol_version() < 4) {
+    builder.OverwriteLength(*this, data.data().length());
+  } else {
+    builder.OverwriteLength(*this, data.data().length() + kSize);
+  }
   DCHECK_EQ(kSize, builder.length());
   return builder.take();
 }

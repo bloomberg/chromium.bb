@@ -88,6 +88,9 @@ void SetFrameFlags(SpdyFrame* frame, uint8 flags, int spdy_version) {
     case 3:
       frame->data()[4] = flags;
       break;
+    case 4:
+      frame->data()[3] = flags;
+      break;
     default:
       LOG(FATAL) << "Unsupported SPDY version.";
   }
@@ -103,6 +106,15 @@ void SetFrameLength(SpdyFrame* frame, size_t length, int spdy_version) {
         // The length field in SPDY 2 and 3 is a 24-bit (3B) integer starting at
         // offset 5.
         memcpy(frame->data() + 5, reinterpret_cast<char*>(&wire_length) + 1, 3);
+      }
+      break;
+    case 4:
+      CHECK_GT(1u<<16, length);
+      {
+        int32 wire_length = htons(static_cast<uint16>(length));
+        memcpy(frame->data(),
+               reinterpret_cast<char*>(&wire_length),
+               sizeof(uint16));
       }
       break;
     default:
