@@ -61,7 +61,7 @@ class ShillManagerClientStub : public ShillManagerClient,
                                  const std::string& device_serial,
                                  const BooleanCallback& callback,
                                  const ErrorCallback& error_callback) OVERRIDE;
-  virtual void VerifyAndSignCredentials(
+  virtual void VerifyAndEncryptCredentials(
       const std::string& certificate,
       const std::string& public_key,
       const std::string& nonce,
@@ -70,7 +70,7 @@ class ShillManagerClientStub : public ShillManagerClient,
       const std::string& service_path,
       const StringCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE;
-  virtual void VerifyAndSignData(const std::string& certificate,
+  virtual void VerifyAndEncryptData(const std::string& certificate,
                                  const std::string& public_key,
                                  const std::string& nonce,
                                  const std::string& signed_data,

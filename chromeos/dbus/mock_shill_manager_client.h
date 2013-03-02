@@ -51,7 +51,7 @@ class MockShillManagerClient : public ShillManagerClient {
                                        const std::string& device_serial,
                                        const BooleanCallback& callback,
                                        const ErrorCallback& error_callback));
-  MOCK_METHOD8(VerifyAndSignCredentials,
+  MOCK_METHOD8(VerifyAndEncryptCredentials,
                void(const std::string& certificate,
                     const std::string& public_key,
                     const std::string& nonce,
@@ -60,7 +60,7 @@ class MockShillManagerClient : public ShillManagerClient {
                     const std::string& service_path,
                     const StringCallback& callback,
                     const ErrorCallback& error_callback));
-  MOCK_METHOD8(VerifyAndSignData, void(const std::string& certificate,
+  MOCK_METHOD8(VerifyAndEncryptData, void(const std::string& certificate,
                                        const std::string& public_key,
                                        const std::string& nonce,
                                        const std::string& signed_data,

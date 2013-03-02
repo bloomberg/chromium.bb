@@ -73,13 +73,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
-                       VerifyAndSignCredentials) {
-  EXPECT_TRUE(RunNetworkingSubtest("verifyAndSignCredentials")) << message_;
+                       VerifyAndEncryptCredentials) {
+  EXPECT_TRUE(RunNetworkingSubtest("verifyAndEncryptCredentials")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
-                       VerifyAndSignData) {
-  EXPECT_TRUE(RunNetworkingSubtest("verifyAndSignData")) << message_;
+                       VerifyAndEncryptData) {
+  EXPECT_TRUE(RunNetworkingSubtest("verifyAndEncryptData")) << message_;
 }
 
 

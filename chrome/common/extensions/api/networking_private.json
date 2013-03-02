@@ -39,7 +39,7 @@
             "type": "string",
             "description": "A string containing the serial number of the device."
           }
-        }        
+        }
       }
     ],
     "functions": [
@@ -148,7 +148,7 @@
         ]
       },
       {
-        "name": "verifyAndSignCredentials",
+        "name": "verifyAndEncryptCredentials",
         "description": "Verifies that the device is a trusted device and retrieves encrypted network credentials.",
         "parameters": [
           {
@@ -175,7 +175,7 @@
         ]
       },
       {
-        "name": "verifyAndSignData",
+        "name": "verifyAndEncryptData",
         "description": "Verifies that the device is a trusted device and encrypts supplied data with device public key.",
         "parameters": [
           {

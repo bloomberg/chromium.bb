@@ -138,16 +138,16 @@ class NetworkingPrivateVerifyDestinationFunction
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateVerifyDestinationFunction);
 };
 
-// Implements the chrome.networkingPrivate.verifyAndSignCredentials method.
-class NetworkingPrivateVerifyAndSignCredentialsFunction
+// Implements the chrome.networkingPrivate.verifyAndEncryptCredentials method.
+class NetworkingPrivateVerifyAndEncryptCredentialsFunction
     : public AsyncExtensionFunction {
  public:
-  NetworkingPrivateVerifyAndSignCredentialsFunction() {}
-  DECLARE_EXTENSION_FUNCTION("networkingPrivate.verifyAndSignCredentials",
-                             NETWORKINGPRIVATE_VERIFYANDSIGNCREDENTIALS);
+  NetworkingPrivateVerifyAndEncryptCredentialsFunction() {}
+  DECLARE_EXTENSION_FUNCTION("networkingPrivate.verifyAndEncryptCredentials",
+                             NETWORKINGPRIVATE_VERIFYANDENCRYPTCREDENTIALS);
 
  protected:
-  virtual ~NetworkingPrivateVerifyAndSignCredentialsFunction();
+  virtual ~NetworkingPrivateVerifyAndEncryptCredentialsFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -156,19 +156,20 @@ class NetworkingPrivateVerifyAndSignCredentialsFunction
   void ErrorCallback(const std::string& error_name, const std::string& error);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateVerifyAndSignCredentialsFunction);
+  DISALLOW_COPY_AND_ASSIGN(
+      NetworkingPrivateVerifyAndEncryptCredentialsFunction);
 };
 
-// Implements the chrome.networkingPrivate.verifyAndSignData method.
-class NetworkingPrivateVerifyAndSignDataFunction
+// Implements the chrome.networkingPrivate.verifyAndEncryptData method.
+class NetworkingPrivateVerifyAndEncryptDataFunction
     : public AsyncExtensionFunction {
  public:
-  NetworkingPrivateVerifyAndSignDataFunction() {}
-  DECLARE_EXTENSION_FUNCTION("networkingPrivate.verifyAndSignData",
-                             NETWORKINGPRIVATE_VERIFYANDSIGNDATA);
+  NetworkingPrivateVerifyAndEncryptDataFunction() {}
+  DECLARE_EXTENSION_FUNCTION("networkingPrivate.verifyAndEncryptData",
+                             NETWORKINGPRIVATE_VERIFYANDENCRYPTDATA);
 
  protected:
-  virtual ~NetworkingPrivateVerifyAndSignDataFunction();
+  virtual ~NetworkingPrivateVerifyAndEncryptDataFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -177,7 +178,7 @@ class NetworkingPrivateVerifyAndSignDataFunction
   void ErrorCallback(const std::string& error_name, const std::string& error);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateVerifyAndSignDataFunction);
+  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateVerifyAndEncryptDataFunction);
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_NETWORKING_PRIVATE_API_H_

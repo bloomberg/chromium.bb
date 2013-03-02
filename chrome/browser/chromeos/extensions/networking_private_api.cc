@@ -376,18 +376,19 @@ void NetworkingPrivateVerifyDestinationFunction::ErrorCallback(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NetworkingPrivateVerifyAndSignCredentialsFunction
+// NetworkingPrivateVerifyAndEncryptCredentialsFunction
 
-NetworkingPrivateVerifyAndSignCredentialsFunction::
-  ~NetworkingPrivateVerifyAndSignCredentialsFunction() {
+NetworkingPrivateVerifyAndEncryptCredentialsFunction::
+  ~NetworkingPrivateVerifyAndEncryptCredentialsFunction() {
 }
 
-bool NetworkingPrivateVerifyAndSignCredentialsFunction::RunImpl() {
-  scoped_ptr<api::VerifyAndSignCredentials::Params> params =
-      api::VerifyAndSignCredentials::Params::Create(*args_);
+bool NetworkingPrivateVerifyAndEncryptCredentialsFunction::RunImpl() {
+  scoped_ptr<api::VerifyAndEncryptCredentials::Params> params =
+      api::VerifyAndEncryptCredentials::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
-
-  DBusThreadManager::Get()->GetShillManagerClient()->VerifyAndSignCredentials(
+  ShillManagerClient* shill_manager_client =
+      DBusThreadManager::Get()->GetShillManagerClient();
+  shill_manager_client->VerifyAndEncryptCredentials(
       params->properties.certificate,
       params->properties.public_key,
       params->properties.nonce,
@@ -395,39 +396,39 @@ bool NetworkingPrivateVerifyAndSignCredentialsFunction::RunImpl() {
       params->properties.device_serial,
       params->guid,
       base::Bind(
-          &NetworkingPrivateVerifyAndSignCredentialsFunction::ResultCallback,
+          &NetworkingPrivateVerifyAndEncryptCredentialsFunction::ResultCallback,
           this),
       base::Bind(
-          &NetworkingPrivateVerifyAndSignCredentialsFunction::ErrorCallback,
+          &NetworkingPrivateVerifyAndEncryptCredentialsFunction::ErrorCallback,
           this));
   return true;
 }
 
-void NetworkingPrivateVerifyAndSignCredentialsFunction::ResultCallback(
+void NetworkingPrivateVerifyAndEncryptCredentialsFunction::ResultCallback(
     const std::string& result) {
-  results_ = api::VerifyAndSignCredentials::Results::Create(result);
+  results_ = api::VerifyAndEncryptCredentials::Results::Create(result);
   SendResponse(true);
 }
 
-void NetworkingPrivateVerifyAndSignCredentialsFunction::ErrorCallback(
+void NetworkingPrivateVerifyAndEncryptCredentialsFunction::ErrorCallback(
     const std::string& error_name, const std::string& error) {
   error_ = error_name;
   SendResponse(false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NetworkingPrivateVerifyAndSignDataFunction
+// NetworkingPrivateVerifyAndEncryptDataFunction
 
-NetworkingPrivateVerifyAndSignDataFunction::
-  ~NetworkingPrivateVerifyAndSignDataFunction() {
+NetworkingPrivateVerifyAndEncryptDataFunction::
+  ~NetworkingPrivateVerifyAndEncryptDataFunction() {
 }
 
-bool NetworkingPrivateVerifyAndSignDataFunction::RunImpl() {
-  scoped_ptr<api::VerifyAndSignData::Params> params =
-      api::VerifyAndSignData::Params::Create(*args_);
+bool NetworkingPrivateVerifyAndEncryptDataFunction::RunImpl() {
+  scoped_ptr<api::VerifyAndEncryptData::Params> params =
+      api::VerifyAndEncryptData::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  DBusThreadManager::Get()->GetShillManagerClient()->VerifyAndSignData(
+  DBusThreadManager::Get()->GetShillManagerClient()->VerifyAndEncryptData(
       params->properties.certificate,
       params->properties.public_key,
       params->properties.nonce,
@@ -435,21 +436,21 @@ bool NetworkingPrivateVerifyAndSignDataFunction::RunImpl() {
       params->properties.device_serial,
       params->data,
       base::Bind(
-          &NetworkingPrivateVerifyAndSignDataFunction::ResultCallback,
+          &NetworkingPrivateVerifyAndEncryptDataFunction::ResultCallback,
           this),
       base::Bind(
-          &NetworkingPrivateVerifyAndSignDataFunction::ErrorCallback,
+          &NetworkingPrivateVerifyAndEncryptDataFunction::ErrorCallback,
           this));
   return true;
 }
 
-void NetworkingPrivateVerifyAndSignDataFunction::ResultCallback(
+void NetworkingPrivateVerifyAndEncryptDataFunction::ResultCallback(
     const std::string& result) {
-  results_ = api::VerifyAndSignData::Results::Create(result);
+  results_ = api::VerifyAndEncryptData::Results::Create(result);
   SendResponse(true);
 }
 
-void NetworkingPrivateVerifyAndSignDataFunction::ErrorCallback(
+void NetworkingPrivateVerifyAndEncryptDataFunction::ErrorCallback(
     const std::string& error_name, const std::string& error) {
   error_ = error_name;
   SendResponse(false);

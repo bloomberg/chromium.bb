@@ -189,7 +189,7 @@ class ShillManagerClientImpl : public ShillManagerClient {
                                                error_callback);
   }
 
-  virtual void VerifyAndSignCredentials(
+  virtual void VerifyAndEncryptCredentials(
       const std::string& certificate,
       const std::string& public_key,
       const std::string& nonce,
@@ -199,7 +199,7 @@ class ShillManagerClientImpl : public ShillManagerClient {
       const StringCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamManagerInterface,
-                                 shill::kVerifyAndSignCredentialsFunction);
+                                 shill::kVerifyAndEncryptCredentialsFunction);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(certificate);
     writer.AppendString(public_key);
@@ -212,7 +212,7 @@ class ShillManagerClientImpl : public ShillManagerClient {
                                               error_callback);
   }
 
-  virtual void VerifyAndSignData(const std::string& certificate,
+  virtual void VerifyAndEncryptData(const std::string& certificate,
                                  const std::string& public_key,
                                  const std::string& nonce,
                                  const std::string& signed_data,
@@ -221,7 +221,7 @@ class ShillManagerClientImpl : public ShillManagerClient {
                                  const StringCallback& callback,
                                  const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamManagerInterface,
-                                 shill::kVerifyAndSignDataFunction);
+                                 shill::kVerifyAndEncryptDataFunction);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(certificate);
     writer.AppendString(public_key);

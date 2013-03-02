@@ -454,7 +454,7 @@ TEST_F(ShillManagerClientTest, VerifyDestination) {
   message_loop_.RunUntilIdle();
 }
 
-TEST_F(ShillManagerClientTest, VerifyAndSignCredentials) {
+TEST_F(ShillManagerClientTest, VerifyAndEncryptCredentials) {
   // Create response.
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(response.get());
@@ -469,7 +469,7 @@ TEST_F(ShillManagerClientTest, VerifyAndSignCredentials) {
   arguments.push_back("device_serial");
   std::string service_path = "/";
   dbus::ObjectPath service_path_obj(service_path);
-  PrepareForMethodCall(shill::kVerifyAndSignCredentialsFunction,
+  PrepareForMethodCall(shill::kVerifyAndEncryptCredentialsFunction,
                        base::Bind(&ExpectStringArgumentsFollowedByObjectPath,
                                   arguments,
                                   service_path_obj),
@@ -478,7 +478,7 @@ TEST_F(ShillManagerClientTest, VerifyAndSignCredentials) {
 
   // Call method.
   MockErrorCallback mock_error_callback;
-  client_->VerifyAndSignCredentials(arguments[0],
+  client_->VerifyAndEncryptCredentials(arguments[0],
                                     arguments[1],
                                     arguments[2],
                                     arguments[3],
@@ -493,7 +493,7 @@ TEST_F(ShillManagerClientTest, VerifyAndSignCredentials) {
   message_loop_.RunUntilIdle();
 }
 
-TEST_F(ShillManagerClientTest, VerifyAndSignData) {
+TEST_F(ShillManagerClientTest, VerifyAndEncryptData) {
   // Create response.
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(response.get());
@@ -507,14 +507,14 @@ TEST_F(ShillManagerClientTest, VerifyAndSignData) {
   arguments.push_back("signed_data");
   arguments.push_back("device_serial");
   arguments.push_back("data");
-  PrepareForMethodCall(shill::kVerifyAndSignDataFunction,
+  PrepareForMethodCall(shill::kVerifyAndEncryptDataFunction,
                        base::Bind(&ExpectStringArguments, arguments),
                        response.get());
 
 
   // Call method.
   MockErrorCallback mock_error_callback;
-  client_->VerifyAndSignData(arguments[0],
+  client_->VerifyAndEncryptData(arguments[0],
                              arguments[1],
                              arguments[2],
                              arguments[3],

@@ -197,16 +197,16 @@ var availableTests = [
         assertTrue(isValid);
       }));
   },
-  function verifyAndSignCredentials() {
-    chrome.networkingPrivate.verifyAndSignCredentials(
+  function verifyAndEncryptCredentials() {
+    chrome.networkingPrivate.verifyAndEncryptCredentials(
       verificationProperties,
       "guid",
       callbackPass(function(result) {
         assertEq("encrypted_credentials", result);
       }));
   },
-  function verifyAndSignData() {
-    chrome.networkingPrivate.verifyAndSignData(
+  function verifyAndEncryptData() {
+    chrome.networkingPrivate.verifyAndEncryptData(
       verificationProperties,
       "data",
       callbackPass(function(result) {

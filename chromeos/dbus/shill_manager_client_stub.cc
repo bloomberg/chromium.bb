@@ -186,7 +186,7 @@ void ShillManagerClientStub::VerifyDestination(
       FROM_HERE, base::Bind(callback, true));
 }
 
-void ShillManagerClientStub::VerifyAndSignCredentials(
+void ShillManagerClientStub::VerifyAndEncryptCredentials(
     const std::string& certificate,
     const std::string& public_key,
     const std::string& nonce,
@@ -201,7 +201,7 @@ void ShillManagerClientStub::VerifyAndSignCredentials(
       FROM_HERE, base::Bind(callback, "encrypted_credentials"));
 }
 
-void ShillManagerClientStub::VerifyAndSignData(
+void ShillManagerClientStub::VerifyAndEncryptData(
     const std::string& certificate,
     const std::string& public_key,
     const std::string& nonce,
