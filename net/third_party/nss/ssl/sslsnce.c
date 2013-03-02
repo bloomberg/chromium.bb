@@ -87,6 +87,11 @@
 #include "nspr.h"
 #include "sslmutex.h"
 
+/* AES_256_KEY_LENGTH was added to blapit.h in NSS 3.12.10. */
+#ifndef AES_256_KEY_LENGTH
+#define AES_256_KEY_LENGTH      32  /* bytes */
+#endif
+
 /*
 ** Format of a cache entry in the shared memory.
 */ 

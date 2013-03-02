@@ -67,8 +67,6 @@
         'ssl/unix_err.h',
         'ssl/win32err.c',
         'ssl/win32err.h',
-        'ssl/bodge/loader.c',
-        'ssl/bodge/loader.h',
         'ssl/bodge/secure_memcmp.c',
       ],
       'sources!': [
@@ -76,16 +74,13 @@
         'ssl/os2_err.h',
       ],
       'defines': [
+        'NO_PKCS11_BYPASS',
         'NSS_ENABLE_ECC',
-        'NSS_ENABLE_ZLIB',
         'USE_UTIL_DIRECTLY',
       ],
       'defines!': [
         # Regrettably, NSS can't be compiled with NO_NSPR_10_SUPPORT yet.
         'NO_NSPR_10_SUPPORT',
-      ],
-      'dependencies': [
-        '../../../third_party/zlib/zlib.gyp:zlib',
       ],
       'msvs_disabled_warnings': [4018, 4244, 4267],
       'conditions': [
@@ -141,14 +136,6 @@
           },
         ],
         [ 'os_posix == 1 and OS != "mac" and OS != "ios"', {
-          'defines': [
-            # These macros are needed only for compiling the files in
-            # ssl/bodge.
-            'SHLIB_PREFIX="lib"',
-            'SHLIB_SUFFIX="so"',
-            'SHLIB_VERSION="3"',
-            'SOFTOKEN_SHLIB_VERSION="3"',
-          ],
           'include_dirs': [
             'ssl/bodge',
           ],

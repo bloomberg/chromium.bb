@@ -92,6 +92,10 @@ Patches:
     patches/dtlsinitclist.patch
     https://bugzilla.mozilla.org/show_bug.cgi?id=822433 (fixed in NSS 3.14.2)
 
+  * Define AES_256_KEY_LENGTH if the system blapit.h header doesn't define it.
+    Remove this patch when all system NSS packages are NSS 3.12.10 or later.
+    patches/aes256keylength.patch
+
 Apply the patches to NSS by running the patches/applypatches.sh script.  Read
 the comments at the top of patches/applypatches.sh for instructions.
 

@@ -1,0 +1,19 @@
+Index: mozilla/security/nss/lib/ssl/sslsnce.c
+===================================================================
+RCS file: /cvsroot/mozilla/security/nss/lib/ssl/sslsnce.c,v
+retrieving revision 1.63
+diff -p -u -r1.63 sslsnce.c
+--- mozilla/security/nss/lib/ssl/sslsnce.c	14 Jun 2012 19:04:59 -0000	1.63
++++ mozilla/security/nss/lib/ssl/sslsnce.c	2 Mar 2013 00:31:22 -0000
+@@ -87,6 +87,11 @@
+ #include "nspr.h"
+ #include "sslmutex.h"
+ 
++/* AES_256_KEY_LENGTH was added to blapit.h in NSS 3.12.10. */
++#ifndef AES_256_KEY_LENGTH
++#define AES_256_KEY_LENGTH      32  /* bytes */
++#endif
++
+ /*
+ ** Format of a cache entry in the shared memory.
+ */ 
