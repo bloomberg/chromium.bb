@@ -269,6 +269,9 @@ void NativeThemeWin::Paint(SkCanvas* canvas,
                            State state,
                            const gfx::Rect& rect,
                            const ExtraParams& extra) const {
+  if (rect.IsEmpty())
+    return;
+
   if (IsNewMenuStyleEnabled()) {
     switch (part) {
       case kMenuPopupGutter:

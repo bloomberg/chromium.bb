@@ -159,6 +159,9 @@ void NativeThemeBase::Paint(SkCanvas* canvas,
                             State state,
                             const gfx::Rect& rect,
                             const ExtraParams& extra) const {
+  if (rect.IsEmpty())
+    return;
+
   switch (part) {
     // Please keep these in the order of NativeTheme::Part.
     case kCheckbox:
