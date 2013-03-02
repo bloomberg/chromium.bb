@@ -6936,11 +6936,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         An app to develop apps / extensions.
       </message>
       <if expr="pp_ifdef('android')">
-        <message name="IDS_FLAGS_ENABLE_SPDY_PROXY_AUTH_NAME" desc="Name of the flag to enable SPDY proxy authentication.">
-          Enable SPDY proxy authentication.
+        <message name="IDS_FLAGS_ENABLE_SPDY_PROXY_AUTH_NAME" desc="Name of the flag to enable data compression proxy.">
+          Enable Data Compression Proxy
         </message>
-        <message name="IDS_FLAGS_ENABLE_SPDY_PROXY_AUTH_DESCRIPTION" desc="Description of flag to enable SPDY proxy authentication.">
-          <!-- TODO Add description of enable SPDY proxy auth flag. -->
+        <message name="IDS_FLAGS_ENABLE_SPDY_PROXY_AUTH_DESCRIPTION" desc="Description of flag to enable data compression proxy.">
+          Reduce data consumption by loading optimized web pages via Google proxy servers.
         </message>
       </if>
       <message name="IDS_FLAGS_IMPL_SIDE_PAINTING_NAME" desc="Name of about:flags option for impl-side painting.">
