@@ -87,6 +87,10 @@ class TestURLFetcher : public URLFetcher {
   // URLFetcher implementation
   virtual void SetUploadData(const std::string& upload_content_type,
                              const std::string& upload_content) OVERRIDE;
+  virtual void SetUploadFilePath(
+      const std::string& upload_content_type,
+      const base::FilePath& file_path,
+      scoped_refptr<base::TaskRunner> file_task_runner) OVERRIDE;
   virtual void SetChunkedUpload(
       const std::string& upload_content_type) OVERRIDE;
   // Overriden to cache the chunks uploaded. Caller can read back the uploaded
@@ -151,6 +155,7 @@ class TestURLFetcher : public URLFetcher {
 
   // Returns the data uploaded on this URLFetcher.
   const std::string& upload_data() const { return upload_data_; }
+  const base::FilePath& upload_file_path() const { return upload_file_path_; }
 
   // Returns the chunks of data uploaded on this URLFetcher.
   const std::list<std::string>& upload_chunks() const { return chunks_; }
@@ -190,6 +195,7 @@ class TestURLFetcher : public URLFetcher {
   URLFetcherDelegate* delegate_;
   DelegateForTests* delegate_for_tests_;
   std::string upload_data_;
+  base::FilePath upload_file_path_;
   std::list<std::string> chunks_;
   bool did_receive_last_chunk_;
 

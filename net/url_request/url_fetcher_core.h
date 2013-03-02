@@ -63,6 +63,9 @@ class URLFetcherCore
   // content and set |content| to the data to upload.
   void SetUploadData(const std::string& upload_content_type,
                      const std::string& upload_content);
+  void SetUploadFilePath(const std::string& upload_content_type,
+                         const base::FilePath& file_path,
+                         scoped_refptr<base::TaskRunner> file_task_runner);
   void SetChunkedUpload(const std::string& upload_content_type);
   // Adds a block of data to be uploaded in a POST body. This can only be
   // called after Start().
@@ -223,8 +226,10 @@ class URLFetcherCore
   scoped_refptr<base::SingleThreadTaskRunner> delegate_task_runner_;
                                      // Task runner for the creating thread.
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
-                                     // Task runner for file access.
+                                     // Task runner for download file access.
   scoped_refptr<base::TaskRunner> file_task_runner_;
+                                     // Task runner for upload file access.
+  scoped_refptr<base::TaskRunner> upload_file_task_runner_;
                                      // Task runner for the thread
                                      // on which file access happens.
   scoped_ptr<URLRequest> request_;   // The actual request this wraps
@@ -248,6 +253,7 @@ class URLFetcherCore
 
   bool upload_content_set_;          // SetUploadData has been called
   std::string upload_content_;       // HTTP POST payload
+  base::FilePath upload_file_path_;  // Path to file containing POST payload
   std::string upload_content_type_;  // MIME type of POST payload
   std::string referrer_;             // HTTP Referer header value
   bool is_chunked_upload_;           // True if using chunked transfer encoding

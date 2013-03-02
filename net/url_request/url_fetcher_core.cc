@@ -16,6 +16,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
+#include "net/base/upload_file_element_reader.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_fetcher_file_writer.h"
@@ -129,6 +130,7 @@ void URLFetcherCore::SetUploadData(const std::string& upload_content_type,
   DCHECK(!is_chunked_upload_);
   DCHECK(!upload_content_set_);
   DCHECK(upload_content_.empty());
+  DCHECK(upload_file_path_.empty());
   DCHECK(upload_content_type_.empty());
 
   // Empty |upload_content_type| is allowed iff the |upload_content| is empty.
@@ -136,6 +138,23 @@ void URLFetcherCore::SetUploadData(const std::string& upload_content_type,
 
   upload_content_type_ = upload_content_type;
   upload_content_ = upload_content;
+  upload_content_set_ = true;
+}
+
+void URLFetcherCore::SetUploadFilePath(
+    const std::string& upload_content_type,
+    const base::FilePath& file_path,
+    scoped_refptr<base::TaskRunner> file_task_runner) {
+  DCHECK(!is_chunked_upload_);
+  DCHECK(!upload_content_set_);
+  DCHECK(upload_content_.empty());
+  DCHECK(upload_file_path_.empty());
+  DCHECK(upload_content_type_.empty());
+  DCHECK(!upload_content_type.empty());
+
+  upload_content_type_ = upload_content_type;
+  upload_file_path_ = file_path;
+  upload_file_task_runner_ = file_task_runner;
   upload_content_set_ = true;
 }
 
@@ -551,6 +570,13 @@ void URLFetcherCore::StartURLRequest() {
             upload_content_.data(), upload_content_.size()));
         request_->set_upload(make_scoped_ptr(
             UploadDataStream::CreateWithReader(reader.Pass(), 0)));
+      } else if (!upload_file_path_.empty()) {
+        scoped_ptr<UploadElementReader> reader(new UploadFileElementReader(
+            upload_file_task_runner_,
+            upload_file_path_,
+            0, kuint64max, base::Time()));
+        request_->set_upload(make_scoped_ptr(
+            UploadDataStream::CreateWithReader(reader.Pass(), 0)));
       }
 
       current_upload_bytes_ = -1;
@@ -850,8 +876,13 @@ void URLFetcherCore::InformDelegateUploadProgress() {
     if (current_upload_bytes_ != current) {
       current_upload_bytes_ = current;
       int64 total = -1;
-      if (!is_chunked_upload_)
-        total = static_cast<int64>(upload_content_.size());
+      if (!is_chunked_upload_) {
+        total = static_cast<int64>(request_->GetUploadProgress().size());
+        // Total may be zero if the UploadDataStream::Init has not been called
+        // yet.  Don't send the upload progress until the size is initialized.
+        if (!total)
+          return;
+      }
       delegate_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(

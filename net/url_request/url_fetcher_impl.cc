@@ -29,6 +29,13 @@ void URLFetcherImpl::SetUploadData(const std::string& upload_content_type,
   core_->SetUploadData(upload_content_type, upload_content);
 }
 
+void URLFetcherImpl::SetUploadFilePath(
+    const std::string& upload_content_type,
+    const base::FilePath& file_path,
+    scoped_refptr<base::TaskRunner> file_task_runner) {
+  core_->SetUploadFilePath(upload_content_type, file_path, file_task_runner);
+}
+
 void URLFetcherImpl::SetChunkedUpload(const std::string& content_type) {
   core_->SetChunkedUpload(content_type);
 }

@@ -57,6 +57,13 @@ void TestURLFetcher::SetUploadData(const std::string& upload_content_type,
   upload_data_ = upload_content;
 }
 
+void TestURLFetcher::SetUploadFilePath(
+    const std::string& upload_content_type,
+    const base::FilePath& file_path,
+    scoped_refptr<base::TaskRunner> file_task_runner) {
+  upload_file_path_ = file_path;
+}
+
 void TestURLFetcher::SetChunkedUpload(const std::string& upload_content_type) {
 }
 
