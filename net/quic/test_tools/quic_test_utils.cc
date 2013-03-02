@@ -6,6 +6,7 @@
 
 #include "base/stl_util.h"
 #include "net/quic/crypto/crypto_framer.h"
+#include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/crypto_utils.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
@@ -277,28 +278,27 @@ QuicPacket* ConstructClientHelloPacket(QuicGuid guid,
                                        const QuicClock* clock,
                                        QuicRandom* random_generator,
                                        const string& server_hostname) {
-  QuicCryptoConfig config;
-  config.SetClientDefaults();
+  QuicCryptoClientConfig config;
+  config.SetDefaults();
   string nonce;
   CryptoUtils::GenerateNonce(clock, random_generator, &nonce);
 
   CryptoHandshakeMessage message;
-  CryptoUtils::FillClientHelloMessage(config, nonce, server_hostname,
-                                      &message);
+  config.FillClientHello(nonce, server_hostname, &message);
   return ConstructPacketFromHandshakeMessage(guid, message);
 }
 
 QuicPacket* ConstructServerHelloPacket(QuicGuid guid,
                                        const QuicClock* clock,
                                        QuicRandom* random_generator) {
-  QuicCryptoNegotiatedParams negotiated_params;
-  negotiated_params.SetDefaults();
   string nonce;
   CryptoUtils::GenerateNonce(clock, random_generator, &nonce);
 
-  CryptoHandshakeMessage message;
-  CryptoUtils::FillServerHelloMessage(negotiated_params, nonce, &message);
-  return ConstructPacketFromHandshakeMessage(guid, message);
+  CryptoHandshakeMessage dummy_client_hello, server_hello;
+  QuicCryptoServerConfig server_config;
+  server_config.AddTestingConfig(random_generator, clock);
+  server_config.ProcessClientHello(dummy_client_hello, nonce, &server_hello);
+  return ConstructPacketFromHandshakeMessage(guid, server_hello);
 }
 
 QuicPacketEntropyHash TestEntropyCalculator::ReceivedEntropyHash(

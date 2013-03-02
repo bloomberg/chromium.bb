@@ -4,99 +4,94 @@
 
 #include "net/quic/crypto/crypto_protocol.h"
 
+#include <stdarg.h>
+#include <string.h>
+
+#include "base/memory/scoped_ptr.h"
+
+using std::string;
+
 namespace net {
 
 CryptoHandshakeMessage::CryptoHandshakeMessage() {}
 CryptoHandshakeMessage::~CryptoHandshakeMessage() {}
 
-QuicCryptoConfig::QuicCryptoConfig()
-    : version(0),
-      idle_connection_state_lifetime(QuicTime::Delta::Zero()),
-      keepalive_timeout(QuicTime::Delta::Zero()) {
+void CryptoHandshakeMessage::SetTaglist(CryptoTag tag, ...) {
+  // Warning, if sizeof(CryptoTag) > sizeof(int) then this function will break
+  // because the terminating 0 will only be promoted to int.
+  COMPILE_ASSERT(sizeof(CryptoTag) <= sizeof(int),
+                 crypto_tag_not_be_larger_than_int_or_varargs_will_break);
+
+  std::vector<CryptoTag> tags;
+  va_list ap;
+
+  va_start(ap, tag);
+  for (;;) {
+    CryptoTag tag = va_arg(ap, CryptoTag);
+    if (tag == 0) {
+      break;
+    }
+    tags.push_back(tag);
+  }
+
+  // Because of the way that we keep tags in memory, we can copy the contents
+  // of the vector and get the correct bytes in wire format. See
+  // crypto_protocol.h. This assumes that the system is little-endian.
+  SetVector(tag, tags);
+
+  va_end(ap);
 }
 
-QuicCryptoConfig::~QuicCryptoConfig() {}
+QuicErrorCode CryptoHandshakeMessage::GetTaglist(CryptoTag tag,
+                                                 const CryptoTag** out_tags,
+                                                 size_t* out_len) const {
+  CryptoTagValueMap::const_iterator it = tag_value_map.find(tag);
+  QuicErrorCode ret = QUIC_NO_ERROR;
 
-void QuicCryptoConfig::SetClientDefaults() {
-  // Version must be 0.
-  version = 0;
+  if (it == tag_value_map.end()) {
+    ret = QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND;
+  } else if (it->second.size() % sizeof(CryptoTag) != 0) {
+    ret = QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+  }
 
-  // Key exchange methods.
-  key_exchange.resize(2);
-  key_exchange[0] = kC255;
-  key_exchange[1] = kP256;
+  if (ret != QUIC_NO_ERROR) {
+    *out_tags = NULL;
+    *out_len = 0;
+    return ret;
+  }
 
-  // Authenticated encryption algorithms.
-  aead.resize(2);
-  aead[0] = kAESG;
-  aead[1] = kAESH;
-
-  // Congestion control feedback types.
-  // TODO(wtc): add kINAR when inter-arrival is supported.
-  congestion_control.resize(1);
-  congestion_control[0] = kQBIC;
-
-  // Idle connection state lifetime.
-  idle_connection_state_lifetime = QuicTime::Delta::FromSeconds(300);
-
-  // Keepalive timeout.
-  keepalive_timeout = QuicTime::Delta::Zero();  // Don't send keepalive probes.
+  *out_tags = reinterpret_cast<const CryptoTag*>(it->second.data());
+  *out_len = it->second.size() / sizeof(CryptoTag);
+  return ret;
 }
 
-void QuicCryptoConfig::SetServerDefaults() {
-  // Version must be 0.
-  version = 0;
-
-  // Key exchange methods.
-  // Add only NIST curve P-256 for now to ensure it is selected.
-  key_exchange.resize(1);
-  key_exchange[0] = kP256;
-
-  // Authenticated encryption algorithms.
-  // Add only AES-GCM for now to ensure it is selected.
-  aead.resize(1);
-  aead[0] = kAESG;
-
-  // Congestion control feedback types.
-  // TODO(wtc): add kINAR when inter-arrival is supported.
-  congestion_control.resize(1);
-  congestion_control[0] = kQBIC;
-
-  // Idle connection state lifetime.
-  idle_connection_state_lifetime = QuicTime::Delta::FromSeconds(300);
-
-  // Keepalive timeout.
-  keepalive_timeout = QuicTime::Delta::Zero();  // Don't send keepalive probes.
+bool CryptoHandshakeMessage::GetString(CryptoTag tag, string* out) const {
+  CryptoTagValueMap::const_iterator it = tag_value_map.find(tag);
+  if (it == tag_value_map.end()) {
+    return false;
+  }
+  *out = it->second;
+  return true;
 }
 
-QuicCryptoNegotiatedParams::QuicCryptoNegotiatedParams()
-    : version(0),
-      key_exchange(0),
-      aead(0),
-      congestion_control(0),
-      idle_connection_state_lifetime(QuicTime::Delta::Zero()) {
-}
+QuicErrorCode CryptoHandshakeMessage::GetUint32(CryptoTag tag,
+                                                uint32* out) const {
+  CryptoTagValueMap::const_iterator it = tag_value_map.find(tag);
+  QuicErrorCode ret = QUIC_NO_ERROR;
 
-QuicCryptoNegotiatedParams::~QuicCryptoNegotiatedParams() {}
+  if (it == tag_value_map.end()) {
+    ret = QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND;
+  } else if (it->second.size() != sizeof(uint32)) {
+    ret = QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+  }
 
-void QuicCryptoNegotiatedParams::SetDefaults() {
-  // TODO(wtc): actually negotiate the parameters using client defaults
-  // and server defaults.
+  if (ret != QUIC_NO_ERROR) {
+    *out = 0;
+    return ret;
+  }
 
-  // Version must be 0.
-  version = 0;
-
-  // Key exchange method.
-  key_exchange = kP256;
-
-  // Authenticated encryption algorithm.
-  aead = kAESG;
-
-  // Congestion control feedback type.
-  congestion_control = kQBIC;
-
-  // Idle connection state lifetime.
-  idle_connection_state_lifetime = QuicTime::Delta::FromSeconds(300);
+  memcpy(out, it->second.data(), sizeof(uint32));
+  return ret;
 }
 
 }  // namespace net

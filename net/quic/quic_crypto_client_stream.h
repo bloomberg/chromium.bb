@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/quic_crypto_stream.h"
 
 namespace net {
@@ -28,7 +29,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   bool CryptoConnect();
 
  private:
-  QuicCryptoConfig crypto_config_;
+  QuicCryptoClientConfig crypto_config_;
   // Client's connection nonce (4-byte timestamp + 28 random bytes)
   std::string nonce_;
   // Server's hostname

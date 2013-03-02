@@ -12,11 +12,14 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "net/base/net_export.h"
+#include "net/quic/quic_protocol.h"
 #include "net/quic/quic_time.h"
 
 namespace net {
 
+// CryptoTag is the type of a tag in the wire protocol.
 typedef uint32 CryptoTag;
+typedef std::string ServerConfigID;
 typedef std::map<CryptoTag, std::string> CryptoTagValueMap;
 typedef std::vector<CryptoTag> CryptoTagVector;
 // An intermediate format of a handshake message that's convenient for a
@@ -24,6 +27,40 @@ typedef std::vector<CryptoTag> CryptoTagVector;
 struct NET_EXPORT_PRIVATE CryptoHandshakeMessage {
   CryptoHandshakeMessage();
   ~CryptoHandshakeMessage();
+
+  // SetValue sets an element with the given tag to the raw, memory contents of
+  // |v|.
+  template<class T> void SetValue(CryptoTag tag, const T& v) {
+    tag_value_map[tag] = std::string(reinterpret_cast<const char*>(&v),
+                                     sizeof(v));
+  }
+
+  // SetVector sets an element with the given tag to the raw contents of an
+  // array of elements in |v|.
+  template<class T> void SetVector(CryptoTag tag, const std::vector<T>& v) {
+    if (v.empty()) {
+      tag_value_map[tag] = std::string();
+    } else {
+      tag_value_map[tag] = std::string(reinterpret_cast<const char*>(&v[0]),
+                                       v.size() * sizeof(T));
+    }
+  }
+
+  // SetTaglist sets an element with the given tag to contain a list of tags,
+  // passed as varargs. The argument list must be terminated with a 0 element.
+  void SetTaglist(CryptoTag tag, ...);
+
+  // GetTaglist finds an element with the given tag containing zero or more
+  // tags. If such a tag doesn't exist, it returns false. Otherwise it sets
+  // |out_tags| and |out_len| to point to the array of tags and returns true.
+  // The array points into the CryptoHandshakeMessage and is valid only for as
+  // long as the CryptoHandshakeMessage exists and is not modified.
+  QuicErrorCode GetTaglist(CryptoTag tag, const CryptoTag** out_tags,
+                           size_t* out_len) const;
+
+  bool GetString(CryptoTag tag, std::string* out) const;
+  QuicErrorCode GetUint32(CryptoTag tag, uint32* out) const;
+
   CryptoTag tag;
   CryptoTagValueMap tag_value_map;
 };
@@ -38,6 +75,7 @@ struct NET_EXPORT_PRIVATE CryptoHandshakeMessage {
 
 const CryptoTag kCHLO = MAKE_TAG('C', 'H', 'L', 'O');  // Client hello
 const CryptoTag kSHLO = MAKE_TAG('S', 'H', 'L', 'O');  // Server hello
+const CryptoTag kSCFG = MAKE_TAG('S', 'H', 'L', 'O');  // Server config
 
 // Key exchange methods
 const CryptoTag kP256 = MAKE_TAG('P', '2', '5', '6');  // ECDH, Curve P-256
@@ -67,51 +105,11 @@ const CryptoTag kKATO = MAKE_TAG('K', 'A', 'T', 'O');  // Keepalive timeout
 const CryptoTag kSNI = MAKE_TAG('S', 'N', 'I', '\0');  // Server name
                                                        // indication
 const CryptoTag kPUBS = MAKE_TAG('P', 'U', 'B', 'S');  // Public key values
+const CryptoTag kSCID = MAKE_TAG('S', 'C', 'I', 'D');  // Server config id
 
 const size_t kMaxEntries = 16;  // Max number of entries in a message.
 
 const size_t kNonceSize = 32;  // Size in bytes of the connection nonce.
-
-// Crypto configuration settings.
-struct NET_EXPORT_PRIVATE QuicCryptoConfig {
-  // Initializes the members to 0 or empty values.
-  QuicCryptoConfig();
-  ~QuicCryptoConfig();
-
-  // Sets the members to client-side or server-side default values.
-  void SetClientDefaults();
-  void SetServerDefaults();
-
-  // Protocol version
-  uint16 version;
-  // Key exchange methods
-  CryptoTagVector key_exchange;
-  // Authenticated encryption with associated data (AEAD) algorithms
-  CryptoTagVector aead;
-  // Congestion control feedback types
-  CryptoTagVector congestion_control;
-  // Idle connection state lifetime
-  QuicTime::Delta idle_connection_state_lifetime;
-  // Keepalive timeout, or 0 to turn off keepalive probes
-  QuicTime::Delta keepalive_timeout;
-};
-
-// Parameters negotiated by the crypto handshake.
-struct NET_EXPORT_PRIVATE QuicCryptoNegotiatedParams {
-  // Initializes the members to 0 or empty values.
-  QuicCryptoNegotiatedParams();
-  ~QuicCryptoNegotiatedParams();
-
-  // Sets the members to the values that would be negotiated from the default
-  // client-side and server-side configuration settings.
-  void SetDefaults();
-
-  uint16 version;
-  CryptoTag key_exchange;
-  CryptoTag aead;
-  CryptoTag congestion_control;
-  QuicTime::Delta idle_connection_state_lifetime;
-};
 
 }  // namespace net
 

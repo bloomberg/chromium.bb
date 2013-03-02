@@ -18,6 +18,31 @@ const size_t kCryptoTagSize = sizeof(uint32);
 const size_t kNumEntriesSize = sizeof(uint16);
 const size_t kValueLenSize = sizeof(uint16);
 
+// OneShotVisitor is a framer visitor that records a single handshake message.
+class OneShotVisitor : public CryptoFramerVisitorInterface {
+ public:
+  explicit OneShotVisitor(CryptoHandshakeMessage* out)
+      : out_(out),
+        error_(false) {
+  }
+
+  void OnError(CryptoFramer* framer) {
+    error_ = true;
+  }
+
+  void OnHandshakeMessage(const CryptoHandshakeMessage& message) {
+    *out_ = message;
+  }
+
+  bool error() const {
+    return error_;
+  }
+
+ private:
+  CryptoHandshakeMessage* const out_;
+  bool error_;
+};
+
 }  // namespace
 
 CryptoFramer::CryptoFramer()
@@ -29,6 +54,22 @@ CryptoFramer::CryptoFramer()
 }
 
 CryptoFramer::~CryptoFramer() {}
+
+// static
+CryptoHandshakeMessage* CryptoFramer::ParseMessage(StringPiece in) {
+  scoped_ptr<CryptoHandshakeMessage> msg(new CryptoHandshakeMessage);
+  OneShotVisitor visitor(msg.get());
+  CryptoFramer framer;
+
+  framer.set_visitor(&visitor);
+  if (!framer.ProcessInput(in) ||
+      visitor.error() ||
+      framer.InputBytesRemaining()) {
+    return NULL;
+  }
+
+  return msg.release();
+}
 
 bool CryptoFramer::ProcessInput(StringPiece input) {
   DCHECK_EQ(QUIC_NO_ERROR, error_);
@@ -119,6 +160,7 @@ bool CryptoFramer::ProcessInput(StringPiece input) {
   return true;
 }
 
+// static
 QuicData* CryptoFramer::ConstructHandshakeMessage(
     const CryptoHandshakeMessage& message) {
   if (message.tag_value_map.size() > kMaxEntries) {

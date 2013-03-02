@@ -37,13 +37,12 @@ void QuicCryptoClientStream::OnHandshakeMessage(
 }
 
 bool QuicCryptoClientStream::CryptoConnect() {
-  crypto_config_.SetClientDefaults();
+  crypto_config_.SetDefaults();
   CryptoUtils::GenerateNonce(session()->connection()->clock(),
                              session()->connection()->random_generator(),
                              &nonce_);
   CryptoHandshakeMessage message;
-  CryptoUtils::FillClientHelloMessage(crypto_config_, nonce_,
-                                      server_hostname_, &message);
+  crypto_config_.FillClientHello(nonce_, server_hostname_, &message);
   SendHandshakeMessage(message);
   return true;
 }
