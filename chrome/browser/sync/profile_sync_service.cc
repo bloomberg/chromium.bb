@@ -1694,9 +1694,6 @@ void ProfileSyncService::SetEncryptionPassphrase(const std::string& passphrase,
            passphrase_required_reason_ == syncer::REASON_DECRYPTION)) <<
          "Can not set explicit passphrase when decryption is needed.";
 
-  if (type == EXPLICIT)
-    UMA_HISTOGRAM_BOOLEAN("Sync.CustomPassphrase", true);
-
   DVLOG(1) << "Setting " << (type == EXPLICIT ? "explicit" : "implicit")
            << " passphrase for encryption.";
   if (passphrase_required_reason_ == syncer::REASON_ENCRYPTION) {
@@ -1732,7 +1729,6 @@ void ProfileSyncService::EnableEncryptEverything() {
   // problems around cancelling encryption in the background (crbug.com/119649).
   if (!encrypt_everything_)
     encryption_pending_ = true;
-  UMA_HISTOGRAM_BOOLEAN("Sync.EncryptAllData", true);
 }
 
 bool ProfileSyncService::encryption_pending() const {

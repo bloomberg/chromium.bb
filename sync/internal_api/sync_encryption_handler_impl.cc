@@ -356,6 +356,10 @@ void SyncEncryptionHandlerImpl::SetEncryptionPassphrase(
     // Will fail if we already have an explicit passphrase or we have pending
     // keys.
     SetCustomPassphrase(passphrase, &trans, &node);
+
+    // When keystore migration occurs, the "CustomEncryption" UMA stat must be
+    // logged as true.
+    UMA_HISTOGRAM_BOOLEAN("Sync.CustomEncryption", true);
     return;
   }
 
@@ -403,6 +407,15 @@ void SyncEncryptionHandlerImpl::SetEncryptionPassphrase(
           DVLOG(1) << "Setting implicit passphrase for encryption.";
         }
         cryptographer->GetBootstrapToken(&bootstrap_token);
+
+        // With M26, sync accounts can be in only one of two encryption states:
+        // 1) Encrypt only passwords with an implicit passphrase.
+        // 2) Encrypt all sync datatypes with an explicit passphrase.
+        // We deprecate the "EncryptAllData" and "CustomPassphrase" histograms,
+        // and keep track of an account's encryption state via the
+        // "CustomEncryption" histogram. See http://crbug.com/131478.
+        UMA_HISTOGRAM_BOOLEAN("Sync.CustomEncryption", is_explicit);
+
         success = true;
       } else {
         NOTREACHED() << "Failed to add key to cryptographer.";
