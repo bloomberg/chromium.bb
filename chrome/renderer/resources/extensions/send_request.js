@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+var DCHECK = requireNative('logging').DCHECK;
 var json = require('json');
 var lastError = require('lastError');
 var natives = requireNative('sendRequest');
@@ -14,6 +15,7 @@ chromeHidden.handleResponse = function(requestId, name,
                                        success, responseList, error) {
   try {
     var request = requests[requestId];
+    DCHECK(request != null);
     if (success) {
       lastError.clear();
     } else {
@@ -32,7 +34,7 @@ chromeHidden.handleResponse = function(requestId, name,
     if (request.callback) {
       // Validate callback in debug only -- and only when the
       // caller has provided a callback. Implementations of api
-      // calls my not return data if they observe the caller
+      // calls may not return data if they observe the caller
       // has not provided a callback.
       if (chromeHidden.validateCallbacks && !error) {
         try {

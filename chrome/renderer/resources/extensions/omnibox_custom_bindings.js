@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom bindings for the omnibox API. Only injected into the v8 contexts
+// Custom binding for the omnibox API. Only injected into the v8 contexts
 // for extensions which have permission for the omnibox API.
+
+var binding = require('binding').Binding.create('omnibox');
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var sendRequest = require('sendRequest').sendRequest;
@@ -79,7 +81,7 @@ function parseOmniboxDescription(input) {
   return result;
 }
 
-chromeHidden.registerCustomHook('omnibox', function(bindingsAPI) {
+binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   apiFunctions.setHandleRequest('setDefaultSuggestion', function(details) {
@@ -109,3 +111,5 @@ chromeHidden.Event.registerArgumentMassager('omnibox.onInputChanged',
   };
   dispatch([text, suggestCallback]);
 });
+
+exports.binding = binding.generate();

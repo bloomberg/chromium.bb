@@ -30,7 +30,8 @@ class Dispatcher;
 class MiscellaneousBindings {
  public:
   // Creates an instance of the extension.
-  static ChromeV8Extension* Get(Dispatcher* dispatcher);
+  static ChromeV8Extension* Get(Dispatcher* dispatcher,
+                                v8::Handle<v8::Context> context);
 
   // Dispatches the Port.onConnect content script messaging event to some
   // contexts in |contexts|. If |restrict_to_render_view| is specified, only

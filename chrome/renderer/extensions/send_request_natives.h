@@ -17,7 +17,9 @@ class RequestSender;
 // the browser.
 class SendRequestNatives : public ChromeV8Extension {
  public:
-  SendRequestNatives(Dispatcher* dispatcher, RequestSender* request_sender);
+  SendRequestNatives(Dispatcher* dispatcher,
+                     RequestSender* request_sender,
+                     ChromeV8Context* context);
 
  private:
   v8::Handle<v8::Value> GetNextRequestId(const v8::Arguments& args);
@@ -26,6 +28,8 @@ class SendRequestNatives : public ChromeV8Extension {
   v8::Handle<v8::Value> StartRequest(const v8::Arguments& args);
 
   RequestSender* request_sender_;
+
+  ChromeV8Context* context_;
 
   DISALLOW_COPY_AND_ASSIGN(SendRequestNatives);
 };

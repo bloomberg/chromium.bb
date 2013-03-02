@@ -9,7 +9,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/string_piece.h"
 #include "chrome/renderer/extensions/chrome_v8_extension_handler.h"
-#include "chrome/renderer/extensions/native_handler.h"
+#include "chrome/renderer/extensions/object_backed_native_handler.h"
 #include "v8/include/v8.h"
 
 #include <map>
@@ -26,18 +26,29 @@ class ChromeV8Context;
 class Dispatcher;
 class Extension;
 
+// DEPRECATED.
+//
 // This is a base class for chrome extension bindings.  Common features that
 // are shared by different modules go here.
-// TODO(koz): Rename this to ExtensionNativeModule.
-class ChromeV8Extension : public NativeHandler {
+//
+// TODO(kalman): Delete this class entirely, it has no value anymore.
+//               Custom bindings should extend ObjectBackedNativeHandler.
+class ChromeV8Extension : public ObjectBackedNativeHandler {
  public:
-  typedef std::set<ChromeV8Extension*> InstanceSet;
-  static const InstanceSet& GetAll();
-
+  // EXTRA DEPRECATED. DO NOT USE THIS CONSTRUCTOR. It doesn't work in subtle
+  // cases.
   explicit ChromeV8Extension(Dispatcher* dispatcher);
+
+  ChromeV8Extension(Dispatcher* dispatcher, v8::Handle<v8::Context> context);
   virtual ~ChromeV8Extension();
 
   Dispatcher* dispatcher() { return dispatcher_; }
+
+  ChromeV8Context* GetContext();
+
+  // Shortcuts through to the context's render view and extension.
+  content::RenderView* GetRenderView();
+  const Extension* GetExtensionForRenderView();
 
  protected:
   template<class T>
@@ -46,17 +57,6 @@ class ChromeV8Extension : public NativeHandler {
     T* result = static_cast<T*>(args.Data().As<v8::External>()->Value());
     return result;
   }
-
-  // Gets the render view for the current v8 context.
-  static content::RenderView* GetCurrentRenderView();
-
-  // Note: do not call this function before or during the chromeHidden.onLoad
-  // event dispatch. The URL might not have been committed yet and might not
-  // be an extension URL.
-  const Extension* GetExtensionForCurrentRenderView() const;
-
-  // Returns the chromeHidden object for the current context.
-  static v8::Handle<v8::Value> GetChromeHidden(const v8::Arguments& args);
 
   Dispatcher* dispatcher_;
 

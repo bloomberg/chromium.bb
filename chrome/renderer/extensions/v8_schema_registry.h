@@ -24,10 +24,10 @@ class V8SchemaRegistry {
   // Returns a v8::Array with all the schemas for the APIs in |apis|.
   v8::Handle<v8::Array> GetSchemas(const std::set<std::string>& apis);
 
- private:
   // Returns a v8::Object for the schema for |api|, possibly from the cache.
   v8::Handle<v8::Object> GetSchema(const std::string& api);
 
+ private:
   // Cache of schemas.
   typedef std::map<std::string, v8::Persistent<v8::Object> > SchemaCache;
   SchemaCache schema_cache_;

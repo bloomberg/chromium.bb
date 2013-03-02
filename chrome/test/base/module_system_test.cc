@@ -7,7 +7,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_piece.h"
-#include "chrome/renderer/extensions/native_handler.h"
+#include "chrome/renderer/extensions/object_backed_native_handler.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #include <map>
@@ -15,12 +15,13 @@
 
 using extensions::ModuleSystem;
 using extensions::NativeHandler;
+using extensions::ObjectBackedNativeHandler;
 
 // Native JS functions for doing asserts.
-class AssertNatives : public NativeHandler {
+class AssertNatives : public ObjectBackedNativeHandler {
  public:
-  explicit AssertNatives(v8::Isolate* isolate)
-      : NativeHandler(isolate),
+  explicit AssertNatives(v8::Handle<v8::Context> context)
+      : ObjectBackedNativeHandler(context),
         assertion_made_(false),
         failed_(false) {
     RouteFunction("AssertTrue", base::Bind(&AssertNatives::AssertTrue,
@@ -88,7 +89,7 @@ ModuleSystemTest::ModuleSystemTest()
       source_map_(new StringSourceMap()),
       should_assertions_be_made_(true) {
   context_->Enter();
-  assert_natives_ = new AssertNatives(context_->GetIsolate());
+  assert_natives_ = new AssertNatives(context_);
   module_system_.reset(new ModuleSystem(context_, source_map_.get()));
   module_system_->RegisterNativeHandler("assert", scoped_ptr<NativeHandler>(
       assert_natives_));
@@ -99,7 +100,7 @@ ModuleSystemTest::ModuleSystemTest()
 ModuleSystemTest::~ModuleSystemTest() {
   module_system_.reset();
   context_->Exit();
-  context_.Dispose(context_->GetIsolate());
+  context_.Dispose();
 }
 
 void ModuleSystemTest::RegisterModule(const std::string& name,

@@ -25,61 +25,33 @@ using WebKit::WebView;
 
 namespace extensions {
 
-namespace {
-
-static base::LazyInstance<ChromeV8Extension::InstanceSet> g_instances =
-    LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
-
-// static
-content::RenderView* ChromeV8Extension::GetCurrentRenderView() {
-  WebFrame* webframe = WebFrame::frameForCurrentContext();
-  DCHECK(webframe) << "RetrieveCurrentFrame called when not in a V8 context.";
-  if (!webframe)
-    return NULL;
-
-  WebView* webview = webframe->view();
-  if (!webview)
-    return NULL;  // can happen during closing
-
-  content::RenderView* renderview = content::RenderView::FromWebView(webview);
-  DCHECK(renderview) << "Encountered a WebView without a WebViewDelegate";
-  return renderview;
+ChromeV8Extension::ChromeV8Extension(Dispatcher* dispatcher)
+    : ObjectBackedNativeHandler(v8::Context::GetCurrent()),
+      dispatcher_(dispatcher) {
 }
 
-ChromeV8Extension::ChromeV8Extension(Dispatcher* dispatcher)
-    // TODO(svenpanne) It would be nice to remove the GetCurrent() call and use
-    // an additional constructor parameter instead, but this would involve too
-    // many changes for now.
-    : NativeHandler(v8::Isolate::GetCurrent()),
+ChromeV8Extension::ChromeV8Extension(Dispatcher* dispatcher,
+                                     v8::Handle<v8::Context> context)
+    : ObjectBackedNativeHandler(context),
       dispatcher_(dispatcher) {
-  g_instances.Get().insert(this);
 }
 
 ChromeV8Extension::~ChromeV8Extension() {
-  g_instances.Get().erase(this);
 }
 
-// static
-const ChromeV8Extension::InstanceSet& ChromeV8Extension::GetAll() {
-  return g_instances.Get();
+ChromeV8Context* ChromeV8Extension::GetContext() {
+  CHECK(dispatcher_);
+  return dispatcher_->v8_context_set().GetByV8Context(v8_context());
 }
 
-const Extension* ChromeV8Extension::GetExtensionForCurrentRenderView() const {
-  content::RenderView* renderview = GetCurrentRenderView();
-  if (!renderview)
-    return NULL;  // this can happen as a tab is closing.
+content::RenderView* ChromeV8Extension::GetRenderView() {
+  ChromeV8Context* context = GetContext();
+  return context ? context->GetRenderView() : NULL;
+}
 
-  WebDocument document = renderview->GetWebView()->mainFrame()->document();
-  GURL url = document.url();
-  const ExtensionSet* extensions = dispatcher_->extensions();
-  if (!extensions->ExtensionBindingsAllowed(
-      ExtensionURLInfo(document.securityOrigin(), url)))
-    return NULL;
-
-  return extensions->GetExtensionOrAppByURL(
-      ExtensionURLInfo(document.securityOrigin(), url));
+const Extension* ChromeV8Extension::GetExtensionForRenderView() {
+  ChromeV8Context* context = GetContext();
+  return context ? context->extension() : NULL;
 }
 
 }  // namespace extensions

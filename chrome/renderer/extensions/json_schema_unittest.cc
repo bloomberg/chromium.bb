@@ -27,11 +27,16 @@ class JsonSchemaTest : public V8UnitTest {
     std::string code = ResourceBundle::GetSharedInstance().GetRawDataResource(
         IDR_JSON_SCHEMA_JS).as_string();
 
-    // json_schema.js expects to have requireNative() defined.
+    // json_schema.js expects to have require() and requireNative() defined.
     ExecuteScriptInContext(
         "function requireNative(id) {"
         "  return {"
         "    GetChromeHidden: function() { return {}; },"
+        "  };"
+        "}"
+        "function require(id) {"
+        "  return {"
+        "    loadRefDependency: function(foo) { return {}; },"
         "  };"
         "}",
         "test-code");

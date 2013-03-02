@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom bindings for the webRequest API.
+// Custom binding for the webRequest API.
+
+var binding = require('binding').Binding.create('webRequest');
 
 var webRequestNatives = requireNative('web_request');
 var GetUniqueSubEventName = webRequestNatives.GetUniqueSubEventName;
@@ -10,6 +12,7 @@ var GetUniqueSubEventName = webRequestNatives.GetUniqueSubEventName;
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var sendRequest = require('sendRequest').sendRequest;
 var validate = require('schemaUtils').validate;
+var webRequestInternal = require('webRequestInternal').binding;
 
 // WebRequestEvent object. This is used for special webRequest events with
 // extra parameters. Each invocation of addListener creates a new named
@@ -63,7 +66,7 @@ WebRequestEvent.prototype.addListener =
   // Note: this could fail to validate, in which case we would not add the
   // subEvent listener.
   validate(Array.prototype.slice.call(arguments, 1), this.extraArgSchemas_);
-  chromeHidden.internalAPIs.webRequestInternal.addEventListener(
+  webRequestInternal.addEventListener(
       cb, opt_filter, opt_extraInfo, this.eventName_, subEventName);
 
   var subEvent = new chrome.Event(subEventName, this.argSchemas_);
@@ -74,10 +77,10 @@ WebRequestEvent.prototype.addListener =
       var requestId = arguments[0].requestId;
       try {
         var result = cb.apply(null, arguments);
-        chromeHidden.internalAPIs.webRequestInternal.eventHandled(
+        webRequestInternal.eventHandled(
             eventName, subEventName, requestId, result);
       } catch (e) {
-        chromeHidden.internalAPIs.webRequestInternal.eventHandled(
+        webRequestInternal.eventHandled(
             eventName, subEventName, requestId);
         throw e;
       }
@@ -88,7 +91,7 @@ WebRequestEvent.prototype.addListener =
       var details = arguments[0];
       var requestId = details.requestId;
       var handledCallback = function(response) {
-        chromeHidden.internalAPIs.webRequestInternal.eventHandled(
+        webRequestInternal.eventHandled(
             eventName, subEventName, requestId, response);
       };
       cb.apply(null, [details, handledCallback]);
@@ -146,9 +149,9 @@ WebRequestEvent.prototype.getRules = function(ruleIdentifiers, cb) {
   this.eventForRules_.getRules(ruleIdentifiers, cb);
 }
 
-chromeHidden.registerCustomEvent('webRequest', WebRequestEvent);
+binding.registerCustomEvent(WebRequestEvent);
 
-chromeHidden.registerCustomHook('webRequest', function(api) {
+binding.registerCustomHook(function(api) {
   var apiFunctions = api.apiFunctions;
 
   apiFunctions.setHandleRequest('handlerBehaviorChanged', function() {
@@ -157,3 +160,5 @@ chromeHidden.registerCustomHook('webRequest', function(api) {
                 {forIOThread: true});
   });
 });
+
+exports.binding = binding.generate();

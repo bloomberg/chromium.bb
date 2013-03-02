@@ -509,8 +509,7 @@ void ExtensionHelper::DidDownloadApplicationIcon(ImageResourceFetcher* fetcher,
     if (current_size > kMaxIconSize - actual_icon_size) {
       AddMessageToRootConsole(
           content::CONSOLE_MESSAGE_LEVEL_ERROR,
-          ASCIIToUTF16("Icons are too large. "
-              "Maximum total size for app icons is 128 KB."));
+          "Icons are too large. Maximum total size for app icons is 128 KB.");
       return;
     }
     actual_icon_size += current_size;
@@ -519,6 +518,11 @@ void ExtensionHelper::DidDownloadApplicationIcon(ImageResourceFetcher* fetcher,
   Send(new ExtensionHostMsg_InstallApplication(
       routing_id(), *pending_app_info_));
   pending_app_info_.reset(NULL);
+}
+
+void ExtensionHelper::AddMessageToRootConsole(ConsoleMessageLevel level,
+                                              const std::string& message) {
+  AddMessageToRootConsole(level, ASCIIToUTF16(message));
 }
 
 void ExtensionHelper::AddMessageToRootConsole(ConsoleMessageLevel level,

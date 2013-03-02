@@ -10,18 +10,22 @@
 
 #include "v8/include/v8.h"
 
+class ChromeV8Context;
+
 namespace extensions {
 
 // Native functions for JS to get access to the schemas for extension APIs.
 class ApiDefinitionsNatives : public ChromeV8Extension {
  public:
-  explicit ApiDefinitionsNatives(Dispatcher* dispatcher);
+  ApiDefinitionsNatives(Dispatcher* dispatcher, ChromeV8Context* context);
 
  private:
   // Returns the list of schemas that are available to the calling context
   // and have their names listed in |args|. If |args| is empty, returns the list
   // of all schemas that are available to the calling context.
   v8::Handle<v8::Value> GetExtensionAPIDefinition(const v8::Arguments& args);
+
+  ChromeV8Context* context_;
 
   DISALLOW_COPY_AND_ASSIGN(ApiDefinitionsNatives);
 };

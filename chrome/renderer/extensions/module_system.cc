@@ -6,6 +6,10 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
+#include "base/stringprintf.h"
+#include "chrome/common/extensions/extension_messages.h"
+#include "chrome/renderer/extensions/chrome_v8_context.h"
+#include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScopedMicrotaskSuppression.h"
 
 namespace {
@@ -21,28 +25,35 @@ namespace extensions {
 
 ModuleSystem::ModuleSystem(v8::Handle<v8::Context> context,
                            SourceMap* source_map)
-    : NativeHandler(context->GetIsolate()),
-      context_(v8::Persistent<v8::Context>::New(context->GetIsolate(),
-                                                context)),
+    : ObjectBackedNativeHandler(context),
       source_map_(source_map),
-      natives_enabled_(0) {
+      natives_enabled_(0),
+      is_valid_(true) {
   RouteFunction("require",
       base::Bind(&ModuleSystem::RequireForJs, base::Unretained(this)));
   RouteFunction("requireNative",
-      base::Bind(&ModuleSystem::GetNative, base::Unretained(this)));
+      base::Bind(&ModuleSystem::RequireNative, base::Unretained(this)));
 
-  v8::Handle<v8::Object> global(context_->Global());
+  v8::Handle<v8::Object> global(context->Global());
   global->SetHiddenValue(v8::String::New(kModulesField), v8::Object::New());
   global->SetHiddenValue(v8::String::New(kModuleSystem),
                          v8::External::New(this));
 }
 
 ModuleSystem::~ModuleSystem() {
+  Invalidate();
+}
+
+bool ModuleSystem::Invalidate() {
+  if (!ObjectBackedNativeHandler::Invalidate())
+    return false;
+
   v8::HandleScope handle_scope;
   // Deleting this value here prevents future lazy field accesses from
   // referencing ModuleSystem after it has been freed.
-  context_->Global()->DeleteHiddenValue(v8::String::New(kModuleSystem));
-  context_.Dispose(context_->GetIsolate());
+  v8_context()->Global()->DeleteHiddenValue(v8::String::New(kModuleSystem));
+
+  return true;
 }
 
 ModuleSystem::NativesEnabledScope::NativesEnabledScope(
@@ -58,6 +69,7 @@ ModuleSystem::NativesEnabledScope::~NativesEnabledScope() {
 
 // static
 bool ModuleSystem::IsPresentInCurrentContext() {
+  // XXX(kalman): Not sure if this is safe. Investigate.
   v8::Handle<v8::Object> global(v8::Context::GetCurrent()->Global());
   if (global.IsEmpty())
     return false;
@@ -73,13 +85,10 @@ void ModuleSystem::HandleException(const v8::TryCatch& try_catch) {
 }
 
 // static
-void ModuleSystem::DumpException(const v8::TryCatch& try_catch) {
-  v8::HandleScope handle_scope;
-
+std::string ModuleSystem::CreateExceptionString(const v8::TryCatch& try_catch) {
   v8::Handle<v8::Message> message(try_catch.Message());
   if (message.IsEmpty()) {
-    LOG(ERROR) << "try_catch has no message";
-    return;
+    return "try_catch has no message";
   }
 
   std::string resource_name = "<unknown resource>";
@@ -92,6 +101,16 @@ void ModuleSystem::DumpException(const v8::TryCatch& try_catch) {
   if (!message->Get().IsEmpty())
     error_message = *v8::String::Utf8Value(message->Get());
 
+  return base::StringPrintf("%s:%d: %s",
+                            resource_name.c_str(),
+                            message->GetLineNumber(),
+                            error_message.c_str());
+}
+
+// static
+void ModuleSystem::DumpException(const v8::TryCatch& try_catch) {
+  v8::HandleScope handle_scope;
+
   std::string stack_trace = "<stack trace unavailable>";
   if (!try_catch.StackTrace().IsEmpty()) {
     v8::String::Utf8Value stack_value(try_catch.StackTrace());
@@ -101,14 +120,13 @@ void ModuleSystem::DumpException(const v8::TryCatch& try_catch) {
       stack_trace = "<could not convert stack trace to string>";
   }
 
-  LOG(ERROR) << "[" << resource_name << "(" << message->GetLineNumber() << ")] "
-             << error_message
-             << "{" << stack_trace << "}";
+  LOG(ERROR) << CreateExceptionString(try_catch) << "{" << stack_trace << "}";
 }
 
-void ModuleSystem::Require(const std::string& module_name) {
+v8::Handle<v8::Value> ModuleSystem::Require(const std::string& module_name) {
   v8::HandleScope handle_scope;
-  RequireForJsInner(v8::String::New(module_name.c_str()));
+  return handle_scope.Close(
+      RequireForJsInner(v8::String::New(module_name.c_str())));
 }
 
 v8::Handle<v8::Value> ModuleSystem::RequireForJs(const v8::Arguments& args) {
@@ -119,8 +137,9 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJs(const v8::Arguments& args) {
 
 v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
     v8::Handle<v8::String> module_name) {
+  CHECK(is_valid_);
   v8::HandleScope handle_scope;
-  v8::Handle<v8::Object> global(v8::Context::GetCurrent()->Global());
+  v8::Handle<v8::Object> global(v8_context()->Global());
   v8::Handle<v8::Object> modules(v8::Handle<v8::Object>::Cast(
       global->GetHiddenValue(v8::String::New(kModulesField))));
   v8::Handle<v8::Value> exports(modules->Get(module_name));
@@ -160,10 +179,11 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
   return handle_scope.Close(exports);
 }
 
-void ModuleSystem::CallModuleMethod(const std::string& module_name,
-                                    const std::string& method_name) {
+v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
+    const std::string& module_name,
+    const std::string& method_name) {
   std::vector<v8::Handle<v8::Value> > args;
-  CallModuleMethod(module_name, method_name, &args);
+  return CallModuleMethod(module_name, method_name, &args);
 }
 
 v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
@@ -183,8 +203,7 @@ v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
     return v8::Local<v8::Value>();
   v8::Handle<v8::Function> func =
       v8::Handle<v8::Function>::Cast(value);
-  // TODO(jeremya/koz): refer to context_ here, not the current context.
-  v8::Handle<v8::Object> global(v8::Context::GetCurrent()->Global());
+  v8::Handle<v8::Object> global(v8_context()->Global());
   v8::Local<v8::Value> result;
   {
     WebKit::WebScopedMicrotaskSuppression suppression;
@@ -195,6 +214,10 @@ v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
       HandleException(try_catch);
   }
   return handle_scope.Close(result);
+}
+
+bool ModuleSystem::HasNativeHandler(const std::string& name) {
+  return native_handler_map_.find(name) != native_handler_map_.end();
 }
 
 void ModuleSystem::RegisterNativeHandler(const std::string& name,
@@ -213,13 +236,29 @@ void ModuleSystem::RunString(const std::string& code, const std::string& name) {
 }
 
 // static
+v8::Handle<v8::Value> ModuleSystem::NativeLazyFieldGetter(
+    v8::Local<v8::String> property, const v8::AccessorInfo& info) {
+  return LazyFieldGetterInner(property,
+                              info,
+                              &ModuleSystem::RequireNativeFromString);
+}
+
+// static
 v8::Handle<v8::Value> ModuleSystem::LazyFieldGetter(
     v8::Local<v8::String> property, const v8::AccessorInfo& info) {
+  return LazyFieldGetterInner(property, info, &ModuleSystem::Require);
+}
+
+// static
+v8::Handle<v8::Value> ModuleSystem::LazyFieldGetterInner(
+    v8::Local<v8::String> property,
+    const v8::AccessorInfo& info,
+    GetModuleFunc get_module) {
   CHECK(!info.Data().IsEmpty());
   CHECK(info.Data()->IsObject());
   v8::HandleScope handle_scope;
   v8::Handle<v8::Object> parameters = v8::Handle<v8::Object>::Cast(info.Data());
-  v8::Handle<v8::Object> global(v8::Context::GetCurrent()->Global());
+  v8::Handle<v8::Object> global(parameters->CreationContext()->Global());
   v8::Handle<v8::Value> module_system_value =
       global->GetHiddenValue(v8::String::New(kModuleSystem));
   if (module_system_value.IsEmpty() || module_system_value->IsUndefined()) {
@@ -229,36 +268,76 @@ v8::Handle<v8::Value> ModuleSystem::LazyFieldGetter(
   ModuleSystem* module_system = static_cast<ModuleSystem*>(
       v8::Handle<v8::External>::Cast(module_system_value)->Value());
 
-  v8::Handle<v8::Object> module;
-  {
-    NativesEnabledScope scope(module_system);
-    module = v8::Handle<v8::Object>::Cast(module_system->RequireForJsInner(
-        parameters->Get(v8::String::New(kModuleName))->ToString()));
+  std::string name = *v8::String::AsciiValue(
+      parameters->Get(v8::String::New(kModuleName))->ToString());
+
+  // HACK(kalman): Switch to the context of the owner module system while
+  // lazily requiring modules.
+  //
+  // It seems to be a common incorrect assumption throughout code that the
+  // current context is the owner context. This makes that assumption true for
+  // at least the period where the JavaScript is first evaluated, which is when
+  // things are most likely to go wrong.
+  v8::Context::Scope context_scope(parameters->CreationContext());
+
+  NativesEnabledScope natives_enabled_scope(module_system);
+
+  v8::TryCatch try_catch;
+  v8::Handle<v8::Object> module = v8::Handle<v8::Object>::Cast(
+      (module_system->*get_module)(name));
+  if (try_catch.HasCaught()) {
+    module_system->HandleException(try_catch);
+    return handle_scope.Close(v8::Handle<v8::Value>());
   }
+
   if (module.IsEmpty())
     return handle_scope.Close(v8::Handle<v8::Value>());
 
   v8::Handle<v8::String> field =
       parameters->Get(v8::String::New(kModuleField))->ToString();
 
-  return handle_scope.Close(module->Get(field));
+  v8::Local<v8::Value> new_field = module->Get(field);
+  v8::Handle<v8::Object> object = info.This();
+  // Delete the getter and set this field to |new_field| so the same object is
+  // returned every time a certain API is accessed.
+  if (!new_field->IsUndefined()) {
+    object->Delete(property);
+    object->Set(property, new_field);
+  }
+  return handle_scope.Close(new_field);
 }
 
 void ModuleSystem::SetLazyField(v8::Handle<v8::Object> object,
                                 const std::string& field,
                                 const std::string& module_name,
                                 const std::string& module_field) {
+  SetLazyField(object, field, module_name, module_field,
+      &ModuleSystem::LazyFieldGetter);
+}
+
+void ModuleSystem::SetLazyField(v8::Handle<v8::Object> object,
+                                const std::string& field,
+                                const std::string& module_name,
+                                const std::string& module_field,
+                                v8::AccessorGetter getter) {
   v8::HandleScope handle_scope;
   v8::Handle<v8::Object> parameters = v8::Object::New();
   parameters->Set(v8::String::New(kModuleName),
                   v8::String::New(module_name.c_str()));
   parameters->Set(v8::String::New(kModuleField),
                   v8::String::New(module_field.c_str()));
-
   object->SetAccessor(v8::String::New(field.c_str()),
-                      &ModuleSystem::LazyFieldGetter,
+                      getter,
                       NULL,
                       parameters);
+}
+
+void ModuleSystem::SetNativeLazyField(v8::Handle<v8::Object> object,
+                                      const std::string& field,
+                                      const std::string& module_name,
+                                      const std::string& module_field) {
+  SetLazyField(object, field, module_name, module_field,
+      &ModuleSystem::NativeLazyFieldGetter);
 }
 
 v8::Handle<v8::Value> ModuleSystem::RunString(v8::Handle<v8::String> code,
@@ -290,13 +369,18 @@ v8::Handle<v8::Value> ModuleSystem::GetSource(
   return handle_scope.Close(source_map_->GetSource(module_name));
 }
 
-v8::Handle<v8::Value> ModuleSystem::GetNative(const v8::Arguments& args) {
+v8::Handle<v8::Value> ModuleSystem::RequireNative(const v8::Arguments& args) {
   CHECK_EQ(1, args.Length());
+  std::string native_name = *v8::String::AsciiValue(args[0]->ToString());
+  return RequireNativeFromString(native_name);
+}
+
+v8::Handle<v8::Value> ModuleSystem::RequireNativeFromString(
+    const std::string& native_name) {
   if (natives_enabled_ == 0)
     return ThrowException("Natives disabled");
-  std::string native_name = *v8::String::AsciiValue(args[0]->ToString());
   if (overridden_native_handlers_.count(native_name) > 0u)
-    return RequireForJs(args);
+    return RequireForJsInner(v8::String::New(native_name.c_str()));
   NativeHandlerMap::iterator i = native_handler_map_.find(native_name);
   if (i == native_handler_map_.end())
     return v8::Undefined();

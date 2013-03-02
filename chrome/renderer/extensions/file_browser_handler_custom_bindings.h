@@ -13,9 +13,11 @@ namespace extensions {
 // Custom bindings for the fileBrowserHandler API.
 class FileBrowserHandlerCustomBindings : public ChromeV8Extension {
  public:
-  FileBrowserHandlerCustomBindings();
+  explicit FileBrowserHandlerCustomBindings(v8::Handle<v8::Context> context);
 
  private:
+  v8::Handle<v8::Value> GetExternalFileEntry(const v8::Arguments& args);
+
   DISALLOW_COPY_AND_ASSIGN(FileBrowserHandlerCustomBindings);
 };
 

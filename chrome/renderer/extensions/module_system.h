@@ -8,7 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/renderer/extensions/native_handler.h"
+#include "chrome/renderer/extensions/object_backed_native_handler.h"
 #include "v8/include/v8.h"
 
 #include <map>
@@ -34,7 +34,7 @@ namespace extensions {
 // Note that a ModuleSystem must be used only in conjunction with a single
 // v8::Context.
 // TODO(koz): Rename this to JavaScriptModuleSystem.
-class ModuleSystem : public NativeHandler {
+class ModuleSystem : public ObjectBackedNativeHandler {
  public:
   class SourceMap {
    public:
@@ -61,7 +61,7 @@ class ModuleSystem : public NativeHandler {
   };
 
   // |source_map| is a weak pointer.
-  explicit ModuleSystem(v8::Handle<v8::Context> context, SourceMap* source_map);
+  ModuleSystem(v8::Handle<v8::Context> context, SourceMap* source_map);
   virtual ~ModuleSystem();
 
   // Returns true if the current context has a ModuleSystem installed in it.
@@ -72,15 +72,13 @@ class ModuleSystem : public NativeHandler {
 
   // Require the specified module. This is the equivalent of calling
   // require('module_name') from the loaded JS files.
-  void Require(const std::string& module_name);
+  v8::Handle<v8::Value> Require(const std::string& module_name);
   v8::Handle<v8::Value> Require(const v8::Arguments& args);
-  v8::Handle<v8::Value> RequireForJs(const v8::Arguments& args);
-  v8::Handle<v8::Value> RequireForJsInner(v8::Handle<v8::String> module_name);
 
   // Calls the specified method exported by the specified module. This is
   // equivalent to calling require('module_name').method_name() from JS.
-  void CallModuleMethod(const std::string& module_name,
-                        const std::string& method_name);
+  v8::Local<v8::Value> CallModuleMethod(const std::string& module_name,
+                                        const std::string& method_name);
 
   // Calls the specified method exported by the specified module. This is
   // equivalent to calling require('module_name').method_name(args) from JS.
@@ -94,6 +92,8 @@ class ModuleSystem : public NativeHandler {
   // |native_handler|.
   void RegisterNativeHandler(const std::string& name,
                              scoped_ptr<NativeHandler> native_handler);
+  // Check if a native handler has been registered for this |name|.
+  bool HasNativeHandler(const std::string& name);
 
   // Causes requireNative(|name|) to look for its module in |source_map_|
   // instead of using a registered native handler. This can be used in unit
@@ -106,6 +106,11 @@ class ModuleSystem : public NativeHandler {
   // Retrieves the lazily defined field specified by |property|.
   static v8::Handle<v8::Value> LazyFieldGetter(v8::Local<v8::String> property,
                                                const v8::AccessorInfo& info);
+  // Retrieves the lazily defined field specified by |property| on a native
+  // object.
+  static v8::Handle<v8::Value> NativeLazyFieldGetter(
+      v8::Local<v8::String> property,
+      const v8::AccessorInfo& info);
 
   // Make |object|.|field| lazily evaluate to the result of
   // require(|module_name|)[|module_field|].
@@ -114,15 +119,26 @@ class ModuleSystem : public NativeHandler {
                     const std::string& module_name,
                     const std::string& module_field);
 
+  // Make |object|.|field| lazily evaluate to the result of
+  // requireNative(|module_name|)[|module_field|].
+  void SetNativeLazyField(v8::Handle<v8::Object> object,
+                          const std::string& field,
+                          const std::string& module_name,
+                          const std::string& module_field);
+
   void set_exception_handler(scoped_ptr<ExceptionHandler> handler) {
     exception_handler_ = handler.Pass();
   }
+
+  virtual bool Invalidate() OVERRIDE;
 
  private:
   typedef std::map<std::string, linked_ptr<NativeHandler> > NativeHandlerMap;
 
   // Called when an exception is thrown but not caught.
   void HandleException(const v8::TryCatch& try_catch);
+
+  static std::string CreateExceptionString(const v8::TryCatch& try_catch);
 
   // Ensure that require_ has been evaluated from require.js.
   void EnsureRequireLoaded();
@@ -132,6 +148,25 @@ class ModuleSystem : public NativeHandler {
   v8::Handle<v8::Value> RunString(v8::Handle<v8::String> code,
                                   v8::Handle<v8::String> name);
 
+  v8::Handle<v8::Value> RequireForJs(const v8::Arguments& args);
+  v8::Handle<v8::Value> RequireForJsInner(v8::Handle<v8::String> module_name);
+
+  // Sets a lazy field using the specified |getter|.
+  void SetLazyField(v8::Handle<v8::Object> object,
+                    const std::string& field,
+                    const std::string& module_name,
+                    const std::string& module_field,
+                    v8::AccessorGetter getter);
+
+  typedef v8::Handle<v8::Value> (ModuleSystem::*GetModuleFunc)(
+      const std::string&);
+  // Base implementation of a LazyFieldGetter that can be customized by passing
+  // in a |get_module| function.
+  static v8::Handle<v8::Value> LazyFieldGetterInner(
+      v8::Local<v8::String> property,
+      const v8::AccessorInfo& info,
+      GetModuleFunc get_module);
+
   // Return the named source file stored in the source map.
   // |args[0]| - the name of a source file in source_map_.
   v8::Handle<v8::Value> GetSource(v8::Handle<v8::String> source_name);
@@ -139,16 +174,14 @@ class ModuleSystem : public NativeHandler {
   // Return an object that contains the native methods defined by the named
   // NativeHandler.
   // |args[0]| - the name of a native handler object.
-  v8::Handle<v8::Value> GetNative(const v8::Arguments& args);
+  v8::Handle<v8::Value> RequireNativeFromString(const std::string& native_name);
+  v8::Handle<v8::Value> RequireNative(const v8::Arguments& args);
 
   // Wraps |source| in a (function(require, requireNative, exports) {...}).
   v8::Handle<v8::String> WrapSource(v8::Handle<v8::String> source);
 
   // Throws an exception in the calling JS context.
   v8::Handle<v8::Value> ThrowException(const std::string& message);
-
-  // The context that this ModuleSystem is for.
-  v8::Persistent<v8::Context> context_;
 
   // A map from module names to the JS source for that module. GetSource()
   // performs a lookup on this map.
@@ -160,6 +193,9 @@ class ModuleSystem : public NativeHandler {
   // When 0, natives are disabled, otherwise indicates how many callers have
   // pinned natives as enabled.
   int natives_enabled_;
+
+  // Set to false if |context_| has been deleted and this should not be used.
+  bool is_valid_;
 
   // Called when an exception is thrown but not caught in JS.
   scoped_ptr<ExceptionHandler> exception_handler_;
