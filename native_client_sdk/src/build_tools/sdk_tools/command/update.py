@@ -2,14 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import download
+import copy
 import logging
 import os
-from sdk_update_common import Error
-import sdk_update_common
 import sys
 import urlparse
 import urllib2
+
+import command_common
+import download
+from sdk_update_common import Error
+import sdk_update_common
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PARENT_DIR = os.path.dirname(SCRIPT_DIR)
@@ -160,6 +163,21 @@ def Update(delegate, remote_manifest, local_manifest, bundle_names, force):
           bundle_name, force)
   else:
     logging.warn('No bundles to update.')
+
+
+def Reinstall(delegate, local_manifest, bundle_names):
+  valid_bundles, invalid_bundles = \
+      command_common.GetValidBundles(local_manifest, bundle_names)
+  if invalid_bundles:
+    logging.warn('Unknown bundle(s): %s\n' % (', '.join(invalid_bundles)))
+
+  if not valid_bundles:
+    logging.warn('No bundles to reinstall.')
+    return
+
+  for bundle_name in valid_bundles:
+    bundle = copy.deepcopy(local_manifest.GetBundle(bundle_name))
+    _UpdateBundle(delegate, bundle, local_manifest)
 
 
 def UpdateBundleIfNeeded(delegate, remote_manifest, local_manifest,

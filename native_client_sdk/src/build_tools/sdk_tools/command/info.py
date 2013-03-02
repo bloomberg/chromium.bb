@@ -2,20 +2,21 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import command_common
 import logging
 import manifest_util
 
 def Info(manifest, bundle_names):
-  valid_bundles = [bundle.name for bundle in manifest.GetBundles()]
-  valid_bundles = set(bundle_names) & set(valid_bundles)
-  invalid_bundles = set(bundle_names) - valid_bundles
+  valid_bundles, invalid_bundles = command_common.GetValidBundles(manifest,
+                                                                  bundle_names)
   if invalid_bundles:
     logging.warn('Unknown bundle(s): %s\n' % (', '.join(invalid_bundles)))
 
-  for bundle_name in bundle_names:
-    if bundle_name not in valid_bundles:
-      continue
+  if not valid_bundles:
+    logging.warn('No valid bundles given.')
+    return
 
+  for bundle_name in valid_bundles:
     bundle = manifest.GetBundle(bundle_name)
 
     print bundle.name

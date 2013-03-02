@@ -466,10 +466,26 @@ class SDKManifest(object):
     # Delete any bundles from the list, then add the new one.  This has the
     # effect of replacing the bundle if it already exists.  It also removes all
     # duplicate bundles.
+    self.RemoveBundle(name)
+    bundles.append(copy.deepcopy(new_bundle))
+
+  def RemoveBundle(self, name):
+    """Remove a bundle by name.
+
+    Args:
+      name: the name of the bundle to remove.
+    Return:
+      True if the bundle was removed, False if there is no bundle with that
+      name.
+    """
+    if not BUNDLES_KEY in self._manifest_data:
+      return False
+    bundles = self._manifest_data[BUNDLES_KEY]
     for i, bundle in enumerate(bundles):
       if bundle[NAME_KEY] == name:
         del bundles[i]
-    bundles.append(copy.deepcopy(new_bundle))
+        return True
+    return False
 
   def BundleNeedsUpdate(self, bundle):
     """Decides if a bundle needs to be updated.
