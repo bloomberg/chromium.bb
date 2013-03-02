@@ -40,10 +40,11 @@ class OffThreadObjectCreator {
 struct Base {
   std::string member;
 };
-struct Derived : Base {};
+struct Derived : public Base {};
 
-struct Target : SupportsWeakPtr<Target> {};
-struct DerivedTarget : Target {};
+struct TargetBase {};
+struct Target : public TargetBase, public SupportsWeakPtr<Target> {};
+struct DerivedTarget : public Target {};
 struct Arrow {
   WeakPtr<Target> target;
 };
@@ -81,6 +82,24 @@ class BackgroundThread : public Thread {
     message_loop()->PostTask(
         FROM_HERE,
         base::Bind(&BackgroundThread::DoDeleteTarget, object, &completion));
+    completion.Wait();
+  }
+
+  void CopyAndAssignArrow(Arrow* object) {
+    WaitableEvent completion(true, false);
+    message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&BackgroundThread::DoCopyAndAssignArrow,
+                   object, &completion));
+    completion.Wait();
+  }
+
+  void CopyAndAssignArrowBase(Arrow* object) {
+    WaitableEvent completion(true, false);
+    message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&BackgroundThread::DoCopyAndAssignArrowBase,
+                   object, &completion));
     completion.Wait();
   }
 
@@ -128,6 +147,25 @@ class BackgroundThread : public Thread {
 
   static void DoDeleteTarget(Target* object, WaitableEvent* completion) {
     delete object;
+    completion->Signal();
+  }
+
+  static void DoCopyAndAssignArrow(Arrow* object, WaitableEvent* completion) {
+    // Copy constructor.
+    Arrow a = *object;
+    // Assignment operator.
+    *object = a;
+    completion->Signal();
+  }
+
+  static void DoCopyAndAssignArrowBase(
+      Arrow* object,
+      WaitableEvent* completion) {
+    // Copy constructor.
+    WeakPtr<TargetBase> b = object->target;
+    // Assignment operator.
+    WeakPtr<TargetBase> c;
+    c = object->target;
     completion->Signal();
   }
 
@@ -391,6 +429,32 @@ TEST(WeakPtrTest, OwnerThreadDeletesObject) {
   }
   EXPECT_EQ(NULL, arrow_copy->target.get());
   background.DeleteArrow(arrow_copy);
+}
+
+TEST(WeakPtrTest, NonOwnerThreadCanCopyAndAssignWeakPtr) {
+  // Main thread creates a Target object.
+  Target target;
+  // Main thread creates an arrow referencing the Target.
+  Arrow* arrow = new Arrow();
+  arrow->target = target.AsWeakPtr();
+
+  // Background can copy and assign arrow (as well as the WeakPtr inside).
+  BackgroundThread background;
+  background.Start();
+  background.CopyAndAssignArrow(arrow);
+}
+
+TEST(WeakPtrTest, NonOwnerThreadCanCopyAndAssignWeakPtrBase) {
+  // Main thread creates a Target object.
+  Target target;
+  // Main thread creates an arrow referencing the Target.
+  Arrow* arrow = new Arrow();
+  arrow->target = target.AsWeakPtr();
+
+  // Background can copy and assign arrow's WeakPtr to a base class WeakPtr.
+  BackgroundThread background;
+  background.Start();
+  background.CopyAndAssignArrowBase(arrow);
 }
 
 TEST(WeakPtrTest, NonOwnerThreadCanDeleteWeakPtr) {

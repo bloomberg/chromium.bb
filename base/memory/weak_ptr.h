@@ -208,9 +208,10 @@ class WeakPtr : public internal::WeakPtrBase {
   WeakPtr() : ptr_(NULL) {
   }
 
-  // Allow conversion from U to T provided U "is a" T.
+  // Allow conversion from U to T provided U "is a" T. Note that this
+  // is separate from the (implicit) copy constructor.
   template <typename U>
-  WeakPtr(const WeakPtr<U>& other) : WeakPtrBase(other), ptr_(other.get()) {
+  WeakPtr(const WeakPtr<U>& other) : WeakPtrBase(other), ptr_(other.ptr_) {
   }
 
   T* get() const { return ref_.is_valid() ? ptr_ : NULL; }
@@ -232,6 +233,7 @@ class WeakPtr : public internal::WeakPtrBase {
 
  private:
   friend class internal::SupportsWeakPtrBase;
+  template <typename U> friend class WeakPtr;
   friend class SupportsWeakPtr<T>;
   friend class WeakPtrFactory<T>;
 
