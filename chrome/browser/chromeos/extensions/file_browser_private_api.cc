@@ -1539,52 +1539,38 @@ bool AddMountFunction::RunImpl() {
       break;
     }
     default: {
-      UrlList file_paths;
-      file_paths.push_back(GURL(file_url));
+      const base::FilePath path = GetLocalPathFromURL(GURL(file_url));
 
-      GetSelectedFileInfo(
-          file_paths,
-          base::Bind(&AddMountFunction::GetSelectedFileInfoResponse,
-                     this,
-                     mount_type_str));
+      if (path.empty()) {
+        SendResponse(false);
+        break;
+      }
+
+      const base::FilePath::StringType display_name = path.BaseName().value();
+
+      // Check if the source path is under Drive cache directory.
+      if (drive::util::IsUnderDriveMountPoint(path)) {
+        drive::DriveSystemService* system_service =
+            drive::DriveSystemServiceFactory::GetForProfile(profile_);
+        drive::DriveFileSystemInterface* file_system =
+            system_service ? system_service->file_system() : NULL;
+        if (!file_system) {
+          SendResponse(false);
+          break;
+        }
+        file_system->GetEntryInfoByPath(
+            drive::util::ExtractDrivePath(path),
+            base::Bind(&AddMountFunction::MarkCacheAsMounted,
+                       this, mount_type_str, display_name));
+      } else {
+        OnMountedStateSet(mount_type_str, display_name,
+                          drive::DRIVE_FILE_OK, path);
+      }
       break;
     }
   }
 
   return true;
-}
-
-void AddMountFunction::GetSelectedFileInfoResponse(
-    const std::string& mount_type,
-    const SelectedFileInfoList& files) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!files.size()) {
-    SendResponse(false);
-    return;
-  }
-
-  const base::FilePath& source_path = files[0].file_path;
-  const base::FilePath::StringType& display_name = files[0].display_name;
-
-  // Check if the source path is under Drive cache directory.
-  if (drive::util::IsUnderDriveMountPoint(source_path)) {
-    drive::DriveSystemService* system_service =
-        drive::DriveSystemServiceFactory::GetForProfile(profile_);
-    drive::DriveFileSystemInterface* file_system =
-        system_service ? system_service->file_system() : NULL;
-    if (!file_system) {
-      SendResponse(false);
-      return;
-    }
-    file_system->GetEntryInfoByPath(
-        drive::util::ExtractDrivePath(source_path),
-        base::Bind(&AddMountFunction::MarkCacheAsMounted,
-                   this, mount_type, display_name));
-  } else {
-    OnMountedStateSet(mount_type, display_name,
-                      drive::DRIVE_FILE_OK, source_path);
-  }
 }
 
 void AddMountFunction::MarkCacheAsMounted(
@@ -2691,33 +2677,19 @@ bool GetDriveFilesFunction::RunImpl() {
     return false;
 
   // Convert the list of strings to a list of GURLs.
-  UrlList file_urls;
   for (size_t i = 0; i < file_urls_as_strings->GetSize(); ++i) {
     std::string file_url_as_string;
     if (!file_urls_as_strings->GetString(i, &file_url_as_string))
       return false;
-    file_urls.push_back(GURL(file_url_as_string));
-  }
-
-  GetSelectedFileInfo(
-      file_urls,
-      base::Bind(&GetDriveFilesFunction::GetSelectedFileInfoResponse, this));
-  return true;
-}
-
-void GetDriveFilesFunction::GetSelectedFileInfoResponse(
-    const SelectedFileInfoList& files) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  for (size_t i = 0; i < files.size(); ++i) {
-    DCHECK(drive::util::IsUnderDriveMountPoint(files[i].file_path));
-    base::FilePath drive_path =
-        drive::util::ExtractDrivePath(files[i].file_path);
+    const base::FilePath path = GetLocalPathFromURL(GURL(file_url_as_string));
+    DCHECK(drive::util::IsUnderDriveMountPoint(path));
+    base::FilePath drive_path = drive::util::ExtractDrivePath(path);
     remaining_drive_paths_.push(drive_path);
   }
 
   local_paths_ = new ListValue;
   GetFileOrSendResponse();
+  return true;
 }
 
 void GetDriveFilesFunction::GetFileOrSendResponse() {

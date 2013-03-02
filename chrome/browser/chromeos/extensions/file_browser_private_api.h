@@ -387,10 +387,6 @@ class AddMountFunction : public FileBrowserFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  // A callback method to handle the result of GetSelectedFileInfo.
-  void GetSelectedFileInfoResponse(const std::string& mount_type,
-                                   const SelectedFileInfoList& files);
-
   // Calls DriveCache::MarkCacheAsMounted.
   void MarkCacheAsMounted(const std::string& mount_type,
                           const base::FilePath::StringType& display_name,
@@ -669,9 +665,6 @@ class GetDriveFilesFunction : public FileBrowserFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  // A callback method to handle the result of GetSelectedFileInfo.
-  void GetSelectedFileInfoResponse(const SelectedFileInfoList& files);
-
   // Gets the file on the top of the |remaining_drive_paths_| or sends the
   // response if the queue is empty.
   void GetFileOrSendResponse();
