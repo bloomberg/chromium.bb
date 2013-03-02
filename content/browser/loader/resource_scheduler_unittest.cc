@@ -117,13 +117,13 @@ class ResourceSchedulerTest : public testing::Test {
 };
 
 TEST_F(ResourceSchedulerTest, OneIsolatedLowRequest) {
-  scoped_ptr<TestRequest> request(NewRequest("http://host/1", net::LOW));
+  scoped_ptr<TestRequest> request(NewRequest("http://host/1", net::LOWEST));
   EXPECT_TRUE(request->started());
 }
 
 TEST_F(ResourceSchedulerTest, LowBlocksUntilIdle) {
   scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
-  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOW));
+  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
   EXPECT_TRUE(high->started());
   EXPECT_FALSE(low->started());
   high.reset();
@@ -132,7 +132,7 @@ TEST_F(ResourceSchedulerTest, LowBlocksUntilIdle) {
 
 TEST_F(ResourceSchedulerTest, LowBlocksUntilBodyInserted) {
   scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
-  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOW));
+  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
   EXPECT_TRUE(high->started());
   EXPECT_FALSE(low->started());
   scheduler_.OnWillInsertBody(kChildId, kRouteId);
@@ -143,14 +143,14 @@ TEST_F(ResourceSchedulerTest, NavigationResetsState) {
   scheduler_.OnWillInsertBody(kChildId, kRouteId);
   scheduler_.OnNavigate(kChildId, kRouteId);
   scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
-  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOW));
+  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
   EXPECT_TRUE(high->started());
   EXPECT_FALSE(low->started());
 }
 
 TEST_F(ResourceSchedulerTest, BackgroundRequestStartsImmediately) {
   const int route_id = 0;  // Indicates a background request.
-  scoped_ptr<TestRequest> request(NewRequest("http://host/1", net::LOW,
+  scoped_ptr<TestRequest> request(NewRequest("http://host/1", net::LOWEST,
                                              route_id));
   EXPECT_TRUE(request->started());
 }
@@ -158,7 +158,7 @@ TEST_F(ResourceSchedulerTest, BackgroundRequestStartsImmediately) {
 TEST_F(ResourceSchedulerTest, StartRequestsWhenIdle) {
   scoped_ptr<TestRequest> high1(NewRequest("http://host/high1", net::HIGHEST));
   scoped_ptr<TestRequest> high2(NewRequest("http://host/high2", net::HIGHEST));
-  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOW));
+  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
   EXPECT_TRUE(high1->started());
   EXPECT_TRUE(high2->started());
   EXPECT_FALSE(low->started());
@@ -176,7 +176,7 @@ TEST_F(ResourceSchedulerTest, EvictedClientsIssuePendingRequests) {
     high_requests.push_back(
         NewRequest("http://host/i", net::HIGHEST, kRouteId + i));
     low_requests.push_back(
-        NewRequest("http://host/i", net::LOW, kRouteId + i));
+        NewRequest("http://host/i", net::LOWEST, kRouteId + i));
     EXPECT_FALSE(low_requests[i]->started());
   }
   EXPECT_TRUE(low_requests[0]->started());
@@ -184,19 +184,19 @@ TEST_F(ResourceSchedulerTest, EvictedClientsIssuePendingRequests) {
 
 TEST_F(ResourceSchedulerTest, CancelOtherRequestsWhileResuming) {
   scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
-  scoped_ptr<TestRequest> low1(NewRequest("http://host/low1", net::LOW));
+  scoped_ptr<TestRequest> low1(NewRequest("http://host/low1", net::LOWEST));
 
   scoped_ptr<net::URLRequest> url_request(
-      NewURLRequest("http://host/low2", net::LOW));
+      NewURLRequest("http://host/low2", net::LOWEST));
   scoped_ptr<ResourceThrottle> throttle(scheduler_.ScheduleRequest(
       kChildId, kRouteId, url_request.get()));
   scoped_ptr<CancelingTestRequest> low2(new CancelingTestRequest(
       throttle.Pass(), url_request.Pass()));
   low2->Start();
 
-  scoped_ptr<TestRequest> low3(NewRequest("http://host/low3", net::LOW));
+  scoped_ptr<TestRequest> low3(NewRequest("http://host/low3", net::LOWEST));
   low2->set_request_to_cancel(low3.Pass());
-  scoped_ptr<TestRequest> low4(NewRequest("http://host/low4", net::LOW));
+  scoped_ptr<TestRequest> low4(NewRequest("http://host/low4", net::LOWEST));
 
   EXPECT_TRUE(high->started());
   EXPECT_FALSE(low2->started());

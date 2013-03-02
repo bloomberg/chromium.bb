@@ -122,7 +122,7 @@ scoped_ptr<ResourceThrottle> ResourceScheduler::ScheduleRequest(
   bool is_synchronous = (url_request->load_flags() & net::LOAD_IGNORE_LIMITS) ==
       net::LOAD_IGNORE_LIMITS;
   bool is_low_priority =
-      url_request->priority() < net::MEDIUM && !is_synchronous;
+      url_request->priority() < net::LOW && !is_synchronous;
 
   if (is_low_priority && !client->in_flight_requests.empty() &&
       !client->has_body) {
