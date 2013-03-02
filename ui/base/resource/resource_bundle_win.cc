@@ -38,34 +38,35 @@ base::FilePath GetResourcesPakFilePath(const std::string& pak_name) {
 void ResourceBundle::LoadCommonResources() {
   // As a convenience, add the current resource module as a data packs.
   data_packs_.push_back(new ResourceDataDLL(GetCurrentResourceDLL()));
-
-  bool use_hidpi = false;
-#if defined(ENABLE_HIDPI)
-  // If we're running in HiDPI mode at a scale larger than 150%, we switch
-  // to 2x resources for desktop layouts.
-  use_hidpi = ui::GetDPIScale() > 1.5;
-#endif
-
-  switch (ui::GetDisplayLayout()) {
-    case ui::LAYOUT_TOUCH:
-      AddDataPackFromPath(
-          GetResourcesPakFilePath("chrome_touch_100_percent.pak"),
-          SCALE_FACTOR_100P);
-      break;
-    default:
-      if (use_hidpi) {
-        AddDataPackFromPath(GetResourcesPakFilePath(
-                            "chrome_200_percent.pak"),
-                            SCALE_FACTOR_200P);
-        AddDataPackFromPath(GetResourcesPakFilePath(
-                            "webkit_resources_200_percent.pak"),
-                            SCALE_FACTOR_200P);
-      } else {
-        AddDataPackFromPath(
-            GetResourcesPakFilePath("chrome_100_percent.pak"),
-            SCALE_FACTOR_100P);
-      }
-      break;
+  // Have high-DPI resources for 140% and 180% scaling on Windows based on
+  // default scaling for Metro mode. If high-DPI mode is enabled, load resource
+  // pak closest to the desired scale factor.  The high-DPI resources are
+  // scaled up from 100% touch.
+  float scale = ui::win::GetDeviceScaleFactor();
+  bool force_touch_resources = false;
+  switch(ui::GetScaleFactorFromScale(scale)) {
+  case ui::SCALE_FACTOR_180P:
+    AddDataPackFromPath(GetResourcesPakFilePath(
+        "chrome_touch_180_percent.pak"),
+        SCALE_FACTOR_180P);
+    force_touch_resources = true;
+    break;
+  case ui::SCALE_FACTOR_140P:
+    AddDataPackFromPath(GetResourcesPakFilePath(
+        "chrome_touch_140_percent.pak"),
+        SCALE_FACTOR_140P);
+    force_touch_resources = true;
+  }
+  // TODO(kevers|girard): Remove loading of 1x resources when in high-DPI
+  // mode once all resources are available at 140% and 180%.
+  if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH || force_touch_resources) {
+    AddDataPackFromPath(
+        GetResourcesPakFilePath("chrome_touch_100_percent.pak"),
+        SCALE_FACTOR_100P);
+  } else {
+    AddDataPackFromPath(
+        GetResourcesPakFilePath("chrome_100_percent.pak"),
+        SCALE_FACTOR_100P);
   }
 }
 
