@@ -293,7 +293,7 @@ if (!chrome.embeddedSearch) {
       native function UndoMostVisitedDeletion();
 
       function SafeWrapMostVisited(restrictedText, width) {
-        return SafeWrap(restrictedText, width, 14, 11);
+        return SafeWrap(restrictedText, width, 18, 11);
       }
 
       function GetMostVisitedItemsWrapper() {
