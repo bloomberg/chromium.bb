@@ -55,6 +55,7 @@ void DnsProbeJobTest::RunProbe(MockDnsClientRule::Result good_result,
   MockDnsClientRuleList rules;
   rules.push_back(MockDnsClientRule("google.com", kTypeA, good_result));
   rules.push_back(MockDnsClientRule("", kTypeA, bad_result));
+
   scoped_ptr<DnsClient> dns_client = CreateMockDnsClient(config, rules);
   dns_client->SetConfig(config);
 
@@ -113,7 +114,6 @@ TEST_F(DnsProbeJobTest, Test) {
       MockDnsClientRule::TIMEOUT,
       DnsProbeJob::SERVERS_UNREACHABLE },
   };
-
   for (size_t i = 0; i < arraysize(kTestCases); i++) {
     const TestCase* test_case = &kTestCases[i];
     RunProbe(test_case->good_result, test_case->bad_result);

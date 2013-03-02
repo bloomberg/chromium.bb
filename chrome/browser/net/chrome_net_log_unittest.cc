@@ -114,6 +114,7 @@ class AddRemoveObserverTestThread : public ChromeNetLogTestThread {
       ASSERT_EQ(net_log_, observer_.net_log());
       ASSERT_EQ(net::NetLog::LOG_ALL, observer_.log_level());
       ASSERT_LE(net_log_->GetLogLevel(), net::NetLog::LOG_ALL);
+
       net_log_->RemoveThreadSafeObserver(&observer_);
       ASSERT_TRUE(!observer_.net_log());
     }
