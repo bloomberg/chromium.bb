@@ -139,44 +139,6 @@ def GetOverlayName(overlay):
     return None
 
 
-class _BlackListManager(object):
-  """Small wrapper class to manage black lists for marking all packages."""
-  BLACK_LIST_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                 'cros_mark_as_stable_blacklist')
-
-  def __init__(self):
-    """Initializes the black list manager."""
-    self.black_list_re_array = None
-    self._Initialize()
-
-  def _Initialize(self):
-    """Initializes the black list manager from a black list file."""
-    self.black_list_re_array = []
-    with open(self.BLACK_LIST_FILE) as file_handle:
-      for line in file_handle.readlines():
-        line = line.strip()
-        # Ignore comment lines.
-        if line and not line.startswith('#'):
-          line = line.rstrip()
-          package_array = line.split('/')
-          assert len(package_array) == 2, \
-              'Line %s does not match package format.' % line
-          category, package_name = package_array
-          self.black_list_re_array.append(
-              re.compile('.*/%s/%s/%s-.*\.ebuild' % (category, package_name,
-                                                     package_name)))
-
-  def IsPackageBlackListed(self, path_to_ebuild):
-    """Returns True if the package given by the path is blacklisted."""
-    assert self.black_list_re_array != None, 'Black list not initialized.'
-
-    for pattern in self.black_list_re_array:
-      if pattern.match(path_to_ebuild):
-        return True
-
-    return False
-
-
 class EBuildVersionFormatException(Exception):
   def __init__(self, filename):
     self.filename = filename
@@ -625,7 +587,7 @@ def BestEBuild(ebuilds):
   return winner
 
 
-def _FindUprevCandidates(files, blacklist):
+def _FindUprevCandidates(files):
   """Return the uprev candidate ebuild from a specified list of files.
 
   Usually an uprev candidate is a the stable ebuild in a cros_workon
@@ -643,9 +605,7 @@ def _FindUprevCandidates(files, blacklist):
     if not path.endswith('.ebuild') or os.path.islink(path):
       continue
     ebuild = EBuild(path)
-    if (not ebuild.is_workon or
-        ebuild.is_blacklisted or
-        blacklist.IsPackageBlackListed(path)):
+    if not ebuild.is_workon or ebuild.is_blacklisted:
       continue
     if ebuild.is_stable:
       if ebuild.version == '9999':
@@ -701,12 +661,11 @@ def BuildEBuildDictionary(overlays, use_all, packages):
   packages: A set of the packages we want to gather.  If use_all is
     True, this argument is ignored, and should be None.
   """
-  blacklist = _BlackListManager()
   for overlay in overlays:
     for package_dir, _dirs, files in os.walk(overlay):
       # Add stable ebuilds to overlays[overlay].
       paths = [os.path.join(package_dir, path) for path in files]
-      ebuild = _FindUprevCandidates(paths, blacklist)
+      ebuild = _FindUprevCandidates(paths)
 
       # If the --all option isn't used, we only want to update packages that
       # are in packages.

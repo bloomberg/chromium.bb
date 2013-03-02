@@ -9,9 +9,7 @@
 import fileinput
 import mox
 import os
-import re
 import sys
-import tempfile
 
 import constants
 if __name__ == '__main__':
@@ -517,8 +515,7 @@ class BuildEBuildDictionaryTest(cros_test_lib.MoxTestCase):
   def testWantedPackage(self):
     overlays = {"/overlay": []}
     package = _Package(self.package)
-    portage_utilities._FindUprevCandidates(
-        [], mox.IgnoreArg()).AndReturn(package)
+    portage_utilities._FindUprevCandidates([]).AndReturn(package)
     self.mox.ReplayAll()
     portage_utilities.BuildEBuildDictionary(
         overlays, False, [self.package])
@@ -529,56 +526,11 @@ class BuildEBuildDictionaryTest(cros_test_lib.MoxTestCase):
   def testUnwantedPackage(self):
     overlays = {"/overlay": []}
     package = _Package(self.package)
-    portage_utilities._FindUprevCandidates(
-        [], mox.IgnoreArg()).AndReturn(package)
+    portage_utilities._FindUprevCandidates([]).AndReturn(package)
     self.mox.ReplayAll()
     portage_utilities.BuildEBuildDictionary(overlays, False, [])
     self.assertEquals(len(overlays), 1)
     self.assertEquals(overlays["/overlay"], [])
-    self.mox.VerifyAll()
-
-
-class BlacklistManagerTest(cros_test_lib.MoxTestCase):
-  """Class that tests the blacklist manager."""
-  FAKE_BLACKLIST = """
-    # A Fake blacklist file.
-
-    chromeos-base/fake-package
-  """
-
-  @osutils.TempDirDecorator
-  def testInitializeFromFile(self):
-    """Tests whether we can correctly initialize from a fake blacklist file."""
-    file_path = tempfile.mktemp()
-    osutils.WriteFile(file_path, self.FAKE_BLACKLIST)
-    saved_black_list = portage_utilities._BlackListManager.BLACK_LIST_FILE
-    try:
-      portage_utilities._BlackListManager.BLACK_LIST_FILE = file_path
-      black_list_manager = portage_utilities._BlackListManager()
-      self.assertTrue(black_list_manager.IsPackageBlackListed(
-          '/some/crazy/path/'
-          'chromeos-base/fake-package/fake-package-0.0.5.ebuild'))
-      self.assertEqual(len(black_list_manager.black_list_re_array), 1)
-    finally:
-      os.remove(file_path)
-      portage_utilities._BlackListManager.BLACK_LIST_FILE = saved_black_list
-
-  def testIsPackageBlackListed(self):
-    """Tests if we can correctly check if a package is blacklisted."""
-    self.mox.StubOutWithMock(portage_utilities._BlackListManager,
-                             '_Initialize')
-    portage_utilities._BlackListManager._Initialize()
-
-    self.mox.ReplayAll()
-    black_list_manager = portage_utilities._BlackListManager()
-    black_list_manager.black_list_re_array = [
-        re.compile('.*/fake/pkg/pkg-.*\.ebuild') ]
-    self.assertTrue(black_list_manager.IsPackageBlackListed(
-        '/some/crazy/path/'
-        'fake/pkg/pkg-version.ebuild'))
-    self.assertFalse(black_list_manager.IsPackageBlackListed(
-        '/some/crazy/path/'
-        'fake/diff-pkg/diff-pkg-version.ebuild'))
     self.mox.VerifyAll()
 
 
