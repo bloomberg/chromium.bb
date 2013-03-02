@@ -834,7 +834,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kNoReferrers,
     switches::kNoSandbox,
     switches::kOldCheckboxStyle,
-    switches::kPpapiOutOfProcess,
+    switches::kPpapiInProcess,
     switches::kRegisterPepperPlugins,
     switches::kRendererAssertTest,
 #if defined(OS_POSIX)

@@ -20,8 +20,10 @@ namespace {
 
 // Appends any plugins from the command line to the given vector.
 void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
-  bool out_of_process =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kPpapiOutOfProcess);
+  bool out_of_process = true;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kPpapiInProcess))
+    out_of_process = false;
+
   const std::string value =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kRegisterPepperPlugins);

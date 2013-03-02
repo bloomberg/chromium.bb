@@ -101,6 +101,8 @@ class PPAPITest : public PPAPITestBase {
 
   virtual std::string BuildQuery(const std::string& base,
                                  const std::string& test_case) OVERRIDE;
+ protected:
+  bool in_process_;  // Controls the --ppapi-in-process switch.
 };
 
 // Variant of PPAPITest that runs plugins out-of-process to test proxy

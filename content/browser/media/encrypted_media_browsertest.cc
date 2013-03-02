@@ -92,7 +92,6 @@ class EncryptedMediaTest : public testing::WithParamInterface<const char*>,
   // Registers any CDM plugins not registered by default.
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(switches::kDisableAudio);
-    command_line->AppendSwitch(switches::kPpapiOutOfProcess);
 
     // Append the switch to register the Clear Key CDM plugin.
     base::FilePath plugin_dir;

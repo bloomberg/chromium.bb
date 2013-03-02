@@ -168,7 +168,7 @@ CONTENT_EXPORT extern const char kPluginPath[];
 CONTENT_EXPORT extern const char kPluginProcess[];
 extern const char kPluginStartupDialog[];
 CONTENT_EXPORT extern const char kPpapiBrokerProcess[];
-CONTENT_EXPORT extern const char kPpapiOutOfProcess[];
+CONTENT_EXPORT extern const char kPpapiInProcess[];
 extern const char kPpapiPluginLauncher[];
 CONTENT_EXPORT extern const char kPpapiPluginProcess[];
 extern const char kPpapiStartupDialog[];

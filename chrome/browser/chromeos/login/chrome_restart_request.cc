@@ -99,7 +99,7 @@ std::string DeriveCommandLine(const GURL& start_url,
       ::switches::kPpapiFlashInProcess,
       ::switches::kPpapiFlashPath,
       ::switches::kPpapiFlashVersion,
-      ::switches::kPpapiOutOfProcess,
+      ::switches::kPpapiInProcess,
       ::switches::kRendererStartupDialog,
 #if defined(USE_XI2_MT)
       ::switches::kTouchCalibration,

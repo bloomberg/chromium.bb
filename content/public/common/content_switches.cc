@@ -544,8 +544,8 @@ const char kPluginStartupDialog[]           = "plugin-startup-dialog";
 // Argument to the process type that indicates a PPAPI broker process type.
 const char kPpapiBrokerProcess[]            = "ppapi-broker";
 
-// Runs PPAPI (Pepper) plugins out-of-process.
-const char kPpapiOutOfProcess[]             = "ppapi-out-of-process";
+// Runs PPAPI (Pepper) plugins in-process.
+const char kPpapiInProcess[]                = "ppapi-in-process";
 
 // Like kPluginLauncher for PPAPI plugins.
 const char kPpapiPluginLauncher[]           = "ppapi-plugin-launcher";

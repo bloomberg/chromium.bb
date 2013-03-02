@@ -275,7 +275,7 @@ GURL PPAPITestBase::GetTestURL(
   return http_server.GetURL(query);
 }
 
-PPAPITest::PPAPITest() {
+PPAPITest::PPAPITest() : in_process_(true) {
 }
 
 void PPAPITest::SetUpCommandLine(CommandLine* command_line) {
@@ -294,6 +294,9 @@ void PPAPITest::SetUpCommandLine(CommandLine* command_line) {
   command_line->AppendSwitchNative(switches::kRegisterPepperPlugins,
                                    pepper_plugin);
   command_line->AppendSwitchASCII(switches::kAllowNaClSocketAPI, "127.0.0.1");
+
+  if (in_process_)
+    command_line->AppendSwitch(switches::kPpapiInProcess);
 }
 
 std::string PPAPITest::BuildQuery(const std::string& base,
@@ -302,13 +305,11 @@ std::string PPAPITest::BuildQuery(const std::string& base,
 }
 
 OutOfProcessPPAPITest::OutOfProcessPPAPITest() {
+  in_process_ = false;
 }
 
 void OutOfProcessPPAPITest::SetUpCommandLine(CommandLine* command_line) {
   PPAPITest::SetUpCommandLine(command_line);
-
-  // Run PPAPI out-of-process to exercise proxy implementations.
-  command_line->AppendSwitch(switches::kPpapiOutOfProcess);
 }
 
 void PPAPINaClTest::SetUpCommandLine(CommandLine* command_line) {
