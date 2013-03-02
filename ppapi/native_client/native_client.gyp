@@ -146,6 +146,20 @@
                  ],
                },
              ],
+             # untrusted.gypi and build_nexe.py currently build
+             # both x86-32 and x86-64 whenever target_arch is some
+             # flavor of x86.  However, on non-windows platforms
+             # we only need one architecture.
+             ['OS!="win" and target_arch=="ia32"',
+               {
+                 'enable_x86_64': 0
+               }
+             ],
+             ['OS!="win" and target_arch=="x64"',
+               {
+                 'enable_x86_32': 0
+               }
+             ]
             ],
             'sources': [
             ],
