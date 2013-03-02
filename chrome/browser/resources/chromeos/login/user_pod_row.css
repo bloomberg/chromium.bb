@@ -220,8 +220,6 @@ html[dir=rtl] .action-box-area {
   font-size: 13px;
   line-height: 19px;
   margin: 0;
-  max-width: 250px;
-  min-width: 200px;
   opacity: 0;
   padding: 0;
   position: absolute;
@@ -229,6 +227,7 @@ html[dir=rtl] .action-box-area {
   top: 18px;
   /* TODO(glotov): the menu should fade out with transition  */
   visibility: hidden;
+  width: 220px;
 }
 
 .action-box-area.active ~ .action-box-menu {
@@ -247,6 +246,13 @@ html[dir=rtl] .action-box-area {
 
 .action-box-menu-title-name {
   display: -webkit-box;
+}
+
+.action-box-menu-title-email {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .action-box-menu-remove {
