@@ -975,30 +975,50 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurface(
 
   scoped_callback_runner.Release();
 
-  // Convert |src_subrect| from the views coordinate (upper-left origin) into
-  // the OpenGL coordinate (lower-left origin).
-  gfx::Rect src_gl_subrect = src_subrect;
-  src_gl_subrect.set_y(GetViewBounds().height() - src_subrect.bottom());
-
-  gfx::Rect src_pixel_gl_subrect = gfx::ToEnclosingRect(
-      gfx::ScaleRect(src_gl_subrect, scale));
-  compositing_iosurface_->CopyTo(
-      src_pixel_gl_subrect,
-      dst_pixel_size,
-      output,
-      callback);
+  compositing_iosurface_->CopyTo(GetScaledOpenGLPixelRect(src_subrect),
+                                 ScaleFactor(cocoa_view_),
+                                 dst_pixel_size,
+                                 output,
+                                 callback);
 }
 
 void RenderWidgetHostViewMac::CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
       const scoped_refptr<media::VideoFrame>& target,
       const base::Callback<void(bool)>& callback) {
-  NOTIMPLEMENTED();
-  callback.Run(false);
+  base::ScopedClosureRunner scoped_callback_runner(base::Bind(callback, false));
+  if (!render_widget_host_->is_accelerated_compositing_active() ||
+      !compositing_iosurface_.get() ||
+      !compositing_iosurface_->HasIOSurface())
+    return;
+
+  if (!target) {
+    NOTREACHED();
+    return;
+  }
+
+  if (target->format() != media::VideoFrame::YV12 &&
+      target->format() != media::VideoFrame::I420) {
+    NOTREACHED();
+    return;
+  }
+
+  if (src_subrect.IsEmpty())
+    return;
+
+  scoped_callback_runner.Release();
+  compositing_iosurface_->CopyToVideoFrame(
+      GetScaledOpenGLPixelRect(src_subrect),
+      ScaleFactor(cocoa_view_),
+      target,
+      callback);
 }
 
 bool RenderWidgetHostViewMac::CanCopyToVideoFrame() const {
-  return false;
+  return (!render_widget_host_->GetBackingStore(false) &&
+          render_widget_host_->is_accelerated_compositing_active() &&
+          compositing_iosurface_.get() &&
+          compositing_iosurface_->HasIOSurface());
 }
 
 // Sets whether or not to accept first responder status.
@@ -1688,6 +1708,15 @@ void RenderWidgetHostViewMac::OnAcceleratedSurfaceBuffersSwapped(
   params.window = window;
   params.surface_handle = surface_handle;
   AcceleratedSurfaceBuffersSwapped(params, 0);
+}
+
+gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
+    const gfx::Rect& rect) {
+  gfx::Rect src_gl_subrect = rect;
+  src_gl_subrect.set_y(GetViewBounds().height() - rect.bottom());
+
+  return gfx::ToEnclosingRect(gfx::ScaleRect(src_gl_subrect,
+                                             ScaleFactor(cocoa_view_)));
 }
 
 }  // namespace content

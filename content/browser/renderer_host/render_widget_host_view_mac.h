@@ -466,6 +466,10 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   void OnAcceleratedSurfaceBuffersSwapped(gfx::PluginWindowHandle window,
                                           uint64 surface_handle);
 
+  // Convert |rect| from the views coordinate (upper-left origin) into
+  // the OpenGL coordinate (lower-left origin) and scale for HiDPI displays.
+  gfx::Rect GetScaledOpenGLPixelRect(const gfx::Rect& rect);
+
   // The associated view. This is weak and is inserted into the view hierarchy
   // to own this RenderWidgetHostViewMac object.
   RenderWidgetHostViewCocoa* cocoa_view_;

@@ -80,24 +80,6 @@ bool LockAndCopyPlane(IDirect3DSurface9* src_surface,
   return true;
 }
 
-// Return the largest centered rectangle with the same aspect ratio of |content|
-// that fits entirely inside of |bounds|.
-gfx::Rect ComputeLetterboxRegion(
-    const gfx::Rect& bounds,
-    const gfx::Size& content) {
-  int64 x = static_cast<int64>(content.width()) * bounds.height();
-  int64 y = static_cast<int64>(bounds.width()) * content.height();
-
-  gfx::Size letterbox(bounds.width(), bounds.height());
-  if (y < x)
-    letterbox.set_height(static_cast<int>(y / content.width()));
-  else
-    letterbox.set_width(static_cast<int>(x / content.height()));
-  gfx::Rect result = bounds;
-  result.ClampToCenteredSize(letterbox);
-  return result;
-}
-
 }  // namespace
 
 // A PresentThread is a thread that is dedicated to presenting surfaces to a
@@ -587,8 +569,8 @@ bool AcceleratedPresenter::DoCopyToYUV(
   // aspect ratio. Fill in any margin with black.
   // TODO(nick): It would be more efficient all around to implement
   // letterboxing as a memset() on the dst.
-  gfx::Rect letterbox = ComputeLetterboxRegion(gfx::Rect(dst_size),
-                                               src_subrect.size());
+  gfx::Rect letterbox = media::ComputeLetterboxRegion(gfx::Rect(dst_size),
+                                                      src_subrect.size());
   if (letterbox != gfx::Rect(dst_size)) {
     TRACE_EVENT0("gpu", "Letterbox");
     present_thread_->device()->ColorFill(resized, NULL, 0xFF000000);

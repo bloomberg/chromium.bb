@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "media/base/media_export.h"
+#include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
 namespace media {
@@ -56,6 +57,19 @@ MEDIA_EXPORT void RotatePlaneByPixels(
     int rotation,  // Clockwise.
     bool flip_vert,
     bool flip_horiz);
+
+// Return the largest centered rectangle with the same aspect ratio of |content|
+// that fits entirely inside of |bounds|.
+MEDIA_EXPORT gfx::Rect ComputeLetterboxRegion(const gfx::Rect& bounds,
+                                              const gfx::Size& content);
+
+// Copy an RGB bitmap into the specified |region_in_frame| of a YUV video frame.
+// Fills the regions outside |region_in_frame| with black.
+MEDIA_EXPORT void CopyRGBToVideoFrame(const uint8* source,
+                                      int stride,
+                                      const gfx::Rect& region_in_frame,
+                                      VideoFrame* frame);
+
 }  // namespace media
 
 #endif  // MEDIA_BASE_VIDEO_UTIL_H_

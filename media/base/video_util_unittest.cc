@@ -326,4 +326,22 @@ TEST_P(VideoUtilRotationTest, Rotate) {
 INSTANTIATE_TEST_CASE_P(, VideoUtilRotationTest,
                         testing::ValuesIn(kVideoRotationTestData));
 
+TEST_F(VideoUtilTest, ComputeLetterboxRegion) {
+  EXPECT_EQ(gfx::Rect(167, 0, 666, 500),
+            ComputeLetterboxRegion(gfx::Rect(0, 0, 1000, 500),
+                                   gfx::Size(640, 480)));
+  EXPECT_EQ(gfx::Rect(0, 312, 500, 375),
+            ComputeLetterboxRegion(gfx::Rect(0, 0, 500, 1000),
+                                   gfx::Size(640, 480)));
+  EXPECT_EQ(gfx::Rect(56, 0, 888, 500),
+            ComputeLetterboxRegion(gfx::Rect(0, 0, 1000, 500),
+                                   gfx::Size(1920, 1080)));
+  EXPECT_EQ(gfx::Rect(0, 12, 100, 75),
+            ComputeLetterboxRegion(gfx::Rect(0, 0, 100, 100),
+                                   gfx::Size(400, 300)));
+  EXPECT_EQ(gfx::Rect(0, 250000000, 2000000000, 1500000000),
+            ComputeLetterboxRegion(gfx::Rect(0, 0, 2000000000, 2000000000),
+                                   gfx::Size(40000, 30000)));
+}
+
 }  // namespace media
