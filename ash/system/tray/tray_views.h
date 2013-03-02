@@ -16,7 +16,6 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/slider.h"
-#include "ui/views/controls/throbber.h"
 #include "ui/views/view.h"
 
 typedef unsigned int SkColor;
@@ -147,53 +146,6 @@ class TrayBarButtonWithTitle : public views::CustomButton {
   int image_height_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayBarButtonWithTitle);
-};
-
-// A SmoothedThrobber with tooltip.
-class SystemTrayThrobber : public views::SmoothedThrobber {
- public:
-  SystemTrayThrobber(int frame_delay_ms);
-  virtual ~SystemTrayThrobber();
-
-  void SetTooltipText(const string16& tooltip_text);
-
-  // Overriden from views::View.
-  virtual bool GetTooltipText(
-        const gfx::Point& p, string16* tooltip) const OVERRIDE;
-
- private:
-  // The current tooltip text.
-  string16 tooltip_text_;
-
-  DISALLOW_COPY_AND_ASSIGN(SystemTrayThrobber);
-};
-
-// A View containing a SystemTrayThrobber with animation for starting/stopping.
-class ThrobberView : public views::View {
- public:
-  ThrobberView();
-  virtual ~ThrobberView();
-
-  void Start();
-  void Stop();
-  void SetTooltipText(const string16& tooltip_text);
-
-  // Overriden from views::View.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual bool GetTooltipText(
-      const gfx::Point& p, string16* tooltip) const OVERRIDE;
-
- private:
-  // Schedules animation for starting/stopping throbber.
-  void ScheduleAnimation(bool start_throbber);
-
-  SystemTrayThrobber* throbber_;
-
-  // The current tooltip text.
-  string16 tooltip_text_;
-
-  DISALLOW_COPY_AND_ASSIGN(ThrobberView);
 };
 
 // Sets up a Label properly for the tray (sets color, font etc.).

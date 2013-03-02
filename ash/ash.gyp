@@ -257,6 +257,8 @@
         'system/tray/system_tray_notifier.h',
         'system/tray/test_system_tray_delegate.cc',
         'system/tray/test_system_tray_delegate.h',
+        'system/tray/throbber_view.cc',
+        'system/tray/throbber_view.h',
         'system/tray/tray_background_view.cc',
         'system/tray/tray_background_view.h',
         'system/tray/tray_bubble_wrapper.cc',
