@@ -633,7 +633,6 @@
             '<(libjingle_source)/talk/app/webrtc/mediastreamhandler.h',
             '<(libjingle_source)/talk/app/webrtc/mediastreaminterface.h',
             '<(libjingle_source)/talk/app/webrtc/mediastreamprovider.h',
-            '<(libjingle_source)/talk/app/webrtc/mediastreamproxy.cc',
             '<(libjingle_source)/talk/app/webrtc/mediastreamproxy.h',
             '<(libjingle_source)/talk/app/webrtc/mediastreamsignaling.cc',
             '<(libjingle_source)/talk/app/webrtc/mediastreamsignaling.h',
