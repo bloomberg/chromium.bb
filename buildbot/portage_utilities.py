@@ -327,9 +327,10 @@ class EBuild(object):
     for line in fileinput.input(path):
       if line.startswith('inherit ') and 'cros-workon' in line:
         self.is_workon = True
-      elif (line.startswith('KEYWORDS=') and '~' not in line and
-            ('amd64' in line or 'x86' in line or 'arm' in line)):
-        self.is_stable = True
+      elif line.startswith('KEYWORDS='):
+        for keyword in line.split('=', 1)[1].strip("\"'").split():
+          if not keyword.startswith('~') and keyword != '-*':
+            self.is_stable = True
     fileinput.close()
 
   def GetGitProjectName(self, path):

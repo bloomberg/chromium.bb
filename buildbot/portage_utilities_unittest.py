@@ -42,9 +42,9 @@ class _DummyCommandResult(object):
 
 class EBuildTest(cros_test_lib.MoxTestCase):
 
-  def _makeFakeEbuild(self, fake_ebuild_path):
+  def _makeFakeEbuild(self, fake_ebuild_path, fake_ebuild_content=''):
     self.mox.StubOutWithMock(fileinput, 'input')
-    fileinput.input(fake_ebuild_path).AndReturn('')
+    fileinput.input(fake_ebuild_path).AndReturn(fake_ebuild_content)
     self.mox.ReplayAll()
     fake_ebuild = portage_utilities.EBuild(fake_ebuild_path)
     self.mox.VerifyAll()
@@ -106,6 +106,24 @@ class EBuildTest(cros_test_lib.MoxTestCase):
     test_hash = fake_ebuild.GetCommitId(fake_sources)
     self.mox.VerifyAll()
     self.assertEquals(test_hash, fake_hash)
+
+  def testEBuildStable(self):
+    """Test ebuild w/keyword variations"""
+    fake_ebuild_path = '/path/to/test_package/test_package-9999.ebuild'
+
+    datasets = (
+        ('~amd64', False),
+        ('amd64', True),
+        ('~amd64 ~arm ~x86', False),
+        ('~amd64 arm ~x86', True),
+        ('-* ~arm', False),
+        ('-* x86', True),
+    )
+    for keywords, stable in datasets:
+      fake_ebuild = self._makeFakeEbuild(
+          fake_ebuild_path, fake_ebuild_content=['KEYWORDS="%s"\n' % keywords])
+      self.assertEquals(fake_ebuild.is_stable, stable)
+      self.mox.UnsetStubs()
 
 
 class ProjectAndPathTest(cros_test_lib.MoxTempDirTestCase):
