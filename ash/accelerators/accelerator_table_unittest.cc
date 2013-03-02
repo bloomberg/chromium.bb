@@ -67,4 +67,13 @@ TEST(AcceleratorTableTest, CheckDuplicatedActionsAllowedAtModalWindow) {
   }
 }
 
+TEST(AcceleratorTableTest, CheckDuplicatedNonrepeatableActions) {
+  std::set<AcceleratorAction> actions;
+  for (size_t i = 0; i < kNonrepeatableActionsLength; ++i) {
+    EXPECT_TRUE(actions.insert(kNonrepeatableActions[i]).second)
+        << "Duplicated action: " << kNonrepeatableActions[i]
+        << " at index: " << i;
+  }
+}
+
 }  // namespace ash

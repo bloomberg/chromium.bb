@@ -289,6 +289,7 @@ const AcceleratorAction kNonrepeatableActions[] = {
   CYCLE_BACKWARD_MRU,
   CYCLE_FORWARD_LINEAR,
   CYCLE_FORWARD_MRU,
+  ROTATE_WINDOW,
   TOGGLE_MAXIMIZED,
   WINDOW_MINIMIZE,
 };
