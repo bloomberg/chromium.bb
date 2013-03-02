@@ -330,11 +330,11 @@
       <message desc="Error displayed if an invalid access code is entered." name="IDR_ERROR_INVALID_ACCESS_CODE">
         The access code is invalid. Please try again.
       </message>
-      <message desc="Error displayed when the host is online, but we are unable to connect to it due to network configuration." name="IDR_ERROR_NETWORK_FAILURE">
+      <message desc="Error displayed when the host is online, but we are unable to connect to it due to network configuration." name="IDR_ERROR_P2P_FAILURE">
         Unable to reach the host. This is probably due to the configuration of the network you are using.
       </message>
-      <message desc="Error displayed by the client if the server does not respond to a network request." name="IDR_ERROR_NO_RESPONSE">
-        The server failed to respond to the network request.
+      <message desc="Error displayed when the host is online, but we are unable to connect to it due to network configuration." name="IDR_ERROR_NETWORK_FAILURE">
+        Could not connect to the network. Please check that your device is on-line.
       </message>
       <message desc="Error displayed when the service returns a 503 error. Such errors are usually temporary, and resolve themselves in about 30 seconds." name="IDR_ERROR_SERVICE_UNAVAILABLE">
         The service is temporarily unavailable. Please try again later.

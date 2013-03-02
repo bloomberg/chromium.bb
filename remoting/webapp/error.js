@@ -11,7 +11,6 @@ var remoting = remoting || {};
  * @enum {string} All error messages from messages.json
  */
 remoting.Error = {
-  NO_RESPONSE: /*i18n-content*/'ERROR_NO_RESPONSE',
   INVALID_ACCESS_CODE: /*i18n-content*/'ERROR_INVALID_ACCESS_CODE',
   MISSING_PLUGIN: /*i18n-content*/'ERROR_MISSING_PLUGIN',
   AUTHENTICATION_FAILED: /*i18n-content*/'ERROR_AUTHENTICATION_FAILED',
@@ -23,5 +22,6 @@ remoting.Error = {
   UNEXPECTED: /*i18n-content*/'ERROR_UNEXPECTED',
   SERVICE_UNAVAILABLE: /*i18n-content*/'ERROR_SERVICE_UNAVAILABLE',
   NOT_AUTHENTICATED: /*i18n-content*/'ERROR_NOT_AUTHENTICATED',
-  INVALID_HOST_DOMAIN: /*i18n-content*/'ERROR_INVALID_HOST_DOMAIN'
+  INVALID_HOST_DOMAIN: /*i18n-content*/'ERROR_INVALID_HOST_DOMAIN',
+  P2P_FAILURE: /*i18n-content*/'ERROR_P2P_FAILURE'
 };

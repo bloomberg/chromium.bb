@@ -392,7 +392,7 @@ remoting.SessionConnector.prototype.startAccessTokenRefreshTimer_ = function() {
 remoting.SessionConnector.prototype.translateSupportHostsError =
     function(error) {
   switch (error) {
-    case 0: return remoting.Error.NO_RESPONSE;
+    case 0: return remoting.Error.NETWORK_FAILURE;
     case 404: return remoting.Error.INVALID_ACCESS_CODE;
     case 502: // No break
     case 503: return remoting.Error.SERVICE_UNAVAILABLE;

@@ -423,7 +423,7 @@ remoting.ClientSession.prototype.getError = function() {
     case remoting.ClientSession.ConnectionError.INCOMPATIBLE_PROTOCOL:
       return remoting.Error.INCOMPATIBLE_PROTOCOL;
     case remoting.ClientSession.ConnectionError.NETWORK_FAILURE:
-      return remoting.Error.NETWORK_FAILURE;
+      return remoting.Error.P2P_FAILURE;
     case remoting.ClientSession.ConnectionError.HOST_OVERLOAD:
       return remoting.Error.HOST_OVERLOAD;
     default:

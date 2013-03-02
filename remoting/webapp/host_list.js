@@ -143,7 +143,6 @@ remoting.HostList.prototype.refresh = function(onDone) {
   };
   /** @param {remoting.Error} error */
   var onError = function(error) {
-    that.hosts_ = [];
     that.lastError_ = error;
     onDone(false);
   };
@@ -161,7 +160,6 @@ remoting.HostList.prototype.refresh = function(onDone) {
  * @private
  */
 remoting.HostList.prototype.parseHostListResponse_ = function(onDone, xhr) {
-  this.hosts_ = [];
   this.lastError_ = '';
   try {
     if (xhr.status == 200) {
@@ -192,7 +190,7 @@ remoting.HostList.prototype.parseHostListResponse_ = function(onDone, xhr) {
       // Some other error.
       console.error('Bad status on host list query: ', xhr);
       if (xhr.status == 0) {
-        this.lastError_ = remoting.Error.NO_RESPONSE;
+        this.lastError_ = remoting.Error.NETWORK_FAILURE;
       } else if (xhr.status == 401) {
         this.lastError_ = remoting.Error.AUTHENTICATION_FAILED;
       } else if (xhr.status == 502 || xhr.status == 503) {
@@ -224,23 +222,6 @@ remoting.HostList.prototype.display = function() {
   this.table_.hidden = noHostsRegistered;
   this.noHosts_.hidden = !noHostsRegistered;
 
-  for (var i = 0; i < this.hosts_.length; ++i) {
-    /** @type {remoting.Host} */
-    var host = this.hosts_[i];
-    // Validate the entry to make sure it has all the fields we expect and is
-    // not the local host (which is displayed separately). NB: if the host has
-    // never sent a heartbeat, then there will be no jabberId.
-    if (host.hostName && host.hostId && host.status && host.publicKey &&
-        (!this.localHost_ || host.hostId != this.localHost_.hostId)) {
-      var hostTableEntry = new remoting.HostTableEntry(
-          host, this.webappMajorVersion_,
-          this.renameHost_.bind(this), this.deleteHost_.bind(this));
-      hostTableEntry.createDom();
-      this.hostTableEntries_[i] = hostTableEntry;
-      this.table_.appendChild(hostTableEntry.tableRow);
-    }
-  }
-
   if (this.lastError_ != '') {
     l10n.localizeElementFromTag(this.errorMsg_, this.lastError_);
     if (this.lastError_ == remoting.Error.AUTHENTICATION_FAILED) {
@@ -250,7 +231,25 @@ remoting.HostList.prototype.display = function() {
       l10n.localizeElementFromTag(this.errorButton_,
                                   /*i18n-content*/'RETRY');
     }
+  } else {
+    for (var i = 0; i < this.hosts_.length; ++i) {
+      /** @type {remoting.Host} */
+      var host = this.hosts_[i];
+      // Validate the entry to make sure it has all the fields we expect and is
+      // not the local host (which is displayed separately). NB: if the host has
+      // never sent a heartbeat, then there will be no jabberId.
+      if (host.hostName && host.hostId && host.status && host.publicKey &&
+          (!this.localHost_ || host.hostId != this.localHost_.hostId)) {
+        var hostTableEntry = new remoting.HostTableEntry(
+            host, this.webappMajorVersion_,
+            this.renameHost_.bind(this), this.deleteHost_.bind(this));
+        hostTableEntry.createDom();
+        this.hostTableEntries_[i] = hostTableEntry;
+        this.table_.appendChild(hostTableEntry.tableRow);
+      }
+    }
   }
+
   this.errorMsg_.parentNode.hidden = (this.lastError_ == '');
 
   var state = this.localHostState_;
@@ -441,8 +440,6 @@ remoting.HostList.prototype.onErrorClick_ = function() {
   if (this.lastError_ == remoting.Error.AUTHENTICATION_FAILED) {
     remoting.oauth2.doAuthRedirect();
   } else {
-    this.lastError_ = '';
-    this.display();
     this.refresh(remoting.updateLocalHostState);
   }
 };
