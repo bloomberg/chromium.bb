@@ -120,6 +120,7 @@ class OpusAudioEncoderTest : public testing::Test {
     }
     double deviation = sqrt(diff_sqare_sum / received_data.size())
          / kMaxSampleValue;
+    LOG(ERROR) << "Decoded signal deviation: " << deviation;
     EXPECT_LE(deviation, kMaxSignalDeviation);
   }
 
