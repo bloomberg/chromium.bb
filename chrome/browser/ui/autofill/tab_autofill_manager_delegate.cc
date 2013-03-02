@@ -66,8 +66,7 @@ bool TabAutofillManagerDelegate::IsSavingPasswordsEnabled() const {
 }
 
 void TabAutofillManagerDelegate::OnAutocheckoutError() {
-  // TODO(ahutter): Notify |dialog_controller_| of the error once it stays open
-  // for Autocheckout.
+  dialog_controller_->OnAutocheckoutError();
 }
 
 void TabAutofillManagerDelegate::ShowAutofillSettings() {
@@ -152,8 +151,7 @@ void TabAutofillManagerDelegate::HideAutofillPopup() {
 }
 
 void TabAutofillManagerDelegate::UpdateProgressBar(double value) {
-  // TODO(ahutter): Notify |dialog_controller_| of the change once it stays open
-  // for Autocheckout.
+  dialog_controller_->UpdateProgressBar(value);
 }
 
 void TabAutofillManagerDelegate::HideRequestAutocompleteDialog() {

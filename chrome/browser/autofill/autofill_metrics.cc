@@ -304,6 +304,24 @@ void AutofillMetrics::LogRequestAutocompleteUiDuration(
   LogUMAHistogramLongTimes(prefix + ".UiDuration." + suffix, duration);
 }
 
+void AutofillMetrics::LogAutocheckoutDuration(
+    const base::TimeDelta& duration,
+    AutocheckoutCompletionStatus status) const {
+  std::string suffix;
+  switch (status) {
+    case AUTOCHECKOUT_FAILED:
+      suffix = "Failed";
+      break;
+
+    case AUTOCHECKOUT_SUCCEEDED:
+      suffix = "Succeeded";
+      break;
+  }
+
+  LogUMAHistogramLongTimes("Autocheckout.FlowDuration", duration);
+  LogUMAHistogramLongTimes("Autocheckout.FlowDuration." + suffix, duration);
+}
+
 void AutofillMetrics::LogDeveloperEngagementMetric(
     DeveloperEngagementMetric metric) const {
   DCHECK(metric < NUM_DEVELOPER_ENGAGEMENT_METRICS);

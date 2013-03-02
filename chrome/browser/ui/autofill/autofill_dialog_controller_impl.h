@@ -32,6 +32,7 @@
 #include "content/public/common/ssl_status.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/base/ui_base_types.h"
 
 class AutofillPopupControllerImpl;
 class FormGroup;
@@ -80,6 +81,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // be in [0.0, 1.0].
   void UpdateProgressBar(double value);
 
+  // Called when there is an error in an active Autocheckout flow.
+  void OnAutocheckoutError();
+
   // AutofillDialogController implementation.
   virtual string16 DialogTitle() const OVERRIDE;
   virtual string16 AccountChooserText() const OVERRIDE;
@@ -95,6 +99,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual bool ShouldOfferToSaveInChrome() const OVERRIDE;
   virtual ui::MenuModel* MenuModelForAccountChooser() OVERRIDE;
   virtual gfx::Image AccountChooserImage() OVERRIDE;
+  virtual bool AutocheckoutIsRunning() const OVERRIDE;
+  virtual bool HadAutocheckoutError() const OVERRIDE;
+  virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
   virtual bool SectionIsActive(DialogSection section) const OVERRIDE;
   virtual const DetailInputs& RequestedFieldsForSection(DialogSection section)
       const OVERRIDE;
@@ -118,10 +125,12 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual bool HandleKeyPressEventInInput(
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void FocusMoved() OVERRIDE;
-  virtual void ViewClosed(DialogAction action) OVERRIDE;
+  virtual void ViewClosed() OVERRIDE;
   virtual std::vector<DialogNotification> CurrentNotifications() const OVERRIDE;
   virtual void StartSignInFlow() OVERRIDE;
   virtual void EndSignInFlow() OVERRIDE;
+  virtual void OnCancel() OVERRIDE;
+  virtual void OnSubmit() OVERRIDE;
   virtual Profile* profile() OVERRIDE;
   virtual content::WebContents* web_contents() OVERRIDE;
 
@@ -351,7 +360,18 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // For logging UMA metrics.
   const AutofillMetrics& metric_logger_;
   base::Time dialog_shown_timestamp_;
+  base::Time autocheckout_started_timestamp_;
+
   DialogType dialog_type_;
+
+  // True if the termination action was a submit.
+  bool did_submit_;
+
+  // Whether or not an Autocheckout flow is running.
+  bool autocheckout_is_running_;
+
+  // Whether or not there was an error in the Autocheckout flow.
+  bool had_autocheckout_error_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogControllerImpl);
 };

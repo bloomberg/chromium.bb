@@ -18,6 +18,14 @@ class TimeDelta;
 
 class AutofillMetrics {
  public:
+  // The success or failure of Autocheckout.
+  enum AutocheckoutCompletionStatus {
+    AUTOCHECKOUT_FAILED,    // The user canceled out of the dialog after
+                            // an Autocheckout failure.
+    AUTOCHECKOUT_SUCCEEDED  // The dialog was closed after Autocheckout
+                            // succeeded.
+  };
+
   enum DeveloperEngagementMetric {
     // Parsed a form that is potentially autofillable.
     FILLABLE_FORM_PARSED = 0,
@@ -172,6 +180,10 @@ class AutofillMetrics {
       const base::TimeDelta& duration,
       autofill::DialogType dialog_type,
       DialogDismissalAction dismissal_action) const;
+
+  virtual void LogAutocheckoutDuration(
+      const base::TimeDelta& duration,
+      AutocheckoutCompletionStatus status) const;
 
   // This should be called when a form that has been Autofilled is submitted.
   // |duration| should be the time elapsed between form load and submission.

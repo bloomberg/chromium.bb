@@ -53,12 +53,6 @@ enum DialogSection {
   SECTION_SHIPPING,
 };
 
-// Termination actions for the dialog.
-enum DialogAction {
-  ACTION_CANCEL,
-  ACTION_SUBMIT,
-};
-
 // A notification to show in the autofill dialog. Ranges from information to
 // seriously scary security messages, and will give you the color it should be
 // displayed (if you ask it).
@@ -66,6 +60,7 @@ class DialogNotification {
  public:
   enum Type {
     NONE,
+    AUTOCHECKOUT_ERROR,
     EXPLANATORY_MESSAGE,
     REQUIRED_ACTION,
     SECURITY_WARNING,

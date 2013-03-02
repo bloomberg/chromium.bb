@@ -46,6 +46,10 @@ void AutofillDialogViewAndroid::UpdateNotificationArea() {
   NOTIMPLEMENTED();
 }
 
+void AutofillDialogViewAndroid::UpdateButtonStrip() {
+  NOTIMPLEMENTED();
+}
+
 void AutofillDialogViewAndroid::UpdateSection(DialogSection section) {
   NOTIMPLEMENTED();
 }

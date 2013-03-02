@@ -67,6 +67,7 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
   virtual void UpdateAccountChooser() OVERRIDE;
+  virtual void UpdateButtonStrip() OVERRIDE;
   virtual void UpdateNotificationArea() OVERRIDE;
   virtual void UpdateSection(DialogSection section) OVERRIDE;
   virtual void GetUserInput(DialogSection section,
@@ -385,9 +386,6 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // The controller that drives this view. Weak pointer, always non-NULL.
   AutofillDialogController* const controller_;
-
-  // True if the termination action was a submit.
-  bool did_submit_;
 
   // The window that displays |contents_|. Weak pointer; may be NULL when the
   // dialog is closing.

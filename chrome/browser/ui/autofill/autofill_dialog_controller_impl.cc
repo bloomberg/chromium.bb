@@ -184,7 +184,10 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       section_showing_popup_(SECTION_BILLING),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       metric_logger_(metric_logger),
-      dialog_type_(dialog_type) {
+      dialog_type_(dialog_type),
+      did_submit_(false),
+      autocheckout_is_running_(false),
+      had_autocheckout_error_(false) {
   // TODO(estade): remove duplicates from |form|?
   content::NavigationEntry* entry = contents->GetController().GetActiveEntry();
   const GURL& active_url = entry ? entry->GetURL() : web_contents()->GetURL();
@@ -307,6 +310,13 @@ void AutofillDialogControllerImpl::UpdateProgressBar(double value) {
   view_->UpdateProgressBar(value);
 }
 
+void AutofillDialogControllerImpl::OnAutocheckoutError() {
+  had_autocheckout_error_ = true;
+  autocheckout_is_running_ = false;
+  view_->UpdateNotificationArea();
+  view_->UpdateButtonStrip();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // AutofillDialogController implementation.
 
@@ -377,6 +387,24 @@ string16 AutofillDialogControllerImpl::SignInLinkText() const {
 
 bool AutofillDialogControllerImpl::ShouldOfferToSaveInChrome() const {
   return !IsPayingWithWallet();
+}
+
+bool AutofillDialogControllerImpl::AutocheckoutIsRunning() const {
+  return autocheckout_is_running_;
+}
+
+bool AutofillDialogControllerImpl::HadAutocheckoutError() const {
+  return had_autocheckout_error_;
+}
+
+bool AutofillDialogControllerImpl::IsDialogButtonEnabled(
+    ui::DialogButton button) const {
+  if (button == ui::DIALOG_BUTTON_OK)
+    return !did_submit_;
+  DCHECK_EQ(ui::DIALOG_BUTTON_CANCEL, button);
+  // TODO(ahutter): Make it possible for the user to cancel out of the dialog
+  // while Autocheckout is in progress.
+  return had_autocheckout_error_ || !did_submit_;
 }
 
 bool AutofillDialogControllerImpl::SectionIsActive(DialogSection section)
@@ -726,44 +754,27 @@ void AutofillDialogControllerImpl::FocusMoved() {
   HidePopup();
 }
 
-void AutofillDialogControllerImpl::ViewClosed(DialogAction action) {
+void AutofillDialogControllerImpl::ViewClosed() {
   GetManager()->RemoveObserver(this);
 
-  if (action == ACTION_SUBMIT) {
-    FillOutputForSection(SECTION_EMAIL);
-    FillOutputForSection(SECTION_CC);
-    FillOutputForSection(SECTION_BILLING);
-    if (view_->UseBillingForShipping()) {
-      FillOutputForSectionWithComparator(
-          SECTION_BILLING,
-          base::Bind(DetailInputMatchesShippingField));
-      FillOutputForSectionWithComparator(
-          SECTION_CC,
-          base::Bind(DetailInputMatchesShippingField));
-    } else {
-      FillOutputForSection(SECTION_SHIPPING);
-    }
-
-    // On a successful submit, save the payment type for next time. If there
-    // was a Wallet server error, try to pay with Wallet again next time.
-    // Reset the view so that updates to the pref aren't processed.
-    view_.reset();
-    bool pay_without_wallet = !IsPayingWithWallet() &&
-        !account_chooser_model_.had_wallet_error();
-    profile_->GetPrefs()->SetBoolean(prefs::kAutofillDialogPayWithoutWallet,
-                                     pay_without_wallet);
-
-    callback_.Run(&form_structure_);
-  } else {
-    callback_.Run(NULL);
+  if (autocheckout_is_running_ || had_autocheckout_error_) {
+    AutofillMetrics::AutocheckoutCompletionStatus metric =
+        autocheckout_is_running_ ?
+            AutofillMetrics::AUTOCHECKOUT_SUCCEEDED :
+            AutofillMetrics::AUTOCHECKOUT_FAILED;
+    metric_logger_.LogAutocheckoutDuration(
+        base::Time::Now() - autocheckout_started_timestamp_,
+        metric);
   }
 
-  AutofillMetrics::DialogDismissalAction metric =
-      action == ACTION_SUBMIT ?
-          AutofillMetrics::DIALOG_ACCEPTED :
-          AutofillMetrics::DIALOG_CANCELED;
-  metric_logger_.LogRequestAutocompleteUiDuration(
-      base::Time::Now() - dialog_shown_timestamp_, dialog_type_, metric);
+  // On a successful submit, save the payment type for next time. If there
+  // was a Wallet server error, try to pay with Wallet again next time.
+  // Reset the view so that updates to the pref aren't processed.
+  view_.reset();
+  bool pay_without_wallet = !IsPayingWithWallet() &&
+      !account_chooser_model_.had_wallet_error();
+  profile_->GetPrefs()->SetBoolean(prefs::kAutofillDialogPayWithoutWallet,
+                                   pay_without_wallet);
 
   delete this;
 }
@@ -816,6 +827,13 @@ std::vector<DialogNotification>
                 UTF8ToUTF16(source_url_.host()))));
   }
 
+  if (had_autocheckout_error_) {
+    notifications.push_back(
+        DialogNotification(
+            DialogNotification::AUTOCHECKOUT_ERROR,
+            l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_AUTOCHECKOUT_ERROR)));
+  }
+
   if (account_chooser_model_.had_wallet_error()) {
     // TODO(dbeam): pass along the Wallet error or remove from the translation.
     // TODO(dbeam): figure out a way to dismiss this error after a while.
@@ -840,6 +858,60 @@ void AutofillDialogControllerImpl::EndSignInFlow() {
   DCHECK(!registrar_.IsEmpty());
   registrar_.RemoveAll();
   view_->HideSignIn();
+}
+
+void AutofillDialogControllerImpl::OnCancel() {
+  if (!did_submit_) {
+    metric_logger_.LogRequestAutocompleteUiDuration(
+        base::Time::Now() - dialog_shown_timestamp_,
+        dialog_type_,
+        AutofillMetrics::DIALOG_CANCELED);
+  }
+
+  // If Autocheckout has an error, it's possible that the dialog will be
+  // submitted to start the flow and then cancelled to close the dialog after
+  // the error.
+  if (!callback_.is_null()) {
+    callback_.Run(NULL);
+    callback_ = base::Callback<void(const FormStructure*)>();
+  }
+}
+
+void AutofillDialogControllerImpl::OnSubmit() {
+  did_submit_ = true;
+  metric_logger_.LogRequestAutocompleteUiDuration(
+      base::Time::Now() - dialog_shown_timestamp_,
+      dialog_type_,
+      AutofillMetrics::DIALOG_ACCEPTED);
+
+  if (dialog_type_ == DIALOG_TYPE_AUTOCHECKOUT) {
+    // Stop observing PersonalDataManager to avoid the dialog redrawing while
+    // in an Autocheckout flow.
+    GetManager()->RemoveObserver(this);
+    autocheckout_is_running_ = true;
+    autocheckout_started_timestamp_ = base::Time::Now();
+    view_->UpdateButtonStrip();
+  }
+
+  FillOutputForSection(SECTION_EMAIL);
+  FillOutputForSection(SECTION_CC);
+  FillOutputForSection(SECTION_BILLING);
+  if (view_->UseBillingForShipping()) {
+    FillOutputForSectionWithComparator(
+        SECTION_BILLING,
+        base::Bind(DetailInputMatchesShippingField));
+    FillOutputForSectionWithComparator(
+        SECTION_CC,
+        base::Bind(DetailInputMatchesShippingField));
+  } else {
+    FillOutputForSection(SECTION_SHIPPING);
+  }
+  callback_.Run(&form_structure_);
+  callback_ = base::Callback<void(const FormStructure*)>();
+
+  if (dialog_type_ == DIALOG_TYPE_REQUEST_AUTOCOMPLETE)
+    // This may delete us.
+    Hide();
 }
 
 Profile* AutofillDialogControllerImpl::profile() {

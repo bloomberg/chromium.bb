@@ -41,6 +41,7 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/dialog_client_view.h"
 
 namespace autofill {
 
@@ -478,7 +479,6 @@ AutofillDialogView* AutofillDialogView::Create(
 
 AutofillDialogViews::AutofillDialogViews(AutofillDialogController* controller)
     : controller_(controller),
-      did_submit_(false),
       window_(NULL),
       contents_(NULL),
       notification_area_(NULL),
@@ -539,6 +539,21 @@ void AutofillDialogViews::Hide() {
 
 void AutofillDialogViews::UpdateAccountChooser() {
   account_chooser_->Update();
+}
+
+void AutofillDialogViews::UpdateButtonStrip() {
+  if (controller_->AutocheckoutIsRunning()) {
+    save_in_chrome_checkbox_->SetVisible(false);
+    autocheckout_progress_bar_view_->SetVisible(true);
+    ContentsPreferredSizeChanged();
+  }
+
+  if (controller_->HadAutocheckoutError()) {
+    autocheckout_progress_bar_view_->SetVisible(false);
+    ContentsPreferredSizeChanged();
+  }
+
+  GetDialogClientView()->UpdateDialogButtons();
 }
 
 void AutofillDialogViews::UpdateNotificationArea() {
@@ -649,8 +664,7 @@ void AutofillDialogViews::ModelChanged() {
 }
 
 void AutofillDialogViews::SubmitForTesting() {
-  if (Accept())
-    Hide();
+  Accept();
 }
 
 void AutofillDialogViews::CancelForTesting() {
@@ -669,7 +683,7 @@ void AutofillDialogViews::WindowClosing() {
 void AutofillDialogViews::DeleteDelegate() {
   window_ = NULL;
   // |this| belongs to |controller_|.
-  controller_->ViewClosed(did_submit_ ? ACTION_SUBMIT : ACTION_CANCEL);
+  controller_->ViewClosed();
 }
 
 views::Widget* AutofillDialogViews::GetWidget() {
@@ -691,7 +705,7 @@ string16 AutofillDialogViews::GetDialogButtonLabel(ui::DialogButton button)
 }
 
 bool AutofillDialogViews::IsDialogButtonEnabled(ui::DialogButton button) const {
-  return true;
+  return controller_->IsDialogButtonEnabled(button);
 }
 
 views::View* AutofillDialogViews::CreateExtraView() {
@@ -704,6 +718,7 @@ views::View* AutofillDialogViews::CreateFootnoteView() {
 }
 
 bool AutofillDialogViews::Cancel() {
+  controller_->OnCancel();
   return true;
 }
 
@@ -711,8 +726,10 @@ bool AutofillDialogViews::Accept() {
   if (!ValidateForm())
     return false;
 
-  did_submit_ = true;
-  return true;
+  controller_->OnSubmit();
+
+  // Let |controller_| decide when to hide the dialog.
+  return false;
 }
 
 // TODO(wittman): Remove this override once we move to the new style frame view
@@ -816,7 +833,6 @@ void AutofillDialogViews::InitChildViews() {
   autocheckout_progress_bar_view_ = new views::View();
   autocheckout_progress_bar_view_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
-  autocheckout_progress_bar_view_->SetVisible(false);
 
   views::Label* progress_bar_label = new views::Label();
   progress_bar_label->SetText(controller_->ProgressBarText());
@@ -827,6 +843,7 @@ void AutofillDialogViews::InitChildViews() {
   autocheckout_progress_bar_view_->AddChildView(autocheckout_progress_bar_);
 
   button_strip_extra_view_->AddChildView(autocheckout_progress_bar_view_);
+  autocheckout_progress_bar_view_->SetVisible(false);
 
   contents_ = new views::View();
   contents_->SetLayoutManager(

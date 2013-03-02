@@ -27,10 +27,21 @@ class MockAutofillMetrics : public AutofillMetrics {
  public:
   MockAutofillMetrics()
       : dialog_type_(static_cast<DialogType>(-1)),
-        metric_(static_cast<AutofillMetrics::DialogDismissalAction>(-1)) {}
+        dialog_dismissal_action_(
+            static_cast<AutofillMetrics::DialogDismissalAction>(-1)),
+        autocheckout_status_(
+            static_cast<AutofillMetrics::AutocheckoutCompletionStatus>(-1)) {}
   virtual ~MockAutofillMetrics() {}
 
   // AutofillMetrics:
+  virtual void LogAutocheckoutDuration(
+      const base::TimeDelta& duration,
+      AutocheckoutCompletionStatus status) const OVERRIDE {
+    // Ignore constness for testing.
+    MockAutofillMetrics* mutable_this = const_cast<MockAutofillMetrics*>(this);
+    mutable_this->autocheckout_status_ = status;
+  }
+
   virtual void LogRequestAutocompleteUiDuration(
       const base::TimeDelta& duration,
       DialogType dialog_type,
@@ -38,15 +49,22 @@ class MockAutofillMetrics : public AutofillMetrics {
     // Ignore constness for testing.
     MockAutofillMetrics* mutable_this = const_cast<MockAutofillMetrics*>(this);
     mutable_this->dialog_type_ = dialog_type;
-    mutable_this->metric_ = dismissal_action;
+    mutable_this->dialog_dismissal_action_ = dismissal_action;
   }
 
   DialogType dialog_type() const { return dialog_type_; }
-  AutofillMetrics::DialogDismissalAction metric() const { return metric_; }
+  AutofillMetrics::DialogDismissalAction dialog_dismissal_action() const {
+    return dialog_dismissal_action_;
+  }
+
+  AutofillMetrics::AutocheckoutCompletionStatus autocheckout_status() const {
+    return autocheckout_status_;
+  }
 
  private:
   DialogType dialog_type_;
-  AutofillMetrics::DialogDismissalAction metric_;
+  AutofillMetrics::DialogDismissalAction dialog_dismissal_action_;
+  AutofillMetrics::AutocheckoutCompletionStatus autocheckout_status_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAutofillMetrics);
 };
@@ -68,8 +86,8 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
 
   virtual ~TestAutofillDialogController() {}
 
-  virtual void ViewClosed(DialogAction action) OVERRIDE {
-    AutofillDialogControllerImpl::ViewClosed(action);
+  virtual void ViewClosed() OVERRIDE {
+    AutofillDialogControllerImpl::ViewClosed();
     MessageLoop::current()->Quit();
   }
 
@@ -134,7 +152,8 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
 
     content::RunMessageLoop();
 
-    EXPECT_EQ(AutofillMetrics::DIALOG_ACCEPTED, metric_logger.metric());
+    EXPECT_EQ(AutofillMetrics::DIALOG_ACCEPTED,
+              metric_logger.dialog_dismissal_action());
     EXPECT_EQ(DIALOG_TYPE_REQUEST_AUTOCOMPLETE, metric_logger.dialog_type());
   }
 
@@ -150,7 +169,8 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
 
     content::RunMessageLoop();
 
-    EXPECT_EQ(AutofillMetrics::DIALOG_CANCELED, metric_logger.metric());
+    EXPECT_EQ(AutofillMetrics::DIALOG_CANCELED,
+              metric_logger.dialog_dismissal_action());
     EXPECT_EQ(DIALOG_TYPE_AUTOCHECKOUT, metric_logger.dialog_type());
   }
 
@@ -166,8 +186,54 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
 
     content::RunMessageLoop();
 
-    EXPECT_EQ(AutofillMetrics::DIALOG_CANCELED, metric_logger.metric());
+    EXPECT_EQ(AutofillMetrics::DIALOG_CANCELED,
+              metric_logger.dialog_dismissal_action());
     EXPECT_EQ(DIALOG_TYPE_AUTOCHECKOUT, metric_logger.dialog_type());
+  }
+
+  // Test Autocheckout success metrics.
+  {
+    MockAutofillMetrics metric_logger;
+    TestAutofillDialogController* dialog_controller =
+        new TestAutofillDialogController(
+            GetActiveWebContents(), form, metric_logger,
+            DIALOG_TYPE_AUTOCHECKOUT);
+    dialog_controller->Show();
+    dialog_controller->view()->SubmitForTesting();
+
+    EXPECT_EQ(AutofillMetrics::DIALOG_ACCEPTED,
+              metric_logger.dialog_dismissal_action());
+    EXPECT_EQ(DIALOG_TYPE_AUTOCHECKOUT, metric_logger.dialog_type());
+
+    dialog_controller->Hide();
+
+    content::RunMessageLoop();
+
+    EXPECT_EQ(AutofillMetrics::AUTOCHECKOUT_SUCCEEDED,
+              metric_logger.autocheckout_status());
+  }
+
+  // Test Autocheckout failure metric.
+  {
+    MockAutofillMetrics metric_logger;
+    TestAutofillDialogController* dialog_controller =
+        new TestAutofillDialogController(
+            GetActiveWebContents(), form, metric_logger,
+            DIALOG_TYPE_AUTOCHECKOUT);
+    dialog_controller->Show();
+    dialog_controller->view()->SubmitForTesting();
+
+    EXPECT_EQ(AutofillMetrics::DIALOG_ACCEPTED,
+              metric_logger.dialog_dismissal_action());
+    EXPECT_EQ(DIALOG_TYPE_AUTOCHECKOUT, metric_logger.dialog_type());
+
+    dialog_controller->OnAutocheckoutError();
+    dialog_controller->view()->CancelForTesting();
+
+    content::RunMessageLoop();
+
+    EXPECT_EQ(AutofillMetrics::AUTOCHECKOUT_FAILED,
+              metric_logger.autocheckout_status());
   }
 }
 
