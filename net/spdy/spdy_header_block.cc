@@ -15,8 +15,18 @@ Value* SpdyHeaderBlockNetLogCallback(
   DictionaryValue* headers_dict = new DictionaryValue();
   for (SpdyHeaderBlock::const_iterator it = headers->begin();
        it != headers->end(); ++it) {
+#if defined(OS_ANDROID)
+    if (it->first == "proxy-authorization") {
+    headers_dict->SetWithoutPathExpansion(
+        it->first, new StringValue("[elided]"));
+    } else {
+      headers_dict->SetWithoutPathExpansion(
+          it->first, new StringValue(it->second));
+    }
+#else
     headers_dict->SetWithoutPathExpansion(
         it->first, new StringValue(it->second));
+#endif
   }
   dict->Set("headers", headers_dict);
   return dict;
