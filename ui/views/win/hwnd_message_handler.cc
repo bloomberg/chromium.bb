@@ -343,8 +343,12 @@ class HWNDMessageHandler::ScopedRedrawLock {
   }
 
   ~ScopedRedrawLock() {
-    if (!cancel_unlock_ && was_visible_ && ::IsWindow(hwnd_))
+    if (!cancel_unlock_ && was_visible_ && ::IsWindow(hwnd_)) {
       owner_->UnlockUpdates(force_);
+      // Invalidate the window to paint over any outdated window regions asap,
+      // particularly graphical artifacts that arise from DefWindowProc usage.
+      InvalidateRect(hwnd_, NULL, FALSE);
+    }
   }
 
   // Cancel the unlock operation, call this if the Widget is being destroyed.
@@ -1897,12 +1901,7 @@ LRESULT HWNDMessageHandler::OnReflectedMessage(UINT message,
 LRESULT HWNDMessageHandler::OnSetCursor(UINT message,
                                         WPARAM w_param,
                                         LPARAM l_param) {
-  // Using ScopedRedrawLock here frequently allows content behind this window to
-  // paint in front of this window, causing glaring rendering artifacts.
-  // If omitting ScopedRedrawLock here triggers caption rendering artifacts via
-  // DefWindowProc message handling, we'll need to find a better solution.
-  SetMsgHandled(FALSE);
-  return 0;
+  return DefWindowProcWithRedrawLock(message, w_param, l_param);
 }
 
 void HWNDMessageHandler::OnSetFocus(HWND last_focused_window) {
