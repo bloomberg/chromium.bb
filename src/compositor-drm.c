@@ -1175,6 +1175,9 @@ init_egl(struct drm_compositor *ec)
 {
 	ec->gbm = gbm_create_device(ec->drm.fd);
 
+	if (!ec->gbm)
+		return -1;
+
 	if (gl_renderer_create(&ec->base, ec->gbm, gl_renderer_opaque_attribs,
 			NULL) < 0) {
 		gbm_device_destroy(ec->gbm);
