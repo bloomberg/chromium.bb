@@ -28,8 +28,7 @@ class ChromeDesktopImpl : public ChromeImpl {
   virtual ~ChromeDesktopImpl();
 
   virtual Status Launch(const base::FilePath& chrome_exe,
-                        const base::ListValue* chrome_args,
-                        const std::string& landing_url);
+                        const base::ListValue* chrome_args);
 
   // Overridden from ChromeImpl:
   virtual Status Quit() OVERRIDE;

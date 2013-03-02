@@ -21,8 +21,7 @@ class ChromeAndroidImpl : public ChromeImpl {
                     const SyncWebSocketFactory& socket_factory);
   virtual ~ChromeAndroidImpl();
 
-  virtual Status Launch(const std::string& package_name,
-                        const std::string& landing_url);
+  virtual Status Launch(const std::string& package_name);
 
   // Overridden from ChromeImpl:
   virtual Status Quit() OVERRIDE;

@@ -26,8 +26,7 @@ ChromeDesktopImpl::~ChromeDesktopImpl() {
 }
 
 Status ChromeDesktopImpl::Launch(const base::FilePath& chrome_exe,
-                                 const base::ListValue* chrome_args,
-                                 const std::string& landing_url) {
+                                 const base::ListValue* chrome_args) {
   base::FilePath program = chrome_exe;
   if (program.empty()) {
     if (!FindChrome(&program))
@@ -43,7 +42,7 @@ Status ChromeDesktopImpl::Launch(const base::FilePath& chrome_exe,
   if (!user_data_dir_.CreateUniqueTempDir())
     return Status(kUnknownError, "cannot create temp dir for user data dir");
   command.AppendSwitchPath("user-data-dir", user_data_dir_.path());
-  command.AppendArg(landing_url);
+  command.AppendArg("data:text/html;charset=utf-8,");
 
   if (chrome_args) {
     Status status = internal::ProcessCommandLineArgs(chrome_args, &command);

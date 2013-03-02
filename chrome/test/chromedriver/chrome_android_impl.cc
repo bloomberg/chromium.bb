@@ -21,8 +21,7 @@ ChromeAndroidImpl::ChromeAndroidImpl(
 
 ChromeAndroidImpl::~ChromeAndroidImpl() {}
 
-Status ChromeAndroidImpl::Launch(const std::string& package_name,
-                                 const std::string& landing_url) {
+Status ChromeAndroidImpl::Launch(const std::string& package_name) {
   // TODO(frankf): Figure out how this should be installed to
   // make this work for all platforms.
   base::FilePath adb_commands(FILE_PATH_LITERAL("adb_commands.py"));
@@ -54,7 +53,7 @@ Status ChromeAndroidImpl::Launch(const std::string& package_name,
         Status(kUnknownError, "unable to discover open window in chrome");
   }
 
-  return web_views.front()->Load(landing_url);
+  return Status(kOk);
 }
 
 Status ChromeAndroidImpl::Quit() {

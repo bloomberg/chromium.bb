@@ -51,14 +51,13 @@ Status ExecuteNewSession(
   scoped_ptr<Chrome> chrome;
   Status status(kOk);
   int port = 33081;
-  std::string landing_url("data:text/html;charset=utf-8,");
   std::string android_package;
 
   if (params.GetString("desiredCapabilities.chromeOptions.android_package",
                        &android_package)) {
     scoped_ptr<ChromeAndroidImpl> chrome_android(new ChromeAndroidImpl(
         context_getter, port, socket_factory));
-    status = chrome_android->Launch(android_package, landing_url);
+    status = chrome_android->Launch(android_package);
     chrome.reset(chrome_android.release());
   } else {
     base::FilePath::StringType path_str;
@@ -84,7 +83,7 @@ Status ExecuteNewSession(
 
     scoped_ptr<ChromeDesktopImpl> chrome_desktop(new ChromeDesktopImpl(
         context_getter, port, socket_factory));
-    status = chrome_desktop->Launch(chrome_exe, args_list, landing_url);
+    status = chrome_desktop->Launch(chrome_exe, args_list);
     chrome.reset(chrome_desktop.release());
   }
   if (status.IsError())

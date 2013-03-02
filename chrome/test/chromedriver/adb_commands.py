@@ -52,7 +52,7 @@ def RunAdbCommand(args, cwd=None):
   Raises:
     AdbError: if exit code is non-zero.
   """
-  args.insert(0, 'adb')
+  args = ['adb', '-d'] + args
   try:
     p = subprocess.Popen(args, cwd=cwd, stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT)
@@ -66,6 +66,21 @@ def RunAdbCommand(args, cwd=None):
     raise e
 
 
+def SetChromeFlags():
+  """Sets the command line flags file on device.
+
+  Raises:
+    AdbError: If failed to write the flags file to device.
+  """
+  out, cmd = RunAdbCommand([
+      'shell',
+      'echo chrome --disable-fre --metrics-recording-only '
+      '--enable-remote-debugging > /data/local/chrome-command-line'
+      ])
+  if out.strip():
+    raise AdbError('Failed to set the command line flags.', out, cmd)
+
+
 def ClearAppData(package):
   """Clears the app data.
 
@@ -75,7 +90,7 @@ def ClearAppData(package):
   Raises:
     AdbError: if any step fails.
   """
-  out, cmd = RunAdbCommand(['shell', 'pm', 'clear', package])
+  out, cmd = RunAdbCommand(['shell', 'pm clear %s' % package])
   # am/pm package do not return valid exit codes.
   if 'Success' not in out:
     raise AdbError('Failed to clear the profile.', out, cmd)
@@ -90,9 +105,11 @@ def LaunchApp(package):
   Raises:
     AdbError: if any step fails.
   """
-  out, cmd = RunAdbCommand(
-      ['shell', 'am', 'start', '-a', 'android.intent.action.VIEW',
-       '-S', '-W', '-n', '%s/%s' % (package, PACKAGE_INFO[package][0])])
+  out, cmd = RunAdbCommand([
+      'shell',
+      'am start -a android.intent.action.VIEW -S -W -n %s/%s '
+      '-d "data:text/html;charset=utf-8,"' %
+      (package, PACKAGE_INFO[package][0])])
   if 'Complete' not in out:
     raise AdbError('Failed to start the app. %s', out, cmd)
 
@@ -132,6 +149,7 @@ if __name__ == '__main__':
                       PACKAGE_INFO.keys())
 
     if options.launch:
+      SetChromeFlags()
       ClearAppData(options.package)
       LaunchApp(options.package)
       Forward(options.package, options.port)
