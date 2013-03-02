@@ -7,11 +7,14 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "ui/gfx/size.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
@@ -123,6 +126,14 @@ class ConstrainedWebDialogDelegateViewViews
   virtual views::View* GetContentsView() OVERRIDE {
     return this;
   }
+  // TODO(wittman): Remove this override once we move to the new style frame
+  // view on all dialogs.
+  virtual views::NonClientFrameView* CreateNonClientFrameView(
+      views::Widget* widget) OVERRIDE {
+    return CreateConstrainedStyleNonClientFrameView(
+        widget,
+        GetWebContents()->GetBrowserContext());
+  }
 
   virtual ui::ModalType GetModalType() const OVERRIDE {
 #if defined(USE_ASH)
@@ -202,7 +213,12 @@ ConstrainedWebDialogDelegate* CreateConstrainedWebDialog(
       new ConstrainedWebDialogDelegateViewViews(
           browser_context, delegate, tab_delegate);
   views::Widget* window =
-      ConstrainedWindowViews::Create(web_contents, constrained_delegate);
+      CreateWebContentsModalDialogViews(
+          constrained_delegate,
+          web_contents->GetView()->GetNativeView());
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents);
+  web_contents_modal_dialog_manager->ShowDialog(window->GetNativeView());
   constrained_delegate->SetWindow(window);
   return constrained_delegate;
 }

@@ -61,6 +61,8 @@ class SSLClientCertificateSelector : public SSLClientAuthObserver,
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
+  virtual views::NonClientFrameView* CreateNonClientFrameView(
+      views::Widget* widget) OVERRIDE;
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
   virtual views::View* CreateExtraView() OVERRIDE;
   virtual ui::ModalType GetModalType() const OVERRIDE;

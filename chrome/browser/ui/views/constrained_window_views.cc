@@ -568,48 +568,31 @@ class ConstrainedWindowFrameViewAsh : public ash::CustomFrameViewAsh {
 };
 #endif  // defined(USE_ASH)
 
-ConstrainedWindowViews::ConstrainedWindowViews(
-    gfx::NativeView parent,
-    bool off_the_record,
-    views::WidgetDelegate* widget_delegate)
-    : off_the_record_(off_the_record) {
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+views::Widget* CreateWebContentsModalDialogViews(
+    views::WidgetDelegate* widget_delegate,
+    gfx::NativeView parent) {
+  views::Widget* dialog = new views::Widget;
+
+  views::Widget::InitParams params;
   params.delegate = widget_delegate;
   params.child = true;
-
   params.parent = parent;
 
-#if defined(USE_ASH)
-  // Ash window headers can be transparent.
-  params.transparent = true;
-#endif
+  dialog->Init(params);
 
-  Init(params);
-}
-
-ConstrainedWindowViews::~ConstrainedWindowViews() {
-}
-
-views::Widget* ConstrainedWindowViews::Create(
-    content::WebContents* web_contents,
-    views::WidgetDelegate* widget_delegate) {
-  WebContentsModalDialogManager* manager =
-      WebContentsModalDialogManager::FromWebContents(web_contents);
-  views::Widget* dialog = new ConstrainedWindowViews(
-      web_contents->GetView()->GetNativeView(),
-      web_contents->GetBrowserContext()->IsOffTheRecord(),
-      widget_delegate);
-  manager->ShowDialog(dialog->GetNativeView());
   return dialog;
 }
 
-views::NonClientFrameView* ConstrainedWindowViews::CreateNonClientFrameView() {
+views::NonClientFrameView* CreateConstrainedStyleNonClientFrameView(
+    views::Widget* widget,
+    content::BrowserContext* browser_context) {
   if (views::DialogDelegate::UseNewStyle())
-    return views::DialogDelegate::CreateNewStyleFrameView(this);
+    return views::DialogDelegate::CreateNewStyleFrameView(widget);
 #if defined(USE_ASH)
   ConstrainedWindowFrameViewAsh* frame = new ConstrainedWindowFrameViewAsh;
-  frame->Init(this);
+  frame->Init(widget);
   return frame;
 #endif
-  return new ConstrainedWindowFrameView(this, off_the_record_);
+  return new ConstrainedWindowFrameView(widget,
+                                        browser_context->IsOffTheRecord());
 }

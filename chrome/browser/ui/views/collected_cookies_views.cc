@@ -21,11 +21,13 @@
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/cookie_info_view.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
@@ -191,7 +193,12 @@ CollectedCookiesViews::CollectedCookiesViews(content::WebContents* web_contents)
       TabSpecificContentSettings::FromWebContents(web_contents);
   registrar_.Add(this, chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN,
                  content::Source<TabSpecificContentSettings>(content_settings));
-  window_ = ConstrainedWindowViews::Create(web_contents, this);
+  window_ = CreateWebContentsModalDialogViews(
+      this,
+      web_contents->GetView()->GetNativeView());
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents);
+  web_contents_modal_dialog_manager->ShowDialog(window_->GetNativeView());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -221,6 +228,15 @@ bool CollectedCookiesViews::Cancel() {
   }
 
   return true;
+}
+
+// TODO(wittman): Remove this override once we move to the new style frame view
+// on all dialogs.
+views::NonClientFrameView* CollectedCookiesViews::CreateNonClientFrameView(
+    views::Widget* widget) {
+  return CreateConstrainedStyleNonClientFrameView(
+      widget,
+      web_contents_->GetBrowserContext());
 }
 
 ui::ModalType CollectedCookiesViews::GetModalType() const {

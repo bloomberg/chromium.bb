@@ -10,10 +10,14 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/message_box_view.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 
 // static
@@ -33,8 +37,14 @@ TabModalConfirmDialogViews::TabModalConfirmDialogViews(
     : delegate_(delegate),
       message_box_view_(new views::MessageBoxView(
           views::MessageBoxView::InitParams(delegate->GetMessage()))),
-      dialog_(NULL) {
-  dialog_ = ConstrainedWindowViews::Create(web_contents, this);
+      dialog_(NULL),
+      browser_context_(web_contents->GetBrowserContext()) {
+  dialog_ = CreateWebContentsModalDialogViews(
+      this,
+      web_contents->GetView()->GetNativeView());
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents);
+  web_contents_modal_dialog_manager->ShowDialog(dialog_->GetNativeView());
   delegate_->set_close_delegate(this);
 }
 
@@ -84,6 +94,13 @@ bool TabModalConfirmDialogViews::Accept() {
 
 views::View* TabModalConfirmDialogViews::GetContentsView() {
   return message_box_view_;
+}
+
+// TODO(wittman): Remove this override once we move to the new style frame view
+// on all dialogs.
+views::NonClientFrameView* TabModalConfirmDialogViews::CreateNonClientFrameView(
+    views::Widget* widget) {
+  return CreateConstrainedStyleNonClientFrameView(widget, browser_context_);
 }
 
 views::Widget* TabModalConfirmDialogViews::GetWidget() {

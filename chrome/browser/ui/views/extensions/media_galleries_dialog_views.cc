@@ -5,6 +5,9 @@
 #include "chrome/browser/ui/views/extensions/media_galleries_dialog_views.h"
 
 #include "chrome/browser/ui/views/constrained_window_views.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -16,6 +19,7 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 
 
@@ -37,7 +41,13 @@ MediaGalleriesDialogViews::MediaGalleriesDialogViews(
 
   // Ownership of |contents_| is handed off by this call. |window_| will take
   // care of deleting itself after calling DeleteDelegate().
-  window_ = ConstrainedWindowViews::Create(controller->web_contents(), this);
+  window_ = CreateWebContentsModalDialogViews(
+      this,
+      controller->web_contents()->GetView()->GetNativeView());
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(
+          controller->web_contents());
+  web_contents_modal_dialog_manager->ShowDialog(window_->GetNativeView());
 }
 
 MediaGalleriesDialogViews::~MediaGalleriesDialogViews() {}
@@ -201,6 +211,15 @@ bool MediaGalleriesDialogViews::Cancel() {
 bool MediaGalleriesDialogViews::Accept() {
   accepted_ = true;
   return true;
+}
+
+// TODO(wittman): Remove this override once we move to the new style frame view
+// on all dialogs.
+views::NonClientFrameView* MediaGalleriesDialogViews::CreateNonClientFrameView(
+    views::Widget* widget) {
+  return CreateConstrainedStyleNonClientFrameView(
+      widget,
+      controller_->web_contents()->GetBrowserContext());
 }
 
 void MediaGalleriesDialogViews::ButtonPressed(views::Button* sender,

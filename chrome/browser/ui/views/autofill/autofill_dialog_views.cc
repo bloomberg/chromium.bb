@@ -11,9 +11,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -38,6 +40,7 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
+#include "ui/views/widget/widget.h"
 
 namespace autofill {
 
@@ -518,7 +521,13 @@ void AutofillDialogViews::Show() {
 
   // Ownership of |contents_| is handed off by this call. The widget will take
   // care of deleting itself after calling DeleteDelegate().
-  window_ = ConstrainedWindowViews::Create(controller_->web_contents(), this);
+  window_ = CreateWebContentsModalDialogViews(
+      this,
+      controller_->web_contents()->GetView()->GetNativeView());
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(
+          controller_->web_contents());
+  web_contents_modal_dialog_manager->ShowDialog(window_->GetNativeView());
   focus_manager_ = window_->GetFocusManager();
   focus_manager_->AddFocusChangeListener(this);
 }
@@ -704,6 +713,15 @@ bool AutofillDialogViews::Accept() {
 
   did_submit_ = true;
   return true;
+}
+
+// TODO(wittman): Remove this override once we move to the new style frame view
+// on all dialogs.
+views::NonClientFrameView* AutofillDialogViews::CreateNonClientFrameView(
+    views::Widget* widget) {
+  return CreateConstrainedStyleNonClientFrameView(
+      widget,
+      controller_->web_contents()->GetBrowserContext());
 }
 
 void AutofillDialogViews::ButtonPressed(views::Button* sender,

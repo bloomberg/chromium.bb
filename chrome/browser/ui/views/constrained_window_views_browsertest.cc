@@ -17,6 +17,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "ipc/ipc_message.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -137,8 +139,10 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
 
   // Create a constrained dialog.  It will attach itself to web_contents.
   scoped_ptr<TestConstrainedDialog> test_dialog1(new TestConstrainedDialog);
-  views::Widget* window1 = ConstrainedWindowViews::Create(
-      web_contents, test_dialog1.get());
+  views::Widget* window1 = CreateWebContentsModalDialogViews(
+      test_dialog1.get(),
+      web_contents->GetView()->GetNativeView());
+  web_contents_modal_dialog_manager->ShowDialog(window1->GetNativeView());
 
   views::FocusManager* focus_manager = window1->GetFocusManager();
   ASSERT_TRUE(focus_manager);
@@ -151,8 +155,10 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
   // web_contents, but will remain hidden since the test_dialog1 is still
   // showing.
   scoped_ptr<TestConstrainedDialog> test_dialog2(new TestConstrainedDialog);
-  views::Widget* window2 = ConstrainedWindowViews::Create(
-      web_contents, test_dialog2.get());
+  views::Widget* window2 = CreateWebContentsModalDialogViews(
+      test_dialog2.get(),
+      web_contents->GetView()->GetNativeView());
+  web_contents_modal_dialog_manager->ShowDialog(window2->GetNativeView());
   // Should be the same focus_manager.
   ASSERT_EQ(focus_manager, window2->GetFocusManager());
 
@@ -212,8 +218,10 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabCloseTest) {
 
   // Create a constrained dialog.  It will attach itself to web_contents.
   scoped_ptr<TestConstrainedDialog> test_dialog(new TestConstrainedDialog);
-  ConstrainedWindowViews::Create(
-      web_contents, test_dialog.get());
+  views::Widget* window = CreateWebContentsModalDialogViews(
+      test_dialog.get(),
+      web_contents->GetView()->GetNativeView());
+  web_contents_modal_dialog_manager->ShowDialog(window->GetNativeView());
 
   bool closed =
       browser()->tab_strip_model()->CloseWebContentsAt(
@@ -233,8 +241,12 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabSwitchTest) {
 
   // Create a constrained dialog.  It will attach itself to web_contents.
   scoped_ptr<TestConstrainedDialog> test_dialog(new TestConstrainedDialog);
-  views::Widget* window = ConstrainedWindowViews::Create(
-      web_contents, test_dialog.get());
+  views::Widget* window = CreateWebContentsModalDialogViews(
+      test_dialog.get(),
+      web_contents->GetView()->GetNativeView());
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents);
+  web_contents_modal_dialog_manager->ShowDialog(window->GetNativeView());
   EXPECT_TRUE(window->IsVisible());
 
   // Open a new tab. The constrained window should hide itself.

@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
+#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -25,6 +26,7 @@
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 
 using content::BrowserThread;
@@ -138,7 +140,12 @@ void SSLClientCertificateSelector::Init() {
 
   StartObserving();
 
-  window_ = ConstrainedWindowViews::Create(web_contents_, this);
+  window_ = CreateWebContentsModalDialogViews(
+      this,
+      web_contents_->GetView()->GetNativeView());
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents_);
+  web_contents_modal_dialog_manager->ShowDialog(window_->GetNativeView());
 
   // Select the first row automatically.  This must be done after the dialog has
   // been created.
@@ -204,6 +211,16 @@ bool SSLClientCertificateSelector::Accept() {
   }
 
   return false;
+}
+
+// TODO(wittman): Remove this override once we move to the new style frame view
+// on all dialogs.
+views::NonClientFrameView*
+    SSLClientCertificateSelector::CreateNonClientFrameView(
+        views::Widget* widget) {
+  return CreateConstrainedStyleNonClientFrameView(
+      widget,
+      web_contents_->GetBrowserContext());
 }
 
 views::View* SSLClientCertificateSelector::GetInitiallyFocusedView() {
