@@ -180,7 +180,18 @@ TEST(TextEliderTest, TestTrailingEllipsisSlashEllipsisHack) {
   GURL url("http://battersbox.com/directory/foo/peter_paul_and_mary.html");
   int available_width = font.GetStringWidth(
       UTF8ToUTF16("battersbox.com/" + kEllipsisStr + "/" + kEllipsisStr));
-  EXPECT_EQ(UTF8ToUTF16("battersbox.com/dir" + kEllipsisStr),
+
+  // Create the expected string, after elision. Depending on font size, the
+  // directory might become /dir... or /di... or/d... - it never should be
+  // shorter than that. (If it is, the font considers d... to be longer
+  // than .../... -  that should never happen).
+  ASSERT_GT(font.GetStringWidth(UTF8ToUTF16(kEllipsisStr + "/" + kEllipsisStr)),
+      font.GetStringWidth(UTF8ToUTF16("d" + kEllipsisStr)));
+  GURL long_url("http://battersbox.com/directorynameisreallylongtoforcetrunc");
+  string16 expected = ElideUrl(long_url, font, available_width, std::string());
+  // Ensure that the expected result still contains part of the directory name.
+  ASSERT_GT(expected.length(), std::string("battersbox.com/d").length());
+  EXPECT_EQ(expected,
              ElideUrl(url, font, available_width, std::string()));
 
   // More space available - elide directories, partially elide filename.
