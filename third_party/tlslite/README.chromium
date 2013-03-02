@@ -32,3 +32,5 @@ Local Modifications:
   updated to add a parseChain method, that can parse multiple certificates from
   a PEM string.
 - patches/tls_intolerant.patch: allow TLSLite to simulate a TLS-intolerant server.
+- patches/channel_id.patch: add basic ChannelID support. (Signatures are not
+  checked.)

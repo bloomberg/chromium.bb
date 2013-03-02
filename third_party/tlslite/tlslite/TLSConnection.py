@@ -611,6 +611,8 @@ class TLSConnection(TLSRecordLayer):
                                    settings.cipherImplementations)
 
             #Exchange ChangeCipherSpec and Finished messages
+            for result in self._getChangeCipherSpec():
+                yield result
             for result in self._getFinished():
                 yield result
             for result in self._sendFinished():
@@ -920,6 +922,8 @@ class TLSConnection(TLSRecordLayer):
             #Exchange ChangeCipherSpec and Finished messages
             for result in self._sendFinished():
                 yield result
+            for result in self._getChangeCipherSpec():
+                yield result
             for result in self._getFinished():
                 yield result
 
@@ -1089,6 +1093,7 @@ class TLSConnection(TLSRecordLayer):
         clientCertChain = None
         serverCertChain = None #We may set certChain to this later
         postFinishedError = None
+        doingChannelID = False
 
         #Tentatively set version to most-desirable version, so if an error
         #occurs parsing the ClientHello, this is what we'll use for the
@@ -1208,6 +1213,8 @@ class TLSConnection(TLSRecordLayer):
                 serverHello.create(self.version, serverRandom,
                                    session.sessionID, session.cipherSuite,
                                    certificateType)
+                serverHello.channel_id = clientHello.channel_id
+                doingChannelID = clientHello.channel_id
                 for result in self._sendMsg(serverHello):
                     yield result
 
@@ -1221,6 +1228,11 @@ class TLSConnection(TLSRecordLayer):
                 #Exchange ChangeCipherSpec and Finished messages
                 for result in self._sendFinished():
                     yield result
+                for result in self._getChangeCipherSpec():
+                    yield result
+                if doingChannelID:
+                    for result in self._getEncryptedExtensions():
+                        yield result
                 for result in self._getFinished():
                     yield result
 
@@ -1399,8 +1411,12 @@ class TLSConnection(TLSRecordLayer):
             #Send ServerHello, Certificate[, CertificateRequest],
             #ServerHelloDone
             msgs = []
-            msgs.append(ServerHello().create(self.version, serverRandom,
-                        sessionID, cipherSuite, certificateType))
+            serverHello = ServerHello().create(
+                    self.version, serverRandom,
+                    sessionID, cipherSuite, certificateType)
+            serverHello.channel_id = clientHello.channel_id
+            doingChannelID = clientHello.channel_id
+            msgs.append(serverHello)
             msgs.append(Certificate(certificateType).create(serverCertChain))
             if reqCert and reqCAs:
                 msgs.append(CertificateRequest().create([], reqCAs))
@@ -1528,6 +1544,11 @@ class TLSConnection(TLSRecordLayer):
                                settings.cipherImplementations)
 
         #Exchange ChangeCipherSpec and Finished messages
+        for result in self._getChangeCipherSpec():
+            yield result
+        if doingChannelID:
+            for result in self._getEncryptedExtensions():
+                yield result
         for result in self._getFinished():
             yield result
 

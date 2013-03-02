@@ -22,6 +22,7 @@ class HandshakeType:
     certificate_verify = 15
     client_key_exchange = 16
     finished = 20
+    encrypted_extensions = 203
 
 class ContentType:
     change_cipher_spec = 20
@@ -29,6 +30,9 @@ class ContentType:
     handshake = 22
     application_data = 23
     all = (20,21,22,23)
+
+class ExtensionType:
+    channel_id = 30031
 
 class AlertLevel:
     warning = 1

@@ -130,6 +130,7 @@ class ClientHello(HandshakeMsg):
         self.certificate_types = [CertificateType.x509]
         self.compression_methods = []   # a list of 8-bit values
         self.srp_username = None        # a string
+        self.channel_id = False
 
     def create(self, version, random, session_id, cipher_suites,
                certificate_types=None, srp_username=None):
@@ -174,6 +175,8 @@ class ClientHello(HandshakeMsg):
                         self.srp_username = bytesToString(p.getVarBytes(1))
                     elif extType == 7:
                         self.certificate_types = p.getVarList(1, 1)
+                    elif extType == ExtensionType.channel_id:
+                        self.channel_id = True
                     else:
                         p.getFixBytes(extLength)
                     soFar += 4 + extLength
@@ -220,6 +223,7 @@ class ServerHello(HandshakeMsg):
         self.cipher_suite = 0
         self.certificate_type = CertificateType.x509
         self.compression_method = 0
+        self.channel_id = False
 
     def create(self, version, random, session_id, cipher_suite,
                certificate_type):
@@ -266,6 +270,9 @@ class ServerHello(HandshakeMsg):
                 CertificateType.x509:
             extLength += 5
 
+        if self.channel_id:
+            extLength += 4
+
         if extLength != 0:
             w.add(extLength, 2)
 
@@ -274,6 +281,10 @@ class ServerHello(HandshakeMsg):
             w.add(7, 2)
             w.add(1, 2)
             w.add(self.certificate_type, 1)
+
+        if self.channel_id:
+            w.add(ExtensionType.channel_id, 2)
+            w.add(0, 2)
 
         return HandshakeMsg.postWrite(self, w, trial)
 
@@ -566,6 +577,28 @@ class Finished(HandshakeMsg):
         w = HandshakeMsg.preWrite(self, HandshakeType.finished, trial)
         w.addFixSeq(self.verify_data, 1)
         return HandshakeMsg.postWrite(self, w, trial)
+
+class EncryptedExtensions(HandshakeMsg):
+    def __init__(self):
+        self.channel_id_key = None
+        self.channel_id_proof = None
+
+    def parse(self, p):
+        p.startLengthCheck(3)
+        soFar = 0
+        while soFar != p.lengthCheck:
+            extType = p.get(2)
+            extLength = p.get(2)
+            if extType == ExtensionType.channel_id:
+                if extLength != 32*4:
+                    raise SyntaxError()
+                self.channel_id_key = p.getFixBytes(64)
+                self.channel_id_proof = p.getFixBytes(64)
+            else:
+                p.getFixBytes(extLength)
+            soFar += 4 + extLength
+        p.stopLengthCheck()
+        return self
 
 class ApplicationData(Msg):
     def __init__(self):

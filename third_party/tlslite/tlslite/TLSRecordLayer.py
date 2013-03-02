@@ -714,6 +714,8 @@ class TLSRecordLayer:
                                             self.version).parse(p)
                 elif subType == HandshakeType.finished:
                     yield Finished(self.version).parse(p)
+                elif subType == HandshakeType.encrypted_extensions:
+                    yield EncryptedExtensions().parse(p)
                 else:
                     raise AssertionError()
 
@@ -1067,7 +1069,7 @@ class TLSRecordLayer:
         for result in self._sendMsg(finished):
             yield result
 
-    def _getFinished(self):
+    def _getChangeCipherSpec(self):
         #Get and check ChangeCipherSpec
         for result in self._getMsg(ContentType.change_cipher_spec):
             if result in (0,1):
@@ -1082,6 +1084,15 @@ class TLSRecordLayer:
         #Switch to pending read state
         self._changeReadState()
 
+    def _getEncryptedExtensions(self):
+        for result in self._getMsg(ContentType.handshake,
+                                   HandshakeType.encrypted_extensions):
+            if result in (0,1):
+                yield result
+        encrypted_extensions = result
+        self.channel_id = encrypted_extensions.channel_id_key
+
+    def _getFinished(self):
         #Calculate verification data
         verifyData = self._calcFinished(False)
 

@@ -158,6 +158,7 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
     """Creates the SSL connection."""
 
     try:
+      self.tlsConnection = tlsConnection
       tlsConnection.handshakeServer(certChain=self.cert_chain,
                                     privateKey=self.private_key,
                                     sessionCache=self.session_cache,
@@ -266,6 +267,7 @@ class TestPageHandler(testserver_base.BasePageHandler):
       self.MultipartSlowHandler,
       self.GetSSLSessionCacheHandler,
       self.SSLManySmallRecords,
+      self.GetChannelID,
       self.CloseSocketHandler,
       self.RangeResetHandler,
       self.DefaultResponseHandler]
@@ -1424,6 +1426,19 @@ class TestPageHandler(testserver_base.BasePageHandler):
     for i in xrange(20):
       self.wfile.write('*' * 1350)
       self.wfile.flush()
+    return True
+
+  def GetChannelID(self):
+    """Send a reply containing the hashed ChannelID that the client provided."""
+
+    if not self._ShouldHandleRequest('/channel-id'):
+      return False
+
+    self.send_response(200)
+    self.send_header('Content-Type', 'text/plain')
+    self.end_headers()
+    channel_id = self.server.tlsConnection.channel_id.tostring()
+    self.wfile.write(hashlib.sha256(channel_id).digest().encode('base64'))
     return True
 
   def CloseSocketHandler(self):
