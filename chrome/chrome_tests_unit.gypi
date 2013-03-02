@@ -109,6 +109,8 @@
         'browser/download/download_test_file_activity_observer.h',
         'browser/download/test_download_shelf.cc',
         'browser/download/test_download_shelf.h',
+        'browser/extensions/api/messaging/native_messaging_test_util.cc',
+        'browser/extensions/api/messaging/native_messaging_test_util.h',
         'browser/extensions/fake_safe_browsing_database_manager.cc',
         'browser/extensions/fake_safe_browsing_database_manager.h',
         'browser/extensions/mock_extension_special_storage_policy.cc',

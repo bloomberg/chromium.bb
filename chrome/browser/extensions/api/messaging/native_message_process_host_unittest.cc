@@ -14,11 +14,13 @@
 #include "base/platform_file.h"
 #include "base/process_util.h"
 #include "base/run_loop.h"
+#include "base/stringprintf.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
 #include "chrome/browser/extensions/api/messaging/native_message_process_host.h"
+#include "chrome/browser/extensions/api/messaging/native_messaging_test_util.h"
 #include "chrome/browser/extensions/api/messaging/native_process_launcher.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -33,7 +35,6 @@ using content::BrowserThread;
 
 namespace {
 
-const char kTestHostId[] = "knldjmfmopnpolahpmmgbagdohdnhkik";
 const char kTestMessage[] = "{\"text\": \"Hello.\"}";
 
 base::FilePath GetTestDir() {
@@ -110,7 +111,8 @@ class NativeMessagingTest : public ::testing::Test,
       int port_id,
       const std::string& message) OVERRIDE  {
     last_posted_message_ = message;
-    read_message_run_loop_.Quit();
+    if (read_message_run_loop_)
+      read_message_run_loop_->Quit();
   }
 
   virtual void CloseChannel(int port_id, bool error) OVERRIDE {
@@ -139,7 +141,7 @@ class NativeMessagingTest : public ::testing::Test,
   scoped_ptr<NativeMessageProcessHost> native_message_process_host_;
   base::FilePath user_data_dir_;
   MessageLoopForIO message_loop_;
-  base::RunLoop read_message_run_loop_;
+  scoped_ptr<base::RunLoop> read_message_run_loop_;
   scoped_ptr<content::TestBrowserThread> ui_thread_;
   scoped_ptr<content::TestBrowserThread> io_thread_;
   std::string last_posted_message_;
@@ -153,12 +155,17 @@ TEST_F(NativeMessagingTest, SingleSendMessageRead) {
   scoped_ptr<NativeProcessLauncher> launcher(
       new FakeLauncher(temp_input_file, temp_output_file));
   native_message_process_host_ = NativeMessageProcessHost::CreateWithLauncher(
-      AsWeakPtr(), kTestHostId, "empty_app.py", 0, launcher.Pass());
+      AsWeakPtr(), kTestNativeMessagingExtensionId, "empty_app.py",
+      0, launcher.Pass());
   ASSERT_TRUE(native_message_process_host_.get());
-  message_loop_.RunUntilIdle();
+  read_message_run_loop_.reset(new base::RunLoop());
+  read_message_run_loop_->RunUntilIdle();
 
-  native_message_process_host_->ReadNowForTesting();
-  read_message_run_loop_.Run();
+  if (last_posted_message_.empty()) {
+    read_message_run_loop_.reset(new base::RunLoop());
+    native_message_process_host_->ReadNowForTesting();
+    read_message_run_loop_->Run();
+  }
   EXPECT_EQ(kTestMessage, last_posted_message_);
 }
 
@@ -171,7 +178,8 @@ TEST_F(NativeMessagingTest, SingleSendMessageWrite) {
   scoped_ptr<NativeProcessLauncher> launcher(
       new FakeLauncher(temp_input_file, temp_output_file));
   native_message_process_host_ = NativeMessageProcessHost::CreateWithLauncher(
-      AsWeakPtr(), kTestHostId, "empty_app.py", 0, launcher.Pass());
+      AsWeakPtr(), kTestNativeMessagingExtensionId, "empty_app.py",
+      0, launcher.Pass());
   ASSERT_TRUE(native_message_process_host_.get());
   message_loop_.RunUntilIdle();
 
@@ -190,22 +198,34 @@ TEST_F(NativeMessagingTest, SingleSendMessageWrite) {
   EXPECT_EQ(FormatMessage(kTestMessage), output);
 }
 
-// Disabled, see http://crbug.com/159754.
 // Test send message with a real client. The client just echo's back the text
 // it recieved.
-TEST_F(NativeMessagingTest, DISABLED_EchoConnect) {
+TEST_F(NativeMessagingTest, EchoConnect) {
+  base::ScopedTempDir temp_dir;
+  base::FilePath manifest_path = temp_dir.path().AppendASCII(
+      std::string(kTestNativeMessagingHostName) + ".json");
+  ASSERT_NO_FATAL_FAILURE(CreateTestNativeHostManifest(manifest_path));
+
+  std::string hosts_option = base::StringPrintf(
+      "%s=%s", extensions::kTestNativeMessagingHostName,
+      manifest_path.AsUTF8Unsafe().c_str());
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kNativeMessagingHosts, hosts_option);
+
   native_message_process_host_ = NativeMessageProcessHost::Create(
-      AsWeakPtr(), kTestHostId, "empty_app.py", 0);
+      AsWeakPtr(), kTestNativeMessagingExtensionId,
+      kTestNativeMessagingHostName, 0);
   ASSERT_TRUE(native_message_process_host_.get());
-  message_loop_.RunUntilIdle();
 
   native_message_process_host_->Send("{\"text\": \"Hello.\"}");
-  read_message_run_loop_.Run();
+  read_message_run_loop_.reset(new base::RunLoop());
+  read_message_run_loop_->Run();
   EXPECT_EQ("{\"id\": 1, \"echo\": {\"text\": \"Hello.\"}}",
             last_posted_message_);
 
   native_message_process_host_->Send("{\"foo\": \"bar\"}");
-  read_message_run_loop_.Run();
+  read_message_run_loop_.reset(new base::RunLoop());
+  read_message_run_loop_->Run();
   EXPECT_EQ("{\"id\": 2, \"echo\": {\"foo\": \"bar\"}}", last_posted_message_);
 }
 
