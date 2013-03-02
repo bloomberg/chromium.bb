@@ -40,16 +40,15 @@ void DelegatedRendererLayer::pushPropertiesTo(LayerImpl* impl) {
   if (!frame_data_)
     return;
 
-  // TODO(danakj): Save these resources somewhere where we can collect them for
-  // the frame ack.
-  TransferableResourceArray resources_for_ack;
   if (frame_size_.IsEmpty()) {
     scoped_ptr<DelegatedFrameData> empty_frame(new DelegatedFrameData);
-    delegated_impl->SetFrameData(
-        empty_frame.Pass(), gfx::Rect(), &resources_for_ack);
+    delegated_impl->SetFrameData(empty_frame.Pass(),
+                                 gfx::Rect(),
+                                 &unused_resources_for_child_compositor_);
   } else {
-    delegated_impl->SetFrameData(
-        frame_data_.Pass(), damage_in_frame_, &resources_for_ack);
+    delegated_impl->SetFrameData(frame_data_.Pass(),
+                                 damage_in_frame_,
+                                 &unused_resources_for_child_compositor_);
   }
   frame_data_.reset();
   damage_in_frame_ = gfx::RectF();
@@ -80,6 +79,14 @@ void DelegatedRendererLayer::SetFrameData(
     frame_size_ = gfx::Size();
   }
   setNeedsCommit();
+}
+
+void DelegatedRendererLayer::TakeUnusedResourcesForChildCompositor(
+    TransferableResourceArray* array) {
+  DCHECK(array->empty());
+  array->clear();
+
+  array->swap(unused_resources_for_child_compositor_);
 }
 
 }  // namespace cc

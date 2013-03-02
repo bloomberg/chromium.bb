@@ -7,6 +7,7 @@
 
 #include "cc/cc_export.h"
 #include "cc/layer.h"
+#include "cc/transferable_resource.h"
 
 namespace cc {
 class DelegatedFrameData;
@@ -28,6 +29,10 @@ class CC_EXPORT DelegatedRendererLayer : public Layer {
 
   void SetFrameData(scoped_ptr<DelegatedFrameData> frame_data);
 
+  // Passes ownership of any unused resources that had been given by the child
+  // compositor to the given array, so they can be given back to the child.
+  void TakeUnusedResourcesForChildCompositor(TransferableResourceArray* array);
+
  protected:
   DelegatedRendererLayer();
   virtual ~DelegatedRendererLayer();
@@ -37,6 +42,7 @@ class CC_EXPORT DelegatedRendererLayer : public Layer {
   gfx::RectF damage_in_frame_;
   gfx::Size frame_size_;
   gfx::Size display_size_;
+  TransferableResourceArray unused_resources_for_child_compositor_;
 };
 
 }

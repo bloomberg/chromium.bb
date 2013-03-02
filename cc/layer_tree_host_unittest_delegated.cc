@@ -339,7 +339,7 @@ class LayerTreeHostDelegatedTestMergeResources
     AddTransferableResource(frame1.get(), 999);
     delegated_->SetFrameData(frame1.Pass());
 
-    // The second frame uses resource 999 still.
+    // The second frame uses resource 999 still, but also adds 555.
     scoped_ptr<DelegatedFrameData> frame2 =
         CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
     AddTextureQuad(frame2.get(), 999);
@@ -381,7 +381,7 @@ class LayerTreeHostDelegatedTestRemapResourcesInQuads
     : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
  public:
   virtual void beginTest() OVERRIDE {
-    // Generate a frame with a resource in it.
+    // Generate a frame with two resources in it.
     scoped_ptr<DelegatedFrameData> frame =
         CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
     AddTextureQuad(frame.get(), 999);
@@ -427,6 +427,135 @@ class LayerTreeHostDelegatedTestRemapResourcesInQuads
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestRemapResourcesInQuads)
+
+class LayerTreeHostDelegatedTestReturnUnusedResources
+    : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
+ public:
+  virtual void beginTest() OVERRIDE {
+    postSetNeedsCommitToMainThread();
+  }
+
+  virtual void didCommit() OVERRIDE {
+    scoped_ptr<DelegatedFrameData> frame;
+    TransferableResourceArray resources;
+
+    int next_source_frame_number = m_layerTreeHost->commitNumber();
+    switch (next_source_frame_number) {
+      case 1:
+        // Generate a frame with two resources in it.
+        frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
+        AddTextureQuad(frame.get(), 999);
+        AddTransferableResource(frame.get(), 999);
+        AddTextureQuad(frame.get(), 555);
+        AddTransferableResource(frame.get(), 555);
+        delegated_->SetFrameData(frame.Pass());
+        break;
+      case 2:
+        // All of the resources are in use.
+        delegated_->TakeUnusedResourcesForChildCompositor(&resources);
+        EXPECT_EQ(0u, resources.size());
+
+        // Keep using 999 but stop using 555.
+        frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
+        AddTextureQuad(frame.get(), 999);
+        AddTextureQuad(frame.get(), 444);
+        AddTransferableResource(frame.get(), 444);
+        delegated_->SetFrameData(frame.Pass());
+        break;
+      case 3:
+        // 555 is no longer in use.
+        delegated_->TakeUnusedResourcesForChildCompositor(&resources);
+        EXPECT_EQ(1u, resources.size());
+        EXPECT_EQ(555, resources[0].id);
+
+        // Stop using any resources.
+        frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
+        delegated_->SetFrameData(frame.Pass());
+        break;
+      case 4:
+        // 444 and 999 are no longer in use.
+        delegated_->TakeUnusedResourcesForChildCompositor(&resources);
+        EXPECT_EQ(2u, resources.size());
+        if (resources[0].id == 999) {
+          EXPECT_EQ(999, resources[0].id);
+          EXPECT_EQ(444, resources[1].id);
+        } else {
+          EXPECT_EQ(444, resources[0].id);
+          EXPECT_EQ(999, resources[1].id);
+        }
+        endTest();
+        break;
+    }
+
+    // Resource are never immediately released.
+    TransferableResourceArray empty_resources;
+    delegated_->TakeUnusedResourcesForChildCompositor(&empty_resources);
+    EXPECT_TRUE(empty_resources.empty());
+  }
+
+  virtual void afterTest() OVERRIDE {}
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestReturnUnusedResources)
+
+class LayerTreeHostDelegatedTestReusedResources
+    : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
+ public:
+  virtual void beginTest() OVERRIDE {
+    postSetNeedsCommitToMainThread();
+  }
+
+  virtual void didCommit() OVERRIDE {
+    scoped_ptr<DelegatedFrameData> frame;
+    TransferableResourceArray resources;
+
+    int next_source_frame_number = m_layerTreeHost->commitNumber();
+    switch (next_source_frame_number) {
+      case 1:
+        // Generate a frame with some resources in it.
+        frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
+        AddTextureQuad(frame.get(), 999);
+        AddTransferableResource(frame.get(), 999);
+        AddTextureQuad(frame.get(), 555);
+        AddTransferableResource(frame.get(), 555);
+        AddTextureQuad(frame.get(), 444);
+        AddTransferableResource(frame.get(), 444);
+        delegated_->SetFrameData(frame.Pass());
+        break;
+      case 2:
+        // All of the resources are in use.
+        delegated_->TakeUnusedResourcesForChildCompositor(&resources);
+        EXPECT_EQ(0u, resources.size());
+
+        // Keep using 999 but stop using 555 and 444.
+        frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
+        AddTextureQuad(frame.get(), 999);
+        delegated_->SetFrameData(frame.Pass());
+
+        // Resource are not immediately released.
+        delegated_->TakeUnusedResourcesForChildCompositor(&resources);
+        EXPECT_EQ(0u, resources.size());
+
+        // Now using 555 and 444 again, but not 999.
+        frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
+        AddTextureQuad(frame.get(), 555);
+        AddTextureQuad(frame.get(), 444);
+        delegated_->SetFrameData(frame.Pass());
+        break;
+      case 3:
+        // The 999 resource is the only unused one.
+        delegated_->TakeUnusedResourcesForChildCompositor(&resources);
+        EXPECT_EQ(1u, resources.size());
+        EXPECT_EQ(999, resources[0].id);
+        endTest();
+        break;
+    }
+  }
+
+  virtual void afterTest() OVERRIDE {}
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestReusedResources)
 
 }  // namespace
 }  // namespace cc
