@@ -564,54 +564,62 @@ TEST_PPAPI_NACL(Memory)
 TEST_PPAPI_IN_PROCESS(VideoDecoder)
 TEST_PPAPI_OUT_OF_PROCESS(VideoDecoder)
 
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileIO_Open)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileIO_OpenDirectory)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileIO_AbortCalls)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileIO_ParallelReads)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileIO_ParallelWrites)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileIO_NotAllowMixedReadWrite)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileIO_ReadWriteSetLength)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileIO_ReadToArrayWriteSetLength)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileIO_TouchQuery)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileIO_WillWriteWillSetLength)
-
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileIO_Open)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileIO_AbortCalls)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileIO_ParallelReads)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileIO_ParallelWrites)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileIO_NotAllowMixedReadWrite)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileIO_ReadWriteSetLength)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileIO_ReadToArrayWriteSetLength)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileIO_TouchQuery)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileIO_WillWriteWillSetLength)
-
-// PPAPINaclTest.FileIO_ParallelReads is flaky on Mac and Windows.
-// http://crbug.com/121104
-#if defined(OS_MACOSX) || defined(OS_WIN)
-#define MAYBE_FileIO_ParallelReads DISABLED_FileIO_ParallelReads
-#else
-#define MAYBE_FileIO_ParallelReads FileIO_ParallelReads
-#endif
-
-// PPAPINaclTest.FileIO_AbortCalls is often flaky on Windows.
-// http://crbug.com/160034
-#if defined(OS_WIN)
-#define MAYBE_FileIO_AbortCalls DISABLED_FileIO_AbortCalls
-#else
-#define MAYBE_FileIO_AbortCalls FileIO_AbortCalls
-#endif
-
-TEST_PPAPI_NACL(FileIO_Open)
-TEST_PPAPI_NACL(MAYBE_FileIO_AbortCalls)
-TEST_PPAPI_NACL(MAYBE_FileIO_ParallelReads)
-// http://crbug.com/167150
-TEST_PPAPI_NACL(DISABLED_FileIO_ParallelWrites)
-TEST_PPAPI_NACL(FileIO_NotAllowMixedReadWrite)
-TEST_PPAPI_NACL(FileIO_TouchQuery)
-TEST_PPAPI_NACL(FileIO_ReadWriteSetLength)
-TEST_PPAPI_NACL(FileIO_ReadToArrayWriteSetLength)
-// The following test requires PPB_FileIO_Trusted, not available in NaCl.
-TEST_PPAPI_NACL(DISABLED_FileIO_WillWriteWillSetLength)
+// FileIO tests.
+IN_PROC_BROWSER_TEST_F(PPAPITest, FileIO) {
+  RunTestViaHTTP(
+      LIST_TEST(FileIO_Open)
+      LIST_TEST(FileIO_OpenDirectory)
+      LIST_TEST(FileIO_AbortCalls)
+      LIST_TEST(FileIO_ParallelReads)
+      LIST_TEST(FileIO_ParallelWrites)
+      LIST_TEST(FileIO_NotAllowMixedReadWrite)
+      LIST_TEST(FileIO_ReadWriteSetLength)
+      LIST_TEST(FileIO_ReadToArrayWriteSetLength)
+      LIST_TEST(FileIO_TouchQuery)
+      LIST_TEST(FileIO_WillWriteWillSetLength)
+  );
+}
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, FileIO) {
+  RunTestViaHTTP(
+      LIST_TEST(FileIO_Open)
+      LIST_TEST(FileIO_AbortCalls)
+      LIST_TEST(FileIO_ParallelReads)
+      LIST_TEST(FileIO_ParallelWrites)
+      LIST_TEST(FileIO_NotAllowMixedReadWrite)
+      LIST_TEST(FileIO_ReadWriteSetLength)
+      LIST_TEST(FileIO_ReadToArrayWriteSetLength)
+      LIST_TEST(FileIO_TouchQuery)
+      LIST_TEST(FileIO_WillWriteWillSetLength)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, FileIO) {
+  RunTestViaHTTP(
+      LIST_TEST(FileIO_Open)
+      LIST_TEST(FileIO_AbortCalls)
+      LIST_TEST(FileIO_ParallelReads)
+      LIST_TEST(FileIO_ParallelWrites)
+      LIST_TEST(FileIO_NotAllowMixedReadWrite)
+      LIST_TEST(FileIO_ReadWriteSetLength)
+      LIST_TEST(FileIO_ReadToArrayWriteSetLength)
+      LIST_TEST(FileIO_TouchQuery)
+      // The following test requires PPB_FileIO_Trusted, not available in NaCl.
+      LIST_TEST(DISABLED_FileIO_WillWriteWillSetLength)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(FileIO)) {
+  RunTestViaHTTP(
+      LIST_TEST(FileIO_Open)
+      LIST_TEST(FileIO_AbortCalls)
+      LIST_TEST(FileIO_ParallelReads)
+      LIST_TEST(FileIO_ParallelWrites)
+      LIST_TEST(FileIO_NotAllowMixedReadWrite)
+      LIST_TEST(FileIO_ReadWriteSetLength)
+      LIST_TEST(FileIO_ReadToArrayWriteSetLength)
+      LIST_TEST(FileIO_TouchQuery)
+      // The following test requires PPB_FileIO_Trusted, not available in NaCl.
+      LIST_TEST(DISABLED_FileIO_WillWriteWillSetLength)
+  );
+}
 
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileRef)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileRef)
