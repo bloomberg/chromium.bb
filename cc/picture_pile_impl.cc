@@ -10,6 +10,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSize.h"
 #include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/size_conversions.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
@@ -60,7 +61,7 @@ scoped_refptr<PicturePileImpl> PicturePileImpl::CloneForDrawing() const {
 
 void PicturePileImpl::Raster(
     SkCanvas* canvas,
-    gfx::Rect content_rect,
+    gfx::Rect canvas_rect,
     float contents_scale,
     int64* total_pixels_rasterized) {
 
@@ -72,12 +73,40 @@ void PicturePileImpl::Raster(
 #endif  // NDEBUG
 
   canvas->save();
-  canvas->translate(-content_rect.x(), -content_rect.y());
-  canvas->clipRect(gfx::RectToSkRect(content_rect));
+  canvas->translate(-canvas_rect.x(), -canvas_rect.y());
 
+  gfx::SizeF total_content_size = gfx::ScaleSize(tiling_.total_size(),
+                                                 contents_scale);
+  gfx::Rect total_content_rect(gfx::ToCeiledSize(total_content_size));
+  gfx::Rect content_rect = total_content_rect;
+  content_rect.Intersect(canvas_rect);
+
+  // Clear one texel inside the right/bottom edge of the content rect,
+  // as it may only be partially covered by the picture playback.
+  // Also clear one texel outside the right/bottom edge of the content rect,
+  // as it may get blended in by linear filtering when zoomed in.
+  gfx::Rect deflated_content_rect = total_content_rect;
+  deflated_content_rect.Inset(0, 0, 1, 1);
+
+  gfx::Rect canvas_outside_content_rect = canvas_rect;
+  canvas_outside_content_rect.Subtract(deflated_content_rect);
+
+  if (!canvas_outside_content_rect.IsEmpty()) {
+    gfx::Rect inflated_content_rect = total_content_rect;
+    inflated_content_rect.Inset(0, 0, -1, -1);
+    canvas->clipRect(gfx::RectToSkRect(inflated_content_rect),
+                     SkRegion::kReplace_Op);
+    canvas->clipRect(gfx::RectToSkRect(deflated_content_rect),
+                     SkRegion::kDifference_Op);
+    canvas->drawColor(background_color_, SkXfermode::kSrc_Mode);
+  }
+
+  // Rasterize the collection of relevant picture piles.
   gfx::Rect layer_rect = gfx::ToEnclosingRect(
       gfx::ScaleRect(content_rect, 1.f / contents_scale));
 
+  canvas->clipRect(gfx::RectToSkRect(content_rect),
+                   SkRegion::kReplace_Op);
   Region unclipped(content_rect);
   for (TilingData::Iterator tile_iter(&tiling_, layer_rect);
        tile_iter; ++tile_iter) {

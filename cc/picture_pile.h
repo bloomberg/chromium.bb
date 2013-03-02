@@ -21,6 +21,7 @@ class CC_EXPORT PicturePile : public PicturePileBase {
   // Invalidations are in layer space.
   void Update(
       ContentLayerClient* painter,
+      SkColor background_color,
       const Region& invalidation,
       gfx::Rect visible_layer_rect,
       RenderingStats* stats);

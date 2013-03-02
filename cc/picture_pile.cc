@@ -31,9 +31,12 @@ PicturePile::~PicturePile() {
 
 void PicturePile::Update(
     ContentLayerClient* painter,
+    SkColor background_color,
     const Region& invalidation,
     gfx::Rect visible_layer_rect,
     RenderingStats* stats) {
+  background_color_ = background_color;
+
   gfx::Rect interest_rect = visible_layer_rect;
   interest_rect.Inset(
       -kPixelDistanceToRecord,
@@ -82,8 +85,15 @@ void PicturePile::Update(
     // Create a picture in this list if it doesn't exist.
     PictureList& pic_list = picture_list_map_[iter.index()];
     if (pic_list.empty()) {
-      gfx::Rect tile =
-          tiling_.TileBoundsWithBorder(iter.index_x(), iter.index_y());
+      // Inflate the base picture with a margin, similar to invalidations, so
+      // that when scaled down to at least min_contents_scale, the enclosed
+      // rect still includes content all the way to the edge of the layer.
+      gfx::Rect tile = tiling_.TileBounds(iter.index_x(), iter.index_y());
+      tile.Inset(
+        -buffer_pixels(),
+        -buffer_pixels(),
+        -buffer_pixels(),
+        -buffer_pixels());
       scoped_refptr<Picture> base_picture = Picture::Create(tile);
       pic_list.push_back(base_picture);
     }

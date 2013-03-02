@@ -109,8 +109,7 @@ class CC_EXPORT PictureLayerTiling {
    private:
     const PictureLayerTiling* tiling_;
     gfx::Rect dest_rect_;
-    float dest_to_content_scale_x_;
-    float dest_to_content_scale_y_;
+    float dest_to_content_scale_;
 
     Tile* current_tile_;
     gfx::Rect current_geometry_rect_;

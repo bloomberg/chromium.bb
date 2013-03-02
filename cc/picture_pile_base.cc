@@ -5,6 +5,7 @@
 #include "cc/picture_pile_base.h"
 
 #include "base/logging.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/rect_conversions.h"
 
 namespace {
@@ -17,7 +18,8 @@ const int kTileGridBorderPixels = 1;
 namespace cc {
 
 PicturePileBase::PicturePileBase()
-    : min_contents_scale_(0) {
+    : min_contents_scale_(0)
+    , background_color_(SkColorSetARGBInline(0, 0, 0, 0)) {
   tiling_.SetMaxTextureSize(gfx::Size(kBasePictureSize, kBasePictureSize));
   tile_grid_info_.fTileInterval.setEmpty();
   tile_grid_info_.fMargin.setEmpty();
@@ -105,6 +107,7 @@ void PicturePileBase::PushPropertiesTo(PicturePileBase* other) {
   other->recorded_region_ = recorded_region_;
   other->min_contents_scale_ = min_contents_scale_;
   other->tile_grid_info_ = tile_grid_info_;
+  other->background_color_ = background_color_;
 }
 
 void PicturePileBase::UpdateRecordedRegion() {

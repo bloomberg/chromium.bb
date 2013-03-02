@@ -79,7 +79,11 @@ void PictureLayer::update(ResourceUpdateQueue&, const OcclusionTracker*,
   gfx::Rect visible_layer_rect = gfx::ToEnclosingRect(
       gfx::ScaleRect(visibleContentRect(), 1.f / contentsScaleX()));
   devtools_instrumentation::ScopedPaintLayer paint_layer(id());
-  pile_->Update(client_, pile_invalidation_, visible_layer_rect, stats);
+  pile_->Update(client_,
+                backgroundColor(),
+                pile_invalidation_,
+                visible_layer_rect,
+                stats);
 }
 
 void PictureLayer::setIsMask(bool is_mask) {

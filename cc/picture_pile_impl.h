@@ -32,7 +32,7 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
   // It is assumed that contentsScale has already been applied to this canvas.
   void Raster(
       SkCanvas* canvas,
-      gfx::Rect content_rect,
+      gfx::Rect canvas_rect,
       float contents_scale,
       int64* total_pixels_rasterized);
 

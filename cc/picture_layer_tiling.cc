@@ -190,8 +190,7 @@ PictureLayerTiling::Iterator::Iterator(const PictureLayerTiling* tiling,
     : tiling_(tiling),
       dest_rect_(dest_rect),
       current_tile_(NULL),
-      dest_to_content_scale_x_(0),
-      dest_to_content_scale_y_(0),
+      dest_to_content_scale_(0),
       tile_i_(0),
       tile_j_(0),
       left_(0),
@@ -202,42 +201,17 @@ PictureLayerTiling::Iterator::Iterator(const PictureLayerTiling* tiling,
   if (dest_rect_.IsEmpty())
     return;
 
-  float dest_to_content_scale = tiling_->contents_scale_ / dest_scale;
+  dest_to_content_scale_ = tiling_->contents_scale_ / dest_scale;
   // This is the maximum size that the dest rect can be, given the content size.
   gfx::Size dest_content_size = gfx::ToCeiledSize(gfx::ScaleSize(
       tiling_->ContentRect().size(),
-      1 / dest_to_content_scale,
-      1 / dest_to_content_scale));
-
-  // The last row/column of texels may not have full rasterization coverage,
-  // which can happen if the ceiled content size does not equal the floored
-  // content size.  These texels will sample outside of the recording to
-  // generate their pixels.  Use the floored size here to ignore them.
-  gfx::Size content_size_floor = gfx::ToFlooredSize(tiling->ContentSizeF());
-  dest_to_content_scale_x_ = content_size_floor.width() /
-      static_cast<float>(dest_content_size.width());
-  dest_to_content_scale_y_ = content_size_floor.height() /
-      static_cast<float>(dest_content_size.height());
-
-  // It's possible that when drawing a quad with texel:pixel ratio < 1
-  // GL_LINEAR will cause us to blend in invalid texels.
-  // We stretch the content a little more to prevent sampling past the
-  // middle of the last texel.
-  if (layerDeviceAlignment == LayerAlignedToDevice){
-    if (dest_to_content_scale_x_ < 1.0)
-      dest_to_content_scale_x_ -= 0.5f / dest_content_size.width();
-    if (dest_to_content_scale_y_ < 1.0)
-      dest_to_content_scale_y_ -= 0.5f / dest_content_size.height();
-  }
-  else if (layerDeviceAlignment == LayerNotAlignedToDevice) {
-    dest_to_content_scale_x_ -= 0.5f / dest_content_size.width();
-    dest_to_content_scale_y_ -= 0.5f / dest_content_size.height();
-  }
+      1 / dest_to_content_scale_,
+      1 / dest_to_content_scale_));
 
   gfx::Rect content_rect =
       gfx::ToEnclosingRect(gfx::ScaleRect(dest_rect_,
-                                          dest_to_content_scale_x_,
-                                          dest_to_content_scale_y_));
+                                          dest_to_content_scale_,
+                                          dest_to_content_scale_));
   // IndexFromSrcCoord clamps to valid tile ranges, so it's necessary to
   // check for non-intersection first.
   content_rect.Intersect(gfx::Rect(tiling_->tiling_data_.total_size()));
@@ -286,8 +260,8 @@ PictureLayerTiling::Iterator& PictureLayerTiling::Iterator::operator++() {
   gfx::Rect content_rect = tiling_->tiling_data_.TileBounds(tile_i_, tile_j_);
 
   current_geometry_rect_ = gfx::ToEnclosingRect(
-      gfx::ScaleRect(content_rect, 1 / dest_to_content_scale_x_,
-                                   1 / dest_to_content_scale_y_));
+      gfx::ScaleRect(content_rect, 1 / dest_to_content_scale_,
+                                   1 / dest_to_content_scale_));
 
   current_geometry_rect_.Intersect(dest_rect_);
 
@@ -336,8 +310,8 @@ gfx::RectF PictureLayerTiling::Iterator::texture_rect() const {
 
   // Convert from dest space => content space => texture space.
   gfx::RectF texture_rect(current_geometry_rect_);
-  texture_rect.Scale(dest_to_content_scale_x_,
-                     dest_to_content_scale_y_);
+  texture_rect.Scale(dest_to_content_scale_,
+                     dest_to_content_scale_);
   texture_rect.Offset(-tex_origin.OffsetFromOrigin());
   texture_rect.Intersect(tiling_->ContentRect());
 
