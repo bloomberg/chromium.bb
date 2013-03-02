@@ -17,7 +17,7 @@ TEST(WalletServiceUrl, CheckDefaultUrls) {
             "getFullWalletJwtless",
             GetGetFullWalletUrl().spec());
   ASSERT_EQ("https://wallet.google.com/online/v2/wallet/autocheckout/v1/"
-            "acceptLegalDocuments",
+            "acceptLegalDocument",
             GetAcceptLegalDocumentsUrl().spec());
   ASSERT_EQ("https://wallet.google.com/online/v2/wallet/autocheckout/v1/"
             "authenticateInstrument",

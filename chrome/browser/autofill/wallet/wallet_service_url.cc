@@ -54,7 +54,7 @@ GURL GetGetFullWalletUrl() {
 }
 
 GURL GetAcceptLegalDocumentsUrl() {
-  return GetBaseAutocheckoutUrl().Resolve("acceptLegalDocuments");
+  return GetBaseAutocheckoutUrl().Resolve("acceptLegalDocument");
 }
 
 GURL GetAuthenticateInstrumentUrl() {
