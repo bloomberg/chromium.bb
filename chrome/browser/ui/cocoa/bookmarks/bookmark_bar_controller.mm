@@ -575,7 +575,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   [sender highlight:NO];
 }
 
--(void)cleanupAfterMenuFlashThread:(id)sender {
+- (void)cleanupAfterMenuFlashThread:(id)sender {
   [self closeFolderAndStopTrackingMenus];
 
   // Items retained by doMenuFlashOnSeparateThread below.
@@ -647,6 +647,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
   if (!animate)
     [self closeFolderAndStopTrackingMenus];
+  bookmark_utils::RecordBookmarkLaunch([self bookmarkLaunchLocation]);
 }
 
 // Common function to open a bookmark folder of any type.
@@ -654,6 +655,9 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   DCHECK([sender isKindOfClass:[BookmarkButton class]]);
   DCHECK([[sender cell] isKindOfClass:[BookmarkButtonCell class]]);
 
+  // Only record the action if it's the initial folder being opened.
+  if (!showFolderMenus_)
+    bookmark_utils::RecordBookmarkFolderOpen([self bookmarkLaunchLocation]);
   showFolderMenus_ = !showFolderMenus_;
 
   if (sender == offTheSideButton_)
@@ -662,7 +666,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   // Toggle presentation of bar folder menus.
   [folderTarget_ openBookmarkFolderFromButton:sender];
 }
-
 
 // Click on a bookmark folder button.
 - (IBAction)openBookmarkFolderFromButton:(id)sender {
@@ -873,6 +876,12 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 - (AnimatableView*)animatableView {
   DCHECK([[self view] isKindOfClass:[AnimatableView class]]);
   return (AnimatableView*)[self view];
+}
+
+- (bookmark_utils::BookmarkLaunchLocation)bookmarkLaunchLocation {
+  return currentState_ == BookmarkBar::DETACHED ?
+      bookmark_utils::LAUNCH_DETACHED_BAR :
+      bookmark_utils::LAUNCH_ATTACHED_BAR;
 }
 
 // Position the off-the-side chevron to the left of the otherBookmarks button,
@@ -1572,7 +1581,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 // tricks (e.g. sending an extra mouseExited: to the button) don't
 // fix the problem.
 // http://crbug.com/129338
--(void)unhighlightBookmark:(const BookmarkNode*)node {
+- (void)unhighlightBookmark:(const BookmarkNode*)node {
   // Only relevant if context menu was opened from a button on the
   // bookmark bar.
   const BookmarkNode* parent = node->parent();

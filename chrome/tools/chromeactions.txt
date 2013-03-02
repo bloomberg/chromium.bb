@@ -252,6 +252,7 @@
 0xe1b2d67ea37c5ba0	ClickToPlay_InfobarShown
 0xcfe5a8d495d7df34	ClickToPlay_LoadAll_Bubble
 0xb30dcb1850e21bce	ClickToPlay_LoadAll_Infobar
+0x57b3678b429935ee	ClickedBookmarkBarFolder
 0x55c851e7c3d9a792	ClickedBookmarkBarURLButton
 0x4f667771b8f484b1	CloseAllSuppressedPopups
 0x9436ccb9a5cc6a27	CloseTab

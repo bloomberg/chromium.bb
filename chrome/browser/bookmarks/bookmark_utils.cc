@@ -29,6 +29,7 @@
 #include "ui/base/models/tree_node_iterator.h"
 
 using base::Time;
+using content::UserMetricsAction;
 
 namespace {
 
@@ -507,13 +508,16 @@ void RemoveAllBookmarks(BookmarkModel* model, const GURL& url) {
   }
 }
 
+void RecordBookmarkFolderOpen(BookmarkLaunchLocation location) {
+  if (location == LAUNCH_DETACHED_BAR || location == LAUNCH_ATTACHED_BAR)
+    content::RecordAction(UserMetricsAction("ClickedBookmarkBarFolder"));
+}
+
 void RecordBookmarkLaunch(BookmarkLaunchLocation location) {
-#if defined(OS_WIN)
-  // TODO(estade): do this on other platforms too. For now it's compiled out
-  // so that stats from platforms for which this is incompletely implemented
-  // don't mix in with Windows, where it should be implemented exhaustively.
+  if (location == LAUNCH_DETACHED_BAR || location == LAUNCH_ATTACHED_BAR)
+    content::RecordAction(UserMetricsAction("ClickedBookmarkBarURLButton"));
+
   UMA_HISTOGRAM_ENUMERATION("Bookmarks.LaunchLocation", location, LAUNCH_LIMIT);
-#endif
 }
 
 #if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(USE_AURA)

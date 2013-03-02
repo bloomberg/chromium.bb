@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/public/pref_member.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar_instructions_delegate.h"
 #include "chrome/browser/ui/bookmarks/bookmark_context_menu_controller.h"
@@ -139,6 +140,9 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   // is equivalent to the number of children the bookmark bar node from the
   // bookmark bar model has.
   int GetBookmarkButtonCount();
+
+  // Returns LAUNCH_DETACHED_BAR or LAUNCH_ATTACHED_BAR based on detached state.
+  bookmark_utils::BookmarkLaunchLocation GetBookmarkLaunchLocation() const;
 
   // Set the appearance of the overflow button appropriately (either chromium
   // style or GTK style).

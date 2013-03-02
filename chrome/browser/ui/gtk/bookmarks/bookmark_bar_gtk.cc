@@ -565,6 +565,13 @@ int BookmarkBarGtk::GetBookmarkButtonCount() {
   return count;
 }
 
+bookmark_utils::BookmarkLaunchLocation
+    BookmarkBarGtk::GetBookmarkLaunchLocation() const {
+  return bookmark_bar_state_ == BookmarkBar::DETACHED ?
+      bookmark_utils::LAUNCH_DETACHED_BAR :
+      bookmark_utils::LAUNCH_ATTACHED_BAR;
+}
+
 void BookmarkBarGtk::SetOverflowButtonAppearance() {
   GtkWidget* former_child = gtk_bin_get_child(GTK_BIN(overflow_button_));
   if (former_child)
@@ -1153,7 +1160,7 @@ void BookmarkBarGtk::OnClicked(GtkWidget* sender) {
                   event_utils::DispositionForCurrentButtonPressEvent(),
                   browser_->profile());
 
-  content::RecordAction(UserMetricsAction("ClickedBookmarkBarURLButton"));
+  bookmark_utils::RecordBookmarkLaunch(GetBookmarkLaunchLocation());
 }
 
 void BookmarkBarGtk::OnButtonDragBegin(GtkWidget* button,
@@ -1233,6 +1240,7 @@ void BookmarkBarGtk::OnFolderClicked(GtkWidget* sender) {
   GdkEvent* event = gtk_get_current_event();
   if (event->button.button == 1 ||
       (event->button.button == 2 && sender == overflow_button_)) {
+    bookmark_utils::RecordBookmarkFolderOpen(GetBookmarkLaunchLocation());
     PopupForButton(sender);
   } else if (event->button.button == 2) {
     const BookmarkNode* node = GetNodeForToolButton(sender);

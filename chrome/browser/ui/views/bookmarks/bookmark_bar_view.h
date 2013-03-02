@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar_instructions_delegate.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view_observer.h"
@@ -275,6 +276,9 @@ class BookmarkBarView : public DetachableToolbarView,
 
   // Returns the button at the specified index.
   views::TextButton* GetBookmarkButton(int index);
+
+  // Returns LAUNCH_DETACHED_BAR or LAUNCH_ATTACHED_BAR based on detached state.
+  bookmark_utils::BookmarkLaunchLocation GetBookmarkLaunchLocation() const;
 
   // Returns the index of the first hidden bookmark button. If all buttons are
   // visible, this returns GetBookmarkButtonCount().

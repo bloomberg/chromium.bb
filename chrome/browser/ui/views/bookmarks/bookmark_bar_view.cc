@@ -1065,6 +1065,7 @@ void BookmarkBarView::OnMenuButtonClicked(views::View* view,
     node = model_->bookmark_bar_node()->GetChild(button_index);
   }
 
+  bookmark_utils::RecordBookmarkFolderOpen(GetBookmarkLaunchLocation());
   bookmark_menu_ = new BookmarkMenuController(browser_,
       page_navigator_, GetWidget(), node, start_index);
   bookmark_menu_->set_observer(this);
@@ -1097,10 +1098,7 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
                     disposition_from_event_flags, browser_->profile());
   }
 
-  bookmark_utils::RecordBookmarkLaunch(IsDetached() ?
-      bookmark_utils::LAUNCH_DETACHED_BAR :
-      bookmark_utils::LAUNCH_ATTACHED_BAR);
-  content::RecordAction(UserMetricsAction("ClickedBookmarkBarURLButton"));
+  bookmark_utils::RecordBookmarkLaunch(GetBookmarkLaunchLocation());
 }
 
 void BookmarkBarView::ShowContextMenuForView(views::View* source,
@@ -1197,6 +1195,12 @@ int BookmarkBarView::GetBookmarkButtonCount() {
 views::TextButton* BookmarkBarView::GetBookmarkButton(int index) {
   DCHECK(index >= 0 && index < GetBookmarkButtonCount());
   return static_cast<views::TextButton*>(child_at(index));
+}
+
+bookmark_utils::BookmarkLaunchLocation
+    BookmarkBarView::GetBookmarkLaunchLocation() const {
+  return IsDetached() ? bookmark_utils::LAUNCH_DETACHED_BAR :
+                        bookmark_utils::LAUNCH_ATTACHED_BAR;
 }
 
 int BookmarkBarView::GetFirstHiddenNodeIndex() {
