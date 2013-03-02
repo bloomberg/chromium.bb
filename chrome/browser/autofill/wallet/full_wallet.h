@@ -45,6 +45,9 @@ class FullWallet {
   // one time pad, |one_time_pad_|.
   const std::string& GetCvn();
 
+  // Whether or not |action| is in |required_actions_|.
+  bool HasRequiredAction(RequiredAction action) const;
+
   bool operator==(const FullWallet& other) const;
   bool operator!=(const FullWallet& other) const;
 

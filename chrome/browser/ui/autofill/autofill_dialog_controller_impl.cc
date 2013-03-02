@@ -349,10 +349,10 @@ DialogSignedInState AutofillDialogControllerImpl::SignedInState() const {
   if (!wallet_items_)
     return REQUIRES_RESPONSE;
 
-  if (HasRequiredAction(wallet::GAIA_AUTH))
+  if (wallet_items_->HasRequiredAction(wallet::GAIA_AUTH))
     return REQUIRES_SIGN_IN;
 
-  if (HasRequiredAction(wallet::PASSIVE_GAIA_AUTH))
+  if (wallet_items_->HasRequiredAction(wallet::PASSIVE_GAIA_AUTH))
     return REQUIRES_PASSIVE_SIGN_IN;
 
   return SIGNED_IN;
@@ -798,13 +798,6 @@ std::vector<DialogNotification>
               l10n_util::GetStringUTF16(
                   IDS_AUTOFILL_DIALOG_SIGN_IN_AND_SAVE_DETAILS)));
     }
-
-    if (HasRequiredAction(wallet::VERIFY_CVV)) {
-      notifications.push_back(
-          DialogNotification(
-              DialogNotification::REQUIRED_ACTION,
-              l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_VERIFY_CVV)));
-    }
   }
 
   if (RequestingCreditCardInfo() && !TransmissionWillBeSecure()) {
@@ -1055,16 +1048,6 @@ bool AutofillDialogControllerImpl::TransmissionWillBeSecure() const {
   return source_url_.SchemeIs(chrome::kHttpsScheme) &&
          !net::IsCertStatusError(ssl_status_.cert_status) &&
          !net::IsCertStatusMinorError(ssl_status_.cert_status);
-}
-
-bool AutofillDialogControllerImpl::HasRequiredAction(
-    wallet::RequiredAction action) const {
-  if (!wallet_items_)
-    return false;
-
-  const std::vector<wallet::RequiredAction>& actions =
-      wallet_items_->required_actions();
-  return std::find(actions.begin(), actions.end(), action) != actions.end();
 }
 
 bool AutofillDialogControllerImpl::IsPayingWithWallet() const {

@@ -192,6 +192,10 @@ class WalletItems {
     DCHECK(legal_document.get());
     legal_documents_.push_back(legal_document.release());
   }
+
+  // Whether or not |action| is in |required_actions_|.
+  bool HasRequiredAction(RequiredAction action) const;
+
   const std::vector<RequiredAction>& required_actions() const {
     return required_actions_;
   }

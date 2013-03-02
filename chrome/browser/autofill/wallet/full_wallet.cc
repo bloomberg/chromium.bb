@@ -123,6 +123,13 @@ scoped_ptr<FullWallet>
                                                required_actions));
 }
 
+bool FullWallet::HasRequiredAction(RequiredAction action) const {
+  DCHECK(ActionAppliesToFullWallet(action));
+  return std::find(required_actions_.begin(),
+                   required_actions_.end(),
+                   action) != required_actions_.end();
+}
+
 bool FullWallet::operator==(const FullWallet& other) const {
   if (expiration_month_ != other.expiration_month_)
     return false;

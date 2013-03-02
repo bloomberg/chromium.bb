@@ -201,9 +201,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // to the requesting site.
   bool TransmissionWillBeSecure() const;
 
-  // Convenience method to tell whether we need to address |action|.
-  bool HasRequiredAction(wallet::RequiredAction action) const;
-
   // Whether the user has ever seen this dialog before. Cancels don't count.
   bool IsFirstRun() const;
 
